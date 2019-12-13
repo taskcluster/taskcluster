@@ -17,20 +17,22 @@ exports.schema = Schema.fromDbDirectory();
  * should implement a `setup` method that sets state for all relevant tables
  * before each test case.
  */
-exports.withDb = function() {
+exports.withDb = function({ serviceName }) {
   suiteSetup('setup database', async function() {
     await exports.clearDb();
     exports.db = await Database.setup({
       schema: exports.schema,
       writeDbUrl: exports.dbUrl,
       readDbUrl: exports.dbUrl,
+      serviceName,
     });
 
-    exports.upgradeDb = async () => {
+    exports.upgradeDb = async ({ serviceName }) => {
       await Database.upgrade({
         schema: exports.schema,
         writeDbUrl: exports.dbUrl,
         readDbUrl: exports.dbUrl,
+        serviceName,
       });
     };
 
@@ -40,6 +42,7 @@ exports.withDb = function() {
         toVersion: ver,
         writeDbUrl: exports.dbUrl,
         readDbUrl: exports.dbUrl,
+        serviceName,
       });
     };
     exports.withDbClient = fn => exports.db._withClient(WRITE, fn);

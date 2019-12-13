@@ -6,37 +6,38 @@ const assert = require('assert');
 dbSuite(path.basename(__filename), function() {
   let db;
 
-  const schema = Schema.fromSerializable({
-    versions: [
-      {
-        version: 1,
-        migrationScript: `begin
-            create table testing (a integer, b integer);
+  const versions = [
+    {
+      version: 1,
+      migrationScript: `begin
+        create table testing (a integer, b integer);
+      end`,
+      methods: {
+        testdata: {
+          mode: 'write',
+          serviceName: 'service-1',
+          args: '',
+          returns: 'void',
+          body: `begin
+            insert into testing values (1, 2), (3, 4);
           end`,
-        methods: {
-          testdata: {
-            mode: 'write',
-            args: '',
-            returns: 'void',
-            body: `begin
-              insert into testing values (1, 2), (3, 4);
-            end`,
-          },
-          addup: {
-            mode: 'read',
-            args: 'x integer',
-            returns: 'table (total integer)',
-            body: `begin
-              return query select a+b+x as total from testing;
-            end`,
-          },
+        },
+        addup: {
+          mode: 'read',
+          serviceName: 'service-2',
+          args: 'x integer',
+          returns: 'table (total integer)',
+          body: `begin
+            return query select a+b+x as total from testing;
+          end`,
         },
       },
-    ],
-  });
+    },
+  ];
+  const schema = Schema.fromSerializable({versions});
 
   setup(function() {
-    db = new Database({schema, readDbUrl: this.dbUrl, writeDbUrl: this.dbUrl});
+    db = new Database({schema, readDbUrl: this.dbUrl, writeDbUrl: this.dbUrl, serviceName: 'service-1'});
   });
 
   teardown(async function() {
@@ -94,7 +95,7 @@ dbSuite(path.basename(__filename), function() {
   });
 
   test('setup creates JS methods that can be called', async function() {
-    await Database.upgrade({schema, runUpgrades: true, readDbUrl: this.dbUrl, writeDbUrl: this.dbUrl});
+    await Database.upgrade({schema, runUpgrades: true, readDbUrl: this.dbUrl, writeDbUrl: this.dbUrl, serviceName: 'service-1'});
     await db.procs.testdata();
     const res = await db.procs.addup(13);
     assert.deepEqual(res.map(r => r.total).sort(), [16, 20]);
@@ -105,11 +106,12 @@ dbSuite(path.basename(__filename), function() {
       versions: [{
         version: 1,
         migrationScript: `begin
-            create table testing (a integer, b integer);
-          end`,
+          create table testing (a integer, b integer);
+        end`,
         methods: {
           testData: {
             mode: 'write',
+            serviceName: 'service-1',
             args: '',
             returns: 'void',
             body: `begin
@@ -121,9 +123,41 @@ dbSuite(path.basename(__filename), function() {
     });
 
     await assert.rejects(
-      Database.upgrade({schema, runUpgrades: true, readDbUrl: this.dbUrl, writeDbUrl: this.dbUrl}),
-      /capital letters/,
+      async () => {
+        await Database.upgrade({schema, runUpgrades: true, readDbUrl: this.dbUrl, writeDbUrl: this.dbUrl, serviceName: 'service-1'});
+      },
+      /capital letters/
     );
+  });
+
+  test('do not allow service A to call any methods for service B which have mode=WRITE', async function() {
+    await Database.upgrade({schema, runUpgrades: true, readDbUrl: this.dbUrl, writeDbUrl: this.dbUrl, serviceName: 'service-2'});
+    const db = await Database.setup({schema, readDbUrl: this.dbUrl, writeDbUrl: this.dbUrl, serviceName: 'service-2'});
+
+    assert.equal(versions[0].methods.testdata.serviceName, 'service-1');
+    assert.equal(Symbol(versions[0].methods.testdata.mode).toString(), WRITE.toString());
+    await assert.rejects(db.procs.testdata, /not allowed to call/);
+    await db.close();
+  });
+
+  test('allow service A to call any methods for service A which have mode=WRITE', async function() {
+    await Database.upgrade({schema, runUpgrades: true, readDbUrl: this.dbUrl, writeDbUrl: this.dbUrl, serviceName: 'service-1'});
+    const db = await Database.setup({schema, readDbUrl: this.dbUrl, writeDbUrl: this.dbUrl, serviceName: 'service-1'});
+
+    assert.equal(versions[0].methods.testdata.serviceName, 'service-1');
+    assert.equal(Symbol(versions[0].methods.testdata.mode).toString(), WRITE.toString());
+    await db.procs.testdata();
+    await db.close();
+  });
+
+  test('allow service A to call any methods for service B which have mode=READ', async function() {
+    await Database.upgrade({schema, runUpgrades: true, readDbUrl: this.dbUrl, writeDbUrl: this.dbUrl, serviceName: 'service-1'});
+    const db = await Database.setup({schema, readDbUrl: this.dbUrl, writeDbUrl: this.dbUrl, serviceName: 'service-1'});
+
+    assert.equal(versions[0].methods.addup.serviceName, 'service-2');
+    assert.equal(Symbol(versions[0].methods.addup.mode).toString(), READ.toString());
+    await db.procs.testdata();
+    await db.close();
   });
 
   test('procedure methods does not have capital letters', async function () {
@@ -136,6 +170,7 @@ dbSuite(path.basename(__filename), function() {
         methods: {
           testData: {
             mode: 'write',
+            serviceName: 'service-1',
             args: '',
             returns: 'void',
             body: `begin
@@ -146,10 +181,10 @@ dbSuite(path.basename(__filename), function() {
       }],
     });
 
-    await Database.upgrade({schema, runUpgrades: true, readDbUrl: this.dbUrl, writeDbUrl: this.dbUrl});
+    await Database.upgrade({schema, runUpgrades: true, readDbUrl: this.dbUrl, writeDbUrl: this.dbUrl, serviceName: 'service-1'});
 
     try {
-      await Database.setup({schema, readDbUrl: this.dbUrl, writeDbUrl: this.dbUrl});
+      await Database.setup({schema, readDbUrl: this.dbUrl, writeDbUrl: this.dbUrl, serviceName: 'service-1'});
       assert.fail('should have failed');
     } catch (e) {
       assert(e);
