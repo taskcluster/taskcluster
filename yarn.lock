@@ -7172,6 +7172,10 @@ tar-stream@^2.0.0:
   version "0.0.0"
   uid ""
 
+"taskcluster-db@link:db":
+  version "0.0.0"
+  uid ""
+
 "taskcluster-lib-api@link:libraries/api":
   version "0.0.0"
   uid ""

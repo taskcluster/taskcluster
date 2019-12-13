@@ -13,7 +13,7 @@ methods:
     returns: table (secret text, expires timestamp)
     body: |-
       begin
-        return query select secrets.secret, secrets.expires from secrets where secrets.name = get_secret.name;
+        return query select secrets.secret, secrets.expires from secrets where secrets.name = get_secret_with_expires.name;
       end
   list_secrets_with_expires:
     mode: read
