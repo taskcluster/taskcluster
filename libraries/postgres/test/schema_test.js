@@ -51,4 +51,10 @@ suite(path.basename(__filename), function() {
         {name: 'list_secrets', mode: READ, serviceName: 'secrets'},
       ]);
   });
+
+  test('disallow duplicate method names', function () {
+    assert.throws(() => {
+      Schema.fromDbDirectory(path.join(__dirname, 'db-with-duplicate-method-names'))
+    }, /duplicated mapping key/)
+  });
 });
