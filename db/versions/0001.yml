@@ -3,8 +3,7 @@ migrationScript: |-
   begin
     create table secrets (
       name text primary key,
-      secret text,
-      expires timestamp
+      secret text
     );
   end
 methods:
@@ -12,19 +11,19 @@ methods:
     mode: read
     serviceName: secrets
     args: name text
-    returns: table (secret text, expires timestamp)
+    returns: table (secret text)
     body: |-
       begin
-        return query select secrets.secret, secrets.expires from secrets where secrets.name = get_secret.name;
+        return query select secrets.secret from secrets where secrets.name = get_secret.name;
       end
   list_secrets:
     mode: read
     serviceName: secrets
     args: ''
-    returns: table (name text, expires timestamp)
+    returns: table (name text)
     body: |-
       begin
-        return query select secrets.name as name, secrets.expires as expires from secrets;
+        return query select secrets.name as name from secrets;
       end
   remove_secret:
     mode: write
@@ -38,11 +37,11 @@ methods:
   set_secret:
     mode: write
     serviceName: secrets
-    args: name text, secret text, expires timestamp
+    args: name text, secret text
     returns: void
     body: |-
       begin
-        insert into secrets values (name, secret, expires)
+        insert into secrets values (name, secret)
         on conflict do update
-        set secret=secret, expires=expires;
+        set secret=secret where name=name;
       end
