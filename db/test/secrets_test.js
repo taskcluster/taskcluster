@@ -3,10 +3,10 @@ const helper = require('./helper');
 const testing = require('taskcluster-lib-testing');
 
 suite(testing.suiteName(), function() {
-  helper.withDb();
+  helper.withDb({ serviceName: 'secrets' });
 
   suiteSetup('set up latest version', async function() {
-    await helper.upgradeDb();
+    await helper.upgradeDb({ serviceName: 'secrets' });
   });
 
   setup('clear table', async function() {
