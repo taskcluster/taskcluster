@@ -18,6 +18,7 @@ const main = async () => {
     showProgress,
     readDbUrl: dbUrl,
     writeDbUrl: dbUrl,
+    serviceName: 'dummy',
   });
 };
 
