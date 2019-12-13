@@ -94,6 +94,7 @@
     "superagent": "^5.0.0",
     "tar-stream": "^2.0.0",
     "taskcluster-client": "link:clients/client",
+    "taskcluster-db": "link:db",
     "taskcluster-lib-api": "link:libraries/api",
     "taskcluster-lib-app": "link:libraries/app",
     "taskcluster-lib-azure": "link:libraries/azure",
