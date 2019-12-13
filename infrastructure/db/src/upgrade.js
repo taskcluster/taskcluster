@@ -1,6 +1,5 @@
 const util = require('util');
 const chalk = require('chalk');
-const path = require('path');
 const {Database, Schema} = require('taskcluster-lib-postgres');
 
 const main = async () => {
@@ -8,7 +7,7 @@ const main = async () => {
   if (!dbUrl) {
     throw new Error('$ADMIN_DB_URL is not set');
   }
-  const schema = Schema.fromDbDirectory(path.join(__dirname, '../../../db'));
+  const schema = Schema.fromDbDirectory();
 
   const showProgress = message => {
     util.log(chalk.green(message));
