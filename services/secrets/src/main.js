@@ -1,4 +1,3 @@
-const path = require('path');
 const builder = require('../src/api');
 const loader = require('taskcluster-lib-loader');
 const SchemaSet = require('taskcluster-lib-validate');
@@ -33,7 +32,7 @@ let load = loader({
   db: {
     requires: ['cfg'],
     setup: ({cfg}) => Database.setup({
-      schema: Schema.fromDbDirectory(path.join(__dirname, '../../../db')),
+      schema: Schema.fromDbDirectory(),
       ...cfg.postgres}),
   },
 
