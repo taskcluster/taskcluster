@@ -21,6 +21,10 @@ module.exports = ({helper, skipping, namespace}) => {
         (!exchange || message.exchange.endsWith(exchange)) &&
         (!check || check(message)));
 
+    helper.onPulsePublish = callback => {
+      client._onPublish = callback;
+    };
+
     helper.assertPulseMessage = (exchange, check) => {
       if (!matchingMessageExists(exchange, check)) {
         debugPulseAssertion(`${client.messages.length} pulse messages recorded:`);
@@ -80,6 +84,7 @@ module.exports = ({helper, skipping, namespace}) => {
       return;
     }
 
+    helper.onPulsePublish();
     helper.clearPulseMessages();
   });
 };
@@ -92,6 +97,7 @@ module.exports = ({helper, skipping, namespace}) => {
 class FakeClient {
   constructor(namespace) {
     this.isFakeClient = true;
+    this._onPublish = null;
     this.namespace = namespace;
     this.debug = debug('taskcluster-lib-pulse.conn-fake');
 
@@ -208,6 +214,9 @@ class FakePulsePublisher extends EventEmitter {
   }
 
   async _send(exchange, routingKey, payload, CCs) {
+    if (this.client._onPublish) {
+      await this.client._onPublish(exchange, routingKey, payload, CCs);
+    }
     this.client.messages.push({
       exchange,
       routingKey,
