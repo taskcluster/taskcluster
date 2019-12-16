@@ -323,9 +323,16 @@ values in the 'worker' section of the runner configuration:
         # path to the root of the generic-worker executable
         # can also be a wrapper script to which args will be passed
         path: /usr/local/bin/generic-worker
+        # (Windows only) service name to start
+        service: generic-worker
         # path where taskcluster-worker-runner should write the generated
         # generic-worker configuration.
         configPath: /etc/taskcluster/generic-worker/config.yaml
+
+Specify either 'path' to run the executable directly, or 'service' to name a
+Windows service that will run the worker.  In the latter case, the configPath
+must match the path configured within the service definition.  See
+[windows-services](./docs/windows-services.md) for details.
 <!-- end-usage -->
 
 # Development

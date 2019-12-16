@@ -155,8 +155,8 @@ values in the 'worker' section of the runner configuration:
 
 Specify either 'path' to run the executable directly, or 'service' to name a
 Windows service that will run the worker.  In the latter case, the configPath
-must match the path configured within the service definition.
+must match the path configured within the service definition.  See
+[windows-services](./docs/windows-services.md) for details.
 
 `
-	// TODO: ^^ support that in g-w startup script (currently expects one of --config-for-xx)
 }
