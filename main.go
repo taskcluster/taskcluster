@@ -121,6 +121,19 @@ func main() {
 		configureForAWS = arguments["--configure-for-aws"].(bool)
 		configureForGCP = arguments["--configure-for-gcp"].(bool)
 
+		// redirect stdio to the protocol pipe, if given; eventually this will
+		// include worker-runner protocol traffic, but for the moment it simply
+		// provides a way to channel generic-worker logging to worker-runner
+		if arguments["--worker-runner-protocol-pipe"].(string) != "" {
+			protocolPipe := arguments["--worker-runner-protocol-pipe"].(string)
+			f, err := os.OpenFile(protocolPipe, os.O_RDWR, 0)
+			exitOnError(CANT_CONNECT_PROTOCOL_PIPE, err, "Cannot connect to %s: %s", protocolPipe, err)
+
+			os.Stdin = f
+			os.Stdout = f
+			os.Stderr = f
+		}
+
 		configFileAbs, err := filepath.Abs(arguments["--config"].(string))
 		exitOnError(CANT_LOAD_CONFIG, err, "Cannot determine absolute path location for generic-worker config file '%v'", arguments["--config"])
 
