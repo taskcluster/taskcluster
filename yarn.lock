@@ -2185,9 +2185,9 @@ cron-parser@2.13.0:
     moment-timezone "^0.5.25"
 
 cronstrue@^1.82.0:
-  version "1.84.0"
-  resolved "https://registry.yarnpkg.com/cronstrue/-/cronstrue-1.84.0.tgz#ab4925cba456f2e176b3b0cc947285f957dde516"
-  integrity sha512-yfQowBKKZGCZ6Ia2zlpDKhT7Eq4Lq4gzFBmJTrHMNgZh+vkSvmI6NtCvXR21JM00tp6afyY04VEgHaaqlE9oIg==
+  version "1.85.0"
+  resolved "https://registry.yarnpkg.com/cronstrue/-/cronstrue-1.85.0.tgz#e5ca1a9d551a6c2cb18ab5b43a472d5db1675f3e"
+  integrity sha512-Xy3Sa5Dubeavt7tFJGcnVvUolB7zNhOYdXiBimbcDOsGaAnoz0lKuPR/EvY6nJlnzymFXIYeRtECo0dWYVWvrg==
 
 cross-env@^6.0.3:
   version "6.0.3"
