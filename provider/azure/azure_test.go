@@ -8,7 +8,6 @@ import (
 
 	"github.com/stretchr/testify/require"
 	"github.com/taskcluster/taskcluster-worker-runner/cfg"
-	"github.com/taskcluster/taskcluster-worker-runner/files"
 	"github.com/taskcluster/taskcluster-worker-runner/protocol"
 	"github.com/taskcluster/taskcluster-worker-runner/run"
 	"github.com/taskcluster/taskcluster-worker-runner/tc"
@@ -23,28 +22,27 @@ func TestConfigureRun(t *testing.T) {
 			ProviderType: "azure",
 		},
 		WorkerImplementation: cfg.WorkerImplementationConfig{
-			Implementation: "whatever",
+			Implementation: "whatever-worker",
 		},
 		WorkerConfig: runnerWorkerConfig,
 	}
 
-	userDataWorkerConfig := cfg.NewWorkerConfig()
-	userDataWorkerConfig, err = userDataWorkerConfig.Set("from-ud", true)
-	require.NoError(t, err, "setting config")
-
-	customData := CustomData{
-		WorkerPoolId: "w/p",
-		ProviderId:   "amazon",
-		WorkerGroup:  "wg",
-		RootURL:      "https://tc.example.com",
-		ProviderWorkerConfig: &cfg.ProviderWorkerConfig{
-			Config: userDataWorkerConfig,
-			Files: []files.File{
-				files.File{
-					Description: "a file.",
-				},
+	pwcJson := json.RawMessage(`{
+        "whateverWorker": {
+		    "config": {
+				"from-ud": true
 			},
-		},
+			"files": [
+			    {"description": "a file."}
+			]
+		}
+	}`)
+	customData := CustomData{
+		WorkerPoolId:         "w/p",
+		ProviderId:           "amazon",
+		WorkerGroup:          "wg",
+		RootURL:              "https://tc.example.com",
+		ProviderWorkerConfig: &pwcJson,
 	}
 	customDataJson, err := json.Marshal(customData)
 	require.NoError(t, err, "marshalling CustomData")

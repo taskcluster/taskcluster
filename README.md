@@ -56,19 +56,30 @@ Providers that interact with the worker-manager service can get configuration fr
 That configuration formally has the form:
 
 ```yaml
-worker:
+<workerImplementation>:
   config:
     workerConfigValue: ...
   files:
     - ...
 ```
 
-Where all fields are optional.  The contents of `worker.config` are merged into the worker configuration.
+Where all fields are optional.
+The `<workerImplementation>` is replaced with the worker implementation name, in camel case (`genericWorker`, `dockerWorker`, etc.)
+The contents of `<workerImplementation>.config` are merged into the worker configuration.
 Files are handled as described below.
 
-For backward compatibility, `worker` can also be spelled `genericWorker`; the two are treated interchangeably.
-Also for backward compatibility, configuration may be specified as a simple object with configuration properties at the top level.
-Both of these forms are deprecated, and support will be removed in a future version.
+For backward compatibility, configuration may be specified as a simple object with configuration properties at the top level.
+Support for this form will be removed in future versions.
+
+Putting all of this together, a worker pool definition for a generic-worker instance might contain:
+```yaml
+launchConfigs:
+- ...
+  workerConfig:
+    genericWorker:
+      config:
+        shutdownMachineOnInternalError: true
+```
 
 ### Secrets
 

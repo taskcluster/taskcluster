@@ -91,8 +91,13 @@ func (p *GoogleProvider) ConfigureRun(state *run.State) error {
 
 	state.ProviderMetadata = providerMetadata
 
-	state.WorkerConfig = state.WorkerConfig.Merge(userData.ProviderWorkerConfig.Config)
-	state.Files = append(state.Files, userData.ProviderWorkerConfig.Files...)
+	pwc, err := cfg.ParseProviderWorkerConfig(p.runnercfg, userData.ProviderWorkerConfig)
+	if err != nil {
+		return err
+	}
+
+	state.WorkerConfig = state.WorkerConfig.Merge(pwc.Config)
+	state.Files = append(state.Files, pwc.Files...)
 
 	return nil
 }

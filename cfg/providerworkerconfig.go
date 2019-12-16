@@ -2,69 +2,61 @@ package cfg
 
 import (
 	"encoding/json"
+	"fmt"
+	"regexp"
+	"strings"
 
 	"github.com/taskcluster/taskcluster-worker-runner/files"
 )
 
 // ProviderWorkerConfig handles the configuration format provided from
-// worker-manager providers: `{worker: {config, files}}`, including some
+// worker-manager providers: `{<workerName>: {config, files}}`, including some
 // compatibility translations described in the README.
 type ProviderWorkerConfig struct {
 	Config *WorkerConfig `json:"config,omitempty"`
 	Files  []files.File  `json:"files,omitempty"`
 }
 
-type expectedConfig struct {
-	Worker *struct {
-		Config *WorkerConfig `json:"config"`
-		Files  []files.File  `json:"files"`
-	} `json:"worker"`
-}
-
-// compatibility with the old {genericWorker: {config, files}} format
-type gwConfig struct {
-	GenericWorker *struct {
-		Config *WorkerConfig `json:"config"`
-		Files  []files.File  `json:"files"`
-	} `json:"genericWorker"`
-}
-
-func (pwc *ProviderWorkerConfig) UnmarshalJSON(b []byte) error {
-	var expected = expectedConfig{}
-	err := json.Unmarshal(b, &expected)
-	if err == nil && expected.Worker != nil {
-		pwc.Config = expected.Worker.Config
-		pwc.Files = expected.Worker.Files
-		return nil
+// ParseProviderWorkerConfig takes a RawMessage represneting the `workerConfig`
+// field received from worker-manager, and returns the config and files it
+// contains.  This requires the runnerConfig in order to determine the worker
+// implementation name.
+func ParseProviderWorkerConfig(runnercfg *RunnerConfig, body *json.RawMessage) (ProviderWorkerConfig, error) {
+	var pwc ProviderWorkerConfig
+	if body == nil {
+		return pwc, nil
 	}
 
-	// compatibility 1: genericWorker -> worker
-	var gw = gwConfig{}
-	err = json.Unmarshal(b, &gw)
-	if err == nil && gw.GenericWorker != nil {
-		pwc.Config = gw.GenericWorker.Config
-		pwc.Files = gw.GenericWorker.Files
-		return nil
+	// calculate the camel-cased worker name
+	implSnakeCase := runnercfg.WorkerImplementation.Implementation
+	workerImpl := regexp.MustCompile("-[a-z]").ReplaceAllStringFunc(implSnakeCase, func(snake string) string { return strings.ToUpper(snake[1:]) })
+
+	// the "correct" format, then, is a single-key dictionary with that key
+	var bodyMap map[string]json.RawMessage
+	err := json.Unmarshal(*body, &bodyMap)
+	fmt.Printf("bm %s\n", bodyMap)
+	if err != nil {
+		return pwc, fmt.Errorf("While parsing workerConfig from worker-manager: %s", err)
 	}
 
-	// compatibility 2: flat form
-	var config = WorkerConfig{}
-	err = json.Unmarshal(b, &config)
-	if err == nil {
-		pwc.Config = &config
-		pwc.Files = []files.File{}
-		return nil
+	if len(bodyMap) == 1 {
+		if inner, ok := bodyMap[workerImpl]; ok {
+			err = json.Unmarshal(inner, &pwc)
+			fmt.Printf("inner %s\n", inner)
+			fmt.Printf("pwc %#v\n", pwc.Config)
+			if err != nil {
+				return pwc, fmt.Errorf("While parsing workerConfig from worker-manager: %s", err)
+			}
+			return pwc, nil
+		}
 	}
 
-	return err
-}
-
-func (pwc ProviderWorkerConfig) MarshalJSON() ([]byte, error) {
-	rv := map[string]interface{}{
-		"worker": map[string]interface{}{
-			"config": pwc.Config,
-			"files":  pwc.Files,
-		},
+	// failing that, assume this is the deprecated "flat" form with configuration values at the top level
+	pwc.Config = NewWorkerConfig()
+	err = json.Unmarshal(*body, pwc.Config)
+	if err != nil {
+		return pwc, fmt.Errorf("While parsing workerConfig from worker-manager: %s", err)
 	}
-	return json.Marshal(rv)
+
+	return pwc, nil
 }

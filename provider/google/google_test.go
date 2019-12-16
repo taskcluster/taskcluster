@@ -7,7 +7,6 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/taskcluster/taskcluster-worker-runner/cfg"
-	"github.com/taskcluster/taskcluster-worker-runner/files"
 	"github.com/taskcluster/taskcluster-worker-runner/run"
 	"github.com/taskcluster/taskcluster-worker-runner/tc"
 )
@@ -21,28 +20,27 @@ func TestGoogleConfigureRun(t *testing.T) {
 			ProviderType: "google",
 		},
 		WorkerImplementation: cfg.WorkerImplementationConfig{
-			Implementation: "whatever",
+			Implementation: "whatever-worker",
 		},
 		WorkerConfig: runnerWorkerConfig,
 	}
 
-	userDataWorkerConfig := cfg.NewWorkerConfig()
-	userDataWorkerConfig, err = userDataWorkerConfig.Set("from-ud", true)
-	require.NoError(t, err, "setting config")
-
-	userData := &UserData{
-		WorkerPoolID: "w/p",
-		ProviderID:   "gcp1",
-		WorkerGroup:  "wg",
-		RootURL:      "https://tc.example.com",
-		ProviderWorkerConfig: &cfg.ProviderWorkerConfig{
-			Config: userDataWorkerConfig,
-			Files: []files.File{
-				files.File{
-					Description: "a file.",
-				},
+	pwcJson := json.RawMessage(`{
+        "whateverWorker": {
+		    "config": {
+				"from-ud": true
 			},
-		},
+			"files": [
+			    {"description": "a file."}
+			]
+		}
+	}`)
+	userData := &UserData{
+		WorkerPoolID:         "w/p",
+		ProviderID:           "gcp1",
+		WorkerGroup:          "wg",
+		RootURL:              "https://tc.example.com",
+		ProviderWorkerConfig: &pwcJson,
 	}
 	identityPath := "/instance/service-accounts/default/identity?audience=https://tc.example.com&format=full"
 	metaData := map[string]string{
