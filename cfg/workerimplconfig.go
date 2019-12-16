@@ -55,16 +55,28 @@ func (pc *WorkerImplementationConfig) Unpack(out interface{}) error {
 		// get the expected property name
 		field := desttype.Field(i)
 		var name string
+		optional := false
 		tag := field.Tag.Get("workerimpl")
-		if tag == "" {
+		tagBits := strings.Split(tag, ",")
+
+		if len(tagBits) == 0 || tagBits[0] == "" {
 			name = strings.ToLower(field.Name[:1]) + field.Name[1:]
 		} else {
-			name = tag
+			name = tagBits[0]
+		}
+
+		for _, tagBit := range tagBits {
+			if tagBit == "optional" {
+				optional = true
+			}
 		}
 
 		// get the value
 		val, ok := pc.data[name]
 		if !ok {
+			if optional {
+				continue
+			}
 			return fmt.Errorf("Configuration value `worker.%s` not found", name)
 		}
 
