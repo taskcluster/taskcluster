@@ -50,6 +50,37 @@ highest precedence, these are:
 Providers can supply configuration to the worker via whatever means makes sense.
 For example, an EC2 or GCP provider would read configuration from the instance's userData.
 
+### Provider Configuration
+
+Providers that interact with the worker-manager service can get configuration from that service.
+That configuration formally has the form:
+
+```yaml
+<workerImplementation>:
+  config:
+    workerConfigValue: ...
+  files:
+    - ...
+```
+
+Where all fields are optional.
+The `<workerImplementation>` is replaced with the worker implementation name, in camel case (`genericWorker`, `dockerWorker`, etc.)
+The contents of `<workerImplementation>.config` are merged into the worker configuration.
+Files are handled as described below.
+
+For backward compatibility, configuration may be specified as a simple object with configuration properties at the top level.
+Support for this form will be removed in future versions.
+
+Putting all of this together, a worker pool definition for a generic-worker instance might contain:
+```yaml
+launchConfigs:
+- ...
+  workerConfig:
+    genericWorker:
+      config:
+        shutdownMachineOnInternalError: true
+```
+
 ### Secrets
 
 Secrets are stored in the secrets service under a secret named
@@ -71,7 +102,7 @@ Two backward-compatibility measures exist:
 
 ### Files
 
-Files can also be stored in the secrets service, under the `files` property described above.
+Files can also be stored in the secrets service and in provider configuration, under the `files` properties described above.
 These can be used to write (small) files to disk on the worker before it starts up.
 For example:
 

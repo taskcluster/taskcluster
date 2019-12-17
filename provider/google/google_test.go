@@ -20,21 +20,27 @@ func TestGoogleConfigureRun(t *testing.T) {
 			ProviderType: "google",
 		},
 		WorkerImplementation: cfg.WorkerImplementationConfig{
-			Implementation: "whatever",
+			Implementation: "whatever-worker",
 		},
 		WorkerConfig: runnerWorkerConfig,
 	}
 
-	userDataWorkerConfig := cfg.NewWorkerConfig()
-	userDataWorkerConfig, err = userDataWorkerConfig.Set("from-ud", true)
-	require.NoError(t, err, "setting config")
-
+	pwcJson := json.RawMessage(`{
+        "whateverWorker": {
+		    "config": {
+				"from-ud": true
+			},
+			"files": [
+			    {"description": "a file."}
+			]
+		}
+	}`)
 	userData := &UserData{
-		WorkerPoolID: "w/p",
-		ProviderID:   "gcp1",
-		WorkerGroup:  "wg",
-		RootURL:      "https://tc.example.com",
-		WorkerConfig: userDataWorkerConfig,
+		WorkerPoolID:         "w/p",
+		ProviderID:           "gcp1",
+		WorkerGroup:          "wg",
+		RootURL:              "https://tc.example.com",
+		ProviderWorkerConfig: &pwcJson,
 	}
 	identityPath := "/instance/service-accounts/default/identity?audience=https://tc.example.com&format=full"
 	metaData := map[string]string{
@@ -90,6 +96,7 @@ func TestGoogleConfigureRun(t *testing.T) {
 
 	require.Equal(t, true, state.WorkerConfig.MustGet("from-runner-cfg"), "value for from-runner-cfg")
 	require.Equal(t, true, state.WorkerConfig.MustGet("from-ud"), "value for worker-config")
+	require.Equal(t, "a file.", state.Files[0].Description)
 
 	require.Equal(t, "google", state.WorkerLocation["cloud"])
 	require.Equal(t, "in-central1", state.WorkerLocation["region"])

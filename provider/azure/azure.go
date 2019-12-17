@@ -25,11 +25,11 @@ type AzureProvider struct {
 }
 
 type CustomData struct {
-	WorkerPoolId string            `json:"workerPoolId"`
-	ProviderId   string            `json:"providerId"`
-	RootURL      string            `json:"rootUrl"`
-	WorkerGroup  string            `json:"workerGroup"`
-	WorkerConfig *cfg.WorkerConfig `json:"workerConfig"`
+	WorkerPoolId         string           `json:"workerPoolId"`
+	ProviderId           string           `json:"providerId"`
+	RootURL              string           `json:"rootUrl"`
+	WorkerGroup          string           `json:"workerGroup"`
+	ProviderWorkerConfig *json.RawMessage `json:"workerConfig"`
 }
 
 func (p *AzureProvider) ConfigureRun(state *run.State) error {
@@ -98,7 +98,13 @@ func (p *AzureProvider) ConfigureRun(state *run.State) error {
 
 	state.ProviderMetadata = providerMetadata
 
-	state.WorkerConfig = state.WorkerConfig.Merge(customData.WorkerConfig)
+	pwc, err := cfg.ParseProviderWorkerConfig(p.runnercfg, customData.ProviderWorkerConfig)
+	if err != nil {
+		return err
+	}
+
+	state.WorkerConfig = state.WorkerConfig.Merge(pwc.Config)
+	state.Files = append(state.Files, pwc.Files...)
 
 	return nil
 }

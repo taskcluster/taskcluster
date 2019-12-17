@@ -1,6 +1,7 @@
 package google
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
@@ -94,6 +95,6 @@ func TestQueryUserData(t *testing.T) {
 	ud, err := ms.queryUserData()
 	if assert.NoError(t, err) {
 		assert.Equal(t, "w/p", ud.WorkerPoolID)
-		assert.Equal(t, true, ud.WorkerConfig.MustGet("from-worker-config"))
+		assert.Equal(t, json.RawMessage(`{"from-worker-config": true}`), *ud.ProviderWorkerConfig)
 	}
 }
