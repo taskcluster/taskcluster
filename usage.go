@@ -33,7 +33,7 @@ and reports back results to the queue.
   Usage:
     generic-worker run                      [--config         CONFIG-FILE]
                                             [--worker-runner-protocol-pipe PIPE]
-                                            [--configure-for-aws | --configure-for-gcp]` + installServiceSummary() + `
+                                            [--configure-for-aws | --configure-for-gcp | --configure-for-azure]` + installServiceSummary() + `
     generic-worker show-payload-schema
     generic-worker new-ed25519-keypair      --file ED25519-PRIVATE-KEY-FILE` + customTargetsSummary() + `
     generic-worker --help
@@ -72,6 +72,9 @@ and reports back results to the queue.
                                             to self-configure, based on AWS metadata, information
                                             from the provisioner, and the worker type definition
                                             that the provisioner holds for the worker type.
+    --configure-for-azure                   This will create the CONFIG-FILE for an Azure
+                                            installation by querying the Azure environment
+                                            and setting appropriate values.
     --configure-for-gcp                     This will create the CONFIG-FILE for a GCP
                                             installation by querying the GCP environment
                                             and setting appropriate values.` + platformCommandLineParameters() + `

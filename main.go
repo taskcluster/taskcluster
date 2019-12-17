@@ -49,6 +49,8 @@ var (
 	configureForAWS bool
 	// Whether we are running in GCP
 	configureForGCP bool
+	// Whether we are running in Azure
+	configureForAzure bool
 	// General platform independent user settings, such as home directory, username...
 	// Platform specific data should be managed in plat_<platform>.go files
 	taskContext = &TaskContext{}
@@ -120,6 +122,7 @@ func main() {
 	case arguments["run"]:
 		configureForAWS = arguments["--configure-for-aws"].(bool)
 		configureForGCP = arguments["--configure-for-gcp"].(bool)
+		configureForAzure = arguments["--configure-for-azure"].(bool)
 
 		// redirect stdio to the protocol pipe, if given; eventually this will
 		// include worker-runner protocol traffic, but for the moment it simply
@@ -141,7 +144,17 @@ func main() {
 			Path: configFileAbs,
 		}
 
-		configProvider, err = loadConfig(configFile, configureForAWS, configureForGCP)
+		var provider Provider = NO_PROVIDER
+		switch {
+		case configureForAWS:
+			provider = AWS_PROVIDER
+		case configureForGCP:
+			provider = GCP_PROVIDER
+		case configureForAzure:
+			provider = AZURE_PROVIDER
+		}
+
+		configProvider, err = loadConfig(configFile, provider)
 
 		// We need to persist the generic-worker config file if we fetched it
 		// over the network, for example if the config is fetched from the AWS
@@ -213,9 +226,9 @@ func main() {
 	}
 }
 
-func loadConfig(configFile *gwconfig.File, queryAWSUserData bool, queryGCPMetaData bool) (gwconfig.Provider, error) {
+func loadConfig(configFile *gwconfig.File, provider Provider) (gwconfig.Provider, error) {
 
-	configProvider, err := ConfigProvider(configFile, queryAWSUserData, queryGCPMetaData)
+	configProvider, err := ConfigProvider(configFile, provider)
 	if err != nil {
 		return nil, err
 	}
@@ -291,17 +304,19 @@ func loadConfig(configFile *gwconfig.File, queryAWSUserData bool, queryGCPMetaDa
 	return configProvider, nil
 }
 
-func ConfigProvider(configFile *gwconfig.File, queryAWSUserData bool, queryGCPMetaData bool) (gwconfig.Provider, error) {
+func ConfigProvider(configFile *gwconfig.File, provider Provider) (gwconfig.Provider, error) {
 	var configProvider gwconfig.Provider
-	switch {
-	case queryAWSUserData:
+	switch provider {
+	case AWS_PROVIDER:
 		var err error
 		configProvider, err = InferAWSConfigProvider()
 		if err != nil {
 			return nil, err
 		}
-	case queryGCPMetaData:
+	case GCP_PROVIDER:
 		configProvider = &GCPConfigProvider{}
+	case AZURE_PROVIDER:
+		configProvider = &AzureConfigProvider{}
 	default:
 		configProvider = configFile
 	}
