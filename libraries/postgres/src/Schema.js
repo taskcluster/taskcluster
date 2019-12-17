@@ -1,4 +1,5 @@
 const fs = require('fs');
+const assert = require('assert');
 const yaml = require('js-yaml');
 const path = require('path');
 const {READ, WRITE} = require('./constants');
@@ -10,7 +11,6 @@ class Schema{
    * script is a script to create the schema, suitable as an argument to
    * the Postgres DO statment; that is usually 'BEGIN stmt; stmt; .. END'.
    */
-  // TODO: Make sure that versions are contiguous
   // TODO: Make sure that procedure argument values don't change
   constructor(versions, access) {
     this.versions = versions;
@@ -37,14 +37,51 @@ class Schema{
       }
 
       const version = yaml.safeLoad(fs.readFileSync(filename));
-
+      Schema._checkVersion(version, filename);
       versions[version.version - 1] = version;
     });
+
+    // check for missing versions
+    for (let i = 0; i < versions.length; i++) {
+      assert(versions[i], `version ${i + 1} is missing`);
+    }
+
+    Schema._checkMethods(versions);
 
     // TODO: Add test to check for correctly loading access
     const access = yaml.safeLoad(fs.readFileSync(path.join(directory, 'access.yml')));
 
     return new Schema(versions, access);
+  }
+
+  static _checkVersion(version, filename) {
+    assert(version.version, `version field missing in ${filename}`);
+    assert(version.migrationScript, `migrationScript field missing in ${filename}`);
+    assert(version.methods, `methods field missing in ${filename}`);
+
+    assert(Object.keys(version).length, 3, `unknown fields in ${filename}`);
+
+    const fileBase = path.basename(filename, '.yml');
+    assert.equal(version.version, Number(fileBase), `filename ${filename} must match version`);
+
+    // TODO: check method forms
+  }
+
+  static _checkMethods(versions) {
+    const methods = new Map();
+    for (let version of versions) {
+      for (let [methodName, {mode, serviceName, args, returns}] of Object.entries(version.methods)) {
+        if (methods.has(methodName)) {
+          const existing = methods.get(methodName);
+          assert.equal(existing.mode, mode, `method ${methodName} changed mode in version ${version.version}`);
+          assert.equal(existing.serviceName, serviceName, `method ${methodName} changed serviceName in version ${version.version}`);
+          assert.equal(existing.args, args, `method ${methodName} changed args in version ${version.version}`);
+          assert.equal(existing.returns, returns, `method ${methodName} changed returns in version ${version.version}`);
+        } else {
+          methods.set(methodName, {mode, serviceName, args, returns});
+        }
+      }
+    }
   }
 
   getVersion(version) {
