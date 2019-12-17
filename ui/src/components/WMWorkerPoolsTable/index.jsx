@@ -144,12 +144,7 @@ export default class WorkerManagerWorkerPoolsTable extends Component {
       });
       this.setState({
         dialogState: {
-          error: null,
           open: false,
-          title: '',
-          body: '',
-          confirmText: '',
-          item: null,
         },
       });
     } catch (error) {
@@ -157,7 +152,7 @@ export default class WorkerManagerWorkerPoolsTable extends Component {
     }
   };
 
-  handleDialogActionOpen = workerPool => {
+  handleDialogActionOpen = workerPool => () => {
     this.setState({
       dialogState: {
         open: true,
@@ -178,10 +173,6 @@ export default class WorkerManagerWorkerPoolsTable extends Component {
     });
   };
 
-  handleDialogActionComplete = () => {
-    this.props.history.push('/worker-manager');
-  };
-
   handleDialogActionClose = () => {
     this.setState({
       dialogState: {
@@ -197,7 +188,6 @@ export default class WorkerManagerWorkerPoolsTable extends Component {
       classes,
     } = this.props;
     const { actionLoading } = this.state;
-    const { handleDialogActionOpen } = this;
     const iconSize = 16;
     const { provisionerId, workerType } = splitWorkerPoolId(
       workerPool.workerPoolId
@@ -258,7 +248,7 @@ export default class WorkerManagerWorkerPoolsTable extends Component {
               title="Delete Worker Pool ID"
               className={classes.button}
               name={`${workerPool.workerPoolId}`}
-              onClick={() => handleDialogActionOpen(workerPool)}
+              onClick={this.handleDialogActionOpen(workerPool)}
               disabled={actionLoading}>
               <DeleteIcon size={iconSize} />
             </IconButton>
@@ -317,19 +307,16 @@ export default class WorkerManagerWorkerPoolsTable extends Component {
           onHeaderClick={this.handleHeaderClick}
           renderRow={this.renderRow}
         />
-        {open && (
-          <DialogAction
-            open={open}
-            onSubmit={this.handleDeleteClick}
-            onComplete={this.handleDialogActionComplete}
-            onClose={this.handleDialogActionClose}
-            onError={this.handleDialogActionError}
-            error={error}
-            title={title}
-            body={<Typography>{body}</Typography>}
-            confirmText={confirmText}
-          />
-        )}
+        <DialogAction
+          open={open}
+          onSubmit={this.handleDeleteClick}
+          onClose={this.handleDialogActionClose}
+          onError={this.handleDialogActionError}
+          error={error}
+          title={title}
+          body={<Typography>{body}</Typography>}
+          confirmText={confirmText}
+        />
       </Fragment>
     );
   }
