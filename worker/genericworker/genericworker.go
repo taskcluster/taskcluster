@@ -14,9 +14,10 @@ import (
 )
 
 type genericworkerConfig struct {
-	Path       string `workerimpl:",optional"`
-	Service    string `workerimpl:",optional"`
-	ConfigPath string
+	Path         string `workerimpl:",optional"`
+	Service      string `workerimpl:",optional"`
+	ProtocolPipe string `workerimpl:",optional"`
+	ConfigPath   string
 }
 
 type genericworker struct {
@@ -149,6 +150,9 @@ values in the 'worker' section of the runner configuration:
 		path: /usr/local/bin/generic-worker
 		# (Windows only) service name to start
 		service: generic-worker
+		# (Windows only) named pipe (\\.\pipe\<something>) with which generic-worker
+		# will communicate with worker-runner; default value is as shown here:
+		protocolPipe: \\.\pipe\generic-worker
 		# path where taskcluster-worker-runner should write the generated
 		# generic-worker configuration.
 		configPath: /etc/taskcluster/generic-worker/config.yaml

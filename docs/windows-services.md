@@ -3,8 +3,11 @@
 Taskcluster-Worker-Runner supports starting generic-worker as a Windows service.
 It is up to you to define such a service, but it must meet a few requirements:
 
- * Automatically reads from the configuration file written by `start-worker`
+ * Uses the configuration file written by `start-worker`
    (the file named in `worker.configPath` in the runner configuration)
+ * Connects the worker's stdin, stdout, and stderr to the named pipe given in
+   `worker.protocolPipe`.  This is used for bi-directional communication with
+   the running worker.
 
 Note that the service created by the built-in `generic-worker install service`
 does not meet these requirements, as it is intended for use without
@@ -13,7 +16,7 @@ Taskcluster-Worker-Runner.
 ## Recommended Setup
 
 The following steps will set up a generic-worker service that meets the above requirements.
-They use [NSSM](http://nssm.cc/) to install the service.
+They use [NSSM](http://nssm.cc/) to install and run the service.
 
 * Install generic-worker as `c:\generic-worker\generic-worker.exe`
 * Install NSSM
@@ -22,7 +25,7 @@ They use [NSSM](http://nssm.cc/) to install the service.
 ```shell
 nssm install generic-worker c:\generic-worker\generic-worker.exe
 nssm set generic-worker AppDirectory c:\generic-worker
-nssm set generic-worker AppParameters run --config c:\generic-worker\generic-worker-config.yml
+nssm set generic-worker AppParameters run --config c:\generic-worker\generic-worker-config.yml --worker-runner-protocol-pipe \\.\pipe\generic-worker
 nssm set generic-worker DisplayName "Generic Worker"
 nssm set generic-worker Description "A taskcluster worker that runs on all mainstream platforms"
 nssm set generic-worker Start SERVICE_DEMAND_START
@@ -54,4 +57,5 @@ worker:
   implementation: generic-worker
   service: generic-worker
   configPath: c:\generic-worker\generic-worker-config.yml
+  protocolPipe: \\.\pipe\generic-worker
 ```
