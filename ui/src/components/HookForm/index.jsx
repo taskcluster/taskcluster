@@ -89,8 +89,14 @@ const initialHook = {
   successIcon: {
     ...theme.mixins.successIcon,
   },
+  successTooltipLabel: {
+    backgroundColor: theme.mixins.successIcon.backgroundColor,
+  },
   deleteIcon: {
     ...theme.mixins.errorIcon,
+  },
+  deleteTooltipLabel: {
+    backgroundColor: theme.mixins.errorIcon.backgroundColor,
   },
   code: {
     maxHeight: '70vh',
@@ -826,7 +832,10 @@ export default class HookForm extends Component {
                 tooltipOpen
                 icon={<DeleteIcon />}
                 onClick={onDialogDeleteHook}
-                className={classes.deleteIcon}
+                classes={{
+                  icon: classes.deleteIcon,
+                  staticTooltipLabel: classes.deleteTooltipLabel,
+                }}
                 FabProps={{
                   disabled: actionLoading,
                 }}
@@ -837,7 +846,10 @@ export default class HookForm extends Component {
                 tooltipOpen
                 icon={<FlashIcon />}
                 onClick={onDialogOpen}
-                className={classes.successIcon}
+                classes={{
+                  icon: classes.successIcon,
+                  staticTooltipLabel: classes.successTooltipLabel,
+                }}
                 FabProps={{
                   disabled: !this.validHook() || actionLoading,
                 }}

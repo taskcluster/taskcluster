@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
 import classNames from 'classnames';
 import { arrayOf, node, oneOfType } from 'prop-types';
-import { makeStyles } from '@material-ui/core/styles';
+import { withStyles } from '@material-ui/core/styles';
 import MuiSpeedDial from '@material-ui/lab/SpeedDial';
 import SpeedDialIcon from '@material-ui/lab/SpeedDialIcon';
 import CloseIcon from 'mdi-react/CloseIcon';
 import DotsVerticalIcon from 'mdi-react/DotsVerticalIcon';
 
-const useStyles = makeStyles(theme => ({
+const styles = withStyles(theme => ({
   speedDial: {
     ...theme.mixins.fab,
   },
@@ -17,8 +17,7 @@ const useStyles = makeStyles(theme => ({
  * Render a dynamically expanding set of floating action buttons.
  */
 function SpeedDial(props) {
-  const classes = useStyles();
-  const { children, className, ...rest } = props;
+  const { classes, children, className, ...rest } = props;
   const [open, setOpen] = useState(false);
 
   function handleClose() {
@@ -54,4 +53,4 @@ SpeedDial.propTypes = {
   children: oneOfType([arrayOf(node), node]).isRequired,
 };
 
-export default SpeedDial;
+export default styles(SpeedDial);
