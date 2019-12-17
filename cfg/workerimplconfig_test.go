@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	yaml "gopkg.in/yaml.v3"
 )
 
@@ -72,6 +73,24 @@ func TestWorkerImplUnpackMissing(t *testing.T) {
 	if err == nil {
 		t.Fatalf("failed to fail")
 	}
+}
+
+func TestWorkerImplUnpackOptional(t *testing.T) {
+	type mypc struct {
+		Value   int    `workerimpl:",optional"`
+		Another string `workerimpl:"anotherValue,optional"`
+	}
+
+	var pc WorkerImplementationConfig
+	err := yaml.Unmarshal([]byte(`{"implementation": "x", "anotherValue": "hi"}`), &pc)
+	require.NoError(t, err, "should fail")
+
+	var c mypc
+	err = pc.Unpack(&c)
+	if err != nil {
+		t.Fatalf("failed to unmarshal: %s", err)
+	}
+	assert.Equal(t, mypc{0, "hi"}, c, "unpacked values correctly")
 }
 
 func TestWorkerImplUnpackWrongType(t *testing.T) {

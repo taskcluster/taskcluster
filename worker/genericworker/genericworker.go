@@ -3,11 +3,8 @@ package genericworker
 import (
 	"encoding/json"
 	"fmt"
-	"io"
 	"io/ioutil"
 	"log"
-	"os"
-	"os/exec"
 	"strings"
 
 	"github.com/taskcluster/taskcluster-worker-runner/cfg"
@@ -17,14 +14,16 @@ import (
 )
 
 type genericworkerConfig struct {
-	Path       string
-	ConfigPath string
+	Path         string `workerimpl:",optional"`
+	Service      string `workerimpl:",optional"`
+	ProtocolPipe string `workerimpl:",optional"`
+	ConfigPath   string
 }
 
 type genericworker struct {
 	runnercfg *cfg.RunnerConfig
 	wicfg     genericworkerConfig
-	cmd       *exec.Cmd
+	runMethod runMethod
 }
 
 func (d *genericworker) ConfigureRun(state *run.State) error {
@@ -106,49 +105,26 @@ func (d *genericworker) StartWorker(state *run.State) (protocol.Transport, error
 		return nil, fmt.Errorf("Error writing worker config to %s: %v", d.wicfg.ConfigPath, err)
 	}
 
-	transp := protocol.NewStdioTransport()
-
-	// path to generic-worker binary
-	cmd := exec.Command(d.wicfg.Path)
-	cmd.Env = os.Environ()
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-
-	// pass config to generic-worker
-	cmd.Args = append(cmd.Args, "run", "--config", d.wicfg.ConfigPath)
-
-	d.cmd = cmd
-
-	// Unfortunately, cmd.Wait does not handle the case where cmd.Stdin is a writer that remains
-	// open when the process exits.  Instead, we set up our own copy loop.  This loop in fact
-	// runs forever, but for a single-use process like this, that's OK.
-	pipe, err := cmd.StdinPipe()
-	if err != nil {
-		return nil, err
+	if (d.wicfg.Path != "" && d.wicfg.Service != "") || (d.wicfg.Path == "" && d.wicfg.Service == "") {
+		return nil, fmt.Errorf("Specify exactly one of worker.path and worker.windowsService")
 	}
-	go func() {
-		_, err = io.Copy(pipe, transp)
-		if err != nil {
-			// this can occur when the worker exits while we are trying to send a
-			// message to it, so we will consider the message lost and shut down
-			// as usual.
-			log.Printf("Error writing to worker process (ignored): %#v", err)
-		}
-	}()
-
-	err = cmd.Start()
+	if d.wicfg.Path != "" {
+		d.runMethod, err = newCmdRunMethod()
+	} else {
+		d.runMethod, err = newServiceRunMethod()
+	}
 	if err != nil {
 		return nil, err
 	}
 
-	return transp, nil
+	return d.runMethod.start(d, state)
 }
 
 func (d *genericworker) SetProtocol(proto *protocol.Protocol) {
 }
 
 func (d *genericworker) Wait() error {
-	return d.cmd.Wait()
+	return d.runMethod.wait()
 }
 
 func New(runnercfg *cfg.RunnerConfig) (worker.Worker, error) {
@@ -172,9 +148,19 @@ values in the 'worker' section of the runner configuration:
 		# path to the root of the generic-worker executable
 		# can also be a wrapper script to which args will be passed
 		path: /usr/local/bin/generic-worker
+		# (Windows only) service name to start
+		service: "Generic Worker"
+		# (Windows only) named pipe (\\.\pipe\<something>) with which generic-worker
+		# will communicate with worker-runner; default value is as shown here:
+		protocolPipe: \\.\pipe\generic-worker
 		# path where taskcluster-worker-runner should write the generated
 		# generic-worker configuration.
 		configPath: /etc/taskcluster/generic-worker/config.yaml
+
+Specify either 'path' to run the executable directly, or 'service' to name a
+Windows service that will run the worker.  In the latter case, the configPath
+must match the path configured within the service definition.  See
+[windows-services](./docs/windows-services.md) for details.
 
 `
 }
