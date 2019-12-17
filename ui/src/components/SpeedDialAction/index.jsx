@@ -1,11 +1,10 @@
 import React from 'react';
-import classNames from 'classnames';
-import { makeStyles } from '@material-ui/core/styles';
+import { withStyles } from '@material-ui/core/styles';
 import MuiSpeedDialAction from '@material-ui/lab/SpeedDialAction';
 import { string, bool } from 'prop-types';
 import { withAuth } from '../../utils/Auth';
 
-const useStyles = makeStyles(theme => ({
+const styles = withStyles(theme => ({
   icon: {
     ...theme.mixins.secondaryIcon,
   },
@@ -26,7 +25,7 @@ const useStyles = makeStyles(theme => ({
  */
 function SpeedDialAction(props) {
   const {
-    className,
+    classes,
     requiresAuth,
     FabProps,
     user,
@@ -35,7 +34,6 @@ function SpeedDialAction(props) {
     tooltipTitle,
     ...rest
   } = props;
-  const classes = useStyles();
   const other = {};
   const lackingAuth = requiresAuth && !user;
   const fabProps = {
@@ -68,7 +66,6 @@ function SpeedDialAction(props) {
           ? classes.staticTooltipLabelDisabled
           : classes.staticTooltipLabel,
       }}
-      className={classNames(className)}
       FabProps={fabProps}
       {...rest}
       {...title}
@@ -89,4 +86,4 @@ SpeedDialAction.defaultProps = {
   requiresAuth: false,
 };
 
-export default withAuth(SpeedDialAction);
+export default withAuth(styles(SpeedDialAction));
