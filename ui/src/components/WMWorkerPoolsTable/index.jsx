@@ -135,8 +135,6 @@ export default class WorkerManagerWorkerPoolsTable extends Component {
       },
     });
 
-    this.props.history.replace('/worker-manager');
-
     try {
       await this.props.deleteRequest({
         workerPoolId: item.workerPoolId,
