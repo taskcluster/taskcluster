@@ -296,6 +296,8 @@ export default class ViewClient extends Component {
       disabled: false,
     };
     const isCliLogin = Boolean(query.callback_url);
+    const isClientDisabled =
+      clientData && clientData.client && clientData.client.disabled;
 
     // CLI login
     if (
@@ -373,7 +375,9 @@ export default class ViewClient extends Component {
                 )}
                 <ErrorPanel
                   fixed
+                  warning={isClientDisabled}
                   error={
+                    (isClientDisabled && 'Disabled') ||
                     error ||
                     (clientData && clientData.error) ||
                     (currentScopesData && currentScopesData.error)
