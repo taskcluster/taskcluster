@@ -19,6 +19,7 @@ const (
 	CANT_CREATE_ED25519_KEYPAIR ExitCode = 75
 	CANT_SAVE_CONFIG            ExitCode = 76
 	CANT_SECURE_CONFIG          ExitCode = 77
+	CANT_CONNECT_PROTOCOL_PIPE  ExitCode = 78
 )
 
 func usage(versionName string) string {
@@ -31,6 +32,7 @@ and reports back results to the queue.
 
   Usage:
     generic-worker run                      [--config         CONFIG-FILE]
+                                            [--worker-runner-protocol-pipe PIPE]
                                             [--configure-for-aws | --configure-for-gcp | --configure-for-azure]` + installServiceSummary() + `
     generic-worker show-payload-schema
     generic-worker new-ed25519-keypair      --file ED25519-PRIVATE-KEY-FILE` + customTargetsSummary() + `
@@ -58,6 +60,11 @@ and reports back results to the queue.
                                             installation should use, rather than the config
                                             to use during install.
                                             [default: generic-worker.config]
+    --worker-runner-protocol-pipe PIPE      Use this option when running generic-worker under
+                                            taskcluster-worker-runner, passing the same value as
+                                            given for 'worker.protocolPipe' in the runner
+                                            configuration.  This specifies a named pipe that is used
+                                            for communication between the two processes.
     --configure-for-aws                     Use this option when installing or running a worker
                                             that is spawned by the AWS provisioner. It will cause
                                             the worker to query the EC2 metadata service when it
@@ -332,5 +339,6 @@ and reports back results to the queue.
     75     Not able to create an ed25519 key pair.
     76     Not able to save generic-worker config file after fetching it from AWS provisioner
            or Google Cloud metadata.` + exitCode77() + `
+    78     Not able to connect to --worker-runner-protocol-pipe.
 `
 }
