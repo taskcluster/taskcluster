@@ -24,30 +24,30 @@ They use [NSSM](http://nssm.cc/) to install and run the service.
 
 ```shell
 nssm install generic-worker c:\generic-worker\generic-worker.exe
-nssm set generic-worker AppDirectory c:\generic-worker
-nssm set generic-worker AppParameters run --config c:\generic-worker\generic-worker-config.yml --worker-runner-protocol-pipe \\.\pipe\generic-worker
-nssm set generic-worker DisplayName "Generic Worker"
-nssm set generic-worker Description "A taskcluster worker that runs on all mainstream platforms"
-nssm set generic-worker Start SERVICE_DEMAND_START
-nssm set generic-worker Type SERVICE_WIN32_OWN_PROCESS
-nssm set generic-worker AppPriority NORMAL_PRIORITY_CLASS
-nssm set generic-worker AppNoConsole 1
-nssm set generic-worker AppAffinity All
-nssm set generic-worker AppStopMethodSkip 0
-nssm set generic-worker AppStopMethodConsole 1500
-nssm set generic-worker AppStopMethodWindow 1500
-nssm set generic-worker AppStopMethodThreads 1500
-nssm set generic-worker AppThrottle 1500
-nssm set generic-worker AppExit Default Exit
-nssm set generic-worker AppRestartDelay 0
-nssm set generic-worker AppStdout c:\generic-worker\generic-worker-service.log
-nssm set generic-worker AppStderr c:\generic-worker\generic-worker-service.log
-nssm set generic-worker AppStdoutCreationDisposition 4
-nssm set generic-worker AppStderrCreationDisposition 4
-nssm set generic-worker AppRotateFiles 1
-nssm set generic-worker AppRotateOnline 1
-nssm set generic-worker AppRotateSeconds 3600
-nssm set generic-worker AppRotateBytes 0
+nssm set "Generic Worker" AppDirectory c:\generic-worker
+nssm set "Generic Worker" AppParameters run --config c:\generic-worker\generic-worker-config.yml --worker-runner-protocol-pipe \\.\pipe\generic-worker
+nssm set "Generic Worker" DisplayName "Generic Worker"
+nssm set "Generic Worker" Description "A taskcluster worker that runs on all mainstream platforms"
+nssm set "Generic Worker" Start SERVICE_DEMAND_START
+nssm set "Generic Worker" Type SERVICE_WIN32_OWN_PROCESS
+nssm set "Generic Worker" AppPriority NORMAL_PRIORITY_CLASS
+nssm set "Generic Worker" AppNoConsole 1
+nssm set "Generic Worker" AppAffinity All
+nssm set "Generic Worker" AppStopMethodSkip 0
+nssm set "Generic Worker" AppStopMethodConsole 1500
+nssm set "Generic Worker" AppStopMethodWindow 1500
+nssm set "Generic Worker" AppStopMethodThreads 1500
+nssm set "Generic Worker" AppThrottle 1500
+nssm set "Generic Worker" AppExit Default Exit
+nssm set "Generic Worker" AppRestartDelay 0
+nssm set "Generic Worker" AppStdout c:\generic-worker\generic-worker-service.log
+nssm set "Generic Worker" AppStderr c:\generic-worker\generic-worker-service.log
+nssm set "Generic Worker" AppStdoutCreationDisposition 4
+nssm set "Generic Worker" AppStderrCreationDisposition 4
+nssm set "Generic Worker" AppRotateFiles 1
+nssm set "Generic Worker" AppRotateOnline 1
+nssm set "Generic Worker" AppRotateSeconds 3600
+nssm set "Generic Worker" AppRotateBytes 0
 ```
 
 * Add the following to your runner configuration:
@@ -55,7 +55,7 @@ nssm set generic-worker AppRotateBytes 0
 ```yaml
 worker:
   implementation: generic-worker
-  service: generic-worker
+  service: "Generic Worker"
   configPath: c:\generic-worker\generic-worker-config.yml
   protocolPipe: \\.\pipe\generic-worker
 ```

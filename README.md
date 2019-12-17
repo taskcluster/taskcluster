@@ -324,7 +324,7 @@ values in the 'worker' section of the runner configuration:
         # can also be a wrapper script to which args will be passed
         path: /usr/local/bin/generic-worker
         # (Windows only) service name to start
-        service: generic-worker
+        service: "Generic Worker"
         # (Windows only) named pipe (\\.\pipe\<something>) with which generic-worker
         # will communicate with worker-runner; default value is as shown here:
         protocolPipe: \\.\pipe\generic-worker
