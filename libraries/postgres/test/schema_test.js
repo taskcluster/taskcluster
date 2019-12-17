@@ -43,6 +43,84 @@ suite(path.basename(__filename), function() {
     });
   });
 
+  suite('_checkVersion', function() {
+    test('version field required', function() {
+      assert.throws(
+        () => Schema._checkVersion({migrationScript: 'yup', methods: []}, '0001.yml'),
+        /version field missing/);
+    });
+
+    test('migrationScript field required', function() {
+      assert.throws(
+        () => Schema._checkVersion({version: 1, methods: []}, '0001.yml'),
+        /migrationScript field missing/);
+    });
+
+    test('methods field required', function() {
+      assert.throws(
+        () => Schema._checkVersion({version: 1, migrationScript: 'yep'}, '0001.yml'),
+        /methods field missing/);
+    });
+
+    test('version does not match filename', function() {
+      assert.throws(
+        () => Schema._checkVersion({version: 2, migrationScript: 'yep', methods: []}, '0001.yml'),
+        /must match version/);
+    });
+  });
+
+  suite('_checkVersion', function() {
+    const versions = v2overrides => [
+      {
+        version: 1,
+        methods: {
+          whatever: {
+            mode: 'read',
+            serviceName: 'test',
+            args: 'x integer',
+            returns: 'void',
+          },
+        },
+      },
+      {
+        version: 2,
+        methods: {
+          whatever: {
+            mode: 'read',
+            serviceName: 'test',
+            args: 'x integer',
+            returns: 'void',
+            ...v2overrides,
+          },
+        },
+      },
+    ];
+
+    test('method changes mode', function() {
+      assert.throws(
+        () => Schema._checkMethods(versions({mode: 'write'})),
+        /method whatever changed mode in version 2/);
+    });
+
+    test('method changes serviceName', function() {
+      assert.throws(
+        () => Schema._checkMethods(versions({serviceName: 'queue'})),
+        /method whatever changed serviceName in version 2/);
+    });
+
+    test('method changes args', function() {
+      assert.throws(
+        () => Schema._checkMethods(versions({args: 'x text'})),
+        /method whatever changed args in version 2/);
+    });
+
+    test('method changes returns', function() {
+      assert.throws(
+        () => Schema._checkMethods(versions({returns: 'text'})),
+        /method whatever changed returns in version 2/);
+    });
+  });
+
   test('allMethods', function() {
     const sch = Schema.fromDbDirectory(path.join(__dirname, 'db-simple'));
     assert.deepEqual([...sch.allMethods()].sort(),
@@ -54,7 +132,13 @@ suite(path.basename(__filename), function() {
 
   test('disallow duplicate method names', function () {
     assert.throws(() => {
-      Schema.fromDbDirectory(path.join(__dirname, 'db-with-duplicate-method-names'))
-    }, /duplicated mapping key/)
+      Schema.fromDbDirectory(path.join(__dirname, 'db-with-duplicate-method-names'));
+    }, /duplicated mapping key/);
+  });
+
+  test('disallow gaps in version numbers', function () {
+    assert.throws(() => {
+      Schema.fromDbDirectory(path.join(__dirname, 'db-with-gaps'));
+    }, /version 2 is missing/);
   });
 });
