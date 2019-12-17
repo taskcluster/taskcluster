@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { node, string } from 'prop-types';
+import { node, string, object } from 'prop-types';
 import { CopyToClipboard } from 'react-copy-to-clipboard';
 import { makeStyles } from '@material-ui/core/styles';
 import ListItem from '@material-ui/core/ListItem';
@@ -8,7 +8,7 @@ import ContentCopyIcon from 'mdi-react/ContentCopyIcon';
 import CheckIcon from 'mdi-react/CheckIcon';
 
 const useStyles = makeStyles(theme => ({
-  listItemButton: {
+  listItemButtonRoot: {
     ...theme.mixins.listItemButton,
   },
 }));
@@ -16,7 +16,14 @@ const useStyles = makeStyles(theme => ({
 function CopyToClipboardListItem(props) {
   const classes = useStyles();
   const [isCopy, setCopy] = useState(false);
-  const { tooltipTitle, textToCopy, primary, secondary } = props;
+  const {
+    tooltipTitle,
+    textToCopy,
+    primary,
+    secondary,
+    listItemTextProps,
+    listItemProps,
+  } = props;
 
   function handleCopyClick() {
     setCopy(true);
@@ -35,8 +42,15 @@ function CopyToClipboardListItem(props) {
       onCopy={handleCopyClick}
       title={`${tooltipTitle} (${isCopy ? 'Copied!' : 'Copy'})`}
       text={textToCopy}>
-      <ListItem button className={classes.listItemButton}>
-        <ListItemText primary={primary} secondary={secondary} />
+      <ListItem
+        button
+        classes={{ root: classes.listItemButtonRoot }}
+        {...listItemProps}>
+        <ListItemText
+          primary={primary}
+          secondary={secondary}
+          {...listItemTextProps}
+        />
         {isCopy ? <CheckIcon /> : <ContentCopyIcon />}
       </ListItem>
     </CopyToClipboard>
@@ -52,10 +66,15 @@ CopyToClipboardListItem.propTypes = {
   primary: node.isRequired,
   // The ListItemText secondary prop
   secondary: node,
+  // Props applied to the ListItemText component
+  listItemTextProps: object,
+  // Props applied  to the ListItem component
+  listItem: object,
 };
 
 CopyToClipboardListItem.defaultProps = {
   secondary: null,
+  listItemTextProps: null,
 };
 
 export default CopyToClipboardListItem;

@@ -1,19 +1,15 @@
 import { hot } from 'react-hot-loader';
 import React, { Component, Fragment } from 'react';
 import { graphql, withApollo } from 'react-apollo';
-import CopyToClipboard from 'react-copy-to-clipboard';
 import { parse } from 'qs';
 import { withStyles } from '@material-ui/core/styles';
 import { fade } from '@material-ui/core/styles/colorManipulator';
 import Card from '@material-ui/core/Card';
 import CardHeader from '@material-ui/core/CardHeader';
 import CardContent from '@material-ui/core/CardContent';
-import ListItem from '@material-ui/core/ListItem';
-import ListItemText from '@material-ui/core/ListItemText';
 import Collapse from '@material-ui/core/Collapse';
 import IconButton from '@material-ui/core/IconButton';
 import ClearIcon from 'mdi-react/ClearIcon';
-import ContentCopyIcon from 'mdi-react/ContentCopyIcon';
 import Spinner from '@mozilla-frontend-infra/components/Spinner';
 import Typography from '@material-ui/core/Typography';
 import { addYears } from 'date-fns';
@@ -22,6 +18,7 @@ import Snackbar from '../../../components/Snackbar';
 import Dashboard from '../../../components/Dashboard';
 import ClientForm from '../../../components/ClientForm';
 import ErrorPanel from '../../../components/ErrorPanel';
+import CopyToClipboardListItem from '../../../components/CopyToClipboardListItem';
 import updateClientQuery from './updateClient.graphql';
 import createClientQuery from './createClient.graphql';
 import deleteClientQuery from './deleteClient.graphql';
@@ -340,19 +337,18 @@ export default class ViewClient extends Component {
               title="You won't be able to see this again"
             />
             <CardContent className={classes.listItemButton}>
-              <CopyToClipboard text={accessToken}>
-                <ListItem button>
-                  <ListItemText
-                    classes={{
-                      primary: classes.panelTextPrimary,
-                      secondary: classes.panelTextSecondary,
-                    }}
-                    primary="Access Token"
-                    secondary={accessToken}
-                  />
-                  <ContentCopyIcon />
-                </ListItem>
-              </CopyToClipboard>
+              <CopyToClipboardListItem
+                tooltipTitle={accessToken}
+                textToCopy={accessToken}
+                primary="AccessToken"
+                secondary={accessToken}
+                listItemTextProps={{
+                  classes: {
+                    primary: classes.panelTextPrimary,
+                    secondary: classes.panelTextSecondary,
+                  },
+                }}
+              />
             </CardContent>
           </Card>
         </Collapse>
