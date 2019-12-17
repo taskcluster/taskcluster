@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"os/user"
 	"time"
 
 	"github.com/Microsoft/go-winio"
@@ -63,8 +64,22 @@ func (m *serviceRunMethod) connectPipeToProtocol(protocolPipe string, transp *pr
 	if protocolPipe == "" {
 		protocolPipe = `\\.\pipe\generic-worker`
 	}
-	// TODO: pass security descriptor limiting to current user
-	listener, err := winio.ListenPipe(protocolPipe, nil)
+
+	// Construct a security-descriptor that allows all access to the current
+	// user and to "Local System" (shorthand SY)
+	cu, err := user.Current()
+	if err != nil {
+		return fmt.Errorf("Error getting current user: %s", err)
+	}
+
+	c := winio.PipeConfig{
+		// D: -- DACL
+		// P  -- Protected
+		// (A;;GA;;;<sid>) -- GENERIC_ALL access for current user
+		// (A;;GA;;;SY) -- GENERIC_ALL access for "Local System"
+		SecurityDescriptor: fmt.Sprintf("D:P(A;;GA;;;%s)(A;;GA;;;SY)", cu.Uid),
+	}
+	listener, err := winio.ListenPipe(protocolPipe, &c)
 	if err != nil {
 		return fmt.Errorf("Error setting up protocolPipe: %s", err)
 	}
