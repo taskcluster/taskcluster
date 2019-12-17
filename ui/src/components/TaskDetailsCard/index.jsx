@@ -1,7 +1,6 @@
 import React, { Component, Fragment } from 'react';
 import classNames from 'classnames';
 import { arrayOf, shape, string } from 'prop-types';
-import { CopyToClipboard } from 'react-copy-to-clipboard';
 import deepSortObject from 'deep-sort-object';
 import Code from '@mozilla-frontend-infra/components/Code';
 import Label from '@mozilla-frontend-infra/components/Label';
@@ -15,9 +14,9 @@ import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
 import ChevronUpIcon from 'mdi-react/ChevronUpIcon';
 import ChevronDownIcon from 'mdi-react/ChevronDownIcon';
-import ContentCopyIcon from 'mdi-react/ContentCopyIcon';
 import LinkIcon from 'mdi-react/LinkIcon';
 import OpenInNewIcon from 'mdi-react/OpenInNewIcon';
+import CopyToClipboardListItem from '../CopyToClipboardListItem';
 import DateDistance from '../DateDistance';
 import StatusLabel from '../StatusLabel';
 import { task } from '../../utils/prop-types';
@@ -131,17 +130,12 @@ export default class TaskDetailsCard extends Component {
                   secondary={<StatusLabel state={task.status.state} />}
                 />
               </ListItem>
-              <CopyToClipboard
-                title={`${task.created} (Copy)`}
-                text={task.created}>
-                <ListItem button className={classes.listItemButton}>
-                  <ListItemText
-                    primary="Created"
-                    secondary={<DateDistance from={task.created} />}
-                  />
-                  <ContentCopyIcon />
-                </ListItem>
-              </CopyToClipboard>
+              <CopyToClipboardListItem
+                tooltipTitle={task.created}
+                textToCopy={task.created}
+                primary="Created"
+                secondary={<DateDistance from={task.created} />}
+              />
               <ListItem>
                 <ListItemText
                   primary="Provisioner"
@@ -233,33 +227,20 @@ export default class TaskDetailsCard extends Component {
                     secondary={`${task.status.retriesLeft} of ${task.retries}`}
                   />
                 </ListItem>
-                <CopyToClipboard
-                  title={`${task.deadline} (Copy)`}
-                  text={task.deadline}>
-                  <ListItem button className={classes.listItemButton}>
-                    <ListItemText
-                      primary="Deadline"
-                      secondary={
-                        <DateDistance
-                          from={task.deadline}
-                          offset={task.created}
-                        />
-                      }
-                    />
-                    <ContentCopyIcon />
-                  </ListItem>
-                </CopyToClipboard>
-                <CopyToClipboard
-                  title={`${task.expires} (Copy)`}
-                  text={task.expires}>
-                  <ListItem button className={classes.listItemButton}>
-                    <ListItemText
-                      primary="Expires"
-                      secondary={<DateDistance from={task.expires} />}
-                    />
-                    <ContentCopyIcon />
-                  </ListItem>
-                </CopyToClipboard>
+                <CopyToClipboardListItem
+                  tooltipTitle={task.deadline}
+                  textToCopy={task.deadline}
+                  primary="Deadline"
+                  secondary={
+                    <DateDistance from={task.deadline} offset={task.created} />
+                  }
+                />
+                <CopyToClipboardListItem
+                  tooltipTitle={task.expires}
+                  textToCopy={task.expires}
+                  primary="Expires"
+                  secondary={<DateDistance from={task.expires} />}
+                />
                 <ListItem>
                   <ListItemText
                     primary="Priority"

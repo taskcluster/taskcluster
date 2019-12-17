@@ -2,7 +2,6 @@ import React, { Fragment, Component } from 'react';
 import { withRouter } from 'react-router-dom';
 import classNames from 'classnames';
 import { func, number, string } from 'prop-types';
-import { CopyToClipboard } from 'react-copy-to-clipboard';
 import Label from '@mozilla-frontend-infra/components/Label';
 import { withStyles } from '@material-ui/core/styles';
 import { fade } from '@material-ui/core/styles/colorManipulator';
@@ -21,13 +20,13 @@ import ChevronLeftIcon from 'mdi-react/ChevronLeftIcon';
 import ChevronUpIcon from 'mdi-react/ChevronUpIcon';
 import ChevronDownIcon from 'mdi-react/ChevronDownIcon';
 import ChevronRightIcon from 'mdi-react/ChevronRightIcon';
-import ContentCopyIcon from 'mdi-react/ContentCopyIcon';
 import LinkIcon from 'mdi-react/LinkIcon';
 import LockIcon from 'mdi-react/LockIcon';
 import LockOpenOutlineIcon from 'mdi-react/LockOpenOutlineIcon';
 import OpenInNewIcon from 'mdi-react/OpenInNewIcon';
 import Button from '../Button';
 import ConnectionDataTable from '../ConnectionDataTable';
+import CopyToClipboardListItem from '../CopyToClipboardListItem';
 import DateDistance from '../DateDistance';
 import StatusLabel from '../StatusLabel';
 import NoRunsIcon from './NoRunsIcon';
@@ -378,57 +377,42 @@ export default class TaskRunsCard extends Component {
                       }
                     />
                   </ListItem>
-                  <CopyToClipboard
-                    title={`${run.scheduled} (Copy)`}
-                    text={run.scheduled}>
-                    <ListItem button className={classes.listItemButton}>
-                      <ListItemText
-                        primary="Scheduled"
-                        secondary={<DateDistance from={run.scheduled} />}
-                      />
-                      <ContentCopyIcon />
-                    </ListItem>
-                  </CopyToClipboard>
-                  <CopyToClipboard
-                    title={`${run.started} (Copy)`}
-                    text={run.started}>
-                    <ListItem button className={classes.listItemButton}>
-                      <ListItemText
-                        primary="Started"
-                        secondary={
-                          run.started ? (
-                            <DateDistance
-                              from={run.started}
-                              offset={run.scheduled}
-                            />
-                          ) : (
-                            <em>n/a</em>
-                          )
-                        }
-                      />
-                      <ContentCopyIcon />
-                    </ListItem>
-                  </CopyToClipboard>
-                  <CopyToClipboard
-                    title={`${run.resolved} (Copy)`}
-                    text={run.resolved}>
-                    <ListItem button className={classes.listItemButton}>
-                      <ListItemText
-                        primary="Resolved"
-                        secondary={
-                          run.resolved ? (
-                            <DateDistance
-                              from={run.resolved}
-                              offset={run.started}
-                            />
-                          ) : (
-                            <em>n/a</em>
-                          )
-                        }
-                      />
-                      <ContentCopyIcon />
-                    </ListItem>
-                  </CopyToClipboard>
+                  <CopyToClipboardListItem
+                    tooltipTitle={run.scheduled}
+                    textToCopy={run.scheduled}
+                    primary="Scheduled"
+                    secondary={<DateDistance from={run.scheduled} />}
+                  />
+                  <CopyToClipboardListItem
+                    tooltipTitle={run.started}
+                    textToCopy={run.started}
+                    primary="Started"
+                    secondary={
+                      run.started ? (
+                        <DateDistance
+                          from={run.started}
+                          offset={run.scheduled}
+                        />
+                      ) : (
+                        <em>n/a</em>
+                      )
+                    }
+                  />
+                  <CopyToClipboardListItem
+                    tooltipTitle={run.resolved}
+                    textToCopy={run.resolved}
+                    primary="Resolved"
+                    secondary={
+                      run.resolved ? (
+                        <DateDistance
+                          from={run.resolved}
+                          offset={run.started}
+                        />
+                      ) : (
+                        <em>n/a</em>
+                      )
+                    }
+                  />
                   <ListItem
                     button
                     className={classes.listItemButton}
@@ -478,23 +462,18 @@ export default class TaskRunsCard extends Component {
                         <LinkIcon />
                       </ListItem>
                     </Link>
-                    <CopyToClipboard
-                      title={`${run.takenUntil} (Copy)`}
-                      text={run.takenUntil}>
-                      <ListItem button className={classes.listItemButton}>
-                        <ListItemText
-                          primary="Taken Until"
-                          secondary={
-                            run.takenUntil ? (
-                              <DateDistance from={run.takenUntil} />
-                            ) : (
-                              <em>n/a</em>
-                            )
-                          }
-                        />
-                        <ContentCopyIcon />
-                      </ListItem>
-                    </CopyToClipboard>
+                    <CopyToClipboardListItem
+                      tooltipTitle={run.takenUntil}
+                      textToCopy={run.takenUntil}
+                      primary="Taken Until"
+                      secondary={
+                        run.takenUntil ? (
+                          <DateDistance from={run.takenUntil} />
+                        ) : (
+                          <em>n/a</em>
+                        )
+                      }
+                    />
                   </List>
                 </Collapse>
               </Fragment>
