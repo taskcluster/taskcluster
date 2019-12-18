@@ -59,6 +59,45 @@ tasks:
         owner: taskcluster-internal@mozilla.com
         source: ${event.repository.url}
 
+  - $if: '(tasks_for == "github-pull-request"  && event["action"] in ["opened", "reopened", "synchronize"])'
+    then:
+      taskId: {$eval: as_slugid("windows-tests")}
+      created: {$fromNow: ''}
+      deadline: {$fromNow: '2 hours'}
+      provisionerId: proj-taskcluster
+      workerType: windows2012r2-amd64-ci
+      metadata:
+        name: taskcluster-worker-runner-windows
+        description: windows tests for taskcluster-worker-runner
+        owner: taskcluster-internal@mozilla.com
+        source: ${event.repository.url}
+      payload:
+        maxRunTime: 3600
+        command:
+          - set CGO_ENABLED=0
+          - set GOPATH=%CD%\gopath1.12.6
+          - set GOROOT=%CD%\go1.12.6\go
+          - set PATH=%CD%\git\cmd;%GOPATH%\bin;%GOROOT%\bin;%PATH%
+          - git config --global core.autocrlf false
+          - go version
+          - go env
+          - git clone ${event.pull_request.head.repo.git_url} taskcluster-worker-runner
+          - cd taskcluster-worker-runner
+          - git config advice.detachedHead false
+          - git checkout ${event.pull_request.head.sha}
+          - go test -v ./...
+        mounts:
+          - content:
+              url: https://storage.googleapis.com/golang/go1.12.6.windows-amd64.zip
+              sha256: 9badf7bbc0ed55f2db967434b033a2cddf2e46dbdc5bb8560d8fde019e8e19d3
+            directory: go1.12.6
+            format: zip
+          - content:
+              url: https://github.com/git-for-windows/git/releases/download/v2.14.1.windows.1/MinGit-2.14.1-64-bit.zip
+              sha256: 65c12e4959b8874187b68ec37e532fe7fc526e10f6f0f29e699fa1d2449e7d92
+            directory: git
+            format: zip
+
   - $if: 'tasks_for == "github-push"'
     then:
       taskId: {$eval: as_slugid("all")}
