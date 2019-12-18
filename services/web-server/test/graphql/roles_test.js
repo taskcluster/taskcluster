@@ -15,16 +15,12 @@ const listRoleIdsQuery = require('../fixtures/listRoleIds.graphql');
 const updateRoleMutation = require('../fixtures/updateRole.graphql');
 
 // Removes any roles created during tests
-const cleanUp = async (client) => {
-  const response = await client.query({
-    query: gql`${listRoleIdsQuery}`,
-  });
-
-  response.data.listRoleIds.edges.forEach(async ({node}) => {
+const cleanUp = async (client, roleIds) => {
+  roleIds.forEach(async roleId => {
     await client.mutate({
       mutation: gql`${deleteRoleMutation}`,
       variables: {
-        roleId: node.roleId,
+        roleId,
       },
     });
   });
@@ -73,7 +69,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
       assert.equal(response.data.role.roleId, roleId);
 
-      await cleanUp(client);
+      await cleanUp(client, [roleId]);
     });
 
     test('Roles Query Works', async function() {
@@ -101,7 +97,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       assert.equal(response.data.roles.length, 1);
       assert.equal(response.data.roles[0].roleId, roleId);
 
-      await cleanUp(client);
+      await cleanUp(client, [roleId]);
     });
 
     test('List Role Ids Query Works', async function() {
@@ -129,7 +125,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       assert.equal(response.data.listRoleIds.edges.length, 1);
       assert.equal(response.data.listRoleIds.edges[0].node.roleId, roleId);
 
-      await cleanUp(client);
+      await cleanUp(client, [roleId]);
     });
 
     test('Create Role Mutation Works', async function() {
@@ -151,7 +147,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
       assert.equal(response.data.createRole.roleId, roleId);
 
-      await cleanUp(client);
+      await cleanUp(client, [roleId]);
     });
 
     test('Update Role Mutation Works', async function() {
@@ -173,6 +169,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
       // 2. update role
       role.scopes = ["scope2"];
+
       await client.mutate({
         mutation: gql`${updateRoleMutation}`,
         variables: {
@@ -192,7 +189,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       assert.equal(response.data.role.roleId, roleId);
       assert.equal(response.data.role.scopes[0], role.scopes[0]);
 
-      await cleanUp(client);
+      await cleanUp(client, [roleId]);
     });
 
     test('Delete Role Mutation Works', async function() {
