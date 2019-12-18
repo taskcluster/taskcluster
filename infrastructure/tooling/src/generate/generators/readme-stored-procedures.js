@@ -1,5 +1,5 @@
 const path = require('path');
-const Schema = require('../../../../../libraries/postgres/src/Schema');
+const { Schema } = require('taskcluster-lib-postgres');
 const {readRepoFile, writeRepoFile} = require('../../utils');
 
 exports.tasks = [{
