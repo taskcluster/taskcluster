@@ -110,6 +110,10 @@ module.exports = (cfg, AuthorizationCode, AccessToken, strategies, auth, monitor
 
     const currentUser = await strategies[user.identityProviderId].userFromIdentity(user.identity);
 
+    if (!currentUser) {
+      throw new oauth2orize.AuthorizationError(null, 'server_error');
+    }
+
     const userScopes = (await auth.expandScopes({scopes: currentUser.scopes()})).scopes;
 
     await AuthorizationCode.create({
@@ -316,6 +320,10 @@ module.exports = (cfg, AuthorizationCode, AccessToken, strategies, auth, monitor
 
     const { clientId, ...data } = entry.clientDetails;
     const currentUser = await strategies[entry.identityProviderId].userFromIdentity(entry.identity);
+
+    if (!currentUser) {
+      throw inputError;
+    }
 
     // Create permacreds to give admins the ability to audit and revoke
     // the access at any time and that the client scanner process will
