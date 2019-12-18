@@ -410,7 +410,7 @@ module.exports = ({tasks, cmdOptions, credentials, baseDir}) => {
         await npmPublish({
           dir: path.join(REPO_ROOT, clientName),
           apiKey: credentials.npmToken,
-          logfile: `${baseDir}/npm-publish-${clientName.replace('/', '-')}.log`,
+          logfile: `${baseDir}/publish-${clientName.replace('/', '-')}.log`,
           utils});
       },
     }));
@@ -433,7 +433,7 @@ module.exports = ({tasks, cmdOptions, credentials, baseDir}) => {
         dir: path.join(REPO_ROOT, 'clients', 'client-py'),
         username: credentials.pypiUsername,
         password: credentials.pypiPassword,
-        logfile: `${baseDir}/npm-publish-client-py.log`,
+        logfile: `${baseDir}/publish-client-py.log`,
         utils});
     },
   });

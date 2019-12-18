@@ -25,6 +25,8 @@ if [ -n "$modified" ]; then
   echo "There are changes in the local tree.  This probably means"
   echo "you'll do something unintentional.  For safety's sake, please"
   echo 'revert or stash them!'
+  echo ''
+  echo -- "$modified"
   exit 66
 fi
 
