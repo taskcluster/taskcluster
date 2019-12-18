@@ -444,7 +444,7 @@ Once you have been granted the above scope:
 To see a full description of all the config options available to you, run `generic-worker --help`:
 
 ```
-generic-worker (multiuser engine) 16.5.6
+generic-worker (multiuser engine) 16.6.0
 
 generic-worker is a taskcluster worker that can run on any platform that supports go (golang).
 See http://taskcluster.github.io/generic-worker/ for more details. Essentially, the worker is
@@ -481,7 +481,7 @@ and reports back results to the queue.
                                             installation should use, rather than the config
                                             to use during install.
                                             [default: generic-worker.config]
-    --worker-runner-protocol-pipe           Use this option when running generic-worker under
+    --worker-runner-protocol-pipe PIPE      Use this option when running generic-worker under
                                             taskcluster-worker-runner, passing the same value as
                                             given for 'worker.protocolPipe' in the runner
                                             configuration.  This specifies a named pipe that is used
@@ -684,7 +684,7 @@ and reports back results to the queue.
           taskclusterProxyPort              Port number for taskcluster-proxy HTTP requests.
                                             [default: 80]
           tasksDir                          The location where task directories should be
-                                            created on the worker. [default: "/Users"]
+                                            created on the worker. [default: "/home"]
           workerGroup                       Typically this would be an aws region - an
                                             identifier to uniquely identify which pool of
                                             workers this worker logically belongs to.
@@ -860,7 +860,7 @@ worker.
 Run the `release.sh` script like so:
 
 ```
-$ ./release.sh 16.5.6
+$ ./release.sh 16.6.0
 ```
 
 This will perform some checks, tag the repo, push the tag to github, which will then trigger travis-ci to run tests, and publish the new release.
