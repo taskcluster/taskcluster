@@ -335,7 +335,8 @@ values in the 'worker' section of the runner configuration:
 Specify either 'path' to run the executable directly, or 'service' to name a
 Windows service that will run the worker.  In the latter case, the configPath
 must match the path configured within the service definition.  See
-[windows-services](./docs/windows-services.md) for details.
+[windows-services](./docs/windows-services.md) for details.  Note that running
+as a service requires at least generic-worker v16.6.0.
 <!-- end-usage -->
 
 # Development
