@@ -1,0 +1,79 @@
+{
+  "access": {
+    "secrets": {
+      "tables": [
+        "secrets"
+      ]
+    }
+  },
+  "versions": [
+    {
+      "methods": {
+        "get_secret": {
+          "args": "name text",
+          "body": "begin\n  return query select secrets.secret from secrets where secrets.name = get_secret.name;\nend",
+          "mode": "read",
+          "returns": "table (secret text)",
+          "serviceName": "secrets"
+        },
+        "list_secrets": {
+          "args": "",
+          "body": "begin\n  return query select secrets.name as name from secrets;\nend",
+          "mode": "read",
+          "returns": "table (name text)",
+          "serviceName": "secrets"
+        },
+        "remove_secret": {
+          "args": "name text",
+          "body": "begin\n  delete from secrets where secrets.name = remove_secret.name;\nend",
+          "mode": "write",
+          "returns": "void",
+          "serviceName": "secrets"
+        },
+        "set_secret": {
+          "args": "name text, secret text",
+          "body": "begin\n  insert into secrets values (set_secret.name, set_secret.secret)\n  on conflict (name) do\n    update set secret=EXCLUDED.secret;\nend",
+          "mode": "write",
+          "returns": "void",
+          "serviceName": "secrets"
+        }
+      },
+      "migrationScript": "begin\n  create table secrets (\n    name text primary key,\n    secret text\n  );\nend",
+      "version": 1
+    },
+    {
+      "methods": {
+        "get_secret_with_expires": {
+          "args": "name text",
+          "body": "begin\n  return query select secrets.secret, secrets.expires from secrets where secrets.name = get_secret_with_expires.name;\nend",
+          "mode": "read",
+          "returns": "table (secret text, expires timestamp)",
+          "serviceName": "secrets"
+        },
+        "list_secrets_with_expires": {
+          "args": "",
+          "body": "begin\n  return query select secrets.name as name, secrets.expires as expires from secrets;\nend",
+          "mode": "read",
+          "returns": "table (name text, expires timestamp)",
+          "serviceName": "secrets"
+        },
+        "remove_secret": {
+          "args": "name text",
+          "body": "begin\n  delete from secrets where secrets.name = remove_secret.name;\nend",
+          "mode": "write",
+          "returns": "void",
+          "serviceName": "secrets"
+        },
+        "set_secret_with_expires": {
+          "args": "name text, secret text, expires timestamp",
+          "body": "begin\n  insert into secrets values (\n    set_secret_with_expires.name,\n    set_secret_with_expires.secret,\n    set_secret_with_expires.expires\n  )\n  on conflict on constraint secrets_pkey do\n    update set secret=EXCLUDED.secret, expires=EXCLUDED.expires;\nend",
+          "mode": "write",
+          "returns": "void",
+          "serviceName": "secrets"
+        }
+      },
+      "migrationScript": "begin\n  alter table secrets add column expires timestamp;\n  update secrets set expires=now() + interval '1000 years';\n  alter table secrets alter column expires set not null;\nend",
+      "version": 2
+    }
+  ]
+}
