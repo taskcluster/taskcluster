@@ -3,6 +3,22 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v24.1.2
+
+▶ [patch] [#2159](https://github.com/taskcluster/taskcluster/issues/2159)
+Taskcluster UI /auth/scopes view has been revamped to improve the experience and avoid confusions with the Clients and Roles views.
+
+▶ [patch] [#2166](https://github.com/taskcluster/taskcluster/issues/2166)
+Taskcluster UI Worker view now gracefully allows a user to quarantine a worker when a recent task has expired.
+
+▶ [patch] [bug 1537922](http://bugzil.la/1537922)
+The `auth.createClient` API method is now properly idempotent, allowing the same call multiple times in short succession.
+
+▶ [patch] [bug 1603197](http://bugzil.la/1603197)
+The notify service's irc process now logs a bit more contextual information about what it is up to, and ignores some common replies from IRC servers instead of considering them "unhandled".
+
+▶ Additional changes not described here: [#2125](https://github.com/taskcluster/taskcluster/issues/2125), [#2179](https://github.com/taskcluster/taskcluster/issues/2179).
+
 ## v24.1.1
 
 ▶ [patch] 
