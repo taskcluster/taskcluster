@@ -127,8 +127,7 @@ func main() {
 		// redirect stdio to the protocol pipe, if given; eventually this will
 		// include worker-runner protocol traffic, but for the moment it simply
 		// provides a way to channel generic-worker logging to worker-runner
-		if arguments["--worker-runner-protocol-pipe"].(string) != "" {
-			protocolPipe := arguments["--worker-runner-protocol-pipe"].(string)
+		if protocolPipe, ok := arguments["--worker-runner-protocol-pipe"].(string); ok && protocolPipe != "" {
 			f, err := os.OpenFile(protocolPipe, os.O_RDWR, 0)
 			exitOnError(CANT_CONNECT_PROTOCOL_PIPE, err, "Cannot connect to %s: %s", protocolPipe, err)
 
