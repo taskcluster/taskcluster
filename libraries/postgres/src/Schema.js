@@ -3,6 +3,7 @@ const assert = require('assert');
 const yaml = require('js-yaml');
 const path = require('path');
 const {READ, WRITE} = require('./constants');
+const schemaJson = require('../../../generated/schema');
 
 class Schema{
   /**references
@@ -12,7 +13,7 @@ class Schema{
    * the Postgres DO statment; that is usually 'BEGIN stmt; stmt; .. END'.
    */
   // TODO: Make sure that procedure argument values don't change
-  constructor(versions, access) {
+  constructor(versions = schemaJson.versions, access = schemaJson.access) {
     this.versions = versions;
     this.access = access;
   }
