@@ -1,0 +1,89 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: taskcluster-ingress
+  labels:
+    app.kubernetes.io/name: taskcluster-ingress
+    app.kubernetes.io/instance: '{{ .Release.Name }}'
+    app.kubernetes.io/component: taskcluster-ingress-ingress
+    app.kubernetes.io/part-of: taskcluster
+  annotations:
+    kubernetes.io/ingress.global-static-ip-name: '{{ .Values.ingressStaticIpName }}'
+    ingress.gcp.kubernetes.io/pre-shared-cert: '{{ .Values.ingressCertName }}'
+spec:
+  rules:
+    - host: '{{ substr 8 -1 (trimSuffix "/" .Values.rootUrl) }}'
+      http:
+        paths:
+          - path: /*
+            backend:
+              servicePort: 80
+              serviceName: taskcluster-ui
+          - path: /references
+            backend:
+              servicePort: 80
+              serviceName: taskcluster-references
+          - path: /references/*
+            backend:
+              servicePort: 80
+              serviceName: taskcluster-references
+          - path: /schemas
+            backend:
+              servicePort: 80
+              serviceName: taskcluster-references
+          - path: /schemas/*
+            backend:
+              servicePort: 80
+              serviceName: taskcluster-references
+          - path: /api/auth/*
+            backend:
+              servicePort: 80
+              serviceName: taskcluster-auth
+          - path: /api/github/*
+            backend:
+              servicePort: 80
+              serviceName: taskcluster-github
+          - path: /api/hooks/*
+            backend:
+              servicePort: 80
+              serviceName: taskcluster-hooks
+          - path: /api/index/*
+            backend:
+              servicePort: 80
+              serviceName: taskcluster-index
+          - path: /api/notify/*
+            backend:
+              servicePort: 80
+              serviceName: taskcluster-notify
+          - path: /api/purge-cache/*
+            backend:
+              servicePort: 80
+              serviceName: taskcluster-purge-cache
+          - path: /api/queue/*
+            backend:
+              servicePort: 80
+              serviceName: taskcluster-queue
+          - path: /api/secrets/*
+            backend:
+              servicePort: 80
+              serviceName: taskcluster-secrets
+          - path: /login
+            backend:
+              servicePort: 80
+              serviceName: taskcluster-web-server
+          - path: /login/*
+            backend:
+              servicePort: 80
+              serviceName: taskcluster-web-server
+          - path: /subscription
+            backend:
+              servicePort: 80
+              serviceName: taskcluster-web-server
+          - path: /graphql
+            backend:
+              servicePort: 80
+              serviceName: taskcluster-web-server
+          - path: /api/worker-manager/*
+            backend:
+              servicePort: 80
+              serviceName: taskcluster-worker-manager
