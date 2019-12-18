@@ -11,24 +11,24 @@ const createRoleMutation = require('../fixtures/createRole.graphql');
 const roleQuery = require('../fixtures/role.graphql');
 const rolesQuery = require('../fixtures/roles.graphql');
 const deleteRoleMutation = require('../fixtures/deleteRole.graphql');
-const listRoleIdsQuery = require('../fixtures/listRoleIds.graphql')
+const listRoleIdsQuery = require('../fixtures/listRoleIds.graphql');
 const updateRoleMutation = require('../fixtures/updateRole.graphql');
 
 // Removes any roles created during tests
 const cleanUp = async (client) => {
   const response = await client.query({
-    query: gql`${listRoleIdsQuery}`
+    query: gql`${listRoleIdsQuery}`,
   });
 
   response.data.listRoleIds.edges.forEach(async ({node}) => {
     await client.mutate({
       mutation: gql`${deleteRoleMutation}`,
       variables: {
-        roleId: node.roleId
-      }
+        roleId: node.roleId,
+      },
     });
-  })
-}
+  });
+};
 
 helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   helper.withEntities(mock, skipping);
@@ -51,8 +51,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       const roleId = taskcluster.slugid();
       const role = {
         scopes: ["scope1"],
-        description: "Test Scope"
-      }
+        description: "Test Scope",
+      };
 
       // 1. create role
       await client.mutate({
@@ -81,8 +81,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       const roleId = taskcluster.slugid();
       const role = {
         scopes: ["scope1"],
-        description: "Test Scope"
-      }
+        description: "Test Scope",
+      };
 
       // 1. create roles
       await client.mutate({
@@ -95,7 +95,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
       // 2. get roles
       const response = await client.query({
-        query: gql`${rolesQuery}`
+        query: gql`${rolesQuery}`,
       });
 
       assert.equal(response.data.roles.length, 1);
@@ -109,8 +109,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       const roleId = taskcluster.slugid();
       const role = {
         scopes: ["scope1"],
-        description: "Test Scope 1"
-      }
+        description: "Test Scope 1",
+      };
 
       // 1. create roles
       await client.mutate({
@@ -123,7 +123,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
       // 2. get role Ids
       const response = await client.query({
-        query: gql`${listRoleIdsQuery}`
+        query: gql`${listRoleIdsQuery}`,
       });
 
       assert.equal(response.data.listRoleIds.edges.length, 1);
@@ -137,8 +137,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       const roleId = taskcluster.slugid();
       const role = {
         scopes: ["scope1"],
-        description: "Test Scope"
-      }
+        description: "Test Scope",
+      };
 
       // 1. create role
       const response = await client.mutate({
@@ -159,8 +159,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       const roleId = taskcluster.slugid();
       const role = {
         scopes: ["scope1"],
-        description: "Test Scope"
-      }
+        description: "Test Scope",
+      };
 
       // 1. create role
       await client.mutate({
@@ -172,7 +172,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       });
 
       // 2. update role
-      role.scopes = ["scope2"]
+      role.scopes = ["scope2"];
       await client.mutate({
         mutation: gql`${updateRoleMutation}`,
         variables: {
@@ -200,8 +200,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       const roleId = taskcluster.slugid();
       const role = {
         scopes: ["scope1"],
-        description: "Test Scope"
-      }
+        description: "Test Scope",
+      };
 
       // 1. create role
       await client.mutate({
@@ -216,8 +216,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       const response = await client.mutate({
         mutation: gql`${deleteRoleMutation}`,
         variables: {
-          roleId: roleId
-        }
+          roleId: roleId,
+        },
       });
 
       assert.equal(response.data.deleteRole, roleId);
