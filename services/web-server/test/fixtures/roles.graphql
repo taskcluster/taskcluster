@@ -1,0 +1,5 @@
+query Roles($filter: JSON){
+  roles(filter: $filter){
+    roleId
+  }
+}

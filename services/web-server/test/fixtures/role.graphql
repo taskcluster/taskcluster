@@ -1,0 +1,5 @@
+query Role($roleId: ID!) {
+  role(roleId: $roleId) {
+    roleId
+  }
+}
