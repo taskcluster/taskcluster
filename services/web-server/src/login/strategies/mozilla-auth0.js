@@ -63,13 +63,28 @@ module.exports = class MozillaAuth0 {
     const userProfile = await personApi.getProfileFromUserId(userId);
     const user = new User();
 
-    if (!userProfile || !userProfile.user_id) {
+    if (!userProfile) {
+      this.monitor.debug('User profile not found', {
+        userId,
+        identityProviderId: 'mozilla-auth0',
+      });
+
+      return;
+    }
+
+    if (!userProfile.user_id) {
+      this.monitor.debug('Profile user_id ; rejecting', {
+        userId,
+        identityProviderId: 'mozilla-auth0',
+      });
+
       return;
     }
 
     if ('active' in userProfile && !userProfile.active) {
       this.monitor.debug('User is not active; rejecting', {
         userId: userProfile.user_id,
+        identityProviderId: 'mozilla-auth0',
       });
 
       return;
