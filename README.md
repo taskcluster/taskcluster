@@ -871,6 +871,12 @@ See [worker_types README.md](https://github.com/taskcluster/generic-worker/blob/
 
 # Release notes
 
+In v16.6.0 since v16.5.6
+========================
+
+* [Bug 1602512 - generic-worker: command abortion race condition](https://bugzil.la/1602512)
+* [Bug 1604201 - Support running generic-worker via worker-runner on windows](https://bugzil.la/1604201)
+
 In v16.5.6 since v16.5.5
 ========================
 
