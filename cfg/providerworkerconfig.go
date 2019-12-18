@@ -34,7 +34,6 @@ func ParseProviderWorkerConfig(runnercfg *RunnerConfig, body *json.RawMessage) (
 	// the "correct" format, then, is a single-key dictionary with that key
 	var bodyMap map[string]json.RawMessage
 	err := json.Unmarshal(*body, &bodyMap)
-	fmt.Printf("bm %s\n", bodyMap)
 	if err != nil {
 		return pwc, fmt.Errorf("While parsing workerConfig from worker-manager: %s", err)
 	}
@@ -42,8 +41,6 @@ func ParseProviderWorkerConfig(runnercfg *RunnerConfig, body *json.RawMessage) (
 	if len(bodyMap) == 1 {
 		if inner, ok := bodyMap[workerImpl]; ok {
 			err = json.Unmarshal(inner, &pwc)
-			fmt.Printf("inner %s\n", inner)
-			fmt.Printf("pwc %#v\n", pwc.Config)
 			if err != nil {
 				return pwc, fmt.Errorf("While parsing workerConfig from worker-manager: %s", err)
 			}
