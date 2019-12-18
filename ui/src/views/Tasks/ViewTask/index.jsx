@@ -293,7 +293,6 @@ export default class ViewTask extends Component {
         ...TASK_ADDED_FIELDS,
         'routes',
         'taskGroupId',
-        'schedulerId',
         'priority',
         'dependencies',
         'requires',
