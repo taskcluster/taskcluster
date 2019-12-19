@@ -12,6 +12,7 @@ class Schema{
   }
 
   static fromSerializable(serializable) {
+    assert.deepEqual(Object.keys(serializable).sort(), ['access', 'versions']);
     return new Schema(serializable.versions, serializable.access);
   }
 
