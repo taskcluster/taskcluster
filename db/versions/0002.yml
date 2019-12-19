@@ -8,9 +8,8 @@ migrationScript: |-
 methods:
   get_secret_with_expires:
     description: |-
-      Read the secret associated with some key. If the secret has recently expired, the response code 410 is returned.
-      If the caller lacks the scope necessary to get the secret, the call will fail with a 403 code regardless of
-      whether the secret exists.
+      Get the single secret associated with a given secret name, or an empty result if no such secret exists.
+      Note that this may include rows with an expiration in the past, as rows are only deleted occasionally.
     mode: read
     serviceName: secrets
     args: name text
@@ -21,12 +20,8 @@ methods:
       end
   list_secrets_with_expires:
     description: |-
-      List the names of all secrets.
-      By default this end-point will try to return up to 1000 secret names in one request. But it may return less,
-      even if more tasks are available. It may also return a `continuationToken` even though there are no more results.
-      However, you can only be sure to have seen all results if you keep calling `listTaskGroup` with the last
-      `continuationToken` until you get a result without a `continuationToken`. If you are not interested in listing
-      all the members at once, you may use the query-string option `limit` to return fewer.
+      List the names and expiration dates of all secrets.
+      Note that this may include rows with an expiration in the past, as rows are only deleted occasionally.
     mode: read
     serviceName: secrets
     args: ''
@@ -48,7 +43,8 @@ methods:
       end
   set_secret_with_expires:
     description: |-
-      Set the secret associated with some key. If the secret already exists, it is updated instead.
+      Set the secret associated with the given name.
+      If the secret already exists, it is updated instead.
     mode: write
     serviceName: secrets
     args: name text, secret text, expires timestamp

@@ -42,7 +42,7 @@ methods:
       end
   set_secret:
     description: |-
-      Set the secret associated with given name.
+      Set the secret associated with the given name.
       If the secret already exists, it is updated instead.
     mode: write
     serviceName: secrets
