@@ -48,6 +48,7 @@ exports.withDbForVersion = function() {
       await tcdb.upgrade({
         adminDbUrl: exports.dbUrl,
         toVersion,
+        useDbDirectory: true,
       });
     };
 
@@ -80,6 +81,7 @@ exports.withDbForProcs = function({ serviceName }) {
       writeDbUrl: exports.dbUrl,
       readDbUrl: exports.dbUrl,
       serviceName,
+      useDbDirectory: true,
     });
 
     exports.fakeDb = await tcdb.fakeSetup({
@@ -92,6 +94,7 @@ exports.withDbForProcs = function({ serviceName }) {
     await exports.withDbClient(client => clearDb(client));
     await tcdb.upgrade({
       adminDbUrl: exports.dbUrl,
+      useDbDirectory: true,
     });
   });
 

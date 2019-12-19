@@ -27,6 +27,7 @@ module.exports = (mock, skipping, helper, serviceName) => {
         readDbUrl: sec.testDbUrl,
         writeDbUrl: sec.testDbUrl,
         serviceName,
+        useDbDirectory: true,
       });
 
       // completely reset the DB
@@ -36,7 +37,10 @@ module.exports = (mock, skipping, helper, serviceName) => {
       });
 
       // upgrade..
-      await tcdb.upgrade({adminDbUrl: sec.testDbUrl});
+      await tcdb.upgrade({
+        adminDbUrl: sec.testDbUrl,
+        useDbDirectory: true,
+      });
     }
 
     helper.load.inject('db', helper.db);
