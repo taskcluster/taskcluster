@@ -1,18 +1,11 @@
 const fs = require('fs');
-const assert = require('assert');
+const assert = require('assert').strict;
 const yaml = require('js-yaml');
 const path = require('path');
 const stringify = require('json-stable-stringify');
 const {READ, WRITE} = require('./constants');
 
 class Schema{
-  /**references
-   * Create a new Schema
-   *
-   * script is a script to create the schema, suitable as an argument to
-   * the Postgres DO statment; that is usually 'BEGIN stmt; stmt; .. END'.
-   */
-  // TODO: Make sure that procedure argument values don't change
   constructor(versions, access) {
     this.versions = versions;
     this.access = access;
@@ -46,6 +39,9 @@ class Schema{
 
       const version = yaml.safeLoad(fs.readFileSync(filename));
       Schema._checkVersion(version, filename);
+      if (versions[version.version - 1]) {
+        throw new Error(`duplicate version number ${version.version} in ${filename}`);
+      }
       versions[version.version - 1] = version;
     });
 
@@ -56,8 +52,8 @@ class Schema{
 
     Schema._checkMethods(versions);
 
-    // TODO: Add test to check for correctly loading access
     const access = yaml.safeLoad(fs.readFileSync(path.join(directory, 'access.yml')));
+    Schema._checkAccess(access);
 
     return new Schema(versions, access);
   }
@@ -72,7 +68,18 @@ class Schema{
     const fileBase = path.basename(filename, '.yml');
     assert.equal(version.version, Number(fileBase), `filename ${filename} must match version`);
 
-    // TODO: check method forms
+    Object.keys(version.methods).forEach(name => {
+      const method = version.methods[name];
+
+      assert.deepEqual(Object.keys(method).sort(), [
+        'args',
+        'body',
+        'description',
+        'mode',
+        'returns',
+        'serviceName',
+      ], `unexpected or missing properties in method ${name} in ${filename}`);
+    });
   }
 
   static _checkMethods(versions) {
@@ -90,6 +97,18 @@ class Schema{
         }
       }
     }
+  }
+
+  static _checkAccess(access) {
+    assert(typeof access === 'object' && !(access instanceof Array),
+      'access.yml should define an object');
+    Object.keys(access).forEach(serviceName => {
+      const serviceAccess = access[serviceName];
+      assert(typeof serviceAccess === 'object' && !(serviceAccess instanceof Array),
+        'each service in access.yml should define an object');
+      assert.deepEqual(Object.keys(serviceAccess).sort(), ['tables'],
+        'each service in access.yml should only have a `tables` property');
+    });
   }
 
   getVersion(version) {
