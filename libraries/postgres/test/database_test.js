@@ -126,7 +126,7 @@ dbSuite(path.basename(__filename), function() {
       async () => {
         await Database.upgrade({schema, runUpgrades: true, readDbUrl: this.dbUrl, writeDbUrl: this.dbUrl, serviceName: 'service-1'});
       },
-      /capital letters/
+      /capital letters/,
     );
   });
 
