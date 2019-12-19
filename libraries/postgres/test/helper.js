@@ -9,7 +9,7 @@ if (dbUrl) {
   exports.dbSuite = (...args) => {
     suite(...args.slice(0, -1), function() {
       suiteSetup('setup database', function() {
-        this.dbUrl = dbUrl;
+        exports.dbUrl = dbUrl;
       });
       setup('clear database', async function() {
         await clearDb(dbUrl);
