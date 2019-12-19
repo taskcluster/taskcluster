@@ -18,9 +18,11 @@ if (dbUrl) {
     });
   };
 } else {
-  // TODO: check NO_TEST_SKIP
   exports.dbSuite = (...args) => {
     suite(...args.slice(0, -1), function() {
+      if (process.env.NO_TEST_SKIP) {
+        throw new Error(`TEST_DB_URL not set and NO_TEST_SKIP is set`);
+      }
       test.skip('(TEST_DB_URL is not set)', function() { });
     });
   };
