@@ -57,12 +57,9 @@ class Database {
     const db = new Database({urlsByMode: {admin: adminDbUrl, read: adminDbUrl}, schema, serviceName: 'dummy'});
 
     try {
-      showProgress('...creating db users');
-      await db._createUsers(db, schema);
+      // perform any necessary upgrades..
       const dbVersion = await db.currentVersion();
       const stopAt = toVersion === undefined ? schema.latestVersion().version : toVersion;
-
-      // perform any necessary upgrades..
       if (dbVersion < stopAt) {
         // run each of the upgrade scripts
         for (let v = dbVersion + 1; v <= stopAt; v++) {
@@ -74,6 +71,9 @@ class Database {
       } else {
         showProgress('No database upgrades required');
       }
+
+      showProgress('...creating db users');
+      await db._createUsers(db, schema);
     } finally {
       await db.close();
     }
