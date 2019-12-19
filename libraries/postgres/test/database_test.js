@@ -14,6 +14,7 @@ dbSuite(path.basename(__filename), function() {
       end`,
       methods: {
         testdata: {
+          description: 'test',
           mode: 'write',
           serviceName: 'service-1',
           args: '',
@@ -23,6 +24,7 @@ dbSuite(path.basename(__filename), function() {
           end`,
         },
         addup: {
+          description: 'test',
           mode: 'read',
           serviceName: 'service-2',
           args: 'x integer',
@@ -110,6 +112,7 @@ dbSuite(path.basename(__filename), function() {
         end`,
         methods: {
           testData: {
+            description: 'test',
             mode: 'write',
             serviceName: 'service-1',
             args: '',
@@ -169,6 +172,7 @@ dbSuite(path.basename(__filename), function() {
           end`,
         methods: {
           testData: {
+            description: 'test',
             mode: 'write',
             serviceName: 'service-1',
             args: '',
