@@ -5,6 +5,74 @@ const debug = require('debug')('taskcluster-lib-postgres');
 const {READ, WRITE} = require('./constants');
 
 class Database {
+  /**
+   * Get a new Database instance
+   */
+  static async setup({schema, ...dbOptions}) {
+    const db = new Database({...dbOptions, schema});
+    const dbVersion = await db.currentVersion();
+    if (dbVersion < schema.latestVersion()) {
+      throw new Error('Database version is older than this software version');
+    }
+    return db;
+  }
+
+  /**
+   * Upgrade this database to the latest version and define functions for all
+   * of the methods.
+   *
+   * The `showProgress` parameter is a callable that displays a message showing
+   * progress of the upgrade.
+   *
+   * If given, the upgrade process stops at toVersion; this is used for testing.
+   */
+  static async upgrade({schema, showProgress = () => {}, toVersion, adminDbUrl}) {
+    const db = new Database({writeDbUrl: adminDbUrl, readDbUrl: adminDbUrl, schema, serviceName: 'dummy'});
+
+    // TODO: Update grants when access.yml changes
+    async function createUsers(db, schema) {
+      for (let serviceName of Object.keys(schema.access)) {
+        await db._withClient(WRITE, async (client) => {
+          try {
+            const password = 'foo-bar'; // TODO: Remove this
+            await client.query(`create user ${serviceName} password '${password}'`);
+          } catch (e) {
+            // 42710 is when a table already exists
+            if (e.code !== '42710') {
+              // TODO: Reset password if user already exist(?)
+              throw e;
+            }
+          }
+          for (let table of schema.access[serviceName].tables) {
+            await client.query(`grant all on ${table} to ${serviceName}`);
+          }
+        });
+      }
+    }
+
+    try {
+      showProgress('...creating db users');
+      await createUsers(db, schema);
+      const dbVersion = await db.currentVersion();
+      const stopAt = toVersion === undefined ? schema.latestVersion().version : toVersion;
+
+      // perform any necessary upgrades..
+      if (dbVersion < stopAt) {
+        // run each of the upgrade scripts
+        for (let v = dbVersion + 1; v <= stopAt; v++) {
+          showProgress(`upgrading database to version ${v}`);
+          const version = schema.getVersion(v);
+          await db._doUpgrade(version, showProgress);
+          showProgress(`upgrade to version ${v} successful`);
+        }
+      } else {
+        showProgress('No database upgrades required');
+      }
+    } finally {
+      await db.close();
+    }
+  }
+
   constructor({readDbUrl, writeDbUrl, schema, serviceName}) {
     assert(readDbUrl, 'readDbUrl is required');
     assert(writeDbUrl, 'writeDbUrl is required');
@@ -132,73 +200,5 @@ class Database {
     ]);
   }
 }
-
-/**
- * Get a new Database instance
- */
-Database.setup = async ({schema, ...dbOptions}) => {
-  const db = new Database({...dbOptions, schema});
-  const dbVersion = await db.currentVersion();
-  if (dbVersion < schema.latestVersion()) {
-    throw new Error('Database version is older than this software version');
-  }
-  return db;
-};
-
-/**
- * Upgrade this database to the latest version and define functions for all
- * of the methods.
- *
- * The `showProgress` parameter is a callable that displays a message showing
- * progress of the upgrade.
- *
- * If given, the upgrade process stops at toVersion; this is used for testing.
- */
-Database.upgrade = async ({schema, showProgress = () => {}, toVersion, adminDbUrl}) => {
-  const db = new Database({writeDbUrl: adminDbUrl, readDbUrl: adminDbUrl, schema, serviceName: 'dummy'});
-
-  // TODO: Update grants when access.yml changes
-  async function createUsers(db, schema) {
-    for (let serviceName of Object.keys(schema.access)) {
-      await db._withClient(WRITE, async (client) => {
-        try {
-          const password = 'foo-bar'; // TODO: Remove this
-          await client.query(`create user ${serviceName} password '${password}'`);
-        } catch (e) {
-          // 42710 is when a table already exists
-          if (e.code !== '42710') {
-            // TODO: Reset password if user already exist(?)
-            throw e;
-          }
-        }
-        for (let table of schema.access[serviceName].tables) {
-          await client.query(`grant all on ${table} to ${serviceName}`);
-        }
-      });
-    }
-  }
-
-  try {
-    showProgress('...creating db users');
-    await createUsers(db, schema);
-    const dbVersion = await db.currentVersion();
-    const stopAt = toVersion === undefined ? schema.latestVersion().version : toVersion;
-
-    // perform any necessary upgrades..
-    if (dbVersion < stopAt) {
-      // run each of the upgrade scripts
-      for (let v = dbVersion + 1; v <= stopAt; v++) {
-        showProgress(`upgrading database to version ${v}`);
-        const version = schema.getVersion(v);
-        await db._doUpgrade(version, showProgress);
-        showProgress(`upgrade to version ${v} successful`);
-      }
-    } else {
-      showProgress('No database upgrades required');
-    }
-  } finally {
-    await db.close();
-  }
-};
 
 module.exports = Database;
