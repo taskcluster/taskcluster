@@ -244,6 +244,7 @@ const stubbedAuth = () => {
 
 const stubbedClients = () => {
   const tasks = new Map();
+  const roles = new Map();
   const options = {
     rootUrl: exports.rootUrl,
   };
@@ -257,7 +258,65 @@ const stubbedClients = () => {
     queueEvents: new taskcluster.QueueEvents(options),
     notify: new taskcluster.Notify(options),
     workerManager: new taskcluster.WorkerManager(options),
-    auth: new taskcluster.Auth(options),
+    auth: new taskcluster.Auth({
+      ...options,
+      fake: {
+        listRoles: async () => {
+          let allRoles = [];
+          for(let roleId of roles.keys()){
+            allRoles.push(roles.get(roleId));
+          }
+          return Promise.resolve(allRoles);
+        },
+        listRoleIds: async (options) => {
+          let roleIds = Array.from(roles.keys());
+          return Promise.resolve({roleIds});
+        },
+        role: async (roleId) => {
+          const role = roles.get(roleId);
+
+          return role
+            ? Promise.resolve(role)
+            : Promise.reject(new Error('role not found'));
+        },
+        createRole: async (roleId, role) => {
+          const newRole = {
+            roleId: roleId,
+            scopes: role.scopes,
+            description: role.description,
+            created: taskcluster.fromNowJSON(),
+            lastModified: taskcluster.fromNowJSON(),
+            expandedScopes: [],
+          };
+          roles.set(roleId, newRole);
+          return Promise.resolve(newRole);
+        },
+        updateRole: async (roleId, role) => {
+          if(!roles.has(roleId)){
+            return Promise.reject('role not found');
+          }
+          const updatedRole = {
+            roleId: roleId,
+            scopes: role.scopes,
+            description: role.description,
+            created: taskcluster.fromNowJSON(),
+            lastModified: taskcluster.fromNowJSON(),
+            expandedScopes: [],
+            ...role,
+          };
+          roles.set(roleId, updatedRole);
+          return Promise.resolve(updatedRole);
+        },
+        deleteRole: async (roleId) => {
+          if(!roles.has(roleId)){
+            return Promise.reject('role not found');
+          }
+          roles.delete(roleId);
+          return Promise.resolve(roleId);
+        },
+
+      },
+    }),
     queue: new taskcluster.Queue({
       ...options,
       fake: {
