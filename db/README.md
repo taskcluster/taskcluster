@@ -11,9 +11,16 @@ This directory defines the Taskcluster database:
 <!-- SP BEGIN -->
 ### secrets
 
-| Name | Mode | Args | Returns |
-| --- | --- | --- | --- |
-| get_secret | Symbol(read) | name text | table (secret text) |,| get_secret_with_expires | Symbol(read) | name text | table (secret text, expires timestamp) |,| list_secrets | Symbol(read) |  | table (name text) |,| list_secrets_with_expires | Symbol(read) |  | table (name text, expires timestamp) |,| remove_secret | Symbol(write) | name text | void |,| remove_secret | Symbol(write) | name text | void |,| set_secret | Symbol(write) | name text, secret text | void |,| set_secret_with_expires | Symbol(write) | name text, secret text, expires timestamp | void |
+| Name | Mode | Arguments | Returns | Description |
+| --- | --- | --- | --- | --- |
+| get_secret | read | name text | table (secret text) | Read the secret associated with some key. If the secret has recently expired, the response code 410 is returned.<br />If the caller lacks the scope necessary to get the secret, the call will fail with a 403 code regardless of<br />whether the secret exists. |
+| get_secret_with_expires | read | name text | table (secret text, expires timestamp) | Read the secret associated with some key. If the secret has recently expired, the response code 410 is returned.<br />If the caller lacks the scope necessary to get the secret, the call will fail with a 403 code regardless of<br />whether the secret exists. |
+| list_secrets | read |  | table (name text) | List the names of all secrets.<br />By default this end-point will try to return up to 1000 secret names in one request. But it may return less,<br />even if more tasks are available. It may also return a `continuationToken` even though there are no more results.<br />However, you can only be sure to have seen all results if you keep calling `listTaskGroup` with the last<br />`continuationToken` until you get a result without a `continuationToken`. If you are not interested in listing<br />all the members at once, you may use the query-string option `limit` to return fewer. |
+| list_secrets_with_expires | read |  | table (name text, expires timestamp) | List the names of all secrets.<br />By default this end-point will try to return up to 1000 secret names in one request. But it may return less,<br />even if more tasks are available. It may also return a `continuationToken` even though there are no more results.<br />However, you can only be sure to have seen all results if you keep calling `listTaskGroup` with the last<br />`continuationToken` until you get a result without a `continuationToken`. If you are not interested in listing<br />all the members at once, you may use the query-string option `limit` to return fewer. |
+| remove_secret | write | name text | void | Delete the secret associated with some key. |
+| remove_secret | write | name text | void | Delete the secret associated with some key. |
+| set_secret | write | name text, secret text | void | Set the secret associated with some key. If the secret already exists, it is updated instead. |
+| set_secret_with_expires | write | name text, secret text, expires timestamp | void | Set the secret associated with some key. If the secret already exists, it is updated instead. |
 <!-- SP END -->
 
 ## Database Schema
