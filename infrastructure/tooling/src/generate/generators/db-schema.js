@@ -9,6 +9,6 @@ exports.tasks = [{
   run: async (requirements, utils) => {
     const schema = Schema.fromDbDirectory();
 
-    writeRepoJSON('generated/db-schema.json', schema.asSerializable());
+    writeRepoJSON('generated/db-schema.json', JSON.parse(schema.asSerializable()));
   },
 }];
