@@ -339,6 +339,10 @@ must match the path configured within the service definition.  See
 as a service requires at least generic-worker v16.6.0.
 <!-- end-usage -->
 
+# Deployment
+
+See [deployment](./docs/deployment.md) for advice on deploying worker-runner itself.
+
 # Development
 
 This application requires go1.12.
