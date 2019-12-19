@@ -33,7 +33,7 @@ TBD
 
 ## JS Interface
 
-The `taskcluster-db` package exports a `setup` function which is intended to be used in services' `main.js`:
+The `taskcluster-db` package exports an async `setup` function which is intended to be used in services' `main.js`:
 
 ```javascript
 const tcdb = require('taskcluster-db');
@@ -62,6 +62,9 @@ setup('upgrade db', async function() {
   await tcdb.upgrade({adminDbUrl: process.env.TEST_DB_URL});
 });
 ```
+
+Both of these functions take an optional `useDbDirectory: true` to indicate that they should read from the YAML files under `db/` instead of using the serialized format.
+This approach is slower, but is appropriate for testing.
 
 ### Testing Support
 
