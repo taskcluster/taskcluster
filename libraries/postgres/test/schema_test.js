@@ -104,6 +104,22 @@ suite(path.basename(__filename), function() {
         () => Schema._checkVersion({version: 1, migrationScript: 'yep', methods}, '0001.yml'),
         /unexpected or missing properties in method foo in 0001.yml/);
     });
+
+    test('method changes mode', function() {
+      const methods = {
+        cApItAlLeTtErS: {
+          description: 'test',
+          mode: 'read',
+          serviceName: 'test',
+          args: 'x integer',
+          returns: 'void',
+        },
+      };
+
+      assert.throws(
+        () => Schema._checkVersion({version: 1, migrationScript: 'yep', methods}, '0001.yml'),
+        /db procedure method cApItAlLeTtErS in 0001.yml has capital letters/);
+    });
   });
 
   suite('_checkVersion', function() {
