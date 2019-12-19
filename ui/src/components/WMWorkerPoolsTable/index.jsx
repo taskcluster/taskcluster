@@ -142,6 +142,7 @@ export default class WorkerManagerWorkerPoolsTable extends Component {
       });
       this.setState({
         dialogState: {
+          ...this.state.dialogState,
           open: false,
         },
       });
@@ -174,6 +175,7 @@ export default class WorkerManagerWorkerPoolsTable extends Component {
   handleDialogActionClose = () => {
     this.setState({
       dialogState: {
+        ...this.state.dialogState,
         error: null,
         open: false,
       },
