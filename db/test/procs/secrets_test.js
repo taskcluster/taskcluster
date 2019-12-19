@@ -1,13 +1,9 @@
 const assert = require('assert').strict;
-const helper = require('./helper');
+const helper = require('../helper');
 const testing = require('taskcluster-lib-testing');
 
 suite(testing.suiteName(), function() {
-  helper.withDb({ serviceName: 'secrets' });
-
-  suiteSetup('set up latest version', async function() {
-    await helper.upgradeDb();
-  });
+  helper.withDbForProcs({ serviceName: 'secrets' });
 
   setup('reset table', async function() {
     await helper.withDbClient(async client => {

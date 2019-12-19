@@ -4,8 +4,8 @@
   "version": "23.0.0",
   "license": "MPL-2.0",
   "scripts": {
-    "test": "mocha test/*_test.js",
-    "lint": "eslint src/*.js test/*.js"
+    "test": "mocha test/**/*_test.js",
+    "lint": "eslint src/**/*.js test/**/*.js"
   },
   "main": "./src/index.js"
 }
