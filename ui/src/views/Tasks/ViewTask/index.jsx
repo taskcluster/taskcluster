@@ -201,7 +201,7 @@ export default class ViewTask extends Component {
     const {
       classes,
       description,
-      data: { loading, error, task, dependentTasks },
+      data: { loading, error, task, refetch: refetchTask, dependentTasks },
       match,
     } = this.props;
     let tags;
@@ -291,7 +291,7 @@ export default class ViewTask extends Component {
                 />
               </Grid>
             </Grid>
-            <TaskActionButtons data={this.props.data} />
+            <TaskActionButtons task={task} refetchTask={refetchTask} />
           </Fragment>
         )}
       </Dashboard>

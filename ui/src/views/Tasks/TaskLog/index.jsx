@@ -53,7 +53,7 @@ export default class TaskLog extends Component {
       classes,
       match,
       stream,
-      data: { task },
+      data: { task, refetch: refetchTask },
     } = this.props;
     const url = decodeURIComponent(match.params.logUrl);
     const run = this.getCurrentRun();
@@ -95,7 +95,7 @@ export default class TaskLog extends Component {
           color="secondary">
           <OpenInNewIcon size={20} />
         </Button>
-        <TaskActionButtons data={this.props.data} />
+        <TaskActionButtons task={task} refetchTask={refetchTask} />
       </Dashboard>
     );
   }

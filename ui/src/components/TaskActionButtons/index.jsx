@@ -1,5 +1,5 @@
 import React, { Component, Fragment } from 'react';
-import { node } from 'prop-types';
+import { func, node, object } from 'prop-types';
 import { withApollo } from 'react-apollo';
 import { withRouter } from 'react-router-dom';
 import { omit } from 'ramda';
@@ -51,12 +51,18 @@ export default class TaskActionButtons extends Component {
   };
 
   static propTypes = {
-    // The children prop can be used to add additional speed dial buttons
+    // The children prop can be used to add additional
+    // action buttons in the speed dial.
     children: node,
+    task: object,
+    // A graphql function to refetch the task query.
+    refetchTask: func,
   };
 
   static defaultProps = {
     children: null,
+    task: null,
+    refetchTask: null,
   };
 
   handleActionClick = name => () => {
@@ -97,10 +103,7 @@ export default class TaskActionButtons extends Component {
   handleActionTaskSubmit = ({ name }) => async () => {
     this.preRunningAction();
 
-    const {
-      client,
-      data: { task },
-    } = this.props;
+    const { client, task } = this.props;
     const { actionInputs, actionData } = this.state;
     const form = actionInputs[name];
     const { action } = actionData[name];
@@ -118,7 +121,7 @@ export default class TaskActionButtons extends Component {
   // copy fields from the parent task, intentionally excluding some
   // fields which might cause confusion if left unchanged
   handleCloneTask = () => {
-    const task = removeKeys(cloneDeep(this.props.data.task), ['__typename']);
+    const task = removeKeys(cloneDeep(this.props.task), ['__typename']);
 
     return omit(
       [
@@ -136,12 +139,12 @@ export default class TaskActionButtons extends Component {
 
   handleRerunComplete = () => {
     this.handleActionDialogClose();
-    this.props.data.refetch();
+    this.props.refetchTask();
   };
 
   handleCancelComplete = () => {
     this.handleActionDialogClose();
-    this.props.data.refetch();
+    this.props.refetchTask();
   };
 
   handleCreateInteractiveComplete = taskId => {
@@ -216,7 +219,7 @@ export default class TaskActionButtons extends Component {
   handleCreateLoaner = async () => {
     const taskId = nice();
     const task = parameterizeTask(
-      removeKeys(cloneDeep(this.props.data.task), ['__typename'])
+      removeKeys(cloneDeep(this.props.task), ['__typename'])
     );
 
     this.preRunningAction();
@@ -427,7 +430,7 @@ export default class TaskActionButtons extends Component {
   };
 
   purgeWorkerCache = async () => {
-    const { provisionerId, workerType } = this.props.data.task;
+    const { provisionerId, workerType } = this.props.task;
     const { selectedCaches } = this.state;
 
     this.preRunningAction();
@@ -511,7 +514,7 @@ export default class TaskActionButtons extends Component {
     const taskId = nice();
     const task = omit(
       [...TASK_ADDED_FIELDS, 'dependencies'],
-      removeKeys(cloneDeep(this.props.data.task), ['__typename'])
+      removeKeys(cloneDeep(this.props.task), ['__typename'])
     );
     const now = Date.now();
     const created = Date.parse(task.created);
