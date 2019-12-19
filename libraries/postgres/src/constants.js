@@ -1,4 +1,4 @@
-const [READ, WRITE] = [Symbol('read'), Symbol('write')];
+const [READ, WRITE] = ['read', 'write'];
 
 exports.READ = READ;
 exports.WRITE = WRITE;

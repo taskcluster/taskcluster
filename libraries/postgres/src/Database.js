@@ -30,7 +30,7 @@ class Database {
       assert(!/.*[A-Z].*/.test(name), 'db procedure methods should not have capital letters');
 
       this.procs[name] = async (...args) => {
-        if (serviceName !== procServiceName && mode === WRITE.toString()) {
+        if (serviceName !== procServiceName && mode === WRITE) {
           throw new Error(
             `${serviceName} is not allowed to call any methods that do not belong to this service and which have mode=WRITE`,
           );
