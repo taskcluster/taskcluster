@@ -1,5 +1,5 @@
 import React, { Component, Fragment } from 'react';
-import { arrayOf, bool, node, object, oneOfType, string } from 'prop-types';
+import { bool, object, string } from 'prop-types';
 import classNames from 'classnames';
 import { withRouter } from 'react-router-dom';
 import { LazyLog, ScrollFollow } from 'react-lazylog';
@@ -120,7 +120,6 @@ const FOLLOW_STORAGE_KEY = 'follow-log';
 export default class Log extends Component {
   static defaultProps = {
     stream: false,
-    actions: null,
     GoToLineButtonProps: null,
     FollowLogButtonProps: null,
   };
@@ -135,10 +134,6 @@ export default class Log extends Component {
      * stream. Specify `false` if the `url` is a complete file.
      */
     stream: bool,
-    /**
-     * Render additional buttons in the actions area.
-     */
-    actions: oneOfType([node, arrayOf(node)]),
     /**
      * Specify props for the "Go to line" floating action button.
      */
@@ -243,7 +238,6 @@ export default class Log extends Component {
       url,
       stream,
       classes,
-      actions,
       GoToLineButtonProps,
       FollowLogButtonProps,
       ...props
@@ -306,7 +300,6 @@ export default class Log extends Component {
                 />
               </Button>
             </div>
-            {actions}
           </Fragment>
         )}
       />

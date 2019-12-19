@@ -18,6 +18,8 @@ import Helmet from '../../../components/Helmet';
 import HelpView from '../../../components/HelpView';
 import Search from '../../../components/Search';
 import Breadcrumbs from '../../../components/Breadcrumbs';
+import ErrorPanel from '../../../components/ErrorPanel';
+import TaskActionButtons from '../../../components/TaskActionButtons';
 import {
   ACTIONS_JSON_KNOWN_KINDS,
   ARTIFACTS_PAGE_SIZE,
@@ -25,11 +27,9 @@ import {
   TASK_POLL_INTERVAL,
 } from '../../../utils/constants';
 import db from '../../../utils/db';
-import ErrorPanel from '../../../components/ErrorPanel';
 import Link from '../../../utils/Link';
 import taskQuery from './task.graphql';
 import pageArtifactsQuery from './pageArtifacts.graphql';
-import TaskButtons from '../TaskButtons';
 
 const updateTaskIdHistory = id => {
   if (!VALID_TASK.test(id)) {
@@ -291,7 +291,7 @@ export default class ViewTask extends Component {
                 />
               </Grid>
             </Grid>
-            <TaskButtons data={this.props.data} />
+            <TaskActionButtons data={this.props.data} />
           </Fragment>
         )}
       </Dashboard>

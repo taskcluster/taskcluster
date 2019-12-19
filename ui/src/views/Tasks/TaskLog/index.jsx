@@ -1,16 +1,18 @@
 import { hot } from 'react-hot-loader';
 import React, { Component } from 'react';
+import classNames from 'classnames';
 import { withApollo, graphql } from 'react-apollo';
 import { withStyles } from '@material-ui/core/styles';
 import ArrowLeftIcon from 'mdi-react/ArrowLeftIcon';
+import OpenInNewIcon from 'mdi-react/OpenInNewIcon';
 import Dashboard from '../../../components/Dashboard';
 import Button from '../../../components/Button';
 import Log from '../../../components/Log';
-import Link from '../../../utils/Link';
-import Helmet from '../../../components/Helmet';
-import taskQuery from './task.graphql';
 import Search from '../../../components/Search';
-import TaskButtons from '../TaskButtons';
+import TaskActionButtons from '../../../components/TaskActionButtons';
+import Helmet from '../../../components/Helmet';
+import Link from '../../../utils/Link';
+import taskQuery from './task.graphql';
 
 @withApollo
 @hot(module)
@@ -19,7 +21,14 @@ import TaskButtons from '../TaskButtons';
     ...theme.mixins.fab,
     ...theme.mixins.actionButton,
     bottom: theme.spacing(2),
-    right: theme.spacing(12),
+  },
+  rawLogFab: {
+    right: theme.spacing(11),
+    bottom: theme.spacing(3),
+  },
+  viewTaskFab: {
+    right: theme.spacing(17),
+    bottom: theme.spacing(3),
   },
 }))
 @graphql(taskQuery, {
@@ -61,23 +70,32 @@ export default class TaskLog extends Component {
           />
         }>
         <Helmet state={run && run.state} />
-        <Log
-          url={url}
-          stream={stream}
-          actions={
-            <Link
-              to={`/tasks/${match.params.taskId}/runs/${match.params.runId}`}>
-              <Button
-                spanProps={{ className: classes.fab }}
-                tooltipProps={{ title: 'View Task' }}
-                variant="round"
-                color="secondary">
-                <ArrowLeftIcon />
-              </Button>
-            </Link>
-          }
-        />
-        <TaskButtons data={this.props.data} url={url} rawButton />
+        <Log url={url} stream={stream} />
+        <Link to={`/tasks/${match.params.taskId}/runs/${match.params.runId}`}>
+          <Button
+            spanProps={{
+              className: classNames(classes.fab, classes.viewTaskFab),
+            }}
+            tooltipProps={{ title: 'View Task' }}
+            size="small"
+            variant="round"
+            color="secondary">
+            <ArrowLeftIcon />
+          </Button>
+        </Link>
+        <Button
+          component="a"
+          href={url}
+          target="_blank"
+          rel="noopener noreferrer"
+          spanProps={{ className: classNames(classes.fab, classes.rawLogFab) }}
+          tooltipProps={{ title: 'Raw Log' }}
+          size="small"
+          variant="round"
+          color="secondary">
+          <OpenInNewIcon size={20} />
+        </Button>
+        <TaskActionButtons data={this.props.data} />
       </Dashboard>
     );
   }

@@ -1,4 +1,5 @@
 import React, { Component, Fragment } from 'react';
+import { node } from 'prop-types';
 import { withApollo } from 'react-apollo';
 import { withRouter } from 'react-router-dom';
 import { omit } from 'ramda';
@@ -14,25 +15,24 @@ import ClockOutlineIcon from 'mdi-react/ClockOutlineIcon';
 import ShovelIcon from 'mdi-react/ShovelIcon';
 import CloseIcon from 'mdi-react/CloseIcon';
 import FlashIcon from 'mdi-react/FlashIcon';
-import OpenInNewIcon from 'mdi-react/OpenInNewIcon';
 import ConsoleLineIcon from 'mdi-react/ConsoleLineIcon';
 import RestartIcon from 'mdi-react/RestartIcon';
-import SpeedDial from '../../../components/SpeedDial';
-import SpeedDialAction from '../../../components/SpeedDialAction';
-import DialogAction from '../../../components/DialogAction';
-import TaskActionForm from '../../../components/TaskActionForm';
-import formatError from '../../../utils/formatError';
-import removeKeys from '../../../utils/removeKeys';
-import parameterizeTask from '../../../utils/parameterizeTask';
-import { nice } from '../../../utils/slugid';
-import { TASK_ADDED_FIELDS } from '../../../utils/constants';
-import formatTaskMutation from '../../../utils/formatTaskMutation';
+import SpeedDial from '../SpeedDial';
+import SpeedDialAction from '../SpeedDialAction';
+import DialogAction from '../DialogAction';
+import TaskActionForm from '../TaskActionForm';
+import formatError from '../../utils/formatError';
+import removeKeys from '../../utils/removeKeys';
+import parameterizeTask from '../../utils/parameterizeTask';
+import { nice } from '../../utils/slugid';
+import { TASK_ADDED_FIELDS } from '../../utils/constants';
+import formatTaskMutation from '../../utils/formatTaskMutation';
 import scheduleTaskQuery from './scheduleTask.graphql';
 import rerunTaskQuery from './rerunTask.graphql';
 import cancelTaskQuery from './cancelTask.graphql';
 import purgeWorkerCacheQuery from './purgeWorkerCache.graphql';
-import createTaskQuery from '../createTask.graphql';
-import submitTaskAction from '../submitTaskAction';
+import createTaskQuery from '../../views/Tasks/createTask.graphql';
+import submitTaskAction from '../../views/Tasks/submitTaskAction';
 
 @withRouter
 @withApollo
@@ -48,6 +48,15 @@ export default class TaskActionButtons extends Component {
     dialogError: null,
     caches: null,
     selectedCaches: null,
+  };
+
+  static propTypes = {
+    // The children prop can be used to add additional speed dial buttons
+    children: node,
+  };
+
+  static defaultProps = {
+    children: null,
   };
 
   handleActionClick = name => () => {
@@ -594,7 +603,7 @@ export default class TaskActionButtons extends Component {
   };
 
   render() {
-    const { url, rawButton } = this.props;
+    const { children } = this.props;
     const {
       dialogActionProps,
       actionData,
@@ -691,19 +700,7 @@ export default class TaskActionButtons extends Component {
               onClick={this.handleCreateInteractiveTaskClick}
             />
           )}
-          {rawButton && (
-            <SpeedDialAction
-              tooltipOpen
-              icon={<OpenInNewIcon size={20} />}
-              tooltipTitle="Raw Log"
-              FabProps={{
-                component: 'a',
-                href: url,
-                target: '_blank',
-                rel: 'noopener noreferrer',
-              }}
-            />
-          )}
+          {children}
           {taskActions &&
             taskActions.length &&
             taskActions.map(action => (
