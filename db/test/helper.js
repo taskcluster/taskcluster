@@ -1,7 +1,7 @@
 const assert = require('assert');
 const {Client} = require('pg');
-const {Schema, Database, WRITE} = require('taskcluster-lib-postgres');
-const {FakeDatabase} = require('taskcluster-db');
+const {Schema, WRITE} = require('taskcluster-lib-postgres');
+const tcdb = require('taskcluster-db');
 
 exports.dbUrl = process.env.TEST_DB_URL;
 assert(exports.dbUrl, "TEST_DB_URL must be set to run db/ tests");
@@ -12,44 +12,34 @@ exports.schema = Schema.fromDbDirectory();
  * Set
  * - helper.db to an empty database instance, using the schema from the repo.
  * - helper.withDbClient(fn) to call fn with a pg client.
- * - helper.upgradeTo(ver) to upgrade the DB to a specific version
- * - helper.upgradeDb9) to upgrade to the latest version
+ * - helper.upgradeDb() to upgrade to the given version (or latest version if omitted)
  *
  * The database is only reset at the beginning of the suite.  Test suites
  * should implement a `setup` method that sets state for all relevant tables
  * before each test case.
+ *
+ * Pass serviceName when testing methods for a specific service.  If omitted,
+ * it will be set to `dummy` and `helper.db.procs` will probably not do what
+ * you want.
  */
-exports.withDb = function({ serviceName }) {
+exports.withDb = function({ serviceName = "dummy" } = {}) {
   suiteSetup('setup database', async function() {
     await exports.clearDb();
-    exports.db = await Database.setup({
-      schema: exports.schema,
+
+    exports.db = await tcdb.setup({
       writeDbUrl: exports.dbUrl,
       readDbUrl: exports.dbUrl,
       serviceName,
     });
 
-    exports.fakeDb = await new FakeDatabase({
-      schema: exports.schema,
+    exports.fakeDb = await tcdb.fakeSetup({
       serviceName,
     });
 
-    exports.upgradeDb = async ({ serviceName }) => {
-      await Database.upgrade({
-        schema: exports.schema,
-        writeDbUrl: exports.dbUrl,
-        readDbUrl: exports.dbUrl,
-        serviceName,
-      });
-    };
-
-    exports.upgradeTo = async ver => {
-      await Database.upgrade({
-        schema: exports.schema,
-        toVersion: ver,
-        writeDbUrl: exports.dbUrl,
-        readDbUrl: exports.dbUrl,
-        serviceName,
+    exports.upgradeDb = async (toVersion) => {
+      await tcdb.upgrade({
+        adminDbUrl: exports.dbUrl,
+        toVersion,
       });
     };
 
