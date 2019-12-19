@@ -35,6 +35,6 @@ const clearDb = async dbUrl => {
     await client.query(`drop schema if exists public cascade`);
     await client.query(`create schema public`);
   } finally {
-    client.end();
+    await client.end();
   }
 };

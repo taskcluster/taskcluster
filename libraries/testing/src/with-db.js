@@ -1,5 +1,54 @@
-const {WRITE} = require('taskcluster-lib-postgres');
+const path = require('path');
+const {Client} = require('pg');
+const {Schema} = require('taskcluster-lib-postgres');
 const tcdb = require('taskcluster-db');
+const {URL} = require('url');
+
+const PG_ERR_ROLE_DOES_NOT_EXIST = '42704';
+
+const ignorePgErrors = async (promise, ...codes) => {
+  try {
+    return await promise;
+  } catch (err) {
+    if (!codes.includes(err.code)) {
+      throw err;
+    }
+  }
+};
+
+const resetDb = async ({testDbUrl}) => {
+  const client = new Client({connectionString: testDbUrl});
+  await client.connect();
+  try {
+    // completely reset the DB contents
+    await client.query(`drop schema if exists public cascade`);
+    await client.query(`create schema public`);
+
+    // get the password portion of the testDbUrl, and use the same for each of
+    // the service accounts.  In the common case of testing with Docker, this
+    // is empty.
+    const url = new URL(testDbUrl);
+    const password = url.password;
+
+    // get a list of services that have any access from the schema
+    const schema = Schema.fromDbDirectory(path.join(__dirname, '../../../db'));
+
+    // and reset/create a user for each one..
+    const services = Object.keys(schema.access);
+    for (let serviceName of services) {
+      const serviceUsername = `test_${serviceName.replace(/-/g, '_')}`;
+      await ignorePgErrors(client.query(`drop owned by ${serviceUsername}`), PG_ERR_ROLE_DOES_NOT_EXIST);
+      await ignorePgErrors(client.query(`drop user ${serviceUsername}`), PG_ERR_ROLE_DOES_NOT_EXIST);
+      if (password) {
+        await client.query(`create user ${serviceUsername} PASSWORD '${password}'`);
+      } else {
+        await client.query(`create user ${serviceUsername}`);
+      }
+    }
+  } finally {
+    await client.end();
+  }
+};
 
 /**
  * withDb:
@@ -11,9 +60,7 @@ const tcdb = require('taskcluster-db');
  * In either case, it's up to the caller to set up and clear any data
  * between test cases.
  */
-module.exports = (mock, skipping, helper, serviceName) => {
-  // on suite setup, monkey-patch the `setup` method of each class to do what
-  // we promise; then un-patch it on teardown
+module.exports.withDb = (mock, skipping, helper, serviceName) => {
   suiteSetup('withDb', async function() {
     if (skipping()) {
       return;
@@ -23,22 +70,24 @@ module.exports = (mock, skipping, helper, serviceName) => {
       helper.db = await tcdb.fakeSetup({serviceName});
     } else {
       const sec = helper.secrets.get('db');
-      helper.db = await tcdb.setup({
-        readDbUrl: sec.testDbUrl,
-        writeDbUrl: sec.testDbUrl,
-        serviceName,
-        useDbDirectory: true,
-      });
 
-      // completely reset the DB
-      await helper.db._withClient(WRITE, async client => {
-        await client.query(`drop schema if exists public cascade`);
-        await client.query(`create schema public`);
-      });
+      await resetDb({testDbUrl: sec.testDbUrl});
 
       // upgrade..
       await tcdb.upgrade({
         adminDbUrl: sec.testDbUrl,
+        usernamePrefix: 'test',
+        useDbDirectory: true,
+      });
+
+      let serviceDbUrl = new URL(sec.testDbUrl);
+      serviceDbUrl.username = `test_${serviceName.replace(/-/g, '_')}`;
+      serviceDbUrl = serviceDbUrl.toString();
+
+      helper.db = await tcdb.setup({
+        readDbUrl: serviceDbUrl,
+        writeDbUrl: serviceDbUrl,
+        serviceName,
         useDbDirectory: true,
       });
     }
@@ -55,6 +104,9 @@ module.exports = (mock, skipping, helper, serviceName) => {
   });
 };
 
-module.exports.secret = [
+module.exports.withDb.secret = [
   {env: 'TEST_DB_URL', cfg: 'db.testUrl', name: 'testDbUrl'},
 ];
+
+// this is useful for taskcluster-db's tests, as well
+module.exports.resetDb = resetDb;

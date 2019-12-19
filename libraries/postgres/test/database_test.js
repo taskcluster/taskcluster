@@ -1,7 +1,7 @@
 const helper = require('./helper');
 const {Schema, Database, READ, WRITE} = require('..');
 const path = require('path');
-const assert = require('assert');
+const assert = require('assert').strict;
 
 helper.dbSuite(path.basename(__filename), function() {
   let db;
@@ -109,9 +109,98 @@ helper.dbSuite(path.basename(__filename), function() {
     });
   });
 
+  suite('Database._updatePermissions', function() {
+    let db;
+
+    suiteSetup(async function() {
+      db = new Database({urlsByMode: {admin: helper.dbUrl}});
+      await db._withClient('admin', async client => {
+        // create users so the grants will succeed
+        for (let username of ['test_service1', 'test_service2']) {
+          try {
+            await client.query(`create user ${username}`);
+          } catch (err) {
+            if (err.code !== '42710') { // role already exists
+              throw err;
+            }
+          }
+        }
+      });
+    });
+
+    setup(async function() {
+      await db._withClient('admin', async client => {
+        // create some perms that should be deleted
+        await client.query('create table tcversion (version int)');
+        await client.query('create table foo (x int)');
+        await client.query('create table bar (x int)');
+        await client.query('grant select on foo to test_service1');
+        await client.query('grant insert on foo to test_service1');
+        // should always be revoked, as we don't ever grant trigger..
+        await client.query('grant trigger on foo to test_service1');
+        await client.query('grant select on foo to test_service2');
+        await client.query('grant select on bar to test_service2');
+      });
+    });
+
+    suiteTeardown(async function() {
+      await db.close();
+    });
+
+    const assertPerms = async (db, ...perms) => {
+      const gotPerms = await db._withClient('admin', async client => {
+        const res = await client.query(`
+          select grantee, table_name, privilege_type
+            from information_schema.table_privileges
+            where table_schema = 'public'
+             and grantee like 'test_%'
+             and table_catalog = current_catalog`);
+        return new Set(res.rows.map(
+          row => `${row.grantee}=${row.table_name}/${row.privilege_type}`));
+      });
+
+      const expectedPerms = new Set(perms);
+      assert.deepEqual(gotPerms, expectedPerms);
+    };
+
+    test('empty access.yml', async function() {
+      const schema = {access: {service1: {tables: {}}, service2: {tables: {}}}, versions: []};
+      await Database._updatePermissions({db, schema, usernamePrefix: 'test'});
+      await assertPerms(db,
+        'test_service1=tcversion/SELECT',
+        'test_service2=tcversion/SELECT',
+      );
+    });
+
+    test('some read, some write', async function() {
+      const schema = {
+        access: {
+          service1: {tables: {foo: 'read', bar: 'write'}},
+          service2: {tables: {foo: 'write', bar: 'read'}},
+        },
+        versions: [],
+      };
+      await Database._updatePermissions({db, schema, usernamePrefix: 'test'});
+      await assertPerms(db,
+        'test_service1=tcversion/SELECT',
+        'test_service1=foo/SELECT',
+        'test_service1=bar/SELECT',
+        'test_service1=bar/INSERT',
+        'test_service1=bar/UPDATE',
+        'test_service1=bar/DELETE',
+        'test_service2=tcversion/SELECT',
+        'test_service2=foo/SELECT',
+        'test_service2=foo/INSERT',
+        'test_service2=foo/UPDATE',
+        'test_service2=foo/DELETE',
+        'test_service2=bar/SELECT',
+      );
+    });
+  });
+
   suite('Database.setup', function() {
     test('setup creates JS methods that can be called', async function() {
-      await Database.upgrade({schema, adminDbUrl: helper.dbUrl});
+      await Database.upgrade({schema, adminDbUrl: helper.dbUrl, usernamePrefix: 'test'});
       db = await Database.setup({schema, readDbUrl: helper.dbUrl, writeDbUrl: helper.dbUrl, serviceName: 'service-1'});
       await db.procs.testdata();
       const res = await db.procs.addup(13);
@@ -119,7 +208,7 @@ helper.dbSuite(path.basename(__filename), function() {
     });
 
     test('do not allow service A to call any methods for service B which have mode=WRITE', async function() {
-      await Database.upgrade({schema, adminDbUrl: helper.dbUrl});
+      await Database.upgrade({schema, adminDbUrl: helper.dbUrl, usernamePrefix: 'test'});
       const db = await Database.setup({schema, readDbUrl: helper.dbUrl, writeDbUrl: helper.dbUrl, serviceName: 'service-2'});
 
       assert.equal(versions[0].methods.testdata.serviceName, 'service-1');
@@ -129,7 +218,7 @@ helper.dbSuite(path.basename(__filename), function() {
     });
 
     test('allow service A to call any methods for service A which have mode=WRITE', async function() {
-      await Database.upgrade({schema, adminDbUrl: helper.dbUrl});
+      await Database.upgrade({schema, adminDbUrl: helper.dbUrl, usernamePrefix: 'test'});
       const db = await Database.setup({schema, readDbUrl: helper.dbUrl, writeDbUrl: helper.dbUrl, serviceName: 'service-1'});
 
       assert.equal(versions[0].methods.testdata.serviceName, 'service-1');
@@ -139,7 +228,7 @@ helper.dbSuite(path.basename(__filename), function() {
     });
 
     test('allow service A to call any methods for service B which have mode=READ', async function() {
-      await Database.upgrade({schema, adminDbUrl: helper.dbUrl});
+      await Database.upgrade({schema, adminDbUrl: helper.dbUrl, usernamePrefix: 'test'});
       const db = await Database.setup({schema, readDbUrl: helper.dbUrl, writeDbUrl: helper.dbUrl, serviceName: 'service-1'});
 
       assert.equal(versions[0].methods.addup.serviceName, 'service-2');
