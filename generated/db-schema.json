@@ -12,6 +12,7 @@
         "get_secret": {
           "args": "name text",
           "body": "begin\n  return query select secrets.secret from secrets where secrets.name = get_secret.name;\nend",
+          "description": "Read the secret associated with some key. If the secret has recently expired, the response code 410 is returned.\nIf the caller lacks the scope necessary to get the secret, the call will fail with a 403 code regardless of\nwhether the secret exists.",
           "mode": "read",
           "returns": "table (secret text)",
           "serviceName": "secrets"
@@ -19,6 +20,7 @@
         "list_secrets": {
           "args": "",
           "body": "begin\n  return query select secrets.name as name from secrets;\nend",
+          "description": "List the names of all secrets.\nBy default this end-point will try to return up to 1000 secret names in one request. But it may return less,\neven if more tasks are available. It may also return a `continuationToken` even though there are no more results.\nHowever, you can only be sure to have seen all results if you keep calling `listTaskGroup` with the last\n`continuationToken` until you get a result without a `continuationToken`. If you are not interested in listing\nall the members at once, you may use the query-string option `limit` to return fewer.",
           "mode": "read",
           "returns": "table (name text)",
           "serviceName": "secrets"
@@ -26,6 +28,7 @@
         "remove_secret": {
           "args": "name text",
           "body": "begin\n  delete from secrets where secrets.name = remove_secret.name;\nend",
+          "description": "Delete the secret associated with some key.",
           "mode": "write",
           "returns": "void",
           "serviceName": "secrets"
@@ -33,6 +36,7 @@
         "set_secret": {
           "args": "name text, secret text",
           "body": "begin\n  insert into secrets values (set_secret.name, set_secret.secret)\n  on conflict (name) do\n    update set secret=EXCLUDED.secret;\nend",
+          "description": "Set the secret associated with some key. If the secret already exists, it is updated instead.",
           "mode": "write",
           "returns": "void",
           "serviceName": "secrets"
@@ -46,6 +50,7 @@
         "get_secret_with_expires": {
           "args": "name text",
           "body": "begin\n  return query select secrets.secret, secrets.expires from secrets where secrets.name = get_secret_with_expires.name;\nend",
+          "description": "Read the secret associated with some key. If the secret has recently expired, the response code 410 is returned.\nIf the caller lacks the scope necessary to get the secret, the call will fail with a 403 code regardless of\nwhether the secret exists.",
           "mode": "read",
           "returns": "table (secret text, expires timestamp)",
           "serviceName": "secrets"
@@ -53,6 +58,7 @@
         "list_secrets_with_expires": {
           "args": "",
           "body": "begin\n  return query select secrets.name as name, secrets.expires as expires from secrets;\nend",
+          "description": "List the names of all secrets.\nBy default this end-point will try to return up to 1000 secret names in one request. But it may return less,\neven if more tasks are available. It may also return a `continuationToken` even though there are no more results.\nHowever, you can only be sure to have seen all results if you keep calling `listTaskGroup` with the last\n`continuationToken` until you get a result without a `continuationToken`. If you are not interested in listing\nall the members at once, you may use the query-string option `limit` to return fewer.",
           "mode": "read",
           "returns": "table (name text, expires timestamp)",
           "serviceName": "secrets"
@@ -60,6 +66,7 @@
         "remove_secret": {
           "args": "name text",
           "body": "begin\n  delete from secrets where secrets.name = remove_secret.name;\nend",
+          "description": "Delete the secret associated with some key.",
           "mode": "write",
           "returns": "void",
           "serviceName": "secrets"
@@ -67,6 +74,7 @@
         "set_secret_with_expires": {
           "args": "name text, secret text, expires timestamp",
           "body": "begin\n  insert into secrets values (\n    set_secret_with_expires.name,\n    set_secret_with_expires.secret,\n    set_secret_with_expires.expires\n  )\n  on conflict on constraint secrets_pkey do\n    update set secret=EXCLUDED.secret, expires=EXCLUDED.expires;\nend",
+          "description": "Set the secret associated with some key. If the secret already exists, it is updated instead.",
           "mode": "write",
           "returns": "void",
           "serviceName": "secrets"

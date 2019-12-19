@@ -29,7 +29,7 @@ exports.tasks = [{
         '',
         '| Name | Mode | Arguments | Returns | Description |',
         '| --- | --- | --- | --- | --- |',
-        [...methods.map(method => `| ${method.name} | ${method.mode.toString()} | ${method.args} | ${method.returns} | ${method.description} |`)].join('\n'),
+        ...[...methods.map(method => `| ${method.name} | ${method.mode} | ${method.args} | ${method.returns} | ${method.description.replace(/\n/g, '<br />')} |`)],
       ].join('\n');
     });
 
