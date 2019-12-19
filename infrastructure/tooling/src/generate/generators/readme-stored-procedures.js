@@ -1,12 +1,12 @@
 const path = require('path');
 const { Schema } = require('taskcluster-lib-postgres');
-const {readRepoFile, writeRepoFile} = require('../../utils');
+const {readRepoFile, writeRepoFile, REPO_ROOT} = require('../../utils');
 
 exports.tasks = [{
   title: 'README Stored Procedures',
   provides: ['readme-stored-procedures'],
   run: async (requirements, utils) => {
-    const schema = Schema.fromDbDirectory();
+    const schema = Schema.fromDbDirectory(path.join(REPO_ROOT, 'db'));
     const methods = schema.allMethods();
     const serviceNames = [...new Set([...methods].map(({ serviceName }) => serviceName).sort())];
     const services = new Map();
