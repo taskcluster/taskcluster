@@ -169,7 +169,7 @@
     "zurvan": "^0.5.2"
   },
   "scripts": {
-    "lint": "eslint --cache --ext js --ignore-pattern clients/client-web/build --ignore-pattern clients/client-py libraries services infrastructure clients test",
+    "lint": "eslint --cache --ext js --ignore-pattern clients/client-web/build --ignore-pattern clients/client-py libraries services infrastructure clients test db",
     "test": "yarn workspaces run test",
     "fetch-coverage": "node test/fetch-coverage.js",
     "test:cleanup": "yarn workspace taskcluster-auth test:cleanup",

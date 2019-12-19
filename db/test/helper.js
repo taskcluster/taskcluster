@@ -1,5 +1,5 @@
 const assert = require('assert');
-const {Client, Pool} = require('pg');
+const {Pool} = require('pg');
 const {WRITE} = require('taskcluster-lib-postgres');
 const tcdb = require('taskcluster-db');
 const debug = require('debug')('db-helper');
