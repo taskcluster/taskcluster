@@ -69,6 +69,7 @@ class Schema{
     assert.equal(version.version, Number(fileBase), `filename ${filename} must match version`);
 
     Object.keys(version.methods).forEach(name => {
+      assert(!/.*[A-Z].*/.test(name), `db procedure method ${name} in ${filename} has capital letters`);
       const method = version.methods[name];
 
       assert.deepEqual(Object.keys(method).sort(), [
@@ -86,6 +87,7 @@ class Schema{
     const methods = new Map();
     for (let version of versions) {
       for (let [methodName, {mode, serviceName, args, returns}] of Object.entries(version.methods)) {
+        // ensure that quoting of identifiers is correct
         if (methods.has(methodName)) {
           const existing = methods.get(methodName);
           assert.equal(existing.mode, mode, `method ${methodName} changed mode in version ${version.version}`);
