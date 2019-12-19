@@ -1,4 +1,4 @@
-const {WRITE, Database, Schema} = require('taskcluster-lib-postgres');
+const {WRITE} = require('taskcluster-lib-postgres');
 const tcdb = require('taskcluster-db');
 
 /**
@@ -36,12 +36,7 @@ module.exports = (mock, skipping, helper, serviceName) => {
       });
 
       // upgrade..
-      await Database.upgrade({
-        schema: Schema.fromDbDirectory(),
-        writeDbUrl: sec.testDbUrl,
-        readDbUrl: sec.testDbUrl,
-        serviceName: 'dummy',
-      });
+      await tcdb.upgrade({adminDbUrl: sec.testDbUrl});
     }
 
     helper.load.inject('db', helper.db);
