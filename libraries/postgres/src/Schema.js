@@ -23,7 +23,7 @@ class Schema{
     }, { space: 2 });
   }
 
-  static fromDbDirectory(directory = path.join(__dirname, '../../../db')) {
+  static fromDbDirectory(directory) {
     const dentries = fs.readdirSync(path.join(directory, 'versions'));
     let versions = new Array(dentries.length);
 
