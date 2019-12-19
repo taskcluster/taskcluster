@@ -6,7 +6,7 @@ suite(testing.suiteName(), function() {
   helper.withDb({ serviceName: 'secrets' });
 
   suiteSetup('set up latest version', async function() {
-    await helper.upgradeDb({ serviceName: 'secrets' });
+    await helper.upgradeDb();
   });
 
   setup('reset table', async function() {

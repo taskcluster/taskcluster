@@ -3,10 +3,10 @@ const helper = require('./helper');
 const testing = require('taskcluster-lib-testing');
 
 suite(testing.suiteName(), function() {
-  helper.withDb({serviceName: 'secrets'}); // TODO: not secrets-specific..
+  helper.withDb();
 
   test('expires column added to table', async function() {
-    await helper.upgradeTo(1);
+    await helper.upgradeDb(1);
 
     await helper.withDbClient(async client => {
       await client.query(`
@@ -15,7 +15,7 @@ suite(testing.suiteName(), function() {
       `);
     });
 
-    await helper.upgradeTo(2);
+    await helper.upgradeDb(2);
 
     await helper.withDbClient(async client => {
       const res = await client.query(`
