@@ -9,5 +9,5 @@ module.exports = {
   suiteName: require('./suite-name'),
   withPulse: require('./with-pulse'),
   withMonitor: require('./with-monitor'),
-  withDb: require('./with-db'),
+  ...require('./with-db'),
 };

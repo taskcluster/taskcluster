@@ -53,8 +53,8 @@ class Database {
    *
    * If given, the upgrade process stops at toVersion; this is used for testing.
    */
-  static async upgrade({schema, showProgress = () => {}, toVersion, adminDbUrl}) {
-    const db = new Database({urlsByMode: {admin: adminDbUrl, read: adminDbUrl}, schema, serviceName: 'dummy'});
+  static async upgrade({schema, showProgress = () => {}, usernamePrefix, toVersion, adminDbUrl}) {
+    const db = new Database({urlsByMode: {admin: adminDbUrl, read: adminDbUrl}});
 
     try {
       // perform any necessary upgrades..
@@ -72,32 +72,65 @@ class Database {
         showProgress('No database upgrades required');
       }
 
-      showProgress('...creating db users');
-      await db._createUsers(db, schema);
+      showProgress('...updating permissions');
+      await Database._updatePermissions({db, schema, usernamePrefix});
     } finally {
       await db.close();
     }
   }
 
-  async _createUsers(db, schema) {
-    // TODO: Update grants when access.yml changes
-    for (let serviceName of Object.keys(schema.access)) {
-      await db._withClient('admin', async (client) => {
-        try {
-          const password = 'foo-bar'; // TODO: Remove this
-          await client.query(`create user ${serviceName} password '${password}'`);
-        } catch (e) {
-          // 42710 is when a table already exists
-          if (e.code !== '42710') {
-            // TODO: Reset password if user already exist(?)
-            throw e;
+  static async _updatePermissions({db, schema, usernamePrefix}) {
+    await db._withClient('admin', async (client) => {
+      for (let serviceName of Object.keys(schema.access)) {
+        const username = `${usernamePrefix}_${serviceName.replace(/-/g, '_')}`;
+
+        // always grant read access to tcversion
+        await client.query(`grant select on tcversion to ${username}`);
+        // allow access to the public schema
+        await client.query(`grant usage on schema public to ${username}`);
+
+        // determine the user's current permissions in the form ["table/priv"]
+        const res = await client.query(`
+          select table_name, privilege_type
+            from information_schema.table_privileges
+            where table_schema = 'public'
+             and grantee = $1
+             and table_catalog = current_catalog
+             and table_name != 'tcversion'`, [username]);
+        const currentPrivs = new Set(res.rows.map(row => `${row.table_name}/${row.privilege_type}`));
+
+        // calculate the expected privs based on access.yml
+        const tables = schema.access[serviceName].tables;
+        const expectedPrivs = new Set();
+        Object.entries(tables).forEach(([table, mode]) => {
+          if (mode === 'read') {
+            expectedPrivs.add(`${table}/SELECT`);
+          } else if (mode === 'write') {
+            expectedPrivs.add(`${table}/SELECT`);
+            expectedPrivs.add(`${table}/INSERT`);
+            expectedPrivs.add(`${table}/UPDATE`);
+            expectedPrivs.add(`${table}/DELETE`);
+          }
+        });
+
+        // now grant and revoke to make it so..
+        for (let privStr of currentPrivs) {
+          if (!expectedPrivs.has(privStr)) {
+            const [table, priv] = privStr.split('/');
+            debug(`revoke ${priv} on table ${table} from ${username}`);
+            await client.query(`revoke ${priv} on table ${table} from ${username}`);
           }
         }
-        for (let table of schema.access[serviceName].tables) {
-          await client.query(`grant all on ${table} to ${serviceName}`);
+
+        for (let privStr of expectedPrivs) {
+          if (!currentPrivs.has(privStr)) {
+            const [table, priv] = privStr.split('/');
+            debug(`grant ${priv} on table ${table} to ${username}`);
+            await client.query(`grant ${priv} on table ${table} to ${username}`);
+          }
         }
-      });
-    }
+      }
+    });
   }
 
   async _doUpgrade(version, showProgress) {

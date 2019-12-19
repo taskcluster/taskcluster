@@ -1,6 +1,7 @@
 const assert = require('assert');
 const {Pool} = require('pg');
 const {WRITE} = require('taskcluster-lib-postgres');
+const {resetDb} = require('taskcluster-lib-testing');
 const tcdb = require('taskcluster-db');
 const debug = require('debug')('db-helper');
 
@@ -48,11 +49,12 @@ exports.withDbForVersion = function() {
       await tcdb.upgrade({
         adminDbUrl: exports.dbUrl,
         toVersion,
+        usernamePrefix: 'test',
         useDbDirectory: true,
       });
     };
 
-    await exports.withDbClient(client => clearDb(client));
+    await resetDb({testDbUrl: exports.dbUrl});
   });
 
   suiteTeardown('teardown database', async function() {
@@ -91,9 +93,10 @@ exports.withDbForProcs = function({ serviceName }) {
     exports.withDbClient = fn => db._withClient(WRITE, fn);
 
     // clear the DB and upgrade it to the latest version
-    await exports.withDbClient(client => clearDb(client));
+    await resetDb({testDbUrl: exports.dbUrl});
     await tcdb.upgrade({
       adminDbUrl: exports.dbUrl,
+      usernamePrefix: 'test',
       useDbDirectory: true,
     });
   });
@@ -119,12 +122,4 @@ exports.withDbForProcs = function({ serviceName }) {
       return testFn(exports.fakeDb, true);
     });
   };
-};
-
-/**
- * Clear the database, resetting it to its initial, empty state
- */
-const clearDb = async client => {
-  await client.query(`drop schema if exists public cascade`);
-  await client.query(`create schema public`);
 };

@@ -51,7 +51,7 @@ const tcdb = require('taskcluster-db');
 The result is a taskcluster-lib-postgres Database instance all set up and ready to use.
 This uses the generated schema by default.
 
-Similarly, the `upgrade` method will upgrade a database to the current version.
+Similarly, the `upgrade` method will upgrade a database to the current version and set up table permissions for per-service postgres users.
 To upgrade to a specific version, pass `toVersion: <number>`.
 This functionality is typically used in tests, as in production deployments the deployers will run `yarn db:upgrade`.
 
@@ -59,7 +59,10 @@ This functionality is typically used in tests, as in production deployments the 
 const tcdb = require('taskcluster-db');
 
 setup('upgrade db', async function() {
-  await tcdb.upgrade({adminDbUrl: process.env.TEST_DB_URL});
+  await tcdb.upgrade({
+    adminDbUrl: process.env.TEST_DB_URL,
+    usernamePrefix: 'test',
+  });
 });
 ```
 

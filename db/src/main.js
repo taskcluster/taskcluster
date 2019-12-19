@@ -8,11 +8,16 @@ const main = async () => {
     throw new Error('$ADMIN_DB_URL is not set');
   }
 
+  const usernamePrefix = process.env.USERNAME_PREFIX;
+  if (!usernamePrefix) {
+    throw new Error('$USERNAME_PREFIX is not set');
+  }
+
   const showProgress = message => {
     util.log(chalk.green(message));
   };
 
-  await upgrade({showProgress, adminDbUrl});
+  await upgrade({showProgress, adminDbUrl, usernamePrefix});
 };
 
 main().catch(err => {
