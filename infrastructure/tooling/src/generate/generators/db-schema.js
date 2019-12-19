@@ -1,17 +1,14 @@
 const { Schema } = require('taskcluster-lib-postgres');
-const sortObject = require('deep-sort-object');
+const stringify = require('json-stable-stringify');
 const { writeRepoJSON } = require('../../utils');
 // Generate a readable JSON version of the schema.
 exports.tasks = [{
-  title: 'Schema JSON',
+  title: 'DB Schema',
   requires: [],
   provides: ['schema-json'],
   run: async (requirements, utils) => {
     const schema = Schema.fromDbDirectory();
 
-    writeRepoJSON('generated/schema.json', sortObject({
-      versions: schema.versions,
-      access: schema.access,
-    }, null, 2));
+    writeRepoJSON('generated/db-schema.json', schema.asSerializable());
   },
 }];

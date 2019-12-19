@@ -2,6 +2,7 @@ const fs = require('fs');
 const assert = require('assert');
 const yaml = require('js-yaml');
 const path = require('path');
+const stringify = require('json-stable-stringify');
 const {READ, WRITE} = require('./constants');
 const schemaJson = require('../../../generated/schema');
 
@@ -13,13 +14,20 @@ class Schema{
    * the Postgres DO statment; that is usually 'BEGIN stmt; stmt; .. END'.
    */
   // TODO: Make sure that procedure argument values don't change
-  constructor(versions = schemaJson.versions, access = schemaJson.access) {
+  constructor(versions, access) {
     this.versions = versions;
     this.access = access;
   }
 
   static fromSerializable(serializable) {
     return new Schema(serializable.versions, serializable.access);
+  }
+
+  asSerializable() {
+    return stringify({
+      versions: this.versions,
+      access: this.access,
+    }, { space: 2 });
   }
 
   static fromDbDirectory(directory = path.join(__dirname, '../../../db')) {
