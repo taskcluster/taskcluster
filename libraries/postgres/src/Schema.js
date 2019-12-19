@@ -110,8 +110,8 @@ class Schema{
     const modes = {read: READ, write: WRITE};
 
     return this.versions.reduce((acc, version) => {
-      Object.entries(version.methods).forEach(([name, { mode, serviceName, args, returns }]) => {
-        acc.add({ name, mode: modes[mode], serviceName, args, returns });
+      Object.entries(version.methods).forEach(([name, { mode, serviceName, args, returns, description }]) => {
+        acc.add({ name, mode: modes[mode], serviceName, args, returns, description });
       });
 
       return acc;
