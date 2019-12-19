@@ -1,5 +1,4 @@
 const { Schema } = require('taskcluster-lib-postgres');
-const stringify = require('json-stable-stringify');
 const { writeRepoJSON } = require('../../utils');
 // Generate a readable JSON version of the schema.
 exports.tasks = [{
