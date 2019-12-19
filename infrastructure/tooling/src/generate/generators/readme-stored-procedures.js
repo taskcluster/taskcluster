@@ -27,9 +27,9 @@ exports.tasks = [{
       return [
         `### ${serviceName}`,
         '',
-        '| Name | Mode | Args | Returns |',
-        '| --- | --- | --- | --- |',
-        [...methods.map(method => `| ${method.name} | ${method.mode.toString()} | ${method.args} | ${method.returns} |`)].join('\n'),
+        '| Name | Mode | Arguments | Returns | Description |',
+        '| --- | --- | --- | --- | --- |',
+        [...methods.map(method => `| ${method.name} | ${method.mode.toString()} | ${method.args} | ${method.returns} | ${method.description} |`)].join('\n'),
       ].join('\n');
     });
 
