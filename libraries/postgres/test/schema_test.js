@@ -17,8 +17,8 @@ suite(path.basename(__filename), function() {
 
       assert.deepEqual([...sch.allMethods()].sort(),
         [
-          {name: 'get_secret', mode: READ, serviceName: 'secrets', args: 'name text', returns: 'table (secret text)'},
-          {name: 'list_secrets', mode: READ, serviceName: 'secrets', args: '', returns: 'table (name text, expires timestamp)' },
+          {name: 'get_secret', mode: READ, serviceName: 'secrets', args: 'name text', returns: 'table (secret text)', description: 'test'},
+          {name: 'list_secrets', mode: READ, serviceName: 'secrets', args: '', returns: 'table (name text, expires timestamp)', description: 'test' },
         ]);
     });
 
@@ -75,6 +75,7 @@ suite(path.basename(__filename), function() {
         version: 1,
         methods: {
           whatever: {
+            description: 'test',
             mode: 'read',
             serviceName: 'test',
             args: 'x integer',
@@ -86,6 +87,7 @@ suite(path.basename(__filename), function() {
         version: 2,
         methods: {
           whatever: {
+            description: 'test',
             mode: 'read',
             serviceName: 'test',
             args: 'x integer',
@@ -125,8 +127,8 @@ suite(path.basename(__filename), function() {
     const sch = Schema.fromDbDirectory(path.join(__dirname, 'db-simple'));
     assert.deepEqual([...sch.allMethods()].sort(),
       [
-        {name: 'get_secret', mode: READ, serviceName: 'secrets', args: 'name text', returns: 'table (secret text)'},
-        {name: 'list_secrets', mode: READ, serviceName: 'secrets', args: '', returns: 'table (name text, expires timestamp)' },
+        {name: 'get_secret', mode: READ, serviceName: 'secrets', args: 'name text', returns: 'table (secret text)', description: 'test'},
+        {name: 'list_secrets', mode: READ, serviceName: 'secrets', args: '', returns: 'table (name text, expires timestamp)', description: 'test'},
       ]);
   });
 
