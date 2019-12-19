@@ -44,6 +44,7 @@ suite(path.basename(__filename), function() {
   suite('fromSerializable', function() {
     test('fromSerializable', function() {
       const sch = Schema.fromSerializable({
+        access: {},
         versions: [
           {
             version: 1,
