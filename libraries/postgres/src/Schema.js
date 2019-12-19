@@ -4,7 +4,6 @@ const yaml = require('js-yaml');
 const path = require('path');
 const stringify = require('json-stable-stringify');
 const {READ, WRITE} = require('./constants');
-const schemaJson = require('../../../generated/schema');
 
 class Schema{
   /**references
