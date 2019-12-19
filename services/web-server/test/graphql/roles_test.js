@@ -30,26 +30,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   };
 
   suite('Roles GraphQL', function() {
-
-    teardown(async () => {
-      // Removes all roles after each test
-      const client = getClient();
-
-      const response = await client.query({
-        query: gql`${listRoleIdsQuery}`,
-      });
-
-      response.data.listRoleIds.edges.forEach(async ({node}) => {
-        await client.mutate({
-          mutation: gql`${deleteRoleMutation}`,
-          variables: {
-            roleId: node.roleId,
-          },
-        });
-      });
-    });
-
-    test('Role Query Works', async function() {
+    test('role query works', async function() {
       const client = getClient();
       const roleId = taskcluster.slugid();
       const role = {
@@ -77,7 +58,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       assert.equal(response.data.role.roleId, roleId);
     });
 
-    test('Roles Query Works', async function() {
+    test('roles query works', async function() {
       const client = getClient();
       const roleId = taskcluster.slugid();
       const role = {
@@ -103,7 +84,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       assert.equal(response.data.roles[0].roleId, roleId);
     });
 
-    test('List Role Ids Query Works', async function() {
+    test('list role ids query works', async function() {
       const client = getClient();
       const roleId = taskcluster.slugid();
       const role = {
@@ -129,7 +110,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       assert.equal(response.data.listRoleIds.edges[0].node.roleId, roleId);
     });
 
-    test('Create Role Mutation Works', async function() {
+    test('create role mutation works', async function() {
       const client = getClient();
       const roleId = taskcluster.slugid();
       const role = {
@@ -149,7 +130,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       assert.equal(response.data.createRole.roleId, roleId);
     });
 
-    test('Update Role Mutation Works', async function() {
+    test('update role mutation works', async function() {
       const client = getClient();
       const roleId = taskcluster.slugid();
       const role = {
@@ -189,7 +170,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       assert.equal(response.data.role.scopes[0], role.scopes[0]);
     });
 
-    test('Delete Role Mutation Works', async function() {
+    test('delete role mutation works', async function() {
       const client = getClient();
       const roleId = taskcluster.slugid();
       const role = {

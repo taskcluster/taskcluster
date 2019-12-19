@@ -249,6 +249,11 @@ const stubbedClients = () => {
     rootUrl: exports.rootUrl,
   };
 
+  teardown(() => {
+    tasks.clear();
+    roles.clear();
+  });
+
   return () => ({
     github: new taskcluster.Github(options),
     hooks: new taskcluster.Hooks(options),
@@ -268,7 +273,7 @@ const stubbedClients = () => {
           }
           return Promise.resolve(allRoles);
         },
-        listRoleIds: async (options) => {
+        listRoleIds: async () => {
           let roleIds = Array.from(roles.keys());
           return Promise.resolve({roleIds});
         },
@@ -314,7 +319,6 @@ const stubbedClients = () => {
           roles.delete(roleId);
           return Promise.resolve(roleId);
         },
-
       },
     }),
     queue: new taskcluster.Queue({
