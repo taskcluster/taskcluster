@@ -3,7 +3,7 @@ const path = require('path');
 const assert = require('assert').strict;
 
 suite(path.basename(__filename), function() {
-  suite('construction', function() {
+  suite('fromDbDirectory', function() {
     test('fromDbDirectory', function() {
       const sch = Schema.fromDbDirectory(path.join(__dirname, 'db-simple'));
       const ver2 = sch.latestVersion();
@@ -22,6 +22,26 @@ suite(path.basename(__filename), function() {
         ]);
     });
 
+    test('disallow duplicate method names', function () {
+      assert.throws(() => {
+        Schema.fromDbDirectory(path.join(__dirname, 'db-with-duplicate-method-names'));
+      }, /duplicated mapping key/);
+    });
+
+    test('disallow gaps in version numbers', function () {
+      assert.throws(() => {
+        Schema.fromDbDirectory(path.join(__dirname, 'db-with-gaps'));
+      }, /version 2 is missing/);
+    });
+
+    test('disallow duplicate version numbers', function () {
+      assert.throws(() => {
+        Schema.fromDbDirectory(path.join(__dirname, 'db-with-dupes'));
+      }, /duplicate version number 1 in/);
+    });
+  });
+
+  suite('fromSerializable', function() {
     test('fromSerializable', function() {
       const sch = Schema.fromSerializable({
         versions: [
@@ -46,13 +66,13 @@ suite(path.basename(__filename), function() {
   suite('_checkVersion', function() {
     test('version field required', function() {
       assert.throws(
-        () => Schema._checkVersion({migrationScript: 'yup', methods: []}, '0001.yml'),
+        () => Schema._checkVersion({migrationScript: 'yup', methods: {}}, '0001.yml'),
         /version field missing/);
     });
 
     test('migrationScript field required', function() {
       assert.throws(
-        () => Schema._checkVersion({version: 1, methods: []}, '0001.yml'),
+        () => Schema._checkVersion({version: 1, methods: {}}, '0001.yml'),
         /migrationScript field missing/);
     });
 
@@ -64,8 +84,25 @@ suite(path.basename(__filename), function() {
 
     test('version does not match filename', function() {
       assert.throws(
-        () => Schema._checkVersion({version: 2, migrationScript: 'yep', methods: []}, '0001.yml'),
+        () => Schema._checkVersion({version: 2, migrationScript: 'yep', methods: {}}, '0001.yml'),
         /must match version/);
+    });
+
+    test('method with extra fields', function() {
+      const methods = {
+        foo: {
+          mode: 'read',
+          args: 'void',
+          returns: 'void',
+          description: 'test',
+          serviceName: 'test',
+          body: 'test',
+          extra: 'test',
+        },
+      };
+      assert.throws(
+        () => Schema._checkVersion({version: 1, migrationScript: 'yep', methods}, '0001.yml'),
+        /unexpected or missing properties in method foo in 0001.yml/);
     });
   });
 
@@ -123,6 +160,24 @@ suite(path.basename(__filename), function() {
     });
   });
 
+  suite('_checkAccess', function() {
+    test('not an object', function() {
+      assert.throws(
+        () => Schema._checkAccess([]),
+        /should define an object/);
+    });
+    test('not an object of objects', function() {
+      assert.throws(
+        () => Schema._checkAccess({test: []}),
+        /should define an object/);
+    });
+    test('service has keys aside from table', function() {
+      assert.throws(
+        () => Schema._checkAccess({test: {views: []}}),
+        /should only have a `tables` property/);
+    });
+  });
+
   test('allMethods', function() {
     const sch = Schema.fromDbDirectory(path.join(__dirname, 'db-simple'));
     assert.deepEqual([...sch.allMethods()].sort(),
@@ -130,17 +185,5 @@ suite(path.basename(__filename), function() {
         {name: 'get_secret', mode: READ, serviceName: 'secrets', args: 'name text', returns: 'table (secret text)', description: 'test'},
         {name: 'list_secrets', mode: READ, serviceName: 'secrets', args: '', returns: 'table (name text, expires timestamp)', description: 'test'},
       ]);
-  });
-
-  test('disallow duplicate method names', function () {
-    assert.throws(() => {
-      Schema.fromDbDirectory(path.join(__dirname, 'db-with-duplicate-method-names'));
-    }, /duplicated mapping key/);
-  });
-
-  test('disallow gaps in version numbers', function () {
-    assert.throws(() => {
-      Schema.fromDbDirectory(path.join(__dirname, 'db-with-gaps'));
-    }, /version 2 is missing/);
   });
 });
