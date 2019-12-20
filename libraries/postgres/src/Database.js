@@ -89,10 +89,21 @@ class Database {
         // allow access to the public schema
         await client.query(`grant usage on schema public to ${username}`);
 
-        // determine the user's current permissions in the form ["table/priv"]
+        // determine the user's current permissions in the form ["table/priv"].
+        // This includes information frmo the column_privileges table as if it
+        // was granting access to the entire table.  We never use column
+        // grants, so such an overstimation doesn't hurt.  And revoking access
+        // to a table implicitly revokes column grants for that table, too.
         const res = await client.query(`
           select table_name, privilege_type
             from information_schema.table_privileges
+            where table_schema = 'public'
+             and grantee = $1
+             and table_catalog = current_catalog
+             and table_name != 'tcversion'
+          union
+          select table_name, privilege_type
+            from information_schema.column_privileges
             where table_schema = 'public'
              and grantee = $1
              and table_catalog = current_catalog

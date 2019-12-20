@@ -140,6 +140,8 @@ helper.dbSuite(path.basename(__filename), function() {
         await client.query('grant trigger on foo to test_service1');
         await client.query('grant select on foo to test_service2');
         await client.query('grant select on bar to test_service2');
+        // a column grant should get revoked, too
+        await client.query('grant select (x) on bar to test_service1');
       });
     });
 
@@ -149,14 +151,24 @@ helper.dbSuite(path.basename(__filename), function() {
 
     const assertPerms = async (db, ...perms) => {
       const gotPerms = await db._withClient('admin', async client => {
+        // column_privileges includes implied columns from table_privileges
+        // as well as grants of specific columns, so we treat them all like
+        // full table privileges, ignoring the column name
         const res = await client.query(`
           select grantee, table_name, privilege_type
             from information_schema.table_privileges
             where table_schema = 'public'
              and grantee like 'test_%'
+             and table_catalog = current_catalog
+          union
+          select grantee, table_name, privilege_type
+            from information_schema.column_privileges
+            where table_schema = 'public'
+             and grantee like 'test_%'
              and table_catalog = current_catalog`);
-        return new Set(res.rows.map(
-          row => `${row.grantee}=${row.table_name}/${row.privilege_type}`));
+        return new Set(
+          res.rows.map(row => `${row.grantee}=${row.table_name}/${row.privilege_type}`),
+        );
       });
 
       const expectedPerms = new Set(perms);
