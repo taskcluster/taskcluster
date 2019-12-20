@@ -1,9 +1,9 @@
 {
   "access": {
     "secrets": {
-      "tables": [
-        "secrets"
-      ]
+      "tables": {
+        "secrets": "write"
+      }
     }
   },
   "versions": [
