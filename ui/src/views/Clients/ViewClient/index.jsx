@@ -103,10 +103,9 @@ export default class ViewClient extends Component {
 
   getClientFormKey = memoize(initialClient => JSON.stringify(initialClient), {
     serializer: initialClient => {
-      // Use expires as cache key
-      const serializeKey = JSON.stringify(omit(['expires'], initialClient));
-
-      return serializeKey;
+      // expires changes on every render so it's best to keep
+      // it out of the caching key
+      return JSON.stringify(omit(['expires'], initialClient));
     },
   });
 
