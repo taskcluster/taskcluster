@@ -2,9 +2,11 @@ import React, { Component, Fragment } from 'react';
 import { func, node, object } from 'prop-types';
 import { withApollo } from 'react-apollo';
 import { withRouter } from 'react-router-dom';
-import { omit } from 'ramda';
+import { omit, pathOr } from 'ramda';
+import { safeDump } from 'js-yaml';
 import cloneDeep from 'lodash.clonedeep';
 import List from '@material-ui/core/List';
+import { withStyles } from '@material-ui/core/styles';
 import ListItem from '@material-ui/core/ListItem';
 import Typography from '@material-ui/core/Typography';
 import Checkbox from '@material-ui/core/Checkbox';
@@ -17,15 +19,17 @@ import CloseIcon from 'mdi-react/CloseIcon';
 import FlashIcon from 'mdi-react/FlashIcon';
 import ConsoleLineIcon from 'mdi-react/ConsoleLineIcon';
 import RestartIcon from 'mdi-react/RestartIcon';
+import jsonSchemaDefaults from 'json-schema-defaults';
 import SpeedDial from '../SpeedDial';
 import SpeedDialAction from '../SpeedDialAction';
 import DialogAction from '../DialogAction';
+import Snackbar from '../Snackbar';
 import TaskActionForm from '../TaskActionForm';
 import formatError from '../../utils/formatError';
 import removeKeys from '../../utils/removeKeys';
 import parameterizeTask from '../../utils/parameterizeTask';
 import { nice } from '../../utils/slugid';
-import { TASK_ADDED_FIELDS } from '../../utils/constants';
+import { TASK_ADDED_FIELDS, VALID_TASK } from '../../utils/constants';
 import formatTaskMutation from '../../utils/formatTaskMutation';
 import scheduleTaskQuery from './scheduleTask.graphql';
 import rerunTaskQuery from './rerunTask.graphql';
@@ -33,22 +37,84 @@ import cancelTaskQuery from './cancelTask.graphql';
 import purgeWorkerCacheQuery from './purgeWorkerCache.graphql';
 import createTaskQuery from '../../views/Tasks/createTask.graphql';
 import submitTaskAction from '../../views/Tasks/submitTaskAction';
+import db from '../../utils/db';
+
+const updateTaskIdHistory = id => {
+  if (!VALID_TASK.test(id)) {
+    return;
+  }
+
+  db.taskIdsHistory.put({ taskId: id });
+};
+
+const taskInContext = (tagSetList, taskTags) =>
+  tagSetList.some(tagSet =>
+    Object.keys(tagSet).every(
+      tag => taskTags[tag] && taskTags[tag] === tagSet[tag]
+    )
+  );
+const getCachesFromTask = task =>
+  Object.keys(pathOr({}, ['payload', 'cache'], task));
 
 @withRouter
 @withApollo
+@withStyles({
+  dialogListItem: {
+    paddingTop: 0,
+    paddingBottom: 0,
+  },
+})
 export default class TaskActionButtons extends Component {
-  state = {
-    taskActions: [],
-    actionInputs: {},
-    actionData: {},
-    selectedAction: null,
-    dialogOpen: false,
-    actionLoading: false,
-    dialogActionProps: null,
-    dialogError: null,
-    caches: null,
-    selectedCaches: null,
-  };
+  static getDerivedStateFromProps(props, state) {
+    const taskId = props.match.params.taskId || '';
+    const { task } = props;
+    const taskActions = [];
+    const actionInputs = state.actionInputs || {};
+    const actionData = state.actionData || {};
+
+    if (taskId !== state.previousTaskId && task) {
+      const { taskActions: actions } = task;
+
+      updateTaskIdHistory(taskId);
+
+      actions &&
+        actions.actions.forEach(action => {
+          const schema = action.schema || {};
+
+          // if an action with this name has already been selected,
+          // don't consider this version
+          if (
+            task &&
+            task.tags &&
+            taskInContext(action.context, task.tags) &&
+            !taskActions.some(({ name }) => name === action.name)
+          ) {
+            taskActions.push(action);
+          } else {
+            return;
+          }
+
+          actionInputs[action.name] = safeDump(
+            jsonSchemaDefaults(schema) || {}
+          );
+          actionData[action.name] = {
+            action,
+          };
+        });
+      const caches = getCachesFromTask(task);
+
+      return {
+        taskActions,
+        actionInputs,
+        actionData,
+        previousTaskId: taskId,
+        caches,
+        selectedCaches: new Set(caches),
+      };
+    }
+
+    return null;
+  }
 
   static propTypes = {
     // The children prop can be used to add additional
@@ -63,6 +129,39 @@ export default class TaskActionButtons extends Component {
     children: null,
     task: null,
     refetchTask: null,
+  };
+
+  state = {
+    taskActions: [],
+    actionInputs: {},
+    actionData: {},
+    selectedAction: null,
+    dialogOpen: false,
+    actionLoading: false,
+    dialogActionProps: null,
+    dialogError: null,
+    caches: null,
+    selectedCaches: null,
+    snackbar: {
+      message: '',
+      variant: 'success',
+      open: false,
+    },
+    previousTaskId: null,
+  };
+
+  handleSnackbarOpen = ({ message, variant = 'success', open }) => {
+    this.setState({ snackbar: { message, variant, open } });
+  };
+
+  handleSnackbarClose = (event, reason) => {
+    if (reason === 'clickaway') {
+      return;
+    }
+
+    this.setState({
+      snackbar: { message: '', variant: 'success', open: false },
+    });
   };
 
   handleActionClick = name => () => {
@@ -88,6 +187,11 @@ export default class TaskActionButtons extends Component {
       dialogError: null,
       actionLoading: false,
     });
+  };
+
+  handleDialogCompleteWithMessage = message => {
+    this.handleActionDialogClose();
+    this.handleSnackbarOpen({ message, open: true });
   };
 
   handleActionTaskComplete = (action, taskId) => {
@@ -137,14 +241,24 @@ export default class TaskActionButtons extends Component {
     );
   };
 
-  handleRerunComplete = () => {
-    this.handleActionDialogClose();
-    this.props.refetchTask();
+  handleRerunComplete = taskId => {
+    if (!this.props.match.params.logUrl) {
+      this.handleDialogCompleteWithMessage('Reran Task');
+      this.props.refetchTask();
+    } else {
+      this.handleActionDialogClose();
+      this.props.history.push(`/tasks/${taskId}`);
+    }
   };
 
-  handleCancelComplete = () => {
-    this.handleActionDialogClose();
-    this.props.refetchTask();
+  handleCancelComplete = taskId => {
+    if (!this.props.match.params.logUrl) {
+      this.handleDialogCompleteWithMessage('Cancelled Task');
+      this.props.refetchTask();
+    } else {
+      this.handleActionDialogClose();
+      this.props.history.push(`/tasks/${taskId}`);
+    }
   };
 
   handleCreateInteractiveComplete = taskId => {
@@ -294,7 +408,8 @@ export default class TaskActionButtons extends Component {
         body: this.renderPurgeWorkerCacheDialogBody(selectedCaches),
         title: `${title}?`,
         onSubmit: this.purgeWorkerCache,
-        onComplete: this.handleActionDialogClose,
+        onComplete: () =>
+          this.handleDialogCompleteWithMessage('Purged Worker Cache'),
         confirmText: title,
       },
     });
@@ -391,7 +506,8 @@ export default class TaskActionButtons extends Component {
         ),
         title: `${title}?`,
         onSubmit: this.scheduleTask,
-        onComplete: this.handleActionDialogClose,
+        onComplete: () =>
+          this.handleDialogCompleteWithMessage('Scheduled Task'),
         confirmText: title,
       },
     });
@@ -468,6 +584,8 @@ export default class TaskActionButtons extends Component {
           taskId,
         },
       });
+
+      return taskId;
     } catch (error) {
       this.postRunningFailedAction(error);
       throw error;
@@ -486,6 +604,8 @@ export default class TaskActionButtons extends Component {
           taskId,
         },
       });
+
+      return taskId;
     } catch (error) {
       this.postRunningFailedAction(error);
       throw error;
@@ -616,6 +736,7 @@ export default class TaskActionButtons extends Component {
       actionInputs,
       actionLoading,
       dialogError,
+      snackbar,
     } = this.state;
 
     return (
@@ -742,6 +863,7 @@ export default class TaskActionButtons extends Component {
             onClose={this.handleActionDialogClose}
           />
         )}
+        <Snackbar onClose={this.handleSnackbarClose} {...snackbar} />
       </Fragment>
     );
   }

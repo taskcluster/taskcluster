@@ -1,15 +1,12 @@
 import { hot } from 'react-hot-loader';
 import React, { Component, Fragment } from 'react';
 import { withApollo, graphql } from 'react-apollo';
-import { pathOr } from 'ramda';
 import Spinner from '@mozilla-frontend-infra/components/Spinner';
 import { withStyles } from '@material-ui/core/styles';
 import Chip from '@material-ui/core/Chip';
 import Grid from '@material-ui/core/Grid';
 import Typography from '@material-ui/core/Typography';
 import dotProp from 'dot-prop-immutable';
-import jsonSchemaDefaults from 'json-schema-defaults';
-import { safeDump } from 'js-yaml';
 import Dashboard from '../../../components/Dashboard';
 import Markdown from '../../../components/Markdown';
 import TaskDetailsCard from '../../../components/TaskDetailsCard';
@@ -23,30 +20,11 @@ import TaskActionButtons from '../../../components/TaskActionButtons';
 import {
   ACTIONS_JSON_KNOWN_KINDS,
   ARTIFACTS_PAGE_SIZE,
-  VALID_TASK,
   TASK_POLL_INTERVAL,
 } from '../../../utils/constants';
-import db from '../../../utils/db';
 import Link from '../../../utils/Link';
 import taskQuery from './task.graphql';
 import pageArtifactsQuery from './pageArtifacts.graphql';
-
-const updateTaskIdHistory = id => {
-  if (!VALID_TASK.test(id)) {
-    return;
-  }
-
-  db.taskIdsHistory.put({ taskId: id });
-};
-
-const taskInContext = (tagSetList, taskTags) =>
-  tagSetList.some(tagSet =>
-    Object.keys(tagSet).every(
-      tag => taskTags[tag] && taskTags[tag] === tagSet[tag]
-    )
-  );
-const getCachesFromTask = task =>
-  Object.keys(pathOr({}, ['payload', 'cache'], task));
 
 @hot(module)
 @withApollo
@@ -59,10 +37,6 @@ const getCachesFromTask = task =>
   },
   tag: {
     margin: `${theme.spacing(1)}px ${theme.spacing(1)}px 0 0`,
-  },
-  dialogListItem: {
-    paddingTop: 0,
-    paddingBottom: 0,
   },
   link: {
     ...theme.mixins.link,
@@ -92,66 +66,6 @@ const getCachesFromTask = task =>
   }),
 })
 export default class ViewTask extends Component {
-  static getDerivedStateFromProps(props, state) {
-    const taskId = props.match.params.taskId || '';
-    const {
-      data: { task },
-    } = props;
-    const taskActions = [];
-    const actionInputs = state.actionInputs || {};
-    const actionData = state.actionData || {};
-
-    if (taskId !== state.previousTaskId && task) {
-      const { taskActions: actions } = task;
-
-      updateTaskIdHistory(taskId);
-
-      actions &&
-        actions.actions.forEach(action => {
-          const schema = action.schema || {};
-
-          // if an action with this name has already been selected,
-          // don't consider this version
-          if (
-            task &&
-            task.tags &&
-            taskInContext(action.context, task.tags) &&
-            !taskActions.some(({ name }) => name === action.name)
-          ) {
-            taskActions.push(action);
-          } else {
-            return;
-          }
-
-          actionInputs[action.name] = safeDump(
-            jsonSchemaDefaults(schema) || {}
-          );
-          actionData[action.name] = {
-            action,
-          };
-        });
-      const caches = getCachesFromTask(task);
-
-      return {
-        taskActions,
-        actionInputs,
-        actionData,
-        previousTaskId: taskId,
-        caches,
-        selectedCaches: new Set(caches),
-      };
-    }
-
-    return null;
-  }
-
-  state = {
-    // eslint-disable-next-line react/no-unused-state
-    previousTaskId: null,
-    actionInputs: {},
-    actionData: {},
-  };
-
   handleArtifactsPageChange = ({ cursor, previousCursor }) => {
     const {
       match,
