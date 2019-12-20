@@ -5,7 +5,7 @@ This library supports Taskcluster services using Postgres as a data-storage back
 ## Usage
 
 There are two components to this library: a schema, and a database.
-The schema represents the organization of the data in the database, and within this repository is defined by the `db/` directory.
+The schema represents the organization of the data in the database, including tables, stored procedures, indexes, etc., as well as user permissions.
 This is constructed with:
 
 ```javascript
@@ -31,7 +31,7 @@ Once that is finished, the methods defined in the schema can be called on the `d
 For example, if the schema defines a `getWidgetsPerWorker` method:
 
 ```javascript
-const wpw = await db.getWidgetsPerWorker();
+const wpw = await db.procs.getWidgetsPerWorker();
 ```
 
 Note that there direct SQL access to the database is *not allowed*.
@@ -80,7 +80,7 @@ docker run -ti -p 5432:5432  --rm postgres:11
 This will run Docker in the foreground in that terminal (so you'll need to use another terminal for your work, or add the `-d` flag to daemonize the container) and make that available on TCP port 5432, the "normal" postgres port.
 An advantage of running in the foreground is that Postgres helpfully logs every query that it runs, which can help with debugging and testing.
 
-*NOTE* the test siute repeatedly drops the `public` schema and re-creates it, effectively deleting all data in the database.
+*NOTE* the test suite repeatedly drops the `public` schema and re-creates it, effectively deleting all data in the database.
 Do not run these tests against a database instance that contains any useful data!
 
 Once this container is running, set TEST_DB_URL to point to the database, as defined by [node-postgres](https://node-postgres.com/features/connecting).
