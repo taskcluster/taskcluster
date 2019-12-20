@@ -16,7 +16,7 @@ import HelpView from '../../../components/HelpView';
 import Search from '../../../components/Search';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import ErrorPanel from '../../../components/ErrorPanel';
-import TaskActionButtons from '../../../components/TaskActionButtons';
+import TaskActionButtons from '../TaskActionButtons';
 import {
   ACTIONS_JSON_KNOWN_KINDS,
   ARTIFACTS_PAGE_SIZE,

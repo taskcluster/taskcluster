@@ -20,24 +20,24 @@ import FlashIcon from 'mdi-react/FlashIcon';
 import ConsoleLineIcon from 'mdi-react/ConsoleLineIcon';
 import RestartIcon from 'mdi-react/RestartIcon';
 import jsonSchemaDefaults from 'json-schema-defaults';
-import SpeedDial from '../SpeedDial';
-import SpeedDialAction from '../SpeedDialAction';
-import DialogAction from '../DialogAction';
-import Snackbar from '../Snackbar';
-import TaskActionForm from '../TaskActionForm';
-import formatError from '../../utils/formatError';
-import removeKeys from '../../utils/removeKeys';
-import parameterizeTask from '../../utils/parameterizeTask';
-import { nice } from '../../utils/slugid';
-import { TASK_ADDED_FIELDS, VALID_TASK } from '../../utils/constants';
-import formatTaskMutation from '../../utils/formatTaskMutation';
+import SpeedDial from '../../../components/SpeedDial';
+import SpeedDialAction from '../../../components/SpeedDialAction';
+import DialogAction from '../../../components/DialogAction';
+import Snackbar from '../../../components/Snackbar';
+import TaskActionForm from '../../../components/TaskActionForm';
+import formatError from '../../../utils/formatError';
+import removeKeys from '../../../utils/removeKeys';
+import parameterizeTask from '../../../utils/parameterizeTask';
+import { nice } from '../../../utils/slugid';
+import { TASK_ADDED_FIELDS, VALID_TASK } from '../../../utils/constants';
+import formatTaskMutation from '../../../utils/formatTaskMutation';
 import scheduleTaskQuery from './scheduleTask.graphql';
 import rerunTaskQuery from './rerunTask.graphql';
 import cancelTaskQuery from './cancelTask.graphql';
 import purgeWorkerCacheQuery from './purgeWorkerCache.graphql';
-import createTaskQuery from '../../views/Tasks/createTask.graphql';
-import submitTaskAction from '../../views/Tasks/submitTaskAction';
-import db from '../../utils/db';
+import createTaskQuery from '../createTask.graphql';
+import submitTaskAction from '../submitTaskAction';
+import db from '../../../utils/db';
 
 const updateTaskIdHistory = id => {
   if (!VALID_TASK.test(id)) {
@@ -199,8 +199,13 @@ export default class TaskActionButtons extends Component {
       case 'create-interactive':
         this.props.history.push(`/tasks/${taskId}/connect`);
         break;
-      default:
-        this.props.history.push(`/tasks/${taskId}`);
+      default: {
+        if (!this.props.match.params.logUrl) {
+          this.handleDialogCompleteWithMessage(action.title);
+        } else {
+          this.props.history.push(`/tasks/${taskId}`);
+        }
+      }
     }
   };
 
@@ -243,7 +248,7 @@ export default class TaskActionButtons extends Component {
 
   handleRerunComplete = taskId => {
     if (!this.props.match.params.logUrl) {
-      this.handleDialogCompleteWithMessage('Reran Task');
+      this.handleDialogCompleteWithMessage('Rerun');
       this.props.refetchTask();
     } else {
       this.handleActionDialogClose();
@@ -253,7 +258,7 @@ export default class TaskActionButtons extends Component {
 
   handleCancelComplete = taskId => {
     if (!this.props.match.params.logUrl) {
-      this.handleDialogCompleteWithMessage('Cancelled Task');
+      this.handleDialogCompleteWithMessage('Cancel');
       this.props.refetchTask();
     } else {
       this.handleActionDialogClose();
@@ -408,8 +413,7 @@ export default class TaskActionButtons extends Component {
         body: this.renderPurgeWorkerCacheDialogBody(selectedCaches),
         title: `${title}?`,
         onSubmit: this.purgeWorkerCache,
-        onComplete: () =>
-          this.handleDialogCompleteWithMessage('Purged Worker Cache'),
+        onComplete: () => this.handleDialogCompleteWithMessage(title),
         confirmText: title,
       },
     });
@@ -506,8 +510,7 @@ export default class TaskActionButtons extends Component {
         ),
         title: `${title}?`,
         onSubmit: this.scheduleTask,
-        onComplete: () =>
-          this.handleDialogCompleteWithMessage('Scheduled Task'),
+        onComplete: () => this.handleDialogCompleteWithMessage(title),
         confirmText: title,
       },
     });

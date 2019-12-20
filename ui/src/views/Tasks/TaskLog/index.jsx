@@ -9,7 +9,7 @@ import Dashboard from '../../../components/Dashboard';
 import Button from '../../../components/Button';
 import Log from '../../../components/Log';
 import Search from '../../../components/Search';
-import TaskActionButtons from '../../../components/TaskActionButtons';
+import TaskActionButtons from '../TaskActionButtons';
 import Helmet from '../../../components/Helmet';
 import Link from '../../../utils/Link';
 import taskQuery from './task.graphql';
