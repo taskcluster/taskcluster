@@ -1,6 +1,4 @@
-#import "../../../fragments/artifacts.graphql"
-
-query Task($taskId: ID!, $artifactsConnection: PageConnection, $taskActionsFilter: JSON) {
+query Task($taskId: ID!, $taskActionsFilter: JSON) {
   task(taskId: $taskId) {
     taskId
     taskGroupId
@@ -41,10 +39,6 @@ query Task($taskId: ID!, $artifactsConnection: PageConnection, $taskActionsFilte
         workerGroup
         workerId
         takenUntil
-
-        artifacts(connection: $artifactsConnection) {
-          ...Artifacts
-        }
       }
     }
 
@@ -56,16 +50,6 @@ query Task($taskId: ID!, $artifactsConnection: PageConnection, $taskActionsFilte
 
     decisionTask {
       scopes
-    }
-  }
-
-  dependentTasks(taskId: $taskId) {
-    taskId
-    status {
-      state
-    }
-    metadata {
-      name
     }
   }
 }
