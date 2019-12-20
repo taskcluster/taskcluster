@@ -180,6 +180,7 @@ tasks:
           command: >-
             pg_ctlcluster 11 main start &&
             export ADMIN_DB_URL="$TEST_DB_URL" &&
+            export USERNAME_PREFIX="test" &&
             yarn db:upgrade
         - name: "taskcluster-db"
           image: taskcluster/node-and-postgres:node${node}-pg11
