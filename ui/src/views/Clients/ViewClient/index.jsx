@@ -2,6 +2,8 @@ import { hot } from 'react-hot-loader';
 import React, { Component, Fragment } from 'react';
 import { graphql, withApollo } from 'react-apollo';
 import { parse } from 'qs';
+import memoize from 'fast-memoize';
+import { omit } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import { fade } from '@material-ui/core/styles/colorManipulator';
 import Card from '@material-ui/core/Card';
@@ -98,6 +100,15 @@ export default class ViewClient extends Component {
       open: false,
     },
   };
+
+  getClientFormKey = memoize(initialClient => JSON.stringify(initialClient), {
+    serializer: initialClient => {
+      // Use expires as cache key
+      const serializeKey = JSON.stringify(omit(['expires'], initialClient));
+
+      return serializeKey;
+    },
+  });
 
   handleDeleteClient = async clientId => {
     this.setState({ dialogError: null, loading: true });
@@ -360,7 +371,7 @@ export default class ViewClient extends Component {
               <Fragment>
                 <ErrorPanel fixed error={error} />
                 <ClientForm
-                  key={JSON.stringify(initialClient)}
+                  key={this.getClientFormKey(initialClient)}
                   loading={loading}
                   client={initialClient}
                   isNewClient
