@@ -313,6 +313,41 @@ This function assumes the following config values:
 
 And assumes that the `exports` argument has a `load` function corresponding to a sticky loader.
 
+withDb
+------
+
+This function is intended for use with `mockSuite` and the [usual configuration](../../db) for Postgres databases.
+In mock mode, it sets up a FakeDatabase, while in "real" mode it sets up a "real" database using `$TEST_DB_URL`.
+In either case, the resulting database is injected into the taskcluster-lib-loader as `db` and also available as `helper.db`.
+
+In the real case, the database is set upgraded to the latest version at the beginning of the suite.
+It is up to the test suite implementation to reset the contents of the database between tests.
+
+The function is typically used like this:
+
+```javascript
+// helper.js
+exports.secrets = new Secrets({
+  secrets: {
+    db: withDb.secret,
+    ...
+  },
+  ...
+});
+
+exports.withDb = (mock, skipping) => {
+  withDb(mock, skipping, exports, 'secrets');
+};
+```
+
+```javascript
+// some_test.js
+helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
+  helper.withDb(mock, skipping);
+  ...
+});
+```
+
 withPulse
 ---------
 
