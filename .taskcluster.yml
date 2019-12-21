@@ -78,6 +78,9 @@ tasks:
         - name: taskcluster-worker-manager
         - name: taskcluster-secrets
           image: taskcluster/node-and-postgres:node${node}-pg11
+          command: >-
+            pg_ctlcluster 11 main start &&
+            yarn workspace taskcluster-secrets coverage:report
         - name: taskcluster-web-server
         others:
         - name: lint
