@@ -143,7 +143,6 @@ const createTheme = isDarkTheme => {
         lineHeight: 1.4,
         display: 'inline-block',
         fontSize: '0.875rem',
-        color: textPrimary,
       },
       listItemButton: {
         '& svg': {
