@@ -5,6 +5,7 @@ import parser from 'markdown-it';
 import linkAttributes from 'markdown-it-link-attributes';
 import highlighter from 'markdown-it-highlightjs';
 import { withStyles } from '@material-ui/core/styles';
+import { fade } from '@material-ui/core/styles/colorManipulator';
 import 'highlight.js/styles/atom-one-dark.css';
 
 const markdown = parser({ linkify: true });
@@ -174,6 +175,13 @@ markdown.use(linkAttributes, {
     },
     '& img': {
       maxWidth: '100%',
+    },
+    '& a': {
+      color: 'inherit',
+    },
+    '& :not(pre) > code': {
+      backgroundColor:
+        theme.palette.type === 'dark' ? fade('#fff', 0.1) : fade('#000', 0.1),
     },
   },
 }))

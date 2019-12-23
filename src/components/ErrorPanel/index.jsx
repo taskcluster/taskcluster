@@ -2,7 +2,6 @@ import React, { Component } from 'react';
 import { bool, func, instanceOf, oneOfType, string } from 'prop-types';
 import classNames from 'classnames';
 import { withStyles } from '@material-ui/core/styles';
-import { lighten } from '@material-ui/core/styles/colorManipulator';
 import ExpansionPanel from '@material-ui/core/ExpansionPanel';
 import ExpansionPanelDetails from '@material-ui/core/ExpansionPanelDetails';
 import ExpansionPanelSummary from '@material-ui/core/ExpansionPanelSummary';
@@ -53,13 +52,6 @@ import palette from '../../utils/palette';
       },
       warningText: {
         color: warning.contrastText,
-        '& code': {
-          color: lighten(warning.contrastText, 0.2),
-          fontWeight: 'bold',
-        },
-        '& a': {
-          color: lighten(warning.contrastText, 0.2),
-        },
       },
       disabled: {
         opacity: 1,
