@@ -1,11 +1,10 @@
 import React, { Component } from 'react';
-import { CopyToClipboard } from 'react-copy-to-clipboard';
 import TableCell from '@material-ui/core/TableCell';
 import TableRow from '@material-ui/core/TableRow';
 import memoize from 'fast-memoize';
 import LinkIcon from 'mdi-react/LinkIcon';
 import { withStyles } from '@material-ui/core/styles';
-import ContentCopyIcon from 'mdi-react/ContentCopyIcon';
+import CopyToClipboardTableCell from '../CopyToClipboardTableCell';
 import TableCellItem from '../TableCellItem';
 import DateDistance from '../DateDistance';
 import DataTable from '../DataTable';
@@ -145,28 +144,22 @@ export default class WorkerTable extends Component {
             </TableCell>
             <TableCell>{task.taskId}</TableCell>
             {task.started ? (
-              <CopyToClipboard title={task.started} text={task.started}>
-                <TableCell>
-                  <TableCellItem button>
-                    <DateDistance from={task.started} />
-                    <ContentCopyIcon size={iconSize} />
-                  </TableCellItem>
-                </TableCell>
-              </CopyToClipboard>
+              <CopyToClipboardTableCell
+                tooltiptitle={task.started}
+                textToCopy={task.started}
+                secondary={<DateDistance from={task.started} />}
+              />
             ) : (
               <TableCell>
                 <em>n/a</em>
               </TableCell>
             )}
             {task.resolved ? (
-              <CopyToClipboard title={task.resolved} text={task.resolved}>
-                <TableCell>
-                  <TableCellItem button>
-                    <DateDistance from={task.resolved} />
-                    <ContentCopyIcon size={iconSize} />
-                  </TableCellItem>
-                </TableCell>
-              </CopyToClipboard>
+              <CopyToClipboardTableCell
+                tooltiptitle={task.resolved}
+                textToCopy={task.resolved}
+                secondary={<DateDistance from={task.resolved} />}
+              />
             ) : (
               <TableCell>
                 <em>n/a</em>

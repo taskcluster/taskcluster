@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { node, string, object } from 'prop-types';
+import { node, string } from 'prop-types';
 import { CopyToClipboard } from 'react-copy-to-clipboard';
 import TableCell from '@material-ui/core/TableCell';
 import ContentCopyIcon from 'mdi-react/ContentCopyIcon';
@@ -22,7 +22,7 @@ function CopyToClipboardTableCell(props) {
     }
   }, [isCopy]);
 
-  const iconSize = 16;
+  const IconSize = 16;
 
   return (
     <CopyToClipboard
@@ -32,7 +32,7 @@ function CopyToClipboardTableCell(props) {
       <TableCell>
         <TableCellItem button>
           secondary={secondary}
-          {isCopy ? <CheckIcon /> : <ContentCopyIcon size={iconSize} />}
+          {isCopy ? <CheckIcon /> : <ContentCopyIcon size={IconSize} />}
         </TableCellItem>
       </TableCell>
     </CopyToClipboard>
@@ -44,20 +44,12 @@ CopyToClipboardTableCell.propTypes = {
   tooltipTitle: string.isRequired,
   // Text to copy when a user clicks on the list item
   textToCopy: string.isRequired,
-  // The TableCellText primary prop
-  primary: node.isRequired,
   // The TableCellText secondary prop
   secondary: node,
-  // Props applied to the TableCellText component
-  TableCellTextProps: object,
-  // Props applied  to the TableCell component
-  TableCell: object,
 };
 
 CopyToClipboardTableCell.defaultProps = {
   secondary: null,
-  TableCellTextProps: null,
-  TableCell: null,
 };
 
 export default CopyToClipboardTableCell;
