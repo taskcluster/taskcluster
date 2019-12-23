@@ -29,7 +29,9 @@ export default class DateDistance extends Component {
     const now = new Date();
     const { from, offset } = this.props;
     const fromParsed = isDate(from) ? from : parseISO(from);
-    const unit = isDateWithin(fromParsed, 44, 120) ? 'minute' : undefined;
+    const unit = isDateWithin(fromParsed, new Date(), 44, 120)
+      ? 'minute'
+      : undefined;
     const fromNow = formatDistanceStrict(fromParsed, now, {
       addSuffix: true,
       unit,

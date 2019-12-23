@@ -1,31 +1,19 @@
 import { expect } from 'chai';
-import fromNow from '../src/utils/fromNow';
+import { addMinutes } from 'date-fns';
 import isDateWithin from '../src/utils/isDateWithin';
 
 describe('isDateWithin', () => {
+  const d = new Date('2020-05-05T01:00:00.000Z');
+
   it('should return true', () => {
-    [
-      '46 minutes',
-      '60 minutes',
-      '119 minutes',
-      '-46 minutes',
-      '-60 minutes',
-      '-119 minutes',
-    ].forEach(t => {
-      expect(isDateWithin(fromNow(t), 44, 120)).to.be.true;
+    [46, 60, 119, -46, -60, -119].forEach(t => {
+      expect(isDateWithin(addMinutes(d, t), d, 45, 120)).to.be.true;
     });
   });
 
   it('should return false', () => {
-    [
-      '42 minutes',
-      '1 minute',
-      '2 hours',
-      '-42 minutes',
-      '- 1 minute',
-      '- 2 hours',
-    ].forEach(t => {
-      expect(isDateWithin(fromNow(t), 44, 120)).to.be.false;
+    [42, 1, 2, -42, -1, -2].forEach(t => {
+      expect(isDateWithin(addMinutes(d, t), d, 45, 120)).to.be.false;
     });
   });
 });
