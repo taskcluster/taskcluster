@@ -45,7 +45,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
       const roleLoader = loader({ auth: helper.clients().auth }).role;
 
-      // 2. get tasks
+      // 2. get roles
       const [firstRole, roleThatDoesNotExist] = await Promise.allSettled([
         roleLoader.load(roleId),
         roleLoader.load('roleId-that-does-not-exist'),
@@ -76,7 +76,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
       const roleLoaders = loader({ auth: helper.clients().auth }).roles;
 
-      // 2. get tasks
+      // 2. get roles
       const [roles] = await Promise.allSettled([
         roleLoaders.load({}),
       ]);
