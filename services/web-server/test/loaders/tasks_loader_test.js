@@ -25,7 +25,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     return new ApolloClient({ cache, link: httpLink });
   };
 
-  suite('queue loaders', function() {
+  suite('tasks loaders', function() {
     // Make sure we still get tasks even if we end up loading some tasks that don't exist
     test('load multiple tasks while gracefully handling errors', async function() {
       const client = getClient();

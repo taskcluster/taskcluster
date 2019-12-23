@@ -1,0 +1,9 @@
+query ListRoleIds($connection: PageConnection, $filter: JSON){
+  listRoleIds(connection: $connection, filter: $filter){
+    edges{
+      node{
+        roleId
+      }
+    }
+  }
+}

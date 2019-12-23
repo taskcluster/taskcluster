@@ -25,7 +25,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     return new ApolloClient({ cache, link: httpLink });
   };
 
-  suite('Queue', function() {
+  suite('Tasks', function() {
     test('query works', async function() {
       const client = getClient();
       const taskId = taskcluster.slugid();
