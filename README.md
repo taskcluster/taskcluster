@@ -75,6 +75,7 @@ It is not possible to run a full Taskcluster deployment directly from this repos
     * [Worker Manager Service](services/worker-manager#readme)
         * [About the Keys in this  Directory](services/worker-manager/src/providers/aws-keys#readme)
 * [Taskcluster UI](ui#readme)
+    * [ui/src/components/CopyToClipboardTableCell](ui/src/components/CopyToClipboardTableCell#readme)
     * [ui/src/components/CopyToClipboardListItem](ui/src/components/CopyToClipboardListItem#readme)
     * [ui/src/components/DateDistance](ui/src/components/DateDistance#readme)
     * [ui/src/components/Search](ui/src/components/Search#readme)
