@@ -10,7 +10,7 @@ const styles = withStyles(theme => ({
     borderLeft: `5px solid ${theme.palette.warning.dark}`,
     backgroundColor: fade(theme.palette.warning.main, 0.2),
     padding: `${theme.spacing(1)}px ${theme.spacing(3)}px`,
-    margin: `${theme.spacing(3)} 0`,
+    margin: `${theme.spacing(3)}px 0`,
     '& a': {
       ...theme.mixins.link,
     },
