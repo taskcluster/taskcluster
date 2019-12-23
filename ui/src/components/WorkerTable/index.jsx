@@ -145,7 +145,7 @@ export default class WorkerTable extends Component {
             <TableCell>{task.taskId}</TableCell>
             {task.started ? (
               <CopyToClipboardTableCell
-                tooltiptitle={task.started}
+                tooltipTitle={task.started}
                 textToCopy={task.started}
                 secondary={<DateDistance from={task.started} />}
               />
@@ -156,7 +156,7 @@ export default class WorkerTable extends Component {
             )}
             {task.resolved ? (
               <CopyToClipboardTableCell
-                tooltiptitle={task.resolved}
+                tooltipTitle={task.resolved}
                 textToCopy={task.resolved}
                 secondary={<DateDistance from={task.resolved} />}
               />

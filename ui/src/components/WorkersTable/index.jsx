@@ -3,12 +3,11 @@ import { func, string } from 'prop-types';
 import { formatDistanceStrict, parseISO } from 'date-fns';
 import { pipe, map, sort as rSort } from 'ramda';
 import memoize from 'fast-memoize';
-import { CopyToClipboard } from 'react-copy-to-clipboard';
 import TableCell from '@material-ui/core/TableCell';
 import TableRow from '@material-ui/core/TableRow';
-import ContentCopyIcon from 'mdi-react/ContentCopyIcon';
 import { withStyles } from '@material-ui/core/styles';
 import LinkIcon from 'mdi-react/LinkIcon';
+import CopyToClipboardTableCell from '../CopyToClipboardTableCell';
 import StatusLabel from '../StatusLabel';
 import DateDistance from '../DateDistance';
 import TableCellItem from '../TableCellItem';
@@ -152,17 +151,11 @@ export default class WorkersTable extends Component {
                 </TableCellItem>
               </Link>
             </TableCell>
-            <CopyToClipboard title={`${firstClaim} (Copy)`} text={firstClaim}>
-              <TableCell>
-                <TableCellItem button>
-                  <DateDistance from={firstClaim} />
-                  <ContentCopyIcon
-                    className={classes.linksIcon}
-                    size={iconSize}
-                  />
-                </TableCellItem>
-              </TableCell>
-            </CopyToClipboard>
+            <CopyToClipboardTableCell
+              tooltipTitle={`${firstClaim} (Copy)`}
+              textToCopy={firstClaim}
+              secondary={<DateDistance from={firstClaim} />}
+            />
             <TableCell>
               {latestTask ? (
                 <Link
@@ -184,36 +177,20 @@ export default class WorkersTable extends Component {
               )}
             </TableCell>
             {latestTask ? (
-              <CopyToClipboard
-                title={`${latestTask.run.started} (Copy)`}
-                text={latestTask.run.started}>
-                <TableCell>
-                  <TableCellItem button>
-                    <DateDistance from={latestTask.run.started} />
-                    <ContentCopyIcon
-                      className={classes.linksIcon}
-                      size={iconSize}
-                    />
-                  </TableCellItem>
-                </TableCell>
-              </CopyToClipboard>
+              <CopyToClipboardTableCell
+                tooltipTitle={`${latestTask.run.started} (Copy)`}
+                textToCopy={latestTask.run.started}
+                secondary={<DateDistance from={latestTask.run.started} />}
+              />
             ) : (
               <TableCell>n/a</TableCell>
             )}
             {latestTask && latestTask.run.resolved ? (
-              <CopyToClipboard
-                title={`${latestTask.run.resolved} (Copy)`}
-                text={latestTask.run.resolved}>
-                <TableCell>
-                  <TableCellItem button>
-                    <DateDistance from={latestTask.run.resolved} />
-                    <ContentCopyIcon
-                      className={classes.linksIcon}
-                      size={iconSize}
-                    />
-                  </TableCellItem>
-                </TableCell>
-              </CopyToClipboard>
+              <CopyToClipboardTableCell
+                tooltipTitle={`${latestTask.run.resolved} (Copy)`}
+                textToCopy={latestTask.run.resolved}
+                secondary={<DateDistance from={latestTask.run.resolved} />}
+              />
             ) : (
               <TableCell>n/a</TableCell>
             )}
