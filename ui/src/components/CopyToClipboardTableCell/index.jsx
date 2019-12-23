@@ -31,7 +31,7 @@ function CopyToClipboardTableCell(props) {
       text={textToCopy}>
       <TableCell>
         <TableCellItem button>
-          secondary={secondary}
+          {secondary}
           {isCopy ? <CheckIcon /> : <ContentCopyIcon size={IconSize} />}
         </TableCellItem>
       </TableCell>
