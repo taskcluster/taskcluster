@@ -80,7 +80,7 @@ export default class ErrorPanel extends Component {
     return (
       error && (
         <MuiErrorPanel
-          className={classNames(classes.icon, className, {
+          className={classNames(className, {
             [classes.error]: !hasWarning,
             [classes.warning]: hasWarning,
             [classes.fixed]: fixed,
