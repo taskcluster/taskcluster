@@ -184,7 +184,7 @@ export default class WorkerManagerErrorsTable extends Component {
         <CopyToClipboardTableCell
           tooltipTitle={`${reported} (Copy)`}
           textToCopy={reported}
-          secondary={
+          text={
             <Typography variant="body2">
               <DateDistance from={reported} />
             </Typography>

@@ -8,7 +8,7 @@ import TableCellItem from '../TableCellItem';
 
 function CopyToClipboardTableCell(props) {
   const [isCopy, setCopy] = useState(false);
-  const { tooltipTitle, textToCopy, secondary } = props;
+  const { tooltipTitle, textToCopy, text } = props;
 
   function handleCopyClick() {
     setCopy(true);
@@ -31,7 +31,7 @@ function CopyToClipboardTableCell(props) {
       text={textToCopy}>
       <TableCell>
         <TableCellItem button>
-          {secondary}
+          {text}
           {isCopy ? <CheckIcon /> : <ContentCopyIcon size={IconSize} />}
         </TableCellItem>
       </TableCell>
@@ -45,11 +45,11 @@ CopyToClipboardTableCell.propTypes = {
   // Text to copy when a user clicks on the list item
   textToCopy: string.isRequired,
   // The TableCellText secondary prop
-  secondary: node,
+  text: node,
 };
 
 CopyToClipboardTableCell.defaultProps = {
-  secondary: null,
+  text: null,
 };
 
 export default CopyToClipboardTableCell;

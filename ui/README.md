@@ -154,8 +154,8 @@ data reflects the user's permissions and is up-to-date when a user logs in/out.
 ## Table of Contents
 
 <!-- TOC BEGIN -->
-* [src/components/CopyToClipboardTableCell](src/components/CopyToClipboardTableCell#readme)
 * [src/components/CopyToClipboardListItem](src/components/CopyToClipboardListItem#readme)
+* [src/components/CopyToClipboardTableCell](src/components/CopyToClipboardTableCell#readme)
 * [src/components/DateDistance](src/components/DateDistance#readme)
 * [src/components/Search](src/components/Search#readme)
 * [src/components/Snackbar](src/components/Snackbar#readme)

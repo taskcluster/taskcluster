@@ -154,7 +154,7 @@ export default class WorkersTable extends Component {
             <CopyToClipboardTableCell
               tooltipTitle={`${firstClaim} (Copy)`}
               textToCopy={firstClaim}
-              secondary={<DateDistance from={firstClaim} />}
+              text={<DateDistance from={firstClaim} />}
             />
             <TableCell>
               {latestTask ? (
@@ -180,7 +180,7 @@ export default class WorkersTable extends Component {
               <CopyToClipboardTableCell
                 tooltipTitle={`${latestTask.run.started} (Copy)`}
                 textToCopy={latestTask.run.started}
-                secondary={<DateDistance from={latestTask.run.started} />}
+                text={<DateDistance from={latestTask.run.started} />}
               />
             ) : (
               <TableCell>n/a</TableCell>
@@ -189,7 +189,7 @@ export default class WorkersTable extends Component {
               <CopyToClipboardTableCell
                 tooltipTitle={`${latestTask.run.resolved} (Copy)`}
                 textToCopy={latestTask.run.resolved}
-                secondary={<DateDistance from={latestTask.run.resolved} />}
+                text={<DateDistance from={latestTask.run.resolved} />}
               />
             ) : (
               <TableCell>n/a</TableCell>

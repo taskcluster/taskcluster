@@ -191,7 +191,7 @@ export default class WorkerTypesTable extends Component {
               <CopyToClipboardTableCell
                 tooltipTitle={`${workerType.lastDateActive} (Copy)`}
                 textToCopy={workerType.lastDateActive}
-                secondary={<DateDistance from={workerType.lastDateActive} />}
+                text={<DateDistance from={workerType.lastDateActive} />}
               />
               <TableCell>{workerType.pendingTasks}</TableCell>
               {'runningCapacity' in workerType && (
