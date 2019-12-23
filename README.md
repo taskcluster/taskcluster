@@ -20,7 +20,7 @@
 
 ## Requirements
 
-* `@material-ui/core` v3+
+* `@material-ui/core` v4+
 * React, React DOM
 
 ## Getting started
