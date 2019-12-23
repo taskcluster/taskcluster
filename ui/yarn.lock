@@ -1326,10 +1326,10 @@
   resolved "https://registry.yarnpkg.com/@mdx-js/util/-/util-1.5.1.tgz#f5f29bde5b09f8da3f4a4b43fa0a34bcf8ffc7cb"
   integrity sha512-8F8E5FPWKP/cHjjI+O6Sh4KLUktk0KKS1xrxqVoBQd14/PBDH+kUgSJVE99p9jSRGh+OjCBmqx0tXN+m32w1tA==
 
-"@mozilla-frontend-infra/components@^3.0.1":
-  version "3.0.1"
-  resolved "https://registry.yarnpkg.com/@mozilla-frontend-infra/components/-/components-3.0.1.tgz#85528b20571f355c5322d353ab122430c514195c"
-  integrity sha512-owQi+PcNKs4eXWGayid9FMOJB0Sj+W9ZUSs3/dr/XlFpeDSVcFMef1ROF1Nd9ui+bmv/Uc842WUNalegIVAOuQ==
+"@mozilla-frontend-infra/components@^3.0.2":
+  version "3.0.2"
+  resolved "https://registry.yarnpkg.com/@mozilla-frontend-infra/components/-/components-3.0.2.tgz#f215ffc568066f5726aa6c81c648aa7c6ac74244"
+  integrity sha512-5agA2QyUuwTgNqL497cZa46goyS2BsfeQdMN9N9O1Ct8bImfO+124i3PVRCsF5Vkr1dqugchvxzZNLxXOnHCdA==
   dependencies:
     classnames "^2.2.6"
     codemirror "^5.39.0"
@@ -12076,7 +12076,8 @@ tar@^4:
     yallist "^3.0.3"
 
 "taskcluster-lib-scopes@link:../libraries/scopes":
-  version "24.1.2"
+  version "0.0.0"
+  uid ""
 
 taskcluster-lib-urls@^12.0.0:
   version "12.0.0"
