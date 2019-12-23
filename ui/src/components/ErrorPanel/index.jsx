@@ -6,19 +6,14 @@ import MuiErrorPanel from '@mozilla-frontend-infra/components/ErrorPanel';
 import { CONTENT_MAX_WIDTH } from '../../utils/constants';
 
 @withStyles(theme => ({
-  warning: {
-    '& a': {
-      color: theme.palette.secondary.dark,
-    },
-  },
   error: {
     '& svg': {
-      fill: theme.palette.error.contrastText,
+      fill: theme.palette.common.white,
     },
   },
-  link: {
-    '& a': {
-      ...theme.mixins.link,
+  warning: {
+    '& svg': {
+      fill: theme.palette.common.black,
     },
   },
   fixed: {
@@ -85,7 +80,7 @@ export default class ErrorPanel extends Component {
     return (
       error && (
         <MuiErrorPanel
-          className={classNames(className, classes.link, {
+          className={classNames(className, {
             [classes.error]: !hasWarning,
             [classes.warning]: hasWarning,
             [classes.fixed]: fixed,
