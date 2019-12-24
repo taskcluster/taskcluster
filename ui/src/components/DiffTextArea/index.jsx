@@ -46,6 +46,7 @@ const styles = withStyles(theme => {
         '& .d2h-code-side-linenumber': {
           border: `solid ${theme.palette.divider}`,
           borderWidth: `0 1px 0 1px`,
+          cursor: 'text',
         },
         '& .d2h-code-side-linenumber.d2h-code-side-emptyplaceholder.d2h-cntx.d2h-emptyplaceholder': {
           background: theme.palette.grey['500'],
