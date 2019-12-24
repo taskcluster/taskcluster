@@ -262,8 +262,7 @@ exports.dockerImages = async ({baseDir}) => {
 exports.dockerRegistryCheck = async ({tag}) => {
   const [repo, imagetag] = tag.split(/:/);
   try {
-    // Acces the registry API directly to see if this tag already exists, and do not push if so.
-    // TODO: this won't work with custom registries!
+    // Access the registry API directly to see if this tag already exists, and do not push if so.
     const res = await got(`https://index.docker.io/v1/repositories/${repo}/tags`, {json: true});
     if (res.body && res.body.map(l => l.name).includes(imagetag)) {
       return true;
