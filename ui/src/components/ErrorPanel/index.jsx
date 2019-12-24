@@ -20,20 +20,38 @@ import { CONTENT_MAX_WIDTH } from '../../utils/constants';
     fontSize: theme.typography.body1.fontSize,
     position: 'fixed',
     zIndex: theme.zIndex.drawer - 1,
-    left: '50%',
-    transform: 'translateX(-50%)',
     width: '92%',
     maxWidth: CONTENT_MAX_WIDTH,
     overflow: 'auto',
     maxHeight: '85vh',
+  },
+  fixedDocs: {
+    width: `calc(100% - ${2 * theme.docsDrawerWidth}px - ${2 *
+      theme.spacing(3)}px)`,
+    [theme.breakpoints.down('md')]: {
+      width: `calc(100% - ${theme.docsDrawerWidth}px - ${theme.spacing(6)}px)`,
+    },
+    [theme.breakpoints.down('sm')]: {
+      width: '92%',
+    },
   },
 }))
 export default class ErrorPanel extends Component {
   static propTypes = {
     /** Error to display. */
     error: oneOfType([string, object]),
-    /** If true, the component will be fixed. */
+    /**
+     * If true, the component will be fixed.
+     * Meant to be used inside the main site.
+     * Do not use this prop in the documentation portion of the site.
+     * */
     fixed: bool,
+    /**
+     * If true, the component will be fixed.
+     * Meant to be used inside the documentation site.
+     * Do not use this prop in the main site.
+     * */
+    fixedDocs: bool,
   };
 
   static defaultProps = {
@@ -69,7 +87,14 @@ export default class ErrorPanel extends Component {
   };
 
   render() {
-    const { classes, className, fixed, error: _, ...props } = this.props;
+    const {
+      classes,
+      className,
+      fixed,
+      fixedDocs,
+      error: _,
+      ...props
+    } = this.props;
     const { error } = this.state;
     const hasWarning = Boolean(props.warning);
     const errorMessage =
@@ -83,7 +108,8 @@ export default class ErrorPanel extends Component {
           className={classNames(className, {
             [classes.error]: !hasWarning,
             [classes.warning]: hasWarning,
-            [classes.fixed]: fixed,
+            [classes.fixed]: fixed || fixedDocs,
+            [classes.fixedDocs]: fixedDocs,
           })}
           error={errorMessage}
           onClose={this.handleErrorClose}
