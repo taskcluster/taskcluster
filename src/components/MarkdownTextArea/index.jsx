@@ -18,7 +18,6 @@ import pickClassName from '../../utils/pickClassName';
   return {
     tab: {
       flexGrow: 1,
-      color: theme.palette.text.primary,
     },
     tabContent: {
       marginTop: theme.spacing(1),
