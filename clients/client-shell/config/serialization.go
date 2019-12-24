@@ -27,11 +27,9 @@ func configFile() string {
 	return filepath.Join(configFolder, "taskcluster.yml")
 }
 
-// Load will load confiration file, and initialize a default configuration
+// Load will load configuration file, and initialize a default configuration
 // if no configuration is present. This only returns an error if a configuration
 // file is present, but we are unable to parse it.
-// TODO	we could simplify this function and only go through the definitions once
-//		and what happens if a value is tied to an env var AND to the config file?
 func Load() (map[string]map[string]interface{}, error) {
 	config := make(map[string]map[string]interface{})
 
