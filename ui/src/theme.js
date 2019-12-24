@@ -100,6 +100,16 @@ const createTheme = isDarkTheme => {
           ? 'rgba(255, 255, 255, 0.4)'
           : 'rgba(0, 0, 0, 0.4)',
       },
+      diff: {
+        red: {
+          line: '#7b1219',
+          word: '#9c0e13',
+        },
+        green: {
+          line: '#0b711c',
+          word: '#098d16',
+        },
+      },
     },
     typography: {
       ...Roboto400,

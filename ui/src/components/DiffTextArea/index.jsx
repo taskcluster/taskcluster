@@ -8,6 +8,7 @@ import { withStyles } from '@material-ui/core/styles';
 import { fade } from '@material-ui/core/styles/colorManipulator';
 import { ReactGhLikeDiff } from 'react-gh-like-diff';
 import 'react-gh-like-diff/lib/diff2html.css';
+import { THEME } from '../../utils/constants';
 
 const styles = withStyles(theme => {
   const borderColor =
@@ -16,10 +17,51 @@ const styles = withStyles(theme => {
       : fade(theme.palette.common.white, 0.23);
 
   return {
+    '@global': {
+      '.d2h-diff-table': {
+        '& .d2h-cntx': {
+          background: theme.palette.background.paper,
+        },
+        '& .d2h-code-side-linenumber.d2h-cntx': {
+          background: theme.palette.background.paper,
+          color: theme.palette.text.secondary,
+        },
+        '& .d2h-code-side-linenumber.d2h-del': {
+          color: THEME.PRIMARY_TEXT_DARK,
+        },
+        '& .d2h-code-side-linenumber.d2h-ins': {
+          color: THEME.PRIMARY_TEXT_DARK,
+        },
+        '& .d2h-code-side-linenumber': {
+          border: `solid ${theme.palette.divider}`,
+          borderWidth: `0 1px 0 1px`,
+        },
+        '& .d2h-code-side-linenumber.d2h-code-side-emptyplaceholder.d2h-cntx.d2h-emptyplaceholder': {
+          background: theme.palette.grey['500'],
+        },
+        '& .d2h-ins': {
+          borderColor: 'none',
+          backgroundColor: theme.palette.diff.green.line,
+          color: THEME.PRIMARY_TEXT_DARK,
+        },
+        '& .d2h-del': {
+          borderColor: 'none',
+          backgroundColor: theme.palette.diff.red.line,
+          color: THEME.PRIMARY_TEXT_DARK,
+        },
+        '& .d2h-code-line ins, & .d2h-code-side-line ins': {
+          backgroundColor: theme.palette.diff.green.word,
+        },
+        '& .d2h-code-line del, & .d2h-code-side-line del': {
+          backgroundColor: theme.palette.diff.red.word,
+        },
+        '& .d2h-code-side-emptyplaceholder, & .d2h-emptyplaceholder': {
+          backgroundColor: theme.palette.grey['500'],
+        },
+      },
+    },
     tab: {
       flexGrow: 1,
-      color: theme.palette.text.primary,
-      width: '100%',
     },
     tabContent: {
       marginTop: theme.spacing(1),
@@ -30,9 +72,6 @@ const styles = withStyles(theme => {
       borderWidth: 1,
       borderRadius: theme.shape.borderRadius,
       borderStyle: 'solid',
-    },
-    diffView: {
-      color: theme.palette.type === 'dark' ? '#000' : 'black',
     },
   };
 });
@@ -73,7 +112,7 @@ function DiffTextArea(props) {
       </Tabs>
       <div
         style={isViewDiff ? { minHeight: rows * 20 } : null}
-        className={classNames(classes.tabContent, classes.diffView, {
+        className={classNames(classes.tabContent, {
           [classes.diffContainer]: isViewDiff,
         })}>
         {!isViewDiff && (
