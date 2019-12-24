@@ -157,7 +157,7 @@ export default class Documentation extends Component {
         <ScrollToTop scrollKey={Page ? Page.toString() : null}>
           {error && error.code === 'MODULE_NOT_FOUND' && <NotFound isDocs />}
           {error && error.code !== 'MODULE_NOT_FOUND' && (
-            <ErrorPanel fixed error={error} />
+            <ErrorPanel fixedDocs error={error} />
           )}
           {!error && Page && (
             <MDXProvider components={components}>
