@@ -29,7 +29,7 @@ import { CONTENT_MAX_WIDTH } from '../../utils/constants';
     width: `calc(100% - ${2 * theme.docsDrawerWidth}px - ${2 *
       theme.spacing(3)}px)`,
     [theme.breakpoints.down('md')]: {
-      width: `calc(100% - ${theme.docsDrawerWidth}px - ${theme.spacing(6)}px)`,
+      width: `calc(100% - ${theme.docsDrawerWidth}px - ${theme.spacing(6  )}px)`,
     },
     [theme.breakpoints.down('sm')]: {
       width: '92%',
