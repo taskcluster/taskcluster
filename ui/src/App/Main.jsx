@@ -47,19 +47,6 @@ import isLoggedInQuery from './isLoggedIn.graphql';
     ':not(pre) > code': {
       ...theme.mixins.highlight,
     },
-    // style for <DiffTextArea />
-    '#d2h-425049': {
-      border: 'none',
-    },
-    '.d2h-file-header': {
-      display: 'none',
-    },
-    '.d2h-info': {
-      display: 'none',
-    },
-    '.d2h-cntx': {
-      backgroundColor: '#f8fafd',
-    },
   },
 }))
 @withAuth

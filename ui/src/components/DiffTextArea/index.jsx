@@ -18,6 +18,17 @@ const styles = withStyles(theme => {
 
   return {
     '@global': {
+      '.d2h-wrapper': {
+        '& .d2h-file-wrapper': {
+          border: 'none',
+        },
+      },
+      '.d2h-file-header': {
+        display: 'none',
+      },
+      '.d2h-info': {
+        display: 'none',
+      },
       '.d2h-diff-table': {
         '& .d2h-cntx': {
           background: theme.palette.background.paper,
