@@ -566,9 +566,6 @@ def test_missing_input_raises(client):
         client.no_args_with_input()
 
 
-# TODO: I should run the same things through the node client and compare the output
-
-
 def test_string_pass_through(client):
     expected = 'johnwrotethis'
     actual = client.topicName(expected)
@@ -833,8 +830,6 @@ def test_permacred_insufficient_scopes():
             'accessToken': 'no-secret',
         }
     })
-    # TODO: this should be TaskclusterAuthFailure; most likely the client
-    # is expecting AuthorizationFailure instead of AuthenticationFailure
     with pytest.raises(exc.TaskclusterRestFailure):
         client.testAuthenticate({
             'clientScopes': ['test:*'],
