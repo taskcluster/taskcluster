@@ -14,7 +14,7 @@ exports.tasks = [{
     const content = await readRepoFile(docsFile);
     const adminUser = ` * \`<prefix>\` -- admin user`;
     const serviceUsers = services
-      .map(s => ` * \`<prefix>_taskcluster_${s}\` -- user for Taskcluster ${s} service`)
+      .map(s => ` * \`<prefix>_${s}\` -- user for Taskcluster ${s} service`)
       .join('\n');
     const newContent = content.replace(
       /(<!-- USERLIST BEGIN -->)(?:.|\n)*(<!-- USERLIST END -->)/m,

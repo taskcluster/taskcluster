@@ -69,19 +69,40 @@ helper.dbSuite(path.basename(__filename), function() {
   });
 
   suite('db._doUpgrade', function() {
+    suiteSetup(async function() {
+      db = new Database({urlsByMode: {admin: helper.dbUrl}});
+      await db._withClient('admin', async client => {
+        // create users so the grants will succeed
+        for (let username of ['test_service1', 'test_service2']) {
+          try {
+            await client.query(`create user ${username}`);
+          } catch (err) {
+            if (err.code !== '42710') { // role already exists
+              throw err;
+            }
+          }
+        }
+      });
+    });
+
     setup(function() {
       db = new Database({urlsByMode: {[READ]: helper.dbUrl, 'admin': helper.dbUrl}});
     });
 
-    test('_doUpgrade runs upgrade script with multiple statements', async function() {
+    test('_doUpgrade runs upgrade script with multiple statements and $db_user_prefix$', async function() {
       await db._doUpgrade({
-        version: 1,
-        migrationScript: `begin
-          create table foo as select 1 as bar;
-          create table foo2 as select 2 as bar2;
-        end`,
-        methods: {},
-      }, () => {});
+        version: {
+          version: 1,
+          migrationScript: `begin
+            create table foo as select 1 as bar;
+            create table foo2 as select 2 as bar2;
+            grant select on foo2 to $db_user_prefix$_service1;
+          end`,
+          methods: {},
+        },
+        showProgress: () => {},
+        usernamePrefix: 'test',
+      });
       assert.equal(await db.currentVersion(), 1);
       await db._withClient(READ, async client => {
         let res = await client.query('select * from foo');
@@ -94,12 +115,16 @@ helper.dbSuite(path.basename(__filename), function() {
     test('failed _doUpgrade does not modify version', async function() {
       try {
         await db._doUpgrade({
-          version: 1,
-          migrationScript: `begin
-            select nosuchcolumn from tcversion;
-          end`,
-          methods: {},
-        }, () => {});
+          version: {
+            version: 1,
+            migrationScript: `begin
+              select nosuchcolumn from tcversion;
+            end`,
+            methods: {},
+          },
+          showProgress: () => {},
+          usernamePrefix: 'test',
+        });
       } catch (err) {
         assert.equal(err.code, '42703'); // unknown column
         assert.equal(await db.currentVersion(), 0);
@@ -109,7 +134,7 @@ helper.dbSuite(path.basename(__filename), function() {
     });
   });
 
-  suite('Database._updatePermissions', function() {
+  suite('Database._checkPermissions', function() {
     let db;
 
     suiteSetup(async function() {
@@ -130,18 +155,10 @@ helper.dbSuite(path.basename(__filename), function() {
 
     setup(async function() {
       await db._withClient('admin', async client => {
-        // create some perms that should be deleted
+        // create some tables for permissions
         await client.query('create table tcversion (version int)');
         await client.query('create table foo (x int)');
         await client.query('create table bar (x int)');
-        await client.query('grant select on foo to test_service1');
-        await client.query('grant insert on foo to test_service1');
-        // should always be revoked, as we don't ever grant trigger..
-        await client.query('grant trigger on foo to test_service1');
-        await client.query('grant select on foo to test_service2');
-        await client.query('grant select on bar to test_service2');
-        // a column grant should get revoked, too
-        await client.query('grant select (x) on bar to test_service1');
       });
     });
 
@@ -149,64 +166,55 @@ helper.dbSuite(path.basename(__filename), function() {
       await db.close();
     });
 
-    const assertPerms = async (db, ...perms) => {
-      const gotPerms = await db._withClient('admin', async client => {
-        // column_privileges includes implied columns from table_privileges
-        // as well as grants of specific columns, so we treat them all like
-        // full table privileges, ignoring the column name
-        const res = await client.query(`
-          select grantee, table_name, privilege_type
-            from information_schema.table_privileges
-            where table_schema = 'public'
-             and grantee like 'test_%'
-             and table_catalog = current_catalog
-          union
-          select grantee, table_name, privilege_type
-            from information_schema.column_privileges
-            where table_schema = 'public'
-             and grantee like 'test_%'
-             and table_catalog = current_catalog`);
-        return new Set(
-          res.rows.map(row => `${row.grantee}=${row.table_name}/${row.privilege_type}`),
-        );
-      });
-
-      const expectedPerms = new Set(perms);
-      assert.deepEqual(gotPerms, expectedPerms);
-    };
-
     test('empty access.yml', async function() {
       const schema = {access: {service1: {tables: {}}, service2: {tables: {}}}, versions: []};
-      await Database._updatePermissions({db, schema, usernamePrefix: 'test'});
-      await assertPerms(db,
-        'test_service1=tcversion/SELECT',
-        'test_service2=tcversion/SELECT',
-      );
+      await Database._checkPermissions({db, schema, usernamePrefix: 'test'});
+      // does not fail
     });
 
-    test('some read, some write', async function() {
+    test('permissions missing', async function() {
       const schema = {
         access: {
-          service1: {tables: {foo: 'read', bar: 'write'}},
-          service2: {tables: {foo: 'write', bar: 'read'}},
+          service1: {tables: {foo: 'read'}},
+          service2: {tables: {foo: 'write'}},
         },
         versions: [],
       };
-      await Database._updatePermissions({db, schema, usernamePrefix: 'test'});
-      await assertPerms(db,
-        'test_service1=tcversion/SELECT',
-        'test_service1=foo/SELECT',
-        'test_service1=bar/SELECT',
-        'test_service1=bar/INSERT',
-        'test_service1=bar/UPDATE',
-        'test_service1=bar/DELETE',
-        'test_service2=tcversion/SELECT',
-        'test_service2=foo/SELECT',
-        'test_service2=foo/INSERT',
-        'test_service2=foo/UPDATE',
-        'test_service2=foo/DELETE',
-        'test_service2=bar/SELECT',
-      );
+      await assert.rejects(() => Database._checkPermissions({db, schema, usernamePrefix: 'test'}),
+        /missing database user grant: test_service1: SELECT on foo/);
+    });
+
+    test('extra permissions', async function() {
+      await db._withClient('admin', async client => {
+        await client.query('grant select on foo to test_service1');
+        await client.query('grant select, insert, update, delete on foo to test_service2');
+        await client.query('grant select on bar to test_service2');
+      });
+      const schema = {
+        access: {
+          service1: {tables: {foo: 'read'}},
+          service2: {tables: {foo: 'write'}},
+        },
+        versions: [],
+      };
+      await assert.rejects(() => Database._checkPermissions({db, schema, usernamePrefix: 'test'}),
+        /unexpected database user grant: test_service2: SELECT on bar/);
+    });
+
+    test('correct permissions', async function() {
+      await db._withClient('admin', async client => {
+        await client.query('grant select on foo to test_service1');
+        await client.query('grant select, insert, update, delete on foo to test_service2');
+      });
+      const schema = {
+        access: {
+          service1: {tables: {foo: 'read'}},
+          service2: {tables: {foo: 'write'}},
+        },
+        versions: [],
+      };
+      Database._checkPermissions({db, schema, usernamePrefix: 'test'});
+      // does not fail
     });
   });
 
