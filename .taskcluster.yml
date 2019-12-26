@@ -6,7 +6,7 @@ tasks:
   $if: 'tasks_for in ["github-push", "github-pull-request"]'
   then:
     $let:
-      node: '12.13.1'
+      node: '12.14.0'
       go: '1.12.13'
       artifactsDir:
         public:
