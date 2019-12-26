@@ -260,7 +260,6 @@ class BaseClient(object):
         routeParams, payload, query, paginationHandler, paginationLimit = x
         route = self._subArgsInRoute(entry, routeParams)
 
-        # TODO: Check for limit being in the Query of the api ref
         if paginationLimit and 'limit' in entry.get('query', []):
             query['limit'] = paginationLimit
 
