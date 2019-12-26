@@ -792,10 +792,10 @@ type (
 		// Creation time of task
 		Created tcclient.Time `json:"created"`
 
-		// Deadline of the task, `pending` and `running` runs are
-		// resolved as **exception** if not resolved by other means
-		// before the deadline. Note, deadline cannot be more than
-		// 5 days into the future
+		// Deadline of the task, by which this task must be complete. `pending` and
+		// `running` runs are resolved as **exception** if not resolved by other means
+		// before the deadline. After the deadline, a task is immutable. Note,
+		// deadline cannot be more than 10 days into the future
 		Deadline tcclient.Time `json:"deadline"`
 
 		// List of dependent tasks. These must either be _completed_ or _resolved_
@@ -963,10 +963,10 @@ type (
 		// Creation time of task
 		Created tcclient.Time `json:"created"`
 
-		// Deadline of the task, `pending` and `running` runs are
-		// resolved as **exception** if not resolved by other means
-		// before the deadline. Note, deadline cannot be more than
-		// 5 days into the future
+		// Deadline of the task, by which this task must be complete. `pending` and
+		// `running` runs are resolved as **exception** if not resolved by other means
+		// before the deadline. After the deadline, a task is immutable. Note,
+		// deadline cannot be more than 10 days into the future
 		Deadline tcclient.Time `json:"deadline"`
 
 		// List of dependent tasks. These must either be _completed_ or _resolved_
@@ -1282,10 +1282,10 @@ type (
 	// A representation of **task status** as known by the queue
 	TaskStatusStructure struct {
 
-		// Deadline of the task, `pending` and `running` runs are
-		// resolved as **exception** if not resolved by other means
-		// before the deadline. Note, deadline cannot be more than
-		// 5 days into the future
+		// Deadline of the task, by which this task must be complete. `pending` and
+		// `running` runs are resolved as **exception** if not resolved by other means
+		// before the deadline. After the deadline, a task is immutable. Note,
+		// deadline cannot be more than 10 days into the future
 		Deadline tcclient.Time `json:"deadline"`
 
 		// Task expiration, time at which task definition and

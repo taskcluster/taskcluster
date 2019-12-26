@@ -398,38 +398,38 @@ let patchAndValidateTaskDef = function(taskId, taskDef) {
   if (created.getTime() < new Date().getTime() - 15 * 60 * 1000) {
     return {
       code: 'InputError',
-      message: 'Created timestamp cannot be in the past (max 15min drift)',
+      message: '`created` cannot be in the past (max 15min drift)',
       details: {created: taskDef.created},
     };
   }
   if (created.getTime() > new Date().getTime() + 15 * 60 * 1000) {
     return {
       code: 'InputError',
-      message: 'Created timestamp cannot be in the future (max 15min drift)',
+      message: '`created` cannot be in the future (max 15min drift)',
       details: {created: taskDef.created},
     };
   }
   if (created.getTime() > deadline.getTime()) {
     return {
       code: 'InputError',
-      message: 'Deadline cannot be past created',
+      message: '`deadline` cannot be later than `created`',
       details: {created: taskDef.created, deadline: taskDef.deadline},
     };
   }
   if (deadline.getTime() < new Date().getTime()) {
     return {
       code: 'InputError',
-      message: 'Deadline cannot be in the past',
+      message: '`deadline` cannot be in the past',
       details: {deadline: taskDef.deadline},
     };
   }
 
   let msToDeadline = deadline.getTime() - new Date().getTime();
-  // Validate that deadline is less than 5 days from now, allow 15 min drift
-  if (msToDeadline > 5 * 24 * 60 * 60 * 1000 + 15 * 60 * 1000) {
+  // Validate that deadline is less than 10 days from now, allow 15 min drift
+  if (msToDeadline > 10 * 24 * 60 * 60 * 1000 + 15 * 60 * 1000) {
     return {
       code: 'InputError',
-      message: 'Deadline cannot be more than 5 days into the future',
+      message: '`deadline` cannot be more than 10 days into the future',
       details: {deadline: taskDef.deadline},
     };
   }
@@ -445,7 +445,7 @@ let patchAndValidateTaskDef = function(taskId, taskDef) {
   if (deadline.getTime() > new Date(taskDef.expires).getTime()) {
     return {
       code: 'InputError',
-      message: 'Expires cannot be before the deadline',
+      message: '`expires` cannot be before `deadline`',
       details: {deadline: taskDef.deadline, expires: taskDef.expires},
     };
   }
