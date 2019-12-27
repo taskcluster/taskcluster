@@ -317,11 +317,18 @@ withDb
 ------
 
 This function is intended for use with `mockSuite` and the [usual configuration](../../db) for Postgres databases.
-In mock mode, it sets up a FakeDatabase, while in "real" mode it sets up a "real" database using `$TEST_DB_URL`.
+In mock mode, it sets up a FakeDatabase.
+In "real" mode it sets up a "real" database using `$TEST_DB_URL`, accessed with a user corresponding to the given serviceName.
 In either case, the resulting database is injected into the taskcluster-lib-loader as `db` and also available as `helper.db`.
 
 In the real case, the database is set upgraded to the latest version at the beginning of the suite.
-It is up to the test suite implementation to reset the contents of the database between tests.
+
+In both the real and mock cases, is up to the test suite implementation to reset the contents of the database between tests.
+Ideally this is done via `helper.db.procs` methods.
+
+Note that this is intended to operate against a temporary Postgres server such as one running in a docker container.
+It's not a good idea to run this against a "real" Postgres server.
+In particular, it will create a bunch of users with names beginning with `test_` (global to the server) and reset their passwords and access.
 
 The function is typically used like this:
 
@@ -336,7 +343,7 @@ exports.secrets = new Secrets({
 });
 
 exports.withDb = (mock, skipping) => {
-  withDb(mock, skipping, exports, 'secrets');
+  withDb(mock, skipping, exports, 'my-service');
 };
 ```
 

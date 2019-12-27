@@ -1,9 +1,9 @@
 {
   "access": {
     "secrets": {
-      "tables": [
-        "secrets"
-      ]
+      "tables": {
+        "secrets": "write"
+      }
     }
   },
   "versions": [
@@ -42,7 +42,7 @@
           "serviceName": "secrets"
         }
       },
-      "migrationScript": "begin\n  create table secrets (\n    name text primary key,\n    secret text\n  );\nend",
+      "migrationScript": "begin\n  create table secrets (\n    name text primary key,\n    secret text\n  );\n  grant select, insert, update, delete on secrets to $db_user_prefix$_secrets;\nend",
       "version": 1
     },
     {

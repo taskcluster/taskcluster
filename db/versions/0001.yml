@@ -5,6 +5,7 @@ migrationScript: |-
       name text primary key,
       secret text
     );
+    grant select, insert, update, delete on secrets to $db_user_prefix$_secrets;
   end
 methods:
   get_secret:

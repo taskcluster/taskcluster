@@ -188,10 +188,20 @@ suite(path.basename(__filename), function() {
         () => Schema._checkAccess({test: []}),
         /should define an object/);
     });
-    test('service has keys aside from table', function() {
+    test('service has keys aside from tables', function() {
       assert.throws(
         () => Schema._checkAccess({test: {views: []}}),
         /should only have a `tables` property/);
+    });
+    test('service tables is an array', function() {
+      assert.throws(
+        () => Schema._checkAccess({test: {tables: []}}),
+        /should be an object/);
+    });
+    test('service tables has invalid mode', function() {
+      assert.throws(
+        () => Schema._checkAccess({test: {tables: {test: 'admin'}}}),
+        /should be read or write/);
     });
   });
 
