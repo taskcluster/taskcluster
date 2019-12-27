@@ -99,9 +99,23 @@ function DiffTextArea(props) {
   const [tabIndex, setTabIndex] = useState(props.defaultTabIndex);
   const [value, setValue] = useState(props.value);
   const isViewDiff = tabIndex === 1;
-  const isNotEqualText = initialValue !== value;
   const isControlled =
     'value' in props && props.value !== undefined && props.value !== null;
+  const isSorted =
+    'sort' in props && props.sort !== undefined && props.sort !== null;
+  const pastValue = isSorted
+    ? initialValue
+        .split('\n')
+        .sort()
+        .join('\n')
+    : initialValue;
+  const currentValue = isSorted
+    ? value
+        .split('\n')
+        .sort()
+        .join('\n')
+    : value;
+  const isNotEqualText = pastValue !== currentValue;
 
   function handleValueChange(event) {
     if (isControlled) {
@@ -139,7 +153,7 @@ function DiffTextArea(props) {
           />
         )}
         {isViewDiff && isNotEqualText && (
-          <ReactGhLikeDiff past={initialValue} current={value} />
+          <ReactGhLikeDiff past={pastValue} current={currentValue} />
         )}
         {isViewDiff && !isNotEqualText && (
           <Typography>Nothing has changed yet</Typography>

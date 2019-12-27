@@ -318,6 +318,7 @@ export default class ClientForm extends Component {
               placeholder="new-scope:for-something:*"
               value={scopeText}
               initialValue={client.scopes.join('\n')}
+              sort
             />
           </ListItem>
           {!isNewClient && client && expandedScopes.length ? (
