@@ -3,7 +3,6 @@ const fs = require('fs');
 const assert = require('assert').strict;
 const yaml = require('js-yaml');
 const path = require('path');
-const stringify = require('json-stable-stringify');
 const {READ, WRITE} = require('./constants');
 
 class Schema{
@@ -18,10 +17,10 @@ class Schema{
   }
 
   asSerializable() {
-    return stringify({
+    return {
       versions: this.versions,
       access: this.access,
-    }, { space: 2 });
+    };
   }
 
   static fromDbDirectory(directory) {
@@ -134,13 +133,22 @@ class Schema{
   allMethods() {
     const modes = {read: READ, write: WRITE};
 
-    return this.versions.reduce((acc, version) => {
+    const map = this.versions.reduce((acc, version) => {
       Object.entries(version.methods).forEach(([name, { mode, serviceName, args, returns, description }]) => {
-        acc.add({ name, mode: modes[mode], serviceName, args, returns, description });
+        acc.set(name, {
+          name,
+          mode: modes[mode],
+          serviceName,
+          args,
+          returns,
+          description,
+        });
       });
 
       return acc;
-    }, new Set());
+    }, new Map());
+
+    return [...map.values()];
   }
 }
 
