@@ -297,7 +297,7 @@ const createTheme = isDarkTheme => {
       },
       MuiPickersToolbarText: {
         toolbarTxt: {
-          color: 'rgba(255, 255, 255, 0.54)',
+          color: THEME.PRIMARY_TEXT_DIMMED,
         },
         toolbarBtnSelected: {
           color: THEME.PRIMARY_TEXT_DARK,
@@ -345,7 +345,7 @@ const createTheme = isDarkTheme => {
         },
         thumb: {
           borderColor: THEME.SECONDARY,
-          backgroundColor: 'rgba(254,255, 255, 0.9)',
+          backgroundColor: THEME.PRIMARY_TEXT_DARK,
         },
         noPoint: {
           backgroundColor: THEME.SECONDARY,
@@ -360,14 +360,9 @@ const createTheme = isDarkTheme => {
         tabs: {
           color: '#fff',
           backgroundColor: THEME.SECONDARY,
-        },
-      },
-      PrivateTabIndicator: {
-        colorPrimary: {
-          backgroundColor: '#fff',
-        },
-        colorSecondary: {
-          backgroundColor: '#000',
+          '& .MuiTabs-indicator': {
+            backgroundColor: isDarkTheme ? '#fff' : '#000',
+          },
         },
       },
       MuiListItem: {
