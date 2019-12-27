@@ -24,11 +24,79 @@ This directory defines the Taskcluster database:
 
 ## Database Schema
 
-TBD
+The database schema is handled by [taskcluster-lib-postgres](../libraries/postgres).
+Each database version is defined in `db/versions/####.yml`, numbered sequentially, as decribed in that library's documentation.
 
-### Versions
+### Changing the Database
 
-TBD
+It's not permitted to change an existing version file (`db/versions/*.yml`) [*].
+Instead, any change to the DB must be made by adding a new version.
+This allows deployments of Taskcluster to follow those changes smoothly.
+
+> [*] There are a few exceptions: fixing bugs in a version that has not yet been included in a Taskcluster release, and updating stored-procedure descriptions.
+
+A version file has a `migrationScript` which performs the change to the database.
+This can use any Postgres functionality required to make the change.
+In some cases, that's as simple as `CREATE TABLE` or `ALTER TABLE`, but can also involve temporary tables and complex data manipulation.
+The script runs in a single transaction.
+
+#### Permissions
+
+This script should also update database permissions as necessary.
+The username prefix is substituted for `$db_user_prefix$`, so permissions can be managed with statements like
+
+```sql
+grant select on table newtable to $db_user_prefix$_someservice;
+```
+
+As a safety check, the upgrade machinery will confirm after an upgrade is complete that the permissions in the database match those in `db/access.yml`.
+
+#### Stored Procedures
+
+Each version file should redefine any stored procedures that are affected by the schema changes, and define any newly-required procedures.
+Unchanged procedures can be omitted.
+A procedure's signature (argument and return types) cannot change from version to version.
+Instead, define a new procedure with a different name.
+
+For example, if `get_widget(widgetId text) returns table (widgetWidth integer)` must be extended to also return a widget height, define a new `get_widget_with_height` method.
+This approach leaves the existing method in place so that older code can continue to use it.
+
+When a method no longer makes sense (for example, when a feature is removed), redefine the method to return an empty table or default value, as appropriate.
+For example, if support for widgets is removed, `get_widget` should be redefined to always return an empty table.
+
+#### Migration Tests
+
+Every version should have tests defined in `db/tests/versions/`.
+These tests should exercise all of the functionality of the migration script, and verify that everything is as expected.
+These tests should be very thorough, as broken migration scripts cannot be easily fixed once they are included in a Taskcluster release.
+Ensure that they cover every conceivable circumstance, especially if they modify existing data.
+
+Tests typically take the form
+
+```js
+  test('...', async function() {
+    await helper.upgradeTo(16); // upgrade to the previous version
+
+    // insert some data
+    await helper.withDbClient(async client => {
+     ..
+    });
+
+    await helper.upgradeTo(17); // upgrade to this version
+
+    // assert that things were migrated properly
+    await helper.withDbClient(async client => {
+     ..
+    });
+  });
+```
+
+#### Proc Tests
+
+Tests for stored functions should be in `db/tests/procs/<service-name>_test.js`.
+These tests serve as unit tests for the stored functions, and also help to ensure that modifications to the stored functions do not unexpectedly change their behavior.
+In most cases, existing tests for a stored function should continue to pass without modification even when a new DB version modifies the function implementation.
+There are exceptions to this rule, but reviewers should carefully scrutinize any such changes to ensure they will not break compatibility.
 
 ## JS Interface
 

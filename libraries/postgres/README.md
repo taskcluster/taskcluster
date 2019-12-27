@@ -10,7 +10,7 @@ This is constructed with:
 
 ```javascript
 const {Schema, Database} = require('taskcluster-lib-postgres');
-const schema = Schema.fromDbDirectory();
+const schema = Schema.fromDbDirectory('path/to/db/directory');
 ```
 
 With this in place, construct a database client with:
@@ -67,6 +67,69 @@ For example, if an upgrade factors a single table into two tables, then a proced
 
 A consequence of this design is that "procedures are forever" -- an upgrade can never delete a stored procedure.
 At worst, when a feature is removed, a stored procedure can be rewritten to return an empty result or perform no action.
+
+## DB Directory Format
+
+The directory passed to `Schema.fromDbDirectory` should have the following format:
+
+* `versions/####.yml` - one file for each DB version, starting at 1
+* `access.yml` - per-service access permissions
+
+### Version Files
+
+Each version file contains the information necessary to upgrade the database from the previous version.
+Version 0 is implicitly an empty database with only the admin and per-service users created.
+
+A version file contains the following:
+
+```yaml
+# the version number; this must match the filename
+version: 17
+
+# an SQL script, bracketed with `begin` and `end`, that will upgrade the database
+# from the previous version.  This should also adjust any permisisons using
+# `grant` and `revoke`.  The username prefix will be substituted for
+# `$db_user_prefix$`, so such statements can take the form `grant .. to
+# $db_user_prefix$_worker_manager`.
+migrationScript: |-
+  begin
+    create ...;
+    alter ...;
+    grant ...;
+  end
+
+# Methods for database access.  Each entry either defines a new stored function, or
+# redefines an existing function (without changing argument or return types).
+methods:
+  method_name:  # name for the stored function and the corresponding JS method
+    # Description of the stored function, for inclusion in `db/README.md`
+    description: |-
+      ...
+
+    # Database access mode: read or write
+    mode: read
+
+    # The Taskcluster service that uses this method.  Services have access to all
+    # methods tagged with their serviceName, and to read-only methods from other
+    # services.
+    serviceName: worker-manager
+
+    # The stored function's arguments and return type.  These are substituted into
+    # `CREATE FUNCTION <method_name>(<args>) RETURNS <returns>`.
+    args: thing_id text
+    returns: table (thing_property text)
+
+    # The body of the stored function.  This is passed verbatim to `CREATE FUNCTION`.
+    body: |-
+      begin
+        ...;
+        return query select ..;
+      end
+```
+
+### Access File
+
+TBD
 
 ## Development
 
