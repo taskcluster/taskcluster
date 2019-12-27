@@ -14,7 +14,7 @@ exports.tasks = [{
     writeRepoJSON('generated/db-schema.json', serializable);
 
     return {
-      ['db-schema-serializable']: serializable,
+      'db-schema-serializable': serializable,
     };
   },
 }];

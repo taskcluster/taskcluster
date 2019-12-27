@@ -75,7 +75,7 @@ Note that the admin user's credentials should not appear anywhere in the Helm co
 Database upgrade must be completed *before* the corresponding code is deployed.
 Taskcluster maintains the invariant that older code is compatible with newer databases, so the existing deployment will continue to function after the database upgrade is committed.
 
-To run an upgrade, run a docker container using the new Taskcluster imaage.
+To run an upgrade, run a docker container using the new Taskcluster image.
 Set `ADMIN_DB_URL` and `USERNAME_PREFIX` to the values described above and run:
 
 ```shell

@@ -94,9 +94,9 @@ class Database {
   static async _checkPermissions({db, schema, usernamePrefix}) {
     await db._withClient('admin', async (client) => {
       // determine current permissions in the form ["username: priv on table"].
-      // This includes information frmo the column_privileges table as if it
-      // was granting access to the entire table.  We never use column
-      // grants, so such an overstimation doesn't hurt.  And revoking access
+      // This includes information from the column_privileges table as if it
+      // was granting access to the entire table. We never use column
+      // grants, so such an overstimation doesn't hurt. And revoking access
       // to a table implicitly revokes column grants for that table, too.
       const res = await client.query(`
         select grantee, table_name, privilege_type
