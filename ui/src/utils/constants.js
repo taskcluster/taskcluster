@@ -49,6 +49,7 @@ export const THEME = {
   PRIMARY_TEXT_LIGHT: 'rgba(0, 0, 0, 0.9)',
   SECONDARY_TEXT_DARK: 'rgba(255, 255, 255, 0.7)',
   SECONDARY_TEXT_LIGHT: 'rgba(0, 0, 0, 0.7)',
+  PRIMARY_TEXT_DIMMED: 'rgba(255, 255, 255, 0.54)',
   SECONDARY: '#4177a5',
   DRAWER_WIDTH: 240,
   DIVIDER: 'rgba(0, 0, 0, 0.12)',
