@@ -102,16 +102,16 @@ class Database {
         select grantee, table_name, privilege_type
           from information_schema.table_privileges
           where table_schema = 'public'
-           and grantee like $1 || '_%'
+           and grantee like $1 || '\\_%'
            and table_catalog = current_catalog
            and table_name != 'tcversion'
         union
         select grantee, table_name, privilege_type
           from information_schema.column_privileges
           where table_schema = 'public'
-           and grantee like $1 || '_%'
+           and grantee like $1 || '\\_%'
            and table_catalog = current_catalog
-           and table_name != 'tcversion'`, [usernamePrefix]);
+           and table_name != 'tcversion'`, [usernamePrefix.replace('_', '\\_')]);
       const currentPrivs = new Set(
         res.rows.map(row => `${row.grantee}: ${row.privilege_type} on ${row.table_name}`));
 
