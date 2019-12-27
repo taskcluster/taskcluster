@@ -4,6 +4,7 @@ import { string, func, number } from 'prop-types';
 import Tab from '@material-ui/core/Tab';
 import Tabs from '@material-ui/core/Tabs';
 import TextField from '@material-ui/core/TextField';
+import Typography from '@material-ui/core/Typography';
 import { withStyles } from '@material-ui/core/styles';
 import { fade } from '@material-ui/core/styles/colorManipulator';
 import { ReactGhLikeDiff } from 'react-gh-like-diff';
@@ -139,6 +140,9 @@ function DiffTextArea(props) {
         )}
         {isViewDiff && isNotEqualText && (
           <ReactGhLikeDiff past={initialValue} current={value} />
+        )}
+        {isViewDiff && !isNotEqualText && (
+          <Typography>Nothing has changed yet</Typography>
         )}
       </div>
     </div>
