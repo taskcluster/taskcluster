@@ -6,10 +6,15 @@ const { writeRepoJSON, REPO_ROOT } = require('../../utils');
 exports.tasks = [{
   title: 'DB Schema',
   requires: [],
-  provides: ['schema-json'],
+  provides: ['db-schema-serializable'],
   run: async (requirements, utils) => {
     const schema = Schema.fromDbDirectory(path.join(REPO_ROOT, 'db'));
 
-    writeRepoJSON('generated/db-schema.json', schema.asSerializable());
+    const serializable = schema.asSerializable();
+    writeRepoJSON('generated/db-schema.json', serializable);
+
+    return {
+      'db-schema-serializable': serializable,
+    };
   },
 }];

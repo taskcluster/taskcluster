@@ -1,3 +1,4 @@
+const {isPlainObject} = require('lodash');
 const fs = require('fs');
 const assert = require('assert').strict;
 const yaml = require('js-yaml');
@@ -102,14 +103,16 @@ class Schema{
   }
 
   static _checkAccess(access) {
-    assert(typeof access === 'object' && !(access instanceof Array),
-      'access.yml should define an object');
+    assert(isPlainObject(access), 'access.yml should define an object');
     Object.keys(access).forEach(serviceName => {
       const serviceAccess = access[serviceName];
-      assert(typeof serviceAccess === 'object' && !(serviceAccess instanceof Array),
-        'each service in access.yml should define an object');
+      assert(isPlainObject(serviceAccess), 'each service in access.yml should define an object');
       assert.deepEqual(Object.keys(serviceAccess).sort(), ['tables'],
         'each service in access.yml should only have a `tables` property');
+      assert(isPlainObject(serviceAccess.tables), `${serviceName}.tables should be an object`);
+      Object.entries(serviceAccess.tables).forEach(([table, mode]) => {
+        assert(['read', 'write'].includes(mode), `${serviceName}.tables.${table} should be read or write`);
+      });
     });
   }
 

@@ -1,6 +1,6 @@
 const {Pool} = require('pg');
 const {dollarQuote} = require('./util');
-const assert = require('assert');
+const assert = require('assert').strict;
 const debug = require('debug')('taskcluster-lib-postgres');
 const {READ, WRITE} = require('./constants');
 
@@ -53,8 +53,8 @@ class Database {
    *
    * If given, the upgrade process stops at toVersion; this is used for testing.
    */
-  static async upgrade({schema, showProgress = () => {}, toVersion, adminDbUrl}) {
-    const db = new Database({urlsByMode: {admin: adminDbUrl, read: adminDbUrl}, schema, serviceName: 'dummy'});
+  static async upgrade({schema, showProgress = () => {}, usernamePrefix, toVersion, adminDbUrl}) {
+    const db = new Database({urlsByMode: {admin: adminDbUrl, read: adminDbUrl}});
 
     try {
       // perform any necessary upgrades..
@@ -65,54 +65,109 @@ class Database {
         for (let v = dbVersion + 1; v <= stopAt; v++) {
           showProgress(`upgrading database to version ${v}`);
           const version = schema.getVersion(v);
-          await db._doUpgrade(version, showProgress);
+          await db._doUpgrade({version, showProgress, usernamePrefix});
           showProgress(`upgrade to version ${v} successful`);
         }
       } else {
         showProgress('No database upgrades required');
       }
 
-      showProgress('...creating db users');
-      await db._createUsers(db, schema);
+      showProgress('...updating users');
+      await db._withClient('admin', async client => {
+        // make sure all services have basic levels of access..
+        for (let serviceName of Object.keys(schema.access)) {
+          const username = `${usernamePrefix}_${serviceName.replace(/-/g, '_')}`;
+          // always grant read access to tcversion
+          await client.query(`grant select on tcversion to ${username}`);
+          // allow access to the public schema
+          await client.query(`grant usage on schema public to ${username}`);
+        }
+      });
+
+      showProgress('...checking permissions');
+      await Database._checkPermissions({db, schema, usernamePrefix});
     } finally {
       await db.close();
     }
   }
 
-  async _createUsers(db, schema) {
-    // TODO: Update grants when access.yml changes
-    for (let serviceName of Object.keys(schema.access)) {
-      await db._withClient('admin', async (client) => {
-        try {
-          const password = 'foo-bar'; // TODO: Remove this
-          await client.query(`create user ${serviceName} password '${password}'`);
-        } catch (e) {
-          // 42710 is when a table already exists
-          if (e.code !== '42710') {
-            // TODO: Reset password if user already exist(?)
-            throw e;
+  static async _checkPermissions({db, schema, usernamePrefix}) {
+    await db._withClient('admin', async (client) => {
+      // determine current permissions in the form ["username: priv on table"].
+      // This includes information from the column_privileges table as if it
+      // was granting access to the entire table. We never use column
+      // grants, so such an overstimation doesn't hurt. And revoking access
+      // to a table implicitly revokes column grants for that table, too.
+      const res = await client.query(`
+        select grantee, table_name, privilege_type
+          from information_schema.table_privileges
+          where table_schema = 'public'
+           and grantee like $1 || '\\_%'
+           and table_catalog = current_catalog
+           and table_name != 'tcversion'
+        union
+        select grantee, table_name, privilege_type
+          from information_schema.column_privileges
+          where table_schema = 'public'
+           and grantee like $1 || '\\_%'
+           and table_catalog = current_catalog
+           and table_name != 'tcversion'`, [usernamePrefix.replace('_', '\\_')]);
+      const currentPrivs = new Set(
+        res.rows.map(row => `${row.grantee}: ${row.privilege_type} on ${row.table_name}`));
+
+      const expectedPrivs = new Set();
+      for (let serviceName of Object.keys(schema.access)) {
+        const username = `${usernamePrefix}_${serviceName.replace(/-/g, '_')}`;
+
+        // calculate the expected privs based on access.yml
+        const tables = schema.access[serviceName].tables;
+        Object.entries(tables).forEach(([table, mode]) => {
+          if (mode === 'read') {
+            expectedPrivs.add(`${username}: SELECT on ${table}`);
+          } else if (mode === 'write') {
+            expectedPrivs.add(`${username}: SELECT on ${table}`);
+            expectedPrivs.add(`${username}: INSERT on ${table}`);
+            expectedPrivs.add(`${username}: UPDATE on ${table}`);
+            expectedPrivs.add(`${username}: DELETE on ${table}`);
           }
+        });
+      }
+
+      const issues = [];
+      for (let cur of currentPrivs) {
+        if (!expectedPrivs.has(cur)) {
+          issues.push(`unexpected database user grant: ${cur}`);
         }
-        for (let table of schema.access[serviceName].tables) {
-          await client.query(`grant all on ${table} to ${serviceName}`);
+      }
+
+      for (let exp of expectedPrivs) {
+        if (!currentPrivs.has(exp)) {
+          issues.push(`missing database user grant: ${exp}`);
         }
-      });
-    }
+      }
+
+      if (issues.length > 0) {
+        throw new Error(`Database privileges are not configured as expected:\n${issues.join('\n')}`);
+      }
+    });
   }
 
-  async _doUpgrade(version, showProgress) {
+  async _doUpgrade({version, showProgress, usernamePrefix}) {
     await this._withClient('admin', async client => {
       await client.query('begin');
       if (version.version === 1) {
         await client.query('create table tcversion as select 0 as version');
       }
+
       // check the version and lock it to prevent other things from changing it
       const res = await client.query('select version from tcversion for update');
       if (res.rowCount !== 1 || res.rows[0].version !== version.version - 1) {
         throw Error('Multiple DB upgrades running simultaneously');
       }
       showProgress('..running migration script');
-      await client.query(`DO ${dollarQuote(version.migrationScript)}`);
+      const migrationScript = version.migrationScript
+        .replace('$db_user_prefix$', usernamePrefix);
+      await client.query(`DO ${dollarQuote(migrationScript)}`);
       showProgress('..defining methods');
       for (let [methodName, { args, body, returns}] of Object.entries(version.methods)) {
         await client.query(`create or replace function

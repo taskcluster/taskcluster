@@ -1,7 +1,7 @@
 const helper = require('./helper');
 const {Schema, Database, READ, WRITE} = require('..');
 const path = require('path');
-const assert = require('assert');
+const assert = require('assert').strict;
 
 helper.dbSuite(path.basename(__filename), function() {
   let db;
@@ -69,19 +69,40 @@ helper.dbSuite(path.basename(__filename), function() {
   });
 
   suite('db._doUpgrade', function() {
+    suiteSetup(async function() {
+      db = new Database({urlsByMode: {admin: helper.dbUrl}});
+      await db._withClient('admin', async client => {
+        // create users so the grants will succeed
+        for (let username of ['test_service1', 'test_service2']) {
+          try {
+            await client.query(`create user ${username}`);
+          } catch (err) {
+            if (err.code !== '42710') { // role already exists
+              throw err;
+            }
+          }
+        }
+      });
+    });
+
     setup(function() {
       db = new Database({urlsByMode: {[READ]: helper.dbUrl, 'admin': helper.dbUrl}});
     });
 
-    test('_doUpgrade runs upgrade script with multiple statements', async function() {
+    test('_doUpgrade runs upgrade script with multiple statements and $db_user_prefix$', async function() {
       await db._doUpgrade({
-        version: 1,
-        migrationScript: `begin
-          create table foo as select 1 as bar;
-          create table foo2 as select 2 as bar2;
-        end`,
-        methods: {},
-      }, () => {});
+        version: {
+          version: 1,
+          migrationScript: `begin
+            create table foo as select 1 as bar;
+            create table foo2 as select 2 as bar2;
+            grant select on foo2 to $db_user_prefix$_service1;
+          end`,
+          methods: {},
+        },
+        showProgress: () => {},
+        usernamePrefix: 'test',
+      });
       assert.equal(await db.currentVersion(), 1);
       await db._withClient(READ, async client => {
         let res = await client.query('select * from foo');
@@ -94,12 +115,16 @@ helper.dbSuite(path.basename(__filename), function() {
     test('failed _doUpgrade does not modify version', async function() {
       try {
         await db._doUpgrade({
-          version: 1,
-          migrationScript: `begin
-            select nosuchcolumn from tcversion;
-          end`,
-          methods: {},
-        }, () => {});
+          version: {
+            version: 1,
+            migrationScript: `begin
+              select nosuchcolumn from tcversion;
+            end`,
+            methods: {},
+          },
+          showProgress: () => {},
+          usernamePrefix: 'test',
+        });
       } catch (err) {
         assert.equal(err.code, '42703'); // unknown column
         assert.equal(await db.currentVersion(), 0);
@@ -109,9 +134,111 @@ helper.dbSuite(path.basename(__filename), function() {
     });
   });
 
+  suite('Database._checkPermissions', function() {
+    let db;
+
+    suiteSetup(async function() {
+      db = new Database({urlsByMode: {admin: helper.dbUrl}});
+      await db._withClient('admin', async client => {
+        // create users so the grants will succeed
+        for (let username of ['test_service1', 'test_service2']) {
+          try {
+            await client.query(`create user ${username}`);
+          } catch (err) {
+            if (err.code !== '42710') { // role already exists
+              throw err;
+            }
+          }
+        }
+      });
+    });
+
+    setup(async function() {
+      await db._withClient('admin', async client => {
+        // create some tables for permissions
+        await client.query('create table tcversion (version int)');
+        await client.query('create table foo (x int)');
+        await client.query('create table bar (x int)');
+      });
+    });
+
+    suiteTeardown(async function() {
+      await db.close();
+    });
+
+    test('empty access.yml', async function() {
+      const schema = {access: {service1: {tables: {}}, service2: {tables: {}}}, versions: []};
+      await Database._checkPermissions({db, schema, usernamePrefix: 'test'});
+      // does not fail
+    });
+
+    test('permissions missing', async function() {
+      const schema = {
+        access: {
+          service1: {tables: {foo: 'read'}},
+          service2: {tables: {foo: 'write'}},
+        },
+        versions: [],
+      };
+      await assert.rejects(() => Database._checkPermissions({db, schema, usernamePrefix: 'test'}),
+        /missing database user grant: test_service1: SELECT on foo/);
+    });
+
+    test('extra permissions', async function() {
+      await db._withClient('admin', async client => {
+        await client.query('grant select on foo to test_service1');
+        await client.query('grant select, insert, update, delete on foo to test_service2');
+        await client.query('grant select on bar to test_service2');
+      });
+      const schema = {
+        access: {
+          service1: {tables: {foo: 'read'}},
+          service2: {tables: {foo: 'write'}},
+        },
+        versions: [],
+      };
+      await assert.rejects(() => Database._checkPermissions({db, schema, usernamePrefix: 'test'}),
+        /unexpected database user grant: test_service2: SELECT on bar/);
+    });
+
+    test('extra column permissions', async function() {
+      await db._withClient('admin', async client => {
+        await client.query('grant select on foo to test_service1');
+        await client.query('grant select, insert, update, delete on foo to test_service2');
+        // grant access only to the `x` column on bar
+        await client.query('grant select(x) on bar to test_service2');
+      });
+      const schema = {
+        access: {
+          service1: {tables: {foo: 'read'}},
+          service2: {tables: {foo: 'write'}},
+        },
+        versions: [],
+      };
+      await assert.rejects(() => Database._checkPermissions({db, schema, usernamePrefix: 'test'}),
+        /unexpected database user grant: test_service2: SELECT on bar/);
+    });
+
+    test('correct permissions', async function() {
+      await db._withClient('admin', async client => {
+        await client.query('grant select on foo to test_service1');
+        await client.query('grant select, insert, update, delete on foo to test_service2');
+      });
+      const schema = {
+        access: {
+          service1: {tables: {foo: 'read'}},
+          service2: {tables: {foo: 'write'}},
+        },
+        versions: [],
+      };
+      await Database._checkPermissions({db, schema, usernamePrefix: 'test'});
+      // does not fail
+    });
+  });
+
   suite('Database.setup', function() {
     test('setup creates JS methods that can be called', async function() {
-      await Database.upgrade({schema, adminDbUrl: helper.dbUrl});
+      await Database.upgrade({schema, adminDbUrl: helper.dbUrl, usernamePrefix: 'test'});
       db = await Database.setup({schema, readDbUrl: helper.dbUrl, writeDbUrl: helper.dbUrl, serviceName: 'service-1'});
       await db.procs.testdata();
       const res = await db.procs.addup(13);
@@ -119,7 +246,7 @@ helper.dbSuite(path.basename(__filename), function() {
     });
 
     test('do not allow service A to call any methods for service B which have mode=WRITE', async function() {
-      await Database.upgrade({schema, adminDbUrl: helper.dbUrl});
+      await Database.upgrade({schema, adminDbUrl: helper.dbUrl, usernamePrefix: 'test'});
       const db = await Database.setup({schema, readDbUrl: helper.dbUrl, writeDbUrl: helper.dbUrl, serviceName: 'service-2'});
 
       assert.equal(versions[0].methods.testdata.serviceName, 'service-1');
@@ -129,7 +256,7 @@ helper.dbSuite(path.basename(__filename), function() {
     });
 
     test('allow service A to call any methods for service A which have mode=WRITE', async function() {
-      await Database.upgrade({schema, adminDbUrl: helper.dbUrl});
+      await Database.upgrade({schema, adminDbUrl: helper.dbUrl, usernamePrefix: 'test'});
       const db = await Database.setup({schema, readDbUrl: helper.dbUrl, writeDbUrl: helper.dbUrl, serviceName: 'service-1'});
 
       assert.equal(versions[0].methods.testdata.serviceName, 'service-1');
@@ -139,7 +266,7 @@ helper.dbSuite(path.basename(__filename), function() {
     });
 
     test('allow service A to call any methods for service B which have mode=READ', async function() {
-      await Database.upgrade({schema, adminDbUrl: helper.dbUrl});
+      await Database.upgrade({schema, adminDbUrl: helper.dbUrl, usernamePrefix: 'test'});
       const db = await Database.setup({schema, readDbUrl: helper.dbUrl, writeDbUrl: helper.dbUrl, serviceName: 'service-1'});
 
       assert.equal(versions[0].methods.addup.serviceName, 'service-2');

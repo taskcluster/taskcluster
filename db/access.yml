@@ -1,9 +1,9 @@
 # <service-name-1>
-#   // tables that this service has WRITE permissions to
+#   // tables that this service has access to
 #   tables:
-#     - table-1
-#     - table-2
+#     <tableName>: [read|write]
+#     <tableName>: [read|write]
 #     - ...
 secrets:
   tables:
-  - secrets
+    secrets: write
