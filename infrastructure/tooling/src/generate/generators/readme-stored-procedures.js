@@ -33,15 +33,13 @@ exports.tasks = [{
       ].join('\n');
     });
 
-    if (sections.length > 0) {
-      const content = await readRepoFile(path.join('db', 'README.md'));
-      const newContent = content.replace(
-        /(<!-- SP BEGIN -->)(?:.|\n)*(<!-- SP END -->)/m,
-        `$1\n${sections.join('\n')}\n$2`);
+    const content = await readRepoFile(path.join('db', 'README.md'));
+    const newContent = content.replace(
+      /(<!-- SP BEGIN -->)(?:.|\n)*(<!-- SP END -->)/m,
+      `$1\n${sections.join('\n')}\n$2`);
 
-      if (content !== newContent) {
-        await writeRepoFile(path.join('db', 'README.md'), newContent);
-      }
+    if (content !== newContent) {
+      await writeRepoFile(path.join('db', 'README.md'), newContent);
     }
   },
 }];
