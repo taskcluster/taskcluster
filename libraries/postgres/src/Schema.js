@@ -2,7 +2,6 @@ const fs = require('fs');
 const assert = require('assert').strict;
 const yaml = require('js-yaml');
 const path = require('path');
-const stringify = require('json-stable-stringify');
 const {READ, WRITE} = require('./constants');
 
 class Schema{
@@ -17,10 +16,10 @@ class Schema{
   }
 
   asSerializable() {
-    return stringify({
+    return {
       versions: this.versions,
       access: this.access,
-    }, { space: 2 });
+    };
   }
 
   static fromDbDirectory(directory) {
