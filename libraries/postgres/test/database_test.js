@@ -201,6 +201,24 @@ helper.dbSuite(path.basename(__filename), function() {
         /unexpected database user grant: test_service2: SELECT on bar/);
     });
 
+    test('extra column permissions', async function() {
+      await db._withClient('admin', async client => {
+        await client.query('grant select on foo to test_service1');
+        await client.query('grant select, insert, update, delete on foo to test_service2');
+        // grant access only to the `x` column on bar
+        await client.query('grant select(x) on bar to test_service2');
+      });
+      const schema = {
+        access: {
+          service1: {tables: {foo: 'read'}},
+          service2: {tables: {foo: 'write'}},
+        },
+        versions: [],
+      };
+      await assert.rejects(() => Database._checkPermissions({db, schema, usernamePrefix: 'test'}),
+        /unexpected database user grant: test_service2: SELECT on bar/);
+    });
+
     test('correct permissions', async function() {
       await db._withClient('admin', async client => {
         await client.query('grant select on foo to test_service1');
@@ -213,7 +231,7 @@ helper.dbSuite(path.basename(__filename), function() {
         },
         versions: [],
       };
-      Database._checkPermissions({db, schema, usernamePrefix: 'test'});
+      await Database._checkPermissions({db, schema, usernamePrefix: 'test'});
       // does not fail
     });
   });
