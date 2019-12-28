@@ -133,6 +133,7 @@ export default class WMWorkerPoolEditor extends Component {
       },
       owner: {
         error: null,
+        check: false,
         message: null,
       },
     },
@@ -151,6 +152,7 @@ export default class WMWorkerPoolEditor extends Component {
           ...this.state.validation,
           owner: {
             error: !validity.valid,
+            check: true,
             message: validationMessage,
           },
         },
@@ -186,7 +188,7 @@ export default class WMWorkerPoolEditor extends Component {
     return (
       !this.state.invalidProviderConfig &&
       !Object.values(validation).some(({ error }) => Boolean(error)) &&
-      providerId !== ''
+      providerId !== '' && this.state.validation.owner.check
     );
   }
 
