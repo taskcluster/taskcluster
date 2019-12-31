@@ -11,7 +11,14 @@ class Release {
     this.cmdOptions = cmdOptions;
 
     if (cmdOptions.push) {
-      ['GH_TOKEN', 'NPM_TOKEN', 'PYPI_USERNAME', 'PYPI_PASSWORD'].forEach(e => {
+      [
+        'GH_TOKEN',
+        'NPM_TOKEN',
+        'PYPI_USERNAME',
+        'PYPI_PASSWORD',
+        'DOCKER_USERNAME',
+        'DOCKER_PASSWORD',
+      ].forEach(e => {
         if (!process.env[e]) {
           throw new Error(`$${e} is required (unless --no-push)`);
         }
@@ -46,6 +53,8 @@ class Release {
         npmToken: process.env.NPM_TOKEN,
         pypiUsername: process.env.PYPI_USERNAME,
         pypiPassword: process.env.PYPI_PASSWORD,
+        dockerUsername: process.env.DOCKER_USERNAME,
+        dockerPassword: process.env.DOCKER_PASSWORD,
       },
       baseDir: this.baseDir,
     });

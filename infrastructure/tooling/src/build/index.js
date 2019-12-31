@@ -25,6 +25,12 @@ class Build {
     generateMonoimageTasks({
       tasks,
       baseDir: this.baseDir,
+      credentials: {
+        // these are optional for `yarn build` but will always be supplied with
+        // `yarn release`
+        dockerUsername: process.env.DOCKER_USERNAME,
+        dockerPassword: process.env.DOCKER_PASSWORD,
+      },
       cmdOptions: this.cmdOptions,
     });
 

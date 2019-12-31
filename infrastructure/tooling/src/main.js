@@ -40,6 +40,7 @@ program.command('release')
       ' * GH_TOKEN - GitHub access token with permissions to create a release',
       ' * NPM_TOKEN - NPM authentication token with permission to publish client libraries',
       ' * PYPI_USERNAME / PYPI_PASSWORD - PyPI credentials with permission to upload taskcluster-client',
+      ' * DOCKER_USERNAME / DOCKER_PASSWORD - Docker credentials with permission to taskcluster/taskcluster',
     ].join('\n'));
   })
   .action((...options) => {
