@@ -158,7 +158,7 @@ To test this library, you will need a Postgres database, running the latest rele
 The easiest and best way to do this is to use docker:
 
 ```shell
-docker run -ti -p 5432:5432  --rm postgres:11
+docker run -ti -p 127.0.0.1:5432:5432  --rm postgres:11
 ```
 
 This will run Docker in the foreground in that terminal (so you'll need to use another terminal for your work, or add the `-d` flag to daemonize the container) and make that available on TCP port 5432, the "normal" postgres port.
