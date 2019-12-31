@@ -185,7 +185,7 @@ func filterTask(status tcqueue.TaskStatusStructure, flags *pflag.FlagSet) bool {
 		}
 	}
 
-	// TODO add other filters here when necessary
+	// ..other filters can be added here as necessary
 
 	return true
 }

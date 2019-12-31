@@ -59,7 +59,7 @@ class MonitorManager {
     level,
     version,
     description,
-    fields = {}, // TODO: Consider making these defined with json-schema and validate only in dev or something
+    fields = {},
   }) {
     assert(!this._setup, 'Cannot register after MonitorManager has been setup');
     assert(title, `Must provide a human readable title for this log type ${name}`);

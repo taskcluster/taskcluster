@@ -242,12 +242,6 @@ class DependencyTracker {
           taskId: dep.dependentTaskId,
           requiredTaskId: taskId,
         }, true);
-        // TODO: Use return code from the remove statement to avoid checking
-        //       isBlocked(...) if no requirement was deleted.
-        //       Note, this will only work if we assume deletion happened, in
-        //       cases where a retry is necessary. Hence, this optimization
-        //       requires some mechanism to cheaply signal if retry or deletion
-        //       occurred. We can do that if this slow.
 
         if (!await this.isBlocked(dep.dependentTaskId)) {
           await this.scheduleTask(dep.dependentTaskId);

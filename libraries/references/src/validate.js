@@ -201,8 +201,7 @@ exports.validate = (references) => {
           problems.push(`${filename}: unknown metadata.version ${metadata.version}`);
         }
       } else if (metadata.name === 'logs') {
-        // Nothing to do for now
-        // TODO: Start validating fields with schemas?
+        // Nothing to do..
       } else {
         problems.push(`${filename}: unknown metadata.name ${metadata.name}`);
       }
