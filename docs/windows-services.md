@@ -23,7 +23,7 @@ They use [NSSM](http://nssm.cc/) to install and run the service.
 * Run these commands to create and configure the service:
 
 ```shell
-nssm install generic-worker c:\generic-worker\generic-worker.exe
+nssm install "Generic Worker" c:\generic-worker\generic-worker.exe
 nssm set "Generic Worker" AppDirectory c:\generic-worker
 nssm set "Generic Worker" AppParameters run --config c:\generic-worker\generic-worker-config.yml --worker-runner-protocol-pipe \\.\pipe\generic-worker
 nssm set "Generic Worker" DisplayName "Generic Worker"
