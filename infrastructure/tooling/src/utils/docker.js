@@ -1,12 +1,16 @@
-const split = require('split');
+const util = require('util');
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
 const Docker = require('dockerode');
 const Observable = require('zen-observable');
 const {PassThrough, Transform} = require('stream');
+const taskcluster = require('taskcluster-client');
+const {REPO_ROOT} = require('./repo');
 const got = require('got');
-const {spawn} = require('child_process');
+const {execCommand} = require('./command');
+const mkdirp = util.promisify(require('mkdirp'));
+const rimraf = util.promisify(require('rimraf'));
 
 /**
  * Set up to call docker in the given baseDir (internal use only)
@@ -204,46 +208,6 @@ exports.dockerPull = async ({baseDir, image, utils}) => {
 };
 
 /**
- * Build a docker image (`docker build`).
- *
- * - baseDir -- base directory for operations
- * - logfile -- name of the file to write the log to
- * - tag -- tag to build
- * - tarball -- tarfile containing the Dockerfile and any other required files
- * - utils -- taskgraph utils (waitFor, etc.)
- */
-exports.dockerBuild = async ({baseDir, logfile, tag, tarball, utils}) => {
-  const {docker} = await _dockerSetup({baseDir});
-
-  utils.status({progress: 0, message: `Building ${tag}`});
-  const buildStream = await docker.buildImage(tarball, {t: tag});
-  if (logfile) {
-    buildStream.pipe(fs.createWriteStream(logfile));
-  }
-
-  await utils.waitFor(new Observable(observer => {
-    docker.modem.followProgress(buildStream,
-      err => {
-        if (err) {
-          observer.error(new Error(`build failed: ${err}\ncheck ${logfile} for reason`));
-        } else {
-          observer.complete();
-        }
-      },
-      update => {
-        if (!update.stream) {
-          return;
-        }
-        observer.next(update.stream);
-        const parts = /^Step (\d+)\/(\d+)/.exec(update.stream);
-        if (parts) {
-          utils.status({progress: 100 * parseInt(parts[1], 10) / (parseInt(parts[2], 10) + 1)});
-        }
-      });
-  }));
-};
-
-/**
  * List locally-loaded docker images (`docker images`)
  *
  * - baseDir -- base directory for operations
@@ -282,25 +246,42 @@ exports.dockerRegistryCheck = async ({tag}) => {
  * - baseDir -- base directory for operations
  * - tag -- tag to push
  * - logfile -- name of the file to write the log to
+ * - credentials -- {username, secret} for docker access
+ *     (optional; uses existing docker creds if omitted)
  * - utils -- taskgraph utils (waitFor, etc.)
  */
-exports.dockerPush = async ({baseDir, tag, logfile, utils}) => {
-  await utils.waitFor(new Observable(observer => {
-    const push = spawn('docker', ['push', tag]);
-    push.on('error', err => observer.error(err));
-    if (logfile) {
-      const logStream = fs.createWriteStream(logfile);
-      push.stdout.pipe(logStream);
-      push.stderr.pipe(logStream);
+exports.dockerPush = async ({baseDir, tag, logfile, credentials, utils}) => {
+  let homeDir;
+  const env = {...process.env};
+
+  try {
+    if (credentials) {
+      // override HOME so this doesn't use the user's credentials
+      homeDir = path.join(REPO_ROOT, 'temp', taskcluster.slugid());
+      await mkdirp(homeDir);
+      env.HOME = homeDir;
+
+      // run `docker login` to set up credentials in the temp homedir
+      await execCommand({
+        dir: baseDir,
+        command: ['docker', 'login', '--username', credentials.username, '--password-stdin'],
+        utils,
+        stdin: credentials.password,
+        logfile,
+        env,
+      });
     }
-    push.stdout.pipe(split(/\r?\n/, null, {trailing: false})).on('data', d => observer.next(d.toString()));
-    push.stderr.pipe(split(/\r?\n/, null, {trailing: false})).on('data', d => observer.next(d.toString()));
-    push.on('exit', (code, signal) => {
-      if (code !== 0) {
-        observer.error(new Error(`push failed! check ${logfile} for reason`));
-      } else {
-        observer.complete();
-      }
+
+    await execCommand({
+      dir: baseDir,
+      command: ['docker', 'push', tag],
+      utils,
+      logfile,
+      env,
     });
-  }));
+  } finally {
+    if (homeDir) {
+      await rimraf(homeDir);
+    }
+  }
 };

@@ -30,7 +30,7 @@ const tempDir = path.join(REPO_ROOT, 'temp');
  *  All of this is done using a "hooks" approach to allow segmenting the various oddball bits of
  *  this process by theme.
  */
-const generateMonoimageTasks = ({tasks, baseDir, cmdOptions}) => {
+const generateMonoimageTasks = ({tasks, baseDir, cmdOptions, credentials}) => {
   const sourceDir = appRootDir.get();
 
   ensureTask(tasks, {
@@ -197,11 +197,20 @@ const generateMonoimageTasks = ({tasks, baseDir, cmdOptions}) => {
         return utils.skip({provides});
       }
 
+      const dockerPushOptions = {};
+      if (credentials.dockerUsername && credentials.dockerPassword) {
+        dockerPushOptions.credentials = {
+          username: credentials.dockerUsername,
+          password: credentials.dockerPassword,
+        };
+      }
+
       await dockerPush({
         logfile: `${baseDir}/docker-push.log`,
         tag,
         utils,
         baseDir,
+        ...dockerPushOptions,
       });
 
       return provides;

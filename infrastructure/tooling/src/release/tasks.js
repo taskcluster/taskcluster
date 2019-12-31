@@ -1,11 +1,5 @@
 const semver = require('semver');
-const Octokit = require('@octokit/rest');
-const fs = require('fs');
 const {ChangeLog} = require('../changelog');
-const util = require('util');
-const path = require('path');
-const rimraf = util.promisify(require('rimraf'));
-const mkdirp = util.promisify(require('mkdirp'));
 const {
   ensureTask,
   gitLsFiles,
@@ -13,8 +7,6 @@ const {
   gitCommit,
   gitTag,
   gitPush,
-  npmPublish,
-  execCommand,
   readRepoJSON,
   readRepoFile,
   writeRepoFile,
@@ -22,15 +14,10 @@ const {
   writeRepoYAML,
   modifyRepoFile,
   removeRepoFile,
-  pyClientRelease,
   REPO_ROOT,
 } = require('../utils');
 
-const readFile = util.promisify(fs.readFile);
-
-module.exports = ({tasks, cmdOptions, credentials, baseDir}) => {
-  const artifactsDir = path.join(baseDir, 'release-artifacts');
-
+module.exports = ({tasks, cmdOptions, credentials}) => {
   ensureTask(tasks, {
     title: 'Get Changelog',
     requires: [
@@ -262,61 +249,12 @@ module.exports = ({tasks, cmdOptions, credentials, baseDir}) => {
   });
 
   ensureTask(tasks, {
-    title: 'Clean release-artifacts',
-    requires: [],
-    provides: ['cleaned-release-artifacts'],
-    run: async (requirements, utils) => {
-      await rimraf(artifactsDir);
-      await mkdirp(artifactsDir);
-    },
-  });
-
-  ensureTask(tasks, {
-    title: 'Build client-shell artifacts',
-    requires: [
-      'cleaned-release-artifacts',
-      'version-updated',
-    ],
-    provides: ['client-shell-artifacts'],
-    run: async (requirements, utils) => {
-      await execCommand({
-        dir: artifactsDir,
-        command: ['go', 'get', '-u', 'github.com/mitchellh/gox'],
-        utils,
-      });
-
-      const osarch = 'linux/amd64 darwin/amd64';
-      await execCommand({
-        dir: path.join(REPO_ROOT, 'clients', 'client-shell'),
-        command: [
-          'gox',
-          `-osarch=${osarch}`,
-          `-output=${artifactsDir}/taskcluster-{{.OS}}-{{.Arch}}`,
-        ],
-        utils,
-      });
-
-      const artifacts = osarch.split(' ')
-        .map(osarch => {
-          const [os, arch] = osarch.split('/');
-          return `taskcluster-${os}-${arch}`;
-        });
-
-      return {
-        'client-shell-artifacts': artifacts,
-      };
-    },
-  });
-
-  /* -- docker image build occurs here -- */
-
-  ensureTask(tasks, {
     title: 'Push Tag',
     requires: [
       'repo-tagged',
     ],
     provides: [
-      'pushed-tag',
+      'target-release',
     ],
     run: async (requirements, utils) => {
       if (!cmdOptions.push) {
@@ -334,123 +272,6 @@ module.exports = ({tasks, cmdOptions, credentials, baseDir}) => {
       return {
         'pushed-tag': tags[0],
       };
-    },
-  });
-
-  /* --- remainder would be done in CI --- */
-
-  ensureTask(tasks, {
-    title: 'Create GitHub Release',
-    requires: [
-      'release-version',
-      'client-shell-artifacts',
-      'pushed-tag',
-      'changelog',
-      'target-monoimage',
-    ],
-    provides: [
-      'github-release',
-    ],
-    run: async (requirements, utils) => {
-      if (!cmdOptions.push) {
-        return utils.skip({});
-      }
-
-      const octokit = new Octokit({auth: `token ${credentials.ghToken}`});
-
-      utils.status({message: `Create Release`});
-      const release = await octokit.repos.createRelease({
-        owner: 'taskcluster',
-        repo: 'taskcluster',
-        tag_name: requirements['pushed-tag'],
-        name: requirements['pushed-tag'],
-        body: await requirements['changelog'].format(),
-        draft: false,
-        prerelease: false,
-      });
-      const {upload_url} = release.data;
-
-      const files = requirements['client-shell-artifacts']
-        .map(name => ({name, contentType: 'application/octet-stream'}));
-      for (let {name, contentType} of files) {
-        utils.status({message: `Upload Release asset ${name}`});
-        const file = await readFile(path.join(artifactsDir, name));
-        await octokit.repos.uploadReleaseAsset({
-          url: upload_url,
-          headers: {
-            'content-length': file.length,
-            'content-type': contentType,
-          },
-          name,
-          file,
-        });
-      }
-
-      return {
-        'github-release': release.data.html_url,
-      };
-    },
-  });
-
-  ['clients/client', 'clients/client-web'].forEach(clientName =>
-    ensureTask(tasks, {
-      title: `Publish ${clientName} to npm`,
-      requires: [
-        'version-updated',
-        'target-monoimage', // to make sure the build succeeds first..
-      ],
-      provides: [
-        `publish-${clientName}`,
-      ],
-      run: async (requirements, utils) => {
-        if (!cmdOptions.push) {
-          return utils.skip({});
-        }
-
-        await npmPublish({
-          dir: path.join(REPO_ROOT, clientName),
-          apiKey: credentials.npmToken,
-          logfile: `${baseDir}/publish-${clientName.replace('/', '-')}.log`,
-          utils});
-      },
-    }));
-
-  ensureTask(tasks, {
-    title: `Publish clients/client-py to pypi`,
-    requires: [
-      'version-updated',
-      'target-monoimage', // to make sure the build succeeds first..
-    ],
-    provides: [
-      `publish-clients/client-py`,
-    ],
-    run: async (requirements, utils) => {
-      if (!cmdOptions.push) {
-        return utils.skip({});
-      }
-
-      await pyClientRelease({
-        dir: path.join(REPO_ROOT, 'clients', 'client-py'),
-        username: credentials.pypiUsername,
-        password: credentials.pypiPassword,
-        logfile: `${baseDir}/publish-client-py.log`,
-        utils});
-    },
-  });
-
-  ensureTask(tasks, {
-    title: 'Release Complete',
-    requires: [
-      'github-release',
-      'publish-clients/client',
-      'publish-clients/client-web',
-      'publish-clients/client-py',
-    ],
-    provides: [
-      'target-release',
-    ],
-    run: async (requirements, utils) => {
-      // this just gathers requirements into a single target..
     },
   });
 };

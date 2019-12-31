@@ -42,7 +42,7 @@ exports.execCommand = async ({
       } else {
         output = '...\n' + chunk.toString();
       }
-      callback(null, output);
+      callback(null, chunk);
     },
   });
   cp.stdout.pipe(stream);

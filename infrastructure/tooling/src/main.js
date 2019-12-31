@@ -30,9 +30,23 @@ program.command('build')
   });
 
 program.command('release')
+  .description('tag a release and push it to GitHub')
+  .option('--dry-run', 'Do not run any tasks, but generate the list of tasks')
+  .option('--no-push', 'Do not push the git commit + tags (but your local repo is still modified)')
+  .action((...options) => {
+    if (options.length !== 1) {
+      console.error('unexpected command-line arguments');
+      process.exit(1);
+    }
+    const {main} = require('./release');
+    run(main, options[0]);
+  });
+
+program.command('release:publish')
+  .description('publish a release based on Git tag')
   .option('--base-dir <base-dir>', 'Base directory for build (fast and big!; default /tmp/taskcluster-builder-build)')
   .option('--dry-run', 'Do not run any tasks, but generate the list of tasks')
-  .option('--no-push', 'Do not push the docker image and git commit + tags (but your local repo is still modified)')
+  .option('--no-push', 'Do not push the GitHub release, docker images, packages, etc.')
   .on('--help', () => {
     console.log([
       '',
@@ -40,6 +54,7 @@ program.command('release')
       ' * GH_TOKEN - GitHub access token with permissions to create a release',
       ' * NPM_TOKEN - NPM authentication token with permission to publish client libraries',
       ' * PYPI_USERNAME / PYPI_PASSWORD - PyPI credentials with permission to upload taskcluster-client',
+      ' * DOCKER_USERNAME / DOCKER_PASSWORD - Docker credentials with permission to taskcluster/taskcluster',
     ].join('\n'));
   })
   .action((...options) => {
@@ -47,7 +62,7 @@ program.command('release')
       console.error('unexpected command-line arguments');
       process.exit(1);
     }
-    const {main} = require('./release');
+    const {main} = require('./publish');
     run(main, options[0]);
   });
 
