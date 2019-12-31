@@ -1,5 +1,4 @@
 const util = require('util');
-const split = require('split');
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
@@ -9,7 +8,6 @@ const {PassThrough, Transform} = require('stream');
 const taskcluster = require('taskcluster-client');
 const {REPO_ROOT} = require('./repo');
 const got = require('got');
-const {spawn} = require('child_process');
 const {execCommand} = require('./command');
 const mkdirp = util.promisify(require('mkdirp'));
 const rimraf = util.promisify(require('rimraf'));
@@ -204,46 +202,6 @@ exports.dockerPull = async ({baseDir, image, utils}) => {
           const current = Object.values(downloading).reduce((a, b) => a + b, 0) +
             Object.values(extracting).reduce((a, b) => a + b, 0);
           utils.status({progress: current * 100 / total});
-        }
-      });
-  }));
-};
-
-/**
- * Build a docker image (`docker build`).
- *
- * - baseDir -- base directory for operations
- * - logfile -- name of the file to write the log to
- * - tag -- tag to build
- * - tarball -- tarfile containing the Dockerfile and any other required files
- * - utils -- taskgraph utils (waitFor, etc.)
- */
-exports.dockerBuild = async ({baseDir, logfile, tag, tarball, utils}) => {
-  const {docker} = await _dockerSetup({baseDir});
-
-  utils.status({progress: 0, message: `Building ${tag}`});
-  const buildStream = await docker.buildImage(tarball, {t: tag});
-  if (logfile) {
-    buildStream.pipe(fs.createWriteStream(logfile));
-  }
-
-  await utils.waitFor(new Observable(observer => {
-    docker.modem.followProgress(buildStream,
-      err => {
-        if (err) {
-          observer.error(new Error(`build failed: ${err}\ncheck ${logfile} for reason`));
-        } else {
-          observer.complete();
-        }
-      },
-      update => {
-        if (!update.stream) {
-          return;
-        }
-        observer.next(update.stream);
-        const parts = /^Step (\d+)\/(\d+)/.exec(update.stream);
-        if (parts) {
-          utils.status({progress: 100 * parseInt(parts[1], 10) / (parseInt(parts[2], 10) + 1)});
         }
       });
   }));
