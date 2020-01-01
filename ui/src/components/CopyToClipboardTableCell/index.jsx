@@ -1,38 +1,30 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { node, string } from 'prop-types';
 import { CopyToClipboard } from 'react-copy-to-clipboard';
 import TableCell from '@material-ui/core/TableCell';
 import ContentCopyIcon from 'mdi-react/ContentCopyIcon';
 import CheckIcon from 'mdi-react/CheckIcon';
 import TableCellItem from '../TableCellItem';
+import useCopyToClipboard from '../../utils/useCopyToClipboard';
 
 function CopyToClipboardTableCell(props) {
-  const [isCopy, setCopy] = useState(false);
+  const { isCopy, onCopyClick } = useCopyToClipboard();
   const { tooltipTitle, textToCopy, text } = props;
-
-  function handleCopyClick() {
-    setCopy(true);
-  }
-
-  useEffect(() => {
-    if (isCopy) {
-      setTimeout(() => {
-        setCopy(false);
-      }, 3000);
-    }
-  }, [isCopy]);
-
-  const IconSize = 16;
+  const iconSize = 16;
 
   return (
     <CopyToClipboard
-      onCopy={handleCopyClick}
+      onCopy={onCopyClick}
       title={`${tooltipTitle} (${isCopy ? 'Copied!' : 'Copy'})`}
       text={textToCopy}>
       <TableCell>
         <TableCellItem button>
           {text}
-          {isCopy ? <CheckIcon /> : <ContentCopyIcon size={IconSize} />}
+          {isCopy ? (
+            <CheckIcon size={iconSize} />
+          ) : (
+            <ContentCopyIcon size={iconSize} />
+          )}
         </TableCellItem>
       </TableCell>
     </CopyToClipboard>
