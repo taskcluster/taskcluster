@@ -157,8 +157,8 @@ helper.dbSuite(path.basename(__filename), function() {
       await db._withClient('admin', async client => {
         // create some tables for permissions
         await client.query('create table tcversion (version int)');
-        await client.query('create table foo (x int)');
-        await client.query('create table bar (x int)');
+        await client.query('create table foo (fooId int)');
+        await client.query('create table bar (barId int)');
       });
     });
 
@@ -205,8 +205,8 @@ helper.dbSuite(path.basename(__filename), function() {
       await db._withClient('admin', async client => {
         await client.query('grant select on foo to test_service1');
         await client.query('grant select, insert, update, delete on foo to test_service2');
-        // grant access only to the `x` column on bar
-        await client.query('grant select(x) on bar to test_service2');
+        // grant access only to the `barId` column on bar
+        await client.query('grant select(barId) on bar to test_service2');
       });
       const schema = {
         access: {
