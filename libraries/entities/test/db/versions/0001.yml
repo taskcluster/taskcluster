@@ -1,0 +1,21 @@
+version: 1
+migrationScript: |-
+  begin
+    create extension pgcrypto;
+    create table test_entities(id text primary key, value jsonb not null, version integer not null, etag uuid default public.gen_random_uuid());
+  end
+methods:
+  test_entities_create:
+    serviceName: test-entities
+    description: test
+    mode: write
+    args: document_id text, properties jsonb, overwrite boolean, version integer
+    returns: void
+    body: |-
+      insert into test_entities(id, value, version)
+      values (
+        document_id,
+        properties,
+        version
+      )
+
