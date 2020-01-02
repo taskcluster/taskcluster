@@ -23,7 +23,8 @@ class Entity {
 
   create(properties, overwrite) {
     const documentId = this.calculateId(properties);
-    this.db.procs[this.serviceName][`${this.tableName}_create`](documentId, properties, overwrite, 1);
+
+    return this.db.procs[`${this.tableName}_create`](documentId, properties, overwrite, 1);
   }
 
   static configure(options) {
