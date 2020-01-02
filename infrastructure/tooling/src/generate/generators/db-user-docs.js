@@ -7,7 +7,7 @@ exports.tasks = [{
   requires: ['db-schema-serializable'],
   provides: [],
   run: async (requirements, utils) => {
-    const schema = Schema.fromDbDirectory(path.join(REPO_ROOT, 'db'));
+    const schema = Schema.fromSerializable(requirements['db-schema-serializable']);
     const services = Object.keys(schema.access).sort();
 
     const docsFile = path.join('ui', 'docs', 'manual', 'deploying', 'database.mdx');

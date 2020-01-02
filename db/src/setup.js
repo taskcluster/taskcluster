@@ -4,7 +4,7 @@ const {FakeDatabase} = require('./fakes');
 
 exports.setup = async ({writeDbUrl, readDbUrl, serviceName, useDbDirectory}) => {
   return await Database.setup({
-    schema: schema(useDbDirectory),
+    schema: schema({useDbDirectory}),
     writeDbUrl,
     readDbUrl,
     serviceName,
@@ -13,7 +13,7 @@ exports.setup = async ({writeDbUrl, readDbUrl, serviceName, useDbDirectory}) => 
 
 exports.fakeSetup = async ({serviceName}) => {
   return new FakeDatabase({
-    schema: schema(true),
+    schema: schema({useDbDirectory: true}),
     serviceName,
   });
 };

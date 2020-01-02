@@ -1,6 +1,5 @@
-const path = require('path');
-const { Schema } = require('taskcluster-lib-postgres');
-const { writeRepoJSON, REPO_ROOT } = require('../../utils');
+const tcdb = require('taskcluster-db');
+const { writeRepoJSON } = require('../../utils');
 
 // Generate a readable JSON version of the schema.
 exports.tasks = [{
@@ -8,7 +7,7 @@ exports.tasks = [{
   requires: [],
   provides: ['db-schema-serializable'],
   run: async (requirements, utils) => {
-    const schema = Schema.fromDbDirectory(path.join(REPO_ROOT, 'db'));
+    const schema = tcdb.schema({fromDbDirectory: true});
 
     const serializable = JSON.parse(schema.asSerializable());
     writeRepoJSON('generated/db-schema.json', serializable);
