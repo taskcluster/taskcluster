@@ -5,12 +5,39 @@ const mkdirp = util.promisify(require('mkdirp'));
 const {TaskGraph, Lock, ConsoleRenderer, LogRenderer} = require('console-taskgraph');
 const {Build} = require('../build');
 const generatePublishTasks = require('./tasks');
+const taskcluster = require('taskcluster-client');
 
 class Publish {
   constructor(cmdOptions) {
     this.cmdOptions = cmdOptions;
 
-    if (cmdOptions.push) {
+    this.baseDir = cmdOptions['baseDir'] || '/tmp/taskcluster-builder-build';
+
+    // The `yarn build` process is a subgraph of the publish taskgraph, with some
+    // options "forced"
+    this.build = new Build({
+      ...cmdOptions,
+      cache: false, // always build from scratch
+    });
+  }
+
+  async generateTasks() {
+    let tasks = this.build.generateTasks();
+
+    // try loading the secret into process.env
+    if (process.env.TASKCLUSTER_PROXY_URL) {
+      const secretName = "project/taskcluster/erelease";
+      console.log(`loading secrets from taskcluster secret ${secretName} via taskcluster-proxy`);
+      const secrets = new taskcluster.Secrets({rootUrl: process.env.TASKCLUSTER_PROXY_URL});
+      const {secret} = await secrets.get(secretName);
+
+      for (let [name, value] of Object.entries(secret)) {
+        console.log(`..found value for ${name}`);
+        process.env[name] = value;
+      }
+    }
+
+    if (this.cmdOptions.push) {
       [
         'GH_TOKEN',
         'NPM_TOKEN',
@@ -24,19 +51,6 @@ class Publish {
         }
       });
     }
-
-    this.baseDir = cmdOptions['baseDir'] || '/tmp/taskcluster-builder-build';
-
-    // The `yarn build` process is a subgraph of the publish taskgraph, with some
-    // options "forced"
-    this.build = new Build({
-      ...cmdOptions,
-      cache: false, // always build from scratch
-    });
-  }
-
-  generateTasks() {
-    let tasks = this.build.generateTasks();
 
     generatePublishTasks({
       tasks,
@@ -61,7 +75,7 @@ class Publish {
     }
     await mkdirp(this.baseDir);
 
-    let tasks = this.generateTasks();
+    let tasks = await this.generateTasks();
 
     const taskgraph = new TaskGraph(tasks, {
       locks: {

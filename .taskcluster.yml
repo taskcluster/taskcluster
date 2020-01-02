@@ -288,6 +288,63 @@ tasks:
                 description: ${job.name}
                 owner: ${owner}
                 source: ${repo.url}
+          releaseTasks:
+          - taskId: {$eval: 'as_slugid("release")'}
+            provisionerId: proj-taskcluster
+            workerType: release
+            created: {$fromNow: ''}
+            deadline: {$fromNow: '3 hours'}
+            extra:
+              notify:
+                email:
+                  subject: 'Taskcluster Release Status'
+            routes:
+            - notify.email.taskcluster-notifications@mozilla.com.on-any
+            - notify.irc-channel.#taskcluster-bots.on-any
+            scopes:
+            - secrets:get:project/taskcluster/release
+            payload:
+              features:
+                taskclusterProxy: true
+              maxRunTime: 3600
+              command:
+                - - "/bin/bash"
+                  - "-ec"
+                  - |-
+                    # set up golang..
+                    export GOROOT="$(pwd)/go/go"
+                    export GOPATH="$(pwd)/go/path"
+                    mkdir -p $${GOPATH}
+                    export PATH="$${GOROOT}/bin:$${GOPATH}/bin:$${PATH}"
+                    go version
+
+                    # set up gox
+                    go get github.com/mitchellh/gox
+
+                    # set up Node, using nvm (generic-worker does not support .xz, so we can't use mounts)
+                    curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.35.2/install.sh | bash
+                    . ~/.nvm/nvm.sh
+                    nvm install ${node}
+                    npm install --global yarn
+
+                    # clone the repo (shallow won't work here as it misses tags)
+                    git clone --quiet --no-single-branch --tags ${repo.git_url} taskcluster
+                    cd taskcluster
+                    git checkout ${repo.ref}
+
+                    # publish the release
+                    yarn --frozen-lockfile
+                    yarn release:publish
+              mounts:
+              - content:
+                  url: 'https://storage.googleapis.com/golang/go${go}.linux-amd64.tar.gz'
+                directory: go
+                format: tar.gz
+            metadata:
+              name: taskcluster-release-publish
+              description: Publish a taskcluster release
+              owner: taskcluster-internal@mozilla.com
+              source: ${repo.url}
         in:
           $flattenDeep:
           # only build pushes to master; everything else should be tested in a PR
@@ -295,3 +352,9 @@ tasks:
             then: {$eval: allTasks}
           - $if: 'tasks_for == "github-pull-request" && event["action"] in ["opened", "reopened", "synchronize"]'
             then: {$eval: allTasks}
+          # Release on tags; note that we must match the `v` to avoid triggering on pushes to golang
+          # package tags like `clients/client-go/v1.2.3`.
+          - $if: 'tasks_for == "github-push"'
+            then:
+              $if: 'event.ref[:11] == "refs/tags/v"'
+              then: {$eval: releaseTasks}
