@@ -5,6 +5,16 @@ migrationScript: |-
     create table test_entities(id text primary key, value jsonb not null, version integer not null, etag uuid default public.gen_random_uuid());
   end
 methods:
+  get_entity:
+    description: test
+    mode: read
+    serviceName: test-entities
+    args: document_id text
+    returns: table (id text, value jsonb, version integer, etag uuid)
+    body: |-
+      begin
+        return query select test_entities.id, test_entities.value, test_entities.version, test_entities.etag from test_entities where test_entities.id = document_id;
+      end
   test_entities_create:
     serviceName: test-entities
     description: test
@@ -12,9 +22,18 @@ methods:
     args: document_id text, properties jsonb, overwrite boolean, version integer
     returns: void
     body: |-
-      insert into test_entities(id, value, version)
-      values (
-        document_id,
-        properties,
-        version
-      )
+      begin
+        if overwrite then
+          update test_entities
+          set (value, version, etag) = (properties, test_entities_create.version, public.gen_random_uuid())
+          where id = document_id;
+        else
+          insert into test_entities(id, value, version)
+          values (
+            document_id,
+            properties,
+            version
+          );
+        end if;
+      end
+
