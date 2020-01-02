@@ -7192,6 +7192,10 @@ tar-stream@^2.0.0:
   version "0.0.0"
   uid ""
 
+"taskcluster-lib-entities@link:libraries/entities":
+  version "0.0.0"
+  uid ""
+
 "taskcluster-lib-iterate@link:libraries/iterate":
   version "0.0.0"
   uid ""
