@@ -153,7 +153,6 @@ docker run -ti -p 127.0.0.1:5432:5432  --rm postgres:11
 ```
 
 This will run Docker in the foreground in that terminal (so you'll need to use another terminal for your work, or add the `-d` flag to daemonize the container) and make that available on TCP port 5432, the "normal" Postgres port.
-An advantage of running in the foreground is that Postgres helpfully logs every query that it runs, which can help with debugging and testing.
 
 *NOTE* the test suite repeatedly drops the `public` schema and re-creates it, effectively deleting all data in the database.
 Do not run these tests against a database instance that contains any useful data!
@@ -163,4 +162,10 @@ For the docker container described above, use
 
 ```shell
 export TEST_DB_URL=postgresql://postgres@localhost/postgres
+```
+
+It can be helpful to log all queries run by the test suite:
+
+```shell
+docker run -ti -p 127.0.0.1:5432:5432  --rm postgres:11 -c log_statement=all
 ```
