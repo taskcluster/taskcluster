@@ -133,7 +133,9 @@ setup('upgrade db', async function() {
 });
 ```
 
-Both of these functions take an optional `useDbDirectory: true` to indicate that they should read from the YAML files under `db/` instead of using the serialized format.
+Finally, to get the current Schema instance, call `tcdb.schema({})`.
+
+All of these functions take an optional `useDbDirectory: true` option to indicate that they should read from the YAML files under `db/` instead of using the serialized format.
 This approach is slower, but is appropriate for testing.
 
 ### Testing Support
