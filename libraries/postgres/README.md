@@ -129,7 +129,19 @@ methods:
 
 ### Access File
 
-TBD
+Because securing access to data in the DB is critical to Taskcluster's integrity, this library performs a check of access permissions after upgrades are complete.
+This check is based on `access.yml`, which has the following format:
+
+```yaml
+service_name:
+  tables:
+    table_name: 'read' or 'write'
+```
+
+Each service which accesses the database is listed in this file, with the tables to which it has access.
+Read access is translated to SELECT, while write access is translated to SELECT, INSERT, UPDATE, DELETE.
+
+This file provides a simple, verified confirmation of which services have what access, providing a useful aid in reviewing changes as well as verification that no malicious or accidental access changes have been made in a production deployment.
 
 ## Development
 
@@ -140,7 +152,7 @@ The easiest and best way to do this is to use docker:
 docker run -ti -p 127.0.0.1:5432:5432  --rm postgres:11
 ```
 
-This will run Docker in the foreground in that terminal (so you'll need to use another terminal for your work, or add the `-d` flag to daemonize the container) and make that available on TCP port 5432, the "normal" postgres port.
+This will run Docker in the foreground in that terminal (so you'll need to use another terminal for your work, or add the `-d` flag to daemonize the container) and make that available on TCP port 5432, the "normal" Postgres port.
 An advantage of running in the foreground is that Postgres helpfully logs every query that it runs, which can help with debugging and testing.
 
 *NOTE* the test suite repeatedly drops the `public` schema and re-creates it, effectively deleting all data in the database.
