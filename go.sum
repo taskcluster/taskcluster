@@ -1,5 +1,6 @@
 github.com/cenkalti/backoff v2.2.1+incompatible h1:tNowT99t7UNflLxfYYSlKYsBpXdEet03Pg2g16Swow4=
 github.com/cenkalti/backoff v2.2.1+incompatible/go.mod h1:90ReRw6GdpyfrHakVjL/QHaoyV4aDUVVkXQJJJ3NXXM=
+github.com/cenkalti/backoff/v3 v3.0.0 h1:ske+9nBpD9qZsTBoF41nW5L+AIuFBKMeze18XQ3eG1c=
 github.com/cenkalti/backoff/v3 v3.0.0/go.mod h1:cIeZDE3IrqwwJl6VUwCN6trj1oXrTS4rc0ij+ULvLYs=
 github.com/cenkalti/backoff/v3 v3.2.1 h1:Sn5hAjy0uGtHq/sAp1vBKyS9GCFaQOrrkyFQN0Sk5dM=
 github.com/cenkalti/backoff/v3 v3.2.1/go.mod h1:cIeZDE3IrqwwJl6VUwCN6trj1oXrTS4rc0ij+ULvLYs=
@@ -10,6 +11,8 @@ github.com/fatih/camelcase v1.0.0/go.mod h1:yN2Sb0lFhZJUdVvtELVWefmrXpuZESvPmqwo
 github.com/ghodss/yaml v1.0.0/go.mod h1:4dBDuWmgqj2HViK6kFavaiC9ZROes6MMH2rRYeMEF04=
 github.com/google/uuid v1.0.0 h1:b4Gk+7WdP/d3HZH8EJsZpvV7EtDOgaZLtnaNGIu1adA=
 github.com/google/uuid v1.0.0/go.mod h1:TIyPZe4MgqvfeYDBFedMoGGpEw/LqOeaOT+nhxU+yHo=
+github.com/gordonklaus/ineffassign v0.0.0-20190601041439-ed7b1b5ee0f8 h1:ehVe1P3MbhHjeN/Rn66N2fGLrP85XXO1uxpLhv0jtX8=
+github.com/gordonklaus/ineffassign v0.0.0-20190601041439-ed7b1b5ee0f8/go.mod h1:cuNKsD1zp2v6XfE/orVX2QE1LC+i254ceGcVeDT3pTU=
 github.com/pborman/uuid v1.2.0 h1:J7Q5mO4ysT1dv8hyrUGHb9+ooztCXu1D8MY8DZYsu3g=
 github.com/pborman/uuid v1.2.0/go.mod h1:X/NO0urCmaxf9VXbdlT7C2Yzkj2IKimNn4k+gtPdI/k=
 github.com/streadway/amqp v0.0.0-20190827072141-edfb9018d271/go.mod h1:AZpEONHx3DKn8O/DFsRAY58/XVQiIPMTMB1SddzLXVw=
@@ -22,6 +25,7 @@ github.com/taskcluster/jsonschema2go v1.0.0/go.mod h1:jhsT3XPj3iLNRx0efJVfFzZBZg
 github.com/taskcluster/pulse-go v1.0.0/go.mod h1:uuaqnRQj9XqouabCEKjnrlJiC6UT9Gurx2oSe6s+irM=
 github.com/taskcluster/slugid-go v1.1.0 h1:SWsUplliyamdYzOKVM4+lDohZKuL63fKreGkvIKJ9aI=
 github.com/taskcluster/slugid-go v1.1.0/go.mod h1:5sOAcPHjqso1UkKxSl77CkKgOwha0D9X0msBKBj0AOg=
+github.com/taskcluster/taskcluster-base-go v1.0.0 h1:Jh2R/J7+a23LjtYEHQtkFV04QBxx6EVX8E0PrzUqJo4=
 github.com/taskcluster/taskcluster-base-go v1.0.0/go.mod h1:ByyzyqqufsfZTrAHUw+0Grp8FwZAizZOKzVE1IpDXxQ=
 github.com/taskcluster/taskcluster-lib-artifact-go v0.0.0-20190401134756-654d226b8d36/go.mod h1:5n/2awXqMP8/HPuVo0kIJltEyi4fMJxhRN3exJBTOl0=
 github.com/taskcluster/taskcluster-lib-urls v12.0.0+incompatible/go.mod h1:ALqTgi15AmJGEGubRKM0ydlLAFatlQPrQrmal9YZpQs=
@@ -40,5 +44,7 @@ golang.org/x/sync v0.0.0-20190423024810-112230192c58/go.mod h1:RxMgew5VJxzue5/jJ
 golang.org/x/sys v0.0.0-20190215142949-d0b11bdaac8a/go.mod h1:STP8DvDyc/dI5b8T5hshtkjS+E42TnysNCUPdjciGhY=
 golang.org/x/text v0.3.0/go.mod h1:NqM8EUOU14njkJ3fqMW+pc6Ldnwhi/IjpwHt7yyuwOQ=
 golang.org/x/tools v0.0.0-20190719005602-e377ae9d6386/go.mod h1:jcCCGcm9btYwXyDqrUWc6MKQKKGJCWEQ3AfLSRIbEuI=
+gopkg.in/check.v1 v0.0.0-20161208181325-20d25e280405 h1:yhCVgyC4o1eVCa2tZl7eS0r+SDo693bJlVdllGtEeKM=
 gopkg.in/check.v1 v0.0.0-20161208181325-20d25e280405/go.mod h1:Co6ibVJAznAaIkqp8huTwlJQCZ016jof/cbN4VW5Yz0=
+gopkg.in/yaml.v2 v2.2.2 h1:ZCJp+EgiOT7lHqUV2J862kp8Qj64Jo6az82+3Td9dZw=
 gopkg.in/yaml.v2 v2.2.2/go.mod h1:hI93XBmqTisBFMUTm0b8Fm+jr3Dg1NNxqwp+5A1VGuI=

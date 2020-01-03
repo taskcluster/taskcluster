@@ -6,7 +6,11 @@ import (
 
 func TestNoTaskNoScopes(t *testing.T) {
 	routes, address, err := ParseCommandArgs(
-		[]string{},
+		[]string{
+			"--root-url", "https://tc-tests.example.com",
+			"--client-id", "abc",
+			"--access-token", "ghi",
+		},
 		false,
 	)
 	if err != nil {
@@ -23,8 +27,10 @@ func TestNoTaskNoScopes(t *testing.T) {
 func TestNondefaultPort(t *testing.T) {
 	_, address, err := ParseCommandArgs(
 		[]string{
-			"--port",
-			"12345",
+			"--root-url", "https://tc-tests.example.com",
+			"--client-id", "abc",
+			"--access-token", "ghi",
+			"--port", "12345",
 		},
 		false,
 	)
@@ -39,6 +45,7 @@ func TestNondefaultPort(t *testing.T) {
 func TestWithTwoScopes(t *testing.T) {
 	routes, address, err := ParseCommandArgs(
 		[]string{
+			"--root-url", "https://tc-tests.example.com",
 			"--client-id", "abc",
 			"--certificate", "def",
 			"--access-token", "ghi",
@@ -105,6 +112,7 @@ func TestWithTaskWithScopes(t *testing.T) {
 func TestWithInterface(t *testing.T) {
 	_, address, err := ParseCommandArgs(
 		[]string{
+			"--root-url", "https://tc-tests.example.com",
 			"--client-id", "abc",
 			"--certificate", "def",
 			"--access-token", "ghi",
