@@ -43,20 +43,7 @@ func newTestClient() *httpbackoff.Client {
 
 type IntegrationTest func(t *testing.T, creds *tcclient.Credentials) *httptest.ResponseRecorder
 
-func skipIfNoPermCreds(t *testing.T) {
-	if rootURL == "" {
-		t.Skip("TASKCLUSTER_ROOT_URL not set - skipping test")
-	}
-	if permCredentials.ClientID == "" {
-		t.Skip("TASKCLUSTER_CLIENT_ID not set - skipping test")
-	}
-	if permCredentials.AccessToken == "" {
-		t.Skip("TASKCLUSTER_ACCESS_TOKEN not set - skipping test")
-	}
-}
-
 func testWithPermCreds(t *testing.T, test IntegrationTest, expectedStatusCode int) {
-	skipIfNoPermCreds(t)
 	res := test(t, permCredentials)
 	checkStatusCode(
 		t,
@@ -79,7 +66,6 @@ func testWithPermCreds(t *testing.T, test IntegrationTest, expectedStatusCode in
 }
 
 func testWithTempCreds(t *testing.T, test IntegrationTest, expectedStatusCode int) {
-	skipIfNoPermCreds(t)
 	tempScopes := []string{
 		"assume:project:taskcluster:taskcluster-proxy-tester",
 	}
@@ -90,7 +76,7 @@ func testWithTempCreds(t *testing.T, test IntegrationTest, expectedStatusCode in
 	}
 	tempScopesJSON := string(tempScopesBytes)
 
-	tempCredsClientID := "garbage/" + slugid.Nice()
+	tempCredsClientID := "project/taskcluster/testing/temp/" + slugid.Nice()
 	tempCredentials, err := permCredentials.CreateNamedTemporaryCredentials(tempCredsClientID, 1*time.Hour, tempScopes...)
 	if err != nil {
 		t.Fatalf("Could not generate temp credentials")
@@ -155,22 +141,21 @@ func checkStatusCode(t *testing.T, res *httptest.ResponseRecorder, statusCode in
 }
 
 func TestBewit(t *testing.T) {
-	taskID, artifactName, artifactContent := createPrivateArtifact(t, nil)
 	test := func(t *testing.T, creds *tcclient.Credentials) *httptest.ResponseRecorder {
 
 		// Test setup
 		routes := NewRoutes(
 			rootURL,
 			tcclient.Client{
+				RootURL:     rootURL,
 				Credentials: creds,
 			},
 		)
-		// go identifier `url` is already used by net/url package - so call var `_url` instead
-		_url := tcurls.API(os.Getenv("TASKCLUSTER_ROOT_URL"), "queue", "v1", "task/"+taskID+"/runs/0/artifacts/"+url.QueryEscape(artifactName))
+		u := tcurls.API(rootURL, "secrets", "v1", "project/taskcluster/testing/tcproxy/a")
 		req, err := http.NewRequest(
 			"POST",
 			"http://localhost:60024/bewit",
-			bytes.NewBufferString(_url),
+			bytes.NewBufferString(u),
 		)
 		if err != nil {
 			log.Fatal(err)
@@ -179,6 +164,10 @@ func TestBewit(t *testing.T) {
 
 		// Function to test
 		routes.BewitHandler(res, req)
+
+		if res.Code != 303 {
+			t.Fatalf("Got non-303 response: %d with body %s", res.Code, res.Body.String())
+		}
 
 		// Validate results
 		bewitURLFromLocation := res.Header().Get("Location")
@@ -192,14 +181,18 @@ func TestBewit(t *testing.T) {
 		}
 		resp, _, err := newTestClient().Get(bewitURLFromLocation)
 		if err != nil {
-			t.Fatalf("Exception thrown:\n%s", err)
+			httpError, ok := err.(httpbackoff.BadHttpResponseCode)
+			if !ok {
+				t.Fatalf("Exception thrown:\n%s", err)
+			}
+			// secrets service only replies with 404 if the credentials and scopes are valid
+			if httpError.HttpResponseCode != 404 {
+				t.Fatalf("Exception thrown:\n%s", err)
+			}
 		}
-		respBody, err := ioutil.ReadAll(resp.Body)
+		_, err = ioutil.ReadAll(resp.Body)
 		if err != nil {
 			t.Fatalf("Exception thrown:\n%s", err)
-		}
-		if string(respBody) != string(artifactContent) {
-			t.Fatalf("Expected response body to be %v but was %v", artifactContent, respBody)
 		}
 		return res
 	}
@@ -226,12 +219,7 @@ func TestAuthorizationDelegate(t *testing.T) {
 
 			// Requires scope "auth:azure-table:read-write:fakeaccount/DuMmYtAbLe"
 			req, err := http.NewRequest(
-				"GET",
-				fmt.Sprintf(
-					"http://localhost:60024/api/auth/v1/azure/%s/table/%s/read-write",
-					"fakeaccount",
-					"DuMmYtAbLe",
-				),
+				"GET", "http://localhost:60024/api/secrets/v1/secret/project/taskcluster/testing/tcproxy/a",
 				// Note: we don't set body to nil as a server http request
 				// cannot have a nil body. See:
 				// https://golang.org/pkg/net/http/#Request
@@ -247,10 +235,10 @@ func TestAuthorizationDelegate(t *testing.T) {
 			return res
 		}
 	}
-	testWithPermCreds(t, test("A", []string{"auth:azure-table:read-write:fakeaccount/DuMmYtAbLe"}), 404)
-	testWithTempCreds(t, test("B", []string{"auth:azure-table:read-write:fakeaccount/DuMmYtAbLe"}), 404)
-	testWithPermCreds(t, test("C", []string{"queue:get-artifact:taskcluster-proxy-test/512-random-bytes"}), 403)
-	testWithTempCreds(t, test("D", []string{"queue:get-artifact:taskcluster-proxy-test/512-random-bytes"}), 403)
+	testWithPermCreds(t, test("A", []string{"secrets:get:project/taskcluster/testing/tcproxy/a"}), 404)
+	testWithTempCreds(t, test("B", []string{"secrets:get:project/taskcluster/testing/tcproxy/a"}), 404)
+	testWithPermCreds(t, test("C", []string{"secrets:get:project/taskcluster/testing/tcproxy/someothersecret"}), 403)
+	testWithTempCreds(t, test("D", []string{"secrets:get:project/taskcluster/testing/tcproxy/someothersecret"}), 403)
 }
 
 func TestAPICallWithPayload(t *testing.T) {
@@ -260,59 +248,21 @@ func TestAPICallWithPayload(t *testing.T) {
 		routes := NewRoutes(
 			rootURL,
 			tcclient.Client{
-				Authenticate: true,
-				Credentials:  creds,
+				RootURL:     rootURL,
+				Credentials: creds,
 			},
 		)
-		taskID := slugid.Nice()
-		taskGroupID := slugid.Nice()
-		created := time.Now()
-		deadline := created.AddDate(0, 0, 1)
-		expires := deadline
+		expires := time.Now()
 
 		req, err := http.NewRequest(
-			"POST",
-			"http://localhost:60024/queue/v1/task/"+taskID+"/define",
-			bytes.NewBufferString(
-				`
-{
-  "provisionerId": "win-provisioner",
-  "workerType": "win2008-worker",
-  "schedulerId": "go-test-test-scheduler",
-  "taskGroupId": "`+taskGroupID+`",
-  "routes": [
-    "garbage.dummy.route.12345",
-    "garbage.dummy.route.54321"
-  ],
-  "priority": "high",
-  "retries": 5,
-  "created": "`+tcclient.Time(created).String()+`",
-  "deadline": "`+tcclient.Time(deadline).String()+`",
-  "expires": "`+tcclient.Time(expires).String()+`",
-  "scopes": [
-  ],
-  "payload": {
-    "features": {
-      "relengApiProxy": true
-    }
-  },
-  "metadata": {
-    "description": "Stuff",
-    "name": "[TC] Pete",
-    "owner": "pmoore@mozilla.com",
-    "source": "http://everywhere.com/"
-  },
-  "tags": {
-    "createdForUser": "cbook@mozilla.com"
-  },
-  "extra": {
-    "index": {
-      "rank": 12345
-    }
-  }
-}
-`,
-			),
+			"PUT",
+			// note that we do not expect to have permissions to create this; 403 is success
+			// TODO: ^^ not actually true as it doesn't check the body until auth is OK
+			"http://localhost:60024/secrets/v1/secret/project/taskcluster/testing/tcproxy/xxx",
+			bytes.NewBufferString(`{
+			  "expires": "`+tcclient.Time(expires).String()+`",
+			  "secret": {},
+			}`),
 		)
 		if err != nil {
 			log.Fatal(err)
@@ -322,11 +272,10 @@ func TestAPICallWithPayload(t *testing.T) {
 		// Function to test
 		routes.RootHandler(res, req)
 
-		t.Logf("Created task https://queue.taskcluster.net/v1/task/%v", taskID)
 		return res
 	}
-	testWithPermCreds(t, test, 200)
-	testWithTempCreds(t, test, 200)
+	testWithPermCreds(t, test, 403)
+	testWithTempCreds(t, test, 403)
 }
 
 func TestNon200HasErrorBody(t *testing.T) {
@@ -476,14 +425,14 @@ func TestInvalidEndpoint(t *testing.T) {
 	testWithPermCreds(t, test, 404)
 }
 
-func TestRetrievePrivateArtifact(t *testing.T) {
-	taskID, artifactName, artifactContent := createPrivateArtifact(t, nil)
+func TestRetrieveSecret(t *testing.T) {
 	test := func(t *testing.T, creds *tcclient.Credentials) *httptest.ResponseRecorder {
 
 		// Test setup
 		routes := NewRoutes(
 			rootURL,
 			tcclient.Client{
+				RootURL:      rootURL,
 				Authenticate: true,
 				Credentials:  creds,
 			},
@@ -491,7 +440,7 @@ func TestRetrievePrivateArtifact(t *testing.T) {
 
 		req, err := http.NewRequest(
 			"GET",
-			"http://localhost:60024/queue/v1/task/"+taskID+"/runs/0/artifacts/"+url.QueryEscape(artifactName),
+			"http://localhost:60024/secrets/v1/secret/project/taskcluster/testing/tcproxy/somesecret",
 			nil,
 		)
 		if err != nil {
@@ -502,9 +451,8 @@ func TestRetrievePrivateArtifact(t *testing.T) {
 		// Function to test
 		routes.RootHandler(res, req)
 
-		if res.Body.String() != string(artifactContent) {
-			t.Fatalf("Artifact content does not match: %v vs %v", res.Body.String(), string(artifactContent))
-		}
+		fmt.Printf("res: %#v\n", res)
+		fmt.Printf("res.Body: %s\n", res.Body.String())
 		return res
 	}
 	testWithPermCreds(t, test, 200)
