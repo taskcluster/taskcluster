@@ -1,9 +1,8 @@
 const helper = require('./helper');
-const { Database, Schema } = require('taskcluster-lib-postgres');
+const { Schema } = require('taskcluster-lib-postgres');
 const { Entity } = require('taskcluster-lib-entities');
 const path = require('path');
 const assert = require('assert').strict;
-
 
 helper.dbSuite(path.basename(__filename), function() {
   let db;
@@ -28,7 +27,7 @@ helper.dbSuite(path.basename(__filename), function() {
       const properties = {
         taskId: 'string',
         provisionerId: 'string',
-        workerType: 'string'
+        workerType: 'string',
       };
       const entity = Entity.configure({
         partitionKey: 'taskId',
@@ -50,7 +49,7 @@ helper.dbSuite(path.basename(__filename), function() {
     const properties = {
       taskId: 'string',
       provisionerId: 'string',
-      workerType: 'string'
+      workerType: 'string',
     };
     const entity = Entity.configure({
       partitionKey: 'taskId',
@@ -84,7 +83,7 @@ helper.dbSuite(path.basename(__filename), function() {
     const properties = {
       taskId: 'string',
       provisionerId: 'string',
-      workerType: 'string'
+      workerType: 'string',
     };
     const entity = Entity.configure({
       partitionKey: 'taskId',
@@ -128,7 +127,7 @@ helper.dbSuite(path.basename(__filename), function() {
     const properties = {
       taskId: 'string',
       provisionerId: 'string',
-      workerType: 'string'
+      workerType: 'string',
     };
     const entity = Entity.configure({
       partitionKey: 'taskId',
@@ -157,7 +156,7 @@ helper.dbSuite(path.basename(__filename), function() {
         await entity.create(entry, false);
       },
       // already exists
-      err => err.code === '23505'
+      err => err.code === '23505',
     );
-  })
+  });
 });

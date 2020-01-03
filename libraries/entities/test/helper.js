@@ -40,7 +40,7 @@ exports.withDb = async ({ schema, serviceName }) => {
   await Database.upgrade({
     schema,
     adminDbUrl: exports.dbUrl,
-    usernamePrefix: 'test'
+    usernamePrefix: 'test',
   });
 
   return db;
