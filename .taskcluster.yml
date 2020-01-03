@@ -330,6 +330,9 @@ tasks:
                     curl -o- -L https://yarnpkg.com/install.sh | bash
                     export PATH="$HOME/.yarn/bin:$HOME/.config/yarn/global/node_modules/.bin:$PATH"
 
+                    # set up Python (see bug 1606948)
+                    apt-get update && apt-get install -y python3-venv
+
                     # clone the repo (shallow won't work here as it misses tags)
                     git clone --quiet --no-single-branch --tags ${repo.git_url} taskcluster
                     cd taskcluster
