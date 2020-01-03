@@ -12,7 +12,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/taskcluster/httpbackoff"
+	"github.com/taskcluster/httpbackoff/v3"
 	tcUrls "github.com/taskcluster/taskcluster-lib-urls"
 	tc "github.com/taskcluster/taskcluster-proxy/taskcluster"
 	tcclient "github.com/taskcluster/taskcluster/clients/client-go/v24"
