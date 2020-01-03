@@ -237,11 +237,20 @@ const generateMonoimageTasks = ({tasks, baseDir, cmdOptions, credentials}) => {
         return utils.skip({reason: "already on registry"});
       }
 
+      const dockerPushOptions = {};
+      if (credentials.dockerUsername && credentials.dockerPassword) {
+        dockerPushOptions.credentials = {
+          username: credentials.dockerUsername,
+          password: credentials.dockerPassword,
+        };
+      }
+
       await dockerPush({
         logfile: `${baseDir}/docker-push.log`,
         tag,
         utils,
         baseDir,
+        ...dockerPushOptions,
       });
     },
   });
