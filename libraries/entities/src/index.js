@@ -33,6 +33,12 @@ class Entity {
     return this.db.procs[`${this.tableName}_delete`](documentId);
   }
 
+  update(properties) {
+    const documentId = this.calculateId(properties);
+
+    return this.db.procs[`${this.tableName}_update`](documentId, properties, 1);
+  }
+
   load(properties) {
     const documentId = this.calculateId(properties);
 
