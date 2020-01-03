@@ -3,6 +3,10 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v24.1.4
+
+No changes
+
 ## v24.1.3
 
 ▶ [patch] [bug 1604175](http://bugzil.la/1604175)
