@@ -13,9 +13,9 @@ import (
 	"time"
 
 	"github.com/taskcluster/httpbackoff"
-	tcclient "github.com/taskcluster/taskcluster-client-go"
 	tcUrls "github.com/taskcluster/taskcluster-lib-urls"
 	tc "github.com/taskcluster/taskcluster-proxy/taskcluster"
+	tcclient "github.com/taskcluster/taskcluster/clients/client-go/v24"
 )
 
 // Routes represents the context of the running service

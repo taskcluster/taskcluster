@@ -13,11 +13,11 @@ import (
 	"testing"
 	"time"
 
-	"github.com/cenkalti/backoff"
+	"github.com/cenkalti/backoff/v3"
 	"github.com/taskcluster/httpbackoff"
 	"github.com/taskcluster/slugid-go/slugid"
-	tcclient "github.com/taskcluster/taskcluster-client-go"
 	tcurls "github.com/taskcluster/taskcluster-lib-urls"
+	tcclient "github.com/taskcluster/taskcluster/clients/client-go/v24"
 )
 
 var (
