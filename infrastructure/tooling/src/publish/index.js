@@ -26,7 +26,7 @@ class Publish {
 
     // try loading the secret into process.env
     if (process.env.TASKCLUSTER_PROXY_URL) {
-      const secretName = "project/taskcluster/erelease";
+      const secretName = "project/taskcluster/release";
       console.log(`loading secrets from taskcluster secret ${secretName} via taskcluster-proxy`);
       const secrets = new taskcluster.Secrets({rootUrl: process.env.TASKCLUSTER_PROXY_URL});
       const {secret} = await secrets.get(secretName);
