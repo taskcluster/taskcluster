@@ -41,7 +41,6 @@ func (d *genericworker) ConfigureRun(state *run.State) error {
 		"instanceID":       "instance-id",
 		"region":           "region",
 		"availabilityZone": "availability-zone",
-		"zone":             "zone",
 	} {
 		v, ok := state.ProviderMetadata[md]
 		if ok {
