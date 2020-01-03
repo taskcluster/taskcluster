@@ -66,7 +66,7 @@ helper.dbSuite(path.basename(__filename), function() {
 
     await entity.create(entry);
 
-    const result = await db.procs['get_entity'](entity.calculateId(entry));
+    const result = await entity.load(entry);
 
     assert.equal(result.length, 1);
     assert.equal(result[0].id, entity.calculateId(entry));
@@ -100,7 +100,7 @@ helper.dbSuite(path.basename(__filename), function() {
 
     await entity.create(entry);
 
-    const old = await db.procs['get_entity'](entity.calculateId(entry));
+    const old = await entity.load(entry);
 
     entry = {
       ...entry,
@@ -109,7 +109,7 @@ helper.dbSuite(path.basename(__filename), function() {
 
     await entity.create(entry, true);
 
-    const result = await db.procs['get_entity'](entity.calculateId(entry));
+    const result = await entity.load(entry);
 
     assert.equal(old.length, 1);
     assert.equal(result.length, 1);
@@ -144,7 +144,7 @@ helper.dbSuite(path.basename(__filename), function() {
 
     await entity.create(entry);
 
-    await db.procs['get_entity'](entity.calculateId(entry));
+    await entity.load(entity.calculateId(entry));
 
     entry = {
       ...entry,
