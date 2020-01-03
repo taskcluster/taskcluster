@@ -17,19 +17,6 @@ cd "$(dirname "${0}")"
 # exit in case of bad exit code
 set -e
 
-# Local changes will not be in the release, so they should be dealt with before
-# continuing. git stash can help here! Untracked files can make it into release
-# so let's make sure we have none of them either.
-modified="$(git status --porcelain)"
-if [ -n "$modified" ]; then
-  echo "There are changes in the local tree.  This probably means"
-  echo "you'll do something unintentional.  For safety's sake, please"
-  echo 'revert or stash them!'
-  echo ''
-  echo -- "$modified"
-  exit 66
-fi
-
 # begin making the distribution
 rm -f dist/*
 rm -rf .release
