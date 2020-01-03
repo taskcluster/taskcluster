@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { node, string, object } from 'prop-types';
 import { CopyToClipboard } from 'react-copy-to-clipboard';
 import { makeStyles } from '@material-ui/core/styles';
@@ -6,6 +6,7 @@ import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
 import ContentCopyIcon from 'mdi-react/ContentCopyIcon';
 import CheckIcon from 'mdi-react/CheckIcon';
+import useCopyToClipboard from '../../utils/useCopyToClipboard';
 
 const useStyles = makeStyles(theme => ({
   listItemButtonRoot: {
@@ -15,7 +16,7 @@ const useStyles = makeStyles(theme => ({
 
 function CopyToClipboardListItem(props) {
   const classes = useStyles();
-  const [isCopy, setCopy] = useState(false);
+  const { isCopy, onCopyClick } = useCopyToClipboard();
   const {
     tooltipTitle,
     textToCopy,
@@ -25,21 +26,9 @@ function CopyToClipboardListItem(props) {
     listItemProps,
   } = props;
 
-  function handleCopyClick() {
-    setCopy(true);
-  }
-
-  useEffect(() => {
-    if (isCopy) {
-      setTimeout(() => {
-        setCopy(false);
-      }, 3000);
-    }
-  }, [isCopy]);
-
   return (
     <CopyToClipboard
-      onCopy={handleCopyClick}
+      onCopy={onCopyClick}
       title={`${tooltipTitle} (${isCopy ? 'Copied!' : 'Copy'})`}
       text={textToCopy}>
       <ListItem
