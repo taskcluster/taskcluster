@@ -177,7 +177,7 @@ module.exports = ({tasks, cmdOptions, credentials, baseDir}) => {
 
         await npmPublish({
           dir: path.join(REPO_ROOT, clientName),
-          apiKey: credentials.npmToken,
+          apiToken: credentials.npmToken,
           logfile: `${baseDir}/publish-${clientName.replace('/', '-')}.log`,
           utils});
       },
