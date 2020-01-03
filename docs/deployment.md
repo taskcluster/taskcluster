@@ -69,4 +69,4 @@ nssm set worker-runner AppRotateSeconds 3600
 nssm set worker-runner AppRotateBytes 0
 ```
 
-Start the service manually and consult the logfiles for details.
+Start the `Worker Runner` service manually (`net start "Worker Runner"`) and consult its log file (`C:\worker-runner\worker-runner-service.log`) and/or the worker implementation's log file(s) for details.
