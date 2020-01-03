@@ -189,7 +189,7 @@ export default class WorkerTypesTable extends Component {
                 <StatusLabel state={workerType.stability} />
               </TableCell>
               <CopyToClipboardTableCell
-                tooltipTitle={`${workerType.lastDateActive}`}
+                tooltipTitle={workerType.lastDateActive}
                 textToCopy={workerType.lastDateActive}
                 text={<DateDistance from={workerType.lastDateActive} />}
               />

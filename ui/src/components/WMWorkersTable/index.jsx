@@ -97,7 +97,7 @@ export default class WorkerManagerWorkersTable extends Component {
         </TableCell>
 
         <CopyToClipboardTableCell
-          tooltipTitle={`${workerAge}`}
+          tooltipTitle={workerAge}
           textToCopy={workerAge}
           text={<DateDistance from={workerAge} />}
         />
@@ -117,7 +117,7 @@ export default class WorkerManagerWorkersTable extends Component {
 
         {latestTaskRun ? (
           <CopyToClipboardTableCell
-            tooltipTitle={`${latestTaskRun.started}`}
+            tooltipTitle={latestTaskRun.started}
             textToCopy={latestTaskRun.started}
             text={<DateDistance from={latestTaskRun.started} />}
           />
@@ -127,7 +127,7 @@ export default class WorkerManagerWorkersTable extends Component {
 
         {latestTaskRun ? (
           <CopyToClipboardTableCell
-            tooltipTitle={`${latestTaskRun.resolved}`}
+            tooltipTitle={latestTaskRun.resolved}
             textToCopy={latestTaskRun.resolved}
             text={<DateDistance from={latestTaskRun.resolved} />}
           />
