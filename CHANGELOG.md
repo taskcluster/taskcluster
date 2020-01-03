@@ -3,6 +3,19 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v24.1.3
+
+▶ [patch] [bug 1604175](http://bugzil.la/1604175)
+A task's deadline can now be up to 10 days in the future (replacing the previous limit of 5 days).
+
+▶ [patch] [bug 1605933](http://bugzil.la/1605933)
+Fix possible XSS vulnerability with the lazylog viewer
+
+▶ [patch] [#1660](https://github.com/taskcluster/taskcluster/issues/1660)
+Taskcluster UI now properly displays the error panel in the docs site.
+
+▶ Additional changes not described here: [bug 1588083](http://bugzil.la/1588083), [bug 1598643](http://bugzil.la/1598643), [bug 1598649](http://bugzil.la/1598649), [bug 1602985](http://bugzil.la/1602985), [#1684](https://github.com/taskcluster/taskcluster/issues/1684), [#2130](https://github.com/taskcluster/taskcluster/issues/2130), [#2187](https://github.com/taskcluster/taskcluster/issues/2187), [bug 1598649](http://bugzil.la/1598649).
+
 ## v24.1.2
 
 ▶ [patch] [#2159](https://github.com/taskcluster/taskcluster/issues/2159)
