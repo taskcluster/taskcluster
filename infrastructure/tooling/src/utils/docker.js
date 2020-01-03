@@ -262,6 +262,7 @@ exports.dockerPush = async ({baseDir, tag, logfile, credentials, utils}) => {
       env.HOME = homeDir;
 
       // run `docker login` to set up credentials in the temp homedir
+      utils.status({message: `Signing into docker hub with username ${credentials.username}`});
       await execCommand({
         dir: baseDir,
         command: ['docker', 'login', '--username', credentials.username, '--password-stdin'],

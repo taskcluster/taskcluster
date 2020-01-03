@@ -22,8 +22,6 @@ class Publish {
   }
 
   async generateTasks() {
-    let tasks = this.build.generateTasks();
-
     // try loading the secret into process.env
     if (process.env.TASKCLUSTER_PROXY_URL) {
       const secretName = "project/taskcluster/release";
@@ -52,6 +50,7 @@ class Publish {
       });
     }
 
+    let tasks = this.build.generateTasks();
     generatePublishTasks({
       tasks,
       cmdOptions: this.cmdOptions,
