@@ -27,6 +27,18 @@ class Entity {
     return this.db.procs[`${this.tableName}_create`](documentId, properties, overwrite, 1);
   }
 
+  delete(properties) {
+    const documentId = this.calculateId(properties);
+
+    return this.db.procs[`${this.tableName}_delete`](documentId);
+  }
+
+  load(properties) {
+    const documentId = this.calculateId(properties);
+
+    return this.db.procs[`${this.tableName}_load`](documentId);
+  }
+
   static configure(options) {
     return new Entity(options);
   }
