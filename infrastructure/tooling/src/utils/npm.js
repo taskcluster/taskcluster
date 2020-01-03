@@ -27,10 +27,12 @@ exports.npmPublish = async ({dir, apiToken, logfile, utils}) => {
         env: {
           ...process.env,
           HOME: homeDir,
-          NPM_TOKEN: apiToken,
         },
         cwd: dir,
       });
+
+      const npmrc = path.join(homeDir, '.npmrc');
+      fs.writeFileSync(npmrc, `//registry.npmjs.org/:_authToken=${apiToken}`);
 
       if (logfile) {
         const logStream = fs.createWriteStream(logfile);
