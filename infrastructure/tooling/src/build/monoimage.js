@@ -268,21 +268,6 @@ const generateMonoimageTasks = ({tasks, baseDir, cmdOptions, credentials}) => {
       const tag = requirements[`monoimage-push`];
       const provides = {[`target-monoimage`]: tag};
 
-      if (!cmdOptions.push) {
-        return utils.skip({provides});
-      }
-
-      if (requirements[`monoimage-image-on-registry`]) {
-        return utils.skip({provides});
-      }
-
-      await dockerPush({
-        logfile: `${baseDir}/docker-push.log`,
-        tag,
-        utils,
-        baseDir,
-      });
-
       return provides;
     },
   });
