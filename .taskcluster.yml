@@ -325,7 +325,10 @@ tasks:
                     curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.35.2/install.sh | bash
                     . ~/.nvm/nvm.sh
                     nvm install ${node}
-                    npm install --global yarn
+
+                    # set up yarn
+                    curl -o- -L https://yarnpkg.com/install.sh | bash
+                    export PATH="$HOME/.yarn/bin:$HOME/.config/yarn/global/node_modules/.bin:$PATH"
 
                     # clone the repo (shallow won't work here as it misses tags)
                     git clone --quiet --no-single-branch --tags ${repo.git_url} taskcluster
