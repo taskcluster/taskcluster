@@ -30,7 +30,7 @@ module.exports = ({tasks, cmdOptions, credentials, baseDir}) => {
       });
 
       if (!gitDescription.match(/^v\d+\.\d+\.\d+$/)) {
-        throw new Error(`Can only publish releases from git revisions with tags of the form X.Y.Z, not ${gitDescription}`);
+        throw new Error(`Can only publish releases from git revisions with tags of the form vX.Y.Z, not ${gitDescription}`);
       }
 
       return {
