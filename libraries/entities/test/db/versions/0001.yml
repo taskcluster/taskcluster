@@ -47,3 +47,15 @@ methods:
         delete from test_entities
         where id = document_id;
       end
+  test_entities_update:
+    serviceName: test-entities
+    description: test
+    mode: write
+    args: document_id text, properties jsonb, version integer
+    returns: void
+    body: |-
+      begin
+        update test_entities
+        set (value, version, etag) = (properties, test_entities_update.version, public.gen_random_uuid())
+        where id = document_id;
+      end
