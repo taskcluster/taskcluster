@@ -23,7 +23,7 @@ exports.pyClientRelease = async ({dir, username, password, logfile, utils}) => {
   await mkdirp(homeDir);
   try {
     await utils.waitFor(new Observable(observer => {
-      const proc = child_process.spawn('bash', ['./release.sh'], {
+      const proc = child_process.spawn('bash', ['./release.sh', '--real'], {
         env: {
           ...process.env,
           HOME: homeDir,
