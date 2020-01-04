@@ -17,23 +17,22 @@ helper.dbSuite(path.basename(__filename), function() {
     }
   });
 
+  const schema = Schema.fromDbDirectory(path.join(__dirname, 'db'));
+  const properties = {
+    taskId: 'string',
+    provisionerId: 'string',
+    workerType: 'string',
+  };
+  const entity = Entity.configure({
+    partitionKey: 'taskId',
+    rowKey: 'task',
+    properties,
+  });
+  const serviceName = 'test-entities';
+
   suite('update', function() {
     test('update entry', async function() {
-      const schema = Schema.fromDbDirectory(path.join(__dirname, 'db'));
-      const serviceName = 'test-entities';
-
       db = await helper.withDb({ schema, serviceName });
-
-      const properties = {
-        taskId: 'string',
-        provisionerId: 'string',
-        workerType: 'string',
-      };
-      const entity = Entity.configure({
-        partitionKey: 'taskId',
-        rowKey: 'task',
-        properties,
-      });
       const entry = {
         taskId: 'taskId',
         provisionerId: 'provisionerId',
@@ -50,7 +49,7 @@ helper.dbSuite(path.basename(__filename), function() {
       assert.equal(result.length, 1);
       assert.equal(result[0].id, documentId);
 
-      const updatedEntry =  {
+      const updatedEntry = {
         ...entry,
         workerType: 'update',
       };
