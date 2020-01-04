@@ -3,6 +3,11 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v24.1.8
+
+▶ [patch] [bug 1598649](http://bugzil.la/1598649)
+Final bit of debugging of the release process.  No other changes.
+
 ## v24.1.7
 
 ▶ [patch] [bug 1598649](http://bugzil.la/1598649)
