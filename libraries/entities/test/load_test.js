@@ -17,23 +17,23 @@ helper.dbSuite(path.basename(__filename), function() {
     }
   });
 
+  const schema = Schema.fromDbDirectory(path.join(__dirname, 'db'));
+  const properties = {
+    taskId: 'string',
+    provisionerId: 'string',
+    workerType: 'string',
+  };
+  const entity = Entity.configure({
+    partitionKey: 'taskId',
+    rowKey: 'task',
+    properties,
+  });
+  const serviceName = 'test-entities';
+
   suite('load', function() {
     test('load entry', async function() {
-      const schema = Schema.fromDbDirectory(path.join(__dirname, 'db'));
-      const serviceName = 'test-entities';
-
       db = await helper.withDb({ schema, serviceName });
 
-      const properties = {
-        taskId: 'string',
-        provisionerId: 'string',
-        workerType: 'string',
-      };
-      const entity = Entity.configure({
-        partitionKey: 'taskId',
-        rowKey: 'task',
-        properties,
-      });
       const entry = {
         taskId: 'taskId',
         provisionerId: 'provisionerId',

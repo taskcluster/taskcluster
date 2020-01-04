@@ -17,18 +17,21 @@ helper.dbSuite(path.basename(__filename), function() {
     }
   });
 
+  const schema = Schema.fromDbDirectory(path.join(__dirname, 'db'));
+  const properties = {
+    taskId: 'string',
+    provisionerId: 'string',
+    workerType: 'string',
+  };
+  const entity = Entity.configure({
+    partitionKey: 'taskId',
+    rowKey: 'task',
+    properties,
+  });
+  const serviceName = 'test-entities';
+
   suite('create', function() {
     test('create entity', async function() {
-      const schema = Schema.fromDbDirectory(path.join(__dirname, 'db'));
-      const serviceName = 'test-entities';
-
-      await helper.withDb({ schema, serviceName });
-
-      const properties = {
-        taskId: 'string',
-        provisionerId: 'string',
-        workerType: 'string',
-      };
       const entity = Entity.configure({
         partitionKey: 'taskId',
         rowKey: 'task',
@@ -41,21 +44,7 @@ helper.dbSuite(path.basename(__filename), function() {
     });
   });
   test('create entry', async function() {
-    const schema = Schema.fromDbDirectory(path.join(__dirname, 'db'));
-    const serviceName = 'test-entities';
-
     db = await helper.withDb({ schema, serviceName });
-
-    const properties = {
-      taskId: 'string',
-      provisionerId: 'string',
-      workerType: 'string',
-    };
-    const entity = Entity.configure({
-      partitionKey: 'taskId',
-      rowKey: 'task',
-      properties,
-    });
     const entry = {
       taskId: 'taskId',
       provisionerId: 'provisionerId',
@@ -63,7 +52,6 @@ helper.dbSuite(path.basename(__filename), function() {
     };
 
     entity.setup({ tableName: 'test_entities', db, serviceName });
-
     await entity.create(entry);
 
     const result = await entity.load(entry);
@@ -75,21 +63,7 @@ helper.dbSuite(path.basename(__filename), function() {
     assert(result[0].version);
   });
   test('create entry (overwriteIfExists)', async function() {
-    const schema = Schema.fromDbDirectory(path.join(__dirname, 'db'));
-    const serviceName = 'test-entities';
-
     db = await helper.withDb({ schema, serviceName });
-
-    const properties = {
-      taskId: 'string',
-      provisionerId: 'string',
-      workerType: 'string',
-    };
-    const entity = Entity.configure({
-      partitionKey: 'taskId',
-      rowKey: 'task',
-      properties,
-    });
     let entry = {
       taskId: 'taskId',
       provisionerId: 'provisionerId',
@@ -97,11 +71,9 @@ helper.dbSuite(path.basename(__filename), function() {
     };
 
     entity.setup({ tableName: 'test_entities', db, serviceName });
-
     await entity.create(entry);
 
     const old = await entity.load(entry);
-
     entry = {
       ...entry,
       workerType: 'foo',
@@ -119,21 +91,7 @@ helper.dbSuite(path.basename(__filename), function() {
     assert.notEqual(old[0].etag, result[0].etag);
   });
   test('create entry (won\'t overwrite)', async function () {
-    const schema = Schema.fromDbDirectory(path.join(__dirname, 'db'));
-    const serviceName = 'test-entities';
-
     db = await helper.withDb({ schema, serviceName });
-
-    const properties = {
-      taskId: 'string',
-      provisionerId: 'string',
-      workerType: 'string',
-    };
-    const entity = Entity.configure({
-      partitionKey: 'taskId',
-      rowKey: 'task',
-      properties,
-    });
     let entry = {
       taskId: 'taskId',
       provisionerId: 'provisionerId',
@@ -141,9 +99,7 @@ helper.dbSuite(path.basename(__filename), function() {
     };
 
     entity.setup({ tableName: 'test_entities', db, serviceName });
-
     await entity.create(entry);
-
     await entity.load(entity.calculateId(entry));
 
     entry = {
