@@ -187,7 +187,8 @@ export default class WMWorkerPoolEditor extends Component {
       !this.state.invalidProviderConfig &&
       !Object.values(validation).some(({ error }) => Boolean(error)) &&
       workerPoolId1 !== '' &&
-      workerPoolId2 !== '' &&  owner !== ''
+      workerPoolId2 !== '' &&
+      owner !== ''
     );
   }
 
