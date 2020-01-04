@@ -270,7 +270,7 @@ module.exports = ({tasks, cmdOptions, credentials}) => {
       });
 
       return {
-        'pushed-tag': tags[0],
+        'target-release': true,
       };
     },
   });
