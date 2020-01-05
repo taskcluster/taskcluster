@@ -297,7 +297,7 @@ const createTheme = isDarkTheme => {
       },
       MuiPickersToolbarText: {
         toolbarTxt: {
-          color: THEME.PRIMARY_TEXT_DIMMED,
+          color: 'rgba(255, 255, 255, 0.54)',
         },
         toolbarBtnSelected: {
           color: THEME.PRIMARY_TEXT_DARK,
