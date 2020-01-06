@@ -1,5 +1,5 @@
 import React, { Component, Fragment } from 'react';
-import { func, node, object } from 'prop-types';
+import { func, node } from 'prop-types';
 import { withApollo } from 'react-apollo';
 import { withRouter } from 'react-router-dom';
 import { omit, pathOr } from 'ramda';
@@ -38,6 +38,7 @@ import purgeWorkerCacheQuery from './purgeWorkerCache.graphql';
 import createTaskQuery from '../createTask.graphql';
 import submitTaskAction from '../submitTaskAction';
 import db from '../../../utils/db';
+import { task } from '../../../utils/prop-types';
 
 const updateTaskIdHistory = id => {
   if (!VALID_TASK.test(id)) {
@@ -120,7 +121,7 @@ export default class TaskActionButtons extends Component {
     // The children prop can be used to add additional
     // action buttons in the speed dial.
     children: node,
-    task: object,
+    task,
     // A graphql function to refetch the task query.
     refetchTask: func,
   };
