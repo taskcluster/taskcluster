@@ -24,10 +24,23 @@ class Entity {
     return `${properties[this.partitionKey]}${properties[this.rowKey]}`;
   }
 
-  create(properties, overwrite) {
+  async create(properties, overwrite) {
     const documentId = this.calculateId(properties);
 
-    return this.db.procs[`${this.tableName}_create`](documentId, properties, overwrite, 1);
+    let res;
+    try {
+      res = await this.db.procs[`${this.tableName}_create`](documentId, properties, overwrite, 1);
+    } catch (err) {
+      if (err.code !== '23505') {
+        throw err;
+      }
+      const e = new Error('Entity already exists');
+      e.code = 'EntityAlreadyExists';
+      throw e;
+    }
+
+    const etag = res[0][`${this.tableName}_create`];
+    //return RowClass(properties, etag);
   }
 
   delete(properties) {

@@ -62,6 +62,7 @@ helper.dbSuite(path.basename(__filename), function() {
     assert(result[0].etag);
     assert(result[0].version);
   });
+
   test('create entry (overwriteIfExists)', async function() {
     db = await helper.withDb({ schema, serviceName });
     let entry = {
@@ -90,6 +91,25 @@ helper.dbSuite(path.basename(__filename), function() {
     assert.deepEqual(result[0].value, entry);
     assert.notEqual(old[0].etag, result[0].etag);
   });
+
+  test('create entry (overwriteIfExists, doesn\'t exist)', async function() {
+    db = await helper.withDb({ schema, serviceName });
+    let entry = {
+      taskId: 'taskId',
+      provisionerId: 'provisionerId',
+      workerType: 'string',
+    };
+
+    entity.setup({ tableName: 'test_entities', db, serviceName });
+    await entity.create(entry, true);
+
+    const result = await entity.load(entry);
+
+    assert.equal(result.length, 1);
+    assert.equal(result[0].value.workerType, 'string');
+    assert.deepEqual(result[0].value, entry);
+  });
+
   test('create entry (won\'t overwrite)', async function () {
     db = await helper.withDb({ schema, serviceName });
     let entry = {
@@ -107,12 +127,12 @@ helper.dbSuite(path.basename(__filename), function() {
       workerType: 'foo',
     };
 
-    assert.rejects(
+    await assert.rejects(
       async () => {
         await entity.create(entry, false);
       },
       // already exists
-      err => err.code === '23505',
+      err => err.code === 'EntityAlreadyExists',
     );
   });
 });

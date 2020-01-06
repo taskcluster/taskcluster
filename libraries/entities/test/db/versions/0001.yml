@@ -20,21 +20,32 @@ methods:
     description: test
     mode: write
     args: document_id text, properties jsonb, overwrite boolean, version integer
-    returns: void
+    returns: uuid
     body: |-
+      declare
+        new_etag uuid := public.gen_random_uuid();
       begin
         if overwrite then
-          update test_entities
-          set (value, version, etag) = (properties, test_entities_create.version, public.gen_random_uuid())
-          where id = document_id;
-        else
-          insert into test_entities(id, value, version)
+          insert into test_entities(id, value, version, etag)
           values (
             document_id,
             properties,
-            version
+            version,
+            new_etag
+          ) on conflict (id) do
+          update
+          set (value, version, etag) = (properties, test_entities_create.version, new_etag)
+          where test_entities.id = document_id;
+        else
+          insert into test_entities(id, value, version, etag)
+          values (
+            document_id,
+            properties,
+            version,
+            new_etag
           );
         end if;
+        return new_etag;
       end
   test_entities_delete:
     serviceName: test-entities
