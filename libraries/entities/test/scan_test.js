@@ -57,7 +57,7 @@ helper.dbSuite(path.basename(__filename), function() {
       await Promise.all(insertDocuments(10));
 
       const result = await entity.scan({
-        filter: entry => Boolean(entry.value.taskId === 1)
+        filter: entry => Boolean(entry.value.taskId === 1),
       });
 
       assert.equal(result.rows.length, 1);
@@ -83,7 +83,7 @@ helper.dbSuite(path.basename(__filename), function() {
       result = await entity.scan({
         limit,
         filter,
-        page: 2
+        page: 2,
       });
 
       assert.equal(result.pageCount, 3);
@@ -93,7 +93,7 @@ helper.dbSuite(path.basename(__filename), function() {
       result = await entity.scan({
         limit,
         filter,
-        page: 3
+        page: 3,
       });
 
       assert.equal(result.pageCount, 3);
