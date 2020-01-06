@@ -10,12 +10,12 @@ import ListItem from '@material-ui/core/ListItem';
     verticalAlign: 'middle',
     paddingTop: 0,
     paddingBottom: 0,
-    width: '115%',
-    minWidth: '115%',
+    width: '100%',
   },
   listItem: {
     marginLeft: -theme.spacing(1),
     padding: theme.spacing(1),
+    width: 'auto',
   },
   listItemButton: {
     ...theme.mixins.listItemButton,
