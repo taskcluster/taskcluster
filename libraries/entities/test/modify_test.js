@@ -30,8 +30,8 @@ helper.dbSuite(path.basename(__filename), function() {
   });
   const serviceName = 'test-entities';
 
-  suite('update', function() {
-    test('update entry', async function() {
+  suite('modify', function() {
+    test('modify entry', async function() {
       db = await helper.withDb({ schema, serviceName });
       const entry = {
         taskId: 'taskId',
@@ -49,18 +49,18 @@ helper.dbSuite(path.basename(__filename), function() {
       assert.equal(result.length, 1);
       assert.equal(result[0].id, documentId);
 
-      const updatedEntry = {
+      const modifiedEntry = {
         ...entry,
-        workerType: 'update',
+        workerType: 'modified',
       };
 
-      await entity.update(updatedEntry);
+      await entity.modify(modifiedEntry);
 
-      result = await entity.load(updatedEntry);
+      result = await entity.load(modifiedEntry);
 
       assert.equal(result.length, 1);
       assert.equal(result[0].id, documentId);
-      assert.deepEqual(result[0].value, updatedEntry);
+      assert.deepEqual(result[0].value, modifiedEntry);
     });
   });
 });
