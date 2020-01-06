@@ -10,7 +10,8 @@ import ListItem from '@material-ui/core/ListItem';
     verticalAlign: 'middle',
     paddingTop: 0,
     paddingBottom: 0,
-    width: '100%',
+    width: '115%',
+    minWidth: '115%',
   },
   listItem: {
     marginLeft: -theme.spacing(1),
