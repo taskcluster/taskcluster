@@ -297,7 +297,7 @@ const createTheme = isDarkTheme => {
       },
       MuiPickersToolbarText: {
         toolbarTxt: {
-          color: THEME.PRIMARY_TEXT_DARK,
+          color: 'rgba(255, 255, 255, 0.54)',
         },
         toolbarBtnSelected: {
           color: THEME.PRIMARY_TEXT_DARK,
@@ -331,6 +331,37 @@ const createTheme = isDarkTheme => {
             color: isDarkTheme
               ? THEME.PRIMARY_TEXT_DARK
               : THEME.PRIMARY_TEXT_LIGHT,
+          },
+        },
+      },
+      MuiPickersClock: {
+        pin: {
+          backgroundColor: THEME.SECONDARY,
+        },
+      },
+      MuiPickersClockPointer: {
+        pointer: {
+          backgroundColor: THEME.SECONDARY,
+        },
+        thumb: {
+          borderColor: THEME.SECONDARY,
+          backgroundColor: THEME.PRIMARY_TEXT_DARK,
+        },
+        noPoint: {
+          backgroundColor: THEME.SECONDARY,
+        },
+      },
+      MuiPickersClockNumber: {
+        clockNumberSelected: {
+          color: '#fff',
+        },
+      },
+      MuiPickerDTTabs: {
+        tabs: {
+          color: '#fff',
+          backgroundColor: THEME.SECONDARY,
+          '& .MuiTabs-indicator': {
+            backgroundColor: isDarkTheme ? '#fff' : '#000',
           },
         },
       },

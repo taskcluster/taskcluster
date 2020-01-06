@@ -293,7 +293,6 @@ export default class ClientForm extends Component {
                 <DatePicker
                   value={expires}
                   onChange={this.handleExpirationChange}
-                  format="yyyy/MM/dd"
                   maxDate={addYears(new Date(), 1001)}
                 />
               }

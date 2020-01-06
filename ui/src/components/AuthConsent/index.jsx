@@ -121,7 +121,6 @@ export default class AuthConsent extends Component {
                         name="expires"
                         value={expires}
                         onChange={onExpirationChange}
-                        format="yyyy/MM/dd"
                         maxDate={addYears(new Date(), 1001)}
                       />
                     }
