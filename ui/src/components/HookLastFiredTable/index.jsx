@@ -7,8 +7,7 @@ import { titleCase } from 'change-case';
 import IconButton from '@material-ui/core/IconButton';
 import LinkIcon from 'mdi-react/LinkIcon';
 import InformationVariantIcon from 'mdi-react/InformationVariantIcon';
-import ContentCopyIcon from 'mdi-react/ContentCopyIcon';
-import { CopyToClipboard } from 'react-copy-to-clipboard';
+import CopyToClipboardTableCell from '../CopyToClipboardTableCell';
 import DateDistance from '../DateDistance';
 import TableCellItem from '../TableCellItem';
 import StatusLabel from '../StatusLabel';
@@ -67,16 +66,11 @@ function HookLastFiredTable({ classes, ...props }) {
               </IconButton>
             )}
           </TableCell>
-          <CopyToClipboard
-            title={`${hookFire.taskCreateTime} (Copy)`}
-            text={hookFire.taskCreateTime}>
-            <TableCell>
-              <TableCellItem button>
-                <DateDistance from={hookFire.taskCreateTime} />
-                <ContentCopyIcon size={iconSize} />
-              </TableCellItem>
-            </TableCell>
-          </CopyToClipboard>
+          <CopyToClipboardTableCell
+            tooltipTitle={hookFire.taskCreateTime}
+            textToCopy={hookFire.taskCreateTime}
+            text={<DateDistance from={hookFire.taskCreateTime} />}
+          />
         </TableRow>
       )}
       {...rest}
