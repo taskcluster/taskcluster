@@ -25,15 +25,15 @@ before_install:
   - go get github.com/pierrre/gotestcover
 
 install:
-  - 'CGO_ENABLED=0 go get -v -t -ldflags "-X main.revision=$(git rev-parse HEAD)" ./...'
+  - 'GO111MODULE=on CGO_ENABLED=0 go get -v -t -ldflags "-X main.revision=$(git rev-parse HEAD)" ./...'
 
 script:
   # need to test without gotestcover since error code is not reliable for gotestcover
-  - 'if [ $GIMME_OS.$GIMME_ARCH = linux.amd64 ]; then CGO_ENABLED=1 GORACE=history_size=7 go test -v -ldflags "-X github.com/taskcluster/taskcluster-proxy.revision=$(git rev-parse HEAD)" ./...; fi'
+  - 'export GO111MODULE=on; if [ $GIMME_OS.$GIMME_ARCH = linux.amd64 ]; then CGO_ENABLED=1 GORACE=history_size=7 go test -v -ldflags "-X github.com/taskcluster/taskcluster-proxy.revision=$(git rev-parse HEAD)" ./...; fi'
 
 after_script:
   # using gotestcover means tests get run again, but need to do this since exit code of gotestcover is unreliable
-  - "if [ $GIMME_OS.$GIMME_ARCH = linux.amd64 ]; then CGO_ENABLED=1 GORACE=history_size=7 ./gotestcover.sh coverage.report; fi"
+  - "export GO111MODULE=on; if [ $GIMME_OS.$GIMME_ARCH = linux.amd64 ]; then CGO_ENABLED=1 GORACE=history_size=7 ./gotestcover.sh coverage.report; fi"
 
 notifications:
   irc:
