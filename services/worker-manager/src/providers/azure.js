@@ -67,13 +67,6 @@ class AzureProvider extends Provider {
 
   async provision({workerPool, existingCapacity}) {
     const {workerPoolId} = workerPool;
-
-    if (!workerPool.providerData[this.providerId]) {
-      await workerPool.modify(wt => {
-        wt.providerData[this.providerId] = wt.providerData[this.providerId] || {};
-      });
-    }
-
     let toSpawn = await this.estimator.simple({
       workerPoolId,
       ...workerPool.config,
@@ -164,10 +157,12 @@ class AzureProvider extends Provider {
         virtualMachine = await this._enqueue('query', () => this.computeClient.virtualMachines.createOrUpdate(resourceGroupName, virtualMachineName, {
           ...cfg,
           osProfile: {
-            adminUsername: 'worker',
             ...cfg.osProfile,
-            // throw this away
-            adminPassword: slugid.nice(),
+            adminUsername: 'worker',
+            // we have to set a password, but we never want it to be used, so we throw it away
+            // a legitimate user who needs access can reset the password
+            // 72 char limit for linux VMs, each slugid is 22 chars
+            adminPassword: (slugid.nice() + slugid.nice() + slugid.nice() + slugid.nice()).slice(0, 72),
             computerName: virtualMachineName,
             customData,
           },
@@ -180,12 +175,6 @@ class AzureProvider extends Provider {
               },
             ],
           },
-          priority: cfg.priority || "Spot",
-          evictionPolicy: cfg.evictionPolicy || "Deallocate",
-          billingProfile: {
-            "maxPrice": -1,
-            ...cfg.billingProfile,
-          },
           tags: {
             ...cfg.tags || {},
             'created-by': `taskcluster-wm-${this.providerId}`.replace(/[^a-zA-Z0-9-]/g, '-'),
@@ -195,6 +184,8 @@ class AzureProvider extends Provider {
           },
         }));
       } catch (err) {
+        // we create multiple resources in order to provision a VM
+        // if we catch an error we want to deprovision those resources
         await this._removeWorker({...providerData});
         await workerPool.reportError({
           kind: 'creation-error',
@@ -244,19 +235,18 @@ class AzureProvider extends Provider {
       w.lastModified = new Date();
       w.state = this.Worker.states.RUNNING;
     });
+
     // assume for the moment that workers self-terminate before 96 hours
     return {expires: taskcluster.fromNow('96 hours')};
   }
 
   async scanPrepare() {
     this.seen = {};
-    this.errors = {};
   }
 
   async checkWorker({worker}) {
     const states = this.Worker.states;
     this.seen[worker.workerPoolId] = this.seen[worker.workerPoolId] || 0;
-    this.errors[worker.workerPoolId] = this.errors[worker.workerPoolId] || [];
     if (worker.providerData.registrationExpiry &&
       worker.state === states.REQUESTED &&
       worker.providerData.registrationExpiry < Date.now()) {
@@ -289,11 +279,18 @@ class AzureProvider extends Provider {
           workerId: worker.workerId,
         });
         state = states.STOPPED;
+      } else {
+        await worker.workerPool.reportError({
+          kind: 'creation-error',
+          title: 'Encountered unknown VM provisioningState',
+          description: `Unknown provisioningState ${provisioningState}`,
+        });
       }
     } catch (err) {
       if (err.code !== 'ResourceNotFound') {
         throw err;
       }
+      await this.removeWorker({worker});
       this.monitor.log.workerStopped({
         workerPoolId: worker.workerPoolId,
         providerId: this.providerId,
@@ -321,10 +318,6 @@ class AzureProvider extends Provider {
       if (!workerPool) {
         return; // In this case, the workertype has been deleted so we can just move on
       }
-
-      if (this.errors[workerPoolId].length) {
-        await Promise.all(this.errors[workerPoolId].map(error => workerPool.reportError(error)));
-      }
     }));
   }
 
@@ -341,22 +334,22 @@ class AzureProvider extends Provider {
         throw err;
       }
     };
-    ignoreNotFound(this._enqueue('query', () => this.computeClient.virtualMachines.deleteMethod(
+    await ignoreNotFound(this._enqueue('query', () => this.computeClient.virtualMachines.deleteMethod(
       resourceGroupName,
       vm.name,
     )));
-    ignoreNotFound(this._enqueue('query', () => this.networkClient.networkInterfaces.deleteMethod(
+    await ignoreNotFound(this._enqueue('query', () => this.networkClient.networkInterfaces.deleteMethod(
       resourceGroupName,
       nic.name,
     )));
     // the public IP cannot be deleted as long as it is attached
     // updating the NIC to detach the IP does not appear to work
     // we should clean this up asynchronously
-    ignoreNotFound(this._enqueue('query', () => this.networkClient.publicIPAddresses.deleteMethod(
+    await ignoreNotFound(this._enqueue('query', () => this.networkClient.publicIPAddresses.deleteMethod(
       resourceGroupName,
       ip.name,
     )));
-    ignoreNotFound(this._enqueue('query', () => this.computeClient.disks.deleteMethod(
+    await ignoreNotFound(this._enqueue('query', () => this.computeClient.disks.deleteMethod(
       resourceGroupName,
       disk.name,
     )));
@@ -364,13 +357,6 @@ class AzureProvider extends Provider {
 
   async removeWorker({worker}) {
     await this._removeWorker({...worker.providerData});
-  }
-
-  async removeResources({workerPool}) {
-    // remove any remaining providerData when we are no longer responsible for this workerPool
-    await workerPool.modify(wt => {
-      delete wt.providerData[this.providerId];
-    });
   }
 }
 

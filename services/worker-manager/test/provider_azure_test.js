@@ -58,7 +58,6 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
         subscriptionId: 'a subscription id',
         resourceGroupName: 'my-resource-group',
         storageAccountName: 'storage123',
-        virtualNetworkName: 'my-vnet',
         subnetName: 'a-subnet',
         _backoffDelay: 1,
       },
@@ -129,21 +128,12 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
     await workerPool.modify(wp => {
       wp.providerId = 'null-provider';
       wp.previousProviderIds = ['azure'];
-      wp.providerData.azure = {};
+
       return wp;
     });
     await provider.deprovision({workerPool});
     // nothing has changed..
     assert(workerPool.previousProviderIds.includes('azure'));
-  });
-
-  test('removeResources', async function() {
-    await workerPool.modify(wp => {
-      wp.providerData.azure = {};
-      return wp;
-    });
-    await provider.removeResources({workerPool});
-    assert(!workerPool.providerData.azure);
   });
 
   test('removeWorker', async function() {

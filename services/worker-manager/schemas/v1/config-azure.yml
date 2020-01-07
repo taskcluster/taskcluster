@@ -2,7 +2,7 @@ $schema: "/schemas/common/metaschema.json#"
 title: Azure Provider Config
 description: |
   'The config section of a workertype is using a provider with implementation azure must match this.
-  Much of these fields are documented [here](https://cloud.google.com/compute/docs/reference/rest/v1/instanceTemplates)'
+  Much of these fields are documented [here](https://docs.microsoft.com/en-us/rest/api/compute/virtualmachines/createorupdate)'
 type: object
 properties:
   minCapacity:
@@ -24,11 +24,11 @@ properties:
     type: array
     title: Choices
     description: |
-      An array of possible variations of workers for this pool. Allows to vary across regions/zones/machineType/etc
+      An array of possible variations of workers for this pool.
       Each choice must include at least the required properties but can also include anything in
-      the request body of [the instance creation](https://cloud.google.com/compute/docs/reference/rest/beta/instances/insert)
-      api method from gcloud. That said, worker-manager sets `instanceName` and `serviceAccounts` directly and you
-      cannot override these. It also fills in some basic labels, will generate a default description, and sets the `taskcluster`
+      the request body of [the virtual machine creation](https://docs.microsoft.com/en-us/rest/api/compute/virtualmachines/createorupdate)
+      api method. worker-manager sets the values of the `osProfile.adminPassword`, `osProfile.computerName`, `osProfile.customData`, `networkProfile.networkInterfaces`
+      properties directly, and they cannot be overriden. It also fills in some basic labels, will generate a default description, and sets the `taskcluster`
       metadata key directly. You are free to set other metadata items though. A subset of these fields we require you to set such as `machineType`.
     uniqueItems: false
     items:
@@ -56,19 +56,13 @@ properties:
         subnetId:
           title: Subnet ID
           type: string
-          description: The ID of the subnet this worker should be spawned in
+          description: The ID of the subnet workers should be spawned in
         priority:
           title: Priority
           type: string
           description: |
             virtual machine priority, i.e. Spot
             https://docs.microsoft.com/en-us/rest/api/compute/virtualmachines/createorupdate#virtualmachineprioritytypes
-        evictionPolicy:
-          title: Eviction Policy
-          type: string
-          description: |
-            eviction policy, i.e. what happens when the virtual machine is shut down
-            https://docs.microsoft.com/en-us/rest/api/compute/virtualmachines/createorupdate#virtualmachineevictionpolicytypes
         billingProfile:
           title: Billing Profile
           type: object
