@@ -9,7 +9,7 @@ import TableCellItem from '../TableCellItem';
 import useCopyToClipboard from '../../utils/useCopyToClipboard';
 
 const styles = theme => ({
-  Icon: {
+  icon: {
     marginLeft: theme.spacing(1),
   },
 });
