@@ -47,6 +47,33 @@ exports.gitClone = async ({dir, url, sha, utils}) => {
 };
 
 /**
+ * Fetch a ref from a remote repository
+ *
+ * - dir: repository directory
+ * - remote: remote repository URL
+ * - ref: ref to fetch from the remote repository
+ * - utils: taskgraph utils
+ *
+ * Returns:
+ * {
+ *   revision: .., // the sha of the remote ref
+ * }
+ */
+exports.gitRemoteRev = async ({dir, remote, ref, utils}) => {
+  const opts = {cwd: dir};
+
+  assert(fs.existsSync(dir), `${dir} does not exist`);
+  const res = await exec('git', ['ls-remote', remote, ref], opts);
+  const lines = res.stdout.split("\n");
+  if (lines.length !== 2) {
+    throw new Error(`Expected exactly one result from ls-remote; got ${res.stdout}`);
+  }
+  return {
+    revision: lines[0].split(' ')[0].trim(),
+  };
+};
+
+/**
  * Call `git status --porcelain` in repoDir and return true if anything appears.
  */
 exports.gitIsDirty = async ({dir}) => {
@@ -65,7 +92,8 @@ exports.gitIsDirty = async ({dir}) => {
  *
  * Returns:
  * {
- *   exactRev: ..,     // the exact revision checked out (possibly with -dirty suffix)
+ *   gitDescription: .., // symbolic description of the revision
+ *   revision: ..,       // sha
  * }
  */
 exports.gitDescribe = async ({dir, utils}) => {
