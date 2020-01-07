@@ -30,8 +30,8 @@ helper.dbSuite(path.basename(__filename), function() {
   });
   const serviceName = 'test-entities';
 
-  suite('load', function() {
-    test('load entry', async function() {
+  suite('row remove', function() {
+    test('remove entry', async function() {
       db = await helper.withDb({ schema, serviceName });
 
       const entry = {
@@ -39,16 +39,13 @@ helper.dbSuite(path.basename(__filename), function() {
         provisionerId: 'provisionerId',
         workerType: 'string',
       };
-      const documentId = entity.calculateId(entry);
 
       entity.setup({ tableName: 'test_entities', db, serviceName });
 
-      await entity.create(entry);
-
-      const result = await entity.load(entry);
-
-      assert.equal(result.length, 1);
-      assert.equal(result[0].id, documentId);
+      let row = await entity.create(entry);
+      await row.remove();
+      row = await entity.load(entry);
+      assert.equal(row.length, 0);
     });
   });
 });

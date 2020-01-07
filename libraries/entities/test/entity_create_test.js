@@ -30,7 +30,7 @@ helper.dbSuite(path.basename(__filename), function() {
   });
   const serviceName = 'test-entities';
 
-  suite('create', function() {
+  suite('entity create', function() {
     test('create entity', async function() {
       const entity = Entity.configure({
         partitionKey: 'taskId',

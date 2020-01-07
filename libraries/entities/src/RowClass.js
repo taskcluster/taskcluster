@@ -1,5 +1,4 @@
 const assert = require('assert').strict;
-const {} = require('taskcluster-lib-postgres');
 
 class RowClass {
   constructor(properties, options = {}) {
@@ -17,13 +16,8 @@ class RowClass {
     this.db = db;
   }
 
-  /*
-    Remove a row if not modified, unless `ignoreChanges` is set. Also,
-    if `ignoreIfNotExists` is true, then this will cause the method return
-    successfully if the row is not present.
-   */
-  remove(ignoreChanges, ignoreIfNotExists) {
-
+  remove() {
+    return this.db.procs[`${this.tableName}_remove`](this.documentId);
   }
 
   // load the properties from the table once more, and return true if anything has changed.
@@ -35,9 +29,7 @@ class RowClass {
     return etag !== this.etag;
   }
 
-  modify() {
-
-  }
+  async modify(modifier) {}
 }
 
 module.exports = RowClass;

@@ -30,8 +30,8 @@ helper.dbSuite(path.basename(__filename), function() {
   });
   const serviceName = 'test-entities';
 
-  suite('reload', function() {
-    test('reload entry (no changes should return false)', async function() {
+  suite('entity load', function() {
+    test('load entry', async function() {
       db = await helper.withDb({ schema, serviceName });
 
       const entry = {
@@ -39,33 +39,16 @@ helper.dbSuite(path.basename(__filename), function() {
         provisionerId: 'provisionerId',
         workerType: 'string',
       };
+      const documentId = entity.calculateId(entry);
 
       entity.setup({ tableName: 'test_entities', db, serviceName });
 
-      const createResult = await entity.create(entry);
-      const result = await createResult.reload();
+      await entity.create(entry);
 
-      assert.equal(result, false);
-    });
+      const result = await entity.load(entry);
 
-    test('reload entry (changes should return true)', async function() {
-      db = await helper.withDb({ schema, serviceName });
-
-      const entry = {
-        taskId: 'taskId',
-        provisionerId: 'provisionerId',
-        workerType: 'string',
-      };
-
-      entity.setup({ tableName: 'test_entities', db, serviceName });
-
-      const createResult = await entity.create(entry);
-
-      await entity.modify({ ...entry, workerType: 'foo' });
-
-      const result = await createResult.reload();
-
-      assert.equal(result, true);
+      assert.equal(result.length, 1);
+      assert.equal(result[0].id, documentId);
     });
   });
 });

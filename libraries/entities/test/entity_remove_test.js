@@ -30,7 +30,7 @@ helper.dbSuite(path.basename(__filename), function() {
   });
   const serviceName = 'test-entities';
 
-  suite('remove', function() {
+  suite('entity remove', function() {
     test('remove entry', async function() {
       db = await helper.withDb({ schema, serviceName });
 
