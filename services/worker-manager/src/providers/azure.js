@@ -1,12 +1,17 @@
+const assert = require('assert');
 const slugid = require('slugid');
 const _ = require('lodash');
 const taskcluster = require('taskcluster-client');
+const forge = require('node-forge');
+const crypto = require('crypto');
+const path = require('path');
+const fs = require('fs');
 
 const auth = require('@azure/ms-rest-nodeauth');
 const ComputeManagementClient = require('@azure/arm-compute').ComputeManagementClient;
 const NetworkManagementClient = require('@azure/arm-network').NetworkManagementClient;
 
-const {Provider} = require('./provider');
+const {ApiError, Provider} = require('./provider');
 const {CloudAPI} = require('./cloudapi');
 
 class AzureProvider extends Provider {
@@ -57,12 +62,18 @@ class AzureProvider extends Provider {
     if (this.fakeCloudApis && this.fakeCloudApis.azure) {
       this.computeClient = this.fakeCloudApis.azure.compute();
       this.networkClient = this.fakeCloudApis.azure.network();
+      this.intermediateCerts = this.fakeCloudApis.azure.intermediates();
       return;
     }
 
     let credentials = await auth.loginWithServicePrincipalSecret(clientId, secret, domain);
     this.computeClient = new ComputeManagementClient(credentials, subscriptionId);
     this.networkClient = new NetworkManagementClient(credentials, subscriptionId);
+
+    // load microsoft intermediate certs from disk
+    let intermediateFiles = [1, 2, 4, 5].map(i => fs.readFileSync(path.resolve(__dirname, `azure-ca-certs/microsoft_it_tls_ca_${i}.pem`)));
+    let intermediateCerts = intermediateFiles.map(content => forge.pki.certificateFromPem(intermediateFiles));
+    this.caStore = forge.pki.createCaStore(intermediateCerts);
   }
 
   async provision({workerPool, existingCapacity}) {
@@ -226,6 +237,65 @@ class AzureProvider extends Provider {
   }
 
   async registerWorker({worker, workerPool, workerIdentityProof}) {
+    const {document} = workerIdentityProof;
+
+    // use the same message for all errors here, so as not to give an attacker
+    // extra information.
+    const error = () => new ApiError('Signature validation error');
+
+    // workerIdentityProof is a signed message
+    // 1. The embedded document was signed with the private key corresponding to the
+    //    embedded public key
+    // 2. The embedded public key has a proper certificate chain back to a trusted CA
+
+    // signature is base64-encoded DER-format PKCS#7 / CMS message
+
+    // decode base64
+    let decodedSignature = document.toString('base64');
+
+    // load DER, extract PKCS#7 message
+    let message;
+    try {
+      message = forge.pkcs7.messageFromAsn1(
+        forge.asn1.fromDer(forge.util.createBuffer(decodedSignature, 'binary')),
+      );
+    } catch (err) {
+      this.monitor.warning('Error extracting PKCS#7 message', {error: err.toString()});
+      throw error;
+    }
+
+    let content, crt, pem, sig;
+    // get message content, signing certificate, and signature
+    try {
+      // in testing, message.content is empty, so we access the raw ASN1 structure
+      content = message.rawCapture.content.value[0].value;
+      // convert to pem for convenience
+      crt = message.certificates[0];
+      pem = forge.pki.publicKeyToPem(crt.publicKey);
+      sig = message.rawCapture.signature;
+    } catch (err) {
+      this.monitor.warning('Error extracting PKCS#7 message content', {error: err.toString()});
+      throw error;
+    }
+
+    // verify that the message is properly signed
+    try {
+      let verifier = crypto.createVerify('RSA-SHA256');
+      verifier.update(Buffer.from(content));
+      assert(!verifier.verify(pem, sig, 'binary', 'true'));
+    } catch (err) {
+      this.monitor.warning('Error verifying PKCS#7 message signature');
+      throw error;
+    }
+
+    // verify that the embedded certificate has proper chain of trust
+    try {
+      assert(forge.pki.verifyCertificateChain(this.caStore, [crt]), true);
+    } catch (err) {
+      this.monitor.warning('Error verifying certificate chain', {error: err.toString()});
+      throw error;
+    }
+
     this.monitor.log.workerRunning({
       workerPoolId: workerPool.workerPoolId,
       providerId: this.providerId,

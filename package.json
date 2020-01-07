@@ -72,6 +72,7 @@
     "mz": "^2.7.0",
     "netmask": "^1.0.5",
     "node-fetch": "^2.6.0",
+    "node-forge": "^0.9.1",
     "nodemailer": "^6.0.0",
     "oauth2orize": "^1.11.0",
     "p-queue": "^6.1.1",
