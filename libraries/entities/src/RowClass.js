@@ -9,6 +9,11 @@ class RowClass {
       db,
     } = options;
 
+    assert(properties, 'properties is required');
+    assert(tableName, 'tableName is required');
+    assert(documentId, 'documentId is required');
+    assert(db, 'db is required');
+
     this.properties = properties;
     this.etag = etag;
     this.tableName = tableName;
