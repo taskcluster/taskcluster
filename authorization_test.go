@@ -21,12 +21,19 @@ import (
 )
 
 var (
-	rootURL         = os.Getenv("TASKCLUSTER_ROOT_URL")
+	rootURL = os.Getenv("TASKCLUSTER_ROOT_URL")
+	// these are the credentials that the auth service's test endpoints accept:
 	permCredentials = &tcclient.Credentials{
-		ClientID:    os.Getenv("TASKCLUSTER_CLIENT_ID"),
-		AccessToken: os.Getenv("TASKCLUSTER_ACCESS_TOKEN"),
+		ClientID:    "tester",
+		AccessToken: "no-secret",
 	}
 )
+
+func init() {
+	if rootURL == "" {
+		panic("Set TASKCLUSTER_ROOT_URL")
+	}
+}
 
 func newTestClient() *httpbackoff.Client {
 	return &httpbackoff.Client{
@@ -65,18 +72,14 @@ func testWithPermCreds(t *testing.T, test IntegrationTest, expectedStatusCode in
 	)
 }
 
-func testWithTempCreds(t *testing.T, test IntegrationTest, expectedStatusCode int) {
-	tempScopes := []string{
-		"assume:project:taskcluster:taskcluster-proxy-tester",
-	}
-
+func testWithTempCreds(t *testing.T, test IntegrationTest, expectedStatusCode int, tempScopes ...string) {
 	tempScopesBytes, err := json.Marshal(tempScopes)
 	if err != nil {
 		t.Fatal("Bug in test")
 	}
 	tempScopesJSON := string(tempScopesBytes)
 
-	tempCredsClientID := "project/taskcluster/testing/temp/" + slugid.Nice()
+	tempCredsClientID := "test:temp-cred-issuer"
 	tempCredentials, err := permCredentials.CreateNamedTemporaryCredentials(tempCredsClientID, 1*time.Hour, tempScopes...)
 	if err != nil {
 		t.Fatalf("Could not generate temp credentials")
@@ -141,85 +144,100 @@ func checkStatusCode(t *testing.T, res *httptest.ResponseRecorder, statusCode in
 }
 
 func TestBewit(t *testing.T) {
-	test := func(t *testing.T, creds *tcclient.Credentials) *httptest.ResponseRecorder {
-
-		// Test setup
-		routes := NewRoutes(
-			rootURL,
-			tcclient.Client{
-				RootURL:     rootURL,
-				Credentials: creds,
-			},
-		)
-		u := tcurls.API(rootURL, "secrets", "v1", "project/taskcluster/testing/tcproxy/a")
-		req, err := http.NewRequest(
-			"POST",
-			"http://localhost:60024/bewit",
-			bytes.NewBufferString(u),
-		)
-		if err != nil {
-			log.Fatal(err)
-		}
-		res := httptest.NewRecorder()
-
-		// Function to test
-		routes.BewitHandler(res, req)
-
-		if res.Code != 303 {
-			t.Fatalf("Got non-303 response: %d with body %s", res.Code, res.Body.String())
-		}
-
-		// Validate results
-		bewitURLFromLocation := res.Header().Get("Location")
-		bewitURLFromResponseBody := res.Body.String()
-		if bewitURLFromLocation != bewitURLFromResponseBody {
-			t.Fatalf("Got inconsistent results between Location header (%v) and Response body (%v).", bewitURLFromLocation, bewitURLFromResponseBody)
-		}
-		_, err = url.Parse(bewitURLFromLocation)
-		if err != nil {
-			t.Fatalf("Bewit URL returned is invalid: %q", bewitURLFromLocation)
-		}
-		resp, _, err := newTestClient().Get(bewitURLFromLocation)
-		if err != nil {
-			httpError, ok := err.(httpbackoff.BadHttpResponseCode)
-			if !ok {
-				t.Fatalf("Exception thrown:\n%s", err)
-			}
-			// secrets service only replies with 404 if the credentials and scopes are valid
-			if httpError.HttpResponseCode != 404 {
-				t.Fatalf("Exception thrown:\n%s", err)
-			}
-		}
-		_, err = ioutil.ReadAll(resp.Body)
-		if err != nil {
-			t.Fatalf("Exception thrown:\n%s", err)
-		}
-		return res
-	}
-	testWithPermCreds(t, test, 303)
-	testWithTempCreds(t, test, 303)
-}
-
-func TestAuthorizationDelegate(t *testing.T) {
-	test := func(name string, scopes []string) IntegrationTest {
+	test := func(useAuthorizedScopes bool, expectedGetResponse int) IntegrationTest {
 		return func(t *testing.T, creds *tcclient.Credentials) *httptest.ResponseRecorder {
 			// Test setup
 			routes := NewRoutes(
 				rootURL,
 				tcclient.Client{
+					RootURL:     rootURL,
+					Credentials: creds,
+				},
+			)
+			if useAuthorizedScopes {
+				routes.Credentials.AuthorizedScopes = []string{"test:authenticate-get"}
+			}
+
+			u := tcurls.API(rootURL, "auth", "v1", "test-authenticate-get")
+			req, err := http.NewRequest(
+				"POST",
+				"http://localhost:60024/bewit",
+				bytes.NewBufferString(u),
+			)
+			if err != nil {
+				log.Fatal(err)
+			}
+			res := httptest.NewRecorder()
+
+			// Function to test
+			routes.BewitHandler(res, req)
+
+			if res.Code != 303 {
+				t.Fatalf("Got non-303 response: %d with body %s", res.Code, res.Body.String())
+			}
+
+			// Validate results
+			bewitURLFromLocation := res.Header().Get("Location")
+			bewitURLFromResponseBody := res.Body.String()
+			if bewitURLFromLocation != bewitURLFromResponseBody {
+				t.Fatalf("Got inconsistent results between Location header (%v) and Response body (%v).", bewitURLFromLocation, bewitURLFromResponseBody)
+			}
+			_, err = url.Parse(bewitURLFromLocation)
+			if err != nil {
+				t.Fatalf("Bewit URL returned is invalid: %q", bewitURLFromLocation)
+			}
+			resp, _, err := newTestClient().Get(bewitURLFromLocation)
+			if err != nil {
+				httpError, ok := err.(httpbackoff.BadHttpResponseCode)
+				if !ok {
+					t.Fatalf("Exception thrown:\n%s", err)
+				}
+				if httpError.HttpResponseCode != expectedGetResponse {
+					t.Fatalf("Bad response code %d", httpError.HttpResponseCode)
+				}
+			}
+			_, err = ioutil.ReadAll(resp.Body)
+			if err != nil {
+				t.Fatalf("Exception thrown:\n%s", err)
+			}
+			return res
+		}
+	}
+
+	testWithPermCreds(t, test(false, 200), 303)
+	testWithTempCreds(t, test(false, 200), 303, "test:authenticate-get")
+	// not the required scope for the API method (InsufficientScopes)
+	testWithTempCreds(t, test(false, 403), 303, "test:some-other-scope")
+	testWithPermCreds(t, test(true, 200), 303)
+	testWithTempCreds(t, test(true, 200), 303, "test:authenticate-get")
+	// temp creds that don't satisfy authorizedScopes (invalid authentication)
+	testWithTempCreds(t, test(true, 401), 303, "test:some-other-scope")
+}
+
+func TestAPICallGET(t *testing.T) {
+	test := func(name string, scopes []string) IntegrationTest {
+		return func(t *testing.T, creds *tcclient.Credentials) *httptest.ResponseRecorder {
+			fmt.Printf("-- %s --\n", name)
+			// Test setup
+			routes := NewRoutes(
+				rootURL,
+				tcclient.Client{
 					Authenticate: true,
+					RootURL:      rootURL,
 					Credentials: &tcclient.Credentials{
-						ClientID:         creds.ClientID,
-						AccessToken:      creds.AccessToken,
-						Certificate:      creds.Certificate,
-						AuthorizedScopes: scopes,
+						ClientID:    creds.ClientID,
+						AccessToken: creds.AccessToken,
+						Certificate: creds.Certificate,
 					},
 				},
 			)
+			if len(scopes) > 0 {
+				routes.Credentials.AuthorizedScopes = scopes
+			}
 
 			// Requires scope "auth:azure-table:read-write:fakeaccount/DuMmYtAbLe"
 			req, err := http.NewRequest(
-				"GET", "http://localhost:60024/api/secrets/v1/secret/project/taskcluster/testing/tcproxy/a",
+				"GET", "http://localhost:60024/api/auth/v1/test-authenticate-get/",
 				// Note: we don't set body to nil as a server http request
 				// cannot have a nil body. See:
 				// https://golang.org/pkg/net/http/#Request
@@ -235,47 +253,58 @@ func TestAuthorizationDelegate(t *testing.T) {
 			return res
 		}
 	}
-	testWithPermCreds(t, test("A", []string{"secrets:get:project/taskcluster/testing/tcproxy/a"}), 404)
-	testWithTempCreds(t, test("B", []string{"secrets:get:project/taskcluster/testing/tcproxy/a"}), 404)
-	testWithPermCreds(t, test("C", []string{"secrets:get:project/taskcluster/testing/tcproxy/someothersecret"}), 403)
-	testWithTempCreds(t, test("D", []string{"secrets:get:project/taskcluster/testing/tcproxy/someothersecret"}), 403)
+	testWithPermCreds(t, test("Test with perm creds without authorizedScopes", []string{}), 200)
+	testWithPermCreds(t, test("Test with perm creds with authorizedScopes", []string{"test:authenticate-get"}), 200)
+	testWithPermCreds(t, test("Test with perm creds with wrong authorizedScopes", []string{"test:something-else"}), 403)
+	testWithTempCreds(t, test("Test with temp creds without authorizedScopes", []string{}), 200, "test:authenticate-get")
+	testWithTempCreds(t, test("Test with temp creds with authorizedScopes", []string{"test:authenticate-get"}), 200, "test:authenticate-get")
 }
 
-func TestAPICallWithPayload(t *testing.T) {
-	test := func(t *testing.T, creds *tcclient.Credentials) *httptest.ResponseRecorder {
+func TestAPICallPOST(t *testing.T) {
+	test := func(name string, scopes []string) IntegrationTest {
+		return func(t *testing.T, creds *tcclient.Credentials) *httptest.ResponseRecorder {
 
-		// Test setup
-		routes := NewRoutes(
-			rootURL,
-			tcclient.Client{
-				RootURL:     rootURL,
-				Credentials: creds,
-			},
-		)
-		expires := time.Now()
+			// Test setup
+			routes := NewRoutes(
+				rootURL,
+				tcclient.Client{
+					Authenticate: true,
+					RootURL:      rootURL,
+					Credentials: &tcclient.Credentials{
+						ClientID:    creds.ClientID,
+						AccessToken: creds.AccessToken,
+						Certificate: creds.Certificate,
+					},
+				},
+			)
+			if len(scopes) > 0 {
+				routes.Credentials.AuthorizedScopes = scopes
+			}
 
-		req, err := http.NewRequest(
-			"PUT",
-			// note that we do not expect to have permissions to create this; 403 is success
-			// TODO: ^^ not actually true as it doesn't check the body until auth is OK
-			"http://localhost:60024/secrets/v1/secret/project/taskcluster/testing/tcproxy/xxx",
-			bytes.NewBufferString(`{
-			  "expires": "`+tcclient.Time(expires).String()+`",
-			  "secret": {},
-			}`),
-		)
-		if err != nil {
-			log.Fatal(err)
+			req, err := http.NewRequest(
+				"POST",
+				// note that we do not expect to have permissions to create this; 403 is success
+				// TODO: ^^ not actually true as it doesn't check the body until auth is OK
+				"http://localhost:60024/auth/v1/test-authenticate",
+				bytes.NewBufferString(`{"clientScopes": ["test:*", "auth:create-client:test:*"], "requiredScopes": ["test:authenticate-post"]}`),
+			)
+			req.Header["content-type"] = []string{"application/json"}
+			if err != nil {
+				log.Fatal(err)
+			}
+			res := httptest.NewRecorder()
+
+			// Function to test
+			routes.RootHandler(res, req)
+			return res
 		}
-		res := httptest.NewRecorder()
-
-		// Function to test
-		routes.RootHandler(res, req)
-
-		return res
 	}
-	testWithPermCreds(t, test, 403)
-	testWithTempCreds(t, test, 403)
+
+	testWithPermCreds(t, test("Test with perm creds without authorizedScopes", []string{}), 200)
+	testWithPermCreds(t, test("Test with perm creds with authorizedScopes", []string{"test:authenticate-post"}), 200)
+	testWithPermCreds(t, test("Test with perm creds with wrong authorizedScopes", []string{"test:something-else"}), 403)
+	testWithTempCreds(t, test("Test with temp creds without authorizedScopes", []string{}), 200, "test:authenticate-post")
+	testWithTempCreds(t, test("Test with temp creds with authorizedScopes", []string{"test:authenticate-post"}), 200, "test:authenticate-post")
 }
 
 func TestNon200HasErrorBody(t *testing.T) {
@@ -425,36 +454,45 @@ func TestInvalidEndpoint(t *testing.T) {
 	testWithPermCreds(t, test, 404)
 }
 
-func TestRetrieveSecret(t *testing.T) {
-	test := func(t *testing.T, creds *tcclient.Credentials) *httptest.ResponseRecorder {
+func TestGetResponseBody(t *testing.T) {
+	test := func(expectedClient string) IntegrationTest {
+		return func(t *testing.T, creds *tcclient.Credentials) *httptest.ResponseRecorder {
 
-		// Test setup
-		routes := NewRoutes(
-			rootURL,
-			tcclient.Client{
-				RootURL:      rootURL,
-				Authenticate: true,
-				Credentials:  creds,
-			},
-		)
+			// Test setup
+			routes := NewRoutes(
+				rootURL,
+				tcclient.Client{
+					RootURL:      rootURL,
+					Authenticate: true,
+					Credentials:  creds,
+				},
+			)
 
-		req, err := http.NewRequest(
-			"GET",
-			"http://localhost:60024/secrets/v1/secret/project/taskcluster/testing/tcproxy/somesecret",
-			nil,
-		)
-		if err != nil {
-			log.Fatal(err)
+			req, err := http.NewRequest(
+				"GET",
+				"http://localhost:60024/auth/v1/test-authenticate-get/",
+				nil,
+			)
+			if err != nil {
+				log.Fatal(err)
+			}
+			res := httptest.NewRecorder()
+
+			// Function to test
+			routes.RootHandler(res, req)
+
+			var body map[string]interface{}
+			err = json.Unmarshal(res.Body.Bytes(), &body)
+			if err != nil {
+				log.Fatal(err)
+			}
+			if body["clientId"].(string) != expectedClient {
+				log.Fatalf("Got clientId %#v", body["clientId"])
+			}
+			return res
 		}
-		res := httptest.NewRecorder()
-
-		// Function to test
-		routes.RootHandler(res, req)
-
-		fmt.Printf("res: %#v\n", res)
-		fmt.Printf("res.Body: %s\n", res.Body.String())
-		return res
 	}
-	testWithPermCreds(t, test, 200)
-	testWithTempCreds(t, test, 200)
+
+	testWithPermCreds(t, test("tester"), 200)
+	testWithTempCreds(t, test("test:temp-cred-issuer"), 200, "test:authenticate-get")
 }
