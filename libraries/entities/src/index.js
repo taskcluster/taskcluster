@@ -45,10 +45,10 @@ class Entity {
     return new RowClass(properties, { etag, tableName: this.tableName, documentId, db: this.db });
   }
 
-  delete(properties) {
+  remove(properties) {
     const documentId = this.calculateId(properties);
 
-    return this.db.procs[`${this.tableName}_delete`](documentId);
+    return this.db.procs[`${this.tableName}_remove`](documentId);
   }
 
   modify(properties) {

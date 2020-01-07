@@ -47,7 +47,7 @@ methods:
         end if;
         return new_etag;
       end
-  test_entities_delete:
+  test_entities_remove:
     serviceName: test-entities
     description: test
     mode: write

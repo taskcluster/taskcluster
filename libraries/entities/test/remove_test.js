@@ -30,8 +30,8 @@ helper.dbSuite(path.basename(__filename), function() {
   });
   const serviceName = 'test-entities';
 
-  suite('delete', function() {
-    test('delete entry', async function() {
+  suite('remove', function() {
+    test('remove entry', async function() {
       db = await helper.withDb({ schema, serviceName });
 
       const entry = {
@@ -50,7 +50,7 @@ helper.dbSuite(path.basename(__filename), function() {
       assert.equal(result.length, 1);
       assert.equal(result[0].id, documentId);
 
-      await entity.delete(entry);
+      await entity.remove(entry);
 
       result = await entity.load(entry);
 
