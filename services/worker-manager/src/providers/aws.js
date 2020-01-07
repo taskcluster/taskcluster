@@ -91,12 +91,14 @@ class AwsProvider extends Provider {
       });
     }
 
-    const toSpawn = await this.estimator.simple({
+    const capacityPerInstance = workerPool.config.capacityPerInstance;
+
+    const toSpawn = Math.ceil((await this.estimator.simple({
       workerPoolId,
-      minCapacity: workerPool.config.minCapacity,
-      maxCapacity: workerPool.config.maxCapacity,
+      minCapacity: workerPool.config.minCapacity * capacityPerInstance,
+      maxCapacity: workerPool.config.maxCapacity * capacityPerInstance,
       existingCapacity,
-    });
+    })) / capacityPerInstance);
     if (toSpawn === 0) {
       return;
     }
