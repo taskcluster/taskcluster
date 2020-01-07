@@ -57,6 +57,7 @@ properties:
         properties:
           document:
             title: Document
+            type: string
             description: |
               Attested data document that is obtained by
               curl http://169.254.169.254/metadata/attested/document on the instance

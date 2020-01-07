@@ -1,0 +1,54 @@
+---
+order: 10
+title: Azure Provider Type
+---
+import SchemaTable from 'taskcluster-ui/components/SchemaTable'
+
+# Azure Provider Type
+
+Azure-based providers create workers dynamically in Azure, within a single Resource Group.
+Best practice is to use a dedicated resource group for each provider that is not shared with other uses.
+This makes it easier to identify which resources a provider is responsible for.
+
+## Removing Workers
+
+A call to the `workerManager.removeWorker` API method for a worker managed by this provider type will result in an attempt to terminate the worker virtual machine and remove related resources.
+Worker virtual machines have an associated NIC and public IP address which will also be deleted.
+
+## Worker Interaction
+
+The provider starts workers with an instance attribute named `taskcluster` containing a JSON object with the following properties:
+
+* `workerPoolId` -- worker pool for this worker
+* `providerId` -- provider ID that started the worker
+* `workerGroup` -- the worker's workerGroup (currently equal to the providerId, but do not depend on this)
+* `rootUrl` -- root URL for the Taskcluster deployment
+* `workerConfig` -- worker configuration supplied as part of the worker pool configuration
+* `userData` -- userData from the worker pool configuration (deprecated)
+
+The worker's `workerId` is identical to its vmId, which can be retrieved from the Azure metadata service at `compute/vmId`.
+
+The `workerIdentityProof` contains a [signed attested data document](https://docs.microsoft.com/en-us/azure/virtual-machines/windows/instance-metadata-service#attested-data) in its `document` property:
+
+```json
+{"document": "<signature>"}
+```
+
+The document should have audience equal to the deployment's `rootUrl` and `format=full`.
+
+## Tags
+
+The provider starts workers with the following labels.
+
+ * `worker-pool-id` - the worker's workerPoolId
+ * `managed-by` - `taskcluster`
+ * `created-by` - `taskcluster-wm-<providerId>`
+ * `owner` - the worker pool's owner
+
+Note that values are lower-cased and disallowed characters are replaced with `-`, to comply with with [Azure requirements](https://docs.microsoft.com/en-us/azure/architecture/best-practices/resource-naming).
+
+## Worker-Pool Configuration
+
+Worker-pool configuration for a worker-pool using this provider type must match the following schema.
+
+<SchemaTable schema="/schemas/worker-manager/v1/config-azure.json" />

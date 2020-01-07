@@ -3,13 +3,13 @@
     {
       "capacityPerInstance": 1,
       "location": "westus",
-      "subnetId": "/subscriptions/{subscription-id}/resourceGroups/{resource-group-name}/providers/Microsoft.Network/virtualNetworks/{vnet-name}/subnets/{subnet-name}",
+      "subnetId": "/subscriptions/your-subscription-id/resourceGroups/your-resource-group-name/providers/Microsoft.Network/virtualNetworks/your-vnet-name/subnets/your-subnet-name",
       "hardwareProfile": {
         "vmSize": "Basic_A1"
       },
       "storageProfile": {
         "imageReference": {
-          "id": "/subscriptions/{subscription-id}/resourceGroups/{resource-group-name}/providers/Microsoft.Compute/images/{image-name}"
+          "id": "/subscriptions/your-subscription-id/resourceGroups/your-resource-group-name/providers/Microsoft.Compute/images/your-image-name"
         },
         "osDisk": {
           "caching": "ReadWrite",
