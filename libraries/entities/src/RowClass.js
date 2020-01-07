@@ -34,7 +34,11 @@ class RowClass {
     return etag !== this.etag;
   }
 
-  async modify(modifier) {}
+  async modify(modifier) {
+    await modifier.call(this.properties, this.properties);
+
+    return this.db.procs[`${this.tableName}_modify`](this.documentId, this.properties, 1);
+  }
 }
 
 module.exports = RowClass;
