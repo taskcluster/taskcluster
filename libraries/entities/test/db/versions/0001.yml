@@ -70,3 +70,29 @@ methods:
         set (value, version, etag) = (properties, test_entities_modify.version, public.gen_random_uuid())
         where id = document_id;
       end
+  test_entities_scan:
+    description: test
+    mode: read
+    serviceName: test-entities
+    args: condition text, size integer, page integer
+    returns: table (id text, value jsonb, version integer, etag uuid)
+    body: |-
+      declare
+        sql text := 'select test_entities.id, test_entities.value, test_entities.version, test_entities.etag from test_entities';
+        page_offset integer;
+      begin
+        if condition is not null then
+          sql := sql || ' where ' || condition;
+        end if;
+
+        if size is not null and size > 0 then
+          sql := sql || ' limit ' || size;
+
+          if page is not null and page > 0 then
+            page_offset := size * (page - 1);
+            sql := sql || ' offset ' || page_offset;
+          end if;
+        end if;
+
+        return query execute sql;
+      end

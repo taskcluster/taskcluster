@@ -30,14 +30,19 @@ helper.dbSuite(path.basename(__filename), function() {
   });
   const serviceName = 'test-entities';
 
-  function insertDocuments(num) {
-    return [...new Array(num)].map((_, i) => (
-      entity.create({
+  async function insertDocuments(num) {
+    const documents = [];
+    for (let i = 0; i < num; i++) {
+      const entry = await entity.create({
         taskId: i,
         provisionerId: `provisionerId-${i}`,
         workerType: `workerType-${i}`,
-      })
-    ));
+      });
+
+      documents.push(entry);
+    }
+
+    return documents;
   }
 
   suite('scan', function() {
@@ -45,89 +50,73 @@ helper.dbSuite(path.basename(__filename), function() {
       db = await helper.withDb({ schema, serviceName });
       entity.setup({ tableName: 'test_entities', db, serviceName });
 
-      await Promise.all(insertDocuments(10));
+      await insertDocuments(10);
       const result = await entity.scan();
 
-      assert.equal(result.rows.length, 10);
+      assert.equal(result.length, 10);
     });
-    test('retrieve documents with filter', async function() {
+    test('retrieve documents (with limit)', async function () {
       db = await helper.withDb({ schema, serviceName });
       entity.setup({ tableName: 'test_entities', db, serviceName });
 
-      await Promise.all(insertDocuments(10));
+      await insertDocuments(10);
+      const result = await entity.scan({ limit: 4 });
 
-      const result = await entity.scan({
-        filter: entry => Boolean(entry.value.taskId === 1),
-      });
-
-      assert.equal(result.rows.length, 1);
-      assert.equal(result.pageCount, 1);
+      assert.equal(result.length, 4);
     });
-    test('retrieve documents from pages and with filter', async function() {
+    test('retrieve all documents (with condition)', async function() {
       db = await helper.withDb({ schema, serviceName });
       entity.setup({ tableName: 'test_entities', db, serviceName });
 
-      await Promise.all(insertDocuments(10));
+      await insertDocuments(10);
 
-      const limit = 2;
-      const filter = entry => Boolean(entry.value.taskId % 2 === 0);
+      const result = await entity.scan({ condition: 'value @> \'{"taskId": 9}\' and version = 1' });
+
+      assert.equal(result.length, 1);
+      assert.deepEqual(result[0].value.taskId, 9);
+    });
+    test('retrieve documents in pages', async function() {
+      db = await helper.withDb({ schema, serviceName });
+      entity.setup({ tableName: 'test_entities', db, serviceName });
+
+      const documents = await insertDocuments(10);
+
       let result = await entity.scan({
-        limit,
-        filter,
+        page: 1,
+        limit: 4,
       });
 
-      assert.equal(result.pageCount, 3);
-      assert.equal(result.rowCount, limit);
-      assert.equal(result.page, 1);
+      assert.equal(result.length, 4);
+      assert.deepEqual(result[0].value, documents[0].properties);
+      assert.deepEqual(result[1].value, documents[1].properties);
+      assert.deepEqual(result[2].value, documents[2].properties);
+      assert.deepEqual(result[3].value, documents[3].properties);
 
       result = await entity.scan({
-        limit,
-        filter,
         page: 2,
+        limit: 4,
       });
 
-      assert.equal(result.pageCount, 3);
-      assert.equal(result.rowCount, limit);
-      assert.equal(result.page, 2);
+      assert.equal(result.length, 4);
+      assert.deepEqual(result[0].value, documents[4].properties);
+      assert.deepEqual(result[1].value, documents[5].properties);
+      assert.deepEqual(result[2].value, documents[6].properties);
+      assert.deepEqual(result[3].value, documents[7].properties);
 
       result = await entity.scan({
-        limit,
-        filter,
         page: 3,
+        limit: 4,
       });
 
-      assert.equal(result.pageCount, 3);
-      assert.equal(result.rowCount, 1);
-      assert.equal(result.page, 3);
-    });
-    test('retrieve non-existent page', async function() {
-      db = await helper.withDb({ schema, serviceName });
-      entity.setup({ tableName: 'test_entities', db, serviceName });
+      assert.equal(result.length, 2);
+      assert.deepEqual(result[0].value, documents[8].properties);
+      assert.deepEqual(result[1].value, documents[9].properties);
 
-      await Promise.all(insertDocuments(10));
-
-      const result = await entity.scan({ page: 99 });
-
-      assert.equal(result.rowCount, 0);
-    });
-    test('retrieve page count', async function() {
-      db = await helper.withDb({ schema, serviceName });
-      entity.setup({ tableName: 'test_entities', db, serviceName });
-
-      await Promise.all(insertDocuments(10));
-      const result = await entity.scan({ limit: 3 });
-
-      assert.equal(result.pageCount, 4);
-      assert.equal(result.rows.length, 3);
-    });
-    test('retrieve page count (when no entries in db))', async function() {
-      db = await helper.withDb({ schema, serviceName });
-      entity.setup({ tableName: 'test_entities', db, serviceName });
-
-      const result = await entity.scan({ limit: 3 });
-
-      assert.equal(result.pageCount, 0);
-      assert.equal(result.rows.length, 0);
+      result = await entity.scan({
+        page: 4,
+        limit: 4,
+      });
+      assert.equal(result.length, 0);
     });
   });
 });

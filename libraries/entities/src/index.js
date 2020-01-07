@@ -1,5 +1,3 @@
-const assert = require('assert').strict;
-const { READ } = require('taskcluster-lib-postgres');
 const RowClass = require('./RowClass');
 
 class Entity {
@@ -63,32 +61,8 @@ class Entity {
     return this.db.procs[`${this.tableName}_load`](documentId);
   }
 
-  async scan(options = {}) {
-    const {
-      filter,
-      limit = 1000,
-      page = 1,
-    } = options;
-
-    if (filter) {
-      assert(typeof filter === 'function', 'filter should be a function');
-    }
-
-    const result = await this.db._withClient(READ, client => {
-      return client.query(`select * from ${this.tableName}`);
-    });
-
-    const filteredRows = filter ? result.rows.filter(filter) : result.rows;
-    const pageCount = Math.ceil(filteredRows.length / limit);
-    const rows = filteredRows.slice((page - 1) * limit, page * limit);
-    const rowCount = rows.length;
-
-    return {
-      rows,
-      rowCount,
-      pageCount,
-      page,
-    };
+  scan({ condition, limit, page } = {}) {
+    return this.db.procs[`${this.tableName}_scan`](condition, limit, page);
   }
 
   static configure(options) {
