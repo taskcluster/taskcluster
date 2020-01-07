@@ -119,7 +119,6 @@
                     "title": "Owner",
                     "description": "E-mail of person who caused this task, e.g. the person who did\n`hg push`. The person we should contact to ask why this task is here.\n",
                     "type": "string",
-                    "format": "email",
                     "maxLength": 255
                 },
                 "source": {
