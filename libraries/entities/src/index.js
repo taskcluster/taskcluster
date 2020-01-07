@@ -1,5 +1,6 @@
 const assert = require('assert').strict;
 const { READ } = require('taskcluster-lib-postgres');
+const RowClass = require('./RowClass');
 
 class Entity {
   constructor(options) {
@@ -40,7 +41,8 @@ class Entity {
     }
 
     const etag = res[0][`${this.tableName}_create`];
-    //return RowClass(properties, etag);
+
+    return new RowClass(properties, { etag, tableName: this.tableName, documentId, db: this.db });
   }
 
   delete(properties) {
