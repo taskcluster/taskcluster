@@ -244,29 +244,29 @@ export const PROVIDER_DEFAULT_CONFIGS = new Map([
   [
     'azure',
     {
-      'minCapacity': 0,
-      'maxCapacity': 4,
-      'launchConfigs': [
+      minCapacity: 0,
+      maxCapacity: 4,
+      launchConfigs: [
         {
-          'location': 'westus',
-          'capacityPerInstance': 1,
-          'subnetId': '...',
-          'hardwareProfile': {
-            'vmSize': 'Basic_A1',
+          location: 'westus',
+          capacityPerInstance: 1,
+          subnetId: '...',
+          hardwareProfile: {
+            vmSize: 'Basic_A1',
           },
-          'storageProfile': {
-            'imageReference': {
-              'id': '...',
+          storageProfile: {
+            imageReference: {
+              id: '...',
             },
-            'osDisk': {
-              'caching': 'ReadWrite',
-              'managedDisk': {
-                'storageAccountType': 'Standard_LRS',
+            osDisk: {
+              caching: 'ReadWrite',
+              managedDisk: {
+                storageAccountType: 'Standard_LRS',
               },
-              'createOption': 'FromImage',
+              createOption: 'FromImage',
             },
           },
-          'workerConfig': {},
+          workerConfig: {},
         },
       ],
     },
