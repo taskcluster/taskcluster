@@ -106,3 +106,13 @@ methods:
       begin
         drop table test_entities;
       end
+  test_entities_ensure_table:
+    serviceName: test-entities
+    description: test
+    mode: write
+    args: ''
+    returns: void
+    body: |-
+      begin
+        create table test_entities(id text primary key, value jsonb not null, version integer not null, etag uuid default public.gen_random_uuid());
+      end

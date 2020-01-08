@@ -47,6 +47,7 @@ class Entity {
     try {
       await this.db.procs[`${this.tableName}_remove_table`]();
     } catch (err) {
+      // 42P01 means undefined table
       if (err.code !== '42P01') {
         throw err;
       }
@@ -56,6 +57,20 @@ class Entity {
       e.code = 'ResourceNotFound';
       e.statusCode = 404;
       throw e;
+    }
+  }
+
+  /*
+   Ensure existence of the underlying table
+   */
+  async ensureTable() {
+    try {
+      await this.db.procs[`${this.tableName}_ensure_table`]();
+    } catch (err) {
+      // 42P07 means duplicate table
+      if (err.code !== '42P07') {
+        throw err;
+      }
     }
   }
 
