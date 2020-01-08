@@ -4,6 +4,8 @@ const helper = require('./helper');
 const {FakeAzure} = require('./fake-azure');
 const {AzureProvider} = require('../src/providers/azure');
 const testing = require('taskcluster-lib-testing');
+const fs = require('fs');
+const path = require('path');
 
 helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping) {
   helper.withEntities(mock, skipping);
@@ -266,7 +268,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
 
   suite('registerWorker', function() {
     const workerGroup = providerId;
-    const workerId = 'abc123';
+    const workerId = '5d06deb3-807b-46dd-aef5-78aaf9193f71';
 
     const defaultWorker = {
       workerPoolId,
@@ -288,7 +290,8 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
       const worker = await helper.Worker.create({
         ...defaultWorker,
       });
-      const workerIdentityProof = {token: 'good'};
+      const document = fs.readFileSync(path.resolve(__dirname, 'fixtures/azure_signature_good')).toString();
+      const workerIdentityProof = {document};
       const res = await provider.registerWorker({workerPool, worker, workerIdentityProof});
       // allow +- 10 seconds since time passes while the test executes
       assert(res.expires - new Date() + 10000 > 96 * 3600 * 1000, res.expires);

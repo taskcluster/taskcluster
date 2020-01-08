@@ -17,14 +17,14 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
 
   test('list providers', async function() {
     const {providers} = await helper.workerManager.listProviders();
-    assert.deepStrictEqual(providers.sort(), [
-      {providerId: 'azure', providerType: 'azure'},
+    assert.deepStrictEqual(providers, [
       {providerId: 'testing1', providerType: 'testing'},
       {providerId: 'testing2', providerType: 'testing'},
       {providerId: 'static', providerType: 'static'},
       {providerId: 'google', providerType: 'google'},
       {providerId: 'aws', providerType: 'aws'},
-    ].sort());
+      {providerId: 'azure', providerType: 'azure'},
+    ]);
   });
 
   test('list providers pagination', async function() {

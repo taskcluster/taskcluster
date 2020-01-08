@@ -55,3 +55,9 @@ test:
       workerServiceAccountId: 12345
     aws:
       providerType: aws
+    azure:
+      providerType: azure
+      secret: 123abc
+      clientId: my client
+      domain: a domain
+      resourceGroupName: some resources

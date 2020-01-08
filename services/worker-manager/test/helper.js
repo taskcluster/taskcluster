@@ -1,4 +1,5 @@
 const taskcluster = require('taskcluster-client');
+const {FakeAzure} = require('./fake-azure.js');
 const {FakeGoogle} = require('./fake-google.js');
 const {stickyLoader, Secrets, withEntity, fakeauth, withMonitor, withPulse} = require('taskcluster-lib-testing');
 const builder = require('../src/api');
@@ -46,6 +47,7 @@ exports.withProviders = (mock, skipping) => {
     });
 
     exports.load.inject('fakeCloudApis', {
+      azure: new FakeAzure(),
       google: new FakeGoogle(),
     });
   });
@@ -64,6 +66,7 @@ exports.withProvisioner = (mock, skipping) => {
     }
     exports.initiateProvisioner = async () => {
       provisioner = await exports.load('provisioner');
+
       // remove it right away, so it will be re-created next time
       exports.load.remove('provisioner');
 

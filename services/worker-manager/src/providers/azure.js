@@ -59,21 +59,22 @@ class AzureProvider extends Provider {
     });
     this._enqueue = cloud.enqueue.bind(cloud);
 
+    // load microsoft intermediate certs from disk
+    // FIXME: we should download the intermediate certs
+    //        locations are in the  authorityInfoAccess extension
+    let intermediateFiles = [1, 2, 4, 5].map(i => fs.readFileSync(path.resolve(__dirname, `azure-ca-certs/microsoft_it_tls_ca_${i}.pem`)));
+    let intermediateCerts = intermediateFiles.map(forge.pki.certificateFromPem);
+    this.caStore = forge.pki.createCaStore(intermediateCerts);
+
     if (this.fakeCloudApis && this.fakeCloudApis.azure) {
       this.computeClient = this.fakeCloudApis.azure.compute();
       this.networkClient = this.fakeCloudApis.azure.network();
-      this.intermediateCerts = this.fakeCloudApis.azure.intermediates();
       return;
     }
 
     let credentials = await auth.loginWithServicePrincipalSecret(clientId, secret, domain);
     this.computeClient = new ComputeManagementClient(credentials, subscriptionId);
     this.networkClient = new NetworkManagementClient(credentials, subscriptionId);
-
-    // load microsoft intermediate certs from disk
-    let intermediateFiles = [1, 2, 4, 5].map(i => fs.readFileSync(path.resolve(__dirname, `azure-ca-certs/microsoft_it_tls_ca_${i}.pem`)));
-    let intermediateCerts = intermediateFiles.map(content => forge.pki.certificateFromPem(intermediateFiles));
-    this.caStore = forge.pki.createCaStore(intermediateCerts);
   }
 
   async provision({workerPool, existingCapacity}) {
@@ -244,24 +245,25 @@ class AzureProvider extends Provider {
     const error = () => new ApiError('Signature validation error');
 
     // workerIdentityProof is a signed message
+
+    // We need to check that:
     // 1. The embedded document was signed with the private key corresponding to the
     //    embedded public key
     // 2. The embedded public key has a proper certificate chain back to a trusted CA
+    // 3. The embedded message contains the vmId that matches the worker making the
+    //    worker making the request
 
     // signature is base64-encoded DER-format PKCS#7 / CMS message
 
-    // decode base64
-    let decodedSignature = document.toString('base64');
-
-    // load DER, extract PKCS#7 message
+    // decode base64, load DER, extract PKCS#7 message
+    let decodedMessage = Buffer.from(document, 'base64');
     let message;
     try {
-      message = forge.pkcs7.messageFromAsn1(
-        forge.asn1.fromDer(forge.util.createBuffer(decodedSignature, 'binary')),
-      );
+      let asn1 = forge.asn1.fromDer(forge.util.createBuffer(decodedMessage));
+      message = forge.pkcs7.messageFromAsn1(asn1);
     } catch (err) {
       this.monitor.warning('Error extracting PKCS#7 message', {error: err.toString()});
-      throw error;
+      throw error();
     }
 
     let content, crt, pem, sig;
@@ -270,22 +272,23 @@ class AzureProvider extends Provider {
       // in testing, message.content is empty, so we access the raw ASN1 structure
       content = message.rawCapture.content.value[0].value;
       // convert to pem for convenience
+      // there may be more than one certificate, we only look at the first one
       crt = message.certificates[0];
       pem = forge.pki.publicKeyToPem(crt.publicKey);
       sig = message.rawCapture.signature;
     } catch (err) {
       this.monitor.warning('Error extracting PKCS#7 message content', {error: err.toString()});
-      throw error;
+      throw error();
     }
 
     // verify that the message is properly signed
     try {
       let verifier = crypto.createVerify('RSA-SHA256');
       verifier.update(Buffer.from(content));
-      assert(!verifier.verify(pem, sig, 'binary', 'true'));
+      assert(verifier.verify(pem, sig, 'binary'), true);
     } catch (err) {
       this.monitor.warning('Error verifying PKCS#7 message signature');
-      throw error;
+      throw error();
     }
 
     // verify that the embedded certificate has proper chain of trust
@@ -293,7 +296,16 @@ class AzureProvider extends Provider {
       assert(forge.pki.verifyCertificateChain(this.caStore, [crt]), true);
     } catch (err) {
       this.monitor.warning('Error verifying certificate chain', {error: err.toString()});
-      throw error;
+      throw error();
+    }
+
+    // verify that the embedded vmId matches what the worker is sending
+    try {
+      let {vmId} = JSON.parse(content);
+      assert(vmId === worker.workerId);
+    } catch (err) {
+      this.monitor.warning('Encountered vmId mismatch', {error: err.toString()});
+      throw error();
     }
 
     this.monitor.log.workerRunning({
