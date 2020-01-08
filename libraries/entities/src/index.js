@@ -74,10 +74,10 @@ class Entity {
     }
   }
 
-  remove(properties) {
+  remove(properties, ignoreIfNotExists) {
     const documentId = this.calculateId(properties);
 
-    return this.db.procs[`${this.tableName}_remove`](documentId);
+    this.db.procs[`${this.tableName}_remove`](documentId);
   }
 
   modify(properties) {
@@ -86,9 +86,13 @@ class Entity {
     return this.db.procs[`${this.tableName}_modify`](documentId, properties, 1);
   }
 
-  async load(properties) {
+  async load(properties, ignoreIfNotExists) {
     const documentId = this.calculateId(properties);
     const [result] = await this.db.procs[`${this.tableName}_load`](documentId);
+
+    if (!result && ignoreIfNotExists) {
+      return null;
+    }
 
     if (!result) {
       const err = new Error('Resource not found');

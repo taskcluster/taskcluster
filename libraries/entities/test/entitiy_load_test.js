@@ -50,5 +50,41 @@ helper.dbSuite(path.basename(__filename), function() {
       assert.equal(result.documentId, documentId);
       assert.deepEqual(result.properties, entry);
     });
+    test('load entry (throws when not found)', async function() {
+      db = await helper.withDb({ schema, serviceName });
+
+      const entry = {
+        taskId: 'taskId',
+        provisionerId: 'provisionerId',
+        workerType: 'string',
+      };
+      entity.setup({ tableName: 'test_entities', db, serviceName });
+
+      await assert.rejects(
+        async () => {
+          await entity.load(entry);
+        },
+        (err => {
+          assert.equal(err.code, "ResourceNotFound");
+          assert.equal(err.statusCode, 404);
+
+          return true;
+        })
+      );
+    });
+    test('load entry (ignoreIfNotExists)', async function() {
+      db = await helper.withDb({ schema, serviceName });
+
+      const entry = {
+        taskId: 'taskId',
+        provisionerId: 'provisionerId',
+        workerType: 'string',
+      };
+      entity.setup({ tableName: 'test_entities', db, serviceName });
+
+      const result = await entity.load(entry, true);
+
+      assert.equal(result, null);
+    });
   });
 });
