@@ -46,13 +46,13 @@ helper.dbSuite(path.basename(__filename), function() {
 
       // second time, should error
       assert.rejects(
-        async () => { await entity.removeTable() },
+        async () => { await entity.removeTable(); },
         (err) => {
           assert.equal(err.code, 'ResourceNotFound');
           assert.equal(err.statusCode, 404);
 
           return true;
-        }
+        },
       );
     });
   });
