@@ -43,6 +43,22 @@ class Entity {
     return new RowClass(properties, { etag, tableName: this.tableName, documentId, db: this.db });
   }
 
+  async removeTable() {
+    try {
+      await this.db.procs[`${this.tableName}_remove_table`]();
+    } catch (err) {
+      if (err.code !== '42P01') {
+        throw err;
+      }
+
+      const e = new Error('Resource not found');
+
+      e.code = 'ResourceNotFound';
+      e.statusCode = 404;
+      throw e;
+    }
+  }
+
   remove(properties) {
     const documentId = this.calculateId(properties);
 

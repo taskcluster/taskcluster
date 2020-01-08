@@ -96,3 +96,13 @@ methods:
 
         return query execute sql;
       end
+  test_entities_remove_table:
+    serviceName: test-entities
+    description: test
+    mode: write
+    args: ''
+    returns: void
+    body: |-
+      begin
+        drop table test_entities;
+      end
