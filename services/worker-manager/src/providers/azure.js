@@ -60,8 +60,8 @@ class AzureProvider extends Provider {
     this._enqueue = cloud.enqueue.bind(cloud);
 
     // load microsoft intermediate certs from disk
-    // FIXME: we should download the intermediate certs
-    //        locations are in the  authorityInfoAccess extension
+    // TODO: we should download the intermediate certs,
+    //       locations are in the authorityInfoAccess extension
     let intermediateFiles = [1, 2, 4, 5].map(i => fs.readFileSync(path.resolve(__dirname, `azure-ca-certs/microsoft_it_tls_ca_${i}.pem`)));
     let intermediateCerts = intermediateFiles.map(forge.pki.certificateFromPem);
     this.caStore = forge.pki.createCaStore(intermediateCerts);
