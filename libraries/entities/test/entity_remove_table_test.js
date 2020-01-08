@@ -45,7 +45,7 @@ helper.dbSuite(path.basename(__filename), function() {
       await entity.removeTable();
 
       // second time, should error
-      assert.rejects(
+      await assert.rejects(
         async () => { await entity.removeTable(); },
         (err) => {
           assert.equal(err.code, 'ResourceNotFound');

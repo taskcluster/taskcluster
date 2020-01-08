@@ -46,8 +46,7 @@ helper.dbSuite(path.basename(__filename), function() {
 
       let result = await entity.load(entry);
 
-      assert.equal(result.length, 1);
-      assert.equal(result[0].id, documentId);
+      assert.equal(result.documentId, documentId);
 
       const modifiedEntry = {
         ...entry,
@@ -58,9 +57,8 @@ helper.dbSuite(path.basename(__filename), function() {
 
       result = await entity.load(modifiedEntry);
 
-      assert.equal(result.length, 1);
-      assert.equal(result[0].id, documentId);
-      assert.deepEqual(result[0].value, modifiedEntry);
+      assert.equal(result.documentId, documentId);
+      assert.deepEqual(result.properties, modifiedEntry);
     });
   });
 });

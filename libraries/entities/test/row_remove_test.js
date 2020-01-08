@@ -44,8 +44,18 @@ helper.dbSuite(path.basename(__filename), function() {
 
       let row = await entity.create(entry);
       await row.remove();
-      row = await entity.load(entry);
-      assert.equal(row.length, 0);
+
+      await assert.rejects(
+        async () => {
+          await entity.load(entry);
+        },
+        err => {
+          assert.equal(err.code, 'ResourceNotFound');
+          assert.equal(err.statusCode, 404);
+
+          return true;
+        },
+      );
     });
   });
 });

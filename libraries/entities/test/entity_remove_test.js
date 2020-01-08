@@ -47,14 +47,21 @@ helper.dbSuite(path.basename(__filename), function() {
 
       let result = await entity.load(entry);
 
-      assert.equal(result.length, 1);
-      assert.equal(result[0].id, documentId);
+      assert.equal(result.documentId, documentId);
 
       await entity.remove(entry);
 
-      result = await entity.load(entry);
+      await assert.rejects(
+        async () => {
+          await entity.load(entry);
+        },
+        err => {
+          assert.equal(err.code, 'ResourceNotFound');
+          assert.equal(err.statusCode, 404);
 
-      assert.equal(result.length, 0);
+          return true;
+        }
+      );
     });
   });
 });

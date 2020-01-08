@@ -47,8 +47,7 @@ helper.dbSuite(path.basename(__filename), function() {
 
       let result = await entity.load(entry);
 
-      assert.equal(result.length, 1);
-      assert.equal(result[0].id, documentId);
+      assert.equal(result.documentId, documentId);
 
       await createdEntry.modify((entry) => {
         entry.workerType = 'foo';
@@ -56,9 +55,8 @@ helper.dbSuite(path.basename(__filename), function() {
 
       result = await entity.load(entry);
 
-      assert.equal(result.length, 1);
-      assert.equal(result[0].id, documentId);
-      assert.deepEqual(result[0].value.workerType, 'foo');
+      assert.equal(result.documentId, documentId);
+      assert.deepEqual(result.properties.workerType, 'foo');
     });
     test('modify entry without argument (synchronous modifier)', async function() {
       db = await helper.withDb({ schema, serviceName });
@@ -75,8 +73,7 @@ helper.dbSuite(path.basename(__filename), function() {
 
       let result = await entity.load(entry);
 
-      assert.equal(result.length, 1);
-      assert.equal(result[0].id, documentId);
+      assert.equal(result.documentId, documentId);
 
       await createdEntry.modify(function (){
         this.workerType = 'foo';
@@ -84,9 +81,8 @@ helper.dbSuite(path.basename(__filename), function() {
 
       result = await entity.load(entry);
 
-      assert.equal(result.length, 1);
-      assert.equal(result[0].id, documentId);
-      assert.deepEqual(result[0].value.workerType, 'foo');
+      assert.equal(result.documentId, documentId);
+      assert.deepEqual(result.properties.workerType, 'foo');
     });
     test('modify entry (asynchronous modifier)', async function () {
       db = await helper.withDb({ schema, serviceName });
@@ -103,8 +99,7 @@ helper.dbSuite(path.basename(__filename), function() {
 
       let result = await entity.load(entry);
 
-      assert.equal(result.length, 1);
-      assert.equal(result[0].id, documentId);
+      assert.equal(result.documentId, documentId);
 
       await createdEntry.modify(async (entry) => {
         await testing.sleep(100);
@@ -113,9 +108,8 @@ helper.dbSuite(path.basename(__filename), function() {
 
       result = await entity.load(entry);
 
-      assert.equal(result.length, 1);
-      assert.equal(result[0].id, documentId);
-      assert.deepEqual(result[0].value.workerType, 'foo');
+      assert.equal(result.documentId, documentId);
+      assert.deepEqual(result.properties.workerType, 'foo');
     });
     test('modify entry without argument (asynchronous modifier)', async function() {
       db = await helper.withDb({ schema, serviceName });
@@ -132,8 +126,7 @@ helper.dbSuite(path.basename(__filename), function() {
 
       let result = await entity.load(entry);
 
-      assert.equal(result.length, 1);
-      assert.equal(result[0].id, documentId);
+      assert.equal(result.documentId, documentId);
 
       await createdEntry.modify(async function () {
         await testing.sleep(100);
@@ -142,9 +135,8 @@ helper.dbSuite(path.basename(__filename), function() {
 
       result = await entity.load(entry);
 
-      assert.equal(result.length, 1);
-      assert.equal(result[0].id, documentId);
-      assert.deepEqual(result[0].value.workerType, 'foo');
+      assert.equal(result.documentId, documentId);
+      assert.deepEqual(result.properties.workerType, 'foo');
     });
   });
 });

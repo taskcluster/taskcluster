@@ -86,10 +86,19 @@ class Entity {
     return this.db.procs[`${this.tableName}_modify`](documentId, properties, 1);
   }
 
-  load(properties) {
+  async load(properties) {
     const documentId = this.calculateId(properties);
+    const [result] = await this.db.procs[`${this.tableName}_load`](documentId);
 
-    return this.db.procs[`${this.tableName}_load`](documentId);
+    if (!result) {
+      const err = new Error('Resource not found');
+
+      err.code = 'ResourceNotFound';
+      err.statusCode = 404;
+      throw err;
+    }
+
+    return new RowClass(properties, { etag: result.etag, tableName: this.tableName, documentId, db: this.db });
   }
 
   scan({ condition, limit, page } = {}) {

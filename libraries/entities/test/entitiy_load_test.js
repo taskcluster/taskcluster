@@ -47,8 +47,8 @@ helper.dbSuite(path.basename(__filename), function() {
 
       const result = await entity.load(entry);
 
-      assert.equal(result.length, 1);
-      assert.equal(result[0].id, documentId);
+      assert.equal(result.documentId, documentId);
+      assert.deepEqual(result.properties, entry);
     });
   });
 });
