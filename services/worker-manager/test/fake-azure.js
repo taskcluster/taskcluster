@@ -17,12 +17,6 @@ class FakeAzure {
     return err;
   }
 
-  intermediates() {
-    const createOrUpdateVMStub = sinon.stub();
-    createOrUpdateVMStub.onCall(0).returns(instanceData);
-    createOrUpdateVMStub.onCall(1).throws(azureError);
-  }
-
   network() {
     const createOrUpdateNICStub = sinon.stub();
     createOrUpdateNICStub.returns({
