@@ -286,6 +286,17 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
       },
     };
 
+    test('document is not a cert', async function() {
+      const worker = await helper.Worker.create({
+        ...defaultWorker,
+      });
+      const document = 'this is not a cert';
+      const workerIdentityProof = {document};
+      await assert.rejects(() =>
+        provider.registerWorker({workerPool, worker, workerIdentityProof}),
+      /Signature validation error/);
+    });
+
     test('sweet success', async function() {
       const worker = await helper.Worker.create({
         ...defaultWorker,
