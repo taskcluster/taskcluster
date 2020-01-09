@@ -24,7 +24,6 @@ import (
 
 // Routes represents the context of the running service
 type Routes struct {
-	RootURL string
 	tcclient.Client
 	services tc.Services
 	lock     sync.RWMutex
@@ -41,9 +40,8 @@ type CredentialsUpdate struct {
 var httpClient = &http.Client{}
 
 // NewRoutes creates a new Routes instance.
-func NewRoutes(rootURL string, client tcclient.Client) Routes {
+func NewRoutes(client tcclient.Client) Routes {
 	return Routes{
-		RootURL:  rootURL,
 		Client:   client,
 		services: tc.NewServices(rootURL),
 	}

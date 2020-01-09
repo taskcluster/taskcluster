@@ -148,7 +148,6 @@ func TestBewit(t *testing.T) {
 		return func(t *testing.T, creds *tcclient.Credentials) *httptest.ResponseRecorder {
 			// Test setup
 			routes := NewRoutes(
-				rootURL,
 				tcclient.Client{
 					RootURL:     rootURL,
 					Credentials: creds,
@@ -220,7 +219,6 @@ func TestAPICallGET(t *testing.T) {
 			fmt.Printf("-- %s --\n", name)
 			// Test setup
 			routes := NewRoutes(
-				rootURL,
 				tcclient.Client{
 					Authenticate: true,
 					RootURL:      rootURL,
@@ -266,7 +264,6 @@ func TestAPICallPOST(t *testing.T) {
 
 			// Test setup
 			routes := NewRoutes(
-				rootURL,
 				tcclient.Client{
 					Authenticate: true,
 					RootURL:      rootURL,
@@ -312,8 +309,8 @@ func TestNon200HasErrorBody(t *testing.T) {
 
 		// Test setup
 		routes := NewRoutes(
-			rootURL,
 			tcclient.Client{
+				RootURL:      rootURL,
 				Authenticate: true,
 				Credentials:  creds,
 			},
@@ -348,8 +345,8 @@ func TestOversteppedScopes(t *testing.T) {
 
 		// Test setup
 		routes := NewRoutes(
-			rootURL,
 			tcclient.Client{
+				RootURL:      rootURL,
 				Authenticate: true,
 				Credentials:  creds,
 			},
@@ -389,8 +386,8 @@ func TestOversteppedScopes(t *testing.T) {
 
 func TestBadCredsReturns500(t *testing.T) {
 	routes := NewRoutes(
-		rootURL,
 		tcclient.Client{
+			RootURL:      rootURL,
 			Authenticate: true,
 			Credentials: &tcclient.Credentials{
 				ClientID:    "abc",
@@ -420,8 +417,8 @@ func TestInvalidEndpoint(t *testing.T) {
 
 		// Test setup
 		routes := NewRoutes(
-			rootURL,
 			tcclient.Client{
+				RootURL:      rootURL,
 				Authenticate: true,
 				Credentials:  creds,
 			},
@@ -460,7 +457,6 @@ func TestGetResponseBody(t *testing.T) {
 
 			// Test setup
 			routes := NewRoutes(
-				rootURL,
 				tcclient.Client{
 					RootURL:      rootURL,
 					Authenticate: true,

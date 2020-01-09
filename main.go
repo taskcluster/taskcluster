@@ -179,8 +179,8 @@ func ParseCommandArgs(argv []string, exit bool) (routes Routes, address string, 
 	}
 
 	routes = NewRoutes(
-		rootURL.(string),
 		tcclient.Client{
+			RootURL:      rootURL.(string),
 			Authenticate: true,
 			Credentials:  creds,
 		},
