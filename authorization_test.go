@@ -144,7 +144,7 @@ func checkStatusCode(t *testing.T, res *httptest.ResponseRecorder, statusCode in
 }
 
 func TestBewit(t *testing.T) {
-	test := func(useAuthorizedScopes bool, expectedGetResponse int) IntegrationTest {
+	test := func(useAuthorizedScopes bool, expectedHTTPStatusCode int) IntegrationTest {
 		return func(t *testing.T, creds *tcclient.Credentials) *httptest.ResponseRecorder {
 			// Test setup
 			routes := NewRoutes(
@@ -191,7 +191,7 @@ func TestBewit(t *testing.T) {
 				if !ok {
 					t.Fatalf("Exception thrown:\n%s", err)
 				}
-				if httpError.HttpResponseCode != expectedGetResponse {
+				if httpError.HttpResponseCode != expectedHTTPStatusCode {
 					t.Fatalf("Bad response code %d", httpError.HttpResponseCode)
 				}
 			}
