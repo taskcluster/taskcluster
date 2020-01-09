@@ -16,6 +16,9 @@ import './json-lint';
 @withStyles({
   root: {
     width: '100%',
+    '& pre.CodeMirror-placeholder': {
+      color: '#999',
+    },
   },
 })
 /** Render an editor.
