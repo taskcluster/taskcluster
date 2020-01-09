@@ -3,21 +3,29 @@ package runner
 import (
 	"fmt"
 	"io/ioutil"
+	"os/exec"
 	"path/filepath"
 	"testing"
 
 	"github.com/Flaque/filet"
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
+
+func buildFakeGenericWorker(workerPath string) error {
+	cmd := exec.Command("go")
+	// fake.go just exits 0
+	cmd.Args = append(cmd.Args, "build", "-o", workerPath, "../worker/genericworker/fake")
+	return cmd.Run()
+}
 
 func TestFakeGenericWorker(t *testing.T) {
 	defer filet.CleanUp(t)
 	dir := filet.TmpDir(t, "")
+	workerPath := filepath.Join(dir, "fake.exe")
 	configPath := filepath.Join(dir, "runner.yaml")
 	workerConfigPath := filepath.Join(dir, "worker.yaml")
 
-	// fake.sh just exits 0
-	fakeWorker := "../worker/genericworker/fake/fake.sh"
+	require.NoError(t, buildFakeGenericWorker(workerPath))
 
 	configData := fmt.Sprintf(`
 provider:
@@ -33,18 +41,14 @@ worker:
   implementation: generic-worker
   configPath: %s
   path: %s
-`, workerConfigPath, fakeWorker)
+`, workerConfigPath, workerPath)
 
 	err := ioutil.WriteFile(configPath, []byte(configData), 0755)
-	if !assert.NoError(t, err) {
-		return
-	}
+	require.NoError(t, err)
 
 	// checks exit code of running fake worker
 	_, err = Run(configPath)
-	if !assert.NoError(t, err) {
-		return
-	}
+	require.NoError(t, err)
 }
 
 func TestDummy(t *testing.T) {
@@ -65,20 +69,16 @@ getSecrets: false
 worker:
   implementation: dummy
 `), 0755)
-	if !assert.NoError(t, err) {
-		return
-	}
+	require.NoError(t, err)
 
 	run, err := Run(configPath)
-	if !assert.NoError(t, err) {
-		return
-	}
+	require.NoError(t, err)
 
 	// spot-check some run values; the main point here is that
 	// an error does not occur
-	assert.Equal(t, "https://tc.example.com", run.RootURL)
-	assert.Equal(t, "fake", run.Credentials.ClientID)
-	assert.Equal(t, "pp/ww", run.WorkerPoolID)
+	require.Equal(t, "https://tc.example.com", run.RootURL)
+	require.Equal(t, "fake", run.Credentials.ClientID)
+	require.Equal(t, "pp/ww", run.WorkerPoolID)
 }
 
 func TestDummyCached(t *testing.T) {
@@ -103,16 +103,12 @@ workerConfig:
 worker:
   implementation: dummy
 `, cachePath)), 0755)
-	if !assert.NoError(t, err) {
-		return
-	}
+	require.NoError(t, err)
 
 	run, err := Run(configPath)
-	if !assert.NoError(t, err) {
-		return
-	}
+	require.NoError(t, err)
 
-	assert.Equal(t, true, run.WorkerConfig.MustGet("fromFirstRun"))
+	require.Equal(t, true, run.WorkerConfig.MustGet("fromFirstRun"))
 
 	// slightly different config this time, omitting `fromFirstRun`:
 	err = ioutil.WriteFile(configPath, []byte(fmt.Sprintf(`
@@ -129,14 +125,10 @@ cacheOverRestarts: %s
 worker:
   implementation: dummy
 `, cachePath)), 0755)
-	if !assert.NoError(t, err) {
-		return
-	}
+	require.NoError(t, err)
 
 	run, err = Run(configPath)
-	if !assert.NoError(t, err) {
-		return
-	}
+	require.NoError(t, err)
 
-	assert.Equal(t, true, run.WorkerConfig.MustGet("fromFirstRun"))
+	require.Equal(t, true, run.WorkerConfig.MustGet("fromFirstRun"))
 }
