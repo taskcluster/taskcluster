@@ -7,18 +7,24 @@ class RowClass {
       tableName,
       documentId,
       db,
+      context = {},
     } = options;
 
     assert(properties, 'properties is required');
     assert(tableName, 'tableName is required');
     assert(documentId, 'documentId is required');
     assert(db, 'db is required');
+    assert(typeof context === 'object' && context.constructor === Object, 'context should be an object');
 
     this.properties = properties;
     this.etag = etag;
     this.tableName = tableName;
     this.documentId = documentId;
     this.db = db;
+
+    Object.entries(context).forEach(([key, value]) => {
+      this[key] = value;
+    });
   }
 
   async remove(ignoreChanges, ignoreIfNotExists) {

@@ -1,18 +1,55 @@
+const assert = require('assert').strict;
 const RowClass = require('./RowClass');
 
 class Entity {
   constructor(options) {
+    if (options.context) {
+      assert(options.context instanceof Array, 'context must be an array');
+
+      options.context.forEach(key => {
+        assert(typeof key === 'string', 'elements of options.context must be strings');
+        assert(options.properties[key] === undefined, `property name ${key} is defined in properties and cannot be specified in options.context`);
+        assert(!Reflect.ownKeys(RowClass.prototype).includes(key), `property name ${key} is reserved and cannot be specified in options.context`);
+      });
+    }
+
     this.partitionKey = options.partitionKey;
     this.rowKey = options.rowKey;
     this.properties = options.properties;
+    this.context = options.context || [];
+
     this.tableName = null;
     this.db = null;
     this.serviceName = null;
+    this.contextEntries = null;
+  }
+
+  _getContextEntries(context) {
+    const ctx = {};
+
+    assert(typeof context === 'object' && context.constructor === Object, 'context should be an object');
+
+    this.context.forEach(key => {
+      assert(key in context, `context key ${key} must be specified`);
+    });
+
+    Object.entries(context).forEach(([key, value]) => {
+      assert(this.context.includes(key), `context key ${key} was not declared in Entity.configure`);
+      ctx[key] = value;
+    });
+
+    return ctx;
   }
 
   setup(options) {
-    const { tableName, db, serviceName } = options;
+    const {
+      tableName,
+      db,
+      serviceName,
+      context = {},
+    } = options;
 
+    this.contextEntries = this._getContextEntries(context);
     this.tableName = tableName;
     this.serviceName = serviceName;
     this.db = db;
@@ -40,7 +77,12 @@ class Entity {
 
     const etag = res[0][`${this.tableName}_create`];
 
-    return new RowClass(properties, { etag, tableName: this.tableName, documentId, db: this.db });
+    return new RowClass(properties, {
+      etag,
+      tableName: this.tableName,
+      documentId, db: this.db,
+      context: this.contextEntries,
+    });
   }
 
   async removeTable() {
@@ -119,7 +161,12 @@ class Entity {
       throw err;
     }
 
-    return new RowClass(properties, { etag: result.etag, tableName: this.tableName, documentId, db: this.db });
+    return new RowClass(properties, {
+      etag: result.etag,
+      tableName: this.tableName,
+      documentId, db: this.db,
+      context: this.contextEntries,
+    });
   }
 
   scan(condition, options = {}) {
