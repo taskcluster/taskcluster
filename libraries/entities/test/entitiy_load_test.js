@@ -69,7 +69,7 @@ helper.dbSuite(path.basename(__filename), function() {
           assert.equal(err.statusCode, 404);
 
           return true;
-        })
+        }),
       );
     });
     test('load entry (ignoreIfNotExists)', async function() {

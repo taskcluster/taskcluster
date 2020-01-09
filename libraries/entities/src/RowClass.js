@@ -21,8 +21,25 @@ class RowClass {
     this.db = db;
   }
 
-  remove() {
-    return this.db.procs[`${this.tableName}_remove`](this.documentId);
+  async remove(ignoreChanges, ignoreIfNotExists) {
+    const [result] = await this.db.procs[`${this.tableName}_remove`](this.documentId);
+
+    if (result) {
+      return true;
+    }
+
+    if (ignoreIfNotExists && !result) {
+      return false;
+    }
+
+    if (!result) {
+      const err = new Error('Resource not found');
+
+      err.code = 'ResourceNotFound';
+      err.statusCode = 404;
+
+      throw err;
+    }
   }
 
   // load the properties from the table once more, and return true if anything has changed.

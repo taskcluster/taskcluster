@@ -131,7 +131,7 @@ helper.dbSuite(path.basename(__filename), function() {
           assert.equal(err.code, 'EntityAlreadyExists');
 
           return true;
-        }
+        },
       );
     });
   });

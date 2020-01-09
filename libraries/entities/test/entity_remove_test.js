@@ -60,7 +60,7 @@ helper.dbSuite(path.basename(__filename), function() {
           assert.equal(err.statusCode, 404);
 
           return true;
-        }
+        },
       );
     });
     test('remove entry (ignoreIfNotExists) returns true', async function() {
