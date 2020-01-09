@@ -66,7 +66,7 @@ var (
 	// taskcluster-worker-runner.  This is initialized early in the
 	// `generic-worker run` process and can be used by any component after that
 	// time.
-	workerRunnerTransport protocol.Transport
+	workerRunnerTransport *protocol.StdioTransport
 	WorkerRunnerProtocol  *protocol.Protocol
 
 	logName = "public/logs/live_backing.log"
@@ -144,7 +144,7 @@ func main() {
 			os.Stderr = f
 		}
 
-		initializeProtocol(os.Stdin, os.Stdout)
+		initializeWorkerRunnerProtocol(os.Stdin, os.Stdout)
 
 		configFileAbs, err := filepath.Abs(arguments["--config"].(string))
 		exitOnError(CANT_LOAD_CONFIG, err, "Cannot determine absolute path location for generic-worker config file '%v'", arguments["--config"])
@@ -235,13 +235,13 @@ func main() {
 	}
 }
 
-func initializeProtocol(stdin io.Reader, stdout io.Writer) {
-	workerRunnerTranport := protocol.NewStdioTransport()
+func initializeWorkerRunnerProtocol(input io.Reader, output io.Writer) {
+	workerRunnerTransport = protocol.NewStdioTransport()
 
-	go io.Copy(workerRunnerTranport, stdin)
-	go io.Copy(stdout, workerRunnerTranport)
+	go io.Copy(workerRunnerTransport, input)
+	go io.Copy(output, workerRunnerTransport)
 
-	WorkerRunnerProtocol = protocol.NewProtocol(workerRunnerTranport)
+	WorkerRunnerProtocol = protocol.NewProtocol(workerRunnerTransport)
 	WorkerRunnerProtocol.Start(true)
 }
 

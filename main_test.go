@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -11,6 +12,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/stretchr/testify/assert"
 	"github.com/taskcluster/generic-worker/testutil"
 )
 
@@ -251,4 +253,43 @@ func TestUsage(t *testing.T) {
 	if !strings.Contains(usage, "Exit Codes:") {
 		t.Fatal("Was expecting the usage text to include information about exit codes")
 	}
+}
+
+type FakeWriter struct {
+	written []byte
+}
+
+func (w *FakeWriter) Write(p []byte) (n int, err error) {
+	w.written = p
+	return len(p), nil
+}
+
+func TestProtocol(t *testing.T) {
+	defer func() {
+		WorkerRunnerProtocol = nil
+		workerRunnerTransport = nil
+	}()
+	reader := bytes.NewBufferString(`~{"type":"welcome", "capabilities": ["graceful-termination"]}` + "\n")
+	writer := &FakeWriter{}
+
+	initializeWorkerRunnerProtocol(reader, writer)
+
+	// wait for up to 10s for the protocol negotiation to occur.
+	// see https://bugzilla.mozilla.org/show_bug.cgi?id=1608185
+	start := time.Now()
+	for {
+		if WorkerRunnerProtocol.Capabilities.Has("graceful-termination") {
+			break
+		}
+		if time.Now().Sub(start) > 10*time.Second {
+			t.Fatalf("protocol negotiation did not work")
+		}
+		time.Sleep(100 * time.Millisecond)
+	}
+
+	// check that we sent a "hello" message in response
+	var msg map[string]interface{}
+	err := json.Unmarshal(writer.written[1:], &msg)
+	assert.NoError(t, err)
+	assert.Equal(t, "hello", msg["type"])
 }
