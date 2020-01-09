@@ -122,8 +122,16 @@ class Entity {
     return new RowClass(properties, { etag: result.etag, tableName: this.tableName, documentId, db: this.db });
   }
 
-  scan(condition, { limit, page } = {}) {
+  scan(condition, options = {}) {
+    const {
+      limit = 1000,
+      page,
+    } = options;
     return this.db.procs[`${this.tableName}_scan`](condition, limit, page);
+  }
+
+  query(conditions, options = {}) {
+    return this.scan(conditions, options);
   }
 
   static configure(options) {
