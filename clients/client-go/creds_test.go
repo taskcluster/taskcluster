@@ -2,6 +2,7 @@ package tcclient_test
 
 import (
 	"fmt"
+	"net/http"
 	"os"
 	"reflect"
 	"testing"
@@ -120,6 +121,95 @@ func Test_NamedTempCred(t *testing.T) {
 	})
 	checkAuthenticate(t, response, err,
 		"jimmy", []string{"scope:1", "scope:2"})
+}
+
+func Test_PermaCred_Bewit(t *testing.T) {
+	rootURL := os.Getenv("TASKCLUSTER_ROOT_URL")
+	if rootURL == "" {
+		t.Skip("Cannot run test, TASKCLUSTER_ROOT_URL is not set to a non-empty string")
+	}
+	client := tcauth.New(testCreds, rootURL)
+	url, err := client.TestAuthenticateGet_SignedURL(15 * time.Minute)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	resp, err := http.Get(url.String())
+	if 200 != resp.StatusCode {
+		t.Fatalf("Got unexpected statusCode %d", resp.StatusCode)
+		return
+	}
+}
+
+func Test_TempCred_Bewit(t *testing.T) {
+	rootURL := os.Getenv("TASKCLUSTER_ROOT_URL")
+	if rootURL == "" {
+		t.Skip("Cannot run test, TASKCLUSTER_ROOT_URL is not set to a non-empty string")
+	}
+	tempCreds, err := testCreds.CreateTemporaryCredentials(1*time.Hour, "test:authenticate-get")
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	client := tcauth.New(tempCreds, rootURL)
+	url, err := client.TestAuthenticateGet_SignedURL(15 * time.Minute)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	resp, err := http.Get(url.String())
+	if 200 != resp.StatusCode {
+		t.Fatalf("Got unexpected statusCode %d", resp.StatusCode)
+		return
+	}
+}
+
+func Test_TempCred_Bewit_WrongScope(t *testing.T) {
+	rootURL := os.Getenv("TASKCLUSTER_ROOT_URL")
+	if rootURL == "" {
+		t.Skip("Cannot run test, TASKCLUSTER_ROOT_URL is not set to a non-empty string")
+	}
+	tempCreds, err := testCreds.CreateTemporaryCredentials(1*time.Hour, "test:not-the-scope-you-need")
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	client := tcauth.New(tempCreds, rootURL)
+	url, err := client.TestAuthenticateGet_SignedURL(15 * time.Minute)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	resp, err := http.Get(url.String())
+	if 403 != resp.StatusCode {
+		t.Fatalf("Got unexpected statusCode %d", resp.StatusCode)
+		return
+	}
+}
+
+func Test_AuthScopes_Bewit(t *testing.T) {
+	rootURL := os.Getenv("TASKCLUSTER_ROOT_URL")
+	if rootURL == "" {
+		t.Skip("Cannot run test, TASKCLUSTER_ROOT_URL is not set to a non-empty string")
+	}
+
+	authCreds := *testCreds
+	authCreds.AuthorizedScopes = []string{"test:authenticate-get"}
+	client := tcauth.New(&authCreds, rootURL)
+
+	url, err := client.TestAuthenticateGet_SignedURL(15 * time.Minute)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	resp, err := http.Get(url.String())
+	if 200 != resp.StatusCode {
+		t.Fatalf("Got unexpected statusCode %d", resp.StatusCode)
+		return
+	}
 }
 
 func Test_TempCred_NoClientId(t *testing.T) {

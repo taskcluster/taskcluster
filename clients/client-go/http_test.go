@@ -391,3 +391,40 @@ func TestHTTPRequestGeneration(t *testing.T) {
 		t.Fail()
 	}
 }
+
+func TestSignedURL_PartialURL(t *testing.T) {
+	client := Client{
+		Credentials: &Credentials{
+			ClientID:    "test-signin",
+			AccessToken: "fake-key",
+		},
+		RootURL:     "https://tc.example.com",
+		ServiceName: "grapes",
+		APIVersion:  "v2",
+	}
+
+	res, err := client.SignedURL("foo/bar", url.Values{"param": []string{"p1"}}, time.Minute)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	if res.Host != "tc.example.com" {
+		t.Fatalf("Got unexpected host %s", res.Host)
+		return
+	}
+	if res.Path != "/api/grapes/v2/foo/bar" {
+		t.Fatalf("Got unexpected path %s", res.Path)
+		return
+	}
+	if res.Query()["param"][0] != "p1" {
+		t.Fatalf("Got unexpected query %s", res.Query())
+		return
+	}
+
+	_, ok := res.Query()["bewit"]
+	if !ok {
+		t.Fatalf("Query does not have a 'bewit'")
+		return
+	}
+}
