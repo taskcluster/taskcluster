@@ -35,6 +35,7 @@ import (
 	"github.com/taskcluster/taskcluster-base-go/scopes"
 	tcclient "github.com/taskcluster/taskcluster-client-go"
 	"github.com/taskcluster/taskcluster-client-go/tcqueue"
+	"github.com/taskcluster/taskcluster-worker-runner/protocol"
 	"github.com/xeipuuv/gojsonschema"
 )
 
@@ -60,6 +61,13 @@ var (
 	config         *gwconfig.Config
 	configProvider gwconfig.Provider
 	Features       []Feature
+
+	// Support for communication betweeen this process and
+	// taskcluster-worker-runner.  This is initialized early in the
+	// `generic-worker run` process and can be used by any component after that
+	// time.
+	workerRunnerTransport protocol.Transport
+	WorkerRunnerProtocol  *protocol.Protocol
 
 	logName = "public/logs/live_backing.log"
 	logPath = filepath.Join("generic-worker", "live_backing.log")
@@ -135,6 +143,8 @@ func main() {
 			os.Stdout = f
 			os.Stderr = f
 		}
+
+		initializeProtocol(os.Stdin, os.Stdout)
 
 		configFileAbs, err := filepath.Abs(arguments["--config"].(string))
 		exitOnError(CANT_LOAD_CONFIG, err, "Cannot determine absolute path location for generic-worker config file '%v'", arguments["--config"])
@@ -223,6 +233,16 @@ func main() {
 		// platform specific...
 		os.Exit(int(platformTargets(arguments)))
 	}
+}
+
+func initializeProtocol(stdin io.Reader, stdout io.Writer) {
+	workerRunnerTranport := protocol.NewStdioTransport()
+
+	go io.Copy(workerRunnerTranport, stdin)
+	go io.Copy(stdout, workerRunnerTranport)
+
+	WorkerRunnerProtocol = protocol.NewProtocol(workerRunnerTranport)
+	WorkerRunnerProtocol.Start(true)
 }
 
 func loadConfig(configFile *gwconfig.File, provider Provider) (gwconfig.Provider, error) {

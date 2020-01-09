@@ -377,6 +377,14 @@
   version = "v12.0.0"
 
 [[projects]]
+  digest = "1:7cb04761a078e352d32353911ec81506d37b109717fc31bc11dec2fedbf8fd2e"
+  name = "github.com/taskcluster/taskcluster-worker-runner"
+  packages = ["protocol"]
+  pruneopts = "UT"
+  revision = "030e745526ec862fa029ace4ef3ef82bf9bd7eea"
+  version = "v1.0.2"
+
+[[projects]]
   digest = "1:dfe0235c6eeb715424505b9f520933baadc453be171c104a89e9e86c569c475f"
   name = "github.com/taskcluster/websocktunnel"
   packages = [
@@ -536,6 +544,7 @@
     "github.com/taskcluster/taskcluster-client-go/tcqueue",
     "github.com/taskcluster/taskcluster-client-go/tcsecrets",
     "github.com/taskcluster/taskcluster-client-go/tcworkermanager",
+    "github.com/taskcluster/taskcluster-worker-runner/protocol",
     "github.com/taskcluster/websocktunnel/client",
     "github.com/taskcluster/websocktunnel/wsproxy",
     "github.com/xeipuuv/gojsonschema",
