@@ -7,6 +7,7 @@ require (
 	github.com/Microsoft/go-winio v0.4.14
 	github.com/docopt/docopt-go v0.0.0-20180111231733-ee0de3bc6815
 	github.com/google/uuid v1.1.1 // indirect
+	github.com/hectane/go-acl v0.0.0-20190604041725-da78bae5fc95
 	github.com/kr/pretty v0.1.0 // indirect
 	github.com/spf13/afero v1.2.2 // indirect
 	github.com/stretchr/testify v1.4.0

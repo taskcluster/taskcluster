@@ -7,6 +7,7 @@ import (
 	"log"
 	"os"
 
+	"github.com/hectane/go-acl"
 	"github.com/taskcluster/taskcluster-worker-runner/cfg"
 	"github.com/taskcluster/taskcluster-worker-runner/credexp"
 	"github.com/taskcluster/taskcluster-worker-runner/files"
@@ -114,6 +115,16 @@ func Run(configFile string) (state run.State, err error) {
 			return
 		}
 		err = ioutil.WriteFile(runnercfg.CacheOverRestarts, encoded, 0700)
+		if err != nil {
+			return
+		}
+
+		// This file contains secrets, so ensure that this is really only
+		// accessible to the file owner (and having just created the file, that
+		// should be the current user).  This uses go-acl so that it works on
+		// Windows, as well -- the `ioutil` used above ignores the permissions
+		// on Windows.
+		err = acl.Chmod(runnercfg.CacheOverRestarts, 0700)
 		if err != nil {
 			return
 		}
