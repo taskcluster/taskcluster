@@ -32,7 +32,7 @@ func (m *cmdRunMethod) start(w *genericworker, state *run.State) (protocol.Trans
 	// path to generic-worker binary
 	cmd := exec.Command(w.wicfg.Path)
 	cmd.Env = os.Environ()
-	cmd.Stdout = os.Stdout
+	cmd.Stdout = transp
 	cmd.Stderr = os.Stderr
 
 	// pass config to generic-worker
