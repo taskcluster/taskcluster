@@ -3,6 +3,7 @@ package tcclient_test
 import (
 	"fmt"
 	"net/http"
+	"net/url"
 	"os"
 	"reflect"
 	"testing"
@@ -130,6 +131,25 @@ func Test_PermaCred_Bewit(t *testing.T) {
 	}
 	client := tcauth.New(testCreds, rootURL)
 	url, err := client.TestAuthenticateGet_SignedURL(15 * time.Minute)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	resp, err := http.Get(url.String())
+	if 200 != resp.StatusCode {
+		t.Fatalf("Got unexpected statusCode %d", resp.StatusCode)
+		return
+	}
+}
+
+func Test_PermaCred_Bewit_SignedURL(t *testing.T) {
+	rootURL := os.Getenv("TASKCLUSTER_ROOT_URL")
+	if rootURL == "" {
+		t.Skip("Cannot run test, TASKCLUSTER_ROOT_URL is not set to a non-empty string")
+	}
+	client := tcclient.Client{Credentials: testCreds}
+	url, err := client.SignedURL(rootURL+"/api/auth/v1/test-authenticate-get/", url.Values{}, 15*time.Minute)
 	if err != nil {
 		t.Error(err)
 		return
