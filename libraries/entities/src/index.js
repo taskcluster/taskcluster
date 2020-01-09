@@ -74,10 +74,27 @@ class Entity {
     }
   }
 
-  remove(properties, ignoreIfNotExists) {
+  async remove(properties, ignoreIfNotExists) {
     const documentId = this.calculateId(properties);
 
-    this.db.procs[`${this.tableName}_remove`](documentId);
+    const [result] = await this.db.procs[`${this.tableName}_remove`](documentId);
+
+    if (result) {
+      return true;
+    }
+
+    if (ignoreIfNotExists && !result) {
+      return false;
+    }
+
+    if (!result) {
+      const err = new Error('Resource not found');
+
+      err.code = 'ResourceNotFound';
+      err.statusCode = 404;
+
+      throw err;
+    }
   }
 
   modify(properties) {

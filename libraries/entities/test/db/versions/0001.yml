@@ -52,11 +52,12 @@ methods:
     description: test
     mode: write
     args: document_id text
-    returns: void
+    returns: table (etag uuid)
     body: |-
       begin
-        delete from test_entities
-        where id = document_id;
+        return query delete from test_entities
+        where test_entities.id = document_id
+        returning test_entities.etag;
       end
   test_entities_modify:
     serviceName: test-entities
