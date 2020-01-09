@@ -68,6 +68,7 @@ properties:
           type: object
           description: https://docs.microsoft.com/en-us/rest/api/compute/virtualmachines/createorupdate#billingprofile
           additionalProperties: true
+          required: []
           properties:
             maxPrice:
               title: Max Price
@@ -78,6 +79,7 @@ properties:
           type: object
           description: https://docs.microsoft.com/en-us/rest/api/compute/virtualmachines/createorupdate#hardwareprofile
           additionalProperties: true
+          required: [vmSize]
           properties:
             vmSize:
               title: Virtual machine type
@@ -89,23 +91,31 @@ properties:
             adminPassword, computerName, and customData are set by the provider and are not configurable
             https://docs.microsoft.com/en-us/rest/api/compute/virtualmachines/createorupdate#osprofile
           additionalProperties: true
+          required: []
         storageProfile:
           title: Storage Profile
           type: object
           additionalProperties: true
+          required: [osDisk]
           properties:
             osDisk:
               title: OS Disk
               type: object
+              description: |
+                https://docs.microsoft.com/en-us/rest/api/compute/virtualmachines/createorupdate#osdisk
               additionalProperties: true
+              required: []
               properties:
                 createOption:
                   type: string
-                  description: https://docs.microsoft.com/en-us/rest/api/compute/virtualmachines/createorupdate#diskcreateoptiontypes
+                  description: |
+                    FromImage creates the disk from the specified image
+                    https://docs.microsoft.com/en-us/rest/api/compute/virtualmachines/createorupdate#diskcreateoptiontypes
             imageReference:
               description: https://docs.microsoft.com/en-us/rest/api/compute/virtualmachines/createorupdate#imagereference
               type: object
               additionalProperties: true
+              required: []
               properties:
                 id:
                   type: string
@@ -116,6 +126,7 @@ properties:
             Container object for network interfaces for the VM
             See here: https://docs.microsoft.com/en-us/rest/api/compute/virtualmachines/createorupdate#networkprofile
           additionalProperties: true
+          required: [networkInterfaces]
           properties:
             networkInterfaces:
               title: Network Interfaces
@@ -125,6 +136,7 @@ properties:
                 title: Network Interface Reference
                 type: object
                 additionalProperties: true
+                required: []
                 properties:
                   id:
                     type: string

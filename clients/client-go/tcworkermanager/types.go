@@ -22,6 +22,15 @@ type (
 		Signature string `json:"signature"`
 	}
 
+	// Proof that this call is coming from the worker identified by the other fields.
+	// The form of this proof varies depending on the provider type.
+	AzureProviderType struct {
+
+		// Attested data document that is obtained by
+		// curl http://169.254.169.254/metadata/attested/document on the instance
+		Document string `json:"document"`
+	}
+
 	// The credentials the worker
 	// will need to perform its work.  Specifically, credentials with scopes
 	// * `assume:worker-pool:<workerPoolId>`
@@ -94,6 +103,7 @@ type (
 		//   * GoogleProviderType
 		//   * StaticProviderType1
 		//   * AwsProviderType
+		//   * AzureProviderType
 		WorkerIdentityProof json.RawMessage `json:"workerIdentityProof"`
 
 		// The ID of this worker pool (of the form `providerId/workerType` for compatibility)
