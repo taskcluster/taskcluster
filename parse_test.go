@@ -1,7 +1,10 @@
 package main
 
 import (
+	"fmt"
 	"testing"
+
+	"github.com/taskcluster/taskcluster/clients/client-go/v24/tcqueue"
 )
 
 func TestNoTaskNoScopes(t *testing.T) {
@@ -76,11 +79,31 @@ func TestWithTwoScopes(t *testing.T) {
 	}
 }
 
-// TODO: test this in a way that does not require a task
-func todoTestWithTaskWithNoScopes(t *testing.T) {
+func withFakeTask(expectedTaskID string, fakeTask *tcqueue.TaskDefinitionResponse) func() {
+	oldGetTask := getTask
+	getTask = func(rootURL string, taskID string) (task *tcqueue.TaskDefinitionResponse, err error) {
+		if taskID == expectedTaskID {
+			task = fakeTask
+		} else {
+			err = fmt.Errorf("Task not found")
+		}
+		return
+	}
+	return func() {
+		getTask = oldGetTask
+	}
+}
+func TestWithTaskWithNoScopes(t *testing.T) {
+	defer withFakeTask("abc", &tcqueue.TaskDefinitionResponse{
+		Scopes: nil,
+	})()
 	routes, _, err := ParseCommandArgs(
 		[]string{
 			"--task-id", "abc",
+			"--root-url", "https://tc-tests.example.com",
+			"--client-id", "abc",
+			"--certificate", "def",
+			"--access-token", "ghi",
 		},
 		false,
 	)
@@ -92,12 +115,18 @@ func todoTestWithTaskWithNoScopes(t *testing.T) {
 	}
 }
 
-// TODO: test this in a way that does not require a task
-func todoTestWithTaskWithScopes(t *testing.T) {
+func TestWithTaskWithScopes(t *testing.T) {
 	exampleScope := "queue:get-artifact:taskcluster-proxy-test/512-random-bytes"
+	defer withFakeTask("abc", &tcqueue.TaskDefinitionResponse{
+		Scopes: []string{exampleScope},
+	})()
 	routes, _, err := ParseCommandArgs(
 		[]string{
 			"--task-id", "abc",
+			"--root-url", "https://tc-tests.example.com",
+			"--client-id", "abc",
+			"--certificate", "def",
+			"--access-token", "ghi",
 		},
 		false,
 	)
