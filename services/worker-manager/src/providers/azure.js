@@ -178,6 +178,13 @@ class AzureProvider extends Provider {
             computerName: virtualMachineName,
             customData: customData,
           },
+          storageProfile: {
+            ...cfg.storageProfile,
+            osDisk: {
+              ...cfg.storageProfile.osDisk,
+              name: diskName,
+            },
+          },
           networkProfile: {
             ...cfg.networkProfile,
             networkInterfaces: [
@@ -250,8 +257,7 @@ class AzureProvider extends Provider {
     // 1. The embedded document was signed with the private key corresponding to the
     //    embedded public key
     // 2. The embedded public key has a proper certificate chain back to a trusted CA
-    // 3. The embedded message contains the vmId that matches the worker making the
-    //    worker making the request
+    // 3. The embedded message contains the vmId that matches the worker making the request
 
     // signature is base64-encoded DER-format PKCS#7 / CMS message
 

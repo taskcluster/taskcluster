@@ -3,6 +3,7 @@ order: 10
 title: Azure Provider Type
 ---
 import SchemaTable from 'taskcluster-ui/components/SchemaTable'
+import Warning from 'taskcluster-ui/views/Documentation/components/Warning';
 
 # Azure Provider Type
 
@@ -45,7 +46,9 @@ The provider starts workers with the following labels.
  * `created-by` - `taskcluster-wm-<providerId>`
  * `owner` - the worker pool's owner
 
+<Warning>
 Note that values are lower-cased and disallowed characters are replaced with `-`, to comply with with [Azure requirements](https://docs.microsoft.com/en-us/azure/architecture/best-practices/resource-naming).
+</Warning>
 
 ## Worker-Pool Configuration
 
