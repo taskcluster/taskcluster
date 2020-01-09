@@ -43,7 +43,7 @@ var httpClient = &http.Client{}
 func NewRoutes(client tcclient.Client) Routes {
 	return Routes{
 		Client:   client,
-		services: tc.NewServices(rootURL),
+		services: tc.NewServices(client.RootURL),
 	}
 }
 
