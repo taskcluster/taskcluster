@@ -122,7 +122,7 @@ class Entity {
     return new RowClass(properties, { etag: result.etag, tableName: this.tableName, documentId, db: this.db });
   }
 
-  scan({ condition, limit, page } = {}) {
+  scan(condition, { limit, page } = {}) {
     return this.db.procs[`${this.tableName}_scan`](condition, limit, page);
   }
 

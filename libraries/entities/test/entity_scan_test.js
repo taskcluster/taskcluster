@@ -46,7 +46,7 @@ helper.dbSuite(path.basename(__filename), function() {
   }
 
   suite('scan', function() {
-    test('retrieve all documents', async function() {
+    test('retrieve all documents (condition set to undefined)', async function() {
       db = await helper.withDb({ schema, serviceName });
       entity.setup({ tableName: 'test_entities', db, serviceName });
 
@@ -55,12 +55,21 @@ helper.dbSuite(path.basename(__filename), function() {
 
       assert.equal(result.length, 10);
     });
+    test('retrieve all documents (condition set to null)', async function() {
+      db = await helper.withDb({ schema, serviceName });
+      entity.setup({ tableName: 'test_entities', db, serviceName });
+
+      await insertDocuments(10);
+      const result = await entity.scan(null);
+
+      assert.equal(result.length, 10);
+    });
     test('retrieve documents (with limit)', async function () {
       db = await helper.withDb({ schema, serviceName });
       entity.setup({ tableName: 'test_entities', db, serviceName });
 
       await insertDocuments(10);
-      const result = await entity.scan({ limit: 4 });
+      const result = await entity.scan(null, { limit: 4 });
 
       assert.equal(result.length, 4);
     });
@@ -70,7 +79,7 @@ helper.dbSuite(path.basename(__filename), function() {
 
       await insertDocuments(10);
 
-      const result = await entity.scan({ condition: 'value @> \'{"taskId": 9}\' and version = 1' });
+      const result = await entity.scan('value @> \'{"taskId": 9}\' and version = 1');
 
       assert.equal(result.length, 1);
       assert.deepEqual(result[0].value.taskId, 9);
@@ -81,7 +90,7 @@ helper.dbSuite(path.basename(__filename), function() {
 
       const documents = await insertDocuments(10);
 
-      let result = await entity.scan({
+      let result = await entity.scan(null, {
         page: 1,
         limit: 4,
       });
@@ -92,7 +101,7 @@ helper.dbSuite(path.basename(__filename), function() {
       assert.deepEqual(result[2].value, documents[2].properties);
       assert.deepEqual(result[3].value, documents[3].properties);
 
-      result = await entity.scan({
+      result = await entity.scan(null, {
         page: 2,
         limit: 4,
       });
@@ -103,7 +112,7 @@ helper.dbSuite(path.basename(__filename), function() {
       assert.deepEqual(result[2].value, documents[6].properties);
       assert.deepEqual(result[3].value, documents[7].properties);
 
-      result = await entity.scan({
+      result = await entity.scan(null, {
         page: 3,
         limit: 4,
       });
@@ -112,7 +121,7 @@ helper.dbSuite(path.basename(__filename), function() {
       assert.deepEqual(result[0].value, documents[8].properties);
       assert.deepEqual(result[1].value, documents[9].properties);
 
-      result = await entity.scan({
+      result = await entity.scan(null, {
         page: 4,
         limit: 4,
       });
