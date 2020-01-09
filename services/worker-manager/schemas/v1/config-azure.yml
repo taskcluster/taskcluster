@@ -67,6 +67,7 @@ properties:
           title: Billing Profile
           type: object
           description: https://docs.microsoft.com/en-us/rest/api/compute/virtualmachines/createorupdate#billingprofile
+          additionalProperties: true
           properties:
             maxPrice:
               title: Max Price
@@ -76,6 +77,7 @@ properties:
           title: Hardware Profile
           type: object
           description: https://docs.microsoft.com/en-us/rest/api/compute/virtualmachines/createorupdate#hardwareprofile
+          additionalProperties: true
           properties:
             vmSize:
               title: Virtual machine type

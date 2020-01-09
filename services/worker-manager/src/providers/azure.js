@@ -176,7 +176,7 @@ class AzureProvider extends Provider {
             // 72 char limit for linux VMs, each slugid is 22 chars
             adminPassword: (slugid.nice() + slugid.nice() + slugid.nice() + slugid.nice()).slice(0, 72),
             computerName: virtualMachineName,
-            customData,
+            customData: customData,
           },
           networkProfile: {
             ...cfg.networkProfile,
