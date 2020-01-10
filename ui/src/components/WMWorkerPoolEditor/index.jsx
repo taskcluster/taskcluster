@@ -288,6 +288,21 @@ export default class WMWorkerPoolEditor extends Component {
       onDialogActionComplete,
     } = this.props;
     const { workerPool, error, actionLoading, validation } = this.state;
+    const {
+      description,
+      emailOnError,
+      owner,
+      providerId,
+      workerPoolId,
+    } = this.props.workerPool;
+    const isWorkerPoolDirty =
+      isNewWorkerPool ||
+      workerPool.description !== description ||
+      workerPool.emailOnError !== emailOnError ||
+      workerPool.owner !== owner ||
+      workerPool.providerId !== providerId ||
+      joinWorkerPoolId(workerPool.workerPoolId1, workerPool.workerPoolId2) !==
+        workerPoolId;
 
     return (
       <Fragment>
@@ -406,8 +421,7 @@ export default class WMWorkerPoolEditor extends Component {
               : classes.saveIconSpan,
           }}
           name="saveRequest"
-          disabled={!this.isValid()}
-          requiresAuth
+          disabled={!this.isValid() || !isWorkerPoolDirty}
           tooltipProps={{ title: 'Save Worker Pool' }}
           onClick={this.handleOnClick}
           classes={{ root: classes.saveIcon }}
