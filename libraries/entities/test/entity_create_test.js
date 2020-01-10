@@ -105,7 +105,6 @@ helper.dbSuite(path.basename(__filename), function() {
     });
 
     test('create entry (won\'t overwrite)', async function () {
-      console.log('start');
       db = await helper.withDb({ schema, serviceName });
       let entry = {
         taskId: 'taskId',

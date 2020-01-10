@@ -1,5 +1,6 @@
 const assert = require('assert').strict;
 const RowClass = require('./RowClass');
+const op = require('./entityops');
 
 class Entity {
   constructor(options) {
@@ -24,6 +25,8 @@ class Entity {
     this.contextEntries = null;
   }
 
+  static op = op;
+
   _getContextEntries(context) {
     const ctx = {};
 
@@ -39,6 +42,22 @@ class Entity {
     });
 
     return ctx;
+  }
+
+  _doCondition(conditions) {
+    if (!conditions) {
+      return null;
+    }
+
+    if (conditions) {
+      assert(typeof conditions === 'object' && conditions.constructor === Object, 'conditions should be an object');
+    }
+
+    return Object.entries(conditions).map(([property, { operator, operand }]) => {
+      const shouldAddQuotes = typeof this.properties[property] === 'string';
+
+      return `value ->> '${property}' ${operator} ${shouldAddQuotes ? `'${operand}'` : operand}`;
+    }).join(' and ');
   }
 
   setup(options) {
@@ -177,11 +196,13 @@ class Entity {
     });
   }
 
-  scan(condition, options = {}) {
+  scan(conditions, options = {}) {
     const {
       limit = 1000,
       page,
     } = options;
+    const condition = this._doCondition(conditions);
+
     return this.db.procs[`${this.tableName}_scan`](condition, limit, page);
   }
 

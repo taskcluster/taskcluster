@@ -79,7 +79,10 @@ helper.dbSuite(path.basename(__filename), function() {
 
       await insertDocuments(10);
 
-      const result = await entity.scan('value @> \'{"taskId": 9}\' and version = 1');
+      const result = await entity.scan({
+        taskId: Entity.op.equal('9'),
+        provisionerId: Entity.op.equal('provisionerId-9'),
+      });
 
       assert.equal(result.length, 1);
       assert.deepEqual(result[0].value.taskId, 9);
