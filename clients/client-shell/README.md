@@ -20,8 +20,8 @@ To install, download the `taskcluster` binary for the latest release your
 platform, and run it!  On POSIX platforms you will need to `chmod +x` of
 course.
 
- * [linux-amd64](https://github.com/taskcluster/taskcluster/releases/download/v24.1.9/taskcluster-linux-amd64)
- * [darwin-amd64](https://github.com/taskcluster/taskcluster/releases/download/v24.1.9/taskcluster-darwin-amd64)
+ * [linux-amd64](https://github.com/taskcluster/taskcluster/releases/download/v24.1.10/taskcluster-linux-amd64)
+ * [darwin-amd64](https://github.com/taskcluster/taskcluster/releases/download/v24.1.10/taskcluster-darwin-amd64)
 
 ## Development
 

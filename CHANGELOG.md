@@ -3,6 +3,16 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v24.1.10
+
+▶ [patch] [#2031](https://github.com/taskcluster/taskcluster/issues/2031)
+Taskcluster UI revamped the date picker component to allow selecting the hour and the minute in addition to the date.
+
+▶ [patch] [bug 1608176](http://bugzil.la/1608176)
+The go client's `client.SignedURL(..)` function can now accept and sign full URLs in its first argument.  This allows signing arbitrary URLs, even if they are not on the same RootURL as the client.
+
+▶ Additional changes not described here: [bug 1606948](http://bugzil.la/1606948), [#2201](https://github.com/taskcluster/taskcluster/issues/2201).
+
 ## v24.1.9
 
 ▶ [patch] [bug 1598649](http://bugzil.la/1598649)
