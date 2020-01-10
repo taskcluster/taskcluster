@@ -11,7 +11,7 @@ require (
 	github.com/taskcluster/slugid-go v1.1.0
 	github.com/taskcluster/taskcluster-lib-artifact-go v0.0.0-20190401134756-654d226b8d36 // indirect
 	github.com/taskcluster/taskcluster-lib-urls v13.0.0+incompatible
-	github.com/taskcluster/taskcluster/clients/client-go/v24 v24.1.9
+	github.com/taskcluster/taskcluster/clients/client-go/v24 v24.1.10
 	github.com/taskcluster/taskcluster/clients/client-shell v0.0.0-20200106163824-4f935ea671b1
 	github.com/tent/hawk-go v0.0.0-20161026210932-d341ea318957
 )

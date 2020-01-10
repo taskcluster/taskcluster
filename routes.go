@@ -148,7 +148,14 @@ func (routes *Routes) BewitHandler(res http.ResponseWriter, req *http.Request) {
 
 	urlString := strings.TrimSpace(string(body))
 
-	bewitURL, err := routes.signURL(urlString, time.Hour*1)
+	urlObject, err := url.Parse(urlString)
+	if err != nil {
+		res.WriteHeader(500)
+		fmt.Fprintf(res, "Error creating bewit url: %s", err)
+		return
+	}
+
+	bewitURL, err := routes.SignedURL(urlString, urlObject.Query(), time.Hour*1)
 
 	if err != nil {
 		res.WriteHeader(500)

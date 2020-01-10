@@ -63,6 +63,8 @@ github.com/taskcluster/taskcluster/clients/client-go/v24 v24.1.2 h1:lGhmL0C0uc+A
 github.com/taskcluster/taskcluster/clients/client-go/v24 v24.1.2/go.mod h1:/KuWQwJKVCMCvuhxUNo/L2zZtCI3SnQ82G84UMJiwww=
 github.com/taskcluster/taskcluster/clients/client-go/v24 v24.1.9 h1:vCrpYvMc27pBvPus1SPzSNsoJs8PBkATM7Ok1q68a6A=
 github.com/taskcluster/taskcluster/clients/client-go/v24 v24.1.9/go.mod h1:/KuWQwJKVCMCvuhxUNo/L2zZtCI3SnQ82G84UMJiwww=
+github.com/taskcluster/taskcluster/clients/client-go/v24 v24.1.10 h1:mreMPJ2kdxbPbPjhyMvzfG1IAA606dQIoLf1JUvPPiQ=
+github.com/taskcluster/taskcluster/clients/client-go/v24 v24.1.10/go.mod h1:/KuWQwJKVCMCvuhxUNo/L2zZtCI3SnQ82G84UMJiwww=
 github.com/taskcluster/taskcluster/clients/client-shell v0.0.0-20200103144318-22772ba5c17a/go.mod h1:sDutPitvCmDzoyb9URXQbvGYnARJfxfsp/EQ7bHtPdA=
 github.com/taskcluster/taskcluster/clients/client-shell v0.0.0-20200106163824-4f935ea671b1 h1:lZWLovFR/Rv+4+jtTKN7sTBAwK/ZlMwDeYr9alYfKdY=
 github.com/taskcluster/taskcluster/clients/client-shell v0.0.0-20200106163824-4f935ea671b1/go.mod h1:oP11OI/Mc6PBv+cxkZgCUKP5Uvr74QhADHU1zmNE2iw=

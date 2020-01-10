@@ -213,6 +213,66 @@ func TestBewit(t *testing.T) {
 	testWithTempCreds(t, test(true, 401), 303, "test:some-other-scope")
 }
 
+func TestBewitArbitraryURL(t *testing.T) {
+	test := func(t *testing.T, creds *tcclient.Credentials) *httptest.ResponseRecorder {
+		// Test setup
+		routes := NewRoutes(
+			tcclient.Client{
+				RootURL:     testRootURL,
+				Credentials: creds,
+			},
+		)
+
+		u := "https://tc.example.com/some/path?somekey=someval"
+		req, err := http.NewRequest(
+			"POST",
+			"http://localhost:60024/bewit",
+			bytes.NewBufferString(u),
+		)
+		if err != nil {
+			log.Fatal(err)
+		}
+		res := httptest.NewRecorder()
+
+		// Function to test
+		routes.BewitHandler(res, req)
+
+		if res.Code != 303 {
+			t.Fatalf("Got non-303 response: %d with body %s", res.Code, res.Body.String())
+		}
+
+		// Validate results
+		bewitURLFromLocation := res.Header().Get("Location")
+		bewitURLFromResponseBody := res.Body.String()
+		if bewitURLFromLocation != bewitURLFromResponseBody {
+			t.Fatalf("Got inconsistent results between Location header (%v) and Response body (%v).", bewitURLFromLocation, bewitURLFromResponseBody)
+		}
+		parsed, err := url.Parse(bewitURLFromLocation)
+		if err != nil {
+			t.Fatalf("Bewit URL returned is invalid: %q", bewitURLFromLocation)
+		}
+
+		if parsed.Host != "tc.example.com" {
+			t.Fatalf("Bewit endpoint rewrote URL host to %s", parsed.Host)
+		}
+		if parsed.Path != "/some/path" {
+			t.Fatalf("Bewit endpoint rewrote URL path to %s", parsed.Path)
+		}
+		query := parsed.Query()
+		if somekey, ok := query["somekey"]; !ok || somekey[0] != "someval" {
+			t.Fatalf("Bewit endpoint did not preserve query params")
+		}
+		if _, ok := query["bewit"]; !ok {
+			t.Fatalf("Bewit endpoint did not contain a bewit query param")
+		}
+
+		return res
+	}
+
+	// Since it's an arbtirary URL, all we can do is check that the endpoint succeeded..
+	testWithPermCreds(t, test, 303)
+}
+
 func TestAPICallGET(t *testing.T) {
 	test := func(name string, scopes []string) IntegrationTest {
 		return func(t *testing.T, creds *tcclient.Credentials) *httptest.ResponseRecorder {
