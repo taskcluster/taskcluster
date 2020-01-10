@@ -93,8 +93,8 @@ module.exports = ({tasks, cmdOptions, credentials}) => {
       });
       if (localRevision !== remoteRevision) {
         throw new Error([
-          'The current git working copy is not up to date with the upstream repo. ' +
-          'Pull the latest changes and try again.',
+          `The current git working copy (${localRevision}) is not up to date with the upstream ` +
+          `repo (${remoteRevision}). Pull the latest changes and try again.`,
         ].join(' '));
       }
     },
@@ -185,6 +185,8 @@ module.exports = ({tasks, cmdOptions, credentials}) => {
     requires: [
       'changelog',
       'release-version',
+      'repo-clean',
+      'repo-up-to-date',
     ],
     provides: [
       'changed-files',

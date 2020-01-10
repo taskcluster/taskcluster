@@ -69,7 +69,7 @@ exports.gitRemoteRev = async ({dir, remote, ref, utils}) => {
     throw new Error(`Expected exactly one result from ls-remote; got ${res.stdout}`);
   }
   return {
-    revision: lines[0].split(' ')[0].trim(),
+    revision: lines[0].split('\t')[0].trim(),
   };
 };
 
