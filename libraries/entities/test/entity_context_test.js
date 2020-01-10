@@ -122,8 +122,8 @@ helper.dbSuite(path.basename(__filename), function() {
               context: [key],
             });
           },
-          /is reserved and cannot be specified in options.context/
-        )
+          /is reserved and cannot be specified in options.context/,
+        );
       });
     });
   });
