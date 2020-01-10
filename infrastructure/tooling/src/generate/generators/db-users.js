@@ -1,6 +1,6 @@
 const path = require('path');
 const { Schema } = require('taskcluster-lib-postgres');
-const {readRepoFile, writeRepoFile, REPO_ROOT} = require('../../utils');
+const {readRepoFile, writeRepoFile } = require('../../utils');
 
 exports.tasks = [{
   title: 'Users in DB Deployment Docs',
@@ -22,6 +22,29 @@ exports.tasks = [{
 
     if (content !== newContent) {
       await writeRepoFile(docsFile, newContent);
+    }
+  },
+}];
+
+exports.tasks = [{
+  title: 'Users in db/test-setup.sh',
+  requires: ['db-schema-serializable'],
+  provides: [],
+  run: async (requirements, utils) => {
+    const schema = Schema.fromSerializable(requirements['db-schema-serializable']);
+    const services = Object.keys(schema.access).sort();
+
+    const setupFile = path.join('db', 'test-setup.sh');
+    const content = await readRepoFile(setupFile);
+    const serviceCreates = services
+      .map(s => `CREATE USER test_${s};`)
+      .join('\n');
+    const newContent = content.replace(
+      /(-- BEGIN CREATE USERS --)(?:.|\n)*(-- END CREATE USERS --)/m,
+      `$1\n${serviceCreates}\n$2`);
+
+    if (content !== newContent) {
+      await writeRepoFile(setupFile, newContent);
     }
   },
 }];
