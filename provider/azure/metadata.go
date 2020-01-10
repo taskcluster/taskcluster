@@ -18,10 +18,9 @@ var MetadataBaseURL = "http://169.254.169.254"
 // feel free to add additional fields here as necessary.
 type InstanceData struct {
 	Compute struct {
-		CustomData string `json:"customData"`
-		Location   string `json:"location"`
-		VMID       string `json:"vmId"`
-		VMSize     string `json:"vmSize"`
+		Location string `json:"location"`
+		VMID     string `json:"vmId"`
+		VMSize   string `json:"vmSize"`
 	} `json:"compute"`
 	Network struct {
 		Interface []struct {
@@ -60,6 +59,8 @@ type MetadataService interface {
 	queryAttestedDocument() (string, error)
 	// Get the content of the scheduled events
 	queryScheduledEvents() (*ScheduledEvents, error)
+	// Load customData from the disk where WALinuxAgent stuck it
+	loadCustomData() ([]byte, error)
 }
 
 type realMetadataService struct{}

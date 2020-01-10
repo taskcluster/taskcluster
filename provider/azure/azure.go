@@ -1,7 +1,6 @@
 package azure
 
 import (
-	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -43,7 +42,7 @@ func (p *AzureProvider) ConfigureRun(state *run.State) error {
 		return fmt.Errorf("Could not query attested document: %v", err)
 	}
 
-	customBytes, err := base64.StdEncoding.DecodeString(instanceData.Compute.CustomData)
+	customBytes, err := p.metadataService.loadCustomData()
 	if err != nil {
 		return fmt.Errorf("Could not read instance customData: %v", err)
 	}
