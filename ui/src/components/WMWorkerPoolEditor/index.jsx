@@ -294,6 +294,7 @@ export default class WMWorkerPoolEditor extends Component {
       owner,
       providerId,
       workerPoolId,
+      config,
     } = this.props.workerPool;
     const isWorkerPoolDirty =
       isNewWorkerPool ||
@@ -301,6 +302,7 @@ export default class WMWorkerPoolEditor extends Component {
       workerPool.emailOnError !== emailOnError ||
       workerPool.owner !== owner ||
       workerPool.providerId !== providerId ||
+      workerPool.config !== config ||
       joinWorkerPoolId(workerPool.workerPoolId1, workerPool.workerPoolId2) !==
         workerPoolId;
 
