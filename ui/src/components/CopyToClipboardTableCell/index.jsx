@@ -11,6 +11,7 @@ import useCopyToClipboard from '../../utils/useCopyToClipboard';
 const styles = theme => ({
   icon: {
     marginLeft: theme.spacing(1),
+    marginTop: theme.spacing(1),
   },
 });
 
@@ -27,7 +28,7 @@ function CopyToClipboardTableCell(props) {
       <TableCell>
         <TableCellItem button>
           {text}
-          <div className={classes.Icon}>
+          <div className={classes.icon}>
             {isCopy ? (
               <CheckIcon size={iconSize} />
             ) : (
