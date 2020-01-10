@@ -107,3 +107,7 @@
 [[constraint]]
   name = "github.com/taskcluster/websocktunnel"
   version = "1.1.0"
+
+[[constraint]]
+  name = "github.com/taskcluster/taskcluster-worker-runner"
+  version = "1.0.2"
