@@ -20,9 +20,9 @@ helper.dbSuite(path.basename(__filename), function() {
 
   const schema = Schema.fromDbDirectory(path.join(__dirname, 'db'));
   const properties = {
-    taskId: 'string',
-    provisionerId: 'string',
-    workerType: 'string',
+    taskId: Entity.types.String,
+    provisionerId: Entity.types.String,
+    workerType: Entity.types.String,
   };
   const entity = Entity.configure({
     partitionKey: 'taskId',

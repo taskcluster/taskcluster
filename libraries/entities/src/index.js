@@ -1,6 +1,7 @@
 const assert = require('assert').strict;
 const RowClass = require('./RowClass');
 const op = require('./entityops');
+const types = require('./entitytypes');
 
 class Entity {
   constructor(options) {
@@ -26,6 +27,8 @@ class Entity {
   }
 
   static op = op;
+
+  static types = types;
 
   _getContextEntries(context) {
     const ctx = {};
