@@ -162,10 +162,6 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
     assert(fakeAzure.deleteNICStub.called);
   });
 
-  test('custom data properly set', async function() {
-    await provider.provision({workerPool, existingCapacity: 0});
-  });
-
   test('worker-scan loop', async function() {
     await provider.provision({workerPool, existingCapacity: 0});
     const worker = await helper.Worker.load({
@@ -286,11 +282,46 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
       },
     };
 
-    test('document is not a cert', async function() {
+    test('document is not a valid PKCS#7 message', async function() {
       const worker = await helper.Worker.create({
         ...defaultWorker,
       });
-      const document = 'this is not a cert';
+      const document = 'this is not a valid PKCS#7 message';
+      const workerIdentityProof = {document};
+      await assert.rejects(() =>
+        provider.registerWorker({workerPool, worker, workerIdentityProof}),
+      /Signature validation error/);
+    });
+
+    test('document is empty', async function() {
+      const worker = await helper.Worker.create({
+        ...defaultWorker,
+      });
+      const document = '';
+      const workerIdentityProof = {document};
+      await assert.rejects(() =>
+        provider.registerWorker({workerPool, worker, workerIdentityProof}),
+      /Signature validation error/);
+    });
+
+    test('message does not match signature', async function() {
+      const worker = await helper.Worker.create({
+        ...defaultWorker,
+      });
+      // this file is a version of `azure_signature_good` where vmId has been edited in the message
+      const document = fs.readFileSync(path.resolve(__dirname, 'fixtures/azure_message_bad')).toString();
+      const workerIdentityProof = {document};
+      await assert.rejects(() =>
+        provider.registerWorker({workerPool, worker, workerIdentityProof}),
+      /Signature validation error/);
+    });
+
+    test('malformed signature', async function() {
+      const worker = await helper.Worker.create({
+        ...defaultWorker,
+      });
+      // this file is a version of `azure_signature_good` where the message signature has been edited
+      const document = fs.readFileSync(path.resolve(__dirname, 'fixtures/azure_signature_bad')).toString();
       const workerIdentityProof = {document};
       await assert.rejects(() =>
         provider.registerWorker({workerPool, worker, workerIdentityProof}),

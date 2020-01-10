@@ -170,7 +170,7 @@ class AzureProvider extends Provider {
           ...cfg,
           osProfile: {
             ...cfg.osProfile,
-            adminUsername: 'worker',
+            adminUsername: slugid.nice(),
             // we have to set a password, but we never want it to be used, so we throw it away
             // a legitimate user who needs access can reset the password
             // 72 char limit for linux VMs, each slugid is 22 chars
@@ -181,7 +181,7 @@ class AzureProvider extends Provider {
           storageProfile: {
             ...cfg.storageProfile,
             osDisk: {
-              ...cfg.storageProfile.osDisk,
+              ...(cfg.storageProfile || {}).osDisk,
               name: diskName,
             },
           },
@@ -422,24 +422,27 @@ class AzureProvider extends Provider {
         throw err;
       }
     };
-    await ignoreNotFound(this._enqueue('query', () => this.computeClient.virtualMachines.deleteMethod(
-      resourceGroupName,
-      vm.name,
-    )));
-    await ignoreNotFound(this._enqueue('query', () => this.networkClient.networkInterfaces.deleteMethod(
-      resourceGroupName,
-      nic.name,
-    )));
+    // VM, disk, and NIC _should_ be able to be deleted in parallel
+    // if we get "in use" failures for NIC/disk they will be retried
+    await Promise.all([
+      ignoreNotFound(this._enqueue('query', () => this.computeClient.virtualMachines.deleteMethod(
+        resourceGroupName,
+        vm.name,
+      ))),
+      ignoreNotFound(this._enqueue('query', () => this.networkClient.networkInterfaces.deleteMethod(
+        resourceGroupName,
+        nic.name,
+      ))),
+      await ignoreNotFound(this._enqueue('query', () => this.computeClient.disks.deleteMethod(
+        resourceGroupName,
+        disk.name,
+      ))),
+    ]);
     // the public IP cannot be deleted as long as it is attached
-    // updating the NIC to detach the IP does not appear to work
-    // we should clean this up asynchronously
+    // can become orphaned if we try to delete before the NIC is deleted
     await ignoreNotFound(this._enqueue('query', () => this.networkClient.publicIPAddresses.deleteMethod(
       resourceGroupName,
       ip.name,
-    )));
-    await ignoreNotFound(this._enqueue('query', () => this.computeClient.disks.deleteMethod(
-      resourceGroupName,
-      disk.name,
     )));
   }
 
