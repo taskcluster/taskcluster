@@ -67,12 +67,20 @@ class Entity {
     try {
       res = await this.db.procs[`${this.tableName}_create`](documentId, properties, overwrite, 1);
     } catch (err) {
-      if (err.code !== '23505') {
-        throw err;
+      if (err.code === '23505') {
+        const e = new Error('Entity already exists');
+        e.code = 'EntityAlreadyExists';
+        throw e;
       }
-      const e = new Error('Entity already exists');
-      e.code = 'EntityAlreadyExists';
-      throw e;
+
+      // TODO: add a test for this
+      if (err.code === '22003') {
+        const e = new Error('Property too large');
+        e.code = 'PropertyTooLarge';
+        throw e;
+      }
+
+      throw err;
     }
 
     const etag = res[0][`${this.tableName}_create`];
