@@ -1,0 +1,100 @@
+package version
+
+import (
+    "fmt"
+    "io/ioutil"
+    "log"
+    "net/http"
+    "runtime"
+    "encoding/json"
+    "github.com/spf13/cobra"
+    "github.com/taskcluster/taskcluster/clients/client-shell/cmds/root"
+)
+
+
+// Useful structure for assets[] in the returned json data 
+type Assets struct {
+  Download string                  `json:"browser_download_url"`
+ }
+
+ // Useful structure in the returned json data 
+
+type Release struct {
+    Name string                    `json:"name"`
+    Asslist []Assets                `json:"assets"`
+   }
+
+var (
+	// Command is the cobra command to check for update and update.
+	Command = &cobra.Command{
+		Use:   "update",
+		Short: "Updates Taskcluster",
+		Run:  check ,
+	}
+
+)
+
+
+func init() {
+    // the update command 
+	root.Command.AddCommand(Command)
+}
+
+
+
+func check() {
+
+    //Get response and also check for error in  from git's REST API
+
+    response, err := http.Get ("https://api.github.com/repos/taskcluster/taskcluster/releases/latest") 
+
+    if err != nil {
+        fmt.Print(err.Error())
+        
+    }
+
+    // Read the whole response body and check for any errors
+
+
+    s, err := ioutil.ReadAll(response.Body)
+    
+    if err != nil {
+        fmt.Errorf(err)
+        
+    }
+
+    //Create an object for the struct to parse the json data into given structure
+    
+    R := Release{}
+    if err := json.Unmarshal([]byte(s), &f); err != nil {
+        panic(fmt.Errorf(err))
+    }
+
+    //Check if taskcluster is already up to date
+
+	if R.Name == VersionNumber{
+        fmt.Fprintf(cmd.OutOrStdout(), "taskcluster version  %s is already updated\n", VersionNumber)
+    }
+
+    // If not then check for the OS and provide the download link respectively
+
+else {
+
+    if runtime.GOOS == "linux"
+    {
+    fmt.Fprintf(cmd.OutOrStdout(), "%s\n", R.Assets[1].Download)
+  
+
+}
+    if runtime.GOOS == "darwin"{
+    fmt.Fprintf(cmd.OutOrStdout(), "%s\n", R.Assets[0].Download)
+                            }
+    }
+
+		
+     }
+    
+    
+		
+    
+
