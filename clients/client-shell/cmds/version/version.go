@@ -2,11 +2,11 @@
 package version
 
 import (
-	"fmt"
+    "fmt"
     "io/ioutil"
     "net/http"
     "encoding/json"
-	
+    "runtime"		
 	"github.com/spf13/cobra"
 	"github.com/taskcluster/taskcluster/clients/client-shell/cmds/root"
 )
