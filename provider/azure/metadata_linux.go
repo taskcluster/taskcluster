@@ -23,8 +23,10 @@ type LinuxProvisioningConfigurationSet struct {
 	CustomData string   `xml:CustomData`
 }
 
+var customDataPath = "/var/lib/waagent/ovf-env.xml"
+
 func (mds *realMetadataService) loadCustomData() ([]byte, error) {
-	dat, err := ioutil.ReadFile("/var/lib/waagent/ovf-env.xml")
+	dat, err := ioutil.ReadFile(customDataPath)
 	if err != nil {
 		return []byte{}, err
 	}
