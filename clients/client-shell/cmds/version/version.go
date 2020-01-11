@@ -92,18 +92,18 @@ func check(cmd *cobra.Command, _ []string) {
 
 	if R.Name == VersionNumber {
        
-        fmt.Println("taskcluster version  %s is already updated\n", VersionNumber)
+        fmt.Printf("taskcluster is already updated")
     
     
     } else {
-    fmt.Println("taskcluster curent version  %s is older than the latest %s \n", VersionNumber,R.Name)	
+    fmt.Printf("taskcluster curent version  %s is older than the latest %s \n", VersionNumber,R.Name)	
     if runtime.GOOS == "linux" {
     fmt.Println(R.Asslist[1].Download)
   
 
     }
     if runtime.GOOS == "darwin"{
-    fmt.Println(R.Asslist[0].Download)
+    fmt.Printf(R.Asslist[0].Download)
                                 }
         }
 
