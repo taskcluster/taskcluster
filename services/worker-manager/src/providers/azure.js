@@ -109,6 +109,8 @@ class AzureProvider extends Provider {
       const resourceGroupName = this.providerConfig.resourceGroupName;
       const poolName = workerPoolId.replace(/[\/_]/g, '-').slice(0, 38);
       const virtualMachineName = `vm-${poolName}-${slugid.nice().replace(/_/g, '-').toLowerCase()}`.slice(0, 38);
+      // Windows computer name cannot be more than 15 characters long, be entirely numeric, or contain the following characters: ` ~ ! @ # $ % ^ & * ( ) = + _ [ ] { } \\ | ; : . " , < > / ?
+      const computerName = slugid.nice(`${slugid.nice().replace(/[\/_-]/g, '')}`).slice(0, 15);
       const ipAddressName = `pip-${slugid.nice().replace(/[\/\_]/g, '-').toLowerCase()}`.slice(0, 24);
       const networkInterfaceName = `nic-${slugid.nice().replace(/[\/\_]/g, '-').toLowerCase()}`.slice(0, 24);
       const diskName = `disk-${slugid.nice().replace(/[\/\_]/g, '-').toLowerCase()}`.slice(0, 24);
@@ -119,6 +121,7 @@ class AzureProvider extends Provider {
         resourceGroupName: this.providerConfig.resourceGroupName,
         vm: {
           name: virtualMachineName,
+          computerName,
           location: cfg.location,
         },
         ip: {
@@ -170,13 +173,14 @@ class AzureProvider extends Provider {
           ...cfg,
           osProfile: {
             ...cfg.osProfile,
-            adminUsername: slugid.nice(),
+            // Windows admin user name cannot be more than 20 characters long, be empty, end with a period(.), or contain the following characters: \\ / \" [ ] : | < > + = ; , ? * @.
+            adminUsername: slugid.nice().replace(/[\/_-]/g, '').slice(0, 20),
             // we have to set a password, but we never want it to be used, so we throw it away
             // a legitimate user who needs access can reset the password
             // 72 char limit for linux VMs, each slugid is 22 chars
             adminPassword: (slugid.nice() + slugid.nice() + slugid.nice() + slugid.nice()).slice(0, 72),
-            computerName: virtualMachineName,
-            customData: customData,
+            computerName,
+            customData,
           },
           storageProfile: {
             ...cfg.storageProfile,
