@@ -7,7 +7,7 @@ import (
     "runtime"
     "encoding/json"
     "github.com/spf13/cobra"
-    "github.com/taskcluster/taskcluster/clients/client-shell/cmds/root"
+    "github.com/taskcluster/taskcluster/clients/client-shell/config"
 )
 
 
