@@ -36,7 +36,7 @@ var (
 
 func init() {
     // the update command 
-	root.Command.AddCommand(Updcommand)
+	Command.AddCommand(Updcommand)
 }
 
 
