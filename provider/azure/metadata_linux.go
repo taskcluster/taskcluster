@@ -20,7 +20,7 @@ type ProvisioningSection struct {
 
 type LinuxProvisioningConfigurationSet struct {
 	XMLName    xml.Name `xml:"LinuxProvisioningConfigurationSet"`
-	CustomData string   `xml:CustomData`
+	CustomData string   `xml:"CustomData"`
 }
 
 var customDataPath = "/var/lib/waagent/ovf-env.xml"
