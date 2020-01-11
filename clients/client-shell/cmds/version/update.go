@@ -3,7 +3,6 @@ package version
 import (
     "fmt"
     "io/ioutil"
-    "log"
     "net/http"
     "runtime"
     "encoding/json"
@@ -26,10 +25,10 @@ type Release struct {
 
 var (
 	// Command is the cobra command to check for update and update.
-	Command = &cobra.Command{
+	Updcommand = &cobra.Command{
 		Use:   "update",
 		Short: "Updates Taskcluster",
-		Run:  check ,
+		Run:  check,
 	}
 
 )
@@ -37,12 +36,12 @@ var (
 
 func init() {
     // the update command 
-	root.Command.AddCommand(Command)
+	root.Command.AddCommand(Updcommand)
 }
 
 
 
-func check() {
+func check(cmd *cobra.Command, _ []string) {
 
     //Get response and also check for error in  from git's REST API
 
@@ -59,37 +58,35 @@ func check() {
     s, err := ioutil.ReadAll(response.Body)
     
     if err != nil {
-        fmt.Errorf(err)
+        fmt.Errorf(err.Error())
         
     }
 
     //Create an object for the struct to parse the json data into given structure
     
     R := Release{}
-    if err := json.Unmarshal([]byte(s), &f); err != nil {
-        panic(fmt.Errorf(err))
+    if err := json.Unmarshal([]byte(s), &R); err != nil {
+        fmt.Errorf(err.Error())
     }
 
     //Check if taskcluster is already up to date
 
-	if R.Name == VersionNumber{
-        fmt.Fprintf(cmd.OutOrStdout(), "taskcluster version  %s is already updated\n", VersionNumber)
-    }
+	if R.Name == VersionNumber {
+       
+        fmt.Println("taskcluster version  %s is already updated\n", VersionNumber)
+    
+    
+    } else {
 
-    // If not then check for the OS and provide the download link respectively
-
-else {
-
-    if runtime.GOOS == "linux"
-    {
-    fmt.Fprintf(cmd.OutOrStdout(), "%s\n", R.Assets[1].Download)
+    if runtime.GOOS == "linux" {
+    fmt.Println(R.Asslist[1].Download)
   
 
-}
-    if runtime.GOOS == "darwin"{
-    fmt.Fprintf(cmd.OutOrStdout(), "%s\n", R.Assets[0].Download)
-                            }
     }
+    if runtime.GOOS == "darwin"{
+    fmt.Println(R.Asslist[0].Download)
+                                }
+        }
 
 		
      }
