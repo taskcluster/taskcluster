@@ -1,6 +1,6 @@
 {
   "name": "taskcluster-worker-manager",
-  "version": "24.1.9",
+  "version": "24.1.10",
   "description": "Taskcluster Worker Manager",
   "main": "index.js",
   "author": "John Ford <john@johnford.org>",
