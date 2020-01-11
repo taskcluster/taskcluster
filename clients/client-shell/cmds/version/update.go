@@ -8,6 +8,7 @@ import (
     "encoding/json"
     "github.com/spf13/cobra"
     "github.com/taskcluster/taskcluster/clients/client-shell/cmds/root"
+    "os"
 )
 
 
@@ -27,7 +28,7 @@ var (
 	// Command is the cobra command to check for update and update.
 	Updcommand = &cobra.Command{
 		Use:   "update",
-		Short: "Updates Taskcluster",
+		Short: "Checks if taskcluster is up to date , else returns the download link respective to the OS",
 		Run:  check,
 	}
 
@@ -90,6 +91,7 @@ func check(cmd *cobra.Command, _ []string) {
 
 		
      }
+
     
     
 		
