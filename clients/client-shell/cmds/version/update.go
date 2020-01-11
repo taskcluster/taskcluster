@@ -8,7 +8,6 @@ import (
     "encoding/json"
     "github.com/spf13/cobra"
     "github.com/taskcluster/taskcluster/clients/client-shell/cmds/root"
-    "os"
 )
 
 
