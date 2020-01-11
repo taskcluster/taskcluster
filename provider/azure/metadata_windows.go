@@ -3,9 +3,16 @@
 package azure
 
 import (
-	"errors"
+	"io/ioutil"
+	"os"
 )
 
+var customDataPath = os.Getenv("SYSTEMDRIVE") + "\\AzureData\\CustomData.bin"
+
 func (mds *realMetadataService) loadCustomData() ([]byte, error) {
-	return []byte{}, errors.New("Azure customdata not implemented for Windows")
+	dat, err := ioutil.ReadFile(customDataPath)
+	if err != nil {
+		return []byte{}, err
+	}
+	return dat, nil
 }
