@@ -16,6 +16,8 @@ type fakeMetadataService struct {
 	ScheduledEvents       *ScheduledEvents
 	AttestedDocumentError error
 	AttestedDocument      string
+	LoadCustomDataError   error
+	CustomData            []byte
 }
 
 func (mds *fakeMetadataService) queryInstanceData() (*InstanceData, error) {
@@ -37,6 +39,13 @@ func (mds *fakeMetadataService) queryAttestedDocument() (string, error) {
 		return "", mds.AttestedDocumentError
 	}
 	return mds.AttestedDocument, nil
+}
+
+func (mds *fakeMetadataService) loadCustomData() ([]byte, error) {
+	if mds.LoadCustomDataError != nil {
+		return []byte{}, mds.LoadCustomDataError
+	}
+	return mds.CustomData, nil
 }
 
 func testServer() *httptest.Server {
@@ -136,7 +145,6 @@ func TestQueryInstanceData(t *testing.T) {
 
 	id, err := ms.queryInstanceData()
 	require.NoError(t, err)
-	require.Equal(t, "Y3VzdG9t", id.Compute.CustomData)
 	require.Equal(t, "eastus", id.Compute.Location)
 	require.Equal(t, "10.11.12.13", id.Network.Interface[0].IPV4.IPAddress[0].PrivateIPAddress)
 	require.Equal(t, "9.10.11.12", id.Network.Interface[0].IPV4.IPAddress[0].PublicIPAddress)

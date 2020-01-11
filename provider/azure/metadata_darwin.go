@@ -1,4 +1,5 @@
 // +build darwin
+
 package azure
 
 import (

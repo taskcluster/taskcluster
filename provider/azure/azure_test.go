@@ -39,19 +39,18 @@ func TestConfigureRun(t *testing.T) {
 	}`)
 	customData := CustomData{
 		WorkerPoolId:         "w/p",
-		ProviderId:           "amazon",
+		ProviderId:           "azure",
 		WorkerGroup:          "wg",
 		RootURL:              "https://tc.example.com",
 		ProviderWorkerConfig: &pwcJson,
 	}
 	customDataJson, err := json.Marshal(customData)
 	require.NoError(t, err, "marshalling CustomData")
-	customDataBase64 := base64.StdEncoding.EncodeToString(customDataJson)
 
 	userData := &InstanceData{}
 	_ = json.Unmarshal([]byte(`{
 		"compute": {
-			"customData": "`+customDataBase64+`",
+			"customData": "",
 			"vmId": "df09142e-c0dd-43d9-a515-489f19829dfd",
 			"location": "uswest",
 			"vmSize": "medium"
@@ -70,7 +69,7 @@ func TestConfigureRun(t *testing.T) {
 
 	attestedDocument := base64.StdEncoding.EncodeToString([]byte("trust me, it's cool --Bill"))
 
-	mds := &fakeMetadataService{nil, userData, nil, &ScheduledEvents{}, nil, attestedDocument}
+	mds := &fakeMetadataService{nil, userData, nil, &ScheduledEvents{}, nil, attestedDocument, nil, []byte(customDataJson)}
 
 	p, err := new(runnercfg, tc.FakeWorkerManagerClientFactory, mds)
 	require.NoError(t, err, "creating provider")
@@ -118,7 +117,7 @@ func TestCheckTerminationTime(t *testing.T) {
 
 	evts := &ScheduledEvents{}
 
-	mds := &fakeMetadataService{nil, nil, nil, evts, nil, ""}
+	mds := &fakeMetadataService{nil, nil, nil, evts, nil, "", nil, []byte(`{}`)}
 	p := &AzureProvider{
 		runnercfg:                  nil,
 		workerManagerClientFactory: nil,
