@@ -5,8 +5,7 @@ import (
 	"fmt"
     "io/ioutil"
     "net/http"
-    "runtime"
-	"encoding/json"
+    "encoding/json"
 	
 	"github.com/spf13/cobra"
 	"github.com/taskcluster/taskcluster/clients/client-shell/cmds/root"
@@ -90,7 +89,7 @@ func check(cmd *cobra.Command, _ []string) {
 
     //Check if taskcluster is already up to date
 
-	if R.Name == VersionNumber {
+	if R.Name == "v"+VersionNumber {
        
         fmt.Printf("taskcluster is already updated")
     
