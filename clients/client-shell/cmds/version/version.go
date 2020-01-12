@@ -95,9 +95,8 @@ func check(cmd *cobra.Command, _ []string) {
     
     
     } else {
-    fmt.Printf("taskcluster curent version  %s is older than the latest %s \n", VersionNumber,R.Name)	
     if runtime.GOOS == "linux" {
-    fmt.Println(R.Asslist[1].Download)
+    fmt.Printf(R.Asslist[1].Download)
   
 
     }
