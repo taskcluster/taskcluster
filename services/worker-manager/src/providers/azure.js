@@ -303,9 +303,9 @@ class AzureProvider extends Provider {
       throw error();
     }
 
-    // verify that the embedded certificate has proper chain of trust
+    // verify that the embedded certificates have proper chain of trust
     try {
-      assert(forge.pki.verifyCertificateChain(this.caStore, [crt]), true);
+      assert(forge.pki.verifyCertificateChain(this.caStore, message.certificates), true);
     } catch (err) {
       this.monitor.warning('Error verifying certificate chain', {error: err.toString()});
       throw error();
