@@ -182,16 +182,17 @@ export default class WMWorkerPoolEditor extends Component {
 
   isValid() {
     const {
-      workerPool: { workerPoolId1, workerPoolId2, owner },
+      workerPool: { providerId, workerPoolId1, workerPoolId2, owner },
       validation,
     } = this.state;
 
     return (
       !this.state.invalidProviderConfig &&
       !Object.values(validation).some(({ error }) => Boolean(error)) &&
-      workerPoolId1 !== '' &&
-      workerPoolId2 !== '' &&
-      owner !== ''
+      workerPoolId1 &&
+      workerPoolId2 &&
+      providerId &&
+      owner
     );
   }
 
