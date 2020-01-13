@@ -15,7 +15,7 @@ type (
 
 		// Instance identity document that is obtained by
 		// curl http://169.254.169.254/latest/dynamic/instance-identity/document on the instance
-		Document json.RawMessage `json:"document"`
+		Document string `json:"document"`
 
 		// The signature for instance identity document. Can be obtained by
 		// curl http://169.254.169.254/latest/dynamic/instance-identity/signature on the instance

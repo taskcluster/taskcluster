@@ -523,7 +523,8 @@
               "properties": {
                 "document": {
                   "description": "Instance identity document that is obtained by\ncurl http://169.254.169.254/latest/dynamic/instance-identity/document on the instance\n",
-                  "title": "Document"
+                  "title": "Document",
+                  "type": "string"
                 },
                 "signature": {
                   "description": "The signature for instance identity document. Can be obtained by\ncurl http://169.254.169.254/latest/dynamic/instance-identity/signature on the instance\n",
