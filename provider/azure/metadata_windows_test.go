@@ -11,7 +11,11 @@ import (
 
 func TestLoadCustomData(t *testing.T) {
 
+	origCustomDataPath := customDataPath
 	customDataPath = "testdata\\CustomData.bin"
+	defer func() {
+		customDataPath = origCustomDataPath
+	}()
 	ms := realMetadataService{}
 
 	cd, err := ms.loadCustomData()
