@@ -164,6 +164,10 @@ class WorkerInfo {
   }
 
   async taskSeen(provisionerId, workerType, workerGroup, workerId, tasks) {
+    if (!tasks.length) {
+      return;
+    }
+
     // Keep track of most recent tasks of a worker
     const worker = await this.Worker.load({
       provisionerId,
@@ -172,7 +176,7 @@ class WorkerInfo {
       workerId,
     }, true);
 
-    if (!tasks.length || !worker || worker.quarantineUntil.getTime() > new Date().getTime()) {
+    if (!worker || worker.quarantineUntil.getTime() > new Date().getTime()) {
       return;
     }
 
