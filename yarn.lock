@@ -2003,9 +2003,9 @@ commander@^2.15.1, commander@~2.20.3:
   integrity sha512-GpVkmM8vF2vQUkj2LvZmD35JxeJOLCwJ9cUkugyk2nuhbv3+mJvpLYYt+0+USMxE+oj+ey/lJEnhZw75x/OMcQ==
 
 commander@^4.0.0:
-  version "4.0.1"
-  resolved "https://registry.yarnpkg.com/commander/-/commander-4.0.1.tgz#b67622721785993182e807f4883633e6401ba53c"
-  integrity sha512-IPF4ouhCP+qdlcmCedhxX4xiGBPyigb8v5NeUp+0LyhwLgxMqyp3S0vl7TAPfS/hiP7FC3caI/PB9lTmP8r1NA==
+  version "4.1.0"
+  resolved "https://registry.yarnpkg.com/commander/-/commander-4.1.0.tgz#545983a0603fe425bc672d66c9e3c89c42121a83"
+  integrity sha512-NIQrwvv9V39FHgGFm36+U9SMQzbiHvU79k+iADraJTpmrFFfx7Ds0IvDoAdZsDrknlkRk14OYoWXb57uTh7/sw==
 
 commonmark@^0.29.0:
   version "0.29.0"
@@ -6975,7 +6975,7 @@ tar-stream@^2.0.0:
     readable-stream "^3.1.1"
 
 "taskcluster-client@link:clients/client":
-  version "24.1.9"
+  version "24.1.10"
   dependencies:
     "@hapi/hawk" "^7.1.2"
     debug "^4.1.1"
@@ -6985,37 +6985,37 @@ tar-stream@^2.0.0:
     taskcluster-lib-urls "^12.0.0"
 
 "taskcluster-lib-api@link:libraries/api":
-  version "24.1.9"
+  version "24.1.10"
 
 "taskcluster-lib-app@link:libraries/app":
-  version "24.1.9"
+  version "24.1.10"
 
 "taskcluster-lib-azure@link:libraries/azure":
-  version "24.1.9"
+  version "24.1.10"
 
 "taskcluster-lib-config@link:libraries/config":
-  version "24.1.9"
+  version "24.1.10"
 
 "taskcluster-lib-iterate@link:libraries/iterate":
-  version "24.1.9"
+  version "24.1.10"
 
 "taskcluster-lib-loader@link:libraries/loader":
-  version "24.1.9"
+  version "24.1.10"
 
 "taskcluster-lib-monitor@link:libraries/monitor":
-  version "24.1.9"
+  version "24.1.10"
 
 "taskcluster-lib-pulse@link:libraries/pulse":
-  version "24.1.9"
+  version "24.1.10"
 
 "taskcluster-lib-references@link:libraries/references":
-  version "24.1.9"
+  version "24.1.10"
 
 "taskcluster-lib-scopes@link:libraries/scopes":
-  version "24.1.9"
+  version "24.1.10"
 
 "taskcluster-lib-testing@link:libraries/testing":
-  version "24.1.9"
+  version "24.1.10"
 
 taskcluster-lib-urls@^12.0.0:
   version "12.0.0"
@@ -7023,7 +7023,7 @@ taskcluster-lib-urls@^12.0.0:
   integrity sha512-OrEFE0m3p/+mGsmIwjttLhSKg3io6MpJLhYtPNjVSZA9Ix8Y5tprN3vM6a3MjWt5asPF6AKZsfT43cgpGwJB0g==
 
 "taskcluster-lib-validate@link:libraries/validate":
-  version "24.1.9"
+  version "24.1.10"
 
 temporary@^1.0.0:
   version "1.0.1"
