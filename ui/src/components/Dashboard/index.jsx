@@ -167,7 +167,7 @@ export default class Dashboard extends Component {
     search: null,
     helpView: null,
     docs: false,
-    disableTitleFormatting: false,
+    disableTitleFormatting: true,
     disableAppbar: false,
   };
 
