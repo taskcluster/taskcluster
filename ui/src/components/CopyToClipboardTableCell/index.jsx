@@ -11,7 +11,7 @@ import useCopyToClipboard from '../../utils/useCopyToClipboard';
 const styles = theme => ({
   icon: {
     marginLeft: theme.spacing(1),
-    marginTop: theme.spacing(1),
+    display: 'flex',
   },
 });
 
