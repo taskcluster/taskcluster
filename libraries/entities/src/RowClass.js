@@ -25,6 +25,10 @@ class RowClass {
     Object.entries(context).forEach(([key, value]) => {
       this[key] = value;
     });
+
+    Object.entries(properties).forEach(([key, value]) => {
+      this[key] = value;
+    });
   }
 
   async remove(ignoreChanges, ignoreIfNotExists) {
