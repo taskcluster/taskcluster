@@ -23,6 +23,9 @@ type LinuxProvisioningConfigurationSet struct {
 	CustomData string   `xml:"CustomData"`
 }
 
+// We believe this file is https://www.dmtf.org/standards/ovf
+// but mostly we've just made this work with this file copied from a running
+// vm so this might not be foolproof
 var customDataPath = "/var/lib/waagent/ovf-env.xml"
 
 func (mds *realMetadataService) loadCustomData() ([]byte, error) {

@@ -59,7 +59,11 @@ type MetadataService interface {
 	queryAttestedDocument() (string, error)
 	// Get the content of the scheduled events
 	queryScheduledEvents() (*ScheduledEvents, error)
-	// Load customData from the disk where WALinuxAgent stuck it
+	// Load customData from the disk where windows azure agent stuck it
+	// This is explained by https://azure.microsoft.com/en-us/blog/custom-data-and-cloud-init-on-windows-azure/
+	// Technically they claim to also provide customData in the metadata service like the other clouds do
+	// but in our experience (and also as seen in https://github.com/MicrosoftDocs/azure-docs/issues/30370) this
+	// does not seem to work.
 	loadCustomData() ([]byte, error)
 }
 
