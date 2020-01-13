@@ -79,7 +79,8 @@ properties:
           type: object
           description: https://docs.microsoft.com/en-us/rest/api/compute/virtualmachines/createorupdate#hardwareprofile
           additionalProperties: true
-          required: [vmSize]
+          required:
+            - vmSize
           properties:
             vmSize:
               title: Virtual machine type
@@ -96,7 +97,8 @@ properties:
           title: Storage Profile
           type: object
           additionalProperties: true
-          required: [osDisk]
+          required:
+            - osDisk
           properties:
             osDisk:
               title: OS Disk
@@ -126,7 +128,8 @@ properties:
             Container object for network interfaces for the VM
             See here: https://docs.microsoft.com/en-us/rest/api/compute/virtualmachines/createorupdate#networkprofile
           additionalProperties: true
-          required: [networkInterfaces]
+          required:
+            - networkInterfaces
           properties:
             networkInterfaces:
               title: Network Interfaces

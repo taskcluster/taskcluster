@@ -60,7 +60,7 @@ class AzureProvider extends Provider {
     this._enqueue = cloud.enqueue.bind(cloud);
 
     // load microsoft intermediate certs from disk
-    // TODO: we should download the intermediate certs,
+    // TODO (bug 1607922) : we should download the intermediate certs,
     //       locations are in the authorityInfoAccess extension
     let intermediateFiles = [1, 2, 4, 5].map(i => fs.readFileSync(path.resolve(__dirname, `azure-ca-certs/microsoft_it_tls_ca_${i}.pem`)));
     let intermediateCerts = intermediateFiles.map(forge.pki.certificateFromPem);
@@ -404,15 +404,6 @@ class AzureProvider extends Provider {
 
   async scanCleanup() {
     this.monitor.log.scanSeen({providerId: this.providerId, seen: this.seen});
-    await Promise.all(Object.entries(this.seen).map(async ([workerPoolId, seen]) => {
-      const workerPool = await this.WorkerPool.load({
-        workerPoolId,
-      }, true);
-
-      if (!workerPool) {
-        return; // In this case, the workertype has been deleted so we can just move on
-      }
-    }));
   }
 
   async _removeWorker({resourceGroupName, location, vm, ip, nic, disk}) {
