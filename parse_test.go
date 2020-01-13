@@ -1,12 +1,19 @@
 package main
 
 import (
+	"fmt"
 	"testing"
+
+	"github.com/taskcluster/taskcluster/clients/client-go/v24/tcqueue"
 )
 
 func TestNoTaskNoScopes(t *testing.T) {
 	routes, address, err := ParseCommandArgs(
-		[]string{},
+		[]string{
+			"--root-url", "https://tc-tests.example.com",
+			"--client-id", "abc",
+			"--access-token", "ghi",
+		},
 		false,
 	)
 	if err != nil {
@@ -23,8 +30,10 @@ func TestNoTaskNoScopes(t *testing.T) {
 func TestNondefaultPort(t *testing.T) {
 	_, address, err := ParseCommandArgs(
 		[]string{
-			"--port",
-			"12345",
+			"--root-url", "https://tc-tests.example.com",
+			"--client-id", "abc",
+			"--access-token", "ghi",
+			"--port", "12345",
 		},
 		false,
 	)
@@ -39,6 +48,7 @@ func TestNondefaultPort(t *testing.T) {
 func TestWithTwoScopes(t *testing.T) {
 	routes, address, err := ParseCommandArgs(
 		[]string{
+			"--root-url", "https://tc-tests.example.com",
 			"--client-id", "abc",
 			"--certificate", "def",
 			"--access-token", "ghi",
@@ -69,11 +79,31 @@ func TestWithTwoScopes(t *testing.T) {
 	}
 }
 
+func withFakeTask(expectedTaskID string, fakeTask *tcqueue.TaskDefinitionResponse) func() {
+	oldGetTask := getTask
+	getTask = func(rootURL string, taskID string) (task *tcqueue.TaskDefinitionResponse, err error) {
+		if taskID == expectedTaskID {
+			task = fakeTask
+		} else {
+			err = fmt.Errorf("Task not found")
+		}
+		return
+	}
+	return func() {
+		getTask = oldGetTask
+	}
+}
 func TestWithTaskWithNoScopes(t *testing.T) {
-	taskID, _, _ := createPrivateArtifact(t, nil)
+	defer withFakeTask("abc", &tcqueue.TaskDefinitionResponse{
+		Scopes: nil,
+	})()
 	routes, _, err := ParseCommandArgs(
 		[]string{
-			"--task-id", taskID,
+			"--task-id", "abc",
+			"--root-url", "https://tc-tests.example.com",
+			"--client-id", "abc",
+			"--certificate", "def",
+			"--access-token", "ghi",
 		},
 		false,
 	)
@@ -87,10 +117,16 @@ func TestWithTaskWithNoScopes(t *testing.T) {
 
 func TestWithTaskWithScopes(t *testing.T) {
 	exampleScope := "queue:get-artifact:taskcluster-proxy-test/512-random-bytes"
-	taskID, _, _ := createPrivateArtifact(t, []string{exampleScope})
+	defer withFakeTask("abc", &tcqueue.TaskDefinitionResponse{
+		Scopes: []string{exampleScope},
+	})()
 	routes, _, err := ParseCommandArgs(
 		[]string{
-			"--task-id", taskID,
+			"--task-id", "abc",
+			"--root-url", "https://tc-tests.example.com",
+			"--client-id", "abc",
+			"--certificate", "def",
+			"--access-token", "ghi",
 		},
 		false,
 	)
@@ -105,6 +141,7 @@ func TestWithTaskWithScopes(t *testing.T) {
 func TestWithInterface(t *testing.T) {
 	_, address, err := ParseCommandArgs(
 		[]string{
+			"--root-url", "https://tc-tests.example.com",
 			"--client-id", "abc",
 			"--certificate", "def",
 			"--access-token", "ghi",

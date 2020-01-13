@@ -9,8 +9,8 @@ import (
 	"strconv"
 
 	docopt "github.com/docopt/docopt-go"
-	tcclient "github.com/taskcluster/taskcluster-client-go"
-	"github.com/taskcluster/taskcluster-client-go/tcqueue"
+	tcclient "github.com/taskcluster/taskcluster/clients/client-go/v24"
+	"github.com/taskcluster/taskcluster/clients/client-go/v24/tcqueue"
 )
 
 var (
@@ -59,6 +59,15 @@ func main() {
 	if startError != nil {
 		log.Fatal(startError)
 	}
+}
+
+// Fetch a task by TaskID.  This is broken out to allow testing.
+var getTask = func(rootURL string, taskID string) (task *tcqueue.TaskDefinitionResponse, err error) {
+	queue := tcqueue.New(nil, rootURL)
+
+	// Fetch the task to get the scopes we should be using...
+	task, err = queue.Task(taskID)
+	return
 }
 
 // ParseCommandArgs converts command line arguments into a configured Routes
@@ -147,11 +156,10 @@ func ParseCommandArgs(argv []string, exit bool) (routes Routes, address string, 
 	if arguments["--task-id"] != nil {
 		taskID := arguments["--task-id"].(string)
 		log.Printf("taskId: '%v'", taskID)
-		queue := tcqueue.New(nil, rootURL.(string))
 
 		// Fetch the task to get the scopes we should be using...
 		var task *tcqueue.TaskDefinitionResponse
-		task, err = queue.Task(taskID)
+		task, err = getTask(rootURL.(string), taskID)
 		if err != nil {
 			err = fmt.Errorf("Could not fetch taskcluster task '%s' : %s", taskID, err)
 			return
@@ -179,8 +187,8 @@ func ParseCommandArgs(argv []string, exit bool) (routes Routes, address string, 
 	}
 
 	routes = NewRoutes(
-		rootURL.(string),
 		tcclient.Client{
+			RootURL:      rootURL.(string),
 			Authenticate: true,
 			Credentials:  creds,
 		},

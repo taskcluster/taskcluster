@@ -1,6 +1,9 @@
 package main
 
 import (
+	"bytes"
+	"crypto/sha256"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -12,15 +15,15 @@ import (
 	"sync"
 	"time"
 
-	"github.com/taskcluster/httpbackoff"
-	tcclient "github.com/taskcluster/taskcluster-client-go"
+	"github.com/taskcluster/httpbackoff/v3"
 	tcUrls "github.com/taskcluster/taskcluster-lib-urls"
 	tc "github.com/taskcluster/taskcluster-proxy/taskcluster"
+	tcclient "github.com/taskcluster/taskcluster/clients/client-go/v24"
+	"github.com/tent/hawk-go"
 )
 
 // Routes represents the context of the running service
 type Routes struct {
-	RootURL string
 	tcclient.Client
 	services tc.Services
 	lock     sync.RWMutex
@@ -37,12 +40,67 @@ type CredentialsUpdate struct {
 var httpClient = &http.Client{}
 
 // NewRoutes creates a new Routes instance.
-func NewRoutes(rootURL string, client tcclient.Client) Routes {
+func NewRoutes(client tcclient.Client) Routes {
 	return Routes{
-		RootURL:  rootURL,
 		Client:   client,
-		services: tc.NewServices(rootURL),
+		services: tc.NewServices(client.RootURL),
 	}
+}
+
+func (routes *Routes) getExtHeader() (header string, err error) {
+	// This function is copied from the
+	// github.com/taskcluster/taskcluster/clients/client-go source
+	credentials := routes.Credentials
+	ext := map[string]interface{}{}
+	if credentials.Certificate != "" {
+		var certObj json.RawMessage
+		err = json.Unmarshal([]byte(credentials.Certificate), &certObj)
+		if err != nil {
+			return "", err
+		}
+		ext["certificate"] = certObj
+	}
+
+	if credentials.AuthorizedScopes != nil {
+		ext["authorizedScopes"] = &credentials.AuthorizedScopes
+	}
+
+	extJSON, err := json.Marshal(ext)
+	if err != nil {
+		return "", err
+	}
+	if string(extJSON) != "{}" {
+		return base64.StdEncoding.EncodeToString(extJSON), nil
+	}
+	return "", nil
+}
+
+func (routes *Routes) signURL(u string, duration time.Duration) (parsed *url.URL, err error) {
+	parsed, err = url.Parse(u)
+	if err != nil {
+		return
+	}
+	credentials := &hawk.Credentials{
+		ID:   routes.Credentials.ClientID,
+		Key:  routes.Credentials.AccessToken,
+		Hash: sha256.New,
+	}
+	reqAuth, err := hawk.NewURLAuth(parsed.String(), credentials, duration)
+	if err != nil {
+		return
+	}
+	reqAuth.Ext, err = routes.getExtHeader()
+	if err != nil {
+		return
+	}
+	bewitSignature := reqAuth.Bewit()
+	query := parsed.Query()
+	if query == nil {
+		query = url.Values{}
+	}
+	query.Set("bewit", bewitSignature)
+	parsed.RawQuery = query.Encode()
+	return
 }
 
 func (routes *Routes) setHeaders(res http.ResponseWriter) {
@@ -90,8 +148,14 @@ func (routes *Routes) BewitHandler(res http.ResponseWriter, req *http.Request) {
 
 	urlString := strings.TrimSpace(string(body))
 
-	cd := tcclient.Client(routes.Client)
-	bewitURL, err := (&cd).SignedURL(urlString, nil, time.Hour*1)
+	urlObject, err := url.Parse(urlString)
+	if err != nil {
+		res.WriteHeader(500)
+		fmt.Fprintf(res, "Error creating bewit url: %s", err)
+		return
+	}
+
+	bewitURL, err := routes.SignedURL(urlString, urlObject.Query(), time.Hour*1)
 
 	if err != nil {
 		res.WriteHeader(500)
@@ -219,8 +283,41 @@ func (routes *Routes) commonHandler(res http.ResponseWriter, req *http.Request, 
 		}
 	}
 
-	cd := tcclient.Client(routes.Client)
-	cs, err := (&cd).Request(body, req.Method, targetPath.String(), nil)
+	// function to perform http request - we call this using backoff library to
+	// have exponential backoff in case of intermittent failures (e.g. network
+	// blips or HTTP 5xx errors)
+	httpCall := func() (*http.Response, error, error) {
+		proxyreq, err := http.NewRequest(req.Method, targetPath.String(), bytes.NewReader(body))
+		if err != nil {
+			return nil, nil, fmt.Errorf("Error constructing request: %s", err)
+		}
+		for k, v := range req.Header {
+			proxyreq.Header[k] = v
+		}
+
+		// Refresh Authorization header with each call...
+		err = routes.Credentials.SignRequest(proxyreq)
+		if err != nil {
+			return nil, nil, err
+		}
+		var resp *http.Response
+		resp, err = httpClient.Do(proxyreq)
+		return resp, err, nil
+	}
+
+	proxyres, _, err := httpbackoff.Retry(httpCall)
+
+	var resbody []byte
+	if proxyres != nil {
+		var err2 error
+		resbody, err2 = ioutil.ReadAll(proxyres.Body)
+		if err == nil && err2 != nil {
+			res.WriteHeader(500)
+			fmt.Fprintf(res, "Failed to read response body: %s", err2)
+			return
+		}
+	}
+
 	// If we fail to create a request notify the client.
 	if err != nil {
 		switch err.(type) {
@@ -234,13 +331,13 @@ func (routes *Routes) commonHandler(res http.ResponseWriter, req *http.Request, 
 	}
 
 	// Map the headers from the proxy back into our proxyResponse
-	for key := range cs.HTTPResponse.Header {
-		res.Header().Set(key, cs.HTTPResponse.Header.Get(key))
+	for key := range proxyres.Header {
+		res.Header().Set(key, proxyres.Header.Get(key))
 	}
 
 	// Write the proxyResponse headers and status.
-	res.WriteHeader(cs.HTTPResponse.StatusCode)
+	res.WriteHeader(proxyres.StatusCode)
 
 	// Proxy the proxyResponse body from the endpoint to our response.
-	res.Write([]byte(cs.HTTPResponseBody))
+	res.Write([]byte(resbody))
 }

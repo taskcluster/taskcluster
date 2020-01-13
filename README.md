@@ -205,11 +205,14 @@ call.
 
 ### Sign URL (`/bewit`)
 
-To generate a signed url for a given endpoint, make an http POST request to `/bewit`, specifying the target url in the POST body. Please note, you supply the target url (e.g. https://queue.taskcluster.net/v1/... not http://localhost:8080/queue/v1/...), in the body. For example:
+To generate a signed url for a given endpoint, make an http POST request to `/bewit`, specifying the target url in the POST body.
+Please note, you supply the target url (e.g. `https://taskcluster.example.com/api/queue/v1/...` not `http://localhost:8080/api/queue/v1/...`), in the body.
+This can work with any URL, not necessarily one associated with the configured rootUrl.
+For example:
 
 ```sh
 # Returned url will last one hour
-curl http://localhost:8080/bewit --data 'https://queue.taskcluster.net/v1/task/KTBKfEgxR5GdfIIREQIvFQ/runs/0/artifacts/SampleArtifacts%2F_%2FX.txt'
+curl http://localhost:8080/bewit --data 'https://taskcluster.example.com/api/queue/v1/task/KTBKfEgxR5GdfIIREQIvFQ/runs/0/artifacts/SampleArtifacts%2F_%2FX.txt'
 ```
 
 ### Update Credentials (`/credentials`)
