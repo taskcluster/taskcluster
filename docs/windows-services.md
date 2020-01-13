@@ -21,6 +21,7 @@ They use [NSSM](http://nssm.cc/) to install and run the service.
 * Install generic-worker as `c:\generic-worker\generic-worker.exe`
 * Install NSSM
 * Run these commands to create and configure the service:
+* If running in an Azure vm instance, you must wait on the Azure Virtual Machine Agent to set up the `CustomData.bin` file before starting
 
 ```shell
 nssm install "Generic Worker" c:\generic-worker\generic-worker.exe
