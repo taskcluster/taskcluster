@@ -223,7 +223,7 @@ export default class WMWorkerPoolEditor extends Component {
       workerPool: {
         ...this.state.workerPool,
         config: JSON.stringify(
-          PROVIDER_DEFAULT_CONFIGS.get(providerInfo.providerType),
+          PROVIDER_DEFAULT_CONFIGS.get(providerInfo.providerType) || {},
           null,
           2
         ),
