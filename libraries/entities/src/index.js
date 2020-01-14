@@ -125,7 +125,6 @@ class Entity {
     try {
       await this.db.fns[`${this.tableName}_remove_table`]();
     } catch (err) {
-      // 42P01 means undefined table
       if (err.code !== UNDEFINED_TABLE) {
         throw err;
       }
@@ -145,7 +144,6 @@ class Entity {
     try {
       await this.db.fns[`${this.tableName}_ensure_table`]();
     } catch (err) {
-      // 42P07 means duplicate table
       if (err.code !== DUPLICATE_TABLE) {
         throw err;
       }
