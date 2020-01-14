@@ -70,7 +70,7 @@ class Schema{
     assert.equal(version.version, Number(fileBase), `filename ${filename} must match version`);
 
     Object.keys(version.methods).forEach(name => {
-      assert(!/.*[A-Z].*/.test(name), `db procedure method ${name} in ${filename} has capital letters`);
+      assert(!/.*[A-Z].*/.test(name), `db function method ${name} in ${filename} has capital letters`);
       const method = version.methods[name];
 
       assert.deepEqual(Object.keys(method).sort(), [

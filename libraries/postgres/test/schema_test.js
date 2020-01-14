@@ -119,7 +119,7 @@ suite(path.basename(__filename), function() {
 
       assert.throws(
         () => Schema._checkVersion({version: 1, migrationScript: 'yep', methods}, '0001.yml'),
-        /db procedure method cApItAlLeTtErS in 0001.yml has capital letters/);
+        /db function method cApItAlLeTtErS in 0001.yml has capital letters/);
     });
   });
 

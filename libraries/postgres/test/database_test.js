@@ -247,8 +247,8 @@ helper.dbSuite(path.basename(__filename), function() {
     test('setup creates JS methods that can be called', async function() {
       await Database.upgrade({schema, adminDbUrl: helper.dbUrl, usernamePrefix: 'test'});
       db = await Database.setup({schema, readDbUrl: helper.dbUrl, writeDbUrl: helper.dbUrl, serviceName: 'service-1'});
-      await db.procs.testdata();
-      const res = await db.procs.addup(13);
+      await db.fns.testdata();
+      const res = await db.fns.addup(13);
       assert.deepEqual(res.map(r => r.total).sort(), [16, 20]);
     });
 
@@ -258,7 +258,7 @@ helper.dbSuite(path.basename(__filename), function() {
 
       assert.equal(versions[0].methods.testdata.serviceName, 'service-1');
       assert.equal(versions[0].methods.testdata.mode, WRITE);
-      await assert.rejects(db.procs.testdata, /not allowed to call/);
+      await assert.rejects(db.fns.testdata, /not allowed to call/);
       await db.close();
     });
 
@@ -268,7 +268,7 @@ helper.dbSuite(path.basename(__filename), function() {
 
       assert.equal(versions[0].methods.testdata.serviceName, 'service-1');
       assert.equal(versions[0].methods.testdata.mode, WRITE);
-      await db.procs.testdata();
+      await db.fns.testdata();
       await db.close();
     });
 
@@ -278,7 +278,7 @@ helper.dbSuite(path.basename(__filename), function() {
 
       assert.equal(versions[0].methods.addup.serviceName, 'service-2');
       assert.equal(versions[0].methods.addup.mode, READ);
-      await db.procs.testdata();
+      await db.fns.testdata();
       await db.close();
     });
   });
