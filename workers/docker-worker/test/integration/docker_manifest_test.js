@@ -10,7 +10,7 @@ const debug = require('debug')('docker-worker:test:docker-manifest');
 
 suite('docker image with manifest.json file', function() {
   test('docker manifest', async () => {
-    let worker = new TestWorker(DockerWorker);
+    let worker = new TestWorker(DockerWorker, 'docker-worker', 'docker-worker');
     await worker.launch();
 
     const imageTaskId = slugid.v4();
@@ -36,7 +36,7 @@ suite('docker image with manifest.json file', function() {
     await worker.queue.createTask(imageTaskId, taskDef);
 
     await worker.queue.claimTask(imageTaskId, 0, {
-      workerGroup: 'docker-worker',
+      workerGroup: 'random-local-worker',
       workerId: 'docker-worker'
     });
 

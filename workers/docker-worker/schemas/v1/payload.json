@@ -168,10 +168,10 @@
     "maxRunTime": {
       "type": "number",
       "title": "Maximum run time in seconds",
-      "description": "Maximum time the task container can run in seconds",
+      "description": "Maximum time the task container can run in seconds.  Maximum is one week, as a sanity-check.  A task that takes so long is unlikely to succeed!",
       "multipleOf": 1,
       "minimum": 1,
-      "maximum": 86400
+      "maximum": 604800
     },
     "onExitStatus": {
       "title": "Exit status handling",
