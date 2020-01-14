@@ -5,6 +5,7 @@ const {FakeAzure} = require('./fake-azure');
 const {AzureProvider} = require('../src/providers/azure');
 const monitorManager = require('../src/monitor');
 const testing = require('taskcluster-lib-testing');
+const forge = require('node-forge');
 const fs = require('fs');
 const path = require('path');
 
@@ -317,7 +318,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
       await assert.rejects(() =>
         provider.registerWorker({workerPool, worker, workerIdentityProof}),
       /Signature validation error/);
-      assert(monitorManager.messages[0].Fields.error.includes('Only 8, 16, 24, or 32 bits supported: 264'));
+      assert(monitorManager.messages[0].Fields.message.includes('Error verifying PKCS#7 message signature'));
     });
 
     test('malformed signature', async function() {
@@ -330,7 +331,26 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
       await assert.rejects(() =>
         provider.registerWorker({workerPool, worker, workerIdentityProof}),
       /Signature validation error/);
-      assert(monitorManager.messages[0].Fields.error.includes('Only 8, 16, 24, or 32 bits supported: 264'));
+      assert(monitorManager.messages[0].Fields.message.includes('Error verifying PKCS#7 message signature'));
+    });
+
+    test('bad cert', async function() {
+      const worker = await helper.Worker.create({
+        ...defaultWorker,
+      });
+      const document = fs.readFileSync(path.resolve(__dirname, 'fixtures/azure_signature_good')).toString();
+      const workerIdentityProof = {document};
+
+      // Here we replace the intermediate certs with nothing and show that this should reject
+      const oldCaStore = provider.caStore;
+      provider.caStore = forge.pki.createCaStore([]);
+
+      await assert.rejects(() =>
+        provider.registerWorker({workerPool, worker, workerIdentityProof}),
+      /Signature validation error/);
+      assert(monitorManager.messages[0].Fields.message.includes('Error verifying certificate chain'));
+      assert(monitorManager.messages[0].Fields.error.includes('Certificate is not trusted'));
+      provider.caStore = oldCaStore;
     });
 
     test('wrong worker state (duplicate call to registerWorker)', async function() {
@@ -356,7 +376,6 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
       await assert.rejects(() =>
         provider.registerWorker({workerPool, worker, workerIdentityProof}),
       /Signature validation error/);
-      assert(monitorManager.messages[0].Fields.error.includes('falsy value'));
       assert(monitorManager.messages[0].Fields.message.includes('Encountered vmId mismatch'));
       assert.equal(monitorManager.messages[0].Fields.vmId, workerId);
       assert.equal(monitorManager.messages[0].Fields.workerId, 'wrongeb3-807b-46dd-aef5-78aaf9193f71');

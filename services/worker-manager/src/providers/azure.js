@@ -284,7 +284,7 @@ class AzureProvider extends Provider {
       // in testing, message.content is empty, so we access the raw ASN1 structure
       content = message.rawCapture.content.value[0].value;
       // convert to pem for convenience
-      assert(message.certificates.length === 1, `Expected one certificate in message, received ${message.certificates.length}`);
+      assert.equal(message.certificates.length, 1, `Expected one certificate in message, received ${message.certificates.length}`);
       crt = message.certificates[0];
       pem = forge.pki.publicKeyToPem(crt.publicKey);
       sig = message.rawCapture.signature;
@@ -297,7 +297,7 @@ class AzureProvider extends Provider {
     try {
       let verifier = crypto.createVerify('RSA-SHA256');
       verifier.update(Buffer.from(content));
-      assert(verifier.verify(pem, sig, 'binary'), true);
+      assert(verifier.verify(pem, sig, 'binary'));
     } catch (err) {
       this.monitor.log.registrationErrorWarning({message: 'Error verifying PKCS#7 message signature', error: err.toString()});
       throw error();
@@ -305,9 +305,9 @@ class AzureProvider extends Provider {
 
     // verify that the embedded certificates have proper chain of trust
     try {
-      assert(forge.pki.verifyCertificateChain(this.caStore, [crt]), true);
+      forge.pki.verifyCertificateChain(this.caStore, [crt]);
     } catch (err) {
-      this.monitor.log.registrationErrorWarning({message: 'Error verifying certificate chain', error: err.toString()});
+      this.monitor.log.registrationErrorWarning({message: 'Error verifying certificate chain', error: err.message});
       throw error();
     }
 
@@ -315,7 +315,7 @@ class AzureProvider extends Provider {
     let vmId;
     try {
       vmId = JSON.parse(content).vmId;
-      assert(vmId === worker.workerId);
+      assert.equal(vmId, worker.workerId);
     } catch (err) {
       this.monitor.log.registrationErrorWarning({message: 'Encountered vmId mismatch', error: err.toString(), vmId, workerId: worker.workerId});
       throw error();
