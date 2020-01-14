@@ -81,13 +81,13 @@ Runtime.prototype.logEvent = function({eventType, task = {status: {}}, timestamp
   const eventInfo = {
     eventType,
     worker: 'docker-worker',
-    workerPoolId: this.workerType,
+    workerPoolId: `${this.provisionerId}/${this.workerType}`,
     workerId: this.workerId,
     timestamp: Math.floor(timestamp / 1000),
     region: this.region,
     instanceType: this.instanceType,
     taskId: task.status.taskId,
-    runId: task.status.runId,
+    runId: task.runId,
   };
 
   if (this.instanceId !== 'test-worker-instance') {
