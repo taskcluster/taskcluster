@@ -217,6 +217,16 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
         handlers.handlerRejected = reject;
       });
 
+      let body = {
+        pull_request: {
+          head: {
+            user: {
+              login: user,
+            },
+          },
+        },
+      };
+
       let details = {
         'event.type': eventType,
         'event.base.repo.branch': 'tc-gh-tests',
@@ -251,11 +261,12 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
         routes: [],
         payload: {
           organization: 'TaskclusterRobot',
-          details: details,
+          details,
           repository: 'hooks-testing',
           eventId: '26370a80-ed65-11e6-8f4c-80082678482d',
           installationId: 5828,
           version: 1,
+          body,
         },
       };
       if (eventBase === 'pull_request') {
@@ -314,7 +325,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
       assert.equal(build.state, 'pending');
     });
 
-    test('valid pull_request (user is collaborator) creates a taskGroup', async function() {
+    test.only('valid pull_request (user is collaborator) creates a taskGroup', async function() {
       github.inst(5828).setRepoCollaborator({
         owner: 'TaskclusterRobot',
         repo: 'hooks-testing',
