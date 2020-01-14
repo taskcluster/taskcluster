@@ -112,7 +112,7 @@ exports.withDbForProcs = function({ serviceName }) {
 
   /**
    * helper.dbTest("description", async (db, isFake) => { .. }) runs the given
-   * test function both with a real and fake db.  This is used for testing procs.
+   * test function both with a real and fake db.  This is used for testing functions.
    */
   exports.dbTest = (description, testFn) => {
     test(`${description} (real)`, async function() {

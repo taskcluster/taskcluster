@@ -5,7 +5,7 @@ This library supports Taskcluster services using Postgres as a data-storage back
 ## Usage
 
 There are two components to this library: a schema, and a database.
-The schema represents the organization of the data in the database, including tables, stored procedures, indexes, etc., as well as user permissions.
+The schema represents the organization of the data in the database, including tables, stored functions, indexes, etc., as well as user permissions.
 This is constructed with:
 
 ```javascript
@@ -27,15 +27,15 @@ const db = Database.setup({
 The read and write URLs typically come from serivce configuration.
 The read URL is used for queries that only read data, and can operate on read-only server mirrors, while queries that will modify the content of the database use the write URL.
 
-Once that is finished, the methods defined in the schema can be called on the `db.procs` object.
+Once that is finished, the methods defined in the schema can be called on the `db.fns` object.
 For example, if the schema defines a `getWidgetsPerWorker` method:
 
 ```javascript
-const wpw = await db.procs.getWidgetsPerWorker();
+const wpw = await db.fns.getWidgetsPerWorker();
 ```
 
 Note that there direct SQL access to the database is *not allowed*.
-All database operations must be made via `db.procs` calls which translate into invocations of Postgres stored procedures.
+All database operations must be made via `db.fns` calls which translate into invocations of Postgres stored functions.
 This is a critical feature of the library's compatibility strategy.
 
 ### Schema
@@ -59,11 +59,11 @@ The library expects to define a single schema for all services hosted in this re
 Each Taskcluster service has its own Postgres user that it uses for access to the database, and the library uses Postgres permissions to limit access to tables and columns to specific services.
 This enforces isolation between microservices and prevents compromise of one service from spreading to other services.
 
-Services interface with the database exclusively through stored procedures, which are defined as part of the schema.
-Each procedure is assigned to a service by name, again enforcing some isolation between services.
-It is permissible, in limited and well-considered circumstances, for a service to call read-only procedures that "belong" to another service.
+Services interface with the database exclusively through stored functions, which are defined as part of the schema.
+Each function is assigned to a service by name, again enforcing some isolation between services.
+It is permissible, in limited and well-considered circumstances, for a service to call read-only functions that "belong" to another service.
 
-Each procedure is also annotated as to whether it requires write access to the database, and the library automatically redirects read-only invocations to a different database connection.
+Each function is also annotated as to whether it requires write access to the database, and the library automatically redirects read-only invocations to a different database connection.
 Those deploying Taskcluster can configure this connection to address a read-only Postgres replica.
 
 ### Version Upgrades and Compatibility
@@ -75,12 +75,12 @@ Each new version comes with an upgrade script that runs in a transaction, thus e
 When deploying a new version of Taskcluster, any necessary database upgrades *must* be applied before any services are upgraded.
 We maintain the invariant that services expecting database version S can interoperate with a database at version V as long as V >= S.
 
-This invariant is maintained through careful attention to the definitions of the stored procedures.
-These stored procedures are changed as necessary during the upgrade process, such that a procedure operates identically before and after the ugprade: identical arguments, identical return type, and correct behavior.
-For example, if an upgrade factors a single table into two tables, then a procedure which previously queried from the single table would be rewritten during the ugprade to perform a join over the two new tables, returning appropriate results in the same format as before the upgrade.
+This invariant is maintained through careful attention to the definitions of the stored functions.
+These stored functions are changed as necessary during the upgrade process, such that a function operates identically before and after the ugprade: identical arguments, identical return type, and correct behavior.
+For example, if an upgrade factors a single table into two tables, then a function which previously queried from the single table would be rewritten during the ugprade to perform a join over the two new tables, returning appropriate results in the same format as before the upgrade.
 
-A consequence of this design is that "procedures are forever" -- an upgrade can never delete a stored procedure.
-At worst, when a feature is removed, a stored procedure can be rewritten to return an empty result or perform no action.
+A consequence of this design is that "functions are forever" -- an upgrade can never delete a stored function.
+At worst, when a feature is removed, a stored function can be rewritten to return an empty result or perform no action.
 
 ## DB Directory Format
 

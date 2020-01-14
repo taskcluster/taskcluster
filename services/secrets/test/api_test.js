@@ -145,7 +145,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
       name: SECRET_NAME,
       res: {},
     });
-    assert.deepEqual(await helper.db.procs.get_secret(SECRET_NAME), []);
+    assert.deepEqual(await helper.db.fns.get_secret(SECRET_NAME), []);
   });
 
   test('getting a missing secret is a 404', async function() {

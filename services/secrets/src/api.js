@@ -45,7 +45,7 @@ builder.declare({
 }, async function(req, res) {
   let {name} = req.params;
   let {secret, expires} = req.body;
-  await this.db.procs.set_secret_with_expires(name, JSON.stringify(secret), new Date(expires));
+  await this.db.fns.set_secret_with_expires(name, JSON.stringify(secret), new Date(expires));
   res.reply({});
 });
 
@@ -64,12 +64,12 @@ builder.declare({
   let {name} = req.params;
 
   // we have historically returned 404 for nonexistent secrets
-  const rows = await this.db.procs.get_secret(name);
+  const rows = await this.db.fns.get_secret(name);
   if (rows.length === 0) {
     return res.reportError('ResourceNotFound', 'Secret not found', {});
   }
 
-  await this.db.procs.remove_secret(name);
+  await this.db.fns.remove_secret(name);
 
   res.reply({});
 });
@@ -91,7 +91,7 @@ builder.declare({
   ].join('\n'),
 }, async function(req, res) {
   let {name} = req.params;
-  const rows = await this.db.procs.get_secret_with_expires(name);
+  const rows = await this.db.fns.get_secret_with_expires(name);
   if (rows.length === 0) {
     return res.reportError('ResourceNotFound', 'Secret not found', {});
   }
@@ -132,7 +132,7 @@ builder.declare({
   ].join('\n'),
 }, async function(req, res) {
   // TODO: continuationToken / limit
-  const secrets = await this.db.procs.list_secrets_with_expires();
+  const secrets = await this.db.fns.list_secrets_with_expires();
 
   return res.reply({
     secrets: secrets.map(secret => secret.name),

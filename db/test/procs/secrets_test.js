@@ -20,34 +20,34 @@ suite(testing.suiteName(), function() {
   });
 
   helper.dbTest('get_secret', async function(db, isFake) {
-    const sec = await db.procs.get_secret("my-secret");
+    const sec = await db.fns.get_secret("my-secret");
     assert.deepEqual(sec, [{secret: 'hunter2'}]);
   });
 
   helper.dbTest('get_secret no such secret', async function(db, isFake) {
-    const sec = await db.procs.get_secret("nosuch-secret");
+    const sec = await db.fns.get_secret("nosuch-secret");
     assert.deepEqual(sec, []);
   });
 
   helper.dbTest('get_secret_with_expires', async function(db, isFake) {
-    const sec = await db.procs.get_secret_with_expires("my-secret");
+    const sec = await db.fns.get_secret_with_expires("my-secret");
     assert.deepEqual(sec, [{secret: 'hunter2', expires: new Date(2019, 0, 1)}]);
   });
 
   helper.dbTest('get_secret_with_expires no such secret', async function(db, isFake) {
-    const sec = await db.procs.get_secret_with_expires("nosuch-secret");
+    const sec = await db.fns.get_secret_with_expires("nosuch-secret");
     assert.deepEqual(sec, []);
   });
 
   helper.dbTest('list_secrets', async function(db, isFake) {
-    const secs = await db.procs.list_secrets();
+    const secs = await db.fns.list_secrets();
     assert.deepEqual(
       secs.sort(),
       [{name: 'my-secret'}, {name: 'their-secret'}].sort());
   });
 
   helper.dbTest('list_secrets_with_expires', async function(db, isFake) {
-    const secs = await db.procs.list_secrets_with_expires();
+    const secs = await db.fns.list_secrets_with_expires();
     assert.deepEqual(
       secs.sort(), [
         {name: 'my-secret', expires: new Date(2019, 0, 1)},
@@ -56,14 +56,14 @@ suite(testing.suiteName(), function() {
   });
 
   helper.dbTest('remove_secret', async function(db, isFake) {
-    await db.procs.remove_secret('my-secret');
-    const secs = await db.procs.list_secrets();
+    await db.fns.remove_secret('my-secret');
+    const secs = await db.fns.list_secrets();
     assert.deepEqual(secs, [{name: 'their-secret'}]);
   });
 
   helper.dbTest('remove_secret no such secret', async function(db, isFake) {
-    await db.procs.remove_secret('nosuch-secret');
-    const secs = await db.procs.list_secrets();
+    await db.fns.remove_secret('nosuch-secret');
+    const secs = await db.fns.list_secrets();
     assert.deepEqual(
       secs.sort(),
       [{name: 'my-secret'}, {name: 'their-secret'}].sort());

@@ -18,7 +18,7 @@ class FakeSecrets {
     this.secrets.set(name, {secret, expires});
   }
 
-  /* fake procs */
+  /* fake functions */
 
   async get_secret(name) {
     if (this.secrets.has(name)) {

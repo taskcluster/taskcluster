@@ -6,7 +6,7 @@ This directory defines the Taskcluster database:
 * `test/` -- tests for the contents of this directory
 * `src/` -- implementation of the JS interface to the DB
 
-## Stored Procedures
+## List of Stored Functions
 
 <!-- SP BEGIN -->
 ### secrets
@@ -33,7 +33,7 @@ It's not permitted to change an existing version file (`db/versions/*.yml`) [*].
 Instead, any change to the DB must be made by adding a new version.
 This allows deployments of Taskcluster to follow those changes smoothly.
 
-> [*] There are a few exceptions: fixing bugs in a version that has not yet been included in a Taskcluster release, and updating stored-procedure descriptions.
+> [*] There are a few exceptions: fixing bugs in a version that has not yet been included in a Taskcluster release, and updating stored-function descriptions.
 
 A version file has a `migrationScript` which performs the change to the database.
 This can use any Postgres functionality required to make the change.
@@ -51,12 +51,12 @@ grant select on table newtable to $db_user_prefix$_someservice;
 
 As a safety check, the upgrade machinery will confirm after an upgrade is complete that the permissions in the database match those in `db/access.yml`.
 
-#### Stored Procedures
+#### Stored Functions
 
-Each version file should redefine any stored procedures that are affected by the schema changes, and define any newly-required procedures.
-Unchanged procedures can be omitted.
-A procedure's signature (argument and return types) cannot change from version to version.
-Instead, define a new procedure with a different name.
+Each version file should redefine any stored functions that are affected by the schema changes, and define any newly-required functions.
+Unchanged functions can be omitted.
+A function's signature (argument and return types) cannot change from version to version.
+Instead, define a new function with a different name.
 
 For example, if `get_widget(widgetId text) returns table (widgetWidth integer)` must be extended to also return a widget height, define a new `get_widget_with_height` method.
 This approach leaves the existing method in place so that older code can continue to use it.
@@ -91,9 +91,9 @@ Tests typically take the form
   });
 ```
 
-#### Proc Tests
+#### Function Tests
 
-Tests for stored functions should be in `db/tests/procs/<service-name>_test.js`.
+Tests for stored functions should be in `db/tests/fns/<service-name>_test.js`.
 These tests serve as unit tests for the stored functions, and also help to ensure that modifications to the stored functions do not unexpectedly change their behavior.
 In most cases, existing tests for a stored function should continue to pass without modification even when a new DB version modifies the function implementation.
 There are exceptions to this rule, but reviewers should carefully scrutinize any such changes to ensure they will not break compatibility.
@@ -150,7 +150,7 @@ const tcdb = require('taskcluster-db');
 const fakeDb = tcdb.fakeSetup({serviceName: 'queue'});
 ```
 
-All of the `fakeDb.proc.<name>` methods to which the service has access are available.
+All of the `fakeDb.fns.<name>` methods to which the service has access are available.
 Specific helper methods are available on sub-objects, such as `fakeDb.secrets.makeSecret`.
 See the source code of this package for the specific helpers that are available.
 

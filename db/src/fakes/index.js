@@ -12,7 +12,7 @@ fs.readdirSync(`${__dirname}/`).forEach(file => {
 });
 
 /**
- * A FakeDatabase has working `db.proc.<name>` methods that do not actually
+ * A FakeDatabase has working `db.fns.<name>` methods that do not actually
  * access a database, making it possible to test most of Taskcluster without a
  * DB.
  *
@@ -22,16 +22,16 @@ fs.readdirSync(`${__dirname}/`).forEach(file => {
 class FakeDatabase {
   constructor({schema, serviceName}) {
     const allMethods = schema.allMethods();
-    this.procs = {};
+    this.fns = {};
 
     COMPONENT_CLASSES.forEach(({name, cls}) => {
       const instance = new cls({schema, serviceName});
       this[name] = instance;
 
-      allMethods.forEach(({ name: methodName, mode, serviceName: procServiceName }) => {
+      allMethods.forEach(({ name: methodName, mode, serviceName: fnServiceName }) => {
         if (instance[methodName]) {
-          this.procs[methodName] = async (...args) => {
-            if (serviceName !== procServiceName && mode === WRITE) {
+          this.fns[methodName] = async (...args) => {
+            if (serviceName !== fnServiceName && mode === WRITE) {
               throw new Error(
                 `${serviceName} is not allowed to call any methods that do not belong to this service and which have mode=WRITE`,
               );

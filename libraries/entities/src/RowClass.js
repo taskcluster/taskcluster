@@ -32,7 +32,7 @@ class RowClass {
   }
 
   async remove(ignoreChanges, ignoreIfNotExists) {
-    const [result] = await this.db.procs[`${this.tableName}_remove`](this.documentId);
+    const [result] = await this.db.fns[`${this.tableName}_remove`](this.documentId);
 
     if (result) {
       return true;
@@ -55,7 +55,7 @@ class RowClass {
   // load the properties from the table once more, and return true if anything has changed.
   // Else, return false.
   async reload() {
-    const result = await this.db.procs[`${this.tableName}_load`](this.documentId);
+    const result = await this.db.fns[`${this.tableName}_load`](this.documentId);
     const etag = result[0].etag;
 
     return etag !== this.etag;
@@ -64,7 +64,7 @@ class RowClass {
   async modify(modifier) {
     await modifier.call(this.properties, this.properties);
 
-    return this.db.procs[`${this.tableName}_modify`](this.documentId, this.properties, 1);
+    return this.db.fns[`${this.tableName}_modify`](this.documentId, this.properties, 1);
   }
 }
 

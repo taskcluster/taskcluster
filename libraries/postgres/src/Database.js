@@ -27,9 +27,9 @@ class Database {
 
   _createProcs({schema, serviceName}) {
     // generate a JS method for each DB method defined in the schema
-    this.procs = {};
+    this.fns = {};
     schema.allMethods().forEach(({ name, mode, serviceName: procServiceName }) => {
-      this.procs[name] = async (...args) => {
+      this.fns[name] = async (...args) => {
         if (serviceName !== procServiceName && mode === WRITE) {
           throw new Error(
             `${serviceName} is not allowed to call any methods that do not belong to this service and which have mode=WRITE`,
@@ -199,7 +199,7 @@ class Database {
       this.pools[mode] = makePool(urlsByMode[mode]);
     }
 
-    this.procs = {};
+    this.fns = {};
   }
 
   /**

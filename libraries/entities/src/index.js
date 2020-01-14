@@ -93,7 +93,7 @@ class Entity {
 
     let res;
     try {
-      res = await this.db.procs[`${this.tableName}_create`](documentId, properties, overwrite, 1);
+      res = await this.db.fns[`${this.tableName}_create`](documentId, properties, overwrite, 1);
     } catch (err) {
       if (err.code === UNIQUE_VIOLATION) {
         const e = new Error('Entity already exists');
@@ -123,7 +123,7 @@ class Entity {
 
   async removeTable() {
     try {
-      await this.db.procs[`${this.tableName}_remove_table`]();
+      await this.db.fns[`${this.tableName}_remove_table`]();
     } catch (err) {
       // 42P01 means undefined table
       if (err.code !== UNDEFINED_TABLE) {
@@ -143,7 +143,7 @@ class Entity {
    */
   async ensureTable() {
     try {
-      await this.db.procs[`${this.tableName}_ensure_table`]();
+      await this.db.fns[`${this.tableName}_ensure_table`]();
     } catch (err) {
       // 42P07 means duplicate table
       if (err.code !== DUPLICATE_TABLE) {
@@ -155,7 +155,7 @@ class Entity {
   async remove(properties, ignoreIfNotExists) {
     const documentId = this.calculateId(properties);
 
-    const [result] = await this.db.procs[`${this.tableName}_remove`](documentId);
+    const [result] = await this.db.fns[`${this.tableName}_remove`](documentId);
 
     if (result) {
       return true;
@@ -178,12 +178,12 @@ class Entity {
   modify(properties) {
     const documentId = this.calculateId(properties);
 
-    return this.db.procs[`${this.tableName}_modify`](documentId, properties, 1);
+    return this.db.fns[`${this.tableName}_modify`](documentId, properties, 1);
   }
 
   async load(properties, ignoreIfNotExists) {
     const documentId = this.calculateId(properties);
-    const [result] = await this.db.procs[`${this.tableName}_load`](documentId);
+    const [result] = await this.db.fns[`${this.tableName}_load`](documentId);
 
     if (!result && ignoreIfNotExists) {
       return null;
@@ -212,7 +212,7 @@ class Entity {
     } = options;
     const condition = this._doCondition(conditions);
 
-    return this.db.procs[`${this.tableName}_scan`](condition, limit, page);
+    return this.db.fns[`${this.tableName}_scan`](condition, limit, page);
   }
 
   query(conditions, options = {}) {
