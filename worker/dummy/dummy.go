@@ -32,6 +32,8 @@ func (d *dummy) StartWorker(state *run.State) (protocol.Transport, error) {
 }
 
 func (d *dummy) SetProtocol(proto *protocol.Protocol) {
+	// the protocol is running on a null transport, so mark it as initialized
+	proto.SetInitialized()
 }
 
 func (d *dummy) Wait() error {

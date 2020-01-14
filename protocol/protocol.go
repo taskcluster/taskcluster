@@ -1,16 +1,23 @@
 package protocol
 
+import "sync"
+
 type MessageCallback func(msg Message)
 
 type Protocol struct {
 	// transport over which this protocol is running
 	transport Transport
 
-	// current set of agreed capabilities
+	// current set of agreed capabilities (but call WaitUntilInitialized first
+	// to avoid finding the empty set at startup)
 	Capabilities *Capabilities
 
 	// callbacks per message type
 	callbacks map[string][]MessageCallback
+
+	// tracking for whether this protocol is intialized
+	initialized     bool
+	initializedCond sync.Cond
 }
 
 func NewProtocol(transport Transport) *Protocol {
@@ -18,6 +25,10 @@ func NewProtocol(transport Transport) *Protocol {
 		transport:    transport,
 		Capabilities: EmptyCapabilities(),
 		callbacks:    make(map[string][]MessageCallback),
+		initialized:  false,
+		initializedCond: sync.Cond{
+			L: &sync.Mutex{},
+		},
 	}
 }
 
@@ -55,10 +66,12 @@ func (prot *Protocol) Start(asWorker bool) {
 					"capabilities": prot.Capabilities.List(),
 				},
 			})
+			prot.SetInitialized()
 		})
 	} else {
 		prot.Register("hello", func(msg Message) {
 			prot.Capabilities = FromCapabilitiesList(listOfStrings(msg.Properties["capabilities"]))
+			prot.SetInitialized()
 		})
 
 		fullCaps := FullCapabilities()
@@ -72,13 +85,35 @@ func (prot *Protocol) Start(asWorker bool) {
 	go prot.recvLoop()
 }
 
-// Check if a capability is supported.  Note that the initial set
-// of capabilities is empty, so calling this before the hello/welcome
-// transaction has been completed will always return false.
+// Set this protocol as initialized.  Ordinarily this happens automatically, but in cases
+// where the worker does not support the protocol, this method can be used to indicate that
+// the protocol is "initialized" with no capabilities.
+func (prot *Protocol) SetInitialized() {
+	// announce that we are now initialized
+	prot.initializedCond.L.Lock()
+	defer prot.initializedCond.L.Unlock()
+	prot.initialized = true
+	prot.initializedCond.Broadcast()
+}
+
+// Wait until this protocol is initialized.
+func (prot *Protocol) WaitUntilInitialized() {
+	prot.initializedCond.L.Lock()
+	defer prot.initializedCond.L.Unlock()
+	for !prot.initialized {
+		prot.initializedCond.Wait()
+	}
+}
+
+// Check if a capability is supported, after waiting for initialization.
 func (prot *Protocol) Capable(c string) bool {
+	prot.WaitUntilInitialized()
 	return prot.Capabilities.Has(c)
 }
 
+// Send a message.  This happens without waiting for initialization; as the
+// caller should already have used prot.Capable to determine whether the
+// message was supported.
 func (prot *Protocol) Send(msg Message) {
 	prot.transport.Send(msg)
 }

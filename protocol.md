@@ -46,6 +46,9 @@ on startup and nothing more.
 
 If a worker is run outside of a taskcluster-worker-runner context, it will never see the `welcome` message and thus never write `hello` or any other message.
 
+A connection is considered "initialized" on the `hello` message has been sent (on a worker) or received (on start-worker).
+Before the connection is initialized, the connection's capabilities are unknown, so protocol users should wait until initialization before querying capabilities.
+
 ## Messages
 
 The following sections describe the defined message types, each under a heading giving the corresponding capability.
