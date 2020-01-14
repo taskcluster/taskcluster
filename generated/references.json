@@ -523,7 +523,8 @@
               "properties": {
                 "document": {
                   "description": "Instance identity document that is obtained by\ncurl http://169.254.169.254/latest/dynamic/instance-identity/document on the instance\n",
-                  "title": "Document"
+                  "title": "Document",
+                  "type": "string"
                 },
                 "signature": {
                   "description": "The signature for instance identity document. Can be obtained by\ncurl http://169.254.169.254/latest/dynamic/instance-identity/signature on the instance\n",
@@ -536,6 +537,21 @@
                 "signature"
               ],
               "title": "aws provider type",
+              "type": "object"
+            },
+            {
+              "additionalProperties": false,
+              "properties": {
+                "document": {
+                  "description": "Attested data document that is obtained by\ncurl http://169.254.169.254/metadata/attested/document on the instance\n",
+                  "title": "Document",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "document"
+              ],
+              "title": "azure provider type",
               "type": "object"
             }
           ],
@@ -849,6 +865,191 @@
       "type": "object"
     },
     "filename": "schemas/worker-manager/v1/config-google.json"
+  },
+  {
+    "content": {
+      "$id": "/schemas/worker-manager/v1/config-azure.json#",
+      "$schema": "/schemas/common/metaschema.json#",
+      "additionalProperties": false,
+      "description": "'The config section of a workertype is using a provider with implementation azure must match this.\nMuch of these fields are documented [here](https://docs.microsoft.com/en-us/rest/api/compute/virtualmachines/createorupdate)'\n",
+      "properties": {
+        "launchConfigs": {
+          "description": "An array of possible variations of workers for this pool.\nEach choice must include at least the required properties but can also include anything in\nthe request body of [the virtual machine creation](https://docs.microsoft.com/en-us/rest/api/compute/virtualmachines/createorupdate)\napi method. worker-manager sets the values of the `osProfile.adminPassword`, `osProfile.computerName`, `osProfile.customData`, `networkProfile.networkInterfaces`\nproperties directly, and they cannot be overriden. It also fills in some basic labels, will generate a default description, and sets the `taskcluster`\nmetadata key directly. You are free to set other metadata items though. A subset of these fields we require you to set such as `machineType`.\n",
+          "items": {
+            "additionalProperties": true,
+            "properties": {
+              "billingProfile": {
+                "additionalProperties": true,
+                "description": "https://docs.microsoft.com/en-us/rest/api/compute/virtualmachines/createorupdate#billingprofile",
+                "properties": {
+                  "maxPrice": {
+                    "description": "the maximum price to pay for a spot virtual machine in US Dollars",
+                    "title": "Max Price",
+                    "type": "number"
+                  }
+                },
+                "required": [
+                ],
+                "title": "Billing Profile",
+                "type": "object"
+              },
+              "capacityPerInstance": {
+                "description": "The number of tasks a single worker of this type can run at any given time.",
+                "minimum": 1,
+                "title": "Capacity Per Instance",
+                "type": "integer"
+              },
+              "hardwareProfile": {
+                "additionalProperties": true,
+                "description": "https://docs.microsoft.com/en-us/rest/api/compute/virtualmachines/createorupdate#hardwareprofile",
+                "properties": {
+                  "vmSize": {
+                    "title": "Virtual machine type",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "vmSize"
+                ],
+                "title": "Hardware Profile",
+                "type": "object"
+              },
+              "location": {
+                "description": "The Azure location this worker should be spawned in",
+                "title": "Location",
+                "type": "string"
+              },
+              "networkProfile": {
+                "additionalProperties": true,
+                "description": "Container object for network interfaces for the VM\nSee here: https://docs.microsoft.com/en-us/rest/api/compute/virtualmachines/createorupdate#networkprofile\n",
+                "properties": {
+                  "networkInterfaces": {
+                    "items": {
+                      "additionalProperties": true,
+                      "properties": {
+                        "id": {
+                          "type": "string"
+                        },
+                        "primary": {
+                          "type": "boolean"
+                        }
+                      },
+                      "required": [
+                      ],
+                      "title": "Network Interface Reference",
+                      "type": "object"
+                    },
+                    "title": "Network Interfaces",
+                    "type": "array",
+                    "uniqueItems": false
+                  }
+                },
+                "required": [
+                  "networkInterfaces"
+                ],
+                "title": "Network Profile",
+                "type": "object"
+              },
+              "osProfile": {
+                "additionalProperties": true,
+                "description": "adminPassword, computerName, and customData are set by the provider and are not configurable\nhttps://docs.microsoft.com/en-us/rest/api/compute/virtualmachines/createorupdate#osprofile\n",
+                "required": [
+                ],
+                "title": "OS Profile",
+                "type": "object"
+              },
+              "priority": {
+                "description": "virtual machine priority, i.e. Spot\nhttps://docs.microsoft.com/en-us/rest/api/compute/virtualmachines/createorupdate#virtualmachineprioritytypes\n",
+                "title": "Priority",
+                "type": "string"
+              },
+              "storageProfile": {
+                "additionalProperties": true,
+                "properties": {
+                  "imageReference": {
+                    "additionalProperties": true,
+                    "description": "https://docs.microsoft.com/en-us/rest/api/compute/virtualmachines/createorupdate#imagereference",
+                    "properties": {
+                      "id": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                    ],
+                    "type": "object"
+                  },
+                  "osDisk": {
+                    "additionalProperties": true,
+                    "description": "https://docs.microsoft.com/en-us/rest/api/compute/virtualmachines/createorupdate#osdisk\n",
+                    "properties": {
+                      "createOption": {
+                        "description": "FromImage creates the disk from the specified image\nhttps://docs.microsoft.com/en-us/rest/api/compute/virtualmachines/createorupdate#diskcreateoptiontypes\n",
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                    ],
+                    "title": "OS Disk",
+                    "type": "object"
+                  }
+                },
+                "required": [
+                  "osDisk"
+                ],
+                "title": "Storage Profile",
+                "type": "object"
+              },
+              "subnetId": {
+                "description": "The ID of the subnet workers should be spawned in",
+                "title": "Subnet ID",
+                "type": "string"
+              },
+              "workerConfig": {
+                "additionalProperties": true,
+                "description": "This value is supplied unchanged as the `workerConfig` property of the `taskcluster` instance metadata attribute.\nThe expectation is that the worker will merge this information with configuration from other sources,\nand this is precisely what [taskcluster-worker-runner](https://github.com/taskcluster/taskcluster-worker-runner) does.\nThis property must not be used for secret configuration, as it is visible both in the worker pool configuration and in the worker instance's metadata.\nInstead, put secret configuration in the [secrets service](https://github.com/taskcluster/taskcluster-worker-runner#secrets).\n",
+                "title": "Worker Config",
+                "type": "object"
+              }
+            },
+            "required": [
+              "capacityPerInstance",
+              "workerConfig",
+              "location",
+              "subnetId",
+              "hardwareProfile",
+              "storageProfile"
+            ],
+            "type": "object"
+          },
+          "title": "Choices",
+          "type": "array",
+          "uniqueItems": false
+        },
+        "lifecycle": {
+          "$ref": "worker-lifecycle.json#"
+        },
+        "maxCapacity": {
+          "description": "The maximum amount of capacity that worker-manager should make\navailable at any given time.\n",
+          "minimum": 0,
+          "title": "Maximum Capacity",
+          "type": "integer"
+        },
+        "minCapacity": {
+          "description": "The minimum amount of capacity that worker-manager should make\navailable at any given time.\n",
+          "minimum": 0,
+          "title": "Minimum Capacity",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "minCapacity",
+        "maxCapacity",
+        "launchConfigs"
+      ],
+      "title": "Azure Provider Config",
+      "type": "object"
+    },
+    "filename": "schemas/worker-manager/v1/config-azure.json"
   },
   {
     "content": {
@@ -7730,6 +7931,18 @@
           "name": "cloudApiResumed",
           "title": "Cloud API Resumed",
           "type": "cloud-api-resumed",
+          "version": 1
+        },
+        {
+          "description": "Something has tried to register as a worker but failed. This could indicate either a bug\nor that somebody is trying to impersonate a worker.",
+          "fields": {
+            "error": "Error message from cloud that triggered this",
+            "message": "Description of this error from the taskcluster side"
+          },
+          "level": "warning",
+          "name": "registrationErrorWarning",
+          "title": "Registration Error Warning",
+          "type": "registration-error-warning",
           "version": 1
         },
         {

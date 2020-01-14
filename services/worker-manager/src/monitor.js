@@ -141,4 +141,20 @@ monitorManager.register({
   },
 });
 
+monitorManager.register({
+  name: 'registrationErrorWarning',
+  title: 'Registration Error Warning',
+  type: 'registration-error-warning',
+  version: 1,
+  level: 'warning',
+  description: `
+    Something has tried to register as a worker but failed. This could indicate either a bug
+    or that somebody is trying to impersonate a worker.
+  `,
+  fields: {
+    message: 'Description of this error from the taskcluster side',
+    error: 'Error message from cloud that triggered this',
+  },
+});
+
 module.exports = monitorManager;

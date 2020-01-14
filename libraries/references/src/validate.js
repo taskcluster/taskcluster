@@ -21,6 +21,7 @@ const UNREFERENCED_SCHEMAS = [
   {service: 'worker-manager', schema: 'v1/config-testing.json#'},
   {service: 'worker-manager', schema: 'v1/config-null.json#'},
   {service: 'worker-manager', schema: 'v1/config-aws.json#'},
+  {service: 'worker-manager', schema: 'v1/config-azure.json#'},
 ];
 
 /**

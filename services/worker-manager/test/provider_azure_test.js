@@ -1,10 +1,13 @@
 const taskcluster = require('taskcluster-client');
-const sinon = require('sinon');
 const assert = require('assert');
 const helper = require('./helper');
-const {FakeGoogle} = require('./fake-google');
-const {GoogleProvider} = require('../src/providers/google');
+const {FakeAzure} = require('./fake-azure');
+const {AzureProvider} = require('../src/providers/azure');
+const monitorManager = require('../src/monitor');
 const testing = require('taskcluster-lib-testing');
+const forge = require('node-forge');
+const fs = require('fs');
+const path = require('path');
 
 helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping) {
   helper.withEntities(mock, skipping);
@@ -14,32 +17,57 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
 
   let provider;
   let workerPool;
-  let providerId = 'google';
+  let providerId = 'azure';
   let workerPoolId = 'foo/bar';
-  let fakeGoogle;
+  let fakeAzure;
+
+  let baseProviderData = {
+    location: 'westus',
+    vm: {
+      location: 'westus',
+      name: 'some vm',
+    },
+    disk: {
+      location: 'westus',
+      name: 'some disk',
+    },
+    nic: {
+      location: 'westus',
+      name: 'some nic',
+    },
+    ip: {
+      location: 'westus',
+      name: 'some ip',
+    },
+  };
 
   setup(async function() {
-    fakeGoogle = new FakeGoogle();
-    provider = new GoogleProvider({
+    fakeAzure = new FakeAzure();
+    provider = new AzureProvider({
       providerId,
       notify: await helper.load('notify'),
-      monitor: (await helper.load('monitor')).childMonitor('google'),
+      monitor: (await helper.load('monitor')).childMonitor('azure'),
       estimator: await helper.load('estimator'),
       fakeCloudApis: {
-        google: fakeGoogle,
+        azure: fakeAzure,
       },
       rootUrl: helper.rootUrl,
       Worker: helper.Worker,
       WorkerPool: helper.WorkerPool,
       WorkerPoolError: helper.WorkerPoolError,
       providerConfig: {
-        project: 'testy',
-        instancePermissions: [],
-        creds: '{}',
-        workerServiceAccountId: '12345',
+        clientId: 'my client id',
+        secret: 'my secret',
+        domain: 'some azure domain',
+        subscriptionId: 'a subscription id',
+        resourceGroupName: 'my-resource-group',
+        storageAccountName: 'storage123',
+        subnetName: 'a-subnet',
         _backoffDelay: 1,
       },
     });
+    // So that checked-in certs are still valid
+    provider._now = () => taskcluster.fromNow('-10 years');
     workerPool = await helper.WorkerPool.create({
       workerPoolId,
       providerId,
@@ -56,13 +84,10 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
         launchConfigs: [
           {
             capacityPerInstance: 1,
-            machineType: 'n1-standard-2',
-            region: 'us-east1',
-            zone: 'us-east1-a',
-            workerConfig: {},
-            scheduling: {},
-            networkInterfaces: [],
-            disks: [],
+            location: 'westus',
+            hardwareProfile: {
+              vmSize: 'Basic_A2',
+            },
           },
         ],
       },
@@ -80,10 +105,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
     // Check that this is setting times correctly to within a second or so to allow for some time
     // for the provisioning loop
     assert(workers.entries[0].providerData.registrationExpiry - now - (6000 * 1000) < 5000);
-    assert.deepEqual(workers.entries[0].providerData.operation, {
-      name: 'foo',
-      zone: 'whatever/a',
-    });
+    assert.equal(workers.entries[0].workerId, '123');
   });
 
   test('provisioning loop with failure', async function() {
@@ -111,22 +133,13 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
     // simulate previous provisionig and deleting the workerpool
     await workerPool.modify(wp => {
       wp.providerId = 'null-provider';
-      wp.previousProviderIds = ['google'];
-      wp.providerData.google = {};
+      wp.previousProviderIds = ['azure'];
+
       return wp;
     });
     await provider.deprovision({workerPool});
     // nothing has changed..
-    assert(workerPool.previousProviderIds.includes('google'));
-  });
-
-  test('removeResources', async function() {
-    await workerPool.modify(wp => {
-      wp.providerData.google = {};
-      return wp;
-    });
-    await provider.removeResources({workerPool});
-    assert(!workerPool.providerData.google);
+    assert(workerPool.previousProviderIds.includes('azure'));
   });
 
   test('removeWorker', async function() {
@@ -142,10 +155,15 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
       expires: taskcluster.fromNow('90 seconds'),
       capacity: 1,
       state: 'requested',
-      providerData: {zone: 'us-east1-a'},
+      providerData: {
+        ...baseProviderData,
+      },
     });
     await provider.removeWorker({worker});
-    assert(fakeGoogle.instanceDeleteStub.called);
+    assert(fakeAzure.deleteVMStub.called);
+    assert(fakeAzure.deleteDiskStub.called);
+    assert(fakeAzure.deleteIPStub.called);
+    assert(fakeAzure.deleteNICStub.called);
   });
 
   test('worker-scan loop', async function() {
@@ -153,10 +171,9 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
     const worker = await helper.Worker.load({
       workerPoolId: 'foo/bar',
       workerId: '123',
-      workerGroup: 'google',
+      workerGroup: 'azure',
     });
 
-    assert(worker.providerData.operation);
     assert.equal(worker.state, helper.Worker.states.REQUESTED);
 
     // On the first run we've faked that the instance is running
@@ -187,7 +204,9 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
       capacity: 1,
       expires,
       state: helper.Worker.states.RUNNING,
-      providerData: {zone: 'us-east1-a'},
+      providerData: {
+        ...baseProviderData,
+      },
     });
     await provider.scanPrepare();
     await provider.checkWorker({worker});
@@ -208,14 +227,17 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
       expires: taskcluster.fromNow('1 week'),
       state: helper.Worker.states.REQUESTED,
       providerData: {
-        zone: 'us-east1-a',
+        ...baseProviderData,
         registrationExpiry: Date.now() - 1000,
       },
     });
     await provider.scanPrepare();
     await provider.checkWorker({worker});
     await provider.scanCleanup();
-    assert(fakeGoogle.instanceDeleteStub.called);
+    assert(fakeAzure.deleteVMStub.called);
+    assert(fakeAzure.deleteDiskStub.called);
+    assert(fakeAzure.deleteIPStub.called);
+    assert(fakeAzure.deleteNICStub.called);
   });
 
   test('don\'t remove unregistered workers that are new', async function() {
@@ -231,68 +253,22 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
       lastChecked: taskcluster.fromNow('-2 weeks'),
       state: helper.Worker.states.REQUESTED,
       providerData: {
-        zone: 'us-east1-a',
+        ...baseProviderData,
         registrationExpiry: Date.now() + 1000,
       },
     });
     await provider.scanPrepare();
     await provider.checkWorker({worker});
     await provider.scanCleanup();
-    assert(!fakeGoogle.instanceDeleteStub.called);
-  });
-
-  suite('_enqueue p-queues', function() {
-    test('non existing queue', async function() {
-      try {
-        await provider._enqueue('nonexisting', () => {});
-      } catch (err) {
-        assert.equal(err.message, 'Unknown p-queue attempted: nonexisting');
-        return;
-      }
-      throw new Error('should have thrown an error');
-    });
-
-    test('simple', async function() {
-      const result = await provider._enqueue('query', () => 5);
-      assert.equal(result, 5);
-    });
-
-    test('one 500', async function() {
-      const remote = sinon.stub();
-      remote.onCall(0).throws({code: 500});
-      remote.onCall(1).returns(10);
-      const result = await provider._enqueue('query', () => remote());
-      assert.equal(result, 10);
-      assert.equal(remote.callCount, 2);
-    });
-    test('multiple 500', async function() {
-      const remote = sinon.stub();
-      remote.onCall(0).throws({code: 500});
-      remote.onCall(1).throws({code: 520});
-      remote.onCall(2).throws({code: 503});
-      remote.onCall(3).returns(15);
-      const result = await provider._enqueue('query', () => remote());
-      assert.equal(result, 15);
-      assert.equal(remote.callCount, 4);
-    });
-    test('500s forever should throw', async function() {
-      const remote = sinon.stub();
-      remote.throws({code: 500});
-
-      try {
-        await provider._enqueue('query', () => remote());
-      } catch (err) {
-        assert.deepEqual(err, {code: 500});
-        return;
-      }
-      assert.equal(remote.callCount, 5);
-      throw new Error('should have thrown an error');
-    });
+    assert(!fakeAzure.deleteVMStub.called);
+    assert(!fakeAzure.deleteDiskStub.called);
+    assert(!fakeAzure.deleteIPStub.called);
+    assert(!fakeAzure.deleteNICStub.called);
   });
 
   suite('registerWorker', function() {
     const workerGroup = providerId;
-    const workerId = 'abc123';
+    const workerId = '5d06deb3-807b-46dd-aef5-78aaf9193f71';
 
     const defaultWorker = {
       workerPoolId,
@@ -305,57 +281,91 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
       capacity: 1,
       expires: taskcluster.fromNow('90 seconds'),
       state: 'requested',
-      providerData: {},
+      providerData: {
+        ...baseProviderData,
+      },
     };
 
-    test('no token', async function() {
+    test('document is not a valid PKCS#7 message', async function() {
       const worker = await helper.Worker.create({
         ...defaultWorker,
       });
-      const workerIdentityProof = {};
+      const document = 'this is not a valid PKCS#7 message';
+      const workerIdentityProof = {document};
       await assert.rejects(() =>
         provider.registerWorker({workerPool, worker, workerIdentityProof}),
-      /Token validation error/);
+      /Signature validation error/);
+      assert(monitorManager.messages[0].Fields.error.includes('Too few bytes to read ASN.1 value.'));
     });
 
-    test('invalid token', async function() {
+    test('document is empty', async function() {
       const worker = await helper.Worker.create({
         ...defaultWorker,
       });
-      const workerIdentityProof = {token: 'invalid'};
+      const document = '';
+      const workerIdentityProof = {document};
       await assert.rejects(() =>
         provider.registerWorker({workerPool, worker, workerIdentityProof}),
-      /Token validation error/);
+      /Signature validation error/);
+      assert(monitorManager.messages[0].Fields.error.includes('Too few bytes to parse DER.'));
     });
 
-    test('wrong project', async function() {
+    test('message does not match signature', async function() {
       const worker = await helper.Worker.create({
         ...defaultWorker,
       });
-      const workerIdentityProof = {token: 'wrongProject'};
+      // this file is a version of `azure_signature_good` where vmId has been edited in the message
+      const document = fs.readFileSync(path.resolve(__dirname, 'fixtures/azure_message_bad')).toString();
+      const workerIdentityProof = {document};
       await assert.rejects(() =>
         provider.registerWorker({workerPool, worker, workerIdentityProof}),
-      /Token validation error/);
+      /Signature validation error/);
+      assert(monitorManager.messages[0].Fields.message.includes('Error verifying PKCS#7 message signature'));
     });
 
-    test('wrong sub', async function() {
+    test('malformed signature', async function() {
       const worker = await helper.Worker.create({
         ...defaultWorker,
       });
-      const workerIdentityProof = {token: 'wrongSub'};
+      // this file is a version of `azure_signature_good` where the message signature has been edited
+      const document = fs.readFileSync(path.resolve(__dirname, 'fixtures/azure_signature_bad')).toString();
+      const workerIdentityProof = {document};
       await assert.rejects(() =>
         provider.registerWorker({workerPool, worker, workerIdentityProof}),
-      /Token validation error/);
+      /Signature validation error/);
+      assert(monitorManager.messages[0].Fields.message.includes('Error verifying PKCS#7 message signature'));
     });
 
-    test('wrong instance ID', async function() {
+    test('expired message', async function() {
       const worker = await helper.Worker.create({
         ...defaultWorker,
       });
-      const workerIdentityProof = {token: 'wrongId'};
+      const document = fs.readFileSync(path.resolve(__dirname, 'fixtures/azure_signature_good')).toString();
+      const workerIdentityProof = {document};
+      provider._now = () => new Date(); // The certs that are checked-in are old so they should be expired now
       await assert.rejects(() =>
         provider.registerWorker({workerPool, worker, workerIdentityProof}),
-      /Token validation error/);
+      /Signature validation error/);
+      assert(monitorManager.messages[0].Fields.message.includes('Expired message'));
+    });
+
+    test('bad cert', async function() {
+      const worker = await helper.Worker.create({
+        ...defaultWorker,
+      });
+      const document = fs.readFileSync(path.resolve(__dirname, 'fixtures/azure_signature_good')).toString();
+      const workerIdentityProof = {document};
+
+      // Here we replace the intermediate certs with nothing and show that this should reject
+      const oldCaStore = provider.caStore;
+      provider.caStore = forge.pki.createCaStore([]);
+
+      await assert.rejects(() =>
+        provider.registerWorker({workerPool, worker, workerIdentityProof}),
+      /Signature validation error/);
+      assert(monitorManager.messages[0].Fields.message.includes('Error verifying certificate chain'));
+      assert(monitorManager.messages[0].Fields.error.includes('Certificate is not trusted'));
+      provider.caStore = oldCaStore;
     });
 
     test('wrong worker state (duplicate call to registerWorker)', async function() {
@@ -363,17 +373,35 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
         ...defaultWorker,
         state: 'running',
       });
-      const workerIdentityProof = {token: 'good'};
+      const document = fs.readFileSync(path.resolve(__dirname, 'fixtures/azure_signature_good')).toString();
+      const workerIdentityProof = {document};
       await assert.rejects(() =>
         provider.registerWorker({workerPool, worker, workerIdentityProof}),
-      /Token validation error/);
+      /Signature validation error/);
+      assert(monitorManager.messages[0].Fields.error.includes('already running'));
+    });
+
+    test('wrong instance ID', async function() {
+      const worker = await helper.Worker.create({
+        ...defaultWorker,
+        workerId: 'wrongeb3-807b-46dd-aef5-78aaf9193f71',
+      });
+      const document = fs.readFileSync(path.resolve(__dirname, 'fixtures/azure_signature_good')).toString();
+      const workerIdentityProof = {document};
+      await assert.rejects(() =>
+        provider.registerWorker({workerPool, worker, workerIdentityProof}),
+      /Signature validation error/);
+      assert(monitorManager.messages[0].Fields.message.includes('Encountered vmId mismatch'));
+      assert.equal(monitorManager.messages[0].Fields.vmId, workerId);
+      assert.equal(monitorManager.messages[0].Fields.workerId, 'wrongeb3-807b-46dd-aef5-78aaf9193f71');
     });
 
     test('sweet success', async function() {
       const worker = await helper.Worker.create({
         ...defaultWorker,
       });
-      const workerIdentityProof = {token: 'good'};
+      const document = fs.readFileSync(path.resolve(__dirname, 'fixtures/azure_signature_good')).toString();
+      const workerIdentityProof = {document};
       const res = await provider.registerWorker({workerPool, worker, workerIdentityProof});
       // allow +- 10 seconds since time passes while the test executes
       assert(res.expires - new Date() + 10000 > 96 * 3600 * 1000, res.expires);

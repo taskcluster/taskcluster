@@ -25,7 +25,6 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
         }
       }));
       return (testing.runWithFakeTime(async function() {
-
         await helper.initiateProvisioner();
         await testing.poll(async () => {
           if (!expectErrors) {
