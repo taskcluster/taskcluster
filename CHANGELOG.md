@@ -3,6 +3,19 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v24.2.0
+
+▶ [minor] [bug 1600966](http://bugzil.la/1600966)
+Adds a provider for azure vm instances to worker-manager.
+
+▶ [patch] 
+The Python client now normalizes the root URL in `optionsFromEnvironment()`.
+
+▶ [patch] [#2269](https://github.com/taskcluster/taskcluster/issues/2269)
+Links to specific log lines now autoscroll to correct location.
+
+▶ Additional changes not described here: [#2266](https://github.com/taskcluster/taskcluster/issues/2266), [#2232](https://github.com/taskcluster/taskcluster/issues/2232).
+
 ## v24.1.10
 
 ▶ [patch] [#2031](https://github.com/taskcluster/taskcluster/issues/2031)
