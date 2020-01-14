@@ -10,6 +10,7 @@ import (
 	"github.com/taskcluster/taskcluster-worker-runner/cfg"
 	"github.com/taskcluster/taskcluster-worker-runner/credexp"
 	"github.com/taskcluster/taskcluster-worker-runner/files"
+	"github.com/taskcluster/taskcluster-worker-runner/perms"
 	"github.com/taskcluster/taskcluster-worker-runner/protocol"
 	"github.com/taskcluster/taskcluster-worker-runner/provider"
 	"github.com/taskcluster/taskcluster-worker-runner/run"
@@ -30,15 +31,23 @@ func Run(configFile string) (state run.State, err error) {
 
 	runCached := false
 	if runnercfg.CacheOverRestarts != "" {
+
 		var encoded []byte
 		encoded, err = ioutil.ReadFile(runnercfg.CacheOverRestarts)
 		if err == nil {
 			log.Printf("Loading cached state from %s", runnercfg.CacheOverRestarts)
+
 			err = json.Unmarshal(encoded, &state)
 			if err != nil {
 				return
 			}
 			runCached = true
+
+			// just double-check that the permissions are correct..
+			err = perms.VerifyPrivateToOwner(runnercfg.CacheOverRestarts)
+			if err != nil {
+				return
+			}
 		} else if !os.IsNotExist(err) {
 			return
 		}
@@ -114,6 +123,19 @@ func Run(configFile string) (state run.State, err error) {
 			return
 		}
 		err = ioutil.WriteFile(runnercfg.CacheOverRestarts, encoded, 0700)
+		if err != nil {
+			return
+		}
+
+		// This file contains secrets, so ensure that this is really only
+		// accessible to the file owner (and having just created the file, that
+		// should be the current user).
+		err = perms.MakePrivateToOwner(runnercfg.CacheOverRestarts)
+		if err != nil {
+			return
+		}
+
+		err = perms.VerifyPrivateToOwner(runnercfg.CacheOverRestarts)
 		if err != nil {
 			return
 		}
