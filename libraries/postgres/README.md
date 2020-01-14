@@ -38,6 +38,20 @@ Note that there direct SQL access to the database is *not allowed*.
 All database operations must be made via `db.procs` calls which translate into invocations of Postgres stored procedures.
 This is a critical feature of the library's compatibility strategy.
 
+### Schema
+
+Schema objects are constructed either from the DB directory format described below or, for efficiency, from a format suitable for JSON serialization.
+Do not call the Schema constructor.
+Insead, construct objects with either of
+
+```javascript
+const schema1 = Schema.fromDbDirectory('path/to/db/directory');
+const schema2 = Schema.fromSerializable(serializableData);
+```
+
+In general, prefer the first form in tests, so that changes to the DB directory can be tested quickly, and the second for in production.
+A serializable representation of a schema is available from `schema.asSerializable()`.
+
 ## Conceptual Overview
 
 The library expects to define a single schema for all services hosted in this repository, and assumes that schema is applied to a dedicated Postgres database.
