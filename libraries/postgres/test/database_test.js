@@ -1,5 +1,12 @@
 const helper = require('./helper');
-const {Schema, Database, READ, WRITE} = require('..');
+const {
+  Schema,
+  Database,
+  READ,
+  WRITE,
+  DUPLICATE_OBJECT,
+  UNDEFINED_COLUMN,
+} = require('..');
 const path = require('path');
 const assert = require('assert').strict;
 
@@ -77,7 +84,7 @@ helper.dbSuite(path.basename(__filename), function() {
           try {
             await client.query(`create user ${username}`);
           } catch (err) {
-            if (err.code !== '42710') { // role already exists
+            if (err.code !== DUPLICATE_OBJECT) {
               throw err;
             }
           }
@@ -126,7 +133,7 @@ helper.dbSuite(path.basename(__filename), function() {
           usernamePrefix: 'test',
         });
       } catch (err) {
-        assert.equal(err.code, '42703'); // unknown column
+        assert.equal(err.code, UNDEFINED_COLUMN);
         assert.equal(await db.currentVersion(), 0);
         return;
       }
@@ -145,7 +152,7 @@ helper.dbSuite(path.basename(__filename), function() {
           try {
             await client.query(`create user ${username}`);
           } catch (err) {
-            if (err.code !== '42710') { // role already exists
+            if (err.code !== DUPLICATE_OBJECT) {
               throw err;
             }
           }

@@ -143,6 +143,13 @@ Read access is translated to SELECT, while write access is translated to SELECT,
 
 This file provides a simple, verified confirmation of which services have what access, providing a useful aid in reviewing changes as well as verification that no malicious or accidental access changes have been made in a production deployment.
 
+## Error Constants
+
+This module also defines a number of constants for Postgres's otherwise-cryptic SQLSTATE codes.
+The symbol names and values are drawn from [PostgreSQL Error Codes](https://www.postgresql.org/docs/11/errcodes-appendix.html).
+For example `tcLibPg.UNDEFINED_TABLE` is `"42P01"`.
+Feel free to add any additional constants required in [`src/constants.js`](./src/constants.js).
+
 ## Development
 
 To test this library, you will need a Postgres database, running the latest release of Postgres 11.
