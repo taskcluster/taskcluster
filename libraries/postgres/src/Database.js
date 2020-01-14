@@ -2,7 +2,7 @@ const {Pool} = require('pg');
 const {dollarQuote} = require('./util');
 const assert = require('assert').strict;
 const debug = require('debug')('taskcluster-lib-postgres');
-const {READ, WRITE} = require('./constants');
+const {READ, WRITE, UNDEFINED_TABLE} = require('./constants');
 
 class Database {
   /**
@@ -246,8 +246,7 @@ class Database {
         }
         return res.rows[0].version;
       } catch (err) {
-        // catch "relation does not exist" and treat it as version 0
-        if (err.code === '42P01') {
+        if (err.code === UNDEFINED_TABLE) {
           return 0;
         }
         throw err;

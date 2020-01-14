@@ -2,6 +2,12 @@ const assert = require('assert').strict;
 const RowClass = require('./RowClass');
 const op = require('./entityops');
 const types = require('./entitytypes');
+const {
+  DUPLICATE_TABLE,
+  NUMERIC_VALUE_OUT_OF_RANGE,
+  UNDEFINED_TABLE,
+  UNIQUE_VIOLATION,
+} = require('taskcluster-lib-postgres');
 
 class Entity {
   constructor(options) {
@@ -89,14 +95,14 @@ class Entity {
     try {
       res = await this.db.procs[`${this.tableName}_create`](documentId, properties, overwrite, 1);
     } catch (err) {
-      if (err.code === '23505') {
+      if (err.code === UNIQUE_VIOLATION) {
         const e = new Error('Entity already exists');
         e.code = 'EntityAlreadyExists';
         throw e;
       }
 
       // TODO: add a test for this
-      if (err.code === '22003') {
+      if (err.code === NUMERIC_VALUE_OUT_OF_RANGE) {
         const e = new Error('Property too large');
         e.code = 'PropertyTooLarge';
         throw e;
@@ -120,7 +126,7 @@ class Entity {
       await this.db.procs[`${this.tableName}_remove_table`]();
     } catch (err) {
       // 42P01 means undefined table
-      if (err.code !== '42P01') {
+      if (err.code !== UNDEFINED_TABLE) {
         throw err;
       }
 
@@ -140,7 +146,7 @@ class Entity {
       await this.db.procs[`${this.tableName}_ensure_table`]();
     } catch (err) {
       // 42P07 means duplicate table
-      if (err.code !== '42P07') {
+      if (err.code !== DUPLICATE_TABLE) {
         throw err;
       }
     }
