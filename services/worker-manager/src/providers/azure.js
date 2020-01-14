@@ -250,6 +250,10 @@ class AzureProvider extends Provider {
     // nothing to do: we just wait for workers to terminate themselves
   }
 
+  _now() {
+    return new Date();
+  }
+
   async registerWorker({worker, workerPool, workerIdentityProof}) {
     const {document} = workerIdentityProof;
 
@@ -311,13 +315,27 @@ class AzureProvider extends Provider {
       throw error();
     }
 
-    // verify that the embedded vmId matches what the worker is sending
-    let vmId;
+    let payload;
     try {
-      vmId = JSON.parse(content).vmId;
-      assert.equal(vmId, worker.workerId);
+      payload = JSON.parse(content);
     } catch (err) {
-      this.monitor.log.registrationErrorWarning({message: 'Encountered vmId mismatch', error: err.toString(), vmId, workerId: worker.workerId});
+      this.monitor.log.registrationErrorWarning({message: 'Payload was not valid JSON', error: err.toString()});
+      throw error();
+    }
+
+    // verify that the embedded vmId matches what the worker is sending
+    try {
+      assert.equal(payload.vmId, worker.workerId);
+    } catch (err) {
+      this.monitor.log.registrationErrorWarning({message: 'Encountered vmId mismatch', error: err.toString(), vmId: payload.vmId, workerId: worker.workerId});
+      throw error();
+    }
+
+    // verify that the message is not expired
+    try {
+      assert(new Date(payload.timeStamp.expiresOn) > this._now());
+    } catch (err) {
+      this.monitor.log.registrationErrorWarning({message: 'Expired message', error: err.toString(), expires: payload.timeStamp.expiresOn});
       throw error();
     }
 

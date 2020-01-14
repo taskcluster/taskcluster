@@ -66,6 +66,8 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
         _backoffDelay: 1,
       },
     });
+    // So that checked-in certs are still valid
+    provider._now = () => taskcluster.fromNow('-10 years');
     workerPool = await helper.WorkerPool.create({
       workerPoolId,
       providerId,
@@ -332,6 +334,19 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
         provider.registerWorker({workerPool, worker, workerIdentityProof}),
       /Signature validation error/);
       assert(monitorManager.messages[0].Fields.message.includes('Error verifying PKCS#7 message signature'));
+    });
+
+    test('expired message', async function() {
+      const worker = await helper.Worker.create({
+        ...defaultWorker,
+      });
+      const document = fs.readFileSync(path.resolve(__dirname, 'fixtures/azure_signature_good')).toString();
+      const workerIdentityProof = {document};
+      provider._now = () => new Date(); // The certs that are checked-in are old so they should be expired now
+      await assert.rejects(() =>
+        provider.registerWorker({workerPool, worker, workerIdentityProof}),
+      /Signature validation error/);
+      assert(monitorManager.messages[0].Fields.message.includes('Expired message'));
     });
 
     test('bad cert', async function() {
