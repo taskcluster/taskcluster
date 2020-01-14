@@ -7934,6 +7934,18 @@
           "version": 1
         },
         {
+          "description": "Something has tried to register as a worker but failed. This could indicate either a bug\nor that somebody is trying to impersonate a worker.",
+          "fields": {
+            "error": "Error message from cloud that triggered this",
+            "message": "Description of this error from the taskcluster side"
+          },
+          "level": "warning",
+          "name": "registrationErrorWarning",
+          "title": "Registration Error Warning",
+          "type": "registration-error-warning",
+          "version": 1
+        },
+        {
           "description": "A connection to Pulse has been established.  Taskcluster services\nautomatically reconnect to Pulse periodically and in the event of\nan error, but rapid reconnections may signal a Pulse failure.",
           "fields": {
           },

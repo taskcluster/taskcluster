@@ -338,7 +338,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
       /Token validation error/);
     });
 
-    test('wrong project', async function() {
+    test('wrong sub', async function() {
       const worker = await helper.Worker.create({
         ...defaultWorker,
       });

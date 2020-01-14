@@ -3,6 +3,7 @@ const assert = require('assert');
 const helper = require('./helper');
 const {FakeAzure} = require('./fake-azure');
 const {AzureProvider} = require('../src/providers/azure');
+const monitorManager = require('../src/monitor');
 const testing = require('taskcluster-lib-testing');
 const fs = require('fs');
 const path = require('path');
@@ -291,6 +292,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
       await assert.rejects(() =>
         provider.registerWorker({workerPool, worker, workerIdentityProof}),
       /Signature validation error/);
+      assert(monitorManager.messages[0].Fields.error.includes('Too few bytes to read ASN.1 value.'));
     });
 
     test('document is empty', async function() {
@@ -302,6 +304,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
       await assert.rejects(() =>
         provider.registerWorker({workerPool, worker, workerIdentityProof}),
       /Signature validation error/);
+      assert(monitorManager.messages[0].Fields.error.includes('Too few bytes to parse DER.'));
     });
 
     test('message does not match signature', async function() {
@@ -314,6 +317,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
       await assert.rejects(() =>
         provider.registerWorker({workerPool, worker, workerIdentityProof}),
       /Signature validation error/);
+      assert(monitorManager.messages[0].Fields.error.includes('Only 8, 16, 24, or 32 bits supported: 264'));
     });
 
     test('malformed signature', async function() {
@@ -326,6 +330,36 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
       await assert.rejects(() =>
         provider.registerWorker({workerPool, worker, workerIdentityProof}),
       /Signature validation error/);
+      assert(monitorManager.messages[0].Fields.error.includes('Only 8, 16, 24, or 32 bits supported: 264'));
+    });
+
+    test('wrong worker state (duplicate call to registerWorker)', async function() {
+      const worker = await helper.Worker.create({
+        ...defaultWorker,
+        state: 'running',
+      });
+      const document = fs.readFileSync(path.resolve(__dirname, 'fixtures/azure_signature_good')).toString();
+      const workerIdentityProof = {document};
+      await assert.rejects(() =>
+        provider.registerWorker({workerPool, worker, workerIdentityProof}),
+      /Signature validation error/);
+      assert(monitorManager.messages[0].Fields.error.includes('already running'));
+    });
+
+    test('wrong instance ID', async function() {
+      const worker = await helper.Worker.create({
+        ...defaultWorker,
+        workerId: 'wrongeb3-807b-46dd-aef5-78aaf9193f71',
+      });
+      const document = fs.readFileSync(path.resolve(__dirname, 'fixtures/azure_signature_good')).toString();
+      const workerIdentityProof = {document};
+      await assert.rejects(() =>
+        provider.registerWorker({workerPool, worker, workerIdentityProof}),
+      /Signature validation error/);
+      assert(monitorManager.messages[0].Fields.error.includes('falsy value'));
+      assert(monitorManager.messages[0].Fields.message.includes('Encountered vmId mismatch'));
+      assert.equal(monitorManager.messages[0].Fields.vmId, workerId);
+      assert.equal(monitorManager.messages[0].Fields.workerId, 'wrongeb3-807b-46dd-aef5-78aaf9193f71');
     });
 
     test('sweet success', async function() {
