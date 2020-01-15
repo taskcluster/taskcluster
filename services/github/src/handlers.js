@@ -626,7 +626,7 @@ async function jobHandler(message) {
     if (!defaultBranchYml) { return; }
 
     if (this.getRepoPolicy(defaultBranchYml).startsWith('collaborators')) {
-      let login = message.payload.details['event.head.user.login'];
+      let login = message.payload.body.pull_request.head.user.login;
 
       let isCollaborator = await instGithub.repos.checkCollaborator({
         owner: organization,
