@@ -7,13 +7,13 @@ class Database {
   /**
    * Get a new Database instance
    */
-  static async setup({schema, readDbUrl, writeDbUrl, serviceName}) {
+  static async setup({schema, readDbUrl, writeDbUrl, serviceName, statementTimeout}) {
     assert(readDbUrl, 'readDbUrl is required');
     assert(writeDbUrl, 'writeDbUrl is required');
     assert(schema, 'schema is required');
     assert(serviceName, 'serviceName is required');
 
-    const db = new Database({urlsByMode: {[READ]: readDbUrl, [WRITE]: writeDbUrl}});
+    const db = new Database({urlsByMode: {[READ]: readDbUrl, [WRITE]: writeDbUrl}, statementTimeout});
     db._createProcs({schema, serviceName});
 
     const dbVersion = await db.currentVersion();
@@ -198,11 +198,16 @@ class Database {
   /**
    * Private constructor (use Database.setup and Database.upgrade instead)
    */
-  constructor({urlsByMode}) {
+  constructor({urlsByMode, statementTimeout}) {
     const makePool = dbUrl => {
       const pool = new Pool({connectionString: dbUrl});
       // ignore errors from *idle* connections
       pool.on('error', client => {});
+      pool.on('connect', async client => {
+        if (statementTimeout) {
+          await client.query(`set statement_timeout = ${statementTimeout}`);
+        }
+      });
       return pool;
     };
 
