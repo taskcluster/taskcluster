@@ -207,6 +207,12 @@ class Database {
         if (statementTimeout) {
           await client.query(`set statement_timeout = ${statementTimeout}`);
         }
+        // unconditionally apply a timeout for idle transactions. we should
+        // never be idle in a transaction (well, for more than few ms beteween
+        // statements), so this is set quite low.  Holding a transaction open
+        // can make locks pile up and also prevent vacuuming of tables, both
+        // leading to performance issues.
+        await client.query('set idle_in_transaction_session_timeout = 200');
       });
       return pool;
     };
