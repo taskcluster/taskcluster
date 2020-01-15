@@ -325,7 +325,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
       assert.equal(build.state, 'pending');
     });
 
-    test.only('valid pull_request (user is collaborator) creates a taskGroup', async function() {
+    test('valid pull_request (user is collaborator) creates a taskGroup', async function() {
       github.inst(5828).setRepoCollaborator({
         owner: 'TaskclusterRobot',
         repo: 'hooks-testing',
