@@ -1,7 +1,6 @@
 const {Pool} = require('pg');
 const {dollarQuote} = require('./util');
 const assert = require('assert').strict;
-const debug = require('debug')('taskcluster-lib-postgres');
 const {READ, WRITE, UNDEFINED_TABLE} = require('./constants');
 
 class Database {
@@ -233,11 +232,10 @@ class Database {
       } catch (err) {
         // show hints or details from this error in the debug log, to help
         // debugging issues..
-        if (err.hint) {
-          debug(`HINT: ${err.hint}`);
-        }
-        if (err.detail) {
-          debug(`DETAIL: ${err.detail}`);
+        for (let p of ['hint', 'detail', 'where', 'code']) {
+          if (err[p]) {
+            err.message += `\n${p.toUpperCase()}: ${err[p]}`;
+          }
         }
         throw err;
       }
@@ -255,7 +253,7 @@ class Database {
       try {
         const res = await client.query('select version from tcversion');
         if (res.rowCount !== 1) {
-          throw new Error('database corrupted; tcversion should hvae exactly one row');
+          throw new Error('database corrupted; tcversion should have exactly one row');
         }
         return res.rows[0].version;
       } catch (err) {
