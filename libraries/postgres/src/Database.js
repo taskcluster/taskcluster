@@ -37,8 +37,21 @@ class Database {
         }
 
         const placeholders = [...new Array(args.length).keys()].map(i => `$${i + 1}`).join(',');
-        const res = await this._withClient(mode, client => client.query(
-          `select * from "${name}"(${placeholders})`, args));
+        const res = await this._withClient(mode, async client => {
+          await client.query(mode === READ ? 'begin read only' : 'begin read write');
+          try {
+            let res = await client.query(`select * from "${name}"(${placeholders})`, args);
+            await client.query('commit');
+            return res;
+          } catch (err) {
+            try {
+              await client.query('rollback');
+            } catch (_) {
+              // ignore
+            }
+            throw err;
+          }
+        });
         return res.rows;
       };
     });

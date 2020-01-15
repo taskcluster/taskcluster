@@ -5,6 +5,7 @@ const {
   READ,
   WRITE,
   DUPLICATE_OBJECT,
+  READ_ONLY_SQL_TRANSACTION,
   UNDEFINED_COLUMN,
 } = require('..');
 const path = require('path');
@@ -38,6 +39,26 @@ helper.dbSuite(path.basename(__filename), function() {
           returns: 'table (total integer)',
           body: `begin
             return query select a+b+x as total from testing;
+          end`,
+        },
+        readonlywrites: {
+          description: 'a read-only method that writes',
+          mode: 'read',
+          serviceName: 'service-2',
+          args: '',
+          returns: 'void',
+          body: `begin
+            insert into testing values (1, 2), (3, 4);
+          end`,
+        },
+        fail: {
+          description: 'a method that just fails',
+          mode: 'read',
+          serviceName: 'service-2',
+          args: '',
+          returns: 'void',
+          body: `begin
+            raise exception 'uhoh' using hint = 'intentional error', errcode = '0A000';
           end`,
         },
       },
@@ -250,6 +271,20 @@ helper.dbSuite(path.basename(__filename), function() {
       await db.fns.testdata();
       const res = await db.fns.addup(13);
       assert.deepEqual(res.map(r => r.total).sort(), [16, 20]);
+    });
+
+    test('read-only methods are called in read-only transactions', async function() {
+      await Database.upgrade({schema, adminDbUrl: helper.dbUrl, usernamePrefix: 'test'});
+      db = await Database.setup({schema, readDbUrl: helper.dbUrl, writeDbUrl: helper.dbUrl, serviceName: 'service-1'});
+      await assert.rejects(() => db.fns.readonlywrites(),
+        err => err.code === READ_ONLY_SQL_TRANSACTION);
+    });
+
+    test('failing methods correctly reject', async function() {
+      await Database.upgrade({schema, adminDbUrl: helper.dbUrl, usernamePrefix: 'test'});
+      db = await Database.setup({schema, readDbUrl: helper.dbUrl, writeDbUrl: helper.dbUrl, serviceName: 'service-1'});
+      await assert.rejects(() => db.fns.fail(),
+        err => err.code === '0A000');
     });
 
     test('do not allow service A to call any methods for service B which have mode=WRITE', async function() {
