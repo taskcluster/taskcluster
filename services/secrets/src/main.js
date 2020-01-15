@@ -30,10 +30,11 @@ let load = loader({
   },
 
   db: {
-    requires: ['cfg'],
-    setup: ({cfg}) => tcdb.setup({
+    requires: ['process', 'cfg'],
+    setup: ({process, cfg}) => tcdb.setup({
       serviceName: 'secrets',
-      ...cfg.postgres}),
+      ...cfg.postgres,
+      statementTimeout: process === 'server' ? 30000 : 0}),
   },
 
   generateReferences: {

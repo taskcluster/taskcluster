@@ -5,6 +5,7 @@ const {
   READ,
   WRITE,
   DUPLICATE_OBJECT,
+  QUERY_CANCELED,
   READ_ONLY_SQL_TRANSACTION,
   UNDEFINED_COLUMN,
 } = require('..');
@@ -59,6 +60,16 @@ helper.dbSuite(path.basename(__filename), function() {
           returns: 'void',
           body: `begin
             raise exception 'uhoh' using hint = 'intentional error', errcode = '0A000';
+          end`,
+        },
+        slow: {
+          description: 'a method that takes a bit',
+          mode: 'read',
+          serviceName: 'service-2',
+          args: '',
+          returns: 'void',
+          body: `begin
+            perform pg_sleep(5);
           end`,
         },
       },
@@ -271,6 +282,19 @@ helper.dbSuite(path.basename(__filename), function() {
       await db.fns.testdata();
       const res = await db.fns.addup(13);
       assert.deepEqual(res.map(r => r.total).sort(), [16, 20]);
+    });
+
+    test('slow methods are aborted if statementTimeout is set', async function() {
+      await Database.upgrade({schema, adminDbUrl: helper.dbUrl, usernamePrefix: 'test'});
+      db = await Database.setup({
+        schema,
+        readDbUrl: helper.dbUrl,
+        writeDbUrl: helper.dbUrl,
+        serviceName: 'service-1',
+        statementTimeout: 100, // 0.1s
+      });
+      await assert.rejects(() => db.fns.slow(),
+        err => err.code === QUERY_CANCELED);
     });
 
     test('read-only methods are called in read-only transactions', async function() {
