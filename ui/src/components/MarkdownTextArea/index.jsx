@@ -1,5 +1,4 @@
 import React from 'react';
-import { node } from 'prop-types';
 import MuiMarkdownTextArea from '@mozilla-frontend-infra/components/MarkdownTextArea';
 import { withStyles } from '@material-ui/core/styles';
 
@@ -19,9 +18,5 @@ function MarkdownTextArea({ classes, ...props }) {
     />
   );
 }
-
-MarkdownTextArea.propTypes = {
-  children: node.isRequired,
-};
 
 export default withStyles(styles)(MarkdownTextArea);
