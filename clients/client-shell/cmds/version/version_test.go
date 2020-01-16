@@ -24,4 +24,14 @@ func TestVersionCommand(t *testing.T) {
 	printVersion(cmd, nil)
 
 	assert.Contains(buf.String(), VersionNumber, "VersionNumber not found in version output")
+
+	assert := assert.New(t)
+
+	buf, cmd := setUpCommand()
+
+	check(cmd, nil)
+
+	assert.Contains(buf.String(),"taskcluster", "Update command not returning a valid output")
+
+
 }
