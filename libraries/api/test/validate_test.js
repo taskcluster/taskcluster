@@ -1,7 +1,5 @@
 const request = require('superagent');
-const assert = require('assert');
-const APIBuilder = require('../');
-const helper = require('./helper');
+const assert = require('assert'); const APIBuilder = require('../'); const helper = require('./helper');
 const libUrls = require('taskcluster-lib-urls');
 const path = require('path');
 const SchemaSet = require('taskcluster-lib-validate');
@@ -129,6 +127,44 @@ suite(testing.suiteName(), function() {
     res.reply();
   });
 
+  builder.declare({
+    method: 'get',
+    route: '/test-double-json-send',
+    name: 'testDoubleJsonSend',
+    output: 'test-schema.yml',
+    category: 'API Library',
+    title: 'Test End-Point',
+    description: 'place to call to trigger a double send',
+  }, function(req, res) {
+    res.status(400).json({error: 'yep'});
+    res.status(200).reply({value: 1});
+  });
+
+  builder.declare({
+    method: 'get',
+    route: '/test-double-error-send',
+    name: 'testDoubleErrorSend',
+    output: 'test-schema.yml',
+    category: 'API Library',
+    title: 'Test End-Point',
+    description: 'place to call to trigger a double send',
+  }, function(req, res) {
+    res.reportError('InputError', 'uhoh', {});
+    res.status(200).reply({value: 1});
+  });
+
+  builder.declare({
+    method: 'get',
+    route: '/test-double-send',
+    name: 'testDoubleSend',
+    output: 'test-schema.yml',
+    category: 'API Library',
+    title: 'Test End-Point',
+    description: 'place to call to trigger a double send',
+  }, function(req, res) {
+    res.status(400).json('bad req');
+    res.status(200).reply({value: 1});
+  });
   // Test valid input
   test('input (valid)', function() {
     const url = u('/test-input');
@@ -295,5 +331,37 @@ suite(testing.suiteName(), function() {
       return;
     }
     assert(0, 'Did not get expected exception');
+  });
+  test('calling send twice with status json triggers an error', () => {
+    const url = u('/test-double-send');
+    return request.get(url).then(function(res) {
+      assert(false, 'the error didnt trigger');
+    }).catch(function (err) {
+      assert(true, 'Error did trigger');
+      assert(helper.monitorManager.messages[0].Fields.message === 'called send twice');
+    });
+  });
+
+  test('calling send twice with reportError triggers an Error', () => {
+
+    const url = u('/test-double-error-send');
+    return request.get(url).then((res) => {
+      assert(false, 'Error didn\'t trigger');
+    }).catch(() => {
+      assert(true, 'Error was triggered');
+      assert(helper.monitorManager.messages[0].Fields.message === 'called send twice');
+    });
+
+  });
+  test('calling send twice with json object triggers an Error', () => {
+
+    const url = u('/test-double-json-send');
+    return request.get(url).then((res) => {
+      assert(false, 'Error didn\'t trigger');
+    }).catch(() => {
+      assert(true, 'Error was triggered');
+      assert(helper.monitorManager.messages[0].Fields.message === 'called send twice');
+    });
+
   });
 });

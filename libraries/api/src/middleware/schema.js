@@ -25,7 +25,7 @@ const debug = Debug('api:schema');
  * Handlers may output errors using `req.json`, as `req.reply` will validate
  * against schema and always returns a 200 OK reply.
  */
-const validateSchemas = ({validator, absoluteSchemas, rootUrl, serviceName, entry}) => {
+const validateSchemas = ({validator, absoluteSchemas, rootUrl, serviceName, entry, monitor}) => {
   // convert relative schema references to id's
   const input = entry.input && !entry.skipInputValidation &&
     url.resolve(libUrls.schema(rootUrl, serviceName, ''), entry.input);
@@ -64,6 +64,9 @@ const validateSchemas = ({validator, absoluteSchemas, rootUrl, serviceName, entr
     // Add a reply method sending JSON replies, this will always reply with HTTP
     // code 200... errors should be sent with res.json(code, json)
     res.reply = (json) => {
+      if (res.headersSent) {
+        monitor.reportError(new Error('called send twice'));
+      }
       if (!req.public && !req.hasAuthed) {
         throw new Error('Deferred auth was never checked!');
       }
