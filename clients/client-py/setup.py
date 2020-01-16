@@ -27,7 +27,7 @@ install_requires = [
     'requests>=2.4.3',
     'mohawk>=0.3.4',
     'slugid>=2',
-    'taskcluster-urls>=10.1.0',
+    'taskcluster-urls>=12.1.0',
     'six>=1.10.0',
 ]
 
