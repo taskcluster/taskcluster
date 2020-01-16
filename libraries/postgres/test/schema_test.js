@@ -64,66 +64,7 @@ suite(path.basename(__filename), function() {
     });
   });
 
-  suite('_checkVersion', function() {
-    test('version field required', function() {
-      assert.throws(
-        () => Schema._checkVersion({migrationScript: 'yup', methods: {}}, '0001.yml'),
-        /version field missing/);
-    });
-
-    test('migrationScript field required', function() {
-      assert.throws(
-        () => Schema._checkVersion({version: 1, methods: {}}, '0001.yml'),
-        /migrationScript field missing/);
-    });
-
-    test('methods field required', function() {
-      assert.throws(
-        () => Schema._checkVersion({version: 1, migrationScript: 'yep'}, '0001.yml'),
-        /methods field missing/);
-    });
-
-    test('version does not match filename', function() {
-      assert.throws(
-        () => Schema._checkVersion({version: 2, migrationScript: 'yep', methods: {}}, '0001.yml'),
-        /must match version/);
-    });
-
-    test('method with extra fields', function() {
-      const methods = {
-        foo: {
-          mode: 'read',
-          args: 'void',
-          returns: 'void',
-          description: 'test',
-          serviceName: 'test',
-          body: 'test',
-          extra: 'test',
-        },
-      };
-      assert.throws(
-        () => Schema._checkVersion({version: 1, migrationScript: 'yep', methods}, '0001.yml'),
-        /unexpected or missing properties in method foo in 0001.yml/);
-    });
-
-    test('method changes mode', function() {
-      const methods = {
-        cApItAlLeTtErS: {
-          description: 'test',
-          mode: 'read',
-          serviceName: 'test',
-          args: 'x integer',
-          returns: 'void',
-        },
-      };
-
-      assert.throws(
-        () => Schema._checkVersion({version: 1, migrationScript: 'yep', methods}, '0001.yml'),
-        /db function method cApItAlLeTtErS in 0001.yml has capital letters/);
-    });
-  });
-
-  suite('_checkVersion', function() {
+  suite('_checkMethods', function() {
     const versions = v2overrides => [
       {
         version: 1,
