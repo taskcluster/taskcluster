@@ -349,7 +349,9 @@ suite(testing.suiteName(), function() {
       assert(false, 'Error didn\'t trigger');
     }).catch(() => {
       assert(true, 'Error was triggered');
-      assert(helper.monitorManager.messages[0].Fields.message === 'called send twice');
+      setTimeout( () => {
+        assert(helper.monitorManager.messages[0].Fields.message === 'called send twice');
+      }, 100);
     });
 
   });
@@ -360,7 +362,9 @@ suite(testing.suiteName(), function() {
       assert(false, 'Error didn\'t trigger');
     }).catch(() => {
       assert(true, 'Error was triggered');
-      assert(helper.monitorManager.messages[0].Fields.message === 'called send twice');
+      setTimeout( () => {
+        assert(helper.monitorManager.messages[0].Fields.message === 'called send twice');
+      }, 100);
     });
 
   });
