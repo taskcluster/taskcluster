@@ -4,7 +4,8 @@
   publish = "ui/build"
   # an exit-code of 1 indicates the contents have changed
   # netlify build will be skipped if the exit-code is 0
-  ignore = "git diff --quiet HEAD^ HEAD ui/"
+  # command will be run from the base directory (i.e., ui)
+  ignore = "git diff --quiet HEAD^ HEAD ."
 
 [build.environment]
   YARN_FLAGS = "--frozen-lockfile"
