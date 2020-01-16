@@ -3,6 +3,7 @@ const fs = require('fs');
 const assert = require('assert').strict;
 const yaml = require('js-yaml');
 const path = require('path');
+const Version = require('./Version');
 const {READ, WRITE} = require('./constants');
 
 class Schema{
@@ -13,12 +14,15 @@ class Schema{
 
   static fromSerializable(serializable) {
     assert.deepEqual(Object.keys(serializable).sort(), ['access', 'versions']);
-    return new Schema(serializable.versions, serializable.access);
+    return new Schema(
+      serializable.versions.map(s => Version.fromSerializable(s)),
+      serializable.access,
+    );
   }
 
   asSerializable() {
     return {
-      versions: this.versions,
+      versions: this.versions.map(v => v.asSerializable()),
       access: this.access,
     };
   }
@@ -38,8 +42,7 @@ class Schema{
         throw new Error(`${filename} is a directory`);
       }
 
-      const version = yaml.safeLoad(fs.readFileSync(filename));
-      Schema._checkVersion(version, filename);
+      const version = Version.fromYamlFile(filename);
       if (versions[version.version - 1]) {
         throw new Error(`duplicate version number ${version.version} in ${filename}`);
       }
@@ -57,31 +60,6 @@ class Schema{
     Schema._checkAccess(access);
 
     return new Schema(versions, access);
-  }
-
-  static _checkVersion(version, filename) {
-    assert(version.version, `version field missing in ${filename}`);
-    assert(version.migrationScript, `migrationScript field missing in ${filename}`);
-    assert(version.methods, `methods field missing in ${filename}`);
-
-    assert(Object.keys(version).length, 3, `unknown fields in ${filename}`);
-
-    const fileBase = path.basename(filename, '.yml');
-    assert.equal(version.version, Number(fileBase), `filename ${filename} must match version`);
-
-    Object.keys(version.methods).forEach(name => {
-      assert(!/.*[A-Z].*/.test(name), `db function method ${name} in ${filename} has capital letters`);
-      const method = version.methods[name];
-
-      assert.deepEqual(Object.keys(method).sort(), [
-        'args',
-        'body',
-        'description',
-        'mode',
-        'returns',
-        'serviceName',
-      ], `unexpected or missing properties in method ${name} in ${filename}`);
-    });
   }
 
   static _checkMethods(versions) {
