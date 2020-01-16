@@ -1,7 +1,7 @@
 [build]
   base    = "ui"
   command = "GENERATE_ENV_JS=1 yarn build"
-  publish = "ui/build"
+  publish = "build"
 
 [build.environment]
   YARN_FLAGS = "--frozen-lockfile"
