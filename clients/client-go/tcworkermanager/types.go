@@ -15,11 +15,20 @@ type (
 
 		// Instance identity document that is obtained by
 		// curl http://169.254.169.254/latest/dynamic/instance-identity/document on the instance
-		Document json.RawMessage `json:"document"`
+		Document string `json:"document"`
 
 		// The signature for instance identity document. Can be obtained by
 		// curl http://169.254.169.254/latest/dynamic/instance-identity/signature on the instance
 		Signature string `json:"signature"`
+	}
+
+	// Proof that this call is coming from the worker identified by the other fields.
+	// The form of this proof varies depending on the provider type.
+	AzureProviderType struct {
+
+		// Attested data document that is obtained by
+		// curl http://169.254.169.254/metadata/attested/document on the instance
+		Document string `json:"document"`
 	}
 
 	// The credentials the worker
@@ -94,6 +103,7 @@ type (
 		//   * GoogleProviderType
 		//   * StaticProviderType1
 		//   * AwsProviderType
+		//   * AzureProviderType
 		WorkerIdentityProof json.RawMessage `json:"workerIdentityProof"`
 
 		// The ID of this worker pool (of the form `providerId/workerType` for compatibility)

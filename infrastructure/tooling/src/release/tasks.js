@@ -3,6 +3,8 @@ const {ChangeLog} = require('../changelog');
 const {
   ensureTask,
   gitLsFiles,
+  gitRemoteRev,
+  gitDescribe,
   gitIsDirty,
   gitCommit,
   gitTag,
@@ -16,6 +18,8 @@ const {
   removeRepoFile,
   REPO_ROOT,
 } = require('../utils');
+
+const UPSTREAM_REMOTE = 'git@github.com:taskcluster/taskcluster';
 
 module.exports = ({tasks, cmdOptions, credentials}) => {
   ensureTask(tasks, {
@@ -73,10 +77,35 @@ module.exports = ({tasks, cmdOptions, credentials}) => {
   });
 
   ensureTask(tasks, {
+    title: 'Check Repo is Up To Date with Upstream master',
+    requires: [],
+    provides: [
+      'repo-up-to-date',
+    ],
+    locks: ['git'],
+    run: async (requirements, utils) => {
+      const { revision: localRevision } = await gitDescribe({dir: REPO_ROOT, utils});
+      const { revision: remoteRevision } = await gitRemoteRev({
+        dir: REPO_ROOT,
+        remote: UPSTREAM_REMOTE,
+        ref: 'master',
+        utils,
+      });
+      if (localRevision !== remoteRevision) {
+        throw new Error([
+          `The current git working copy (${localRevision}) is not up to date with the upstream ` +
+          `repo (${remoteRevision}). Pull the latest changes and try again.`,
+        ].join(' '));
+      }
+    },
+  });
+
+  ensureTask(tasks, {
     title: 'Update Version in Repo',
     requires: [
       'release-version',
       'repo-clean',
+      'repo-up-to-date',
     ],
     provides: [
       'version-updated',
@@ -156,6 +185,8 @@ module.exports = ({tasks, cmdOptions, credentials}) => {
     requires: [
       'changelog',
       'release-version',
+      'repo-clean',
+      'repo-up-to-date',
     ],
     provides: [
       'changed-files',

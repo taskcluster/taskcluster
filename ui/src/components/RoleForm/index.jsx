@@ -282,7 +282,6 @@ export default class RoleForm extends Component {
               spanProps={{
                 className: classNames(classes.fab, classes.saveRoleSpan),
               }}
-              requiresAuth
               tooltipOpen
               onClick={this.handleSaveRole}
               className={classes.saveIcon}

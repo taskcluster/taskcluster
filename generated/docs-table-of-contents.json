@@ -2802,13 +2802,35 @@
                 },
                 "name": "logs",
                 "next": {
-                  "path": "reference/core/worker-manager/google",
-                  "title": "Google Provider Type"
+                  "path": "reference/core/worker-manager/azure",
+                  "title": "Azure Provider Type"
                 },
                 "path": "reference/core/worker-manager/logs",
                 "prev": {
                   "path": "reference/core/worker-manager/api",
                   "title": "api"
+                },
+                "up": {
+                  "path": "reference/core/worker-manager/README",
+                  "title": "worker-manager"
+                }
+              },
+              {
+                "children": [
+                ],
+                "data": {
+                  "order": 10,
+                  "title": "Azure Provider Type"
+                },
+                "name": "azure",
+                "next": {
+                  "path": "reference/core/worker-manager/google",
+                  "title": "Google Provider Type"
+                },
+                "path": "reference/core/worker-manager/azure",
+                "prev": {
+                  "path": "reference/core/worker-manager/logs",
+                  "title": "logs"
                 },
                 "up": {
                   "path": "reference/core/worker-manager/README",
@@ -2829,8 +2851,8 @@
                 },
                 "path": "reference/core/worker-manager/google",
                 "prev": {
-                  "path": "reference/core/worker-manager/logs",
-                  "title": "logs"
+                  "path": "reference/core/worker-manager/azure",
+                  "title": "Azure Provider Type"
                 },
                 "up": {
                   "path": "reference/core/worker-manager/README",

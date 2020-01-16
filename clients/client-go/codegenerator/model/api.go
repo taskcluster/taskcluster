@@ -359,8 +359,10 @@ func (entry *APIEntry) generateDirectMethod(apiName string) string {
 
 func (entry *APIEntry) generateSignedURLMethod(apiName string) string {
 	// if no required scopes, no reason to provide a signed url
-	// method, since no auth is required, so unsigned url already works
-	if entry.Scopes.Type == "" {
+	// method, since no auth is required, so unsigned url already works,
+	// except for TestAuthenticateGet, which can be usefully used to test
+	// with signed URLs
+	if entry.Scopes.Type == "" && entry.MethodName != "TestAuthenticateGet" {
 		return ""
 	}
 	comment := "// Returns a signed URL for " + entry.MethodName + ", valid for the specified duration.\n"

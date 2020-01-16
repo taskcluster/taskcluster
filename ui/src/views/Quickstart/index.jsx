@@ -340,6 +340,7 @@ export default class QuickStart extends Component {
     return (
       <Dashboard
         title="GitHub Quickstart"
+        disableTitleFormatting
         helpView={
           <HelpView
             description="Create a configuration file and

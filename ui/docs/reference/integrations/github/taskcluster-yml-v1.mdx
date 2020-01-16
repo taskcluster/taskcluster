@@ -41,6 +41,8 @@ The `pullRequests` policy controls this behavior:
 
 Github [defines collaborators](https://developer.github.com/v3/repos/collaborators/#list-collaborators) as "outside collaborators, organization members with access through team memberships, organization members with access through default organization permissions, and organization owners."
 
+Please note that only the user or organization authoring the request is being checked, even if the event itself comes from another user (for example, if the PR was opened by a non-collaborator, or from a fork in a non-collaborator organization, closing the PR or editing it by a collaborator will not result in a build in Taskcluster).
+
 Example:
 ```yaml
 policy:

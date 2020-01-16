@@ -3,6 +3,29 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v24.2.0
+
+▶ [minor] [bug 1600966](http://bugzil.la/1600966)
+Adds a provider for azure vm instances to worker-manager.
+
+▶ [patch] 
+The Python client now normalizes the root URL in `optionsFromEnvironment()`.
+
+▶ [patch] [#2269](https://github.com/taskcluster/taskcluster/issues/2269)
+Links to specific log lines now autoscroll to correct location.
+
+▶ Additional changes not described here: [#2266](https://github.com/taskcluster/taskcluster/issues/2266), [#2232](https://github.com/taskcluster/taskcluster/issues/2232).
+
+## v24.1.10
+
+▶ [patch] [#2031](https://github.com/taskcluster/taskcluster/issues/2031)
+Taskcluster UI revamped the date picker component to allow selecting the hour and the minute in addition to the date.
+
+▶ [patch] [bug 1608176](http://bugzil.la/1608176)
+The go client's `client.SignedURL(..)` function can now accept and sign full URLs in its first argument.  This allows signing arbitrary URLs, even if they are not on the same RootURL as the client.
+
+▶ Additional changes not described here: [bug 1606948](http://bugzil.la/1606948), [#2201](https://github.com/taskcluster/taskcluster/issues/2201).
+
 ## v24.1.9
 
 ▶ [patch] [bug 1598649](http://bugzil.la/1598649)

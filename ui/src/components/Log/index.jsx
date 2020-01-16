@@ -162,8 +162,17 @@ export default class Log extends Component {
 
   state = {
     lineNumber: null,
-    follow: true,
+    follow: null,
+    followPref: null,
   };
+
+  async componentDidMount() {
+    const followPref = await storage.getItem(FOLLOW_STORAGE_KEY);
+
+    this.setState({
+      followPref: Boolean(followPref),
+    });
+  }
 
   getHighlightFromHash() {
     const hasHighlight = LINE_NUMBER_MATCH.exec(this.props.location.hash);
@@ -174,7 +183,7 @@ export default class Log extends Component {
   }
 
   getScrollToLine() {
-    if (typeof this.state.follow === 'boolean') {
+    if (this.state.follow !== null) {
       return null;
     }
 
@@ -189,7 +198,7 @@ export default class Log extends Component {
     }
   }
 
-  handleFollowClick = () => {
+  handleFollowClick = async () => {
     const follow = !this.state.follow;
 
     storage.setItem(FOLLOW_STORAGE_KEY, follow);
@@ -232,18 +241,20 @@ export default class Log extends Component {
   };
 
   shouldStartFollowing() {
-    if (typeof this.state.follow === 'boolean') {
-      return this.state.follow;
-    }
+    const { follow, followPref } = this.state;
 
     if (this.getScrollToLine()) {
       return false;
     }
 
-    const pref = storage.getItem(FOLLOW_STORAGE_KEY);
+    if (follow !== null) {
+      return this.state.follow;
+    }
 
-    if (typeof pref === 'boolean') {
-      return pref;
+    if (followPref) {
+      this.setState({ follow: true });
+
+      return true;
     }
 
     return false;
@@ -318,14 +329,14 @@ export default class Log extends Component {
                   title: follow && stream ? 'Unfollow Log' : 'Follow Log',
                 }}
                 className={classNames(classes.logToolbarButton, {
-                  [classes.followButtonFollowing]: follow && stream,
+                  [classes.followButtonFollowing]: follow,
                 })}
                 color={follow && stream ? 'inherit' : 'secondary'}
                 onClick={this.handleFollowClick}
                 {...FollowLogButtonRest}>
                 <ArrowDownBoldCircleOutlineIcon
                   className={classNames({
-                    [classes.followLogIconFollowing]: follow && stream,
+                    [classes.followLogIconFollowing]: follow,
                   })}
                 />
               </Button>

@@ -1,10 +1,10 @@
 {
   "name": "taskcluster",
-  "version": "24.1.9",
+  "version": "24.2.0",
   "private": true,
   "engine-strict": true,
   "engines": {
-    "node": "12.14.0",
+    "node": "12.14.1",
     "yarn": "^1.21.0"
   },
   "workspaces": [
@@ -12,6 +12,9 @@
     "services/*"
   ],
   "dependencies": {
+    "@azure/arm-compute": "^12.0.0",
+    "@azure/arm-network": "^19.1.0",
+    "@azure/ms-rest-nodeauth": "^3.0.0",
     "@hapi/hawk": "^7.1.2",
     "@octokit/rest": "^16.15.0",
     "@sentry/node": "^5.6.1",
@@ -69,6 +72,7 @@
     "mz": "^2.7.0",
     "netmask": "^1.0.5",
     "node-fetch": "^2.6.0",
+    "node-forge": "^0.9.1",
     "nodemailer": "^6.0.0",
     "oauth2orize": "^1.11.0",
     "p-queue": "^6.1.1",
@@ -113,7 +117,6 @@
   "devDependencies": {
     "@azure/arm-resources": "^2.0.0",
     "@azure/arm-storage": "^11.0.0",
-    "@azure/ms-rest-nodeauth": "^3.0.0",
     "@babel/core": "^7.2.2",
     "@babel/plugin-proposal-class-properties": "^7.4.4",
     "apollo-cache-inmemory": "^1.6.3",
