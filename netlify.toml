@@ -2,6 +2,9 @@
   base    = "ui"
   command = "GENERATE_ENV_JS=1 yarn build"
   publish = "ui/build"
+  # an exit-code of 1 indicates the contents have changed
+  # netlify build will be skipped if the exit-code is 0
+  ignore = "git diff --quiet HEAD^ HEAD ui/"
 
 [build.environment]
   YARN_FLAGS = "--frozen-lockfile"
