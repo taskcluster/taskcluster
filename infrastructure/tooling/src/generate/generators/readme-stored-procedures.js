@@ -8,7 +8,7 @@ exports.tasks = [{
   provides: ['readme-stored-procedures'],
   run: async (requirements, utils) => {
     const schema = Schema.fromSerializable(requirements['db-schema-serializable']);
-    const methods = schema.allMethods();
+    const methods = schema.allMethods().filter(method => !method.deprecated);
     const serviceNames = [...new Set([...methods].map(({ serviceName }) => serviceName).sort())];
     const services = new Map();
 

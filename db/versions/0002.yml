@@ -41,6 +41,21 @@ methods:
       begin
         delete from secrets where secrets.name = remove_secret.name;
       end
+  set_secret:
+    description: |-
+      Set the secret associated with the given name.
+      If the secret already exists, it is updated instead.
+    mode: write
+    serviceName: secrets
+    args: name text, secret text
+    returns: void
+    deprecated: true
+    body: |-
+      begin
+        insert into secrets values (set_secret.name, set_secret.secret, now() + interval '1000 years')
+        on conflict (name) do
+        update set secret=EXCLUDED.secret, expires=now() + interval '1000 years';
+      end
   set_secret_with_expires:
     description: |-
       Set the secret associated with the given name.

@@ -72,6 +72,17 @@ helper.dbSuite(path.basename(__filename), function() {
             perform pg_sleep(5);
           end`,
         },
+        old: {
+          description: 'a method that is deprecated',
+          mode: 'read',
+          deprecated: true,
+          serviceName: 'service-2',
+          args: '',
+          returns: 'void',
+          body: `begin
+            perform pg_sleep(5);
+          end`,
+        },
       },
     },
   ];
@@ -272,6 +283,12 @@ helper.dbSuite(path.basename(__filename), function() {
       await db.fns.testdata();
       const res = await db.fns.addup(13);
       assert.deepEqual(res.map(r => r.total).sort(), [16, 20]);
+    });
+
+    test('setup does not create deprecated methods', async function() {
+      await Database.upgrade({schema, adminDbUrl: helper.dbUrl, usernamePrefix: 'test'});
+      db = await Database.setup({schema, readDbUrl: helper.dbUrl, writeDbUrl: helper.dbUrl, serviceName: 'service-1'});
+      assert(!db.fns.old);
     });
 
     test('slow methods are aborted if statementTimeout is set', async function() {

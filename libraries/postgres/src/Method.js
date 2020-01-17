@@ -22,10 +22,11 @@ class Method {
       args: this.args,
       returns: this.returns,
       body: this.body,
+      deprecated: this.deprecated,
     };
   }
 
-  constructor(name, {description, mode, serviceName, args, returns, body}) {
+  constructor(name, {description, mode, serviceName, args, returns, body, deprecated}) {
     this.name = name;
     this.description = description;
     this.mode = mode;
@@ -33,6 +34,7 @@ class Method {
     this.args = args;
     this.returns = returns;
     this.body = body;
+    this.deprecated = Boolean(deprecated);
   }
 
   _check(name, content, filename) {
@@ -42,11 +44,11 @@ class Method {
     assert(this.args !== undefined, `method ${name} in ${filename} is missing args (use an empty string?)`);
     assert(this.returns, `method ${name} in ${filename} is missing returns (use void?)`);
     assert(this.body, `method ${name} in ${filename} is missing body`);
-    assert.deepEqual(
-      Object.keys(content).sort(),
-      ['description', 'mode', 'serviceName', 'args', 'returns', 'body'].sort(),
-      `unexpected properties for method ${name} in ${filename}`);
-
+    for (let k of Object.keys(content)) {
+      if (!['description', 'mode', 'serviceName', 'args', 'returns', 'body', 'deprecated'].includes(k)) {
+        throw new Error(`unexpected properties for method ${name} in ${filename}`);
+      }
+    }
   }
 
   checkUpdateFrom(name, existing, version) {

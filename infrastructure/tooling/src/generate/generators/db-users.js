@@ -8,7 +8,7 @@ exports.tasks = [{
   provides: [],
   run: async (requirements, utils) => {
     const schema = Schema.fromSerializable(requirements['db-schema-serializable']);
-    const services = Object.keys(schema.access).sort();
+    const services = schema.access.serviceNames().sort();
 
     const docsFile = path.join('ui', 'docs', 'manual', 'deploying', 'database.mdx');
     const content = await readRepoFile(docsFile);
@@ -32,7 +32,7 @@ exports.tasks = [{
   provides: [],
   run: async (requirements, utils) => {
     const schema = Schema.fromSerializable(requirements['db-schema-serializable']);
-    const services = Object.keys(schema.access).sort();
+    const services = schema.access.serviceNames().sort();
 
     const setupFile = path.join('db', 'test-setup.sh');
     const content = await readRepoFile(setupFile);

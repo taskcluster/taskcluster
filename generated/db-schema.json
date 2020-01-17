@@ -12,6 +12,7 @@
         "get_secret": {
           "args": "name text",
           "body": "begin\n  return query select secrets.secret from secrets where secrets.name = get_secret.name;\nend",
+          "deprecated": false,
           "description": "Get the single secret associated with a given secret name, or an empty result if no such secret exists.",
           "mode": "read",
           "returns": "table (secret text)",
@@ -20,6 +21,7 @@
         "list_secrets": {
           "args": "",
           "body": "begin\n  return query select secrets.name as name from secrets;\nend",
+          "deprecated": false,
           "description": "List the names of all secrets.",
           "mode": "read",
           "returns": "table (name text)",
@@ -28,6 +30,7 @@
         "remove_secret": {
           "args": "name text",
           "body": "begin\n  delete from secrets where secrets.name = remove_secret.name;\nend",
+          "deprecated": false,
           "description": "Delete the secret associated with the given name.",
           "mode": "write",
           "returns": "void",
@@ -36,6 +39,7 @@
         "set_secret": {
           "args": "name text, secret text",
           "body": "begin\n  insert into secrets values (set_secret.name, set_secret.secret)\n  on conflict (name) do\n    update set secret=EXCLUDED.secret;\nend",
+          "deprecated": false,
           "description": "Set the secret associated with the given name.\nIf the secret already exists, it is updated instead.",
           "mode": "write",
           "returns": "void",
@@ -50,6 +54,7 @@
         "get_secret_with_expires": {
           "args": "name text",
           "body": "begin\n  return query select secrets.secret, secrets.expires from secrets where secrets.name = get_secret_with_expires.name;\nend",
+          "deprecated": false,
           "description": "Get the single secret associated with a given secret name, or an empty result if no such secret exists.\nNote that this may include rows with an expiration in the past, as rows are only deleted occasionally.",
           "mode": "read",
           "returns": "table (secret text, expires timestamp)",
@@ -58,6 +63,7 @@
         "list_secrets_with_expires": {
           "args": "",
           "body": "begin\n  return query select secrets.name as name, secrets.expires as expires from secrets;\nend",
+          "deprecated": false,
           "description": "List the names and expiration dates of all secrets.\nNote that this may include rows with an expiration in the past, as rows are only deleted occasionally.",
           "mode": "read",
           "returns": "table (name text, expires timestamp)",
@@ -66,7 +72,17 @@
         "remove_secret": {
           "args": "name text",
           "body": "begin\n  delete from secrets where secrets.name = remove_secret.name;\nend",
+          "deprecated": false,
           "description": "Delete the secret associated with some key.",
+          "mode": "write",
+          "returns": "void",
+          "serviceName": "secrets"
+        },
+        "set_secret": {
+          "args": "name text, secret text",
+          "body": "begin\n  insert into secrets values (set_secret.name, set_secret.secret, now() + interval '1000 years')\n  on conflict (name) do\n  update set secret=EXCLUDED.secret, expires=now() + interval '1000 years';\nend",
+          "deprecated": true,
+          "description": "Set the secret associated with the given name.\nIf the secret already exists, it is updated instead.",
           "mode": "write",
           "returns": "void",
           "serviceName": "secrets"
@@ -74,6 +90,7 @@
         "set_secret_with_expires": {
           "args": "name text, secret text, expires timestamp",
           "body": "begin\n  insert into secrets values (\n    set_secret_with_expires.name,\n    set_secret_with_expires.secret,\n    set_secret_with_expires.expires\n  )\n  on conflict on constraint secrets_pkey do\n    update set secret=EXCLUDED.secret, expires=EXCLUDED.expires;\nend",
+          "deprecated": false,
           "description": "Set the secret associated with the given name.\nIf the secret already exists, it is updated instead.",
           "mode": "write",
           "returns": "void",

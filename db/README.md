@@ -18,7 +18,6 @@ This directory defines the Taskcluster database:
 | list_secrets | read |  | table (name text) | List the names of all secrets. |
 | list_secrets_with_expires | read |  | table (name text, expires timestamp) | List the names and expiration dates of all secrets.<br />Note that this may include rows with an expiration in the past, as rows are only deleted occasionally. |
 | remove_secret | write | name text | void | Delete the secret associated with some key. |
-| set_secret | write | name text, secret text | void | Set the secret associated with the given name.<br />If the secret already exists, it is updated instead. |
 | set_secret_with_expires | write | name text, secret text, expires timestamp | void | Set the secret associated with the given name.<br />If the secret already exists, it is updated instead. |
 <!-- SP END -->
 

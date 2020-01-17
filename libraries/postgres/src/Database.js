@@ -27,19 +27,24 @@ class Database {
   _createProcs({schema, serviceName}) {
     // generate a JS method for each DB method defined in the schema
     this.fns = {};
-    schema.allMethods().forEach(({ name, mode, serviceName: procServiceName }) => {
-      this.fns[name] = async (...args) => {
-        if (serviceName !== procServiceName && mode === WRITE) {
+    schema.allMethods().forEach(method => {
+      // ignore deprecated methods
+      if (method.deprecated) {
+        return;
+      }
+
+      this.fns[method.name] = async (...args) => {
+        if (serviceName !== method.serviceName && method.mode === WRITE) {
           throw new Error(
             `${serviceName} is not allowed to call any methods that do not belong to this service and which have mode=WRITE`,
           );
         }
 
         const placeholders = [...new Array(args.length).keys()].map(i => `$${i + 1}`).join(',');
-        const res = await this._withClient(mode, async client => {
-          await client.query(mode === READ ? 'begin read only' : 'begin read write');
+        const res = await this._withClient(method.mode, async client => {
+          await client.query(method.mode === READ ? 'begin read only' : 'begin read write');
           try {
-            let res = await client.query(`select * from "${name}"(${placeholders})`, args);
+            let res = await client.query(`select * from "${method.name}"(${placeholders})`, args);
             await client.query('commit');
             return res;
           } catch (err) {
