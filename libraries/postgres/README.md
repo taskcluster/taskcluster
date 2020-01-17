@@ -136,6 +136,10 @@ methods:
     args: thing_id text
     returns: table (thing_property text)
 
+    # If true, this method won't be available to be called at Database.funcs.  It will
+    # still exist in the database!  Defaults to false, so this is omitted unless needed
+    deprecated: true
+
     # The body of the stored function.  This is passed verbatim to `CREATE FUNCTION`.
     body: |-
       begin
