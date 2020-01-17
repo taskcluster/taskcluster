@@ -50,6 +50,8 @@ suite(path.basename(__filename), function() {
             version: 1,
             methods: {
               reset: {
+                description: 'reset',
+                serviceName: 'testy',
                 mode: 'write',
                 args: '',
                 returns: 'void',

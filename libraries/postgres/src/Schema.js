@@ -42,7 +42,8 @@ class Schema{
         throw new Error(`${filename} is a directory`);
       }
 
-      const version = Version.fromYamlFile(filename);
+      const content = yaml.safeLoad(fs.readFileSync(filename));
+      const version = Version.fromYamlFile(content, filename);
       if (versions[version.version - 1]) {
         throw new Error(`duplicate version number ${version.version} in ${filename}`);
       }
