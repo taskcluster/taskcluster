@@ -1,14 +1,19 @@
 const path = require('path');
 const assert = require('assert').strict;
-const yaml = require('js-yaml');
-const fs = require('fs');
+const Method = require('./Method');
+
+const objMap = (obj, fn) => Object.fromEntries(Object.entries(obj).map(fn));
 
 class Version {
-  static fromYamlFile(filename) {
-    const content = yaml.safeLoad(fs.readFileSync(filename));
+  static fromYamlFile(content, filename) {
     Version._checkContent(content, filename);
 
-    return new Version(content.version, content.migrationScript, content.methods);
+    return new Version(
+      content.version,
+      content.migrationScript,
+      objMap(content.methods,
+        ([name, meth]) => [name, Method.fromYamlFile(name, meth, filename)]),
+    );
   }
 
   static fromSerializable(serializable) {
@@ -17,14 +22,19 @@ class Version {
         throw new Error(`unexpected version key ${k}`);
       }
     }
-    return new Version(serializable.version, serializable.migrationScript, serializable.methods);
+    return new Version(
+      serializable.version,
+      serializable.migrationScript,
+      objMap(serializable.methods,
+        ([name, meth]) => [name, Method.fromSerializable(name, meth)]),
+    );
   }
 
   asSerializable() {
     return {
       version: this.version,
       migrationScript: this.migrationScript,
-      methods: this.methods,
+      methods: objMap(this.methods, ([name, meth]) => [name, meth.asSerializable()]),
     };
   }
 
