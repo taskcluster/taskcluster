@@ -53,22 +53,7 @@ class Version {
 
     const fileBase = path.basename(filename, '.yml');
     assert.equal(content.version, Number(fileBase), `filename ${filename} must match version`);
-
-    Object.keys(content.methods).forEach(name => {
-      assert(!/.*[A-Z].*/.test(name), `db function method ${name} in ${filename} has capital letters`);
-      const method = content.methods[name];
-
-      assert.deepEqual(Object.keys(method).sort(), [
-        'args',
-        'body',
-        'description',
-        'mode',
-        'returns',
-        'serviceName',
-      ], `unexpected or missing properties in method ${name} in ${filename}`);
-    });
   }
-
 }
 
 module.exports = Version;

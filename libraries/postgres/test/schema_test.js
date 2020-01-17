@@ -1,4 +1,4 @@
-const {Schema, READ} = require('..');
+const {Schema} = require('..');
 const path = require('path');
 const assert = require('assert').strict;
 
@@ -15,11 +15,8 @@ suite(path.basename(__filename), function() {
       const ver1 = sch.getVersion(1);
       assert.deepEqual(Object.keys(ver1.methods), ['get_secret']);
 
-      assert.deepEqual([...sch.allMethods()].sort(),
-        [
-          {name: 'get_secret', mode: READ, serviceName: 'secrets', args: 'name text', returns: 'table (secret text)', description: 'test'},
-          {name: 'list_secrets', mode: READ, serviceName: 'secrets', args: '', returns: 'table (name text, expires timestamp)', description: 'test' },
-        ]);
+      assert.deepEqual([...sch.allMethods().map(meth => meth.name)].sort(),
+        ['get_secret', 'list_secrets']);
     });
 
     test('disallow duplicate method names', function () {
@@ -66,56 +63,61 @@ suite(path.basename(__filename), function() {
     });
   });
 
-  suite('_checkMethods', function() {
-    const versions = v2overrides => [
-      {
-        version: 1,
-        methods: {
-          whatever: {
-            description: 'test',
-            mode: 'read',
-            serviceName: 'test',
-            args: 'x integer',
-            returns: 'void',
+  suite('_checkMethodUpdates', function() {
+    const versions = v2overrides => Schema.fromSerializable({
+      versions: [
+        {
+          version: 1,
+          methods: {
+            whatever: {
+              description: 'test',
+              mode: 'read',
+              serviceName: 'test',
+              args: 'x integer',
+              returns: 'void',
+              body: 'hi',
+            },
           },
         },
-      },
-      {
-        version: 2,
-        methods: {
-          whatever: {
-            description: 'test',
-            mode: 'read',
-            serviceName: 'test',
-            args: 'x integer',
-            returns: 'void',
-            ...v2overrides,
+        {
+          version: 2,
+          methods: {
+            whatever: {
+              description: 'test',
+              mode: 'read',
+              serviceName: 'test',
+              args: 'x integer',
+              returns: 'void',
+              body: 'hi',
+              ...v2overrides,
+            },
           },
         },
-      },
-    ];
+      ],
+      access: {},
+    }).versions;
 
     test('method changes mode', function() {
       assert.throws(
-        () => Schema._checkMethods(versions({mode: 'write'})),
+        () => Schema._checkMethodUpdates(versions({mode: 'write'})),
         /method whatever changed mode in version 2/);
     });
 
     test('method changes serviceName', function() {
       assert.throws(
-        () => Schema._checkMethods(versions({serviceName: 'queue'})),
+        () => Schema._checkMethodUpdates(versions({serviceName: 'queue'})),
         /method whatever changed serviceName in version 2/);
     });
 
     test('method changes args', function() {
       assert.throws(
-        () => Schema._checkMethods(versions({args: 'x text'})),
+        () => Schema._checkMethodUpdates(versions({args: 'x text'})),
         /method whatever changed args in version 2/);
     });
 
     test('method changes returns', function() {
       assert.throws(
-        () => Schema._checkMethods(versions({returns: 'text'})),
+        () => Schema._checkMethodUpdates(versions({returns: 'text'})),
         /method whatever changed returns in version 2/);
     });
   });
@@ -150,10 +152,7 @@ suite(path.basename(__filename), function() {
 
   test('allMethods', function() {
     const sch = Schema.fromDbDirectory(path.join(__dirname, 'db-simple'));
-    assert.deepEqual([...sch.allMethods()].sort(),
-      [
-        {name: 'get_secret', mode: READ, serviceName: 'secrets', args: 'name text', returns: 'table (secret text)', description: 'test'},
-        {name: 'list_secrets', mode: READ, serviceName: 'secrets', args: '', returns: 'table (name text, expires timestamp)', description: 'test'},
-      ]);
+    assert.deepEqual([...sch.allMethods().map(meth => meth.name)].sort(),
+      ['get_secret', 'list_secrets']);
   });
 });

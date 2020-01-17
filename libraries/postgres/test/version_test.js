@@ -27,38 +27,5 @@ suite(path.basename(__filename), function() {
         () => Version._checkContent({version: 2, migrationScript: 'yep', methods: {}}, '0001.yml'),
         /must match version/);
     });
-
-    test('method with extra fields', function() {
-      const methods = {
-        foo: {
-          mode: 'read',
-          args: 'void',
-          returns: 'void',
-          description: 'test',
-          serviceName: 'test',
-          body: 'test',
-          extra: 'test',
-        },
-      };
-      assert.throws(
-        () => Version._checkContent({version: 1, migrationScript: 'yep', methods}, '0001.yml'),
-        /unexpected or missing properties in method foo in 0001.yml/);
-    });
-
-    test('method changes mode', function() {
-      const methods = {
-        cApItAlLeTtErS: {
-          description: 'test',
-          mode: 'read',
-          serviceName: 'test',
-          args: 'x integer',
-          returns: 'void',
-        },
-      };
-
-      assert.throws(
-        () => Version._checkContent({version: 1, migrationScript: 'yep', methods}, '0001.yml'),
-        /db function method cApItAlLeTtErS in 0001.yml has capital letters/);
-    });
   });
 });
