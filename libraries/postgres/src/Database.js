@@ -87,7 +87,7 @@ class Database {
       showProgress('...updating users');
       await db._withClient('admin', async client => {
         // make sure all services have basic levels of access..
-        for (let serviceName of Object.keys(schema.access)) {
+        for (let serviceName of schema.access.serviceNames()) {
           const username = `${usernamePrefix}_${serviceName.replace(/-/g, '_')}`;
           // always grant read access to tcversion
           await client.query(`grant select on tcversion to ${username}`);
@@ -128,11 +128,11 @@ class Database {
         res.rows.map(row => `${row.grantee}: ${row.privilege_type} on ${row.table_name}`));
 
       const expectedPrivs = new Set();
-      for (let serviceName of Object.keys(schema.access)) {
+      for (let serviceName of schema.access.serviceNames()) {
         const username = `${usernamePrefix}_${serviceName.replace(/-/g, '_')}`;
 
         // calculate the expected privs based on access.yml
-        const tables = schema.access[serviceName].tables;
+        const tables = schema.access.tables(serviceName);
         Object.entries(tables).forEach(([table, mode]) => {
           if (mode === 'read') {
             expectedPrivs.add(`${username}: SELECT on ${table}`);

@@ -122,34 +122,6 @@ suite(path.basename(__filename), function() {
     });
   });
 
-  suite('_checkAccess', function() {
-    test('not an object', function() {
-      assert.throws(
-        () => Schema._checkAccess([]),
-        /should define an object/);
-    });
-    test('not an object of objects', function() {
-      assert.throws(
-        () => Schema._checkAccess({test: []}),
-        /should define an object/);
-    });
-    test('service has keys aside from tables', function() {
-      assert.throws(
-        () => Schema._checkAccess({test: {views: []}}),
-        /should only have a `tables` property/);
-    });
-    test('service tables is an array', function() {
-      assert.throws(
-        () => Schema._checkAccess({test: {tables: []}}),
-        /should be an object/);
-    });
-    test('service tables has invalid mode', function() {
-      assert.throws(
-        () => Schema._checkAccess({test: {tables: {test: 'admin'}}}),
-        /should be read or write/);
-    });
-  });
-
   test('allMethods', function() {
     const sch = Schema.fromDbDirectory(path.join(__dirname, 'db-simple'));
     assert.deepEqual([...sch.allMethods().map(meth => meth.name)].sort(),
