@@ -14,6 +14,12 @@ suite(path.basename(__filename), function() {
       body: 'select *',
     };
 
+    test('name must be lowercase', function() {
+      assert.throws(
+        () => Method.fromYamlFile('tEsTmEthOd', method, 'file.yml'),
+        /has capital letters/);
+    });
+
     test('description must exist', function() {
       assert.throws(
         () => Method.fromYamlFile('testmethod', omit(method, ['description']), 'file.yml'),
@@ -54,6 +60,12 @@ suite(path.basename(__filename), function() {
       assert.throws(
         () => Method.fromYamlFile('testmethod', omit(method, ['body']), 'file.yml'),
         /missing body/);
+    });
+
+    test('extra props forbidden', function() {
+      assert.throws(
+        () => Method.fromYamlFile('testmethod', {...method, uhoh: 10}, 'file.yml'),
+        /unexpected properties/);
     });
   });
 });

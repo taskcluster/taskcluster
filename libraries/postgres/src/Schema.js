@@ -4,7 +4,6 @@ const assert = require('assert').strict;
 const yaml = require('js-yaml');
 const path = require('path');
 const Version = require('./Version');
-const {READ, WRITE} = require('./constants');
 
 class Schema{
   constructor(versions, access) {
@@ -55,7 +54,7 @@ class Schema{
       assert(versions[i], `version ${i + 1} is missing`);
     }
 
-    Schema._checkMethods(versions);
+    Schema._checkMethodUpdates(versions);
 
     const access = yaml.safeLoad(fs.readFileSync(path.join(directory, 'access.yml')));
     Schema._checkAccess(access);
@@ -63,19 +62,15 @@ class Schema{
     return new Schema(versions, access);
   }
 
-  static _checkMethods(versions) {
+  static _checkMethodUpdates(versions) {
     const methods = new Map();
     for (let version of versions) {
-      for (let [methodName, {mode, serviceName, args, returns}] of Object.entries(version.methods)) {
-        // ensure that quoting of identifiers is correct
-        if (methods.has(methodName)) {
-          const existing = methods.get(methodName);
-          assert.equal(existing.mode, mode, `method ${methodName} changed mode in version ${version.version}`);
-          assert.equal(existing.serviceName, serviceName, `method ${methodName} changed serviceName in version ${version.version}`);
-          assert.equal(existing.args, args, `method ${methodName} changed args in version ${version.version}`);
-          assert.equal(existing.returns, returns, `method ${methodName} changed returns in version ${version.version}`);
+      for (let [name, method] of Object.entries(version.methods)) {
+        if (methods.has(name)) {
+          const existing = methods.get(name);
+          method.checkUpdateFrom(name, existing, version);
         } else {
-          methods.set(methodName, {mode, serviceName, args, returns});
+          methods.set(name, method);
         }
       }
     }
@@ -110,22 +105,11 @@ class Schema{
   }
 
   allMethods() {
-    const modes = {read: READ, write: WRITE};
-
-    const map = this.versions.reduce((acc, version) => {
-      Object.entries(version.methods).forEach(([name, { mode, serviceName, args, returns, description }]) => {
-        acc.set(name, {
-          name,
-          mode: modes[mode],
-          serviceName,
-          args,
-          returns,
-          description,
-        });
-      });
-
-      return acc;
-    }, new Map());
+    const map = this.versions.reduce(
+      (acc, version) => {
+        Object.entries(version.methods).forEach(([name, method]) => acc.set(name, method));
+        return acc;
+      }, new Map());
 
     return [...map.values()];
   }
