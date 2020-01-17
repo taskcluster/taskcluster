@@ -1,6 +1,7 @@
 const assert = require('assert').strict;
 const op = require('./entityops');
 const types = require('./entitytypes');
+const keys = require('./entitykeys');
 const {
   DUPLICATE_TABLE,
   NUMERIC_VALUE_OUT_OF_RANGE,
@@ -10,7 +11,7 @@ const {
 
 class Entity {
   static op = op;
-
+  static keys = keys;
   static types = types;
 
   constructor(properties, options = {}) {
@@ -115,11 +116,10 @@ class Entity {
     }).join(' and ');
   }
 
-  // TODO: Fix this. This is totally wrong :-)
   static calculateId(properties) {
     return {
-      partitionKey: properties[this.partitionKey],
-      rowKey: properties[this.rowKey],
+      partitionKey: properties[this.partitionKey.key],
+      rowKey: properties[this.rowKey.key],
     }
   }
 
@@ -257,8 +257,8 @@ class Entity {
     }
 
     ConfiguredEntity.properties = configureOptions.properties;
-    ConfiguredEntity.partitionKey = configureOptions.partitionKey;
-    ConfiguredEntity.rowKey = configureOptions.rowKey;
+    ConfiguredEntity.partitionKey = configureOptions.partitionKey(configureOptions.properties);
+    ConfiguredEntity.rowKey = configureOptions.rowKey(configureOptions.properties);
     // TODO: more configureOptions
     return ConfiguredEntity;
   }

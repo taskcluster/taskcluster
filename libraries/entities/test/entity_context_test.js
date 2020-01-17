@@ -29,8 +29,8 @@ helper.dbSuite(path.basename(__filename), function() {
     test('Entity.configure().setup()', async function() {
       db = await helper.withDb({ schema, serviceName });
       const entity = Entity.configure({
-        partitionKey: 'taskId',
-        rowKey: 'provisionerId',
+        partitionKey: Entity.keys.StringKey('taskId'),
+        rowKey: Entity.keys.StringKey('provisionerId'),
         properties,
       });
       entity.setup({ tableName: 'test_entities', db, serviceName });
@@ -39,8 +39,8 @@ helper.dbSuite(path.basename(__filename), function() {
     test('Entity.configure().setup() with context', async function() {
       db = await helper.withDb({ schema, serviceName });
       const entity = Entity.configure({
-        partitionKey: 'taskId',
-        rowKey: 'provisionerId',
+        partitionKey: Entity.keys.StringKey('taskId'),
+        rowKey: Entity.keys.StringKey('provisionerId'),
         properties,
         context: ['config', 'maxCount'],
       });
@@ -59,8 +59,8 @@ helper.dbSuite(path.basename(__filename), function() {
         workerType: 'string',
       };
       const entity = Entity.configure({
-        partitionKey: 'taskId',
-        rowKey: 'provisionerId',
+        partitionKey: Entity.keys.StringKey('taskId'),
+        rowKey: Entity.keys.StringKey('provisionerId'),
         properties,
         context: ['config', 'maxCount'],
       });
@@ -79,8 +79,8 @@ helper.dbSuite(path.basename(__filename), function() {
     test('Entity.configure().setup() with undeclared context', async function() {
       db = await helper.withDb({ schema, serviceName });
       const entity = Entity.configure({
-        partitionKey: 'taskId',
-        rowKey: 'provisionerId',
+        partitionKey: Entity.keys.StringKey('taskId'),
+        rowKey: Entity.keys.StringKey('provisionerId'),
         properties,
         context: ['config'],
       });
@@ -96,8 +96,8 @@ helper.dbSuite(path.basename(__filename), function() {
     test('Entity.configure().setup() with missing context', async function() {
       db = await helper.withDb({ schema, serviceName });
       const entity = Entity.configure({
-        partitionKey: 'taskId',
-        rowKey: 'provisionerId',
+        partitionKey: Entity.keys.StringKey('taskId'),
+        rowKey: Entity.keys.StringKey('provisionerId'),
         properties,
         context: ['config'],
       });
@@ -117,8 +117,8 @@ helper.dbSuite(path.basename(__filename), function() {
         assert.throws(
           () => {
             Entity.configure({
-              partitionKey: 'taskId',
-              rowKey: 'provisionerId',
+              partitionKey: Entity.keys.StringKey('taskId'),
+              rowKey: Entity.keys.StringKey('provisionerId'),
               properties,
               context: [key],
             });

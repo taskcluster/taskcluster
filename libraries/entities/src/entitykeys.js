@@ -1,6 +1,8 @@
+const assert = require('assert');
+
 class StringKey {
   constructor(mapping, key) {
-    assert(mapping[this.key], `key ${key} is not defined in mapping`);
+    assert(mapping[key], `key ${key} is not defined in mapping`);
 
     this.key = key;
     this.mapping = mapping;
@@ -10,7 +12,7 @@ class StringKey {
 
 class DescendingIntegerKey {
   constructor(mapping, key) {
-    assert(mapping[this.key], `key ${key} is not defined in mapping`);
+    assert(mapping[key], `key ${key} is not defined in mapping`);
 
     this.key = key;
     this.type = mapping[key];
@@ -20,7 +22,7 @@ class DescendingIntegerKey {
 
 class AscendingIntegerKey {
   constructor(mapping, key) {
-    assert(mapping[this.key], `key ${key} is not defined in mapping`);
+    assert(mapping[key], `key ${key} is not defined in mapping`);
 
     this.key = key;
     this.type = mapping[key];
@@ -72,7 +74,7 @@ class HashKey {
 }
 
 module.exports = {
-  StringKey: key => {
+  StringKey: function(key) {
     const keys = [...arguments];
 
     assert.equal(keys.length, 1, 'StringKey takes exactly one key argument');
@@ -80,22 +82,26 @@ module.exports = {
 
     return mapping => new StringKey(mapping, key);
   },
-  DescendingIntegerKey: key => mapping => new DescendingIntegerKey(mapping, key),
-  AscendingIntegerKey: key => mapping => new AscendingIntegerKey(mapping, key),
-  ConstantKey: constant => {
-    assert.equal(typeof constant, 'string', `ConstantKey takes a string`);
-    return mapping => new ConstantKey(key);
+  DescendingIntegerKey: function(key) {
+    return mapping => new DescendingIntegerKey(mapping, key);
   },
-  CompositeKey: () => {
+  AscendingIntegerKey: function(key) {
+    return mapping => new AscendingIntegerKey(mapping, key);
+  },
+  ConstantKey: function(constant) {
+    assert.equal(typeof constant, 'string', `ConstantKey takes a string`);
+    return mapping => new ConstantKey(constant);
+  },
+  CompositeKey: function() {
     const keys = [...arguments];
 
     keys.forEach(function(key) {
       assert.equal(typeof key, 'string', 'CompositeKey takes strings as arguments');
     });
 
-    return mapping => new CompositeKey(mapping, keys)
+    return mapping => new CompositeKey(mapping, keys);
   },
-  HashKey: () => {
+  HashKey: function() {
     const keys = [...arguments];
 
     keys.forEach(function(key) {
