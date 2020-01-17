@@ -71,16 +71,6 @@ class HashKey {
   }
 }
 
-class StringKey {
-  constructor(mapping, key) {
-    assert(mapping[this.key], `key ${key} is not defined in mapping`);
-
-    this.key = key;
-    this.mapping = mapping;
-    this.covers = [key];
-  }
-}
-
 module.exports = {
   StringKey: key => {
     const keys = [...arguments];

@@ -38,7 +38,7 @@ helper.dbSuite(path.basename(__filename), function() {
       const entry = {
         taskId,
         provisionerId,
-        workerType: '789'
+        workerType: '789',
       };
 
       entity.setup({ tableName: 'test_entities', db, serviceName });
@@ -71,7 +71,7 @@ helper.dbSuite(path.basename(__filename), function() {
       const entry = {
         taskId,
         provisionerId,
-        workerType: '789'
+        workerType: '789',
       };
 
       entity.setup({ tableName: 'test_entities', db, serviceName });

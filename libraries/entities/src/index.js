@@ -126,21 +126,8 @@ class Entity {
     });
   }
 
-  async removeTable() {
-    try {
-      await this.db.fns[`${this.tableName}_remove_table`]();
-    } catch (err) {
-      if (err.code !== UNDEFINED_TABLE) {
-        throw err;
-      }
-
-      const e = new Error('Resource not found');
-
-      e.code = 'ResourceNotFound';
-      e.statusCode = 404;
-      throw e;
-    }
-  }
+  /* NOOP */
+  async removeTable() {}
 
   /* NOOP */
   async ensureTable() {}

@@ -2,7 +2,6 @@ const helper = require('./helper');
 const { Schema } = require('taskcluster-lib-postgres');
 const { Entity } = require('taskcluster-lib-entities');
 const path = require('path');
-const assert = require('assert').strict;
 
 helper.dbSuite(path.basename(__filename), function() {
   let db;
@@ -36,24 +35,6 @@ helper.dbSuite(path.basename(__filename), function() {
       entity.setup({ tableName: 'test_entities', db, serviceName });
 
       await entity.removeTable();
-    });
-    test('remove table (again, should error)', async function() {
-      db = await helper.withDb({ schema, serviceName });
-      entity.setup({ tableName: 'test_entities', db, serviceName });
-
-      // first time, should be okay
-      await entity.removeTable();
-
-      // second time, should error
-      await assert.rejects(
-        async () => { await entity.removeTable(); },
-        (err) => {
-          assert.equal(err.code, 'ResourceNotFound');
-          assert.equal(err.statusCode, 404);
-
-          return true;
-        },
-      );
     });
   });
 });
