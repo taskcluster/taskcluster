@@ -205,20 +205,19 @@ helper.dbSuite(path.basename(__filename), function() {
       await db.close();
     });
 
+    const withAccess = access => Schema.fromSerializable({access, versions: []});
+
     test('empty access.yml', async function() {
-      const schema = {access: {service1: {tables: {}}, service2: {tables: {}}}, versions: []};
+      const schema = withAccess({service1: {tables: {}}, service2: {tables: {}}});
       await Database._checkPermissions({db, schema, usernamePrefix: 'test'});
       // does not fail
     });
 
     test('permissions missing', async function() {
-      const schema = {
-        access: {
-          service1: {tables: {foo: 'read'}},
-          service2: {tables: {foo: 'write'}},
-        },
-        versions: [],
-      };
+      const schema = withAccess({
+        service1: {tables: {foo: 'read'}},
+        service2: {tables: {foo: 'write'}},
+      });
       await assert.rejects(() => Database._checkPermissions({db, schema, usernamePrefix: 'test'}),
         /missing database user grant: test_service1: SELECT on foo/);
     });
@@ -229,13 +228,10 @@ helper.dbSuite(path.basename(__filename), function() {
         await client.query('grant select, insert, update, delete on foo to test_service2');
         await client.query('grant select on bar to test_service2');
       });
-      const schema = {
-        access: {
-          service1: {tables: {foo: 'read'}},
-          service2: {tables: {foo: 'write'}},
-        },
-        versions: [],
-      };
+      const schema = withAccess({
+        service1: {tables: {foo: 'read'}},
+        service2: {tables: {foo: 'write'}},
+      });
       await assert.rejects(() => Database._checkPermissions({db, schema, usernamePrefix: 'test'}),
         /unexpected database user grant: test_service2: SELECT on bar/);
     });
@@ -247,13 +243,10 @@ helper.dbSuite(path.basename(__filename), function() {
         // grant access only to the `barId` column on bar
         await client.query('grant select(barId) on bar to test_service2');
       });
-      const schema = {
-        access: {
-          service1: {tables: {foo: 'read'}},
-          service2: {tables: {foo: 'write'}},
-        },
-        versions: [],
-      };
+      const schema = withAccess({
+        service1: {tables: {foo: 'read'}},
+        service2: {tables: {foo: 'write'}},
+      });
       await assert.rejects(() => Database._checkPermissions({db, schema, usernamePrefix: 'test'}),
         /unexpected database user grant: test_service2: SELECT on bar/);
     });
@@ -263,13 +256,10 @@ helper.dbSuite(path.basename(__filename), function() {
         await client.query('grant select on foo to test_service1');
         await client.query('grant select, insert, update, delete on foo to test_service2');
       });
-      const schema = {
-        access: {
-          service1: {tables: {foo: 'read'}},
-          service2: {tables: {foo: 'write'}},
-        },
-        versions: [],
-      };
+      const schema = withAccess({
+        service1: {tables: {foo: 'read'}},
+        service2: {tables: {foo: 'write'}},
+      });
       await Database._checkPermissions({db, schema, usernamePrefix: 'test'});
       // does not fail
     });

@@ -1,9 +1,9 @@
-const {isPlainObject} = require('lodash');
 const fs = require('fs');
 const assert = require('assert').strict;
 const yaml = require('js-yaml');
 const path = require('path');
 const Version = require('./Version');
+const Access = require('./Access');
 
 class Schema{
   constructor(versions, access) {
@@ -15,14 +15,14 @@ class Schema{
     assert.deepEqual(Object.keys(serializable).sort(), ['access', 'versions']);
     return new Schema(
       serializable.versions.map(s => Version.fromSerializable(s)),
-      serializable.access,
+      Access.fromSerializable(serializable.access),
     );
   }
 
   asSerializable() {
     return {
       versions: this.versions.map(v => v.asSerializable()),
-      access: this.access,
+      access: this.access.asSerializable(),
     };
   }
 
@@ -56,13 +56,15 @@ class Schema{
 
     Schema._checkMethodUpdates(versions);
 
-    const access = yaml.safeLoad(fs.readFileSync(path.join(directory, 'access.yml')));
-    Schema._checkAccess(access);
+    const content = yaml.safeLoad(fs.readFileSync(path.join(directory, 'access.yml')));
+    const access = Access.fromYamlFile(content, 'access.yml');
 
     return new Schema(versions, access);
   }
 
   static _checkMethodUpdates(versions) {
+    // verify that no method declarations incorrectly try to change fixed attributes
+    // of those methods
     const methods = new Map();
     for (let version of versions) {
       for (let [name, method] of Object.entries(version.methods)) {
@@ -74,20 +76,6 @@ class Schema{
         }
       }
     }
-  }
-
-  static _checkAccess(access) {
-    assert(isPlainObject(access), 'access.yml should define an object');
-    Object.keys(access).forEach(serviceName => {
-      const serviceAccess = access[serviceName];
-      assert(isPlainObject(serviceAccess), 'each service in access.yml should define an object');
-      assert.deepEqual(Object.keys(serviceAccess).sort(), ['tables'],
-        'each service in access.yml should only have a `tables` property');
-      assert(isPlainObject(serviceAccess.tables), `${serviceName}.tables should be an object`);
-      Object.entries(serviceAccess.tables).forEach(([table, mode]) => {
-        assert(['read', 'write'].includes(mode), `${serviceName}.tables.${table} should be read or write`);
-      });
-    });
   }
 
   getVersion(version) {

@@ -34,8 +34,7 @@ const resetDb = async ({testDbUrl}) => {
     const schema = Schema.fromDbDirectory(path.join(__dirname, '../../../db'));
 
     // and reset/create a user for each one..
-    const services = Object.keys(schema.access);
-    for (let serviceName of services) {
+    for (let serviceName of schema.access.serviceNames()) {
       const serviceUsername = `test_${serviceName.replace(/-/g, '_')}`;
       await ignorePgErrors(client.query(`drop owned by ${serviceUsername}`), PG_ERR_ROLE_DOES_NOT_EXIST);
       await ignorePgErrors(client.query(`drop user ${serviceUsername}`), PG_ERR_ROLE_DOES_NOT_EXIST);
