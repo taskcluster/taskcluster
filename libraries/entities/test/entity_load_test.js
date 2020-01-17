@@ -23,7 +23,7 @@ helper.dbSuite(path.basename(__filename), function() {
     provisionerId: Entity.types.String,
     workerType: Entity.types.String,
   };
-  const entity = Entity.configure({
+  const configuredTestTable = Entity.configure({
     partitionKey: 'taskId',
     rowKey: 'provisionerId',
     properties,
@@ -41,11 +41,11 @@ helper.dbSuite(path.basename(__filename), function() {
         workerType: '789',
       };
 
-      entity.setup({ tableName: 'test_entities', db, serviceName });
+      const TestTable = configuredTestTable.setup({ tableName: 'test_entities', db, serviceName });
 
-      await entity.create(entry);
+      await TestTable.create(entry);
 
-      const result = await entity.load({ taskId, provisionerId });
+      const result = await TestTable.load({ taskId, provisionerId });
 
       assert.equal(result.taskId, taskId);
       assert.equal(result.provisionerId, provisionerId);
@@ -54,11 +54,11 @@ helper.dbSuite(path.basename(__filename), function() {
       db = await helper.withDb({ schema, serviceName });
       const taskId = '123';
       const provisionerId = '456';
-      entity.setup({ tableName: 'test_entities', db, serviceName });
+      const TestTable = configuredTestTable.setup({ tableName: 'test_entities', db, serviceName });
 
       await assert.rejects(
         async () => {
-          await entity.load({ taskId, provisionerId });
+          await TestTable.load({ taskId, provisionerId });
         },
         (err => {
           assert.equal(err.code, "ResourceNotFound");
@@ -72,9 +72,9 @@ helper.dbSuite(path.basename(__filename), function() {
       db = await helper.withDb({ schema, serviceName });
       const taskId = '123';
       const provisionerId = '456';
-      entity.setup({ tableName: 'test_entities', db, serviceName });
+      const TestTable = configuredTestTable.setup({ tableName: 'test_entities', db, serviceName });
 
-      const result = await entity.load({ taskId, provisionerId }, true);
+      const result = await TestTable.load({ taskId, provisionerId }, true);
 
       assert.equal(result, null);
     });

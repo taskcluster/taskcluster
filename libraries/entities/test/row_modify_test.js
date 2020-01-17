@@ -24,7 +24,7 @@ helper.dbSuite(path.basename(__filename), function() {
     provisionerId: Entity.types.String,
     workerType: Entity.types.String,
   };
-  const entity = Entity.configure({
+  const configuredTestTable = Entity.configure({
     partitionKey: 'taskId',
     rowKey: 'provisionerId',
     properties,
@@ -32,32 +32,33 @@ helper.dbSuite(path.basename(__filename), function() {
   const serviceName = 'test-entities';
 
   suite('row modify', function() {
-    test('modify entry (synchronous modifier)', async function() {
+
+    test('modify entry', async function() {
       db = await helper.withDb({ schema, serviceName });
       const taskId = '123';
       const provisionerId = '456';
-      let entry = {
+      const entry = {
         taskId,
         provisionerId,
-        workerType: '567',
+        workerType: '789',
       };
 
-      entity.setup({ tableName: 'test_entities', db, serviceName });
+      const TestTable = configuredTestTable.setup({ tableName: 'test_entities', db, serviceName });
 
-      const createdEntry = await entity.create(entry);
+      await TestTable.create(entry);
 
-      let result = await entity.load({ taskId, provisionerId });
+      let result = await TestTable.load({ taskId, provisionerId });
 
-      assert.equal(result.workerType, entry.workerType);
+      assert.equal(result.taskId, taskId);
+      assert.equal(result.provisionerId, provisionerId);
 
-      await createdEntry.modify((entry) => {
-        entry.workerType = 'foo';
-      });
+      await result.modify(row => row.workerType = 'modified');
 
-      result = await entity.load({ taskId, provisionerId });
+      result = await TestTable.load({ taskId, provisionerId });
 
-      assert.deepEqual(result.properties.workerType, 'foo');
+      assert.equal(result.workerType, 'modified');
     });
+
     test('modify entry without argument (synchronous modifier)', async function() {
       db = await helper.withDb({ schema, serviceName });
       const taskId = '123';
@@ -68,20 +69,21 @@ helper.dbSuite(path.basename(__filename), function() {
         workerType: '567',
       };
 
-      entity.setup({ tableName: 'test_entities', db, serviceName });
+      const TestTable = configuredTestTable.setup({ tableName: 'test_entities', db, serviceName });
 
-      const createdEntry = await entity.create(entry);
+      const createdEntry = await TestTable.create(entry);
 
       await createdEntry.modify(function (){
         this.workerType = 'foo';
       });
 
-      const result = await entity.load({ taskId, provisionerId });
+      const result = await TestTable.load({ taskId, provisionerId });
 
       assert.equal(result.taskId, taskId);
       assert.equal(result.provisionerId, provisionerId);
       assert.equal(result.workerType, 'foo');
     });
+
     test('modify entry (asynchronous modifier)', async function () {
       db = await helper.withDb({ schema, serviceName });
       const taskId = '123';
@@ -92,16 +94,16 @@ helper.dbSuite(path.basename(__filename), function() {
         workerType: '567',
       };
 
-      entity.setup({ tableName: 'test_entities', db, serviceName });
+      const TestTable = configuredTestTable.setup({ tableName: 'test_entities', db, serviceName });
 
-      const createdEntry = await entity.create(entry);
+      const createdEntry = await TestTable.create(entry);
 
       await createdEntry.modify(async (entry) => {
         await testing.sleep(100);
         entry.workerType = 'foo';
       });
 
-      const result = await entity.load({ taskId, provisionerId });
+      const result = await TestTable.load({ taskId, provisionerId });
 
       assert.equal(result.taskId, taskId);
       assert.equal(result.provisionerId, provisionerId);
@@ -117,16 +119,16 @@ helper.dbSuite(path.basename(__filename), function() {
         workerType: '567',
       };
 
-      entity.setup({ tableName: 'test_entities', db, serviceName });
+      const TestTable = configuredTestTable.setup({ tableName: 'test_entities', db, serviceName });
 
-      const createdEntry = await entity.create(entry);
+      const createdEntry = await TestTable.create(entry);
 
       await createdEntry.modify(async function () {
         await testing.sleep(100);
         this.workerType = 'foo';
       });
 
-      const result = await entity.load({ taskId, provisionerId });
+      const result = await TestTable.load({ taskId, provisionerId });
 
       assert.equal(result.taskId, taskId);
       assert.equal(result.provisionerId, provisionerId);

@@ -23,7 +23,7 @@ helper.dbSuite(path.basename(__filename), function() {
     provisionerId: Entity.types.String,
     workerType: Entity.types.String,
   };
-  const entity = Entity.configure({
+  const configuredTestTable = Entity.configure({
     partitionKey: 'taskId',
     rowKey: 'provisionerId',
     properties,
@@ -41,9 +41,9 @@ helper.dbSuite(path.basename(__filename), function() {
         workerType: '567',
       };
 
-      entity.setup({ tableName: 'test_entities', db, serviceName });
+      const TestTable = configuredTestTable.setup({ tableName: 'test_entities', db, serviceName });
 
-      const createResult = await entity.create(entry);
+      const createResult = await TestTable.create(entry);
       const result = await createResult.reload();
 
       assert.equal(result, false);
@@ -59,11 +59,11 @@ helper.dbSuite(path.basename(__filename), function() {
         workerType: '567',
       };
 
-      entity.setup({ tableName: 'test_entities', db, serviceName });
+      const TestTable = configuredTestTable.setup({ tableName: 'test_entities', db, serviceName });
 
-      const createResult = await entity.create(entry);
+      const createResult = await TestTable.create(entry);
 
-      await entity.modify({ ...entry, workerType: 'foo' });
+      await createResult.modify(entry => ({ ...entry, workerType: 'foo' }));
 
       const result = await createResult.reload();
 

@@ -22,7 +22,7 @@ helper.dbSuite(path.basename(__filename), function() {
     provisionerId: Entity.types.String,
     workerType: Entity.types.String,
   };
-  const entity = Entity.configure({
+  const configuredTestTable = Entity.configure({
     partitionKey: 'taskId',
     rowKey: 'provisionerId',
     properties,
@@ -32,16 +32,16 @@ helper.dbSuite(path.basename(__filename), function() {
   suite('ensure table', function() {
     test('ensure table', async function() {
       db = await helper.withDb({ schema, serviceName });
-      entity.setup({ tableName: 'test_entities', db, serviceName });
+      const TestTable = configuredTestTable.setup({ tableName: 'test_entities', db, serviceName });
 
-      await entity.ensureTable();
+      await TestTable.ensureTable();
     });
     test('ensure table (again)', async function() {
       db = await helper.withDb({ schema, serviceName });
-      entity.setup({ tableName: 'test_entities', db, serviceName });
+      const TestTable = configuredTestTable.setup({ tableName: 'test_entities', db, serviceName });
 
-      await entity.ensureTable();
-      await entity.ensureTable();
+      await TestTable.ensureTable();
+      await TestTable.ensureTable();
     });
   });
 });

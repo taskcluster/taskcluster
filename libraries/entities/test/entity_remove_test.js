@@ -23,7 +23,7 @@ helper.dbSuite(path.basename(__filename), function() {
     provisionerId: Entity.types.String,
     workerType: Entity.types.String,
   };
-  const entity = Entity.configure({
+  const configuredTestTable = Entity.configure({
     partitionKey: 'taskId',
     rowKey: 'provisionerId',
     properties,
@@ -41,20 +41,20 @@ helper.dbSuite(path.basename(__filename), function() {
         workerType: '789',
       };
 
-      entity.setup({ tableName: 'test_entities', db, serviceName });
+      const TestTable = configuredTestTable.setup({ tableName: 'test_entities', db, serviceName });
 
-      await entity.create(entry);
+      await TestTable.create(entry);
 
-      let result = await entity.load({ taskId, provisionerId });
+      let result = await TestTable.load({ taskId, provisionerId });
 
       assert.equal(result.taskId, taskId);
       assert.equal(result.provisionerId, provisionerId);
 
-      await entity.remove({ taskId, provisionerId });
+      await TestTable.remove({ taskId, provisionerId });
 
       await assert.rejects(
         async () => {
-          await entity.load({ taskId, provisionerId });
+          await TestTable.load({ taskId, provisionerId });
         },
         err => {
           assert.equal(err.code, 'ResourceNotFound');
@@ -74,10 +74,10 @@ helper.dbSuite(path.basename(__filename), function() {
         workerType: '789',
       };
 
-      entity.setup({ tableName: 'test_entities', db, serviceName });
+      const TestTable = configuredTestTable.setup({ tableName: 'test_entities', db, serviceName });
 
-      await entity.create(entry);
-      const result = await entity.remove(entry, true);
+      await TestTable.create(entry);
+      const result = await TestTable.remove(entry, true);
 
       assert.equal(result, true);
     });
@@ -86,9 +86,9 @@ helper.dbSuite(path.basename(__filename), function() {
       const taskId = '123';
       const provisionerId = '456';
 
-      entity.setup({ tableName: 'test_entities', db, serviceName });
+      const TestTable = configuredTestTable.setup({ tableName: 'test_entities', db, serviceName });
 
-      const result = await entity.remove({ taskId, provisionerId }, true);
+      const result = await TestTable.remove({ taskId, provisionerId }, true);
 
       assert.equal(result, false);
     });
@@ -97,11 +97,11 @@ helper.dbSuite(path.basename(__filename), function() {
       const taskId = '123';
       const provisionerId = '456';
 
-      entity.setup({ tableName: 'test_entities', db, serviceName });
+      const TestTable = configuredTestTable.setup({ tableName: 'test_entities', db, serviceName });
 
       await assert.rejects(
         async () => {
-          await entity.remove({ taskId, provisionerId }, false);
+          await TestTable.remove({ taskId, provisionerId }, false);
         },
         err => {
           assert.equal(err.statusCode, 404);

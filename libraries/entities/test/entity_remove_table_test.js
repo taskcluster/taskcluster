@@ -22,7 +22,7 @@ helper.dbSuite(path.basename(__filename), function() {
     provisionerId: Entity.types.String,
     workerType: Entity.types.String,
   };
-  const entity = Entity.configure({
+  const configuredTestTable = Entity.configure({
     partitionKey: 'taskId',
     rowKey: 'task',
     properties,
@@ -32,9 +32,9 @@ helper.dbSuite(path.basename(__filename), function() {
   suite('remove table', function() {
     test('remove table', async function() {
       db = await helper.withDb({ schema, serviceName });
-      entity.setup({ tableName: 'test_entities', db, serviceName });
+      const TestTable = configuredTestTable.setup({ tableName: 'test_entities', db, serviceName });
 
-      await entity.removeTable();
+      await TestTable.removeTable();
     });
   });
 });

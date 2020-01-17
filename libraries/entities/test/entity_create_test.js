@@ -23,7 +23,7 @@ helper.dbSuite(path.basename(__filename), function() {
     provisionerId: Entity.types.String,
     workerType: Entity.types.String,
   };
-  const entity = Entity.configure({
+  const configuredTestTable = Entity.configure({
     partitionKey: 'taskId',
     rowKey: 'provisionerId',
     properties,
@@ -41,10 +41,14 @@ helper.dbSuite(path.basename(__filename), function() {
         workerType: '567',
       };
 
-      entity.setup({ tableName: 'test_entities', db, serviceName });
-      await entity.create(entry);
+      const TestTable = configuredTestTable.setup({
+        tableName: 'test_entities',
+        db,
+        serviceName,
+      });
+      await TestTable.create(entry);
 
-      const result = await entity.load({ taskId, provisionerId });
+      const result = await TestTable.load({ taskId, provisionerId });
 
       assert.equal(result.taskId, taskId);
       assert.equal(result.provisionerId, provisionerId);
@@ -62,18 +66,18 @@ helper.dbSuite(path.basename(__filename), function() {
         workerType: '567',
       };
 
-      entity.setup({ tableName: 'test_entities', db, serviceName });
-      await entity.create(entry);
+      const TestTable = configuredTestTable.setup({ tableName: 'test_entities', db, serviceName });
+      await TestTable.create(entry);
 
-      const old = await entity.load({ taskId, provisionerId });
+      const old = await TestTable.load({ taskId, provisionerId });
       entry = {
         ...entry,
         workerType: 'foo',
       };
 
-      await entity.create(entry, true);
+      await TestTable.create(entry, true);
 
-      const result = await entity.load({ taskId, provisionerId });
+      const result = await TestTable.load({ taskId, provisionerId });
 
       assert.equal(old.workerType, '567');
       assert.equal(result.workerType, 'foo');
@@ -90,10 +94,10 @@ helper.dbSuite(path.basename(__filename), function() {
         workerType: '567',
       };
 
-      entity.setup({ tableName: 'test_entities', db, serviceName });
-      await entity.create(entry, true);
+      const TestTable = configuredTestTable.setup({ tableName: 'test_entities', db, serviceName });
+      await TestTable.create(entry, true);
 
-      const result = await entity.load({ taskId, provisionerId });
+      const result = await TestTable.load({ taskId, provisionerId });
 
       assert.equal(result.workerType, '567');
     });
@@ -108,9 +112,9 @@ helper.dbSuite(path.basename(__filename), function() {
         workerType: '567',
       };
 
-      entity.setup({ tableName: 'test_entities', db, serviceName });
-      await entity.create(entry);
-      await entity.load({ taskId, provisionerId });
+      const TestTable = configuredTestTable.setup({ tableName: 'test_entities', db, serviceName });
+      await TestTable.create(entry);
+      await TestTable.load({ taskId, provisionerId });
 
       entry = {
         ...entry,
@@ -119,7 +123,7 @@ helper.dbSuite(path.basename(__filename), function() {
 
       await assert.rejects(
         async () => {
-          await entity.create(entry, false);
+          await TestTable.create(entry, false);
         },
         // already exists
         err => {

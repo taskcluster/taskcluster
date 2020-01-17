@@ -35,6 +35,7 @@ helper.dbSuite(path.basename(__filename), function() {
       });
       entity.setup({ tableName: 'test_entities', db, serviceName });
     });
+
     test('Entity.configure().setup() with context', async function() {
       db = await helper.withDb({ schema, serviceName });
       const entity = Entity.configure({
@@ -122,7 +123,7 @@ helper.dbSuite(path.basename(__filename), function() {
               context: [key],
             });
           },
-          /is reserved and cannot be specified in options.context/,
+          /is reserved and cannot be specified in context/,
         );
       });
     });

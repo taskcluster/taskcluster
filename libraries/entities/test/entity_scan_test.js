@@ -23,17 +23,17 @@ helper.dbSuite(path.basename(__filename), function() {
     provisionerId: Entity.types.String,
     workerType: Entity.types.String,
   };
-  const entity = Entity.configure({
+  const configuredTestTable = Entity.configure({
     partitionKey: 'taskId',
     rowKey: 'provisionerId',
     properties,
   });
   const serviceName = 'test-entities';
 
-  async function insertDocuments(num) {
+  async function insertDocuments(TestTable, num) {
     const documents = [];
     for (let i = 0; i < num; i++) {
-      const entry = await entity.create({
+      const entry = await TestTable.create({
         taskId: `${i}`,
         provisionerId: `provisionerId-${i}`,
         workerType: `workerType-${i}`,
@@ -48,38 +48,38 @@ helper.dbSuite(path.basename(__filename), function() {
   suite('scan', function() {
     test('retrieve all documents (condition set to undefined)', async function() {
       db = await helper.withDb({ schema, serviceName });
-      entity.setup({ tableName: 'test_entities', db, serviceName });
+      const TestTable = configuredTestTable.setup({ tableName: 'test_entities', db, serviceName });
 
-      await insertDocuments(10);
-      const result = await entity.scan();
+      await insertDocuments(TestTable, 10);
+      const result = await TestTable.scan();
 
       assert.equal(result.length, 10);
     });
     test('retrieve all documents (condition set to null)', async function() {
       db = await helper.withDb({ schema, serviceName });
-      entity.setup({ tableName: 'test_entities', db, serviceName });
+      const TestTable = configuredTestTable.setup({ tableName: 'test_entities', db, serviceName });
 
-      await insertDocuments(10);
-      const result = await entity.scan(null);
+      await insertDocuments(TestTable, 10);
+      const result = await TestTable.scan(null);
 
       assert.equal(result.length, 10);
     });
     test('retrieve documents (with limit)', async function () {
       db = await helper.withDb({ schema, serviceName });
-      entity.setup({ tableName: 'test_entities', db, serviceName });
+      const TestTable = configuredTestTable.setup({ tableName: 'test_entities', db, serviceName });
 
-      await insertDocuments(10);
-      const result = await entity.scan(null, { limit: 4 });
+      await insertDocuments(TestTable, 10);
+      const result = await TestTable.scan(null, { limit: 4 });
 
       assert.equal(result.length, 4);
     });
     test('retrieve all documents (with condition)', async function() {
       db = await helper.withDb({ schema, serviceName });
-      entity.setup({ tableName: 'test_entities', db, serviceName });
+      const TestTable = configuredTestTable.setup({ tableName: 'test_entities', db, serviceName });
 
-      await insertDocuments(10);
+      await insertDocuments(TestTable, 10);
 
-      const result = await entity.scan({
+      const result = await TestTable.scan({
         taskId: Entity.op.equal('9'),
         provisionerId: Entity.op.equal('provisionerId-9'),
       });
@@ -89,11 +89,11 @@ helper.dbSuite(path.basename(__filename), function() {
     });
     test('retrieve documents in pages', async function() {
       db = await helper.withDb({ schema, serviceName });
-      entity.setup({ tableName: 'test_entities', db, serviceName });
+      const TestTable = configuredTestTable.setup({ tableName: 'test_entities', db, serviceName });
 
-      const documents = await insertDocuments(10);
+      const documents = await insertDocuments(TestTable, 10);
 
-      let result = await entity.scan(null, {
+      let result = await TestTable.scan(null, {
         page: 1,
         limit: 4,
       });
@@ -104,7 +104,7 @@ helper.dbSuite(path.basename(__filename), function() {
       assert.deepEqual(result[2].value, documents[2].properties);
       assert.deepEqual(result[3].value, documents[3].properties);
 
-      result = await entity.scan(null, {
+      result = await TestTable.scan(null, {
         page: 2,
         limit: 4,
       });
@@ -115,7 +115,7 @@ helper.dbSuite(path.basename(__filename), function() {
       assert.deepEqual(result[2].value, documents[6].properties);
       assert.deepEqual(result[3].value, documents[7].properties);
 
-      result = await entity.scan(null, {
+      result = await TestTable.scan(null, {
         page: 3,
         limit: 4,
       });
@@ -124,7 +124,7 @@ helper.dbSuite(path.basename(__filename), function() {
       assert.deepEqual(result[0].value, documents[8].properties);
       assert.deepEqual(result[1].value, documents[9].properties);
 
-      result = await entity.scan(null, {
+      result = await TestTable.scan(null, {
         page: 4,
         limit: 4,
       });

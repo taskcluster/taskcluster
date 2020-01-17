@@ -1,5 +1,4 @@
 const assert = require('assert').strict;
-const RowClass = require('./RowClass');
 const op = require('./entityops');
 const types = require('./entitytypes');
 const {
@@ -10,50 +9,97 @@ const {
 } = require('taskcluster-lib-postgres');
 
 class Entity {
-  constructor(options) {
-    if (options.context) {
-      assert(options.context instanceof Array, 'context must be an array');
-
-      options.context.forEach(key => {
-        assert(typeof key === 'string', 'elements of options.context must be strings');
-        assert(options.properties[key] === undefined, `property name ${key} is defined in properties and cannot be specified in options.context`);
-        assert(!Reflect.ownKeys(RowClass.prototype).includes(key), `property name ${key} is reserved and cannot be specified in options.context`);
-      });
-    }
-
-    this.partitionKey = options.partitionKey;
-    this.rowKey = options.rowKey;
-    this.properties = options.properties;
-    this.context = options.context || [];
-
-    this.tableName = null;
-    this.db = null;
-    this.serviceName = null;
-    this.contextEntries = null;
-  }
-
   static op = op;
 
   static types = types;
 
-  _getContextEntries(context) {
-    const ctx = {};
+  constructor(properties, options = {}) {
+    const {
+      etag,
+      tableName,
+      partitionKey,
+      rowKey,
+      db,
+      context = {},
+    } = options;
 
+    assert(properties, 'properties is required');
+    assert(tableName, 'tableName is required');
+    assert(partitionKey, 'partitionKey is required');
+    assert(rowKey, 'rowKey is required');
+    assert(db, 'db is required');
     assert(typeof context === 'object' && context.constructor === Object, 'context should be an object');
 
-    this.context.forEach(key => {
-      assert(key in context, `context key ${key} must be specified`);
-    });
+    this.properties = properties;
+    this.etag = etag;
+    this.tableName = tableName;
+    this.partitionKey = partitionKey;
+    this.rowKey = rowKey;
+    this.db = db;
 
     Object.entries(context).forEach(([key, value]) => {
-      assert(this.context.includes(key), `context key ${key} was not declared in Entity.configure`);
+      this[key] = value;
+    });
+
+    Object.entries(properties).forEach(([key, value]) => {
+      this[key] = value;
+    });
+  }
+
+  async remove(ignoreChanges, ignoreIfNotExists) {
+    const [result] = await this.db.fns[`${this.tableName}_remove`](this.partitionKey, this.rowKey);
+
+    if (result) {
+      return true;
+    }
+
+    if (ignoreIfNotExists && !result) {
+      return false;
+    }
+
+    if (!result) {
+      const err = new Error('Resource not found');
+
+      err.code = 'ResourceNotFound';
+      err.statusCode = 404;
+
+      throw err;
+    }
+  }
+
+  // load the properties from the table once more, and return true if anything has changed.
+  // Else, return false.
+  async reload() {
+    const result = await this.db.fns[`${this.tableName}_load`](this.partitionKey, this.rowKey);
+    const etag = result[0].etag;
+
+    return etag !== this.etag;
+  }
+
+  async modify(modifier) {
+    await modifier.call(this.properties, this.properties);
+
+    return this.db.fns[`${this.tableName}_modify`](this.partitionKey, this.rowKey, this.properties, 1);
+  }
+
+  static _getContextEntries(contextNames, contextEntries) {
+    const ctx = {};
+
+    assert(typeof contextEntries === 'object' && contextEntries.constructor === Object, 'context should be an object');
+
+    contextNames.forEach(key => {
+      assert(key in contextEntries, `context key ${key} must be specified`);
+    });
+
+    Object.entries(contextEntries).forEach(([key, value]) => {
+      assert(contextNames.includes(key), `context key ${key} was not declared in Entity.configure`);
       ctx[key] = value;
     });
 
     return ctx;
   }
 
-  _doCondition(conditions) {
+  static _doCondition(conditions) {
     if (!conditions) {
       return null;
     }
@@ -69,29 +115,15 @@ class Entity {
     }).join(' and ');
   }
 
-  setup(options) {
-    const {
-      tableName,
-      db,
-      serviceName,
-      context = {},
-    } = options;
-
-    this.contextEntries = this._getContextEntries(context);
-    this.tableName = tableName;
-    this.serviceName = serviceName;
-    this.db = db;
-  }
-
   // TODO: Fix this. This is totally wrong :-)
-  calculateId(properties) {
+  static calculateId(properties) {
     return {
       partitionKey: properties[this.partitionKey],
       rowKey: properties[this.rowKey],
     }
   }
 
-  async create(properties, overwrite) {
+  static async create(properties, overwrite) {
     const { partitionKey, rowKey } = this.calculateId(properties);
 
     let res;
@@ -116,7 +148,7 @@ class Entity {
 
     const etag = res[0][`${this.tableName}_create`];
 
-    return new RowClass(properties, {
+    return new this(properties, {
       etag,
       tableName: this.tableName,
       partitionKey,
@@ -127,12 +159,12 @@ class Entity {
   }
 
   /* NOOP */
-  async removeTable() {}
+  static async removeTable() {}
 
   /* NOOP */
-  async ensureTable() {}
+  static async ensureTable() {}
 
-  async remove(properties, ignoreIfNotExists) {
+  static async remove(properties, ignoreIfNotExists) {
     const { partitionKey, rowKey } = this.calculateId(properties);
     const [result] = await this.db.fns[`${this.tableName}_remove`](partitionKey, rowKey);
 
@@ -154,13 +186,7 @@ class Entity {
     }
   }
 
-  modify(properties) {
-    const { partitionKey, rowKey } = this.calculateId(properties);
-
-    return this.db.fns[`${this.tableName}_modify`](partitionKey, rowKey, properties, 1);
-  }
-
-  async load(properties, ignoreIfNotExists) {
+  static async load(properties, ignoreIfNotExists) {
     const { partitionKey, rowKey } = this.calculateId(properties);
     const [result] = await this.db.fns[`${this.tableName}_load`](partitionKey, rowKey);
 
@@ -176,7 +202,7 @@ class Entity {
       throw err;
     }
 
-    return new RowClass(result.value, {
+    return new this(result.value, {
       etag: result.etag,
       tableName: this.tableName,
       partitionKey,
@@ -186,7 +212,7 @@ class Entity {
     });
   }
 
-  scan(conditions, options = {}) {
+  static scan(conditions, options = {}) {
     const {
       limit = 1000,
       page,
@@ -196,12 +222,45 @@ class Entity {
     return this.db.fns[`${this.tableName}_scan`](condition, limit, page);
   }
 
-  query(conditions, options = {}) {
+  static query(conditions, options = {}) {
     return this.scan(conditions, options);
   }
 
-  static configure(options) {
-    return new Entity(options);
+  static configure(configureOptions) {
+    class ConfiguredEntity extends Entity {
+      static setup(setupOptions) {
+        const {
+          tableName,
+          db,
+          serviceName,
+        } = setupOptions;
+
+        ConfiguredEntity.contextEntries = ConfiguredEntity._getContextEntries(
+          configureOptions.context || [],
+          setupOptions.context || {});
+        ConfiguredEntity.tableName = tableName;
+        ConfiguredEntity.serviceName = serviceName;
+        ConfiguredEntity.db = db;
+
+        return ConfiguredEntity;
+      }
+    };
+
+    if (configureOptions.context) {
+      assert(configureOptions.context instanceof Array, 'context must be an array');
+
+      configureOptions.context.forEach(key => {
+        assert(typeof key === 'string', 'elements of context must be strings');
+        assert(configureOptions.properties[key] === undefined, `property name ${key} is defined in properties and cannot be specified in context`);
+        assert(!Reflect.ownKeys(this.prototype).includes(key), `property name ${key} is reserved and cannot be specified in context`);
+      });
+    }
+
+    ConfiguredEntity.properties = configureOptions.properties;
+    ConfiguredEntity.partitionKey = configureOptions.partitionKey;
+    ConfiguredEntity.rowKey = configureOptions.rowKey;
+    // TODO: more configureOptions
+    return ConfiguredEntity;
   }
 }
 
