@@ -332,40 +332,22 @@ suite(testing.suiteName(), function() {
     }
     assert(0, 'Did not get expected exception');
   });
-  test('calling send twice with status json triggers an error', () => {
+
+  test('calling send twice with status json triggers an error', async () => {
     const url = u('/test-double-send');
-    return request.get(url).then(function(res) {
-      assert(false, 'the error didnt trigger');
-    }).catch(function (err) {
-      assert(true, 'Error did trigger');
-      assert(helper.monitorManager.messages[0].Fields.message === 'called send twice');
-    });
+    await assert.rejects(() => request.get(url), /Bad Request/);
+    assert(helper.monitorManager.messages[0].Fields.message === 'called send twice');
   });
 
-  test('calling send twice with reportError triggers an Error', () => {
-
+  test('calling send twice with reportError triggers an Error', async () => {
     const url = u('/test-double-error-send');
-    return request.get(url).then((res) => {
-      assert(false, 'Error didn\'t trigger');
-    }).catch(() => {
-      assert(true, 'Error was triggered');
-      setTimeout( () => {
-        assert(helper.monitorManager.messages[0].Fields.message === 'called send twice');
-      }, 100);
-    });
-
+    await assert.rejects(() => request.get(url), /Bad Request/);
+    assert(helper.monitorManager.messages[0].Fields.message === 'called send twice');
   });
-  test('calling send twice with json object triggers an Error', () => {
 
+  test('calling send twice with json object triggers an Error', async () => {
     const url = u('/test-double-json-send');
-    return request.get(url).then((res) => {
-      assert(false, 'Error didn\'t trigger');
-    }).catch(() => {
-      assert(true, 'Error was triggered');
-      setTimeout( () => {
-        assert(helper.monitorManager.messages[0].Fields.message === 'called send twice');
-      }, 100);
-    });
-
+    await assert.rejects(() => request.get(url), /Bad Request/);
+    assert(helper.monitorManager.messages[0].Fields.message === 'called send twice');
   });
 });
