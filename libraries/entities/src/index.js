@@ -85,15 +85,18 @@ class Entity {
 
   // TODO: Fix this. This is totally wrong :-)
   calculateId(properties) {
-    return `${properties[this.partitionKey]}${properties[this.rowKey]}`;
+    return {
+      partitionKey: properties[this.partitionKey],
+      rowKey: properties[this.rowKey],
+    }
   }
 
   async create(properties, overwrite) {
-    const documentId = this.calculateId(properties);
+    const { partitionKey, rowKey } = this.calculateId(properties);
 
     let res;
     try {
-      res = await this.db.fns[`${this.tableName}_create`](documentId, properties, overwrite, 1);
+      res = await this.db.fns[`${this.tableName}_create`](partitionKey, rowKey, properties, overwrite, 1);
     } catch (err) {
       if (err.code === UNIQUE_VIOLATION) {
         const e = new Error('Entity already exists');
@@ -116,7 +119,9 @@ class Entity {
     return new RowClass(properties, {
       etag,
       tableName: this.tableName,
-      documentId, db: this.db,
+      partitionKey,
+      rowKey,
+      db: this.db,
       context: this.contextEntries,
     });
   }
@@ -137,23 +142,12 @@ class Entity {
     }
   }
 
-  /*
-   Ensure existence of the underlying table
-   */
-  async ensureTable() {
-    try {
-      await this.db.fns[`${this.tableName}_ensure_table`]();
-    } catch (err) {
-      if (err.code !== DUPLICATE_TABLE) {
-        throw err;
-      }
-    }
-  }
+  /* NOOP */
+  async ensureTable() {}
 
   async remove(properties, ignoreIfNotExists) {
-    const documentId = this.calculateId(properties);
-
-    const [result] = await this.db.fns[`${this.tableName}_remove`](documentId);
+    const { partitionKey, rowKey } = this.calculateId(properties);
+    const [result] = await this.db.fns[`${this.tableName}_remove`](partitionKey, rowKey);
 
     if (result) {
       return true;
@@ -174,14 +168,14 @@ class Entity {
   }
 
   modify(properties) {
-    const documentId = this.calculateId(properties);
+    const { partitionKey, rowKey } = this.calculateId(properties);
 
-    return this.db.fns[`${this.tableName}_modify`](documentId, properties, 1);
+    return this.db.fns[`${this.tableName}_modify`](partitionKey, rowKey, properties, 1);
   }
 
   async load(properties, ignoreIfNotExists) {
-    const documentId = this.calculateId(properties);
-    const [result] = await this.db.fns[`${this.tableName}_load`](documentId);
+    const { partitionKey, rowKey } = this.calculateId(properties);
+    const [result] = await this.db.fns[`${this.tableName}_load`](partitionKey, rowKey);
 
     if (!result && ignoreIfNotExists) {
       return null;
@@ -195,10 +189,12 @@ class Entity {
       throw err;
     }
 
-    return new RowClass(properties, {
+    return new RowClass(result.value, {
       etag: result.etag,
       tableName: this.tableName,
-      documentId, db: this.db,
+      partitionKey,
+      rowKey,
+      db: this.db,
       context: this.contextEntries,
     });
   }

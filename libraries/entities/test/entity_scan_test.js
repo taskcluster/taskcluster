@@ -25,7 +25,7 @@ helper.dbSuite(path.basename(__filename), function() {
   };
   const entity = Entity.configure({
     partitionKey: 'taskId',
-    rowKey: 'task',
+    rowKey: 'provisionerId',
     properties,
   });
   const serviceName = 'test-entities';
@@ -34,7 +34,7 @@ helper.dbSuite(path.basename(__filename), function() {
     const documents = [];
     for (let i = 0; i < num; i++) {
       const entry = await entity.create({
-        taskId: i,
+        taskId: `${i}`,
         provisionerId: `provisionerId-${i}`,
         workerType: `workerType-${i}`,
       });
@@ -85,7 +85,7 @@ helper.dbSuite(path.basename(__filename), function() {
       });
 
       assert.equal(result.length, 1);
-      assert.deepEqual(result[0].value.taskId, 9);
+      assert.deepEqual(result[0].value.taskId, '9');
     });
     test('retrieve documents in pages', async function() {
       db = await helper.withDb({ schema, serviceName });

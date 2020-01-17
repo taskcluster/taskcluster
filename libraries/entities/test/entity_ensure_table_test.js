@@ -24,7 +24,7 @@ helper.dbSuite(path.basename(__filename), function() {
   };
   const entity = Entity.configure({
     partitionKey: 'taskId',
-    rowKey: 'task',
+    rowKey: 'provisionerId',
     properties,
   });
   const serviceName = 'test-entities';
@@ -41,13 +41,6 @@ helper.dbSuite(path.basename(__filename), function() {
       entity.setup({ tableName: 'test_entities', db, serviceName });
 
       await entity.ensureTable();
-      await entity.ensureTable();
-    });
-    test('ensure table creates table when it doesn\'t exist', async function() {
-      db = await helper.withDb({ schema, serviceName });
-      entity.setup({ tableName: 'test_entities', db, serviceName });
-
-      await entity.removeTable();
       await entity.ensureTable();
     });
   });

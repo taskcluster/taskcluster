@@ -5,21 +5,24 @@ class RowClass {
     const {
       etag,
       tableName,
-      documentId,
+      partitionKey,
+      rowKey,
       db,
       context = {},
     } = options;
 
     assert(properties, 'properties is required');
     assert(tableName, 'tableName is required');
-    assert(documentId, 'documentId is required');
+    assert(partitionKey, 'partitionKey is required');
+    assert(rowKey, 'rowKey is required');
     assert(db, 'db is required');
     assert(typeof context === 'object' && context.constructor === Object, 'context should be an object');
 
     this.properties = properties;
     this.etag = etag;
     this.tableName = tableName;
-    this.documentId = documentId;
+    this.partitionKey = partitionKey;
+    this.rowKey = rowKey;
     this.db = db;
 
     Object.entries(context).forEach(([key, value]) => {
@@ -32,7 +35,7 @@ class RowClass {
   }
 
   async remove(ignoreChanges, ignoreIfNotExists) {
-    const [result] = await this.db.fns[`${this.tableName}_remove`](this.documentId);
+    const [result] = await this.db.fns[`${this.tableName}_remove`](this.partitionKey, this.rowKey);
 
     if (result) {
       return true;
@@ -55,7 +58,7 @@ class RowClass {
   // load the properties from the table once more, and return true if anything has changed.
   // Else, return false.
   async reload() {
-    const result = await this.db.fns[`${this.tableName}_load`](this.documentId);
+    const result = await this.db.fns[`${this.tableName}_load`](this.partitionKey, this.rowKey);
     const etag = result[0].etag;
 
     return etag !== this.etag;
@@ -64,7 +67,7 @@ class RowClass {
   async modify(modifier) {
     await modifier.call(this.properties, this.properties);
 
-    return this.db.fns[`${this.tableName}_modify`](this.documentId, this.properties, 1);
+    return this.db.fns[`${this.tableName}_modify`](this.partitionKey, this.rowKey, this.properties, 1);
   }
 }
 

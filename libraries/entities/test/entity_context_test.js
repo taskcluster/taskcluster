@@ -30,7 +30,7 @@ helper.dbSuite(path.basename(__filename), function() {
       db = await helper.withDb({ schema, serviceName });
       const entity = Entity.configure({
         partitionKey: 'taskId',
-        rowKey: 'task',
+        rowKey: 'provisionerId',
         properties,
       });
       entity.setup({ tableName: 'test_entities', db, serviceName });
@@ -39,7 +39,7 @@ helper.dbSuite(path.basename(__filename), function() {
       db = await helper.withDb({ schema, serviceName });
       const entity = Entity.configure({
         partitionKey: 'taskId',
-        rowKey: 'task',
+        rowKey: 'provisionerId',
         properties,
         context: ['config', 'maxCount'],
       });
@@ -59,7 +59,7 @@ helper.dbSuite(path.basename(__filename), function() {
       };
       const entity = Entity.configure({
         partitionKey: 'taskId',
-        rowKey: 'task',
+        rowKey: 'provisionerId',
         properties,
         context: ['config', 'maxCount'],
       });
@@ -79,7 +79,7 @@ helper.dbSuite(path.basename(__filename), function() {
       db = await helper.withDb({ schema, serviceName });
       const entity = Entity.configure({
         partitionKey: 'taskId',
-        rowKey: 'task',
+        rowKey: 'provisionerId',
         properties,
         context: ['config'],
       });
@@ -96,7 +96,7 @@ helper.dbSuite(path.basename(__filename), function() {
       db = await helper.withDb({ schema, serviceName });
       const entity = Entity.configure({
         partitionKey: 'taskId',
-        rowKey: 'task',
+        rowKey: 'provisionerId',
         properties,
         context: ['config'],
       });
@@ -117,7 +117,7 @@ helper.dbSuite(path.basename(__filename), function() {
           () => {
             Entity.configure({
               partitionKey: 'taskId',
-              rowKey: 'task',
+              rowKey: 'provisionerId',
               properties,
               context: [key],
             });

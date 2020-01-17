@@ -25,7 +25,7 @@ helper.dbSuite(path.basename(__filename), function() {
   };
   const entity = Entity.configure({
     partitionKey: 'taskId',
-    rowKey: 'task',
+    rowKey: 'provisionerId',
     properties,
   });
   const serviceName = 'test-entities';
@@ -33,18 +33,19 @@ helper.dbSuite(path.basename(__filename), function() {
   suite('row', function() {
     test('can access properties defined in Entity.configure()', async function() {
       db = await helper.withDb({ schema, serviceName });
-
-      const entry = {
-        taskId: 'taskId',
-        provisionerId: 'provisionerId',
-        workerType: 'string',
+      const taskId = '123';
+      const provisionerId = '456';
+      let entry = {
+        taskId,
+        provisionerId,
+        workerType: '567',
       };
 
       entity.setup({ tableName: 'test_entities', db, serviceName });
 
       await entity.create(entry);
 
-      const result = await entity.load(entry);
+      const result = await entity.load({ taskId, provisionerId });
 
       assert.equal(result.taskId, entry.taskId);
       assert.equal(result.provisionerId, entry.provisionerId);

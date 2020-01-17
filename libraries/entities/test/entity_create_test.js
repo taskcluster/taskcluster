@@ -25,53 +25,47 @@ helper.dbSuite(path.basename(__filename), function() {
   };
   const entity = Entity.configure({
     partitionKey: 'taskId',
-    rowKey: 'task',
+    rowKey: 'provisionerId',
     properties,
   });
   const serviceName = 'test-entities';
 
   suite('entity create', function() {
-    test('create entity', async function() {
-      const entity = Entity.configure({
-        partitionKey: 'taskId',
-        rowKey: 'task',
-        properties,
-      });
-
-      assert.equal(entity.properties, properties);
-      assert.equal(entity.rowKey, 'task');
-      assert.equal(entity.partitionKey, 'taskId');
-    });
     test('create entry', async function() {
       db = await helper.withDb({ schema, serviceName });
+      const taskId = '123';
+      const provisionerId = '456';
       const entry = {
-        taskId: 'taskId',
-        provisionerId: 'provisionerId',
-        workerType: 'string',
+        taskId,
+        provisionerId,
+        workerType: '567',
       };
 
       entity.setup({ tableName: 'test_entities', db, serviceName });
       await entity.create(entry);
 
-      const result = await entity.load(entry);
+      const result = await entity.load({ taskId, provisionerId });
 
-      assert.equal(result.documentId, entity.calculateId(entry));
+      assert.equal(result.taskId, taskId);
+      assert.equal(result.provisionerId, provisionerId);
       assert.deepEqual(result.properties, entry);
       assert(result.etag);
     });
 
     test('create entry (overwriteIfExists)', async function() {
       db = await helper.withDb({ schema, serviceName });
+      const taskId = '123';
+      const provisionerId = '456';
       let entry = {
-        taskId: 'taskId',
-        provisionerId: 'provisionerId',
-        workerType: 'string',
+        taskId,
+        provisionerId,
+        workerType: '567',
       };
 
       entity.setup({ tableName: 'test_entities', db, serviceName });
       await entity.create(entry);
 
-      const old = await entity.load(entry);
+      const old = await entity.load({ taskId, provisionerId });
       entry = {
         ...entry,
         workerType: 'foo',
@@ -79,42 +73,44 @@ helper.dbSuite(path.basename(__filename), function() {
 
       await entity.create(entry, true);
 
-      const result = await entity.load(entry);
+      const result = await entity.load({ taskId, provisionerId });
 
-      assert.equal(old.properties.workerType, 'string');
-      assert.equal(result.properties.workerType, 'foo');
-      assert.deepEqual(result.properties, entry);
+      assert.equal(old.workerType, '567');
+      assert.equal(result.workerType, 'foo');
       assert.notEqual(old.etag, result.etag);
     });
 
     test('create entry (overwriteIfExists, doesn\'t exist)', async function() {
       db = await helper.withDb({ schema, serviceName });
+      const taskId = '123';
+      const provisionerId = '456';
       let entry = {
-        taskId: 'taskId',
-        provisionerId: 'provisionerId',
-        workerType: 'string',
+        taskId,
+        provisionerId,
+        workerType: '567',
       };
 
       entity.setup({ tableName: 'test_entities', db, serviceName });
       await entity.create(entry, true);
 
-      const result = await entity.load(entry);
+      const result = await entity.load({ taskId, provisionerId });
 
-      assert.equal(result.properties.workerType, 'string');
-      assert.deepEqual(result.properties, entry);
+      assert.equal(result.workerType, '567');
     });
 
     test('create entry (won\'t overwrite)', async function () {
       db = await helper.withDb({ schema, serviceName });
+      const taskId = '123';
+      const provisionerId = '456';
       let entry = {
-        taskId: 'taskId',
-        provisionerId: 'provisionerId',
-        workerType: 'string',
+        taskId,
+        provisionerId,
+        workerType: '567',
       };
 
       entity.setup({ tableName: 'test_entities', db, serviceName });
       await entity.create(entry);
-      await entity.load(entry);
+      await entity.load({ taskId, provisionerId });
 
       entry = {
         ...entry,

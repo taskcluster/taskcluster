@@ -25,7 +25,7 @@ helper.dbSuite(path.basename(__filename), function() {
   };
   const entity = Entity.configure({
     partitionKey: 'taskId',
-    rowKey: 'task',
+    rowKey: 'provisionerId',
     properties,
   });
   const serviceName = 'test-entities';
@@ -33,21 +33,22 @@ helper.dbSuite(path.basename(__filename), function() {
   suite('row remove', function() {
     test('remove entry', async function() {
       db = await helper.withDb({ schema, serviceName });
-
-      const entry = {
-        taskId: 'taskId',
-        provisionerId: 'provisionerId',
-        workerType: 'string',
+      const taskId = '123';
+      const provisionerId = '456';
+      let entry = {
+        taskId,
+        provisionerId,
+        workerType: '567',
       };
 
       entity.setup({ tableName: 'test_entities', db, serviceName });
 
-      let row = await entity.create(entry);
+      const row = await entity.create(entry);
       await row.remove();
 
       await assert.rejects(
         async () => {
-          await entity.load(entry);
+          await entity.load({ taskId, provisionerId });
         },
         err => {
           assert.equal(err.code, 'ResourceNotFound');
@@ -59,11 +60,12 @@ helper.dbSuite(path.basename(__filename), function() {
     });
     test('remove entry (ignoreIfNotExists) returns true', async function() {
       db = await helper.withDb({ schema, serviceName });
-
-      const entry = {
-        taskId: 'taskId',
-        provisionerId: 'provisionerId',
-        workerType: 'string',
+      const taskId = '123';
+      const provisionerId = '456';
+      let entry = {
+        taskId,
+        provisionerId,
+        workerType: '567',
       };
 
       entity.setup({ tableName: 'test_entities', db, serviceName });
@@ -75,11 +77,12 @@ helper.dbSuite(path.basename(__filename), function() {
     });
     test('remove entry (ignoreIfNotExists) returns false', async function() {
       db = await helper.withDb({ schema, serviceName });
-
-      const entry = {
-        taskId: 'taskId',
-        provisionerId: 'provisionerId',
-        workerType: 'string',
+      const taskId = '123';
+      const provisionerId = '456';
+      let entry = {
+        taskId,
+        provisionerId,
+        workerType: '567',
       };
 
       entity.setup({ tableName: 'test_entities', db, serviceName });
@@ -92,11 +95,12 @@ helper.dbSuite(path.basename(__filename), function() {
     });
     test('remove entry (error when doesn\'t exist)', async function() {
       db = await helper.withDb({ schema, serviceName });
-
-      const entry = {
-        taskId: 'taskId',
-        provisionerId: 'provisionerId',
-        workerType: 'string',
+      const taskId = '123';
+      const provisionerId = '456';
+      let entry = {
+        taskId,
+        provisionerId,
+        workerType: '567',
       };
 
       entity.setup({ tableName: 'test_entities', db, serviceName });

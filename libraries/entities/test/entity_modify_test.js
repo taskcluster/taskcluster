@@ -25,7 +25,7 @@ helper.dbSuite(path.basename(__filename), function() {
   };
   const entity = Entity.configure({
     partitionKey: 'taskId',
-    rowKey: 'task',
+    rowKey: 'provisionerId',
     properties,
   });
   const serviceName = 'test-entities';
@@ -33,20 +33,22 @@ helper.dbSuite(path.basename(__filename), function() {
   suite('modify', function() {
     test('modify entry', async function() {
       db = await helper.withDb({ schema, serviceName });
+      const taskId = '123';
+      const provisionerId = '456';
       const entry = {
-        taskId: 'taskId',
-        provisionerId: 'provisionerId',
-        workerType: 'string',
+        taskId,
+        provisionerId,
+        workerType: '789'
       };
-      const documentId = entity.calculateId(entry);
 
       entity.setup({ tableName: 'test_entities', db, serviceName });
 
       await entity.create(entry);
 
-      let result = await entity.load(entry);
+      let result = await entity.load({ taskId, provisionerId });
 
-      assert.equal(result.documentId, documentId);
+      assert.equal(result.taskId, taskId);
+      assert.equal(result.provisionerId, provisionerId);
 
       const modifiedEntry = {
         ...entry,
@@ -55,10 +57,9 @@ helper.dbSuite(path.basename(__filename), function() {
 
       await entity.modify(modifiedEntry);
 
-      result = await entity.load(modifiedEntry);
+      result = await entity.load({ taskId: modifiedEntry.taskId, provisionerId: modifiedEntry.provisionerId });
 
-      assert.equal(result.documentId, documentId);
-      assert.deepEqual(result.properties, modifiedEntry);
+      assert.equal(result.workerType, modifiedEntry.workerType);
     });
   });
 });

@@ -2,44 +2,50 @@ version: 1
 migrationScript: |-
   begin
     create extension pgcrypto;
-    create table test_entities(id text primary key, value jsonb not null, version integer not null, etag uuid default public.gen_random_uuid());
+    create table test_entities(partition_key text, row_key text, value jsonb not null, version integer not null, etag uuid default public.gen_random_uuid());
+    alter table test_entities add primary key (partition_key, row_key);
   end
 methods:
   test_entities_load:
     description: test
     mode: read
     serviceName: test-entities
-    args: document_id text
-    returns: table (id text, value jsonb, version integer, etag uuid)
+    args: partition_key text, row_key text
+    returns: table (partition_key_out text, row_key_out text, value jsonb, version integer, etag uuid)
     body: |-
       begin
-        return query select test_entities.id, test_entities.value, test_entities.version, test_entities.etag from test_entities where test_entities.id = document_id;
+        return query
+        select test_entities.partition_key, test_entities.row_key, test_entities.value, test_entities.version,
+        test_entities.etag from test_entities
+        where test_entities.partition_key = test_entities_load.partition_key and test_entities.row_key = test_entities_load.row_key;
       end
   test_entities_create:
     serviceName: test-entities
     description: test
     mode: write
-    args: document_id text, properties jsonb, overwrite boolean, version integer
+    args: pk text, rk text, properties jsonb, overwrite boolean, version integer
     returns: uuid
     body: |-
       declare
         new_etag uuid := public.gen_random_uuid();
       begin
         if overwrite then
-          insert into test_entities(id, value, version, etag)
+          insert into test_entities(partition_key, row_key, value, version, etag)
           values (
-            document_id,
+            pk,
+            rk,
             properties,
             version,
             new_etag
-          ) on conflict (id) do
+          ) on conflict (partition_key, row_key) do
           update
           set (value, version, etag) = (properties, test_entities_create.version, new_etag)
-          where test_entities.id = document_id;
+          where test_entities.partition_key = test_entities_create.pk and test_entities.row_key = test_entities_create.rk;
         else
-          insert into test_entities(id, value, version, etag)
+          insert into test_entities(partition_key, row_key, value, version, etag)
           values (
-            document_id,
+            pk,
+            rk,
             properties,
             version,
             new_etag
@@ -51,35 +57,35 @@ methods:
     serviceName: test-entities
     description: test
     mode: write
-    args: document_id text
+    args: partition_key text, row_key text
     returns: table (etag uuid)
     body: |-
       begin
         return query delete from test_entities
-        where test_entities.id = document_id
+        where test_entities.partition_key = test_entities_remove.partition_key and test_entities.row_key = test_entities_remove.row_key
         returning test_entities.etag;
       end
   test_entities_modify:
     serviceName: test-entities
     description: test
     mode: write
-    args: document_id text, properties jsonb, version integer
+    args: partition_key text, row_key text, properties jsonb, version integer
     returns: void
     body: |-
       begin
         update test_entities
         set (value, version, etag) = (properties, test_entities_modify.version, public.gen_random_uuid())
-        where id = document_id;
+        where test_entities.partition_key = test_entities_modify.partition_key and test_entities.row_key = test_entities_modify.row_key;
       end
   test_entities_scan:
     description: test
     mode: read
     serviceName: test-entities
     args: condition text, size integer, page integer
-    returns: table (id text, value jsonb, version integer, etag uuid)
+    returns: table (partition_key text, row_key text, value jsonb, version integer, etag uuid)
     body: |-
       declare
-        sql text := 'select test_entities.id, test_entities.value, test_entities.version, test_entities.etag from test_entities';
+        sql text := 'select test_entities.partition_key, test_entities.row_key, test_entities.value, test_entities.version, test_entities.etag from test_entities';
         page_offset integer;
       begin
         if condition is not null then
@@ -106,14 +112,4 @@ methods:
     body: |-
       begin
         drop table test_entities;
-      end
-  test_entities_ensure_table:
-    serviceName: test-entities
-    description: test
-    mode: write
-    args: ''
-    returns: void
-    body: |-
-      begin
-        create table test_entities(id text primary key, value jsonb not null, version integer not null, etag uuid default public.gen_random_uuid());
       end
