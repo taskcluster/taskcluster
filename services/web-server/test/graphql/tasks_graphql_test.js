@@ -11,7 +11,7 @@ const taskQuery = require('../fixtures/task.graphql');
 const createTaskQuery = require('../fixtures/createTask.graphql');
 const subscribeTasks = require('../fixtures/tasksSubscriptions.graphql');
 const { WebSocketLink } = require('apollo-link-ws');
-const ws = require('ws');
+const WebSocket = require('ws');
 const { SubscriptionClient } = require('subscriptions-transport-ws');
 
 helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
@@ -79,7 +79,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
           {
             reconnect: true,
           },
-          ws,
+          WebSocket,
         );
         subscriptionClient.onConnected(function() {
           resolve(subscriptionClient);
