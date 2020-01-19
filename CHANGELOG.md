@@ -3,6 +3,71 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v24.2.0
+
+▶ [minor] [bug 1600966](http://bugzil.la/1600966)
+Adds a provider for azure vm instances to worker-manager.
+
+▶ [patch] 
+The Python client now normalizes the root URL in `optionsFromEnvironment()`.
+
+▶ [patch] [#2269](https://github.com/taskcluster/taskcluster/issues/2269)
+Links to specific log lines now autoscroll to correct location.
+
+▶ Additional changes not described here: [#2266](https://github.com/taskcluster/taskcluster/issues/2266), [#2232](https://github.com/taskcluster/taskcluster/issues/2232).
+
+## v24.1.10
+
+▶ [patch] [#2031](https://github.com/taskcluster/taskcluster/issues/2031)
+Taskcluster UI revamped the date picker component to allow selecting the hour and the minute in addition to the date.
+
+▶ [patch] [bug 1608176](http://bugzil.la/1608176)
+The go client's `client.SignedURL(..)` function can now accept and sign full URLs in its first argument.  This allows signing arbitrary URLs, even if they are not on the same RootURL as the client.
+
+▶ Additional changes not described here: [bug 1606948](http://bugzil.la/1606948), [#2201](https://github.com/taskcluster/taskcluster/issues/2201).
+
+## v24.1.9
+
+▶ [patch] [bug 1598649](http://bugzil.la/1598649)
+Final bits of release debugging (sorry!)
+
+## v24.1.8
+
+▶ [patch] [bug 1598649](http://bugzil.la/1598649)
+Final bit of debugging of the release process.  No other changes.
+
+## v24.1.7
+
+▶ [patch] [bug 1598649](http://bugzil.la/1598649)
+Further debugging of the release process.
+
+## v24.1.6
+
+▶ [patch] [bug 1598649](http://bugzil.la/1598649)
+Additional changes to the release process.
+
+## v24.1.5
+
+▶ [patch] 
+Changes only to the release process.
+
+## v24.1.4
+
+No changes
+
+## v24.1.3
+
+▶ [patch] [bug 1604175](http://bugzil.la/1604175)
+A task's deadline can now be up to 10 days in the future (replacing the previous limit of 5 days).
+
+▶ [patch] [bug 1605933](http://bugzil.la/1605933)
+Fix possible XSS vulnerability with the lazylog viewer
+
+▶ [patch] [#1660](https://github.com/taskcluster/taskcluster/issues/1660)
+Taskcluster UI now properly displays the error panel in the docs site.
+
+▶ Additional changes not described here: [bug 1588083](http://bugzil.la/1588083), [bug 1598643](http://bugzil.la/1598643), [bug 1598649](http://bugzil.la/1598649), [bug 1602985](http://bugzil.la/1602985), [#1684](https://github.com/taskcluster/taskcluster/issues/1684), [#2130](https://github.com/taskcluster/taskcluster/issues/2130), [#2187](https://github.com/taskcluster/taskcluster/issues/2187), [bug 1598649](http://bugzil.la/1598649).
+
 ## v24.1.2
 
 ▶ [patch] [#2159](https://github.com/taskcluster/taskcluster/issues/2159)

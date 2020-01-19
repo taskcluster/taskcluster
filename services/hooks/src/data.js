@@ -13,7 +13,7 @@ const Hook = Entity.configure({
     metadata: Entity.types.JSON,
     // task template
     task: Entity.types.JSON,
-    // pulse bindings (TODO; empty for now)
+    // pulse bindings
     bindings: Entity.types.JSON,
     // timings for the task (in fromNow format, e.g., "1 day")
     deadline: Entity.types.String,
@@ -38,7 +38,7 @@ const Hook = Entity.configure({
     metadata: Entity.types.JSON,
     // task template
     task: Entity.types.JSON,
-    // pulse bindings (TODO; empty for now)
+    // pulse bindings
     bindings: Entity.types.JSON,
     // timings for the task (in fromNow format, e.g., "1 day")
     deadline: Entity.types.String,
@@ -71,7 +71,7 @@ const Hook = Entity.configure({
     metadata: Entity.types.JSON,
     // task template
     task: Entity.types.JSON,
-    // pulse bindings (TODO; empty for now)
+    // pulse bindings
     bindings: Entity.types.JSON,
     // timings for the task (in fromNow format, e.g., "1 day")
     deadline: Entity.types.String,
@@ -102,7 +102,7 @@ const Hook = Entity.configure({
     metadata: Entity.types.JSON,
     // task template
     task: Entity.types.JSON,
-    // pulse bindings (TODO; empty for now)
+    // pulse bindings
     bindings: Entity.types.JSON,
     // timings for the task (in fromNow format, e.g., "1 day")
     deadline: Entity.types.String,
@@ -135,7 +135,7 @@ const Hook = Entity.configure({
     metadata: Entity.types.JSON,
     // task template
     task: Entity.types.JSON,
-    // pulse bindings (TODO; empty for now)
+    // pulse bindings
     bindings: Entity.types.JSON,
     // schedule for this task (see schemas/schedule.yml)
     schedule: Entity.types.JSON,
@@ -166,7 +166,7 @@ const Hook = Entity.configure({
     metadata: Entity.types.JSON,
     // task template
     task: Entity.types.JSON,
-    // pulse bindings (TODO; empty for now)
+    // pulse bindings
     bindings: Entity.types.JSON,
     // schedule for this task (see schemas/schedule.yml)
     schedule: Entity.types.JSON,

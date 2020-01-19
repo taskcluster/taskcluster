@@ -384,6 +384,15 @@ def clear_env(self):
         assert subject.optionsFromEnvironment({'rootUrl': 'https://other.example.com'}) == {'rootUrl': 'https://tc.example.com'}
 
     @mock.patch.dict(os.environ)
+    def test_normalized_rooturl(self):
+        """
+        If the environment contains a URL with a trailing slash,
+        it is normalized by `optionsFromEnvironment`.
+        """
+        os.environ['TASKCLUSTER_ROOT_URL'] = 'https://tc.test/'
+        assert subject.optionsFromEnvironment() == {'rootUrl': 'https://tc.test'}
+
+    @mock.patch.dict(os.environ)
     def test_default_creds(self):
         os.environ['TASKCLUSTER_ROOT_URL'] = 'https://tc.example.com'
         os.environ['TASKCLUSTER_ACCESS_TOKEN'] = 'shave-and-a-haircut'

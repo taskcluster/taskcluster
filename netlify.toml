@@ -1,12 +1,12 @@
 [build]
   base    = "ui"
   command = "GENERATE_ENV_JS=1 yarn build"
-  publish = "ui/build"
+  publish = "build"
 
 [build.environment]
   YARN_FLAGS = "--frozen-lockfile"
   YARN_VERSION = "1.10.1"
-  NODE_VERSION = "12.13.1"
+  NODE_VERSION = "12.14.1"
   APPLICATION_NAME = "Taskcluster"
   GRAPHQL_ENDPOINT = "https://community-tc.services.mozilla.com/graphql"
   GRAPHQL_SUBSCRIPTION_ENDPOINT = "https://community-tc.services.mozilla.com/subscription"

@@ -3,13 +3,12 @@ import { withRouter } from 'react-router-dom';
 import { isEmpty, map, pipe, sort as rSort } from 'ramda';
 import memoize from 'fast-memoize';
 import { formatDistanceStrict } from 'date-fns';
-import { CopyToClipboard } from 'react-copy-to-clipboard';
 import { arrayOf } from 'prop-types';
-import ContentCopyIcon from 'mdi-react/ContentCopyIcon';
 import AlertIcon from 'mdi-react/AlertIcon';
 import LinkIcon from 'mdi-react/LinkIcon';
 import TableRow from '@material-ui/core/TableRow';
 import TableCell from '@material-ui/core/TableCell';
+import CopyToClipboardTableCell from '../CopyToClipboardTableCell';
 import DataTable from '../DataTable';
 import TableCellItem from '../TableCellItem';
 import Link from '../../utils/Link';
@@ -97,15 +96,11 @@ export default class WorkerManagerWorkersTable extends Component {
           </Link>
         </TableCell>
 
-        <CopyToClipboard title={`${workerAge} (Copy)`} text={workerAge}>
-          <TableCell>
-            <TableCellItem button>
-              <DateDistance from={workerAge} />
-              <ContentCopyIcon size={iconSize} />
-            </TableCellItem>
-          </TableCell>
-        </CopyToClipboard>
-
+        <CopyToClipboardTableCell
+          tooltipTitle={workerAge}
+          textToCopy={workerAge}
+          text={<DateDistance from={workerAge} />}
+        />
         <TableCell>
           {latestTaskRun ? (
             <Link
@@ -121,31 +116,21 @@ export default class WorkerManagerWorkersTable extends Component {
         </TableCell>
 
         {latestTaskRun ? (
-          <CopyToClipboard
-            title={`${latestTaskRun.started} (Copy)`}
-            text={latestTaskRun.started}>
-            <TableCell>
-              <TableCellItem button>
-                <DateDistance from={latestTaskRun.started} />
-                <ContentCopyIcon size={iconSize} />
-              </TableCellItem>
-            </TableCell>
-          </CopyToClipboard>
+          <CopyToClipboardTableCell
+            tooltipTitle={latestTaskRun.started}
+            textToCopy={latestTaskRun.started}
+            text={<DateDistance from={latestTaskRun.started} />}
+          />
         ) : (
           <TableCell>n/a</TableCell>
         )}
 
         {latestTaskRun ? (
-          <CopyToClipboard
-            title={`${latestTaskRun.resolved} (Copy)`}
-            text={latestTaskRun.resolved}>
-            <TableCell>
-              <TableCellItem button>
-                <DateDistance from={latestTaskRun.resolved} />
-                <ContentCopyIcon size={iconSize} />
-              </TableCellItem>
-            </TableCell>
-          </CopyToClipboard>
+          <CopyToClipboardTableCell
+            tooltipTitle={latestTaskRun.resolved}
+            textToCopy={latestTaskRun.resolved}
+            text={<DateDistance from={latestTaskRun.resolved} />}
+          />
         ) : (
           <TableCell>n/a</TableCell>
         )}

@@ -1,5 +1,4 @@
 import React, { Component, Fragment } from 'react';
-import { CopyToClipboard } from 'react-copy-to-clipboard';
 import { withStyles } from '@material-ui/core/styles';
 import TableCell from '@material-ui/core/TableCell';
 import TableRow from '@material-ui/core/TableRow';
@@ -9,13 +8,13 @@ import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
 import Typography from '@material-ui/core/Typography';
 import Drawer from '@material-ui/core/Drawer';
-import ContentCopyIcon from 'mdi-react/ContentCopyIcon';
 import InformationVariantIcon from 'mdi-react/InformationVariantIcon';
 import { func, array, shape } from 'prop-types';
 import { pipe, map, sort as rSort } from 'ramda';
 import memoize from 'fast-memoize';
 import { camelCase } from 'change-case';
 import LinkIcon from 'mdi-react/LinkIcon';
+import CopyToClipboardTableCell from '../CopyToClipboardTableCell';
 import StatusLabel from '../StatusLabel';
 import DateDistance from '../DateDistance';
 import Markdown from '../Markdown';
@@ -189,16 +188,11 @@ export default class WorkerTypesTable extends Component {
               <TableCell>
                 <StatusLabel state={workerType.stability} />
               </TableCell>
-              <CopyToClipboard
-                title={`${workerType.lastDateActive} (Copy)`}
-                text={workerType.lastDateActive}>
-                <TableCell>
-                  <TableCellItem button>
-                    <DateDistance from={workerType.lastDateActive} />
-                    <ContentCopyIcon size={iconSize} />
-                  </TableCellItem>
-                </TableCell>
-              </CopyToClipboard>
+              <CopyToClipboardTableCell
+                tooltipTitle={workerType.lastDateActive}
+                textToCopy={workerType.lastDateActive}
+                text={<DateDistance from={workerType.lastDateActive} />}
+              />
               <TableCell>{workerType.pendingTasks}</TableCell>
               {'runningCapacity' in workerType && (
                 <TableCell>{workerType.runningCapacity}</TableCell>

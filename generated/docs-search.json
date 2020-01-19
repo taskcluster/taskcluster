@@ -322,10 +322,24 @@
     "title": "Workers"
   },
   {
+    "element": "h3",
+    "id": "azure",
+    "path": "/manual/deploying/workers",
+    "subtitle": "Azure",
+    "title": "Workers"
+  },
+  {
     "element": "h2",
     "id": "cautions",
     "path": "/manual/deploying/workers",
     "subtitle": "Cautions",
+    "title": "Workers"
+  },
+  {
+    "element": "h4",
+    "id": "expected-resources",
+    "path": "/manual/deploying/workers",
+    "subtitle": "Expected resources:",
     "title": "Workers"
   },
   {
@@ -350,10 +364,45 @@
     "title": "Workers"
   },
   {
+    "element": "h3",
+    "id": "rate-limiting--retries",
+    "path": "/manual/deploying/workers",
+    "subtitle": "Rate Limiting / Retries",
+    "title": "Workers"
+  },
+  {
+    "element": "h4",
+    "id": "recommended",
+    "path": "/manual/deploying/workers",
+    "subtitle": "Recommended:",
+    "title": "Workers"
+  },
+  {
+    "element": "h3",
+    "id": "resource-dependencies",
+    "path": "/manual/deploying/workers",
+    "subtitle": "Resource Dependencies",
+    "title": "Workers"
+  },
+  {
+    "element": "h3",
+    "id": "resource-groups",
+    "path": "/manual/deploying/workers",
+    "subtitle": "Resource Groups",
+    "title": "Workers"
+  },
+  {
     "element": "h4",
     "id": "service-accounts",
     "path": "/manual/deploying/workers",
     "subtitle": "Service Accounts",
+    "title": "Workers"
+  },
+  {
+    "element": "h3",
+    "id": "spot-instances",
+    "path": "/manual/deploying/workers",
+    "subtitle": "Spot Instances",
     "title": "Workers"
   },
   {
@@ -1685,6 +1734,41 @@
     "path": "/reference/core/worker-manager/aws",
     "subtitle": "Worker-Pool Configuration",
     "title": "AWS Provider Type"
+  },
+  {
+    "element": "h1",
+    "id": "azure-provider-type",
+    "path": "/reference/core/worker-manager/azure",
+    "subtitle": null,
+    "title": "Azure Provider Type"
+  },
+  {
+    "element": "h2",
+    "id": "removing-workers",
+    "path": "/reference/core/worker-manager/azure",
+    "subtitle": "Removing Workers",
+    "title": "Azure Provider Type"
+  },
+  {
+    "element": "h2",
+    "id": "tags",
+    "path": "/reference/core/worker-manager/azure",
+    "subtitle": "Tags",
+    "title": "Azure Provider Type"
+  },
+  {
+    "element": "h2",
+    "id": "worker-interaction",
+    "path": "/reference/core/worker-manager/azure",
+    "subtitle": "Worker Interaction",
+    "title": "Azure Provider Type"
+  },
+  {
+    "element": "h2",
+    "id": "worker-pool-configuration",
+    "path": "/reference/core/worker-manager/azure",
+    "subtitle": "Worker-Pool Configuration",
+    "title": "Azure Provider Type"
   },
   {
     "element": "h1",

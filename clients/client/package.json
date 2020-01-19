@@ -1,6 +1,6 @@
 {
   "name": "taskcluster-client",
-  "version": "24.1.2",
+  "version": "24.2.0",
   "author": "Jonas Finnemann Jensen <jopsen@gmail.com>",
   "description": "Client for interfacing taskcluster components",
   "license": "MPL-2.0",
@@ -23,7 +23,7 @@
     "nock": "^11.0.0"
   },
   "engines": {
-    "node": ">=v8.16.2"
+    "node": ">=v8.17.0"
   },
   "files": [
     "src"

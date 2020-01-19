@@ -204,7 +204,6 @@ export default class SecretForm extends Component {
               label="Expires"
               value={expires}
               onChange={this.handleExpirationChange}
-              format="yyyy/MM/dd"
               maxDate={addYears(new Date(), 1001)}
             />
           </ListItem>
@@ -258,7 +257,6 @@ export default class SecretForm extends Component {
                 className: classNames(classes.fab, classes.saveSecretSpan),
               }}
               tooltipProps={{ title: 'Save Secret' }}
-              requiresAuth
               classes={{ root: classes.successIcon }}
               variant="round"
               className={classes.saveIcon}

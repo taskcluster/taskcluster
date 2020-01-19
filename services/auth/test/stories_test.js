@@ -77,6 +77,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
             'auth:reset-access-token:test-users/charlene/*',
             'assume:test-role:role1',
             'assume:test-role:role2',
+            'scope3a',
           ],
         }),
       });
@@ -160,8 +161,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
       });
     });
 
-    // TODO: bug 1242473
-    test.skip('charlene replaces role3 with one of its constituent scopes', async () => {
+    test('charlene replaces role3 with one of its constituent scopes', async () => {
       await charlene.updateClient('test-users/charlene/travis-tests', {
         description: 'Permacred created by test',
         expires: taskcluster.fromNow('3 hours'),

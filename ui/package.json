@@ -1,10 +1,10 @@
 {
   "name": "taskcluster-ui",
-  "version": "24.1.2",
+  "version": "24.2.0",
   "private": true,
   "license": "MPL-2.0",
   "engines": {
-    "node": "12.13.1",
+    "node": "12.14.1",
     "yarn": "^1.21.0"
   },
   "scripts": {
@@ -78,7 +78,7 @@
     "react-ga": "^2.5.3",
     "react-helmet": "^5.2.1",
     "react-hot-loader": "^4.8.4",
-    "react-lazylog": "^4.4.3",
+    "react-lazylog": "^4.5.1",
     "react-router-dom": "^4.3.1",
     "react-schema-viewer": "^3.2.3",
     "react-virtualized": "^9.21.0",

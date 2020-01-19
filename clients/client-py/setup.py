@@ -4,7 +4,7 @@ from setuptools import setup
 from setuptools.command.test import test as TestCommand
 import sys
 
-VERSION = '24.1.2'
+VERSION = '24.2.0'
 
 tests_require = [
     'pytest',
@@ -27,7 +27,7 @@ install_requires = [
     'requests>=2.4.3',
     'mohawk>=0.3.4',
     'slugid>=2',
-    'taskcluster-urls>=10.1.0',
+    'taskcluster-urls>=12.1.0',
     'six>=1.10.0',
 ]
 
@@ -66,8 +66,12 @@ elif sys.version_info[:2] >= (3, 5):
         'async_timeout>=2.0.0',
     ])
 
-with open('README.md') as f:
-    long_description = f.read()
+if sys.version_info.major == 2:
+    with open('README.md') as f:
+        long_description = f.read()
+else:
+    with open('README.md', encoding='utf8') as f:
+        long_description = f.read()
 
 if __name__ == '__main__':
     setup(

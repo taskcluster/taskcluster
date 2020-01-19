@@ -120,7 +120,7 @@ export default class WMWorkerPoolEditor extends Component {
       description: this.props.workerPool.description,
       owner: this.props.workerPool.owner,
       emailOnError: this.props.workerPool.emailOnError,
-      config: this.props.workerPool.config,
+      config: JSON.stringify(this.props.workerPool.config || {}, null, 2),
     },
     invalidProviderConfig: false,
     actionLoading: false,
@@ -182,14 +182,17 @@ export default class WMWorkerPoolEditor extends Component {
 
   isValid() {
     const {
-      workerPool: { providerId },
+      workerPool: { providerId, workerPoolId1, workerPoolId2, owner },
       validation,
     } = this.state;
 
     return (
       !this.state.invalidProviderConfig &&
       !Object.values(validation).some(({ error }) => Boolean(error)) &&
-      providerId !== ''
+      workerPoolId1 &&
+      workerPoolId2 &&
+      providerId &&
+      owner
     );
   }
 
@@ -220,7 +223,11 @@ export default class WMWorkerPoolEditor extends Component {
     this.setState({
       workerPool: {
         ...this.state.workerPool,
-        config: PROVIDER_DEFAULT_CONFIGS.get(providerInfo.providerType),
+        config: JSON.stringify(
+          PROVIDER_DEFAULT_CONFIGS.get(providerInfo.providerType) || {},
+          null,
+          2
+        ),
         providerId: providerInfo.providerId,
       },
     });
@@ -230,29 +237,35 @@ export default class WMWorkerPoolEditor extends Component {
     const { workerPool } = this.state;
 
     try {
-      workerPool.config = JSON.parse(value);
+      JSON.parse(value);
 
       this.setState({
-        workerPool,
+        workerPool: {
+          ...workerPool,
+          config: value,
+        },
         invalidProviderConfig: false,
       });
     } catch (err) {
-      workerPool.config = value;
-
       this.setState({
-        workerPool,
+        workerPool: {
+          ...workerPool,
+          config: value,
+        },
         invalidProviderConfig: true,
       });
     }
   };
 
   handleOnClick = async event => {
-    const { workerPoolId1, workerPoolId2, ...payload } = this.state.workerPool;
+    const { workerPoolId1, workerPoolId2, ...rest } = this.state.workerPool;
     const { name: requestName } = event.currentTarget;
 
     this.setState({ error: null, actionLoading: true });
 
     try {
+      const payload = { ...rest, config: JSON.parse(rest.config) };
+
       await this.props[requestName]({
         workerPoolId: joinWorkerPoolId(workerPoolId1, workerPoolId2),
         payload,
@@ -265,7 +278,8 @@ export default class WMWorkerPoolEditor extends Component {
   };
 
   handleDeleteWorkerPool = () => {
-    const { workerPoolId1, workerPoolId2, ...payload } = this.state.workerPool;
+    const { workerPoolId1, workerPoolId2, ...rest } = this.state.workerPool;
+    const payload = { ...rest, config: JSON.parse(rest.config) };
 
     return this.props.deleteRequest({
       workerPoolId: joinWorkerPoolId(workerPoolId1, workerPoolId2),
@@ -286,6 +300,23 @@ export default class WMWorkerPoolEditor extends Component {
       onDialogActionComplete,
     } = this.props;
     const { workerPool, error, actionLoading, validation } = this.state;
+    const {
+      description,
+      emailOnError,
+      owner,
+      providerId,
+      workerPoolId,
+      config,
+    } = this.props.workerPool;
+    const isWorkerPoolDirty =
+      isNewWorkerPool ||
+      workerPool.description !== description ||
+      workerPool.emailOnError !== emailOnError ||
+      workerPool.owner !== owner ||
+      workerPool.providerId !== providerId ||
+      workerPool.config !== JSON.stringify(config || {}, null, 2) ||
+      joinWorkerPoolId(workerPool.workerPoolId1, workerPool.workerPoolId2) !==
+        workerPoolId;
 
     return (
       <Fragment>
@@ -388,7 +419,7 @@ export default class WMWorkerPoolEditor extends Component {
               }
               secondary={
                 <CodeEditor
-                  value={JSON.stringify(workerPool.config || {}, null, 2)}
+                  value={workerPool.config}
                   onChange={this.handleEditorChange}
                   lint
                 />
@@ -404,8 +435,7 @@ export default class WMWorkerPoolEditor extends Component {
               : classes.saveIconSpan,
           }}
           name="saveRequest"
-          disabled={!this.isValid()}
-          requiresAuth
+          disabled={!this.isValid() || !isWorkerPoolDirty}
           tooltipProps={{ title: 'Save Worker Pool' }}
           onClick={this.handleOnClick}
           classes={{ root: classes.saveIcon }}

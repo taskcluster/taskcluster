@@ -21,6 +21,7 @@ const UNREFERENCED_SCHEMAS = [
   {service: 'worker-manager', schema: 'v1/config-testing.json#'},
   {service: 'worker-manager', schema: 'v1/config-null.json#'},
   {service: 'worker-manager', schema: 'v1/config-aws.json#'},
+  {service: 'worker-manager', schema: 'v1/config-azure.json#'},
 ];
 
 /**
@@ -201,8 +202,7 @@ exports.validate = (references) => {
           problems.push(`${filename}: unknown metadata.version ${metadata.version}`);
         }
       } else if (metadata.name === 'logs') {
-        // Nothing to do for now
-        // TODO: Start validating fields with schemas?
+        // Nothing to do..
       } else {
         problems.push(`${filename}: unknown metadata.name ${metadata.name}`);
       }

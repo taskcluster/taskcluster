@@ -64,6 +64,7 @@ script/fetch-coverage) shift; exec yarn run fetch-coverage "${@}";;
 script/test:cleanup) shift; exec yarn run test:cleanup "${@}";;
 script/build) shift; exec yarn run build "${@}";;
 script/release) shift; exec yarn run release "${@}";;
+script/release:publish) shift; exec yarn run release:publish "${@}";;
 script/generate) shift; exec yarn run generate "${@}";;
 script/changelog) shift; exec yarn run changelog "${@}";;
 script/changelog:show) shift; exec yarn run changelog:show "${@}";;

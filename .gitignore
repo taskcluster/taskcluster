@@ -6,3 +6,4 @@ user-build-config.yml
 user-config.*
 dev-config.*
 /artifacts/
+temp/

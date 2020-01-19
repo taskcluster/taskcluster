@@ -598,7 +598,6 @@ builder.declare({
   let runId = parseInt(req.params.runId, 10);
   let continuation = req.query.continuationToken || null;
   let limit = parseInt(req.query.limit || 1000, 10);
-  // TODO: Add support querying using prefix
 
   let [task, artifacts] = await Promise.all([
     this.Task.load({taskId}, true),
@@ -666,7 +665,6 @@ builder.declare({
   let taskId = req.params.taskId;
   let continuation = req.query.continuationToken || null;
   let limit = parseInt(req.query.limit || 1000, 10);
-  // TODO: Add support querying using prefix
 
   // Load task status structure from table
   let task = await this.Task.load({taskId}, true);

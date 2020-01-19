@@ -293,7 +293,6 @@ export default class ClientForm extends Component {
                 <DatePicker
                   value={expires}
                   onChange={this.handleExpirationChange}
-                  format="yyyy/MM/dd"
                   maxDate={addYears(new Date(), 1001)}
                 />
               }
@@ -382,7 +381,6 @@ export default class ClientForm extends Component {
         ) : (
           <Fragment>
             <Button
-              requiresAuth
               tooltipOpen
               variant="round"
               onClick={this.handleSaveClient}

@@ -30,7 +30,7 @@ const tempDir = path.join(REPO_ROOT, 'temp');
  *  All of this is done using a "hooks" approach to allow segmenting the various oddball bits of
  *  this process by theme.
  */
-const generateMonoimageTasks = ({tasks, baseDir, cmdOptions}) => {
+const generateMonoimageTasks = ({tasks, baseDir, cmdOptions, credentials}) => {
   const sourceDir = appRootDir.get();
 
   ensureTask(tasks, {
@@ -197,11 +197,20 @@ const generateMonoimageTasks = ({tasks, baseDir, cmdOptions}) => {
         return utils.skip({provides});
       }
 
+      const dockerPushOptions = {};
+      if (credentials.dockerUsername && credentials.dockerPassword) {
+        dockerPushOptions.credentials = {
+          username: credentials.dockerUsername,
+          password: credentials.dockerPassword,
+        };
+      }
+
       await dockerPush({
         logfile: `${baseDir}/docker-push.log`,
         tag,
         utils,
         baseDir,
+        ...dockerPushOptions,
       });
 
       return provides;
@@ -228,11 +237,20 @@ const generateMonoimageTasks = ({tasks, baseDir, cmdOptions}) => {
         return utils.skip({reason: "already on registry"});
       }
 
+      const dockerPushOptions = {};
+      if (credentials.dockerUsername && credentials.dockerPassword) {
+        dockerPushOptions.credentials = {
+          username: credentials.dockerUsername,
+          password: credentials.dockerPassword,
+        };
+      }
+
       await dockerPush({
         logfile: `${baseDir}/docker-push.log`,
         tag,
         utils,
         baseDir,
+        ...dockerPushOptions,
       });
     },
   });
@@ -249,21 +267,6 @@ const generateMonoimageTasks = ({tasks, baseDir, cmdOptions}) => {
     run: async (requirements, utils) => {
       const tag = requirements[`monoimage-push`];
       const provides = {[`target-monoimage`]: tag};
-
-      if (!cmdOptions.push) {
-        return utils.skip({provides});
-      }
-
-      if (requirements[`monoimage-image-on-registry`]) {
-        return utils.skip({provides});
-      }
-
-      await dockerPush({
-        logfile: `${baseDir}/docker-push.log`,
-        tag,
-        utils,
-        baseDir,
-      });
 
       return provides;
     },

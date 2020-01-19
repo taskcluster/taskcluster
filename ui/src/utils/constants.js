@@ -241,6 +241,36 @@ export const PROVIDER_DEFAULT_CONFIGS = new Map([
     },
   ],
   ['static', {}],
+  [
+    'azure',
+    {
+      minCapacity: 0,
+      maxCapacity: 4,
+      launchConfigs: [
+        {
+          location: 'westus',
+          capacityPerInstance: 1,
+          subnetId: '...',
+          hardwareProfile: {
+            vmSize: 'Basic_A1',
+          },
+          storageProfile: {
+            imageReference: {
+              id: '...',
+            },
+            osDisk: {
+              caching: 'ReadWrite',
+              managedDisk: {
+                storageAccountType: 'Standard_LRS',
+              },
+              createOption: 'FromImage',
+            },
+          },
+          workerConfig: {},
+        },
+      ],
+    },
+  ],
 ]);
 export const NULL_WORKER_POOL = {
   workerPoolId: '/',
