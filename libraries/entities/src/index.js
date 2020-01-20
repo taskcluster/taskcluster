@@ -244,7 +244,7 @@ class Entity {
 
         return ConfiguredEntity;
       }
-    };
+    }
 
     if (configureOptions.context) {
       assert(configureOptions.context instanceof Array, 'context must be an array');
