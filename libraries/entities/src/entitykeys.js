@@ -1,4 +1,5 @@
 const assert = require('assert');
+const { COMPOSITE_SEPARATOR } = require('./constants');
 
 class StringKey {
   constructor(mapping, key) {
@@ -6,7 +7,17 @@ class StringKey {
 
     this.key = key;
     this.mapping = mapping;
+    this.type = mapping[this.key];
     this.covers = [key];
+  }
+
+  exact(properties) {
+    // Get value
+    const value = properties[this.key];
+    // Check that value was given
+    assert(value !== undefined, 'Unable to create key from properties');
+    // Return exact key
+    return this.type.string(value);
   }
 }
 
@@ -53,6 +64,20 @@ class CompositeKey {
     }
 
     this.covers = keys;
+  }
+
+  exact(properties) {
+    // Map each key to it's string encoded value
+    return this.keys.map(function(key, index) {
+      // Get value from key
+      const value = properties[key];
+
+      if (value === undefined) {
+        throw new Error(`Unable to render CompositeKey from properties, missing ${key}`);
+      }
+
+      return this.types[index].string(value);
+    }, this).join(COMPOSITE_SEPARATOR); // Join with separator
   }
 }
 

@@ -31,7 +31,7 @@ class Entity {
     assert(db, 'db is required');
     assert(typeof context === 'object' && context.constructor === Object, 'context should be an object');
 
-    this.properties = properties;
+    this.properties = this.deserialize(properties);
     this.etag = etag;
     this.tableName = tableName;
     this.partitionKey = partitionKey;
@@ -110,7 +110,7 @@ class Entity {
     }
 
     return Object.entries(conditions).map(([property, { operator, operand }]) => {
-      const shouldAddQuotes = typeof this.properties[property] === 'string';
+      const shouldAddQuotes = typeof this.mapping[property].name !== 'NumberType';
 
       return `value ->> '${property}' ${operator} ${shouldAddQuotes ? `'${operand}'` : operand}`;
     }).join(' and ');
@@ -118,8 +118,8 @@ class Entity {
 
   static calculateId(properties) {
     return {
-      partitionKey: properties[this.partitionKey.key],
-      rowKey: properties[this.rowKey.key],
+      partitionKey: this.partitionKey.exact(properties),
+      rowKey: this.rowKey.exact(properties),
     }
   }
 
@@ -244,6 +244,16 @@ class Entity {
 
         return ConfiguredEntity;
       }
+
+      deserialize(properties) {
+        const deserializedProperties = {};
+
+        Object.entries(configureOptions.properties).forEach(([key, Type]) => {
+          deserializedProperties[key] = new Type(key).deserialize(properties);
+        });
+
+        return deserializedProperties;
+      }
     }
 
     if (configureOptions.context) {
@@ -256,9 +266,13 @@ class Entity {
       });
     }
 
-    ConfiguredEntity.properties = configureOptions.properties;
-    ConfiguredEntity.partitionKey = configureOptions.partitionKey(configureOptions.properties);
-    ConfiguredEntity.rowKey = configureOptions.rowKey(configureOptions.properties);
+    ConfiguredEntity.mapping = {};
+    Object.entries(configureOptions.properties).forEach(([key, Type]) => {
+      ConfiguredEntity.mapping[key] = new Type(key);
+    });
+
+    ConfiguredEntity.partitionKey = configureOptions.partitionKey(ConfiguredEntity.mapping);
+    ConfiguredEntity.rowKey = configureOptions.rowKey(ConfiguredEntity.mapping);
     // TODO: more configureOptions
     return ConfiguredEntity;
   }
