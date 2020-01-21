@@ -52,12 +52,31 @@ class NumberType extends BaseValueType {
   }
 }
 
+class PositiveIntegerType extends NumberType {
+  validate(value) {
+    checkType('PositiveIntegerType', this.property, value, 'number');
+    if (!isNaN(value) && value % 1  !== 0) {
+      throw new Error(`PositiveIntegerType ${this.property} expected an intger got a float or NaN`);
+    }
+
+    if (value < 0) {
+      throw new Error(`PositiveIntegerType ${this.property} expected a positive integer, got less than zero`);
+    }
+
+    if (value > Math.pow(2, 32)) {
+      throw new Error(`PositiveIntegerType ${this.property} expected an integer, got more than 2^32`);
+    }
+  }
+}
+
 module.exports = {
   Boolean: 'boolean',
   Number: function(property) {
     return new NumberType(property);
   },
-  PositiveInteger: 'positive-integer',
+  PositiveInteger: function(property) {
+    return new PositiveIntegerType(property);
+  },
   Date: 'date',
   UUID: 'uuid',
   SlugId: function(property) {

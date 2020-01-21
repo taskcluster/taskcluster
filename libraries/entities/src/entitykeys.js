@@ -1,5 +1,5 @@
 const assert = require('assert');
-const { COMPOSITE_SEPARATOR } = require('./constants');
+const { COMPOSITE_SEPARATOR, ASCENDING_KEY_PADDING } = require('./constants');
 
 class StringKey {
   constructor(mapping, key) {
@@ -34,10 +34,24 @@ class DescendingIntegerKey {
 class AscendingIntegerKey {
   constructor(mapping, key) {
     assert(mapping[key], `key ${key} is not defined in mapping`);
+    // TODO: Add the second assertion (see azure-entities)
 
     this.key = key;
     this.type = mapping[key];
     this.covers = [key];
+  }
+
+  exact(properties) {
+    // Get value
+    const value = properties[this.key];
+    // Check that value was given
+    assert(value !== undefined, 'Unable to create key from properties');
+    // Return exact key
+    const str = value.toString();
+
+    return ASCENDING_KEY_PADDING.substring(
+      0, ASCENDING_KEY_PADDING.length - str.length,
+    ) + str;
   }
 }
 

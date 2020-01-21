@@ -46,6 +46,15 @@ helper.dbSuite(path.basename(__filename), function() {
   }
 
   suite('scan', function() {
+    test('retrieve all on empty db', async function() {
+      db = await helper.withDb({ schema, serviceName });
+      const TestTable = configuredTestTable.setup({ tableName: 'test_entities', db, serviceName });
+
+      const result = await TestTable.scan();
+
+      assert(result instanceof Array);
+      assert.equal(result.length, 0);
+    });
     test('retrieve all documents (condition set to undefined)', async function() {
       db = await helper.withDb({ schema, serviceName });
       const TestTable = configuredTestTable.setup({ tableName: 'test_entities', db, serviceName });
@@ -85,7 +94,7 @@ helper.dbSuite(path.basename(__filename), function() {
       });
 
       assert.equal(result.length, 1);
-      assert.deepEqual(result[0].value.taskId, '9');
+      assert.deepEqual(result[0].taskId, '9');
     });
     test('retrieve documents in pages', async function() {
       db = await helper.withDb({ schema, serviceName });
@@ -99,10 +108,10 @@ helper.dbSuite(path.basename(__filename), function() {
       });
 
       assert.equal(result.length, 4);
-      assert.deepEqual(result[0].value, documents[0].properties);
-      assert.deepEqual(result[1].value, documents[1].properties);
-      assert.deepEqual(result[2].value, documents[2].properties);
-      assert.deepEqual(result[3].value, documents[3].properties);
+      assert.deepEqual(result[0], documents[0]);
+      assert.deepEqual(result[1], documents[1]);
+      assert.deepEqual(result[2], documents[2]);
+      assert.deepEqual(result[3], documents[3]);
 
       result = await TestTable.scan(null, {
         page: 2,
@@ -110,10 +119,10 @@ helper.dbSuite(path.basename(__filename), function() {
       });
 
       assert.equal(result.length, 4);
-      assert.deepEqual(result[0].value, documents[4].properties);
-      assert.deepEqual(result[1].value, documents[5].properties);
-      assert.deepEqual(result[2].value, documents[6].properties);
-      assert.deepEqual(result[3].value, documents[7].properties);
+      assert.deepEqual(result[0], documents[4]);
+      assert.deepEqual(result[1], documents[5]);
+      assert.deepEqual(result[2], documents[6]);
+      assert.deepEqual(result[3], documents[7]);
 
       result = await TestTable.scan(null, {
         page: 3,
@@ -121,8 +130,8 @@ helper.dbSuite(path.basename(__filename), function() {
       });
 
       assert.equal(result.length, 2);
-      assert.deepEqual(result[0].value, documents[8].properties);
-      assert.deepEqual(result[1].value, documents[9].properties);
+      assert.deepEqual(result[0], documents[8]);
+      assert.deepEqual(result[1], documents[9]);
 
       result = await TestTable.scan(null, {
         page: 4,

@@ -109,10 +109,16 @@ class Entity {
       assert(typeof conditions === 'object' && conditions.constructor === Object, 'conditions should be an object');
     }
 
-    return Object.entries(conditions).map(([property, { operator, operand }]) => {
+    return Object.entries(conditions).map(([property, op]) => {
       const shouldAddQuotes = typeof this.mapping[property].name !== 'NumberType';
 
-      return `value ->> '${property}' ${operator} ${shouldAddQuotes ? `'${operand}'` : operand}`;
+      // Ensure that we have an operator, we just assume anything specified
+      // without an operator is equality
+      if (!(op instanceof Entity.op)) {
+        op = Entity.op.equal(op);
+      }
+
+      return `value ->> '${property}' ${op.operator} ${shouldAddQuotes ? `'${op.operand}'` : op.operand}`;
     }).join(' and ');
   }
 
@@ -212,14 +218,24 @@ class Entity {
     });
   }
 
-  static scan(conditions, options = {}) {
+  static async scan(conditions, options = {}) {
     const {
       limit = 1000,
       page,
     } = options;
     const condition = this._doCondition(conditions);
+    const result = await this.db.fns[`${this.tableName}_scan`](condition, limit, page);
 
-    return this.db.fns[`${this.tableName}_scan`](condition, limit, page);
+    return result.map(entry => (
+      new this(entry.value, {
+        etag: entry.etag,
+        tableName: this.tableName,
+        partitionKey: entry.partition_key,
+        rowKey: entry.row_key,
+        db: this.db,
+        context: this.contextEntries,
+      })
+    ));
   }
 
   static query(conditions, options = {}) {
