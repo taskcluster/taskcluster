@@ -118,6 +118,14 @@ class Entity {
         op = Entity.op.equal(op);
       }
 
+      if (this.partitionKey.key === property) {
+        return `partition_key ${op.operator} ${shouldAddQuotes ? `'${op.operand}'` : op.operand}`;
+      }
+
+      if (this.rowKey.key === property) {
+        return `row_key ${op.operator} ${shouldAddQuotes ? `'${op.operand}'` : op.operand}`;
+      }
+
       return `value ->> '${property}' ${op.operator} ${shouldAddQuotes ? `'${op.operand}'` : op.operand}`;
     }).join(' and ');
   }
