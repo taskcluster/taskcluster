@@ -43,12 +43,27 @@ This protocol is used to communicate events such as an impending shutdown.
 Worker configuration comes from a number of sources; in order from lowest to
 highest precedence, these are:
 
-* The worker runner config file (described above)
+* The worker runner config file
 * The configuration defined by the provider, if any
 * Configuration stored in the secrets service
 
 Providers can supply configuration to the worker via whatever means makes sense.
 For example, an EC2 or GCP provider would read configuration from the instance's userData.
+
+### Configuration from Runner Config
+
+The runner configuration file is described in more detail in the "Usage" section below.
+Its `workerConfig` property can contain arbitrary worker configuration values.
+For example:
+
+```yaml
+provider: ..
+worker: ..
+workerConfig:
+  shutdownMachineOnIdle:  true
+```
+
+Note that the deeply-nested format described in the next section is not available in the runner config file.
 
 ### Provider Configuration
 
@@ -124,7 +139,7 @@ The formats supported are:
  * `zip` -- the content is treated as a ZIP archive and extracted at the directory named by `path`
 
 
-## Usage
+# Usage
 
 <!-- start-usage -->
 This binary is configured to run at instance start up, getting a configuration
@@ -152,6 +167,8 @@ the following fields:
 
 * `workerConfig`: arbitrary data which forms the basics of the config passed to
   the worker; this will be merged with several other sources of configuration.
+  Note that the nested `<workerImplementation>.config` structure is not allowed
+  here.
 
 * `getSecrets`: if true (the default), then configuration is fetched from the
   secrets service and merged with the worker configuration.  This option is
