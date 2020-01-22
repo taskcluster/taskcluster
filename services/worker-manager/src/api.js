@@ -552,6 +552,53 @@ builder.declare({
 
 builder.declare({
   method: 'get',
+  route: '/workers/:workerPoolId:/:workerGroup/:workerId/reregister',
+  name: 'reregister',
+  title: 'Reregister Worker',
+  stability: APIBuilder.stability.stable,
+  output: 'register-worker-response.yml',
+  category: 'Workers',
+  scopes: 'worker-manager:reregister-worker:<workerPoolId>/<workerGroup>/<workerId>',
+  description: [
+    'Allows a worker to claim new credentials and increase its own',
+    'maximum lifetime before a provider will terminate it.',
+  ].join('\n'),
+}, async function(req, res) {
+  const {workerPoolId, workerGroup, workerId} = req.params;
+  const worker = await this.Worker.load({workerPoolId, workerGroup, workerId}, true);
+
+  if (!worker) {
+    return res.reportError('ResourceNotFound', 'Worker not found', {});
+  }
+
+  const provider = this.providers.get(worker.providerId);
+  if (!provider) {
+    return res.reportError('ResourceNotFound',
+      `Provider ${worker.providerId} for this worker does not exist`, {});
+  }
+
+  let expires;
+  try {
+    const reg = await provider.reregisterWorker({worker});
+    expires = reg.expires;
+  } catch (err) {
+    if (!(err instanceof ApiError)) {
+      throw err;
+    }
+    return res.reportError('InputError', err.message, {});
+  }
+
+  const credentials = createTemporaryCredentials({
+    worker,
+    expires,
+    permanentCredentials: this.cfg.taskcluster.credentials,
+  });
+
+  return res.reply({expires: expires.toJSON(), credentials});
+});
+
+builder.declare({
+  method: 'get',
   route: '/workers/:workerPoolId(*)',
   query: {
     continuationToken: /./,
@@ -586,9 +633,27 @@ builder.declare({
   return res.reply(result);
 });
 
-let cleanPayload = payload => {
+const cleanPayload = payload => {
   payload = '(OMITTED)';
   return payload;
+};
+
+const createTemporaryCredentials = ({worker, expires, permanentCredentials}) => {
+  return taskcluster.createTemporaryCredentials({
+    clientId: `worker/${worker.providerId}/${worker.workerPoolId}/${worker.workerGroup}/${worker.workerId}`,
+    scopes: [
+      `assume:worker-type:${worker.workerPoolId}`, // deprecated role
+      `assume:worker-pool:${worker.workerPoolId}`,
+      `assume:worker-id:${worker.workerGroup}/${worker.workerId}`,
+      `queue:worker-id:${worker.workerGroup}/${worker.workerId}`,
+      `secrets:get:worker-type:${worker.workerPoolId}`, // deprecated secret name
+      `secrets:get:worker-pool:${worker.workerPoolId}`,
+      `queue:claim-work:${worker.workerPoolId}`,
+    ],
+    start: taskcluster.fromNow('-15 minutes'),
+    expiry: expires,
+    credentials: permanentCredentials,
+  });
 };
 
 builder.declare({
@@ -654,25 +719,10 @@ builder.declare({
   }
   assert(expires, 'registerWorker did not return expires');
 
-  // We use these fields from inside the worker rather than
-  // what was passed in because that is the thing we have verified
-  // to be passing in the token. This helps avoid slipups later
-  // like if we had a scope based on workerGroup alone which we do
-  // not verify here
-  const credentials = taskcluster.createTemporaryCredentials({
-    clientId: `worker/${worker.providerId}/${worker.workerPoolId}/${worker.workerGroup}/${worker.workerId}`,
-    scopes: [
-      `assume:worker-type:${worker.workerPoolId}`, // deprecated role
-      `assume:worker-pool:${worker.workerPoolId}`,
-      `assume:worker-id:${worker.workerGroup}/${worker.workerId}`,
-      `queue:worker-id:${worker.workerGroup}/${worker.workerId}`,
-      `secrets:get:worker-type:${worker.workerPoolId}`, // deprecated secret name
-      `secrets:get:worker-pool:${worker.workerPoolId}`,
-      `queue:claim-work:${worker.workerPoolId}`,
-    ],
-    start: taskcluster.fromNow('-15 minutes'),
-    expiry: expires,
-    credentials: this.cfg.taskcluster.credentials,
+  const credentials = createTemporaryCredentials({
+    worker,
+    expires,
+    permanentCredentials: this.cfg.taskcluster.credentials,
   });
 
   return res.reply({expires: expires.toJSON(), credentials});

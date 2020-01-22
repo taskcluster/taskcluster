@@ -57,6 +57,10 @@ class Provider {
     throw new ApiError('not supported for this provider');
   }
 
+  async reregisterWorker({worker, workerPool, workerIdentityProof}) {
+    throw new ApiError('not supported for this provider');
+  }
+
   async cleanup() {
   }
 
