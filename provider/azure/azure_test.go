@@ -114,6 +114,7 @@ func TestConfigureRun(t *testing.T) {
 func TestCheckTerminationTime(t *testing.T) {
 	transp := protocol.NewFakeTransport()
 	proto := protocol.NewProtocol(transp)
+	proto.SetInitialized()
 
 	evts := &ScheduledEvents{}
 

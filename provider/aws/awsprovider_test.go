@@ -101,6 +101,7 @@ func TestAWSConfigureRun(t *testing.T) {
 func TestCheckTerminationTime(t *testing.T) {
 	transp := protocol.NewFakeTransport()
 	proto := protocol.NewProtocol(transp)
+	proto.SetInitialized()
 
 	metaData := map[string]string{}
 	instanceIdentityDocument := "{\n  \"instanceId\" : \"i-55555nonesense5\",\n  \"region\" : \"us-west-2\",\n  \"availabilityZone\" : \"us-west-2a\",\n  \"instanceType\" : \"t2.micro\",\n  \"imageId\" : \"banana\"\n,  \"privateIp\" : \"1.1.1.1\"\n}"

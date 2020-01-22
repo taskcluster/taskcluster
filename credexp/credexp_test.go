@@ -21,6 +21,7 @@ func TestCredsExpiration(t *testing.T) {
 	transp := protocol.NewFakeTransport()
 	proto := protocol.NewProtocol(transp)
 	proto.Capabilities.Add("graceful-termination")
+	proto.SetInitialized()
 
 	ce.SetProtocol(proto)
 
