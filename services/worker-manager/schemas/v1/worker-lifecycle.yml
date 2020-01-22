@@ -10,10 +10,19 @@ properties:
     title: Registration Timeout
     type: integer
     description: |
-      Each worker in this pool has `timeout` seconds to
+      Each worker in this pool has `registrationTimeout` seconds to
       register itself with worker-manager after it has
       been requsted from the cloud provider. After this
       timeout, worker-manager will terminate the instance,
-      assuming it is broken
+      assuming it is broken.
+  checkinTimeout:
+    title: Checkin Timeout
+    type: integer
+    default: 345600
+    description: |
+      If specified, workers in this pool must re-register via `checkin()`
+      within `checkinTimeout` seconds to get new credentials. If the
+      worker has not done so, it will be terminated. This defaults
+      to 96 hours.
 additionalProperties: false
 required: []
