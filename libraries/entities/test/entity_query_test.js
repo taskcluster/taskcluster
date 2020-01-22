@@ -86,14 +86,13 @@ helper.dbSuite(path.basename(__filename), function() {
 
       await insertDocuments(TestTable);
 
-      // TODO: Fix this
-      // await assert.rejects(async () => {
-      //   await TestTable.query({
-      //     name: 'item1',
-      //     count: 1,
-      //     tag: 'tag1',
-      //   });
-      // })
+      await assert.rejects(async () => {
+        await TestTable.query({
+          name: 'item1',
+          count: 1,
+          tag: 'tag1',
+        });
+      }, /should provide enough constraints/)
     });
     // TODO: Add more tests...
   });

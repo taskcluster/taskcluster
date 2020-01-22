@@ -100,7 +100,7 @@ class Entity {
     return ctx;
   }
 
-  static _doCondition(conditions) {
+  static _doCondition(conditions, options) {
     const valueFromOperand = (operand) => {
       if (operand instanceof Date) {
         return operand.toJSON();
@@ -138,6 +138,10 @@ class Entity {
 
       return `value ->> '${property}' ${op.operator} ${shouldAddQuotes ? `'${operandValue}'` : operandValue}`;
     }).join(' and ');
+
+    if (options.matchPartition === 'exact') {
+      assert(/partition_key/.test(condition), 'conditions should provide enough constraints for constructions of the partition key');
+    }
 
     return condition;
   }
@@ -242,8 +246,9 @@ class Entity {
     const {
       limit = 1000,
       page,
+      matchPartition = 'none',
     } = options;
-    const condition = this._doCondition(conditions);
+    const condition = this._doCondition(conditions, options);
     const result = await this.db.fns[`${this.tableName}_scan`](condition, limit, page);
 
     return result.map(entry => (
@@ -259,7 +264,12 @@ class Entity {
   }
 
   static query(conditions, options = {}) {
-    return this.scan(conditions, options);
+    const opts = {
+      ...options,
+      matchPartition: 'exact',
+    };
+
+    return this.scan(conditions, opts);
   }
 
   static configure(configureOptions) {
