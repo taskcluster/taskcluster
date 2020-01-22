@@ -114,10 +114,7 @@ class AzureProvider extends Provider {
       return; // Nothing to do
     }
 
-    let registrationExpiry = null;
-    if ((workerPool.config.lifecycle || {}).registrationTimeout) {
-      registrationExpiry = Date.now() + workerPool.config.lifecycle.registrationTimeout * 1000;
-    }
+    const {registrationExpiry, checkinDeadline} = this.interpretLifecycle(workerPool.config);
 
     const cfgs = [];
     while (toSpawn > 0) {
@@ -265,6 +262,7 @@ class AzureProvider extends Provider {
         providerData: {
           ...providerData,
           registrationExpiry,
+          checkinDeadline,
         },
       });
     }));
@@ -389,9 +387,14 @@ class AzureProvider extends Provider {
   async checkWorker({worker}) {
     const states = this.Worker.states;
     this.seen[worker.workerPoolId] = this.seen[worker.workerPoolId] || 0;
+
     if (worker.providerData.registrationExpiry &&
       worker.state === states.REQUESTED &&
       worker.providerData.registrationExpiry < Date.now()) {
+      return await this.removeWorker({worker});
+    }
+
+    if (worker.providerData.checkinDeadline && worker.providerData.checkinDeadline < Date.now()) {
       return await this.removeWorker({worker});
     }
 

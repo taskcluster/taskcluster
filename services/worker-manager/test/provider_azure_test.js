@@ -266,6 +266,58 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
     assert(!fakeAzure.deleteNICStub.called);
   });
 
+  test('remove very old workers', async function() {
+    const worker = await helper.Worker.create({
+      workerPoolId,
+      workerGroup: 'whatever',
+      workerId: 'whatever',
+      providerId,
+      capacity: 1,
+      created: taskcluster.fromNow('-1 hour'),
+      lastModified: taskcluster.fromNow('-2 weeks'),
+      lastChecked: taskcluster.fromNow('-2 weeks'),
+      expires: taskcluster.fromNow('1 week'),
+      state: helper.Worker.states.REQUESTED,
+      providerData: {
+        ...baseProviderData,
+        checkinDeadline: Date.now() - 1000,
+      },
+    });
+    await provider.scanPrepare();
+    await provider.checkWorker({worker});
+    await provider.scanCleanup();
+    assert(fakeAzure.deleteVMStub.called);
+    assert(fakeAzure.deleteDiskStub.called);
+    assert(fakeAzure.deleteIPStub.called);
+    assert(fakeAzure.deleteNICStub.called);
+  });
+
+  test('don\'t remove current workers', async function() {
+    const worker = await helper.Worker.create({
+      workerPoolId,
+      workerGroup: 'whatever',
+      workerId: 'whatever',
+      providerId,
+      created: taskcluster.fromNow('-1 hour'),
+      expires: taskcluster.fromNow('1 week'),
+      capacity: 1,
+      lastModified: taskcluster.fromNow('-2 weeks'),
+      lastChecked: taskcluster.fromNow('-2 weeks'),
+      state: helper.Worker.states.REQUESTED,
+      providerData: {
+        ...baseProviderData,
+        checkinDeadline: Date.now() + 1000,
+      },
+    });
+    await provider.scanPrepare();
+    await provider.checkWorker({worker});
+    await provider.scanCleanup();
+    assert(!fakeAzure.deleteVMStub.called);
+    assert(!fakeAzure.deleteDiskStub.called);
+    assert(!fakeAzure.deleteIPStub.called);
+    assert(!fakeAzure.deleteNICStub.called);
+  });
+
   suite('registerWorker', function() {
     const workerGroup = providerId;
     const workerId = '5d06deb3-807b-46dd-aef5-78aaf9193f71';

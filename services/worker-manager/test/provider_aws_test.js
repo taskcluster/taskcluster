@@ -481,6 +481,40 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
 
       sinon.restore();
     });
+
+    test('remove very old workers', async function() {
+      const worker = await helper.Worker.create({
+        ...workerInDB,
+        workerId: 'running',
+        state: helper.Worker.states.REQUESTED,
+        providerData: {
+          ...workerInDB.providerData,
+          checkinDeadline: Date.now() - 1000,
+        },
+      });
+      provider.seen = {};
+      await provider.checkWorker({worker: worker});
+      assert.equal(aws.EC2().terminateInstances.calls.length, 1);
+
+      sinon.restore();
+    });
+
+    test('don\'t remove current workers', async function() {
+      const worker = await helper.Worker.create({
+        ...workerInDB,
+        workerId: 'running',
+        state: helper.Worker.states.REQUESTED,
+        providerData: {
+          ...workerInDB.providerData,
+          checkinDeadline: Date.now() + 1000,
+        },
+      });
+      provider.seen = {};
+      await provider.checkWorker({worker: worker});
+      assert.equal(aws.EC2().terminateInstances.calls.length, 0);
+
+      sinon.restore();
+    });
   });
 
   suite('AWS provider - removeWorker', function() {

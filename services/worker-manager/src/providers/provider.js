@@ -85,6 +85,20 @@ class Provider {
 
   async removeResources({workerPool}) {
   }
+
+  interpretLifecycle({lifecycle}) {
+    let registrationExpiry, checkinDeadline = null;
+    if (lifecycle){
+      const {registrationTimeout, checkinTimeout} = lifecycle;
+      if (registrationTimeout) {
+        registrationExpiry = Date.now() + registrationTimeout * 1000;
+      }
+      if (checkinTimeout) {
+        checkinDeadline = Date.now() + checkinTimeout * 1000;
+      }
+    }
+    return {registrationExpiry, checkinDeadline};
+  }
 }
 
 /**
