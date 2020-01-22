@@ -114,11 +114,10 @@ helper.dbSuite(path.basename(__filename), function() {
 
       const result = await TestTable.query({ id });
       const revs = result.map(item => item.rev);
-      // TODO: Fix this
-      // assert.equal(revs, [0, 1, 2, 14, 200], 'wrong revision order');
-      // assert.equal(result.map(item => item.text), [
-      //   'A', 'B', 'C', 'D', 'E',
-      // ], 'wrong order of text properties');
+      assert.deepEqual(revs, [0, 1, 2, 14, 200], 'wrong revision order');
+      assert.deepEqual(result.map(item => item.text), [
+        'A', 'B', 'C', 'D', 'E',
+      ], 'wrong order of text properties');
     });
   });
 });

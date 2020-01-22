@@ -92,6 +92,8 @@ methods:
           sql := sql || ' where ' || condition;
         end if;
 
+        sql := sql || ' order by test_entities.partition_key, test_entities.row_key';
+
         if size is not null and size > 0 then
           sql := sql || ' limit ' || size;
 

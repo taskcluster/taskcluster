@@ -57,8 +57,8 @@ helper.dbSuite(path.basename(__filename), function() {
         text2: 'another string for the key',
       });
 
-      assert.equal(result.partitionKey, `${id}~42`);
-      assert.equal(result.rowKey, `${entry.text1}~${entry.text2}`);
+      assert.equal(result._partitionKey, `${id}~42`);
+      assert.equal(result._rowKey, `${entry.text1}~${entry.text2}`);
     });
   });
 });

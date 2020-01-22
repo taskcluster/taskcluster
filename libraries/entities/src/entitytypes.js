@@ -155,15 +155,33 @@ class BaseBufferType extends BaseType {
     throw new Error('Not implemented');
   }
 
-  // TODO: Fix this
-  serialize(target, value, cryptoKey) {}
+  serialize(target, value, cryptoKey) {
+    value = this.toBuffer(value, cryptoKey);
+    checkSize(this.property, value, 256 * 1024);
+    // We have one chunk per 64kb
+    const chunks = Math.ceil(value.length / (64 * 1024));
+    for (let i = 0; i < chunks; i++) {
+      const end   = Math.min((i + 1) * 64 * 1024, value.length);
+      const chunk = value.slice(i * 64 * 1024, end);
+      target['__buf' + i + '_' + this.property] = chunk.toString('base64');
+    }
+    target['__bufchunks_' + this.property] = chunks;
+  }
 
   hash(value) {
     return this.toBuffer(value);
   }
 
-  // TODO: Fix this
-  deserialize(source, cryptoKey) {}
+  deserialize(source, cryptoKey) {
+    const n = source['__bufchunks_' + this.property];
+    checkType('BaseBufferType', '__bufchunks_' + this.property, n, 'number');
+
+    const chunks = [];
+    for (let i = 0; i < n; i++) {
+      chunks[i] = Buffer.from(source['__buf' + i + '_' + this.property], 'base64');
+    }
+    return this.fromBuffer(Buffer.concat(chunks), cryptoKey);
+  }
 }
 
 class DateType extends BaseType {

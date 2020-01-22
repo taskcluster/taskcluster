@@ -9,33 +9,66 @@ const {
   UNIQUE_VIOLATION,
 } = require('taskcluster-lib-postgres');
 
+// ** Coding Style **
+// To ease reading of this component we recommend the following code guidelines:
+//
+// Summary:
+//    - Use __ prefix for private members on `Entity.prototype` and
+//      Use _  prefix for private members on `Entity` instances.
+//    - Variables named `entity` are semi-raw `azure-table-node` types
+//    - Variables named `item` are instances of `Entity`
+//    - Variables named `properties` are deserialized `entity` objects
+//
+// Long Version:
+//
+//
+//    * Variables named `entity` are "raw" entities, well raw in the sense that
+//      they interface the transport layer provided by Azure Table Storage.
+//
+//    * Variables named `item` refers instances of `Entity` or instances of
+//      subclasses of `Entity`. This is slightly confusing as people using the
+//      `Entity` class (of subclasses thereof) are more likely refer to generic
+//      instances of their subclasses as `entity` and not `item`.
+//      We draw the distinction here because Azure Table Storage uses the
+//      terminology entities. Also subclasses of `Entity` usually has another
+//      name, like `Artifact`, so non-generic instances are easily referred to
+//      using a variant of that name, like `artifact` as an instance of
+//      `Artifact`.
+//
+//    * Variables named `properties` is usually a mapping from property names
+//      to deserialized values.
+//
+//    * Properties that are private the `Entity` class, should be prefixed `__`,
+//      this way subclasses of `Entity` (created with `Entity.configure`) can
+//      rely on properties prefixed `_` as being private to them.
+//
+//    * Try to prevent users from making mistakes. Or doing illegal things, like
+//      modifying objects unintentionally without changes being saved.
+//
+// Okay, that's it for now, happy hacking...
 class Entity {
   static op = op;
   static keys = keys;
   static types = types;
 
-  constructor(properties, options = {}) {
+  constructor(entity, options = {}) {
     const {
       etag,
       tableName,
-      partitionKey,
-      rowKey,
       db,
       context = {},
     } = options;
 
-    assert(properties, 'properties is required');
+    assert(entity, 'properties is required');
     assert(tableName, 'tableName is required');
-    assert(partitionKey, 'partitionKey is required');
-    assert(rowKey, 'rowKey is required');
     assert(db, 'db is required');
     assert(typeof context === 'object' && context.constructor === Object, 'context should be an object');
 
-    this.properties = this.deserialize(properties);
+    this.properties = this.deserialize(entity); // TODO: _properties
     this.etag = etag;
     this.tableName = tableName;
-    this.partitionKey = partitionKey;
-    this.rowKey = rowKey;
+    this._partitionKey = entity.PartitionKey;
+    this._rowKey = entity.RowKey;
     this.db = db;
 
     Object.entries(context).forEach(([key, value]) => {
@@ -48,7 +81,7 @@ class Entity {
   }
 
   async remove(ignoreChanges, ignoreIfNotExists) {
-    const [result] = await this.db.fns[`${this.tableName}_remove`](this.partitionKey, this.rowKey);
+    const [result] = await this.db.fns[`${this.tableName}_remove`](this._partitionKey, this._rowKey);
 
     if (result) {
       return true;
@@ -71,7 +104,7 @@ class Entity {
   // load the properties from the table once more, and return true if anything has changed.
   // Else, return false.
   async reload() {
-    const result = await this.db.fns[`${this.tableName}_load`](this.partitionKey, this.rowKey);
+    const result = await this.db.fns[`${this.tableName}_load`](this._partitionKey, this._rowKey);
     const etag = result[0].etag;
 
     return etag !== this.etag;
@@ -80,7 +113,7 @@ class Entity {
   async modify(modifier) {
     await modifier.call(this.properties, this.properties);
 
-    return this.db.fns[`${this.tableName}_modify`](this.partitionKey, this.rowKey, this.properties, 1);
+    return this.db.fns[`${this.tableName}_modify`](this._partitionKey, this._rowKey, this.properties, 1);
   }
 
   static _getContextEntries(contextNames, contextEntries) {
@@ -126,11 +159,11 @@ class Entity {
         op = Entity.op.equal(op);
       }
 
-      if (this.partitionKey.key === property) {
+      if (this.__partitionKey.key === property) {
         return `partition_key ${op.operator} ${shouldAddQuotes ? `'${op.operand}'` : op.operand}`;
       }
 
-      if (this.rowKey.key === property) {
+      if (this.__rowKey.key === property) {
         return `row_key ${op.operator} ${shouldAddQuotes ? `'${op.operand}'` : op.operand}`;
       }
 
@@ -148,17 +181,42 @@ class Entity {
 
   static calculateId(properties) {
     return {
-      partitionKey: this.partitionKey.exact(properties),
-      rowKey: this.rowKey.exact(properties),
+      partitionKey: this.__partitionKey.exact(properties),
+      rowKey: this.__rowKey.exact(properties),
     }
+  }
+
+  static serialize(properties) {
+    const {partitionKey, rowKey} = this.calculateId(properties);
+    const entity = {
+      PartitionKey: partitionKey,
+      RowKey: rowKey,
+      Version: this.version,
+    };
+    const cryptoKey = this.cryptoKey;
+    Object.entries(this.mapping).forEach(([key, keytype]) => {
+      keytype.serialize(entity, properties[key], cryptoKey);
+    });
+    return entity;
+  }
+
+  deserialize(properties) {
+    const deserializedProperties = {};
+    Object.entries(this.constructor.mapping).forEach(([key, keytype]) => {
+      deserializedProperties[key] = keytype.deserialize(properties);
+    });
+
+    return deserializedProperties;
   }
 
   static async create(properties, overwrite) {
     const { partitionKey, rowKey } = this.calculateId(properties);
 
+    const entity = this.serialize(properties);
+
     let res;
     try {
-      res = await this.db.fns[`${this.tableName}_create`](partitionKey, rowKey, properties, overwrite, 1);
+      res = await this.db.fns[`${this.tableName}_create`](partitionKey, rowKey, entity, overwrite, 1);
     } catch (err) {
       if (err.code === UNIQUE_VIOLATION) {
         const e = new Error('Entity already exists');
@@ -178,7 +236,7 @@ class Entity {
 
     const etag = res[0][`${this.tableName}_create`];
 
-    return new this(properties, {
+    return new this(entity, {
       etag,
       tableName: this.tableName,
       partitionKey,
@@ -290,16 +348,6 @@ class Entity {
 
         return ConfiguredEntity;
       }
-
-      deserialize(properties) {
-        const deserializedProperties = {};
-
-        Object.entries(configureOptions.properties).forEach(([key, Type]) => {
-          deserializedProperties[key] = new Type(key).deserialize(properties);
-        });
-
-        return deserializedProperties;
-      }
     }
 
     if (configureOptions.context) {
@@ -317,8 +365,8 @@ class Entity {
       ConfiguredEntity.mapping[key] = new Type(key);
     });
 
-    ConfiguredEntity.partitionKey = configureOptions.partitionKey(ConfiguredEntity.mapping);
-    ConfiguredEntity.rowKey = configureOptions.rowKey(ConfiguredEntity.mapping);
+    ConfiguredEntity.__partitionKey = configureOptions.partitionKey(ConfiguredEntity.mapping);
+    ConfiguredEntity.__rowKey = configureOptions.rowKey(ConfiguredEntity.mapping);
     // TODO: more configureOptions
     return ConfiguredEntity;
   }
