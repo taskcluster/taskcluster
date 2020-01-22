@@ -227,15 +227,15 @@
       "additionalProperties": false,
       "description": "Conditions a worker can reach and actions to take in the case that they do.\nNot all providers necessarily implement all features of this in the same way.\nRead the providers docs to understand exactly what it will do.\n",
       "properties": {
-        "checkinTimeout": {
-          "default": 345600,
-          "description": "If specified, workers in this pool must re-register via `checkin()`\nwithin `checkinTimeout` seconds to get new credentials. If the\nworker has not done so, it will be terminated. This defaults\nto 96 hours.\n",
-          "title": "Checkin Timeout",
-          "type": "integer"
-        },
         "registrationTimeout": {
           "description": "Each worker in this pool has `registrationTimeout` seconds to\nregister itself with worker-manager after it has\nbeen requsted from the cloud provider. After this\ntimeout, worker-manager will terminate the instance,\nassuming it is broken.\n",
           "title": "Registration Timeout",
+          "type": "integer"
+        },
+        "reregisterTimeout": {
+          "default": 345600,
+          "description": "If specified, workers in this pool must re-register via `reregister()`\nwithin `reregisterTimeout` seconds to get new credentials. If the\nworker has not done so, it will be terminated. This defaults\nto 96 hours.\n",
+          "title": "Checkin Timeout",
           "type": "integer"
         }
       },
@@ -8316,6 +8316,25 @@
           "scopes": "worker-manager:remove-worker:<workerPoolId>/<workerGroup>/<workerId>",
           "stability": "stable",
           "title": "Remove a Worker",
+          "type": "function"
+        },
+        {
+          "args": [
+            "workerPoolId",
+            "workerGroup",
+            "workerId"
+          ],
+          "category": "Workers",
+          "description": "Allows a worker to claim new credentials and increase its own\nmaximum lifetime before a provider will terminate it.",
+          "method": "get",
+          "name": "reregister",
+          "output": "v1/register-worker-response.json#",
+          "query": [
+          ],
+          "route": "/workers/<workerPoolId>:/<workerGroup>/<workerId>/reregister",
+          "scopes": "worker-manager:reregister-worker:<workerPoolId>/<workerGroup>/<workerId>",
+          "stability": "stable",
+          "title": "Reregister Worker",
           "type": "function"
         },
         {

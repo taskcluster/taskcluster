@@ -3801,6 +3801,29 @@ await asyncWorkerManager.removeWorker(workerPoolId, workerGroup, workerId) # -> 
 await asyncWorkerManager.removeWorker(workerPoolId='value', workerGroup='value', workerId='value') # -> None
 ```
 
+#### Reregister Worker
+Allows a worker to claim new credentials and increase its own
+maximum lifetime before a provider will terminate it.
+
+
+
+Takes the following arguments:
+
+  * `workerPoolId`
+  * `workerGroup`
+  * `workerId`
+
+Has required output schema
+
+```python
+# Sync calls
+workerManager.reregister(workerPoolId, workerGroup, workerId) # -> result
+workerManager.reregister(workerPoolId='value', workerGroup='value', workerId='value') # -> result
+# Async call
+await asyncWorkerManager.reregister(workerPoolId, workerGroup, workerId) # -> result
+await asyncWorkerManager.reregister(workerPoolId='value', workerGroup='value', workerId='value') # -> result
+```
+
 #### Workers in a Worker Pool
 Get the list of all the existing workers in a given worker pool.
 

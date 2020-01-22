@@ -187,6 +187,18 @@ class WorkerManager(BaseClient):
 
         return self._makeApiCall(self.funcinfo["removeWorker"], *args, **kwargs)
 
+    def reregister(self, *args, **kwargs):
+        """
+        Reregister Worker
+
+        Allows a worker to claim new credentials and increase its own
+        maximum lifetime before a provider will terminate it.
+
+        This method is ``stable``
+        """
+
+        return self._makeApiCall(self.funcinfo["reregister"], *args, **kwargs)
+
     def listWorkersForWorkerPool(self, *args, **kwargs):
         """
         Workers in a Worker Pool
@@ -315,6 +327,14 @@ class WorkerManager(BaseClient):
             'name': 'reportWorkerError',
             'output': 'v1/worker-pool-error.json#',
             'route': '/worker-pool-errors/<workerPoolId>',
+            'stability': 'stable',
+        },
+        "reregister": {
+            'args': ['workerPoolId', 'workerGroup', 'workerId'],
+            'method': 'get',
+            'name': 'reregister',
+            'output': 'v1/register-worker-response.json#',
+            'route': '/workers/<workerPoolId>:/<workerGroup>/<workerId>/reregister',
             'stability': 'stable',
         },
         "updateWorkerPool": {
