@@ -204,16 +204,7 @@ class GoogleProvider extends Provider {
       return; // Nothing to do
     }
 
-    let registrationExpiry, checkinDeadline = null;
-    if (workerPool.config.lifecycle){
-      const {registrationTimeout, checkinTimeout} = workerPool.config.lifecycle || {};
-      if (registrationTimeout) {
-        registrationExpiry = Date.now() + registrationTimeout * 1000;
-      }
-      if (checkinTimeout) {
-        checkinDeadline = Date.now() + checkinTimeout * 1000;
-      }
-    }
+    const {registrationExpiry, checkinDeadline} = this.interpretLifecycle(workerPool.config);
 
     const cfgs = [];
     while (toSpawn > 0) {

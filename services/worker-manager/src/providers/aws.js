@@ -101,10 +101,7 @@ class AwsProvider extends Provider {
       return;
     }
 
-    let registrationExpiry = null;
-    if ((workerPool.config.lifecycle || {}).registrationTimeout) {
-      registrationExpiry = Date.now() + workerPool.config.lifecycle.registrationTimeout * 1000;
-    }
+    const {registrationExpiry, checkinDeadline} = this.interpretLifecycle(workerPool.config);
 
     const toSpawnPerConfig = Math.ceil(toSpawn / workerPool.config.launchConfigs.length);
     const shuffledConfigs = _.shuffle(workerPool.config.launchConfigs);
@@ -227,6 +224,7 @@ class AwsProvider extends Provider {
             state: i.State.Name,
             stateReason: i.StateReason.Message,
             registrationExpiry,
+            checkinDeadline,
           },
         });
       }));
@@ -281,6 +279,10 @@ class AwsProvider extends Provider {
     if (worker.providerData.registrationExpiry &&
       worker.state === this.Worker.states.REQUESTED &&
       worker.providerData.registrationExpiry < Date.now()) {
+      return await this.removeWorker({worker});
+    }
+
+    if (worker.providerData.checkinDeadline && worker.providerData.checkinDeadline < Date.now()) {
       return await this.removeWorker({worker});
     }
 
