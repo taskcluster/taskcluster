@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/taskcluster/taskcluster-client-go/tcauth"
+	"github.com/taskcluster/taskcluster/clients/client-go/tcauth"
 )
 
 // tests only call public APIs, so no auth needed and we can use mozilla production deployment
