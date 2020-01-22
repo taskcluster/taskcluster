@@ -3365,6 +3365,25 @@ module.exports = {
         },
         {
           "args": [
+            "workerPoolId",
+            "workerGroup",
+            "workerId"
+          ],
+          "category": "Workers",
+          "description": "Allows a worker to claim new credentials and increase its own\nmaximum lifetime before a provider will terminate it.",
+          "method": "get",
+          "name": "reregister",
+          "output": "v1/register-worker-response.json#",
+          "query": [
+          ],
+          "route": "/workers/<workerPoolId>:/<workerGroup>/<workerId>/reregister",
+          "scopes": "worker-manager:reregister-worker:<workerPoolId>/<workerGroup>/<workerId>",
+          "stability": "stable",
+          "title": "Reregister Worker",
+          "type": "function"
+        },
+        {
+          "args": [
             "workerPoolId"
           ],
           "category": "Workers",

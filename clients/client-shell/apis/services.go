@@ -1680,6 +1680,21 @@ var services = map[string]definitions.Service{
 				Input: "",
 			},
 			definitions.Entry{
+				Name:        "reregister",
+				Title:       "Reregister Worker",
+				Description: "Allows a worker to claim new credentials and increase its own\nmaximum lifetime before a provider will terminate it.",
+				Stability:   "stable",
+				Method:      "get",
+				Route:       "/workers/<workerPoolId>:/<workerGroup>/<workerId>/reregister",
+				Args: []string{
+					"workerPoolId",
+					"workerGroup",
+					"workerId",
+				},
+				Query: []string{},
+				Input: "",
+			},
+			definitions.Entry{
 				Name:        "listWorkersForWorkerPool",
 				Title:       "Workers in a Worker Pool",
 				Description: "Get the list of all the existing workers in a given worker pool.",

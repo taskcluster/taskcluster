@@ -280,7 +280,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
       state: helper.Worker.states.REQUESTED,
       providerData: {
         ...baseProviderData,
-        checkinDeadline: Date.now() - 1000,
+        reregisterDeadline: Date.now() - 1000,
       },
     });
     await provider.scanPrepare();
@@ -306,7 +306,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
       state: helper.Worker.states.REQUESTED,
       providerData: {
         ...baseProviderData,
-        checkinDeadline: Date.now() + 1000,
+        reregisterDeadline: Date.now() + 1000,
       },
     });
     await provider.scanPrepare();

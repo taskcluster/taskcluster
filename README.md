@@ -41,6 +41,8 @@ It is not possible to run a full Taskcluster deployment directly from this repos
     * [Taskcluster Client for JS](clients/client#readme)
     * [Taskcluster Client for Go](clients/client-go#readme)
     * [Taskcluster Client for Python](clients/client-py#readme)
+    * [Taskcluster Client for Python](clients/client-py#readme)
+    * [Taskcluster Client for Python](clients/client-py#readme)
     * [Taskcluster Client for Shell](clients/client-shell#readme)
     * [Taskcluster Client for Web](clients/client-web#readme)
 * [Development Documentation](dev-docs#readme)

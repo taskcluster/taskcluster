@@ -114,7 +114,7 @@ class AzureProvider extends Provider {
       return; // Nothing to do
     }
 
-    const {registrationExpiry, checkinDeadline} = this.interpretLifecycle(workerPool.config);
+    const {registrationExpiry, reregisterDeadline} = this.interpretLifecycle(workerPool.config);
 
     const cfgs = [];
     while (toSpawn > 0) {
@@ -262,7 +262,7 @@ class AzureProvider extends Provider {
         providerData: {
           ...providerData,
           registrationExpiry,
-          checkinDeadline,
+          reregisterDeadline,
         },
       });
     }));
@@ -394,7 +394,7 @@ class AzureProvider extends Provider {
       return await this.removeWorker({worker});
     }
 
-    if (worker.providerData.checkinDeadline && worker.providerData.checkinDeadline < Date.now()) {
+    if (worker.providerData.reregisterDeadline && worker.providerData.reregisterDeadline < Date.now()) {
       return await this.removeWorker({worker});
     }
 
