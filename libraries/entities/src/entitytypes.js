@@ -88,6 +88,17 @@ class StringType extends BaseValueType {
   }
 }
 
+class BooleanType extends BaseValueType {
+  validate(value) {
+    checkType('BooleanType', this.property, value, 'boolean');
+  }
+
+  string(value) {
+    this.validate(value);
+    return value.toString();
+  }
+}
+
 class SlugIdType extends BaseValueType {
   isOrdered = true;
   isComparable = true;
@@ -252,7 +263,9 @@ class TextType extends BaseBufferType {
 }
 
 module.exports = {
-  Boolean: 'boolean',
+  Boolean: function(property) {
+    return new BooleanType(property);
+  },
   Number: function(property) {
     return new NumberType(property);
   },
