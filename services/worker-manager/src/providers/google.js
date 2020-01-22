@@ -204,9 +204,15 @@ class GoogleProvider extends Provider {
       return; // Nothing to do
     }
 
-    let registrationExpiry = null;
-    if ((workerPool.config.lifecycle || {}).registrationTimeout) {
-      registrationExpiry = Date.now() + workerPool.config.lifecycle.registrationTimeout * 1000;
+    let registrationExpiry, checkinDeadline = null;
+    if (workerPool.config.lifecycle){
+      const {registrationTimeout, checkinTimeout} = workerPool.config.lifecycle || {};
+      if (registrationTimeout) {
+        registrationExpiry = Date.now() + registrationTimeout * 1000;
+      }
+      if (checkinTimeout) {
+        checkinDeadline = Date.now() + checkinTimeout * 1000;
+      }
     }
 
     const cfgs = [];
@@ -320,6 +326,7 @@ class GoogleProvider extends Provider {
             zone: op.zone,
           },
           registrationExpiry,
+          checkinDeadline,
         },
       });
     }));
@@ -345,6 +352,10 @@ class GoogleProvider extends Provider {
     if (worker.providerData.registrationExpiry &&
       worker.state === states.REQUESTED &&
       worker.providerData.registrationExpiry < Date.now()) {
+      return await this.removeWorker({worker});
+    }
+
+    if (worker.providerData.checkinDeadline && worker.providerData.checkinDeadline < Date.now()) {
       return await this.removeWorker({worker});
     }
 

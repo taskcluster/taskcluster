@@ -227,8 +227,14 @@
       "additionalProperties": false,
       "description": "Conditions a worker can reach and actions to take in the case that they do.\nNot all providers necessarily implement all features of this in the same way.\nRead the providers docs to understand exactly what it will do.\n",
       "properties": {
+        "checkinTimeout": {
+          "default": 345600,
+          "description": "If specified, workers in this pool must re-register via `checkin()`\nwithin `checkinTimeout` seconds to get new credentials. If the\nworker has not done so, it will be terminated. This defaults\nto 96 hours.\n",
+          "title": "Checkin Timeout",
+          "type": "integer"
+        },
         "registrationTimeout": {
-          "description": "Each worker in this pool has `timeout` seconds to\nregister itself with worker-manager after it has\nbeen requsted from the cloud provider. After this\ntimeout, worker-manager will terminate the instance,\nassuming it is broken\n",
+          "description": "Each worker in this pool has `registrationTimeout` seconds to\nregister itself with worker-manager after it has\nbeen requsted from the cloud provider. After this\ntimeout, worker-manager will terminate the instance,\nassuming it is broken.\n",
           "title": "Registration Timeout",
           "type": "integer"
         }
