@@ -1,3 +1,6 @@
+const _ = require('lodash');
+const slugid = require('slugid');
+const stringify = require('json-stable-stringify');
 const { SLUG_ID_RE } = require('./constants');
 // Check that value is of types for name and property
 // Print messages and throw an error if the check fails
@@ -10,10 +13,53 @@ function checkType(name, property, value, types) {
   }
 }
 
-class BaseValueType {
+const checkSize = function(property, value, maxSize) {
+  if (value.length <= maxSize) {
+    return;
+  }
+
+  const err = new Error('Property ' + property + ' is larger than ' + maxSize +
+    ' bytes when encoded for storage');
+  err.code = 'PropertyTooLarge';
+
+  throw err;
+};
+
+class BaseType {
   constructor(property) {
     this.property = property;
   }
+
+  isOrdered = false;
+  isComparable = false;
+  isEncrypted = false;
+
+  serialize(target, value, cryptoKey) {
+    throw new Error('Not implemented');
+  }
+
+  equal(value1, value2) {
+    const target1 = {};
+    const target2 = {};
+
+    this.serialize(target1, value1);
+    this.serialize(target2, value2);
+
+    return _.isEqual(target1, target2);
+  }
+
+  string(value) {
+    throw new Error('Operation is not supported for this data type');
+  }
+
+  hash(value) {
+    return this.string(value);
+  }
+}
+
+class BaseValueType extends BaseType {
+  isOrdered = true;
+  isComparable = true;
 
   deserialize(source) {
     const value = source[this.property];
@@ -23,6 +69,11 @@ class BaseValueType {
 
   validate(value) {
     throw new Error('Not implemented');
+  }
+
+  serialize(target, value, cryptoKey) {
+    this.validate(value);
+    target[this.property] = value;
   }
 
   string(value) {
@@ -38,11 +89,23 @@ class StringType extends BaseValueType {
 }
 
 class SlugIdType extends BaseValueType {
+  isOrdered = true;
+  isComparable = true;
+
   validate(value) {
     checkType('SlugIdType', this.property, value, 'string');
     if (!SLUG_ID_RE.test(value)) {
       throw new Error(`SlugIdType ${this.property} expected a slugid got: ${value}`);
     }
+  }
+
+  serialize(target, value) {
+    this.validate(value);
+    target[this.property] = slugid.decode(value);
+  }
+
+  deserialize(source) {
+    return slugid.encode(source[this.property]);
   }
 }
 
@@ -69,6 +132,125 @@ class PositiveIntegerType extends NumberType {
   }
 }
 
+class BaseBufferType extends BaseType {
+  isOrdered = false;
+  isComparable = false;
+
+  toBuffer(value, cryptoKey) {
+    throw new Error('Not implemented');
+  }
+
+  fromBuffer(buffer, cryptoKey) {
+    throw new Error('Not implemented');
+  }
+
+  // TODO: Fix this
+  serialize(target, value, cryptoKey) {}
+
+  hash(value) {
+    return this.toBuffer(value);
+  }
+
+  // TODO: Fix this
+  deserialize(source, cryptoKey) {}
+}
+
+class DateType extends BaseType {
+  isOrdered = true;
+  isComparable = true;
+
+  validate(value) {
+    if (!(value instanceof Date)) {
+      throw new Error(`DateType ${this.property} expected a date got type ${typeof value}`);
+    }
+  }
+
+  serialize(target, value) {
+    this.validate(value);
+
+    target[this.property] = value.toJSON();
+  }
+
+  equal(value1, value2) {
+    this.validate(value1);
+    this.validate(value2);
+
+    return value1.getTime() === value2.getTime();
+  }
+
+  string(value) {
+    this.validate(value);
+
+    return value.toJSON();
+  }
+
+  deserialize(source) {
+    const value = new Date(source[this.property]);
+    this.validate(value);
+
+    return value;
+  }
+}
+
+class JSONType extends BaseBufferType {
+  validate(value) {
+    checkType('JSONType', this.property, value, [
+      'string',
+      'number',
+      'object',
+      'boolean',
+    ]);
+  }
+
+  toBuffer(value) {
+    this.validate(value);
+    return Buffer.from(JSON.stringify(value), 'utf8');
+  }
+
+  fromBuffer(value) {
+    return JSON.parse(value.toString('utf8'));
+  }
+
+  equal(value1, value2) {
+    return _.isEqual(value1, value2);
+  }
+
+  hash(value) {
+    return stringify(value);
+  }
+
+  clone(value) {
+    return _.cloneDeep(value);
+  }
+}
+
+class TextType extends BaseBufferType {
+  validate(value) {
+    checkType('TextType', this.property, value, 'string');
+  }
+
+  toBuffer(value) {
+    this.validate(value);
+    return Buffer.from(value, 'utf8');
+  }
+
+  fromBuffer(value) {
+    return value.toString('utf8');
+  }
+
+  equal(value1, value2) {
+    return value1 === value2;
+  }
+
+  hash(value) {
+    return value;
+  }
+
+  clone(value) {
+    return value;
+  }
+}
+
 module.exports = {
   Boolean: 'boolean',
   Number: function(property) {
@@ -77,14 +259,18 @@ module.exports = {
   PositiveInteger: function(property) {
     return new PositiveIntegerType(property);
   },
-  Date: 'date',
+  Date: function(property) {
+    return new DateType(property);
+  },
   UUID: 'uuid',
   SlugId: function(property) {
     return new SlugIdType(property);
   },
   BaseBufferType: 'base-buffer-type',
   Blob: 'blob',
-  JSON: 'json',
+  JSON: function (property) {
+    return new JSONType(property);
+  },
   Schema: 'schema',
   EncryptedBlob: 'encrypted-blob',
   EncryptedText: 'encrypted-text',
@@ -94,5 +280,7 @@ module.exports = {
   String: function(property) {
     return new StringType(property);
   },
-  Text: 'text',
+  Text: function (property) {
+    return new TextType(property);
+  },
 };

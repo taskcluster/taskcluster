@@ -42,7 +42,7 @@ class Entity {
       this[key] = value;
     });
 
-    Object.entries(properties).forEach(([key, value]) => {
+    Object.entries(this.properties).forEach(([key, value]) => {
       this[key] = value;
     });
   }
@@ -101,6 +101,14 @@ class Entity {
   }
 
   static _doCondition(conditions) {
+    const valueFromOperand = (operand) => {
+      if (operand instanceof Date) {
+        return operand.toJSON();
+      }
+
+      return operand;
+    };
+
     if (!conditions) {
       return null;
     }
@@ -109,7 +117,7 @@ class Entity {
       assert(typeof conditions === 'object' && conditions.constructor === Object, 'conditions should be an object');
     }
 
-    return Object.entries(conditions).map(([property, op]) => {
+    const condition = Object.entries(conditions).map(([property, op]) => {
       const shouldAddQuotes = typeof this.mapping[property].name !== 'NumberType';
 
       // Ensure that we have an operator, we just assume anything specified
@@ -126,8 +134,12 @@ class Entity {
         return `row_key ${op.operator} ${shouldAddQuotes ? `'${op.operand}'` : op.operand}`;
       }
 
-      return `value ->> '${property}' ${op.operator} ${shouldAddQuotes ? `'${op.operand}'` : op.operand}`;
+      const operandValue = valueFromOperand(op.operand);
+
+      return `value ->> '${property}' ${op.operator} ${shouldAddQuotes ? `'${operandValue}'` : operandValue}`;
     }).join(' and ');
+
+    return condition;
   }
 
   static calculateId(properties) {

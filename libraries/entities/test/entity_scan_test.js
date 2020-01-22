@@ -22,6 +22,7 @@ helper.dbSuite(path.basename(__filename), function() {
     taskId: Entity.types.String,
     provisionerId: Entity.types.String,
     workerType: Entity.types.String,
+    expires: Entity.types.Date,
   };
   const configuredTestTable = Entity.configure({
     partitionKey: Entity.keys.StringKey('taskId'),
@@ -37,6 +38,7 @@ helper.dbSuite(path.basename(__filename), function() {
         taskId: `${i}`,
         provisionerId: `provisionerId-${i}`,
         workerType: `workerType-${i}`,
+        expires: new Date(),
       });
 
       documents.push(entry);
@@ -95,6 +97,22 @@ helper.dbSuite(path.basename(__filename), function() {
 
       assert.equal(result.length, 1);
       assert.deepEqual(result[0].taskId, '9');
+    });
+    test('retrieve documents (with date condition)', async function() {
+      db = await helper.withDb({ schema, serviceName });
+      const TestTable = configuredTestTable.setup({ tableName: 'test_entities', db, serviceName });
+      const document = { provisionerId: 'test', workerType: 'test' };
+      await TestTable.create({ ...document, taskId: '1', expires: new Date('2020-01-01') });
+      await TestTable.create({ ...document, taskId: '2', expires: new Date('3020-01-01') });
+      await TestTable.create({ ...document, taskId: '3', expires: new Date('4020-01-01') });
+
+      const result = await TestTable.scan({
+        expires: Entity.op.equal(new Date('2020-01-01')),
+      });
+
+      assert.equal(result.length, 1);
+      assert.equal(result[0].taskId, '1');
+      assert.equal(result[0].expires.toJSON(), new Date('2020-01-01').toJSON());
     });
     test('retrieve documents in pages', async function() {
       db = await helper.withDb({ schema, serviceName });

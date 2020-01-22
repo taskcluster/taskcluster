@@ -1,5 +1,6 @@
 const assert = require('assert');
-const { COMPOSITE_SEPARATOR, ASCENDING_KEY_PADDING } = require('./constants');
+const crypto = require('crypto');
+const { COMPOSITE_SEPARATOR, HASH_KEY_SEPARATOR, ASCENDING_KEY_PADDING } = require('./constants');
 
 class StringKey {
   constructor(mapping, key) {
@@ -109,6 +110,32 @@ class HashKey {
       assert(mapping[keys[i]], `key ${keys[i]} is not defined in mapping`);
       this.types[i] = mapping[keys[i]];
     }
+  }
+
+  exact(properties) {
+    const hash =  crypto.createHash('sha512');
+    const n = this.keys.length;
+
+    for (let i = 0; i < n; i++) {
+      const key = this.keys[i];
+
+      // Get value from key
+      const value = properties[key];
+
+      if (value === undefined) {
+        throw new Error(`Unable to render HashKey from properties, missing ${key}`);
+      }
+
+      // Find hash value and update the hashsum
+      hash.update(this.types[i].hash(value), 'utf8');
+
+      // Insert separator, if this isn't the last key
+      if (i + 1 < n) {
+        hash.update(HASH_KEY_SEPARATOR, 'utf8');
+      }
+    }
+
+    return hash.digest('hex');
   }
 }
 
