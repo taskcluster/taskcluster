@@ -1,0 +1,55 @@
+version: 1
+migrationScript: |-
+  begin
+    create extension pgcrypto;
+    create table azure_queue_messages (
+      message_id uuid not null primary key,
+      queue_name text not null,
+      message_text text not null,
+      inserted timestamp not null,
+      visible timestamp not null, -- visible after this time
+      expires timestamp not null,  -- expired after this time
+      pop_receipt uuid -- null means not popped
+    );
+    create index azure_queue_messages_name on azure_queue_messages(queue_name);
+  end
+methods:
+  azure_queue_count:
+    description: test
+    mode: read
+    serviceName: test-entities
+    args: queue_name text
+    returns: integer
+    body: |-
+      begin
+        return (select count(*)
+        from azure_queue_messages msgs
+        where msgs.queue_name = azure_queue_count.queue_name); -- TODO: think about whether we should skip locks here
+      end
+  azure_queue_put:
+    description: test
+    mode: write
+    # Fix service name
+    serviceName: test-entities
+    args: queue_name text, message_text text, visible timestamp, expires timestamp
+    returns: void
+    body: |-
+      begin
+        insert into azure_queue_messages (
+            queue_name,
+            message_id,
+            message_text,
+            inserted,
+            visible,
+            expires
+          ) values (
+            azure_queue_put.queue_name,
+            public.gen_random_uuid(),
+            azure_queue_put.message_text,
+            now(),
+            azure_queue_put.visible,
+            azure_queue_put.expires
+          );
+          -- NOTE: JS will need to make sure queue name is a valid pg identifier
+        execute 'notify ' || queue_name;
+      end
