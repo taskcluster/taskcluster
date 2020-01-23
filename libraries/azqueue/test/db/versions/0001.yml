@@ -24,12 +24,13 @@ methods:
       begin
         return (select count(*)
         from azure_queue_messages msgs
-        where msgs.queue_name = azure_queue_count.queue_name); -- TODO: think about whether we should skip locks here
+        -- TODO: think about whether we should skip locks here
+        where msgs.queue_name = azure_queue_count.queue_name);
       end
   azure_queue_put:
     description: test
     mode: write
-    # Fix service name
+    # TODO: Fix service name
     serviceName: test-entities
     args: queue_name text, message_text text, visible timestamp, expires timestamp
     returns: void
@@ -50,6 +51,6 @@ methods:
             azure_queue_put.visible,
             azure_queue_put.expires
           );
-          -- NOTE: JS will need to make sure queue name is a valid pg identifier
+          -- TODO: JS will need to make sure queue name is a valid pg identifier
         execute 'notify ' || queue_name;
       end
