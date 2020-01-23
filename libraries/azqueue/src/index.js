@@ -1,4 +1,3 @@
-const assert = require('assert').strict;
 const taskcluster = require('taskcluster-client');
 
 class AZQueue {
@@ -6,17 +5,16 @@ class AZQueue {
     this.db = db;
   }
 
-  // NOOP
   async createQueue(name, metadata) {
-
+    // NOOP
   }
 
   async getMetadata(name) {
     const result = await this.db.fns.azure_queue_count(name);
 
     return {
-     messageCount: result[0].azure_queue_count,
-    }
+      messageCount: result[0].azure_queue_count,
+    };
   }
 
   async setMetadata(name, update) {
@@ -24,15 +22,15 @@ class AZQueue {
   }
 
   async putMessage(name, text, {visibilityTimeout, messageTTL}) {
-    const result = await this.db.fns.azure_queue_put(
+    await this.db.fns.azure_queue_put(
       name,
       text,
       taskcluster.fromNow(`${visibilityTimeout} seconds`),
-      taskcluster.fromNow(`${messageTTL} seconds`)
+      taskcluster.fromNow(`${messageTTL} seconds`),
     );
   }
 
-  async getMessage(name, {visibilityTimeout, numberOfMessages}) {
+  async getMessages(name, {visibilityTimeout, numberOfMessages}) {
 
   }
 
@@ -45,12 +43,12 @@ class AZQueue {
   }
 
   async listQueues() {
-
+    // stubbed out
+    return {queues: []};
   }
 
-  // NOOP
   async deleteQueue(name) {
-
+    // NOOP
   }
 }
 

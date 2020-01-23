@@ -7184,6 +7184,10 @@ tar-stream@^2.0.0:
   version "0.0.0"
   uid ""
 
+"taskcluster-lib-azqueue@link:libraries/azqueue":
+  version "0.0.0"
+  uid ""
+
 "taskcluster-lib-azure@link:libraries/azure":
   version "0.0.0"
   uid ""
