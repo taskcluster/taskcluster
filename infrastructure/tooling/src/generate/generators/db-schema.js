@@ -9,7 +9,7 @@ exports.tasks = [{
   run: async (requirements, utils) => {
     const schema = tcdb.schema({useDbDirectory: true});
 
-    const serializable = JSON.parse(schema.asSerializable());
+    const serializable = schema.asSerializable();
     writeRepoJSON('generated/db-schema.json', serializable);
 
     return {
