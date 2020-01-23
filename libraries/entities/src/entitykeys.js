@@ -113,7 +113,7 @@ class HashKey {
   }
 
   exact(properties) {
-    const hash =  crypto.createHash('sha512');
+    const hash = crypto.createHash('sha512');
     const n = this.keys.length;
 
     for (let i = 0; i < n; i++) {

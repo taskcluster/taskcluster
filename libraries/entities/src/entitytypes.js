@@ -1,7 +1,8 @@
+const assert = require('assert').strict;
 const _ = require('lodash');
 const slugid = require('slugid');
 const stringify = require('json-stable-stringify');
-const { SLUG_ID_RE } = require('./constants');
+const { SLUG_ID_RE, SLUGID_SIZE } = require('./constants');
 // Check that value is of types for name and property
 // Print messages and throw an error if the check fails
 function checkType(name, property, value, types) {
@@ -23,6 +24,24 @@ const checkSize = function(property, value, maxSize) {
   err.code = 'PropertyTooLarge';
 
   throw err;
+};
+
+// Convert slugid to buffer
+const slugIdToBuffer = function(slug) {
+  const base64 = slug
+      .replace(/-/g, '+')
+      .replace(/_/g, '/')
+    + '==';
+
+  return Buffer.from(base64, 'base64');
+};
+
+// Convert buffer to slugId where `entryIndex` is the slugId entry index to retrieve
+const bufferToSlugId = function(bufferView, entryIndex) {
+  return bufferView.toString('base64', entryIndex * SLUGID_SIZE, SLUGID_SIZE * (entryIndex + 1))
+    .replace(/\+/g, '-')
+    .replace(/\//g, '_')
+    .replace(/==/g, '');
 };
 
 class BaseType {
@@ -280,6 +299,215 @@ class TextType extends BaseBufferType {
   }
 }
 
+class SlugIdArray {
+  constructor() {
+    this.buffer = Buffer.alloc(SLUGID_SIZE * 32);
+    this.length = 0;
+    this.avail  = 32;
+  }
+
+  toArray() {
+    const buffer = this.getBufferView();
+    let result = [];
+
+    for (let i = 0; i < this.length; i++) {
+      const slug = bufferToSlugId(buffer, i);
+
+      result.push(slug);
+    }
+
+    return result;
+  }
+
+  push(slug) {
+    this.realloc();
+    slugIdToBuffer(slug).copy(this.buffer, this.length * SLUGID_SIZE);
+    this.length += 1;
+    this.avail  -= 1;
+  }
+
+  realloc() {
+    if (this.avail === 0 && this.length === 0) {
+      this.buffer = Buffer.alloc(SLUGID_SIZE * 32);
+      this.length = 0;
+      this.avail = 32;
+
+      return true;
+    }
+
+    // Allocate more space, if needed, we this by doubling the underlying buffer
+    if (this.avail === 0) {
+      const buffer = Buffer.alloc(this.length * 2 * SLUGID_SIZE);
+      this.buffer.copy(buffer);
+      this.buffer = buffer;
+      this.avail = this.length;
+      return true;
+    }
+
+    // Shrink the buffer if it is less than 1/3 full
+    if (this.avail > this.length * 2 && this.buffer.length > SLUGID_SIZE * 32) {
+      this.buffer = Buffer.from(this.getBufferView());
+      this.avail  = 0;
+      return true;
+    }
+    return false;
+  }
+
+  indexOf(slug) {
+    const slugBuffer  = slugIdToBuffer(slug);
+    let index = this.buffer.indexOf(slugBuffer);
+
+    while (index !== -1 && index < this.length * SLUGID_SIZE) {
+      if (index % SLUGID_SIZE === 0) {
+        return index / SLUGID_SIZE;
+      }
+      index = this.buffer.indexOf(slugBuffer, index + 1);
+    }
+    return -1;
+  }
+
+  includes(slug) {
+    return this.indexOf(slug) !== -1 ? true : false;
+  }
+
+  shift() {
+    if (this.length === 0) {
+      return;
+    }
+
+    const result = bufferToSlugId(this.buffer, 0);
+
+    this.buffer.copy(this.buffer, 0, SLUGID_SIZE);
+
+    this.avail  += 1;
+    this.length -= 1;
+    this.realloc();
+
+    return result;
+  }
+
+  pop() {
+    if (this.length === 0) {
+      return;
+    }
+
+    const result = bufferToSlugId(this.buffer, this.length - 1);
+
+    this.avail  += 1;
+    this.length -= 1;
+    this.realloc();
+
+    return result;
+  }
+
+  remove(slug) {
+    const index = this.indexOf(slug);
+
+    if (index > -1) {
+      // This uses memmove, so my cowboy tricks are okay, - I hope :)
+      this.buffer.copy(
+        this.buffer,
+        index * SLUGID_SIZE,
+        (index + 1) * SLUGID_SIZE,
+      );
+      this.avail  += 1;
+      this.length -= 1;
+      this.realloc();
+      return true;
+    }
+    return false;
+  }
+
+  slice(begin, end) {
+    if (begin < 0) {
+      begin = this.length + begin;
+    } else {
+      begin = begin || 0;
+    }
+
+    if (end < 0) {
+      end = this.length + end;
+    } else {
+      end = !end || this.length > end ? this.length : end;
+    }
+
+    // Return a copy of the array
+    const count = end - begin;
+    const buffer = this.buffer.slice(begin * SLUGID_SIZE, end * SLUGID_SIZE);
+    let result = [];
+
+    for (let i = 0; i < count; i++) {
+      result.push(bufferToSlugId(buffer, i));
+    }
+
+    return result;
+  }
+
+  clone() {
+    const clone = new SlugIdArray();
+    clone.buffer  = Buffer.from(this.buffer);
+    clone.length  = this.length;
+    clone.avail   = this.avail;
+
+    return clone;
+  }
+
+  equals(other) {
+    assert(other instanceof SlugIdArray, 'Expected a SlugIdArray');
+
+    return Buffer.compare(
+      this.getBufferView(),
+      other.getBufferView(),
+    ) === 0;
+  }
+
+  getBufferView() {
+    return this.buffer.slice(0, this.length * SLUGID_SIZE);
+  }
+
+  static fromBuffer(buffer) {
+    const array = new SlugIdArray();
+
+    array.buffer  = buffer;
+    array.length  = buffer.length / SLUGID_SIZE;
+    array.avail   = 0;
+
+    return array;
+  }
+}
+
+class SlugIdArrayType extends BaseBufferType {
+  toBuffer(value, cryptoKey) {
+    assert(value instanceof SlugIdArray, `SlugIdArrayType ${this.property} expected SlugIdArray, got ${value}`);
+
+    return value.getBufferView();
+  }
+
+  fromBuffer(value) {
+
+    return SlugIdArray.fromBuffer(value);
+  }
+
+  equal(value1, value2) {
+    assert(value1 instanceof SlugIdArray, `SlugIdArrayType ${this.property} expected SlugIdArray, got: ${value1}`);
+    assert(value2 instanceof SlugIdArray, `SlugIdArrayType ${this.property} expected SlugIdArray, got: ${value2}`);
+
+    return value1.equals(value2);
+  }
+
+  hash(value) {
+    assert(value instanceof SlugIdArray, `SlugIdArrayType ${this.property} expected SlugIdArray, got: ' ${value}`);
+
+    return value.getBufferView();
+  }
+
+  clone(value) {
+    assert(value instanceof SlugIdArray, `SlugIdArrayType ${this.property} expected SlugIdArray, got: ${value}`);
+
+    return value.clone();
+  }
+}
+
 module.exports = {
   Boolean: function(property) {
     return new BooleanType(property);
@@ -307,7 +535,15 @@ module.exports = {
   EncryptedText: 'encrypted-text',
   EncryptedJSON: 'encrypted-json',
   EncryptedSchema: 'encrypted-schema',
-  SlugIdArray: 'slug-id-array',
+  SlugIdArray: class {
+    constructor(property) {
+      return new SlugIdArrayType(property);
+    }
+
+    static create() {
+      return new SlugIdArray();
+    }
+  },
   String: function(property) {
     return new StringType(property);
   },

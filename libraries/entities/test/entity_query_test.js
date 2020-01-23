@@ -40,7 +40,7 @@ helper.dbSuite(path.basename(__filename), function() {
       TestTable.create({ id, name: 'item1', count: 1, tag: 'tag1', time: new Date(0), active: true }),
       TestTable.create({ id, name: 'item2', count: 2, tag: 'tag2', time: new Date(0), active: false }),
       TestTable.create({ id, name: 'item3', count: 3, tag: 'tag1', time: new Date(0), active: true }),
-    ])
+    ]);
   }
 
   suite('query', function() {
@@ -56,7 +56,7 @@ helper.dbSuite(path.basename(__filename), function() {
 
       let sum = 0;
       result.forEach(entry => {
-        sum+= entry.count;
+        sum += entry.count;
       });
 
       assert.equal(result.length, 3);
@@ -74,7 +74,7 @@ helper.dbSuite(path.basename(__filename), function() {
 
       let sum = 0;
       result.forEach(entry => {
-        sum+= entry.count;
+        sum += entry.count;
       });
 
       assert.equal(result.length, 3);
@@ -92,7 +92,7 @@ helper.dbSuite(path.basename(__filename), function() {
           count: 1,
           tag: 'tag1',
         });
-      }, /should provide enough constraints/)
+      }, /should provide enough constraints/);
     });
     // TODO: Add more tests...
   });
