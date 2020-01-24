@@ -1,6 +1,6 @@
 const load = require('../src/main');
 const taskcluster = require('taskcluster-client');
-const {Secrets, stickyLoader, withMonitor, withEntity} = require('taskcluster-lib-testing');
+const {Secrets, stickyLoader, withMonitor, withEntity, withPulse} = require('taskcluster-lib-testing');
 const sinon = require('sinon');
 const AuthorizationCode = require('../src/data/AuthorizationCode');
 const AccessToken = require('../src/data/AccessToken');
@@ -10,6 +10,7 @@ const GithubClient = require('../src/login/clients/GithubClient');
 const libUrls = require('taskcluster-lib-urls');
 const request = require('superagent');
 const merge = require('deepmerge');
+const PulseEngine = require('../src/PulseEngine');
 
 exports.load = stickyLoader(load);
 
@@ -36,6 +37,32 @@ exports.withEntities = (mock, skipping) => {
   withEntity(mock, skipping, exports, 'AccessToken', AccessToken);
   withEntity(mock, skipping, exports, 'GithubAccessToken', GithubAccessToken);
   withEntity(mock, skipping, exports, 'SessionStorage', SessionStorage);
+};
+
+exports.withPulse = (helper, skipping) => {
+  withPulse({helper, skipping, namespace: 'taskcluster-web-server'});
+};
+
+exports.withMockedEventIterator = () => {
+  let PulseEngineCopy = Object.assign({}, PulseEngine);
+
+  PulseEngineCopy.NextAsyncIterator = null;
+  exports.setNextAsyncIterator = (asyncIterator) => {
+    PulseEngineCopy.NextAsyncIterator = asyncIterator;
+  };
+
+  PulseEngineCopy.eventIterator = (eventName, subscriptions) => {
+    if(!PulseEngineCopy.NextAsyncIterator){
+      throw new Error(`No async iterator to return. Set one up with SetNextAsyncIterator`);
+    }
+    return PulseEngineCopy.NextAsyncIterator;
+  };
+
+  exports.load.inject('pulseEngine', PulseEngineCopy);
+
+  suiteTeardown(() => {
+    exports.load.remove('pulseEngine');
+  });
 };
 
 exports.withFakeAuth = (mock, skipping) => {

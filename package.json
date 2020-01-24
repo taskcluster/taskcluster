@@ -122,6 +122,7 @@
     "apollo-cache-inmemory": "^1.6.3",
     "apollo-client": "^2.6.4",
     "apollo-link-http": "^1.5.16",
+    "apollo-link-ws": "^1.0.19",
     "assume": "^2.1.0",
     "aws-sdk-mock": "^4.3.0",
     "c8": "^6.0.0",
@@ -164,6 +165,7 @@
     "through": "^2.3.8",
     "tmp": "^0.1.0",
     "url-join": "^4.0.0",
+    "ws": "^7.2.1",
     "zen-observable": "^0.8.11",
     "zurvan": "^0.5.2"
   },
