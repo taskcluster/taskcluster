@@ -102,17 +102,15 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       // Otherwise, our tests will just hang and timeout
       let subscriptionClient = await createSubscriptionClient();
       const client = getClient(subscriptionClient);
-      const task = helper.makeTaskDefinition();
-      const taskGroupId = task.taskGroupId;
-      const subscriptions = [
-        'tasksDefined',
-      ];
+
+      let taskId = "subscribe-task-id";
+      let taskGroupId = "subscribe-task-group-id"
 
       const payload = {
         tasksSubscriptions: {
           status: {
-            taskId: "subscribe-task-id",
-            taskGroupId: "subscribe-task-group-id",
+            taskId,
+            taskGroupId,
           },
         },
       };
@@ -122,24 +120,25 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         yield payload;
       };
 
-      helper.SetNextAsyncIterator(asyncIterator);
+      helper.setNextAsyncIterator(asyncIterator);
 
       let tasksSubscriptionsResult;
       let taskSubscription = client.subscribe({
         query: gql`${subscribeTasks}`,
         variables: {
           taskGroupId,
-          subscriptions,
+          subscriptions: ['tasksDefined'],
         },
       }).subscribe(
         (value) => tasksSubscriptionsResult = value,
       );
 
-      //wait for event to be processed
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await testing.poll(
+        () => assert(tasksSubscriptionsResult),
+        100, 10);
 
-      assert(tasksSubscriptionsResult.data.tasksSubscriptions.taskId, "subscribe-task-id");
-      assert(tasksSubscriptionsResult.data.tasksSubscriptions.taskGroupId, "subscribe-task-group-id");
+      assert(tasksSubscriptionsResult.data.tasksSubscriptions.taskId, taskId);
+      assert(tasksSubscriptionsResult.data.tasksSubscriptions.taskGroupId, taskGroupId);
 
       taskSubscription.unsubscribe();
       subscriptionClient.close();

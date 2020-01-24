@@ -47,7 +47,7 @@ exports.withMockedEventIterator = () => {
   let PulseEngineCopy = Object.assign({}, PulseEngine);
 
   PulseEngineCopy.NextAsyncIterator = null;
-  exports.SetNextAsyncIterator = (asyncIterator) => {
+  exports.setNextAsyncIterator = (asyncIterator) => {
     PulseEngineCopy.NextAsyncIterator = asyncIterator;
   };
 
