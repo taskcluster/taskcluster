@@ -77,7 +77,7 @@ tasks:
         - name: lint
           command: yarn lint
         - name: test:meta
-          command: yarn test:meta
+          command: "yarn test:meta | cat"
           # only do cleanup on pushes; no sense doing so on pull requests
         - $if: 'tasks_for == "github-push" && event["ref"] == "refs/heads/master"'
           then:

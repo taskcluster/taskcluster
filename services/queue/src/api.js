@@ -425,11 +425,12 @@ let patchAndValidateTaskDef = function(taskId, taskDef) {
   }
 
   let msToDeadline = deadline.getTime() - new Date().getTime();
-  // Validate that deadline is less than 10 days from now, allow 15 min drift
-  if (msToDeadline > 10 * 24 * 60 * 60 * 1000 + 15 * 60 * 1000) {
+  // Validate that deadline is less than 5 days from now, allow 15 min drift
+  // NOTE: Azure does not allow more than 7 days - see https://bugzilla.mozilla.org/show_bug.cgi?id=1604175
+  if (msToDeadline > 5 * 24 * 60 * 60 * 1000 + 15 * 60 * 1000) {
     return {
       code: 'InputError',
-      message: '`deadline` cannot be more than 10 days into the future',
+      message: '`deadline` cannot be more than 5 days into the future',
       details: {deadline: taskDef.deadline},
     };
   }

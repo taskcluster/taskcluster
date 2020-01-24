@@ -1578,7 +1578,7 @@
           "type": "string"
         },
         "deadline": {
-          "description": "Deadline of the task, by which this task must be complete. `pending` and\n`running` runs are resolved as **exception** if not resolved by other means\nbefore the deadline. After the deadline, a task is immutable. Note,\ndeadline cannot be more than 10 days into the future\n",
+          "description": "Deadline of the task, by which this task must be complete. `pending` and\n`running` runs are resolved as **exception** if not resolved by other means\nbefore the deadline. After the deadline, a task is immutable. Note,\ndeadline cannot be more than 5 days into the future\n",
           "format": "date-time",
           "title": "Deadline",
           "type": "string"
@@ -1751,7 +1751,7 @@
       "description": "A representation of **task status** as known by the queue\n",
       "properties": {
         "deadline": {
-          "description": "Deadline of the task, by which this task must be complete. `pending` and\n`running` runs are resolved as **exception** if not resolved by other means\nbefore the deadline. After the deadline, a task is immutable. Note,\ndeadline cannot be more than 10 days into the future\n",
+          "description": "Deadline of the task, by which this task must be complete. `pending` and\n`running` runs are resolved as **exception** if not resolved by other means\nbefore the deadline. After the deadline, a task is immutable. Note,\ndeadline cannot be more than 5 days into the future\n",
           "format": "date-time",
           "title": "Deadline",
           "type": "string"
@@ -3325,7 +3325,7 @@
           "type": "string"
         },
         "deadline": {
-          "description": "Deadline of the task, by which this task must be complete. `pending` and\n`running` runs are resolved as **exception** if not resolved by other means\nbefore the deadline. After the deadline, a task is immutable. Note,\ndeadline cannot be more than 10 days into the future\n",
+          "description": "Deadline of the task, by which this task must be complete. `pending` and\n`running` runs are resolved as **exception** if not resolved by other means\nbefore the deadline. After the deadline, a task is immutable. Note,\ndeadline cannot be more than 5 days into the future\n",
           "format": "date-time",
           "title": "Deadline",
           "type": "string"
