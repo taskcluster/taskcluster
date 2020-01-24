@@ -15,9 +15,10 @@ migrationScript: |-
   end
 methods:
   azure_queue_count:
-    description: test
+    description: |
+      Count messages in the named queue.
     mode: read
-    serviceName: test-entities
+    serviceName: test-azqueue
     args: queue_name text
     returns: integer
     body: |-
@@ -28,10 +29,11 @@ methods:
         where msgs.queue_name = azure_queue_count.queue_name);
       end
   azure_queue_put:
-    description: test
+    description: |
+      Put the given message into the given queue.  The message will not be visible until
+      after the visible timestamp, and will disappear after the expires timestamp.
     mode: write
-    # TODO: Fix service name
-    serviceName: test-entities
+    serviceName: test-azqueue
     args: queue_name text, message_text text, visible timestamp, expires timestamp
     returns: void
     body: |-
@@ -51,6 +53,29 @@ methods:
             azure_queue_put.visible,
             azure_queue_put.expires
           );
-          -- TODO: JS will need to make sure queue name is a valid pg identifier
-        execute 'notify ' || queue_name;
+        execute 'notify ' || quote_ident(queue_name);
+      end
+  azure_queue_get:
+    description: TODO
+    mode: write
+    serviceName: test-azqueue
+    args: queue_name text, visible timestamp, count integer
+    returns: table (message_id uuid, message_text text, pop_receipt uuid)
+    body: |-
+      begin
+        return query update azure_queue_messages m1
+          set
+            pop_receipt = public.gen_random_uuid(),
+            visible = azure_queue_get.visible
+          where
+            m1.message_id in (
+              select m2.message_id from azure_queue_messages m2
+              where m2.queue_name = azure_queue_get.queue_name
+                and m2.visible < now()
+                and m2.expires > now()
+              order by m2.inserted
+              for update skip locked -- magic sauce TODO more comments / links
+              limit count
+          )
+          returning m1.message_id, m1.message_text, m1.pop_receipt;
       end
