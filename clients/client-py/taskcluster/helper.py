@@ -102,6 +102,7 @@ class TaskclusterConfig(object):
 
         return urllib.parse.urljoin(self.default_url, path)
 
+
 def load_secrets(
     secrets_service, secret_name, prefixes=[], required=[], existing={}, local_secrets=None
 ):
