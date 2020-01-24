@@ -573,6 +573,38 @@ class EncryptedTextType extends EncryptedBaseType {
   };
 }
 
+class EncryptedJSONType extends EncryptedBaseType {
+  validate(value) {
+    checkType('EncryptedJSONType', this.property, value, [
+      'string',
+      'number',
+      'object',
+      'boolean',
+    ]);
+  };
+
+  toPlainBuffer(value) {
+    this.validate(value);
+    return Buffer.from(JSON.stringify(value), 'utf8');
+  };
+
+  fromPlainBuffer(value) {
+    return JSON.parse(value.toString('utf8'));
+  };
+
+  equal(value1, value2) {
+    return _.isEqual(value1, value2);
+  };
+
+  hash (value) {
+    return stringify(value);
+  };
+
+  clone (value) {
+    return _.cloneDeep(value);
+  };
+}
+
 module.exports = {
   Boolean: function(property) {
     return new BooleanType(property);
@@ -600,7 +632,9 @@ module.exports = {
   EncryptedText: function (property) {
     return new EncryptedTextType(property);
   },
-  EncryptedJSON: 'encrypted-json',
+  EncryptedJSON: function(props) {
+    return new EncryptedJSONType(props);
+  },
   EncryptedSchema: 'encrypted-schema',
   SlugIdArray: class {
     constructor(property) {

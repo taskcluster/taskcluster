@@ -63,6 +63,10 @@ class ConstantKey {
     this.constant = constant;
     this.covers = [];
   }
+
+  exact(properties) {
+    return this.constant;
+  }
 }
 
 class CompositeKey {
