@@ -104,7 +104,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       const client = getClient(subscriptionClient);
 
       let taskId = "subscribe-task-id";
-      let taskGroupId = "subscribe-task-group-id"
+      let taskGroupId = "subscribe-task-group-id";
 
       const payload = {
         tasksSubscriptions: {
