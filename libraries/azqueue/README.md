@@ -50,3 +50,9 @@ await azqueue.getMessages(
     messageId,
     popReceipt);
 ```
+
+## Using this in Queue service
+
+* Add the db version file in this library's tests to the monorepo's db versions
+* Remove queue-deletion logic (including from `procs.yml`)
+* Add a new hourly crontask to delete expired messages

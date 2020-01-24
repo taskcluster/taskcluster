@@ -41,6 +41,25 @@ helper.dbSuite(path.basename(__filename), function() {
     assert.deepEqual(result.map(({messageText}) => messageText), ['bar-1']);
   });
 
+  test('get marks items invisible', async function() {
+    db = await helper.withDb({ schema, serviceName });
+    const queue = new AZQueue({ db });
+
+    await queue.putMessage('foo', 'bar-1', { visibilityTimeout: 0, messageTTL: 100 });
+
+    const result1 = await queue.getMessages('foo', {visibilityTimeout: 1, numberOfMessages: 2});
+    assert.deepEqual(result1.map(({messageText}) => messageText), ['bar-1']);
+
+    const result2 = await queue.getMessages('foo', {visibilityTimeout: 1, numberOfMessages: 2});
+    assert.deepEqual(result2, []);
+
+    // visibility granularity is in seconds, so we have to wait at least 1s
+    await testing.sleep(1010);
+
+    const result3 = await queue.getMessages('foo', {visibilityTimeout: 1, numberOfMessages: 2});
+    assert.deepEqual(result3.map(({messageText}) => messageText), ['bar-1']);
+  });
+
   test('get from multi-item queue', async function() {
     db = await helper.withDb({ schema, serviceName });
     const queue = new AZQueue({ db });

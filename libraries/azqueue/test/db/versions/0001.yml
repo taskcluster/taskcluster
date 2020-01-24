@@ -21,13 +21,16 @@ methods:
     serviceName: test-azqueue
     args: queue_name text
     returns: integer
+    # note that this will block on locked rows.  Such row locks are very quick,
+    # only lasting long enough to update the row with a pop_receipt and a new
+    # value of `visible`.
     body: |-
       begin
         return (select count(*)
         from azure_queue_messages msgs
-        -- TODO: think about whether we should skip locks here
         where msgs.queue_name = azure_queue_count.queue_name);
       end
+
   azure_queue_put:
     description: |
       Put the given message into the given queue.  The message will not be visible until
@@ -55,14 +58,32 @@ methods:
           );
         execute 'notify ' || quote_ident(queue_name);
       end
+
   azure_queue_get:
-    description: TODO
+    description: |
+      Get up to `count` messages from the given queue, setting the `visible`
+      column of each to the given value.  Returns a `message_id` and
+      `pop_receipt` for each one, for use with `azure_queue_delete` and
+      `azure_queue_update`.
     mode: write
     serviceName: test-azqueue
     args: queue_name text, visible timestamp, count integer
     returns: table (message_id uuid, message_text text, pop_receipt uuid)
+    # This uses the queueing logic described many places around the web but
+    # best in https://tnishimura.github.io/articles/queues-in-postgresql/
+    #
+    # The magic sauce is
+    #
+    #   for update -- locks returned rows
+    #   skip locked -- skips locked rows
+    #
+    # The first ensures that no two concurrent transactions return the
+    # same message, while the second ensures that concurrent transactions
+    # do not serialize themselves but instead immediately return distinct
+    # messages, if they are available.
     body: |-
       begin
+        raise info 'oh dear %s', azure_queue_get.visible::text;
         return query update azure_queue_messages m1
           set
             pop_receipt = public.gen_random_uuid(),
@@ -74,8 +95,43 @@ methods:
                 and m2.visible < now()
                 and m2.expires > now()
               order by m2.inserted
-              for update skip locked -- magic sauce TODO more comments / links
+              for update skip locked
               limit count
           )
           returning m1.message_id, m1.message_text, m1.pop_receipt;
+      end
+
+  azure_queue_delete:
+    description: |
+      Delete the message identified by the given `queue_name`, `message_id` and
+      `pop_receipt`.
+    mode: write
+    serviceName: test-azqueue
+    args: queue_name text, message_id uuid, pop_receipt uuid
+    returns: void
+    body: |-
+      begin
+        delete from azure_queue_messages msgs
+          where msgs.queue_name = azure_queue_delete.queue_name
+            and msgs.message_id = azure_queue_delete.message_id
+            and msgs.pop_receipt = azure_queue_delete.pop_receipt;
+      end
+
+  azure_queue_update:
+    description: |
+      Update the message identified by the given `queue_name`, `message_id` and
+      `pop_receipt`, setting its `visible` and `message_text` properties as
+      given.
+    mode: write
+    serviceName: test-azqueue
+    args: queue_name text, message_text text, message_id uuid, pop_receipt uuid, visible timestamp
+    returns: void
+    body: |-
+      begin
+        update azure_queue_messages msgs
+          set message_text = azure_queue_update.message_text,
+            visible = azure_queue_update.visible
+          where msgs.queue_name = azure_queue_update.queue_name
+            and msgs.message_id = azure_queue_update.message_id
+            and msgs.pop_receipt = azure_queue_update.pop_receipt;
       end

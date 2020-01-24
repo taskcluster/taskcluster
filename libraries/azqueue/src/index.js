@@ -1,5 +1,7 @@
 const taskcluster = require('taskcluster-client');
 
+// TODO: add a deleteExpiredMessages method
+
 class AZQueue {
   constructor({ db }) {
     this.db = db;
@@ -32,7 +34,7 @@ class AZQueue {
 
   async getMessages(name, {visibilityTimeout, numberOfMessages}) {
     // TODO: how to listen, and for how long..
-    // TODO: this should return a cancel-able promise?
+    // TODO: what does queue expect?
     const res = await this.db.fns.azure_queue_get(
       name,
       taskcluster.fromNow(`${visibilityTimeout} seconds`),
@@ -45,11 +47,16 @@ class AZQueue {
   }
 
   async deleteMessage(name, messageId, popReceipt) {
-
+    await this.db.fns.azure_queue_delete(name, messageId, popReceipt);
   }
 
-  async updateMessage(name, messageText, messageId, popRecipt, {visibilityTimeout}) {
-
+  async updateMessage(name, messageText, messageId, popReceipt, {visibilityTimeout}) {
+    await this.db.fns.azure_queue_update(
+      name,
+      messageText,
+      messageId,
+      popReceipt,
+      taskcluster.fromNow(`${visibilityTimeout} seconds`));
   }
 
   async listQueues() {
