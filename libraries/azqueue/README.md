@@ -35,7 +35,8 @@ await azqueue.putMessage(
         messageTTL: 100, // in seconds
     });
 
-// get messages from a queue
+// get messages from a queue.  If there are no messages, this immediately returns an
+// empty list.  Poll this function (gently!).
 const messages = await azqueue.getMessages(
     queueName,
     {
@@ -49,10 +50,14 @@ await azqueue.getMessages(
     queueName,
     messageId,
     popReceipt);
+
+// Delete all expired messages in all queues.  This is a maintenance task that
+// should run about once an hour on a busy system.
+await azqueue.deleteExpiredMessages();
 ```
 
 ## Using this in Queue service
 
 * Add the db version file in this library's tests to the monorepo's db versions
 * Remove queue-deletion logic (including from `procs.yml`)
-* Add a new hourly crontask to delete expired messages
+* Add a new hourly crontask to call `deleteExpiredMessages`

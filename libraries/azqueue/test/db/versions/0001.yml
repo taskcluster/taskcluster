@@ -135,3 +135,18 @@ methods:
             and msgs.message_id = azure_queue_update.message_id
             and msgs.pop_receipt = azure_queue_update.pop_receipt;
       end
+
+  azure_queue_delete_expired:
+    description: |
+      Delete all expired messages.  This is a maintenance task that should occur
+      about once an hour.
+    mode: write
+    serviceName: test-azqueue
+    args: ''
+    returns: void
+    body: |-
+      begin
+        delete from azure_queue_messages msgs
+          where msgs.expires <= now();
+      end
+
