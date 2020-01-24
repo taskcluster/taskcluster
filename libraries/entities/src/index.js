@@ -193,9 +193,8 @@ class Entity {
       RowKey: rowKey,
       Version: this.version,
     };
-    const cryptoKey = this.cryptoKey;
     Object.entries(this.mapping).forEach(([key, keytype]) => {
-      keytype.serialize(entity, properties[key], cryptoKey);
+      keytype.serialize(entity, properties[key], this.__cryptoKey);
     });
     return entity;
   }
@@ -203,7 +202,7 @@ class Entity {
   deserialize(properties) {
     const deserializedProperties = {};
     Object.entries(this.constructor.mapping).forEach(([key, keytype]) => {
-      deserializedProperties[key] = keytype.deserialize(properties);
+      deserializedProperties[key] = keytype.deserialize(properties, this.constructor.__cryptoKey);
     });
 
     return deserializedProperties;
@@ -339,6 +338,18 @@ class Entity {
           serviceName,
         } = setupOptions;
 
+        if (ConfiguredEntity.__hasEncrypted) {
+          assert(typeof setupOptions.cryptoKey === 'string',
+            'cryptoKey is required when a property is encrypted in any ' +
+            'of the schema versions.');
+          const secret  = Buffer.from(setupOptions.cryptoKey, 'base64');
+          assert(secret.length === 32, 'cryptoKey must be 32 bytes in base64');
+          ConfiguredEntity.__cryptoKey = secret;
+        } else {
+          assert(!setupOptions.cryptoKey, 'Don\'t specify options.cryptoKey when ' +
+            'there aren\'t any encrypted properties!');
+        }
+
         ConfiguredEntity.contextEntries = ConfiguredEntity._getContextEntries(
           configureOptions.context || [],
           setupOptions.context || {});
@@ -364,6 +375,13 @@ class Entity {
     Object.entries(configureOptions.properties).forEach(([key, Type]) => {
       ConfiguredEntity.mapping[key] = new Type(key);
     });
+
+    const hasEncrypted = Object.values(ConfiguredEntity.mapping)
+      .some(({ isEncrypted }) => isEncrypted);
+
+    if (hasEncrypted) {
+      ConfiguredEntity.__hasEncrypted = true;
+    }
 
     ConfiguredEntity.__partitionKey = configureOptions.partitionKey(ConfiguredEntity.mapping);
     ConfiguredEntity.__rowKey = configureOptions.rowKey(ConfiguredEntity.mapping);

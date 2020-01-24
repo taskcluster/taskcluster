@@ -2,6 +2,7 @@ const assert = require('assert').strict;
 const _ = require('lodash');
 const slugid = require('slugid');
 const stringify = require('json-stable-stringify');
+const crypto = require('crypto');
 const { SLUG_ID_RE, SLUGID_SIZE } = require('./constants');
 // Check that value is of types for name and property
 // Print messages and throw an error if the check fails
@@ -508,6 +509,70 @@ class SlugIdArrayType extends BaseBufferType {
   }
 }
 
+class EncryptedBaseType extends BaseBufferType {
+  isEncrypted = true;
+
+  toPlainBuffer(value) {
+    throw new Error('Not implemented');
+  }
+
+  fromPlainBuffer(buffer) {
+    throw new Error('Not implemented');
+  }
+
+  toBuffer(value, cryptoKey) {
+    const plainBuffer = this.toPlainBuffer(value);
+    // Need room for initialization vector and any padding
+    checkSize(this.property, plainBuffer, 256 * 1024 - 32);
+    const iv          = crypto.randomBytes(16);
+    const cipher      = crypto.createCipheriv('aes-256-cbc', cryptoKey, iv);
+    const c1          = cipher.update(plainBuffer);
+    const c2          = cipher.final();
+
+    return Buffer.concat([iv, c1, c2]);
+  }
+
+  fromBuffer(buffer, cryptoKey) {
+    const iv          = buffer.slice(0, 16);
+    const decipher    = crypto.createDecipheriv('aes-256-cbc', cryptoKey, iv);
+    const b1          = decipher.update(buffer.slice(16));
+    const b2          = decipher.final();
+
+    return this.fromPlainBuffer(Buffer.concat([b1, b2]));
+  }
+
+  hash(value) {
+    return this.toPlainBuffer(value);
+  }
+}
+
+class EncryptedTextType extends EncryptedBaseType {
+  validate (value) {
+    checkType('EncryptedTextType', this.property, value, 'string');
+  };
+
+  toPlainBuffer (value) {
+    this.validate(value);
+    return Buffer.from(value, 'utf8');
+  };
+
+  fromPlainBuffer (value) {
+    return value.toString('utf8');
+  };
+
+  equal (value1, value2) {
+    return value1 === value2;
+  };
+
+  hash (value) {
+    return value;
+  };
+
+  clone (value) {
+    return value;
+  };
+}
+
 module.exports = {
   Boolean: function(property) {
     return new BooleanType(property);
@@ -532,7 +597,9 @@ module.exports = {
   },
   Schema: 'schema',
   EncryptedBlob: 'encrypted-blob',
-  EncryptedText: 'encrypted-text',
+  EncryptedText: function (property) {
+    return new EncryptedTextType(property);
+  },
   EncryptedJSON: 'encrypted-json',
   EncryptedSchema: 'encrypted-schema',
   SlugIdArray: class {
