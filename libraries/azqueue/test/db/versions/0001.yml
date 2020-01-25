@@ -11,7 +11,8 @@ migrationScript: |-
       expires timestamp not null,  -- expired after this time
       pop_receipt uuid -- null means not popped
     );
-    create index azure_queue_messages_name on azure_queue_messages(queue_name);
+    -- 'get' operations sort by inserted within a queue
+    create index azure_queue_messages_inserted on azure_queue_messages(queue_name, inserted);
   end
 methods:
   azure_queue_count:

@@ -1,4 +1,3 @@
-const {Client} = require('pg');
 const { Database } = require('taskcluster-lib-postgres');
 const dbUrl = process.env.TEST_DB_URL;
 
@@ -8,13 +7,8 @@ const dbUrl = process.env.TEST_DB_URL;
  */
 if (dbUrl) {
   exports.dbSuite = (...args) => {
+    exports.dbUrl = dbUrl;
     suite(...args.slice(0, -1), function() {
-      suiteSetup('setup database', function() {
-        exports.dbUrl = dbUrl;
-      });
-      setup('clear database', async function() {
-        await clearDb(dbUrl);
-      });
       args[args.length - 1].call(this);
     });
   };
@@ -29,30 +23,42 @@ if (dbUrl) {
   };
 }
 
-exports.withDb = async ({ schema, serviceName }) => {
-  const db = await Database.setup({
-    schema,
-    readDbUrl: exports.dbUrl,
-    writeDbUrl: exports.dbUrl,
-    serviceName,
+exports.withDb = ({ schema, serviceName, clearBeforeTests }) => {
+  suiteSetup(async function() {
+    exports.db = await Database.setup({
+      schema,
+      readDbUrl: exports.dbUrl,
+      writeDbUrl: exports.dbUrl,
+      serviceName,
+    });
+
+    await exports.db._withClient('write', async client => {
+      await client.query(`drop schema if exists public cascade`);
+      await client.query(`create schema public`);
+    });
+
+    await Database.upgrade({
+      schema,
+      adminDbUrl: exports.dbUrl,
+      usernamePrefix: 'test',
+    });
   });
 
-  await Database.upgrade({
-    schema,
-    adminDbUrl: exports.dbUrl,
-    usernamePrefix: 'test',
-  });
-
-  return db;
-};
-
-const clearDb = async dbUrl => {
-  const client = new Client({connectionString: dbUrl});
-  await client.connect();
-  try {
-    await client.query(`drop schema if exists public cascade`);
-    await client.query(`create schema public`);
-  } finally {
-    await client.end();
+  if (clearBeforeTests) {
+    setup(async function() {
+      await exports.db._withClient(
+        'write',
+        client => client.query(`delete from azure_queue_messages`));
+    });
   }
+
+  suiteTeardown(async function() {
+    if (exports.db) {
+      try {
+        await exports.db.close();
+      } finally {
+        exports.db = null;
+      }
+    }
+  });
 };

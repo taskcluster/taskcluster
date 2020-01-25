@@ -1,30 +1,17 @@
 const helper = require('./helper');
 const { Schema } = require('taskcluster-lib-postgres');
 const AZQueue = require('taskcluster-lib-azqueue');
-const testing = require('taskcluster-lib-testing');
 const path = require('path');
 const assert = require('assert').strict;
 const _ = require('lodash');
 
 helper.dbSuite(path.basename(__filename), function() {
-  let db;
-
-  teardown(async function() {
-    if (db) {
-      try {
-        await db.close();
-      } finally {
-        db = null;
-      }
-    }
-  });
-
   const schema = Schema.fromDbDirectory(path.join(__dirname, 'db'));
   const serviceName = 'test-azqueue';
+  helper.withDb({ schema, serviceName, clearBeforeTests: true });
 
   test('delete message after getting', async function() {
-    db = await helper.withDb({ schema, serviceName });
-    const queue = new AZQueue({ db });
+    const queue = new AZQueue({ db: helper.db });
 
     await queue.putMessage('foo', 'bar-1', { visibilityTimeout: 0, messageTTL: 100 });
     const result1 = await queue.getMessages('foo', {visibilityTimeout: 0, numberOfMessages: 2});

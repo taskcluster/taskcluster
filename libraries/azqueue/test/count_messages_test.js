@@ -5,34 +5,19 @@ const path = require('path');
 const assert = require('assert').strict;
 
 helper.dbSuite(path.basename(__filename), function() {
-  let db;
-
-  teardown(async function() {
-    if (db) {
-      try {
-        await db.close();
-      } finally {
-        db = null;
-      }
-    }
-  });
-
   const schema = Schema.fromDbDirectory(path.join(__dirname, 'db'));
   const serviceName = 'test-azqueue';
+  helper.withDb({ schema, serviceName, clearBeforeTests: true });
 
   test('count empty queue', async function() {
-    db = await helper.withDb({ schema, serviceName });
-
-    const queue = new AZQueue({ db });
+    const queue = new AZQueue({ db: helper.db });
     const result = await queue.getMetadata('foo');
 
     assert.equal(result.messageCount, 0);
   });
 
   test('count queue with visible messages', async function() {
-    db = await helper.withDb({ schema, serviceName });
-
-    const queue = new AZQueue({ db });
+    const queue = new AZQueue({ db: helper.db });
     await queue.putMessage('foo', 'bar', { visibilityTimeout: 0, messageTTL: 100 });
     const result = await queue.getMetadata('foo');
 
@@ -40,9 +25,7 @@ helper.dbSuite(path.basename(__filename), function() {
   });
 
   test('count queue with invisible messages', async function() {
-    db = await helper.withDb({ schema, serviceName });
-
-    const queue = new AZQueue({ db });
+    const queue = new AZQueue({ db: helper.db });
     await queue.putMessage('foo', 'bar', { visibilityTimeout: 50, messageTTL: 100 });
     const result = await queue.getMetadata('foo');
 
@@ -50,9 +33,7 @@ helper.dbSuite(path.basename(__filename), function() {
   });
 
   test('count queue with many messages in several queues', async function() {
-    db = await helper.withDb({ schema, serviceName });
-
-    const queue = new AZQueue({ db });
+    const queue = new AZQueue({ db: helper.db });
     for (let i = 0; i < 100; i++) {
       await queue.putMessage('queue-1-ABC', 'foo', { visibilityTimeout: (i % 2) ? 0 : 20, messageTTL: 100 });
       await queue.putMessage('queue-1-DEF', 'bar', { visibilityTimeout: (i % 3) ? 0 : 20, messageTTL: 100 });
