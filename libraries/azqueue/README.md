@@ -2,7 +2,7 @@
 
 This library partially implements the Azure Queue API, using Postgres.  It
 implements enough of the API to support the use of Azure Queues by the
-Taskcluster Queue service.  Tehavior of the API conforms to the [Azure
+Taskcluster Queue service.  Behavior of the API conforms to the [Azure
 Documentatation](https://docs.microsoft.com/en-us/rest/api/storageservices/queue-service-rest-api).
 The details of the API conform to those of the
 [fast-azure-storage](https://taskcluster.github.io/fast-azure-storage/classes/Queue.html)
@@ -55,6 +55,24 @@ await azqueue.getMessages(
 // should run about once an hour on a busy system.
 await azqueue.deleteExpiredMessages();
 ```
+
+## Backend
+
+There are a few key things to know about how this uses postgres:
+
+* It uses short-term locks, via `SELECT .. FOR UPDATE`, to ensure that only one
+  transaction "gets" a single message.  The transaction marks the messages as
+  "gotten" by updating its visibility, so this lock lasts only until
+  `getMessages` returns, not until the message is ultimately handled.
+
+* It allows concurrent gets with `.. SKIP LOCKED`, meaning that multiple
+  concurrent transactions will look at different rows, rather than simply
+  waiting for one another.
+
+* It uses an index over (queue name, inserted timestamp) to limit `getMessages`
+  attention to messages in a single queue, and prioritizes those that were
+  inserted earliest, corresponding to FIFO order.  This can get a bit slow in
+  cases where most of the earliest messages are invisible or expired.
 
 ## Using this in Queue service
 
