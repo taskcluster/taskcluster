@@ -163,7 +163,7 @@ suite(testing.suiteName(), function() {
     description: 'place to call to trigger a double send',
   }, function(req, res) {
     res.status(400).json('bad req');
-    res.status(200).reply({value: 1});
+    res.status(200).json('{value: 1}');
   });
   // Test valid input
   test('input (valid)', function() {
@@ -336,18 +336,18 @@ suite(testing.suiteName(), function() {
   test('calling send twice with status json triggers an error', async () => {
     const url = u('/test-double-send');
     await assert.rejects(() => request.get(url), /Bad Request/);
-    assert(helper.monitorManager.messages[0].Fields.message === 'called send twice');
+    assert(helper.monitorManager.messages[0].Fields.message === 'API method implementation called res.send twice');
   });
 
   test('calling send twice with reportError triggers an Error', async () => {
     const url = u('/test-double-error-send');
     await assert.rejects(() => request.get(url), /Bad Request/);
-    assert(helper.monitorManager.messages[0].Fields.message === 'called send twice');
+    assert(helper.monitorManager.messages[0].Fields.message === 'API method implementation called res.send twice');
   });
 
   test('calling send twice with json object triggers an Error', async () => {
     const url = u('/test-double-json-send');
     await assert.rejects(() => request.get(url), /Bad Request/);
-    assert(helper.monitorManager.messages[0].Fields.message === 'called send twice');
+    assert(helper.monitorManager.messages[0].Fields.message === 'API method implementation called res.send twice');
   });
 });
