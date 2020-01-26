@@ -65,7 +65,7 @@ const validateSchemas = ({validator, absoluteSchemas, rootUrl, serviceName, entr
     // code 200... errors should be sent with res.json(code, json)
     res.reply = (json) => {
       if (res.headersSent) {
-        monitor.reportError(new Error('called send twice'));
+        monitor.reportError(new Error('API method implementation called res.send twice'));
         return;
       }
       if (!req.public && !req.hasAuthed) {
