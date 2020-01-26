@@ -355,7 +355,11 @@ async function deprecatedStatusHandler(message) {
 
   let build = await this.context.Builds.load({
     taskGroupId,
-  });
+  }, true);
+  if (!build) {
+    // no status to update..
+    return;
+  }
 
   let debug = Debug(`${debugPrefix}:deprecated-result-handler:${build.eventId}`);
   debug(`Statuses API. Handling state change for task-group ${taskGroupId}`);
