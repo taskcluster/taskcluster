@@ -1,4 +1,6 @@
 const assert = require('assert');
+const stringify = require('json-stable-stringify');
+const {flatten} = require('lodash');
 
 const VALID_SCOPE = /^[\x20-\x7e]*$/;
 
@@ -222,10 +224,14 @@ const validateExpression = (expr) => {
   if (typeof expr === 'string') {
     return validScope(expr);
   }
-  return Object.keys(expr).length === 1 && (
-    'AnyOf' in expr && expr.AnyOf.every(validateExpression) ||
-    'AllOf' in expr && expr.AllOf.every(validateExpression)
-  );
+  if (typeof expr === 'object') {
+    return Object.keys(expr).length === 1 && (
+      'AnyOf' in expr && expr.AnyOf.every(validateExpression) ||
+      'AllOf' in expr && expr.AllOf.every(validateExpression)
+    );
+  } else {
+    return false;
+  }
 };
 
 /**
@@ -365,4 +371,84 @@ exports.removeGivenScopes = function(scopeset, expression) {
   };
 
   return simplify(expression);
+};
+
+exports.simplifyScopeExpression = scopeExpression => {
+  // checking that the expression is valid simplifies the conditionals below
+  if (!validateExpression(scopeExpression)) {
+    throw new Error("Cannot simplify invalid scope expression");
+  }
+
+  const simplify = scopeExpression => {
+    if (isScope(scopeExpression)) {
+      return scopeExpression;
+    } else if (isAnyOf(scopeExpression)) {
+      let rerun = false;
+      let {scopes, anyOfs, allOfs} = divideSubexpressions(scopeExpression.AnyOf);
+      anyOfs = anyOfs.map(simplify);
+      allOfs = allOfs.map(simplify);
+
+      // Take the concatenation of the values of the AnyOfs.  In this case we may
+      // introduce more duplicates, so we re-run simplify on the
+      // result.
+      if (anyOfs.length > 0) {
+        rerun = true;
+        anyOfs = flatten(anyOfs.map(e => e.AnyOf));
+      }
+
+      let subexprs = [...scopes, ...anyOfs, ...allOfs];
+      if (subexprs.length === 1) {
+        return subexprs[0];
+      }
+
+      return rerun ? simplify({AnyOf: subexprs}) : {AnyOf: subexprs};
+    } else if (isAllOf(scopeExpression)) {
+      let rerun = false;
+      let {scopes, anyOfs, allOfs} = divideSubexpressions(scopeExpression.AllOf.map(simplify));
+
+      scopes = normalizeScopeSet(scopes);
+
+      // Take the concatenation of the values of the AllOfs.  In this case we may
+      // introduce more duplicates, so we re-run simplify on the
+      // result.
+      if (allOfs.length > 0) {
+        rerun = true;
+        allOfs = flatten(allOfs.map(e => e.AllOf));
+      }
+
+      let subexprs = [...scopes, ...anyOfs, ...allOfs];
+      if (subexprs.length === 1) {
+        return subexprs[0];
+      }
+      return rerun ? simplify({AllOf: subexprs}) : {AllOf: subexprs};
+    }
+  };
+
+  return simplify(scopeExpression);
+};
+
+// utility functions for simplifyScopeExpression
+const isScope = exports.simplifyScopeExpression.isScope = exp => typeof exp === "string";
+const isAnyOf = exports.simplifyScopeExpression.isAnyOf = exp => exp.AnyOf;
+const isAllOf = exports.simplifyScopeExpression.isAllOf = exp => exp.AllOf;
+
+const divideSubexpressions = exports.simplifyScopeExpression.divideSubexpressions = subexprs => {
+  const scopes = new Set();
+  const anyOfs = new Map();
+  const allOfs = new Map();
+
+  for (let e of subexprs) {
+    if (isScope(e)) {
+      scopes.add(e);
+    } else if (isAnyOf(e)) {
+      anyOfs.set(stringify(e), e);
+    } else if (isAllOf(e)) {
+      allOfs.set(stringify(e), e);
+    }
+  }
+  return {
+    scopes: [...scopes].sort(scopeCompare),
+    anyOfs: [...anyOfs.values()],
+    allOfs: [...allOfs.values()],
+  };
 };
