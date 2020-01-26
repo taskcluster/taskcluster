@@ -66,6 +66,7 @@ const validateSchemas = ({validator, absoluteSchemas, rootUrl, serviceName, entr
     res.reply = (json) => {
       if (res.headersSent) {
         monitor.reportError(new Error('called send twice'));
+        return;
       }
       if (!req.public && !req.hasAuthed) {
         throw new Error('Deferred auth was never checked!');
