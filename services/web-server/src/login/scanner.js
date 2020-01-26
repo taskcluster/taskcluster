@@ -46,7 +46,16 @@ module.exports = async (auth, strategies) => {
 
         if (!user) {
           // this user has been deleted, so disable the client
-          await auth.disableClient(client.clientId);
+          try {
+            await auth.disableClient(client.clientId);
+          } catch (err) {
+            if (err.statusCode !== 404) {
+              throw err;
+            }
+            // 404's are OK - it means the user was deleted (even better than
+            // disabled) between the auth.listClients call and the
+            // auth.disableClient call.
+          }
           continue;
         }
 
