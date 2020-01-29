@@ -107,8 +107,14 @@ export default class MarkdownTextArea extends Component {
   };
 
   render() {
-    const { classes, rows, markdownProps } = this.props;
-    const { onChange, defaultTabIndex, ...props } = this.props;
+    const {
+      classes,
+      rows,
+      markdownProps,
+      onChange,
+      defaultTabIndex,
+      ...props
+    } = this.props;
     const { tabIndex, value } = this.state;
     const isPreview = tabIndex === 1;
 
