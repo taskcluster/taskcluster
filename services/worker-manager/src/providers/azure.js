@@ -14,6 +14,11 @@ const NetworkManagementClient = require('@azure/arm-network').NetworkManagementC
 const {ApiError, Provider} = require('./provider');
 const {CloudAPI} = require('./cloudapi');
 
+// only use alphanumeric characters for convenience
+function nicerId() {
+  return (slugid.nice() + slugid.nice() + slugid.nice()).toLowerCase().replace(/[^A-Za-z0-9]/g, '');
+}
+
 class AzureProvider extends Provider {
 
   constructor({
@@ -108,13 +113,13 @@ class AzureProvider extends Provider {
       // workers in taskcluster.
       const resourceGroupName = this.providerConfig.resourceGroupName;
       const poolName = workerPoolId.replace(/[\/_]/g, '-').slice(0, 38);
-      const virtualMachineName = `vm-${poolName}-${slugid.nice().replace(/_/g, '-').toLowerCase()}`.slice(0, 38);
+      const virtualMachineName = `vm-${poolName}-${nicerId()}`.slice(0, 38);
       // Windows computer name cannot be more than 15 characters long, be entirely numeric,
       // or contain the following characters: ` ~ ! @ # $ % ^ & * ( ) = + _ [ ] { } \\ | ; : . " , < > / ?
-      const computerName = slugid.nice(`${slugid.nice().replace(/[\/_-]/g, '')}`).slice(0, 15);
-      const ipAddressName = `pip-${slugid.nice().replace(/[\/\_]/g, '-').toLowerCase()}`.slice(0, 24);
-      const networkInterfaceName = `nic-${slugid.nice().replace(/[\/\_]/g, '-').toLowerCase()}`.slice(0, 24);
-      const diskName = `disk-${slugid.nice().replace(/[\/\_]/g, '-').toLowerCase()}`.slice(0, 24);
+      const computerName = nicerId().slice(0, 15);
+      const ipAddressName = `pip-${nicerId()}`.slice(0, 24);
+      const networkInterfaceName = `nic-${nicerId()}`.slice(0, 24);
+      const diskName = `disk-${nicerId()}`.slice(0, 24);
       let ipAddress, networkInterface, virtualMachine;
 
       let providerData = {
@@ -176,11 +181,11 @@ class AzureProvider extends Provider {
             ...cfg.osProfile,
             // Windows admin user name cannot be more than 20 characters long, be empty,
             // end with a period(.), or contain the following characters: \\ / \" [ ] : | < > + = ; , ? * @.
-            adminUsername: slugid.nice().replace(/[\/_-]/g, '').slice(0, 20),
+            adminUsername: nicerId().slice(0, 20),
             // we have to set a password, but we never want it to be used, so we throw it away
             // a legitimate user who needs access can reset the password
-            // 72 char limit for linux VMs, each slugid is 22 chars
-            adminPassword: (slugid.nice() + slugid.nice() + slugid.nice() + slugid.nice()).slice(0, 72),
+            // 72 char limit for linux VMs
+            adminPassword: (nicerId() + nicerId()).slice(0, 72),
             computerName,
             customData,
           },
