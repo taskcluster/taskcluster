@@ -76,7 +76,7 @@ func update(cmd *cobra.Command, _ []string) {
 	}
 
 	if s.Contains(R.Message, "API rate limit") {
-		fmt.Fprintf(cmd.OutOrStderr(), "taskcluster update: GitHub API Rate limit exceeeded\n")
+		fmt.Fprintf(cmd.OutOrStderr(), "taskcluster update: GitHub API Rate limit exceeded\n")
 		return
 	}
 	// Check if taskcluster is already up to date. The published
