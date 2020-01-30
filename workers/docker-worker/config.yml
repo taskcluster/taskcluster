@@ -99,7 +99,7 @@ defaults:
     # We must reclaim somewhat frequently (but not too frequently) this is the
     # divisor used to figure out when to issue the reclaim based on taken until
     # for example `2` would mean half the time between now and taken until.
-    reclaimDivisor: 1.3
+    reclaimDivisor: 2
     # Tasks should be removed from the queue if they have been dequeued a lot.
     # Possible signs that the task is bad
     dequeueCount: 15
