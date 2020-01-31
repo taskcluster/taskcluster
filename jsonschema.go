@@ -438,7 +438,7 @@ func (jsonSubSchema *JsonSubSchema) typeDefinition(disableNested bool, topLevel 
 		if f := jsonSubSchema.Format; f != nil {
 			if *f == "date-time" {
 				typ = "tcclient.Time"
-				extraPackages["tcclient \"github.com/taskcluster/taskcluster/clients/client-go\""] = true
+				extraPackages["tcclient \"github.com/taskcluster/taskcluster/clients/client-go/v24\""] = true
 			}
 		}
 	}
