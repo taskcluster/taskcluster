@@ -459,5 +459,20 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
       assert(res.expires - new Date() + 10000 > 96 * 3600 * 1000, res.expires);
       assert(res.expires - new Date() - 10000 < 96 * 3600 * 1000, res.expires);
     });
+
+    test('sweet success (different reregister)', async function() {
+      const worker = await helper.Worker.create({
+        ...defaultWorker,
+        providerData: {
+          reregistrationDeadline: taskcluster.fromNow('10 hours'),
+        },
+      });
+      const document = fs.readFileSync(path.resolve(__dirname, 'fixtures/azure_signature_good')).toString();
+      const workerIdentityProof = {document};
+      const res = await provider.registerWorker({workerPool, worker, workerIdentityProof});
+      // allow +- 10 seconds since time passes while the test executes
+      assert(res.expires - new Date() + 10000 > 10 * 3600 * 1000, res.expires);
+      assert(res.expires - new Date() - 10000 < 10 * 3600 * 1000, res.expires);
+    });
   });
 });
