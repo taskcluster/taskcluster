@@ -254,8 +254,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
     });
   });
 
-  suite('[UNIT] AWS provider - registerWorker - negative test cases', function() {
-    // For the positive integration test, see api_test.js, registerWorker endpoint
+  suite('[UNIT] AWS provider - registerWorker', function() {
 
     test('registerWorker - verifyInstanceIdentityDocument - document is not string', async function() {
       const workerIdentityProof = {
@@ -369,6 +368,61 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
 
       sinon.restore();
 
+    });
+
+    test('registerWorker - success', async function() {
+      const runningWorker = await helper.Worker.create({
+        workerId: 'i-02312cd4f06c990ca',
+        ...defaultWorker,
+        providerData: {
+          region: 'us-west-2',
+          imageId: actualWorkerIid.imageId,
+          instanceType: actualWorkerIid.instanceType,
+          architecture: actualWorkerIid.architecture,
+          availabilityZone: 'us-west-2a',
+          privateIp: '172.31.23.159',
+          owner: actualWorkerIid.accountId,
+        },
+      });
+
+      const workerIdentityProof = {
+        "document": fs.readFileSync(path.resolve(__dirname, 'fixtures/aws_iid_DOCUMENT')).toString(),
+        "signature": fs.readFileSync(path.resolve(__dirname, 'fixtures/aws_iid_SIGNATURE')).toString(),
+      };
+
+      const resp = await provider.registerWorker({worker: runningWorker, workerPool, workerIdentityProof});
+      assert(resp.expires - new Date() + 10000 > 96 * 3600 * 1000);
+      assert(resp.expires - new Date() - 10000 < 96 * 3600 * 1000);
+
+      sinon.restore();
+    });
+
+    test('registerWorker - success (different reregister)', async function() {
+      const runningWorker = await helper.Worker.create({
+        workerId: 'i-02312cd4f06c990ca',
+        ...defaultWorker,
+        providerData: {
+          region: 'us-west-2',
+          imageId: actualWorkerIid.imageId,
+          reregistrationTimeout: taskcluster.fromNow('10 hours'),
+          instanceType: actualWorkerIid.instanceType,
+          architecture: actualWorkerIid.architecture,
+          availabilityZone: 'us-west-2a',
+          privateIp: '172.31.23.159',
+          owner: actualWorkerIid.accountId,
+        },
+      });
+
+      const workerIdentityProof = {
+        "document": fs.readFileSync(path.resolve(__dirname, 'fixtures/aws_iid_DOCUMENT')).toString(),
+        "signature": fs.readFileSync(path.resolve(__dirname, 'fixtures/aws_iid_SIGNATURE')).toString(),
+      };
+
+      const resp = await provider.registerWorker({worker: runningWorker, workerPool, workerIdentityProof});
+      assert(resp.expires - new Date() + 10000 > 96 * 3600 * 1000);
+      assert(resp.expires - new Date() - 10000 < 96 * 3600 * 1000);
+
+      sinon.restore();
     });
   });
 

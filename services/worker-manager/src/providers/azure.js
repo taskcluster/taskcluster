@@ -376,8 +376,12 @@ class AzureProvider extends Provider {
       w.state = this.Worker.states.RUNNING;
     });
 
-    // assume for the moment that workers self-terminate before 96 hours
-    return {expires: taskcluster.fromNow('96 hours')};
+    let expires = taskcluster.fromNow('96 hours');
+    if (worker.providerData.reregistrationDeadline) {
+      expires = new Date(worker.providerData.reregistrationDeadline);
+    }
+
+    return {expires};
   }
 
   async scanPrepare() {

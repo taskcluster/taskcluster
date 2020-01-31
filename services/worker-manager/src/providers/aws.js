@@ -269,8 +269,12 @@ class AwsProvider extends Provider {
       w.state = this.Worker.states.RUNNING;
     });
 
-    // return object that has expires field
-    return {expires: taskcluster.fromNow('96 hours')};
+    let expires = taskcluster.fromNow('96 hours');
+    if (worker.providerData.reregistrationDeadline) {
+      expires = new Date(worker.providerData.reregistrationDeadline);
+    }
+
+    return {expires};
   }
 
   async checkWorker({worker}) {
