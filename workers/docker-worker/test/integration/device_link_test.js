@@ -174,4 +174,34 @@ suite('device linking within containers', () => {
       `Worker should just capacity based on the number of devices that could be found:\n${message}`
     );
   });
+
+  test.skip('/dev/shm is shared with the host', async () => {
+    worker = new TestWorker(DockerWorker);
+    await worker.launch();
+    let task = {
+      scopes: ['docker-worker:capability:device:hostSharedMemory'],
+      payload: {
+        capabilities: {
+          devices: {
+            hostSharedMemory: true
+          }
+        },
+        image: 'ubuntu:14.10',
+        command: cmd(
+          'mount | grep dev/shm',
+          'mount | grep dev/shm | grep -vq size= || { echo \'/dev/shm should not contain size\'; exit 1; }'
+        ),
+        maxRunTime: 5 * 60
+      }
+    };
+
+    let result = await worker.postToQueue(task);
+
+    assert.equal(result.status.state, 'completed', 'Task state is not marked as completed');
+    assert.equal(
+      result.run.reasonResolved,
+      'completed',
+      'Task not resolved as complete'
+    );
+  });
 });

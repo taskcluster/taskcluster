@@ -146,6 +146,11 @@
               "title": "Loopback Audio device",
               "description": "Audio loopback device created using snd-aloop",
               "type": "boolean"
+            },
+            "hostSharedMemory": {
+              "title": "Host shared memory device (Experimental)",
+              "description": "Mount /dev/shm from the host in the container.",
+              "type": "boolean"
             }
           }
         }
