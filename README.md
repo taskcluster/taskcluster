@@ -5,7 +5,7 @@ This repository defines a utility for running workers.
 It handles:
 
  - Getting Taskcluster credentials
- - Interacting with the [worker manager](https://docs.taskcluster.net/docs/reference/core/worker-manager/)
+ - Interacting with the [worker manager](https://docs.taskcluster.net/docs/manual/design/env-vars#taskcluster_worker_location)
  - Gathering configuration from various sources
  - Polling for interruptions of cloud instances (e.g., spot termination)
 
@@ -198,7 +198,7 @@ provider:
     providerType: aws
 ```
 
-The [$TASKCLUSTER_WORKER_LOCATION](https://docs.taskcluster.net/docs/reference/core/worker-manager/)
+The [$TASKCLUSTER_WORKER_LOCATION](https://docs.taskcluster.net/docs/manual/design/env-vars#taskcluster_worker_location)
 defined by this provider has the following fields:
 
 * cloud: aws
@@ -215,7 +215,7 @@ provider:
     providerType: azure
 ```
 
-The [$TASKCLUSTER_WORKER_LOCATION](https://docs.taskcluster.net/docs/reference/core/worker-manager/)
+The [$TASKCLUSTER_WORKER_LOCATION](https://docs.taskcluster.net/docs/manual/design/env-vars#taskcluster_worker_location)
 defined by this provider has the following fields:
 
 * cloud: azure
@@ -231,7 +231,7 @@ provider:
     providerType: google
 ```
 
-The [$TASKCLUSTER_WORKER_LOCATION](https://docs.taskcluster.net/docs/reference/core/worker-manager/)
+The [$TASKCLUSTER_WORKER_LOCATION](https://docs.taskcluster.net/docs/manual/design/env-vars#taskcluster_worker_location)
 defined by this provider has the following fields:
 
 * cloud: google
@@ -263,7 +263,7 @@ provider:
     workerLocation:  {prop: val, ..}
 ```
 
-The [$TASKCLUSTER_WORKER_LOCATION](https://docs.taskcluster.net/docs/reference/core/worker-manager/)
+The [$TASKCLUSTER_WORKER_LOCATION](https://docs.taskcluster.net/docs/manual/design/env-vars#taskcluster_worker_location)
 defined by this provider has the following fields:
 
 * cloud: standalone
@@ -291,7 +291,7 @@ provider:
     workerLocation:  {prop: val, ..}
 ```
 
-The [$TASKCLUSTER_WORKER_LOCATION](https://docs.taskcluster.net/docs/reference/core/worker-manager/)
+The [$TASKCLUSTER_WORKER_LOCATION](https://docs.taskcluster.net/docs/manual/design/env-vars#taskcluster_worker_location)
 defined by this provider has the following fields:
 
 * cloud: static
