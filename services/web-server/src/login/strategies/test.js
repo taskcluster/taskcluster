@@ -1,5 +1,4 @@
 const User = require('../User');
-const identityFromClientId = require('../../utils/identityFromClientId');
 const taskcluster = require('taskcluster-client');
 const { encode, decode } = require('../../utils/codec');
 
@@ -21,16 +20,6 @@ module.exports = class Test {
     const userId = decode(encodedUserId);
 
     return this.getUser({ userId });
-  }
-
-  userFromClientId(clientId) {
-    const identity = identityFromClientId(clientId);
-
-    if (!identity) {
-      return;
-    }
-
-    return this.userFromIdentity(identity);
   }
 
   useStrategy(app, cfg) {

@@ -4,7 +4,6 @@ const scan = require('../src/login/scanner');
 const testing = require('taskcluster-lib-testing');
 const libUrls = require('taskcluster-lib-urls');
 const User = require('../src/login/User');
-const identityFromClientId = require('../src/utils/identityFromClientId');
 
 suite(testing.suiteName(), () => {
   // set up some fakes
@@ -59,11 +58,6 @@ suite(testing.suiteName(), () => {
       user.identity = identity;
       user.addRole('is:' + userId);
       return user;
-    }
-
-    userFromClientId(clientId) {
-      const identity = identityFromClientId(clientId);
-      return this.userFromIdentity(identity);
     }
   }
 
