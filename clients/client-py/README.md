@@ -460,6 +460,62 @@ prod_config = load_secrets(
 )
 ```
 
+### Uploading artifacts during the task execution
+
+Most artifacts are automatically uploaded at the end of a task execution, but if you need to upload them during the task execution, here is an helper function to do that: `taskcluster.helper.upload_artifact`.
+
+It will directly do the two steps upload through Taskcluster proxy (this cannot work from your computer):
+
+1. use `createArtifact` on a pre-configured queue service, setting artifact path, content type & expiration date
+2. upload the file on Amazon S3 through the short lived url provided by Taskcluster
+
+Here is an example of direct usage of that function:
+
+
+```python
+from taskcluster import Queue
+from taskcluster.helper import upload_artifact
+from datetime import timedelta
+
+artifact_url = upload_artifact(
+  Queue({...}),
+
+	# The artifact path exposed to users
+  'myproject/file.txt',
+
+  # The artifact content as a string
+  'My super payload !',
+
+  # Content type of the artifact
+  'text/plain',
+
+  # Artifact Time to live using a timedelta
+	timedelta(days=10),
+)
+
+# artifact_url = '/api/queue/v1/task/<taskid>/runs/<runid>/artifacts/myproject/file.txt'
+```
+
+This method is also exposed in `TaskclusterConfig` and will use the current authentification:
+
+```python
+from project import tc
+
+artifact_url = tc.load_secrets(
+	# The artifact path exposed to users
+  'myproject/file.txt',
+
+  # The artifact content as a string
+  'My super payload !',
+
+  # Content type of the artifact
+  'text/plain',
+
+  # Artifact Time to live using a timedelta
+	timedelta(days=10),
+)
+```
+
 ## Methods contained in the client library
 
 <!-- START OF GENERATED DOCS -->
