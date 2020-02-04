@@ -238,10 +238,14 @@ exports.tasks.push({
     ...SERVICES.map(name => `procslist-${name}`),
     'static-clients',
   ],
-  provides: [],
+  provides: [
+    'config-values-schema',
+    'config-values',
+  ],
   run: async (requirements, utils) => {
     const schema = {
       '$schema': 'http://json-schema.org/draft-06/schema#',
+      '$id': '/schemas/common/values.schema.json#',
       type: 'object',
       title: 'Taskcluster Configuration Values',
       properties: {
@@ -446,5 +450,10 @@ exports.tasks.push({
     await writeRepoJSON(path.join(CHART_DIR, 'values.schema.json'), schema);
     await writeRepoYAML(path.join(CHART_DIR, 'values.yaml'), valuesYAML); // helm requires this to be "yaml"
     await writeRepoYAML(path.join('dev-docs', 'dev-config-example.yml'), exampleConfig);
+
+    return {
+      'config-values-schema': schema,
+      'config-values': valuesYAML,
+    };
   },
 });
