@@ -10,6 +10,7 @@ import logging
 import requests
 from taskcluster.generated import _client_importer
 from taskcluster.generated.aio import _client_importer as _async_client_importer
+from taskcluster.utils import stringDate
 import urllib.parse
 
 logger = logging.getLogger(__name__)
@@ -165,9 +166,7 @@ def upload_artifact(queue_service, artifact_path, content, content_type, ttl):
         artifact_path,
         {
             "storageType": "s3",
-            "expires": (datetime.datetime.utcnow() + ttl).strftime(
-                "%Y-%m-%dT%H:%M:%S.%fZ"
-            ),
+            "expires": stringDate(datetime.datetime.utcnow() + ttl),
             "contentType": content_type,
         },
     )
