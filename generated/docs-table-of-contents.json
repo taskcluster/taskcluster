@@ -1017,6 +1017,28 @@
             "children": [
             ],
             "data": {
+              "order": 0,
+              "title": "Calling Taskcluster APIs"
+            },
+            "name": "api",
+            "next": {
+              "path": "manual/using/github",
+              "title": "Integrating with Github"
+            },
+            "path": "manual/using/api",
+            "prev": {
+              "path": "manual/using",
+              "title": "Using Taskcluster"
+            },
+            "up": {
+              "path": "manual/using",
+              "title": "Using Taskcluster"
+            }
+          },
+          {
+            "children": [
+            ],
+            "data": {
               "filename": "using/github.mdx",
               "order": 10,
               "title": "Integrating with Github"
@@ -1028,8 +1050,8 @@
             },
             "path": "manual/using/github",
             "prev": {
-              "path": "manual/using",
-              "title": "Using Taskcluster"
+              "path": "manual/using/api",
+              "title": "Calling Taskcluster APIs"
             },
             "up": {
               "path": "manual/using",
@@ -1343,35 +1365,13 @@
                 },
                 "name": "pulse",
                 "next": {
-                  "path": "manual/using/integration/libraries",
-                  "title": "Client Libraries"
+                  "path": "manual/using/actions",
+                  "title": "Defining User Actions on Existing Tasks"
                 },
                 "path": "manual/using/integration/pulse",
                 "prev": {
                   "path": "manual/using/integration/backend",
                   "title": "Backend Services"
-                },
-                "up": {
-                  "path": "manual/using/integration",
-                  "title": "Integration with Other Applications"
-                }
-              },
-              {
-                "children": [
-                ],
-                "data": {
-                  "order": 50,
-                  "title": "Client Libraries"
-                },
-                "name": "libraries",
-                "next": {
-                  "path": "manual/using/actions",
-                  "title": "Defining User Actions on Existing Tasks"
-                },
-                "path": "manual/using/integration/libraries",
-                "prev": {
-                  "path": "manual/using/integration/pulse",
-                  "title": "Pulse Integrations"
                 },
                 "up": {
                   "path": "manual/using/integration",
@@ -1413,8 +1413,8 @@
             },
             "path": "manual/using/actions",
             "prev": {
-              "path": "manual/using/integration/libraries",
-              "title": "Client Libraries"
+              "path": "manual/using/integration/pulse",
+              "title": "Pulse Integrations"
             },
             "up": {
               "path": "manual/using",
@@ -1451,8 +1451,8 @@
         },
         "name": "using",
         "next": {
-          "path": "manual/using/github",
-          "title": "Integrating with Github"
+          "path": "manual/using/api",
+          "title": "Calling Taskcluster APIs"
         },
         "path": "manual/using",
         "prev": {

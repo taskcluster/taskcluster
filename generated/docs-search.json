@@ -995,6 +995,34 @@
   },
   {
     "element": "h1",
+    "id": "calling-taskcluster-apis",
+    "path": "/manual/using/api",
+    "subtitle": null,
+    "title": "Calling Taskcluster APIs"
+  },
+  {
+    "element": "h2",
+    "id": "authentication",
+    "path": "/manual/using/api",
+    "subtitle": "Authentication",
+    "title": "Calling Taskcluster APIs"
+  },
+  {
+    "element": "h2",
+    "id": "client-libraries",
+    "path": "/manual/using/api",
+    "subtitle": "Client Libraries",
+    "title": "Calling Taskcluster APIs"
+  },
+  {
+    "element": "h3",
+    "id": "using-clients-in-a-task",
+    "path": "/manual/using/api",
+    "subtitle": "Using Clients in a Task",
+    "title": "Calling Taskcluster APIs"
+  },
+  {
+    "element": "h1",
     "id": "working-with-artifacts",
     "path": "/manual/using/artifacts",
     "subtitle": null,
