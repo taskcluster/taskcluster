@@ -289,12 +289,17 @@ const remoteAuthentication = ({signatureValidator, entry}) => {
             '{{required}}',
             '```',
           ]).join('\n');
+          let unsatisfied = undefined;
+          if (gotCreds) {
+            unsatisfied = scopes.simplifyScopeExpression(
+              scopes.removeGivenScopes(result.scopes, scopeExpression));
+          }
           throw new ErrorReply({
             code: 'InsufficientScopes',
             message,
             details: {
               required: scopeExpression,
-              unsatisfied: gotCreds ? scopes.removeGivenScopes(result.scopes, scopeExpression) : undefined,
+              unsatisfied,
             },
           });
         }
