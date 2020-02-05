@@ -5,7 +5,9 @@ import (
 	"io/ioutil"
 	"os/exec"
 	"path/filepath"
+	"runtime"
 	"testing"
+	"time"
 
 	"github.com/Flaque/filet"
 	"github.com/stretchr/testify/require"
@@ -49,6 +51,12 @@ worker:
 	// checks exit code of running fake worker
 	_, err = Run(configPath)
 	require.NoError(t, err)
+
+	// sleep a short bit to let NTFS figure out that fake.exe isn't in use anymore
+	// and it's safe to delete
+	if runtime.GOOS == "windows" {
+		time.Sleep(5 * time.Second)
+	}
 }
 
 func TestDummy(t *testing.T) {
