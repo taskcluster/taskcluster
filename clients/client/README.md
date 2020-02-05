@@ -1,22 +1,31 @@
-# Taskcluster Client
+# Taskcluster Client for JS
 
-This client library is generated from the auto-generated API reference.
-You can create a Client class from a JSON reference object at runtime using
-`taskcluster.createClient(reference)`. But there is also a set of builtin
-references from which Client classes are already constructed.
+[![Download](https://img.shields.io/badge/yarn-taskcluster--client-brightgreen)](https://yarnpkg.com/en/package/taskcluster-client)
+[![License](https://img.shields.io/badge/license-MPL%202.0-orange.svg)](http://mozilla.org/MPL/2.0)
 
-## Calling API End-Points
-To invoke an API end-point instantiate a taskcluster Client class, these are
-classes can be created from a JSON reference object, but a number of them are
-also built-in to this library. The following example instantiates an
-instance of the `Queue` Client class, showing all available options, and
-uses it to to create a task.  Note that only the `rootUrl` option is required.
+**A Taskcluster client library for (server-side) JS.**
+
+This library is a complete interface to Taskcluster in JavaScript.  It provides
+an asynchronous interface for all Taskcluster API methods.  This library is
+used within Taskcluster itself for inter-service communication.
+
+## Usage
+
+For a general guide to using Taskcluster clients, see [Calling Taskcluster APIs](https://docs.taskcluster.net/docs/manual/using/api).
+
+### Setup
+
+Before calling an API end-point, you'll need to create a client instance.
+There is a class for each service, e.g., `Queue` and `Auth`.  Each takes the
+same options, shown in the example below.  Note that only `rootUrl` is
+required, and it's unusual to configure any other options aside from
+`credentials`.
 
 ```js
-var taskcluster = require('taskcluster-client');
+const taskcluster = require('taskcluster-client');
 
 // Instantiate the Queue Client class
-var queue = new taskcluster.Queue({
+const queue = new taskcluster.Queue({
   // rootUrl for this Taskcluster instance (required)
   rootUrl: 'https://taskcluster.myproject.org',
 
@@ -51,116 +60,161 @@ var queue = new taskcluster.Queue({
   // will have its own agent with the given options...
   agent: undefined,
 
-  // Fake methods, for testing
+  // Fake methods, for testing (see below)
   fake: null,
-});
 
-// Create task using the queue client
-var taskId = '...';
-queue.createTask(taskId, payload).then(function(result) {
-  // status is a task status structure
-  console.log(result.status);
+  // authorized scopes for use in requests by this client
+  authorizedScopes: undefined,
 });
 ```
-
-The `payload` parameter is always a JSON object as documented by the REST API
-documentation. The methods always returns a _promise_ for the response JSON
-object as documented in the REST API documentation.
 
 If you need to create a client similar to a existing client, but with some
 options changed, use `client.use(options)`:
 
 ```js
 queue
-  .use({authorizedScopes: [..]})
+  .use({retries: 0}) // disable retries for this request
   .createTask(..)
   .then(..);
 ```
 
 This replaces any given options with new values.
 
+#### Authentication Options
 
-## Listening for Events
-
-**NOTE** `PulseListener` is no longer included in `taskcluster-client`;
-instead, use `PulseConsumer` from
-[taskcluster-lib-pulse](../../libraries/pulse).
-
-However, this library helpfully includes bindings for exchanges declared by
-various Taskcluster services.  To use these with `taskcluster-lib-pulse`,
-create an `..Events` instance, call the apprporiate methods on it to construct
-a binding, and pass that to `pulse.consume`:
+You can automatically read credentials and rootUrl from the standard `TASKCLUSTER_…`
+[environment
+variables](https://docs.taskcluster.net/docs/manual/design/env-vars) with
+`taskcluster.fromEnvVars()` with `fromEnvVars`:
 
 ```js
-var taskcluster = require('taskcluster-client');
-
-// Instantiate the QueueEvents Client class
-var queueEvents = new taskcluster.QueueEvents({rootUrl: ..});
-
-let pc = await pulse.consume({
-  bindings: [
-    // Bind to task-completed events from queue that matches routing key pattern:
-    //   'primary.<myTaskId>.*.*.*.*.*.#'
-    queueEvents.taskCompleted({taskId: myTaskId});
-  ], ..);
+const auth = new taskcluster.Auth({
+  ...taskcluster.fromEnvVars(),
+});
 ```
 
-## Documentation
+Note that this function does not respect `TASKCLUSTER_PROXY_URL`.  To use the Taskcluster Proxy from within a task:
 
-The set of API entries is generated from the built-in references.
-Detailed documentation with description, payload and result format details is
-available in the reference section of the Taskcluster documentation.
+```js
+const auth = new taskcluster.Auth({
+  rootUrl: process.env.TASKCLUSTER_PROXY_URL,
+});
+```
 
-## Providing Options
-Some API end-points may take query-string, this is indicated in the signature
-above as `[options]`. These options are always _optional_, commonly used for
-continuation tokens when paging a list. For list of supported options you
-should consult API documentation.
+You may also provide credentials directly. For example:
+```js
+const auth = new taskcluster.Auth({
+  credentials: {
+    clientId:     '...',
+    accessToken:  '...'
+  }
+});
+```
+If the `clientId` and `accessToken` are not given, no credentials will be used.
 
-## Construct Urls
-You can build a url for any request, but this feature is mostly useful for
-request that doesn't require any authentication. If you need authentication
-take a look at the section on building signed urls, which is possible for all
-`GET` requests. To construct a url for a request use the `buildUrl` method, as
-illustrated in the following example:
+#### Global Configuration
+
+You can set any of these values as global configuration options:
+
+```js
+// Configure default options
+taskcluster.config({
+  rootUrl: "https://somesite.com",
+  credentials: {
+    clientId:     '...',
+    accessToken:  '...'
+  }
+});
+
+// No rootUrl needed here
+const auth = new taskcluster.Auth();
+```
+
+#### Authorized Scopes
+
+If you wish to perform requests on behalf of a third-party that has small set
+of scopes than you do. You can specify [which scopes your request should be
+allowed to
+use](https://docs.taskcluster.net/docs/manual/design/apis/hawk/authorized-scopes),
+in the `authorizedScopes` option.  See example below:
+
+```js
+// Create a Queue Client class can only define tasks for a specific workerType
+const queue = new taskcluster.Queue({
+  // Credentials that can define tasks for any provisioner and workerType.
+  credentials: {
+    clientId:       '...',
+    accessToken:    '...'
+  },
+  // Restricting this instance of the Queue client to only one scope
+  authorizedScopes: ['queue:create-task:highest:my-provisioner/my-worker-type']
+});
+
+// This request will only be successful, if the task posted is aimed at
+// "my-worker-type/my-provisioner".
+await queue.defineTask(taskId taskDefinition).then(function(result) {
+  // ...
+});
+```
+
+### Calling API Methods
+
+Once you have a client object, calling API methods is as simple as invoking a
+method on the object.  All API methods are async, and their function signatures
+match those in the reference documentation.  In general, URL arguments are
+positional JS arguments, and any request payload is provided in a JSON object
+in the final argument.
+
+Some API end-points may take query-string options.  This is indicated in the
+signature in the reference documentation as `[options]`. These options are
+always _optional_, commonly used for continuation tokens when paging a list.
+
+```js
+// Create task using the queue client
+const taskId = '...';
+const result = await queue.createTask(taskId, payload);
+console.log(result.status);
+});
+```
+
+### Generating URLs
+
+You can build a URL for any API method, although this feature is
+mostly useful for request that don't require any authentication. To construct a
+url for a request use the `buildUrl` method, as illustrated in the following
+example:
 
 ```js
 // Create queue instance
-var queue = new taskcluster.Queue(...);
+const queue = new taskcluster.Queue(...);
 
 // Build url to get a specific task
-var url = queue.buildUrl(
+const url = queue.buildUrl(
   queue.getTask,    // Method to build url for.
   taskId            // First parameter for the method, in this case taskId
 );
 ```
 
-Please, note that the `payload` parameter cannot be encoded in urls. And must be
-sent when using a constructed urls. Again, this is not a problem as most methods
-that takes a `payload` also requires authentication.
-
-
-## Construct Signed Urls
-It's possible to build both signed urls for all `GET` requests. A signed url
-contains a query-string parameter called `bewit`, this parameter holds
-expiration time, signature and scope restrictions (if applied). The signature
-covers the following parameters:
+It's possible to build signed URLs, including authentication information, for
+all `GET` requests. A signed url contains a query-string parameter called
+`bewit`, this parameter holds expiration time, signature and scope restrictions
+(if applied). The signature covers the following parameters:
 
   * Expiration time,
   * Url and query-string, and
   * scope restrictions (if applied)
 
-These signed urls is very convenient if you want to grant somebody access to
+These signed urls are very convenient if you want to grant somebody access to
 specific resource without proxying the request or sharing your credentials.
 For example it's fairly safe to provide someone with a signed url for a
 specific artifact that is protected by a scope. See example below.
 
 ```js
 // Create queue instance
-var queue = new taskcluster.Queue(...);
+const queue = new taskcluster.Queue(...);
 
 // Build signed url
-var signedUrl = queue.buildSignedUrl(
+const signedUrl = queue.buildSignedUrl(
   queue.getArtifactFromRun,   // method to build signed url for.
   taskId,                     // TaskId parameter
   runId,                      // RunId parameter
@@ -180,14 +234,15 @@ possible to retract a signed url without revoking your credentials.
 For more technical details on signed urls, see _bewit_ urls in
 [@hapi/hawk](https://github.com/hapijs/hawk).
 
-## Generating Temporary Credentials
+### Generating Temporary Credentials
+
 If you have non-temporary taskcluster credentials you can generate a set of
-temporary credentials as follows. Notice that the credentials cannot last more
+[temporary credentials](https://docs.taskcluster.net/docs/manual/design/apis/hawk/temporary-credentials) as follows. Notice that the credentials cannot last more
 than 31 days, and you can only revoke them by revoking the credentials that was
 used to issue them (this takes up to one hour).
 
 ```js
-var credentials = taskcluster.createTemporaryCredentials({
+const credentials = taskcluster.createTemporaryCredentials({
   // Name of temporary credential (optional)
   clientId:           '...',
   // Validity of temporary credentials starts here
@@ -207,107 +262,8 @@ You cannot use temporary credentials to issue new temporary credentials.  You
 must have `auth:create-client:<name>` to create a named temporary credential,
 but unnamed temporary credentials can be created regardless of your scopes.
 
-## Create Client Class Dynamically
-You can create a Client class from a reference JSON object as illustrated
-below:
+### Handling Timestamps
 
-```js
-var reference = {...}; // JSON from references.taskcluster.net/...
-
-// Create Client class
-var MyClient = taskcluster.createClient(reference);
-
-// Instantiate an instance of MyClient
-var myClient = new MyClient(options);
-
-// Make a request with a method on myClient
-myClient.myMethod(arg1, arg2, payload).then(function(result) {
-  // ...
-});
-```
-
-## Configuration of API Invocations
-There is a number of configuration options for Client which affects invocation
-of API end-points. These are useful if using a non-default server, for example
-when setting up a staging area or testing locally.
-
-### Configuring API Root URL and Credentials
-
-If you use the builtin API Client classes documented above you must configure
-the `rootUrl` when creating an instance of the client. As illustrated below:
-
-```js
-var auth = new taskcluster.Auth({
-  rootUrl:      "http://whatever.com"
-});
-```
-
-You may also provide credentials. For example:
-```js
-var auth = new taskcluster.Auth({
-  credentials: {
-    clientId:     '...',
-    accessToken:  '...'
-  }
-});
-```
-If the `clientId` and `accessToken` are not given, no credentials will be used.
-
-You can set either or both of these values as global config options as below:
-
-```js
-// Configure default options
-taskcluster.config({
-  rootUrl: "https://somesite.com",
-  credentials: {
-    clientId:     '...',
-    accessToken:  '...'
-  }
-});
-
-// No rootUrl needed here
-var auth = new taskcluster.Auth();
-```
-
-You can read credentials and rootUrl from the standard `TASKCLUSTER_…`
-environment variables with `taskcluster.fromEnvVars()`:
-
-```js
-var auth = new taskcluster.Auth({
-  ...taskcluster.fromEnvVars(),
-});
-// or (to get behavior like that in versions 11.0.0 and earlier):
-taskcluster.config(taskcluster.fromEnvVars());
-```
-
-### Restricting Authorized Scopes
-If you wish to perform requests on behalf of a third-party that has small set of
-scopes than you do. You can specify which scopes your request should be allowed
-to use, in the key `authorizedScopes`. This is useful when the scheduler
-performs a request on behalf of a task-graph, or when authentication takes
-place in a trusted proxy. See example below:
-
-```js
-// Create a Queue Client class can only define tasks for a specific workerType
-var queue = new taskcluster.Queue({
-  // Credentials that can define tasks for any provisioner and workerType.
-  credentials: {
-    clientId:       '...',
-    accessToken:    '...'
-  },
-  // Restricting this instance of the Queue client to only one scope
-  authorizedScopes: ['queue:post:define-task/my-provisioner/my-worker-type']
-});
-
-// This request will only be successful, if the task posted is aimed at
-// "my-worker-type" under "my-provisioner".
-queue.defineTask(taskId taskDefinition).then(function(result) {
-  // ...
-});
-```
-
-
-## Relative Date-time Utilities
 A lot of taskcluster APIs requires ISO 8601 time stamps offset into the future
 as way of providing expiration, deadlines, etc. These can be easily created
 using `new Date().toJSON()`, however, it can be rather error prone and tedious
@@ -315,8 +271,8 @@ to offset `Date` objects into the future. Therefore this library comes with two
 utility functions for this purposes.
 
 ```js
-var dateObject = taskcluster.fromNow("2 days 3 hours 1 minute");
-var dateString = taskcluster.fromNowJSON("2 days 3 hours 1 minute");
+const dateObject = taskcluster.fromNow("2 days 3 hours 1 minute");
+const dateString = taskcluster.fromNowJSON("2 days 3 hours 1 minute");
 assert(dateObject.toJSON() === dateString);
 // dateObject = now() + 2 days 2 hours and 1 minute
 assert(new Date().getTime() < dateObject.getTime());
@@ -327,7 +283,7 @@ are prefixed minus (`-`) the date object will be offset into the past. This is
 useful in some corner cases.
 
 ```js
-var dateObject = taskcluster.fromNow("- 1 year 2 months 3 weeks 5 seconds");
+const dateObject = taskcluster.fromNow("- 1 year 2 months 3 weeks 5 seconds");
 // dateObject = now() - 1 year, 2 months, 3 weeks and 5 seconds
 assert(new Date().getTime() > dateObject.getTime());
 ```
@@ -353,13 +309,28 @@ argument. This is useful if offset the task expiration relative to the the task
 deadline or doing something similar.
 
 ```js
-var dateObject1 = taskcluster.fromNow("2 days 3 hours");
+const dateObject1 = taskcluster.fromNow("2 days 3 hours");
 // dateObject1  = now() + 2 days and 3 hours
-var dateObject2 = taskcluster.fromNow("1 year", dateObject1);
+const dateObject2 = taskcluster.fromNow("1 year", dateObject1);
 // dateObject2  = now() + 1 year, 2 days and 3 hours
 ```
 
-## Handling Credentials
+### Generating SlugIDs
+
+In node you can rely on the `slugid` module to generate slugids, but we already
+need it in `taskcluster-client` and expose the preferred slugid generation
+function as `taskcluster.slugid()`.
+
+```js
+const taskcluster = require('taskcluster-client');
+
+// Generate new taskId
+const taskId = taskcluster.slugid();
+```
+
+The generates _nice_ random slugids, refer to slugid module for further details.
+
+### Inspecting Credentials
 
 Your users may find the options for Taskcluster credentials overwhelming.  You
 can help by interpreting the credentials for them.
@@ -385,21 +356,32 @@ scopes result to determine whether to display UI elements associated with a
 particular scope, as long as the underlying API performs more reliable
 authorization checks.
 
-## Generating slugids
-In node you can rely on the `slugid` module to generate slugids, but we already
-need it in `taskcluster-client` and expose the preferred slugid generation
-function as `taskcluster.slugid()`.
+### Listening for Events
+
+**NOTE** `PulseListener` is no longer included in `taskcluster-client`;
+instead, use `PulseConsumer` from
+[taskcluster-lib-pulse](../../libraries/pulse).
+
+However, this library helpfully includes bindings for exchanges declared by
+various Taskcluster services.  To use these with `taskcluster-lib-pulse`,
+create an `..Events` instance, call the apprporiate methods on it to construct
+a binding, and pass that to `pulse.consume`:
 
 ```js
-var taskcluster = require('taskcluster-client');
+const taskcluster = require('taskcluster-client');
 
-// Generate new taskId
-var taskId = taskcluster.slugid();
+// Instantiate the QueueEvents Client class
+const queueEvents = new taskcluster.QueueEvents({rootUrl: ..});
+
+let pc = await pulse.consume({
+  bindings: [
+    // Bind to task-completed events from queue that matches routing key pattern:
+    //   'primary.<myTaskId>.*.*.*.*.*.#'
+    queueEvents.taskCompleted({taskId: myTaskId});
+  ], ..);
 ```
 
-The generates _nice_ random slugids, refer to slugid module for further details.
-
-## Fake API Methods
+### Fake API Methods
 
 In testing, it is useful to be able to "fake out" client methods so that they
 do not try to communicate with an actual, external service. The normal client
@@ -439,6 +421,33 @@ test('test the thing', async function() {
   }
 });
 ```
+### Creating Client Classes Dynamically
 
-##License
-The taskcluster client library is released on [MPL 2.0](http://mozilla.org/MPL/2.0/).
+You can create a Client class from a reference JSON object as illustrated
+below.  This is unusual, as generally the latest version of the library
+contains pre-defined classes for all Taskcluster services.
+
+```js
+const reference = {...}; // JSON from <rootUrl>/references/<serviceName>/<apiVersion>/api.json
+
+// Create Client class
+const MyClient = taskcluster.createClient(reference);
+
+// Instantiate an instance of MyClient
+const myClient = new MyClient(options);
+
+// Make a request with a method on myClient
+myClient.myMethod(arg1, arg2, payload).then(function(result) {
+  // ...
+});
+```
+
+## Compatibility
+
+This library is co-versioned with Taskcluster itself.
+That is, a client with version x.y.z contains API methods corresponding to Taskcluster version x.y.z.
+Taskcluster is careful to maintain API compatibility, and guarantees it within a major version.
+That means that any client with version x.* will work against any Taskcluster services at version x.*, and is very likely to work for many other major versions of the Taskcluster services.
+Any incompatibilities are noted in the [Changelog](https://github.com/taskcluster/taskcluster/blob/master/CHANGELOG.md).
+
+

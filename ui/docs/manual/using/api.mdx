@@ -42,6 +42,28 @@ All of the clients provide functionality that makes this easy:
  * Go: `myQueue := tcqueue.NewFromEnv()`
  * Shell: (env vars are read automatically)
 
+### Getting Credentials on the Command Line
+
+The [shell client](https://github.com/taskcluster/taskcluster/tree/master/clients/client-shell) provides an easy way to set the necessary environment variables:
+
+```
+$ eval `taskcluster signin`
+```
+
+You might make this easy to use with a shell function in ~/.bashrc:
+
+```shell
+tc-signin() { eval `taskcluster signin "${@}"`; }
+```
+
+This will open a web browser to get credentials, then set the corresponding environment variables in your shell session.
+
+It's common to pass a `--name` (to help you differentiate clients from one another) and one or more `--scope` arguments:
+
+```shell
+tc-signin --name smoketest --scope assume:project:taskcluster:smoketests
+```
+
 ### Using Clients in a Task
 
 Code running in a properly-configured task can use the scopes afforded to that task directly, avoiding handling any Taskcluster credentials directly.

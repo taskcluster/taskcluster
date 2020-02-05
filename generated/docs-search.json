@@ -1016,6 +1016,13 @@
   },
   {
     "element": "h3",
+    "id": "getting-credentials-on-the-command-line",
+    "path": "/manual/using/api",
+    "subtitle": "Getting Credentials on the Command Line",
+    "title": "Calling Taskcluster APIs"
+  },
+  {
+    "element": "h3",
     "id": "using-clients-in-a-task",
     "path": "/manual/using/api",
     "subtitle": "Using Clients in a Task",
