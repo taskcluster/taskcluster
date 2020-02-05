@@ -121,7 +121,7 @@ provider:
     workerLocation:  {prop: val, ..}
 ` + "```" + `
 
-The [$TASKCLUSTER_WORKER_LOCATION](https://docs.taskcluster.net/docs/reference/core/worker-manager/)
+The [$TASKCLUSTER_WORKER_LOCATION](https://docs.taskcluster.net/docs/manual/design/env-vars#taskcluster_worker_location)
 defined by this provider has the following fields:
 
 * cloud: static
