@@ -34,10 +34,9 @@ class Database {
       }
 
       this.fns[method.name] = async (...args) => {
-        if (serviceName !== method.serviceName && method.mode === WRITE) {
+        if (serviceName !== method.serviceName && method.mode !== READ) {
           throw new Error(
-            `${serviceName} is not allowed to call any methods that do not belong to this service and which have mode=WRITE`,
-          );
+            `${serviceName} is not allowed to call read-write methods for other services`);
         }
 
         const placeholders = [...new Array(args.length).keys()].map(i => `$${i + 1}`).join(',');
@@ -51,7 +50,9 @@ class Database {
             try {
               await client.query('rollback');
             } catch (_) {
-              // ignore
+              // Ignore, as we are already throwing the original error.  This
+              // is probably a case of a server shutting down or a failed
+              // connection.
             }
             throw err;
           }
@@ -113,7 +114,7 @@ class Database {
       // determine current permissions in the form ["username: priv on table"].
       // This includes information from the column_privileges table as if it
       // was granting access to the entire table. We never use column
-      // grants, so such an overstimation doesn't hurt. And revoking access
+      // grants, so such an overestimation doesn't hurt. And revoking access
       // to a table implicitly revokes column grants for that table, too.
       const res = await client.query(`
         select grantee, table_name, privilege_type
@@ -206,18 +207,33 @@ class Database {
   constructor({urlsByMode, statementTimeout}) {
     const makePool = dbUrl => {
       const pool = new Pool({connectionString: dbUrl});
-      // ignore errors from *idle* connections
+      // ignore errors from *idle* connections.  From the docs:
+      //
+      // > When a client is sitting idly in the pool it can still emit errors
+      // > because it is connected to a live backend. If the backend goes down or
+      // > a network partition is encountered all the idle, connected clients in
+      // > your application will emit an error through the pool's error event
+      // > emitter. The error listener is passed the error as the first argument
+      // > and the client upon which the error occurred as the 2nd argument. The
+      // > client will be automatically terminated and removed from the pool, it
+      // > is only passed to the error handler in case you want to inspect it.
+      //
+      // So Pool will handle those errors properly, and we must only register an
+      // handler so that Node does not complain of an unhandled error event.
       pool.on('error', client => {});
       pool.on('connect', async client => {
         if (statementTimeout) {
           await client.query(`set statement_timeout = ${statementTimeout}`);
         }
-        // unconditionally apply a timeout for idle transactions. we should
+
+        // Unconditionally apply a timeout for idle transactions. we should
         // never be idle in a transaction (well, for more than few ms beteween
-        // statements), so this is set quite low.  Holding a transaction open
-        // can make locks pile up and also prevent vacuuming of tables, both
-        // leading to performance issues.
-        await client.query('set idle_in_transaction_session_timeout = 200');
+        // statements)  Holding a transaction open can make locks pile up and
+        // also prevent vacuuming of tables, both leading to performance
+        // issues.  This is here to catch programming errors, but in a case
+        // where the server or the client are already overloaded this timer
+        // could also start running.
+        await client.query('set idle_in_transaction_session_timeout = 1000');
       });
       return pool;
     };
@@ -233,8 +249,8 @@ class Database {
   /**
    * Run cb with a client.
    *
-   * This is for INTERNAL USE ONLY.  All external access to the DB should be
-   * performed via methods.
+   * This is for use in tests and within this library only.  All "real" access
+   * to the DB should be performed via stored functions.
    */
   async _withClient(mode, cb) {
     const pool = this.pools[mode];

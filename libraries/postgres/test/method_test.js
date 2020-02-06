@@ -16,55 +16,55 @@ suite(path.basename(__filename), function() {
 
     test('name must be lowercase', function() {
       assert.throws(
-        () => Method.fromYamlFile('tEsTmEthOd', method, 'file.yml'),
+        () => Method.fromYamlFileContent('tEsTmEthOd', method, 'file.yml'),
         /has capital letters/);
     });
 
     test('description must exist', function() {
       assert.throws(
-        () => Method.fromYamlFile('testmethod', omit(method, ['description']), 'file.yml'),
+        () => Method.fromYamlFileContent('testmethod', omit(method, ['description']), 'file.yml'),
         /is missing description/);
     });
 
     test('mode must exist', function() {
       assert.throws(
-        () => Method.fromYamlFile('testmethod', omit(method, ['mode']), 'file.yml'),
+        () => Method.fromYamlFileContent('testmethod', omit(method, ['mode']), 'file.yml'),
         /missing or bad mode/);
     });
 
     test('mode must be valid', function() {
       assert.throws(
-        () => Method.fromYamlFile('testmethod', {...omit(method, ['mode']), mode: 'admin'}, 'file.yml'),
+        () => Method.fromYamlFileContent('testmethod', {...omit(method, ['mode']), mode: 'admin'}, 'file.yml'),
         /missing or bad mode/);
     });
 
     test('serviceName must exist', function() {
       assert.throws(
-        () => Method.fromYamlFile('testmethod', omit(method, ['serviceName']), 'file.yml'),
+        () => Method.fromYamlFileContent('testmethod', omit(method, ['serviceName']), 'file.yml'),
         /missing serviceName/);
     });
 
     test('args must exist', function() {
       assert.throws(
-        () => Method.fromYamlFile('testmethod', omit(method, ['args']), 'file.yml'),
+        () => Method.fromYamlFileContent('testmethod', omit(method, ['args']), 'file.yml'),
         /missing args/);
     });
 
     test('returns must exist', function() {
       assert.throws(
-        () => Method.fromYamlFile('testmethod', omit(method, ['returns']), 'file.yml'),
+        () => Method.fromYamlFileContent('testmethod', omit(method, ['returns']), 'file.yml'),
         /missing returns/);
     });
 
     test('body must exist', function() {
       assert.throws(
-        () => Method.fromYamlFile('testmethod', omit(method, ['body']), 'file.yml'),
+        () => Method.fromYamlFileContent('testmethod', omit(method, ['body']), 'file.yml'),
         /missing body/);
     });
 
     test('extra props forbidden', function() {
       assert.throws(
-        () => Method.fromYamlFile('testmethod', {...method, uhoh: 10}, 'file.yml'),
+        () => Method.fromYamlFileContent('testmethod', {...method, uhoh: 10}, 'file.yml'),
         /unexpected properties/);
     });
   });

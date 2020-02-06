@@ -5,17 +5,23 @@ const Method = require('./Method');
 const objMap = (obj, fn) => Object.fromEntries(Object.entries(obj).map(fn));
 
 class Version {
-  static fromYamlFile(content, filename) {
+  /**
+   * Load a Version from the content of a db/versions/nnn.yml file
+   */
+  static fromYamlFileContent(content, filename) {
     Version._checkContent(content, filename);
 
     return new Version(
       content.version,
       content.migrationScript,
       objMap(content.methods,
-        ([name, meth]) => [name, Method.fromYamlFile(name, meth, filename)]),
+        ([name, meth]) => [name, Method.fromYamlFileContent(name, meth, filename)]),
     );
   }
 
+  /**
+   * Load a Version from a serialized representation
+   */
   static fromSerializable(serializable) {
     for (let k of Object.keys(serializable)) {
       if (!['methods', 'migrationScript', 'version'].includes(k)) {
@@ -30,6 +36,9 @@ class Version {
     );
   }
 
+  /**
+   * Create a serialized representation
+   */
   asSerializable() {
     return {
       version: this.version,

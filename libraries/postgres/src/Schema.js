@@ -5,27 +5,15 @@ const path = require('path');
 const Version = require('./Version');
 const Access = require('./Access');
 
-class Schema{
+class Schema {
   constructor(versions, access) {
     this.versions = versions;
     this.access = access;
   }
 
-  static fromSerializable(serializable) {
-    assert.deepEqual(Object.keys(serializable).sort(), ['access', 'versions']);
-    return new Schema(
-      serializable.versions.map(s => Version.fromSerializable(s)),
-      Access.fromSerializable(serializable.access),
-    );
-  }
-
-  asSerializable() {
-    return {
-      versions: this.versions.map(v => v.asSerializable()),
-      access: this.access.asSerializable(),
-    };
-  }
-
+  /**
+   * Load a Schema from a db directory
+   */
   static fromDbDirectory(directory) {
     const dentries = fs.readdirSync(path.join(directory, 'versions'));
     let versions = new Array(dentries.length);
@@ -42,7 +30,7 @@ class Schema{
       }
 
       const content = yaml.safeLoad(fs.readFileSync(filename));
-      const version = Version.fromYamlFile(content, filename);
+      const version = Version.fromYamlFileContent(content, filename);
       if (versions[version.version - 1]) {
         throw new Error(`duplicate version number ${version.version} in ${filename}`);
       }
@@ -57,9 +45,30 @@ class Schema{
     Schema._checkMethodUpdates(versions);
 
     const content = yaml.safeLoad(fs.readFileSync(path.join(directory, 'access.yml')));
-    const access = Access.fromYamlFile(content, 'access.yml');
+    const access = Access.fromYamlFileContent(content, 'access.yml');
 
     return new Schema(versions, access);
+  }
+
+  /**
+   * Load a Schema from a serialized representation
+   */
+  static fromSerializable(serializable) {
+    assert.deepEqual(Object.keys(serializable).sort(), ['access', 'versions']);
+    return new Schema(
+      serializable.versions.map(s => Version.fromSerializable(s)),
+      Access.fromSerializable(serializable.access),
+    );
+  }
+
+  /**
+   * Create a serialized representation
+   */
+  asSerializable() {
+    return {
+      versions: this.versions.map(v => v.asSerializable()),
+      access: this.access.asSerializable(),
+    };
   }
 
   static _checkMethodUpdates(versions) {
