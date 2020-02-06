@@ -17,7 +17,7 @@ func TestCreateAndDestroyEnvironmentBlock(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Could not get interactive user token: %v", err)
 	}
-	runUntil := time.Now().Add(time.Second * 60)
+	runUntil := time.Now().Add(time.Second * 600)
 	pass := 0
 	fail := 0
 	for time.Now().Before(runUntil) {
