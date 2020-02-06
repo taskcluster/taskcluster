@@ -414,11 +414,11 @@ tasks:
           # only build pushes to master; everything else should be tested in a PR
           - $if: 'tasks_for == "github-push" && event["ref"] == "refs/heads/master"'
             then:
-              - $eval: platformTasks
+ #            - $eval: platformTasks
               - $eval: workerTasks
           - $if: 'tasks_for == "github-pull-request" && event["action"] in ["opened", "reopened", "synchronize"]'
             then:
-              - $eval: platformTasks
+ #            - $eval: platformTasks
               - $eval: workerTasks
           # Release on tags; note that we must match the `v` to avoid triggering on pushes to golang
           # package tags like `clients/client-go/v1.2.3`.
