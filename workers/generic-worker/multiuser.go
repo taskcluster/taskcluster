@@ -12,9 +12,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/taskcluster/generic-worker/fileutil"
-	"github.com/taskcluster/generic-worker/process"
-	"github.com/taskcluster/generic-worker/runtime"
+	"github.com/taskcluster/taskcluster/v24/workers/generic-worker/fileutil"
+	"github.com/taskcluster/taskcluster/v24/workers/generic-worker/process"
+	"github.com/taskcluster/taskcluster/v24/workers/generic-worker/runtime"
 )
 
 const (

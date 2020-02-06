@@ -11,8 +11,8 @@ import (
 	"strings"
 	"syscall"
 
-	"github.com/taskcluster/generic-worker/host"
-	"github.com/taskcluster/generic-worker/runtime"
+	"github.com/taskcluster/taskcluster/v24/workers/generic-worker/host"
+	"github.com/taskcluster/taskcluster/v24/workers/generic-worker/runtime"
 )
 
 type PlatformData struct {

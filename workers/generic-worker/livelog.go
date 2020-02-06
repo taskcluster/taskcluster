@@ -8,11 +8,12 @@ import (
 	"os"
 	"time"
 
-	"github.com/taskcluster/generic-worker/expose"
-	"github.com/taskcluster/generic-worker/livelog"
-	"github.com/taskcluster/generic-worker/process"
 	"github.com/taskcluster/taskcluster-base-go/scopes"
-	tcclient "github.com/taskcluster/taskcluster-client-go"
+	tcurls "github.com/taskcluster/taskcluster-lib-urls"
+	tcclient "github.com/taskcluster/taskcluster/v24/clients/client-go"
+	"github.com/taskcluster/taskcluster/v24/workers/generic-worker/expose"
+	"github.com/taskcluster/taskcluster/v24/workers/generic-worker/livelog"
+	"github.com/taskcluster/taskcluster/v24/workers/generic-worker/process"
 )
 
 var (
@@ -129,7 +130,7 @@ func (l *LiveLogTask) Stop(err *ExecutionErrors) {
 		log.Printf("WARNING: could not terminate livelog writer: %s", errTerminate)
 	}
 	log.Printf("Redirecting %v to %v", livelogName, logName)
-	logURL := fmt.Sprintf("%v/task/%v/runs/%v/artifacts/%v", queue.BaseURL, l.task.TaskID, l.task.RunID, logName)
+	logURL := tcurls.API(queue.RootURL, "queue", "v1", fmt.Sprintf("task/%v/runs/%v/artifacts/%v", l.task.TaskID, l.task.RunID, logName))
 	err.add(l.task.uploadArtifact(
 		&RedirectArtifact{
 			BaseArtifact: &BaseArtifact{

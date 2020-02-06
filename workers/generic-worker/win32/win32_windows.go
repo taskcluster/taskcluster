@@ -34,7 +34,7 @@ var (
 	procCoTaskMemFree                = ole32.NewProc("CoTaskMemFree")
 	procWTSQueryUserToken            = wtsapi32.NewProc("WTSQueryUserToken")
 	procWTSGetActiveConsoleSessionId = kernel32.NewProc("WTSGetActiveConsoleSessionId")
-	procGetProfilesDirectory         = userenv.NewProc("GetProfilesDirectoryW")
+	procGetProfilesDirectoryW        = userenv.NewProc("GetProfilesDirectoryW")
 	procGetUserProfileDirectory      = userenv.NewProc("GetUserProfileDirectoryW")
 	procVerifyVersionInfoW           = kernel32.NewProc("VerifyVersionInfoW")
 	procVerSetConditionMask          = kernel32.NewProc("VerSetConditionMask")
@@ -443,21 +443,19 @@ func InteractiveUserToken(timeout time.Duration) (hToken syscall.Token, err erro
 	return
 }
 
-// https://msdn.microsoft.com/en-us/library/windows/desktop/bb762278(v=vs.85).aspx
-// BOOL WINAPI GetProfilesDirectory(
-//   _Out_   LPTSTR  lpProfilesDir,
-//   _Inout_ LPDWORD lpcchSize
+// https://docs.microsoft.com/en-us/windows/win32/api/userenv/nf-userenv-getprofilesdirectoryw
+// USERENVAPI BOOL GetProfilesDirectoryW(
+//   LPWSTR  lpProfileDir,
+//   LPDWORD lpcchSize
 // );
-func GetProfilesDirectory(
-	lpProfilesDir *uint16,
-	lpcchSize *uint32,
-) (err error) {
-	r1, _, e1 := procGetProfilesDirectory.Call(
-		uintptr(unsafe.Pointer(lpProfilesDir)),
-		uintptr(unsafe.Pointer(lpcchSize)),
-	)
+func GetProfilesDirectory(dir *uint16, dirLen *uint32) (err error) {
+	r1, _, e1 := procGetProfilesDirectoryW.Call(uintptr(unsafe.Pointer(dir)), uintptr(unsafe.Pointer(dirLen)))
 	if r1 == 0 {
-		err = os.NewSyscallError("GetProfilesDirectory", e1)
+		if e1 != syscall.Errno(0) {
+			err = error(e1)
+		} else {
+			err = syscall.EINVAL
+		}
 	}
 	return
 }
@@ -479,15 +477,22 @@ func ProfileDirectory(hToken syscall.Token) (string, error) {
 // ProfilesDirectory returns the folder where user profiles get created,
 // typically `C:\Users`
 func ProfilesDirectory() string {
-	lpcchSize := uint32(0)
-	GetProfilesDirectory(nil, &lpcchSize)
-	u16 := make([]uint16, lpcchSize)
-	err := GetProfilesDirectory(&u16[0], &lpcchSize)
-	if err != nil {
-		// this should never happen - it means Windows is corrupt!
-		panic(err)
+	n := uint32(100)
+	for {
+		b := make([]uint16, n)
+		e := GetProfilesDirectory(&b[0], &n)
+		if e == nil {
+			return syscall.UTF16ToString(b)
+		}
+		if e != syscall.ERROR_INSUFFICIENT_BUFFER {
+			// this should never happen - it means Windows is corrupt!
+			panic(e)
+		}
+		if n <= uint32(len(b)) {
+			// this should never happen - it means Windows is corrupt!
+			panic(e)
+		}
 	}
-	return syscall.UTF16ToString(u16)
 }
 
 // https://msdn.microsoft.com/en-us/library/windows/desktop/bb762280(v=vs.85).aspx
@@ -745,10 +750,7 @@ func DumpTokenInfo(token syscall.Token) {
 	groups := make([]windows.SIDAndAttributes, tokenGroups.GroupCount, tokenGroups.GroupCount)
 	for i := uint32(0); i < tokenGroups.GroupCount; i++ {
 		groups[i] = *(*windows.SIDAndAttributes)(unsafe.Pointer(uintptr(unsafe.Pointer(&tokenGroups.Groups[0])) + uintptr(i)*unsafe.Sizeof(tokenGroups.Groups[0])))
-		groupSid, err := groups[i].Sid.String()
-		if err != nil {
-			panic(fmt.Errorf("WEIRD: got error: %v", err))
-		}
+		groupSid := groups[i].Sid.String()
 		account, domain, accType, err := groups[i].Sid.LookupAccount("")
 		if err != nil {
 			log.Printf("Token Group (%v): <<NO_SID>> - with attributes: %#x", groupSid, groups[i].Attributes)

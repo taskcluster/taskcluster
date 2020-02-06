@@ -26,16 +26,16 @@ import (
 
 	docopt "github.com/docopt/docopt-go"
 	sysinfo "github.com/elastic/go-sysinfo"
-	"github.com/taskcluster/generic-worker/expose"
-	"github.com/taskcluster/generic-worker/fileutil"
-	"github.com/taskcluster/generic-worker/gwconfig"
-	"github.com/taskcluster/generic-worker/host"
-	"github.com/taskcluster/generic-worker/process"
-	gwruntime "github.com/taskcluster/generic-worker/runtime"
 	"github.com/taskcluster/taskcluster-base-go/scopes"
-	tcclient "github.com/taskcluster/taskcluster-client-go"
-	"github.com/taskcluster/taskcluster-client-go/tcqueue"
 	"github.com/taskcluster/taskcluster-worker-runner/protocol"
+	tcclient "github.com/taskcluster/taskcluster/v24/clients/client-go"
+	"github.com/taskcluster/taskcluster/v24/clients/client-go/tcqueue"
+	"github.com/taskcluster/taskcluster/v24/workers/generic-worker/expose"
+	"github.com/taskcluster/taskcluster/v24/workers/generic-worker/fileutil"
+	"github.com/taskcluster/taskcluster/v24/workers/generic-worker/gwconfig"
+	"github.com/taskcluster/taskcluster/v24/workers/generic-worker/host"
+	"github.com/taskcluster/taskcluster/v24/workers/generic-worker/process"
+	gwruntime "github.com/taskcluster/taskcluster/v24/workers/generic-worker/runtime"
 	"github.com/xeipuuv/gojsonschema"
 )
 
@@ -46,7 +46,7 @@ var (
 	cwd = CwdOrPanic()
 	// workerReady becomes true when it is able to call queue.claimWork for the first time
 	workerReady = false
-	// Whether we are running under the aws provisioner
+	// Whether we are running in AWS
 	configureForAWS bool
 	// Whether we are running in GCP
 	configureForGCP bool
@@ -167,10 +167,8 @@ func main() {
 
 		// We need to persist the generic-worker config file if we fetched it
 		// over the network, for example if the config is fetched from the AWS
-		// Provisioner (--configure-for-aws) or from the Google Cloud service
-		// (--configure-for-gcp). We delete taskcluster credentials from the
-		// AWS provisioner as soon as we've fetched them, so unless we persist
-		// the config on the first run, the worker will not work after reboots.
+		// Provider (--configure-for-aws) or from the Google Cloud service
+		// (--configure-for-gcp).
 		//
 		// We persist the config _before_ checking for an error from the
 		// loadConfig function call, so that if there was an error, we can see
@@ -258,7 +256,7 @@ func loadConfig(configFile *gwconfig.File, provider Provider) (gwconfig.Provider
 	// only one place if possible (defaults also declared in `usage`)
 	config = &gwconfig.Config{
 		PublicConfig: gwconfig.PublicConfig{
-			AuthBaseURL:                    "",
+			AuthRootURL:                    "",
 			CachesDir:                      "caches",
 			CheckForNewDeploymentEverySecs: 1800,
 			CleanUpTaskDirs:                true,
@@ -269,14 +267,13 @@ func loadConfig(configFile *gwconfig.File, provider Provider) (gwconfig.Provider
 			LiveLogGETPort:                 60023,
 			LiveLogPUTPort:                 60022,
 			NumberOfTasksToRun:             0,
-			ProvisionerBaseURL:             "",
 			ProvisionerID:                  "test-provisioner",
-			PurgeCacheBaseURL:              "",
-			QueueBaseURL:                   "",
+			PurgeCacheRootURL:              "",
+			QueueRootURL:                   "",
 			RequiredDiskSpaceMegabytes:     10240,
 			RootURL:                        "",
 			RunAfterUserCreation:           "",
-			SecretsBaseURL:                 "",
+			SecretsRootURL:                 "",
 			SentryProject:                  "generic-worker",
 			ShutdownMachineOnIdle:          false,
 			ShutdownMachineOnInternalError: false,
@@ -286,7 +283,7 @@ func loadConfig(configFile *gwconfig.File, provider Provider) (gwconfig.Provider
 			TasksDir:                       defaultTasksDir(),
 			WorkerGroup:                    "test-worker-group",
 			WorkerLocation:                 "",
-			WorkerManagerBaseURL:           "",
+			WorkerManagerRootURL:           "",
 			WorkerTypeMetadata:             map[string]interface{}{},
 		},
 	}
@@ -466,7 +463,6 @@ func RunWorker() (exitCode ExitCode) {
 
 	// Queue is the object we will use for accessing queue api
 	queue = config.Queue()
-	provisioner = config.AWSProvisioner()
 
 	err = initialiseFeatures()
 	if err != nil {
@@ -651,9 +647,9 @@ func ClaimWork() *TaskRun {
 			},
 			config.RootURL,
 		)
-		// if queueBaseURL is configured, this takes precedence over rootURL
-		if config.QueueBaseURL != "" {
-			taskQueue.BaseURL = config.QueueBaseURL
+		// if queueRootURL is configured, this takes precedence over rootURL
+		if config.QueueRootURL != "" {
+			taskQueue.RootURL = config.QueueRootURL
 		}
 		task := &TaskRun{
 			TaskID:            taskResponse.Status.TaskID,

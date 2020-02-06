@@ -16,7 +16,7 @@ import (
 	"github.com/gorilla/websocket"
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
-	"github.com/taskcluster/taskcluster-client-go/tcauth"
+	"github.com/taskcluster/taskcluster/v24/clients/client-go/tcauth"
 	"github.com/taskcluster/websocktunnel/wsproxy"
 )
 
@@ -72,10 +72,8 @@ func makeWSTServer(t *testing.T) wstServer {
 		Upgrader:   upgrader,
 		JWTSecretA: []byte(WST_SECRET),
 		JWTSecretB: []byte(WST_SECRET),
-		Domain:     "127.0.0.1",
-		Port:       int(port),
-		TLS:        false,
 		Audience:   WST_AUDIENCE,
+		URLPrefix:  "http://127.0.0.1:" + strconv.Itoa(int(port)),
 	})
 	if err != nil {
 		listener.Close()

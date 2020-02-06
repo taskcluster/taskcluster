@@ -18,9 +18,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/taskcluster/httpbackoff"
-	tcclient "github.com/taskcluster/taskcluster-client-go"
-	"github.com/taskcluster/taskcluster-client-go/tcqueue"
+	"github.com/taskcluster/httpbackoff/v3"
+	tcclient "github.com/taskcluster/taskcluster/v24/clients/client-go"
+	"github.com/taskcluster/taskcluster/v24/clients/client-go/tcqueue"
 )
 
 var (
@@ -417,9 +417,9 @@ func resolve(base *BaseArtifact, artifactType string, path string, contentType s
 		}
 	}
 	s3Artifact := &S3Artifact{
-		BaseArtifact: base,
-		Path:         path,
-		ContentType:  contentType,
+		BaseArtifact:    base,
+		Path:            path,
+		ContentType:     contentType,
 		ContentEncoding: contentEncoding,
 	}
 	return s3Artifact

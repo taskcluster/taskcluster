@@ -12,8 +12,8 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/taskcluster/generic-worker/host"
-	"github.com/taskcluster/generic-worker/win32"
+	"github.com/taskcluster/taskcluster/v24/workers/generic-worker/host"
+	"github.com/taskcluster/taskcluster/v24/workers/generic-worker/win32"
 )
 
 var sidsThatCanControlDesktopAndWindowsStation map[string]bool = map[string]bool{}
@@ -162,7 +162,7 @@ func GrantSIDWinstaAccess(sid string, pd *PlatformData) {
 		if filepath.Base(os.Args[0]) == "generic-worker.exe" {
 			exe = os.Args[0]
 		} else {
-			exe = `..\..\..\..\bin\generic-worker.exe`
+			exe = os.Getenv("GOPATH") + `\bin\generic-worker.exe`
 		}
 		cmd, err := NewCommand([]string{exe, "grant-winsta-access", "--sid", sid}, ".", []string{}, pd)
 		cmd.DirectOutput(os.Stdout)

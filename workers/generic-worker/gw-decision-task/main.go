@@ -15,8 +15,8 @@ import (
 	"github.com/ghodss/yaml"
 	"github.com/taskcluster/shell"
 	"github.com/taskcluster/slugid-go/slugid"
-	tcclient "github.com/taskcluster/taskcluster-client-go"
-	"github.com/taskcluster/taskcluster-client-go/tcqueue"
+	tcclient "github.com/taskcluster/taskcluster/v24/clients/client-go"
+	"github.com/taskcluster/taskcluster/v24/clients/client-go/tcqueue"
 )
 
 // Data types that map to sections of tasks.yml
@@ -124,7 +124,7 @@ func NewDecisionTask(yamlPath string, gitRevision string) (*DecisionTask, error)
 	// TaskID will be "" if running outside of taskcluster, e.g. locally by a developer
 	d.TaskID = os.Getenv("TASK_ID")
 	if d.TaskID != "" {
-		d.TaskGroupID = d.TaskID
+		d.TaskGroupID = os.Getenv("TASK_GROUP_ID")
 	} else {
 		// If running decision task code outside of taskcluster (e.g. developer
 		// manually runs `gw-decision-task tasks.yml`), then still generate
@@ -203,7 +203,7 @@ func (dt *DecisionTask) GenerateTasks() (*TaskGroup, error) {
 						mountEntry["directory"] = mount.Directory
 					}
 					if mount.File != "" {
-						mountEntry["file"] = mount.File
+						mountEntry["file"] = substituteVars(context, mount.File)
 					}
 					if content.Format != "" {
 						mountEntry["format"] = content.Format

@@ -3,7 +3,7 @@
 package main
 
 import (
-	"github.com/taskcluster/generic-worker/process"
+	"github.com/taskcluster/taskcluster/v24/workers/generic-worker/process"
 )
 
 func (cot *ChainOfTrustTaskFeature) catCotKeyCommand() (*process.Command, error) {

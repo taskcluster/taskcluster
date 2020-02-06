@@ -10,10 +10,10 @@ import (
 	"runtime"
 	"strconv"
 
-	"github.com/taskcluster/generic-worker/host"
-	"github.com/taskcluster/generic-worker/process"
-	gwruntime "github.com/taskcluster/generic-worker/runtime"
 	"github.com/taskcluster/shell"
+	"github.com/taskcluster/taskcluster/v24/workers/generic-worker/host"
+	"github.com/taskcluster/taskcluster/v24/workers/generic-worker/process"
+	gwruntime "github.com/taskcluster/taskcluster/v24/workers/generic-worker/runtime"
 )
 
 func (task *TaskRun) formatCommand(index int) string {

@@ -5,7 +5,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/taskcluster/generic-worker/fileutil"
+	"github.com/taskcluster/taskcluster/v24/workers/generic-worker/fileutil"
 )
 
 func TestNoWorkerTypeUserDataGenericWorkerProperty(t *testing.T) {
@@ -49,7 +49,7 @@ func TestSecretServiceError(t *testing.T) {
 	}
 	teardown, err := m.Setup(t)
 	defer teardown()
-	m.ExpectError(t, "Error fetching secret worker-type:"+config.ProvisionerID+"/"+config.WorkerType+" from taskcluster-secrets service", err)
+	m.ExpectError(t, "Error fetching secret worker-pool:"+config.ProvisionerID+"/"+config.WorkerType+" from taskcluster-secrets service", err)
 }
 
 func TestPrivateConfigInUserData(t *testing.T) {
@@ -187,7 +187,6 @@ func TestDeploymentIDUpdated(t *testing.T) {
 	teardown, err := m.Setup(t)
 	defer teardown()
 	m.ExpectNoError(t, err)
-	provisioner = config.AWSProvisioner()
 	if !deploymentIDUpdated() {
 		t.Fatalf("Was expecting deploymentIDUpdated() function to see that deployment ID was updated")
 	}
@@ -201,7 +200,6 @@ func TestDeploymentIDNotUpdated(t *testing.T) {
 	teardown, err := m.Setup(t)
 	defer teardown()
 	m.ExpectNoError(t, err)
-	provisioner = config.AWSProvisioner()
 	if deploymentIDUpdated() {
 		t.Fatalf("Was expecting deploymentIDUpdated() function to see that deployment ID was not updated")
 	}

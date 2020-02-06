@@ -9,8 +9,8 @@ import (
 	"net"
 	"net/http"
 
-	"github.com/taskcluster/generic-worker/gwconfig"
-	"github.com/taskcluster/httpbackoff"
+	"github.com/taskcluster/httpbackoff/v3"
+	"github.com/taskcluster/taskcluster/v24/workers/generic-worker/gwconfig"
 )
 
 var (

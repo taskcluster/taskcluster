@@ -1,11 +1,8 @@
 package main
 
 import (
-	"encoding/json"
-	"fmt"
-
-	"github.com/taskcluster/generic-worker/gwconfig"
-	"github.com/taskcluster/taskcluster-client-go/tcworkermanager"
+	"github.com/taskcluster/taskcluster/v24/clients/client-go/tcworkermanager"
+	"github.com/taskcluster/taskcluster/v24/workers/generic-worker/gwconfig"
 )
 
 type AWSProvider struct {
@@ -23,8 +20,7 @@ func (a *AWSProvider) UpdateConfig(c *gwconfig.Config) error {
 		return err
 	}
 	providerType := &tcworkermanager.AwsProviderType{
-		// Document must be a string, not an object
-		Document:  json.RawMessage(fmt.Sprintf(`%q`, string(awsMetadata["document"]))),
+		Document:  string(awsMetadata["document"]),
 		Signature: string(awsMetadata["signature"]),
 	}
 

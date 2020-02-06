@@ -10,14 +10,13 @@ import (
 	"os"
 	"reflect"
 
-	"github.com/taskcluster/generic-worker/fileutil"
-	tcclient "github.com/taskcluster/taskcluster-client-go"
-	"github.com/taskcluster/taskcluster-client-go/tcauth"
-	"github.com/taskcluster/taskcluster-client-go/tcawsprovisioner"
-	"github.com/taskcluster/taskcluster-client-go/tcpurgecache"
-	"github.com/taskcluster/taskcluster-client-go/tcqueue"
-	"github.com/taskcluster/taskcluster-client-go/tcsecrets"
-	"github.com/taskcluster/taskcluster-client-go/tcworkermanager"
+	tcclient "github.com/taskcluster/taskcluster/v24/clients/client-go"
+	"github.com/taskcluster/taskcluster/v24/clients/client-go/tcauth"
+	"github.com/taskcluster/taskcluster/v24/clients/client-go/tcpurgecache"
+	"github.com/taskcluster/taskcluster/v24/clients/client-go/tcqueue"
+	"github.com/taskcluster/taskcluster/v24/clients/client-go/tcsecrets"
+	"github.com/taskcluster/taskcluster/v24/clients/client-go/tcworkermanager"
+	"github.com/taskcluster/taskcluster/v24/workers/generic-worker/fileutil"
 )
 
 type (
@@ -29,7 +28,7 @@ type (
 
 	PublicConfig struct {
 		PublicEngineConfig
-		AuthBaseURL                    string                 `json:"authBaseURL"`
+		AuthRootURL                    string                 `json:"authRootURL"`
 		AvailabilityZone               string                 `json:"availabilityZone"`
 		CachesDir                      string                 `json:"cachesDir"`
 		CheckForNewDeploymentEverySecs uint                   `json:"checkForNewDeploymentEverySecs"`
@@ -49,16 +48,15 @@ type (
 		LiveLogPUTPort                 uint16                 `json:"livelogPUTPort"`
 		NumberOfTasksToRun             uint                   `json:"numberOfTasksToRun"`
 		PrivateIP                      net.IP                 `json:"privateIP"`
-		ProvisionerBaseURL             string                 `json:"provisionerBaseURL"`
 		ProvisionerID                  string                 `json:"provisionerId"`
 		PublicIP                       net.IP                 `json:"publicIP"`
-		PurgeCacheBaseURL              string                 `json:"purgeCacheBaseURL"`
-		QueueBaseURL                   string                 `json:"queueBaseURL"`
+		PurgeCacheRootURL              string                 `json:"purgeCacheRootURL"`
+		QueueRootURL                   string                 `json:"queueRootURL"`
 		Region                         string                 `json:"region"`
 		RequiredDiskSpaceMegabytes     uint                   `json:"requiredDiskSpaceMegabytes"`
 		RootURL                        string                 `json:"rootURL"`
 		RunAfterUserCreation           string                 `json:"runAfterUserCreation"`
-		SecretsBaseURL                 string                 `json:"secretsBaseURL"`
+		SecretsRootURL                 string                 `json:"secretsRootURL"`
 		SentryProject                  string                 `json:"sentryProject"`
 		ShutdownMachineOnIdle          bool                   `json:"shutdownMachineOnIdle"`
 		ShutdownMachineOnInternalError bool                   `json:"shutdownMachineOnInternalError"`
@@ -69,7 +67,7 @@ type (
 		WorkerGroup                    string                 `json:"workerGroup"`
 		WorkerID                       string                 `json:"workerId"`
 		WorkerLocation                 string                 `json:"workerLocation"`
-		WorkerManagerBaseURL           string                 `json:"workerManagerBaseURL"`
+		WorkerManagerRootURL           string                 `json:"workerManagerRootURL"`
 		WorkerType                     string                 `json:"workerType"`
 		WorkerTypeMetadata             map[string]interface{} `json:"workerTypeMetadata"`
 		WSTAudience                    string                 `json:"wstAudience"`
@@ -165,55 +163,45 @@ func (c *Config) Credentials() *tcclient.Credentials {
 
 func (c *Config) Auth() *tcauth.Auth {
 	auth := tcauth.New(c.Credentials(), c.RootURL)
-	// If authBaseURL provided, it should take precedence over rootURL
-	if c.AuthBaseURL != "" {
-		auth.BaseURL = c.AuthBaseURL
+	// If authRootURL provided, it should take precedence over rootURL
+	if c.AuthRootURL != "" {
+		auth.RootURL = c.AuthRootURL
 	}
 	return auth
 }
 
 func (c *Config) Queue() *tcqueue.Queue {
 	queue := tcqueue.New(c.Credentials(), c.RootURL)
-	// If queueBaseURL provided, it should take precedence over rootURL
-	if c.QueueBaseURL != "" {
-		queue.BaseURL = c.QueueBaseURL
+	// If queueRootURL provided, it should take precedence over rootURL
+	if c.QueueRootURL != "" {
+		queue.RootURL = c.QueueRootURL
 	}
 	return queue
 }
 
-func (c *Config) AWSProvisioner() *tcawsprovisioner.AwsProvisioner {
-	awsProvisioner := tcawsprovisioner.New(c.Credentials())
-	awsProvisioner.BaseURL = tcclient.BaseURL(c.RootURL, "aws-provisioner", "v1")
-	// If provisionerBaseURL provided, it should take precedence over rootURL
-	if c.ProvisionerBaseURL != "" {
-		awsProvisioner.BaseURL = c.ProvisionerBaseURL
-	}
-	return awsProvisioner
-}
-
 func (c *Config) PurgeCache() *tcpurgecache.PurgeCache {
 	purgeCache := tcpurgecache.New(c.Credentials(), c.RootURL)
-	// If purgeCacheBaseURL provided, it should take precedence over rootURL
-	if c.PurgeCacheBaseURL != "" {
-		purgeCache.BaseURL = c.PurgeCacheBaseURL
+	// If purgeCacheRootURL provided, it should take precedence over rootURL
+	if c.PurgeCacheRootURL != "" {
+		purgeCache.RootURL = c.PurgeCacheRootURL
 	}
 	return purgeCache
 }
 
 func (c *Config) Secrets() *tcsecrets.Secrets {
 	secrets := tcsecrets.New(c.Credentials(), c.RootURL)
-	// If secretsBaseURL provided, it should take precedence over rootURL
-	if c.SecretsBaseURL != "" {
-		secrets.BaseURL = c.SecretsBaseURL
+	// If secretsRootURL provided, it should take precedence over rootURL
+	if c.SecretsRootURL != "" {
+		secrets.RootURL = c.SecretsRootURL
 	}
 	return secrets
 }
 
 func (c *Config) WorkerManager() *tcworkermanager.WorkerManager {
 	workerManager := tcworkermanager.New(c.Credentials(), c.RootURL)
-	// If workerManagerBaseURL provided, it should take precedence over rootURL
-	if c.WorkerManagerBaseURL != "" {
-		workerManager.BaseURL = c.WorkerManagerBaseURL
+	// If workerManagerRootURL provided, it should take precedence over rootURL
+	if c.WorkerManagerRootURL != "" {
+		workerManager.RootURL = c.WorkerManagerRootURL
 	}
 	return workerManager
 }

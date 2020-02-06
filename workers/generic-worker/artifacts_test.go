@@ -1,17 +1,17 @@
 package main
 
 import (
-	"path/filepath"
-	"reflect"
-	"testing"
-	"time"
 	"encoding/json"
 	"io/ioutil"
+	"path/filepath"
+	"reflect"
 	"strings"
+	"testing"
+	"time"
 
 	"github.com/taskcluster/slugid-go/slugid"
-	tcclient "github.com/taskcluster/taskcluster-client-go"
-	"github.com/taskcluster/taskcluster-client-go/tcqueue"
+	tcclient "github.com/taskcluster/taskcluster/v24/clients/client-go"
+	"github.com/taskcluster/taskcluster/v24/clients/client-go/tcqueue"
 )
 
 var (
@@ -112,108 +112,108 @@ func TestFileArtifactWithContentEncoding(t *testing.T) {
 		// what appears in task payload
 		[]Artifact{
 			{
-				Expires:	inAnHour,
-				Path:		"SampleArtifacts/_/X.txt",
-				Type:		"file",
-				Name:		"public/_/X.txt",
-				ContentType:	"text/plain; charset=utf-8",
+				Expires:     inAnHour,
+				Path:        "SampleArtifacts/_/X.txt",
+				Type:        "file",
+				Name:        "public/_/X.txt",
+				ContentType: "text/plain; charset=utf-8",
 			},
 			{
-				Expires:	inAnHour,
-				Path:		"SampleArtifacts/b/c/d.jpg",
-				Type:		"file",
-				Name:		"public/b/c/d.jpg",
-				ContentType:	"image/jpeg",
+				Expires:     inAnHour,
+				Path:        "SampleArtifacts/b/c/d.jpg",
+				Type:        "file",
+				Name:        "public/b/c/d.jpg",
+				ContentType: "image/jpeg",
 			},
 			{
-				Expires:		inAnHour,
-				Path:			"SampleArtifacts/_/X.txt",
-				Type:			"file",
-				Name:			"public/_/X.txt",
-				ContentType:		"text/plain; charset=utf-8",
-				ContentEncoding:	"identity",
+				Expires:         inAnHour,
+				Path:            "SampleArtifacts/_/X.txt",
+				Type:            "file",
+				Name:            "public/_/X.txt",
+				ContentType:     "text/plain; charset=utf-8",
+				ContentEncoding: "identity",
 			},
 			{
-				Expires:		inAnHour,
-				Path:			"SampleArtifacts/b/c/d.jpg",
-				Type:			"file",
-				Name:			"public/b/c/d.jpg",
-				ContentType:		"image/jpeg",
-				ContentEncoding:	"identity",
+				Expires:         inAnHour,
+				Path:            "SampleArtifacts/b/c/d.jpg",
+				Type:            "file",
+				Name:            "public/b/c/d.jpg",
+				ContentType:     "image/jpeg",
+				ContentEncoding: "identity",
 			},
 			{
-				Expires:		inAnHour,
-				Path:			"SampleArtifacts/_/X.txt",
-				Type:			"file",
-				Name:			"public/_/X.txt",
-				ContentType:		"text/plain; charset=utf-8",
-				ContentEncoding:	"gzip",
+				Expires:         inAnHour,
+				Path:            "SampleArtifacts/_/X.txt",
+				Type:            "file",
+				Name:            "public/_/X.txt",
+				ContentType:     "text/plain; charset=utf-8",
+				ContentEncoding: "gzip",
 			},
 			{
-				Expires:		inAnHour,
-				Path:			"SampleArtifacts/b/c/d.jpg",
-				Type:			"file",
-				Name:			"public/b/c/d.jpg",
-				ContentType:		"image/jpeg",
-				ContentEncoding:	"gzip",
+				Expires:         inAnHour,
+				Path:            "SampleArtifacts/b/c/d.jpg",
+				Type:            "file",
+				Name:            "public/b/c/d.jpg",
+				ContentType:     "image/jpeg",
+				ContentEncoding: "gzip",
 			},
 		},
 
 		// what we expect to discover on file system
 		[]TaskArtifact{
 			&S3Artifact{
-				BaseArtifact:		&BaseArtifact{
-					Name:		"public/_/X.txt",
-					Expires:	inAnHour,
+				BaseArtifact: &BaseArtifact{
+					Name:    "public/_/X.txt",
+					Expires: inAnHour,
 				},
-				ContentType:		"text/plain; charset=utf-8",
-				ContentEncoding:	"gzip",
-				Path:			"SampleArtifacts/_/X.txt",
+				ContentType:     "text/plain; charset=utf-8",
+				ContentEncoding: "gzip",
+				Path:            "SampleArtifacts/_/X.txt",
 			},
 			&S3Artifact{
-				BaseArtifact:		&BaseArtifact{
-					Name:		"public/b/c/d.jpg",
-					Expires:	inAnHour,
+				BaseArtifact: &BaseArtifact{
+					Name:    "public/b/c/d.jpg",
+					Expires: inAnHour,
 				},
-				ContentType:		"image/jpeg",
-				ContentEncoding:	"identity",
-				Path:			"SampleArtifacts/b/c/d.jpg",
+				ContentType:     "image/jpeg",
+				ContentEncoding: "identity",
+				Path:            "SampleArtifacts/b/c/d.jpg",
 			},
 			&S3Artifact{
-				BaseArtifact:		&BaseArtifact{
-					Name:		"public/_/X.txt",
-					Expires:	inAnHour,
+				BaseArtifact: &BaseArtifact{
+					Name:    "public/_/X.txt",
+					Expires: inAnHour,
 				},
-				ContentType:		"text/plain; charset=utf-8",
-				ContentEncoding:	"identity",
-				Path:			"SampleArtifacts/_/X.txt",
+				ContentType:     "text/plain; charset=utf-8",
+				ContentEncoding: "identity",
+				Path:            "SampleArtifacts/_/X.txt",
 			},
 			&S3Artifact{
-				BaseArtifact:		&BaseArtifact{
-					Name:		"public/b/c/d.jpg",
-					Expires:	inAnHour,
+				BaseArtifact: &BaseArtifact{
+					Name:    "public/b/c/d.jpg",
+					Expires: inAnHour,
 				},
-				ContentType:		"image/jpeg",
-				ContentEncoding:	"identity",
-				Path:			"SampleArtifacts/b/c/d.jpg",
+				ContentType:     "image/jpeg",
+				ContentEncoding: "identity",
+				Path:            "SampleArtifacts/b/c/d.jpg",
 			},
 			&S3Artifact{
-				BaseArtifact:		&BaseArtifact{
-					Name:		"public/_/X.txt",
-					Expires:	inAnHour,
+				BaseArtifact: &BaseArtifact{
+					Name:    "public/_/X.txt",
+					Expires: inAnHour,
 				},
-				ContentType:		"text/plain; charset=utf-8",
-				ContentEncoding:	"gzip",
-				Path:			"SampleArtifacts/_/X.txt",
+				ContentType:     "text/plain; charset=utf-8",
+				ContentEncoding: "gzip",
+				Path:            "SampleArtifacts/_/X.txt",
 			},
 			&S3Artifact{
-				BaseArtifact:		&BaseArtifact{
-					Name:		"public/b/c/d.jpg",
-					Expires:	inAnHour,
+				BaseArtifact: &BaseArtifact{
+					Name:    "public/b/c/d.jpg",
+					Expires: inAnHour,
 				},
-				ContentType:		"image/jpeg",
-				ContentEncoding:	"gzip",
-				Path:			"SampleArtifacts/b/c/d.jpg",
+				ContentType:     "image/jpeg",
+				ContentEncoding: "gzip",
+				Path:            "SampleArtifacts/b/c/d.jpg",
 			},
 		})
 }
@@ -321,20 +321,20 @@ func TestDirectoryArtifactWithContentEncoding(t *testing.T) {
 		// what appears in task payload
 		[]Artifact{
 			{
-				Expires:		inAnHour,
-				Path:			"SampleArtifacts",
-				Type:			"directory",
-				Name:			"public/b/c",
-				ContentType:		"text/plain; charset=utf-8",
-				ContentEncoding:	"identity",
+				Expires:         inAnHour,
+				Path:            "SampleArtifacts",
+				Type:            "directory",
+				Name:            "public/b/c",
+				ContentType:     "text/plain; charset=utf-8",
+				ContentEncoding: "identity",
 			},
 			{
-				Expires:		inAnHour,
-				Path:			"SampleArtifacts",
-				Type:			"directory",
-				Name:			"public/b/c",
-				ContentType:		"text/plain; charset=utf-8",
-				ContentEncoding:	"gzip",
+				Expires:         inAnHour,
+				Path:            "SampleArtifacts",
+				Type:            "directory",
+				Name:            "public/b/c",
+				ContentType:     "text/plain; charset=utf-8",
+				ContentEncoding: "gzip",
 			},
 		},
 
@@ -359,13 +359,13 @@ func TestDirectoryArtifactWithContentEncoding(t *testing.T) {
 				Path:            filepath.Join("SampleArtifacts", "_", "X.txt"),
 			},
 			&S3Artifact{
-				BaseArtifact:		&BaseArtifact{
-					Name:		"public/b/c/b/c/d.jpg",
-					Expires:	inAnHour,
+				BaseArtifact: &BaseArtifact{
+					Name:    "public/b/c/b/c/d.jpg",
+					Expires: inAnHour,
 				},
-				ContentType:		"text/plain; charset=utf-8",
-				ContentEncoding:	"identity",
-				Path:			filepath.Join("SampleArtifacts", "b", "c", "d.jpg"),
+				ContentType:     "text/plain; charset=utf-8",
+				ContentEncoding: "identity",
+				Path:            filepath.Join("SampleArtifacts", "b", "c", "d.jpg"),
 			},
 			&S3Artifact{
 				BaseArtifact: &BaseArtifact{
@@ -386,13 +386,13 @@ func TestDirectoryArtifactWithContentEncoding(t *testing.T) {
 				Path:            filepath.Join("SampleArtifacts", "_", "X.txt"),
 			},
 			&S3Artifact{
-				BaseArtifact:		&BaseArtifact{
-					Name:		"public/b/c/b/c/d.jpg",
-					Expires:	inAnHour,
+				BaseArtifact: &BaseArtifact{
+					Name:    "public/b/c/b/c/d.jpg",
+					Expires: inAnHour,
 				},
-				ContentType:		"text/plain; charset=utf-8",
-				ContentEncoding:	"gzip",
-				Path:			filepath.Join("SampleArtifacts", "b", "c", "d.jpg"),
+				ContentType:     "text/plain; charset=utf-8",
+				ContentEncoding: "gzip",
+				Path:            filepath.Join("SampleArtifacts", "b", "c", "d.jpg"),
 			},
 		})
 }
@@ -613,16 +613,16 @@ func TestInvalidContentEncoding(t *testing.T) {
 	command := helloGoodbye()
 
 	payload := GenericWorkerPayload{
-		Command:	command,
-		MaxRunTime:	30,
-		Artifacts:	[]Artifact{
+		Command:    command,
+		MaxRunTime: 30,
+		Artifacts: []Artifact{
 			{
-				Path:			"SampleArtifacts/_/X.txt",
-				Expires:		expires,
-				Type:			"file",
-				Name:			"public/_/X.txt",
-				ContentType:		"text/plain; charset=utf-8",
-				ContentEncoding:	"jpg",
+				Path:            "SampleArtifacts/_/X.txt",
+				Expires:         expires,
+				Type:            "file",
+				Name:            "public/_/X.txt",
+				ContentType:     "text/plain; charset=utf-8",
+				ContentEncoding: "jpg",
 			},
 		},
 	}
@@ -650,16 +650,16 @@ func TestInvalidContentEncodingBlacklisted(t *testing.T) {
 	command := helloGoodbye()
 
 	payload := GenericWorkerPayload{
-		Command:	command,
-		MaxRunTime:	30,
-		Artifacts:	[]Artifact{
+		Command:    command,
+		MaxRunTime: 30,
+		Artifacts: []Artifact{
 			{
-				Path:			"SampleArtifacts/b/c/d.jpg",
-				Expires:		expires,
-				Type:			"file",
-				Name:			"public/b/c/d.jpg",
-				ContentType:		"image/jpeg",
-				ContentEncoding:	"jpg",
+				Path:            "SampleArtifacts/b/c/d.jpg",
+				Expires:         expires,
+				Type:            "file",
+				Name:            "public/b/c/d.jpg",
+				ContentType:     "image/jpeg",
+				ContentEncoding: "jpg",
 			},
 		},
 	}
@@ -678,19 +678,19 @@ func TestInvalidContentEncodingBlacklisted(t *testing.T) {
 	}
 }
 
-func TestEmptyContentEncoding(t *testing.T){
+func TestEmptyContentEncoding(t *testing.T) {
 
 	defer setup(t)()
 
 	td := testTask(t)
 	td.Payload = json.RawMessage(`
 {
-  "command": [`+ rawHelloGoodbye() +`],
+  "command": [` + rawHelloGoodbye() + `],
   "maxRunTime": 30,
   "artifacts": [
     {
       "path": "SampleArtifacts/b/c/d.jpg",
-      "expires": "` + tcclient.Time(time.Now().Add(time.Minute * 30)).String() + `",
+      "expires": "` + tcclient.Time(time.Now().Add(time.Minute*30)).String() + `",
       "type": "file",
       "name": "public/b/c/d.jpg",
       "contentType": "image/jpeg",

@@ -10,8 +10,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/taskcluster/generic-worker/gwconfig"
-	"github.com/taskcluster/taskcluster-client-go/tcworkermanager"
+	"github.com/taskcluster/taskcluster/v24/clients/client-go/tcworkermanager"
+	"github.com/taskcluster/taskcluster/v24/workers/generic-worker/gwconfig"
 )
 
 type MockGCPProvisionedEnvironment struct {
@@ -120,7 +120,6 @@ func (m *MockGCPProvisionedEnvironment) Setup(t *testing.T) func() {
 	}
 	go func() {
 		s.ListenAndServe()
-		t.Log("HTTP server for mock Provisioner and GCP metadata endpoints stopped")
 	}()
 	var err error
 	configFile := &gwconfig.File{
@@ -136,6 +135,7 @@ func (m *MockGCPProvisionedEnvironment) Setup(t *testing.T) func() {
 		if err != nil {
 			t.Fatalf("Error shutting down http server: %v", err)
 		}
+		t.Log("HTTP server for mock Provisioner and GCP metadata endpoints stopped")
 		GCPMetadataBaseURL = oldGCPMetadataBaseURL
 		configureForGCP = false
 	}

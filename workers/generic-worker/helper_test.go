@@ -20,12 +20,12 @@ import (
 	"time"
 
 	"github.com/pborman/uuid"
-	"github.com/taskcluster/generic-worker/gwconfig"
-	"github.com/taskcluster/generic-worker/testutil"
-	"github.com/taskcluster/httpbackoff"
+	"github.com/taskcluster/httpbackoff/v3"
 	"github.com/taskcluster/slugid-go/slugid"
-	tcclient "github.com/taskcluster/taskcluster-client-go"
-	"github.com/taskcluster/taskcluster-client-go/tcqueue"
+	tcclient "github.com/taskcluster/taskcluster/v24/clients/client-go"
+	"github.com/taskcluster/taskcluster/v24/clients/client-go/tcqueue"
+	"github.com/taskcluster/taskcluster/v24/workers/generic-worker/gwconfig"
+	"github.com/taskcluster/taskcluster/v24/workers/generic-worker/testutil"
 )
 
 var (
@@ -103,7 +103,7 @@ func setup(t *testing.T) (teardown func()) {
 			LiveLogSecret: "xyz",
 		},
 		PublicConfig: gwconfig.PublicConfig{
-			AuthBaseURL:      "",
+			AuthRootURL:      "",
 			AvailabilityZone: "outer-space",
 			// Need common caches directory across tests, since files
 			// directory-caches.json and file-caches.json are not per-test.
@@ -127,11 +127,10 @@ func setup(t *testing.T) (teardown func()) {
 			LiveLogPUTPort:            43264,
 			NumberOfTasksToRun:        1,
 			PrivateIP:                 net.ParseIP("87.65.43.21"),
-			ProvisionerBaseURL:        "",
 			ProvisionerID:             "test-provisioner",
 			PublicIP:                  net.ParseIP("12.34.56.78"),
-			PurgeCacheBaseURL:         "",
-			QueueBaseURL:              "",
+			PurgeCacheRootURL:         "",
+			QueueRootURL:              "",
 			Region:                    "test-worker-group",
 			// should be enough for tests, and travis-ci.org CI environments don't
 			// have a lot of free disk
@@ -196,7 +195,7 @@ func testWorkerType() string {
 
 func NewQueue(t *testing.T) *tcqueue.Queue {
 	testutil.RequireTaskclusterCredentials(t)
-	// BaseURL shouldn't be proxy otherwise requests will use CI clientId
+	// RootURL shouldn't be proxy otherwise requests will use CI clientId
 	// rather than env var TASKCLUSTER_CLIENT_ID
 	return tcqueue.New(tcclient.CredentialsFromEnvVars(), os.Getenv("TASKCLUSTER_ROOT_URL"))
 }
@@ -441,18 +440,12 @@ func toMountArray(t *testing.T, x interface{}) []json.RawMessage {
 }
 
 func cancelTask(t *testing.T) (td *tcqueue.TaskDefinitionRequest, payload GenericWorkerPayload) {
-	command := goGet("github.com/taskcluster/taskcluster-client-go")
-	command = append(command, goRun("resolvetask.go")...)
+	// resolvetask is a go binary; source is in resolvetask subdirectory, binary is built in CI
+	// but if running test manually, you may need to explicitly build it first.
+	command := singleCommandNoArgs("resolvetask")
 	payload = GenericWorkerPayload{
 		Command:    command,
 		MaxRunTime: 300,
-		Artifacts: []Artifact{
-			{
-				Type:    "file",
-				Path:    "resolvetask.go",
-				Expires: inAnHour,
-			},
-		},
 	}
 	fullCreds := &tcclient.Credentials{
 		AccessToken: config.AccessToken,

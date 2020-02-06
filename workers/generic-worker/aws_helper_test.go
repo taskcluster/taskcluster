@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -11,9 +12,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/taskcluster/generic-worker/gwconfig"
-	"github.com/taskcluster/taskcluster-client-go/tcpurgecache"
-	"github.com/taskcluster/taskcluster-client-go/tcqueue"
+	"github.com/taskcluster/taskcluster/v24/clients/client-go/tcpurgecache"
+	"github.com/taskcluster/taskcluster/v24/clients/client-go/tcqueue"
+	"github.com/taskcluster/taskcluster/v24/clients/client-go/tcworkermanager"
+	"github.com/taskcluster/taskcluster/v24/workers/generic-worker/gwconfig"
 )
 
 type MockAWSProvisionedEnvironment struct {
@@ -27,8 +29,6 @@ type MockAWSProvisionedEnvironment struct {
 	PretendMetadata                  string
 	OldDeploymentID                  string
 	NewDeploymentID                  string
-	// Set when provisioner secret (credentials) gets deleted
-	SecretDeleted bool
 }
 
 func (m *MockAWSProvisionedEnvironment) ValidPublicConfig(t *testing.T) map[string]interface{} {
@@ -46,10 +46,10 @@ func (m *MockAWSProvisionedEnvironment) ValidPublicConfig(t *testing.T) map[stri
 		"numberOfTasksToRun": 1,
 		// should be enough for tests, and travis-ci.org CI environments
 		// don't have a lot of free disk
-		"queueBaseURL":               tcqueue.New(nil, os.Getenv("TASKCLUSTER_ROOT_URL")).BaseURL,
-		"purgeCacheBaseURL":          tcpurgecache.New(nil, os.Getenv("TASKCLUSTER_ROOT_URL")).BaseURL,
+		"queueRootURL":               tcqueue.New(nil, os.Getenv("TASKCLUSTER_ROOT_URL")).RootURL,
+		"purgeCacheRootURL":          tcpurgecache.New(nil, os.Getenv("TASKCLUSTER_ROOT_URL")).RootURL,
 		"requiredDiskSpaceMegabytes": 16,
-		// "secretsBaseURL":                 "http://localhost:13243/secrets",
+		// "secretsRootURL":                 "http://localhost:13243/secrets",
 		"sentryProject":                  "generic-worker-tests",
 		"shutdownMachineOnIdle":          false,
 		"shutdownMachineOnInternalError": false,
@@ -82,10 +82,16 @@ func WriteJSON(t *testing.T, w http.ResponseWriter, resp interface{}) {
 
 func (m *MockAWSProvisionedEnvironment) workerTypeDefinition(t *testing.T, w http.ResponseWriter) {
 	resp := map[string]interface{}{
-		"userData": map[string]interface{}{
-			"genericWorker": map[string]interface{}{
-				"config": map[string]interface{}{
-					"deploymentId": m.NewDeploymentID,
+		"config": map[string]interface{}{
+			"launchConfigs": []map[string]interface{}{
+				{
+					"workerConfig": map[string]interface{}{
+						"genericWorker": map[string]interface{}{
+							"config": map[string]interface{}{
+								"deploymentId": m.NewDeploymentID,
+							},
+						},
+					},
 				},
 			},
 		},
@@ -125,21 +131,12 @@ func (m *MockAWSProvisionedEnvironment) userData(t *testing.T, w http.ResponseWr
 		data = m.WorkerTypeDefinitionUserData(t)
 	}
 	resp := map[string]interface{}{
-		"data":             data,
-		"capacity":         1,
-		"workerType":       workerType,
-		"provisionerId":    "test-provisioner",
-		"region":           "test-worker-group",
-		"availabilityZone": "neuss-germany",
-		"instanceType":     "p3.teenyweeny",
-		"spotBid":          3.5,
-		"price":            3.02,
-		// "taskclusterRootUrl":  os.Getenv("TASKCLUSTER_ROOT_URL"), // don't use tcclient.RootURLFromEnvVars() since we don't want ClientID of CI
-		"taskclusterRootUrl":  "http://localhost:13243",
-		"launchSpecGenerated": time.Now(),
-		"lastModified":        time.Now().Add(time.Minute * -30),
-		// "provisionerBaseUrl":  "http://localhost:13243/provisioner",
-		"securityToken": "12345",
+		"workerPoolId": "test-provisioner/" + workerType,
+		"providerId":   "test-provider",
+		"workerGroup":  "test-worker-group",
+		// "rootUrl":  os.Getenv("TASKCLUSTER_ROOT_URL"), // don't use tcclient.RootURLFromEnvVars() since we don't want ClientID of CI
+		"rootUrl":      "http://localhost:13243",
+		"workerConfig": data,
 	}
 	WriteJSON(t, w, resp)
 }
@@ -189,22 +186,39 @@ func (m *MockAWSProvisionedEnvironment) Setup(t *testing.T) (teardown func(), er
 	ec2MetadataHandler.HandleFunc("/", func(w http.ResponseWriter, req *http.Request) {
 		switch req.URL.EscapedPath() {
 
-		// simulate provisioner endpoints
-		case "/api/aws-provisioner/v1/worker-type/" + workerType:
-			m.workerTypeDefinition(t, w)
-		case "/api/aws-provisioner/v1/secret/12345":
-			switch req.Method {
-			case "GET":
-				m.credentials(t, w)
-			case "DELETE":
-				fmt.Fprint(w, "Credentials deleted, yay!")
-				m.SecretDeleted = true
-			default:
+		// simulate worker-manager endpoints
+		case "/api/worker-manager/v1/worker/register":
+			if req.Method != "POST" {
 				w.WriteHeader(400)
+				fmt.Fprintf(w, "Must register with POST")
 			}
+			d := json.NewDecoder(req.Body)
+			d.DisallowUnknownFields()
+			b := tcworkermanager.RegisterWorkerRequest{}
+			err := d.Decode(&b)
+			if err != nil {
+				w.WriteHeader(400)
+				fmt.Fprintf(w, "%v", err)
+			}
+			d = json.NewDecoder(bytes.NewBuffer(b.WorkerIdentityProof))
+			d.DisallowUnknownFields()
+			g := tcworkermanager.AwsProviderType{}
+			err = d.Decode(&g)
+			if err != nil {
+				w.WriteHeader(400)
+				fmt.Fprintf(w, "%v", err)
+			}
+			if g.Signature != "test-signature" {
+				w.WriteHeader(400)
+				fmt.Fprintf(w, "Got signature %q but was expecting %q", g.Signature, "test-signature")
+			}
+			m.credentials(t, w)
+
+		case "/api/worker-manager/v1/worker-pool/test-provisioner%2F" + workerType:
+			m.workerTypeDefinition(t, w)
 
 		// simulate taskcluster secrets endpoints
-		case "/api/secrets/v1/secret/worker-type%3Atest-provisioner%2F" + workerType:
+		case "/api/secrets/v1/secret/worker-pool%3Atest-provisioner%2F" + workerType:
 			m.workerTypeSecret(t, w)
 
 		// simulate AWS endpoints
@@ -261,7 +275,6 @@ func (m *MockAWSProvisionedEnvironment) Setup(t *testing.T) (teardown func(), er
 	}
 	go func() {
 		s.ListenAndServe()
-		t.Log("HTTP server for mock Provisioner and EC2 metadata endpoints stopped")
 	}()
 	configFile := &gwconfig.File{
 		Path: filepath.Join(testdataDir, t.Name(), "generic-worker.config"),
@@ -273,9 +286,7 @@ func (m *MockAWSProvisionedEnvironment) Setup(t *testing.T) (teardown func(), er
 		if err != nil {
 			t.Fatalf("Error shutting down http server: %v", err)
 		}
-		if !m.SecretDeleted {
-			t.Fatal("Provisioner secret (credentials) not deleted")
-		}
+		t.Log("HTTP server for mock Provisioner and EC2 metadata endpoints stopped")
 		EC2MetadataBaseURL = oldEC2MetadataBaseURL
 		configureForAWS = false
 	}, err

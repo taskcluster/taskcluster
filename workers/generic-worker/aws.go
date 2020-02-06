@@ -10,8 +10,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/taskcluster/generic-worker/gwconfig"
-	"github.com/taskcluster/httpbackoff"
+	"github.com/taskcluster/httpbackoff/v3"
+	"github.com/taskcluster/taskcluster/v24/workers/generic-worker/gwconfig"
 )
 
 var (
@@ -116,24 +116,12 @@ func AWSUpdateConfig(c *gwconfig.Config) (awsMetadata map[string][]byte, err err
 }
 
 // InferAWSConfigProvider determines whether the instance was spawned by the
-// AWS Provisioner or the AWS Provider, and returns the appropriate Provider.
+// AWS Provider, and returns the appropriate Provider.
 func InferAWSConfigProvider() (gwconfig.Provider, error) {
 	userdataBytes, err := queryAWSMetaData(EC2MetadataBaseURL + "/user-data")
 	if err != nil {
 		// if we can't read user data, this is a serious problem
 		return nil, fmt.Errorf("Could not read user data: %v", err)
-	}
-	// If running under AWS Provisioner, we should have a `taskclusterRootUrl` property set in userdata ...
-	awsProvisionerUserData := new(AWSProvisionerUserData)
-	err = json.Unmarshal(userdataBytes, awsProvisionerUserData)
-	if err != nil {
-		// if we can't parse user data, this is a serious problem
-		return nil, fmt.Errorf("Could not unmarshal userdata %q into AWSProvisionerUserData struct: %v", string(userdataBytes), err)
-	}
-	if awsProvisionerUserData.TaskclusterRootURL != "" {
-		return &AWSProvisioner{
-			UserData: awsProvisionerUserData,
-		}, nil
 	}
 	// If running under AWS Provider, we should have a `rootUrl` property set in userdata ...
 	awsProviderUserData := new(WorkerManagerUserData)
@@ -147,7 +135,7 @@ func InferAWSConfigProvider() (gwconfig.Provider, error) {
 			UserData: awsProviderUserData,
 		}, nil
 	}
-	return nil, fmt.Errorf("Userdata is neither recognised as valid AWS Provisioner userdata nor as AWS Provider userdata: %q", string(userdataBytes))
+	return nil, fmt.Errorf("Userdata is not recognised as valid AWS Provider userdata: %q", string(userdataBytes))
 }
 
 func handleWorkerShutdown(abort func()) func() {
