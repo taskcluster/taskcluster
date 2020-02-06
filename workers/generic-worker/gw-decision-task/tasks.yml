@@ -1,0 +1,297 @@
+Types:
+
+  BuildAndTest:
+    Name: 'Build/test generic-worker (${ENGINE} engine) on ${PLATFORM}'
+    Description: 'This builds and tests the ${ARCH} version of generic-worker (${ENGINE} engine) on ${PLATFORM}'
+    Mounts:
+      - 'go1.10.8'
+      - 'git2.24.0.2'
+      - 'jq1.6'
+      - 'ci-creds'
+    Command: BuildAndTest
+    Features:
+      taskclusterProxy: true
+    Scopes:
+      - 'generic-worker:cache:generic-worker-checkout'
+      - 'secrets:get:project/taskcluster/testing/generic-worker/ci-creds'
+    Artifacts:
+      - Name: 'public/build/generic-worker-${OS}-${ARCH}${EXTENSION}'
+        Path: 'gopath1.10.8/bin/generic-worker${EXTENSION}'
+        Type: 'file'
+    MaxRunTime: 3600
+
+  CheckDeps:
+    Name: 'Run `dep check` to ensure golang vendored dependencies are up-to-date'
+    Description: |
+                 Run `dep check` to ensure golang vendored dependencies are up-to-date.
+                 See [go dep docs](https://golang.github.io/dep/docs/daily-dep.html#key-takeaways)
+                 for more information.
+    Mounts:
+      - 'go1.10.8'
+    Command: CheckDeps
+    MaxRunTime: 3600
+
+Tasks:
+  BuildAndTest:
+    - WorkerPool: 'proj-taskcluster/gw-ci-macos'
+      Env:
+        ENGINE: 'multiuser'
+    - WorkerPool: 'proj-taskcluster/gw-ci-macos'
+      Env:
+        ENGINE: 'simple'
+    - WorkerPool: 'proj-taskcluster/gw-ci-raspbian-stretch'
+      Env:
+        ENGINE: 'simple'
+    - WorkerPool: 'proj-taskcluster/gw-ci-ubuntu-18-04'
+      Env:
+        ENGINE: 'multiuser'
+    - WorkerPool: 'proj-taskcluster/gw-ci-ubuntu-18-04'
+      Env:
+        ENGINE: 'simple'
+    - WorkerPool: 'proj-taskcluster/gw-ci-ubuntu-18-04'
+      Env:
+        ENGINE: 'docker'
+    - WorkerPool: 'proj-taskcluster/gw-ci-windows10-amd64'
+      Env:
+        ENGINE: 'multiuser'
+        # We must set here since this worker pool does not have a Z: drive
+        GW_SKIP_Z_DRIVE_TESTS: 'true'
+        # This worker pool has no mozilla-build installation
+        GW_SKIP_MOZILLA_BUILD_TESTS: 'true'
+        # This worker pool has no python installation
+        GW_SKIP_PYTHON_TESTS: 'true'
+    - WorkerPool: 'proj-taskcluster/gw-ci-windows10-arm'
+      Env:
+        ENGINE: 'multiuser'
+        # We must set here since this worker pool does not have a Z: drive
+        GW_SKIP_Z_DRIVE_TESTS: 'true'
+        # This worker pool has no mozilla-build installation
+        GW_SKIP_MOZILLA_BUILD_TESTS: 'true'
+        # This worker pool has no python installation
+        GW_SKIP_PYTHON_TESTS: 'true'
+    - WorkerPool: 'proj-taskcluster/gw-ci-windows2012r2-amd64'
+      Env:
+        ENGINE: 'multiuser'
+        # We must set here since this worker type does not have a Z: drive
+        GW_SKIP_Z_DRIVE_TESTS: 'true'
+#####################################################################
+#   #############################################################   #
+#   # DISABLING WINDOWS 7 UNTIL WE HAVE WINDOWS 7 WORKERS AGAIN #   #
+#   #############################################################   #
+#   - WorkerPool: 'proj-taskcluster/gw-ci-windows7-386'             #
+#     Env:                                                          #
+#       ENGINE: 'multiuser'                                         #
+#####################################################################
+  CheckDeps:
+    - WorkerPool: 'proj-taskcluster/gw-ci-ubuntu-18-04'
+
+WorkerPools:
+  proj-taskcluster/gw-ci-macos:
+    Platform: 'macOS Mojave 10.14'
+    OS: 'darwin'
+    Arch: 'amd64'
+  proj-taskcluster/gw-ci-raspbian-stretch:
+    Platform: 'Raspbian GNU/Linux 9 (stretch)'
+    OS: 'linux'
+    Arch: 'armv6l'
+  proj-taskcluster/gw-ci-ubuntu-18-04:
+    Platform: 'Ubuntu 18.04 (amd64)'
+    OS: 'linux'
+    Arch: 'amd64'
+  proj-taskcluster/gw-ci-windows10-amd64:
+    Platform: 'Windows 10 (amd64)'
+    OS: 'windows'
+    Arch: 'amd64'
+  proj-taskcluster/gw-ci-windows10-arm:
+    Platform: 'Windows 10 (arm)'
+    OS: 'windows'
+    # There is no arm release for go 1.10.8 on windows, but 386 release works
+    # through emulation provided by the host OS.
+    Arch: '386'
+  proj-taskcluster/gw-ci-windows2012r2-amd64:
+    Platform: 'Windows Server 2012 R2 (amd64)'
+    OS: 'windows'
+    Arch: 'amd64'
+  proj-taskcluster/gw-ci-windows7-386:
+    Platform: 'Windows 7 (386)'
+    OS: 'windows'
+    Arch: '386'
+
+Commands:
+  CheckDeps:
+    Posix:
+      - - /bin/bash
+        - -vxec
+        - |
+          export CGO_ENABLED=0
+          export GOROOT="$(pwd)/go1.10.8/go"
+          export GOPATH="$(pwd)/gopath1.10.8"
+          export PATH="${GOPATH}/bin:${GOROOT}/bin:${PATH}"
+          go version
+          go env
+          mkdir -p "${GOPATH}/src/github.com/taskcluster"
+          cd "${GOPATH}/src/github.com/taskcluster"
+          if [ ! -d generic-worker/.git ]; then rm -rf generic-worker; git clone "${GITHUB_CLONE_URL}" 'generic-worker'; fi
+          cd 'generic-worker'
+          git fetch "${GITHUB_CLONE_URL}" "+${GITHUB_SHA}:refs/heads/X${TASK_ID}"
+          git checkout -f "X${TASK_ID}"
+          git reset --hard "${GITHUB_SHA}"
+          git clean -fdx
+          git checkout -B tmp -t "X${TASK_ID}"
+          mkdir -p "${GOPATH}/bin"
+          curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
+          dep check
+
+  BuildAndTest:
+    Posix:
+      - - /bin/bash
+        - -vxec
+        - |
+          function b64 {
+            [ "$(uname -s)" != "Darwin" ] || base64 -D
+            [ "$(uname -s)" != "Linux" ]  || base64 -d
+          }
+          # go test: -race and -msan are only supported on linux/amd64, freebsd/amd64, darwin/amd64 and windows/amd64
+          test $(uname -m) == "x86_64" && RACE=-race || RACE=
+          export CGO_ENABLED=0
+          export GOROOT="$(pwd)/go1.10.8/go"
+          export GOPATH="$(pwd)/gopath1.10.8"
+          export PATH="${GOPATH}/bin:${GOROOT}/bin:${PATH}"
+          git --version
+          go version
+          go env
+          curl -s "${TASKCLUSTER_PROXY_URL}/secrets/v1/secret/project/taskcluster/testing/generic-worker/ci-creds" | sed -n 's/.*"b64_encoded_credentials_script": "\(.*\)".*/\1/p' | b64 > tc-creds.sh
+          source tc-creds.sh
+          mkdir -p "${GOPATH}/src/github.com/taskcluster"
+          cd "${GOPATH}/src/github.com/taskcluster"
+          if [ ! -d generic-worker/.git ]; then rm -rf generic-worker; git clone "${GITHUB_CLONE_URL}" 'generic-worker'; fi
+          cd 'generic-worker'
+          git fetch "${GITHUB_CLONE_URL}" "+${GITHUB_SHA}:refs/heads/X${TASK_ID}"
+          git checkout -f "X${TASK_ID}"
+          git reset --hard "${GITHUB_SHA}"
+          git clean -fdx
+          git checkout -B tmp -t "X${TASK_ID}"
+          go get -v -u github.com/taskcluster/livelog github.com/taskcluster/taskcluster-proxy github.com/gordonklaus/ineffassign
+          cd gw-codegen
+          go get -v
+          cd ..
+          go generate
+          go install -tags "${ENGINE}" -v -ldflags "-X main.revision=${GITHUB_SHA}" ./...
+          # output of wc command can contain spaces on darwin, so no quotes around expression                                                                                                                           
+          test $(git status --porcelain | wc -l) == 0   
+          if [ "${ENGINE}" == "multiuser" ]; then
+            cp "${TASK_USER_CREDENTIALS}" next-task-user.json
+            # IMPORTANT - run go test with GW_TESTS_RUN_AS_CURRENT_USER=true *before* running it without
+            # otherwise tests that call `go run ....` will write go object files to .cache as root
+            GW_TESTS_RUN_AS_CURRENT_USER=true GORACE=history_size=7 CGO_ENABLED=1 go test -tags "${ENGINE}" -timeout 45m -ldflags "-X github.com/taskcluster/generic-worker.revision=${GITHUB_SHA}" -v ${RACE}
+          fi
+          if [ "$(go env GOARCH)" != 'armv6l' ]; then
+            export CGO_ENABLED=1
+          fi
+          GORACE=history_size=7 go test -tags "${ENGINE}" -timeout 45m -ldflags "-X github.com/taskcluster/generic-worker.revision=${GITHUB_SHA}" -v ${RACE} ./...
+          "${GOPATH}/bin/ineffassign" .
+    Windows:
+      - |
+        :: go test: -race and -msan are only supported on linux/amd64, freebsd/amd64, darwin/amd64 and windows/amd64
+        reg Query "HKLM\Hardware\Description\System\CentralProcessor\0" | find /i "Intel64" > NUL && set RACE=-race || set "RACE= "
+        :: find.exe may have exited with exit code 1, so need to explicitly exit with 0
+        exit /b 0
+      - jq -r .secret.b64_encoded_credentials_batch_script ci-creds.json > tc-creds.bat.b64
+      - certutil -decode tc-creds.bat.b64 tc-creds.bat
+      - call tc-creds.bat 2>&1
+      - set CGO_ENABLED=0
+      - set GOPATH=%CD%\gopath1.10.8
+      - set GOROOT=%CD%\go1.10.8\go
+      - set PATH=%CD%\git\cmd;%GOPATH%\bin;%GOROOT%\bin;%PATH%
+      - git version
+      - go version
+      - go env
+      - git config --global core.autocrlf false
+      - 'if not exist "%GOPATH%\src\github.com\taskcluster" mkdir "%GOPATH%\src\github.com\taskcluster"'
+      - 'cd "%GOPATH%\src\github.com\taskcluster"'
+      - 'if not exist generic-worker git clone %GITHUB_CLONE_URL% generic-worker'
+      - 'cd generic-worker'
+      - 'git fetch %GITHUB_CLONE_URL% +%GITHUB_SHA%:refs/heads/X%TASK_ID%'
+      - 'git checkout -f "X%TASK_ID%"'
+      - 'git reset --hard %GITHUB_SHA%'
+      - 'git clean -fdx'
+      - 'git checkout -B tmp -t "X%TASK_ID%"'
+      - go get -v -u github.com/taskcluster/livelog github.com/taskcluster/taskcluster-proxy github.com/gordonklaus/ineffassign
+      - cd gw-codegen
+      - go get -v
+      - cd ..
+      - go generate
+      - |
+        :: this counts the number of lines returned by git status
+        :: dump temp file a directory higher, otherwise git status reports the tmp1.txt file!
+        git status --porcelain | C:\Windows\System32\find.exe /v /c "" > ..\tmp1.txt
+        set /P lines=<..\tmp1.txt
+        :: this checks that if more than 0 lines are returned, we fail
+        if %lines% gtr 0 exit /b 64
+        :: find.exe may have exited with exit code 1, so need to explicitly exit with 0
+        exit /b 0
+      - go install -tags "%ENGINE%" -v -ldflags "-X main.revision=%GITHUB_SHA%" ./...
+      - set CGO_ENABLED=%CGO_ENABLED_TESTS%
+      - set GORACE=history_size=7
+      - copy "%TASK_USER_CREDENTIALS%" "%CD%\next-task-user.json"
+      - 'go test -tags "%ENGINE%" -timeout 45m -ldflags "-X github.com/taskcluster/generic-worker.revision=%GITHUB_SHA%" -v %RACE% ./...'
+      - set GW_TESTS_RUN_AS_CURRENT_USER=true
+      - 'go test -tags "%ENGINE%" -timeout 45m -ldflags "-X github.com/taskcluster/generic-worker.revision=%GITHUB_SHA%" -v %RACE%'
+      - ineffassign .
+
+Mounts:
+  go1.10.8:
+    directory: go1.10.8
+    content:
+      darwin:
+        amd64:
+          url: 'https://storage.googleapis.com/golang/go1.10.8.darwin-amd64.tar.gz'
+          sha256: 'f41bc914a721ac98a187df824b3b40f0a7f35bfb3c6d31221bdd940d537d3c28'
+          format: tar.gz
+      linux:
+        armv6l:
+          url: 'https://storage.googleapis.com/golang/go1.10.8.linux-armv6l.tar.gz'
+          sha256: '6fdbc67524fc4c15fc87014869dddce9ecda7958b78f3cb1bbc5b0a9b61bfb95'
+          format: tar.gz
+        amd64:
+          url: 'https://storage.googleapis.com/golang/go1.10.8.linux-amd64.tar.gz'
+          sha256: 'd8626fb6f9a3ab397d88c483b576be41fa81eefcec2fd18562c87626dbb3c39e'
+          format: tar.gz
+      windows:
+        386:
+          url: 'https://storage.googleapis.com/golang/go1.10.8.windows-386.zip'
+          sha256: '9ded97d830bef3734ea6de70df0159656d6a63e01484175b34d72b8db326bda0'
+          format: zip
+        amd64:
+          url: 'https://storage.googleapis.com/golang/go1.10.8.windows-amd64.zip'
+          sha256: 'ab63b55c349f75cce4b93aefa9b52828f50ebafb302da5057db0e686d7873d7a'
+          format: zip
+  git2.24.0.2:
+    directory: git
+    content:
+      windows:
+        386:
+          url: 'https://github.com/git-for-windows/git/releases/download/v2.24.0.windows.2/MinGit-2.24.0.2-32-bit.zip'
+          sha256: 'b7b26e87d3df9b44fee0606a9df3ca839bc444faf76c4c27bc0824a6c10e7831'
+          format: zip
+        amd64:
+          url: 'https://github.com/git-for-windows/git/releases/download/v2.24.0.windows.2/MinGit-2.24.0.2-64-bit.zip'
+          sha256: 'c33aec6ae68989103653ca9fb64f12cabccf6c61d0dde30c50da47fc15cf66e2'
+          format: zip
+  jq1.6:
+    file: jq.exe
+    content:
+      windows:
+        386:
+          url: 'https://github.com/stedolan/jq/releases/download/jq-1.6/jq-win32.exe'
+          sha256: '0012cb4c0eb6eaf97b842e676e423a69a8fea95055d93830551b4a5a54494bd8'
+        amd64:
+          url: 'https://github.com/stedolan/jq/releases/download/jq-1.6/jq-win64.exe'
+          sha256: 'a51d36968dcbdeabb3142c6f5cf9b401a65dc3a095f3144bd0c118d5bb192753'
+  ci-creds:
+    file: ci-creds.json
+    content:
+      windows:
+        all:
+          url: 'http://localhost/secrets/v1/secret/project/taskcluster/testing/generic-worker/ci-creds'
+          sha256: 'ef1d954dbae01a0810fcdb56f56761dbbb26692b0dc8cbb2994101512fc26992'
