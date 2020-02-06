@@ -156,11 +156,6 @@ func FormatSourceAndSave(sourceFile string, sourceCode []byte) {
 	formattedContent, err := imports.Process(sourceFile, sourceCode, nil)
 	exitOnFail(err)
 
-	// imports inscrutably uses the old tc-client path, so fix that up.  Note
-	// that this must be the full path to allow `yarn release` to update it
-	// correctly.
-	formattedContent = regexp.MustCompile(`github.com/taskcluster/taskcluster-client-go`).ReplaceAll(formattedContent, []byte(`github.com/taskcluster/taskcluster/clients/client-go/v24`))
-
 	// remove links based on the schema server
 	formattedContent = regexp.MustCompile(`(?:[ \t]*//\n)?[ \t]*// See http://127.0.0.1:.*\n`).ReplaceAll(formattedContent, []byte(""))
 
