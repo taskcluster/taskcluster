@@ -246,9 +246,16 @@
   },
   {
     "element": "h2",
-    "id": "details",
+    "id": "configuration",
     "path": "/manual/deploying/pulse",
-    "subtitle": "Details",
+    "subtitle": "Configuration",
+    "title": null
+  },
+  {
+    "element": "h3",
+    "id": "server-configuration-details",
+    "path": "/manual/deploying/pulse",
+    "subtitle": "Server Configuration Details",
     "title": null
   },
   {

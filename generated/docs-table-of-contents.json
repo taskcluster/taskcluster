@@ -1470,6 +1470,28 @@
             "children": [
             ],
             "data": {
+              "order": 10,
+              "title": "Static Clients"
+            },
+            "name": "static-clients",
+            "next": {
+              "path": "manual/deploying/workers",
+              "title": "Workers"
+            },
+            "path": "manual/deploying/static-clients",
+            "prev": {
+              "path": "manual/deploying",
+              "title": "Deploying Taskcluster"
+            },
+            "up": {
+              "path": "manual/deploying",
+              "title": "Deploying Taskcluster"
+            }
+          },
+          {
+            "children": [
+            ],
+            "data": {
               "order": 20,
               "title": "Workers"
             },
@@ -1480,8 +1502,8 @@
             },
             "path": "manual/deploying/workers",
             "prev": {
-              "path": "manual/deploying",
-              "title": "Deploying Taskcluster"
+              "path": "manual/deploying/static-clients",
+              "title": "Static Clients"
             },
             "up": {
               "path": "manual/deploying",
@@ -1607,8 +1629,8 @@
             },
             "name": "pulse",
             "next": {
-              "path": "manual/deploying/smoketests",
-              "title": "Smoketests"
+              "path": "manual/deploying/schema",
+              "title": "Helm Configuration Schema"
             },
             "path": "manual/deploying/pulse",
             "prev": {
@@ -1625,14 +1647,14 @@
             ],
             "data": {
               "order": 1000,
+              "title": "Helm Configuration Schema"
+            },
+            "name": "schema",
+            "next": {
+              "path": "manual/deploying/smoketests",
               "title": "Smoketests"
             },
-            "name": "smoketests",
-            "next": {
-              "path": "manual/deploying/static-clients",
-              "title": "Static Clients"
-            },
-            "path": "manual/deploying/smoketests",
+            "path": "manual/deploying/schema",
             "prev": {
               "path": "manual/deploying/pulse",
               "title": "Pulse"
@@ -1647,17 +1669,17 @@
             ],
             "data": {
               "order": 1000,
-              "title": "Static Clients"
+              "title": "Smoketests"
             },
-            "name": "static-clients",
+            "name": "smoketests",
             "next": {
               "path": "manual/deploying/third-party",
               "title": "Third Party"
             },
-            "path": "manual/deploying/static-clients",
+            "path": "manual/deploying/smoketests",
             "prev": {
-              "path": "manual/deploying/smoketests",
-              "title": "Smoketests"
+              "path": "manual/deploying/schema",
+              "title": "Helm Configuration Schema"
             },
             "up": {
               "path": "manual/deploying",
@@ -1678,8 +1700,8 @@
             },
             "path": "manual/deploying/third-party",
             "prev": {
-              "path": "manual/deploying/static-clients",
-              "title": "Static Clients"
+              "path": "manual/deploying/smoketests",
+              "title": "Smoketests"
             },
             "up": {
               "path": "manual/deploying",
@@ -1693,8 +1715,8 @@
         },
         "name": "deploying",
         "next": {
-          "path": "manual/deploying/workers",
-          "title": "Workers"
+          "path": "manual/deploying/static-clients",
+          "title": "Static Clients"
         },
         "path": "manual/deploying",
         "prev": {
