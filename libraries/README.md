@@ -12,6 +12,7 @@ These are any packages that are used by Taskcluster services that aren't intende
 * [Iterate Library](iterate#readme)
 * [Loader Library](loader#readme)
 * [Monitor Library](monitor#readme)
+* [Postgres Library](postgres#readme)
 * [Pulse Library](pulse#readme)
 * [References Library](references#readme)
 * [Scopes Library](scopes#readme)

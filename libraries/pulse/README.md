@@ -500,6 +500,6 @@ To run the tests, a simple `yarn test` will do.  But it will skip most of the te
 Better to run against a real RabbitAMQP server.  If you have Docker, that's easy:
 
 ```
-docker run -d -ti --rm -p 5672:5672 rabbitmq:alpine
+docker run -d -ti --rm -p 127.0.0.1:5672:5672 rabbitmq:alpine
 export PULSE_CONNECTION_STRING=amqp://guest:guest@localhost:5672/
 ```
