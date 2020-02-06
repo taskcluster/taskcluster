@@ -34,24 +34,24 @@ Types:
 
 Tasks:
   BuildAndTest:
-    - WorkerPool: 'proj-taskcluster/gw-ci-macos'
-      Env:
-        ENGINE: 'multiuser'
-    - WorkerPool: 'proj-taskcluster/gw-ci-macos'
-      Env:
-        ENGINE: 'simple'
-    - WorkerPool: 'proj-taskcluster/gw-ci-raspbian-stretch'
-      Env:
-        ENGINE: 'simple'
-    - WorkerPool: 'proj-taskcluster/gw-ci-ubuntu-18-04'
-      Env:
-        ENGINE: 'multiuser'
-    - WorkerPool: 'proj-taskcluster/gw-ci-ubuntu-18-04'
-      Env:
-        ENGINE: 'simple'
-    - WorkerPool: 'proj-taskcluster/gw-ci-ubuntu-18-04'
-      Env:
-        ENGINE: 'docker'
+#   - WorkerPool: 'proj-taskcluster/gw-ci-macos'
+#     Env:
+#       ENGINE: 'multiuser'
+#   - WorkerPool: 'proj-taskcluster/gw-ci-macos'
+#     Env:
+#       ENGINE: 'simple'
+#   - WorkerPool: 'proj-taskcluster/gw-ci-raspbian-stretch'
+#     Env:
+#       ENGINE: 'simple'
+#   - WorkerPool: 'proj-taskcluster/gw-ci-ubuntu-18-04'
+#     Env:
+#       ENGINE: 'multiuser'
+#   - WorkerPool: 'proj-taskcluster/gw-ci-ubuntu-18-04'
+#     Env:
+#       ENGINE: 'simple'
+#   - WorkerPool: 'proj-taskcluster/gw-ci-ubuntu-18-04'
+#     Env:
+#       ENGINE: 'docker'
     - WorkerPool: 'proj-taskcluster/gw-ci-windows10-amd64'
       Env:
         ENGINE: 'multiuser'
@@ -267,6 +267,7 @@ Commands:
       - set CGO_ENABLED=%CGO_ENABLED_TESTS%
       - set GORACE=history_size=7
       - copy "%TASK_USER_CREDENTIALS%" "%CD%\next-task-user.json"
+      - cd win32
       - 'go test -tags "%ENGINE%" -timeout 45m -ldflags "-X github.com/taskcluster/taskcluster/v24/workers/generic-worker.revision=%GITHUB_SHA%" -v %RACE% %VET% ./...'
       - set GW_TESTS_RUN_AS_CURRENT_USER=true
       - 'go test -tags "%ENGINE%" -timeout 45m -ldflags "-X github.com/taskcluster/taskcluster/v24/workers/generic-worker.revision=%GITHUB_SHA%" -v %RACE% %VET%'
