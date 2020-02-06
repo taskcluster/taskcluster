@@ -463,15 +463,23 @@ func GetProfilesDirectory(dir *uint16, dirLen *uint32) (err error) {
 // ProfileDirectory returns the profile directory of the user represented by
 // the given user handle
 func ProfileDirectory(hToken syscall.Token) (string, error) {
-	lpcchSize := uint32(0)
-	GetUserProfileDirectory(hToken, nil, &lpcchSize)
-	u16 := make([]uint16, lpcchSize)
-	err := GetUserProfileDirectory(hToken, &u16[0], &lpcchSize)
-	// bad token?
-	if err != nil {
-		return "", err
+	n := uint32(100)
+	for {
+		b := make([]uint16, n)
+		GetUserProfileDirectory(hToken, nil, &n)
+		e := GetUserProfileDirectory(hToken, &b[0], &n)
+		if e == nil {
+			return syscall.UTF16ToString(b), nil
+		}
+		if e != syscall.ERROR_INSUFFICIENT_BUFFER {
+			// this should never happen
+			return "", e
+		}
+		if n <= uint32(len(b)) {
+			// this should never happen
+			return "", e
+		}
 	}
-	return syscall.UTF16ToString(u16), nil
 }
 
 // ProfilesDirectory returns the folder where user profiles get created,
@@ -485,11 +493,11 @@ func ProfilesDirectory() string {
 			return syscall.UTF16ToString(b)
 		}
 		if e != syscall.ERROR_INSUFFICIENT_BUFFER {
-			// this should never happen - it means Windows is corrupt!
+			// this should never happen
 			panic(e)
 		}
 		if n <= uint32(len(b)) {
-			// this should never happen - it means Windows is corrupt!
+			// this should never happen
 			panic(e)
 		}
 	}
