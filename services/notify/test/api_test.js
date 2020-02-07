@@ -2,6 +2,7 @@ const _ = require('lodash');
 const assert = require('assert');
 const helper = require('./helper');
 const testing = require('taskcluster-lib-testing');
+const {defaultMonitorManager} = require('taskcluster-lib-monitor');
 
 helper.secrets.mockSuite(testing.suiteName(), ['azure', 'aws'], function(mock, skipping) {
   helper.withEntities(mock, skipping);
@@ -33,6 +34,23 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'aws'], function(mock, s
     helper.assertPulseMessage('notification', m => (
       _.isEqual(m.payload.message, {test: 123}) &&
       _.isEqual(m.CCs, ['route.notify-test'])));
+  });
+
+  test('pulse() fails if pulse publish fails', async function() {
+    helper.onPulsePublish(() => {
+      throw new Error('uhoh');
+    });
+    const apiClient = helper.apiClient.use({retries: 0});
+    await assert.rejects(
+      () => apiClient.pulse({routingKey: 'notify-test', message: {test: 456}}),
+      err => err.statusCode === 500);
+
+    assert.equal(
+      defaultMonitorManager.messages.filter(
+        ({Type, Fields}) => Type === 'monitor.error' && Fields.message === 'uhoh',
+      ).length,
+      1);
+    defaultMonitorManager.reset();
   });
 
   test('does not send notifications to denylisted pulse address', async function() {
@@ -117,6 +135,23 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'aws'], function(mock, s
       return _.isEqual(channel, '#taskcluster-test') &&
         _.isEqual(message, 'Does this work?');
     });
+  });
+
+  test('irc() fails if pulse publish fails', async function() {
+    helper.onPulsePublish(() => {
+      throw new Error('uhoh');
+    });
+    const apiClient = helper.apiClient.use({retries: 0});
+    await assert.rejects(
+      () => apiClient.irc({message: 'no', channel: '#taskcluster-test'}),
+      err => err.statusCode === 500);
+
+    assert.equal(
+      defaultMonitorManager.messages.filter(
+        ({Type, Fields}) => Type === 'monitor.error' && Fields.message === 'uhoh',
+      ).length,
+      1);
+    defaultMonitorManager.reset();
   });
 
   test('does not send notifications to denylisted irc channel', async function() {

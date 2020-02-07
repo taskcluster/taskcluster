@@ -282,7 +282,9 @@ builder.declare({
         {});
     }
   }
-  this.publisher.hookCreated({hookGroupId, hookId});
+
+  await this.publisher.hookCreated({hookGroupId, hookId});
+
   // Reply with the hook definition
   return res.reply(hookDef);
 });
@@ -385,7 +387,7 @@ builder.declare({
   }
 
   let definition = await hook.definition();
-  this.publisher.hookUpdated({hookGroupId, hookId});
+  await this.publisher.hookUpdated({hookGroupId, hookId});
 
   return res.reply(definition);
 });
@@ -411,7 +413,7 @@ builder.declare({
 
   // Remove the resource if it exists
   await this.Hook.remove({hookGroupId, hookId}, true);
-  this.publisher.hookDeleted({hookGroupId, hookId});
+  await this.publisher.hookDeleted({hookGroupId, hookId});
 
   await this.LastFire.query({
     hookGroupId: req.params.hookGroupId,

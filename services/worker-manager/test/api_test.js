@@ -4,6 +4,7 @@ const helper = require('./helper');
 const testing = require('taskcluster-lib-testing');
 const fs = require('fs');
 const path = require('path');
+const {defaultMonitorManager} = require('taskcluster-lib-monitor');
 
 helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping) {
   helper.withEntities(mock, skipping);
@@ -77,6 +78,31 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
       await helper.workerManager.createWorkerPool(workerPoolId2, input2));
   });
 
+  test('create worker pool fails when pulse publish fails', async function() {
+    const workerPoolId = 'pp/ee';
+    const input = {
+      providerId: 'testing1',
+      description: 'bar',
+      config: {},
+      owner: 'example@example.com',
+      emailOnError: false,
+    };
+    helper.onPulsePublish(() => {
+      throw new Error('uhoh');
+    });
+    const apiClient = helper.workerManager.use({retries: 0});
+    await assert.rejects(
+      () => apiClient.createWorkerPool(workerPoolId, input),
+      err => err.statusCode === 500);
+
+    assert.equal(
+      defaultMonitorManager.messages.filter(
+        ({Type, Fields}) => Type === 'monitor.error' && Fields.message === 'uhoh',
+      ).length,
+      1);
+    defaultMonitorManager.reset();
+  });
+
   test('update worker pool', async function() {
     const workerPoolId = 'pp/ee';
     const input = {
@@ -105,6 +131,35 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
     assert.equal(initial.lastModified, initial.created);
     assert.equal(initial.created, updated.created);
     assert(updated.lastModifed !== updated.created);
+  });
+
+  test('update worker pool fails when pulse publish fails', async function() {
+    const workerPoolId = 'pp/ee';
+    const input = {
+      providerId: 'testing1',
+      description: 'bar',
+      config: {},
+      owner: 'example@example.com',
+      emailOnError: false,
+    };
+    await helper.workerManager.createWorkerPool(workerPoolId, input);
+
+    helper.onPulsePublish(() => {
+      throw new Error('uhoh');
+    });
+
+    input.description = 'foo';
+    const apiClient = helper.workerManager.use({retries: 0});
+    await assert.rejects(
+      () => apiClient.updateWorkerPool(workerPoolId, input),
+      err => err.statusCode === 500);
+
+    assert.equal(
+      defaultMonitorManager.messages.filter(
+        ({Type, Fields}) => Type === 'monitor.error' && Fields.message === 'uhoh',
+      ).length,
+      1);
+    defaultMonitorManager.reset();
   });
 
   test('create worker pool (invalid providerId)', async function() {

@@ -5,6 +5,7 @@ const _ = require('lodash');
 const assume = require('assume');
 const testing = require('taskcluster-lib-testing');
 const taskcluster = require('taskcluster-client');
+const {defaultMonitorManager} = require('taskcluster-lib-monitor');
 
 helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, skipping) {
   helper.withCfg(mock, skipping);
@@ -138,6 +139,33 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
     assert.equal(matchingRoles.length, 1);
 
     await helper.apiClient.deleteRole('double');
+  });
+
+  test('createRole but pulse publish fails', async function() {
+    helper.onPulsePublish(() => {
+      throw new Error('uhoh');
+    });
+    const apiClient = helper.apiClient.use({retries: 0});
+    await assert.rejects(() => apiClient.createRole('no-publish', {
+      description: 'no-pulse-message',
+      scopes: ['foo'],
+    }),
+    err => err.statusCode === 500);
+
+    assert.equal(
+      defaultMonitorManager.messages.filter(
+        ({Type, Fields}) => Type === 'monitor.error' && Fields.message === 'uhoh',
+      ).length,
+      1);
+    defaultMonitorManager.reset();
+
+    helper.onPulsePublish(); // don't fail to publish this time
+
+    // this should be an idempotent create operation
+    await apiClient.createRole('no-publish', {
+      description: 'no-pulse-message',
+      scopes: ['foo'],
+    });
   });
 
   test('createRole twice with different roles', async function() {
@@ -354,6 +382,21 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
     ].sort());
   });
 
+  test('deleteRole where pulse publish fails', async () => {
+    helper.onPulsePublish(() => {
+      throw new Error('uhoh');
+    });
+    const apiClient = helper.apiClient.use({retries: 0});
+    await assert.rejects(() => apiClient.deleteRole('thing-id:' + clientId));
+
+    assert.equal(
+      defaultMonitorManager.messages.filter(
+        ({Type, Fields}) => Type === 'monitor.error' && Fields.message === 'uhoh',
+      ).length,
+      1);
+    defaultMonitorManager.reset();
+  });
+
   test('deleteRole', async () => {
     await helper.apiClient.deleteRole('thing-id:' + clientId);
     await helper.apiClient.deleteRole('thing-id:' + clientId);
@@ -467,6 +510,24 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
         description: 'test role',
         scopes: ['scope:role-has:*'],
       });
+    });
+
+    test('updateRole where publish fails', async () => {
+      helper.onPulsePublish(() => {
+        throw new Error('uhoh');
+      });
+      const apiClient = auth.use({retries: 0});
+      await assert.rejects(() => apiClient.updateRole(roleId, {
+        description: 'test role',
+        scopes: ['scope:role-has:*'],
+      }));
+
+      assert.equal(
+        defaultMonitorManager.messages.filter(
+          ({Type, Fields}) => Type === 'monitor.error' && Fields.message === 'uhoh',
+        ).length,
+        1);
+      defaultMonitorManager.reset();
     });
 
     test('role already has new scope by role expansion', async () => {

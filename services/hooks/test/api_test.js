@@ -5,6 +5,7 @@ const debug = require('debug')('test:api:createhook');
 const taskcluster = require('taskcluster-client');
 const helper = require('./helper');
 const testing = require('taskcluster-lib-testing');
+const {defaultMonitorManager} = require('taskcluster-lib-monitor');
 
 helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping) {
   helper.withEntities(mock, skipping);
@@ -120,6 +121,24 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
       assume(r1).deep.equals(r2);
       helper.assertPulseMessage('hook-created', ({payload}) =>
         _.isEqual({hookGroupId: 'foo', hookId: 'bar'}, payload));
+    });
+
+    test('returns 500 when pulse publish fails', async () => {
+      helper.onPulsePublish(() => {
+        throw new Error('uhoh');
+      });
+
+      const apiClient = helper.hooks.use({retries: 0});
+      await assert.rejects(
+        () => apiClient.createHook('foo', 'bar', hookWithTriggerSchema),
+        err => err.statusCode === 500);
+
+      assert.equal(
+        defaultMonitorManager.messages.filter(
+          ({Type, Fields}) => Type === 'monitor.error' && Fields.message === 'uhoh',
+        ).length,
+        1);
+      defaultMonitorManager.reset();
     });
 
     test('creates a hook with slash in hookId', async () => {
@@ -276,6 +295,25 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
         _.isEqual({hookId: 'bar', hookGroupId: 'foo'}, payload));
     });
 
+    test('fails if pulse publisher fails', async function() {
+      await helper.hooks.createHook('foo', 'bar', hookWithTriggerSchema);
+      helper.onPulsePublish(() => {
+        throw new Error('uhoh');
+      });
+
+      const apiClient = helper.hooks.use({retries: 0});
+      await assert.rejects(
+        () => apiClient.updateHook('foo', 'bar', hookWithTriggerSchema),
+        err => err.statusCode === 500);
+
+      assert.equal(
+        defaultMonitorManager.messages.filter(
+          ({Type, Fields}) => Type === 'monitor.error' && Fields.message === 'uhoh',
+        ).length,
+        1);
+      defaultMonitorManager.reset();
+    });
+
     test('fails if resource doesn\'t exist', async () => {
       await helper.hooks.updateHook('foo', 'bar', hookDef).then(
         () => { throw new Error('Expected an error'); },
@@ -322,6 +360,25 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
       await helper.hooks.listLastFires('foo', 'bar').then(
         () => { throw new Error('The resource in LastFires table should not exist'); },
         (err) => { assume(err.statusCode).equals(404); });
+    });
+
+    test('fails if pulse publisher fails', async function() {
+      await helper.hooks.createHook('foo', 'bar', hookWithTriggerSchema);
+      helper.onPulsePublish(() => {
+        throw new Error('uhoh');
+      });
+
+      const apiClient = helper.hooks.use({retries: 0});
+      await assert.rejects(
+        () => apiClient.removeHook('foo', 'bar'),
+        err => err.statusCode === 500);
+
+      assert.equal(
+        defaultMonitorManager.messages.filter(
+          ({Type, Fields}) => Type === 'monitor.error' && Fields.message === 'uhoh',
+        ).length,
+        1);
+      defaultMonitorManager.reset();
     });
 
     test('remove all lastFires info of the hook ', async () => {
