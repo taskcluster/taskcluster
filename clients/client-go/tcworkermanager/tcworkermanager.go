@@ -36,7 +36,6 @@ package tcworkermanager
 
 import (
 	"net/url"
-	"time"
 
 	tcclient "github.com/taskcluster/taskcluster/v24/clients/client-go"
 )
@@ -281,30 +280,6 @@ func (workerManager *WorkerManager) RemoveWorker(workerPoolId, workerGroup, work
 	cd := tcclient.Client(*workerManager)
 	_, _, err := (&cd).APICall(nil, "DELETE", "/workers/"+url.QueryEscape(workerPoolId)+"/"+url.QueryEscape(workerGroup)+"/"+url.QueryEscape(workerId), nil, nil)
 	return err
-}
-
-// Allows a worker to claim new credentials and increase its own
-// maximum lifetime before a provider will terminate it.
-//
-// Required scopes:
-//   worker-manager:reregister-worker:<workerPoolId>/<workerGroup>/<workerId>
-//
-// See #reregister
-func (workerManager *WorkerManager) Reregister(workerPoolId, workerGroup, workerId string) (*RegisterWorkerResponse, error) {
-	cd := tcclient.Client(*workerManager)
-	responseObject, _, err := (&cd).APICall(nil, "GET", "/workers/"+url.QueryEscape(workerPoolId)+":/"+url.QueryEscape(workerGroup)+"/"+url.QueryEscape(workerId)+"/reregister", new(RegisterWorkerResponse), nil)
-	return responseObject.(*RegisterWorkerResponse), err
-}
-
-// Returns a signed URL for Reregister, valid for the specified duration.
-//
-// Required scopes:
-//   worker-manager:reregister-worker:<workerPoolId>/<workerGroup>/<workerId>
-//
-// See Reregister for more details.
-func (workerManager *WorkerManager) Reregister_SignedURL(workerPoolId, workerGroup, workerId string, duration time.Duration) (*url.URL, error) {
-	cd := tcclient.Client(*workerManager)
-	return (&cd).SignedURL("/workers/"+url.QueryEscape(workerPoolId)+":/"+url.QueryEscape(workerGroup)+"/"+url.QueryEscape(workerId)+"/reregister", nil, duration)
 }
 
 // Get the list of all the existing workers in a given worker pool.

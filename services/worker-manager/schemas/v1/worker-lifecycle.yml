@@ -21,8 +21,8 @@ properties:
     default: 345600
     description: |
       If specified, workers in this pool must re-register via `reregister()`
-      within `reregisterTimeout` seconds to get new credentials. If the
-      worker has not done so, it will be terminated. This defaults
-      to 96 hours.
+      within `reregisterTimeout` seconds from the initial call to `register()`
+      to get new credentials. If the worker has not done so, it will be
+      terminated. This defaults to 96 hours.
 additionalProperties: false
 required: []

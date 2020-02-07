@@ -234,7 +234,7 @@
         },
         "reregisterTimeout": {
           "default": 345600,
-          "description": "If specified, workers in this pool must re-register via `reregister()`\nwithin `reregisterTimeout` seconds to get new credentials. If the\nworker has not done so, it will be terminated. This defaults\nto 96 hours.\n",
+          "description": "If specified, workers in this pool must re-register via `reregister()`\nwithin `reregisterTimeout` seconds from the initial call to `register()`\nto get new credentials. If the worker has not done so, it will be\nterminated. This defaults to 96 hours.\n",
           "title": "Checkin Timeout",
           "type": "integer"
         }
@@ -10072,25 +10072,6 @@
           "scopes": "worker-manager:remove-worker:<workerPoolId>/<workerGroup>/<workerId>",
           "stability": "stable",
           "title": "Remove a Worker",
-          "type": "function"
-        },
-        {
-          "args": [
-            "workerPoolId",
-            "workerGroup",
-            "workerId"
-          ],
-          "category": "Workers",
-          "description": "Allows a worker to claim new credentials and increase its own\nmaximum lifetime before a provider will terminate it.",
-          "method": "get",
-          "name": "reregister",
-          "output": "v1/register-worker-response.json#",
-          "query": [
-          ],
-          "route": "/workers/<workerPoolId>:/<workerGroup>/<workerId>/reregister",
-          "scopes": "worker-manager:reregister-worker:<workerPoolId>/<workerGroup>/<workerId>",
-          "stability": "stable",
-          "title": "Reregister Worker",
           "type": "function"
         },
         {

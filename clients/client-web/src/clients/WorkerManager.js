@@ -23,7 +23,6 @@ export default class WorkerManager extends Client {
     this.worker.entry = {"args":["workerPoolId","workerGroup","workerId"],"category":"Workers","method":"get","name":"worker","output":true,"query":[],"route":"/workers/<workerPoolId>:/<workerGroup>/<workerId>","stability":"stable","type":"function"}; // eslint-disable-line
     this.createWorker.entry = {"args":["workerPoolId","workerGroup","workerId"],"category":"Workers","input":true,"method":"put","name":"createWorker","output":true,"query":[],"route":"/workers/<workerPoolId>:/<workerGroup>/<workerId>","scopes":"worker-manager:create-worker:<workerPoolId>/<workerGroup>/<workerId>","stability":"stable","type":"function"}; // eslint-disable-line
     this.removeWorker.entry = {"args":["workerPoolId","workerGroup","workerId"],"category":"Workers","method":"delete","name":"removeWorker","query":[],"route":"/workers/<workerPoolId>/<workerGroup>/<workerId>","scopes":"worker-manager:remove-worker:<workerPoolId>/<workerGroup>/<workerId>","stability":"stable","type":"function"}; // eslint-disable-line
-    this.reregister.entry = {"args":["workerPoolId","workerGroup","workerId"],"category":"Workers","method":"get","name":"reregister","output":true,"query":[],"route":"/workers/<workerPoolId>:/<workerGroup>/<workerId>/reregister","scopes":"worker-manager:reregister-worker:<workerPoolId>/<workerGroup>/<workerId>","stability":"stable","type":"function"}; // eslint-disable-line
     this.listWorkersForWorkerPool.entry = {"args":["workerPoolId"],"category":"Workers","method":"get","name":"listWorkersForWorkerPool","output":true,"query":["continuationToken","limit"],"route":"/workers/<workerPoolId>","stability":"stable","type":"function"}; // eslint-disable-line
     this.registerWorker.entry = {"args":[],"category":"Worker Interface","input":true,"method":"post","name":"registerWorker","output":true,"query":[],"route":"/worker/register","stability":"stable","type":"function"}; // eslint-disable-line
   }
@@ -150,15 +149,6 @@ export default class WorkerManager extends Client {
     this.validate(this.removeWorker.entry, args);
 
     return this.request(this.removeWorker.entry, args);
-  }
-  /* eslint-disable max-len */
-  // Allows a worker to claim new credentials and increase its own
-  // maximum lifetime before a provider will terminate it.
-  /* eslint-enable max-len */
-  reregister(...args) {
-    this.validate(this.reregister.entry, args);
-
-    return this.request(this.reregister.entry, args);
   }
   /* eslint-disable max-len */
   // Get the list of all the existing workers in a given worker pool.
