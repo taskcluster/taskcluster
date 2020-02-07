@@ -1,4 +1,6 @@
 const assert = require('assert').strict;
+const path = require('path');
+const { loadSql } = require('./util');
 
 class Method {
   /**
@@ -7,7 +9,10 @@ class Method {
    */
   static fromYamlFileContent(name, content, filename) {
     assert(!/.*[A-Z].*/.test(name), `db function method ${name} in ${filename} has capital letters`);
-    const method = new Method(name, content);
+    const method = new Method(name, {
+      ...content,
+      body: content.body && loadSql(content.body, path.dirname(filename)),
+    });
     method._check(name, content, filename);
     return method;
   }
