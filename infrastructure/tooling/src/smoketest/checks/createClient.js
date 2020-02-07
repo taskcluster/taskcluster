@@ -22,6 +22,7 @@ exports.tasks.push({
 
     let clientId = `project/taskcluster/smoketest/${randomId}`;
     const payload = {
+      "deleteOnExpiration": true,
       "expires": taskcluster.fromNowJSON('1 hour'),
       "description": `Create a client and use it ${clientId}`,
       "scopes": [`auth:reset-access-token:project/taskcluster/smoketest/${randomId}`],
