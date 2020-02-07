@@ -6,7 +6,7 @@ tasks:
   $if: 'tasks_for in ["github-push", "github-pull-request"]'
   then:
     $let:
-      node: '12.14.1'
+      node: '12.15.0'
       go: '1.12.13'
       artifactsDir:
         public:
@@ -96,7 +96,7 @@ tasks:
         - name: lint
           command: yarn lint
         - name: test:meta
-          command: yarn test:meta
+          command: "yarn test:meta | cat"
           # only do cleanup on pushes; no sense doing so on pull requests
         - $if: 'tasks_for == "github-push" && event["ref"] == "refs/heads/master"'
           then:

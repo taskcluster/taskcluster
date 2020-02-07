@@ -1578,7 +1578,7 @@
           "type": "string"
         },
         "deadline": {
-          "description": "Deadline of the task, by which this task must be complete. `pending` and\n`running` runs are resolved as **exception** if not resolved by other means\nbefore the deadline. After the deadline, a task is immutable. Note,\ndeadline cannot be more than 10 days into the future\n",
+          "description": "Deadline of the task, by which this task must be complete. `pending` and\n`running` runs are resolved as **exception** if not resolved by other means\nbefore the deadline. After the deadline, a task is immutable. Note,\ndeadline cannot be more than 5 days into the future\n",
           "format": "date-time",
           "title": "Deadline",
           "type": "string"
@@ -1751,7 +1751,7 @@
       "description": "A representation of **task status** as known by the queue\n",
       "properties": {
         "deadline": {
-          "description": "Deadline of the task, by which this task must be complete. `pending` and\n`running` runs are resolved as **exception** if not resolved by other means\nbefore the deadline. After the deadline, a task is immutable. Note,\ndeadline cannot be more than 10 days into the future\n",
+          "description": "Deadline of the task, by which this task must be complete. `pending` and\n`running` runs are resolved as **exception** if not resolved by other means\nbefore the deadline. After the deadline, a task is immutable. Note,\ndeadline cannot be more than 5 days into the future\n",
           "format": "date-time",
           "title": "Deadline",
           "type": "string"
@@ -3325,7 +3325,7 @@
           "type": "string"
         },
         "deadline": {
-          "description": "Deadline of the task, by which this task must be complete. `pending` and\n`running` runs are resolved as **exception** if not resolved by other means\nbefore the deadline. After the deadline, a task is immutable. Note,\ndeadline cannot be more than 10 days into the future\n",
+          "description": "Deadline of the task, by which this task must be complete. `pending` and\n`running` runs are resolved as **exception** if not resolved by other means\nbefore the deadline. After the deadline, a task is immutable. Note,\ndeadline cannot be more than 5 days into the future\n",
           "format": "date-time",
           "title": "Deadline",
           "type": "string"
@@ -5606,6 +5606,1762 @@
       "type": "object"
     },
     "filename": "schemas/github/v1/build-list.json"
+  },
+  {
+    "content": {
+      "$id": "/schemas/common/values.schema.json#",
+      "$schema": "http://json-schema.org/draft-06/schema#",
+      "aditionalProperties": false,
+      "properties": {
+        "applicationName": {
+          "description": "The name of this deployment of Taskcluster.",
+          "type": "string"
+        },
+        "auth": {
+          "additionalProperties": false,
+          "properties": {
+            "audit_log": {
+              "type": "string"
+            },
+            "aws_credentials_allowed_buckets": {
+              "oneOf": [
+                {
+                  "additionalProperties": true,
+                  "type": "object"
+                },
+                {
+                  "type": "array"
+                }
+              ]
+            },
+            "azure_account_key": {
+              "type": "string"
+            },
+            "azure_accounts": {
+              "oneOf": [
+                {
+                  "additionalProperties": true,
+                  "type": "object"
+                },
+                {
+                  "type": "array"
+                }
+              ]
+            },
+            "azure_crypto_key": {
+              "type": "string"
+            },
+            "azure_signing_key": {
+              "type": "string"
+            },
+            "debug": {
+              "title": "node debug env var",
+              "type": "string"
+            },
+            "docs_bucket": {
+              "type": "string"
+            },
+            "gcp_credentials_allowed_projects": {
+              "oneOf": [
+                {
+                  "additionalProperties": true,
+                  "type": "object"
+                },
+                {
+                  "type": "array"
+                }
+              ]
+            },
+            "level": {
+              "type": "string"
+            },
+            "procs": {
+              "additionalProperties": false,
+              "properties": {
+                "purgeExpiredClients": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "cpu": {
+                      "type": "string"
+                    },
+                    "memory": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "memory",
+                    "cpu"
+                  ],
+                  "type": "object"
+                },
+                "web": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "cpu": {
+                      "type": "string"
+                    },
+                    "memory": {
+                      "type": "string"
+                    },
+                    "replicas": {
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "replicas",
+                    "memory",
+                    "cpu"
+                  ],
+                  "type": "object"
+                }
+              },
+              "required": [
+                "web",
+                "purgeExpiredClients"
+              ],
+              "title": "Process settings for this service",
+              "type": "object"
+            },
+            "pulse_password": {
+              "type": "string"
+            },
+            "pulse_username": {
+              "type": "string"
+            },
+            "refs_bucket": {
+              "type": "string"
+            },
+            "schemas_bucket": {
+              "type": "string"
+            },
+            "sentry_auth_token": {
+              "type": "string"
+            },
+            "sentry_host": {
+              "type": "string"
+            },
+            "sentry_key_prefix": {
+              "type": "string"
+            },
+            "sentry_organization": {
+              "type": "string"
+            },
+            "sentry_team": {
+              "type": "string"
+            },
+            "static_clients": {
+              "oneOf": [
+                {
+                  "additionalProperties": true,
+                  "type": "object"
+                },
+                {
+                  "type": "array"
+                }
+              ]
+            },
+            "websocktunnel_secret": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "procs",
+            "static_clients",
+            "azure_accounts",
+            "azure_account_key",
+            "azure_signing_key",
+            "azure_crypto_key",
+            "pulse_username",
+            "pulse_password"
+          ],
+          "title": "Configuration options for auth",
+          "type": "object"
+        },
+        "azureAccountId": {
+          "description": "An azure storage account for this deployment. Note this is a _storage_ account, not a billing one.",
+          "type": "string"
+        },
+        "built_in_workers": {
+          "additionalProperties": false,
+          "properties": {
+            "debug": {
+              "title": "node debug env var",
+              "type": "string"
+            },
+            "level": {
+              "type": "string"
+            },
+            "procs": {
+              "additionalProperties": false,
+              "properties": {
+                "server": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "cpu": {
+                      "type": "string"
+                    },
+                    "memory": {
+                      "type": "string"
+                    },
+                    "replicas": {
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "replicas",
+                    "memory",
+                    "cpu"
+                  ],
+                  "type": "object"
+                }
+              },
+              "required": [
+                "server"
+              ],
+              "title": "Process settings for this service",
+              "type": "object"
+            },
+            "taskcluster_access_token": {
+              "type": "string"
+            },
+            "taskcluster_client_id": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "procs",
+            "taskcluster_client_id",
+            "taskcluster_access_token"
+          ],
+          "title": "Configuration options for built-in-workers",
+          "type": "object"
+        },
+        "dockerImage": {
+          "description": "The docker image containing taskcluster.",
+          "type": "string"
+        },
+        "errorConfig": {
+          "additionalProperties": true,
+          "description": "Error reporting configuration for lib-monitor.",
+          "properties": {
+            "reporter": {
+              "description": "Which reporter to use.",
+              "type": "string"
+            }
+          },
+          "required": [
+            "reporter"
+          ],
+          "type": "object"
+        },
+        "forceSSL": {
+          "description": "If true, all connections must use ssl",
+          "type": "boolean"
+        },
+        "github": {
+          "additionalProperties": false,
+          "properties": {
+            "bot_username": {
+              "type": "string"
+            },
+            "debug": {
+              "title": "node debug env var",
+              "type": "string"
+            },
+            "github_app_id": {
+              "type": "string"
+            },
+            "github_private_pem": {
+              "type": "string"
+            },
+            "level": {
+              "type": "string"
+            },
+            "procs": {
+              "additionalProperties": false,
+              "properties": {
+                "sync": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "cpu": {
+                      "type": "string"
+                    },
+                    "memory": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "memory",
+                    "cpu"
+                  ],
+                  "type": "object"
+                },
+                "web": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "cpu": {
+                      "type": "string"
+                    },
+                    "memory": {
+                      "type": "string"
+                    },
+                    "replicas": {
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "replicas",
+                    "memory",
+                    "cpu"
+                  ],
+                  "type": "object"
+                },
+                "worker": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "cpu": {
+                      "type": "string"
+                    },
+                    "memory": {
+                      "type": "string"
+                    },
+                    "replicas": {
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "replicas",
+                    "memory",
+                    "cpu"
+                  ],
+                  "type": "object"
+                }
+              },
+              "required": [
+                "web",
+                "worker",
+                "sync"
+              ],
+              "title": "Process settings for this service",
+              "type": "object"
+            },
+            "provisioner_id": {
+              "type": "string"
+            },
+            "pulse_password": {
+              "type": "string"
+            },
+            "pulse_username": {
+              "type": "string"
+            },
+            "taskcluster_access_token": {
+              "type": "string"
+            },
+            "taskcluster_client_id": {
+              "type": "string"
+            },
+            "webhook_secret": {
+              "type": "array"
+            },
+            "worker_type": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "procs",
+            "bot_username",
+            "taskcluster_client_id",
+            "taskcluster_access_token",
+            "github_private_pem",
+            "github_app_id",
+            "webhook_secret",
+            "pulse_username",
+            "pulse_password"
+          ],
+          "title": "Configuration options for github",
+          "type": "object"
+        },
+        "hooks": {
+          "additionalProperties": false,
+          "properties": {
+            "azure_crypto_key": {
+              "type": "string"
+            },
+            "azure_signing_key": {
+              "type": "string"
+            },
+            "debug": {
+              "title": "node debug env var",
+              "type": "string"
+            },
+            "influx_connection": {
+              "type": "string"
+            },
+            "level": {
+              "type": "string"
+            },
+            "procs": {
+              "additionalProperties": false,
+              "properties": {
+                "expires": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "cpu": {
+                      "type": "string"
+                    },
+                    "memory": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "memory",
+                    "cpu"
+                  ],
+                  "type": "object"
+                },
+                "listeners": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "cpu": {
+                      "type": "string"
+                    },
+                    "memory": {
+                      "type": "string"
+                    },
+                    "replicas": {
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "replicas",
+                    "memory",
+                    "cpu"
+                  ],
+                  "type": "object"
+                },
+                "scheduler": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "cpu": {
+                      "type": "string"
+                    },
+                    "memory": {
+                      "type": "string"
+                    },
+                    "replicas": {
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "replicas",
+                    "memory",
+                    "cpu"
+                  ],
+                  "type": "object"
+                },
+                "web": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "cpu": {
+                      "type": "string"
+                    },
+                    "memory": {
+                      "type": "string"
+                    },
+                    "replicas": {
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "replicas",
+                    "memory",
+                    "cpu"
+                  ],
+                  "type": "object"
+                }
+              },
+              "required": [
+                "web",
+                "scheduler",
+                "listeners",
+                "expires"
+              ],
+              "title": "Process settings for this service",
+              "type": "object"
+            },
+            "pulse_password": {
+              "type": "string"
+            },
+            "pulse_username": {
+              "type": "string"
+            },
+            "taskcluster_access_token": {
+              "type": "string"
+            },
+            "taskcluster_client_id": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "procs",
+            "azure_signing_key",
+            "azure_crypto_key",
+            "taskcluster_client_id",
+            "taskcluster_access_token",
+            "pulse_username",
+            "pulse_password"
+          ],
+          "title": "Configuration options for hooks",
+          "type": "object"
+        },
+        "index": {
+          "additionalProperties": false,
+          "properties": {
+            "debug": {
+              "title": "node debug env var",
+              "type": "string"
+            },
+            "level": {
+              "type": "string"
+            },
+            "procs": {
+              "additionalProperties": false,
+              "properties": {
+                "expire": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "cpu": {
+                      "type": "string"
+                    },
+                    "memory": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "memory",
+                    "cpu"
+                  ],
+                  "type": "object"
+                },
+                "handlers": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "cpu": {
+                      "type": "string"
+                    },
+                    "memory": {
+                      "type": "string"
+                    },
+                    "replicas": {
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "replicas",
+                    "memory",
+                    "cpu"
+                  ],
+                  "type": "object"
+                },
+                "web": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "cpu": {
+                      "type": "string"
+                    },
+                    "memory": {
+                      "type": "string"
+                    },
+                    "replicas": {
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "replicas",
+                    "memory",
+                    "cpu"
+                  ],
+                  "type": "object"
+                }
+              },
+              "required": [
+                "web",
+                "handlers",
+                "expire"
+              ],
+              "title": "Process settings for this service",
+              "type": "object"
+            },
+            "pulse_password": {
+              "type": "string"
+            },
+            "pulse_username": {
+              "type": "string"
+            },
+            "taskcluster_access_token": {
+              "type": "string"
+            },
+            "taskcluster_client_id": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "procs",
+            "taskcluster_client_id",
+            "taskcluster_access_token",
+            "pulse_username",
+            "pulse_password"
+          ],
+          "title": "Configuration options for index",
+          "type": "object"
+        },
+        "ingressCertName": {
+          "description": "A google certificate name that the ingress can use to set up tls.",
+          "type": "string"
+        },
+        "ingressStaticIpName": {
+          "description": "A google static ip object that the ingress can use to maintain the same ip address.",
+          "type": "string"
+        },
+        "meta": {
+          "additionalProperties": true,
+          "description": "Metadata about a deployment. This is not interpreted by Helm and can be used to store arbitrary metadata\nabout the configuration for use by other tooling.  It is automatically generated by `yarn dev:init`.",
+          "type": "object"
+        },
+        "nodeEnv": {
+          "description": "You almost certainly want \"production\" here.",
+          "type": "string"
+        },
+        "notify": {
+          "additionalProperties": false,
+          "properties": {
+            "aws_access_key_id": {
+              "type": "string"
+            },
+            "aws_region": {
+              "type": "string"
+            },
+            "aws_secret_access_key": {
+              "type": "string"
+            },
+            "debug": {
+              "title": "node debug env var",
+              "type": "string"
+            },
+            "email_blacklist": {
+              "oneOf": [
+                {
+                  "additionalProperties": true,
+                  "type": "object"
+                },
+                {
+                  "type": "array"
+                }
+              ]
+            },
+            "email_source_address": {
+              "type": "string"
+            },
+            "irc_debug": {
+              "type": "string"
+            },
+            "irc_nick": {
+              "type": "string"
+            },
+            "irc_password": {
+              "type": "string"
+            },
+            "irc_port": {
+              "type": "string"
+            },
+            "irc_real_name": {
+              "type": "string"
+            },
+            "irc_server": {
+              "type": "string"
+            },
+            "irc_user_name": {
+              "type": "string"
+            },
+            "level": {
+              "type": "string"
+            },
+            "procs": {
+              "additionalProperties": false,
+              "properties": {
+                "handler": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "cpu": {
+                      "type": "string"
+                    },
+                    "memory": {
+                      "type": "string"
+                    },
+                    "replicas": {
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "replicas",
+                    "memory",
+                    "cpu"
+                  ],
+                  "type": "object"
+                },
+                "irc": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "cpu": {
+                      "type": "string"
+                    },
+                    "memory": {
+                      "type": "string"
+                    },
+                    "replicas": {
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "replicas",
+                    "memory",
+                    "cpu"
+                  ],
+                  "type": "object"
+                },
+                "web": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "cpu": {
+                      "type": "string"
+                    },
+                    "memory": {
+                      "type": "string"
+                    },
+                    "replicas": {
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "replicas",
+                    "memory",
+                    "cpu"
+                  ],
+                  "type": "object"
+                }
+              },
+              "required": [
+                "web",
+                "irc",
+                "handler"
+              ],
+              "title": "Process settings for this service",
+              "type": "object"
+            },
+            "pulse_password": {
+              "type": "string"
+            },
+            "pulse_username": {
+              "type": "string"
+            },
+            "taskcluster_access_token": {
+              "type": "string"
+            },
+            "taskcluster_client_id": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "procs",
+            "email_source_address",
+            "taskcluster_client_id",
+            "taskcluster_access_token",
+            "aws_access_key_id",
+            "aws_secret_access_key",
+            "pulse_username",
+            "pulse_password"
+          ],
+          "title": "Configuration options for notify",
+          "type": "object"
+        },
+        "pulseHostname": {
+          "description": "A rabbitmq cluster",
+          "type": "string"
+        },
+        "pulseVhost": {
+          "description": "The vhost this deployment will use on the rabbitmq cluster",
+          "type": "string"
+        },
+        "purge_cache": {
+          "additionalProperties": false,
+          "properties": {
+            "debug": {
+              "title": "node debug env var",
+              "type": "string"
+            },
+            "level": {
+              "type": "string"
+            },
+            "procs": {
+              "additionalProperties": false,
+              "properties": {
+                "expireCachePurges": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "cpu": {
+                      "type": "string"
+                    },
+                    "memory": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "memory",
+                    "cpu"
+                  ],
+                  "type": "object"
+                },
+                "web": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "cpu": {
+                      "type": "string"
+                    },
+                    "memory": {
+                      "type": "string"
+                    },
+                    "replicas": {
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "replicas",
+                    "memory",
+                    "cpu"
+                  ],
+                  "type": "object"
+                }
+              },
+              "required": [
+                "web",
+                "expireCachePurges"
+              ],
+              "title": "Process settings for this service",
+              "type": "object"
+            },
+            "taskcluster_access_token": {
+              "type": "string"
+            },
+            "taskcluster_client_id": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "procs",
+            "taskcluster_client_id",
+            "taskcluster_access_token"
+          ],
+          "title": "Configuration options for purge-cache",
+          "type": "object"
+        },
+        "queue": {
+          "additionalProperties": false,
+          "properties": {
+            "artifact_region": {
+              "type": "string"
+            },
+            "aws_access_key_id": {
+              "type": "string"
+            },
+            "aws_secret_access_key": {
+              "type": "string"
+            },
+            "azure_account_key": {
+              "type": "string"
+            },
+            "azure_report_chance": {
+              "type": "number"
+            },
+            "azure_report_threshold": {
+              "type": "number"
+            },
+            "debug": {
+              "title": "node debug env var",
+              "type": "string"
+            },
+            "level": {
+              "type": "string"
+            },
+            "private_artifact_bucket": {
+              "type": "string"
+            },
+            "procs": {
+              "additionalProperties": false,
+              "properties": {
+                "claimResolver": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "cpu": {
+                      "type": "string"
+                    },
+                    "memory": {
+                      "type": "string"
+                    },
+                    "replicas": {
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "replicas",
+                    "memory",
+                    "cpu"
+                  ],
+                  "type": "object"
+                },
+                "deadlineResolver": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "cpu": {
+                      "type": "string"
+                    },
+                    "memory": {
+                      "type": "string"
+                    },
+                    "replicas": {
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "replicas",
+                    "memory",
+                    "cpu"
+                  ],
+                  "type": "object"
+                },
+                "dependencyResolver": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "cpu": {
+                      "type": "string"
+                    },
+                    "memory": {
+                      "type": "string"
+                    },
+                    "replicas": {
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "replicas",
+                    "memory",
+                    "cpu"
+                  ],
+                  "type": "object"
+                },
+                "expireArtifacts": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "cpu": {
+                      "type": "string"
+                    },
+                    "memory": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "memory",
+                    "cpu"
+                  ],
+                  "type": "object"
+                },
+                "expireQueues": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "cpu": {
+                      "type": "string"
+                    },
+                    "memory": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "memory",
+                    "cpu"
+                  ],
+                  "type": "object"
+                },
+                "expireTask": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "cpu": {
+                      "type": "string"
+                    },
+                    "memory": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "memory",
+                    "cpu"
+                  ],
+                  "type": "object"
+                },
+                "expireTaskDependency": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "cpu": {
+                      "type": "string"
+                    },
+                    "memory": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "memory",
+                    "cpu"
+                  ],
+                  "type": "object"
+                },
+                "expireTaskGroupMembers": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "cpu": {
+                      "type": "string"
+                    },
+                    "memory": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "memory",
+                    "cpu"
+                  ],
+                  "type": "object"
+                },
+                "expireTaskGroupSizes": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "cpu": {
+                      "type": "string"
+                    },
+                    "memory": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "memory",
+                    "cpu"
+                  ],
+                  "type": "object"
+                },
+                "expireTaskGroups": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "cpu": {
+                      "type": "string"
+                    },
+                    "memory": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "memory",
+                    "cpu"
+                  ],
+                  "type": "object"
+                },
+                "expireTaskRequirement": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "cpu": {
+                      "type": "string"
+                    },
+                    "memory": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "memory",
+                    "cpu"
+                  ],
+                  "type": "object"
+                },
+                "expireWorkerInfo": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "cpu": {
+                      "type": "string"
+                    },
+                    "memory": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "memory",
+                    "cpu"
+                  ],
+                  "type": "object"
+                },
+                "web": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "cpu": {
+                      "type": "string"
+                    },
+                    "memory": {
+                      "type": "string"
+                    },
+                    "replicas": {
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "replicas",
+                    "memory",
+                    "cpu"
+                  ],
+                  "type": "object"
+                }
+              },
+              "required": [
+                "web",
+                "claimResolver",
+                "deadlineResolver",
+                "dependencyResolver",
+                "expireArtifacts",
+                "expireTask",
+                "expireTaskGroups",
+                "expireTaskGroupMembers",
+                "expireTaskGroupSizes",
+                "expireTaskDependency",
+                "expireTaskRequirement",
+                "expireQueues",
+                "expireWorkerInfo"
+              ],
+              "title": "Process settings for this service",
+              "type": "object"
+            },
+            "public_artifact_bucket": {
+              "type": "string"
+            },
+            "public_artifact_bucket_cdn": {
+              "type": "string"
+            },
+            "public_artifact_ec2_proxies": {
+              "oneOf": [
+                {
+                  "additionalProperties": true,
+                  "type": "object"
+                },
+                {
+                  "type": "array"
+                }
+              ]
+            },
+            "pulse_password": {
+              "type": "string"
+            },
+            "pulse_username": {
+              "type": "string"
+            },
+            "task_cache_max_size": {
+              "type": "number"
+            },
+            "taskcluster_access_token": {
+              "type": "string"
+            },
+            "taskcluster_client_id": {
+              "type": "string"
+            },
+            "use_cloud_mirror": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "procs",
+            "public_artifact_bucket",
+            "private_artifact_bucket",
+            "taskcluster_client_id",
+            "taskcluster_access_token",
+            "azure_account_key",
+            "pulse_username",
+            "pulse_password",
+            "aws_access_key_id",
+            "aws_secret_access_key",
+            "artifact_region"
+          ],
+          "title": "Configuration options for queue",
+          "type": "object"
+        },
+        "references": {
+          "additionalProperties": false,
+          "properties": {
+            "debug": {
+              "title": "node debug env var",
+              "type": "string"
+            },
+            "procs": {
+              "additionalProperties": false,
+              "properties": {
+                "web": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "cpu": {
+                      "type": "string"
+                    },
+                    "memory": {
+                      "type": "string"
+                    },
+                    "replicas": {
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "replicas",
+                    "memory",
+                    "cpu"
+                  ],
+                  "type": "object"
+                }
+              },
+              "required": [
+                "web"
+              ],
+              "title": "Process settings for this service",
+              "type": "object"
+            }
+          },
+          "required": [
+            "procs"
+          ],
+          "title": "Configuration options for references",
+          "type": "object"
+        },
+        "rootUrl": {
+          "description": "The url pointing to your deployment's ingress.",
+          "format": "uri",
+          "type": "string"
+        },
+        "secrets": {
+          "additionalProperties": false,
+          "properties": {
+            "debug": {
+              "title": "node debug env var",
+              "type": "string"
+            },
+            "level": {
+              "type": "string"
+            },
+            "procs": {
+              "additionalProperties": false,
+              "properties": {
+                "expire": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "cpu": {
+                      "type": "string"
+                    },
+                    "memory": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "memory",
+                    "cpu"
+                  ],
+                  "type": "object"
+                },
+                "web": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "cpu": {
+                      "type": "string"
+                    },
+                    "memory": {
+                      "type": "string"
+                    },
+                    "replicas": {
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "replicas",
+                    "memory",
+                    "cpu"
+                  ],
+                  "type": "object"
+                }
+              },
+              "required": [
+                "web",
+                "expire"
+              ],
+              "title": "Process settings for this service",
+              "type": "object"
+            },
+            "read_db_url": {
+              "type": "string"
+            },
+            "taskcluster_access_token": {
+              "type": "string"
+            },
+            "taskcluster_client_id": {
+              "type": "string"
+            },
+            "write_db_url": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "procs",
+            "taskcluster_client_id",
+            "taskcluster_access_token",
+            "read_db_url",
+            "write_db_url"
+          ],
+          "title": "Configuration options for secrets",
+          "type": "object"
+        },
+        "trustProxy": {
+          "description": "If true, only the external ingress needs to use ssl. connections to services are allowed however.",
+          "type": "boolean"
+        },
+        "ui": {
+          "additionalProperties": false,
+          "properties": {
+            "banner_message": {
+              "type": "string"
+            },
+            "debug": {
+              "title": "node debug env var",
+              "type": "string"
+            },
+            "graphql_endpoint": {
+              "type": "string"
+            },
+            "graphql_subscription_endpoint": {
+              "type": "string"
+            },
+            "procs": {
+              "additionalProperties": false,
+              "properties": {
+                "web": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "cpu": {
+                      "type": "string"
+                    },
+                    "memory": {
+                      "type": "string"
+                    },
+                    "replicas": {
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "replicas",
+                    "memory",
+                    "cpu"
+                  ],
+                  "type": "object"
+                }
+              },
+              "required": [
+                "web"
+              ],
+              "title": "Process settings for this service",
+              "type": "object"
+            },
+            "ui_login_strategy_names": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "procs",
+            "graphql_subscription_endpoint",
+            "graphql_endpoint",
+            "ui_login_strategy_names",
+            "banner_message"
+          ],
+          "title": "Configuration options for ui",
+          "type": "object"
+        },
+        "web_server": {
+          "additionalProperties": false,
+          "properties": {
+            "additional_allowed_cors_origin": {
+              "type": "string"
+            },
+            "azure_crypto_key": {
+              "type": "string"
+            },
+            "azure_signing_key": {
+              "type": "string"
+            },
+            "debug": {
+              "title": "node debug env var",
+              "type": "string"
+            },
+            "level": {
+              "type": "string"
+            },
+            "procs": {
+              "additionalProperties": false,
+              "properties": {
+                "cleanup_expire_access_tokens": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "cpu": {
+                      "type": "string"
+                    },
+                    "memory": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "memory",
+                    "cpu"
+                  ],
+                  "type": "object"
+                },
+                "cleanup_expire_auth_codes": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "cpu": {
+                      "type": "string"
+                    },
+                    "memory": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "memory",
+                    "cpu"
+                  ],
+                  "type": "object"
+                },
+                "scanner": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "cpu": {
+                      "type": "string"
+                    },
+                    "memory": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "memory",
+                    "cpu"
+                  ],
+                  "type": "object"
+                },
+                "web": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "cpu": {
+                      "type": "string"
+                    },
+                    "memory": {
+                      "type": "string"
+                    },
+                    "replicas": {
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "replicas",
+                    "memory",
+                    "cpu"
+                  ],
+                  "type": "object"
+                }
+              },
+              "required": [
+                "web",
+                "scanner",
+                "cleanup_expire_auth_codes",
+                "cleanup_expire_access_tokens"
+              ],
+              "title": "Process settings for this service",
+              "type": "object"
+            },
+            "public_url": {
+              "type": "string"
+            },
+            "pulse_password": {
+              "type": "string"
+            },
+            "pulse_username": {
+              "type": "string"
+            },
+            "registered_clients": {
+              "oneOf": [
+                {
+                  "additionalProperties": true,
+                  "type": "object"
+                },
+                {
+                  "type": "array"
+                }
+              ]
+            },
+            "session_secret": {
+              "type": "string"
+            },
+            "taskcluster_access_token": {
+              "type": "string"
+            },
+            "taskcluster_client_id": {
+              "type": "string"
+            },
+            "ui_login_strategies": {
+              "oneOf": [
+                {
+                  "additionalProperties": true,
+                  "type": "object"
+                },
+                {
+                  "type": "array"
+                }
+              ]
+            }
+          },
+          "required": [
+            "procs",
+            "public_url",
+            "additional_allowed_cors_origin",
+            "taskcluster_client_id",
+            "taskcluster_access_token",
+            "azure_signing_key",
+            "azure_crypto_key",
+            "pulse_username",
+            "pulse_password",
+            "registered_clients",
+            "ui_login_strategies",
+            "session_secret"
+          ],
+          "title": "Configuration options for web-server",
+          "type": "object"
+        },
+        "worker_manager": {
+          "additionalProperties": false,
+          "properties": {
+            "debug": {
+              "title": "node debug env var",
+              "type": "string"
+            },
+            "level": {
+              "type": "string"
+            },
+            "procs": {
+              "additionalProperties": false,
+              "properties": {
+                "expire_errors": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "cpu": {
+                      "type": "string"
+                    },
+                    "memory": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "memory",
+                    "cpu"
+                  ],
+                  "type": "object"
+                },
+                "expire_worker_pools": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "cpu": {
+                      "type": "string"
+                    },
+                    "memory": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "memory",
+                    "cpu"
+                  ],
+                  "type": "object"
+                },
+                "expire_workers": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "cpu": {
+                      "type": "string"
+                    },
+                    "memory": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "memory",
+                    "cpu"
+                  ],
+                  "type": "object"
+                },
+                "provisioner": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "cpu": {
+                      "type": "string"
+                    },
+                    "memory": {
+                      "type": "string"
+                    },
+                    "replicas": {
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "replicas",
+                    "memory",
+                    "cpu"
+                  ],
+                  "type": "object"
+                },
+                "web": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "cpu": {
+                      "type": "string"
+                    },
+                    "memory": {
+                      "type": "string"
+                    },
+                    "replicas": {
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "replicas",
+                    "memory",
+                    "cpu"
+                  ],
+                  "type": "object"
+                },
+                "workerscanner": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "cpu": {
+                      "type": "string"
+                    },
+                    "memory": {
+                      "type": "string"
+                    },
+                    "replicas": {
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "replicas",
+                    "memory",
+                    "cpu"
+                  ],
+                  "type": "object"
+                }
+              },
+              "required": [
+                "web",
+                "provisioner",
+                "workerscanner",
+                "expire_workers",
+                "expire_worker_pools",
+                "expire_errors"
+              ],
+              "title": "Process settings for this service",
+              "type": "object"
+            },
+            "providers": {
+              "oneOf": [
+                {
+                  "additionalProperties": true,
+                  "type": "object"
+                },
+                {
+                  "type": "array"
+                }
+              ]
+            },
+            "provisioner_iterate_config": {
+              "oneOf": [
+                {
+                  "additionalProperties": true,
+                  "type": "object"
+                },
+                {
+                  "type": "array"
+                }
+              ]
+            },
+            "pulse_password": {
+              "type": "string"
+            },
+            "pulse_username": {
+              "type": "string"
+            },
+            "taskcluster_access_token": {
+              "type": "string"
+            },
+            "taskcluster_client_id": {
+              "type": "string"
+            },
+            "worker_scanner_iterate_config": {
+              "oneOf": [
+                {
+                  "additionalProperties": true,
+                  "type": "object"
+                },
+                {
+                  "type": "array"
+                }
+              ]
+            }
+          },
+          "required": [
+            "procs",
+            "taskcluster_client_id",
+            "taskcluster_access_token",
+            "pulse_username",
+            "pulse_password",
+            "providers"
+          ],
+          "title": "Configuration options for worker-manager",
+          "type": "object"
+        }
+      },
+      "required": [
+        "rootUrl",
+        "dockerImage",
+        "pulseHostname",
+        "pulseVhost",
+        "azureAccountId",
+        "forceSSL",
+        "trustProxy",
+        "nodeEnv",
+        "auth",
+        "built_in_workers",
+        "github",
+        "hooks",
+        "index",
+        "notify",
+        "purge_cache",
+        "queue",
+        "secrets",
+        "web_server",
+        "worker_manager",
+        "ui",
+        "references"
+      ],
+      "title": "Taskcluster Configuration Values",
+      "type": "object"
+    },
+    "filename": "schemas/common/values.schema.json"
   },
   {
     "content": {

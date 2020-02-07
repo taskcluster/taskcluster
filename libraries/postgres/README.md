@@ -37,9 +37,10 @@ For example, if the schema defines a `getWidgetsPerWorker` method:
 const wpw = await db.fns.getWidgetsPerWorker();
 ```
 
-Note that there direct SQL access to the database is *not allowed*.
+Note that direct SQL access to the database is *not allowed*.
 All database operations must be made via `db.fns` calls which translate into invocations of Postgres stored functions.
 This is a critical feature of the library's compatibility strategy.
+See "Version Upgrades and Compatibility", below.
 
 ### Schema
 
@@ -65,6 +66,7 @@ This enforces isolation between microservices and prevents compromise of one ser
 Services interface with the database exclusively through stored functions, which are defined as part of the schema.
 Each function is assigned to a service by name, again enforcing some isolation between services.
 It is permissible, in limited and well-considered circumstances, for a service to call read-only functions that "belong" to another service.
+This is enforced both at the JS level (read-write functions for other services are not even available) and at the Postgres permission level (services do not even have read access to tables that are not specifically whitelisted).
 
 Each function is also annotated as to whether it requires write access to the database, and the library automatically redirects read-only invocations to a different database connection.
 Those deploying Taskcluster can configure this connection to address a read-only Postgres replica.

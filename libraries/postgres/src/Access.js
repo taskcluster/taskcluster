@@ -2,18 +2,28 @@ const {isPlainObject} = require('lodash');
 const assert = require('assert').strict;
 
 class Access {
-  static fromYamlFile(content, filename) {
-    const access = new Access(content);
-    access._check(filename);
-    return access;
+  /**
+   * Load an Access from the the content of a db/access.yml file.
+   */
+  static fromYamlFileContent(content, filename) {
+    // The serializable format is the same as the access.yml file,
+    // so just short-circuit to that function, while keeping this
+    // function to parallel similar methods in Schema, Version, etc.
+    return Access.fromSerializable(content);
   }
 
+  /**
+   * Load an Access from a serialized representation
+   */
   static fromSerializable(serializable) {
     const access = new Access(serializable);
     access._check(serializable, 'serializable input');
     return access;
   }
 
+  /**
+   * Create a serialized representation
+   */
   asSerializable() {
     return this.services;
   }

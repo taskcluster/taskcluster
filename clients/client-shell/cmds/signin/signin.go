@@ -33,9 +33,9 @@ Use it like this:
 
 $ eval ` + "`taskcluster signin`" + `
 
-You might make this easy to use with an alias in ~/.bashrc:
+You might make this easy to use with a function in ~/.bashrc:
 
-alias tc-signin="eval ` + "`taskcluster signin`" + `"
+tc-signin() { eval ` + "`" + `taskcluster signin "${@}"` + "`" + `; }
 
 This will set environment variables in your shell session containing the credentials.
 Note that the JS and Python client recognize the same environment variables, so any

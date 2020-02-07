@@ -1,19 +1,29 @@
 const assert = require('assert').strict;
 
 class Method {
-  static fromYamlFile(name, content, filename) {
+  /**
+   * Load a Method from the content inside the version in a db/versions/nnn.yml
+   * file
+   */
+  static fromYamlFileContent(name, content, filename) {
     assert(!/.*[A-Z].*/.test(name), `db function method ${name} in ${filename} has capital letters`);
     const method = new Method(name, content);
     method._check(name, content, filename);
     return method;
   }
 
+  /**
+   * Load a Method from a serialized representation
+   */
   static fromSerializable(name, serializable) {
     const method = new Method(name, serializable);
     method._check(name, serializable, 'serializable input');
     return method;
   }
 
+  /**
+   * Create a serialized representation
+   */
   asSerializable() {
     return {
       description: this.description,
