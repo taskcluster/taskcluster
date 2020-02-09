@@ -1,0 +1,10 @@
+$schema: "/schemas/common/metaschema.json#"
+title:              "Widget"
+type:               object
+properties:
+  name:
+    type:           string
+    title: widget name
+additionalProperties: false
+required:
+  - name

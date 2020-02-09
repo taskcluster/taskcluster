@@ -1,0 +1,89 @@
+---
+title: Database Configuration
+---
+
+import Warning from 'taskcluster-ui/views/Documentation/components/Warning';
+
+# Database Configuration
+
+Taskcluster uses a Postgres 11 database for its backend storage.
+A single database is shared among all services.
+
+Taskcluster assumes that it "owns" the database, but can share a single server with other users.
+For production purposes we recommend a dedicated server, due to the possibility of contention for server resources, but sharing a server acceptable for non-production environments.
+
+## DB Users
+
+Each service uses its own Postgres user to access the database, and Taskcluster uses this functionality internally to isolate services from one another.
+The Taskcluster deployment process additionally requires an "admin" user that is used for schema migrations and to update the permissions of the per-service users.
+This admin user must have full permission to all resources in the selected database, as well as permission to grant and revoke access for the service users.
+
+The admin user can have any name.
+Because users are global to a Postgres server, Taskcluster requires a name prefix which is applied to each per-service user.
+In a non-production environment, this allows several installations of Taskcluster to co-exist on the same server.
+We recommend that the admin username and the prefix be the same string.
+
+The set of users that must be configured, then, are:
+
+<!-- USERLIST BEGIN -->
+ * `<prefix>` -- admin user
+ * `<prefix>_notify` -- user for Taskcluster notify service
+<!-- USERLIST END -->
+
+Set these up using something with the following effect:
+
+```
+CREATE USER <prefix> PASSWORD '<admin_password>';
+GRANT ALL ON DATABASE <dbname> TO <prefix> WITH GRANT OPTION;
+CREATE USER <prefix>_taskcluster_queue PASSWORD '<queue_password>';
+...
+```
+
+## Read and Write Replicas
+
+Taskcluster assumes full transactional consistency from Postgres.
+That is, once a transaction is committed, the results of that transaction must be visible everywhere.
+Furthermore, Taskcluster relies on per-row locks to perform queueing operations.
+Within these parameters, the backend database can be replicated and sharded as load and availability demand.
+
+Taskcluster allows each service to be configured with both "read-only" and "read-write" access configuration.
+The read-only configuration will only be used to read from the database.
+This can be used to direct reads to read-only replicas, in cases where the read load is significantly higher than the write load.
+However, note that these read-only replicas must conform to the consistency requirements described above.
+
+## Configuration
+
+Database access is configured with URL-shaped strings as defined by [node-postgres](https://node-postgres.com/features/connecting).
+
+Each service that requires database access has Helm properties `<service>.readDbUrl` and `<service>.writeDbUrl`.
+Set these values to include the corresponding database users' credentials.
+In a non-replicated scenario, set each service's read and write URLs to the same value.
+For example:
+
+```yaml
+queue:
+  readDbUrl: postgresql://prod_taskcluster_queue:sekrit@readonly.tc-db.example.com/taskcluster_prod
+  writeDbUrl: postgresql://prod_taskcluster_queue:sekrit@readwrite.tc-db.example.com/taskcluster_prod
+```
+
+<Warning>
+Note that the admin user's credentials should not appear anywhere in the Helm configuration!
+</Warning>
+
+## Upgrades
+
+Database upgrade must be completed *before* the corresponding code is deployed.
+Taskcluster maintains the invariant that older code is compatible with newer databases, so the existing deployment will continue to function after the database upgrade is committed.
+
+To run an upgrade, run a docker container using the new Taskcluster image.
+Set `ADMIN_DB_URL` and `USERNAME_PREFIX` to the values described above and run:
+
+```shell
+docker run -ti --rm -e ADMIN_DB_URL -e USERNAME_PREFIX taskcluster/taskcluster:1.2.3 db:upgrade
+```
+
+The output will describe the changes taking place.
+
+<Warning>
+As with any upgrade, consult the release notes before running the upgrade.
+</Warning>

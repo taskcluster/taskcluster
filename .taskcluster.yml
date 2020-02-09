@@ -83,6 +83,10 @@ tasks:
         - name: taskcluster-hooks
         - name: taskcluster-index
         - name: taskcluster-notify
+          image: taskcluster/node-and-postgres:node${node}-pg11
+          command: >-
+            ./db/test-setup.sh &&
+            yarn workspace taskcluster-notify coverage:report
         - name: taskcluster-purge-cache
         - name: taskcluster-queue
         - name: taskcluster-worker-manager
@@ -204,6 +208,18 @@ tasks:
           command: >-
               (cd clients/client-go && go list -m all) &&
               (cd clients/client-shell && go list -m all)
+        - name: "yarn db:upgrade"
+          image: taskcluster/node-and-postgres:node${node}-pg11
+          command: >-
+            ./db/test-setup.sh --users &&
+            export ADMIN_DB_URL="$TEST_DB_URL" &&
+            export USERNAME_PREFIX="test" &&
+            yarn db:upgrade
+        - name: "taskcluster-db"
+          image: taskcluster/node-and-postgres:node${node}-pg11
+          command: >-
+            ./db/test-setup.sh &&
+            cd db && yarn test
         - name: taskcluster-ui
           image: 'taskcluster/browser-test:${node}'
           install: >-

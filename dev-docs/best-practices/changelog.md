@@ -40,6 +40,7 @@ Do not be afraid to flag a change as major -- users and operations staff will al
 A minor change is one that adds new functionality without breaking backward compatibility.
 Typically this functionality is something that would motivate a user or operator to adopt the upgrade.
 If the change is in response to a feature-request filed by a user, it is probably at least "minor".
+Note that any database upgrade is considered at least minor, as rollback might incur data los.
 
 A patch change is one that fixes a bug or makes a minor change which users can do their work without.
 A key distinction between minor and patch changes is that an operations engineer should be comfortable rolling back a patch upgrade immediately if any issues are uncovered.
@@ -54,6 +55,7 @@ For example:
  * major: Breaking changes for administration of Taskcluster
  * major: Breaking changes for users of Taskcluster
  * minor: New feature users want to know about and take advantage of
+ * minor: Any change that adds a new version to the database
  * patch: Bug fix users are waiting on
  * silent: Changes to tests or documentation
  * silent: Minor changes or fixes to UI

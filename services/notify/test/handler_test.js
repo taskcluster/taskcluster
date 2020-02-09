@@ -4,7 +4,8 @@ const helper = require('./helper');
 const testing = require('taskcluster-lib-testing');
 const monitorManager = require('../src/monitor');
 
-helper.secrets.mockSuite(testing.suiteName(), ['azure', 'aws'], function(mock, skipping) {
+helper.secrets.mockSuite(testing.suiteName(), ['db', 'azure', 'aws'], function(mock, skipping) {
+  helper.withDb(mock, skipping);
   helper.withDenier(mock, skipping);
   helper.withFakeQueue(mock, skipping);
   helper.withFakeMatrix(mock, skipping);

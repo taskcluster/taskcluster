@@ -1541,13 +1541,35 @@
             },
             "name": "cloud-credentials",
             "next": {
-              "path": "manual/deploying/github",
-              "title": "GitHub Integration"
+              "path": "manual/deploying/database",
+              "title": "Database Configuration"
             },
             "path": "manual/deploying/cloud-credentials",
             "prev": {
               "path": "manual/deploying/backups",
               "title": "Backups"
+            },
+            "up": {
+              "path": "manual/deploying",
+              "title": "Deploying Taskcluster"
+            }
+          },
+          {
+            "children": [
+            ],
+            "data": {
+              "order": 1000,
+              "title": "Database Configuration"
+            },
+            "name": "database",
+            "next": {
+              "path": "manual/deploying/github",
+              "title": "GitHub Integration"
+            },
+            "path": "manual/deploying/database",
+            "prev": {
+              "path": "manual/deploying/cloud-credentials",
+              "title": "Cloud Credentials"
             },
             "up": {
               "path": "manual/deploying",
@@ -1568,8 +1590,8 @@
             },
             "path": "manual/deploying/github",
             "prev": {
-              "path": "manual/deploying/cloud-credentials",
-              "title": "Cloud Credentials"
+              "path": "manual/deploying/database",
+              "title": "Database Configuration"
             },
             "up": {
               "path": "manual/deploying",

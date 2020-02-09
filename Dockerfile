@@ -50,6 +50,7 @@ RUN rm -rf .git
 RUN rm -rf .node-gyp ui/.node-gyp
 RUN rm -rf clients/client-{go,py,web}
 RUN rm -rf {services,libraries}/*/test
+RUN rm -rf db/test db/versions
 RUN rm -rf ui/node_modules ui/src
 
 ##

@@ -1,0 +1,21 @@
+version: 1
+migrationScript: |-
+  begin
+    create table widgets (
+      name text
+    );
+    grant select, insert, update, delete on widgets to $db_user_prefix$_notify;
+  end
+methods:
+  update_widgets:
+    description: |-
+      Temporary method to test infrastructure support fo database access
+    mode: write
+    serviceName: notify
+    args: name_in text
+    returns: table (name text)
+    body: |-
+      begin
+        insert into widgets (name) values (name_in);
+        return query select widgets.name from widgets;
+      end

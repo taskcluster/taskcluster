@@ -19,9 +19,9 @@ exports.tasks.push({
     const configured = taskclusterYml.tasks.then.in.$let.packages.map(pkg => pkg.name);
 
     const { stdout } = await exec('yarn workspaces info -s');
+    const exceptions = new Set(['taskcluster-client', 'taskcluster-db']);
     const existing = Object.keys(JSON.parse(stdout))
-      // taskcluster-client is tested separately
-      .filter(name => name !== 'taskcluster-client');
+      .filter(name => !exceptions.has(name));
 
     const extra = _.difference(configured, existing);
     const missing = _.difference(existing, configured);

@@ -1,0 +1,26 @@
+{
+  "access": {
+    "notify": {
+      "tables": {
+        "widgets": "write"
+      }
+    }
+  },
+  "versions": [
+    {
+      "methods": {
+        "update_widgets": {
+          "args": "name_in text",
+          "body": "begin\n  insert into widgets (name) values (name_in);\n  return query select widgets.name from widgets;\nend",
+          "deprecated": false,
+          "description": "Temporary method to test infrastructure support fo database access",
+          "mode": "write",
+          "returns": "table (name text)",
+          "serviceName": "notify"
+        }
+      },
+      "migrationScript": "begin\n  create table widgets (\n    name text\n  );\n  grant select, insert, update, delete on widgets to $db_user_prefix$_notify;\nend",
+      "version": 1
+    }
+  ]
+}
