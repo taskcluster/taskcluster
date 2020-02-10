@@ -99,6 +99,7 @@
     "taskcluster-client": "link:clients/client",
     "taskcluster-lib-api": "link:libraries/api",
     "taskcluster-lib-app": "link:libraries/app",
+    "taskcluster-lib-azqueue": "link:libraries/azqueue",
     "taskcluster-lib-azure": "link:libraries/azure",
     "taskcluster-lib-config": "link:libraries/config",
     "taskcluster-lib-iterate": "link:libraries/iterate",

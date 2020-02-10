@@ -51,6 +51,7 @@ It is not possible to run a full Taskcluster deployment directly from this repos
 * [Libraries](libraries#readme)
     * [API Library](libraries/api#readme)
     * [App Library](libraries/app#readme)
+    * [AZQueue Library](libraries/azqueue#readme)
     * [Azure Library](libraries/azure#readme)
     * [Config Library](libraries/config#readme)
     * [Iterate Library](libraries/iterate#readme)

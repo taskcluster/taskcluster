@@ -1,7 +1,12 @@
 const {Pool} = require('pg');
 const {dollarQuote} = require('./util');
 const assert = require('assert').strict;
-const {READ, WRITE, UNDEFINED_TABLE} = require('./constants');
+const {READ, WRITE, DUPLICATE_OBJECT, UNDEFINED_TABLE} = require('./constants');
+
+// Postgres extensions to "create".
+const EXTENSIONS = [
+  'pgcrypto',
+];
 
 class Database {
   /**
@@ -73,6 +78,8 @@ class Database {
    */
   static async upgrade({schema, showProgress = () => {}, usernamePrefix, toVersion, adminDbUrl}) {
     const db = new Database({urlsByMode: {admin: adminDbUrl, read: adminDbUrl}});
+
+    await db._createExtensions();
 
     try {
       // perform any necessary upgrades..
@@ -166,6 +173,21 @@ class Database {
 
       if (issues.length > 0) {
         throw new Error(`Database privileges are not configured as expected:\n${issues.join('\n')}`);
+      }
+    });
+  }
+
+  async _createExtensions() {
+    await this._withClient('admin', async client => {
+      for (let ext of EXTENSIONS) {
+        try {
+          await client.query('create extension ' + ext);
+        } catch (err) {
+          // ignore errors from the extension already being installed
+          if (err.code !== DUPLICATE_OBJECT) {
+            throw err;
+          }
+        }
       }
     });
   }
