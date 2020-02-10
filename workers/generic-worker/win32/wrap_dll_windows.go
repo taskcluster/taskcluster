@@ -27,6 +27,8 @@ func (l *LazyDLLWrapper) NewProc(name string) *LazyProcWrapper {
 	}
 }
 
+//go:uintptrescapes
+
 func (p *LazyProcWrapper) Call(a ...uintptr) (r1, r2 uintptr, lastErr error) {
 	log.Printf("Making system call %v with args: %X", p.LazyProc.Name, a)
 	r1, r2, lastErr = p.LazyProc.Call(a...)
