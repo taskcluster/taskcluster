@@ -19,6 +19,15 @@ suite(path.basename(__filename), function() {
         ['get_secret', 'list_secrets']);
     });
 
+    test('fromDbDirectory with external SQL files', function() {
+      const sch = Schema.fromDbDirectory(path.join(__dirname, 'db-simple'));
+      const ver1 = sch.getVersion(1);
+      assert(ver1.migrationScript.startsWith('begin'));
+
+      const ver2 = sch.getVersion(2);
+      assert(ver2.methods['list_secrets'].body.startsWith('begin'));
+    });
+
     test('disallow duplicate method names', function () {
       assert.throws(() => {
         Schema.fromDbDirectory(path.join(__dirname, 'db-with-duplicate-method-names'));
