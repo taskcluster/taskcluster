@@ -12,7 +12,7 @@ const DOWNLOAD_METHODS = [
 ];
 
 let builder = new APIBuilder({
-  title: 'Taskcluster Object Service API Documentation',
+  title: 'Object Service',
   description: [
     'The object service provides HTTP-accessible storage for large blobs of data.',
   ].join('\n'),

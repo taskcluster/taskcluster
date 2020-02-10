@@ -10,7 +10,7 @@ const helpers = require('./helpers');
  * }
  */
 let builder = new APIBuilder({
-  title: 'Task Index API Documentation',
+  title: 'Index Service',
   description: [
     'The index service is responsible for indexing tasks. The service ensures that',
     'tasks can be located by user-defined names.',

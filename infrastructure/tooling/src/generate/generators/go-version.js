@@ -3,7 +3,7 @@ const exec = util.promisify(require('child_process').execFile);
 const { readRepoFile, modifyRepoFile } = require('../../utils');
 
 /**
- * Update the Go version to match everywhere, treating that in `package.json`
+ * Update the Go version to match everywhere, treating that in `.go-version`
  * as authoritative.
  */
 exports.tasks = [{

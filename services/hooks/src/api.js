@@ -8,7 +8,7 @@ const Ajv = require('ajv');
 const { hookUtils } = require('./utils');
 
 const builder = new APIBuilder({
-  title: 'Hooks API Documentation',
+  title: 'Hooks Service',
   description: [
     'The hooks service provides a mechanism for creating tasks in response to events.',
     '',

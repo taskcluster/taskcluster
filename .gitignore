@@ -68,3 +68,7 @@ next-task-user.json
 # generated when compiling tests
 /tools/taskcluster-proxy/taskcluster-proxy.test
 /tools/taskcluster-proxy/taskcluster-proxy.test*
+
+# Rust ignores
+/clients/client-rust/target/
+/clients/client-rust/Cargo.lock

@@ -588,8 +588,9 @@ module.exports = {
         }
       ],
       "serviceName": "auth",
-      "title": "Authentication API"
-    }
+      "title": "Auth Service"
+    },
+    "referenceKind": "api"
   },
   "AuthEvents": {
     "reference": {
@@ -697,7 +698,8 @@ module.exports = {
       "exchangePrefix": "exchange/taskcluster-auth/v1/",
       "serviceName": "auth",
       "title": "Auth Pulse Exchanges"
-    }
+    },
+    "referenceKind": "exchanges"
   },
   "Github": {
     "reference": {
@@ -848,8 +850,9 @@ module.exports = {
         }
       ],
       "serviceName": "github",
-      "title": "Taskcluster GitHub API Documentation"
-    }
+      "title": "GitHub Service"
+    },
+    "referenceKind": "api"
   },
   "GithubEvents": {
     "reference": {
@@ -983,7 +986,8 @@ module.exports = {
       "exchangePrefix": "exchange/taskcluster-github/v1/",
       "serviceName": "github",
       "title": "Taskcluster-Github Exchanges"
-    }
+    },
+    "referenceKind": "exchanges"
   },
   "Hooks": {
     "reference": {
@@ -1233,8 +1237,9 @@ module.exports = {
         }
       ],
       "serviceName": "hooks",
-      "title": "Hooks API Documentation"
-    }
+      "title": "Hooks Service"
+    },
+    "referenceKind": "api"
   },
   "HooksEvents": {
     "reference": {
@@ -1294,7 +1299,8 @@ module.exports = {
       "exchangePrefix": "exchange/taskcluster-hooks/v1/",
       "serviceName": "hooks",
       "title": "Exchanges to manage hooks"
-    }
+    },
+    "referenceKind": "exchanges"
   },
   "Index": {
     "reference": {
@@ -1408,8 +1414,9 @@ module.exports = {
         }
       ],
       "serviceName": "index",
-      "title": "Task Index API Documentation"
-    }
+      "title": "Index Service"
+    },
+    "referenceKind": "api"
   },
   "Notify": {
     "reference": {
@@ -1548,7 +1555,8 @@ module.exports = {
       ],
       "serviceName": "notify",
       "title": "Notification Service"
-    }
+    },
+    "referenceKind": "api"
   },
   "NotifyEvents": {
     "reference": {
@@ -1583,7 +1591,8 @@ module.exports = {
       "exchangePrefix": "exchange/taskcluster-notify/v1/",
       "serviceName": "notify",
       "title": "Notify AMQP Exchanges"
-    }
+    },
+    "referenceKind": "exchanges"
   },
   "Object": {
     "reference": {
@@ -1658,8 +1667,9 @@ module.exports = {
         }
       ],
       "serviceName": "object",
-      "title": "Taskcluster Object Service API Documentation"
-    }
+      "title": "Object Service"
+    },
+    "referenceKind": "api"
   },
   "PurgeCache": {
     "reference": {
@@ -1738,8 +1748,9 @@ module.exports = {
         }
       ],
       "serviceName": "purge-cache",
-      "title": "Purge Cache API"
-    }
+      "title": "Purge Cache Service"
+    },
+    "referenceKind": "api"
   },
   "Queue": {
     "reference": {
@@ -2522,8 +2533,9 @@ module.exports = {
         }
       ],
       "serviceName": "queue",
-      "title": "Queue API Documentation"
-    }
+      "title": "Queue Service"
+    },
+    "referenceKind": "api"
   },
   "QueueEvents": {
     "reference": {
@@ -3067,7 +3079,8 @@ module.exports = {
       "exchangePrefix": "exchange/taskcluster-queue/v1/",
       "serviceName": "queue",
       "title": "Queue AMQP Exchanges"
-    }
+    },
+    "referenceKind": "exchanges"
   },
   "Secrets": {
     "reference": {
@@ -3159,8 +3172,9 @@ module.exports = {
         }
       ],
       "serviceName": "secrets",
-      "title": "Taskcluster Secrets API Documentation"
-    }
+      "title": "Secrets Service"
+    },
+    "referenceKind": "api"
   },
   "WorkerManager": {
     "reference": {
@@ -3491,8 +3505,9 @@ module.exports = {
         }
       ],
       "serviceName": "worker-manager",
-      "title": "Taskcluster Worker Manager"
-    }
+      "title": "Worker Manager Service"
+    },
+    "referenceKind": "api"
   },
   "WorkerManagerEvents": {
     "reference": {
@@ -3550,6 +3565,7 @@ module.exports = {
       "exchangePrefix": "exchange/taskcluster-worker-manager/v1/",
       "serviceName": "worker-manager",
       "title": "Worker Manager Exchanges"
-    }
+    },
+    "referenceKind": "exchanges"
   }
 };

@@ -12673,7 +12673,7 @@
         }
       ],
       "serviceName": "worker-manager",
-      "title": "Taskcluster Worker Manager"
+      "title": "Worker Manager Service"
     },
     "filename": "references/worker-manager/v1/api.json"
   },
@@ -13203,7 +13203,7 @@
         }
       ],
       "serviceName": "secrets",
-      "title": "Taskcluster Secrets API Documentation"
+      "title": "Secrets Service"
     },
     "filename": "references/secrets/v1/api.json"
   },
@@ -14881,7 +14881,7 @@
         }
       ],
       "serviceName": "queue",
-      "title": "Queue API Documentation"
+      "title": "Queue Service"
     },
     "filename": "references/queue/v1/api.json"
   },
@@ -15152,7 +15152,7 @@
         }
       ],
       "serviceName": "purge-cache",
-      "title": "Purge Cache API"
+      "title": "Purge Cache Service"
     },
     "filename": "references/purge-cache/v1/api.json"
   },
@@ -15419,7 +15419,7 @@
         }
       ],
       "serviceName": "object",
-      "title": "Taskcluster Object Service API Documentation"
+      "title": "Object Service"
     },
     "filename": "references/object/v1/api.json"
   },
@@ -16258,7 +16258,7 @@
         }
       ],
       "serviceName": "index",
-      "title": "Task Index API Documentation"
+      "title": "Index Service"
     },
     "filename": "references/index/v1/api.json"
   },
@@ -16808,7 +16808,7 @@
         }
       ],
       "serviceName": "hooks",
-      "title": "Hooks API Documentation"
+      "title": "Hooks Service"
     },
     "filename": "references/hooks/v1/api.json"
   },
@@ -17349,7 +17349,7 @@
         }
       ],
       "serviceName": "github",
-      "title": "Taskcluster GitHub API Documentation"
+      "title": "GitHub Service"
     },
     "filename": "references/github/v1/api.json"
   },
@@ -18414,7 +18414,7 @@
         }
       ],
       "serviceName": "auth",
-      "title": "Authentication API"
+      "title": "Auth Service"
     },
     "filename": "references/auth/v1/api.json"
   }

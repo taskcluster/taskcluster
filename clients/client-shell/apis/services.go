@@ -8,7 +8,7 @@ var services = map[string]definitions.Service{
 	"Auth": definitions.Service{
 		APIVersion:  "v1",
 		ServiceName: "auth",
-		Title:       "Authentication API",
+		Title:       "Auth Service",
 		Description: "Authentication related API end-points for Taskcluster and related\nservices. These API end-points are of interest if you wish to:\n  * Authorize a request signed with Taskcluster credentials,\n  * Manage clients and roles,\n  * Inspect or audit clients and roles,\n  * Gain access to various services guarded by this API.\n",
 		Entries: []definitions.Entry{
 			definitions.Entry{
@@ -408,7 +408,7 @@ var services = map[string]definitions.Service{
 	"Github": definitions.Service{
 		APIVersion:  "v1",
 		ServiceName: "github",
-		Title:       "Taskcluster GitHub API Documentation",
+		Title:       "GitHub Service",
 		Description: "The github service is responsible for creating tasks in response\nto GitHub events, and posting results to the GitHub UI.\n\nThis document describes the API end-point for consuming GitHub\nweb hooks, as well as some useful consumer APIs.\n\nWhen Github forbids an action, this service returns an HTTP 403\nwith code ForbiddenByGithub.",
 		Entries: []definitions.Entry{
 			definitions.Entry{
@@ -529,7 +529,7 @@ var services = map[string]definitions.Service{
 	"Hooks": definitions.Service{
 		APIVersion:  "v1",
 		ServiceName: "hooks",
-		Title:       "Hooks API Documentation",
+		Title:       "Hooks Service",
 		Description: "The hooks service provides a mechanism for creating tasks in response to events.\n",
 		Entries: []definitions.Entry{
 			definitions.Entry{
@@ -713,7 +713,7 @@ var services = map[string]definitions.Service{
 	"Index": definitions.Service{
 		APIVersion:  "v1",
 		ServiceName: "index",
-		Title:       "Task Index API Documentation",
+		Title:       "Index Service",
 		Description: "The index service is responsible for indexing tasks. The service ensures that\ntasks can be located by user-defined names.\n\nAs described in the service documentation, tasks are typically indexed via Pulse\nmessages, so the most common use of API methods is to read from the index.\n\nSlashes (`/`) aren't allowed in index paths.",
 		Entries: []definitions.Entry{
 			definitions.Entry{
@@ -903,7 +903,7 @@ var services = map[string]definitions.Service{
 	"Object": definitions.Service{
 		APIVersion:  "v1",
 		ServiceName: "object",
-		Title:       "Taskcluster Object Service API Documentation",
+		Title:       "Object Service",
 		Description: "The object service provides HTTP-accessible storage for large blobs of data.",
 		Entries: []definitions.Entry{
 			definitions.Entry{
@@ -961,7 +961,7 @@ var services = map[string]definitions.Service{
 	"PurgeCache": definitions.Service{
 		APIVersion:  "v1",
 		ServiceName: "purge-cache",
-		Title:       "Purge Cache API",
+		Title:       "Purge Cache Service",
 		Description: "The purge-cache service is responsible for tracking cache-purge requests.\n\nUser create purge requests for specific caches on specific workers, and\nthese requests are timestamped.  Workers consult the service before\nstarting a new task, and purge any caches older than the timestamp.",
 		Entries: []definitions.Entry{
 			definitions.Entry{
@@ -1024,7 +1024,7 @@ var services = map[string]definitions.Service{
 	"Queue": definitions.Service{
 		APIVersion:  "v1",
 		ServiceName: "queue",
-		Title:       "Queue API Documentation",
+		Title:       "Queue Service",
 		Description: "The queue service is responsible for accepting tasks and track their state\nas they are executed by workers. In order ensure they are eventually\nresolved.\n\nThis document describes the API end-points offered by the queue. These \nend-points targets the following audience:\n * Schedulers, who create tasks to be executed,\n * Workers, who execute tasks, and\n * Tools, that wants to inspect the state of a task.",
 		Entries: []definitions.Entry{
 			definitions.Entry{
@@ -1505,7 +1505,7 @@ var services = map[string]definitions.Service{
 	"Secrets": definitions.Service{
 		APIVersion:  "v1",
 		ServiceName: "secrets",
-		Title:       "Taskcluster Secrets API Documentation",
+		Title:       "Secrets Service",
 		Description: "The secrets service provides a simple key/value store for small bits of secret\ndata.  Access is limited by scopes, so values can be considered secret from\nthose who do not have the relevant scopes.\n\nSecrets also have an expiration date, and once a secret has expired it can no\nlonger be read.  This is useful for short-term secrets such as a temporary\nservice credential or a one-time signing key.",
 		Entries: []definitions.Entry{
 			definitions.Entry{
@@ -1577,7 +1577,7 @@ var services = map[string]definitions.Service{
 	"WorkerManager": definitions.Service{
 		APIVersion:  "v1",
 		ServiceName: "worker-manager",
-		Title:       "Taskcluster Worker Manager",
+		Title:       "Worker Manager Service",
 		Description: "This service manages workers, including provisioning for dynamic worker pools.",
 		Entries: []definitions.Entry{
 			definitions.Entry{
