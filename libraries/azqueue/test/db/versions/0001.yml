@@ -1,7 +1,6 @@
 version: 1
 migrationScript: |-
   begin
-    create extension pgcrypto;
     create table azure_queue_messages (
       message_id uuid not null primary key,
       queue_name text not null,
@@ -84,7 +83,6 @@ methods:
     # messages, if they are available.
     body: |-
       begin
-        raise info 'oh dear %s', azure_queue_get.visible::text;
         return query update azure_queue_messages m1
           set
             pop_receipt = public.gen_random_uuid(),
