@@ -3,6 +3,38 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v24.3.0
+
+▶ [minor] [#2293](https://github.com/taskcluster/taskcluster/issues/2293)
+The Taskcluster Python client now has an helper function to easily upload artifacts.
+
+▶ [minor] [bug 1604175](http://bugzil.la/1604175)
+The maximum "deadline" has been reverted to 5 days, after its change to 10 days in v24.1.3.  Values over 7 days caused internal server errors anyway, because the Azure queue backend cannot handle delays greater than that value.  Since this functionality never worked, the revert is considered minor.
+
+▶ [patch] [bug 1606874](http://bugzil.la/1606874)
+Changes behavior of tc-github when checking the user permissions on PR: now tc-github always checks the permissions 
+of the PR author (or the organization of the PR origin if the PR was made from a fork in an org)
+
+▶ [patch] [bug 1611266](http://bugzil.la/1611266)
+Limit azure-provider name generation to alphanumeric to reduce invalid name errors (previously characters such as _ and - were included in some names and could be the ending character, resulting in errors)
+
+▶ [patch] [bug 1613150](http://bugzil.la/1613150)
+Taskcluster services now run with Node version 12.15.0.
+
+▶ [patch] [bug 1584208](http://bugzil.la/1584208)
+The client libraries' documentation has been throughly refactored and is now more helpful and contains better links to the documentation site.
+
+▶ [patch] 
+The deployment documentation now contains information on how Pulse users should be set up, as well as a complete schema for the Helm values file.
+
+▶ [patch] [bug 1604649](http://bugzil.la/1604649)
+The queue now avoids calling GetEntity for a worker in claimWork when no work was claimed, providing a very minor reduction in Azure load.
+
+▶ [patch] [bug 1436478](http://bugzil.la/1436478)
+This version includes the `taskcluster-lib-postgres` library, but does not use that library at runtime.
+
+▶ Additional changes not described here: [bug 1537922](http://bugzil.la/1537922), [bug 1588083](http://bugzil.la/1588083), [bug 1611694](http://bugzil.la/1611694), [bug 1611696](http://bugzil.la/1611696), [#1963](https://github.com/taskcluster/taskcluster/issues/1963), [#2130](https://github.com/taskcluster/taskcluster/issues/2130).
+
 ## v24.2.0
 
 ▶ [minor] [bug 1600966](http://bugzil.la/1600966)

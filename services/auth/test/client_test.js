@@ -242,6 +242,28 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
     assume(client2.expandedScopes).contains('myapi:*');
   });
 
+  test('auth.updateClient (pulse send fails)', async () => {
+    await createTestClient();
+
+    helper.onPulsePublish(() => {
+      throw new Error('uhoh');
+    });
+
+    let expires = new Date();
+    let description = 'Different test description...';
+    const apiClient = helper.apiClient.use({retries: 0});
+    await assert.rejects(
+      () => apiClient.updateClient(CLIENT_ID, {description, expires}),
+      err => err.statusCode === 500);
+
+    assert.equal(
+      defaultMonitorManager.messages.filter(
+        ({Type, Fields}) => Type === 'monitor.error' && Fields.message === 'uhoh',
+      ).length,
+      1);
+    defaultMonitorManager.reset();
+  });
+
   test('auth.updateClient (with scope changes)', async () => {
     await createTestClient();
 
@@ -322,6 +344,25 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
     }, err => {
       // Expected error
     });
+  });
+
+  test('auth.deleteClient (pulse publish fails)', async () => {
+    await createTestClient();
+    helper.onPulsePublish(() => {
+      throw new Error('uhoh');
+    });
+
+    const apiClient = helper.apiClient.use({retries: 0});
+    await assert.rejects(
+      () => apiClient.deleteClient(CLIENT_ID),
+      err => err.statusCode === 500);
+
+    assert.equal(
+      defaultMonitorManager.messages.filter(
+        ({Type, Fields}) => Type === 'monitor.error' && Fields.message === 'uhoh',
+      ).length,
+      1);
+    defaultMonitorManager.reset();
   });
 
   let assumeScopesetsEqual = (ss1, ss2) => {
