@@ -61,10 +61,6 @@ tasks:
         - name: taskcluster-lib-loader
         - name: taskcluster-lib-monitor
         - name: taskcluster-lib-postgres
-          image: taskcluster/node-and-postgres:node${node}-pg11
-          command: >-
-            ./db/test-setup.sh &&
-            yarn workspace taskcluster-lib-postgres coverage:report
         - name: taskcluster-lib-pulse
           image: taskcluster/rabbit-test:${node}
           env:
@@ -83,10 +79,6 @@ tasks:
         - name: taskcluster-hooks
         - name: taskcluster-index
         - name: taskcluster-notify
-          image: taskcluster/node-and-postgres:node${node}-pg11
-          command: >-
-            ./db/test-setup.sh &&
-            yarn workspace taskcluster-notify coverage:report
         - name: taskcluster-purge-cache
         - name: taskcluster-queue
         - name: taskcluster-worker-manager
@@ -250,14 +242,15 @@ tasks:
                   - $eval: others
               each(entry):
                 name: ${entry.name}
-                image:  # use `image` if given, falling back to the node image
+                image:  # use `image` if given, falling back to the node+pg image
                   $if: entry['image']
                   then: ${entry.image}
-                  else: "node:${node}"
+                  else: taskcluster/node-and-postgres:node${node}-pg11
                 command:  # use `command` if given, falling back to basic yarn test
                   $if: entry['command']
                   then: ${entry.command}
                   else: >-
+                    ./db/test-setup.sh &&
                     yarn workspace ${entry.name} coverage:report
                 env: # add in any custom env vars that this package needs
                   $if: entry['env']
