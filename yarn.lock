@@ -3443,6 +3443,11 @@ gcp-metadata@^2.0.0:
     gaxios "^2.0.0"
     json-bigint "^0.3.0"
 
+generate-password@^1.5.0:
+  version "1.5.0"
+  resolved "https://registry.yarnpkg.com/generate-password/-/generate-password-1.5.0.tgz#9e734f2f7bb55e08bd3efa08793048d34e742b65"
+  integrity sha512-rGb6xNK6BRdShUQ1FDPD6WgjrrIaBHZm+dhRlw7XjoBXciEn9RiNMNitIRC2ffSSVm3q9mt+ygetJK7450W/uA==
+
 gensync@^1.0.0-beta.1:
   version "1.0.0-beta.1"
   resolved "https://registry.yarnpkg.com/gensync/-/gensync-1.0.0-beta.1.tgz#58f4361ff987e5ff6e1e7a210827aa371eaac269"
