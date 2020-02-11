@@ -7,7 +7,11 @@ tasks:
   then:
     $let:
       node: '12.15.0'
-      go: '1.13.7'
+      go:
+        release: '1.13.7'
+        linux:
+          amd64:
+            sha: b3dd4bd781a0271b33168e627f7f43886b4c5d1c794a4015abf34e99c6526ca3
       artifactsDir:
         public:
           # This is not used at the moment other than by the trailer task to upload results. Feel free to bump later
@@ -89,7 +93,7 @@ tasks:
             name: test:cleanup
             command: yarn test:cleanup
         - name: yarn generate
-          image: taskcluster/node-and-go:node${node}-go${go}
+          image: taskcluster/node-and-go:node${node}-go${go.release}
           command: >-
               set -o pipefail &&
               yarn generate | cat &&
@@ -152,14 +156,14 @@ tasks:
               /sandbox/bin/pip install tox
           command: >-
               TOXENV=py37 /sandbox/bin/tox
-        - name: taskcluster-client-go-${go}
-          image: 'golang:${go}'
+        - name: taskcluster-client-go-${go.release}
+          image: 'golang:${go.release}'
           install: >-
               cd clients/client-go
           command: >-
               go test -v -race ./...
-        - name: taskcluster-client-shell-${go}
-          image: 'golang:${go}'
+        - name: taskcluster-client-shell-${go.release}
+          image: 'golang:${go.release}'
           install: >-
               cd clients/client-shell
           command: >-
@@ -312,8 +316,8 @@ tasks:
                   - -vxec
                   - |
                     export CGO_ENABLED=0
-                    export GOROOT="$(pwd)/go1.13.7/go"
-                    export GOPATH="$(pwd)/gopath1.13.7"
+                    export GOROOT="$(pwd)/go${go.release}/go"
+                    export GOPATH="$(pwd)/gopath${go.release}"
                     export PATH="$${GOPATH}/bin:$${GOROOT}/bin:$${PATH}"
                     go version
                     go env
@@ -334,9 +338,9 @@ tasks:
                 taskclusterProxy: true
               mounts:
                 - content:
-                    url: https://storage.googleapis.com/golang/go1.13.7.linux-amd64.tar.gz
-                    sha256: b3dd4bd781a0271b33168e627f7f43886b4c5d1c794a4015abf34e99c6526ca3
-                  directory: go1.13.7
+                    url: https://storage.googleapis.com/golang/go${go.release}.linux-amd64.tar.gz
+                    sha256: ${go.linux.amd64.sha}
+                  directory: go${go.release}
                   format: tar.gz
             metadata:
               name: Generic Worker CI Decision Task
@@ -401,7 +405,8 @@ tasks:
                     yarn release:publish
               mounts:
               - content:
-                  url: 'https://storage.googleapis.com/golang/go${go}.linux-amd64.tar.gz'
+                  url: 'https://storage.googleapis.com/golang/go${go.release}.linux-amd64.tar.gz'
+                  sha256: '${go.linux.amd64.sha}'
                 directory: go
                 format: tar.gz
             metadata:
