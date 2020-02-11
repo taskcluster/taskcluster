@@ -6,6 +6,7 @@ const SLUGID_SIZE = 128 / 8;
 // Padding for integers up to 2^32 be in ascending order.
 // AscendingIntegerKey only works with PositiveInteger which is limited 2^32.
 const ASCENDING_KEY_PADDING = '00000000000';
+const MAX_MODIFY_ATTEMPTS = 10;
 
 module.exports = {
   ASCENDING_KEY_PADDING,
@@ -13,4 +14,5 @@ module.exports = {
   HASH_KEY_SEPARATOR,
   SLUG_ID_RE,
   SLUGID_SIZE,
+  MAX_MODIFY_ATTEMPTS,
 };
