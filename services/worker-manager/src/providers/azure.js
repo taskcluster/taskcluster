@@ -114,7 +114,7 @@ class AzureProvider extends Provider {
       return; // Nothing to do
     }
 
-    const {registrationExpiry, reregisterDeadline} = this.interpretLifecycle(workerPool.config);
+    const {registrationExpiry, reregisterDeadline, reregisterTimeout} = this.interpretLifecycle(workerPool.config);
 
     const cfgs = [];
     while (toSpawn > 0) {
@@ -263,6 +263,7 @@ class AzureProvider extends Provider {
           ...providerData,
           registrationExpiry,
           reregisterDeadline,
+          reregisterTimeout,
         },
       });
     }));
@@ -377,8 +378,8 @@ class AzureProvider extends Provider {
     });
 
     let expires = taskcluster.fromNow('96 hours');
-    if (worker.providerData.reregistrationDeadline) {
-      expires = new Date(worker.providerData.reregistrationDeadline);
+    if (worker.providerData.reregisterDeadline) {
+      expires = new Date(worker.providerData.reregisterDeadline);
     }
 
     return {expires};

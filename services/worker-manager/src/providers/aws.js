@@ -101,7 +101,7 @@ class AwsProvider extends Provider {
       return;
     }
 
-    const {registrationExpiry, reregisterDeadline} = this.interpretLifecycle(workerPool.config);
+    const {registrationExpiry, reregisterDeadline, reregisterTimeout} = this.interpretLifecycle(workerPool.config);
 
     const toSpawnPerConfig = Math.ceil(toSpawn / workerPool.config.launchConfigs.length);
     const shuffledConfigs = _.shuffle(workerPool.config.launchConfigs);
@@ -225,6 +225,7 @@ class AwsProvider extends Provider {
             stateReason: i.StateReason.Message,
             registrationExpiry,
             reregisterDeadline,
+            reregisterTimeout,
           },
         });
       }));
@@ -270,8 +271,8 @@ class AwsProvider extends Provider {
     });
 
     let expires = taskcluster.fromNow('96 hours');
-    if (worker.providerData.reregistrationDeadline) {
-      expires = new Date(worker.providerData.reregistrationDeadline);
+    if (worker.providerData.reregisterDeadline) {
+      expires = new Date(worker.providerData.reregisterDeadline);
     }
 
     return {expires};

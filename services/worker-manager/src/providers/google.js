@@ -152,8 +152,8 @@ class GoogleProvider extends Provider {
     });
 
     let expires = taskcluster.fromNow('96 hours');
-    if (worker.providerData.reregistrationDeadline) {
-      expires = new Date(worker.providerData.reregistrationDeadline);
+    if (worker.providerData.reregisterDeadline) {
+      expires = new Date(worker.providerData.reregisterDeadline);
     }
 
     // assume for the moment that workers self-terminate before 96 hours
@@ -209,7 +209,7 @@ class GoogleProvider extends Provider {
       return; // Nothing to do
     }
 
-    const {registrationExpiry, reregisterDeadline} = this.interpretLifecycle(workerPool.config);
+    const {registrationExpiry, reregisterDeadline, reregisterTimeout} = this.interpretLifecycle(workerPool.config);
 
     const cfgs = [];
     while (toSpawn > 0) {
@@ -323,6 +323,7 @@ class GoogleProvider extends Provider {
           },
           registrationExpiry,
           reregisterDeadline,
+          reregisterTimeout, // Record this for later reregistrations so that we can recalculate deadline
         },
       });
     }));

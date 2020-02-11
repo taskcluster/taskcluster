@@ -97,7 +97,7 @@ class Provider {
         reregisterDeadline = Date.now() + reregisterTimeout * 1000;
       }
     }
-    return {registrationExpiry, reregisterDeadline};
+    return {registrationExpiry, reregisterDeadline, ...lifecycle};
   }
 }
 

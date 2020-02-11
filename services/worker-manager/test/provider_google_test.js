@@ -430,7 +430,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
       const worker = await helper.Worker.create({
         ...defaultWorker,
         providerData: {
-          reregistrationDeadline: taskcluster.fromNow('10 hours'),
+          reregisterDeadline: taskcluster.fromNow('10 hours'),
         },
       });
       const workerIdentityProof = {token: 'good'};
