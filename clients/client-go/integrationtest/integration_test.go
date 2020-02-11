@@ -7,50 +7,22 @@ import (
 
 	"github.com/taskcluster/slugid-go/slugid"
 	"github.com/taskcluster/taskcluster-base-go/jsontest"
-	tcclient "github.com/taskcluster/taskcluster/clients/client-go/v24"
-	"github.com/taskcluster/taskcluster/clients/client-go/v24/tcindex"
-	"github.com/taskcluster/taskcluster/clients/client-go/v24/tcqueue"
+	tcclient "github.com/taskcluster/taskcluster/v24/clients/client-go"
+	"github.com/taskcluster/taskcluster/v24/clients/client-go/tcindex"
+	"github.com/taskcluster/taskcluster/v24/clients/client-go/tcqueue"
 )
 
-// This is a silly test that looks for the latest mozilla-inbound linux64 debug
-// build and asserts that it must have a created time between a year ago and an
-// hour in the future.
+// This is a silly test that looks for the garbage index namespace, to somewhat
+// validate that the index client was generated correctly.
 //
-// Could easily break at a point in the future, e.g. if this index route
-// changes, at which point we can change to something else.
-//
-// Note, no credentials are needed, so this can be run even on travis-ci.org,
-// for example.
-func TestFindLatestLinux64DebugBuild(t *testing.T) {
-	Index := tcindex.New(nil, "https://taskcluster.net")
-	Queue := tcqueue.New(nil, "https://taskcluster.net")
-	itr, err := Index.FindTask("gecko.v2.mozilla-inbound.latest.firefox.linux64-debug")
+// Note, no credentials are needed.
+func TestGarbageNamespaces(t *testing.T) {
+	Index := tcindex.NewFromEnv()
+	n, err := Index.ListNamespaces("garbage", "", "")
 	if err != nil {
 		t.Fatalf("%v\n", err)
 	}
-	taskID := itr.TaskID
-	td, err := Queue.Task(taskID)
-	if err != nil {
-		t.Fatalf("%v\n", err)
-	}
-	created := time.Time(td.Created).Local()
-
-	// calculate time an hour in the future to allow for clock drift
-	now := time.Now().Local()
-	inAnHour := now.Add(time.Hour * 1)
-	aYearAgo := now.AddDate(-1, 0, 0)
-	t.Log("")
-	t.Log("  => Task " + taskID + " was created on " + created.Format("Mon, 2 Jan 2006 at 15:04:00 -0700"))
-	t.Log("")
-	if created.After(inAnHour) {
-		t.Log("Current time: " + now.Format("Mon, 2 Jan 2006 at 15:04:00 -0700"))
-		t.Error("Task " + taskID + " has a creation date that is over an hour in the future")
-	}
-	if created.Before(aYearAgo) {
-		t.Log("Current time: " + now.Format("Mon, 2 Jan 2006 at 15:04:00 -0700"))
-		t.Error("Task " + taskID + " has a creation date that is over a year old")
-	}
-
+	t.Logf("Namespaces: %#v", n.Namespaces)
 }
 
 func permaCreds(t *testing.T) *tcclient.Credentials {

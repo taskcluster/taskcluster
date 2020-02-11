@@ -8,8 +8,8 @@ import (
 
 	"github.com/spf13/pflag"
 	"github.com/taskcluster/slugid-go/slugid"
-	tcclient "github.com/taskcluster/taskcluster/clients/client-go/v24"
-	"github.com/taskcluster/taskcluster/clients/client-go/v24/tcqueue"
+	tcclient "github.com/taskcluster/taskcluster/v24/clients/client-go"
+	"github.com/taskcluster/taskcluster/v24/clients/client-go/tcqueue"
 )
 
 // runCancel cancels the runs of a given task.
