@@ -7,6 +7,9 @@ services/web-server @taskcluster/frontend-reviewers
 clients/client-web @taskcluster/frontend-reviewers
 ui @taskcluster/frontend-reviewers
 
+# worker stuff
+workers/** @taskcluster/worker-reviewers
+
 # python
 clients/client-py @taskcluster/python-reviewers
 
