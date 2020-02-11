@@ -4,8 +4,6 @@ import (
 	"os"
 	"syscall"
 	"unsafe"
-
-	"runtime"
 )
 
 var (
@@ -137,9 +135,8 @@ func SetUserObjectSecurity(obj syscall.Handle, sid uint32, desc []byte) error {
 	r1, _, e1 := procSetUserObjectSecurity.Call(
 		uintptr(obj),
 		uintptr(unsafe.Pointer(&sid)),
-		uintptr(unsafe.Pointer(&desc[0])))
-	runtime.KeepAlive(&sid)
-	runtime.KeepAlive(&desc)
+		uintptr(unsafe.Pointer(&desc[0])),
+	)
 	if int(r1) == 0 {
 		return os.NewSyscallError("SetUserObjectSecurity", e1)
 	}
@@ -151,8 +148,8 @@ type Acl struct{}
 func InitializeSecurityDescriptor(sd []byte) error {
 	r1, _, e1 := procInitializeSecurityDescriptor.Call(
 		uintptr(unsafe.Pointer(&sd[0])),
-		SECURITY_DESCRIPTOR_REVISION)
-	runtime.KeepAlive(sd)
+		SECURITY_DESCRIPTOR_REVISION,
+	)
 	if int(r1) == 0 {
 		return os.NewSyscallError("InitializeSecurityDescriptor", e1)
 	}
@@ -163,8 +160,8 @@ func InitializeAcl(acl *Acl, length, revision uint32) error {
 	r1, _, e1 := procInitializeAcl.Call(
 		uintptr(unsafe.Pointer(acl)),
 		uintptr(length),
-		uintptr(revision))
-	runtime.KeepAlive(acl)
+		uintptr(revision),
+	)
 	if int(r1) == 0 {
 		return os.NewSyscallError("InitializeAcl", e1)
 	}
@@ -184,9 +181,8 @@ func AddAccessAllowedAce(acl *Acl, revision, mask uint32, sid *syscall.SID) erro
 		uintptr(unsafe.Pointer(acl)),
 		uintptr(revision),
 		uintptr(mask),
-		uintptr(unsafe.Pointer(sid)))
-	runtime.KeepAlive(acl)
-	runtime.KeepAlive(sid)
+		uintptr(unsafe.Pointer(sid)),
+	)
 	if int(r1) == 0 {
 		return os.NewSyscallError("AddAccessAllowedAce", e1)
 	}
@@ -198,9 +194,8 @@ func SetSecurityDescriptorDacl(sd []byte, present bool, acl *Acl, defaulted bool
 		uintptr(unsafe.Pointer(&sd[0])),
 		uintptr(boolToUint32(present)),
 		uintptr(unsafe.Pointer(acl)),
-		uintptr(boolToUint32(defaulted)))
-	runtime.KeepAlive(sd)
-	runtime.KeepAlive(acl)
+		uintptr(boolToUint32(defaulted)),
+	)
 	if int(r1) == 0 {
 		return os.NewSyscallError("SetSecurityDescriptorDacl", e1)
 	}
@@ -213,9 +208,8 @@ func AddAccessAllowedAceEx(acl *Acl, revision, flags, mask uint32, sid *syscall.
 		uintptr(revision),
 		uintptr(flags),
 		uintptr(mask),
-		uintptr(unsafe.Pointer(sid)))
-	runtime.KeepAlive(acl)
-	runtime.KeepAlive(sid)
+		uintptr(unsafe.Pointer(sid)),
+	)
 	if int(r1) == 0 {
 		return os.NewSyscallError("AddAccessAllowedAceEx", e1)
 	}

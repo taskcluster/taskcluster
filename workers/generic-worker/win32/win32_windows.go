@@ -9,10 +9,9 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"runtime"
 	"syscall"
 	"time"
-	"unicode/utf8"
+	"unicode/utf16"
 	"unsafe"
 
 	"golang.org/x/sys/windows"
@@ -204,9 +203,6 @@ func LogonUser(username *uint16, domain *uint16, password *uint16, logonType uin
 		uintptr(logonType),
 		uintptr(logonProvider),
 		uintptr(unsafe.Pointer(&token)))
-	runtime.KeepAlive(username)
-	runtime.KeepAlive(domain)
-	runtime.KeepAlive(password)
 	if int(r1) == 0 {
 		return syscall.Token(syscall.InvalidHandle), os.NewSyscallError("LogonUser", e1)
 	}
@@ -217,7 +213,6 @@ func LoadUserProfile(token syscall.Token, pinfo *ProfileInfo) error {
 	r1, _, e1 := procLoadUserProfileW.Call(
 		uintptr(token),
 		uintptr(unsafe.Pointer(pinfo)))
-	runtime.KeepAlive(pinfo)
 	if int(r1) == 0 {
 		return os.NewSyscallError("LoadUserProfile", e1)
 	}
@@ -236,7 +231,7 @@ func UnloadUserProfile(token syscall.Token, profile syscall.Handle) error {
 
 // https://msdn.microsoft.com/en-us/library/windows/desktop/bb762270(v=vs.85).aspx
 func CreateEnvironmentBlock(
-	lpEnvironment *uintptr, // LPVOID*
+	lpEnvironment **uint16, // LPVOID*
 	hToken syscall.Token, // HANDLE
 	bInherit bool, // BOOL
 ) (err error) {
@@ -257,10 +252,10 @@ func CreateEnvironmentBlock(
 
 // https://msdn.microsoft.com/en-us/library/windows/desktop/bb762274(v=vs.85).aspx
 func DestroyEnvironmentBlock(
-	lpEnvironment uintptr, // LPVOID - beware - unlike LPVOID* in CreateEnvironmentBlock!
+	lpEnvironment *uint16, // LPVOID - beware - unlike LPVOID* in CreateEnvironmentBlock!
 ) (err error) {
 	r1, _, e1 := procDestroyEnvironmentBlock.Call(
-		lpEnvironment,
+		uintptr(unsafe.Pointer(lpEnvironment)),
 	)
 	if r1 == 0 {
 		err = os.NewSyscallError("DestroyEnvironmentBlock", e1)
@@ -272,29 +267,30 @@ func DestroyEnvironmentBlock(
 // CreateProcessAsUser system call. The default environment variables of hUser
 // are overlayed with values in env.
 func CreateEnvironment(env *[]string, hUser syscall.Token) (mergedEnv *[]string, err error) {
-	var logonEnv uintptr
+	var logonEnv *uint16
 	err = CreateEnvironmentBlock(&logonEnv, hUser, false)
 	if err != nil {
 		return
 	}
 	defer DestroyEnvironmentBlock(logonEnv)
-	var varStartOffset uint
 	envList := &[]string{}
-	for {
-		envVar := syscall.UTF16ToString((*[1 << 15]uint16)(unsafe.Pointer(logonEnv + uintptr(varStartOffset)))[:])
-		if envVar == "" {
-			break
+	u16 := (*[1 << 15]uint16)(unsafe.Pointer(logonEnv))
+	start := 0
+	for i, v := range u16 {
+		if v == 0 {
+			if i == start {
+				break
+			}
+			*envList = append(*envList, string(utf16.Decode(u16[start:i])))
+			start = i + 1
 		}
-		*envList = append(*envList, envVar)
-		// in UTF16, each rune takes two bytes, as does the trailing uint16(0)
-		varStartOffset += uint(2 * (utf8.RuneCountInString(envVar) + 1))
 	}
 	mergedEnv, err = MergeEnvLists(envList, env)
 	return
 }
 
 // https://msdn.microsoft.com/en-us/library/windows/desktop/bb762188(v=vs.85).aspx
-func SHGetKnownFolderPath(rfid *syscall.GUID, dwFlags uint32, hToken syscall.Token, pszPath *uintptr) (err error) {
+func SHGetKnownFolderPath(rfid *syscall.GUID, dwFlags uint32, hToken syscall.Token, pszPath **uint16) (err error) {
 	r0, _, _ := procSHGetKnownFolderPath.Call(
 		uintptr(unsafe.Pointer(rfid)),
 		uintptr(dwFlags),
@@ -328,12 +324,12 @@ func SHSetKnownFolderPath(
 
 // https://msdn.microsoft.com/en-us/library/windows/desktop/ms680722(v=vs.85).aspx
 // Note: the system call returns no value, so we can't check for an error
-func CoTaskMemFree(pv uintptr) {
-	procCoTaskMemFree.Call(uintptr(pv))
+func CoTaskMemFree(pv *uint16) {
+	procCoTaskMemFree.Call(uintptr(unsafe.Pointer(pv)))
 }
 
 func GetFolder(hUser syscall.Token, folder *syscall.GUID, dwFlags uint32) (value string, err error) {
-	var path uintptr
+	var path *uint16
 	err = SHGetKnownFolderPath(folder, dwFlags, hUser, &path)
 	if err != nil {
 		return
@@ -536,23 +532,35 @@ func GetUserProfileDirectory(
 func GetTokenInformation(
 	tokenHandle syscall.Token,
 	tokenInformationClass TOKEN_INFORMATION_CLASS,
-	tokenInformation uintptr,
-	tokenInformationLength uintptr,
-	returnLength *uintptr,
+	tokenInformation *byte,
+	tokenInformationLength uint32,
+	returnLength *uint32,
 ) (err error) {
 	r1, _, e1 := procGetTokenInformation.Call(
 		uintptr(tokenHandle),
 		uintptr(tokenInformationClass),
-		tokenInformation,
-		tokenInformationLength,
+		uintptr(unsafe.Pointer(tokenInformation)),
+		uintptr(tokenInformationLength),
 		uintptr(unsafe.Pointer(returnLength)),
 	)
-	runtime.KeepAlive(tokenInformation)
-	runtime.KeepAlive(tokenInformationLength)
 	if r1 == 0 {
 		err = os.NewSyscallError("GetTokenInformation", e1)
 	}
 	return
+}
+
+func GetLinkedToken(hToken syscall.Token) (syscall.Token, error) {
+	var linkedToken TOKEN_LINKED_TOKEN
+	tokenInformationLength := uint32(unsafe.Sizeof(linkedToken))
+	returnLength := uint32(0)
+	err := GetTokenInformation(hToken, TokenLinkedToken, (*byte)(unsafe.Pointer(&linkedToken)), tokenInformationLength, &returnLength)
+	if returnLength != tokenInformationLength {
+		return 0, fmt.Errorf("Was expecting %v bytes of data from GetTokenInformation, but got %v bytes", returnLength, tokenInformationLength)
+	}
+	if err != nil {
+		return 0, err
+	}
+	return linkedToken.LinkedToken, nil
 }
 
 // https://msdn.microsoft.com/en-us/library/windows/desktop/aa379591(v=vs.85).aspx
@@ -565,42 +573,26 @@ func GetTokenInformation(
 func SetTokenInformation(
 	tokenHandle syscall.Token,
 	tokenInformationClass TOKEN_INFORMATION_CLASS,
-	tokenInformation uintptr,
-	tokenInformationLength uintptr,
+	tokenInformation *byte,
+	tokenInformationLength uint32,
 ) (err error) {
 	r1, _, e1 := procSetTokenInformation.Call(
 		uintptr(tokenHandle),
 		uintptr(tokenInformationClass),
-		tokenInformation,
-		tokenInformationLength,
+		uintptr(unsafe.Pointer(tokenInformation)),
+		uintptr(tokenInformationLength),
 	)
-	runtime.KeepAlive(tokenInformation)
-	runtime.KeepAlive(tokenInformationLength)
 	if r1 == 0 {
 		err = os.NewSyscallError("SetTokenInformation", e1)
 	}
 	return
 }
 
-func GetLinkedToken(hToken syscall.Token) (syscall.Token, error) {
-	linkedToken := TOKEN_LINKED_TOKEN{}
-	tokenInformationLength := unsafe.Sizeof(linkedToken)
-	returnLength := uintptr(0)
-	err := GetTokenInformation(hToken, TokenLinkedToken, uintptr(unsafe.Pointer(&linkedToken)), tokenInformationLength, &returnLength)
-	if returnLength != tokenInformationLength {
-		return 0, fmt.Errorf("Was expecting %v bytes of data from GetTokenInformation, but got %v bytes", returnLength, tokenInformationLength)
-	}
-	if err != nil {
-		return 0, err
-	}
-	return linkedToken.LinkedToken, nil
-}
-
 func GetTokenSessionID(hToken syscall.Token) (uint32, error) {
 	var tokenSessionID uint32
-	tokenInformationLength := unsafe.Sizeof(tokenSessionID)
-	returnLength := uintptr(0)
-	err := GetTokenInformation(hToken, TokenSessionId, uintptr(unsafe.Pointer(&tokenSessionID)), tokenInformationLength, &returnLength)
+	tokenInformationLength := uint32(unsafe.Sizeof(tokenSessionID))
+	returnLength := uint32(0)
+	err := GetTokenInformation(hToken, TokenSessionId, (*byte)(unsafe.Pointer(&tokenSessionID)), tokenInformationLength, &returnLength)
 	if returnLength != tokenInformationLength {
 		return 0, fmt.Errorf("Was expecting %v bytes of data from GetTokenInformation, but got %v bytes", returnLength, tokenInformationLength)
 	}
@@ -612,9 +604,9 @@ func GetTokenSessionID(hToken syscall.Token) (uint32, error) {
 
 func GetTokenUIAccess(hToken syscall.Token) (uint32, error) {
 	var tokenUIAccess uint32
-	tokenInformationLength := unsafe.Sizeof(tokenUIAccess)
-	returnLength := uintptr(0)
-	err := GetTokenInformation(hToken, TokenUIAccess, uintptr(unsafe.Pointer(&tokenUIAccess)), tokenInformationLength, &returnLength)
+	tokenInformationLength := uint32(unsafe.Sizeof(tokenUIAccess))
+	returnLength := uint32(0)
+	err := GetTokenInformation(hToken, TokenUIAccess, (*byte)(unsafe.Pointer(&tokenUIAccess)), tokenInformationLength, &returnLength)
 	if returnLength != tokenInformationLength {
 		return 0, fmt.Errorf("Was expecting %v bytes of data from GetTokenInformation, but got %v bytes", returnLength, tokenInformationLength)
 	}
@@ -692,7 +684,6 @@ func GetUserObjectInformation(obj syscall.Handle, index int, info unsafe.Pointer
 		uintptr(info),
 		uintptr(length),
 		uintptr(unsafe.Pointer(&nLength)))
-	runtime.KeepAlive(&nLength)
 	if int(r1) == 0 {
 		return nLength, os.NewSyscallError("GetUserObjectInformation", e1)
 	}

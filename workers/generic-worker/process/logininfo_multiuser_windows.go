@@ -137,8 +137,8 @@ func (loginInfo *LoginInfo) SetActiveConsoleSessionId() (err error) {
 	err = win32.SetTokenInformation(
 		loginInfo.hUser,
 		win32.TokenSessionId,
-		uintptr(unsafe.Pointer(&sessionId)),
-		unsafe.Sizeof(sessionId),
+		(*byte)(unsafe.Pointer(&sessionId)),
+		uint32(unsafe.Sizeof(sessionId)),
 	)
 	return
 }

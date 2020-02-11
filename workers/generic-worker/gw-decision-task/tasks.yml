@@ -197,6 +197,7 @@ Commands:
           # output of wc command can contain spaces on darwin, so no quotes around expression
           test $(git status --porcelain | wc -l) == 0
           go install -tags "${ENGINE}" -v -ldflags "-X main.revision=${GITHUB_SHA}" ./...
+          go vet -tags "${ENGINE}" ./...
           if [ "${ENGINE}" == "multiuser" ]; then
             cp "${TASK_USER_CREDENTIALS}" next-task-user.json
             # IMPORTANT - run go test with GW_TESTS_RUN_AS_CURRENT_USER=true *before* running it without
@@ -264,6 +265,7 @@ Commands:
         :: find.exe may have exited with exit code 1, so need to explicitly exit with 0
         exit /b 0
       - go install -tags "%ENGINE%" -v -ldflags "-X main.revision=%GITHUB_SHA%" ./...
+      - go vet -tags "%ENGINE%" ./...
       - set CGO_ENABLED=%CGO_ENABLED_TESTS%
       - set GORACE=history_size=7
       - copy "%TASK_USER_CREDENTIALS%" "%CD%\next-task-user.json"
