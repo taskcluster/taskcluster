@@ -1,4 +1,4 @@
-# generic-worker
+# Generic Worker
 
 <img align="right" src="https://avatars3.githubusercontent.com/u/6257436?s=256" /> A generic worker for [taskcluster](https://tools.taskcluster.net/), written in go.
 
