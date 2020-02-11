@@ -527,8 +527,7 @@ and reports back results to the queue.
                                             Also used by chain of trust.
           rootURL                           The root URL of the taskcluster deployment to which
                                             clientId and accessToken grant access. For example,
-                                            'https://taskcluster.net'. Individual services can
-                                            override this setting - see the *BaseURL settings.
+                                            'https://community-tc.services.mozilla.com/'.
           workerId                          A name to uniquely identify your worker.
           workerType                        This should match a worker_type managed by the
                                             provisioner you have specified.
@@ -536,11 +535,9 @@ and reports back results to the queue.
         ** OPTIONAL ** properties
         =========================
 
-          authBaseURL                       The base URL for taskcluster auth API calls.
-                                            If not provided, the base URL for API calls is
-                                            instead derived from rootURL setting as follows:
-                                              * https://auth.taskcluster.net/v1 for rootURL https://taskcluster.net
-                                              * <rootURL>/api/auth/v1 for all other rootURLs
+          authRootURL                       The root URL for taskcluster auth API calls.
+                                            If not provided, the value from config property
+                                            rootURL is used. Intended for development/testing.
           availabilityZone                  The EC2 availability zone of the worker.
           cachesDir                         The directory where task caches should be stored on
                                             the worker. The directory will be created if it does
@@ -609,24 +606,15 @@ and reports back results to the queue.
           numberOfTasksToRun                If zero, run tasks indefinitely. Otherwise, after
                                             this many tasks, exit. [default: 0]
           privateIP                         The private IP of the worker, used by chain of trust.
-          provisionerBaseURL                The base URL for aws-provisioner API calls.
-                                            If not provided, the base URL for API calls is
-                                            instead derived from rootURL setting as follows:
-                                              * https://aws-provisioner.taskcluster.net/v1 for rootURL https://taskcluster.net
-                                              * <rootURL>/api/aws-provisioner/v1 for all other rootURLs
           provisionerId                     The taskcluster provisioner which is taking care
                                             of provisioning environments with generic-worker
                                             running on them. [default: "test-provisioner"]
-          purgeCacheBaseURL                 The base URL for purge cache API calls.
-                                            If not provided, the base URL for API calls is
-                                            instead derived from rootURL setting as follows:
-                                              * https://purge-cache.taskcluster.net/v1 for rootURL https://taskcluster.net
-                                              * <rootURL>/api/purge-cache/v1 for all other rootURLs
-          queueBaseURL                      The base URL for API calls to the queue service.
-                                            If not provided, the base URL for API calls is
-                                            instead derived from rootURL setting as follows:
-                                              * https://queue.taskcluster.net/v1 for rootURL https://taskcluster.net
-                                              * <rootURL>/api/queue/v1 for all other rootURLs
+          purgeCacheRootURL                 The root URL for taskcluster purge cache API calls.
+                                            If not provided, the value from config property
+                                            rootURL is used. Intended for development/testing.
+          queueRootURL                      The root URL for taskcluster queue API calls.
+                                            If not provided, the value from config property
+                                            rootURL is used. Intended for development/testing.
           region                            The EC2 region of the worker. Used by chain of trust.
           requiredDiskSpaceMegabytes        The garbage collector will ensure at least this
                                             number of megabytes of disk space are available
@@ -648,11 +636,9 @@ and reports back results to the queue.
                                             current user (that runs the generic-worker process).
           runTasksAsCurrentUser             If true, users will not be created for tasks, but
                                             the current OS user will be used. [default: false]
-          secretsBaseURL                    The base URL for taskcluster secrets API calls.
-                                            If not provided, the base URL for API calls is
-                                            instead derived from rootURL setting as follows:
-                                              * https://secrets.taskcluster.net/v1 for rootURL https://taskcluster.net
-                                              * <rootURL>/api/secrets/v1 for all other rootURLs
+          secretsRootURL                    The root URL for taskcluster secrets API calls.
+                                            If not provided, the value from config property
+                                            rootURL is used. Intended for development/testing.
           sentryProject                     The project name used in https://sentry.io for
                                             reporting worker crashes. Permission to publish
                                             crash reports is granted via the scope
@@ -684,7 +670,7 @@ and reports back results to the queue.
           taskclusterProxyPort              Port number for taskcluster-proxy HTTP requests.
                                             [default: 80]
           tasksDir                          The location where task directories should be
-                                            created on the worker. [default: "/home"]
+                                            created on the worker. [default: "/Users"]
           workerGroup                       Typically this would be an aws region - an
                                             identifier to uniquely identify which pool of
                                             workers this worker logically belongs to.
@@ -707,11 +693,9 @@ and reports back results to the queue.
                                             Otherwise TASKCLUSTER_WORKER_LOCATION environment
                                             variable will not be implicitly set in task commands.
                                             [default: ""]
-          workerManagerBaseURL              The base URL for taskcluster worker-manager API calls.
-                                            If not provided, the base URL for API calls is
-                                            instead derived from rootURL setting as follows:
-                                              * https://worker-manager.taskcluster.net/v1 for rootURL https://taskcluster.net
-                                              * <rootURL>/api/worker-manager/v1 for all other rootURLs
+          workerManagerRootURL              The root URL for taskcluster worker manager API calls.
+                                            If not provided, the value from config property
+                                            rootURL is used. Intended for development/testing.
           workerTypeMetaData                This arbitrary json blob will be included at the
                                             top of each task log. Providing information here,
                                             such as a URL to the code/config used to set up the
