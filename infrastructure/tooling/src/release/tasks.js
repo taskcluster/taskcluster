@@ -159,22 +159,22 @@ module.exports = ({tasks, cmdOptions, credentials}) => {
         contents.replace(/download\/v[0-9.]*\/taskcluster-/g, `download/v${requirements['release-version']}/taskcluster-`));
       changed.push(shellreadme);
 
-      const shellgomod = 'clients/client-shell/go.mod';
+      // The go libraries require the major version number in their package
+      // import paths, so just about every file needs to be edited. This
+      // matches the full package path to avoid false positives, but that
+      // might result in missed changes where the full path is not used.
       const major = requirements['release-version'].replace(/\..*/, '');
-      utils.status({message: `Update ${shellgomod}`});
-      await modifyRepoFile(shellgomod, contents =>
-        contents.replace(/(\tgithub.com\/taskcluster\/taskcluster\/clients\/client-go\/v)\d+ +v.*/g, `$1${major} v${requirements['release-version']}`));
-      changed.push(shellgomod);
-
-      // the go client requires the major version number in its import path, so
-      // just about every file needs to be edited.  This matches the full package
-      // path to avoid false positives, but that might result in missed changes
-      // where the full path is not used.
-      for (let file of await gitLsFiles({patterns: ['clients/client-go/**', 'clients/client-shell/**']})) {
+      for (let file of await gitLsFiles({patterns: ['clients/client-go/**', 'clients/client-shell/**', 'workers/generic-worker/**']})) {
         await modifyRepoFile(file, contents =>
-          contents.replace(/(github.com\/taskcluster\/taskcluster\/clients\/client-go\/v)\d+/g, `$1${major}`));
+          contents.replace(/(github.com\/taskcluster\/taskcluster\/v)\d+/g, `$1${major}`));
         changed.push(file);
       }
+
+      const genericworker = 'workers/generic-worker/main.go';
+      utils.status({message: `Update ${genericworker}`});
+      await modifyRepoFile(genericworker, contents =>
+        contents.replace(/^(\w*version\w*=\w*).*/, `$1"${requirements['release-version']}"`));
+      changed.push(genericworker);
 
       return {'version-updated': changed};
     },
@@ -256,25 +256,16 @@ module.exports = ({tasks, cmdOptions, credentials}) => {
     ],
     run: async (requirements, utils) => {
       const tag = `v${requirements['release-version']}`;
-      // go gets confused by raw tags for a module in a subdirectory, so we
-      // make a tag just for go
-      const goClientTag = `clients/client-go/${tag}`;
       await gitTag({
         dir: REPO_ROOT,
         rev: 'HEAD',
         tag,
         utils,
       });
-      await gitTag({
-        dir: REPO_ROOT,
-        rev: 'HEAD',
-        tag: goClientTag,
-        utils,
-      });
 
       return {
         'build-can-start': true,
-        'repo-tagged': [tag, goClientTag],
+        'repo-tagged': [tag],
       };
     },
   });
