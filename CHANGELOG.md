@@ -3,6 +3,11 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v24.3.1
+
+▶ [patch] [bug 1611266](http://bugzil.la/1611266)
+azure-provider now ensures generated adminPasswords meet all passwords requirements
+
 ## v24.3.0
 
 ▶ [minor] [#2293](https://github.com/taskcluster/taskcluster/issues/2293)

@@ -1,3 +1,6 @@
+const fs = require('fs');
+const path = require('path');
+
 exports.dollarQuote = str => {
   let i = '';
   while (true) {
@@ -7,4 +10,17 @@ exports.dollarQuote = str => {
     }
     i = i + '-';
   }
+};
+
+exports.loadSql = (value, dir) => {
+  // if this doesn't look like a filename, treat it literally
+  if (value.includes('\n')) {
+    return value;
+  }
+  const pathname = path.join(dir, value);
+  if (!fs.existsSync(pathname)) {
+    return value;
+  }
+
+  return fs.readFileSync(pathname, 'utf8');
 };

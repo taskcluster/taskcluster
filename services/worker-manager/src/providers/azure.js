@@ -6,6 +6,7 @@ const forge = require('node-forge');
 const crypto = require('crypto');
 const path = require('path');
 const fs = require('fs');
+const generator = require('generate-password');
 
 const auth = require('@azure/ms-rest-nodeauth');
 const ComputeManagementClient = require('@azure/arm-compute').ComputeManagementClient;
@@ -17,6 +18,25 @@ const {CloudAPI} = require('./cloudapi');
 // only use alphanumeric characters for convenience
 function nicerId() {
   return (slugid.nice() + slugid.nice() + slugid.nice()).toLowerCase().replace(/[^A-Za-z0-9]/g, '');
+}
+
+// The password must be between 8-72 characters long (Linux max is 72)
+// must satisfy >= 3 of password complexity requirements from the following:
+//   1) Contains an uppercase character
+//   2) Contains a lowercase character
+//   3) Contains a numeric digit
+//   4) Contains a special character
+//   5) Control characters are not allowed
+function generateAdminPassword() {
+  // using `strict: true` ensures we match requirements
+  return generator.generate({
+    length: 72,
+    lowercase: true,
+    uppercase: true,
+    numbers: true,
+    symbols: true,
+    strict: true,
+  });
 }
 
 class AzureProvider extends Provider {
@@ -184,8 +204,7 @@ class AzureProvider extends Provider {
             adminUsername: nicerId().slice(0, 20),
             // we have to set a password, but we never want it to be used, so we throw it away
             // a legitimate user who needs access can reset the password
-            // 72 char limit for linux VMs
-            adminPassword: (nicerId() + nicerId()).slice(0, 72),
+            adminPassword: generateAdminPassword(),
             computerName,
             customData,
           },

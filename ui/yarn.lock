@@ -1856,9 +1856,9 @@
   integrity sha512-8F8E5FPWKP/cHjjI+O6Sh4KLUktk0KKS1xrxqVoBQd14/PBDH+kUgSJVE99p9jSRGh+OjCBmqx0tXN+m32w1tA==
 
 "@mozilla-frontend-infra/components@^3.0.2":
-  version "3.0.4"
-  resolved "https://registry.yarnpkg.com/@mozilla-frontend-infra/components/-/components-3.0.4.tgz#fe43d69c189b802c9865a8cbfddce2045d760832"
-  integrity sha512-ZgH8m2JY5hitEge9/4yjotdnC7XOTrw449EgSz0kR2qMsnx+3d9WdrsuX2JjsIr+T3NvXdoy1i13cWqFmzns1A==
+  version "3.0.5"
+  resolved "https://registry.yarnpkg.com/@mozilla-frontend-infra/components/-/components-3.0.5.tgz#a225aafd9f01f4e015cc79b10b841b6893f4c62a"
+  integrity sha512-LgfstuNj+5pPnveZN8xxD7HTuIJlYGu+WIgjJXvOLMPbLdhHefYWHPaKT9hRgRpB02CLvxgu7Fh1T0fhMBotKw==
   dependencies:
     classnames "^2.2.6"
     codemirror "^5.39.0"
@@ -12641,7 +12641,7 @@ tar@^4:
     yallist "^3.0.3"
 
 "taskcluster-lib-scopes@link:../libraries/scopes":
-  version "24.2.0"
+  version "24.3.0"
 
 taskcluster-lib-urls@^12.0.0:
   version "12.0.0"
