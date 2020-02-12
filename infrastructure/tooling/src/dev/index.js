@@ -3,7 +3,7 @@ const _ = require('lodash');
 const {readRepoYAML, writeRepoYAML} = require('../utils');
 const inquirer = require('inquirer');
 const commonPrompts = require('./common');
-const rabbitPrompts = require('./rabbit');
+const {rabbitPrompts, rabbitResources} = require('./rabbit');
 const {azurePrompts, azureResources} = require('./azure');
 const awsResources = require('./aws');
 const taskclusterResources = require('./taskcluster');
@@ -30,19 +30,13 @@ const main = async (options) => {
     await rabbitPrompts({userConfig, prompts, configTmpl});
     await azurePrompts({userConfig, prompts, configTmpl});
 
-    let {meta, ...answer} = await inquirer.prompt(prompts);
-    let rabbitUsers = {};
-    if (meta) {
-      rabbitUsers = meta.rabbitAdminPassword;
-      delete meta.rabbitAdminPassword;
-    } else {
-      meta = {};
-    }
-    answer = _.merge(answer, rabbitUsers, {meta});
+    let answer = await inquirer.prompt(prompts);
 
     userConfig = await awsResources({userConfig, answer, configTmpl});
     userConfig = await taskclusterResources({userConfig, answer, configTmpl});
     userConfig = await azureResources({userConfig, answer, configTmpl});
+    userConfig = await rabbitResources({userConfig, answer, configTmpl});
+
     await writeRepoYAML(USER_CONF_FILE, _.merge(userConfig, answer));
   }
 
