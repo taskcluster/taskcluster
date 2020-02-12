@@ -1,5 +1,5 @@
 const {Pool} = require('pg');
-const {dollarQuote} = require('./util');
+const {dollarQuote, annotateError} = require('./util');
 const assert = require('assert').strict;
 const {READ, WRITE, UNDEFINED_TABLE} = require('./constants');
 
@@ -251,6 +251,9 @@ class Database {
    *
    * This is for use in tests and within this library only.  All "real" access
    * to the DB should be performed via stored functions.
+   *
+   * This annotates syntax errors from `query` with the position at which the
+   * error occurred.
    */
   async _withClient(mode, cb) {
     const pool = this.pools[mode];
@@ -258,19 +261,18 @@ class Database {
       throw new Error(`No DB pool for mode ${mode}`);
     }
     const client = await pool.connect();
-    try {
-      try {
-        return await cb(client);
-      } catch (err) {
-        // show hints or details from this error in the debug log, to help
-        // debugging issues..
-        for (let p of ['hint', 'detail', 'where', 'code']) {
-          if (err[p]) {
-            err.message += `\n${p.toUpperCase()}: ${err[p]}`;
-          }
+    const wrapped = {
+      query: async function(query) {
+        try {
+          return await client.query.apply(client, arguments);
+        } catch (err) {
+          annotateError(query, err);
+          throw err;
         }
-        throw err;
-      }
+      },
+    };
+    try {
+      return await cb(wrapped);
     } finally {
       client.release();
     }

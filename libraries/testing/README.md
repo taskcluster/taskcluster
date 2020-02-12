@@ -321,7 +321,7 @@ In mock mode, it sets up a FakeDatabase.
 In "real" mode it sets up a "real" database using `$TEST_DB_URL`, accessed with a user corresponding to the given serviceName.
 In either case, the resulting database is injected into the taskcluster-lib-loader as `db` and also available as `helper.db`.
 
-In the real case, the database is set upgraded to the latest version at the beginning of the suite.
+In the real case, the database is upgraded to the latest version at the beginning of the suite.
 
 In both the real and mock cases, is up to the test suite implementation to reset the contents of the database between tests.
 Ideally this is done via `helper.db.procs` methods.

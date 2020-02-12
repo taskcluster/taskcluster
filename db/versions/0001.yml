@@ -1,57 +1,21 @@
 version: 1
 migrationScript: |-
   begin
-    create table secrets (
-      name text primary key,
-      secret text
+    create table widgets (
+      name text
     );
-    grant select, insert, update, delete on secrets to $db_user_prefix$_secrets;
+    grant select, insert, update, delete on widgets to $db_user_prefix$_notify;
   end
 methods:
-  get_secret:
+  update_widgets:
     description: |-
-      Get the single secret associated with a given secret name, or an empty result if no such secret exists.
-    mode: read
-    serviceName: secrets
-    args: name text
-    returns: table (secret text)
-    body: |-
-      begin
-        return query select secrets.secret from secrets where secrets.name = get_secret.name;
-      end
-  list_secrets:
-    description: |-
-      List the names of all secrets.
-    mode: read
-    serviceName: secrets
-    args: ''
+      Temporary method to test infrastructure support fo database access
+    mode: write
+    serviceName: notify
+    args: name_in text
     returns: table (name text)
     body: |-
       begin
-        return query select secrets.name as name from secrets;
-      end
-  remove_secret:
-    description: |-
-      Delete the secret associated with the given name.
-    mode: write
-    serviceName: secrets
-    args: name text
-    returns: void
-    body: |-
-      begin
-        delete from secrets where secrets.name = remove_secret.name;
-      end
-  set_secret:
-    description: |-
-      Set the secret associated with the given name.
-      If the secret already exists, it is updated instead.
-    mode: write
-    serviceName: secrets
-    args: name text, secret text
-    returns: void
-    body: |-
-      begin
-        insert into secrets values (set_secret.name, set_secret.secret)
-        on conflict (name) do
-          update set secret=EXCLUDED.secret;
+        insert into widgets (name) values (name_in);
+        return query select widgets.name from widgets;
       end

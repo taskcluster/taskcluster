@@ -24,9 +24,7 @@ exports.tasks = [{
       await writeRepoFile(docsFile, newContent);
     }
   },
-}];
-
-exports.tasks = [{
+}, {
   title: 'Users in db/test-setup.sh',
   requires: ['db-schema-serializable'],
   provides: [],

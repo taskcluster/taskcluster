@@ -754,10 +754,16 @@
         "pulse_username": {
           "type": "string"
         },
+        "read_db_url": {
+          "type": "string"
+        },
         "taskcluster_access_token": {
           "type": "string"
         },
         "taskcluster_client_id": {
+          "type": "string"
+        },
+        "write_db_url": {
           "type": "string"
         }
       },
@@ -766,6 +772,8 @@
         "email_source_address",
         "taskcluster_client_id",
         "taskcluster_access_token",
+        "read_db_url",
+        "write_db_url",
         "aws_access_key_id",
         "aws_secret_access_key",
         "pulse_username",
@@ -1235,6 +1243,12 @@
     "secrets": {
       "additionalProperties": false,
       "properties": {
+        "azure_crypto_key": {
+          "type": "string"
+        },
+        "azure_signing_key": {
+          "type": "string"
+        },
         "debug": {
           "title": "node debug env var",
           "type": "string"
@@ -1289,16 +1303,10 @@
           "title": "Process settings for this service",
           "type": "object"
         },
-        "read_db_url": {
-          "type": "string"
-        },
         "taskcluster_access_token": {
           "type": "string"
         },
         "taskcluster_client_id": {
-          "type": "string"
-        },
-        "write_db_url": {
           "type": "string"
         }
       },
@@ -1306,8 +1314,8 @@
         "procs",
         "taskcluster_client_id",
         "taskcluster_access_token",
-        "read_db_url",
-        "write_db_url"
+        "azure_crypto_key",
+        "azure_signing_key"
       ],
       "title": "Configuration options for secrets",
       "type": "object"

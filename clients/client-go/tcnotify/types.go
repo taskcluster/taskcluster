@@ -135,6 +135,12 @@ type (
 		// Default:    "simple"
 		Template string `json:"template,omitempty"`
 	}
+
+	Widget struct {
+		Name string `json:"name"`
+	}
+
+	Widgets []Widget
 )
 
 // MarshalJSON calls json.RawMessage method of the same name. Required since

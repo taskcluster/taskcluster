@@ -25,6 +25,10 @@ defaults:
   azure:
     accountId:                    !env AZURE_ACCOUNT_ID
 
+  postgres:
+    readDbUrl:                    !env READ_DB_URL
+    writeDbUrl:                   !env WRITE_DB_URL
+
   monitoring:
     level: !env:optional LEVEL
     errorConfig: !env:json:optional ERROR_CONFIG

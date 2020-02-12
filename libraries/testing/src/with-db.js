@@ -1,10 +1,8 @@
 const path = require('path');
 const {Client} = require('pg');
-const {Schema} = require('taskcluster-lib-postgres');
+const {Schema, UNDEFINED_OBJECT} = require('taskcluster-lib-postgres');
 const tcdb = require('taskcluster-db');
 const {URL} = require('url');
-
-const PG_ERR_ROLE_DOES_NOT_EXIST = '42704';
 
 const ignorePgErrors = async (promise, ...codes) => {
   try {
@@ -36,8 +34,8 @@ const resetDb = async ({testDbUrl}) => {
     // and reset/create a user for each one..
     for (let serviceName of schema.access.serviceNames()) {
       const serviceUsername = `test_${serviceName.replace(/-/g, '_')}`;
-      await ignorePgErrors(client.query(`drop owned by ${serviceUsername}`), PG_ERR_ROLE_DOES_NOT_EXIST);
-      await ignorePgErrors(client.query(`drop user ${serviceUsername}`), PG_ERR_ROLE_DOES_NOT_EXIST);
+      await ignorePgErrors(client.query(`drop owned by ${serviceUsername}`), UNDEFINED_OBJECT);
+      await ignorePgErrors(client.query(`drop user ${serviceUsername}`), UNDEFINED_OBJECT);
       if (password) {
         await client.query(`create user ${serviceUsername} PASSWORD '${password}'`);
       } else {

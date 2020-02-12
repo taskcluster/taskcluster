@@ -4,6 +4,6 @@
 #     <tableName>: [read|write]
 #     <tableName>: [read|write]
 #     - ...
-secrets:
+notify:
   tables:
-    secrets: write
+    widgets: write

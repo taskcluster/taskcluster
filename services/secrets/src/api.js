@@ -17,7 +17,7 @@ let builder = new APIBuilder({
   ].join('\n'),
   serviceName: 'secrets',
   apiVersion: 'v1',
-  context: ['cfg', 'db'],
+  context: ['cfg', 'Secret'],
 });
 
 // Export API
@@ -45,7 +45,24 @@ builder.declare({
 }, async function(req, res) {
   let {name} = req.params;
   let {secret, expires} = req.body;
-  await this.db.fns.set_secret_with_expires(name, JSON.stringify(secret), new Date(expires));
+  try {
+    await this.Secret.create({
+      name: name,
+      secret: secret,
+      expires: new Date(expires),
+    });
+  } catch (e) {
+    // If the entity exists, update it
+    if (e.name === 'EntityAlreadyExistsError') {
+      let item = await this.Secret.load({name});
+      await item.modify(function() {
+        this.secret = secret;
+        this.expires = new Date(expires);
+      });
+    } else {
+      throw e;
+    }
+  }
   res.reply({});
 });
 
@@ -62,15 +79,15 @@ builder.declare({
   ].join('\n'),
 }, async function(req, res) {
   let {name} = req.params;
-
-  // we have historically returned 404 for nonexistent secrets
-  const rows = await this.db.fns.get_secret(name);
-  if (rows.length === 0) {
-    return res.reportError('ResourceNotFound', 'Secret not found', {});
+  try {
+    await this.Secret.remove({name: name});
+  } catch (e) {
+    if (e.name === 'ResourceNotFoundError') {
+      return res.reportError('ResourceNotFound', 'Secret not found', {});
+    } else {
+      throw e;
+    }
   }
-
-  await this.db.fns.remove_secret(name);
-
   res.reply({});
 });
 
@@ -91,18 +108,21 @@ builder.declare({
   ].join('\n'),
 }, async function(req, res) {
   let {name} = req.params;
-  const rows = await this.db.fns.get_secret_with_expires(name);
-  if (rows.length === 0) {
-    return res.reportError('ResourceNotFound', 'Secret not found', {});
+  let item = undefined;
+  try {
+    item = await this.Secret.load({name});
+  } catch (e) {
+    if (e.name === 'ResourceNotFoundError') {
+      return res.reportError('ResourceNotFound', 'Secret not found', {});
+    } else {
+      throw e;
+    }
   }
-  const row = rows[0];
-  if (row.expires < new Date()) {
+  if (item.isExpired()) {
     return res.reportError('ResourceExpired', 'The requested resource has expired.', {});
+  } else {
+    res.reply(item.json());
   }
-  res.reply({
-    secret: JSON.parse(row.secret),
-    expires: row.expires.toJSON(),
-  });
 });
 
 builder.declare({
@@ -131,10 +151,12 @@ builder.declare({
     'use the query-string option `limit` to return fewer.',
   ].join('\n'),
 }, async function(req, res) {
-  // TODO: continuationToken / limit
-  const secrets = await this.db.fns.list_secrets_with_expires();
+  const continuation = req.query.continuationToken || null;
+  const limit = Math.min(parseInt(req.query.limit || 1000, 10), 1000);
+  const query = await this.Secret.scan({}, {continuation, limit});
 
   return res.reply({
-    secrets: secrets.map(secret => secret.name),
+    secrets: query.entries.map(secret => secret.name),
+    continuationToken: query.continuation || undefined,
   });
 });

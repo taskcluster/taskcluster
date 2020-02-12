@@ -9,16 +9,11 @@ This directory defines the Taskcluster database:
 ## List of Stored Functions
 
 <!-- SP BEGIN -->
-### secrets
+### notify
 
 | Name | Mode | Arguments | Returns | Description |
 | --- | --- | --- | --- | --- |
-| get_secret | read | name text | table (secret text) | Get the single secret associated with a given secret name, or an empty result if no such secret exists. |
-| get_secret_with_expires | read | name text | table (secret text, expires timestamp) | Get the single secret associated with a given secret name, or an empty result if no such secret exists.<br />Note that this may include rows with an expiration in the past, as rows are only deleted occasionally. |
-| list_secrets | read |  | table (name text) | List the names of all secrets. |
-| list_secrets_with_expires | read |  | table (name text, expires timestamp) | List the names and expiration dates of all secrets.<br />Note that this may include rows with an expiration in the past, as rows are only deleted occasionally. |
-| remove_secret | write | name text | void | Delete the secret associated with some key. |
-| set_secret_with_expires | write | name text, secret text, expires timestamp | void | Set the secret associated with the given name.<br />If the secret already exists, it is updated instead. |
+| update_widgets | write | name_in text | table (name text) | Temporary method to test infrastructure support fo database access |
 <!-- SP END -->
 
 ## Database Schema
@@ -38,6 +33,16 @@ A version file has a `migrationScript` which performs the change to the database
 This can use any Postgres functionality required to make the change.
 In some cases, that's as simple as `CREATE TABLE` or `ALTER TABLE`, but can also involve temporary tables and complex data manipulation.
 The script runs in a single transaction.
+
+#### Checklist
+
+The following checklist summarizes what needs to be written to modify the database.
+
+* [ ] new version file in `db/versions` that updates all impacted stored functions
+* [ ] new test script in `db/test/versions`
+* for any *new* stored functions:
+  * [ ] fake implementation in `db/src/fakes/<serviceName>.js`
+  * [ ] tests for new functions in `db/test/fns`
 
 #### Permissions
 

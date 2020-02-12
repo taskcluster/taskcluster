@@ -1,11 +1,11 @@
 const helper = require('./helper');
-const assert = require('assert').strict;
+const assert = require('assert');
 const slugid = require('slugid');
 const taskcluster = require('taskcluster-client');
 const testing = require('taskcluster-lib-testing');
 
-helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
-  helper.withDb(mock, skipping);
+helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping) {
+  helper.withEntities(mock, skipping);
   helper.withServer(mock, skipping);
 
   const SECRET_NAME = `captain:${slugid.v4()}`;
@@ -145,7 +145,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
       name: SECRET_NAME,
       res: {},
     });
-    assert.deepEqual(await helper.db.fns.get_secret(SECRET_NAME), []);
+    assert(!await helper.Secret.load({name: SECRET_NAME}, true));
   });
 
   test('getting a missing secret is a 404', async function() {
@@ -180,7 +180,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
     });
   });
 
-  test.skip('Expire secrets', async () => {
+  test('Expire secrets', async () => {
     let client = await helper.client('captain-read-write');
     let key = 'captain:' + slugid.v4();
 
