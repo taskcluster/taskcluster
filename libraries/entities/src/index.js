@@ -1,4 +1,5 @@
 const assert = require('assert').strict;
+const _ = require('lodash');
 const op = require('./entityops');
 const types = require('./entitytypes');
 const keys = require('./entitykeys');
@@ -8,6 +9,7 @@ const {
   UNDEFINED_TABLE,
   UNIQUE_VIOLATION,
 } = require('taskcluster-lib-postgres');
+const { MAX_MODIFY_ATTEMPTS } = require('./constants');
 
 // ** Coding Style **
 // To ease reading of this component we recommend the following code guidelines:
@@ -64,17 +66,21 @@ class Entity {
     assert(db, 'db is required');
     assert(typeof context === 'object' && context.constructor === Object, 'context should be an object');
 
-    this.properties = this.deserialize(entity); // TODO: _properties
     this.etag = etag;
     this.tableName = tableName;
     this._partitionKey = entity.PartitionKey;
     this._rowKey = entity.RowKey;
     this.db = db;
 
+    this._getPropertiesFromEntity(entity);
+
     Object.entries(context).forEach(([key, value]) => {
       this[key] = value;
     });
+  }
 
+  _getPropertiesFromEntity(entity) {
+    this.properties = this.deserialize(entity); // TODO: _properties
     Object.entries(this.properties).forEach(([key, value]) => {
       this[key] = value;
     });
@@ -106,14 +112,72 @@ class Entity {
   async reload() {
     const result = await this.db.fns[`${this.tableName}_load`](this._partitionKey, this._rowKey);
     const etag = result[0].etag;
+    const hasChanged = etag !== this.etag;
 
-    return etag !== this.etag;
+    this._getPropertiesFromEntity(result[0].value);
+    this.etag = etag;
+
+    Object.entries(this.properties).forEach(([key, value]) => {
+      this[key] = value;
+    });
+
+    return hasChanged;
   }
 
   async modify(modifier) {
-    await modifier.call(this.properties, this.properties);
+    let attemptsLeft = MAX_MODIFY_ATTEMPTS;
 
-    return this.db.fns[`${this.tableName}_modify`](this._partitionKey, this._rowKey, this.properties, 1);
+    const attemptModify = async () => {
+      const newProperties = _.cloneDeep(this.properties);
+      await modifier.call(newProperties, newProperties);
+      let result;
+      try {
+        [result] = await this.db.fns[`${this.tableName}_modify`](this._partitionKey, this._rowKey, newProperties, 1, this.etag);
+      } catch (e) {
+        if (e.code === 'P0004') {
+          return null;
+        }
+
+        if (e.code === 'P0002') {
+          const err = new Error('Resource not found');
+
+          err.code = 'ResourceNotFound';
+          err.statusCode = 404;
+
+          throw err;
+        }
+
+        throw e;
+      }
+
+      const entity = this.constructor.serialize(newProperties);
+      const etag = result['test_entities_modify'];
+
+      this._getPropertiesFromEntity(entity);
+      this.etag = etag;
+
+      return this;
+    };
+
+    let result;
+    while (attemptsLeft--) {
+      result = await attemptModify();
+
+      if (result) {
+        break;
+      }
+
+      await this.reload();
+    }
+
+    if (attemptsLeft <= 0) {
+      const err = new Error('MAX_MODIFY_ATTEMPTS exhausted, check for congestion');
+      err.code = 'EntityWriteCongestionError';
+      err.originalEntity = this.properties;
+      throw err;
+    }
+
+    return result;
   }
 
   static _getContextEntries(contextNames, contextEntries) {
