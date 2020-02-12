@@ -1,0 +1,353 @@
+Types:
+
+  BuildAndTest:
+    Name: 'Build/test generic-worker (${ENGINE} engine) on ${PLATFORM}'
+    Description: 'This builds and tests the ${ARCH} version of generic-worker (${ENGINE} engine) on ${PLATFORM}'
+    Mounts:
+      - 'go1.13.7'
+      - 'git2.24.0.2'
+      - 'jq1.6'
+      - 'ci-creds'
+      - 'taskcluster-proxy5.1.0'
+    Command: BuildAndTest
+    Features:
+      taskclusterProxy: true
+    Scopes:
+      - 'generic-worker:cache:generic-worker-checkout'
+      - 'secrets:get:project/taskcluster/testing/generic-worker/ci-creds'
+    Artifacts:
+      - Name: 'public/build/generic-worker-${OS}-${ARCH}${EXTENSION}'
+        Path: 'gopath1.13.7/bin/generic-worker${EXTENSION}'
+        Type: 'file'
+    MaxRunTime: 3600
+
+  CheckModules:
+    Name: 'Run `go mod tidy` and ensure that go.mod and go.sum do not change'
+    Description: |
+                 Run `go mod tidy` to ensure that `go.mod` and `go.sum` are up-to-date.
+                 See the [go modules wiki page](https://github.com/golang/go/wiki/Modules)
+                 for more information.
+    Mounts:
+      - 'go1.13.7'
+    Command: CheckModules
+    MaxRunTime: 3600
+
+Tasks:
+  BuildAndTest:
+    - WorkerPool: 'proj-taskcluster/gw-ci-macos'
+      Env:
+        ENGINE: 'multiuser'
+    - WorkerPool: 'proj-taskcluster/gw-ci-macos'
+      Env:
+        ENGINE: 'simple'
+    - WorkerPool: 'proj-taskcluster/gw-ci-raspbian-stretch'
+      Env:
+        ENGINE: 'simple'
+    - WorkerPool: 'proj-taskcluster/gw-ci-ubuntu-18-04'
+      Env:
+        ENGINE: 'multiuser'
+    - WorkerPool: 'proj-taskcluster/gw-ci-ubuntu-18-04'
+      Env:
+        ENGINE: 'simple'
+    - WorkerPool: 'proj-taskcluster/gw-ci-ubuntu-18-04'
+      Env:
+        ENGINE: 'docker'
+    - WorkerPool: 'proj-taskcluster/gw-ci-windows10-amd64'
+      Env:
+        ENGINE: 'multiuser'
+        # We must set here since this worker pool does not have a Z: drive
+        GW_SKIP_Z_DRIVE_TESTS: 'true'
+        # This worker pool has no mozilla-build installation
+        GW_SKIP_MOZILLA_BUILD_TESTS: 'true'
+        # This worker pool has no python installation
+        GW_SKIP_PYTHON_TESTS: 'true'
+    - WorkerPool: 'proj-taskcluster/gw-ci-windows10-arm'
+      Env:
+        ENGINE: 'multiuser'
+        # We must set here since this worker pool does not have a Z: drive
+        GW_SKIP_Z_DRIVE_TESTS: 'true'
+        # This worker pool has no mozilla-build installation
+        GW_SKIP_MOZILLA_BUILD_TESTS: 'true'
+        # This worker pool has no python installation
+        GW_SKIP_PYTHON_TESTS: 'true'
+    - WorkerPool: 'proj-taskcluster/gw-ci-windows2012r2-amd64'
+      Env:
+        ENGINE: 'multiuser'
+        # We must set here since this worker type does not have a Z: drive
+        GW_SKIP_Z_DRIVE_TESTS: 'true'
+#####################################################################
+#   #############################################################   #
+#   # DISABLING WINDOWS 7 UNTIL WE HAVE WINDOWS 7 WORKERS AGAIN #   #
+#   #############################################################   #
+#   - WorkerPool: 'proj-taskcluster/gw-ci-windows7-386'             #
+#     Env:                                                          #
+#       ENGINE: 'multiuser'                                         #
+#####################################################################
+  CheckModules:
+    - WorkerPool: 'proj-taskcluster/gw-ci-ubuntu-18-04'
+
+WorkerPools:
+  proj-taskcluster/gw-ci-macos:
+    Platform: 'macOS Mojave 10.14'
+    OS: 'darwin'
+    Arch: 'amd64'
+  proj-taskcluster/gw-ci-raspbian-stretch:
+    Platform: 'Raspbian GNU/Linux 9 (stretch)'
+    OS: 'linux'
+    Arch: 'armv6l'
+  proj-taskcluster/gw-ci-ubuntu-18-04:
+    Platform: 'Ubuntu 18.04 (amd64)'
+    OS: 'linux'
+    Arch: 'amd64'
+  proj-taskcluster/gw-ci-windows10-amd64:
+    Platform: 'Windows 10 (amd64)'
+    OS: 'windows'
+    Arch: 'amd64'
+  proj-taskcluster/gw-ci-windows10-arm:
+    Platform: 'Windows 10 (arm)'
+    OS: 'windows'
+    # There is no arm release for go 1.13.7 on windows, but 386 release works
+    # through emulation provided by the host OS.
+    Arch: '386'
+  proj-taskcluster/gw-ci-windows2012r2-amd64:
+    Platform: 'Windows Server 2012 R2 (amd64)'
+    OS: 'windows'
+    Arch: 'amd64'
+  proj-taskcluster/gw-ci-windows7-386:
+    Platform: 'Windows 7 (386)'
+    OS: 'windows'
+    Arch: '386'
+
+Commands:
+  CheckModules:
+    Posix:
+      - - /bin/bash
+        - -vxec
+        - |
+          export CGO_ENABLED=0
+          export GOROOT="$(pwd)/go1.13.7/go"
+          export GOPATH="$(pwd)/gopath1.13.7"
+          export PATH="${GOPATH}/bin:${GOROOT}/bin:${PATH}"
+          go version
+          go env
+          mkdir -p "${GOPATH}/src/github.com/taskcluster"
+          cd "${GOPATH}/src/github.com/taskcluster"
+          if [ ! -d taskcluster/.git ]; then rm -rf taskcluster; git clone "${GITHUB_CLONE_URL}" 'taskcluster'; fi
+          cd taskcluster
+          git fetch "${GITHUB_CLONE_URL}" "+${GITHUB_SHA}:refs/heads/X${TASK_ID}"
+          git checkout -f "X${TASK_ID}"
+          git reset --hard "${GITHUB_SHA}"
+          git clean -fdx
+          git checkout -B tmp -t "X${TASK_ID}"
+          cd workers/generic-worker
+          go mod tidy
+          test $(git status --porcelain | wc -l) == 0
+
+  BuildAndTest:
+    Posix:
+      - - /bin/bash
+        - -vxec
+        - |
+          function b64 {
+            [ "$(uname -s)" != "Darwin" ] || base64 -D
+            [ "$(uname -s)" != "Linux" ]  || base64 -d
+          }
+          chmod a+x bin/taskcluster-proxy
+          # go test: -race and -msan are only supported on linux/amd64, freebsd/amd64, darwin/amd64 and windows/amd64
+          if [ "$(uname -m)" == "x86_64" ]; then
+            RACE=-race
+            CGO_ENABLED_TESTS=1
+            # See https://github.com/golang/go/issues/27089#issuecomment-415329050
+            VET=-vet=off
+          else
+            RACE=
+            CGO_ENABLED_TESTS=0
+            VET=
+          fi
+          export CGO_ENABLED=0
+          export GOROOT="$(pwd)/go1.13.7/go"
+          export GOPATH="$(pwd)/gopath1.13.7"
+          export PATH="${GOPATH}/bin:${GOROOT}/bin:$(pwd)/bin:${PATH}"
+          git --version
+          go version
+          go env
+          curl -s "${TASKCLUSTER_PROXY_URL}/secrets/v1/secret/project/taskcluster/testing/generic-worker/ci-creds" | sed -n 's/.*"b64_encoded_credentials_script": "\(.*\)".*/\1/p' | b64 > tc-creds.sh
+          source tc-creds.sh
+          mkdir -p "${GOPATH}/src/github.com/taskcluster"
+          cd "${GOPATH}/src/github.com/taskcluster"
+          if [ ! -d taskcluster/.git ]; then rm -rf taskcluster; git clone "${GITHUB_CLONE_URL}" 'taskcluster'; fi
+          cd 'taskcluster'
+          git fetch "${GITHUB_CLONE_URL}" "+${GITHUB_SHA}:refs/heads/X${TASK_ID}"
+          git checkout -f "X${TASK_ID}"
+          git reset --hard "${GITHUB_SHA}"
+          git clean -fdx
+          git checkout -B tmp -t "X${TASK_ID}"
+          go get -v -u github.com/taskcluster/livelog github.com/gordonklaus/ineffassign
+          cd workers/generic-worker/gw-codegen
+          go get -v
+          cd ..
+          go generate
+          # go.mod and go.sum will be affected by above go get commands, so
+          # tidy them before checking for changes. Not needed in go 1.14:
+          # https://github.com/golang/go/issues/30515#issuecomment-581984371
+          # TODO: use go get -modfile instead when running go 1.14, and remove
+          # go mod tidy command
+          go mod tidy
+          git status
+          # output of wc command can contain spaces on darwin, so no quotes around expression
+          test $(git status --porcelain | wc -l) == 0
+          go install -tags "${ENGINE}" -v -ldflags "-X main.revision=${GITHUB_SHA}" ./...
+          go vet -tags "${ENGINE}" ./...
+          if [ "${ENGINE}" == "multiuser" ]; then
+            cp "${TASK_USER_CREDENTIALS}" next-task-user.json
+            # IMPORTANT - run go test with GW_TESTS_RUN_AS_CURRENT_USER=true *before* running it without
+            # otherwise tests that call `go run ....` will write go object files to .cache as root
+            GW_TESTS_RUN_AS_CURRENT_USER=true GORACE=history_size=7 CGO_ENABLED=1 go test -tags "${ENGINE}" -timeout 45m -ldflags "-X github.com/taskcluster/taskcluster/v24/workers/generic-worker.revision=${GITHUB_SHA}" -v ${RACE} ${VET}
+          fi
+          GORACE=history_size=7 CGO_ENABLED=${CGO_ENABLED_TESTS} go test -tags "${ENGINE}" -timeout 45m -ldflags "-X github.com/taskcluster/taskcluster/v24/workers/generic-worker.revision=${GITHUB_SHA}" -v ${RACE} ${VET} ./...
+          "${GOPATH}/bin/ineffassign" .
+    Windows:
+      - |
+        :: go test: -race and -msan are only supported on linux/amd64, freebsd/amd64, darwin/amd64 and windows/amd64
+        reg Query "HKLM\Hardware\Description\System\CentralProcessor\0" | find /i "Intel64" > NUL && (
+          set RACE=-race
+          set CGO_ENABLED_TESTS=1
+          :: See https://github.com/golang/go/issues/27089#issuecomment-415329050
+          set VET=-vet=off
+        ) || (
+          set "RACE= "
+          set CGO_ENABLED_TESTS=0
+          set "VET= "
+        )
+        :: find.exe may have exited with exit code 1, so need to explicitly exit with 0
+        exit /b 0
+      - set CGO_ENABLED=0
+      - set GOPATH=%CD%\gopath1.13.7
+      - set GOROOT=%CD%\go1.13.7\go
+      # temporarily add C:\cygwin\bin to PATH - if this works out well, we should probably do it in system setup instead (i.e. in default system PATH of the image set)
+      - set PATH=%CD%\git\cmd;%GOPATH%\bin;%GOROOT%\bin;%CD%\bin;%PATH%;C:\cygwin\bin
+      - git version
+      - go version
+      - go env
+      - git config --global core.autocrlf false
+      - jq -r .secret.b64_encoded_credentials_batch_script ci-creds.json > tc-creds.bat.b64
+      - certutil -decode tc-creds.bat.b64 tc-creds.bat
+      - call tc-creds.bat 2>&1
+      - 'if not exist "%GOPATH%\src\github.com\taskcluster" mkdir "%GOPATH%\src\github.com\taskcluster"'
+      - 'cd "%GOPATH%\src\github.com\taskcluster"'
+      - 'if not exist taskcluster git clone %GITHUB_CLONE_URL% taskcluster'
+      - 'cd taskcluster'
+      - 'git fetch %GITHUB_CLONE_URL% +%GITHUB_SHA%:refs/heads/X%TASK_ID%'
+      - 'git checkout -f "X%TASK_ID%"'
+      - 'git reset --hard %GITHUB_SHA%'
+      - 'git clean -fdx'
+      - 'git checkout -B tmp -t "X%TASK_ID%"'
+      - go get -v -u github.com/taskcluster/livelog github.com/gordonklaus/ineffassign
+      - cd workers\generic-worker\gw-codegen
+      - go get -v
+      - cd ..
+      - go generate
+      - |
+        :: go.mod and go.sum will be affected by above go get commands, so
+        :: tidy them before checking for changes. Not needed in go 1.14:
+        :: https://github.com/golang/go/issues/30515#issuecomment-581984371
+        :: TODO: use go get -modfile instead when running go 1.14, and remove
+        :: go mod tidy command
+        go mod tidy
+      - |
+        :: this counts the number of lines returned by git status
+        :: dump temp file outside of repo, otherwise git status reports the tmp1.txt file!
+        git status
+        git status --porcelain | C:\Windows\System32\find.exe /v /c "" > ..\..\..\tmp1.txt
+        set /P lines=<..\..\..\tmp1.txt
+        :: this checks that if more than 0 lines are returned, we fail
+        if %lines% gtr 0 exit /b 64
+        :: find.exe may have exited with exit code 1, so need to explicitly exit with 0
+        exit /b 0
+      - go install -tags "%ENGINE%" -v -ldflags "-X main.revision=%GITHUB_SHA%" ./...
+      - go vet -tags "%ENGINE%" ./...
+      - set CGO_ENABLED=%CGO_ENABLED_TESTS%
+      - set GORACE=history_size=7
+      - copy "%TASK_USER_CREDENTIALS%" "%CD%\next-task-user.json"
+      - 'go test -tags "%ENGINE%" -timeout 45m -ldflags "-X github.com/taskcluster/taskcluster/v24/workers/generic-worker.revision=%GITHUB_SHA%" -v %RACE% %VET% ./...'
+      - set GW_TESTS_RUN_AS_CURRENT_USER=true
+      - 'go test -tags "%ENGINE%" -timeout 45m -ldflags "-X github.com/taskcluster/taskcluster/v24/workers/generic-worker.revision=%GITHUB_SHA%" -v %RACE% %VET%'
+      - ineffassign .
+
+Mounts:
+  go1.13.7:
+    directory: go1.13.7
+    content:
+      darwin:
+        amd64:
+          url: 'https://storage.googleapis.com/golang/go1.13.7.darwin-amd64.tar.gz'
+          sha256: '8436f846b49c2b14a96d90eef6b2a6e0a0e1943bbb767299c1ecabb795b042b9'
+          format: tar.gz
+      linux:
+        armv6l:
+          url: 'https://storage.googleapis.com/golang/go1.13.7.linux-armv6l.tar.gz'
+          sha256: 'ff8b870222d82c38a0108810706811dcbd1fcdbddc877789184a0f903cbdf11a'
+          format: tar.gz
+        amd64:
+          url: 'https://storage.googleapis.com/golang/go1.13.7.linux-amd64.tar.gz'
+          sha256: 'b3dd4bd781a0271b33168e627f7f43886b4c5d1c794a4015abf34e99c6526ca3'
+          format: tar.gz
+      windows:
+        386:
+          url: 'https://storage.googleapis.com/golang/go1.13.7.windows-386.zip'
+          sha256: 'cf9b1a2f96240adb98dc4081121ac308bf6f8d2760f96d45f429ec571602cefc'
+          format: zip
+        amd64:
+          url: 'https://storage.googleapis.com/golang/go1.13.7.windows-amd64.zip'
+          sha256: '03befd335ee9ddf1d10cae52e84eb5a37408b8e105acc1c29e30bbbbd8143749'
+          format: zip
+  git2.24.0.2:
+    directory: git
+    content:
+      windows:
+        386:
+          url: 'https://github.com/git-for-windows/git/releases/download/v2.24.0.windows.2/MinGit-2.24.0.2-32-bit.zip'
+          sha256: 'b7b26e87d3df9b44fee0606a9df3ca839bc444faf76c4c27bc0824a6c10e7831'
+          format: zip
+        amd64:
+          url: 'https://github.com/git-for-windows/git/releases/download/v2.24.0.windows.2/MinGit-2.24.0.2-64-bit.zip'
+          sha256: 'c33aec6ae68989103653ca9fb64f12cabccf6c61d0dde30c50da47fc15cf66e2'
+          format: zip
+  jq1.6:
+    file: bin/jq${EXTENSION}
+    content:
+      windows:
+        386:
+          url: 'https://github.com/stedolan/jq/releases/download/jq-1.6/jq-win32.exe'
+          sha256: '0012cb4c0eb6eaf97b842e676e423a69a8fea95055d93830551b4a5a54494bd8'
+        amd64:
+          url: 'https://github.com/stedolan/jq/releases/download/jq-1.6/jq-win64.exe'
+          sha256: 'a51d36968dcbdeabb3142c6f5cf9b401a65dc3a095f3144bd0c118d5bb192753'
+  ci-creds:
+    file: ci-creds.json
+    content:
+      windows:
+        all:
+          url: 'http://localhost/secrets/v1/secret/project/taskcluster/testing/generic-worker/ci-creds'
+          sha256: 'ef1d954dbae01a0810fcdb56f56761dbbb26692b0dc8cbb2994101512fc26992'
+  taskcluster-proxy5.1.0:
+    file: bin/taskcluster-proxy${EXTENSION}
+    content:
+      darwin:
+        amd64:
+          url: 'https://github.com/taskcluster/taskcluster-proxy/releases/download/v5.1.0/taskcluster-proxy-darwin-amd64'
+          sha256: '3faf524b9c6b9611339510797bf1013d4274e9f03e7c4bd47e9ab5ec8813d3ae'
+      linux:
+        armv6l:
+          url: 'https://github.com/taskcluster/taskcluster-proxy/releases/download/v5.1.0/taskcluster-proxy-linux-arm'
+          sha256: '896ed9f7b4b95a016ab17ceff3c0de873489713acf722a88ee8691a1a0bff11b'
+        amd64:
+          url: 'https://github.com/taskcluster/taskcluster-proxy/releases/download/v5.1.0/taskcluster-proxy-linux-amd64'
+          sha256: 'fcf000ca939b3ecbfc287405142f0f38ab4292b2f039ca9c6fc71fecfcfd065a'
+      windows:
+        386:
+          url: 'https://github.com/taskcluster/taskcluster-proxy/releases/download/v5.1.0/taskcluster-proxy-windows-386.exe'
+          sha256: '6d093e3fcb69fa325276136b6d421bed1f45a1f31a8e442eb994f2a11be27c5e'
+        amd64:
+          url: 'https://github.com/taskcluster/taskcluster-proxy/releases/download/v5.1.0/taskcluster-proxy-windows-amd64.exe'
+          sha256: '0764644101703202b100daa36b5cafe72829d12ac09319222f9676602640a8a6'

@@ -109,7 +109,9 @@ version: 17
 # from the previous version.  This should also adjust any permisisons using
 # `grant` and `revoke`.  The username prefix will be substituted for
 # `$db_user_prefix$`, so such statements can take the form `grant .. to
-# $db_user_prefix$_worker_manager`.
+# $db_user_prefix$_worker_manager`.  The script can be included inline in the YAML
+# using `|-`, or specify a filename to load the script from an external file in the
+# same directory.
 migrationScript: |-
   begin
     create ...;
@@ -143,11 +145,9 @@ methods:
     deprecated: true
 
     # The body of the stored function.  This is passed verbatim to `CREATE FUNCTION`.
-    body: |-
-      begin
-        ...;
-        return query select ..;
-      end
+    # Like migrationScript, this can also be a filename to load the script from an
+    # external file
+    body: my-method.sql
 ```
 
 ### Access File

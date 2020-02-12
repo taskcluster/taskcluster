@@ -1,6 +1,7 @@
 const path = require('path');
 const assert = require('assert').strict;
 const Method = require('./Method');
+const { loadSql } = require('./util');
 
 const objMap = (obj, fn) => Object.fromEntries(Object.entries(obj).map(fn));
 
@@ -13,7 +14,7 @@ class Version {
 
     return new Version(
       content.version,
-      content.migrationScript,
+      loadSql(content.migrationScript, path.dirname(filename)),
       objMap(content.methods,
         ([name, meth]) => [name, Method.fromYamlFileContent(name, meth, filename)]),
     );

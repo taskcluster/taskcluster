@@ -1,7 +1,11 @@
 [build]
   base    = "ui"
   command = "GENERATE_ENV_JS=1 yarn build"
-  publish = "build"
+  publish = "ui/build"
+  # an exit-code of 1 indicates the contents have changed
+  # netlify build will be skipped if the exit-code is 0
+  # command will be run from the base directory (i.e., ui)
+  ignore = "git diff HEAD^ HEAD -- . ':!docs'"
 
 [build.environment]
   YARN_FLAGS = "--frozen-lockfile"
