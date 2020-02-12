@@ -325,6 +325,7 @@ definitions:
         - rar
         - tar.bz2
         - tar.gz
+        - tar.xz
         - zip
     additionalProperties: false
     required:
@@ -364,6 +365,7 @@ definitions:
         - rar
         - tar.bz2
         - tar.gz
+        - tar.xz
         - zip
     additionalProperties: false
     required:

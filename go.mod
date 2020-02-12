@@ -17,7 +17,7 @@ require (
 	github.com/gorilla/websocket v1.4.1
 	github.com/iancoleman/strcase v0.0.0-20191112232945-16388991a334
 	github.com/kr/text v0.1.0
-	github.com/mholt/archiver v2.1.0+incompatible
+	github.com/mholt/archiver v3.1.1+incompatible
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/nwaples/rardecode v1.0.0 // indirect
 	github.com/pborman/uuid v1.2.0
@@ -41,6 +41,7 @@ require (
 	github.com/taskcluster/websocktunnel v2.0.0+incompatible
 	github.com/tent/hawk-go v0.0.0-20161026210932-d341ea318957
 	github.com/xeipuuv/gojsonschema v1.1.0
+	github.com/xi2/xz v0.0.0-20171230120015-48954b6210f8 // indirect
 	golang.org/x/crypto v0.0.0-20191011191535-87dc89f01550
 	golang.org/x/net v0.0.0-20191002035440-2ec189313ef0
 	golang.org/x/sys v0.0.0-20191218084908-4a24b4065292
