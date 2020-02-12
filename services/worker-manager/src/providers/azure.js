@@ -114,7 +114,7 @@ class AzureProvider extends Provider {
       return; // Nothing to do
     }
 
-    const {terminateAfter, reregisterTimeout} = Provider.interpretLifecycle(workerPool.config);
+    const {terminateAfter, reregistrationTimeout} = Provider.interpretLifecycle(workerPool.config);
 
     const cfgs = [];
     while (toSpawn > 0) {
@@ -262,7 +262,7 @@ class AzureProvider extends Provider {
         providerData: {
           ...providerData,
           terminateAfter,
-          reregisterTimeout,
+          reregistrationTimeout,
         },
       });
     }));
@@ -367,8 +367,8 @@ class AzureProvider extends Provider {
     }
 
     let expires = taskcluster.fromNow('96 hours');
-    if (worker.providerData.reregisterTimeout) {
-      expires = new Date(Date.now() + worker.providerData.reregisterTimeout);
+    if (worker.providerData.reregistrationTimeout) {
+      expires = new Date(Date.now() + worker.providerData.reregistrationTimeout);
     }
 
     this.monitor.log.workerRunning({

@@ -430,7 +430,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
       const worker = await helper.Worker.create({
         ...defaultWorker,
         providerData: {
-          reregisterTimeout: 3600 * 10 * 1000,
+          reregistrationTimeout: 3600 * 10 * 1000,
         },
       });
       const workerIdentityProof = {token: 'good'};

@@ -404,7 +404,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
         providerData: {
           region: 'us-west-2',
           imageId: actualWorkerIid.imageId,
-          reregisterTimeout: 10 * 3600 * 1000,
+          reregistrationTimeout: 10 * 3600 * 1000,
           instanceType: actualWorkerIid.instanceType,
           architecture: actualWorkerIid.architecture,
           availabilityZone: 'us-west-2a',

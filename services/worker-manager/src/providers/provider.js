@@ -89,12 +89,12 @@ class Provider {
   static interpretLifecycle({lifecycle}) {
     let terminateAfter = null;
     if (lifecycle){
-      const {registrationTimeout, reregisterTimeout} = lifecycle;
+      const {registrationTimeout, reregistrationTimeout} = lifecycle;
       if (registrationTimeout) {
         terminateAfter = Date.now() + registrationTimeout * 1000;
       }
-      if (reregisterTimeout && !registrationTimeout || reregisterTimeout < registrationTimeout) {
-        terminateAfter = Date.now() + reregisterTimeout * 1000;
+      if (reregistrationTimeout && !registrationTimeout || reregistrationTimeout < registrationTimeout) {
+        terminateAfter = Date.now() + reregistrationTimeout * 1000;
       }
     }
     return {terminateAfter, ...lifecycle};

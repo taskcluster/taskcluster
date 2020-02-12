@@ -464,7 +464,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
       const worker = await helper.Worker.create({
         ...defaultWorker,
         providerData: {
-          reregisterTimeout: 10 * 3600 * 1000,
+          reregistrationTimeout: 10 * 3600 * 1000,
         },
       });
       const document = fs.readFileSync(path.resolve(__dirname, 'fixtures/azure_signature_good')).toString();

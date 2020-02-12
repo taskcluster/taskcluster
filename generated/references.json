@@ -232,9 +232,9 @@
           "title": "Registration Timeout",
           "type": "integer"
         },
-        "reregisterTimeout": {
+        "reregistrationTimeout": {
           "default": 345600,
-          "description": "If specified, workers in this pool must re-register via `reregister()`\nwithin `reregisterTimeout` seconds from the initial call to `register()`\nto get new credentials. If the worker has not done so, it will be\nterminated. This defaults to 96 hours.\n",
+          "description": "If specified, workers in this pool must re-register via `reregister()`\nwithin `reregistrationTimeout` seconds from the initial call to `register()`\nto get new credentials. If the worker has not done so, it will be\nterminated. This defaults to 96 hours.\n",
           "title": "Checkin Timeout",
           "type": "integer"
         }

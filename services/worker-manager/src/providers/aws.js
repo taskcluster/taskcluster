@@ -101,7 +101,7 @@ class AwsProvider extends Provider {
       return;
     }
 
-    const {terminateAfter, reregisterTimeout} = Provider.interpretLifecycle(workerPool.config);
+    const {terminateAfter, reregistrationTimeout} = Provider.interpretLifecycle(workerPool.config);
 
     const toSpawnPerConfig = Math.ceil(toSpawn / workerPool.config.launchConfigs.length);
     const shuffledConfigs = _.shuffle(workerPool.config.launchConfigs);
@@ -224,7 +224,7 @@ class AwsProvider extends Provider {
             state: i.State.Name,
             stateReason: i.StateReason.Message,
             terminateAfter,
-            reregisterTimeout,
+            reregistrationTimeout,
           },
         });
       }));
@@ -259,8 +259,8 @@ class AwsProvider extends Provider {
     }
 
     let expires = taskcluster.fromNow('96 hours');
-    if (worker.providerData.reregisterTimeout) {
-      expires = new Date(Date.now() + worker.providerData.reregisterTimeout);
+    if (worker.providerData.reregistrationTimeout) {
+      expires = new Date(Date.now() + worker.providerData.reregistrationTimeout);
     }
 
     // mark it as running
