@@ -4,8 +4,8 @@ set -e
 
 VERSION="${1}"
 
-if [ -z "$VERSION" ]; then
-    echo "USAGE: $0 <version>"
+if [ -z "$VERSION" ] || [[ "$VERSION" == v* ]]; then
+    echo "USAGE: $0 <version> (without the leading `v`)"
     exit 1
 fi
 
