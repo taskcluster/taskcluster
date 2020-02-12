@@ -324,7 +324,7 @@ In either case, the resulting database is injected into the taskcluster-lib-load
 In the real case, the database is upgraded to the latest version at the beginning of the suite.
 
 In both the real and mock cases, is up to the test suite implementation to reset the contents of the database between tests.
-Ideally this is done via `helper.db.procs` methods.
+Ideally this is done via `helper.db.fns` methods.
 
 Note that this is intended to operate against a temporary Postgres server such as one running in a docker container.
 It's not a good idea to run this against a "real" Postgres server.
