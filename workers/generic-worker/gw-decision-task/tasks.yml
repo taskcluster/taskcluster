@@ -304,6 +304,11 @@ Mounts:
   git2.24.0.2:
     directory: git
     content:
+      linux:
+        amd64:
+          url: 'https://mirrors.edge.kernel.org/pub/software/scm/git/git-2.24.1.tar.xz'
+          sha256: '723f24dce8fdd621a308b6187553fce7d5244205c065fe0a3aebd0b7c3f88562'
+          format: tar.xz
       windows:
         386:
           url: 'https://github.com/git-for-windows/git/releases/download/v2.24.0.windows.2/MinGit-2.24.0.2-32-bit.zip'
