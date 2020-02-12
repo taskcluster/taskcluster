@@ -9,7 +9,28 @@ const {
   UNDEFINED_TABLE,
   UNIQUE_VIOLATION,
 } = require('taskcluster-lib-postgres');
+const crypto = require('crypto');
 const { MAX_MODIFY_ATTEMPTS } = require('./constants');
+
+/** Fixed time comparison of two buffers */
+const fixedTimeComparison = function(b1, b2) {
+  let mismatch = 0;
+  mismatch |= !(b1 instanceof Buffer);
+  mismatch |= !(b2 instanceof Buffer);
+  mismatch |= b1.length !== b2.length;
+
+  if (mismatch === 1) {
+    return false;
+  }
+
+  const n = b1.length;
+
+  for (var i = 0; i < n; i++) {
+    mismatch |= b1[i] ^ b2[i];
+  }
+
+  return mismatch === 0;
+};
 
 // ** Coding Style **
 // To ease reading of this component we recommend the following code guidelines:
@@ -132,6 +153,13 @@ class Entity {
       await modifier.call(newProperties, newProperties);
       let result;
       try {
+        newProperties.PartitionKey = this._partitionKey;
+        newProperties.RowKey = this._rowKey;
+
+        if (this.constructor.__hasSigning) {
+          newProperties.Signature = this.constructor.__sign(newProperties);
+        }
+
         [result] = await this.db.fns[`${this.tableName}_modify`](this._partitionKey, this._rowKey, newProperties, 1, this.etag);
       } catch (e) {
         if (e.code === 'P0004') {
@@ -151,10 +179,9 @@ class Entity {
       }
 
       const entity = this.constructor.serialize(newProperties);
-      const etag = result['test_entities_modify'];
 
       this._getPropertiesFromEntity(entity);
-      this.etag = etag;
+      this.etag = result.etag;
 
       return this;
     };
@@ -257,17 +284,32 @@ class Entity {
       RowKey: rowKey,
       Version: this.version,
     };
+
     Object.entries(this.mapping).forEach(([key, keytype]) => {
       keytype.serialize(entity, properties[key], this.__cryptoKey);
     });
+
+    if (this.__sign) {
+      entity.Signature = this.__sign.call(this, properties).toString('base64');
+    }
+
     return entity;
   }
 
-  deserialize(properties) {
+  deserialize(entity) {
     const deserializedProperties = {};
+
     Object.entries(this.constructor.mapping).forEach(([key, keytype]) => {
-      deserializedProperties[key] = keytype.deserialize(properties, this.constructor.__cryptoKey);
+      deserializedProperties[key] = keytype.deserialize(entity, this.constructor.__cryptoKey);
     });
+
+    if (this.constructor.__hasSigning) {
+      const signature = Buffer.from(entity.Signature, 'base64');
+
+      if (!fixedTimeComparison(signature, this.constructor.__sign(deserializedProperties))) {
+        throw new Error('Signature validation failed!');
+      }
+    }
 
     return deserializedProperties;
   }
@@ -414,6 +456,16 @@ class Entity {
             'there aren\'t any encrypted properties!');
         }
 
+        if (ConfiguredEntity.__hasSigning) {
+          assert(typeof setupOptions.signingKey === 'string',
+            'signingKey is required when {signEntities: true} is set in ' +
+            'one of the versions of the Entity versions');
+          ConfiguredEntity.__signingKey = Buffer.from(setupOptions.signingKey, 'utf8');
+        } else {
+          assert(!setupOptions.signingKey, 'Don\'t specify options.signingKey when '  +
+            'entities aren\'t signed!');
+        }
+
         ConfiguredEntity.contextEntries = ConfiguredEntity._getContextEntries(
           configureOptions.context || [],
           setupOptions.context || {});
@@ -442,9 +494,45 @@ class Entity {
 
     const hasEncrypted = Object.values(ConfiguredEntity.mapping)
       .some(({ isEncrypted }) => isEncrypted);
+    const hasSigning = configureOptions.signEntities === true;
 
     if (hasEncrypted) {
       ConfiguredEntity.__hasEncrypted = true;
+    }
+
+    if (hasSigning) {
+      ConfiguredEntity.__hasSigning = true;
+
+      // Order keys for consistency
+      const keys = _.keys(ConfiguredEntity.mapping).sort();
+
+      ConfiguredEntity.__sign = function(properties) {
+        const hash  = crypto.createHmac('sha512', this.__signingKey);
+        const buf   = Buffer.alloc(4);
+        const n     = keys.length;
+        for (let i = 0; i < n; i++) {
+          const property = keys[i];
+          const type = ConfiguredEntity.mapping[property];
+          const value = type.hash(properties[property]);
+
+          // Hash [uint32 - len(property)] [bytes - property]
+          buf.writeUInt32BE(Buffer.byteLength(property, 'utf8'), 0);
+          hash.update(buf, 'utf8');
+          hash.update(property, 'utf8');
+
+          // Hash [uint32 - len(value)] [bytes - value]
+          let len;
+          if (typeof value === 'string') {
+            len = Buffer.byteLength(value, 'utf8');
+          } else {
+            len = value.length;
+          }
+          buf.writeUInt32BE(len, 0);
+          hash.update(buf);
+          hash.update(value, 'utf8');
+        }
+        return hash.digest();
+      };
     }
 
     ConfiguredEntity.__partitionKey = configureOptions.partitionKey(ConfiguredEntity.mapping);
