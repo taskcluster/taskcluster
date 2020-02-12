@@ -79,7 +79,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
     const workers = await helper.Worker.scan({}, {});
     // Check that this is setting times correctly to within a second or so to allow for some time
     // for the provisioning loop
-    assert(workers.entries[0].providerData.registrationExpiry - now - (6000 * 1000) < 5000);
+    assert(workers.entries[0].providerData.terminateAfter - now - (6000 * 1000) < 5000);
     assert.deepEqual(workers.entries[0].providerData.operation, {
       name: 'foo',
       zone: 'whatever/a',
@@ -209,7 +209,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
       state: helper.Worker.states.REQUESTED,
       providerData: {
         zone: 'us-east1-a',
-        registrationExpiry: Date.now() - 1000,
+        terminateAfter: Date.now() - 1000,
       },
     });
     await provider.scanPrepare();
@@ -232,7 +232,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
       state: helper.Worker.states.REQUESTED,
       providerData: {
         zone: 'us-east1-a',
-        registrationExpiry: Date.now() + 1000,
+        terminateAfter: Date.now() + 1000,
       },
     });
     await provider.scanPrepare();
@@ -255,7 +255,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
       state: helper.Worker.states.REQUESTED,
       providerData: {
         zone: 'us-east1-a',
-        reregisterDeadline: Date.now() - 1000,
+        terminateAfter: Date.now() - 1000,
       },
     });
     await provider.scanPrepare();
@@ -278,7 +278,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
       state: helper.Worker.states.REQUESTED,
       providerData: {
         zone: 'us-east1-a',
-        reregisterDeadline: Date.now() + 1000,
+        terminateAfter: Date.now() + 1000,
       },
     });
     await provider.scanPrepare();
@@ -430,7 +430,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
       const worker = await helper.Worker.create({
         ...defaultWorker,
         providerData: {
-          reregisterDeadline: taskcluster.fromNow('10 hours'),
+          reregisterTimeout: 3600 * 10 * 1000,
         },
       });
       const workerIdentityProof = {token: 'good'};

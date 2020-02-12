@@ -122,7 +122,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
         assert.strictEqual(w.providerData.region, defaultLaunchConfig.region, 'Region should come from the chosen config');
         // Check that this is setting times correctly to within a second or so to allow for some time
         // for the provisioning loop
-        assert(workers.entries[0].providerData.registrationExpiry - now - (6000 * 1000) < 5000);
+        assert(workers.entries[0].providerData.terminateAfter - now - (6000 * 1000) < 5000);
       });
       sinon.restore();
     });
@@ -404,7 +404,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
         providerData: {
           region: 'us-west-2',
           imageId: actualWorkerIid.imageId,
-          reregisterTimeout: taskcluster.fromNow('10 hours'),
+          reregisterTimeout: 10 * 3600 * 1000,
           instanceType: actualWorkerIid.instanceType,
           architecture: actualWorkerIid.architecture,
           availabilityZone: 'us-west-2a',
@@ -419,8 +419,8 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
       };
 
       const resp = await provider.registerWorker({worker: runningWorker, workerPool, workerIdentityProof});
-      assert(resp.expires - new Date() + 10000 > 96 * 3600 * 1000);
-      assert(resp.expires - new Date() - 10000 < 96 * 3600 * 1000);
+      assert(resp.expires - new Date() + 10000 > 10 * 3600 * 1000);
+      assert(resp.expires - new Date() - 10000 < 10 * 3600 * 1000);
 
       sinon.restore();
     });
@@ -509,7 +509,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
         state: helper.Worker.states.REQUESTED,
         providerData: {
           ...workerInDB.providerData,
-          registrationExpiry: Date.now() - 1000,
+          terminateAfter: Date.now() - 1000,
         },
       });
       provider.seen = {};
@@ -526,7 +526,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
         state: helper.Worker.states.REQUESTED,
         providerData: {
           ...workerInDB.providerData,
-          registrationExpiry: Date.now() + 1000,
+          terminateAfter: Date.now() + 1000,
         },
       });
       provider.seen = {};
@@ -543,7 +543,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
         state: helper.Worker.states.REQUESTED,
         providerData: {
           ...workerInDB.providerData,
-          reregisterDeadline: Date.now() - 1000,
+          terminateAfter: Date.now() - 1000,
         },
       });
       provider.seen = {};
@@ -560,7 +560,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
         state: helper.Worker.states.REQUESTED,
         providerData: {
           ...workerInDB.providerData,
-          reregisterDeadline: Date.now() + 1000,
+          terminateAfter: Date.now() + 1000,
         },
       });
       provider.seen = {};

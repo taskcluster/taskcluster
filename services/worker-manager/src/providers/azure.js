@@ -114,7 +114,7 @@ class AzureProvider extends Provider {
       return; // Nothing to do
     }
 
-    const {registrationExpiry, reregisterDeadline, reregisterTimeout} = this.interpretLifecycle(workerPool.config);
+    const {terminateAfter, reregisterTimeout} = this.interpretLifecycle(workerPool.config);
 
     const cfgs = [];
     while (toSpawn > 0) {
@@ -261,8 +261,7 @@ class AzureProvider extends Provider {
         capacity: cfg.capacityPerInstance,
         providerData: {
           ...providerData,
-          registrationExpiry,
-          reregisterDeadline,
+          terminateAfter,
           reregisterTimeout,
         },
       });
@@ -367,6 +366,11 @@ class AzureProvider extends Provider {
       throw error();
     }
 
+    let expires = taskcluster.fromNow('96 hours');
+    if (worker.providerData.reregisterTimeout) {
+      expires = new Date(Date.now() + worker.providerData.reregisterTimeout);
+    }
+
     this.monitor.log.workerRunning({
       workerPoolId: workerPool.workerPoolId,
       providerId: this.providerId,
@@ -375,12 +379,8 @@ class AzureProvider extends Provider {
     await worker.modify(w => {
       w.lastModified = new Date();
       w.state = this.Worker.states.RUNNING;
+      w.providerData.terminateAfter = expires;
     });
-
-    let expires = taskcluster.fromNow('96 hours');
-    if (worker.providerData.reregisterDeadline) {
-      expires = new Date(worker.providerData.reregisterDeadline);
-    }
 
     return {expires};
   }
@@ -393,13 +393,7 @@ class AzureProvider extends Provider {
     const states = this.Worker.states;
     this.seen[worker.workerPoolId] = this.seen[worker.workerPoolId] || 0;
 
-    if (worker.providerData.registrationExpiry &&
-      worker.state === states.REQUESTED &&
-      worker.providerData.registrationExpiry < Date.now()) {
-      return await this.removeWorker({worker});
-    }
-
-    if (worker.providerData.reregisterDeadline && worker.providerData.reregisterDeadline < Date.now()) {
+    if (worker.providerData.terminateAfter && worker.providerData.terminateAfter < Date.now()) {
       return await this.removeWorker({worker});
     }
 

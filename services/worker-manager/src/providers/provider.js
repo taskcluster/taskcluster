@@ -87,17 +87,18 @@ class Provider {
   }
 
   interpretLifecycle({lifecycle}) {
-    let registrationExpiry, reregisterDeadline = null;
+    let terminateAfter = null;
     if (lifecycle){
       const {registrationTimeout, reregisterTimeout} = lifecycle;
       if (registrationTimeout) {
-        registrationExpiry = Date.now() + registrationTimeout * 1000;
+        terminateAfter = registrationTimeout;
       }
-      if (reregisterTimeout) {
-        reregisterDeadline = Date.now() + reregisterTimeout * 1000;
+      if (reregisterTimeout && !terminateAfter || reregisterTimeout < terminateAfter) {
+        terminateAfter = reregisterTimeout;
       }
+      terminateAfter = Date.now() + terminateAfter * 1000;
     }
-    return {registrationExpiry, reregisterDeadline, ...lifecycle};
+    return {terminateAfter, ...lifecycle};
   }
 }
 

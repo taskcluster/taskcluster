@@ -101,7 +101,7 @@ class AwsProvider extends Provider {
       return;
     }
 
-    const {registrationExpiry, reregisterDeadline, reregisterTimeout} = this.interpretLifecycle(workerPool.config);
+    const {terminateAfter, reregisterTimeout} = this.interpretLifecycle(workerPool.config);
 
     const toSpawnPerConfig = Math.ceil(toSpawn / workerPool.config.launchConfigs.length);
     const shuffledConfigs = _.shuffle(workerPool.config.launchConfigs);
@@ -223,8 +223,7 @@ class AwsProvider extends Provider {
             owner: spawned.OwnerId,
             state: i.State.Name,
             stateReason: i.StateReason.Message,
-            registrationExpiry,
-            reregisterDeadline,
+            terminateAfter,
             reregisterTimeout,
           },
         });
@@ -259,6 +258,11 @@ class AwsProvider extends Provider {
       throw new ApiError('Instance validation error');
     }
 
+    let expires = taskcluster.fromNow('96 hours');
+    if (worker.providerData.reregisterTimeout) {
+      expires = new Date(Date.now() + worker.providerData.reregisterTimeout);
+    }
+
     // mark it as running
     this.monitor.log.workerRunning({
       workerPoolId: workerPool.workerPoolId,
@@ -268,12 +272,8 @@ class AwsProvider extends Provider {
     await worker.modify(w => {
       w.lastModified = new Date();
       w.state = this.Worker.states.RUNNING;
+      w.providerData.terminateAfter = expires;
     });
-
-    let expires = taskcluster.fromNow('96 hours');
-    if (worker.providerData.reregisterDeadline) {
-      expires = new Date(worker.providerData.reregisterDeadline);
-    }
 
     return {expires};
   }
@@ -281,13 +281,7 @@ class AwsProvider extends Provider {
   async checkWorker({worker}) {
     this.seen[worker.workerPoolId] = this.seen[worker.workerPoolId] || 0;
 
-    if (worker.providerData.registrationExpiry &&
-      worker.state === this.Worker.states.REQUESTED &&
-      worker.providerData.registrationExpiry < Date.now()) {
-      return await this.removeWorker({worker});
-    }
-
-    if (worker.providerData.reregisterDeadline && worker.providerData.reregisterDeadline < Date.now()) {
+    if (worker.providerData.terminateAfter && worker.providerData.terminateAfter < Date.now()) {
       return await this.removeWorker({worker});
     }
 
