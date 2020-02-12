@@ -86,17 +86,16 @@ class Provider {
   async removeResources({workerPool}) {
   }
 
-  interpretLifecycle({lifecycle}) {
+  static interpretLifecycle({lifecycle}) {
     let terminateAfter = null;
     if (lifecycle){
       const {registrationTimeout, reregisterTimeout} = lifecycle;
       if (registrationTimeout) {
-        terminateAfter = registrationTimeout;
+        terminateAfter = Date.now() + registrationTimeout * 1000;
       }
-      if (reregisterTimeout && !terminateAfter || reregisterTimeout < terminateAfter) {
-        terminateAfter = reregisterTimeout;
+      if (reregisterTimeout && !registrationTimeout || reregisterTimeout < registrationTimeout) {
+        terminateAfter = Date.now() + reregisterTimeout * 1000;
       }
-      terminateAfter = Date.now() + terminateAfter * 1000;
     }
     return {terminateAfter, ...lifecycle};
   }

@@ -114,7 +114,7 @@ class AzureProvider extends Provider {
       return; // Nothing to do
     }
 
-    const {terminateAfter, reregisterTimeout} = this.interpretLifecycle(workerPool.config);
+    const {terminateAfter, reregisterTimeout} = Provider.interpretLifecycle(workerPool.config);
 
     const cfgs = [];
     while (toSpawn > 0) {

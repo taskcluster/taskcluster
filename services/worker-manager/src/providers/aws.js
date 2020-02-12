@@ -101,7 +101,7 @@ class AwsProvider extends Provider {
       return;
     }
 
-    const {terminateAfter, reregisterTimeout} = this.interpretLifecycle(workerPool.config);
+    const {terminateAfter, reregisterTimeout} = Provider.interpretLifecycle(workerPool.config);
 
     const toSpawnPerConfig = Math.ceil(toSpawn / workerPool.config.launchConfigs.length);
     const shuffledConfigs = _.shuffle(workerPool.config.launchConfigs);
