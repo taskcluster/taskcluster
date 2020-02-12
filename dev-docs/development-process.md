@@ -130,6 +130,7 @@ You will first need to have
 * a running kubernetes cluster (at the moment this has to be a gke cluster from google)
 * a rabbitmq cluster
 * an azure account
+* a postgres server (see below for Cloud SQL, or use another provider)
 * an aws account and an IAM user in that account
 * helm installed (either 2 or 3 should Just Work)
 * latest version of kubectl installed
@@ -137,7 +138,7 @@ You will first need to have
 Once those are all set up, you will need:
 
 * Configure CLI access for your AWS user; this iam user must be able to configure s3/iam resources
-* Think of a hostname for which you control the DNS; this will be your rootUrl. (hint: <yourname>.taskcluster-dev.net - this domain managed in Route53 in the taskcluster-aws-staging AWS account. You'll have to create a TXT recordset named _acme-challenge.<yourname>.taskcluster-dev.net with the secret that certbot gave you, and after completing the certbot step - IPv4 recordset with your ingress-ip)
+* Think of a hostname for which you control the DNS; this will be your rootUrl. (hint: <yourname>.taskcluster-dev.net - this domain managed in Route53 in the taskcluster-aws-staging AWS account. You'll have to create a TXT recordset named `_acme-challenge.<yourname>.taskcluster-dev.net` with the secret that certbot gave you, and after completing the certbot step - IPv4 recordset with your ingress-ip)
 * Run `gcloud container clusters get-credentials` for your k8s cluster
 
 Now follow along:
@@ -153,6 +154,9 @@ Now follow along:
    be encrypted at rest.
    * SubscriptionId can be found in the Azure console
    * RabbitMQ account creds are in passwordstore at tc/cloudamqp.com/hip-macaw
+1. Run `yarn dev:db:upgrade` to upgrade the DB to the current version of the database.  You will generally want to do this
+   before deploying with `dev:apply`, if any DB changes need to be applied.  This command is a thin wrapper around `yarn
+   db:upgrade` that sets the necessary environment variables, so feel free to use that command instead if you prefer.
 1. Run `yarn dev:verify` and see if it complains about any missing values in
    your configuration. Please note that `dev-config.yml` defines values for environment variables rather than configuration
    fields directly, so if you ever need to edit the file manually, instead of entering the names of the config fields from
@@ -170,6 +174,30 @@ Troubleshooting:
 * Dev config creation step: `AccessDenied: Access Denied` error with a stack trace pointing at aws-sdk library - make sure to have your aws credentials are fetched and stored in environment variables AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, and AWS_SESSION_TOKEN.
 * Helm error `Error: stat taskcluster: no such file or directory` - make sure you have helm3 installed.
 * Kubectl error: `Error: unknown flag --current` - make sure you run kubectl v1.15.0 or later
+
+### Google Cloud SQL
+
+To set up a Google Cloud SQL server:
+
+ 1. In the Google Cloud Console, create a new SQL instance.  Its name doesn't really matter.  Generate but ignore the password for the postgres user.  It will take a while to create.
+ 1. Under "Connections", enable "Public IP" and allow access from your development system or wherever you'll be running DB upgrades from.  You can use 0.0.0.0/0 here, if you'd like -- Google will complain, but it's development data.
+ 1. Still under "Connections", enable "Private IP".
+    See https://cloud.google.com/sql/docs/mysql/configure-private-ip.
+    If this is the first time setting this up in a project, then you'll need to enable the Service Networking API and your account must have the "Network Administrator" role so that Cloud SQL can do some complicated networking stuff behind the scenes.
+    Note that there are two buttons to click: "Allocate and Create" and then later "Save".
+    Each can take several minutes.
+
+That much only need be done once, in fact -- multiple dev environments can share the same DB.  For a specific deployment:
+
+ 1. Under "Users", create a new user with the name of your deployment (`<yourname>`) and generate a good password and make a note of it.
+   * This will also be the "username prefix" from which the per-service usernames are derived
+   * Google creates this user as a superuser on the server, which is a bit more than required, but will do for development environments.
+ 1. Under "Databases", create one with the name of your deployment (`<yourname>`).
+
+You will need the following to tell `yarn dev:init`:
+ * Public and Private IP addresses (on the "Overview" tab)
+ * The admin username and password
+ * The database name
 
 ### Optional configuration
 

@@ -130,6 +130,17 @@ program.command('dev:init')
     run(init, options[0]);
   });
 
+program.command('dev:db:upgrade')
+  .description('Run `yarn db:upgrade` for a development environment')
+  .action((...options) => {
+    if (options.length !== 1) {
+      console.error('unexpected command-line arguments');
+      process.exit(1);
+    }
+    const {dbUpgrade} = require('./dev');
+    run(dbUpgrade, options[0]);
+  });
+
 program.command('dev:apply')
   .description('Apply changes to a development deployment')
   .action((...options) => {
