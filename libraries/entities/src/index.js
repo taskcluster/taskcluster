@@ -112,6 +112,7 @@ class Entity {
   async reload() {
     const result = await this.db.fns[`${this.tableName}_load`](this._partitionKey, this._rowKey);
     const etag = result[0].etag;
+    const hasChanged = etag !== this.etag;
 
     this._getPropertiesFromEntity(result[0].value);
     this.etag = etag;
@@ -120,7 +121,7 @@ class Entity {
       this[key] = value;
     });
 
-    return etag !== this.etag;
+    return hasChanged;
   }
 
   async modify(modifier) {

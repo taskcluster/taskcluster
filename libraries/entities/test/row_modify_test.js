@@ -154,14 +154,14 @@ helper.dbSuite(path.basename(__filename), function() {
       const id = slugid.v4();
       const TestTable = configuredTestTable.setup({ tableName: 'test_entities', db, serviceName });
       return TestTable.create({
-        id:     id,
-        name:   'my-test-item',
-        count:  1,
-        time:   new Date(),
+        id: id,
+        name: 'my-test-item',
+        count: 1,
+        time: new Date(),
       }).then(function(itemA) {
         return TestTable.load({
-          id:     id,
-          name:   'my-test-item',
+          id: id,
+          name: 'my-test-item',
         }).then(function(itemB) {
           return Promise.all([
             itemA.modify(function() {
@@ -174,8 +174,8 @@ helper.dbSuite(path.basename(__filename), function() {
         });
       }).then(function() {
         return TestTable.load({
-          id:     id,
-          name:   'my-test-item',
+          id: id,
+          name: 'my-test-item',
         });
       }).then(function(item) {
         assert(item instanceof TestTable);
