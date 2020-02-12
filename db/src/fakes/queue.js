@@ -5,6 +5,7 @@ const { getEntries } = require('../utils');
 
 class FakeQueue {
   constructor() {
+    this.messages = new Map();
     this.queueTasks = new Set();
     this.queueArtifacts = new Set();
     this.queueTaskGroups = new Set();
@@ -15,11 +16,13 @@ class FakeQueue {
     this.queueWorkers = new Set();
     this.queueWorkerTypes = new Set();
     this.queueProvisioners = new Set();
+
   }
 
   /* helpers */
 
   reset() {
+    this.messages = new Map();
     this.queueTasks = new Set();
     this.queueArtifacts = new Set();
     this.queueTaskGroups = new Set();
@@ -434,6 +437,10 @@ class FakeQueue {
     this.queueProvisioners.add(c);
 
     return c;
+  }
+
+  getQueueContent(queueName) {
+    return this.messages.get(queueName) || [];
   }
 
   /* fake functions */
@@ -1002,6 +1009,71 @@ class FakeQueue {
     const entries = getEntries({ partitionKey: partition_key, rowKey: row_key, condition }, this.queueProvisioners);
 
     return entries.slice((page - 1) * size, (page - 1) * size + size);
+  }
+
+  async azure_queue_count(queue_name) {
+    const queue = this.messages.get(queue_name) || [];
+    return [{azure_queue_count: queue.length}];
+  }
+
+  async azure_queue_put(queue_name, message_text, visible, expires) {
+    const queue = this.messages.get(queue_name) || [];
+    this.messages.set(queue_name, queue);
+
+    queue.push({message_id: slugid.v4(), message_text, visible, expires});
+
+    return [];
+  }
+
+  async azure_queue_delete(queue_name, message_id, pop_receipt) {
+    const queue = this.messages.get(queue_name) || [];
+    this.messages.set(queue_name,
+      queue.filter(msg => msg.message_id !== message_id || msg.pop_receipt !== pop_receipt));
+  }
+
+  async azure_queue_update(queue_name, message_text, message_id, pop_receipt, visible) {
+    const queue = this.messages.get(queue_name) || [];
+    this.messages.set(queue_name,
+      queue.map(msg => {
+        if (msg.message_id === message_id && msg.pop_receipt === pop_receipt) {
+          msg.visible = visible;
+          msg.message_text = message_text;
+        }
+        return msg;
+      }));
+  }
+
+  async azure_queue_get(queue_name, visible, count) {
+    const queue = this.messages.get(queue_name) || [];
+    const result = [];
+    const now = new Date();
+
+    assert(count >= 1);
+
+    for (let msg of queue) {
+      if (msg.visible <= now && msg.expires > now) {
+        msg.pop_receipt = slugid.v4();
+        msg.visible = visible;
+        result.push({
+          message_id: msg.message_id,
+          message_text: msg.message_text,
+          pop_receipt: msg.pop_receipt,
+        });
+        count--;
+        if (count <= 0) {
+          break;
+        }
+      }
+    }
+
+    return result;
+  }
+
+  async azure_queue_delete_expired() {
+    const now = new Date();
+    for (let [key, queue] of this.messages) {
+      this.messages.set(key, queue.filter(({expires}) => expires > now));
+    }
   }
 }
 
