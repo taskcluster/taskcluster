@@ -144,6 +144,11 @@ class NumberType extends BaseValueType {
   validate(value) {
     checkType('NumberType', this.property, value, 'number');
   }
+
+  string(value) {
+    this.validate(value);
+    return value.toString();
+  };
 }
 
 class PositiveIntegerType extends NumberType {
