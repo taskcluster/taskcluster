@@ -38,7 +38,7 @@ require (
 	github.com/taskcluster/stateless-dns-go v1.0.6
 	github.com/taskcluster/taskcluster-base-go v1.0.1
 	github.com/taskcluster/taskcluster-lib-urls v13.0.0+incompatible
-	github.com/taskcluster/taskcluster-worker-runner v1.0.4
+	github.com/taskcluster/taskcluster-worker-runner v1.1.0
 	github.com/taskcluster/websocktunnel v2.0.0+incompatible
 	github.com/tent/hawk-go v0.0.0-20161026210932-d341ea318957
 	github.com/xeipuuv/gojsonschema v1.1.0

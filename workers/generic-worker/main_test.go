@@ -2,7 +2,6 @@ package main
 
 import (
 	"bytes"
-	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -12,7 +11,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"github.com/taskcluster/taskcluster/v24/workers/generic-worker/testutil"
 )
 
@@ -264,9 +263,7 @@ func (w *FakeWriter) Write(p []byte) (n int, err error) {
 	return len(p), nil
 }
 
-func TestProtocol(t *testing.T) {
-	// TODO: Fix bug 1608185.
-	t.Skip("SKIPPING until generic-worker has migrated to the monorepo. See bug 1608185 and bug 1608828.")
+func TestProtocolStdio(t *testing.T) {
 	defer func() {
 		WorkerRunnerProtocol = nil
 		workerRunnerTransport = nil
@@ -274,24 +271,20 @@ func TestProtocol(t *testing.T) {
 	reader := bytes.NewBufferString(`~{"type":"welcome", "capabilities": ["graceful-termination"]}` + "\n")
 	writer := &FakeWriter{}
 
-	initializeWorkerRunnerProtocol(reader, writer)
+	initializeWorkerRunnerProtocol(reader, writer, true)
+	// Capable waits until the protocol is initialized and capabilities are fully determined
+	require.True(t, WorkerRunnerProtocol.Capable("graceful-termination"))
+}
 
-	// wait for up to 10s for the protocol negotiation to occur.
-	// see https://bugzilla.mozilla.org/show_bug.cgi?id=1608185
-	start := time.Now()
-	for {
-		if WorkerRunnerProtocol.Capabilities.Has("graceful-termination") {
-			break
-		}
-		if time.Now().Sub(start) > 10*time.Second {
-			t.Fatalf("protocol negotiation did not work")
-		}
-		time.Sleep(100 * time.Millisecond)
-	}
+func TestProtocolNull(t *testing.T) {
+	defer func() {
+		WorkerRunnerProtocol = nil
+		workerRunnerTransport = nil
+	}()
+	reader := bytes.NewBufferString(`~{"type":"welcome", "capabilities": ["graceful-termination"]}` + "\n")
+	writer := &FakeWriter{}
 
-	// check that we sent a "hello" message in response
-	var msg map[string]interface{}
-	err := json.Unmarshal(writer.written[1:], &msg)
-	assert.NoError(t, err)
-	assert.Equal(t, "hello", msg["type"])
+	initializeWorkerRunnerProtocol(reader, writer, false)
+	// withWorkerRunner is false, so we are using a NullTransport and the capability is not available
+	require.False(t, WorkerRunnerProtocol.Capable("graceful-termination"))
 }

@@ -139,9 +139,9 @@ github.com/taskcluster/taskcluster-lib-urls v12.0.0+incompatible h1:57WLzh7B04y6
 github.com/taskcluster/taskcluster-lib-urls v12.0.0+incompatible/go.mod h1:ALqTgi15AmJGEGubRKM0ydlLAFatlQPrQrmal9YZpQs=
 github.com/taskcluster/taskcluster-lib-urls v13.0.0+incompatible h1:JzXbHelZk1Kmi5JftwM47YOdHre2zddpP/cZCgXAkqM=
 github.com/taskcluster/taskcluster-lib-urls v13.0.0+incompatible/go.mod h1:ALqTgi15AmJGEGubRKM0ydlLAFatlQPrQrmal9YZpQs=
-github.com/taskcluster/taskcluster-worker-runner v1.0.4 h1:WECD+DDJteYLqVtjDoxRwkDAjhMGWgKY4lrGA7ilJDE=
-github.com/taskcluster/taskcluster-worker-runner v1.0.4/go.mod h1:VCPi0FlNiE0BNRHVDnNLp5pYkC6aYryEv67siIXbQoo=
-github.com/taskcluster/taskcluster/clients/client-go/v24 v24.1.10/go.mod h1:/KuWQwJKVCMCvuhxUNo/L2zZtCI3SnQ82G84UMJiwww=
+github.com/taskcluster/taskcluster-worker-runner v1.1.0 h1:OPcmZy55IX8u2rDOHyu9dmy0D3kyoGfcWFLpWJhXoac=
+github.com/taskcluster/taskcluster-worker-runner v1.1.0/go.mod h1:5H40vn7vUe620wpS1q29MAqXmqO6W0LJWK+hgfnuPHU=
+github.com/taskcluster/taskcluster/clients/client-go/v24 v24.3.1/go.mod h1:/KuWQwJKVCMCvuhxUNo/L2zZtCI3SnQ82G84UMJiwww=
 github.com/taskcluster/websocktunnel v2.0.0+incompatible h1:w6mt7+u7p8a3Xbe37YYL7Pw1p/A5T9slZbhn7t9Za3g=
 github.com/taskcluster/websocktunnel v2.0.0+incompatible/go.mod h1:Ky2uIex00xBd73oEXvmMdshUWgSjiWeAfeeX4p8JknY=
 github.com/tent/hawk-go v0.0.0-20161026210932-d341ea318957 h1:6Fre/uvwovW5YY4nfHZk66cAg9HjT9YdFSAJHUUgOyQ=
