@@ -148,6 +148,7 @@ export default class Documentation extends Component {
       <Dashboard
         className={classes.documentation}
         docs
+        disableTitleFormatting
         title={
           pageInfo && pageInfo.data.title
             ? pageInfo.data.title
