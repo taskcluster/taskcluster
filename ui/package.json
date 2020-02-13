@@ -17,7 +17,7 @@
     "create:fragment-matcher": "dotenv node src/scripts/queryServer"
   },
   "dependencies": {
-    "@material-ui/core": "^4.5.1",
+    "@material-ui/core": "^4.8.3",
     "@material-ui/icons": "^4.5.1",
     "@material-ui/lab": "4.0.0-alpha.33",
     "@material-ui/pickers": "3.2.7",
