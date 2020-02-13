@@ -67,7 +67,6 @@ tasks:
             yarn workspace taskcluster-lib-pulse coverage:report
           artifacts: {$eval: artifactsDir}
         - name: taskcluster-lib-references
-        - name: taskcluster-lib-scopes
         - name: taskcluster-lib-testing
         - name: taskcluster-lib-config
         - name: taskcluster-lib-validate

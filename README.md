@@ -59,7 +59,6 @@ It is not possible to run a full Taskcluster deployment directly from this repos
     * [Postgres Library](libraries/postgres#readme)
     * [Pulse Library](libraries/pulse#readme)
     * [References Library](libraries/references#readme)
-    * [Scopes Library](libraries/scopes#readme)
     * [Testing Library](libraries/testing#readme)
     * [Validate Library](libraries/validate#readme)
 * [Services](services#readme)
