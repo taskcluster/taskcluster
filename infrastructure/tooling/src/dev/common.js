@@ -31,8 +31,10 @@ module.exports = ({userConfig, prompts, configTmpl}) => {
 
   prompts.push({
     type: 'input',
-    when: () => !userConfig.ui || !userConfig.ui.application_name,
-    name: 'ui.application_name',
+    when: () => !userConfig.applicationName,
+    // this config was renamed, so help the user out with a default
+    default: userConfig.ui && userConfig.ui.application_name,
+    name: 'applicationName',
     message: 'What human-readable name will your deployment have?',
   });
 
