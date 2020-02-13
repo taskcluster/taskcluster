@@ -31,7 +31,12 @@ func platformFeatures() []Feature {
 
 func deleteDir(path string) error {
 	log.Print("Removing directory '" + path + "'...")
-	err := host.Run("/usr/bin/sudo", "/bin/rm", "-rf", path)
+	err := host.Run("/usr/bin/sudo", "/bin/chmod", "-R", "u+w", path)
+	if err != nil {
+		log.Print("WARNING: could not chmod -R u+w '" + path + "'")
+		log.Printf("%v", err)
+	}
+	err = host.Run("/usr/bin/sudo", "/bin/rm", "-rf", path)
 	if err != nil {
 		log.Print("WARNING: could not delete directory '" + path + "'")
 		log.Printf("%v", err)
