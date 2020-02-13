@@ -154,7 +154,7 @@ class GoogleProvider extends Provider {
     await worker.modify(w => {
       w.lastModified = new Date();
       w.state = this.Worker.states.RUNNING;
-      w.providerData.terminateAfter = expires;
+      w.providerData.terminateAfter = expires.getTime();
     });
 
     // assume for the moment that workers self-terminate before 96 hours

@@ -23,25 +23,37 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   });
 
   test('only registrationTimeout', async function() {
-    assert.equal(10100, Provider.interpretLifecycle({lifecycle: {registrationTimeout: 10}}).terminateAfter);
+    assert.deepEqual({
+      terminateAfter: 10100,
+      reregistrationTimeout: null,
+    }, Provider.interpretLifecycle({lifecycle: {registrationTimeout: 10}}));
   });
 
   test('only reregistrationTimeout', async function() {
-    assert.equal(10100, Provider.interpretLifecycle({lifecycle: {reregistrationTimeout: 10}}).terminateAfter);
+    assert.deepEqual({
+      terminateAfter: 10100,
+      reregistrationTimeout: 10000,
+    }, Provider.interpretLifecycle({lifecycle: {reregistrationTimeout: 10}}));
   });
 
   test('greater registrationTimeout', async function() {
-    assert.equal(10100, Provider.interpretLifecycle({lifecycle: {
+    assert.deepEqual({
+      terminateAfter: 10100,
+      reregistrationTimeout: 10000,
+    }, Provider.interpretLifecycle({lifecycle: {
       registrationTimeout: 100,
       reregistrationTimeout: 10,
-    }}).terminateAfter);
+    }}));
   });
 
   test('greater reregistrationTimeout', async function() {
-    assert.equal(10100, Provider.interpretLifecycle({lifecycle: {
+    assert.deepEqual({
+      terminateAfter: 10100,
+      reregistrationTimeout: 100000,
+    }, Provider.interpretLifecycle({lifecycle: {
       registrationTimeout: 10,
       reregistrationTimeout: 100,
-    }}).terminateAfter);
+    }}));
   });
 
 });
