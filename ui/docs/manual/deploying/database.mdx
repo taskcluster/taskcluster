@@ -55,15 +55,21 @@ However, note that these read-only replicas must conform to the consistency requ
 
 Database access is configured with URL-shaped strings as defined by [node-postgres](https://node-postgres.com/features/connecting).
 
-Each service that requires database access has Helm properties `<service>.readDbUrl` and `<service>.writeDbUrl`.
+These URLs can specify TLS connections with a `?ssl=1` suffix, but note that this only enables end-to-end encryption, without identity validation on either end.
+This means that the connection could be intercepted by a MITM attack.
+An alternative syntax is `?sslcert=/path/to/client/cert&sslkey=/path/to/client/key&sslrootcert=/path/to/server/cert`, giving filenames for a client cert and key, and for a server cert.
+These files must be on the filesystem, making this form difficult to use in deployed services.
+We recommend configuring private IP access for services and using `?ssl=1`, and using a public IP with the full set of certificates and keys for the administrative access.
+
+Each service that requires database access has Helm properties `<service>.read_db_url` and `<service>.write_db_url`.
 Set these values to include the corresponding database users' credentials.
 In a non-replicated scenario, set each service's read and write URLs to the same value.
 For example:
 
 ```yaml
 queue:
-  readDbUrl: postgresql://prod_taskcluster_queue:sekrit@readonly.tc-db.example.com/taskcluster_prod
-  writeDbUrl: postgresql://prod_taskcluster_queue:sekrit@readwrite.tc-db.example.com/taskcluster_prod
+  read_db_url: postgresql://prod_taskcluster_queue:sekrit@readonly.tc-db.example.com/taskcluster_prod?ssl=1
+  write_db_url: postgresql://prod_taskcluster_queue:sekrit@readwrite.tc-db.example.com/taskcluster_prod?ssl=1
 ```
 
 <Warning>
