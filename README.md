@@ -83,10 +83,11 @@ It is not possible to run a full Taskcluster deployment directly from this repos
     * [ui/src/components/Snackbar](ui/src/components/Snackbar#readme)
     * [ui/src/components/SpeedDial](ui/src/components/SpeedDial#readme)
     * [ui/src/components/StatusLabel](ui/src/components/StatusLabel#readme)
-* [Generic Worker](workers/generic-worker#readme)
-    * [workers/generic-worker/imagesets](workers/generic-worker/imagesets#readme)
-    * [workers/generic-worker/server-logs](workers/generic-worker/server-logs#readme)
-    * [workers/generic-worker/worker_types](workers/generic-worker/worker_types#readme)
+* [Workers](workers#readme)
+    * [Generic Worker](workers/generic-worker#readme)
+        * [workers/generic-worker/imagesets](workers/generic-worker/imagesets#readme)
+        * [workers/generic-worker/server-logs](workers/generic-worker/server-logs#readme)
+        * [workers/generic-worker/worker_types](workers/generic-worker/worker_types#readme)
 <!-- TOC END -->
 
 ## Team Mentions
