@@ -150,8 +150,9 @@ class Entity {
 
     const attemptModify = async () => {
       const newProperties = _.cloneDeep(this.properties);
-      await modifier.call(newProperties, newProperties);
+      let entity;
       let result;
+      await modifier.call(newProperties, newProperties);
       try {
         newProperties.PartitionKey = this._partitionKey;
         newProperties.RowKey = this._rowKey;
@@ -160,7 +161,8 @@ class Entity {
           newProperties.Signature = this.constructor.__sign(newProperties);
         }
 
-        [result] = await this.db.fns[`${this.tableName}_modify`](this._partitionKey, this._rowKey, newProperties, 1, this.etag);
+        entity = this.constructor.serialize(newProperties);
+        [result] = await this.db.fns[`${this.tableName}_modify`](this._partitionKey, this._rowKey, entity, 1, this.etag);
       } catch (e) {
         if (e.code === 'P0004') {
           return null;
@@ -177,8 +179,6 @@ class Entity {
 
         throw e;
       }
-
-      const entity = this.constructor.serialize(newProperties);
 
       this._getPropertiesFromEntity(entity);
       this.etag = result.etag;
@@ -444,13 +444,15 @@ class Entity {
           serviceName,
         } = setupOptions;
 
+        class subClass extends ConfiguredEntity {}
+
         if (ConfiguredEntity.__hasEncrypted) {
           assert(typeof setupOptions.cryptoKey === 'string',
             'cryptoKey is required when a property is encrypted in any ' +
             'of the schema versions.');
           const secret  = Buffer.from(setupOptions.cryptoKey, 'base64');
           assert(secret.length === 32, 'cryptoKey must be 32 bytes in base64');
-          ConfiguredEntity.__cryptoKey = secret;
+          subClass.__cryptoKey = secret;
         } else {
           assert(!setupOptions.cryptoKey, 'Don\'t specify options.cryptoKey when ' +
             'there aren\'t any encrypted properties!');
@@ -460,20 +462,20 @@ class Entity {
           assert(typeof setupOptions.signingKey === 'string',
             'signingKey is required when {signEntities: true} is set in ' +
             'one of the versions of the Entity versions');
-          ConfiguredEntity.__signingKey = Buffer.from(setupOptions.signingKey, 'utf8');
+          subClass.__signingKey = Buffer.from(setupOptions.signingKey, 'utf8');
         } else {
           assert(!setupOptions.signingKey, 'Don\'t specify options.signingKey when '  +
             'entities aren\'t signed!');
         }
 
-        ConfiguredEntity.contextEntries = ConfiguredEntity._getContextEntries(
+        subClass.contextEntries = ConfiguredEntity._getContextEntries(
           configureOptions.context || [],
           setupOptions.context || {});
-        ConfiguredEntity.tableName = tableName;
-        ConfiguredEntity.serviceName = serviceName;
-        ConfiguredEntity.db = db;
+        subClass.tableName = tableName;
+        subClass.serviceName = serviceName;
+        subClass.db = db;
 
-        return ConfiguredEntity;
+        return subClass;
       }
     }
 

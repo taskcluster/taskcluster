@@ -28,23 +28,23 @@ helper.dbSuite(path.basename(__filename), function() {
   suite('entity (context)', function() {
     test('Entity.configure().setup()', async function() {
       db = await helper.withDb({ schema, serviceName });
-      const entity = Entity.configure({
+      const configuredEntity = Entity.configure({
         partitionKey: Entity.keys.StringKey('taskId'),
         rowKey: Entity.keys.StringKey('provisionerId'),
         properties,
       });
-      entity.setup({ tableName: 'test_entities', db, serviceName });
+      configuredEntity.setup({ tableName: 'test_entities', db, serviceName });
     });
 
     test('Entity.configure().setup() with context', async function() {
       db = await helper.withDb({ schema, serviceName });
-      const entity = Entity.configure({
+      const configuredEntity = Entity.configure({
         partitionKey: Entity.keys.StringKey('taskId'),
         rowKey: Entity.keys.StringKey('provisionerId'),
         properties,
         context: ['config', 'maxCount'],
       });
-      entity.setup({
+      configuredEntity.setup({
         tableName: 'test_entities',
         db,
         serviceName,
@@ -58,34 +58,34 @@ helper.dbSuite(path.basename(__filename), function() {
         provisionerId: 'provisionerId',
         workerType: 'string',
       };
-      const entity = Entity.configure({
+      const configuredEntity = Entity.configure({
         partitionKey: Entity.keys.StringKey('taskId'),
         rowKey: Entity.keys.StringKey('provisionerId'),
         properties,
         context: ['config', 'maxCount'],
       });
-      entity.setup({
+      const TestTable = configuredEntity.setup({
         tableName: 'test_entities',
         db,
         serviceName,
         context: { config: 'My config object', maxCount: 10 },
       });
 
-      const createdEntry = await entity.create(entry);
+      const createdEntry = await TestTable.create(entry);
 
       assert.equal(createdEntry.config, 'My config object', 'Missing config from context');
       assert.equal(createdEntry.maxCount, 10, 'Missing maxCount from context');
     });
     test('Entity.configure().setup() with undeclared context', async function() {
       db = await helper.withDb({ schema, serviceName });
-      const entity = Entity.configure({
+      const configuredEntity = Entity.configure({
         partitionKey: Entity.keys.StringKey('taskId'),
         rowKey: Entity.keys.StringKey('provisionerId'),
         properties,
         context: ['config'],
       });
       assert.throws(() => {
-        entity.setup({
+        configuredEntity.setup({
           tableName: 'test_entities',
           db,
           serviceName,
@@ -95,14 +95,14 @@ helper.dbSuite(path.basename(__filename), function() {
     });
     test('Entity.configure().setup() with missing context', async function() {
       db = await helper.withDb({ schema, serviceName });
-      const entity = Entity.configure({
+      const configuredEntity = Entity.configure({
         partitionKey: Entity.keys.StringKey('taskId'),
         rowKey: Entity.keys.StringKey('provisionerId'),
         properties,
         context: ['config'],
       });
       assert.throws(() => {
-        entity.setup({
+        configuredEntity.setup({
           tableName: 'test_entities',
           db,
           serviceName,

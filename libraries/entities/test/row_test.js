@@ -23,7 +23,7 @@ helper.dbSuite(path.basename(__filename), function() {
     provisionerId: Entity.types.String,
     workerType: Entity.types.String,
   };
-  const entity = Entity.configure({
+  const configuredEntity = Entity.configure({
     partitionKey: Entity.keys.StringKey('taskId'),
     rowKey: Entity.keys.StringKey('provisionerId'),
     properties,
@@ -41,11 +41,11 @@ helper.dbSuite(path.basename(__filename), function() {
         workerType: '567',
       };
 
-      entity.setup({ tableName: 'test_entities', db, serviceName });
+      const TestTable = configuredEntity.setup({ tableName: 'test_entities', db, serviceName });
 
-      await entity.create(entry);
+      await TestTable.create(entry);
 
-      const result = await entity.load({ taskId, provisionerId });
+      const result = await TestTable.load({ taskId, provisionerId });
 
       assert.equal(result.taskId, entry.taskId);
       assert.equal(result.provisionerId, entry.provisionerId);
