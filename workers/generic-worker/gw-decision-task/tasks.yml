@@ -22,9 +22,10 @@ Types:
     MaxRunTime: 3600
 
   CheckModules:
-    Name: 'Run `go mod tidy` and ensure that go.mod and go.sum do not change'
+    Name: 'Run `go mod tidy` to ensure that go.mod and go.sum and correct and source code is formatted with go fmt'
     Description: |
-                 Run `go mod tidy` to ensure that `go.mod` and `go.sum` are up-to-date.
+                 Run `go mod tidy` to ensure that `go.mod` and `go.sum` are up-to-date and
+                 `go fmt` to ensure that go source code is formatted.
                  See the [go modules wiki page](https://github.com/golang/go/wiki/Modules)
                  for more information.
     Mounts:
@@ -139,7 +140,7 @@ Commands:
           git reset --hard "${GITHUB_SHA}"
           git clean -fdx
           git checkout -B tmp -t "X${TASK_ID}"
-          cd workers/generic-worker
+          go fmt ./...
           go mod tidy
           test $(git status --porcelain | wc -l) == 0
 
