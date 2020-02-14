@@ -51,8 +51,6 @@ class BaseType {
     this.property = property;
   }
 
-  isOrdered = false;
-  isComparable = false;
   isEncrypted = false;
 
   serialize(target, value, cryptoKey) {
@@ -79,9 +77,6 @@ class BaseType {
 }
 
 class BaseValueType extends BaseType {
-  isOrdered = true;
-  isComparable = true;
-
   deserialize(source) {
     const value = source[this.property];
     this.validate(value);
@@ -121,9 +116,6 @@ class BooleanType extends BaseValueType {
 }
 
 class SlugIdType extends BaseValueType {
-  isOrdered = true;
-  isComparable = true;
-
   validate(value) {
     checkType('SlugIdType', this.property, value, 'string');
     if (!SLUG_ID_RE.test(value)) {
@@ -170,9 +162,6 @@ class PositiveIntegerType extends NumberType {
 }
 
 class BaseBufferType extends BaseType {
-  isOrdered = false;
-  isComparable = false;
-
   toBuffer(value, cryptoKey) {
     throw new Error('Not implemented');
   }
@@ -211,9 +200,6 @@ class BaseBufferType extends BaseType {
 }
 
 class DateType extends BaseType {
-  isOrdered = true;
-  isComparable = true;
-
   validate(value) {
     if (!(value instanceof Date)) {
       throw new Error(`DateType ${this.property} expected a date got type ${typeof value}`);
@@ -611,6 +597,73 @@ class EncryptedJSONType extends EncryptedBaseType {
   };
 }
 
+class BlobType extends BaseBufferType {
+  validate(value) {
+    assert(Buffer.isBuffer(value),
+      'BlobType \'' + this.property + '\' expected a Buffer');
+  }
+
+  toBuffer(value) {
+    this.validate(value);
+    return value;
+  }
+
+  fromBuffer(value) {
+    this.validate(value);
+    return value;
+  }
+
+  equal(value1, value2) {
+    this.validate(value1);
+    this.validate(value2);
+    if (value1 === value2) {
+      return true;
+    }
+    if (value1.length !== value2.length) {
+      return false;
+    }
+    return Buffer.compare(value1, value2) === 0;
+  }
+
+  clone(value) {
+    this.validate(value);
+    return Buffer.from(value);
+  }
+}
+
+class EncryptedBlob extends EncryptedBaseType {
+  validate(value) {
+    assert(Buffer.isBuffer(value),
+      'EncryptedBlobType \'' + this.property + '\' expected a Buffer');
+  }
+
+  toPlainBuffer(value) {
+    this.validate(value);
+    return value;
+  }
+
+  fromPlainBuffer(value) {
+    this.validate(value);
+    return value;
+  }
+
+  equal(value1, value2) {
+    this.validate(value1);
+    this.validate(value2);
+    if (value1 === value2) {
+      return true;
+    }
+    if (value1.length !== value2.length) {
+      return false;
+    }
+    return Buffer.compare(value1, value2) === 0;
+  }
+
+  clone(value) {
+    this.validate(value);
+    return Buffer.from(value);
+  }
+}
 
 module.exports = {
   Boolean: function(property) {
@@ -630,7 +683,9 @@ module.exports = {
     return new SlugIdType(property);
   },
   BaseBufferType: 'base-buffer-type',
-  Blob: 'blob',
+  Blob: function(property) {
+    return new BlobType(property);
+  },
   JSON: function (property) {
     return new JSONType(property);
   },
@@ -656,7 +711,9 @@ module.exports = {
 
     return SchemaEnforcedType;
   },
-  EncryptedBlob: 'encrypted-blob',
+  EncryptedBlob: function(property) {
+    return new EncryptedBlob(property);
+  },
   EncryptedText: function (property) {
     return new EncryptedTextType(property);
   },
