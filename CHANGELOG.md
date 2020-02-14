@@ -3,6 +3,10 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v25.1.1
+
+No changes
+
 ## v25.1.0
 
 ▶ [minor] [bug 1587511](http://bugzil.la/1587511)
