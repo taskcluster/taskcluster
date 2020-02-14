@@ -346,10 +346,6 @@ class GoogleProvider extends Provider {
     this.seen[worker.workerPoolId] = this.seen[worker.workerPoolId] || 0;
     this.errors[worker.workerPoolId] = this.errors[worker.workerPoolId] || [];
 
-    if (worker.providerData.terminateAfter && worker.providerData.terminateAfter < Date.now()) {
-      return await this.removeWorker({worker});
-    }
-
     let state = worker.state;
     try {
       const {data} = await this._enqueue('get', () => this.compute.instances.get({
@@ -369,6 +365,9 @@ class GoogleProvider extends Provider {
           await worker.modify(w => {
             w.expires = taskcluster.fromNow('1 week');
           });
+        }
+        if (worker.providerData.terminateAfter && worker.providerData.terminateAfter < Date.now()) {
+          await this.removeWorker({worker});
         }
       } else if (['TERMINATED', 'STOPPED'].includes(status)) {
         await this._enqueue('query', () => this.compute.instances.delete({

@@ -393,10 +393,6 @@ class AzureProvider extends Provider {
     const states = this.Worker.states;
     this.seen[worker.workerPoolId] = this.seen[worker.workerPoolId] || 0;
 
-    if (worker.providerData.terminateAfter && worker.providerData.terminateAfter < Date.now()) {
-      return await this.removeWorker({worker});
-    }
-
     let state = worker.state;
     try {
       const {provisioningState} = await this._enqueue('get', () => this.computeClient.virtualMachines.get(
@@ -414,6 +410,9 @@ class AzureProvider extends Provider {
           await worker.modify(w => {
             w.expires = taskcluster.fromNow('1 week');
           });
+        }
+        if (worker.providerData.terminateAfter && worker.providerData.terminateAfter < Date.now()) {
+          await this.removeWorker({worker});
         }
       } else if (['Failed', 'Canceled', 'Deleting', 'Deallocating', 'Stopped', 'Deallocated'].includes(provisioningState)) {
         await this.removeWorker({worker});

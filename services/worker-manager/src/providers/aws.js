@@ -281,10 +281,6 @@ class AwsProvider extends Provider {
   async checkWorker({worker}) {
     this.seen[worker.workerPoolId] = this.seen[worker.workerPoolId] || 0;
 
-    if (worker.providerData.terminateAfter && worker.providerData.terminateAfter < Date.now()) {
-      return await this.removeWorker({worker});
-    }
-
     let state = worker.state;
     try {
       const region = worker.providerData.region;
@@ -314,6 +310,9 @@ class AwsProvider extends Provider {
           default:
             throw new Error(`Unknown state: ${is.InstanceState.Name} for ${is.InstanceId}`);
         }
+      }
+      if (worker.providerData.terminateAfter && worker.providerData.terminateAfter < Date.now()) {
+        await this.removeWorker({worker});
       }
     } catch (e) {
       if (e.code !== 'InvalidInstanceID.NotFound') { // aws throws this error for instances that had been terminated, too
