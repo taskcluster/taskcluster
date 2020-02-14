@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/taskcluster/taskcluster-base-go/scopes"
+	"github.com/taskcluster/taskcluster/v25/internal/scopes"
 )
 
 // one instance overall - represents feature
