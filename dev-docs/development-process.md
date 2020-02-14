@@ -34,10 +34,10 @@ export PATH=$PWD/node_modules/.bin:$PATH
 
 ## Hacking on the UI
 
-Taskcluster requires a Linux-like enviroment for development.
+Taskcluster requires a Linux-like environment for development.
 If you are developing on a Windows system, you will need to either
-* install [WSL](https://docs.microsoft.com/en-us/windows/wsl/install-win10);
-* use a virtual machine for development; or
+* install [WSL](https://docs.microsoft.com/en-us/windows/wsl/install-win10)
+* use a virtual machine for development or
 * install Linux as a second OS and boot into that.
 
 The files comprising the Taskcluster UI are under [`ui/`](../ui).
@@ -150,7 +150,7 @@ Now follow along:
    config for you (most of it anyway).  Once it has done this, your
    `dev-config.yml` is filled with secrets so don't leak it. These are dev-only
    secrets though so don't be too worried. Soon we may work on getting this to
-   be encryped at rest.
+   be encrypted at rest.
    * SubscriptionId can be found in the Azure console
    * RabbitMQ account creds are in passwordstore at tc/cloudamqp.com/hip-macaw
 1. Run `yarn dev:verify` and see if it complains about any missing values in
