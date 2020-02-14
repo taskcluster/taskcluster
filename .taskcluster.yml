@@ -27,7 +27,14 @@ tasks:
             then: ${event.head_commit.message[7:]}
             else: ''
           else: ''
+
         owner: taskcluster-internal@mozilla.com
+
+        # a push to a branch with prefix `staging-release/` on the main repo will trigger a staging release
+        stagingRelease: 
+          $if: 'tasks_for == "github-push"'
+          then: {$eval: 'event.ref[:27] == "refs/heads/staging-release/"'}
+          else: false
 
         # This only supports pushes and pull requests for now.
         # If we start responding to another action type, make this
@@ -365,19 +372,33 @@ tasks:
             created: {$fromNow: ''}
             deadline: {$fromNow: '3 hours'}
             extra:
-              notify:
-                email:
-                  subject: 'Taskcluster Release Status'
+              $if: '!stagingRelease'
+              then:
+                notify:
+                  email:
+                    subject: 'Taskcluster Release Status'
+              else: {}
             routes:
-            - notify.email.taskcluster-notifications@mozilla.com.on-any
-            - notify.irc-channel.#taskcluster-bots.on-any
+              $if: stagingRelease
+              then: []
+              else:
+              - notify.email.taskcluster-notifications@mozilla.com.on-any
+              - notify.irc-channel.#taskcluster-bots.on-any
             scopes:
-            - secrets:get:project/taskcluster/release
+              $if: stagingRelease
+              then: []
+              else: [secrets:get:project/taskcluster/release]
             payload:
               features:
                 taskclusterProxy: true
               maxRunTime: 3600
               command:
+                $let:
+                  releaseArgs:
+                    $if: stagingRelease
+                    then: '--no-push --staging'
+                    else: ''
+                in:
                 - - "/bin/bash"
                   - "-ec"
                   - |-
@@ -407,7 +428,7 @@ tasks:
 
                     # publish the release
                     yarn --frozen-lockfile
-                    yarn release:publish
+                    yarn release:publish ${releaseArgs}
               mounts:
               - content:
                   url: 'https://storage.googleapis.com/golang/go${go.release}.linux-amd64.tar.gz'
@@ -415,7 +436,10 @@ tasks:
                 directory: go
                 format: tar.gz
             metadata:
-              name: taskcluster-release-publish
+              name:
+                $if: stagingRelease
+                then: taskcluster-release-publish (STAGING)
+                else: taskcluster-release-publish
               description: Publish a taskcluster release
               owner: taskcluster-internal@mozilla.com
               source: ${repo.url}
@@ -426,6 +450,9 @@ tasks:
             then:
               - $eval: platformTasks
               - $eval: workerTasks
+          - $if: stagingRelease
+            then:
+              - $eval: releaseTasks
           - $if: 'tasks_for == "github-pull-request" && event["action"] in ["opened", "reopened", "synchronize"]'
             then:
               - $eval: platformTasks
