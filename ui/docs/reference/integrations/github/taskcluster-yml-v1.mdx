@@ -35,13 +35,14 @@ The `pullRequests` policy controls this behavior:
 
 * `public` -- tasks are created for all pull requests.
 
-* `collaborators` (the default) -- tasks are created if the user who made the pull request is a collaborator on the repository. If the user is not a collaborator then we leave a comment "No taskcluster jobs were created.."  on the pullRequests.
+* `collaborators` (the default) -- tasks are created if the user who made the pull request is a collaborator on the repository, and has requested that changes be merged either from the same repository or from a repository belonging to a collaborator. If the check fails then we leave a comment "No taskcluster jobs were created.."  on the pullRequest.
+  Please note that only user who *created* the pull request and the user owning the head repository are being checked, even if the event itself comes from the actions of another user.
+  For example, if a collaborator modifies the assignee for or re-opens a PR filed by a non-collaborator, tasks will not be started.
 
 * `collaborators_quiet` -- tasks are created if the user who made the pull request is a collaborator on the repository. we don't make any comment on the pull request if the user is not a collaborator, which we are doing in **collaborators** policy. 
 
 Github [defines collaborators](https://developer.github.com/v3/repos/collaborators/#list-collaborators) as "outside collaborators, organization members with access through team memberships, organization members with access through default organization permissions, and organization owners."
 
-Please note that only the user or organization authoring the request is being checked, even if the event itself comes from another user (for example, if the PR was opened by a non-collaborator, or from a fork in a non-collaborator organization, closing the PR or editing it by a collaborator will not result in a build in Taskcluster).
 
 Example:
 ```yaml
