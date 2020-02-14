@@ -180,26 +180,26 @@ helper.dbSuite(path.basename(__filename), function() {
       if (!encryptedTestOnly) {
         test('raw datatype', async function() {
           db = await helper.withDb({ schema, serviceName });
-          var Item = Entity.configure({
-            version:          1,
-            partitionKey:     Entity.keys.StringKey('id'),
-            rowKey:           Entity.keys.StringKey('name'),
+          let Item = Entity.configure({
+            version: 1,
+            partitionKey: Entity.keys.StringKey('id'),
+            rowKey: Entity.keys.StringKey('name'),
             properties: {
-              id:             Entity.types.String,
-              name:           Entity.types.String,
-              data:           type,
+              id: Entity.types.String,
+              name: Entity.types.String,
+              data: type,
             },
           }).setup({ tableName: 'test_entities', db, serviceName });
 
-          var id = slugid.v4();
+          let id = slugid.v4();
           return Item.create({
-            id:     id,
-            name:   'my-test-item',
-            data:   sample1,
+            id: id,
+            name: 'my-test-item',
+            data: sample1,
           }).then(function(itemA) {
             return Item.load({
-              id:     id,
-              name:   'my-test-item',
+              id: id,
+              name: 'my-test-item',
             }).then(function(itemB) {
               assert(_.isEqual(itemA.data, sample1));
               assert(_.isEqual(itemA.data, itemB.data));
@@ -212,8 +212,8 @@ helper.dbSuite(path.basename(__filename), function() {
             });
           }).then(function(itemA) {
             return Item.load({
-              id:     id,
-              name:   'my-test-item',
+              id: id,
+              name: 'my-test-item',
             }).then(function(itemB) {
               assert(_.isEqual(itemA.data, sample2));
               assert(_.isEqual(itemA.data, itemB.data));
@@ -229,8 +229,8 @@ helper.dbSuite(path.basename(__filename), function() {
                 assert(itemA.etag === itemB.etag);
               }).then(function() {
                 // Try parallel edit
-                var count = 0;
-                var noop = 0;
+                let count = 0;
+                let noop = 0;
                 return Promise.all([
                   itemA.modify(function(item) {
                     count++;
@@ -263,28 +263,28 @@ helper.dbSuite(path.basename(__filename), function() {
 
         test('signEntities', async function() {
           db = await helper.withDb({ schema, serviceName });
-          var Item = Entity.configure({
-            version:          1,
-            partitionKey:     Entity.keys.StringKey('id'),
-            rowKey:           Entity.keys.ConstantKey('signing-test-item'),
-            signEntities:     true,
+          let Item = Entity.configure({
+            version: 1,
+            partitionKey: Entity.keys.StringKey('id'),
+            rowKey: Entity.keys.ConstantKey('signing-test-item'),
+            signEntities: true,
             properties: {
-              id:             Entity.types.String,
-              data:           type,
+              id: Entity.types.String,
+              data: type,
             },
           }).setup({
             signingKey: 'my-super-secret',
             tableName: 'test_entities',
             db,
-            serviceName
+            serviceName,
           });
-          var id = slugid.v4();
+          let id = slugid.v4();
           return Item.create({
-            id:     id,
-            data:   sample1,
+            id: id,
+            data: sample1,
           }).then(function(itemA) {
             return Item.load({
-              id:     id,
+              id: id,
             }).then(function(itemB) {
               assert(_.isEqual(itemA.data, itemB.data));
               assert(_.isEqual(itemA.data, sample1));
@@ -296,7 +296,7 @@ helper.dbSuite(path.basename(__filename), function() {
             });
           }).then(function(itemA) {
             return Item.load({
-              id:     id,
+              id: id,
             }).then(function(itemB) {
               assert(_.isEqual(itemA.data, itemB.data));
               assert(_.isEqual(itemA.data, sample2));
@@ -306,32 +306,32 @@ helper.dbSuite(path.basename(__filename), function() {
 
         test('signEntities detect invalid key', async function() {
           db = await helper.withDb({ schema, serviceName });
-          var ItemClass = Entity.configure({
-            version:          1,
-            partitionKey:     Entity.keys.StringKey('id'),
-            rowKey:           Entity.keys.ConstantKey('signing-test-item'),
-            signEntities:     true,
+          let ItemClass = Entity.configure({
+            version: 1,
+            partitionKey: Entity.keys.StringKey('id'),
+            rowKey: Entity.keys.ConstantKey('signing-test-item'),
+            signEntities: true,
             properties: {
-              id:             Entity.types.String,
-              data:           type,
+              id: Entity.types.String,
+              data: type,
             },
           });
-          var Item1 = ItemClass.setup({
-            signingKey:   'my-super-secret',
+          let Item1 = ItemClass.setup({
+            signingKey: 'my-super-secret',
             tableName: 'test_entities',
             db,
             serviceName,
           });
-          var Item2 = ItemClass.setup({
+          let Item2 = ItemClass.setup({
             tableName: 'test_entities',
             db,
             serviceName,
-            signingKey:   'super-wrong-secret',
+            signingKey: 'super-wrong-secret',
           });
-          var id = slugid.v4();
+          let id = slugid.v4();
           return Item1.create({
-            id:     id,
-            data:   sample1,
+            id: id,
+            data: sample1,
           }).then(function(itemA) {
             return Item2.load({id: id}).then(function() {
               assert(false, 'Expected an error');
@@ -348,7 +348,7 @@ helper.dbSuite(path.basename(__filename), function() {
             });
           }).then(function(itemA) {
             return Item1.load({
-              id:     id,
+              id: id,
             }).then(function(itemB) {
               assert(_.isEqual(itemA.data, itemB.data));
               assert(_.isEqual(itemA.data, sample2));

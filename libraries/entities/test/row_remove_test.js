@@ -20,13 +20,13 @@ helper.dbSuite(path.basename(__filename), function() {
 
   const schema = Schema.fromDbDirectory(path.join(__dirname, 'db'));
   const properties = {
-    id:             Entity.types.String,
-    name:           Entity.types.String,
-    count:          Entity.types.Number,
+    id: Entity.types.String,
+    name: Entity.types.String,
+    count: Entity.types.Number,
   };
   const configuredTestTable = Entity.configure({
-    partitionKey:     Entity.keys.StringKey('id'),
-    rowKey:           Entity.keys.StringKey('name'),
+    partitionKey: Entity.keys.StringKey('id'),
+    rowKey: Entity.keys.StringKey('name'),
     properties,
   });
   const serviceName = 'test-entities';
@@ -42,9 +42,9 @@ helper.dbSuite(path.basename(__filename), function() {
       });
 
       return TestTable.create({
-        id:     id,
-        name:   'my-test-item',
-        count:  1,
+        id: id,
+        name: 'my-test-item',
+        count: 1,
       }).then(function(item) {
         assert(item instanceof TestTable);
         assert(item.id === id);
@@ -52,8 +52,8 @@ helper.dbSuite(path.basename(__filename), function() {
         return item.remove();
       }).then(function() {
         return TestTable.load({
-          id:     id,
-          name:   'my-test-item',
+          id: id,
+          name: 'my-test-item',
         });
       }).catch(function(err) {
         assert(err.code === 'ResourceNotFound');
@@ -69,18 +69,18 @@ helper.dbSuite(path.basename(__filename), function() {
         serviceName,
       });
       return TestTable.create({
-        id:     id,
-        name:   'my-test-item',
-        count:  1,
+        id: id,
+        name: 'my-test-item',
+        count: 1,
       }).then(function(item) {
         return TestTable.remove({
-          id:     id,
-          name:   'my-test-item',
+          id: id,
+          name: 'my-test-item',
         });
       }).then(function() {
         return TestTable.load({
-          id:     id,
-          name:   'my-test-item',
+          id: id,
+          name: 'my-test-item',
         });
       }).catch(function(err) {
         assert(err.code === 'ResourceNotFound');
@@ -95,8 +95,8 @@ helper.dbSuite(path.basename(__filename), function() {
         serviceName,
       });
       return TestTable.remove({
-        id:     slugid.v4(),
-        name:   'my-test-item',
+        id: slugid.v4(),
+        name: 'my-test-item',
       }).catch(function(err) {
         assert(err.code === 'ResourceNotFound');
       });
@@ -110,8 +110,8 @@ helper.dbSuite(path.basename(__filename), function() {
         serviceName,
       });
       return TestTable.remove({
-        id:     slugid.v4(),
-        name:   'my-test-item',
+        id: slugid.v4(),
+        name: 'my-test-item',
       }, true);
     });
 
@@ -124,13 +124,13 @@ helper.dbSuite(path.basename(__filename), function() {
         serviceName,
       });
       return TestTable.create({
-        id:     id,
-        name:   'my-test-item',
-        count:  1,
+        id: id,
+        name: 'my-test-item',
+        count: 1,
       }).then(function(itemA) {
         return TestTable.load({
-          id:     id,
-          name:   'my-test-item',
+          id: id,
+          name: 'my-test-item',
         }).then(function(itemB) {
           return itemB.modify(function() {
             this.count += 1;
@@ -152,13 +152,13 @@ helper.dbSuite(path.basename(__filename), function() {
         serviceName,
       });
       return TestTable.create({
-        id:     id,
-        name:   'my-test-item',
-        count:  1,
+        id: id,
+        name: 'my-test-item',
+        count: 1,
       }).then(function(itemA) {
         return TestTable.load({
-          id:     id,
-          name:   'my-test-item',
+          id: id,
+          name: 'my-test-item',
         }).then(function(itemB) {
           return itemB.modify(function() {
             this.count += 1;
@@ -178,9 +178,9 @@ helper.dbSuite(path.basename(__filename), function() {
         serviceName,
       });
       return TestTable.create({
-        id:     id,
-        name:   'my-test-item',
-        count:  1,
+        id: id,
+        name: 'my-test-item',
+        count: 1,
       }).then(function(itemA) {
         return itemA.remove(false, false).then(function() {
           return itemA.remove(false, true);
@@ -197,18 +197,18 @@ helper.dbSuite(path.basename(__filename), function() {
         serviceName,
       });
       return TestTable.create({
-        id:     id,
-        name:   'my-test-item',
-        count:  1,
+        id: id,
+        name: 'my-test-item',
+        count: 1,
       }).then(function() {
         return TestTable.remove({
-          id:     id,
-          name:   'my-test-item',
+          id: id,
+          name: 'my-test-item',
         }, false).then(function(result) {
           assert(result === true, 'Expected true');
           return TestTable.remove({
-            id:     id,
-            name:   'my-test-item',
+            id: id,
+            name: 'my-test-item',
           }, true).then(function(result) {
             assert(result === false, 'Expected false');
           });

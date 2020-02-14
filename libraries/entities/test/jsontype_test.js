@@ -4,7 +4,6 @@ const { Entity } = require('taskcluster-lib-entities');
 const path = require('path');
 const assert = require('assert').strict;
 const _ = require('lodash');
-const crypto = require('crypto');
 const slugid = require('slugid');
 
 helper.dbSuite(path.basename(__filename), function() {
@@ -30,41 +29,40 @@ helper.dbSuite(path.basename(__filename), function() {
         type: Entity.types.JSON,
       },
     }, {
-    context: 'EncryptedJSON',
-    options: {
-      type: Entity.types.EncryptedJSON,
-      config: {
-        cryptoKey: 'Iiit3Y+b4m7z7YOmKA2iCbZDGyEmy6Xn42QapzTU67w=',
+      context: 'EncryptedJSON',
+      options: {
+        type: Entity.types.EncryptedJSON,
+        config: {
+          cryptoKey: 'Iiit3Y+b4m7z7YOmKA2iCbZDGyEmy6Xn42QapzTU67w=',
+        },
       },
     },
-  },
-  {
-    context: 'Schema',
-    options: {
-      type: Entity.types.Schema({type: 'object'}),
-    },
-  },
-  {
-    context: 'EncryptedSchema',
-    options: {
-      type: Entity.types.EncryptedSchema({type: 'object'}),
-      config: {
-        cryptoKey: 'Iiit3Y+b4m7z7YOmKA2iCbZDGyEmy6Xn42QapzTU67w=',
+    {
+      context: 'Schema',
+      options: {
+        type: Entity.types.Schema({type: 'object'}),
       },
     },
-  },
+    {
+      context: 'EncryptedSchema',
+      options: {
+        type: Entity.types.EncryptedSchema({type: 'object'}),
+        config: {
+          cryptoKey: 'Iiit3Y+b4m7z7YOmKA2iCbZDGyEmy6Xn42QapzTU67w=',
+        },
+      },
+    },
   ].forEach(context => {
     suite(context.context, function() {
-      const { encryptedTestOnly } = context.options;
-      const { type, sample1, sample2, config } = context.options;
+      const { type, config } = context.options;
       const configuredTestTable = Entity.configure({
-        version:          1,
-        partitionKey:     Entity.keys.StringKey('id'),
-        rowKey:           Entity.keys.StringKey('name'),
+        version: 1,
+        partitionKey: Entity.keys.StringKey('id'),
+        rowKey: Entity.keys.StringKey('name'),
         properties: {
-          id:             Entity.types.String,
-          name:           Entity.types.String,
-          data:           type,
+          id: Entity.types.String,
+          name: Entity.types.String,
+          data: type,
         },
       });
 
@@ -83,23 +81,23 @@ helper.dbSuite(path.basename(__filename), function() {
       };
 
       test('largeString helper', function() {
-        const text  = randomString(64);
+        const text = randomString(64);
         assert(text.length === 1024 * 64);
       });
 
       test('small JSON object', async function() {
         db = await helper.withDb({ schema, serviceName });
         const TestTable = configuredTestTable.setup({ tableName: 'test_entities', db, serviceName, ...config });
-        const id    = slugid.v4();
-        const obj   = {text: 'Hello World', number: 42};
+        const id = slugid.v4();
+        const obj = {text: 'Hello World', number: 42};
         return TestTable.create({
-          id:     id,
-          name:   'my-test-item',
-          data:   obj,
+          id: id,
+          name: 'my-test-item',
+          data: obj,
         }).then(function(itemA) {
           return TestTable.load({
-            id:     id,
-            name:   'my-test-item',
+            id: id,
+            name: 'my-test-item',
           }).then(function(itemB) {
             assert(_.isEqual(itemA.data, itemB.data));
             assert(_.isEqual(itemA.data, obj));
@@ -110,16 +108,16 @@ helper.dbSuite(path.basename(__filename), function() {
       test('large JSON object (62k)', async function() {
         db = await helper.withDb({ schema, serviceName });
         const TestTable = configuredTestTable.setup({ tableName: 'test_entities', db, serviceName, ...config });
-        const id    = slugid.v4();
-        const obj   = {text: randomString(62), number: 42};
+        const id = slugid.v4();
+        const obj = {text: randomString(62), number: 42};
         return TestTable.create({
-          id:     id,
-          name:   'my-test-item',
-          data:   obj,
+          id: id,
+          name: 'my-test-item',
+          data: obj,
         }).then(function(itemA) {
           return TestTable.load({
-            id:     id,
-            name:   'my-test-item',
+            id: id,
+            name: 'my-test-item',
           }).then(function(itemB) {
             assert(_.isEqual(itemA.data, itemB.data));
             assert(_.isEqual(itemA.data, obj));
@@ -130,16 +128,16 @@ helper.dbSuite(path.basename(__filename), function() {
       test('large JSON object (126k)', async function() {
         db = await helper.withDb({ schema, serviceName });
         const TestTable = configuredTestTable.setup({ tableName: 'test_entities', db, serviceName, ...config });
-        const id    = slugid.v4();
-        const obj   = {text: randomString(126), number: 42};
+        const id = slugid.v4();
+        const obj = {text: randomString(126), number: 42};
         return TestTable.create({
-          id:     id,
-          name:   'my-test-item',
-          data:   obj,
+          id: id,
+          name: 'my-test-item',
+          data: obj,
         }).then(function(itemA) {
           return TestTable.load({
-            id:     id,
-            name:   'my-test-item',
+            id: id,
+            name: 'my-test-item',
           }).then(function(itemB) {
             assert(_.isEqual(itemA.data, itemB.data));
             assert(_.isEqual(itemA.data, obj));
@@ -150,16 +148,16 @@ helper.dbSuite(path.basename(__filename), function() {
       test('large JSON object (255k)', async function() {
         db = await helper.withDb({ schema, serviceName });
         const TestTable = configuredTestTable.setup({ tableName: 'test_entities', db, serviceName, ...config });
-        const id    = slugid.v4();
-        const obj   = {text: randomString(255), number: 42};
+        const id = slugid.v4();
+        const obj = {text: randomString(255), number: 42};
         return TestTable.create({
-          id:     id,
-          name:   'my-test-item',
-          data:   obj,
+          id: id,
+          name: 'my-test-item',
+          data: obj,
         }).then(function(itemA) {
           return TestTable.load({
-            id:     id,
-            name:   'my-test-item',
+            id: id,
+            name: 'my-test-item',
           }).then(function(itemB) {
             assert(_.isEqual(itemA.data, itemB.data));
             assert(_.isEqual(itemA.data, obj));

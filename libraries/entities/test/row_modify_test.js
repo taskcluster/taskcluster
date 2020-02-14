@@ -1,7 +1,6 @@
 const helper = require('./helper');
 const { Schema } = require('taskcluster-lib-postgres');
 const { Entity } = require('taskcluster-lib-entities');
-const testing = require('taskcluster-lib-testing');
 const path = require('path');
 const assert = require('assert').strict;
 const slugid = require('slugid');
