@@ -3,6 +3,39 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v25.0.0
+
+▶ [MAJOR] [bug 1608828](http://bugzil.la/1608828)
+Generic worker is now shipped as part of the taskcluster platform release. The generic-worker codebase has been integrated into the monorepo. The former generic-worker github repo is now archived.  Consequently, the generic worker version number now matches the taskcluster platform release number.  The generic-worker binaries are published to https://github.com/taskcluster/taskcluster/releases.
+
+With this change, the import path for the Taskcluster Go client library changes from `github.com/taskcluster/taskcluster/clients/client-go/vNN` to `github.com/taskcluster/taskcluster/vNN/clients/client-go`.  Functionality of the library remains unchanged.
+
+▶ [patch] [bug 1588099](http://bugzil.la/1588099)
+InsufficientScopes errors now contain a simplfied scope expression describing the missing scopes.  In most cases, this will be a single scope.
+
+▶ [patch] [bug 1615312](http://bugzil.la/1615312)
+Old generic-worker task directories on POSIX systems (Linux/macOS) are now
+deleted more aggressively, by first running `chmod u+w -R <task dir>` before
+running `rm -rf <task dir>`.
+
+This bug always existed, and could leave files on the filesystem from previous
+tasks. Those files were not readable to other task users under the
+generic-worker multiuser engine where they were owned by a different OS user,
+but they did consume disk space. The files were readable by other tasks under
+the generic-worker simple engine, where all tasks run as the same user, but
+simple engine is not used for tasks that contain sensitive/private information.
+
+This bug was present in both the simple and multisuer engine, and has been
+fixed on both.
+
+Cleanup of Windows task directories will be handled separately in [bug
+1433854](https://bugzilla.mozilla.org/show_bug.cgi?id=1433854).
+
+▶ [patch] [bug 1608185](http://bugzil.la/1608185)
+The `generic-worker` binary now accepts a `--with-worker-runner` argument and expects to interact with worker-runner if that option is given.  Otherwise, it will assume it is running alone and will not use any worker-runner features.
+
+▶ Additional changes not described here: [bug 1615631](http://bugzil.la/1615631), [#2312](https://github.com/taskcluster/taskcluster/issues/2312), [#2321](https://github.com/taskcluster/taskcluster/issues/2321).
+
 ## v24.3.1
 
 ▶ [patch] [bug 1611266](http://bugzil.la/1611266)

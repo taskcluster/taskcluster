@@ -10,10 +10,10 @@ import (
 
 	"github.com/taskcluster/taskcluster-base-go/scopes"
 	tcurls "github.com/taskcluster/taskcluster-lib-urls"
-	tcclient "github.com/taskcluster/taskcluster/v24/clients/client-go"
-	"github.com/taskcluster/taskcluster/v24/workers/generic-worker/expose"
-	"github.com/taskcluster/taskcluster/v24/workers/generic-worker/livelog"
-	"github.com/taskcluster/taskcluster/v24/workers/generic-worker/process"
+	tcclient "github.com/taskcluster/taskcluster/v25/clients/client-go"
+	"github.com/taskcluster/taskcluster/v25/workers/generic-worker/expose"
+	"github.com/taskcluster/taskcluster/v25/workers/generic-worker/livelog"
+	"github.com/taskcluster/taskcluster/v25/workers/generic-worker/process"
 )
 
 var (
