@@ -164,7 +164,13 @@ module.exports = ({tasks, cmdOptions, credentials}) => {
       // matches the full package path to avoid false positives, but that
       // might result in missed changes where the full path is not used.
       const major = requirements['release-version'].replace(/\..*/, '');
-      for (let file of await gitLsFiles({patterns: ['clients/client-go/**', 'clients/client-shell/**', 'workers/generic-worker/**']})) {
+      const goFiles = [
+        'go.mod',
+        'clients/client-go/**',
+        'clients/client-shell/**',
+        'workers/generic-worker/**',
+      ];
+      for (let file of await gitLsFiles({patterns: goFiles})) {
         await modifyRepoFile(file, contents =>
           contents.replace(/(github.com\/taskcluster\/taskcluster\/v)\d+/g, `$1${major}`));
         changed.push(file);
