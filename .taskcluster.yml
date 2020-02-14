@@ -27,7 +27,13 @@ tasks:
             then: ${event.head_commit.message[7:]}
             else: ''
           else: ''
+
         owner: taskcluster-internal@mozilla.com
+
+        stagingRelease: 
+          $if: 'tasks_for == "github-pull-request"'
+          then: {$eval: 'event.pull_request.body[:15] == "staging-release"'}
+          else: false
 
         # This only supports pushes and pull requests for now.
         # If we start responding to another action type, make this
@@ -365,19 +371,30 @@ tasks:
             created: {$fromNow: ''}
             deadline: {$fromNow: '3 hours'}
             extra:
-              notify:
-                email:
-                  subject: 'Taskcluster Release Status'
+              $if: '!stagingRelease'
+              then:
+                notify:
+                  email:
+                    subject: 'Taskcluster Release Status'
+              else: {}
             routes:
             - notify.email.taskcluster-notifications@mozilla.com.on-any
             - notify.irc-channel.#taskcluster-bots.on-any
             scopes:
-            - secrets:get:project/taskcluster/release
+              $if: stagingRelease
+              then: [secrets:get:project/taskcluster/release]
+              else: []
             payload:
               features:
                 taskclusterProxy: true
               maxRunTime: 3600
               command:
+                $let:
+                  releaseArgs:
+                    $if: stagingRelease
+                    then: '--no-push'
+                    else: ''
+                in:
                 - - "/bin/bash"
                   - "-ec"
                   - |-
@@ -407,7 +424,7 @@ tasks:
 
                     # publish the release
                     yarn --frozen-lockfile
-                    yarn release:publish
+                    yarn release:publish ${releaseArgs}
               mounts:
               - content:
                   url: 'https://storage.googleapis.com/golang/go${go.release}.linux-amd64.tar.gz'
@@ -428,8 +445,12 @@ tasks:
               - $eval: workerTasks
           - $if: 'tasks_for == "github-pull-request" && event["action"] in ["opened", "reopened", "synchronize"]'
             then:
-              - $eval: platformTasks
-              - $eval: workerTasks
+              $if: stagingRelease
+              then:
+                - {$eval: releaseTasks}
+              else:
+                - $eval: platformTasks
+                - $eval: workerTasks
           # Release on tags; note that we must match the `v` to avoid triggering on pushes to golang
           # package tags like `clients/client-go/v1.2.3`.
           - $if: 'tasks_for == "github-push"'
