@@ -114,14 +114,14 @@ helper.dbSuite(path.basename(__filename), function() {
         sample2: {subobject: {number: 51}, array: [1, 2, 3, 4, 5, 'string']},
       },
     },
-    // {
-    //   context: 'Entity.types.Blob',
-    //   options: {
-    //     type: Entity.types.Blob,
-    //     sample1: crypto.randomBytes(10 * 1000),
-    //     sample2: crypto.randomBytes(100 * 1000),
-    //   },
-    // },
+    {
+      context: 'Entity.types.Blob',
+      options: {
+        type: Entity.types.Blob,
+        sample1: crypto.randomBytes(10 * 1000),
+        sample2: crypto.randomBytes(100 * 1000),
+      },
+    },
     {
       context: 'Entity.types.Text',
       options: {
