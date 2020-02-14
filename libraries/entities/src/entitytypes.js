@@ -665,6 +665,40 @@ class EncryptedBlob extends EncryptedBaseType {
   }
 }
 
+const _uuidExpr = /^[\da-f]{8}-[\da-f]{4}-[\da-f]{4}-[\da-f]{4}-[\da-f]{12}$/i;
+class UUIDType extends BaseValueType {
+  validate(value) {
+    checkType('UUIDType', this.property, value, 'string');
+    if (!_uuidExpr.test(value)) {
+      throw new Error('UUIDType \'' + this.property + '\' expected a uuid got: '
+        + value);
+    }
+  }
+
+  equal(value1, value2) {
+    return value1.toLowerCase() === value2.toLowerCase();
+  }
+
+  string(value) {
+    return value.toLowerCase();
+  }
+
+  serialize(target, value) {
+    this.validate(value);
+    target[this.property + '@odata.type'] = 'Edm.Guid';
+    target[this.property] = value;
+  }
+
+  filterCondition(op) {
+    this.validate(op.operand);
+    return this.property + ' ' + op.operator + ' ' + fmt.guid(op.operand);
+  }
+
+  compare(entity, op) {
+    throw new Error('Not implemented');
+  }
+}
+
 module.exports = {
   Boolean: function(property) {
     return new BooleanType(property);
@@ -678,11 +712,15 @@ module.exports = {
   Date: function(property) {
     return new DateType(property);
   },
-  UUID: 'uuid',
+  UUID: function(property) {
+    return new UUIDType(property);
+  },
   SlugId: function(property) {
     return new SlugIdType(property);
   },
-  BaseBufferType: 'base-buffer-type',
+  BaseBufferType: function(property) {
+    return new BaseBufferType(property);
+  },
   Blob: function(property) {
     return new BlobType(property);
   },

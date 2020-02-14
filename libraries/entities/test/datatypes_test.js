@@ -80,14 +80,14 @@ helper.dbSuite(path.basename(__filename), function() {
         sample2: new Date('2015-09-01T03:47:24.883Z'),
       },
     },
-    // {
-    //   context: 'Entity.types.UUID',
-    //   options: {
-    //     type: Entity.types.UUID,
-    //     sample1: 'f47ac10b-58cc-4372-a567-0e02b2c3d479', // v4 uuid
-    //     sample2: '37175f00-505c-11e5-ad72-69c56eeb1d01',  // v1 uuid
-    //   },
-    // },
+    {
+      context: 'Entity.types.UUID',
+      options: {
+        type: Entity.types.UUID,
+        sample1: 'f47ac10b-58cc-4372-a567-0e02b2c3d479', // v4 uuid
+        sample2: '37175f00-505c-11e5-ad72-69c56eeb1d01',  // v1 uuid
+      },
+    },
     {
       context: 'Entity.types.SlugId',
       options: {
