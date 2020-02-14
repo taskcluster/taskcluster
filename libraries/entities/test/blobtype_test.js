@@ -58,13 +58,13 @@ helper.dbSuite(path.basename(__filename), function() {
       const buf = Buffer.from([0, 1, 2, 3]);
 
       return TestTable.create({
-        id:     id,
-        name:   'my-test-item',
-        data:   buf,
+        id: id,
+        name: 'my-test-item',
+        data: buf,
       }).then(function(itemA) {
         return TestTable.load({
-          id:     id,
-          name:   'my-test-item',
+          id: id,
+          name: 'my-test-item',
         }).then(function(itemB) {
           assert(compareBuffers(itemA.data, itemB.data));
         });
@@ -80,13 +80,13 @@ helper.dbSuite(path.basename(__filename), function() {
       });
       const buf = crypto.pseudoRandomBytes(64 * 1024);
       return TestTable.create({
-        id:     id,
-        name:   'my-test-item',
-        data:   buf,
+        id: id,
+        name: 'my-test-item',
+        data: buf,
       }).then(function(itemA) {
         return TestTable.load({
-          id:     id,
-          name:   'my-test-item',
+          id: id,
+          name: 'my-test-item',
         }).then(function(itemB) {
           assert(compareBuffers(itemA.data, itemB.data));
         });
@@ -103,13 +103,13 @@ helper.dbSuite(path.basename(__filename), function() {
       });
       const buf = crypto.pseudoRandomBytes(128 * 1024);
       return TestTable.create({
-        id:     id,
-        name:   'my-test-item',
-        data:   buf,
+        id: id,
+        name: 'my-test-item',
+        data: buf,
       }).then(function(itemA) {
         return TestTable.load({
-          id:     id,
-          name:   'my-test-item',
+          id: id,
+          name: 'my-test-item',
         }).then(function(itemB) {
           assert(compareBuffers(itemA.data, itemB.data));
         });
@@ -126,13 +126,13 @@ helper.dbSuite(path.basename(__filename), function() {
       });
       const buf = crypto.pseudoRandomBytes(256 * 1024);
       return TestTable.create({
-        id:     id,
-        name:   'my-test-item',
-        data:   buf,
+        id: id,
+        name: 'my-test-item',
+        data: buf,
       }).then(function(itemA) {
         return TestTable.load({
-          id:     id,
-          name:   'my-test-item',
+          id: id,
+          name: 'my-test-item',
         }).then(function(itemB) {
           assert(compareBuffers(itemA.data, itemB.data));
         });
@@ -149,9 +149,9 @@ helper.dbSuite(path.basename(__filename), function() {
       });
       const buf = crypto.pseudoRandomBytes(512 * 1024);
       return assert.rejects(() => TestTable.create({
-        id:     id,
-        name:   'my-test-item',
-        data:   buf,
+        id: id,
+        name: 'my-test-item',
+        data: buf,
       }), err => err.code === 'PropertyTooLarge');
     });
   });

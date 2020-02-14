@@ -85,7 +85,7 @@ helper.dbSuite(path.basename(__filename), function() {
       options: {
         type: Entity.types.UUID,
         sample1: 'f47ac10b-58cc-4372-a567-0e02b2c3d479', // v4 uuid
-        sample2: '37175f00-505c-11e5-ad72-69c56eeb1d01',  // v1 uuid
+        sample2: '37175f00-505c-11e5-ad72-69c56eeb1d01', // v1 uuid
       },
     },
     {
