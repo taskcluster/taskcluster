@@ -38,7 +38,7 @@ Taskcluster requires a Linux-like environment for development.
 If you are developing on a Windows system, you will need to either
 * Install [WSL](https://docs.microsoft.com/en-us/windows/wsl/install-win10)
 * Use a virtual machine for development or
-* Install Linux as a second OS and boot into that.
+* install Linux as a second OS and boot into that.
 
 The files comprising the Taskcluster UI are under [`ui/`](../ui).
 It relies on a microservice called web-server, which you will need to run in a different terminal window.
