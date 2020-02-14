@@ -102,8 +102,12 @@ class Database {
         }
       });
 
-      showProgress('...checking permissions');
-      await Database._checkPermissions({db, schema, usernamePrefix});
+      // access.yml corresponds to the latest version, so only check
+      // permissions if upgrading to that version
+      if (toVersion === schema.latestVersion().version) {
+        showProgress('...checking permissions');
+        await Database._checkPermissions({db, schema, usernamePrefix});
+      }
     } finally {
       await db.close();
     }
