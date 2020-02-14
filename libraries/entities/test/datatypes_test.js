@@ -161,15 +161,15 @@ helper.dbSuite(path.basename(__filename), function() {
         encryptedTestOnly: true,
       },
     },
-    // {
-    //   context: 'Entity.types.EncryptedBlob',
-    //   options: {
-    //     type: Entity.types.EncryptedBlob,
-    //     sample1: crypto.randomBytes(10 * 1000),
-    //     sample2: crypto.randomBytes(100 * 1000),
-    //     encryptedTestOnly: true,
-    //   },
-    // },
+    {
+      context: 'Entity.types.EncryptedBlob',
+      options: {
+        type: Entity.types.EncryptedBlob,
+        sample1: crypto.randomBytes(10 * 1000),
+        sample2: crypto.randomBytes(100 * 1000),
+        encryptedTestOnly: true,
+      },
+    },
   ].forEach(context => {
     suite(`Entity (create/load/modify DataTypes) ${context.context}`, function() {
       const { encryptedTestOnly } = context.options;
