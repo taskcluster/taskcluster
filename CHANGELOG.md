@@ -3,6 +3,14 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v25.1.0
+
+▶ [minor] [bug 1587511](http://bugzil.la/1587511)
+Worker pools that use cloud providers (aws, azure, google) now support a `lifecycle.reregistrationTimeout` config that
+will make the credentials we hand to these workers expire within that amount of seconds. If the worker still exists
+at that time, the instance will be terminated. This lays the groundwork for a subsequent release where you will
+be able to have your workers reregister to continue working.
+
 ## v25.0.0
 
 ▶ [MAJOR] [bug 1608828](http://bugzil.la/1608828)
