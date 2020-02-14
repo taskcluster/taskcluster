@@ -79,7 +79,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
     const workers = await helper.Worker.scan({}, {});
     // Check that this is setting times correctly to within a second or so to allow for some time
     // for the provisioning loop
-    assert(workers.entries[0].providerData.registrationExpiry - now - (6000 * 1000) < 5000);
+    assert(workers.entries[0].providerData.terminateAfter - now - (6000 * 1000) < 5000);
     assert.deepEqual(workers.entries[0].providerData.operation, {
       name: 'foo',
       zone: 'whatever/a',
@@ -209,7 +209,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
       state: helper.Worker.states.REQUESTED,
       providerData: {
         zone: 'us-east1-a',
-        registrationExpiry: Date.now() - 1000,
+        terminateAfter: Date.now() - 1000,
       },
     });
     await provider.scanPrepare();
@@ -232,7 +232,53 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
       state: helper.Worker.states.REQUESTED,
       providerData: {
         zone: 'us-east1-a',
-        registrationExpiry: Date.now() + 1000,
+        terminateAfter: Date.now() + 1000,
+      },
+    });
+    await provider.scanPrepare();
+    await provider.checkWorker({worker});
+    await provider.scanCleanup();
+    assert(!fakeGoogle.instanceDeleteStub.called);
+  });
+
+  test('remove very old workers', async function() {
+    const worker = await helper.Worker.create({
+      workerPoolId,
+      workerGroup: 'whatever',
+      workerId: 'whatever',
+      providerId,
+      capacity: 1,
+      created: taskcluster.fromNow('-1 hour'),
+      lastModified: taskcluster.fromNow('-2 weeks'),
+      lastChecked: taskcluster.fromNow('-2 weeks'),
+      expires: taskcluster.fromNow('1 week'),
+      state: helper.Worker.states.REQUESTED,
+      providerData: {
+        zone: 'us-east1-a',
+        terminateAfter: Date.now() - 1000,
+      },
+    });
+    await provider.scanPrepare();
+    await provider.checkWorker({worker});
+    await provider.scanCleanup();
+    assert(fakeGoogle.instanceDeleteStub.called);
+  });
+
+  test('don\'t remove current workers', async function() {
+    const worker = await helper.Worker.create({
+      workerPoolId,
+      workerGroup: 'whatever',
+      workerId: 'whatever',
+      providerId,
+      capacity: 1,
+      created: taskcluster.fromNow('-1 hour'),
+      lastModified: taskcluster.fromNow('-2 weeks'),
+      lastChecked: taskcluster.fromNow('-2 weeks'),
+      expires: taskcluster.fromNow('1 week'),
+      state: helper.Worker.states.REQUESTED,
+      providerData: {
+        zone: 'us-east1-a',
+        terminateAfter: Date.now() + 1000,
       },
     });
     await provider.scanPrepare();
@@ -378,6 +424,20 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
       // allow +- 10 seconds since time passes while the test executes
       assert(res.expires - new Date() + 10000 > 96 * 3600 * 1000, res.expires);
       assert(res.expires - new Date() - 10000 < 96 * 3600 * 1000, res.expires);
+    });
+
+    test('sweet success (different reregister)', async function() {
+      const worker = await helper.Worker.create({
+        ...defaultWorker,
+        providerData: {
+          reregistrationTimeout: 3600 * 10 * 1000,
+        },
+      });
+      const workerIdentityProof = {token: 'good'};
+      const res = await provider.registerWorker({workerPool, worker, workerIdentityProof});
+      // allow +- 10 seconds since time passes while the test executes
+      assert(res.expires - new Date() + 10000 > 10 * 3600 * 1000, res.expires);
+      assert(res.expires - new Date() - 10000 < 10 * 3600 * 1000, res.expires);
     });
   });
 });
