@@ -17,6 +17,21 @@ func Get(t *testing.T) string {
 			t.Fatal("TASKCLUSTER_ROOT_URL must be set when NO_TEST_SKIP is set")
 		}
 	}
-	// tests only call public APIs, so no auth needed and we can use mozilla production deployment
 	return rootURL
+}
+
+// Like Get, but also return clientID, accessToken, and optional certificate.
+func GetWithCreds(t *testing.T) (rootURL string, clientID string, accessToken string, certificate string) {
+	rootURL = os.Getenv("TASKCLUSTER_ROOT_URL")
+	clientID = os.Getenv("TASKCLUSTER_CLIENT_ID")
+	accessToken = os.Getenv("TASKCLUSTER_ACCESS_TOKEN")
+	certificate = os.Getenv("TASKCLUSTER_CERTIFICATE")
+	if rootURL == "" || clientID == "" || accessToken == "" {
+		if os.Getenv("NO_TEST_SKIP") == "" {
+			t.Skip("Set TASKCLUSTER_ROOT_URL, TASKCLUSTER_CLIENT_ID, and TASKCLUSTER_ACCESS_TOKEN to run tests")
+		} else {
+			t.Fatal("TASKCLUSTER_ROOT_URL, TASKCLUSTER_CLIENT_ID, and TASKCLUSTER_ACCESS_TOKEN must be set when NO_TEST_SKIP is set")
+		}
+	}
+	return
 }
