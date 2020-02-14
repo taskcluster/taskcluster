@@ -104,16 +104,16 @@ helper.dbSuite(path.basename(__filename), function() {
         sample2: {subobject: {number: 51}, array: [1, 2, 3, 4, 5, 'string']},
       },
     },
-    // {
-    //   context: 'Entity.types.Schema',
-    //   options: {
-    //     type: Entity.types.Schema({
-    //       type: 'object', required: ['subobject', 'array'],
-    //     }),
-    //     sample1: {subobject: {number: 42}, array: [1, 2, 3, 4, 'string']},
-    //     sample2: {subobject: {number: 51}, array: [1, 2, 3, 4, 5, 'string']},
-    //   },
-    // },
+    {
+      context: 'Entity.types.Schema',
+      options: {
+        type: Entity.types.Schema({
+          type: 'object', required: ['subobject', 'array'],
+        }),
+        sample1: {subobject: {number: 42}, array: [1, 2, 3, 4, 'string']},
+        sample2: {subobject: {number: 51}, array: [1, 2, 3, 4, 5, 'string']},
+      },
+    },
     // {
     //   context: 'Entity.types.Blob',
     //   options: {
@@ -141,17 +141,17 @@ helper.dbSuite(path.basename(__filename), function() {
         encryptedTestOnly: true,
       },
     },
-    // {
-    //   context: 'Entity.types.EncryptedSchema',
-    //   options: {
-    //     type: Entity.types.EncryptedSchema({
-    //       type: 'object', required: ['subobject', 'array'],
-    //     }),
-    //     sample1: {subobject: {number: 42}, array: [1, 2, 3, 4, 'string']},
-    //     sample2: {subobject: {number: 51}, array: [1, 2, 3, 4, 5, 'string']},
-    //     encryptedTestOnly: true,
-    //   },
-    // },
+    {
+      context: 'Entity.types.EncryptedSchema',
+      options: {
+        type: Entity.types.EncryptedSchema({
+          type: 'object', required: ['subobject', 'array'],
+        }),
+        sample1: {subobject: {number: 42}, array: [1, 2, 3, 4, 'string']},
+        sample2: {subobject: {number: 51}, array: [1, 2, 3, 4, 5, 'string']},
+        encryptedTestOnly: true,
+      },
+    },
     {
       context: 'Entity.types.EncryptedText',
       options: {

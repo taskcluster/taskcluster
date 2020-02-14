@@ -3,6 +3,7 @@ const _ = require('lodash');
 const slugid = require('slugid');
 const stringify = require('json-stable-stringify');
 const crypto = require('crypto');
+const Ajv = require('ajv');
 const { SLUG_ID_RE, SLUGID_SIZE } = require('./constants');
 // Check that value is of types for name and property
 // Print messages and throw an error if the check fails
@@ -610,6 +611,7 @@ class EncryptedJSONType extends EncryptedBaseType {
   };
 }
 
+
 module.exports = {
   Boolean: function(property) {
     return new BooleanType(property);
@@ -632,7 +634,28 @@ module.exports = {
   JSON: function (property) {
     return new JSONType(property);
   },
-  Schema: 'schema',
+  Schema: function(schema) {
+    let ajv = new Ajv({useDefaults: true});
+    let validate = ajv.compile(schema);
+
+    /** Schema Entity type */
+    class SchemaEnforcedType extends JSONType {
+      validate(value) {
+        if (validate(value)) {
+          return;
+        }
+        let err = new Error(
+          'SchemaEnforcedType \'' + this.property +
+          '\' schema validation failed: ' + ajv.errorsText(validate.errors),
+        );
+        err.errors = validate.errors;
+        err.value = value;
+        throw err;
+      }
+    }
+
+    return SchemaEnforcedType;
+  },
   EncryptedBlob: 'encrypted-blob',
   EncryptedText: function (property) {
     return new EncryptedTextType(property);
@@ -640,7 +663,28 @@ module.exports = {
   EncryptedJSON: function(props) {
     return new EncryptedJSONType(props);
   },
-  EncryptedSchema: 'encrypted-schema',
+  EncryptedSchema: function(schema) {
+    let ajv = new Ajv({useDefaults: true});
+    let validate = ajv.compile(schema);
+
+    /** Schema Entity type */
+    class EncryptedSchemaEnforcedType extends EncryptedJSONType {
+      validate = function(value) {
+        if (validate(value)) {
+          return;
+        }
+        let err = new Error(
+          'EncryptedSchemaEnforcedType \'' + this.property +
+          '\' schema validation failed: ' + ajv.errorsText(validate.errors),
+        );
+        err.errors = validate.errors;
+        err.value = value;
+        throw err;
+      };
+    }
+
+    return EncryptedSchemaEnforcedType;
+  },
   SlugIdArray: class {
     constructor(property) {
       return new SlugIdArrayType(property);
