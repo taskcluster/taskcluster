@@ -93,7 +93,7 @@ else
   esac
 fi
 
-ls "$OUTPUT_DIR/generic-worker-*"
+ls -1 "$OUTPUT_DIR"/generic-worker-*
 
 CGO_ENABLED=0 go get github.com/taskcluster/livelog
 
