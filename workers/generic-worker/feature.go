@@ -1,6 +1,6 @@
 package main
 
-import "github.com/taskcluster/taskcluster-base-go/scopes"
+import "github.com/taskcluster/taskcluster/v25/internal/scopes"
 
 type (
 	Feature interface {

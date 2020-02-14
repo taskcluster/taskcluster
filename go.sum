@@ -131,10 +131,7 @@ github.com/taskcluster/slugid-go v1.1.0 h1:SWsUplliyamdYzOKVM4+lDohZKuL63fKreGkv
 github.com/taskcluster/slugid-go v1.1.0/go.mod h1:5sOAcPHjqso1UkKxSl77CkKgOwha0D9X0msBKBj0AOg=
 github.com/taskcluster/stateless-dns-go v1.0.6 h1:6Nzte8Y+UWCNQCjTUpfs7LU7gA+FG3kjJeEZIhtCcaE=
 github.com/taskcluster/stateless-dns-go v1.0.6/go.mod h1:Nu9QAMTDA6EdWm4xyQVQurJDRXjhl8R6XDwxU/WNJ40=
-github.com/taskcluster/taskcluster-base-go v1.0.0 h1:Jh2R/J7+a23LjtYEHQtkFV04QBxx6EVX8E0PrzUqJo4=
 github.com/taskcluster/taskcluster-base-go v1.0.0/go.mod h1:ByyzyqqufsfZTrAHUw+0Grp8FwZAizZOKzVE1IpDXxQ=
-github.com/taskcluster/taskcluster-base-go v1.0.1 h1:xIkpFaQjBkEjBB4md9zkuZmiTMglxifIqPPN23AXHeM=
-github.com/taskcluster/taskcluster-base-go v1.0.1/go.mod h1:+83N4j7iv03QXiEFMZBxpJsRtWIi65FxRLNPMtJCqe0=
 github.com/taskcluster/taskcluster-lib-urls v12.0.0+incompatible h1:57WLzh7B04y6ahTOJ8wjvdkbwYqnyJkwLXQ1Tu4E/DU=
 github.com/taskcluster/taskcluster-lib-urls v12.0.0+incompatible/go.mod h1:ALqTgi15AmJGEGubRKM0ydlLAFatlQPrQrmal9YZpQs=
 github.com/taskcluster/taskcluster-lib-urls v13.0.0+incompatible h1:JzXbHelZk1Kmi5JftwM47YOdHre2zddpP/cZCgXAkqM=

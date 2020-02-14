@@ -155,6 +155,12 @@ tasks:
               /sandbox/bin/pip install tox
           command: >-
               TOXENV=py37 /sandbox/bin/tox
+        - name: internal-go-libraries-${go.release}
+          image: 'golang:${go.release}'
+          install: >-
+              cd internal
+          command: >-
+              go test -v -race ./...
         - name: taskcluster-client-go-${go.release}
           image: 'golang:${go.release}'
           install: >-

@@ -15,7 +15,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/taskcluster/taskcluster-base-go/jsontest"
+	"github.com/taskcluster/taskcluster/v25/internal/jsontest"
 )
 
 // TestExtHeaderPermAuthScopes checks that the generated hawk ext http header

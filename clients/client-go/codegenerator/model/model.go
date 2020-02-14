@@ -159,6 +159,10 @@ func FormatSourceAndSave(sourceFile string, sourceCode []byte) {
 	// remove links based on the schema server
 	formattedContent = regexp.MustCompile(`(?:[ \t]*//\n)?[ \t]*// See http://127.0.0.1:.*\n`).ReplaceAll(formattedContent, []byte(""))
 
+	// goimports often gets confused about versions based on whatever it finds
+	// in GOPATH, so reset the TC version to the appropriate value
+	formattedContent = regexp.MustCompile(`github.com/taskcluster/taskcluster/v[0-9]+/`).ReplaceAll(formattedContent, []byte("github.com/taskcluster/taskcluster/v25/"))
+
 	// only perform general format, if that worked...
 	formattedContent, err = format.Source(formattedContent)
 	exitOnFail(err)

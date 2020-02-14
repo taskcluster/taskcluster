@@ -6,10 +6,10 @@ import (
 	"time"
 
 	"github.com/taskcluster/slugid-go/slugid"
-	"github.com/taskcluster/taskcluster-base-go/jsontest"
 	tcclient "github.com/taskcluster/taskcluster/v25/clients/client-go"
 	"github.com/taskcluster/taskcluster/v25/clients/client-go/tcindex"
 	"github.com/taskcluster/taskcluster/v25/clients/client-go/tcqueue"
+	"github.com/taskcluster/taskcluster/v25/internal/jsontest"
 )
 
 // This is a silly test that looks for the garbage index namespace, to somewhat

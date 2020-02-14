@@ -15,7 +15,7 @@ import (
 	"github.com/ghodss/yaml"
 	"github.com/kr/text"
 	"github.com/taskcluster/jsonschema2go"
-	"github.com/taskcluster/taskcluster-base-go/jsontest"
+	"github.com/taskcluster/taskcluster/v25/internal/jsontest"
 )
 
 func main() {
