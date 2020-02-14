@@ -24,10 +24,12 @@ elif [ "${GO_MAJ}" != "go${GO_MAJOR_VERSION}" ] || [ "${GO_MIN}" -lt "${MIN_GO_M
 fi
 echo "Go version ok (${GO_VERSION} >= go${GO_MAJOR_VERSION}.${MIN_GO_MINOR_VERSION})"
 TEST=false
+PUBLISH=false
 OUTPUT_ALL_PLATFORMS="Building just for the multiuser platform (build.sh -a argument NOT specified)"
 OUTPUT_TEST="Test flag NOT detected (-t) as argument to build.sh script"
+OUTPUT_DIR=.
 ALL_PLATFORMS=false
-while getopts ":at" opt; do
+while getopts ":atpo:" opt; do
     case "${opt}" in
         a)  ALL_PLATFORMS=true
             OUTPUT_ALL_PLATFORMS="Building for all platforms (build.sh -a argument specified)"
@@ -35,22 +37,32 @@ while getopts ":at" opt; do
         t)  TEST=true
             OUTPUT_TEST="Test flag detected (-t) as build.sh argument"
             ;;
+        p)  PUBLISH=true
+            ALL_PLATFORMS=true
+            OUTPUT_ALL_PLATFORMS="Building for all platforms (build.sh -p argument specified)"
+            ;;
+        o)  OUTPUT_DIR=$OPTARG
+            ;;
     esac
 done
 echo "${OUTPUT_ALL_PLATFORMS}"
 echo "${OUTPUT_TEST}"
 
-go install ./gw-codegen
-export PATH="$(go env GOPATH)/bin:${PATH}"
-go generate ./...
+if ! $PUBLISH; then
+    go install ./gw-codegen
+    export PATH="$(go env GOPATH)/bin:${PATH}"
+    go generate ./...
+fi
 
 function install {
-  GOOS="${2}" GOARCH="${3}" CGO_ENABLED=0 go install -ldflags "-X main.revision=$(git rev-parse HEAD)" -tags "${1}" -v ./...
-  GOOS="${2}" GOARCH="${3}" go vet -tags "${1}" ./...
-  # note, this just builds tests, it doesn't run them!
-  GOOS="${2}" GOARCH="${3}" CGO_ENABLED=0 go test -tags "${1}" -c .
-  GOOS="${2}" GOARCH="${3}" CGO_ENABLED=0 go test -tags "${1}" -c ./livelog
-  GOOS="${2}" GOARCH="${3}" CGO_ENABLED=0 go build -o generic-worker-${1}-${2}-${3} -ldflags "-X main.revision=$(git rev-parse HEAD)" -tags "${1}" -v .
+  if ! $PUBLISH; then
+      GOOS="${2}" GOARCH="${3}" CGO_ENABLED=0 go install -ldflags "-X main.revision=$(git rev-parse HEAD)" -tags "${1}" -v ./...
+      GOOS="${2}" GOARCH="${3}" go vet -tags "${1}" ./...
+      # note, this just builds tests, it doesn't run them!
+      GOOS="${2}" GOARCH="${3}" CGO_ENABLED=0 go test -tags "${1}" -c .
+      GOOS="${2}" GOARCH="${3}" CGO_ENABLED=0 go test -tags "${1}" -c ./livelog
+  fi
+  GOOS="${2}" GOARCH="${3}" CGO_ENABLED=0 go build -o "$OUTPUT_DIR/generic-worker-${1}-${2}-${3}" -ldflags "-X main.revision=$(git rev-parse HEAD)" -tags "${1}" -v .
 }
 
 if ${ALL_PLATFORMS}; then
@@ -81,7 +93,7 @@ else
   esac
 fi
 
-find "${GOPATH}/bin" -name 'generic-worker*'
+ls "$OUTPUT_DIR/generic-worker-*"
 
 CGO_ENABLED=0 go get github.com/taskcluster/livelog
 
@@ -92,11 +104,13 @@ if $TEST; then
   if [ "${MYGOHOSTOS}" == "linux" ] || [ "${MYGOHOSTOS}" == "darwin" ]; then
     CGO_ENABLED=1 GORACE="history_size=7" go test -v -tags docker -ldflags "-X github.com/taskcluster/taskcluster/v24/workers/generic-worker.revision=$(git rev-parse HEAD)" -race -timeout 1h ./...
   fi
+  go get golang.org/x/lint/golint
+  golint $(go list ./...) | sed "s*${PWD}/**"
+  go get github.com/gordonklaus/ineffassign
+  ineffassign .
 fi
-go get golang.org/x/lint/golint
-golint $(go list ./...) | sed "s*${PWD}/**"
-go get github.com/gordonklaus/ineffassign
-ineffassign .
 
 echo "Build successful!"
-git status
+if ! $PUBLISH; then
+    git status
+fi
