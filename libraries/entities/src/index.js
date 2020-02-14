@@ -102,9 +102,6 @@ class Entity {
 
   _getPropertiesFromEntity(entity) {
     this.properties = this.deserialize(entity); // TODO: _properties
-    Object.entries(this.properties).forEach(([key, value]) => {
-      this[key] = value;
-    });
   }
 
   async remove(ignoreChanges, ignoreIfNotExists) {
@@ -137,10 +134,6 @@ class Entity {
 
     this._getPropertiesFromEntity(result[0].value);
     this.etag = etag;
-
-    Object.entries(this.properties).forEach(([key, value]) => {
-      this[key] = value;
-    });
 
     return hasChanged;
   }
@@ -474,6 +467,18 @@ class Entity {
         subClass.tableName = tableName;
         subClass.serviceName = serviceName;
         subClass.db = db;
+
+        // Define access properties, we do this here, as doing it in Entity.configure
+        // means that it could be called more than once.
+        _.forIn(ConfiguredEntity.mapping, function(type, property) {
+          // Define property for accessing underlying shadow object
+          Object.defineProperty(subClass.prototype, property, {
+            enumerable: true,
+            get: function() {
+              return this.properties[property];
+            },
+          });
+        });
 
         return subClass;
       }
