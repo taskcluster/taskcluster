@@ -30,7 +30,7 @@ helper.dbSuite(path.basename(__filename), function() {
     properties,
   });
   const serviceName = 'test-entities';
-  const cryptoKey = 'CNcj2aOozdo7Pn+HEkAIixwninIwKnbYc6JPS9mNxZk=';
+  const cryptoKey = 'gRT3AtCOwtZOP4xI6ESB4vPC3unDXqKq8VolcnDISPE=';
 
   suite('Entity (encrypted properties)', function() {
     test('setup', function() {
@@ -170,6 +170,39 @@ helper.dbSuite(path.basename(__filename), function() {
       }, function(err) {
         assert(err.code === 'ResourceNotFound');
       });
+    });
+
+    test('check for stable encrypted form', async function() {
+      db = await helper.withDb({ schema, serviceName });
+      const tableName = 'test_entities';
+      const TestTable = configuredTestTable.setup({
+        tableName,
+        db,
+        serviceName,
+        cryptoKey,
+      });
+      const id = slugid.v4();
+
+      await TestTable.create({
+        id,
+        count: 1,
+      });
+      const item = await TestTable.load({id});
+
+      // overwrite the `count` column with an encrypted value captured from a
+      // successful run.  This test then ensures that no changes causes
+      // existing rows to no longer decrypt correctly.
+      const entity = {
+        PartitionKey: item._partitionKey,
+        RowKey: item._rowKey,
+        id,
+        __bufchunks_count: 1,
+        // encrypted version of 1234
+        __buf0_count: '+HqJql/AFykC590r8Fkxmhg/2tqsnCOX2eOfbuDKpx8=',
+      };
+      await db.fns[`${tableName}_modify`](item._partitionKey, item._rowKey, entity, 1, item.etag);
+      await item.reload();
+      assert.equal(item.count, 1234);
     });
 
     test('Entity.load (invalid cryptoKey)', async function() {

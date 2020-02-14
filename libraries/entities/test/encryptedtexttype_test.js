@@ -83,6 +83,42 @@ helper.dbSuite(path.basename(__filename), function() {
       });
     });
 
+    test('check for stable encrypted form', async function() {
+      db = await helper.withDb({ schema, serviceName });
+      const tableName = 'test_entities';
+      const name = 'my-test-name';
+      const data = 'not-what-we-want-to-see';
+      const TestTable = configuredTestTable.setup({
+        tableName,
+        db,
+        serviceName,
+        cryptoKey,
+      });
+      const id = slugid.v4();
+
+      const item = await TestTable.create({
+        id,
+        name,
+        data,
+      });
+
+      // overwrite the `data` column with an encrypted value captured from a
+      // successful run.  This test then ensures that no changes causes
+      // existing rows to no longer decrypt correctly.
+      const entity = {
+        PartitionKey: item._partitionKey,
+        RowKey: item._rowKey,
+        id,
+        name,
+        __bufchunks_data: 1,
+        // encrypted version of 'EXPECTED'
+        __buf0_data: 'seMOJM+lR6L+dfcHFy4efU9biT9fsNEZrtad2o/fSVY=',
+      };
+      await db.fns[`${tableName}_modify`](item._partitionKey, item._rowKey, entity, 1, item.etag);
+      await item.reload();
+      assert.deepEqual(item.data, 'EXPECTED');
+    });
+
     test('large text (64k)', async function() {
       db = await helper.withDb({ schema, serviceName });
       const id = slugid.v4();

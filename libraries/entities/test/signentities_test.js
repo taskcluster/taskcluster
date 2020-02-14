@@ -110,6 +110,34 @@ helper.dbSuite(path.basename(__filename), function() {
       });
     });
 
+    test('check for stable signature', async function() {
+      db = await helper.withDb({ schema, serviceName });
+      const id = 'ZqZrh4PeQp6eS6alJNANLg';
+      const name = 'stable entity';
+      const tableName = 'test_entities';
+      const TestTable = configuredTestTable.setup({
+        tableName: 'test_entities',
+        db,
+        serviceName,
+        signingKey: 'no-way-you-can-guess-this',
+      });
+      await TestTable.remove({id, name}, true);
+
+      const item = await TestTable.create({
+        id,
+        name,
+        count: 42,
+      });
+
+      // overwrite the `data` column with an encrypted value captured from a
+      // successful run.  This test then ensures that no changes causes
+      // existing rows to no longer decrypt correctly.
+      const [result] = await db.fns[`${tableName}_load`](item._partitionKey, item._rowKey);
+
+      assert.equal(result.value.Signature,
+        'Ngc8HXokZRUuUJadEPtlYXbDPrV/C52eCR6aviiyLtaxvaV1LrWy0tFOjx0LzsiCd2Tq2dciEtL65cIfK8ohTQ==');
+    });
+
     test('Item.load (invalid signature)', async function() {
       db = await helper.withDb({ schema, serviceName });
       const TestTable = configuredTestTable.setup({
