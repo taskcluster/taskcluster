@@ -36,7 +36,7 @@ export PATH=$PWD/node_modules/.bin:$PATH
 
 Taskcluster requires a Linux-like environment for development.
 If you are developing on a Windows system, you will need to either
-* Install [WSL](https://docs.microsoft.com/en-us/windows/wsl/install-win10)
+* install [WSL](https://docs.microsoft.com/en-us/windows/wsl/install-win10)
 * use a virtual machine for development or
 * install Linux as a second OS and boot into that.
 
