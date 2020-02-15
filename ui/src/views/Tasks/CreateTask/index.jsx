@@ -36,6 +36,7 @@ import { nice } from '../../../utils/slugid';
 import formatTaskMutation from '../../../utils/formatTaskMutation';
 import {
   TASKS_CREATE_STORAGE_KEY,
+  UI_SCHEDULER_ID,
   ISO_8601_REGEX,
 } from '../../../utils/constants';
 import urls from '../../../utils/urls';
@@ -46,7 +47,7 @@ import db from '../../../utils/db';
 const defaultTask = {
   provisionerId: 'proj-getting-started',
   workerType: 'tutorial',
-  schedulerId: 'taskcluster-ui',
+  schedulerId: UI_SCHEDULER_ID,
   created: new Date().toISOString(),
   deadline: toDate(addHours(new Date(), 3)).toISOString(),
   payload: {

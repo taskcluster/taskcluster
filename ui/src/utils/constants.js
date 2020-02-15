@@ -280,3 +280,4 @@ export const NULL_WORKER_POOL = {
   emailOnError: false,
   config: {},
 };
+export const UI_SCHEDULER_ID = 'taskcluster-ui';
