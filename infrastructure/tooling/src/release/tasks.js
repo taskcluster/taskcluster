@@ -179,7 +179,7 @@ module.exports = ({tasks, cmdOptions, credentials}) => {
       const genericworker = 'workers/generic-worker/main.go';
       utils.status({message: `Update ${genericworker}`});
       await modifyRepoFile(genericworker, contents =>
-        contents.replace(/^(\w*version\w*=\w*).*/, `$1"${requirements['release-version']}"`));
+        contents.replace(/^(\s*version\s*=\s*).*/, `$1"${requirements['release-version']}"`));
       changed.push(genericworker);
 
       return {'version-updated': changed};
