@@ -23,7 +23,7 @@ class Publish {
 
   async generateTasks() {
     // try loading the secret into process.env
-    if (process.env.TASKCLUSTER_PROXY_URL) {
+    if (process.env.TASKCLUSTER_PROXY_URL && !this.cmdOptions.staging) {
       const secretName = "project/taskcluster/release";
       console.log(`loading secrets from taskcluster secret ${secretName} via taskcluster-proxy`);
       const secrets = new taskcluster.Secrets({rootUrl: process.env.TASKCLUSTER_PROXY_URL});
@@ -69,6 +69,11 @@ class Publish {
   }
 
   async run() {
+    // --staging implies --no-push
+    if (this.cmdOptions.staging) {
+      this.cmdOptions.push = false;
+    }
+
     if (!this.cmdOptions.cache) {
       await rimraf(this.baseDir);
     }

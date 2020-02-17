@@ -46,6 +46,7 @@ program.command('release:publish')
   .description('publish a release based on Git tag')
   .option('--base-dir <base-dir>', 'Base directory for build (fast and big!; default /tmp/taskcluster-builder-build)')
   .option('--dry-run', 'Do not run any tasks, but generate the list of tasks')
+  .option('--staging', 'Staging run (implies --no-push)')
   .option('--no-push', 'Do not push the GitHub release, docker images, packages, etc.')
   .on('--help', () => {
     console.log([

@@ -25,6 +25,12 @@ module.exports = ({tasks, cmdOptions, credentials, baseDir}) => {
     requires: [],
     provides: ['release-version'],
     run: async (requirements, utils) => {
+      if (cmdOptions.staging) {
+        return {
+          'release-version': '9999.99.99',
+        };
+      }
+
       const {gitDescription} = await gitDescribe({
         dir: REPO_ROOT,
         utils,
@@ -48,6 +54,13 @@ module.exports = ({tasks, cmdOptions, credentials, baseDir}) => {
       'build-can-start', // wait to build until we're sure this worked..
     ],
     run: async (requirements, utils) => {
+      if (cmdOptions.staging) {
+        return {
+          'changelog-text': '(staging release)',
+          'build-can-start': true,
+        };
+      }
+
       // recover the changelog for this version from CHANGELOG.md, where `yarn
       // release` put it
       const changelogFile = await readRepoFile('CHANGELOG.md');
