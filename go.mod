@@ -46,7 +46,7 @@ require (
 	golang.org/x/net v0.0.0-20191002035440-2ec189313ef0
 	golang.org/x/sys v0.0.0-20191218084908-4a24b4065292
 	golang.org/x/tools v0.0.0-20200130002326-2f3ba24bd6e7
-	gopkg.in/tylerb/graceful.v1 v1.0.0-00010101000000-000000000000
+	gopkg.in/tylerb/graceful.v1 v1.2.15
 	gopkg.in/yaml.v2 v2.2.2
 	launchpad.net/gocheck v0.0.0-20140225173054-000000000087 // indirect
 )
@@ -55,5 +55,3 @@ require (
 replace gopkg.in/yaml.v2 => github.com/go-yaml/yaml v0.0.0-20181115110504-51d6538a90f8
 
 replace gopkg.in/check.v1 => github.com/go-check/check v0.0.0-20190902080502-41f04d3bba15
-
-replace gopkg.in/tylerb/graceful.v1 => github.com/tylerb/graceful v1.2.15
