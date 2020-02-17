@@ -115,7 +115,7 @@ func init() {
 func main() {
 	versionName := "generic-worker (" + engine + " engine) " + version
 	if revision != "" {
-		versionName += " [ revision: https://github.com/taskcluster/generic-worker/commits/" + revision + " ]"
+		versionName += " [ revision: https://github.com/taskcluster/taskcluster/commits/" + revision + " ]"
 	}
 	arguments, err := docopt.Parse(usage(versionName), nil, true, versionName, false, true)
 	if err != nil {
@@ -320,13 +320,13 @@ func loadConfig(configFile *gwconfig.File, provider Provider) (gwconfig.Provider
 		"go-arch":    runtime.GOARCH,
 		"go-os":      runtime.GOOS,
 		"go-version": runtime.Version(),
-		"release":    "https://github.com/taskcluster/generic-worker/releases/tag/v" + version,
+		"release":    "https://github.com/taskcluster/taskcluster/releases/tag/v" + version,
 		"version":    version,
 		"engine":     engine,
 	}
 	if revision != "" {
 		gwMetadata["revision"] = revision
-		gwMetadata["source"] = "https://github.com/taskcluster/generic-worker/commits/" + revision
+		gwMetadata["source"] = "https://github.com/taskcluster/taskcluster/commits/" + revision
 	}
 	config.WorkerTypeMetadata["generic-worker"] = gwMetadata
 	return configProvider, nil
