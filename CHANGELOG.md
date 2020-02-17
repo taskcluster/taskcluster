@@ -3,6 +3,13 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v25.2.0
+
+▶ [minor] [bug 1616022](http://bugzil.la/1616022)
+Generic worker now correctly reports its version number. The version number was incorrectly reported in release 25.1.1.
+
+▶ Additional changes not described here: [bug 1615762](http://bugzil.la/1615762), [#2367](https://github.com/taskcluster/taskcluster/issues/2367).
+
 ## v25.1.1
 
 No changes
