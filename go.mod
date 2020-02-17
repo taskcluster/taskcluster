@@ -32,7 +32,6 @@ require (
 	github.com/taskcluster/go-got v0.0.0-20190401132811-c63e3293a290
 	github.com/taskcluster/httpbackoff/v3 v3.0.0
 	github.com/taskcluster/jsonschema2go v1.0.2
-	github.com/taskcluster/livelog v1.1.1 // indirect
 	github.com/taskcluster/pulse-go v1.0.0
 	github.com/taskcluster/shell v0.0.0-20191115171910-c688067f12d3
 	github.com/taskcluster/slugid-go v1.1.0
