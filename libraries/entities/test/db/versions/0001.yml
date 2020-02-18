@@ -66,15 +66,14 @@ methods:
       end
   test_entities_modify:
     serviceName: test-entities
-    description: test
+    description: |
+      Modify an entity. If the modify operation is succesful, the etag is returned in a set.
+      Else, an error will be raised with the following error code:
+      * 'P0004' - update was unsuccessful (e.g., the etag value did not match)
+      * 'P0002' - entry not found in the table (i.e., no such row)
     mode: write
     args: partition_key text, row_key text, properties jsonb, version integer, old_etag uuid
     returns: table (etag uuid)
-#    3 things that can happen here:
-#    1. successful update
-#    2. unsuccessful update
-#    3. no such row
-#    TODO: Add error status codes to description
     body: |-
       declare
         new_etag uuid := public.gen_random_uuid();
