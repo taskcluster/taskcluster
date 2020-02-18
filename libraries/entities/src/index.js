@@ -91,7 +91,7 @@ class Entity {
     this._tableName = tableName;
     this._partitionKey = entity.PartitionKey;
     this._rowKey = entity.RowKey;
-    this.db = db;
+    this._db = db;
 
     this._getPropertiesFromEntity(entity);
 
@@ -105,7 +105,7 @@ class Entity {
   }
 
   async remove(ignoreChanges, ignoreIfNotExists) {
-    const [result] = await this.db.fns[`${this._tableName}_remove`](this._partitionKey, this._rowKey);
+    const [result] = await this._db.fns[`${this._tableName}_remove`](this._partitionKey, this._rowKey);
 
     if (result) {
       return true;
@@ -128,7 +128,7 @@ class Entity {
   // load the properties from the table once more, and return true if anything has changed.
   // Else, return false.
   async reload() {
-    const result = await this.db.fns[`${this._tableName}_load`](this._partitionKey, this._rowKey);
+    const result = await this._db.fns[`${this._tableName}_load`](this._partitionKey, this._rowKey);
     const etag = result[0].etag;
     const hasChanged = etag !== this._etag;
 
@@ -155,7 +155,7 @@ class Entity {
         }
 
         entity = this.constructor.serialize(newProperties);
-        [result] = await this.db.fns[`${this._tableName}_modify`](this._partitionKey, this._rowKey, entity, 1, this._etag);
+        [result] = await this._db.fns[`${this._tableName}_modify`](this._partitionKey, this._rowKey, entity, 1, this._etag);
       } catch (e) {
         if (e.code === 'P0004') {
           return null;
@@ -314,7 +314,7 @@ class Entity {
 
     let res;
     try {
-      res = await this.db.fns[`${this._tableName}_create`](partitionKey, rowKey, entity, overwrite, 1);
+      res = await this._db.fns[`${this._tableName}_create`](partitionKey, rowKey, entity, overwrite, 1);
     } catch (err) {
       if (err.code === UNIQUE_VIOLATION) {
         const e = new Error('Entity already exists');
@@ -339,7 +339,7 @@ class Entity {
       tableName: this._tableName,
       partitionKey,
       rowKey,
-      db: this.db,
+      db: this._db,
       context: this.contextEntries,
     });
   }
@@ -352,7 +352,7 @@ class Entity {
 
   static async remove(properties, ignoreIfNotExists) {
     const { partitionKey, rowKey } = this.calculateId(properties);
-    const [result] = await this.db.fns[`${this._tableName}_remove`](partitionKey, rowKey);
+    const [result] = await this._db.fns[`${this._tableName}_remove`](partitionKey, rowKey);
 
     if (result) {
       return true;
@@ -374,7 +374,7 @@ class Entity {
 
   static async load(properties, ignoreIfNotExists) {
     const { partitionKey, rowKey } = this.calculateId(properties);
-    const [result] = await this.db.fns[`${this._tableName}_load`](partitionKey, rowKey);
+    const [result] = await this._db.fns[`${this._tableName}_load`](partitionKey, rowKey);
 
     if (!result && ignoreIfNotExists) {
       return null;
@@ -393,7 +393,7 @@ class Entity {
       tableName: this._tableName,
       partitionKey,
       rowKey,
-      db: this.db,
+      db: this._db,
       context: this.contextEntries,
     });
   }
@@ -405,7 +405,7 @@ class Entity {
       matchPartition = 'none',
     } = options;
     const condition = this._doCondition(conditions, options);
-    const result = await this.db.fns[`${this._tableName}_scan`](condition, limit, page);
+    const result = await this._db.fns[`${this._tableName}_scan`](condition, limit, page);
 
     return result.map(entry => (
       new this(entry.value, {
@@ -413,7 +413,7 @@ class Entity {
         tableName: this._tableName,
         partitionKey: entry.partition_key,
         rowKey: entry.row_key,
-        db: this.db,
+        db: this._db,
         context: this.contextEntries,
       })
     ));
@@ -466,7 +466,7 @@ class Entity {
           setupOptions.context || {});
         subClass._tableName = tableName;
         subClass.serviceName = serviceName;
-        subClass.db = db;
+        subClass._db = db;
 
         // Define access properties, we do this here, as doing it in Entity.configure
         // means that it could be called more than once.
