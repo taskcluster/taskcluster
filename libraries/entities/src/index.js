@@ -88,7 +88,7 @@ class Entity {
     assert(typeof context === 'object' && context.constructor === Object, 'context should be an object');
 
     this.etag = etag;
-    this.tableName = tableName;
+    this._tableName = tableName;
     this._partitionKey = entity.PartitionKey;
     this._rowKey = entity.RowKey;
     this.db = db;
@@ -105,7 +105,7 @@ class Entity {
   }
 
   async remove(ignoreChanges, ignoreIfNotExists) {
-    const [result] = await this.db.fns[`${this.tableName}_remove`](this._partitionKey, this._rowKey);
+    const [result] = await this.db.fns[`${this._tableName}_remove`](this._partitionKey, this._rowKey);
 
     if (result) {
       return true;
@@ -128,7 +128,7 @@ class Entity {
   // load the properties from the table once more, and return true if anything has changed.
   // Else, return false.
   async reload() {
-    const result = await this.db.fns[`${this.tableName}_load`](this._partitionKey, this._rowKey);
+    const result = await this.db.fns[`${this._tableName}_load`](this._partitionKey, this._rowKey);
     const etag = result[0].etag;
     const hasChanged = etag !== this.etag;
 
@@ -155,7 +155,7 @@ class Entity {
         }
 
         entity = this.constructor.serialize(newProperties);
-        [result] = await this.db.fns[`${this.tableName}_modify`](this._partitionKey, this._rowKey, entity, 1, this.etag);
+        [result] = await this.db.fns[`${this._tableName}_modify`](this._partitionKey, this._rowKey, entity, 1, this.etag);
       } catch (e) {
         if (e.code === 'P0004') {
           return null;
@@ -314,7 +314,7 @@ class Entity {
 
     let res;
     try {
-      res = await this.db.fns[`${this.tableName}_create`](partitionKey, rowKey, entity, overwrite, 1);
+      res = await this.db.fns[`${this._tableName}_create`](partitionKey, rowKey, entity, overwrite, 1);
     } catch (err) {
       if (err.code === UNIQUE_VIOLATION) {
         const e = new Error('Entity already exists');
@@ -332,11 +332,11 @@ class Entity {
       throw err;
     }
 
-    const etag = res[0][`${this.tableName}_create`];
+    const etag = res[0][`${this._tableName}_create`];
 
     return new this(entity, {
       etag,
-      tableName: this.tableName,
+      tableName: this._tableName,
       partitionKey,
       rowKey,
       db: this.db,
@@ -352,7 +352,7 @@ class Entity {
 
   static async remove(properties, ignoreIfNotExists) {
     const { partitionKey, rowKey } = this.calculateId(properties);
-    const [result] = await this.db.fns[`${this.tableName}_remove`](partitionKey, rowKey);
+    const [result] = await this.db.fns[`${this._tableName}_remove`](partitionKey, rowKey);
 
     if (result) {
       return true;
@@ -374,7 +374,7 @@ class Entity {
 
   static async load(properties, ignoreIfNotExists) {
     const { partitionKey, rowKey } = this.calculateId(properties);
-    const [result] = await this.db.fns[`${this.tableName}_load`](partitionKey, rowKey);
+    const [result] = await this.db.fns[`${this._tableName}_load`](partitionKey, rowKey);
 
     if (!result && ignoreIfNotExists) {
       return null;
@@ -390,7 +390,7 @@ class Entity {
 
     return new this(result.value, {
       etag: result.etag,
-      tableName: this.tableName,
+      tableName: this._tableName,
       partitionKey,
       rowKey,
       db: this.db,
@@ -405,12 +405,12 @@ class Entity {
       matchPartition = 'none',
     } = options;
     const condition = this._doCondition(conditions, options);
-    const result = await this.db.fns[`${this.tableName}_scan`](condition, limit, page);
+    const result = await this.db.fns[`${this._tableName}_scan`](condition, limit, page);
 
     return result.map(entry => (
       new this(entry.value, {
         etag: entry.etag,
-        tableName: this.tableName,
+        tableName: this._tableName,
         partitionKey: entry.partition_key,
         rowKey: entry.row_key,
         db: this.db,
@@ -464,7 +464,7 @@ class Entity {
         subClass.contextEntries = ConfiguredEntity._getContextEntries(
           configureOptions.context || [],
           setupOptions.context || {});
-        subClass.tableName = tableName;
+        subClass._tableName = tableName;
         subClass.serviceName = serviceName;
         subClass.db = db;
 
