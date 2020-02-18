@@ -14,7 +14,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/mholt/archiver"
+	"github.com/lissyx/archiver"
 	"github.com/taskcluster/httpbackoff/v3"
 	"github.com/taskcluster/slugid-go/slugid"
 	"github.com/taskcluster/taskcluster/v25/internal/scopes"
