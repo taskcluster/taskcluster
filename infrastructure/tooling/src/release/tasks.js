@@ -164,6 +164,8 @@ module.exports = ({tasks, cmdOptions, credentials}) => {
       // matches the full package path to avoid false positives, but that
       // might result in missed changes where the full path is not used.
       const major = requirements['release-version'].replace(/\..*/, '');
+      // Note, this intentionally also includes scripts and yaml files that
+      // also refer to the release version.
       const goFiles = [
         'go.mod',
         'clients/client-go/**',
@@ -179,7 +181,7 @@ module.exports = ({tasks, cmdOptions, credentials}) => {
       const genericworker = 'workers/generic-worker/main.go';
       utils.status({message: `Update ${genericworker}`});
       await modifyRepoFile(genericworker, contents =>
-        contents.replace(/^(\s*version\s*=\s*).*/, `$1"${requirements['release-version']}"`));
+        contents.replace(/^(\s*version\s*=\s*).*/m, `$1"${requirements['release-version']}"`));
       changed.push(genericworker);
 
       return {'version-updated': changed};
