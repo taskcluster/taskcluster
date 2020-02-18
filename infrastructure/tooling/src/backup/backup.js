@@ -14,7 +14,7 @@ const backupTasks = async ({azureCreds, s3, bucket, include, exclude}) => {
   let containers = [];
   let tables = [];
   for (let path of glob.sync('services/*/azure.yml', {cwd: REPO_ROOT})) {
-    const azureYml = await await readRepoYAML(path);
+    const azureYml = await readRepoYAML(path);
     for (let c of azureYml.containers || []) {
       containers.push(c);
     }
