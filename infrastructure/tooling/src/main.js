@@ -221,6 +221,12 @@ program.command('backup:compare <resource1> <resource2>')
     run(compare, {resource1: options[0], resource2: options[1], ...options[2]});
   });
 
+program.command('importer')
+  .action(() => {
+    const importer = require('./importer');
+    run(importer);
+  });
+
 program.command('*', {noHelp: true})
   .action(() => program.help(txt => txt));
 
