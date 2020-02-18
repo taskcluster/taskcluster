@@ -147,13 +147,6 @@ class Entity {
       let result;
       await modifier.call(newProperties, newProperties);
       try {
-        newProperties.PartitionKey = this._partitionKey;
-        newProperties.RowKey = this._rowKey;
-
-        if (this.constructor.__hasSigning) {
-          newProperties.Signature = this.constructor.__sign(newProperties);
-        }
-
         entity = this.constructor.serialize(newProperties);
         [result] = await this._db.fns[`${this._tableName}_modify`](this._partitionKey, this._rowKey, entity, 1, this._etag);
       } catch (e) {
