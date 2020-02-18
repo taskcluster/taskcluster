@@ -5,8 +5,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/taskcluster/taskcluster-worker-runner/cfg"
-	"github.com/taskcluster/taskcluster-worker-runner/files"
+	"github.com/taskcluster/taskcluster/v25/tools/taskcluster-worker-runner/cfg"
+	"github.com/taskcluster/taskcluster/v25/tools/taskcluster-worker-runner/files"
 	taskcluster "github.com/taskcluster/taskcluster/v25/clients/client-go"
 )
 

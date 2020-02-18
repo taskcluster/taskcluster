@@ -7,10 +7,10 @@ import (
 	"log"
 
 	"github.com/taskcluster/httpbackoff/v3"
-	"github.com/taskcluster/taskcluster-worker-runner/cfg"
-	"github.com/taskcluster/taskcluster-worker-runner/files"
-	"github.com/taskcluster/taskcluster-worker-runner/run"
-	"github.com/taskcluster/taskcluster-worker-runner/tc"
+	"github.com/taskcluster/taskcluster/v25/tools/taskcluster-worker-runner/cfg"
+	"github.com/taskcluster/taskcluster/v25/tools/taskcluster-worker-runner/files"
+	"github.com/taskcluster/taskcluster/v25/tools/taskcluster-worker-runner/run"
+	"github.com/taskcluster/taskcluster/v25/tools/taskcluster-worker-runner/tc"
 	tcclient "github.com/taskcluster/taskcluster/v25/clients/client-go"
 	"github.com/taskcluster/taskcluster/v25/clients/client-go/tcsecrets"
 )

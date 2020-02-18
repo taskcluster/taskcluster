@@ -13,7 +13,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/taskcluster/jsonschema2go/text"
+	"github.com/taskcluster/taskcluster/v25/tools/jsonschema2go/text"
 	"github.com/taskcluster/slugid-go/slugid"
 )
 

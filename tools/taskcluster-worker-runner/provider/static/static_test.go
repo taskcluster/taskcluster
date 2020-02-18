@@ -5,9 +5,9 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
-	"github.com/taskcluster/taskcluster-worker-runner/cfg"
-	"github.com/taskcluster/taskcluster-worker-runner/run"
-	"github.com/taskcluster/taskcluster-worker-runner/tc"
+	"github.com/taskcluster/taskcluster/v25/tools/taskcluster-worker-runner/cfg"
+	"github.com/taskcluster/taskcluster/v25/tools/taskcluster-worker-runner/run"
+	"github.com/taskcluster/taskcluster/v25/tools/taskcluster-worker-runner/tc"
 )
 
 func TestConfigureRun(t *testing.T) {

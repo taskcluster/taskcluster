@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/taskcluster/taskcluster-worker-runner/run"
-	"github.com/taskcluster/taskcluster-worker-runner/tc"
+	"github.com/taskcluster/taskcluster/v25/tools/taskcluster-worker-runner/run"
+	"github.com/taskcluster/taskcluster/v25/tools/taskcluster-worker-runner/tc"
 	"github.com/taskcluster/taskcluster/v25/clients/client-go/tcworkermanager"
 )
 

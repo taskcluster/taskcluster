@@ -7,15 +7,15 @@ import (
 	"log"
 	"os"
 
-	"github.com/taskcluster/taskcluster-worker-runner/cfg"
-	"github.com/taskcluster/taskcluster-worker-runner/credexp"
-	"github.com/taskcluster/taskcluster-worker-runner/files"
-	"github.com/taskcluster/taskcluster-worker-runner/perms"
-	"github.com/taskcluster/taskcluster-worker-runner/protocol"
-	"github.com/taskcluster/taskcluster-worker-runner/provider"
-	"github.com/taskcluster/taskcluster-worker-runner/run"
-	"github.com/taskcluster/taskcluster-worker-runner/secrets"
-	"github.com/taskcluster/taskcluster-worker-runner/worker"
+	"github.com/taskcluster/taskcluster/v25/tools/taskcluster-worker-runner/cfg"
+	"github.com/taskcluster/taskcluster/v25/tools/taskcluster-worker-runner/credexp"
+	"github.com/taskcluster/taskcluster/v25/tools/taskcluster-worker-runner/files"
+	"github.com/taskcluster/taskcluster/v25/tools/taskcluster-worker-runner/perms"
+	"github.com/taskcluster/taskcluster/v25/tools/taskcluster-worker-runner/protocol"
+	"github.com/taskcluster/taskcluster/v25/tools/taskcluster-worker-runner/provider"
+	"github.com/taskcluster/taskcluster/v25/tools/taskcluster-worker-runner/run"
+	"github.com/taskcluster/taskcluster/v25/tools/taskcluster-worker-runner/secrets"
+	"github.com/taskcluster/taskcluster/v25/tools/taskcluster-worker-runner/worker"
 )
 
 // Run the worker.  This embodies the execution of the start-worker command.

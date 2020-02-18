@@ -21,16 +21,19 @@ Types:
         Type: 'file'
     MaxRunTime: 3600
 
-  CheckModules:
-    Name: 'Run `go mod tidy` to ensure that go.mod and go.sum and correct and source code is formatted with go fmt'
+  FormatSource:
+    Name: 'Run `go mod tidy`, `go fmt` and `goimports` against source code'
     Description: |
-                 Run `go mod tidy` to ensure that `go.mod` and `go.sum` are up-to-date and
-                 `go fmt` to ensure that go source code is formatted.
-                 See the [go modules wiki page](https://github.com/golang/go/wiki/Modules)
-                 for more information.
+            This task performs three formatting steps against the codebase, and
+            ensures that no local changes are found after applying them:
+
+            * `go mod tidy` (see the [go modules wiki page](https://github.com/golang/go/wiki/Modules)
+              for more information)
+            * `go fmt` to ensure that go source code is formatted
+            * `goimports` to ensure that imports are specified in their canonical form
     Mounts:
       - 'go1.13.7'
-    Command: CheckModules
+    Command: FormatSource
     MaxRunTime: 3600
 
 Tasks:
@@ -84,7 +87,7 @@ Tasks:
 #     Env:                                                          #
 #       ENGINE: 'multiuser'                                         #
 #####################################################################
-  CheckModules:
+  FormatSource:
     - WorkerPool: 'proj-taskcluster/gw-ci-ubuntu-18-04'
 
 WorkerPools:
@@ -120,7 +123,7 @@ WorkerPools:
     Arch: '386'
 
 Commands:
-  CheckModules:
+  FormatSource:
     Posix:
       - - /bin/bash
         - -vxec
@@ -141,7 +144,18 @@ Commands:
           git clean -fdx
           git checkout -B tmp -t "X${TASK_ID}"
           go fmt ./...
+          git diff
+          test $(git status --porcelain | wc -l) == 0
           go mod tidy
+          git diff
+          test $(git status --porcelain | wc -l) == 0
+          go get golang.org/x/tools/cmd/goimports
+          # Run go mod tidy again since go get above will have messed it up.
+          # Should be fixed in go 1.14; see:
+          #   * https://github.com/golang/go/issues/30515#issuecomment-581984371
+          go mod tidy
+          goimports -w .
+          git diff
           test $(git status --porcelain | wc -l) == 0
 
   BuildAndTest:

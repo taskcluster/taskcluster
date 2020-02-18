@@ -26,10 +26,10 @@ import (
 
 	docopt "github.com/docopt/docopt-go"
 	sysinfo "github.com/elastic/go-sysinfo"
-	"github.com/taskcluster/taskcluster/v25/internal/scopes"
-	"github.com/taskcluster/taskcluster-worker-runner/protocol"
+	"github.com/taskcluster/taskcluster/v25/tools/taskcluster-worker-runner/protocol"
 	tcclient "github.com/taskcluster/taskcluster/v25/clients/client-go"
 	"github.com/taskcluster/taskcluster/v25/clients/client-go/tcqueue"
+	"github.com/taskcluster/taskcluster/v25/internal/scopes"
 	"github.com/taskcluster/taskcluster/v25/workers/generic-worker/expose"
 	"github.com/taskcluster/taskcluster/v25/workers/generic-worker/fileutil"
 	"github.com/taskcluster/taskcluster/v25/workers/generic-worker/gwconfig"

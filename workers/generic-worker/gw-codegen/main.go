@@ -14,7 +14,7 @@ import (
 
 	"github.com/ghodss/yaml"
 	"github.com/kr/text"
-	"github.com/taskcluster/jsonschema2go"
+	"github.com/taskcluster/taskcluster/v25/tools/jsonschema2go"
 	"github.com/taskcluster/taskcluster/v25/internal/jsontest"
 )
 

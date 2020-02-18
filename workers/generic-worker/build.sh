@@ -108,7 +108,18 @@ if $TEST; then
   golint $(go list ./...) | sed "s*${PWD}/**"
   go get github.com/gordonklaus/ineffassign
   ineffassign .
+  go get golang.org/x/tools/cmd/goimports
+
+  # We should uncomment this goimports command once either we no longer have
+  # ciruclar go module dependencies that cause an older version of
+  # github.com/taskcluster/taskcluster module to be a dependency, or when
+  # goimports no longer favours the older version over the newer.
+
+  # goimports -w .
+
 fi
+
+go mod tidy
 
 echo "Build successful!"
 if ! $PUBLISH; then
