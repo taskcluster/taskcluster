@@ -114,7 +114,7 @@ helper.dbSuite(path.basename(__filename), function() {
         // encrypted version of 'EXPECTED'
         __buf0_data: 'seMOJM+lR6L+dfcHFy4efU9biT9fsNEZrtad2o/fSVY=',
       };
-      await db.fns[`${tableName}_modify`](item._partitionKey, item._rowKey, entity, 1, item.etag);
+      await db.fns[`${tableName}_modify`](item._partitionKey, item._rowKey, entity, 1, item._etag);
       await item.reload();
       assert.deepEqual(item.data, 'EXPECTED');
     });

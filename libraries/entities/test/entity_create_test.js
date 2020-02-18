@@ -53,7 +53,7 @@ helper.dbSuite(path.basename(__filename), function() {
       assert.equal(result.taskId, taskId);
       assert.equal(result.provisionerId, provisionerId);
       assert.deepEqual(result.properties, entry);
-      assert(result.etag);
+      assert(result._etag);
     });
 
     test('create entry (overwriteIfExists)', async function() {
@@ -81,7 +81,7 @@ helper.dbSuite(path.basename(__filename), function() {
 
       assert.equal(old.workerType, '567');
       assert.equal(result.workerType, 'foo');
-      assert.notEqual(old.etag, result.etag);
+      assert.notEqual(old._etag, result._etag);
     });
 
     test('create entry (overwriteIfExists, doesn\'t exist)', async function() {

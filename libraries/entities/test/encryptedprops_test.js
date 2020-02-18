@@ -200,7 +200,7 @@ helper.dbSuite(path.basename(__filename), function() {
         // encrypted version of 1234
         __buf0_count: '+HqJql/AFykC590r8Fkxmhg/2tqsnCOX2eOfbuDKpx8=',
       };
-      await db.fns[`${tableName}_modify`](item._partitionKey, item._rowKey, entity, 1, item.etag);
+      await db.fns[`${tableName}_modify`](item._partitionKey, item._rowKey, entity, 1, item._etag);
       await item.reload();
       assert.equal(item.count, 1234);
     });

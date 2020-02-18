@@ -203,7 +203,7 @@ helper.dbSuite(path.basename(__filename), function() {
             }).then(function(itemB) {
               assert(_.isEqual(itemA.data, sample1));
               assert(_.isEqual(itemA.data, itemB.data));
-              assert(itemA.etag === itemB.etag);
+              assert(itemA._etag === itemB._etag);
               return itemB;
             });
           }).then(function(item) {
@@ -217,7 +217,7 @@ helper.dbSuite(path.basename(__filename), function() {
             }).then(function(itemB) {
               assert(_.isEqual(itemA.data, sample2));
               assert(_.isEqual(itemA.data, itemB.data));
-              assert(itemA.etag === itemB.etag);
+              assert(itemA._etag === itemB._etag);
               return itemB.modify(function(item) {
                 item.data = sample1;
               });
@@ -226,7 +226,7 @@ helper.dbSuite(path.basename(__filename), function() {
               return itemA.reload().then(function() {
                 assert(_.isEqual(itemA.data, sample1));
                 assert(_.isEqual(itemA.data, itemB.data));
-                assert(itemA.etag === itemB.etag);
+                assert(itemA._etag === itemB._etag);
               }).then(function() {
                 // Try parallel edit
                 let count = 0;
@@ -253,8 +253,8 @@ helper.dbSuite(path.basename(__filename), function() {
                   assert(_.isEqual(itemB.data, sample2));
                   assert(_.isEqual(itemA.data, itemB.data));
                   // Check that etags match, otherwise we might have updated even when not needed
-                  assert(itemA.etag);
-                  assert(itemB.etag);
+                  assert(itemA._etag);
+                  assert(itemB._etag);
                 });
               });
             });

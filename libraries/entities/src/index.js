@@ -87,7 +87,7 @@ class Entity {
     assert(db, 'db is required');
     assert(typeof context === 'object' && context.constructor === Object, 'context should be an object');
 
-    this.etag = etag;
+    this._etag = etag;
     this._tableName = tableName;
     this._partitionKey = entity.PartitionKey;
     this._rowKey = entity.RowKey;
@@ -130,10 +130,10 @@ class Entity {
   async reload() {
     const result = await this.db.fns[`${this._tableName}_load`](this._partitionKey, this._rowKey);
     const etag = result[0].etag;
-    const hasChanged = etag !== this.etag;
+    const hasChanged = etag !== this._etag;
 
     this._getPropertiesFromEntity(result[0].value);
-    this.etag = etag;
+    this._etag = etag;
 
     return hasChanged;
   }
@@ -155,7 +155,7 @@ class Entity {
         }
 
         entity = this.constructor.serialize(newProperties);
-        [result] = await this.db.fns[`${this._tableName}_modify`](this._partitionKey, this._rowKey, entity, 1, this.etag);
+        [result] = await this.db.fns[`${this._tableName}_modify`](this._partitionKey, this._rowKey, entity, 1, this._etag);
       } catch (e) {
         if (e.code === 'P0004') {
           return null;
@@ -174,7 +174,7 @@ class Entity {
       }
 
       this._getPropertiesFromEntity(entity);
-      this.etag = result.etag;
+      this._etag = result.etag;
 
       return this;
     };
