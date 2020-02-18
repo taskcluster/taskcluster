@@ -1,1 +1,0 @@
---image=windows-server-2012-r2-dc-v20190910 --image-project=windows-cloud --boot-disk-size=50GB --boot-disk-type=pd-standard
