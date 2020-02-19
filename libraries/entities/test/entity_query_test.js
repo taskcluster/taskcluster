@@ -92,7 +92,7 @@ helper.dbSuite(path.basename(__filename), function() {
           count: 1,
           tag: 'tag1',
         });
-      }, /should provide enough constraints/);
+      }, /Unable to create key from properties/);
     });
     // TODO: Add more tests...
   });

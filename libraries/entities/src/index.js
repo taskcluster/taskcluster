@@ -227,7 +227,25 @@ class Entity {
       assert(typeof conditions === 'object' && conditions.constructor === Object, 'conditions should be an object');
     }
 
-    const condition = Object.entries(conditions).map(([property, op]) => {
+    let pk;
+    let rk;
+    let condition = [];
+    let covered = [];
+
+    if (options.matchPartition === 'exact') {
+      pk = this.__partitionKey.exactFromConditions(conditions);
+      assert(pk, 'conditions should provide enough constraints for constructions of the partition key');
+      condition.push(`partition_key = '${pk}'`);
+      covered.push(...this.__partitionKey.covers);
+    }
+
+    if (options.matchRow === 'exact') {
+      rk = this.__rowKey.exactFromConditions(conditions);
+      condition.push(`row_key = '${rk}'`);
+      covered.push(...this.__rowKey.covers);
+    }
+
+    Object.entries(conditions).forEach(([property, op]) => {
       const shouldAddQuotes = typeof this.mapping[property].name !== 'NumberType';
 
       // Ensure that we have an operator, we just assume anything specified
@@ -236,22 +254,14 @@ class Entity {
         op = Entity.op.equal(op);
       }
 
-      if (this.__partitionKey.key === property) {
-        return `partition_key ${op.operator} ${shouldAddQuotes ? `'${op.operand}'` : op.operand}`;
+      if (!covered.includes(property)) {
+        const operandValue = valueFromOperand(op.operand);
+
+        condition.push(`value ->> '${property}' ${op.operator} ${shouldAddQuotes ? `'${operandValue}'` : operandValue}`);
       }
+    });
 
-      if (this.__rowKey.key === property) {
-        return `row_key ${op.operator} ${shouldAddQuotes ? `'${op.operand}'` : op.operand}`;
-      }
-
-      const operandValue = valueFromOperand(op.operand);
-
-      return `value ->> '${property}' ${op.operator} ${shouldAddQuotes ? `'${operandValue}'` : operandValue}`;
-    }).join(' and ');
-
-    if (options.matchPartition === 'exact') {
-      assert(/partition_key/.test(condition), 'conditions should provide enough constraints for constructions of the partition key');
-    }
+    condition = condition.join(' and ');
 
     return condition;
   }
@@ -302,9 +312,7 @@ class Entity {
 
   static async create(properties, overwrite) {
     const { partitionKey, rowKey } = this.calculateId(properties);
-
     const entity = this.serialize(properties);
-
     let res;
     try {
       res = await this._db.fns[`${this._tableName}_create`](partitionKey, rowKey, entity, overwrite, 1);
@@ -396,6 +404,7 @@ class Entity {
       limit = 1000,
       page,
       matchPartition = 'none',
+      matchRow = 'none',
     } = options;
     const condition = this._doCondition(conditions, options);
     const result = await this._db.fns[`${this._tableName}_scan`](condition, limit, page);

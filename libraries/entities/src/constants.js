@@ -7,11 +7,15 @@ const SLUGID_SIZE = 128 / 8;
 // AscendingIntegerKey only works with PositiveInteger which is limited 2^32.
 const ASCENDING_KEY_PADDING = '00000000000';
 const MAX_MODIFY_ATTEMPTS = 10;
+// More nines than an int can hold, ie. MORE_NINES_THAN_INT > 2^32
+// DescendingIntegerKey only works with PositiveInteger which is limited 2^32.
+const MORE_NINES_THAN_INT = 9999999999;
 
 module.exports = {
   ASCENDING_KEY_PADDING,
   COMPOSITE_SEPARATOR,
   HASH_KEY_SEPARATOR,
+  MORE_NINES_THAN_INT,
   SLUG_ID_RE,
   SLUGID_SIZE,
   MAX_MODIFY_ATTEMPTS,
