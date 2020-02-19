@@ -10,6 +10,7 @@ const {
   UNIQUE_VIOLATION,
 } = require('taskcluster-lib-postgres');
 const crypto = require('crypto');
+const Hashids = require('hashids/cjs');
 const { MAX_MODIFY_ATTEMPTS } = require('./constants');
 
 /** Fixed time comparison of two buffers */
@@ -30,6 +31,27 @@ const fixedTimeComparison = function(b1, b2) {
   }
 
   return mismatch === 0;
+};
+
+const decodeContinuationToken = token => {
+  const hashids = new Hashids();
+  const decodedToken = hashids.decode(token);
+
+  if (!decodedToken.length) {
+    return 1;
+  }
+
+  return decodedToken[0];
+};
+
+const encodeContinuationToken = token => {
+  const hashids = new Hashids();
+
+  if (!token) {
+    return null;
+  }
+
+  return hashids.encode(token, 10);
 };
 
 // ** Coding Style **
@@ -401,26 +423,35 @@ class Entity {
 
   static async scan(conditions, options = {}) {
     const {
+      continuation,
       limit = 1000,
-      page,
+      // page,
       matchPartition = 'none',
       matchRow = 'none',
     } = options;
-    const condition = this._doCondition(conditions, options);
-    const result = await this._db.fns[`${this._tableName}_scan`](condition, limit, page);
+    const fetchResults = async (continuation) => {
+      const page = decodeContinuationToken(continuation);
+      const condition = this._doCondition(conditions, options);
+      const result = await this._db.fns[`${this._tableName}_scan`](condition, limit, page);
+      const entries = result.map(entry => (
+        new this(entry.value, {
+          etag: entry.etag,
+          tableName: this._tableName,
+          partitionKey: entry.partition_key,
+          rowKey: entry.row_key,
+          db: this._db,
+          context: this.contextEntries,
+        })
+      ));
+      const contToken = result.length ? page + 1 : null;
 
-    const entries = result.map(entry => (
-      new this(entry.value, {
-        etag: entry.etag,
-        tableName: this._tableName,
-        partitionKey: entry.partition_key,
-        rowKey: entry.row_key,
-        db: this._db,
-        context: this.contextEntries,
-      })
-    ));
+      return { entries, continuation: encodeContinuationToken(contToken) };
+    };
 
-    return { entries, continuation: null };
+    // Fetch results
+    const results = await fetchResults(options.continuation);
+
+    return results;
   }
 
   static query(conditions, options = {}) {

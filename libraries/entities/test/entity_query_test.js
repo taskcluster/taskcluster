@@ -102,23 +102,28 @@ helper.dbSuite(path.basename(__filename), function() {
       const TestTable = configuredTestTable.setup({ tableName: 'test_entities', db, serviceName });
 
       await insertDocuments(TestTable);
-      return TestTable.query({id: id}, {
-        limit: 2,
-      }).then(function(data) {
-        assert(data.entries.length === 2);
-        // TODO: Uncomment this
-        // assert(data.continuation);
-        // assert(subject.continuationTokenPattern.test(data.continuation));
-        //
-        // // Fetch next
-        // return Item.query({id: id}, {
-        //   limit:          2,
-        //   continuation:   data.continuation,
-        // }).then(function(data) {
-        //   assert(data.entries.length === 1);
-        //   assert(!data.continuation);
-        // });
+      let result = await TestTable.query({ id }, {
+        limit:          2,
       });
+      assert(result.entries.length === 2);
+      assert(result.continuation);
+      // TODO: Add continuationTokenPattern(?)
+      // assert(Entity.continuationTokenPattern.test(data.continuation));
+
+      // Fetch next
+      result = await TestTable.query({ id }, {
+        limit:          2,
+        continuation:   result.continuation,
+      });
+      assert(result.entries.length === 1);
+      assert(result.continuation);
+
+      result = await TestTable.query({ id }, {
+        limit:          2,
+        continuation:   result.continuation,
+      });
+      assert(result.entries.length === 0);
+      assert(!result.continuation);
     });
     // TODO: Add more tests...
   });

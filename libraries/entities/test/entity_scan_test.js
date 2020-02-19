@@ -122,7 +122,6 @@ helper.dbSuite(path.basename(__filename), function() {
       const documents = await insertDocuments(TestTable, 10);
 
       let result = await TestTable.scan(null, {
-        page: 1,
         limit: 4,
       });
 
@@ -133,7 +132,7 @@ helper.dbSuite(path.basename(__filename), function() {
       assert.deepEqual(result.entries[3], documents[3]);
 
       result = await TestTable.scan(null, {
-        page: 2,
+        continuation: result.continuation,
         limit: 4,
       });
 
@@ -144,7 +143,7 @@ helper.dbSuite(path.basename(__filename), function() {
       assert.deepEqual(result.entries[3], documents[7]);
 
       result = await TestTable.scan(null, {
-        page: 3,
+        continuation: result.continuation,
         limit: 4,
       });
 
@@ -153,7 +152,7 @@ helper.dbSuite(path.basename(__filename), function() {
       assert.deepEqual(result.entries[1], documents[9]);
 
       result = await TestTable.scan(null, {
-        page: 4,
+        continuation: result.continuation,
         limit: 4,
       });
       assert.equal(result.entries.length, 0);
@@ -265,7 +264,6 @@ helper.dbSuite(path.basename(__filename), function() {
       const documents = await insertDocuments(TestTable, 10);
 
       let result = await TestTable.scan(null, {
-        page: 1,
         limit: 4,
       });
 
@@ -276,7 +274,7 @@ helper.dbSuite(path.basename(__filename), function() {
       assert.deepEqual(result.entries[3], documents[3]);
 
       result = await TestTable.scan(null, {
-        page: 2,
+        continuation: result.continuation,
         limit: 4,
       });
 
@@ -287,7 +285,7 @@ helper.dbSuite(path.basename(__filename), function() {
       assert.deepEqual(result.entries[3], documents[7]);
 
       result = await TestTable.scan(null, {
-        page: 3,
+        continuation: result.continuation,
         limit: 4,
       });
 
@@ -296,7 +294,7 @@ helper.dbSuite(path.basename(__filename), function() {
       assert.deepEqual(result.entries[1], documents[9]);
 
       result = await TestTable.scan(null, {
-        page: 4,
+        continuation: result.continuation,
         limit: 4,
       });
       assert.equal(result.entries.length, 0);
