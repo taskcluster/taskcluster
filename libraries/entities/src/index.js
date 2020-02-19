@@ -211,12 +211,14 @@ class Entity {
   }
 
   static _doCondition(conditions, options) {
-    const valueFromOperand = (operand) => {
+    const valueFromOperand = (type, operand) => {
       if (operand instanceof Date) {
-        return operand.toJSON();
+        return `'${operand.toJSON()}'`;
       }
 
-      return operand;
+      const shouldAddQuotes = typeof type.name !== 'NumberType';
+
+      return shouldAddQuotes ? `'${operand}'` : operand;
     };
 
     if (!conditions) {
@@ -246,8 +248,6 @@ class Entity {
     }
 
     Object.entries(conditions).forEach(([property, op]) => {
-      const shouldAddQuotes = typeof this.mapping[property].name !== 'NumberType';
-
       // Ensure that we have an operator, we just assume anything specified
       // without an operator is equality
       if (!(op instanceof Entity.op)) {
@@ -255,9 +255,9 @@ class Entity {
       }
 
       if (!covered.includes(property)) {
-        const operandValue = valueFromOperand(op.operand);
+        const operandValue = valueFromOperand(this.mapping[property], op.operand);
 
-        condition.push(`value ->> '${property}' ${op.operator} ${shouldAddQuotes ? `'${operandValue}'` : operandValue}`);
+        condition.push(`value ->> '${property}' ${op.operator} ${operandValue}`);
       }
     });
 
