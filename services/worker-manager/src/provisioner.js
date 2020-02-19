@@ -117,6 +117,10 @@ class Provisioner {
       // from the list of previous provider IDs
       const providersByPool = new Map();
       const seen = worker => {
+        // don't count capacity for stopping workers
+        if (worker.state === this.Worker.states.STOPPING) {
+          return;
+        }
         const v = providersByPool.get(worker.workerPoolId);
         const isRequested = worker.state === this.Worker.states.REQUESTED;
         // compute the number of instances that have not yet called "registerWorker"

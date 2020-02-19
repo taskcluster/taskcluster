@@ -24,19 +24,15 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
   let baseProviderData = {
     location: 'westus',
     vm: {
-      location: 'westus',
       name: 'some vm',
     },
     disk: {
-      location: 'westus',
       name: 'some disk',
     },
     nic: {
-      location: 'westus',
       name: 'some nic',
     },
     ip: {
-      location: 'westus',
       name: 'some ip',
     },
   };
@@ -109,7 +105,9 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
     // Check that this is setting times correctly to within a second or so to allow for some time
     // for the provisioning loop
     assert(workers.entries[0].providerData.terminateAfter - now - (6000 * 1000) < 5000);
-    assert.equal(workers.entries[0].workerId, '123');
+    // id is name, which is randomly generated with sanitized worker-pool prefix
+    const sanitizedWorkerPoolId = workerPool.workerPoolId.replace(/[^a-zA-Z0-9-]/g, '-').toLowerCase();
+    assert(workers.entries[0].workerId.includes(sanitizedWorkerPoolId));
   });
 
   test('provisioning loop with failure', async function() {
@@ -117,28 +115,23 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
       existingCapacity: 0,
       requestedCapacity: 0,
     };
-    // The fake throws an error on the second call
-    await provider.provision({workerPool, workerInfo});
-    await provider.provision({workerPool, workerInfo});
-    const errors = await helper.WorkerPoolError.scan({}, {});
-    assert.equal(errors.entries.length, 1);
-    assert.equal(errors.entries[0].description, 'something went wrong');
-    const workers = await helper.Worker.scan({}, {});
-    assert.equal(workers.entries.length, 1); // second loop should not have created one
-  });
-
-  test('provisioning loop with rate limiting', async function() {
-    const workerInfo = {
-      existingCapacity: 0,
-      requestedCapacity: 0,
-    };
-    // Notice this is only three loops, but instance insert fails on third try before succeeding on 4th
-    await provider.provision({workerPool, workerInfo});
     await provider.provision({workerPool, workerInfo});
     await provider.provision({workerPool, workerInfo});
 
     const workers = await helper.Worker.scan({}, {});
     assert.equal(workers.entries.length, 2);
+
+    const worker1 = workers.entries[0];
+    const worker2 = workers.entries[1];
+
+    await provider.scanPrepare();
+    await provider.checkWorker({worker: worker1});
+    await provider.checkWorker({worker: worker2});
+    await provider.scanCleanup();
+
+    assert.equal(worker1.state, 'requested');
+    // The fake throws an error on the second call
+    assert.equal(worker2.state, 'stopping');
   });
 
   test('de-provisioning loop', async function() {
@@ -154,12 +147,11 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
     assert(workerPool.previousProviderIds.includes('azure'));
   });
 
-  test('removeWorker', async function() {
-    const workerId = '12345';
+  test('removeWorker deletes VM if it exists and has an id', async function() {
     const worker = await helper.Worker.create({
       workerPoolId,
       workerGroup: 'whatever',
-      workerId,
+      workerId: 'whatever',
       providerId,
       created: taskcluster.fromNow('0 seconds'),
       lastModified: taskcluster.fromNow('0 seconds'),
@@ -169,13 +161,50 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
       state: 'requested',
       providerData: {
         ...baseProviderData,
+        vm: {
+          name: baseProviderData.vm.name,
+          id: 'some-id',
+        },
       },
     });
     await provider.removeWorker({worker});
     assert(fakeAzure.deleteVMStub.called);
-    assert(fakeAzure.deleteDiskStub.called);
-    assert(fakeAzure.deleteIPStub.called);
+    assert(!worker.providerData.vm.id);
+  });
+
+  test('checkWorker calls removeWorker() if worker is stopping', async function() {
+    const worker = await helper.Worker.create({
+      workerPoolId,
+      workerGroup: 'whatever',
+      workerId: 'whatever',
+      providerId,
+      created: taskcluster.fromNow('0 seconds'),
+      lastModified: taskcluster.fromNow('0 seconds'),
+      lastChecked: taskcluster.fromNow('0 seconds'),
+      expires: taskcluster.fromNow('90 seconds'),
+      capacity: 1,
+      state: 'stopping',
+      providerData: {
+        ...baseProviderData,
+        nic: {
+          name: baseProviderData.nic.name,
+          id: 'some-id',
+        },
+      },
+    });
+    // so that we hit the 404 condition in removeWorker() on the next call
+    await fakeAzure.getVMStub();
+    await fakeAzure.getVMStub();
+
+    await provider.removeWorker({worker});
+
+    // only deleting NIC on this iteration
+    // because VM is faked as already deleted
+    // and other deletions are future iterations
+    assert(!fakeAzure.deleteVMStub.called);
     assert(fakeAzure.deleteNICStub.called);
+    assert(!fakeAzure.deleteIPStub.called);
+    assert(!fakeAzure.deleteDiskStub.called);
   });
 
   test('worker-scan loop', async function() {
@@ -184,11 +213,8 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
       requestedCapacity: 0,
     };
     await provider.provision({workerPool, workerInfo});
-    const worker = await helper.Worker.load({
-      workerPoolId: 'foo/bar',
-      workerId: '123',
-      workerGroup: 'azure',
-    });
+    const workers = await helper.Worker.scan({}, {});
+    const worker = workers.entries[0];
 
     assert.equal(worker.state, helper.Worker.states.REQUESTED);
 
@@ -199,12 +225,12 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
     await worker.reload();
     assert.equal(worker.state, helper.Worker.states.REQUESTED); // RUNNING is set by register which does not happen here
 
-    // And now we fake it is stopped
+    // And now we fake it is stopping
     await provider.scanPrepare();
     await provider.checkWorker({worker});
     await provider.scanCleanup();
     await worker.reload();
-    assert.equal(worker.state, helper.Worker.states.STOPPED);
+    assert.equal(worker.state, helper.Worker.states.STOPPING);
   });
 
   test('update long-running worker', async function() {
@@ -244,6 +270,10 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
       state: helper.Worker.states.REQUESTED,
       providerData: {
         ...baseProviderData,
+        vm: {
+          name: baseProviderData.vm.name,
+          id: 'some-id',
+        },
         terminateAfter: Date.now() - 1000,
       },
     });
@@ -251,9 +281,6 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
     await provider.checkWorker({worker});
     await provider.scanCleanup();
     assert(fakeAzure.deleteVMStub.called);
-    assert(fakeAzure.deleteDiskStub.called);
-    assert(fakeAzure.deleteIPStub.called);
-    assert(fakeAzure.deleteNICStub.called);
   });
 
   test('don\'t remove unregistered workers that are new', async function() {
@@ -296,6 +323,10 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
       state: helper.Worker.states.REQUESTED,
       providerData: {
         ...baseProviderData,
+        vm: {
+          name: baseProviderData.vm.name,
+          id: 'some-id',
+        },
         terminateAfter: Date.now() - 1000,
       },
     });
@@ -303,9 +334,6 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
     await provider.checkWorker({worker});
     await provider.scanCleanup();
     assert(fakeAzure.deleteVMStub.called);
-    assert(fakeAzure.deleteDiskStub.called);
-    assert(fakeAzure.deleteIPStub.called);
-    assert(fakeAzure.deleteNICStub.called);
   });
 
   test('don\'t remove current workers', async function() {

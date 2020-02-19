@@ -8,12 +8,14 @@
 
 const sinon = require("sinon");
 
+// Note: we set some stubs on `this` so the tests can check
+// whether they have been called
 class FakeAzure {
   constructor() {}
 
   error(code) {
     const err = new Error(code);
-    err.code = code;
+    err.statusCode = code;
     return err;
   }
 
@@ -28,6 +30,10 @@ class FakeAzure {
     this.deleteNICStub = sinon.stub();
     this.deleteNICStub.returns({});
 
+    this.getNICStub = sinon.stub();
+    // exists, should delete
+    this.getNICStub.returns({provisioningState: 'Deallocated'});
+
     const createOrUpdateIPStub = sinon.stub();
     createOrUpdateIPStub.returns({
       "id": "/subscriptions/subscription-id/resourceGroups/group-name/providers/Microsoft.Network/publicIPAddresses/test-ip",
@@ -38,14 +44,18 @@ class FakeAzure {
     this.deleteIPStub = sinon.stub();
     this.deleteIPStub.returns({});
 
+    this.getIPStub = sinon.stub();
+    this.getIPStub.returns({provisioningState: 'Deallocated'});
     return {
       networkInterfaces: {
-        createOrUpdate: async () => createOrUpdateNICStub(),
-        deleteMethod: async () => this.deleteNICStub(),
+        beginCreateOrUpdate: async () => createOrUpdateNICStub(),
+        beginDeleteMethod: async () => this.deleteNICStub(),
+        get: async () => this.getNICStub(),
       },
       publicIPAddresses: {
-        createOrUpdate: async () => createOrUpdateIPStub(),
-        deleteMethod: async () => this.deleteIPStub(),
+        beginCreateOrUpdate: async () => createOrUpdateIPStub(),
+        beginDeleteMethod: async () => this.deleteIPStub(),
+        get: async () => this.getIPStub(),
       },
     };
   }
@@ -53,7 +63,7 @@ class FakeAzure {
   compute() {
     const instanceData = {
       id: '/subscriptions/subscription-id/resourceGroups/group-name/providers/Microsoft.Compute/virtualMachines/test-vm',
-      name: 'test-vm',
+      name: 'some vm',
       location: 'westus',
       storageProfile: {
         "osDisk": {
@@ -77,16 +87,17 @@ class FakeAzure {
           },
         ],
       },
-      vmId: "123",
+      vmId: "a-vm-id",
       provisioningState: 'Creating',
     };
 
     const azureError = new Error("something went wrong");
 
-    const getVMStub = sinon.stub();
+    this.getVMStub = sinon.stub();
     // first call returns provisioningState Creating, second returns Deallocated
-    getVMStub.onCall(0).returns(instanceData);
-    getVMStub.onCall(1).returns({...instanceData, provisioningState: 'Deallocated'});
+    this.getVMStub.onCall(0).returns({...instanceData, provisioningState: 'Succeeded'});
+    this.getVMStub.onCall(1).returns({...instanceData, provisioningState: 'Deallocated'});
+    this.getVMStub.onCall(2).throws(() => { return this.error(404); });
 
     const createOrUpdateVMStub = sinon.stub();
     createOrUpdateVMStub.onCall(0).returns(instanceData);
@@ -108,14 +119,17 @@ class FakeAzure {
     this.deleteDiskStub = sinon.stub();
     this.deleteDiskStub.returns({});
 
+    this.getDiskStub = sinon.stub();
+    this.getDiskStub.returns({provisioningState: 'Deallocated'});
     return {
       virtualMachines: {
-        createOrUpdate: async () => createOrUpdateVMStub(),
-        get: async () => getVMStub(),
-        deleteMethod: async () => this.deleteVMStub(),
+        beginCreateOrUpdate: async () => createOrUpdateVMStub(),
+        get: async () => this.getVMStub(),
+        beginDeleteMethod: async () => this.deleteVMStub(),
       },
       disks: {
-        deleteMethod: async () => this.deleteDiskStub(),
+        beginDeleteMethod: async () => this.deleteDiskStub(),
+        get: async () => this.getDiskStub(),
       },
     };
   }
