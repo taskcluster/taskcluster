@@ -1,5 +1,7 @@
 const request = require('superagent');
-const assert = require('assert'); const APIBuilder = require('../'); const helper = require('./helper');
+const assert = require('assert');
+const APIBuilder = require('../');
+const helper = require('./helper');
 const libUrls = require('taskcluster-lib-urls');
 const path = require('path');
 const SchemaSet = require('taskcluster-lib-validate');
@@ -324,13 +326,12 @@ suite(testing.suiteName(), function() {
   test('calling send twice with reportError triggers an Error', async () => {
     const url = u('/test-double-error-send');
     await assert.doesNotReject(() => request.get(url));
-    console.log(helper.monitorManager.messages[0].Fields.message);
-    assert(helper.monitorManager.messages[0].Fields.message === 'API method implementation called res.send twice');
+    assert.equal(helper.monitorManager.messages[0].Fields.message, 'API method implementation called res.send twice');
   });
 
   test('calling send twice with json object triggers an Error', async () => {
     const url = u('/test-double-json-send');
     await assert.rejects(() => request.get(url), /Bad Request/);
-    assert(helper.monitorManager.messages[0].Fields.message === 'API method implementation called res.send twice');
+    assert.equal(helper.monitorManager.messages[0].Fields.message, 'API method implementation called res.send twice');
   });
 });
