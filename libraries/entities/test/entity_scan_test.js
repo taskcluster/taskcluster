@@ -55,8 +55,8 @@ helper.dbSuite(path.basename(__filename), function() {
 
       const result = await TestTable.scan();
 
-      assert(result instanceof Array);
-      assert.equal(result.length, 0);
+      assert(result.entries instanceof Array);
+      assert.equal(result.entries.length, 0);
     });
     test('retrieve all documents (condition set to undefined)', async function() {
       db = await helper.withDb({ schema, serviceName });
@@ -65,7 +65,7 @@ helper.dbSuite(path.basename(__filename), function() {
       await insertDocuments(TestTable, 10);
       const result = await TestTable.scan();
 
-      assert.equal(result.length, 10);
+      assert.equal(result.entries.length, 10);
     });
     test('retrieve all documents (condition set to null)', async function() {
       db = await helper.withDb({ schema, serviceName });
@@ -74,7 +74,7 @@ helper.dbSuite(path.basename(__filename), function() {
       await insertDocuments(TestTable, 10);
       const result = await TestTable.scan(null);
 
-      assert.equal(result.length, 10);
+      assert.equal(result.entries.length, 10);
     });
     test('retrieve documents (with limit)', async function () {
       db = await helper.withDb({ schema, serviceName });
@@ -83,7 +83,7 @@ helper.dbSuite(path.basename(__filename), function() {
       await insertDocuments(TestTable, 10);
       const result = await TestTable.scan(null, { limit: 4 });
 
-      assert.equal(result.length, 4);
+      assert.equal(result.entries.length, 4);
     });
     test('retrieve all documents (with condition)', async function() {
       db = await helper.withDb({ schema, serviceName });
@@ -96,8 +96,8 @@ helper.dbSuite(path.basename(__filename), function() {
         provisionerId: Entity.op.equal('provisionerId-9'),
       });
 
-      assert.equal(result.length, 1);
-      assert.deepEqual(result[0].taskId, '9');
+      assert.equal(result.entries.length, 1);
+      assert.deepEqual(result.entries[0].taskId, '9');
     });
     test('retrieve documents (with date condition)', async function() {
       db = await helper.withDb({ schema, serviceName });
@@ -111,9 +111,9 @@ helper.dbSuite(path.basename(__filename), function() {
         expires: Entity.op.equal(new Date('2020-01-01')),
       });
 
-      assert.equal(result.length, 1);
-      assert.equal(result[0].taskId, '1');
-      assert.equal(result[0].expires.toJSON(), new Date('2020-01-01').toJSON());
+      assert.equal(result.entries.length, 1);
+      assert.equal(result.entries[0].taskId, '1');
+      assert.equal(result.entries[0].expires.toJSON(), new Date('2020-01-01').toJSON());
     });
     test('retrieve documents in pages', async function() {
       db = await helper.withDb({ schema, serviceName });
@@ -126,37 +126,37 @@ helper.dbSuite(path.basename(__filename), function() {
         limit: 4,
       });
 
-      assert.equal(result.length, 4);
-      assert.deepEqual(result[0], documents[0]);
-      assert.deepEqual(result[1], documents[1]);
-      assert.deepEqual(result[2], documents[2]);
-      assert.deepEqual(result[3], documents[3]);
+      assert.equal(result.entries.length, 4);
+      assert.deepEqual(result.entries[0], documents[0]);
+      assert.deepEqual(result.entries[1], documents[1]);
+      assert.deepEqual(result.entries[2], documents[2]);
+      assert.deepEqual(result.entries[3], documents[3]);
 
       result = await TestTable.scan(null, {
         page: 2,
         limit: 4,
       });
 
-      assert.equal(result.length, 4);
-      assert.deepEqual(result[0], documents[4]);
-      assert.deepEqual(result[1], documents[5]);
-      assert.deepEqual(result[2], documents[6]);
-      assert.deepEqual(result[3], documents[7]);
+      assert.equal(result.entries.length, 4);
+      assert.deepEqual(result.entries[0], documents[4]);
+      assert.deepEqual(result.entries[1], documents[5]);
+      assert.deepEqual(result.entries[2], documents[6]);
+      assert.deepEqual(result.entries[3], documents[7]);
 
       result = await TestTable.scan(null, {
         page: 3,
         limit: 4,
       });
 
-      assert.equal(result.length, 2);
-      assert.deepEqual(result[0], documents[8]);
-      assert.deepEqual(result[1], documents[9]);
+      assert.equal(result.entries.length, 2);
+      assert.deepEqual(result.entries[0], documents[8]);
+      assert.deepEqual(result.entries[1], documents[9]);
 
       result = await TestTable.scan(null, {
         page: 4,
         limit: 4,
       });
-      assert.equal(result.length, 0);
+      assert.equal(result.entries.length, 0);
     });
   });
 
@@ -198,7 +198,7 @@ helper.dbSuite(path.basename(__filename), function() {
       await insertDocuments(TestTable, 10);
       const result = await TestTable.scan();
 
-      assert.equal(result.length, 10);
+      assert.equal(result.entries.length, 10);
     });
 
     test('retrieve all documents (condition set to null)', async function() {
@@ -208,7 +208,7 @@ helper.dbSuite(path.basename(__filename), function() {
       await insertDocuments(TestTable, 10);
       const result = await TestTable.scan(null);
 
-      assert.equal(result.length, 10);
+      assert.equal(result.entries.length, 10);
     });
 
     test('retrieve documents (with limit)', async function () {
@@ -218,7 +218,7 @@ helper.dbSuite(path.basename(__filename), function() {
       await insertDocuments(TestTable, 10);
       const result = await TestTable.scan(null, { limit: 4 });
 
-      assert.equal(result.length, 4);
+      assert.equal(result.entries.length, 4);
     });
 
     test('retrieve all documents (with condition)', async function() {
@@ -234,11 +234,11 @@ helper.dbSuite(path.basename(__filename), function() {
         text2: 'another string for the key-1',
       });
 
-      assert.equal(result.length, 1);
-      assert.equal(result[0].id, '1');
-      assert.equal(result[0].data, 42);
-      assert.equal(result[0].text1, 'some text for the key-1');
-      assert.equal(result[0].text2, 'another string for the key-1');
+      assert.equal(result.entries.length, 1);
+      assert.equal(result.entries[0].id, '1');
+      assert.equal(result.entries[0].data, 42);
+      assert.equal(result.entries[0].text1, 'some text for the key-1');
+      assert.equal(result.entries[0].text2, 'another string for the key-1');
     });
 
     test('retrieve documents (with date condition)', async function() {
@@ -253,9 +253,9 @@ helper.dbSuite(path.basename(__filename), function() {
         expires: Entity.op.equal(new Date('2020-01-01')),
       });
 
-      assert.equal(result.length, 1);
-      assert.equal(result[0].id, '1');
-      assert.equal(result[0].expires.toJSON(), new Date('2020-01-01').toJSON());
+      assert.equal(result.entries.length, 1);
+      assert.equal(result.entries[0].id, '1');
+      assert.equal(result.entries[0].expires.toJSON(), new Date('2020-01-01').toJSON());
     });
 
     test('retrieve documents in pages', async function() {
@@ -269,37 +269,37 @@ helper.dbSuite(path.basename(__filename), function() {
         limit: 4,
       });
 
-      assert.equal(result.length, 4);
-      assert.deepEqual(result[0], documents[0]);
-      assert.deepEqual(result[1], documents[1]);
-      assert.deepEqual(result[2], documents[2]);
-      assert.deepEqual(result[3], documents[3]);
+      assert.equal(result.entries.length, 4);
+      assert.deepEqual(result.entries[0], documents[0]);
+      assert.deepEqual(result.entries[1], documents[1]);
+      assert.deepEqual(result.entries[2], documents[2]);
+      assert.deepEqual(result.entries[3], documents[3]);
 
       result = await TestTable.scan(null, {
         page: 2,
         limit: 4,
       });
 
-      assert.equal(result.length, 4);
-      assert.deepEqual(result[0], documents[4]);
-      assert.deepEqual(result[1], documents[5]);
-      assert.deepEqual(result[2], documents[6]);
-      assert.deepEqual(result[3], documents[7]);
+      assert.equal(result.entries.length, 4);
+      assert.deepEqual(result.entries[0], documents[4]);
+      assert.deepEqual(result.entries[1], documents[5]);
+      assert.deepEqual(result.entries[2], documents[6]);
+      assert.deepEqual(result.entries[3], documents[7]);
 
       result = await TestTable.scan(null, {
         page: 3,
         limit: 4,
       });
 
-      assert.equal(result.length, 2);
-      assert.deepEqual(result[0], documents[8]);
-      assert.deepEqual(result[1], documents[9]);
+      assert.equal(result.entries.length, 2);
+      assert.deepEqual(result.entries[0], documents[8]);
+      assert.deepEqual(result.entries[1], documents[9]);
 
       result = await TestTable.scan(null, {
         page: 4,
         limit: 4,
       });
-      assert.equal(result.length, 0);
+      assert.equal(result.entries.length, 0);
     });
   });
 });

@@ -55,13 +55,14 @@ helper.dbSuite(path.basename(__filename), function() {
       });
 
       let sum = 0;
-      result.forEach(entry => {
+      result.entries.forEach(entry => {
         sum += entry.count;
       });
 
-      assert.equal(result.length, 3);
+      assert.equal(result.entries.length, 3);
       assert.equal(sum, 6);
     });
+
     test('query a partition (with Entity.op.equal)', async function() {
       db = await helper.withDb({ schema, serviceName });
       const TestTable = configuredTestTable.setup({ tableName: 'test_entities', db, serviceName });
@@ -73,13 +74,14 @@ helper.dbSuite(path.basename(__filename), function() {
       });
 
       let sum = 0;
-      result.forEach(entry => {
+      result.entries.forEach(entry => {
         sum += entry.count;
       });
 
-      assert.equal(result.length, 3);
+      assert.equal(result.entries.length, 3);
       assert.equal(sum, 6);
     });
+
     test('can\'t query without partition-key', async function() {
       db = await helper.withDb({ schema, serviceName });
       const TestTable = configuredTestTable.setup({ tableName: 'test_entities', db, serviceName });
@@ -93,6 +95,30 @@ helper.dbSuite(path.basename(__filename), function() {
           tag: 'tag1',
         });
       }, /Unable to create key from properties/);
+    });
+
+    test('Query a partition (with limit 2)', async function() {
+      db = await helper.withDb({ schema, serviceName });
+      const TestTable = configuredTestTable.setup({ tableName: 'test_entities', db, serviceName });
+
+      await insertDocuments(TestTable);
+      return TestTable.query({id: id}, {
+        limit: 2,
+      }).then(function(data) {
+        assert(data.entries.length === 2);
+        // TODO: Uncomment this
+        // assert(data.continuation);
+        // assert(subject.continuationTokenPattern.test(data.continuation));
+        //
+        // // Fetch next
+        // return Item.query({id: id}, {
+        //   limit:          2,
+        //   continuation:   data.continuation,
+        // }).then(function(data) {
+        //   assert(data.entries.length === 1);
+        //   assert(!data.continuation);
+        // });
+      });
     });
     // TODO: Add more tests...
   });

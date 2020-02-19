@@ -409,7 +409,7 @@ class Entity {
     const condition = this._doCondition(conditions, options);
     const result = await this._db.fns[`${this._tableName}_scan`](condition, limit, page);
 
-    return result.map(entry => (
+    const entries = result.map(entry => (
       new this(entry.value, {
         etag: entry.etag,
         tableName: this._tableName,
@@ -419,6 +419,8 @@ class Entity {
         context: this.contextEntries,
       })
     ));
+
+    return { entries, continuation: null };
   }
 
   static query(conditions, options = {}) {
