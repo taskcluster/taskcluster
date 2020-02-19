@@ -67,7 +67,7 @@ class DescendingIntegerKey {
     assert(value !== undefined, 'Unable to create key from properties');
     // Return exact key
     return (MORE_NINES_THAN_INT - value).toString();
-  };
+  }
 }
 
 class AscendingIntegerKey {
@@ -103,7 +103,7 @@ class AscendingIntegerKey {
     return ASCENDING_KEY_PADDING.substring(
       0, ASCENDING_KEY_PADDING.length - str.length,
     ) + str;
-  };
+  }
 }
 
 class ConstantKey {
@@ -120,7 +120,7 @@ class ConstantKey {
 
   exactFromConditions(properties) {
     return this.constant;
-  };
+  }
 }
 
 class CompositeKey {
@@ -212,7 +212,7 @@ class HashKey {
   }
 
   exactFromConditions(properties) {
-    const hash =  crypto.createHash('sha512');
+    const hash = crypto.createHash('sha512');
     const n = this.keys.length;
     for (let i = 0; i < n; i++) {
       const key = this.keys[i];
@@ -234,7 +234,7 @@ class HashKey {
     }
 
     return hash.digest('hex');
-  };
+  }
 }
 
 module.exports = {
