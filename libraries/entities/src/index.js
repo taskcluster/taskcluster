@@ -238,6 +238,8 @@ class Entity {
         return `'${operand.toJSON()}'`;
       }
 
+      // TODO: "Adding quotes" to a string is a sure way to get owned. Let's error out in that case, instead of doing it.
+      // TODO: If that ends up making some tests fail, they can probably be skipped or modified. If later we see it causing failures for services, we can adjust for those cases. If I remember correctly there was one such case but it would be trivial to modify.
       const shouldAddQuotes = typeof type.name !== 'NumberType';
 
       return shouldAddQuotes ? `'${operand}'` : operand;
@@ -256,15 +258,28 @@ class Entity {
     let condition = [];
     let covered = [];
 
-    if (options.matchPartition === 'exact') {
+    try {
       pk = this.__partitionKey.exactFromConditions(conditions);
-      assert(pk, 'conditions should provide enough constraints for constructions of the partition key');
+    } catch (e) {
+      if (options.matchPartition === 'exact') {
+        assert(pk, 'conditions should provide enough constraints for constructions of the partition key');
+      }
+    }
+
+    try {
+      rk = this.__rowKey.exactFromConditions(conditions);
+    } catch (e) {
+      if (options.matchPartition === 'exact') {
+        assert(pk, 'conditions should provide enough constraints for constructions of the row key');
+      }
+    }
+
+    if (pk) {
       condition.push(`partition_key = '${pk}'`);
       covered.push(...this.__partitionKey.covers);
     }
 
-    if (options.matchRow === 'exact') {
-      rk = this.__rowKey.exactFromConditions(conditions);
+    if (rk) {
       condition.push(`row_key = '${rk}'`);
       covered.push(...this.__rowKey.covers);
     }

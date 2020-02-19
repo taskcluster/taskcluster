@@ -94,7 +94,7 @@ helper.dbSuite(path.basename(__filename), function() {
           count: 1,
           tag: 'tag1',
         });
-      }, /Unable to create key from properties/);
+      }, /conditions should provide enough constraints for constructions of the partition key/);
     });
 
     test('Query a partition (with limit 2)', async function() {
