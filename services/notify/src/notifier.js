@@ -19,6 +19,7 @@ class Notifier {
     this.rateLimit = options.rateLimit;
     this.queueName = this.options.queueName;
     this.sender = options.sourceEmail;
+    this._matrix = options.matrix;
     this.monitor = options.monitor;
 
     const transport = nodemailer.createTransport({
@@ -139,6 +140,21 @@ class Notifier {
     this.markSent(channel, user, message);
     this.monitor.log.irc({dest: user || channel});
     return res;
+  }
+
+  async matrix({roomId, format, formattedBody, body}) {
+    if (this.isDuplicate(roomId, format, formattedBody, body)) {
+      debug('Duplicate matrix send detected. Not attempting resend.');
+      return;
+    }
+
+    if (await this.options.denier.isDenied('matrix', roomId)) {
+      debug('Denylist matrix: denylisted send detected, discarding the notification');
+      return;
+    }
+
+    await this._matrix.sendNotice({roomId, format, formattedBody, body});
+    this.markSent(roomId, format, formattedBody, body);
   }
 }
 

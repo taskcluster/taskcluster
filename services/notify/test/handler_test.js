@@ -6,6 +6,7 @@ const testing = require('taskcluster-lib-testing');
 helper.secrets.mockSuite(testing.suiteName(), ['azure', 'aws'], function(mock, skipping) {
   helper.withDenier(mock, skipping);
   helper.withFakeQueue(mock, skipping);
+  helper.withFakeMatrix(mock, skipping);
   helper.withSES(mock, skipping);
   helper.withPulse(mock, skipping);
   helper.withServer(mock, skipping);
@@ -157,5 +158,20 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'aws'], function(mock, s
       return _.isEqual(channel, '#taskcluster-test') &&
       _.isEqual(message, 'it worked with taskid DKPZPsvvQEiw67Pb3rkdNg');
     });
+  });
+
+  test('matrix', async () => {
+    const route = 'test-notify.matrix-room.!gBxblkbeeBSadzOniu:mozilla.org.on-any';
+    const task = makeTask([route]);
+    helper.queue.addTask(baseStatus.taskId, task);
+    await helper.fakePulseMessage({
+      payload: {
+        status: baseStatus,
+      },
+      exchange: 'exchange/taskcluster-queue/v1/task-completed',
+      routingKey: 'doesnt-matter',
+      routes: [route],
+    });
+    assert.equal(helper.matrixClient.sendEvent.callCount, 1);
   });
 });

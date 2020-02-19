@@ -104,6 +104,14 @@ class Handler {
             message: ircMessage,
           });
         }
+        case 'matrix-room': {
+          return this.notifier.matrix({
+            roomId: _.join(_.slice(route, 2, route.length - 1), '.'),
+            format: undefined,
+            formattedBody: undefined,
+            body: ircMessage, // TODO: Update this and also do custom messages
+          });
+        }
         case 'pulse': {
           return this.notifier.pulse({
             routingKey: _.join(_.slice(route, 2, route.length - 1), '.'),

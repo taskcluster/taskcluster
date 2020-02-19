@@ -6292,6 +6292,15 @@
             "level": {
               "type": "string"
             },
+            "matrix_access_token": {
+              "type": "string"
+            },
+            "matrix_base_url": {
+              "type": "string"
+            },
+            "matrix_user_id": {
+              "type": "string"
+            },
             "procs": {
               "additionalProperties": false,
               "properties": {

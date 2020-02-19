@@ -58,6 +58,11 @@ defaults:
     debug:            !env:optional IRC_DEBUG
     pulseQueueName:   irc-notifications
 
+  matrix:
+    baseUrl: !env:optional MATRIX_BASE_URL
+    accessToken: !env:optional MATRIX_ACCESS_TOKEN
+    userId: !env:optional MATRIX_USER_ID
+
 # Configuration of tests
 test:
   taskcluster:

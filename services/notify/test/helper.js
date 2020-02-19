@@ -8,6 +8,7 @@ const load = require('../src/main');
 const RateLimit = require('../src/ratelimit');
 const data = require('../src/data');
 const debug = require('debug')('test');
+const sinon = require('sinon');
 
 const testclients = {
   'test-client': ['*'],
@@ -234,6 +235,23 @@ exports.withFakeQueue = (mock, skipping) => {
 
     exports.queue = stubbedQueue();
     exports.load.inject('queue', exports.queue);
+  });
+};
+
+const fakeMatrixClient = () => {
+  return {
+    sendEvent: sinon.fake(),
+  };
+};
+
+exports.withFakeMatrix = (mock, skipping) => {
+  suiteSetup('withFakeMatrix', function() {
+    if (skipping()) {
+      return;
+    }
+
+    exports.matrixClient = fakeMatrixClient();
+    exports.load.inject('matrixClient', exports.matrixClient);
   });
 };
 

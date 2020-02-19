@@ -7,6 +7,7 @@ const {defaultMonitorManager} = require('taskcluster-lib-monitor');
 helper.secrets.mockSuite(testing.suiteName(), ['azure', 'aws'], function(mock, skipping) {
   helper.withEntities(mock, skipping);
   helper.withPulse(mock, skipping);
+  helper.withFakeMatrix(mock, skipping);
   helper.withSES(mock, skipping);
   helper.withServer(mock, skipping);
 
