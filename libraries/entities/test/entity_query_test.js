@@ -125,6 +125,42 @@ helper.dbSuite(path.basename(__filename), function() {
       assert(result.entries.length === 0);
       assert(!result.continuation);
     });
+
+    test('Filter by tag', async function() {
+      db = await helper.withDb({ schema, serviceName });
+      const TestTable = configuredTestTable.setup({ tableName: 'test_entities', db, serviceName });
+
+      await insertDocuments(TestTable);
+      return TestTable.query({
+        id: id,
+        tag: 'tag1',
+      }).then(function(data) {
+        assert(data.entries.length === 2);
+        data.entries.forEach(function(item) {
+          assert(item.tag === 'tag1');
+        });
+      });
+    });
+
+    test('Filter by tag (with handler)', async function() {
+      let sum = 0;
+      db = await helper.withDb({ schema, serviceName });
+      const TestTable = configuredTestTable.setup({ tableName: 'test_entities', db, serviceName });
+
+      await insertDocuments(TestTable);
+
+      return TestTable.query({
+        id: id,
+        tag: 'tag1',
+      }, {
+        handler: function(item) {
+          sum += item.count;
+        },
+      }).then(function() {
+        assert(sum === 4);
+      });
+    });
+
     // TODO: Add more tests...
   });
 });

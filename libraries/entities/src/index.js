@@ -11,7 +11,7 @@ const {
 } = require('taskcluster-lib-postgres');
 const crypto = require('crypto');
 const Hashids = require('hashids/cjs');
-const { MAX_MODIFY_ATTEMPTS } = require('./constants');
+const { VALID_ROW_MATCH, VALID_PARTITION_MATCH, MAX_MODIFY_ATTEMPTS } = require('./constants');
 
 /** Fixed time comparison of two buffers */
 const fixedTimeComparison = function(b1, b2) {
@@ -269,7 +269,7 @@ class Entity {
     try {
       rk = this.__rowKey.exactFromConditions(conditions);
     } catch (e) {
-      if (options.matchPartition === 'exact') {
+      if (options.matchRow === 'exact') {
         assert(pk, 'conditions should provide enough constraints for constructions of the row key');
       }
     }
@@ -439,11 +439,20 @@ class Entity {
   static async scan(conditions, options = {}) {
     const {
       continuation,
+      handler,
       limit = 1000,
-      // page,
       matchPartition = 'none',
       matchRow = 'none',
     } = options;
+    assert(VALID_PARTITION_MATCH.indexOf(matchPartition) !== -1,
+      'Valid values for \'matchPartition\' are: none, exact');
+    assert(VALID_ROW_MATCH.indexOf(matchRow) !== -1,
+      'Valid values for \'matchRow\' are: none, partial, exact');
+    assert(!handler || handler instanceof Function,
+      'If options.handler is given it must be a function');
+    assert(limit === undefined ||
+      typeof limit === 'number', 'options.limit must be a number');
+
     const fetchResults = async (continuation) => {
       const page = decodeContinuationToken(continuation);
       const condition = this._doCondition(conditions, options);
@@ -464,7 +473,21 @@ class Entity {
     };
 
     // Fetch results
-    const results = await fetchResults(options.continuation);
+    let results = await fetchResults(continuation);
+
+    // If we have a handler, then we have to handle the results
+    if (handler) {
+      const handleResults = function(res) {
+        return Promise.all(res.entries.map(function(item) {
+          return handler(item);
+        })).then(async function() {
+          if (res.continuation) {
+            return handleResults(await fetchResults(res.continuation));
+          }
+        });
+      };
+      results = await handleResults(results);
+    }
 
     return results;
   }

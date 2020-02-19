@@ -10,6 +10,11 @@ const MAX_MODIFY_ATTEMPTS = 10;
 // More nines than an int can hold, ie. MORE_NINES_THAN_INT > 2^32
 // DescendingIntegerKey only works with PositiveInteger which is limited 2^32.
 const MORE_NINES_THAN_INT = 9999999999;
+// Valid values for `options.matchPartition` in Entity.scan
+const VALID_PARTITION_MATCH = ['exact', 'none'];
+
+// Valid values for `options.matchRow` in Entity.scan and Entity.query
+const VALID_ROW_MATCH = ['exact', 'partial', 'none'];
 
 module.exports = {
   ASCENDING_KEY_PADDING,
@@ -19,4 +24,6 @@ module.exports = {
   SLUG_ID_RE,
   SLUGID_SIZE,
   MAX_MODIFY_ATTEMPTS,
+  VALID_PARTITION_MATCH,
+  VALID_ROW_MATCH,
 };
