@@ -103,7 +103,7 @@ helper.dbSuite(path.basename(__filename), function() {
 
       await insertDocuments(TestTable);
       let result = await TestTable.query({ id }, {
-        limit:          2,
+        limit: 2,
       });
       assert(result.entries.length === 2);
       assert(result.continuation);
@@ -112,15 +112,15 @@ helper.dbSuite(path.basename(__filename), function() {
 
       // Fetch next
       result = await TestTable.query({ id }, {
-        limit:          2,
-        continuation:   result.continuation,
+        limit: 2,
+        continuation: result.continuation,
       });
       assert(result.entries.length === 1);
       assert(result.continuation);
 
       result = await TestTable.query({ id }, {
-        limit:          2,
-        continuation:   result.continuation,
+        limit: 2,
+        continuation: result.continuation,
       });
       assert(result.entries.length === 0);
       assert(!result.continuation);
