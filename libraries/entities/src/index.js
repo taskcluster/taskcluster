@@ -270,7 +270,7 @@ class Entity {
       rk = this.__rowKey.exactFromConditions(conditions);
     } catch (e) {
       if (options.matchRow === 'exact') {
-        assert(pk, 'conditions should provide enough constraints for constructions of the row key');
+        assert(rk, 'conditions should provide enough constraints for constructions of the row key');
       }
     }
 

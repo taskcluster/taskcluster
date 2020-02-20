@@ -38,8 +38,8 @@ helper.dbSuite(path.basename(__filename), function() {
   function insertDocuments(TestTable) {
     return Promise.all([
       TestTable.create({ id, name: 'item1', count: 1, tag: 'tag1', time: new Date(0), active: true }),
-      TestTable.create({ id, name: 'item2', count: 2, tag: 'tag2', time: new Date(0), active: false }),
-      TestTable.create({ id, name: 'item3', count: 3, tag: 'tag1', time: new Date(0), active: true }),
+      TestTable.create({ id, name: 'item2', count: 2, tag: 'tag2', time: new Date(1), active: false }),
+      TestTable.create({ id, name: 'item3', count: 3, tag: 'tag1', time: new Date(1000000000000), active: true }),
     ]);
   }
 
@@ -161,6 +161,142 @@ helper.dbSuite(path.basename(__filename), function() {
       });
     });
 
-    // TODO: Add more tests...
+    test('Filter by time === Date(1)', async function() {
+      db = await helper.withDb({ schema, serviceName });
+      const TestTable = configuredTestTable.setup({ tableName: 'test_entities', db, serviceName });
+
+      await insertDocuments(TestTable);
+      return TestTable.query({
+        id: id,
+        time: new Date(1),
+      }).then(function(data) {
+        assert(data.entries.length === 1);
+        assert(data.entries[0].name === 'item2');
+      });
+    });
+
+    test('Filter by time < Date(1)', async function() {
+      db = await helper.withDb({ schema, serviceName });
+      const TestTable = configuredTestTable.setup({ tableName: 'test_entities', db, serviceName });
+
+      await insertDocuments(TestTable);
+      return TestTable.query({
+        id: id,
+        time: Entity.op.lessThan(new Date(1)),
+      }).then(function(data) {
+        assert(data.entries.length === 1);
+        assert(data.entries[0].name === 'item1');
+      });
+    });
+
+    test('Filter by time < Date(100)', async function() {
+      db = await helper.withDb({ schema, serviceName });
+      const TestTable = configuredTestTable.setup({ tableName: 'test_entities', db, serviceName });
+
+      await insertDocuments(TestTable);
+      return TestTable.query({
+        id: id,
+        time: Entity.op.lessThan(new Date(100)),
+      }).then(function(data) {
+        assert(data.entries.length === 2);
+      });
+    });
+
+    test('Filter by time > Date(100)', async function() {
+      db = await helper.withDb({ schema, serviceName });
+      const TestTable = configuredTestTable.setup({ tableName: 'test_entities', db, serviceName });
+
+      await insertDocuments(TestTable);
+      return TestTable.query({
+        id: id,
+        time: Entity.op.greaterThan(new Date(100)),
+      }).then(function(data) {
+        assert(data.entries.length === 1);
+        assert(data.entries[0].name === 'item3');
+      });
+    });
+
+    test('Filter by active === true', async function() {
+      db = await helper.withDb({ schema, serviceName });
+      const TestTable = configuredTestTable.setup({ tableName: 'test_entities', db, serviceName });
+
+      await insertDocuments(TestTable);
+      return TestTable.query({
+        id: id,
+        active: true,
+      }).then(function(data) {
+        assert(data.entries.length === 2);
+        data.entries.forEach(function(item) {
+          assert(item.active === true);
+        });
+      });
+    });
+
+    test('Filter by active === false', async function() {
+      db = await helper.withDb({ schema, serviceName });
+      const TestTable = configuredTestTable.setup({ tableName: 'test_entities', db, serviceName });
+
+      await insertDocuments(TestTable);
+      return TestTable.query({
+        id: id,
+        active: false,
+      }).then(function(data) {
+        assert(data.entries.length === 1);
+        assert(data.entries[0].name === 'item2');
+        data.entries.forEach(function(item) {
+          assert(item.active === false);
+        });
+      });
+    });
+
+    test('Filter by count < 3', async function() {
+      db = await helper.withDb({ schema, serviceName });
+      const TestTable = configuredTestTable.setup({ tableName: 'test_entities', db, serviceName });
+
+      await insertDocuments(TestTable);
+      return TestTable.query({
+        id: id,
+        count: Entity.op.lessThan(3),
+      }).then(function(data) {
+        assert(data.entries.length === 2);
+        data.entries.forEach(function(item) {
+          assert(item.count < 3);
+        });
+      });
+    });
+
+    test('Query for specific row (matchRow: exact)', async function() {
+      db = await helper.withDb({ schema, serviceName });
+      const TestTable = configuredTestTable.setup({ tableName: 'test_entities', db, serviceName });
+
+      await insertDocuments(TestTable);
+      return TestTable.query({
+        id: id,
+        name: 'item2',
+      }, {
+        matchRow: 'exact',
+      }).then(function(data) {
+        assert(data.entries.length === 1);
+        data.entries.forEach(function(item) {
+          assert(item.tag === 'tag2');
+        });
+      });
+    });
+
+    test('Can\'t use matchRow: exact without row-key', async function() {
+      db = await helper.withDb({ schema, serviceName });
+      const TestTable = configuredTestTable.setup({ tableName: 'test_entities', db, serviceName });
+
+      await insertDocuments(TestTable);
+      return Promise.resolve().then(function() {
+        return TestTable.query({
+          id: id,
+        }, {
+          matchRow: 'exact',
+        });
+      }).then(function() {
+        assert(false, 'Expected an error');
+      }, function(err) {});
+    });
   });
 });
