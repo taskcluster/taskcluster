@@ -126,41 +126,6 @@ helper.dbSuite(path.basename(__filename), function() {
       assert(!result.continuation);
     });
 
-    test('Filter by tag', async function() {
-      db = await helper.withDb({ schema, serviceName });
-      const TestTable = configuredTestTable.setup({ tableName: 'test_entities', db, serviceName });
-
-      await insertDocuments(TestTable);
-      return TestTable.query({
-        id: id,
-        tag: 'tag1',
-      }).then(function(data) {
-        assert(data.entries.length === 2);
-        data.entries.forEach(function(item) {
-          assert(item.tag === 'tag1');
-        });
-      });
-    });
-
-    test('Filter by tag (with handler)', async function() {
-      let sum = 0;
-      db = await helper.withDb({ schema, serviceName });
-      const TestTable = configuredTestTable.setup({ tableName: 'test_entities', db, serviceName });
-
-      await insertDocuments(TestTable);
-
-      return TestTable.query({
-        id: id,
-        tag: 'tag1',
-      }, {
-        handler: function(item) {
-          sum += item.count;
-        },
-      }).then(function() {
-        assert(sum === 4);
-      });
-    });
-
     test('Filter by time === Date(1)', async function() {
       db = await helper.withDb({ schema, serviceName });
       const TestTable = configuredTestTable.setup({ tableName: 'test_entities', db, serviceName });
@@ -172,6 +137,25 @@ helper.dbSuite(path.basename(__filename), function() {
       }).then(function(data) {
         assert(data.entries.length === 1);
         assert(data.entries[0].name === 'item2');
+      });
+    });
+
+    test('Filter by time === Date(1) (with handler)', async function() {
+      let sum = 0;
+      db = await helper.withDb({ schema, serviceName });
+      const TestTable = configuredTestTable.setup({ tableName: 'test_entities', db, serviceName });
+
+      await insertDocuments(TestTable);
+
+      return TestTable.query({
+        id: id,
+        time: new Date(1),
+      }, {
+        handler: function(item) {
+          sum += item.count;
+        },
+      }).then(function() {
+        assert(sum === 2);
       });
     });
 
@@ -216,53 +200,17 @@ helper.dbSuite(path.basename(__filename), function() {
       });
     });
 
-    test('Filter by active === true', async function() {
+    test.only('Filter by active === false throws an error', async function() {
       db = await helper.withDb({ schema, serviceName });
       const TestTable = configuredTestTable.setup({ tableName: 'test_entities', db, serviceName });
 
       await insertDocuments(TestTable);
-      return TestTable.query({
-        id: id,
-        active: true,
-      }).then(function(data) {
-        assert(data.entries.length === 2);
-        data.entries.forEach(function(item) {
-          assert(item.active === true);
-        });
-      });
-    });
-
-    test('Filter by active === false', async function() {
-      db = await helper.withDb({ schema, serviceName });
-      const TestTable = configuredTestTable.setup({ tableName: 'test_entities', db, serviceName });
-
-      await insertDocuments(TestTable);
-      return TestTable.query({
-        id: id,
-        active: false,
-      }).then(function(data) {
-        assert(data.entries.length === 1);
-        assert(data.entries[0].name === 'item2');
-        data.entries.forEach(function(item) {
-          assert(item.active === false);
-        });
-      });
-    });
-
-    test('Filter by count < 3', async function() {
-      db = await helper.withDb({ schema, serviceName });
-      const TestTable = configuredTestTable.setup({ tableName: 'test_entities', db, serviceName });
-
-      await insertDocuments(TestTable);
-      return TestTable.query({
-        id: id,
-        count: Entity.op.lessThan(3),
-      }).then(function(data) {
-        assert(data.entries.length === 2);
-        data.entries.forEach(function(item) {
-          assert(item.count < 3);
-        });
-      });
+      await assert.rejects(
+        async () => {
+          await TestTable.query({ id, active: false });
+        },
+        /condition operand can only be a date/,
+      );
     });
 
     test('Query for specific row (matchRow: exact)', async function() {

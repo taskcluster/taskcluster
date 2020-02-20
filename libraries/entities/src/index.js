@@ -248,11 +248,7 @@ class Entity {
         return `'${operand.toJSON()}'`;
       }
 
-      // TODO: "Adding quotes" to a string is a sure way to get owned. Let's error out in that case, instead of doing it.
-      // TODO: If that ends up making some tests fail, they can probably be skipped or modified. If later we see it causing failures for services, we can adjust for those cases. If I remember correctly there was one such case but it would be trivial to modify.
-      const shouldAddQuotes = typeof type.name !== 'NumberType';
-
-      return shouldAddQuotes ? `'${operand}'` : operand;
+      throw new Error('condition operand can only be a date');
     };
 
     if (!conditions) {
