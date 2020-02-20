@@ -14,16 +14,16 @@
 
 <p align="center">
   <a href="http://mozilla.org/MPL/2.0">
-    <img src="https://img.shields.io/badge/license-MPL%202.0-orange.svg" alt="License">
+    <img src="https://img.shields.io/badge/license-MPL%202.0-orange.svg" alt="License" />
   </a>
-  <a href="https://www.irccloud.com/invite?channel=%23taskcluster&amp;hostname=irc.mozilla.org&amp;port=6697&amp;ssl=1" target="_blank">
-    <img src="https://img.shields.io/badge/IRC-%23taskcluster-1e72ff.svg?style=flat"  height="20">
+  <a href="https://chat.mozilla.org/#/welcome">
+    <img src="https://img.shields.io/badge/matrix-%23taskcluster%3Amozilla.org-informational" alt="Chat" />
   </a>
   <a href="https://codecov.io/gh/taskcluster/taskcluster">
-    <img src="https://codecov.io/gh/taskcluster/taskcluster/branch/master/graph/badge.svg" />
+    <img src="https://codecov.io/gh/taskcluster/taskcluster/branch/master/graph/badge.svg" alt="Codecov" />
   </a>
   <a href="https://app.netlify.com/sites/taskcluster-web/deploys">
-    <img src="https://img.shields.io/netlify/6cc2aece-1178-4933-a581-afc0ec5a259e" />
+    <img src="https://api.netlify.com/api/v1/badges/bc284a9a-8986-4ba4-b91a-3ede1a56e5a4/deploy-status" alt="netlify" />
   </a>
 </p>
 
