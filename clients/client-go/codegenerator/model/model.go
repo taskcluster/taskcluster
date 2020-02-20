@@ -76,7 +76,7 @@ func (apiDef *APIDefinition) loadJSON(refRaw json.RawMessage) bool {
 
 	schemaRaw := ReferencesServerGet(schemaURL[:len(schemaURL)-1])
 	if schemaRaw == nil {
-		panic(fmt.Sprintf("No schema %s", schemaRaw))
+		panic("No schema")
 	}
 	var schema interface{}
 	err = json.Unmarshal(*schemaRaw, &schema)

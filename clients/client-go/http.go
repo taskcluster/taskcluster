@@ -121,8 +121,7 @@ func (client *Client) Request(rawPayload []byte, method, route string, query url
 	// have exponential backoff in case of intermittent failures (e.g. network
 	// blips or HTTP 5xx errors)
 	httpCall := func() (*http.Response, error, error) {
-		var ioReader io.Reader
-		ioReader = bytes.NewReader(rawPayload)
+		ioReader := bytes.NewReader(rawPayload)
 		u, err := setURL(client, route, query)
 		if err != nil {
 			return nil, nil, fmt.Errorf("apiCall url cannot be parsed:\n%v\n", err)

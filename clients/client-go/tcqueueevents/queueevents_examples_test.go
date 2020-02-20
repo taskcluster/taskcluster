@@ -1,7 +1,6 @@
 package tcqueueevents_test
 
 import (
-	"errors"
 	"fmt"
 
 	"github.com/streadway/amqp"
@@ -15,7 +14,7 @@ func Example_taskclusterSniffer() {
 	// empty password => use PULSE_PASSWORD env var
 	// empty url => connect to production
 	conn := pulse.NewConnection("", "", "")
-	conn.Consume(
+	_, _ = conn.Consume(
 		"taskprocessing", // queue name
 		func(message interface{}, delivery amqp.Delivery) { // callback function to pass messages to
 			switch t := message.(type) {
@@ -25,16 +24,16 @@ func Example_taskclusterSniffer() {
 			case *tcqueueevents.TaskRunningMessage:
 				fmt.Println("Task " + t.Status.TaskID + " running, (taken until " + t.TakenUntil.String() + " by worker " + t.WorkerID + ")")
 			default:
-				panic(errors.New(fmt.Sprintf("Unrecognised message type %T!", t)))
+				panic(fmt.Errorf("Unrecognised message type %T!", t))
 			}
 			fmt.Println("===========")
-			delivery.Ack(false) // acknowledge message *after* processing
+			_ = delivery.Ack(false) // acknowledge message *after* processing
 		},
 		1,     // prefetch 1 message at a time
 		false, // don't auto-acknowledge messages
 		tcqueueevents.TaskDefined{WorkerType: "gaia", ProvisionerID: "aws-provisioner"},
 		tcqueueevents.TaskRunning{WorkerType: "gaia", ProvisionerID: "aws-provisioner"})
-	conn.Consume( // a second workflow to manage concurrently
+	_, _ = conn.Consume( // a second workflow to manage concurrently
 		"", // empty name implies anonymous queue
 		func(message interface{}, delivery amqp.Delivery) { // simpler callback than before
 			fmt.Println("A buildbot message was received")

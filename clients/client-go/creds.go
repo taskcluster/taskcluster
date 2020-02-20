@@ -13,8 +13,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/taskcluster/taskcluster/v25/tools/jsonschema2go/text"
 	"github.com/taskcluster/slugid-go/slugid"
+	"github.com/taskcluster/taskcluster/v25/tools/jsonschema2go/text"
 )
 
 // Credentials represents the set of credentials required to access protected
@@ -124,7 +124,7 @@ func (permaCreds *Credentials) CreateNamedTemporaryCredentials(tempClientID stri
 		cert.Issuer = permaCreds.ClientID
 	}
 
-	cert.Sign(permaCreds.AccessToken, tempClientID)
+	_ = cert.Sign(permaCreds.AccessToken, tempClientID)
 
 	certBytes, err := json.Marshal(cert)
 	if err != nil {

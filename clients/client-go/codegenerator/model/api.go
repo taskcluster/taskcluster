@@ -520,14 +520,14 @@ func (this *ScopeExpressionTemplate) UnmarshalJSON(data []byte) error {
 	case []interface{}:
 		this.Type = "AnyOf"
 		this.AnyOf = &Disjunction{
-			AnyOf: make([]ScopeExpressionTemplate, len(t), len(t)),
+			AnyOf: make([]ScopeExpressionTemplate, len(t)),
 		}
 		for i, j := range t {
 			allOf := j.([]interface{})
 			this.AnyOf.AnyOf[i] = ScopeExpressionTemplate{
 				Type: "AllOf",
 				AllOf: &Conjunction{
-					AllOf: make([]ScopeExpressionTemplate, len(allOf), len(allOf)),
+					AllOf: make([]ScopeExpressionTemplate, len(allOf)),
 				},
 			}
 			for k, l := range allOf {

@@ -41,7 +41,7 @@ func StartReferencesServer() error {
 		raw := ReferencesServerGet(path)
 		if raw != nil {
 			enc := json.NewEncoder(w)
-			enc.Encode(*raw)
+			_ = enc.Encode(*raw)
 			return
 		}
 		http.NotFound(w, r)
