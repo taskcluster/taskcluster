@@ -47,7 +47,7 @@ require (
 	golang.org/x/crypto v0.0.0-20191011191535-87dc89f01550
 	golang.org/x/net v0.0.0-20191002035440-2ec189313ef0
 	golang.org/x/sys v0.0.0-20191218084908-4a24b4065292
-	golang.org/x/tools v0.0.0-20200130002326-2f3ba24bd6e7
+	golang.org/x/tools v0.0.0-20200219161401-5fb17a1e7b9b
 	gopkg.in/tylerb/graceful.v1 v1.2.15
 	gopkg.in/yaml.v2 v2.2.2
 	gopkg.in/yaml.v3 v3.0.0-20190502103701-55513cacd4ae
