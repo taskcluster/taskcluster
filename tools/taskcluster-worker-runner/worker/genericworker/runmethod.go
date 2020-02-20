@@ -36,7 +36,7 @@ func (m *cmdRunMethod) start(w *genericworker, state *run.State) (protocol.Trans
 	cmd.Stderr = os.Stderr
 
 	// pass config to generic-worker
-	cmd.Args = append(cmd.Args, "run", "--config", w.wicfg.ConfigPath)
+	cmd.Args = append(cmd.Args, "run", "--config", w.wicfg.ConfigPath, "--with-worker-runner")
 
 	m.cmd = cmd
 
