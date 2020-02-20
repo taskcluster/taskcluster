@@ -106,12 +106,21 @@ class Handler {
         }
         case 'matrix-room': {
           const roomId = route.slice(2, route.length - 1).join('.');
+          let body = `'${task.metadata.name}' resolved as '${status.state}': ${href}`;
+          let formattedBody = undefined;
+          let format = _.get(task, 'extra.notify.matrixFormat');
+          if (_.has(task, 'extra.notify.matrixBody')) {
+            body = this.renderMessage(task.extra.notify.matrixBody, {task, status});
+          }
+          if (_.has(task, 'extra.notify.matrixFormattedBody')) {
+            formattedBody = this.renderMessage(task.extra.notify.matrixFormattedBody, {task, status});
+          }
           try {
             return await this.notifier.matrix({
               roomId,
-              format: undefined,
-              formattedBody: undefined,
-              body: ircMessage, // TODO: Update this and also do custom messages
+              format,
+              formattedBody,
+              body,
             });
           } catch (err) {
             // This just means that we haven't been invited to the room yet
