@@ -69,7 +69,7 @@ The go type names will be "normalised" from the json subschema Title element.
 
 func main() {
 	// Parse the docopt string and exit on any error or help message.
-	arguments, err := docopt.Parse(usage, nil, true, version, false, true)
+	arguments, err := docopt.ParseArgs(usage, nil, version)
 	exitOnFail(err)
 	job := &jsonschema2go.Job{
 		Package:              arguments["-o"].(string),

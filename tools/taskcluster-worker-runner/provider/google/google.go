@@ -4,13 +4,13 @@ import (
 	"fmt"
 	"strings"
 
+	tcclient "github.com/taskcluster/taskcluster/v25/clients/client-go"
+	"github.com/taskcluster/taskcluster/v25/clients/client-go/tcworkermanager"
 	"github.com/taskcluster/taskcluster/v25/tools/taskcluster-worker-runner/cfg"
 	"github.com/taskcluster/taskcluster/v25/tools/taskcluster-worker-runner/protocol"
 	"github.com/taskcluster/taskcluster/v25/tools/taskcluster-worker-runner/provider/provider"
 	"github.com/taskcluster/taskcluster/v25/tools/taskcluster-worker-runner/run"
 	"github.com/taskcluster/taskcluster/v25/tools/taskcluster-worker-runner/tc"
-	tcclient "github.com/taskcluster/taskcluster/v25/clients/client-go"
-	"github.com/taskcluster/taskcluster/v25/clients/client-go/tcworkermanager"
 )
 
 type GoogleProvider struct {

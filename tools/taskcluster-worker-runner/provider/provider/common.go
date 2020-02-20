@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/taskcluster/taskcluster/v25/clients/client-go/tcworkermanager"
 	"github.com/taskcluster/taskcluster/v25/tools/taskcluster-worker-runner/run"
 	"github.com/taskcluster/taskcluster/v25/tools/taskcluster-worker-runner/tc"
-	"github.com/taskcluster/taskcluster/v25/clients/client-go/tcworkermanager"
 )
 
 // Register this worker with the worker-manager, and update the state with the parameters and the results.
