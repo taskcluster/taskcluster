@@ -1,41 +1,58 @@
 import { expect, use } from 'chai';
 import chaiAsPromised from 'chai-as-promised';
 import { Auth, createTemporaryCredentials, fromNow, request } from '../src';
+import helper from './helper';
 
 use(chaiAsPromised);
 
-const rootUrl = 'https://taskcluster.net';
-
 describe('Auth', function() {
+  helper.withRootUrl();
+
   this.timeout(30000);
 
-  const auth = new Auth({
-    rootUrl,
-    credentials: {
-      clientId: 'tester',
-      accessToken: 'no-secret',
-    },
-  });
-
   it('should successfully ping', () => {
+    const auth = new Auth({
+      rootUrl: helper.rootUrl,
+      credentials: {
+        clientId: 'tester',
+        accessToken: 'no-secret',
+      },
+    });
+
     return auth
       .ping()
       .then(({ alive }) => expect(alive).to.be.ok);
   });
 
   it('should build signed URL', () => {
+    const auth = new Auth({
+      rootUrl: helper.rootUrl,
+      credentials: {
+        clientId: 'tester',
+        accessToken: 'no-secret',
+      },
+    });
+
     expect(auth.buildSignedUrl(auth.client, 'test'))
       .to.eventually.match(new RegExp(`^${process.env.BASE_URL}/auth/v1/clients/test\\?bewit`));
   });
 
   it('should request from signed URL', () => {
+    const auth = new Auth({
+      rootUrl: helper.rootUrl,
+      credentials: {
+        clientId: 'tester',
+        accessToken: 'no-secret',
+      },
+    });
+
     return auth.buildSignedUrl(auth.testAuthenticateGet)
       .then(url => request(url));
   });
 
   it('should fetch from signed URL with authorized scopes', () => {
     const auth = new Auth({
-      rootUrl,
+      rootUrl: helper.rootUrl,
       credentials: {
         clientId: 'tester',
         accessToken: 'no-secret',
@@ -52,7 +69,7 @@ describe('Auth', function() {
 
   it('should fetch from signed URL with temporary credentials', () => {
     const auth = new Auth({
-      rootUrl,
+      rootUrl: helper.rootUrl,
       credentials: createTemporaryCredentials({
         scopes: ['test:authenticate-get', 'test:bar'],
         expiry: fromNow('1 hour'),
@@ -72,7 +89,7 @@ describe('Auth', function() {
 
   it('should fetch from expiring signed URL with temporary credentials', () => {
     const auth = new Auth({
-      rootUrl,
+      rootUrl: helper.rootUrl,
       credentials: createTemporaryCredentials({
         scopes: ['test:authenticate-get', 'test:bar'],
         expiry: fromNow('1 hour'),
@@ -89,7 +106,7 @@ describe('Auth', function() {
 
   it('should fetch from signed URL with temporary credentials and authorized scopes', () => {
     const auth = new Auth({
-      rootUrl,
+      rootUrl: helper.rootUrl,
       authorizedScopes: ['test:authenticate-get'],
       credentials: createTemporaryCredentials({
         scopes: ['test:auth*'],
@@ -110,7 +127,7 @@ describe('Auth', function() {
 
   it('should fail fetch from expired signed URL with temporary credentials', () => {
     const auth = new Auth({
-      rootUrl,
+      rootUrl: helper.rootUrl,
       credentials: createTemporaryCredentials({
         scopes: ['test:authenticate-get', 'test:bar'],
         expiry: fromNow('1 hour'),
@@ -134,7 +151,7 @@ describe('Auth', function() {
 
   it('should fail fetch from signed URL with unauthorized scopes', () => {
     const auth = new Auth({
-      rootUrl,
+      rootUrl: helper.rootUrl,
       credentials: {
         clientId: 'tester',
         accessToken: 'no-secret',
@@ -154,6 +171,14 @@ describe('Auth', function() {
   });
 
   it('should request with authentication', () => {
+    const auth = new Auth({
+      rootUrl: helper.rootUrl,
+      credentials: {
+        clientId: 'tester',
+        accessToken: 'no-secret',
+      },
+    });
+
     return auth
       .testAuthenticate({
         clientScopes: [],
@@ -166,6 +191,14 @@ describe('Auth', function() {
   });
 
   it('should request with authentication and query string', () => {
+    const auth = new Auth({
+      rootUrl: helper.rootUrl,
+      credentials: {
+        clientId: 'tester',
+        accessToken: 'no-secret',
+      },
+    });
+
     return auth
       .listClients({ prefix: 'abc' })
       .then(clients => expect(clients).to.deep.equal({ clients: [] }));
@@ -173,7 +206,7 @@ describe('Auth', function() {
 
   it('should fetch using authorized scopes', () => {
     const auth = new Auth({
-      rootUrl,
+      rootUrl: helper.rootUrl,
       credentials: {
         clientId: 'tester',
         accessToken: 'no-secret',
@@ -194,7 +227,7 @@ describe('Auth', function() {
 
   it('should fail fetch using unauthorized scopes', () => {
     const auth = new Auth({
-      rootUrl,
+      rootUrl: helper.rootUrl,
       credentials: {
         clientId: 'tester',
         accessToken: 'no-secret',
@@ -215,7 +248,7 @@ describe('Auth', function() {
 
   it('should fail fetch using insufficient scopes', () => {
     const auth = new Auth({
-      rootUrl,
+      rootUrl: helper.rootUrl,
       credentials: {
         clientId: 'tester',
         accessToken: 'no-secret',
@@ -239,7 +272,7 @@ describe('Auth', function() {
 
   it('should fetch using unnamed temporary credentials', () => {
     const auth = new Auth({
-      rootUrl,
+      rootUrl: helper.rootUrl,
       credentials: createTemporaryCredentials({
         scopes: ['scopes:specific'],
         expiry: fromNow('1 hour'),
@@ -263,7 +296,7 @@ describe('Auth', function() {
 
   it('should fail fetch using unauthorized temporary credentials', () => {
     const auth = new Auth({
-      rootUrl,
+      rootUrl: helper.rootUrl,
       credentials: createTemporaryCredentials({
         scopes: ['test:params'],
         expiry: fromNow('1 hour'),
@@ -290,7 +323,7 @@ describe('Auth', function() {
 
   it('should fail fetch using insufficient temporary credentials', () => {
     const auth = new Auth({
-      rootUrl,
+      rootUrl: helper.rootUrl,
       credentials: createTemporaryCredentials({
         scopes: ['scopes:something-else'],
         expiry: fromNow('1 hour'),
@@ -328,7 +361,7 @@ describe('Auth', function() {
 
     expect(credentials.clientId).to.equal('my-temp-cred');
 
-    const auth = new Auth({ rootUrl, credentials });
+    const auth = new Auth({ rootUrl: helper.rootUrl, credentials });
 
     return auth
       .testAuthenticate({
@@ -355,7 +388,7 @@ describe('Auth', function() {
     expect(credentials.clientId).to.equal('my-temp-cred');
 
     const auth = new Auth({
-      rootUrl,
+      rootUrl: helper.rootUrl,
       credentials,
       authorizedScopes: ['scopes:specific', 'scopes:another'],
     });
@@ -373,7 +406,7 @@ describe('Auth', function() {
 
   it('should fetch with temporary credentials using authorized scopes', () => {
     const auth = new Auth({
-      rootUrl,
+      rootUrl: helper.rootUrl,
       authorizedScopes: ['scopes:subcategory:specific'],
       credentials: createTemporaryCredentials({
         scopes: ['scopes:subcategory:*'],
@@ -398,7 +431,7 @@ describe('Auth', function() {
 
   it('should fail fetch using temporary credentials with unauthorized and insufficient scopes', () => {
     const auth = new Auth({
-      rootUrl,
+      rootUrl: helper.rootUrl,
       authorizedScopes: ['scopes:subcategory:wrong-scope'],
       credentials: createTemporaryCredentials({
         scopes: ['scopes:subcategory:*'],
@@ -426,7 +459,7 @@ describe('Auth', function() {
 
   it('should fail fetch using temporary credentials with authorized but bad authentication', () => {
     const auth = new Auth({
-      rootUrl,
+      rootUrl: helper.rootUrl,
       authorizedScopes: ['scopes:subcategory:specific'],
       credentials: createTemporaryCredentials({
         scopes: ['scopes:subcategory:*'],
@@ -454,7 +487,7 @@ describe('Auth', function() {
 
   it('should fail with bad authentication', () => {
     const auth = new Auth({
-      rootUrl,
+      rootUrl: helper.rootUrl,
       credentials: {
         clientId: 'tester',
         accessToken: 'wrong',
@@ -476,6 +509,14 @@ describe('Auth', function() {
   });
 
   it('should fail with bad scopes', () => {
+    const auth = new Auth({
+      rootUrl: helper.rootUrl,
+      credentials: {
+        clientId: 'tester',
+        accessToken: 'no-secret',
+      },
+    });
+
     return auth
       .testAuthenticate({
         clientScopes: ['some-scope'],

@@ -1,10 +1,18 @@
 import { expect } from 'chai';
 import { Queue } from '../src';
+import helper from './helper';
 
 describe('Queue', function() {
+  helper.withRootUrl();
+
   this.timeout(30000);
 
-  const queue = new Queue({ rootUrl: 'https://taskcluster.net' });
+  let queue;
+  before(function() {
+    if (helper.rootUrl) {
+      queue = new Queue({ rootUrl: helper.rootUrl });
+    }
+  });
 
   it('should be loaded', () => {
     expect(queue).to.be.ok;
