@@ -168,7 +168,12 @@ module.exports = ({tasks, cmdOptions, credentials}) => {
         'go.mod',
         'clients/client-go/**',
         'clients/client-shell/**',
-        'workers/generic-worker/**',
+        'tools/**',
+        // Provide explicit list of allowed file extensions so that
+        // workers/generic-worker/testdata/*.zip files are not modified.
+        'workers/generic-worker/**.go',
+        'workers/generic-worker/**.yml',
+        'workers/generic-worker/**.sh',
       ];
       for (let file of await gitLsFiles({patterns: goFiles})) {
         await modifyRepoFile(file, contents =>
