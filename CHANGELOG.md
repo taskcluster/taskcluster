@@ -3,6 +3,28 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v25.3.0
+
+▶ [minor] [bug 1616214](http://bugzil.la/1616214)
+Source code repositories taskcluster-worker-runner and jsonschema2go have been
+migrated to the taskcluster monorepo. This is an internal change that should
+not impact the release. However, it is a reasonably significant change to the
+build/release process.
+
+▶ [patch] [#2377](https://github.com/taskcluster/taskcluster/issues/2377)
+Editing a task that contains ISO-8601 dates embedded in larger strings no longer fails with "Invalid Date".
+
+▶ [patch] [bug 1616022](http://bugzil.la/1616022)
+Fixes the version number reported by generic-worker. This was first attempted (unsuccessfully) in release 25.2.0.
+
+▶ [patch] [bug 1606874](http://bugzil.la/1606874)
+The Taskcluster-GitHub service now checks that the person who *filed* a pull request is a collaborator and the repo from which the changes are being pulled belongs to a collaborator or is the usptream repository.
+
+▶ [patch] 
+This version removes the undocumented, deprecated WebListener class from taskcluster-client-web.
+
+▶ Additional changes not described here: [bug 1437193](http://bugzil.la/1437193), [#2371](https://github.com/taskcluster/taskcluster/issues/2371), [#2375](https://github.com/taskcluster/taskcluster/issues/2375).
+
 ## v25.2.0
 
 ▶ [minor] [bug 1616022](http://bugzil.la/1616022)
