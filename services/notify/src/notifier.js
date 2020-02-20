@@ -155,6 +155,7 @@ class Notifier {
 
     await this._matrix.sendNotice({roomId, format, formattedBody, body});
     this.markSent(roomId, format, formattedBody, body);
+    this.monitor.log.matrix({dest: roomId});
   }
 }
 

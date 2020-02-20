@@ -238,11 +238,13 @@ exports.withFakeQueue = (mock, skipping) => {
   });
 };
 
-const fakeMatrixClient = () => {
-  return {
-    sendEvent: sinon.fake(),
-  };
-};
+const fakeMatrixSend = () => sinon.fake(roomId => {
+  if (roomId.includes('rejected')) {
+    const err = new Error('rejected this room');
+    err.errcode = 'M_FORBIDDEN';
+    throw err;
+  }
+});
 
 exports.withFakeMatrix = (mock, skipping) => {
   suiteSetup('withFakeMatrix', function() {
@@ -250,8 +252,14 @@ exports.withFakeMatrix = (mock, skipping) => {
       return;
     }
 
-    exports.matrixClient = fakeMatrixClient();
+    exports.matrixClient = {
+      sendEvent: fakeMatrixSend(),
+    };
     exports.load.inject('matrixClient', exports.matrixClient);
+  });
+
+  setup(function() {
+    exports.matrixClient.sendEvent = fakeMatrixSend();
   });
 };
 

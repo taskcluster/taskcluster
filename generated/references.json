@@ -12520,6 +12520,40 @@
           "version": 1
         },
         {
+          "description": "A matrix message has been sent.",
+          "fields": {
+            "dest": "A user or room."
+          },
+          "level": "info",
+          "name": "matrix",
+          "title": "Matrix Message Sent",
+          "type": "matrix",
+          "version": 1
+        },
+        {
+          "description": "Log events from the matrix sdk. Contains arbitrary data from them.",
+          "fields": {
+            "level": "The level that matrix logged this at. We send all logs to debug no matter what.",
+            "message": "Arbitrary message from matrix sdk."
+          },
+          "level": "debug",
+          "name": "matrixSdkDebug",
+          "title": "Matrix SDK Debug",
+          "type": "matrix-sdk-debug",
+          "version": 1
+        },
+        {
+          "description": "We have been rejected from messaging a room. This is expected if the user\nhas not invited our client into the room yet but we log it as a notice to\nhelp debug confused users.",
+          "fields": {
+            "roomId": "The roomId that we were forbidden from."
+          },
+          "level": "notice",
+          "name": "matrixForbidden",
+          "title": "Matrix Forbidden",
+          "type": "matrix-forbidden",
+          "version": 1
+        },
+        {
           "description": "A timer and audit for express API endpoints.\nYou can combine this with auth audit logs to get\na complete picture of what was authorized when.\n\nHere, anything that is not public should have authenticated\nand if it authenticated, we will tell the clientId here. Given\nthat, it is not necessarily true that the endpoint was\n_authorized_. You can tell that by the statusCode.",
           "fields": {
             "apiVersion": "The version of the API (e.g., `v1`)",

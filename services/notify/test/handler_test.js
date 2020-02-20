@@ -2,6 +2,7 @@ const _ = require('lodash');
 const assert = require('assert');
 const helper = require('./helper');
 const testing = require('taskcluster-lib-testing');
+const monitorManager = require('../src/monitor');
 
 helper.secrets.mockSuite(testing.suiteName(), ['azure', 'aws'], function(mock, skipping) {
   helper.withDenier(mock, skipping);
@@ -173,5 +174,26 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'aws'], function(mock, s
       routes: [route],
     });
     assert.equal(helper.matrixClient.sendEvent.callCount, 1);
+    assert.equal(helper.matrixClient.sendEvent.args[0][0], '!gBxblkbeeBSadzOniu:mozilla.org');
+    assert(monitorManager.messages.find(m => m.Type === 'matrix'));
+    assert(monitorManager.messages.find(m => m.Type === 'matrix-forbidden') === undefined);
+  });
+
+  test('matrix (rejected)', async () => {
+    const route = 'test-notify.matrix-room.!rejected:mozilla.org.on-any';
+    const task = makeTask([route]);
+    helper.queue.addTask(baseStatus.taskId, task);
+    await helper.fakePulseMessage({
+      payload: {
+        status: baseStatus,
+      },
+      exchange: 'exchange/taskcluster-queue/v1/task-completed',
+      routingKey: 'doesnt-matter',
+      routes: [route],
+    });
+    assert.equal(helper.matrixClient.sendEvent.callCount, 1);
+    assert.equal(helper.matrixClient.sendEvent.args[0][0], '!rejected:mozilla.org');
+    assert(monitorManager.messages.find(m => m.Type === 'matrix'));
+    assert(monitorManager.messages.find(m => m.Type === 'matrix-forbidden'));
   });
 });
