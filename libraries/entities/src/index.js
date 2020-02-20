@@ -168,6 +168,16 @@ class Entity {
       let entity;
       let result;
       await modifier.call(newProperties, newProperties);
+
+      assert(
+        this._rowKey === this.constructor.__rowKey.exact(newProperties),
+        `You can't modify elements of the rowKey`
+      );
+      assert(
+        this._partitionKey === this.constructor.__partitionKey.exact(newProperties),
+        `You can't modify elements of the partitionKey`
+      );
+
       try {
         entity = this.constructor.serialize(newProperties);
         [result] = await this._db.fns[`${this._tableName}_modify`](this._partitionKey, this._rowKey, entity, 1, this._etag);

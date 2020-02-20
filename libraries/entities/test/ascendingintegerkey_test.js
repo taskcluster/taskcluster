@@ -71,11 +71,11 @@ helper.dbSuite(path.basename(__filename), function() {
       const createdEntity = await TestTable.create(entry);
 
       // TODO: Fix this
-      // await assert.rejects(async () => {
-      //   await createdEntity.modify(item => {
-      //     item.rev = 1;
-      //   });
-      // });
+      await assert.rejects(async () => {
+        await createdEntity.modify(item => {
+          item.rev = 1;
+        });
+      });
     });
     test('can\'t use negative numbers', async function() {
       db = await helper.withDb({ schema, serviceName });

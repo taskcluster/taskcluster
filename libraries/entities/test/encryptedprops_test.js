@@ -114,7 +114,7 @@ helper.dbSuite(path.basename(__filename), function() {
       });
     });
 
-    test.skip('Item.load, item.modify, item.reload()', async function() {
+    test('Item.load, item.modify, item.reload()', async function() {
       db = await helper.withDb({ schema, serviceName });
       const id = slugid.v4();
       const TestTable = configuredTestTable.setup({

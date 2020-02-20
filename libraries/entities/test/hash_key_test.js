@@ -80,7 +80,7 @@ helper.dbSuite(path.basename(__filename), function() {
       assert.equal(loaded.text1, "some text for the key");
     });
 
-    test.skip('Can\'t modify key', async function() {
+    test('Can\'t modify key', async function() {
       db = await helper.withDb({ schema, serviceName });
       const TestTable = configuredTestTable.setup({
         tableName: 'test_entities',
@@ -95,9 +95,11 @@ helper.dbSuite(path.basename(__filename), function() {
         text2: 'another string for the key',
       });
 
-      await assert.throws(() => item.modify(function() {
-        this.text1 = 'This will never work';
-      }), /foo/);
+      await assert.rejects(async () => {
+        return item.modify(function() {
+          this.text1 = 'This will never work';
+        });
+      }, /can't modify element/);
     });
   });
 });
