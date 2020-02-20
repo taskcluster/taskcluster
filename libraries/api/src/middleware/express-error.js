@@ -16,6 +16,12 @@ const expressError = ({errorCodes, entry, monitor}) => {
   const {name: method, cleanPayload} = entry;
   return (err, req, res, next) => {
 
+    if (res.headersSent) {
+      monitor.reportError(new Error('API method implementation called res.send twice'));
+      // nothing more we can do here, since we have already sent the HTTP response
+      return;
+    }
+
     if (!(err instanceof ErrorReply)) {
       const incidentId = uuid.v4();
 
