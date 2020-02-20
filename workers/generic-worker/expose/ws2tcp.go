@@ -10,8 +10,6 @@ import (
 	"github.com/gorilla/websocket"
 )
 
-var keepAliveInterval time.Duration
-
 // Accept websocket connections at path / and forward them to the local port.
 func websocketToTCPHandlerFunc(targetPort uint16) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -133,7 +131,5 @@ func websocketToTCPHandlerFunc(targetPort uint16) http.HandlerFunc {
 		}()
 
 		wg.Wait()
-
-		return
 	}
 }

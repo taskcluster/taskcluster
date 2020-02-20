@@ -34,7 +34,7 @@ func forwardPort(forwardFrom net.Listener, forwardTo string) {
 
 		forward := func(f net.Conn, t net.Conn) {
 			defer t.Close()
-			io.Copy(t, f)
+			_, _ = io.Copy(t, f)
 		}
 		go forward(fromConn, toConn)
 		go forward(toConn, fromConn)

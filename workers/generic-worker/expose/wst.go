@@ -105,7 +105,9 @@ func (exposure *wstExposure) start() error {
 		server := http.Server{
 			Handler: websocketToTCPHandlerFunc(exposure.targetPort),
 		}
-		go server.Serve(wstClient)
+		go func() {
+			_ = server.Serve(wstClient)
+		}()
 	}
 
 	return nil

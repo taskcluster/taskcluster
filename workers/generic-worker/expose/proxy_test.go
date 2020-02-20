@@ -110,7 +110,7 @@ func TestStreamingProxy(t *testing.T) {
 		flusher.Flush()
 
 		for part := range bodyParts {
-			w.Write(part)
+			_, _ = w.Write(part)
 			flusher.Flush()
 		}
 	}))
@@ -338,7 +338,7 @@ func TestProxyTCPPortTCPClose(t *testing.T) {
 			return
 		}
 
-		stream.Write([]byte("GOODBYE"))
+		_, _ = stream.Write([]byte("GOODBYE"))
 		stream.Close()
 	}()
 

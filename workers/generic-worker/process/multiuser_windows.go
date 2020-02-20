@@ -177,5 +177,4 @@ func GrantSIDWinstaAccess(sid string, pd *PlatformData) {
 		log.Printf("Granted %v full control of interactive windows station and desktop", sid)
 		sidsThatCanControlDesktopAndWindowsStation[sid] = true
 	}
-	return
 }

@@ -37,14 +37,14 @@ func listenOnRandomPort() (net.Listener, uint16, error) {
 // echo the entire contents of that connection, and then
 // send true to the channel after the connection closes.
 func tcpEchoServer(listener net.Listener) chan bool {
-	connClosed := make(chan bool, 0)
+	connClosed := make(chan bool)
 	go func() {
 		stream, err := listener.Accept()
 		if err != nil {
 			return
 		}
 
-		io.Copy(stream, stream)
+		_, _ = io.Copy(stream, stream)
 		_ = stream.Close()
 		connClosed <- true
 	}()

@@ -12,8 +12,8 @@ import (
 
 	"golang.org/x/crypto/ed25519"
 
-	"github.com/taskcluster/taskcluster/v25/internal/scopes"
 	"github.com/taskcluster/taskcluster/v25/clients/client-go/tcqueue"
+	"github.com/taskcluster/taskcluster/v25/internal/scopes"
 	"github.com/taskcluster/taskcluster/v25/workers/generic-worker/fileutil"
 )
 

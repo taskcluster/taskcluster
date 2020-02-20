@@ -588,7 +588,7 @@ func TestMissingArtifactFailsTest(t *testing.T) {
 	expires := tcclient.Time(time.Now().Add(time.Minute * 30))
 
 	payload := GenericWorkerPayload{
-		Command:    append(helloGoodbye()),
+		Command:    helloGoodbye(),
 		MaxRunTime: 30,
 		Artifacts: []Artifact{
 			{

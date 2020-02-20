@@ -71,12 +71,6 @@ func sleep(seconds uint) []string {
 	}
 }
 
-func goGet(packages ...string) []string {
-	cmd := []string{"go", "get"}
-	cmd = append(cmd, packages...)
-	return []string{run(cmd, "")}
-}
-
 func goRun(goFile string, args ...string) []string {
 	return goRunFileOutput("", goFile, args...)
 }

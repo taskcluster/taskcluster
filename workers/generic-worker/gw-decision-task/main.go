@@ -224,7 +224,7 @@ func (dt *DecisionTask) GenerateTasks() (*TaskGroup, error) {
 			if typ.MaxRunTime > 0 {
 				payload["maxRunTime"] = typ.MaxRunTime
 			}
-			artifacts := make([]*Artifact, len(typ.Artifacts), len(typ.Artifacts))
+			artifacts := make([]*Artifact, len(typ.Artifacts))
 			for i, a := range typ.Artifacts {
 				artifacts[i] = &Artifact{
 					Name: substituteVars(context, a.Name),

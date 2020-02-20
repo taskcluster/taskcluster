@@ -14,7 +14,6 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
-	"strconv"
 	"strings"
 	"testing"
 	"time"
@@ -148,24 +147,17 @@ func setup(t *testing.T) (teardown func()) {
 			WorkerID:                       "test-worker-id",
 			WorkerType:                     testWorkerType(),
 			WorkerTypeMetadata: map[string]interface{}{
-				"aws": map[string]string{
-					"ami-id":            "test-ami",
-					"availability-zone": "outer-space",
-					"instance-id":       "test-instance-id",
-					"instance-type":     "p3.enormous",
-					"local-ipv4":        "87.65.43.21",
-					"public-ipv4":       "12.34.56.78",
-				},
 				"generic-worker": map[string]string{
 					"go-arch":    runtime.GOARCH,
 					"go-os":      runtime.GOOS,
 					"go-version": runtime.Version(),
-					"release":    "test-release-url",
 					"version":    version,
+					"revision":   revision,
+					"engine":     engine,
 				},
-				"machine-setup": map[string]string{
-					"maintainer": "pmoore@mozilla.com",
-					"script":     "test-script-url",
+				"parent-task": map[string]string{
+					"taskId": os.Getenv("TASK_ID"),
+					"runId":  os.Getenv("RUN_ID"),
 				},
 			},
 		},
@@ -218,8 +210,8 @@ func scheduleNamedTask(t *testing.T, td *tcqueue.TaskDefinitionRequest, payload 
 		// horrible hack here, until we have jsonschema2go generating pointer types...
 		//
 		//////////////////////////////////////////////////////////////////////////////////
-		b = bytes.Replace(b, []byte(`"expires":"0001-01-01T00:00:00Z",`), []byte{}, -1)
-		b = bytes.Replace(b, []byte(`,"expires":"0001-01-01T00:00:00Z"`), []byte{}, -1)
+		b = bytes.Replace(b, []byte(`"expires":"0001-01-01T00:00:00.000Z",`), []byte{}, -1)
+		b = bytes.Replace(b, []byte(`,"expires":"0001-01-01T00:00:00.000Z"`), []byte{}, -1)
 
 		payloadJSON := json.RawMessage{}
 		err = json.Unmarshal(b, &payloadJSON)
@@ -283,78 +275,6 @@ func testTask(t *testing.T) *tcqueue.TaskDefinitionRequest {
 		Priority:      "lowest",
 		TaskGroupID:   taskGroupID,
 		WorkerType:    config.WorkerType,
-	}
-}
-
-func checkSHA256(t *testing.T, sha256Hex string, file string) {
-	hasher := sha256.New()
-	f, err := os.Open(file)
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer f.Close()
-	if _, err := io.Copy(hasher, f); err != nil {
-		t.Fatal(err)
-	}
-	if actualSHA256Hex := hex.EncodeToString(hasher.Sum(nil)); actualSHA256Hex != sha256Hex {
-		t.Errorf("Expected file %v to have SHA256 %v but it was %v", file, sha256Hex, actualSHA256Hex)
-	}
-}
-
-type ArtifactTraits struct {
-	Extracts        []string
-	ContentType     string
-	ContentEncoding string
-	Expires         tcclient.Time
-}
-
-type ExpectedArtifacts map[string]ArtifactTraits
-
-func (expectedArtifacts ExpectedArtifacts) Validate(t *testing.T, taskID string, run int) {
-
-	artifacts, err := testQueue.ListArtifacts(taskID, strconv.Itoa(run), "", "")
-
-	if err != nil {
-		t.Fatalf("Error listing artifacts: %v", err)
-	}
-
-	actualArtifacts := make(map[string]struct {
-		ContentType string        `json:"contentType"`
-		Expires     tcclient.Time `json:"expires"`
-		Name        string        `json:"name"`
-		StorageType string        `json:"storageType"`
-	}, len(artifacts.Artifacts))
-
-	for _, actualArtifact := range artifacts.Artifacts {
-		actualArtifacts[actualArtifact.Name] = actualArtifact
-	}
-
-	for artifact, expected := range expectedArtifacts {
-		if actual, ok := actualArtifacts[artifact]; ok {
-			if actual.ContentType != expected.ContentType {
-				t.Errorf("Artifact %s should have mime type '%v' but has '%s'", artifact, expected.ContentType, actual.ContentType)
-			}
-			if !time.Time(expected.Expires).IsZero() {
-				if actual.Expires.String() != expected.Expires.String() {
-					t.Errorf("Artifact %s should have expiry '%s' but has '%s'", artifact, expected.Expires, actual.Expires)
-				}
-			}
-		} else {
-			t.Errorf("Artifact '%s' not created", artifact)
-		}
-		b, rawResp, resp, url := getArtifactContent(t, taskID, artifact)
-		defer resp.Body.Close()
-		for _, requiredSubstring := range expected.Extracts {
-			if strings.Index(string(b), requiredSubstring) < 0 {
-				t.Errorf("Artifact '%s': Could not find substring %q in '%s'", artifact, requiredSubstring, string(b))
-			}
-		}
-		if actualContentEncoding := rawResp.Header.Get("Content-Encoding"); actualContentEncoding != expected.ContentEncoding {
-			t.Fatalf("Expected Content-Encoding %q but got Content-Encoding %q for artifact %q from url %v", expected.ContentEncoding, actualContentEncoding, artifact, url)
-		}
-		if actualContentType := resp.Header.Get("Content-Type"); actualContentType != expected.ContentType {
-			t.Fatalf("Content-Type in Signed URL %v response (%v) does not match Content-Type of artifact (%v)", url, actualContentType, expected.ContentType)
-		}
 	}
 }
 
@@ -439,48 +359,6 @@ func toMountArray(t *testing.T, x interface{}) []json.RawMessage {
 	return rawMessageArray
 }
 
-func cancelTask(t *testing.T) (td *tcqueue.TaskDefinitionRequest, payload GenericWorkerPayload) {
-	// resolvetask is a go binary; source is in resolvetask subdirectory, binary is built in CI
-	// but if running test manually, you may need to explicitly build it first.
-	command := singleCommandNoArgs("resolvetask")
-	payload = GenericWorkerPayload{
-		Command:    command,
-		MaxRunTime: 300,
-	}
-	fullCreds := &tcclient.Credentials{
-		AccessToken: config.AccessToken,
-		ClientID:    config.ClientID,
-		Certificate: config.Certificate,
-	}
-	if os.Getenv("GW_SKIP_PERMA_CREDS_TESTS") != "" {
-		t.Skip("Skipping since GW_SKIP_PERMA_CREDS_TESTS env var is set")
-	}
-	testutil.RequireTaskclusterCredentials(t)
-	if fullCreds.Certificate != "" {
-		t.Fatal("Skipping since I need permanent TC credentials for this test and only have temp creds - set GW_SKIP_PERMA_CREDS_TESTS or GW_SKIP_INTEGRATION_TESTS env var to something to skip this test, or change your TASKCLUSTER_* env vars to a permanent client instead of a temporary client")
-	}
-	td = testTask(t)
-	tempCreds, err := fullCreds.CreateNamedTemporaryCredentials("project/taskcluster:generic-worker-tester/"+t.Name(), time.Minute, "queue:cancel-task:"+td.SchedulerID+"/"+td.TaskGroupID+"/*")
-	if err != nil {
-		t.Fatalf("%v", err)
-	}
-	payload.Env = map[string]string{
-		"TASKCLUSTER_CLIENT_ID":    tempCreds.ClientID,
-		"TASKCLUSTER_ACCESS_TOKEN": tempCreds.AccessToken,
-		"TASKCLUSTER_CERTIFICATE":  tempCreds.Certificate,
-	}
-	for _, envVar := range []string{
-		"PATH",
-		"GOPATH",
-		"GOROOT",
-	} {
-		if v, exists := os.LookupEnv(envVar); exists {
-			payload.Env[envVar] = v
-		}
-	}
-	return
-}
-
 // CreateArtifactFromFile returns a taskID for a task with an artifact with the
 // given name whose content matches the content of the local file (relative to
 // the testdata folder) with the given path. It does this by creating a hash of
@@ -512,6 +390,14 @@ func CreateArtifactFromFile(t *testing.T, path string, name string) (taskID stri
 		t.Fatal(err)
 	}
 
+	// Now add a fixed string which we can change if we ever need to roll
+	// new artifacts, for example if we get a failure like we did for
+	// https://community-tc.services.mozilla.com/tasks/RgyFPm08TxaF1c9KcpRUaQ/runs/0
+	_, err = hasher.Write(append([]byte{0}, []byte("tum te tum te tum")...))
+	if err != nil {
+		t.Fatal(err)
+	}
+
 	// Use first 128 bits of 256 bit hash for UUID
 	sha256 := hasher.Sum(nil)
 	v4uuid := sha256[:16]
@@ -534,6 +420,9 @@ func CreateArtifactFromFile(t *testing.T, path string, name string) (taskID stri
 			switch r := e.RootCause.(type) {
 			case httpbackoff.BadHttpResponseCode:
 				if r.HttpResponseCode == 404 {
+					if engine == "docker" {
+						t.Fatalf("You've been extremely unlucky. This test depends on task %v with artifact %v that the docker engine can't create, but any of the other engines can create. It is created once every six months by whichever CI task first runs after the previous version expired. It looks like docker engine got there first, which is unfortunate, as it is the only one that can't create it. Probably if you rerun this test, all will be fine, because another CI task will have created it by now.", taskID, name)
+					}
 					t.Logf("Creating task %q for artifact %v under path %v...", taskID, name, path)
 					payload := GenericWorkerPayload{
 						Command:    copyTestdataFile(path),
@@ -565,7 +454,7 @@ func CreateArtifactFromFile(t *testing.T, path string, name string) (taskID stri
 	// after 6 months, so the chance of hitting the two minute period before it
 	// expires is extremely small, and the error will explicitly report it
 	// anyway.
-	remainingTime := time.Time(tdr.Expires).Sub(time.Now())
+	remainingTime := time.Until(time.Time(tdr.Expires))
 	if remainingTime.Seconds() < 120 {
 		t.Fatalf("You've been extremely unlucky. This test depends on task %q that was created six months ago but is due to expire in less than two minutes (%v). Wait a few minutes and try again!", taskID, remainingTime)
 	}

@@ -87,7 +87,7 @@ func fetchWorkerType(workerType, name string, out *bytes.Buffer) {
 		return
 	}
 	var wg sync.WaitGroup
-	regionBuffers := make([]*bytes.Buffer, len(data), len(data))
+	regionBuffers := make([]*bytes.Buffer, len(data))
 	c := 0
 	for region, rsaKey := range data {
 		regionBuffers[c] = &bytes.Buffer{}
@@ -112,7 +112,8 @@ func fetchRegion(workerType string, region string, rsaKey interface{}, out *byte
 		out.WriteString(fmt.Sprintf("Could not interpret rsa key data '%v': '%v'\n", rsaKey, err))
 		return
 	}
-	svc := ec2.New(session.New(), &aws.Config{Region: aws.String(region)})
+	sess, _ := session.NewSession()
+	svc := ec2.New(sess, &aws.Config{Region: aws.String(region)})
 	inst, err := svc.DescribeInstances(
 		&ec2.DescribeInstancesInput{
 			Filters: []*ec2.Filter{

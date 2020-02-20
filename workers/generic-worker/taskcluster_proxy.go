@@ -7,8 +7,8 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/taskcluster/taskcluster/v25/internal/scopes"
 	tcclient "github.com/taskcluster/taskcluster/v25/clients/client-go"
+	"github.com/taskcluster/taskcluster/v25/internal/scopes"
 	"github.com/taskcluster/taskcluster/v25/workers/generic-worker/tcproxy"
 )
 

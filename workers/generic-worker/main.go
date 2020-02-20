@@ -26,10 +26,10 @@ import (
 
 	docopt "github.com/docopt/docopt-go"
 	sysinfo "github.com/elastic/go-sysinfo"
-	"github.com/taskcluster/taskcluster/v25/internal/scopes"
-	"github.com/taskcluster/taskcluster-worker-runner/protocol"
 	tcclient "github.com/taskcluster/taskcluster/v25/clients/client-go"
 	"github.com/taskcluster/taskcluster/v25/clients/client-go/tcqueue"
+	"github.com/taskcluster/taskcluster/v25/internal/scopes"
+	"github.com/taskcluster/taskcluster/v25/tools/taskcluster-worker-runner/protocol"
 	"github.com/taskcluster/taskcluster/v25/workers/generic-worker/expose"
 	"github.com/taskcluster/taskcluster/v25/workers/generic-worker/fileutil"
 	"github.com/taskcluster/taskcluster/v25/workers/generic-worker/gwconfig"
@@ -117,7 +117,7 @@ func main() {
 	if revision != "" {
 		versionName += " [ revision: https://github.com/taskcluster/taskcluster/commits/" + revision + " ]"
 	}
-	arguments, err := docopt.Parse(usage(versionName), nil, true, versionName, false, true)
+	arguments, err := docopt.ParseArgs(usage(versionName), nil, versionName)
 	if err != nil {
 		log.Println("Error parsing command line arguments!")
 		panic(err)
@@ -239,8 +239,12 @@ func main() {
 func initializeWorkerRunnerProtocol(input io.Reader, output io.Writer, withWorkerRunner bool) {
 	if withWorkerRunner {
 		transp := protocol.NewStdioTransport()
-		go io.Copy(transp, input)
-		go io.Copy(output, transp)
+		go func() {
+			_, _ = io.Copy(transp, input)
+		}()
+		go func() {
+			_, _ = io.Copy(output, transp)
+		}()
 		workerRunnerTransport = transp
 	} else {
 		workerRunnerTransport = protocol.NewNullTransport()
@@ -571,7 +575,7 @@ func RunWorker() (exitCode ExitCode) {
 			if config.IdleTimeoutSecs > 0 {
 				remainingIdleTimeText = fmt.Sprintf(" (will exit if no task claimed in %v)", time.Second*time.Duration(config.IdleTimeoutSecs)-idleTime)
 				if idleTime.Seconds() > float64(config.IdleTimeoutSecs) {
-					purgeOldTasks()
+					_ = purgeOldTasks()
 					log.Printf("Worker idle for idleShutdownTimeoutSecs seconds (%v)", idleTime)
 					return IDLE_TIMEOUT
 				}
@@ -812,7 +816,7 @@ func (task *TaskRun) Log(prefix, message string) {
 	defer task.logMux.RUnlock()
 	if task.logWriter != nil {
 		for _, line := range strings.Split(message, "\n") {
-			task.logWriter.Write([]byte(prefix + line + "\n"))
+			_, _ = task.logWriter.Write([]byte(prefix + line + "\n"))
 		}
 	} else {
 		log.Print("Unloggable task log message (no task log writer): " + message)
@@ -882,7 +886,7 @@ func (e *ExecutionErrors) Error() string {
 	if !e.Occurred() {
 		return ""
 	}
-	lines := make([]string, len(*e), len(*e))
+	lines := make([]string, len(*e))
 	for i, err := range *e {
 		lines[i] = err.Error()
 	}
@@ -1135,7 +1139,7 @@ func (task *TaskRun) Run() (err *ExecutionErrors) {
 	// additional retries left.
 	if configureForAWS {
 		stopHandlingWorkerShutdown := handleWorkerShutdown(func() {
-			task.StatusManager.Abort(
+			_ = task.StatusManager.Abort(
 				&CommandExecutionError{
 					Cause:      fmt.Errorf("AWS has issued a spot termination - need to abort task"),
 					Reason:     workerShutdown,
@@ -1192,13 +1196,6 @@ func (task *TaskRun) closeLog(logHandle io.WriteCloser) {
 	if err != nil {
 		panic(err)
 	}
-}
-
-func convertNilToEmptyString(val interface{}) string {
-	if val == nil {
-		return ""
-	}
-	return val.(string)
 }
 
 func PrepareTaskEnvironment() (reboot bool) {

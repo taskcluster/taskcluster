@@ -36,9 +36,7 @@ func New(taskclusterProxyExecutable string, httpPort uint16, rootURL string, cre
 	if creds.Certificate != "" {
 		args = append(args, "--certificate", creds.Certificate)
 	}
-	for _, scope := range creds.AuthorizedScopes {
-		args = append(args, scope)
-	}
+	args = append(args, creds.AuthorizedScopes...)
 	l := &TaskclusterProxy{
 		command:  exec.Command(taskclusterProxyExecutable, args...),
 		HTTPPort: httpPort,

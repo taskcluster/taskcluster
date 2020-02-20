@@ -168,7 +168,7 @@ func (s3Artifact *S3Artifact) CreateTempFileForPUTBody() string {
 		panic(err)
 	}
 	defer source.Close()
-	io.Copy(target, source)
+	_, _ = io.Copy(target, source)
 	return tmpFile.Name()
 }
 
@@ -309,7 +309,7 @@ func (task *TaskRun) PayloadArtifacts() []TaskArtifact {
 				}
 				return nil
 			}
-			filepath.Walk(filepath.Join(taskContext.TaskDir, basePath), walkFn)
+			_ = filepath.Walk(filepath.Join(taskContext.TaskDir, basePath), walkFn)
 		}
 	}
 	return artifacts

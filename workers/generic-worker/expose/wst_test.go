@@ -82,7 +82,7 @@ func makeWSTServer(t *testing.T) wstServer {
 
 	server := &http.Server{Addr: fmt.Sprintf("127.0.0.1:%d", port), Handler: handler}
 	go func() {
-		server.Serve(listener)
+		_ = server.Serve(listener)
 	}()
 
 	return wstServer{t, listener, port, handler, server}
