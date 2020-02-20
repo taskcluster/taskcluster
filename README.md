@@ -85,7 +85,6 @@ It is not possible to run a full Taskcluster deployment directly from this repos
 * [Workers](workers#readme)
     * [Generic Worker](workers/generic-worker#readme)
         * [workers/generic-worker/server-logs](workers/generic-worker/server-logs#readme)
-        * [workers/generic-worker/worker_types](workers/generic-worker/worker_types#readme)
 <!-- TOC END -->
 
 ## Team Mentions
