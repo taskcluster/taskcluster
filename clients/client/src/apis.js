@@ -1469,6 +1469,22 @@ module.exports = {
         {
           "args": [
           ],
+          "category": "Notifications",
+          "description": "Post a message to a room in Matrix. Optionally includes formatted message.",
+          "input": "v1/matrix-request.json#",
+          "method": "post",
+          "name": "matrix",
+          "query": [
+          ],
+          "route": "/matrix",
+          "scopes": "notify:matrix-room:<roomId>",
+          "stability": "experimental",
+          "title": "Post Matrix Message",
+          "type": "function"
+        },
+        {
+          "args": [
+          ],
           "category": "Denylist",
           "description": "Add the given address to the notification denylist. The address\ncan be of either of the three supported address type namely pulse, email\nor IRC(user or channel). Addresses in the denylist will be ignored\nby the notification service.",
           "input": "v1/notification-address.json#",

@@ -80,6 +80,17 @@ class Notify(AsyncBaseClient):
 
         return await self._makeApiCall(self.funcinfo["irc"], *args, **kwargs)
 
+    async def matrix(self, *args, **kwargs):
+        """
+        Post Matrix Message
+
+        Post a message to a room in Matrix. Optionally includes formatted message.
+
+        This method is ``experimental``
+        """
+
+        return await self._makeApiCall(self.funcinfo["matrix"], *args, **kwargs)
+
     async def addDenylistAddress(self, *args, **kwargs):
         """
         Denylist Given Address
@@ -166,6 +177,14 @@ class Notify(AsyncBaseClient):
             'output': 'v1/notification-address-list.json#',
             'query': ['continuationToken', 'limit'],
             'route': '/denylist/list',
+            'stability': 'experimental',
+        },
+        "matrix": {
+            'args': [],
+            'input': 'v1/matrix-request.json#',
+            'method': 'post',
+            'name': 'matrix',
+            'route': '/matrix',
             'stability': 'experimental',
         },
         "ping": {

@@ -26,16 +26,7 @@ class MatrixBot {
   }
 
   async sendNotice({roomId, format, formattedBody, body}) {
-    try {
-      await this._client.sendEvent(roomId, 'm.room.message', {formatted_body: formattedBody, body, msgtype: 'm.notice', format}, '');
-    } catch (err) {
-      // This just means that we haven't been invited to the room yet
-      if (err.errcode === 'M_FORBIDDEN') {
-        this._monitor.log.matrixForbidden({roomId});
-        return;
-      }
-      throw err;
-    }
+    await this._client.sendEvent(roomId, 'm.room.message', {formatted_body: formattedBody, body, msgtype: 'm.notice', format}, '');
   }
 }
 

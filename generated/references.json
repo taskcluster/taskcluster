@@ -3859,7 +3859,8 @@
             "email",
             "pulse",
             "irc-user",
-            "irc-channel"
+            "irc-channel",
+            "matrix-room"
           ],
           "type": "string"
         }
@@ -3900,6 +3901,39 @@
       "type": "object"
     },
     "filename": "schemas/notify/v1/notification-address-list.json"
+  },
+  {
+    "content": {
+      "$id": "/schemas/notify/v1/matrix-request.json#",
+      "$schema": "/schemas/common/metaschema.json#",
+      "additionalProperties": false,
+      "description": "Request to send a Matrix notice.",
+      "properties": {
+        "body": {
+          "description": "Unformatted text that will be displayed in the room if you do not\nspecify `formattedBody` or if a user's client can not render the format.\n",
+          "type": "string"
+        },
+        "format": {
+          "description": "The format for `formattedBody`. For instance, `org.matrix.custom.html`",
+          "type": "string"
+        },
+        "formattedBody": {
+          "description": "Text that will be rendered by matrix clients that support the given\nformat in that format. For instance, `<h1>Header Text</h1>`.\n",
+          "type": "string"
+        },
+        "roomId": {
+          "description": "The fully qualified room name, such as `!whDRjjSmICCgrhFHsQ:mozilla.org`\nIf you are using riot, you can find this under the advanced settings for a room.\n",
+          "type": "string"
+        }
+      },
+      "required": [
+        "roomId",
+        "body"
+      ],
+      "title": "Send Matrix Notice Request",
+      "type": "object"
+    },
+    "filename": "schemas/notify/v1/matrix-request.json"
   },
   {
     "content": {
@@ -12709,6 +12743,22 @@
           },
           "stability": "experimental",
           "title": "Post IRC Message",
+          "type": "function"
+        },
+        {
+          "args": [
+          ],
+          "category": "Notifications",
+          "description": "Post a message to a room in Matrix. Optionally includes formatted message.",
+          "input": "v1/matrix-request.json#",
+          "method": "post",
+          "name": "matrix",
+          "query": [
+          ],
+          "route": "/matrix",
+          "scopes": "notify:matrix-room:<roomId>",
+          "stability": "experimental",
+          "title": "Post Matrix Message",
           "type": "function"
         },
         {

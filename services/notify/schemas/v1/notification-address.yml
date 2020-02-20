@@ -11,6 +11,7 @@ properties:
       - "pulse"
       - "irc-user"
       - "irc-channel"
+      - "matrix-room"
   notificationAddress:
     type: string
 additionalProperties: false

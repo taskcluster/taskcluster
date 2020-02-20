@@ -160,6 +160,20 @@ func (notify *Notify) Irc(payload *PostIRCMessageRequest) error {
 
 // Stability: *** EXPERIMENTAL ***
 //
+// Post a message to a room in Matrix. Optionally includes formatted message.
+//
+// Required scopes:
+//   notify:matrix-room:<roomId>
+//
+// See #matrix
+func (notify *Notify) Matrix(payload *SendMatrixNoticeRequest) error {
+	cd := tcclient.Client(*notify)
+	_, _, err := (&cd).APICall(payload, "POST", "/matrix", nil, nil)
+	return err
+}
+
+// Stability: *** EXPERIMENTAL ***
+//
 // Add the given address to the notification denylist. The address
 // can be of either of the three supported address type namely pulse, email
 // or IRC(user or channel). Addresses in the denylist will be ignored

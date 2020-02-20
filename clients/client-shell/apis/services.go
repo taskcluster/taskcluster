@@ -852,6 +852,17 @@ var services = map[string]definitions.Service{
 				Input:       "v1/irc-request.json#",
 			},
 			definitions.Entry{
+				Name:        "matrix",
+				Title:       "Post Matrix Message",
+				Description: "Post a message to a room in Matrix. Optionally includes formatted message.",
+				Stability:   "experimental",
+				Method:      "post",
+				Route:       "/matrix",
+				Args:        []string{},
+				Query:       []string{},
+				Input:       "v1/matrix-request.json#",
+			},
+			definitions.Entry{
 				Name:        "addDenylistAddress",
 				Title:       "Denylist Given Address",
 				Description: "Add the given address to the notification denylist. The address\ncan be of either of the three supported address type namely pulse, email\nor IRC(user or channel). Addresses in the denylist will be ignored\nby the notification service.",
