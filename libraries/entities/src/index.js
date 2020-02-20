@@ -456,7 +456,7 @@ class Entity {
     const fetchResults = async (continuation) => {
       const page = decodeContinuationToken(continuation);
       const condition = this._doCondition(conditions, options);
-      const result = await this._db.fns[`${this._tableName}_scan`](condition, limit, page);
+      const result = await this._db.fns[`${this._tableName}_scan`](condition, Math.min(limit, 1000), page);
       const entries = result.map(entry => (
         new this(entry.value, {
           etag: entry.etag,
