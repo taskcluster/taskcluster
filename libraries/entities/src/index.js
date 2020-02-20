@@ -123,7 +123,7 @@ class Entity {
   }
 
   _getPropertiesFromEntity(entity) {
-    this.properties = this.deserialize(entity); // TODO: _properties
+    this._properties = this.deserialize(entity);
   }
 
   async remove(ignoreChanges, ignoreIfNotExists) {
@@ -164,7 +164,7 @@ class Entity {
     let attemptsLeft = MAX_MODIFY_ATTEMPTS;
 
     const attemptModify = async () => {
-      const newProperties = _.cloneDeep(this.properties);
+      const newProperties = _.cloneDeep(this._properties);
       let entity;
       let result;
       await modifier.call(newProperties, newProperties);
@@ -208,7 +208,7 @@ class Entity {
     if (attemptsLeft <= 0) {
       const err = new Error('MAX_MODIFY_ATTEMPTS exhausted, check for congestion');
       err.code = 'EntityWriteCongestionError';
-      err.originalEntity = this.properties;
+      err.originalEntity = this._properties;
       throw err;
     }
 
@@ -548,7 +548,7 @@ class Entity {
           Object.defineProperty(subClass.prototype, property, {
             enumerable: true,
             get: function() {
-              return this.properties[property];
+              return this._properties[property];
             },
           });
         });

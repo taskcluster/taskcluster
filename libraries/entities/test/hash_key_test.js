@@ -48,7 +48,7 @@ helper.dbSuite(path.basename(__filename), function() {
         text2: 'another string for the key',
       });
 
-      const hash = item.constructor.__rowKey.exact(item.properties);
+      const hash = item.constructor.__rowKey.exact(item._properties);
       assert(hash === '8cdcd277cf2ddcb7be572019ef154756' +
                     '86484a3c3eeb4fe3caa5727f0aadd7c9' +
                     '8b873a64a7c54336a3f973e1902d4f1f' +

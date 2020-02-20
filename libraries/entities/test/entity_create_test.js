@@ -52,7 +52,7 @@ helper.dbSuite(path.basename(__filename), function() {
 
       assert.equal(result.taskId, taskId);
       assert.equal(result.provisionerId, provisionerId);
-      assert.deepEqual(result.properties, entry);
+      assert.deepEqual(result._properties, entry);
       assert(result._etag);
     });
 
