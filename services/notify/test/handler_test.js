@@ -162,7 +162,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'aws'], function(mock, s
   });
 
   test('matrix', async () => {
-    const route = 'test-notify.matrix-room.!gBxblkbeeBSadzOniu:mozilla.org.on-any';
+    const route = 'test-notify.matrix-room.mozilla.org:!gBxblkbeeBSadzOniu.on-any';
     const task = makeTask([route]);
     helper.queue.addTask(baseStatus.taskId, task);
     await helper.fakePulseMessage({
@@ -180,7 +180,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'aws'], function(mock, s
   });
 
   test('matrix (rejected)', async () => {
-    const route = 'test-notify.matrix-room.!rejected:mozilla.org.on-any';
+    const route = 'test-notify.matrix-room.mozilla.org:!rejected.on-any';
     const task = makeTask([route]);
     helper.queue.addTask(baseStatus.taskId, task);
     await helper.fakePulseMessage({

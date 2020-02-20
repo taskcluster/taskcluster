@@ -105,8 +105,10 @@ class Handler {
           });
         }
         case 'matrix-room': {
+          const room = route.slice(2, route.length - 1).join('.').split(':');
           return this.notifier.matrix({
-            roomId: _.join(_.slice(route, 2, route.length - 1), '.'),
+            roomId: room[1],
+            domain: room[0],
             format: undefined,
             formattedBody: undefined,
             body: ircMessage, // TODO: Update this and also do custom messages

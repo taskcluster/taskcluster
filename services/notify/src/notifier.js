@@ -142,7 +142,8 @@ class Notifier {
     return res;
   }
 
-  async matrix({roomId, format, formattedBody, body}) {
+  async matrix({roomId, domain, format, formattedBody, body}) {
+    roomId = `${roomId}:${domain}`;
     if (this.isDuplicate(roomId, format, formattedBody, body)) {
       debug('Duplicate matrix send detected. Not attempting resend.');
       return;
