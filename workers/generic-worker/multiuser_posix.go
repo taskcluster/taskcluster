@@ -188,7 +188,13 @@ func makeFileOrDirReadWritableForUser(recurse bool, fileOrDir string, user *gwru
 func makeDirUnreadableForUser(dir string, user *gwruntime.OSUser) error {
 	// Note, only need to set top directory, not recursively, since without
 	// access to top directory, nothing inside can be read anyway
-	err := os.Chown(dir, 0, 0) // root user / root group
+	var err error
+	switch runtime.GOOS {
+	case "darwin":
+		err = host.Run("/usr/sbin/chown", "0:0", dir)
+	case "linux":
+		err = host.Run("/bin/chown", "0:0", dir)
+	}
 	if err != nil {
 		return fmt.Errorf("[mounts] Not able to make directory %v owned by root/root in order to prevent %v from having access: %v", dir, user.Name, err)
 	}

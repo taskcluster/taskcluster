@@ -63,7 +63,6 @@ func TestChainOfTrustUpload(t *testing.T) {
 			Extracts: []string{
 				"hello world!",
 				"goodbye world!",
-				`"instance-type": "p3.enormous"`,
 			},
 			ContentType:     "text/plain; charset=utf-8",
 			ContentEncoding: "gzip",

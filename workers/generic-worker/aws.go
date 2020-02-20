@@ -143,7 +143,7 @@ func handleWorkerShutdown(abort func()) func() {
 	// http://169.254.169.254/latest/meta-data/spot/termination-time
 	ticker := time.NewTicker(time.Second * 5)
 	go func() {
-		for _ = range ticker.C {
+		for range ticker.C {
 			resp, err := http.Get(EC2MetadataBaseURL + "/meta-data/spot/termination-time")
 			// intermittent errors calling this endpoint should be ignored, but can be logged
 			if err != nil {

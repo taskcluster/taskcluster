@@ -22,5 +22,4 @@ func expectChainOfTrustKeyNotSecureMessage(t *testing.T, td *tcqueue.TaskDefinit
 	}
 
 	expectedArtifacts.Validate(t, taskID, 0)
-	return
 }

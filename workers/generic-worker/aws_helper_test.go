@@ -77,7 +77,7 @@ func WriteJSON(t *testing.T, w http.ResponseWriter, resp interface{}) {
 	if err != nil {
 		t.Fatalf("Strange - I can't convert %#v to json: %v", resp, err)
 	}
-	w.Write(bytes)
+	_, _ = w.Write(bytes)
 }
 
 func (m *MockAWSProvisionedEnvironment) workerTypeDefinition(t *testing.T, w http.ResponseWriter) {
@@ -274,7 +274,7 @@ func (m *MockAWSProvisionedEnvironment) Setup(t *testing.T) (teardown func(), er
 		MaxHeaderBytes: 1 << 20,
 	}
 	go func() {
-		s.ListenAndServe()
+		_ = s.ListenAndServe()
 	}()
 	configFile := &gwconfig.File{
 		Path: filepath.Join(testdataDir, t.Name(), "generic-worker.config"),

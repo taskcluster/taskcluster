@@ -44,13 +44,6 @@ type (
 		featureArtifacts map[string]string
 	}
 
-	S3ArtifactResponse struct {
-		StorageType string    `json:"storageType"`
-		PutURL      string    `json:"putUrl"`
-		Expires     time.Time `json:"expires"`
-		ContentType string    `json:"contentType"`
-	}
-
 	TaskStatus       string
 	TaskUpdateReason string
 )

@@ -36,7 +36,7 @@ func TestPortForward(t *testing.T) {
 		t.Fatalf("net.Dial: %s", err)
 	}
 
-	conn.Write([]byte("Hello!"))
+	_, _ = conn.Write([]byte("Hello!"))
 
 	got := make([]byte, 20)
 	n, err := conn.Read(got)
@@ -44,7 +44,7 @@ func TestPortForward(t *testing.T) {
 		t.Fatalf("Read: %s", err)
 	}
 	assert.Equal(t, []byte("Hello!"), got[:n], "got expected echo")
-	conn.Close()
+	_ = conn.Close()
 
 	<-connClosed
 }

@@ -57,8 +57,12 @@ func TestSupersede(t *testing.T) {
 		MaxHeaderBytes: 1 << 20,
 	}
 
-	go s.ListenAndServe()
-	defer s.Shutdown(context.Background())
+	go func() {
+		_ = s.ListenAndServe()
+	}()
+	defer func() {
+		_ = s.Shutdown(context.Background())
+	}()
 
 	for _, taskID := range taskIDs {
 		t.Logf("Executing task %v", taskID)
@@ -109,8 +113,12 @@ func TestEmptySupersedeList(t *testing.T) {
 		}
 	})
 
-	go s.ListenAndServe()
-	defer s.Shutdown(context.Background())
+	go func() {
+		_ = s.ListenAndServe()
+	}()
+	defer func() {
+		_ = s.Shutdown(context.Background())
+	}()
 
 	_ = submitAndAssert(t, td, payload, "completed", "completed")
 }

@@ -18,7 +18,6 @@ const (
 	INVALID_CONFIG              ExitCode = 73
 	CANT_CREATE_ED25519_KEYPAIR ExitCode = 75
 	CANT_SAVE_CONFIG            ExitCode = 76
-	CANT_SECURE_CONFIG          ExitCode = 77
 	CANT_CONNECT_PROTOCOL_PIPE  ExitCode = 78
 )
 

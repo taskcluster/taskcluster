@@ -2,6 +2,10 @@
 
 package main
 
+const (
+	CANT_SECURE_CONFIG ExitCode = 77
+)
+
 func runTasksAsCurrentUserUsage() string {
 	return `
           runTasksAsCurrentUser             If true, users will not be created for tasks, but
