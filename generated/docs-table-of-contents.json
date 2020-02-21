@@ -3194,28 +3194,6 @@
                 "children": [
                 ],
                 "data": {
-                  "order": 10,
-                  "title": "Payload Format"
-                },
-                "name": "payload",
-                "next": {
-                  "path": "reference/workers/generic-worker/features",
-                  "title": "Features"
-                },
-                "path": "reference/workers/generic-worker/payload",
-                "prev": {
-                  "path": "reference/workers/generic-worker/README",
-                  "title": "generic-worker"
-                },
-                "up": {
-                  "path": "reference/workers/generic-worker/README",
-                  "title": "generic-worker"
-                }
-              },
-              {
-                "children": [
-                ],
-                "data": {
                   "order": 20,
                   "title": "Features"
                 },
@@ -3226,8 +3204,8 @@
                 },
                 "path": "reference/workers/generic-worker/features",
                 "prev": {
-                  "path": "reference/workers/generic-worker/payload",
-                  "title": "Payload Format"
+                  "path": "reference/workers/generic-worker/README",
+                  "title": "generic-worker"
                 },
                 "up": {
                   "path": "reference/workers/generic-worker/README",
@@ -3264,10 +3242,98 @@
                   "title": "Installing"
                 },
                 "name": "installing",
+                "next": {
+                  "path": "reference/workers/generic-worker/docker-posix-payload",
+                  "title": "Task Payload - docker, posix"
+                },
                 "path": "reference/workers/generic-worker/installing",
                 "prev": {
                   "path": "reference/workers/generic-worker/engines",
                   "title": "Engines"
+                },
+                "up": {
+                  "path": "reference/workers/generic-worker/README",
+                  "title": "generic-worker"
+                }
+              },
+              {
+                "children": [
+                ],
+                "data": {
+                  "order": 1000,
+                  "title": "Task Payload - docker, posix"
+                },
+                "name": "docker-posix-payload",
+                "next": {
+                  "path": "reference/workers/generic-worker/multiuser-posix-payload",
+                  "title": "Task Payload - multiuser, posix"
+                },
+                "path": "reference/workers/generic-worker/docker-posix-payload",
+                "prev": {
+                  "path": "reference/workers/generic-worker/installing",
+                  "title": "Installing"
+                },
+                "up": {
+                  "path": "reference/workers/generic-worker/README",
+                  "title": "generic-worker"
+                }
+              },
+              {
+                "children": [
+                ],
+                "data": {
+                  "order": 1000,
+                  "title": "Task Payload - multiuser, posix"
+                },
+                "name": "multiuser-posix-payload",
+                "next": {
+                  "path": "reference/workers/generic-worker/multiuser-windows-payload",
+                  "title": "Task Payload - multiuser, windows"
+                },
+                "path": "reference/workers/generic-worker/multiuser-posix-payload",
+                "prev": {
+                  "path": "reference/workers/generic-worker/docker-posix-payload",
+                  "title": "Task Payload - docker, posix"
+                },
+                "up": {
+                  "path": "reference/workers/generic-worker/README",
+                  "title": "generic-worker"
+                }
+              },
+              {
+                "children": [
+                ],
+                "data": {
+                  "order": 1000,
+                  "title": "Task Payload - multiuser, windows"
+                },
+                "name": "multiuser-windows-payload",
+                "next": {
+                  "path": "reference/workers/generic-worker/simple-posix-payload",
+                  "title": "Task Payload - simple, posix"
+                },
+                "path": "reference/workers/generic-worker/multiuser-windows-payload",
+                "prev": {
+                  "path": "reference/workers/generic-worker/multiuser-posix-payload",
+                  "title": "Task Payload - multiuser, posix"
+                },
+                "up": {
+                  "path": "reference/workers/generic-worker/README",
+                  "title": "generic-worker"
+                }
+              },
+              {
+                "children": [
+                ],
+                "data": {
+                  "order": 1000,
+                  "title": "Task Payload - simple, posix"
+                },
+                "name": "simple-posix-payload",
+                "path": "reference/workers/generic-worker/simple-posix-payload",
+                "prev": {
+                  "path": "reference/workers/generic-worker/multiuser-windows-payload",
+                  "title": "Task Payload - multiuser, windows"
                 },
                 "up": {
                   "path": "reference/workers/generic-worker/README",
@@ -3280,8 +3346,8 @@
             },
             "name": "generic-worker",
             "next": {
-              "path": "reference/workers/generic-worker/payload",
-              "title": "Payload Format"
+              "path": "reference/workers/generic-worker/features",
+              "title": "Features"
             },
             "path": "reference/workers/generic-worker/README",
             "prev": {

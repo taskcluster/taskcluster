@@ -6009,7 +6009,7 @@
         "command",
         "maxRunTime"
       ],
-      "title": "Generic worker payload",
+      "title": "Generic worker payload - simple, posix",
       "type": "object"
     },
     "filename": "schemas/generic-worker/simple_posix.json"
@@ -6385,7 +6385,7 @@
         "command",
         "maxRunTime"
       ],
-      "title": "Generic worker payload",
+      "title": "Generic worker payload - multiuser, windows",
       "type": "object"
     },
     "filename": "schemas/generic-worker/multiuser_windows.json"
@@ -6757,7 +6757,7 @@
         "command",
         "maxRunTime"
       ],
-      "title": "Generic worker payload",
+      "title": "Generic worker payload - multiuser, posix",
       "type": "object"
     },
     "filename": "schemas/generic-worker/multiuser_posix.json"
@@ -7129,7 +7129,7 @@
         "command",
         "maxRunTime"
       ],
-      "title": "Generic worker payload",
+      "title": "Generic worker payload - docker, posix",
       "type": "object"
     },
     "filename": "schemas/generic-worker/docker_posix.json"

@@ -2569,6 +2569,20 @@
     "title": "Generic Worker"
   },
   {
+    "element": "h2",
+    "id": "more-information",
+    "path": "/reference/workers/generic-worker",
+    "subtitle": "More Information",
+    "title": "Generic Worker"
+  },
+  {
+    "element": "h2",
+    "id": "payload-formats",
+    "path": "/reference/workers/generic-worker",
+    "subtitle": "Payload Formats",
+    "title": "Generic Worker"
+  },
+  {
     "element": "h1",
     "id": "engines",
     "path": "/reference/workers/generic-worker/engines",
@@ -2735,48 +2749,6 @@
     "path": "/reference/workers/generic-worker/installing",
     "subtitle": "Windows - multiuser build",
     "title": "Installing Generic-Worker"
-  },
-  {
-    "element": "h1",
-    "id": "payload-format",
-    "path": "/reference/workers/generic-worker/payload",
-    "subtitle": null,
-    "title": "Payload Format"
-  },
-  {
-    "element": "h2",
-    "id": "generic-worker-on-linux-docker-engine",
-    "path": "/reference/workers/generic-worker/payload",
-    "subtitle": "Generic Worker on Linux (docker engine)",
-    "title": "Payload Format"
-  },
-  {
-    "element": "h2",
-    "id": "generic-worker-on-linux-simple-engine",
-    "path": "/reference/workers/generic-worker/payload",
-    "subtitle": "Generic Worker on Linux (simple engine)",
-    "title": "Payload Format"
-  },
-  {
-    "element": "h2",
-    "id": "generic-worker-on-macos-multiuser-engine",
-    "path": "/reference/workers/generic-worker/payload",
-    "subtitle": "Generic Worker on macOS (multiuser engine)",
-    "title": "Payload Format"
-  },
-  {
-    "element": "h2",
-    "id": "generic-worker-on-macos-simple-engine",
-    "path": "/reference/workers/generic-worker/payload",
-    "subtitle": "Generic Worker on macOS (simple engine)",
-    "title": "Payload Format"
-  },
-  {
-    "element": "h2",
-    "id": "generic-worker-on-windows-multiuser-engine",
-    "path": "/reference/workers/generic-worker/payload",
-    "subtitle": "Generic Worker on Windows (multiuser engine)",
-    "title": "Payload Format"
   },
   {
     "element": "h1",

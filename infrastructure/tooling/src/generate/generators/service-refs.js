@@ -1,11 +1,10 @@
 const util = require('util');
 const path = require('path');
-const glob = require('glob');
 const rimraf = util.promisify(require('rimraf'));
 const mkdirp = util.promisify(require('mkdirp'));
 const References = require('taskcluster-lib-references');
 const exec = util.promisify(require('child_process').execFile);
-const {REPO_ROOT, readRepoYAML, writeRepoJSON, listServices} = require('../../utils');
+const {REPO_ROOT, writeRepoJSON, listServices} = require('../../utils');
 
 /**
  * This file defines a few tasks that call generateReferences for all services,
@@ -45,23 +44,6 @@ SERVICES.forEach(name => {
       };
     },
   });
-});
-
-exports.tasks.push({
-  title: `Generate Generic-Worker Schemas`,
-  requires: [],
-  provides: [
-    'generic-worker-schemas',
-  ],
-  run: async (requirements, utils) => {
-    const schemaFiles = glob.sync('workers/generic-worker/schemas/*.yml', {cwd: REPO_ROOT});
-    return {
-      'generic-worker-schemas': await Promise.all(schemaFiles.map(async filename => ({
-        filename: filename.replace('workers/generic-worker/schemas', 'schemas/generic-worker'),
-        content: await readRepoYAML(filename),
-      }))),
-    };
-  },
 });
 
 exports.tasks.push({
