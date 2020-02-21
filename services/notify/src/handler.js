@@ -88,7 +88,7 @@ class Handler {
       switch (route[1]) {
         case 'irc-user': {
           if (_.has(task, 'extra.notify.ircUserMessage')) {
-            ircMessage = this.renderMessage(task.extra.notify.ircUserMessage, {task, status});
+            ircMessage = this.renderMessage(task.extra.notify.ircUserMessage, {task, status, taskId});
           }
           return await this.notifier.irc({
             user: route[2],
@@ -97,7 +97,7 @@ class Handler {
         }
         case 'irc-channel': {
           if (_.has(task, 'extra.notify.ircChannelMessage')) {
-            ircMessage = this.renderMessage(task.extra.notify.ircChannelMessage, {task, status});
+            ircMessage = this.renderMessage(task.extra.notify.ircChannelMessage, {task, status, taskId});
           }
           return await this.notifier.irc({
             channel: route[2],
@@ -110,10 +110,10 @@ class Handler {
           let formattedBody = undefined;
           let format = _.get(task, 'extra.notify.matrixFormat');
           if (_.has(task, 'extra.notify.matrixBody')) {
-            body = this.renderMessage(task.extra.notify.matrixBody, {task, status});
+            body = this.renderMessage(task.extra.notify.matrixBody, {task, status, taskId});
           }
           if (_.has(task, 'extra.notify.matrixFormattedBody')) {
-            formattedBody = this.renderMessage(task.extra.notify.matrixFormattedBody, {task, status});
+            formattedBody = this.renderMessage(task.extra.notify.matrixFormattedBody, {task, status, taskId});
           }
           try {
             return await this.notifier.matrix({
