@@ -62,6 +62,9 @@ import Link from '../../utils/Link';
   listItemText: {
     paddingLeft: theme.spacing(2),
   },
+  payload: {
+    whiteSpace: 'break-spaces',
+  },
 }))
 /**
  * Render information in a card layout about a task.
@@ -168,7 +171,7 @@ export default class TaskDetailsCard extends Component {
                     <ListItemText
                       disableTypography
                       primary={
-                        <Code language="json">
+                        <Code className={classes.payload} language="json">
                           {JSON.stringify(payload, null, 2)}
                         </Code>
                       }
