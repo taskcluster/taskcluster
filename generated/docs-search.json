@@ -92,6 +92,13 @@
   },
   {
     "element": "h2",
+    "id": "matrix-support",
+    "path": "/manual/deploying",
+    "subtitle": "Matrix Support",
+    "title": "Deploying Taskcluster"
+  },
+  {
+    "element": "h2",
     "id": "testing-and-monitoring",
     "path": "/manual/deploying",
     "subtitle": "Testing and Monitoring",
