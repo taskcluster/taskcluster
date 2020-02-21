@@ -11,7 +11,12 @@ const {
 } = require('taskcluster-lib-postgres');
 const crypto = require('crypto');
 const Hashids = require('hashids/cjs');
-const { VALID_ROW_MATCH, VALID_PARTITION_MATCH, MAX_MODIFY_ATTEMPTS } = require('./constants');
+const {
+  VALID_ROW_MATCH,
+  VALID_PARTITION_MATCH,
+  MAX_MODIFY_ATTEMPTS,
+  CONTINUATION_TOKEN_PATTERN,
+} = require('./constants');
 
 /** Fixed time comparison of two buffers */
 const fixedTimeComparison = function(b1, b2) {
@@ -95,6 +100,7 @@ class Entity {
   static op = op;
   static keys = keys;
   static types = types;
+  static continuationTokenPattern = CONTINUATION_TOKEN_PATTERN;
 
   constructor(entity, options = {}) {
     const {

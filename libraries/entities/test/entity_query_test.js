@@ -107,8 +107,7 @@ helper.dbSuite(path.basename(__filename), function() {
       });
       assert(result.entries.length === 2);
       assert(result.continuation);
-      // TODO: Add continuationTokenPattern(?)
-      // assert(Entity.continuationTokenPattern.test(data.continuation));
+      assert(Entity.continuationTokenPattern.test(result.continuation));
 
       // Fetch next
       result = await TestTable.query({ id }, {
@@ -200,7 +199,7 @@ helper.dbSuite(path.basename(__filename), function() {
       });
     });
 
-    test.only('Filter by active === false throws an error', async function() {
+    test('Filter by active === false throws an error', async function() {
       db = await helper.withDb({ schema, serviceName });
       const TestTable = configuredTestTable.setup({ tableName: 'test_entities', db, serviceName });
 

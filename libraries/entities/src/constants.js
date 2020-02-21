@@ -15,9 +15,13 @@ const VALID_PARTITION_MATCH = ['exact', 'none'];
 
 // Valid values for `options.matchRow` in Entity.scan and Entity.query
 const VALID_ROW_MATCH = ['exact', 'partial', 'none'];
+// a regular expression matching a continuation token; callers can use this to
+// pre-screen invalid continuation tokens and offer a suitable error.
+const CONTINUATION_TOKEN_PATTERN = /[a-zA-Z0-9]+/;
 
 module.exports = {
   ASCENDING_KEY_PADDING,
+  CONTINUATION_TOKEN_PATTERN,
   COMPOSITE_SEPARATOR,
   HASH_KEY_SEPARATOR,
   MORE_NINES_THAN_INT,
