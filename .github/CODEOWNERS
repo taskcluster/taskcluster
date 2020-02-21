@@ -33,3 +33,4 @@ clients/client-shell/apis/services.go
 clients/client-go/tc*/**
 go.mod
 go.sum
+workers/generic-worker/generated_*.go

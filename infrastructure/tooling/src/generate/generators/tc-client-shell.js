@@ -3,7 +3,7 @@ const {REPO_ROOT, execCommand} = require('../../utils');
 
 exports.tasks = [{
   title: 'Generate Taskcluster-Client-Shell',
-  requires: ['references-json', 'go-version'],
+  requires: ['references-json', 'target-go-version'],
   provides: ['target-taskcluster-client-shell'],
   run: async (requirements, utils) => {
     await execCommand({
