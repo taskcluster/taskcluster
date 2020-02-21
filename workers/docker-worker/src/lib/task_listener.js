@@ -180,7 +180,7 @@ class TaskListener extends EventEmitter {
 
     this.runtime.logEvent({
       eventType: 'instanceBoot',
-      timestamp: Date.now() - os.uptime(),
+      timestamp: Date.now() - (os.uptime() * 1000),
     });
 
     this.runtime.logEvent({eventType: 'workerReady'});
