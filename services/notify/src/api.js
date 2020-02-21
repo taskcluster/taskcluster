@@ -121,6 +121,12 @@ builder.declare({
   category: 'Notifications',
   description: [
     'Post a message to a room in Matrix. Optionally includes formatted message.',
+    '',
+    'The `roomId` in the scopes is a fully formed `roomId` with leading `!` such',
+    'as `!foo:bar.com`.',
+    '',
+    'Note that the matrix client used by taskcluster must be invited to a room before',
+    'it can post there!',
   ].join('\n'),
 }, async function(req, res) {
   await req.authorize({

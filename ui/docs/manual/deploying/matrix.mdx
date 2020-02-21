@@ -1,0 +1,32 @@
+---
+title: Matrix Integration
+---
+
+# Matrix Integration
+
+Taskcluster requires a Matrix client in order to be able to post notices to Matrix.
+
+## Client Setup
+
+This can differ depending on how you're setting things up but if you are using riot,
+[this helpful site](https://t2bot.io/docs/access_tokens/) has given nice instructions
+which we'll copy here for posterity:
+
+0. In a private/incognito browser window, open Riot.
+0. Log in to the account you want to get the access token for, such as the bot's account.
+0. Click on the bot's name in the top left corner then "Settings".
+0. (Optional) Set your bot's display name and avatar.
+0. Click the "Help & About" tab (left side of the dialog).
+0. Scroll to the bottom and click the <click to reveal> part of Access Token: <click to reveal>.
+0. Copy your access token to a safe place, like the bot's configuration file.
+0. Do not log out. Instead, just close the window. If you used a private browsing session, you should be able to still use Riot for your own account. Logging out deletes the access token from the server, making the bot unable to use it.
+
+## Taskcluster Configuration
+
+In the Helm templates, you'll need to set
+
+```yaml
+notify.matrix_base_url: foo # The homeserver where your client is registered
+notify.matrix_user_id: bar # The user that will act on behalf of taskcluster
+notify.matrix_access_token: baz # An access token for this user
+```

@@ -162,6 +162,12 @@ func (notify *Notify) Irc(payload *PostIRCMessageRequest) error {
 //
 // Post a message to a room in Matrix. Optionally includes formatted message.
 //
+// The `roomId` in the scopes is a fully formed `roomId` with leading `!` such
+// as `!foo:bar.com`.
+//
+// Note that the matrix client used by taskcluster must be invited to a room before
+// it can post there!
+//
 // Required scopes:
 //   notify:matrix-room:<roomId>
 //
