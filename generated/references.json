@@ -5649,6 +5649,1493 @@
   },
   {
     "content": {
+      "$id": "/schemas/generic-worker/simple_posix.json#",
+      "$schema": "/schemas/common/metaschema.json#",
+      "additionalProperties": false,
+      "definitions": {
+        "content": {
+          "oneOf": [
+            {
+              "additionalProperties": false,
+              "description": "Requires scope `queue:get-artifact:<artifact-name>`.\n\nSince: generic-worker 5.4.0",
+              "properties": {
+                "artifact": {
+                  "maxLength": 1024,
+                  "type": "string"
+                },
+                "sha256": {
+                  "description": "The required SHA 256 of the content body.\n\nSince: generic-worker 10.8.0",
+                  "pattern": "^[a-f0-9]{64}$",
+                  "title": "SHA 256",
+                  "type": "string"
+                },
+                "taskId": {
+                  "pattern": "^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "taskId",
+                "artifact"
+              ],
+              "title": "Artifact Content",
+              "type": "object"
+            },
+            {
+              "additionalProperties": false,
+              "description": "URL to download content from.\n\nSince: generic-worker 5.4.0",
+              "properties": {
+                "sha256": {
+                  "description": "The required SHA 256 of the content body.\n\nSince: generic-worker 10.8.0",
+                  "pattern": "^[a-f0-9]{64}$",
+                  "title": "SHA 256",
+                  "type": "string"
+                },
+                "url": {
+                  "description": "URL to download content from.\n\nSince: generic-worker 5.4.0",
+                  "format": "uri",
+                  "title": "URL",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "url"
+              ],
+              "title": "URL Content",
+              "type": "object"
+            },
+            {
+              "additionalProperties": false,
+              "description": "Byte-for-byte literal inline content of file/archive, up to 64KB in size.\n\nSince: generic-worker 11.1.0",
+              "properties": {
+                "raw": {
+                  "description": "Byte-for-byte literal inline content of file/archive, up to 64KB in size.\n\nSince: generic-worker 11.1.0",
+                  "maxLength": 65536,
+                  "title": "Raw",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "raw"
+              ],
+              "title": "Raw Content",
+              "type": "object"
+            },
+            {
+              "additionalProperties": false,
+              "description": "Base64 encoded content of file/archive, up to 64KB (encoded) in size.\n\nSince: generic-worker 11.1.0",
+              "properties": {
+                "base64": {
+                  "description": "Base64 encoded content of file/archive, up to 64KB (encoded) in size.\n\nSince: generic-worker 11.1.0",
+                  "maxLength": 65536,
+                  "pattern": "^[A-Za-z0-9/+]+[=]{0,2}$",
+                  "title": "Base64",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "base64"
+              ],
+              "title": "Base64 Content",
+              "type": "object"
+            }
+          ]
+        },
+        "fileMount": {
+          "additionalProperties": false,
+          "properties": {
+            "content": {
+              "$ref": "#/definitions/content",
+              "description": "Content of the file to be mounted.\n\nSince: generic-worker 5.4.0"
+            },
+            "file": {
+              "description": "The filesystem location to mount the file.\n\nSince: generic-worker 5.4.0",
+              "title": "File",
+              "type": "string"
+            }
+          },
+          "required": [
+            "file",
+            "content"
+          ],
+          "title": "File Mount",
+          "type": "object"
+        },
+        "mount": {
+          "oneOf": [
+            {
+              "$ref": "#/definitions/fileMount"
+            },
+            {
+              "$ref": "#/definitions/writableDirectoryCache"
+            },
+            {
+              "$ref": "#/definitions/readOnlyDirectory"
+            }
+          ],
+          "title": "Mount"
+        },
+        "readOnlyDirectory": {
+          "additionalProperties": false,
+          "properties": {
+            "content": {
+              "$ref": "#/definitions/content",
+              "description": "Contents of read only directory.\n\nSince: generic-worker 5.4.0",
+              "title": "Content"
+            },
+            "directory": {
+              "description": "The filesystem location to mount the directory volume.\n\nSince: generic-worker 5.4.0",
+              "title": "Directory",
+              "type": "string"
+            },
+            "format": {
+              "description": "Archive format of content for read only directory.\n\nSince: generic-worker 5.4.0",
+              "enum": [
+                "rar",
+                "tar.bz2",
+                "tar.gz",
+                "zip"
+              ],
+              "title": "Format",
+              "type": "string"
+            }
+          },
+          "required": [
+            "directory",
+            "content",
+            "format"
+          ],
+          "title": "Read Only Directory",
+          "type": "object"
+        },
+        "writableDirectoryCache": {
+          "additionalProperties": false,
+          "dependencies": {
+            "content": [
+              "format"
+            ],
+            "format": [
+              "content"
+            ]
+          },
+          "properties": {
+            "cacheName": {
+              "description": "Implies a read/write cache directory volume. A unique name for the\ncache volume. Requires scope `generic-worker:cache:<cache-name>`.\nNote if this cache is loaded from an artifact, you will also require\nscope `queue:get-artifact:<artifact-name>` to use this cache.\n\nSince: generic-worker 5.4.0",
+              "title": "Cache Name",
+              "type": "string"
+            },
+            "content": {
+              "$ref": "#/definitions/content",
+              "description": "Optional content to be preloaded when initially creating the cache\n(if set, `format` must also be provided).\n\nSince: generic-worker 5.4.0",
+              "title": "Content"
+            },
+            "directory": {
+              "description": "The filesystem location to mount the directory volume.\n\nSince: generic-worker 5.4.0",
+              "title": "Directory Volume",
+              "type": "string"
+            },
+            "format": {
+              "description": "Archive format of the preloaded content (if `content` provided).\n\nSince: generic-worker 5.4.0",
+              "enum": [
+                "rar",
+                "tar.bz2",
+                "tar.gz",
+                "zip"
+              ],
+              "title": "Format",
+              "type": "string"
+            }
+          },
+          "required": [
+            "directory",
+            "cacheName"
+          ],
+          "title": "Writable Directory Cache",
+          "type": "object"
+        }
+      },
+      "description": "This schema defines the structure of the `payload` property referred to in a\nTaskcluster Task definition.",
+      "properties": {
+        "artifacts": {
+          "description": "Artifacts to be published.\n\nSince: generic-worker 1.0.0",
+          "items": {
+            "additionalProperties": false,
+            "properties": {
+              "contentEncoding": {
+                "description": "Content-Encoding for the artifact. If not provided, `gzip` will be used, except for the\nfollowing file extensions, where `identity` will be used, since they are already\ncompressed:\n\n* jpg\n* jpeg\n* png\n* gif\n* webp\n* 7z\n* zip\n* gz\n* tgz\n* bz2\n* tbz\n* whl\n* xz\n* swf\n* flv\n* woff\n* woff2\n\nNote, setting `contentEncoding` on a directory artifact will apply the same content\nencoding to all the files contained in the directory.\n\nSince: generic-worker 16.2.0",
+                "enum": [
+                  "identity",
+                  "gzip"
+                ],
+                "title": "Content-Encoding header when serving artifact over HTTP.",
+                "type": "string"
+              },
+              "contentType": {
+                "description": "Explicitly set the value of the HTTP `Content-Type` response header when the artifact(s)\nis/are served over HTTP(S). If not provided (this property is optional) the worker will\nguess the content type of artifacts based on the filename extension of the file storing\nthe artifact content. It does this by looking at the system filename-to-mimetype mappings\ndefined in multiple `mime.types` files located under `/etc`. Note, setting `contentType`\non a directory artifact will apply the same contentType to all files contained in the\ndirectory.\n\nSee [mime.TypeByExtension](https://godoc.org/mime#TypeByExtension).\n\nSince: generic-worker 10.4.0",
+                "title": "Content-Type header when serving artifact over HTTP",
+                "type": "string"
+              },
+              "expires": {
+                "description": "Date when artifact should expire must be in the future, no earlier than task deadline, but\nno later than task expiry. If not set, defaults to task expiry.\n\nSince: generic-worker 1.0.0",
+                "format": "date-time",
+                "title": "Expiry date and time",
+                "type": "string"
+              },
+              "name": {
+                "description": "Name of the artifact, as it will be published. If not set, `path` will be used.\nConventionally (although not enforced) path elements are forward slash separated. Example:\n`public/build/a/house`. Note, no scopes are required to read artifacts beginning `public/`.\nArtifact names not beginning `public/` are scope-protected (caller requires scopes to\ndownload the artifact). See the Queue documentation for more information.\n\nSince: generic-worker 8.1.0",
+                "title": "Name of the artifact",
+                "type": "string"
+              },
+              "path": {
+                "description": "Relative path of the file/directory from the task directory. Note this is not an absolute\npath as is typically used in docker-worker, since the absolute task directory name is not\nknown when the task is submitted. Example: `dist\\regedit.exe`. It doesn't matter if\nforward slashes or backslashes are used.\n\nSince: generic-worker 1.0.0",
+                "title": "Artifact location",
+                "type": "string"
+              },
+              "type": {
+                "description": "Artifacts can be either an individual `file` or a `directory` containing\npotentially multiple files with recursively included subdirectories.\n\nSince: generic-worker 1.0.0",
+                "enum": [
+                  "file",
+                  "directory"
+                ],
+                "title": "Artifact upload type.",
+                "type": "string"
+              }
+            },
+            "required": [
+              "type",
+              "path"
+            ],
+            "title": "Artifact",
+            "type": "object"
+          },
+          "title": "Artifacts to be published",
+          "type": "array",
+          "uniqueItems": true
+        },
+        "command": {
+          "description": "One array per command (each command is an array of arguments). Several arrays\nfor several commands.\n\nSince: generic-worker 0.0.1",
+          "items": {
+            "items": {
+              "type": "string"
+            },
+            "minItems": 1,
+            "type": "array",
+            "uniqueItems": false
+          },
+          "minItems": 1,
+          "title": "Commands to run",
+          "type": "array",
+          "uniqueItems": false
+        },
+        "env": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "description": "Env vars must be string to __string__ mappings (not number or boolean). For example:\n```\n{\n  \"PATH\": \"/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin\",\n  \"GOOS\": \"darwin\",\n  \"FOO_ENABLE\": \"true\",\n  \"BAR_TOTAL\": \"3\"\n}\n```\n\nNote, the following environment variables will automatically be set in the task\ncommands:\n  * `TASK_ID` - the task ID of the currently running task\n  * `RUN_ID` - the run ID of the currently running task\n  * `TASKCLUSTER_ROOT_URL` - the root URL of the taskcluster deployment\n  * `TASKCLUSTER_PROXY_URL` (if taskcluster proxy feature enabled) - the\n     taskcluster authentication proxy for making unauthenticated taskcluster\n     API calls\n  * `TASKCLUSTER_WORKER_LOCATION` (if running in AWS or GCP or explicitly set\n    in the generic-worker config file). See\n    [RFC #0148](https://github.com/taskcluster/taskcluster-rfcs/blob/master/rfcs/0148-taskcluster-worker-location.md)\n    for details.\n\nSince: generic-worker 0.0.1",
+          "title": "Env vars",
+          "type": "object"
+        },
+        "features": {
+          "additionalProperties": false,
+          "description": "Feature flags enable additional functionality.\n\nSince: generic-worker 5.3.0",
+          "properties": {
+            "taskclusterProxy": {
+              "description": "The taskcluster proxy provides an easy and safe way to make authenticated\ntaskcluster requests within the scope(s) of a particular task. See\n[the github project](https://github.com/taskcluster/taskcluster-proxy) for more information.\n\nSince: generic-worker 10.6.0",
+              "title": "Run [taskcluster-proxy](https://github.com/taskcluster/taskcluster-proxy) to allow tasks to dynamically proxy requests to taskcluster services",
+              "type": "boolean"
+            }
+          },
+          "required": [
+          ],
+          "title": "Feature flags",
+          "type": "object"
+        },
+        "maxRunTime": {
+          "description": "Maximum time the task container can run in seconds.\n\nSince: generic-worker 0.0.1",
+          "maximum": 86400,
+          "minimum": 1,
+          "multipleOf": 1,
+          "title": "Maximum run time in seconds",
+          "type": "integer"
+        },
+        "mounts": {
+          "description": "Directories and/or files to be mounted.\n\nSince: generic-worker 5.4.0",
+          "items": {
+            "$ref": "#/definitions/mount",
+            "title": "Mount"
+          },
+          "type": "array",
+          "uniqueItems": false
+        },
+        "onExitStatus": {
+          "additionalProperties": false,
+          "description": "By default tasks will be resolved with `state/reasonResolved`: `completed/completed`\nif all task commands have a zero exit code, or `failed/failed` if any command has a\nnon-zero exit code. This payload property allows customsation of the task resolution\nbased on exit code of task commands.",
+          "properties": {
+            "retry": {
+              "description": "Exit codes for any command in the task payload to cause this task to\nbe resolved as `exception/intermittent-task`. Typically the Queue\nwill then schedule a new run of the existing `taskId` (rerun) if not\nall task runs have been exhausted.\n\nSee [itermittent tasks](https://docs.taskcluster.net/docs/reference/platform/taskcluster-queue/docs/worker-interaction#intermittent-tasks) for more detail.\n\nSince: generic-worker 10.10.0",
+              "items": {
+                "minimum": 1,
+                "title": "Exit codes",
+                "type": "integer"
+              },
+              "title": "Intermittent task exit codes",
+              "type": "array",
+              "uniqueItems": true
+            }
+          },
+          "required": [
+          ],
+          "title": "Exit code handling",
+          "type": "object"
+        },
+        "osGroups": {
+          "description": "A list of OS Groups that the task user should be a member of. Not yet implemented on\nnon-Windows platforms, therefore this optional property may only be an empty array if\nprovided.\n\nSince: generic-worker 6.0.0",
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 0,
+          "title": "OS Groups",
+          "type": "array",
+          "uniqueItems": false
+        },
+        "supersederUrl": {
+          "description": "URL of a service that can indicate tasks superseding this one; the current `taskId`\nwill be appended as a query argument `taskId`. The service should return an object with\na `supersedes` key containing a list of `taskId`s, including the supplied `taskId`. The\ntasks should be ordered such that each task supersedes all tasks appearing later in the\nlist.\n\nSee [superseding](https://docs.taskcluster.net/reference/platform/taskcluster-queue/docs/superseding) for more detail.\n\nSince: generic-worker 10.2.2",
+          "format": "uri",
+          "title": "Superseder URL",
+          "type": "string"
+        }
+      },
+      "required": [
+        "command",
+        "maxRunTime"
+      ],
+      "title": "Generic worker payload",
+      "type": "object"
+    },
+    "filename": "schemas/generic-worker/simple_posix.json"
+  },
+  {
+    "content": {
+      "$id": "/schemas/generic-worker/multiuser_windows.json#",
+      "$schema": "/schemas/common/metaschema.json#",
+      "additionalProperties": false,
+      "definitions": {
+        "content": {
+          "oneOf": [
+            {
+              "additionalProperties": false,
+              "description": "Requires scope `queue:get-artifact:<artifact-name>`.\n\nSince: generic-worker 5.4.0",
+              "properties": {
+                "artifact": {
+                  "maxLength": 1024,
+                  "type": "string"
+                },
+                "sha256": {
+                  "description": "The required SHA 256 of the content body.\n\nSince: generic-worker 10.8.0",
+                  "pattern": "^[a-f0-9]{64}$",
+                  "title": "SHA 256",
+                  "type": "string"
+                },
+                "taskId": {
+                  "pattern": "^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "taskId",
+                "artifact"
+              ],
+              "title": "Artifact Content",
+              "type": "object"
+            },
+            {
+              "additionalProperties": false,
+              "description": "URL to download content from.\n\nSince: generic-worker 5.4.0",
+              "properties": {
+                "sha256": {
+                  "description": "The required SHA 256 of the content body.\n\nSince: generic-worker 10.8.0",
+                  "pattern": "^[a-f0-9]{64}$",
+                  "title": "SHA 256",
+                  "type": "string"
+                },
+                "url": {
+                  "description": "URL to download content from.\n\nSince: generic-worker 5.4.0",
+                  "format": "uri",
+                  "title": "URL",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "url"
+              ],
+              "title": "URL Content",
+              "type": "object"
+            },
+            {
+              "additionalProperties": false,
+              "description": "Byte-for-byte literal inline content of file/archive, up to 64KB in size.\n\nSince: generic-worker 11.1.0",
+              "properties": {
+                "raw": {
+                  "description": "Byte-for-byte literal inline content of file/archive, up to 64KB in size.\n\nSince: generic-worker 11.1.0",
+                  "maxLength": 65536,
+                  "title": "Raw",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "raw"
+              ],
+              "title": "Raw Content",
+              "type": "object"
+            },
+            {
+              "additionalProperties": false,
+              "description": "Base64 encoded content of file/archive, up to 64KB (encoded) in size.\n\nSince: generic-worker 11.1.0",
+              "properties": {
+                "base64": {
+                  "description": "Base64 encoded content of file/archive, up to 64KB (encoded) in size.\n\nSince: generic-worker 11.1.0",
+                  "maxLength": 65536,
+                  "pattern": "^[A-Za-z0-9/+]+[=]{0,2}$",
+                  "title": "Base64",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "base64"
+              ],
+              "title": "Base64 Content",
+              "type": "object"
+            }
+          ]
+        },
+        "fileMount": {
+          "additionalProperties": false,
+          "properties": {
+            "content": {
+              "$ref": "#/definitions/content",
+              "description": "Content of the file to be mounted.\n\nSince: generic-worker 5.4.0"
+            },
+            "file": {
+              "description": "The filesystem location to mount the file.\n\nSince: generic-worker 5.4.0",
+              "title": "File",
+              "type": "string"
+            }
+          },
+          "required": [
+            "file",
+            "content"
+          ],
+          "title": "File Mount",
+          "type": "object"
+        },
+        "mount": {
+          "oneOf": [
+            {
+              "$ref": "#/definitions/fileMount"
+            },
+            {
+              "$ref": "#/definitions/writableDirectoryCache"
+            },
+            {
+              "$ref": "#/definitions/readOnlyDirectory"
+            }
+          ],
+          "title": "Mount"
+        },
+        "readOnlyDirectory": {
+          "additionalProperties": false,
+          "properties": {
+            "content": {
+              "$ref": "#/definitions/content",
+              "description": "Contents of read only directory.\n\nSince: generic-worker 5.4.0",
+              "title": "Content"
+            },
+            "directory": {
+              "description": "The filesystem location to mount the directory volume.\n\nSince: generic-worker 5.4.0",
+              "title": "Directory",
+              "type": "string"
+            },
+            "format": {
+              "description": "Archive format of content for read only directory.\n\nSince: generic-worker 5.4.0",
+              "enum": [
+                "rar",
+                "tar.bz2",
+                "tar.gz",
+                "zip"
+              ],
+              "title": "Format",
+              "type": "string"
+            }
+          },
+          "required": [
+            "directory",
+            "content",
+            "format"
+          ],
+          "title": "Read Only Directory",
+          "type": "object"
+        },
+        "writableDirectoryCache": {
+          "additionalProperties": false,
+          "dependencies": {
+            "content": [
+              "format"
+            ],
+            "format": [
+              "content"
+            ]
+          },
+          "properties": {
+            "cacheName": {
+              "description": "Implies a read/write cache directory volume. A unique name for the\ncache volume. Requires scope `generic-worker:cache:<cache-name>`.\nNote if this cache is loaded from an artifact, you will also require\nscope `queue:get-artifact:<artifact-name>` to use this cache.\n\nSince: generic-worker 5.4.0",
+              "title": "Cache Name",
+              "type": "string"
+            },
+            "content": {
+              "$ref": "#/definitions/content",
+              "description": "Optional content to be preloaded when initially creating the cache\n(if set, `format` must also be provided).\n\nSince: generic-worker 5.4.0",
+              "title": "Content"
+            },
+            "directory": {
+              "description": "The filesystem location to mount the directory volume.\n\nSince: generic-worker 5.4.0",
+              "title": "Directory Volume",
+              "type": "string"
+            },
+            "format": {
+              "description": "Archive format of the preloaded content (if `content` provided).\n\nSince: generic-worker 5.4.0",
+              "enum": [
+                "rar",
+                "tar.bz2",
+                "tar.gz",
+                "zip"
+              ],
+              "title": "Format",
+              "type": "string"
+            }
+          },
+          "required": [
+            "directory",
+            "cacheName"
+          ],
+          "title": "Writable Directory Cache",
+          "type": "object"
+        }
+      },
+      "description": "This schema defines the structure of the `payload` property referred to in a\nTaskcluster Task definition.",
+      "properties": {
+        "artifacts": {
+          "description": "Artifacts to be published.\n\nSince: generic-worker 1.0.0",
+          "items": {
+            "additionalProperties": false,
+            "properties": {
+              "contentEncoding": {
+                "description": "Content-Encoding for the artifact. If not provided, `gzip` will be used, except for the\nfollowing file extensions, where `identity` will be used, since they are already\ncompressed:\n\n* jpg\n* jpeg\n* png\n* gif\n* webp\n* 7z\n* zip\n* gz\n* tgz\n* bz2\n* tbz\n* whl\n* xz\n* swf\n* flv\n* woff\n* woff2\n\nNote, setting `contentEncoding` on a directory artifact will apply the same content\nencoding to all the files contained in the directory.\n\nSince: generic-worker 16.2.0",
+                "enum": [
+                  "identity",
+                  "gzip"
+                ],
+                "title": "Content-Encoding header when serving artifact over HTTP.",
+                "type": "string"
+              },
+              "contentType": {
+                "description": "Explicitly set the value of the HTTP `Content-Type` response header when the artifact(s)\nis/are served over HTTP(S). If not provided (this property is optional) the worker will\nguess the content type of artifacts based on the filename extension of the file storing\nthe artifact content. It does this by looking at the system filename-to-mimetype mappings\ndefined in the Windows registry. Note, setting `contentType` on a directory artifact will\napply the same contentType to all files contained in the directory.\n\nSee [mime.TypeByExtension](https://godoc.org/mime#TypeByExtension).\n\nSince: generic-worker 10.4.0",
+                "title": "Content-Type header when serving artifact over HTTP",
+                "type": "string"
+              },
+              "expires": {
+                "description": "Date when artifact should expire must be in the future, no earlier than task deadline, but\nno later than task expiry. If not set, defaults to task expiry.\n\nSince: generic-worker 1.0.0",
+                "format": "date-time",
+                "title": "Expiry date and time",
+                "type": "string"
+              },
+              "name": {
+                "description": "Name of the artifact, as it will be published. If not set, `path` will be used.\nConventionally (although not enforced) path elements are forward slash separated. Example:\n`public/build/a/house`. Note, no scopes are required to read artifacts beginning `public/`.\nArtifact names not beginning `public/` are scope-protected (caller requires scopes to\ndownload the artifact). See the Queue documentation for more information.\n\nSince: generic-worker 8.1.0",
+                "title": "Name of the artifact",
+                "type": "string"
+              },
+              "path": {
+                "description": "Relative path of the file/directory from the task directory. Note this is not an absolute\npath as is typically used in docker-worker, since the absolute task directory name is not\nknown when the task is submitted. Example: `dist\\regedit.exe`. It doesn't matter if\nforward slashes or backslashes are used.\n\nSince: generic-worker 1.0.0",
+                "title": "Artifact location",
+                "type": "string"
+              },
+              "type": {
+                "description": "Artifacts can be either an individual `file` or a `directory` containing\npotentially multiple files with recursively included subdirectories.\n\nSince: generic-worker 1.0.0",
+                "enum": [
+                  "file",
+                  "directory"
+                ],
+                "title": "Artifact upload type.",
+                "type": "string"
+              }
+            },
+            "required": [
+              "type",
+              "path"
+            ],
+            "title": "Artifact",
+            "type": "object"
+          },
+          "title": "Artifacts to be published",
+          "type": "array",
+          "uniqueItems": true
+        },
+        "command": {
+          "description": "One entry per command (consider each entry to be interpreted as a full line of\na Windows™ .bat file). For example:\n```\n[\n  \"set\",\n  \"echo hello world > hello_world.txt\",\n  \"set GOPATH=C:\\\\Go\"\n]\n```\n\nSince: generic-worker 0.0.1",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Commands to run",
+          "type": "array",
+          "uniqueItems": false
+        },
+        "env": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "description": "Env vars must be string to __string__ mappings (not number or boolean). For example:\n```\n{\n  \"PATH\": \"C:\\\\Windows\\\\system32;C:\\\\Windows\",\n  \"GOOS\": \"windows\",\n  \"FOO_ENABLE\": \"true\",\n  \"BAR_TOTAL\": \"3\"\n}\n```\n\nNote, the following environment variables will automatically be set in the task\ncommands:\n  * `TASK_ID` - the task ID of the currently running task\n  * `RUN_ID` - the run ID of the currently running task\n  * `TASKCLUSTER_ROOT_URL` - the root URL of the taskcluster deployment\n  * `TASKCLUSTER_PROXY_URL` (if taskcluster proxy feature enabled) - the\n     taskcluster authentication proxy for making unauthenticated taskcluster\n     API calls\n  * `TASK_USER_CREDENTIALS` (if config property `runTasksAsCurrentUser` set to\n    `true` in `generic-worker.config` file - the absolute file location of a\n    json file containing the current task OS user account name and password.\n    This is only useful for the generic-worker multiuser CI tasks, where\n    `runTasksAsCurrentUser` is set to `true`.\n  * `TASKCLUSTER_WORKER_LOCATION` (if running in AWS or GCP or explicitly set\n    in the generic-worker config file). See\n    [RFC #0148](https://github.com/taskcluster/taskcluster-rfcs/blob/master/rfcs/0148-taskcluster-worker-location.md)\n    for details.\n\nSince: generic-worker 0.0.1",
+          "title": "Env vars",
+          "type": "object"
+        },
+        "features": {
+          "additionalProperties": false,
+          "description": "Feature flags enable additional functionality.\n\nSince: generic-worker 5.3.0",
+          "properties": {
+            "chainOfTrust": {
+              "description": "Artifacts named `public/chain-of-trust.json` and\n`public/chain-of-trust.json.sig` should be generated which will\ninclude information for downstream tasks to build a level of trust\nfor the artifacts produced by the task and the environment it ran in.\n\nSince: generic-worker 5.3.0",
+              "title": "Enable generation of signed Chain of Trust artifacts",
+              "type": "boolean"
+            },
+            "runAsAdministrator": {
+              "description": "Runs commands with UAC elevation. Only set to true when UAC is\nenabled on the worker and Administrative privileges are required by\ntask commands. When UAC is disabled on the worker, task commands will\nalready run with full user privileges, and therefore a value of true\nwill result in a malformed-payload task exception.\n\nA value of true does not add the task user to the `Administrators`\ngroup - see the `osGroups` property for that. Typically\n`task.payload.osGroups` should include an Administrative group, such\nas `Administrators`, when setting to true.\n\nFor security, `runAsAdministrator` feature cannot be used in\nconjunction with `chainOfTrust` feature.\n\nRequires scope\n`generic-worker:run-as-administrator:<provisionerId>/<workerType>`.\n\nSince: generic-worker 10.11.0",
+              "title": "Run commands with UAC process elevation",
+              "type": "boolean"
+            },
+            "taskclusterProxy": {
+              "description": "The taskcluster proxy provides an easy and safe way to make authenticated\ntaskcluster requests within the scope(s) of a particular task. See\n[the github project](https://github.com/taskcluster/taskcluster-proxy) for more information.\n\nSince: generic-worker 10.6.0",
+              "title": "Run [taskcluster-proxy](https://github.com/taskcluster/taskcluster-proxy) to allow tasks to dynamically proxy requests to taskcluster services",
+              "type": "boolean"
+            }
+          },
+          "required": [
+          ],
+          "title": "Feature flags",
+          "type": "object"
+        },
+        "maxRunTime": {
+          "description": "Maximum time the task container can run in seconds.\n\nSince: generic-worker 0.0.1",
+          "maximum": 86400,
+          "minimum": 1,
+          "multipleOf": 1,
+          "title": "Maximum run time in seconds",
+          "type": "integer"
+        },
+        "mounts": {
+          "description": "Directories and/or files to be mounted.\n\nSince: generic-worker 5.4.0",
+          "items": {
+            "$ref": "#/definitions/mount",
+            "title": "Mount"
+          },
+          "type": "array",
+          "uniqueItems": false
+        },
+        "onExitStatus": {
+          "additionalProperties": false,
+          "description": "By default tasks will be resolved with `state/reasonResolved`: `completed/completed`\nif all task commands have a zero exit code, or `failed/failed` if any command has a\nnon-zero exit code. This payload property allows customsation of the task resolution\nbased on exit code of task commands.",
+          "properties": {
+            "retry": {
+              "description": "Exit codes for any command in the task payload to cause this task to\nbe resolved as `exception/intermittent-task`. Typically the Queue\nwill then schedule a new run of the existing `taskId` (rerun) if not\nall task runs have been exhausted.\n\nSee [itermittent tasks](https://docs.taskcluster.net/docs/reference/platform/taskcluster-queue/docs/worker-interaction#intermittent-tasks) for more detail.\n\nSince: generic-worker 10.10.0",
+              "items": {
+                "minimum": 1,
+                "title": "Exit codes",
+                "type": "integer"
+              },
+              "title": "Intermittent task exit codes",
+              "type": "array",
+              "uniqueItems": true
+            }
+          },
+          "required": [
+          ],
+          "title": "Exit code handling",
+          "type": "object"
+        },
+        "osGroups": {
+          "description": "A list of OS Groups that the task user should be a member of. Requires scope\n`generic-worker:os-group:<provisionerId>/<workerType>/<os-group>` for each\ngroup listed.\n\nSince: generic-worker 6.0.0",
+          "items": {
+            "type": "string"
+          },
+          "title": "OS Groups",
+          "type": "array",
+          "uniqueItems": false
+        },
+        "rdpInfo": {
+          "description": "Specifies an artifact name for publishing RDP connection information.\n\nSince this is potentially sensitive data, care should be taken to publish\nto a suitably locked down path, such as\n`login-identity/<login-identity>/rdpinfo.json` which is only readable for\nthe given login identity (for example\n`login-identity/mozilla-ldap/pmoore@mozilla.com/rdpinfo.json`). See the\n[artifact namespace guide](https://docs.taskcluster.net/manual/design/namespaces#artifacts) for more information.\n\nUse of this feature requires scope\n`generic-worker:allow-rdp:<provisionerId>/<workerType>` which must be\ndeclared as a task scope.\n\nThe RDP connection data is published during task startup so that a user\nmay interact with the running task.\n\nThe task environment will be retained for 12 hours after the task\ncompletes, to enable an interactive user to perform investigative tasks.\nAfter these 12 hours, the worker will delete the task's Windows user\naccount, and then continue with other tasks.\n\nNo guarantees are given about the resolution status of the interactive\ntask, since the task is inherently non-reproducible and no automation\nshould rely on this value.\n\nSince: generic-worker 10.5.0",
+          "title": "RDP Info",
+          "type": "string"
+        },
+        "supersederUrl": {
+          "description": "URL of a service that can indicate tasks superseding this one; the current `taskId`\nwill be appended as a query argument `taskId`. The service should return an object with\na `supersedes` key containing a list of `taskId`s, including the supplied `taskId`. The\ntasks should be ordered such that each task supersedes all tasks appearing later in the\nlist.\n\nSee [superseding](https://docs.taskcluster.net/reference/platform/taskcluster-queue/docs/superseding) for more detail.\n\nSince: generic-worker 10.2.2",
+          "format": "uri",
+          "title": "Superseder URL",
+          "type": "string"
+        }
+      },
+      "required": [
+        "command",
+        "maxRunTime"
+      ],
+      "title": "Generic worker payload",
+      "type": "object"
+    },
+    "filename": "schemas/generic-worker/multiuser_windows.json"
+  },
+  {
+    "content": {
+      "$id": "/schemas/generic-worker/multiuser_posix.json#",
+      "$schema": "/schemas/common/metaschema.json#",
+      "additionalProperties": false,
+      "definitions": {
+        "content": {
+          "oneOf": [
+            {
+              "additionalProperties": false,
+              "description": "Requires scope `queue:get-artifact:<artifact-name>`.\n\nSince: generic-worker 5.4.0",
+              "properties": {
+                "artifact": {
+                  "maxLength": 1024,
+                  "type": "string"
+                },
+                "sha256": {
+                  "description": "The required SHA 256 of the content body.\n\nSince: generic-worker 10.8.0",
+                  "pattern": "^[a-f0-9]{64}$",
+                  "title": "SHA 256",
+                  "type": "string"
+                },
+                "taskId": {
+                  "pattern": "^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "taskId",
+                "artifact"
+              ],
+              "title": "Artifact Content",
+              "type": "object"
+            },
+            {
+              "additionalProperties": false,
+              "description": "URL to download content from.\n\nSince: generic-worker 5.4.0",
+              "properties": {
+                "sha256": {
+                  "description": "The required SHA 256 of the content body.\n\nSince: generic-worker 10.8.0",
+                  "pattern": "^[a-f0-9]{64}$",
+                  "title": "SHA 256",
+                  "type": "string"
+                },
+                "url": {
+                  "description": "URL to download content from.\n\nSince: generic-worker 5.4.0",
+                  "format": "uri",
+                  "title": "URL",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "url"
+              ],
+              "title": "URL Content",
+              "type": "object"
+            },
+            {
+              "additionalProperties": false,
+              "description": "Byte-for-byte literal inline content of file/archive, up to 64KB in size.\n\nSince: generic-worker 11.1.0",
+              "properties": {
+                "raw": {
+                  "description": "Byte-for-byte literal inline content of file/archive, up to 64KB in size.\n\nSince: generic-worker 11.1.0",
+                  "maxLength": 65536,
+                  "title": "Raw",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "raw"
+              ],
+              "title": "Raw Content",
+              "type": "object"
+            },
+            {
+              "additionalProperties": false,
+              "description": "Base64 encoded content of file/archive, up to 64KB (encoded) in size.\n\nSince: generic-worker 11.1.0",
+              "properties": {
+                "base64": {
+                  "description": "Base64 encoded content of file/archive, up to 64KB (encoded) in size.\n\nSince: generic-worker 11.1.0",
+                  "maxLength": 65536,
+                  "pattern": "^[A-Za-z0-9/+]+[=]{0,2}$",
+                  "title": "Base64",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "base64"
+              ],
+              "title": "Base64 Content",
+              "type": "object"
+            }
+          ]
+        },
+        "fileMount": {
+          "additionalProperties": false,
+          "properties": {
+            "content": {
+              "$ref": "#/definitions/content",
+              "description": "Content of the file to be mounted.\n\nSince: generic-worker 5.4.0"
+            },
+            "file": {
+              "description": "The filesystem location to mount the file.\n\nSince: generic-worker 5.4.0",
+              "title": "File",
+              "type": "string"
+            }
+          },
+          "required": [
+            "file",
+            "content"
+          ],
+          "title": "File Mount",
+          "type": "object"
+        },
+        "mount": {
+          "oneOf": [
+            {
+              "$ref": "#/definitions/fileMount"
+            },
+            {
+              "$ref": "#/definitions/writableDirectoryCache"
+            },
+            {
+              "$ref": "#/definitions/readOnlyDirectory"
+            }
+          ],
+          "title": "Mount"
+        },
+        "readOnlyDirectory": {
+          "additionalProperties": false,
+          "properties": {
+            "content": {
+              "$ref": "#/definitions/content",
+              "description": "Contents of read only directory.\n\nSince: generic-worker 5.4.0",
+              "title": "Content"
+            },
+            "directory": {
+              "description": "The filesystem location to mount the directory volume.\n\nSince: generic-worker 5.4.0",
+              "title": "Directory",
+              "type": "string"
+            },
+            "format": {
+              "description": "Archive format of content for read only directory.\n\nSince: generic-worker 5.4.0",
+              "enum": [
+                "rar",
+                "tar.bz2",
+                "tar.gz",
+                "zip"
+              ],
+              "title": "Format",
+              "type": "string"
+            }
+          },
+          "required": [
+            "directory",
+            "content",
+            "format"
+          ],
+          "title": "Read Only Directory",
+          "type": "object"
+        },
+        "writableDirectoryCache": {
+          "additionalProperties": false,
+          "dependencies": {
+            "content": [
+              "format"
+            ],
+            "format": [
+              "content"
+            ]
+          },
+          "properties": {
+            "cacheName": {
+              "description": "Implies a read/write cache directory volume. A unique name for the\ncache volume. Requires scope `generic-worker:cache:<cache-name>`.\nNote if this cache is loaded from an artifact, you will also require\nscope `queue:get-artifact:<artifact-name>` to use this cache.\n\nSince: generic-worker 5.4.0",
+              "title": "Cache Name",
+              "type": "string"
+            },
+            "content": {
+              "$ref": "#/definitions/content",
+              "description": "Optional content to be preloaded when initially creating the cache\n(if set, `format` must also be provided).\n\nSince: generic-worker 5.4.0",
+              "title": "Content"
+            },
+            "directory": {
+              "description": "The filesystem location to mount the directory volume.\n\nSince: generic-worker 5.4.0",
+              "title": "Directory Volume",
+              "type": "string"
+            },
+            "format": {
+              "description": "Archive format of the preloaded content (if `content` provided).\n\nSince: generic-worker 5.4.0",
+              "enum": [
+                "rar",
+                "tar.bz2",
+                "tar.gz",
+                "zip"
+              ],
+              "title": "Format",
+              "type": "string"
+            }
+          },
+          "required": [
+            "directory",
+            "cacheName"
+          ],
+          "title": "Writable Directory Cache",
+          "type": "object"
+        }
+      },
+      "description": "This schema defines the structure of the `payload` property referred to in a\nTaskcluster Task definition.",
+      "properties": {
+        "artifacts": {
+          "description": "Artifacts to be published.\n\nSince: generic-worker 1.0.0",
+          "items": {
+            "additionalProperties": false,
+            "properties": {
+              "contentEncoding": {
+                "description": "Content-Encoding for the artifact. If not provided, `gzip` will be used, except for the\nfollowing file extensions, where `identity` will be used, since they are already\ncompressed:\n\n* jpg\n* jpeg\n* png\n* gif\n* webp\n* 7z\n* zip\n* gz\n* tgz\n* bz2\n* tbz\n* whl\n* xz\n* swf\n* flv\n* woff\n* woff2\n\nNote, setting `contentEncoding` on a directory artifact will apply the same content\nencoding to all the files contained in the directory.\n\nSince: generic-worker 16.2.0",
+                "enum": [
+                  "identity",
+                  "gzip"
+                ],
+                "title": "Content-Encoding header when serving artifact over HTTP.",
+                "type": "string"
+              },
+              "contentType": {
+                "description": "Explicitly set the value of the HTTP `Content-Type` response header when the artifact(s)\nis/are served over HTTP(S). If not provided (this property is optional) the worker will\nguess the content type of artifacts based on the filename extension of the file storing\nthe artifact content. It does this by looking at the system filename-to-mimetype mappings\ndefined in multiple `mime.types` files located under `/etc`. Note, setting `contentType`\non a directory artifact will apply the same contentType to all files contained in the\ndirectory.\n\nSee [mime.TypeByExtension](https://godoc.org/mime#TypeByExtension).\n\nSince: generic-worker 10.4.0",
+                "title": "Content-Type header when serving artifact over HTTP",
+                "type": "string"
+              },
+              "expires": {
+                "description": "Date when artifact should expire must be in the future, no earlier than task deadline, but\nno later than task expiry. If not set, defaults to task expiry.\n\nSince: generic-worker 1.0.0",
+                "format": "date-time",
+                "title": "Expiry date and time",
+                "type": "string"
+              },
+              "name": {
+                "description": "Name of the artifact, as it will be published. If not set, `path` will be used.\nConventionally (although not enforced) path elements are forward slash separated. Example:\n`public/build/a/house`. Note, no scopes are required to read artifacts beginning `public/`.\nArtifact names not beginning `public/` are scope-protected (caller requires scopes to\ndownload the artifact). See the Queue documentation for more information.\n\nSince: generic-worker 8.1.0",
+                "title": "Name of the artifact",
+                "type": "string"
+              },
+              "path": {
+                "description": "Relative path of the file/directory from the task directory. Note this is not an absolute\npath as is typically used in docker-worker, since the absolute task directory name is not\nknown when the task is submitted. Example: `dist\\regedit.exe`. It doesn't matter if\nforward slashes or backslashes are used.\n\nSince: generic-worker 1.0.0",
+                "title": "Artifact location",
+                "type": "string"
+              },
+              "type": {
+                "description": "Artifacts can be either an individual `file` or a `directory` containing\npotentially multiple files with recursively included subdirectories.\n\nSince: generic-worker 1.0.0",
+                "enum": [
+                  "file",
+                  "directory"
+                ],
+                "title": "Artifact upload type.",
+                "type": "string"
+              }
+            },
+            "required": [
+              "type",
+              "path"
+            ],
+            "title": "Artifact",
+            "type": "object"
+          },
+          "title": "Artifacts to be published",
+          "type": "array",
+          "uniqueItems": true
+        },
+        "command": {
+          "description": "One array per command (each command is an array of arguments). Several arrays\nfor several commands.\n\nSince: generic-worker 0.0.1",
+          "items": {
+            "items": {
+              "type": "string"
+            },
+            "minItems": 1,
+            "type": "array",
+            "uniqueItems": false
+          },
+          "minItems": 1,
+          "title": "Commands to run",
+          "type": "array",
+          "uniqueItems": false
+        },
+        "env": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "description": "Env vars must be string to __string__ mappings (not number or boolean). For example:\n```\n{\n  \"PATH\": \"/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin\",\n  \"GOOS\": \"darwin\",\n  \"FOO_ENABLE\": \"true\",\n  \"BAR_TOTAL\": \"3\"\n}\n```\n\nNote, the following environment variables will automatically be set in the task\ncommands, but may be overridden by environment variables in the task payload:\n  * `HOME` - the home directory of the task user\n  * `PATH` - `/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin`\n  * `USER` - the name of the task user\n\nThe following environment variables will automatically be set in the task\ncommands, and may not be overridden by environment variables in the task payload:\n  * `DISPLAY` - `:0` (Linux only)\n  * `TASK_ID` - the task ID of the currently running task\n  * `RUN_ID` - the run ID of the currently running task\n  * `TASKCLUSTER_ROOT_URL` - the root URL of the taskcluster deployment\n  * `TASKCLUSTER_PROXY_URL` (if taskcluster proxy feature enabled) - the\n     taskcluster authentication proxy for making unauthenticated taskcluster\n     API calls\n  * `TASK_USER_CREDENTIALS` (if config property `runTasksAsCurrentUser` set to\n    `true` in `generic-worker.config` file - the absolute file location of a\n    json file containing the current task OS user account name and password.\n    This is only useful for the generic-worker multiuser CI tasks, where\n    `runTasksAsCurrentUser` is set to `true`.\n  * `TASKCLUSTER_WORKER_LOCATION` (if running in AWS or GCP or explicitly set\n    in the generic-worker config file). See\n    [RFC #0148](https://github.com/taskcluster/taskcluster-rfcs/blob/master/rfcs/0148-taskcluster-worker-location.md)\n    for details.\n\nSince: generic-worker 0.0.1",
+          "title": "Env vars",
+          "type": "object"
+        },
+        "features": {
+          "additionalProperties": false,
+          "description": "Feature flags enable additional functionality.\n\nSince: generic-worker 5.3.0",
+          "properties": {
+            "chainOfTrust": {
+              "description": "Artifacts named `public/chain-of-trust.json` and\n`public/chain-of-trust.json.sig` should be generated which will\ninclude information for downstream tasks to build a level of trust\nfor the artifacts produced by the task and the environment it ran in.\n\nSince: generic-worker 5.3.0",
+              "title": "Enable generation of signed Chain of Trust artifacts",
+              "type": "boolean"
+            },
+            "taskclusterProxy": {
+              "description": "The taskcluster proxy provides an easy and safe way to make authenticated\ntaskcluster requests within the scope(s) of a particular task. See\n[the github project](https://github.com/taskcluster/taskcluster-proxy) for more information.\n\nSince: generic-worker 10.6.0",
+              "title": "Run [taskcluster-proxy](https://github.com/taskcluster/taskcluster-proxy) to allow tasks to dynamically proxy requests to taskcluster services",
+              "type": "boolean"
+            }
+          },
+          "required": [
+          ],
+          "title": "Feature flags",
+          "type": "object"
+        },
+        "maxRunTime": {
+          "description": "Maximum time the task container can run in seconds.\n\nSince: generic-worker 0.0.1",
+          "maximum": 86400,
+          "minimum": 1,
+          "multipleOf": 1,
+          "title": "Maximum run time in seconds",
+          "type": "integer"
+        },
+        "mounts": {
+          "description": "Directories and/or files to be mounted.\n\nSince: generic-worker 5.4.0",
+          "items": {
+            "$ref": "#/definitions/mount",
+            "title": "Mount"
+          },
+          "type": "array",
+          "uniqueItems": false
+        },
+        "onExitStatus": {
+          "additionalProperties": false,
+          "description": "By default tasks will be resolved with `state/reasonResolved`: `completed/completed`\nif all task commands have a zero exit code, or `failed/failed` if any command has a\nnon-zero exit code. This payload property allows customsation of the task resolution\nbased on exit code of task commands.",
+          "properties": {
+            "retry": {
+              "description": "Exit codes for any command in the task payload to cause this task to\nbe resolved as `exception/intermittent-task`. Typically the Queue\nwill then schedule a new run of the existing `taskId` (rerun) if not\nall task runs have been exhausted.\n\nSee [itermittent tasks](https://docs.taskcluster.net/docs/reference/platform/taskcluster-queue/docs/worker-interaction#intermittent-tasks) for more detail.\n\nSince: generic-worker 10.10.0",
+              "items": {
+                "minimum": 1,
+                "title": "Exit codes",
+                "type": "integer"
+              },
+              "title": "Intermittent task exit codes",
+              "type": "array",
+              "uniqueItems": true
+            }
+          },
+          "required": [
+          ],
+          "title": "Exit code handling",
+          "type": "object"
+        },
+        "osGroups": {
+          "description": "A list of OS Groups that the task user should be a member of. Not yet implemented on\nnon-Windows platforms, therefore this optional property may only be an empty array if\nprovided.\n\nSince: generic-worker 6.0.0",
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 0,
+          "title": "OS Groups",
+          "type": "array",
+          "uniqueItems": false
+        },
+        "supersederUrl": {
+          "description": "URL of a service that can indicate tasks superseding this one; the current `taskId`\nwill be appended as a query argument `taskId`. The service should return an object with\na `supersedes` key containing a list of `taskId`s, including the supplied `taskId`. The\ntasks should be ordered such that each task supersedes all tasks appearing later in the\nlist.\n\nSee [superseding](https://docs.taskcluster.net/reference/platform/taskcluster-queue/docs/superseding) for more detail.\n\nSince: generic-worker 10.2.2",
+          "format": "uri",
+          "title": "Superseder URL",
+          "type": "string"
+        }
+      },
+      "required": [
+        "command",
+        "maxRunTime"
+      ],
+      "title": "Generic worker payload",
+      "type": "object"
+    },
+    "filename": "schemas/generic-worker/multiuser_posix.json"
+  },
+  {
+    "content": {
+      "$id": "/schemas/generic-worker/docker_posix.json#",
+      "$schema": "/schemas/common/metaschema.json#",
+      "additionalProperties": false,
+      "definitions": {
+        "content": {
+          "oneOf": [
+            {
+              "additionalProperties": false,
+              "description": "Requires scope `queue:get-artifact:<artifact-name>`.\n\nSince: generic-worker 5.4.0",
+              "properties": {
+                "artifact": {
+                  "maxLength": 1024,
+                  "type": "string"
+                },
+                "sha256": {
+                  "description": "The required SHA 256 of the content body.\n\nSince: generic-worker 10.8.0",
+                  "pattern": "^[a-f0-9]{64}$",
+                  "title": "SHA 256",
+                  "type": "string"
+                },
+                "taskId": {
+                  "pattern": "^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "taskId",
+                "artifact"
+              ],
+              "title": "Artifact Content",
+              "type": "object"
+            },
+            {
+              "additionalProperties": false,
+              "description": "URL to download content from.\n\nSince: generic-worker 5.4.0",
+              "properties": {
+                "sha256": {
+                  "description": "The required SHA 256 of the content body.\n\nSince: generic-worker 10.8.0",
+                  "pattern": "^[a-f0-9]{64}$",
+                  "title": "SHA 256",
+                  "type": "string"
+                },
+                "url": {
+                  "description": "URL to download content from.\n\nSince: generic-worker 5.4.0",
+                  "format": "uri",
+                  "title": "URL",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "url"
+              ],
+              "title": "URL Content",
+              "type": "object"
+            },
+            {
+              "additionalProperties": false,
+              "description": "Byte-for-byte literal inline content of file/archive, up to 64KB in size.\n\nSince: generic-worker 11.1.0",
+              "properties": {
+                "raw": {
+                  "description": "Byte-for-byte literal inline content of file/archive, up to 64KB in size.\n\nSince: generic-worker 11.1.0",
+                  "maxLength": 65536,
+                  "title": "Raw",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "raw"
+              ],
+              "title": "Raw Content",
+              "type": "object"
+            },
+            {
+              "additionalProperties": false,
+              "description": "Base64 encoded content of file/archive, up to 64KB (encoded) in size.\n\nSince: generic-worker 11.1.0",
+              "properties": {
+                "base64": {
+                  "description": "Base64 encoded content of file/archive, up to 64KB (encoded) in size.\n\nSince: generic-worker 11.1.0",
+                  "maxLength": 65536,
+                  "pattern": "^[A-Za-z0-9/+]+[=]{0,2}$",
+                  "title": "Base64",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "base64"
+              ],
+              "title": "Base64 Content",
+              "type": "object"
+            }
+          ]
+        },
+        "fileMount": {
+          "additionalProperties": false,
+          "properties": {
+            "content": {
+              "$ref": "#/definitions/content",
+              "description": "Content of the file to be mounted.\n\nSince: generic-worker 5.4.0"
+            },
+            "file": {
+              "description": "The filesystem location to mount the file.\n\nSince: generic-worker 5.4.0",
+              "title": "File",
+              "type": "string"
+            }
+          },
+          "required": [
+            "file",
+            "content"
+          ],
+          "title": "File Mount",
+          "type": "object"
+        },
+        "mount": {
+          "oneOf": [
+            {
+              "$ref": "#/definitions/fileMount"
+            },
+            {
+              "$ref": "#/definitions/writableDirectoryCache"
+            },
+            {
+              "$ref": "#/definitions/readOnlyDirectory"
+            }
+          ],
+          "title": "Mount"
+        },
+        "readOnlyDirectory": {
+          "additionalProperties": false,
+          "properties": {
+            "content": {
+              "$ref": "#/definitions/content",
+              "description": "Contents of read only directory.\n\nSince: generic-worker 5.4.0",
+              "title": "Content"
+            },
+            "directory": {
+              "description": "The filesystem location to mount the directory volume.\n\nSince: generic-worker 5.4.0",
+              "title": "Directory",
+              "type": "string"
+            },
+            "format": {
+              "description": "Archive format of content for read only directory.\n\nSince: generic-worker 5.4.0",
+              "enum": [
+                "rar",
+                "tar.bz2",
+                "tar.gz",
+                "zip"
+              ],
+              "title": "Format",
+              "type": "string"
+            }
+          },
+          "required": [
+            "directory",
+            "content",
+            "format"
+          ],
+          "title": "Read Only Directory",
+          "type": "object"
+        },
+        "writableDirectoryCache": {
+          "additionalProperties": false,
+          "dependencies": {
+            "content": [
+              "format"
+            ],
+            "format": [
+              "content"
+            ]
+          },
+          "properties": {
+            "cacheName": {
+              "description": "Implies a read/write cache directory volume. A unique name for the\ncache volume. Requires scope `generic-worker:cache:<cache-name>`.\nNote if this cache is loaded from an artifact, you will also require\nscope `queue:get-artifact:<artifact-name>` to use this cache.\n\nSince: generic-worker 5.4.0",
+              "title": "Cache Name",
+              "type": "string"
+            },
+            "content": {
+              "$ref": "#/definitions/content",
+              "description": "Optional content to be preloaded when initially creating the cache\n(if set, `format` must also be provided).\n\nSince: generic-worker 5.4.0",
+              "title": "Content"
+            },
+            "directory": {
+              "description": "The filesystem location to mount the directory volume.\n\nSince: generic-worker 5.4.0",
+              "title": "Directory Volume",
+              "type": "string"
+            },
+            "format": {
+              "description": "Archive format of the preloaded content (if `content` provided).\n\nSince: generic-worker 5.4.0",
+              "enum": [
+                "rar",
+                "tar.bz2",
+                "tar.gz",
+                "zip"
+              ],
+              "title": "Format",
+              "type": "string"
+            }
+          },
+          "required": [
+            "directory",
+            "cacheName"
+          ],
+          "title": "Writable Directory Cache",
+          "type": "object"
+        }
+      },
+      "description": "This schema defines the structure of the `payload` property referred to in a\nTaskcluster Task definition.",
+      "properties": {
+        "artifacts": {
+          "description": "Artifacts to be published.\n\nSince: generic-worker 1.0.0",
+          "items": {
+            "additionalProperties": false,
+            "properties": {
+              "contentEncoding": {
+                "description": "Content-Encoding for the artifact. If not provided, `gzip` will be used, except for the\nfollowing file extensions, where `identity` will be used, since they are already\ncompressed:\n\n* jpg\n* jpeg\n* png\n* gif\n* webp\n* 7z\n* zip\n* gz\n* tgz\n* bz2\n* tbz\n* whl\n* xz\n* swf\n* flv\n* woff\n* woff2\n\nNote, setting `contentEncoding` on a directory artifact will apply the same content\nencoding to all the files contained in the directory.\n\nSince: generic-worker 16.2.0",
+                "enum": [
+                  "identity",
+                  "gzip"
+                ],
+                "title": "Content-Encoding header when serving artifact over HTTP.",
+                "type": "string"
+              },
+              "contentType": {
+                "description": "Explicitly set the value of the HTTP `Content-Type` response header when the artifact(s)\nis/are served over HTTP(S). If not provided (this property is optional) the worker will\nguess the content type of artifacts based on the filename extension of the file storing\nthe artifact content. It does this by looking at the system filename-to-mimetype mappings\ndefined in multiple `mime.types` files located under `/etc`. Note, setting `contentType`\non a directory artifact will apply the same contentType to all files contained in the\ndirectory.\n\nSee [mime.TypeByExtension](https://godoc.org/mime#TypeByExtension).\n\nSince: generic-worker 10.4.0",
+                "title": "Content-Type header when serving artifact over HTTP",
+                "type": "string"
+              },
+              "expires": {
+                "description": "Date when artifact should expire must be in the future, no earlier than task deadline, but\nno later than task expiry. If not set, defaults to task expiry.\n\nSince: generic-worker 1.0.0",
+                "format": "date-time",
+                "title": "Expiry date and time",
+                "type": "string"
+              },
+              "name": {
+                "description": "Name of the artifact, as it will be published. If not set, `path` will be used.\nConventionally (although not enforced) path elements are forward slash separated. Example:\n`public/build/a/house`. Note, no scopes are required to read artifacts beginning `public/`.\nArtifact names not beginning `public/` are scope-protected (caller requires scopes to\ndownload the artifact). See the Queue documentation for more information.\n\nSince: generic-worker 8.1.0",
+                "title": "Name of the artifact",
+                "type": "string"
+              },
+              "path": {
+                "description": "Relative path of the file/directory from the task directory. Note this is not an absolute\npath as is typically used in docker-worker, since the absolute task directory name is not\nknown when the task is submitted. Example: `dist\\regedit.exe`. It doesn't matter if\nforward slashes or backslashes are used.\n\nSince: generic-worker 1.0.0",
+                "title": "Artifact location",
+                "type": "string"
+              },
+              "type": {
+                "description": "Artifacts can be either an individual `file` or a `directory` containing\npotentially multiple files with recursively included subdirectories.\n\nSince: generic-worker 1.0.0",
+                "enum": [
+                  "file",
+                  "directory"
+                ],
+                "title": "Artifact upload type.",
+                "type": "string"
+              }
+            },
+            "required": [
+              "type",
+              "path"
+            ],
+            "title": "Artifact",
+            "type": "object"
+          },
+          "title": "Artifacts to be published",
+          "type": "array",
+          "uniqueItems": true
+        },
+        "command": {
+          "description": "One array per command (each command is an array of arguments). Several arrays\nfor several commands.\n\nSince: generic-worker 0.0.1",
+          "items": {
+            "items": {
+              "type": "string"
+            },
+            "minItems": 1,
+            "type": "array",
+            "uniqueItems": false
+          },
+          "minItems": 1,
+          "title": "Commands to run",
+          "type": "array",
+          "uniqueItems": false
+        },
+        "env": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "description": "Env vars must be string to __string__ mappings (not number or boolean). For example:\n```\n{\n  \"PATH\": \"/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin\",\n  \"GOOS\": \"darwin\",\n  \"FOO_ENABLE\": \"true\",\n  \"BAR_TOTAL\": \"3\"\n}\n```\n\nNote, the following environment variables will automatically be set in the task\ncommands:\n  * `TASK_ID` - the task ID of the currently running task\n  * `RUN_ID` - the run ID of the currently running task\n  * `TASKCLUSTER_ROOT_URL` - the root URL of the taskcluster deployment\n  * `TASKCLUSTER_PROXY_URL` (if taskcluster proxy feature enabled) - the\n     taskcluster authentication proxy for making unauthenticated taskcluster\n     API calls\n  * `TASKCLUSTER_WORKER_LOCATION` (if running in AWS or GCP or explicitly set\n    in the generic-worker config file). See\n    [RFC #0148](https://github.com/taskcluster/taskcluster-rfcs/blob/master/rfcs/0148-taskcluster-worker-location.md)\n    for details.\n\nSince: generic-worker 0.0.1",
+          "title": "Env vars",
+          "type": "object"
+        },
+        "features": {
+          "additionalProperties": false,
+          "description": "Feature flags enable additional functionality.\n\nSince: generic-worker 5.3.0",
+          "properties": {
+            "chainOfTrust": {
+              "description": "Artifacts named `public/chain-of-trust.json` and\n`public/chain-of-trust.json.sig` should be generated which will\ninclude information for downstream tasks to build a level of trust\nfor the artifacts produced by the task and the environment it ran in.\n\nSince: generic-worker 5.3.0",
+              "title": "Enable generation of signed Chain of Trust artifacts",
+              "type": "boolean"
+            },
+            "taskclusterProxy": {
+              "description": "The taskcluster proxy provides an easy and safe way to make authenticated\ntaskcluster requests within the scope(s) of a particular task. See\n[the github project](https://github.com/taskcluster/taskcluster-proxy) for more information.\n\nSince: generic-worker 10.6.0",
+              "title": "Run [taskcluster-proxy](https://github.com/taskcluster/taskcluster-proxy) to allow tasks to dynamically proxy requests to taskcluster services",
+              "type": "boolean"
+            }
+          },
+          "required": [
+          ],
+          "title": "Feature flags",
+          "type": "object"
+        },
+        "maxRunTime": {
+          "description": "Maximum time the task container can run in seconds.\n\nSince: generic-worker 0.0.1",
+          "maximum": 86400,
+          "minimum": 1,
+          "multipleOf": 1,
+          "title": "Maximum run time in seconds",
+          "type": "integer"
+        },
+        "mounts": {
+          "description": "Directories and/or files to be mounted.\n\nSince: generic-worker 5.4.0",
+          "items": {
+            "$ref": "#/definitions/mount",
+            "title": "Mount"
+          },
+          "type": "array",
+          "uniqueItems": false
+        },
+        "onExitStatus": {
+          "additionalProperties": false,
+          "description": "By default tasks will be resolved with `state/reasonResolved`: `completed/completed`\nif all task commands have a zero exit code, or `failed/failed` if any command has a\nnon-zero exit code. This payload property allows customsation of the task resolution\nbased on exit code of task commands.",
+          "properties": {
+            "retry": {
+              "description": "Exit codes for any command in the task payload to cause this task to\nbe resolved as `exception/intermittent-task`. Typically the Queue\nwill then schedule a new run of the existing `taskId` (rerun) if not\nall task runs have been exhausted.\n\nSee [itermittent tasks](https://docs.taskcluster.net/docs/reference/platform/taskcluster-queue/docs/worker-interaction#intermittent-tasks) for more detail.\n\nSince: generic-worker 10.10.0",
+              "items": {
+                "minimum": 1,
+                "title": "Exit codes",
+                "type": "integer"
+              },
+              "title": "Intermittent task exit codes",
+              "type": "array",
+              "uniqueItems": true
+            }
+          },
+          "required": [
+          ],
+          "title": "Exit code handling",
+          "type": "object"
+        },
+        "osGroups": {
+          "description": "A list of OS Groups that the task user should be a member of. Not yet implemented on\nnon-Windows platforms, therefore this optional property may only be an empty array if\nprovided.\n\nSince: generic-worker 6.0.0",
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 0,
+          "title": "OS Groups",
+          "type": "array",
+          "uniqueItems": false
+        },
+        "supersederUrl": {
+          "description": "URL of a service that can indicate tasks superseding this one; the current `taskId`\nwill be appended as a query argument `taskId`. The service should return an object with\na `supersedes` key containing a list of `taskId`s, including the supplied `taskId`. The\ntasks should be ordered such that each task supersedes all tasks appearing later in the\nlist.\n\nSee [superseding](https://docs.taskcluster.net/reference/platform/taskcluster-queue/docs/superseding) for more detail.\n\nSince: generic-worker 10.2.2",
+          "format": "uri",
+          "title": "Superseder URL",
+          "type": "string"
+        }
+      },
+      "required": [
+        "command",
+        "maxRunTime"
+      ],
+      "title": "Generic worker payload",
+      "type": "object"
+    },
+    "filename": "schemas/generic-worker/docker_posix.json"
+  },
+  {
+    "content": {
       "$id": "/schemas/common/values.schema.json#",
       "$schema": "http://json-schema.org/draft-06/schema#",
       "aditionalProperties": false,

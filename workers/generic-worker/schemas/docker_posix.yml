@@ -1,5 +1,5 @@
----
-"$schema": http://json-schema.org/draft-04/schema#
+$schema: "/schemas/common/metaschema.json#"
+$id: "/schemas/generic-worker/docker_posix.json#"
 title: Generic worker payload
 description: |-
   This schema defines the structure of the `payload` property referred to in a
@@ -14,9 +14,11 @@ properties:
     title: Commands to run
     type: array
     minItems: 1
+    uniqueItems: false
     items:
       type: array
       minItems: 1
+      uniqueItems: false
       items:
         type: string
     description: |-
@@ -71,6 +73,7 @@ properties:
       Artifacts to be published.
 
       Since: generic-worker 1.0.0
+    uniqueItems: true
     items:
       type: object
       title: Artifact
@@ -176,6 +179,7 @@ properties:
       Since: generic-worker 5.3.0
     type: object
     additionalProperties: false
+    required: []
     properties:
       chainOfTrust:
         type: boolean
@@ -202,6 +206,7 @@ properties:
       Directories and/or files to be mounted.
 
       Since: generic-worker 5.4.0
+    uniqueItems: false
     items:
       title: Mount
       "$ref": "#/definitions/mount"
@@ -214,6 +219,7 @@ properties:
       provided.
 
       Since: generic-worker 6.0.0
+    uniqueItems: false
     items:
       type: string
     maxItems: 0
@@ -240,6 +246,7 @@ properties:
       based on exit code of task commands.
     type: object
     additionalProperties: false
+    required: []
     properties:
       retry:
         title: Intermittent task exit codes
@@ -253,6 +260,7 @@ properties:
 
           Since: generic-worker 10.10.0
         type: array
+        uniqueItems: true
         items:
           title: Exit codes
           type: integer

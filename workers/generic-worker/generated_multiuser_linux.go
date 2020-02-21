@@ -396,7 +396,8 @@ type (
 // out.
 func taskPayloadSchema() string {
 	return `{
-  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$id": "/schemas/generic-worker/multiuser_posix.json#",
+  "$schema": "/schemas/common/metaschema.json#",
   "additionalProperties": false,
   "definitions": {
     "content": {
@@ -655,7 +656,8 @@ func taskPayloadSchema() string {
         "type": "object"
       },
       "title": "Artifacts to be published",
-      "type": "array"
+      "type": "array",
+      "uniqueItems": true
     },
     "command": {
       "description": "One array per command (each command is an array of arguments). Several arrays\nfor several commands.\n\nSince: generic-worker 0.0.1",
@@ -664,11 +666,13 @@ func taskPayloadSchema() string {
           "type": "string"
         },
         "minItems": 1,
-        "type": "array"
+        "type": "array",
+        "uniqueItems": false
       },
       "minItems": 1,
       "title": "Commands to run",
-      "type": "array"
+      "type": "array",
+      "uniqueItems": false
     },
     "env": {
       "additionalProperties": {
@@ -693,6 +697,7 @@ func taskPayloadSchema() string {
           "type": "boolean"
         }
       },
+      "required": [],
       "title": "Feature flags",
       "type": "object"
     },
@@ -710,7 +715,8 @@ func taskPayloadSchema() string {
         "$ref": "#/definitions/mount",
         "title": "Mount"
       },
-      "type": "array"
+      "type": "array",
+      "uniqueItems": false
     },
     "onExitStatus": {
       "additionalProperties": false,
@@ -724,9 +730,11 @@ func taskPayloadSchema() string {
             "type": "integer"
           },
           "title": "Intermittent task exit codes",
-          "type": "array"
+          "type": "array",
+          "uniqueItems": true
         }
       },
+      "required": [],
       "title": "Exit code handling",
       "type": "object"
     },
@@ -737,7 +745,8 @@ func taskPayloadSchema() string {
       },
       "maxItems": 0,
       "title": "OS Groups",
-      "type": "array"
+      "type": "array",
+      "uniqueItems": false
     },
     "supersederUrl": {
       "description": "URL of a service that can indicate tasks superseding this one; the current ` + "`" + `taskId` + "`" + `\nwill be appended as a query argument ` + "`" + `taskId` + "`" + `. The service should return an object with\na ` + "`" + `supersedes` + "`" + ` key containing a list of ` + "`" + `taskId` + "`" + `s, including the supplied ` + "`" + `taskId` + "`" + `. The\ntasks should be ordered such that each task supersedes all tasks appearing later in the\nlist.\n\nSee [superseding](https://docs.taskcluster.net/reference/platform/taskcluster-queue/docs/superseding) for more detail.\n\nSince: generic-worker 10.2.2",
