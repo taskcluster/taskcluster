@@ -183,7 +183,7 @@ errorConfig:
 
 in order to report your errors to a sentry project.
 
-### Setting up a taskcluster app in your Development Cluster
+### Setting up a Taskcluster Github app in your Development Cluster
 
 You will need:
 1. Development cluster up and running (see above)
@@ -194,7 +194,8 @@ To set up a taskcluster-github app:
 Press it to generate the private key.
 1. In your `dev-config.yml`, in the `github` section, add `github_private_pem` - you can copy-paste the contents of the 
 PEM file you have obtained in the previous step. Be careful to remove any newlines from the encrypted part,
-and the necessary newlines after the header and before the footer should be replaced with `\n`, so the whole thing is a string of one long line.
+and the necessary newlines after the header and before the footer should be replaced with `\n`, so the whole thing is a one-line string
+like this: `-----BEGIN RSA PRIVATE KEY-----\nMIIEpAIBAAKCAQEblahblahblah==\n-----END RSA PRIVATE KEY-----`
 2. Populate the `github_app_id` in the `dev-config.yml` (it's the numerical `App ID` you will find in the app settings, near the top of the General tab)
 3. If you have `webhook_secret` in your `dev-config.yml`, remove it.
 4. In the app settings, on that same General tab, find the Webhook URL field. Enter the api URL in there (should be something like
