@@ -4,9 +4,7 @@ const op = require('./entityops');
 const types = require('./entitytypes');
 const keys = require('./entitykeys');
 const {
-  DUPLICATE_TABLE,
   NUMERIC_VALUE_OUT_OF_RANGE,
-  UNDEFINED_TABLE,
   UNIQUE_VIOLATION,
 } = require('taskcluster-lib-postgres');
 const crypto = require('crypto');
@@ -31,7 +29,7 @@ const fixedTimeComparison = function(b1, b2) {
 
   const n = b1.length;
 
-  for (var i = 0; i < n; i++) {
+  for (let i = 0; i < n; i++) {
     mismatch |= b1[i] ^ b2[i];
   }
 
@@ -97,11 +95,6 @@ const encodeContinuationToken = token => {
 //
 // Okay, that's it for now, happy hacking...
 class Entity {
-  static op = op;
-  static keys = keys;
-  static types = types;
-  static continuationTokenPattern = CONTINUATION_TOKEN_PATTERN;
-
   constructor(entity, options = {}) {
     const {
       etag,
@@ -177,11 +170,11 @@ class Entity {
 
       assert(
         this._rowKey === this.constructor.__rowKey.exact(newProperties),
-        `You can't modify elements of the rowKey`
+        `You can't modify elements of the rowKey`,
       );
       assert(
         this._partitionKey === this.constructor.__partitionKey.exact(newProperties),
-        `You can't modify elements of the partitionKey`
+        `You can't modify elements of the partitionKey`,
       );
 
       try {
@@ -320,7 +313,7 @@ class Entity {
     return {
       partitionKey: this.__partitionKey.exact(properties),
       rowKey: this.__rowKey.exact(properties),
-    }
+    };
   }
 
   static serialize(properties) {
@@ -373,7 +366,6 @@ class Entity {
         throw e;
       }
 
-      // TODO: add a test for this
       if (err.code === NUMERIC_VALUE_OUT_OF_RANGE) {
         const e = new Error('Property too large');
         e.code = 'PropertyTooLarge';
@@ -529,7 +521,7 @@ class Entity {
           assert(typeof setupOptions.cryptoKey === 'string',
             'cryptoKey is required when a property is encrypted in any ' +
             'of the schema versions.');
-          const secret  = Buffer.from(setupOptions.cryptoKey, 'base64');
+          const secret = Buffer.from(setupOptions.cryptoKey, 'base64');
           assert(secret.length === 32, 'cryptoKey must be 32 bytes in base64');
           subClass.__cryptoKey = secret;
         } else {
@@ -543,7 +535,7 @@ class Entity {
             'one of the versions of the Entity versions');
           subClass.__signingKey = Buffer.from(setupOptions.signingKey, 'utf8');
         } else {
-          assert(!setupOptions.signingKey, 'Don\'t specify options.signingKey when '  +
+          assert(!setupOptions.signingKey, 'Don\'t specify options.signingKey when ' +
             'entities aren\'t signed!');
         }
 
@@ -600,9 +592,9 @@ class Entity {
       const keys = _.keys(ConfiguredEntity.mapping).sort();
 
       ConfiguredEntity.__sign = function(properties) {
-        const hash  = crypto.createHmac('sha512', this.__signingKey);
-        const buf   = Buffer.alloc(4);
-        const n     = keys.length;
+        const hash = crypto.createHmac('sha512', this.__signingKey);
+        const buf = Buffer.alloc(4);
+        const n = keys.length;
         for (let i = 0; i < n; i++) {
           const property = keys[i];
           const type = ConfiguredEntity.mapping[property];
@@ -630,10 +622,15 @@ class Entity {
 
     ConfiguredEntity.__partitionKey = configureOptions.partitionKey(ConfiguredEntity.mapping);
     ConfiguredEntity.__rowKey = configureOptions.rowKey(ConfiguredEntity.mapping);
-    // TODO: more configureOptions
+
     return ConfiguredEntity;
   }
 }
+
+Entity.op = op;
+Entity.keys = keys;
+Entity.types = types;
+Entity.continuationTokenPattern = CONTINUATION_TOKEN_PATTERN;
 
 module.exports = {
   Entity,

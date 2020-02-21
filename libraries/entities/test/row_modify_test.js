@@ -182,7 +182,5 @@ helper.dbSuite(path.basename(__filename), function() {
         assert(item.count === 3);
       });
     });
-
-    // TODO: 2 transactions that are running updates on the same row at the same time
   });
 });

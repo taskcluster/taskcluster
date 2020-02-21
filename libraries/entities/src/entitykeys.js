@@ -73,7 +73,6 @@ class DescendingIntegerKey {
 class AscendingIntegerKey {
   constructor(mapping, key) {
     assert(mapping[key], `key ${key} is not defined in mapping`);
-    // TODO: Add the second assertion (see azure-entities)
 
     this.key = key;
     this.type = mapping[key];

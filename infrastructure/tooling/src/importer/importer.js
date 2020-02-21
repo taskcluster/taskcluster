@@ -47,6 +47,10 @@ const importTable = async ({azureCreds, tableName, utils}) => {
     let results;
     try {
       results = await table.queryEntities(tableName, tableParams);
+      if (tableName === 'WMWorkerPools') {
+        console.log(results);
+        process.exit(1);
+      }
     } catch (err) {
       if (err.statusCode === 404) {
         utils.skip("no such table");

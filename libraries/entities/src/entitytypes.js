@@ -31,8 +31,8 @@ const checkSize = function(property, value, maxSize) {
 // Convert slugid to buffer
 const slugIdToBuffer = function(slug) {
   const base64 = slug
-      .replace(/-/g, '+')
-      .replace(/_/g, '/')
+    .replace(/-/g, '+')
+    .replace(/_/g, '/')
     + '==';
 
   return Buffer.from(base64, 'base64');
@@ -49,9 +49,8 @@ const bufferToSlugId = function(bufferView, entryIndex) {
 class BaseType {
   constructor(property) {
     this.property = property;
+    this.isEncrypted = false;
   }
-
-  isEncrypted = false;
 
   serialize(target, value, cryptoKey) {
     throw new Error('Not implemented');
@@ -141,13 +140,13 @@ class NumberType extends BaseValueType {
   string(value) {
     this.validate(value);
     return value.toString();
-  };
+  }
 }
 
 class PositiveIntegerType extends NumberType {
   validate(value) {
     checkType('PositiveIntegerType', this.property, value, 'number');
-    if (!isNaN(value) && value % 1  !== 0) {
+    if (!isNaN(value) && value % 1 !== 0) {
       throw new Error(`PositiveIntegerType ${this.property} expected an intger got a float or NaN`);
     }
 
@@ -176,7 +175,7 @@ class BaseBufferType extends BaseType {
     // We have one chunk per 64kb
     const chunks = Math.ceil(value.length / (64 * 1024));
     for (let i = 0; i < chunks; i++) {
-      const end   = Math.min((i + 1) * 64 * 1024, value.length);
+      const end = Math.min((i + 1) * 64 * 1024, value.length);
       const chunk = value.slice(i * 64 * 1024, end);
       target['__buf' + i + '_' + this.property] = chunk.toString('base64');
     }
@@ -296,7 +295,7 @@ class SlugIdArray {
   constructor() {
     this.buffer = Buffer.alloc(SLUGID_SIZE * 32);
     this.length = 0;
-    this.avail  = 32;
+    this.avail = 32;
   }
 
   toArray() {
@@ -316,7 +315,7 @@ class SlugIdArray {
     this.realloc();
     slugIdToBuffer(slug).copy(this.buffer, this.length * SLUGID_SIZE);
     this.length += 1;
-    this.avail  -= 1;
+    this.avail -= 1;
   }
 
   realloc() {
@@ -340,14 +339,14 @@ class SlugIdArray {
     // Shrink the buffer if it is less than 1/3 full
     if (this.avail > this.length * 2 && this.buffer.length > SLUGID_SIZE * 32) {
       this.buffer = Buffer.from(this.getBufferView());
-      this.avail  = 0;
+      this.avail = 0;
       return true;
     }
     return false;
   }
 
   indexOf(slug) {
-    const slugBuffer  = slugIdToBuffer(slug);
+    const slugBuffer = slugIdToBuffer(slug);
     let index = this.buffer.indexOf(slugBuffer);
 
     while (index !== -1 && index < this.length * SLUGID_SIZE) {
@@ -372,7 +371,7 @@ class SlugIdArray {
 
     this.buffer.copy(this.buffer, 0, SLUGID_SIZE);
 
-    this.avail  += 1;
+    this.avail += 1;
     this.length -= 1;
     this.realloc();
 
@@ -386,7 +385,7 @@ class SlugIdArray {
 
     const result = bufferToSlugId(this.buffer, this.length - 1);
 
-    this.avail  += 1;
+    this.avail += 1;
     this.length -= 1;
     this.realloc();
 
@@ -403,7 +402,7 @@ class SlugIdArray {
         index * SLUGID_SIZE,
         (index + 1) * SLUGID_SIZE,
       );
-      this.avail  += 1;
+      this.avail += 1;
       this.length -= 1;
       this.realloc();
       return true;
@@ -438,9 +437,9 @@ class SlugIdArray {
 
   clone() {
     const clone = new SlugIdArray();
-    clone.buffer  = Buffer.from(this.buffer);
-    clone.length  = this.length;
-    clone.avail   = this.avail;
+    clone.buffer = Buffer.from(this.buffer);
+    clone.length = this.length;
+    clone.avail = this.avail;
 
     return clone;
   }
@@ -461,9 +460,9 @@ class SlugIdArray {
   static fromBuffer(buffer) {
     const array = new SlugIdArray();
 
-    array.buffer  = buffer;
-    array.length  = buffer.length / SLUGID_SIZE;
-    array.avail   = 0;
+    array.buffer = buffer;
+    array.length = buffer.length / SLUGID_SIZE;
+    array.avail = 0;
 
     return array;
   }
@@ -502,7 +501,10 @@ class SlugIdArrayType extends BaseBufferType {
 }
 
 class EncryptedBaseType extends BaseBufferType {
-  isEncrypted = true;
+  constructor(property) {
+    super(property);
+    this.isEncrypted = true;
+  }
 
   toPlainBuffer(value) {
     throw new Error('Not implemented');
@@ -516,19 +518,19 @@ class EncryptedBaseType extends BaseBufferType {
     const plainBuffer = this.toPlainBuffer(value);
     // Need room for initialization vector and any padding
     checkSize(this.property, plainBuffer, 256 * 1024 - 32);
-    const iv          = crypto.randomBytes(16);
-    const cipher      = crypto.createCipheriv('aes-256-cbc', cryptoKey, iv);
-    const c1          = cipher.update(plainBuffer);
-    const c2          = cipher.final();
+    const iv = crypto.randomBytes(16);
+    const cipher = crypto.createCipheriv('aes-256-cbc', cryptoKey, iv);
+    const c1 = cipher.update(plainBuffer);
+    const c2 = cipher.final();
 
     return Buffer.concat([iv, c1, c2]);
   }
 
   fromBuffer(buffer, cryptoKey) {
-    const iv          = buffer.slice(0, 16);
-    const decipher    = crypto.createDecipheriv('aes-256-cbc', cryptoKey, iv);
-    const b1          = decipher.update(buffer.slice(16));
-    const b2          = decipher.final();
+    const iv = buffer.slice(0, 16);
+    const decipher = crypto.createDecipheriv('aes-256-cbc', cryptoKey, iv);
+    const b1 = decipher.update(buffer.slice(16));
+    const b2 = decipher.final();
 
     return this.fromPlainBuffer(Buffer.concat([b1, b2]));
   }
@@ -541,28 +543,28 @@ class EncryptedBaseType extends BaseBufferType {
 class EncryptedTextType extends EncryptedBaseType {
   validate (value) {
     checkType('EncryptedTextType', this.property, value, 'string');
-  };
+  }
 
   toPlainBuffer (value) {
     this.validate(value);
     return Buffer.from(value, 'utf8');
-  };
+  }
 
   fromPlainBuffer (value) {
     return value.toString('utf8');
-  };
+  }
 
   equal (value1, value2) {
     return value1 === value2;
-  };
+  }
 
   hash (value) {
     return value;
-  };
+  }
 
   clone (value) {
     return value;
-  };
+  }
 }
 
 class EncryptedJSONType extends EncryptedBaseType {
@@ -573,28 +575,28 @@ class EncryptedJSONType extends EncryptedBaseType {
       'object',
       'boolean',
     ]);
-  };
+  }
 
   toPlainBuffer(value) {
     this.validate(value);
     return Buffer.from(JSON.stringify(value), 'utf8');
-  };
+  }
 
   fromPlainBuffer(value) {
     return JSON.parse(value.toString('utf8'));
-  };
+  }
 
   equal(value1, value2) {
     return _.isEqual(value1, value2);
-  };
+  }
 
   hash (value) {
     return stringify(value);
-  };
+  }
 
   clone (value) {
     return _.cloneDeep(value);
-  };
+  }
 }
 
 class BlobType extends BaseBufferType {
@@ -689,11 +691,6 @@ class UUIDType extends BaseValueType {
     target[this.property] = value;
   }
 
-  filterCondition(op) {
-    this.validate(op.operand);
-    return this.property + ' ' + op.operator + ' ' + fmt.guid(op.operand);
-  }
-
   compare(entity, op) {
     throw new Error('Not implemented');
   }
@@ -764,7 +761,7 @@ module.exports = {
 
     /** Schema Entity type */
     class EncryptedSchemaEnforcedType extends EncryptedJSONType {
-      validate = function(value) {
+      validate(value) {
         if (validate(value)) {
           return;
         }
@@ -775,7 +772,7 @@ module.exports = {
         err.errors = validate.errors;
         err.value = value;
         throw err;
-      };
+      }
     }
 
     return EncryptedSchemaEnforcedType;
