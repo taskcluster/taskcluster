@@ -216,6 +216,7 @@ func (dt *DecisionTask) GenerateTasks() (*TaskGroup, error) {
 				"env": map[string]string{
 					"GITHUB_SHA":       os.Getenv("GITHUB_SHA"),
 					"GITHUB_CLONE_URL": os.Getenv("GITHUB_CLONE_URL"),
+					"NO_TEST_SKIP":     "true",
 				},
 			}
 			for k, v := range task.Env {

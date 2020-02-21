@@ -160,7 +160,9 @@ func FormatSourceAndSave(sourceFile string, sourceCode []byte) {
 	formattedContent = regexp.MustCompile(`(?:[ \t]*//\n)?[ \t]*// See http://127.0.0.1:.*\n`).ReplaceAll(formattedContent, []byte(""))
 
 	// goimports often gets confused about versions based on whatever it finds
-	// in GOPATH, so reset the TC version to the appropriate value
+	// in GOPATH, so reset the TC version to the appropriate value.  Note that
+	// the last argument here will be updated to the current version by `yarn
+	// release`, so this will always substitute the correct version.
 	formattedContent = regexp.MustCompile(`github.com/taskcluster/taskcluster/v[0-9]+/`).ReplaceAll(formattedContent, []byte("github.com/taskcluster/taskcluster/v25/"))
 
 	// only perform general format, if that worked...
