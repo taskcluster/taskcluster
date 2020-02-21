@@ -249,6 +249,7 @@ class Entity {
   }
 
   static _doCondition(conditions, options) {
+    const result = { partitionKey: null, rowKey: null, condition: null };
     const valueFromOperand = (type, operand) => {
       if (operand instanceof Date) {
         return `'${operand.toJSON()}'`;
@@ -258,7 +259,7 @@ class Entity {
     };
 
     if (!conditions) {
-      return null;
+      return result;
     }
 
     if (conditions) {
@@ -287,13 +288,13 @@ class Entity {
     }
 
     if (pk) {
-      condition.push(`partition_key = '${pk}'`);
       covered.push(...this.__partitionKey.covers);
+      result.partitionKey = pk;
     }
 
     if (rk) {
-      condition.push(`row_key = '${rk}'`);
       covered.push(...this.__rowKey.covers);
+      result.rowKey = rk;
     }
 
     Object.entries(conditions).forEach(([property, op]) => {
@@ -310,9 +311,9 @@ class Entity {
       }
     });
 
-    condition = condition.join(' and ');
+    result.condition = condition.join(' and ') || null;
 
-    return condition;
+    return result;
   }
 
   static calculateId(properties) {
@@ -467,8 +468,8 @@ class Entity {
 
     const fetchResults = async (continuation) => {
       const page = decodeContinuationToken(continuation);
-      const condition = this._doCondition(conditions, options);
-      const result = await this._db.fns[`${this._tableName}_scan`](condition, Math.min(limit, 1000), page);
+      const { partitionKey, rowKey, condition } = this._doCondition(conditions, options);
+      const result = await this._db.fns[`${this._tableName}_scan`](partitionKey, rowKey, condition, Math.min(limit, 1000), page);
       const entries = result.map(entry => (
         new this(entry.value, {
           etag: entry.etag,
