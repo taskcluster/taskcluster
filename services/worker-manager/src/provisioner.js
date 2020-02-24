@@ -118,13 +118,18 @@ class Provisioner {
       const providersByPool = new Map();
       const seen = worker => {
         const v = providersByPool.get(worker.workerPoolId);
+        const isRequested = worker.state === this.Worker.states.REQUESTED;
+        // compute the number of instances that have not yet called "registerWorker"
+        const requestedCapacity = isRequested ? worker.capacity : 0;
         if (v) {
           v.providers.add(worker.providerId);
-          v.capacity += worker.capacity;
+          v.existingCapacity += worker.capacity;
+          v.requestedCapacity += requestedCapacity;
         } else {
           providersByPool.set(worker.workerPoolId, {
             providers: new Set([worker.providerId]),
-            capacity: worker.capacity,
+            existingCapacity: worker.capacity,
+            requestedCapacity,
           });
         }
       };
@@ -158,10 +163,18 @@ class Provisioner {
           }
           poolsByProvider.get(providerId).add(workerPoolId);
 
-          const providerByPool = providersByPool.get(workerPoolId) || {providers: new Set(), capacity: 0};
+          const providerByPool = providersByPool.get(workerPoolId) || {
+            providers: new Set(),
+            existingCapacity: 0,
+            requestedCapacity: 0,
+          };
 
           try {
-            await provider.provision({workerPool, existingCapacity: providerByPool.capacity});
+            const workerInfo = {
+              existingCapacity: providerByPool.capacity,
+              requestedCapacity: providerByPool.requested,
+            };
+            await provider.provision({workerPool, workerInfo});
           } catch (err) {
             this.monitor.reportError(err, {providerId: workerPool.providerId}); // Just report this and move on
           }

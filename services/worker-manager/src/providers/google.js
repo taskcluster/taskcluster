@@ -191,7 +191,7 @@ class GoogleProvider extends Provider {
     }
   }
 
-  async provision({workerPool, existingCapacity}) {
+  async provision({workerPool, workerInfo}) {
     const {workerPoolId} = workerPool;
 
     if (!workerPool.providerData[this.providerId]) {
@@ -203,7 +203,7 @@ class GoogleProvider extends Provider {
     let toSpawn = await this.estimator.simple({
       workerPoolId,
       ...workerPool.config,
-      existingCapacity,
+      workerInfo,
     });
 
     if (toSpawn === 0) {

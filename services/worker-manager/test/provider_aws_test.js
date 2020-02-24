@@ -110,7 +110,11 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
 
     test('positive test', async function() {
       const now = Date.now();
-      await provider.provision({workerPool, existingCapacity: 0});
+      const workerInfo = {
+        existingCapacity: 0,
+        requestedCapacity: 0,
+      };
+      await provider.provision({workerPool, workerInfo});
       const workers = await helper.Worker.scan({}, {});
 
       assert.notStrictEqual(workers.entries.length, 0);
@@ -141,7 +145,11 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
           maxCapacity: 34,
         };
       });
-      await provider.provision({workerPool, existingCapacity: 0});
+      const workerInfo = {
+        existingCapacity: 0,
+        requestedCapacity: 0,
+      };
+      await provider.provision({workerPool, workerInfo});
       const workers = await helper.Worker.scan({}, {});
 
       // capacity 34 at 6 per instance should be 6 instances..
@@ -159,7 +167,11 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
         }
       });
 
-      await provider.provision({workerPool, existingCapacity: 0});
+      const workerInfo = {
+        existingCapacity: 0,
+        requestedCapacity: 0,
+      };
+      await provider.provision({workerPool, workerInfo});
       const workers = await helper.Worker.scan({}, {});
 
       assert.notStrictEqual(workers.entries.length, 0);
@@ -193,7 +205,11 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
         }
       });
 
-      await provider.provision({workerPool, existingCapacity: 0});
+      const workerInfo = {
+        existingCapacity: 0,
+        requestedCapacity: 0,
+      };
+      await provider.provision({workerPool, workerInfo});
       const workers = await helper.Worker.scan({}, {});
 
       assert.notStrictEqual(workers.entries.length, 0);
@@ -231,7 +247,11 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
         }
       });
 
-      await provider.provision({workerPool, existingCapacity: 0});
+      const workerInfo = {
+        existingCapacity: 0,
+        requestedCapacity: 0,
+      };
+      await provider.provision({workerPool, workerInfo});
       const workers = await helper.Worker.scan({}, {});
 
       assert.notStrictEqual(workers.entries.length, 0);
