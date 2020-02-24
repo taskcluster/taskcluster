@@ -1019,7 +1019,17 @@ agent-base@~4.2.1:
   dependencies:
     es6-promisify "^5.0.0"
 
-ajv@^6.10.0, ajv@^6.10.2, ajv@^6.5.5, ajv@^6.9.2:
+ajv@^6.10.0:
+  version "6.12.0"
+  resolved "https://registry.yarnpkg.com/ajv/-/ajv-6.12.0.tgz#06d60b96d87b8454a5adaba86e7854da629db4b7"
+  integrity sha512-D6gFiFA0RRLyUbvijN74DWAjXSFxWKaWP7mldxkVhyhAV3+SWA9HEJPHQ2c9soIeTFJqcSdFDGFgdqs1iUU2Hw==
+  dependencies:
+    fast-deep-equal "^3.1.1"
+    fast-json-stable-stringify "^2.0.0"
+    json-schema-traverse "^0.4.1"
+    uri-js "^4.2.2"
+
+ajv@^6.10.2, ajv@^6.5.5, ajv@^6.9.2:
   version "6.11.0"
   resolved "https://registry.yarnpkg.com/ajv/-/ajv-6.11.0.tgz#c3607cbc8ae392d8a5a536f25b21f8e5f3f87fe9"
   integrity sha512-nCprB/0syFYy9fVYU1ox1l2KN8S9I+tziH8D4zdZuLT3N6RMlGSGt5FSTpAiHB/Whv8Qs1cWHma1aMKZyaHRKA==
@@ -7196,7 +7206,7 @@ tar-stream@^2.0.0:
     readable-stream "^3.1.1"
 
 "taskcluster-client@link:clients/client":
-  version "25.2.0"
+  version "25.3.0"
   dependencies:
     "@hapi/hawk" "^7.1.2"
     debug "^4.1.1"
@@ -7206,34 +7216,34 @@ tar-stream@^2.0.0:
     taskcluster-lib-urls "^12.0.0"
 
 "taskcluster-lib-api@link:libraries/api":
-  version "25.2.0"
+  version "25.3.0"
 
 "taskcluster-lib-app@link:libraries/app":
-  version "25.2.0"
+  version "25.3.0"
 
 "taskcluster-lib-azure@link:libraries/azure":
-  version "25.2.0"
+  version "25.3.0"
 
 "taskcluster-lib-config@link:libraries/config":
-  version "25.2.0"
+  version "25.3.0"
 
 "taskcluster-lib-iterate@link:libraries/iterate":
-  version "25.2.0"
+  version "25.3.0"
 
 "taskcluster-lib-loader@link:libraries/loader":
-  version "25.2.0"
+  version "25.3.0"
 
 "taskcluster-lib-monitor@link:libraries/monitor":
-  version "25.2.0"
+  version "25.3.0"
 
 "taskcluster-lib-postgres@link:libraries/postgres":
-  version "25.2.0"
+  version "25.3.0"
 
 "taskcluster-lib-pulse@link:libraries/pulse":
-  version "25.2.0"
+  version "25.3.0"
 
 "taskcluster-lib-references@link:libraries/references":
-  version "25.2.0"
+  version "25.3.0"
 
 taskcluster-lib-scopes@^11.0.0:
   version "11.0.0"
@@ -7243,7 +7253,7 @@ taskcluster-lib-scopes@^11.0.0:
     fast-json-stable-stringify "^2.1.0"
 
 "taskcluster-lib-testing@link:libraries/testing":
-  version "25.2.0"
+  version "25.3.0"
 
 taskcluster-lib-urls@^12.0.0:
   version "12.0.0"
@@ -7251,7 +7261,7 @@ taskcluster-lib-urls@^12.0.0:
   integrity sha512-OrEFE0m3p/+mGsmIwjttLhSKg3io6MpJLhYtPNjVSZA9Ix8Y5tprN3vM6a3MjWt5asPF6AKZsfT43cgpGwJB0g==
 
 "taskcluster-lib-validate@link:libraries/validate":
-  version "25.2.0"
+  version "25.3.0"
 
 temporary@^1.0.0:
   version "1.0.1"
