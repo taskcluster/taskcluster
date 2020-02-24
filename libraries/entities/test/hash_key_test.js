@@ -26,6 +26,7 @@ helper.dbSuite(path.basename(__filename), function() {
     data: Entity.types.JSON,
   };
   const configuredTestTable = Entity.configure({
+    version: 1,
     partitionKey: Entity.keys.HashKey('id', 'data'),
     rowKey: Entity.keys.HashKey('text1', 'text2'),
     properties,

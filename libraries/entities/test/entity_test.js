@@ -29,6 +29,7 @@ helper.dbSuite(path.basename(__filename), function() {
     test('Entity.configure() can add a class-level method', async function() {
       db = await helper.withDb({ schema, serviceName });
       const configuredTestTable = Entity.configure({
+        version: 1,
         partitionKey: Entity.keys.StringKey('taskId'),
         rowKey: Entity.keys.StringKey('provisionerId'),
         properties,
@@ -54,6 +55,7 @@ helper.dbSuite(path.basename(__filename), function() {
       workerType: '567',
     };
     const configuredTestTable = Entity.configure({
+      version: 1,
       partitionKey: Entity.keys.StringKey('taskId'),
       rowKey: Entity.keys.StringKey('provisionerId'),
       properties,

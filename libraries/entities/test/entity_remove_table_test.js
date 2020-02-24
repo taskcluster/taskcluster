@@ -23,6 +23,7 @@ helper.dbSuite(path.basename(__filename), function() {
     workerType: Entity.types.String,
   };
   const configuredTestTable = Entity.configure({
+    version: 1,
     partitionKey: Entity.keys.StringKey('taskId'),
     rowKey: Entity.keys.StringKey('provisionerId'),
     properties,

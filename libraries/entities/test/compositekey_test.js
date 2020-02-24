@@ -26,6 +26,7 @@ helper.dbSuite(path.basename(__filename), function() {
     data: Entity.types.Number,
   };
   const configuredTestTable = Entity.configure({
+    version: 1,
     partitionKey: Entity.keys.CompositeKey('id', 'data'),
     rowKey: Entity.keys.CompositeKey('text1', 'text2'),
     properties,

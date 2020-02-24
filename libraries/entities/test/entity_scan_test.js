@@ -28,6 +28,7 @@ helper.dbSuite(path.basename(__filename), function() {
       expires: Entity.types.Date,
     };
     const configuredTestTable = Entity.configure({
+      version: 1,
       partitionKey: Entity.keys.StringKey('taskId'),
       rowKey: Entity.keys.StringKey('provisionerId'),
       properties,
@@ -168,6 +169,7 @@ helper.dbSuite(path.basename(__filename), function() {
       expires: Entity.types.Date,
     };
     const configuredTestTable = Entity.configure({
+      version: 1,
       partitionKey: Entity.keys.CompositeKey('id', 'data'),
       rowKey: Entity.keys.CompositeKey('text1', 'text2'),
       properties,

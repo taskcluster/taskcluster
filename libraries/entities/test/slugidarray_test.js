@@ -25,6 +25,7 @@ helper.dbSuite(path.basename(__filename), function() {
     data: Entity.types.SlugIdArray,
   };
   const configuredTestTable = Entity.configure({
+    version: 1,
     partitionKey: Entity.keys.StringKey('id'),
     rowKey: Entity.keys.StringKey('name'),
     properties,

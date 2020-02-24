@@ -28,6 +28,7 @@ helper.dbSuite(path.basename(__filename), function() {
     active: Entity.types.Boolean,
   };
   const configuredTestTable = Entity.configure({
+    version: 1,
     partitionKey: Entity.keys.StringKey('id'),
     rowKey: Entity.keys.StringKey('name'),
     properties,

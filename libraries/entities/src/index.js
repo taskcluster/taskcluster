@@ -620,8 +620,19 @@ class Entity {
       };
     }
 
-    ConfiguredEntity.__partitionKey = configureOptions.partitionKey(ConfiguredEntity.mapping);
-    ConfiguredEntity.__rowKey = configureOptions.rowKey(ConfiguredEntity.mapping);
+    // If version 1, then we save the partition/row-keys definitions
+    if (configureOptions.version === 1) {
+      assert(configureOptions.partitionKey, 'partitionKey is required in version 1');
+      assert(configureOptions.rowKey,       'rowKey is required in version 1');
+      ConfiguredEntity.__partitionKeyDefinition = configureOptions.partitionKey;
+      ConfiguredEntity.__rowKeyDefinition = configureOptions.rowKey;
+    } else {
+      assert(!configureOptions.partitionKey, 'You can\'t redefine the partitionKey');
+      assert(!configureOptions.rowKey,       'You can\'t redefine the rowKey');
+    }
+
+    ConfiguredEntity.__partitionKey = ConfiguredEntity.__partitionKeyDefinition(ConfiguredEntity.mapping);
+    ConfiguredEntity.__rowKey = ConfiguredEntity.__rowKeyDefinition(ConfiguredEntity.mapping);
 
     return ConfiguredEntity;
   }
