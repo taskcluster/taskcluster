@@ -632,6 +632,4 @@ Entity.keys = keys;
 Entity.types = types;
 Entity.continuationTokenPattern = CONTINUATION_TOKEN_PATTERN;
 
-module.exports = {
-  Entity,
-};
+module.exports = Entity;
