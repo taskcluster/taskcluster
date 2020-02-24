@@ -1,5 +1,4 @@
 const _ = require('lodash');
-const zlib = require('zlib');
 const glob = require('glob');
 const {REPO_ROOT, readRepoYAML} = require('../utils');
 const azure = require('fast-azure-storage');
@@ -23,9 +22,9 @@ const importer = async ({azureCreds}) => {
       requires: [],
       provides: [],
       run: async (requirements, utils) => {
-        const table = await importTable({azureCreds, tableName, utils});
+        const tableEntities = await importTable({azureCreds, tableName, utils});
 
-        await writeToPostgres(table);
+        await writeToPostgres(tableName, tableEntities, utils);
       },
     });
   }
@@ -34,11 +33,22 @@ const importer = async ({azureCreds}) => {
 };
 
 const importTable = async ({azureCreds, tableName, utils}) => {
-  const stream = new zlib.createGzip();
   const table = new azure.Table(azureCreds);
+  const entities = [];
 
-  const processEntities = entities => entities.map(
-    entity => stream.write(JSON.stringify(entity) + '\n'));
+  const processResult = results => {
+    const firstEntity = _.head(results.entities);
+    const azureKeys = firstEntity ? Object.keys(results.entities[0]).filter(key => key.includes('odata')) : [];
+    const filteredEntities = results.entities.map(
+      entity => {
+        azureKeys.forEach(key => delete entity[key]);
+
+        return entity;
+      },
+    );
+
+    entities.push(...filteredEntities);
+  };
 
   let count = 0;
   let nextUpdateCount = 1000;
@@ -47,10 +57,7 @@ const importTable = async ({azureCreds, tableName, utils}) => {
     let results;
     try {
       results = await table.queryEntities(tableName, tableParams);
-      if (tableName === 'WMWorkerPools') {
-        console.log(results);
-        process.exit(1);
-      }
+      processResult(results);
     } catch (err) {
       if (err.statusCode === 404) {
         utils.skip("no such table");
@@ -59,7 +66,6 @@ const importTable = async ({azureCreds, tableName, utils}) => {
       throw err;
     }
     tableParams = _.pick(results, ['nextPartitionKey', 'nextRowKey']);
-    processEntities(results.entities);
     count = count + results.entities.length;
     if (count > nextUpdateCount) {
       utils.status({
@@ -69,9 +75,7 @@ const importTable = async ({azureCreds, tableName, utils}) => {
     }
   } while (tableParams.nextPartitionKey && tableParams.nextRowKey);
 
-  stream.end();
-
-  return stream;
+  return entities;
 };
 
 module.exports = importer;
