@@ -3859,7 +3859,8 @@
             "email",
             "pulse",
             "irc-user",
-            "irc-channel"
+            "irc-channel",
+            "matrix-room"
           ],
           "type": "string"
         }
@@ -3900,6 +3901,39 @@
       "type": "object"
     },
     "filename": "schemas/notify/v1/notification-address-list.json"
+  },
+  {
+    "content": {
+      "$id": "/schemas/notify/v1/matrix-request.json#",
+      "$schema": "/schemas/common/metaschema.json#",
+      "additionalProperties": false,
+      "description": "Request to send a Matrix notice.",
+      "properties": {
+        "body": {
+          "description": "Unformatted text that will be displayed in the room if you do not\nspecify `formattedBody` or if a user's client can not render the format.\n",
+          "type": "string"
+        },
+        "format": {
+          "description": "The format for `formattedBody`. For instance, `org.matrix.custom.html`",
+          "type": "string"
+        },
+        "formattedBody": {
+          "description": "Text that will be rendered by matrix clients that support the given\nformat in that format. For instance, `<h1>Header Text</h1>`.\n",
+          "type": "string"
+        },
+        "roomId": {
+          "description": "The fully qualified room name, such as `!whDRjjSmICCgrhFHsQ:mozilla.org`\nIf you are using riot, you can find this under the advanced settings for a room.\n",
+          "type": "string"
+        }
+      },
+      "required": [
+        "roomId",
+        "body"
+      ],
+      "title": "Send Matrix Notice Request",
+      "type": "object"
+    },
+    "filename": "schemas/notify/v1/matrix-request.json"
   },
   {
     "content": {
@@ -6290,6 +6324,15 @@
               "type": "string"
             },
             "level": {
+              "type": "string"
+            },
+            "matrix_access_token": {
+              "type": "string"
+            },
+            "matrix_base_url": {
+              "type": "string"
+            },
+            "matrix_user_id": {
               "type": "string"
             },
             "procs": {
@@ -12511,6 +12554,40 @@
           "version": 1
         },
         {
+          "description": "A matrix message has been sent.",
+          "fields": {
+            "dest": "A user or room."
+          },
+          "level": "info",
+          "name": "matrix",
+          "title": "Matrix Message Sent",
+          "type": "matrix",
+          "version": 1
+        },
+        {
+          "description": "Log events from the matrix sdk. Contains arbitrary data from them.",
+          "fields": {
+            "level": "The level that matrix logged this at. We send all logs to debug no matter what.",
+            "message": "Arbitrary message from matrix sdk."
+          },
+          "level": "debug",
+          "name": "matrixSdkDebug",
+          "title": "Matrix SDK Debug",
+          "type": "matrix-sdk-debug",
+          "version": 1
+        },
+        {
+          "description": "We have been rejected from messaging a room. This is expected if the user\nhas not invited our client into the room yet but we log it as a notice to\nhelp debug confused users.",
+          "fields": {
+            "roomId": "The roomId that we were forbidden from."
+          },
+          "level": "notice",
+          "name": "matrixForbidden",
+          "title": "Matrix Forbidden",
+          "type": "matrix-forbidden",
+          "version": 1
+        },
+        {
           "description": "A timer and audit for express API endpoints.\nYou can combine this with auth audit logs to get\na complete picture of what was authorized when.\n\nHere, anything that is not public should have authenticated\nand if it authenticated, we will tell the clientId here. Given\nthat, it is not necessarily true that the endpoint was\n_authorized_. You can tell that by the statusCode.",
           "fields": {
             "apiVersion": "The version of the API (e.g., `v1`)",
@@ -12666,6 +12743,22 @@
           },
           "stability": "experimental",
           "title": "Post IRC Message",
+          "type": "function"
+        },
+        {
+          "args": [
+          ],
+          "category": "Notifications",
+          "description": "Post a message to a room in Matrix. Optionally includes formatted message.\n\nThe `roomId` in the scopes is a fully formed `roomId` with leading `!` such\nas `!foo:bar.com`.\n\nNote that the matrix client used by taskcluster must be invited to a room before\nit can post there!",
+          "input": "v1/matrix-request.json#",
+          "method": "post",
+          "name": "matrix",
+          "query": [
+          ],
+          "route": "/matrix",
+          "scopes": "notify:matrix-room:<roomId>",
+          "stability": "experimental",
+          "title": "Post Matrix Message",
           "type": "function"
         },
         {

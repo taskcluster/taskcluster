@@ -92,6 +92,13 @@
   },
   {
     "element": "h2",
+    "id": "matrix-support",
+    "path": "/manual/deploying",
+    "subtitle": "Matrix Support",
+    "title": "Deploying Taskcluster"
+  },
+  {
+    "element": "h2",
     "id": "testing-and-monitoring",
     "path": "/manual/deploying",
     "subtitle": "Testing and Monitoring",
@@ -243,6 +250,27 @@
     "path": "/manual/deploying/login-strategies",
     "subtitle": "Mozilla Auth0",
     "title": null
+  },
+  {
+    "element": "h1",
+    "id": "matrix-integration",
+    "path": "/manual/deploying/matrix",
+    "subtitle": null,
+    "title": "Matrix Integration"
+  },
+  {
+    "element": "h2",
+    "id": "client-setup",
+    "path": "/manual/deploying/matrix",
+    "subtitle": "Client Setup",
+    "title": "Matrix Integration"
+  },
+  {
+    "element": "h2",
+    "id": "taskcluster-configuration",
+    "path": "/manual/deploying/matrix",
+    "subtitle": "Taskcluster Configuration",
+    "title": "Matrix Integration"
   },
   {
     "element": "h2",

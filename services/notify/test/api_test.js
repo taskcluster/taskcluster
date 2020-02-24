@@ -2,11 +2,13 @@ const _ = require('lodash');
 const assert = require('assert');
 const helper = require('./helper');
 const testing = require('taskcluster-lib-testing');
+const monitorManager = require('../src/monitor');
 const {defaultMonitorManager} = require('taskcluster-lib-monitor');
 
 helper.secrets.mockSuite(testing.suiteName(), ['azure', 'aws'], function(mock, skipping) {
   helper.withEntities(mock, skipping);
   helper.withPulse(mock, skipping);
+  helper.withFakeMatrix(mock, skipping);
   helper.withSES(mock, skipping);
   helper.withServer(mock, skipping);
 
@@ -183,6 +185,39 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'aws'], function(mock, s
       return;
     }
     throw new Error('expected an error');
+  });
+
+  test('matrix', async function() {
+    await helper.apiClient.matrix({body: 'Does this work?', roomId: '!foobar:baz.com'});
+    assert.equal(helper.matrixClient.sendEvent.callCount, 1);
+    assert.equal(helper.matrixClient.sendEvent.args[0][0], '!foobar:baz.com');
+    assert(monitorManager.messages.find(m => m.Type === 'matrix'));
+    assert(monitorManager.messages.find(m => m.Type === 'matrix-forbidden') === undefined);
+  });
+
+  test('matrix (rejected)', async function() {
+    try {
+      await helper.apiClient.matrix({body: 'Does this work?', roomId: '!rejected:baz.com'});
+      throw new Error('should have failed');
+    } catch (err) {
+      if (err.code !== 'InputError') {
+        throw err;
+      }
+      assert.equal(helper.matrixClient.sendEvent.callCount, 1);
+      assert.equal(helper.matrixClient.sendEvent.args[0][0], '!rejected:baz.com');
+    }
+  });
+
+  test('matrix (denylisted)', async function() {
+    await helper.apiClient.addDenylistAddress({notificationType: 'matrix-room', notificationAddress: '!foo:baz.com'});
+    try {
+      await helper.apiClient.matrix({body: 'Does this work?', roomId: '!foo:baz.com'});
+      throw new Error('should have failed');
+    } catch (err) {
+      if (err.code !== 'DenylistedAddress') {
+        throw err;
+      }
+    }
   });
 
   test('Denylist: addDenylistAddress()', async function() {

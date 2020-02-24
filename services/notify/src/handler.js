@@ -74,13 +74,13 @@ class Handler {
     let groupHref = libUrls.ui(this.rootUrl, `groups/${taskId}/tasks`);
     let runCount = status.runs.length;
 
-    return Promise.all(message.routes.map(entry => {
+    await Promise.allSettled(message.routes.map(async entry => {
       let route = entry.split('.');
 
       // convert from on- syntax to state. e.g. on-exception -> exception
       let decider = _.join(_.slice(route[route.length - 1], 3), '');
       if (decider !== 'any' && status.state !== decider) {
-        return null;
+        return;
       }
 
       let ircMessage = `Task "${task.metadata.name}" complete with status '${status.state}'. Inspect: ${href}`;
@@ -88,24 +88,50 @@ class Handler {
       switch (route[1]) {
         case 'irc-user': {
           if (_.has(task, 'extra.notify.ircUserMessage')) {
-            ircMessage = this.renderMessage(task.extra.notify.ircUserMessage, {task, status});
+            ircMessage = this.renderMessage(task.extra.notify.ircUserMessage, {task, status, taskId});
           }
-          return this.notifier.irc({
+          return await this.notifier.irc({
             user: route[2],
             message: ircMessage,
           });
         }
         case 'irc-channel': {
           if (_.has(task, 'extra.notify.ircChannelMessage')) {
-            ircMessage = this.renderMessage(task.extra.notify.ircChannelMessage, {task, status});
+            ircMessage = this.renderMessage(task.extra.notify.ircChannelMessage, {task, status, taskId});
           }
-          return this.notifier.irc({
+          return await this.notifier.irc({
             channel: route[2],
             message: ircMessage,
           });
         }
+        case 'matrix-room': {
+          const roomId = route.slice(2, route.length - 1).join('.');
+          let body = `'${task.metadata.name}' resolved as '${status.state}': ${href}`;
+          let formattedBody = undefined;
+          let format = _.get(task, 'extra.notify.matrixFormat');
+          if (_.has(task, 'extra.notify.matrixBody')) {
+            body = this.renderMessage(task.extra.notify.matrixBody, {task, status, taskId});
+          }
+          if (_.has(task, 'extra.notify.matrixFormattedBody')) {
+            formattedBody = this.renderMessage(task.extra.notify.matrixFormattedBody, {task, status, taskId});
+          }
+          try {
+            return await this.notifier.matrix({
+              roomId,
+              format,
+              formattedBody,
+              body,
+            });
+          } catch (err) {
+            // This just means that we haven't been invited to the room yet
+            if (err.errcode === 'M_FORBIDDEN') {
+              return this.monitor.log.matrixForbidden({roomId});
+            }
+            throw err;
+          }
+        }
         case 'pulse': {
-          return this.notifier.pulse({
+          return await this.notifier.pulse({
             routingKey: _.join(_.slice(route, 2, route.length - 1), '.'),
             message: status,
           });
@@ -130,7 +156,7 @@ Task [\`${taskId}\`](${href}) in task-group [\`${task.taskGroupId}\`](${groupHre
             link = extra.link ? jsone(extra.link, {task, status}) : link;
             template = extra.template ? jsone(extra.template, {task, status}) : template;
           }
-          return this.notifier.email({
+          return await this.notifier.email({
             address: _.join(_.slice(route, 2, route.length - 1), '.'),
             content,
             subject,
