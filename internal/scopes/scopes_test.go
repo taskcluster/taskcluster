@@ -1,21 +1,15 @@
 package scopes
 
 import (
-	"os"
 	"testing"
 
 	"github.com/stretchr/testify/require"
 	"github.com/taskcluster/taskcluster/v25/clients/client-go/tcauth"
+	"github.com/taskcluster/taskcluster/v25/internal/testrooturl"
 )
 
 func authClient(t *testing.T) *tcauth.Auth {
-	rootURL := os.Getenv("TASKCLUSTER_ROOT_URL")
-	if rootURL == "" {
-		t.Skip("Set TASKCLUSTER_ROOT_URL to run tests")
-		return nil
-	}
-	// tests only call public APIs, so no auth needed and we can use mozilla production deployment
-	return tcauth.New(nil, rootURL)
+	return tcauth.New(nil, testrooturl.Get(t))
 }
 
 func accept(t *testing.T, given Given, required Required) {

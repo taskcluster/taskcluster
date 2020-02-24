@@ -14,7 +14,7 @@ import ChevronUpIcon from 'mdi-react/ChevronUpIcon';
 import { join } from 'path';
 import { DOCS_MENU_ITEMS, DOCS_PATH_PREFIX } from '../../utils/constants';
 import removeReadmeFromPath from '../../utils/removeReadmeFromPath';
-import docsTableOfContents from '../../../../generated/docs-table-of-contents';
+import docsTableOfContents from '../../../../generated/docs-table-of-contents.json';
 
 const getDocsSectionFromPathname = pathname => {
   if (!pathname) {

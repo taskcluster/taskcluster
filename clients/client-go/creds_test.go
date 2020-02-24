@@ -11,6 +11,7 @@ import (
 
 	tcclient "github.com/taskcluster/taskcluster/v25/clients/client-go"
 	"github.com/taskcluster/taskcluster/v25/clients/client-go/tcauth"
+	"github.com/taskcluster/taskcluster/v25/internal/testrooturl"
 )
 
 func ExampleCredentials_CreateTemporaryCredentials() {
@@ -72,11 +73,7 @@ func checkAuthenticate(t *testing.T, response *tcauth.TestAuthenticateResponse, 
 }
 
 func Test_PermaCred(t *testing.T) {
-	rootURL := os.Getenv("TASKCLUSTER_ROOT_URL")
-	if rootURL == "" {
-		t.Skip("Cannot run test, TASKCLUSTER_ROOT_URL is not set to a non-empty string")
-	}
-	client := tcauth.New(testCreds, rootURL)
+	client := tcauth.New(testCreds, testrooturl.Get(t))
 	response, err := client.TestAuthenticate(&tcauth.TestAuthenticateRequest{
 		ClientScopes:   []string{"scope:*"},
 		RequiredScopes: []string{"scope:this"},
@@ -86,16 +83,12 @@ func Test_PermaCred(t *testing.T) {
 }
 
 func Test_TempCred(t *testing.T) {
-	rootURL := os.Getenv("TASKCLUSTER_ROOT_URL")
-	if rootURL == "" {
-		t.Skip("Cannot run test, TASKCLUSTER_ROOT_URL is not set to a non-empty string")
-	}
 	tempCreds, err := testCreds.CreateTemporaryCredentials(1*time.Hour, "scope:1", "scope:2")
 	if err != nil {
 		t.Error(err)
 		return
 	}
-	client := tcauth.New(tempCreds, rootURL)
+	client := tcauth.New(tempCreds, testrooturl.Get(t))
 	response, err := client.TestAuthenticate(&tcauth.TestAuthenticateRequest{
 		ClientScopes:   []string{"scope:*"},
 		RequiredScopes: []string{"scope:1"},
@@ -105,17 +98,13 @@ func Test_TempCred(t *testing.T) {
 }
 
 func Test_NamedTempCred(t *testing.T) {
-	rootURL := os.Getenv("TASKCLUSTER_ROOT_URL")
-	if rootURL == "" {
-		t.Skip("Cannot run test, TASKCLUSTER_ROOT_URL is not set to a non-empty string")
-	}
 	tempCreds, err := testCreds.CreateNamedTemporaryCredentials("jimmy", 1*time.Hour,
 		"scope:1", "scope:2")
 	if err != nil {
 		t.Error(err)
 		return
 	}
-	client := tcauth.New(tempCreds, rootURL)
+	client := tcauth.New(tempCreds, testrooturl.Get(t))
 	response, err := client.TestAuthenticate(&tcauth.TestAuthenticateRequest{
 		ClientScopes:   []string{"scope:*", "auth:create-client:jimmy"},
 		RequiredScopes: []string{"scope:1"},
@@ -125,11 +114,7 @@ func Test_NamedTempCred(t *testing.T) {
 }
 
 func Test_PermaCred_Bewit(t *testing.T) {
-	rootURL := os.Getenv("TASKCLUSTER_ROOT_URL")
-	if rootURL == "" {
-		t.Skip("Cannot run test, TASKCLUSTER_ROOT_URL is not set to a non-empty string")
-	}
-	client := tcauth.New(testCreds, rootURL)
+	client := tcauth.New(testCreds, testrooturl.Get(t))
 	url, err := client.TestAuthenticateGet_SignedURL(15 * time.Minute)
 	if err != nil {
 		t.Error(err)
@@ -147,12 +132,8 @@ func Test_PermaCred_Bewit(t *testing.T) {
 }
 
 func Test_PermaCred_Bewit_SignedURL(t *testing.T) {
-	rootURL := os.Getenv("TASKCLUSTER_ROOT_URL")
-	if rootURL == "" {
-		t.Skip("Cannot run test, TASKCLUSTER_ROOT_URL is not set to a non-empty string")
-	}
 	client := tcclient.Client{Credentials: testCreds}
-	url, err := client.SignedURL(rootURL+"/api/auth/v1/test-authenticate-get/", url.Values{}, 15*time.Minute)
+	url, err := client.SignedURL(testrooturl.Get(t)+"/api/auth/v1/test-authenticate-get/", url.Values{}, 15*time.Minute)
 	if err != nil {
 		t.Error(err)
 		return
@@ -169,16 +150,12 @@ func Test_PermaCred_Bewit_SignedURL(t *testing.T) {
 }
 
 func Test_TempCred_Bewit(t *testing.T) {
-	rootURL := os.Getenv("TASKCLUSTER_ROOT_URL")
-	if rootURL == "" {
-		t.Skip("Cannot run test, TASKCLUSTER_ROOT_URL is not set to a non-empty string")
-	}
 	tempCreds, err := testCreds.CreateTemporaryCredentials(1*time.Hour, "test:authenticate-get")
 	if err != nil {
 		t.Error(err)
 		return
 	}
-	client := tcauth.New(tempCreds, rootURL)
+	client := tcauth.New(tempCreds, testrooturl.Get(t))
 	url, err := client.TestAuthenticateGet_SignedURL(15 * time.Minute)
 	if err != nil {
 		t.Error(err)
@@ -196,16 +173,12 @@ func Test_TempCred_Bewit(t *testing.T) {
 }
 
 func Test_TempCred_Bewit_WrongScope(t *testing.T) {
-	rootURL := os.Getenv("TASKCLUSTER_ROOT_URL")
-	if rootURL == "" {
-		t.Skip("Cannot run test, TASKCLUSTER_ROOT_URL is not set to a non-empty string")
-	}
 	tempCreds, err := testCreds.CreateTemporaryCredentials(1*time.Hour, "test:not-the-scope-you-need")
 	if err != nil {
 		t.Error(err)
 		return
 	}
-	client := tcauth.New(tempCreds, rootURL)
+	client := tcauth.New(tempCreds, testrooturl.Get(t))
 	url, err := client.TestAuthenticateGet_SignedURL(15 * time.Minute)
 	if err != nil {
 		t.Error(err)
@@ -223,14 +196,9 @@ func Test_TempCred_Bewit_WrongScope(t *testing.T) {
 }
 
 func Test_AuthScopes_Bewit(t *testing.T) {
-	rootURL := os.Getenv("TASKCLUSTER_ROOT_URL")
-	if rootURL == "" {
-		t.Skip("Cannot run test, TASKCLUSTER_ROOT_URL is not set to a non-empty string")
-	}
-
 	authCreds := *testCreds
 	authCreds.AuthorizedScopes = []string{"test:authenticate-get"}
-	client := tcauth.New(&authCreds, rootURL)
+	client := tcauth.New(&authCreds, testrooturl.Get(t))
 
 	url, err := client.TestAuthenticateGet_SignedURL(15 * time.Minute)
 	if err != nil {
@@ -283,13 +251,9 @@ func Test_TempCred_TooLong(t *testing.T) {
 }
 
 func Test_AuthorizedScopes(t *testing.T) {
-	rootURL := os.Getenv("TASKCLUSTER_ROOT_URL")
-	if rootURL == "" {
-		t.Skip("Cannot run test, TASKCLUSTER_ROOT_URL is not set to a non-empty string")
-	}
 	authCreds := *testCreds
 	authCreds.AuthorizedScopes = []string{"scope:1", "scope:3"}
-	client := tcauth.New(&authCreds, rootURL)
+	client := tcauth.New(&authCreds, testrooturl.Get(t))
 	response, err := client.TestAuthenticate(&tcauth.TestAuthenticateRequest{
 		ClientScopes:   []string{"scope:*"},
 		RequiredScopes: []string{"scope:1"},
@@ -299,17 +263,13 @@ func Test_AuthorizedScopes(t *testing.T) {
 }
 
 func Test_TempCredWithAuthorizedScopes(t *testing.T) {
-	rootURL := os.Getenv("TASKCLUSTER_ROOT_URL")
-	if rootURL == "" {
-		t.Skip("Cannot run test, TASKCLUSTER_ROOT_URL is not set to a non-empty string")
-	}
 	tempCreds, err := testCreds.CreateTemporaryCredentials(1*time.Hour, "scope:1", "scope:2")
 	if err != nil {
 		t.Error(err)
 		return
 	}
 	tempCreds.AuthorizedScopes = []string{"scope:1"}
-	client := tcauth.New(tempCreds, rootURL)
+	client := tcauth.New(tempCreds, testrooturl.Get(t))
 	response, err := client.TestAuthenticate(&tcauth.TestAuthenticateRequest{
 		ClientScopes:   []string{"scope:*"},
 		RequiredScopes: []string{"scope:1"},
@@ -319,10 +279,6 @@ func Test_TempCredWithAuthorizedScopes(t *testing.T) {
 }
 
 func Test_NamedTempCredWithAuthorizedScopes(t *testing.T) {
-	rootURL := os.Getenv("TASKCLUSTER_ROOT_URL")
-	if rootURL == "" {
-		t.Skip("Cannot run test, TASKCLUSTER_ROOT_URL is not set to a non-empty string")
-	}
 	tempCreds, err := testCreds.CreateNamedTemporaryCredentials("julie", 1*time.Hour,
 		"scope:1", "scope:2")
 	if err != nil {
@@ -330,7 +286,7 @@ func Test_NamedTempCredWithAuthorizedScopes(t *testing.T) {
 		return
 	}
 	tempCreds.AuthorizedScopes = []string{"scope:1"} // note: no create-client
-	client := tcauth.New(tempCreds, rootURL)
+	client := tcauth.New(tempCreds, testrooturl.Get(t))
 	response, err := client.TestAuthenticate(&tcauth.TestAuthenticateRequest{
 		ClientScopes:   []string{"scope:*", "auth:create-client:j*"},
 		RequiredScopes: []string{"scope:1"},
