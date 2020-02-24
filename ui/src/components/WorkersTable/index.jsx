@@ -21,9 +21,8 @@ const sorted = pipe(
   rSort((a, b) => sort(a.node.workerId, b.node.workerId)),
   map(
     ({ node: { workerId, latestTask } }) =>
-      `${workerId}.${latestTask ? latestTask.run.taskId : '-'}.${
-        latestTask ? latestTask.run.runId : '-'
-      }`
+      `${workerId}.${latestTask?.run?.taskId ?? '-'}.${latestTask?.run?.runId ??
+        '-'}`
   )
 );
 
@@ -96,10 +95,10 @@ export default class WorkersTable extends Component {
       'Worker Group': node.workerGroup,
       'Worker ID': node.workerId,
       'First Claim': node.firstClaim,
-      'Most Recent Task': node.latestTask && node.latestTask.run.taskId,
-      'Task State': node.latestTask && node.latestTask.run.state,
-      'Task Started': node.latestTask && node.latestTask.run.started,
-      'Task Resolved': node.latestTask && node.latestTask.run.resolved,
+      'Most Recent Task': node.latestTask?.run?.taskId,
+      'Task State': node.latestTask?.run?.state,
+      'Task Started': node.latestTask?.run?.started,
+      'Task Resolved': node.latestTask?.run?.resolved,
       Quarantined: node.quarantineUntil,
     };
 
@@ -157,7 +156,7 @@ export default class WorkersTable extends Component {
               text={<DateDistance from={firstClaim} />}
             />
             <TableCell>
-              {latestTask ? (
+              {latestTask?.run ? (
                 <Link
                   to={`/tasks/${latestTask.run.taskId}/runs/${latestTask.run.runId}`}>
                   <TableCellItem button>
@@ -170,13 +169,13 @@ export default class WorkersTable extends Component {
               )}
             </TableCell>
             <TableCell>
-              {latestTask ? (
+              {latestTask?.run ? (
                 <StatusLabel state={latestTask.run.state} />
               ) : (
                 <em>n/a</em>
               )}
             </TableCell>
-            {latestTask ? (
+            {latestTask?.run ? (
               <CopyToClipboardTableCell
                 tooltipTitle={latestTask.run.started}
                 textToCopy={latestTask.run.started}
@@ -185,7 +184,7 @@ export default class WorkersTable extends Component {
             ) : (
               <TableCell>n/a</TableCell>
             )}
-            {latestTask && latestTask.run.resolved ? (
+            {latestTask?.run?.resolved ? (
               <CopyToClipboardTableCell
                 tooltipTitle={latestTask.run.resolved}
                 textToCopy={latestTask.run.resolved}

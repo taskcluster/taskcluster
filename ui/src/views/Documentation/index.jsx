@@ -19,8 +19,8 @@ import ScrollToTop from '../../utils/ScrollToTop';
 import { DOCS_PATH_PREFIX, DOCS_MENU_ITEMS } from '../../utils/constants';
 import scrollToHash from '../../utils/scrollToHash';
 import removeReadmeFromPath from '../../utils/removeReadmeFromPath';
-import docsTableOfContents from '../../../../generated/docs-table-of-contents';
-import docsSearchOptions from '../../../../generated/docs-search';
+import docsTableOfContents from '../../../../generated/docs-table-of-contents.json';
+import docsSearchOptions from '../../../../generated/docs-search.json';
 import ErrorPanel from '../../components/ErrorPanel';
 import PageMeta from './PageMeta';
 
