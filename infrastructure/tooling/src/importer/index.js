@@ -14,8 +14,16 @@ const main = async () => {
     accountId: requireEnv('AZURE_ACCOUNT'),
     accessKey: requireEnv('AZURE_ACCOUNT_KEY'),
   };
-
-  const tasks = await importer({azureCreds});
+  const postgresCreds = {
+    readDbUrl: requireEnv('READ_DB_URL'),
+    writeDbUrl: requireEnv('WRITE_DB_URL'),
+  };
+  const tasks = await importer({
+    credentials: {
+      azure: azureCreds,
+      postgres: postgresCreds,
+    },
+  });
 
   const taskgraph = new TaskGraph(tasks, {
     locks: {

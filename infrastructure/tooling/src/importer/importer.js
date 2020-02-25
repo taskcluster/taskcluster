@@ -2,9 +2,12 @@ const _ = require('lodash');
 const glob = require('glob');
 const {REPO_ROOT, readRepoYAML} = require('../utils');
 const azure = require('fast-azure-storage');
+const tcdb = require('taskcluster-db');
 const writeToPostgres = require('./writeToPostgres');
 
-const importer = async ({azureCreds}) => {
+const importer = async options => {
+  const { credentials } = options;
+  const db = await tcdb.setup({ serviceName: 'importer', ...credentials.postgres });
   const tasks = [];
 
   let tables = [];
@@ -22,9 +25,9 @@ const importer = async ({azureCreds}) => {
       requires: [],
       provides: [],
       run: async (requirements, utils) => {
-        const tableEntities = await importTable({azureCreds, tableName, utils});
+        const tableEntities = await importTable({azureCreds: credentials.azure, tableName, utils});
 
-        await writeToPostgres(tableName, tableEntities, utils);
+        await writeToPostgres(tableName, tableEntities, db, utils);
       },
     });
   }
