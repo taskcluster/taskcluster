@@ -4,7 +4,6 @@ import { string } from 'prop-types';
 import Spinner from '@mozilla-frontend-infra/components/Spinner';
 import { withStyles } from '@material-ui/core/styles';
 import Table from 'material-ui-json-schema-viewer/build/SchemaViewer';
-import cloneDeep from 'lodash.clonedeep';
 import jsonSchemaDraft06 from 'ajv/lib/refs/json-schema-draft-06.json';
 import jsonSchemaDraft07 from 'ajv/lib/refs/json-schema-draft-07.json';
 import ErrorPanel from '../ErrorPanel';
@@ -96,12 +95,16 @@ export default class SchemaTable extends Component {
 
   state = {
     schema: null,
+    references: [],
     error: null,
   };
 
   async componentDidMount() {
     const { schema } = this.props;
 
+    /**
+     * Fetch schema content by $id and update state
+     */
     if (!this.state.schema && schema) {
       try {
         const schemaContent = await this.getSchemaContent(schema);
@@ -112,6 +115,19 @@ export default class SchemaTable extends Component {
       } catch (error) {
         this.setState({ error });
       }
+    }
+
+    /**
+     *
+     */
+    try {
+      const schemaReferences = await this.getSchemaReferences();
+
+      this.setState({
+        references: schemaReferences,
+      });
+    } catch (error) {
+      this.setState({ error });
     }
   }
 
@@ -131,9 +147,19 @@ export default class SchemaTable extends Component {
     return schema.content;
   }
 
+  async getSchemaReferences() {
+    const schemaReferences = references.map(schema => schema.content);
+
+    Object.values(EXTERNAL_SCHEMAS).forEach(schema => {
+      schemaReferences.push(schema);
+    });
+
+    return schemaReferences;
+  }
+
   render() {
-    const { classes, theme } = this.props;
-    const { error, schema } = this.state;
+    const { classes } = this.props;
+    const { error, schema, references } = this.state;
 
     if (error) {
       return <ErrorPanel error={error} />;
@@ -141,7 +167,7 @@ export default class SchemaTable extends Component {
 
     return schema ? (
       <div className={classes.schemaTable}>
-        <Table schema={schema} />
+        <Table schema={schema} references={references} />
       </div>
     ) : (
       <Spinner loading />
