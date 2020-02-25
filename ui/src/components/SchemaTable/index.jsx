@@ -1,10 +1,9 @@
 import React, { Component } from 'react';
 import { withRouter } from 'react-router-dom';
-import RefParser from 'json-schema-ref-parser';
 import { string } from 'prop-types';
 import Spinner from '@mozilla-frontend-infra/components/Spinner';
 import { withStyles } from '@material-ui/core/styles';
-import Table from 'react-schema-viewer/lib/SchemaTable';
+import Table from 'material-ui-json-schema-viewer';
 import cloneDeep from 'lodash.clonedeep';
 import jsonSchemaDraft06 from 'ajv/lib/refs/json-schema-draft-06.json';
 import jsonSchemaDraft07 from 'ajv/lib/refs/json-schema-draft-07.json';
@@ -92,7 +91,7 @@ const EXTERNAL_SCHEMAS = [jsonSchemaDraft06, jsonSchemaDraft07].reduce(
 export default class SchemaTable extends Component {
   static propTypes = {
     // The $id of the schema to render
-    schema: string.isRequired,
+    schemaId: string.isRequired,
   };
 
   state = {
@@ -101,11 +100,11 @@ export default class SchemaTable extends Component {
   };
 
   async componentDidMount() {
-    const { schema } = this.props;
+    const { schemaId } = this.props;
 
-    if (!this.state.schema && schema) {
+    if (!this.state.schema && schemaId) {
       try {
-        const schemaContent = await this.getSchemaContent(schema);
+        const schemaContent = await this.getSchemaContent(schemaId);
 
         this.setState({
           schema: schemaContent,
@@ -156,21 +155,6 @@ export default class SchemaTable extends Component {
       throw new Error(`Cannot find ${schemaPath}.`);
     }
 
-    await RefParser.dereference(schema.$id, schema, {
-      resolve: {
-        http: false,
-        file: false,
-        any: {
-          order: 1,
-          canRead: true,
-          read: file => this.readReference(file),
-        },
-      },
-      dereference: {
-        circular: 'ignore',
-      },
-    });
-
     return schema;
   }
 
@@ -186,7 +170,7 @@ export default class SchemaTable extends Component {
 
     return schema ? (
       <div className={classes.bootstrapTable}>
-        <Table headerBackgroundColor={headerBackground} schema={schema} />
+        <Table schema={schema} />
       </div>
     ) : (
       <Spinner loading />
