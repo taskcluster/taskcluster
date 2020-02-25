@@ -100,7 +100,11 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
 
   test('provisioning loop', async function() {
     const now = Date.now();
-    await provider.provision({workerPool, existingCapacity: 0});
+    const workerInfo = {
+      existingCapacity: 0,
+      requestedCapacity: 0,
+    };
+    await provider.provision({workerPool, workerInfo});
     const workers = await helper.Worker.scan({}, {});
     // Check that this is setting times correctly to within a second or so to allow for some time
     // for the provisioning loop
@@ -109,9 +113,13 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
   });
 
   test('provisioning loop with failure', async function() {
+    const workerInfo = {
+      existingCapacity: 0,
+      requestedCapacity: 0,
+    };
     // The fake throws an error on the second call
-    await provider.provision({workerPool, existingCapacity: 0});
-    await provider.provision({workerPool, existingCapacity: 0});
+    await provider.provision({workerPool, workerInfo});
+    await provider.provision({workerPool, workerInfo});
     const errors = await helper.WorkerPoolError.scan({}, {});
     assert.equal(errors.entries.length, 1);
     assert.equal(errors.entries[0].description, 'something went wrong');
@@ -120,10 +128,14 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
   });
 
   test('provisioning loop with rate limiting', async function() {
+    const workerInfo = {
+      existingCapacity: 0,
+      requestedCapacity: 0,
+    };
     // Notice this is only three loops, but instance insert fails on third try before succeeding on 4th
-    await provider.provision({workerPool, existingCapacity: 0});
-    await provider.provision({workerPool, existingCapacity: 0});
-    await provider.provision({workerPool, existingCapacity: 0});
+    await provider.provision({workerPool, workerInfo});
+    await provider.provision({workerPool, workerInfo});
+    await provider.provision({workerPool, workerInfo});
 
     const workers = await helper.Worker.scan({}, {});
     assert.equal(workers.entries.length, 2);
@@ -167,7 +179,11 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
   });
 
   test('worker-scan loop', async function() {
-    await provider.provision({workerPool, existingCapacity: 0});
+    const workerInfo = {
+      existingCapacity: 0,
+      requestedCapacity: 0,
+    };
+    await provider.provision({workerPool, workerInfo});
     const worker = await helper.Worker.load({
       workerPoolId: 'foo/bar',
       workerId: '123',

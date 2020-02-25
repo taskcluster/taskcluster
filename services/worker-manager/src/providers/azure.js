@@ -102,12 +102,12 @@ class AzureProvider extends Provider {
     this.networkClient = new NetworkManagementClient(credentials, subscriptionId);
   }
 
-  async provision({workerPool, existingCapacity}) {
+  async provision({workerPool, workerInfo}) {
     const {workerPoolId} = workerPool;
     let toSpawn = await this.estimator.simple({
       workerPoolId,
       ...workerPool.config,
-      existingCapacity,
+      workerInfo,
     });
 
     if (toSpawn === 0) {

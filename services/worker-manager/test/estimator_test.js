@@ -14,11 +14,15 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
   });
 
   test('empty estimation', async function() {
+    const workerInfo = {
+      existingCapacity: 0,
+      requestedCapacity: 0,
+    };
     const estimate = await estimator.simple({
       workerPoolId: 'foo/bar',
       maxCapacity: 0,
       minCapacity: 0,
-      existingCapacity: 0,
+      workerInfo,
     });
 
     assert.strictEqual(estimate, 0);
@@ -27,11 +31,15 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
   });
 
   test('single estimation', async function() {
+    const workerInfo = {
+      existingCapacity: 0,
+      requestedCapacity: 0,
+    };
     const estimate = await estimator.simple({
       workerPoolId: 'foo/bar',
       maxCapacity: 1,
       minCapacity: 1,
-      existingCapacity: 0,
+      workerInfo,
     });
 
     assert.strictEqual(estimate, 1);
@@ -40,11 +48,15 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
   });
 
   test('satisfied estimation', async function() {
+    const workerInfo = {
+      existingCapacity: 0,
+      requestedCapacity: 1,
+    };
     const estimate = await estimator.simple({
       workerPoolId: 'foo/bar',
       maxCapacity: 1,
       minCapacity: 1,
-      existingCapacity: 1,
+      workerInfo,
     });
 
     assert.strictEqual(estimate, 0);
@@ -53,11 +65,15 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
   });
 
   test('over-satisfied estimation', async function() {
+    const workerInfo = {
+      existingCapacity: 10,
+      requestedCapacity: 0,
+    };
     const estimate = await estimator.simple({
       workerPoolId: 'foo/bar',
       maxCapacity: 1,
       minCapacity: 1,
-      existingCapacity: 10,
+      workerInfo,
     });
 
     assert.strictEqual(estimate, 0);
