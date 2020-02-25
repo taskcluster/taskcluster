@@ -3,7 +3,7 @@ import { withRouter } from 'react-router-dom';
 import { string } from 'prop-types';
 import Spinner from '@mozilla-frontend-infra/components/Spinner';
 import { withStyles } from '@material-ui/core/styles';
-import Table from 'material-ui-json-schema-viewer';
+import Table from 'material-ui-json-schema-viewer/build/SchemaViewer';
 import cloneDeep from 'lodash.clonedeep';
 import jsonSchemaDraft06 from 'ajv/lib/refs/json-schema-draft-06.json';
 import jsonSchemaDraft07 from 'ajv/lib/refs/json-schema-draft-07.json';
@@ -91,7 +91,7 @@ const EXTERNAL_SCHEMAS = [jsonSchemaDraft06, jsonSchemaDraft07].reduce(
 export default class SchemaTable extends Component {
   static propTypes = {
     // The $id of the schema to render
-    schemaId: string.isRequired,
+    schema: string.isRequired,
   };
 
   state = {
@@ -100,11 +100,11 @@ export default class SchemaTable extends Component {
   };
 
   async componentDidMount() {
-    const { schemaId } = this.props;
+    const { schema } = this.props;
 
-    if (!this.state.schema && schemaId) {
+    if (!this.state.schema && schema) {
       try {
-        const schemaContent = await this.getSchemaContent(schemaId);
+        const schemaContent = await this.getSchemaContent(schema);
 
         this.setState({
           schema: schemaContent,
@@ -115,47 +115,20 @@ export default class SchemaTable extends Component {
     }
   }
 
-  readReference(file) {
-    const external = EXTERNAL_SCHEMAS[`${file.url}#`];
+  async getSchemaContent(schemaPath) {
+    const external = EXTERNAL_SCHEMAS[schemaPath];
 
     if (external) {
       return external;
     }
 
-    const { protocol, hostname, pathname } = new URL(file.url);
-
-    // since json-schema-ref-parser uses the window's location for relative
-    // URIs, only map those to our local schema list
-    if (
-      protocol !== window.location.protocol ||
-      hostname !== window.location.hostname
-    ) {
-      throw new Error(`External schema ${file.url} not available`);
-    }
-
-    const schemaId = `${pathname}#`;
-    const schema = references.find(({ content }) => content.$id === schemaId);
-
-    if (!schema) {
-      throw new Error(`Schema ${file.url} not found`);
-    }
-
-    return schema.content;
-  }
-
-  async getSchemaContent(schemaPath) {
-    // json-schema-ref-parser uses the window's location for relative URIs, so
-    // we adapt the path to match..
-    const fullSchemaPath = new URL(schemaPath, window.location.href);
-    const schema = cloneDeep(
-      this.readReference({ url: fullSchemaPath.toString() })
-    );
+    const schema = references.find(({ content }) => content.$id === schemaPath);
 
     if (!schema) {
       throw new Error(`Cannot find ${schemaPath}.`);
     }
 
-    return schema;
+    return schema.content;
   }
 
   render() {
