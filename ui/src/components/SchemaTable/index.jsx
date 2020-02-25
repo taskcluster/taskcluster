@@ -26,7 +26,7 @@ const EXTERNAL_SCHEMAS = [jsonSchemaDraft06, jsonSchemaDraft07].reduce(
         : THEME.TEN_PERCENT_BLACK;
 
     return {
-      bootstrapTable: {
+      schemaTable: {
         fontSize: 16,
         overflowX: 'auto',
         '& pre': {
@@ -134,15 +134,13 @@ export default class SchemaTable extends Component {
   render() {
     const { classes, theme } = this.props;
     const { error, schema } = this.state;
-    const headerBackground =
-      theme.palette.type === 'light' ? 'rgb(240,240,240)' : 'rgb(43,57,69)';
 
     if (error) {
       return <ErrorPanel error={error} />;
     }
 
     return schema ? (
-      <div className={classes.bootstrapTable}>
+      <div className={classes.schemaTable}>
         <Table schema={schema} />
       </div>
     ) : (
