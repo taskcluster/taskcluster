@@ -145,6 +145,7 @@ func (l *LiveLogTask) Stop(err *ExecutionErrors) {
 
 	if l.exposure != nil {
 		closeErr := l.exposure.Close()
+		l.exposure = nil
 		if closeErr != nil {
 			log.Printf("WARNING: could not terminate livelog exposure: %s", closeErr)
 		}
