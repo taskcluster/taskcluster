@@ -1,5 +1,4 @@
 const { EventEmitter } = require('events');
-const { spawn } = require('child_process');
 
 class ShutdownManager extends EventEmitter {
   constructor(host, config) {
@@ -36,7 +35,8 @@ class ShutdownManager extends EventEmitter {
 
     this.config.log('shutdown');
     this.config.logEvent({eventType: 'instanceShutdown'});
-    spawn('shutdown', ['-h', 'now']);
+    this.config.log('exit');
+    await this.host.shutdown();
   }
 
   onIdle() {

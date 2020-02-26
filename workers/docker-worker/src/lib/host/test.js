@@ -50,5 +50,8 @@ module.exports = {
     } catch (e) {
       return config;
     }
-  }
+  },
+  async shutdown() {
+    process.exit(0);
+  },
 };

@@ -112,4 +112,7 @@ module.exports = {
   billingCycleUptime() {
     return os.uptime();
   },
+  async shutdown() {
+    // do nothing
+  },
 };
