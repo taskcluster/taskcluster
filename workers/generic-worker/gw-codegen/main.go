@@ -8,6 +8,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
 
 	"golang.org/x/tools/imports"
@@ -121,11 +122,21 @@ func taskPayloadSchema() string {
 func formatSourceAndSave(sourceCode []byte, sourceFile string) error {
 	// first run goimports to clean up unused imports
 	fixedImports, err := imports.Process(sourceFile, sourceCode, nil)
-	var formattedContent []byte
+
+	// goimports often gets confused about versions based on whatever it finds
+	// in GOPATH, so reset the TC version to the appropriate value.  The version
+	// in the string below will be updated during `yarn release`
+	var fixedFixedImports []byte
+	if err == nil {
+		importFixer := regexp.MustCompile(`github.com/taskcluster/taskcluster/v[0-9]+/`)
+		fixedFixedImports = importFixer.ReplaceAll(fixedImports, []byte("github.com/taskcluster/taskcluster/v25/"))
+	}
+
 	// only perform general format, if that worked...
+	var formattedContent []byte
 	if err == nil {
 		// now run a standard system format
-		formattedContent, err = format.Source(fixedImports)
+		formattedContent, err = format.Source(fixedFixedImports)
 	}
 	// in case of formatting failure from either of the above formatting
 	// steps, let's keep the unformatted version so we can troubleshoot

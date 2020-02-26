@@ -51,6 +51,7 @@ exports.tasks.push({
   requires: [
     ...SERVICES.map(name => `refs-${name}`),
     'config-values-schema',
+    'generic-worker-schemas',
   ],
   provides: [
     'target-references',
@@ -65,6 +66,8 @@ exports.tasks.push({
     SERVICES.forEach(
       name => requirements[`refs-${name}`].forEach(
         ({filename, content}) => files.set(filename, content)));
+    requirements['generic-worker-schemas'].forEach(
+      ({filename, content}) => files.set(filename, content));
 
     // add config-values-schema, mostly so that it can be referenced in the manual
     files.set('schemas/common/values.schema.json', requirements['config-values-schema']);

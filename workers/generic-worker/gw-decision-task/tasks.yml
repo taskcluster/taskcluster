@@ -182,7 +182,6 @@ Commands:
           fi
           export CGO_ENABLED=0
           export GOROOT="$(pwd)/go1.13.7/go"
-          # set GOPATH so we can include in PATH so that `go generate` works which calls gw-codegen (and thus needs it in PATH)
           export GOPATH="$(pwd)/gopath1.13.7"
           export PATH="${GOPATH}/bin:${GOROOT}/bin:$(pwd)/bin:${PATH}"
           git --version
@@ -201,10 +200,7 @@ Commands:
           git clean -fdx
           git checkout -B tmp -t "X${TASK_ID}"
           go get -v -u github.com/taskcluster/livelog
-          cd workers/generic-worker/gw-codegen
-          go get -v
-          cd ..
-          go generate
+          cd workers/generic-worker
           # go.mod and go.sum will be affected by above go get commands, so
           # tidy them before checking for changes. Not needed in go 1.14:
           # https://github.com/golang/go/issues/30515#issuecomment-581984371
@@ -242,7 +238,6 @@ Commands:
       - set CGO_ENABLED=0
       - set GOROOT=%CD%\go1.13.7\go
       - |
-        :: set GOPATH so we can include in PATH so that `go generate` works which calls gw-codegen (and thus needs it in PATH)
         set GOPATH=%CD%\gopath1.13.7
       - |
         :: temporarily add C:\cygwin\bin to PATH - if this works out well, we should probably do it in system setup instead (i.e. in default system PATH of the image set)
@@ -262,10 +257,7 @@ Commands:
       - 'git clean -fdx'
       - 'git checkout -B tmp -t "X%TASK_ID%"'
       - go get -v -u github.com/taskcluster/livelog
-      - cd workers\generic-worker\gw-codegen
-      - go get -v
-      - cd ..
-      - go generate
+      - cd workers\generic-worker
       - |
         :: go.mod and go.sum will be affected by above go get commands, so
         :: tidy them before checking for changes. Not needed in go 1.14:

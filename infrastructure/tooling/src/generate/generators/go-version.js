@@ -1,3 +1,5 @@
+const util = require('util');
+const exec = util.promisify(require('child_process').execFile);
 const {readRepoFile, modifyRepoFile} = require('../../utils');
 
 /**
@@ -9,7 +11,22 @@ exports.tasks = [{
   provides: ['target-go-version'],
   run: async (requirements, utils) => {
     const goVersion = (await readRepoFile('.go-version')).trim();
-    utils.step({title: `Setting go version ${goVersion}`});
+    utils.step({title: 'Checking go version'});
+
+    const errmsg = `'yarn generate' requires ${goVersion}.  Consider using https://github.com/moovweb/gvm.`;
+    let version;
+    try {
+      version = (await exec('go', ['version'])).stdout.split(/\s+/)[2];
+    } catch (err) {
+      if (err.code === 'ENOENT') {
+        throw new Error(`Cannot find \`go\`.  ${errmsg}`);
+      }
+    }
+    if (version !== goVersion) {
+      throw new Error(`Found ${version}.  ${errmsg}`);
+    }
+
+    utils.step({title: `Setting go version ${goVersion} in source files`});
 
     utils.status({message: '.taskcluster.yml'});
     await modifyRepoFile('.taskcluster.yml',

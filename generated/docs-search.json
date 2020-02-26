@@ -1422,20 +1422,6 @@
   },
   {
     "element": "h1",
-    "id": "built-in-workers-service",
-    "path": "/reference/core/built-in-workers",
-    "subtitle": null,
-    "title": "Built-In Workers Service"
-  },
-  {
-    "element": "h2",
-    "id": "usage",
-    "path": "/reference/core/built-in-workers",
-    "subtitle": "Usage",
-    "title": "Built-In Workers Service"
-  },
-  {
-    "element": "h1",
     "id": "hooks-service",
     "path": "/reference/core/hooks",
     "subtitle": null,
@@ -2560,6 +2546,209 @@
     "path": "/reference/url-structure",
     "subtitle": "URLs",
     "title": "URL Structure"
+  },
+  {
+    "element": "h1",
+    "id": "built-in-workers-service",
+    "path": "/reference/workers/built-in-workers",
+    "subtitle": null,
+    "title": "Built-In Workers Service"
+  },
+  {
+    "element": "h2",
+    "id": "usage",
+    "path": "/reference/workers/built-in-workers",
+    "subtitle": "Usage",
+    "title": "Built-In Workers Service"
+  },
+  {
+    "element": "h1",
+    "id": "generic-worker",
+    "path": "/reference/workers/generic-worker",
+    "subtitle": null,
+    "title": "Generic Worker"
+  },
+  {
+    "element": "h2",
+    "id": "more-information",
+    "path": "/reference/workers/generic-worker",
+    "subtitle": "More Information",
+    "title": "Generic Worker"
+  },
+  {
+    "element": "h2",
+    "id": "payload-formats",
+    "path": "/reference/workers/generic-worker",
+    "subtitle": "Payload Formats",
+    "title": "Generic Worker"
+  },
+  {
+    "element": "h1",
+    "id": "engines",
+    "path": "/reference/workers/generic-worker/engines",
+    "subtitle": null,
+    "title": "Engines"
+  },
+  {
+    "element": "h2",
+    "id": "docker-engine",
+    "path": "/reference/workers/generic-worker/engines",
+    "subtitle": "Docker engine",
+    "title": "Engines"
+  },
+  {
+    "element": "h2",
+    "id": "multiuser-engine",
+    "path": "/reference/workers/generic-worker/engines",
+    "subtitle": "Multiuser engine",
+    "title": "Engines"
+  },
+  {
+    "element": "h2",
+    "id": "simple-engine",
+    "path": "/reference/workers/generic-worker/engines",
+    "subtitle": "Simple engine",
+    "title": "Engines"
+  },
+  {
+    "element": "h1",
+    "id": "features",
+    "path": "/reference/workers/generic-worker/features",
+    "subtitle": null,
+    "title": "Features"
+  },
+  {
+    "element": "h2",
+    "id": "feature-chainoftrust",
+    "path": "/reference/workers/generic-worker/features",
+    "subtitle": "Feature: `chainOfTrust`",
+    "title": "Features"
+  },
+  {
+    "element": "h2",
+    "id": "feature-taskclusterproxy",
+    "path": "/reference/workers/generic-worker/features",
+    "subtitle": "Feature: `taskclusterProxy`",
+    "title": "Features"
+  },
+  {
+    "element": "h4",
+    "id": "since-generic-worker-1060",
+    "path": "/reference/workers/generic-worker/features",
+    "subtitle": "Since: generic-worker 10.6.0",
+    "title": "Features"
+  },
+  {
+    "element": "h4",
+    "id": "since-generic-worker-1200",
+    "path": "/reference/workers/generic-worker/features",
+    "subtitle": "Since: generic-worker 12.0.0",
+    "title": "Features"
+  },
+  {
+    "element": "h4",
+    "id": "since-generic-worker-1300",
+    "path": "/reference/workers/generic-worker/features",
+    "subtitle": "Since: generic-worker 13.0.0",
+    "title": "Features"
+  },
+  {
+    "element": "h4",
+    "id": "since-generic-worker-530",
+    "path": "/reference/workers/generic-worker/features",
+    "subtitle": "Since: generic-worker 5.3.0",
+    "title": "Features"
+  },
+  {
+    "element": "h1",
+    "id": "installing-generic-worker",
+    "path": "/reference/workers/generic-worker/installing",
+    "subtitle": null,
+    "title": "Installing Generic-Worker"
+  },
+  {
+    "element": "h2",
+    "id": "acquire-taskcluster-credentials-for-running-tests",
+    "path": "/reference/workers/generic-worker/installing",
+    "subtitle": "Acquire taskcluster credentials for running tests",
+    "title": "Installing Generic-Worker"
+  },
+  {
+    "element": "h2",
+    "id": "build-from-source",
+    "path": "/reference/workers/generic-worker/installing",
+    "subtitle": "Build from source",
+    "title": "Installing Generic-Worker"
+  },
+  {
+    "element": "h2",
+    "id": "create-a-test-job",
+    "path": "/reference/workers/generic-worker/installing",
+    "subtitle": "Create a test job",
+    "title": "Installing Generic-Worker"
+  },
+  {
+    "element": "h2",
+    "id": "installation-on-worker-machines",
+    "path": "/reference/workers/generic-worker/installing",
+    "subtitle": "Installation on worker machines",
+    "title": "Installing Generic-Worker"
+  },
+  {
+    "element": "h3",
+    "id": "linux-simplemultiuserdocker-build",
+    "path": "/reference/workers/generic-worker/installing",
+    "subtitle": "Linux simple/multiuser/docker build",
+    "title": "Installing Generic-Worker"
+  },
+  {
+    "element": "h3",
+    "id": "macos---multiusersimple-build",
+    "path": "/reference/workers/generic-worker/installing",
+    "subtitle": "macOS - multiuser/simple build",
+    "title": "Installing Generic-Worker"
+  },
+  {
+    "element": "h2",
+    "id": "obtain-prebuilt-release",
+    "path": "/reference/workers/generic-worker/installing",
+    "subtitle": "Obtain prebuilt release",
+    "title": "Installing Generic-Worker"
+  },
+  {
+    "element": "h3",
+    "id": "option-1",
+    "path": "/reference/workers/generic-worker/installing",
+    "subtitle": "Option 1",
+    "title": "Installing Generic-Worker"
+  },
+  {
+    "element": "h3",
+    "id": "option-2",
+    "path": "/reference/workers/generic-worker/installing",
+    "subtitle": "Option 2",
+    "title": "Installing Generic-Worker"
+  },
+  {
+    "element": "h2",
+    "id": "set-up-your-env",
+    "path": "/reference/workers/generic-worker/installing",
+    "subtitle": "Set up your env",
+    "title": "Installing Generic-Worker"
+  },
+  {
+    "element": "h2",
+    "id": "start-the-generic-worker",
+    "path": "/reference/workers/generic-worker/installing",
+    "subtitle": "Start the generic worker",
+    "title": "Installing Generic-Worker"
+  },
+  {
+    "element": "h3",
+    "id": "windows---multiuser-build",
+    "path": "/reference/workers/generic-worker/installing",
+    "subtitle": "Windows - multiuser build",
+    "title": "Installing Generic-Worker"
   },
   {
     "element": "h1",
