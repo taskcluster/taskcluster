@@ -140,7 +140,7 @@ export default class ListNamespaces extends Component {
   };
 
   handleIndexPathSearchSubmit = () => {
-    this.props.history.replace(`/tasks/index/${this.state.indexPathInput}`);
+    this.props.history.push(`/tasks/index/${this.state.indexPathInput}`);
   };
 
   render() {
