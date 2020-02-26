@@ -364,12 +364,11 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
 
   suite('registerWorker', function() {
     const workerGroup = providerId;
-    const workerId = '5d06deb3-807b-46dd-aef5-78aaf9193f71';
-
+    const vmId = '5d06deb3-807b-46dd-aef5-78aaf9193f71';
     const defaultWorker = {
       workerPoolId,
       workerGroup,
-      workerId,
+      workerId: 'some-vm',
       providerId,
       created: taskcluster.fromNow('0 seconds'),
       lastModified: taskcluster.fromNow('0 seconds'),
@@ -379,6 +378,10 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
       state: 'requested',
       providerData: {
         ...baseProviderData,
+        vm: {
+          name: 'some-vm',
+          vmId: vmId,
+        },
       },
     };
 
@@ -477,19 +480,26 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
       assert(monitorManager.messages[0].Fields.error.includes('already running'));
     });
 
-    test('wrong instance ID', async function() {
+    test('wrong vmID', async function() {
       const worker = await helper.Worker.create({
         ...defaultWorker,
-        workerId: 'wrongeb3-807b-46dd-aef5-78aaf9193f71',
+        providerData: {
+          ...baseProviderData,
+          vm: {
+            name: baseProviderData.vm.name,
+            vmId: 'wrongeba3-807b-46dd-aef5-78aaf9193f71',
+          },
+        },
       });
       const document = fs.readFileSync(path.resolve(__dirname, 'fixtures/azure_signature_good')).toString();
       const workerIdentityProof = {document};
       await assert.rejects(() =>
         provider.registerWorker({workerPool, worker, workerIdentityProof}),
       /Signature validation error/);
-      assert(monitorManager.messages[0].Fields.message.includes('Encountered vmId mismatch'));
-      assert.equal(monitorManager.messages[0].Fields.vmId, workerId);
-      assert.equal(monitorManager.messages[0].Fields.workerId, 'wrongeb3-807b-46dd-aef5-78aaf9193f71');
+      assert(monitorManager.messages[0].Fields.message.includes('vmId mismatch'));
+      assert.equal(monitorManager.messages[0].Fields.vmId, vmId);
+      assert.equal(monitorManager.messages[0].Fields.expectedVmId, 'wrongeba3-807b-46dd-aef5-78aaf9193f71');
+      assert.equal(monitorManager.messages[0].Fields.workerId, 'some-vm');
     });
 
     test('sweet success', async function() {
@@ -507,9 +517,9 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
     test('sweet success (different reregister)', async function() {
       const worker = await helper.Worker.create({
         ...defaultWorker,
-        providerData: {
-          reregistrationTimeout: 10 * 3600 * 1000,
-        },
+      });
+      await worker.modify(w => {
+        w.providerData.reregistrationTimeout = 10 * 3600 * 1000;
       });
       const document = fs.readFileSync(path.resolve(__dirname, 'fixtures/azure_signature_good')).toString();
       const workerIdentityProof = {document};

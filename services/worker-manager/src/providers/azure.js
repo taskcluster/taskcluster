@@ -339,7 +339,13 @@ class AzureProvider extends Provider {
       assert(worker.providerData.vm.vmId);
       assert.equal(payload.vmId, worker.providerData.vm.vmId);
     } catch (err) {
-      this.monitor.log.registrationErrorWarning({message: `vmId mismatch: ${payload.vmId} !== ${worker.providerData.vm.vmId}`, error: err.toString(), vmId: payload.vmId, workerId: worker.workerId});
+      this.monitor.log.registrationErrorWarning({
+        message: 'vmId mismatch',
+        error: err.toString(),
+        vmId: payload.vmId,
+        expectedVmId: worker.providerData.vm.vmId,
+        workerId: worker.workerId,
+      });
       throw error();
     }
 
@@ -638,7 +644,7 @@ class AzureProvider extends Provider {
         await worker.workerPool.reportError({
           kind: 'creation-error',
           title: 'Encountered unknown VM provisioningState or powerStates',
-          description: `Unknown provisioningState ${provisioningState}`,
+          description: `Unknown provisioningState ${provisioningState} or powerStates: ${powerStates}`,
         });
       }
     } catch (err) {

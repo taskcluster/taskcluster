@@ -32,7 +32,7 @@ class FakeAzure {
 
     this.getNICStub = sinon.stub();
     // exists, should delete
-    this.getNICStub.returns({provisioningState: 'Deallocated'});
+    this.getNICStub.returns({provisioningState: 'Failed'});
 
     const createOrUpdateIPStub = sinon.stub();
     createOrUpdateIPStub.returns({
@@ -45,7 +45,7 @@ class FakeAzure {
     this.deleteIPStub.returns({});
 
     this.getIPStub = sinon.stub();
-    this.getIPStub.returns({provisioningState: 'Deallocated'});
+    this.getIPStub.returns({provisioningState: 'Failed'});
     return {
       networkInterfaces: {
         beginCreateOrUpdate: async () => createOrUpdateNICStub(),
@@ -94,24 +94,17 @@ class FakeAzure {
     const azureError = new Error("something went wrong");
 
     this.getVMStub = sinon.stub();
-    // first call returns provisioningState Creating, second returns Deallocated
+    // first call returns provisioningState Creating, second returns Failed
     this.getVMStub.onCall(0).returns({...instanceData, provisioningState: 'Succeeded'});
-    this.getVMStub.onCall(1).returns({...instanceData, provisioningState: 'Deallocated'});
+    this.getVMStub.onCall(1).returns({...instanceData, provisioningState: 'Failed'});
     this.getVMStub.onCall(2).throws(() => { return this.error(404); });
 
     const createOrUpdateVMStub = sinon.stub();
     createOrUpdateVMStub.onCall(0).returns(instanceData);
     createOrUpdateVMStub.onCall(1).throws(azureError);
 
-    const limitError = new Error("whatever");
-    limitError.code = 429;
-    createOrUpdateVMStub.onCall(2).throws(limitError);
-    createOrUpdateVMStub.onCall(3).returns({
-      id: '/subscriptions/subscription-id/resourceGroups/group-name/providers/Microsoft.Compute/virtualMachines/test-vm',
-      name: 'test-vm',
-      location: 'westus',
-      vmId: '456',
-    });
+    const instanceViewStub = sinon.stub();
+    instanceViewStub.returns({statuses: [{code: 'PowerState/running'}]});
 
     this.deleteVMStub = sinon.stub();
     this.deleteVMStub.returns({});
@@ -120,11 +113,12 @@ class FakeAzure {
     this.deleteDiskStub.returns({});
 
     this.getDiskStub = sinon.stub();
-    this.getDiskStub.returns({provisioningState: 'Deallocated'});
+    this.getDiskStub.returns({provisioningState: 'Failed'});
     return {
       virtualMachines: {
         beginCreateOrUpdate: async () => createOrUpdateVMStub(),
         get: async () => this.getVMStub(),
+        instanceView: async () => instanceViewStub(),
         beginDeleteMethod: async () => this.deleteVMStub(),
       },
       disks: {
