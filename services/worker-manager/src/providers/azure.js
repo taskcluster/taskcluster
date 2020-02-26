@@ -148,8 +148,9 @@ class AzureProvider extends Provider {
     // Create "empty" workers to provision in provisionResources loop
     await Promise.all(cfgs.map(async cfg => {
       // This must be unique to currently existing instances and match [a-z]([-a-z0-9]*[a-z0-9])?
+      // 38 chars is workerPoolId / workerId limit
       const poolName = workerPoolId.replace(/[\/_]/g, '-').slice(0, 38);
-      const virtualMachineName = `vm-${poolName}-${nicerId()}-${nicerId()}`.slice(0, 64);
+      const virtualMachineName = `vm-${poolName}-${nicerId()}-${nicerId()}`.slice(0, 38);
       // Windows computer name cannot be more than 15 characters long, be entirely numeric,
       // or contain the following characters: ` ~ ! @ # $ % ^ & * ( ) = + _ [ ] { } \\ | ; : . " , < > / ?
       const computerName = nicerId().slice(0, 15);
