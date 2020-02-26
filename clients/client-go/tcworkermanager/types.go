@@ -38,6 +38,7 @@ type (
 	// * `queue:worker-id:<workerGroup>/<workerId>`
 	// * `secrets:get:worker-pool:<workerPoolId>`
 	// * `queue:claim-work:<workerPoolId>`
+	// * `worker-manager:remove-worker:<workerPoolId>/<workerGroup>/<workerId>`
 	Credentials struct {
 		AccessToken string `json:"accessToken"`
 
@@ -122,6 +123,7 @@ type (
 		// * `queue:worker-id:<workerGroup>/<workerId>`
 		// * `secrets:get:worker-pool:<workerPoolId>`
 		// * `queue:claim-work:<workerPoolId>`
+		// * `worker-manager:remove-worker:<workerPoolId>/<workerGroup>/<workerId>`
 		Credentials Credentials `json:"credentials"`
 
 		// Time at which the included credentials will expire.  Workers must either

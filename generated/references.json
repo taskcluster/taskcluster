@@ -438,7 +438,7 @@
       "properties": {
         "credentials": {
           "additionalProperties": false,
-          "description": "The credentials the worker\nwill need to perform its work.  Specifically, credentials with scopes\n* `assume:worker-pool:<workerPoolId>`\n* `assume:worker-id:<workerGroup>/<workerId>`\n* `queue:worker-id:<workerGroup>/<workerId>`\n* `secrets:get:worker-pool:<workerPoolId>`\n* `queue:claim-work:<workerPoolId>`\n",
+          "description": "The credentials the worker\nwill need to perform its work.  Specifically, credentials with scopes\n* `assume:worker-pool:<workerPoolId>`\n* `assume:worker-id:<workerGroup>/<workerId>`\n* `queue:worker-id:<workerGroup>/<workerId>`\n* `secrets:get:worker-pool:<workerPoolId>`\n* `queue:claim-work:<workerPoolId>`\n* `worker-manager:remove-worker:<workerPoolId>/<workerGroup>/<workerId>`\n",
           "properties": {
             "accessToken": {
               "type": "string"
