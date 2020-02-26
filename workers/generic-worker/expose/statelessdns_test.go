@@ -114,7 +114,7 @@ func TestStatelessDNSExposePort(t *testing.T) {
 			return
 		}
 
-		io.Copy(stream, stream)
+		_, _ = io.Copy(stream, stream)
 		_ = stream.Close()
 	}()
 

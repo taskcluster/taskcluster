@@ -114,10 +114,7 @@ class AzureProvider extends Provider {
       return; // Nothing to do
     }
 
-    let registrationExpiry = null;
-    if ((workerPool.config.lifecycle || {}).registrationTimeout) {
-      registrationExpiry = Date.now() + workerPool.config.lifecycle.registrationTimeout * 1000;
-    }
+    const {terminateAfter, reregistrationTimeout} = Provider.interpretLifecycle(workerPool.config);
 
     const cfgs = [];
     while (toSpawn > 0) {
@@ -264,7 +261,8 @@ class AzureProvider extends Provider {
         capacity: cfg.capacityPerInstance,
         providerData: {
           ...providerData,
-          registrationExpiry,
+          terminateAfter,
+          reregistrationTimeout,
         },
       });
     }));
@@ -368,6 +366,11 @@ class AzureProvider extends Provider {
       throw error();
     }
 
+    let expires = taskcluster.fromNow('96 hours');
+    if (worker.providerData.reregistrationTimeout) {
+      expires = new Date(Date.now() + worker.providerData.reregistrationTimeout);
+    }
+
     this.monitor.log.workerRunning({
       workerPoolId: workerPool.workerPoolId,
       providerId: this.providerId,
@@ -376,10 +379,10 @@ class AzureProvider extends Provider {
     await worker.modify(w => {
       w.lastModified = new Date();
       w.state = this.Worker.states.RUNNING;
+      w.providerData.terminateAfter = expires.getTime();
     });
 
-    // assume for the moment that workers self-terminate before 96 hours
-    return {expires: taskcluster.fromNow('96 hours')};
+    return {expires};
   }
 
   async scanPrepare() {
@@ -389,11 +392,6 @@ class AzureProvider extends Provider {
   async checkWorker({worker}) {
     const states = this.Worker.states;
     this.seen[worker.workerPoolId] = this.seen[worker.workerPoolId] || 0;
-    if (worker.providerData.registrationExpiry &&
-      worker.state === states.REQUESTED &&
-      worker.providerData.registrationExpiry < Date.now()) {
-      return await this.removeWorker({worker});
-    }
 
     let state = worker.state;
     try {
@@ -412,6 +410,9 @@ class AzureProvider extends Provider {
           await worker.modify(w => {
             w.expires = taskcluster.fromNow('1 week');
           });
+        }
+        if (worker.providerData.terminateAfter && worker.providerData.terminateAfter < Date.now()) {
+          await this.removeWorker({worker});
         }
       } else if (['Failed', 'Canceled', 'Deleting', 'Deallocating', 'Stopped', 'Deallocated'].includes(provisioningState)) {
         await this.removeWorker({worker});

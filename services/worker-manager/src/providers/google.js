@@ -141,6 +141,11 @@ class GoogleProvider extends Provider {
       throw error();
     }
 
+    let expires = taskcluster.fromNow('96 hours');
+    if (worker.providerData.reregistrationTimeout) {
+      expires = new Date(Date.now() + worker.providerData.reregistrationTimeout);
+    }
+
     this.monitor.log.workerRunning({
       workerPoolId: workerPool.workerPoolId,
       providerId: this.providerId,
@@ -149,10 +154,11 @@ class GoogleProvider extends Provider {
     await worker.modify(w => {
       w.lastModified = new Date();
       w.state = this.Worker.states.RUNNING;
+      w.providerData.terminateAfter = expires.getTime();
     });
 
     // assume for the moment that workers self-terminate before 96 hours
-    return {expires: taskcluster.fromNow('96 hours')};
+    return {expires};
   }
 
   async deprovision({workerPool}) {
@@ -204,10 +210,7 @@ class GoogleProvider extends Provider {
       return; // Nothing to do
     }
 
-    let registrationExpiry = null;
-    if ((workerPool.config.lifecycle || {}).registrationTimeout) {
-      registrationExpiry = Date.now() + workerPool.config.lifecycle.registrationTimeout * 1000;
-    }
+    const {terminateAfter, reregistrationTimeout} = Provider.interpretLifecycle(workerPool.config);
 
     const cfgs = [];
     while (toSpawn > 0) {
@@ -319,7 +322,8 @@ class GoogleProvider extends Provider {
             name: op.name,
             zone: op.zone,
           },
-          registrationExpiry,
+          terminateAfter,
+          reregistrationTimeout, // Record this for later reregistrations so that we can recalculate deadline
         },
       });
     }));
@@ -342,12 +346,6 @@ class GoogleProvider extends Provider {
     this.seen[worker.workerPoolId] = this.seen[worker.workerPoolId] || 0;
     this.errors[worker.workerPoolId] = this.errors[worker.workerPoolId] || [];
 
-    if (worker.providerData.registrationExpiry &&
-      worker.state === states.REQUESTED &&
-      worker.providerData.registrationExpiry < Date.now()) {
-      return await this.removeWorker({worker});
-    }
-
     let state = worker.state;
     try {
       const {data} = await this._enqueue('get', () => this.compute.instances.get({
@@ -367,6 +365,9 @@ class GoogleProvider extends Provider {
           await worker.modify(w => {
             w.expires = taskcluster.fromNow('1 week');
           });
+        }
+        if (worker.providerData.terminateAfter && worker.providerData.terminateAfter < Date.now()) {
+          await this.removeWorker({worker});
         }
       } else if (['TERMINATED', 'STOPPED'].includes(status)) {
         await this._enqueue('query', () => this.compute.instances.delete({

@@ -6,8 +6,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/taskcluster/taskcluster/v24/clients/client-go/tcqueue"
-	"github.com/taskcluster/taskcluster/v24/workers/generic-worker/process"
+	"github.com/taskcluster/taskcluster/v25/clients/client-go/tcqueue"
+	"github.com/taskcluster/taskcluster/v25/workers/generic-worker/process"
 )
 
 type (
@@ -42,13 +42,6 @@ type (
 		// be useful for the user. Normally this map would get appended to by
 		// features when they are started.
 		featureArtifacts map[string]string
-	}
-
-	S3ArtifactResponse struct {
-		StorageType string    `json:"storageType"`
-		PutURL      string    `json:"putUrl"`
-		Expires     time.Time `json:"expires"`
-		ContentType string    `json:"contentType"`
 	}
 
 	TaskStatus       string

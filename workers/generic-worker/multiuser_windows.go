@@ -14,11 +14,11 @@ import (
 	"strings"
 	"syscall"
 
-	"github.com/taskcluster/taskcluster/v24/workers/generic-worker/host"
-	"github.com/taskcluster/taskcluster/v24/workers/generic-worker/process"
-	"github.com/taskcluster/taskcluster/v24/workers/generic-worker/runtime"
-	gwruntime "github.com/taskcluster/taskcluster/v24/workers/generic-worker/runtime"
-	"github.com/taskcluster/taskcluster/v24/workers/generic-worker/win32"
+	"github.com/taskcluster/taskcluster/v25/workers/generic-worker/host"
+	"github.com/taskcluster/taskcluster/v25/workers/generic-worker/process"
+	"github.com/taskcluster/taskcluster/v25/workers/generic-worker/runtime"
+	gwruntime "github.com/taskcluster/taskcluster/v25/workers/generic-worker/runtime"
+	"github.com/taskcluster/taskcluster/v25/workers/generic-worker/win32"
 	"golang.org/x/sys/windows"
 	"golang.org/x/sys/windows/registry"
 )
@@ -221,7 +221,7 @@ func install(arguments map[string]interface{}) (err error) {
 		nssm := convertNilToEmptyString(arguments["--nssm"])
 		serviceName := convertNilToEmptyString(arguments["--service-name"])
 		extraOpts := ""
-		for k, _ := range arguments {
+		for k := range arguments {
 			if strings.HasPrefix(k, "--configure-for-") {
 				extraOpts += " " + k
 			}
@@ -555,4 +555,11 @@ func PreRebootSetup(nextTaskUser *runtime.OSUser) {
 
 func MkdirAllTaskUser(dir string, perms os.FileMode) (err error) {
 	return os.MkdirAll(dir, perms)
+}
+
+func convertNilToEmptyString(val interface{}) string {
+	if val == nil {
+		return ""
+	}
+	return val.(string)
 }

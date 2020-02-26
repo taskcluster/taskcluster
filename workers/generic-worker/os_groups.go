@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/taskcluster/taskcluster-base-go/scopes"
+	"github.com/taskcluster/taskcluster/v25/internal/scopes"
 )
 
 // one instance overall - represents feature
@@ -44,7 +44,7 @@ func (osGroups *OSGroups) ReservedArtifacts() []string {
 }
 
 func (osGroups *OSGroups) RequiredScopes() scopes.Required {
-	requiredScopes := make([]string, len(osGroups.Task.Payload.OSGroups), len(osGroups.Task.Payload.OSGroups))
+	requiredScopes := make([]string, len(osGroups.Task.Payload.OSGroups))
 	for i, osGroup := range osGroups.Task.Payload.OSGroups {
 		requiredScopes[i] = "generic-worker:os-group:" + config.ProvisionerID + "/" + config.WorkerType + "/" + osGroup
 	}

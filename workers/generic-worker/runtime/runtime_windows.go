@@ -3,11 +3,13 @@ package runtime
 import (
 	"fmt"
 	"log"
+	"os/user"
 	"strings"
+	"syscall"
 	"time"
 
-	"github.com/taskcluster/taskcluster/v24/workers/generic-worker/host"
-	"github.com/taskcluster/taskcluster/v24/workers/generic-worker/win32"
+	"github.com/taskcluster/taskcluster/v25/workers/generic-worker/host"
+	"github.com/taskcluster/taskcluster/v25/workers/generic-worker/win32"
 	"golang.org/x/sys/windows/registry"
 )
 
@@ -51,7 +53,32 @@ func (user *OSUser) MakeAdmin() error {
 }
 
 func DeleteUser(username string) (err error) {
-	return host.Run("net", "user", username, "/delete")
+	var u *user.User
+	u, err = user.Lookup(username)
+	if err == nil {
+		var userSID *uint16
+		userSID, err = syscall.UTF16PtrFromString(u.Uid)
+		if err == nil {
+			err = win32.DeleteProfile(userSID, nil, nil)
+			if err == nil {
+				log.Printf("Successfully deleted profile for user %v (SID %v)", username, u.Uid)
+			} else {
+				log.Printf("WARNING: not able to delete profile for user %v (SID %v): %v", username, u.Uid, err)
+			}
+		} else {
+			log.Printf("WARNING: not able to convert SID %v to UTF16 pointer so could not delete user profile for %v: %v", u.Uid, username, err)
+		}
+	} else {
+		log.Printf("WARNING: not able to look up SID for user %v: %v", username, err)
+	}
+	err2 := host.Run("net", "user", username, "/delete")
+	if err2 != nil {
+		log.Printf("WARNING: not able to delete user account %v: %v", username, err2)
+		if err == nil {
+			err = err2
+		}
+	}
+	return
 }
 
 func ListUserAccounts() (usernames []string, err error) {

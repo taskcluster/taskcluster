@@ -26,16 +26,16 @@ import (
 
 	docopt "github.com/docopt/docopt-go"
 	sysinfo "github.com/elastic/go-sysinfo"
-	"github.com/taskcluster/taskcluster-base-go/scopes"
-	"github.com/taskcluster/taskcluster-worker-runner/protocol"
-	tcclient "github.com/taskcluster/taskcluster/v24/clients/client-go"
-	"github.com/taskcluster/taskcluster/v24/clients/client-go/tcqueue"
-	"github.com/taskcluster/taskcluster/v24/workers/generic-worker/expose"
-	"github.com/taskcluster/taskcluster/v24/workers/generic-worker/fileutil"
-	"github.com/taskcluster/taskcluster/v24/workers/generic-worker/gwconfig"
-	"github.com/taskcluster/taskcluster/v24/workers/generic-worker/host"
-	"github.com/taskcluster/taskcluster/v24/workers/generic-worker/process"
-	gwruntime "github.com/taskcluster/taskcluster/v24/workers/generic-worker/runtime"
+	tcclient "github.com/taskcluster/taskcluster/v25/clients/client-go"
+	"github.com/taskcluster/taskcluster/v25/clients/client-go/tcqueue"
+	"github.com/taskcluster/taskcluster/v25/internal/scopes"
+	"github.com/taskcluster/taskcluster/v25/tools/taskcluster-worker-runner/protocol"
+	"github.com/taskcluster/taskcluster/v25/workers/generic-worker/expose"
+	"github.com/taskcluster/taskcluster/v25/workers/generic-worker/fileutil"
+	"github.com/taskcluster/taskcluster/v25/workers/generic-worker/gwconfig"
+	"github.com/taskcluster/taskcluster/v25/workers/generic-worker/host"
+	"github.com/taskcluster/taskcluster/v25/workers/generic-worker/process"
+	gwruntime "github.com/taskcluster/taskcluster/v25/workers/generic-worker/runtime"
 	"github.com/xeipuuv/gojsonschema"
 )
 
@@ -66,13 +66,13 @@ var (
 	// taskcluster-worker-runner.  This is initialized early in the
 	// `generic-worker run` process and can be used by any component after that
 	// time.
-	workerRunnerTransport *protocol.StdioTransport
+	workerRunnerTransport protocol.Transport
 	WorkerRunnerProtocol  *protocol.Protocol
 
 	logName = "public/logs/live_backing.log"
 	logPath = filepath.Join("generic-worker", "live_backing.log")
 
-	version  = "16.6.1"
+	version  = "25.3.0"
 	revision = "" // this is set during build with `-ldflags "-X main.revision=$(git rev-parse HEAD)"`
 )
 
@@ -115,9 +115,9 @@ func init() {
 func main() {
 	versionName := "generic-worker (" + engine + " engine) " + version
 	if revision != "" {
-		versionName += " [ revision: https://github.com/taskcluster/generic-worker/commits/" + revision + " ]"
+		versionName += " [ revision: https://github.com/taskcluster/taskcluster/commits/" + revision + " ]"
 	}
-	arguments, err := docopt.Parse(usage(versionName), nil, true, versionName, false, true)
+	arguments, err := docopt.ParseArgs(usage(versionName), nil, versionName)
 	if err != nil {
 		log.Println("Error parsing command line arguments!")
 		panic(err)
@@ -132,19 +132,22 @@ func main() {
 		configureForGCP = arguments["--configure-for-gcp"].(bool)
 		configureForAzure = arguments["--configure-for-azure"].(bool)
 
-		// redirect stdio to the protocol pipe, if given; eventually this will
-		// include worker-runner protocol traffic, but for the moment it simply
-		// provides a way to channel generic-worker logging to worker-runner
-		if protocolPipe, ok := arguments["--worker-runner-protocol-pipe"].(string); ok && protocolPipe != "" {
-			f, err := os.OpenFile(protocolPipe, os.O_RDWR, 0)
-			exitOnError(CANT_CONNECT_PROTOCOL_PIPE, err, "Cannot connect to %s: %s", protocolPipe, err)
+		withWorkerRunner := arguments["--with-worker-runner"].(bool)
+		if withWorkerRunner {
+			// redirect stdio to the protocol pipe, if given; eventually this will
+			// include worker-runner protocol traffic, but for the moment it simply
+			// provides a way to channel generic-worker logging to worker-runner
+			if protocolPipe, ok := arguments["--worker-runner-protocol-pipe"].(string); ok && protocolPipe != "" {
+				f, err := os.OpenFile(protocolPipe, os.O_RDWR, 0)
+				exitOnError(CANT_CONNECT_PROTOCOL_PIPE, err, "Cannot connect to %s: %s", protocolPipe, err)
 
-			os.Stdin = f
-			os.Stdout = f
-			os.Stderr = f
+				os.Stdin = f
+				os.Stdout = f
+				os.Stderr = f
+			}
 		}
 
-		initializeWorkerRunnerProtocol(os.Stdin, os.Stdout)
+		initializeWorkerRunnerProtocol(os.Stdin, os.Stdout, withWorkerRunner)
 
 		configFileAbs, err := filepath.Abs(arguments["--config"].(string))
 		exitOnError(CANT_LOAD_CONFIG, err, "Cannot determine absolute path location for generic-worker config file '%v'", arguments["--config"])
@@ -233,14 +236,27 @@ func main() {
 	}
 }
 
-func initializeWorkerRunnerProtocol(input io.Reader, output io.Writer) {
-	workerRunnerTransport = protocol.NewStdioTransport()
-
-	go io.Copy(workerRunnerTransport, input)
-	go io.Copy(output, workerRunnerTransport)
+func initializeWorkerRunnerProtocol(input io.Reader, output io.Writer, withWorkerRunner bool) {
+	if withWorkerRunner {
+		transp := protocol.NewStdioTransport()
+		go func() {
+			_, _ = io.Copy(transp, input)
+		}()
+		go func() {
+			_, _ = io.Copy(output, transp)
+		}()
+		workerRunnerTransport = transp
+	} else {
+		workerRunnerTransport = protocol.NewNullTransport()
+	}
 
 	WorkerRunnerProtocol = protocol.NewProtocol(workerRunnerTransport)
 	WorkerRunnerProtocol.Start(true)
+
+	// when not using worker-runner, consider the protocol initialized with no capabilities
+	if !withWorkerRunner {
+		WorkerRunnerProtocol.SetInitialized()
+	}
 }
 
 func loadConfig(configFile *gwconfig.File, provider Provider) (gwconfig.Provider, error) {
@@ -308,13 +324,13 @@ func loadConfig(configFile *gwconfig.File, provider Provider) (gwconfig.Provider
 		"go-arch":    runtime.GOARCH,
 		"go-os":      runtime.GOOS,
 		"go-version": runtime.Version(),
-		"release":    "https://github.com/taskcluster/generic-worker/releases/tag/v" + version,
+		"release":    "https://github.com/taskcluster/taskcluster/releases/tag/v" + version,
 		"version":    version,
 		"engine":     engine,
 	}
 	if revision != "" {
 		gwMetadata["revision"] = revision
-		gwMetadata["source"] = "https://github.com/taskcluster/generic-worker/commits/" + revision
+		gwMetadata["source"] = "https://github.com/taskcluster/taskcluster/commits/" + revision
 	}
 	config.WorkerTypeMetadata["generic-worker"] = gwMetadata
 	return configProvider, nil
@@ -559,7 +575,7 @@ func RunWorker() (exitCode ExitCode) {
 			if config.IdleTimeoutSecs > 0 {
 				remainingIdleTimeText = fmt.Sprintf(" (will exit if no task claimed in %v)", time.Second*time.Duration(config.IdleTimeoutSecs)-idleTime)
 				if idleTime.Seconds() > float64(config.IdleTimeoutSecs) {
-					purgeOldTasks()
+					_ = purgeOldTasks()
 					log.Printf("Worker idle for idleShutdownTimeoutSecs seconds (%v)", idleTime)
 					return IDLE_TIMEOUT
 				}
@@ -800,7 +816,7 @@ func (task *TaskRun) Log(prefix, message string) {
 	defer task.logMux.RUnlock()
 	if task.logWriter != nil {
 		for _, line := range strings.Split(message, "\n") {
-			task.logWriter.Write([]byte(prefix + line + "\n"))
+			_, _ = task.logWriter.Write([]byte(prefix + line + "\n"))
 		}
 	} else {
 		log.Print("Unloggable task log message (no task log writer): " + message)
@@ -870,7 +886,7 @@ func (e *ExecutionErrors) Error() string {
 	if !e.Occurred() {
 		return ""
 	}
-	lines := make([]string, len(*e), len(*e))
+	lines := make([]string, len(*e))
 	for i, err := range *e {
 		lines[i] = err.Error()
 	}
@@ -1123,7 +1139,7 @@ func (task *TaskRun) Run() (err *ExecutionErrors) {
 	// additional retries left.
 	if configureForAWS {
 		stopHandlingWorkerShutdown := handleWorkerShutdown(func() {
-			task.StatusManager.Abort(
+			_ = task.StatusManager.Abort(
 				&CommandExecutionError{
 					Cause:      fmt.Errorf("AWS has issued a spot termination - need to abort task"),
 					Reason:     workerShutdown,
@@ -1180,13 +1196,6 @@ func (task *TaskRun) closeLog(logHandle io.WriteCloser) {
 	if err != nil {
 		panic(err)
 	}
-}
-
-func convertNilToEmptyString(val interface{}) string {
-	if val == nil {
-		return ""
-	}
-	return val.(string)
 }
 
 func PrepareTaskEnvironment() (reboot bool) {

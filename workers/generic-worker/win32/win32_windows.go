@@ -49,6 +49,8 @@ var (
 	procGetCurrentThreadId           = kernel32.NewProc("GetCurrentThreadId")
 	procGetThreadDesktop             = user32.NewProc("GetThreadDesktop")
 	procGetUserObjectInformationW    = user32.NewProc("GetUserObjectInformationW")
+	procDeleteProfileW               = userenv.NewProc("DeleteProfileW")
+	procGetDiskFreeSpaceExW          = kernel32.NewProc("GetDiskFreeSpaceExW")
 
 	FOLDERID_LocalAppData   = syscall.GUID{Data1: 0xF1B32785, Data2: 0x6FBA, Data3: 0x4FCF, Data4: [8]byte{0x9D, 0x55, 0x7B, 0x8E, 0x7F, 0x15, 0x70, 0x91}}
 	FOLDERID_RoamingAppData = syscall.GUID{Data1: 0x3EB685DB, Data2: 0x65F9, Data3: 0x4CF6, Data4: [8]byte{0xA0, 0x3A, 0xE3, 0xEF, 0x65, 0x72, 0x9F, 0x3D}}
@@ -272,7 +274,12 @@ func CreateEnvironment(env *[]string, hUser syscall.Token) (mergedEnv *[]string,
 	if err != nil {
 		return
 	}
-	defer DestroyEnvironmentBlock(logonEnv)
+	defer func(logonEnv *uint16) {
+		err2 := DestroyEnvironmentBlock(logonEnv)
+		if err == nil {
+			err = err2
+		}
+	}(logonEnv)
 	envList := &[]string{}
 	u16 := (*[1 << 15]uint16)(unsafe.Pointer(logonEnv))
 	start := 0
@@ -325,7 +332,7 @@ func SHSetKnownFolderPath(
 // https://msdn.microsoft.com/en-us/library/windows/desktop/ms680722(v=vs.85).aspx
 // Note: the system call returns no value, so we can't check for an error
 func CoTaskMemFree(pv *uint16) {
-	procCoTaskMemFree.Call(uintptr(unsafe.Pointer(pv)))
+	_, _, _ = procCoTaskMemFree.Call(uintptr(unsafe.Pointer(pv)))
 }
 
 func GetFolder(hUser syscall.Token, folder *syscall.GUID, dwFlags uint32) (value string, err error) {
@@ -462,7 +469,7 @@ func ProfileDirectory(hToken syscall.Token) (string, error) {
 	n := uint32(100)
 	for {
 		b := make([]uint16, n)
-		GetUserProfileDirectory(hToken, nil, &n)
+		_ = GetUserProfileDirectory(hToken, nil, &n)
 		e := GetUserProfileDirectory(hToken, &b[0], &n)
 		if e == nil {
 			return syscall.UTF16ToString(b), nil
@@ -746,7 +753,7 @@ func DumpTokenInfo(token syscall.Token) {
 	if err != nil {
 		panic(err)
 	}
-	groups := make([]windows.SIDAndAttributes, tokenGroups.GroupCount, tokenGroups.GroupCount)
+	groups := make([]windows.SIDAndAttributes, tokenGroups.GroupCount)
 	for i := uint32(0); i < tokenGroups.GroupCount; i++ {
 		groups[i] = *(*windows.SIDAndAttributes)(unsafe.Pointer(uintptr(unsafe.Pointer(&tokenGroups.Groups[0])) + uintptr(i)*unsafe.Sizeof(tokenGroups.Groups[0])))
 		groupSid := groups[i].Sid.String()
@@ -759,4 +766,51 @@ func DumpTokenInfo(token syscall.Token) {
 	}
 
 	log.Print("==================================================")
+}
+
+// https://docs.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-getdiskfreespaceexw
+// BOOL GetDiskFreeSpaceExW(
+//   LPCWSTR         lpDirectoryName,
+//   PULARGE_INTEGER lpFreeBytesAvailableToCaller,
+//   PULARGE_INTEGER lpTotalNumberOfBytes,
+//   PULARGE_INTEGER lpTotalNumberOfFreeBytes
+// );
+func GetDiskFreeSpace(
+	lpDirectoryName *uint16,
+	lpFreeBytesAvailableToCaller *uint64,
+	lpTotalNumberOfBytes *uint64,
+	lpTotalNumberOfFreeBytes *uint64,
+) (err error) {
+	r1, _, e1 := procGetDiskFreeSpaceExW.Call(
+		uintptr(unsafe.Pointer(lpDirectoryName)),
+		uintptr(unsafe.Pointer(lpFreeBytesAvailableToCaller)),
+		uintptr(unsafe.Pointer(lpTotalNumberOfBytes)),
+		uintptr(unsafe.Pointer(lpTotalNumberOfFreeBytes)),
+	)
+	if r1 == 0 {
+		err = os.NewSyscallError("GetDiskFreeSpaceExW", e1)
+	}
+	return
+}
+
+// https://docs.microsoft.com/en-us/windows/win32/api/userenv/nf-userenv-deleteprofilew
+// USERENVAPI BOOL DeleteProfileW(
+//   LPCWSTR lpSidString,
+//   LPCWSTR lpProfilePath,
+//   LPCWSTR lpComputerName
+// );
+func DeleteProfile(
+	lpSidString *uint16,
+	lpProfilePath *uint16,
+	lpComputerName *uint16,
+) (err error) {
+	r1, _, e1 := procDeleteProfileW.Call(
+		uintptr(unsafe.Pointer(lpSidString)),
+		uintptr(unsafe.Pointer(lpProfilePath)),
+		uintptr(unsafe.Pointer(lpComputerName)),
+	)
+	if r1 == 0 {
+		err = os.NewSyscallError("DeleteProfileW", e1)
+	}
+	return
 }

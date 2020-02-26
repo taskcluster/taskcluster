@@ -27,7 +27,14 @@ tasks:
             then: ${event.head_commit.message[7:]}
             else: ''
           else: ''
+
         owner: taskcluster-internal@mozilla.com
+
+        # a push to a branch with prefix `staging-release/` on the main repo will trigger a staging release
+        stagingRelease: 
+          $if: 'tasks_for == "github-push"'
+          then: {$eval: 'event.ref[:27] == "refs/heads/staging-release/"'}
+          else: false
 
         # This only supports pushes and pull requests for now.
         # If we start responding to another action type, make this
@@ -65,7 +72,6 @@ tasks:
             yarn workspace taskcluster-lib-pulse coverage:report
           artifacts: {$eval: artifactsDir}
         - name: taskcluster-lib-references
-        - name: taskcluster-lib-scopes
         - name: taskcluster-lib-testing
         - name: taskcluster-lib-config
         - name: taskcluster-lib-validate
@@ -154,21 +160,44 @@ tasks:
               /sandbox/bin/pip install tox
           command: >-
               TOXENV=py37 /sandbox/bin/tox
+        - name: internal-go-libraries-${go.release}
+          image: 'golang:${go.release}'
+          install: >-
+              cd internal
+          command: >-
+              curl -sfL https://install.goreleaser.com/github.com/golangci/golangci-lint.sh | sh -s -- -b $GOPATH/bin v1.23.6 &&
+              golangci-lint run && go test -v -race ./...
         - name: taskcluster-client-go-${go.release}
           image: 'golang:${go.release}'
           install: >-
               cd clients/client-go
           command: >-
-              go test -v -race ./...
+              curl -sfL https://install.goreleaser.com/github.com/golangci/golangci-lint.sh | sh -s -- -b $GOPATH/bin v1.23.6 &&
+              golangci-lint run && go test -v -race ./...
         - name: taskcluster-client-shell-${go.release}
           image: 'golang:${go.release}'
           install: >-
               cd clients/client-shell
           command: >-
-              go test -v -race ./...
+              curl -sfL https://install.goreleaser.com/github.com/golangci/golangci-lint.sh | sh -s -- -b $GOPATH/bin v1.23.6 &&
+              golangci-lint run && go test -v -race ./...
+        - name: tools-${go.release}
+          image: 'golang:${go.release}'
+          install: >-
+              cd tools
+          command: >-
+              curl -sfL https://install.goreleaser.com/github.com/golangci/golangci-lint.sh | sh -s -- -b $GOPATH/bin v1.23.6 &&
+              golangci-lint run && go test -v -race ./... &&
+              cd taskcluster-worker-runner &&
+              go run util/update-readme.go &&
+              if ! output=$(git status --porcelain) || [ -n "$output" ]; then
+                echo "*** 'go run util/update-readme.go' produced changes to the repository; these changes should be checked in ***";
+                git --no-pager diff;
+                exit 1;
+              fi
         - name: check for invalid go pseudo-versions
           # see https://github.com/taskcluster/taskcluster/issues/1492
-          image: 'golang:1.13.1'
+          image: 'golang:${go.release}'
           install: ":"
           command: >-
               (cd clients/client-go && go list -m all) &&
@@ -328,23 +357,22 @@ tasks:
                   - |
                     export CGO_ENABLED=0
                     export GOROOT="$(pwd)/go${go.release}/go"
-                    export GOPATH="$(pwd)/gopath${go.release}"
                     export PATH="$${GOPATH}/bin:$${GOROOT}/bin:$${PATH}"
                     go version
                     go env
-                    mkdir -p "$${GOPATH}/src/github.com/taskcluster"
-                    cd "$${GOPATH}/src/github.com/taskcluster"
-                    if [ ! -d taskcluster/.git ]; then rm -rf taskcluster; git clone "$${GITHUB_CLONE_URL}" 'taskcluster'; fi
+                    if [ ! -d taskcluster/.git ]; then
+                      rm -rf taskcluster
+                      git clone "$${GITHUB_CLONE_URL}" taskcluster
+                    fi
                     cd taskcluster
                     git fetch "$${GITHUB_CLONE_URL}" "+$${GITHUB_SHA}:refs/heads/X$${TASK_ID}"
                     git checkout -f "X$${TASK_ID}"
                     git reset --hard "$${GITHUB_SHA}"
                     git clean -fdx
                     git checkout -B tmp -t "X$${TASK_ID}"
-                    mkdir -p "$${GOPATH}/bin"
                     cd workers/generic-worker/gw-decision-task
                     go install
-                    gw-decision-task tasks.yml "$${GITHUB_SHA}"
+                    "$(go env GOPATH)/bin/gw-decision-task" tasks.yml "$${GITHUB_SHA}"
               features:
                 taskclusterProxy: true
               mounts:
@@ -371,19 +399,33 @@ tasks:
             created: {$fromNow: ''}
             deadline: {$fromNow: '3 hours'}
             extra:
-              notify:
-                email:
-                  subject: 'Taskcluster Release Status'
+              $if: '!stagingRelease'
+              then:
+                notify:
+                  email:
+                    subject: 'Taskcluster Release Status'
+              else: {}
             routes:
-            - notify.email.taskcluster-notifications@mozilla.com.on-any
-            - notify.irc-channel.#taskcluster-bots.on-any
+              $if: stagingRelease
+              then: []
+              else:
+              - notify.email.taskcluster-notifications@mozilla.com.on-any
+              - notify.irc-channel.#taskcluster-bots.on-any
             scopes:
-            - secrets:get:project/taskcluster/release
+              $if: stagingRelease
+              then: []
+              else: [secrets:get:project/taskcluster/release]
             payload:
               features:
                 taskclusterProxy: true
               maxRunTime: 3600
               command:
+                $let:
+                  releaseArgs:
+                    $if: stagingRelease
+                    then: '--no-push --staging'
+                    else: ''
+                in:
                 - - "/bin/bash"
                   - "-ec"
                   - |-
@@ -413,7 +455,7 @@ tasks:
 
                     # publish the release
                     yarn --frozen-lockfile
-                    yarn release:publish
+                    yarn release:publish ${releaseArgs}
               mounts:
               - content:
                   url: 'https://storage.googleapis.com/golang/go${go.release}.linux-amd64.tar.gz'
@@ -421,7 +463,10 @@ tasks:
                 directory: go
                 format: tar.gz
             metadata:
-              name: taskcluster-release-publish
+              name:
+                $if: stagingRelease
+                then: taskcluster-release-publish (STAGING)
+                else: taskcluster-release-publish
               description: Publish a taskcluster release
               owner: taskcluster-internal@mozilla.com
               source: ${repo.url}
@@ -432,6 +477,9 @@ tasks:
             then:
               - $eval: platformTasks
               - $eval: workerTasks
+          - $if: stagingRelease
+            then:
+              - $eval: releaseTasks
           - $if: 'tasks_for == "github-pull-request" && event["action"] in ["opened", "reopened", "synchronize"]'
             then:
               - $eval: platformTasks

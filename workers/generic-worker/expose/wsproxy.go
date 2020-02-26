@@ -196,6 +196,5 @@ func websockCompatibleHandlerFunc(reverseproxy *httputil.ReverseProxy, targetPor
 
 		// not a websocket thing; defer to ReverseProxy
 		reverseproxy.ServeHTTP(w, r)
-		return
 	}
 }

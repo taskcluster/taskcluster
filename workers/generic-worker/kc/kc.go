@@ -8,7 +8,7 @@ import (
 	"fmt"
 	"io/ioutil"
 
-	"github.com/taskcluster/taskcluster/v24/workers/generic-worker/host"
+	"github.com/taskcluster/taskcluster/v25/workers/generic-worker/host"
 )
 
 var (
@@ -21,7 +21,7 @@ func Encode(password []byte) []byte {
 	if overflow > 0 {
 		paddingLength += len(MagicKey) + 1 - overflow
 	}
-	data := append(password, make([]byte, paddingLength, paddingLength)...)
+	data := append(password, make([]byte, paddingLength)...)
 	for j := 0; j < len(data); j++ {
 		data[j] ^= MagicKey[j%len(MagicKey)]
 	}
@@ -29,7 +29,7 @@ func Encode(password []byte) []byte {
 }
 
 func Decode(encoded []byte) []byte {
-	data := make([]byte, len(encoded), len(encoded))
+	data := make([]byte, len(encoded))
 	for j := 0; j < len(encoded); j++ {
 		data[j] = encoded[j] ^ MagicKey[j%len(MagicKey)]
 		if data[j] == 0 {

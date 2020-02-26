@@ -15,8 +15,8 @@ import (
 	"github.com/ghodss/yaml"
 	"github.com/taskcluster/shell"
 	"github.com/taskcluster/slugid-go/slugid"
-	tcclient "github.com/taskcluster/taskcluster/v24/clients/client-go"
-	"github.com/taskcluster/taskcluster/v24/clients/client-go/tcqueue"
+	tcclient "github.com/taskcluster/taskcluster/v25/clients/client-go"
+	"github.com/taskcluster/taskcluster/v25/clients/client-go/tcqueue"
 )
 
 // Data types that map to sections of tasks.yml
@@ -216,6 +216,7 @@ func (dt *DecisionTask) GenerateTasks() (*TaskGroup, error) {
 				"env": map[string]string{
 					"GITHUB_SHA":       os.Getenv("GITHUB_SHA"),
 					"GITHUB_CLONE_URL": os.Getenv("GITHUB_CLONE_URL"),
+					"NO_TEST_SKIP":     "true",
 				},
 			}
 			for k, v := range task.Env {
@@ -224,7 +225,7 @@ func (dt *DecisionTask) GenerateTasks() (*TaskGroup, error) {
 			if typ.MaxRunTime > 0 {
 				payload["maxRunTime"] = typ.MaxRunTime
 			}
-			artifacts := make([]*Artifact, len(typ.Artifacts), len(typ.Artifacts))
+			artifacts := make([]*Artifact, len(typ.Artifacts))
 			for i, a := range typ.Artifacts {
 				artifacts[i] = &Artifact{
 					Name: substituteVars(context, a.Name),

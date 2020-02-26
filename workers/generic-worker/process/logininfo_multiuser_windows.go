@@ -9,7 +9,7 @@ import (
 	"time"
 	"unsafe"
 
-	"github.com/taskcluster/taskcluster/v24/workers/generic-worker/win32"
+	"github.com/taskcluster/taskcluster/v25/workers/generic-worker/win32"
 )
 
 // LoginInfo represents a logged in user session
@@ -93,12 +93,16 @@ func (s *LoginInfo) logout() error {
 func (s *LoginInfo) prepare(username, password string) error {
 
 	var err error
+	u, _ := syscall.UTF16PtrFromString(username)
+	dot, _ := syscall.UTF16PtrFromString(".")
+	p, _ := syscall.UTF16PtrFromString(password)
 	s.hUser, err = win32.LogonUser(
-		syscall.StringToUTF16Ptr(username),
-		syscall.StringToUTF16Ptr("."),
-		syscall.StringToUTF16Ptr(password),
+		u,
+		dot,
+		p,
 		win32.LOGON32_LOGON_INTERACTIVE,
-		win32.LOGON32_PROVIDER_DEFAULT)
+		win32.LOGON32_PROVIDER_DEFAULT,
+	)
 
 	if err != nil {
 		return err
@@ -109,7 +113,8 @@ func (s *LoginInfo) prepare(username, password string) error {
 	s.hProfile, err = loadProfile(s.hUser, username)
 
 	if err != nil {
-		win32.CloseHandle(syscall.Handle(s.hUser))
+		// ignore any error when closing since we already have one to return
+		_ = win32.CloseHandle(syscall.Handle(s.hUser))
 		s.hUser = syscall.Token(syscall.InvalidHandle)
 		return err
 	}

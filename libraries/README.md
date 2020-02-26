@@ -17,7 +17,6 @@ These are any packages that are used by Taskcluster services that aren't intende
 * [Postgres Library](postgres#readme)
 * [Pulse Library](pulse#readme)
 * [References Library](references#readme)
-* [Scopes Library](scopes#readme)
 * [Testing Library](testing#readme)
 * [Validate Library](validate#readme)
 <!-- TOC END -->

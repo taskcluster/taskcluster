@@ -4,7 +4,7 @@ import (
 	"log"
 	"testing"
 
-	"github.com/taskcluster/taskcluster/v24/workers/generic-worker/win32"
+	"github.com/taskcluster/taskcluster/v25/workers/generic-worker/win32"
 )
 
 func TestMergeNilListsFirstNil(t *testing.T) {

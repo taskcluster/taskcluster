@@ -85,6 +85,30 @@ class Provider {
 
   async removeResources({workerPool}) {
   }
+
+  /**
+   * Takes a lifecycle block as defined in the schema and returns
+   * a date when the worker should be destroyed if the provider
+   * supports this action. Also returns the reregistrationTimeout
+   * in milliseconds (as opposed to the seconds it is defined in) for
+   * doing date math with easier.
+   */
+  static interpretLifecycle({lifecycle}) {
+    let terminateAfter = null;
+    if (!lifecycle) {
+      return {terminateAfter, reregistrationTimeout: null};
+    }
+
+    let {registrationTimeout, reregistrationTimeout} = lifecycle;
+    if (registrationTimeout !== undefined) {
+      terminateAfter = Date.now() + registrationTimeout * 1000;
+    }
+    if (reregistrationTimeout !== undefined && registrationTimeout === undefined ||
+        reregistrationTimeout < registrationTimeout) {
+      terminateAfter = Date.now() + reregistrationTimeout * 1000;
+    }
+    return {terminateAfter, reregistrationTimeout: reregistrationTimeout * 1000 || null};
+  }
 }
 
 /**

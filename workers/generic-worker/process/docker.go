@@ -8,7 +8,6 @@ import (
 	"log"
 	"os"
 	"os/exec"
-	"sync"
 	"syscall"
 	"time"
 
@@ -29,7 +28,6 @@ type Result struct {
 }
 
 type Command struct {
-	mutex            sync.RWMutex
 	ctx              context.Context
 	writer           io.Writer
 	cmd              []string
@@ -91,7 +89,7 @@ func (c *Command) Execute() (r *Result) {
 		return
 	}
 
-	r.Duration = time.Now().Sub(startTime)
+	r.Duration = time.Since(startTime)
 
 	return
 }

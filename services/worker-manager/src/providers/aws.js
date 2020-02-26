@@ -101,10 +101,7 @@ class AwsProvider extends Provider {
       return;
     }
 
-    let registrationExpiry = null;
-    if ((workerPool.config.lifecycle || {}).registrationTimeout) {
-      registrationExpiry = Date.now() + workerPool.config.lifecycle.registrationTimeout * 1000;
-    }
+    const {terminateAfter, reregistrationTimeout} = Provider.interpretLifecycle(workerPool.config);
 
     const toSpawnPerConfig = Math.ceil(toSpawn / workerPool.config.launchConfigs.length);
     const shuffledConfigs = _.shuffle(workerPool.config.launchConfigs);
@@ -226,7 +223,8 @@ class AwsProvider extends Provider {
             owner: spawned.OwnerId,
             state: i.State.Name,
             stateReason: i.StateReason.Message,
-            registrationExpiry,
+            terminateAfter,
+            reregistrationTimeout,
           },
         });
       }));
@@ -260,6 +258,11 @@ class AwsProvider extends Provider {
       throw new ApiError('Instance validation error');
     }
 
+    let expires = taskcluster.fromNow('96 hours');
+    if (worker.providerData.reregistrationTimeout) {
+      expires = new Date(Date.now() + worker.providerData.reregistrationTimeout);
+    }
+
     // mark it as running
     this.monitor.log.workerRunning({
       workerPoolId: workerPool.workerPoolId,
@@ -269,20 +272,14 @@ class AwsProvider extends Provider {
     await worker.modify(w => {
       w.lastModified = new Date();
       w.state = this.Worker.states.RUNNING;
+      w.providerData.terminateAfter = expires.getTime();
     });
 
-    // return object that has expires field
-    return {expires: taskcluster.fromNow('96 hours')};
+    return {expires};
   }
 
   async checkWorker({worker}) {
     this.seen[worker.workerPoolId] = this.seen[worker.workerPoolId] || 0;
-
-    if (worker.providerData.registrationExpiry &&
-      worker.state === this.Worker.states.REQUESTED &&
-      worker.providerData.registrationExpiry < Date.now()) {
-      return await this.removeWorker({worker});
-    }
 
     let state = worker.state;
     try {
@@ -313,6 +310,9 @@ class AwsProvider extends Provider {
           default:
             throw new Error(`Unknown state: ${is.InstanceState.Name} for ${is.InstanceId}`);
         }
+      }
+      if (worker.providerData.terminateAfter && worker.providerData.terminateAfter < Date.now()) {
+        await this.removeWorker({worker});
       }
     } catch (e) {
       if (e.code !== 'InvalidInstanceID.NotFound') { // aws throws this error for instances that had been terminated, too

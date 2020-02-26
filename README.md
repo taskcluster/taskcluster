@@ -62,7 +62,6 @@ It is not possible to run a full Taskcluster deployment directly from this repos
     * [Postgres Library](libraries/postgres#readme)
     * [Pulse Library](libraries/pulse#readme)
     * [References Library](libraries/references#readme)
-    * [Scopes Library](libraries/scopes#readme)
     * [Testing Library](libraries/testing#readme)
     * [Validate Library](libraries/validate#readme)
 * [Services](services#readme)
@@ -79,6 +78,9 @@ It is not possible to run a full Taskcluster deployment directly from this repos
     * [Worker Manager Service](services/worker-manager#readme)
         * [About the Keys in this  Directory](services/worker-manager/src/providers/aws-keys#readme)
         * [services/worker-manager/src/providers/azure-ca-certs](services/worker-manager/src/providers/azure-ca-certs#readme)
+* [Tools](tools#readme)
+    * [jsonschema2go](tools/jsonschema2go#readme)
+    * [Taskcluster Worker Runner](tools/taskcluster-worker-runner#readme)
 * [Taskcluster UI](ui#readme)
     * [ui/src/components/CopyToClipboardListItem](ui/src/components/CopyToClipboardListItem#readme)
     * [ui/src/components/DateDistance](ui/src/components/DateDistance#readme)
@@ -86,10 +88,9 @@ It is not possible to run a full Taskcluster deployment directly from this repos
     * [ui/src/components/Snackbar](ui/src/components/Snackbar#readme)
     * [ui/src/components/SpeedDial](ui/src/components/SpeedDial#readme)
     * [ui/src/components/StatusLabel](ui/src/components/StatusLabel#readme)
-* [Generic Worker](workers/generic-worker#readme)
-    * [workers/generic-worker/imagesets](workers/generic-worker/imagesets#readme)
-    * [workers/generic-worker/server-logs](workers/generic-worker/server-logs#readme)
-    * [workers/generic-worker/worker_types](workers/generic-worker/worker_types#readme)
+* [Workers](workers#readme)
+    * [Generic Worker](workers/generic-worker#readme)
+        * [workers/generic-worker/server-logs](workers/generic-worker/server-logs#readme)
 <!-- TOC END -->
 
 ## Team Mentions

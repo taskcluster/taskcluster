@@ -34,7 +34,7 @@ func proxyHTTP(listener net.Listener, targetPort uint16) (exposeProxy, error) {
 	}
 
 	go func() {
-		server.Serve(listener)
+		_ = server.Serve(listener)
 	}()
 
 	return &httpProxy{server}, nil
@@ -58,7 +58,7 @@ func proxyTCPPort(listener net.Listener, targetPort uint16) (exposeProxy, error)
 	}
 
 	go func() {
-		server.Serve(listener)
+		_ = server.Serve(listener)
 	}()
 
 	return &tcpPortProxy{server}, nil

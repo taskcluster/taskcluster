@@ -15,7 +15,7 @@ import (
 	"net/http"
 	"net/url"
 
-	"github.com/taskcluster/taskcluster/v24/clients/client-go/tcauth"
+	"github.com/taskcluster/taskcluster/v25/clients/client-go/tcauth"
 	"github.com/taskcluster/websocktunnel/client"
 )
 
@@ -105,7 +105,9 @@ func (exposure *wstExposure) start() error {
 		server := http.Server{
 			Handler: websocketToTCPHandlerFunc(exposure.targetPort),
 		}
-		go server.Serve(wstClient)
+		go func() {
+			_ = server.Serve(wstClient)
+		}()
 	}
 
 	return nil

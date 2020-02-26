@@ -164,7 +164,20 @@ module.exports = ({tasks, cmdOptions, credentials}) => {
       // matches the full package path to avoid false positives, but that
       // might result in missed changes where the full path is not used.
       const major = requirements['release-version'].replace(/\..*/, '');
-      for (let file of await gitLsFiles({patterns: ['clients/client-go/**', 'clients/client-shell/**', 'workers/generic-worker/**']})) {
+      // Note, this intentionally also includes scripts and yaml files that
+      // also refer to the release version.
+      const goFiles = [
+        'go.mod',
+        'clients/client-go/**',
+        'clients/client-shell/**',
+        'tools/**',
+        // Provide explicit list of allowed file extensions so that
+        // workers/generic-worker/testdata/*.zip files are not modified.
+        'workers/generic-worker/**.go',
+        'workers/generic-worker/**.yml',
+        'workers/generic-worker/**.sh',
+      ];
+      for (let file of await gitLsFiles({patterns: goFiles})) {
         await modifyRepoFile(file, contents =>
           contents.replace(/(github.com\/taskcluster\/taskcluster\/v)\d+/g, `$1${major}`));
         changed.push(file);
@@ -173,7 +186,7 @@ module.exports = ({tasks, cmdOptions, credentials}) => {
       const genericworker = 'workers/generic-worker/main.go';
       utils.status({message: `Update ${genericworker}`});
       await modifyRepoFile(genericworker, contents =>
-        contents.replace(/^(\w*version\w*=\w*).*/, `$1"${requirements['release-version']}"`));
+        contents.replace(/^(\s*version\s*=\s*).*/m, `$1"${requirements['release-version']}"`));
       changed.push(genericworker);
 
       return {'version-updated': changed};

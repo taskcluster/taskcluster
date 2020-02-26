@@ -11,9 +11,9 @@ import (
 	"strconv"
 
 	"github.com/taskcluster/shell"
-	"github.com/taskcluster/taskcluster/v24/workers/generic-worker/host"
-	"github.com/taskcluster/taskcluster/v24/workers/generic-worker/process"
-	gwruntime "github.com/taskcluster/taskcluster/v24/workers/generic-worker/runtime"
+	"github.com/taskcluster/taskcluster/v25/workers/generic-worker/host"
+	"github.com/taskcluster/taskcluster/v25/workers/generic-worker/process"
+	gwruntime "github.com/taskcluster/taskcluster/v25/workers/generic-worker/runtime"
 )
 
 func (task *TaskRun) formatCommand(index int) string {
@@ -31,7 +31,12 @@ func platformFeatures() []Feature {
 
 func deleteDir(path string) error {
 	log.Print("Removing directory '" + path + "'...")
-	err := host.Run("/usr/bin/sudo", "/bin/rm", "-rf", path)
+	err := host.Run("/usr/bin/sudo", "/bin/chmod", "-R", "u+w", path)
+	if err != nil {
+		log.Print("WARNING: could not chmod -R u+w '" + path + "'")
+		log.Printf("%v", err)
+	}
+	err = host.Run("/usr/bin/sudo", "/bin/rm", "-rf", path)
 	if err != nil {
 		log.Print("WARNING: could not delete directory '" + path + "'")
 		log.Printf("%v", err)
@@ -183,7 +188,13 @@ func makeFileOrDirReadWritableForUser(recurse bool, fileOrDir string, user *gwru
 func makeDirUnreadableForUser(dir string, user *gwruntime.OSUser) error {
 	// Note, only need to set top directory, not recursively, since without
 	// access to top directory, nothing inside can be read anyway
-	err := os.Chown(dir, 0, 0) // root user / root group
+	var err error
+	switch runtime.GOOS {
+	case "darwin":
+		err = host.Run("/usr/sbin/chown", "0:0", dir)
+	case "linux":
+		err = host.Run("/bin/chown", "0:0", dir)
+	}
 	if err != nil {
 		return fmt.Errorf("[mounts] Not able to make directory %v owned by root/root in order to prevent %v from having access: %v", dir, user.Name, err)
 	}

@@ -16,7 +16,7 @@ import (
 	"github.com/gorilla/websocket"
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
-	"github.com/taskcluster/taskcluster/v24/clients/client-go/tcauth"
+	"github.com/taskcluster/taskcluster/v25/clients/client-go/tcauth"
 	"github.com/taskcluster/websocktunnel/wsproxy"
 )
 
@@ -82,7 +82,7 @@ func makeWSTServer(t *testing.T) wstServer {
 
 	server := &http.Server{Addr: fmt.Sprintf("127.0.0.1:%d", port), Handler: handler}
 	go func() {
-		server.Serve(listener)
+		_ = server.Serve(listener)
 	}()
 
 	return wstServer{t, listener, port, handler, server}

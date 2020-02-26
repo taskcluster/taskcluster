@@ -10,8 +10,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/taskcluster/taskcluster/v24/clients/client-go/tcworkermanager"
-	"github.com/taskcluster/taskcluster/v24/workers/generic-worker/gwconfig"
+	"github.com/taskcluster/taskcluster/v25/clients/client-go/tcworkermanager"
+	"github.com/taskcluster/taskcluster/v25/workers/generic-worker/gwconfig"
 )
 
 type MockGCPProvisionedEnvironment struct {
@@ -119,7 +119,7 @@ func (m *MockGCPProvisionedEnvironment) Setup(t *testing.T) func() {
 		MaxHeaderBytes: 1 << 20,
 	}
 	go func() {
-		s.ListenAndServe()
+		_ = s.ListenAndServe()
 	}()
 	var err error
 	configFile := &gwconfig.File{

@@ -13,7 +13,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ec2"
-	"github.com/taskcluster/taskcluster/v24/clients/client-go/tcsecrets"
+	"github.com/taskcluster/taskcluster/v25/clients/client-go/tcsecrets"
 )
 
 var secrets *tcsecrets.Secrets
@@ -140,7 +140,7 @@ func fetchWorkerType(workerType, name string, out *bytes.Buffer) {
 		return
 	}
 	var wg sync.WaitGroup
-	regionBuffers := make([]*bytes.Buffer, len(regions), len(regions))
+	regionBuffers := make([]*bytes.Buffer, len(regions))
 	c := 0
 	for _, region := range regions {
 		regionBuffers[c] = &bytes.Buffer{}
@@ -159,7 +159,8 @@ func fetchWorkerType(workerType, name string, out *bytes.Buffer) {
 
 func fetchRegion(workerType string, region string, secret RelOpsWorkerTypeSecret, out *bytes.Buffer) {
 	out.WriteString(fmt.Sprintf("Region: %v\n", region))
-	svc := ec2.New(session.New(), &aws.Config{Region: aws.String(region)})
+	sess, _ := session.NewSession()
+	svc := ec2.New(sess, &aws.Config{Region: aws.String(region)})
 	inst, err := svc.DescribeInstances(
 		&ec2.DescribeInstancesInput{
 			Filters: []*ec2.Filter{

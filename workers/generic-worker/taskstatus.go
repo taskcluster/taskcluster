@@ -7,8 +7,8 @@ import (
 	"sync"
 	"time"
 
-	tcclient "github.com/taskcluster/taskcluster/v24/clients/client-go"
-	"github.com/taskcluster/taskcluster/v24/clients/client-go/tcqueue"
+	tcclient "github.com/taskcluster/taskcluster/v25/clients/client-go"
+	"github.com/taskcluster/taskcluster/v25/clients/client-go/tcqueue"
 )
 
 // Enumerate task status to aid life-cycle decision making
@@ -340,7 +340,7 @@ func NewTaskStatusManager(task *TaskRun) *TaskStatusManager {
 				takenUntil := time.Time(tsm.TakenUntil())
 				reclaimTime := takenUntil.Add(time.Minute * -3)
 				// Round(0) forces wall time calculation instead of monotonic time in case machine slept etc
-				waitTimeUntilReclaim = reclaimTime.Round(0).Sub(time.Now())
+				waitTimeUntilReclaim = time.Until(reclaimTime.Round(0))
 				log.Printf("Reclaiming task %v at %v", task.TaskID, reclaimTime)
 				log.Printf("Current task claim expires at %v", takenUntil)
 				// sanity check - only set an alarm, if wait time >= 30s, so we can't hammer queue in production

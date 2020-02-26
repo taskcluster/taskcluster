@@ -11,7 +11,8 @@ import (
 	"strings"
 
 	"github.com/taskcluster/shell"
-	"github.com/taskcluster/taskcluster/v24/workers/generic-worker/process"
+	"github.com/taskcluster/taskcluster/v25/workers/generic-worker/host"
+	"github.com/taskcluster/taskcluster/v25/workers/generic-worker/process"
 )
 
 func (task *TaskRun) formatCommand(index int) string {
@@ -35,7 +36,12 @@ func platformFeatures() []Feature {
 
 func deleteDir(path string) error {
 	log.Print("Removing directory '" + path + "'...")
-	err := os.RemoveAll(path)
+	err := host.Run("/bin/chmod", "-R", "u+w", path)
+	if err != nil {
+		log.Print("WARNING: could not chmod -R u+w '" + path + "'")
+		log.Printf("%v", err)
+	}
+	err = host.Run("/bin/rm", "-rf", path)
 	if err != nil {
 		log.Print("WARNING: could not delete directory '" + path + "'")
 		log.Printf("%v", err)

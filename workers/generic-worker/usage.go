@@ -18,7 +18,6 @@ const (
 	INVALID_CONFIG              ExitCode = 73
 	CANT_CREATE_ED25519_KEYPAIR ExitCode = 75
 	CANT_SAVE_CONFIG            ExitCode = 76
-	CANT_SECURE_CONFIG          ExitCode = 77
 	CANT_CONNECT_PROTOCOL_PIPE  ExitCode = 78
 )
 
@@ -32,6 +31,7 @@ and reports back results to the queue.
 
   Usage:
     generic-worker run                      [--config         CONFIG-FILE]
+                                            [--with-worker-runner]
                                             [--worker-runner-protocol-pipe PIPE]
                                             [--configure-for-aws | --configure-for-gcp | --configure-for-azure]` + installServiceSummary() + `
     generic-worker show-payload-schema
@@ -40,7 +40,9 @@ and reports back results to the queue.
     generic-worker --version
 
   Targets:
-    run                                     Runs the generic-worker.
+    run                                     Runs the generic-worker.  Pass --with-worker-runner if
+                                            running under that service, otherwise generic-worker will
+                                            not communicate with worker-runner.
     show-payload-schema                     Each taskcluster task defines a payload to be
                                             interpreted by the worker that executes it. This
                                             payload is validated against a json schema baked

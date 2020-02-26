@@ -104,7 +104,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
     const workers = await helper.Worker.scan({}, {});
     // Check that this is setting times correctly to within a second or so to allow for some time
     // for the provisioning loop
-    assert(workers.entries[0].providerData.registrationExpiry - now - (6000 * 1000) < 5000);
+    assert(workers.entries[0].providerData.terminateAfter - now - (6000 * 1000) < 5000);
     assert.equal(workers.entries[0].workerId, '123');
   });
 
@@ -228,7 +228,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
       state: helper.Worker.states.REQUESTED,
       providerData: {
         ...baseProviderData,
-        registrationExpiry: Date.now() - 1000,
+        terminateAfter: Date.now() - 1000,
       },
     });
     await provider.scanPrepare();
@@ -254,7 +254,59 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
       state: helper.Worker.states.REQUESTED,
       providerData: {
         ...baseProviderData,
-        registrationExpiry: Date.now() + 1000,
+        terminateAfter: Date.now() + 1000,
+      },
+    });
+    await provider.scanPrepare();
+    await provider.checkWorker({worker});
+    await provider.scanCleanup();
+    assert(!fakeAzure.deleteVMStub.called);
+    assert(!fakeAzure.deleteDiskStub.called);
+    assert(!fakeAzure.deleteIPStub.called);
+    assert(!fakeAzure.deleteNICStub.called);
+  });
+
+  test('remove very old workers', async function() {
+    const worker = await helper.Worker.create({
+      workerPoolId,
+      workerGroup: 'whatever',
+      workerId: 'whatever',
+      providerId,
+      capacity: 1,
+      created: taskcluster.fromNow('-1 hour'),
+      lastModified: taskcluster.fromNow('-2 weeks'),
+      lastChecked: taskcluster.fromNow('-2 weeks'),
+      expires: taskcluster.fromNow('1 week'),
+      state: helper.Worker.states.REQUESTED,
+      providerData: {
+        ...baseProviderData,
+        terminateAfter: Date.now() - 1000,
+      },
+    });
+    await provider.scanPrepare();
+    await provider.checkWorker({worker});
+    await provider.scanCleanup();
+    assert(fakeAzure.deleteVMStub.called);
+    assert(fakeAzure.deleteDiskStub.called);
+    assert(fakeAzure.deleteIPStub.called);
+    assert(fakeAzure.deleteNICStub.called);
+  });
+
+  test('don\'t remove current workers', async function() {
+    const worker = await helper.Worker.create({
+      workerPoolId,
+      workerGroup: 'whatever',
+      workerId: 'whatever',
+      providerId,
+      created: taskcluster.fromNow('-1 hour'),
+      expires: taskcluster.fromNow('1 week'),
+      capacity: 1,
+      lastModified: taskcluster.fromNow('-2 weeks'),
+      lastChecked: taskcluster.fromNow('-2 weeks'),
+      state: helper.Worker.states.REQUESTED,
+      providerData: {
+        ...baseProviderData,
+        terminateAfter: Date.now() + 1000,
       },
     });
     await provider.scanPrepare();
@@ -406,6 +458,21 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
       // allow +- 10 seconds since time passes while the test executes
       assert(res.expires - new Date() + 10000 > 96 * 3600 * 1000, res.expires);
       assert(res.expires - new Date() - 10000 < 96 * 3600 * 1000, res.expires);
+    });
+
+    test('sweet success (different reregister)', async function() {
+      const worker = await helper.Worker.create({
+        ...defaultWorker,
+        providerData: {
+          reregistrationTimeout: 10 * 3600 * 1000,
+        },
+      });
+      const document = fs.readFileSync(path.resolve(__dirname, 'fixtures/azure_signature_good')).toString();
+      const workerIdentityProof = {document};
+      const res = await provider.registerWorker({workerPool, worker, workerIdentityProof});
+      // allow +- 10 seconds since time passes while the test executes
+      assert(res.expires - new Date() + 10000 > 10 * 3600 * 1000, res.expires);
+      assert(res.expires - new Date() - 10000 < 10 * 3600 * 1000, res.expires);
     });
   });
 });

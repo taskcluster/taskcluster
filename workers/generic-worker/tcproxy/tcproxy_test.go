@@ -4,17 +4,16 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"net/http"
-	"os"
 	"runtime"
 	"testing"
 
-	tcclient "github.com/taskcluster/taskcluster/v24/clients/client-go"
-	"github.com/taskcluster/taskcluster/v24/clients/client-go/tcauth"
-	"github.com/taskcluster/taskcluster/v24/workers/generic-worker/testutil"
+	tcclient "github.com/taskcluster/taskcluster/v25/clients/client-go"
+	"github.com/taskcluster/taskcluster/v25/clients/client-go/tcauth"
+	"github.com/taskcluster/taskcluster/v25/internal/testrooturl"
 )
 
 func TestTcProxy(t *testing.T) {
-	testutil.RequireTaskclusterCredentials(t)
+	rootURL, clientID, accessToken, certificate := testrooturl.GetWithCreds(t)
 	var executable string
 	switch runtime.GOOS {
 	case "windows":
@@ -23,12 +22,12 @@ func TestTcProxy(t *testing.T) {
 		executable = "taskcluster-proxy"
 	}
 	creds := &tcclient.Credentials{
-		ClientID:         os.Getenv("TASKCLUSTER_CLIENT_ID"),
-		AccessToken:      os.Getenv("TASKCLUSTER_ACCESS_TOKEN"),
-		Certificate:      os.Getenv("TASKCLUSTER_CERTIFICATE"),
+		ClientID:         clientID,
+		AccessToken:      accessToken,
+		Certificate:      certificate,
 		AuthorizedScopes: []string{"queue:get-artifact:SampleArtifacts/_/X.txt"},
 	}
-	ll, err := New(executable, 34569, os.Getenv("TASKCLUSTER_ROOT_URL"), creds)
+	ll, err := New(executable, 34569, rootURL, creds)
 	// Do defer before checking err since err could be a different error and
 	// process may have already started up.
 	defer func() {

@@ -10,8 +10,8 @@ import (
 	"time"
 
 	"github.com/taskcluster/slugid-go/slugid"
-	tcclient "github.com/taskcluster/taskcluster/v24/clients/client-go"
-	"github.com/taskcluster/taskcluster/v24/clients/client-go/tcqueue"
+	tcclient "github.com/taskcluster/taskcluster/v25/clients/client-go"
+	"github.com/taskcluster/taskcluster/v25/clients/client-go/tcqueue"
 )
 
 var (
@@ -588,7 +588,7 @@ func TestMissingArtifactFailsTest(t *testing.T) {
 	expires := tcclient.Time(time.Now().Add(time.Minute * 30))
 
 	payload := GenericWorkerPayload{
-		Command:    append(helloGoodbye()),
+		Command:    helloGoodbye(),
 		MaxRunTime: 30,
 		Artifacts: []Artifact{
 			{

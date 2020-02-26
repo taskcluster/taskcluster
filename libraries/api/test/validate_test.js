@@ -129,6 +129,32 @@ suite(testing.suiteName(), function() {
     res.reply();
   });
 
+  builder.declare({
+    method: 'get',
+    route: '/test-double-json-send',
+    name: 'testDoubleJsonSend',
+    output: 'test-schema.yml',
+    category: 'API Library',
+    title: 'Test End-Point',
+    description: 'place to call to trigger a double send',
+  }, function(req, res) {
+    res.status(400).json({error: 'yep'});
+    res.status(200).reply({value: 1});
+  });
+
+  builder.declare({
+    method: 'get',
+    route: '/test-double-error-send',
+    name: 'testDoubleErrorSend',
+    output: 'test-schema.yml',
+    category: 'API Library',
+    title: 'Test End-Point',
+    description: 'place to call to trigger a double send',
+  }, function(req, res) {
+    res.status(400).reply({value: 1});
+    res.reportError('InputError', 'uhoh', {});
+  });
+
   // Test valid input
   test('input (valid)', function() {
     const url = u('/test-input');
@@ -295,5 +321,17 @@ suite(testing.suiteName(), function() {
       return;
     }
     assert(0, 'Did not get expected exception');
+  });
+
+  test('calling send twice with reportError triggers an Error', async () => {
+    const url = u('/test-double-error-send');
+    await assert.doesNotReject(() => request.get(url));
+    assert.equal(helper.monitorManager.messages[0].Fields.message, 'API method implementation called res.send twice');
+  });
+
+  test('calling send twice with json object triggers an Error', async () => {
+    const url = u('/test-double-json-send');
+    await assert.rejects(() => request.get(url), /Bad Request/);
+    assert.equal(helper.monitorManager.messages[0].Fields.message, 'API method implementation called res.send twice');
   });
 });

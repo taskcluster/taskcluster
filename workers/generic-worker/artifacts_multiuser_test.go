@@ -11,8 +11,8 @@ import (
 	"testing"
 	"time"
 
-	tcclient "github.com/taskcluster/taskcluster/v24/clients/client-go"
-	"github.com/taskcluster/taskcluster/v24/clients/client-go/tcqueue"
+	tcclient "github.com/taskcluster/taskcluster/v25/clients/client-go"
+	"github.com/taskcluster/taskcluster/v25/clients/client-go/tcqueue"
 	"golang.org/x/crypto/ed25519"
 )
 
@@ -63,7 +63,6 @@ func TestChainOfTrustUpload(t *testing.T) {
 			Extracts: []string{
 				"hello world!",
 				"goodbye world!",
-				`"instance-type": "p3.enormous"`,
 			},
 			ContentType:     "text/plain; charset=utf-8",
 			ContentEncoding: "gzip",

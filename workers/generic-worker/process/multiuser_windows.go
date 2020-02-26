@@ -12,8 +12,8 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/taskcluster/taskcluster/v24/workers/generic-worker/host"
-	"github.com/taskcluster/taskcluster/v24/workers/generic-worker/win32"
+	"github.com/taskcluster/taskcluster/v25/workers/generic-worker/host"
+	"github.com/taskcluster/taskcluster/v25/workers/generic-worker/win32"
 )
 
 var sidsThatCanControlDesktopAndWindowsStation map[string]bool = map[string]bool{}
@@ -177,5 +177,4 @@ func GrantSIDWinstaAccess(sid string, pd *PlatformData) {
 		log.Printf("Granted %v full control of interactive windows station and desktop", sid)
 		sidsThatCanControlDesktopAndWindowsStation[sid] = true
 	}
-	return
 }
