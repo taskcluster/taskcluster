@@ -171,8 +171,8 @@ class Provisioner {
 
           try {
             const workerInfo = {
-              existingCapacity: providerByPool.capacity,
-              requestedCapacity: providerByPool.requested,
+              existingCapacity: providerByPool.existingCapacity,
+              requestedCapacity: providerByPool.requestedCapacity,
             };
             await provider.provision({workerPool, workerInfo});
           } catch (err) {
