@@ -74,7 +74,7 @@ func (p *AzureProvider) ConfigureRun(state *run.State) error {
 		customData.WorkerPoolId,
 		customData.ProviderId,
 		customData.WorkerGroup,
-		instanceData.Compute.VMID,
+		instanceData.Compute.Name,
 		workerIdentityProofMap)
 	if err != nil {
 		return err

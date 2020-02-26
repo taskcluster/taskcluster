@@ -11155,6 +11155,19 @@
           "version": 1
         },
         {
+          "description": "A worker has been marked as stopping",
+          "fields": {
+            "providerId": "The provider that did the work for this worker pool.",
+            "workerId": "The worker that was created",
+            "workerPoolId": "The worker pool ID (provisionerId/workerType)"
+          },
+          "level": "notice",
+          "name": "workerStopping",
+          "title": "Worker Stopping",
+          "type": "worker-stopping",
+          "version": 1
+        },
+        {
           "description": "The simple estimator has decided that we need some number of instances.",
           "fields": {
             "desiredCapacity": "Amount of capacity that this estimator thinks we should have",

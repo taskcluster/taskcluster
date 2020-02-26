@@ -61,6 +61,20 @@ monitorManager.register({
 });
 
 monitorManager.register({
+  name: 'workerStopping',
+  title: 'Worker Stopping',
+  type: 'worker-stopping',
+  version: 1,
+  level: 'notice',
+  description: 'A worker has been marked as stopping',
+  fields: {
+    workerPoolId: 'The worker pool ID (provisionerId/workerType)',
+    providerId: 'The provider that did the work for this worker pool.',
+    workerId: 'The worker that was created',
+  },
+});
+
+monitorManager.register({
   name: 'simpleEstimate',
   title: 'Simple Estimate Provided',
   type: 'simple-estimate',

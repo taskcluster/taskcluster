@@ -52,6 +52,7 @@ func TestConfigureRun(t *testing.T) {
 		"compute": {
 			"customData": "",
 			"vmId": "df09142e-c0dd-43d9-a515-489f19829dfd",
+			"name": "vm-w-p-test",
 			"location": "uswest",
 			"vmSize": "medium"
 		},
@@ -84,7 +85,7 @@ func TestConfigureRun(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, customData.ProviderId, reg.ProviderID)
 	require.Equal(t, customData.WorkerGroup, reg.WorkerGroup)
-	require.Equal(t, "df09142e-c0dd-43d9-a515-489f19829dfd", reg.WorkerID)
+	require.Equal(t, "vm-w-p-test", reg.WorkerID)
 	require.Equal(t, json.RawMessage(`{"document":"`+attestedDocument+`"}`), reg.WorkerIdentityProof)
 	require.Equal(t, "w/p", reg.WorkerPoolID)
 
@@ -94,7 +95,7 @@ func TestConfigureRun(t *testing.T) {
 	require.Equal(t, "cert", state.Credentials.Certificate, "cert is correct")
 	require.Equal(t, "w/p", state.WorkerPoolID, "workerPoolID is correct")
 	require.Equal(t, "wg", state.WorkerGroup, "workerGroup is correct")
-	require.Equal(t, "df09142e-c0dd-43d9-a515-489f19829dfd", state.WorkerID, "workerID is correct")
+	require.Equal(t, "vm-w-p-test", state.WorkerID, "workerID is correct")
 
 	require.Equal(t, map[string]interface{}{
 		"vm-id":         "df09142e-c0dd-43d9-a515-489f19829dfd",
