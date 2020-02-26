@@ -327,9 +327,10 @@ class AzureProvider extends Provider {
 
     // verify that the embedded vmId matches what the worker is sending
     try {
-      assert.equal(payload.vmId, worker.workerId);
+      assert(worker.providerData.vm.id);
+      assert.equal(payload.vmId, worker.providerData.vm.id);
     } catch (err) {
-      this.monitor.log.registrationErrorWarning({message: 'Encountered vmId mismatch', error: err.toString(), vmId: payload.vmId, workerId: worker.workerId});
+      this.monitor.log.registrationErrorWarning({message: `vmId mismatch: ${payload.vmId} !== ${worker.providerData.vm.id}`, error: err.toString(), vmId: payload.vmId, workerId: worker.workerId});
       throw error();
     }
 
