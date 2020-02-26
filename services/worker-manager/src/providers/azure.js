@@ -208,6 +208,7 @@ class AzureProvider extends Provider {
           config,
           operation: false,
           id: false,
+          vmId: false,
         },
         ip: {
           name: ipAddressName,
@@ -335,10 +336,10 @@ class AzureProvider extends Provider {
 
     // verify that the embedded vmId matches what the worker is sending
     try {
-      assert(worker.providerData.vmId);
-      assert.equal(payload.vmId, worker.providerData.vmId);
+      assert(worker.providerData.vm.vmId);
+      assert.equal(payload.vmId, worker.providerData.vm.vmId);
     } catch (err) {
-      this.monitor.log.registrationErrorWarning({message: `vmId mismatch: ${payload.vmId} !== ${worker.providerData.vmId}`, error: err.toString(), vmId: payload.vmId, workerId: worker.workerId});
+      this.monitor.log.registrationErrorWarning({message: `vmId mismatch: ${payload.vmId} !== ${worker.providerData.vm.vmId}`, error: err.toString(), vmId: payload.vmId, workerId: worker.workerId});
       throw error();
     }
 
