@@ -13,6 +13,7 @@ const styles = theme => ({
 function MarkdownTextArea({ classes, ...props }) {
   return (
     <MuiMarkdownTextArea
+      color="secondary"
       classes={{ markdownContainer: classes.markdown }}
       {...props}
     />
