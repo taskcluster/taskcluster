@@ -327,10 +327,10 @@ class AzureProvider extends Provider {
 
     // verify that the embedded vmId matches what the worker is sending
     try {
-      assert(worker.providerData.vm.id);
-      assert.equal(payload.vmId, worker.providerData.vm.id);
+      assert(worker.providerData.vmId);
+      assert.equal(payload.vmId, worker.providerData.vmId);
     } catch (err) {
-      this.monitor.log.registrationErrorWarning({message: `vmId mismatch: ${payload.vmId} !== ${worker.providerData.vm.id}`, error: err.toString(), vmId: payload.vmId, workerId: worker.workerId});
+      this.monitor.log.registrationErrorWarning({message: `vmId mismatch: ${payload.vmId} !== ${worker.providerData.vmId}`, error: err.toString(), vmId: payload.vmId, workerId: worker.workerId});
       throw error();
     }
 
@@ -577,7 +577,7 @@ class AzureProvider extends Provider {
     this.errors[worker.workerPoolId] = this.errors[worker.workerPoolId] || [];
     let state = worker.state || states.REQUESTED;
     try {
-      const {provisioningState} = await this._enqueue('get', () => this.computeClient.virtualMachines.get(
+      const {provisioningState, id, vmId} = await this._enqueue('get', () => this.computeClient.virtualMachines.get(
         worker.providerData.resourceGroupName,
         worker.providerData.vm.name,
       ));
@@ -597,6 +597,16 @@ class AzureProvider extends Provider {
         }
         if (worker.providerData.terminateAfter && worker.providerData.terminateAfter < Date.now()) {
           state = await this.removeWorker({worker});
+        }
+
+        // vm has successfully provisioned, we need to set id and vmId
+        // id is the fully qualified azure resource ID
+        // vmId is a uuid, we use it for registering workers
+        if (!worker.providerData.vm.id || !worker.providerData.vm.id) {
+          await worker.modify(w => {
+            w.providerData.vm.id = id;
+            w.providerData.vm.vmId = vmId;
+          });
         }
       } else if (failStates.includes(provisioningState)) {
         state = await this.removeWorker({worker});
