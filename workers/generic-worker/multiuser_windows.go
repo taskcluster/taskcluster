@@ -46,8 +46,12 @@ func deleteDir(path string) error {
 	}
 	log.Print("WARNING: could not delete directory '" + path + "' with os.RemoveAll(path) method")
 	log.Printf("%v", err)
-	log.Print("Trying to remove directory '" + path + "' via del command...")
+	log.Print("Trying to remove directory '" + path + "' via del and rmdir commands...")
 	err = host.Run("cmd", "/c", "del", "/s", "/q", "/f", path)
+	if err != nil {
+		log.Printf("%#v", err)
+	}
+	err = host.Run("cmd", "/c", "rmdir", "/s", "/q", path)
 	if err != nil {
 		log.Printf("%#v", err)
 	}
