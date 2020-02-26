@@ -135,28 +135,7 @@ func TestFileArtifactTwiceInPayload(t *testing.T) {
 	}
 	td := testTask(t)
 
-	taskID := submitAndAssert(t, td, payload, "completed", "completed")
-
-	artifacts, err := testQueue.ListArtifacts(taskID, "0", "", "")
-
-	if err != nil {
-		t.Fatalf("Error listing artifacts: %v", err)
-	}
-
-	if l := len(artifacts.Artifacts); l != 3 {
-		t.Fatalf("Was expecting 3 artifacts, but got %v", l)
-	}
-
-	// use the artifact names as keys in a map, so we can look up that each key exists
-	a := map[string]bool{
-		artifacts.Artifacts[0].Name: true,
-		artifacts.Artifacts[1].Name: true,
-		artifacts.Artifacts[2].Name: true,
-	}
-
-	if !a["public/build/X.txt"] || !a["public/logs/live.log"] || !a["public/logs/live_backing.log"] {
-		t.Fatalf("Wrong artifacts presented in task %v", taskID)
-	}
+	_ = submitAndAssert(t, td, payload, "exception", "malformed-payload")
 }
 
 func TestArtifactIncludedAsFileAndDirectoryInPayload(t *testing.T) {
