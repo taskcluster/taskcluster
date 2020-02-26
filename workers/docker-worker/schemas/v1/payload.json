@@ -151,6 +151,11 @@
               "title": "Host shared memory device (Experimental)",
               "description": "Mount /dev/shm from the host in the container.",
               "type": "boolean"
+            },
+            "kvm": {
+              "title": "/dev/kvm device (Experimental)",
+              "description": "Mount /dev/kvm from the host in the container.",
+              "type": "boolean"
             }
           }
         }

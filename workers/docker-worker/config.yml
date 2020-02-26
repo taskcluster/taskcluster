@@ -9,6 +9,8 @@ defaults:
       enabled: true
     hostSharedMemory:
       enabled: true
+    kvm:
+      enabled: true
   phone:
     enabled: false
     sims: '1'
