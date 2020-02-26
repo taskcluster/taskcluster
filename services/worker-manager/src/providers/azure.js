@@ -148,11 +148,8 @@ class AzureProvider extends Provider {
     // Create "empty" workers to provision in provisionResources loop
     await Promise.all(cfgs.map(async cfg => {
       // This must be unique to currently existing instances and match [a-z]([-a-z0-9]*[a-z0-9])?
-      // The lost entropy from downcasing, etc should be ok due to the fact that
-      // only running instances need not be identical. We do not use this name to identify
-      // workers in taskcluster.
       const poolName = workerPoolId.replace(/[\/_]/g, '-').slice(0, 38);
-      const virtualMachineName = `vm-${poolName}-${nicerId()}`.slice(0, 38);
+      const virtualMachineName = `vm-${poolName}-${nicerId()}-${nicerId()}`.slice(0, 64);
       // Windows computer name cannot be more than 15 characters long, be entirely numeric,
       // or contain the following characters: ` ~ ! @ # $ % ^ & * ( ) = + _ [ ] { } \\ | ; : . " , < > / ?
       const computerName = nicerId().slice(0, 15);
@@ -396,7 +393,8 @@ class AzureProvider extends Provider {
   async handleOperation({op, errors}) {
     let req, resp;
     try {
-      // TODO: we could be smarter about getting operation status
+      // NB: we don't respect azure's Retry-After header, we assume our iteration
+      // will wait long enough, and we keep trying
       // see here: https://docs.microsoft.com/en-us/azure/azure-resource-manager/management/async-operations
       req = new msRestJS.WebResource(op, 'GET');
       // sendLongRunningRequest polls until finished but this is just reading
@@ -404,13 +402,19 @@ class AzureProvider extends Provider {
       // it's ok if we hit an error here, that will trigger resource teardown
       resp = await this._enqueue('opRead', () => this.restClient.sendLongRunningRequest(req));
     } catch (err) {
-      // Rest API has different error semantics than the SDK
-      if (_.has(resp, 'status') && resp.status === 404) {
-        // operation not found because it has either expired or does not exist
-        // nothing more to do
-        return false;
-      }
-      throw err;
+      errors.push({
+        kind: 'operation-error',
+        title: 'Operation Error',
+        description: err.message,
+        notify: this.notify,
+        WorkerPoolError: this.WorkerPoolError,
+      });
+    }
+    // Rest API has different error semantics than the SDK
+    if (resp.status === 404) {
+      // operation not found because it has either expired or does not exist
+      // nothing more to do
+      return false;
     }
 
     let body = resp.parsedBody;
@@ -440,8 +444,12 @@ class AzureProvider extends Provider {
    * provisionResource generically provisions individual resources
    * Handles cases where:
    *  we have not yet created a resource and need to create one,
+   *    * we have no id, get request for name 404s, no operation
    *  we have requested a resource but it is not ready,
+   *    * we have no id, get request for name 404s, we have an operation
    *  we have a resource ready to go
+   *    * we have an id, we short circuit return
+   *    * OR we have no id, get request for name succeeds, we set id
    *
    * worker: the worker for which the resource is being provisioned
    * client: the Azure SDK client for the resource
@@ -583,6 +591,7 @@ class AzureProvider extends Provider {
         title: 'VM Creation Error',
         description: err.message,
       });
+      return await this.removeWorker({worker});
     }
   }
 
@@ -604,7 +613,7 @@ class AzureProvider extends Provider {
       const powerStates = instanceView.statuses.map(i => i.code);
       if (successProvisioningStates.has(provisioningState) &&
           // fairly lame check, succeeds if we've ever been starting/running
-          _.some(powerStates, (v) => { return successPowerStates.has(v); })
+          _.some(powerStates, v => successPowerStates.has(v))
       ) {
         this.seen[worker.workerPoolId] += worker.capacity || 1;
 
@@ -624,7 +633,7 @@ class AzureProvider extends Provider {
         // vm has successfully provisioned, we need to set id and vmId
         // id is the fully qualified azure resource ID
         // vmId is a uuid, we use it for registering workers
-        if (!worker.providerData.vm.id || !worker.providerData.vm.id) {
+        if (!worker.providerData.vm.id || !worker.providerData.vm.vmId) {
           await worker.modify(w => {
             w.providerData.vm.id = id;
             w.providerData.vm.vmId = vmId;
@@ -632,7 +641,7 @@ class AzureProvider extends Provider {
         }
       } else if (failProvisioningStates.has(provisioningState) ||
                 // if the VM has ever been in a failing power state
-                _.some(powerStates, (v) => { return failPowerStates.has(v); })
+                _.some(powerStates, v => failPowerStates.has(v))
       ) {
         state = await this.removeWorker({worker});
         this.monitor.log.workerStopped({
@@ -693,6 +702,9 @@ class AzureProvider extends Provider {
 
   /*
    * removeResource attempts to delete a resource and verify deletion
+   * if the resource has been verified deleted
+   *   * sets providerData[resourceType].id = false, signalling it has been deleted
+   *   * returns true
    */
   async removeResource({client, worker, resourceType}) {
     if (!_.has(worker.providerData, resourceType)) {

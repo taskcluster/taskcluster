@@ -94,7 +94,7 @@ class FakeAzure {
     const azureError = new Error("something went wrong");
 
     this.getVMStub = sinon.stub();
-    // first call returns provisioningState Creating, second returns Failed
+    // first call returns provisioningState Succeeded, second returns Failed
     this.getVMStub.onCall(0).returns({...instanceData, provisioningState: 'Succeeded'});
     this.getVMStub.onCall(1).returns({...instanceData, provisioningState: 'Failed'});
     this.getVMStub.onCall(2).throws(() => { return this.error(404); });
