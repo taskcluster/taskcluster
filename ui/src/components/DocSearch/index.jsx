@@ -2,11 +2,11 @@ import React, { Component } from 'react';
 import { withRouter } from 'react-router-dom';
 import { oneOf, string, arrayOf, shape } from 'prop-types';
 import { fade, withStyles } from '@material-ui/core/styles';
-import TextField from '@material-ui/core/TextField';
 import Typography from '@material-ui/core/Typography';
 import ListSubheader from '@material-ui/core/ListSubheader';
 import Autocomplete from '@material-ui/lab/Autocomplete';
 import MagnifyIcon from 'mdi-react/MagnifyIcon';
+import TextField from '../TextField';
 import Link from '../../utils/Link';
 import { THEME } from '../../utils/constants';
 

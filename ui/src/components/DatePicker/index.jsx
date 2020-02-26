@@ -40,6 +40,7 @@ export default class DatePicker extends Component {
     return (
       <MuiPickersUtilsProvider utils={DateFnsUtils}>
         <KeyboardDateTimePicker
+          color="secondary"
           className={classNames(classes.datePicker, className)}
           showTodayButton
           keyboardIcon={<CalendarIcon />}
