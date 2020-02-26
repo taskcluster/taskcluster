@@ -1,0 +1,27 @@
+$schema: "/schemas/common/metaschema.json#"
+title: "Send Matrix Notice Request"
+description: Request to send a Matrix notice.
+type: object
+properties:
+  roomId:
+    type: string
+    description: |
+      The fully qualified room name, such as `!whDRjjSmICCgrhFHsQ:mozilla.org`
+      If you are using riot, you can find this under the advanced settings for a room.
+  body:
+    type: string
+    description: |
+      Unformatted text that will be displayed in the room if you do not
+      specify `formattedBody` or if a user's client can not render the format.
+  format:
+    type: string
+    description: The format for `formattedBody`. For instance, `org.matrix.custom.html`
+  formattedBody:
+    type: string
+    description: |
+      Text that will be rendered by matrix clients that support the given
+      format in that format. For instance, `<h1>Header Text</h1>`.
+additionalProperties: false
+required:
+  - roomId
+  - body

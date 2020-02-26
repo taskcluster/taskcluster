@@ -82,7 +82,7 @@ class AwsProvider extends Provider {
     this._enqueue = cloud.enqueue.bind(cloud);
   }
 
-  async provision({workerPool, existingCapacity}) {
+  async provision({workerPool, workerInfo}) {
     const {workerPoolId} = workerPool;
 
     if (!workerPool.providerData[this.providerId]) {
@@ -95,7 +95,7 @@ class AwsProvider extends Provider {
       workerPoolId,
       minCapacity: workerPool.config.minCapacity,
       maxCapacity: workerPool.config.maxCapacity,
-      existingCapacity,
+      workerInfo,
     });
     if (toSpawn === 0) {
       return;

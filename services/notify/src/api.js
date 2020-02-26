@@ -114,6 +114,44 @@ builder.declare({
 
 builder.declare({
   method: 'post',
+  route: '/matrix',
+  name: 'matrix',
+  scopes: 'notify:matrix-room:<roomId>',
+  input: 'matrix-request.yml',
+  title: 'Post Matrix Message',
+  category: 'Notifications',
+  description: [
+    'Post a message to a room in Matrix. Optionally includes formatted message.',
+    '',
+    'The `roomId` in the scopes is a fully formed `roomId` with leading `!` such',
+    'as `!foo:bar.com`.',
+    '',
+    'Note that the matrix client used by taskcluster must be invited to a room before',
+    'it can post there!',
+  ].join('\n'),
+}, async function(req, res) {
+  await req.authorize({
+    roomId: req.body.roomId,
+  });
+
+  if (await this.denier.isDenied('matrix-room', req.body.roomId)) {
+    return res.reportError('DenylistedAddress', `Matrix room ${req.body.roomId} is denylisted`, {});
+  }
+
+  try {
+    await this.notifier.matrix(req.body);
+    res.sendStatus(200);
+  } catch (err) {
+    // This just means that we haven't been invited to the room yet
+    if (err.errcode === 'M_FORBIDDEN') {
+      res.reportError('InputError', `The taskcluster matrix client must be invited to ${req.body.roomId}`, {});
+    }
+    throw err;
+  }
+});
+
+builder.declare({
+  method: 'post',
   route: '/denylist/add',
   name: 'addDenylistAddress',
   scopes: 'notify:manage-denylist',

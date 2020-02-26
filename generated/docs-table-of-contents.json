@@ -1607,13 +1607,35 @@
             },
             "name": "login-strategies",
             "next": {
-              "path": "manual/deploying/monitoring",
-              "title": "Monitoring Services"
+              "path": "manual/deploying/matrix",
+              "title": "Matrix Integration"
             },
             "path": "manual/deploying/login-strategies",
             "prev": {
               "path": "manual/deploying/github",
               "title": "GitHub Integration"
+            },
+            "up": {
+              "path": "manual/deploying",
+              "title": "Deploying Taskcluster"
+            }
+          },
+          {
+            "children": [
+            ],
+            "data": {
+              "order": 1000,
+              "title": "Matrix Integration"
+            },
+            "name": "matrix",
+            "next": {
+              "path": "manual/deploying/monitoring",
+              "title": "Monitoring Services"
+            },
+            "path": "manual/deploying/matrix",
+            "prev": {
+              "path": "manual/deploying/login-strategies",
+              "title": "Login Strategies"
             },
             "up": {
               "path": "manual/deploying",
@@ -1634,8 +1656,8 @@
             },
             "path": "manual/deploying/monitoring",
             "prev": {
-              "path": "manual/deploying/login-strategies",
-              "title": "Login Strategies"
+              "path": "manual/deploying/matrix",
+              "title": "Matrix Integration"
             },
             "up": {
               "path": "manual/deploying",
@@ -2284,50 +2306,6 @@
                 ],
                 "data": {
                   "inline": true,
-                  "order": 2,
-                  "title": "logs"
-                },
-                "name": "logs",
-                "next": {
-                  "path": "reference/core/hooks/README",
-                  "title": "hooks"
-                },
-                "path": "reference/core/built-in-workers/logs",
-                "prev": {
-                  "path": "reference/core/built-in-workers/README",
-                  "title": "built-in-workers"
-                },
-                "up": {
-                  "path": "reference/core/built-in-workers/README",
-                  "title": "built-in-workers"
-                }
-              }
-            ],
-            "data": {
-              "order": 1000
-            },
-            "name": "built-in-workers",
-            "next": {
-              "path": "reference/core/built-in-workers/logs",
-              "title": "logs"
-            },
-            "path": "reference/core/built-in-workers/README",
-            "prev": {
-              "path": "reference/core/README",
-              "title": "Core Services"
-            },
-            "up": {
-              "path": "reference/core/README",
-              "title": "Core Services"
-            }
-          },
-          {
-            "children": [
-              {
-                "children": [
-                ],
-                "data": {
-                  "inline": true,
                   "order": 1,
                   "title": "api"
                 },
@@ -2425,8 +2403,8 @@
             },
             "path": "reference/core/hooks/README",
             "prev": {
-              "path": "reference/core/built-in-workers/logs",
-              "title": "logs"
+              "path": "reference/core/README",
+              "title": "Core Services"
             },
             "up": {
               "path": "reference/core/README",
@@ -2995,8 +2973,8 @@
         },
         "name": "core",
         "next": {
-          "path": "reference/core/built-in-workers/README",
-          "title": "built-in-workers"
+          "path": "reference/core/hooks/README",
+          "title": "hooks"
         },
         "path": "reference/core/README",
         "prev": {
@@ -3133,6 +3111,10 @@
                   "title": ".taskcluster.yml version 0"
                 },
                 "name": "taskcluster-yml-v0",
+                "next": {
+                  "path": "reference/workers/README",
+                  "title": "Workers"
+                },
                 "path": "reference/integrations/github/taskcluster-yml-v0",
                 "prev": {
                   "path": "reference/integrations/github/taskcluster-yml-v1",
@@ -3176,6 +3158,243 @@
         "prev": {
           "path": "reference/core/worker-manager/worker-interaction",
           "title": "Worker-Manager - Worker Interaction"
+        },
+        "up": {
+          "path": "reference/README",
+          "title": "Taskcluster Reference"
+        }
+      },
+      {
+        "children": [
+          {
+            "children": [
+              {
+                "children": [
+                ],
+                "data": {
+                  "inline": true,
+                  "order": 2,
+                  "title": "logs"
+                },
+                "name": "logs",
+                "next": {
+                  "path": "reference/workers/generic-worker/README",
+                  "title": "generic-worker"
+                },
+                "path": "reference/workers/built-in-workers/logs",
+                "prev": {
+                  "path": "reference/workers/built-in-workers/README",
+                  "title": "built-in-workers"
+                },
+                "up": {
+                  "path": "reference/workers/built-in-workers/README",
+                  "title": "built-in-workers"
+                }
+              }
+            ],
+            "data": {
+              "order": 1000
+            },
+            "name": "built-in-workers",
+            "next": {
+              "path": "reference/workers/built-in-workers/logs",
+              "title": "logs"
+            },
+            "path": "reference/workers/built-in-workers/README",
+            "prev": {
+              "path": "reference/workers/README",
+              "title": "Workers"
+            },
+            "up": {
+              "path": "reference/workers/README",
+              "title": "Workers"
+            }
+          },
+          {
+            "children": [
+              {
+                "children": [
+                ],
+                "data": {
+                  "order": 20,
+                  "title": "Features"
+                },
+                "name": "features",
+                "next": {
+                  "path": "reference/workers/generic-worker/engines",
+                  "title": "Engines"
+                },
+                "path": "reference/workers/generic-worker/features",
+                "prev": {
+                  "path": "reference/workers/generic-worker/README",
+                  "title": "generic-worker"
+                },
+                "up": {
+                  "path": "reference/workers/generic-worker/README",
+                  "title": "generic-worker"
+                }
+              },
+              {
+                "children": [
+                ],
+                "data": {
+                  "order": 30,
+                  "title": "Engines"
+                },
+                "name": "engines",
+                "next": {
+                  "path": "reference/workers/generic-worker/installing",
+                  "title": "Installing"
+                },
+                "path": "reference/workers/generic-worker/engines",
+                "prev": {
+                  "path": "reference/workers/generic-worker/features",
+                  "title": "Features"
+                },
+                "up": {
+                  "path": "reference/workers/generic-worker/README",
+                  "title": "generic-worker"
+                }
+              },
+              {
+                "children": [
+                ],
+                "data": {
+                  "order": 40,
+                  "title": "Installing"
+                },
+                "name": "installing",
+                "next": {
+                  "path": "reference/workers/generic-worker/docker-posix-payload",
+                  "title": "Task Payload - docker, posix"
+                },
+                "path": "reference/workers/generic-worker/installing",
+                "prev": {
+                  "path": "reference/workers/generic-worker/engines",
+                  "title": "Engines"
+                },
+                "up": {
+                  "path": "reference/workers/generic-worker/README",
+                  "title": "generic-worker"
+                }
+              },
+              {
+                "children": [
+                ],
+                "data": {
+                  "order": 1000,
+                  "title": "Task Payload - docker, posix"
+                },
+                "name": "docker-posix-payload",
+                "next": {
+                  "path": "reference/workers/generic-worker/multiuser-posix-payload",
+                  "title": "Task Payload - multiuser, posix"
+                },
+                "path": "reference/workers/generic-worker/docker-posix-payload",
+                "prev": {
+                  "path": "reference/workers/generic-worker/installing",
+                  "title": "Installing"
+                },
+                "up": {
+                  "path": "reference/workers/generic-worker/README",
+                  "title": "generic-worker"
+                }
+              },
+              {
+                "children": [
+                ],
+                "data": {
+                  "order": 1000,
+                  "title": "Task Payload - multiuser, posix"
+                },
+                "name": "multiuser-posix-payload",
+                "next": {
+                  "path": "reference/workers/generic-worker/multiuser-windows-payload",
+                  "title": "Task Payload - multiuser, windows"
+                },
+                "path": "reference/workers/generic-worker/multiuser-posix-payload",
+                "prev": {
+                  "path": "reference/workers/generic-worker/docker-posix-payload",
+                  "title": "Task Payload - docker, posix"
+                },
+                "up": {
+                  "path": "reference/workers/generic-worker/README",
+                  "title": "generic-worker"
+                }
+              },
+              {
+                "children": [
+                ],
+                "data": {
+                  "order": 1000,
+                  "title": "Task Payload - multiuser, windows"
+                },
+                "name": "multiuser-windows-payload",
+                "next": {
+                  "path": "reference/workers/generic-worker/simple-posix-payload",
+                  "title": "Task Payload - simple, posix"
+                },
+                "path": "reference/workers/generic-worker/multiuser-windows-payload",
+                "prev": {
+                  "path": "reference/workers/generic-worker/multiuser-posix-payload",
+                  "title": "Task Payload - multiuser, posix"
+                },
+                "up": {
+                  "path": "reference/workers/generic-worker/README",
+                  "title": "generic-worker"
+                }
+              },
+              {
+                "children": [
+                ],
+                "data": {
+                  "order": 1000,
+                  "title": "Task Payload - simple, posix"
+                },
+                "name": "simple-posix-payload",
+                "path": "reference/workers/generic-worker/simple-posix-payload",
+                "prev": {
+                  "path": "reference/workers/generic-worker/multiuser-windows-payload",
+                  "title": "Task Payload - multiuser, windows"
+                },
+                "up": {
+                  "path": "reference/workers/generic-worker/README",
+                  "title": "generic-worker"
+                }
+              }
+            ],
+            "data": {
+              "order": 1000
+            },
+            "name": "generic-worker",
+            "next": {
+              "path": "reference/workers/generic-worker/features",
+              "title": "Features"
+            },
+            "path": "reference/workers/generic-worker/README",
+            "prev": {
+              "path": "reference/workers/built-in-workers/logs",
+              "title": "logs"
+            },
+            "up": {
+              "path": "reference/workers/README",
+              "title": "Workers"
+            }
+          }
+        ],
+        "data": {
+          "order": 20,
+          "title": "Workers"
+        },
+        "name": "workers",
+        "next": {
+          "path": "reference/workers/built-in-workers/README",
+          "title": "built-in-workers"
+        },
+        "path": "reference/workers/README",
+        "prev": {
+          "path": "reference/integrations/github/taskcluster-yml-v0",
+          "title": ".taskcluster.yml version 0"
         },
         "up": {
           "path": "reference/README",

@@ -47,7 +47,7 @@ class Provider {
   async prepare() {
   }
 
-  async provision({workerPool, existingCapacity}) {
+  async provision({workerPool, workerInfo}) {
   }
 
   async deprovision({workerPool}) {

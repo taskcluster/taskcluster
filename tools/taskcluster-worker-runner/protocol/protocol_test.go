@@ -44,11 +44,9 @@ func TestProtocol(t *testing.T) {
 		welcomeCaps = listOfStrings(msg.Properties["capabilities"])
 	})
 
-	done := make(chan bool)
 	var helloCaps []string
 	runnerProto.Register("hello", func(msg Message) {
 		helloCaps = listOfStrings(msg.Properties["capabilities"])
-		close(done)
 	})
 
 	RequireInitialized(t, runnerProto, false)
@@ -61,7 +59,8 @@ func TestProtocol(t *testing.T) {
 
 	workerProto.Start(true)
 
-	<-done
+	runnerProto.WaitUntilInitialized()
+	workerProto.WaitUntilInitialized()
 
 	RequireInitialized(t, workerProto, true)
 	RequireInitialized(t, runnerProto, true)

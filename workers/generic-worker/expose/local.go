@@ -46,21 +46,6 @@ func (exposer *localExposer) getURL(listener net.Listener, scheme string) *url.U
 	}
 }
 
-// close is a utility for exposures
-func (exposer *localExposer) close(listener net.Listener, proxy exposeProxy) error {
-	if proxy != nil {
-		if err := proxy.Close(); err != nil {
-			return err
-		}
-	}
-	if listener != nil {
-		if err := listener.Close(); err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
 type localHTTPExposure struct {
 	exposer    *localExposer
 	targetPort uint16
@@ -87,7 +72,13 @@ func (exposure *localHTTPExposure) start() error {
 }
 
 func (exposure *localHTTPExposure) Close() error {
-	return exposure.exposer.close(exposure.listener, exposure.proxy)
+	if exposure.proxy != nil {
+		if err := exposure.proxy.Close(); err != nil {
+			return err
+		}
+	}
+	exposure.proxy = nil
+	return nil
 }
 
 func (exposure *localHTTPExposure) GetURL() *url.URL {
@@ -120,7 +111,13 @@ func (exposure *localPortExposure) start() error {
 }
 
 func (exposure *localPortExposure) Close() error {
-	return exposure.exposer.close(exposure.listener, exposure.proxy)
+	if exposure.proxy != nil {
+		if err := exposure.proxy.Close(); err != nil {
+			return err
+		}
+	}
+	exposure.proxy = nil
+	return nil
 }
 
 func (exposure *localPortExposure) GetURL() *url.URL {

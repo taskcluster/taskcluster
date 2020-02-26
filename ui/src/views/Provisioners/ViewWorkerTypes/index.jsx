@@ -6,7 +6,7 @@ import Spinner from '@mozilla-frontend-infra/components/Spinner';
 import Typography from '@material-ui/core/Typography';
 import { withStyles } from '@material-ui/core/styles';
 import MenuItem from '@material-ui/core/MenuItem';
-import TextField from '@material-ui/core/TextField';
+import TextField from '../../../components/TextField';
 import WorkerTypesTable from '../../../components/WorkerTypesTable';
 import Dashboard from '../../../components/Dashboard';
 import { VIEW_WORKER_TYPES_PAGE_SIZE } from '../../../utils/constants';

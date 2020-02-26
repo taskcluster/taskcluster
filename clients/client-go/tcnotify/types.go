@@ -59,6 +59,7 @@ type (
 		//   * "pulse"
 		//   * "irc-user"
 		//   * "irc-channel"
+		//   * "matrix-room"
 		NotificationType string `json:"notificationType"`
 	}
 
@@ -134,6 +135,25 @@ type (
 		//
 		// Default:    "simple"
 		Template string `json:"template,omitempty"`
+	}
+
+	// Request to send a Matrix notice.
+	SendMatrixNoticeRequest struct {
+
+		// Unformatted text that will be displayed in the room if you do not
+		// specify `formattedBody` or if a user's client can not render the format.
+		Body string `json:"body"`
+
+		// The format for `formattedBody`. For instance, `org.matrix.custom.html`
+		Format string `json:"format,omitempty"`
+
+		// Text that will be rendered by matrix clients that support the given
+		// format in that format. For instance, `<h1>Header Text</h1>`.
+		FormattedBody string `json:"formattedBody,omitempty"`
+
+		// The fully qualified room name, such as `!whDRjjSmICCgrhFHsQ:mozilla.org`
+		// If you are using riot, you can find this under the advanced settings for a room.
+		RoomID string `json:"roomId"`
 	}
 
 	Widget struct {

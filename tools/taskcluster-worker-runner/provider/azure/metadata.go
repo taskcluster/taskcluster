@@ -20,6 +20,7 @@ type InstanceData struct {
 	Compute struct {
 		Location string `json:"location"`
 		VMID     string `json:"vmId"`
+		Name     string `json:"name"`
 		VMSize   string `json:"vmSize"`
 	} `json:"compute"`
 	Network struct {

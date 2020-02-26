@@ -6,7 +6,7 @@ title: Enable Notifications
 
 This service can also be used via a simple api, if you have the correct scopes.
 
-There are (as of today) three types of notifications and four types of filters possible on these notifications.
+There are four types of notifications and four types of filters possible on these notifications.
 
 ### Notification Types
 
@@ -15,6 +15,8 @@ __IRC:__ This is only enabled on ``irc.mozilla.org`` for now. You can specify ei
 __Email:__ We can you both nicely formatted or plain text emails depending on which email client you want to use. You can send to any email address, so long as you have the correct scopes (we'll discuss scopes later).
 
 __Pulse:__ We can also send a Pulse message that is documented [on this page](/docs/reference/core/notify/exchanges). The message is  pretty much just the status of the task.
+
+__Matrix:__ If a deployment of taskcluster is configured with credentials for a Matrix instance, it can post in a similar way to irc as well. *Note: The taskcluster user must be invited to a room before it can post there*
 
 ### Filters
 
@@ -38,22 +40,31 @@ But what you've really been waiting for is to know how to use this, so here's a 
     "notify.email.<you@you.com>.on-any",
     "notify.irc-user.<your-mozilla-irc-nick>.on-failed",
     "notify.irc-channel.<a-mozilla-irc-channel>.on-completed",
-    "notify.pulse.<a-pulse-routing-key>.on-exception"
+    "notify.pulse.<a-pulse-routing-key>.on-exception",
+    "notify.matrix-room.<a-matrix-roomId>.on-any"
   ]
 }
 ```
 
+The `roomId` referenced by matrix is a full `!foo:bar.com` including the leading `!`.
+
 ### Setting Custom Messages
 
-In both irc and email you can set custom messages by adding fields to your task definition. The fields will be rendered with [jsone](https://taskcluster.github.io/json-e/)
+In irc, matrix, and email you can set custom messages by adding fields to your task definition. The fields will be rendered with [jsone](https://taskcluster.github.io/json-e/)
 given a context of the [task definition](/docs/reference/platform/queue/api#get-task-definition)
 and the `status` section of [task status](/docs/reference/platform/queue/references/events#message-payload-4).
-The task definition is in the context under the key `task` and the status is in the context under the key `status`.
+The task definition is in the context under the key `task` and the status is in the context under the key `status`. `taskId` is also provided.
 The fields you add to your task definition are all in the `task.extra` section under a key `notify`. They are as follows:
 
 __task.extra.notify.ircUserMessage:__ This should evaluate to a string and is the message sent to a user in irc if a `notify.irc-user` event occurs
 
 __task.extra.notify.ircChannelMessage:__ This should evaluate to a string and is the message posted to a channel in irc if a `notify.irc-channel` event occurs
+
+__task.extra.notify.matrixBody:__ This is a simple text message suitable to be rendered by any matrix client
+
+__task.extra.notify.matrixFormattedBody:__ This is a rich message suitable to be rendered by capable matrix clients. Matrix will fall back to `matrixBody` if not supported.
+
+__task.extra.notify.matrixFormat:__ The format of the formatted body. Read matrix documentation for `m.room.message msgtypes` to understand options
 
 __task.extra.notify.email.content:__ This should evaluate to a markdown string and is the body of an email
 
@@ -67,6 +78,8 @@ __task.extra.notify.email.template:__ This should evaluate to string with a valu
 ### Scopes
 
 If you're using this from the api instead of via a task definition, you'll need some simple ``notify.<type>.*`` scopes of some sort. The specific ones you need are documented on the [api docs](/docs/reference/core/notify/api).
+
+The `roomId` referenced by matrix is a full `!foo:bar.com` including the leading `!`.
 
 If you're using this via task definitions, access to notifications is guarded with route scopes. As an example, to allow the taskcluster-github project to email and ping in irc when builds complete, it has the scopes
 

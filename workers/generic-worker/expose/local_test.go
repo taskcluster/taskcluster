@@ -11,6 +11,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestConstructor(t *testing.T) {
@@ -46,7 +47,10 @@ func TestLocalExposeHTTP(t *testing.T) {
 	if err != nil {
 		t.Fatalf("ExposeHTTP returned an error: %v", err)
 	}
-	defer exposure.Close()
+	defer func() {
+		err := exposure.Close()
+		require.NoError(t, err)
+	}()
 
 	gotURL := exposure.GetURL()
 	host, port, _ := net.SplitHostPort(gotURL.Host)

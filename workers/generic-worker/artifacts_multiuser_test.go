@@ -72,6 +72,7 @@ func TestChainOfTrustUpload(t *testing.T) {
 			Extracts: []string{
 				"hello world!",
 				"goodbye world!",
+				"",
 				"=== Task Finished ===",
 				"Exit Code: 0",
 			},
