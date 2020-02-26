@@ -17,6 +17,14 @@ const msRestAzure = require('@azure/ms-rest-azure-js');
 const {ApiError, Provider} = require('./provider');
 const {CloudAPI} = require('./cloudapi');
 
+// Azure provisioning and VM power states
+// see here: https://docs.microsoft.com/en-us/azure/virtual-machines/windows/states-lifecycle
+// same for linux: https://docs.microsoft.com/en-us/azure/virtual-machines/linux/states-lifecycle
+const successPowerStates = new Set(['PowerState/running', 'PowerState/starting']);
+const failPowerStates = new Set(['PowerState/stopping', 'PowerState/stopped', 'PowerState/deallocating', 'PowerState/deallocated']);
+const successProvisioningStates = new Set(['Succeeded', 'Creating', 'Updating']);
+const failProvisioningStates = new Set(['Failed', 'Deleting', 'Canceled', 'Deallocating']);
+
 // only use alphanumeric characters for convenience
 function nicerId() {
   return (slugid.nice() + slugid.nice() + slugid.nice()).toLowerCase().replace(/[^A-Za-z0-9]/g, '');
@@ -581,9 +589,16 @@ class AzureProvider extends Provider {
         worker.providerData.resourceGroupName,
         worker.providerData.vm.name,
       ));
-      const successStates = ['Creating', 'Updating', 'Starting', 'Running', 'Succeeded'];
-      const failStates = ['Failed', 'Canceled', 'Deleting', 'Deallocating', 'Stopped', 'Deallocated'];
-      if (successStates.includes(provisioningState)) {
+      // lets us get power states for the VM
+      const instanceView = await this._enqueue('get', () => this.computeClient.virtualMachines.instanceView(
+        worker.providerData.resourceGroupName,
+        worker.providerData.vm.name,
+      ));
+      const powerStates = instanceView.statuses.map(i => i.code);
+      if (successProvisioningStates.has(provisioningState) &&
+          // fairly lame check, succeeds if we've ever been starting/running
+          _.some(powerStates, (v) => { return successPowerStates.has(v); })
+      ) {
         this.seen[worker.workerPoolId] += worker.capacity || 1;
 
         // If the worker will be expired soon but it still exists,
@@ -608,7 +623,10 @@ class AzureProvider extends Provider {
             w.providerData.vm.vmId = vmId;
           });
         }
-      } else if (failStates.includes(provisioningState)) {
+      } else if (failProvisioningStates.has(provisioningState) ||
+                // if the VM has ever been in a failing power state
+                _.some(powerStates, (v) => { return failPowerStates.has(v); })
+      ) {
         state = await this.removeWorker({worker});
         this.monitor.log.workerStopped({
           workerPoolId: worker.workerPoolId,
@@ -618,7 +636,7 @@ class AzureProvider extends Provider {
       } else {
         await worker.workerPool.reportError({
           kind: 'creation-error',
-          title: 'Encountered unknown VM provisioningState',
+          title: 'Encountered unknown VM provisioningState or powerStates',
           description: `Unknown provisioningState ${provisioningState}`,
         });
       }
