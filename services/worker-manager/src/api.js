@@ -669,6 +669,7 @@ builder.declare({
       `secrets:get:worker-type:${worker.workerPoolId}`, // deprecated secret name
       `secrets:get:worker-pool:${worker.workerPoolId}`,
       `queue:claim-work:${worker.workerPoolId}`,
+      `worker-manager:remove-worker:${worker.workerPoolId}/${worker.workerGroup}/${worker.workerId}`,
     ],
     start: taskcluster.fromNow('-15 minutes'),
     expiry: expires,
