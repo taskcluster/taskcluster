@@ -2,12 +2,10 @@ const _ = require('lodash');
 const glob = require('glob');
 const {REPO_ROOT, readRepoYAML} = require('../utils');
 const azure = require('fast-azure-storage');
-const tcdb = require('taskcluster-db');
 const writeToPostgres = require('./writeToPostgres');
 
 const importer = async options => {
-  const { credentials } = options;
-  const db = await tcdb.setup({ serviceName: 'importer', ...credentials.postgres });
+  const { credentials, db } = options;
   const tasks = [];
 
   let tables = [];
@@ -41,7 +39,7 @@ const importTable = async ({azureCreds, tableName, utils}) => {
 
   const processResult = results => {
     const firstEntity = _.head(results.entities);
-    const azureKeys = firstEntity ? Object.keys(results.entities[0]).filter(key => key.includes('odata')) : [];
+    const azureKeys = firstEntity ? Object.keys(results.entities[0]).filter(key => key.includes('odata') || key === 'Version') : [];
     const filteredEntities = results.entities.map(
       entity => {
         azureKeys.forEach(key => delete entity[key]);

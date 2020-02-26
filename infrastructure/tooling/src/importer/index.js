@@ -1,4 +1,5 @@
 const {TaskGraph, Lock} = require('console-taskgraph');
+const { Database } = require('taskcluster-lib-postgres');
 const importer = require('./importer');
 
 const main = async () => {
@@ -15,14 +16,15 @@ const main = async () => {
     accessKey: requireEnv('AZURE_ACCOUNT_KEY'),
   };
   const postgresCreds = {
-    readDbUrl: requireEnv('READ_DB_URL'),
-    writeDbUrl: requireEnv('WRITE_DB_URL'),
+    adminDbUrl: requireEnv('ADMIN_DB_URL'),
   };
+  const db = new Database({ urlsByMode: {admin: postgresCreds.adminDbUrl}, statementTimeout: 30 });
   const tasks = await importer({
     credentials: {
       azure: azureCreds,
       postgres: postgresCreds,
     },
+    db,
   });
 
   const taskgraph = new TaskGraph(tasks, {
@@ -31,6 +33,7 @@ const main = async () => {
     },
   });
   const context = await taskgraph.run();
+  await db.close();
 
   if (context['output']) {
     console.log(context.output);

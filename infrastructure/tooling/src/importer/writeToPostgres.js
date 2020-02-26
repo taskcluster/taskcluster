@@ -1,30 +1,35 @@
-const requireFromString = require('require-from-string');
-const data = require('./data');
-const { rewriteScript } = require('./util');
+const { azurePostgresTableNameMapping } = require('./util');
 
 const writeToPostgres = async (tableName, entities, db, utils) => {
-  // TODO: Remove this
-  if (tableName !== 'Clients') {
+  // TaskclusterGithubBuilds, TaskclusterIntegrationOwners, TaskclusterChecksToTasks
+  // TaskclusterCheckRuns, Hooks, Queues, LastFire3,
+  // IndexedTasks, Namespaces, DenylistedNotification, CachePurges
+  // QueueTasks, QueueArtifacts, QueueTaskGroups, QueueTaskGroupMembers
+  // QueueTaskGroupActiveSets, QueueTaskRequirement, QueueTaskDependency, QueueWorker
+  // QueueWorkerType, QueueProvisioner, Secrets, AuthorizationCodesTable, AccessTokenTable, SessionStorageTable
+  // GithubAccessTokenTable, WMWorkers, WMWorkerPools, WMWorkerPoolErrors
+  //
+  // to allow us to migrate one table at a time
+  const ALLOWED_TABLES = ['Clients'];
+
+  if (!ALLOWED_TABLES.includes(tableName)) {
     return;
   }
 
-  const content = await rewriteScript(data[tableName].path);
-  const configuredClients = requireFromString(content);
+  const postgresTableName = azurePostgresTableNameMapping(tableName);
 
-  function setupClient(configuredClient) {
-    // const opts = { tableName, db, serviceName: data[tableName].serviceName };
-    // return configuredClient.setup(opts)
-  }
-
-  if (typeof configuredClients !== 'function') {
-    Object.values(configuredClients).forEach(setupClient);
-  } else {
-    setupClient(configuredClients);
-  }
-
-  entities.forEach(entity => {
-    // Write entity to db
+  await db._withClient('admin', async client => {
+    await client.query(`truncate ${postgresTableName}`);
   });
+
+  for (let entity of entities) {
+    await db._withClient('admin', async client => {
+      await client.query(
+        `insert into ${postgresTableName}(partition_key, row_key, value, version, etag) values ($1, $2, $3, 1, public.gen_random_uuid())`,
+        [entity.PartitionKey, entity.RowKey, entity],
+      );
+    });
+  }
 };
 
 module.exports = writeToPostgres;
