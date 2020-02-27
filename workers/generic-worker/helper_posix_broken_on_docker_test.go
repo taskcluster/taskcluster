@@ -1,4 +1,4 @@
-// +build darwin,!docker linux,!docker, freebsd
+// +build darwin,!docker linux,!docker freebsd
 
 package main
 
