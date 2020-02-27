@@ -1,14 +1,6 @@
 const { azurePostgresTableNameMapping } = require('./util');
 
 const writeToPostgres = async (tableName, entities, db, utils) => {
-  // TaskclusterGithubBuilds, TaskclusterIntegrationOwners, TaskclusterChecksToTasks
-  // TaskclusterCheckRuns, Hooks, Queues, LastFire3,
-  // IndexedTasks, Namespaces, DenylistedNotification, CachePurges
-  // QueueTasks, QueueArtifacts, QueueTaskGroups, QueueTaskGroupMembers
-  // QueueTaskGroupActiveSets, QueueTaskRequirement, QueueTaskDependency, QueueWorker
-  // QueueWorkerType, QueueProvisioner, Secrets, AuthorizationCodesTable, AccessTokenTable, SessionStorageTable
-  // GithubAccessTokenTable, WMWorkers, WMWorkerPools, WMWorkerPoolErrors
-  //
   // to allow us to migrate one table at a time
   const ALLOWED_TABLES = ['Clients'];
 
