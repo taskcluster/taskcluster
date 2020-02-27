@@ -1154,7 +1154,7 @@ func (task *TaskRun) Run() (err *ExecutionErrors) {
 	started := time.Now()
 	defer func() {
 		finished := time.Now()
-		task.Info("\n=== Task Finished ===")
+		task.Info("=== Task Finished ===")
 		// Round(0) forces wall time calculation instead of monotonic time in case machine slept etc
 		task.Info("Task Duration: " + finished.Round(0).Sub(started).String())
 	}()
