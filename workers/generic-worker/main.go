@@ -2,6 +2,7 @@
 //go:generate go run ./gw-codegen file://schemas/docker_posix.yml       generated_docker_darwin.go       docker
 //go:generate go run ./gw-codegen file://schemas/simple_posix.yml       generated_simple_linux.go        simple
 //go:generate go run ./gw-codegen file://schemas/simple_posix.yml       generated_simple_darwin.go       simple
+//go:generate go run ./gw-codegen file://schemas/simple_posix.yml       generated_simple_freebsd.go      simple
 //go:generate go run ./gw-codegen file://schemas/multiuser_posix.yml    generated_multiuser_darwin.go    multiuser
 //go:generate go run ./gw-codegen file://schemas/multiuser_posix.yml    generated_multiuser_linux.go     multiuser
 //go:generate go run ./gw-codegen file://schemas/multiuser_windows.yml  generated_multiuser_windows.go   multiuser

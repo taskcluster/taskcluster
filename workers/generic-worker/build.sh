@@ -88,6 +88,8 @@ else
      darwin) install simple    "${MY_GOHOSTOS}" "${MY_GOHOSTARCH}"
              install multiuser "${MY_GOHOSTOS}" "${MY_GOHOSTARCH}"
              ;;
+     freebsd) install simple    "${MY_GOHOSTOS}" "${MY_GOHOSTARCH}"
+             ;;
     windows) install multiuser "${MY_GOHOSTOS}" "${MY_GOHOSTARCH}"
              ;;
   esac
