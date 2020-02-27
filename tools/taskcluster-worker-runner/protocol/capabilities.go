@@ -2,10 +2,6 @@ package protocol
 
 import "sort"
 
-var KnownCapabilities = []string{
-	"graceful-termination",
-}
-
 type Capabilities struct {
 	// use a map as a poor-man's set
 	capabilities map[string]bool
@@ -15,10 +11,6 @@ func EmptyCapabilities() *Capabilities {
 	return &Capabilities{
 		capabilities: make(map[string]bool),
 	}
-}
-
-func FullCapabilities() *Capabilities {
-	return FromCapabilitiesList(KnownCapabilities)
 }
 
 func FromCapabilitiesList(caplist []string) *Capabilities {

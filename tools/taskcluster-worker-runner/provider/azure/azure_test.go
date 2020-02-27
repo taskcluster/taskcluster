@@ -115,6 +115,14 @@ func TestConfigureRun(t *testing.T) {
 
 	require.Equal(t, "azure", state.WorkerLocation["cloud"])
 	require.Equal(t, "uswest", state.WorkerLocation["region"])
+
+	transp := protocol.NewFakeTransport()
+	proto := protocol.NewProtocol(transp)
+	proto.SetInitialized()
+
+	p.SetProtocol(proto)
+	require.NoError(t, p.WorkerStarted(&state))
+	require.True(t, proto.Capable("shutdown"))
 }
 
 func TestCheckTerminationTime(t *testing.T) {

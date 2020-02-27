@@ -67,11 +67,11 @@ func (p *StandaloneProvider) UseCachedRun(run *run.State) error {
 func (p *StandaloneProvider) SetProtocol(proto *protocol.Protocol) {
 }
 
-func (p *StandaloneProvider) WorkerStarted() error {
+func (p *StandaloneProvider) WorkerStarted(state *run.State) error {
 	return nil
 }
 
-func (p *StandaloneProvider) WorkerFinished() error {
+func (p *StandaloneProvider) WorkerFinished(state *run.State) error {
 	return nil
 }
 

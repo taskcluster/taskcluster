@@ -132,9 +132,18 @@ func (p *AWSProvider) checkTerminationTime() {
 	}
 }
 
-func (p *AWSProvider) WorkerStarted() error {
+func (p *AWSProvider) WorkerStarted(state *run.State) error {
 	// start polling for graceful shutdown
 	p.terminationTicker = time.NewTicker(30 * time.Second)
+
+	p.proto.Register("shutdown", func(msg protocol.Message) {
+		if err := provider.RemoveWorker(state, p.workerManagerClientFactory); err != nil {
+			log.Printf("Shutdown error: %v\n", err)
+		}
+	})
+	p.proto.Capabilities.Add("shutdown")
+	p.proto.Capabilities.Add("graceful-termination")
+
 	go func() {
 		for {
 			<-p.terminationTicker.C
@@ -146,7 +155,7 @@ func (p *AWSProvider) WorkerStarted() error {
 	return nil
 }
 
-func (p *AWSProvider) WorkerFinished() error {
+func (p *AWSProvider) WorkerFinished(state *run.State) error {
 	p.terminationTicker.Stop()
 	return nil
 }

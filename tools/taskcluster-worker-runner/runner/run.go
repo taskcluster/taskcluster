@@ -176,7 +176,7 @@ func Run(configFile string) (state run.State, err error) {
 		return
 	}
 
-	err = provider.WorkerStarted()
+	err = provider.WorkerStarted(&state)
 	if err != nil {
 		return
 	}
@@ -192,7 +192,7 @@ func Run(configFile string) (state run.State, err error) {
 
 	// shut things down
 
-	err = provider.WorkerFinished()
+	err = provider.WorkerFinished(&state)
 	if err != nil {
 		return
 	}

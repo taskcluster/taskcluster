@@ -46,6 +46,10 @@ func (wm *FakeWorkerManager) RegisterWorker(payload *tcworkermanager.RegisterWor
 	}, nil
 }
 
+func (wm *FakeWorkerManager) RemoveWorker(workerPoolID, workerGroup, workerID string) error {
+	return nil
+}
+
 // Get the single registration that has occurred, or an error if there are not
 // exactly one.  This resets the list of registrations in the process.
 func FakeWorkerManagerRegistration() (*tcworkermanager.RegisterWorkerRequest, error) {

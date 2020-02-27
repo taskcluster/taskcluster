@@ -91,11 +91,11 @@ func (p *StaticProvider) SetProtocol(proto *protocol.Protocol) {
 	p.proto = proto
 }
 
-func (p *StaticProvider) WorkerStarted() error {
+func (p *StaticProvider) WorkerStarted(state *run.State) error {
 	return nil
 }
 
-func (p *StaticProvider) WorkerFinished() error {
+func (p *StaticProvider) WorkerFinished(state *run.State) error {
 	return nil
 }
 
