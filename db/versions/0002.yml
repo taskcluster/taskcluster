@@ -121,16 +121,16 @@ migrationScript: |-
     grant select, insert, update, delete on wm_worker_pools_entities to $db_user_prefix$_worker-manager;
     grant select, insert, update, delete on wm_workers_entities to $db_user_prefix$_worker-manager;
 
-    grant select, insert, update, delete on queue_tasks_entities to $db_user_prefix$_worker-manager;
-    grant select, insert, update, delete on queue_artifacts_entities to $db_user_prefix$_worker-manager;
-    grant select, insert, update, delete on queue_task_groups_entities to $db_user_prefix$_worker-manager;
-    grant select, insert, update, delete on queue_task_group_members_entities to $db_user_prefix$_worker-manager;
-    grant select, insert, update, delete on queue_task_group_active_sets_entities to $db_user_prefix$_worker-manager;
-    grant select, insert, update, delete on queue_task_requirement_entities to $db_user_prefix$_worker-manager;
-    grant select, insert, update, delete on queue_task_dependency_entities to $db_user_prefix$_worker-manager;
-    grant select, insert, update, delete on queue_worker_entities to $db_user_prefix$_worker-manager;
-    grant select, insert, update, delete on queue_worker_type_entities to $db_user_prefix$_worker-manager;
-    grant select, insert, update, delete on queue_provisioner_entities to $db_user_prefix$_worker-manager;
+    grant select, insert, update, delete on queue_tasks_entities to $db_user_prefix$_queue;
+    grant select, insert, update, delete on queue_artifacts_entities to $db_user_prefix$_queue;
+    grant select, insert, update, delete on queue_task_groups_entities to $db_user_prefix$_queue;
+    grant select, insert, update, delete on queue_task_group_members_entities to $db_user_prefix$_queue;
+    grant select, insert, update, delete on queue_task_group_active_sets_entities to $db_user_prefix$_queue;
+    grant select, insert, update, delete on queue_task_requirement_entities to $db_user_prefix$_queu@e;
+    grant select, insert, update, delete on queue_task_dependency_entities to $db_user_prefix$_queue;
+    grant select, insert, update, delete on queue_worker_entities to $db_user_prefix$_queue;
+    grant select, insert, update, delete on queue_worker_type_entities to $db_user_prefix$_queue;
+    grant select, insert, update, delete on queue_provisioner_entities to $db_user_prefix$_queue;
   end
 methods:
   clients_entities_load:
@@ -901,6 +901,3126 @@ methods:
 
         sql := sql || concat_ws(' and ', partition_key_var, row_key_var, condition);
         sql := sql || ' order by taskcluster_check_runs_entities.partition_key, taskcluster_check_runs_entities.row_key';
+
+        if size is not null and size > 0 then
+          sql := sql || ' limit ' || size;
+
+          if page is not null and page > 0 then
+            page_offset := size * (page - 1);
+            sql := sql || ' offset ' || page_offset;
+          end if;
+        end if;
+
+        return query execute sql;
+      end
+  hooks_load:
+    description: test
+    mode: read
+    serviceName: hooks
+    args: partition_key text, row_key text
+    returns: table (partition_key_out text, row_key_out text, value jsonb, version integer, etag uuid)
+    body: |-
+      begin
+        return query
+        select hooks.partition_key, hooks.row_key, hooks.value, hooks.version,
+        hooks.etag from hooks
+        where hooks.partition_key = hooks_load.partition_key and hooks.row_key = hooks_load.row_key;
+      end
+  hooks_create:
+    serviceName: hooks
+    description: test
+    mode: write
+    args: pk text, rk text, properties jsonb, overwrite boolean, version integer
+    returns: uuid
+    body: |-
+      declare
+        new_etag uuid := public.gen_random_uuid();
+      begin
+        if overwrite then
+          insert into hooks(partition_key, row_key, value, version, etag)
+          values (
+            pk,
+            rk,
+            properties,
+            version,
+            new_etag
+          ) on conflict (partition_key, row_key) do
+          update
+          set (value, version, etag) = (properties, hooks_create.version, new_etag)
+          where hooks.partition_key = hooks_create.pk and hooks.row_key = hooks_create.rk;
+        else
+          insert into hooks(partition_key, row_key, value, version, etag)
+          values (
+            pk,
+            rk,
+            properties,
+            version,
+            new_etag
+          );
+        end if;
+        return new_etag;
+      end
+  hooks_remove:
+    serviceName: hooks
+    description: test
+    mode: write
+    args: partition_key text, row_key text
+    returns: table (etag uuid)
+    body: |-
+      begin
+        return query delete from hooks
+        where hooks.partition_key = hooks_remove.partition_key and hooks.row_key = hooks_remove.row_key
+        returning hooks.etag;
+      end
+  hooks_modify:
+    serviceName: hooks
+    description: |
+      Modify an entity. If the modify operation is succesful, the etag is returned in a set.
+      Else, an error will be raised with the following error code:
+      * 'P0004' - update was unsuccessful (e.g., the etag value did not match)
+      * 'P0002' - entry not found in the table (i.e., no such row)
+    mode: write
+    args: partition_key text, row_key text, properties jsonb, version integer, old_etag uuid
+    returns: table (etag uuid)
+    body: |-
+      declare
+        new_etag uuid := public.gen_random_uuid();
+      begin
+        update hooks
+        set (value, version, etag) = (properties, hooks_modify.version, new_etag)
+        where hooks.partition_key = hooks_modify.partition_key and hooks.row_key = hooks_modify.row_key and hooks.etag = hooks_modify.old_etag;
+
+        if found then
+          return query select new_etag;
+          return;
+        end if;
+
+        perform hooks.etag from hooks
+        where hooks.partition_key = hooks_modify.partition_key and hooks.row_key = hooks_modify.row_key;
+
+        if found then
+          raise exception 'unsuccessful update' using errcode = 'P0004';
+        else
+          raise exception 'no such row' using errcode = 'P0002';
+        end if;
+      end
+  hooks_scan:
+    description: test
+    mode: read
+    serviceName: hooks
+    args: pk text, rk text, condition text, size integer, page integer
+    returns: table (partition_key text, row_key text, value jsonb, version integer, etag uuid)
+    body: |-
+      declare
+        sql text := 'select hooks.partition_key, hooks.row_key, hooks.value, hooks.version, hooks.etag from hooks';
+        partition_key_var text;
+        row_key_var text;
+        page_offset integer;
+      begin
+        if hooks_scan.pk is not null or hooks_scan.rk is not null or condition is not null then
+          sql := sql || ' where ';
+        end if;
+
+        if hooks_scan.pk is not null then
+          partition_key_var := 'partition_key = ' || quote_literal(hooks_scan.pk);
+        end if;
+
+        if hooks_scan.rk is not null then
+          row_key_var := 'row_key = ' || quote_literal(hooks_scan.rk);
+        end if;
+
+        sql := sql || concat_ws(' and ', partition_key_var, row_key_var, condition);
+        sql := sql || ' order by hooks.partition_key, hooks.row_key';
+
+        if size is not null and size > 0 then
+          sql := sql || ' limit ' || size;
+
+          if page is not null and page > 0 then
+            page_offset := size * (page - 1);
+            sql := sql || ' offset ' || page_offset;
+          end if;
+        end if;
+
+        return query execute sql;
+      end
+  queues_entities_load:
+    description: test
+    mode: read
+    serviceName: hooks
+    args: partition_key text, row_key text
+    returns: table (partition_key_out text, row_key_out text, value jsonb, version integer, etag uuid)
+    body: |-
+      begin
+        return query
+        select queues_entities.partition_key, queues_entities.row_key, queues_entities.value, queues_entities.version,
+        queues_entities.etag from queues_entities
+        where queues_entities.partition_key = queues_entities_load.partition_key and queues_entities.row_key = queues_entities_load.row_key;
+      end
+  queues_entities_create:
+    serviceName: hooks
+    description: test
+    mode: write
+    args: pk text, rk text, properties jsonb, overwrite boolean, version integer
+    returns: uuid
+    body: |-
+      declare
+        new_etag uuid := public.gen_random_uuid();
+      begin
+        if overwrite then
+          insert into queues_entities(partition_key, row_key, value, version, etag)
+          values (
+            pk,
+            rk,
+            properties,
+            version,
+            new_etag
+          ) on conflict (partition_key, row_key) do
+          update
+          set (value, version, etag) = (properties, queues_entities_create.version, new_etag)
+          where queues_entities.partition_key = queues_entities_create.pk and queues_entities.row_key = queues_entities_create.rk;
+        else
+          insert into queues_entities(partition_key, row_key, value, version, etag)
+          values (
+            pk,
+            rk,
+            properties,
+            version,
+            new_etag
+          );
+        end if;
+        return new_etag;
+      end
+  queues_entities_remove:
+    serviceName: hooks
+    description: test
+    mode: write
+    args: partition_key text, row_key text
+    returns: table (etag uuid)
+    body: |-
+      begin
+        return query delete from queues_entities
+        where queues_entities.partition_key = queues_entities_remove.partition_key and queues_entities.row_key = queues_entities_remove.row_key
+        returning queues_entities.etag;
+      end
+  queues_entities_modify:
+    serviceName: hooks
+    description: |
+      Modify an entity. If the modify operation is succesful, the etag is returned in a set.
+      Else, an error will be raised with the following error code:
+      * 'P0004' - update was unsuccessful (e.g., the etag value did not match)
+      * 'P0002' - entry not found in the table (i.e., no such row)
+    mode: write
+    args: partition_key text, row_key text, properties jsonb, version integer, old_etag uuid
+    returns: table (etag uuid)
+    body: |-
+      declare
+        new_etag uuid := public.gen_random_uuid();
+      begin
+        update queues_entities
+        set (value, version, etag) = (properties, queues_entities_modify.version, new_etag)
+        where queues_entities.partition_key = queues_entities_modify.partition_key and queues_entities.row_key = queues_entities_modify.row_key and queues_entities.etag = queues_entities_modify.old_etag;
+
+        if found then
+          return query select new_etag;
+          return;
+        end if;
+
+        perform queues_entities.etag from queues_entities
+        where queues_entities.partition_key = queues_entities_modify.partition_key and queues_entities.row_key = queues_entities_modify.row_key;
+
+        if found then
+          raise exception 'unsuccessful update' using errcode = 'P0004';
+        else
+          raise exception 'no such row' using errcode = 'P0002';
+        end if;
+      end
+  queues_entities_scan:
+    description: test
+    mode: read
+    serviceName: hooks
+    args: pk text, rk text, condition text, size integer, page integer
+    returns: table (partition_key text, row_key text, value jsonb, version integer, etag uuid)
+    body: |-
+      declare
+        sql text := 'select queues_entities.partition_key, queues_entities.row_key, queues_entities.value, queues_entities.version, queues_entities.etag from queues_entities';
+        partition_key_var text;
+        row_key_var text;
+        page_offset integer;
+      begin
+        if queues_entities_scan.pk is not null or queues_entities_scan.rk is not null or condition is not null then
+          sql := sql || ' where ';
+        end if;
+
+        if queues_entities_scan.pk is not null then
+          partition_key_var := 'partition_key = ' || quote_literal(queues_entities_scan.pk);
+        end if;
+
+        if queues_entities_scan.rk is not null then
+          row_key_var := 'row_key = ' || quote_literal(queues_entities_scan.rk);
+        end if;
+
+        sql := sql || concat_ws(' and ', partition_key_var, row_key_var, condition);
+        sql := sql || ' order by queues_entities.partition_key, queues_entities.row_key';
+
+        if size is not null and size > 0 then
+          sql := sql || ' limit ' || size;
+
+          if page is not null and page > 0 then
+            page_offset := size * (page - 1);
+            sql := sql || ' offset ' || page_offset;
+          end if;
+        end if;
+
+        return query execute sql;
+      end
+  last_fire3_entities_load:
+    description: test
+    mode: read
+    serviceName: hooks
+    args: partition_key text, row_key text
+    returns: table (partition_key_out text, row_key_out text, value jsonb, version integer, etag uuid)
+    body: |-
+      begin
+        return query
+        select last_fire3_entities.partition_key, last_fire3_entities.row_key, last_fire3_entities.value, last_fire3_entities.version,
+        last_fire3_entities.etag from last_fire3_entities
+        where last_fire3_entities.partition_key = last_fire3_entities_load.partition_key and last_fire3_entities.row_key = last_fire3_entities_load.row_key;
+      end
+  last_fire3_entities_create:
+    serviceName: hooks
+    description: test
+    mode: write
+    args: pk text, rk text, properties jsonb, overwrite boolean, version integer
+    returns: uuid
+    body: |-
+      declare
+        new_etag uuid := public.gen_random_uuid();
+      begin
+        if overwrite then
+          insert into last_fire3_entities(partition_key, row_key, value, version, etag)
+          values (
+            pk,
+            rk,
+            properties,
+            version,
+            new_etag
+          ) on conflict (partition_key, row_key) do
+          update
+          set (value, version, etag) = (properties, last_fire3_entities_create.version, new_etag)
+          where last_fire3_entities.partition_key = last_fire3_entities_create.pk and last_fire3_entities.row_key = last_fire3_entities_create.rk;
+        else
+          insert into last_fire3_entities(partition_key, row_key, value, version, etag)
+          values (
+            pk,
+            rk,
+            properties,
+            version,
+            new_etag
+          );
+        end if;
+        return new_etag;
+      end
+  last_fire3_entities_remove:
+    serviceName: hooks
+    description: test
+    mode: write
+    args: partition_key text, row_key text
+    returns: table (etag uuid)
+    body: |-
+      begin
+        return query delete from last_fire3_entities
+        where last_fire3_entities.partition_key = last_fire3_entities_remove.partition_key and last_fire3_entities.row_key = last_fire3_entities_remove.row_key
+        returning last_fire3_entities.etag;
+      end
+  last_fire3_entities_modify:
+    serviceName: hooks
+    description: |
+      Modify an entity. If the modify operation is succesful, the etag is returned in a set.
+      Else, an error will be raised with the following error code:
+      * 'P0004' - update was unsuccessful (e.g., the etag value did not match)
+      * 'P0002' - entry not found in the table (i.e., no such row)
+    mode: write
+    args: partition_key text, row_key text, properties jsonb, version integer, old_etag uuid
+    returns: table (etag uuid)
+    body: |-
+      declare
+        new_etag uuid := public.gen_random_uuid();
+      begin
+        update last_fire3_entities
+        set (value, version, etag) = (properties, last_fire3_entities_modify.version, new_etag)
+        where last_fire3_entities.partition_key = last_fire3_entities_modify.partition_key and last_fire3_entities.row_key = last_fire3_entities_modify.row_key and last_fire3_entities.etag = last_fire3_entities_modify.old_etag;
+
+        if found then
+          return query select new_etag;
+          return;
+        end if;
+
+        perform last_fire3_entities.etag from last_fire3_entities
+        where last_fire3_entities.partition_key = last_fire3_entities_modify.partition_key and last_fire3_entities.row_key = last_fire3_entities_modify.row_key;
+
+        if found then
+          raise exception 'unsuccessful update' using errcode = 'P0004';
+        else
+          raise exception 'no such row' using errcode = 'P0002';
+        end if;
+      end
+  last_fire3_entities_scan:
+    description: test
+    mode: read
+    serviceName: hooks
+    args: pk text, rk text, condition text, size integer, page integer
+    returns: table (partition_key text, row_key text, value jsonb, version integer, etag uuid)
+    body: |-
+      declare
+        sql text := 'select last_fire3_entities.partition_key, last_fire3_entities.row_key, last_fire3_entities.value, last_fire3_entities.version, last_fire3_entities.etag from last_fire3_entities';
+        partition_key_var text;
+        row_key_var text;
+        page_offset integer;
+      begin
+        if last_fire3_entities_scan.pk is not null or last_fire3_entities_scan.rk is not null or condition is not null then
+          sql := sql || ' where ';
+        end if;
+
+        if last_fire3_entities_scan.pk is not null then
+          partition_key_var := 'partition_key = ' || quote_literal(last_fire3_entities_scan.pk);
+        end if;
+
+        if last_fire3_entities_scan.rk is not null then
+          row_key_var := 'row_key = ' || quote_literal(last_fire3_entities_scan.rk);
+        end if;
+
+        sql := sql || concat_ws(' and ', partition_key_var, row_key_var, condition);
+        sql := sql || ' order by last_fire3_entities.partition_key, last_fire3_entities.row_key';
+
+        if size is not null and size > 0 then
+          sql := sql || ' limit ' || size;
+
+          if page is not null and page > 0 then
+            page_offset := size * (page - 1);
+            sql := sql || ' offset ' || page_offset;
+          end if;
+        end if;
+
+        return query execute sql;
+      end
+  indexed_tasks_entities_load:
+    description: test
+    mode: read
+    serviceName: index
+    args: partition_key text, row_key text
+    returns: table (partition_key_out text, row_key_out text, value jsonb, version integer, etag uuid)
+    body: |-
+      begin
+        return query
+        select indexed_tasks_entities.partition_key, indexed_tasks_entities.row_key, indexed_tasks_entities.value, indexed_tasks_entities.version,
+        indexed_tasks_entities.etag from indexed_tasks_entities
+        where indexed_tasks_entities.partition_key = indexed_tasks_entities_load.partition_key and indexed_tasks_entities.row_key = indexed_tasks_entities_load.row_key;
+      end
+  indexed_tasks_entities_create:
+    serviceName: index
+    description: test
+    mode: write
+    args: pk text, rk text, properties jsonb, overwrite boolean, version integer
+    returns: uuid
+    body: |-
+      declare
+        new_etag uuid := public.gen_random_uuid();
+      begin
+        if overwrite then
+          insert into indexed_tasks_entities(partition_key, row_key, value, version, etag)
+          values (
+            pk,
+            rk,
+            properties,
+            version,
+            new_etag
+          ) on conflict (partition_key, row_key) do
+          update
+          set (value, version, etag) = (properties, indexed_tasks_entities_create.version, new_etag)
+          where indexed_tasks_entities.partition_key = indexed_tasks_entities_create.pk and indexed_tasks_entities.row_key = indexed_tasks_entities_create.rk;
+        else
+          insert into indexed_tasks_entities(partition_key, row_key, value, version, etag)
+          values (
+            pk,
+            rk,
+            properties,
+            version,
+            new_etag
+          );
+        end if;
+        return new_etag;
+      end
+  indexed_tasks_entities_remove:
+    serviceName: index
+    description: test
+    mode: write
+    args: partition_key text, row_key text
+    returns: table (etag uuid)
+    body: |-
+      begin
+        return query delete from indexed_tasks_entities
+        where indexed_tasks_entities.partition_key = indexed_tasks_entities_remove.partition_key and indexed_tasks_entities.row_key = indexed_tasks_entities_remove.row_key
+        returning indexed_tasks_entities.etag;
+      end
+  indexed_tasks_entities_modify:
+    serviceName: index
+    description: |
+      Modify an entity. If the modify operation is succesful, the etag is returned in a set.
+      Else, an error will be raised with the following error code:
+      * 'P0004' - update was unsuccessful (e.g., the etag value did not match)
+      * 'P0002' - entry not found in the table (i.e., no such row)
+    mode: write
+    args: partition_key text, row_key text, properties jsonb, version integer, old_etag uuid
+    returns: table (etag uuid)
+    body: |-
+      declare
+        new_etag uuid := public.gen_random_uuid();
+      begin
+        update indexed_tasks_entities
+        set (value, version, etag) = (properties, indexed_tasks_entities_modify.version, new_etag)
+        where indexed_tasks_entities.partition_key = indexed_tasks_entities_modify.partition_key and indexed_tasks_entities.row_key = indexed_tasks_entities_modify.row_key and indexed_tasks_entities.etag = indexed_tasks_entities_modify.old_etag;
+
+        if found then
+          return query select new_etag;
+          return;
+        end if;
+
+        perform indexed_tasks_entities.etag from indexed_tasks_entities
+        where indexed_tasks_entities.partition_key = indexed_tasks_entities_modify.partition_key and indexed_tasks_entities.row_key = indexed_tasks_entities_modify.row_key;
+
+        if found then
+          raise exception 'unsuccessful update' using errcode = 'P0004';
+        else
+          raise exception 'no such row' using errcode = 'P0002';
+        end if;
+      end
+  indexed_tasks_entities_scan:
+    description: test
+    mode: read
+    serviceName: index
+    args: pk text, rk text, condition text, size integer, page integer
+    returns: table (partition_key text, row_key text, value jsonb, version integer, etag uuid)
+    body: |-
+      declare
+        sql text := 'select indexed_tasks_entities.partition_key, indexed_tasks_entities.row_key, indexed_tasks_entities.value, indexed_tasks_entities.version, indexed_tasks_entities.etag from indexed_tasks_entities';
+        partition_key_var text;
+        row_key_var text;
+        page_offset integer;
+      begin
+        if indexed_tasks_entities_scan.pk is not null or indexed_tasks_entities_scan.rk is not null or condition is not null then
+          sql := sql || ' where ';
+        end if;
+
+        if indexed_tasks_entities_scan.pk is not null then
+          partition_key_var := 'partition_key = ' || quote_literal(indexed_tasks_entities_scan.pk);
+        end if;
+
+        if indexed_tasks_entities_scan.rk is not null then
+          row_key_var := 'row_key = ' || quote_literal(indexed_tasks_entities_scan.rk);
+        end if;
+
+        sql := sql || concat_ws(' and ', partition_key_var, row_key_var, condition);
+        sql := sql || ' order by indexed_tasks_entities.partition_key, indexed_tasks_entities.row_key';
+
+        if size is not null and size > 0 then
+          sql := sql || ' limit ' || size;
+
+          if page is not null and page > 0 then
+            page_offset := size * (page - 1);
+            sql := sql || ' offset ' || page_offset;
+          end if;
+        end if;
+
+        return query execute sql;
+      end
+  namespaces_entities_load:
+    description: test
+    mode: read
+    serviceName: index
+    args: partition_key text, row_key text
+    returns: table (partition_key_out text, row_key_out text, value jsonb, version integer, etag uuid)
+    body: |-
+      begin
+        return query
+        select namespaces_entities.partition_key, namespaces_entities.row_key, namespaces_entities.value, namespaces_entities.version,
+        namespaces_entities.etag from namespaces_entities
+        where namespaces_entities.partition_key = namespaces_entities_load.partition_key and namespaces_entities.row_key = namespaces_entities_load.row_key;
+      end
+  namespaces_entities_create:
+    serviceName: index
+    description: test
+    mode: write
+    args: pk text, rk text, properties jsonb, overwrite boolean, version integer
+    returns: uuid
+    body: |-
+      declare
+        new_etag uuid := public.gen_random_uuid();
+      begin
+        if overwrite then
+          insert into namespaces_entities(partition_key, row_key, value, version, etag)
+          values (
+            pk,
+            rk,
+            properties,
+            version,
+            new_etag
+          ) on conflict (partition_key, row_key) do
+          update
+          set (value, version, etag) = (properties, namespaces_entities_create.version, new_etag)
+          where namespaces_entities.partition_key = namespaces_entities_create.pk and namespaces_entities.row_key = namespaces_entities_create.rk;
+        else
+          insert into namespaces_entities(partition_key, row_key, value, version, etag)
+          values (
+            pk,
+            rk,
+            properties,
+            version,
+            new_etag
+          );
+        end if;
+        return new_etag;
+      end
+  namespaces_entities_remove:
+    serviceName: index
+    description: test
+    mode: write
+    args: partition_key text, row_key text
+    returns: table (etag uuid)
+    body: |-
+      begin
+        return query delete from namespaces_entities
+        where namespaces_entities.partition_key = namespaces_entities_remove.partition_key and namespaces_entities.row_key = namespaces_entities_remove.row_key
+        returning namespaces_entities.etag;
+      end
+  namespaces_entities_modify:
+    serviceName: index
+    description: |
+      Modify an entity. If the modify operation is succesful, the etag is returned in a set.
+      Else, an error will be raised with the following error code:
+      * 'P0004' - update was unsuccessful (e.g., the etag value did not match)
+      * 'P0002' - entry not found in the table (i.e., no such row)
+    mode: write
+    args: partition_key text, row_key text, properties jsonb, version integer, old_etag uuid
+    returns: table (etag uuid)
+    body: |-
+      declare
+        new_etag uuid := public.gen_random_uuid();
+      begin
+        update namespaces_entities
+        set (value, version, etag) = (properties, namespaces_entities_modify.version, new_etag)
+        where namespaces_entities.partition_key = namespaces_entities_modify.partition_key and namespaces_entities.row_key = namespaces_entities_modify.row_key and namespaces_entities.etag = namespaces_entities_modify.old_etag;
+
+        if found then
+          return query select new_etag;
+          return;
+        end if;
+
+        perform namespaces_entities.etag from namespaces_entities
+        where namespaces_entities.partition_key = namespaces_entities_modify.partition_key and namespaces_entities.row_key = namespaces_entities_modify.row_key;
+
+        if found then
+          raise exception 'unsuccessful update' using errcode = 'P0004';
+        else
+          raise exception 'no such row' using errcode = 'P0002';
+        end if;
+      end
+  namespaces_entities_scan:
+    description: test
+    mode: read
+    serviceName: index
+    args: pk text, rk text, condition text, size integer, page integer
+    returns: table (partition_key text, row_key text, value jsonb, version integer, etag uuid)
+    body: |-
+      declare
+        sql text := 'select namespaces_entities.partition_key, namespaces_entities.row_key, namespaces_entities.value, namespaces_entities.version, namespaces_entities.etag from namespaces_entities';
+        partition_key_var text;
+        row_key_var text;
+        page_offset integer;
+      begin
+        if namespaces_entities_scan.pk is not null or namespaces_entities_scan.rk is not null or condition is not null then
+          sql := sql || ' where ';
+        end if;
+
+        if namespaces_entities_scan.pk is not null then
+          partition_key_var := 'partition_key = ' || quote_literal(namespaces_entities_scan.pk);
+        end if;
+
+        if namespaces_entities_scan.rk is not null then
+          row_key_var := 'row_key = ' || quote_literal(namespaces_entities_scan.rk);
+        end if;
+
+        sql := sql || concat_ws(' and ', partition_key_var, row_key_var, condition);
+        sql := sql || ' order by namespaces_entities.partition_key, namespaces_entities.row_key';
+
+        if size is not null and size > 0 then
+          sql := sql || ' limit ' || size;
+
+          if page is not null and page > 0 then
+            page_offset := size * (page - 1);
+            sql := sql || ' offset ' || page_offset;
+          end if;
+        end if;
+
+        return query execute sql;
+      end
+  denylisted_notification_entities_load:
+    description: test
+    mode: read
+    serviceName: notify
+    args: partition_key text, row_key text
+    returns: table (partition_key_out text, row_key_out text, value jsonb, version integer, etag uuid)
+    body: |-
+      begin
+        return query
+        select denylisted_notification_entities.partition_key, denylisted_notification_entities.row_key, denylisted_notification_entities.value, denylisted_notification_entities.version,
+        denylisted_notification_entities.etag from denylisted_notification_entities
+        where denylisted_notification_entities.partition_key = denylisted_notification_entities_load.partition_key and denylisted_notification_entities.row_key = denylisted_notification_entities_load.row_key;
+      end
+  denylisted_notification_entities_create:
+    serviceName: notify
+    description: test
+    mode: write
+    args: pk text, rk text, properties jsonb, overwrite boolean, version integer
+    returns: uuid
+    body: |-
+      declare
+        new_etag uuid := public.gen_random_uuid();
+      begin
+        if overwrite then
+          insert into denylisted_notification_entities(partition_key, row_key, value, version, etag)
+          values (
+            pk,
+            rk,
+            properties,
+            version,
+            new_etag
+          ) on conflict (partition_key, row_key) do
+          update
+          set (value, version, etag) = (properties, denylisted_notification_entities_create.version, new_etag)
+          where denylisted_notification_entities.partition_key = denylisted_notification_entities_create.pk and denylisted_notification_entities.row_key = denylisted_notification_entities_create.rk;
+        else
+          insert into denylisted_notification_entities(partition_key, row_key, value, version, etag)
+          values (
+            pk,
+            rk,
+            properties,
+            version,
+            new_etag
+          );
+        end if;
+        return new_etag;
+      end
+  denylisted_notification_entities_remove:
+    serviceName: notify
+    description: test
+    mode: write
+    args: partition_key text, row_key text
+    returns: table (etag uuid)
+    body: |-
+      begin
+        return query delete from denylisted_notification_entities
+        where denylisted_notification_entities.partition_key = denylisted_notification_entities_remove.partition_key and denylisted_notification_entities.row_key = denylisted_notification_entities_remove.row_key
+        returning denylisted_notification_entities.etag;
+      end
+  denylisted_notification_entities_modify:
+    serviceName: notify
+    description: |
+      Modify an entity. If the modify operation is succesful, the etag is returned in a set.
+      Else, an error will be raised with the following error code:
+      * 'P0004' - update was unsuccessful (e.g., the etag value did not match)
+      * 'P0002' - entry not found in the table (i.e., no such row)
+    mode: write
+    args: partition_key text, row_key text, properties jsonb, version integer, old_etag uuid
+    returns: table (etag uuid)
+    body: |-
+      declare
+        new_etag uuid := public.gen_random_uuid();
+      begin
+        update denylisted_notification_entities
+        set (value, version, etag) = (properties, denylisted_notification_entities_modify.version, new_etag)
+        where denylisted_notification_entities.partition_key = denylisted_notification_entities_modify.partition_key and denylisted_notification_entities.row_key = denylisted_notification_entities_modify.row_key and denylisted_notification_entities.etag = denylisted_notification_entities_modify.old_etag;
+
+        if found then
+          return query select new_etag;
+          return;
+        end if;
+
+        perform denylisted_notification_entities.etag from denylisted_notification_entities
+        where denylisted_notification_entities.partition_key = denylisted_notification_entities_modify.partition_key and denylisted_notification_entities.row_key = denylisted_notification_entities_modify.row_key;
+
+        if found then
+          raise exception 'unsuccessful update' using errcode = 'P0004';
+        else
+          raise exception 'no such row' using errcode = 'P0002';
+        end if;
+      end
+  denylisted_notification_entities_scan:
+    description: test
+    mode: read
+    serviceName: notify
+    args: pk text, rk text, condition text, size integer, page integer
+    returns: table (partition_key text, row_key text, value jsonb, version integer, etag uuid)
+    body: |-
+      declare
+        sql text := 'select denylisted_notification_entities.partition_key, denylisted_notification_entities.row_key, denylisted_notification_entities.value, denylisted_notification_entities.version, denylisted_notification_entities.etag from denylisted_notification_entities';
+        partition_key_var text;
+        row_key_var text;
+        page_offset integer;
+      begin
+        if denylisted_notification_entities_scan.pk is not null or denylisted_notification_entities_scan.rk is not null or condition is not null then
+          sql := sql || ' where ';
+        end if;
+
+        if denylisted_notification_entities_scan.pk is not null then
+          partition_key_var := 'partition_key = ' || quote_literal(denylisted_notification_entities_scan.pk);
+        end if;
+
+        if denylisted_notification_entities_scan.rk is not null then
+          row_key_var := 'row_key = ' || quote_literal(denylisted_notification_entities_scan.rk);
+        end if;
+
+        sql := sql || concat_ws(' and ', partition_key_var, row_key_var, condition);
+        sql := sql || ' order by denylisted_notification_entities.partition_key, denylisted_notification_entities.row_key';
+
+        if size is not null and size > 0 then
+          sql := sql || ' limit ' || size;
+
+          if page is not null and page > 0 then
+            page_offset := size * (page - 1);
+            sql := sql || ' offset ' || page_offset;
+          end if;
+        end if;
+
+        return query execute sql;
+      end
+  cache_purges_entities_load:
+    description: test
+    mode: read
+    serviceName: cache-purge
+    args: partition_key text, row_key text
+    returns: table (partition_key_out text, row_key_out text, value jsonb, version integer, etag uuid)
+    body: |-
+      begin
+        return query
+        select cache_purges_entities.partition_key, cache_purges_entities.row_key, cache_purges_entities.value, cache_purges_entities.version,
+        cache_purges_entities.etag from cache_purges_entities
+        where cache_purges_entities.partition_key = cache_purges_entities_load.partition_key and cache_purges_entities.row_key = cache_purges_entities_load.row_key;
+      end
+  cache_purges_entities_create:
+    serviceName: cache-purge
+    description: test
+    mode: write
+    args: pk text, rk text, properties jsonb, overwrite boolean, version integer
+    returns: uuid
+    body: |-
+      declare
+        new_etag uuid := public.gen_random_uuid();
+      begin
+        if overwrite then
+          insert into cache_purges_entities(partition_key, row_key, value, version, etag)
+          values (
+            pk,
+            rk,
+            properties,
+            version,
+            new_etag
+          ) on conflict (partition_key, row_key) do
+          update
+          set (value, version, etag) = (properties, cache_purges_entities_create.version, new_etag)
+          where cache_purges_entities.partition_key = cache_purges_entities_create.pk and cache_purges_entities.row_key = cache_purges_entities_create.rk;
+        else
+          insert into cache_purges_entities(partition_key, row_key, value, version, etag)
+          values (
+            pk,
+            rk,
+            properties,
+            version,
+            new_etag
+          );
+        end if;
+        return new_etag;
+      end
+  cache_purges_entities_remove:
+    serviceName: cache-purge
+    description: test
+    mode: write
+    args: partition_key text, row_key text
+    returns: table (etag uuid)
+    body: |-
+      begin
+        return query delete from cache_purges_entities
+        where cache_purges_entities.partition_key = cache_purges_entities_remove.partition_key and cache_purges_entities.row_key = cache_purges_entities_remove.row_key
+        returning cache_purges_entities.etag;
+      end
+  cache_purges_entities_modify:
+    serviceName: cache-purge
+    description: |
+      Modify an entity. If the modify operation is succesful, the etag is returned in a set.
+      Else, an error will be raised with the following error code:
+      * 'P0004' - update was unsuccessful (e.g., the etag value did not match)
+      * 'P0002' - entry not found in the table (i.e., no such row)
+    mode: write
+    args: partition_key text, row_key text, properties jsonb, version integer, old_etag uuid
+    returns: table (etag uuid)
+    body: |-
+      declare
+        new_etag uuid := public.gen_random_uuid();
+      begin
+        update cache_purges_entities
+        set (value, version, etag) = (properties, cache_purges_entities_modify.version, new_etag)
+        where cache_purges_entities.partition_key = cache_purges_entities_modify.partition_key and cache_purges_entities.row_key = cache_purges_entities_modify.row_key and cache_purges_entities.etag = cache_purges_entities_modify.old_etag;
+
+        if found then
+          return query select new_etag;
+          return;
+        end if;
+
+        perform cache_purges_entities.etag from cache_purges_entities
+        where cache_purges_entities.partition_key = cache_purges_entities_modify.partition_key and cache_purges_entities.row_key = cache_purges_entities_modify.row_key;
+
+        if found then
+          raise exception 'unsuccessful update' using errcode = 'P0004';
+        else
+          raise exception 'no such row' using errcode = 'P0002';
+        end if;
+      end
+  cache_purges_entities_scan:
+    description: test
+    mode: read
+    serviceName: cache-purge
+    args: pk text, rk text, condition text, size integer, page integer
+    returns: table (partition_key text, row_key text, value jsonb, version integer, etag uuid)
+    body: |-
+      declare
+        sql text := 'select cache_purges_entities.partition_key, cache_purges_entities.row_key, cache_purges_entities.value, cache_purges_entities.version, cache_purges_entities.etag from cache_purges_entities';
+        partition_key_var text;
+        row_key_var text;
+        page_offset integer;
+      begin
+        if cache_purges_entities_scan.pk is not null or cache_purges_entities_scan.rk is not null or condition is not null then
+          sql := sql || ' where ';
+        end if;
+
+        if cache_purges_entities_scan.pk is not null then
+          partition_key_var := 'partition_key = ' || quote_literal(cache_purges_entities_scan.pk);
+        end if;
+
+        if cache_purges_entities_scan.rk is not null then
+          row_key_var := 'row_key = ' || quote_literal(cache_purges_entities_scan.rk);
+        end if;
+
+        sql := sql || concat_ws(' and ', partition_key_var, row_key_var, condition);
+        sql := sql || ' order by cache_purges_entities.partition_key, cache_purges_entities.row_key';
+
+        if size is not null and size > 0 then
+          sql := sql || ' limit ' || size;
+
+          if page is not null and page > 0 then
+            page_offset := size * (page - 1);
+            sql := sql || ' offset ' || page_offset;
+          end if;
+        end if;
+
+        return query execute sql;
+      end
+  queue_tasks_entities_load:
+    description: test
+    mode: read
+    serviceName: queue
+    args: partition_key text, row_key text
+    returns: table (partition_key_out text, row_key_out text, value jsonb, version integer, etag uuid)
+    body: |-
+      begin
+        return query
+        select queue_tasks_entities.partition_key, queue_tasks_entities.row_key, queue_tasks_entities.value, queue_tasks_entities.version,
+        queue_tasks_entities.etag from queue_tasks_entities
+        where queue_tasks_entities.partition_key = queue_tasks_entities_load.partition_key and queue_tasks_entities.row_key = queue_tasks_entities_load.row_key;
+      end
+  queue_tasks_entities_create:
+    serviceName: queue
+    description: test
+    mode: write
+    args: pk text, rk text, properties jsonb, overwrite boolean, version integer
+    returns: uuid
+    body: |-
+      declare
+        new_etag uuid := public.gen_random_uuid();
+      begin
+        if overwrite then
+          insert into queue_tasks_entities(partition_key, row_key, value, version, etag)
+          values (
+            pk,
+            rk,
+            properties,
+            version,
+            new_etag
+          ) on conflict (partition_key, row_key) do
+          update
+          set (value, version, etag) = (properties, queue_tasks_entities_create.version, new_etag)
+          where queue_tasks_entities.partition_key = queue_tasks_entities_create.pk and queue_tasks_entities.row_key = queue_tasks_entities_create.rk;
+        else
+          insert into queue_tasks_entities(partition_key, row_key, value, version, etag)
+          values (
+            pk,
+            rk,
+            properties,
+            version,
+            new_etag
+          );
+        end if;
+        return new_etag;
+      end
+  queue_tasks_entities_remove:
+    serviceName: queue
+    description: test
+    mode: write
+    args: partition_key text, row_key text
+    returns: table (etag uuid)
+    body: |-
+      begin
+        return query delete from queue_tasks_entities
+        where queue_tasks_entities.partition_key = queue_tasks_entities_remove.partition_key and queue_tasks_entities.row_key = queue_tasks_entities_remove.row_key
+        returning queue_tasks_entities.etag;
+      end
+  queue_tasks_entities_modify:
+    serviceName: queue
+    description: |
+      Modify an entity. If the modify operation is succesful, the etag is returned in a set.
+      Else, an error will be raised with the following error code:
+      * 'P0004' - update was unsuccessful (e.g., the etag value did not match)
+      * 'P0002' - entry not found in the table (i.e., no such row)
+    mode: write
+    args: partition_key text, row_key text, properties jsonb, version integer, old_etag uuid
+    returns: table (etag uuid)
+    body: |-
+      declare
+        new_etag uuid := public.gen_random_uuid();
+      begin
+        update queue_tasks_entities
+        set (value, version, etag) = (properties, queue_tasks_entities_modify.version, new_etag)
+        where queue_tasks_entities.partition_key = queue_tasks_entities_modify.partition_key and queue_tasks_entities.row_key = queue_tasks_entities_modify.row_key and queue_tasks_entities.etag = queue_tasks_entities_modify.old_etag;
+
+        if found then
+          return query select new_etag;
+          return;
+        end if;
+
+        perform queue_tasks_entities.etag from queue_tasks_entities
+        where queue_tasks_entities.partition_key = queue_tasks_entities_modify.partition_key and queue_tasks_entities.row_key = queue_tasks_entities_modify.row_key;
+
+        if found then
+          raise exception 'unsuccessful update' using errcode = 'P0004';
+        else
+          raise exception 'no such row' using errcode = 'P0002';
+        end if;
+      end
+  queue_tasks_entities_scan:
+    description: test
+    mode: read
+    serviceName: queue
+    args: pk text, rk text, condition text, size integer, page integer
+    returns: table (partition_key text, row_key text, value jsonb, version integer, etag uuid)
+    body: |-
+      declare
+        sql text := 'select queue_tasks_entities.partition_key, queue_tasks_entities.row_key, queue_tasks_entities.value, queue_tasks_entities.version, queue_tasks_entities.etag from queue_tasks_entities';
+        partition_key_var text;
+        row_key_var text;
+        page_offset integer;
+      begin
+        if queue_tasks_entities_scan.pk is not null or queue_tasks_entities_scan.rk is not null or condition is not null then
+          sql := sql || ' where ';
+        end if;
+
+        if queue_tasks_entities_scan.pk is not null then
+          partition_key_var := 'partition_key = ' || quote_literal(queue_tasks_entities_scan.pk);
+        end if;
+
+        if queue_tasks_entities_scan.rk is not null then
+          row_key_var := 'row_key = ' || quote_literal(queue_tasks_entities_scan.rk);
+        end if;
+
+        sql := sql || concat_ws(' and ', partition_key_var, row_key_var, condition);
+        sql := sql || ' order by queue_tasks_entities.partition_key, queue_tasks_entities.row_key';
+
+        if size is not null and size > 0 then
+          sql := sql || ' limit ' || size;
+
+          if page is not null and page > 0 then
+            page_offset := size * (page - 1);
+            sql := sql || ' offset ' || page_offset;
+          end if;
+        end if;
+
+        return query execute sql;
+      end
+  queue_artifcats_entities_load:
+    description: test
+    mode: read
+    serviceName: queue_artifcats_entitie
+    args: partition_key text, row_key text
+    returns: table (partition_key_out text, row_key_out text, value jsonb, version integer, etag uuid)
+    body: |-
+      begin
+        return query
+        select queue_artifcats_entities.partition_key, queue_artifcats_entities.row_key, queue_artifcats_entities.value, queue_artifcats_entities.version,
+        queue_artifcats_entities.etag from queue_artifcats_entities
+        where queue_artifcats_entities.partition_key = queue_artifcats_entities_load.partition_key and queue_artifcats_entities.row_key = queue_artifcats_entities_load.row_key;
+      end
+  queue_artifcats_entities_create:
+    serviceName: queue
+    description: test
+    mode: write
+    args: pk text, rk text, properties jsonb, overwrite boolean, version integer
+    returns: uuid
+    body: |-
+      declare
+        new_etag uuid := public.gen_random_uuid();
+      begin
+        if overwrite then
+          insert into queue_artifcats_entities(partition_key, row_key, value, version, etag)
+          values (
+            pk,
+            rk,
+            properties,
+            version,
+            new_etag
+          ) on conflict (partition_key, row_key) do
+          update
+          set (value, version, etag) = (properties, queue_artifcats_entities_create.version, new_etag)
+          where queue_artifcats_entities.partition_key = queue_artifcats_entities_create.pk and queue_artifcats_entities.row_key = queue_artifcats_entities_create.rk;
+        else
+          insert into queue_artifcats_entities(partition_key, row_key, value, version, etag)
+          values (
+            pk,
+            rk,
+            properties,
+            version,
+            new_etag
+          );
+        end if;
+        return new_etag;
+      end
+  queue_artifcats_entities_remove:
+    serviceName: queue
+    description: test
+    mode: write
+    args: partition_key text, row_key text
+    returns: table (etag uuid)
+    body: |-
+      begin
+        return query delete from queue_artifcats_entities
+        where queue_artifcats_entities.partition_key = queue_artifcats_entities_remove.partition_key and queue_artifcats_entities.row_key = queue_artifcats_entities_remove.row_key
+        returning queue_artifcats_entities.etag;
+      end
+  queue_artifcats_entities_modify:
+    serviceName: queue
+    description: |
+      Modify an entity. If the modify operation is succesful, the etag is returned in a set.
+      Else, an error will be raised with the following error code:
+      * 'P0004' - update was unsuccessful (e.g., the etag value did not match)
+      * 'P0002' - entry not found in the table (i.e., no such row)
+    mode: write
+    args: partition_key text, row_key text, properties jsonb, version integer, old_etag uuid
+    returns: table (etag uuid)
+    body: |-
+      declare
+        new_etag uuid := public.gen_random_uuid();
+      begin
+        update queue_artifcats_entities
+        set (value, version, etag) = (properties, queue_artifcats_entities_modify.version, new_etag)
+        where queue_artifcats_entities.partition_key = queue_artifcats_entities_modify.partition_key and queue_artifcats_entities.row_key = queue_artifcats_entities_modify.row_key and queue_artifcats_entities.etag = queue_artifcats_entities_modify.old_etag;
+
+        if found then
+          return query select new_etag;
+          return;
+        end if;
+
+        perform queue_artifcats_entities.etag from queue_artifcats_entities
+        where queue_artifcats_entities.partition_key = queue_artifcats_entities_modify.partition_key and queue_artifcats_entities.row_key = queue_artifcats_entities_modify.row_key;
+
+        if found then
+          raise exception 'unsuccessful update' using errcode = 'P0004';
+        else
+          raise exception 'no such row' using errcode = 'P0002';
+        end if;
+      end
+  queue_artifcats_entities_scan:
+    description: test
+    mode: read
+    serviceName: queue
+    args: pk text, rk text, condition text, size integer, page integer
+    returns: table (partition_key text, row_key text, value jsonb, version integer, etag uuid)
+    body: |-
+      declare
+        sql text := 'select queue_artifcats_entities.partition_key, queue_artifcats_entities.row_key, queue_artifcats_entities.value, queue_artifcats_entities.version, queue_artifcats_entities.etag from queue_artifcats_entities';
+        partition_key_var text;
+        row_key_var text;
+        page_offset integer;
+      begin
+        if queue_artifcats_entities_scan.pk is not null or queue_artifcats_entities_scan.rk is not null or condition is not null then
+          sql := sql || ' where ';
+        end if;
+
+        if queue_artifcats_entities_scan.pk is not null then
+          partition_key_var := 'partition_key = ' || quote_literal(queue_artifcats_entities_scan.pk);
+        end if;
+
+        if queue_artifcats_entities_scan.rk is not null then
+          row_key_var := 'row_key = ' || quote_literal(queue_artifcats_entities_scan.rk);
+        end if;
+
+        sql := sql || concat_ws(' and ', partition_key_var, row_key_var, condition);
+        sql := sql || ' order by queue_artifcats_entities.partition_key, queue_artifcats_entities.row_key';
+
+        if size is not null and size > 0 then
+          sql := sql || ' limit ' || size;
+
+          if page is not null and page > 0 then
+            page_offset := size * (page - 1);
+            sql := sql || ' offset ' || page_offset;
+          end if;
+        end if;
+
+        return query execute sql;
+      end
+  queue_task_groups_entities_load:
+    description: test
+    mode: read
+    serviceName: queue
+    args: partition_key text, row_key text
+    returns: table (partition_key_out text, row_key_out text, value jsonb, version integer, etag uuid)
+    body: |-
+      begin
+        return query
+        select queue_task_groups_entities.partition_key, queue_task_groups_entities.row_key, queue_task_groups_entities.value, queue_task_groups_entities.version,
+        queue_task_groups_entities.etag from queue_task_groups_entities
+        where queue_task_groups_entities.partition_key = queue_task_groups_entities_load.partition_key and queue_task_groups_entities.row_key = queue_task_groups_entities_load.row_key;
+      end
+  queue_task_groups_entities_create:
+    serviceName: queue
+    description: test
+    mode: write
+    args: pk text, rk text, properties jsonb, overwrite boolean, version integer
+    returns: uuid
+    body: |-
+      declare
+        new_etag uuid := public.gen_random_uuid();
+      begin
+        if overwrite then
+          insert into queue_task_groups_entities(partition_key, row_key, value, version, etag)
+          values (
+            pk,
+            rk,
+            properties,
+            version,
+            new_etag
+          ) on conflict (partition_key, row_key) do
+          update
+          set (value, version, etag) = (properties, queue_task_groups_entities_create.version, new_etag)
+          where queue_task_groups_entities.partition_key = queue_task_groups_entities_create.pk and queue_task_groups_entities.row_key = queue_task_groups_entities_create.rk;
+        else
+          insert into queue_task_groups_entities(partition_key, row_key, value, version, etag)
+          values (
+            pk,
+            rk,
+            properties,
+            version,
+            new_etag
+          );
+        end if;
+        return new_etag;
+      end
+  queue_task_groups_entities_remove:
+    serviceName: queue
+    description: test
+    mode: write
+    args: partition_key text, row_key text
+    returns: table (etag uuid)
+    body: |-
+      begin
+        return query delete from queue_task_groups_entities
+        where queue_task_groups_entities.partition_key = queue_task_groups_entities_remove.partition_key and queue_task_groups_entities.row_key = queue_task_groups_entities_remove.row_key
+        returning queue_task_groups_entities.etag;
+      end
+  queue_task_groups_entities_modify:
+    serviceName: queue
+    description: |
+      Modify an entity. If the modify operation is succesful, the etag is returned in a set.
+      Else, an error will be raised with the following error code:
+      * 'P0004' - update was unsuccessful (e.g., the etag value did not match)
+      * 'P0002' - entry not found in the table (i.e., no such row)
+    mode: write
+    args: partition_key text, row_key text, properties jsonb, version integer, old_etag uuid
+    returns: table (etag uuid)
+    body: |-
+      declare
+        new_etag uuid := public.gen_random_uuid();
+      begin
+        update queue_task_groups_entities
+        set (value, version, etag) = (properties, queue_task_groups_entities_modify.version, new_etag)
+        where queue_task_groups_entities.partition_key = queue_task_groups_entities_modify.partition_key and queue_task_groups_entities.row_key = queue_task_groups_entities_modify.row_key and queue_task_groups_entities.etag = queue_task_groups_entities_modify.old_etag;
+
+        if found then
+          return query select new_etag;
+          return;
+        end if;
+
+        perform queue_task_groups_entities.etag from queue_task_groups_entities
+        where queue_task_groups_entities.partition_key = queue_task_groups_entities_modify.partition_key and queue_task_groups_entities.row_key = queue_task_groups_entities_modify.row_key;
+
+        if found then
+          raise exception 'unsuccessful update' using errcode = 'P0004';
+        else
+          raise exception 'no such row' using errcode = 'P0002';
+        end if;
+      end
+  queue_task_groups_entities_scan:
+    description: test
+    mode: read
+    serviceName: queue
+    args: pk text, rk text, condition text, size integer, page integer
+    returns: table (partition_key text, row_key text, value jsonb, version integer, etag uuid)
+    body: |-
+      declare
+        sql text := 'select queue_task_groups_entities.partition_key, queue_task_groups_entities.row_key, queue_task_groups_entities.value, queue_task_groups_entities.version, queue_task_groups_entities.etag from queue_task_groups_entities';
+        partition_key_var text;
+        row_key_var text;
+        page_offset integer;
+      begin
+        if queue_task_groups_entities_scan.pk is not null or queue_task_groups_entities_scan.rk is not null or condition is not null then
+          sql := sql || ' where ';
+        end if;
+
+        if queue_task_groups_entities_scan.pk is not null then
+          partition_key_var := 'partition_key = ' || quote_literal(queue_task_groups_entities_scan.pk);
+        end if;
+
+        if queue_task_groups_entities_scan.rk is not null then
+          row_key_var := 'row_key = ' || quote_literal(queue_task_groups_entities_scan.rk);
+        end if;
+
+        sql := sql || concat_ws(' and ', partition_key_var, row_key_var, condition);
+        sql := sql || ' order by queue_task_groups_entities.partition_key, queue_task_groups_entities.row_key';
+
+        if size is not null and size > 0 then
+          sql := sql || ' limit ' || size;
+
+          if page is not null and page > 0 then
+            page_offset := size * (page - 1);
+            sql := sql || ' offset ' || page_offset;
+          end if;
+        end if;
+
+        return query execute sql;
+      end
+  queue_task_group_active_sets_entities_load:
+    description: test
+    mode: read
+    serviceName: queue
+    args: partition_key text, row_key text
+    returns: table (partition_key_out text, row_key_out text, value jsonb, version integer, etag uuid)
+    body: |-
+      begin
+        return query
+        select queue_task_group_active_sets_entities.partition_key, queue_task_group_active_sets_entities.row_key, queue_task_group_active_sets_entities.value, queue_task_group_active_sets_entities.version,
+        queue_task_group_active_sets_entities.etag from queue_task_group_active_sets_entities
+        where queue_task_group_active_sets_entities.partition_key = queue_task_group_active_sets_entities_load.partition_key and queue_task_group_active_sets_entities.row_key = queue_task_group_active_sets_entities_load.row_key;
+      end
+  queue_task_group_active_sets_entities_create:
+    serviceName: queue
+    description: test
+    mode: write
+    args: pk text, rk text, properties jsonb, overwrite boolean, version integer
+    returns: uuid
+    body: |-
+      declare
+        new_etag uuid := public.gen_random_uuid();
+      begin
+        if overwrite then
+          insert into queue_task_group_active_sets_entities(partition_key, row_key, value, version, etag)
+          values (
+            pk,
+            rk,
+            properties,
+            version,
+            new_etag
+          ) on conflict (partition_key, row_key) do
+          update
+          set (value, version, etag) = (properties, queue_task_group_active_sets_entities_create.version, new_etag)
+          where queue_task_group_active_sets_entities.partition_key = queue_task_group_active_sets_entities_create.pk and queue_task_group_active_sets_entities.row_key = queue_task_group_active_sets_entities_create.rk;
+        else
+          insert into queue_task_group_active_sets_entities(partition_key, row_key, value, version, etag)
+          values (
+            pk,
+            rk,
+            properties,
+            version,
+            new_etag
+          );
+        end if;
+        return new_etag;
+      end
+  queue_task_group_active_sets_entities_remove:
+    serviceName: queue
+    description: test
+    mode: write
+    args: partition_key text, row_key text
+    returns: table (etag uuid)
+    body: |-
+      begin
+        return query delete from queue_task_group_active_sets_entities
+        where queue_task_group_active_sets_entities.partition_key = queue_task_group_active_sets_entities_remove.partition_key and queue_task_group_active_sets_entities.row_key = queue_task_group_active_sets_entities_remove.row_key
+        returning queue_task_group_active_sets_entities.etag;
+      end
+  queue_task_group_active_sets_entities_modify:
+    serviceName: queue
+    description: |
+      Modify an entity. If the modify operation is succesful, the etag is returned in a set.
+      Else, an error will be raised with the following error code:
+      * 'P0004' - update was unsuccessful (e.g., the etag value did not match)
+      * 'P0002' - entry not found in the table (i.e., no such row)
+    mode: write
+    args: partition_key text, row_key text, properties jsonb, version integer, old_etag uuid
+    returns: table (etag uuid)
+    body: |-
+      declare
+        new_etag uuid := public.gen_random_uuid();
+      begin
+        update queue_task_group_active_sets_entities
+        set (value, version, etag) = (properties, queue_task_group_active_sets_entities_modify.version, new_etag)
+        where queue_task_group_active_sets_entities.partition_key = queue_task_group_active_sets_entities_modify.partition_key and queue_task_group_active_sets_entities.row_key = queue_task_group_active_sets_entities_modify.row_key and queue_task_group_active_sets_entities.etag = queue_task_group_active_sets_entities_modify.old_etag;
+
+        if found then
+          return query select new_etag;
+          return;
+        end if;
+
+        perform queue_task_group_active_sets_entities.etag from queue_task_group_active_sets_entities
+        where queue_task_group_active_sets_entities.partition_key = queue_task_group_active_sets_entities_modify.partition_key and queue_task_group_active_sets_entities.row_key = queue_task_group_active_sets_entities_modify.row_key;
+
+        if found then
+          raise exception 'unsuccessful update' using errcode = 'P0004';
+        else
+          raise exception 'no such row' using errcode = 'P0002';
+        end if;
+      end
+  queue_task_group_active_sets_entities_scan:
+    description: test
+    mode: read
+    serviceName: queue
+    args: pk text, rk text, condition text, size integer, page integer
+    returns: table (partition_key text, row_key text, value jsonb, version integer, etag uuid)
+    body: |-
+      declare
+        sql text := 'select queue_task_group_active_sets_entities.partition_key, queue_task_group_active_sets_entities.row_key, queue_task_group_active_sets_entities.value, queue_task_group_active_sets_entities.version, queue_task_group_active_sets_entities.etag from queue_task_group_active_sets_entities';
+        partition_key_var text;
+        row_key_var text;
+        page_offset integer;
+      begin
+        if queue_task_group_active_sets_entities_scan.pk is not null or queue_task_group_active_sets_entities_scan.rk is not null or condition is not null then
+          sql := sql || ' where ';
+        end if;
+
+        if queue_task_group_active_sets_entities_scan.pk is not null then
+          partition_key_var := 'partition_key = ' || quote_literal(queue_task_group_active_sets_entities_scan.pk);
+        end if;
+
+        if queue_task_group_active_sets_entities_scan.rk is not null then
+          row_key_var := 'row_key = ' || quote_literal(queue_task_group_active_sets_entities_scan.rk);
+        end if;
+
+        sql := sql || concat_ws(' and ', partition_key_var, row_key_var, condition);
+        sql := sql || ' order by queue_task_group_active_sets_entities.partition_key, queue_task_group_active_sets_entities.row_key';
+
+        if size is not null and size > 0 then
+          sql := sql || ' limit ' || size;
+
+          if page is not null and page > 0 then
+            page_offset := size * (page - 1);
+            sql := sql || ' offset ' || page_offset;
+          end if;
+        end if;
+
+        return query execute sql;
+      end
+  queue_task_requirement_entities_load:
+    description: test
+    mode: read
+    serviceName: queue
+    args: partition_key text, row_key text
+    returns: table (partition_key_out text, row_key_out text, value jsonb, version integer, etag uuid)
+    body: |-
+      begin
+        return query
+        select queue_task_requirement_entities.partition_key, queue_task_requirement_entities.row_key, queue_task_requirement_entities.value, queue_task_requirement_entities.version,
+        queue_task_requirement_entities.etag from queue_task_requirement_entities
+        where queue_task_requirement_entities.partition_key = queue_task_requirement_entities_load.partition_key and queue_task_requirement_entities.row_key = queue_task_requirement_entities_load.row_key;
+      end
+  queue_task_requirement_entities_create:
+    serviceName: queue
+    description: test
+    mode: write
+    args: pk text, rk text, properties jsonb, overwrite boolean, version integer
+    returns: uuid
+    body: |-
+      declare
+        new_etag uuid := public.gen_random_uuid();
+      begin
+        if overwrite then
+          insert into queue_task_requirement_entities(partition_key, row_key, value, version, etag)
+          values (
+            pk,
+            rk,
+            properties,
+            version,
+            new_etag
+          ) on conflict (partition_key, row_key) do
+          update
+          set (value, version, etag) = (properties, queue_task_requirement_entities_create.version, new_etag)
+          where queue_task_requirement_entities.partition_key = queue_task_requirement_entities_create.pk and queue_task_requirement_entities.row_key = queue_task_requirement_entities_create.rk;
+        else
+          insert into queue_task_requirement_entities(partition_key, row_key, value, version, etag)
+          values (
+            pk,
+            rk,
+            properties,
+            version,
+            new_etag
+          );
+        end if;
+        return new_etag;
+      end
+  queue_task_requirement_entities_remove:
+    serviceName: queue
+    description: test
+    mode: write
+    args: partition_key text, row_key text
+    returns: table (etag uuid)
+    body: |-
+      begin
+        return query delete from queue_task_requirement_entities
+        where queue_task_requirement_entities.partition_key = queue_task_requirement_entities_remove.partition_key and queue_task_requirement_entities.row_key = queue_task_requirement_entities_remove.row_key
+        returning queue_task_requirement_entities.etag;
+      end
+  queue_task_requirement_entities_modify:
+    serviceName: queue
+    description: |
+      Modify an entity. If the modify operation is succesful, the etag is returned in a set.
+      Else, an error will be raised with the following error code:
+      * 'P0004' - update was unsuccessful (e.g., the etag value did not match)
+      * 'P0002' - entry not found in the table (i.e., no such row)
+    mode: write
+    args: partition_key text, row_key text, properties jsonb, version integer, old_etag uuid
+    returns: table (etag uuid)
+    body: |-
+      declare
+        new_etag uuid := public.gen_random_uuid();
+      begin
+        update queue_task_requirement_entities
+        set (value, version, etag) = (properties, queue_task_requirement_entities_modify.version, new_etag)
+        where queue_task_requirement_entities.partition_key = queue_task_requirement_entities_modify.partition_key and queue_task_requirement_entities.row_key = queue_task_requirement_entities_modify.row_key and queue_task_requirement_entities.etag = queue_task_requirement_entities_modify.old_etag;
+
+        if found then
+          return query select new_etag;
+          return;
+        end if;
+
+        perform queue_task_requirement_entities.etag from queue_task_requirement_entities
+        where queue_task_requirement_entities.partition_key = queue_task_requirement_entities_modify.partition_key and queue_task_requirement_entities.row_key = queue_task_requirement_entities_modify.row_key;
+
+        if found then
+          raise exception 'unsuccessful update' using errcode = 'P0004';
+        else
+          raise exception 'no such row' using errcode = 'P0002';
+        end if;
+      end
+  queue_task_requirement_entities_scan:
+    description: test
+    mode: read
+    serviceName: queue
+    args: pk text, rk text, condition text, size integer, page integer
+    returns: table (partition_key text, row_key text, value jsonb, version integer, etag uuid)
+    body: |-
+      declare
+        sql text := 'select queue_task_requirement_entities.partition_key, queue_task_requirement_entities.row_key, queue_task_requirement_entities.value, queue_task_requirement_entities.version, queue_task_requirement_entities.etag from queue_task_requirement_entities';
+        partition_key_var text;
+        row_key_var text;
+        page_offset integer;
+      begin
+        if queue_task_requirement_entities_scan.pk is not null or queue_task_requirement_entities_scan.rk is not null or condition is not null then
+          sql := sql || ' where ';
+        end if;
+
+        if queue_task_requirement_entities_scan.pk is not null then
+          partition_key_var := 'partition_key = ' || quote_literal(queue_task_requirement_entities_scan.pk);
+        end if;
+
+        if queue_task_requirement_entities_scan.rk is not null then
+          row_key_var := 'row_key = ' || quote_literal(queue_task_requirement_entities_scan.rk);
+        end if;
+
+        sql := sql || concat_ws(' and ', partition_key_var, row_key_var, condition);
+        sql := sql || ' order by queue_task_requirement_entities.partition_key, queue_task_requirement_entities.row_key';
+
+        if size is not null and size > 0 then
+          sql := sql || ' limit ' || size;
+
+          if page is not null and page > 0 then
+            page_offset := size * (page - 1);
+            sql := sql || ' offset ' || page_offset;
+          end if;
+        end if;
+
+        return query execute sql;
+      end
+  queue_task_dependency_entities_load:
+    description: test
+    mode: read
+    serviceName: queue
+    args: partition_key text, row_key text
+    returns: table (partition_key_out text, row_key_out text, value jsonb, version integer, etag uuid)
+    body: |-
+      begin
+        return query
+        select queue_task_dependency_entities.partition_key, queue_task_dependency_entities.row_key, queue_task_dependency_entities.value, queue_task_dependency_entities.version,
+        queue_task_dependency_entities.etag from queue_task_dependency_entities
+        where queue_task_dependency_entities.partition_key = queue_task_dependency_entities_load.partition_key and queue_task_dependency_entities.row_key = queue_task_dependency_entities_load.row_key;
+      end
+  queue_task_dependency_entities_create:
+    serviceName: queue
+    description: test
+    mode: write
+    args: pk text, rk text, properties jsonb, overwrite boolean, version integer
+    returns: uuid
+    body: |-
+      declare
+        new_etag uuid := public.gen_random_uuid();
+      begin
+        if overwrite then
+          insert into queue_task_dependency_entities(partition_key, row_key, value, version, etag)
+          values (
+            pk,
+            rk,
+            properties,
+            version,
+            new_etag
+          ) on conflict (partition_key, row_key) do
+          update
+          set (value, version, etag) = (properties, queue_task_dependency_entities_create.version, new_etag)
+          where queue_task_dependency_entities.partition_key = queue_task_dependency_entities_create.pk and queue_task_dependency_entities.row_key = queue_task_dependency_entities_create.rk;
+        else
+          insert into queue_task_dependency_entities(partition_key, row_key, value, version, etag)
+          values (
+            pk,
+            rk,
+            properties,
+            version,
+            new_etag
+          );
+        end if;
+        return new_etag;
+      end
+  queue_task_dependency_entities_remove:
+    serviceName: queue
+    description: test
+    mode: write
+    args: partition_key text, row_key text
+    returns: table (etag uuid)
+    body: |-
+      begin
+        return query delete from queue_task_dependency_entities
+        where queue_task_dependency_entities.partition_key = queue_task_dependency_entities_remove.partition_key and queue_task_dependency_entities.row_key = queue_task_dependency_entities_remove.row_key
+        returning queue_task_dependency_entities.etag;
+      end
+  queue_task_dependency_entities_modify:
+    serviceName: queue
+    description: |
+      Modify an entity. If the modify operation is succesful, the etag is returned in a set.
+      Else, an error will be raised with the following error code:
+      * 'P0004' - update was unsuccessful (e.g., the etag value did not match)
+      * 'P0002' - entry not found in the table (i.e., no such row)
+    mode: write
+    args: partition_key text, row_key text, properties jsonb, version integer, old_etag uuid
+    returns: table (etag uuid)
+    body: |-
+      declare
+        new_etag uuid := public.gen_random_uuid();
+      begin
+        update queue_task_dependency_entities
+        set (value, version, etag) = (properties, queue_task_dependency_entities_modify.version, new_etag)
+        where queue_task_dependency_entities.partition_key = queue_task_dependency_entities_modify.partition_key and queue_task_dependency_entities.row_key = queue_task_dependency_entities_modify.row_key and queue_task_dependency_entities.etag = queue_task_dependency_entities_modify.old_etag;
+
+        if found then
+          return query select new_etag;
+          return;
+        end if;
+
+        perform queue_task_dependency_entities.etag from queue_task_dependency_entities
+        where queue_task_dependency_entities.partition_key = queue_task_dependency_entities_modify.partition_key and queue_task_dependency_entities.row_key = queue_task_dependency_entities_modify.row_key;
+
+        if found then
+          raise exception 'unsuccessful update' using errcode = 'P0004';
+        else
+          raise exception 'no such row' using errcode = 'P0002';
+        end if;
+      end
+  queue_task_dependency_entities_scan:
+    description: test
+    mode: read
+    serviceName: queue
+    args: pk text, rk text, condition text, size integer, page integer
+    returns: table (partition_key text, row_key text, value jsonb, version integer, etag uuid)
+    body: |-
+      declare
+        sql text := 'select queue_task_dependency_entities.partition_key, queue_task_dependency_entities.row_key, queue_task_dependency_entities.value, queue_task_dependency_entities.version, queue_task_dependency_entities.etag from queue_task_dependency_entities';
+        partition_key_var text;
+        row_key_var text;
+        page_offset integer;
+      begin
+        if queue_task_dependency_entities_scan.pk is not null or queue_task_dependency_entities_scan.rk is not null or condition is not null then
+          sql := sql || ' where ';
+        end if;
+
+        if queue_task_dependency_entities_scan.pk is not null then
+          partition_key_var := 'partition_key = ' || quote_literal(queue_task_dependency_entities_scan.pk);
+        end if;
+
+        if queue_task_dependency_entities_scan.rk is not null then
+          row_key_var := 'row_key = ' || quote_literal(queue_task_dependency_entities_scan.rk);
+        end if;
+
+        sql := sql || concat_ws(' and ', partition_key_var, row_key_var, condition);
+        sql := sql || ' order by queue_task_dependency_entities.partition_key, queue_task_dependency_entities.row_key';
+
+        if size is not null and size > 0 then
+          sql := sql || ' limit ' || size;
+
+          if page is not null and page > 0 then
+            page_offset := size * (page - 1);
+            sql := sql || ' offset ' || page_offset;
+          end if;
+        end if;
+
+        return query execute sql;
+      end
+  queue_worker_entities_load:
+    description: test
+    mode: read
+    serviceName: queue
+    args: partition_key text, row_key text
+    returns: table (partition_key_out text, row_key_out text, value jsonb, version integer, etag uuid)
+    body: |-
+      begin
+        return query
+        select queue_worker_entities.partition_key, queue_worker_entities.row_key, queue_worker_entities.value, queue_worker_entities.version,
+        queue_worker_entities.etag from queue_worker_entities
+        where queue_worker_entities.partition_key = queue_worker_entities_load.partition_key and queue_worker_entities.row_key = queue_worker_entities_load.row_key;
+      end
+  queue_worker_entities_create:
+    serviceName: queue
+    description: test
+    mode: write
+    args: pk text, rk text, properties jsonb, overwrite boolean, version integer
+    returns: uuid
+    body: |-
+      declare
+        new_etag uuid := public.gen_random_uuid();
+      begin
+        if overwrite then
+          insert into queue_worker_entities(partition_key, row_key, value, version, etag)
+          values (
+            pk,
+            rk,
+            properties,
+            version,
+            new_etag
+          ) on conflict (partition_key, row_key) do
+          update
+          set (value, version, etag) = (properties, queue_worker_entities_create.version, new_etag)
+          where queue_worker_entities.partition_key = queue_worker_entities_create.pk and queue_worker_entities.row_key = queue_worker_entities_create.rk;
+        else
+          insert into queue_worker_entities(partition_key, row_key, value, version, etag)
+          values (
+            pk,
+            rk,
+            properties,
+            version,
+            new_etag
+          );
+        end if;
+        return new_etag;
+      end
+  queue_worker_entities_remove:
+    serviceName: queue
+    description: test
+    mode: write
+    args: partition_key text, row_key text
+    returns: table (etag uuid)
+    body: |-
+      begin
+        return query delete from queue_worker_entities
+        where queue_worker_entities.partition_key = queue_worker_entities_remove.partition_key and queue_worker_entities.row_key = queue_worker_entities_remove.row_key
+        returning queue_worker_entities.etag;
+      end
+  queue_worker_entities_modify:
+    serviceName: queue
+    description: |
+      Modify an entity. If the modify operation is succesful, the etag is returned in a set.
+      Else, an error will be raised with the following error code:
+      * 'P0004' - update was unsuccessful (e.g., the etag value did not match)
+      * 'P0002' - entry not found in the table (i.e., no such row)
+    mode: write
+    args: partition_key text, row_key text, properties jsonb, version integer, old_etag uuid
+    returns: table (etag uuid)
+    body: |-
+      declare
+        new_etag uuid := public.gen_random_uuid();
+      begin
+        update queue_worker_entities
+        set (value, version, etag) = (properties, queue_worker_entities_modify.version, new_etag)
+        where queue_worker_entities.partition_key = queue_worker_entities_modify.partition_key and queue_worker_entities.row_key = queue_worker_entities_modify.row_key and queue_worker_entities.etag = queue_worker_entities_modify.old_etag;
+
+        if found then
+          return query select new_etag;
+          return;
+        end if;
+
+        perform queue_worker_entities.etag from queue_worker_entities
+        where queue_worker_entities.partition_key = queue_worker_entities_modify.partition_key and queue_worker_entities.row_key = queue_worker_entities_modify.row_key;
+
+        if found then
+          raise exception 'unsuccessful update' using errcode = 'P0004';
+        else
+          raise exception 'no such row' using errcode = 'P0002';
+        end if;
+      end
+  queue_worker_entities_scan:
+    description: test
+    mode: read
+    serviceName: queue
+    args: pk text, rk text, condition text, size integer, page integer
+    returns: table (partition_key text, row_key text, value jsonb, version integer, etag uuid)
+    body: |-
+      declare
+        sql text := 'select queue_worker_entities.partition_key, queue_worker_entities.row_key, queue_worker_entities.value, queue_worker_entities.version, queue_worker_entities.etag from queue_worker_entities';
+        partition_key_var text;
+        row_key_var text;
+        page_offset integer;
+      begin
+        if queue_worker_entities_scan.pk is not null or queue_worker_entities_scan.rk is not null or condition is not null then
+          sql := sql || ' where ';
+        end if;
+
+        if queue_worker_entities_scan.pk is not null then
+          partition_key_var := 'partition_key = ' || quote_literal(queue_worker_entities_scan.pk);
+        end if;
+
+        if queue_worker_entities_scan.rk is not null then
+          row_key_var := 'row_key = ' || quote_literal(queue_worker_entities_scan.rk);
+        end if;
+
+        sql := sql || concat_ws(' and ', partition_key_var, row_key_var, condition);
+        sql := sql || ' order by queue_worker_entities.partition_key, queue_worker_entities.row_key';
+
+        if size is not null and size > 0 then
+          sql := sql || ' limit ' || size;
+
+          if page is not null and page > 0 then
+            page_offset := size * (page - 1);
+            sql := sql || ' offset ' || page_offset;
+          end if;
+        end if;
+
+        return query execute sql;
+      end
+  queue_worker_type_entities_load:
+    description: test
+    mode: read
+    serviceName: queue
+    args: partition_key text, row_key text
+    returns: table (partition_key_out text, row_key_out text, value jsonb, version integer, etag uuid)
+    body: |-
+      begin
+        return query
+        select queue_worker_type_entities.partition_key, queue_worker_type_entities.row_key, queue_worker_type_entities.value, queue_worker_type_entities.version,
+        queue_worker_type_entities.etag from queue_worker_type_entities
+        where queue_worker_type_entities.partition_key = queue_worker_type_entities_load.partition_key and queue_worker_type_entities.row_key = queue_worker_type_entities_load.row_key;
+      end
+  queue_worker_type_entities_create:
+    serviceName: queue
+    description: test
+    mode: write
+    args: pk text, rk text, properties jsonb, overwrite boolean, version integer
+    returns: uuid
+    body: |-
+      declare
+        new_etag uuid := public.gen_random_uuid();
+      begin
+        if overwrite then
+          insert into queue_worker_type_entities(partition_key, row_key, value, version, etag)
+          values (
+            pk,
+            rk,
+            properties,
+            version,
+            new_etag
+          ) on conflict (partition_key, row_key) do
+          update
+          set (value, version, etag) = (properties, queue_worker_type_entities_create.version, new_etag)
+          where queue_worker_type_entities.partition_key = queue_worker_type_entities_create.pk and queue_worker_type_entities.row_key = queue_worker_type_entities_create.rk;
+        else
+          insert into queue_worker_type_entities(partition_key, row_key, value, version, etag)
+          values (
+            pk,
+            rk,
+            properties,
+            version,
+            new_etag
+          );
+        end if;
+        return new_etag;
+      end
+  queue_worker_type_entities_remove:
+    serviceName: queue
+    description: test
+    mode: write
+    args: partition_key text, row_key text
+    returns: table (etag uuid)
+    body: |-
+      begin
+        return query delete from queue_worker_type_entities
+        where queue_worker_type_entities.partition_key = queue_worker_type_entities_remove.partition_key and queue_worker_type_entities.row_key = queue_worker_type_entities_remove.row_key
+        returning queue_worker_type_entities.etag;
+      end
+  queue_worker_type_entities_modify:
+    serviceName: queue
+    description: |
+      Modify an entity. If the modify operation is succesful, the etag is returned in a set.
+      Else, an error will be raised with the following error code:
+      * 'P0004' - update was unsuccessful (e.g., the etag value did not match)
+      * 'P0002' - entry not found in the table (i.e., no such row)
+    mode: write
+    args: partition_key text, row_key text, properties jsonb, version integer, old_etag uuid
+    returns: table (etag uuid)
+    body: |-
+      declare
+        new_etag uuid := public.gen_random_uuid();
+      begin
+        update queue_worker_type_entities
+        set (value, version, etag) = (properties, queue_worker_type_entities_modify.version, new_etag)
+        where queue_worker_type_entities.partition_key = queue_worker_type_entities_modify.partition_key and queue_worker_type_entities.row_key = queue_worker_type_entities_modify.row_key and queue_worker_type_entities.etag = queue_worker_type_entities_modify.old_etag;
+
+        if found then
+          return query select new_etag;
+          return;
+        end if;
+
+        perform queue_worker_type_entities.etag from queue_worker_type_entities
+        where queue_worker_type_entities.partition_key = queue_worker_type_entities_modify.partition_key and queue_worker_type_entities.row_key = queue_worker_type_entities_modify.row_key;
+
+        if found then
+          raise exception 'unsuccessful update' using errcode = 'P0004';
+        else
+          raise exception 'no such row' using errcode = 'P0002';
+        end if;
+      end
+  queue_worker_type_entities_scan:
+    description: test
+    mode: read
+    serviceName: queue
+    args: pk text, rk text, condition text, size integer, page integer
+    returns: table (partition_key text, row_key text, value jsonb, version integer, etag uuid)
+    body: |-
+      declare
+        sql text := 'select queue_worker_type_entities.partition_key, queue_worker_type_entities.row_key, queue_worker_type_entities.value, queue_worker_type_entities.version, queue_worker_type_entities.etag from queue_worker_type_entities';
+        partition_key_var text;
+        row_key_var text;
+        page_offset integer;
+      begin
+        if queue_worker_type_entities_scan.pk is not null or queue_worker_type_entities_scan.rk is not null or condition is not null then
+          sql := sql || ' where ';
+        end if;
+
+        if queue_worker_type_entities_scan.pk is not null then
+          partition_key_var := 'partition_key = ' || quote_literal(queue_worker_type_entities_scan.pk);
+        end if;
+
+        if queue_worker_type_entities_scan.rk is not null then
+          row_key_var := 'row_key = ' || quote_literal(queue_worker_type_entities_scan.rk);
+        end if;
+
+        sql := sql || concat_ws(' and ', partition_key_var, row_key_var, condition);
+        sql := sql || ' order by queue_worker_type_entities.partition_key, queue_worker_type_entities.row_key';
+
+        if size is not null and size > 0 then
+          sql := sql || ' limit ' || size;
+
+          if page is not null and page > 0 then
+            page_offset := size * (page - 1);
+            sql := sql || ' offset ' || page_offset;
+          end if;
+        end if;
+
+        return query execute sql;
+      end
+  queue_provisioner_entities_load:
+    description: test
+    mode: read
+    serviceName: queue
+    args: partition_key text, row_key text
+    returns: table (partition_key_out text, row_key_out text, value jsonb, version integer, etag uuid)
+    body: |-
+      begin
+        return query
+        select queue_provisioner_entities.partition_key, queue_provisioner_entities.row_key, queue_provisioner_entities.value, queue_provisioner_entities.version,
+        queue_provisioner_entities.etag from queue_provisioner_entities
+        where queue_provisioner_entities.partition_key = queue_provisioner_entities_load.partition_key and queue_provisioner_entities.row_key = queue_provisioner_entities_load.row_key;
+      end
+  queue_provisioner_entities_create:
+    serviceName: queue
+    description: test
+    mode: write
+    args: pk text, rk text, properties jsonb, overwrite boolean, version integer
+    returns: uuid
+    body: |-
+      declare
+        new_etag uuid := public.gen_random_uuid();
+      begin
+        if overwrite then
+          insert into queue_provisioner_entities(partition_key, row_key, value, version, etag)
+          values (
+            pk,
+            rk,
+            properties,
+            version,
+            new_etag
+          ) on conflict (partition_key, row_key) do
+          update
+          set (value, version, etag) = (properties, queue_provisioner_entities_create.version, new_etag)
+          where queue_provisioner_entities.partition_key = queue_provisioner_entities_create.pk and queue_provisioner_entities.row_key = queue_provisioner_entities_create.rk;
+        else
+          insert into queue_provisioner_entities(partition_key, row_key, value, version, etag)
+          values (
+            pk,
+            rk,
+            properties,
+            version,
+            new_etag
+          );
+        end if;
+        return new_etag;
+      end
+  queue_provisioner_entities_remove:
+    serviceName: queue
+    description: test
+    mode: write
+    args: partition_key text, row_key text
+    returns: table (etag uuid)
+    body: |-
+      begin
+        return query delete from queue_provisioner_entities
+        where queue_provisioner_entities.partition_key = queue_provisioner_entities_remove.partition_key and queue_provisioner_entities.row_key = queue_provisioner_entities_remove.row_key
+        returning queue_provisioner_entities.etag;
+      end
+  queue_provisioner_entities_modify:
+    serviceName: queue
+    description: |
+      Modify an entity. If the modify operation is succesful, the etag is returned in a set.
+      Else, an error will be raised with the following error code:
+      * 'P0004' - update was unsuccessful (e.g., the etag value did not match)
+      * 'P0002' - entry not found in the table (i.e., no such row)
+    mode: write
+    args: partition_key text, row_key text, properties jsonb, version integer, old_etag uuid
+    returns: table (etag uuid)
+    body: |-
+      declare
+        new_etag uuid := public.gen_random_uuid();
+      begin
+        update queue_provisioner_entities
+        set (value, version, etag) = (properties, queue_provisioner_entities_modify.version, new_etag)
+        where queue_provisioner_entities.partition_key = queue_provisioner_entities_modify.partition_key and queue_provisioner_entities.row_key = queue_provisioner_entities_modify.row_key and queue_provisioner_entities.etag = queue_provisioner_entities_modify.old_etag;
+
+        if found then
+          return query select new_etag;
+          return;
+        end if;
+
+        perform queue_provisioner_entities.etag from queue_provisioner_entities
+        where queue_provisioner_entities.partition_key = queue_provisioner_entities_modify.partition_key and queue_provisioner_entities.row_key = queue_provisioner_entities_modify.row_key;
+
+        if found then
+          raise exception 'unsuccessful update' using errcode = 'P0004';
+        else
+          raise exception 'no such row' using errcode = 'P0002';
+        end if;
+      end
+  queue_provisioner_entities_scan:
+    description: test
+    mode: read
+    serviceName: queue
+    args: pk text, rk text, condition text, size integer, page integer
+    returns: table (partition_key text, row_key text, value jsonb, version integer, etag uuid)
+    body: |-
+      declare
+        sql text := 'select queue_provisioner_entities.partition_key, queue_provisioner_entities.row_key, queue_provisioner_entities.value, queue_provisioner_entities.version, queue_provisioner_entities.etag from queue_provisioner_entities';
+        partition_key_var text;
+        row_key_var text;
+        page_offset integer;
+      begin
+        if queue_provisioner_entities_scan.pk is not null or queue_provisioner_entities_scan.rk is not null or condition is not null then
+          sql := sql || ' where ';
+        end if;
+
+        if queue_provisioner_entities_scan.pk is not null then
+          partition_key_var := 'partition_key = ' || quote_literal(queue_provisioner_entities_scan.pk);
+        end if;
+
+        if queue_provisioner_entities_scan.rk is not null then
+          row_key_var := 'row_key = ' || quote_literal(queue_provisioner_entities_scan.rk);
+        end if;
+
+        sql := sql || concat_ws(' and ', partition_key_var, row_key_var, condition);
+        sql := sql || ' order by queue_provisioner_entities.partition_key, queue_provisioner_entities.row_key';
+
+        if size is not null and size > 0 then
+          sql := sql || ' limit ' || size;
+
+          if page is not null and page > 0 then
+            page_offset := size * (page - 1);
+            sql := sql || ' offset ' || page_offset;
+          end if;
+        end if;
+
+        return query execute sql;
+      end
+  secrets_entities_load:
+    description: test
+    mode: read
+    serviceName: secrets
+    args: partition_key text, row_key text
+    returns: table (partition_key_out text, row_key_out text, value jsonb, version integer, etag uuid)
+    body: |-
+      begin
+        return query
+        select secrets_entities.partition_key, secrets_entities.row_key, secrets_entities.value, secrets_entities.version,
+        secrets_entities.etag from secrets_entities
+        where secrets_entities.partition_key = secrets_entities_load.partition_key and secrets_entities.row_key = secrets_entities_load.row_key;
+      end
+  secrets_entities_create:
+    serviceName: secrets
+    description: test
+    mode: write
+    args: pk text, rk text, properties jsonb, overwrite boolean, version integer
+    returns: uuid
+    body: |-
+      declare
+        new_etag uuid := public.gen_random_uuid();
+      begin
+        if overwrite then
+          insert into secrets_entities(partition_key, row_key, value, version, etag)
+          values (
+            pk,
+            rk,
+            properties,
+            version,
+            new_etag
+          ) on conflict (partition_key, row_key) do
+          update
+          set (value, version, etag) = (properties, secrets_entities_create.version, new_etag)
+          where secrets_entities.partition_key = secrets_entities_create.pk and secrets_entities.row_key = secrets_entities_create.rk;
+        else
+          insert into secrets_entities(partition_key, row_key, value, version, etag)
+          values (
+            pk,
+            rk,
+            properties,
+            version,
+            new_etag
+          );
+        end if;
+        return new_etag;
+      end
+  secrets_entities_remove:
+    serviceName: secrets
+    description: test
+    mode: write
+    args: partition_key text, row_key text
+    returns: table (etag uuid)
+    body: |-
+      begin
+        return query delete from secrets_entities
+        where secrets_entities.partition_key = secrets_entities_remove.partition_key and secrets_entities.row_key = secrets_entities_remove.row_key
+        returning secrets_entities.etag;
+      end
+  secrets_entities_modify:
+    serviceName: secrets
+    description: |
+      Modify an entity. If the modify operation is succesful, the etag is returned in a set.
+      Else, an error will be raised with the following error code:
+      * 'P0004' - update was unsuccessful (e.g., the etag value did not match)
+      * 'P0002' - entry not found in the table (i.e., no such row)
+    mode: write
+    args: partition_key text, row_key text, properties jsonb, version integer, old_etag uuid
+    returns: table (etag uuid)
+    body: |-
+      declare
+        new_etag uuid := public.gen_random_uuid();
+      begin
+        update secrets_entities
+        set (value, version, etag) = (properties, secrets_entities_modify.version, new_etag)
+        where secrets_entities.partition_key = secrets_entities_modify.partition_key and secrets_entities.row_key = secrets_entities_modify.row_key and secrets_entities.etag = secrets_entities_modify.old_etag;
+
+        if found then
+          return query select new_etag;
+          return;
+        end if;
+
+        perform secrets_entities.etag from secrets_entities
+        where secrets_entities.partition_key = secrets_entities_modify.partition_key and secrets_entities.row_key = secrets_entities_modify.row_key;
+
+        if found then
+          raise exception 'unsuccessful update' using errcode = 'P0004';
+        else
+          raise exception 'no such row' using errcode = 'P0002';
+        end if;
+      end
+  secrets_entities_scan:
+    description: test
+    mode: read
+    serviceName: secrets
+    args: pk text, rk text, condition text, size integer, page integer
+    returns: table (partition_key text, row_key text, value jsonb, version integer, etag uuid)
+    body: |-
+      declare
+        sql text := 'select secrets_entities.partition_key, secrets_entities.row_key, secrets_entities.value, secrets_entities.version, secrets_entities.etag from secrets_entities';
+        partition_key_var text;
+        row_key_var text;
+        page_offset integer;
+      begin
+        if secrets_entities_scan.pk is not null or secrets_entities_scan.rk is not null or condition is not null then
+          sql := sql || ' where ';
+        end if;
+
+        if secrets_entities_scan.pk is not null then
+          partition_key_var := 'partition_key = ' || quote_literal(secrets_entities_scan.pk);
+        end if;
+
+        if secrets_entities_scan.rk is not null then
+          row_key_var := 'row_key = ' || quote_literal(secrets_entities_scan.rk);
+        end if;
+
+        sql := sql || concat_ws(' and ', partition_key_var, row_key_var, condition);
+        sql := sql || ' order by secrets_entities.partition_key, secrets_entities.row_key';
+
+        if size is not null and size > 0 then
+          sql := sql || ' limit ' || size;
+
+          if page is not null and page > 0 then
+            page_offset := size * (page - 1);
+            sql := sql || ' offset ' || page_offset;
+          end if;
+        end if;
+
+        return query execute sql;
+      end
+  authorization_codes_table_entities_load:
+    description: test
+    mode: read
+    serviceName: web-server
+    args: partition_key text, row_key text
+    returns: table (partition_key_out text, row_key_out text, value jsonb, version integer, etag uuid)
+    body: |-
+      begin
+        return query
+        select authorization_codes_table_entities.partition_key, authorization_codes_table_entities.row_key, authorization_codes_table_entities.value, authorization_codes_table_entities.version,
+        authorization_codes_table_entities.etag from authorization_codes_table_entities
+        where authorization_codes_table_entities.partition_key = authorization_codes_table_entities_load.partition_key and authorization_codes_table_entities.row_key = authorization_codes_table_entities_load.row_key;
+      end
+  authorization_codes_table_entities_create:
+    serviceName: web-server
+    description: test
+    mode: write
+    args: pk text, rk text, properties jsonb, overwrite boolean, version integer
+    returns: uuid
+    body: |-
+      declare
+        new_etag uuid := public.gen_random_uuid();
+      begin
+        if overwrite then
+          insert into authorization_codes_table_entities(partition_key, row_key, value, version, etag)
+          values (
+            pk,
+            rk,
+            properties,
+            version,
+            new_etag
+          ) on conflict (partition_key, row_key) do
+          update
+          set (value, version, etag) = (properties, authorization_codes_table_entities_create.version, new_etag)
+          where authorization_codes_table_entities.partition_key = authorization_codes_table_entities_create.pk and authorization_codes_table_entities.row_key = authorization_codes_table_entities_create.rk;
+        else
+          insert into authorization_codes_table_entities(partition_key, row_key, value, version, etag)
+          values (
+            pk,
+            rk,
+            properties,
+            version,
+            new_etag
+          );
+        end if;
+        return new_etag;
+      end
+  authorization_codes_table_entities_remove:
+    serviceName: web-server
+    description: test
+    mode: write
+    args: partition_key text, row_key text
+    returns: table (etag uuid)
+    body: |-
+      begin
+        return query delete from authorization_codes_table_entities
+        where authorization_codes_table_entities.partition_key = authorization_codes_table_entities_remove.partition_key and authorization_codes_table_entities.row_key = authorization_codes_table_entities_remove.row_key
+        returning authorization_codes_table_entities.etag;
+      end
+  authorization_codes_table_entities_modify:
+    serviceName: web-server
+    description: |
+      Modify an entity. If the modify operation is succesful, the etag is returned in a set.
+      Else, an error will be raised with the following error code:
+      * 'P0004' - update was unsuccessful (e.g., the etag value did not match)
+      * 'P0002' - entry not found in the table (i.e., no such row)
+    mode: write
+    args: partition_key text, row_key text, properties jsonb, version integer, old_etag uuid
+    returns: table (etag uuid)
+    body: |-
+      declare
+        new_etag uuid := public.gen_random_uuid();
+      begin
+        update authorization_codes_table_entities
+        set (value, version, etag) = (properties, authorization_codes_table_entities_modify.version, new_etag)
+        where authorization_codes_table_entities.partition_key = authorization_codes_table_entities_modify.partition_key and authorization_codes_table_entities.row_key = authorization_codes_table_entities_modify.row_key and authorization_codes_table_entities.etag = authorization_codes_table_entities_modify.old_etag;
+
+        if found then
+          return query select new_etag;
+          return;
+        end if;
+
+        perform authorization_codes_table_entities.etag from authorization_codes_table_entities
+        where authorization_codes_table_entities.partition_key = authorization_codes_table_entities_modify.partition_key and authorization_codes_table_entities.row_key = authorization_codes_table_entities_modify.row_key;
+
+        if found then
+          raise exception 'unsuccessful update' using errcode = 'P0004';
+        else
+          raise exception 'no such row' using errcode = 'P0002';
+        end if;
+      end
+  authorization_codes_table_entities_scan:
+    description: test
+    mode: read
+    serviceName: web-server
+    args: pk text, rk text, condition text, size integer, page integer
+    returns: table (partition_key text, row_key text, value jsonb, version integer, etag uuid)
+    body: |-
+      declare
+        sql text := 'select authorization_codes_table_entities.partition_key, authorization_codes_table_entities.row_key, authorization_codes_table_entities.value, authorization_codes_table_entities.version, authorization_codes_table_entities.etag from authorization_codes_table_entities';
+        partition_key_var text;
+        row_key_var text;
+        page_offset integer;
+      begin
+        if authorization_codes_table_entities_scan.pk is not null or authorization_codes_table_entities_scan.rk is not null or condition is not null then
+          sql := sql || ' where ';
+        end if;
+
+        if authorization_codes_table_entities_scan.pk is not null then
+          partition_key_var := 'partition_key = ' || quote_literal(authorization_codes_table_entities_scan.pk);
+        end if;
+
+        if authorization_codes_table_entities_scan.rk is not null then
+          row_key_var := 'row_key = ' || quote_literal(authorization_codes_table_entities_scan.rk);
+        end if;
+
+        sql := sql || concat_ws(' and ', partition_key_var, row_key_var, condition);
+        sql := sql || ' order by authorization_codes_table_entities.partition_key, authorization_codes_table_entities.row_key';
+
+        if size is not null and size > 0 then
+          sql := sql || ' limit ' || size;
+
+          if page is not null and page > 0 then
+            page_offset := size * (page - 1);
+            sql := sql || ' offset ' || page_offset;
+          end if;
+        end if;
+
+        return query execute sql;
+      end
+  access_token_table_entities_load:
+    description: test
+    mode: read
+    serviceName: web-server
+    args: partition_key text, row_key text
+    returns: table (partition_key_out text, row_key_out text, value jsonb, version integer, etag uuid)
+    body: |-
+      begin
+        return query
+        select access_token_table_entities.partition_key, access_token_table_entities.row_key, access_token_table_entities.value, access_token_table_entities.version,
+        access_token_table_entities.etag from access_token_table_entities
+        where access_token_table_entities.partition_key = access_token_table_entities_load.partition_key and access_token_table_entities.row_key = access_token_table_entities_load.row_key;
+      end
+  access_token_table_entities_create:
+    serviceName: web-server
+    description: test
+    mode: write
+    args: pk text, rk text, properties jsonb, overwrite boolean, version integer
+    returns: uuid
+    body: |-
+      declare
+        new_etag uuid := public.gen_random_uuid();
+      begin
+        if overwrite then
+          insert into access_token_table_entities(partition_key, row_key, value, version, etag)
+          values (
+            pk,
+            rk,
+            properties,
+            version,
+            new_etag
+          ) on conflict (partition_key, row_key) do
+          update
+          set (value, version, etag) = (properties, access_token_table_entities_create.version, new_etag)
+          where access_token_table_entities.partition_key = access_token_table_entities_create.pk and access_token_table_entities.row_key = access_token_table_entities_create.rk;
+        else
+          insert into access_token_table_entities(partition_key, row_key, value, version, etag)
+          values (
+            pk,
+            rk,
+            properties,
+            version,
+            new_etag
+          );
+        end if;
+        return new_etag;
+      end
+  access_token_table_entities_remove:
+    serviceName: web-server
+    description: test
+    mode: write
+    args: partition_key text, row_key text
+    returns: table (etag uuid)
+    body: |-
+      begin
+        return query delete from access_token_table_entities
+        where access_token_table_entities.partition_key = access_token_table_entities_remove.partition_key and access_token_table_entities.row_key = access_token_table_entities_remove.row_key
+        returning access_token_table_entities.etag;
+      end
+  access_token_table_entities_modify:
+    serviceName: web-server
+    description: |
+      Modify an entity. If the modify operation is succesful, the etag is returned in a set.
+      Else, an error will be raised with the following error code:
+      * 'P0004' - update was unsuccessful (e.g., the etag value did not match)
+      * 'P0002' - entry not found in the table (i.e., no such row)
+    mode: write
+    args: partition_key text, row_key text, properties jsonb, version integer, old_etag uuid
+    returns: table (etag uuid)
+    body: |-
+      declare
+        new_etag uuid := public.gen_random_uuid();
+      begin
+        update access_token_table_entities
+        set (value, version, etag) = (properties, access_token_table_entities_modify.version, new_etag)
+        where access_token_table_entities.partition_key = access_token_table_entities_modify.partition_key and access_token_table_entities.row_key = access_token_table_entities_modify.row_key and access_token_table_entities.etag = access_token_table_entities_modify.old_etag;
+
+        if found then
+          return query select new_etag;
+          return;
+        end if;
+
+        perform access_token_table_entities.etag from access_token_table_entities
+        where access_token_table_entities.partition_key = access_token_table_entities_modify.partition_key and access_token_table_entities.row_key = access_token_table_entities_modify.row_key;
+
+        if found then
+          raise exception 'unsuccessful update' using errcode = 'P0004';
+        else
+          raise exception 'no such row' using errcode = 'P0002';
+        end if;
+      end
+  access_token_table_entities_scan:
+    description: test
+    mode: read
+    serviceName: web-server
+    args: pk text, rk text, condition text, size integer, page integer
+    returns: table (partition_key text, row_key text, value jsonb, version integer, etag uuid)
+    body: |-
+      declare
+        sql text := 'select access_token_table_entities.partition_key, access_token_table_entities.row_key, access_token_table_entities.value, access_token_table_entities.version, access_token_table_entities.etag from access_token_table_entities';
+        partition_key_var text;
+        row_key_var text;
+        page_offset integer;
+      begin
+        if access_token_table_entities_scan.pk is not null or access_token_table_entities_scan.rk is not null or condition is not null then
+          sql := sql || ' where ';
+        end if;
+
+        if access_token_table_entities_scan.pk is not null then
+          partition_key_var := 'partition_key = ' || quote_literal(access_token_table_entities_scan.pk);
+        end if;
+
+        if access_token_table_entities_scan.rk is not null then
+          row_key_var := 'row_key = ' || quote_literal(access_token_table_entities_scan.rk);
+        end if;
+
+        sql := sql || concat_ws(' and ', partition_key_var, row_key_var, condition);
+        sql := sql || ' order by access_token_table_entities.partition_key, access_token_table_entities.row_key';
+
+        if size is not null and size > 0 then
+          sql := sql || ' limit ' || size;
+
+          if page is not null and page > 0 then
+            page_offset := size * (page - 1);
+            sql := sql || ' offset ' || page_offset;
+          end if;
+        end if;
+
+        return query execute sql;
+      end
+  session_storage_table_entities_load:
+    description: test
+    mode: read
+    serviceName: web-server
+    args: partition_key text, row_key text
+    returns: table (partition_key_out text, row_key_out text, value jsonb, version integer, etag uuid)
+    body: |-
+      begin
+        return query
+        select session_storage_table_entities.partition_key, session_storage_table_entities.row_key, session_storage_table_entities.value, session_storage_table_entities.version,
+        session_storage_table_entities.etag from session_storage_table_entities
+        where session_storage_table_entities.partition_key = session_storage_table_entities_load.partition_key and session_storage_table_entities.row_key = session_storage_table_entities_load.row_key;
+      end
+  session_storage_table_entities_create:
+    serviceName: web-server
+    description: test
+    mode: write
+    args: pk text, rk text, properties jsonb, overwrite boolean, version integer
+    returns: uuid
+    body: |-
+      declare
+        new_etag uuid := public.gen_random_uuid();
+      begin
+        if overwrite then
+          insert into session_storage_table_entities(partition_key, row_key, value, version, etag)
+          values (
+            pk,
+            rk,
+            properties,
+            version,
+            new_etag
+          ) on conflict (partition_key, row_key) do
+          update
+          set (value, version, etag) = (properties, session_storage_table_entities_create.version, new_etag)
+          where session_storage_table_entities.partition_key = session_storage_table_entities_create.pk and session_storage_table_entities.row_key = session_storage_table_entities_create.rk;
+        else
+          insert into session_storage_table_entities(partition_key, row_key, value, version, etag)
+          values (
+            pk,
+            rk,
+            properties,
+            version,
+            new_etag
+          );
+        end if;
+        return new_etag;
+      end
+  session_storage_table_entities_remove:
+    serviceName: web-server
+    description: test
+    mode: write
+    args: partition_key text, row_key text
+    returns: table (etag uuid)
+    body: |-
+      begin
+        return query delete from session_storage_table_entities
+        where session_storage_table_entities.partition_key = session_storage_table_entities_remove.partition_key and session_storage_table_entities.row_key = session_storage_table_entities_remove.row_key
+        returning session_storage_table_entities.etag;
+      end
+  session_storage_table_entities_modify:
+    serviceName: web-server
+    description: |
+      Modify an entity. If the modify operation is succesful, the etag is returned in a set.
+      Else, an error will be raised with the following error code:
+      * 'P0004' - update was unsuccessful (e.g., the etag value did not match)
+      * 'P0002' - entry not found in the table (i.e., no such row)
+    mode: write
+    args: partition_key text, row_key text, properties jsonb, version integer, old_etag uuid
+    returns: table (etag uuid)
+    body: |-
+      declare
+        new_etag uuid := public.gen_random_uuid();
+      begin
+        update session_storage_table_entities
+        set (value, version, etag) = (properties, session_storage_table_entities_modify.version, new_etag)
+        where session_storage_table_entities.partition_key = session_storage_table_entities_modify.partition_key and session_storage_table_entities.row_key = session_storage_table_entities_modify.row_key and session_storage_table_entities.etag = session_storage_table_entities_modify.old_etag;
+
+        if found then
+          return query select new_etag;
+          return;
+        end if;
+
+        perform session_storage_table_entities.etag from session_storage_table_entities
+        where session_storage_table_entities.partition_key = session_storage_table_entities_modify.partition_key and session_storage_table_entities.row_key = session_storage_table_entities_modify.row_key;
+
+        if found then
+          raise exception 'unsuccessful update' using errcode = 'P0004';
+        else
+          raise exception 'no such row' using errcode = 'P0002';
+        end if;
+      end
+  session_storage_table_entities_scan:
+    description: test
+    mode: read
+    serviceName: web-server
+    args: pk text, rk text, condition text, size integer, page integer
+    returns: table (partition_key text, row_key text, value jsonb, version integer, etag uuid)
+    body: |-
+      declare
+        sql text := 'select session_storage_table_entities.partition_key, session_storage_table_entities.row_key, session_storage_table_entities.value, session_storage_table_entities.version, session_storage_table_entities.etag from session_storage_table_entities';
+        partition_key_var text;
+        row_key_var text;
+        page_offset integer;
+      begin
+        if session_storage_table_entities_scan.pk is not null or session_storage_table_entities_scan.rk is not null or condition is not null then
+          sql := sql || ' where ';
+        end if;
+
+        if session_storage_table_entities_scan.pk is not null then
+          partition_key_var := 'partition_key = ' || quote_literal(session_storage_table_entities_scan.pk);
+        end if;
+
+        if session_storage_table_entities_scan.rk is not null then
+          row_key_var := 'row_key = ' || quote_literal(session_storage_table_entities_scan.rk);
+        end if;
+
+        sql := sql || concat_ws(' and ', partition_key_var, row_key_var, condition);
+        sql := sql || ' order by session_storage_table_entities.partition_key, session_storage_table_entities.row_key';
+
+        if size is not null and size > 0 then
+          sql := sql || ' limit ' || size;
+
+          if page is not null and page > 0 then
+            page_offset := size * (page - 1);
+            sql := sql || ' offset ' || page_offset;
+          end if;
+        end if;
+
+        return query execute sql;
+      end
+  github_access_token_table_entities_load:
+    description: test
+    mode: read
+    serviceName: web-server
+    args: partition_key text, row_key text
+    returns: table (partition_key_out text, row_key_out text, value jsonb, version integer, etag uuid)
+    body: |-
+      begin
+        return query
+        select github_access_token_table_entities.partition_key, github_access_token_table_entities.row_key, github_access_token_table_entities.value, github_access_token_table_entities.version,
+        github_access_token_table_entities.etag from github_access_token_table_entities
+        where github_access_token_table_entities.partition_key = github_access_token_table_entities_load.partition_key and github_access_token_table_entities.row_key = github_access_token_table_entities_load.row_key;
+      end
+  github_access_token_table_entities_create:
+    serviceName: web-server
+    description: test
+    mode: write
+    args: pk text, rk text, properties jsonb, overwrite boolean, version integer
+    returns: uuid
+    body: |-
+      declare
+        new_etag uuid := public.gen_random_uuid();
+      begin
+        if overwrite then
+          insert into github_access_token_table_entities(partition_key, row_key, value, version, etag)
+          values (
+            pk,
+            rk,
+            properties,
+            version,
+            new_etag
+          ) on conflict (partition_key, row_key) do
+          update
+          set (value, version, etag) = (properties, github_access_token_table_entities_create.version, new_etag)
+          where github_access_token_table_entities.partition_key = github_access_token_table_entities_create.pk and github_access_token_table_entities.row_key = github_access_token_table_entities_create.rk;
+        else
+          insert into github_access_token_table_entities(partition_key, row_key, value, version, etag)
+          values (
+            pk,
+            rk,
+            properties,
+            version,
+            new_etag
+          );
+        end if;
+        return new_etag;
+      end
+  github_access_token_table_entities_remove:
+    serviceName: web-server
+    description: test
+    mode: write
+    args: partition_key text, row_key text
+    returns: table (etag uuid)
+    body: |-
+      begin
+        return query delete from github_access_token_table_entities
+        where github_access_token_table_entities.partition_key = github_access_token_table_entities_remove.partition_key and github_access_token_table_entities.row_key = github_access_token_table_entities_remove.row_key
+        returning github_access_token_table_entities.etag;
+      end
+  github_access_token_table_entities_modify:
+    serviceName: web-server
+    description: |
+      Modify an entity. If the modify operation is succesful, the etag is returned in a set.
+      Else, an error will be raised with the following error code:
+      * 'P0004' - update was unsuccessful (e.g., the etag value did not match)
+      * 'P0002' - entry not found in the table (i.e., no such row)
+    mode: write
+    args: partition_key text, row_key text, properties jsonb, version integer, old_etag uuid
+    returns: table (etag uuid)
+    body: |-
+      declare
+        new_etag uuid := public.gen_random_uuid();
+      begin
+        update github_access_token_table_entities
+        set (value, version, etag) = (properties, github_access_token_table_entities_modify.version, new_etag)
+        where github_access_token_table_entities.partition_key = github_access_token_table_entities_modify.partition_key and github_access_token_table_entities.row_key = github_access_token_table_entities_modify.row_key and github_access_token_table_entities.etag = github_access_token_table_entities_modify.old_etag;
+
+        if found then
+          return query select new_etag;
+          return;
+        end if;
+
+        perform github_access_token_table_entities.etag from github_access_token_table_entities
+        where github_access_token_table_entities.partition_key = github_access_token_table_entities_modify.partition_key and github_access_token_table_entities.row_key = github_access_token_table_entities_modify.row_key;
+
+        if found then
+          raise exception 'unsuccessful update' using errcode = 'P0004';
+        else
+          raise exception 'no such row' using errcode = 'P0002';
+        end if;
+      end
+  github_access_token_table_entities_scan:
+    description: test
+    mode: read
+    serviceName: web-server
+    args: pk text, rk text, condition text, size integer, page integer
+    returns: table (partition_key text, row_key text, value jsonb, version integer, etag uuid)
+    body: |-
+      declare
+        sql text := 'select github_access_token_table_entities.partition_key, github_access_token_table_entities.row_key, github_access_token_table_entities.value, github_access_token_table_entities.version, github_access_token_table_entities.etag from github_access_token_table_entities';
+        partition_key_var text;
+        row_key_var text;
+        page_offset integer;
+      begin
+        if github_access_token_table_entities_scan.pk is not null or github_access_token_table_entities_scan.rk is not null or condition is not null then
+          sql := sql || ' where ';
+        end if;
+
+        if github_access_token_table_entities_scan.pk is not null then
+          partition_key_var := 'partition_key = ' || quote_literal(github_access_token_table_entities_scan.pk);
+        end if;
+
+        if github_access_token_table_entities_scan.rk is not null then
+          row_key_var := 'row_key = ' || quote_literal(github_access_token_table_entities_scan.rk);
+        end if;
+
+        sql := sql || concat_ws(' and ', partition_key_var, row_key_var, condition);
+        sql := sql || ' order by github_access_token_table_entities.partition_key, github_access_token_table_entities.row_key';
+
+        if size is not null and size > 0 then
+          sql := sql || ' limit ' || size;
+
+          if page is not null and page > 0 then
+            page_offset := size * (page - 1);
+            sql := sql || ' offset ' || page_offset;
+          end if;
+        end if;
+
+        return query execute sql;
+      end
+  wm_workers_entities_load:
+    description: test
+    mode: read
+    serviceName: worker-manager
+    args: partition_key text, row_key text
+    returns: table (partition_key_out text, row_key_out text, value jsonb, version integer, etag uuid)
+    body: |-
+      begin
+        return query
+        select wm_workers_entities.partition_key, wm_workers_entities.row_key, wm_workers_entities.value, wm_workers_entities.version,
+        wm_workers_entities.etag from wm_workers_entities
+        where wm_workers_entities.partition_key = wm_workers_entities_load.partition_key and wm_workers_entities.row_key = wm_workers_entities_load.row_key;
+      end
+  wm_workers_entities_create:
+    serviceName: worker-manager
+    description: test
+    mode: write
+    args: pk text, rk text, properties jsonb, overwrite boolean, version integer
+    returns: uuid
+    body: |-
+      declare
+        new_etag uuid := public.gen_random_uuid();
+      begin
+        if overwrite then
+          insert into wm_workers_entities(partition_key, row_key, value, version, etag)
+          values (
+            pk,
+            rk,
+            properties,
+            version,
+            new_etag
+          ) on conflict (partition_key, row_key) do
+          update
+          set (value, version, etag) = (properties, wm_workers_entities_create.version, new_etag)
+          where wm_workers_entities.partition_key = wm_workers_entities_create.pk and wm_workers_entities.row_key = wm_workers_entities_create.rk;
+        else
+          insert into wm_workers_entities(partition_key, row_key, value, version, etag)
+          values (
+            pk,
+            rk,
+            properties,
+            version,
+            new_etag
+          );
+        end if;
+        return new_etag;
+      end
+  wm_workers_entities_remove:
+    serviceName: worker-manager
+    description: test
+    mode: write
+    args: partition_key text, row_key text
+    returns: table (etag uuid)
+    body: |-
+      begin
+        return query delete from wm_workers_entities
+        where wm_workers_entities.partition_key = wm_workers_entities_remove.partition_key and wm_workers_entities.row_key = wm_workers_entities_remove.row_key
+        returning wm_workers_entities.etag;
+      end
+  wm_workers_entities_modify:
+    serviceName: worker-manager
+    description: |
+      Modify an entity. If the modify operation is succesful, the etag is returned in a set.
+      Else, an error will be raised with the following error code:
+      * 'P0004' - update was unsuccessful (e.g., the etag value did not match)
+      * 'P0002' - entry not found in the table (i.e., no such row)
+    mode: write
+    args: partition_key text, row_key text, properties jsonb, version integer, old_etag uuid
+    returns: table (etag uuid)
+    body: |-
+      declare
+        new_etag uuid := public.gen_random_uuid();
+      begin
+        update wm_workers_entities
+        set (value, version, etag) = (properties, wm_workers_entities_modify.version, new_etag)
+        where wm_workers_entities.partition_key = wm_workers_entities_modify.partition_key and wm_workers_entities.row_key = wm_workers_entities_modify.row_key and wm_workers_entities.etag = wm_workers_entities_modify.old_etag;
+
+        if found then
+          return query select new_etag;
+          return;
+        end if;
+
+        perform wm_workers_entities.etag from wm_workers_entities
+        where wm_workers_entities.partition_key = wm_workers_entities_modify.partition_key and wm_workers_entities.row_key = wm_workers_entities_modify.row_key;
+
+        if found then
+          raise exception 'unsuccessful update' using errcode = 'P0004';
+        else
+          raise exception 'no such row' using errcode = 'P0002';
+        end if;
+      end
+  wm_workers_entities_scan:
+    description: test
+    mode: read
+    serviceName: worker-manager
+    args: pk text, rk text, condition text, size integer, page integer
+    returns: table (partition_key text, row_key text, value jsonb, version integer, etag uuid)
+    body: |-
+      declare
+        sql text := 'select wm_workers_entities.partition_key, wm_workers_entities.row_key, wm_workers_entities.value, wm_workers_entities.version, wm_workers_entities.etag from wm_workers_entities';
+        partition_key_var text;
+        row_key_var text;
+        page_offset integer;
+      begin
+        if wm_workers_entities_scan.pk is not null or wm_workers_entities_scan.rk is not null or condition is not null then
+          sql := sql || ' where ';
+        end if;
+
+        if wm_workers_entities_scan.pk is not null then
+          partition_key_var := 'partition_key = ' || quote_literal(wm_workers_entities_scan.pk);
+        end if;
+
+        if wm_workers_entities_scan.rk is not null then
+          row_key_var := 'row_key = ' || quote_literal(wm_workers_entities_scan.rk);
+        end if;
+
+        sql := sql || concat_ws(' and ', partition_key_var, row_key_var, condition);
+        sql := sql || ' order by wm_workers_entities.partition_key, wm_workers_entities.row_key';
+
+        if size is not null and size > 0 then
+          sql := sql || ' limit ' || size;
+
+          if page is not null and page > 0 then
+            page_offset := size * (page - 1);
+            sql := sql || ' offset ' || page_offset;
+          end if;
+        end if;
+
+        return query execute sql;
+      end
+  wm_worker_pools_entities_load:
+    description: test
+    mode: read
+    serviceName: worker-manager
+    args: partition_key text, row_key text
+    returns: table (partition_key_out text, row_key_out text, value jsonb, version integer, etag uuid)
+    body: |-
+      begin
+        return query
+        select wm_worker_pools_entities.partition_key, wm_worker_pools_entities.row_key, wm_worker_pools_entities.value, wm_worker_pools_entities.version,
+        wm_worker_pools_entities.etag from wm_worker_pools_entities
+        where wm_worker_pools_entities.partition_key = wm_worker_pools_entities_load.partition_key and wm_worker_pools_entities.row_key = wm_worker_pools_entities_load.row_key;
+      end
+  wm_worker_pools_entities_create:
+    serviceName: worker-manager
+    description: test
+    mode: write
+    args: pk text, rk text, properties jsonb, overwrite boolean, version integer
+    returns: uuid
+    body: |-
+      declare
+        new_etag uuid := public.gen_random_uuid();
+      begin
+        if overwrite then
+          insert into wm_worker_pools_entities(partition_key, row_key, value, version, etag)
+          values (
+            pk,
+            rk,
+            properties,
+            version,
+            new_etag
+          ) on conflict (partition_key, row_key) do
+          update
+          set (value, version, etag) = (properties, wm_worker_pools_entities_create.version, new_etag)
+          where wm_worker_pools_entities.partition_key = wm_worker_pools_entities_create.pk and wm_worker_pools_entities.row_key = wm_worker_pools_entities_create.rk;
+        else
+          insert into wm_worker_pools_entities(partition_key, row_key, value, version, etag)
+          values (
+            pk,
+            rk,
+            properties,
+            version,
+            new_etag
+          );
+        end if;
+        return new_etag;
+      end
+  wm_worker_pools_entities_remove:
+    serviceName: worker-manager
+    description: test
+    mode: write
+    args: partition_key text, row_key text
+    returns: table (etag uuid)
+    body: |-
+      begin
+        return query delete from wm_worker_pools_entities
+        where wm_worker_pools_entities.partition_key = wm_worker_pools_entities_remove.partition_key and wm_worker_pools_entities.row_key = wm_worker_pools_entities_remove.row_key
+        returning wm_worker_pools_entities.etag;
+      end
+  wm_worker_pools_entities_modify:
+    serviceName: worker-manager
+    description: |
+      Modify an entity. If the modify operation is succesful, the etag is returned in a set.
+      Else, an error will be raised with the following error code:
+      * 'P0004' - update was unsuccessful (e.g., the etag value did not match)
+      * 'P0002' - entry not found in the table (i.e., no such row)
+    mode: write
+    args: partition_key text, row_key text, properties jsonb, version integer, old_etag uuid
+    returns: table (etag uuid)
+    body: |-
+      declare
+        new_etag uuid := public.gen_random_uuid();
+      begin
+        update wm_worker_pools_entities
+        set (value, version, etag) = (properties, wm_worker_pools_entities_modify.version, new_etag)
+        where wm_worker_pools_entities.partition_key = wm_worker_pools_entities_modify.partition_key and wm_worker_pools_entities.row_key = wm_worker_pools_entities_modify.row_key and wm_worker_pools_entities.etag = wm_worker_pools_entities_modify.old_etag;
+
+        if found then
+          return query select new_etag;
+          return;
+        end if;
+
+        perform wm_worker_pools_entities.etag from wm_worker_pools_entities
+        where wm_worker_pools_entities.partition_key = wm_worker_pools_entities_modify.partition_key and wm_worker_pools_entities.row_key = wm_worker_pools_entities_modify.row_key;
+
+        if found then
+          raise exception 'unsuccessful update' using errcode = 'P0004';
+        else
+          raise exception 'no such row' using errcode = 'P0002';
+        end if;
+      end
+  wm_worker_pools_entities_scan:
+    description: test
+    mode: read
+    serviceName: worker-manager
+    args: pk text, rk text, condition text, size integer, page integer
+    returns: table (partition_key text, row_key text, value jsonb, version integer, etag uuid)
+    body: |-
+      declare
+        sql text := 'select wm_worker_pools_entities.partition_key, wm_worker_pools_entities.row_key, wm_worker_pools_entities.value, wm_worker_pools_entities.version, wm_worker_pools_entities.etag from wm_worker_pools_entities';
+        partition_key_var text;
+        row_key_var text;
+        page_offset integer;
+      begin
+        if wm_worker_pools_entities_scan.pk is not null or wm_worker_pools_entities_scan.rk is not null or condition is not null then
+          sql := sql || ' where ';
+        end if;
+
+        if wm_worker_pools_entities_scan.pk is not null then
+          partition_key_var := 'partition_key = ' || quote_literal(wm_worker_pools_entities_scan.pk);
+        end if;
+
+        if wm_worker_pools_entities_scan.rk is not null then
+          row_key_var := 'row_key = ' || quote_literal(wm_worker_pools_entities_scan.rk);
+        end if;
+
+        sql := sql || concat_ws(' and ', partition_key_var, row_key_var, condition);
+        sql := sql || ' order by wm_worker_pools_entities.partition_key, wm_worker_pools_entities.row_key';
+
+        if size is not null and size > 0 then
+          sql := sql || ' limit ' || size;
+
+          if page is not null and page > 0 then
+            page_offset := size * (page - 1);
+            sql := sql || ' offset ' || page_offset;
+          end if;
+        end if;
+
+        return query execute sql;
+      end
+  wm_worker_pool_errors_entities_load:
+    description: test
+    mode: read
+    serviceName: worker-manager
+    args: partition_key text, row_key text
+    returns: table (partition_key_out text, row_key_out text, value jsonb, version integer, etag uuid)
+    body: |-
+      begin
+        return query
+        select wm_worker_pool_errors_entities.partition_key, wm_worker_pool_errors_entities.row_key, wm_worker_pool_errors_entities.value, wm_worker_pool_errors_entities.version,
+        wm_worker_pool_errors_entities.etag from wm_worker_pool_errors_entities
+        where wm_worker_pool_errors_entities.partition_key = wm_worker_pool_errors_entities_load.partition_key and wm_worker_pool_errors_entities.row_key = wm_worker_pool_errors_entities_load.row_key;
+      end
+  wm_worker_pool_errors_entities_create:
+    serviceName: worker-manager
+    description: test
+    mode: write
+    args: pk text, rk text, properties jsonb, overwrite boolean, version integer
+    returns: uuid
+    body: |-
+      declare
+        new_etag uuid := public.gen_random_uuid();
+      begin
+        if overwrite then
+          insert into wm_worker_pool_errors_entities(partition_key, row_key, value, version, etag)
+          values (
+            pk,
+            rk,
+            properties,
+            version,
+            new_etag
+          ) on conflict (partition_key, row_key) do
+          update
+          set (value, version, etag) = (properties, wm_worker_pool_errors_entities_create.version, new_etag)
+          where wm_worker_pool_errors_entities.partition_key = wm_worker_pool_errors_entities_create.pk and wm_worker_pool_errors_entities.row_key = wm_worker_pool_errors_entities_create.rk;
+        else
+          insert into wm_worker_pool_errors_entities(partition_key, row_key, value, version, etag)
+          values (
+            pk,
+            rk,
+            properties,
+            version,
+            new_etag
+          );
+        end if;
+        return new_etag;
+      end
+  wm_worker_pool_errors_entities_remove:
+    serviceName: worker-manager
+    description: test
+    mode: write
+    args: partition_key text, row_key text
+    returns: table (etag uuid)
+    body: |-
+      begin
+        return query delete from wm_worker_pool_errors_entities
+        where wm_worker_pool_errors_entities.partition_key = wm_worker_pool_errors_entities_remove.partition_key and wm_worker_pool_errors_entities.row_key = wm_worker_pool_errors_entities_remove.row_key
+        returning wm_worker_pool_errors_entities.etag;
+      end
+  wm_worker_pool_errors_entities_modify:
+    serviceName: worker-manager
+    description: |
+      Modify an entity. If the modify operation is succesful, the etag is returned in a set.
+      Else, an error will be raised with the following error code:
+      * 'P0004' - update was unsuccessful (e.g., the etag value did not match)
+      * 'P0002' - entry not found in the table (i.e., no such row)
+    mode: write
+    args: partition_key text, row_key text, properties jsonb, version integer, old_etag uuid
+    returns: table (etag uuid)
+    body: |-
+      declare
+        new_etag uuid := public.gen_random_uuid();
+      begin
+        update wm_worker_pool_errors_entities
+        set (value, version, etag) = (properties, wm_worker_pool_errors_entities_modify.version, new_etag)
+        where wm_worker_pool_errors_entities.partition_key = wm_worker_pool_errors_entities_modify.partition_key and wm_worker_pool_errors_entities.row_key = wm_worker_pool_errors_entities_modify.row_key and wm_worker_pool_errors_entities.etag = wm_worker_pool_errors_entities_modify.old_etag;
+
+        if found then
+          return query select new_etag;
+          return;
+        end if;
+
+        perform wm_worker_pool_errors_entities.etag from wm_worker_pool_errors_entities
+        where wm_worker_pool_errors_entities.partition_key = wm_worker_pool_errors_entities_modify.partition_key and wm_worker_pool_errors_entities.row_key = wm_worker_pool_errors_entities_modify.row_key;
+
+        if found then
+          raise exception 'unsuccessful update' using errcode = 'P0004';
+        else
+          raise exception 'no such row' using errcode = 'P0002';
+        end if;
+      end
+  wm_worker_pool_errors_entities_scan:
+    description: test
+    mode: read
+    serviceName: worker-manager
+    args: pk text, rk text, condition text, size integer, page integer
+    returns: table (partition_key text, row_key text, value jsonb, version integer, etag uuid)
+    body: |-
+      declare
+        sql text := 'select wm_worker_pool_errors_entities.partition_key, wm_worker_pool_errors_entities.row_key, wm_worker_pool_errors_entities.value, wm_worker_pool_errors_entities.version, wm_worker_pool_errors_entities.etag from wm_worker_pool_errors_entities';
+        partition_key_var text;
+        row_key_var text;
+        page_offset integer;
+      begin
+        if wm_worker_pool_errors_entities_scan.pk is not null or wm_worker_pool_errors_entities_scan.rk is not null or condition is not null then
+          sql := sql || ' where ';
+        end if;
+
+        if wm_worker_pool_errors_entities_scan.pk is not null then
+          partition_key_var := 'partition_key = ' || quote_literal(wm_worker_pool_errors_entities_scan.pk);
+        end if;
+
+        if wm_worker_pool_errors_entities_scan.rk is not null then
+          row_key_var := 'row_key = ' || quote_literal(wm_worker_pool_errors_entities_scan.rk);
+        end if;
+
+        sql := sql || concat_ws(' and ', partition_key_var, row_key_var, condition);
+        sql := sql || ' order by wm_worker_pool_errors_entities.partition_key, wm_worker_pool_errors_entities.row_key';
 
         if size is not null and size > 0 then
           sql := sql || ' limit ' || size;
