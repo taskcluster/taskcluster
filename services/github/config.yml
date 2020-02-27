@@ -6,6 +6,7 @@ defaults:
     deprecatedInitialStatusQueue: 'stat-init'
     resultStatusQueue: 'ch-result'
     initialStatusQueue: 'ch-init'
+    artifactQueue: 'ch-artifacts'
     buildsTableName: 'TaskclusterGithubBuilds'
     ownersDirectoryTableName: 'TaskclusterIntegrationOwners'
     checkRunsTableName: 'TaskclusterCheckRuns'

@@ -40,6 +40,7 @@ class Handlers {
       deprecatedInitialStatusQueueName,
       resultStatusQueueName,
       initialStatusQueueName,
+      artifactQueueName,
       intree,
       context,
       pulseClient,
@@ -60,6 +61,7 @@ class Handlers {
     this.jobQueueName = jobQueueName;
     this.deprecatedInitialStatusQueueName = deprecatedInitialStatusQueueName;
     this.initialStatusQueueName = initialStatusQueueName;
+    this.artifactQueueName = artifactQueueName;
     this.context = context;
     this.pulseClient = pulseClient;
 
@@ -71,6 +73,7 @@ class Handlers {
     this.deprecatedResultStatusPq = null;
     this.initialTaskStatusPq = null;
     this.deprecatedInitialStatusPq = null;
+    this.resultStatusPq = null;
 
     this.queueClient = null;
   }
@@ -85,6 +88,7 @@ class Handlers {
     assert(!this.initialTaskStatusPq, 'Cannot setup twice!');
     assert(!this.deprecatedResultStatusPq, 'Cannot setup twice!');
     assert(!this.deprecatedInitialStatusPq, 'Cannot setup twice!');
+    assert(!this.artifactPq, 'Cannot setup twice!');
 
     // This is a simple Queue client without scopes to use throughout the handlers for simple things
     // Where scopes are needed, use this.queueClient.use({authorizedScopes: scopes}).blahblah
@@ -129,6 +133,11 @@ class Handlers {
     // Listen for taskDefined event to create initial status on github
     const taskBindings = [
       queueEvents.taskDefined(`route.${this.context.cfg.app.checkTaskRoute}`),
+    ];
+
+    // Listen for artifactCreated event to grab the logs
+    const artifactBindings = [
+      queueEvents.artifactCreated(`route.${this.context.cfg.app.checkTaskRoute}`),
     ];
 
     const callHandler = (name, handler) => message => {
@@ -189,6 +198,15 @@ class Handlers {
       this.monitor.timedHandler('tasklistener', callHandler('task', taskDefinedHandler).bind(this)),
     );
 
+    this.artifactPq = await consume(
+      {
+        client: this.pulseClient,
+        bindings: artifactBindings,
+        queueName: this.artifactQueueName,
+      },
+      this.monitor.timedHandler('artifactlistener', callHandler('artifact', artifactCreatedHandler.bind(this))),
+    );
+
   }
 
   async terminate() {
@@ -207,6 +225,9 @@ class Handlers {
     }
     if (this.deprecatedInitialStatusPq) {
       await this.deprecatedInitialStatusPq.stop();
+    }
+    if (this.artifactPq) {
+      await this.artifactPq.stop();
     }
   }
 
@@ -862,4 +883,99 @@ async function taskDefinedHandler(message) {
   });
 
   debug(`Status for task ${taskId}, task group ${taskGroupId} created`);
+}
+
+async function artifactCreatedHandler(message) {
+  let debug = Debug(`${debugPrefix}:artifacts`);
+  // 1. get info from message; optional: check if it's the artifact we're interested in
+  const {taskGroupId, taskId} = message.payload.status;
+
+  // 2. get the artifact with the logs // todo check types in this section
+  let artifactName = (await this.queueClient.listArtifacts(taskId))
+    .artifacts
+    .find(a => a.storageType === 'reference')
+    .name;
+  let latestLog = await this.queueClient.getLatestArtifact(taskId, artifactName);
+
+  // 3. parse the logs
+  const parseExecTests = 'EXECUTE TEST(S)';
+  const parseDevice = 'device';
+  const parseFlank = 'flank';
+  const parseMatrixRes = 'MatrixResultsReport';
+  const parseTaskFinished = '=== Task Finished ===';
+
+  const a = latestLog.split(parseExecTests);
+  const results = a[1];
+  const device = results.split(parseDevice)[1];
+  const flank = device.split(parseFlank)[0].replace(':', '');
+  const pollMatrices = results.split(parseMatrixRes)[1].split(parseTaskFinished)[0];
+
+  // 4. create check run (or add to the check run)
+  const comment = `**DEVICES**X86\n${flank}\n**TEST REPORT**\n${pollMatrices}`.replace(/\[task.*\]/, '');
+
+  let instGithub;
+  let build = await this.context.Builds.load({taskGroupId});
+  let {organization, repository, sha, eventType, installationId} = build;
+  // Authenticating as installation.
+  try {
+    debug('Authenticating as installation in artifact handler...');
+    instGithub = await this.context.github.getInstallationGithub(installationId);
+    debug('Authorized as installation in artifact handler');
+  } catch (e) {
+    debug(`Error authenticating as installation in status handler! Error: ${e}`);
+    throw e;
+  }
+
+  debug(
+    `Attempting to add comment to the checkrun for ${organization}/${repository}@${sha} (artifact parsing)`,
+  );
+  try {
+    // true means we'll get null if the record doesn't exist
+    let checkRun = await this.context.CheckRuns.load({taskGroupId, taskId}, true);
+    const taskDefinition = await this.queueClient.task(taskId);
+
+    if (checkRun) {
+      await instGithub.checks.update({
+        owner: organization,
+        repo: repository,
+        check_run_id: checkRun.checkRunId,
+        output: {
+          title: `${this.context.cfg.app.statusContext} (${eventType.split('.')[0]})`,
+          summary: `${taskDefinition.metadata.description}`,
+          text: comment,
+        },
+      });
+    } else {
+      debug(`Artifact creation handler. Got task build from DB and task definition for ${taskId} from Queue service`);
+
+      const checkRun = await instGithub.checks.create({
+        owner: organization,
+        repo: repository,
+        name: `${taskDefinition.metadata.name}`,
+        head_sha: sha,
+        output: {
+          title: `${this.context.cfg.app.statusContext} (${eventType.split('.')[0]})`,
+          summary: `${taskDefinition.metadata.description}`,
+          text: comment,
+        },
+      });
+
+      await this.context.CheckRuns.create({
+        taskGroupId: taskGroupId,
+        taskId: taskId,
+        checkSuiteId: checkRun.data.check_suite.id.toString(),
+        checkRunId: checkRun.data.id.toString(),
+      });
+
+      await this.context.ChecksToTasks.create({
+        taskGroupId,
+        taskId,
+        checkSuiteId: checkRun.data.check_suite.id.toString(),
+        checkRunId: checkRun.data.id.toString(),
+      });
+    }
+  } catch (e) {
+    debug(`Failed to update checkrun with artifact information: ${build.organization}/${build.repository}@${build.sha}`);
+    throw e;
+  }
 }
