@@ -27,6 +27,11 @@ const styles = withStyles(theme => {
       '.d2h-file-header': {
         display: 'none',
       },
+      '.d2h-files-diff': {
+        '& .d2h-file-side-diff': {
+          overflowX: 'auto',
+        },
+      },
       '.d2h-info': {
         display: 'none',
       },
