@@ -1,4 +1,4 @@
-// +build multiuser,linux multiuser,darwin
+// +build multiuser,linux multiuser,darwin,freebsd
 
 package main
 

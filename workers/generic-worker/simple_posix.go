@@ -1,4 +1,4 @@
-// +build darwin,simple linux,simple
+// +build darwin,simple linux,simple,simple freebsd
 
 package main
 
