@@ -20,7 +20,7 @@ Each message is in the form of a newline-terminated line of the form
 
 with the `{...}` being a JSON encoding of the message containing at least a `type` property, as described below.
 
-Any line that does not match this pattern is output to the receiving process's stdout in the expectation that it will be fed to a log aggregator.
+Any line that does not match this pattern is logged using the standard `log` package.
 Note that stderr is not included in the protocol.
 
 ## Go Package

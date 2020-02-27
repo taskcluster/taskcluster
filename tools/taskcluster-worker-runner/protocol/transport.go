@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"io"
-	"os"
+	"log"
 	"sync"
 )
 
@@ -26,10 +26,6 @@ type StdioTransport struct {
 	In  chan Message
 	Out chan Message
 
-	// a writer to which invalid lines are written, defaulting to
-	// os.Stdout
-	InvalidLines io.Writer
-
 	// protects access to inBuffer (outbuffer has no contention)
 	inMux sync.Mutex
 
@@ -41,9 +37,8 @@ type StdioTransport struct {
 // io.Writer so it can be specified as a cmd's Stdin and Stdout.
 func NewStdioTransport() *StdioTransport {
 	return &StdioTransport{
-		In:           make(chan Message, 5),
-		Out:          make(chan Message, 5),
-		InvalidLines: os.Stdout,
+		In:  make(chan Message, 5),
+		Out: make(chan Message, 5),
 	}
 }
 
@@ -120,12 +115,9 @@ func (transp *StdioTransport) Write(p []byte) (int, error) {
 		}
 
 		if invalid {
-			// write the whole line, including the newline, to InvalidLines
-			n, err := transp.InvalidLines.Write(transp.inBuffer[:newline+1])
-			if err != nil {
-				transp.inBuffer = transp.inBuffer[n:]
-				return n, err
-			}
+			// strip the newline and hand this to the logger as unstructured data
+			logLine := string(transp.inBuffer[:newline])
+			log.Println(logLine)
 		} else {
 			transp.In <- msg
 		}
@@ -141,10 +133,7 @@ func (transp *StdioTransport) Close() error {
 	defer transp.inMux.Unlock()
 	// flush any remaining buffered input as invalid..
 	if len(transp.inBuffer) != 0 {
-		_, err := transp.InvalidLines.Write(transp.inBuffer)
-		if err != nil {
-			return err
-		}
+		log.Println(string(transp.inBuffer))
 	}
 
 	close(transp.In)

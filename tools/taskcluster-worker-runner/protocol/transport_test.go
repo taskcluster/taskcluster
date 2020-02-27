@@ -4,9 +4,12 @@ import (
 	"bytes"
 	"fmt"
 	"io"
+	"log"
+	"os"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/taskcluster/taskcluster/v28/tools/taskcluster-worker-runner/logging"
 )
 
 // Write the given data in chunks of the given size
@@ -52,10 +55,18 @@ not a message
 `[1:])
 
 func doTestWriter(t *testing.T, chunkSize int) {
-	transp := NewStdioTransport()
+	testLogDest := &logging.TestLogDestination{}
+	oldLogDest := logging.Destination
+	oldLogFlags := log.Flags()
+	defer func() {
+		logging.Destination = oldLogDest
+		log.SetOutput(os.Stderr)
+		log.SetFlags(oldLogFlags)
+	}()
+	logging.Destination = testLogDest
+	logging.PatchStdLogger(nil)
 
-	var invalid bytes.Buffer
-	transp.InvalidLines = &invalid
+	transp := NewStdioTransport()
 
 	err := writeInChunks(testWriterData, chunkSize, transp)
 	assert.NoError(t, err, "should not fail")
@@ -69,10 +80,10 @@ func doTestWriter(t *testing.T, chunkSize int) {
 		Message{Type: "bcdf", Properties: map[string]interface{}{"lengthy": "abc abc abc abc abc abc abc abc abc abc abc abc abc abc"}},
 	}, got, "should have gotten two messages")
 
-	assert.Equal(t, `
-not a message
-~{"type": "not valid JSON}
-`[1:], invalid.String(), "expected two invalid lines")
+	assert.Equal(t, []map[string]interface{}{
+		map[string]interface{}{"textPayload": `not a message`},
+		map[string]interface{}{"textPayload": `~{"type": "not valid JSON}`},
+	}, testLogDest.Messages(), "expected two invalid lines")
 }
 
 func TestWriterFullSize(t *testing.T) {
