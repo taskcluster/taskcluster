@@ -108,18 +108,18 @@ migrationScript: |-
 
     grant select, insert, update, delete on denylisted_notification_entities to $db_user_prefix$_notify;
 
-    grant select, insert, update, delete on cache_purges_entities to $db_user_prefix$_purge-cache;
+    grant select, insert, update, delete on cache_purges_entities to $db_user_prefix$_purge_cache;
 
     grant select, insert, update, delete on secrets_entities to $db_user_prefix$_secrets;
 
-    grant select, insert, update, delete on access_token_table_entities to $db_user_prefix$_web-server;
-    grant select, insert, update, delete on authorization_codes_table_entities to $db_user_prefix$_web-server;
-    grant select, insert, update, delete on github_access_token_table_entities to $db_user_prefix$_web-server;
-    grant select, insert, update, delete on session_storage_table_entities to $db_user_prefix$_web-server;
+    grant select, insert, update, delete on access_token_table_entities to $db_user_prefix$_web_server;
+    grant select, insert, update, delete on authorization_codes_table_entities to $db_user_prefix$_web_server;
+    grant select, insert, update, delete on github_access_token_table_entities to $db_user_prefix$_web_server;
+    grant select, insert, update, delete on session_storage_table_entities to $db_user_prefix$_web_server;
 
-    grant select, insert, update, delete on wm_worker_pool_errors_entities to $db_user_prefix$_worker-manager;
-    grant select, insert, update, delete on wm_worker_pools_entities to $db_user_prefix$_worker-manager;
-    grant select, insert, update, delete on wm_workers_entities to $db_user_prefix$_worker-manager;
+    grant select, insert, update, delete on wm_worker_pool_errors_entities to $db_user_prefix$_worker_manager;
+    grant select, insert, update, delete on wm_worker_pools_entities to $db_user_prefix$_worker_manager;
+    grant select, insert, update, delete on wm_workers_entities to $db_user_prefix$_worker_manager;
 
     grant select, insert, update, delete on queue_tasks_entities to $db_user_prefix$_queue;
     grant select, insert, update, delete on queue_artifacts_entities to $db_user_prefix$_queue;
@@ -1696,7 +1696,7 @@ methods:
   cache_purges_entities_load:
     description: test
     mode: read
-    serviceName: cache-purge
+    serviceName: purge_cache
     args: partition_key text, row_key text
     returns: table (partition_key_out text, row_key_out text, value jsonb, version integer, etag uuid)
     body: |-
@@ -1707,7 +1707,7 @@ methods:
         where cache_purges_entities.partition_key = cache_purges_entities_load.partition_key and cache_purges_entities.row_key = cache_purges_entities_load.row_key;
       end
   cache_purges_entities_create:
-    serviceName: cache-purge
+    serviceName: purge_cache
     description: test
     mode: write
     args: pk text, rk text, properties jsonb, overwrite boolean, version integer
@@ -1741,7 +1741,7 @@ methods:
         return new_etag;
       end
   cache_purges_entities_remove:
-    serviceName: cache-purge
+    serviceName: purge_cache
     description: test
     mode: write
     args: partition_key text, row_key text
@@ -1753,7 +1753,7 @@ methods:
         returning cache_purges_entities.etag;
       end
   cache_purges_entities_modify:
-    serviceName: cache-purge
+    serviceName: purge_cache
     description: |
       Modify an entity. If the modify operation is succesful, the etag is returned in a set.
       Else, an error will be raised with the following error code:
@@ -1787,7 +1787,7 @@ methods:
   cache_purges_entities_scan:
     description: test
     mode: read
-    serviceName: cache-purge
+    serviceName: purge_cache
     args: pk text, rk text, condition text, size integer, page integer
     returns: table (partition_key text, row_key text, value jsonb, version integer, etag uuid)
     body: |-
@@ -3126,7 +3126,7 @@ methods:
   authorization_codes_table_entities_load:
     description: test
     mode: read
-    serviceName: web-server
+    serviceName: web_server
     args: partition_key text, row_key text
     returns: table (partition_key_out text, row_key_out text, value jsonb, version integer, etag uuid)
     body: |-
@@ -3137,7 +3137,7 @@ methods:
         where authorization_codes_table_entities.partition_key = authorization_codes_table_entities_load.partition_key and authorization_codes_table_entities.row_key = authorization_codes_table_entities_load.row_key;
       end
   authorization_codes_table_entities_create:
-    serviceName: web-server
+    serviceName: web_server
     description: test
     mode: write
     args: pk text, rk text, properties jsonb, overwrite boolean, version integer
@@ -3171,7 +3171,7 @@ methods:
         return new_etag;
       end
   authorization_codes_table_entities_remove:
-    serviceName: web-server
+    serviceName: web_server
     description: test
     mode: write
     args: partition_key text, row_key text
@@ -3183,7 +3183,7 @@ methods:
         returning authorization_codes_table_entities.etag;
       end
   authorization_codes_table_entities_modify:
-    serviceName: web-server
+    serviceName: web_server
     description: |
       Modify an entity. If the modify operation is succesful, the etag is returned in a set.
       Else, an error will be raised with the following error code:
@@ -3217,7 +3217,7 @@ methods:
   authorization_codes_table_entities_scan:
     description: test
     mode: read
-    serviceName: web-server
+    serviceName: web_server
     args: pk text, rk text, condition text, size integer, page integer
     returns: table (partition_key text, row_key text, value jsonb, version integer, etag uuid)
     body: |-
@@ -3256,7 +3256,7 @@ methods:
   access_token_table_entities_load:
     description: test
     mode: read
-    serviceName: web-server
+    serviceName: web_server
     args: partition_key text, row_key text
     returns: table (partition_key_out text, row_key_out text, value jsonb, version integer, etag uuid)
     body: |-
@@ -3267,7 +3267,7 @@ methods:
         where access_token_table_entities.partition_key = access_token_table_entities_load.partition_key and access_token_table_entities.row_key = access_token_table_entities_load.row_key;
       end
   access_token_table_entities_create:
-    serviceName: web-server
+    serviceName: web_server
     description: test
     mode: write
     args: pk text, rk text, properties jsonb, overwrite boolean, version integer
@@ -3301,7 +3301,7 @@ methods:
         return new_etag;
       end
   access_token_table_entities_remove:
-    serviceName: web-server
+    serviceName: web_server
     description: test
     mode: write
     args: partition_key text, row_key text
@@ -3313,7 +3313,7 @@ methods:
         returning access_token_table_entities.etag;
       end
   access_token_table_entities_modify:
-    serviceName: web-server
+    serviceName: web_server
     description: |
       Modify an entity. If the modify operation is succesful, the etag is returned in a set.
       Else, an error will be raised with the following error code:
@@ -3347,7 +3347,7 @@ methods:
   access_token_table_entities_scan:
     description: test
     mode: read
-    serviceName: web-server
+    serviceName: web_server
     args: pk text, rk text, condition text, size integer, page integer
     returns: table (partition_key text, row_key text, value jsonb, version integer, etag uuid)
     body: |-
@@ -3386,7 +3386,7 @@ methods:
   session_storage_table_entities_load:
     description: test
     mode: read
-    serviceName: web-server
+    serviceName: web_server
     args: partition_key text, row_key text
     returns: table (partition_key_out text, row_key_out text, value jsonb, version integer, etag uuid)
     body: |-
@@ -3397,7 +3397,7 @@ methods:
         where session_storage_table_entities.partition_key = session_storage_table_entities_load.partition_key and session_storage_table_entities.row_key = session_storage_table_entities_load.row_key;
       end
   session_storage_table_entities_create:
-    serviceName: web-server
+    serviceName: web_server
     description: test
     mode: write
     args: pk text, rk text, properties jsonb, overwrite boolean, version integer
@@ -3431,7 +3431,7 @@ methods:
         return new_etag;
       end
   session_storage_table_entities_remove:
-    serviceName: web-server
+    serviceName: web_server
     description: test
     mode: write
     args: partition_key text, row_key text
@@ -3443,7 +3443,7 @@ methods:
         returning session_storage_table_entities.etag;
       end
   session_storage_table_entities_modify:
-    serviceName: web-server
+    serviceName: web_server
     description: |
       Modify an entity. If the modify operation is succesful, the etag is returned in a set.
       Else, an error will be raised with the following error code:
@@ -3477,7 +3477,7 @@ methods:
   session_storage_table_entities_scan:
     description: test
     mode: read
-    serviceName: web-server
+    serviceName: web_server
     args: pk text, rk text, condition text, size integer, page integer
     returns: table (partition_key text, row_key text, value jsonb, version integer, etag uuid)
     body: |-
@@ -3516,7 +3516,7 @@ methods:
   github_access_token_table_entities_load:
     description: test
     mode: read
-    serviceName: web-server
+    serviceName: web_server
     args: partition_key text, row_key text
     returns: table (partition_key_out text, row_key_out text, value jsonb, version integer, etag uuid)
     body: |-
@@ -3527,7 +3527,7 @@ methods:
         where github_access_token_table_entities.partition_key = github_access_token_table_entities_load.partition_key and github_access_token_table_entities.row_key = github_access_token_table_entities_load.row_key;
       end
   github_access_token_table_entities_create:
-    serviceName: web-server
+    serviceName: web_server
     description: test
     mode: write
     args: pk text, rk text, properties jsonb, overwrite boolean, version integer
@@ -3561,7 +3561,7 @@ methods:
         return new_etag;
       end
   github_access_token_table_entities_remove:
-    serviceName: web-server
+    serviceName: web_server
     description: test
     mode: write
     args: partition_key text, row_key text
@@ -3573,7 +3573,7 @@ methods:
         returning github_access_token_table_entities.etag;
       end
   github_access_token_table_entities_modify:
-    serviceName: web-server
+    serviceName: web_server
     description: |
       Modify an entity. If the modify operation is succesful, the etag is returned in a set.
       Else, an error will be raised with the following error code:
@@ -3607,7 +3607,7 @@ methods:
   github_access_token_table_entities_scan:
     description: test
     mode: read
-    serviceName: web-server
+    serviceName: web_server
     args: pk text, rk text, condition text, size integer, page integer
     returns: table (partition_key text, row_key text, value jsonb, version integer, etag uuid)
     body: |-
@@ -3646,7 +3646,7 @@ methods:
   wm_workers_entities_load:
     description: test
     mode: read
-    serviceName: worker-manager
+    serviceName: worker_manager
     args: partition_key text, row_key text
     returns: table (partition_key_out text, row_key_out text, value jsonb, version integer, etag uuid)
     body: |-
@@ -3657,7 +3657,7 @@ methods:
         where wm_workers_entities.partition_key = wm_workers_entities_load.partition_key and wm_workers_entities.row_key = wm_workers_entities_load.row_key;
       end
   wm_workers_entities_create:
-    serviceName: worker-manager
+    serviceName: worker_manager
     description: test
     mode: write
     args: pk text, rk text, properties jsonb, overwrite boolean, version integer
@@ -3691,7 +3691,7 @@ methods:
         return new_etag;
       end
   wm_workers_entities_remove:
-    serviceName: worker-manager
+    serviceName: worker_manager
     description: test
     mode: write
     args: partition_key text, row_key text
@@ -3703,7 +3703,7 @@ methods:
         returning wm_workers_entities.etag;
       end
   wm_workers_entities_modify:
-    serviceName: worker-manager
+    serviceName: worker_manager
     description: |
       Modify an entity. If the modify operation is succesful, the etag is returned in a set.
       Else, an error will be raised with the following error code:
@@ -3737,7 +3737,7 @@ methods:
   wm_workers_entities_scan:
     description: test
     mode: read
-    serviceName: worker-manager
+    serviceName: worker_manager
     args: pk text, rk text, condition text, size integer, page integer
     returns: table (partition_key text, row_key text, value jsonb, version integer, etag uuid)
     body: |-
@@ -3776,7 +3776,7 @@ methods:
   wm_worker_pools_entities_load:
     description: test
     mode: read
-    serviceName: worker-manager
+    serviceName: worker_manager
     args: partition_key text, row_key text
     returns: table (partition_key_out text, row_key_out text, value jsonb, version integer, etag uuid)
     body: |-
@@ -3787,7 +3787,7 @@ methods:
         where wm_worker_pools_entities.partition_key = wm_worker_pools_entities_load.partition_key and wm_worker_pools_entities.row_key = wm_worker_pools_entities_load.row_key;
       end
   wm_worker_pools_entities_create:
-    serviceName: worker-manager
+    serviceName: worker_manager
     description: test
     mode: write
     args: pk text, rk text, properties jsonb, overwrite boolean, version integer
@@ -3821,7 +3821,7 @@ methods:
         return new_etag;
       end
   wm_worker_pools_entities_remove:
-    serviceName: worker-manager
+    serviceName: worker_manager
     description: test
     mode: write
     args: partition_key text, row_key text
@@ -3833,7 +3833,7 @@ methods:
         returning wm_worker_pools_entities.etag;
       end
   wm_worker_pools_entities_modify:
-    serviceName: worker-manager
+    serviceName: worker_manager
     description: |
       Modify an entity. If the modify operation is succesful, the etag is returned in a set.
       Else, an error will be raised with the following error code:
@@ -3867,7 +3867,7 @@ methods:
   wm_worker_pools_entities_scan:
     description: test
     mode: read
-    serviceName: worker-manager
+    serviceName: worker_manager
     args: pk text, rk text, condition text, size integer, page integer
     returns: table (partition_key text, row_key text, value jsonb, version integer, etag uuid)
     body: |-
@@ -3906,7 +3906,7 @@ methods:
   wm_worker_pool_errors_entities_load:
     description: test
     mode: read
-    serviceName: worker-manager
+    serviceName: worker_manager
     args: partition_key text, row_key text
     returns: table (partition_key_out text, row_key_out text, value jsonb, version integer, etag uuid)
     body: |-
@@ -3917,7 +3917,7 @@ methods:
         where wm_worker_pool_errors_entities.partition_key = wm_worker_pool_errors_entities_load.partition_key and wm_worker_pool_errors_entities.row_key = wm_worker_pool_errors_entities_load.row_key;
       end
   wm_worker_pool_errors_entities_create:
-    serviceName: worker-manager
+    serviceName: worker_manager
     description: test
     mode: write
     args: pk text, rk text, properties jsonb, overwrite boolean, version integer
@@ -3951,7 +3951,7 @@ methods:
         return new_etag;
       end
   wm_worker_pool_errors_entities_remove:
-    serviceName: worker-manager
+    serviceName: worker_manager
     description: test
     mode: write
     args: partition_key text, row_key text
@@ -3963,7 +3963,7 @@ methods:
         returning wm_worker_pool_errors_entities.etag;
       end
   wm_worker_pool_errors_entities_modify:
-    serviceName: worker-manager
+    serviceName: worker_manager
     description: |
       Modify an entity. If the modify operation is succesful, the etag is returned in a set.
       Else, an error will be raised with the following error code:
@@ -3997,7 +3997,7 @@ methods:
   wm_worker_pool_errors_entities_scan:
     description: test
     mode: read
-    serviceName: worker-manager
+    serviceName: worker_manager
     args: pk text, rk text, condition text, size integer, page integer
     returns: table (partition_key text, row_key text, value jsonb, version integer, etag uuid)
     body: |-

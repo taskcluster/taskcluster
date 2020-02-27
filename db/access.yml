@@ -26,7 +26,7 @@ index:
 notify:
   tables:
     denylisted_notification_entities: write
-purge-cache:
+purge_cache:
   tables:
     cache_purges_entities: write
 queue:
@@ -43,13 +43,13 @@ queue:
 secrets:
   tables:
     secrets_entities: write
-web-server:
+web_server:
   tables:
     authorization_codes_table_entities: write
     access_token_table_entities: write
     session_storage_table_entities: write
     github_access_token_table_entities: write
-worker-manager:
+worker_manager:
   tables:
     wm_workers_entities: write
     wm_worker_pools_entities: write
