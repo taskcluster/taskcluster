@@ -27,7 +27,7 @@ CREATE USER test_notify;
 CREATE USER test_purge_cache;
 CREATE USER test_queue;
 CREATE USER test_secrets;
-CREATE USER test_web-server;
+CREATE USER test_web_server;
 CREATE USER test_worker_manager;
 -- END CREATE USERS --
 EOF

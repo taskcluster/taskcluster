@@ -126,7 +126,7 @@ migrationScript: |-
     grant select, insert, update, delete on queue_task_groups_entities to $db_user_prefix$_queue;
     grant select, insert, update, delete on queue_task_group_members_entities to $db_user_prefix$_queue;
     grant select, insert, update, delete on queue_task_group_active_sets_entities to $db_user_prefix$_queue;
-    grant select, insert, update, delete on queue_task_requirement_entities to $db_user_prefix$_queu@e;
+    grant select, insert, update, delete on queue_task_requirement_entities to $db_user_prefix$_queue;
     grant select, insert, update, delete on queue_task_dependency_entities to $db_user_prefix$_queue;
     grant select, insert, update, delete on queue_worker_entities to $db_user_prefix$_queue;
     grant select, insert, update, delete on queue_worker_type_entities to $db_user_prefix$_queue;
