@@ -4,10 +4,11 @@ import (
 	"encoding/json"
 	"testing"
 
+	ptesting "github.com/taskcluster/taskcluster/v28/tools/taskcluster-worker-runner/protocol/testing"
+
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/taskcluster/taskcluster/v28/tools/taskcluster-worker-runner/cfg"
-	"github.com/taskcluster/taskcluster/v28/tools/taskcluster-worker-runner/protocol"
 	"github.com/taskcluster/taskcluster/v28/tools/taskcluster-worker-runner/run"
 	"github.com/taskcluster/taskcluster/v28/tools/taskcluster-worker-runner/tc"
 )
@@ -103,18 +104,12 @@ func TestGoogleConfigureRun(t *testing.T) {
 	require.Equal(t, "in-central1", state.WorkerLocation["region"])
 	require.Equal(t, "in-central1-b", state.WorkerLocation["zone"])
 
-	transp := protocol.NewFakeTransport()
-	defer transp.Close()
-	transp.InjectMessage(protocol.Message{
-		Type: "hello",
-		Properties: map[string]interface{}{
-			"capabilities": []interface{}{"shutdown"},
-		},
-	})
-	proto := protocol.NewProtocol(transp)
+	wkr := ptesting.NewFakeWorkerWithCapabilities("shutdown")
+	defer wkr.Close()
 
-	p.SetProtocol(proto)
+	p.SetProtocol(wkr.RunnerProtocol)
 	require.NoError(t, p.WorkerStarted(&state))
-	proto.Start(false)
-	require.True(t, proto.Capable("shutdown"))
+	wkr.RunnerProtocol.Start(false)
+	wkr.RunnerProtocol.WaitUntilInitialized()
+	require.True(t, wkr.RunnerProtocol.Capable("shutdown"))
 }

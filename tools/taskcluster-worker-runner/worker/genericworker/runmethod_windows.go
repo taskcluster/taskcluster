@@ -44,9 +44,11 @@ func (m *serviceRunMethod) start(w *genericworker, state *run.State) (protocol.T
 	}
 
 	// connect the transport to the named
-	transp := protocol.NewStdioTransport()
+	inputReader, inputWriter := io.Pipe()
+	outputReader, outputWriter := io.Pipe()
+	transp := protocol.NewPipeTransport(inputReader, outputWriter)
 
-	err = m.connectPipeToProtocol(w.wicfg.ProtocolPipe, transp)
+	err = m.connectPipeToProtocol(w.wicfg.ProtocolPipe, inputWriter, outputReader)
 	if err != nil {
 		return nil, err
 	}
@@ -60,7 +62,7 @@ func (m *serviceRunMethod) start(w *genericworker, state *run.State) (protocol.T
 // careful configuration of the security descriptor, this provides an
 // additional layer of assurance that this pipe is not used to manipulate the
 // worker or worker-runner.
-func (m *serviceRunMethod) connectPipeToProtocol(protocolPipe string, transp *protocol.StdioTransport) error {
+func (m *serviceRunMethod) connectPipeToProtocol(protocolPipe string, inputWriter io.Writer, outputReader io.Reader) error {
 	if protocolPipe == "" {
 		protocolPipe = `\\.\pipe\generic-worker`
 	}
@@ -99,8 +101,8 @@ func (m *serviceRunMethod) connectPipeToProtocol(protocolPipe string, transp *pr
 
 		// copy bidirectionally between this connection and the protocol transport, and do not
 		// accept any further connections
-		go io.Copy(conn, transp)
-		go io.Copy(transp, conn)
+		go io.Copy(conn, outputReader)
+		go io.Copy(inputWriter, conn)
 	}()
 
 	return nil

@@ -239,13 +239,7 @@ func main() {
 
 func initializeWorkerRunnerProtocol(input io.Reader, output io.Writer, withWorkerRunner bool) {
 	if withWorkerRunner {
-		transp := protocol.NewStdioTransport()
-		go func() {
-			_, _ = io.Copy(transp, input)
-		}()
-		go func() {
-			_, _ = io.Copy(output, transp)
-		}()
+		transp := protocol.NewPipeTransport(input, output)
 		workerRunnerTransport = transp
 	} else {
 		workerRunnerTransport = protocol.NewNullTransport()

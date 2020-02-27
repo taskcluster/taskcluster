@@ -15,25 +15,14 @@ func RequireInitialized(t *testing.T, prot *Protocol, initialized bool) {
 
 func TestCapabilityNegotiation(t *testing.T) {
 	test := func(t *testing.T, runnerHasCap bool, workerHasCap bool) {
-		runnerTransp := NewStdioTransport()
-		workerTransp := NewStdioTransport()
-
-		// wire those together in both directions, and finish them at
+		// wire transports together in both directions, and finish them at
 		// the end of the test
-		go func() {
-			_, err := io.Copy(runnerTransp, workerTransp)
-			if err != nil {
-				panic(err)
-			}
-		}()
-		go func() {
-			_, err := io.Copy(workerTransp, runnerTransp)
-			if err != nil {
-				panic(err)
-			}
-		}()
-		defer runnerTransp.Close()
-		defer workerTransp.Close()
+		r2wReader, r2wWriter := io.Pipe()
+		defer r2wWriter.Close()
+		w2rReader, w2rWriter := io.Pipe()
+		defer w2rWriter.Close()
+		runnerTransp := NewPipeTransport(w2rReader, r2wWriter)
+		workerTransp := NewPipeTransport(r2wReader, w2rWriter)
 
 		runnerProto := NewProtocol(runnerTransp)
 		workerProto := NewProtocol(workerTransp)

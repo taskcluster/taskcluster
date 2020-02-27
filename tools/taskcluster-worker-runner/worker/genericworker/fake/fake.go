@@ -2,21 +2,13 @@ package main
 
 import (
 	"fmt"
-	"io"
 	"os"
-	"time"
 
 	"github.com/taskcluster/taskcluster/v28/tools/taskcluster-worker-runner/protocol"
 )
 
 func main() {
-	transp := protocol.NewStdioTransport()
-	go func() {
-		_, _ = io.Copy(transp, os.Stdin)
-	}()
-	go func() {
-		_, _ = io.Copy(os.Stdout, transp)
-	}()
+	transp := protocol.NewPipeTransport(os.Stdin, os.Stdout)
 	proto := protocol.NewProtocol(transp)
 	proto.AddCapability("log")
 	proto.Start(true)
@@ -31,8 +23,6 @@ func main() {
 				},
 			},
 		})
-		// wait until the message is sent before exiting
-		time.Sleep(100 * time.Millisecond)
 	} else {
 		fmt.Println("proto does not support log")
 	}

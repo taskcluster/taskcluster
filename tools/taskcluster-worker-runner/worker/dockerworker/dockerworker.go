@@ -3,7 +3,6 @@ package dockerworker
 import (
 	"encoding/json"
 	"fmt"
-	"io"
 	"io/ioutil"
 	"log"
 	"os"
@@ -104,34 +103,24 @@ func (d *dockerworker) StartWorker(state *run.State) (protocol.Transport, error)
 		return nil, fmt.Errorf("Error writing worker config to %s: %v", d.wicfg.ConfigPath, err)
 	}
 
-	transp := protocol.NewStdioTransport()
-
 	// the --host taskcluster-worker-runner instructs docker-worker to merge
 	// config from $DOCKER_WORKER_CONFIG.
 	mainJs := fmt.Sprintf("%s/src/bin/worker.js", d.wicfg.Path)
 	cmd := exec.Command("node", mainJs, "--host", "taskcluster-worker-runner", "production")
 	cmd.Env = os.Environ()
 	cmd.Env = append(cmd.Env, "DOCKER_WORKER_CONFIG="+d.wicfg.ConfigPath)
-	cmd.Stdout = transp
 	cmd.Stderr = os.Stderr
 	d.cmd = cmd
 
-	// Unfortunately, cmd.Wait does not handle the case where cmd.Stdin is a writer that remains
-	// open when the process exits.  Instead, we set up our own copy loop.  This loop in fact
-	// runs forever, but for a single-use process like this, that's OK.
-	pipe, err := cmd.StdinPipe()
+	cmdStdout, err := cmd.StdoutPipe()
 	if err != nil {
 		return nil, err
 	}
-	go func() {
-		_, err = io.Copy(pipe, transp)
-		if err != nil {
-			// this can occur when the worker exits while we are trying to send a
-			// message to it, so we will consider the message lost and shut down
-			// as usual.
-			log.Printf("Error writing to worker process (ignored): %#v", err)
-		}
-	}()
+	cmdStdin, err := cmd.StdinPipe()
+	if err != nil {
+		return nil, err
+	}
+	transp := protocol.NewPipeTransport(cmdStdout, cmdStdin)
 
 	err = cmd.Start()
 	if err != nil {
