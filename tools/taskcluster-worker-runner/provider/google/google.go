@@ -2,6 +2,7 @@ package google
 
 import (
 	"fmt"
+	"log"
 	"strings"
 
 	tcclient "github.com/taskcluster/taskcluster/v27/clients/client-go"
@@ -113,11 +114,20 @@ func (p *GoogleProvider) SetProtocol(proto *protocol.Protocol) {
 	p.proto = proto
 }
 
-func (p *GoogleProvider) WorkerStarted() error {
+func (p *GoogleProvider) WorkerStarted(state *run.State) error {
+	p.proto.Register("shutdown", func(msg protocol.Message) {
+		err := provider.RemoveWorker(state, p.workerManagerClientFactory)
+		if err != nil {
+			log.Printf("Shutdown error: %v\n", err)
+		}
+	})
+	p.proto.Capabilities.Add("shutdown")
+	p.proto.Capabilities.Add("graceful-termination")
+
 	return nil
 }
 
-func (p *GoogleProvider) WorkerFinished() error {
+func (p *GoogleProvider) WorkerFinished(state *run.State) error {
 	return nil
 }
 

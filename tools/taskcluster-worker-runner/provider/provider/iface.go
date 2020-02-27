@@ -25,10 +25,10 @@ type Provider interface {
 	// provider-specific things that should occur while the worker is running.
 	// Note that this is called before the protocol has started, so it will still
 	// have no capabilities.
-	WorkerStarted() error
+	WorkerStarted(state *run.State) error
 
 	// The worker has exited.  Handle any necessary communication with the provider.
 	// Note that this method may not always be called, e.g., in the event of a system
 	// failure.
-	WorkerFinished() error
+	WorkerFinished(state *run.State) error
 }

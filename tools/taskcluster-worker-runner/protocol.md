@@ -53,6 +53,17 @@ Before the connection is initialized, the connection's capabilities are unknown,
 
 The following sections describe the defined message types, each under a heading giving the corresponding capability.
 
+### shutdown
+
+When worker-runner receives this message, and the provider supports it, it will invoke the function `RemoveWorker` from
+worker-manager. If the function fails, then we initiate a system shutdown.
+
+```
+~{"type": "shutdown"}
+```
+
+This is a no response message.
+
 ### graceful-termination
 
 Graceful termination is a way of indicating that the worker should shut down gracefully but quickly.
