@@ -3,7 +3,134 @@ migrationScript: |-
   begin
     create table clients_entities(partition_key text, row_key text, value jsonb not null, version integer not null, etag uuid default public.gen_random_uuid());
     alter table clients_entities add primary key (partition_key, row_key);
-    grant select, insert, update, delete on widgets to $db_user_prefix$_auth;
+
+    create table roles_entities(partition_key text, row_key text, value jsonb not null, version integer not null, etag uuid default public.gen_random_uuid());
+    alter table roles_entities add primary key (partition_key, row_key);
+
+    create table taskcluster_github_builds_entities(partition_key text, row_key text, value jsonb not null, version integer not null, etag uuid default public.gen_random_uuid());
+    alter table taskcluster_github_builds_entities add primary key (partition_key, row_key);
+
+    create table taskcluster_intergration_owners_entities(partition_key text, row_key text, value jsonb not null, version integer not null, etag uuid default public.gen_random_uuid());
+    alter table taskcluster_intergration_owners_entities add primary key (partition_key, row_key);
+
+    create table taskcluster_checks_to_tasks_entities(partition_key text, row_key text, value jsonb not null, version integer not null, etag uuid default public.gen_random_uuid());
+    alter table taskcluster_checks_to_tasks_entities add primary key (partition_key, row_key);
+
+    create table taskcluster_check_runs_entities(partition_key text, row_key text, value jsonb not null, version integer not null, etag uuid default public.gen_random_uuid());
+    alter table taskcluster_check_runs_entities add primary key (partition_key, row_key);
+
+    create table hooks_entities(partition_key text, row_key text, value jsonb not null, version integer not null, etag uuid default public.gen_random_uuid());
+    alter table hooks_entities add primary key (partition_key, row_key);
+
+    create table queues_entities(partition_key text, row_key text, value jsonb not null, version integer not null, etag uuid default public.gen_random_uuid());
+    alter table queues_entities add primary key (partition_key, row_key);
+
+    create table last_fire3_entities(partition_key text, row_key text, value jsonb not null, version integer not null, etag uuid default public.gen_random_uuid());
+    alter table last_fire3_entities add primary key (partition_key, row_key);
+
+    create table indexed_tasks_entities(partition_key text, row_key text, value jsonb not null, version integer not null, etag uuid default public.gen_random_uuid());
+    alter table indexed_tasks_entities add primary key (partition_key, row_key);
+
+    create table namespaces_entities(partition_key text, row_key text, value jsonb not null, version integer not null, etag uuid default public.gen_random_uuid());
+    alter table namespaces_entities add primary key (partition_key, row_key);
+
+    create table denylisted_notification_entities(partition_key text, row_key text, value jsonb not null, version integer not null, etag uuid default public.gen_random_uuid());
+    alter table denylisted_notification_entities add primary key (partition_key, row_key);
+
+    create table cache_purges_entities(partition_key text, row_key text, value jsonb not null, version integer not null, etag uuid default public.gen_random_uuid());
+    alter table cache_purges_entities add primary key (partition_key, row_key);
+
+    create table queue_tasks_entities(partition_key text, row_key text, value jsonb not null, version integer not null, etag uuid default public.gen_random_uuid());
+    alter table queue_tasks_entities add primary key (partition_key, row_key);
+
+    create table queue_artifcats_entities(partition_key text, row_key text, value jsonb not null, version integer not null, etag uuid default public.gen_random_uuid());
+    alter table queue_artifcats_entities add primary key (partition_key, row_key);
+
+    create table queue_task_groups_entities(partition_key text, row_key text, value jsonb not null, version integer not null, etag uuid default public.gen_random_uuid());
+    alter table queue_task_groups_entities add primary key (partition_key, row_key);
+
+    create table queue_task_group_active_sets_entities(partition_key text, row_key text, value jsonb not null, version integer not null, etag uuid default public.gen_random_uuid());
+    alter table queue_task_group_active_sets_entities add primary key (partition_key, row_key);
+
+    create table queue_task_requirement_entities(partition_key text, row_key text, value jsonb not null, version integer not null, etag uuid default public.gen_random_uuid());
+    alter table queue_task_requirement_entities add primary key (partition_key, row_key);
+
+    create table queue_task_dependency_entities(partition_key text, row_key text, value jsonb not null, version integer not null, etag uuid default public.gen_random_uuid());
+    alter table queue_task_dependency_entities add primary key (partition_key, row_key);
+
+    create table queue_worker_entities(partition_key text, row_key text, value jsonb not null, version integer not null, etag uuid default public.gen_random_uuid());
+    alter table queue_worker_entities add primary key (partition_key, row_key);
+
+    create table queue_worker_type_entities(partition_key text, row_key text, value jsonb not null, version integer not null, etag uuid default public.gen_random_uuid());
+    alter table queue_worker_type_entities add primary key (partition_key, row_key);
+
+    create table queue_provisioner_entities(partition_key text, row_key text, value jsonb not null, version integer not null, etag uuid default public.gen_random_uuid());
+    alter table queue_provisioner_entities add primary key (partition_key, row_key);
+
+    create table secrets_entities(partition_key text, row_key text, value jsonb not null, version integer not null, etag uuid default public.gen_random_uuid());
+    alter table secrets_entities add primary key (partition_key, row_key);
+
+    create table authorization_codes_table_entities(partition_key text, row_key text, value jsonb not null, version integer not null, etag uuid default public.gen_random_uuid());
+    alter table authorization_codes_table_entities add primary key (partition_key, row_key);
+
+    create table access_token_table_entities(partition_key text, row_key text, value jsonb not null, version integer not null, etag uuid default public.gen_random_uuid());
+    alter table access_token_table_entities add primary key (partition_key, row_key);
+
+    create table session_storage_table_entities(partition_key text, row_key text, value jsonb not null, version integer not null, etag uuid default public.gen_random_uuid());
+    alter table session_storage_table_entities add primary key (partition_key, row_key);
+
+    create table github_access_token_table_entities(partition_key text, row_key text, value jsonb not null, version integer not null, etag uuid default public.gen_random_uuid());
+    alter table github_access_token_table_entities add primary key (partition_key, row_key);
+
+    create table wm_workers_entities(partition_key text, row_key text, value jsonb not null, version integer not null, etag uuid default public.gen_random_uuid());
+    alter table wm_workers_entities add primary key (partition_key, row_key);
+
+    create table wm_worker_pools_entities(partition_key text, row_key text, value jsonb not null, version integer not null, etag uuid default public.gen_random_uuid());
+    alter table wm_worker_pools_entities add primary key (partition_key, row_key);
+
+    create table wm_worker_pool_errors_entities(partition_key text, row_key text, value jsonb not null, version integer not null, etag uuid default public.gen_random_uuid());
+    alter table wm_worker_pool_errors_entities add primary key (partition_key, row_key);
+
+    grant select, insert, update, delete on clients_entities to $db_user_prefix$_auth;
+    grant select, insert, update, delete on roles_entities to $db_user_prefix$_auth;
+
+    grant select, insert, update, delete on taskcluster_check_runs_entities to $db_user_prefix$_github;
+    grant select, insert, update, delete on taskcluster_checks_to_tasks_entities to $db_user_prefix$_github;
+    grant select, insert, update, delete on taskcluster_github_builds_entities to $db_user_prefix$_github;
+    grant select, insert, update, delete on taskcluster_integration_owners_entities to $db_user_prefix$_github;
+
+    grant select, insert, update, delete on hooks_entities to $db_user_prefix$_hooks;
+    grant select, insert, update, delete on last_fire3_entities to $db_user_prefix$_hooks;
+    grant select, insert, update, delete on queues_entities to $db_user_prefix$_hooks;
+
+    grant select, insert, update, delete on indexed_tasks_entities to $db_user_prefix$_index;
+    grant select, insert, update, delete on namespaces_entities to $db_user_prefix$_index;
+
+    grant select, insert, update, delete on denylisted_notification_entities to $db_user_prefix$_notify;
+
+    grant select, insert, update, delete on cache_purges_entities to $db_user_prefix$_purge-cache;
+
+    grant select, insert, update, delete on secrets_entities to $db_user_prefix$_secrets;
+
+    grant select, insert, update, delete on access_token_table_entities to $db_user_prefix$_web-server;
+    grant select, insert, update, delete on authorization_codes_table_entities to $db_user_prefix$_web-server;
+    grant select, insert, update, delete on github_access_token_table_entities to $db_user_prefix$_web-server;
+    grant select, insert, update, delete on session_storage_table_entities to $db_user_prefix$_web-server;
+
+    grant select, insert, update, delete on wm_worker_pool_errors_entities to $db_user_prefix$_worker-manager;
+    grant select, insert, update, delete on wm_worker_pools_entities to $db_user_prefix$_worker-manager;
+    grant select, insert, update, delete on wm_workers_entities to $db_user_prefix$_worker-manager;
+
+    grant select, insert, update, delete on queue_tasks_entities to $db_user_prefix$_worker-manager;
+    grant select, insert, update, delete on queue_artifacts_entities to $db_user_prefix$_worker-manager;
+    grant select, insert, update, delete on queue_task_groups_entities to $db_user_prefix$_worker-manager;
+    grant select, insert, update, delete on queue_task_group_members_entities to $db_user_prefix$_worker-manager;
+    grant select, insert, update, delete on queue_task_group_active_sets_entities to $db_user_prefix$_worker-manager;
+    grant select, insert, update, delete on queue_task_requirement_entities to $db_user_prefix$_worker-manager;
+    grant select, insert, update, delete on queue_task_dependency_entities to $db_user_prefix$_worker-manager;
+    grant select, insert, update, delete on queue_worker_entities to $db_user_prefix$_worker-manager;
+    grant select, insert, update, delete on queue_worker_type_entities to $db_user_prefix$_worker-manager;
+    grant select, insert, update, delete on queue_provisioner_entities to $db_user_prefix$_worker-manager;
   end
 methods:
   clients_entities_load:
