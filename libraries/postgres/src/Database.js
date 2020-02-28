@@ -210,7 +210,7 @@ class Database {
       }
       showProgress('..running migration script');
       const migrationScript = version.migrationScript
-        .replace('$db_user_prefix$', usernamePrefix);
+        .replace(/\$db_user_prefix\$/g, usernamePrefix);
       await client.query(`DO ${dollarQuote(migrationScript)}`);
       showProgress('..defining methods');
       for (let [methodName, { args, body, returns}] of Object.entries(version.methods)) {
