@@ -43,11 +43,14 @@ migrationScript: |-
     create table queue_tasks_entities(partition_key text, row_key text, value jsonb not null, version integer not null, etag uuid default public.gen_random_uuid());
     alter table queue_tasks_entities add primary key (partition_key, row_key);
 
-    create table queue_artifcats_entities(partition_key text, row_key text, value jsonb not null, version integer not null, etag uuid default public.gen_random_uuid());
-    alter table queue_artifcats_entities add primary key (partition_key, row_key);
+    create table queue_artifacts_entities(partition_key text, row_key text, value jsonb not null, version integer not null, etag uuid default public.gen_random_uuid());
+    alter table queue_artifacts_entities add primary key (partition_key, row_key);
 
     create table queue_task_groups_entities(partition_key text, row_key text, value jsonb not null, version integer not null, etag uuid default public.gen_random_uuid());
     alter table queue_task_groups_entities add primary key (partition_key, row_key);
+
+    create table queue_task_group_members_entities(partition_key text, row_key text, value jsonb not null, version integer not null, etag uuid default public.gen_random_uuid());
+    alter table queue_task_group_members_entities add primary key (partition_key, row_key);
 
     create table queue_task_group_active_sets_entities(partition_key text, row_key text, value jsonb not null, version integer not null, etag uuid default public.gen_random_uuid());
     alter table queue_task_group_active_sets_entities add primary key (partition_key, row_key);
@@ -97,7 +100,7 @@ migrationScript: |-
     grant select, insert, update, delete on taskcluster_check_runs_entities to $db_user_prefix$_github;
     grant select, insert, update, delete on taskcluster_checks_to_tasks_entities to $db_user_prefix$_github;
     grant select, insert, update, delete on taskcluster_github_builds_entities to $db_user_prefix$_github;
-    grant select, insert, update, delete on taskcluster_integration_owners_entities to $db_user_prefix$_github;
+    grant select, insert, update, delete on taskcluster_intergration_owners_entities to $db_user_prefix$_github;
 
     grant select, insert, update, delete on hooks_entities to $db_user_prefix$_hooks;
     grant select, insert, update, delete on last_fire3_entities to $db_user_prefix$_hooks;
