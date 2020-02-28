@@ -1,6 +1,10 @@
 package logging
 
-import "sync"
+import (
+	"sync"
+
+	"github.com/taskcluster/taskcluster/v28/tools/taskcluster-worker-runner/logging/logging"
+)
 
 type TestLogDestination struct {
 	mutex    sync.Mutex
@@ -22,7 +26,7 @@ func (dst *TestLogDestination) Clear() {
 
 func (dst *TestLogDestination) LogUnstructured(message string) {
 	dst.mutex.Lock()
-	dst.messages = append(dst.messages, toStructured(message))
+	dst.messages = append(dst.messages, logging.ToStructured(message))
 	dst.mutex.Unlock()
 }
 

@@ -12,6 +12,7 @@ import (
 	"github.com/Flaque/filet"
 	"github.com/stretchr/testify/require"
 	"github.com/taskcluster/taskcluster/v28/tools/taskcluster-worker-runner/logging"
+	loggingCommon "github.com/taskcluster/taskcluster/v28/tools/taskcluster-worker-runner/logging/logging"
 )
 
 func buildFakeGenericWorker(workerPath string) error {
@@ -21,7 +22,7 @@ func buildFakeGenericWorker(workerPath string) error {
 	return cmd.Run()
 }
 
-var oldLoggingDestination logging.Logger
+var oldLoggingDestination loggingCommon.Logger
 
 func setupLogging() *logging.TestLogDestination {
 	oldLoggingDestination = logging.Destination

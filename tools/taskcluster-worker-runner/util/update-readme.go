@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"strings"
 
+	"github.com/taskcluster/taskcluster/v28/tools/taskcluster-worker-runner/logging"
 	"github.com/taskcluster/taskcluster/v28/tools/taskcluster-worker-runner/provider"
 	"github.com/taskcluster/taskcluster/v28/tools/taskcluster-worker-runner/runner"
 	"github.com/taskcluster/taskcluster/v28/tools/taskcluster-worker-runner/worker"
@@ -24,7 +25,9 @@ start-worker <runnerConfig>
 
 ` + provider.Usage() + `
 
-` + worker.Usage()
+` + worker.Usage() + `
+
+` + logging.Usage()
 }
 
 const prefix = "<!-- start-usage -->"

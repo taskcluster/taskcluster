@@ -25,6 +25,11 @@ the following fields:
   Note that the nested |<workerImplementation>.config| structure is not allowed
   here.
 
+* |logging|: configuration for where logs from this application and from the
+  worker should be sent.  This defaults to the |stdio| logging implementation.
+
+  * |implementation|: the name of the logging implementation; see below.
+
 * |getSecrets|: if true (the default), then configuration is fetched from the
   secrets service and merged with the worker configuration.  This option is
   generally only used in testing.

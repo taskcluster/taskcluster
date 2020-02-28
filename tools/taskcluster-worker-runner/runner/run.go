@@ -30,6 +30,8 @@ func Run(configFile string) (state run.State, err error) {
 		return
 	}
 
+	logging.Configure(runnercfg)
+
 	runCached := false
 	if runnercfg.CacheOverRestarts != "" {
 

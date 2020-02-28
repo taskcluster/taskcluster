@@ -1,14 +1,15 @@
-package logging
+package stdio
 
 import (
 	"bytes"
 	"testing"
 
 	"github.com/stretchr/testify/require"
+	"github.com/taskcluster/taskcluster/v28/tools/taskcluster-worker-runner/logging/logging"
 )
 
-func makeLogger() (Logger, *bytes.Buffer) {
-	stdioLogDestination := NewStdioLogDestination()
+func makeLogger() (logging.Logger, *bytes.Buffer) {
+	stdioLogDestination := New(nil).(*stdioLogDestination)
 
 	// modify the logger in-place to get behavior we can test for
 	buf := bytes.NewBuffer([]byte{})
