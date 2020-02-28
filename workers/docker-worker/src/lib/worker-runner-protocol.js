@@ -75,7 +75,13 @@ class Protocol extends EventEmitter {
       this.emit(event, msg);
     });
 
-    this.on('welcome-msg', msg => this._handleWelcome(msg));
+    // create a promise that will resolve when we have received a welcome
+    // message and know the extent of capabilities available.
+    this._welcomedPromise = new Promise(resolve =>
+      this.on('welcome-msg', msg => {
+        this._handleWelcome(msg);
+        resolve();
+      }));
   }
 
   /**
@@ -88,7 +94,8 @@ class Protocol extends EventEmitter {
   /**
    * Check whether a particular capability is available
    */
-  capable(cap) {
+  async capable(cap) {
+    await this._welcomedPromise;
     return this.capabilities.has(cap);
   }
 

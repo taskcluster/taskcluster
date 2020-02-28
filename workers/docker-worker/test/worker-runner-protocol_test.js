@@ -92,15 +92,16 @@ suite('worker-runner-protocol', function() {
       const transp = new TestTransport();
       const prot = new Protocol(transp, new Set(['worker-only', 'shared']));
 
-      assert.equal(prot.capable('worker-only'), false);
-      assert.equal(prot.capable('shared'), false);
-      assert.equal(prot.capable('runner-only'), false);
+      // `capable` doesn't return yet..
+      let returned = false;
+      prot.capable('worker-only').then(() => { returned = true; });
+      assert.equal(returned, false);
 
       transp.fakeReceive({type: 'welcome', capabilities: ['shared', 'runner-only']});
 
-      assert.equal(prot.capable('worker-only'), false);
-      assert.equal(prot.capable('shared'), true);
-      assert.equal(prot.capable('runner-only'), false);
+      assert.equal(await prot.capable('worker-only'), false);
+      assert.equal(await prot.capable('shared'), true);
+      assert.equal(await prot.capable('runner-only'), false);
     });
 
     test('sending', async function() {
