@@ -1,0 +1,7 @@
+subscription artifactsCreated($taskGroupId: ID!){
+  artifactsCreated(taskGroupId: $taskGroupId){
+    artifact {
+      name
+    }
+  }
+}
