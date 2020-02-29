@@ -24,7 +24,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         variables: {
           taskId: taskId,
           runId: runId,
-          name: name
+          name: name,
         },
       });
 
@@ -42,7 +42,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         query: gql`${getArtifacts}`,
         variables: {
           taskId: taskId,
-          runId: runId
+          runId: runId,
         },
       });
 
@@ -70,7 +70,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
   suite('Artifact Subscriptions', function() {
     helper.withMockedEventIterator();
-  
+
     test('subscribe works', async function(){
       let subscriptionClient = await helper.createSubscriptionClient();
       const client = helper.getWebsocketClient(subscriptionClient);
@@ -79,7 +79,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         artifactsCreated: {
           artifact: {
             name: "name",
-          }
+          },
         },
       };
 
@@ -94,11 +94,11 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       let subscription = client.subscribe({
         query: gql`${artifactsCreated}`,
         variables: {
-          taskGroupId: "groupId"
+          taskGroupId: "groupId",
         },
       }).subscribe(
         (value) => subscriptionResult = value,
-        (error) => console.log(error)
+        (error) => console.log(error),
       );
 
       await testing.poll(

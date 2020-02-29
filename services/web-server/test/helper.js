@@ -433,28 +433,28 @@ const stubbedClients = () => {
           const artifact = {
             taskId: taskId,
             runId: runId,
-            name: name
-          }
-          return Promise.resolve(artifact)
+            name: name,
+          };
+          return Promise.resolve(artifact);
         },
         listArtifacts: async (taskId, runId, options) => {
-          const artifacts = ["1", "2", "3"].map(artifactSuffix => { 
+          const artifacts = ["1", "2", "3"].map(artifactSuffix => {
             return {
               taskId,
               runId,
-              name: `artifact-${artifactSuffix}`
-            }
+              name: `artifact-${artifactSuffix}`,
+            };
           });
-          return Promise.resolve({artifacts})
+          return Promise.resolve({artifacts});
         },
         listLatestArtifacts: async (taskId, options) => {
-          const artifacts = ["1", "2", "3"].map(artifactSuffix => { 
+          const artifacts = ["1", "2", "3"].map(artifactSuffix => {
             return {
               taskId,
-              name: `artifact-${artifactSuffix}`
-            }
+              name: `artifact-${artifactSuffix}`,
+            };
           });
-          return Promise.resolve({artifacts})
+          return Promise.resolve({artifacts});
         },
       },
     }),

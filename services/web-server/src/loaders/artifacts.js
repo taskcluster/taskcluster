@@ -63,10 +63,10 @@ module.exports = ({ queue }, isAuthed, rootUrl) => {
           return new Artifact(
             taskId,
             withUrl({
-              method: queue.getArtifact, 
-              taskId, 
-              artifact, 
-              runId
+              method: queue.getArtifact,
+              taskId,
+              artifact,
+              runId,
             }),
             runId,
           );
