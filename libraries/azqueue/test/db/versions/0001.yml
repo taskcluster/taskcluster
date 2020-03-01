@@ -13,6 +13,10 @@ migrationScript: |-
     -- 'get' operations sort by inserted within a queue
     create index azure_queue_messages_inserted on azure_queue_messages(queue_name, inserted);
   end
+downgradeScript: |-
+  begin
+    drop table azure_queue_messages;
+  end
 methods:
   azure_queue_count:
     description: |

@@ -112,7 +112,6 @@ suite(`${testing.suiteName()} - roles`, function() {
     { first: 'baz', last: 'gamma' },
   ];
 
-
   setup('reset roles table', async function() {
     await helper.withDbClient(async role => {
       await role.query(`delete from roles_entities`);

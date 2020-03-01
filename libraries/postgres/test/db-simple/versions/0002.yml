@@ -4,6 +4,11 @@ migrationScript: |-
     alter table secrets
       add column expires timestamp not null defeault now() + interval '1000 years';
   end
+downgradeScript: |-
+  begin
+    alter table secrets
+      drop column expires;
+  end
 methods:
   list_secrets:
     description: test

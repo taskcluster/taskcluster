@@ -246,6 +246,13 @@
   },
   {
     "element": "h2",
+    "id": "downgrades",
+    "path": "/manual/deploying/database",
+    "subtitle": "Downgrades",
+    "title": "Database Configuration"
+  },
+  {
+    "element": "h2",
     "id": "read-and-write-replicas",
     "path": "/manual/deploying/database",
     "subtitle": "Read and Write Replicas",

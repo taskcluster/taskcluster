@@ -135,6 +135,81 @@ migrationScript: |-
     grant select, insert, update, delete on queue_worker_type_entities to $db_user_prefix$_queue;
     grant select, insert, update, delete on queue_provisioner_entities to $db_user_prefix$_queue;
   end
+downgradeScript: |-
+  begin
+    revoke select, insert, update, delete on clients_entities from $db_user_prefix$_auth;
+    revoke select, insert, update, delete on roles_entities from $db_user_prefix$_auth;
+
+    revoke select, insert, update, delete on taskcluster_check_runs_entities from $db_user_prefix$_github;
+    revoke select, insert, update, delete on taskcluster_checks_to_tasks_entities from $db_user_prefix$_github;
+    revoke select, insert, update, delete on taskcluster_github_builds_entities from $db_user_prefix$_github;
+    revoke select, insert, update, delete on taskcluster_intergration_owners_entities from $db_user_prefix$_github;
+
+    revoke select, insert, update, delete on hooks_entities from $db_user_prefix$_hooks;
+    revoke select, insert, update, delete on last_fire3_entities from $db_user_prefix$_hooks;
+    revoke select, insert, update, delete on queues_entities from $db_user_prefix$_hooks;
+
+    revoke select, insert, update, delete on indexed_tasks_entities from $db_user_prefix$_index;
+    revoke select, insert, update, delete on namespaces_entities from $db_user_prefix$_index;
+
+    revoke select, insert, update, delete on denylisted_notification_entities from $db_user_prefix$_notify;
+
+    revoke select, insert, update, delete on cache_purges_entities from $db_user_prefix$_purge_cache;
+
+    revoke select, insert, update, delete on secrets_entities from $db_user_prefix$_secrets;
+
+    revoke select, insert, update, delete on access_token_table_entities from $db_user_prefix$_web_server;
+    revoke select, insert, update, delete on authorization_codes_table_entities from $db_user_prefix$_web_server;
+    revoke select, insert, update, delete on github_access_token_table_entities from $db_user_prefix$_web_server;
+    revoke select, insert, update, delete on session_storage_table_entities from $db_user_prefix$_web_server;
+
+    revoke select, insert, update, delete on wm_worker_pool_errors_entities from $db_user_prefix$_worker_manager;
+    revoke select, insert, update, delete on wm_worker_pools_entities from $db_user_prefix$_worker_manager;
+    revoke select, insert, update, delete on wm_workers_entities from $db_user_prefix$_worker_manager;
+
+    revoke select, insert, update, delete on queue_tasks_entities from $db_user_prefix$_queue;
+    revoke select, insert, update, delete on queue_artifacts_entities from $db_user_prefix$_queue;
+    revoke select, insert, update, delete on queue_task_groups_entities from $db_user_prefix$_queue;
+    revoke select, insert, update, delete on queue_task_group_members_entities from $db_user_prefix$_queue;
+    revoke select, insert, update, delete on queue_task_group_active_sets_entities from $db_user_prefix$_queue;
+    revoke select, insert, update, delete on queue_task_requirement_entities from $db_user_prefix$_queue;
+    revoke select, insert, update, delete on queue_task_dependency_entities from $db_user_prefix$_queue;
+    revoke select, insert, update, delete on queue_worker_entities from $db_user_prefix$_queue;
+    revoke select, insert, update, delete on queue_worker_type_entities from $db_user_prefix$_queue;
+    revoke select, insert, update, delete on queue_provisioner_entities from $db_user_prefix$_queue;
+
+    drop table clients_entities;
+    drop table roles_entities;
+    drop table taskcluster_github_builds_entities;
+    drop table taskcluster_intergration_owners_entities;
+    drop table taskcluster_checks_to_tasks_entities;
+    drop table taskcluster_check_runs_entities;
+    drop table hooks_entities;
+    drop table queues_entities;
+    drop table last_fire3_entities;
+    drop table indexed_tasks_entities;
+    drop table namespaces_entities;
+    drop table denylisted_notification_entities;
+    drop table cache_purges_entities;
+    drop table queue_tasks_entities;
+    drop table queue_artifacts_entities;
+    drop table queue_task_groups_entities;
+    drop table queue_task_group_members_entities;
+    drop table queue_task_group_active_sets_entities;
+    drop table queue_task_requirement_entities;
+    drop table queue_task_dependency_entities;
+    drop table queue_worker_entities;
+    drop table queue_worker_type_entities;
+    drop table queue_provisioner_entities;
+    drop table secrets_entities;
+    drop table authorization_codes_table_entities;
+    drop table access_token_table_entities;
+    drop table session_storage_table_entities;
+    drop table github_access_token_table_entities;
+    drop table wm_workers_entities;
+    drop table wm_worker_pools_entities;
+    drop table wm_worker_pool_errors_entities;
+  end
 methods:
   clients_entities_load:
     description: test
