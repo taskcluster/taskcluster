@@ -200,7 +200,8 @@
     "backup:run": "node infrastructure/tooling/src/main.js backup:run",
     "backup:restore": "node infrastructure/tooling/src/main.js backup:restore",
     "backup:compare": "node infrastructure/tooling/src/main.js backup:compare",
-    "db:upgrade": "node db/src/main.js"
+    "db:upgrade": "node db/src/main.js upgrade",
+    "db:downgrade": "node db/src/main.js downgrade"
   },
   "renovate": {
     "extends": [

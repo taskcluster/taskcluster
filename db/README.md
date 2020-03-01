@@ -40,6 +40,9 @@ The following checklist summarizes what needs to be written to modify the databa
 
 * [ ] new version file in `db/versions` that updates all impacted stored functions
 * [ ] new test script in `db/test/versions`
+  * [ ] test forward migration
+  * [ ] test downgrade
+  * [ ] test migration after downgrade (ensuring downgrade doesn't leave stray Postgres resources around)
 * for any *new* stored functions:
   * [ ] fake implementation in `db/src/fakes/<serviceName>.js`
   * [ ] tests for new functions in `db/test/fns`

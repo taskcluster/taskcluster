@@ -1,6 +1,6 @@
 const util = require('util');
 const chalk = require('chalk');
-const {upgrade} = require('taskcluster-db');
+const {upgrade, downgrade} = require('taskcluster-db');
 
 const main = async () => {
   const adminDbUrl = process.env.ADMIN_DB_URL;
@@ -17,7 +17,17 @@ const main = async () => {
     util.log(chalk.green(message));
   };
 
-  await upgrade({showProgress, adminDbUrl, usernamePrefix});
+  if (process.argv[2] === 'upgrade') {
+    await upgrade({showProgress, adminDbUrl, usernamePrefix});
+  } else if (process.argv[2] === 'downgrade') {
+    const toVersion = parseInt(process.argv[3]);
+    if (isNaN(toVersion)) {
+      throw new Error('invalid version specified for downgrade -- must be an integer DB version, not a TC release version');
+    }
+    await downgrade({showProgress, adminDbUrl, usernamePrefix, toVersion});
+  } else {
+    throw new Error('invalid subcommand for db/src/main.js');
+  }
 };
 
 main().catch(err => {

@@ -93,3 +93,31 @@ The output will describe the changes taking place.
 <Warning>
 As with any upgrade, consult the release notes before running the upgrade.
 </Warning>
+
+## Downgrades
+
+In general, it is safe to downgrade the Taskcluster services without downgrading the database.
+By design, older versions of the services can run against newer versions of the database.
+
+However, in the specific circumstance that a database upgrade has itself caused problems -- for example, if a new stored function is failing -- then a database downgrade can be performed.
+
+<Warning>
+Database downgrades must be performed *after* the corresponding code is deployed.
+</Warning>
+<Warning>
+Database downgrades can cause data loss -- for example, downgrading a version that created a table will drop that table.
+</Warning>
+<Warning>
+Database versions are unrelated to Taskcluster release versions.
+Consult the Taskcluster source or development team to find the appropriate database version.
+</Warning>
+
+To perform a database downgrade, determine the Taskcluster version `<tcversion>` that defined the currently-deployed database version.
+This is the Taskcluster release version that was deployed and caused the error requiring a rollback.
+Then, determine the target database version.
+This should be the database version `<dbversion>` defined by the Taskcluster release to which you have (already!) rolled back.
+Then, run:
+
+```shell
+docker run -ti --rm -e ADMIN_DB_URL -e USERNAME_PREFIX taskcluster/taskcluster:<tcversion> db:downgrade <dbversion>
+```
