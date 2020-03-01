@@ -1543,9 +1543,9 @@ aws-sdk-mock@^4.3.0:
     traverse "^0.6.6"
 
 aws-sdk@^2.394.0:
-  version "2.546.0"
-  resolved "https://registry.yarnpkg.com/aws-sdk/-/aws-sdk-2.546.0.tgz#48bf5fa56ce880973467452427024e77336d6098"
-  integrity sha512-SA+vL10oz8fwH0zicFqTthVEotjg7eGcP2lB/C6DOcNM/P/NMJpXEuR3Dt5eQmuNtjJBZ6kOIOrpq3IglzMmuQ==
+  version "2.630.0"
+  resolved "https://registry.yarnpkg.com/aws-sdk/-/aws-sdk-2.630.0.tgz#108ccd50b585226db8d1798def73f7b873a2efa6"
+  integrity sha512-7BDPUIqmMZfZf+KN2Z3RpGDYGkEucQORLM2EqXuE91ETW5ySvoNd771+EaE3OS+FUx3JejfcVk8Rr2ZFU38RjA==
   dependencies:
     buffer "4.9.1"
     events "1.1.1"
@@ -7265,48 +7265,44 @@ tar-stream@^2.0.0:
     readable-stream "^3.1.1"
 
 "taskcluster-client@link:clients/client":
-  version "0.0.0"
-  uid ""
+  version "25.4.0"
+  dependencies:
+    "@hapi/hawk" "^7.1.2"
+    debug "^4.1.1"
+    lodash "^4.17.4"
+    slugid "^2.0.0"
+    superagent "^5.0.0"
+    taskcluster-lib-urls "^12.0.0"
 
 "taskcluster-lib-api@link:libraries/api":
-  version "0.0.0"
-  uid ""
+  version "25.4.0"
 
 "taskcluster-lib-app@link:libraries/app":
-  version "0.0.0"
-  uid ""
+  version "25.4.0"
 
 "taskcluster-lib-azure@link:libraries/azure":
-  version "0.0.0"
-  uid ""
+  version "25.4.0"
 
 "taskcluster-lib-config@link:libraries/config":
-  version "0.0.0"
-  uid ""
+  version "25.4.0"
 
 "taskcluster-lib-iterate@link:libraries/iterate":
-  version "0.0.0"
-  uid ""
+  version "25.4.0"
 
 "taskcluster-lib-loader@link:libraries/loader":
-  version "0.0.0"
-  uid ""
+  version "25.4.0"
 
 "taskcluster-lib-monitor@link:libraries/monitor":
-  version "0.0.0"
-  uid ""
+  version "25.4.0"
 
 "taskcluster-lib-postgres@link:libraries/postgres":
-  version "0.0.0"
-  uid ""
+  version "25.4.0"
 
 "taskcluster-lib-pulse@link:libraries/pulse":
-  version "0.0.0"
-  uid ""
+  version "25.4.0"
 
 "taskcluster-lib-references@link:libraries/references":
-  version "0.0.0"
-  uid ""
+  version "25.4.0"
 
 taskcluster-lib-scopes@^11.0.0:
   version "11.0.0"
@@ -7316,8 +7312,7 @@ taskcluster-lib-scopes@^11.0.0:
     fast-json-stable-stringify "^2.1.0"
 
 "taskcluster-lib-testing@link:libraries/testing":
-  version "0.0.0"
-  uid ""
+  version "25.4.0"
 
 taskcluster-lib-urls@^12.0.0:
   version "12.0.0"
@@ -7325,8 +7320,7 @@ taskcluster-lib-urls@^12.0.0:
   integrity sha512-OrEFE0m3p/+mGsmIwjttLhSKg3io6MpJLhYtPNjVSZA9Ix8Y5tprN3vM6a3MjWt5asPF6AKZsfT43cgpGwJB0g==
 
 "taskcluster-lib-validate@link:libraries/validate":
-  version "0.0.0"
-  uid ""
+  version "25.4.0"
 
 temporary@^1.0.0:
   version "1.0.1"
