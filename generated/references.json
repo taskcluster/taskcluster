@@ -228,13 +228,13 @@
       "description": "Conditions a worker can reach and actions to take in the case that they do.\nNot all providers necessarily implement all features of this in the same way.\nRead the providers docs to understand exactly what it will do.\n",
       "properties": {
         "registrationTimeout": {
-          "description": "Each worker in this pool has `registrationTimeout` seconds to\nregister itself with worker-manager after it has\nbeen requsted from the cloud provider. After this\ntimeout, worker-manager will terminate the instance,\nassuming it is broken.\n",
+          "description": "Each worker in this pool has `registrationTimeout` seconds to\nregister itself with worker-manager after it has\nbeen requsted from the cloud provider. After this\ntimeout, worker-manager will terminate the instance,\nassuming it is broken.\n\nThis parameter has no effect for worker pools using the static provider\ntype.\n",
           "title": "Registration Timeout",
           "type": "integer"
         },
         "reregistrationTimeout": {
           "default": 345600,
-          "description": "If specified, workers in this pool must re-register via `reregister()`\nwithin `reregistrationTimeout` seconds from the initial call to `register()`\nto get new credentials. If the worker has not done so, it will be\nterminated. This defaults to 96 hours.\n",
+          "description": "If specified, workers in this pool must re-register via `reregister()`\nwithin `reregistrationTimeout` seconds from the initial call to\n`register()` to get new credentials. If the worker has not done so, it\nwill be terminated.  This value also dictates the lifetime of the\ntemporary credentials granted to the worker, meaning that it cannot be\ngreater than 31 days.\n\nThe default value is 3 days.\n",
           "title": "Checkin Timeout",
           "type": "integer"
         }
@@ -756,6 +756,13 @@
       "$schema": "/schemas/common/metaschema.json#",
       "additionalProperties": false,
       "description": "A configuration for static workertypes",
+      "properties": {
+        "lifecycle": {
+          "$ref": "worker-lifecycle.json#"
+        }
+      },
+      "required": [
+      ],
       "title": "Static Provider Config",
       "type": "object"
     },

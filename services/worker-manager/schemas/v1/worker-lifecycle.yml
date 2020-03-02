@@ -15,14 +15,21 @@ properties:
       been requsted from the cloud provider. After this
       timeout, worker-manager will terminate the instance,
       assuming it is broken.
+
+      This parameter has no effect for worker pools using the static provider
+      type.
   reregistrationTimeout:
     title: Checkin Timeout
     type: integer
     default: 345600
     description: |
       If specified, workers in this pool must re-register via `reregister()`
-      within `reregistrationTimeout` seconds from the initial call to `register()`
-      to get new credentials. If the worker has not done so, it will be
-      terminated. This defaults to 96 hours.
+      within `reregistrationTimeout` seconds from the initial call to
+      `register()` to get new credentials. If the worker has not done so, it
+      will be terminated.  This value also dictates the lifetime of the
+      temporary credentials granted to the worker, meaning that it cannot be
+      greater than 31 days.
+      
+      The default value is 3 days.
 additionalProperties: false
 required: []
