@@ -18,7 +18,6 @@ if [ "$1" = "--users" ]; then
     echo "Creating per-service users.."
     psql -U postgres -h localhost postgres <<'EOF'
 -- BEGIN CREATE USERS --
-CREATE USER test_notify;
 CREATE USER test_auth;
 CREATE USER test_github;
 CREATE USER test_hooks;
