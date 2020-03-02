@@ -637,6 +637,11 @@ builder.declare({
       `Worker ${workerGroup}/${workerId} in worker pool ${workerPoolId} does not exist`, {});
   }
 
+  if (worker.expires < new Date()) {
+    return res.reportError('InputError',
+      `Worker ${workerGroup}/${workerId} has expired`, {});
+  }
+
   if (worker.providerId !== providerId) {
     return res.reportError('InputError',
       `Worker ${workerGroup}/${workerId} does not have provider ${providerId}`, {});
@@ -653,6 +658,7 @@ builder.declare({
     return res.reportError('InputError', err.message, {});
   }
   assert(expires, 'registerWorker did not return expires');
+  assert(expires > new Date(), 'registerWorker returned expires in the past');
 
   // We use these fields from inside the worker rather than
   // what was passed in because that is the thing we have verified
