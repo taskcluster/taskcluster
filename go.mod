@@ -7,7 +7,7 @@ require (
 	github.com/Microsoft/go-winio v0.4.14
 	github.com/aws/aws-sdk-go v1.28.9
 	github.com/certifi/gocertifi v0.0.0-20200104152315-a6d78f326758 // indirect
-	github.com/dchest/uniuri v0.0.0-20160212164326-8902c56451e9
+	github.com/dchest/uniuri v0.0.0-20200228104902-7aecb25e1fe5
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/docopt/docopt-go v0.0.0-20180111231733-ee0de3bc6815
 	github.com/dsnet/compress v0.0.1 // indirect
