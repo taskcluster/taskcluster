@@ -11,6 +11,7 @@ import { VIEW_ROLES_PAGE_SIZE } from '../../../utils/constants';
 
 @graphql(rolesQuery, {
   options: props => ({
+    fetchPolicy: 'network-only',
     variables: {
       rolesConnection: {
         limit: VIEW_ROLES_PAGE_SIZE,
