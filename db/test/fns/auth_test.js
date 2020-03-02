@@ -101,6 +101,106 @@ suite(`${testing.suiteName()} - clients`, function() {
       err => err.code === 'P0004',
     );
   });
+});
 
-  // TODO : Add test for clients_entities_scan
+suite(`${testing.suiteName()} - roles`, function() {
+  helper.withDbForProcs({ serviceName: 'auth' });
+
+  const roles = [
+    { first: 'foo', last: 'bar' },
+    { first: 'bar', last: 'foo' },
+    { first: 'baz', last: 'gamma' },
+  ];
+
+
+  setup('reset roles table', async function() {
+    await helper.withDbClient(async role => {
+      await role.query(`delete from roles_entities`);
+      await role.query(`insert into roles_entities (partition_key, row_key, value, version) values ('foo', 'bar', '{ "first": "foo", "last": "bar" }', 1), ('bar', 'foo', '{ "first": "bar", "last": "foo" }', 1)`);
+    });
+    helper.fakeDb.auth.reset();
+    helper.fakeDb.auth.roles_entities_create('foo', 'bar', roles[0], false, 1);
+    helper.fakeDb.auth.roles_entities_create('bar', 'foo', roles[1], false, 1);
+  });
+
+  helper.dbTest('roles_entities_load', async function(db, isFake) {
+    const [fooClient] = await db.fns.roles_entities_load('foo', 'bar');
+    assert(typeof fooClient.etag === 'string');
+    assert.equal(fooClient.partition_key_out, 'foo');
+    assert.equal(fooClient.row_key_out, 'bar');
+    assert.equal(fooClient.version, 1);
+    assert.deepEqual(roles[0], fooClient.value);
+  });
+
+  helper.dbTest('roles_entities_create', async function(db, isFake) {
+    const [{ roles_entities_create: etag }] = await db.fns.roles_entities_create('baz', 'gamma', roles[2], false, 1);
+    assert(typeof etag === 'string');
+    const [bazClient] = await db.fns.roles_entities_load('baz', 'gamma');
+    assert.equal(bazClient.etag, etag);
+    assert.equal(bazClient.partition_key_out, 'baz');
+    assert.equal(bazClient.row_key_out, 'gamma');
+    assert.equal(bazClient.version, 1);
+    assert.deepEqual(roles[2], bazClient.value);
+  });
+
+  helper.dbTest('roles_entities_create throws when overwrite is false', async function(db, isFake) {
+    await db.fns.roles_entities_create('baz', 'gamma', roles[2], false, 1);
+    await assert.rejects(
+      () => db.fns.roles_entities_create('baz', 'gamma', roles[2], false, 1),
+      err => err.code === UNIQUE_VIOLATION,
+    );
+  });
+
+  helper.dbTest('roles_entities_create does not throw when overwrite is true', async function(db, isFake) {
+    await db.fns.roles_entities_create('baz', 'gamma', roles[2], true, 1);
+    await db.fns.roles_entities_create('baz', 'gamma', { ...roles[2], last: 'updated' }, true, 1);
+
+    const [bazClient] = await db.fns.roles_entities_load('baz', 'gamma');
+    assert.deepEqual({ ...roles[2], last: 'updated' }, bazClient.value);
+  });
+
+  helper.dbTest('roles_entities_remove', async function(db, isFake) {
+    const [fooClient] = await db.fns.roles_entities_remove('foo', 'bar');
+    const c = await db.fns.roles_entities_load('foo', 'bar');
+    assert(typeof fooClient.etag === 'string');
+    assert.equal(c.length, 0);
+  });
+
+  helper.dbTest('roles_entities_modify', async function(db, isFake) {
+    const value = { first: 'updated', last: 'updated' };
+    const [{ etag: oldEtag }] = await db.fns.roles_entities_load('foo', 'bar');
+    const [etag] = await db.fns.roles_entities_modify('foo', 'bar', value, 1, oldEtag);
+    const [fooClient] = await db.fns.roles_entities_load('foo', 'bar');
+    assert(fooClient.etag !== etag);
+    assert.equal(fooClient.partition_key_out, 'foo');
+    assert.equal(fooClient.row_key_out, 'bar');
+    assert.equal(fooClient.version, 1);
+    assert.equal(fooClient.value.first, 'updated');
+    assert.equal(fooClient.value.last, 'updated');
+  });
+
+  helper.dbTest('roles_entities_modify throws when no such row', async function(db, isFake) {
+    const value = { first: 'updated', last: 'updated' };
+    const [{ etag: oldEtag }] = await db.fns.roles_entities_load('foo', 'bar');
+    await assert.rejects(
+      async () => {
+        await db.fns.roles_entities_modify('foo', 'does-not-exist', value, 1, oldEtag);
+      },
+      err => err.code === 'P0002',
+    );
+  });
+
+  helper.dbTest('roles_entities_modify throws when update was unsuccessful (e.g., etag value did not match)', async function(db, isFake) {
+    const value = { first: 'updated', last: 'updated' };
+    const [{ etag: oldEtag }] = await db.fns.roles_entities_load('foo', 'bar');
+    await db.fns.roles_entities_modify('foo', 'bar', value, 1, oldEtag);
+    await assert.rejects(
+      async () => {
+        await db.fns.roles_entities_modify('foo', 'bar', value, 1, oldEtag);
+      },
+      err => err.code === 'P0004',
+    );
+  });
+
+  // TODO : Add test for roles_entities_scan
 });
