@@ -55,7 +55,8 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws', 'azure'], function(mock, s
     const taskId = slugid.v4();
 
     helper.scopes(
-      'queue:create-task:no-provisioner-extended-extended/test-worker-extended-extended',
+      'queue:create-task:lowest:no-provisioner-extended-extended/test-worker-extended-extended',
+      'queue:scheduler-id:my-scheduler-extended-extended',
       'queue:route:*',
     );
 
@@ -94,7 +95,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws', 'azure'], function(mock, s
   test('createTask (without required scopes)', async () => {
     const taskId = slugid.v4();
     helper.scopes(
-      'queue:create-task:my-provisioner/another-worker',
+      'queue:create-task:lowest:my-provisioner/another-worker',
       'queue:route:wrong-route',
     );
     await helper.queue.createTask(taskId, taskDef).then(() => {
@@ -109,7 +110,8 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws', 'azure'], function(mock, s
   test('createTask (with ** scope)', async () => {
     const taskId = slugid.v4();
     helper.scopes(
-      'queue:create-task:*',
+      'queue:create-task:lowest:*',
+      'queue:scheduler-id:my-scheduler-extended-extended',
       'abc:**',
       'queue:route:*',
     );
@@ -171,7 +173,8 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws', 'azure'], function(mock, s
     const taskId = slugid.v4();
 
     helper.scopes(
-      'queue:define-task:no-provisioner-extended-extended/test-worker-extended-extended',
+      'queue:create-task:lowest:no-provisioner-extended-extended/test-worker-extended-extended',
+      'queue:scheduler-id:my-scheduler-extended-extended',
       'queue:route:---*',
     );
 
@@ -313,7 +316,8 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws', 'azure'], function(mock, s
     const taskId = slugid.v4();
 
     helper.scopes(
-      'queue:create-task:no-provisioner-extended-extended/test-worker-extended-extended',
+      'queue:create-task:lowest:no-provisioner-extended-extended/test-worker-extended-extended',
+      'queue:scheduler-id:-',
     );
 
     debug('### Creating task');
@@ -379,26 +383,10 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws', 'azure'], function(mock, s
     await helper.queue.createTask(slugid.v4(), makePriorityTask('normal'));
   });
 
-  test('Can create "normal" priority task with legacy scope', async () => {
-    helper.scopes(
-      'queue:create-task:no-provisioner-extended-extended/test-worker-extended-extended',
-    );
-    await helper.queue.createTask(slugid.v4(), makePriorityTask('normal'));
-  });
-
   test('Can create "lowest" priority task with ..:lowest:.. scope', async () => {
     helper.scopes(
       'queue:create-task:lowest:no-provisioner-extended-extended/test-worker-extended-extended',
       'queue:scheduler-id:test-run',
-    );
-    await helper.queue.createTask(slugid.v4(), makePriorityTask('lowest'));
-  });
-
-  test('Can create "lowest" priority task with legacy scope', async () => {
-    // This is perhaps not intended, but since lowest is treated the same
-    // as normal, the legacy scope works for lowest, too.
-    helper.scopes(
-      'queue:create-task:no-provisioner-extended-extended/test-worker-extended-extended',
     );
     await helper.queue.createTask(slugid.v4(), makePriorityTask('lowest'));
   });

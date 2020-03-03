@@ -51,7 +51,7 @@ let launch = async function(cfg) {
         start: taskcluster.fromNow('- 15 min'),
         expiry: taskcluster.fromNow('4 hours'),
         scopes: [
-          'queue:create-task:no-provisioner/test-worker',
+          'queue:create-task:highest:no-provisioner/test-worker',
           'queue:claim-task:no-provisioner/test-worker',
           'queue:claim-work:no-provisioner/test-worker',
           'queue:worker-id:no-worker/dummy-worker',
@@ -68,7 +68,7 @@ let launch = async function(cfg) {
         baseUrl: cfg.server.publicUrl + '/v1',
         agent: agent,
         authorizedScopes: [
-          'queue:create-task:no-provisioner/test-worker',
+          'queue:create-task:highest:no-provisioner/test-worker',
           'queue:claim-task:no-provisioner/test-worker',
           'queue:claim-work:no-provisioner/test-worker',
           'queue:worker-id:no-worker/dummy-worker',
