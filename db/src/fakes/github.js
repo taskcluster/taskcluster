@@ -51,7 +51,10 @@ class FakeGithub {
       etag,
     };
 
-    this._removeTaskclusterGithubBuild({ partitionKey: taskclusterGithubBuild.partition_key, rowKey: taskclusterGithubBuild.row_key });
+    this._removeTaskclusterGithubBuild({
+      partitionKey: taskclusterGithubBuild.partition_key,
+      rowKey: taskclusterGithubBuild.row_key,
+    });
     this.taskclusterGithubBuilds.add(c);
 
     return c;
@@ -89,7 +92,10 @@ class FakeGithub {
       etag,
     };
 
-    this._removeTaskclusterIntergrationOwner({ partitionKey: taskclusterIntergrationOwner.partition_key, rowKey: taskclusterIntergrationOwner.row_key });
+    this._removeTaskclusterIntergrationOwner({
+      partitionKey: taskclusterIntergrationOwner.partition_key,
+      rowKey: taskclusterIntergrationOwner.row_key,
+    });
     this.taskclusterIntergrationOwners.add(c);
 
     return c;
@@ -173,14 +179,20 @@ class FakeGithub {
   }
 
   async taskcluster_intergration_owners_entities_remove(partition_key, row_key) {
-    const taskclusterIntergrationOwner = this._getTaskclusterIntergrationOwner({ partitionKey: partition_key, rowKey: row_key });
+    const taskclusterIntergrationOwner = this._getTaskclusterIntergrationOwner({
+      partitionKey: partition_key,
+      rowKey: row_key,
+    });
     this._removeTaskclusterIntergrationOwner({ partitionKey: partition_key, rowKey: row_key });
 
     return taskclusterIntergrationOwner ? [{ etag: taskclusterIntergrationOwner.etag }] : [];
   }
 
   async taskcluster_intergration_owners_entities_modify(partition_key, row_key, value, version, oldEtag) {
-    const taskclusterIntergrationOwner = this._getTaskclusterIntergrationOwner({ partitionKey: partition_key, rowKey: row_key });
+    const taskclusterIntergrationOwner = this._getTaskclusterIntergrationOwner({
+      partitionKey: partition_key,
+      rowKey: row_key,
+    });
 
     if (!taskclusterIntergrationOwner) {
       const err = new Error('no such row');
@@ -233,7 +245,10 @@ class FakeGithub {
       etag,
     };
 
-    this._removeTaskclusterChecksToTask({ partitionKey: taskclusterChecksToTask.partition_key, rowKey: taskclusterChecksToTask.row_key });
+    this._removeTaskclusterChecksToTask({
+      partitionKey: taskclusterChecksToTask.partition_key,
+      rowKey: taskclusterChecksToTask.row_key,
+    });
     this.taskclusterChecksToTasks.add(c);
 
     return c;
@@ -271,7 +286,10 @@ class FakeGithub {
       etag,
     };
 
-    this._removeTaskclusterCheckRun({ partitionKey: taskclusterCheckRun.partition_key, rowKey: taskclusterCheckRun.row_key });
+    this._removeTaskclusterCheckRun({
+      partitionKey: taskclusterCheckRun.partition_key,
+      rowKey: taskclusterCheckRun.row_key,
+    });
     this.taskclusterCheckRuns.add(c);
 
     return c;
