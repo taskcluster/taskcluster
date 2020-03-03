@@ -51,11 +51,11 @@ This directory defines the Taskcluster database:
 
 | Name | Mode | Arguments | Returns | Description |
 | --- | --- | --- | --- | --- |
-| hooks_create | write | pk text, rk text, properties jsonb, overwrite boolean, version integer | uuid | test |
-| hooks_load | read | partition_key text, row_key text | table (partition_key_out text, row_key_out text, value jsonb, version integer, etag uuid) | test |
-| hooks_modify | write | partition_key text, row_key text, properties jsonb, version integer, old_etag uuid | table (etag uuid) | Modify an entity. If the modify operation is succesful, the etag is returned in a set.<br />Else, an error will be raised with the following error code:<br />* 'P0004' - update was unsuccessful (e.g., the etag value did not match)<br />* 'P0002' - entry not found in the table (i.e., no such row)<br /> |
-| hooks_remove | write | partition_key text, row_key text | table (etag uuid) | test |
-| hooks_scan | read | pk text, rk text, condition text, size integer, page integer | table (partition_key text, row_key text, value jsonb, version integer, etag uuid) | test |
+| hooks_entities_create | write | pk text, rk text, properties jsonb, overwrite boolean, version integer | uuid | test |
+| hooks_entities_load | read | partition_key text, row_key text | table (partition_key_out text, row_key_out text, value jsonb, version integer, etag uuid) | test |
+| hooks_entities_modify | write | partition_key text, row_key text, properties jsonb, version integer, old_etag uuid | table (etag uuid) | Modify an entity. If the modify operation is succesful, the etag is returned in a set.<br />Else, an error will be raised with the following error code:<br />* 'P0004' - update was unsuccessful (e.g., the etag value did not match)<br />* 'P0002' - entry not found in the table (i.e., no such row)<br /> |
+| hooks_entities_remove | write | partition_key text, row_key text | table (etag uuid) | test |
+| hooks_entities_scan | read | pk text, rk text, condition text, size integer, page integer | table (partition_key text, row_key text, value jsonb, version integer, etag uuid) | test |
 | last_fire3_entities_create | write | pk text, rk text, properties jsonb, overwrite boolean, version integer | uuid | test |
 | last_fire3_entities_load | read | partition_key text, row_key text | table (partition_key_out text, row_key_out text, value jsonb, version integer, etag uuid) | test |
 | last_fire3_entities_modify | write | partition_key text, row_key text, properties jsonb, version integer, old_etag uuid | table (etag uuid) | Modify an entity. If the modify operation is succesful, the etag is returned in a set.<br />Else, an error will be raised with the following error code:<br />* 'P0004' - update was unsuccessful (e.g., the etag value did not match)<br />* 'P0002' - entry not found in the table (i.e., no such row)<br /> |
@@ -103,10 +103,10 @@ This directory defines the Taskcluster database:
 
 | Name | Mode | Arguments | Returns | Description |
 | --- | --- | --- | --- | --- |
-| queue_artifcats_entities_create | write | pk text, rk text, properties jsonb, overwrite boolean, version integer | uuid | test |
-| queue_artifcats_entities_modify | write | partition_key text, row_key text, properties jsonb, version integer, old_etag uuid | table (etag uuid) | Modify an entity. If the modify operation is succesful, the etag is returned in a set.<br />Else, an error will be raised with the following error code:<br />* 'P0004' - update was unsuccessful (e.g., the etag value did not match)<br />* 'P0002' - entry not found in the table (i.e., no such row)<br /> |
-| queue_artifcats_entities_remove | write | partition_key text, row_key text | table (etag uuid) | test |
-| queue_artifcats_entities_scan | read | pk text, rk text, condition text, size integer, page integer | table (partition_key text, row_key text, value jsonb, version integer, etag uuid) | test |
+| queue_artifacts_entities_create | write | pk text, rk text, properties jsonb, overwrite boolean, version integer | uuid | test |
+| queue_artifacts_entities_modify | write | partition_key text, row_key text, properties jsonb, version integer, old_etag uuid | table (etag uuid) | Modify an entity. If the modify operation is succesful, the etag is returned in a set.<br />Else, an error will be raised with the following error code:<br />* 'P0004' - update was unsuccessful (e.g., the etag value did not match)<br />* 'P0002' - entry not found in the table (i.e., no such row)<br /> |
+| queue_artifacts_entities_remove | write | partition_key text, row_key text | table (etag uuid) | test |
+| queue_artifacts_entities_scan | read | pk text, rk text, condition text, size integer, page integer | table (partition_key text, row_key text, value jsonb, version integer, etag uuid) | test |
 | queue_provisioner_entities_create | write | pk text, rk text, properties jsonb, overwrite boolean, version integer | uuid | test |
 | queue_provisioner_entities_load | read | partition_key text, row_key text | table (partition_key_out text, row_key_out text, value jsonb, version integer, etag uuid) | test |
 | queue_provisioner_entities_modify | write | partition_key text, row_key text, properties jsonb, version integer, old_etag uuid | table (etag uuid) | Modify an entity. If the modify operation is succesful, the etag is returned in a set.<br />Else, an error will be raised with the following error code:<br />* 'P0004' - update was unsuccessful (e.g., the etag value did not match)<br />* 'P0002' - entry not found in the table (i.e., no such row)<br /> |
@@ -122,6 +122,11 @@ This directory defines the Taskcluster database:
 | queue_task_group_active_sets_entities_modify | write | partition_key text, row_key text, properties jsonb, version integer, old_etag uuid | table (etag uuid) | Modify an entity. If the modify operation is succesful, the etag is returned in a set.<br />Else, an error will be raised with the following error code:<br />* 'P0004' - update was unsuccessful (e.g., the etag value did not match)<br />* 'P0002' - entry not found in the table (i.e., no such row)<br /> |
 | queue_task_group_active_sets_entities_remove | write | partition_key text, row_key text | table (etag uuid) | test |
 | queue_task_group_active_sets_entities_scan | read | pk text, rk text, condition text, size integer, page integer | table (partition_key text, row_key text, value jsonb, version integer, etag uuid) | test |
+| queue_task_group_members_entities_create | write | pk text, rk text, properties jsonb, overwrite boolean, version integer | uuid | test |
+| queue_task_group_members_entities_load | read | partition_key text, row_key text | table (partition_key_out text, row_key_out text, value jsonb, version integer, etag uuid) | test |
+| queue_task_group_members_entities_modify | write | partition_key text, row_key text, properties jsonb, version integer, old_etag uuid | table (etag uuid) | Modify an entity. If the modify operation is succesful, the etag is returned in a set.<br />Else, an error will be raised with the following error code:<br />* 'P0004' - update was unsuccessful (e.g., the etag value did not match)<br />* 'P0002' - entry not found in the table (i.e., no such row)<br /> |
+| queue_task_group_members_entities_remove | write | partition_key text, row_key text | table (etag uuid) | test |
+| queue_task_group_members_entities_scan | read | pk text, rk text, condition text, size integer, page integer | table (partition_key text, row_key text, value jsonb, version integer, etag uuid) | test |
 | queue_task_groups_entities_create | write | pk text, rk text, properties jsonb, overwrite boolean, version integer | uuid | test |
 | queue_task_groups_entities_load | read | partition_key text, row_key text | table (partition_key_out text, row_key_out text, value jsonb, version integer, etag uuid) | test |
 | queue_task_groups_entities_modify | write | partition_key text, row_key text, properties jsonb, version integer, old_etag uuid | table (etag uuid) | Modify an entity. If the modify operation is succesful, the etag is returned in a set.<br />Else, an error will be raised with the following error code:<br />* 'P0004' - update was unsuccessful (e.g., the etag value did not match)<br />* 'P0002' - entry not found in the table (i.e., no such row)<br /> |
@@ -147,11 +152,11 @@ This directory defines the Taskcluster database:
 | queue_worker_type_entities_modify | write | partition_key text, row_key text, properties jsonb, version integer, old_etag uuid | table (etag uuid) | Modify an entity. If the modify operation is succesful, the etag is returned in a set.<br />Else, an error will be raised with the following error code:<br />* 'P0004' - update was unsuccessful (e.g., the etag value did not match)<br />* 'P0002' - entry not found in the table (i.e., no such row)<br /> |
 | queue_worker_type_entities_remove | write | partition_key text, row_key text | table (etag uuid) | test |
 | queue_worker_type_entities_scan | read | pk text, rk text, condition text, size integer, page integer | table (partition_key text, row_key text, value jsonb, version integer, etag uuid) | test |
-### queue_artifcats_entitie
+### queue_artifacts_entitie
 
 | Name | Mode | Arguments | Returns | Description |
 | --- | --- | --- | --- | --- |
-| queue_artifcats_entities_load | read | partition_key text, row_key text | table (partition_key_out text, row_key_out text, value jsonb, version integer, etag uuid) | test |
+| queue_artifacts_entities_load | read | partition_key text, row_key text | table (partition_key_out text, row_key_out text, value jsonb, version integer, etag uuid) | test |
 ### secrets
 
 | Name | Mode | Arguments | Returns | Description |

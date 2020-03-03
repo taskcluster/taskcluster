@@ -2,7 +2,7 @@ const assert = require('assert');
 const slugid = require('slugid');
 const { UNIQUE_VIOLATION } = require('taskcluster-lib-postgres');
 
-class FakeGithub {
+class FakeHook {
   constructor() {
     this.hooks = new Set();
     this.lastFire3s = new Set();
@@ -292,4 +292,4 @@ class FakeGithub {
   async queues_entities_scan(partition_key, row_key, condition, size, page) {}
 }
 
-module.exports = FakeGithub;
+module.exports = FakeHook;
