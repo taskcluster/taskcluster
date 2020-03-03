@@ -1,0 +1,44 @@
+---
+title: Support Tiers
+order: 35
+---
+
+# Support Tiers
+
+While Generic-Worker can run on a wide variety of platforms, the level of support for those platforms varies.
+Support levels are categorized into tiers, each bringing a different set of guarantees.
+This model is based on [Rust's support tiers](https://forge.rust-lang.org/release/platform-support.html).
+
+## Tier 1
+
+Tier one platforms are "guaranteed to work".
+That means that
+* They are tested in Taskcluster's continuous integration and tests must pass for a change to land.
+* Binaries are provided with each Taskcluster release.
+
+The Tier-1 platforms are:
+
+* OSX (GOOS darwin, GOARCH amd64)
+* 64-bit Linux (GOOS linux, GOARCH amd64)
+* 64-bit Linux for ARM (GOOS linux, GOARCH arm64)
+* 32-bit Linux for ARM (GOOS linux, GOARCH arm)
+* 64-bit Windows (GOOS windows, GOARCH amd64)
+* 32-bit Windows (GOOS windows, GOARCH 386)
+
+## Tier 2
+
+Tier 2 platforms are "guaranteed to build".
+That means that
+* The are built (generally cross-compiled) in Taskcluster's continuous integration
+* Tests are not run automatically
+* Binaries are not provided with each Taskcluster release
+
+There are currently no Tier-2 platforms.
+
+## Tier 3
+
+Tier 3 platforms are supported, but that support is not at all guaranteed.
+
+The Tier-3 platforms are:
+
+* FreeBSD (GOOS freebsd, GOARCH amd64)
