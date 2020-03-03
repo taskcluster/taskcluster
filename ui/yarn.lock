@@ -8253,10 +8253,10 @@ markdown-to-jsx@^6.6.8:
     prop-types "^15.6.2"
     unquote "^1.1.0"
 
-material-ui-json-schema-viewer@^1.0.2:
-  version "1.0.2"
-  resolved "https://registry.yarnpkg.com/material-ui-json-schema-viewer/-/material-ui-json-schema-viewer-1.0.2.tgz#714aa8db29f1b038fce685dce705c6a2a83ae67a"
-  integrity sha512-3evHVq2aCwGGhe1LlJY0ecWwX1IKKUBrUkR3C4JNQsGO2f4ViARoohuTW7IKe6IiqUbZPz91WnbWVxUbb+5IwA==
+material-ui-json-schema-viewer@^1.0.3:
+  version "1.0.3"
+  resolved "https://registry.yarnpkg.com/material-ui-json-schema-viewer/-/material-ui-json-schema-viewer-1.0.3.tgz#a23cee3fa778a8d492e1e3a8e42aa250b9bfe798"
+  integrity sha512-UEB1TIW2y3lHuxC98EuIrxdk4b+R8Cl8TDdvK/Gl/0IQh46RnrxLO+LRSf91ODJOc+32LvooMg5l8TpdmYxkjA==
   dependencies:
     classnames "^2.2.6"
     markdown-it "^10.0.0"
