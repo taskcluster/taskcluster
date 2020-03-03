@@ -11,8 +11,7 @@ const {REPO_ROOT, writeRepoJSON, listServices} = require('../../utils');
  * then combine the result into references.json.
  */
 
-// this can't run writeDocs without 'yarn build', so ignore it for now.
-const SERVICES = listServices().filter(service => service !== 'web-server');
+const SERVICES = listServices();
 
 const tempDir = path.join(REPO_ROOT, 'temp');
 const genDir = path.join(tempDir, 'generated');
