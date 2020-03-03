@@ -6,6 +6,11 @@ migrationScript: |-
     );
     grant select, insert, update, delete on widgets to $db_user_prefix$_notify;
   end
+downgradeScript: |-
+  begin
+    revoke select, insert, update, delete on widgets from $db_user_prefix$_notify;
+    drop table widgets;
+  end
 methods:
   update_widgets:
     description: |-

@@ -10,3 +10,13 @@ exports.upgrade = async ({adminDbUrl, showProgress, usernamePrefix, toVersion, u
     toVersion,
   });
 };
+
+exports.downgrade = async ({adminDbUrl, showProgress, usernamePrefix, toVersion, useDbDirectory}) => {
+  await Database.downgrade({
+    schema: schema({useDbDirectory}),
+    showProgress,
+    usernamePrefix,
+    adminDbUrl,
+    toVersion,
+  });
+};

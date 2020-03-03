@@ -14,6 +14,7 @@ assert(exports.dbUrl, "TEST_DB_URL must be set to run db/ tests");
  * Set
  * - helper.withDbClient(fn) to call fn with a pg client.
  * - helper.upgradeTo(v) to upgrade to the given version.
+ * - helper.downgradeTo(v) to downgrade to the given version.
  *
  * The database is only reset at the beginning of the suite.  Test suites
  * should implement a `setup` method that sets state for all relevant tables
@@ -47,6 +48,15 @@ exports.withDbForVersion = function() {
 
     exports.upgradeTo = async (toVersion) => {
       await tcdb.upgrade({
+        adminDbUrl: exports.dbUrl,
+        toVersion,
+        usernamePrefix: 'test',
+        useDbDirectory: true,
+      });
+    };
+
+    exports.downgradeTo = async (toVersion) => {
+      await tcdb.downgrade({
         adminDbUrl: exports.dbUrl,
         toVersion,
         usernamePrefix: 'test',

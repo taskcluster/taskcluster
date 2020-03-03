@@ -120,6 +120,50 @@ class Database {
     }
   }
 
+  /**
+   * Downgrade this database to the given version and define functions for all
+   * of the methods in that version.  Note that this does not remove unknown
+   * functions.
+   *
+   * The `showProgress` parameter is like that for upgrade().
+   */
+  static async downgrade({schema, showProgress = () => {}, usernamePrefix, toVersion, adminDbUrl}) {
+    const db = new Database({urlsByMode: {admin: adminDbUrl, read: adminDbUrl}});
+
+    await db._createExtensions();
+
+    if (typeof toVersion !== 'number') {
+      throw new Error('Target DB version must be an integer');
+    }
+
+    try {
+      // perform any necessary upgrades..
+      const latestVersion = schema.latestVersion().version;
+      const dbVersion = await db.currentVersion();
+      if (dbVersion > latestVersion) {
+        throw new Error(`This Taskcluster release version is too old to downgrade from DB version ${dbVersion}`);
+      }
+
+      if (dbVersion > toVersion) {
+        // run each of the upgrade scripts
+        for (let v = dbVersion; v > toVersion; v--) {
+          showProgress(`downgrading database to version ${v}`);
+          const fromVersion = schema.getVersion(v);
+          const toVersion = v === 1 ? {version: 0, methods: []} : schema.getVersion(v - 1);
+          await db._doDowngrade({fromVersion, toVersion, showProgress, usernamePrefix});
+          showProgress(`downgrade to version ${v - 1} successful`);
+        }
+      } else {
+        showProgress(`No database downgrades required; now at DB version ${dbVersion}`);
+      }
+
+      // after a downgrade, `access.yml` for this version of the TC services no longer
+      // matches the deployed access, so we do not check it.
+    } finally {
+      await db.close();
+    }
+  }
+
   static async _checkPermissions({db, schema, usernamePrefix}) {
     await db._withClient('admin', async (client) => {
       // determine current permissions in the form ["username: priv on table"].
@@ -199,31 +243,71 @@ class Database {
   async _doUpgrade({version, showProgress, usernamePrefix}) {
     await this._withClient('admin', async client => {
       await client.query('begin');
-      if (version.version === 1) {
-        await client.query('create table tcversion as select 0 as version');
-      }
 
-      // check the version and lock it to prevent other things from changing it
-      const res = await client.query('select version from tcversion for update');
-      if (res.rowCount !== 1 || res.rows[0].version !== version.version - 1) {
-        throw Error('Multiple DB upgrades running simultaneously');
+      try {
+        if (version.version === 1) {
+          await client.query('create table if not exists tcversion as select 0 as version');
+        }
+
+        // check the version and lock it to prevent other things from changing it
+        const res = await client.query('select version from tcversion for update');
+        if (res.rowCount !== 1 || res.rows[0].version !== version.version - 1) {
+          throw Error('Multiple DB upgrades running simultaneously');
+        }
+        showProgress('..running migration script');
+        const migrationScript = version.migrationScript
+          .replace(/\$db_user_prefix\$/g, usernamePrefix);
+        await client.query(`DO ${dollarQuote(migrationScript)}`);
+        showProgress('..defining methods');
+        for (let [methodName, { args, body, returns}] of Object.entries(version.methods)) {
+          await client.query(`create or replace function
+          "${methodName}"(${args})
+          returns ${returns}
+          as ${dollarQuote(body)}
+          language plpgsql`);
+        }
+        showProgress('..updating version');
+        await client.query('update tcversion set version = $1', [version.version]);
+        showProgress('..committing transaction');
+        await client.query('commit');
+      } catch (err) {
+        await client.query('commit');
+        throw err;
       }
-      showProgress('..running migration script');
-      const migrationScript = version.migrationScript
-        .replace(/\$db_user_prefix\$/g, usernamePrefix);
-      await client.query(`DO ${dollarQuote(migrationScript)}`);
-      showProgress('..defining methods');
-      for (let [methodName, { args, body, returns}] of Object.entries(version.methods)) {
-        await client.query(`create or replace function
-        "${methodName}"(${args})
-        returns ${returns}
-        as ${dollarQuote(body)}
-        language plpgsql`);
+    });
+  }
+
+  async _doDowngrade({fromVersion, toVersion, showProgress, usernamePrefix}) {
+    assert.equal(fromVersion.version, toVersion.version + 1);
+    await this._withClient('admin', async client => {
+      await client.query('begin');
+
+      try {
+        // check the version and lock it to prevent other things from changing it
+        const res = await client.query('select version from tcversion for update');
+        if (res.rowCount !== 1 || res.rows[0].version !== fromVersion.version) {
+          throw Error('Multiple DB modifications running simultaneously');
+        }
+        showProgress('..running downgrade script');
+        const downgradeScript = fromVersion.downgradeScript
+          .replace(/\$db_user_prefix\$/g, usernamePrefix);
+        await client.query(`DO ${dollarQuote(downgradeScript)}`);
+        showProgress('..defining methods');
+        for (let [methodName, { args, body, returns}] of Object.entries(toVersion.methods)) {
+          await client.query(`create or replace function
+          "${methodName}"(${args})
+          returns ${returns}
+          as ${dollarQuote(body)}
+          language plpgsql`);
+        }
+        showProgress('..updating version');
+        await client.query('update tcversion set version = $1', [toVersion.version]);
+        showProgress('..committing transaction');
+        await client.query('commit');
+      } catch (err) {
+        await client.query('commit');
+        throw err;
       }
-      showProgress('..updating version');
-      await client.query('update tcversion set version = $1', [version.version]);
-      showProgress('..committing transaction');
-      await client.query('commit');
     });
   }
 

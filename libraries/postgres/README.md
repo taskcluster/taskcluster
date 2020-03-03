@@ -87,6 +87,18 @@ For example, if an upgrade factors a single table into two tables, then a functi
 A consequence of this design is that "functions are forever" -- an upgrade can never delete a stored function.
 At worst, when a feature is removed, a stored function can be rewritten to return an empty result or perform no action.
 
+#### Downgrades
+
+It is sometimes necessary to roll back a deployment of Taskcluster services, due to an unexpected issue.
+In most cases, the database compatibility model means that this can be done without changing the database itself: by design, old code can run against the new database.
+However, if the issue is with the database itself, then the version upgrade must be rolled back.
+
+This library supports *downgrades* for this purpose, reversing the effects of an upgrade.
+A downgrade entails running the downgrade script for the buggy DB version, *after* downgrading the Taskcluster services to an older version.
+
+Downgrades should not be done lightly, as they can lose data.
+For example, downgrading a version that adds a table entails dropping that table and all data it contains.
+
 ## DB Directory Format
 
 The directory passed to `Schema.fromDbDirectory` should have the following format:
@@ -117,6 +129,15 @@ migrationScript: |-
     create ...;
     alter ...;
     grant ...;
+  end
+
+# Similar to migrationScript, but reversing its effects.  It's OK for this to lose data.
+# This can similarly specify a filename.
+downgradeScript: |-
+  begin
+    revoke ...;
+    alter ...;
+    create ...;
   end
 
 # Methods for database access.  Each entry either defines a new stored function, or
