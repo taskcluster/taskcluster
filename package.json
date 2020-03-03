@@ -222,6 +222,9 @@
     "enabledManagers": [
       "npm",
       "gomod"
+    ],
+    "postUpdateOptions": [
+      "gomodTidy"
     ]
   },
   "eslintIgnore": [
