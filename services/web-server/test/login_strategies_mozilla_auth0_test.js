@@ -17,7 +17,7 @@ suite(testing.suiteName(), () => {
       },
     },
     monitor: {
-      debug: () => {},
+      warning: () => {},
     },
   });
 
