@@ -18,9 +18,9 @@ suite(`${testing.suiteName()} - clients`, function() {
       await client.query(`delete from clients_entities`);
       await client.query(`insert into clients_entities (partition_key, row_key, value, version) values ('foo', 'bar', '{ "first": "foo", "last": "bar" }', 1), ('bar', 'foo', '{ "first": "bar", "last": "foo" }', 1)`);
     });
-    helper.fakeDb.auth.reset();
-    helper.fakeDb.auth.clients_entities_create('foo', 'bar', clients[0], false, 1);
-    helper.fakeDb.auth.clients_entities_create('bar', 'foo', clients[1], false, 1);
+    await helper.fakeDb.auth.reset();
+    await helper.fakeDb.auth.clients_entities_create('foo', 'bar', clients[0], false, 1);
+    await helper.fakeDb.auth.clients_entities_create('bar', 'foo', clients[1], false, 1);
   });
 
   helper.dbTest('clients_entities_load', async function(db, isFake) {
@@ -117,9 +117,9 @@ suite(`${testing.suiteName()} - roles`, function() {
       await role.query(`delete from roles_entities`);
       await role.query(`insert into roles_entities (partition_key, row_key, value, version) values ('foo', 'bar', '{ "first": "foo", "last": "bar" }', 1), ('bar', 'foo', '{ "first": "bar", "last": "foo" }', 1)`);
     });
-    helper.fakeDb.auth.reset();
-    helper.fakeDb.auth.roles_entities_create('foo', 'bar', roles[0], false, 1);
-    helper.fakeDb.auth.roles_entities_create('bar', 'foo', roles[1], false, 1);
+    await helper.fakeDb.auth.reset();
+    await helper.fakeDb.auth.roles_entities_create('foo', 'bar', roles[0], false, 1);
+    await helper.fakeDb.auth.roles_entities_create('bar', 'foo', roles[1], false, 1);
   });
 
   helper.dbTest('roles_entities_load', async function(db, isFake) {
