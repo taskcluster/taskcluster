@@ -27,34 +27,36 @@ func TestConfigureRun(t *testing.T) {
 		WorkerConfig: runnerWorkerConfig,
 	}
 
-	pwcJson := json.RawMessage(`{
-        "whateverWorker": {
-		    "config": {
-				"from-ud": true
-			},
-			"files": [
-			    {"description": "a file."}
-			]
-		}
-	}`)
-	customData := CustomData{
-		WorkerPoolId:         "w/p",
-		ProviderId:           "azure",
-		WorkerGroup:          "wg",
-		RootURL:              "https://tc.example.com",
-		ProviderWorkerConfig: &pwcJson,
-	}
-	customDataJson, err := json.Marshal(customData)
-	require.NoError(t, err, "marshalling CustomData")
+	workerPoolId := "w/p"
+	providerId := "azure"
+	workerGroup := "wg"
 
 	userData := &InstanceData{}
-	_ = json.Unmarshal([]byte(`{
+	_ = json.Unmarshal([]byte(fmt.Sprintf(`{
 		"compute": {
 			"customData": "",
 			"vmId": "df09142e-c0dd-43d9-a515-489f19829dfd",
 			"name": "vm-w-p-test",
 			"location": "uswest",
-			"vmSize": "medium"
+			"vmSize": "medium",
+			"tagsList": [
+				{
+					"name": "worker-pool-id",
+					"value": "%s"
+				},
+				{
+					"name": "provider-id",
+					"value": "%s"
+				},
+				{
+					"name": "worker-group",
+					"value": "%s"
+				},
+				{
+					"name": "root-url",
+					"value": "https://tc.example.com"
+				}
+			]
 		},
 		"network": {
 		   "interface": [{
@@ -66,11 +68,11 @@ func TestConfigureRun(t *testing.T) {
 		   	 }
 		   }]
         }
-      }`), userData)
+      }`, workerPoolId, providerId, workerGroup)), userData)
 
 	attestedDocument := base64.StdEncoding.EncodeToString([]byte("trust me, it's cool --Bill"))
 
-	mds := &fakeMetadataService{nil, userData, nil, &ScheduledEvents{}, nil, attestedDocument, nil, []byte(customDataJson)}
+	mds := &fakeMetadataService{nil, userData, nil, &ScheduledEvents{}, nil, attestedDocument, nil, []byte("{}")}
 
 	p, err := new(runnercfg, tc.FakeWorkerManagerClientFactory, mds)
 	require.NoError(t, err, "creating provider")
@@ -83,11 +85,11 @@ func TestConfigureRun(t *testing.T) {
 
 	reg, err := tc.FakeWorkerManagerRegistration()
 	require.NoError(t, err)
-	require.Equal(t, customData.ProviderId, reg.ProviderID)
-	require.Equal(t, customData.WorkerGroup, reg.WorkerGroup)
+	require.Equal(t, providerId, reg.ProviderID)
+	require.Equal(t, workerGroup, reg.WorkerGroup)
 	require.Equal(t, "vm-w-p-test", reg.WorkerID)
 	require.Equal(t, json.RawMessage(`{"document":"`+attestedDocument+`"}`), reg.WorkerIdentityProof)
-	require.Equal(t, "w/p", reg.WorkerPoolID)
+	require.Equal(t, workerPoolId, reg.WorkerPoolID)
 
 	require.Equal(t, "https://tc.example.com", state.RootURL, "rootURL is correct")
 	require.Equal(t, "testing", state.Credentials.ClientID, "clientID is correct")

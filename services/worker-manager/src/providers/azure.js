@@ -148,9 +148,8 @@ class AzureProvider extends Provider {
     // Create "empty" workers to provision in provisionResources loop
     await Promise.all(cfgs.map(async cfg => {
       // This must be unique to currently existing instances and match [a-z]([-a-z0-9]*[a-z0-9])?
-      // 38 chars is workerPoolId / workerId limit
-      const poolName = workerPoolId.replace(/[\/_]/g, '-').slice(0, 38);
-      const virtualMachineName = `vm-${poolName}-${nicerId()}-${nicerId()}`.slice(0, 38);
+      // 38 chars is workerId limit
+      const virtualMachineName = `vm-${nicerId()}-${nicerId()}`.slice(0, 38);
       // Windows computer name cannot be more than 15 characters long, be entirely numeric,
       // or contain the following characters: ` ~ ! @ # $ % ^ & * ( ) = + _ [ ] { } \\ | ; : . " , < > / ?
       const computerName = nicerId().slice(0, 15);
@@ -192,7 +191,10 @@ class AzureProvider extends Provider {
           ...cfg.tags || {},
           'created-by': `taskcluster-wm-${this.providerId}`.replace(/[^a-zA-Z0-9-]/g, '-'),
           'managed-by': 'taskcluster',
-          'worker-pool-id': workerPoolId.replace(/[^a-zA-Z0-9-]/g, '-').toLowerCase(),
+          'provider-id': this.providerId,
+          'worker-group': this.providerId,
+          'worker-pool-id': workerPoolId,
+          'root-url': this.rootUrl,
           'owner': workerPool.owner.replace(/[^a-zA-Z0-9-]/g, '-').toLowerCase(),
         },
       };

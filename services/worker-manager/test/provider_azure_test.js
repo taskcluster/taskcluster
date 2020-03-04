@@ -105,9 +105,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
     // Check that this is setting times correctly to within a second or so to allow for some time
     // for the provisioning loop
     assert(workers.entries[0].providerData.terminateAfter - now - (6000 * 1000) < 5000);
-    // id is name, which is randomly generated with sanitized worker-pool prefix
-    const sanitizedWorkerPoolId = workerPool.workerPoolId.replace(/[^a-zA-Z0-9-]/g, '-').toLowerCase();
-    assert(workers.entries[0].workerId.includes(sanitizedWorkerPoolId));
+    assert.equal(workers.entries[0].workerPoolId, workerPoolId);
   });
 
   test('provisioning loop with failure', async function() {

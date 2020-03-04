@@ -42,16 +42,9 @@ func (p *AzureProvider) ConfigureRun(state *run.State) error {
 		return fmt.Errorf("Could not query attested document: %v", err)
 	}
 
-	customBytes, err := p.metadataService.loadCustomData()
-	if err != nil {
-		return fmt.Errorf("Could not read instance customData: %v", err)
-	}
-
-	customData := &CustomData{}
-	err = json.Unmarshal([]byte(customBytes), customData)
-	if err != nil {
-		return fmt.Errorf("Could not parse customData as JSON: %v", err)
-	}
+	// Azure custom data is broken, so we load these from tags
+	// see: https://bugzilla.mozilla.org/show_bug.cgi?id=1618916
+	customData := loadCustomDataFromTagsList(instanceData.Compute.TagsList)
 
 	state.RootURL = customData.RootURL
 	state.WorkerLocation = map[string]string{
@@ -198,6 +191,25 @@ defined by this provider has the following fields:
 * cloud: azure
 * region
 `
+}
+
+func loadCustomDataFromTagsList(tags []Tag) *CustomData {
+	c := &CustomData{}
+	for _, tag := range tags {
+		if tag.Name == "worker-pool-id" {
+			c.WorkerPoolId = tag.Value
+		}
+		if tag.Name == "provider-id" {
+			c.ProviderId = tag.Value
+		}
+		if tag.Name == "worker-group" {
+			c.WorkerGroup = tag.Value
+		}
+		if tag.Name == "root-url" {
+			c.RootURL = tag.Value
+		}
+	}
+	return c
 }
 
 // New takes its dependencies as optional arguments, allowing injection of fake dependencies for testing.
