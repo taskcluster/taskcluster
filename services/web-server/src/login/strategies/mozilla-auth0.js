@@ -64,7 +64,8 @@ module.exports = class MozillaAuth0 {
     const user = new User();
 
     if (!userProfile) {
-      this.monitor.debug('User profile not found', {
+      this.monitor.warning({
+        message: 'User profile not found',
         userId,
         identityProviderId: this.identityProviderId,
       });
@@ -73,7 +74,8 @@ module.exports = class MozillaAuth0 {
     }
 
     if (!userProfile.user_id) {
-      this.monitor.debug('Profile user_id ; rejecting', {
+      this.monitor.warning({
+        message: 'Profile is missing user_id; rejecting',
         userId,
         identityProviderId: this.identityProviderId,
       });
@@ -82,7 +84,8 @@ module.exports = class MozillaAuth0 {
     }
 
     if ('active' in userProfile && !userProfile.active) {
-      this.monitor.debug('User is not active; rejecting', {
+      this.monitor.warning({
+        message: 'User is not active; rejecting',
         userId: userProfile.user_id,
         identityProviderId: this.identityProviderId,
       });

@@ -2708,6 +2708,29 @@
                 "children": [
                 ],
                 "data": {
+                  "inline": true,
+                  "order": 2,
+                  "title": "logs"
+                },
+                "name": "logs",
+                "next": {
+                  "path": "reference/core/web-server/github-login-strategy",
+                  "title": "GitHub Login Strategy"
+                },
+                "path": "reference/core/web-server/logs",
+                "prev": {
+                  "path": "reference/core/web-server/README",
+                  "title": "web-server"
+                },
+                "up": {
+                  "path": "reference/core/web-server/README",
+                  "title": "web-server"
+                }
+              },
+              {
+                "children": [
+                ],
+                "data": {
                   "order": 10,
                   "title": "GitHub Login Strategy"
                 },
@@ -2718,8 +2741,8 @@
                 },
                 "path": "reference/core/web-server/github-login-strategy",
                 "prev": {
-                  "path": "reference/core/web-server/README",
-                  "title": "web-server"
+                  "path": "reference/core/web-server/logs",
+                  "title": "logs"
                 },
                 "up": {
                   "path": "reference/core/web-server/README",
@@ -2754,8 +2777,8 @@
             },
             "name": "web-server",
             "next": {
-              "path": "reference/core/web-server/github-login-strategy",
-              "title": "GitHub Login Strategy"
+              "path": "reference/core/web-server/logs",
+              "title": "logs"
             },
             "path": "reference/core/web-server/README",
             "prev": {
