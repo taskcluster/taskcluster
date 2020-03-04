@@ -3977,6 +3977,11 @@ indent-string@^3.0.0:
   resolved "https://registry.yarnpkg.com/indent-string/-/indent-string-3.2.0.tgz#4a5fd6d27cc332f37e5419a504dbb837105c9289"
   integrity sha1-Sl/W0nzDMvN+VBmlBNu4NxBckok=
 
+indento@^1.1.7:
+  version "1.1.12"
+  resolved "https://registry.yarnpkg.com/indento/-/indento-1.1.12.tgz#e95942e88e528655df33f129b6826019a1a221fd"
+  integrity sha512-hWlFlRL6dd06MU5SsOZZ6kzO7t/7ZjcxWh1Yf/MjGtyKQMC8SPS5GbZ2XqMBGaGn+HM2QQawYxSLtS7Zv0w0BQ==
+
 inflight@^1.0.4:
   version "1.0.6"
   resolved "https://registry.yarnpkg.com/inflight/-/inflight-1.0.6.tgz#49bd6331d7d02d0c09bc910a1075ba8165b56df9"
@@ -4359,6 +4364,13 @@ json-stringify-safe@^5.0.1, json-stringify-safe@~5.0.1:
   version "5.0.1"
   resolved "https://registry.yarnpkg.com/json-stringify-safe/-/json-stringify-safe-5.0.1.tgz#1296a2d58fd45f19a0f6ce01d65701e2c735b6eb"
   integrity sha1-Epai1Y/UXxmg9s4B1lcB4sc1tus=
+
+json2md@^1.7.0:
+  version "1.7.0"
+  resolved "https://registry.yarnpkg.com/json2md/-/json2md-1.7.0.tgz#aaf4bad77ec8c0e623169a288add12b6493e180e"
+  integrity sha512-g/lg6H3sEeyqCTqNLn8DTsqAa2wwqUI0Y7MnZ8d6wJLMJLgsMp5mBO9hPIPPuFjv/C1vYBoKAZG8TdTfcIGZCA==
+  dependencies:
+    indento "^1.1.7"
 
 json5@^2.1.0:
   version "2.1.1"
@@ -7196,44 +7208,48 @@ tar-stream@^2.0.0:
     readable-stream "^3.1.1"
 
 "taskcluster-client@link:clients/client":
-  version "25.2.0"
-  dependencies:
-    "@hapi/hawk" "^7.1.2"
-    debug "^4.1.1"
-    lodash "^4.17.4"
-    slugid "^2.0.0"
-    superagent "^5.0.0"
-    taskcluster-lib-urls "^12.0.0"
+  version "0.0.0"
+  uid ""
 
 "taskcluster-lib-api@link:libraries/api":
-  version "25.2.0"
+  version "0.0.0"
+  uid ""
 
 "taskcluster-lib-app@link:libraries/app":
-  version "25.2.0"
+  version "0.0.0"
+  uid ""
 
 "taskcluster-lib-azure@link:libraries/azure":
-  version "25.2.0"
+  version "0.0.0"
+  uid ""
 
 "taskcluster-lib-config@link:libraries/config":
-  version "25.2.0"
+  version "0.0.0"
+  uid ""
 
 "taskcluster-lib-iterate@link:libraries/iterate":
-  version "25.2.0"
+  version "0.0.0"
+  uid ""
 
 "taskcluster-lib-loader@link:libraries/loader":
-  version "25.2.0"
+  version "0.0.0"
+  uid ""
 
 "taskcluster-lib-monitor@link:libraries/monitor":
-  version "25.2.0"
+  version "0.0.0"
+  uid ""
 
 "taskcluster-lib-postgres@link:libraries/postgres":
-  version "25.2.0"
+  version "0.0.0"
+  uid ""
 
 "taskcluster-lib-pulse@link:libraries/pulse":
-  version "25.2.0"
+  version "0.0.0"
+  uid ""
 
 "taskcluster-lib-references@link:libraries/references":
-  version "25.2.0"
+  version "0.0.0"
+  uid ""
 
 taskcluster-lib-scopes@^11.0.0:
   version "11.0.0"
@@ -7243,7 +7259,8 @@ taskcluster-lib-scopes@^11.0.0:
     fast-json-stable-stringify "^2.1.0"
 
 "taskcluster-lib-testing@link:libraries/testing":
-  version "25.2.0"
+  version "0.0.0"
+  uid ""
 
 taskcluster-lib-urls@^12.0.0:
   version "12.0.0"
@@ -7251,7 +7268,8 @@ taskcluster-lib-urls@^12.0.0:
   integrity sha512-OrEFE0m3p/+mGsmIwjttLhSKg3io6MpJLhYtPNjVSZA9Ix8Y5tprN3vM6a3MjWt5asPF6AKZsfT43cgpGwJB0g==
 
 "taskcluster-lib-validate@link:libraries/validate":
-  version "25.2.0"
+  version "0.0.0"
+  uid ""
 
 temporary@^1.0.0:
   version "1.0.1"

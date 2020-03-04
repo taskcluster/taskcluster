@@ -4,6 +4,8 @@ const libUrls = require('taskcluster-lib-urls');
 const yaml = require('js-yaml');
 const assert = require('assert');
 const {consume} = require('taskcluster-lib-pulse');
+const json2md = require("json2md");
+const aws = require('aws-sdk');
 
 const debugPrefix = 'taskcluster-github:handlers';
 const debug = Debug(debugPrefix);
@@ -886,96 +888,103 @@ async function taskDefinedHandler(message) {
 }
 
 async function artifactCreatedHandler(message) {
-  let debug = Debug(`${debugPrefix}:artifacts`);
-  // 1. get info from message; optional: check if it's the artifact we're interested in
-  const {taskGroupId, taskId} = message.payload.status;
+  // 1. get info from message.
+  const {taskId} = message.status;
+  const taskDefinition = await this.queueClient.task(taskId);
+  const {customCheckRun} = taskDefinition.extra;
+  if (!customCheckRun) return;
 
-  // 2. get the artifact with the logs // todo check types in this section
-  let artifactName = (await this.queueClient.listArtifacts(taskId))
-    .artifacts
-    .find(a => a.storageType === 'reference')
-    .name;
-  let latestLog = await this.queueClient.getLatestArtifact(taskId, artifactName);
+  // 2. get the JSON data
+  const parameters = {
+    Bucket: 'STRING_VALUE', // I wonder if this should be an API endpoint in the queue? Queue knows this
+    Expression: 'select * from s3object', // should be a constant or go into config.yml
+    ExpressionType: 'SQL',
+    InputSerialization: {
+      JSON: {
+        Type: 'DOCUMENT',
+      },
+      CompressionType: 'NONE',
+    },
+    Key: `${taskId}/${runId}/${customCheckRun.artifactName}`, // needs checking if that's correct; couples with the Queue code
+    OutputSerialization: {
+      JSON: {
+        RecordDelimiter: ',',
+      }
+    },
+  };
+  const jsonData = getJSON(parameters);
+  // An actual example of the data we would get:
+  // {
+  //   "matrix-16y7b2fiwf2bq": {
+  //     "matrixId": "matrix-16y7b2fiwf2bq",
+  //     "state": "FINISHED",
+  //     "gcsPath": "fenix_test_artifacts/2020-02-27_16-11-10.107000_WjQn/shard_0",
+  //     "webLink": "https://console.firebase.google.com/project/moz-fenix/testlab/histories/bh.66b7091e15d53d45/matrices/5508247870578707104",
+  //     "downloaded": true,
+  //     "billableVirtualMinutes": 2,
+  //     "billablePhysicalMinutes": 0,
+  //     "outcome": "success",
+  //     "outcomeDetails": ""
+  //   },
+  //   "matrix-1nn26bo02u3ug": {
+  //     "matrixId": "matrix-1nn26bo02u3ug",
+  //     "state": "FINISHED",
+  //     "gcsPath": "fenix_test_artifacts/2020-02-27_16-11-10.107000_WjQn/shard_1",
+  //     "webLink": "https://console.firebase.google.com/project/moz-fenix/testlab/histories/bh.66b7091e15d53d45/matrices/5120113998491150720",
+  //     "downloaded": true,
+  //     "billableVirtualMinutes": 2,
+  //     "billablePhysicalMinutes": 0,
+  //     "outcome": "success",
+  //     "outcomeDetails": ""
+  //   }
+  // };
 
-  // 3. parse the logs
-  const parseExecTests = 'EXECUTE TEST(S)';
-  const parseDevice = 'device';
-  const parseFlank = 'flank';
-  const parseMatrixRes = 'MatrixResultsReport';
-  const parseTaskFinished = '=== Task Finished ===';
+  // 3. Format the data
+  const {markupTemplate} = customCheckRun;
+  // An example of the template:
+  // {
+  //   createMarkup: o => (
+  //     [
+  //       {h6: `${o.matrixId}`},
+  //       {p: `State: ${o.state}`},
+  //       {p: `Outcome: ${o.outcome}`},
+  //       {link: {title: 'View logs on Firebase', source: `${o.webLink}`}},
+  //     ]
+  //   ),
+  // };
 
-  const a = latestLog.split(parseExecTests);
-  const results = a[1];
-  const device = results.split(parseDevice)[1];
-  const flank = device.split(parseFlank)[0].replace(':', '');
-  const pollMatrices = results.split(parseMatrixRes)[1].split(parseTaskFinished)[0];
+  const markup = [];
+  for (const prop in jsonData) {
+    markup = markup.concat(markupTemplate.createMarkup(jsonData[prop]));
+  }
+  const comment = json2md(markup);
+
 
   // 4. create check run (or add to the check run)
-  const comment = `**DEVICES**X86\n${flank}\n**TEST REPORT**\n${pollMatrices}`.replace(/\[task.*\]/, '');
-
-  let instGithub;
-  let build = await this.context.Builds.load({taskGroupId});
-  let {organization, repository, sha, eventType, installationId} = build;
-  // Authenticating as installation.
-  try {
-    debug('Authenticating as installation in artifact handler...');
-    instGithub = await this.context.github.getInstallationGithub(installationId);
-    debug('Authorized as installation in artifact handler');
-  } catch (e) {
-    debug(`Error authenticating as installation in status handler! Error: ${e}`);
-    throw e;
-  }
-
-  debug(
-    `Attempting to add comment to the checkrun for ${organization}/${repository}@${sha} (artifact parsing)`,
-  );
-  try {
-    // true means we'll get null if the record doesn't exist
-    let checkRun = await this.context.CheckRuns.load({taskGroupId, taskId}, true);
-    const taskDefinition = await this.queueClient.task(taskId);
-
-    if (checkRun) {
-      await instGithub.checks.update({
-        owner: organization,
-        repo: repository,
-        check_run_id: checkRun.checkRunId,
-        output: {
-          title: `${this.context.cfg.app.statusContext} (${eventType.split('.')[0]})`,
-          summary: `${taskDefinition.metadata.description}`,
-          text: comment,
-        },
-      });
-    } else {
-      debug(`Artifact creation handler. Got task build from DB and task definition for ${taskId} from Queue service`);
-
-      const checkRun = await instGithub.checks.create({
-        owner: organization,
-        repo: repository,
-        name: `${taskDefinition.metadata.name}`,
-        head_sha: sha,
-        output: {
-          title: `${this.context.cfg.app.statusContext} (${eventType.split('.')[0]})`,
-          summary: `${taskDefinition.metadata.description}`,
-          text: comment,
-        },
-      });
-
-      await this.context.CheckRuns.create({
-        taskGroupId: taskGroupId,
-        taskId: taskId,
-        checkSuiteId: checkRun.data.check_suite.id.toString(),
-        checkRunId: checkRun.data.id.toString(),
-      });
-
-      await this.context.ChecksToTasks.create({
-        taskGroupId,
-        taskId,
-        checkSuiteId: checkRun.data.check_suite.id.toString(),
-        checkRunId: checkRun.data.id.toString(),
-      });
-    }
-  } catch (e) {
-    debug(`Failed to update checkrun with artifact information: ${build.organization}/${build.repository}@${build.sha}`);
-    throw e;
-  }
+  // essentially the same code as in statusHandler
 }
+
+const getJSON = async parameters => {
+  const s3 = aws.S3();
+
+  try {
+    const data = await s3.selectObjectContent(parameters).promise();
+
+    const events = data.Payload;
+
+    const records = [];
+    let result;
+
+    for await (const event of events) {
+      if (event.Records) {
+        records.push(event.Records.Payload);
+      } else if (event.End) {
+        result = JSON.parse(Buffer.concat(records).toString('utf8'));
+      }
+    }
+  } catch (err) {
+    console.error(err);
+  }
+
+  return result;
+};
