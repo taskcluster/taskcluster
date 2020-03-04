@@ -504,17 +504,29 @@ async function statusHandler(message) {
     `Attempting to update status of the checkrun for ${organization}/${repository}@${sha} (${taskState.conclusion})`,
   );
   try {
+    const taskDefinition = await this.queueClient.task(taskId);
+    debug(`Result status. Got task build from DB and task definition for ${taskId} from Queue service`);
+    const {checkRunArtifactName} = taskDefinition.extra.github;
+
+    let checkRunArtifact = '';
+    if (checkRunArtifactName) {
+      checkRunArtifact = (await this.queueClient.getArtifact(taskId, runId, checkRunArtifactName)).toString();
+    }
+
+
     if (checkRun) {
       await instGithub.checks.update({
         ...taskState,
         owner: organization,
         repo: repository,
         check_run_id: checkRun.checkRunId,
+        output: {
+          title: `${this.context.cfg.app.statusContext} (${eventType.split('.')[0]})`,
+          summary: `${taskDefinition.metadata.description}`,
+          text: `[View task in Taskcluster](${taskUI(this.context.cfg.taskcluster.rootUrl, taskGroupId, taskId)})\n${checkRunArtifact || ''}`,
+        },
       });
     } else {
-      const taskDefinition = await this.queueClient.task(taskId);
-      debug(`Result status. Got task build from DB and task definition for ${taskId} from Queue service`);
-
       const checkRun = await instGithub.checks.create({
         owner: organization,
         repo: repository,
@@ -523,9 +535,9 @@ async function statusHandler(message) {
         output: {
           title: `${this.context.cfg.app.statusContext} (${eventType.split('.')[0]})`,
           summary: `${taskDefinition.metadata.description}`,
-          text: `[Task group](${taskGroupUI(this.context.cfg.taskcluster.rootUrl, taskGroupId)})`,
+          text: `[View task in Taskcluster](${taskUI(this.context.cfg.taskcluster.rootUrl, taskGroupId, taskId)})\n${checkRunArtifact || ''}`,
         },
-        details_url: taskUI(this.context.cfg.taskcluster.rootUrl, taskGroupId, taskId),
+        details_url: taskGroupUI(this.context.cfg.taskcluster.rootUrl, taskGroupId),
       });
 
       await this.context.CheckRuns.create({
