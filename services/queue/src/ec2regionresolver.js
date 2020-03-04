@@ -2,9 +2,13 @@ let {Netmask} = require('netmask');
 let requestIp = require('request-ip');
 let request = require('superagent');
 let assert = require('assert');
+let fs = require('fs');
+let path = require('path');
 
 // Static URL from which ip-ranges from AWS services can be fetched
 const AWS_IP_RANGES_URL = 'https://ip-ranges.amazonaws.com/ip-ranges.json';
+// cached set of IP ranges for use until and unless the URL can be loaded
+const LOCAL_IP_RANGES = path.join(__dirname, 'ip-ranges.json');
 
 /** Resolve EC2 region from request using AWS ip-ranges */
 class EC2RegionResolver {
@@ -25,14 +29,18 @@ class EC2RegionResolver {
     let delay = 500;
     this._running = true;
 
-    this._loadPromise = new Promise(resolve => {
+    // load a cached set of regions to start with
+    this._loadIpRanges();
+
+    // then begin trying to load the latest from AWS
+    this._fetchPromise = new Promise(resolve => {
       const tryLoad = async () => {
         if (!this._running) {
           return resolve();
         }
 
         try {
-          await this._loadIpRanges();
+          await this._fetchIpRanges();
           return resolve();
         } catch (err) {
           this.monitor.warning(`Failed to download AWS IP ranges (retrying): ${err}`);
@@ -47,8 +55,8 @@ class EC2RegionResolver {
   /**
    * Return when the IP ranges are loaded
    */
-  async waitForLoad() {
-    await this._loadPromise;
+  async waitForFetch() {
+    await this._fetchPromise;
   }
 
   /**
@@ -56,13 +64,27 @@ class EC2RegionResolver {
    */
   async stop() {
     this._running = false;
-    await this._loadPromise;
+    await this._fetchPromise;
   }
 
+  /**
+   * Load IP ranges from the local file in this directory
+   */
   async _loadIpRanges() {
+    let body = JSON.parse(fs.readFileSync(LOCAL_IP_RANGES));
+    this._setIpRanges(body);
+  }
+
+  /**
+   * Fetch IP ranges from AWS
+   */
+  async _fetchIpRanges() {
     // Get IP ranges from AWS
     let {body} = await request.get(AWS_IP_RANGES_URL);
+    this._setIpRanges(body);
+  }
 
+  _setIpRanges(body) {
     // Add ip-ranges to regions
     this.ipRanges = body.prefixes.filter(prefix => {
       // Filter ip-ranges we're interested in
