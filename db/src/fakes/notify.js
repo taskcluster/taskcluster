@@ -1,6 +1,7 @@
-const assert = require('assert');
-const slugid = require('slugid');
-const { UNIQUE_VIOLATION } = require('taskcluster-lib-postgres');
+const assert = require("assert");
+const slugid = require("slugid");
+const { UNIQUE_VIOLATION } = require("taskcluster-lib-postgres");
+const { getEntries } = require("../utils");
 
 class FakeNotify {
   constructor() {
@@ -52,7 +53,10 @@ class FakeNotify {
       etag,
     };
 
-    this._removeDenylistedNotification({ partitionKey: denylistedNotification.partition_key, rowKey: denylistedNotification.row_key });
+    this._removeDenylistedNotification({
+      partitionKey: denylistedNotification.partition_key,
+      rowKey: denylistedNotification.row_key,
+    });
     this.denylistedNotifications.add(c);
 
     return c;
@@ -68,7 +72,7 @@ class FakeNotify {
 
   async denylisted_notification_entities_create(partition_key, row_key, value, overwrite, version) {
     if (!overwrite && this._getDenylistedNotification({ partitionKey: partition_key, rowKey: row_key })) {
-      const err = new Error('duplicate key value violates unique constraint');
+      const err = new Error("duplicate key value violates unique constraint");
       err.code = UNIQUE_VIOLATION;
       throw err;
     }
@@ -80,7 +84,7 @@ class FakeNotify {
       version,
     });
 
-    return [{ 'denylisted_notification_entities_create': denylistedNotification.etag }];
+    return [{ "denylisted_notification_entities_create": denylistedNotification.etag }];
   }
 
   async denylisted_notification_entities_remove(partition_key, row_key) {
@@ -94,14 +98,14 @@ class FakeNotify {
     const denylistedNotification = this._getDenylistedNotification({ partitionKey: partition_key, rowKey: row_key });
 
     if (!denylistedNotification) {
-      const err = new Error('no such row');
-      err.code = 'P0002';
+      const err = new Error("no such row");
+      err.code = "P0002";
       throw err;
     }
 
     if (denylistedNotification.etag !== oldEtag) {
-      const err = new Error('unsuccessful update');
-      err.code = 'P0004';
+      const err = new Error("unsuccessful update");
+      err.code = "P0004";
       throw err;
     }
 
@@ -109,12 +113,19 @@ class FakeNotify {
     return [{ etag: c.etag }];
   }
 
-  // TODO
-  async denylisted_notification_entities_scan(partition_key, row_key, condition, size, page) {}
+  async denylisted_notification_entities_scan(partition_key, row_key, condition, size, page) {
+    const entries = getEntries({
+      partitionKey: partition_key,
+      rowKey: row_key,
+      condition,
+    }, this.denylistedNotifications);
+
+    return entries.slice((page - 1) * size, (page - 1) * size + size);
+  }
 
   async update_widgets(name) {
     this.widgets.add(name);
-    return [...this.widgets].map(name => ({name}));
+    return [...this.widgets].map(name => ({ name }));
   }
 }
 

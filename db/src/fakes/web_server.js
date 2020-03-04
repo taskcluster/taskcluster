@@ -1,6 +1,7 @@
 const assert = require('assert');
 const slugid = require('slugid');
 const { UNIQUE_VIOLATION } = require('taskcluster-lib-postgres');
+const { getEntries } = require("../utils");
 
 class FakeAuth {
   constructor() {
@@ -51,7 +52,10 @@ class FakeAuth {
       etag,
     };
 
-    this._removeAuthorizationCodesTable({ partitionKey: authorizationCodesTable.partition_key, rowKey: authorizationCodesTable.row_key });
+    this._removeAuthorizationCodesTable({
+      partitionKey: authorizationCodesTable.partition_key,
+      rowKey: authorizationCodesTable.row_key,
+    });
     this.authorizationCodesTables.add(c);
 
     return c;
@@ -127,7 +131,10 @@ class FakeAuth {
       etag,
     };
 
-    this._removeSessionStorageTable({ partitionKey: sessionStorageTable.partition_key, rowKey: sessionStorageTable.row_key });
+    this._removeSessionStorageTable({
+      partitionKey: sessionStorageTable.partition_key,
+      rowKey: sessionStorageTable.row_key,
+    });
     this.sessionStorageTables.add(c);
 
     return c;
@@ -165,7 +172,10 @@ class FakeAuth {
       etag,
     };
 
-    this._removeGithubAccessTokenTable({ partitionKey: githubAccessTokenTable.partition_key, rowKey: githubAccessTokenTable.row_key });
+    this._removeGithubAccessTokenTable({
+      partitionKey: githubAccessTokenTable.partition_key,
+      rowKey: githubAccessTokenTable.row_key,
+    });
     this.githubAccessTokenTables.add(c);
 
     return c;
@@ -181,7 +191,7 @@ class FakeAuth {
 
   async authorization_codes_table_entities_create(partition_key, row_key, value, overwrite, version) {
     if (!overwrite && this._getAuthorizationCodesTable({ partitionKey: partition_key, rowKey: row_key })) {
-      const err = new Error('duplicate key value violates unique constraint');
+      const err = new Error("duplicate key value violates unique constraint");
       err.code = UNIQUE_VIOLATION;
       throw err;
     }
@@ -193,7 +203,7 @@ class FakeAuth {
       version,
     });
 
-    return [{ 'authorization_codes_table_entities_create': authorizationCodesTable.etag }];
+    return [{ "authorization_codes_table_entities_create": authorizationCodesTable.etag }];
   }
 
   async authorization_codes_table_entities_remove(partition_key, row_key) {
@@ -207,14 +217,14 @@ class FakeAuth {
     const authorizationCodesTable = this._getAuthorizationCodesTable({ partitionKey: partition_key, rowKey: row_key });
 
     if (!authorizationCodesTable) {
-      const err = new Error('no such row');
-      err.code = 'P0002';
+      const err = new Error("no such row");
+      err.code = "P0002";
       throw err;
     }
 
     if (authorizationCodesTable.etag !== oldEtag) {
-      const err = new Error('unsuccessful update');
-      err.code = 'P0004';
+      const err = new Error("unsuccessful update");
+      err.code = "P0004";
       throw err;
     }
 
@@ -222,8 +232,15 @@ class FakeAuth {
     return [{ etag: c.etag }];
   }
 
-  // TODO
-  async authorization_codes_table_entities_scan(partition_key, row_key, condition, size, page) {}
+  async authorization_codes_table_entities_scan(partition_key, row_key, condition, size, page) {
+    const entries = getEntries({
+      partitionKey: partition_key,
+      rowKey: row_key,
+      condition,
+    }, this.authorizationCodesTables);
+
+    return entries.slice((page - 1) * size, (page - 1) * size + size);
+  }
 
   async access_token_table_entities_load(partitionKey, rowKey) {
     const accessTokenTable = this._getAccessTokenTable({ partitionKey, rowKey });
@@ -233,7 +250,7 @@ class FakeAuth {
 
   async access_token_table_entities_create(partition_key, row_key, value, overwrite, version) {
     if (!overwrite && this._getAccessTokenTable({ partitionKey: partition_key, rowKey: row_key })) {
-      const err = new Error('duplicate key value violates unique constraint');
+      const err = new Error("duplicate key value violates unique constraint");
       err.code = UNIQUE_VIOLATION;
       throw err;
     }
@@ -245,7 +262,7 @@ class FakeAuth {
       version,
     });
 
-    return [{ 'access_token_table_entities_create': accessTokenTable.etag }];
+    return [{ "access_token_table_entities_create": accessTokenTable.etag }];
   }
 
   async access_token_table_entities_remove(partition_key, row_key) {
@@ -259,14 +276,14 @@ class FakeAuth {
     const accessTokenTable = this._getAccessTokenTable({ partitionKey: partition_key, rowKey: row_key });
 
     if (!accessTokenTable) {
-      const err = new Error('no such row');
-      err.code = 'P0002';
+      const err = new Error("no such row");
+      err.code = "P0002";
       throw err;
     }
 
     if (accessTokenTable.etag !== oldEtag) {
-      const err = new Error('unsuccessful update');
-      err.code = 'P0004';
+      const err = new Error("unsuccessful update");
+      err.code = "P0004";
       throw err;
     }
 
@@ -274,8 +291,11 @@ class FakeAuth {
     return [{ etag: c.etag }];
   }
 
-  // TODO
-  async access_token_table_entities_scan(partition_key, row_key, condition, size, page) {}
+  async access_token_table_entities_scan(partition_key, row_key, condition, size, page) {
+    const entries = getEntries({ partitionKey: partition_key, rowKey: row_key, condition }, this.accessTokenTables);
+
+    return entries.slice((page - 1) * size, (page - 1) * size + size);
+  }
 
   async session_storage_table_entities_load(partitionKey, rowKey) {
     const sessionStorageTable = this._getSessionStorageTable({ partitionKey, rowKey });
@@ -285,7 +305,7 @@ class FakeAuth {
 
   async session_storage_table_entities_create(partition_key, row_key, value, overwrite, version) {
     if (!overwrite && this._getSessionStorageTable({ partitionKey: partition_key, rowKey: row_key })) {
-      const err = new Error('duplicate key value violates unique constraint');
+      const err = new Error("duplicate key value violates unique constraint");
       err.code = UNIQUE_VIOLATION;
       throw err;
     }
@@ -297,7 +317,7 @@ class FakeAuth {
       version,
     });
 
-    return [{ 'session_storage_table_entities_create': sessionStorageTable.etag }];
+    return [{ "session_storage_table_entities_create": sessionStorageTable.etag }];
   }
 
   async session_storage_table_entities_remove(partition_key, row_key) {
@@ -311,14 +331,14 @@ class FakeAuth {
     const sessionStorageTable = this._getSessionStorageTable({ partitionKey: partition_key, rowKey: row_key });
 
     if (!sessionStorageTable) {
-      const err = new Error('no such row');
-      err.code = 'P0002';
+      const err = new Error("no such row");
+      err.code = "P0002";
       throw err;
     }
 
     if (sessionStorageTable.etag !== oldEtag) {
-      const err = new Error('unsuccessful update');
-      err.code = 'P0004';
+      const err = new Error("unsuccessful update");
+      err.code = "P0004";
       throw err;
     }
 
@@ -326,8 +346,11 @@ class FakeAuth {
     return [{ etag: c.etag }];
   }
 
-  // TODO
-  async session_storage_table_entities_scan(partition_key, row_key, condition, size, page) {}
+  async session_storage_table_entities_scan(partition_key, row_key, condition, size, page) {
+    const entries = getEntries({ partitionKey: partition_key, rowKey: row_key, condition }, this.sessionStorageTables);
+
+    return entries.slice((page - 1) * size, (page - 1) * size + size);
+  }
 
   async github_access_token_table_entities_load(partitionKey, rowKey) {
     const githubAccessTokenTable = this._getGithubAccessTokenTable({ partitionKey, rowKey });
@@ -337,7 +360,7 @@ class FakeAuth {
 
   async github_access_token_table_entities_create(partition_key, row_key, value, overwrite, version) {
     if (!overwrite && this._getGithubAccessTokenTable({ partitionKey: partition_key, rowKey: row_key })) {
-      const err = new Error('duplicate key value violates unique constraint');
+      const err = new Error("duplicate key value violates unique constraint");
       err.code = UNIQUE_VIOLATION;
       throw err;
     }
@@ -349,7 +372,7 @@ class FakeAuth {
       version,
     });
 
-    return [{ 'github_access_token_table_entities_create': githubAccessTokenTable.etag }];
+    return [{ "github_access_token_table_entities_create": githubAccessTokenTable.etag }];
   }
 
   async github_access_token_table_entities_remove(partition_key, row_key) {
@@ -363,14 +386,14 @@ class FakeAuth {
     const githubAccessTokenTable = this._getGithubAccessTokenTable({ partitionKey: partition_key, rowKey: row_key });
 
     if (!githubAccessTokenTable) {
-      const err = new Error('no such row');
-      err.code = 'P0002';
+      const err = new Error("no such row");
+      err.code = "P0002";
       throw err;
     }
 
     if (githubAccessTokenTable.etag !== oldEtag) {
-      const err = new Error('unsuccessful update');
-      err.code = 'P0004';
+      const err = new Error("unsuccessful update");
+      err.code = "P0004";
       throw err;
     }
 
@@ -378,8 +401,15 @@ class FakeAuth {
     return [{ etag: c.etag }];
   }
 
-  // TODO
-  async github_access_token_table_entities_scan(partition_key, row_key, condition, size, page) {}
+  async github_access_token_table_entities_scan(partition_key, row_key, condition, size, page) {
+    const entries = getEntries({
+      partitionKey: partition_key,
+      rowKey: row_key,
+      condition,
+    }, this.githubAccessTokenTables);
+
+    return entries.slice((page - 1) * size, (page - 1) * size + size);
+  }
 }
 
 module.exports = FakeAuth;

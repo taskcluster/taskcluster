@@ -1,6 +1,7 @@
 const assert = require('assert');
 const slugid = require('slugid');
 const { UNIQUE_VIOLATION } = require('taskcluster-lib-postgres');
+const { getEntries } = require('../utils');
 
 class FakeWorkerManager {
   constructor() {
@@ -182,8 +183,11 @@ class FakeWorkerManager {
     return [{ etag: c.etag }];
   }
 
-  // TODO
-  async wm_workers_entities_scan(partition_key, row_key, condition, size, page) {}
+  async wm_workers_entities_scan(partition_key, row_key, condition, size, page) {
+    const entries = getEntries({ partitionKey: partition_key, rowKey: row_key, condition }, this.wmWorkers);
+
+    return entries.slice((page - 1) * size, (page - 1) * size + size);
+  }
 
   async wm_worker_pools_entities_load(partitionKey, rowKey) {
     const wmWorkerPool = this._getWmWorkerPool({ partitionKey, rowKey });
@@ -234,8 +238,11 @@ class FakeWorkerManager {
     return [{ etag: c.etag }];
   }
 
-  // TODO
-  async wm_worker_pools_entities_scan(partition_key, row_key, condition, size, page) {}
+  async wm_worker_pools_entities_scan(partition_key, row_key, condition, size, page) {
+    const entries = getEntries({ partitionKey: partition_key, rowKey: row_key, condition }, this.wmWorkerPools);
+
+    return entries.slice((page - 1) * size, (page - 1) * size + size);
+  }
 
   /* fake functions */
 
@@ -288,8 +295,11 @@ class FakeWorkerManager {
     return [{ etag: c.etag }];
   }
 
-  // TODO
-  async wm_worker_pool_errors_entities_scan(partition_key, row_key, condition, size, page) {}
+  async wm_worker_pool_errors_entities_scan(partition_key, row_key, condition, size, page) {
+    const entries = getEntries({ partitionKey: partition_key, rowKey: row_key, condition }, this.wmWorkerPoolErrors);
+
+    return entries.slice((page - 1) * size, (page - 1) * size + size);
+  }
 }
 
 module.exports = FakeWorkerManager;

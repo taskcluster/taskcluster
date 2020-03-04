@@ -1,6 +1,7 @@
 const assert = require('assert');
 const slugid = require('slugid');
 const { UNIQUE_VIOLATION } = require('taskcluster-lib-postgres');
+const { getEntries } = require('../utils');
 
 class FakeHook {
   constructor() {
@@ -182,8 +183,11 @@ class FakeHook {
     return [{ etag: c.etag }];
   }
 
-  // TODO
-  async hooks_entities_scan(partition_key, row_key, condition, size, page) {}
+  async hooks_entities_scan(partition_key, row_key, condition, size, page) {
+    const entries = getEntries({ partitionKey: partition_key, rowKey: row_key, condition }, this.hooks);
+
+    return entries.slice((page - 1) * size, (page - 1) * size + size);
+  }
 
   async last_fire3_entities_load(partitionKey, rowKey) {
     const lastFire3 = this._getLastFire3({ partitionKey, rowKey });
@@ -234,8 +238,11 @@ class FakeHook {
     return [{ etag: c.etag }];
   }
 
-  // TODO
-  async last_fire3_entities_scan(partition_key, row_key, condition, size, page) {}
+  async last_fire3_entities_scan(partition_key, row_key, condition, size, page) {
+    const entries = getEntries({ partitionKey: partition_key, rowKey: row_key, condition }, this.lastFire3s);
+
+    return entries.slice((page - 1) * size, (page - 1) * size + size);
+  }
 
   /* fake functions */
 
@@ -288,8 +295,11 @@ class FakeHook {
     return [{ etag: c.etag }];
   }
 
-  // TODO
-  async queues_entities_scan(partition_key, row_key, condition, size, page) {}
+  async queues_entities_scan(partition_key, row_key, condition, size, page) {
+    const entries = getEntries({ partitionKey: partition_key, rowKey: row_key, condition }, this.queues);
+
+    return entries.slice((page - 1) * size, (page - 1) * size + size);
+  }
 }
 
 module.exports = FakeHook;

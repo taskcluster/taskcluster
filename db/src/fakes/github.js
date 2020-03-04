@@ -1,6 +1,7 @@
-const assert = require('assert');
-const slugid = require('slugid');
-const { UNIQUE_VIOLATION } = require('taskcluster-lib-postgres');
+const assert = require("assert");
+const slugid = require("slugid");
+const { UNIQUE_VIOLATION } = require("taskcluster-lib-postgres");
+const { getEntries } = require("../utils");
 
 class FakeGithub {
   constructor() {
@@ -111,7 +112,7 @@ class FakeGithub {
 
   async taskcluster_github_builds_entities_create(partition_key, row_key, value, overwrite, version) {
     if (!overwrite && this._getTaskclusterGithubBuild({ partitionKey: partition_key, rowKey: row_key })) {
-      const err = new Error('duplicate key value violates unique constraint');
+      const err = new Error("duplicate key value violates unique constraint");
       err.code = UNIQUE_VIOLATION;
       throw err;
     }
@@ -123,7 +124,7 @@ class FakeGithub {
       version,
     });
 
-    return [{ 'taskcluster_github_builds_entities_create': taskclusterGithubBuild.etag }];
+    return [{ "taskcluster_github_builds_entities_create": taskclusterGithubBuild.etag }];
   }
 
   async taskcluster_github_builds_entities_remove(partition_key, row_key) {
@@ -137,14 +138,14 @@ class FakeGithub {
     const taskclusterGithubBuild = this._getTaskclusterGithubBuild({ partitionKey: partition_key, rowKey: row_key });
 
     if (!taskclusterGithubBuild) {
-      const err = new Error('no such row');
-      err.code = 'P0002';
+      const err = new Error("no such row");
+      err.code = "P0002";
       throw err;
     }
 
     if (taskclusterGithubBuild.etag !== oldEtag) {
-      const err = new Error('unsuccessful update');
-      err.code = 'P0004';
+      const err = new Error("unsuccessful update");
+      err.code = "P0004";
       throw err;
     }
 
@@ -152,8 +153,15 @@ class FakeGithub {
     return [{ etag: c.etag }];
   }
 
-  // TODO
-  async taskcluster_github_builds_entities_scan(partition_key, row_key, condition, size, page) {}
+  async taskcluster_github_builds_entities_scan(partition_key, row_key, condition, size, page) {
+    const entries = getEntries({
+      partitionKey: partition_key,
+      rowKey: row_key,
+      condition,
+    }, this.taskclusterGithubBuilds);
+
+    return entries.slice((page - 1) * size, (page - 1) * size + size);
+  }
 
   async taskcluster_intergration_owners_entities_load(partitionKey, rowKey) {
     const taskclusterIntergrationOwner = this._getTaskclusterIntergrationOwner({ partitionKey, rowKey });
@@ -163,7 +171,7 @@ class FakeGithub {
 
   async taskcluster_intergration_owners_entities_create(partition_key, row_key, value, overwrite, version) {
     if (!overwrite && this._getTaskclusterIntergrationOwner({ partitionKey: partition_key, rowKey: row_key })) {
-      const err = new Error('duplicate key value violates unique constraint');
+      const err = new Error("duplicate key value violates unique constraint");
       err.code = UNIQUE_VIOLATION;
       throw err;
     }
@@ -175,7 +183,7 @@ class FakeGithub {
       version,
     });
 
-    return [{ 'taskcluster_intergration_owners_entities_create': taskclusterIntergrationOwner.etag }];
+    return [{ "taskcluster_intergration_owners_entities_create": taskclusterIntergrationOwner.etag }];
   }
 
   async taskcluster_intergration_owners_entities_remove(partition_key, row_key) {
@@ -195,14 +203,14 @@ class FakeGithub {
     });
 
     if (!taskclusterIntergrationOwner) {
-      const err = new Error('no such row');
-      err.code = 'P0002';
+      const err = new Error("no such row");
+      err.code = "P0002";
       throw err;
     }
 
     if (taskclusterIntergrationOwner.etag !== oldEtag) {
-      const err = new Error('unsuccessful update');
-      err.code = 'P0004';
+      const err = new Error("unsuccessful update");
+      err.code = "P0004";
       throw err;
     }
 
@@ -210,8 +218,15 @@ class FakeGithub {
     return [{ etag: c.etag }];
   }
 
-  // TODO
-  async taskcluster_intergration_owners_entities_scan(partition_key, row_key, condition, size, page) {}
+  async taskcluster_intergration_owners_entities_scan(partition_key, row_key, condition, size, page) {
+    const entries = getEntries({
+      partitionKey: partition_key,
+      rowKey: row_key,
+      condition,
+    }, this.taskclusterIntergrationOwners);
+
+    return entries.slice((page - 1) * size, (page - 1) * size + size);
+  }
 
   _getTaskclusterChecksToTask({ partitionKey, rowKey }) {
     for (let c of [...this.taskclusterChecksToTasks]) {
@@ -305,7 +320,7 @@ class FakeGithub {
 
   async taskcluster_checks_to_tasks_entities_create(partition_key, row_key, value, overwrite, version) {
     if (!overwrite && this._getTaskclusterChecksToTask({ partitionKey: partition_key, rowKey: row_key })) {
-      const err = new Error('duplicate key value violates unique constraint');
+      const err = new Error("duplicate key value violates unique constraint");
       err.code = UNIQUE_VIOLATION;
       throw err;
     }
@@ -317,7 +332,7 @@ class FakeGithub {
       version,
     });
 
-    return [{ 'taskcluster_checks_to_tasks_entities_create': taskclusterChecksToTask.etag }];
+    return [{ "taskcluster_checks_to_tasks_entities_create": taskclusterChecksToTask.etag }];
   }
 
   async taskcluster_checks_to_tasks_entities_remove(partition_key, row_key) {
@@ -331,14 +346,14 @@ class FakeGithub {
     const taskclusterChecksToTask = this._getTaskclusterChecksToTask({ partitionKey: partition_key, rowKey: row_key });
 
     if (!taskclusterChecksToTask) {
-      const err = new Error('no such row');
-      err.code = 'P0002';
+      const err = new Error("no such row");
+      err.code = "P0002";
       throw err;
     }
 
     if (taskclusterChecksToTask.etag !== oldEtag) {
-      const err = new Error('unsuccessful update');
-      err.code = 'P0004';
+      const err = new Error("unsuccessful update");
+      err.code = "P0004";
       throw err;
     }
 
@@ -346,8 +361,15 @@ class FakeGithub {
     return [{ etag: c.etag }];
   }
 
-  // TODO
-  async taskcluster_checks_to_tasks_entities_scan(partition_key, row_key, condition, size, page) {}
+  async taskcluster_checks_to_tasks_entities_scan(partition_key, row_key, condition, size, page) {
+    const entries = getEntries({
+      partitionKey: partition_key,
+      rowKey: row_key,
+      condition,
+    }, this.taskclusterChecksToTasks);
+
+    return entries.slice((page - 1) * size, (page - 1) * size + size);
+  }
 
   async taskcluster_check_runs_entities_load(partitionKey, rowKey) {
     const taskclusterCheckRun = this._getTaskclusterCheckRun({ partitionKey, rowKey });
@@ -357,7 +379,7 @@ class FakeGithub {
 
   async taskcluster_check_runs_entities_create(partition_key, row_key, value, overwrite, version) {
     if (!overwrite && this._getTaskclusterCheckRun({ partitionKey: partition_key, rowKey: row_key })) {
-      const err = new Error('duplicate key value violates unique constraint');
+      const err = new Error("duplicate key value violates unique constraint");
       err.code = UNIQUE_VIOLATION;
       throw err;
     }
@@ -369,7 +391,7 @@ class FakeGithub {
       version,
     });
 
-    return [{ 'taskcluster_check_runs_entities_create': taskclusterCheckRun.etag }];
+    return [{ "taskcluster_check_runs_entities_create": taskclusterCheckRun.etag }];
   }
 
   async taskcluster_check_runs_entities_remove(partition_key, row_key) {
@@ -383,14 +405,14 @@ class FakeGithub {
     const taskclusterCheckRun = this._getTaskclusterCheckRun({ partitionKey: partition_key, rowKey: row_key });
 
     if (!taskclusterCheckRun) {
-      const err = new Error('no such row');
-      err.code = 'P0002';
+      const err = new Error("no such row");
+      err.code = "P0002";
       throw err;
     }
 
     if (taskclusterCheckRun.etag !== oldEtag) {
-      const err = new Error('unsuccessful update');
-      err.code = 'P0004';
+      const err = new Error("unsuccessful update");
+      err.code = "P0004";
       throw err;
     }
 
@@ -398,8 +420,11 @@ class FakeGithub {
     return [{ etag: c.etag }];
   }
 
-  // TODO
-  async taskcluster_check_runs_entities_scan(partition_key, row_key, condition, size, page) {}
+  async taskcluster_check_runs_entities_scan(partition_key, row_key, condition, size, page) {
+    const entries = getEntries({ partitionKey: partition_key, rowKey: row_key, condition }, this.taskclusterCheckRuns);
+
+    return entries.slice((page - 1) * size, (page - 1) * size + size);
+  }
 }
 
 module.exports = FakeGithub;

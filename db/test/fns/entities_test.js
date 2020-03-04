@@ -1,9 +1,8 @@
 const assert = require("assert").strict;
 const helper = require("../helper");
 const testing = require("taskcluster-lib-testing");
-const { UNIQUE_VIOLATION } = require("taskcluster-lib-postgres");
-const _ = require("lodash");
 const fs = require("fs");
+const { UNIQUE_VIOLATION } = require('taskcluster-lib-postgres');
 const yaml = require("js-yaml");
 const path = require("path");
 
@@ -24,8 +23,8 @@ suite("services checks", function() {
         "queue",
         "secrets",
         "web_server",
-        "worker_manager"
-      ]
+        "worker_manager",
+      ],
     );
   });
 });
@@ -36,9 +35,9 @@ for (let service of services) {
 
   for (let tableName of tableNames) {
     const clients = [
-      { first: "foo", last: "bar" },
-      { first: "bar", last: "foo" },
-      { first: "baz", last: "gamma" }
+      { first: "foo", last: "bar", expires: new Date(0).toJSON() },
+      { first: "bar", last: "foo", expires: new Date(1).toJSON() },
+      { first: "baz", last: "gamma", expires: new Date(2).toJSON() },
     ];
 
     suite(`${testing.suiteName()} - ${serviceName}`, function() {
@@ -46,9 +45,9 @@ for (let service of services) {
       setup(`reset ${tableName} table`, async function() {
         await helper.withDbClient(async client => {
           await client.query(`delete from ${tableName}`);
-          await client.query(`insert into ${tableName} (partition_key, row_key, value, version) values ('foo', 'bar', '{ "first": "foo", "last": "bar" }', 1), ('bar', 'foo', '{ "first": "bar", "last": "foo" }', 1)`);
+          await client.query(`insert into ${tableName} (partition_key, row_key, value, version) values ('foo', 'bar', '{ "first": "foo", "last": "bar", "expires": "1970-01-01T00:00:00.000Z" }', 1), ('bar', 'foo', '{ "first": "bar", "last": "foo", "expires": "1970-01-01T00:00:00.001Z" }', 1)`);
         });
-        const sn = serviceName === 'index' ? `fake${serviceName}` : serviceName;
+        const sn = serviceName === "index" ? `fake${serviceName}` : serviceName;
         await helper.fakeDb[sn].reset();
         await helper.fakeDb[sn][`${tableName}_create`]("foo", "bar", clients[0], false, 1);
         await helper.fakeDb[sn][`${tableName}_create`]("bar", "foo", clients[1], false, 1);
@@ -131,6 +130,69 @@ for (let service of services) {
           },
           err => err.code === 'P0004',
         );
+      });
+
+      function createThreeValues(db) {
+        return Promise.all([
+          db.fns[`${tableName}_create`]("foo-1", "foo-1", { first: "foo-1", expires: new Date(3).toJSON() }, false, 1),
+          db.fns[`${tableName}_create`]("foo-2", "foo-2", { first: "foo-2", expires: new Date(3).toJSON() }, false, 1),
+          db.fns[`${tableName}_create`]("foo-3", "foo-3", { first: "foo-3", expires: new Date(3).toJSON() }, false, 1),
+        ]);
+      }
+
+      helper.dbTest(`${tableName}_scan retrieve all documents (pk, rk, and condition set to undefined)`, async function(db, isFake) {
+        // create 3 more values to have 5 in total
+        await createThreeValues(db);
+        const result = await db.fns[`${tableName}_scan`](undefined, undefined, undefined, 1000, 1);
+        assert.equal(result.length, 5);
+      });
+
+      helper.dbTest(`${tableName}_scan retrieve all documents (pk, rk, and condition set to null)`, async function(db, isFake) {
+        // create 3 more values to have 5 in total
+        await createThreeValues(db);
+        const result = await db.fns[`${tableName}_scan`](null, null, null, 1000, 1);
+        assert.equal(result.length, 5);
+      });
+
+      helper.dbTest(`${tableName}_scan retrieve all documents (pk, rk, and condition set to undefined)`, async function(db, isFake) {
+        // create 3 more values to have 5 in total
+        await createThreeValues(db);
+        const result = await db.fns[`${tableName}_scan`](undefined, undefined, undefined, 1000, 1);
+        assert.equal(result.length, 5);
+      });
+
+      helper.dbTest(`${tableName}_scan retrieve documents with limit`, async function(db, isFake) {
+        // create 3 more values to have 5 in total
+        await createThreeValues(db);
+        const result = await db.fns[`${tableName}_scan`](undefined, undefined, undefined, 2, 1);
+        assert.equal(result.length, 2);
+      });
+
+      helper.dbTest(`${tableName}_scan retrieve documents in pages`, async function(db, isFake) {
+        // create 3 more values to have 5 in total
+        await createThreeValues(db);
+        let result = await db.fns[`${tableName}_scan`](undefined, undefined, undefined, 2, 1);
+        assert.equal(result.length, 2);
+
+        result = await db.fns[`${tableName}_scan`](undefined, undefined, undefined, 2, 2);
+        assert.equal(result.length, 2);
+
+        result = await db.fns[`${tableName}_scan`](undefined, undefined, undefined, 2, 3);
+        assert.equal(result.length, 1);
+
+        result = await db.fns[`${tableName}_scan`](undefined, undefined, undefined, 2, 4);
+        assert.equal(result.length, 0);
+      });
+      helper.dbTest(`${tableName}_scan retrieve documents (with date condition)`, async function(db, isFake) {
+        // create 3 more values to have 5 in total
+        await createThreeValues(db);
+        const condition = `value ->> 'expires' = '${new Date(3).toJSON()}'`;
+        const result = await db.fns[`${tableName}_scan`](undefined, undefined, condition, 1000, 1);
+
+        assert.equal(result.length, 3);
+        result.forEach(entry => {
+          assert.equal(entry.value.expires, new Date(3).toJSON());
+        });
       });
     });
   }

@@ -1,6 +1,7 @@
 const assert = require('assert');
 const slugid = require('slugid');
 const { UNIQUE_VIOLATION } = require('taskcluster-lib-postgres');
+const { getEntries } = require('../utils');
 
 class FakePurgeCache {
   constructor() {
@@ -102,8 +103,11 @@ class FakePurgeCache {
     return [{ etag: c.etag }];
   }
 
-  // TODO
-  async cache_purges_entities_scan(partition_key, row_key, condition, size, page) {}
+  async cache_purges_entities_scan(partition_key, row_key, condition, size, page) {
+    const entries = getEntries({ partitionKey: partition_key, rowKey: row_key, condition }, this.cachePurges);
+
+    return entries.slice((page - 1) * size, (page - 1) * size + size);
+  }
 }
 
 module.exports = FakePurgeCache;

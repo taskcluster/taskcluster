@@ -1,6 +1,7 @@
 const assert = require('assert');
 const slugid = require('slugid');
 const { UNIQUE_VIOLATION } = require('taskcluster-lib-postgres');
+const { getEntries } = require('../utils');
 
 class FakeQueue {
   constructor() {
@@ -486,8 +487,11 @@ class FakeQueue {
     return [{ etag: c.etag }];
   }
 
-  // TODO
-  async queue_tasks_entities_scan(partition_key, row_key, condition, size, page) {}
+  async queue_tasks_entities_scan(partition_key, row_key, condition, size, page) {
+    const entries = getEntries({ partitionKey: partition_key, rowKey: row_key, condition }, this.queueTasks);
+
+    return entries.slice((page - 1) * size, (page - 1) * size + size);
+  }
 
   async queue_artifacts_entities_load(partitionKey, rowKey) {
     const queueArtifact = this._getQueueArtifact({ partitionKey, rowKey });
@@ -544,8 +548,11 @@ class FakeQueue {
     return [{ etag: c.etag }];
   }
 
-  // TODO
-  async queue_artifacts_entities_scan(partition_key, row_key, condition, size, page) {}
+  async queue_artifacts_entities_scan(partition_key, row_key, condition, size, page) {
+    const entries = getEntries({ partitionKey: partition_key, rowKey: row_key, condition }, this.queueArtifacts);
+
+    return entries.slice((page - 1) * size, (page - 1) * size + size);
+  }
 
   async queue_task_groups_entities_load(partitionKey, rowKey) {
     const queueTaskGroup = this._getQueueTaskGroup({ partitionKey, rowKey });
@@ -596,8 +603,11 @@ class FakeQueue {
     return [{ etag: c.etag }];
   }
 
-  // TODO
-  async queue_task_groups_entities_scan(partition_key, row_key, condition, size, page) {}
+  async queue_task_groups_entities_scan(partition_key, row_key, condition, size, page) {
+    const entries = getEntries({ partitionKey: partition_key, rowKey: row_key, condition }, this.queueTaskGroups);
+
+    return entries.slice((page - 1) * size, (page - 1) * size + size);
+  }
 
   async queue_task_group_active_sets_entities_load(partitionKey, rowKey) {
     const queueTaskGroupActiveSet = this._getQueueTaskGroupActiveSet({ partitionKey, rowKey });
@@ -648,8 +658,15 @@ class FakeQueue {
     return [{ etag: c.etag }];
   }
 
-  // TODO
-  async queue_task_group_active_sets_entities_scan(partition_key, row_key, condition, size, page) {}
+  async queue_task_group_active_sets_entities_scan(partition_key, row_key, condition, size, page) {
+    const entries = getEntries({
+      partitionKey: partition_key,
+      rowKey: row_key,
+      condition,
+    }, this.queueTaskGroupActiveSets);
+
+    return entries.slice((page - 1) * size, (page - 1) * size + size);
+  }
 
   async queue_task_requirement_entities_load(partitionKey, rowKey) {
     const queueTaskRequirement = this._getQueueTaskRequirement({ partitionKey, rowKey });
@@ -706,8 +723,11 @@ class FakeQueue {
     return [{ etag: c.etag }];
   }
 
-  // TODO
-  async queue_task_requirement_entities_scan(partition_key, row_key, condition, size, page) {}
+  async queue_task_requirement_entities_scan(partition_key, row_key, condition, size, page) {
+    const entries = getEntries({ partitionKey: partition_key, rowKey: row_key, condition }, this.queueTaskRequirements);
+
+    return entries.slice((page - 1) * size, (page - 1) * size + size);
+  }
 
   async queue_task_group_members_entities_load(partitionKey, rowKey) {
     const queueTaskGroupMember = this._getQueueTaskGroupMember({ partitionKey, rowKey });
@@ -758,8 +778,11 @@ class FakeQueue {
     return [{ etag: c.etag }];
   }
 
-  // TODO
-  async queue_task_group_members_entities_scan(partition_key, row_key, condition, size, page) {}
+  async queue_task_group_members_entities_scan(partition_key, row_key, condition, size, page) {
+    const entries = getEntries({ partitionKey: partition_key, rowKey: row_key, condition }, this.queueTaskGroupMembers);
+
+    return entries.slice((page - 1) * size, (page - 1) * size + size);
+  }
 
   async queue_task_dependency_entities_load(partitionKey, rowKey) {
     const queueTaskDependency = this._getQueueTaskDependency({ partitionKey, rowKey });
@@ -810,8 +833,11 @@ class FakeQueue {
     return [{ etag: c.etag }];
   }
 
-  // TODO
-  async queue_task_dependency_entities_scan(partition_key, row_key, condition, size, page) {}
+  async queue_task_dependency_entities_scan(partition_key, row_key, condition, size, page) {
+    const entries = getEntries({ partitionKey: partition_key, rowKey: row_key, condition }, this.queueTaskDependencys);
+
+    return entries.slice((page - 1) * size, (page - 1) * size + size);
+  }
 
   async queue_worker_entities_load(partitionKey, rowKey) {
     const queueWorker = this._getQueueWorker({ partitionKey, rowKey });
@@ -862,8 +888,11 @@ class FakeQueue {
     return [{ etag: c.etag }];
   }
 
-  // TODO
-  async queue_worker_entities_scan(partition_key, row_key, condition, size, page) {}
+  async queue_worker_entities_scan(partition_key, row_key, condition, size, page) {
+    const entries = getEntries({ partitionKey: partition_key, rowKey: row_key, condition }, this.queueWorkers);
+
+    return entries.slice((page - 1) * size, (page - 1) * size + size);
+  }
 
   async queue_worker_type_entities_load(partitionKey, rowKey) {
     const queueWorkerType = this._getQueueWorkerType({ partitionKey, rowKey });
@@ -914,8 +943,11 @@ class FakeQueue {
     return [{ etag: c.etag }];
   }
 
-  // TODO
-  async queue_worker_type_entities_scan(partition_key, row_key, condition, size, page) {}
+  async queue_worker_type_entities_scan(partition_key, row_key, condition, size, page) {
+    const entries = getEntries({ partitionKey: partition_key, rowKey: row_key, condition }, this.queueWorkerTypes);
+
+    return entries.slice((page - 1) * size, (page - 1) * size + size);
+  }
 
   async queue_provisioner_entities_load(partitionKey, rowKey) {
     const queueProvisioner = this._getQueueProvisioner({ partitionKey, rowKey });
@@ -966,8 +998,11 @@ class FakeQueue {
     return [{ etag: c.etag }];
   }
 
-  // TODO
-  async queue_provisioner_entities_scan(partition_key, row_key, condition, size, page) {}
+  async queue_provisioner_entities_scan(partition_key, row_key, condition, size, page) {
+    const entries = getEntries({ partitionKey: partition_key, rowKey: row_key, condition }, this.queueProvisioners);
+
+    return entries.slice((page - 1) * size, (page - 1) * size + size);
+  }
 }
 
 module.exports = FakeQueue;

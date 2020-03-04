@@ -1,6 +1,7 @@
-const assert = require('assert');
-const slugid = require('slugid');
-const { UNIQUE_VIOLATION } = require('taskcluster-lib-postgres');
+const assert = require("assert");
+const slugid = require("slugid");
+const { UNIQUE_VIOLATION } = require("taskcluster-lib-postgres");
+const { getEntries } = require("../utils");
 
 class FakeAuth {
   constructor() {
@@ -101,7 +102,7 @@ class FakeAuth {
 
   async clients_entities_create(partition_key, row_key, value, overwrite, version) {
     if (!overwrite && this._getClient({ partitionKey: partition_key, rowKey: row_key })) {
-      const err = new Error('duplicate key value violates unique constraint');
+      const err = new Error("duplicate key value violates unique constraint");
       err.code = UNIQUE_VIOLATION;
       throw err;
     }
@@ -113,7 +114,7 @@ class FakeAuth {
       version,
     });
 
-    return [{ 'clients_entities_create': client.etag }];
+    return [{ "clients_entities_create": client.etag }];
   }
 
   async clients_entities_remove(partition_key, row_key) {
@@ -127,14 +128,14 @@ class FakeAuth {
     const client = this._getClient({ partitionKey: partition_key, rowKey: row_key });
 
     if (!client) {
-      const err = new Error('no such row');
-      err.code = 'P0002';
+      const err = new Error("no such row");
+      err.code = "P0002";
       throw err;
     }
 
     if (client.etag !== oldEtag) {
-      const err = new Error('unsuccessful update');
-      err.code = 'P0004';
+      const err = new Error("unsuccessful update");
+      err.code = "P0004";
       throw err;
     }
 
@@ -142,8 +143,11 @@ class FakeAuth {
     return [{ etag: c.etag }];
   }
 
-  // TODO
-  async clients_entities_scan(partition_key, row_key, condition, size, page) {}
+  async clients_entities_scan(partition_key, row_key, condition, size, page) {
+    const entries = getEntries({ partitionKey: partition_key, rowKey: row_key, condition }, this.clients);
+
+    return entries.slice((page - 1) * size, (page - 1) * size + size);
+  }
 
   async roles_entities_load(partitionKey, rowKey) {
     const role = this._getRole({ partitionKey, rowKey });
@@ -153,7 +157,7 @@ class FakeAuth {
 
   async roles_entities_create(partition_key, row_key, value, overwrite, version) {
     if (!overwrite && this._getRole({ partitionKey: partition_key, rowKey: row_key })) {
-      const err = new Error('duplicate key value violates unique constraint');
+      const err = new Error("duplicate key value violates unique constraint");
       err.code = UNIQUE_VIOLATION;
       throw err;
     }
@@ -165,7 +169,7 @@ class FakeAuth {
       version,
     });
 
-    return [{ 'roles_entities_create': role.etag }];
+    return [{ "roles_entities_create": role.etag }];
   }
 
   async roles_entities_remove(partition_key, row_key) {
@@ -179,14 +183,14 @@ class FakeAuth {
     const role = this._getRole({ partitionKey: partition_key, rowKey: row_key });
 
     if (!role) {
-      const err = new Error('no such row');
-      err.code = 'P0002';
+      const err = new Error("no such row");
+      err.code = "P0002";
       throw err;
     }
 
     if (role.etag !== oldEtag) {
-      const err = new Error('unsuccessful update');
-      err.code = 'P0004';
+      const err = new Error("unsuccessful update");
+      err.code = "P0004";
       throw err;
     }
 
@@ -194,8 +198,11 @@ class FakeAuth {
     return [{ etag: c.etag }];
   }
 
-  // TODO
-  async roles_entities_scan(partition_key, row_key, condition, size, page) {}
+  async roles_entities_scan(partition_key, row_key, condition, size, page) {
+    const entries = getEntries({ partitionKey: partition_key, rowKey: row_key, condition }, this.roles);
+
+    return entries.slice((page - 1) * size, (page - 1) * size + size);
+  }
 }
 
 module.exports = FakeAuth;
