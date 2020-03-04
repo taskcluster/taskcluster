@@ -20,9 +20,9 @@ const pulseCredentials = ({username, password, hostname, vhost}) => {
     return {
       connectionString: [
         'amqps://', // Ensure that we're using SSL
-        encodeURI(username),
+        encodeURIComponent(username),
         ':',
-        encodeURI(password),
+        encodeURIComponent(password),
         '@',
         hostname,
         ':',
