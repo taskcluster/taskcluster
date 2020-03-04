@@ -219,7 +219,7 @@ Commands:
             GW_TESTS_RUN_AS_CURRENT_USER=true GORACE=history_size=7 CGO_ENABLED=1 go test -tags "${ENGINE}" -timeout 45m -ldflags "-X github.com/taskcluster/taskcluster/v25/workers/generic-worker.revision=${GITHUB_SHA}" -v ${RACE} ${VET}
           fi
           GORACE=history_size=7 CGO_ENABLED=${CGO_ENABLED_TESTS} go test -tags "${ENGINE}" -timeout 45m -ldflags "-X github.com/taskcluster/taskcluster/v25/workers/generic-worker.revision=${GITHUB_SHA}" -v ${RACE} ${VET} ./...
-          ../../../golangci-lint/golangci-lint-1.23.6-*/golangci-lint run --build-tags "${ENGINE}"
+          ../../../golangci-lint/golangci-lint-1.23.6-*/golangci-lint run --build-tags "${ENGINE}" --timeout=15m
     Windows:
       - |
         :: go test: -race and -msan are only supported on linux/amd64, freebsd/amd64, darwin/amd64 and windows/amd64
@@ -288,9 +288,9 @@ Commands:
         :: i've also made it an if/else so that one of them has to run, as there should always be a
         :: linter
         if exist ..\..\..\golangci-lint\golangci-lint-1.23.6-windows-amd64 (
-          ..\..\..\golangci-lint\golangci-lint-1.23.6-windows-amd64\golangci-lint.exe run --build-tags "%ENGINE%"
+          ..\..\..\golangci-lint\golangci-lint-1.23.6-windows-amd64\golangci-lint.exe run --build-tags "%ENGINE%" --timeout=15m
         ) else (
-          ..\..\..\golangci-lint\golangci-lint-1.23.6-windows-386\golangci-lint.exe run --build-tags "%ENGINE%"
+          ..\..\..\golangci-lint\golangci-lint-1.23.6-windows-386\golangci-lint.exe run --build-tags "%ENGINE%" --timeout=15m
         )
 
 Mounts:
