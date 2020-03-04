@@ -147,11 +147,6 @@ class Queue(BaseClient):
         on the content of the `scopes`, `routes`, `schedulerId`, `priority`,
         `provisionerId`, and `workerType` properties of the task definition.
 
-        **Legacy Scopes**: The `queue:create-task:..` scope without a priority and
-        the `queue:define-task:..` and `queue:task-group-id:..` scopes are considered
-        legacy and should not be used. Note that the new, non-legacy scopes require
-        a `queue:scheduler-id:..` scope as well as scopes for the proper priority.
-
         This method is ``stable``
         """
 
