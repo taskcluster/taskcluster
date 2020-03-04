@@ -1893,7 +1893,7 @@ module.exports = {
               }
             ]
           },
-          "stability": "deprecated",
+          "stability": "stable",
           "title": "Rerun a Resolved Task",
           "type": "function"
         },
