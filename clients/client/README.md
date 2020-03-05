@@ -152,7 +152,7 @@ const queue = new taskcluster.Queue({
 
 // This request will only be successful, if the task posted is aimed at
 // "my-worker-type/my-provisioner".
-await queue.defineTask(taskId taskDefinition).then(function(result) {
+await queue.createTask(taskId taskDefinition).then(function(result) {
   // ...
 });
 ```

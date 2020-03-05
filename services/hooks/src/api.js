@@ -173,9 +173,8 @@ builder.declare({
   if (hook.schedule.length > 0) {
     reply.nextScheduledDate = hook.nextScheduledDate.toJSON();
     // Remark: nextTaskId cannot be exposed here, it's a secret.
-    // If someone could predict the taskId they could use it, breaking this
-    // service at best, at worst maybe exploit it to elevate from defineTask
-    // to createTask without scope to schedule a task.
+    // If someone could predict the taskId they could use it to create a task,
+    // breaking this service when it attemtps to create a task with the same id.
   }
   return res.reply(reply);
 });

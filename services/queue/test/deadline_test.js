@@ -40,8 +40,11 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws', 'azure'], function(mock, s
   test('Resolve unscheduled task deadline', testing.runWithFakeTime(async () => {
     const {taskId, task} = makeTask();
 
-    debug('### Define task');
-    const r1 = await helper.queue.defineTask(taskId, task);
+    // make task self-dependent so that it does not get scheduled
+    task.dependencies = [taskId];
+
+    debug('### Create task');
+    const r1 = await helper.queue.createTask(taskId, task);
     assume(r1.status.state).equals('unscheduled');
     assume(r1.status.runs.length).equals(0);
     helper.assertPulseMessage('task-defined');

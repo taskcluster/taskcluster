@@ -152,7 +152,7 @@ Parameters are substituted into scopes with `<paramName>`
 syntax.  For example, the following definition allows the method when *either*
 the caller's scopes satisfy `queue:create-task..` for the given `provisionerId`
 and `workerType`, *or* the caller's scopes satisfy all of
-`queue:define-task:..`, `queue:task-group-id:..`, and `queue:schedule-task:..`.
+`queue:create-task:..`, `queue:task-group-id:..`, and `queue:schedule-task:..`.
 
 ```js
   scopes:
@@ -161,7 +161,7 @@ and `workerType`, *or* the caller's scopes satisfy all of
         'queue:create-task:<provisionerId>/<workerType>',
       ]},
       {AllOf: [
-        'queue:define-task:<provisionerId>/<workerType>',
+        'queue:create-task:<provisionerId>/<workerType>',
         'queue:task-group-id:<schedulerId>/<taskGroupId>',
         'queue:schedule-task:<schedulerId>/<taskGroupId>/<taskId>',
       ]},

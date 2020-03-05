@@ -16,7 +16,6 @@ export default class Queue extends Client {
     this.listTaskGroup.entry = {"args":["taskGroupId"],"category":"Tasks","method":"get","name":"listTaskGroup","output":true,"query":["continuationToken","limit"],"route":"/task-group/<taskGroupId>/list","stability":"stable","type":"function"}; // eslint-disable-line
     this.listDependentTasks.entry = {"args":["taskId"],"category":"Tasks","method":"get","name":"listDependentTasks","output":true,"query":["continuationToken","limit"],"route":"/task/<taskId>/dependents","stability":"stable","type":"function"}; // eslint-disable-line
     this.createTask.entry = {"args":["taskId"],"category":"Tasks","input":true,"method":"put","name":"createTask","output":true,"query":[],"route":"/task/<taskId>","scopes":{"AllOf":[{"each":"<scope>","for":"scope","in":"scopes"},{"each":"queue:route:<route>","for":"route","in":"routes"},"queue:scheduler-id:<schedulerId>",{"AnyOf":[{"each":"queue:create-task:<priority>:<provisionerId>/<workerType>","for":"priority","in":"priorities"}]}]},"stability":"stable","type":"function"}; // eslint-disable-line
-    this.defineTask.entry = {"args":["taskId"],"category":"Tasks","input":true,"method":"post","name":"defineTask","output":true,"query":[],"route":"/task/<taskId>/define","scopes":{"AllOf":[{"each":"<scope>","for":"scope","in":"scopes"},{"each":"queue:route:<route>","for":"route","in":"routes"},"queue:scheduler-id:<schedulerId>",{"AnyOf":[{"each":"queue:create-task:<priority>:<provisionerId>/<workerType>","for":"priority","in":"priorities"}]}]},"stability":"deprecated","type":"function"}; // eslint-disable-line
     this.scheduleTask.entry = {"args":["taskId"],"category":"Tasks","method":"post","name":"scheduleTask","output":true,"query":[],"route":"/task/<taskId>/schedule","scopes":{"AnyOf":["queue:schedule-task:<schedulerId>/<taskGroupId>/<taskId>",{"AllOf":["queue:schedule-task","assume:scheduler-id:<schedulerId>/<taskGroupId>"]}]},"stability":"stable","type":"function"}; // eslint-disable-line
     this.rerunTask.entry = {"args":["taskId"],"category":"Tasks","method":"post","name":"rerunTask","output":true,"query":[],"route":"/task/<taskId>/rerun","scopes":{"AnyOf":["queue:rerun-task:<schedulerId>/<taskGroupId>/<taskId>",{"AllOf":["queue:rerun-task","assume:scheduler-id:<schedulerId>/<taskGroupId>"]}]},"stability":"stable","type":"function"}; // eslint-disable-line
     this.cancelTask.entry = {"args":["taskId"],"category":"Tasks","method":"post","name":"cancelTask","output":true,"query":[],"route":"/task/<taskId>/cancel","scopes":{"AnyOf":["queue:cancel-task:<schedulerId>/<taskGroupId>/<taskId>",{"AllOf":["queue:cancel-task","assume:scheduler-id:<schedulerId>/<taskGroupId>"]}]},"stability":"stable","type":"function"}; // eslint-disable-line
@@ -136,15 +135,6 @@ export default class Queue extends Client {
     this.validate(this.createTask.entry, args);
 
     return this.request(this.createTask.entry, args);
-  }
-  /* eslint-disable max-len */
-  // **Deprecated**, this is the same as `createTask` with a **self-dependency**.
-  // This is only present for legacy.
-  /* eslint-enable max-len */
-  defineTask(...args) {
-    this.validate(this.defineTask.entry, args);
-
-    return this.request(this.defineTask.entry, args);
   }
   /* eslint-disable max-len */
   // scheduleTask will schedule a task to be executed, even if it has

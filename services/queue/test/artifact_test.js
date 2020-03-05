@@ -728,9 +728,13 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws', 'azure'], function(mock, s
   });
 
   test('listArtifacts, listLatestArtifacts (missing run)', async () => {
-    debug('### Creating task');
+    debug('### Creating self-dependent task');
     let taskId = slugid.v4();
-    await helper.queue.defineTask(taskId, taskDef);
+    let task = {
+      ...taskDef,
+      dependencies: [taskId],
+    };
+    await helper.queue.createTask(taskId, task);
 
     debug('### listArtifacts (runId: 0, is missing)');
     await helper.queue.listArtifacts(taskId, 0).then(
