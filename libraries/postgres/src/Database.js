@@ -1,7 +1,12 @@
 const {Pool} = require('pg');
-const {dollarQuote} = require('./util');
+const {dollarQuote, annotateError} = require('./util');
 const assert = require('assert').strict;
-const {READ, WRITE, UNDEFINED_TABLE} = require('./constants');
+const {READ, WRITE, DUPLICATE_OBJECT, UNDEFINED_TABLE} = require('./constants');
+
+// Postgres extensions to "create".
+const EXTENSIONS = [
+  'pgcrypto',
+];
 
 class Database {
   /**
@@ -72,7 +77,10 @@ class Database {
    * If given, the upgrade process stops at toVersion; this is used for testing.
    */
   static async upgrade({schema, showProgress = () => {}, usernamePrefix, toVersion, adminDbUrl}) {
+    assert(Database._validUsernamePrefix(usernamePrefix));
     const db = new Database({urlsByMode: {admin: adminDbUrl, read: adminDbUrl}});
+
+    await db._createExtensions();
 
     try {
       // perform any necessary upgrades..
@@ -108,6 +116,51 @@ class Database {
         showProgress('...checking permissions');
         await Database._checkPermissions({db, schema, usernamePrefix});
       }
+    } finally {
+      await db.close();
+    }
+  }
+
+  /**
+   * Downgrade this database to the given version and define functions for all
+   * of the methods in that version.  Note that this does not remove unknown
+   * functions.
+   *
+   * The `showProgress` parameter is like that for upgrade().
+   */
+  static async downgrade({schema, showProgress = () => {}, usernamePrefix, toVersion, adminDbUrl}) {
+    assert(Database._validUsernamePrefix(usernamePrefix));
+    const db = new Database({urlsByMode: {admin: adminDbUrl, read: adminDbUrl}});
+
+    await db._createExtensions();
+
+    if (typeof toVersion !== 'number') {
+      throw new Error('Target DB version must be an integer');
+    }
+
+    try {
+      // perform any necessary upgrades..
+      const latestVersion = schema.latestVersion().version;
+      const dbVersion = await db.currentVersion();
+      if (dbVersion > latestVersion) {
+        throw new Error(`This Taskcluster release version is too old to downgrade from DB version ${dbVersion}`);
+      }
+
+      if (dbVersion > toVersion) {
+        // run each of the upgrade scripts
+        for (let v = dbVersion; v > toVersion; v--) {
+          showProgress(`downgrading database to version ${v}`);
+          const fromVersion = schema.getVersion(v);
+          const toVersion = v === 1 ? {version: 0, methods: []} : schema.getVersion(v - 1);
+          await db._doDowngrade({fromVersion, toVersion, showProgress, usernamePrefix});
+          showProgress(`downgrade to version ${v - 1} successful`);
+        }
+      } else {
+        showProgress(`No database downgrades required; now at DB version ${dbVersion}`);
+      }
+
+      // after a downgrade, `access.yml` for this version of the TC services no longer
+      // matches the deployed access, so we do not check it.
     } finally {
       await db.close();
     }
@@ -174,34 +227,89 @@ class Database {
     });
   }
 
+  async _createExtensions() {
+    await this._withClient('admin', async client => {
+      for (let ext of EXTENSIONS) {
+        try {
+          await client.query('create extension ' + ext);
+        } catch (err) {
+          // ignore errors from the extension already being installed
+          if (err.code !== DUPLICATE_OBJECT) {
+            throw err;
+          }
+        }
+      }
+    });
+  }
+
   async _doUpgrade({version, showProgress, usernamePrefix}) {
     await this._withClient('admin', async client => {
       await client.query('begin');
-      if (version.version === 1) {
-        await client.query('create table tcversion as select 0 as version');
-      }
 
-      // check the version and lock it to prevent other things from changing it
-      const res = await client.query('select version from tcversion for update');
-      if (res.rowCount !== 1 || res.rows[0].version !== version.version - 1) {
-        throw Error('Multiple DB upgrades running simultaneously');
+      try {
+        if (version.version === 1) {
+          await client.query('create table if not exists tcversion as select 0 as version');
+        }
+
+        // check the version and lock it to prevent other things from changing it
+        const res = await client.query('select version from tcversion for update');
+        if (res.rowCount !== 1 || res.rows[0].version !== version.version - 1) {
+          throw Error('Multiple DB upgrades running simultaneously');
+        }
+        showProgress('..running migration script');
+        const migrationScript = version.migrationScript
+          .replace(/\$db_user_prefix\$/g, usernamePrefix);
+        await client.query(`DO ${dollarQuote(migrationScript)}`);
+        showProgress('..defining methods');
+        for (let [methodName, { args, body, returns}] of Object.entries(version.methods)) {
+          await client.query(`create or replace function
+          "${methodName}"(${args})
+          returns ${returns}
+          as ${dollarQuote(body)}
+          language plpgsql`);
+        }
+        showProgress('..updating version');
+        await client.query('update tcversion set version = $1', [version.version]);
+        showProgress('..committing transaction');
+        await client.query('commit');
+      } catch (err) {
+        await client.query('commit');
+        throw err;
       }
-      showProgress('..running migration script');
-      const migrationScript = version.migrationScript
-        .replace('$db_user_prefix$', usernamePrefix);
-      await client.query(`DO ${dollarQuote(migrationScript)}`);
-      showProgress('..defining methods');
-      for (let [methodName, { args, body, returns}] of Object.entries(version.methods)) {
-        await client.query(`create or replace function
-        "${methodName}"(${args})
-        returns ${returns}
-        as ${dollarQuote(body)}
-        language plpgsql`);
+    });
+  }
+
+  async _doDowngrade({fromVersion, toVersion, showProgress, usernamePrefix}) {
+    assert.equal(fromVersion.version, toVersion.version + 1);
+    await this._withClient('admin', async client => {
+      await client.query('begin');
+
+      try {
+        // check the version and lock it to prevent other things from changing it
+        const res = await client.query('select version from tcversion for update');
+        if (res.rowCount !== 1 || res.rows[0].version !== fromVersion.version) {
+          throw Error('Multiple DB modifications running simultaneously');
+        }
+        showProgress('..running downgrade script');
+        const downgradeScript = fromVersion.downgradeScript
+          .replace(/\$db_user_prefix\$/g, usernamePrefix);
+        await client.query(`DO ${dollarQuote(downgradeScript)}`);
+        showProgress('..defining methods');
+        for (let [methodName, { args, body, returns}] of Object.entries(toVersion.methods)) {
+          await client.query(`create or replace function
+          "${methodName}"(${args})
+          returns ${returns}
+          as ${dollarQuote(body)}
+          language plpgsql`);
+        }
+        showProgress('..updating version');
+        await client.query('update tcversion set version = $1', [toVersion.version]);
+        showProgress('..committing transaction');
+        await client.query('commit');
+      } catch (err) {
+        await client.query('commit');
+        throw err;
       }
-      showProgress('..updating version');
-      await client.query('update tcversion set version = $1', [version.version]);
-      showProgress('..committing transaction');
-      await client.query('commit');
     });
   }
 
@@ -209,6 +317,7 @@ class Database {
    * Private constructor (use Database.setup and Database.upgrade instead)
    */
   constructor({urlsByMode, statementTimeout}) {
+    assert(!statementTimeout || typeof statementTimeout === 'number');
     const makePool = dbUrl => {
       const pool = new Pool({connectionString: dbUrl});
       // ignore errors from *idle* connections.  From the docs:
@@ -227,6 +336,8 @@ class Database {
       pool.on('error', client => {});
       pool.on('connect', async client => {
         if (statementTimeout) {
+          // note that postgres placeholders don't seem to work here.  So we check
+          // that this is a number (above) and subtitute it directly
           await client.query(`set statement_timeout = ${statementTimeout}`);
         }
 
@@ -255,6 +366,9 @@ class Database {
    *
    * This is for use in tests and within this library only.  All "real" access
    * to the DB should be performed via stored functions.
+   *
+   * This annotates syntax errors from `query` with the position at which the
+   * error occurred.
    */
   async _withClient(mode, cb) {
     const pool = this.pools[mode];
@@ -262,19 +376,18 @@ class Database {
       throw new Error(`No DB pool for mode ${mode}`);
     }
     const client = await pool.connect();
-    try {
-      try {
-        return await cb(client);
-      } catch (err) {
-        // show hints or details from this error in the debug log, to help
-        // debugging issues..
-        for (let p of ['hint', 'detail', 'where', 'code']) {
-          if (err[p]) {
-            err.message += `\n${p.toUpperCase()}: ${err[p]}`;
-          }
+    const wrapped = {
+      query: async function(query) {
+        try {
+          return await client.query.apply(client, arguments);
+        } catch (err) {
+          annotateError(query, err);
+          throw err;
         }
-        throw err;
-      }
+      },
+    };
+    try {
+      return await cb(wrapped);
     } finally {
       client.release();
     }
@@ -306,6 +419,10 @@ class Database {
    */
   async close() {
     await Promise.all(Object.values(this.pools).map(pool => pool.end()));
+  }
+
+  static _validUsernamePrefix(usernamePrefix) {
+    return usernamePrefix.match(/^[a-z_]+$/);
   }
 }
 

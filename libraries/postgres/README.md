@@ -87,6 +87,18 @@ For example, if an upgrade factors a single table into two tables, then a functi
 A consequence of this design is that "functions are forever" -- an upgrade can never delete a stored function.
 At worst, when a feature is removed, a stored function can be rewritten to return an empty result or perform no action.
 
+#### Downgrades
+
+It is sometimes necessary to roll back a deployment of Taskcluster services, due to an unexpected issue.
+In most cases, the database compatibility model means that this can be done without changing the database itself: by design, old code can run against the new database.
+However, if the issue is with the database itself, then the version upgrade must be rolled back.
+
+This library supports *downgrades* for this purpose, reversing the effects of an upgrade.
+A downgrade entails running the downgrade script for the buggy DB version, *after* downgrading the Taskcluster services to an older version.
+
+Downgrades should not be done lightly, as they can lose data.
+For example, downgrading a version that adds a table entails dropping that table and all data it contains.
+
 ## DB Directory Format
 
 The directory passed to `Schema.fromDbDirectory` should have the following format:
@@ -117,6 +129,15 @@ migrationScript: |-
     create ...;
     alter ...;
     grant ...;
+  end
+
+# Similar to migrationScript, but reversing its effects.  It's OK for this to lose data.
+# This can similarly specify a filename.
+downgradeScript: |-
+  begin
+    revoke ...;
+    alter ...;
+    create ...;
   end
 
 # Methods for database access.  Each entry either defines a new stored function, or
@@ -165,6 +186,34 @@ Each service which accesses the database is listed in this file, with the tables
 Read access is translated to SELECT, while write access is translated to SELECT, INSERT, UPDATE, DELETE.
 
 This file provides a simple, verified confirmation of which services have what access, providing a useful aid in reviewing changes as well as verification that no malicious or accidental access changes have been made in a production deployment.
+
+## Security Invariants
+
+Use of Postgres brings with it the risk of SQL injection vulnerabilities and other security flaws.
+The invariants here *must* be adhered to avoid such flaws.
+
+### All DB Access from Services Via Stored Functions
+
+No service should *ever* execute a SQL query directly against the database.
+All access should be performed via stored functions defined in a DB version file.
+The code to invoke such stored functions is carefully vetted to avoid SQL injection, and all access should be channeled through that code.
+
+This invariant also supports the compatibility guarantees described above.
+It is enforced with a meta test, and PRs will fail if it is violated.
+
+### No Admin Credentials in Services
+
+The `adminUrl` configuration value should *never* be available to services.
+It is only used in administrative contexts (hence the name).
+As such, DB access made using administrative control can be less careful about SQL injection, since the inputs come from administrators and not API queries.
+
+### Avoid Query Construction in Stored Functions
+
+Calls from JS to Postgres aren't the only place where SQL injection might occur.
+A stored function which uses string concatenation and `return query execute <something>` to generate a query can also be vulnerable.
+Prefer to design around the need to do such query generation by creating multiple stored functions or limiting the types of arguments to non-textual types.
+
+**NOTE** The taskcluster-lib-entities support is a notable exception to this rule, and is carefully vetted to avoid SQL injection through coordination of JS and SQL code.
 
 ## Error Constants
 
