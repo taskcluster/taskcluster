@@ -391,6 +391,16 @@ helper.dbSuite(path.basename(__filename), function() {
       assert(!db.fns.old);
     });
 
+    test('non-numeric statementTimeout is not alloewd', async function() {
+      await assert.rejects(() => Database.setup({
+        schema,
+        readDbUrl: helper.dbUrl,
+        writeDbUrl: helper.dbUrl,
+        serviceName: 'service-1',
+        statementTimeout: 'about 3 seconds',
+      }), err => err.code === 'ERR_ASSERTION');
+    });
+
     test('slow methods are aborted if statementTimeout is set', async function() {
       await Database.upgrade({schema, adminDbUrl: helper.dbUrl, usernamePrefix: 'test'});
       db = await Database.setup({
@@ -447,5 +457,15 @@ helper.dbSuite(path.basename(__filename), function() {
       await db.fns.testdata();
       await db.close();
     });
+  });
+
+  test('_validUsernamePrefix', function() {
+    assert(Database._validUsernamePrefix('a_b_c'));
+    assert(!Database._validUsernamePrefix(''));
+    assert(!Database._validUsernamePrefix('abc_123'));
+    assert(!Database._validUsernamePrefix('123'));
+    // this would be a particularly bizarre thing to put in the deployment configuration,
+    // but hey, it won't work!
+    assert(!Database._validUsernamePrefix(`'; drop table clients`));
   });
 });
