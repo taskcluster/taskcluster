@@ -505,6 +505,16 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
     test('sweet success', async function() {
       const worker = await helper.Worker.create({
         ...defaultWorker,
+        providerData: {
+          ...baseProviderData,
+          vm: {
+            name: 'some-vm',
+            vmId: vmId,
+          },
+          workerConfig: {
+            "someKey": "someValue",
+          },
+        },
       });
       const document = fs.readFileSync(path.resolve(__dirname, 'fixtures/azure_signature_good')).toString();
       const workerIdentityProof = {document};
@@ -512,11 +522,22 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
       // allow +- 10 seconds since time passes while the test executes
       assert(res.expires - new Date() + 10000 > 96 * 3600 * 1000, res.expires);
       assert(res.expires - new Date() - 10000 < 96 * 3600 * 1000, res.expires);
+      assert.equal(res.workerConfig.someKey, 'someValue');
     });
 
     test('sweet success (different reregister)', async function() {
       const worker = await helper.Worker.create({
         ...defaultWorker,
+        providerData: {
+          ...baseProviderData,
+          vm: {
+            name: 'some-vm',
+            vmId: vmId,
+          },
+          workerConfig: {
+            "someKey": "someValue",
+          },
+        },
       });
       await worker.modify(w => {
         w.providerData.reregistrationTimeout = 10 * 3600 * 1000;
@@ -527,6 +548,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
       // allow +- 10 seconds since time passes while the test executes
       assert(res.expires - new Date() + 10000 > 10 * 3600 * 1000, res.expires);
       assert(res.expires - new Date() - 10000 < 10 * 3600 * 1000, res.expires);
+      assert.equal(res.workerConfig.someKey, 'someValue');
     });
   });
 });

@@ -11,10 +11,10 @@ import (
 )
 
 // Register this worker with the worker-manager, and update the state with the parameters and the results.
-func RegisterWorker(state *run.State, wm tc.WorkerManager, workerPoolID, providerID, workerGroup, workerID string, workerIdentityProofMap map[string]interface{}) error {
+func RegisterWorker(state *run.State, wm tc.WorkerManager, workerPoolID, providerID, workerGroup, workerID string, workerIdentityProofMap map[string]interface{}) (*json.RawMessage, error) {
 	workerIdentityProof, err := json.Marshal(workerIdentityProofMap)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	reg, err := wm.RegisterWorker(&tcworkermanager.RegisterWorkerRequest{
@@ -25,7 +25,7 @@ func RegisterWorker(state *run.State, wm tc.WorkerManager, workerPoolID, provide
 		WorkerIdentityProof: json.RawMessage(workerIdentityProof),
 	})
 	if err != nil {
-		return fmt.Errorf("Could not register worker: %v", err)
+		return nil, fmt.Errorf("Could not register worker: %v", err)
 	}
 
 	state.WorkerPoolID = workerPoolID
@@ -38,5 +38,10 @@ func RegisterWorker(state *run.State, wm tc.WorkerManager, workerPoolID, provide
 
 	state.CredentialsExpire = time.Time(reg.Expires)
 
-	return nil
+	wc := json.RawMessage(`{}`)
+	if reg.WorkerConfig != nil {
+		wc = reg.WorkerConfig
+	}
+
+	return &wc, nil
 }

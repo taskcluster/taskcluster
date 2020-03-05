@@ -49,7 +49,7 @@ func (p *GoogleProvider) ConfigureRun(state *run.State) error {
 
 	workerIdentityProofMap := map[string]interface{}{"token": interface{}(proofToken)}
 
-	err = provider.RegisterWorker(state, wm, userData.WorkerPoolID, userData.ProviderID, userData.WorkerGroup, workerID, workerIdentityProofMap)
+	_, err = provider.RegisterWorker(state, wm, userData.WorkerPoolID, userData.ProviderID, userData.WorkerGroup, workerID, workerIdentityProofMap)
 	if err != nil {
 		return err
 	}

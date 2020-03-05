@@ -68,7 +68,7 @@ func (p *AzureProvider) ConfigureRun(state *run.State) error {
 		"document": interface{}(document),
 	}
 
-	err = provider.RegisterWorker(
+	workerConfig, err := provider.RegisterWorker(
 		state,
 		wm,
 		customData.WorkerPoolId,
@@ -97,7 +97,7 @@ func (p *AzureProvider) ConfigureRun(state *run.State) error {
 
 	state.ProviderMetadata = providerMetadata
 
-	pwc, err := cfg.ParseProviderWorkerConfig(p.runnercfg, customData.ProviderWorkerConfig)
+	pwc, err := cfg.ParseProviderWorkerConfig(p.runnercfg, workerConfig)
 	if err != nil {
 		return err
 	}

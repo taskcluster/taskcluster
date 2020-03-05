@@ -158,7 +158,8 @@ class GoogleProvider extends Provider {
     });
 
     // assume for the moment that workers self-terminate before 96 hours
-    return {expires};
+    const workerConfig = worker.providerData.workerConfig || {};
+    return {expires, workerConfig};
   }
 
   async deprovision({workerPool}) {
@@ -324,6 +325,7 @@ class GoogleProvider extends Provider {
           },
           terminateAfter,
           reregistrationTimeout, // Record this for later reregistrations so that we can recalculate deadline
+          workerConfig: cfg.workerConfig || {},
         },
       });
     }));

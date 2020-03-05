@@ -58,7 +58,7 @@ func (p *AWSProvider) ConfigureRun(state *run.State) error {
 		"signature": interface{}(instanceIdentityDocumentSignature),
 	}
 
-	err = provider.RegisterWorker(
+	_, err = provider.RegisterWorker(
 		state,
 		wm,
 		userData.WorkerPoolId,

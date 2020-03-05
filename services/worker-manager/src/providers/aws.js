@@ -225,6 +225,7 @@ class AwsProvider extends Provider {
             stateReason: i.StateReason.Message,
             terminateAfter,
             reregistrationTimeout,
+            workerConfig: config.workerConfig || {},
           },
         });
       }));
@@ -275,7 +276,8 @@ class AwsProvider extends Provider {
       w.providerData.terminateAfter = expires.getTime();
     });
 
-    return {expires};
+    const workerConfig = worker.providerData.workerConfig || {};
+    return {expires, workerConfig};
   }
 
   async checkWorker({worker}) {

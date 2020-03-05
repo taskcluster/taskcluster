@@ -130,6 +130,15 @@ type (
 		// re-register (for static workers) or terminate (for dynamically
 		// provisioned workers) before this time.
 		Expires tcclient.Time `json:"expires"`
+
+		// This value is supplied unchanged as the `workerConfig` property of the `taskcluster` instance metadata attribute.
+		// The expectation is that the worker will merge this information with configuration from other sources,
+		// and this is precisely what [taskcluster-worker-runner](https://github.com/taskcluster/taskcluster-worker-runner) does.
+		// This property must not be used for secret configuration, as it is visible both in the worker pool configuration and in the worker instance's metadata.
+		// Instead, put secret configuration in the [secrets service](https://github.com/taskcluster/taskcluster-worker-runner#secrets).
+		//
+		// Additional properties allowed
+		WorkerConfig json.RawMessage `json:"workerConfig"`
 	}
 
 	// Provider-specific information

@@ -1,6 +1,7 @@
 package tc
 
 import (
+	"encoding/json"
 	"fmt"
 	"time"
 
@@ -21,6 +22,17 @@ func (wm *FakeWorkerManager) RegisterWorker(payload *tcworkermanager.RegisterWor
 		return nil, fmt.Errorf("must use an unauthenticated client to register")
 	}
 
+	wc := json.RawMessage(`{
+        "whateverWorker": {
+		    "config": {
+				"from-register-worker": true
+			},
+			"files": [
+			    {"description": "a file."}
+			]
+		}
+	}`)
+
 	wmRegistrations = append(wmRegistrations, payload)
 
 	return &tcworkermanager.RegisterWorkerResponse{
@@ -29,7 +41,8 @@ func (wm *FakeWorkerManager) RegisterWorker(payload *tcworkermanager.RegisterWor
 			AccessToken: "at",
 			Certificate: "cert",
 		},
-		Expires: tcclient.Time(time.Now()),
+		Expires:      tcclient.Time(time.Now()),
+		WorkerConfig: wc,
 	}, nil
 }
 

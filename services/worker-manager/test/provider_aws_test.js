@@ -402,6 +402,9 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
           availabilityZone: 'us-west-2a',
           privateIp: '172.31.23.159',
           owner: actualWorkerIid.accountId,
+          workerConfig: {
+            "someConfig": "someConfigValue",
+          },
         },
       });
 
@@ -413,6 +416,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
       const resp = await provider.registerWorker({worker: runningWorker, workerPool, workerIdentityProof});
       assert(resp.expires - new Date() + 10000 > 96 * 3600 * 1000);
       assert(resp.expires - new Date() - 10000 < 96 * 3600 * 1000);
+      assert.equal(resp.workerConfig.someConfig, 'someConfigValue');
 
       sinon.restore();
     });
@@ -430,6 +434,9 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
           availabilityZone: 'us-west-2a',
           privateIp: '172.31.23.159',
           owner: actualWorkerIid.accountId,
+          workerConfig: {
+            'someKey': 'someValue',
+          },
         },
       });
 
@@ -441,7 +448,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
       const resp = await provider.registerWorker({worker: runningWorker, workerPool, workerIdentityProof});
       assert(resp.expires - new Date() + 10000 > 10 * 3600 * 1000);
       assert(resp.expires - new Date() - 10000 < 10 * 3600 * 1000);
-
+      assert.equal(resp.workerConfig.someKey, 'someValue');
       sinon.restore();
     });
   });

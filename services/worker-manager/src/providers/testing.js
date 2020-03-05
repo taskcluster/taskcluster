@@ -56,7 +56,8 @@ class TestingProvider extends Provider {
     if (worker.providerData.noExpiry) {
       return {};
     }
-    return {expires: taskcluster.fromNow('1 hour')};
+    const workerConfig = worker.providerData.workerConfig || {};
+    return {expires: taskcluster.fromNow('1 hour'), workerConfig};
   }
 
   async createWorker({workerPool, workerGroup, workerId, input}) {
