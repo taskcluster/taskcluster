@@ -16,6 +16,7 @@ import (
 	"reflect"
 	"time"
 
+	"github.com/cenkalti/backoff/v3"
 	"github.com/taskcluster/httpbackoff/v3"
 	tcurls "github.com/taskcluster/taskcluster-lib-urls"
 	hawk "github.com/tent/hawk-go"
@@ -27,6 +28,10 @@ func init() {
 	if _, ok := os.LookupEnv("TASKCLUSTER_DEBUG"); ok {
 		debug = true
 	}
+}
+
+var defaultBackoff httpbackoff.Client = httpbackoff.Client{
+	BackOffSettings: backoff.NewExponentialBackOff(),
 }
 
 // CallSummary provides information about the underlying http request and
@@ -164,7 +169,7 @@ func (client *Client) Request(rawPayload []byte, method, route string, query url
 
 	// Make HTTP API calls using an exponential backoff algorithm...
 	var err error
-	callSummary.HTTPResponse, callSummary.Attempts, err = httpbackoff.Retry(httpCall)
+	callSummary.HTTPResponse, callSummary.Attempts, err = defaultBackoff.Retry(httpCall)
 
 	// read response into memory, so that we can return the body
 	if callSummary.HTTPResponse != nil {
