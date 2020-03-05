@@ -212,7 +212,7 @@ downgradeScript: |-
   end
 methods:
   clients_entities_load:
-    description: test
+    description: See taskcluster-lib-entities
     mode: read
     serviceName: auth
     args: partition_key text, row_key text
@@ -226,7 +226,7 @@ methods:
       end
   clients_entities_create:
     serviceName: auth
-    description: test
+    description: See taskcluster-lib-entities
     mode: write
     args: pk text, rk text, properties jsonb, overwrite boolean, version integer
     returns: uuid
@@ -260,7 +260,7 @@ methods:
       end
   clients_entities_remove:
     serviceName: auth
-    description: test
+    description: See taskcluster-lib-entities
     mode: write
     args: partition_key text, row_key text
     returns: table (etag uuid)
@@ -272,11 +272,7 @@ methods:
       end
   clients_entities_modify:
     serviceName: auth
-    description: |
-      Modify an entity. If the modify operation is succesful, the etag is returned in a set.
-      Else, an error will be raised with the following error code:
-      * 'P0004' - update was unsuccessful (e.g., the etag value did not match)
-      * 'P0002' - entry not found in the table (i.e., no such row)
+    description: See taskcluster-lib-entities
     mode: write
     args: partition_key text, row_key text, properties jsonb, version integer, old_etag uuid
     returns: table (etag uuid)
@@ -303,7 +299,7 @@ methods:
         end if;
       end
   clients_entities_scan:
-    description: test
+    description: See taskcluster-lib-entities
     mode: read
     serviceName: auth
     args: pk text, rk text, condition text, size integer, page integer
@@ -342,7 +338,7 @@ methods:
         return query execute sql;
       end
   roles_entities_load:
-    description: test
+    description: See taskcluster-lib-entities
     mode: read
     serviceName: auth
     args: partition_key text, row_key text
@@ -356,7 +352,7 @@ methods:
       end
   roles_entities_create:
     serviceName: auth
-    description: test
+    description: See taskcluster-lib-entities
     mode: write
     args: pk text, rk text, properties jsonb, overwrite boolean, version integer
     returns: uuid
@@ -390,7 +386,7 @@ methods:
       end
   roles_entities_remove:
     serviceName: auth
-    description: test
+    description: See taskcluster-lib-entities
     mode: write
     args: partition_key text, row_key text
     returns: table (etag uuid)
@@ -402,11 +398,7 @@ methods:
       end
   roles_entities_modify:
     serviceName: auth
-    description: |
-      Modify an entity. If the modify operation is succesful, the etag is returned in a set.
-      Else, an error will be raised with the following error code:
-      * 'P0004' - update was unsuccessful (e.g., the etag value did not match)
-      * 'P0002' - entry not found in the table (i.e., no such row)
+    description: See taskcluster-lib-entities
     mode: write
     args: partition_key text, row_key text, properties jsonb, version integer, old_etag uuid
     returns: table (etag uuid)
@@ -433,7 +425,7 @@ methods:
         end if;
       end
   roles_entities_scan:
-    description: test
+    description: See taskcluster-lib-entities
     mode: read
     serviceName: auth
     args: pk text, rk text, condition text, size integer, page integer
@@ -472,7 +464,7 @@ methods:
         return query execute sql;
       end
   taskcluster_github_builds_entities_load:
-    description: test
+    description: See taskcluster-lib-entities
     mode: read
     serviceName: github
     args: partition_key text, row_key text
@@ -486,7 +478,7 @@ methods:
       end
   taskcluster_github_builds_entities_create:
     serviceName: github
-    description: test
+    description: See taskcluster-lib-entities
     mode: write
     args: pk text, rk text, properties jsonb, overwrite boolean, version integer
     returns: uuid
@@ -520,7 +512,7 @@ methods:
       end
   taskcluster_github_builds_entities_remove:
     serviceName: github
-    description: test
+    description: See taskcluster-lib-entities
     mode: write
     args: partition_key text, row_key text
     returns: table (etag uuid)
@@ -532,11 +524,7 @@ methods:
       end
   taskcluster_github_builds_entities_modify:
     serviceName: github
-    description: |
-      Modify an entity. If the modify operation is succesful, the etag is returned in a set.
-      Else, an error will be raised with the following error code:
-      * 'P0004' - update was unsuccessful (e.g., the etag value did not match)
-      * 'P0002' - entry not found in the table (i.e., no such row)
+    description: See taskcluster-lib-entities
     mode: write
     args: partition_key text, row_key text, properties jsonb, version integer, old_etag uuid
     returns: table (etag uuid)
@@ -563,7 +551,7 @@ methods:
         end if;
       end
   taskcluster_github_builds_entities_scan:
-    description: test
+    description: See taskcluster-lib-entities
     mode: read
     serviceName: github
     args: pk text, rk text, condition text, size integer, page integer
@@ -602,7 +590,7 @@ methods:
         return query execute sql;
       end
   taskcluster_intergration_owners_entities_load:
-    description: test
+    description: See taskcluster-lib-entities
     mode: read
     serviceName: github
     args: partition_key text, row_key text
@@ -616,7 +604,7 @@ methods:
       end
   taskcluster_intergration_owners_entities_create:
     serviceName: github
-    description: test
+    description: See taskcluster-lib-entities
     mode: write
     args: pk text, rk text, properties jsonb, overwrite boolean, version integer
     returns: uuid
@@ -650,7 +638,7 @@ methods:
       end
   taskcluster_intergration_owners_entities_remove:
     serviceName: github
-    description: test
+    description: See taskcluster-lib-entities
     mode: write
     args: partition_key text, row_key text
     returns: table (etag uuid)
@@ -662,11 +650,7 @@ methods:
       end
   taskcluster_intergration_owners_entities_modify:
     serviceName: github
-    description: |
-      Modify an entity. If the modify operation is succesful, the etag is returned in a set.
-      Else, an error will be raised with the following error code:
-      * 'P0004' - update was unsuccessful (e.g., the etag value did not match)
-      * 'P0002' - entry not found in the table (i.e., no such row)
+    description: See taskcluster-lib-entities
     mode: write
     args: partition_key text, row_key text, properties jsonb, version integer, old_etag uuid
     returns: table (etag uuid)
@@ -693,7 +677,7 @@ methods:
         end if;
       end
   taskcluster_intergration_owners_entities_scan:
-    description: test
+    description: See taskcluster-lib-entities
     mode: read
     serviceName: github
     args: pk text, rk text, condition text, size integer, page integer
@@ -732,7 +716,7 @@ methods:
         return query execute sql;
       end
   taskcluster_checks_to_tasks_entities_load:
-    description: test
+    description: See taskcluster-lib-entities
     mode: read
     serviceName: github
     args: partition_key text, row_key text
@@ -746,7 +730,7 @@ methods:
       end
   taskcluster_checks_to_tasks_entities_create:
     serviceName: github
-    description: test
+    description: See taskcluster-lib-entities
     mode: write
     args: pk text, rk text, properties jsonb, overwrite boolean, version integer
     returns: uuid
@@ -780,7 +764,7 @@ methods:
       end
   taskcluster_checks_to_tasks_entities_remove:
     serviceName: github
-    description: test
+    description: See taskcluster-lib-entities
     mode: write
     args: partition_key text, row_key text
     returns: table (etag uuid)
@@ -792,11 +776,7 @@ methods:
       end
   taskcluster_checks_to_tasks_entities_modify:
     serviceName: github
-    description: |
-      Modify an entity. If the modify operation is succesful, the etag is returned in a set.
-      Else, an error will be raised with the following error code:
-      * 'P0004' - update was unsuccessful (e.g., the etag value did not match)
-      * 'P0002' - entry not found in the table (i.e., no such row)
+    description: See taskcluster-lib-entities
     mode: write
     args: partition_key text, row_key text, properties jsonb, version integer, old_etag uuid
     returns: table (etag uuid)
@@ -823,7 +803,7 @@ methods:
         end if;
       end
   taskcluster_checks_to_tasks_entities_scan:
-    description: test
+    description: See taskcluster-lib-entities
     mode: read
     serviceName: github
     args: pk text, rk text, condition text, size integer, page integer
@@ -862,7 +842,7 @@ methods:
         return query execute sql;
       end
   taskcluster_check_runs_entities_load:
-    description: test
+    description: See taskcluster-lib-entities
     mode: read
     serviceName: github
     args: partition_key text, row_key text
@@ -876,7 +856,7 @@ methods:
       end
   taskcluster_check_runs_entities_create:
     serviceName: github
-    description: test
+    description: See taskcluster-lib-entities
     mode: write
     args: pk text, rk text, properties jsonb, overwrite boolean, version integer
     returns: uuid
@@ -910,7 +890,7 @@ methods:
       end
   taskcluster_check_runs_entities_remove:
     serviceName: github
-    description: test
+    description: See taskcluster-lib-entities
     mode: write
     args: partition_key text, row_key text
     returns: table (etag uuid)
@@ -922,11 +902,7 @@ methods:
       end
   taskcluster_check_runs_entities_modify:
     serviceName: github
-    description: |
-      Modify an entity. If the modify operation is succesful, the etag is returned in a set.
-      Else, an error will be raised with the following error code:
-      * 'P0004' - update was unsuccessful (e.g., the etag value did not match)
-      * 'P0002' - entry not found in the table (i.e., no such row)
+    description: See taskcluster-lib-entities
     mode: write
     args: partition_key text, row_key text, properties jsonb, version integer, old_etag uuid
     returns: table (etag uuid)
@@ -953,7 +929,7 @@ methods:
         end if;
       end
   taskcluster_check_runs_entities_scan:
-    description: test
+    description: See taskcluster-lib-entities
     mode: read
     serviceName: github
     args: pk text, rk text, condition text, size integer, page integer
@@ -992,7 +968,7 @@ methods:
         return query execute sql;
       end
   hooks_entities_load:
-    description: test
+    description: See taskcluster-lib-entities
     mode: read
     serviceName: hooks
     args: partition_key text, row_key text
@@ -1006,7 +982,7 @@ methods:
       end
   hooks_entities_create:
     serviceName: hooks
-    description: test
+    description: See taskcluster-lib-entities
     mode: write
     args: pk text, rk text, properties jsonb, overwrite boolean, version integer
     returns: uuid
@@ -1040,7 +1016,7 @@ methods:
       end
   hooks_entities_remove:
     serviceName: hooks
-    description: test
+    description: See taskcluster-lib-entities
     mode: write
     args: partition_key text, row_key text
     returns: table (etag uuid)
@@ -1052,11 +1028,7 @@ methods:
       end
   hooks_entities_modify:
     serviceName: hooks
-    description: |
-      Modify an entity. If the modify operation is succesful, the etag is returned in a set.
-      Else, an error will be raised with the following error code:
-      * 'P0004' - update was unsuccessful (e.g., the etag value did not match)
-      * 'P0002' - entry not found in the table (i.e., no such row)
+    description: See taskcluster-lib-entities
     mode: write
     args: partition_key text, row_key text, properties jsonb, version integer, old_etag uuid
     returns: table (etag uuid)
@@ -1083,7 +1055,7 @@ methods:
         end if;
       end
   hooks_entities_scan:
-    description: test
+    description: See taskcluster-lib-entities
     mode: read
     serviceName: hooks
     args: pk text, rk text, condition text, size integer, page integer
@@ -1122,7 +1094,7 @@ methods:
         return query execute sql;
       end
   queues_entities_load:
-    description: test
+    description: See taskcluster-lib-entities
     mode: read
     serviceName: hooks
     args: partition_key text, row_key text
@@ -1136,7 +1108,7 @@ methods:
       end
   queues_entities_create:
     serviceName: hooks
-    description: test
+    description: See taskcluster-lib-entities
     mode: write
     args: pk text, rk text, properties jsonb, overwrite boolean, version integer
     returns: uuid
@@ -1170,7 +1142,7 @@ methods:
       end
   queues_entities_remove:
     serviceName: hooks
-    description: test
+    description: See taskcluster-lib-entities
     mode: write
     args: partition_key text, row_key text
     returns: table (etag uuid)
@@ -1182,11 +1154,7 @@ methods:
       end
   queues_entities_modify:
     serviceName: hooks
-    description: |
-      Modify an entity. If the modify operation is succesful, the etag is returned in a set.
-      Else, an error will be raised with the following error code:
-      * 'P0004' - update was unsuccessful (e.g., the etag value did not match)
-      * 'P0002' - entry not found in the table (i.e., no such row)
+    description: See taskcluster-lib-entities
     mode: write
     args: partition_key text, row_key text, properties jsonb, version integer, old_etag uuid
     returns: table (etag uuid)
@@ -1213,7 +1181,7 @@ methods:
         end if;
       end
   queues_entities_scan:
-    description: test
+    description: See taskcluster-lib-entities
     mode: read
     serviceName: hooks
     args: pk text, rk text, condition text, size integer, page integer
@@ -1252,7 +1220,7 @@ methods:
         return query execute sql;
       end
   last_fire3_entities_load:
-    description: test
+    description: See taskcluster-lib-entities
     mode: read
     serviceName: hooks
     args: partition_key text, row_key text
@@ -1266,7 +1234,7 @@ methods:
       end
   last_fire3_entities_create:
     serviceName: hooks
-    description: test
+    description: See taskcluster-lib-entities
     mode: write
     args: pk text, rk text, properties jsonb, overwrite boolean, version integer
     returns: uuid
@@ -1300,7 +1268,7 @@ methods:
       end
   last_fire3_entities_remove:
     serviceName: hooks
-    description: test
+    description: See taskcluster-lib-entities
     mode: write
     args: partition_key text, row_key text
     returns: table (etag uuid)
@@ -1312,11 +1280,7 @@ methods:
       end
   last_fire3_entities_modify:
     serviceName: hooks
-    description: |
-      Modify an entity. If the modify operation is succesful, the etag is returned in a set.
-      Else, an error will be raised with the following error code:
-      * 'P0004' - update was unsuccessful (e.g., the etag value did not match)
-      * 'P0002' - entry not found in the table (i.e., no such row)
+    description: See taskcluster-lib-entities
     mode: write
     args: partition_key text, row_key text, properties jsonb, version integer, old_etag uuid
     returns: table (etag uuid)
@@ -1343,7 +1307,7 @@ methods:
         end if;
       end
   last_fire3_entities_scan:
-    description: test
+    description: See taskcluster-lib-entities
     mode: read
     serviceName: hooks
     args: pk text, rk text, condition text, size integer, page integer
@@ -1382,7 +1346,7 @@ methods:
         return query execute sql;
       end
   indexed_tasks_entities_load:
-    description: test
+    description: See taskcluster-lib-entities
     mode: read
     serviceName: index
     args: partition_key text, row_key text
@@ -1396,7 +1360,7 @@ methods:
       end
   indexed_tasks_entities_create:
     serviceName: index
-    description: test
+    description: See taskcluster-lib-entities
     mode: write
     args: pk text, rk text, properties jsonb, overwrite boolean, version integer
     returns: uuid
@@ -1430,7 +1394,7 @@ methods:
       end
   indexed_tasks_entities_remove:
     serviceName: index
-    description: test
+    description: See taskcluster-lib-entities
     mode: write
     args: partition_key text, row_key text
     returns: table (etag uuid)
@@ -1442,11 +1406,7 @@ methods:
       end
   indexed_tasks_entities_modify:
     serviceName: index
-    description: |
-      Modify an entity. If the modify operation is succesful, the etag is returned in a set.
-      Else, an error will be raised with the following error code:
-      * 'P0004' - update was unsuccessful (e.g., the etag value did not match)
-      * 'P0002' - entry not found in the table (i.e., no such row)
+    description: See taskcluster-lib-entities
     mode: write
     args: partition_key text, row_key text, properties jsonb, version integer, old_etag uuid
     returns: table (etag uuid)
@@ -1473,7 +1433,7 @@ methods:
         end if;
       end
   indexed_tasks_entities_scan:
-    description: test
+    description: See taskcluster-lib-entities
     mode: read
     serviceName: index
     args: pk text, rk text, condition text, size integer, page integer
@@ -1512,7 +1472,7 @@ methods:
         return query execute sql;
       end
   namespaces_entities_load:
-    description: test
+    description: See taskcluster-lib-entities
     mode: read
     serviceName: index
     args: partition_key text, row_key text
@@ -1526,7 +1486,7 @@ methods:
       end
   namespaces_entities_create:
     serviceName: index
-    description: test
+    description: See taskcluster-lib-entities
     mode: write
     args: pk text, rk text, properties jsonb, overwrite boolean, version integer
     returns: uuid
@@ -1560,7 +1520,7 @@ methods:
       end
   namespaces_entities_remove:
     serviceName: index
-    description: test
+    description: See taskcluster-lib-entities
     mode: write
     args: partition_key text, row_key text
     returns: table (etag uuid)
@@ -1572,11 +1532,7 @@ methods:
       end
   namespaces_entities_modify:
     serviceName: index
-    description: |
-      Modify an entity. If the modify operation is succesful, the etag is returned in a set.
-      Else, an error will be raised with the following error code:
-      * 'P0004' - update was unsuccessful (e.g., the etag value did not match)
-      * 'P0002' - entry not found in the table (i.e., no such row)
+    description: See taskcluster-lib-entities
     mode: write
     args: partition_key text, row_key text, properties jsonb, version integer, old_etag uuid
     returns: table (etag uuid)
@@ -1603,7 +1559,7 @@ methods:
         end if;
       end
   namespaces_entities_scan:
-    description: test
+    description: See taskcluster-lib-entities
     mode: read
     serviceName: index
     args: pk text, rk text, condition text, size integer, page integer
@@ -1642,7 +1598,7 @@ methods:
         return query execute sql;
       end
   denylisted_notification_entities_load:
-    description: test
+    description: See taskcluster-lib-entities
     mode: read
     serviceName: notify
     args: partition_key text, row_key text
@@ -1656,7 +1612,7 @@ methods:
       end
   denylisted_notification_entities_create:
     serviceName: notify
-    description: test
+    description: See taskcluster-lib-entities
     mode: write
     args: pk text, rk text, properties jsonb, overwrite boolean, version integer
     returns: uuid
@@ -1690,7 +1646,7 @@ methods:
       end
   denylisted_notification_entities_remove:
     serviceName: notify
-    description: test
+    description: See taskcluster-lib-entities
     mode: write
     args: partition_key text, row_key text
     returns: table (etag uuid)
@@ -1702,11 +1658,7 @@ methods:
       end
   denylisted_notification_entities_modify:
     serviceName: notify
-    description: |
-      Modify an entity. If the modify operation is succesful, the etag is returned in a set.
-      Else, an error will be raised with the following error code:
-      * 'P0004' - update was unsuccessful (e.g., the etag value did not match)
-      * 'P0002' - entry not found in the table (i.e., no such row)
+    description: See taskcluster-lib-entities
     mode: write
     args: partition_key text, row_key text, properties jsonb, version integer, old_etag uuid
     returns: table (etag uuid)
@@ -1733,7 +1685,7 @@ methods:
         end if;
       end
   denylisted_notification_entities_scan:
-    description: test
+    description: See taskcluster-lib-entities
     mode: read
     serviceName: notify
     args: pk text, rk text, condition text, size integer, page integer
@@ -1772,7 +1724,7 @@ methods:
         return query execute sql;
       end
   cache_purges_entities_load:
-    description: test
+    description: See taskcluster-lib-entities
     mode: read
     serviceName: purge_cache
     args: partition_key text, row_key text
@@ -1786,7 +1738,7 @@ methods:
       end
   cache_purges_entities_create:
     serviceName: purge_cache
-    description: test
+    description: See taskcluster-lib-entities
     mode: write
     args: pk text, rk text, properties jsonb, overwrite boolean, version integer
     returns: uuid
@@ -1820,7 +1772,7 @@ methods:
       end
   cache_purges_entities_remove:
     serviceName: purge_cache
-    description: test
+    description: See taskcluster-lib-entities
     mode: write
     args: partition_key text, row_key text
     returns: table (etag uuid)
@@ -1832,11 +1784,7 @@ methods:
       end
   cache_purges_entities_modify:
     serviceName: purge_cache
-    description: |
-      Modify an entity. If the modify operation is succesful, the etag is returned in a set.
-      Else, an error will be raised with the following error code:
-      * 'P0004' - update was unsuccessful (e.g., the etag value did not match)
-      * 'P0002' - entry not found in the table (i.e., no such row)
+    description: See taskcluster-lib-entities
     mode: write
     args: partition_key text, row_key text, properties jsonb, version integer, old_etag uuid
     returns: table (etag uuid)
@@ -1863,7 +1811,7 @@ methods:
         end if;
       end
   cache_purges_entities_scan:
-    description: test
+    description: See taskcluster-lib-entities
     mode: read
     serviceName: purge_cache
     args: pk text, rk text, condition text, size integer, page integer
@@ -1902,7 +1850,7 @@ methods:
         return query execute sql;
       end
   queue_tasks_entities_load:
-    description: test
+    description: See taskcluster-lib-entities
     mode: read
     serviceName: queue
     args: partition_key text, row_key text
@@ -1916,7 +1864,7 @@ methods:
       end
   queue_tasks_entities_create:
     serviceName: queue
-    description: test
+    description: See taskcluster-lib-entities
     mode: write
     args: pk text, rk text, properties jsonb, overwrite boolean, version integer
     returns: uuid
@@ -1950,7 +1898,7 @@ methods:
       end
   queue_tasks_entities_remove:
     serviceName: queue
-    description: test
+    description: See taskcluster-lib-entities
     mode: write
     args: partition_key text, row_key text
     returns: table (etag uuid)
@@ -1962,11 +1910,7 @@ methods:
       end
   queue_tasks_entities_modify:
     serviceName: queue
-    description: |
-      Modify an entity. If the modify operation is succesful, the etag is returned in a set.
-      Else, an error will be raised with the following error code:
-      * 'P0004' - update was unsuccessful (e.g., the etag value did not match)
-      * 'P0002' - entry not found in the table (i.e., no such row)
+    description: See taskcluster-lib-entities
     mode: write
     args: partition_key text, row_key text, properties jsonb, version integer, old_etag uuid
     returns: table (etag uuid)
@@ -1993,7 +1937,7 @@ methods:
         end if;
       end
   queue_tasks_entities_scan:
-    description: test
+    description: See taskcluster-lib-entities
     mode: read
     serviceName: queue
     args: pk text, rk text, condition text, size integer, page integer
@@ -2032,9 +1976,9 @@ methods:
         return query execute sql;
       end
   queue_artifacts_entities_load:
-    description: test
+    description: See taskcluster-lib-entities
     mode: read
-    serviceName: queue_artifacts_entitie
+    serviceName: queue
     args: partition_key text, row_key text
     returns: table (partition_key_out text, row_key_out text, value jsonb, version integer, etag uuid)
     body: |-
@@ -2046,7 +1990,7 @@ methods:
       end
   queue_artifacts_entities_create:
     serviceName: queue
-    description: test
+    description: See taskcluster-lib-entities
     mode: write
     args: pk text, rk text, properties jsonb, overwrite boolean, version integer
     returns: uuid
@@ -2080,7 +2024,7 @@ methods:
       end
   queue_artifacts_entities_remove:
     serviceName: queue
-    description: test
+    description: See taskcluster-lib-entities
     mode: write
     args: partition_key text, row_key text
     returns: table (etag uuid)
@@ -2092,11 +2036,7 @@ methods:
       end
   queue_artifacts_entities_modify:
     serviceName: queue
-    description: |
-      Modify an entity. If the modify operation is succesful, the etag is returned in a set.
-      Else, an error will be raised with the following error code:
-      * 'P0004' - update was unsuccessful (e.g., the etag value did not match)
-      * 'P0002' - entry not found in the table (i.e., no such row)
+    description: See taskcluster-lib-entities
     mode: write
     args: partition_key text, row_key text, properties jsonb, version integer, old_etag uuid
     returns: table (etag uuid)
@@ -2123,7 +2063,7 @@ methods:
         end if;
       end
   queue_artifacts_entities_scan:
-    description: test
+    description: See taskcluster-lib-entities
     mode: read
     serviceName: queue
     args: pk text, rk text, condition text, size integer, page integer
@@ -2162,7 +2102,7 @@ methods:
         return query execute sql;
       end
   queue_task_groups_entities_load:
-    description: test
+    description: See taskcluster-lib-entities
     mode: read
     serviceName: queue
     args: partition_key text, row_key text
@@ -2176,7 +2116,7 @@ methods:
       end
   queue_task_groups_entities_create:
     serviceName: queue
-    description: test
+    description: See taskcluster-lib-entities
     mode: write
     args: pk text, rk text, properties jsonb, overwrite boolean, version integer
     returns: uuid
@@ -2210,7 +2150,7 @@ methods:
       end
   queue_task_groups_entities_remove:
     serviceName: queue
-    description: test
+    description: See taskcluster-lib-entities
     mode: write
     args: partition_key text, row_key text
     returns: table (etag uuid)
@@ -2222,11 +2162,7 @@ methods:
       end
   queue_task_groups_entities_modify:
     serviceName: queue
-    description: |
-      Modify an entity. If the modify operation is succesful, the etag is returned in a set.
-      Else, an error will be raised with the following error code:
-      * 'P0004' - update was unsuccessful (e.g., the etag value did not match)
-      * 'P0002' - entry not found in the table (i.e., no such row)
+    description: See taskcluster-lib-entities
     mode: write
     args: partition_key text, row_key text, properties jsonb, version integer, old_etag uuid
     returns: table (etag uuid)
@@ -2253,7 +2189,7 @@ methods:
         end if;
       end
   queue_task_groups_entities_scan:
-    description: test
+    description: See taskcluster-lib-entities
     mode: read
     serviceName: queue
     args: pk text, rk text, condition text, size integer, page integer
@@ -2292,7 +2228,7 @@ methods:
         return query execute sql;
       end
   queue_task_group_members_entities_load:
-    description: test
+    description: See taskcluster-lib-entities
     mode: read
     serviceName: queue
     args: partition_key text, row_key text
@@ -2306,7 +2242,7 @@ methods:
       end
   queue_task_group_members_entities_create:
     serviceName: queue
-    description: test
+    description: See taskcluster-lib-entities
     mode: write
     args: pk text, rk text, properties jsonb, overwrite boolean, version integer
     returns: uuid
@@ -2340,7 +2276,7 @@ methods:
       end
   queue_task_group_members_entities_remove:
     serviceName: queue
-    description: test
+    description: See taskcluster-lib-entities
     mode: write
     args: partition_key text, row_key text
     returns: table (etag uuid)
@@ -2352,11 +2288,7 @@ methods:
       end
   queue_task_group_members_entities_modify:
     serviceName: queue
-    description: |
-      Modify an entity. If the modify operation is succesful, the etag is returned in a set.
-      Else, an error will be raised with the following error code:
-      * 'P0004' - update was unsuccessful (e.g., the etag value did not match)
-      * 'P0002' - entry not found in the table (i.e., no such row)
+    description: See taskcluster-lib-entities
     mode: write
     args: partition_key text, row_key text, properties jsonb, version integer, old_etag uuid
     returns: table (etag uuid)
@@ -2383,7 +2315,7 @@ methods:
         end if;
       end
   queue_task_group_members_entities_scan:
-    description: test
+    description: See taskcluster-lib-entities
     mode: read
     serviceName: queue
     args: pk text, rk text, condition text, size integer, page integer
@@ -2422,7 +2354,7 @@ methods:
         return query execute sql;
       end
   queue_task_group_active_sets_entities_load:
-    description: test
+    description: See taskcluster-lib-entities
     mode: read
     serviceName: queue
     args: partition_key text, row_key text
@@ -2436,7 +2368,7 @@ methods:
       end
   queue_task_group_active_sets_entities_create:
     serviceName: queue
-    description: test
+    description: See taskcluster-lib-entities
     mode: write
     args: pk text, rk text, properties jsonb, overwrite boolean, version integer
     returns: uuid
@@ -2470,7 +2402,7 @@ methods:
       end
   queue_task_group_active_sets_entities_remove:
     serviceName: queue
-    description: test
+    description: See taskcluster-lib-entities
     mode: write
     args: partition_key text, row_key text
     returns: table (etag uuid)
@@ -2482,11 +2414,7 @@ methods:
       end
   queue_task_group_active_sets_entities_modify:
     serviceName: queue
-    description: |
-      Modify an entity. If the modify operation is succesful, the etag is returned in a set.
-      Else, an error will be raised with the following error code:
-      * 'P0004' - update was unsuccessful (e.g., the etag value did not match)
-      * 'P0002' - entry not found in the table (i.e., no such row)
+    description: See taskcluster-lib-entities
     mode: write
     args: partition_key text, row_key text, properties jsonb, version integer, old_etag uuid
     returns: table (etag uuid)
@@ -2513,7 +2441,7 @@ methods:
         end if;
       end
   queue_task_group_active_sets_entities_scan:
-    description: test
+    description: See taskcluster-lib-entities
     mode: read
     serviceName: queue
     args: pk text, rk text, condition text, size integer, page integer
@@ -2552,7 +2480,7 @@ methods:
         return query execute sql;
       end
   queue_task_requirement_entities_load:
-    description: test
+    description: See taskcluster-lib-entities
     mode: read
     serviceName: queue
     args: partition_key text, row_key text
@@ -2566,7 +2494,7 @@ methods:
       end
   queue_task_requirement_entities_create:
     serviceName: queue
-    description: test
+    description: See taskcluster-lib-entities
     mode: write
     args: pk text, rk text, properties jsonb, overwrite boolean, version integer
     returns: uuid
@@ -2600,7 +2528,7 @@ methods:
       end
   queue_task_requirement_entities_remove:
     serviceName: queue
-    description: test
+    description: See taskcluster-lib-entities
     mode: write
     args: partition_key text, row_key text
     returns: table (etag uuid)
@@ -2612,11 +2540,7 @@ methods:
       end
   queue_task_requirement_entities_modify:
     serviceName: queue
-    description: |
-      Modify an entity. If the modify operation is succesful, the etag is returned in a set.
-      Else, an error will be raised with the following error code:
-      * 'P0004' - update was unsuccessful (e.g., the etag value did not match)
-      * 'P0002' - entry not found in the table (i.e., no such row)
+    description: See taskcluster-lib-entities
     mode: write
     args: partition_key text, row_key text, properties jsonb, version integer, old_etag uuid
     returns: table (etag uuid)
@@ -2643,7 +2567,7 @@ methods:
         end if;
       end
   queue_task_requirement_entities_scan:
-    description: test
+    description: See taskcluster-lib-entities
     mode: read
     serviceName: queue
     args: pk text, rk text, condition text, size integer, page integer
@@ -2682,7 +2606,7 @@ methods:
         return query execute sql;
       end
   queue_task_dependency_entities_load:
-    description: test
+    description: See taskcluster-lib-entities
     mode: read
     serviceName: queue
     args: partition_key text, row_key text
@@ -2696,7 +2620,7 @@ methods:
       end
   queue_task_dependency_entities_create:
     serviceName: queue
-    description: test
+    description: See taskcluster-lib-entities
     mode: write
     args: pk text, rk text, properties jsonb, overwrite boolean, version integer
     returns: uuid
@@ -2730,7 +2654,7 @@ methods:
       end
   queue_task_dependency_entities_remove:
     serviceName: queue
-    description: test
+    description: See taskcluster-lib-entities
     mode: write
     args: partition_key text, row_key text
     returns: table (etag uuid)
@@ -2742,11 +2666,7 @@ methods:
       end
   queue_task_dependency_entities_modify:
     serviceName: queue
-    description: |
-      Modify an entity. If the modify operation is succesful, the etag is returned in a set.
-      Else, an error will be raised with the following error code:
-      * 'P0004' - update was unsuccessful (e.g., the etag value did not match)
-      * 'P0002' - entry not found in the table (i.e., no such row)
+    description: See taskcluster-lib-entities
     mode: write
     args: partition_key text, row_key text, properties jsonb, version integer, old_etag uuid
     returns: table (etag uuid)
@@ -2773,7 +2693,7 @@ methods:
         end if;
       end
   queue_task_dependency_entities_scan:
-    description: test
+    description: See taskcluster-lib-entities
     mode: read
     serviceName: queue
     args: pk text, rk text, condition text, size integer, page integer
@@ -2812,7 +2732,7 @@ methods:
         return query execute sql;
       end
   queue_worker_entities_load:
-    description: test
+    description: See taskcluster-lib-entities
     mode: read
     serviceName: queue
     args: partition_key text, row_key text
@@ -2826,7 +2746,7 @@ methods:
       end
   queue_worker_entities_create:
     serviceName: queue
-    description: test
+    description: See taskcluster-lib-entities
     mode: write
     args: pk text, rk text, properties jsonb, overwrite boolean, version integer
     returns: uuid
@@ -2860,7 +2780,7 @@ methods:
       end
   queue_worker_entities_remove:
     serviceName: queue
-    description: test
+    description: See taskcluster-lib-entities
     mode: write
     args: partition_key text, row_key text
     returns: table (etag uuid)
@@ -2872,11 +2792,7 @@ methods:
       end
   queue_worker_entities_modify:
     serviceName: queue
-    description: |
-      Modify an entity. If the modify operation is succesful, the etag is returned in a set.
-      Else, an error will be raised with the following error code:
-      * 'P0004' - update was unsuccessful (e.g., the etag value did not match)
-      * 'P0002' - entry not found in the table (i.e., no such row)
+    description: See taskcluster-lib-entities
     mode: write
     args: partition_key text, row_key text, properties jsonb, version integer, old_etag uuid
     returns: table (etag uuid)
@@ -2903,7 +2819,7 @@ methods:
         end if;
       end
   queue_worker_entities_scan:
-    description: test
+    description: See taskcluster-lib-entities
     mode: read
     serviceName: queue
     args: pk text, rk text, condition text, size integer, page integer
@@ -2942,7 +2858,7 @@ methods:
         return query execute sql;
       end
   queue_worker_type_entities_load:
-    description: test
+    description: See taskcluster-lib-entities
     mode: read
     serviceName: queue
     args: partition_key text, row_key text
@@ -2956,7 +2872,7 @@ methods:
       end
   queue_worker_type_entities_create:
     serviceName: queue
-    description: test
+    description: See taskcluster-lib-entities
     mode: write
     args: pk text, rk text, properties jsonb, overwrite boolean, version integer
     returns: uuid
@@ -2990,7 +2906,7 @@ methods:
       end
   queue_worker_type_entities_remove:
     serviceName: queue
-    description: test
+    description: See taskcluster-lib-entities
     mode: write
     args: partition_key text, row_key text
     returns: table (etag uuid)
@@ -3002,11 +2918,7 @@ methods:
       end
   queue_worker_type_entities_modify:
     serviceName: queue
-    description: |
-      Modify an entity. If the modify operation is succesful, the etag is returned in a set.
-      Else, an error will be raised with the following error code:
-      * 'P0004' - update was unsuccessful (e.g., the etag value did not match)
-      * 'P0002' - entry not found in the table (i.e., no such row)
+    description: See taskcluster-lib-entities
     mode: write
     args: partition_key text, row_key text, properties jsonb, version integer, old_etag uuid
     returns: table (etag uuid)
@@ -3033,7 +2945,7 @@ methods:
         end if;
       end
   queue_worker_type_entities_scan:
-    description: test
+    description: See taskcluster-lib-entities
     mode: read
     serviceName: queue
     args: pk text, rk text, condition text, size integer, page integer
@@ -3072,7 +2984,7 @@ methods:
         return query execute sql;
       end
   queue_provisioner_entities_load:
-    description: test
+    description: See taskcluster-lib-entities
     mode: read
     serviceName: queue
     args: partition_key text, row_key text
@@ -3086,7 +2998,7 @@ methods:
       end
   queue_provisioner_entities_create:
     serviceName: queue
-    description: test
+    description: See taskcluster-lib-entities
     mode: write
     args: pk text, rk text, properties jsonb, overwrite boolean, version integer
     returns: uuid
@@ -3120,7 +3032,7 @@ methods:
       end
   queue_provisioner_entities_remove:
     serviceName: queue
-    description: test
+    description: See taskcluster-lib-entities
     mode: write
     args: partition_key text, row_key text
     returns: table (etag uuid)
@@ -3132,11 +3044,7 @@ methods:
       end
   queue_provisioner_entities_modify:
     serviceName: queue
-    description: |
-      Modify an entity. If the modify operation is succesful, the etag is returned in a set.
-      Else, an error will be raised with the following error code:
-      * 'P0004' - update was unsuccessful (e.g., the etag value did not match)
-      * 'P0002' - entry not found in the table (i.e., no such row)
+    description: See taskcluster-lib-entities
     mode: write
     args: partition_key text, row_key text, properties jsonb, version integer, old_etag uuid
     returns: table (etag uuid)
@@ -3163,7 +3071,7 @@ methods:
         end if;
       end
   queue_provisioner_entities_scan:
-    description: test
+    description: See taskcluster-lib-entities
     mode: read
     serviceName: queue
     args: pk text, rk text, condition text, size integer, page integer
@@ -3202,7 +3110,7 @@ methods:
         return query execute sql;
       end
   secrets_entities_load:
-    description: test
+    description: See taskcluster-lib-entities
     mode: read
     serviceName: secrets
     args: partition_key text, row_key text
@@ -3216,7 +3124,7 @@ methods:
       end
   secrets_entities_create:
     serviceName: secrets
-    description: test
+    description: See taskcluster-lib-entities
     mode: write
     args: pk text, rk text, properties jsonb, overwrite boolean, version integer
     returns: uuid
@@ -3250,7 +3158,7 @@ methods:
       end
   secrets_entities_remove:
     serviceName: secrets
-    description: test
+    description: See taskcluster-lib-entities
     mode: write
     args: partition_key text, row_key text
     returns: table (etag uuid)
@@ -3262,11 +3170,7 @@ methods:
       end
   secrets_entities_modify:
     serviceName: secrets
-    description: |
-      Modify an entity. If the modify operation is succesful, the etag is returned in a set.
-      Else, an error will be raised with the following error code:
-      * 'P0004' - update was unsuccessful (e.g., the etag value did not match)
-      * 'P0002' - entry not found in the table (i.e., no such row)
+    description: See taskcluster-lib-entities
     mode: write
     args: partition_key text, row_key text, properties jsonb, version integer, old_etag uuid
     returns: table (etag uuid)
@@ -3293,7 +3197,7 @@ methods:
         end if;
       end
   secrets_entities_scan:
-    description: test
+    description: See taskcluster-lib-entities
     mode: read
     serviceName: secrets
     args: pk text, rk text, condition text, size integer, page integer
@@ -3332,7 +3236,7 @@ methods:
         return query execute sql;
       end
   authorization_codes_table_entities_load:
-    description: test
+    description: See taskcluster-lib-entities
     mode: read
     serviceName: web_server
     args: partition_key text, row_key text
@@ -3346,7 +3250,7 @@ methods:
       end
   authorization_codes_table_entities_create:
     serviceName: web_server
-    description: test
+    description: See taskcluster-lib-entities
     mode: write
     args: pk text, rk text, properties jsonb, overwrite boolean, version integer
     returns: uuid
@@ -3380,7 +3284,7 @@ methods:
       end
   authorization_codes_table_entities_remove:
     serviceName: web_server
-    description: test
+    description: See taskcluster-lib-entities
     mode: write
     args: partition_key text, row_key text
     returns: table (etag uuid)
@@ -3392,11 +3296,7 @@ methods:
       end
   authorization_codes_table_entities_modify:
     serviceName: web_server
-    description: |
-      Modify an entity. If the modify operation is succesful, the etag is returned in a set.
-      Else, an error will be raised with the following error code:
-      * 'P0004' - update was unsuccessful (e.g., the etag value did not match)
-      * 'P0002' - entry not found in the table (i.e., no such row)
+    description: See taskcluster-lib-entities
     mode: write
     args: partition_key text, row_key text, properties jsonb, version integer, old_etag uuid
     returns: table (etag uuid)
@@ -3423,7 +3323,7 @@ methods:
         end if;
       end
   authorization_codes_table_entities_scan:
-    description: test
+    description: See taskcluster-lib-entities
     mode: read
     serviceName: web_server
     args: pk text, rk text, condition text, size integer, page integer
@@ -3462,7 +3362,7 @@ methods:
         return query execute sql;
       end
   access_token_table_entities_load:
-    description: test
+    description: See taskcluster-lib-entities
     mode: read
     serviceName: web_server
     args: partition_key text, row_key text
@@ -3476,7 +3376,7 @@ methods:
       end
   access_token_table_entities_create:
     serviceName: web_server
-    description: test
+    description: See taskcluster-lib-entities
     mode: write
     args: pk text, rk text, properties jsonb, overwrite boolean, version integer
     returns: uuid
@@ -3510,7 +3410,7 @@ methods:
       end
   access_token_table_entities_remove:
     serviceName: web_server
-    description: test
+    description: See taskcluster-lib-entities
     mode: write
     args: partition_key text, row_key text
     returns: table (etag uuid)
@@ -3522,11 +3422,7 @@ methods:
       end
   access_token_table_entities_modify:
     serviceName: web_server
-    description: |
-      Modify an entity. If the modify operation is succesful, the etag is returned in a set.
-      Else, an error will be raised with the following error code:
-      * 'P0004' - update was unsuccessful (e.g., the etag value did not match)
-      * 'P0002' - entry not found in the table (i.e., no such row)
+    description: See taskcluster-lib-entities
     mode: write
     args: partition_key text, row_key text, properties jsonb, version integer, old_etag uuid
     returns: table (etag uuid)
@@ -3553,7 +3449,7 @@ methods:
         end if;
       end
   access_token_table_entities_scan:
-    description: test
+    description: See taskcluster-lib-entities
     mode: read
     serviceName: web_server
     args: pk text, rk text, condition text, size integer, page integer
@@ -3592,7 +3488,7 @@ methods:
         return query execute sql;
       end
   session_storage_table_entities_load:
-    description: test
+    description: See taskcluster-lib-entities
     mode: read
     serviceName: web_server
     args: partition_key text, row_key text
@@ -3606,7 +3502,7 @@ methods:
       end
   session_storage_table_entities_create:
     serviceName: web_server
-    description: test
+    description: See taskcluster-lib-entities
     mode: write
     args: pk text, rk text, properties jsonb, overwrite boolean, version integer
     returns: uuid
@@ -3640,7 +3536,7 @@ methods:
       end
   session_storage_table_entities_remove:
     serviceName: web_server
-    description: test
+    description: See taskcluster-lib-entities
     mode: write
     args: partition_key text, row_key text
     returns: table (etag uuid)
@@ -3652,11 +3548,7 @@ methods:
       end
   session_storage_table_entities_modify:
     serviceName: web_server
-    description: |
-      Modify an entity. If the modify operation is succesful, the etag is returned in a set.
-      Else, an error will be raised with the following error code:
-      * 'P0004' - update was unsuccessful (e.g., the etag value did not match)
-      * 'P0002' - entry not found in the table (i.e., no such row)
+    description: See taskcluster-lib-entities
     mode: write
     args: partition_key text, row_key text, properties jsonb, version integer, old_etag uuid
     returns: table (etag uuid)
@@ -3683,7 +3575,7 @@ methods:
         end if;
       end
   session_storage_table_entities_scan:
-    description: test
+    description: See taskcluster-lib-entities
     mode: read
     serviceName: web_server
     args: pk text, rk text, condition text, size integer, page integer
@@ -3722,7 +3614,7 @@ methods:
         return query execute sql;
       end
   github_access_token_table_entities_load:
-    description: test
+    description: See taskcluster-lib-entities
     mode: read
     serviceName: web_server
     args: partition_key text, row_key text
@@ -3736,7 +3628,7 @@ methods:
       end
   github_access_token_table_entities_create:
     serviceName: web_server
-    description: test
+    description: See taskcluster-lib-entities
     mode: write
     args: pk text, rk text, properties jsonb, overwrite boolean, version integer
     returns: uuid
@@ -3770,7 +3662,7 @@ methods:
       end
   github_access_token_table_entities_remove:
     serviceName: web_server
-    description: test
+    description: See taskcluster-lib-entities
     mode: write
     args: partition_key text, row_key text
     returns: table (etag uuid)
@@ -3782,11 +3674,7 @@ methods:
       end
   github_access_token_table_entities_modify:
     serviceName: web_server
-    description: |
-      Modify an entity. If the modify operation is succesful, the etag is returned in a set.
-      Else, an error will be raised with the following error code:
-      * 'P0004' - update was unsuccessful (e.g., the etag value did not match)
-      * 'P0002' - entry not found in the table (i.e., no such row)
+    description: See taskcluster-lib-entities
     mode: write
     args: partition_key text, row_key text, properties jsonb, version integer, old_etag uuid
     returns: table (etag uuid)
@@ -3813,7 +3701,7 @@ methods:
         end if;
       end
   github_access_token_table_entities_scan:
-    description: test
+    description: See taskcluster-lib-entities
     mode: read
     serviceName: web_server
     args: pk text, rk text, condition text, size integer, page integer
@@ -3852,7 +3740,7 @@ methods:
         return query execute sql;
       end
   wm_workers_entities_load:
-    description: test
+    description: See taskcluster-lib-entities
     mode: read
     serviceName: worker_manager
     args: partition_key text, row_key text
@@ -3866,7 +3754,7 @@ methods:
       end
   wm_workers_entities_create:
     serviceName: worker_manager
-    description: test
+    description: See taskcluster-lib-entities
     mode: write
     args: pk text, rk text, properties jsonb, overwrite boolean, version integer
     returns: uuid
@@ -3900,7 +3788,7 @@ methods:
       end
   wm_workers_entities_remove:
     serviceName: worker_manager
-    description: test
+    description: See taskcluster-lib-entities
     mode: write
     args: partition_key text, row_key text
     returns: table (etag uuid)
@@ -3912,11 +3800,7 @@ methods:
       end
   wm_workers_entities_modify:
     serviceName: worker_manager
-    description: |
-      Modify an entity. If the modify operation is succesful, the etag is returned in a set.
-      Else, an error will be raised with the following error code:
-      * 'P0004' - update was unsuccessful (e.g., the etag value did not match)
-      * 'P0002' - entry not found in the table (i.e., no such row)
+    description: See taskcluster-lib-entities
     mode: write
     args: partition_key text, row_key text, properties jsonb, version integer, old_etag uuid
     returns: table (etag uuid)
@@ -3943,7 +3827,7 @@ methods:
         end if;
       end
   wm_workers_entities_scan:
-    description: test
+    description: See taskcluster-lib-entities
     mode: read
     serviceName: worker_manager
     args: pk text, rk text, condition text, size integer, page integer
@@ -3982,7 +3866,7 @@ methods:
         return query execute sql;
       end
   wm_worker_pools_entities_load:
-    description: test
+    description: See taskcluster-lib-entities
     mode: read
     serviceName: worker_manager
     args: partition_key text, row_key text
@@ -3996,7 +3880,7 @@ methods:
       end
   wm_worker_pools_entities_create:
     serviceName: worker_manager
-    description: test
+    description: See taskcluster-lib-entities
     mode: write
     args: pk text, rk text, properties jsonb, overwrite boolean, version integer
     returns: uuid
@@ -4030,7 +3914,7 @@ methods:
       end
   wm_worker_pools_entities_remove:
     serviceName: worker_manager
-    description: test
+    description: See taskcluster-lib-entities
     mode: write
     args: partition_key text, row_key text
     returns: table (etag uuid)
@@ -4042,11 +3926,7 @@ methods:
       end
   wm_worker_pools_entities_modify:
     serviceName: worker_manager
-    description: |
-      Modify an entity. If the modify operation is succesful, the etag is returned in a set.
-      Else, an error will be raised with the following error code:
-      * 'P0004' - update was unsuccessful (e.g., the etag value did not match)
-      * 'P0002' - entry not found in the table (i.e., no such row)
+    description: See taskcluster-lib-entities
     mode: write
     args: partition_key text, row_key text, properties jsonb, version integer, old_etag uuid
     returns: table (etag uuid)
@@ -4073,7 +3953,7 @@ methods:
         end if;
       end
   wm_worker_pools_entities_scan:
-    description: test
+    description: See taskcluster-lib-entities
     mode: read
     serviceName: worker_manager
     args: pk text, rk text, condition text, size integer, page integer
@@ -4112,7 +3992,7 @@ methods:
         return query execute sql;
       end
   wm_worker_pool_errors_entities_load:
-    description: test
+    description: See taskcluster-lib-entities
     mode: read
     serviceName: worker_manager
     args: partition_key text, row_key text
@@ -4126,7 +4006,7 @@ methods:
       end
   wm_worker_pool_errors_entities_create:
     serviceName: worker_manager
-    description: test
+    description: See taskcluster-lib-entities
     mode: write
     args: pk text, rk text, properties jsonb, overwrite boolean, version integer
     returns: uuid
@@ -4160,7 +4040,7 @@ methods:
       end
   wm_worker_pool_errors_entities_remove:
     serviceName: worker_manager
-    description: test
+    description: See taskcluster-lib-entities
     mode: write
     args: partition_key text, row_key text
     returns: table (etag uuid)
@@ -4172,11 +4052,7 @@ methods:
       end
   wm_worker_pool_errors_entities_modify:
     serviceName: worker_manager
-    description: |
-      Modify an entity. If the modify operation is succesful, the etag is returned in a set.
-      Else, an error will be raised with the following error code:
-      * 'P0004' - update was unsuccessful (e.g., the etag value did not match)
-      * 'P0002' - entry not found in the table (i.e., no such row)
+    description: See taskcluster-lib-entities
     mode: write
     args: partition_key text, row_key text, properties jsonb, version integer, old_etag uuid
     returns: table (etag uuid)
@@ -4203,7 +4079,7 @@ methods:
         end if;
       end
   wm_worker_pool_errors_entities_scan:
-    description: test
+    description: See taskcluster-lib-entities
     mode: read
     serviceName: worker_manager
     args: pk text, rk text, condition text, size integer, page integer
