@@ -8,6 +8,7 @@ const {
   QUERY_CANCELED,
   READ_ONLY_SQL_TRANSACTION,
   UNDEFINED_COLUMN,
+  UNDEFINED_FUNCTION,
   UNDEFINED_TABLE,
 } = require('..');
 const path = require('path');
@@ -41,6 +42,16 @@ helper.dbSuite(path.basename(__filename), function() {
           returns: 'table (total integer)',
           body: `begin
             return query select a+b+x as total from testing;
+          end`,
+        },
+        stringparam: {
+          description: 'test',
+          mode: 'read',
+          serviceName: 'service-2',
+          args: 'x text',
+          returns: 'text',
+          body: `begin
+            return 'got ' || x;
           end`,
         },
         readonlywrites: {
@@ -399,6 +410,32 @@ helper.dbSuite(path.basename(__filename), function() {
         serviceName: 'service-1',
         statementTimeout: 'about 3 seconds',
       }), err => err.code === 'ERR_ASSERTION');
+    });
+
+    test('methods do not allow SQL injection', async function() {
+      await Database.upgrade({schema, adminDbUrl: helper.dbUrl, usernamePrefix: 'test'});
+      db = await Database.setup({schema, readDbUrl: helper.dbUrl, writeDbUrl: helper.dbUrl, serviceName: 'service-1'});
+      await db.fns.testdata();
+      const res = await db.fns.stringparam("' or 1=1; --");
+      assert.equal(res[0].stringparam, "got ' or 1=1; --");
+    });
+
+    test('passing too few parameters fails', async function() {
+      await Database.upgrade({schema, adminDbUrl: helper.dbUrl, usernamePrefix: 'test'});
+      db = await Database.setup({schema, readDbUrl: helper.dbUrl, writeDbUrl: helper.dbUrl, serviceName: 'service-1'});
+      await db.fns.testdata();
+      await assert.rejects(
+        () => db.fns.addup(),
+        err => err.code === UNDEFINED_FUNCTION);
+    });
+
+    test('passing too many parameters fails', async function() {
+      await Database.upgrade({schema, adminDbUrl: helper.dbUrl, usernamePrefix: 'test'});
+      db = await Database.setup({schema, readDbUrl: helper.dbUrl, writeDbUrl: helper.dbUrl, serviceName: 'service-1'});
+      await db.fns.testdata();
+      await assert.rejects(
+        () => db.fns.addup(13, 14),
+        err => err.code === UNDEFINED_FUNCTION);
     });
 
     test('slow methods are aborted if statementTimeout is set', async function() {
