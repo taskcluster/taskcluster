@@ -100,7 +100,7 @@ helper.dbSuite(path.basename(__filename), function() {
       assert.equal(result.entries.length, 1);
       assert.deepEqual(result.entries[0].taskId, '9');
     });
-    test('retrieve documents (with date condition)', async function() {
+    test('retrieve documents (with equality date condition)', async function() {
       db = await helper.withDb({ schema, serviceName });
       const TestTable = configuredTestTable.setup({ tableName: 'test_entities', db, serviceName });
       const document = { provisionerId: 'test', workerType: 'test' };
@@ -115,6 +115,22 @@ helper.dbSuite(path.basename(__filename), function() {
       assert.equal(result.entries.length, 1);
       assert.equal(result.entries[0].taskId, '1');
       assert.equal(result.entries[0].expires.toJSON(), new Date('2020-01-01').toJSON());
+    });
+    test('retrieve documents (with comparison date condition)', async function() {
+      db = await helper.withDb({ schema, serviceName });
+      const TestTable = configuredTestTable.setup({ tableName: 'test_entities', db, serviceName });
+      const document = { provisionerId: 'test', workerType: 'test' };
+      await TestTable.create({ ...document, taskId: '1', expires: new Date('2020-01-01') });
+      await TestTable.create({ ...document, taskId: '2', expires: new Date('3020-01-01') });
+      await TestTable.create({ ...document, taskId: '3', expires: new Date('4020-01-01') });
+
+      const result = await TestTable.scan({
+        expires: Entity.op.greaterThan(new Date('3020-01-01')),
+      });
+
+      assert.equal(result.entries.length, 1);
+      assert.equal(result.entries[0].taskId, '3');
+      assert.equal(result.entries[0].expires.toJSON(), new Date('4020-01-01').toJSON());
     });
     test('retrieve documents in pages', async function() {
       db = await helper.withDb({ schema, serviceName });
@@ -300,6 +316,116 @@ helper.dbSuite(path.basename(__filename), function() {
         limit: 4,
       });
       assert.equal(result.entries.length, 0);
+    });
+  });
+  suite('scan SQL injection checks', function() {
+    const properties = {
+      taskId: Entity.types.String,
+      provisionerId: Entity.types.String,
+      workerType: Entity.types.String,
+      count: Entity.types.Number,
+      expires: Entity.types.Date,
+    };
+    const configuredTestTable = Entity.configure({
+      version: 1,
+      partitionKey: Entity.keys.StringKey('taskId'),
+      rowKey: Entity.keys.StringKey('provisionerId'),
+      properties,
+    });
+
+    test('retrieve documents with string condition', async function() {
+      db = await helper.withDb({ schema, serviceName });
+      const TestTable = configuredTestTable.setup({ tableName: 'test_entities', db, serviceName });
+      await assert.rejects(
+        () => TestTable.scan({workerType: Entity.op.equal("foo")}),
+        /can only be a date/);
+    });
+
+    test('retrieve documents with SQL escape in partition key', async function() {
+      db = await helper.withDb({ schema, serviceName });
+      const TestTable = configuredTestTable.setup({ tableName: 'test_entities', db, serviceName });
+      const document = {
+        taskId: '1',
+        provisionerId: 'test',
+        workerType: 'test',
+        count: 13,
+        expies: new Date(),
+      };
+      await TestTable.create({ ...document, taskId: '1', expires: new Date('2020-01-01') });
+      // Enabling EXPLAIN for this test shows (newlines added):
+      // Query Text:
+      //   select
+      //     test_entities.partition_key,
+      //     test_entities.row_key,
+      //     test_entities.value,
+      //     test_entities.version,
+      //     test_entities.etag
+      //   from test_entities
+      //   where partition_key = ''' or 1=1; drop table test_entities; --'
+      //   order by test_entities.partition_key, test_entities.row_key
+      //   limit 1000 offset 0
+      //
+      // Which contains a correct quoting of the `'` character:
+      //
+      // postgres=# select ''' or 1=1; drop table test_entities; --';
+      // ----------------------------------------
+      //  ' or 1=1; drop table test_entities; --
+      //
+      // Furthermore, replacing the usage of `quote_literal` with a vulnerable equivalent results
+      // in the following from this test, indicating a successful injection:
+      //
+      //   error: cannot open multi-query plan as cursor
+      //   WHERE: PL/pgSQL function test_entities_scan(text,text,text,integer,integer) line 31 at RETURN QUERY
+      //   CODE: 42P11
+      const res = await TestTable.scan({taskId: "' or 1=1; drop table test_entities; --"});
+      assert.deepEqual(res.entries, []);
+    });
+
+    test('retrieve documents with SQL escape in row key', async function() {
+      db = await helper.withDb({ schema, serviceName });
+      const TestTable = configuredTestTable.setup({ tableName: 'test_entities', db, serviceName });
+      const document = {
+        taskId: '1',
+        provisionerId: 'test',
+        workerType: 'test',
+        count: 13,
+        expies: new Date(),
+      };
+      await TestTable.create({ ...document, taskId: '1', expires: new Date('2020-01-01') });
+      const res = await TestTable.scan({provisionerId: "' or 1=1; drop table test_entities; --"});
+      assert.deepEqual(res.entries, []);
+    });
+
+    test('retrieve documents with bare string condition', async function() {
+      db = await helper.withDb({ schema, serviceName });
+      const TestTable = configuredTestTable.setup({ tableName: 'test_entities', db, serviceName });
+      await assert.rejects(
+        () => TestTable.scan({workerType: "foo"}),
+        /can only be a date/);
+    });
+
+    test('retrieve documents with numeric condition', async function() {
+      db = await helper.withDb({ schema, serviceName });
+      const TestTable = configuredTestTable.setup({ tableName: 'test_entities', db, serviceName });
+      await assert.rejects(
+        () => TestTable.scan({count: Entity.op.equal(10)}),
+        /can only be a date/);
+    });
+
+    test('retrieve documents with numeric condition in comparison', async function() {
+      db = await helper.withDb({ schema, serviceName });
+      const TestTable = configuredTestTable.setup({ tableName: 'test_entities', db, serviceName });
+      await assert.rejects(
+        () => TestTable.scan({count: Entity.op.lessThan(10)}),
+        /can only be a date/);
+    });
+
+    test('retrieve documents with string condition on datetime property', async function() {
+      db = await helper.withDb({ schema, serviceName });
+      const TestTable = configuredTestTable.setup({ tableName: 'test_entities', db, serviceName });
+      await assert.rejects(
+        () => TestTable.scan({expires: Entity.op.equal("foo")}),
+        /can only be a date/);
     });
   });
 });
