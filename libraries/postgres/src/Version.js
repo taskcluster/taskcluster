@@ -15,6 +15,7 @@ class Version {
     return new Version(
       content.version,
       loadSql(content.migrationScript, path.dirname(filename)),
+      loadSql(content.downgradeScript, path.dirname(filename)),
       objMap(content.methods,
         ([name, meth]) => [name, Method.fromYamlFileContent(name, meth, filename)]),
     );
@@ -25,13 +26,14 @@ class Version {
    */
   static fromSerializable(serializable) {
     for (let k of Object.keys(serializable)) {
-      if (!['methods', 'migrationScript', 'version'].includes(k)) {
+      if (!['methods', 'migrationScript', 'downgradeScript', 'version'].includes(k)) {
         throw new Error(`unexpected version key ${k}`);
       }
     }
     return new Version(
       serializable.version,
       serializable.migrationScript,
+      serializable.downgradeScript,
       objMap(serializable.methods,
         ([name, meth]) => [name, Method.fromSerializable(name, meth)]),
     );
@@ -44,19 +46,22 @@ class Version {
     return {
       version: this.version,
       migrationScript: this.migrationScript,
+      downgradeScript: this.downgradeScript,
       methods: objMap(this.methods, ([name, meth]) => [name, meth.asSerializable()]),
     };
   }
 
-  constructor(version, migrationScript, methods) {
+  constructor(version, migrationScript, downgradeScript, methods) {
     this.version = version;
     this.migrationScript = migrationScript;
+    this.downgradeScript = downgradeScript;
     this.methods = methods;
   }
 
   static _checkContent(content, filename) {
     assert(content.version, `version field missing in ${filename}`);
     assert(content.migrationScript, `migrationScript field missing in ${filename}`);
+    assert(content.downgradeScript, `downgradeScript field missing in ${filename}`);
     assert(content.methods, `methods field missing in ${filename}`);
 
     assert(Object.keys(content).length, 3, `unknown fields in ${filename}`);

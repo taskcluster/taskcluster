@@ -1,5 +1,9 @@
 version: 1
 migrationScript: 0001.sql
+downgradeScript: |-
+  begin
+    drop table secrets;
+  end
 methods:
   get_secret:
     description: test

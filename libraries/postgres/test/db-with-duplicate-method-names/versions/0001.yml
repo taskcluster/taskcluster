@@ -6,6 +6,10 @@ migrationScript: |-
       secret text
     );
   end
+downgradeScript: |-
+  begin
+    drop table screts;
+  end
 methods:
   get_secret:
     description: |-

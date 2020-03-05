@@ -8,6 +8,7 @@ const {
   QUERY_CANCELED,
   READ_ONLY_SQL_TRANSACTION,
   UNDEFINED_COLUMN,
+  UNDEFINED_TABLE,
 } = require('..');
 const path = require('path');
 const assert = require('assert').strict;
@@ -88,6 +89,21 @@ helper.dbSuite(path.basename(__filename), function() {
   ];
   const schema = Schema.fromSerializable({versions, access: {}});
 
+  const createUsers = async db => {
+    await db._withClient('admin', async client => {
+      // create users so the grants will succeed
+      for (let username of ['test_service1', 'test_service2']) {
+        try {
+          await client.query(`create user ${username}`);
+        } catch (err) {
+          if (err.code !== DUPLICATE_OBJECT) {
+            throw err;
+          }
+        }
+      }
+    });
+  };
+
   teardown(async function() {
     if (db) {
       try {
@@ -121,18 +137,7 @@ helper.dbSuite(path.basename(__filename), function() {
   suite('db._doUpgrade', function() {
     suiteSetup(async function() {
       db = new Database({urlsByMode: {admin: helper.dbUrl}});
-      await db._withClient('admin', async client => {
-        // create users so the grants will succeed
-        for (let username of ['test_service1', 'test_service2']) {
-          try {
-            await client.query(`create user ${username}`);
-          } catch (err) {
-            if (err.code !== DUPLICATE_OBJECT) {
-              throw err;
-            }
-          }
-        }
-      });
+      await createUsers(db);
     });
 
     setup(function() {
@@ -184,23 +189,118 @@ helper.dbSuite(path.basename(__filename), function() {
     });
   });
 
+  suite('db._doDowngrade', function() {
+    suiteSetup(async function() {
+      // TODO: factor to util
+      db = new Database({urlsByMode: {admin: helper.dbUrl}});
+      await createUsers(db);
+    });
+
+    const v1 = {
+      version: 1,
+      migrationScript: `begin
+        create table foo as select 1 as bar;
+        grant select on foo to $db_user_prefix$_service1;
+      end`,
+      downgradeScript: `begin
+        revoke select on foo from $db_user_prefix$_service1;
+        drop table foo;
+      end`,
+      methods: {
+        test: {
+          args: '',
+          returns: 'int',
+          body: 'begin return 1; end',
+        },
+      },
+    };
+
+    const v2 = {
+      version: 2,
+      migrationScript: `begin
+        create table foo2 as select 1 as bar;
+        grant select on foo2 to $db_user_prefix$_service2;
+      end`,
+      downgradeScript: `begin
+        revoke select on foo2 from $db_user_prefix$_service2;
+        drop table foo2;
+      end`,
+      methods: {
+        test: {
+          args: '',
+          returns: 'int',
+          body: 'begin return 2; end',
+        },
+      },
+    };
+
+    const testMethod = async (client, v) => {
+      const res = await client.query('select test()');
+      assert.equal(res.rows[0].test, v);
+    };
+
+    setup(async function() {
+      db = new Database({urlsByMode: {[READ]: helper.dbUrl, 'admin': helper.dbUrl}});
+      await db._doUpgrade({
+        version: v1,
+        showProgress: () => {},
+        usernamePrefix: 'test',
+      });
+      await db._doUpgrade({
+        version: v2,
+        showProgress: () => {},
+        usernamePrefix: 'test',
+      });
+      await db._withClient('admin', async client => {
+        await testMethod(client, 2);
+      });
+    });
+
+    test('_doDowngrade runs downgrade script with multiple statements and $db_user_prefix$', async function() {
+      await db._doDowngrade({
+        fromVersion: v2,
+        toVersion: v1,
+        showProgress: () => {},
+        usernamePrefix: 'test',
+      });
+      assert.equal(await db.currentVersion(), 1);
+      await db._withClient('admin', async client => {
+        await assert.rejects(async () => {
+          await client.query('select * from foo2');
+        }, err => err.code === UNDEFINED_TABLE);
+        // method is now the v1 method
+        await testMethod(client, 1);
+      });
+    });
+
+    test('failure does not modify version', async function() {
+      await assert.rejects(
+        async () => db._doDowngrade({
+          fromVersion: {
+            ...v2,
+            downgradeScript: `begin
+              drop table NOSUCHTABLE;
+            end`,
+          },
+          toVersion: v1,
+          showProgress: () => {},
+          usernamePrefix: 'test',
+        }),
+        err => err.code === UNDEFINED_TABLE);
+      assert.equal(await db.currentVersion(), 2);
+      await db._withClient('admin', async client => {
+        // method is still the v2 method
+        await testMethod(client, 2);
+      });
+    });
+  });
+
   suite('Database._checkPermissions', function() {
     let db;
 
     suiteSetup(async function() {
       db = new Database({urlsByMode: {admin: helper.dbUrl}});
-      await db._withClient('admin', async client => {
-        // create users so the grants will succeed
-        for (let username of ['test_service1', 'test_service2']) {
-          try {
-            await client.query(`create user ${username}`);
-          } catch (err) {
-            if (err.code !== DUPLICATE_OBJECT) {
-              throw err;
-            }
-          }
-        }
-      });
+      await createUsers(db);
     });
 
     setup(async function() {
@@ -291,6 +391,16 @@ helper.dbSuite(path.basename(__filename), function() {
       assert(!db.fns.old);
     });
 
+    test('non-numeric statementTimeout is not alloewd', async function() {
+      await assert.rejects(() => Database.setup({
+        schema,
+        readDbUrl: helper.dbUrl,
+        writeDbUrl: helper.dbUrl,
+        serviceName: 'service-1',
+        statementTimeout: 'about 3 seconds',
+      }), err => err.code === 'ERR_ASSERTION');
+    });
+
     test('slow methods are aborted if statementTimeout is set', async function() {
       await Database.upgrade({schema, adminDbUrl: helper.dbUrl, usernamePrefix: 'test'});
       db = await Database.setup({
@@ -347,5 +457,15 @@ helper.dbSuite(path.basename(__filename), function() {
       await db.fns.testdata();
       await db.close();
     });
+  });
+
+  test('_validUsernamePrefix', function() {
+    assert(Database._validUsernamePrefix('a_b_c'));
+    assert(!Database._validUsernamePrefix(''));
+    assert(!Database._validUsernamePrefix('abc_123'));
+    assert(!Database._validUsernamePrefix('123'));
+    // this would be a particularly bizarre thing to put in the deployment configuration,
+    // but hey, it won't work!
+    assert(!Database._validUsernamePrefix(`'; drop table clients`));
   });
 });
