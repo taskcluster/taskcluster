@@ -77,6 +77,7 @@ class Database {
    * If given, the upgrade process stops at toVersion; this is used for testing.
    */
   static async upgrade({schema, showProgress = () => {}, usernamePrefix, toVersion, adminDbUrl}) {
+    assert(Database._validUsernamePrefix(usernamePrefix));
     const db = new Database({urlsByMode: {admin: adminDbUrl, read: adminDbUrl}});
 
     await db._createExtensions();
@@ -128,6 +129,7 @@ class Database {
    * The `showProgress` parameter is like that for upgrade().
    */
   static async downgrade({schema, showProgress = () => {}, usernamePrefix, toVersion, adminDbUrl}) {
+    assert(Database._validUsernamePrefix(usernamePrefix));
     const db = new Database({urlsByMode: {admin: adminDbUrl, read: adminDbUrl}});
 
     await db._createExtensions();
@@ -315,6 +317,7 @@ class Database {
    * Private constructor (use Database.setup and Database.upgrade instead)
    */
   constructor({urlsByMode, statementTimeout}) {
+    assert(!statementTimeout || typeof statementTimeout === 'number');
     const makePool = dbUrl => {
       const pool = new Pool({connectionString: dbUrl});
       // ignore errors from *idle* connections.  From the docs:
@@ -333,6 +336,8 @@ class Database {
       pool.on('error', client => {});
       pool.on('connect', async client => {
         if (statementTimeout) {
+          // note that postgres placeholders don't seem to work here.  So we check
+          // that this is a number (above) and subtitute it directly
           await client.query(`set statement_timeout = ${statementTimeout}`);
         }
 
@@ -414,6 +419,10 @@ class Database {
    */
   async close() {
     await Promise.all(Object.values(this.pools).map(pool => pool.end()));
+  }
+
+  static _validUsernamePrefix(usernamePrefix) {
+    return usernamePrefix.match(/^[a-z_]+$/);
   }
 }
 
