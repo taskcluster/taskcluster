@@ -3244,13 +3244,35 @@
                 },
                 "name": "engines",
                 "next": {
-                  "path": "reference/workers/generic-worker/installing",
-                  "title": "Installing"
+                  "path": "reference/workers/generic-worker/support-tiers",
+                  "title": "Support Tiers"
                 },
                 "path": "reference/workers/generic-worker/engines",
                 "prev": {
                   "path": "reference/workers/generic-worker/features",
                   "title": "Features"
+                },
+                "up": {
+                  "path": "reference/workers/generic-worker/README",
+                  "title": "generic-worker"
+                }
+              },
+              {
+                "children": [
+                ],
+                "data": {
+                  "order": 35,
+                  "title": "Support Tiers"
+                },
+                "name": "support-tiers",
+                "next": {
+                  "path": "reference/workers/generic-worker/installing",
+                  "title": "Installing"
+                },
+                "path": "reference/workers/generic-worker/support-tiers",
+                "prev": {
+                  "path": "reference/workers/generic-worker/engines",
+                  "title": "Engines"
                 },
                 "up": {
                   "path": "reference/workers/generic-worker/README",
@@ -3271,8 +3293,8 @@
                 },
                 "path": "reference/workers/generic-worker/installing",
                 "prev": {
-                  "path": "reference/workers/generic-worker/engines",
-                  "title": "Engines"
+                  "path": "reference/workers/generic-worker/support-tiers",
+                  "title": "Support Tiers"
                 },
                 "up": {
                   "path": "reference/workers/generic-worker/README",
