@@ -135,7 +135,7 @@ exports.withAmazonIPRanges = (mock, skipping) => {
     interceptor = nock('https://ip-ranges.amazonaws.com')
       .persist()
       .get('/ip-ranges.json')
-      .replyWithFile(200, __dirname + '/ip-ranges.json', {'Content-Type': 'application/json'});
+      .replyWithFile(200, __dirname + '/fake-ip-ranges.json', {'Content-Type': 'application/json'});
   });
 
   suiteTeardown(async function() {
