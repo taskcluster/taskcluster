@@ -975,7 +975,7 @@ builder.declare({
   method: 'post',
   route: '/task/:taskId/rerun',
   name: 'rerunTask',
-  stability: APIBuilder.stability.deprecated,
+  stability: APIBuilder.stability.stable,
   category: 'Tasks',
   scopes: {AnyOf: [
     'queue:rerun-task:<schedulerId>/<taskGroupId>/<taskId>',

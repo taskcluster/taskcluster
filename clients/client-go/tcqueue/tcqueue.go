@@ -279,8 +279,6 @@ func (queue *Queue) ScheduleTask(taskId string) (*TaskStatusResponse, error) {
 	return responseObject.(*TaskStatusResponse), err
 }
 
-// Stability: *** DEPRECATED ***
-//
 // This method _reruns_ a previously resolved task, even if it was
 // _completed_. This is useful if your task completes unsuccessfully, and
 // you just want to run it from scratch again. This will also reset the

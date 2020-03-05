@@ -1081,7 +1081,7 @@ var services = map[string]definitions.Service{
 				Name:        "rerunTask",
 				Title:       "Rerun a Resolved Task",
 				Description: "This method _reruns_ a previously resolved task, even if it was\n_completed_. This is useful if your task completes unsuccessfully, and\nyou just want to run it from scratch again. This will also reset the\nnumber of `retries` allowed.\n\nThis method is deprecated in favour of creating a new task with the same\ntask definition (but with a new taskId).\n\nRemember that `retries` in the task status counts the number of runs that\nthe queue have started because the worker stopped responding, for example\nbecause a spot node died.\n\n**Remark** this operation is idempotent, if you try to rerun a task that\nis not either `failed` or `completed`, this operation will just return\nthe current task status.",
-				Stability:   "deprecated",
+				Stability:   "stable",
 				Method:      "post",
 				Route:       "/task/<taskId>/rerun",
 				Args: []string{
