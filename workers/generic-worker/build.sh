@@ -65,6 +65,8 @@ function install {
   GOOS="${2}" GOARCH="${3}" CGO_ENABLED=0 go build -o "$OUTPUT_DIR/generic-worker-${1}-${2}-${3}" -ldflags "-X main.revision=$(git rev-parse HEAD)" -tags "${1}" -v .
 }
 
+# NOTE: when changing this, also update
+# ui/docs/reference/workers/generic-worker/support-tiers.mdx
 if ${ALL_PLATFORMS}; then
   install multiuser windows amd64
   install multiuser windows 386
@@ -87,6 +89,8 @@ else
              ;;
      darwin) install simple    "${MY_GOHOSTOS}" "${MY_GOHOSTARCH}"
              install multiuser "${MY_GOHOSTOS}" "${MY_GOHOSTARCH}"
+             ;;
+     freebsd) install simple    "${MY_GOHOSTOS}" "${MY_GOHOSTARCH}"
              ;;
     windows) install multiuser "${MY_GOHOSTOS}" "${MY_GOHOSTARCH}"
              ;;

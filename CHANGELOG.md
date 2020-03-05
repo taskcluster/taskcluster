@@ -3,6 +3,68 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v25.4.0
+
+▶ [minor] [bug 1608185](http://bugzil.la/1608185)
+Taskcluster-worker-runner now passes `--with-worker-runner` to generic-worker when running it directly.  When running generic-worker as a Windows service, this argument should be included in the service definition.
+
+Only generic-worker versions 25.0.0 and higher support this argument.  In general, we recommend running matching versions of taskcluster-worker-runner and generic-worker.
+
+▶ [minor] [bug 1522154](http://bugzil.la/1522154)
+[Matrix](https://matrix.org/) notifications are now supported if a deployment is configured
+with credentials for a homeserver. The three fields needed are:
+
+```yaml
+notify.matrix_base_url: foo # The homeserver where your client is registered
+notify.matrix_user_id: bar # The user that will act on behalf of taskcluster
+notify.matrix_access_token: baz # An access token for this user
+```
+
+If you are using riot, you can get the access token by following [this guide](https://t2bot.io/docs/access_tokens/).
+
+▶ [patch] [bug 1600071](http://bugzil.la/1600071)
+Avoid overprovisioning for instances that take a long time to boot.
+
+▶ [patch] [#2404](https://github.com/taskcluster/taskcluster/issues/2404)
+Fix worker type page when the latest task has no runs. Previously, an error
+panel was being displayed with text "t.run is null".
+
+▶ [patch] [bug 1616922](http://bugzil.la/1616922)
+Generic-Worker documentation is now included in the Taskcluster documentation site,
+and the generic-worker task payload has been slightly tightened.
+
+* `task.payload.artifacts` must contain unique items
+* `task.payload.onExitStatus.retry` must contain unique items
+
+▶ [patch] [bug 1558240](http://bugzil.la/1558240)
+Generic-worker now outputs a newline before `=== Task Finished ===`, to ensure that line is separated from other output in the logs.
+
+▶ [patch] [bug 1433854](http://bugzil.la/1433854)
+Task directories from previous task runs on Windows are now more aggressively
+purged.
+
+This should reduce the amount of time spent trying to delete task directories
+between task runs, and also the amount of logging, in addition to freeing up
+more disk space.
+
+This issue always existed on the Windows version of generic-worker. A similar
+issue existed on macOS and Linux but was fixed in bug 1615312 which was
+initially tagged for release in v25.0.0, but first appeared in release 25.3.0
+due to some problems with the release process.
+
+▶ [patch] [#2004](https://github.com/taskcluster/taskcluster/issues/2004)
+The Task Details panel in the Task view now wraps the payload text in order to
+be able to see the complete payload without scrolling.
+
+▶ [patch] [bug 1618066](http://bugzil.la/1618066)
+fix bug where workerInfo could have NaN values
+
+▶ [patch] [bug 1616649](http://bugzil.la/1616649)
+reimplements azure-provider's use of the azure SDK to avoid blocking operations that can hold up worker-manager iterations
+resource creation operations that were previously waiting for completion in the provisioner now are tracked and checked on as part of the worker-scanner iteration
+
+▶ Additional change not described here: [bug 1616900](http://bugzil.la/1616900).
+
 ## v25.3.0
 
 ▶ [minor] [bug 1616214](http://bugzil.la/1616214)

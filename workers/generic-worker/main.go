@@ -2,6 +2,7 @@
 //go:generate go run ./gw-codegen file://schemas/docker_posix.yml       generated_docker_darwin.go       docker
 //go:generate go run ./gw-codegen file://schemas/simple_posix.yml       generated_simple_linux.go        simple
 //go:generate go run ./gw-codegen file://schemas/simple_posix.yml       generated_simple_darwin.go       simple
+//go:generate go run ./gw-codegen file://schemas/simple_posix.yml       generated_simple_freebsd.go      simple
 //go:generate go run ./gw-codegen file://schemas/multiuser_posix.yml    generated_multiuser_darwin.go    multiuser
 //go:generate go run ./gw-codegen file://schemas/multiuser_posix.yml    generated_multiuser_linux.go     multiuser
 //go:generate go run ./gw-codegen file://schemas/multiuser_windows.yml  generated_multiuser_windows.go   multiuser
@@ -72,7 +73,7 @@ var (
 	logName = "public/logs/live_backing.log"
 	logPath = filepath.Join("generic-worker", "live_backing.log")
 
-	version  = "25.3.0"
+	version  = "25.4.0"
 	revision = "" // this is set during build with `-ldflags "-X main.revision=$(git rev-parse HEAD)"`
 )
 
@@ -1153,7 +1154,7 @@ func (task *TaskRun) Run() (err *ExecutionErrors) {
 	started := time.Now()
 	defer func() {
 		finished := time.Now()
-		task.Info("\n=== Task Finished ===")
+		task.Info("=== Task Finished ===")
 		// Round(0) forces wall time calculation instead of monotonic time in case machine slept etc
 		task.Info("Task Duration: " + finished.Round(0).Sub(started).String())
 	}()

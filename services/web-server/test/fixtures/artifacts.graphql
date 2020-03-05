@@ -1,0 +1,10 @@
+query Artifacts($taskId: ID!, $runId: Int!) {
+  artifacts(taskId: $taskId, runId: $runId) {
+    edges{
+      node{
+        taskId,
+        name
+      }
+    }
+  }
+}

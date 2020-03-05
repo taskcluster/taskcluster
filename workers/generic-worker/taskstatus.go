@@ -57,6 +57,12 @@ type TaskStatusManager struct {
 }
 
 func (tsm *TaskStatusManager) DeregisterListener(listener *TaskStatusChangeListener) {
+	// https://bugzil.la/1619925
+	// This lock ensures that any currently executing callbacks complete before
+	// the listener is deregistered, and that no new callbacks are scheduled
+	// once this method has started.
+	tsm.Lock()
+	defer tsm.Unlock()
 	// if Start() failed, a listener might not be registered, so check before deleting it...
 	if tsm.statusChangeListeners[listener] {
 		delete(tsm.statusChangeListeners, listener)

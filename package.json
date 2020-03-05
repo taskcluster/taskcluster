@@ -1,6 +1,6 @@
 {
   "name": "taskcluster",
-  "version": "25.3.0",
+  "version": "25.4.0",
   "private": true,
   "engine-strict": true,
   "engines": {
@@ -60,7 +60,7 @@
     "irc-upd": "^0.10.0",
     "iterall": "^1.2.2",
     "js-yaml": "^3.13.1",
-    "json-e": "^3.0.0",
+    "json-e": "^4.0.0",
     "json-parameterization": "^2.0.0",
     "jsonwebtoken": "^8.1.1",
     "jwks-rsa": "^1.2.1",
@@ -217,13 +217,21 @@
     "rangeStrategy": "update-lockfile",
     "packageRules": [
       {
-        "packageNames": ["aws-sdk", "golang.org/x/sys"],
-        "schedule": ["after 9pm on sunday"]
+        "packageNames": [
+          "aws-sdk",
+          "golang.org/x/sys"
+        ],
+        "schedule": [
+          "after 9pm on sunday"
+        ]
       }
     ],
     "enabledManagers": [
       "npm",
       "gomod"
+    ],
+    "postUpdateOptions": [
+      "gomodTidy"
     ]
   },
   "eslintIgnore": [

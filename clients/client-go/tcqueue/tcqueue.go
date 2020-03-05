@@ -217,26 +217,12 @@ func (queue *Queue) ListDependentTasks(taskId, continuationToken, limit string) 
 // on the content of the `scopes`, `routes`, `schedulerId`, `priority`,
 // `provisionerId`, and `workerType` properties of the task definition.
 //
-// **Legacy Scopes**: The `queue:create-task:..` scope without a priority and
-// the `queue:define-task:..` and `queue:task-group-id:..` scopes are considered
-// legacy and should not be used. Note that the new, non-legacy scopes require
-// a `queue:scheduler-id:..` scope as well as scopes for the proper priority.
-//
 // Required scopes:
 //   All of:
 //   * For scope in scopes each <scope>
 //   * For route in routes each queue:route:<route>
-//   * Any of:
-//     - All of:
-//       * queue:scheduler-id:<schedulerId>
-//       * For priority in priorities each queue:create-task:<priority>:<provisionerId>/<workerType>
-//     - If legacyScopes:
-//         Any of:
-//         - queue:create-task:<provisionerId>/<workerType>
-//         - All of:
-//           * queue:define-task:<provisionerId>/<workerType>
-//           * queue:task-group-id:<schedulerId>/<taskGroupId>
-//           * queue:schedule-task:<schedulerId>/<taskGroupId>/<taskId>
+//   * queue:scheduler-id:<schedulerId>
+//   * For priority in priorities each queue:create-task:<priority>:<provisionerId>/<workerType>
 //
 // See #createTask
 func (queue *Queue) CreateTask(taskId string, payload *TaskDefinitionRequest) (*TaskStatusResponse, error) {
@@ -254,17 +240,8 @@ func (queue *Queue) CreateTask(taskId string, payload *TaskDefinitionRequest) (*
 //   All of:
 //   * For scope in scopes each <scope>
 //   * For route in routes each queue:route:<route>
-//   * Any of:
-//     - All of:
-//       * queue:scheduler-id:<schedulerId>
-//       * For priority in priorities each queue:create-task:<priority>:<provisionerId>/<workerType>
-//     - If legacyScopes:
-//         Any of:
-//         - queue:define-task:<provisionerId>/<workerType>
-//         - queue:create-task:<provisionerId>/<workerType>
-//         - All of:
-//           * queue:define-task:<provisionerId>/<workerType>
-//           * queue:task-group-id:<schedulerId>/<taskGroupId>
+//   * queue:scheduler-id:<schedulerId>
+//   * For priority in priorities each queue:create-task:<priority>:<provisionerId>/<workerType>
 //
 // See #defineTask
 func (queue *Queue) DefineTask(taskId string, payload *TaskDefinitionRequest) (*TaskStatusResponse, error) {
@@ -302,8 +279,6 @@ func (queue *Queue) ScheduleTask(taskId string) (*TaskStatusResponse, error) {
 	return responseObject.(*TaskStatusResponse), err
 }
 
-// Stability: *** DEPRECATED ***
-//
 // This method _reruns_ a previously resolved task, even if it was
 // _completed_. This is useful if your task completes unsuccessfully, and
 // you just want to run it from scratch again. This will also reset the

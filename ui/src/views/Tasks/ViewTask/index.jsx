@@ -1,7 +1,7 @@
 import { hot } from 'react-hot-loader';
 import React, { Component, Fragment } from 'react';
 import { withApollo, graphql } from 'react-apollo';
-import { omit, pathOr } from 'ramda';
+import { omit, pathOr, mergeRight } from 'ramda';
 import cloneDeep from 'lodash.clonedeep';
 import Spinner from '@mozilla-frontend-infra/components/Spinner';
 import { withStyles } from '@material-ui/core/styles';
@@ -41,6 +41,7 @@ import {
   VALID_TASK,
   TASK_ADDED_FIELDS,
   TASK_POLL_INTERVAL,
+  UI_SCHEDULER_ID,
 } from '../../../utils/constants';
 import db from '../../../utils/db';
 import ErrorPanel from '../../../components/ErrorPanel';
@@ -288,17 +289,20 @@ export default class ViewTask extends Component {
   handleCloneTask = () => {
     const task = removeKeys(cloneDeep(this.props.data.task), ['__typename']);
 
-    return omit(
-      [
-        ...TASK_ADDED_FIELDS,
-        'routes',
-        'taskGroupId',
-        'schedulerId',
-        'priority',
-        'dependencies',
-        'requires',
-      ],
-      task
+    return mergeRight(
+      omit(
+        [
+          ...TASK_ADDED_FIELDS,
+          'routes',
+          'taskGroupId',
+          'schedulerId',
+          'priority',
+          'dependencies',
+          'requires',
+        ],
+        task
+      ),
+      { schedulerId: UI_SCHEDULER_ID }
     );
   };
 

@@ -14,7 +14,11 @@ import ErrorPanel from '../../../components/ErrorPanel';
 import hooksQuery from './hooks.graphql';
 
 @hot(module)
-@graphql(hooksQuery)
+@graphql(hooksQuery, {
+  options: {
+    fetchPolicy: 'network-only',
+  },
+})
 @withStyles(theme => ({
   actionButton: {
     ...theme.mixins.fab,

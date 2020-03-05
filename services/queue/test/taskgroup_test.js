@@ -92,9 +92,9 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws', 'azure'], function(mock, s
     let taskGroupId = slugid.v4();
 
     helper.scopes(
-      'queue:define-task:no-provisioner-extended-extended/test-worker-extended-extended',
+      'queue:create-task:highest:no-provisioner-extended-extended/test-worker-extended-extended',
+      'queue:scheduler-id:dummy-scheduler-extended-extended-*',
       'queue:task-group-id:*',
-      'queue:schedule-task:*',
     );
 
     debug('### Creating taskA');

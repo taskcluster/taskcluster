@@ -11,6 +11,13 @@ const libUrls = require('taskcluster-lib-urls');
 const request = require('superagent');
 const merge = require('deepmerge');
 const PulseEngine = require('../src/PulseEngine');
+const { WebSocketLink } = require('apollo-link-ws');
+const WebSocket = require('ws');
+const { SubscriptionClient } = require('subscriptions-transport-ws');
+const { ApolloClient } = require('apollo-client');
+const { InMemoryCache } = require('apollo-cache-inmemory');
+const { HttpLink } = require('apollo-link-http');
+const fetch = require('node-fetch');
 
 exports.load = stickyLoader(load);
 
@@ -246,6 +253,43 @@ exports.withGithubClient = () => {
   });
 };
 
+exports.getHttpClient = () => {
+  const cache = new InMemoryCache();
+  const httpLink = new HttpLink({
+    uri: `http://localhost:${exports.serverPort}/graphql`,
+    fetch,
+  });
+
+  return new ApolloClient({ cache, link: httpLink });
+};
+
+exports.getWebsocketClient = (subscriptionClient) => {
+  const cache = new InMemoryCache();
+  const link = new WebSocketLink(subscriptionClient);
+
+  return new ApolloClient({ cache, link });
+};
+
+// If a subscription client is created for a test, it also needs to be closed.
+// Otherwise, the tests will just hang and timeout
+exports.createSubscriptionClient = async () => {
+  return new Promise(function(resolve, reject) {
+    const subscriptionClient = new SubscriptionClient(
+      `ws://localhost:${exports.serverPort}/subscription`,
+      {
+        reconnect: true,
+      },
+      WebSocket,
+    );
+    subscriptionClient.onConnected(function() {
+      resolve(subscriptionClient);
+    });
+    subscriptionClient.onError(function(err) {
+      reject(err);
+    });
+  });
+};
+
 const stubbedAuth = () => {
   const auth = new taskcluster.Auth({
     rootUrl: exports.rootUrl,
@@ -384,6 +428,33 @@ const stubbedClients = () => {
           };
 
           return Promise.resolve(taskStatus);
+        },
+        getArtifact: async (taskId, runId, name ) => {
+          const artifact = {
+            taskId: taskId,
+            runId: runId,
+            name: name,
+          };
+          return Promise.resolve(artifact);
+        },
+        listArtifacts: async (taskId, runId, options) => {
+          const artifacts = ["1", "2", "3"].map(artifactSuffix => {
+            return {
+              taskId,
+              runId,
+              name: `artifact-${artifactSuffix}`,
+            };
+          });
+          return Promise.resolve({artifacts});
+        },
+        listLatestArtifacts: async (taskId, options) => {
+          const artifacts = ["1", "2", "3"].map(artifactSuffix => {
+            return {
+              taskId,
+              name: `artifact-${artifactSuffix}`,
+            };
+          });
+          return Promise.resolve({artifacts});
         },
       },
     }),

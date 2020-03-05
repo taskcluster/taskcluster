@@ -228,13 +228,13 @@
       "description": "Conditions a worker can reach and actions to take in the case that they do.\nNot all providers necessarily implement all features of this in the same way.\nRead the providers docs to understand exactly what it will do.\n",
       "properties": {
         "registrationTimeout": {
-          "description": "Each worker in this pool has `registrationTimeout` seconds to\nregister itself with worker-manager after it has\nbeen requsted from the cloud provider. After this\ntimeout, worker-manager will terminate the instance,\nassuming it is broken.\n",
+          "description": "Each worker in this pool has `registrationTimeout` seconds to\nregister itself with worker-manager after it has\nbeen requsted from the cloud provider. After this\ntimeout, worker-manager will terminate the instance,\nassuming it is broken.\n\nThis parameter has no effect for worker pools using the static provider\ntype.\n",
           "title": "Registration Timeout",
           "type": "integer"
         },
         "reregistrationTimeout": {
           "default": 345600,
-          "description": "If specified, workers in this pool must re-register via `reregister()`\nwithin `reregistrationTimeout` seconds from the initial call to `register()`\nto get new credentials. If the worker has not done so, it will be\nterminated. This defaults to 96 hours.\n",
+          "description": "If specified, workers in this pool must re-register via `reregister()`\nwithin `reregistrationTimeout` seconds from the initial call to\n`register()` to get new credentials. If the worker has not done so, it\nwill be terminated.  This value also dictates the lifetime of the\ntemporary credentials granted to the worker, meaning that it cannot be\ngreater than 31 days.\n\nThe default value is 3 days.\n",
           "title": "Checkin Timeout",
           "type": "integer"
         }
@@ -438,7 +438,7 @@
       "properties": {
         "credentials": {
           "additionalProperties": false,
-          "description": "The credentials the worker\nwill need to perform its work.  Specifically, credentials with scopes\n* `assume:worker-pool:<workerPoolId>`\n* `assume:worker-id:<workerGroup>/<workerId>`\n* `queue:worker-id:<workerGroup>/<workerId>`\n* `secrets:get:worker-pool:<workerPoolId>`\n* `queue:claim-work:<workerPoolId>`\n",
+          "description": "The credentials the worker\nwill need to perform its work.  Specifically, credentials with scopes\n* `assume:worker-pool:<workerPoolId>`\n* `assume:worker-id:<workerGroup>/<workerId>`\n* `queue:worker-id:<workerGroup>/<workerId>`\n* `secrets:get:worker-pool:<workerPoolId>`\n* `queue:claim-work:<workerPoolId>`\n* `worker-manager:remove-worker:<workerPoolId>/<workerGroup>/<workerId>`\n",
           "properties": {
             "accessToken": {
               "type": "string"
@@ -756,6 +756,13 @@
       "$schema": "/schemas/common/metaschema.json#",
       "additionalProperties": false,
       "description": "A configuration for static workertypes",
+      "properties": {
+        "lifecycle": {
+          "$ref": "worker-lifecycle.json#"
+        }
+      },
+      "required": [
+      ],
       "title": "Static Provider Config",
       "type": "object"
     },
@@ -11700,6 +11707,215 @@
   {
     "content": {
       "$schema": "/schemas/common/logs-reference-v0.json#",
+      "serviceName": "web-server",
+      "types": [
+        {
+          "description": "Status and duration of a periodic background process.",
+          "fields": {
+            "duration": "The duration in ms of the process.",
+            "name": "The name of this process.",
+            "status": "Either success, or exception depending on the outcome."
+          },
+          "level": "any",
+          "name": "periodic",
+          "title": "Periodic Process",
+          "type": "monitor.periodic",
+          "version": 1
+        },
+        {
+          "description": "The most basic timer.",
+          "fields": {
+            "duration": "The duration in ms of whatever was timed.",
+            "key": "A key that should be unique to the logger prefix."
+          },
+          "level": "info",
+          "name": "basicTimer",
+          "title": "Basic Timer",
+          "type": "monitor.timer",
+          "version": 1
+        },
+        {
+          "description": "A basic timer applied to a function.",
+          "fields": {
+            "duration": "The duration in ms of the function.",
+            "name": "The name of the handler.",
+            "status": "Whether or not the handler resolved succesfully."
+          },
+          "level": "info",
+          "name": "handlerTimer",
+          "title": "Handler Timer",
+          "type": "monitor.timedHandler",
+          "version": 1
+        },
+        {
+          "description": "A timer for calls to aws services.",
+          "fields": {
+            "duration": "How long it took to resolve the request in ms.",
+            "operation": "The specific operation of this call.",
+            "region": "The AWS region this service is in.",
+            "service": "The name of the aws service being accessed."
+          },
+          "level": "info",
+          "name": "awsTimer",
+          "title": "AWS Request Report",
+          "type": "monitor.aws",
+          "version": 1
+        },
+        {
+          "description": "Metrics of a node process.",
+          "fields": {
+            "lastCpuUsage": "The output of node's process.cpuUsage",
+            "lastMemoryUsage": "The output of node's process.memoryUsage"
+          },
+          "level": "info",
+          "name": "resourceMetrics",
+          "title": "Resource Usage Metrics",
+          "type": "monitor.resources",
+          "version": 1
+        },
+        {
+          "description": "A simple measurement. The reported values are expected to have statistics calculated over them.",
+          "fields": {
+            "key": "An arbitrary key.",
+            "val": "A number that should be calculated over in a time span."
+          },
+          "level": "info",
+          "name": "measureMetric",
+          "title": "Generic Measure",
+          "type": "monitor.measure",
+          "version": 1
+        },
+        {
+          "description": "A simple count. The reported values should be summed up in a time span.",
+          "fields": {
+            "key": "An arbitrary key.",
+            "val": "A number that should be summed over a time span."
+          },
+          "level": "info",
+          "name": "countMetric",
+          "title": "Generic Count",
+          "type": "monitor.count",
+          "version": 1
+        },
+        {
+          "description": "A specifically formatted error report. Will have at least the following but can contain more.",
+          "fields": {
+            "message": "Whatever message the error contained.",
+            "name": "The name of the error.",
+            "stack": "A nodejs stack trace."
+          },
+          "level": "any",
+          "name": "errorReport",
+          "title": "Error Report",
+          "type": "monitor.error",
+          "version": 1
+        },
+        {
+          "description": "A simple timekeeper for measuring arbitrary time spans.",
+          "fields": {
+            "duration": "The duration in ms of whatever was timed.",
+            "key": "A key that should be unique to the logger prefix."
+          },
+          "level": "info",
+          "name": "timekeeper",
+          "title": "TimeKeeper Report",
+          "type": "monitor.timekeeper",
+          "version": 1
+        },
+        {
+          "description": "An internal type for logging simple messages. No required fields.",
+          "fields": {
+          },
+          "level": "any",
+          "name": "generic",
+          "title": "Generic Message",
+          "type": "monitor.generic",
+          "version": 1
+        },
+        {
+          "description": "An internal type for reporting malformed logging calls.",
+          "fields": {
+          },
+          "level": "err",
+          "name": "loggingError",
+          "title": "Error in Logging",
+          "type": "monitor.loggingError",
+          "version": 1
+        },
+        {
+          "description": "A connection to Pulse has been established.  Taskcluster services\nautomatically reconnect to Pulse periodically and in the event of\nan error, but rapid reconnections may signal a Pulse failure.",
+          "fields": {
+          },
+          "level": "info",
+          "name": "pulseConnected",
+          "title": "Connection to pulse established",
+          "type": "pulse.connected",
+          "version": 1
+        },
+        {
+          "description": "A connection to Pulse has ended or failed.  This may be due to normal\nreconnection or to an error communicating with Pulse.  The service\nautomatically reconnects, so even an error is not necessarily a problem.",
+          "fields": {
+            "error": "The error message, if the disconnection was due to an error."
+          },
+          "level": "info",
+          "name": "pulseDisconnected",
+          "title": "Connection to pulse has ended",
+          "type": "pulse.disconnected",
+          "version": 1
+        },
+        {
+          "description": "A pulse publisher has been notified by the pulse server\nthat it has been blocked, usually because the server is\nresource-constrained.  If `blocked` is false, then the\nnotification is that the publisher has been unblocked\nafter having previously been blocked.",
+          "fields": {
+            "blocked": "If true, the publisher has been blocked; if false, it has been unblocked."
+          },
+          "level": "warning",
+          "name": "pulsePublisherBlocked",
+          "title": "Pulse server has (un)blocked a publisher",
+          "type": "pulsePublisherBlocked",
+          "version": 1
+        },
+        {
+          "description": "A client has been issued Taskcluster credentials",
+          "fields": {
+            "clientId": "The clientId of the issued credentials",
+            "expires": "Date time when the issued credentials expires.",
+            "userIdentity": "The identity of the user to which the credentials were issued"
+          },
+          "level": "info",
+          "name": "createCredentials",
+          "title": "Credentials Created",
+          "type": "create-credentials",
+          "version": 1
+        },
+        {
+          "description": "The PulseEngine has created a queue and bound it to one or more exchanges in\nresponse to a GraphQL subsscription request.",
+          "fields": {
+            "subscriptionId": "The subscriptionId, which will also appear in the AMQP queue name"
+          },
+          "level": "debug",
+          "name": "bindPulseSubscription",
+          "title": "Bind a Pulse Subscription",
+          "type": "bind-pulse-subscription",
+          "version": 1
+        },
+        {
+          "description": "The PulseEngine has deleted a queue bound to one or more exchanges in\nresponse to termination of a GraphQL subsscription request.",
+          "fields": {
+            "subscriptionId": "The subscriptionId, which will also appear in the AMQP queue name"
+          },
+          "level": "debug",
+          "name": "unbindPulseSubscription",
+          "title": "Unbind a Pulse Subscription",
+          "type": "unbind-pulse-subscription",
+          "version": 1
+        }
+      ]
+    },
+    "filename": "references/web-server/v1/logs.json"
+  },
+  {
+    "content": {
+      "$schema": "/schemas/common/logs-reference-v0.json#",
       "serviceName": "secrets",
       "types": [
         {
@@ -12917,7 +13133,7 @@
             "taskId"
           ],
           "category": "Tasks",
-          "description": "Create a new task, this is an **idempotent** operation, so repeat it if\nyou get an internal server error or network connection is dropped.\n\n**Task `deadline`**: the deadline property can be no more than 5 days\ninto the future. This is to limit the amount of pending tasks not being\ntaken care of. Ideally, you should use a much shorter deadline.\n\n**Task expiration**: the `expires` property must be greater than the\ntask `deadline`. If not provided it will default to `deadline` + one\nyear. Notice, that artifacts created by task must expire before the task.\n\n**Task specific routing-keys**: using the `task.routes` property you may\ndefine task specific routing-keys. If a task has a task specific \nrouting-key: `<route>`, then when the AMQP message about the task is\npublished, the message will be CC'ed with the routing-key: \n`route.<route>`. This is useful if you want another component to listen\nfor completed tasks you have posted.  The caller must have scope\n`queue:route:<route>` for each route.\n\n**Dependencies**: any tasks referenced in `task.dependencies` must have\nalready been created at the time of this call.\n\n**Scopes**: Note that the scopes required to complete this API call depend\non the content of the `scopes`, `routes`, `schedulerId`, `priority`,\n`provisionerId`, and `workerType` properties of the task definition.\n\n**Legacy Scopes**: The `queue:create-task:..` scope without a priority and\nthe `queue:define-task:..` and `queue:task-group-id:..` scopes are considered\nlegacy and should not be used. Note that the new, non-legacy scopes require\na `queue:scheduler-id:..` scope as well as scopes for the proper priority.",
+          "description": "Create a new task, this is an **idempotent** operation, so repeat it if\nyou get an internal server error or network connection is dropped.\n\n**Task `deadline`**: the deadline property can be no more than 5 days\ninto the future. This is to limit the amount of pending tasks not being\ntaken care of. Ideally, you should use a much shorter deadline.\n\n**Task expiration**: the `expires` property must be greater than the\ntask `deadline`. If not provided it will default to `deadline` + one\nyear. Notice, that artifacts created by task must expire before the task.\n\n**Task specific routing-keys**: using the `task.routes` property you may\ndefine task specific routing-keys. If a task has a task specific \nrouting-key: `<route>`, then when the AMQP message about the task is\npublished, the message will be CC'ed with the routing-key: \n`route.<route>`. This is useful if you want another component to listen\nfor completed tasks you have posted.  The caller must have scope\n`queue:route:<route>` for each route.\n\n**Dependencies**: any tasks referenced in `task.dependencies` must have\nalready been created at the time of this call.\n\n**Scopes**: Note that the scopes required to complete this API call depend\non the content of the `scopes`, `routes`, `schedulerId`, `priority`,\n`provisionerId`, and `workerType` properties of the task definition.",
           "input": "v1/create-task-request.json#",
           "method": "put",
           "name": "createTask",
@@ -12937,36 +13153,13 @@
                 "for": "route",
                 "in": "routes"
               },
+              "queue:scheduler-id:<schedulerId>",
               {
                 "AnyOf": [
                   {
-                    "AllOf": [
-                      "queue:scheduler-id:<schedulerId>",
-                      {
-                        "AnyOf": [
-                          {
-                            "each": "queue:create-task:<priority>:<provisionerId>/<workerType>",
-                            "for": "priority",
-                            "in": "priorities"
-                          }
-                        ]
-                      }
-                    ]
-                  },
-                  {
-                    "if": "legacyScopes",
-                    "then": {
-                      "AnyOf": [
-                        "queue:create-task:<provisionerId>/<workerType>",
-                        {
-                          "AllOf": [
-                            "queue:define-task:<provisionerId>/<workerType>",
-                            "queue:task-group-id:<schedulerId>/<taskGroupId>",
-                            "queue:schedule-task:<schedulerId>/<taskGroupId>/<taskId>"
-                          ]
-                        }
-                      ]
-                    }
+                    "each": "queue:create-task:<priority>:<provisionerId>/<workerType>",
+                    "for": "priority",
+                    "in": "priorities"
                   }
                 ]
               }
@@ -13001,36 +13194,13 @@
                 "for": "route",
                 "in": "routes"
               },
+              "queue:scheduler-id:<schedulerId>",
               {
                 "AnyOf": [
                   {
-                    "AllOf": [
-                      "queue:scheduler-id:<schedulerId>",
-                      {
-                        "AnyOf": [
-                          {
-                            "each": "queue:create-task:<priority>:<provisionerId>/<workerType>",
-                            "for": "priority",
-                            "in": "priorities"
-                          }
-                        ]
-                      }
-                    ]
-                  },
-                  {
-                    "if": "legacyScopes",
-                    "then": {
-                      "AnyOf": [
-                        "queue:define-task:<provisionerId>/<workerType>",
-                        "queue:create-task:<provisionerId>/<workerType>",
-                        {
-                          "AllOf": [
-                            "queue:define-task:<provisionerId>/<workerType>",
-                            "queue:task-group-id:<schedulerId>/<taskGroupId>"
-                          ]
-                        }
-                      ]
-                    }
+                    "each": "queue:create-task:<priority>:<provisionerId>/<workerType>",
+                    "for": "priority",
+                    "in": "priorities"
                   }
                 ]
               }
@@ -13090,7 +13260,7 @@
               }
             ]
           },
-          "stability": "deprecated",
+          "stability": "stable",
           "title": "Rerun a Resolved Task",
           "type": "function"
         },
@@ -14400,6 +14570,7 @@
         "/references/queue/v1/logs.json",
         "/references/secrets/v1/api.json",
         "/references/secrets/v1/logs.json",
+        "/references/web-server/v1/logs.json",
         "/references/worker-manager/v1/api.json",
         "/references/worker-manager/v1/exchanges.json",
         "/references/worker-manager/v1/logs.json"

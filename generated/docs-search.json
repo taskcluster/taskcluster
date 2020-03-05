@@ -2801,6 +2801,34 @@
   },
   {
     "element": "h1",
+    "id": "support-tiers",
+    "path": "/reference/workers/generic-worker/support-tiers",
+    "subtitle": null,
+    "title": "Support Tiers"
+  },
+  {
+    "element": "h2",
+    "id": "tier-1",
+    "path": "/reference/workers/generic-worker/support-tiers",
+    "subtitle": "Tier 1",
+    "title": "Support Tiers"
+  },
+  {
+    "element": "h2",
+    "id": "tier-2",
+    "path": "/reference/workers/generic-worker/support-tiers",
+    "subtitle": "Tier 2",
+    "title": "Support Tiers"
+  },
+  {
+    "element": "h2",
+    "id": "tier-3",
+    "path": "/reference/workers/generic-worker/support-tiers",
+    "subtitle": "Tier 3",
+    "title": "Support Tiers"
+  },
+  {
+    "element": "h1",
     "id": "welcome-to-taskcluster",
     "path": "/tutorial",
     "subtitle": null,

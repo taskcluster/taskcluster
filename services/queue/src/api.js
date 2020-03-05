@@ -373,7 +373,6 @@ const authorizeTaskCreation = async function(req, taskId, taskDef) {
   assert(priorities.length > 0, 'must have a non-empty list of priorities');
 
   await req.authorize({
-    legacyScopes: priority === 'lowest',
     taskId,
     priorities,
     routes: taskDef.routes,
@@ -557,29 +556,12 @@ builder.declare({
   scopes: {AllOf: [
     {for: 'scope', in: 'scopes', each: '<scope>'},
     {for: 'route', in: 'routes', each: 'queue:route:<route>'},
+    'queue:scheduler-id:<schedulerId>',
     {AnyOf: [
-      {AllOf: [
-        'queue:scheduler-id:<schedulerId>',
-        {AnyOf: [
-          {
-            for: 'priority',
-            in: 'priorities',
-            each: 'queue:create-task:<priority>:<provisionerId>/<workerType>',
-          },
-        ]},
-      ]},
       {
-        if: 'legacyScopes',
-        then: {AnyOf: [
-          'queue:create-task:<provisionerId>/<workerType>',
-          {
-            AllOf: [
-              'queue:define-task:<provisionerId>/<workerType>',
-              'queue:task-group-id:<schedulerId>/<taskGroupId>',
-              'queue:schedule-task:<schedulerId>/<taskGroupId>/<taskId>',
-            ],
-          },
-        ]},
+        for: 'priority',
+        in: 'priorities',
+        each: 'queue:create-task:<priority>:<provisionerId>/<workerType>',
       },
     ]},
   ]},
@@ -612,11 +594,6 @@ builder.declare({
     '**Scopes**: Note that the scopes required to complete this API call depend',
     'on the content of the `scopes`, `routes`, `schedulerId`, `priority`,',
     '`provisionerId`, and `workerType` properties of the task definition.',
-    '',
-    '**Legacy Scopes**: The `queue:create-task:..` scope without a priority and',
-    'the `queue:define-task:..` and `queue:task-group-id:..` scopes are considered',
-    'legacy and should not be used. Note that the new, non-legacy scopes require',
-    'a `queue:scheduler-id:..` scope as well as scopes for the proper priority.',
   ].join('\n'),
 }, async function(req, res) {
   let taskId = req.params.taskId;
@@ -775,29 +752,12 @@ builder.declare({
   scopes: {AllOf: [
     {for: 'scope', in: 'scopes', each: '<scope>'},
     {for: 'route', in: 'routes', each: 'queue:route:<route>'},
+    'queue:scheduler-id:<schedulerId>',
     {AnyOf: [
-      {AllOf: [
-        'queue:scheduler-id:<schedulerId>',
-        {AnyOf: [
-          {
-            for: 'priority',
-            in: 'priorities',
-            each: 'queue:create-task:<priority>:<provisionerId>/<workerType>',
-          },
-        ]},
-      ]},
       {
-        if: 'legacyScopes',
-        then: {AnyOf: [
-          'queue:define-task:<provisionerId>/<workerType>',
-          'queue:create-task:<provisionerId>/<workerType>',
-          {
-            AllOf: [
-              'queue:define-task:<provisionerId>/<workerType>',
-              'queue:task-group-id:<schedulerId>/<taskGroupId>',
-            ],
-          },
-        ]},
+        for: 'priority',
+        in: 'priorities',
+        each: 'queue:create-task:<priority>:<provisionerId>/<workerType>',
       },
     ]},
   ]},
@@ -1015,7 +975,7 @@ builder.declare({
   method: 'post',
   route: '/task/:taskId/rerun',
   name: 'rerunTask',
-  stability: APIBuilder.stability.deprecated,
+  stability: APIBuilder.stability.stable,
   category: 'Tasks',
   scopes: {AnyOf: [
     'queue:rerun-task:<schedulerId>/<taskGroupId>/<taskId>',

@@ -3,3 +3,6 @@ title: Static Provider Config
 description: A configuration for static workertypes
 type: object
 additionalProperties: false
+required: []
+properties:
+  lifecycle: {$ref: 'worker-lifecycle.json#'}

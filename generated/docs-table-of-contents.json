@@ -2730,6 +2730,29 @@
                 "children": [
                 ],
                 "data": {
+                  "inline": true,
+                  "order": 2,
+                  "title": "logs"
+                },
+                "name": "logs",
+                "next": {
+                  "path": "reference/core/web-server/github-login-strategy",
+                  "title": "GitHub Login Strategy"
+                },
+                "path": "reference/core/web-server/logs",
+                "prev": {
+                  "path": "reference/core/web-server/README",
+                  "title": "web-server"
+                },
+                "up": {
+                  "path": "reference/core/web-server/README",
+                  "title": "web-server"
+                }
+              },
+              {
+                "children": [
+                ],
+                "data": {
                   "order": 10,
                   "title": "GitHub Login Strategy"
                 },
@@ -2740,8 +2763,8 @@
                 },
                 "path": "reference/core/web-server/github-login-strategy",
                 "prev": {
-                  "path": "reference/core/web-server/README",
-                  "title": "web-server"
+                  "path": "reference/core/web-server/logs",
+                  "title": "logs"
                 },
                 "up": {
                   "path": "reference/core/web-server/README",
@@ -2776,8 +2799,8 @@
             },
             "name": "web-server",
             "next": {
-              "path": "reference/core/web-server/github-login-strategy",
-              "title": "GitHub Login Strategy"
+              "path": "reference/core/web-server/logs",
+              "title": "logs"
             },
             "path": "reference/core/web-server/README",
             "prev": {
@@ -3243,13 +3266,35 @@
                 },
                 "name": "engines",
                 "next": {
-                  "path": "reference/workers/generic-worker/installing",
-                  "title": "Installing"
+                  "path": "reference/workers/generic-worker/support-tiers",
+                  "title": "Support Tiers"
                 },
                 "path": "reference/workers/generic-worker/engines",
                 "prev": {
                   "path": "reference/workers/generic-worker/features",
                   "title": "Features"
+                },
+                "up": {
+                  "path": "reference/workers/generic-worker/README",
+                  "title": "generic-worker"
+                }
+              },
+              {
+                "children": [
+                ],
+                "data": {
+                  "order": 35,
+                  "title": "Support Tiers"
+                },
+                "name": "support-tiers",
+                "next": {
+                  "path": "reference/workers/generic-worker/installing",
+                  "title": "Installing"
+                },
+                "path": "reference/workers/generic-worker/support-tiers",
+                "prev": {
+                  "path": "reference/workers/generic-worker/engines",
+                  "title": "Engines"
                 },
                 "up": {
                   "path": "reference/workers/generic-worker/README",
@@ -3270,8 +3315,8 @@
                 },
                 "path": "reference/workers/generic-worker/installing",
                 "prev": {
-                  "path": "reference/workers/generic-worker/engines",
-                  "title": "Engines"
+                  "path": "reference/workers/generic-worker/support-tiers",
+                  "title": "Support Tiers"
                 },
                 "up": {
                   "path": "reference/workers/generic-worker/README",

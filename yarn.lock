@@ -1543,9 +1543,9 @@ aws-sdk-mock@^4.3.0:
     traverse "^0.6.6"
 
 aws-sdk@^2.394.0:
-  version "2.546.0"
-  resolved "https://registry.yarnpkg.com/aws-sdk/-/aws-sdk-2.546.0.tgz#48bf5fa56ce880973467452427024e77336d6098"
-  integrity sha512-SA+vL10oz8fwH0zicFqTthVEotjg7eGcP2lB/C6DOcNM/P/NMJpXEuR3Dt5eQmuNtjJBZ6kOIOrpq3IglzMmuQ==
+  version "2.630.0"
+  resolved "https://registry.yarnpkg.com/aws-sdk/-/aws-sdk-2.630.0.tgz#108ccd50b585226db8d1798def73f7b873a2efa6"
+  integrity sha512-7BDPUIqmMZfZf+KN2Z3RpGDYGkEucQORLM2EqXuE91ETW5ySvoNd771+EaE3OS+FUx3JejfcVk8Rr2ZFU38RjA==
   dependencies:
     buffer "4.9.1"
     events "1.1.1"
@@ -4422,10 +4422,10 @@ json-buffer@3.0.0:
   resolved "https://registry.yarnpkg.com/json-buffer/-/json-buffer-3.0.0.tgz#5b1f397afc75d677bde8bcfc0e47e1f9a3d9a898"
   integrity sha1-Wx85evx11ne96Lz8Dkfh+aPZqJg=
 
-json-e@^3.0.0:
-  version "3.0.1"
-  resolved "https://registry.yarnpkg.com/json-e/-/json-e-3.0.1.tgz#8e674e622012559747994f872739ea142cff4453"
-  integrity sha512-ZYUZ6KXdeL52Gd9yh7ig3k0a+O/5XwlBnel5fDHuCxAcAMXfqbed5FkCnZYiv52E0uB8dHoP5W7xOHjfISzHnQ==
+json-e@^4.0.0:
+  version "4.0.0"
+  resolved "https://registry.yarnpkg.com/json-e/-/json-e-4.0.0.tgz#a95739914fe567baf452340c9392dcd12eaa998b"
+  integrity sha512-B+EmuBzVRCWQ1G1kYzD73whYrXNF1R7fCrAZyrvUnXcqWoTxrMTrOiYZX6y+pmXh0h+QrXRPMsTJhP2wMbge5g==
   dependencies:
     json-stable-stringify-without-jsonify "^1.0.1"
 
