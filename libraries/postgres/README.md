@@ -187,6 +187,34 @@ Read access is translated to SELECT, while write access is translated to SELECT,
 
 This file provides a simple, verified confirmation of which services have what access, providing a useful aid in reviewing changes as well as verification that no malicious or accidental access changes have been made in a production deployment.
 
+## Security Invariants
+
+Use of Postgres brings with it the risk of SQL injection vulnerabilities and other security flaws.
+The invariants here *must* be adhered to avoid such flaws.
+
+### All DB Access from Services Via Stored Functions
+
+No service should *ever* execute a SQL query directly against the database.
+All access should be performed via stored functions defined in a DB version file.
+The code to invoke such stored functions is carefully vetted to avoid SQL injection, and all access should be channeled through that code.
+
+This invariant also supports the compatibility guarantees described above.
+It is enforced with a meta test, and PRs will fail if it is violated.
+
+### No Admin Credentials in Services
+
+The `adminUrl` configuration value should *never* be available to services.
+It is only used in administrative contexts (hence the name).
+As such, DB access made using administrative control can be less careful about SQL injection, since the inputs come from administrators and not API queries.
+
+### Avoid Query Construction in Stored Functions
+
+Calls from JS to Postgres aren't the only place where SQL injection might occur.
+A stored function which uses string concatenation and `return query execute <something>` to generate a query can also be vulnerable.
+Prefer to design around the need to do such query generation by creating multiple stored functions or limiting the types of arguments to non-textual types.
+
+**NOTE** The taskcluster-lib-entities support is a notable exception to this rule, and is carefully vetted to avoid SQL injection through coordination of JS and SQL code.
+
 ## Error Constants
 
 This module also defines a number of constants for Postgres's otherwise-cryptic SQLSTATE codes.
