@@ -4,7 +4,7 @@ const fetch = require('../utils/fetch');
 const ConnectionLoader = require('../ConnectionLoader');
 const Task = require('../entities/Task');
 
-module.exports = ({ queue, index }) => {
+module.exports = ({ queue, index }, isAuthed, rootUrl, monitor, strategies, req, cfg, requestId) => {
   const task = new DataLoader(taskIds =>
     Promise.all(
       taskIds.map(async (taskId) => {

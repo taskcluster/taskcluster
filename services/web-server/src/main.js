@@ -11,7 +11,6 @@ const { ApolloServer } = require('apollo-server-express');
 const { sasCredentials } = require('taskcluster-lib-azure');
 const taskcluster = require('taskcluster-client');
 const { Auth } = require('taskcluster-client');
-const slugid = require('slugid');
 const monitorManager = require('./monitor');
 const createApp = require('./servers/createApp');
 const formatError = require('./servers/formatError');
@@ -121,27 +120,11 @@ const load = loader(
     httpServer: {
       requires: ['app', 'schema', 'context', 'monitor'],
       setup: ({ app, schema, context, monitor }) => {
-        const logger = monitor.childMonitor('httpServer');
-        const monitorPlugin = {
-          // Fires whenever a GraphQL request is received from a client.
-          requestDidStart(requestContext) {
-            const { request } = requestContext;
-
-            if (request.operationName !== "IntrospectionQuery") {
-              logger.log.requestReceived({
-                operationName: request.operationName,
-                query: request.query,
-                requestId: slugid.v4(),
-              });
-            }
-          },
-        };
         const server = new ApolloServer({
           schema,
           context,
           formatError,
           tracing: true,
-          plugins: [monitorPlugin],
         });
         const httpServer = createServer(app);
 

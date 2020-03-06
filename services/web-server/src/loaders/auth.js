@@ -3,7 +3,7 @@ const WebServerError = require('../utils/WebServerError');
 const regenerateSession = require('../utils/regenerateSession');
 const generateCredentials = require('../utils/generateCredentials');
 
-module.exports = (clients, isAuthed, rootUrl, monitor, strategies, req, cfg) => {
+module.exports = (clients, isAuthed, rootUrl, monitor, strategies, req, cfg, requestId) => {
   const getCredentials = new DataLoader(queries => {
     return Promise.all(
       queries.map(async () => {

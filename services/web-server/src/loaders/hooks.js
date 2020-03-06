@@ -1,7 +1,7 @@
 const DataLoader = require('dataloader');
 const sift = require('../utils/sift');
 
-module.exports = ({ hooks }) => {
+module.exports = ({ hooks }, isAuthed, rootUrl, monitor, strategies, req, cfg, requestId) => {
   const hookGroups = new DataLoader(queries =>
     Promise.all(
       queries.map(async ({ filter }) => {
