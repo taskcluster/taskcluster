@@ -130,7 +130,6 @@ const load = loader(
             if (request.operationName !== "IntrospectionQuery") {
               logger.log.requestReceived({
                 operationName: request.operationName,
-                variables: request.variables,
                 query: request.query,
                 requestId: slugid.v4(),
               });

@@ -59,7 +59,6 @@ monitorManager.register({
       The name of the graphql query performed. If the operation is anonymous
       (i.e., the operation is query { ... } instead of query NamedQuery { ... })
       , then operationName is null.`,
-    variables: 'Object that contains all of the variables passed to the GraphQL query.',
     requestId: 'A unique request ID for every incoming GraphQL request that the client receives.',
   },
 });
