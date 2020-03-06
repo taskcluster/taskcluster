@@ -49,6 +49,9 @@ func (p *GoogleProvider) ConfigureRun(state *run.State) error {
 
 	workerIdentityProofMap := map[string]interface{}{"token": interface{}(proofToken)}
 
+	// TODO
+	// bug 1591476: we should get workerConfig from RegisterWorker()
+	// and not from the metadata service
 	_, err = provider.RegisterWorker(state, wm, userData.WorkerPoolID, userData.ProviderID, userData.WorkerGroup, workerID, workerIdentityProofMap)
 	if err != nil {
 		return err
