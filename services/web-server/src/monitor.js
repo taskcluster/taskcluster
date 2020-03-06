@@ -54,6 +54,7 @@ monitorManager.register({
   level: 'info',
   description: 'A GraphQL request has been received.',
   fields: {
+    query: 'The graphQL query string',
     operationName: `
       The name of the graphql query performed. If the operation is anonymous
       (i.e., the operation is query { ... } instead of query NamedQuery { ... })
