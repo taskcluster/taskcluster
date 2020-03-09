@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import classNames from 'classnames';
-import { string, func, number } from 'prop-types';
+import { bool, string, func, number } from 'prop-types';
 import Tab from '@material-ui/core/Tab';
 import Tabs from '@material-ui/core/Tabs';
 import TextField from '@material-ui/core/TextField';
@@ -100,7 +100,7 @@ const styles = withStyles(theme => {
  * ref: https://github.com/mozilla-frontend-infra/components/blob/master/src/components/MarkdownTextArea/index.jsx
  */
 function DiffTextArea(props) {
-  const { classes, onChange, rows, initialValue, ...rest } = props;
+  const { classes, onChange, rows, initialValue, sort, ...rest } = props;
   const [tabIndex, setTabIndex] = useState(props.defaultTabIndex);
   const [value, setValue] = useState(props.value);
   const isViewDiff = tabIndex === 1;
@@ -149,6 +149,7 @@ function DiffTextArea(props) {
         })}>
         {!isViewDiff && (
           <TextField
+            color="secondary"
             onChange={handleValueChange}
             fullWidth
             multiline
@@ -195,9 +196,14 @@ DiffTextArea.propTypes = {
    * A number used to control the amount of rows displayed for the input area.
    */
   rows: number,
+  /**
+   * If true, the content will be sorted prior to computing the diff.
+   */
+  sort: bool,
 };
 
 DiffTextArea.defaultProps = {
+  sort: false,
   onChange: null,
   value: undefined,
   placeholder: null,
