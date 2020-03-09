@@ -3,6 +3,11 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v26.0.1
+
+▶ [patch] 
+Changes version imports for internal go libraries that weren't properly updated by the release script to v26.
+
 ## v26.0.0
 
 ▶ [MAJOR] [bug 1596177](http://bugzil.la/1596177)
