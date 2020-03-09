@@ -72,6 +72,9 @@ func TestConfigureRun(t *testing.T) {
 
 	attestedDocument := base64.StdEncoding.EncodeToString([]byte("trust me, it's cool --Bill"))
 
+	// Note: we set empty customData here because we cannot trust the metadata service
+	// to properly supply it. These properties come from tags instead.
+	// bug 1621037: revert to setting customData once customData is fixed
 	mds := &fakeMetadataService{nil, userData, nil, &ScheduledEvents{}, nil, attestedDocument, nil, []byte("{}")}
 
 	p, err := new(runnercfg, tc.FakeWorkerManagerClientFactory, mds)

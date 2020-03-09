@@ -189,13 +189,13 @@ class AzureProvider extends Provider {
         },
         tags: {
           ...cfg.tags || {},
-          'created-by': `taskcluster-wm-${this.providerId}`.replace(/[^a-zA-Z0-9-]/g, '-'),
+          'created-by': `taskcluster-wm-${this.providerId}`,
           'managed-by': 'taskcluster',
           'provider-id': this.providerId,
           'worker-group': this.providerId,
           'worker-pool-id': workerPoolId,
           'root-url': this.rootUrl,
-          'owner': workerPool.owner.replace(/[^a-zA-Z0-9-]/g, '-').toLowerCase(),
+          'owner': workerPool.owner,
         },
       };
 

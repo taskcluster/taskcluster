@@ -31,6 +31,15 @@ type CustomData struct {
 	ProviderWorkerConfig *json.RawMessage `json:"workerConfig"`
 }
 
+// These values are expected to be set in tags on the VM
+// by the provider
+type TaggedData struct {
+	WorkerPoolId string
+	ProviderId   string
+	RootURL      string
+	WorkerGroup  string
+}
+
 func (p *AzureProvider) ConfigureRun(state *run.State) error {
 	instanceData, err := p.metadataService.queryInstanceData()
 	if err != nil {
@@ -42,11 +51,10 @@ func (p *AzureProvider) ConfigureRun(state *run.State) error {
 		return fmt.Errorf("Could not query attested document: %v", err)
 	}
 
-	// Azure custom data is broken, so we load these from tags
-	// see: https://bugzilla.mozilla.org/show_bug.cgi?id=1618916
-	customData := loadCustomDataFromTagsList(instanceData.Compute.TagsList)
+	// bug 1621037: revert to using customData once it is fixed
+	taggedData := loadTaggedData(instanceData.Compute.TagsList)
 
-	state.RootURL = customData.RootURL
+	state.RootURL = taggedData.RootURL
 	state.WorkerLocation = map[string]string{
 		"cloud":  "azure",
 		"region": instanceData.Compute.Location,
@@ -64,9 +72,9 @@ func (p *AzureProvider) ConfigureRun(state *run.State) error {
 	workerConfig, err := provider.RegisterWorker(
 		state,
 		wm,
-		customData.WorkerPoolId,
-		customData.ProviderId,
-		customData.WorkerGroup,
+		taggedData.WorkerPoolId,
+		taggedData.ProviderId,
+		taggedData.WorkerGroup,
 		instanceData.Compute.Name,
 		workerIdentityProofMap)
 	if err != nil {
@@ -193,8 +201,8 @@ defined by this provider has the following fields:
 `
 }
 
-func loadCustomDataFromTagsList(tags []Tag) *CustomData {
-	c := &CustomData{}
+func loadTaggedData(tags []Tag) *TaggedData {
+	c := &TaggedData{}
 	for _, tag := range tags {
 		if tag.Name == "worker-pool-id" {
 			c.WorkerPoolId = tag.Value
