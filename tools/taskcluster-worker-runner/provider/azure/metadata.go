@@ -19,9 +19,10 @@ var MetadataBaseURL = "http://169.254.169.254"
 type InstanceData struct {
 	Compute struct {
 		Location string `json:"location"`
-		VMID     string `json:"vmId"`
 		Name     string `json:"name"`
+		VMID     string `json:"vmId"`
 		VMSize   string `json:"vmSize"`
+		TagsList []Tag  `json:"tagsList"`
 	} `json:"compute"`
 	Network struct {
 		Interface []struct {
@@ -33,6 +34,12 @@ type InstanceData struct {
 			} `json:"ipv4"`
 		} `json:"interface"`
 	} `json:"network"`
+}
+
+// Convenience object for Azure tags
+type Tag struct {
+	Name  string `json:"name"`
+	Value string `json:"value"`
 }
 
 // Data from the /scheduledevents endpoint
@@ -96,7 +103,7 @@ func (mds *realMetadataService) fetch(path string, apiVersion string) (string, e
 }
 
 func (mds *realMetadataService) queryInstanceData() (*InstanceData, error) {
-	content, err := mds.fetch("/metadata/instance", "2019-04-30")
+	content, err := mds.fetch("/metadata/instance", "2019-08-15")
 	if err != nil {
 		return nil, err
 	}
@@ -106,7 +113,7 @@ func (mds *realMetadataService) queryInstanceData() (*InstanceData, error) {
 }
 
 func (mds *realMetadataService) queryAttestedDocument() (string, error) {
-	content, err := mds.fetch("/metadata/attested/document", "2019-04-30")
+	content, err := mds.fetch("/metadata/attested/document", "2019-08-15")
 	if err != nil {
 		return "", err
 	}
