@@ -58,7 +58,10 @@ func (p *AWSProvider) ConfigureRun(state *run.State) error {
 		"signature": interface{}(instanceIdentityDocumentSignature),
 	}
 
-	err = provider.RegisterWorker(
+	// TODO
+	// bug 1591476: we should get workerConfig from RegisterWorker()
+	// and not from the metadata service
+	_, err = provider.RegisterWorker(
 		state,
 		wm,
 		userData.WorkerPoolId,

@@ -1050,6 +1050,11 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
       });
       await helper.Worker.create({
         ...defaultWorker,
+        providerData: {
+          workerConfig: {
+            "someKey": "someValue",
+          },
+        },
       });
       const res = await helper.workerManager.registerWorker({
         ...defaultRegisterWorker,
@@ -1057,6 +1062,8 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
 
       assert.equal(res.credentials.clientId,
         `worker/${providerId}/${workerPoolId}/${workerGroup}/${workerId}`);
+
+      assert.equal(res.workerConfig.someKey, "someValue");
 
       // cheat a little and look in the certificate to check the scopes
       const scopes = new Set(JSON.parse(res.credentials.certificate).scopes);

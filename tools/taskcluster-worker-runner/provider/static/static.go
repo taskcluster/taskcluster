@@ -46,10 +46,18 @@ func (p *StaticProvider) ConfigureRun(state *run.State) error {
 
 	workerIdentityProofMap := map[string]interface{}{"staticSecret": interface{}(pc.StaticSecret)}
 
-	err = provider.RegisterWorker(state, wm, pc.WorkerPoolID, pc.ProviderID, pc.WorkerGroup, pc.WorkerID, workerIdentityProofMap)
+	workerConfig, err := provider.RegisterWorker(state, wm, pc.WorkerPoolID, pc.ProviderID, pc.WorkerGroup, pc.WorkerID, workerIdentityProofMap)
 	if err != nil {
 		return err
 	}
+
+	pwc, err := cfg.ParseProviderWorkerConfig(p.runnercfg, workerConfig)
+	if err != nil {
+		return err
+	}
+
+	state.WorkerConfig = state.WorkerConfig.Merge(pwc.Config)
+	state.Files = append(state.Files, pwc.Files...)
 
 	state.WorkerLocation = map[string]string{
 		"cloud": "static",

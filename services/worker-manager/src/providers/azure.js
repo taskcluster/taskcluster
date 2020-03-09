@@ -200,6 +200,7 @@ class AzureProvider extends Provider {
       let providerData = {
         location: cfg.location,
         resourceGroupName: this.providerConfig.resourceGroupName,
+        workerConfig: cfg.workerConfig,
         vm: {
           name: virtualMachineName,
           computerName,
@@ -375,8 +376,8 @@ class AzureProvider extends Provider {
       w.state = this.Worker.states.RUNNING;
       w.providerData.terminateAfter = expires.getTime();
     });
-
-    return {expires};
+    const workerConfig = worker.providerData.workerConfig || {};
+    return {expires, workerConfig};
   }
 
   async scanPrepare() {
