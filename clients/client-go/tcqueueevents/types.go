@@ -358,8 +358,9 @@ type (
 		// Max length: 255
 		Name string `json:"name"`
 
-		// E-mail of person who caused this task, e.g. the person who did
-		// `hg push`. The person we should contact to ask why this task is here.
+		// Entity who caused this task, not necessarily a person with email who did
+		// `hg push` as it could be automation bots as well. This entity we should
+		// contact to ask why this task is here.
 		//
 		// Max length: 255
 		Owner string `json:"owner"`
