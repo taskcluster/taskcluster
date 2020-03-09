@@ -1,8 +1,8 @@
 package provider
 
 import (
-	"github.com/taskcluster/taskcluster/v25/tools/taskcluster-worker-runner/protocol"
-	"github.com/taskcluster/taskcluster/v25/tools/taskcluster-worker-runner/run"
+	"github.com/taskcluster/taskcluster/v26/tools/taskcluster-worker-runner/protocol"
+	"github.com/taskcluster/taskcluster/v26/tools/taskcluster-worker-runner/run"
 )
 
 // Provider is responsible for determining the identity of this worker and gathering

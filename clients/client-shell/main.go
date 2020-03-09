@@ -3,8 +3,8 @@ package main
 import (
 	"os"
 
-	"github.com/taskcluster/taskcluster/v25/clients/client-shell/cmds/root"
-	"github.com/taskcluster/taskcluster/v25/clients/client-shell/config"
+	"github.com/taskcluster/taskcluster/v26/clients/client-shell/cmds/root"
+	"github.com/taskcluster/taskcluster/v26/clients/client-shell/config"
 )
 
 func main() {

@@ -1,4 +1,4 @@
-module github.com/taskcluster/taskcluster/v25
+module github.com/taskcluster/taskcluster/v26
 
 go 1.13
 

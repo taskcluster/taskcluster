@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
-	taskcluster "github.com/taskcluster/taskcluster/v25/clients/client-go"
+	taskcluster "github.com/taskcluster/taskcluster/v26/clients/client-go"
 )
 
 func makeState() State {

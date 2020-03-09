@@ -3,10 +3,10 @@ package dummy
 import (
 	"log"
 
-	"github.com/taskcluster/taskcluster/v25/tools/taskcluster-worker-runner/cfg"
-	"github.com/taskcluster/taskcluster/v25/tools/taskcluster-worker-runner/protocol"
-	"github.com/taskcluster/taskcluster/v25/tools/taskcluster-worker-runner/run"
-	"github.com/taskcluster/taskcluster/v25/tools/taskcluster-worker-runner/worker/worker"
+	"github.com/taskcluster/taskcluster/v26/tools/taskcluster-worker-runner/cfg"
+	"github.com/taskcluster/taskcluster/v26/tools/taskcluster-worker-runner/protocol"
+	"github.com/taskcluster/taskcluster/v26/tools/taskcluster-worker-runner/run"
+	"github.com/taskcluster/taskcluster/v26/tools/taskcluster-worker-runner/worker/worker"
 	yaml "gopkg.in/yaml.v3"
 )
 

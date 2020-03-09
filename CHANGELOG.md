@@ -3,6 +3,50 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v26.0.0
+
+▶ [MAJOR] [bug 1596177](http://bugzil.la/1596177)
+Legacy create-task scopes without a priority, of the form `queue:create-task:<provisionerId>/<workerType>`, are no longer supported.
+
+▶ [minor] 
+Add support for a simple generic FreeBSD worker
+
+▶ [minor] [bug 1473155](http://bugzil.la/1473155)
+Schemas are now displayed in a two-column viewer to provide a more comprehensive understanding of the schema structures. The left panel shows the overall data structure while the right panel shows additional properties to keep in mind for certain data within the schemas. Users can also expand or shrink $ref schemas when needed.
+
+▶ [minor] [bug 1618916](http://bugzil.la/1618916)
+The Azure worker-manager provider now provides bootstrapping information to the worker in tags in addition to the `customData` instance metadata field, and worker-runner now expects to find data in tags.  This avoids the use of the barely-functional customData.  Reading this information from customData is now deprecated, but will continue to work at least until the next major Taskcluster release.
+
+▶ [minor] 
+The json-e library now supports short-circuiting in boolean logic, and so does Taskcluster for taskcluster.ymls now!
+
+▶ [patch] [bug 1619925](http://bugzil.la/1619925)
+Bug fix: taskcluster-proxy credential updates from task reclaims no longer race with taskcluster proxy process termination. Previously if a task completed just as the task was being reclaimed, it was possible for generic-worker to terminate the taskcluster-proxy process while it was HTTP posting updated credentials to it, which caused generic-worker to crash.
+
+▶ [patch] [bug 1559434](http://bugzil.la/1559434)
+Pulse passwords are now correctly encoded and can contain `/` characters.
+
+▶ [patch] [#2386](https://github.com/taskcluster/taskcluster/issues/2386)
+Taskcluster UI now no longer shows a cached view when a user deletes a role,
+client or hook.
+
+▶ [patch] [bug 1558240](http://bugzil.la/1558240)
+The generic-worker logging change that appeared in v25.4.0 has been reverted.
+
+▶ [patch] [bug 1617685](http://bugzil.la/1617685)
+The queue service will now start up even if the AWS IP-to-region mapping file is not accessible.  In this case, it will use a local, cached copy of this information.
+
+▶ [patch] [bug 1618983](http://bugzil.la/1618983)
+The worker-manager's `static` provider type now supports worker lifecycles, and in particular `reregistrationTimeout`.
+
+▶ [patch] 
+Update `registerWorker` API to grant scopes for workers to terminate themselves
+
+▶ [patch] [bug 1591476](http://bugzil.la/1591476)
+worker-manager's `registerWorker()` now returns worker config, and worker-runner (for Azure and static providers, others coming soon) merges that configuration with other configuration sources.  This allows worker pools to include configuration for static workers, and allows Azure workers to fetch their config without referencing the non-functional customData instance metadata.
+
+▶ Additional changes not described here: [bug 1596171](http://bugzil.la/1596171), [#2441](https://github.com/taskcluster/taskcluster/issues/2441), [bug 1455632](http://bugzil.la/1455632).
+
 ## v25.4.0
 
 ▶ [minor] [bug 1608185](http://bugzil.la/1608185)

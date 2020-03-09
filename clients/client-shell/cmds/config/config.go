@@ -8,9 +8,9 @@ import (
 	"os"
 
 	"github.com/spf13/cobra"
-	tcclient "github.com/taskcluster/taskcluster/v25/clients/client-go"
-	"github.com/taskcluster/taskcluster/v25/clients/client-shell/cmds/root"
-	"github.com/taskcluster/taskcluster/v25/clients/client-shell/config"
+	tcclient "github.com/taskcluster/taskcluster/v26/clients/client-go"
+	"github.com/taskcluster/taskcluster/v26/clients/client-shell/cmds/root"
+	"github.com/taskcluster/taskcluster/v26/clients/client-shell/config"
 )
 
 var (
