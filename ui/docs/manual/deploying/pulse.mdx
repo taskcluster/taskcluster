@@ -8,9 +8,25 @@ The particular approach it takes to this communication is called "Pulse", taken 
 See [/docs/manual/design/apis/pulse](the Pulse design page) for information on how Taskcluster expects this to be configured.
 This is satisfied by a mostly-default RabbitMQ installation.
 
-Most services require service-specific credentials for access to Pulse.
+## Configuration
 
-## Details
+The following Helm configuration properties must be set, and are shared by all services:
+
+* `pulseHostname` - hostname of the Pulse server.  This must be listening on the amqps port.
+* `pulseVhost` - vhost on which Taskcluster should communicate.  Taskcluster will create some exchanges and queues with fixed names (`exchange/taskcluster-<service/*` and `queue/taskcluster-<service>/*`) in this vhost.
+
+Services that use Pulse require service-specific credentials for access to Pulse.
+These are defined by the configuration Helm properties `<service>.pulse_username` and `<service>.pulse_password`.
+Each such user should have the following permissions in the vhost configured with `pulseVhost`:
+
+* **configure**: `^(queue/taskcluster\-<service>/.*|exchange/taskcluster\-<service>/.*)`
+* **write**: `^(queue/taskcluster\-<service>/.*|exchange/taskcluster\-<service>/.*)`
+* **read**: `^(queue/taskcluster\-<service>/.*|exchange/.*)`
+
+Adherence to the Pulse naming conventions means that the `<service>.pulse_username` Helm property should have value `taskcluster-<service>`, and this is the recommended approach on a dedicated Pulse server.
+However, Taskcluster does not require that this be the case and will use any username it is given.
+
+### Server Configuration Details
 
 Taskcluster is particularly sensitive to the AMQP `frame_max` parameter.
 It must fit all the "routes" for a task into the header of an AMQP message, and the header must fit in a single frame.

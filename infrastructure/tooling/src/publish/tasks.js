@@ -1,5 +1,6 @@
 const Octokit = require('@octokit/rest');
 const fs = require('fs');
+const glob = require('glob');
 const util = require('util');
 const path = require('path');
 const rimraf = util.promisify(require('rimraf'));
@@ -24,6 +25,12 @@ module.exports = ({tasks, cmdOptions, credentials, baseDir}) => {
     requires: [],
     provides: ['release-version'],
     run: async (requirements, utils) => {
+      if (cmdOptions.staging) {
+        return {
+          'release-version': '9999.99.99',
+        };
+      }
+
       const {gitDescription} = await gitDescribe({
         dir: REPO_ROOT,
         utils,
@@ -47,6 +54,13 @@ module.exports = ({tasks, cmdOptions, credentials, baseDir}) => {
       'build-can-start', // wait to build until we're sure this worked..
     ],
     run: async (requirements, utils) => {
+      if (cmdOptions.staging) {
+        return {
+          'changelog-text': '(staging release)',
+          'build-can-start': true,
+        };
+      }
+
       // recover the changelog for this version from CHANGELOG.md, where `yarn
       // release` put it
       const changelogFile = await readRepoFile('CHANGELOG.md');
@@ -107,6 +121,25 @@ module.exports = ({tasks, cmdOptions, credentials, baseDir}) => {
     },
   });
 
+  ensureTask(tasks, {
+    title: 'Build generic-worker artifacts',
+    requires: ['cleaned-release-artifacts'],
+    provides: ['generic-worker-artifacts'],
+    run: async (requirements, utils) => {
+      await execCommand({
+        dir: path.join(REPO_ROOT, 'workers', 'generic-worker'),
+        command: ['./build.sh', '-p', '-o', artifactsDir],
+        utils,
+      });
+
+      const artifacts = glob.sync('generic-worker-*', {cwd: artifactsDir});
+
+      return {
+        'generic-worker-artifacts': artifacts,
+      };
+    },
+  });
+
   /* -- docker image build occurs here -- */
 
   ensureTask(tasks, {
@@ -114,6 +147,7 @@ module.exports = ({tasks, cmdOptions, credentials, baseDir}) => {
     requires: [
       'release-version',
       'client-shell-artifacts',
+      'generic-worker-artifacts',
       'changelog-text',
       'target-monoimage',
     ],
@@ -140,6 +174,7 @@ module.exports = ({tasks, cmdOptions, credentials, baseDir}) => {
       const {upload_url} = release.data;
 
       const files = requirements['client-shell-artifacts']
+        .concat(requirements['generic-worker-artifacts'])
         .map(name => ({name, contentType: 'application/octet-stream'}));
       for (let {name, contentType} of files) {
         utils.status({message: `Upload Release asset ${name}`});

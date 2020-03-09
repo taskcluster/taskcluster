@@ -2,10 +2,12 @@ const _ = require('lodash');
 const assert = require('assert');
 const helper = require('./helper');
 const testing = require('taskcluster-lib-testing');
+const monitorManager = require('../src/monitor');
 
 helper.secrets.mockSuite(testing.suiteName(), ['azure', 'aws'], function(mock, skipping) {
   helper.withDenier(mock, skipping);
   helper.withFakeQueue(mock, skipping);
+  helper.withFakeMatrix(mock, skipping);
   helper.withSES(mock, skipping);
   helper.withPulse(mock, skipping);
   helper.withServer(mock, skipping);
@@ -157,5 +159,44 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'aws'], function(mock, s
       return _.isEqual(channel, '#taskcluster-test') &&
       _.isEqual(message, 'it worked with taskid DKPZPsvvQEiw67Pb3rkdNg');
     });
+  });
+
+  test('matrix', async () => {
+    const route = 'test-notify.matrix-room.!gBxblkbeeBSadzOniu:mozilla.org.on-any';
+    const task = makeTask([route]);
+    task.extra = {notify: {matrixFormat: 'matrix.foo', matrixBody: '${taskId}', matrixFormattedBody: '<h1>${taskId}</h1>'}};
+    helper.queue.addTask(baseStatus.taskId, task);
+    await helper.fakePulseMessage({
+      payload: {
+        status: baseStatus,
+      },
+      exchange: 'exchange/taskcluster-queue/v1/task-completed',
+      routingKey: 'doesnt-matter',
+      routes: [route],
+    });
+    assert.equal(helper.matrixClient.sendEvent.callCount, 1);
+    assert.equal(helper.matrixClient.sendEvent.args[0][0], '!gBxblkbeeBSadzOniu:mozilla.org');
+    assert.equal(helper.matrixClient.sendEvent.args[0][2].format, 'matrix.foo');
+    assert.equal(helper.matrixClient.sendEvent.args[0][2].body, 'DKPZPsvvQEiw67Pb3rkdNg');
+    assert.equal(helper.matrixClient.sendEvent.args[0][2].formatted_body, '<h1>DKPZPsvvQEiw67Pb3rkdNg</h1>');
+    assert(monitorManager.messages.find(m => m.Type === 'matrix'));
+    assert(monitorManager.messages.find(m => m.Type === 'matrix-forbidden') === undefined);
+  });
+
+  test('matrix (rejected)', async () => {
+    const route = 'test-notify.matrix-room.!rejected:mozilla.org.on-any';
+    const task = makeTask([route]);
+    helper.queue.addTask(baseStatus.taskId, task);
+    await helper.fakePulseMessage({
+      payload: {
+        status: baseStatus,
+      },
+      exchange: 'exchange/taskcluster-queue/v1/task-completed',
+      routingKey: 'doesnt-matter',
+      routes: [route],
+    });
+    assert.equal(helper.matrixClient.sendEvent.callCount, 1);
+    assert.equal(helper.matrixClient.sendEvent.args[0][0], '!rejected:mozilla.org');
+    assert(monitorManager.messages.find(m => m.Type === 'matrix-forbidden'));
   });
 });

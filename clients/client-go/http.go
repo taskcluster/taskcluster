@@ -17,8 +17,8 @@ import (
 	"time"
 
 	"github.com/taskcluster/httpbackoff/v3"
-	hawk "github.com/tent/hawk-go"
 	tcurls "github.com/taskcluster/taskcluster-lib-urls"
+	hawk "github.com/tent/hawk-go"
 )
 
 var debug = false
@@ -121,8 +121,7 @@ func (client *Client) Request(rawPayload []byte, method, route string, query url
 	// have exponential backoff in case of intermittent failures (e.g. network
 	// blips or HTTP 5xx errors)
 	httpCall := func() (*http.Response, error, error) {
-		var ioReader io.Reader
-		ioReader = bytes.NewReader(rawPayload)
+		ioReader := bytes.NewReader(rawPayload)
 		u, err := setURL(client, route, query)
 		if err != nil {
 			return nil, nil, fmt.Errorf("apiCall url cannot be parsed:\n%v\n", err)
@@ -259,15 +258,21 @@ func (client *Client) APICall(payload interface{}, method, route string, result 
 	return result, callSummary, nil
 }
 
-// SignedURL creates a signed URL using the given Client, where route is the
-// url path relative to the RootURL stored in the Client, query is the set of
-// query string parameters, if any, and duration is the amount of time that the
-// signed URL should remain valid for.
+// SignedURL creates a signed URL using the given Client, where route is
+// either a url path relative to `<RootURL>/api/<serviceName>/<apiVersion>` or
+// a fully qualified URL.  query is the set of query string parameters, if any,
+// and duration is the amount of time that the signed URL should remain valid
+// for.  The full-URL form permits signing URLs that are not even on the given
+// RootURL.
 func (client *Client) SignedURL(route string, query url.Values, duration time.Duration) (u *url.URL, err error) {
-	u, err = setURL(client, route, query)
-	if err != nil {
-		return
+	u, err = url.Parse(route)
+	if err != nil || u.Host == "" {
+		u, err = setURL(client, route, query)
+		if err != nil {
+			return
+		}
 	}
+
 	credentials := &hawk.Credentials{
 		ID:   client.Credentials.ClientID,
 		Key:  client.Credentials.AccessToken,

@@ -1,0 +1,23 @@
+{
+  "syncToken": "1528917739",
+  "createDate": "2018-06-13-19-22-19",
+  "prefixes": [
+    {
+      "ip_prefix": "1.0.0.0/8",
+      "region": "us-west-2",
+      "service": "EC2"
+    },
+    {
+      "ip_prefix": "2.0.0.0/8",
+      "region": "us-east-1",
+      "service": "EC2"
+    },
+    {
+      "ip_prefix": "4.0.0.0/8",
+      "region": "ap-central-4",
+      "service": "EC2"
+    }
+  ],
+  "ipv6_prefixes": [
+  ]
+}

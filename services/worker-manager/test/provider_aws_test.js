@@ -110,7 +110,11 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
 
     test('positive test', async function() {
       const now = Date.now();
-      await provider.provision({workerPool, existingCapacity: 0});
+      const workerInfo = {
+        existingCapacity: 0,
+        requestedCapacity: 0,
+      };
+      await provider.provision({workerPool, workerInfo});
       const workers = await helper.Worker.scan({}, {});
 
       assert.notStrictEqual(workers.entries.length, 0);
@@ -122,7 +126,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
         assert.strictEqual(w.providerData.region, defaultLaunchConfig.region, 'Region should come from the chosen config');
         // Check that this is setting times correctly to within a second or so to allow for some time
         // for the provisioning loop
-        assert(workers.entries[0].providerData.registrationExpiry - now - (6000 * 1000) < 5000);
+        assert(workers.entries[0].providerData.terminateAfter - now - (6000 * 1000) < 5000);
       });
       sinon.restore();
     });
@@ -141,7 +145,11 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
           maxCapacity: 34,
         };
       });
-      await provider.provision({workerPool, existingCapacity: 0});
+      const workerInfo = {
+        existingCapacity: 0,
+        requestedCapacity: 0,
+      };
+      await provider.provision({workerPool, workerInfo});
       const workers = await helper.Worker.scan({}, {});
 
       // capacity 34 at 6 per instance should be 6 instances..
@@ -159,7 +167,11 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
         }
       });
 
-      await provider.provision({workerPool, existingCapacity: 0});
+      const workerInfo = {
+        existingCapacity: 0,
+        requestedCapacity: 0,
+      };
+      await provider.provision({workerPool, workerInfo});
       const workers = await helper.Worker.scan({}, {});
 
       assert.notStrictEqual(workers.entries.length, 0);
@@ -193,7 +205,11 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
         }
       });
 
-      await provider.provision({workerPool, existingCapacity: 0});
+      const workerInfo = {
+        existingCapacity: 0,
+        requestedCapacity: 0,
+      };
+      await provider.provision({workerPool, workerInfo});
       const workers = await helper.Worker.scan({}, {});
 
       assert.notStrictEqual(workers.entries.length, 0);
@@ -231,7 +247,11 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
         }
       });
 
-      await provider.provision({workerPool, existingCapacity: 0});
+      const workerInfo = {
+        existingCapacity: 0,
+        requestedCapacity: 0,
+      };
+      await provider.provision({workerPool, workerInfo});
       const workers = await helper.Worker.scan({}, {});
 
       assert.notStrictEqual(workers.entries.length, 0);
@@ -254,8 +274,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
     });
   });
 
-  suite('[UNIT] AWS provider - registerWorker - negative test cases', function() {
-    // For the positive integration test, see api_test.js, registerWorker endpoint
+  suite('[UNIT] AWS provider - registerWorker', function() {
 
     test('registerWorker - verifyInstanceIdentityDocument - document is not string', async function() {
       const workerIdentityProof = {
@@ -370,6 +389,61 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
       sinon.restore();
 
     });
+
+    test('registerWorker - success', async function() {
+      const runningWorker = await helper.Worker.create({
+        workerId: 'i-02312cd4f06c990ca',
+        ...defaultWorker,
+        providerData: {
+          region: 'us-west-2',
+          imageId: actualWorkerIid.imageId,
+          instanceType: actualWorkerIid.instanceType,
+          architecture: actualWorkerIid.architecture,
+          availabilityZone: 'us-west-2a',
+          privateIp: '172.31.23.159',
+          owner: actualWorkerIid.accountId,
+        },
+      });
+
+      const workerIdentityProof = {
+        "document": fs.readFileSync(path.resolve(__dirname, 'fixtures/aws_iid_DOCUMENT')).toString(),
+        "signature": fs.readFileSync(path.resolve(__dirname, 'fixtures/aws_iid_SIGNATURE')).toString(),
+      };
+
+      const resp = await provider.registerWorker({worker: runningWorker, workerPool, workerIdentityProof});
+      assert(resp.expires - new Date() + 10000 > 96 * 3600 * 1000);
+      assert(resp.expires - new Date() - 10000 < 96 * 3600 * 1000);
+
+      sinon.restore();
+    });
+
+    test('registerWorker - success (different reregister)', async function() {
+      const runningWorker = await helper.Worker.create({
+        workerId: 'i-02312cd4f06c990ca',
+        ...defaultWorker,
+        providerData: {
+          region: 'us-west-2',
+          imageId: actualWorkerIid.imageId,
+          reregistrationTimeout: 10 * 3600 * 1000,
+          instanceType: actualWorkerIid.instanceType,
+          architecture: actualWorkerIid.architecture,
+          availabilityZone: 'us-west-2a',
+          privateIp: '172.31.23.159',
+          owner: actualWorkerIid.accountId,
+        },
+      });
+
+      const workerIdentityProof = {
+        "document": fs.readFileSync(path.resolve(__dirname, 'fixtures/aws_iid_DOCUMENT')).toString(),
+        "signature": fs.readFileSync(path.resolve(__dirname, 'fixtures/aws_iid_SIGNATURE')).toString(),
+      };
+
+      const resp = await provider.registerWorker({worker: runningWorker, workerPool, workerIdentityProof});
+      assert(resp.expires - new Date() + 10000 > 10 * 3600 * 1000);
+      assert(resp.expires - new Date() - 10000 < 10 * 3600 * 1000);
+
+      sinon.restore();
+    });
   });
 
   suite('AWS provider - checkWorker', function() {
@@ -455,7 +529,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
         state: helper.Worker.states.REQUESTED,
         providerData: {
           ...workerInDB.providerData,
-          registrationExpiry: Date.now() - 1000,
+          terminateAfter: Date.now() - 1000,
         },
       });
       provider.seen = {};
@@ -472,7 +546,41 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
         state: helper.Worker.states.REQUESTED,
         providerData: {
           ...workerInDB.providerData,
-          registrationExpiry: Date.now() + 1000,
+          terminateAfter: Date.now() + 1000,
+        },
+      });
+      provider.seen = {};
+      await provider.checkWorker({worker: worker});
+      assert.equal(aws.EC2().terminateInstances.calls.length, 0);
+
+      sinon.restore();
+    });
+
+    test('remove very old workers', async function() {
+      const worker = await helper.Worker.create({
+        ...workerInDB,
+        workerId: 'running',
+        state: helper.Worker.states.REQUESTED,
+        providerData: {
+          ...workerInDB.providerData,
+          terminateAfter: Date.now() - 1000,
+        },
+      });
+      provider.seen = {};
+      await provider.checkWorker({worker: worker});
+      assert.equal(aws.EC2().terminateInstances.calls.length, 1);
+
+      sinon.restore();
+    });
+
+    test('don\'t remove current workers', async function() {
+      const worker = await helper.Worker.create({
+        ...workerInDB,
+        workerId: 'running',
+        state: helper.Worker.states.REQUESTED,
+        providerData: {
+          ...workerInDB.providerData,
+          terminateAfter: Date.now() + 1000,
         },
       });
       provider.seen = {};

@@ -1,48 +1,186 @@
-# Taskcluster Client Go
+# Taskcluster Client for Go
 
-[![GoDoc](https://godoc.org/github.com/taskcluster/taskcluster/clients/client-go/v24?status.svg)](https://godoc.org/github.com/taskcluster/taskcluster/clients/client-go/v24)
-[![Coverage Status](https://coveralls.io/repos/taskcluster/taskcluster/clients/client-go/badge.svg?branch=master&service=github)](https://coveralls.io/github/taskcluster/taskcluster/clients/client-go?branch=master)
+[![GoDoc](https://godoc.org/github.com/taskcluster/taskcluster/clients/client-go?status.svg)](https://godoc.org/github.com/taskcluster/taskcluster/clients/client-go)
 [![License](https://img.shields.io/badge/license-MPL%202.0-orange.svg)](http://mozilla.org/MPL/2.0)
 
-A go (golang) port of taskcluster-client.
+**A Taskcluster client library for Go.**
 
-Complete godoc documentation [here](https://godoc.org/github.com/taskcluster/taskcluster/clients/client-go/v24).
+This package contains a complete client interface to Taskcluster in Go,
+including pre-defined types for the data structures consumed and produced by
+the API methods.
 
-This library provides the following packages to interface with Taskcluster:
+## Usage
 
-### HTTP APIs
-* http://godoc.org/github.com/taskcluster/taskcluster/clients/client-go/v24/tcauth
-* http://godoc.org/github.com/taskcluster/taskcluster/clients/client-go/v24/tcawsprovisioner
-* http://godoc.org/github.com/taskcluster/taskcluster/clients/client-go/v24/tcec2manager
-* http://godoc.org/github.com/taskcluster/taskcluster/clients/client-go/v24/tcgithub
-* http://godoc.org/github.com/taskcluster/taskcluster/clients/client-go/v24/tchooks
-* http://godoc.org/github.com/taskcluster/taskcluster/clients/client-go/v24/tcindex
-* http://godoc.org/github.com/taskcluster/taskcluster/clients/client-go/v24/tclogin
-* http://godoc.org/github.com/taskcluster/taskcluster/clients/client-go/v24/tcnotify
-* http://godoc.org/github.com/taskcluster/taskcluster/clients/client-go/v24/tcpurgecache
-* http://godoc.org/github.com/taskcluster/taskcluster/clients/client-go/v24/tcqueue
-* http://godoc.org/github.com/taskcluster/taskcluster/clients/client-go/v24/tcsecrets
+For a general guide to using Taskcluster clients, see [Calling Taskcluster APIs](https://docs.taskcluster.net/docs/manual/using/api).
 
-### AMQP APIs
-* http://godoc.org/github.com/taskcluster/taskcluster/clients/client-go/v24/tcauthevents
-* http://godoc.org/github.com/taskcluster/taskcluster/clients/client-go/v24/tcawsprovisionerevents
-* http://godoc.org/github.com/taskcluster/taskcluster/clients/client-go/v24/tcgithubevents
-* http://godoc.org/github.com/taskcluster/taskcluster/clients/client-go/v24/tcpurgecacheevents
-* http://godoc.org/github.com/taskcluster/taskcluster/clients/client-go/v24/tcqueueevents
+### Setup
 
-## Example programs
+Before invoking API methods, create a client object corresponding to the service you wish to communicate with.
+See the [client subdirectories](https://godoc.org/github.com/taskcluster/taskcluster/clients/client-go#pkg-subdirectories) for the list of available packages, each beginning with `tc`.
+
+The most common case is to use `NewFromEnv`, reading environment variables for credentials:
+
+```go
+import (
+	tcclient "github.com/taskcluster/taskcluster/v25/clients/client-go"
+	"github.com/taskcluster/taskcluster/v25/clients/client-go/tcqueue"
+)
+queue := tcqueue.NewFromEnv()
+```
+
+Each client package has a `New` method that takes explicit configuration, too:
+
+```go
+creds := tcclient.Credentials{
+    ClientID: "..",
+    AccessToken: "..",
+}
+queue := tcqueue.New(&creds, rootURL)
+```
+If the first argument is `nil`, then the client makes API requests without authentication.
+
+The `Credentials` struct has an optional list of `AuthorizedScopes`.  This can
+be used to [restrict the scopes for a
+request](https://docs.taskcluster.net/docs/manual/design/apis/hawk/authorized-scopes),
+
+### Calling API Methods
+
+Each client object exposes API methods by their Golang-formatted name.
+For example, a `tcqueue.Queue` object has methods like `CreateTask` and `GetArtifact`.
+The calling signature for these methods resemble those in the service reference documentation, with the payload and response data represented by Golang structs.
+
+For example, the `CreateTask` method is called like this:
+
+```go
+import (
+	tcclient "github.com/taskcluster/taskcluster/v25/clients/client-go"
+	"github.com/taskcluster/taskcluster/v25/clients/client-go/tcqueue"
+    "github.com/taskcluster/slugid-go"
+)
+task := tcqueue.TaskDefinitionRequest{..};
+taskId: = slugid.Nice() 
+status := queue.CreateTask(taskId, &task)
+```
+
+Complete Godoc documentation of the available methods and types is [here](https://godoc.org/github.com/taskcluster/taskcluster/clients/client-go); see the "Directories" section to find the interfaces defined for specific services.
+
+### Generating Signed URLs
+
+API methods which take credentials and have method GET can be invoked with a signed URL.
+To generate such a URL, use the method with suffix `_SignedURL`, and pass as its final argument the duration for which the URL should be valid.
+For example, to generate a URL for [Queue.GetArtifact](https://godoc.org/github.com/taskcluster/taskcluster/clients/client-go/tcqueue#Queue.GetArtifact_SignedURL):
+
+```go
+url := queue.GetArtifact_SignedURL(taskId, runId, "my/secret/artifact.txt", 5 * time.Minutes)
+```
+
+### Generating Temporary Credentials
+
+You can generate temporary credentials from permanent credentials using the
+Go client. This may be useful if you wish to issue credentials to a third
+party. See [the manual](https://docs.taskcluster.net/docs/manual/design/env-vars) for
+more information.
+
+Create named credentials with
+[`Credentials.CreateNamedTemporaryCredentials`](https://godoc.org/github.com/taskcluster/taskcluster/clients/client-go#Credentials.CreateNamedTemporaryCredentials),
+or unnamed credentials with
+[`Credentials.CreateTemporaryCredentials`](https://godoc.org/github.com/taskcluster/taskcluster/clients/client-go#Credentials.CreateTemporaryCredentials).
+Named credentials are preferred if you are not sure which type to use.
+
+#### Example
+
+```go
+package main
+
+import (
+	"fmt"
+	"log"
+	"os"
+	"strconv"
+	"time"
+
+	tcclient "github.com/taskcluster/taskcluster/v25/clients/client-go"
+	"github.com/taskcluster/taskcluster/v25/clients/client-go/tcqueue"
+)
+
+const (
+	taskID  = "VESwp9JaRo-XkFN_bemBhw"
+	runID   = 0
+    rootURL = "https://tc.example.com"
+)
+
+// This simple demo lists the artifacts in run 0 of task
+// VESwp9JaRo-XkFN_bemBhw. It creates permanent credentials from environment
+// variables TASKCLUSTER_CLIENT_ID and TASKCLUSTER_ACCESS_TOKEN, and then
+// creates temporary credentials, valid for 24 hours, from these permanent
+// credentials. It queries the Queue using the temporary credentials, and with
+// limited authorized scopes.
+//
+// Note, the queueClient.ListArtifacts(...) call doesn't require any scopes.
+// The generation of temporary credentials, and limiting via authorized scopes
+// is purely illustrative. The TASKCLUSTER_CLIENT_ID must satisfy
+// auth:create-client:demo-client/taskcluster/clients/client-go, though.
+func main() {
+	permCreds := &tcclient.Credentials{
+		ClientID:    os.Getenv("TASKCLUSTER_CLIENT_ID"),
+		AccessToken: os.Getenv("TASKCLUSTER_ACCESS_TOKEN"),
+	}
+	tempCreds, err := permCreds.CreateNamedTemporaryCredentials(
+		"demo-client/taskcluster/clients/client-go",
+		time.Hour*24,
+		"assume:legacy-permacred",
+	)
+	if err != nil {
+		log.Fatalf("Could not create temporary credentials: %v", err)
+	}
+	tempCreds.AuthorizedScopes = []string{
+		"queue:get-artifact:private/build/*",
+	}
+	queueClient, err := tcqueue.New(tempCreds, rootURL)
+	if err != nil {
+		// bug in code
+		log.Fatalf("SERIOUS BUG! Could not create client from generated temporary credentials: %v", err)
+	}
+	listArtifactsResponse, err := queueClient.ListArtifacts(taskID, strconv.Itoa(runID), "", "")
+	if err != nil {
+		log.Fatalf("Could not call queue.listArtifacts endpoint: %v", err)
+	}
+	fmt.Printf("Task %v run %v artifacts:\n", taskID, runID)
+	for _, artifact := range listArtifactsResponse.Artifacts {
+		fmt.Printf("  * %v\n", artifact.Name)
+	}
+	fmt.Println("Done")
+}
+```
+### Handling Timestamps
+
+Taskcluster uses RFC3339 timestamps, specifically with millisecond precision and a `Z` timestamp.
+To support serializing and deserializing this format exactly, use the [`tcclient.Time`](https://godoc.org/github.com/taskcluster/taskcluster/clients/client-go#Time) type instead of with the built-in `time.Time` type.
+
+All timestamp arithmetic should be performed with the built-in `time` package.
+
+### Generating SlugIDs
+
+To generate SlugIDs, such as for TaskIDs, use [github.com/taskcluster/slugid-go](https://github.com/taskcluster/slugid-go).
+
+## Compatibility
+
+This library is co-versioned with Taskcluster itself.
+That is, a client with version x.y.z contains API methods corresponding to Taskcluster version x.y.z.
+Taskcluster is careful to maintain API compatibility, and guarantees it within a major version.
+That means that any client with version x.* will work against any Taskcluster services at version x.*, and is very likely to work for many other major versions of the Taskcluster services.
+Any incompatibilities are noted in the [Changelog](https://github.com/taskcluster/taskcluster/blob/master/CHANGELOG.md).
+
+
+## Examples
 
 To get you started quickly, some example programs are included that use both the HTTP APIs and the AMQP APIs:
 
-* This [HTTP example program](http://godoc.org/github.com/taskcluster/taskcluster/clients/client-go/v24/tcauth#example-package--Scopes) demonstrates the use of the [tcauth](http://godoc.org/github.com/taskcluster/taskcluster/clients/client-go/v24/tcauth) package to query the expiry and expanded scopes of a given clientId.
-* This [HTTP example program](http://godoc.org/github.com/taskcluster/taskcluster/clients/client-go/v24/tcauth#example-package--UpdateClient) demonstrates the use of the [tcauth](http://godoc.org/github.com/taskcluster/taskcluster/clients/client-go/v24/tcauth) package to update an existing clientId with a new description and expiry.
-* The [AMQP example program](http://godoc.org/github.com/taskcluster/taskcluster/clients/client-go/v24/tcqueueevents#example-package--TaskclusterSniffer) demonstrates the use of the [tcqueueevents](http://godoc.org/github.com/taskcluster/taskcluster/clients/client-go/v24/tcqueueevents) package to listen in on Taskcluster tasks being defined and executed.
+* This [HTTP example program](http://godoc.org/github.com/taskcluster/taskcluster/clients/client-go/tcauth#example-package--Scopes) demonstrates the use of the [tcauth](http://godoc.org/github.com/taskcluster/taskcluster/clients/client-go/tcauth) package to query the expiry and expanded scopes of a given clientId.
+* This [HTTP example program](http://godoc.org/github.com/taskcluster/taskcluster/clients/client-go/tcauth#example-package--UpdateClient) demonstrates the use of the [tcauth](http://godoc.org/github.com/taskcluster/taskcluster/clients/client-go/tcauth) package to update an existing clientId with a new description and expiry.
+* The [AMQP example program](http://godoc.org/github.com/taskcluster/taskcluster/clients/client-go/tcqueueevents#example-package--TaskclusterSniffer) demonstrates the use of the [tcqueueevents](http://godoc.org/github.com/taskcluster/taskcluster/clients/client-go/tcqueueevents) package to listen in on Taskcluster tasks being defined and executed.
 
-## Calling API End-Points
-
-To invoke an API end-point, instantiate one of the HTTP API classes (from
-section [HTTP APIs](#http-apis)).  In the following example we instantiate an
-instance of the `Queue` client class and use it to create a task.
+### Creating a Task
 
 ```go
 package main
@@ -54,8 +192,8 @@ import (
 	"time"
 
 	"github.com/taskcluster/slugid-go/slugid"
-	tcclient "github.com/taskcluster/taskcluster/clients/client-go/v24"
-	"github.com/taskcluster/taskcluster/clients/client-go/v24/tcqueue"
+	tcclient "github.com/taskcluster/taskcluster/v25/clients/client-go"
+	"github.com/taskcluster/taskcluster/v25/clients/client-go/tcqueue"
 )
 
 // *********************************************************
@@ -505,85 +643,8 @@ func main() {
 }
 ```
 
-## Temporary credentials
+## Development
 
-You can generate temporary credentials from permanent credentials using the
-go client. This may be useful if you wish to issue credentials to a third
-party. See https://docs.taskcluster.net/docs/manual/design/apis/hawk/temporary-credentials for
-more information. Both named and unnamed temporary credentials are supported,
-although named credentials are preferred if you are not sure which type to use.
-
-### Example
-
-```go
-package main
-
-import (
-	"fmt"
-	"log"
-	"os"
-	"strconv"
-	"time"
-
-	tcclient "github.com/taskcluster/taskcluster/clients/client-go/v24"
-	"github.com/taskcluster/taskcluster/clients/client-go/v24/tcqueue"
-)
-
-const (
-	taskID  = "VESwp9JaRo-XkFN_bemBhw"
-	runID   = 0
-    rootURL = "https://tc.example.com"
-)
-
-// This simple demo lists the artifacts in run 0 of task
-// VESwp9JaRo-XkFN_bemBhw. It creates permanent credentials from environment
-// variables TASKCLUSTER_CLIENT_ID and TASKCLUSTER_ACCESS_TOKEN, and then
-// creates temporary credentials, valid for 24 hours, from these permanent
-// credentials. It queries the Queue using the temporary credentials, and with
-// limited authorized scopes.
-//
-// Note, the queueClient.ListArtifacts(...) call doesn't require any scopes.
-// The generation of temporary credentials, and limiting via authorized scopes
-// is purely illustrative. The TASKCLUSTER_CLIENT_ID must satisfy
-// auth:create-client:demo-client/taskcluster/clients/client-go, though.
-func main() {
-	permCreds := &tcclient.Credentials{
-		ClientID:    os.Getenv("TASKCLUSTER_CLIENT_ID"),
-		AccessToken: os.Getenv("TASKCLUSTER_ACCESS_TOKEN"),
-	}
-	tempCreds, err := permCreds.CreateNamedTemporaryCredentials(
-		"demo-client/taskcluster/clients/client-go",
-		time.Hour*24,
-		"assume:legacy-permacred",
-	)
-	if err != nil {
-		log.Fatalf("Could not create temporary credentials: %v", err)
-	}
-	tempCreds.AuthorizedScopes = []string{
-		"queue:get-artifact:private/build/*",
-	}
-	queueClient, err := tcqueue.New(tempCreds, rootURL)
-	if err != nil {
-		// bug in code
-		log.Fatalf("SERIOUS BUG! Could not create client from generated temporary credentials: %v", err)
-	}
-	listArtifactsResponse, err := queueClient.ListArtifacts(taskID, strconv.Itoa(runID), "", "")
-	if err != nil {
-		log.Fatalf("Could not call queue.listArtifacts endpoint: %v", err)
-	}
-	fmt.Printf("Task %v run %v artifacts:\n", taskID, runID)
-	for _, artifact := range listArtifactsResponse.Artifacts {
-		fmt.Printf("  * %v\n", artifact.Name)
-	}
-	fmt.Println("Done")
-}
-```
-
-See the [HTTP API godocs](#http-apis) for more information, or browse the [integration
-tests](https://github.com/taskcluster/taskcluster/tree/master/clients/client-go/integrationtest)
-for further examples.
-
-## Generating
 The libraries provided by this client are auto-generated based on the schema references in this repository.
 This is done with the `yarn generate` command, run from the top level of the repository.
 

@@ -228,8 +228,14 @@
       "description": "Conditions a worker can reach and actions to take in the case that they do.\nNot all providers necessarily implement all features of this in the same way.\nRead the providers docs to understand exactly what it will do.\n",
       "properties": {
         "registrationTimeout": {
-          "description": "Each worker in this pool has `timeout` seconds to\nregister itself with worker-manager after it has\nbeen requsted from the cloud provider. After this\ntimeout, worker-manager will terminate the instance,\nassuming it is broken\n",
+          "description": "Each worker in this pool has `registrationTimeout` seconds to\nregister itself with worker-manager after it has\nbeen requsted from the cloud provider. After this\ntimeout, worker-manager will terminate the instance,\nassuming it is broken.\n\nThis parameter has no effect for worker pools using the static provider\ntype.\n",
           "title": "Registration Timeout",
+          "type": "integer"
+        },
+        "reregistrationTimeout": {
+          "default": 345600,
+          "description": "If specified, workers in this pool must re-register via `reregister()`\nwithin `reregistrationTimeout` seconds from the initial call to\n`register()` to get new credentials. If the worker has not done so, it\nwill be terminated.  This value also dictates the lifetime of the\ntemporary credentials granted to the worker, meaning that it cannot be\ngreater than 31 days.\n\nThe default value is 3 days.\n",
+          "title": "Checkin Timeout",
           "type": "integer"
         }
       },
@@ -432,7 +438,7 @@
       "properties": {
         "credentials": {
           "additionalProperties": false,
-          "description": "The credentials the worker\nwill need to perform its work.  Specifically, credentials with scopes\n* `assume:worker-pool:<workerPoolId>`\n* `assume:worker-id:<workerGroup>/<workerId>`\n* `queue:worker-id:<workerGroup>/<workerId>`\n* `secrets:get:worker-pool:<workerPoolId>`\n* `queue:claim-work:<workerPoolId>`\n",
+          "description": "The credentials the worker\nwill need to perform its work.  Specifically, credentials with scopes\n* `assume:worker-pool:<workerPoolId>`\n* `assume:worker-id:<workerGroup>/<workerId>`\n* `queue:worker-id:<workerGroup>/<workerId>`\n* `secrets:get:worker-pool:<workerPoolId>`\n* `queue:claim-work:<workerPoolId>`\n* `worker-manager:remove-worker:<workerPoolId>/<workerGroup>/<workerId>`\n",
           "properties": {
             "accessToken": {
               "type": "string"
@@ -523,7 +529,8 @@
               "properties": {
                 "document": {
                   "description": "Instance identity document that is obtained by\ncurl http://169.254.169.254/latest/dynamic/instance-identity/document on the instance\n",
-                  "title": "Document"
+                  "title": "Document",
+                  "type": "string"
                 },
                 "signature": {
                   "description": "The signature for instance identity document. Can be obtained by\ncurl http://169.254.169.254/latest/dynamic/instance-identity/signature on the instance\n",
@@ -536,6 +543,21 @@
                 "signature"
               ],
               "title": "aws provider type",
+              "type": "object"
+            },
+            {
+              "additionalProperties": false,
+              "properties": {
+                "document": {
+                  "description": "Attested data document that is obtained by\ncurl http://169.254.169.254/metadata/attested/document on the instance\n",
+                  "title": "Document",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "document"
+              ],
+              "title": "azure provider type",
               "type": "object"
             }
           ],
@@ -734,6 +756,13 @@
       "$schema": "/schemas/common/metaschema.json#",
       "additionalProperties": false,
       "description": "A configuration for static workertypes",
+      "properties": {
+        "lifecycle": {
+          "$ref": "worker-lifecycle.json#"
+        }
+      },
+      "required": [
+      ],
       "title": "Static Provider Config",
       "type": "object"
     },
@@ -849,6 +878,191 @@
       "type": "object"
     },
     "filename": "schemas/worker-manager/v1/config-google.json"
+  },
+  {
+    "content": {
+      "$id": "/schemas/worker-manager/v1/config-azure.json#",
+      "$schema": "/schemas/common/metaschema.json#",
+      "additionalProperties": false,
+      "description": "'The config section of a workertype is using a provider with implementation azure must match this.\nMuch of these fields are documented [here](https://docs.microsoft.com/en-us/rest/api/compute/virtualmachines/createorupdate)'\n",
+      "properties": {
+        "launchConfigs": {
+          "description": "An array of possible variations of workers for this pool.\nEach choice must include at least the required properties but can also include anything in\nthe request body of [the virtual machine creation](https://docs.microsoft.com/en-us/rest/api/compute/virtualmachines/createorupdate)\napi method. worker-manager sets the values of the `osProfile.adminPassword`, `osProfile.computerName`, `osProfile.customData`, `networkProfile.networkInterfaces`\nproperties directly, and they cannot be overriden. It also fills in some basic labels, will generate a default description, and sets the `taskcluster`\nmetadata key directly. You are free to set other metadata items though. A subset of these fields we require you to set such as `machineType`.\n",
+          "items": {
+            "additionalProperties": true,
+            "properties": {
+              "billingProfile": {
+                "additionalProperties": true,
+                "description": "https://docs.microsoft.com/en-us/rest/api/compute/virtualmachines/createorupdate#billingprofile",
+                "properties": {
+                  "maxPrice": {
+                    "description": "the maximum price to pay for a spot virtual machine in US Dollars",
+                    "title": "Max Price",
+                    "type": "number"
+                  }
+                },
+                "required": [
+                ],
+                "title": "Billing Profile",
+                "type": "object"
+              },
+              "capacityPerInstance": {
+                "description": "The number of tasks a single worker of this type can run at any given time.",
+                "minimum": 1,
+                "title": "Capacity Per Instance",
+                "type": "integer"
+              },
+              "hardwareProfile": {
+                "additionalProperties": true,
+                "description": "https://docs.microsoft.com/en-us/rest/api/compute/virtualmachines/createorupdate#hardwareprofile",
+                "properties": {
+                  "vmSize": {
+                    "title": "Virtual machine type",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "vmSize"
+                ],
+                "title": "Hardware Profile",
+                "type": "object"
+              },
+              "location": {
+                "description": "The Azure location this worker should be spawned in",
+                "title": "Location",
+                "type": "string"
+              },
+              "networkProfile": {
+                "additionalProperties": true,
+                "description": "Container object for network interfaces for the VM\nSee here: https://docs.microsoft.com/en-us/rest/api/compute/virtualmachines/createorupdate#networkprofile\n",
+                "properties": {
+                  "networkInterfaces": {
+                    "items": {
+                      "additionalProperties": true,
+                      "properties": {
+                        "id": {
+                          "type": "string"
+                        },
+                        "primary": {
+                          "type": "boolean"
+                        }
+                      },
+                      "required": [
+                      ],
+                      "title": "Network Interface Reference",
+                      "type": "object"
+                    },
+                    "title": "Network Interfaces",
+                    "type": "array",
+                    "uniqueItems": false
+                  }
+                },
+                "required": [
+                  "networkInterfaces"
+                ],
+                "title": "Network Profile",
+                "type": "object"
+              },
+              "osProfile": {
+                "additionalProperties": true,
+                "description": "adminPassword, computerName, and customData are set by the provider and are not configurable\nhttps://docs.microsoft.com/en-us/rest/api/compute/virtualmachines/createorupdate#osprofile\n",
+                "required": [
+                ],
+                "title": "OS Profile",
+                "type": "object"
+              },
+              "priority": {
+                "description": "virtual machine priority, i.e. Spot\nhttps://docs.microsoft.com/en-us/rest/api/compute/virtualmachines/createorupdate#virtualmachineprioritytypes\n",
+                "title": "Priority",
+                "type": "string"
+              },
+              "storageProfile": {
+                "additionalProperties": true,
+                "properties": {
+                  "imageReference": {
+                    "additionalProperties": true,
+                    "description": "https://docs.microsoft.com/en-us/rest/api/compute/virtualmachines/createorupdate#imagereference",
+                    "properties": {
+                      "id": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                    ],
+                    "type": "object"
+                  },
+                  "osDisk": {
+                    "additionalProperties": true,
+                    "description": "https://docs.microsoft.com/en-us/rest/api/compute/virtualmachines/createorupdate#osdisk\n",
+                    "properties": {
+                      "createOption": {
+                        "description": "FromImage creates the disk from the specified image\nhttps://docs.microsoft.com/en-us/rest/api/compute/virtualmachines/createorupdate#diskcreateoptiontypes\n",
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                    ],
+                    "title": "OS Disk",
+                    "type": "object"
+                  }
+                },
+                "required": [
+                  "osDisk"
+                ],
+                "title": "Storage Profile",
+                "type": "object"
+              },
+              "subnetId": {
+                "description": "The ID of the subnet workers should be spawned in",
+                "title": "Subnet ID",
+                "type": "string"
+              },
+              "workerConfig": {
+                "additionalProperties": true,
+                "description": "This value is supplied unchanged as the `workerConfig` property of the `taskcluster` instance metadata attribute.\nThe expectation is that the worker will merge this information with configuration from other sources,\nand this is precisely what [taskcluster-worker-runner](https://github.com/taskcluster/taskcluster-worker-runner) does.\nThis property must not be used for secret configuration, as it is visible both in the worker pool configuration and in the worker instance's metadata.\nInstead, put secret configuration in the [secrets service](https://github.com/taskcluster/taskcluster-worker-runner#secrets).\n",
+                "title": "Worker Config",
+                "type": "object"
+              }
+            },
+            "required": [
+              "capacityPerInstance",
+              "workerConfig",
+              "location",
+              "subnetId",
+              "hardwareProfile",
+              "storageProfile"
+            ],
+            "type": "object"
+          },
+          "title": "Choices",
+          "type": "array",
+          "uniqueItems": false
+        },
+        "lifecycle": {
+          "$ref": "worker-lifecycle.json#"
+        },
+        "maxCapacity": {
+          "description": "The maximum amount of capacity that worker-manager should make\navailable at any given time.\n",
+          "minimum": 0,
+          "title": "Maximum Capacity",
+          "type": "integer"
+        },
+        "minCapacity": {
+          "description": "The minimum amount of capacity that worker-manager should make\navailable at any given time.\n",
+          "minimum": 0,
+          "title": "Minimum Capacity",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "minCapacity",
+        "maxCapacity",
+        "launchConfigs"
+      ],
+      "title": "Azure Provider Config",
+      "type": "object"
+    },
+    "filename": "schemas/worker-manager/v1/config-azure.json"
   },
   {
     "content": {
@@ -1377,7 +1591,7 @@
           "type": "string"
         },
         "deadline": {
-          "description": "Deadline of the task, by which this task must be complete. `pending` and\n`running` runs are resolved as **exception** if not resolved by other means\nbefore the deadline. After the deadline, a task is immutable. Note,\ndeadline cannot be more than 10 days into the future\n",
+          "description": "Deadline of the task, by which this task must be complete. `pending` and\n`running` runs are resolved as **exception** if not resolved by other means\nbefore the deadline. After the deadline, a task is immutable. Note,\ndeadline cannot be more than 5 days into the future\n",
           "format": "date-time",
           "title": "Deadline",
           "type": "string"
@@ -1550,7 +1764,7 @@
       "description": "A representation of **task status** as known by the queue\n",
       "properties": {
         "deadline": {
-          "description": "Deadline of the task, by which this task must be complete. `pending` and\n`running` runs are resolved as **exception** if not resolved by other means\nbefore the deadline. After the deadline, a task is immutable. Note,\ndeadline cannot be more than 10 days into the future\n",
+          "description": "Deadline of the task, by which this task must be complete. `pending` and\n`running` runs are resolved as **exception** if not resolved by other means\nbefore the deadline. After the deadline, a task is immutable. Note,\ndeadline cannot be more than 5 days into the future\n",
           "format": "date-time",
           "title": "Deadline",
           "type": "string"
@@ -3124,7 +3338,7 @@
           "type": "string"
         },
         "deadline": {
-          "description": "Deadline of the task, by which this task must be complete. `pending` and\n`running` runs are resolved as **exception** if not resolved by other means\nbefore the deadline. After the deadline, a task is immutable. Note,\ndeadline cannot be more than 10 days into the future\n",
+          "description": "Deadline of the task, by which this task must be complete. `pending` and\n`running` runs are resolved as **exception** if not resolved by other means\nbefore the deadline. After the deadline, a task is immutable. Note,\ndeadline cannot be more than 5 days into the future\n",
           "format": "date-time",
           "title": "Deadline",
           "type": "string"
@@ -3652,7 +3866,8 @@
             "email",
             "pulse",
             "irc-user",
-            "irc-channel"
+            "irc-channel",
+            "matrix-room"
           ],
           "type": "string"
         }
@@ -3693,6 +3908,39 @@
       "type": "object"
     },
     "filename": "schemas/notify/v1/notification-address-list.json"
+  },
+  {
+    "content": {
+      "$id": "/schemas/notify/v1/matrix-request.json#",
+      "$schema": "/schemas/common/metaschema.json#",
+      "additionalProperties": false,
+      "description": "Request to send a Matrix notice.",
+      "properties": {
+        "body": {
+          "description": "Unformatted text that will be displayed in the room if you do not\nspecify `formattedBody` or if a user's client can not render the format.\n",
+          "type": "string"
+        },
+        "format": {
+          "description": "The format for `formattedBody`. For instance, `org.matrix.custom.html`",
+          "type": "string"
+        },
+        "formattedBody": {
+          "description": "Text that will be rendered by matrix clients that support the given\nformat in that format. For instance, `<h1>Header Text</h1>`.\n",
+          "type": "string"
+        },
+        "roomId": {
+          "description": "The fully qualified room name, such as `!whDRjjSmICCgrhFHsQ:mozilla.org`\nIf you are using riot, you can find this under the advanced settings for a room.\n",
+          "type": "string"
+        }
+      },
+      "required": [
+        "roomId",
+        "body"
+      ],
+      "title": "Send Matrix Notice Request",
+      "type": "object"
+    },
+    "filename": "schemas/notify/v1/matrix-request.json"
   },
   {
     "content": {
@@ -5405,6 +5653,3258 @@
       "type": "object"
     },
     "filename": "schemas/github/v1/build-list.json"
+  },
+  {
+    "content": {
+      "$id": "/schemas/generic-worker/simple_posix.json#",
+      "$schema": "/schemas/common/metaschema.json#",
+      "additionalProperties": false,
+      "definitions": {
+        "content": {
+          "oneOf": [
+            {
+              "additionalProperties": false,
+              "description": "Requires scope `queue:get-artifact:<artifact-name>`.\n\nSince: generic-worker 5.4.0",
+              "properties": {
+                "artifact": {
+                  "maxLength": 1024,
+                  "type": "string"
+                },
+                "sha256": {
+                  "description": "The required SHA 256 of the content body.\n\nSince: generic-worker 10.8.0",
+                  "pattern": "^[a-f0-9]{64}$",
+                  "title": "SHA 256",
+                  "type": "string"
+                },
+                "taskId": {
+                  "pattern": "^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "taskId",
+                "artifact"
+              ],
+              "title": "Artifact Content",
+              "type": "object"
+            },
+            {
+              "additionalProperties": false,
+              "description": "URL to download content from.\n\nSince: generic-worker 5.4.0",
+              "properties": {
+                "sha256": {
+                  "description": "The required SHA 256 of the content body.\n\nSince: generic-worker 10.8.0",
+                  "pattern": "^[a-f0-9]{64}$",
+                  "title": "SHA 256",
+                  "type": "string"
+                },
+                "url": {
+                  "description": "URL to download content from.\n\nSince: generic-worker 5.4.0",
+                  "format": "uri",
+                  "title": "URL",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "url"
+              ],
+              "title": "URL Content",
+              "type": "object"
+            },
+            {
+              "additionalProperties": false,
+              "description": "Byte-for-byte literal inline content of file/archive, up to 64KB in size.\n\nSince: generic-worker 11.1.0",
+              "properties": {
+                "raw": {
+                  "description": "Byte-for-byte literal inline content of file/archive, up to 64KB in size.\n\nSince: generic-worker 11.1.0",
+                  "maxLength": 65536,
+                  "title": "Raw",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "raw"
+              ],
+              "title": "Raw Content",
+              "type": "object"
+            },
+            {
+              "additionalProperties": false,
+              "description": "Base64 encoded content of file/archive, up to 64KB (encoded) in size.\n\nSince: generic-worker 11.1.0",
+              "properties": {
+                "base64": {
+                  "description": "Base64 encoded content of file/archive, up to 64KB (encoded) in size.\n\nSince: generic-worker 11.1.0",
+                  "maxLength": 65536,
+                  "pattern": "^[A-Za-z0-9/+]+[=]{0,2}$",
+                  "title": "Base64",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "base64"
+              ],
+              "title": "Base64 Content",
+              "type": "object"
+            }
+          ]
+        },
+        "fileMount": {
+          "additionalProperties": false,
+          "properties": {
+            "content": {
+              "$ref": "#/definitions/content",
+              "description": "Content of the file to be mounted.\n\nSince: generic-worker 5.4.0"
+            },
+            "file": {
+              "description": "The filesystem location to mount the file.\n\nSince: generic-worker 5.4.0",
+              "title": "File",
+              "type": "string"
+            }
+          },
+          "required": [
+            "file",
+            "content"
+          ],
+          "title": "File Mount",
+          "type": "object"
+        },
+        "mount": {
+          "oneOf": [
+            {
+              "$ref": "#/definitions/fileMount"
+            },
+            {
+              "$ref": "#/definitions/writableDirectoryCache"
+            },
+            {
+              "$ref": "#/definitions/readOnlyDirectory"
+            }
+          ],
+          "title": "Mount"
+        },
+        "readOnlyDirectory": {
+          "additionalProperties": false,
+          "properties": {
+            "content": {
+              "$ref": "#/definitions/content",
+              "description": "Contents of read only directory.\n\nSince: generic-worker 5.4.0",
+              "title": "Content"
+            },
+            "directory": {
+              "description": "The filesystem location to mount the directory volume.\n\nSince: generic-worker 5.4.0",
+              "title": "Directory",
+              "type": "string"
+            },
+            "format": {
+              "description": "Archive format of content for read only directory.\n\nSince: generic-worker 5.4.0",
+              "enum": [
+                "rar",
+                "tar.bz2",
+                "tar.gz",
+                "zip"
+              ],
+              "title": "Format",
+              "type": "string"
+            }
+          },
+          "required": [
+            "directory",
+            "content",
+            "format"
+          ],
+          "title": "Read Only Directory",
+          "type": "object"
+        },
+        "writableDirectoryCache": {
+          "additionalProperties": false,
+          "dependencies": {
+            "content": [
+              "format"
+            ],
+            "format": [
+              "content"
+            ]
+          },
+          "properties": {
+            "cacheName": {
+              "description": "Implies a read/write cache directory volume. A unique name for the\ncache volume. Requires scope `generic-worker:cache:<cache-name>`.\nNote if this cache is loaded from an artifact, you will also require\nscope `queue:get-artifact:<artifact-name>` to use this cache.\n\nSince: generic-worker 5.4.0",
+              "title": "Cache Name",
+              "type": "string"
+            },
+            "content": {
+              "$ref": "#/definitions/content",
+              "description": "Optional content to be preloaded when initially creating the cache\n(if set, `format` must also be provided).\n\nSince: generic-worker 5.4.0",
+              "title": "Content"
+            },
+            "directory": {
+              "description": "The filesystem location to mount the directory volume.\n\nSince: generic-worker 5.4.0",
+              "title": "Directory Volume",
+              "type": "string"
+            },
+            "format": {
+              "description": "Archive format of the preloaded content (if `content` provided).\n\nSince: generic-worker 5.4.0",
+              "enum": [
+                "rar",
+                "tar.bz2",
+                "tar.gz",
+                "zip"
+              ],
+              "title": "Format",
+              "type": "string"
+            }
+          },
+          "required": [
+            "directory",
+            "cacheName"
+          ],
+          "title": "Writable Directory Cache",
+          "type": "object"
+        }
+      },
+      "description": "This schema defines the structure of the `payload` property referred to in a\nTaskcluster Task definition.",
+      "properties": {
+        "artifacts": {
+          "description": "Artifacts to be published.\n\nSince: generic-worker 1.0.0",
+          "items": {
+            "additionalProperties": false,
+            "properties": {
+              "contentEncoding": {
+                "description": "Content-Encoding for the artifact. If not provided, `gzip` will be used, except for the\nfollowing file extensions, where `identity` will be used, since they are already\ncompressed:\n\n* jpg\n* jpeg\n* png\n* gif\n* webp\n* 7z\n* zip\n* gz\n* tgz\n* bz2\n* tbz\n* whl\n* xz\n* swf\n* flv\n* woff\n* woff2\n\nNote, setting `contentEncoding` on a directory artifact will apply the same content\nencoding to all the files contained in the directory.\n\nSince: generic-worker 16.2.0",
+                "enum": [
+                  "identity",
+                  "gzip"
+                ],
+                "title": "Content-Encoding header when serving artifact over HTTP.",
+                "type": "string"
+              },
+              "contentType": {
+                "description": "Explicitly set the value of the HTTP `Content-Type` response header when the artifact(s)\nis/are served over HTTP(S). If not provided (this property is optional) the worker will\nguess the content type of artifacts based on the filename extension of the file storing\nthe artifact content. It does this by looking at the system filename-to-mimetype mappings\ndefined in multiple `mime.types` files located under `/etc`. Note, setting `contentType`\non a directory artifact will apply the same contentType to all files contained in the\ndirectory.\n\nSee [mime.TypeByExtension](https://godoc.org/mime#TypeByExtension).\n\nSince: generic-worker 10.4.0",
+                "title": "Content-Type header when serving artifact over HTTP",
+                "type": "string"
+              },
+              "expires": {
+                "description": "Date when artifact should expire must be in the future, no earlier than task deadline, but\nno later than task expiry. If not set, defaults to task expiry.\n\nSince: generic-worker 1.0.0",
+                "format": "date-time",
+                "title": "Expiry date and time",
+                "type": "string"
+              },
+              "name": {
+                "description": "Name of the artifact, as it will be published. If not set, `path` will be used.\nConventionally (although not enforced) path elements are forward slash separated. Example:\n`public/build/a/house`. Note, no scopes are required to read artifacts beginning `public/`.\nArtifact names not beginning `public/` are scope-protected (caller requires scopes to\ndownload the artifact). See the Queue documentation for more information.\n\nSince: generic-worker 8.1.0",
+                "title": "Name of the artifact",
+                "type": "string"
+              },
+              "path": {
+                "description": "Relative path of the file/directory from the task directory. Note this is not an absolute\npath as is typically used in docker-worker, since the absolute task directory name is not\nknown when the task is submitted. Example: `dist\\regedit.exe`. It doesn't matter if\nforward slashes or backslashes are used.\n\nSince: generic-worker 1.0.0",
+                "title": "Artifact location",
+                "type": "string"
+              },
+              "type": {
+                "description": "Artifacts can be either an individual `file` or a `directory` containing\npotentially multiple files with recursively included subdirectories.\n\nSince: generic-worker 1.0.0",
+                "enum": [
+                  "file",
+                  "directory"
+                ],
+                "title": "Artifact upload type.",
+                "type": "string"
+              }
+            },
+            "required": [
+              "type",
+              "path"
+            ],
+            "title": "Artifact",
+            "type": "object"
+          },
+          "title": "Artifacts to be published",
+          "type": "array",
+          "uniqueItems": true
+        },
+        "command": {
+          "description": "One array per command (each command is an array of arguments). Several arrays\nfor several commands.\n\nSince: generic-worker 0.0.1",
+          "items": {
+            "items": {
+              "type": "string"
+            },
+            "minItems": 1,
+            "type": "array",
+            "uniqueItems": false
+          },
+          "minItems": 1,
+          "title": "Commands to run",
+          "type": "array",
+          "uniqueItems": false
+        },
+        "env": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "description": "Env vars must be string to __string__ mappings (not number or boolean). For example:\n```\n{\n  \"PATH\": \"/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin\",\n  \"GOOS\": \"darwin\",\n  \"FOO_ENABLE\": \"true\",\n  \"BAR_TOTAL\": \"3\"\n}\n```\n\nNote, the following environment variables will automatically be set in the task\ncommands:\n  * `TASK_ID` - the task ID of the currently running task\n  * `RUN_ID` - the run ID of the currently running task\n  * `TASKCLUSTER_ROOT_URL` - the root URL of the taskcluster deployment\n  * `TASKCLUSTER_PROXY_URL` (if taskcluster proxy feature enabled) - the\n     taskcluster authentication proxy for making unauthenticated taskcluster\n     API calls\n  * `TASKCLUSTER_WORKER_LOCATION` (if running in AWS or GCP or explicitly set\n    in the generic-worker config file). See\n    [RFC #0148](https://github.com/taskcluster/taskcluster-rfcs/blob/master/rfcs/0148-taskcluster-worker-location.md)\n    for details.\n\nSince: generic-worker 0.0.1",
+          "title": "Env vars",
+          "type": "object"
+        },
+        "features": {
+          "additionalProperties": false,
+          "description": "Feature flags enable additional functionality.\n\nSince: generic-worker 5.3.0",
+          "properties": {
+            "taskclusterProxy": {
+              "description": "The taskcluster proxy provides an easy and safe way to make authenticated\ntaskcluster requests within the scope(s) of a particular task. See\n[the github project](https://github.com/taskcluster/taskcluster-proxy) for more information.\n\nSince: generic-worker 10.6.0",
+              "title": "Run [taskcluster-proxy](https://github.com/taskcluster/taskcluster-proxy) to allow tasks to dynamically proxy requests to taskcluster services",
+              "type": "boolean"
+            }
+          },
+          "required": [
+          ],
+          "title": "Feature flags",
+          "type": "object"
+        },
+        "maxRunTime": {
+          "description": "Maximum time the task container can run in seconds.\n\nSince: generic-worker 0.0.1",
+          "maximum": 86400,
+          "minimum": 1,
+          "multipleOf": 1,
+          "title": "Maximum run time in seconds",
+          "type": "integer"
+        },
+        "mounts": {
+          "description": "Directories and/or files to be mounted.\n\nSince: generic-worker 5.4.0",
+          "items": {
+            "$ref": "#/definitions/mount",
+            "title": "Mount"
+          },
+          "type": "array",
+          "uniqueItems": false
+        },
+        "onExitStatus": {
+          "additionalProperties": false,
+          "description": "By default tasks will be resolved with `state/reasonResolved`: `completed/completed`\nif all task commands have a zero exit code, or `failed/failed` if any command has a\nnon-zero exit code. This payload property allows customsation of the task resolution\nbased on exit code of task commands.",
+          "properties": {
+            "retry": {
+              "description": "Exit codes for any command in the task payload to cause this task to\nbe resolved as `exception/intermittent-task`. Typically the Queue\nwill then schedule a new run of the existing `taskId` (rerun) if not\nall task runs have been exhausted.\n\nSee [itermittent tasks](https://docs.taskcluster.net/docs/reference/platform/taskcluster-queue/docs/worker-interaction#intermittent-tasks) for more detail.\n\nSince: generic-worker 10.10.0",
+              "items": {
+                "minimum": 1,
+                "title": "Exit codes",
+                "type": "integer"
+              },
+              "title": "Intermittent task exit codes",
+              "type": "array",
+              "uniqueItems": true
+            }
+          },
+          "required": [
+          ],
+          "title": "Exit code handling",
+          "type": "object"
+        },
+        "osGroups": {
+          "description": "A list of OS Groups that the task user should be a member of. Not yet implemented on\nnon-Windows platforms, therefore this optional property may only be an empty array if\nprovided.\n\nSince: generic-worker 6.0.0",
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 0,
+          "title": "OS Groups",
+          "type": "array",
+          "uniqueItems": false
+        },
+        "supersederUrl": {
+          "description": "URL of a service that can indicate tasks superseding this one; the current `taskId`\nwill be appended as a query argument `taskId`. The service should return an object with\na `supersedes` key containing a list of `taskId`s, including the supplied `taskId`. The\ntasks should be ordered such that each task supersedes all tasks appearing later in the\nlist.\n\nSee [superseding](https://docs.taskcluster.net/reference/platform/taskcluster-queue/docs/superseding) for more detail.\n\nSince: generic-worker 10.2.2",
+          "format": "uri",
+          "title": "Superseder URL",
+          "type": "string"
+        }
+      },
+      "required": [
+        "command",
+        "maxRunTime"
+      ],
+      "title": "Generic worker payload - simple, posix",
+      "type": "object"
+    },
+    "filename": "schemas/generic-worker/simple_posix.json"
+  },
+  {
+    "content": {
+      "$id": "/schemas/generic-worker/multiuser_windows.json#",
+      "$schema": "/schemas/common/metaschema.json#",
+      "additionalProperties": false,
+      "definitions": {
+        "content": {
+          "oneOf": [
+            {
+              "additionalProperties": false,
+              "description": "Requires scope `queue:get-artifact:<artifact-name>`.\n\nSince: generic-worker 5.4.0",
+              "properties": {
+                "artifact": {
+                  "maxLength": 1024,
+                  "type": "string"
+                },
+                "sha256": {
+                  "description": "The required SHA 256 of the content body.\n\nSince: generic-worker 10.8.0",
+                  "pattern": "^[a-f0-9]{64}$",
+                  "title": "SHA 256",
+                  "type": "string"
+                },
+                "taskId": {
+                  "pattern": "^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "taskId",
+                "artifact"
+              ],
+              "title": "Artifact Content",
+              "type": "object"
+            },
+            {
+              "additionalProperties": false,
+              "description": "URL to download content from.\n\nSince: generic-worker 5.4.0",
+              "properties": {
+                "sha256": {
+                  "description": "The required SHA 256 of the content body.\n\nSince: generic-worker 10.8.0",
+                  "pattern": "^[a-f0-9]{64}$",
+                  "title": "SHA 256",
+                  "type": "string"
+                },
+                "url": {
+                  "description": "URL to download content from.\n\nSince: generic-worker 5.4.0",
+                  "format": "uri",
+                  "title": "URL",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "url"
+              ],
+              "title": "URL Content",
+              "type": "object"
+            },
+            {
+              "additionalProperties": false,
+              "description": "Byte-for-byte literal inline content of file/archive, up to 64KB in size.\n\nSince: generic-worker 11.1.0",
+              "properties": {
+                "raw": {
+                  "description": "Byte-for-byte literal inline content of file/archive, up to 64KB in size.\n\nSince: generic-worker 11.1.0",
+                  "maxLength": 65536,
+                  "title": "Raw",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "raw"
+              ],
+              "title": "Raw Content",
+              "type": "object"
+            },
+            {
+              "additionalProperties": false,
+              "description": "Base64 encoded content of file/archive, up to 64KB (encoded) in size.\n\nSince: generic-worker 11.1.0",
+              "properties": {
+                "base64": {
+                  "description": "Base64 encoded content of file/archive, up to 64KB (encoded) in size.\n\nSince: generic-worker 11.1.0",
+                  "maxLength": 65536,
+                  "pattern": "^[A-Za-z0-9/+]+[=]{0,2}$",
+                  "title": "Base64",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "base64"
+              ],
+              "title": "Base64 Content",
+              "type": "object"
+            }
+          ]
+        },
+        "fileMount": {
+          "additionalProperties": false,
+          "properties": {
+            "content": {
+              "$ref": "#/definitions/content",
+              "description": "Content of the file to be mounted.\n\nSince: generic-worker 5.4.0"
+            },
+            "file": {
+              "description": "The filesystem location to mount the file.\n\nSince: generic-worker 5.4.0",
+              "title": "File",
+              "type": "string"
+            }
+          },
+          "required": [
+            "file",
+            "content"
+          ],
+          "title": "File Mount",
+          "type": "object"
+        },
+        "mount": {
+          "oneOf": [
+            {
+              "$ref": "#/definitions/fileMount"
+            },
+            {
+              "$ref": "#/definitions/writableDirectoryCache"
+            },
+            {
+              "$ref": "#/definitions/readOnlyDirectory"
+            }
+          ],
+          "title": "Mount"
+        },
+        "readOnlyDirectory": {
+          "additionalProperties": false,
+          "properties": {
+            "content": {
+              "$ref": "#/definitions/content",
+              "description": "Contents of read only directory.\n\nSince: generic-worker 5.4.0",
+              "title": "Content"
+            },
+            "directory": {
+              "description": "The filesystem location to mount the directory volume.\n\nSince: generic-worker 5.4.0",
+              "title": "Directory",
+              "type": "string"
+            },
+            "format": {
+              "description": "Archive format of content for read only directory.\n\nSince: generic-worker 5.4.0",
+              "enum": [
+                "rar",
+                "tar.bz2",
+                "tar.gz",
+                "zip"
+              ],
+              "title": "Format",
+              "type": "string"
+            }
+          },
+          "required": [
+            "directory",
+            "content",
+            "format"
+          ],
+          "title": "Read Only Directory",
+          "type": "object"
+        },
+        "writableDirectoryCache": {
+          "additionalProperties": false,
+          "dependencies": {
+            "content": [
+              "format"
+            ],
+            "format": [
+              "content"
+            ]
+          },
+          "properties": {
+            "cacheName": {
+              "description": "Implies a read/write cache directory volume. A unique name for the\ncache volume. Requires scope `generic-worker:cache:<cache-name>`.\nNote if this cache is loaded from an artifact, you will also require\nscope `queue:get-artifact:<artifact-name>` to use this cache.\n\nSince: generic-worker 5.4.0",
+              "title": "Cache Name",
+              "type": "string"
+            },
+            "content": {
+              "$ref": "#/definitions/content",
+              "description": "Optional content to be preloaded when initially creating the cache\n(if set, `format` must also be provided).\n\nSince: generic-worker 5.4.0",
+              "title": "Content"
+            },
+            "directory": {
+              "description": "The filesystem location to mount the directory volume.\n\nSince: generic-worker 5.4.0",
+              "title": "Directory Volume",
+              "type": "string"
+            },
+            "format": {
+              "description": "Archive format of the preloaded content (if `content` provided).\n\nSince: generic-worker 5.4.0",
+              "enum": [
+                "rar",
+                "tar.bz2",
+                "tar.gz",
+                "zip"
+              ],
+              "title": "Format",
+              "type": "string"
+            }
+          },
+          "required": [
+            "directory",
+            "cacheName"
+          ],
+          "title": "Writable Directory Cache",
+          "type": "object"
+        }
+      },
+      "description": "This schema defines the structure of the `payload` property referred to in a\nTaskcluster Task definition.",
+      "properties": {
+        "artifacts": {
+          "description": "Artifacts to be published.\n\nSince: generic-worker 1.0.0",
+          "items": {
+            "additionalProperties": false,
+            "properties": {
+              "contentEncoding": {
+                "description": "Content-Encoding for the artifact. If not provided, `gzip` will be used, except for the\nfollowing file extensions, where `identity` will be used, since they are already\ncompressed:\n\n* jpg\n* jpeg\n* png\n* gif\n* webp\n* 7z\n* zip\n* gz\n* tgz\n* bz2\n* tbz\n* whl\n* xz\n* swf\n* flv\n* woff\n* woff2\n\nNote, setting `contentEncoding` on a directory artifact will apply the same content\nencoding to all the files contained in the directory.\n\nSince: generic-worker 16.2.0",
+                "enum": [
+                  "identity",
+                  "gzip"
+                ],
+                "title": "Content-Encoding header when serving artifact over HTTP.",
+                "type": "string"
+              },
+              "contentType": {
+                "description": "Explicitly set the value of the HTTP `Content-Type` response header when the artifact(s)\nis/are served over HTTP(S). If not provided (this property is optional) the worker will\nguess the content type of artifacts based on the filename extension of the file storing\nthe artifact content. It does this by looking at the system filename-to-mimetype mappings\ndefined in the Windows registry. Note, setting `contentType` on a directory artifact will\napply the same contentType to all files contained in the directory.\n\nSee [mime.TypeByExtension](https://godoc.org/mime#TypeByExtension).\n\nSince: generic-worker 10.4.0",
+                "title": "Content-Type header when serving artifact over HTTP",
+                "type": "string"
+              },
+              "expires": {
+                "description": "Date when artifact should expire must be in the future, no earlier than task deadline, but\nno later than task expiry. If not set, defaults to task expiry.\n\nSince: generic-worker 1.0.0",
+                "format": "date-time",
+                "title": "Expiry date and time",
+                "type": "string"
+              },
+              "name": {
+                "description": "Name of the artifact, as it will be published. If not set, `path` will be used.\nConventionally (although not enforced) path elements are forward slash separated. Example:\n`public/build/a/house`. Note, no scopes are required to read artifacts beginning `public/`.\nArtifact names not beginning `public/` are scope-protected (caller requires scopes to\ndownload the artifact). See the Queue documentation for more information.\n\nSince: generic-worker 8.1.0",
+                "title": "Name of the artifact",
+                "type": "string"
+              },
+              "path": {
+                "description": "Relative path of the file/directory from the task directory. Note this is not an absolute\npath as is typically used in docker-worker, since the absolute task directory name is not\nknown when the task is submitted. Example: `dist\\regedit.exe`. It doesn't matter if\nforward slashes or backslashes are used.\n\nSince: generic-worker 1.0.0",
+                "title": "Artifact location",
+                "type": "string"
+              },
+              "type": {
+                "description": "Artifacts can be either an individual `file` or a `directory` containing\npotentially multiple files with recursively included subdirectories.\n\nSince: generic-worker 1.0.0",
+                "enum": [
+                  "file",
+                  "directory"
+                ],
+                "title": "Artifact upload type.",
+                "type": "string"
+              }
+            },
+            "required": [
+              "type",
+              "path"
+            ],
+            "title": "Artifact",
+            "type": "object"
+          },
+          "title": "Artifacts to be published",
+          "type": "array",
+          "uniqueItems": true
+        },
+        "command": {
+          "description": "One entry per command (consider each entry to be interpreted as a full line of\na Windows™ .bat file). For example:\n```\n[\n  \"set\",\n  \"echo hello world > hello_world.txt\",\n  \"set GOPATH=C:\\\\Go\"\n]\n```\n\nSince: generic-worker 0.0.1",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Commands to run",
+          "type": "array",
+          "uniqueItems": false
+        },
+        "env": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "description": "Env vars must be string to __string__ mappings (not number or boolean). For example:\n```\n{\n  \"PATH\": \"C:\\\\Windows\\\\system32;C:\\\\Windows\",\n  \"GOOS\": \"windows\",\n  \"FOO_ENABLE\": \"true\",\n  \"BAR_TOTAL\": \"3\"\n}\n```\n\nNote, the following environment variables will automatically be set in the task\ncommands:\n  * `TASK_ID` - the task ID of the currently running task\n  * `RUN_ID` - the run ID of the currently running task\n  * `TASKCLUSTER_ROOT_URL` - the root URL of the taskcluster deployment\n  * `TASKCLUSTER_PROXY_URL` (if taskcluster proxy feature enabled) - the\n     taskcluster authentication proxy for making unauthenticated taskcluster\n     API calls\n  * `TASK_USER_CREDENTIALS` (if config property `runTasksAsCurrentUser` set to\n    `true` in `generic-worker.config` file - the absolute file location of a\n    json file containing the current task OS user account name and password.\n    This is only useful for the generic-worker multiuser CI tasks, where\n    `runTasksAsCurrentUser` is set to `true`.\n  * `TASKCLUSTER_WORKER_LOCATION` (if running in AWS or GCP or explicitly set\n    in the generic-worker config file). See\n    [RFC #0148](https://github.com/taskcluster/taskcluster-rfcs/blob/master/rfcs/0148-taskcluster-worker-location.md)\n    for details.\n\nSince: generic-worker 0.0.1",
+          "title": "Env vars",
+          "type": "object"
+        },
+        "features": {
+          "additionalProperties": false,
+          "description": "Feature flags enable additional functionality.\n\nSince: generic-worker 5.3.0",
+          "properties": {
+            "chainOfTrust": {
+              "description": "Artifacts named `public/chain-of-trust.json` and\n`public/chain-of-trust.json.sig` should be generated which will\ninclude information for downstream tasks to build a level of trust\nfor the artifacts produced by the task and the environment it ran in.\n\nSince: generic-worker 5.3.0",
+              "title": "Enable generation of signed Chain of Trust artifacts",
+              "type": "boolean"
+            },
+            "runAsAdministrator": {
+              "description": "Runs commands with UAC elevation. Only set to true when UAC is\nenabled on the worker and Administrative privileges are required by\ntask commands. When UAC is disabled on the worker, task commands will\nalready run with full user privileges, and therefore a value of true\nwill result in a malformed-payload task exception.\n\nA value of true does not add the task user to the `Administrators`\ngroup - see the `osGroups` property for that. Typically\n`task.payload.osGroups` should include an Administrative group, such\nas `Administrators`, when setting to true.\n\nFor security, `runAsAdministrator` feature cannot be used in\nconjunction with `chainOfTrust` feature.\n\nRequires scope\n`generic-worker:run-as-administrator:<provisionerId>/<workerType>`.\n\nSince: generic-worker 10.11.0",
+              "title": "Run commands with UAC process elevation",
+              "type": "boolean"
+            },
+            "taskclusterProxy": {
+              "description": "The taskcluster proxy provides an easy and safe way to make authenticated\ntaskcluster requests within the scope(s) of a particular task. See\n[the github project](https://github.com/taskcluster/taskcluster-proxy) for more information.\n\nSince: generic-worker 10.6.0",
+              "title": "Run [taskcluster-proxy](https://github.com/taskcluster/taskcluster-proxy) to allow tasks to dynamically proxy requests to taskcluster services",
+              "type": "boolean"
+            }
+          },
+          "required": [
+          ],
+          "title": "Feature flags",
+          "type": "object"
+        },
+        "maxRunTime": {
+          "description": "Maximum time the task container can run in seconds.\n\nSince: generic-worker 0.0.1",
+          "maximum": 86400,
+          "minimum": 1,
+          "multipleOf": 1,
+          "title": "Maximum run time in seconds",
+          "type": "integer"
+        },
+        "mounts": {
+          "description": "Directories and/or files to be mounted.\n\nSince: generic-worker 5.4.0",
+          "items": {
+            "$ref": "#/definitions/mount",
+            "title": "Mount"
+          },
+          "type": "array",
+          "uniqueItems": false
+        },
+        "onExitStatus": {
+          "additionalProperties": false,
+          "description": "By default tasks will be resolved with `state/reasonResolved`: `completed/completed`\nif all task commands have a zero exit code, or `failed/failed` if any command has a\nnon-zero exit code. This payload property allows customsation of the task resolution\nbased on exit code of task commands.",
+          "properties": {
+            "retry": {
+              "description": "Exit codes for any command in the task payload to cause this task to\nbe resolved as `exception/intermittent-task`. Typically the Queue\nwill then schedule a new run of the existing `taskId` (rerun) if not\nall task runs have been exhausted.\n\nSee [itermittent tasks](https://docs.taskcluster.net/docs/reference/platform/taskcluster-queue/docs/worker-interaction#intermittent-tasks) for more detail.\n\nSince: generic-worker 10.10.0",
+              "items": {
+                "minimum": 1,
+                "title": "Exit codes",
+                "type": "integer"
+              },
+              "title": "Intermittent task exit codes",
+              "type": "array",
+              "uniqueItems": true
+            }
+          },
+          "required": [
+          ],
+          "title": "Exit code handling",
+          "type": "object"
+        },
+        "osGroups": {
+          "description": "A list of OS Groups that the task user should be a member of. Requires scope\n`generic-worker:os-group:<provisionerId>/<workerType>/<os-group>` for each\ngroup listed.\n\nSince: generic-worker 6.0.0",
+          "items": {
+            "type": "string"
+          },
+          "title": "OS Groups",
+          "type": "array",
+          "uniqueItems": false
+        },
+        "rdpInfo": {
+          "description": "Specifies an artifact name for publishing RDP connection information.\n\nSince this is potentially sensitive data, care should be taken to publish\nto a suitably locked down path, such as\n`login-identity/<login-identity>/rdpinfo.json` which is only readable for\nthe given login identity (for example\n`login-identity/mozilla-ldap/pmoore@mozilla.com/rdpinfo.json`). See the\n[artifact namespace guide](https://docs.taskcluster.net/manual/design/namespaces#artifacts) for more information.\n\nUse of this feature requires scope\n`generic-worker:allow-rdp:<provisionerId>/<workerType>` which must be\ndeclared as a task scope.\n\nThe RDP connection data is published during task startup so that a user\nmay interact with the running task.\n\nThe task environment will be retained for 12 hours after the task\ncompletes, to enable an interactive user to perform investigative tasks.\nAfter these 12 hours, the worker will delete the task's Windows user\naccount, and then continue with other tasks.\n\nNo guarantees are given about the resolution status of the interactive\ntask, since the task is inherently non-reproducible and no automation\nshould rely on this value.\n\nSince: generic-worker 10.5.0",
+          "title": "RDP Info",
+          "type": "string"
+        },
+        "supersederUrl": {
+          "description": "URL of a service that can indicate tasks superseding this one; the current `taskId`\nwill be appended as a query argument `taskId`. The service should return an object with\na `supersedes` key containing a list of `taskId`s, including the supplied `taskId`. The\ntasks should be ordered such that each task supersedes all tasks appearing later in the\nlist.\n\nSee [superseding](https://docs.taskcluster.net/reference/platform/taskcluster-queue/docs/superseding) for more detail.\n\nSince: generic-worker 10.2.2",
+          "format": "uri",
+          "title": "Superseder URL",
+          "type": "string"
+        }
+      },
+      "required": [
+        "command",
+        "maxRunTime"
+      ],
+      "title": "Generic worker payload - multiuser, windows",
+      "type": "object"
+    },
+    "filename": "schemas/generic-worker/multiuser_windows.json"
+  },
+  {
+    "content": {
+      "$id": "/schemas/generic-worker/multiuser_posix.json#",
+      "$schema": "/schemas/common/metaschema.json#",
+      "additionalProperties": false,
+      "definitions": {
+        "content": {
+          "oneOf": [
+            {
+              "additionalProperties": false,
+              "description": "Requires scope `queue:get-artifact:<artifact-name>`.\n\nSince: generic-worker 5.4.0",
+              "properties": {
+                "artifact": {
+                  "maxLength": 1024,
+                  "type": "string"
+                },
+                "sha256": {
+                  "description": "The required SHA 256 of the content body.\n\nSince: generic-worker 10.8.0",
+                  "pattern": "^[a-f0-9]{64}$",
+                  "title": "SHA 256",
+                  "type": "string"
+                },
+                "taskId": {
+                  "pattern": "^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "taskId",
+                "artifact"
+              ],
+              "title": "Artifact Content",
+              "type": "object"
+            },
+            {
+              "additionalProperties": false,
+              "description": "URL to download content from.\n\nSince: generic-worker 5.4.0",
+              "properties": {
+                "sha256": {
+                  "description": "The required SHA 256 of the content body.\n\nSince: generic-worker 10.8.0",
+                  "pattern": "^[a-f0-9]{64}$",
+                  "title": "SHA 256",
+                  "type": "string"
+                },
+                "url": {
+                  "description": "URL to download content from.\n\nSince: generic-worker 5.4.0",
+                  "format": "uri",
+                  "title": "URL",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "url"
+              ],
+              "title": "URL Content",
+              "type": "object"
+            },
+            {
+              "additionalProperties": false,
+              "description": "Byte-for-byte literal inline content of file/archive, up to 64KB in size.\n\nSince: generic-worker 11.1.0",
+              "properties": {
+                "raw": {
+                  "description": "Byte-for-byte literal inline content of file/archive, up to 64KB in size.\n\nSince: generic-worker 11.1.0",
+                  "maxLength": 65536,
+                  "title": "Raw",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "raw"
+              ],
+              "title": "Raw Content",
+              "type": "object"
+            },
+            {
+              "additionalProperties": false,
+              "description": "Base64 encoded content of file/archive, up to 64KB (encoded) in size.\n\nSince: generic-worker 11.1.0",
+              "properties": {
+                "base64": {
+                  "description": "Base64 encoded content of file/archive, up to 64KB (encoded) in size.\n\nSince: generic-worker 11.1.0",
+                  "maxLength": 65536,
+                  "pattern": "^[A-Za-z0-9/+]+[=]{0,2}$",
+                  "title": "Base64",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "base64"
+              ],
+              "title": "Base64 Content",
+              "type": "object"
+            }
+          ]
+        },
+        "fileMount": {
+          "additionalProperties": false,
+          "properties": {
+            "content": {
+              "$ref": "#/definitions/content",
+              "description": "Content of the file to be mounted.\n\nSince: generic-worker 5.4.0"
+            },
+            "file": {
+              "description": "The filesystem location to mount the file.\n\nSince: generic-worker 5.4.0",
+              "title": "File",
+              "type": "string"
+            }
+          },
+          "required": [
+            "file",
+            "content"
+          ],
+          "title": "File Mount",
+          "type": "object"
+        },
+        "mount": {
+          "oneOf": [
+            {
+              "$ref": "#/definitions/fileMount"
+            },
+            {
+              "$ref": "#/definitions/writableDirectoryCache"
+            },
+            {
+              "$ref": "#/definitions/readOnlyDirectory"
+            }
+          ],
+          "title": "Mount"
+        },
+        "readOnlyDirectory": {
+          "additionalProperties": false,
+          "properties": {
+            "content": {
+              "$ref": "#/definitions/content",
+              "description": "Contents of read only directory.\n\nSince: generic-worker 5.4.0",
+              "title": "Content"
+            },
+            "directory": {
+              "description": "The filesystem location to mount the directory volume.\n\nSince: generic-worker 5.4.0",
+              "title": "Directory",
+              "type": "string"
+            },
+            "format": {
+              "description": "Archive format of content for read only directory.\n\nSince: generic-worker 5.4.0",
+              "enum": [
+                "rar",
+                "tar.bz2",
+                "tar.gz",
+                "zip"
+              ],
+              "title": "Format",
+              "type": "string"
+            }
+          },
+          "required": [
+            "directory",
+            "content",
+            "format"
+          ],
+          "title": "Read Only Directory",
+          "type": "object"
+        },
+        "writableDirectoryCache": {
+          "additionalProperties": false,
+          "dependencies": {
+            "content": [
+              "format"
+            ],
+            "format": [
+              "content"
+            ]
+          },
+          "properties": {
+            "cacheName": {
+              "description": "Implies a read/write cache directory volume. A unique name for the\ncache volume. Requires scope `generic-worker:cache:<cache-name>`.\nNote if this cache is loaded from an artifact, you will also require\nscope `queue:get-artifact:<artifact-name>` to use this cache.\n\nSince: generic-worker 5.4.0",
+              "title": "Cache Name",
+              "type": "string"
+            },
+            "content": {
+              "$ref": "#/definitions/content",
+              "description": "Optional content to be preloaded when initially creating the cache\n(if set, `format` must also be provided).\n\nSince: generic-worker 5.4.0",
+              "title": "Content"
+            },
+            "directory": {
+              "description": "The filesystem location to mount the directory volume.\n\nSince: generic-worker 5.4.0",
+              "title": "Directory Volume",
+              "type": "string"
+            },
+            "format": {
+              "description": "Archive format of the preloaded content (if `content` provided).\n\nSince: generic-worker 5.4.0",
+              "enum": [
+                "rar",
+                "tar.bz2",
+                "tar.gz",
+                "zip"
+              ],
+              "title": "Format",
+              "type": "string"
+            }
+          },
+          "required": [
+            "directory",
+            "cacheName"
+          ],
+          "title": "Writable Directory Cache",
+          "type": "object"
+        }
+      },
+      "description": "This schema defines the structure of the `payload` property referred to in a\nTaskcluster Task definition.",
+      "properties": {
+        "artifacts": {
+          "description": "Artifacts to be published.\n\nSince: generic-worker 1.0.0",
+          "items": {
+            "additionalProperties": false,
+            "properties": {
+              "contentEncoding": {
+                "description": "Content-Encoding for the artifact. If not provided, `gzip` will be used, except for the\nfollowing file extensions, where `identity` will be used, since they are already\ncompressed:\n\n* jpg\n* jpeg\n* png\n* gif\n* webp\n* 7z\n* zip\n* gz\n* tgz\n* bz2\n* tbz\n* whl\n* xz\n* swf\n* flv\n* woff\n* woff2\n\nNote, setting `contentEncoding` on a directory artifact will apply the same content\nencoding to all the files contained in the directory.\n\nSince: generic-worker 16.2.0",
+                "enum": [
+                  "identity",
+                  "gzip"
+                ],
+                "title": "Content-Encoding header when serving artifact over HTTP.",
+                "type": "string"
+              },
+              "contentType": {
+                "description": "Explicitly set the value of the HTTP `Content-Type` response header when the artifact(s)\nis/are served over HTTP(S). If not provided (this property is optional) the worker will\nguess the content type of artifacts based on the filename extension of the file storing\nthe artifact content. It does this by looking at the system filename-to-mimetype mappings\ndefined in multiple `mime.types` files located under `/etc`. Note, setting `contentType`\non a directory artifact will apply the same contentType to all files contained in the\ndirectory.\n\nSee [mime.TypeByExtension](https://godoc.org/mime#TypeByExtension).\n\nSince: generic-worker 10.4.0",
+                "title": "Content-Type header when serving artifact over HTTP",
+                "type": "string"
+              },
+              "expires": {
+                "description": "Date when artifact should expire must be in the future, no earlier than task deadline, but\nno later than task expiry. If not set, defaults to task expiry.\n\nSince: generic-worker 1.0.0",
+                "format": "date-time",
+                "title": "Expiry date and time",
+                "type": "string"
+              },
+              "name": {
+                "description": "Name of the artifact, as it will be published. If not set, `path` will be used.\nConventionally (although not enforced) path elements are forward slash separated. Example:\n`public/build/a/house`. Note, no scopes are required to read artifacts beginning `public/`.\nArtifact names not beginning `public/` are scope-protected (caller requires scopes to\ndownload the artifact). See the Queue documentation for more information.\n\nSince: generic-worker 8.1.0",
+                "title": "Name of the artifact",
+                "type": "string"
+              },
+              "path": {
+                "description": "Relative path of the file/directory from the task directory. Note this is not an absolute\npath as is typically used in docker-worker, since the absolute task directory name is not\nknown when the task is submitted. Example: `dist\\regedit.exe`. It doesn't matter if\nforward slashes or backslashes are used.\n\nSince: generic-worker 1.0.0",
+                "title": "Artifact location",
+                "type": "string"
+              },
+              "type": {
+                "description": "Artifacts can be either an individual `file` or a `directory` containing\npotentially multiple files with recursively included subdirectories.\n\nSince: generic-worker 1.0.0",
+                "enum": [
+                  "file",
+                  "directory"
+                ],
+                "title": "Artifact upload type.",
+                "type": "string"
+              }
+            },
+            "required": [
+              "type",
+              "path"
+            ],
+            "title": "Artifact",
+            "type": "object"
+          },
+          "title": "Artifacts to be published",
+          "type": "array",
+          "uniqueItems": true
+        },
+        "command": {
+          "description": "One array per command (each command is an array of arguments). Several arrays\nfor several commands.\n\nSince: generic-worker 0.0.1",
+          "items": {
+            "items": {
+              "type": "string"
+            },
+            "minItems": 1,
+            "type": "array",
+            "uniqueItems": false
+          },
+          "minItems": 1,
+          "title": "Commands to run",
+          "type": "array",
+          "uniqueItems": false
+        },
+        "env": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "description": "Env vars must be string to __string__ mappings (not number or boolean). For example:\n```\n{\n  \"PATH\": \"/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin\",\n  \"GOOS\": \"darwin\",\n  \"FOO_ENABLE\": \"true\",\n  \"BAR_TOTAL\": \"3\"\n}\n```\n\nNote, the following environment variables will automatically be set in the task\ncommands, but may be overridden by environment variables in the task payload:\n  * `HOME` - the home directory of the task user\n  * `PATH` - `/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin`\n  * `USER` - the name of the task user\n\nThe following environment variables will automatically be set in the task\ncommands, and may not be overridden by environment variables in the task payload:\n  * `DISPLAY` - `:0` (Linux only)\n  * `TASK_ID` - the task ID of the currently running task\n  * `RUN_ID` - the run ID of the currently running task\n  * `TASKCLUSTER_ROOT_URL` - the root URL of the taskcluster deployment\n  * `TASKCLUSTER_PROXY_URL` (if taskcluster proxy feature enabled) - the\n     taskcluster authentication proxy for making unauthenticated taskcluster\n     API calls\n  * `TASK_USER_CREDENTIALS` (if config property `runTasksAsCurrentUser` set to\n    `true` in `generic-worker.config` file - the absolute file location of a\n    json file containing the current task OS user account name and password.\n    This is only useful for the generic-worker multiuser CI tasks, where\n    `runTasksAsCurrentUser` is set to `true`.\n  * `TASKCLUSTER_WORKER_LOCATION` (if running in AWS or GCP or explicitly set\n    in the generic-worker config file). See\n    [RFC #0148](https://github.com/taskcluster/taskcluster-rfcs/blob/master/rfcs/0148-taskcluster-worker-location.md)\n    for details.\n\nSince: generic-worker 0.0.1",
+          "title": "Env vars",
+          "type": "object"
+        },
+        "features": {
+          "additionalProperties": false,
+          "description": "Feature flags enable additional functionality.\n\nSince: generic-worker 5.3.0",
+          "properties": {
+            "chainOfTrust": {
+              "description": "Artifacts named `public/chain-of-trust.json` and\n`public/chain-of-trust.json.sig` should be generated which will\ninclude information for downstream tasks to build a level of trust\nfor the artifacts produced by the task and the environment it ran in.\n\nSince: generic-worker 5.3.0",
+              "title": "Enable generation of signed Chain of Trust artifacts",
+              "type": "boolean"
+            },
+            "taskclusterProxy": {
+              "description": "The taskcluster proxy provides an easy and safe way to make authenticated\ntaskcluster requests within the scope(s) of a particular task. See\n[the github project](https://github.com/taskcluster/taskcluster-proxy) for more information.\n\nSince: generic-worker 10.6.0",
+              "title": "Run [taskcluster-proxy](https://github.com/taskcluster/taskcluster-proxy) to allow tasks to dynamically proxy requests to taskcluster services",
+              "type": "boolean"
+            }
+          },
+          "required": [
+          ],
+          "title": "Feature flags",
+          "type": "object"
+        },
+        "maxRunTime": {
+          "description": "Maximum time the task container can run in seconds.\n\nSince: generic-worker 0.0.1",
+          "maximum": 86400,
+          "minimum": 1,
+          "multipleOf": 1,
+          "title": "Maximum run time in seconds",
+          "type": "integer"
+        },
+        "mounts": {
+          "description": "Directories and/or files to be mounted.\n\nSince: generic-worker 5.4.0",
+          "items": {
+            "$ref": "#/definitions/mount",
+            "title": "Mount"
+          },
+          "type": "array",
+          "uniqueItems": false
+        },
+        "onExitStatus": {
+          "additionalProperties": false,
+          "description": "By default tasks will be resolved with `state/reasonResolved`: `completed/completed`\nif all task commands have a zero exit code, or `failed/failed` if any command has a\nnon-zero exit code. This payload property allows customsation of the task resolution\nbased on exit code of task commands.",
+          "properties": {
+            "retry": {
+              "description": "Exit codes for any command in the task payload to cause this task to\nbe resolved as `exception/intermittent-task`. Typically the Queue\nwill then schedule a new run of the existing `taskId` (rerun) if not\nall task runs have been exhausted.\n\nSee [itermittent tasks](https://docs.taskcluster.net/docs/reference/platform/taskcluster-queue/docs/worker-interaction#intermittent-tasks) for more detail.\n\nSince: generic-worker 10.10.0",
+              "items": {
+                "minimum": 1,
+                "title": "Exit codes",
+                "type": "integer"
+              },
+              "title": "Intermittent task exit codes",
+              "type": "array",
+              "uniqueItems": true
+            }
+          },
+          "required": [
+          ],
+          "title": "Exit code handling",
+          "type": "object"
+        },
+        "osGroups": {
+          "description": "A list of OS Groups that the task user should be a member of. Not yet implemented on\nnon-Windows platforms, therefore this optional property may only be an empty array if\nprovided.\n\nSince: generic-worker 6.0.0",
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 0,
+          "title": "OS Groups",
+          "type": "array",
+          "uniqueItems": false
+        },
+        "supersederUrl": {
+          "description": "URL of a service that can indicate tasks superseding this one; the current `taskId`\nwill be appended as a query argument `taskId`. The service should return an object with\na `supersedes` key containing a list of `taskId`s, including the supplied `taskId`. The\ntasks should be ordered such that each task supersedes all tasks appearing later in the\nlist.\n\nSee [superseding](https://docs.taskcluster.net/reference/platform/taskcluster-queue/docs/superseding) for more detail.\n\nSince: generic-worker 10.2.2",
+          "format": "uri",
+          "title": "Superseder URL",
+          "type": "string"
+        }
+      },
+      "required": [
+        "command",
+        "maxRunTime"
+      ],
+      "title": "Generic worker payload - multiuser, posix",
+      "type": "object"
+    },
+    "filename": "schemas/generic-worker/multiuser_posix.json"
+  },
+  {
+    "content": {
+      "$id": "/schemas/generic-worker/docker_posix.json#",
+      "$schema": "/schemas/common/metaschema.json#",
+      "additionalProperties": false,
+      "definitions": {
+        "content": {
+          "oneOf": [
+            {
+              "additionalProperties": false,
+              "description": "Requires scope `queue:get-artifact:<artifact-name>`.\n\nSince: generic-worker 5.4.0",
+              "properties": {
+                "artifact": {
+                  "maxLength": 1024,
+                  "type": "string"
+                },
+                "sha256": {
+                  "description": "The required SHA 256 of the content body.\n\nSince: generic-worker 10.8.0",
+                  "pattern": "^[a-f0-9]{64}$",
+                  "title": "SHA 256",
+                  "type": "string"
+                },
+                "taskId": {
+                  "pattern": "^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "taskId",
+                "artifact"
+              ],
+              "title": "Artifact Content",
+              "type": "object"
+            },
+            {
+              "additionalProperties": false,
+              "description": "URL to download content from.\n\nSince: generic-worker 5.4.0",
+              "properties": {
+                "sha256": {
+                  "description": "The required SHA 256 of the content body.\n\nSince: generic-worker 10.8.0",
+                  "pattern": "^[a-f0-9]{64}$",
+                  "title": "SHA 256",
+                  "type": "string"
+                },
+                "url": {
+                  "description": "URL to download content from.\n\nSince: generic-worker 5.4.0",
+                  "format": "uri",
+                  "title": "URL",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "url"
+              ],
+              "title": "URL Content",
+              "type": "object"
+            },
+            {
+              "additionalProperties": false,
+              "description": "Byte-for-byte literal inline content of file/archive, up to 64KB in size.\n\nSince: generic-worker 11.1.0",
+              "properties": {
+                "raw": {
+                  "description": "Byte-for-byte literal inline content of file/archive, up to 64KB in size.\n\nSince: generic-worker 11.1.0",
+                  "maxLength": 65536,
+                  "title": "Raw",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "raw"
+              ],
+              "title": "Raw Content",
+              "type": "object"
+            },
+            {
+              "additionalProperties": false,
+              "description": "Base64 encoded content of file/archive, up to 64KB (encoded) in size.\n\nSince: generic-worker 11.1.0",
+              "properties": {
+                "base64": {
+                  "description": "Base64 encoded content of file/archive, up to 64KB (encoded) in size.\n\nSince: generic-worker 11.1.0",
+                  "maxLength": 65536,
+                  "pattern": "^[A-Za-z0-9/+]+[=]{0,2}$",
+                  "title": "Base64",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "base64"
+              ],
+              "title": "Base64 Content",
+              "type": "object"
+            }
+          ]
+        },
+        "fileMount": {
+          "additionalProperties": false,
+          "properties": {
+            "content": {
+              "$ref": "#/definitions/content",
+              "description": "Content of the file to be mounted.\n\nSince: generic-worker 5.4.0"
+            },
+            "file": {
+              "description": "The filesystem location to mount the file.\n\nSince: generic-worker 5.4.0",
+              "title": "File",
+              "type": "string"
+            }
+          },
+          "required": [
+            "file",
+            "content"
+          ],
+          "title": "File Mount",
+          "type": "object"
+        },
+        "mount": {
+          "oneOf": [
+            {
+              "$ref": "#/definitions/fileMount"
+            },
+            {
+              "$ref": "#/definitions/writableDirectoryCache"
+            },
+            {
+              "$ref": "#/definitions/readOnlyDirectory"
+            }
+          ],
+          "title": "Mount"
+        },
+        "readOnlyDirectory": {
+          "additionalProperties": false,
+          "properties": {
+            "content": {
+              "$ref": "#/definitions/content",
+              "description": "Contents of read only directory.\n\nSince: generic-worker 5.4.0",
+              "title": "Content"
+            },
+            "directory": {
+              "description": "The filesystem location to mount the directory volume.\n\nSince: generic-worker 5.4.0",
+              "title": "Directory",
+              "type": "string"
+            },
+            "format": {
+              "description": "Archive format of content for read only directory.\n\nSince: generic-worker 5.4.0",
+              "enum": [
+                "rar",
+                "tar.bz2",
+                "tar.gz",
+                "zip"
+              ],
+              "title": "Format",
+              "type": "string"
+            }
+          },
+          "required": [
+            "directory",
+            "content",
+            "format"
+          ],
+          "title": "Read Only Directory",
+          "type": "object"
+        },
+        "writableDirectoryCache": {
+          "additionalProperties": false,
+          "dependencies": {
+            "content": [
+              "format"
+            ],
+            "format": [
+              "content"
+            ]
+          },
+          "properties": {
+            "cacheName": {
+              "description": "Implies a read/write cache directory volume. A unique name for the\ncache volume. Requires scope `generic-worker:cache:<cache-name>`.\nNote if this cache is loaded from an artifact, you will also require\nscope `queue:get-artifact:<artifact-name>` to use this cache.\n\nSince: generic-worker 5.4.0",
+              "title": "Cache Name",
+              "type": "string"
+            },
+            "content": {
+              "$ref": "#/definitions/content",
+              "description": "Optional content to be preloaded when initially creating the cache\n(if set, `format` must also be provided).\n\nSince: generic-worker 5.4.0",
+              "title": "Content"
+            },
+            "directory": {
+              "description": "The filesystem location to mount the directory volume.\n\nSince: generic-worker 5.4.0",
+              "title": "Directory Volume",
+              "type": "string"
+            },
+            "format": {
+              "description": "Archive format of the preloaded content (if `content` provided).\n\nSince: generic-worker 5.4.0",
+              "enum": [
+                "rar",
+                "tar.bz2",
+                "tar.gz",
+                "zip"
+              ],
+              "title": "Format",
+              "type": "string"
+            }
+          },
+          "required": [
+            "directory",
+            "cacheName"
+          ],
+          "title": "Writable Directory Cache",
+          "type": "object"
+        }
+      },
+      "description": "This schema defines the structure of the `payload` property referred to in a\nTaskcluster Task definition.",
+      "properties": {
+        "artifacts": {
+          "description": "Artifacts to be published.\n\nSince: generic-worker 1.0.0",
+          "items": {
+            "additionalProperties": false,
+            "properties": {
+              "contentEncoding": {
+                "description": "Content-Encoding for the artifact. If not provided, `gzip` will be used, except for the\nfollowing file extensions, where `identity` will be used, since they are already\ncompressed:\n\n* jpg\n* jpeg\n* png\n* gif\n* webp\n* 7z\n* zip\n* gz\n* tgz\n* bz2\n* tbz\n* whl\n* xz\n* swf\n* flv\n* woff\n* woff2\n\nNote, setting `contentEncoding` on a directory artifact will apply the same content\nencoding to all the files contained in the directory.\n\nSince: generic-worker 16.2.0",
+                "enum": [
+                  "identity",
+                  "gzip"
+                ],
+                "title": "Content-Encoding header when serving artifact over HTTP.",
+                "type": "string"
+              },
+              "contentType": {
+                "description": "Explicitly set the value of the HTTP `Content-Type` response header when the artifact(s)\nis/are served over HTTP(S). If not provided (this property is optional) the worker will\nguess the content type of artifacts based on the filename extension of the file storing\nthe artifact content. It does this by looking at the system filename-to-mimetype mappings\ndefined in multiple `mime.types` files located under `/etc`. Note, setting `contentType`\non a directory artifact will apply the same contentType to all files contained in the\ndirectory.\n\nSee [mime.TypeByExtension](https://godoc.org/mime#TypeByExtension).\n\nSince: generic-worker 10.4.0",
+                "title": "Content-Type header when serving artifact over HTTP",
+                "type": "string"
+              },
+              "expires": {
+                "description": "Date when artifact should expire must be in the future, no earlier than task deadline, but\nno later than task expiry. If not set, defaults to task expiry.\n\nSince: generic-worker 1.0.0",
+                "format": "date-time",
+                "title": "Expiry date and time",
+                "type": "string"
+              },
+              "name": {
+                "description": "Name of the artifact, as it will be published. If not set, `path` will be used.\nConventionally (although not enforced) path elements are forward slash separated. Example:\n`public/build/a/house`. Note, no scopes are required to read artifacts beginning `public/`.\nArtifact names not beginning `public/` are scope-protected (caller requires scopes to\ndownload the artifact). See the Queue documentation for more information.\n\nSince: generic-worker 8.1.0",
+                "title": "Name of the artifact",
+                "type": "string"
+              },
+              "path": {
+                "description": "Relative path of the file/directory from the task directory. Note this is not an absolute\npath as is typically used in docker-worker, since the absolute task directory name is not\nknown when the task is submitted. Example: `dist\\regedit.exe`. It doesn't matter if\nforward slashes or backslashes are used.\n\nSince: generic-worker 1.0.0",
+                "title": "Artifact location",
+                "type": "string"
+              },
+              "type": {
+                "description": "Artifacts can be either an individual `file` or a `directory` containing\npotentially multiple files with recursively included subdirectories.\n\nSince: generic-worker 1.0.0",
+                "enum": [
+                  "file",
+                  "directory"
+                ],
+                "title": "Artifact upload type.",
+                "type": "string"
+              }
+            },
+            "required": [
+              "type",
+              "path"
+            ],
+            "title": "Artifact",
+            "type": "object"
+          },
+          "title": "Artifacts to be published",
+          "type": "array",
+          "uniqueItems": true
+        },
+        "command": {
+          "description": "One array per command (each command is an array of arguments). Several arrays\nfor several commands.\n\nSince: generic-worker 0.0.1",
+          "items": {
+            "items": {
+              "type": "string"
+            },
+            "minItems": 1,
+            "type": "array",
+            "uniqueItems": false
+          },
+          "minItems": 1,
+          "title": "Commands to run",
+          "type": "array",
+          "uniqueItems": false
+        },
+        "env": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "description": "Env vars must be string to __string__ mappings (not number or boolean). For example:\n```\n{\n  \"PATH\": \"/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin\",\n  \"GOOS\": \"darwin\",\n  \"FOO_ENABLE\": \"true\",\n  \"BAR_TOTAL\": \"3\"\n}\n```\n\nNote, the following environment variables will automatically be set in the task\ncommands:\n  * `TASK_ID` - the task ID of the currently running task\n  * `RUN_ID` - the run ID of the currently running task\n  * `TASKCLUSTER_ROOT_URL` - the root URL of the taskcluster deployment\n  * `TASKCLUSTER_PROXY_URL` (if taskcluster proxy feature enabled) - the\n     taskcluster authentication proxy for making unauthenticated taskcluster\n     API calls\n  * `TASKCLUSTER_WORKER_LOCATION` (if running in AWS or GCP or explicitly set\n    in the generic-worker config file). See\n    [RFC #0148](https://github.com/taskcluster/taskcluster-rfcs/blob/master/rfcs/0148-taskcluster-worker-location.md)\n    for details.\n\nSince: generic-worker 0.0.1",
+          "title": "Env vars",
+          "type": "object"
+        },
+        "features": {
+          "additionalProperties": false,
+          "description": "Feature flags enable additional functionality.\n\nSince: generic-worker 5.3.0",
+          "properties": {
+            "chainOfTrust": {
+              "description": "Artifacts named `public/chain-of-trust.json` and\n`public/chain-of-trust.json.sig` should be generated which will\ninclude information for downstream tasks to build a level of trust\nfor the artifacts produced by the task and the environment it ran in.\n\nSince: generic-worker 5.3.0",
+              "title": "Enable generation of signed Chain of Trust artifacts",
+              "type": "boolean"
+            },
+            "taskclusterProxy": {
+              "description": "The taskcluster proxy provides an easy and safe way to make authenticated\ntaskcluster requests within the scope(s) of a particular task. See\n[the github project](https://github.com/taskcluster/taskcluster-proxy) for more information.\n\nSince: generic-worker 10.6.0",
+              "title": "Run [taskcluster-proxy](https://github.com/taskcluster/taskcluster-proxy) to allow tasks to dynamically proxy requests to taskcluster services",
+              "type": "boolean"
+            }
+          },
+          "required": [
+          ],
+          "title": "Feature flags",
+          "type": "object"
+        },
+        "maxRunTime": {
+          "description": "Maximum time the task container can run in seconds.\n\nSince: generic-worker 0.0.1",
+          "maximum": 86400,
+          "minimum": 1,
+          "multipleOf": 1,
+          "title": "Maximum run time in seconds",
+          "type": "integer"
+        },
+        "mounts": {
+          "description": "Directories and/or files to be mounted.\n\nSince: generic-worker 5.4.0",
+          "items": {
+            "$ref": "#/definitions/mount",
+            "title": "Mount"
+          },
+          "type": "array",
+          "uniqueItems": false
+        },
+        "onExitStatus": {
+          "additionalProperties": false,
+          "description": "By default tasks will be resolved with `state/reasonResolved`: `completed/completed`\nif all task commands have a zero exit code, or `failed/failed` if any command has a\nnon-zero exit code. This payload property allows customsation of the task resolution\nbased on exit code of task commands.",
+          "properties": {
+            "retry": {
+              "description": "Exit codes for any command in the task payload to cause this task to\nbe resolved as `exception/intermittent-task`. Typically the Queue\nwill then schedule a new run of the existing `taskId` (rerun) if not\nall task runs have been exhausted.\n\nSee [itermittent tasks](https://docs.taskcluster.net/docs/reference/platform/taskcluster-queue/docs/worker-interaction#intermittent-tasks) for more detail.\n\nSince: generic-worker 10.10.0",
+              "items": {
+                "minimum": 1,
+                "title": "Exit codes",
+                "type": "integer"
+              },
+              "title": "Intermittent task exit codes",
+              "type": "array",
+              "uniqueItems": true
+            }
+          },
+          "required": [
+          ],
+          "title": "Exit code handling",
+          "type": "object"
+        },
+        "osGroups": {
+          "description": "A list of OS Groups that the task user should be a member of. Not yet implemented on\nnon-Windows platforms, therefore this optional property may only be an empty array if\nprovided.\n\nSince: generic-worker 6.0.0",
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 0,
+          "title": "OS Groups",
+          "type": "array",
+          "uniqueItems": false
+        },
+        "supersederUrl": {
+          "description": "URL of a service that can indicate tasks superseding this one; the current `taskId`\nwill be appended as a query argument `taskId`. The service should return an object with\na `supersedes` key containing a list of `taskId`s, including the supplied `taskId`. The\ntasks should be ordered such that each task supersedes all tasks appearing later in the\nlist.\n\nSee [superseding](https://docs.taskcluster.net/reference/platform/taskcluster-queue/docs/superseding) for more detail.\n\nSince: generic-worker 10.2.2",
+          "format": "uri",
+          "title": "Superseder URL",
+          "type": "string"
+        }
+      },
+      "required": [
+        "command",
+        "maxRunTime"
+      ],
+      "title": "Generic worker payload - docker, posix",
+      "type": "object"
+    },
+    "filename": "schemas/generic-worker/docker_posix.json"
+  },
+  {
+    "content": {
+      "$id": "/schemas/common/values.schema.json#",
+      "$schema": "http://json-schema.org/draft-06/schema#",
+      "aditionalProperties": false,
+      "properties": {
+        "applicationName": {
+          "description": "The name of this deployment of Taskcluster.",
+          "type": "string"
+        },
+        "auth": {
+          "additionalProperties": false,
+          "properties": {
+            "audit_log": {
+              "type": "string"
+            },
+            "aws_credentials_allowed_buckets": {
+              "oneOf": [
+                {
+                  "additionalProperties": true,
+                  "type": "object"
+                },
+                {
+                  "type": "array"
+                }
+              ]
+            },
+            "azure_account_key": {
+              "type": "string"
+            },
+            "azure_accounts": {
+              "oneOf": [
+                {
+                  "additionalProperties": true,
+                  "type": "object"
+                },
+                {
+                  "type": "array"
+                }
+              ]
+            },
+            "azure_crypto_key": {
+              "type": "string"
+            },
+            "azure_signing_key": {
+              "type": "string"
+            },
+            "debug": {
+              "title": "node debug env var",
+              "type": "string"
+            },
+            "docs_bucket": {
+              "type": "string"
+            },
+            "gcp_credentials_allowed_projects": {
+              "oneOf": [
+                {
+                  "additionalProperties": true,
+                  "type": "object"
+                },
+                {
+                  "type": "array"
+                }
+              ]
+            },
+            "level": {
+              "type": "string"
+            },
+            "procs": {
+              "additionalProperties": false,
+              "properties": {
+                "purgeExpiredClients": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "cpu": {
+                      "type": "string"
+                    },
+                    "memory": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "memory",
+                    "cpu"
+                  ],
+                  "type": "object"
+                },
+                "web": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "cpu": {
+                      "type": "string"
+                    },
+                    "memory": {
+                      "type": "string"
+                    },
+                    "replicas": {
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "replicas",
+                    "memory",
+                    "cpu"
+                  ],
+                  "type": "object"
+                }
+              },
+              "required": [
+                "web",
+                "purgeExpiredClients"
+              ],
+              "title": "Process settings for this service",
+              "type": "object"
+            },
+            "pulse_password": {
+              "type": "string"
+            },
+            "pulse_username": {
+              "type": "string"
+            },
+            "refs_bucket": {
+              "type": "string"
+            },
+            "schemas_bucket": {
+              "type": "string"
+            },
+            "sentry_auth_token": {
+              "type": "string"
+            },
+            "sentry_host": {
+              "type": "string"
+            },
+            "sentry_key_prefix": {
+              "type": "string"
+            },
+            "sentry_organization": {
+              "type": "string"
+            },
+            "sentry_team": {
+              "type": "string"
+            },
+            "static_clients": {
+              "oneOf": [
+                {
+                  "additionalProperties": true,
+                  "type": "object"
+                },
+                {
+                  "type": "array"
+                }
+              ]
+            },
+            "websocktunnel_secret": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "procs",
+            "static_clients",
+            "azure_accounts",
+            "azure_account_key",
+            "azure_signing_key",
+            "azure_crypto_key",
+            "pulse_username",
+            "pulse_password"
+          ],
+          "title": "Configuration options for auth",
+          "type": "object"
+        },
+        "azureAccountId": {
+          "description": "An azure storage account for this deployment. Note this is a _storage_ account, not a billing one.",
+          "type": "string"
+        },
+        "built_in_workers": {
+          "additionalProperties": false,
+          "properties": {
+            "debug": {
+              "title": "node debug env var",
+              "type": "string"
+            },
+            "level": {
+              "type": "string"
+            },
+            "procs": {
+              "additionalProperties": false,
+              "properties": {
+                "server": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "cpu": {
+                      "type": "string"
+                    },
+                    "memory": {
+                      "type": "string"
+                    },
+                    "replicas": {
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "replicas",
+                    "memory",
+                    "cpu"
+                  ],
+                  "type": "object"
+                }
+              },
+              "required": [
+                "server"
+              ],
+              "title": "Process settings for this service",
+              "type": "object"
+            },
+            "taskcluster_access_token": {
+              "type": "string"
+            },
+            "taskcluster_client_id": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "procs",
+            "taskcluster_client_id",
+            "taskcluster_access_token"
+          ],
+          "title": "Configuration options for built-in-workers",
+          "type": "object"
+        },
+        "dockerImage": {
+          "description": "The docker image containing taskcluster.",
+          "type": "string"
+        },
+        "errorConfig": {
+          "additionalProperties": true,
+          "description": "Error reporting configuration for lib-monitor.",
+          "properties": {
+            "reporter": {
+              "description": "Which reporter to use.",
+              "type": "string"
+            }
+          },
+          "required": [
+            "reporter"
+          ],
+          "type": "object"
+        },
+        "forceSSL": {
+          "description": "If true, all connections must use ssl",
+          "type": "boolean"
+        },
+        "github": {
+          "additionalProperties": false,
+          "properties": {
+            "bot_username": {
+              "type": "string"
+            },
+            "debug": {
+              "title": "node debug env var",
+              "type": "string"
+            },
+            "github_app_id": {
+              "type": "string"
+            },
+            "github_private_pem": {
+              "type": "string"
+            },
+            "level": {
+              "type": "string"
+            },
+            "procs": {
+              "additionalProperties": false,
+              "properties": {
+                "sync": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "cpu": {
+                      "type": "string"
+                    },
+                    "memory": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "memory",
+                    "cpu"
+                  ],
+                  "type": "object"
+                },
+                "web": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "cpu": {
+                      "type": "string"
+                    },
+                    "memory": {
+                      "type": "string"
+                    },
+                    "replicas": {
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "replicas",
+                    "memory",
+                    "cpu"
+                  ],
+                  "type": "object"
+                },
+                "worker": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "cpu": {
+                      "type": "string"
+                    },
+                    "memory": {
+                      "type": "string"
+                    },
+                    "replicas": {
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "replicas",
+                    "memory",
+                    "cpu"
+                  ],
+                  "type": "object"
+                }
+              },
+              "required": [
+                "web",
+                "worker",
+                "sync"
+              ],
+              "title": "Process settings for this service",
+              "type": "object"
+            },
+            "provisioner_id": {
+              "type": "string"
+            },
+            "pulse_password": {
+              "type": "string"
+            },
+            "pulse_username": {
+              "type": "string"
+            },
+            "taskcluster_access_token": {
+              "type": "string"
+            },
+            "taskcluster_client_id": {
+              "type": "string"
+            },
+            "webhook_secret": {
+              "type": "array"
+            },
+            "worker_type": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "procs",
+            "bot_username",
+            "taskcluster_client_id",
+            "taskcluster_access_token",
+            "github_private_pem",
+            "github_app_id",
+            "webhook_secret",
+            "pulse_username",
+            "pulse_password"
+          ],
+          "title": "Configuration options for github",
+          "type": "object"
+        },
+        "hooks": {
+          "additionalProperties": false,
+          "properties": {
+            "azure_crypto_key": {
+              "type": "string"
+            },
+            "azure_signing_key": {
+              "type": "string"
+            },
+            "debug": {
+              "title": "node debug env var",
+              "type": "string"
+            },
+            "influx_connection": {
+              "type": "string"
+            },
+            "level": {
+              "type": "string"
+            },
+            "procs": {
+              "additionalProperties": false,
+              "properties": {
+                "expires": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "cpu": {
+                      "type": "string"
+                    },
+                    "memory": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "memory",
+                    "cpu"
+                  ],
+                  "type": "object"
+                },
+                "listeners": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "cpu": {
+                      "type": "string"
+                    },
+                    "memory": {
+                      "type": "string"
+                    },
+                    "replicas": {
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "replicas",
+                    "memory",
+                    "cpu"
+                  ],
+                  "type": "object"
+                },
+                "scheduler": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "cpu": {
+                      "type": "string"
+                    },
+                    "memory": {
+                      "type": "string"
+                    },
+                    "replicas": {
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "replicas",
+                    "memory",
+                    "cpu"
+                  ],
+                  "type": "object"
+                },
+                "web": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "cpu": {
+                      "type": "string"
+                    },
+                    "memory": {
+                      "type": "string"
+                    },
+                    "replicas": {
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "replicas",
+                    "memory",
+                    "cpu"
+                  ],
+                  "type": "object"
+                }
+              },
+              "required": [
+                "web",
+                "scheduler",
+                "listeners",
+                "expires"
+              ],
+              "title": "Process settings for this service",
+              "type": "object"
+            },
+            "pulse_password": {
+              "type": "string"
+            },
+            "pulse_username": {
+              "type": "string"
+            },
+            "taskcluster_access_token": {
+              "type": "string"
+            },
+            "taskcluster_client_id": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "procs",
+            "azure_signing_key",
+            "azure_crypto_key",
+            "taskcluster_client_id",
+            "taskcluster_access_token",
+            "pulse_username",
+            "pulse_password"
+          ],
+          "title": "Configuration options for hooks",
+          "type": "object"
+        },
+        "index": {
+          "additionalProperties": false,
+          "properties": {
+            "debug": {
+              "title": "node debug env var",
+              "type": "string"
+            },
+            "level": {
+              "type": "string"
+            },
+            "procs": {
+              "additionalProperties": false,
+              "properties": {
+                "expire": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "cpu": {
+                      "type": "string"
+                    },
+                    "memory": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "memory",
+                    "cpu"
+                  ],
+                  "type": "object"
+                },
+                "handlers": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "cpu": {
+                      "type": "string"
+                    },
+                    "memory": {
+                      "type": "string"
+                    },
+                    "replicas": {
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "replicas",
+                    "memory",
+                    "cpu"
+                  ],
+                  "type": "object"
+                },
+                "web": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "cpu": {
+                      "type": "string"
+                    },
+                    "memory": {
+                      "type": "string"
+                    },
+                    "replicas": {
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "replicas",
+                    "memory",
+                    "cpu"
+                  ],
+                  "type": "object"
+                }
+              },
+              "required": [
+                "web",
+                "handlers",
+                "expire"
+              ],
+              "title": "Process settings for this service",
+              "type": "object"
+            },
+            "pulse_password": {
+              "type": "string"
+            },
+            "pulse_username": {
+              "type": "string"
+            },
+            "taskcluster_access_token": {
+              "type": "string"
+            },
+            "taskcluster_client_id": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "procs",
+            "taskcluster_client_id",
+            "taskcluster_access_token",
+            "pulse_username",
+            "pulse_password"
+          ],
+          "title": "Configuration options for index",
+          "type": "object"
+        },
+        "ingressCertName": {
+          "description": "A google certificate name that the ingress can use to set up tls.",
+          "type": "string"
+        },
+        "ingressStaticIpName": {
+          "description": "A google static ip object that the ingress can use to maintain the same ip address.",
+          "type": "string"
+        },
+        "meta": {
+          "additionalProperties": true,
+          "description": "Metadata about a deployment. This is not interpreted by Helm and can be used to store arbitrary metadata\nabout the configuration for use by other tooling.  It is automatically generated by `yarn dev:init`.",
+          "type": "object"
+        },
+        "nodeEnv": {
+          "description": "You almost certainly want \"production\" here.",
+          "type": "string"
+        },
+        "notify": {
+          "additionalProperties": false,
+          "properties": {
+            "aws_access_key_id": {
+              "type": "string"
+            },
+            "aws_region": {
+              "type": "string"
+            },
+            "aws_secret_access_key": {
+              "type": "string"
+            },
+            "debug": {
+              "title": "node debug env var",
+              "type": "string"
+            },
+            "email_blacklist": {
+              "oneOf": [
+                {
+                  "additionalProperties": true,
+                  "type": "object"
+                },
+                {
+                  "type": "array"
+                }
+              ]
+            },
+            "email_source_address": {
+              "type": "string"
+            },
+            "irc_debug": {
+              "type": "string"
+            },
+            "irc_nick": {
+              "type": "string"
+            },
+            "irc_password": {
+              "type": "string"
+            },
+            "irc_port": {
+              "type": "string"
+            },
+            "irc_real_name": {
+              "type": "string"
+            },
+            "irc_server": {
+              "type": "string"
+            },
+            "irc_user_name": {
+              "type": "string"
+            },
+            "level": {
+              "type": "string"
+            },
+            "matrix_access_token": {
+              "type": "string"
+            },
+            "matrix_base_url": {
+              "type": "string"
+            },
+            "matrix_user_id": {
+              "type": "string"
+            },
+            "procs": {
+              "additionalProperties": false,
+              "properties": {
+                "handler": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "cpu": {
+                      "type": "string"
+                    },
+                    "memory": {
+                      "type": "string"
+                    },
+                    "replicas": {
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "replicas",
+                    "memory",
+                    "cpu"
+                  ],
+                  "type": "object"
+                },
+                "irc": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "cpu": {
+                      "type": "string"
+                    },
+                    "memory": {
+                      "type": "string"
+                    },
+                    "replicas": {
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "replicas",
+                    "memory",
+                    "cpu"
+                  ],
+                  "type": "object"
+                },
+                "web": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "cpu": {
+                      "type": "string"
+                    },
+                    "memory": {
+                      "type": "string"
+                    },
+                    "replicas": {
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "replicas",
+                    "memory",
+                    "cpu"
+                  ],
+                  "type": "object"
+                }
+              },
+              "required": [
+                "web",
+                "irc",
+                "handler"
+              ],
+              "title": "Process settings for this service",
+              "type": "object"
+            },
+            "pulse_password": {
+              "type": "string"
+            },
+            "pulse_username": {
+              "type": "string"
+            },
+            "taskcluster_access_token": {
+              "type": "string"
+            },
+            "taskcluster_client_id": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "procs",
+            "email_source_address",
+            "taskcluster_client_id",
+            "taskcluster_access_token",
+            "aws_access_key_id",
+            "aws_secret_access_key",
+            "pulse_username",
+            "pulse_password"
+          ],
+          "title": "Configuration options for notify",
+          "type": "object"
+        },
+        "pulseHostname": {
+          "description": "A rabbitmq cluster",
+          "type": "string"
+        },
+        "pulseVhost": {
+          "description": "The vhost this deployment will use on the rabbitmq cluster",
+          "type": "string"
+        },
+        "purge_cache": {
+          "additionalProperties": false,
+          "properties": {
+            "debug": {
+              "title": "node debug env var",
+              "type": "string"
+            },
+            "level": {
+              "type": "string"
+            },
+            "procs": {
+              "additionalProperties": false,
+              "properties": {
+                "expireCachePurges": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "cpu": {
+                      "type": "string"
+                    },
+                    "memory": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "memory",
+                    "cpu"
+                  ],
+                  "type": "object"
+                },
+                "web": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "cpu": {
+                      "type": "string"
+                    },
+                    "memory": {
+                      "type": "string"
+                    },
+                    "replicas": {
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "replicas",
+                    "memory",
+                    "cpu"
+                  ],
+                  "type": "object"
+                }
+              },
+              "required": [
+                "web",
+                "expireCachePurges"
+              ],
+              "title": "Process settings for this service",
+              "type": "object"
+            },
+            "taskcluster_access_token": {
+              "type": "string"
+            },
+            "taskcluster_client_id": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "procs",
+            "taskcluster_client_id",
+            "taskcluster_access_token"
+          ],
+          "title": "Configuration options for purge-cache",
+          "type": "object"
+        },
+        "queue": {
+          "additionalProperties": false,
+          "properties": {
+            "artifact_region": {
+              "type": "string"
+            },
+            "aws_access_key_id": {
+              "type": "string"
+            },
+            "aws_secret_access_key": {
+              "type": "string"
+            },
+            "azure_account_key": {
+              "type": "string"
+            },
+            "azure_report_chance": {
+              "type": "number"
+            },
+            "azure_report_threshold": {
+              "type": "number"
+            },
+            "debug": {
+              "title": "node debug env var",
+              "type": "string"
+            },
+            "level": {
+              "type": "string"
+            },
+            "private_artifact_bucket": {
+              "type": "string"
+            },
+            "procs": {
+              "additionalProperties": false,
+              "properties": {
+                "claimResolver": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "cpu": {
+                      "type": "string"
+                    },
+                    "memory": {
+                      "type": "string"
+                    },
+                    "replicas": {
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "replicas",
+                    "memory",
+                    "cpu"
+                  ],
+                  "type": "object"
+                },
+                "deadlineResolver": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "cpu": {
+                      "type": "string"
+                    },
+                    "memory": {
+                      "type": "string"
+                    },
+                    "replicas": {
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "replicas",
+                    "memory",
+                    "cpu"
+                  ],
+                  "type": "object"
+                },
+                "dependencyResolver": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "cpu": {
+                      "type": "string"
+                    },
+                    "memory": {
+                      "type": "string"
+                    },
+                    "replicas": {
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "replicas",
+                    "memory",
+                    "cpu"
+                  ],
+                  "type": "object"
+                },
+                "expireArtifacts": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "cpu": {
+                      "type": "string"
+                    },
+                    "memory": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "memory",
+                    "cpu"
+                  ],
+                  "type": "object"
+                },
+                "expireQueues": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "cpu": {
+                      "type": "string"
+                    },
+                    "memory": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "memory",
+                    "cpu"
+                  ],
+                  "type": "object"
+                },
+                "expireTask": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "cpu": {
+                      "type": "string"
+                    },
+                    "memory": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "memory",
+                    "cpu"
+                  ],
+                  "type": "object"
+                },
+                "expireTaskDependency": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "cpu": {
+                      "type": "string"
+                    },
+                    "memory": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "memory",
+                    "cpu"
+                  ],
+                  "type": "object"
+                },
+                "expireTaskGroupMembers": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "cpu": {
+                      "type": "string"
+                    },
+                    "memory": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "memory",
+                    "cpu"
+                  ],
+                  "type": "object"
+                },
+                "expireTaskGroupSizes": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "cpu": {
+                      "type": "string"
+                    },
+                    "memory": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "memory",
+                    "cpu"
+                  ],
+                  "type": "object"
+                },
+                "expireTaskGroups": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "cpu": {
+                      "type": "string"
+                    },
+                    "memory": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "memory",
+                    "cpu"
+                  ],
+                  "type": "object"
+                },
+                "expireTaskRequirement": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "cpu": {
+                      "type": "string"
+                    },
+                    "memory": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "memory",
+                    "cpu"
+                  ],
+                  "type": "object"
+                },
+                "expireWorkerInfo": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "cpu": {
+                      "type": "string"
+                    },
+                    "memory": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "memory",
+                    "cpu"
+                  ],
+                  "type": "object"
+                },
+                "web": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "cpu": {
+                      "type": "string"
+                    },
+                    "memory": {
+                      "type": "string"
+                    },
+                    "replicas": {
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "replicas",
+                    "memory",
+                    "cpu"
+                  ],
+                  "type": "object"
+                }
+              },
+              "required": [
+                "web",
+                "claimResolver",
+                "deadlineResolver",
+                "dependencyResolver",
+                "expireArtifacts",
+                "expireTask",
+                "expireTaskGroups",
+                "expireTaskGroupMembers",
+                "expireTaskGroupSizes",
+                "expireTaskDependency",
+                "expireTaskRequirement",
+                "expireQueues",
+                "expireWorkerInfo"
+              ],
+              "title": "Process settings for this service",
+              "type": "object"
+            },
+            "public_artifact_bucket": {
+              "type": "string"
+            },
+            "public_artifact_bucket_cdn": {
+              "type": "string"
+            },
+            "public_artifact_ec2_proxies": {
+              "oneOf": [
+                {
+                  "additionalProperties": true,
+                  "type": "object"
+                },
+                {
+                  "type": "array"
+                }
+              ]
+            },
+            "pulse_password": {
+              "type": "string"
+            },
+            "pulse_username": {
+              "type": "string"
+            },
+            "task_cache_max_size": {
+              "type": "number"
+            },
+            "taskcluster_access_token": {
+              "type": "string"
+            },
+            "taskcluster_client_id": {
+              "type": "string"
+            },
+            "use_cloud_mirror": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "procs",
+            "public_artifact_bucket",
+            "private_artifact_bucket",
+            "taskcluster_client_id",
+            "taskcluster_access_token",
+            "azure_account_key",
+            "pulse_username",
+            "pulse_password",
+            "aws_access_key_id",
+            "aws_secret_access_key",
+            "artifact_region"
+          ],
+          "title": "Configuration options for queue",
+          "type": "object"
+        },
+        "references": {
+          "additionalProperties": false,
+          "properties": {
+            "debug": {
+              "title": "node debug env var",
+              "type": "string"
+            },
+            "procs": {
+              "additionalProperties": false,
+              "properties": {
+                "web": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "cpu": {
+                      "type": "string"
+                    },
+                    "memory": {
+                      "type": "string"
+                    },
+                    "replicas": {
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "replicas",
+                    "memory",
+                    "cpu"
+                  ],
+                  "type": "object"
+                }
+              },
+              "required": [
+                "web"
+              ],
+              "title": "Process settings for this service",
+              "type": "object"
+            }
+          },
+          "required": [
+            "procs"
+          ],
+          "title": "Configuration options for references",
+          "type": "object"
+        },
+        "rootUrl": {
+          "description": "The url pointing to your deployment's ingress.",
+          "format": "uri",
+          "type": "string"
+        },
+        "secrets": {
+          "additionalProperties": false,
+          "properties": {
+            "azure_crypto_key": {
+              "type": "string"
+            },
+            "azure_signing_key": {
+              "type": "string"
+            },
+            "debug": {
+              "title": "node debug env var",
+              "type": "string"
+            },
+            "level": {
+              "type": "string"
+            },
+            "procs": {
+              "additionalProperties": false,
+              "properties": {
+                "expire": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "cpu": {
+                      "type": "string"
+                    },
+                    "memory": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "memory",
+                    "cpu"
+                  ],
+                  "type": "object"
+                },
+                "web": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "cpu": {
+                      "type": "string"
+                    },
+                    "memory": {
+                      "type": "string"
+                    },
+                    "replicas": {
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "replicas",
+                    "memory",
+                    "cpu"
+                  ],
+                  "type": "object"
+                }
+              },
+              "required": [
+                "web",
+                "expire"
+              ],
+              "title": "Process settings for this service",
+              "type": "object"
+            },
+            "taskcluster_access_token": {
+              "type": "string"
+            },
+            "taskcluster_client_id": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "procs",
+            "taskcluster_client_id",
+            "taskcluster_access_token",
+            "azure_crypto_key",
+            "azure_signing_key"
+          ],
+          "title": "Configuration options for secrets",
+          "type": "object"
+        },
+        "trustProxy": {
+          "description": "If true, only the external ingress needs to use ssl. connections to services are allowed however.",
+          "type": "boolean"
+        },
+        "ui": {
+          "additionalProperties": false,
+          "properties": {
+            "banner_message": {
+              "type": "string"
+            },
+            "debug": {
+              "title": "node debug env var",
+              "type": "string"
+            },
+            "graphql_endpoint": {
+              "type": "string"
+            },
+            "graphql_subscription_endpoint": {
+              "type": "string"
+            },
+            "procs": {
+              "additionalProperties": false,
+              "properties": {
+                "web": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "cpu": {
+                      "type": "string"
+                    },
+                    "memory": {
+                      "type": "string"
+                    },
+                    "replicas": {
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "replicas",
+                    "memory",
+                    "cpu"
+                  ],
+                  "type": "object"
+                }
+              },
+              "required": [
+                "web"
+              ],
+              "title": "Process settings for this service",
+              "type": "object"
+            },
+            "ui_login_strategy_names": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "procs",
+            "graphql_subscription_endpoint",
+            "graphql_endpoint",
+            "ui_login_strategy_names",
+            "banner_message"
+          ],
+          "title": "Configuration options for ui",
+          "type": "object"
+        },
+        "web_server": {
+          "additionalProperties": false,
+          "properties": {
+            "additional_allowed_cors_origin": {
+              "type": "string"
+            },
+            "azure_crypto_key": {
+              "type": "string"
+            },
+            "azure_signing_key": {
+              "type": "string"
+            },
+            "debug": {
+              "title": "node debug env var",
+              "type": "string"
+            },
+            "level": {
+              "type": "string"
+            },
+            "procs": {
+              "additionalProperties": false,
+              "properties": {
+                "cleanup_expire_access_tokens": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "cpu": {
+                      "type": "string"
+                    },
+                    "memory": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "memory",
+                    "cpu"
+                  ],
+                  "type": "object"
+                },
+                "cleanup_expire_auth_codes": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "cpu": {
+                      "type": "string"
+                    },
+                    "memory": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "memory",
+                    "cpu"
+                  ],
+                  "type": "object"
+                },
+                "scanner": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "cpu": {
+                      "type": "string"
+                    },
+                    "memory": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "memory",
+                    "cpu"
+                  ],
+                  "type": "object"
+                },
+                "web": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "cpu": {
+                      "type": "string"
+                    },
+                    "memory": {
+                      "type": "string"
+                    },
+                    "replicas": {
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "replicas",
+                    "memory",
+                    "cpu"
+                  ],
+                  "type": "object"
+                }
+              },
+              "required": [
+                "web",
+                "scanner",
+                "cleanup_expire_auth_codes",
+                "cleanup_expire_access_tokens"
+              ],
+              "title": "Process settings for this service",
+              "type": "object"
+            },
+            "public_url": {
+              "type": "string"
+            },
+            "pulse_password": {
+              "type": "string"
+            },
+            "pulse_username": {
+              "type": "string"
+            },
+            "registered_clients": {
+              "oneOf": [
+                {
+                  "additionalProperties": true,
+                  "type": "object"
+                },
+                {
+                  "type": "array"
+                }
+              ]
+            },
+            "session_secret": {
+              "type": "string"
+            },
+            "taskcluster_access_token": {
+              "type": "string"
+            },
+            "taskcluster_client_id": {
+              "type": "string"
+            },
+            "ui_login_strategies": {
+              "oneOf": [
+                {
+                  "additionalProperties": true,
+                  "type": "object"
+                },
+                {
+                  "type": "array"
+                }
+              ]
+            }
+          },
+          "required": [
+            "procs",
+            "public_url",
+            "additional_allowed_cors_origin",
+            "taskcluster_client_id",
+            "taskcluster_access_token",
+            "azure_signing_key",
+            "azure_crypto_key",
+            "pulse_username",
+            "pulse_password",
+            "registered_clients",
+            "ui_login_strategies",
+            "session_secret"
+          ],
+          "title": "Configuration options for web-server",
+          "type": "object"
+        },
+        "worker_manager": {
+          "additionalProperties": false,
+          "properties": {
+            "debug": {
+              "title": "node debug env var",
+              "type": "string"
+            },
+            "level": {
+              "type": "string"
+            },
+            "procs": {
+              "additionalProperties": false,
+              "properties": {
+                "expire_errors": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "cpu": {
+                      "type": "string"
+                    },
+                    "memory": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "memory",
+                    "cpu"
+                  ],
+                  "type": "object"
+                },
+                "expire_worker_pools": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "cpu": {
+                      "type": "string"
+                    },
+                    "memory": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "memory",
+                    "cpu"
+                  ],
+                  "type": "object"
+                },
+                "expire_workers": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "cpu": {
+                      "type": "string"
+                    },
+                    "memory": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "memory",
+                    "cpu"
+                  ],
+                  "type": "object"
+                },
+                "provisioner": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "cpu": {
+                      "type": "string"
+                    },
+                    "memory": {
+                      "type": "string"
+                    },
+                    "replicas": {
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "replicas",
+                    "memory",
+                    "cpu"
+                  ],
+                  "type": "object"
+                },
+                "web": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "cpu": {
+                      "type": "string"
+                    },
+                    "memory": {
+                      "type": "string"
+                    },
+                    "replicas": {
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "replicas",
+                    "memory",
+                    "cpu"
+                  ],
+                  "type": "object"
+                },
+                "workerscanner": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "cpu": {
+                      "type": "string"
+                    },
+                    "memory": {
+                      "type": "string"
+                    },
+                    "replicas": {
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "replicas",
+                    "memory",
+                    "cpu"
+                  ],
+                  "type": "object"
+                }
+              },
+              "required": [
+                "web",
+                "provisioner",
+                "workerscanner",
+                "expire_workers",
+                "expire_worker_pools",
+                "expire_errors"
+              ],
+              "title": "Process settings for this service",
+              "type": "object"
+            },
+            "providers": {
+              "oneOf": [
+                {
+                  "additionalProperties": true,
+                  "type": "object"
+                },
+                {
+                  "type": "array"
+                }
+              ]
+            },
+            "provisioner_iterate_config": {
+              "oneOf": [
+                {
+                  "additionalProperties": true,
+                  "type": "object"
+                },
+                {
+                  "type": "array"
+                }
+              ]
+            },
+            "pulse_password": {
+              "type": "string"
+            },
+            "pulse_username": {
+              "type": "string"
+            },
+            "taskcluster_access_token": {
+              "type": "string"
+            },
+            "taskcluster_client_id": {
+              "type": "string"
+            },
+            "worker_scanner_iterate_config": {
+              "oneOf": [
+                {
+                  "additionalProperties": true,
+                  "type": "object"
+                },
+                {
+                  "type": "array"
+                }
+              ]
+            }
+          },
+          "required": [
+            "procs",
+            "taskcluster_client_id",
+            "taskcluster_access_token",
+            "pulse_username",
+            "pulse_password",
+            "providers"
+          ],
+          "title": "Configuration options for worker-manager",
+          "type": "object"
+        }
+      },
+      "required": [
+        "rootUrl",
+        "dockerImage",
+        "pulseHostname",
+        "pulseVhost",
+        "azureAccountId",
+        "forceSSL",
+        "trustProxy",
+        "nodeEnv",
+        "auth",
+        "built_in_workers",
+        "github",
+        "hooks",
+        "index",
+        "notify",
+        "purge_cache",
+        "queue",
+        "secrets",
+        "web_server",
+        "worker_manager",
+        "ui",
+        "references"
+      ],
+      "title": "Taskcluster Configuration Values",
+      "type": "object"
+    },
+    "filename": "schemas/common/values.schema.json"
   },
   {
     "content": {
@@ -7662,6 +11162,19 @@
           "version": 1
         },
         {
+          "description": "A worker has been marked as stopping",
+          "fields": {
+            "providerId": "The provider that did the work for this worker pool.",
+            "workerId": "The worker that was created",
+            "workerPoolId": "The worker pool ID (provisionerId/workerType)"
+          },
+          "level": "notice",
+          "name": "workerStopping",
+          "title": "Worker Stopping",
+          "type": "worker-stopping",
+          "version": 1
+        },
+        {
           "description": "The simple estimator has decided that we need some number of instances.",
           "fields": {
             "desiredCapacity": "Amount of capacity that this estimator thinks we should have",
@@ -7730,6 +11243,18 @@
           "name": "cloudApiResumed",
           "title": "Cloud API Resumed",
           "type": "cloud-api-resumed",
+          "version": 1
+        },
+        {
+          "description": "Something has tried to register as a worker but failed. This could indicate either a bug\nor that somebody is trying to impersonate a worker.",
+          "fields": {
+            "error": "Error message from cloud that triggered this",
+            "message": "Description of this error from the taskcluster side"
+          },
+          "level": "warning",
+          "name": "registrationErrorWarning",
+          "title": "Registration Error Warning",
+          "type": "registration-error-warning",
           "version": 1
         },
         {
@@ -8138,6 +11663,215 @@
       "title": "Taskcluster Worker Manager"
     },
     "filename": "references/worker-manager/v1/api.json"
+  },
+  {
+    "content": {
+      "$schema": "/schemas/common/logs-reference-v0.json#",
+      "serviceName": "web-server",
+      "types": [
+        {
+          "description": "Status and duration of a periodic background process.",
+          "fields": {
+            "duration": "The duration in ms of the process.",
+            "name": "The name of this process.",
+            "status": "Either success, or exception depending on the outcome."
+          },
+          "level": "any",
+          "name": "periodic",
+          "title": "Periodic Process",
+          "type": "monitor.periodic",
+          "version": 1
+        },
+        {
+          "description": "The most basic timer.",
+          "fields": {
+            "duration": "The duration in ms of whatever was timed.",
+            "key": "A key that should be unique to the logger prefix."
+          },
+          "level": "info",
+          "name": "basicTimer",
+          "title": "Basic Timer",
+          "type": "monitor.timer",
+          "version": 1
+        },
+        {
+          "description": "A basic timer applied to a function.",
+          "fields": {
+            "duration": "The duration in ms of the function.",
+            "name": "The name of the handler.",
+            "status": "Whether or not the handler resolved succesfully."
+          },
+          "level": "info",
+          "name": "handlerTimer",
+          "title": "Handler Timer",
+          "type": "monitor.timedHandler",
+          "version": 1
+        },
+        {
+          "description": "A timer for calls to aws services.",
+          "fields": {
+            "duration": "How long it took to resolve the request in ms.",
+            "operation": "The specific operation of this call.",
+            "region": "The AWS region this service is in.",
+            "service": "The name of the aws service being accessed."
+          },
+          "level": "info",
+          "name": "awsTimer",
+          "title": "AWS Request Report",
+          "type": "monitor.aws",
+          "version": 1
+        },
+        {
+          "description": "Metrics of a node process.",
+          "fields": {
+            "lastCpuUsage": "The output of node's process.cpuUsage",
+            "lastMemoryUsage": "The output of node's process.memoryUsage"
+          },
+          "level": "info",
+          "name": "resourceMetrics",
+          "title": "Resource Usage Metrics",
+          "type": "monitor.resources",
+          "version": 1
+        },
+        {
+          "description": "A simple measurement. The reported values are expected to have statistics calculated over them.",
+          "fields": {
+            "key": "An arbitrary key.",
+            "val": "A number that should be calculated over in a time span."
+          },
+          "level": "info",
+          "name": "measureMetric",
+          "title": "Generic Measure",
+          "type": "monitor.measure",
+          "version": 1
+        },
+        {
+          "description": "A simple count. The reported values should be summed up in a time span.",
+          "fields": {
+            "key": "An arbitrary key.",
+            "val": "A number that should be summed over a time span."
+          },
+          "level": "info",
+          "name": "countMetric",
+          "title": "Generic Count",
+          "type": "monitor.count",
+          "version": 1
+        },
+        {
+          "description": "A specifically formatted error report. Will have at least the following but can contain more.",
+          "fields": {
+            "message": "Whatever message the error contained.",
+            "name": "The name of the error.",
+            "stack": "A nodejs stack trace."
+          },
+          "level": "any",
+          "name": "errorReport",
+          "title": "Error Report",
+          "type": "monitor.error",
+          "version": 1
+        },
+        {
+          "description": "A simple timekeeper for measuring arbitrary time spans.",
+          "fields": {
+            "duration": "The duration in ms of whatever was timed.",
+            "key": "A key that should be unique to the logger prefix."
+          },
+          "level": "info",
+          "name": "timekeeper",
+          "title": "TimeKeeper Report",
+          "type": "monitor.timekeeper",
+          "version": 1
+        },
+        {
+          "description": "An internal type for logging simple messages. No required fields.",
+          "fields": {
+          },
+          "level": "any",
+          "name": "generic",
+          "title": "Generic Message",
+          "type": "monitor.generic",
+          "version": 1
+        },
+        {
+          "description": "An internal type for reporting malformed logging calls.",
+          "fields": {
+          },
+          "level": "err",
+          "name": "loggingError",
+          "title": "Error in Logging",
+          "type": "monitor.loggingError",
+          "version": 1
+        },
+        {
+          "description": "A connection to Pulse has been established.  Taskcluster services\nautomatically reconnect to Pulse periodically and in the event of\nan error, but rapid reconnections may signal a Pulse failure.",
+          "fields": {
+          },
+          "level": "info",
+          "name": "pulseConnected",
+          "title": "Connection to pulse established",
+          "type": "pulse.connected",
+          "version": 1
+        },
+        {
+          "description": "A connection to Pulse has ended or failed.  This may be due to normal\nreconnection or to an error communicating with Pulse.  The service\nautomatically reconnects, so even an error is not necessarily a problem.",
+          "fields": {
+            "error": "The error message, if the disconnection was due to an error."
+          },
+          "level": "info",
+          "name": "pulseDisconnected",
+          "title": "Connection to pulse has ended",
+          "type": "pulse.disconnected",
+          "version": 1
+        },
+        {
+          "description": "A pulse publisher has been notified by the pulse server\nthat it has been blocked, usually because the server is\nresource-constrained.  If `blocked` is false, then the\nnotification is that the publisher has been unblocked\nafter having previously been blocked.",
+          "fields": {
+            "blocked": "If true, the publisher has been blocked; if false, it has been unblocked."
+          },
+          "level": "warning",
+          "name": "pulsePublisherBlocked",
+          "title": "Pulse server has (un)blocked a publisher",
+          "type": "pulsePublisherBlocked",
+          "version": 1
+        },
+        {
+          "description": "A client has been issued Taskcluster credentials",
+          "fields": {
+            "clientId": "The clientId of the issued credentials",
+            "expires": "Date time when the issued credentials expires.",
+            "userIdentity": "The identity of the user to which the credentials were issued"
+          },
+          "level": "info",
+          "name": "createCredentials",
+          "title": "Credentials Created",
+          "type": "create-credentials",
+          "version": 1
+        },
+        {
+          "description": "The PulseEngine has created a queue and bound it to one or more exchanges in\nresponse to a GraphQL subsscription request.",
+          "fields": {
+            "subscriptionId": "The subscriptionId, which will also appear in the AMQP queue name"
+          },
+          "level": "debug",
+          "name": "bindPulseSubscription",
+          "title": "Bind a Pulse Subscription",
+          "type": "bind-pulse-subscription",
+          "version": 1
+        },
+        {
+          "description": "The PulseEngine has deleted a queue bound to one or more exchanges in\nresponse to termination of a GraphQL subsscription request.",
+          "fields": {
+            "subscriptionId": "The subscriptionId, which will also appear in the AMQP queue name"
+          },
+          "level": "debug",
+          "name": "unbindPulseSubscription",
+          "title": "Unbind a Pulse Subscription",
+          "type": "unbind-pulse-subscription",
+          "version": 1
+        }
+      ]
+    },
+    "filename": "references/web-server/v1/logs.json"
   },
   {
     "content": {
@@ -9359,7 +13093,7 @@
             "taskId"
           ],
           "category": "Tasks",
-          "description": "Create a new task, this is an **idempotent** operation, so repeat it if\nyou get an internal server error or network connection is dropped.\n\n**Task `deadline`**: the deadline property can be no more than 5 days\ninto the future. This is to limit the amount of pending tasks not being\ntaken care of. Ideally, you should use a much shorter deadline.\n\n**Task expiration**: the `expires` property must be greater than the\ntask `deadline`. If not provided it will default to `deadline` + one\nyear. Notice, that artifacts created by task must expire before the task.\n\n**Task specific routing-keys**: using the `task.routes` property you may\ndefine task specific routing-keys. If a task has a task specific \nrouting-key: `<route>`, then when the AMQP message about the task is\npublished, the message will be CC'ed with the routing-key: \n`route.<route>`. This is useful if you want another component to listen\nfor completed tasks you have posted.  The caller must have scope\n`queue:route:<route>` for each route.\n\n**Dependencies**: any tasks referenced in `task.dependencies` must have\nalready been created at the time of this call.\n\n**Scopes**: Note that the scopes required to complete this API call depend\non the content of the `scopes`, `routes`, `schedulerId`, `priority`,\n`provisionerId`, and `workerType` properties of the task definition.\n\n**Legacy Scopes**: The `queue:create-task:..` scope without a priority and\nthe `queue:define-task:..` and `queue:task-group-id:..` scopes are considered\nlegacy and should not be used. Note that the new, non-legacy scopes require\na `queue:scheduler-id:..` scope as well as scopes for the proper priority.",
+          "description": "Create a new task, this is an **idempotent** operation, so repeat it if\nyou get an internal server error or network connection is dropped.\n\n**Task `deadline`**: the deadline property can be no more than 5 days\ninto the future. This is to limit the amount of pending tasks not being\ntaken care of. Ideally, you should use a much shorter deadline.\n\n**Task expiration**: the `expires` property must be greater than the\ntask `deadline`. If not provided it will default to `deadline` + one\nyear. Notice, that artifacts created by task must expire before the task.\n\n**Task specific routing-keys**: using the `task.routes` property you may\ndefine task specific routing-keys. If a task has a task specific \nrouting-key: `<route>`, then when the AMQP message about the task is\npublished, the message will be CC'ed with the routing-key: \n`route.<route>`. This is useful if you want another component to listen\nfor completed tasks you have posted.  The caller must have scope\n`queue:route:<route>` for each route.\n\n**Dependencies**: any tasks referenced in `task.dependencies` must have\nalready been created at the time of this call.\n\n**Scopes**: Note that the scopes required to complete this API call depend\non the content of the `scopes`, `routes`, `schedulerId`, `priority`,\n`provisionerId`, and `workerType` properties of the task definition.",
           "input": "v1/create-task-request.json#",
           "method": "put",
           "name": "createTask",
@@ -9379,36 +13113,13 @@
                 "for": "route",
                 "in": "routes"
               },
+              "queue:scheduler-id:<schedulerId>",
               {
                 "AnyOf": [
                   {
-                    "AllOf": [
-                      "queue:scheduler-id:<schedulerId>",
-                      {
-                        "AnyOf": [
-                          {
-                            "each": "queue:create-task:<priority>:<provisionerId>/<workerType>",
-                            "for": "priority",
-                            "in": "priorities"
-                          }
-                        ]
-                      }
-                    ]
-                  },
-                  {
-                    "if": "legacyScopes",
-                    "then": {
-                      "AnyOf": [
-                        "queue:create-task:<provisionerId>/<workerType>",
-                        {
-                          "AllOf": [
-                            "queue:define-task:<provisionerId>/<workerType>",
-                            "queue:task-group-id:<schedulerId>/<taskGroupId>",
-                            "queue:schedule-task:<schedulerId>/<taskGroupId>/<taskId>"
-                          ]
-                        }
-                      ]
-                    }
+                    "each": "queue:create-task:<priority>:<provisionerId>/<workerType>",
+                    "for": "priority",
+                    "in": "priorities"
                   }
                 ]
               }
@@ -9443,36 +13154,13 @@
                 "for": "route",
                 "in": "routes"
               },
+              "queue:scheduler-id:<schedulerId>",
               {
                 "AnyOf": [
                   {
-                    "AllOf": [
-                      "queue:scheduler-id:<schedulerId>",
-                      {
-                        "AnyOf": [
-                          {
-                            "each": "queue:create-task:<priority>:<provisionerId>/<workerType>",
-                            "for": "priority",
-                            "in": "priorities"
-                          }
-                        ]
-                      }
-                    ]
-                  },
-                  {
-                    "if": "legacyScopes",
-                    "then": {
-                      "AnyOf": [
-                        "queue:define-task:<provisionerId>/<workerType>",
-                        "queue:create-task:<provisionerId>/<workerType>",
-                        {
-                          "AllOf": [
-                            "queue:define-task:<provisionerId>/<workerType>",
-                            "queue:task-group-id:<schedulerId>/<taskGroupId>"
-                          ]
-                        }
-                      ]
-                    }
+                    "each": "queue:create-task:<priority>:<provisionerId>/<workerType>",
+                    "for": "priority",
+                    "in": "priorities"
                   }
                 ]
               }
@@ -9532,7 +13220,7 @@
               }
             ]
           },
-          "stability": "deprecated",
+          "stability": "stable",
           "title": "Rerun a Resolved Task",
           "type": "function"
         },
@@ -10536,6 +14224,40 @@
           "version": 1
         },
         {
+          "description": "A matrix message has been sent.",
+          "fields": {
+            "dest": "A user or room."
+          },
+          "level": "info",
+          "name": "matrix",
+          "title": "Matrix Message Sent",
+          "type": "matrix",
+          "version": 1
+        },
+        {
+          "description": "Log events from the matrix sdk. Contains arbitrary data from them.",
+          "fields": {
+            "level": "The level that matrix logged this at. We send all logs to debug no matter what.",
+            "message": "Arbitrary message from matrix sdk."
+          },
+          "level": "debug",
+          "name": "matrixSdkDebug",
+          "title": "Matrix SDK Debug",
+          "type": "matrix-sdk-debug",
+          "version": 1
+        },
+        {
+          "description": "We have been rejected from messaging a room. This is expected if the user\nhas not invited our client into the room yet but we log it as a notice to\nhelp debug confused users.",
+          "fields": {
+            "roomId": "The roomId that we were forbidden from."
+          },
+          "level": "notice",
+          "name": "matrixForbidden",
+          "title": "Matrix Forbidden",
+          "type": "matrix-forbidden",
+          "version": 1
+        },
+        {
           "description": "A timer and audit for express API endpoints.\nYou can combine this with auth audit logs to get\na complete picture of what was authorized when.\n\nHere, anything that is not public should have authenticated\nand if it authenticated, we will tell the clientId here. Given\nthat, it is not necessarily true that the endpoint was\n_authorized_. You can tell that by the statusCode.",
           "fields": {
             "apiVersion": "The version of the API (e.g., `v1`)",
@@ -10696,6 +14418,22 @@
         {
           "args": [
           ],
+          "category": "Notifications",
+          "description": "Post a message to a room in Matrix. Optionally includes formatted message.\n\nThe `roomId` in the scopes is a fully formed `roomId` with leading `!` such\nas `!foo:bar.com`.\n\nNote that the matrix client used by taskcluster must be invited to a room before\nit can post there!",
+          "input": "v1/matrix-request.json#",
+          "method": "post",
+          "name": "matrix",
+          "query": [
+          ],
+          "route": "/matrix",
+          "scopes": "notify:matrix-room:<roomId>",
+          "stability": "experimental",
+          "title": "Post Matrix Message",
+          "type": "function"
+        },
+        {
+          "args": [
+          ],
           "category": "Denylist",
           "description": "Add the given address to the notification denylist. The address\ncan be of either of the three supported address type namely pulse, email\nor IRC(user or channel). Addresses in the denylist will be ignored\nby the notification service.",
           "input": "v1/notification-address.json#",
@@ -10775,6 +14513,7 @@
         "/references/queue/v1/logs.json",
         "/references/secrets/v1/api.json",
         "/references/secrets/v1/logs.json",
+        "/references/web-server/v1/logs.json",
         "/references/worker-manager/v1/api.json",
         "/references/worker-manager/v1/exchanges.json",
         "/references/worker-manager/v1/logs.json"

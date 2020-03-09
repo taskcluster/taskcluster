@@ -310,6 +310,7 @@ Worker.prototype.serializable = function() {
 Worker.states = {
   REQUESTED: 'requested',
   RUNNING: 'running',
+  STOPPING: 'stopping',
   STOPPED: 'stopped',
 };
 

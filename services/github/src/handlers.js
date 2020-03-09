@@ -355,7 +355,11 @@ async function deprecatedStatusHandler(message) {
 
   let build = await this.context.Builds.load({
     taskGroupId,
-  });
+  }, true);
+  if (!build) {
+    // no status to update..
+    return;
+  }
 
   let debug = Debug(`${debugPrefix}:deprecated-result-handler:${build.eventId}`);
   debug(`Statuses API. Handling state change for task-group ${taskGroupId}`);
@@ -626,19 +630,42 @@ async function jobHandler(message) {
     if (!defaultBranchYml) { return; }
 
     if (this.getRepoPolicy(defaultBranchYml).startsWith('collaborators')) {
-      let login = message.payload.details['event.head.user.login'];
+      // There are four usernames associated with a PR action:
+      //  - pull_request.user.login -- the user who opened the PR
+      //  - pull_request.head.user.login -- the username or org name for the repo from which changes are pulled
+      //  - pull_request.base.user.login -- the username or org name for the repo into which changes will merge
+      //  - sender.login -- the user who clicked the button to trigger this action
+      //
+      // The "collaborators" and "collaborators_quiet" policies require:
+      //  - pull_request.user.login is a collaborator; AND
+      //  - pull_request.head.user.login is
+      //    - a collaborator OR
+      //    - the same as pull_request.base.user.login
+      //
+      // Meaning that the PR must have been opened by a collaborator and be merging code from a collaborator
+      // or from the repo against which the PR is filed.
 
-      let isCollaborator = await instGithub.repos.checkCollaborator({
-        owner: organization,
-        repo: repository,
-        username: login,
-      }).catch(e => {
-        if (e.status !== 404) {
-          throw e;
-        }
-      });
+      const isCollaborator = async login => {
+        return Boolean(await instGithub.repos.checkCollaborator({
+          owner: organization,
+          repo: repository,
+          username: login,
+        }).catch(e => {
+          if (e.status !== 404) {
+            throw e;
+          }
+          return false; // 404 -> false
+        }));
+      };
 
-      if (!isCollaborator) {
+      const evt = message.payload.body;
+      const opener = evt.pull_request.user.login;
+      const openerIsCollaborator = await isCollaborator(opener);
+      const head = evt.pull_request.head.user.login;
+      const headIsCollaborator = head === opener ? openerIsCollaborator : await isCollaborator(head);
+      const headIsBase = evt.pull_request.head.user.login === evt.pull_request.base.user.login;
+
+      if (!(openerIsCollaborator && (headIsCollaborator || headIsBase))) {
         if (message.payload.details['event.type'].startsWith('pull_request.opened') && (this.getRepoPolicy(defaultBranchYml) !== 'collaborators_quiet')) {
           let body = [
             '<details>\n',

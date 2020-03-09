@@ -5,8 +5,8 @@ import (
 	"log"
 	"time"
 
-	tcclient "github.com/taskcluster/taskcluster/clients/client-go/v24"
-	"github.com/taskcluster/taskcluster/clients/client-go/v24/tcauth"
+	tcclient "github.com/taskcluster/taskcluster/v25/clients/client-go"
+	"github.com/taskcluster/taskcluster/v25/clients/client-go/tcauth"
 )
 
 func Example_scopes() {
@@ -19,11 +19,11 @@ func Example_scopes() {
 			ClientID:    "SOME-CLIENT-ID",
 			AccessToken: "SOME-WELL-FORMED-ACCESS-TOKEN",
 		},
-		"https://taskcluster.net",
+		"https://community-tc.services.mozilla.com",
 	)
 
-	// Look up client details for client id "project/taskcluster/tc-client-go/tests"...
-	resp, err := myAuth.Client("project/taskcluster/tc-client-go/tests")
+	// Look up client details for client id "project/taskcluster/generic-worker/taskcluster-ci"...
+	resp, err := myAuth.Client("project/taskcluster/generic-worker/taskcluster-ci")
 
 	// Handle any errors...
 	if err != nil {
@@ -38,8 +38,8 @@ func Example_scopes() {
 	//   fmt.Printf("Expanded Scopes:  %v\n", resp.ExpandedScopes)
 
 	// Output:
-	// Client ID:  project/taskcluster/tc-client-go/tests
-	// Expires:    3017-02-01T05:00:00.000Z
+	// Client ID:  project/taskcluster/generic-worker/taskcluster-ci
+	// Expires:    3000-01-01T00:00:00.000Z
 }
 
 func Example_updateClient() {

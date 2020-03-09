@@ -59,7 +59,7 @@ export const CONTENT_MAX_WIDTH = 1592;
 // eslint-disable-next-line max-len
 export const VALID_TASK = /^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$/;
 export const TASKS_CREATE_STORAGE_KEY = 'tasks:create';
-export const ISO_8601_REGEX = /\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{3}Z/;
+export const ISO_8601_REGEX = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{3}Z$/;
 export const TASK_STATE = {
   COMPLETED: 'COMPLETED',
   RUNNING: 'RUNNING',
@@ -241,6 +241,36 @@ export const PROVIDER_DEFAULT_CONFIGS = new Map([
     },
   ],
   ['static', {}],
+  [
+    'azure',
+    {
+      minCapacity: 0,
+      maxCapacity: 4,
+      launchConfigs: [
+        {
+          location: 'westus',
+          capacityPerInstance: 1,
+          subnetId: '...',
+          hardwareProfile: {
+            vmSize: 'Basic_A1',
+          },
+          storageProfile: {
+            imageReference: {
+              id: '...',
+            },
+            osDisk: {
+              caching: 'ReadWrite',
+              managedDisk: {
+                storageAccountType: 'Standard_LRS',
+              },
+              createOption: 'FromImage',
+            },
+          },
+          workerConfig: {},
+        },
+      ],
+    },
+  ],
 ]);
 export const NULL_WORKER_POOL = {
   workerPoolId: '/',
@@ -250,3 +280,4 @@ export const NULL_WORKER_POOL = {
   emailOnError: false,
   config: {},
 };
+export const UI_SCHEDULER_ID = 'taskcluster-ui';

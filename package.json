@@ -1,17 +1,20 @@
 {
   "name": "taskcluster",
-  "version": "24.1.9",
+  "version": "25.4.0",
   "private": true,
   "engine-strict": true,
   "engines": {
-    "node": "12.14.0",
-    "yarn": "^1.21.0"
+    "node": "12.16.1",
+    "yarn": "^1.22.0"
   },
   "workspaces": [
     "libraries/*",
     "services/*"
   ],
   "dependencies": {
+    "@azure/arm-compute": "^12.0.0",
+    "@azure/arm-network": "^19.1.0",
+    "@azure/ms-rest-nodeauth": "^3.0.0",
     "@hapi/hawk": "^7.1.2",
     "@octokit/rest": "^16.15.0",
     "@sentry/node": "^5.6.1",
@@ -41,6 +44,7 @@
     "express-sslify": "1.2.0",
     "fast-azure-storage": "^3.1.2",
     "fast-json-stable-stringify": "^2.0.0",
+    "generate-password": "^1.5.0",
     "get-caller-file": "^2.0.5",
     "googleapis": "^45.0.0",
     "graphql": "^14.5.4",
@@ -55,12 +59,14 @@
     "irc-upd": "^0.10.0",
     "iterall": "^1.2.2",
     "js-yaml": "^3.13.1",
-    "json-e": "^3.0.0",
+    "json-e": "^4.0.0",
     "json-parameterization": "^2.0.0",
     "jsonwebtoken": "^8.1.1",
     "jwks-rsa": "^1.2.1",
     "lodash": "4.17.15",
+    "loglevel": "^1.6.7",
     "marked": "^0.7.0",
+    "matrix-js-sdk": "^5.0.0",
     "memorystore": "^1.6.1",
     "mkdirp": "^0.5.1",
     "moment": "^2.22.2",
@@ -69,6 +75,7 @@
     "mz": "^2.7.0",
     "netmask": "^1.0.5",
     "node-fetch": "^2.6.0",
+    "node-forge": "^0.9.1",
     "nodemailer": "^6.0.0",
     "oauth2orize": "^1.11.0",
     "p-queue": "^6.1.1",
@@ -76,6 +83,7 @@
     "passport": "^0.4.0",
     "passport-auth0": "^1.1.0",
     "passport-github": "^1.1.0",
+    "pg": "^7.14.0",
     "promisepipe": "^3.0.0",
     "quick-lru": "^4.0.0",
     "ramda": "^0.26.0",
@@ -99,9 +107,10 @@
     "taskcluster-lib-iterate": "link:libraries/iterate",
     "taskcluster-lib-loader": "link:libraries/loader",
     "taskcluster-lib-monitor": "link:libraries/monitor",
+    "taskcluster-lib-postgres": "link:libraries/postgres",
     "taskcluster-lib-pulse": "link:libraries/pulse",
     "taskcluster-lib-references": "link:libraries/references",
-    "taskcluster-lib-scopes": "link:libraries/scopes",
+    "taskcluster-lib-scopes": "^11.0.0",
     "taskcluster-lib-urls": "^12.0.0",
     "taskcluster-lib-validate": "link:libraries/validate",
     "thirty-two": "^1.0.2",
@@ -113,12 +122,12 @@
   "devDependencies": {
     "@azure/arm-resources": "^2.0.0",
     "@azure/arm-storage": "^11.0.0",
-    "@azure/ms-rest-nodeauth": "^3.0.0",
     "@babel/core": "^7.2.2",
     "@babel/plugin-proposal-class-properties": "^7.4.4",
     "apollo-cache-inmemory": "^1.6.3",
     "apollo-client": "^2.6.4",
     "apollo-link-http": "^1.5.16",
+    "apollo-link-ws": "^1.0.19",
     "assume": "^2.1.0",
     "aws-sdk-mock": "^4.3.0",
     "c8": "^6.0.0",
@@ -161,6 +170,7 @@
     "through": "^2.3.8",
     "tmp": "^0.1.0",
     "url-join": "^4.0.0",
+    "ws": "^7.2.1",
     "zen-observable": "^0.8.11",
     "zurvan": "^0.5.2"
   },
@@ -179,10 +189,10 @@
     "shared-secrets": "node test/shared-secrets.js",
     "heroku-prebuild": "echo {\\\"version\\\"\\: \\\"$SOURCE_VERSION\\\"} > version.json",
     "heroku-postbuild": "if [ $PROCFILE = \"ui/Procfile\" ]; then cd ui && yarn install --frozen-lockfile && yarn build; fi",
-    "dev:init": "node infrastructure/tooling/src/main.js dev --init",
-    "dev:apply": "node infrastructure/tooling/src/main.js dev --k8s-action apply",
-    "dev:delete": "node infrastructure/tooling/src/main.js dev --k8s-action delete",
-    "dev:verify": "node infrastructure/tooling/src/main.js dev --k8s-action verify",
+    "dev:init": "node infrastructure/tooling/src/main.js dev:init",
+    "dev:apply": "node infrastructure/tooling/src/main.js dev:apply",
+    "dev:delete": "node infrastructure/tooling/src/main.js dev:delete",
+    "dev:verify": "node infrastructure/tooling/src/main.js dev:verify",
     "smoketest": "node infrastructure/tooling/src/main.js smoketest",
     "test:meta": "node infrastructure/tooling/src/main.js test:meta",
     "backup:run": "node infrastructure/tooling/src/main.js backup:run",
@@ -194,14 +204,27 @@
       "config:base",
       "schedule:earlyMondays"
     ],
+    "rebaseConflictedPrs": false,
     "prHourlyLimit": 0,
     "prConcurrentLimit": 9,
     "rangeStrategy": "update-lockfile",
-    "ignoreDeps": [
-      "aws-sdk"
+    "packageRules": [
+      {
+        "packageNames": [
+          "aws-sdk",
+          "golang.org/x/sys"
+        ],
+        "schedule": [
+          "after 9pm on sunday"
+        ]
+      }
     ],
     "enabledManagers": [
-      "npm"
+      "npm",
+      "gomod"
+    ],
+    "postUpdateOptions": [
+      "gomodTidy"
     ]
   },
   "eslintIgnore": [

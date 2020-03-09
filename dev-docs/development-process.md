@@ -10,13 +10,13 @@ You will probably be working on only one of these pieces, so read carefully belo
 ### Node
 
 <!-- the next line is automatically edited; do not change -->
-You will need Node version 12.14.0 installed.
+You will need Node version 12.16.1 installed.
 We recommend using https://github.com/nvm-sh/nvm to support installing multiple Node versions.
 
 ### Go
 
 <!-- the next line is automatically edited; do not change -->
-Go version go1.12.13 is required for some development tasks, in particular to run `yarn generate`.
+Go version go1.13.7 is required for some development tasks, in particular to run `yarn generate`.
 For new contributors not familiar with Go, it's probably safe to skip installing Go for now -- you will see a helpful error if and when it is needed.
 We recommend using https://github.com/moovweb/gvm to support installing multiple Go versions.
 
@@ -34,10 +34,10 @@ export PATH=$PWD/node_modules/.bin:$PATH
 
 ## Hacking on the UI
 
-Taskcluster requires a Linux-like enviroment for development.
+Taskcluster requires a Linux-like environment for development.
 If you are developing on a Windows system, you will need to either
-* install [WSL](https://docs.microsoft.com/en-us/windows/wsl/install-win10);
-* use a virtual machine for development; or
+* install [WSL](https://docs.microsoft.com/en-us/windows/wsl/install-win10)
+* use a virtual machine for development or
 * install Linux as a second OS and boot into that.
 
 The files comprising the Taskcluster UI are under [`ui/`](../ui).
@@ -150,7 +150,7 @@ Now follow along:
    config for you (most of it anyway).  Once it has done this, your
    `dev-config.yml` is filled with secrets so don't leak it. These are dev-only
    secrets though so don't be too worried. Soon we may work on getting this to
-   be encryped at rest.
+   be encrypted at rest.
    * SubscriptionId can be found in the Azure console
    * RabbitMQ account creds are in passwordstore at tc/cloudamqp.com/hip-macaw
 1. Run `yarn dev:verify` and see if it complains about any missing values in
@@ -182,6 +182,32 @@ errorConfig:
 ```
 
 in order to report your errors to a sentry project.
+
+### Setting up a Taskcluster Github app in your Development Cluster
+
+You will need:
+1. Development cluster up and running (see above)
+2. A github app created and installed for a testing repository.
+
+To set up a taskcluster-github app:
+0. In the settings of the github app that you created, at the very bottom of the General tab, you will find Generate Private Key button. 
+Press it to generate the private key.
+1. In your `dev-config.yml`, in the `github` section, add `github_private_pem` - you can copy-paste the contents of the 
+PEM file you have obtained in the previous step. Be careful to remove any newlines from the encrypted part,
+and the necessary newlines after the header and before the footer should be replaced with `\n`, so the whole thing is a one-line string
+like this: `-----BEGIN RSA PRIVATE KEY-----\nMIIEpAIBAAKCAQEblahblahblah==\n-----END RSA PRIVATE KEY-----`
+2. Populate the `github_app_id` in the `dev-config.yml` (it's the numerical `App ID` you will find in the app settings, near the top of the General tab)
+3. If you have `webhook_secret` in your `dev-config.yml`, remove it.
+4. In the app settings, on that same General tab, find the Webhook URL field. Enter the api URL in there (should be something like
+`https://<YOUR_ROOT_URL>/api/github/v1/github`).
+5. Leave the Webhook Secret field empty, make sure the app is Active and the SSL verification is enabled. On the Permissions & Events tab,
+_carefully_ add permissions. Do not give it more permissions than it needs.
+6. Try it on a test repo. If the app doesn't work, go into the app settings, Advanced tab, and look at the webhook deliveries.
+Logs of tc-github service are also good for a few laughs.
+7. If the app does work but lacks scopes, you can add those by creating a `repo:github.com/<TEST_OWNER>/<TEST_REPO>:*` role
+and adding the scopes to that role.
+8. If you need functional workers to go with the app, make sure to set up a provider in the cloud you need and then create a workerpool
+for that provider.
 
 ## Hacking on Clients
 

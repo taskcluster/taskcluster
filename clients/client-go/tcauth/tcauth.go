@@ -43,7 +43,7 @@ import (
 	"net/url"
 	"time"
 
-	tcclient "github.com/taskcluster/taskcluster/clients/client-go/v24"
+	tcclient "github.com/taskcluster/taskcluster/v25/clients/client-go"
 )
 
 type Auth tcclient.Client
@@ -758,4 +758,12 @@ func (auth *Auth) TestAuthenticateGet() (*TestAuthenticateResponse, error) {
 	cd := tcclient.Client(*auth)
 	responseObject, _, err := (&cd).APICall(nil, "GET", "/test-authenticate-get/", new(TestAuthenticateResponse), nil)
 	return responseObject.(*TestAuthenticateResponse), err
+}
+
+// Returns a signed URL for TestAuthenticateGet, valid for the specified duration.
+//
+// See TestAuthenticateGet for more details.
+func (auth *Auth) TestAuthenticateGet_SignedURL(duration time.Duration) (*url.URL, error) {
+	cd := tcclient.Client(*auth)
+	return (&cd).SignedURL("/test-authenticate-get/", nil, duration)
 }

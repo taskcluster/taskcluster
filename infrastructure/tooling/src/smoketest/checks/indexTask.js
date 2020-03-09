@@ -3,7 +3,7 @@ const taskcluster = require('taskcluster-client');
 exports.scopeExpression = {
   AllOf: [
     'queue:create-task:highest:built-in/succeed',
-    'queue:scheduler-id:-',
+    'queue:scheduler-id:smoketest',
   ],
 };
 
@@ -25,6 +25,7 @@ exports.tasks.push({
       provisionerId: 'built-in',
       workerType: 'succeed',
       created: (new Date()).toJSON(),
+      schedulerId: 'smoketest',
       deadline: taskcluster.fromNowJSON('2 minutes'),
       expires: taskcluster.fromNowJSON('60 minutes'),
       metadata: {

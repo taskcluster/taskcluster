@@ -46,6 +46,7 @@ program.command('release:publish')
   .description('publish a release based on Git tag')
   .option('--base-dir <base-dir>', 'Base directory for build (fast and big!; default /tmp/taskcluster-builder-build)')
   .option('--dry-run', 'Do not run any tasks, but generate the list of tasks')
+  .option('--staging', 'Staging run (implies --no-push)')
   .option('--no-push', 'Do not push the GitHub release, docker images, packages, etc.')
   .on('--help', () => {
     console.log([
@@ -118,16 +119,48 @@ program.command('changelog:check')
     run(check, options[0]);
   });
 
-program.command('dev')
-  .option('--init', 'Set up resources and configure')
-  .option('--k8s-action <action>', 'Run a specific action (apply, delete, template)')
+program.command('dev:init')
+  .description('Initialize a development deployment (see dev-docs/development-process.md first)')
   .action((...options) => {
     if (options.length !== 1) {
       console.error('unexpected command-line arguments');
       process.exit(1);
     }
-    const {main} = require('./dev');
-    run(main, options[0]);
+    const {init} = require('./dev');
+    run(init, options[0]);
+  });
+
+program.command('dev:apply')
+  .description('Apply changes to a development deployment')
+  .action((...options) => {
+    if (options.length !== 1) {
+      console.error('unexpected command-line arguments');
+      process.exit(1);
+    }
+    const {apply} = require('./dev');
+    run(apply, options[0]);
+  });
+
+program.command('dev:delete')
+  .description('Delete a development deployment')
+  .action((...options) => {
+    if (options.length !== 1) {
+      console.error('unexpected command-line arguments');
+      process.exit(1);
+    }
+    const {delete_} = require('./dev');
+    run(delete_, options[0]);
+  });
+
+program.command('dev:verify')
+  .description('Verify settings for a development deployment')
+  .action((...options) => {
+    if (options.length !== 1) {
+      console.error('unexpected command-line arguments');
+      process.exit(1);
+    }
+    const {verify} = require('./dev');
+    run(verify, options[0]);
   });
 
 program.command('test:meta')

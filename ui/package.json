@@ -1,11 +1,11 @@
 {
   "name": "taskcluster-ui",
-  "version": "24.1.9",
+  "version": "25.4.0",
   "private": true,
   "license": "MPL-2.0",
   "engines": {
-    "node": "12.14.0",
-    "yarn": "^1.21.0"
+    "node": "12.16.1",
+    "yarn": "^1.22.0"
   },
   "scripts": {
     "build": "webpack --mode production",
@@ -17,7 +17,7 @@
     "create:fragment-matcher": "dotenv node src/scripts/queryServer"
   },
   "dependencies": {
-    "@material-ui/core": "^4.5.1",
+    "@material-ui/core": "^4.8.3",
     "@material-ui/icons": "^4.5.1",
     "@material-ui/lab": "4.0.0-alpha.33",
     "@material-ui/pickers": "3.2.7",
@@ -61,6 +61,7 @@
     "markdown-it": "^10.0.0",
     "markdown-it-highlightjs": "^3.0.0",
     "markdown-it-link-attributes": "^3.0.0",
+    "material-ui-json-schema-viewer": "^1.0.3",
     "material-ui-treeview": "^4.1.0",
     "mdi-react": "^6.2.0",
     "mdx-loader": "^3.0.2",
@@ -80,14 +81,13 @@
     "react-hot-loader": "^4.8.4",
     "react-lazylog": "^4.5.1",
     "react-router-dom": "^4.3.1",
-    "react-schema-viewer": "^3.2.3",
     "react-virtualized": "^9.21.0",
     "react-vnc-display": "^2.0.0",
     "react-window": "^1.8.1",
     "resolve-pathname": "^3.0.0",
     "shebang-loader": "^0.0.1",
     "subscriptions-transport-ws": "^0.9.16",
-    "taskcluster-lib-scopes": "link:../libraries/scopes",
+    "taskcluster-lib-scopes": "^11.0.0",
     "taskcluster-lib-urls": "^12.0.0",
     "typeface-roboto": "^0.0.75",
     "ws-shell": "^0.1.5"
@@ -101,10 +101,10 @@
     "@babel/register": "^7.0.0",
     "@date-io/date-fns": "1.3.13",
     "@mozilla-frontend-infra/react-lint": "^2.0.1",
-    "@neutrinojs/airbnb": "9.0.0-rc.5",
-    "@neutrinojs/copy": "9.0.0-rc.5",
-    "@neutrinojs/karma": "9.0.0-rc.5",
-    "@neutrinojs/react": "9.0.0-rc.5",
+    "@neutrinojs/airbnb": "^9.1.0",
+    "@neutrinojs/copy": "^9.1.0",
+    "@neutrinojs/karma": "^9.1.0",
+    "@neutrinojs/react": "^9.1.0",
     "babel-loader": "^8.0.5",
     "chai": "^4.2.0",
     "cross-env": "^6.0.3",
@@ -115,7 +115,7 @@
     "karma-cli": "^2.0.0",
     "karma-firefox-launcher": "^1.1.0",
     "mocha": "^6.0.0",
-    "neutrino": "9.0.0-rc.5",
+    "neutrino": "^9.1.0",
     "node-fetch": "^2.2.0",
     "raw-loader": "^3.0.0",
     "react-styleguidist": "^7.3.11",

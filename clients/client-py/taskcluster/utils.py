@@ -13,6 +13,8 @@ import time
 import six
 import random
 
+import taskcluster_urls as liburls
+
 from . import exceptions
 
 MAX_RETRIES = 5
@@ -328,7 +330,7 @@ def optionsFromEnvironment(defaults=None):
 
     rootUrl = os.environ.get('TASKCLUSTER_ROOT_URL')
     if rootUrl:
-        options['rootUrl'] = rootUrl
+        options['rootUrl'] = liburls.normalize_root_url(rootUrl)
 
     clientId = os.environ.get('TASKCLUSTER_CLIENT_ID')
     if clientId:

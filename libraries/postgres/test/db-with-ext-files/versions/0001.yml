@@ -1,0 +1,17 @@
+version: 1
+migrationScript: 0001.sql
+downgradeScript: |-
+  begin
+    drop table secrets;
+  end
+methods:
+  get_secret:
+    description: test
+    mode: read
+    serviceName: secrets
+    args: name text
+    returns: table (secret text)
+    body: |-
+      begin
+        return query select secrets.secret from secrets where secrets.name = get_secret.name;
+      end

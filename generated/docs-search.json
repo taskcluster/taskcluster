@@ -92,6 +92,13 @@
   },
   {
     "element": "h2",
+    "id": "matrix-support",
+    "path": "/manual/deploying",
+    "subtitle": "Matrix Support",
+    "title": "Deploying Taskcluster"
+  },
+  {
+    "element": "h2",
     "id": "testing-and-monitoring",
     "path": "/manual/deploying",
     "subtitle": "Testing and Monitoring",
@@ -245,10 +252,38 @@
     "title": null
   },
   {
+    "element": "h1",
+    "id": "matrix-integration",
+    "path": "/manual/deploying/matrix",
+    "subtitle": null,
+    "title": "Matrix Integration"
+  },
+  {
     "element": "h2",
-    "id": "details",
+    "id": "client-setup",
+    "path": "/manual/deploying/matrix",
+    "subtitle": "Client Setup",
+    "title": "Matrix Integration"
+  },
+  {
+    "element": "h2",
+    "id": "taskcluster-configuration",
+    "path": "/manual/deploying/matrix",
+    "subtitle": "Taskcluster Configuration",
+    "title": "Matrix Integration"
+  },
+  {
+    "element": "h2",
+    "id": "configuration",
     "path": "/manual/deploying/pulse",
-    "subtitle": "Details",
+    "subtitle": "Configuration",
+    "title": null
+  },
+  {
+    "element": "h3",
+    "id": "server-configuration-details",
+    "path": "/manual/deploying/pulse",
+    "subtitle": "Server Configuration Details",
     "title": null
   },
   {
@@ -322,10 +357,24 @@
     "title": "Workers"
   },
   {
+    "element": "h3",
+    "id": "azure",
+    "path": "/manual/deploying/workers",
+    "subtitle": "Azure",
+    "title": "Workers"
+  },
+  {
     "element": "h2",
     "id": "cautions",
     "path": "/manual/deploying/workers",
     "subtitle": "Cautions",
+    "title": "Workers"
+  },
+  {
+    "element": "h4",
+    "id": "expected-resources",
+    "path": "/manual/deploying/workers",
+    "subtitle": "Expected resources:",
     "title": "Workers"
   },
   {
@@ -350,10 +399,45 @@
     "title": "Workers"
   },
   {
+    "element": "h3",
+    "id": "rate-limiting--retries",
+    "path": "/manual/deploying/workers",
+    "subtitle": "Rate Limiting / Retries",
+    "title": "Workers"
+  },
+  {
+    "element": "h4",
+    "id": "recommended",
+    "path": "/manual/deploying/workers",
+    "subtitle": "Recommended:",
+    "title": "Workers"
+  },
+  {
+    "element": "h3",
+    "id": "resource-dependencies",
+    "path": "/manual/deploying/workers",
+    "subtitle": "Resource Dependencies",
+    "title": "Workers"
+  },
+  {
+    "element": "h3",
+    "id": "resource-groups",
+    "path": "/manual/deploying/workers",
+    "subtitle": "Resource Groups",
+    "title": "Workers"
+  },
+  {
     "element": "h4",
     "id": "service-accounts",
     "path": "/manual/deploying/workers",
     "subtitle": "Service Accounts",
+    "title": "Workers"
+  },
+  {
+    "element": "h3",
+    "id": "spot-instances",
+    "path": "/manual/deploying/workers",
+    "subtitle": "Spot Instances",
     "title": "Workers"
   },
   {
@@ -946,6 +1030,41 @@
   },
   {
     "element": "h1",
+    "id": "calling-taskcluster-apis",
+    "path": "/manual/using/api",
+    "subtitle": null,
+    "title": "Calling Taskcluster APIs"
+  },
+  {
+    "element": "h2",
+    "id": "authentication",
+    "path": "/manual/using/api",
+    "subtitle": "Authentication",
+    "title": "Calling Taskcluster APIs"
+  },
+  {
+    "element": "h2",
+    "id": "client-libraries",
+    "path": "/manual/using/api",
+    "subtitle": "Client Libraries",
+    "title": "Calling Taskcluster APIs"
+  },
+  {
+    "element": "h3",
+    "id": "getting-credentials-on-the-command-line",
+    "path": "/manual/using/api",
+    "subtitle": "Getting Credentials on the Command Line",
+    "title": "Calling Taskcluster APIs"
+  },
+  {
+    "element": "h3",
+    "id": "using-clients-in-a-task",
+    "path": "/manual/using/api",
+    "subtitle": "Using Clients in a Task",
+    "title": "Calling Taskcluster APIs"
+  },
+  {
+    "element": "h1",
     "id": "working-with-artifacts",
     "path": "/manual/using/artifacts",
     "subtitle": null,
@@ -1300,20 +1419,6 @@
     "path": "/people",
     "subtitle": "Staff",
     "title": "People of Taskcluster"
-  },
-  {
-    "element": "h1",
-    "id": "built-in-workers-service",
-    "path": "/reference/core/built-in-workers",
-    "subtitle": null,
-    "title": "Built-In Workers Service"
-  },
-  {
-    "element": "h2",
-    "id": "usage",
-    "path": "/reference/core/built-in-workers",
-    "subtitle": "Usage",
-    "title": "Built-In Workers Service"
   },
   {
     "element": "h1",
@@ -1685,6 +1790,41 @@
     "path": "/reference/core/worker-manager/aws",
     "subtitle": "Worker-Pool Configuration",
     "title": "AWS Provider Type"
+  },
+  {
+    "element": "h1",
+    "id": "azure-provider-type",
+    "path": "/reference/core/worker-manager/azure",
+    "subtitle": null,
+    "title": "Azure Provider Type"
+  },
+  {
+    "element": "h2",
+    "id": "removing-workers",
+    "path": "/reference/core/worker-manager/azure",
+    "subtitle": "Removing Workers",
+    "title": "Azure Provider Type"
+  },
+  {
+    "element": "h2",
+    "id": "tags",
+    "path": "/reference/core/worker-manager/azure",
+    "subtitle": "Tags",
+    "title": "Azure Provider Type"
+  },
+  {
+    "element": "h2",
+    "id": "worker-interaction",
+    "path": "/reference/core/worker-manager/azure",
+    "subtitle": "Worker Interaction",
+    "title": "Azure Provider Type"
+  },
+  {
+    "element": "h2",
+    "id": "worker-pool-configuration",
+    "path": "/reference/core/worker-manager/azure",
+    "subtitle": "Worker-Pool Configuration",
+    "title": "Azure Provider Type"
   },
   {
     "element": "h1",
@@ -2406,6 +2546,237 @@
     "path": "/reference/url-structure",
     "subtitle": "URLs",
     "title": "URL Structure"
+  },
+  {
+    "element": "h1",
+    "id": "built-in-workers-service",
+    "path": "/reference/workers/built-in-workers",
+    "subtitle": null,
+    "title": "Built-In Workers Service"
+  },
+  {
+    "element": "h2",
+    "id": "usage",
+    "path": "/reference/workers/built-in-workers",
+    "subtitle": "Usage",
+    "title": "Built-In Workers Service"
+  },
+  {
+    "element": "h1",
+    "id": "generic-worker",
+    "path": "/reference/workers/generic-worker",
+    "subtitle": null,
+    "title": "Generic Worker"
+  },
+  {
+    "element": "h2",
+    "id": "more-information",
+    "path": "/reference/workers/generic-worker",
+    "subtitle": "More Information",
+    "title": "Generic Worker"
+  },
+  {
+    "element": "h2",
+    "id": "payload-formats",
+    "path": "/reference/workers/generic-worker",
+    "subtitle": "Payload Formats",
+    "title": "Generic Worker"
+  },
+  {
+    "element": "h1",
+    "id": "engines",
+    "path": "/reference/workers/generic-worker/engines",
+    "subtitle": null,
+    "title": "Engines"
+  },
+  {
+    "element": "h2",
+    "id": "docker-engine",
+    "path": "/reference/workers/generic-worker/engines",
+    "subtitle": "Docker engine",
+    "title": "Engines"
+  },
+  {
+    "element": "h2",
+    "id": "multiuser-engine",
+    "path": "/reference/workers/generic-worker/engines",
+    "subtitle": "Multiuser engine",
+    "title": "Engines"
+  },
+  {
+    "element": "h2",
+    "id": "simple-engine",
+    "path": "/reference/workers/generic-worker/engines",
+    "subtitle": "Simple engine",
+    "title": "Engines"
+  },
+  {
+    "element": "h1",
+    "id": "features",
+    "path": "/reference/workers/generic-worker/features",
+    "subtitle": null,
+    "title": "Features"
+  },
+  {
+    "element": "h2",
+    "id": "feature-chainoftrust",
+    "path": "/reference/workers/generic-worker/features",
+    "subtitle": "Feature: `chainOfTrust`",
+    "title": "Features"
+  },
+  {
+    "element": "h2",
+    "id": "feature-taskclusterproxy",
+    "path": "/reference/workers/generic-worker/features",
+    "subtitle": "Feature: `taskclusterProxy`",
+    "title": "Features"
+  },
+  {
+    "element": "h4",
+    "id": "since-generic-worker-1060",
+    "path": "/reference/workers/generic-worker/features",
+    "subtitle": "Since: generic-worker 10.6.0",
+    "title": "Features"
+  },
+  {
+    "element": "h4",
+    "id": "since-generic-worker-1200",
+    "path": "/reference/workers/generic-worker/features",
+    "subtitle": "Since: generic-worker 12.0.0",
+    "title": "Features"
+  },
+  {
+    "element": "h4",
+    "id": "since-generic-worker-1300",
+    "path": "/reference/workers/generic-worker/features",
+    "subtitle": "Since: generic-worker 13.0.0",
+    "title": "Features"
+  },
+  {
+    "element": "h4",
+    "id": "since-generic-worker-530",
+    "path": "/reference/workers/generic-worker/features",
+    "subtitle": "Since: generic-worker 5.3.0",
+    "title": "Features"
+  },
+  {
+    "element": "h1",
+    "id": "installing-generic-worker",
+    "path": "/reference/workers/generic-worker/installing",
+    "subtitle": null,
+    "title": "Installing Generic-Worker"
+  },
+  {
+    "element": "h2",
+    "id": "acquire-taskcluster-credentials-for-running-tests",
+    "path": "/reference/workers/generic-worker/installing",
+    "subtitle": "Acquire taskcluster credentials for running tests",
+    "title": "Installing Generic-Worker"
+  },
+  {
+    "element": "h2",
+    "id": "build-from-source",
+    "path": "/reference/workers/generic-worker/installing",
+    "subtitle": "Build from source",
+    "title": "Installing Generic-Worker"
+  },
+  {
+    "element": "h2",
+    "id": "create-a-test-job",
+    "path": "/reference/workers/generic-worker/installing",
+    "subtitle": "Create a test job",
+    "title": "Installing Generic-Worker"
+  },
+  {
+    "element": "h2",
+    "id": "installation-on-worker-machines",
+    "path": "/reference/workers/generic-worker/installing",
+    "subtitle": "Installation on worker machines",
+    "title": "Installing Generic-Worker"
+  },
+  {
+    "element": "h3",
+    "id": "linux-simplemultiuserdocker-build",
+    "path": "/reference/workers/generic-worker/installing",
+    "subtitle": "Linux simple/multiuser/docker build",
+    "title": "Installing Generic-Worker"
+  },
+  {
+    "element": "h3",
+    "id": "macos---multiusersimple-build",
+    "path": "/reference/workers/generic-worker/installing",
+    "subtitle": "macOS - multiuser/simple build",
+    "title": "Installing Generic-Worker"
+  },
+  {
+    "element": "h2",
+    "id": "obtain-prebuilt-release",
+    "path": "/reference/workers/generic-worker/installing",
+    "subtitle": "Obtain prebuilt release",
+    "title": "Installing Generic-Worker"
+  },
+  {
+    "element": "h3",
+    "id": "option-1",
+    "path": "/reference/workers/generic-worker/installing",
+    "subtitle": "Option 1",
+    "title": "Installing Generic-Worker"
+  },
+  {
+    "element": "h3",
+    "id": "option-2",
+    "path": "/reference/workers/generic-worker/installing",
+    "subtitle": "Option 2",
+    "title": "Installing Generic-Worker"
+  },
+  {
+    "element": "h2",
+    "id": "set-up-your-env",
+    "path": "/reference/workers/generic-worker/installing",
+    "subtitle": "Set up your env",
+    "title": "Installing Generic-Worker"
+  },
+  {
+    "element": "h2",
+    "id": "start-the-generic-worker",
+    "path": "/reference/workers/generic-worker/installing",
+    "subtitle": "Start the generic worker",
+    "title": "Installing Generic-Worker"
+  },
+  {
+    "element": "h3",
+    "id": "windows---multiuser-build",
+    "path": "/reference/workers/generic-worker/installing",
+    "subtitle": "Windows - multiuser build",
+    "title": "Installing Generic-Worker"
+  },
+  {
+    "element": "h1",
+    "id": "support-tiers",
+    "path": "/reference/workers/generic-worker/support-tiers",
+    "subtitle": null,
+    "title": "Support Tiers"
+  },
+  {
+    "element": "h2",
+    "id": "tier-1",
+    "path": "/reference/workers/generic-worker/support-tiers",
+    "subtitle": "Tier 1",
+    "title": "Support Tiers"
+  },
+  {
+    "element": "h2",
+    "id": "tier-2",
+    "path": "/reference/workers/generic-worker/support-tiers",
+    "subtitle": "Tier 2",
+    "title": "Support Tiers"
+  },
+  {
+    "element": "h2",
+    "id": "tier-3",
+    "path": "/reference/workers/generic-worker/support-tiers",
+    "subtitle": "Tier 3",
+    "title": "Support Tiers"
   },
   {
     "element": "h1",

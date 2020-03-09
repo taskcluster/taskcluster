@@ -15,10 +15,10 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/taskcluster/slugid-go/slugid"
 	libUrls "github.com/taskcluster/taskcluster-lib-urls"
-	tcclient "github.com/taskcluster/taskcluster/clients/client-go/v24"
-	"github.com/taskcluster/taskcluster/clients/client-go/v24/tcauth"
-	"github.com/taskcluster/taskcluster/clients/client-shell/cmds/root"
-	"github.com/taskcluster/taskcluster/clients/client-shell/config"
+	tcclient "github.com/taskcluster/taskcluster/v25/clients/client-go"
+	"github.com/taskcluster/taskcluster/v25/clients/client-go/tcauth"
+	"github.com/taskcluster/taskcluster/v25/clients/client-shell/cmds/root"
+	"github.com/taskcluster/taskcluster/v25/clients/client-shell/config"
 	graceful "gopkg.in/tylerb/graceful.v1"
 )
 
@@ -33,9 +33,9 @@ Use it like this:
 
 $ eval ` + "`taskcluster signin`" + `
 
-You might make this easy to use with an alias in ~/.bashrc:
+You might make this easy to use with a function in ~/.bashrc:
 
-alias tc-signin="eval ` + "`taskcluster signin`" + `"
+tc-signin() { eval ` + "`" + `taskcluster signin "${@}"` + "`" + `; }
 
 This will set environment variables in your shell session containing the credentials.
 Note that the JS and Python client recognize the same environment variables, so any

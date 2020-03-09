@@ -4,7 +4,7 @@ exports.scopeExpression = {
   AllOf: [
     'queue:create-task:highest:built-in/succeed',
     'queue:create-task:highest:built-in/fail',
-    'queue:scheduler-id:-',
+    'queue:scheduler-id:smoketest',
   ],
 };
 
@@ -28,6 +28,7 @@ exports.tasks = [];
         workerType: taskType,
         created: (new Date()).toJSON(),
         deadline: taskcluster.fromNowJSON('2 minutes'),
+        schedulerId: 'smoketest',
         metadata: {
           name: 'Smoketest built-in/' + taskType,
           description: 'built-in/' + taskType + ' task created during smoketest',

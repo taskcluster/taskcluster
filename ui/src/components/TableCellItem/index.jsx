@@ -15,6 +15,7 @@ import ListItem from '@material-ui/core/ListItem';
   listItem: {
     marginLeft: -theme.spacing(1),
     padding: theme.spacing(1),
+    width: 'auto',
   },
   listItemButton: {
     ...theme.mixins.listItemButton,

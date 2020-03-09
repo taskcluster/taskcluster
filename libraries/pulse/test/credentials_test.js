@@ -38,6 +38,6 @@ suite(testing.suiteName(), function() {
 
     assert.equal(
       credentials.connectionString,
-      'amqps://ali-escaper:/@%5C%7C()%3C%3E&:bobby-tables:/@%5C%7C()%3C%3E&@pulse.abc.com:5671/%2F?frameMax=0');
+      'amqps://ali-escaper%3A%2F%40%5C%7C()%3C%3E%26:bobby-tables%3A%2F%40%5C%7C()%3C%3E%26@pulse.abc.com:5671/%2F?frameMax=0');
   });
 });

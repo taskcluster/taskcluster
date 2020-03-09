@@ -164,3 +164,101 @@ If this service-linked role is not set up properly, worker creation will fail wi
 
 We recommend a dedicated AWS account for workers, but understand that this is difficult to set up for small deployments.
 If the AWS account is shared with other uses, it is possible to make a more restrictive policy limiting, for example, the security groups or subnets in which the provider can create instances.
+
+### Azure
+
+An Azure-based provider is configured in `providers` with the following structure:
+
+```json
+{
+  "myProvider": {
+    "providerType": "azure",
+    "clientId": "your-azure-client-id",
+    "secret": "azure-secret",
+    "domain": "creds-domain",
+    "subscriptionId": "your-subscription-id",
+    "resourceGroupName": "azure-provider-resource-group",
+    "apiRateLimits": {
+      "get": {"interval": 1000, "intervalCap": 20000},
+      "query": {"interval": 1000, "intervalCap": 40000},
+      "list": {"interval": 1000, "intervalCap": 20000},
+    },
+  }
+}
+```
+
+`clientId` and `secret` are properties of Azure application secrets. See [here](https://docs.microsoft.com/en-us/azure/active-directory/develop/howto-create-service-principal-portal)
+for information on creating Azure AD Applications, assigning roles, and getting credentials.
+
+Azure-based providers need permissions to manage virtual machines, network interfaces, disks, and public IP addresses.
+Here is an example custom Azure role definition that encompasses the scope of permissions an Azure-based provider needs:
+
+```json
+{
+  "Name": "Worker-Manager Azure Provider",
+  "IsCustom": true,
+  "Description": "Based on Virtual Machine Contributor + image access, delete access",
+  "Actions": [
+    "Microsoft.Authorization/*/read",
+    "Microsoft.Compute/availabilitySets/*",
+    "Microsoft.Compute/locations/*",
+    "Microsoft.Compute/virtualMachines/*",
+    "Microsoft.Compute/disks/*",
+    "Microsoft.Compute/virtualMachineScaleSets/*",
+    "Microsoft.Compute/images/read",
+    "Microsoft.Insights/alertRules/*",
+    "Microsoft.Network/locations/*",
+    "Microsoft.Network/networkInterfaces/*",
+    "Microsoft.Network/networkSecurityGroups/join/action",
+    "Microsoft.Network/networkSecurityGroups/read",
+    "Microsoft.Network/publicIPAddresses/join/action",
+    "Microsoft.Network/publicIPAddresses/read",
+    "Microsoft.Network/publicIPAddresses/delete",
+    "Microsoft.Network/publicIPAddresses/write",
+    "Microsoft.Network/virtualNetworks/read",
+    "Microsoft.Network/virtualNetworks/subnets/join/action",
+    "Microsoft.Resources/deployments/*",
+    "Microsoft.Resources/subscriptions/resourceGroups/read",
+    "Microsoft.Storage/storageAccounts/listKeys/action",
+    "Microsoft.Storage/storageAccounts/read",
+    "Microsoft.Support/*"
+  ],
+  "AssignableScopes": [
+    "/subscriptions/your-subscription-id"
+  ]
+}
+```
+
+### Resource Groups
+
+Resources in Azure are created within the context of resource groups. The provider is configured with the `resourceGroupName` in which resources will be created.
+This allows for a convenient grouping of all provider-related resources. Unrelated resources can exist within the resource group, but this is not recommended.
+
+### Resource Dependencies
+
+Azure-based providers create and manage worker resources, but also expect resources to already exist within the subscription and resource group that the provider is configured for.
+
+#### Expected resources:
+
+- a Resource Group
+- one or more Virtual Networks
+- one or more Subnets within Virtual Networks
+- an Azure storage account (in which disks will be created)
+
+#### Recommended:
+
+- one or more Network Security Groups to associate with Virtual Machines
+
+### Rate Limiting / Retries
+
+The Azure SDK has built-in support for handling rate limiting for most client uses, so requests should be retried appropriately.
+The provider has its own retry functionality which can be configured as well.
+
+See [here](https://docs.microsoft.com/en-us/azure/virtual-machines/troubleshooting/troubleshooting-throttling-errors) for more information on Azure throttling.
+
+### Spot Instances
+
+Azure spot instances are configured using a combination of settings: `billingProfile` and `priority`.
+Spot instances should have `priority` set to `Spot`, and a `billingProfile` with a `maxPrice` value corresponding to an amount in dollars.
+
+See [here](https://docs.microsoft.com/en-us/rest/api/compute/virtualmachines/createorupdate#billingprofile) for more information on `billingProfile` and `maxPrice`.

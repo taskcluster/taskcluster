@@ -163,7 +163,7 @@ suite(testing.suiteName(), function() {
       try {
         await creator.fire(hook, {firedBy: 'me'}, {taskId});
       } catch (err) {
-        if (!err.toString().match(/unknown context value uhoh/)) {
+        if (!err.toString().match(/SyntaxError/)) {
           throw err;
         }
 
@@ -173,7 +173,7 @@ suite(testing.suiteName(), function() {
           taskId: taskId,
         });
         assume(lf.result).to.equal('error');
-        assume(lf.error).to.match(/unknown context value uhoh/);
+        assume(lf.error).to.match(/SyntaxError/);
         assume(lf.firedBy).to.equal('me');
 
         assertFireLogged({firedBy: "me", taskId, result: 'failure'});

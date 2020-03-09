@@ -7,6 +7,11 @@ services/web-server @taskcluster/frontend-reviewers
 clients/client-web @taskcluster/frontend-reviewers
 ui @taskcluster/frontend-reviewers
 
+# worker stuff
+workers/** @taskcluster/worker-reviewers
+tools/** @taskcluster/worker-reviewers
+internal/** @taskcluster/worker-reviewers
+
 # python
 clients/client-py @taskcluster/python-reviewers
 
@@ -26,3 +31,6 @@ services/*/Procfile
 infrastructure/k8s/templates/**
 clients/client-shell/apis/services.go
 clients/client-go/tc*/**
+go.mod
+go.sum
+workers/generic-worker/generated_*.go

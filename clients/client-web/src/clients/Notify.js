@@ -14,6 +14,7 @@ export default class Notify extends Client {
     this.email.entry = {"args":[],"category":"Notifications","input":true,"method":"post","name":"email","query":[],"route":"/email","scopes":"notify:email:<address>","stability":"experimental","type":"function"}; // eslint-disable-line
     this.pulse.entry = {"args":[],"category":"Notifications","input":true,"method":"post","name":"pulse","query":[],"route":"/pulse","scopes":"notify:pulse:<routingKey>","stability":"experimental","type":"function"}; // eslint-disable-line
     this.irc.entry = {"args":[],"category":"Notifications","input":true,"method":"post","name":"irc","query":[],"route":"/irc","scopes":{"else":"notify:irc-user:<user>","if":"channelRequest","then":"notify:irc-channel:<channel>"},"stability":"experimental","type":"function"}; // eslint-disable-line
+    this.matrix.entry = {"args":[],"category":"Notifications","input":true,"method":"post","name":"matrix","query":[],"route":"/matrix","scopes":"notify:matrix-room:<roomId>","stability":"experimental","type":"function"}; // eslint-disable-line
     this.addDenylistAddress.entry = {"args":[],"category":"Denylist","input":true,"method":"post","name":"addDenylistAddress","query":[],"route":"/denylist/add","scopes":"notify:manage-denylist","stability":"experimental","type":"function"}; // eslint-disable-line
     this.deleteDenylistAddress.entry = {"args":[],"category":"Denylist","input":true,"method":"delete","name":"deleteDenylistAddress","query":[],"route":"/denylist/delete","scopes":"notify:manage-denylist","stability":"experimental","type":"function"}; // eslint-disable-line
     this.listDenylist.entry = {"args":[],"category":"Denylist","method":"get","name":"listDenylist","output":true,"query":["continuationToken","limit"],"route":"/denylist/list","scopes":"notify:manage-denylist","stability":"experimental","type":"function"}; // eslint-disable-line
@@ -61,6 +62,18 @@ export default class Notify extends Client {
     this.validate(this.irc.entry, args);
 
     return this.request(this.irc.entry, args);
+  }
+  /* eslint-disable max-len */
+  // Post a message to a room in Matrix. Optionally includes formatted message.
+  // The `roomId` in the scopes is a fully formed `roomId` with leading `!` such
+  // as `!foo:bar.com`.
+  // Note that the matrix client used by taskcluster must be invited to a room before
+  // it can post there!
+  /* eslint-enable max-len */
+  matrix(...args) {
+    this.validate(this.matrix.entry, args);
+
+    return this.request(this.matrix.entry, args);
   }
   /* eslint-disable max-len */
   // Add the given address to the notification denylist. The address

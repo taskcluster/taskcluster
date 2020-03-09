@@ -9,7 +9,6 @@ import classNames from 'classnames';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
-import TextField from '@material-ui/core/TextField';
 import Switch from '@material-ui/core/Switch';
 import FormGroup from '@material-ui/core/FormGroup';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
@@ -19,6 +18,7 @@ import DeleteIcon from 'mdi-react/DeleteIcon';
 import LinkIcon from 'mdi-react/LinkIcon';
 import PowerIcon from 'mdi-react/PowerIcon';
 import LockResetIcon from 'mdi-react/LockResetIcon';
+import TextField from '../TextField';
 import MarkdownTextArea from '../MarkdownTextArea';
 import DateDistance from '../DateDistance';
 import SpeedDial from '../SpeedDial';
@@ -381,7 +381,6 @@ export default class ClientForm extends Component {
         ) : (
           <Fragment>
             <Button
-              requiresAuth
               tooltipOpen
               variant="round"
               onClick={this.handleSaveClient}

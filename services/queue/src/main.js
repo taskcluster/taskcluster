@@ -335,13 +335,14 @@ let load = loader({
 
   // Create EC2RegionResolver for regions we have artifact proxies in
   regionResolver: {
-    requires: ['cfg'],
-    setup: async ({cfg}) => {
+    requires: ['cfg', 'monitor'],
+    setup: async ({cfg, monitor}) => {
       let regionResolver = new EC2RegionResolver(
         cfg.app.useCloudMirror ?
           [...cfg.app.cloudMirrorRegions, cfg.aws.region] :
-          [cfg.aws.region]);
-      await regionResolver.loadIpRanges();
+          [cfg.aws.region],
+        monitor);
+      regionResolver.start();
       return regionResolver;
     },
   },

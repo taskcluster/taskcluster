@@ -22,6 +22,7 @@ properties:
       * `queue:worker-id:<workerGroup>/<workerId>`
       * `secrets:get:worker-pool:<workerPoolId>`
       * `queue:claim-work:<workerPoolId>`
+      * `worker-manager:remove-worker:<workerPoolId>/<workerGroup>/<workerId>`
     properties:
       accessToken:
         type: string

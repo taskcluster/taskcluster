@@ -24,11 +24,11 @@ const main = async (options) => {
     const message = [
       'The provided Taskcluster credentials are missing the following scopes:',
       '',
-      JSON.stringify(required, null, 2),
+      JSON.stringify(libScopes.simplifyScopeExpression(required), null, 2),
       '',
       'The credentials must satisfy the following expression:',
       '',
-      JSON.stringify(scopeExpression, null, 2),
+      JSON.stringify(libScopes.simplifyScopeExpression(scopeExpression), null, 2),
     ].join('\n');
     console.log(message);
     process.exit(1);

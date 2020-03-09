@@ -1,9 +1,5 @@
 const assert = require('assert');
 const taskcluster = require('taskcluster-client');
-const { ApolloClient } = require('apollo-client');
-const { InMemoryCache } = require('apollo-cache-inmemory');
-const { HttpLink } = require('apollo-link-http');
-const fetch = require('node-fetch');
 const gql = require('graphql-tag');
 const testing = require('taskcluster-lib-testing');
 const helper = require('../helper');
@@ -19,19 +15,9 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   helper.withClients(mock, skipping);
   helper.withServer(mock, skipping);
 
-  const getClient = () => {
-    const cache = new InMemoryCache();
-    const httpLink = new HttpLink({
-      uri: `http://localhost:${helper.serverPort}/graphql`,
-      fetch,
-    });
-
-    return new ApolloClient({ cache, link: httpLink });
-  };
-
   suite('Roles GraphQL', function() {
     test('role query works', async function() {
-      const client = getClient();
+      const client = helper.getHttpClient();
       const roleId = taskcluster.slugid();
       const role = {
         scopes: ["scope1"],
@@ -59,7 +45,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     });
 
     test('roles query works', async function() {
-      const client = getClient();
+      const client = helper.getHttpClient();
       const roleId = taskcluster.slugid();
       const role = {
         scopes: ["scope1"],
@@ -85,7 +71,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     });
 
     test('list role ids query works', async function() {
-      const client = getClient();
+      const client = helper.getHttpClient();
       const roleId = taskcluster.slugid();
       const role = {
         scopes: ["scope1"],
@@ -111,7 +97,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     });
 
     test('create role mutation works', async function() {
-      const client = getClient();
+      const client = helper.getHttpClient();
       const roleId = taskcluster.slugid();
       const role = {
         scopes: ["scope1"],
@@ -131,7 +117,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     });
 
     test('update role mutation works', async function() {
-      const client = getClient();
+      const client = helper.getHttpClient();
       const roleId = taskcluster.slugid();
       const role = {
         scopes: ["scope1"],
@@ -171,7 +157,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     });
 
     test('delete role mutation works', async function() {
-      const client = getClient();
+      const client = helper.getHttpClient();
       const roleId = taskcluster.slugid();
       const role = {
         scopes: ["scope1"],

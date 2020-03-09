@@ -1,0 +1,4 @@
+version: 1
+migrationScript: here
+downgradeScript: here
+methods: []

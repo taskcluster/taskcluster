@@ -10,11 +10,11 @@ import ListItem from '@material-ui/core/ListItem';
 import Typography from '@material-ui/core/Typography';
 import ListItemText from '@material-ui/core/ListItemText';
 import ListSubheader from '@material-ui/core/ListSubheader';
-import TextField from '@material-ui/core/TextField';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
 import Switch from '@material-ui/core/Switch';
 import DeleteIcon from 'mdi-react/DeleteIcon';
 import ContentSaveIcon from 'mdi-react/ContentSaveIcon';
+import TextField from '../TextField';
 import DialogAction from '../DialogAction';
 import Button from '../Button';
 import SpeedDial from '../SpeedDial';
@@ -257,7 +257,6 @@ export default class SecretForm extends Component {
                 className: classNames(classes.fab, classes.saveSecretSpan),
               }}
               tooltipProps={{ title: 'Save Secret' }}
-              requiresAuth
               classes={{ root: classes.successIcon }}
               variant="round"
               className={classes.saveIcon}

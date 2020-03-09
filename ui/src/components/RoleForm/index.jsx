@@ -5,11 +5,11 @@ import classNames from 'classnames';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
-import TextField from '@material-ui/core/TextField';
 import Typography from '@material-ui/core/Typography';
 import ContentSaveIcon from 'mdi-react/ContentSaveIcon';
 import DeleteIcon from 'mdi-react/DeleteIcon';
 import LinkIcon from 'mdi-react/LinkIcon';
+import TextField from '../TextField';
 import MarkdownTextArea from '../MarkdownTextArea';
 import Button from '../Button';
 import SpeedDial from '../SpeedDial';
@@ -282,7 +282,6 @@ export default class RoleForm extends Component {
               spanProps={{
                 className: classNames(classes.fab, classes.saveRoleSpan),
               }}
-              requiresAuth
               tooltipOpen
               onClick={this.handleSaveRole}
               className={classes.saveIcon}

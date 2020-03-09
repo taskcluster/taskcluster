@@ -7,7 +7,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/taskcluster/jsonschema2go/text"
+	"github.com/taskcluster/taskcluster/v25/tools/jsonschema2go/text"
 )
 
 //////////////////////////////////////////////////////////////////
@@ -122,7 +122,7 @@ import (
 	"errors"
 	"net/url"
 	"time"
-	tcclient "github.com/taskcluster/taskcluster/clients/client-go/v24"
+	tcclient "github.com/taskcluster/taskcluster/v25/clients/client-go"
 )
 
 type ` + api.Name() + ` tcclient.Client
@@ -359,8 +359,10 @@ func (entry *APIEntry) generateDirectMethod(apiName string) string {
 
 func (entry *APIEntry) generateSignedURLMethod(apiName string) string {
 	// if no required scopes, no reason to provide a signed url
-	// method, since no auth is required, so unsigned url already works
-	if entry.Scopes.Type == "" {
+	// method, since no auth is required, so unsigned url already works,
+	// except for TestAuthenticateGet, which can be usefully used to test
+	// with signed URLs
+	if entry.Scopes.Type == "" && entry.MethodName != "TestAuthenticateGet" {
 		return ""
 	}
 	comment := "// Returns a signed URL for " + entry.MethodName + ", valid for the specified duration.\n"
@@ -518,14 +520,14 @@ func (this *ScopeExpressionTemplate) UnmarshalJSON(data []byte) error {
 	case []interface{}:
 		this.Type = "AnyOf"
 		this.AnyOf = &Disjunction{
-			AnyOf: make([]ScopeExpressionTemplate, len(t), len(t)),
+			AnyOf: make([]ScopeExpressionTemplate, len(t)),
 		}
 		for i, j := range t {
 			allOf := j.([]interface{})
 			this.AnyOf.AnyOf[i] = ScopeExpressionTemplate{
 				Type: "AllOf",
 				AllOf: &Conjunction{
-					AllOf: make([]ScopeExpressionTemplate, len(allOf), len(allOf)),
+					AllOf: make([]ScopeExpressionTemplate, len(allOf)),
 				},
 			}
 			for k, l := range allOf {

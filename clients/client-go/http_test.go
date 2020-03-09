@@ -15,7 +15,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/taskcluster/taskcluster-base-go/jsontest"
+	"github.com/taskcluster/taskcluster/v25/internal/jsontest"
 )
 
 // TestExtHeaderPermAuthScopes checks that the generated hawk ext http header
@@ -179,7 +179,7 @@ func TestRequestWithContext(t *testing.T) {
 	s := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		time.Sleep(2 * time.Second)
 		w.WriteHeader(200)
-		w.Write([]byte(`{"value": "hello world"}`))
+		_, _ = w.Write([]byte(`{"value": "hello world"}`))
 	}))
 	defer s.Close()
 	ctx, cancel := context.WithCancel(context.Background())
@@ -216,7 +216,7 @@ func TestContentTypeHeader(t *testing.T) {
 	// header in the response body so we can check what value it had.
 	s := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(200)
-		w.Write([]byte(r.Header.Get("Content-Type")))
+		_, _ = w.Write([]byte(r.Header.Get("Content-Type")))
 	}))
 	defer s.Close()
 	client := Client{
@@ -379,7 +379,7 @@ func TestHTTPRequestGeneration(t *testing.T) {
 		c.RootURL = testCase.RootURL
 		c.ServiceName = testCase.ServiceName
 		c.APIVersion = testCase.APIVersion
-		c.Request(testCase.RequestBody, testCase.Method, testCase.Route, testCase.QueryParameters)
+		_, _ = c.Request(testCase.RequestBody, testCase.Method, testCase.Route, testCase.QueryParameters)
 	}
 	actualRequests := mockHTTPClient.Requests()
 
@@ -389,5 +389,79 @@ func TestHTTPRequestGeneration(t *testing.T) {
 		t.Log("Actual requests:")
 		t.Logf("%#v", actualRequests)
 		t.Fail()
+	}
+}
+
+func TestSignedURL_FullURL(t *testing.T) {
+	client := Client{
+		Credentials: &Credentials{
+			ClientID:    "test-signin",
+			AccessToken: "fake-key",
+		},
+		RootURL:     "https://tc.example.com",
+		ServiceName: "grapes",
+		APIVersion:  "v2",
+	}
+
+	res, err := client.SignedURL("https://tc.example.com/api/barley/v1/foo/bar", url.Values{"param": []string{"p1"}}, time.Minute)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	if res.Host != "tc.example.com" {
+		t.Fatalf("Got unexpected host %s", res.Host)
+		return
+	}
+	if res.Path != "/api/barley/v1/foo/bar" {
+		t.Fatalf("Got unexpected path %s", res.Path)
+		return
+	}
+	if res.Query()["param"][0] != "p1" {
+		t.Fatalf("Got unexpected query %s", res.Query())
+		return
+	}
+
+	_, ok := res.Query()["bewit"]
+	if !ok {
+		t.Fatalf("Query does not have a 'bewit'")
+		return
+	}
+}
+
+func TestSignedURL_PartialURL(t *testing.T) {
+	client := Client{
+		Credentials: &Credentials{
+			ClientID:    "test-signin",
+			AccessToken: "fake-key",
+		},
+		RootURL:     "https://tc.example.com",
+		ServiceName: "grapes",
+		APIVersion:  "v2",
+	}
+
+	res, err := client.SignedURL("foo/bar", url.Values{"param": []string{"p1"}}, time.Minute)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	if res.Host != "tc.example.com" {
+		t.Fatalf("Got unexpected host %s", res.Host)
+		return
+	}
+	if res.Path != "/api/grapes/v2/foo/bar" {
+		t.Fatalf("Got unexpected path %s", res.Path)
+		return
+	}
+	if res.Query()["param"][0] != "p1" {
+		t.Fatalf("Got unexpected query %s", res.Query())
+		return
+	}
+
+	_, ok := res.Query()["bewit"]
+	if !ok {
+		t.Fatalf("Query does not have a 'bewit'")
+		return
 	}
 }

@@ -10,9 +10,9 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
-	tcclient "github.com/taskcluster/taskcluster/clients/client-go/v24"
-	"github.com/taskcluster/taskcluster/clients/client-go/v24/tcqueue"
-	"github.com/taskcluster/taskcluster/clients/client-shell/config"
+	tcclient "github.com/taskcluster/taskcluster/v25/clients/client-go"
+	"github.com/taskcluster/taskcluster/v25/clients/client-go/tcqueue"
+	"github.com/taskcluster/taskcluster/v25/clients/client-shell/config"
 )
 
 var listFormat string

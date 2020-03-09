@@ -80,6 +80,23 @@ class Notify(BaseClient):
 
         return self._makeApiCall(self.funcinfo["irc"], *args, **kwargs)
 
+    def matrix(self, *args, **kwargs):
+        """
+        Post Matrix Message
+
+        Post a message to a room in Matrix. Optionally includes formatted message.
+
+        The `roomId` in the scopes is a fully formed `roomId` with leading `!` such
+        as `!foo:bar.com`.
+
+        Note that the matrix client used by taskcluster must be invited to a room before
+        it can post there!
+
+        This method is ``experimental``
+        """
+
+        return self._makeApiCall(self.funcinfo["matrix"], *args, **kwargs)
+
     def addDenylistAddress(self, *args, **kwargs):
         """
         Denylist Given Address
@@ -166,6 +183,14 @@ class Notify(BaseClient):
             'output': 'v1/notification-address-list.json#',
             'query': ['continuationToken', 'limit'],
             'route': '/denylist/list',
+            'stability': 'experimental',
+        },
+        "matrix": {
+            'args': [],
+            'input': 'v1/matrix-request.json#',
+            'method': 'post',
+            'name': 'matrix',
+            'route': '/matrix',
             'stability': 'experimental',
         },
         "ping": {

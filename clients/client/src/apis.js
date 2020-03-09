@@ -1469,6 +1469,22 @@ module.exports = {
         {
           "args": [
           ],
+          "category": "Notifications",
+          "description": "Post a message to a room in Matrix. Optionally includes formatted message.\n\nThe `roomId` in the scopes is a fully formed `roomId` with leading `!` such\nas `!foo:bar.com`.\n\nNote that the matrix client used by taskcluster must be invited to a room before\nit can post there!",
+          "input": "v1/matrix-request.json#",
+          "method": "post",
+          "name": "matrix",
+          "query": [
+          ],
+          "route": "/matrix",
+          "scopes": "notify:matrix-room:<roomId>",
+          "stability": "experimental",
+          "title": "Post Matrix Message",
+          "type": "function"
+        },
+        {
+          "args": [
+          ],
           "category": "Denylist",
           "description": "Add the given address to the notification denylist. The address\ncan be of either of the three supported address type namely pulse, email\nor IRC(user or channel). Addresses in the denylist will be ignored\nby the notification service.",
           "input": "v1/notification-address.json#",
@@ -1750,7 +1766,7 @@ module.exports = {
             "taskId"
           ],
           "category": "Tasks",
-          "description": "Create a new task, this is an **idempotent** operation, so repeat it if\nyou get an internal server error or network connection is dropped.\n\n**Task `deadline`**: the deadline property can be no more than 5 days\ninto the future. This is to limit the amount of pending tasks not being\ntaken care of. Ideally, you should use a much shorter deadline.\n\n**Task expiration**: the `expires` property must be greater than the\ntask `deadline`. If not provided it will default to `deadline` + one\nyear. Notice, that artifacts created by task must expire before the task.\n\n**Task specific routing-keys**: using the `task.routes` property you may\ndefine task specific routing-keys. If a task has a task specific \nrouting-key: `<route>`, then when the AMQP message about the task is\npublished, the message will be CC'ed with the routing-key: \n`route.<route>`. This is useful if you want another component to listen\nfor completed tasks you have posted.  The caller must have scope\n`queue:route:<route>` for each route.\n\n**Dependencies**: any tasks referenced in `task.dependencies` must have\nalready been created at the time of this call.\n\n**Scopes**: Note that the scopes required to complete this API call depend\non the content of the `scopes`, `routes`, `schedulerId`, `priority`,\n`provisionerId`, and `workerType` properties of the task definition.\n\n**Legacy Scopes**: The `queue:create-task:..` scope without a priority and\nthe `queue:define-task:..` and `queue:task-group-id:..` scopes are considered\nlegacy and should not be used. Note that the new, non-legacy scopes require\na `queue:scheduler-id:..` scope as well as scopes for the proper priority.",
+          "description": "Create a new task, this is an **idempotent** operation, so repeat it if\nyou get an internal server error or network connection is dropped.\n\n**Task `deadline`**: the deadline property can be no more than 5 days\ninto the future. This is to limit the amount of pending tasks not being\ntaken care of. Ideally, you should use a much shorter deadline.\n\n**Task expiration**: the `expires` property must be greater than the\ntask `deadline`. If not provided it will default to `deadline` + one\nyear. Notice, that artifacts created by task must expire before the task.\n\n**Task specific routing-keys**: using the `task.routes` property you may\ndefine task specific routing-keys. If a task has a task specific \nrouting-key: `<route>`, then when the AMQP message about the task is\npublished, the message will be CC'ed with the routing-key: \n`route.<route>`. This is useful if you want another component to listen\nfor completed tasks you have posted.  The caller must have scope\n`queue:route:<route>` for each route.\n\n**Dependencies**: any tasks referenced in `task.dependencies` must have\nalready been created at the time of this call.\n\n**Scopes**: Note that the scopes required to complete this API call depend\non the content of the `scopes`, `routes`, `schedulerId`, `priority`,\n`provisionerId`, and `workerType` properties of the task definition.",
           "input": "v1/create-task-request.json#",
           "method": "put",
           "name": "createTask",
@@ -1770,36 +1786,13 @@ module.exports = {
                 "for": "route",
                 "in": "routes"
               },
+              "queue:scheduler-id:<schedulerId>",
               {
                 "AnyOf": [
                   {
-                    "AllOf": [
-                      "queue:scheduler-id:<schedulerId>",
-                      {
-                        "AnyOf": [
-                          {
-                            "each": "queue:create-task:<priority>:<provisionerId>/<workerType>",
-                            "for": "priority",
-                            "in": "priorities"
-                          }
-                        ]
-                      }
-                    ]
-                  },
-                  {
-                    "if": "legacyScopes",
-                    "then": {
-                      "AnyOf": [
-                        "queue:create-task:<provisionerId>/<workerType>",
-                        {
-                          "AllOf": [
-                            "queue:define-task:<provisionerId>/<workerType>",
-                            "queue:task-group-id:<schedulerId>/<taskGroupId>",
-                            "queue:schedule-task:<schedulerId>/<taskGroupId>/<taskId>"
-                          ]
-                        }
-                      ]
-                    }
+                    "each": "queue:create-task:<priority>:<provisionerId>/<workerType>",
+                    "for": "priority",
+                    "in": "priorities"
                   }
                 ]
               }
@@ -1834,36 +1827,13 @@ module.exports = {
                 "for": "route",
                 "in": "routes"
               },
+              "queue:scheduler-id:<schedulerId>",
               {
                 "AnyOf": [
                   {
-                    "AllOf": [
-                      "queue:scheduler-id:<schedulerId>",
-                      {
-                        "AnyOf": [
-                          {
-                            "each": "queue:create-task:<priority>:<provisionerId>/<workerType>",
-                            "for": "priority",
-                            "in": "priorities"
-                          }
-                        ]
-                      }
-                    ]
-                  },
-                  {
-                    "if": "legacyScopes",
-                    "then": {
-                      "AnyOf": [
-                        "queue:define-task:<provisionerId>/<workerType>",
-                        "queue:create-task:<provisionerId>/<workerType>",
-                        {
-                          "AllOf": [
-                            "queue:define-task:<provisionerId>/<workerType>",
-                            "queue:task-group-id:<schedulerId>/<taskGroupId>"
-                          ]
-                        }
-                      ]
-                    }
+                    "each": "queue:create-task:<priority>:<provisionerId>/<workerType>",
+                    "for": "priority",
+                    "in": "priorities"
                   }
                 ]
               }
@@ -1923,7 +1893,7 @@ module.exports = {
               }
             ]
           },
-          "stability": "deprecated",
+          "stability": "stable",
           "title": "Rerun a Resolved Task",
           "type": "function"
         },

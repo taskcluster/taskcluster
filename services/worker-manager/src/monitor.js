@@ -61,6 +61,20 @@ monitorManager.register({
 });
 
 monitorManager.register({
+  name: 'workerStopping',
+  title: 'Worker Stopping',
+  type: 'worker-stopping',
+  version: 1,
+  level: 'notice',
+  description: 'A worker has been marked as stopping',
+  fields: {
+    workerPoolId: 'The worker pool ID (provisionerId/workerType)',
+    providerId: 'The provider that did the work for this worker pool.',
+    workerId: 'The worker that was created',
+  },
+});
+
+monitorManager.register({
   name: 'simpleEstimate',
   title: 'Simple Estimate Provided',
   type: 'simple-estimate',
@@ -138,6 +152,22 @@ monitorManager.register({
   fields: {
     providerId: 'Which provider has hit a limit (each provider manages a single project)',
     queueName: 'Which queue is paused -- there is one for each class of api request',
+  },
+});
+
+monitorManager.register({
+  name: 'registrationErrorWarning',
+  title: 'Registration Error Warning',
+  type: 'registration-error-warning',
+  version: 1,
+  level: 'warning',
+  description: `
+    Something has tried to register as a worker but failed. This could indicate either a bug
+    or that somebody is trying to impersonate a worker.
+  `,
+  fields: {
+    message: 'Description of this error from the taskcluster side',
+    error: 'Error message from cloud that triggered this',
   },
 });
 

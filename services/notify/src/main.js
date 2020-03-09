@@ -15,6 +15,8 @@ const Denier = require('./denier');
 const Handler = require('./handler');
 const exchanges = require('./exchanges');
 const IRC = require('./irc');
+const matrix = require('matrix-js-sdk');
+const MatrixBot = require('./matrix');
 const data = require('./data');
 const {sasCredentials} = require('taskcluster-lib-azure');
 
@@ -125,13 +127,37 @@ const load = loader({
       new Denier({DenylistedNotification, emailBlacklist: cfg.app.emailBlacklist}),
   },
 
+  matrixClient: {
+    requires: ['cfg'],
+    setup: ({cfg}) => matrix.createClient({
+      ...cfg.matrix,
+      localTimeoutMs: 60 * 1000, // We will timeout http requests after 60 seconds. By default this has no timeout.
+    }),
+  },
+
+  matrix: {
+    requires: ['cfg', 'matrixClient', 'monitor'],
+    setup: async ({cfg, matrixClient, monitor}) => {
+      let client = new MatrixBot({
+        ...cfg.matrix,
+        matrixClient,
+        monitor: monitor.childMonitor('matrix'),
+      });
+      if (cfg.matrix.baseUrl) {
+        await client.start();
+      }
+      return client;
+    },
+  },
+
   notifier: {
-    requires: ['cfg', 'publisher', 'rateLimit', 'ses', 'denier', 'monitor'],
-    setup: ({cfg, publisher, rateLimit, ses, denier, monitor}) => new Notifier({
+    requires: ['cfg', 'publisher', 'rateLimit', 'ses', 'denier', 'monitor', 'matrix'],
+    setup: ({cfg, publisher, rateLimit, ses, denier, monitor, matrix}) => new Notifier({
       denier,
       publisher,
       rateLimit,
       ses,
+      matrix,
       sourceEmail: cfg.app.sourceEmail,
       monitor: monitor.childMonitor('notifier'),
     }),

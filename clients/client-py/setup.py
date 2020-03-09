@@ -4,7 +4,7 @@ from setuptools import setup
 from setuptools.command.test import test as TestCommand
 import sys
 
-VERSION = '24.1.9'
+VERSION = '25.4.0'
 
 tests_require = [
     'pytest',
@@ -27,7 +27,7 @@ install_requires = [
     'requests>=2.4.3',
     'mohawk>=0.3.4',
     'slugid>=2',
-    'taskcluster-urls>=10.1.0',
+    'taskcluster-urls>=12.1.0',
     'six>=1.10.0',
 ]
 

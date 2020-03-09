@@ -39,7 +39,7 @@ import (
 	"net/url"
 	"time"
 
-	tcclient "github.com/taskcluster/taskcluster/clients/client-go/v24"
+	tcclient "github.com/taskcluster/taskcluster/v25/clients/client-go"
 )
 
 type Notify tcclient.Client
@@ -155,6 +155,26 @@ func (notify *Notify) Pulse(payload *PostPulseMessageRequest) error {
 func (notify *Notify) Irc(payload *PostIRCMessageRequest) error {
 	cd := tcclient.Client(*notify)
 	_, _, err := (&cd).APICall(payload, "POST", "/irc", nil, nil)
+	return err
+}
+
+// Stability: *** EXPERIMENTAL ***
+//
+// Post a message to a room in Matrix. Optionally includes formatted message.
+//
+// The `roomId` in the scopes is a fully formed `roomId` with leading `!` such
+// as `!foo:bar.com`.
+//
+// Note that the matrix client used by taskcluster must be invited to a room before
+// it can post there!
+//
+// Required scopes:
+//   notify:matrix-room:<roomId>
+//
+// See #matrix
+func (notify *Notify) Matrix(payload *SendMatrixNoticeRequest) error {
+	cd := tcclient.Client(*notify)
+	_, _, err := (&cd).APICall(payload, "POST", "/matrix", nil, nil)
 	return err
 }
 

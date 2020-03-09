@@ -1,3 +1,4 @@
+const taskcluster = require('taskcluster-client');
 const {ApiError, Provider} = require('./provider');
 const {Worker} = require('../data');
 
@@ -55,11 +56,23 @@ class StaticProvider extends Provider {
 
     // note that this can be called multiple times for the same worker..
 
-    if (!worker.providerData.staticSecret || staticSecret !== worker.providerData.staticSecret) {
-      throw new ApiError('bad staticSecret');
+    if (!staticSecret) {
+      throw new ApiError('missing staticSecret in workerIdentityProof');
     }
 
-    return {expires: worker.expires};
+    if (staticSecret !== worker.providerData.staticSecret) {
+      throw new ApiError('bad staticSecret in workerIdentityProof');
+    }
+
+    let expires;
+    const {reregistrationTimeout} = Provider.interpretLifecycle(workerPool.config);
+    if (reregistrationTimeout) {
+      expires = new Date(Date.now() + reregistrationTimeout);
+    } else {
+      expires = taskcluster.fromNow('96 hours');
+    }
+
+    return {expires};
   }
 }
 

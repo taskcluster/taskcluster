@@ -6,7 +6,7 @@ module.exports = {
         name: 'taskcluster',
         env: {
           NODE_ENV: 'development',
-          TASKCLUSTER_ROOT_URL: 'https://taskcluster.net',
+          TASKCLUSTER_ROOT_URL: process.env.TASKCLUSTER_ROOT_URL,
         },
         babel: {
           plugins: [require.resolve('@babel/plugin-proposal-class-properties')],
@@ -60,6 +60,9 @@ module.exports = {
       neutrino.config.resolve.alias.set('hawk', 'hawk/dist/browser.js');
     },
     ['@neutrinojs/karma', {
+      client: {
+        args: [process.env.TASKCLUSTER_ROOT_URL],
+      },
       plugins: [
         'karma-firefox-launcher',
       ],

@@ -3,6 +3,202 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v25.4.0
+
+▶ [minor] [bug 1608185](http://bugzil.la/1608185)
+Taskcluster-worker-runner now passes `--with-worker-runner` to generic-worker when running it directly.  When running generic-worker as a Windows service, this argument should be included in the service definition.
+
+Only generic-worker versions 25.0.0 and higher support this argument.  In general, we recommend running matching versions of taskcluster-worker-runner and generic-worker.
+
+▶ [minor] [bug 1522154](http://bugzil.la/1522154)
+[Matrix](https://matrix.org/) notifications are now supported if a deployment is configured
+with credentials for a homeserver. The three fields needed are:
+
+```yaml
+notify.matrix_base_url: foo # The homeserver where your client is registered
+notify.matrix_user_id: bar # The user that will act on behalf of taskcluster
+notify.matrix_access_token: baz # An access token for this user
+```
+
+If you are using riot, you can get the access token by following [this guide](https://t2bot.io/docs/access_tokens/).
+
+▶ [patch] [bug 1600071](http://bugzil.la/1600071)
+Avoid overprovisioning for instances that take a long time to boot.
+
+▶ [patch] [#2404](https://github.com/taskcluster/taskcluster/issues/2404)
+Fix worker type page when the latest task has no runs. Previously, an error
+panel was being displayed with text "t.run is null".
+
+▶ [patch] [bug 1616922](http://bugzil.la/1616922)
+Generic-Worker documentation is now included in the Taskcluster documentation site,
+and the generic-worker task payload has been slightly tightened.
+
+* `task.payload.artifacts` must contain unique items
+* `task.payload.onExitStatus.retry` must contain unique items
+
+▶ [patch] [bug 1558240](http://bugzil.la/1558240)
+Generic-worker now outputs a newline before `=== Task Finished ===`, to ensure that line is separated from other output in the logs.
+
+▶ [patch] [bug 1433854](http://bugzil.la/1433854)
+Task directories from previous task runs on Windows are now more aggressively
+purged.
+
+This should reduce the amount of time spent trying to delete task directories
+between task runs, and also the amount of logging, in addition to freeing up
+more disk space.
+
+This issue always existed on the Windows version of generic-worker. A similar
+issue existed on macOS and Linux but was fixed in bug 1615312 which was
+initially tagged for release in v25.0.0, but first appeared in release 25.3.0
+due to some problems with the release process.
+
+▶ [patch] [#2004](https://github.com/taskcluster/taskcluster/issues/2004)
+The Task Details panel in the Task view now wraps the payload text in order to
+be able to see the complete payload without scrolling.
+
+▶ [patch] [bug 1618066](http://bugzil.la/1618066)
+fix bug where workerInfo could have NaN values
+
+▶ [patch] [bug 1616649](http://bugzil.la/1616649)
+reimplements azure-provider's use of the azure SDK to avoid blocking operations that can hold up worker-manager iterations
+resource creation operations that were previously waiting for completion in the provisioner now are tracked and checked on as part of the worker-scanner iteration
+
+▶ Additional change not described here: [bug 1616900](http://bugzil.la/1616900).
+
+## v25.3.0
+
+▶ [minor] [bug 1616214](http://bugzil.la/1616214)
+Source code repositories taskcluster-worker-runner and jsonschema2go have been
+migrated to the taskcluster monorepo. This is an internal change that should
+not impact the release. However, it is a reasonably significant change to the
+build/release process.
+
+▶ [patch] [#2377](https://github.com/taskcluster/taskcluster/issues/2377)
+Editing a task that contains ISO-8601 dates embedded in larger strings no longer fails with "Invalid Date".
+
+▶ [patch] [bug 1616022](http://bugzil.la/1616022)
+Fixes the version number reported by generic-worker. This was first attempted (unsuccessfully) in release 25.2.0.
+
+▶ [patch] [bug 1606874](http://bugzil.la/1606874)
+The Taskcluster-GitHub service now checks that the person who *filed* a pull request is a collaborator and the repo from which the changes are being pulled belongs to a collaborator or is the usptream repository.
+
+▶ [patch] 
+This version removes the undocumented, deprecated WebListener class from taskcluster-client-web.
+
+▶ Additional changes not described here: [bug 1437193](http://bugzil.la/1437193), [#2371](https://github.com/taskcluster/taskcluster/issues/2371), [#2375](https://github.com/taskcluster/taskcluster/issues/2375).
+
+## v25.2.0
+
+▶ [minor] [bug 1616022](http://bugzil.la/1616022)
+Generic worker now correctly reports its version number. The version number was incorrectly reported in release 25.1.1.
+
+▶ Additional changes not described here: [bug 1615762](http://bugzil.la/1615762), [#2367](https://github.com/taskcluster/taskcluster/issues/2367).
+
+## v25.1.1
+
+No changes
+
+## v25.1.0
+
+▶ [minor] [bug 1587511](http://bugzil.la/1587511)
+Worker pools that use cloud providers (aws, azure, google) now support a `lifecycle.reregistrationTimeout` config that
+will make the credentials we hand to these workers expire within that amount of seconds. If the worker still exists
+at that time, the instance will be terminated. This lays the groundwork for a subsequent release where you will
+be able to have your workers reregister to continue working.
+
+## v25.0.0
+
+▶ [MAJOR] [bug 1608828](http://bugzil.la/1608828)
+Generic worker is now shipped as part of the taskcluster platform release. The generic-worker codebase has been integrated into the monorepo. The former generic-worker github repo is now archived.  Consequently, the generic worker version number now matches the taskcluster platform release number.  The generic-worker binaries are published to https://github.com/taskcluster/taskcluster/releases.
+
+With this change, the import path for the Taskcluster Go client library changes from `github.com/taskcluster/taskcluster/clients/client-go/vNN` to `github.com/taskcluster/taskcluster/vNN/clients/client-go`.  Functionality of the library remains unchanged.
+
+▶ [patch] [bug 1588099](http://bugzil.la/1588099)
+InsufficientScopes errors now contain a simplfied scope expression describing the missing scopes.  In most cases, this will be a single scope.
+
+▶ [patch] [bug 1615312](http://bugzil.la/1615312)
+Old generic-worker task directories on POSIX systems (Linux/macOS) are now
+deleted more aggressively, by first running `chmod u+w -R <task dir>` before
+running `rm -rf <task dir>`.
+
+This bug always existed, and could leave files on the filesystem from previous
+tasks. Those files were not readable to other task users under the
+generic-worker multiuser engine where they were owned by a different OS user,
+but they did consume disk space. The files were readable by other tasks under
+the generic-worker simple engine, where all tasks run as the same user, but
+simple engine is not used for tasks that contain sensitive/private information.
+
+This bug was present in both the simple and multisuer engine, and has been
+fixed on both.
+
+Cleanup of Windows task directories will be handled separately in [bug
+1433854](https://bugzilla.mozilla.org/show_bug.cgi?id=1433854).
+
+▶ [patch] [bug 1608185](http://bugzil.la/1608185)
+The `generic-worker` binary now accepts a `--with-worker-runner` argument and expects to interact with worker-runner if that option is given.  Otherwise, it will assume it is running alone and will not use any worker-runner features.
+
+▶ Additional changes not described here: [bug 1615631](http://bugzil.la/1615631), [#2312](https://github.com/taskcluster/taskcluster/issues/2312), [#2321](https://github.com/taskcluster/taskcluster/issues/2321).
+
+## v24.3.1
+
+▶ [patch] [bug 1611266](http://bugzil.la/1611266)
+azure-provider now ensures generated adminPasswords meet all passwords requirements
+
+## v24.3.0
+
+▶ [minor] [#2293](https://github.com/taskcluster/taskcluster/issues/2293)
+The Taskcluster Python client now has an helper function to easily upload artifacts.
+
+▶ [minor] [bug 1604175](http://bugzil.la/1604175)
+The maximum "deadline" has been reverted to 5 days, after its change to 10 days in v24.1.3.  Values over 7 days caused internal server errors anyway, because the Azure queue backend cannot handle delays greater than that value.  Since this functionality never worked, the revert is considered minor.
+
+▶ [patch] [bug 1606874](http://bugzil.la/1606874)
+Changes behavior of tc-github when checking the user permissions on PR: now tc-github always checks the permissions 
+of the PR author (or the organization of the PR origin if the PR was made from a fork in an org)
+
+▶ [patch] [bug 1611266](http://bugzil.la/1611266)
+Limit azure-provider name generation to alphanumeric to reduce invalid name errors (previously characters such as _ and - were included in some names and could be the ending character, resulting in errors)
+
+▶ [patch] [bug 1613150](http://bugzil.la/1613150)
+Taskcluster services now run with Node version 12.15.0.
+
+▶ [patch] [bug 1584208](http://bugzil.la/1584208)
+The client libraries' documentation has been throughly refactored and is now more helpful and contains better links to the documentation site.
+
+▶ [patch] 
+The deployment documentation now contains information on how Pulse users should be set up, as well as a complete schema for the Helm values file.
+
+▶ [patch] [bug 1604649](http://bugzil.la/1604649)
+The queue now avoids calling GetEntity for a worker in claimWork when no work was claimed, providing a very minor reduction in Azure load.
+
+▶ [patch] [bug 1436478](http://bugzil.la/1436478)
+This version includes the `taskcluster-lib-postgres` library, but does not use that library at runtime.
+
+▶ Additional changes not described here: [bug 1537922](http://bugzil.la/1537922), [bug 1588083](http://bugzil.la/1588083), [bug 1611694](http://bugzil.la/1611694), [bug 1611696](http://bugzil.la/1611696), [#1963](https://github.com/taskcluster/taskcluster/issues/1963), [#2130](https://github.com/taskcluster/taskcluster/issues/2130).
+
+## v24.2.0
+
+▶ [minor] [bug 1600966](http://bugzil.la/1600966)
+Adds a provider for azure vm instances to worker-manager.
+
+▶ [patch] 
+The Python client now normalizes the root URL in `optionsFromEnvironment()`.
+
+▶ [patch] [#2269](https://github.com/taskcluster/taskcluster/issues/2269)
+Links to specific log lines now autoscroll to correct location.
+
+▶ Additional changes not described here: [#2266](https://github.com/taskcluster/taskcluster/issues/2266), [#2232](https://github.com/taskcluster/taskcluster/issues/2232).
+
+## v24.1.10
+
+▶ [patch] [#2031](https://github.com/taskcluster/taskcluster/issues/2031)
+Taskcluster UI revamped the date picker component to allow selecting the hour and the minute in addition to the date.
+
+▶ [patch] [bug 1608176](http://bugzil.la/1608176)
+The go client's `client.SignedURL(..)` function can now accept and sign full URLs in its first argument.  This allows signing arbitrary URLs, even if they are not on the same RootURL as the client.
+
+▶ Additional changes not described here: [bug 1606948](http://bugzil.la/1606948), [#2201](https://github.com/taskcluster/taskcluster/issues/2201).
+
 ## v24.1.9
 
 ▶ [patch] [bug 1598649](http://bugzil.la/1598649)

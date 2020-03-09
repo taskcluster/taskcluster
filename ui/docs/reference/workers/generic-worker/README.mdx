@@ -1,0 +1,31 @@
+# Generic Worker
+
+Generic-Worker is a worker for Taskcluster, designed to run arbitrary tasks on a wide range of platforms.
+While Taskcluster supports many worker implementations as long as they follow the [Queue-Worker interaction process](/docs/reference/platform/queue/worker-interaction), Generic-Worker is the common choice for most worker pools.
+
+This documentation is a work in progress.
+
+## Payload Formats
+
+When submitting a task to the Taskcluster Queue (see [createTask](/reference/platform/queue/reference/api-docs#createTask)) you must provide a payload property for the task. 
+This `payload` property is specific to the worker implementation, and tells the worker what to execute, and which artifacts to upload.
+The worker will run the task, upload artifacts, and report status to the Queue.
+
+The generic-worker expects an imperative payload comprised of commands to run (`command`) and a timeout for the task (`maxRunTime`), with additional optional settings such as artifacts to upload or environment variables to set.
+
+Depending on the operating system of the worker, and the generic-worker engine that has been installed (multiuser, simple, or docker), the exact form of the required payload varies.
+Please see the following pages for guidance:
+
+<!-- BEGIN PAYLOAD LINKS -->
+ * [Generic worker payload - docker, posix](/docs/reference/workers/generic-worker/docker-posix-payload.mdx)
+ * [Generic worker payload - multiuser, posix](/docs/reference/workers/generic-worker/multiuser-posix-payload.mdx)
+ * [Generic worker payload - multiuser, windows](/docs/reference/workers/generic-worker/multiuser-windows-payload.mdx)
+ * [Generic worker payload - simple, posix](/docs/reference/workers/generic-worker/simple-posix-payload.mdx)
+<!-- END PAYLOAD LINKS -->
+
+## More Information
+
+See also:
+* [Features](/docs/reference/workers/generic-worker/features)
+* [Engines](/docs/reference/workers/generic-worker/engines)
+* [Installing Generic-Worker](/docs/reference/workers/generic-worker/installing)

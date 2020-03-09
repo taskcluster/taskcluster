@@ -1,6 +1,6 @@
 const util = require('util');
 const path = require('path');
-const {writeRepoFile, REPO_ROOT, modifyRepoFile} = require('../../utils');
+const {writeRepoFile, REPO_ROOT} = require('../../utils');
 const rimraf = util.promisify(require('rimraf'));
 const mkdirp = util.promisify(require('mkdirp'));
 
@@ -206,121 +206,6 @@ const generateStaticClient = async (className, reference, filename, genAsync) =>
   await writePyFile(filename, lines.join('\n'));
 };
 
-const modifyReadme = async (apis, content) => {
-  const lines = [];
-  for (let [name, {reference}] of Object.entries(apis).sort()) {
-    const instName = `${name[0].toLowerCase()}${name.slice(1)}`;
-    const asyncName = `async${name}`;
-    const entries = reference.entries;
-    const functions = entries.filter(({type}) => type === 'function');
-    const exchanges = entries.filter(({type}) => type === 'topic-exchange');
-
-    if (functions.length > 0) {
-      lines.push('');
-      lines.push(`### Methods in \`taskcluster.${name}\``);
-      lines.push('```python');
-      lines.push(`import asyncio # Only for async `);
-      lines.push(`import taskcluster`);
-      lines.push(`import taskcluster.aio`);
-      lines.push('');
-      lines.push(`# Create ${name} client instance`);
-      lines.push(`${instName} = taskcluster.${name}(options)`);
-      lines.push('# Below only for async instances, assume already in coroutine');
-      lines.push('loop = asyncio.get_event_loop()');
-      lines.push('session = taskcluster.aio.createSession(loop=loop)');
-      lines.push(`${asyncName} = taskcluster.aio.${name}(options, session=session)`);
-      lines.push('```');
-
-      if (reference.description) {
-        lines.push(reference.description);
-      }
-    }
-
-    for (let func of functions) {
-      const {name: methodName, args} = func;
-      const hasOutput = !!func.output;
-      const hasInput = !!func.input;
-
-      let inArgs = args.join(', ');
-      let inKwargs = args.map(arg => `${arg}='value'`).join(', ');
-      if (hasInput) {
-        inArgs += args.length > 0 ? ', payload' : 'payload';
-        inKwargs = (args.length > 0 ? 'payload, ' : 'payload') + inKwargs;
-      }
-      const outStr = hasOutput ? 'result' : 'None';
-
-      lines.push(`#### ${func.title}`);
-      if (func.description) {
-        lines.push(func.description);
-        lines.push('');
-        lines.push('');
-      }
-
-      if (args.length > 0) {
-        lines.push('');
-        lines.push('Takes the following arguments:');
-        lines.push('');
-        for (let arg of args) {
-          lines.push(`  * \`${arg}\``);
-        }
-        lines.push('');
-      }
-
-      if (hasInput) {
-        lines.push('Has required input schema\n');
-      }
-      if (hasOutput) {
-        lines.push('Has required output schema\n');
-      }
-
-      lines.push('```python');
-      lines.push('# Sync calls');
-      lines.push(`${instName}.${methodName}(${inArgs}) # -> ${outStr}`);
-      if (args.length > 0) {
-        lines.push(`${instName}.${methodName}(${inKwargs}) # -> ${outStr}`);
-      }
-      lines.push('# Async call');
-      lines.push(`await ${asyncName}.${methodName}(${inArgs}) # -> ${outStr}`);
-      if (args.length > 0) {
-        lines.push(`await ${asyncName}.${methodName}(${inKwargs}) # -> ${outStr}`);
-      }
-      lines.push('```');
-      lines.push('');
-    }
-
-    if (exchanges.length > 0) {
-      lines.push('');
-      lines.push(`### Exchanges in \`taskcluster.${name}\``);
-      lines.push('```python');
-      lines.push('import taskcluster');
-      lines.push('');
-      lines.push(`# Create ${name} client instance`);
-      lines.push(`${instName} = taskcluster.${name}(options)`);
-      lines.push('```');
-
-      if (reference.description) {
-        lines.push(reference.description);
-      }
-    }
-
-    for (let exchange of exchanges) {
-      lines.push(`#### ${exchange.title}`);
-      lines.push(` * \`${instName}.${exchange.name}(routingKeyPattern) -> routingKey\``);
-      for (let key of exchange.routingKey) {
-        const isConstant = key.constant ? ` is constant of \`${key.constant}\` ` : '';
-        const isRequired = key.required ? ' is required ' : '';
-        lines.push(`   * \`${key.name}\`${isConstant}${isRequired} Description: ${key.summary}`);
-      }
-      lines.push('');
-    }
-    lines.push('\n');
-  }
-
-  return content.replace(
-    /(<!-- START OF GENERATED DOCS -->)(?:.|\n)*(<!-- END OF GENERATED DOCS -->)/m,
-    `$1\n${lines.join('\n')}\n$2`);
-};
-
 exports.tasks = [{
   title: 'Generate Taskcluster-Client-Py',
   requires: ['apis'],
@@ -360,9 +245,5 @@ exports.tasks = [{
     const clientImporterString = clientImporter.sort().join('\n');
     await writePyFile(path.join(moduleDir, '_client_importer.py'), clientImporterString);
     await writePyFile(path.join(moduleDir, 'aio', '_client_importer.py'), clientImporterString);
-
-    utils.status({message: 'README'});
-    await modifyRepoFile(path.join('clients', 'client-py', 'README.md'),
-      contents => modifyReadme(apis, contents));
   },
 }];

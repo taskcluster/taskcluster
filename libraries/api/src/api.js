@@ -102,7 +102,7 @@ class API {
         remoteAuthentication({signatureValidator, entry}),
         parameterValidator({context, entry}),
         queryValidator({context, entry}),
-        validateSchemas({validator, absoluteSchemas, rootUrl, serviceName, entry}),
+        validateSchemas({validator, absoluteSchemas, rootUrl, serviceName, entry, monitor}),
         callHandler({entry, context, monitor}),
         expressError({errorCodes, entry, monitor}),
       );

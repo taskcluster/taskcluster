@@ -210,12 +210,34 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
       }
     });
 
-    async function simulateJobMessage({user, head, base, eventType = 'push'}) {
+    // set any of the three important users for a PR:
+    // opener -> pull_request.user.login (defaults to user)
+    // headUser -> pull_request.head.user.login (defaults to user)
+    // baseUser -> pull_request.base.user.login (defaults to hooks-testing)
+    async function simulateJobMessage({user, opener, headUser, baseUser, head, base, eventType = 'push'}) {
       // set up to resolve when the handler has finished (even if it finishes with error)
       const handlerComplete = new Promise((resolve, reject) => {
         handlers.handlerComplete = resolve;
         handlers.handlerRejected = reject;
       });
+
+      let body = {
+        pull_request: {
+          user: {
+            login: opener || user || 'octocat',
+          },
+          head: {
+            user: {
+              login: headUser || user || 'octocat',
+            },
+          },
+          base: {
+            user: {
+              login: baseUser || 'hooks-testing',
+            },
+          },
+        },
+      };
 
       let details = {
         'event.type': eventType,
@@ -251,11 +273,12 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
         routes: [],
         payload: {
           organization: 'TaskclusterRobot',
-          details: details,
+          details,
           repository: 'hooks-testing',
           eventId: '26370a80-ed65-11e6-8f4c-80082678482d',
           installationId: 5828,
           version: 1,
+          body,
         },
       };
       if (eventBase === 'pull_request') {
@@ -422,28 +445,54 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
       assert(args[0][0].body.indexOf('oh noes') !== -1);
     });
 
-    test('not an org member or collaborator is reported correctly for pull requests', async function() {
-      github.inst(5828).setTaskclusterYml({
-        owner: 'TaskclusterRobot',
-        repo: 'hooks-testing',
-        ref: '03e9577bc1ec60f2ff0929d5f1554de36b8f48cf',
-        content: require('./data/yml/valid-yaml.json'),
-      });
-      github.inst(5828).setTaskclusterYml({
-        owner: 'TaskclusterRobot',
-        repo: 'hooks-testing',
-        ref: 'development',
-        content: {version: 0, allowPullRequests: 'collaborators'},
-      });
+    suite('PR permissions (collaborators)', function() {
+      const testPermissions = (name, {opener, headUser, succeed}) => {
+        test(name, async function() {
+          github.inst(5828).setRepoCollaborator({
+            owner: 'TaskclusterRobot',
+            repo: 'hooks-testing',
+            username: 'friendlyFace',
+          });
+          github.inst(5828).setRepoCollaborator({
+            owner: 'TaskclusterRobot',
+            repo: 'hooks-testing',
+            username: 'goodBuddy',
+          });
+          github.inst(5828).setTaskclusterYml({
+            owner: 'TaskclusterRobot',
+            repo: 'hooks-testing',
+            ref: '03e9577bc1ec60f2ff0929d5f1554de36b8f48cf',
+            content: require('./data/yml/valid-yaml.json'),
+          });
+          github.inst(5828).setTaskclusterYml({
+            owner: 'TaskclusterRobot',
+            repo: 'hooks-testing',
+            ref: 'development',
+            content: {version: 0, allowPullRequests: 'collaborators'},
+          });
 
-      await simulateJobMessage({user: 'imbstack', eventType: 'pull_request.opened'});
+          await simulateJobMessage({opener, headUser, baseUser: 'hooks-testing', eventType: 'pull_request.opened'});
 
-      assert(github.inst(5828).issues.createComment.calledOnce);
-      let args = github.inst(5828).issues.createComment.args;
-      assert.equal(args[0][0].owner, 'TaskclusterRobot');
-      assert.equal(args[0][0].repo, 'hooks-testing');
-      assert.equal(args[0][0].number, '36');
-      assert(args[0][0].body.indexOf('No Taskcluster jobs started for this pull request') !== -1);
+          if (succeed) {
+            assert(handlers.createTasks.calledWith({scopes: sinon.match.array, tasks: sinon.match.array}));
+          } else {
+            assert(github.inst(5828).issues.createComment.calledOnce);
+            let args = github.inst(5828).issues.createComment.args;
+            assert.equal(args[0][0].owner, 'TaskclusterRobot');
+            assert.equal(args[0][0].repo, 'hooks-testing');
+            assert.equal(args[0][0].number, '36');
+            assert(args[0][0].body.indexOf('No Taskcluster jobs started for this pull request') !== -1);
+          }
+        });
+      };
+
+      testPermissions('all from bad guy', {opener: 'badguy', headUser: 'badguy', succeed: false});
+      testPermissions('collaborator opens PR for non-collaborator', {opener: 'goodBuddy', headUser: 'badguy', succeed: false});
+      testPermissions('non-collaborator opens PR for collaborator', {opener: 'badguy', headUser: 'goodBuddy', succeed: false});
+      testPermissions('collaborator opens PR for self', {opener: 'goodBuddy', headUser: 'goodBuddy', succeed: true});
+      testPermissions('collaborator opens PR for friendly face', {opener: 'goodBuddy', headUser: 'friendlyFace', succeed: true});
+      testPermissions('collaborator opens PR for upstream repo', {opener: 'goodBuddy', headUser: 'hooks-testing', succeed: true});
+      testPermissions('collaborator opens PR for another repo', {opener: 'goodBuddy', headUser: 'some-other-repo', succeed: false});
     });
 
     test('specifying allowPullRequests: public in the default branch allows all', async function() {

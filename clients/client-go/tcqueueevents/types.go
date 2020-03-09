@@ -3,7 +3,7 @@
 package tcqueueevents
 
 import (
-	tcclient "github.com/taskcluster/taskcluster/clients/client-go/v24"
+	tcclient "github.com/taskcluster/taskcluster/v25/clients/client-go"
 )
 
 type (
@@ -438,7 +438,7 @@ type (
 		// Deadline of the task, by which this task must be complete. `pending` and
 		// `running` runs are resolved as **exception** if not resolved by other means
 		// before the deadline. After the deadline, a task is immutable. Note,
-		// deadline cannot be more than 10 days into the future
+		// deadline cannot be more than 5 days into the future
 		Deadline tcclient.Time `json:"deadline"`
 
 		// Task expiration, time at which task definition and

@@ -147,11 +147,6 @@ class Queue(BaseClient):
         on the content of the `scopes`, `routes`, `schedulerId`, `priority`,
         `provisionerId`, and `workerType` properties of the task definition.
 
-        **Legacy Scopes**: The `queue:create-task:..` scope without a priority and
-        the `queue:define-task:..` and `queue:task-group-id:..` scopes are considered
-        legacy and should not be used. Note that the new, non-legacy scopes require
-        a `queue:scheduler-id:..` scope as well as scopes for the proper priority.
-
         This method is ``stable``
         """
 
@@ -213,7 +208,7 @@ class Queue(BaseClient):
         is not either `failed` or `completed`, this operation will just return
         the current task status.
 
-        This method is ``deprecated``
+        This method is ``stable``
         """
 
         return self._makeApiCall(self.funcinfo["rerunTask"], *args, **kwargs)
@@ -973,7 +968,7 @@ class Queue(BaseClient):
             'name': 'rerunTask',
             'output': 'v1/task-status-response.json#',
             'route': '/task/<taskId>/rerun',
-            'stability': 'deprecated',
+            'stability': 'stable',
         },
         "scheduleTask": {
             'args': ['taskId'],

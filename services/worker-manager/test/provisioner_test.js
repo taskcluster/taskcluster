@@ -25,7 +25,6 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
         }
       }));
       return (testing.runWithFakeTime(async function() {
-
         await helper.initiateProvisioner();
         await testing.poll(async () => {
           if (!expectErrors) {
@@ -44,14 +43,20 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
                 Fields: {workerPoolId: wt.workerPoolId, providerId: pId, v: 1},
                 Severity: LEVELS.info,
               });
-            assert.deepEqual(
-              monitorManager.messages.find(
-                msg => msg.Type === 'test-provision' && msg.Fields.workerPoolId === wt.workerPoolId), {
-                Logger: `taskcluster.worker-manager.provider.${pId}`,
-                Type: 'test-provision',
-                Fields: {workerPoolId: wt.workerPoolId, existingCapacity: wt.existingCapacity},
-                Severity: LEVELS.notice,
-              });
+            const msg = monitorManager.messages.find(
+              msg => msg.Type === 'test-provision' && msg.Fields.workerPoolId === wt.workerPoolId);
+            assert.deepEqual(msg, {
+              Logger: `taskcluster.worker-manager.provider.${pId}`,
+              Type: 'test-provision',
+              Fields: {
+                workerPoolId: wt.workerPoolId,
+                workerInfo: {
+                  existingCapacity: wt.existingCapacity,
+                  requestedCapacity: msg.Fields.workerInfo.requestedCapacity,
+                },
+              },
+              Severity: LEVELS.notice,
+            });
           }));
           if (assertion) {
             await assertion();
@@ -172,6 +177,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
       workers: [
         {
           workerPoolId: 'ff/ee',
+          existingCapacity: 0,
           workerGroup: 'whatever',
           workerId: 'testing-OLD',
           providerId: 'testing1',
@@ -185,6 +191,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
         },
         {
           workerPoolId: 'ff/ee',
+          existingCapacity: 0,
           workerGroup: 'whatever',
           workerId: 'testing-123',
           providerId: 'testing2',
@@ -430,7 +437,13 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
           msg => msg.Type === 'test-provision' && msg.Fields.workerPoolId === workerPool.workerPoolId), {
           Logger: `taskcluster.worker-manager.provider.${workerPool.input.providerId}`,
           Type: 'test-provision',
-          Fields: {workerPoolId: workerPool.workerPoolId, existingCapacity: 0},
+          Fields: {
+            workerPoolId: workerPool.workerPoolId,
+            workerInfo: {
+              existingCapacity: 0,
+              requestedCapacity: 0,
+            },
+          },
           Severity: LEVELS.notice,
         });
 
@@ -469,7 +482,13 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
           msg => msg.Type === 'test-provision' && msg.Fields.workerPoolId === workerPool.workerPoolId), {
           Logger: `taskcluster.worker-manager.provider.${workerPool.input.providerId}`,
           Type: 'test-provision',
-          Fields: {workerPoolId: workerPool.workerPoolId, existingCapacity: 0},
+          Fields: {
+            workerPoolId: workerPool.workerPoolId,
+            workerInfo: {
+              existingCapacity: 0,
+              requestedCapacity: 0,
+            },
+          },
           Severity: LEVELS.notice,
         });
 
@@ -492,7 +511,13 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
           msg => msg.Type === 'test-provision' && msg.Fields.workerPoolId === workerPool.workerPoolId), {
           Logger: `taskcluster.worker-manager.provider.${workerPool.input.providerId}`,
           Type: 'test-provision',
-          Fields: {workerPoolId: workerPool.workerPoolId, existingCapacity: 0},
+          Fields: {
+            workerPoolId: workerPool.workerPoolId,
+            workerInfo: {
+              existingCapacity: 0,
+              requestedCapacity: 0,
+            },
+          },
           Severity: LEVELS.notice,
         });
     });

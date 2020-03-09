@@ -11,8 +11,7 @@ const {REPO_ROOT, writeRepoJSON, listServices} = require('../../utils');
  * then combine the result into references.json.
  */
 
-// this can't run writeDocs without 'yarn build', so ignore it for now.
-const SERVICES = listServices().filter(service => service !== 'web-server');
+const SERVICES = listServices();
 
 const tempDir = path.join(REPO_ROOT, 'temp');
 const genDir = path.join(tempDir, 'generated');
@@ -48,7 +47,11 @@ SERVICES.forEach(name => {
 
 exports.tasks.push({
   title: `Generate References`,
-  requires: SERVICES.map(name => `refs-${name}`),
+  requires: [
+    ...SERVICES.map(name => `refs-${name}`),
+    'config-values-schema',
+    'generic-worker-schemas',
+  ],
   provides: [
     'target-references',
     'references-json',
@@ -62,6 +65,11 @@ exports.tasks.push({
     SERVICES.forEach(
       name => requirements[`refs-${name}`].forEach(
         ({filename, content}) => files.set(filename, content)));
+    requirements['generic-worker-schemas'].forEach(
+      ({filename, content}) => files.set(filename, content));
+
+    // add config-values-schema, mostly so that it can be referenced in the manual
+    files.set('schemas/common/values.schema.json', requirements['config-values-schema']);
 
     // round-trip that through References to validate and disambiguate
     // everything

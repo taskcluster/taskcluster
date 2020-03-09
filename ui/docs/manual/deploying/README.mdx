@@ -23,9 +23,11 @@ Pull Requests to improve this section are welcome.
 
 ## Configuration
 
-A Taskcluster deployment's configuration comes in the form of Helm "values".
-Most of those are undocumented, but see:
- * [static clients](/docs/manual/deploying/static-clients)
+A Taskcluster deployment's configuration comes in the form of a set of Helm "values".
+
+In addition to the sections below, see:
+ * [Static Clients](/docs/manual/deploying/static-clients)
+ * [Helm Configuration Schema](/docs/manual/deploying/schema)
 
 ## Clouds
 
@@ -39,6 +41,10 @@ Taskcluster can dynamically provision workers in a variety of clouds; see the [w
 
 Taskcluster can also generate temporary credentials for supported clouds.
 See [Cloud Credentials](/docs/manual/deploying/cloud-credentials) for details.
+
+## Matrix Support
+
+Taskcluster supports sending notices to Matrix rooms upon task status updates. See [Matrix Integration](/docs/manual/deploying/matrix) for details.
 
 ## GitHub
 

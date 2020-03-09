@@ -5,9 +5,13 @@
 
 import os
 
+import datetime
 import logging
+import requests
 from taskcluster.generated import _client_importer
 from taskcluster.generated.aio import _client_importer as _async_client_importer
+from taskcluster.utils import stringDate
+import urllib.parse
 
 logger = logging.getLogger(__name__)
 
@@ -87,6 +91,18 @@ class TaskclusterConfig(object):
         )
         return self.secrets
 
+    def upload_artifact(self, artifact_path, content, content_type, ttl):
+        """Shortcut to use upload_artifact helper with current authentication"""
+        path = upload_artifact(
+            self.get_service('queue'),
+            artifact_path,
+            content,
+            content_type,
+            ttl,
+        )
+
+        return urllib.parse.urljoin(self.default_url, path)
+
 
 def load_secrets(
     secrets_service, secret_name, prefixes=[], required=[], existing={}, local_secrets=None
@@ -128,3 +144,44 @@ def load_secrets(
             raise Exception("Missing value {} in secrets.".format(required_secret))
 
     return secrets
+
+
+def upload_artifact(queue_service, artifact_path, content, content_type, ttl):
+    """
+    Create an artifact on the current Taskcluster Task in 2 steps:
+    1. create the Artifact through the API
+    2. upload the file on the storage provider
+    """
+    task_id = os.environ.get("TASK_ID")
+    run_id = os.environ.get("RUN_ID")
+    proxy = os.environ.get("TASKCLUSTER_PROXY_URL")
+    assert task_id and run_id and proxy, "Can only run in Taskcluster tasks with proxy"
+    assert isinstance(content, str)
+    assert isinstance(ttl, datetime.timedelta)
+
+    # Create S3 artifact on Taskcluster
+    resp = queue_service.createArtifact(
+        task_id,
+        run_id,
+        artifact_path,
+        {
+            "storageType": "s3",
+            "expires": stringDate(datetime.datetime.utcnow() + ttl),
+            "contentType": content_type,
+        },
+    )
+    assert resp["storageType"] == "s3", "Not an s3 storage"
+    assert "putUrl" in resp, "Missing putUrl"
+    assert "contentType" in resp, "Missing contentType"
+
+    # Push the artifact on storage service
+    headers = {"Content-Type": resp["contentType"]}
+    push = requests.put(url=resp["putUrl"], headers=headers, data=content)
+    push.raise_for_status()
+
+    # Build the absolute url
+    return "/api/queue/v1/task/{task_id}/runs/{run_id}/artifacts/{path}".format(
+        task_id=task_id,
+        run_id=run_id,
+        path=artifact_path,
+    )

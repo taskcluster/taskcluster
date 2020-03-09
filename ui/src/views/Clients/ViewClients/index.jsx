@@ -19,6 +19,7 @@ import ErrorPanel from '../../../components/ErrorPanel';
 @hot(module)
 @graphql(clientsQuery, {
   options: props => ({
+    fetchPolicy: 'network-only',
     variables: {
       clientOptions: null,
       clientsConnection: {
