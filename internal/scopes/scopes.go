@@ -8,7 +8,7 @@ package scopes
 import (
 	"strings"
 
-	"github.com/taskcluster/taskcluster/v25/clients/client-go/tcauth"
+	"github.com/taskcluster/taskcluster/v26/clients/client-go/tcauth"
 )
 
 type (

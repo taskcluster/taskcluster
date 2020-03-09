@@ -4,8 +4,8 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
-	"github.com/taskcluster/taskcluster/v25/clients/client-go/tcauth"
-	"github.com/taskcluster/taskcluster/v25/internal/testrooturl"
+	"github.com/taskcluster/taskcluster/v26/clients/client-go/tcauth"
+	"github.com/taskcluster/taskcluster/v26/internal/testrooturl"
 )
 
 func authClient(t *testing.T) *tcauth.Auth {
