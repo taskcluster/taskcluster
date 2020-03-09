@@ -1,6 +1,7 @@
+const _ = require('lodash');
 const glob = require('glob');
 const {REPO_ROOT, readRepoYAML} = require('../utils');
-const { readAzureTable, writeToPostgres } = require('./util');
+const { readAzureTable, verifyWithPostgres } = require('./util');
 
 const importer = async options => {
   const { credentials, db } = options;
@@ -16,14 +17,14 @@ const importer = async options => {
 
   for (let tableName of tables) {
     tasks.push({
-      title: `Import Table ${tableName}`,
+      title: `Verify Table ${tableName}`,
       locks: ['concurrency'],
       requires: [],
       provides: [],
       run: async (requirements, utils) => {
         const entities = await readAzureTable({azureCreds: credentials.azure, tableName, utils});
 
-        await writeToPostgres(tableName, entities, db, utils);
+        await verifyWithPostgres(tableName, entities, db, utils);
       },
     });
   }

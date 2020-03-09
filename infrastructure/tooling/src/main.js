@@ -254,12 +254,24 @@ program.command('backup:compare <resource1> <resource2>')
     run(compare, {resource1: options[0], resource2: options[1], ...options[2]});
   });
 
-program.command('importer')
-  .action(() => {
-    const importer = require('./importer');
+program.command('importer:run')
+  .action((...options) => {
+    if (options.length !== 1) {
+      console.error('unexpected command-line arguments');
+      process.exit(1);
+    }
+    const { importer } = require('./importer');
     run(importer);
   });
-
+program.command('importer:verify')
+  .action((...options) => {
+    if (options.length !== 1) {
+      console.error('unexpected command-line arguments');
+      process.exit(1);
+    }
+    const { verifier } = require('./importer');
+    run(verifier);
+  });
 program.command('*', {noHelp: true})
   .action(() => program.help(txt => txt));
 
