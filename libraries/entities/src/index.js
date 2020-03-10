@@ -244,6 +244,13 @@ class Entity {
   static _doCondition(conditions, options) {
     const result = { partitionKey: null, rowKey: null, condition: null };
     const valueFromOperand = (type, operand) => {
+      // SECURITY-CRITICAL: We only support conditions on dates, as they cannot
+      // be used to inject SQL -- `Date.toJSON` always produces a simple string
+      // with no SQL metacharacters.  An analysis of all call-sites of the scan
+      // method suggests this is all that will be required, and the few calls
+      // with other types can be rewritten to check the condition on the
+      // results of scan.  Consider carefully before adding additional accepted
+      // types here, and DO NOT ADD 'string'.
       if (operand instanceof Date) {
         return `'${operand.toJSON()}'`;
       }
@@ -299,7 +306,17 @@ class Entity {
 
       if (!covered.includes(property)) {
         const operandValue = valueFromOperand(this.mapping[property], op.operand);
-
+        // SECURITY-CRITICAL: We're injecting raw values into a string that
+        // will be used as raw SQL (by the TABLENAME_scan stored function).
+        // Here's why this is safe:
+        //  - this entire library is for backward compatibility and only for use
+        //    within the TC services, so we can easily examine every call site,
+        //    and do not expect those call sites to change except in a rewrite to
+        //    no longer use this library.
+        //  - property is hard-coded in the call site
+        //  - op.operator is a constant from `entityops.js`
+        //  - operandValue comes from valueFromOperand, above, which has a big
+        //    warning on it.
         condition.push(`value ->> '${property}' ${op.operator} ${operandValue}`);
       }
     });
