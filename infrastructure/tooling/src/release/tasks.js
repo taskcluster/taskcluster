@@ -171,6 +171,7 @@ module.exports = ({tasks, cmdOptions, credentials}) => {
         'clients/client-go/**',
         'clients/client-shell/**',
         'tools/**',
+        'internal/**',
         // Provide explicit list of allowed file extensions so that
         // workers/generic-worker/testdata/*.zip files are not modified.
         'workers/generic-worker/**.go',
