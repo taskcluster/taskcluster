@@ -90,7 +90,7 @@ To run an upgrade, run a docker container using the new Taskcluster image.
 Set `ADMIN_DB_URL` and `USERNAME_PREFIX` to the values described above and run:
 
 ```shell
-docker run -ti --rm -e ADMIN_DB_URL -e USERNAME_PREFIX taskcluster/taskcluster:1.2.3 db:upgrade
+docker run -ti --rm -e ADMIN_DB_URL -e USERNAME_PREFIX taskcluster/taskcluster:1.2.3 script/db:upgrade
 ```
 
 The output will describe the changes taking place.
