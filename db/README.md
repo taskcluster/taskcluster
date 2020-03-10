@@ -42,11 +42,11 @@ This directory defines the Taskcluster database:
 | taskcluster_github_builds_entities_modify | write | partition_key text, row_key text, properties jsonb, version integer, old_etag uuid | table (etag uuid) | See taskcluster-lib-entities |
 | taskcluster_github_builds_entities_remove | write | partition_key text, row_key text | table (etag uuid) | See taskcluster-lib-entities |
 | taskcluster_github_builds_entities_scan | read | pk text, rk text, condition text, size integer, page integer | table (partition_key text, row_key text, value jsonb, version integer, etag uuid) | See taskcluster-lib-entities |
-| taskcluster_intergration_owners_entities_create | write | pk text, rk text, properties jsonb, overwrite boolean, version integer | uuid | See taskcluster-lib-entities |
-| taskcluster_intergration_owners_entities_load | read | partition_key text, row_key text | table (partition_key_out text, row_key_out text, value jsonb, version integer, etag uuid) | See taskcluster-lib-entities |
-| taskcluster_intergration_owners_entities_modify | write | partition_key text, row_key text, properties jsonb, version integer, old_etag uuid | table (etag uuid) | See taskcluster-lib-entities |
-| taskcluster_intergration_owners_entities_remove | write | partition_key text, row_key text | table (etag uuid) | See taskcluster-lib-entities |
-| taskcluster_intergration_owners_entities_scan | read | pk text, rk text, condition text, size integer, page integer | table (partition_key text, row_key text, value jsonb, version integer, etag uuid) | See taskcluster-lib-entities |
+| taskcluster_integration_owners_entities_create | write | pk text, rk text, properties jsonb, overwrite boolean, version integer | uuid | See taskcluster-lib-entities |
+| taskcluster_integration_owners_entities_load | read | partition_key text, row_key text | table (partition_key_out text, row_key_out text, value jsonb, version integer, etag uuid) | See taskcluster-lib-entities |
+| taskcluster_integration_owners_entities_modify | write | partition_key text, row_key text, properties jsonb, version integer, old_etag uuid | table (etag uuid) | See taskcluster-lib-entities |
+| taskcluster_integration_owners_entities_remove | write | partition_key text, row_key text | table (etag uuid) | See taskcluster-lib-entities |
+| taskcluster_integration_owners_entities_scan | read | pk text, rk text, condition text, size integer, page integer | table (partition_key text, row_key text, value jsonb, version integer, etag uuid) | See taskcluster-lib-entities |
 ### hooks
 
 | Name | Mode | Arguments | Returns | Description |

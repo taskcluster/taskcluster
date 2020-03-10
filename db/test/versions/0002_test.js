@@ -13,7 +13,7 @@ suite(testing.suiteName(), function() {
     // roles is actually stored in a azure container but we're putting everything in a table now
     'Roles',
     'TaskclusterGithubBuilds',
-    'TaskclusterIntergrationOwners',
+    'TaskclusterIntegrationOwners',
     'TaskclusterChecksToTasks',
     'TaskclusterCheckRuns',
     'Hooks',

@@ -6,7 +6,7 @@ const { getEntries } = require("../utils");
 class FakeGithub {
   constructor() {
     this.taskclusterGithubBuilds = new Set();
-    this.taskclusterIntergrationOwners = new Set();
+    this.taskclusterIntegrationOwners = new Set();
     this.taskclusterChecksToTasks = new Set();
     this.taskclusterCheckRuns = new Set();
   }
@@ -15,7 +15,7 @@ class FakeGithub {
 
   reset() {
     this.taskclusterGithubBuilds = new Set();
-    this.taskclusterIntergrationOwners = new Set();
+    this.taskclusterIntegrationOwners = new Set();
     this.taskclusterChecksToTasks = new Set();
     this.taskclusterCheckRuns = new Set();
   }
@@ -61,43 +61,43 @@ class FakeGithub {
     return c;
   }
 
-  _getTaskclusterIntergrationOwner({ partitionKey, rowKey }) {
-    for (let c of [...this.taskclusterIntergrationOwners]) {
+  _getTaskclusterIntegrationOwner({ partitionKey, rowKey }) {
+    for (let c of [...this.taskclusterIntegrationOwners]) {
       if (c.partition_key_out === partitionKey && c.row_key_out === rowKey) {
         return c;
       }
     }
   }
 
-  _removeTaskclusterIntergrationOwner({ partitionKey, rowKey }) {
-    for (let c of [...this.taskclusterIntergrationOwners]) {
+  _removeTaskclusterIntegrationOwner({ partitionKey, rowKey }) {
+    for (let c of [...this.taskclusterIntegrationOwners]) {
       if (c.partition_key_out === partitionKey && c.row_key_out === rowKey) {
-        this.taskclusterIntergrationOwners.delete(c);
+        this.taskclusterIntegrationOwners.delete(c);
         break;
       }
     }
   }
 
-  _addTaskclusterIntergrationOwner(taskclusterIntergrationOwner) {
-    assert(typeof taskclusterIntergrationOwner.partition_key === "string");
-    assert(typeof taskclusterIntergrationOwner.row_key === "string");
-    assert(typeof taskclusterIntergrationOwner.value === "object");
-    assert(typeof taskclusterIntergrationOwner.version === "number");
+  _addTaskclusterIntegrationOwner(taskclusterIntegrationOwner) {
+    assert(typeof taskclusterIntegrationOwner.partition_key === "string");
+    assert(typeof taskclusterIntegrationOwner.row_key === "string");
+    assert(typeof taskclusterIntegrationOwner.value === "object");
+    assert(typeof taskclusterIntegrationOwner.version === "number");
 
     const etag = slugid.v4();
     const c = {
-      partition_key_out: taskclusterIntergrationOwner.partition_key,
-      row_key_out: taskclusterIntergrationOwner.row_key,
-      value: taskclusterIntergrationOwner.value,
-      version: taskclusterIntergrationOwner.version,
+      partition_key_out: taskclusterIntegrationOwner.partition_key,
+      row_key_out: taskclusterIntegrationOwner.row_key,
+      value: taskclusterIntegrationOwner.value,
+      version: taskclusterIntegrationOwner.version,
       etag,
     };
 
-    this._removeTaskclusterIntergrationOwner({
-      partitionKey: taskclusterIntergrationOwner.partition_key,
-      rowKey: taskclusterIntergrationOwner.row_key,
+    this._removeTaskclusterIntegrationOwner({
+      partitionKey: taskclusterIntegrationOwner.partition_key,
+      rowKey: taskclusterIntegrationOwner.row_key,
     });
-    this.taskclusterIntergrationOwners.add(c);
+    this.taskclusterIntegrationOwners.add(c);
 
     return c;
   }
@@ -163,67 +163,67 @@ class FakeGithub {
     return entries.slice((page - 1) * size, (page - 1) * size + size);
   }
 
-  async taskcluster_intergration_owners_entities_load(partitionKey, rowKey) {
-    const taskclusterIntergrationOwner = this._getTaskclusterIntergrationOwner({ partitionKey, rowKey });
+  async taskcluster_integration_owners_entities_load(partitionKey, rowKey) {
+    const taskclusterIntegrationOwner = this._getTaskclusterIntegrationOwner({ partitionKey, rowKey });
 
-    return taskclusterIntergrationOwner ? [taskclusterIntergrationOwner] : [];
+    return taskclusterIntegrationOwner ? [taskclusterIntegrationOwner] : [];
   }
 
-  async taskcluster_intergration_owners_entities_create(partition_key, row_key, value, overwrite, version) {
-    if (!overwrite && this._getTaskclusterIntergrationOwner({ partitionKey: partition_key, rowKey: row_key })) {
+  async taskcluster_integration_owners_entities_create(partition_key, row_key, value, overwrite, version) {
+    if (!overwrite && this._getTaskclusterIntegrationOwner({ partitionKey: partition_key, rowKey: row_key })) {
       const err = new Error("duplicate key value violates unique constraint");
       err.code = UNIQUE_VIOLATION;
       throw err;
     }
 
-    const taskclusterIntergrationOwner = this._addTaskclusterIntergrationOwner({
+    const taskclusterIntegrationOwner = this._addTaskclusterIntegrationOwner({
       partition_key,
       row_key,
       value,
       version,
     });
 
-    return [{ "taskcluster_intergration_owners_entities_create": taskclusterIntergrationOwner.etag }];
+    return [{ "taskcluster_integration_owners_entities_create": taskclusterIntegrationOwner.etag }];
   }
 
-  async taskcluster_intergration_owners_entities_remove(partition_key, row_key) {
-    const taskclusterIntergrationOwner = this._getTaskclusterIntergrationOwner({
+  async taskcluster_integration_owners_entities_remove(partition_key, row_key) {
+    const taskclusterIntegrationOwner = this._getTaskclusterIntegrationOwner({
       partitionKey: partition_key,
       rowKey: row_key,
     });
-    this._removeTaskclusterIntergrationOwner({ partitionKey: partition_key, rowKey: row_key });
+    this._removeTaskclusterIntegrationOwner({ partitionKey: partition_key, rowKey: row_key });
 
-    return taskclusterIntergrationOwner ? [{ etag: taskclusterIntergrationOwner.etag }] : [];
+    return taskclusterIntegrationOwner ? [{ etag: taskclusterIntegrationOwner.etag }] : [];
   }
 
-  async taskcluster_intergration_owners_entities_modify(partition_key, row_key, value, version, oldEtag) {
-    const taskclusterIntergrationOwner = this._getTaskclusterIntergrationOwner({
+  async taskcluster_integration_owners_entities_modify(partition_key, row_key, value, version, oldEtag) {
+    const taskclusterIntegrationOwner = this._getTaskclusterIntegrationOwner({
       partitionKey: partition_key,
       rowKey: row_key,
     });
 
-    if (!taskclusterIntergrationOwner) {
+    if (!taskclusterIntegrationOwner) {
       const err = new Error("no such row");
       err.code = "P0002";
       throw err;
     }
 
-    if (taskclusterIntergrationOwner.etag !== oldEtag) {
+    if (taskclusterIntegrationOwner.etag !== oldEtag) {
       const err = new Error("unsuccessful update");
       err.code = "P0004";
       throw err;
     }
 
-    const c = this._addTaskclusterIntergrationOwner({ partition_key, row_key, value, version });
+    const c = this._addTaskclusterIntegrationOwner({ partition_key, row_key, value, version });
     return [{ etag: c.etag }];
   }
 
-  async taskcluster_intergration_owners_entities_scan(partition_key, row_key, condition, size, page) {
+  async taskcluster_integration_owners_entities_scan(partition_key, row_key, condition, size, page) {
     const entries = getEntries({
       partitionKey: partition_key,
       rowKey: row_key,
       condition,
-    }, this.taskclusterIntergrationOwners);
+    }, this.taskclusterIntegrationOwners);
 
     return entries.slice((page - 1) * size, (page - 1) * size + size);
   }
