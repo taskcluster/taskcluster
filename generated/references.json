@@ -2184,7 +2184,7 @@
           "type": "string"
         },
         "owner": {
-          "description": "Entity who caused this task, not necessarily a person with email who did\n`hg push` as it could be automation bots as well. This entity we should\ncontact to ask why this task is here.\n",
+          "description": "Entity who caused this task, not necessarily a person with email who did\n`hg push` as it could be automation bots as well. The entity we should\ncontact to ask why this task is here.\n",
           "maxLength": 255,
           "title": "Owner",
           "type": "string"

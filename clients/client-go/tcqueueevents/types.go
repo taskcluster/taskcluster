@@ -359,7 +359,7 @@ type (
 		Name string `json:"name"`
 
 		// Entity who caused this task, not necessarily a person with email who did
-		// `hg push` as it could be automation bots as well. This entity we should
+		// `hg push` as it could be automation bots as well. The entity we should
 		// contact to ask why this task is here.
 		//
 		// Max length: 255
