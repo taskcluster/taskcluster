@@ -21,10 +21,10 @@ properties:
   owner:
     title:          "Owner"
     description: |
-      E-mail of person who caused this task, e.g. the person who did
-      `hg push`. The person we should contact to ask why this task is here.
+      Entity who caused this task, not necessarily a person with email who did
+      `hg push` as it could be automation bots as well. The entity we should
+      contact to ask why this task is here.
     type:           string
-    format:         email
     maxLength:      255
   source:
     title:          "Source"
