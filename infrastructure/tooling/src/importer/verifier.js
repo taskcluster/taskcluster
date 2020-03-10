@@ -1,7 +1,7 @@
 const _ = require('lodash');
 const glob = require('glob');
 const {REPO_ROOT, readRepoYAML} = require('../utils');
-const { readAzureTable, verifyWithPostgres } = require('./util');
+const { readAzureTable, verifyWithPostgres, ALLOWED_TABLES } = require('./util');
 
 const importer = async options => {
   const { credentials, db } = options;
@@ -24,7 +24,7 @@ const importer = async options => {
       run: async (requirements, utils) => {
         const entities = await readAzureTable({azureCreds: credentials.azure, tableName, utils});
 
-        await verifyWithPostgres(tableName, entities, db, utils);
+        await verifyWithPostgres(tableName, entities, db, ALLOWED_TABLES);
       },
     });
   }

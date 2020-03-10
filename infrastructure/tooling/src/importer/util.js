@@ -72,20 +72,20 @@ exports.readAzureTable = async ({azureCreds, tableName, utils}) => {
 };
 
 // Given a list of azure entities, this method will write to a postgres database
-exports.writeToPostgres = async (tableName, entities, db, utils) => {
+exports.writeToPostgres = async (tableName, entities, db, allowedTables = [], mode = 'admin') => {
   // to allow us to migrate one table at a time
-  if (!exports.ALLOWED_TABLES.includes(tableName)) {
+  if (!allowedTables.includes(tableName)) {
     return;
   }
 
   const postgresTableName = exports.azurePostgresTableNameMapping(tableName);
 
-  await db._withClient('admin', async client => {
+  await db._withClient(mode, async client => {
     await client.query(`truncate ${postgresTableName}`);
   });
 
   for (let entity of entities) {
-    await db._withClient('admin', async client => {
+    await db._withClient(mode, async client => {
       await client.query(
         `insert into ${postgresTableName}(partition_key, row_key, value, version, etag) values ($1, $2, $3, 1, public.gen_random_uuid())`,
         [entity.PartitionKey, entity.RowKey, entity],
@@ -96,9 +96,9 @@ exports.writeToPostgres = async (tableName, entities, db, utils) => {
 
 // Given a list of azure entities, this method will throw an error if the data
 // is not on par with the values in postgres.
-exports.verifyWithPostgres = async (tableName, entities, db, utils) => {
+exports.verifyWithPostgres = async (tableName, entities, db, allowedTables = [], mode = 'admin') => {
   // verify only tables that have been migrated
-  if (!exports.ALLOWED_TABLES.includes(tableName)) {
+  if (!allowedTables.includes(tableName)) {
     return;
   }
 
@@ -125,7 +125,7 @@ exports.verifyWithPostgres = async (tableName, entities, db, utils) => {
       return entity;
     },
   );
-  await db._withClient('admin', async client => {
+  await db._withClient(mode, async client => {
     const result = await client.query(
       `select * from ${postgresTableName}`,
     );

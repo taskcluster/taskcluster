@@ -1,6 +1,6 @@
 const glob = require('glob');
 const {REPO_ROOT, readRepoYAML} = require('../utils');
-const { readAzureTable, writeToPostgres } = require('./util');
+const { readAzureTable, writeToPostgres, ALLOWED_TABLES } = require('./util');
 
 const importer = async options => {
   const { credentials, db } = options;
@@ -23,7 +23,7 @@ const importer = async options => {
       run: async (requirements, utils) => {
         const entities = await readAzureTable({azureCreds: credentials.azure, tableName, utils});
 
-        await writeToPostgres(tableName, entities, db, utils);
+        await writeToPostgres(tableName, entities, db, ALLOWED_TABLES);
       },
     });
   }

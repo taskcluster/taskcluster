@@ -200,9 +200,12 @@
     "dev:verify": "node infrastructure/tooling/src/main.js dev:verify",
     "smoketest": "node infrastructure/tooling/src/main.js smoketest",
     "test:meta": "node infrastructure/tooling/src/main.js test:meta",
+    "test:importer": "mocha infrastructure/tooling/src/importer/test/*_test.js",
     "backup:run": "node infrastructure/tooling/src/main.js backup:run",
     "backup:restore": "node infrastructure/tooling/src/main.js backup:restore",
     "backup:compare": "node infrastructure/tooling/src/main.js backup:compare",
+    "importer:run": "node infrastructure/tooling/src/main.js importer:run",
+    "importer:verify": "node infrastructure/tooling/src/main.js importer:verify",
     "db:upgrade": "node db/src/main.js upgrade",
     "db:downgrade": "node db/src/main.js downgrade"
   },
