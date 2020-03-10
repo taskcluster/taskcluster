@@ -49,6 +49,10 @@ defaults:
     signingKey: !env AZURE_SIGNING_KEY
     cryptoKey: !env AZURE_CRYPTO_KEY
 
+  postgres:
+    readDbUrl: !env READ_DB_URL
+    writeDbUrl: !env WRITE_DB_URL
+
   # Pulse credentials
   pulse:
     username: !env PULSE_USERNAME

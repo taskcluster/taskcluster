@@ -16,6 +16,9 @@ defaults:
       accessToken: !env TASKCLUSTER_ACCESS_TOKEN
   azure:
     accountId: !env AZURE_ACCOUNT_ID
+  postgres:
+    readDbUrl: !env READ_DB_URL
+    writeDbUrl: !env WRITE_DB_URL
   server:
     port: !env:number PORT
     env: !env NODE_ENV

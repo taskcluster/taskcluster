@@ -121,6 +121,10 @@ defaults:
     accountId:                !env AZURE_ACCOUNT_ID
     accessKey:                !env AZURE_ACCOUNT_KEY
 
+  postgres:
+    readDbUrl: !env READ_DB_URL
+    writeDbUrl: !env WRITE_DB_URL
+
   pulse:
     username:                 !env PULSE_USERNAME
     password:                 !env PULSE_PASSWORD

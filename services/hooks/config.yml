@@ -16,6 +16,9 @@ defaults:
     accountId:        !env AZURE_ACCOUNT_ID
     signingKey:       !env AZURE_SIGNING_KEY
     cryptoKey:        !env AZURE_CRYPTO_KEY
+  postgres:
+    readDbUrl:        !env READ_DB_URL
+    writeDbUrl:       !env WRITE_DB_URL
   taskcluster:
     rootUrl:          !env TASKCLUSTER_ROOT_URL
     credentials:

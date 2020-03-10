@@ -86,6 +86,9 @@ defaults:
     # Key for data encryption in base.Entity (32 random bytes as base64)
     cryptoKey:               !env AZURE_CRYPTO_KEY
 
+  postgres:
+    readDbUrl:               !env READ_DB_URL
+    writeDbUrl:              !env WRITE_DB_URL
 
   pulse:
     username:                 !env PULSE_USERNAME
