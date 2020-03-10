@@ -588,9 +588,13 @@ class AzureProvider extends Provider {
       }
       return this.Worker.states.RUNNING;
     } catch (err) {
+      const {workerPoolId} = worker;
+      const workerPool = await this.WorkerPool.load({
+        workerPoolId,
+      }, true);
       // we create multiple resources in order to provision a VM
       // if we catch an error we want to deprovision those resources
-      await worker.workerPool.reportError({
+      await workerPool.reportError({
         kind: 'creation-error',
         title: 'VM Creation Error',
         description: err.message,
@@ -654,7 +658,11 @@ class AzureProvider extends Provider {
           workerId: worker.workerId,
         });
       } else {
-        await worker.workerPool.reportError({
+        const {workerPoolId} = worker;
+        const workerPool = await this.WorkerPool.load({
+          workerPoolId,
+        }, true);
+        await workerPool.reportError({
           kind: 'creation-error',
           title: 'Encountered unknown VM provisioningState or powerStates',
           description: `Unknown provisioningState ${provisioningState} or powerStates: ${powerStates}`,
