@@ -168,6 +168,7 @@ const check_pr = async (pr) => {
   const boringFiles = [
     /yarn\.lock$/,
     /package\.json$/,
+    /^go\.(mod|sum)$/,
     /^\.yarn$/,
     /^\.taskcluster.yml/,
     /^infrastructure\//,
