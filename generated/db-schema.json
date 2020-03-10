@@ -97,7 +97,7 @@
           "args": "pk text, rk text, properties jsonb, overwrite boolean, version integer",
           "body": "declare\n  new_etag uuid := public.gen_random_uuid();\nbegin\n  if overwrite then\n    insert into access_token_table_entities(partition_key, row_key, value, version, etag)\n    values (\n      pk,\n      rk,\n      properties,\n      version,\n      new_etag\n    ) on conflict (partition_key, row_key) do\n    update\n    set (value, version, etag) = (properties, access_token_table_entities_create.version, new_etag)\n    where access_token_table_entities.partition_key = access_token_table_entities_create.pk and access_token_table_entities.row_key = access_token_table_entities_create.rk;\n  else\n    insert into access_token_table_entities(partition_key, row_key, value, version, etag)\n    values (\n      pk,\n      rk,\n      properties,\n      version,\n      new_etag\n    );\n  end if;\n  return new_etag;\nend",
           "deprecated": false,
-          "description": "test",
+          "description": "See taskcluster-lib-entities",
           "mode": "write",
           "returns": "uuid",
           "serviceName": "web_server"
@@ -106,7 +106,7 @@
           "args": "partition_key text, row_key text",
           "body": "begin\n  return query\n  select access_token_table_entities.partition_key, access_token_table_entities.row_key, access_token_table_entities.value, access_token_table_entities.version,\n  access_token_table_entities.etag from access_token_table_entities\n  where access_token_table_entities.partition_key = access_token_table_entities_load.partition_key and access_token_table_entities.row_key = access_token_table_entities_load.row_key;\nend",
           "deprecated": false,
-          "description": "test",
+          "description": "See taskcluster-lib-entities",
           "mode": "read",
           "returns": "table (partition_key_out text, row_key_out text, value jsonb, version integer, etag uuid)",
           "serviceName": "web_server"
@@ -115,7 +115,7 @@
           "args": "partition_key text, row_key text, properties jsonb, version integer, old_etag uuid",
           "body": "declare\n  new_etag uuid := public.gen_random_uuid();\nbegin\n  update access_token_table_entities\n  set (value, version, etag) = (properties, access_token_table_entities_modify.version, new_etag)\n  where access_token_table_entities.partition_key = access_token_table_entities_modify.partition_key and access_token_table_entities.row_key = access_token_table_entities_modify.row_key and access_token_table_entities.etag = access_token_table_entities_modify.old_etag;\n\n  if found then\n    return query select new_etag;\n    return;\n  end if;\n\n  perform access_token_table_entities.etag from access_token_table_entities\n  where access_token_table_entities.partition_key = access_token_table_entities_modify.partition_key and access_token_table_entities.row_key = access_token_table_entities_modify.row_key;\n\n  if found then\n    raise exception 'unsuccessful update' using errcode = 'P0004';\n  else\n    raise exception 'no such row' using errcode = 'P0002';\n  end if;\nend",
           "deprecated": false,
-          "description": "Modify an entity. If the modify operation is succesful, the etag is returned in a set.\nElse, an error will be raised with the following error code:\n* 'P0004' - update was unsuccessful (e.g., the etag value did not match)\n* 'P0002' - entry not found in the table (i.e., no such row)\n",
+          "description": "See taskcluster-lib-entities",
           "mode": "write",
           "returns": "table (etag uuid)",
           "serviceName": "web_server"
@@ -124,7 +124,7 @@
           "args": "partition_key text, row_key text",
           "body": "begin\n  return query delete from access_token_table_entities\n  where access_token_table_entities.partition_key = access_token_table_entities_remove.partition_key and access_token_table_entities.row_key = access_token_table_entities_remove.row_key\n  returning access_token_table_entities.etag;\nend",
           "deprecated": false,
-          "description": "test",
+          "description": "See taskcluster-lib-entities",
           "mode": "write",
           "returns": "table (etag uuid)",
           "serviceName": "web_server"
@@ -133,7 +133,7 @@
           "args": "pk text, rk text, condition text, size integer, page integer",
           "body": "declare\n  sql text := 'select access_token_table_entities.partition_key, access_token_table_entities.row_key, access_token_table_entities.value, access_token_table_entities.version, access_token_table_entities.etag from access_token_table_entities';\n  partition_key_var text;\n  row_key_var text;\n  page_offset integer;\nbegin\n  if access_token_table_entities_scan.pk is not null or access_token_table_entities_scan.rk is not null or condition is not null then\n    sql := sql || ' where ';\n  end if;\n\n  if access_token_table_entities_scan.pk is not null then\n    partition_key_var := 'partition_key = ' || quote_literal(access_token_table_entities_scan.pk);\n  end if;\n\n  if access_token_table_entities_scan.rk is not null then\n    row_key_var := 'row_key = ' || quote_literal(access_token_table_entities_scan.rk);\n  end if;\n\n  sql := sql || concat_ws(' and ', partition_key_var, row_key_var, condition);\n  sql := sql || ' order by access_token_table_entities.partition_key, access_token_table_entities.row_key';\n\n  if size is not null and size > 0 then\n    sql := sql || ' limit ' || size;\n\n    if page is not null and page > 0 then\n      page_offset := size * (page - 1);\n      sql := sql || ' offset ' || page_offset;\n    end if;\n  end if;\n\n  return query execute sql;\nend",
           "deprecated": false,
-          "description": "test",
+          "description": "See taskcluster-lib-entities",
           "mode": "read",
           "returns": "table (partition_key text, row_key text, value jsonb, version integer, etag uuid)",
           "serviceName": "web_server"
@@ -142,7 +142,7 @@
           "args": "pk text, rk text, properties jsonb, overwrite boolean, version integer",
           "body": "declare\n  new_etag uuid := public.gen_random_uuid();\nbegin\n  if overwrite then\n    insert into authorization_codes_table_entities(partition_key, row_key, value, version, etag)\n    values (\n      pk,\n      rk,\n      properties,\n      version,\n      new_etag\n    ) on conflict (partition_key, row_key) do\n    update\n    set (value, version, etag) = (properties, authorization_codes_table_entities_create.version, new_etag)\n    where authorization_codes_table_entities.partition_key = authorization_codes_table_entities_create.pk and authorization_codes_table_entities.row_key = authorization_codes_table_entities_create.rk;\n  else\n    insert into authorization_codes_table_entities(partition_key, row_key, value, version, etag)\n    values (\n      pk,\n      rk,\n      properties,\n      version,\n      new_etag\n    );\n  end if;\n  return new_etag;\nend",
           "deprecated": false,
-          "description": "test",
+          "description": "See taskcluster-lib-entities",
           "mode": "write",
           "returns": "uuid",
           "serviceName": "web_server"
@@ -151,7 +151,7 @@
           "args": "partition_key text, row_key text",
           "body": "begin\n  return query\n  select authorization_codes_table_entities.partition_key, authorization_codes_table_entities.row_key, authorization_codes_table_entities.value, authorization_codes_table_entities.version,\n  authorization_codes_table_entities.etag from authorization_codes_table_entities\n  where authorization_codes_table_entities.partition_key = authorization_codes_table_entities_load.partition_key and authorization_codes_table_entities.row_key = authorization_codes_table_entities_load.row_key;\nend",
           "deprecated": false,
-          "description": "test",
+          "description": "See taskcluster-lib-entities",
           "mode": "read",
           "returns": "table (partition_key_out text, row_key_out text, value jsonb, version integer, etag uuid)",
           "serviceName": "web_server"
@@ -160,7 +160,7 @@
           "args": "partition_key text, row_key text, properties jsonb, version integer, old_etag uuid",
           "body": "declare\n  new_etag uuid := public.gen_random_uuid();\nbegin\n  update authorization_codes_table_entities\n  set (value, version, etag) = (properties, authorization_codes_table_entities_modify.version, new_etag)\n  where authorization_codes_table_entities.partition_key = authorization_codes_table_entities_modify.partition_key and authorization_codes_table_entities.row_key = authorization_codes_table_entities_modify.row_key and authorization_codes_table_entities.etag = authorization_codes_table_entities_modify.old_etag;\n\n  if found then\n    return query select new_etag;\n    return;\n  end if;\n\n  perform authorization_codes_table_entities.etag from authorization_codes_table_entities\n  where authorization_codes_table_entities.partition_key = authorization_codes_table_entities_modify.partition_key and authorization_codes_table_entities.row_key = authorization_codes_table_entities_modify.row_key;\n\n  if found then\n    raise exception 'unsuccessful update' using errcode = 'P0004';\n  else\n    raise exception 'no such row' using errcode = 'P0002';\n  end if;\nend",
           "deprecated": false,
-          "description": "Modify an entity. If the modify operation is succesful, the etag is returned in a set.\nElse, an error will be raised with the following error code:\n* 'P0004' - update was unsuccessful (e.g., the etag value did not match)\n* 'P0002' - entry not found in the table (i.e., no such row)\n",
+          "description": "See taskcluster-lib-entities",
           "mode": "write",
           "returns": "table (etag uuid)",
           "serviceName": "web_server"
@@ -169,7 +169,7 @@
           "args": "partition_key text, row_key text",
           "body": "begin\n  return query delete from authorization_codes_table_entities\n  where authorization_codes_table_entities.partition_key = authorization_codes_table_entities_remove.partition_key and authorization_codes_table_entities.row_key = authorization_codes_table_entities_remove.row_key\n  returning authorization_codes_table_entities.etag;\nend",
           "deprecated": false,
-          "description": "test",
+          "description": "See taskcluster-lib-entities",
           "mode": "write",
           "returns": "table (etag uuid)",
           "serviceName": "web_server"
@@ -178,7 +178,7 @@
           "args": "pk text, rk text, condition text, size integer, page integer",
           "body": "declare\n  sql text := 'select authorization_codes_table_entities.partition_key, authorization_codes_table_entities.row_key, authorization_codes_table_entities.value, authorization_codes_table_entities.version, authorization_codes_table_entities.etag from authorization_codes_table_entities';\n  partition_key_var text;\n  row_key_var text;\n  page_offset integer;\nbegin\n  if authorization_codes_table_entities_scan.pk is not null or authorization_codes_table_entities_scan.rk is not null or condition is not null then\n    sql := sql || ' where ';\n  end if;\n\n  if authorization_codes_table_entities_scan.pk is not null then\n    partition_key_var := 'partition_key = ' || quote_literal(authorization_codes_table_entities_scan.pk);\n  end if;\n\n  if authorization_codes_table_entities_scan.rk is not null then\n    row_key_var := 'row_key = ' || quote_literal(authorization_codes_table_entities_scan.rk);\n  end if;\n\n  sql := sql || concat_ws(' and ', partition_key_var, row_key_var, condition);\n  sql := sql || ' order by authorization_codes_table_entities.partition_key, authorization_codes_table_entities.row_key';\n\n  if size is not null and size > 0 then\n    sql := sql || ' limit ' || size;\n\n    if page is not null and page > 0 then\n      page_offset := size * (page - 1);\n      sql := sql || ' offset ' || page_offset;\n    end if;\n  end if;\n\n  return query execute sql;\nend",
           "deprecated": false,
-          "description": "test",
+          "description": "See taskcluster-lib-entities",
           "mode": "read",
           "returns": "table (partition_key text, row_key text, value jsonb, version integer, etag uuid)",
           "serviceName": "web_server"
@@ -187,7 +187,7 @@
           "args": "pk text, rk text, properties jsonb, overwrite boolean, version integer",
           "body": "declare\n  new_etag uuid := public.gen_random_uuid();\nbegin\n  if overwrite then\n    insert into cache_purges_entities(partition_key, row_key, value, version, etag)\n    values (\n      pk,\n      rk,\n      properties,\n      version,\n      new_etag\n    ) on conflict (partition_key, row_key) do\n    update\n    set (value, version, etag) = (properties, cache_purges_entities_create.version, new_etag)\n    where cache_purges_entities.partition_key = cache_purges_entities_create.pk and cache_purges_entities.row_key = cache_purges_entities_create.rk;\n  else\n    insert into cache_purges_entities(partition_key, row_key, value, version, etag)\n    values (\n      pk,\n      rk,\n      properties,\n      version,\n      new_etag\n    );\n  end if;\n  return new_etag;\nend",
           "deprecated": false,
-          "description": "test",
+          "description": "See taskcluster-lib-entities",
           "mode": "write",
           "returns": "uuid",
           "serviceName": "purge_cache"
@@ -196,7 +196,7 @@
           "args": "partition_key text, row_key text",
           "body": "begin\n  return query\n  select cache_purges_entities.partition_key, cache_purges_entities.row_key, cache_purges_entities.value, cache_purges_entities.version,\n  cache_purges_entities.etag from cache_purges_entities\n  where cache_purges_entities.partition_key = cache_purges_entities_load.partition_key and cache_purges_entities.row_key = cache_purges_entities_load.row_key;\nend",
           "deprecated": false,
-          "description": "test",
+          "description": "See taskcluster-lib-entities",
           "mode": "read",
           "returns": "table (partition_key_out text, row_key_out text, value jsonb, version integer, etag uuid)",
           "serviceName": "purge_cache"
@@ -205,7 +205,7 @@
           "args": "partition_key text, row_key text, properties jsonb, version integer, old_etag uuid",
           "body": "declare\n  new_etag uuid := public.gen_random_uuid();\nbegin\n  update cache_purges_entities\n  set (value, version, etag) = (properties, cache_purges_entities_modify.version, new_etag)\n  where cache_purges_entities.partition_key = cache_purges_entities_modify.partition_key and cache_purges_entities.row_key = cache_purges_entities_modify.row_key and cache_purges_entities.etag = cache_purges_entities_modify.old_etag;\n\n  if found then\n    return query select new_etag;\n    return;\n  end if;\n\n  perform cache_purges_entities.etag from cache_purges_entities\n  where cache_purges_entities.partition_key = cache_purges_entities_modify.partition_key and cache_purges_entities.row_key = cache_purges_entities_modify.row_key;\n\n  if found then\n    raise exception 'unsuccessful update' using errcode = 'P0004';\n  else\n    raise exception 'no such row' using errcode = 'P0002';\n  end if;\nend",
           "deprecated": false,
-          "description": "Modify an entity. If the modify operation is succesful, the etag is returned in a set.\nElse, an error will be raised with the following error code:\n* 'P0004' - update was unsuccessful (e.g., the etag value did not match)\n* 'P0002' - entry not found in the table (i.e., no such row)\n",
+          "description": "See taskcluster-lib-entities",
           "mode": "write",
           "returns": "table (etag uuid)",
           "serviceName": "purge_cache"
@@ -214,7 +214,7 @@
           "args": "partition_key text, row_key text",
           "body": "begin\n  return query delete from cache_purges_entities\n  where cache_purges_entities.partition_key = cache_purges_entities_remove.partition_key and cache_purges_entities.row_key = cache_purges_entities_remove.row_key\n  returning cache_purges_entities.etag;\nend",
           "deprecated": false,
-          "description": "test",
+          "description": "See taskcluster-lib-entities",
           "mode": "write",
           "returns": "table (etag uuid)",
           "serviceName": "purge_cache"
@@ -223,7 +223,7 @@
           "args": "pk text, rk text, condition text, size integer, page integer",
           "body": "declare\n  sql text := 'select cache_purges_entities.partition_key, cache_purges_entities.row_key, cache_purges_entities.value, cache_purges_entities.version, cache_purges_entities.etag from cache_purges_entities';\n  partition_key_var text;\n  row_key_var text;\n  page_offset integer;\nbegin\n  if cache_purges_entities_scan.pk is not null or cache_purges_entities_scan.rk is not null or condition is not null then\n    sql := sql || ' where ';\n  end if;\n\n  if cache_purges_entities_scan.pk is not null then\n    partition_key_var := 'partition_key = ' || quote_literal(cache_purges_entities_scan.pk);\n  end if;\n\n  if cache_purges_entities_scan.rk is not null then\n    row_key_var := 'row_key = ' || quote_literal(cache_purges_entities_scan.rk);\n  end if;\n\n  sql := sql || concat_ws(' and ', partition_key_var, row_key_var, condition);\n  sql := sql || ' order by cache_purges_entities.partition_key, cache_purges_entities.row_key';\n\n  if size is not null and size > 0 then\n    sql := sql || ' limit ' || size;\n\n    if page is not null and page > 0 then\n      page_offset := size * (page - 1);\n      sql := sql || ' offset ' || page_offset;\n    end if;\n  end if;\n\n  return query execute sql;\nend",
           "deprecated": false,
-          "description": "test",
+          "description": "See taskcluster-lib-entities",
           "mode": "read",
           "returns": "table (partition_key text, row_key text, value jsonb, version integer, etag uuid)",
           "serviceName": "purge_cache"
@@ -232,7 +232,7 @@
           "args": "pk text, rk text, properties jsonb, overwrite boolean, version integer",
           "body": "declare\n  new_etag uuid := public.gen_random_uuid();\nbegin\n  if overwrite then\n    insert into clients_entities(partition_key, row_key, value, version, etag)\n    values (\n      pk,\n      rk,\n      properties,\n      version,\n      new_etag\n    ) on conflict (partition_key, row_key) do\n    update\n    set (value, version, etag) = (properties, clients_entities_create.version, new_etag)\n    where clients_entities.partition_key = clients_entities_create.pk and clients_entities.row_key = clients_entities_create.rk;\n  else\n    insert into clients_entities(partition_key, row_key, value, version, etag)\n    values (\n      pk,\n      rk,\n      properties,\n      version,\n      new_etag\n    );\n  end if;\n  return new_etag;\nend",
           "deprecated": false,
-          "description": "test",
+          "description": "See taskcluster-lib-entities",
           "mode": "write",
           "returns": "uuid",
           "serviceName": "auth"
@@ -241,7 +241,7 @@
           "args": "partition_key text, row_key text",
           "body": "begin\n  return query\n  select clients_entities.partition_key, clients_entities.row_key, clients_entities.value, clients_entities.version,\n  clients_entities.etag from clients_entities\n  where clients_entities.partition_key = clients_entities_load.partition_key and clients_entities.row_key = clients_entities_load.row_key;\nend",
           "deprecated": false,
-          "description": "test",
+          "description": "See taskcluster-lib-entities",
           "mode": "read",
           "returns": "table (partition_key_out text, row_key_out text, value jsonb, version integer, etag uuid)",
           "serviceName": "auth"
@@ -250,7 +250,7 @@
           "args": "partition_key text, row_key text, properties jsonb, version integer, old_etag uuid",
           "body": "declare\n  new_etag uuid := public.gen_random_uuid();\nbegin\n  update clients_entities\n  set (value, version, etag) = (properties, clients_entities_modify.version, new_etag)\n  where clients_entities.partition_key = clients_entities_modify.partition_key and clients_entities.row_key = clients_entities_modify.row_key and clients_entities.etag = clients_entities_modify.old_etag;\n\n  if found then\n    return query select new_etag;\n    return;\n  end if;\n\n  perform clients_entities.etag from clients_entities\n  where clients_entities.partition_key = clients_entities_modify.partition_key and clients_entities.row_key = clients_entities_modify.row_key;\n\n  if found then\n    raise exception 'unsuccessful update' using errcode = 'P0004';\n  else\n    raise exception 'no such row' using errcode = 'P0002';\n  end if;\nend",
           "deprecated": false,
-          "description": "Modify an entity. If the modify operation is succesful, the etag is returned in a set.\nElse, an error will be raised with the following error code:\n* 'P0004' - update was unsuccessful (e.g., the etag value did not match)\n* 'P0002' - entry not found in the table (i.e., no such row)\n",
+          "description": "See taskcluster-lib-entities",
           "mode": "write",
           "returns": "table (etag uuid)",
           "serviceName": "auth"
@@ -259,7 +259,7 @@
           "args": "partition_key text, row_key text",
           "body": "begin\n  return query delete from clients_entities\n  where clients_entities.partition_key = clients_entities_remove.partition_key and clients_entities.row_key = clients_entities_remove.row_key\n  returning clients_entities.etag;\nend",
           "deprecated": false,
-          "description": "test",
+          "description": "See taskcluster-lib-entities",
           "mode": "write",
           "returns": "table (etag uuid)",
           "serviceName": "auth"
@@ -268,7 +268,7 @@
           "args": "pk text, rk text, condition text, size integer, page integer",
           "body": "declare\n  sql text := 'select clients_entities.partition_key, clients_entities.row_key, clients_entities.value, clients_entities.version, clients_entities.etag from clients_entities';\n  partition_key_var text;\n  row_key_var text;\n  page_offset integer;\nbegin\n  if clients_entities_scan.pk is not null or clients_entities_scan.rk is not null or condition is not null then\n    sql := sql || ' where ';\n  end if;\n\n  if clients_entities_scan.pk is not null then\n    partition_key_var := 'partition_key = ' || quote_literal(clients_entities_scan.pk);\n  end if;\n\n  if clients_entities_scan.rk is not null then\n    row_key_var := 'row_key = ' || quote_literal(clients_entities_scan.rk);\n  end if;\n\n  sql := sql || concat_ws(' and ', partition_key_var, row_key_var, condition);\n  sql := sql || ' order by clients_entities.partition_key, clients_entities.row_key';\n\n  if size is not null and size > 0 then\n    sql := sql || ' limit ' || size;\n\n    if page is not null and page > 0 then\n      page_offset := size * (page - 1);\n      sql := sql || ' offset ' || page_offset;\n    end if;\n  end if;\n\n  return query execute sql;\nend",
           "deprecated": false,
-          "description": "test",
+          "description": "See taskcluster-lib-entities",
           "mode": "read",
           "returns": "table (partition_key text, row_key text, value jsonb, version integer, etag uuid)",
           "serviceName": "auth"
@@ -277,7 +277,7 @@
           "args": "pk text, rk text, properties jsonb, overwrite boolean, version integer",
           "body": "declare\n  new_etag uuid := public.gen_random_uuid();\nbegin\n  if overwrite then\n    insert into denylisted_notification_entities(partition_key, row_key, value, version, etag)\n    values (\n      pk,\n      rk,\n      properties,\n      version,\n      new_etag\n    ) on conflict (partition_key, row_key) do\n    update\n    set (value, version, etag) = (properties, denylisted_notification_entities_create.version, new_etag)\n    where denylisted_notification_entities.partition_key = denylisted_notification_entities_create.pk and denylisted_notification_entities.row_key = denylisted_notification_entities_create.rk;\n  else\n    insert into denylisted_notification_entities(partition_key, row_key, value, version, etag)\n    values (\n      pk,\n      rk,\n      properties,\n      version,\n      new_etag\n    );\n  end if;\n  return new_etag;\nend",
           "deprecated": false,
-          "description": "test",
+          "description": "See taskcluster-lib-entities",
           "mode": "write",
           "returns": "uuid",
           "serviceName": "notify"
@@ -286,7 +286,7 @@
           "args": "partition_key text, row_key text",
           "body": "begin\n  return query\n  select denylisted_notification_entities.partition_key, denylisted_notification_entities.row_key, denylisted_notification_entities.value, denylisted_notification_entities.version,\n  denylisted_notification_entities.etag from denylisted_notification_entities\n  where denylisted_notification_entities.partition_key = denylisted_notification_entities_load.partition_key and denylisted_notification_entities.row_key = denylisted_notification_entities_load.row_key;\nend",
           "deprecated": false,
-          "description": "test",
+          "description": "See taskcluster-lib-entities",
           "mode": "read",
           "returns": "table (partition_key_out text, row_key_out text, value jsonb, version integer, etag uuid)",
           "serviceName": "notify"
@@ -295,7 +295,7 @@
           "args": "partition_key text, row_key text, properties jsonb, version integer, old_etag uuid",
           "body": "declare\n  new_etag uuid := public.gen_random_uuid();\nbegin\n  update denylisted_notification_entities\n  set (value, version, etag) = (properties, denylisted_notification_entities_modify.version, new_etag)\n  where denylisted_notification_entities.partition_key = denylisted_notification_entities_modify.partition_key and denylisted_notification_entities.row_key = denylisted_notification_entities_modify.row_key and denylisted_notification_entities.etag = denylisted_notification_entities_modify.old_etag;\n\n  if found then\n    return query select new_etag;\n    return;\n  end if;\n\n  perform denylisted_notification_entities.etag from denylisted_notification_entities\n  where denylisted_notification_entities.partition_key = denylisted_notification_entities_modify.partition_key and denylisted_notification_entities.row_key = denylisted_notification_entities_modify.row_key;\n\n  if found then\n    raise exception 'unsuccessful update' using errcode = 'P0004';\n  else\n    raise exception 'no such row' using errcode = 'P0002';\n  end if;\nend",
           "deprecated": false,
-          "description": "Modify an entity. If the modify operation is succesful, the etag is returned in a set.\nElse, an error will be raised with the following error code:\n* 'P0004' - update was unsuccessful (e.g., the etag value did not match)\n* 'P0002' - entry not found in the table (i.e., no such row)\n",
+          "description": "See taskcluster-lib-entities",
           "mode": "write",
           "returns": "table (etag uuid)",
           "serviceName": "notify"
@@ -304,7 +304,7 @@
           "args": "partition_key text, row_key text",
           "body": "begin\n  return query delete from denylisted_notification_entities\n  where denylisted_notification_entities.partition_key = denylisted_notification_entities_remove.partition_key and denylisted_notification_entities.row_key = denylisted_notification_entities_remove.row_key\n  returning denylisted_notification_entities.etag;\nend",
           "deprecated": false,
-          "description": "test",
+          "description": "See taskcluster-lib-entities",
           "mode": "write",
           "returns": "table (etag uuid)",
           "serviceName": "notify"
@@ -313,7 +313,7 @@
           "args": "pk text, rk text, condition text, size integer, page integer",
           "body": "declare\n  sql text := 'select denylisted_notification_entities.partition_key, denylisted_notification_entities.row_key, denylisted_notification_entities.value, denylisted_notification_entities.version, denylisted_notification_entities.etag from denylisted_notification_entities';\n  partition_key_var text;\n  row_key_var text;\n  page_offset integer;\nbegin\n  if denylisted_notification_entities_scan.pk is not null or denylisted_notification_entities_scan.rk is not null or condition is not null then\n    sql := sql || ' where ';\n  end if;\n\n  if denylisted_notification_entities_scan.pk is not null then\n    partition_key_var := 'partition_key = ' || quote_literal(denylisted_notification_entities_scan.pk);\n  end if;\n\n  if denylisted_notification_entities_scan.rk is not null then\n    row_key_var := 'row_key = ' || quote_literal(denylisted_notification_entities_scan.rk);\n  end if;\n\n  sql := sql || concat_ws(' and ', partition_key_var, row_key_var, condition);\n  sql := sql || ' order by denylisted_notification_entities.partition_key, denylisted_notification_entities.row_key';\n\n  if size is not null and size > 0 then\n    sql := sql || ' limit ' || size;\n\n    if page is not null and page > 0 then\n      page_offset := size * (page - 1);\n      sql := sql || ' offset ' || page_offset;\n    end if;\n  end if;\n\n  return query execute sql;\nend",
           "deprecated": false,
-          "description": "test",
+          "description": "See taskcluster-lib-entities",
           "mode": "read",
           "returns": "table (partition_key text, row_key text, value jsonb, version integer, etag uuid)",
           "serviceName": "notify"
@@ -322,7 +322,7 @@
           "args": "pk text, rk text, properties jsonb, overwrite boolean, version integer",
           "body": "declare\n  new_etag uuid := public.gen_random_uuid();\nbegin\n  if overwrite then\n    insert into github_access_token_table_entities(partition_key, row_key, value, version, etag)\n    values (\n      pk,\n      rk,\n      properties,\n      version,\n      new_etag\n    ) on conflict (partition_key, row_key) do\n    update\n    set (value, version, etag) = (properties, github_access_token_table_entities_create.version, new_etag)\n    where github_access_token_table_entities.partition_key = github_access_token_table_entities_create.pk and github_access_token_table_entities.row_key = github_access_token_table_entities_create.rk;\n  else\n    insert into github_access_token_table_entities(partition_key, row_key, value, version, etag)\n    values (\n      pk,\n      rk,\n      properties,\n      version,\n      new_etag\n    );\n  end if;\n  return new_etag;\nend",
           "deprecated": false,
-          "description": "test",
+          "description": "See taskcluster-lib-entities",
           "mode": "write",
           "returns": "uuid",
           "serviceName": "web_server"
@@ -331,7 +331,7 @@
           "args": "partition_key text, row_key text",
           "body": "begin\n  return query\n  select github_access_token_table_entities.partition_key, github_access_token_table_entities.row_key, github_access_token_table_entities.value, github_access_token_table_entities.version,\n  github_access_token_table_entities.etag from github_access_token_table_entities\n  where github_access_token_table_entities.partition_key = github_access_token_table_entities_load.partition_key and github_access_token_table_entities.row_key = github_access_token_table_entities_load.row_key;\nend",
           "deprecated": false,
-          "description": "test",
+          "description": "See taskcluster-lib-entities",
           "mode": "read",
           "returns": "table (partition_key_out text, row_key_out text, value jsonb, version integer, etag uuid)",
           "serviceName": "web_server"
@@ -340,7 +340,7 @@
           "args": "partition_key text, row_key text, properties jsonb, version integer, old_etag uuid",
           "body": "declare\n  new_etag uuid := public.gen_random_uuid();\nbegin\n  update github_access_token_table_entities\n  set (value, version, etag) = (properties, github_access_token_table_entities_modify.version, new_etag)\n  where github_access_token_table_entities.partition_key = github_access_token_table_entities_modify.partition_key and github_access_token_table_entities.row_key = github_access_token_table_entities_modify.row_key and github_access_token_table_entities.etag = github_access_token_table_entities_modify.old_etag;\n\n  if found then\n    return query select new_etag;\n    return;\n  end if;\n\n  perform github_access_token_table_entities.etag from github_access_token_table_entities\n  where github_access_token_table_entities.partition_key = github_access_token_table_entities_modify.partition_key and github_access_token_table_entities.row_key = github_access_token_table_entities_modify.row_key;\n\n  if found then\n    raise exception 'unsuccessful update' using errcode = 'P0004';\n  else\n    raise exception 'no such row' using errcode = 'P0002';\n  end if;\nend",
           "deprecated": false,
-          "description": "Modify an entity. If the modify operation is succesful, the etag is returned in a set.\nElse, an error will be raised with the following error code:\n* 'P0004' - update was unsuccessful (e.g., the etag value did not match)\n* 'P0002' - entry not found in the table (i.e., no such row)\n",
+          "description": "See taskcluster-lib-entities",
           "mode": "write",
           "returns": "table (etag uuid)",
           "serviceName": "web_server"
@@ -349,7 +349,7 @@
           "args": "partition_key text, row_key text",
           "body": "begin\n  return query delete from github_access_token_table_entities\n  where github_access_token_table_entities.partition_key = github_access_token_table_entities_remove.partition_key and github_access_token_table_entities.row_key = github_access_token_table_entities_remove.row_key\n  returning github_access_token_table_entities.etag;\nend",
           "deprecated": false,
-          "description": "test",
+          "description": "See taskcluster-lib-entities",
           "mode": "write",
           "returns": "table (etag uuid)",
           "serviceName": "web_server"
@@ -358,7 +358,7 @@
           "args": "pk text, rk text, condition text, size integer, page integer",
           "body": "declare\n  sql text := 'select github_access_token_table_entities.partition_key, github_access_token_table_entities.row_key, github_access_token_table_entities.value, github_access_token_table_entities.version, github_access_token_table_entities.etag from github_access_token_table_entities';\n  partition_key_var text;\n  row_key_var text;\n  page_offset integer;\nbegin\n  if github_access_token_table_entities_scan.pk is not null or github_access_token_table_entities_scan.rk is not null or condition is not null then\n    sql := sql || ' where ';\n  end if;\n\n  if github_access_token_table_entities_scan.pk is not null then\n    partition_key_var := 'partition_key = ' || quote_literal(github_access_token_table_entities_scan.pk);\n  end if;\n\n  if github_access_token_table_entities_scan.rk is not null then\n    row_key_var := 'row_key = ' || quote_literal(github_access_token_table_entities_scan.rk);\n  end if;\n\n  sql := sql || concat_ws(' and ', partition_key_var, row_key_var, condition);\n  sql := sql || ' order by github_access_token_table_entities.partition_key, github_access_token_table_entities.row_key';\n\n  if size is not null and size > 0 then\n    sql := sql || ' limit ' || size;\n\n    if page is not null and page > 0 then\n      page_offset := size * (page - 1);\n      sql := sql || ' offset ' || page_offset;\n    end if;\n  end if;\n\n  return query execute sql;\nend",
           "deprecated": false,
-          "description": "test",
+          "description": "See taskcluster-lib-entities",
           "mode": "read",
           "returns": "table (partition_key text, row_key text, value jsonb, version integer, etag uuid)",
           "serviceName": "web_server"
@@ -367,7 +367,7 @@
           "args": "pk text, rk text, properties jsonb, overwrite boolean, version integer",
           "body": "declare\n  new_etag uuid := public.gen_random_uuid();\nbegin\n  if overwrite then\n    insert into hooks_entities(partition_key, row_key, value, version, etag)\n    values (\n      pk,\n      rk,\n      properties,\n      version,\n      new_etag\n    ) on conflict (partition_key, row_key) do\n    update\n    set (value, version, etag) = (properties, hooks_entities_create.version, new_etag)\n    where hooks_entities.partition_key = hooks_entities_create.pk and hooks_entities.row_key = hooks_entities_create.rk;\n  else\n    insert into hooks_entities(partition_key, row_key, value, version, etag)\n    values (\n      pk,\n      rk,\n      properties,\n      version,\n      new_etag\n    );\n  end if;\n  return new_etag;\nend",
           "deprecated": false,
-          "description": "test",
+          "description": "See taskcluster-lib-entities",
           "mode": "write",
           "returns": "uuid",
           "serviceName": "hooks"
@@ -376,7 +376,7 @@
           "args": "partition_key text, row_key text",
           "body": "begin\n  return query\n  select hooks_entities.partition_key, hooks_entities.row_key, hooks_entities.value, hooks_entities.version,\n  hooks_entities.etag from hooks_entities\n  where hooks_entities.partition_key = hooks_entities_load.partition_key and hooks_entities.row_key = hooks_entities_load.row_key;\nend",
           "deprecated": false,
-          "description": "test",
+          "description": "See taskcluster-lib-entities",
           "mode": "read",
           "returns": "table (partition_key_out text, row_key_out text, value jsonb, version integer, etag uuid)",
           "serviceName": "hooks"
@@ -385,7 +385,7 @@
           "args": "partition_key text, row_key text, properties jsonb, version integer, old_etag uuid",
           "body": "declare\n  new_etag uuid := public.gen_random_uuid();\nbegin\n  update hooks_entities\n  set (value, version, etag) = (properties, hooks_entities_modify.version, new_etag)\n  where hooks_entities.partition_key = hooks_entities_modify.partition_key and hooks_entities.row_key = hooks_entities_modify.row_key and hooks_entities.etag = hooks_entities_modify.old_etag;\n\n  if found then\n    return query select new_etag;\n    return;\n  end if;\n\n  perform hooks_entities.etag from hooks_entities\n  where hooks_entities.partition_key = hooks_entities_modify.partition_key and hooks_entities.row_key = hooks_entities_modify.row_key;\n\n  if found then\n    raise exception 'unsuccessful update' using errcode = 'P0004';\n  else\n    raise exception 'no such row' using errcode = 'P0002';\n  end if;\nend",
           "deprecated": false,
-          "description": "Modify an entity. If the modify operation is succesful, the etag is returned in a set.\nElse, an error will be raised with the following error code:\n* 'P0004' - update was unsuccessful (e.g., the etag value did not match)\n* 'P0002' - entry not found in the table (i.e., no such row)\n",
+          "description": "See taskcluster-lib-entities",
           "mode": "write",
           "returns": "table (etag uuid)",
           "serviceName": "hooks"
@@ -394,7 +394,7 @@
           "args": "partition_key text, row_key text",
           "body": "begin\n  return query delete from hooks_entities\n  where hooks_entities.partition_key = hooks_entities_remove.partition_key and hooks_entities.row_key = hooks_entities_remove.row_key\n  returning hooks_entities.etag;\nend",
           "deprecated": false,
-          "description": "test",
+          "description": "See taskcluster-lib-entities",
           "mode": "write",
           "returns": "table (etag uuid)",
           "serviceName": "hooks"
@@ -403,7 +403,7 @@
           "args": "pk text, rk text, condition text, size integer, page integer",
           "body": "declare\n  sql text := 'select hooks_entities.partition_key, hooks_entities.row_key, hooks_entities.value, hooks_entities.version, hooks_entities.etag from hooks_entities';\n  partition_key_var text;\n  row_key_var text;\n  page_offset integer;\nbegin\n  if hooks_entities_scan.pk is not null or hooks_entities_scan.rk is not null or condition is not null then\n    sql := sql || ' where ';\n  end if;\n\n  if hooks_entities_scan.pk is not null then\n    partition_key_var := 'partition_key = ' || quote_literal(hooks_entities_scan.pk);\n  end if;\n\n  if hooks_entities_scan.rk is not null then\n    row_key_var := 'row_key = ' || quote_literal(hooks_entities_scan.rk);\n  end if;\n\n  sql := sql || concat_ws(' and ', partition_key_var, row_key_var, condition);\n  sql := sql || ' order by hooks_entities.partition_key, hooks_entities.row_key';\n\n  if size is not null and size > 0 then\n    sql := sql || ' limit ' || size;\n\n    if page is not null and page > 0 then\n      page_offset := size * (page - 1);\n      sql := sql || ' offset ' || page_offset;\n    end if;\n  end if;\n\n  return query execute sql;\nend",
           "deprecated": false,
-          "description": "test",
+          "description": "See taskcluster-lib-entities",
           "mode": "read",
           "returns": "table (partition_key text, row_key text, value jsonb, version integer, etag uuid)",
           "serviceName": "hooks"
@@ -412,7 +412,7 @@
           "args": "pk text, rk text, properties jsonb, overwrite boolean, version integer",
           "body": "declare\n  new_etag uuid := public.gen_random_uuid();\nbegin\n  if overwrite then\n    insert into indexed_tasks_entities(partition_key, row_key, value, version, etag)\n    values (\n      pk,\n      rk,\n      properties,\n      version,\n      new_etag\n    ) on conflict (partition_key, row_key) do\n    update\n    set (value, version, etag) = (properties, indexed_tasks_entities_create.version, new_etag)\n    where indexed_tasks_entities.partition_key = indexed_tasks_entities_create.pk and indexed_tasks_entities.row_key = indexed_tasks_entities_create.rk;\n  else\n    insert into indexed_tasks_entities(partition_key, row_key, value, version, etag)\n    values (\n      pk,\n      rk,\n      properties,\n      version,\n      new_etag\n    );\n  end if;\n  return new_etag;\nend",
           "deprecated": false,
-          "description": "test",
+          "description": "See taskcluster-lib-entities",
           "mode": "write",
           "returns": "uuid",
           "serviceName": "index"
@@ -421,7 +421,7 @@
           "args": "partition_key text, row_key text",
           "body": "begin\n  return query\n  select indexed_tasks_entities.partition_key, indexed_tasks_entities.row_key, indexed_tasks_entities.value, indexed_tasks_entities.version,\n  indexed_tasks_entities.etag from indexed_tasks_entities\n  where indexed_tasks_entities.partition_key = indexed_tasks_entities_load.partition_key and indexed_tasks_entities.row_key = indexed_tasks_entities_load.row_key;\nend",
           "deprecated": false,
-          "description": "test",
+          "description": "See taskcluster-lib-entities",
           "mode": "read",
           "returns": "table (partition_key_out text, row_key_out text, value jsonb, version integer, etag uuid)",
           "serviceName": "index"
@@ -430,7 +430,7 @@
           "args": "partition_key text, row_key text, properties jsonb, version integer, old_etag uuid",
           "body": "declare\n  new_etag uuid := public.gen_random_uuid();\nbegin\n  update indexed_tasks_entities\n  set (value, version, etag) = (properties, indexed_tasks_entities_modify.version, new_etag)\n  where indexed_tasks_entities.partition_key = indexed_tasks_entities_modify.partition_key and indexed_tasks_entities.row_key = indexed_tasks_entities_modify.row_key and indexed_tasks_entities.etag = indexed_tasks_entities_modify.old_etag;\n\n  if found then\n    return query select new_etag;\n    return;\n  end if;\n\n  perform indexed_tasks_entities.etag from indexed_tasks_entities\n  where indexed_tasks_entities.partition_key = indexed_tasks_entities_modify.partition_key and indexed_tasks_entities.row_key = indexed_tasks_entities_modify.row_key;\n\n  if found then\n    raise exception 'unsuccessful update' using errcode = 'P0004';\n  else\n    raise exception 'no such row' using errcode = 'P0002';\n  end if;\nend",
           "deprecated": false,
-          "description": "Modify an entity. If the modify operation is succesful, the etag is returned in a set.\nElse, an error will be raised with the following error code:\n* 'P0004' - update was unsuccessful (e.g., the etag value did not match)\n* 'P0002' - entry not found in the table (i.e., no such row)\n",
+          "description": "See taskcluster-lib-entities",
           "mode": "write",
           "returns": "table (etag uuid)",
           "serviceName": "index"
@@ -439,7 +439,7 @@
           "args": "partition_key text, row_key text",
           "body": "begin\n  return query delete from indexed_tasks_entities\n  where indexed_tasks_entities.partition_key = indexed_tasks_entities_remove.partition_key and indexed_tasks_entities.row_key = indexed_tasks_entities_remove.row_key\n  returning indexed_tasks_entities.etag;\nend",
           "deprecated": false,
-          "description": "test",
+          "description": "See taskcluster-lib-entities",
           "mode": "write",
           "returns": "table (etag uuid)",
           "serviceName": "index"
@@ -448,7 +448,7 @@
           "args": "pk text, rk text, condition text, size integer, page integer",
           "body": "declare\n  sql text := 'select indexed_tasks_entities.partition_key, indexed_tasks_entities.row_key, indexed_tasks_entities.value, indexed_tasks_entities.version, indexed_tasks_entities.etag from indexed_tasks_entities';\n  partition_key_var text;\n  row_key_var text;\n  page_offset integer;\nbegin\n  if indexed_tasks_entities_scan.pk is not null or indexed_tasks_entities_scan.rk is not null or condition is not null then\n    sql := sql || ' where ';\n  end if;\n\n  if indexed_tasks_entities_scan.pk is not null then\n    partition_key_var := 'partition_key = ' || quote_literal(indexed_tasks_entities_scan.pk);\n  end if;\n\n  if indexed_tasks_entities_scan.rk is not null then\n    row_key_var := 'row_key = ' || quote_literal(indexed_tasks_entities_scan.rk);\n  end if;\n\n  sql := sql || concat_ws(' and ', partition_key_var, row_key_var, condition);\n  sql := sql || ' order by indexed_tasks_entities.partition_key, indexed_tasks_entities.row_key';\n\n  if size is not null and size > 0 then\n    sql := sql || ' limit ' || size;\n\n    if page is not null and page > 0 then\n      page_offset := size * (page - 1);\n      sql := sql || ' offset ' || page_offset;\n    end if;\n  end if;\n\n  return query execute sql;\nend",
           "deprecated": false,
-          "description": "test",
+          "description": "See taskcluster-lib-entities",
           "mode": "read",
           "returns": "table (partition_key text, row_key text, value jsonb, version integer, etag uuid)",
           "serviceName": "index"
@@ -457,7 +457,7 @@
           "args": "pk text, rk text, properties jsonb, overwrite boolean, version integer",
           "body": "declare\n  new_etag uuid := public.gen_random_uuid();\nbegin\n  if overwrite then\n    insert into last_fire3_entities(partition_key, row_key, value, version, etag)\n    values (\n      pk,\n      rk,\n      properties,\n      version,\n      new_etag\n    ) on conflict (partition_key, row_key) do\n    update\n    set (value, version, etag) = (properties, last_fire3_entities_create.version, new_etag)\n    where last_fire3_entities.partition_key = last_fire3_entities_create.pk and last_fire3_entities.row_key = last_fire3_entities_create.rk;\n  else\n    insert into last_fire3_entities(partition_key, row_key, value, version, etag)\n    values (\n      pk,\n      rk,\n      properties,\n      version,\n      new_etag\n    );\n  end if;\n  return new_etag;\nend",
           "deprecated": false,
-          "description": "test",
+          "description": "See taskcluster-lib-entities",
           "mode": "write",
           "returns": "uuid",
           "serviceName": "hooks"
@@ -466,7 +466,7 @@
           "args": "partition_key text, row_key text",
           "body": "begin\n  return query\n  select last_fire3_entities.partition_key, last_fire3_entities.row_key, last_fire3_entities.value, last_fire3_entities.version,\n  last_fire3_entities.etag from last_fire3_entities\n  where last_fire3_entities.partition_key = last_fire3_entities_load.partition_key and last_fire3_entities.row_key = last_fire3_entities_load.row_key;\nend",
           "deprecated": false,
-          "description": "test",
+          "description": "See taskcluster-lib-entities",
           "mode": "read",
           "returns": "table (partition_key_out text, row_key_out text, value jsonb, version integer, etag uuid)",
           "serviceName": "hooks"
@@ -475,7 +475,7 @@
           "args": "partition_key text, row_key text, properties jsonb, version integer, old_etag uuid",
           "body": "declare\n  new_etag uuid := public.gen_random_uuid();\nbegin\n  update last_fire3_entities\n  set (value, version, etag) = (properties, last_fire3_entities_modify.version, new_etag)\n  where last_fire3_entities.partition_key = last_fire3_entities_modify.partition_key and last_fire3_entities.row_key = last_fire3_entities_modify.row_key and last_fire3_entities.etag = last_fire3_entities_modify.old_etag;\n\n  if found then\n    return query select new_etag;\n    return;\n  end if;\n\n  perform last_fire3_entities.etag from last_fire3_entities\n  where last_fire3_entities.partition_key = last_fire3_entities_modify.partition_key and last_fire3_entities.row_key = last_fire3_entities_modify.row_key;\n\n  if found then\n    raise exception 'unsuccessful update' using errcode = 'P0004';\n  else\n    raise exception 'no such row' using errcode = 'P0002';\n  end if;\nend",
           "deprecated": false,
-          "description": "Modify an entity. If the modify operation is succesful, the etag is returned in a set.\nElse, an error will be raised with the following error code:\n* 'P0004' - update was unsuccessful (e.g., the etag value did not match)\n* 'P0002' - entry not found in the table (i.e., no such row)\n",
+          "description": "See taskcluster-lib-entities",
           "mode": "write",
           "returns": "table (etag uuid)",
           "serviceName": "hooks"
@@ -484,7 +484,7 @@
           "args": "partition_key text, row_key text",
           "body": "begin\n  return query delete from last_fire3_entities\n  where last_fire3_entities.partition_key = last_fire3_entities_remove.partition_key and last_fire3_entities.row_key = last_fire3_entities_remove.row_key\n  returning last_fire3_entities.etag;\nend",
           "deprecated": false,
-          "description": "test",
+          "description": "See taskcluster-lib-entities",
           "mode": "write",
           "returns": "table (etag uuid)",
           "serviceName": "hooks"
@@ -493,7 +493,7 @@
           "args": "pk text, rk text, condition text, size integer, page integer",
           "body": "declare\n  sql text := 'select last_fire3_entities.partition_key, last_fire3_entities.row_key, last_fire3_entities.value, last_fire3_entities.version, last_fire3_entities.etag from last_fire3_entities';\n  partition_key_var text;\n  row_key_var text;\n  page_offset integer;\nbegin\n  if last_fire3_entities_scan.pk is not null or last_fire3_entities_scan.rk is not null or condition is not null then\n    sql := sql || ' where ';\n  end if;\n\n  if last_fire3_entities_scan.pk is not null then\n    partition_key_var := 'partition_key = ' || quote_literal(last_fire3_entities_scan.pk);\n  end if;\n\n  if last_fire3_entities_scan.rk is not null then\n    row_key_var := 'row_key = ' || quote_literal(last_fire3_entities_scan.rk);\n  end if;\n\n  sql := sql || concat_ws(' and ', partition_key_var, row_key_var, condition);\n  sql := sql || ' order by last_fire3_entities.partition_key, last_fire3_entities.row_key';\n\n  if size is not null and size > 0 then\n    sql := sql || ' limit ' || size;\n\n    if page is not null and page > 0 then\n      page_offset := size * (page - 1);\n      sql := sql || ' offset ' || page_offset;\n    end if;\n  end if;\n\n  return query execute sql;\nend",
           "deprecated": false,
-          "description": "test",
+          "description": "See taskcluster-lib-entities",
           "mode": "read",
           "returns": "table (partition_key text, row_key text, value jsonb, version integer, etag uuid)",
           "serviceName": "hooks"
@@ -502,7 +502,7 @@
           "args": "pk text, rk text, properties jsonb, overwrite boolean, version integer",
           "body": "declare\n  new_etag uuid := public.gen_random_uuid();\nbegin\n  if overwrite then\n    insert into namespaces_entities(partition_key, row_key, value, version, etag)\n    values (\n      pk,\n      rk,\n      properties,\n      version,\n      new_etag\n    ) on conflict (partition_key, row_key) do\n    update\n    set (value, version, etag) = (properties, namespaces_entities_create.version, new_etag)\n    where namespaces_entities.partition_key = namespaces_entities_create.pk and namespaces_entities.row_key = namespaces_entities_create.rk;\n  else\n    insert into namespaces_entities(partition_key, row_key, value, version, etag)\n    values (\n      pk,\n      rk,\n      properties,\n      version,\n      new_etag\n    );\n  end if;\n  return new_etag;\nend",
           "deprecated": false,
-          "description": "test",
+          "description": "See taskcluster-lib-entities",
           "mode": "write",
           "returns": "uuid",
           "serviceName": "index"
@@ -511,7 +511,7 @@
           "args": "partition_key text, row_key text",
           "body": "begin\n  return query\n  select namespaces_entities.partition_key, namespaces_entities.row_key, namespaces_entities.value, namespaces_entities.version,\n  namespaces_entities.etag from namespaces_entities\n  where namespaces_entities.partition_key = namespaces_entities_load.partition_key and namespaces_entities.row_key = namespaces_entities_load.row_key;\nend",
           "deprecated": false,
-          "description": "test",
+          "description": "See taskcluster-lib-entities",
           "mode": "read",
           "returns": "table (partition_key_out text, row_key_out text, value jsonb, version integer, etag uuid)",
           "serviceName": "index"
@@ -520,7 +520,7 @@
           "args": "partition_key text, row_key text, properties jsonb, version integer, old_etag uuid",
           "body": "declare\n  new_etag uuid := public.gen_random_uuid();\nbegin\n  update namespaces_entities\n  set (value, version, etag) = (properties, namespaces_entities_modify.version, new_etag)\n  where namespaces_entities.partition_key = namespaces_entities_modify.partition_key and namespaces_entities.row_key = namespaces_entities_modify.row_key and namespaces_entities.etag = namespaces_entities_modify.old_etag;\n\n  if found then\n    return query select new_etag;\n    return;\n  end if;\n\n  perform namespaces_entities.etag from namespaces_entities\n  where namespaces_entities.partition_key = namespaces_entities_modify.partition_key and namespaces_entities.row_key = namespaces_entities_modify.row_key;\n\n  if found then\n    raise exception 'unsuccessful update' using errcode = 'P0004';\n  else\n    raise exception 'no such row' using errcode = 'P0002';\n  end if;\nend",
           "deprecated": false,
-          "description": "Modify an entity. If the modify operation is succesful, the etag is returned in a set.\nElse, an error will be raised with the following error code:\n* 'P0004' - update was unsuccessful (e.g., the etag value did not match)\n* 'P0002' - entry not found in the table (i.e., no such row)\n",
+          "description": "See taskcluster-lib-entities",
           "mode": "write",
           "returns": "table (etag uuid)",
           "serviceName": "index"
@@ -529,7 +529,7 @@
           "args": "partition_key text, row_key text",
           "body": "begin\n  return query delete from namespaces_entities\n  where namespaces_entities.partition_key = namespaces_entities_remove.partition_key and namespaces_entities.row_key = namespaces_entities_remove.row_key\n  returning namespaces_entities.etag;\nend",
           "deprecated": false,
-          "description": "test",
+          "description": "See taskcluster-lib-entities",
           "mode": "write",
           "returns": "table (etag uuid)",
           "serviceName": "index"
@@ -538,7 +538,7 @@
           "args": "pk text, rk text, condition text, size integer, page integer",
           "body": "declare\n  sql text := 'select namespaces_entities.partition_key, namespaces_entities.row_key, namespaces_entities.value, namespaces_entities.version, namespaces_entities.etag from namespaces_entities';\n  partition_key_var text;\n  row_key_var text;\n  page_offset integer;\nbegin\n  if namespaces_entities_scan.pk is not null or namespaces_entities_scan.rk is not null or condition is not null then\n    sql := sql || ' where ';\n  end if;\n\n  if namespaces_entities_scan.pk is not null then\n    partition_key_var := 'partition_key = ' || quote_literal(namespaces_entities_scan.pk);\n  end if;\n\n  if namespaces_entities_scan.rk is not null then\n    row_key_var := 'row_key = ' || quote_literal(namespaces_entities_scan.rk);\n  end if;\n\n  sql := sql || concat_ws(' and ', partition_key_var, row_key_var, condition);\n  sql := sql || ' order by namespaces_entities.partition_key, namespaces_entities.row_key';\n\n  if size is not null and size > 0 then\n    sql := sql || ' limit ' || size;\n\n    if page is not null and page > 0 then\n      page_offset := size * (page - 1);\n      sql := sql || ' offset ' || page_offset;\n    end if;\n  end if;\n\n  return query execute sql;\nend",
           "deprecated": false,
-          "description": "test",
+          "description": "See taskcluster-lib-entities",
           "mode": "read",
           "returns": "table (partition_key text, row_key text, value jsonb, version integer, etag uuid)",
           "serviceName": "index"
@@ -547,7 +547,7 @@
           "args": "pk text, rk text, properties jsonb, overwrite boolean, version integer",
           "body": "declare\n  new_etag uuid := public.gen_random_uuid();\nbegin\n  if overwrite then\n    insert into queue_artifacts_entities(partition_key, row_key, value, version, etag)\n    values (\n      pk,\n      rk,\n      properties,\n      version,\n      new_etag\n    ) on conflict (partition_key, row_key) do\n    update\n    set (value, version, etag) = (properties, queue_artifacts_entities_create.version, new_etag)\n    where queue_artifacts_entities.partition_key = queue_artifacts_entities_create.pk and queue_artifacts_entities.row_key = queue_artifacts_entities_create.rk;\n  else\n    insert into queue_artifacts_entities(partition_key, row_key, value, version, etag)\n    values (\n      pk,\n      rk,\n      properties,\n      version,\n      new_etag\n    );\n  end if;\n  return new_etag;\nend",
           "deprecated": false,
-          "description": "test",
+          "description": "See taskcluster-lib-entities",
           "mode": "write",
           "returns": "uuid",
           "serviceName": "queue"
@@ -556,16 +556,16 @@
           "args": "partition_key text, row_key text",
           "body": "begin\n  return query\n  select queue_artifacts_entities.partition_key, queue_artifacts_entities.row_key, queue_artifacts_entities.value, queue_artifacts_entities.version,\n  queue_artifacts_entities.etag from queue_artifacts_entities\n  where queue_artifacts_entities.partition_key = queue_artifacts_entities_load.partition_key and queue_artifacts_entities.row_key = queue_artifacts_entities_load.row_key;\nend",
           "deprecated": false,
-          "description": "test",
+          "description": "See taskcluster-lib-entities",
           "mode": "read",
           "returns": "table (partition_key_out text, row_key_out text, value jsonb, version integer, etag uuid)",
-          "serviceName": "queue_artifacts_entitie"
+          "serviceName": "queue"
         },
         "queue_artifacts_entities_modify": {
           "args": "partition_key text, row_key text, properties jsonb, version integer, old_etag uuid",
           "body": "declare\n  new_etag uuid := public.gen_random_uuid();\nbegin\n  update queue_artifacts_entities\n  set (value, version, etag) = (properties, queue_artifacts_entities_modify.version, new_etag)\n  where queue_artifacts_entities.partition_key = queue_artifacts_entities_modify.partition_key and queue_artifacts_entities.row_key = queue_artifacts_entities_modify.row_key and queue_artifacts_entities.etag = queue_artifacts_entities_modify.old_etag;\n\n  if found then\n    return query select new_etag;\n    return;\n  end if;\n\n  perform queue_artifacts_entities.etag from queue_artifacts_entities\n  where queue_artifacts_entities.partition_key = queue_artifacts_entities_modify.partition_key and queue_artifacts_entities.row_key = queue_artifacts_entities_modify.row_key;\n\n  if found then\n    raise exception 'unsuccessful update' using errcode = 'P0004';\n  else\n    raise exception 'no such row' using errcode = 'P0002';\n  end if;\nend",
           "deprecated": false,
-          "description": "Modify an entity. If the modify operation is succesful, the etag is returned in a set.\nElse, an error will be raised with the following error code:\n* 'P0004' - update was unsuccessful (e.g., the etag value did not match)\n* 'P0002' - entry not found in the table (i.e., no such row)\n",
+          "description": "See taskcluster-lib-entities",
           "mode": "write",
           "returns": "table (etag uuid)",
           "serviceName": "queue"
@@ -574,7 +574,7 @@
           "args": "partition_key text, row_key text",
           "body": "begin\n  return query delete from queue_artifacts_entities\n  where queue_artifacts_entities.partition_key = queue_artifacts_entities_remove.partition_key and queue_artifacts_entities.row_key = queue_artifacts_entities_remove.row_key\n  returning queue_artifacts_entities.etag;\nend",
           "deprecated": false,
-          "description": "test",
+          "description": "See taskcluster-lib-entities",
           "mode": "write",
           "returns": "table (etag uuid)",
           "serviceName": "queue"
@@ -583,7 +583,7 @@
           "args": "pk text, rk text, condition text, size integer, page integer",
           "body": "declare\n  sql text := 'select queue_artifacts_entities.partition_key, queue_artifacts_entities.row_key, queue_artifacts_entities.value, queue_artifacts_entities.version, queue_artifacts_entities.etag from queue_artifacts_entities';\n  partition_key_var text;\n  row_key_var text;\n  page_offset integer;\nbegin\n  if queue_artifacts_entities_scan.pk is not null or queue_artifacts_entities_scan.rk is not null or condition is not null then\n    sql := sql || ' where ';\n  end if;\n\n  if queue_artifacts_entities_scan.pk is not null then\n    partition_key_var := 'partition_key = ' || quote_literal(queue_artifacts_entities_scan.pk);\n  end if;\n\n  if queue_artifacts_entities_scan.rk is not null then\n    row_key_var := 'row_key = ' || quote_literal(queue_artifacts_entities_scan.rk);\n  end if;\n\n  sql := sql || concat_ws(' and ', partition_key_var, row_key_var, condition);\n  sql := sql || ' order by queue_artifacts_entities.partition_key, queue_artifacts_entities.row_key';\n\n  if size is not null and size > 0 then\n    sql := sql || ' limit ' || size;\n\n    if page is not null and page > 0 then\n      page_offset := size * (page - 1);\n      sql := sql || ' offset ' || page_offset;\n    end if;\n  end if;\n\n  return query execute sql;\nend",
           "deprecated": false,
-          "description": "test",
+          "description": "See taskcluster-lib-entities",
           "mode": "read",
           "returns": "table (partition_key text, row_key text, value jsonb, version integer, etag uuid)",
           "serviceName": "queue"
@@ -592,7 +592,7 @@
           "args": "pk text, rk text, properties jsonb, overwrite boolean, version integer",
           "body": "declare\n  new_etag uuid := public.gen_random_uuid();\nbegin\n  if overwrite then\n    insert into queue_provisioner_entities(partition_key, row_key, value, version, etag)\n    values (\n      pk,\n      rk,\n      properties,\n      version,\n      new_etag\n    ) on conflict (partition_key, row_key) do\n    update\n    set (value, version, etag) = (properties, queue_provisioner_entities_create.version, new_etag)\n    where queue_provisioner_entities.partition_key = queue_provisioner_entities_create.pk and queue_provisioner_entities.row_key = queue_provisioner_entities_create.rk;\n  else\n    insert into queue_provisioner_entities(partition_key, row_key, value, version, etag)\n    values (\n      pk,\n      rk,\n      properties,\n      version,\n      new_etag\n    );\n  end if;\n  return new_etag;\nend",
           "deprecated": false,
-          "description": "test",
+          "description": "See taskcluster-lib-entities",
           "mode": "write",
           "returns": "uuid",
           "serviceName": "queue"
@@ -601,7 +601,7 @@
           "args": "partition_key text, row_key text",
           "body": "begin\n  return query\n  select queue_provisioner_entities.partition_key, queue_provisioner_entities.row_key, queue_provisioner_entities.value, queue_provisioner_entities.version,\n  queue_provisioner_entities.etag from queue_provisioner_entities\n  where queue_provisioner_entities.partition_key = queue_provisioner_entities_load.partition_key and queue_provisioner_entities.row_key = queue_provisioner_entities_load.row_key;\nend",
           "deprecated": false,
-          "description": "test",
+          "description": "See taskcluster-lib-entities",
           "mode": "read",
           "returns": "table (partition_key_out text, row_key_out text, value jsonb, version integer, etag uuid)",
           "serviceName": "queue"
@@ -610,7 +610,7 @@
           "args": "partition_key text, row_key text, properties jsonb, version integer, old_etag uuid",
           "body": "declare\n  new_etag uuid := public.gen_random_uuid();\nbegin\n  update queue_provisioner_entities\n  set (value, version, etag) = (properties, queue_provisioner_entities_modify.version, new_etag)\n  where queue_provisioner_entities.partition_key = queue_provisioner_entities_modify.partition_key and queue_provisioner_entities.row_key = queue_provisioner_entities_modify.row_key and queue_provisioner_entities.etag = queue_provisioner_entities_modify.old_etag;\n\n  if found then\n    return query select new_etag;\n    return;\n  end if;\n\n  perform queue_provisioner_entities.etag from queue_provisioner_entities\n  where queue_provisioner_entities.partition_key = queue_provisioner_entities_modify.partition_key and queue_provisioner_entities.row_key = queue_provisioner_entities_modify.row_key;\n\n  if found then\n    raise exception 'unsuccessful update' using errcode = 'P0004';\n  else\n    raise exception 'no such row' using errcode = 'P0002';\n  end if;\nend",
           "deprecated": false,
-          "description": "Modify an entity. If the modify operation is succesful, the etag is returned in a set.\nElse, an error will be raised with the following error code:\n* 'P0004' - update was unsuccessful (e.g., the etag value did not match)\n* 'P0002' - entry not found in the table (i.e., no such row)\n",
+          "description": "See taskcluster-lib-entities",
           "mode": "write",
           "returns": "table (etag uuid)",
           "serviceName": "queue"
@@ -619,7 +619,7 @@
           "args": "partition_key text, row_key text",
           "body": "begin\n  return query delete from queue_provisioner_entities\n  where queue_provisioner_entities.partition_key = queue_provisioner_entities_remove.partition_key and queue_provisioner_entities.row_key = queue_provisioner_entities_remove.row_key\n  returning queue_provisioner_entities.etag;\nend",
           "deprecated": false,
-          "description": "test",
+          "description": "See taskcluster-lib-entities",
           "mode": "write",
           "returns": "table (etag uuid)",
           "serviceName": "queue"
@@ -628,7 +628,7 @@
           "args": "pk text, rk text, condition text, size integer, page integer",
           "body": "declare\n  sql text := 'select queue_provisioner_entities.partition_key, queue_provisioner_entities.row_key, queue_provisioner_entities.value, queue_provisioner_entities.version, queue_provisioner_entities.etag from queue_provisioner_entities';\n  partition_key_var text;\n  row_key_var text;\n  page_offset integer;\nbegin\n  if queue_provisioner_entities_scan.pk is not null or queue_provisioner_entities_scan.rk is not null or condition is not null then\n    sql := sql || ' where ';\n  end if;\n\n  if queue_provisioner_entities_scan.pk is not null then\n    partition_key_var := 'partition_key = ' || quote_literal(queue_provisioner_entities_scan.pk);\n  end if;\n\n  if queue_provisioner_entities_scan.rk is not null then\n    row_key_var := 'row_key = ' || quote_literal(queue_provisioner_entities_scan.rk);\n  end if;\n\n  sql := sql || concat_ws(' and ', partition_key_var, row_key_var, condition);\n  sql := sql || ' order by queue_provisioner_entities.partition_key, queue_provisioner_entities.row_key';\n\n  if size is not null and size > 0 then\n    sql := sql || ' limit ' || size;\n\n    if page is not null and page > 0 then\n      page_offset := size * (page - 1);\n      sql := sql || ' offset ' || page_offset;\n    end if;\n  end if;\n\n  return query execute sql;\nend",
           "deprecated": false,
-          "description": "test",
+          "description": "See taskcluster-lib-entities",
           "mode": "read",
           "returns": "table (partition_key text, row_key text, value jsonb, version integer, etag uuid)",
           "serviceName": "queue"
@@ -637,7 +637,7 @@
           "args": "pk text, rk text, properties jsonb, overwrite boolean, version integer",
           "body": "declare\n  new_etag uuid := public.gen_random_uuid();\nbegin\n  if overwrite then\n    insert into queue_task_dependency_entities(partition_key, row_key, value, version, etag)\n    values (\n      pk,\n      rk,\n      properties,\n      version,\n      new_etag\n    ) on conflict (partition_key, row_key) do\n    update\n    set (value, version, etag) = (properties, queue_task_dependency_entities_create.version, new_etag)\n    where queue_task_dependency_entities.partition_key = queue_task_dependency_entities_create.pk and queue_task_dependency_entities.row_key = queue_task_dependency_entities_create.rk;\n  else\n    insert into queue_task_dependency_entities(partition_key, row_key, value, version, etag)\n    values (\n      pk,\n      rk,\n      properties,\n      version,\n      new_etag\n    );\n  end if;\n  return new_etag;\nend",
           "deprecated": false,
-          "description": "test",
+          "description": "See taskcluster-lib-entities",
           "mode": "write",
           "returns": "uuid",
           "serviceName": "queue"
@@ -646,7 +646,7 @@
           "args": "partition_key text, row_key text",
           "body": "begin\n  return query\n  select queue_task_dependency_entities.partition_key, queue_task_dependency_entities.row_key, queue_task_dependency_entities.value, queue_task_dependency_entities.version,\n  queue_task_dependency_entities.etag from queue_task_dependency_entities\n  where queue_task_dependency_entities.partition_key = queue_task_dependency_entities_load.partition_key and queue_task_dependency_entities.row_key = queue_task_dependency_entities_load.row_key;\nend",
           "deprecated": false,
-          "description": "test",
+          "description": "See taskcluster-lib-entities",
           "mode": "read",
           "returns": "table (partition_key_out text, row_key_out text, value jsonb, version integer, etag uuid)",
           "serviceName": "queue"
@@ -655,7 +655,7 @@
           "args": "partition_key text, row_key text, properties jsonb, version integer, old_etag uuid",
           "body": "declare\n  new_etag uuid := public.gen_random_uuid();\nbegin\n  update queue_task_dependency_entities\n  set (value, version, etag) = (properties, queue_task_dependency_entities_modify.version, new_etag)\n  where queue_task_dependency_entities.partition_key = queue_task_dependency_entities_modify.partition_key and queue_task_dependency_entities.row_key = queue_task_dependency_entities_modify.row_key and queue_task_dependency_entities.etag = queue_task_dependency_entities_modify.old_etag;\n\n  if found then\n    return query select new_etag;\n    return;\n  end if;\n\n  perform queue_task_dependency_entities.etag from queue_task_dependency_entities\n  where queue_task_dependency_entities.partition_key = queue_task_dependency_entities_modify.partition_key and queue_task_dependency_entities.row_key = queue_task_dependency_entities_modify.row_key;\n\n  if found then\n    raise exception 'unsuccessful update' using errcode = 'P0004';\n  else\n    raise exception 'no such row' using errcode = 'P0002';\n  end if;\nend",
           "deprecated": false,
-          "description": "Modify an entity. If the modify operation is succesful, the etag is returned in a set.\nElse, an error will be raised with the following error code:\n* 'P0004' - update was unsuccessful (e.g., the etag value did not match)\n* 'P0002' - entry not found in the table (i.e., no such row)\n",
+          "description": "See taskcluster-lib-entities",
           "mode": "write",
           "returns": "table (etag uuid)",
           "serviceName": "queue"
@@ -664,7 +664,7 @@
           "args": "partition_key text, row_key text",
           "body": "begin\n  return query delete from queue_task_dependency_entities\n  where queue_task_dependency_entities.partition_key = queue_task_dependency_entities_remove.partition_key and queue_task_dependency_entities.row_key = queue_task_dependency_entities_remove.row_key\n  returning queue_task_dependency_entities.etag;\nend",
           "deprecated": false,
-          "description": "test",
+          "description": "See taskcluster-lib-entities",
           "mode": "write",
           "returns": "table (etag uuid)",
           "serviceName": "queue"
@@ -673,7 +673,7 @@
           "args": "pk text, rk text, condition text, size integer, page integer",
           "body": "declare\n  sql text := 'select queue_task_dependency_entities.partition_key, queue_task_dependency_entities.row_key, queue_task_dependency_entities.value, queue_task_dependency_entities.version, queue_task_dependency_entities.etag from queue_task_dependency_entities';\n  partition_key_var text;\n  row_key_var text;\n  page_offset integer;\nbegin\n  if queue_task_dependency_entities_scan.pk is not null or queue_task_dependency_entities_scan.rk is not null or condition is not null then\n    sql := sql || ' where ';\n  end if;\n\n  if queue_task_dependency_entities_scan.pk is not null then\n    partition_key_var := 'partition_key = ' || quote_literal(queue_task_dependency_entities_scan.pk);\n  end if;\n\n  if queue_task_dependency_entities_scan.rk is not null then\n    row_key_var := 'row_key = ' || quote_literal(queue_task_dependency_entities_scan.rk);\n  end if;\n\n  sql := sql || concat_ws(' and ', partition_key_var, row_key_var, condition);\n  sql := sql || ' order by queue_task_dependency_entities.partition_key, queue_task_dependency_entities.row_key';\n\n  if size is not null and size > 0 then\n    sql := sql || ' limit ' || size;\n\n    if page is not null and page > 0 then\n      page_offset := size * (page - 1);\n      sql := sql || ' offset ' || page_offset;\n    end if;\n  end if;\n\n  return query execute sql;\nend",
           "deprecated": false,
-          "description": "test",
+          "description": "See taskcluster-lib-entities",
           "mode": "read",
           "returns": "table (partition_key text, row_key text, value jsonb, version integer, etag uuid)",
           "serviceName": "queue"
@@ -682,7 +682,7 @@
           "args": "pk text, rk text, properties jsonb, overwrite boolean, version integer",
           "body": "declare\n  new_etag uuid := public.gen_random_uuid();\nbegin\n  if overwrite then\n    insert into queue_task_group_active_sets_entities(partition_key, row_key, value, version, etag)\n    values (\n      pk,\n      rk,\n      properties,\n      version,\n      new_etag\n    ) on conflict (partition_key, row_key) do\n    update\n    set (value, version, etag) = (properties, queue_task_group_active_sets_entities_create.version, new_etag)\n    where queue_task_group_active_sets_entities.partition_key = queue_task_group_active_sets_entities_create.pk and queue_task_group_active_sets_entities.row_key = queue_task_group_active_sets_entities_create.rk;\n  else\n    insert into queue_task_group_active_sets_entities(partition_key, row_key, value, version, etag)\n    values (\n      pk,\n      rk,\n      properties,\n      version,\n      new_etag\n    );\n  end if;\n  return new_etag;\nend",
           "deprecated": false,
-          "description": "test",
+          "description": "See taskcluster-lib-entities",
           "mode": "write",
           "returns": "uuid",
           "serviceName": "queue"
@@ -691,7 +691,7 @@
           "args": "partition_key text, row_key text",
           "body": "begin\n  return query\n  select queue_task_group_active_sets_entities.partition_key, queue_task_group_active_sets_entities.row_key, queue_task_group_active_sets_entities.value, queue_task_group_active_sets_entities.version,\n  queue_task_group_active_sets_entities.etag from queue_task_group_active_sets_entities\n  where queue_task_group_active_sets_entities.partition_key = queue_task_group_active_sets_entities_load.partition_key and queue_task_group_active_sets_entities.row_key = queue_task_group_active_sets_entities_load.row_key;\nend",
           "deprecated": false,
-          "description": "test",
+          "description": "See taskcluster-lib-entities",
           "mode": "read",
           "returns": "table (partition_key_out text, row_key_out text, value jsonb, version integer, etag uuid)",
           "serviceName": "queue"
@@ -700,7 +700,7 @@
           "args": "partition_key text, row_key text, properties jsonb, version integer, old_etag uuid",
           "body": "declare\n  new_etag uuid := public.gen_random_uuid();\nbegin\n  update queue_task_group_active_sets_entities\n  set (value, version, etag) = (properties, queue_task_group_active_sets_entities_modify.version, new_etag)\n  where queue_task_group_active_sets_entities.partition_key = queue_task_group_active_sets_entities_modify.partition_key and queue_task_group_active_sets_entities.row_key = queue_task_group_active_sets_entities_modify.row_key and queue_task_group_active_sets_entities.etag = queue_task_group_active_sets_entities_modify.old_etag;\n\n  if found then\n    return query select new_etag;\n    return;\n  end if;\n\n  perform queue_task_group_active_sets_entities.etag from queue_task_group_active_sets_entities\n  where queue_task_group_active_sets_entities.partition_key = queue_task_group_active_sets_entities_modify.partition_key and queue_task_group_active_sets_entities.row_key = queue_task_group_active_sets_entities_modify.row_key;\n\n  if found then\n    raise exception 'unsuccessful update' using errcode = 'P0004';\n  else\n    raise exception 'no such row' using errcode = 'P0002';\n  end if;\nend",
           "deprecated": false,
-          "description": "Modify an entity. If the modify operation is succesful, the etag is returned in a set.\nElse, an error will be raised with the following error code:\n* 'P0004' - update was unsuccessful (e.g., the etag value did not match)\n* 'P0002' - entry not found in the table (i.e., no such row)\n",
+          "description": "See taskcluster-lib-entities",
           "mode": "write",
           "returns": "table (etag uuid)",
           "serviceName": "queue"
@@ -709,7 +709,7 @@
           "args": "partition_key text, row_key text",
           "body": "begin\n  return query delete from queue_task_group_active_sets_entities\n  where queue_task_group_active_sets_entities.partition_key = queue_task_group_active_sets_entities_remove.partition_key and queue_task_group_active_sets_entities.row_key = queue_task_group_active_sets_entities_remove.row_key\n  returning queue_task_group_active_sets_entities.etag;\nend",
           "deprecated": false,
-          "description": "test",
+          "description": "See taskcluster-lib-entities",
           "mode": "write",
           "returns": "table (etag uuid)",
           "serviceName": "queue"
@@ -718,7 +718,7 @@
           "args": "pk text, rk text, condition text, size integer, page integer",
           "body": "declare\n  sql text := 'select queue_task_group_active_sets_entities.partition_key, queue_task_group_active_sets_entities.row_key, queue_task_group_active_sets_entities.value, queue_task_group_active_sets_entities.version, queue_task_group_active_sets_entities.etag from queue_task_group_active_sets_entities';\n  partition_key_var text;\n  row_key_var text;\n  page_offset integer;\nbegin\n  if queue_task_group_active_sets_entities_scan.pk is not null or queue_task_group_active_sets_entities_scan.rk is not null or condition is not null then\n    sql := sql || ' where ';\n  end if;\n\n  if queue_task_group_active_sets_entities_scan.pk is not null then\n    partition_key_var := 'partition_key = ' || quote_literal(queue_task_group_active_sets_entities_scan.pk);\n  end if;\n\n  if queue_task_group_active_sets_entities_scan.rk is not null then\n    row_key_var := 'row_key = ' || quote_literal(queue_task_group_active_sets_entities_scan.rk);\n  end if;\n\n  sql := sql || concat_ws(' and ', partition_key_var, row_key_var, condition);\n  sql := sql || ' order by queue_task_group_active_sets_entities.partition_key, queue_task_group_active_sets_entities.row_key';\n\n  if size is not null and size > 0 then\n    sql := sql || ' limit ' || size;\n\n    if page is not null and page > 0 then\n      page_offset := size * (page - 1);\n      sql := sql || ' offset ' || page_offset;\n    end if;\n  end if;\n\n  return query execute sql;\nend",
           "deprecated": false,
-          "description": "test",
+          "description": "See taskcluster-lib-entities",
           "mode": "read",
           "returns": "table (partition_key text, row_key text, value jsonb, version integer, etag uuid)",
           "serviceName": "queue"
@@ -727,7 +727,7 @@
           "args": "pk text, rk text, properties jsonb, overwrite boolean, version integer",
           "body": "declare\n  new_etag uuid := public.gen_random_uuid();\nbegin\n  if overwrite then\n    insert into queue_task_group_members_entities(partition_key, row_key, value, version, etag)\n    values (\n      pk,\n      rk,\n      properties,\n      version,\n      new_etag\n    ) on conflict (partition_key, row_key) do\n    update\n    set (value, version, etag) = (properties, queue_task_group_members_entities_create.version, new_etag)\n    where queue_task_group_members_entities.partition_key = queue_task_group_members_entities_create.pk and queue_task_group_members_entities.row_key = queue_task_group_members_entities_create.rk;\n  else\n    insert into queue_task_group_members_entities(partition_key, row_key, value, version, etag)\n    values (\n      pk,\n      rk,\n      properties,\n      version,\n      new_etag\n    );\n  end if;\n  return new_etag;\nend",
           "deprecated": false,
-          "description": "test",
+          "description": "See taskcluster-lib-entities",
           "mode": "write",
           "returns": "uuid",
           "serviceName": "queue"
@@ -736,7 +736,7 @@
           "args": "partition_key text, row_key text",
           "body": "begin\n  return query\n  select queue_task_group_members_entities.partition_key, queue_task_group_members_entities.row_key, queue_task_group_members_entities.value, queue_task_group_members_entities.version,\n  queue_task_group_members_entities.etag from queue_task_group_members_entities\n  where queue_task_group_members_entities.partition_key = queue_task_group_members_entities_load.partition_key and queue_task_group_members_entities.row_key = queue_task_group_members_entities_load.row_key;\nend",
           "deprecated": false,
-          "description": "test",
+          "description": "See taskcluster-lib-entities",
           "mode": "read",
           "returns": "table (partition_key_out text, row_key_out text, value jsonb, version integer, etag uuid)",
           "serviceName": "queue"
@@ -745,7 +745,7 @@
           "args": "partition_key text, row_key text, properties jsonb, version integer, old_etag uuid",
           "body": "declare\n  new_etag uuid := public.gen_random_uuid();\nbegin\n  update queue_task_group_members_entities\n  set (value, version, etag) = (properties, queue_task_group_members_entities_modify.version, new_etag)\n  where queue_task_group_members_entities.partition_key = queue_task_group_members_entities_modify.partition_key and queue_task_group_members_entities.row_key = queue_task_group_members_entities_modify.row_key and queue_task_group_members_entities.etag = queue_task_group_members_entities_modify.old_etag;\n\n  if found then\n    return query select new_etag;\n    return;\n  end if;\n\n  perform queue_task_group_members_entities.etag from queue_task_group_members_entities\n  where queue_task_group_members_entities.partition_key = queue_task_group_members_entities_modify.partition_key and queue_task_group_members_entities.row_key = queue_task_group_members_entities_modify.row_key;\n\n  if found then\n    raise exception 'unsuccessful update' using errcode = 'P0004';\n  else\n    raise exception 'no such row' using errcode = 'P0002';\n  end if;\nend",
           "deprecated": false,
-          "description": "Modify an entity. If the modify operation is succesful, the etag is returned in a set.\nElse, an error will be raised with the following error code:\n* 'P0004' - update was unsuccessful (e.g., the etag value did not match)\n* 'P0002' - entry not found in the table (i.e., no such row)\n",
+          "description": "See taskcluster-lib-entities",
           "mode": "write",
           "returns": "table (etag uuid)",
           "serviceName": "queue"
@@ -754,7 +754,7 @@
           "args": "partition_key text, row_key text",
           "body": "begin\n  return query delete from queue_task_group_members_entities\n  where queue_task_group_members_entities.partition_key = queue_task_group_members_entities_remove.partition_key and queue_task_group_members_entities.row_key = queue_task_group_members_entities_remove.row_key\n  returning queue_task_group_members_entities.etag;\nend",
           "deprecated": false,
-          "description": "test",
+          "description": "See taskcluster-lib-entities",
           "mode": "write",
           "returns": "table (etag uuid)",
           "serviceName": "queue"
@@ -763,7 +763,7 @@
           "args": "pk text, rk text, condition text, size integer, page integer",
           "body": "declare\n  sql text := 'select queue_task_group_members_entities.partition_key, queue_task_group_members_entities.row_key, queue_task_group_members_entities.value, queue_task_group_members_entities.version, queue_task_group_members_entities.etag from queue_task_group_members_entities';\n  partition_key_var text;\n  row_key_var text;\n  page_offset integer;\nbegin\n  if queue_task_group_members_entities_scan.pk is not null or queue_task_group_members_entities_scan.rk is not null or condition is not null then\n    sql := sql || ' where ';\n  end if;\n\n  if queue_task_group_members_entities_scan.pk is not null then\n    partition_key_var := 'partition_key = ' || quote_literal(queue_task_group_members_entities_scan.pk);\n  end if;\n\n  if queue_task_group_members_entities_scan.rk is not null then\n    row_key_var := 'row_key = ' || quote_literal(queue_task_group_members_entities_scan.rk);\n  end if;\n\n  sql := sql || concat_ws(' and ', partition_key_var, row_key_var, condition);\n  sql := sql || ' order by queue_task_group_members_entities.partition_key, queue_task_group_members_entities.row_key';\n\n  if size is not null and size > 0 then\n    sql := sql || ' limit ' || size;\n\n    if page is not null and page > 0 then\n      page_offset := size * (page - 1);\n      sql := sql || ' offset ' || page_offset;\n    end if;\n  end if;\n\n  return query execute sql;\nend",
           "deprecated": false,
-          "description": "test",
+          "description": "See taskcluster-lib-entities",
           "mode": "read",
           "returns": "table (partition_key text, row_key text, value jsonb, version integer, etag uuid)",
           "serviceName": "queue"
@@ -772,7 +772,7 @@
           "args": "pk text, rk text, properties jsonb, overwrite boolean, version integer",
           "body": "declare\n  new_etag uuid := public.gen_random_uuid();\nbegin\n  if overwrite then\n    insert into queue_task_groups_entities(partition_key, row_key, value, version, etag)\n    values (\n      pk,\n      rk,\n      properties,\n      version,\n      new_etag\n    ) on conflict (partition_key, row_key) do\n    update\n    set (value, version, etag) = (properties, queue_task_groups_entities_create.version, new_etag)\n    where queue_task_groups_entities.partition_key = queue_task_groups_entities_create.pk and queue_task_groups_entities.row_key = queue_task_groups_entities_create.rk;\n  else\n    insert into queue_task_groups_entities(partition_key, row_key, value, version, etag)\n    values (\n      pk,\n      rk,\n      properties,\n      version,\n      new_etag\n    );\n  end if;\n  return new_etag;\nend",
           "deprecated": false,
-          "description": "test",
+          "description": "See taskcluster-lib-entities",
           "mode": "write",
           "returns": "uuid",
           "serviceName": "queue"
@@ -781,7 +781,7 @@
           "args": "partition_key text, row_key text",
           "body": "begin\n  return query\n  select queue_task_groups_entities.partition_key, queue_task_groups_entities.row_key, queue_task_groups_entities.value, queue_task_groups_entities.version,\n  queue_task_groups_entities.etag from queue_task_groups_entities\n  where queue_task_groups_entities.partition_key = queue_task_groups_entities_load.partition_key and queue_task_groups_entities.row_key = queue_task_groups_entities_load.row_key;\nend",
           "deprecated": false,
-          "description": "test",
+          "description": "See taskcluster-lib-entities",
           "mode": "read",
           "returns": "table (partition_key_out text, row_key_out text, value jsonb, version integer, etag uuid)",
           "serviceName": "queue"
@@ -790,7 +790,7 @@
           "args": "partition_key text, row_key text, properties jsonb, version integer, old_etag uuid",
           "body": "declare\n  new_etag uuid := public.gen_random_uuid();\nbegin\n  update queue_task_groups_entities\n  set (value, version, etag) = (properties, queue_task_groups_entities_modify.version, new_etag)\n  where queue_task_groups_entities.partition_key = queue_task_groups_entities_modify.partition_key and queue_task_groups_entities.row_key = queue_task_groups_entities_modify.row_key and queue_task_groups_entities.etag = queue_task_groups_entities_modify.old_etag;\n\n  if found then\n    return query select new_etag;\n    return;\n  end if;\n\n  perform queue_task_groups_entities.etag from queue_task_groups_entities\n  where queue_task_groups_entities.partition_key = queue_task_groups_entities_modify.partition_key and queue_task_groups_entities.row_key = queue_task_groups_entities_modify.row_key;\n\n  if found then\n    raise exception 'unsuccessful update' using errcode = 'P0004';\n  else\n    raise exception 'no such row' using errcode = 'P0002';\n  end if;\nend",
           "deprecated": false,
-          "description": "Modify an entity. If the modify operation is succesful, the etag is returned in a set.\nElse, an error will be raised with the following error code:\n* 'P0004' - update was unsuccessful (e.g., the etag value did not match)\n* 'P0002' - entry not found in the table (i.e., no such row)\n",
+          "description": "See taskcluster-lib-entities",
           "mode": "write",
           "returns": "table (etag uuid)",
           "serviceName": "queue"
@@ -799,7 +799,7 @@
           "args": "partition_key text, row_key text",
           "body": "begin\n  return query delete from queue_task_groups_entities\n  where queue_task_groups_entities.partition_key = queue_task_groups_entities_remove.partition_key and queue_task_groups_entities.row_key = queue_task_groups_entities_remove.row_key\n  returning queue_task_groups_entities.etag;\nend",
           "deprecated": false,
-          "description": "test",
+          "description": "See taskcluster-lib-entities",
           "mode": "write",
           "returns": "table (etag uuid)",
           "serviceName": "queue"
@@ -808,7 +808,7 @@
           "args": "pk text, rk text, condition text, size integer, page integer",
           "body": "declare\n  sql text := 'select queue_task_groups_entities.partition_key, queue_task_groups_entities.row_key, queue_task_groups_entities.value, queue_task_groups_entities.version, queue_task_groups_entities.etag from queue_task_groups_entities';\n  partition_key_var text;\n  row_key_var text;\n  page_offset integer;\nbegin\n  if queue_task_groups_entities_scan.pk is not null or queue_task_groups_entities_scan.rk is not null or condition is not null then\n    sql := sql || ' where ';\n  end if;\n\n  if queue_task_groups_entities_scan.pk is not null then\n    partition_key_var := 'partition_key = ' || quote_literal(queue_task_groups_entities_scan.pk);\n  end if;\n\n  if queue_task_groups_entities_scan.rk is not null then\n    row_key_var := 'row_key = ' || quote_literal(queue_task_groups_entities_scan.rk);\n  end if;\n\n  sql := sql || concat_ws(' and ', partition_key_var, row_key_var, condition);\n  sql := sql || ' order by queue_task_groups_entities.partition_key, queue_task_groups_entities.row_key';\n\n  if size is not null and size > 0 then\n    sql := sql || ' limit ' || size;\n\n    if page is not null and page > 0 then\n      page_offset := size * (page - 1);\n      sql := sql || ' offset ' || page_offset;\n    end if;\n  end if;\n\n  return query execute sql;\nend",
           "deprecated": false,
-          "description": "test",
+          "description": "See taskcluster-lib-entities",
           "mode": "read",
           "returns": "table (partition_key text, row_key text, value jsonb, version integer, etag uuid)",
           "serviceName": "queue"
@@ -817,7 +817,7 @@
           "args": "pk text, rk text, properties jsonb, overwrite boolean, version integer",
           "body": "declare\n  new_etag uuid := public.gen_random_uuid();\nbegin\n  if overwrite then\n    insert into queue_task_requirement_entities(partition_key, row_key, value, version, etag)\n    values (\n      pk,\n      rk,\n      properties,\n      version,\n      new_etag\n    ) on conflict (partition_key, row_key) do\n    update\n    set (value, version, etag) = (properties, queue_task_requirement_entities_create.version, new_etag)\n    where queue_task_requirement_entities.partition_key = queue_task_requirement_entities_create.pk and queue_task_requirement_entities.row_key = queue_task_requirement_entities_create.rk;\n  else\n    insert into queue_task_requirement_entities(partition_key, row_key, value, version, etag)\n    values (\n      pk,\n      rk,\n      properties,\n      version,\n      new_etag\n    );\n  end if;\n  return new_etag;\nend",
           "deprecated": false,
-          "description": "test",
+          "description": "See taskcluster-lib-entities",
           "mode": "write",
           "returns": "uuid",
           "serviceName": "queue"
@@ -826,7 +826,7 @@
           "args": "partition_key text, row_key text",
           "body": "begin\n  return query\n  select queue_task_requirement_entities.partition_key, queue_task_requirement_entities.row_key, queue_task_requirement_entities.value, queue_task_requirement_entities.version,\n  queue_task_requirement_entities.etag from queue_task_requirement_entities\n  where queue_task_requirement_entities.partition_key = queue_task_requirement_entities_load.partition_key and queue_task_requirement_entities.row_key = queue_task_requirement_entities_load.row_key;\nend",
           "deprecated": false,
-          "description": "test",
+          "description": "See taskcluster-lib-entities",
           "mode": "read",
           "returns": "table (partition_key_out text, row_key_out text, value jsonb, version integer, etag uuid)",
           "serviceName": "queue"
@@ -835,7 +835,7 @@
           "args": "partition_key text, row_key text, properties jsonb, version integer, old_etag uuid",
           "body": "declare\n  new_etag uuid := public.gen_random_uuid();\nbegin\n  update queue_task_requirement_entities\n  set (value, version, etag) = (properties, queue_task_requirement_entities_modify.version, new_etag)\n  where queue_task_requirement_entities.partition_key = queue_task_requirement_entities_modify.partition_key and queue_task_requirement_entities.row_key = queue_task_requirement_entities_modify.row_key and queue_task_requirement_entities.etag = queue_task_requirement_entities_modify.old_etag;\n\n  if found then\n    return query select new_etag;\n    return;\n  end if;\n\n  perform queue_task_requirement_entities.etag from queue_task_requirement_entities\n  where queue_task_requirement_entities.partition_key = queue_task_requirement_entities_modify.partition_key and queue_task_requirement_entities.row_key = queue_task_requirement_entities_modify.row_key;\n\n  if found then\n    raise exception 'unsuccessful update' using errcode = 'P0004';\n  else\n    raise exception 'no such row' using errcode = 'P0002';\n  end if;\nend",
           "deprecated": false,
-          "description": "Modify an entity. If the modify operation is succesful, the etag is returned in a set.\nElse, an error will be raised with the following error code:\n* 'P0004' - update was unsuccessful (e.g., the etag value did not match)\n* 'P0002' - entry not found in the table (i.e., no such row)\n",
+          "description": "See taskcluster-lib-entities",
           "mode": "write",
           "returns": "table (etag uuid)",
           "serviceName": "queue"
@@ -844,7 +844,7 @@
           "args": "partition_key text, row_key text",
           "body": "begin\n  return query delete from queue_task_requirement_entities\n  where queue_task_requirement_entities.partition_key = queue_task_requirement_entities_remove.partition_key and queue_task_requirement_entities.row_key = queue_task_requirement_entities_remove.row_key\n  returning queue_task_requirement_entities.etag;\nend",
           "deprecated": false,
-          "description": "test",
+          "description": "See taskcluster-lib-entities",
           "mode": "write",
           "returns": "table (etag uuid)",
           "serviceName": "queue"
@@ -853,7 +853,7 @@
           "args": "pk text, rk text, condition text, size integer, page integer",
           "body": "declare\n  sql text := 'select queue_task_requirement_entities.partition_key, queue_task_requirement_entities.row_key, queue_task_requirement_entities.value, queue_task_requirement_entities.version, queue_task_requirement_entities.etag from queue_task_requirement_entities';\n  partition_key_var text;\n  row_key_var text;\n  page_offset integer;\nbegin\n  if queue_task_requirement_entities_scan.pk is not null or queue_task_requirement_entities_scan.rk is not null or condition is not null then\n    sql := sql || ' where ';\n  end if;\n\n  if queue_task_requirement_entities_scan.pk is not null then\n    partition_key_var := 'partition_key = ' || quote_literal(queue_task_requirement_entities_scan.pk);\n  end if;\n\n  if queue_task_requirement_entities_scan.rk is not null then\n    row_key_var := 'row_key = ' || quote_literal(queue_task_requirement_entities_scan.rk);\n  end if;\n\n  sql := sql || concat_ws(' and ', partition_key_var, row_key_var, condition);\n  sql := sql || ' order by queue_task_requirement_entities.partition_key, queue_task_requirement_entities.row_key';\n\n  if size is not null and size > 0 then\n    sql := sql || ' limit ' || size;\n\n    if page is not null and page > 0 then\n      page_offset := size * (page - 1);\n      sql := sql || ' offset ' || page_offset;\n    end if;\n  end if;\n\n  return query execute sql;\nend",
           "deprecated": false,
-          "description": "test",
+          "description": "See taskcluster-lib-entities",
           "mode": "read",
           "returns": "table (partition_key text, row_key text, value jsonb, version integer, etag uuid)",
           "serviceName": "queue"
@@ -862,7 +862,7 @@
           "args": "pk text, rk text, properties jsonb, overwrite boolean, version integer",
           "body": "declare\n  new_etag uuid := public.gen_random_uuid();\nbegin\n  if overwrite then\n    insert into queue_tasks_entities(partition_key, row_key, value, version, etag)\n    values (\n      pk,\n      rk,\n      properties,\n      version,\n      new_etag\n    ) on conflict (partition_key, row_key) do\n    update\n    set (value, version, etag) = (properties, queue_tasks_entities_create.version, new_etag)\n    where queue_tasks_entities.partition_key = queue_tasks_entities_create.pk and queue_tasks_entities.row_key = queue_tasks_entities_create.rk;\n  else\n    insert into queue_tasks_entities(partition_key, row_key, value, version, etag)\n    values (\n      pk,\n      rk,\n      properties,\n      version,\n      new_etag\n    );\n  end if;\n  return new_etag;\nend",
           "deprecated": false,
-          "description": "test",
+          "description": "See taskcluster-lib-entities",
           "mode": "write",
           "returns": "uuid",
           "serviceName": "queue"
@@ -871,7 +871,7 @@
           "args": "partition_key text, row_key text",
           "body": "begin\n  return query\n  select queue_tasks_entities.partition_key, queue_tasks_entities.row_key, queue_tasks_entities.value, queue_tasks_entities.version,\n  queue_tasks_entities.etag from queue_tasks_entities\n  where queue_tasks_entities.partition_key = queue_tasks_entities_load.partition_key and queue_tasks_entities.row_key = queue_tasks_entities_load.row_key;\nend",
           "deprecated": false,
-          "description": "test",
+          "description": "See taskcluster-lib-entities",
           "mode": "read",
           "returns": "table (partition_key_out text, row_key_out text, value jsonb, version integer, etag uuid)",
           "serviceName": "queue"
@@ -880,7 +880,7 @@
           "args": "partition_key text, row_key text, properties jsonb, version integer, old_etag uuid",
           "body": "declare\n  new_etag uuid := public.gen_random_uuid();\nbegin\n  update queue_tasks_entities\n  set (value, version, etag) = (properties, queue_tasks_entities_modify.version, new_etag)\n  where queue_tasks_entities.partition_key = queue_tasks_entities_modify.partition_key and queue_tasks_entities.row_key = queue_tasks_entities_modify.row_key and queue_tasks_entities.etag = queue_tasks_entities_modify.old_etag;\n\n  if found then\n    return query select new_etag;\n    return;\n  end if;\n\n  perform queue_tasks_entities.etag from queue_tasks_entities\n  where queue_tasks_entities.partition_key = queue_tasks_entities_modify.partition_key and queue_tasks_entities.row_key = queue_tasks_entities_modify.row_key;\n\n  if found then\n    raise exception 'unsuccessful update' using errcode = 'P0004';\n  else\n    raise exception 'no such row' using errcode = 'P0002';\n  end if;\nend",
           "deprecated": false,
-          "description": "Modify an entity. If the modify operation is succesful, the etag is returned in a set.\nElse, an error will be raised with the following error code:\n* 'P0004' - update was unsuccessful (e.g., the etag value did not match)\n* 'P0002' - entry not found in the table (i.e., no such row)\n",
+          "description": "See taskcluster-lib-entities",
           "mode": "write",
           "returns": "table (etag uuid)",
           "serviceName": "queue"
@@ -889,7 +889,7 @@
           "args": "partition_key text, row_key text",
           "body": "begin\n  return query delete from queue_tasks_entities\n  where queue_tasks_entities.partition_key = queue_tasks_entities_remove.partition_key and queue_tasks_entities.row_key = queue_tasks_entities_remove.row_key\n  returning queue_tasks_entities.etag;\nend",
           "deprecated": false,
-          "description": "test",
+          "description": "See taskcluster-lib-entities",
           "mode": "write",
           "returns": "table (etag uuid)",
           "serviceName": "queue"
@@ -898,7 +898,7 @@
           "args": "pk text, rk text, condition text, size integer, page integer",
           "body": "declare\n  sql text := 'select queue_tasks_entities.partition_key, queue_tasks_entities.row_key, queue_tasks_entities.value, queue_tasks_entities.version, queue_tasks_entities.etag from queue_tasks_entities';\n  partition_key_var text;\n  row_key_var text;\n  page_offset integer;\nbegin\n  if queue_tasks_entities_scan.pk is not null or queue_tasks_entities_scan.rk is not null or condition is not null then\n    sql := sql || ' where ';\n  end if;\n\n  if queue_tasks_entities_scan.pk is not null then\n    partition_key_var := 'partition_key = ' || quote_literal(queue_tasks_entities_scan.pk);\n  end if;\n\n  if queue_tasks_entities_scan.rk is not null then\n    row_key_var := 'row_key = ' || quote_literal(queue_tasks_entities_scan.rk);\n  end if;\n\n  sql := sql || concat_ws(' and ', partition_key_var, row_key_var, condition);\n  sql := sql || ' order by queue_tasks_entities.partition_key, queue_tasks_entities.row_key';\n\n  if size is not null and size > 0 then\n    sql := sql || ' limit ' || size;\n\n    if page is not null and page > 0 then\n      page_offset := size * (page - 1);\n      sql := sql || ' offset ' || page_offset;\n    end if;\n  end if;\n\n  return query execute sql;\nend",
           "deprecated": false,
-          "description": "test",
+          "description": "See taskcluster-lib-entities",
           "mode": "read",
           "returns": "table (partition_key text, row_key text, value jsonb, version integer, etag uuid)",
           "serviceName": "queue"
@@ -907,7 +907,7 @@
           "args": "pk text, rk text, properties jsonb, overwrite boolean, version integer",
           "body": "declare\n  new_etag uuid := public.gen_random_uuid();\nbegin\n  if overwrite then\n    insert into queue_worker_entities(partition_key, row_key, value, version, etag)\n    values (\n      pk,\n      rk,\n      properties,\n      version,\n      new_etag\n    ) on conflict (partition_key, row_key) do\n    update\n    set (value, version, etag) = (properties, queue_worker_entities_create.version, new_etag)\n    where queue_worker_entities.partition_key = queue_worker_entities_create.pk and queue_worker_entities.row_key = queue_worker_entities_create.rk;\n  else\n    insert into queue_worker_entities(partition_key, row_key, value, version, etag)\n    values (\n      pk,\n      rk,\n      properties,\n      version,\n      new_etag\n    );\n  end if;\n  return new_etag;\nend",
           "deprecated": false,
-          "description": "test",
+          "description": "See taskcluster-lib-entities",
           "mode": "write",
           "returns": "uuid",
           "serviceName": "queue"
@@ -916,7 +916,7 @@
           "args": "partition_key text, row_key text",
           "body": "begin\n  return query\n  select queue_worker_entities.partition_key, queue_worker_entities.row_key, queue_worker_entities.value, queue_worker_entities.version,\n  queue_worker_entities.etag from queue_worker_entities\n  where queue_worker_entities.partition_key = queue_worker_entities_load.partition_key and queue_worker_entities.row_key = queue_worker_entities_load.row_key;\nend",
           "deprecated": false,
-          "description": "test",
+          "description": "See taskcluster-lib-entities",
           "mode": "read",
           "returns": "table (partition_key_out text, row_key_out text, value jsonb, version integer, etag uuid)",
           "serviceName": "queue"
@@ -925,7 +925,7 @@
           "args": "partition_key text, row_key text, properties jsonb, version integer, old_etag uuid",
           "body": "declare\n  new_etag uuid := public.gen_random_uuid();\nbegin\n  update queue_worker_entities\n  set (value, version, etag) = (properties, queue_worker_entities_modify.version, new_etag)\n  where queue_worker_entities.partition_key = queue_worker_entities_modify.partition_key and queue_worker_entities.row_key = queue_worker_entities_modify.row_key and queue_worker_entities.etag = queue_worker_entities_modify.old_etag;\n\n  if found then\n    return query select new_etag;\n    return;\n  end if;\n\n  perform queue_worker_entities.etag from queue_worker_entities\n  where queue_worker_entities.partition_key = queue_worker_entities_modify.partition_key and queue_worker_entities.row_key = queue_worker_entities_modify.row_key;\n\n  if found then\n    raise exception 'unsuccessful update' using errcode = 'P0004';\n  else\n    raise exception 'no such row' using errcode = 'P0002';\n  end if;\nend",
           "deprecated": false,
-          "description": "Modify an entity. If the modify operation is succesful, the etag is returned in a set.\nElse, an error will be raised with the following error code:\n* 'P0004' - update was unsuccessful (e.g., the etag value did not match)\n* 'P0002' - entry not found in the table (i.e., no such row)\n",
+          "description": "See taskcluster-lib-entities",
           "mode": "write",
           "returns": "table (etag uuid)",
           "serviceName": "queue"
@@ -934,7 +934,7 @@
           "args": "partition_key text, row_key text",
           "body": "begin\n  return query delete from queue_worker_entities\n  where queue_worker_entities.partition_key = queue_worker_entities_remove.partition_key and queue_worker_entities.row_key = queue_worker_entities_remove.row_key\n  returning queue_worker_entities.etag;\nend",
           "deprecated": false,
-          "description": "test",
+          "description": "See taskcluster-lib-entities",
           "mode": "write",
           "returns": "table (etag uuid)",
           "serviceName": "queue"
@@ -943,7 +943,7 @@
           "args": "pk text, rk text, condition text, size integer, page integer",
           "body": "declare\n  sql text := 'select queue_worker_entities.partition_key, queue_worker_entities.row_key, queue_worker_entities.value, queue_worker_entities.version, queue_worker_entities.etag from queue_worker_entities';\n  partition_key_var text;\n  row_key_var text;\n  page_offset integer;\nbegin\n  if queue_worker_entities_scan.pk is not null or queue_worker_entities_scan.rk is not null or condition is not null then\n    sql := sql || ' where ';\n  end if;\n\n  if queue_worker_entities_scan.pk is not null then\n    partition_key_var := 'partition_key = ' || quote_literal(queue_worker_entities_scan.pk);\n  end if;\n\n  if queue_worker_entities_scan.rk is not null then\n    row_key_var := 'row_key = ' || quote_literal(queue_worker_entities_scan.rk);\n  end if;\n\n  sql := sql || concat_ws(' and ', partition_key_var, row_key_var, condition);\n  sql := sql || ' order by queue_worker_entities.partition_key, queue_worker_entities.row_key';\n\n  if size is not null and size > 0 then\n    sql := sql || ' limit ' || size;\n\n    if page is not null and page > 0 then\n      page_offset := size * (page - 1);\n      sql := sql || ' offset ' || page_offset;\n    end if;\n  end if;\n\n  return query execute sql;\nend",
           "deprecated": false,
-          "description": "test",
+          "description": "See taskcluster-lib-entities",
           "mode": "read",
           "returns": "table (partition_key text, row_key text, value jsonb, version integer, etag uuid)",
           "serviceName": "queue"
@@ -952,7 +952,7 @@
           "args": "pk text, rk text, properties jsonb, overwrite boolean, version integer",
           "body": "declare\n  new_etag uuid := public.gen_random_uuid();\nbegin\n  if overwrite then\n    insert into queue_worker_type_entities(partition_key, row_key, value, version, etag)\n    values (\n      pk,\n      rk,\n      properties,\n      version,\n      new_etag\n    ) on conflict (partition_key, row_key) do\n    update\n    set (value, version, etag) = (properties, queue_worker_type_entities_create.version, new_etag)\n    where queue_worker_type_entities.partition_key = queue_worker_type_entities_create.pk and queue_worker_type_entities.row_key = queue_worker_type_entities_create.rk;\n  else\n    insert into queue_worker_type_entities(partition_key, row_key, value, version, etag)\n    values (\n      pk,\n      rk,\n      properties,\n      version,\n      new_etag\n    );\n  end if;\n  return new_etag;\nend",
           "deprecated": false,
-          "description": "test",
+          "description": "See taskcluster-lib-entities",
           "mode": "write",
           "returns": "uuid",
           "serviceName": "queue"
@@ -961,7 +961,7 @@
           "args": "partition_key text, row_key text",
           "body": "begin\n  return query\n  select queue_worker_type_entities.partition_key, queue_worker_type_entities.row_key, queue_worker_type_entities.value, queue_worker_type_entities.version,\n  queue_worker_type_entities.etag from queue_worker_type_entities\n  where queue_worker_type_entities.partition_key = queue_worker_type_entities_load.partition_key and queue_worker_type_entities.row_key = queue_worker_type_entities_load.row_key;\nend",
           "deprecated": false,
-          "description": "test",
+          "description": "See taskcluster-lib-entities",
           "mode": "read",
           "returns": "table (partition_key_out text, row_key_out text, value jsonb, version integer, etag uuid)",
           "serviceName": "queue"
@@ -970,7 +970,7 @@
           "args": "partition_key text, row_key text, properties jsonb, version integer, old_etag uuid",
           "body": "declare\n  new_etag uuid := public.gen_random_uuid();\nbegin\n  update queue_worker_type_entities\n  set (value, version, etag) = (properties, queue_worker_type_entities_modify.version, new_etag)\n  where queue_worker_type_entities.partition_key = queue_worker_type_entities_modify.partition_key and queue_worker_type_entities.row_key = queue_worker_type_entities_modify.row_key and queue_worker_type_entities.etag = queue_worker_type_entities_modify.old_etag;\n\n  if found then\n    return query select new_etag;\n    return;\n  end if;\n\n  perform queue_worker_type_entities.etag from queue_worker_type_entities\n  where queue_worker_type_entities.partition_key = queue_worker_type_entities_modify.partition_key and queue_worker_type_entities.row_key = queue_worker_type_entities_modify.row_key;\n\n  if found then\n    raise exception 'unsuccessful update' using errcode = 'P0004';\n  else\n    raise exception 'no such row' using errcode = 'P0002';\n  end if;\nend",
           "deprecated": false,
-          "description": "Modify an entity. If the modify operation is succesful, the etag is returned in a set.\nElse, an error will be raised with the following error code:\n* 'P0004' - update was unsuccessful (e.g., the etag value did not match)\n* 'P0002' - entry not found in the table (i.e., no such row)\n",
+          "description": "See taskcluster-lib-entities",
           "mode": "write",
           "returns": "table (etag uuid)",
           "serviceName": "queue"
@@ -979,7 +979,7 @@
           "args": "partition_key text, row_key text",
           "body": "begin\n  return query delete from queue_worker_type_entities\n  where queue_worker_type_entities.partition_key = queue_worker_type_entities_remove.partition_key and queue_worker_type_entities.row_key = queue_worker_type_entities_remove.row_key\n  returning queue_worker_type_entities.etag;\nend",
           "deprecated": false,
-          "description": "test",
+          "description": "See taskcluster-lib-entities",
           "mode": "write",
           "returns": "table (etag uuid)",
           "serviceName": "queue"
@@ -988,7 +988,7 @@
           "args": "pk text, rk text, condition text, size integer, page integer",
           "body": "declare\n  sql text := 'select queue_worker_type_entities.partition_key, queue_worker_type_entities.row_key, queue_worker_type_entities.value, queue_worker_type_entities.version, queue_worker_type_entities.etag from queue_worker_type_entities';\n  partition_key_var text;\n  row_key_var text;\n  page_offset integer;\nbegin\n  if queue_worker_type_entities_scan.pk is not null or queue_worker_type_entities_scan.rk is not null or condition is not null then\n    sql := sql || ' where ';\n  end if;\n\n  if queue_worker_type_entities_scan.pk is not null then\n    partition_key_var := 'partition_key = ' || quote_literal(queue_worker_type_entities_scan.pk);\n  end if;\n\n  if queue_worker_type_entities_scan.rk is not null then\n    row_key_var := 'row_key = ' || quote_literal(queue_worker_type_entities_scan.rk);\n  end if;\n\n  sql := sql || concat_ws(' and ', partition_key_var, row_key_var, condition);\n  sql := sql || ' order by queue_worker_type_entities.partition_key, queue_worker_type_entities.row_key';\n\n  if size is not null and size > 0 then\n    sql := sql || ' limit ' || size;\n\n    if page is not null and page > 0 then\n      page_offset := size * (page - 1);\n      sql := sql || ' offset ' || page_offset;\n    end if;\n  end if;\n\n  return query execute sql;\nend",
           "deprecated": false,
-          "description": "test",
+          "description": "See taskcluster-lib-entities",
           "mode": "read",
           "returns": "table (partition_key text, row_key text, value jsonb, version integer, etag uuid)",
           "serviceName": "queue"
@@ -997,7 +997,7 @@
           "args": "pk text, rk text, properties jsonb, overwrite boolean, version integer",
           "body": "declare\n  new_etag uuid := public.gen_random_uuid();\nbegin\n  if overwrite then\n    insert into queues_entities(partition_key, row_key, value, version, etag)\n    values (\n      pk,\n      rk,\n      properties,\n      version,\n      new_etag\n    ) on conflict (partition_key, row_key) do\n    update\n    set (value, version, etag) = (properties, queues_entities_create.version, new_etag)\n    where queues_entities.partition_key = queues_entities_create.pk and queues_entities.row_key = queues_entities_create.rk;\n  else\n    insert into queues_entities(partition_key, row_key, value, version, etag)\n    values (\n      pk,\n      rk,\n      properties,\n      version,\n      new_etag\n    );\n  end if;\n  return new_etag;\nend",
           "deprecated": false,
-          "description": "test",
+          "description": "See taskcluster-lib-entities",
           "mode": "write",
           "returns": "uuid",
           "serviceName": "hooks"
@@ -1006,7 +1006,7 @@
           "args": "partition_key text, row_key text",
           "body": "begin\n  return query\n  select queues_entities.partition_key, queues_entities.row_key, queues_entities.value, queues_entities.version,\n  queues_entities.etag from queues_entities\n  where queues_entities.partition_key = queues_entities_load.partition_key and queues_entities.row_key = queues_entities_load.row_key;\nend",
           "deprecated": false,
-          "description": "test",
+          "description": "See taskcluster-lib-entities",
           "mode": "read",
           "returns": "table (partition_key_out text, row_key_out text, value jsonb, version integer, etag uuid)",
           "serviceName": "hooks"
@@ -1015,7 +1015,7 @@
           "args": "partition_key text, row_key text, properties jsonb, version integer, old_etag uuid",
           "body": "declare\n  new_etag uuid := public.gen_random_uuid();\nbegin\n  update queues_entities\n  set (value, version, etag) = (properties, queues_entities_modify.version, new_etag)\n  where queues_entities.partition_key = queues_entities_modify.partition_key and queues_entities.row_key = queues_entities_modify.row_key and queues_entities.etag = queues_entities_modify.old_etag;\n\n  if found then\n    return query select new_etag;\n    return;\n  end if;\n\n  perform queues_entities.etag from queues_entities\n  where queues_entities.partition_key = queues_entities_modify.partition_key and queues_entities.row_key = queues_entities_modify.row_key;\n\n  if found then\n    raise exception 'unsuccessful update' using errcode = 'P0004';\n  else\n    raise exception 'no such row' using errcode = 'P0002';\n  end if;\nend",
           "deprecated": false,
-          "description": "Modify an entity. If the modify operation is succesful, the etag is returned in a set.\nElse, an error will be raised with the following error code:\n* 'P0004' - update was unsuccessful (e.g., the etag value did not match)\n* 'P0002' - entry not found in the table (i.e., no such row)\n",
+          "description": "See taskcluster-lib-entities",
           "mode": "write",
           "returns": "table (etag uuid)",
           "serviceName": "hooks"
@@ -1024,7 +1024,7 @@
           "args": "partition_key text, row_key text",
           "body": "begin\n  return query delete from queues_entities\n  where queues_entities.partition_key = queues_entities_remove.partition_key and queues_entities.row_key = queues_entities_remove.row_key\n  returning queues_entities.etag;\nend",
           "deprecated": false,
-          "description": "test",
+          "description": "See taskcluster-lib-entities",
           "mode": "write",
           "returns": "table (etag uuid)",
           "serviceName": "hooks"
@@ -1033,7 +1033,7 @@
           "args": "pk text, rk text, condition text, size integer, page integer",
           "body": "declare\n  sql text := 'select queues_entities.partition_key, queues_entities.row_key, queues_entities.value, queues_entities.version, queues_entities.etag from queues_entities';\n  partition_key_var text;\n  row_key_var text;\n  page_offset integer;\nbegin\n  if queues_entities_scan.pk is not null or queues_entities_scan.rk is not null or condition is not null then\n    sql := sql || ' where ';\n  end if;\n\n  if queues_entities_scan.pk is not null then\n    partition_key_var := 'partition_key = ' || quote_literal(queues_entities_scan.pk);\n  end if;\n\n  if queues_entities_scan.rk is not null then\n    row_key_var := 'row_key = ' || quote_literal(queues_entities_scan.rk);\n  end if;\n\n  sql := sql || concat_ws(' and ', partition_key_var, row_key_var, condition);\n  sql := sql || ' order by queues_entities.partition_key, queues_entities.row_key';\n\n  if size is not null and size > 0 then\n    sql := sql || ' limit ' || size;\n\n    if page is not null and page > 0 then\n      page_offset := size * (page - 1);\n      sql := sql || ' offset ' || page_offset;\n    end if;\n  end if;\n\n  return query execute sql;\nend",
           "deprecated": false,
-          "description": "test",
+          "description": "See taskcluster-lib-entities",
           "mode": "read",
           "returns": "table (partition_key text, row_key text, value jsonb, version integer, etag uuid)",
           "serviceName": "hooks"
@@ -1042,7 +1042,7 @@
           "args": "pk text, rk text, properties jsonb, overwrite boolean, version integer",
           "body": "declare\n  new_etag uuid := public.gen_random_uuid();\nbegin\n  if overwrite then\n    insert into roles_entities(partition_key, row_key, value, version, etag)\n    values (\n      pk,\n      rk,\n      properties,\n      version,\n      new_etag\n    ) on conflict (partition_key, row_key) do\n    update\n    set (value, version, etag) = (properties, roles_entities_create.version, new_etag)\n    where roles_entities.partition_key = roles_entities_create.pk and roles_entities.row_key = roles_entities_create.rk;\n  else\n    insert into roles_entities(partition_key, row_key, value, version, etag)\n    values (\n      pk,\n      rk,\n      properties,\n      version,\n      new_etag\n    );\n  end if;\n  return new_etag;\nend",
           "deprecated": false,
-          "description": "test",
+          "description": "See taskcluster-lib-entities",
           "mode": "write",
           "returns": "uuid",
           "serviceName": "auth"
@@ -1051,7 +1051,7 @@
           "args": "partition_key text, row_key text",
           "body": "begin\n  return query\n  select roles_entities.partition_key, roles_entities.row_key, roles_entities.value, roles_entities.version,\n  roles_entities.etag from roles_entities\n  where roles_entities.partition_key = roles_entities_load.partition_key and roles_entities.row_key = roles_entities_load.row_key;\nend",
           "deprecated": false,
-          "description": "test",
+          "description": "See taskcluster-lib-entities",
           "mode": "read",
           "returns": "table (partition_key_out text, row_key_out text, value jsonb, version integer, etag uuid)",
           "serviceName": "auth"
@@ -1060,7 +1060,7 @@
           "args": "partition_key text, row_key text, properties jsonb, version integer, old_etag uuid",
           "body": "declare\n  new_etag uuid := public.gen_random_uuid();\nbegin\n  update roles_entities\n  set (value, version, etag) = (properties, roles_entities_modify.version, new_etag)\n  where roles_entities.partition_key = roles_entities_modify.partition_key and roles_entities.row_key = roles_entities_modify.row_key and roles_entities.etag = roles_entities_modify.old_etag;\n\n  if found then\n    return query select new_etag;\n    return;\n  end if;\n\n  perform roles_entities.etag from roles_entities\n  where roles_entities.partition_key = roles_entities_modify.partition_key and roles_entities.row_key = roles_entities_modify.row_key;\n\n  if found then\n    raise exception 'unsuccessful update' using errcode = 'P0004';\n  else\n    raise exception 'no such row' using errcode = 'P0002';\n  end if;\nend",
           "deprecated": false,
-          "description": "Modify an entity. If the modify operation is succesful, the etag is returned in a set.\nElse, an error will be raised with the following error code:\n* 'P0004' - update was unsuccessful (e.g., the etag value did not match)\n* 'P0002' - entry not found in the table (i.e., no such row)\n",
+          "description": "See taskcluster-lib-entities",
           "mode": "write",
           "returns": "table (etag uuid)",
           "serviceName": "auth"
@@ -1069,7 +1069,7 @@
           "args": "partition_key text, row_key text",
           "body": "begin\n  return query delete from roles_entities\n  where roles_entities.partition_key = roles_entities_remove.partition_key and roles_entities.row_key = roles_entities_remove.row_key\n  returning roles_entities.etag;\nend",
           "deprecated": false,
-          "description": "test",
+          "description": "See taskcluster-lib-entities",
           "mode": "write",
           "returns": "table (etag uuid)",
           "serviceName": "auth"
@@ -1078,7 +1078,7 @@
           "args": "pk text, rk text, condition text, size integer, page integer",
           "body": "declare\n  sql text := 'select roles_entities.partition_key, roles_entities.row_key, roles_entities.value, roles_entities.version, roles_entities.etag from roles_entities';\n  partition_key_var text;\n  row_key_var text;\n  page_offset integer;\nbegin\n  if roles_entities_scan.pk is not null or roles_entities_scan.rk is not null or condition is not null then\n    sql := sql || ' where ';\n  end if;\n\n  if roles_entities_scan.pk is not null then\n    partition_key_var := 'partition_key = ' || quote_literal(roles_entities_scan.pk);\n  end if;\n\n  if roles_entities_scan.rk is not null then\n    row_key_var := 'row_key = ' || quote_literal(roles_entities_scan.rk);\n  end if;\n\n  sql := sql || concat_ws(' and ', partition_key_var, row_key_var, condition);\n  sql := sql || ' order by roles_entities.partition_key, roles_entities.row_key';\n\n  if size is not null and size > 0 then\n    sql := sql || ' limit ' || size;\n\n    if page is not null and page > 0 then\n      page_offset := size * (page - 1);\n      sql := sql || ' offset ' || page_offset;\n    end if;\n  end if;\n\n  return query execute sql;\nend",
           "deprecated": false,
-          "description": "test",
+          "description": "See taskcluster-lib-entities",
           "mode": "read",
           "returns": "table (partition_key text, row_key text, value jsonb, version integer, etag uuid)",
           "serviceName": "auth"
@@ -1087,7 +1087,7 @@
           "args": "pk text, rk text, properties jsonb, overwrite boolean, version integer",
           "body": "declare\n  new_etag uuid := public.gen_random_uuid();\nbegin\n  if overwrite then\n    insert into secrets_entities(partition_key, row_key, value, version, etag)\n    values (\n      pk,\n      rk,\n      properties,\n      version,\n      new_etag\n    ) on conflict (partition_key, row_key) do\n    update\n    set (value, version, etag) = (properties, secrets_entities_create.version, new_etag)\n    where secrets_entities.partition_key = secrets_entities_create.pk and secrets_entities.row_key = secrets_entities_create.rk;\n  else\n    insert into secrets_entities(partition_key, row_key, value, version, etag)\n    values (\n      pk,\n      rk,\n      properties,\n      version,\n      new_etag\n    );\n  end if;\n  return new_etag;\nend",
           "deprecated": false,
-          "description": "test",
+          "description": "See taskcluster-lib-entities",
           "mode": "write",
           "returns": "uuid",
           "serviceName": "secrets"
@@ -1096,7 +1096,7 @@
           "args": "partition_key text, row_key text",
           "body": "begin\n  return query\n  select secrets_entities.partition_key, secrets_entities.row_key, secrets_entities.value, secrets_entities.version,\n  secrets_entities.etag from secrets_entities\n  where secrets_entities.partition_key = secrets_entities_load.partition_key and secrets_entities.row_key = secrets_entities_load.row_key;\nend",
           "deprecated": false,
-          "description": "test",
+          "description": "See taskcluster-lib-entities",
           "mode": "read",
           "returns": "table (partition_key_out text, row_key_out text, value jsonb, version integer, etag uuid)",
           "serviceName": "secrets"
@@ -1105,7 +1105,7 @@
           "args": "partition_key text, row_key text, properties jsonb, version integer, old_etag uuid",
           "body": "declare\n  new_etag uuid := public.gen_random_uuid();\nbegin\n  update secrets_entities\n  set (value, version, etag) = (properties, secrets_entities_modify.version, new_etag)\n  where secrets_entities.partition_key = secrets_entities_modify.partition_key and secrets_entities.row_key = secrets_entities_modify.row_key and secrets_entities.etag = secrets_entities_modify.old_etag;\n\n  if found then\n    return query select new_etag;\n    return;\n  end if;\n\n  perform secrets_entities.etag from secrets_entities\n  where secrets_entities.partition_key = secrets_entities_modify.partition_key and secrets_entities.row_key = secrets_entities_modify.row_key;\n\n  if found then\n    raise exception 'unsuccessful update' using errcode = 'P0004';\n  else\n    raise exception 'no such row' using errcode = 'P0002';\n  end if;\nend",
           "deprecated": false,
-          "description": "Modify an entity. If the modify operation is succesful, the etag is returned in a set.\nElse, an error will be raised with the following error code:\n* 'P0004' - update was unsuccessful (e.g., the etag value did not match)\n* 'P0002' - entry not found in the table (i.e., no such row)\n",
+          "description": "See taskcluster-lib-entities",
           "mode": "write",
           "returns": "table (etag uuid)",
           "serviceName": "secrets"
@@ -1114,7 +1114,7 @@
           "args": "partition_key text, row_key text",
           "body": "begin\n  return query delete from secrets_entities\n  where secrets_entities.partition_key = secrets_entities_remove.partition_key and secrets_entities.row_key = secrets_entities_remove.row_key\n  returning secrets_entities.etag;\nend",
           "deprecated": false,
-          "description": "test",
+          "description": "See taskcluster-lib-entities",
           "mode": "write",
           "returns": "table (etag uuid)",
           "serviceName": "secrets"
@@ -1123,7 +1123,7 @@
           "args": "pk text, rk text, condition text, size integer, page integer",
           "body": "declare\n  sql text := 'select secrets_entities.partition_key, secrets_entities.row_key, secrets_entities.value, secrets_entities.version, secrets_entities.etag from secrets_entities';\n  partition_key_var text;\n  row_key_var text;\n  page_offset integer;\nbegin\n  if secrets_entities_scan.pk is not null or secrets_entities_scan.rk is not null or condition is not null then\n    sql := sql || ' where ';\n  end if;\n\n  if secrets_entities_scan.pk is not null then\n    partition_key_var := 'partition_key = ' || quote_literal(secrets_entities_scan.pk);\n  end if;\n\n  if secrets_entities_scan.rk is not null then\n    row_key_var := 'row_key = ' || quote_literal(secrets_entities_scan.rk);\n  end if;\n\n  sql := sql || concat_ws(' and ', partition_key_var, row_key_var, condition);\n  sql := sql || ' order by secrets_entities.partition_key, secrets_entities.row_key';\n\n  if size is not null and size > 0 then\n    sql := sql || ' limit ' || size;\n\n    if page is not null and page > 0 then\n      page_offset := size * (page - 1);\n      sql := sql || ' offset ' || page_offset;\n    end if;\n  end if;\n\n  return query execute sql;\nend",
           "deprecated": false,
-          "description": "test",
+          "description": "See taskcluster-lib-entities",
           "mode": "read",
           "returns": "table (partition_key text, row_key text, value jsonb, version integer, etag uuid)",
           "serviceName": "secrets"
@@ -1132,7 +1132,7 @@
           "args": "pk text, rk text, properties jsonb, overwrite boolean, version integer",
           "body": "declare\n  new_etag uuid := public.gen_random_uuid();\nbegin\n  if overwrite then\n    insert into session_storage_table_entities(partition_key, row_key, value, version, etag)\n    values (\n      pk,\n      rk,\n      properties,\n      version,\n      new_etag\n    ) on conflict (partition_key, row_key) do\n    update\n    set (value, version, etag) = (properties, session_storage_table_entities_create.version, new_etag)\n    where session_storage_table_entities.partition_key = session_storage_table_entities_create.pk and session_storage_table_entities.row_key = session_storage_table_entities_create.rk;\n  else\n    insert into session_storage_table_entities(partition_key, row_key, value, version, etag)\n    values (\n      pk,\n      rk,\n      properties,\n      version,\n      new_etag\n    );\n  end if;\n  return new_etag;\nend",
           "deprecated": false,
-          "description": "test",
+          "description": "See taskcluster-lib-entities",
           "mode": "write",
           "returns": "uuid",
           "serviceName": "web_server"
@@ -1141,7 +1141,7 @@
           "args": "partition_key text, row_key text",
           "body": "begin\n  return query\n  select session_storage_table_entities.partition_key, session_storage_table_entities.row_key, session_storage_table_entities.value, session_storage_table_entities.version,\n  session_storage_table_entities.etag from session_storage_table_entities\n  where session_storage_table_entities.partition_key = session_storage_table_entities_load.partition_key and session_storage_table_entities.row_key = session_storage_table_entities_load.row_key;\nend",
           "deprecated": false,
-          "description": "test",
+          "description": "See taskcluster-lib-entities",
           "mode": "read",
           "returns": "table (partition_key_out text, row_key_out text, value jsonb, version integer, etag uuid)",
           "serviceName": "web_server"
@@ -1150,7 +1150,7 @@
           "args": "partition_key text, row_key text, properties jsonb, version integer, old_etag uuid",
           "body": "declare\n  new_etag uuid := public.gen_random_uuid();\nbegin\n  update session_storage_table_entities\n  set (value, version, etag) = (properties, session_storage_table_entities_modify.version, new_etag)\n  where session_storage_table_entities.partition_key = session_storage_table_entities_modify.partition_key and session_storage_table_entities.row_key = session_storage_table_entities_modify.row_key and session_storage_table_entities.etag = session_storage_table_entities_modify.old_etag;\n\n  if found then\n    return query select new_etag;\n    return;\n  end if;\n\n  perform session_storage_table_entities.etag from session_storage_table_entities\n  where session_storage_table_entities.partition_key = session_storage_table_entities_modify.partition_key and session_storage_table_entities.row_key = session_storage_table_entities_modify.row_key;\n\n  if found then\n    raise exception 'unsuccessful update' using errcode = 'P0004';\n  else\n    raise exception 'no such row' using errcode = 'P0002';\n  end if;\nend",
           "deprecated": false,
-          "description": "Modify an entity. If the modify operation is succesful, the etag is returned in a set.\nElse, an error will be raised with the following error code:\n* 'P0004' - update was unsuccessful (e.g., the etag value did not match)\n* 'P0002' - entry not found in the table (i.e., no such row)\n",
+          "description": "See taskcluster-lib-entities",
           "mode": "write",
           "returns": "table (etag uuid)",
           "serviceName": "web_server"
@@ -1159,7 +1159,7 @@
           "args": "partition_key text, row_key text",
           "body": "begin\n  return query delete from session_storage_table_entities\n  where session_storage_table_entities.partition_key = session_storage_table_entities_remove.partition_key and session_storage_table_entities.row_key = session_storage_table_entities_remove.row_key\n  returning session_storage_table_entities.etag;\nend",
           "deprecated": false,
-          "description": "test",
+          "description": "See taskcluster-lib-entities",
           "mode": "write",
           "returns": "table (etag uuid)",
           "serviceName": "web_server"
@@ -1168,7 +1168,7 @@
           "args": "pk text, rk text, condition text, size integer, page integer",
           "body": "declare\n  sql text := 'select session_storage_table_entities.partition_key, session_storage_table_entities.row_key, session_storage_table_entities.value, session_storage_table_entities.version, session_storage_table_entities.etag from session_storage_table_entities';\n  partition_key_var text;\n  row_key_var text;\n  page_offset integer;\nbegin\n  if session_storage_table_entities_scan.pk is not null or session_storage_table_entities_scan.rk is not null or condition is not null then\n    sql := sql || ' where ';\n  end if;\n\n  if session_storage_table_entities_scan.pk is not null then\n    partition_key_var := 'partition_key = ' || quote_literal(session_storage_table_entities_scan.pk);\n  end if;\n\n  if session_storage_table_entities_scan.rk is not null then\n    row_key_var := 'row_key = ' || quote_literal(session_storage_table_entities_scan.rk);\n  end if;\n\n  sql := sql || concat_ws(' and ', partition_key_var, row_key_var, condition);\n  sql := sql || ' order by session_storage_table_entities.partition_key, session_storage_table_entities.row_key';\n\n  if size is not null and size > 0 then\n    sql := sql || ' limit ' || size;\n\n    if page is not null and page > 0 then\n      page_offset := size * (page - 1);\n      sql := sql || ' offset ' || page_offset;\n    end if;\n  end if;\n\n  return query execute sql;\nend",
           "deprecated": false,
-          "description": "test",
+          "description": "See taskcluster-lib-entities",
           "mode": "read",
           "returns": "table (partition_key text, row_key text, value jsonb, version integer, etag uuid)",
           "serviceName": "web_server"
@@ -1177,7 +1177,7 @@
           "args": "pk text, rk text, properties jsonb, overwrite boolean, version integer",
           "body": "declare\n  new_etag uuid := public.gen_random_uuid();\nbegin\n  if overwrite then\n    insert into taskcluster_check_runs_entities(partition_key, row_key, value, version, etag)\n    values (\n      pk,\n      rk,\n      properties,\n      version,\n      new_etag\n    ) on conflict (partition_key, row_key) do\n    update\n    set (value, version, etag) = (properties, taskcluster_check_runs_entities_create.version, new_etag)\n    where taskcluster_check_runs_entities.partition_key = taskcluster_check_runs_entities_create.pk and taskcluster_check_runs_entities.row_key = taskcluster_check_runs_entities_create.rk;\n  else\n    insert into taskcluster_check_runs_entities(partition_key, row_key, value, version, etag)\n    values (\n      pk,\n      rk,\n      properties,\n      version,\n      new_etag\n    );\n  end if;\n  return new_etag;\nend",
           "deprecated": false,
-          "description": "test",
+          "description": "See taskcluster-lib-entities",
           "mode": "write",
           "returns": "uuid",
           "serviceName": "github"
@@ -1186,7 +1186,7 @@
           "args": "partition_key text, row_key text",
           "body": "begin\n  return query\n  select taskcluster_check_runs_entities.partition_key, taskcluster_check_runs_entities.row_key, taskcluster_check_runs_entities.value, taskcluster_check_runs_entities.version,\n  taskcluster_check_runs_entities.etag from taskcluster_check_runs_entities\n  where taskcluster_check_runs_entities.partition_key = taskcluster_check_runs_entities_load.partition_key and taskcluster_check_runs_entities.row_key = taskcluster_check_runs_entities_load.row_key;\nend",
           "deprecated": false,
-          "description": "test",
+          "description": "See taskcluster-lib-entities",
           "mode": "read",
           "returns": "table (partition_key_out text, row_key_out text, value jsonb, version integer, etag uuid)",
           "serviceName": "github"
@@ -1195,7 +1195,7 @@
           "args": "partition_key text, row_key text, properties jsonb, version integer, old_etag uuid",
           "body": "declare\n  new_etag uuid := public.gen_random_uuid();\nbegin\n  update taskcluster_check_runs_entities\n  set (value, version, etag) = (properties, taskcluster_check_runs_entities_modify.version, new_etag)\n  where taskcluster_check_runs_entities.partition_key = taskcluster_check_runs_entities_modify.partition_key and taskcluster_check_runs_entities.row_key = taskcluster_check_runs_entities_modify.row_key and taskcluster_check_runs_entities.etag = taskcluster_check_runs_entities_modify.old_etag;\n\n  if found then\n    return query select new_etag;\n    return;\n  end if;\n\n  perform taskcluster_check_runs_entities.etag from taskcluster_check_runs_entities\n  where taskcluster_check_runs_entities.partition_key = taskcluster_check_runs_entities_modify.partition_key and taskcluster_check_runs_entities.row_key = taskcluster_check_runs_entities_modify.row_key;\n\n  if found then\n    raise exception 'unsuccessful update' using errcode = 'P0004';\n  else\n    raise exception 'no such row' using errcode = 'P0002';\n  end if;\nend",
           "deprecated": false,
-          "description": "Modify an entity. If the modify operation is succesful, the etag is returned in a set.\nElse, an error will be raised with the following error code:\n* 'P0004' - update was unsuccessful (e.g., the etag value did not match)\n* 'P0002' - entry not found in the table (i.e., no such row)\n",
+          "description": "See taskcluster-lib-entities",
           "mode": "write",
           "returns": "table (etag uuid)",
           "serviceName": "github"
@@ -1204,7 +1204,7 @@
           "args": "partition_key text, row_key text",
           "body": "begin\n  return query delete from taskcluster_check_runs_entities\n  where taskcluster_check_runs_entities.partition_key = taskcluster_check_runs_entities_remove.partition_key and taskcluster_check_runs_entities.row_key = taskcluster_check_runs_entities_remove.row_key\n  returning taskcluster_check_runs_entities.etag;\nend",
           "deprecated": false,
-          "description": "test",
+          "description": "See taskcluster-lib-entities",
           "mode": "write",
           "returns": "table (etag uuid)",
           "serviceName": "github"
@@ -1213,7 +1213,7 @@
           "args": "pk text, rk text, condition text, size integer, page integer",
           "body": "declare\n  sql text := 'select taskcluster_check_runs_entities.partition_key, taskcluster_check_runs_entities.row_key, taskcluster_check_runs_entities.value, taskcluster_check_runs_entities.version, taskcluster_check_runs_entities.etag from taskcluster_check_runs_entities';\n  partition_key_var text;\n  row_key_var text;\n  page_offset integer;\nbegin\n  if taskcluster_check_runs_entities_scan.pk is not null or taskcluster_check_runs_entities_scan.rk is not null or condition is not null then\n    sql := sql || ' where ';\n  end if;\n\n  if taskcluster_check_runs_entities_scan.pk is not null then\n    partition_key_var := 'partition_key = ' || quote_literal(taskcluster_check_runs_entities_scan.pk);\n  end if;\n\n  if taskcluster_check_runs_entities_scan.rk is not null then\n    row_key_var := 'row_key = ' || quote_literal(taskcluster_check_runs_entities_scan.rk);\n  end if;\n\n  sql := sql || concat_ws(' and ', partition_key_var, row_key_var, condition);\n  sql := sql || ' order by taskcluster_check_runs_entities.partition_key, taskcluster_check_runs_entities.row_key';\n\n  if size is not null and size > 0 then\n    sql := sql || ' limit ' || size;\n\n    if page is not null and page > 0 then\n      page_offset := size * (page - 1);\n      sql := sql || ' offset ' || page_offset;\n    end if;\n  end if;\n\n  return query execute sql;\nend",
           "deprecated": false,
-          "description": "test",
+          "description": "See taskcluster-lib-entities",
           "mode": "read",
           "returns": "table (partition_key text, row_key text, value jsonb, version integer, etag uuid)",
           "serviceName": "github"
@@ -1222,7 +1222,7 @@
           "args": "pk text, rk text, properties jsonb, overwrite boolean, version integer",
           "body": "declare\n  new_etag uuid := public.gen_random_uuid();\nbegin\n  if overwrite then\n    insert into taskcluster_checks_to_tasks_entities(partition_key, row_key, value, version, etag)\n    values (\n      pk,\n      rk,\n      properties,\n      version,\n      new_etag\n    ) on conflict (partition_key, row_key) do\n    update\n    set (value, version, etag) = (properties, taskcluster_checks_to_tasks_entities_create.version, new_etag)\n    where taskcluster_checks_to_tasks_entities.partition_key = taskcluster_checks_to_tasks_entities_create.pk and taskcluster_checks_to_tasks_entities.row_key = taskcluster_checks_to_tasks_entities_create.rk;\n  else\n    insert into taskcluster_checks_to_tasks_entities(partition_key, row_key, value, version, etag)\n    values (\n      pk,\n      rk,\n      properties,\n      version,\n      new_etag\n    );\n  end if;\n  return new_etag;\nend",
           "deprecated": false,
-          "description": "test",
+          "description": "See taskcluster-lib-entities",
           "mode": "write",
           "returns": "uuid",
           "serviceName": "github"
@@ -1231,7 +1231,7 @@
           "args": "partition_key text, row_key text",
           "body": "begin\n  return query\n  select taskcluster_checks_to_tasks_entities.partition_key, taskcluster_checks_to_tasks_entities.row_key, taskcluster_checks_to_tasks_entities.value, taskcluster_checks_to_tasks_entities.version,\n  taskcluster_checks_to_tasks_entities.etag from taskcluster_checks_to_tasks_entities\n  where taskcluster_checks_to_tasks_entities.partition_key = taskcluster_checks_to_tasks_entities_load.partition_key and taskcluster_checks_to_tasks_entities.row_key = taskcluster_checks_to_tasks_entities_load.row_key;\nend",
           "deprecated": false,
-          "description": "test",
+          "description": "See taskcluster-lib-entities",
           "mode": "read",
           "returns": "table (partition_key_out text, row_key_out text, value jsonb, version integer, etag uuid)",
           "serviceName": "github"
@@ -1240,7 +1240,7 @@
           "args": "partition_key text, row_key text, properties jsonb, version integer, old_etag uuid",
           "body": "declare\n  new_etag uuid := public.gen_random_uuid();\nbegin\n  update taskcluster_checks_to_tasks_entities\n  set (value, version, etag) = (properties, taskcluster_checks_to_tasks_entities_modify.version, new_etag)\n  where taskcluster_checks_to_tasks_entities.partition_key = taskcluster_checks_to_tasks_entities_modify.partition_key and taskcluster_checks_to_tasks_entities.row_key = taskcluster_checks_to_tasks_entities_modify.row_key and taskcluster_checks_to_tasks_entities.etag = taskcluster_checks_to_tasks_entities_modify.old_etag;\n\n  if found then\n    return query select new_etag;\n    return;\n  end if;\n\n  perform taskcluster_checks_to_tasks_entities.etag from taskcluster_checks_to_tasks_entities\n  where taskcluster_checks_to_tasks_entities.partition_key = taskcluster_checks_to_tasks_entities_modify.partition_key and taskcluster_checks_to_tasks_entities.row_key = taskcluster_checks_to_tasks_entities_modify.row_key;\n\n  if found then\n    raise exception 'unsuccessful update' using errcode = 'P0004';\n  else\n    raise exception 'no such row' using errcode = 'P0002';\n  end if;\nend",
           "deprecated": false,
-          "description": "Modify an entity. If the modify operation is succesful, the etag is returned in a set.\nElse, an error will be raised with the following error code:\n* 'P0004' - update was unsuccessful (e.g., the etag value did not match)\n* 'P0002' - entry not found in the table (i.e., no such row)\n",
+          "description": "See taskcluster-lib-entities",
           "mode": "write",
           "returns": "table (etag uuid)",
           "serviceName": "github"
@@ -1249,7 +1249,7 @@
           "args": "partition_key text, row_key text",
           "body": "begin\n  return query delete from taskcluster_checks_to_tasks_entities\n  where taskcluster_checks_to_tasks_entities.partition_key = taskcluster_checks_to_tasks_entities_remove.partition_key and taskcluster_checks_to_tasks_entities.row_key = taskcluster_checks_to_tasks_entities_remove.row_key\n  returning taskcluster_checks_to_tasks_entities.etag;\nend",
           "deprecated": false,
-          "description": "test",
+          "description": "See taskcluster-lib-entities",
           "mode": "write",
           "returns": "table (etag uuid)",
           "serviceName": "github"
@@ -1258,7 +1258,7 @@
           "args": "pk text, rk text, condition text, size integer, page integer",
           "body": "declare\n  sql text := 'select taskcluster_checks_to_tasks_entities.partition_key, taskcluster_checks_to_tasks_entities.row_key, taskcluster_checks_to_tasks_entities.value, taskcluster_checks_to_tasks_entities.version, taskcluster_checks_to_tasks_entities.etag from taskcluster_checks_to_tasks_entities';\n  partition_key_var text;\n  row_key_var text;\n  page_offset integer;\nbegin\n  if taskcluster_checks_to_tasks_entities_scan.pk is not null or taskcluster_checks_to_tasks_entities_scan.rk is not null or condition is not null then\n    sql := sql || ' where ';\n  end if;\n\n  if taskcluster_checks_to_tasks_entities_scan.pk is not null then\n    partition_key_var := 'partition_key = ' || quote_literal(taskcluster_checks_to_tasks_entities_scan.pk);\n  end if;\n\n  if taskcluster_checks_to_tasks_entities_scan.rk is not null then\n    row_key_var := 'row_key = ' || quote_literal(taskcluster_checks_to_tasks_entities_scan.rk);\n  end if;\n\n  sql := sql || concat_ws(' and ', partition_key_var, row_key_var, condition);\n  sql := sql || ' order by taskcluster_checks_to_tasks_entities.partition_key, taskcluster_checks_to_tasks_entities.row_key';\n\n  if size is not null and size > 0 then\n    sql := sql || ' limit ' || size;\n\n    if page is not null and page > 0 then\n      page_offset := size * (page - 1);\n      sql := sql || ' offset ' || page_offset;\n    end if;\n  end if;\n\n  return query execute sql;\nend",
           "deprecated": false,
-          "description": "test",
+          "description": "See taskcluster-lib-entities",
           "mode": "read",
           "returns": "table (partition_key text, row_key text, value jsonb, version integer, etag uuid)",
           "serviceName": "github"
@@ -1267,7 +1267,7 @@
           "args": "pk text, rk text, properties jsonb, overwrite boolean, version integer",
           "body": "declare\n  new_etag uuid := public.gen_random_uuid();\nbegin\n  if overwrite then\n    insert into taskcluster_github_builds_entities(partition_key, row_key, value, version, etag)\n    values (\n      pk,\n      rk,\n      properties,\n      version,\n      new_etag\n    ) on conflict (partition_key, row_key) do\n    update\n    set (value, version, etag) = (properties, taskcluster_github_builds_entities_create.version, new_etag)\n    where taskcluster_github_builds_entities.partition_key = taskcluster_github_builds_entities_create.pk and taskcluster_github_builds_entities.row_key = taskcluster_github_builds_entities_create.rk;\n  else\n    insert into taskcluster_github_builds_entities(partition_key, row_key, value, version, etag)\n    values (\n      pk,\n      rk,\n      properties,\n      version,\n      new_etag\n    );\n  end if;\n  return new_etag;\nend",
           "deprecated": false,
-          "description": "test",
+          "description": "See taskcluster-lib-entities",
           "mode": "write",
           "returns": "uuid",
           "serviceName": "github"
@@ -1276,7 +1276,7 @@
           "args": "partition_key text, row_key text",
           "body": "begin\n  return query\n  select taskcluster_github_builds_entities.partition_key, taskcluster_github_builds_entities.row_key, taskcluster_github_builds_entities.value, taskcluster_github_builds_entities.version,\n  taskcluster_github_builds_entities.etag from taskcluster_github_builds_entities\n  where taskcluster_github_builds_entities.partition_key = taskcluster_github_builds_entities_load.partition_key and taskcluster_github_builds_entities.row_key = taskcluster_github_builds_entities_load.row_key;\nend",
           "deprecated": false,
-          "description": "test",
+          "description": "See taskcluster-lib-entities",
           "mode": "read",
           "returns": "table (partition_key_out text, row_key_out text, value jsonb, version integer, etag uuid)",
           "serviceName": "github"
@@ -1285,7 +1285,7 @@
           "args": "partition_key text, row_key text, properties jsonb, version integer, old_etag uuid",
           "body": "declare\n  new_etag uuid := public.gen_random_uuid();\nbegin\n  update taskcluster_github_builds_entities\n  set (value, version, etag) = (properties, taskcluster_github_builds_entities_modify.version, new_etag)\n  where taskcluster_github_builds_entities.partition_key = taskcluster_github_builds_entities_modify.partition_key and taskcluster_github_builds_entities.row_key = taskcluster_github_builds_entities_modify.row_key and taskcluster_github_builds_entities.etag = taskcluster_github_builds_entities_modify.old_etag;\n\n  if found then\n    return query select new_etag;\n    return;\n  end if;\n\n  perform taskcluster_github_builds_entities.etag from taskcluster_github_builds_entities\n  where taskcluster_github_builds_entities.partition_key = taskcluster_github_builds_entities_modify.partition_key and taskcluster_github_builds_entities.row_key = taskcluster_github_builds_entities_modify.row_key;\n\n  if found then\n    raise exception 'unsuccessful update' using errcode = 'P0004';\n  else\n    raise exception 'no such row' using errcode = 'P0002';\n  end if;\nend",
           "deprecated": false,
-          "description": "Modify an entity. If the modify operation is succesful, the etag is returned in a set.\nElse, an error will be raised with the following error code:\n* 'P0004' - update was unsuccessful (e.g., the etag value did not match)\n* 'P0002' - entry not found in the table (i.e., no such row)\n",
+          "description": "See taskcluster-lib-entities",
           "mode": "write",
           "returns": "table (etag uuid)",
           "serviceName": "github"
@@ -1294,7 +1294,7 @@
           "args": "partition_key text, row_key text",
           "body": "begin\n  return query delete from taskcluster_github_builds_entities\n  where taskcluster_github_builds_entities.partition_key = taskcluster_github_builds_entities_remove.partition_key and taskcluster_github_builds_entities.row_key = taskcluster_github_builds_entities_remove.row_key\n  returning taskcluster_github_builds_entities.etag;\nend",
           "deprecated": false,
-          "description": "test",
+          "description": "See taskcluster-lib-entities",
           "mode": "write",
           "returns": "table (etag uuid)",
           "serviceName": "github"
@@ -1303,7 +1303,7 @@
           "args": "pk text, rk text, condition text, size integer, page integer",
           "body": "declare\n  sql text := 'select taskcluster_github_builds_entities.partition_key, taskcluster_github_builds_entities.row_key, taskcluster_github_builds_entities.value, taskcluster_github_builds_entities.version, taskcluster_github_builds_entities.etag from taskcluster_github_builds_entities';\n  partition_key_var text;\n  row_key_var text;\n  page_offset integer;\nbegin\n  if taskcluster_github_builds_entities_scan.pk is not null or taskcluster_github_builds_entities_scan.rk is not null or condition is not null then\n    sql := sql || ' where ';\n  end if;\n\n  if taskcluster_github_builds_entities_scan.pk is not null then\n    partition_key_var := 'partition_key = ' || quote_literal(taskcluster_github_builds_entities_scan.pk);\n  end if;\n\n  if taskcluster_github_builds_entities_scan.rk is not null then\n    row_key_var := 'row_key = ' || quote_literal(taskcluster_github_builds_entities_scan.rk);\n  end if;\n\n  sql := sql || concat_ws(' and ', partition_key_var, row_key_var, condition);\n  sql := sql || ' order by taskcluster_github_builds_entities.partition_key, taskcluster_github_builds_entities.row_key';\n\n  if size is not null and size > 0 then\n    sql := sql || ' limit ' || size;\n\n    if page is not null and page > 0 then\n      page_offset := size * (page - 1);\n      sql := sql || ' offset ' || page_offset;\n    end if;\n  end if;\n\n  return query execute sql;\nend",
           "deprecated": false,
-          "description": "test",
+          "description": "See taskcluster-lib-entities",
           "mode": "read",
           "returns": "table (partition_key text, row_key text, value jsonb, version integer, etag uuid)",
           "serviceName": "github"
@@ -1312,7 +1312,7 @@
           "args": "pk text, rk text, properties jsonb, overwrite boolean, version integer",
           "body": "declare\n  new_etag uuid := public.gen_random_uuid();\nbegin\n  if overwrite then\n    insert into taskcluster_intergration_owners_entities(partition_key, row_key, value, version, etag)\n    values (\n      pk,\n      rk,\n      properties,\n      version,\n      new_etag\n    ) on conflict (partition_key, row_key) do\n    update\n    set (value, version, etag) = (properties, taskcluster_intergration_owners_entities_create.version, new_etag)\n    where taskcluster_intergration_owners_entities.partition_key = taskcluster_intergration_owners_entities_create.pk and taskcluster_intergration_owners_entities.row_key = taskcluster_intergration_owners_entities_create.rk;\n  else\n    insert into taskcluster_intergration_owners_entities(partition_key, row_key, value, version, etag)\n    values (\n      pk,\n      rk,\n      properties,\n      version,\n      new_etag\n    );\n  end if;\n  return new_etag;\nend",
           "deprecated": false,
-          "description": "test",
+          "description": "See taskcluster-lib-entities",
           "mode": "write",
           "returns": "uuid",
           "serviceName": "github"
@@ -1321,7 +1321,7 @@
           "args": "partition_key text, row_key text",
           "body": "begin\n  return query\n  select taskcluster_intergration_owners_entities.partition_key, taskcluster_intergration_owners_entities.row_key, taskcluster_intergration_owners_entities.value, taskcluster_intergration_owners_entities.version,\n  taskcluster_intergration_owners_entities.etag from taskcluster_intergration_owners_entities\n  where taskcluster_intergration_owners_entities.partition_key = taskcluster_intergration_owners_entities_load.partition_key and taskcluster_intergration_owners_entities.row_key = taskcluster_intergration_owners_entities_load.row_key;\nend",
           "deprecated": false,
-          "description": "test",
+          "description": "See taskcluster-lib-entities",
           "mode": "read",
           "returns": "table (partition_key_out text, row_key_out text, value jsonb, version integer, etag uuid)",
           "serviceName": "github"
@@ -1330,7 +1330,7 @@
           "args": "partition_key text, row_key text, properties jsonb, version integer, old_etag uuid",
           "body": "declare\n  new_etag uuid := public.gen_random_uuid();\nbegin\n  update taskcluster_intergration_owners_entities\n  set (value, version, etag) = (properties, taskcluster_intergration_owners_entities_modify.version, new_etag)\n  where taskcluster_intergration_owners_entities.partition_key = taskcluster_intergration_owners_entities_modify.partition_key and taskcluster_intergration_owners_entities.row_key = taskcluster_intergration_owners_entities_modify.row_key and taskcluster_intergration_owners_entities.etag = taskcluster_intergration_owners_entities_modify.old_etag;\n\n  if found then\n    return query select new_etag;\n    return;\n  end if;\n\n  perform taskcluster_intergration_owners_entities.etag from taskcluster_intergration_owners_entities\n  where taskcluster_intergration_owners_entities.partition_key = taskcluster_intergration_owners_entities_modify.partition_key and taskcluster_intergration_owners_entities.row_key = taskcluster_intergration_owners_entities_modify.row_key;\n\n  if found then\n    raise exception 'unsuccessful update' using errcode = 'P0004';\n  else\n    raise exception 'no such row' using errcode = 'P0002';\n  end if;\nend",
           "deprecated": false,
-          "description": "Modify an entity. If the modify operation is succesful, the etag is returned in a set.\nElse, an error will be raised with the following error code:\n* 'P0004' - update was unsuccessful (e.g., the etag value did not match)\n* 'P0002' - entry not found in the table (i.e., no such row)\n",
+          "description": "See taskcluster-lib-entities",
           "mode": "write",
           "returns": "table (etag uuid)",
           "serviceName": "github"
@@ -1339,7 +1339,7 @@
           "args": "partition_key text, row_key text",
           "body": "begin\n  return query delete from taskcluster_intergration_owners_entities\n  where taskcluster_intergration_owners_entities.partition_key = taskcluster_intergration_owners_entities_remove.partition_key and taskcluster_intergration_owners_entities.row_key = taskcluster_intergration_owners_entities_remove.row_key\n  returning taskcluster_intergration_owners_entities.etag;\nend",
           "deprecated": false,
-          "description": "test",
+          "description": "See taskcluster-lib-entities",
           "mode": "write",
           "returns": "table (etag uuid)",
           "serviceName": "github"
@@ -1348,7 +1348,7 @@
           "args": "pk text, rk text, condition text, size integer, page integer",
           "body": "declare\n  sql text := 'select taskcluster_intergration_owners_entities.partition_key, taskcluster_intergration_owners_entities.row_key, taskcluster_intergration_owners_entities.value, taskcluster_intergration_owners_entities.version, taskcluster_intergration_owners_entities.etag from taskcluster_intergration_owners_entities';\n  partition_key_var text;\n  row_key_var text;\n  page_offset integer;\nbegin\n  if taskcluster_intergration_owners_entities_scan.pk is not null or taskcluster_intergration_owners_entities_scan.rk is not null or condition is not null then\n    sql := sql || ' where ';\n  end if;\n\n  if taskcluster_intergration_owners_entities_scan.pk is not null then\n    partition_key_var := 'partition_key = ' || quote_literal(taskcluster_intergration_owners_entities_scan.pk);\n  end if;\n\n  if taskcluster_intergration_owners_entities_scan.rk is not null then\n    row_key_var := 'row_key = ' || quote_literal(taskcluster_intergration_owners_entities_scan.rk);\n  end if;\n\n  sql := sql || concat_ws(' and ', partition_key_var, row_key_var, condition);\n  sql := sql || ' order by taskcluster_intergration_owners_entities.partition_key, taskcluster_intergration_owners_entities.row_key';\n\n  if size is not null and size > 0 then\n    sql := sql || ' limit ' || size;\n\n    if page is not null and page > 0 then\n      page_offset := size * (page - 1);\n      sql := sql || ' offset ' || page_offset;\n    end if;\n  end if;\n\n  return query execute sql;\nend",
           "deprecated": false,
-          "description": "test",
+          "description": "See taskcluster-lib-entities",
           "mode": "read",
           "returns": "table (partition_key text, row_key text, value jsonb, version integer, etag uuid)",
           "serviceName": "github"
@@ -1357,7 +1357,7 @@
           "args": "pk text, rk text, properties jsonb, overwrite boolean, version integer",
           "body": "declare\n  new_etag uuid := public.gen_random_uuid();\nbegin\n  if overwrite then\n    insert into wm_worker_pool_errors_entities(partition_key, row_key, value, version, etag)\n    values (\n      pk,\n      rk,\n      properties,\n      version,\n      new_etag\n    ) on conflict (partition_key, row_key) do\n    update\n    set (value, version, etag) = (properties, wm_worker_pool_errors_entities_create.version, new_etag)\n    where wm_worker_pool_errors_entities.partition_key = wm_worker_pool_errors_entities_create.pk and wm_worker_pool_errors_entities.row_key = wm_worker_pool_errors_entities_create.rk;\n  else\n    insert into wm_worker_pool_errors_entities(partition_key, row_key, value, version, etag)\n    values (\n      pk,\n      rk,\n      properties,\n      version,\n      new_etag\n    );\n  end if;\n  return new_etag;\nend",
           "deprecated": false,
-          "description": "test",
+          "description": "See taskcluster-lib-entities",
           "mode": "write",
           "returns": "uuid",
           "serviceName": "worker_manager"
@@ -1366,7 +1366,7 @@
           "args": "partition_key text, row_key text",
           "body": "begin\n  return query\n  select wm_worker_pool_errors_entities.partition_key, wm_worker_pool_errors_entities.row_key, wm_worker_pool_errors_entities.value, wm_worker_pool_errors_entities.version,\n  wm_worker_pool_errors_entities.etag from wm_worker_pool_errors_entities\n  where wm_worker_pool_errors_entities.partition_key = wm_worker_pool_errors_entities_load.partition_key and wm_worker_pool_errors_entities.row_key = wm_worker_pool_errors_entities_load.row_key;\nend",
           "deprecated": false,
-          "description": "test",
+          "description": "See taskcluster-lib-entities",
           "mode": "read",
           "returns": "table (partition_key_out text, row_key_out text, value jsonb, version integer, etag uuid)",
           "serviceName": "worker_manager"
@@ -1375,7 +1375,7 @@
           "args": "partition_key text, row_key text, properties jsonb, version integer, old_etag uuid",
           "body": "declare\n  new_etag uuid := public.gen_random_uuid();\nbegin\n  update wm_worker_pool_errors_entities\n  set (value, version, etag) = (properties, wm_worker_pool_errors_entities_modify.version, new_etag)\n  where wm_worker_pool_errors_entities.partition_key = wm_worker_pool_errors_entities_modify.partition_key and wm_worker_pool_errors_entities.row_key = wm_worker_pool_errors_entities_modify.row_key and wm_worker_pool_errors_entities.etag = wm_worker_pool_errors_entities_modify.old_etag;\n\n  if found then\n    return query select new_etag;\n    return;\n  end if;\n\n  perform wm_worker_pool_errors_entities.etag from wm_worker_pool_errors_entities\n  where wm_worker_pool_errors_entities.partition_key = wm_worker_pool_errors_entities_modify.partition_key and wm_worker_pool_errors_entities.row_key = wm_worker_pool_errors_entities_modify.row_key;\n\n  if found then\n    raise exception 'unsuccessful update' using errcode = 'P0004';\n  else\n    raise exception 'no such row' using errcode = 'P0002';\n  end if;\nend",
           "deprecated": false,
-          "description": "Modify an entity. If the modify operation is succesful, the etag is returned in a set.\nElse, an error will be raised with the following error code:\n* 'P0004' - update was unsuccessful (e.g., the etag value did not match)\n* 'P0002' - entry not found in the table (i.e., no such row)\n",
+          "description": "See taskcluster-lib-entities",
           "mode": "write",
           "returns": "table (etag uuid)",
           "serviceName": "worker_manager"
@@ -1384,7 +1384,7 @@
           "args": "partition_key text, row_key text",
           "body": "begin\n  return query delete from wm_worker_pool_errors_entities\n  where wm_worker_pool_errors_entities.partition_key = wm_worker_pool_errors_entities_remove.partition_key and wm_worker_pool_errors_entities.row_key = wm_worker_pool_errors_entities_remove.row_key\n  returning wm_worker_pool_errors_entities.etag;\nend",
           "deprecated": false,
-          "description": "test",
+          "description": "See taskcluster-lib-entities",
           "mode": "write",
           "returns": "table (etag uuid)",
           "serviceName": "worker_manager"
@@ -1393,7 +1393,7 @@
           "args": "pk text, rk text, condition text, size integer, page integer",
           "body": "declare\n  sql text := 'select wm_worker_pool_errors_entities.partition_key, wm_worker_pool_errors_entities.row_key, wm_worker_pool_errors_entities.value, wm_worker_pool_errors_entities.version, wm_worker_pool_errors_entities.etag from wm_worker_pool_errors_entities';\n  partition_key_var text;\n  row_key_var text;\n  page_offset integer;\nbegin\n  if wm_worker_pool_errors_entities_scan.pk is not null or wm_worker_pool_errors_entities_scan.rk is not null or condition is not null then\n    sql := sql || ' where ';\n  end if;\n\n  if wm_worker_pool_errors_entities_scan.pk is not null then\n    partition_key_var := 'partition_key = ' || quote_literal(wm_worker_pool_errors_entities_scan.pk);\n  end if;\n\n  if wm_worker_pool_errors_entities_scan.rk is not null then\n    row_key_var := 'row_key = ' || quote_literal(wm_worker_pool_errors_entities_scan.rk);\n  end if;\n\n  sql := sql || concat_ws(' and ', partition_key_var, row_key_var, condition);\n  sql := sql || ' order by wm_worker_pool_errors_entities.partition_key, wm_worker_pool_errors_entities.row_key';\n\n  if size is not null and size > 0 then\n    sql := sql || ' limit ' || size;\n\n    if page is not null and page > 0 then\n      page_offset := size * (page - 1);\n      sql := sql || ' offset ' || page_offset;\n    end if;\n  end if;\n\n  return query execute sql;\nend",
           "deprecated": false,
-          "description": "test",
+          "description": "See taskcluster-lib-entities",
           "mode": "read",
           "returns": "table (partition_key text, row_key text, value jsonb, version integer, etag uuid)",
           "serviceName": "worker_manager"
@@ -1402,7 +1402,7 @@
           "args": "pk text, rk text, properties jsonb, overwrite boolean, version integer",
           "body": "declare\n  new_etag uuid := public.gen_random_uuid();\nbegin\n  if overwrite then\n    insert into wm_worker_pools_entities(partition_key, row_key, value, version, etag)\n    values (\n      pk,\n      rk,\n      properties,\n      version,\n      new_etag\n    ) on conflict (partition_key, row_key) do\n    update\n    set (value, version, etag) = (properties, wm_worker_pools_entities_create.version, new_etag)\n    where wm_worker_pools_entities.partition_key = wm_worker_pools_entities_create.pk and wm_worker_pools_entities.row_key = wm_worker_pools_entities_create.rk;\n  else\n    insert into wm_worker_pools_entities(partition_key, row_key, value, version, etag)\n    values (\n      pk,\n      rk,\n      properties,\n      version,\n      new_etag\n    );\n  end if;\n  return new_etag;\nend",
           "deprecated": false,
-          "description": "test",
+          "description": "See taskcluster-lib-entities",
           "mode": "write",
           "returns": "uuid",
           "serviceName": "worker_manager"
@@ -1411,7 +1411,7 @@
           "args": "partition_key text, row_key text",
           "body": "begin\n  return query\n  select wm_worker_pools_entities.partition_key, wm_worker_pools_entities.row_key, wm_worker_pools_entities.value, wm_worker_pools_entities.version,\n  wm_worker_pools_entities.etag from wm_worker_pools_entities\n  where wm_worker_pools_entities.partition_key = wm_worker_pools_entities_load.partition_key and wm_worker_pools_entities.row_key = wm_worker_pools_entities_load.row_key;\nend",
           "deprecated": false,
-          "description": "test",
+          "description": "See taskcluster-lib-entities",
           "mode": "read",
           "returns": "table (partition_key_out text, row_key_out text, value jsonb, version integer, etag uuid)",
           "serviceName": "worker_manager"
@@ -1420,7 +1420,7 @@
           "args": "partition_key text, row_key text, properties jsonb, version integer, old_etag uuid",
           "body": "declare\n  new_etag uuid := public.gen_random_uuid();\nbegin\n  update wm_worker_pools_entities\n  set (value, version, etag) = (properties, wm_worker_pools_entities_modify.version, new_etag)\n  where wm_worker_pools_entities.partition_key = wm_worker_pools_entities_modify.partition_key and wm_worker_pools_entities.row_key = wm_worker_pools_entities_modify.row_key and wm_worker_pools_entities.etag = wm_worker_pools_entities_modify.old_etag;\n\n  if found then\n    return query select new_etag;\n    return;\n  end if;\n\n  perform wm_worker_pools_entities.etag from wm_worker_pools_entities\n  where wm_worker_pools_entities.partition_key = wm_worker_pools_entities_modify.partition_key and wm_worker_pools_entities.row_key = wm_worker_pools_entities_modify.row_key;\n\n  if found then\n    raise exception 'unsuccessful update' using errcode = 'P0004';\n  else\n    raise exception 'no such row' using errcode = 'P0002';\n  end if;\nend",
           "deprecated": false,
-          "description": "Modify an entity. If the modify operation is succesful, the etag is returned in a set.\nElse, an error will be raised with the following error code:\n* 'P0004' - update was unsuccessful (e.g., the etag value did not match)\n* 'P0002' - entry not found in the table (i.e., no such row)\n",
+          "description": "See taskcluster-lib-entities",
           "mode": "write",
           "returns": "table (etag uuid)",
           "serviceName": "worker_manager"
@@ -1429,7 +1429,7 @@
           "args": "partition_key text, row_key text",
           "body": "begin\n  return query delete from wm_worker_pools_entities\n  where wm_worker_pools_entities.partition_key = wm_worker_pools_entities_remove.partition_key and wm_worker_pools_entities.row_key = wm_worker_pools_entities_remove.row_key\n  returning wm_worker_pools_entities.etag;\nend",
           "deprecated": false,
-          "description": "test",
+          "description": "See taskcluster-lib-entities",
           "mode": "write",
           "returns": "table (etag uuid)",
           "serviceName": "worker_manager"
@@ -1438,7 +1438,7 @@
           "args": "pk text, rk text, condition text, size integer, page integer",
           "body": "declare\n  sql text := 'select wm_worker_pools_entities.partition_key, wm_worker_pools_entities.row_key, wm_worker_pools_entities.value, wm_worker_pools_entities.version, wm_worker_pools_entities.etag from wm_worker_pools_entities';\n  partition_key_var text;\n  row_key_var text;\n  page_offset integer;\nbegin\n  if wm_worker_pools_entities_scan.pk is not null or wm_worker_pools_entities_scan.rk is not null or condition is not null then\n    sql := sql || ' where ';\n  end if;\n\n  if wm_worker_pools_entities_scan.pk is not null then\n    partition_key_var := 'partition_key = ' || quote_literal(wm_worker_pools_entities_scan.pk);\n  end if;\n\n  if wm_worker_pools_entities_scan.rk is not null then\n    row_key_var := 'row_key = ' || quote_literal(wm_worker_pools_entities_scan.rk);\n  end if;\n\n  sql := sql || concat_ws(' and ', partition_key_var, row_key_var, condition);\n  sql := sql || ' order by wm_worker_pools_entities.partition_key, wm_worker_pools_entities.row_key';\n\n  if size is not null and size > 0 then\n    sql := sql || ' limit ' || size;\n\n    if page is not null and page > 0 then\n      page_offset := size * (page - 1);\n      sql := sql || ' offset ' || page_offset;\n    end if;\n  end if;\n\n  return query execute sql;\nend",
           "deprecated": false,
-          "description": "test",
+          "description": "See taskcluster-lib-entities",
           "mode": "read",
           "returns": "table (partition_key text, row_key text, value jsonb, version integer, etag uuid)",
           "serviceName": "worker_manager"
@@ -1447,7 +1447,7 @@
           "args": "pk text, rk text, properties jsonb, overwrite boolean, version integer",
           "body": "declare\n  new_etag uuid := public.gen_random_uuid();\nbegin\n  if overwrite then\n    insert into wm_workers_entities(partition_key, row_key, value, version, etag)\n    values (\n      pk,\n      rk,\n      properties,\n      version,\n      new_etag\n    ) on conflict (partition_key, row_key) do\n    update\n    set (value, version, etag) = (properties, wm_workers_entities_create.version, new_etag)\n    where wm_workers_entities.partition_key = wm_workers_entities_create.pk and wm_workers_entities.row_key = wm_workers_entities_create.rk;\n  else\n    insert into wm_workers_entities(partition_key, row_key, value, version, etag)\n    values (\n      pk,\n      rk,\n      properties,\n      version,\n      new_etag\n    );\n  end if;\n  return new_etag;\nend",
           "deprecated": false,
-          "description": "test",
+          "description": "See taskcluster-lib-entities",
           "mode": "write",
           "returns": "uuid",
           "serviceName": "worker_manager"
@@ -1456,7 +1456,7 @@
           "args": "partition_key text, row_key text",
           "body": "begin\n  return query\n  select wm_workers_entities.partition_key, wm_workers_entities.row_key, wm_workers_entities.value, wm_workers_entities.version,\n  wm_workers_entities.etag from wm_workers_entities\n  where wm_workers_entities.partition_key = wm_workers_entities_load.partition_key and wm_workers_entities.row_key = wm_workers_entities_load.row_key;\nend",
           "deprecated": false,
-          "description": "test",
+          "description": "See taskcluster-lib-entities",
           "mode": "read",
           "returns": "table (partition_key_out text, row_key_out text, value jsonb, version integer, etag uuid)",
           "serviceName": "worker_manager"
@@ -1465,7 +1465,7 @@
           "args": "partition_key text, row_key text, properties jsonb, version integer, old_etag uuid",
           "body": "declare\n  new_etag uuid := public.gen_random_uuid();\nbegin\n  update wm_workers_entities\n  set (value, version, etag) = (properties, wm_workers_entities_modify.version, new_etag)\n  where wm_workers_entities.partition_key = wm_workers_entities_modify.partition_key and wm_workers_entities.row_key = wm_workers_entities_modify.row_key and wm_workers_entities.etag = wm_workers_entities_modify.old_etag;\n\n  if found then\n    return query select new_etag;\n    return;\n  end if;\n\n  perform wm_workers_entities.etag from wm_workers_entities\n  where wm_workers_entities.partition_key = wm_workers_entities_modify.partition_key and wm_workers_entities.row_key = wm_workers_entities_modify.row_key;\n\n  if found then\n    raise exception 'unsuccessful update' using errcode = 'P0004';\n  else\n    raise exception 'no such row' using errcode = 'P0002';\n  end if;\nend",
           "deprecated": false,
-          "description": "Modify an entity. If the modify operation is succesful, the etag is returned in a set.\nElse, an error will be raised with the following error code:\n* 'P0004' - update was unsuccessful (e.g., the etag value did not match)\n* 'P0002' - entry not found in the table (i.e., no such row)\n",
+          "description": "See taskcluster-lib-entities",
           "mode": "write",
           "returns": "table (etag uuid)",
           "serviceName": "worker_manager"
@@ -1474,7 +1474,7 @@
           "args": "partition_key text, row_key text",
           "body": "begin\n  return query delete from wm_workers_entities\n  where wm_workers_entities.partition_key = wm_workers_entities_remove.partition_key and wm_workers_entities.row_key = wm_workers_entities_remove.row_key\n  returning wm_workers_entities.etag;\nend",
           "deprecated": false,
-          "description": "test",
+          "description": "See taskcluster-lib-entities",
           "mode": "write",
           "returns": "table (etag uuid)",
           "serviceName": "worker_manager"
@@ -1483,7 +1483,7 @@
           "args": "pk text, rk text, condition text, size integer, page integer",
           "body": "declare\n  sql text := 'select wm_workers_entities.partition_key, wm_workers_entities.row_key, wm_workers_entities.value, wm_workers_entities.version, wm_workers_entities.etag from wm_workers_entities';\n  partition_key_var text;\n  row_key_var text;\n  page_offset integer;\nbegin\n  if wm_workers_entities_scan.pk is not null or wm_workers_entities_scan.rk is not null or condition is not null then\n    sql := sql || ' where ';\n  end if;\n\n  if wm_workers_entities_scan.pk is not null then\n    partition_key_var := 'partition_key = ' || quote_literal(wm_workers_entities_scan.pk);\n  end if;\n\n  if wm_workers_entities_scan.rk is not null then\n    row_key_var := 'row_key = ' || quote_literal(wm_workers_entities_scan.rk);\n  end if;\n\n  sql := sql || concat_ws(' and ', partition_key_var, row_key_var, condition);\n  sql := sql || ' order by wm_workers_entities.partition_key, wm_workers_entities.row_key';\n\n  if size is not null and size > 0 then\n    sql := sql || ' limit ' || size;\n\n    if page is not null and page > 0 then\n      page_offset := size * (page - 1);\n      sql := sql || ' offset ' || page_offset;\n    end if;\n  end if;\n\n  return query execute sql;\nend",
           "deprecated": false,
-          "description": "test",
+          "description": "See taskcluster-lib-entities",
           "mode": "read",
           "returns": "table (partition_key text, row_key text, value jsonb, version integer, etag uuid)",
           "serviceName": "worker_manager"
