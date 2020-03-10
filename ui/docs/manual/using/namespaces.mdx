@@ -27,7 +27,7 @@ Many scopes reflect the namespaces given elsewhere in this document, as describe
 
 * `<service>:<action>:<details>` -
    Scopes for most Taskcluster services follow this pattern.
-   For example, the `queue.defineTask` call is governed by a scope beginning with `queue:define-task:<details>`, where the details describe a hierarchy of task attributes.
+   For example, the `queue.createTask` call is governed by a scope beginning with `queue:create-task:<details>`, where the details describe a hierarchy of task attributes.
    In cases where an action may be limited along any of several dimensions, each of those dimensions should be a separate scope.
 
 ---

@@ -1052,19 +1052,6 @@ var services = map[string]definitions.Service{
 				Input: "v1/create-task-request.json#",
 			},
 			definitions.Entry{
-				Name:        "defineTask",
-				Title:       "Define Task",
-				Description: "**Deprecated**, this is the same as `createTask` with a **self-dependency**.\nThis is only present for legacy.",
-				Stability:   "deprecated",
-				Method:      "post",
-				Route:       "/task/<taskId>/define",
-				Args: []string{
-					"taskId",
-				},
-				Query: []string{},
-				Input: "v1/create-task-request.json#",
-			},
-			definitions.Entry{
 				Name:        "scheduleTask",
 				Title:       "Schedule Defined Task",
 				Description: "scheduleTask will schedule a task to be executed, even if it has\nunresolved dependencies. A task would otherwise only be scheduled if\nits dependencies were resolved.\n\nThis is useful if you have defined a task that depends on itself or on\nsome other task that has not been resolved, but you wish the task to be\nscheduled immediately.\n\nThis will announce the task as pending and workers will be allowed to\nclaim it and resolve the task.\n\n**Note** this operation is **idempotent** and will not fail or complain\nif called with a `taskId` that is already scheduled, or even resolved.\nTo reschedule a task previously resolved, use `rerunTask`.",

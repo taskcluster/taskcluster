@@ -231,25 +231,6 @@ func (queue *Queue) CreateTask(taskId string, payload *TaskDefinitionRequest) (*
 	return responseObject.(*TaskStatusResponse), err
 }
 
-// Stability: *** DEPRECATED ***
-//
-// **Deprecated**, this is the same as `createTask` with a **self-dependency**.
-// This is only present for legacy.
-//
-// Required scopes:
-//   All of:
-//   * For scope in scopes each <scope>
-//   * For route in routes each queue:route:<route>
-//   * queue:scheduler-id:<schedulerId>
-//   * For priority in priorities each queue:create-task:<priority>:<provisionerId>/<workerType>
-//
-// See #defineTask
-func (queue *Queue) DefineTask(taskId string, payload *TaskDefinitionRequest) (*TaskStatusResponse, error) {
-	cd := tcclient.Client(*queue)
-	responseObject, _, err := (&cd).APICall(payload, "POST", "/task/"+url.QueryEscape(taskId)+"/define", new(TaskStatusResponse), nil)
-	return responseObject.(*TaskStatusResponse), err
-}
-
 // scheduleTask will schedule a task to be executed, even if it has
 // unresolved dependencies. A task would otherwise only be scheduled if
 // its dependencies were resolved.

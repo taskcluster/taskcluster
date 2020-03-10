@@ -164,13 +164,13 @@ const queue = new Queue({
     accessToken: '...'
   },
   // Restricting this instance of the Queue client to only one scope
-  authorizedScopes: ['queue:post:define-task/my-provisioner/my-worker-type']
+  authorizedScopes: ['queue:post:create-task/my-provisioner/my-worker-type']
 });
 
 // This request will only be successful if the task posted is aimed at
 // "my-worker-type" under "my-provisioner".
 queue
-  .defineTask(taskId, taskDefinition)
+  .createTask(taskId, taskDefinition)
   .then(result => {
     // ...
   });
