@@ -1,7 +1,9 @@
+const slugid = require('slugid');
 const loaders = require('./loaders');
 
 module.exports = ({ clients, pulseEngine, rootUrl, strategies, cfg, monitor }) => ({ req, connection }) => {
   if (req) {
+    const requestId = slugid.v4();
     const currentClients = clients({
       credentials: req.credentials,
       rootUrl,
@@ -14,7 +16,16 @@ module.exports = ({ clients, pulseEngine, rootUrl, strategies, cfg, monitor }) =
       strategies,
       req,
       cfg,
+      requestId,
     );
+
+    if (req.body.operationName !== 'IntrospectionQuery') {
+      monitor.log.requestReceived({
+        operationName: req.body.operationName,
+        query: req.body.query,
+        requestId,
+      });
+    }
 
     return {
       clients: currentClients,

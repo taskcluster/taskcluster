@@ -2,7 +2,7 @@ const DataLoader = require('dataloader');
 const sift = require('../utils/sift');
 const ConnectionLoader = require('../ConnectionLoader');
 
-module.exports = ({ auth }) => {
+module.exports = ({ auth }, isAuthed, rootUrl, monitor, strategies, req, cfg, requestId) => {
   const roles = new DataLoader(queries =>
     Promise.all(
       queries.map(async ({ filter }) => {

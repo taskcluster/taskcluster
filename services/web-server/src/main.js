@@ -118,8 +118,8 @@ const load = loader(
     },
 
     httpServer: {
-      requires: ['app', 'schema', 'context'],
-      setup: ({ app, schema, context }) => {
+      requires: ['app', 'schema', 'context', 'monitor'],
+      setup: ({ app, schema, context, monitor }) => {
         const server = new ApolloServer({
           schema,
           context,

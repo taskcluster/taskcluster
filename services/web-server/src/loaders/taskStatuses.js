@@ -1,7 +1,7 @@
 const DataLoader = require('dataloader');
 const TaskStatus = require('../entities/TaskStatus');
 
-module.exports = ({ queue }) => {
+module.exports = ({ queue }, isAuthed, rootUrl, monitor, strategies, req, cfg, requestId) => {
   const status = new DataLoader(taskIds =>
     Promise.all(
       taskIds.map(async taskId => {
