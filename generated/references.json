@@ -11880,6 +11880,19 @@
           "title": "Unbind a Pulse Subscription",
           "type": "unbind-pulse-subscription",
           "version": 1
+        },
+        {
+          "description": "A GraphQL request has been received.",
+          "fields": {
+            "operationName": "The name of the graphql query performed. If the operation is anonymous\n(i.e., the operation is query { ... } instead of query NamedQuery { ... })\n, then operationName is null.",
+            "query": "The graphQL query string",
+            "requestId": "A unique request ID for every incoming GraphQL request that the client receives."
+          },
+          "level": "info",
+          "name": "requestReceived",
+          "title": "Request Received",
+          "type": "request-received",
+          "version": 1
         }
       ]
     },
