@@ -3,6 +3,20 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v27.0.0
+
+▶ [MAJOR] [bug 1620109](http://bugzil.la/1620109)
+The long-deprecated `queue.defineTask` API method has been removed.
+
+▶ [minor] [bug 1573192](http://bugzil.la/1573192)
+A task's `metadata.owner` is no longer required to have the form of an email address, as discussed in [RFC#153](https://github.com/taskcluster/taskcluster-rfcs/blob/master/rfcs/0153-remove-email-validation-for-metadata-owner.md).
+
+▶ [patch] 
+Fixed worker-manager's azure-provider to properly report worker pool errors when provisioning workers fails.
+
+▶ [patch] [bug 1547731](http://bugzil.la/1547731)
+The web-server service now includes structured logging for web-server requests.
+
 ## v26.0.1
 
 ▶ [patch] 

@@ -7,8 +7,8 @@ import (
 	"log"
 	"strings"
 
-	"github.com/taskcluster/taskcluster/v26/clients/client-go/tcworkermanager"
-	"github.com/taskcluster/taskcluster/v26/workers/generic-worker/gwconfig"
+	"github.com/taskcluster/taskcluster/v27/clients/client-go/tcworkermanager"
+	"github.com/taskcluster/taskcluster/v27/workers/generic-worker/gwconfig"
 )
 
 type WorkerManagerUserData struct {

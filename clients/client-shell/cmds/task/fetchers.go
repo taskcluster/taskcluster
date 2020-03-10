@@ -13,9 +13,9 @@ import (
 
 	"github.com/spf13/pflag"
 	tcurls "github.com/taskcluster/taskcluster-lib-urls"
-	tcclient "github.com/taskcluster/taskcluster/v26/clients/client-go"
-	"github.com/taskcluster/taskcluster/v26/clients/client-go/tcqueue"
-	"github.com/taskcluster/taskcluster/v26/clients/client-shell/config"
+	tcclient "github.com/taskcluster/taskcluster/v27/clients/client-go"
+	"github.com/taskcluster/taskcluster/v27/clients/client-go/tcqueue"
+	"github.com/taskcluster/taskcluster/v27/clients/client-shell/config"
 )
 
 func makeQueue(credentials *tcclient.Credentials) *tcqueue.Queue {

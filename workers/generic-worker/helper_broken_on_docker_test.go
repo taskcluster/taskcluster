@@ -12,9 +12,9 @@ import (
 	"testing"
 	"time"
 
-	tcclient "github.com/taskcluster/taskcluster/v26/clients/client-go"
-	"github.com/taskcluster/taskcluster/v26/clients/client-go/tcqueue"
-	"github.com/taskcluster/taskcluster/v26/workers/generic-worker/testutil"
+	tcclient "github.com/taskcluster/taskcluster/v27/clients/client-go"
+	"github.com/taskcluster/taskcluster/v27/clients/client-go/tcqueue"
+	"github.com/taskcluster/taskcluster/v27/workers/generic-worker/testutil"
 )
 
 func checkSHA256(t *testing.T, sha256Hex string, file string) {

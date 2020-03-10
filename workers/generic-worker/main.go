@@ -27,16 +27,16 @@ import (
 
 	docopt "github.com/docopt/docopt-go"
 	sysinfo "github.com/elastic/go-sysinfo"
-	tcclient "github.com/taskcluster/taskcluster/v26/clients/client-go"
-	"github.com/taskcluster/taskcluster/v26/clients/client-go/tcqueue"
-	"github.com/taskcluster/taskcluster/v26/internal/scopes"
-	"github.com/taskcluster/taskcluster/v26/tools/taskcluster-worker-runner/protocol"
-	"github.com/taskcluster/taskcluster/v26/workers/generic-worker/expose"
-	"github.com/taskcluster/taskcluster/v26/workers/generic-worker/fileutil"
-	"github.com/taskcluster/taskcluster/v26/workers/generic-worker/gwconfig"
-	"github.com/taskcluster/taskcluster/v26/workers/generic-worker/host"
-	"github.com/taskcluster/taskcluster/v26/workers/generic-worker/process"
-	gwruntime "github.com/taskcluster/taskcluster/v26/workers/generic-worker/runtime"
+	tcclient "github.com/taskcluster/taskcluster/v27/clients/client-go"
+	"github.com/taskcluster/taskcluster/v27/clients/client-go/tcqueue"
+	"github.com/taskcluster/taskcluster/v27/internal/scopes"
+	"github.com/taskcluster/taskcluster/v27/tools/taskcluster-worker-runner/protocol"
+	"github.com/taskcluster/taskcluster/v27/workers/generic-worker/expose"
+	"github.com/taskcluster/taskcluster/v27/workers/generic-worker/fileutil"
+	"github.com/taskcluster/taskcluster/v27/workers/generic-worker/gwconfig"
+	"github.com/taskcluster/taskcluster/v27/workers/generic-worker/host"
+	"github.com/taskcluster/taskcluster/v27/workers/generic-worker/process"
+	gwruntime "github.com/taskcluster/taskcluster/v27/workers/generic-worker/runtime"
 	"github.com/xeipuuv/gojsonschema"
 )
 
@@ -73,7 +73,7 @@ var (
 	logName = "public/logs/live_backing.log"
 	logPath = filepath.Join("generic-worker", "live_backing.log")
 
-	version  = "26.0.1"
+	version  = "27.0.0"
 	revision = "" // this is set during build with `-ldflags "-X main.revision=$(git rev-parse HEAD)"`
 )
 

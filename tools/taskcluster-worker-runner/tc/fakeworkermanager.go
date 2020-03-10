@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"time"
 
-	tcclient "github.com/taskcluster/taskcluster/v26/clients/client-go"
-	"github.com/taskcluster/taskcluster/v26/clients/client-go/tcworkermanager"
+	tcclient "github.com/taskcluster/taskcluster/v27/clients/client-go"
+	"github.com/taskcluster/taskcluster/v27/clients/client-go/tcworkermanager"
 )
 
 var (

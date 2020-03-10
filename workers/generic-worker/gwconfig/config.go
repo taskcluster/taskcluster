@@ -10,13 +10,13 @@ import (
 	"os"
 	"reflect"
 
-	tcclient "github.com/taskcluster/taskcluster/v26/clients/client-go"
-	"github.com/taskcluster/taskcluster/v26/clients/client-go/tcauth"
-	"github.com/taskcluster/taskcluster/v26/clients/client-go/tcpurgecache"
-	"github.com/taskcluster/taskcluster/v26/clients/client-go/tcqueue"
-	"github.com/taskcluster/taskcluster/v26/clients/client-go/tcsecrets"
-	"github.com/taskcluster/taskcluster/v26/clients/client-go/tcworkermanager"
-	"github.com/taskcluster/taskcluster/v26/workers/generic-worker/fileutil"
+	tcclient "github.com/taskcluster/taskcluster/v27/clients/client-go"
+	"github.com/taskcluster/taskcluster/v27/clients/client-go/tcauth"
+	"github.com/taskcluster/taskcluster/v27/clients/client-go/tcpurgecache"
+	"github.com/taskcluster/taskcluster/v27/clients/client-go/tcqueue"
+	"github.com/taskcluster/taskcluster/v27/clients/client-go/tcsecrets"
+	"github.com/taskcluster/taskcluster/v27/clients/client-go/tcworkermanager"
+	"github.com/taskcluster/taskcluster/v27/workers/generic-worker/fileutil"
 )
 
 type (

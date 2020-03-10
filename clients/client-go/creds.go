@@ -14,7 +14,7 @@ import (
 	"time"
 
 	"github.com/taskcluster/slugid-go/slugid"
-	"github.com/taskcluster/taskcluster/v26/tools/jsonschema2go/text"
+	"github.com/taskcluster/taskcluster/v27/tools/jsonschema2go/text"
 )
 
 // Credentials represents the set of credentials required to access protected

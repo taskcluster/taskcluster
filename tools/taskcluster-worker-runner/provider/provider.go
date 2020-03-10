@@ -5,13 +5,13 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/taskcluster/taskcluster/v26/tools/taskcluster-worker-runner/cfg"
-	"github.com/taskcluster/taskcluster/v26/tools/taskcluster-worker-runner/provider/aws"
-	"github.com/taskcluster/taskcluster/v26/tools/taskcluster-worker-runner/provider/azure"
-	"github.com/taskcluster/taskcluster/v26/tools/taskcluster-worker-runner/provider/google"
-	"github.com/taskcluster/taskcluster/v26/tools/taskcluster-worker-runner/provider/provider"
-	"github.com/taskcluster/taskcluster/v26/tools/taskcluster-worker-runner/provider/standalone"
-	"github.com/taskcluster/taskcluster/v26/tools/taskcluster-worker-runner/provider/static"
+	"github.com/taskcluster/taskcluster/v27/tools/taskcluster-worker-runner/cfg"
+	"github.com/taskcluster/taskcluster/v27/tools/taskcluster-worker-runner/provider/aws"
+	"github.com/taskcluster/taskcluster/v27/tools/taskcluster-worker-runner/provider/azure"
+	"github.com/taskcluster/taskcluster/v27/tools/taskcluster-worker-runner/provider/google"
+	"github.com/taskcluster/taskcluster/v27/tools/taskcluster-worker-runner/provider/provider"
+	"github.com/taskcluster/taskcluster/v27/tools/taskcluster-worker-runner/provider/standalone"
+	"github.com/taskcluster/taskcluster/v27/tools/taskcluster-worker-runner/provider/static"
 )
 
 type providerInfo struct {

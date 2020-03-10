@@ -22,8 +22,8 @@ The most common case is to use `NewFromEnv`, reading environment variables for c
 
 ```go
 import (
-	tcclient "github.com/taskcluster/taskcluster/v26/clients/client-go"
-	"github.com/taskcluster/taskcluster/v26/clients/client-go/tcqueue"
+	tcclient "github.com/taskcluster/taskcluster/v27/clients/client-go"
+	"github.com/taskcluster/taskcluster/v27/clients/client-go/tcqueue"
 )
 queue := tcqueue.NewFromEnv()
 ```
@@ -53,8 +53,8 @@ For example, the `CreateTask` method is called like this:
 
 ```go
 import (
-	tcclient "github.com/taskcluster/taskcluster/v26/clients/client-go"
-	"github.com/taskcluster/taskcluster/v26/clients/client-go/tcqueue"
+	tcclient "github.com/taskcluster/taskcluster/v27/clients/client-go"
+	"github.com/taskcluster/taskcluster/v27/clients/client-go/tcqueue"
     "github.com/taskcluster/slugid-go"
 )
 task := tcqueue.TaskDefinitionRequest{..};
@@ -99,8 +99,8 @@ import (
 	"strconv"
 	"time"
 
-	tcclient "github.com/taskcluster/taskcluster/v26/clients/client-go"
-	"github.com/taskcluster/taskcluster/v26/clients/client-go/tcqueue"
+	tcclient "github.com/taskcluster/taskcluster/v27/clients/client-go"
+	"github.com/taskcluster/taskcluster/v27/clients/client-go/tcqueue"
 )
 
 const (
@@ -192,8 +192,8 @@ import (
 	"time"
 
 	"github.com/taskcluster/slugid-go/slugid"
-	tcclient "github.com/taskcluster/taskcluster/v26/clients/client-go"
-	"github.com/taskcluster/taskcluster/v26/clients/client-go/tcqueue"
+	tcclient "github.com/taskcluster/taskcluster/v27/clients/client-go"
+	"github.com/taskcluster/taskcluster/v27/clients/client-go/tcqueue"
 )
 
 // *********************************************************

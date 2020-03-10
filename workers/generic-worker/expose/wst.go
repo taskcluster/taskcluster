@@ -15,7 +15,7 @@ import (
 	"net/http"
 	"net/url"
 
-	"github.com/taskcluster/taskcluster/v26/clients/client-go/tcauth"
+	"github.com/taskcluster/taskcluster/v27/clients/client-go/tcauth"
 	"github.com/taskcluster/websocktunnel/client"
 )
 
