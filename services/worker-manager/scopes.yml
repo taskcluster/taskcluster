@@ -7,3 +7,4 @@
 - secrets:get:worker-pool:*
 - queue:claim-work:*
 - queue:worker-id:*
+- worker-manager:remove-worker:*
