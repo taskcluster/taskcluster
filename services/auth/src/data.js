@@ -1,4 +1,4 @@
-const Entity = require('azure-entities');
+const Entity = require('taskcluster-lib-entities');
 const assert = require('assert');
 const _ = require('lodash');
 const taskcluster = require('taskcluster-client');
