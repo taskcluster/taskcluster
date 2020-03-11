@@ -59,7 +59,7 @@
     "irc-upd": "^0.10.0",
     "iterall": "^1.2.2",
     "js-yaml": "^3.13.1",
-    "json-e": "3.0.2",
+    "json-e": "3.0.1",
     "json-parameterization": "^2.0.0",
     "jsonwebtoken": "^8.1.1",
     "jwks-rsa": "^1.2.1",
