@@ -26,5 +26,5 @@ Developers should be familiar with the incidents that have occurred in the past 
 
 * [Design Principles](principles.md)
 * [Idempotency](idempotency.md)
-* [Best Practices](best-practices)
-* [Releasing](releasing)
+* [Best Practices](best-practices.md)
+* [Releasing](releasing.md)
