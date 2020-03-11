@@ -234,7 +234,8 @@ builder.declare({
   let msg = {};
   let publisherKey = '';
 
-  debug('Received ' + eventType + ' event webhook payload. Processing...');
+  const installationId = body.installation && body.installation.id;
+  this.monitor.log.webhookReceived({eventId, eventType, installationId});
 
   try {
     msg.body = body;
@@ -284,7 +285,6 @@ builder.declare({
         return resolve(res, 400, 'No publisher available for X-GitHub-Event: ' + eventType);
     }
   } catch (e) {
-    debug('Error processing webhook payload!');
     e.webhookPayload = body;
     e.eventId = eventId;
     throw e;
