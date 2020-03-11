@@ -15543,6 +15543,24 @@
           "title": "Webhook Received",
           "type": "webhook-received",
           "version": 1
+        },
+        {
+          "description": "Narrative debug logging for event handling.  These messages have attributes that\ncan be useful in filtering to a specific event, but note that all fields are not\nalways available.  For example, when a task completes, the eventId that led to\nthe task's creation is not available and not logged.",
+          "fields": {
+            "eventId": "The GUID of the webhook delivery (`X-GitHub-Delivery` header), if any",
+            "installationId": "The installation ID associated with this event (`installation.id`), if any",
+            "message": "Free-form message",
+            "owner": "The repository owner (organization or username), if any",
+            "repo": "The repository name, if any",
+            "sha": "The SHA of the commit being addressed, if any",
+            "taskGroupId": "The taskGroupId of the affected tasks, if any",
+            "taskId": "The taskId of the affected task, if any"
+          },
+          "level": "debug",
+          "name": "handlerDebug",
+          "title": "Event Handler Debug Information",
+          "type": "handler-debug",
+          "version": 1
         }
       ]
     },
