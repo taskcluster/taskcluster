@@ -149,7 +149,10 @@ errorConfig: {
 
 Monitor objects are intended to be passed around to the various things that might need to submit data for monitoring.
 The `setup` function returns a "root" monitor, and other "child" monitors can be created from the root.
-The messages these child monitors produce will have a value of `Logger` corresponding to their name.
+
+To create a child monitor, call `monitor.childMonitor(name)`.
+The given name will be appended to the parent monitor's name.
+The messages these child monitors produce will have a value of `Logger` corresponding to their full name.
 
 ### Logging
 
