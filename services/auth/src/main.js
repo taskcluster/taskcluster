@@ -1,6 +1,7 @@
 const Loader = require('taskcluster-lib-loader');
 const SchemaSet = require('taskcluster-lib-validate');
 const libReferences = require('taskcluster-lib-references');
+const tcdb = require('taskcluster-db');
 const monitorManager = require('./monitor');
 const App = require('taskcluster-lib-app');
 const Config = require('taskcluster-lib-config');
@@ -46,12 +47,22 @@ const load = Loader({
     }),
   },
 
+  db: {
+    requires: ['cfg'],
+    setup: ({cfg}) => tcdb.setup({
+      readDbUrl: cfg.postgres.readDbUrl,
+      writeDbUrl: cfg.postgres.writeDbUrl,
+      serviceName: 'auth',
+    }),
+  },
+
   Client: {
-    requires: ['cfg', 'monitor'],
-    setup: ({cfg, monitor}) =>
+    requires: ['cfg', 'monitor', 'db'],
+    setup: ({cfg, monitor, db}) =>
       data.Client.setup({
+        db,
+        serviceName: 'auth',
         tableName: cfg.app.clientTableName,
-        credentials: cfg.azure || {},
         signingKey: cfg.azure.signingKey,
         cryptoKey: cfg.azure.cryptoKey,
         monitor: monitor.childMonitor('table.clients'),
