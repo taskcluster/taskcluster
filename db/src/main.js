@@ -21,7 +21,7 @@ const main = async () => {
     await upgrade({showProgress, adminDbUrl, usernamePrefix});
   } else if (process.argv[2] === 'downgrade') {
     const toVersion = parseInt(process.argv[3]);
-    if (isNaN(toVersion)) {
+    if (!process.argv[3].match(/^[0-9]+$/) || isNaN(toVersion)) {
       throw new Error('invalid version specified for downgrade -- must be an integer DB version, not a TC release version');
     }
     await downgrade({showProgress, adminDbUrl, usernamePrefix, toVersion});
@@ -30,11 +30,7 @@ const main = async () => {
   }
 };
 
-if (require.main === module) {
-  main().catch(err => {
-    console.log(err);
-    process.exit(1);
-  });
-} else {
-  module.exports = main;
-}
+main().catch(err => {
+  console.log(err);
+  process.exit(1);
+});

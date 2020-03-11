@@ -141,6 +141,18 @@ program.command('dev:db:upgrade')
     run(dbUpgrade, options[0]);
   });
 
+program.command('dev:db:downgrade')
+  .description('Run `yarn db:downgrade` for a development environment')
+  .option('--db-version <v>', 'Downgrade to this DB version')
+  .action((...options) => {
+    if (options.length !== 1) {
+      console.error('unexpected command-line arguments');
+      process.exit(1);
+    }
+    const {dbDowngrade} = require('./dev');
+    run(dbDowngrade, options[0]);
+  });
+
 program.command('dev:apply')
   .description('Apply changes to a development deployment')
   .action((...options) => {

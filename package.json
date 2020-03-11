@@ -196,6 +196,7 @@
     "heroku-postbuild": "if [ $PROCFILE = \"ui/Procfile\" ]; then cd ui && yarn install --frozen-lockfile && yarn build; fi",
     "dev:init": "node infrastructure/tooling/src/main.js dev:init",
     "dev:db:upgrade": "node infrastructure/tooling/src/main.js dev:db:upgrade",
+    "dev:db:downgrade": "node infrastructure/tooling/src/main.js dev:db:downgrade",
     "dev:apply": "node infrastructure/tooling/src/main.js dev:apply",
     "dev:delete": "node infrastructure/tooling/src/main.js dev:delete",
     "dev:verify": "node infrastructure/tooling/src/main.js dev:verify",
