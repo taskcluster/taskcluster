@@ -10,6 +10,7 @@ import { VIEW_DENYLIST_PAGE_SIZE } from '../../../utils/constants';
 
 @graphql(notificationsQuery, {
   options: props => ({
+    fetchPolicy: 'network-only',
     variables: {
       notificationsConnection: {
         limit: VIEW_DENYLIST_PAGE_SIZE,
