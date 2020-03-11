@@ -403,16 +403,8 @@ async function deprecatedStatusHandler(message) {
     return;
   }
 
-  let instGithub;
   // Authenticating as installation.
-  try {
-    debug('Authenticating as installation in status handler...');
-    instGithub = await this.context.github.getInstallationGithub(build.installationId);
-    debug('Authorized as installation in status handler');
-  } catch (e) {
-    debug(`Error authenticating as installation in status handler! Error: ${e}`);
-    throw e;
-  }
+  let instGithub = await this.context.github.getInstallationGithub(build.installationId);
 
   debug(`Attempting to update status for ${build.organization}/${build.repository}@${build.sha} (${state})`);
   const target_url = taskGroupUI(this.context.cfg.taskcluster.rootUrl, taskGroupId);
@@ -474,16 +466,8 @@ async function statusHandler(message) {
   // true means we'll get null if the record doesn't exist
   let checkRun = await this.context.CheckRuns.load({taskGroupId, taskId}, true);
 
-  let instGithub;
   // Authenticating as installation.
-  try {
-    debug('Authenticating as installation in status handler...');
-    instGithub = await this.context.github.getInstallationGithub(installationId);
-    debug('Authorized as installation in status handler');
-  } catch (e) {
-    debug(`Error authenticating as installation in status handler! Error: ${e}`);
-    throw e;
-  }
+  let instGithub = await this.context.github.getInstallationGithub(installationId);
 
   debug(
     `Attempting to update status of the checkrun for ${organization}/${repository}@${sha} (${taskState.conclusion})`,

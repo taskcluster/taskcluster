@@ -290,14 +290,8 @@ builder.declare({
     throw e;
   }
 
-  let instGithub;
-  try {
-    debug(`Trying to authenticate as installation for ${eventType}`);
-    instGithub = await this.github.getInstallationGithub(msg.installationId);
-  } catch (e) {
-    debug('Error authenticating as installation');
-    throw e;
-  }
+  // Authenticating as installation.
+  const instGithub = await this.github.getInstallationGithub(installationId);
 
   // Not all webhook payloads include an e-mail for the user who triggered an event
   let headUser = msg.details['event.head.user.login'].toString();
