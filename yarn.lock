@@ -4397,10 +4397,10 @@ json-buffer@3.0.0:
   resolved "https://registry.yarnpkg.com/json-buffer/-/json-buffer-3.0.0.tgz#5b1f397afc75d677bde8bcfc0e47e1f9a3d9a898"
   integrity sha1-Wx85evx11ne96Lz8Dkfh+aPZqJg=
 
-json-e@3.0.2:
-  version "3.0.2"
-  resolved "https://registry.yarnpkg.com/json-e/-/json-e-3.0.2.tgz#46b6c8e0dde340c3ead8f90efe35f3e1ee99e55b"
-  integrity sha512-6WtdeX8HkMvfKfT064c7pzonvQ5DNiAjUiiZH5S28XzAESkfl3uc1X7N8Yg+8Ka2lqqvYOnWincT926q0jMsSg==
+json-e@3.0.1:
+  version "3.0.1"
+  resolved "https://registry.yarnpkg.com/json-e/-/json-e-3.0.1.tgz#8e674e622012559747994f872739ea142cff4453"
+  integrity sha512-ZYUZ6KXdeL52Gd9yh7ig3k0a+O/5XwlBnel5fDHuCxAcAMXfqbed5FkCnZYiv52E0uB8dHoP5W7xOHjfISzHnQ==
   dependencies:
     json-stable-stringify-without-jsonify "^1.0.1"
 
