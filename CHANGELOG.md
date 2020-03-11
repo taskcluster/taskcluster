@@ -3,6 +3,11 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v27.2.0
+
+▶ [minor] [bug 1621630](http://bugzil.la/1621630)
+JSON-e has been reverted to v3.0.1, meaning that short-circuit evaluation of boolean operators is again unsupported.  This support will return soon.
+
 ## v27.1.0
 
 ▶ [minor] [bug 1621630](http://bugzil.la/1621630)

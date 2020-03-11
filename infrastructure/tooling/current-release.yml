@@ -1,1 +1,1 @@
-image: 'taskcluster/taskcluster:v27.1.0'
+image: 'taskcluster/taskcluster:v27.2.0'
