@@ -72,6 +72,7 @@ if [ -z "$providerType" ]; then
 fi
 if [ -z "$providerType" ]; then
     echo "No provider type for cloud $cloud"
+    exit 1
 fi
 
 sudo bash -c "cat > /etc/start-worker.yml <<EOF
