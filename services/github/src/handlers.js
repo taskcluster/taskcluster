@@ -327,11 +327,13 @@ class Handlers {
         // I consider this to be a hard-to-fix bug in octokat, so let's make
         // the logs usable for now and try to fix this later. It's a relatively
         // rare occurence.
-        debug('Detected an extremely long error. Truncating!');
         e.message = e.message.slice(0, 100).concat('...');
         e.stack = e.stack.split('</body>\n</html>\n')[1] || e.stack;
       }
-      debug(`Error fetching yaml for ${owner}/${repo}@${ref}: ${e.message} \n ${e.stack}`);
+
+      e.owner = owner;
+      e.repo = repo;
+      e.ref = ref;
       throw e;
     }
 
@@ -419,7 +421,9 @@ async function deprecatedStatusHandler(message) {
       context: `${this.context.cfg.app.statusContext} (${build.eventType.split('.')[0]})`,
     });
   } catch (e) {
-    debug(`Failed to update status: ${build.organization}/${build.repository}@${build.sha}`);
+    e.owner = build.organization;
+    e.repo = build.repository;
+    e.sha = build.sha;
     throw e;
   }
 }
@@ -512,7 +516,9 @@ async function statusHandler(message) {
       });
     }
   } catch (e) {
-    debug(`Failed to update status: ${build.organization}/${build.repository}@${build.sha}`);
+    e.owner = build.organization;
+    e.repo = build.repository;
+    e.sha = build.sha;
     throw e;
   }
 }
@@ -566,7 +572,6 @@ async function jobHandler(message) {
         pullNumber,
       });
     }
-    debug(`Error checking yaml for ${organization}/${repository}@${sha}: ${e}`);
     throw e;
   }
   if (!repoconf) { return; }

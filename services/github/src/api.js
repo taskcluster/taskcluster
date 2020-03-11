@@ -520,7 +520,6 @@ builder.declare({
           'Operation was forbidden by Github. The Github App may not be set up for this repo.',
           {});
       }
-      debug(`Error creating status: ${JSON.stringify(e)}`);
       await this.monitor.reportError(e);
       return res.status(500).send();
     }
@@ -570,7 +569,6 @@ builder.declare({
           'Operation was forbidden by Github. The Github App may not be set up for this repo.',
           {});
       }
-      debug(`Error creating comment: ${JSON.stringify(e)}`);
       await this.monitor.reportError(e);
       return res.status(500).send();
     }

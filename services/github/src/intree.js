@@ -35,14 +35,9 @@ module.exports.setup = async function({cfg, schemaset}) {
     // functions are used as default values for some fields.
     config = tcyaml.substituteParameters(config, cfg, payload);
 
-    try {
-      // Compile individual tasks, filtering any that are not intended
-      // for the current github event type. Append taskGroupId while
-      // we're at it.
-      return tcyaml.compileTasks(config, cfg, payload, new Date().toJSON());
-    } catch (e) {
-      debug('Error processing tasks!');
-      throw e;
-    }
+    // Compile individual tasks, filtering any that are not intended
+    // for the current github event type. Append taskGroupId while
+    // we're at it.
+    return tcyaml.compileTasks(config, cfg, payload, new Date().toJSON());
   };
 };
