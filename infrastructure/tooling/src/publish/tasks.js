@@ -140,6 +140,25 @@ module.exports = ({tasks, cmdOptions, credentials, baseDir}) => {
     },
   });
 
+  ensureTask(tasks, {
+    title: 'Build worker-runner artifacts',
+    requires: ['cleaned-release-artifacts'],
+    provides: ['worker-runner-artifacts'],
+    run: async (requirements, utils) => {
+      await execCommand({
+        dir: path.join(REPO_ROOT, 'tools', 'taskcluster-worker-runner'),
+        command: ['./build.sh', artifactsDir],
+        utils,
+      });
+
+      const artifacts = glob.sync('start-worker-*', {cwd: artifactsDir});
+
+      return {
+        'worker-runner-artifacts': artifacts,
+      };
+    },
+  });
+
   /* -- docker image build occurs here -- */
 
   ensureTask(tasks, {
@@ -148,6 +167,7 @@ module.exports = ({tasks, cmdOptions, credentials, baseDir}) => {
       'release-version',
       'client-shell-artifacts',
       'generic-worker-artifacts',
+      'worker-runner-artifacts',
       'changelog-text',
       'target-monoimage',
     ],
@@ -175,6 +195,7 @@ module.exports = ({tasks, cmdOptions, credentials, baseDir}) => {
 
       const files = requirements['client-shell-artifacts']
         .concat(requirements['generic-worker-artifacts'])
+        .concat(requirements['worker-runner-artifacts'])
         .map(name => ({name, contentType: 'application/octet-stream'}));
       for (let {name, contentType} of files) {
         utils.status({message: `Upload Release asset ${name}`});
