@@ -29,7 +29,6 @@ const CONCLUSIONS = { // maps status communicated by the queue service to github
  */
 class Handlers {
   constructor(options) {
-    debug('Constructing handlers...');
     const {
       rootUrl,
       credentials,
@@ -79,7 +78,6 @@ class Handlers {
    * Set up the handlers.
    */
   async setup(options = {}) {
-    debug('Setting up handlers...');
     assert(!this.jobPq, 'Cannot setup twice!');
     assert(!this.resultStatusPq, 'Cannot setup twice!');
     assert(!this.initialTaskStatusPq, 'Cannot setup twice!');
@@ -192,7 +190,6 @@ class Handlers {
   }
 
   async terminate() {
-    debug('Terminating handlers...');
     if (this.jobPq) {
       await this.jobPq.stop();
     }
@@ -529,7 +526,6 @@ async function statusHandler(message) {
  **/
 async function jobHandler(message) {
   let debug = Debug(debugPrefix + ':' + message.payload.eventId);
-  debug('Received message. Starting processing...');
   let context = this.context;
 
   // Authenticating as installation.

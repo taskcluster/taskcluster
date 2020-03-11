@@ -1,11 +1,7 @@
-const Debug = require('debug');
 const crypto = require('crypto');
 const APIBuilder = require('taskcluster-lib-api');
 const _ = require('lodash');
 const Entity = require('azure-entities');
-
-const debugPrefix = 'taskcluster-github:api';
-const debug = Debug(debugPrefix);
 
 // Strips/replaces undesirable characters which GitHub allows in
 // repository/organization names (notably .)
@@ -201,7 +197,6 @@ builder.declare({
   ].join('\n'),
 }, async function(req, res) {
   let eventId = req.headers['x-github-delivery'];
-  let debug = Debug(debugPrefix + ':' + eventId);
 
   let eventType = req.headers['x-github-event'];
   if (!eventType) {
@@ -302,9 +297,7 @@ builder.declare({
   msg.repository = sanitizeGitHubField(body.repository.name);
   msg.eventId = eventId;
 
-  debug('Beginning publishing event message on pulse.');
   await this.publisher[publisherKey](msg);
-  debug('Finished Publishing event message on pulse.');
   res.status(204).send();
 });
 

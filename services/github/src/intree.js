@@ -1,4 +1,3 @@
-const debug = require('debug')('taskcluster-github:intree');
 const TcYaml = require('./tc-yaml');
 
 module.exports = {};
@@ -22,8 +21,7 @@ module.exports.setup = async function({cfg, schemaset}) {
     if (errors) {
       throw new Error(errors);
     }
-    debug(`intree config for ${payload.organization}/${payload.repository} matches valid schema.`);
-
+    //
     // We need to toss out the config version number; it's the only
     // field that's not also in graph/task definitions
     delete config.version;
