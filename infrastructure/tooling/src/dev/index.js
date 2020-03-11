@@ -1,3 +1,5 @@
+const util = require('util');
+const chalk = require('chalk');
 const path = require('path');
 const _ = require('lodash');
 const {readRepoYAML, writeRepoYAML} = require('../utils');
@@ -10,6 +12,7 @@ const awsResources = require('./aws');
 const taskclusterResources = require('./taskcluster');
 const helm = require('./helm');
 const {makePgUrl} = require('./util');
+const {upgrade, downgrade} = require('taskcluster-db');
 
 const USER_CONF_FILE = 'dev-config.yml';
 const readUserConfig = async () => {
@@ -47,20 +50,46 @@ const init = async (options) => {
   await writeRepoYAML(USER_CONF_FILE, _.merge(userConfig, answer));
 };
 
+const dbParams = (meta) => {
+  return {
+    adminDbUrl: makePgUrl({
+      hostname: meta.dbPublicIp,
+      username: meta.dbAdminUsername,
+      password: meta.dbAdminPassword,
+      dbname: meta.dbName,
+    }),
+    usernamePrefix: meta.dbAdminUsername,
+  };
+};
+
 const dbUpgrade = async (options) => {
   const userConfig = await readUserConfig();
   const meta = userConfig.meta || {};
 
-  process.env.ADMIN_DB_URL = makePgUrl({
-    hostname: meta.dbPublicIp,
-    username: meta.dbAdminUsername,
-    password: meta.dbAdminPassword,
-    dbname: meta.dbName,
-  });
-  process.env.USERNAME_PREFIX = meta.dbAdminUsername;
+  const {adminDbUrl, usernamePrefix} = dbParams(meta);
+  const showProgress = message => {
+    util.log(chalk.green(message));
+  };
 
-  // invoke the main function for `yarn db:upgrade`
-  await require('../../../../db/src/main')();
+  await upgrade({showProgress, adminDbUrl, usernamePrefix});
+};
+
+const dbDowngrade = async (options) => {
+  const userConfig = await readUserConfig();
+  const meta = userConfig.meta || {};
+
+  const {dbVersion} = options;
+  const toVersion = parseInt(dbVersion);
+  if (!dbVersion.match(/^[0-9]+$/) || isNaN(toVersion)) {
+    throw new Error('Missing or invalid --db-version');
+  }
+
+  const {adminDbUrl, usernamePrefix} = dbParams(meta);
+  const showProgress = message => {
+    util.log(chalk.green(message));
+  };
+
+  await downgrade({showProgress, adminDbUrl, usernamePrefix, toVersion});
 };
 
 const apply = async (options) => {
@@ -75,4 +104,4 @@ const delete_ = async (options) => {
   await helm('delete');
 };
 
-module.exports = {init, apply, verify, delete_, dbUpgrade};
+module.exports = {init, apply, verify, delete_, dbUpgrade, dbDowngrade};
