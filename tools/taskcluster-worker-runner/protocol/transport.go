@@ -168,34 +168,3 @@ func (transp *NullTransport) Recv() (Message, bool) {
 	// no messages are ever received
 	select {}
 }
-
-// FakeTransport implements Transport and records sent messages.  It is used
-// for testing.
-type FakeTransport struct {
-	mux      sync.Mutex
-	messages []Message
-}
-
-func NewFakeTransport() *FakeTransport {
-	return &FakeTransport{messages: []Message{}}
-}
-
-func (transp *FakeTransport) Send(msg Message) {
-	transp.mux.Lock()
-	defer transp.mux.Unlock()
-	transp.messages = append(transp.messages, msg)
-}
-
-func (transp *FakeTransport) Messages() []Message {
-	transp.mux.Lock()
-	defer transp.mux.Unlock()
-	// make a copy of the messages that won't be modified concurrently
-	rv := make([]Message, len(transp.messages))
-	copy(rv, transp.messages)
-	return rv
-}
-
-func (transp *FakeTransport) Recv() (Message, bool) {
-	// no messages are ever received
-	select {}
-}

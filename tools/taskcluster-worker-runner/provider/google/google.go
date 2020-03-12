@@ -121,8 +121,8 @@ func (p *GoogleProvider) WorkerStarted(state *run.State) error {
 			log.Printf("Shutdown error: %v\n", err)
 		}
 	})
-	p.proto.Capabilities.Add("shutdown")
-	p.proto.Capabilities.Add("graceful-termination")
+	p.proto.AddCapability("shutdown")
+	p.proto.AddCapability("graceful-termination")
 
 	return nil
 }

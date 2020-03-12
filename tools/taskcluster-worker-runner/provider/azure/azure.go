@@ -159,8 +159,8 @@ func (p *AzureProvider) WorkerStarted(state *run.State) error {
 			log.Printf("Shutdown error: %v\n", err)
 		}
 	})
-	p.proto.Capabilities.Add("shutdown")
-	p.proto.Capabilities.Add("graceful-termination")
+	p.proto.AddCapability("shutdown")
+	p.proto.AddCapability("graceful-termination")
 
 	// start polling for graceful shutdown
 	p.terminationTicker = time.NewTicker(30 * time.Second)
