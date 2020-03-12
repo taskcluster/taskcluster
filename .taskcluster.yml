@@ -61,10 +61,6 @@ tasks:
         - name: taskcluster-lib-loader
         - name: taskcluster-lib-monitor
         - name: taskcluster-lib-postgres
-          image: taskcluster/node-and-postgres:node${node}-pg11
-          command: >-
-            ./db/test-setup.sh &&
-            yarn workspace taskcluster-lib-postgres coverage:report
         - name: taskcluster-lib-pulse
           image: taskcluster/rabbit-test:${node}
           env:
@@ -204,6 +200,18 @@ tasks:
           command: >-
               (cd clients/client-go && go list -m all) &&
               (cd clients/client-shell && go list -m all)
+        - name: "yarn db:upgrade"
+          image: taskcluster/node-and-postgres:node${node}-pg11
+          command: >-
+            ./db/test-setup.sh --users &&
+            export ADMIN_DB_URL="$TEST_DB_URL" &&
+            export USERNAME_PREFIX="test" &&
+            yarn db:upgrade
+        - name: "taskcluster-db"
+          image: taskcluster/node-and-postgres:node${node}-pg11
+          command: >-
+            ./db/test-setup.sh &&
+            cd db && yarn test
         - name: taskcluster-ui
           image: 'taskcluster/browser-test:${node}'
           install: >-
@@ -234,14 +242,15 @@ tasks:
                   - $eval: others
               each(entry):
                 name: ${entry.name}
-                image:  # use `image` if given, falling back to the node image
+                image:  # use `image` if given, falling back to the node+pg image
                   $if: entry['image']
                   then: ${entry.image}
-                  else: "node:${node}"
+                  else: taskcluster/node-and-postgres:node${node}-pg11
                 command:  # use `command` if given, falling back to basic yarn test
                   $if: entry['command']
                   then: ${entry.command}
                   else: >-
+                    ./db/test-setup.sh &&
                     yarn workspace ${entry.name} coverage:report
                 env: # add in any custom env vars that this package needs
                   $if: entry['env']

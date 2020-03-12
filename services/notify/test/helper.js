@@ -2,7 +2,7 @@ const assert = require('assert');
 const path = require('path');
 const aws = require('aws-sdk');
 const taskcluster = require('taskcluster-client');
-const {stickyLoader, Secrets, fakeauth, withEntity, withPulse, withMonitor} = require('taskcluster-lib-testing');
+const {stickyLoader, Secrets, fakeauth, withEntity, withPulse, withMonitor, withDb} = require('taskcluster-lib-testing');
 const builder = require('../src/api');
 const load = require('../src/main');
 const RateLimit = require('../src/ratelimit');
@@ -35,6 +35,7 @@ exports.secrets = new Secrets({
   ],
   secrets: {
     azure: withEntity.secret,
+    db: withDb.secret,
     aws: [
       {env: 'AWS_ACCESS_KEY_ID', cfg: 'aws.accessKeyId'},
       {env: 'AWS_SECRET_ACCESS_KEY', cfg: 'aws.secretAccessKey'},
@@ -316,4 +317,8 @@ exports.withServer = (mock, skipping) => {
 
 exports.withEntities = (mock, skipping) => {
   withEntity(mock, skipping, exports, 'DenylistedNotification', data.DenylistedNotification);
+};
+
+exports.withDb = (mock, skipping) => {
+  withDb(mock, skipping, exports, 'notify');
 };

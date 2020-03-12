@@ -19,6 +19,7 @@ const matrix = require('matrix-js-sdk');
 const MatrixBot = require('./matrix');
 const data = require('./data');
 const {sasCredentials} = require('taskcluster-lib-azure');
+const tcdb = require('taskcluster-db');
 
 // Create component loader
 const load = loader({
@@ -63,6 +64,14 @@ const load = loader({
       }),
       monitor: monitor.childMonitor('table.denylist'),
     }),
+  },
+
+  db: {
+    requires: ['process', 'cfg'],
+    setup: ({process, cfg}) => tcdb.setup({
+      serviceName: 'notify',
+      ...cfg.postgres,
+      statementTimeout: process === 'server' ? 30000 : 0}),
   },
 
   generateReferences: {
@@ -196,10 +205,10 @@ const load = loader({
   },
 
   api: {
-    requires: ['cfg', 'monitor', 'schemaset', 'notifier', 'DenylistedNotification', 'denier'],
-    setup: ({cfg, monitor, schemaset, notifier, DenylistedNotification, denier}) => builder.build({
+    requires: ['cfg', 'monitor', 'schemaset', 'notifier', 'DenylistedNotification', 'denier', 'db'],
+    setup: ({cfg, monitor, schemaset, notifier, DenylistedNotification, denier, db}) => builder.build({
       rootUrl: cfg.taskcluster.rootUrl,
-      context: {notifier, DenylistedNotification, denier},
+      context: {notifier, DenylistedNotification, denier, db},
       monitor: monitor.childMonitor('api'),
       schemaset,
     }),

@@ -13,6 +13,7 @@ const builder = new APIBuilder({
     'notifier',
     'DenylistedNotification',
     'denier',
+    'db',
   ],
   errorCodes: {
     DenylistedAddress: 400,
@@ -252,4 +253,28 @@ builder.declare({
     }),
     continuationToken: query.continuation || undefined,
   });
+});
+
+builder.declare({
+  method: 'post',
+  route: '/widgets',
+  name: 'updateWidgets',
+  scopes: 'notify:manage-widgets',
+  input: 'widget.yml',
+  output: 'widgets.yml',
+  stability: 'experimental',
+  title: 'Update the Widgets',
+  category: 'Widgets',
+  description: [
+    'This is a temporary API method to exercise infrastructure support for database',
+    'access and migrations.  It is not advertised and will be removed in a later version.',
+    '',
+    'Do not call this method.',
+  ].join('\n'),
+}, async function(req, res) {
+  const {name} = req.body;
+
+  const widgets = await this.db.fns.update_widgets(name);
+
+  return res.reply(widgets.map(({name}) => ({name})));
 });

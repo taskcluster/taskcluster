@@ -1,0 +1,9 @@
+# <service-name-1>
+#   // tables that this service has access to
+#   tables:
+#     <tableName>: [read|write]
+#     <tableName>: [read|write]
+#     - ...
+notify:
+  tables:
+    widgets: write

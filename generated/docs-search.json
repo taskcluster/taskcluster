@@ -78,6 +78,13 @@
   },
   {
     "element": "h2",
+    "id": "database",
+    "path": "/manual/deploying",
+    "subtitle": "Database",
+    "title": "Deploying Taskcluster"
+  },
+  {
+    "element": "h2",
     "id": "events",
     "path": "/manual/deploying",
     "subtitle": "Events",
@@ -215,6 +222,41 @@
     "path": "/manual/deploying/cloud-credentials",
     "subtitle": "Websocktunnel Credentials",
     "title": "Cloud Credentials"
+  },
+  {
+    "element": "h1",
+    "id": "database-configuration",
+    "path": "/manual/deploying/database",
+    "subtitle": null,
+    "title": "Database Configuration"
+  },
+  {
+    "element": "h2",
+    "id": "configuration",
+    "path": "/manual/deploying/database",
+    "subtitle": "Configuration",
+    "title": "Database Configuration"
+  },
+  {
+    "element": "h2",
+    "id": "db-users",
+    "path": "/manual/deploying/database",
+    "subtitle": "DB Users",
+    "title": "Database Configuration"
+  },
+  {
+    "element": "h2",
+    "id": "read-and-write-replicas",
+    "path": "/manual/deploying/database",
+    "subtitle": "Read and Write Replicas",
+    "title": "Database Configuration"
+  },
+  {
+    "element": "h2",
+    "id": "upgrades",
+    "path": "/manual/deploying/database",
+    "subtitle": "Upgrades",
+    "title": "Database Configuration"
   },
   {
     "element": "h1",

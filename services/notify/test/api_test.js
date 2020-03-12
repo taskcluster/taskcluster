@@ -1,12 +1,13 @@
 const _ = require('lodash');
-const assert = require('assert');
+const assert = require('assert').strict;
 const helper = require('./helper');
 const testing = require('taskcluster-lib-testing');
 const monitorManager = require('../src/monitor');
 const {defaultMonitorManager} = require('taskcluster-lib-monitor');
 
-helper.secrets.mockSuite(testing.suiteName(), ['azure', 'aws'], function(mock, skipping) {
+helper.secrets.mockSuite(testing.suiteName(), ['db', 'azure', 'aws'], function(mock, skipping) {
   helper.withEntities(mock, skipping);
+  helper.withDb(mock, skipping);
   helper.withPulse(mock, skipping);
   helper.withFakeMatrix(mock, skipping);
   helper.withSES(mock, skipping);
@@ -270,5 +271,10 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'aws'], function(mock, s
     addressList = await helper.apiClient.listDenylist();
     let expectedResult = [dummyAddress1, dummyAddress2].sort();
     assert.deepEqual(addressList.addresses.sort(), expectedResult);
+  });
+
+  test('widgets!', async function() {
+    const widgets = await helper.apiClient.updateWidgets({name: 'foober'});
+    assert.deepEqual(widgets, [{name: 'foober'}]);
   });
 });

@@ -155,6 +155,12 @@ type (
 		// If you are using riot, you can find this under the advanced settings for a room.
 		RoomID string `json:"roomId"`
 	}
+
+	Widget struct {
+		Name string `json:"name"`
+	}
+
+	Widgets []Widget
 )
 
 // MarshalJSON calls json.RawMessage method of the same name. Required since

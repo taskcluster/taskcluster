@@ -9,7 +9,8 @@
   },
   "workspaces": [
     "libraries/*",
-    "services/*"
+    "services/*",
+    "db"
   ],
   "dependencies": {
     "@azure/arm-compute": "^12.0.0",
@@ -100,6 +101,7 @@
     "superagent": "^5.0.0",
     "tar-stream": "^2.0.0",
     "taskcluster-client": "link:clients/client",
+    "taskcluster-db": "link:db",
     "taskcluster-lib-api": "link:libraries/api",
     "taskcluster-lib-app": "link:libraries/app",
     "taskcluster-lib-azure": "link:libraries/azure",
@@ -175,7 +177,7 @@
     "zurvan": "^0.5.2"
   },
   "scripts": {
-    "lint": "eslint --cache --ext js --ignore-pattern clients/client-web/build --ignore-pattern clients/client-py libraries services infrastructure clients test",
+    "lint": "eslint --cache --ext js --ignore-pattern clients/client-web/build --ignore-pattern clients/client-py libraries services infrastructure clients test db",
     "test": "yarn workspaces run test",
     "fetch-coverage": "node test/fetch-coverage.js",
     "test:cleanup": "yarn workspace taskcluster-auth test:cleanup",
@@ -197,7 +199,8 @@
     "test:meta": "node infrastructure/tooling/src/main.js test:meta",
     "backup:run": "node infrastructure/tooling/src/main.js backup:run",
     "backup:restore": "node infrastructure/tooling/src/main.js backup:restore",
-    "backup:compare": "node infrastructure/tooling/src/main.js backup:compare"
+    "backup:compare": "node infrastructure/tooling/src/main.js backup:compare",
+    "db:upgrade": "node db/src/main.js"
   },
   "renovate": {
     "extends": [

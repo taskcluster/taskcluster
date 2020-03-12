@@ -81,6 +81,7 @@ script/test:meta) shift; exec yarn run test:meta "${@}";;
 script/backup:run) shift; exec yarn run backup:run "${@}";;
 script/backup:restore) shift; exec yarn run backup:restore "${@}";;
 script/backup:compare) shift; exec yarn run backup:compare "${@}";;
+script/db:upgrade) shift; exec yarn run db:upgrade "${@}";;
 references/web) exec sh infrastructure/references/references.sh;;
 ui/web) node /app/ui/generate-env-js.js /app/ui/build/static/env.js && exec nginx -c /app/ui/web-ui-nginx-site.conf -g 'daemon off;';;
 *) exec "${@}";;

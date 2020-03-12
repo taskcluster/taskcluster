@@ -763,10 +763,16 @@
         "pulse_username": {
           "type": "string"
         },
+        "read_db_url": {
+          "type": "string"
+        },
         "taskcluster_access_token": {
           "type": "string"
         },
         "taskcluster_client_id": {
+          "type": "string"
+        },
+        "write_db_url": {
           "type": "string"
         }
       },
@@ -775,6 +781,8 @@
         "email_source_address",
         "taskcluster_client_id",
         "taskcluster_access_token",
+        "read_db_url",
+        "write_db_url",
         "aws_access_key_id",
         "aws_secret_access_key",
         "pulse_username",
