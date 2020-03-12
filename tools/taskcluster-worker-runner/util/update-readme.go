@@ -5,9 +5,9 @@ import (
 	"io/ioutil"
 	"strings"
 
-	"github.com/taskcluster/taskcluster/v25/tools/taskcluster-worker-runner/provider"
-	"github.com/taskcluster/taskcluster/v25/tools/taskcluster-worker-runner/runner"
-	"github.com/taskcluster/taskcluster/v25/tools/taskcluster-worker-runner/worker"
+	"github.com/taskcluster/taskcluster/v27/tools/taskcluster-worker-runner/provider"
+	"github.com/taskcluster/taskcluster/v27/tools/taskcluster-worker-runner/runner"
+	"github.com/taskcluster/taskcluster/v27/tools/taskcluster-worker-runner/worker"
 )
 
 // copy of Usage from `cmd/startworker/main.go` since go won't allow importing that

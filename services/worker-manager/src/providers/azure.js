@@ -148,9 +148,8 @@ class AzureProvider extends Provider {
     // Create "empty" workers to provision in provisionResources loop
     await Promise.all(cfgs.map(async cfg => {
       // This must be unique to currently existing instances and match [a-z]([-a-z0-9]*[a-z0-9])?
-      // 38 chars is workerPoolId / workerId limit
-      const poolName = workerPoolId.replace(/[\/_]/g, '-').slice(0, 38);
-      const virtualMachineName = `vm-${poolName}-${nicerId()}-${nicerId()}`.slice(0, 38);
+      // 38 chars is workerId limit
+      const virtualMachineName = `vm-${nicerId()}-${nicerId()}`.slice(0, 38);
       // Windows computer name cannot be more than 15 characters long, be entirely numeric,
       // or contain the following characters: ` ~ ! @ # $ % ^ & * ( ) = + _ [ ] { } \\ | ; : . " , < > / ?
       const computerName = nicerId().slice(0, 15);
@@ -190,16 +189,20 @@ class AzureProvider extends Provider {
         },
         tags: {
           ...cfg.tags || {},
-          'created-by': `taskcluster-wm-${this.providerId}`.replace(/[^a-zA-Z0-9-]/g, '-'),
+          'created-by': `taskcluster-wm-${this.providerId}`,
           'managed-by': 'taskcluster',
-          'worker-pool-id': workerPoolId.replace(/[^a-zA-Z0-9-]/g, '-').toLowerCase(),
-          'owner': workerPool.owner.replace(/[^a-zA-Z0-9-]/g, '-').toLowerCase(),
+          'provider-id': this.providerId,
+          'worker-group': this.providerId,
+          'worker-pool-id': workerPoolId,
+          'root-url': this.rootUrl,
+          'owner': workerPool.owner,
         },
       };
 
       let providerData = {
         location: cfg.location,
         resourceGroupName: this.providerConfig.resourceGroupName,
+        workerConfig: cfg.workerConfig,
         vm: {
           name: virtualMachineName,
           computerName,
@@ -375,8 +378,8 @@ class AzureProvider extends Provider {
       w.state = this.Worker.states.RUNNING;
       w.providerData.terminateAfter = expires.getTime();
     });
-
-    return {expires};
+    const workerConfig = worker.providerData.workerConfig || {};
+    return {expires, workerConfig};
   }
 
   async scanPrepare() {
@@ -585,9 +588,13 @@ class AzureProvider extends Provider {
       }
       return this.Worker.states.RUNNING;
     } catch (err) {
+      const {workerPoolId} = worker;
+      const workerPool = await this.WorkerPool.load({
+        workerPoolId,
+      }, true);
       // we create multiple resources in order to provision a VM
       // if we catch an error we want to deprovision those resources
-      await worker.workerPool.reportError({
+      await workerPool.reportError({
         kind: 'creation-error',
         title: 'VM Creation Error',
         description: err.message,
@@ -651,7 +658,11 @@ class AzureProvider extends Provider {
           workerId: worker.workerId,
         });
       } else {
-        await worker.workerPool.reportError({
+        const {workerPoolId} = worker;
+        const workerPool = await this.WorkerPool.load({
+          workerPoolId,
+        }, true);
+        await workerPool.reportError({
           kind: 'creation-error',
           title: 'Encountered unknown VM provisioningState or powerStates',
           description: `Unknown provisioningState ${provisioningState} or powerStates: ${powerStates}`,

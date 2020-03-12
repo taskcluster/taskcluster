@@ -1,11 +1,12 @@
 package tc
 
 import (
+	"encoding/json"
 	"fmt"
 	"time"
 
-	tcclient "github.com/taskcluster/taskcluster/v25/clients/client-go"
-	"github.com/taskcluster/taskcluster/v25/clients/client-go/tcworkermanager"
+	tcclient "github.com/taskcluster/taskcluster/v27/clients/client-go"
+	"github.com/taskcluster/taskcluster/v27/clients/client-go/tcworkermanager"
 )
 
 var (
@@ -21,6 +22,17 @@ func (wm *FakeWorkerManager) RegisterWorker(payload *tcworkermanager.RegisterWor
 		return nil, fmt.Errorf("must use an unauthenticated client to register")
 	}
 
+	wc := json.RawMessage(`{
+        "whateverWorker": {
+		    "config": {
+				"from-register-worker": true
+			},
+			"files": [
+			    {"description": "a file."}
+			]
+		}
+	}`)
+
 	wmRegistrations = append(wmRegistrations, payload)
 
 	return &tcworkermanager.RegisterWorkerResponse{
@@ -29,8 +41,13 @@ func (wm *FakeWorkerManager) RegisterWorker(payload *tcworkermanager.RegisterWor
 			AccessToken: "at",
 			Certificate: "cert",
 		},
-		Expires: tcclient.Time(time.Now()),
+		Expires:      tcclient.Time(time.Now()),
+		WorkerConfig: wc,
 	}, nil
+}
+
+func (wm *FakeWorkerManager) RemoveWorker(workerPoolID, workerGroup, workerID string) error {
+	return nil
 }
 
 // Get the single registration that has occurred, or an error if there are not

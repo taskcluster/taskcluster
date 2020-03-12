@@ -75,11 +75,9 @@ class QueueEvents(AsyncBaseClient):
         When a task is created or just defined a message is posted to this
         exchange.
 
-        This message exchange is mainly useful when tasks are scheduled by a
-        scheduler that uses `defineTask` as this does not make the task
+        This message exchange is mainly useful when tasks are created with dependencies
+        on incomplete tasks, as this does not make the task
         `pending`. Thus, no `taskPending` message is published.
-        Please, note that messages are also published on this exchange if defined
-        using `createTask`.
 
         This exchange takes the following keys:
 

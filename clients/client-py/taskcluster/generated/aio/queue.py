@@ -152,18 +152,6 @@ class Queue(AsyncBaseClient):
 
         return await self._makeApiCall(self.funcinfo["createTask"], *args, **kwargs)
 
-    async def defineTask(self, *args, **kwargs):
-        """
-        Define Task
-
-        **Deprecated**, this is the same as `createTask` with a **self-dependency**.
-        This is only present for legacy.
-
-        This method is ``deprecated``
-        """
-
-        return await self._makeApiCall(self.funcinfo["defineTask"], *args, **kwargs)
-
     async def scheduleTask(self, *args, **kwargs):
         """
         Schedule Defined Task
@@ -794,15 +782,6 @@ class Queue(AsyncBaseClient):
             'output': 'v1/workertype-response.json#',
             'route': '/provisioners/<provisionerId>/worker-types/<workerType>',
             'stability': 'experimental',
-        },
-        "defineTask": {
-            'args': ['taskId'],
-            'input': 'v1/create-task-request.json#',
-            'method': 'post',
-            'name': 'defineTask',
-            'output': 'v1/task-status-response.json#',
-            'route': '/task/<taskId>/define',
-            'stability': 'deprecated',
         },
         "getArtifact": {
             'args': ['taskId', 'runId', 'name'],

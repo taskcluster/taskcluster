@@ -18,6 +18,8 @@ Worker virtual machines have an associated NIC and public IP address which will 
 
 ## Worker Interaction
 
+The Azure metadata service [does not currently have a working feature](https://github.com/MicrosoftDocs/azure-docs/issues/30370) for providing text data to VMs, so while the provider sets a `customData` blob for parity with the other providers, it also provides a set of of tags that provide the same set of properties.
+
 The provider starts workers with an instance attribute named `taskcluster` containing a JSON object with the following properties:
 
 * `workerPoolId` -- worker pool for this worker
@@ -39,16 +41,15 @@ The document should have audience equal to the deployment's `rootUrl` and `forma
 
 ## Tags
 
-The provider starts workers with the following labels.
+The provider starts workers with the following labels. The tags `provider-id`, `worker-group`, `worker-pool-id`, and `root-url` are used by the worker for configuration while `customData` is broken in the instance metadata service.
 
+ * `provider-id` - provider ID that started the worker
+ * `worker-group` - the worker's workerGroup (currently equal to the providerId, but do not depend on this)
  * `worker-pool-id` - the worker's workerPoolId
+ * `root-url` - root URL for the Taskcluster deployment
  * `managed-by` - `taskcluster`
  * `created-by` - `taskcluster-wm-<providerId>`
  * `owner` - the worker pool's owner
-
-<Warning>
-Note that values are lower-cased and disallowed characters are replaced with `-`, to comply with with [Azure requirements](https://docs.microsoft.com/en-us/azure/architecture/best-practices/resource-naming).
-</Warning>
 
 ## Worker-Pool Configuration
 

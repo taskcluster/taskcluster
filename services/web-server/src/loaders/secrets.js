@@ -2,7 +2,7 @@ const DataLoader = require('dataloader');
 const sift = require('../utils/sift');
 const ConnectionLoader = require('../ConnectionLoader');
 
-module.exports = ({ secrets }) => {
+module.exports = ({ secrets }, isAuthed, rootUrl, monitor, strategies, req, cfg, requestId) => {
   const secretsList = new ConnectionLoader(async ({ filter, options }) => {
     const raw = await secrets.list(options);
     const secretsList = raw.secrets.map(name => ({ name }));

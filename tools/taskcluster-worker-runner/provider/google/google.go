@@ -2,15 +2,16 @@ package google
 
 import (
 	"fmt"
+	"log"
 	"strings"
 
-	tcclient "github.com/taskcluster/taskcluster/v25/clients/client-go"
-	"github.com/taskcluster/taskcluster/v25/clients/client-go/tcworkermanager"
-	"github.com/taskcluster/taskcluster/v25/tools/taskcluster-worker-runner/cfg"
-	"github.com/taskcluster/taskcluster/v25/tools/taskcluster-worker-runner/protocol"
-	"github.com/taskcluster/taskcluster/v25/tools/taskcluster-worker-runner/provider/provider"
-	"github.com/taskcluster/taskcluster/v25/tools/taskcluster-worker-runner/run"
-	"github.com/taskcluster/taskcluster/v25/tools/taskcluster-worker-runner/tc"
+	tcclient "github.com/taskcluster/taskcluster/v27/clients/client-go"
+	"github.com/taskcluster/taskcluster/v27/clients/client-go/tcworkermanager"
+	"github.com/taskcluster/taskcluster/v27/tools/taskcluster-worker-runner/cfg"
+	"github.com/taskcluster/taskcluster/v27/tools/taskcluster-worker-runner/protocol"
+	"github.com/taskcluster/taskcluster/v27/tools/taskcluster-worker-runner/provider/provider"
+	"github.com/taskcluster/taskcluster/v27/tools/taskcluster-worker-runner/run"
+	"github.com/taskcluster/taskcluster/v27/tools/taskcluster-worker-runner/tc"
 )
 
 type GoogleProvider struct {
@@ -49,7 +50,10 @@ func (p *GoogleProvider) ConfigureRun(state *run.State) error {
 
 	workerIdentityProofMap := map[string]interface{}{"token": interface{}(proofToken)}
 
-	err = provider.RegisterWorker(state, wm, userData.WorkerPoolID, userData.ProviderID, userData.WorkerGroup, workerID, workerIdentityProofMap)
+	// TODO
+	// bug 1591476: we should get workerConfig from RegisterWorker()
+	// and not from the metadata service
+	_, err = provider.RegisterWorker(state, wm, userData.WorkerPoolID, userData.ProviderID, userData.WorkerGroup, workerID, workerIdentityProofMap)
 	if err != nil {
 		return err
 	}
@@ -110,11 +114,20 @@ func (p *GoogleProvider) SetProtocol(proto *protocol.Protocol) {
 	p.proto = proto
 }
 
-func (p *GoogleProvider) WorkerStarted() error {
+func (p *GoogleProvider) WorkerStarted(state *run.State) error {
+	p.proto.Register("shutdown", func(msg protocol.Message) {
+		err := provider.RemoveWorker(state, p.workerManagerClientFactory)
+		if err != nil {
+			log.Printf("Shutdown error: %v\n", err)
+		}
+	})
+	p.proto.Capabilities.Add("shutdown")
+	p.proto.Capabilities.Add("graceful-termination")
+
 	return nil
 }
 
-func (p *GoogleProvider) WorkerFinished() error {
+func (p *GoogleProvider) WorkerFinished(state *run.State) error {
 	return nil
 }
 

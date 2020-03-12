@@ -463,11 +463,18 @@
           "format": "date-time",
           "title": "Expires",
           "type": "string"
+        },
+        "workerConfig": {
+          "additionalProperties": true,
+          "description": "This value is supplied unchanged to the worker from the worker-pool configuration.\nThe expectation is that the worker will merge this information with configuration from other sources,\nand this is precisely what [taskcluster-worker-runner](https://github.com/taskcluster/taskcluster-worker-runner) does.\nThis property must not be used for secret configuration, as it is visible both in the worker pool configuration and in the worker instance's metadata.\nInstead, put secret configuration in the [secrets service](https://github.com/taskcluster/taskcluster-worker-runner#secrets).\n",
+          "title": "Worker Config",
+          "type": "object"
         }
       },
       "required": [
         "expires",
-        "credentials"
+        "credentials",
+        "workerConfig"
       ],
       "title": "Register Worker Response",
       "type": "object"
@@ -759,6 +766,12 @@
       "properties": {
         "lifecycle": {
           "$ref": "worker-lifecycle.json#"
+        },
+        "workerConfig": {
+          "additionalProperties": true,
+          "description": "This value is supplied unchanged to the worker from the provider configuration.\nThe expectation is that the worker will merge this information with configuration from other sources,\nand this is precisely what [taskcluster-worker-runner](https://github.com/taskcluster/taskcluster-worker-runner) does.\nThis property must not be used for secret configuration, as it is visible both in the worker pool configuration and in the worker instance's metadata.\nInstead, put secret configuration in the [secrets service](https://github.com/taskcluster/taskcluster-worker-runner#secrets).\n",
+          "title": "Worker Config",
+          "type": "object"
         }
       },
       "required": [
@@ -2184,8 +2197,7 @@
           "type": "string"
         },
         "owner": {
-          "description": "E-mail of person who caused this task, e.g. the person who did\n`hg push`. The person we should contact to ask why this task is here.\n",
-          "format": "email",
+          "description": "Entity who caused this task, not necessarily a person with email who did\n`hg push` as it could be automation bots as well. The entity we should\ncontact to ask why this task is here.\n",
           "maxLength": 255,
           "title": "Owner",
           "type": "string"
@@ -7294,6 +7306,9 @@
             "pulse_username": {
               "type": "string"
             },
+            "read_db_url": {
+              "type": "string"
+            },
             "refs_bucket": {
               "type": "string"
             },
@@ -7328,6 +7343,9 @@
             },
             "websocktunnel_secret": {
               "type": "string"
+            },
+            "write_db_url": {
+              "type": "string"
             }
           },
           "required": [
@@ -7337,6 +7355,8 @@
             "azure_account_key",
             "azure_signing_key",
             "azure_crypto_key",
+            "read_db_url",
+            "write_db_url",
             "pulse_username",
             "pulse_password"
           ],
@@ -7520,6 +7540,9 @@
             "pulse_username": {
               "type": "string"
             },
+            "read_db_url": {
+              "type": "string"
+            },
             "taskcluster_access_token": {
               "type": "string"
             },
@@ -7531,6 +7554,9 @@
             },
             "worker_type": {
               "type": "string"
+            },
+            "write_db_url": {
+              "type": "string"
             }
           },
           "required": [
@@ -7541,6 +7567,8 @@
             "github_private_pem",
             "github_app_id",
             "webhook_secret",
+            "read_db_url",
+            "write_db_url",
             "pulse_username",
             "pulse_password"
           ],
@@ -7661,10 +7689,16 @@
             "pulse_username": {
               "type": "string"
             },
+            "read_db_url": {
+              "type": "string"
+            },
             "taskcluster_access_token": {
               "type": "string"
             },
             "taskcluster_client_id": {
+              "type": "string"
+            },
+            "write_db_url": {
               "type": "string"
             }
           },
@@ -7672,6 +7706,8 @@
             "procs",
             "azure_signing_key",
             "azure_crypto_key",
+            "read_db_url",
+            "write_db_url",
             "taskcluster_client_id",
             "taskcluster_access_token",
             "pulse_username",
@@ -7764,15 +7800,23 @@
             "pulse_username": {
               "type": "string"
             },
+            "read_db_url": {
+              "type": "string"
+            },
             "taskcluster_access_token": {
               "type": "string"
             },
             "taskcluster_client_id": {
               "type": "string"
+            },
+            "write_db_url": {
+              "type": "string"
             }
           },
           "required": [
             "procs",
+            "read_db_url",
+            "write_db_url",
             "taskcluster_client_id",
             "taskcluster_access_token",
             "pulse_username",
@@ -8032,15 +8076,23 @@
               "title": "Process settings for this service",
               "type": "object"
             },
+            "read_db_url": {
+              "type": "string"
+            },
             "taskcluster_access_token": {
               "type": "string"
             },
             "taskcluster_client_id": {
               "type": "string"
+            },
+            "write_db_url": {
+              "type": "string"
             }
           },
           "required": [
             "procs",
+            "read_db_url",
+            "write_db_url",
             "taskcluster_client_id",
             "taskcluster_access_token"
           ],
@@ -8347,6 +8399,9 @@
             "pulse_username": {
               "type": "string"
             },
+            "read_db_url": {
+              "type": "string"
+            },
             "task_cache_max_size": {
               "type": "number"
             },
@@ -8358,6 +8413,9 @@
             },
             "use_cloud_mirror": {
               "type": "boolean"
+            },
+            "write_db_url": {
+              "type": "string"
             }
           },
           "required": [
@@ -8367,6 +8425,8 @@
             "taskcluster_client_id",
             "taskcluster_access_token",
             "azure_account_key",
+            "read_db_url",
+            "write_db_url",
             "pulse_username",
             "pulse_password",
             "aws_access_key_id",
@@ -8488,10 +8548,16 @@
               "title": "Process settings for this service",
               "type": "object"
             },
+            "read_db_url": {
+              "type": "string"
+            },
             "taskcluster_access_token": {
               "type": "string"
             },
             "taskcluster_client_id": {
+              "type": "string"
+            },
+            "write_db_url": {
               "type": "string"
             }
           },
@@ -8500,7 +8566,9 @@
             "taskcluster_client_id",
             "taskcluster_access_token",
             "azure_crypto_key",
-            "azure_signing_key"
+            "azure_signing_key",
+            "read_db_url",
+            "write_db_url"
           ],
           "title": "Configuration options for secrets",
           "type": "object"
@@ -8678,6 +8746,9 @@
             "pulse_username": {
               "type": "string"
             },
+            "read_db_url": {
+              "type": "string"
+            },
             "registered_clients": {
               "oneOf": [
                 {
@@ -8708,6 +8779,9 @@
                   "type": "array"
                 }
               ]
+            },
+            "write_db_url": {
+              "type": "string"
             }
           },
           "required": [
@@ -8718,6 +8792,8 @@
             "taskcluster_access_token",
             "azure_signing_key",
             "azure_crypto_key",
+            "read_db_url",
+            "write_db_url",
             "pulse_username",
             "pulse_password",
             "registered_clients",
@@ -8888,6 +8964,9 @@
             "pulse_username": {
               "type": "string"
             },
+            "read_db_url": {
+              "type": "string"
+            },
             "taskcluster_access_token": {
               "type": "string"
             },
@@ -8904,12 +8983,17 @@
                   "type": "array"
                 }
               ]
+            },
+            "write_db_url": {
+              "type": "string"
             }
           },
           "required": [
             "procs",
             "taskcluster_client_id",
             "taskcluster_access_token",
+            "read_db_url",
+            "write_db_url",
             "pulse_username",
             "pulse_password",
             "providers"
@@ -11908,6 +11992,19 @@
           "title": "Unbind a Pulse Subscription",
           "type": "unbind-pulse-subscription",
           "version": 1
+        },
+        {
+          "description": "A GraphQL request has been received.",
+          "fields": {
+            "operationName": "The name of the graphql query performed. If the operation is anonymous\n(i.e., the operation is query { ... } instead of query NamedQuery { ... })\n, then operationName is null.",
+            "query": "The graphQL query string",
+            "requestId": "A unique request ID for every incoming GraphQL request that the client receives."
+          },
+          "level": "info",
+          "name": "requestReceived",
+          "title": "Request Received",
+          "type": "request-received",
+          "version": 1
         }
       ]
     },
@@ -12378,7 +12475,7 @@
           "version": 1
         },
         {
-          "description": "A task has been created (via defineTask or createTask).  This is logged when the task-defined\npulse message is sent.",
+          "description": "A task has been created (createTask).  This is logged when the task-defined\npulse message is sent.",
           "fields": {
             "taskId": "The task's taskId."
           },
@@ -12502,7 +12599,7 @@
       "description": "The queue service is responsible for accepting tasks and track their state\nas they are executed by workers. In order ensure they are eventually\nresolved.\n\nThis document describes AMQP exchanges offered by the queue, which allows\nthird-party listeners to monitor tasks as they progress to resolution.\nThese exchanges targets the following audience:\n * Schedulers, who takes action after tasks are completed,\n * Workers, who wants to listen for new or canceled tasks (optional),\n * Tools, that wants to update their view as task progress.\n\nYou'll notice that all the exchanges in the document shares the same\nrouting key pattern. This makes it very easy to bind to all messages\nabout a certain kind tasks.\n\n**Task specific routes**, a task can define a task specific route using\nthe `task.routes` property. See task creation documentation for details\non permissions required to provide task specific routes. If a task has\nthe entry `'notify.by-email'` in as task specific route defined in\n`task.routes` all messages about this task will be CC'ed with the\nrouting-key `'route.notify.by-email'`.\n\nThese routes will always be prefixed `route.`, so that cannot interfere\nwith the _primary_ routing key as documented here. Notice that the\n_primary_ routing key is always prefixed `primary.`. This is ensured\nin the routing key reference, so API clients will do this automatically.\n\nPlease, note that the way RabbitMQ works, the message will only arrive\nin your queue once, even though you may have bound to the exchange with\nmultiple routing key patterns that matches more of the CC'ed routing\nrouting keys.\n\n**Delivery guarantees**, most operations on the queue are idempotent,\nwhich means that if repeated with the same arguments then the requests\nwill ensure completion of the operation and return the same response.\nThis is useful if the server crashes or the TCP connection breaks, but\nwhen re-executing an idempotent operation, the queue will also resend\nany related AMQP messages. Hence, messages may be repeated.\n\nThis shouldn't be much of a problem, as the best you can achieve using\nconfirm messages with AMQP is at-least-once delivery semantics. Hence,\nthis only prevents you from obtaining at-most-once delivery semantics.\n\n**Remark**, some message generated by timeouts maybe dropped if the\nserver crashes at wrong time. Ideally, we'll address this in the\nfuture. For now we suggest you ignore this corner case, and notify us\nif this corner case is of concern to you.",
       "entries": [
         {
-          "description": "When a task is created or just defined a message is posted to this\nexchange.\n\nThis message exchange is mainly useful when tasks are scheduled by a\nscheduler that uses `defineTask` as this does not make the task\n`pending`. Thus, no `taskPending` message is published.\nPlease, note that messages are also published on this exchange if defined\nusing `createTask`.",
+          "description": "When a task is created or just defined a message is posted to this\nexchange.\n\nThis message exchange is mainly useful when tasks are created with dependencies\non incomplete tasks, as this does not make the task\n`pending`. Thus, no `taskPending` message is published.",
           "exchange": "task-defined",
           "name": "taskDefined",
           "routingKey": [
@@ -13167,47 +13264,6 @@
           },
           "stability": "stable",
           "title": "Create New Task",
-          "type": "function"
-        },
-        {
-          "args": [
-            "taskId"
-          ],
-          "category": "Tasks",
-          "description": "**Deprecated**, this is the same as `createTask` with a **self-dependency**.\nThis is only present for legacy.",
-          "input": "v1/create-task-request.json#",
-          "method": "post",
-          "name": "defineTask",
-          "output": "v1/task-status-response.json#",
-          "query": [
-          ],
-          "route": "/task/<taskId>/define",
-          "scopes": {
-            "AllOf": [
-              {
-                "each": "<scope>",
-                "for": "scope",
-                "in": "scopes"
-              },
-              {
-                "each": "queue:route:<route>",
-                "for": "route",
-                "in": "routes"
-              },
-              "queue:scheduler-id:<schedulerId>",
-              {
-                "AnyOf": [
-                  {
-                    "each": "queue:create-task:<priority>:<provisionerId>/<workerType>",
-                    "for": "priority",
-                    "in": "priorities"
-                  }
-                ]
-              }
-            ]
-          },
-          "stability": "deprecated",
-          "title": "Define Task",
           "type": "function"
         },
         {
@@ -15602,6 +15658,37 @@
           "name": "pulsePublisherBlocked",
           "title": "Pulse server has (un)blocked a publisher",
           "type": "pulsePublisherBlocked",
+          "version": 1
+        },
+        {
+          "description": "A valid webhook payload was received from GitHub.",
+          "fields": {
+            "eventId": "The GUID of this webhook delivery (`X-GitHub-Delivery` header)",
+            "eventType": "The event type (`X-GitHub-Event` header)",
+            "installationId": "The installation ID associated with this event (`installation.id`), if any"
+          },
+          "level": "notice",
+          "name": "webhookReceived",
+          "title": "Webhook Received",
+          "type": "webhook-received",
+          "version": 1
+        },
+        {
+          "description": "Narrative debug logging for event handling.  These messages have attributes that\ncan be useful in filtering to a specific event, but note that all fields are not\nalways available.  For example, when a task completes, the eventId that led to\nthe task's creation is not available and not logged.",
+          "fields": {
+            "eventId": "The GUID of the webhook delivery (`X-GitHub-Delivery` header), if any",
+            "installationId": "The installation ID associated with this event (`installation.id`), if any",
+            "message": "Free-form message",
+            "owner": "The repository owner (organization or username), if any",
+            "repo": "The repository name, if any",
+            "sha": "The SHA of the commit being addressed, if any",
+            "taskGroupId": "The taskGroupId of the affected tasks, if any",
+            "taskId": "The taskId of the affected task, if any"
+          },
+          "level": "debug",
+          "name": "handlerDebug",
+          "title": "Event Handler Debug Information",
+          "type": "handler-debug",
           "version": 1
         }
       ]

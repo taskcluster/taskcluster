@@ -105,9 +105,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
     // Check that this is setting times correctly to within a second or so to allow for some time
     // for the provisioning loop
     assert(workers.entries[0].providerData.terminateAfter - now - (6000 * 1000) < 5000);
-    // id is name, which is randomly generated with sanitized worker-pool prefix
-    const sanitizedWorkerPoolId = workerPool.workerPoolId.replace(/[^a-zA-Z0-9-]/g, '-').toLowerCase();
-    assert(workers.entries[0].workerId.includes(sanitizedWorkerPoolId));
+    assert.equal(workers.entries[0].workerPoolId, workerPoolId);
   });
 
   test('provisioning loop with failure', async function() {
@@ -505,6 +503,16 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
     test('sweet success', async function() {
       const worker = await helper.Worker.create({
         ...defaultWorker,
+        providerData: {
+          ...baseProviderData,
+          vm: {
+            name: 'some-vm',
+            vmId: vmId,
+          },
+          workerConfig: {
+            "someKey": "someValue",
+          },
+        },
       });
       const document = fs.readFileSync(path.resolve(__dirname, 'fixtures/azure_signature_good')).toString();
       const workerIdentityProof = {document};
@@ -512,11 +520,22 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
       // allow +- 10 seconds since time passes while the test executes
       assert(res.expires - new Date() + 10000 > 96 * 3600 * 1000, res.expires);
       assert(res.expires - new Date() - 10000 < 96 * 3600 * 1000, res.expires);
+      assert.equal(res.workerConfig.someKey, 'someValue');
     });
 
     test('sweet success (different reregister)', async function() {
       const worker = await helper.Worker.create({
         ...defaultWorker,
+        providerData: {
+          ...baseProviderData,
+          vm: {
+            name: 'some-vm',
+            vmId: vmId,
+          },
+          workerConfig: {
+            "someKey": "someValue",
+          },
+        },
       });
       await worker.modify(w => {
         w.providerData.reregistrationTimeout = 10 * 3600 * 1000;
@@ -527,6 +546,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
       // allow +- 10 seconds since time passes while the test executes
       assert(res.expires - new Date() + 10000 > 10 * 3600 * 1000, res.expires);
       assert(res.expires - new Date() - 10000 < 10 * 3600 * 1000, res.expires);
+      assert.equal(res.workerConfig.someKey, 'someValue');
     });
   });
 });

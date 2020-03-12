@@ -6,9 +6,10 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/taskcluster/taskcluster/v25/tools/taskcluster-worker-runner/cfg"
-	"github.com/taskcluster/taskcluster/v25/tools/taskcluster-worker-runner/run"
-	"github.com/taskcluster/taskcluster/v25/tools/taskcluster-worker-runner/tc"
+	"github.com/taskcluster/taskcluster/v27/tools/taskcluster-worker-runner/cfg"
+	"github.com/taskcluster/taskcluster/v27/tools/taskcluster-worker-runner/protocol"
+	"github.com/taskcluster/taskcluster/v27/tools/taskcluster-worker-runner/run"
+	"github.com/taskcluster/taskcluster/v27/tools/taskcluster-worker-runner/tc"
 )
 
 func TestGoogleConfigureRun(t *testing.T) {
@@ -101,4 +102,12 @@ func TestGoogleConfigureRun(t *testing.T) {
 	require.Equal(t, "google", state.WorkerLocation["cloud"])
 	require.Equal(t, "in-central1", state.WorkerLocation["region"])
 	require.Equal(t, "in-central1-b", state.WorkerLocation["zone"])
+
+	transp := protocol.NewFakeTransport()
+	proto := protocol.NewProtocol(transp)
+	proto.SetInitialized()
+
+	p.SetProtocol(proto)
+	require.NoError(t, p.WorkerStarted(&state))
+	require.True(t, proto.Capable("shutdown"))
 }

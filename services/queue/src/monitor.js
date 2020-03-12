@@ -31,7 +31,7 @@ monitorManager.register({
   version: 1,
   level: 'notice',
   description: `
-    A task has been created (via defineTask or createTask).  This is logged when the task-defined
+    A task has been created (createTask).  This is logged when the task-defined
     pulse message is sent.`,
   fields: {
     taskId: 'The task\'s taskId.',

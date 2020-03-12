@@ -171,6 +171,7 @@ module.exports = ({tasks, cmdOptions, credentials}) => {
         'clients/client-go/**',
         'clients/client-shell/**',
         'tools/**',
+        'internal/**',
         // Provide explicit list of allowed file extensions so that
         // workers/generic-worker/testdata/*.zip files are not modified.
         'workers/generic-worker/**.go',
@@ -183,11 +184,17 @@ module.exports = ({tasks, cmdOptions, credentials}) => {
         changed.push(file);
       }
 
-      const genericworker = 'workers/generic-worker/main.go';
-      utils.status({message: `Update ${genericworker}`});
-      await modifyRepoFile(genericworker, contents =>
-        contents.replace(/^(\s*version\s*=\s*).*/m, `$1"${requirements['release-version']}"`));
-      changed.push(genericworker);
+      const otherFiles = [
+        'workers/generic-worker/main.go',
+        'tools/taskcluster-worker-runner/version.go',
+      ];
+
+      for (const f of otherFiles) {
+        utils.status({message: `Update ${f}`});
+        await modifyRepoFile(f, contents =>
+          contents.replace(/^(\s*[vV]ersion\s*=\s*).*/m, `$1"${requirements['release-version']}"`));
+        changed.push(f);
+      }
 
       return {'version-updated': changed};
     },

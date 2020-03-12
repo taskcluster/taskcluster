@@ -6,13 +6,13 @@ import (
 	"log"
 	"time"
 
-	tcclient "github.com/taskcluster/taskcluster/v25/clients/client-go"
-	"github.com/taskcluster/taskcluster/v25/clients/client-go/tcworkermanager"
-	"github.com/taskcluster/taskcluster/v25/tools/taskcluster-worker-runner/cfg"
-	"github.com/taskcluster/taskcluster/v25/tools/taskcluster-worker-runner/protocol"
-	"github.com/taskcluster/taskcluster/v25/tools/taskcluster-worker-runner/provider/provider"
-	"github.com/taskcluster/taskcluster/v25/tools/taskcluster-worker-runner/run"
-	"github.com/taskcluster/taskcluster/v25/tools/taskcluster-worker-runner/tc"
+	tcclient "github.com/taskcluster/taskcluster/v27/clients/client-go"
+	"github.com/taskcluster/taskcluster/v27/clients/client-go/tcworkermanager"
+	"github.com/taskcluster/taskcluster/v27/tools/taskcluster-worker-runner/cfg"
+	"github.com/taskcluster/taskcluster/v27/tools/taskcluster-worker-runner/protocol"
+	"github.com/taskcluster/taskcluster/v27/tools/taskcluster-worker-runner/provider/provider"
+	"github.com/taskcluster/taskcluster/v27/tools/taskcluster-worker-runner/run"
+	"github.com/taskcluster/taskcluster/v27/tools/taskcluster-worker-runner/tc"
 )
 
 type AzureProvider struct {
@@ -31,6 +31,15 @@ type CustomData struct {
 	ProviderWorkerConfig *json.RawMessage `json:"workerConfig"`
 }
 
+// These values are expected to be set in tags on the VM
+// by the provider
+type TaggedData struct {
+	WorkerPoolId string
+	ProviderId   string
+	RootURL      string
+	WorkerGroup  string
+}
+
 func (p *AzureProvider) ConfigureRun(state *run.State) error {
 	instanceData, err := p.metadataService.queryInstanceData()
 	if err != nil {
@@ -42,18 +51,10 @@ func (p *AzureProvider) ConfigureRun(state *run.State) error {
 		return fmt.Errorf("Could not query attested document: %v", err)
 	}
 
-	customBytes, err := p.metadataService.loadCustomData()
-	if err != nil {
-		return fmt.Errorf("Could not read instance customData: %v", err)
-	}
+	// bug 1621037: revert to using customData once it is fixed
+	taggedData := loadTaggedData(instanceData.Compute.TagsList)
 
-	customData := &CustomData{}
-	err = json.Unmarshal([]byte(customBytes), customData)
-	if err != nil {
-		return fmt.Errorf("Could not parse customData as JSON: %v", err)
-	}
-
-	state.RootURL = customData.RootURL
+	state.RootURL = taggedData.RootURL
 	state.WorkerLocation = map[string]string{
 		"cloud":  "azure",
 		"region": instanceData.Compute.Location,
@@ -68,12 +69,12 @@ func (p *AzureProvider) ConfigureRun(state *run.State) error {
 		"document": interface{}(document),
 	}
 
-	err = provider.RegisterWorker(
+	workerConfig, err := provider.RegisterWorker(
 		state,
 		wm,
-		customData.WorkerPoolId,
-		customData.ProviderId,
-		customData.WorkerGroup,
+		taggedData.WorkerPoolId,
+		taggedData.ProviderId,
+		taggedData.WorkerGroup,
 		instanceData.Compute.Name,
 		workerIdentityProofMap)
 	if err != nil {
@@ -97,7 +98,7 @@ func (p *AzureProvider) ConfigureRun(state *run.State) error {
 
 	state.ProviderMetadata = providerMetadata
 
-	pwc, err := cfg.ParseProviderWorkerConfig(p.runnercfg, customData.ProviderWorkerConfig)
+	pwc, err := cfg.ParseProviderWorkerConfig(p.runnercfg, workerConfig)
 	if err != nil {
 		return err
 	}
@@ -151,7 +152,16 @@ func (p *AzureProvider) checkTerminationTime() bool {
 	return false
 }
 
-func (p *AzureProvider) WorkerStarted() error {
+func (p *AzureProvider) WorkerStarted(state *run.State) error {
+	p.proto.Register("shutdown", func(msg protocol.Message) {
+		err := provider.RemoveWorker(state, p.workerManagerClientFactory)
+		if err != nil {
+			log.Printf("Shutdown error: %v\n", err)
+		}
+	})
+	p.proto.Capabilities.Add("shutdown")
+	p.proto.Capabilities.Add("graceful-termination")
+
 	// start polling for graceful shutdown
 	p.terminationTicker = time.NewTicker(30 * time.Second)
 	go func() {
@@ -168,7 +178,7 @@ func (p *AzureProvider) WorkerStarted() error {
 	return nil
 }
 
-func (p *AzureProvider) WorkerFinished() error {
+func (p *AzureProvider) WorkerFinished(state *run.State) error {
 	p.terminationTicker.Stop()
 	return nil
 }
@@ -198,6 +208,25 @@ defined by this provider has the following fields:
 * cloud: azure
 * region
 `
+}
+
+func loadTaggedData(tags []Tag) *TaggedData {
+	c := &TaggedData{}
+	for _, tag := range tags {
+		if tag.Name == "worker-pool-id" {
+			c.WorkerPoolId = tag.Value
+		}
+		if tag.Name == "provider-id" {
+			c.ProviderId = tag.Value
+		}
+		if tag.Name == "worker-group" {
+			c.WorkerGroup = tag.Value
+		}
+		if tag.Name == "root-url" {
+			c.RootURL = tag.Value
+		}
+	}
+	return c
 }
 
 // New takes its dependencies as optional arguments, allowing injection of fake dependencies for testing.

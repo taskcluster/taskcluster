@@ -647,10 +647,11 @@ builder.declare({
       `Worker ${workerGroup}/${workerId} does not have provider ${providerId}`, {});
   }
 
-  let expires;
+  let expires, workerConfig;
   try {
     const reg = await provider.registerWorker({worker, workerPool, workerIdentityProof});
     expires = reg.expires;
+    workerConfig = reg.workerConfig;
   } catch (err) {
     if (!(err instanceof ApiError)) {
       throw err;
@@ -682,5 +683,5 @@ builder.declare({
     credentials: this.cfg.taskcluster.credentials,
   });
 
-  return res.reply({expires: expires.toJSON(), credentials});
+  return res.reply({expires: expires.toJSON(), credentials, workerConfig});
 });

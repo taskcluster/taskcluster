@@ -46,7 +46,7 @@ import (
 	"net/url"
 	"time"
 
-	tcclient "github.com/taskcluster/taskcluster/v25/clients/client-go"
+	tcclient "github.com/taskcluster/taskcluster/v27/clients/client-go"
 )
 
 type Queue tcclient.Client
@@ -228,25 +228,6 @@ func (queue *Queue) ListDependentTasks(taskId, continuationToken, limit string) 
 func (queue *Queue) CreateTask(taskId string, payload *TaskDefinitionRequest) (*TaskStatusResponse, error) {
 	cd := tcclient.Client(*queue)
 	responseObject, _, err := (&cd).APICall(payload, "PUT", "/task/"+url.QueryEscape(taskId), new(TaskStatusResponse), nil)
-	return responseObject.(*TaskStatusResponse), err
-}
-
-// Stability: *** DEPRECATED ***
-//
-// **Deprecated**, this is the same as `createTask` with a **self-dependency**.
-// This is only present for legacy.
-//
-// Required scopes:
-//   All of:
-//   * For scope in scopes each <scope>
-//   * For route in routes each queue:route:<route>
-//   * queue:scheduler-id:<schedulerId>
-//   * For priority in priorities each queue:create-task:<priority>:<provisionerId>/<workerType>
-//
-// See #defineTask
-func (queue *Queue) DefineTask(taskId string, payload *TaskDefinitionRequest) (*TaskStatusResponse, error) {
-	cd := tcclient.Client(*queue)
-	responseObject, _, err := (&cd).APICall(payload, "POST", "/task/"+url.QueryEscape(taskId)+"/define", new(TaskStatusResponse), nil)
 	return responseObject.(*TaskStatusResponse), err
 }
 

@@ -10,10 +10,10 @@ import (
 	"os/exec"
 	"strings"
 
-	"github.com/taskcluster/taskcluster/v25/tools/taskcluster-worker-runner/cfg"
-	"github.com/taskcluster/taskcluster/v25/tools/taskcluster-worker-runner/protocol"
-	"github.com/taskcluster/taskcluster/v25/tools/taskcluster-worker-runner/run"
-	"github.com/taskcluster/taskcluster/v25/tools/taskcluster-worker-runner/worker/worker"
+	"github.com/taskcluster/taskcluster/v27/tools/taskcluster-worker-runner/cfg"
+	"github.com/taskcluster/taskcluster/v27/tools/taskcluster-worker-runner/protocol"
+	"github.com/taskcluster/taskcluster/v27/tools/taskcluster-worker-runner/run"
+	"github.com/taskcluster/taskcluster/v27/tools/taskcluster-worker-runner/worker/worker"
 )
 
 type dockerworkerConfig struct {

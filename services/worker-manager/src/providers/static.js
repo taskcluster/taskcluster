@@ -27,7 +27,7 @@ class StaticProvider extends Provider {
       expires: new Date(input.expires),
       capacity: input.capacity,
       state: Worker.states.RUNNING,
-      providerData: {staticSecret},
+      providerData: {staticSecret, workerConfig: workerPool.config.workerConfig},
     };
 
     let worker;
@@ -71,8 +71,8 @@ class StaticProvider extends Provider {
     } else {
       expires = taskcluster.fromNow('96 hours');
     }
-
-    return {expires};
+    const workerConfig = worker.providerData.workerConfig || {};
+    return {expires, workerConfig};
   }
 }
 

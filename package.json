@@ -1,11 +1,11 @@
 {
   "name": "taskcluster",
-  "version": "25.4.0",
+  "version": "27.2.0",
   "private": true,
   "engine-strict": true,
   "engines": {
     "node": "12.16.1",
-    "yarn": "^1.22.0"
+    "yarn": "^1.22.4"
   },
   "workspaces": [
     "libraries/*",
@@ -60,7 +60,7 @@
     "irc-upd": "^0.10.0",
     "iterall": "^1.2.2",
     "js-yaml": "^3.13.1",
-    "json-e": "^4.0.0",
+    "json-e": "^4.0.1",
     "json-parameterization": "^2.0.0",
     "jsonwebtoken": "^8.1.1",
     "jwks-rsa": "^1.2.1",

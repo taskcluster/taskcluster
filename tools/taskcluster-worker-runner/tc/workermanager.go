@@ -1,14 +1,15 @@
 package tc
 
 import (
-	tcclient "github.com/taskcluster/taskcluster/v25/clients/client-go"
-	"github.com/taskcluster/taskcluster/v25/clients/client-go/tcworkermanager"
+	tcclient "github.com/taskcluster/taskcluster/v27/clients/client-go"
+	"github.com/taskcluster/taskcluster/v27/clients/client-go/tcworkermanager"
 )
 
 // An interface containing the functions required of WorkerManager, allowing
 // use of fakes that also match this interface.
 type WorkerManager interface {
 	RegisterWorker(payload *tcworkermanager.RegisterWorkerRequest) (*tcworkermanager.RegisterWorkerResponse, error)
+	RemoveWorker(workerPoolID, workerGroup, workerID string) error
 }
 
 // A factory type that can create new instances of the WorkerManager interface.

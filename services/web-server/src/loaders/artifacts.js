@@ -6,7 +6,7 @@ const ConnectionLoader = require('../ConnectionLoader');
 const Artifact = require('../entities/Artifact');
 const Artifacts = require('../entities/Artifacts');
 
-module.exports = ({ queue }, isAuthed, rootUrl) => {
+module.exports = ({ queue }, isAuthed, rootUrl, monitor, strategies, req, cfg, requestId) => {
   const urls = withRootUrl(rootUrl);
   const withUrl = ({ method, taskId, artifact, runId }) => {
     const hasRunId = !isNil(runId);

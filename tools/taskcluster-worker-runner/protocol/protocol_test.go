@@ -66,9 +66,6 @@ func TestProtocol(t *testing.T) {
 	RequireInitialized(t, runnerProto, true)
 
 	require.True(t, gotWelcome)
-	require.Equal(t, welcomeCaps, KnownCapabilities)
-	require.Equal(t, helloCaps, KnownCapabilities)
-
-	require.True(t, workerProto.Capable("graceful-termination"))
-	require.True(t, runnerProto.Capable("graceful-termination"))
+	require.Equal(t, welcomeCaps, EmptyCapabilities().List())
+	require.Equal(t, helloCaps, EmptyCapabilities().List())
 }

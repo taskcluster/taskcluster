@@ -3,18 +3,24 @@ package provider
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"time"
 
-	"github.com/taskcluster/taskcluster/v25/clients/client-go/tcworkermanager"
-	"github.com/taskcluster/taskcluster/v25/tools/taskcluster-worker-runner/run"
-	"github.com/taskcluster/taskcluster/v25/tools/taskcluster-worker-runner/tc"
+	"github.com/taskcluster/taskcluster/v27/clients/client-go/tcworkermanager"
+	"github.com/taskcluster/taskcluster/v27/tools/taskcluster-worker-runner/run"
+	"github.com/taskcluster/taskcluster/v27/tools/taskcluster-worker-runner/tc"
 )
 
+// WorkerInfo contains the information to identify the worker
+type WorkerInfo struct {
+	WorkerPoolID, WorkerGroup, WorkerID string
+}
+
 // Register this worker with the worker-manager, and update the state with the parameters and the results.
-func RegisterWorker(state *run.State, wm tc.WorkerManager, workerPoolID, providerID, workerGroup, workerID string, workerIdentityProofMap map[string]interface{}) error {
+func RegisterWorker(state *run.State, wm tc.WorkerManager, workerPoolID, providerID, workerGroup, workerID string, workerIdentityProofMap map[string]interface{}) (*json.RawMessage, error) {
 	workerIdentityProof, err := json.Marshal(workerIdentityProofMap)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	reg, err := wm.RegisterWorker(&tcworkermanager.RegisterWorkerRequest{
@@ -25,7 +31,7 @@ func RegisterWorker(state *run.State, wm tc.WorkerManager, workerPoolID, provide
 		WorkerIdentityProof: json.RawMessage(workerIdentityProof),
 	})
 	if err != nil {
-		return fmt.Errorf("Could not register worker: %v", err)
+		return nil, fmt.Errorf("Could not register worker: %v", err)
 	}
 
 	state.WorkerPoolID = workerPoolID
@@ -38,5 +44,36 @@ func RegisterWorker(state *run.State, wm tc.WorkerManager, workerPoolID, provide
 
 	state.CredentialsExpire = time.Time(reg.Expires)
 
-	return nil
+	wc := json.RawMessage(`{}`)
+	if reg.WorkerConfig != nil {
+		wc = reg.WorkerConfig
+	}
+
+	return &wc, nil
+}
+
+// RemoveWorker will request worker-manager to terminate the given worker, if it
+// fails, it shuts down us
+func RemoveWorker(state *run.State, factory tc.WorkerManagerClientFactory) error {
+	shutdown := func() error {
+		log.Printf("Falling back to system shutdown")
+		if err := Shutdown(); err != nil {
+			log.Printf("Error shutting down the worker: %v\n", err)
+			return err
+		}
+		return nil
+	}
+
+	wc, err := factory(state.RootURL, &state.Credentials)
+	if err != nil {
+		log.Printf("Error instanciating worker-manager client: %v\n", err)
+		return shutdown()
+	}
+
+	if err = wc.RemoveWorker(state.WorkerPoolID, state.WorkerGroup, state.WorkerID); err != nil {
+		log.Printf("Error removing the worker: %v\n", err)
+		return shutdown()
+	}
+
+	return err
 }

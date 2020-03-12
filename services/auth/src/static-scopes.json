@@ -105,7 +105,8 @@
       "queue:claim-work:*",
       "queue:worker-id:*",
       "secrets:get:worker-pool:*",
-      "secrets:get:worker-type:*"
+      "secrets:get:worker-type:*",
+      "worker-manager:remove-worker:*"
     ]
   },
   {

@@ -1,6 +1,9 @@
+const fs = require('fs');
 const helper = require('./helper');
 const assert = require('assert');
 const testing = require('taskcluster-lib-testing');
+const monitorManager = require('../src/monitor');
+const {LEVELS} = require('taskcluster-lib-monitor');
 
 helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping) {
   helper.withEntities(mock, skipping);
@@ -19,9 +22,24 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
   // Check the status code returned from a request containing some test data
   function statusTest(testName, jsonFile, statusCode) {
     test(testName, async function() {
-      let response = await helper.jsonHttpRequest('./test/data/webhooks/' + jsonFile);
+      const filename = './test/data/webhooks/' + jsonFile;
+      let request = JSON.parse(fs.readFileSync(filename));
+      let response = await helper.jsonHttpRequest(filename);
       assert.equal(response.statusCode, statusCode);
       response.connection.destroy();
+      if (statusCode < 300) {
+        assert.deepEqual(monitorManager.messages.find(({Type}) => Type === 'webhook-received'), {
+          Type: 'webhook-received',
+          Logger: 'taskcluster.github.api',
+          Fields: {
+            eventId: request.headers['X-GitHub-Delivery'],
+            eventType: request.headers['X-GitHub-Event'],
+            installationId: 5808,
+            v: 1,
+          },
+          Severity: LEVELS.notice,
+        });
+      }
     });
   }
 

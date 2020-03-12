@@ -6,7 +6,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/taskcluster/taskcluster/v25/tools/taskcluster-worker-runner/files"
+	"github.com/taskcluster/taskcluster/v27/tools/taskcluster-worker-runner/files"
 )
 
 // ProviderWorkerConfig handles the configuration format provided from
@@ -17,7 +17,7 @@ type ProviderWorkerConfig struct {
 	Files  []files.File  `json:"files,omitempty"`
 }
 
-// ParseProviderWorkerConfig takes a RawMessage represneting the `workerConfig`
+// ParseProviderWorkerConfig takes a RawMessage representing the `workerConfig`
 // field received from worker-manager, and returns the config and files it
 // contains.  This requires the runnerConfig in order to determine the worker
 // implementation name.

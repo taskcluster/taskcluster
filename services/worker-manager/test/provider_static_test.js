@@ -90,6 +90,12 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
     test('successful registration', async function() {
       const worker = await helper.Worker.create({
         ...defaultWorker,
+        providerData: {
+          staticSecret: 'good',
+          workerConfig: {
+            "someKey": "someValue",
+          },
+        },
       });
       const workerIdentityProof = {staticSecret: 'good'};
       const res = await provider.registerWorker({workerPool, worker, workerIdentityProof});
@@ -97,6 +103,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
       // allow +- 10 seconds since time passes while the test executes
       assert(Math.abs(res.expires - expectedExpires) < 10000,
         `${res.expires}, ${expectedExpires}, diff = ${res.expires - expectedExpires} ms`);
+      assert.equal(res.workerConfig.someKey, 'someValue');
     });
   });
 });

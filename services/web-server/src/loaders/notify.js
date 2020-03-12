@@ -1,7 +1,7 @@
 const sift = require('../utils/sift');
 const ConnectionLoader = require('../ConnectionLoader');
 
-module.exports = ({ notify }) => {
+module.exports = ({ notify }, isAuthed, rootUrl, monitor, strategies, req, cfg, requestId) => {
   const listDenylistAddresses = new ConnectionLoader(async ({ filter, options }) => {
     const raw = await notify.listDenylist(options);
     const addresses = raw.addresses.map(address => {

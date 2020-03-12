@@ -37,32 +37,6 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws', 'azure'], function(mock, s
     },
   };
 
-  test('defineTask, cancelTask (idempotent)', async () => {
-    const taskId = slugid.v4();
-
-    debug('### Define task');
-    const r1 = await helper.queue.defineTask(taskId, taskDef);
-    assume(r1.status.state).equals('unscheduled');
-    helper.assertPulseMessage('task-defined', m => m.payload.status.taskId === taskId);
-
-    debug('### Cancel Task');
-    const r2 = await helper.queue.cancelTask(taskId);
-    assume(r2.status.state).equals('exception');
-    assume(r2.status.runs.length).equals(1);
-    assume(r2.status.runs[0].state).equals('exception');
-    assume(r2.status.runs[0].reasonCreated).equals('exception');
-    assume(r2.status.runs[0].reasonResolved).equals('canceled');
-
-    helper.assertPulseMessage('task-exception', m => _.isEqual(m.payload.status, r2.status));
-    helper.clearPulseMessages();
-
-    debug('### Cancel Task (again)');
-    const r3 = await helper.queue.cancelTask(taskId);
-    assume(r3.status).deep.equals(r2.status);
-    // exception message is sent again..
-    helper.assertPulseMessage('task-exception', m => _.isEqual(m.payload.status, r2.status));
-  });
-
   test('createTask, cancelTask (idempotent)', async () => {
     const taskId = slugid.v4();
 

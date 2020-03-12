@@ -1,6 +1,9 @@
 package protocol
 
-import "sync"
+import (
+	"log"
+	"sync"
+)
 
 type MessageCallback func(msg Message)
 
@@ -12,6 +15,9 @@ type Protocol struct {
 	// to avoid finding the empty set at startup)
 	Capabilities *Capabilities
 
+	// Capabilities of the remote peer
+	RemoteCapabilities *Capabilities
+
 	// callbacks per message type
 	callbacks map[string][]MessageCallback
 
@@ -22,10 +28,11 @@ type Protocol struct {
 
 func NewProtocol(transport Transport) *Protocol {
 	return &Protocol{
-		transport:    transport,
-		Capabilities: EmptyCapabilities(),
-		callbacks:    make(map[string][]MessageCallback),
-		initialized:  false,
+		transport:          transport,
+		Capabilities:       EmptyCapabilities(),
+		RemoteCapabilities: EmptyCapabilities(),
+		callbacks:          make(map[string][]MessageCallback),
+		initialized:        false,
 		initializedCond: sync.Cond{
 			L: &sync.Mutex{},
 		},
@@ -55,11 +62,7 @@ func listOfStrings(val interface{}) []string {
 func (prot *Protocol) Start(asWorker bool) {
 	if asWorker {
 		prot.Register("welcome", func(msg Message) {
-			caps := FullCapabilities()
-			otherCaps := FromCapabilitiesList(listOfStrings(msg.Properties["capabilities"]))
-			caps.LimitTo(otherCaps)
-			prot.Capabilities = caps
-
+			prot.RemoteCapabilities = FromCapabilitiesList(listOfStrings(msg.Properties["capabilities"]))
 			prot.Send(Message{
 				Type: "hello",
 				Properties: map[string]interface{}{
@@ -70,15 +73,14 @@ func (prot *Protocol) Start(asWorker bool) {
 		})
 	} else {
 		prot.Register("hello", func(msg Message) {
-			prot.Capabilities = FromCapabilitiesList(listOfStrings(msg.Properties["capabilities"]))
+			prot.RemoteCapabilities = FromCapabilitiesList(listOfStrings(msg.Properties["capabilities"]))
 			prot.SetInitialized()
 		})
 
-		fullCaps := FullCapabilities()
 		prot.Send(Message{
 			Type: "welcome",
 			Properties: map[string]interface{}{
-				"capabilities": fullCaps.List(),
+				"capabilities": prot.Capabilities.List(),
 			},
 		})
 	}
@@ -124,9 +126,13 @@ func (prot *Protocol) recvLoop() {
 		if !ok {
 			return
 		}
-		callbacks := prot.callbacks[msg.Type]
-		for _, cb := range callbacks {
-			cb(msg)
+		callbacks, ok := prot.callbacks[msg.Type]
+		if ok {
+			for _, cb := range callbacks {
+				cb(msg)
+			}
+		} else {
+			log.Printf("No callback registered for message %s\n", msg.Type)
 		}
 	}
 }

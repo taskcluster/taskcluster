@@ -22,7 +22,8 @@ func TestAdd(t *testing.T) {
 }
 
 func TestRemove(t *testing.T) {
-	caps := FullCapabilities()
+	caps := EmptyCapabilities()
+	caps.Add("graceful-termination")
 	assert.True(t, caps.Has("graceful-termination"))
 	caps.Remove("graceful-termination")
 	assert.False(t, caps.Has("graceful-termination"))

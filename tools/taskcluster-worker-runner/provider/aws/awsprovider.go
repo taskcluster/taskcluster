@@ -6,13 +6,13 @@ import (
 	"log"
 	"time"
 
-	tcclient "github.com/taskcluster/taskcluster/v25/clients/client-go"
-	"github.com/taskcluster/taskcluster/v25/clients/client-go/tcworkermanager"
-	"github.com/taskcluster/taskcluster/v25/tools/taskcluster-worker-runner/cfg"
-	"github.com/taskcluster/taskcluster/v25/tools/taskcluster-worker-runner/protocol"
-	"github.com/taskcluster/taskcluster/v25/tools/taskcluster-worker-runner/provider/provider"
-	"github.com/taskcluster/taskcluster/v25/tools/taskcluster-worker-runner/run"
-	"github.com/taskcluster/taskcluster/v25/tools/taskcluster-worker-runner/tc"
+	tcclient "github.com/taskcluster/taskcluster/v27/clients/client-go"
+	"github.com/taskcluster/taskcluster/v27/clients/client-go/tcworkermanager"
+	"github.com/taskcluster/taskcluster/v27/tools/taskcluster-worker-runner/cfg"
+	"github.com/taskcluster/taskcluster/v27/tools/taskcluster-worker-runner/protocol"
+	"github.com/taskcluster/taskcluster/v27/tools/taskcluster-worker-runner/provider/provider"
+	"github.com/taskcluster/taskcluster/v27/tools/taskcluster-worker-runner/run"
+	"github.com/taskcluster/taskcluster/v27/tools/taskcluster-worker-runner/tc"
 )
 
 const TERMINATION_PATH = "/meta-data/spot/termination-time"
@@ -58,7 +58,10 @@ func (p *AWSProvider) ConfigureRun(state *run.State) error {
 		"signature": interface{}(instanceIdentityDocumentSignature),
 	}
 
-	err = provider.RegisterWorker(
+	// TODO
+	// bug 1591476: we should get workerConfig from RegisterWorker()
+	// and not from the metadata service
+	_, err = provider.RegisterWorker(
 		state,
 		wm,
 		userData.WorkerPoolId,
@@ -129,9 +132,18 @@ func (p *AWSProvider) checkTerminationTime() {
 	}
 }
 
-func (p *AWSProvider) WorkerStarted() error {
+func (p *AWSProvider) WorkerStarted(state *run.State) error {
 	// start polling for graceful shutdown
 	p.terminationTicker = time.NewTicker(30 * time.Second)
+
+	p.proto.Register("shutdown", func(msg protocol.Message) {
+		if err := provider.RemoveWorker(state, p.workerManagerClientFactory); err != nil {
+			log.Printf("Shutdown error: %v\n", err)
+		}
+	})
+	p.proto.Capabilities.Add("shutdown")
+	p.proto.Capabilities.Add("graceful-termination")
+
 	go func() {
 		for {
 			<-p.terminationTicker.C
@@ -143,7 +155,7 @@ func (p *AWSProvider) WorkerStarted() error {
 	return nil
 }
 
-func (p *AWSProvider) WorkerFinished() error {
+func (p *AWSProvider) WorkerFinished(state *run.State) error {
 	p.terminationTicker.Stop()
 	return nil
 }

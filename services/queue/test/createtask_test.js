@@ -169,53 +169,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws', 'azure'], function(mock, s
     await helper.queue.createTask(taskId, taskDef);
   });
 
-  test('defineTask', async () => {
-    const taskId = slugid.v4();
-
-    helper.scopes(
-      'queue:create-task:lowest:no-provisioner-extended-extended/test-worker-extended-extended',
-      'queue:scheduler-id:my-scheduler-extended-extended',
-      'queue:route:---*',
-    );
-
-    await helper.queue.defineTask(taskId, taskDef);
-
-    helper.assertPulseMessage('task-defined');
-    helper.assertNoPulseMessage('task-pending');
-  });
-
-  test('defineTask and scheduleTask', async () => {
-    const taskId = slugid.v4();
-
-    await helper.queue.defineTask(taskId, taskDef);
-    helper.assertPulseMessage('task-defined');
-    helper.assertNoPulseMessage('task-pending');
-
-    helper.scopes(
-      'queue:schedule-task',
-      'assume:scheduler-id:my-scheduler-extended-extended/dSlITZ4yQgmvxxAi4A8fHQ',
-    );
-    const r1 = await helper.queue.scheduleTask(taskId);
-    helper.assertPulseMessage('task-pending', m => _.isEqual(m.payload.status, r1.status));
-  });
-
-  test('defineTask is idempotent', async () => {
-    const taskId = slugid.v4();
-    await helper.queue.defineTask(taskId, taskDef);
-    await helper.queue.defineTask(taskId, taskDef);
-
-    // Verify that we can't modify the task
-    await helper.queue.defineTask(taskId, _.defaults({
-      workerType: 'another-worker',
-    }, taskDef)).then(() => {
-      throw new Error('This operation should have failed!');
-    }, (err) => {
-      assume(err.statusCode).equals(409);
-      debug('Expected error: %j', err, err);
-    });
-  });
-
-  test('defineTask is idempotent (with date format variance)', async () => {
+  test('createTask is idempotent (with date format variance)', async () => {
     const taskId = slugid.v4();
     // You can add as many ms fractions as you like in the date format
     // but we won't store them, so we have to handle this case right
@@ -225,11 +179,11 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws', 'azure'], function(mock, s
       deadline: taskDef.deadline.substr(0, taskDef.deadline.length - 1) + x,
       expires: taskDef.expires.substr(0, taskDef.expires.length - 1) + x,
     }, taskDef);
-    await helper.queue.defineTask(taskId, taskDef2);
-    await helper.queue.defineTask(taskId, taskDef2);
+    await helper.queue.createTask(taskId, taskDef2);
+    await helper.queue.createTask(taskId, taskDef2);
 
     // Verify that we can't modify the task
-    await helper.queue.defineTask(taskId, _.defaults({
+    await helper.queue.createTask(taskId, _.defaults({
       workerType: 'another-worker',
     }, taskDef)).then(() => {
       throw new Error('This operation should have failed!');

@@ -44,7 +44,7 @@ package tcgithub
 import (
 	"net/url"
 
-	tcclient "github.com/taskcluster/taskcluster/v25/clients/client-go"
+	tcclient "github.com/taskcluster/taskcluster/v27/clients/client-go"
 )
 
 type Github tcclient.Client

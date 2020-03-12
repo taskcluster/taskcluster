@@ -2,7 +2,7 @@ const DataLoader = require('dataloader');
 const sift = require('../utils/sift');
 const ConnectionLoader = require('../ConnectionLoader');
 
-module.exports = ({ workerManager }) => {
+module.exports = ({ workerManager }, isAuthed, rootUrl, monitor, strategies, req, cfg, requestId) => {
   const WorkerManagerWorkerPoolSummaries = new DataLoader(queries =>
     Promise.all(
       queries.map(async ({ filter }) => {

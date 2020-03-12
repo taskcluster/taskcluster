@@ -4,10 +4,10 @@ import (
 	"fmt"
 
 	tcurls "github.com/taskcluster/taskcluster-lib-urls"
-	"github.com/taskcluster/taskcluster/v25/tools/taskcluster-worker-runner/cfg"
-	"github.com/taskcluster/taskcluster/v25/tools/taskcluster-worker-runner/protocol"
-	"github.com/taskcluster/taskcluster/v25/tools/taskcluster-worker-runner/provider/provider"
-	"github.com/taskcluster/taskcluster/v25/tools/taskcluster-worker-runner/run"
+	"github.com/taskcluster/taskcluster/v27/tools/taskcluster-worker-runner/cfg"
+	"github.com/taskcluster/taskcluster/v27/tools/taskcluster-worker-runner/protocol"
+	"github.com/taskcluster/taskcluster/v27/tools/taskcluster-worker-runner/provider/provider"
+	"github.com/taskcluster/taskcluster/v27/tools/taskcluster-worker-runner/run"
 )
 
 type standaloneProviderConfig struct {
@@ -67,11 +67,11 @@ func (p *StandaloneProvider) UseCachedRun(run *run.State) error {
 func (p *StandaloneProvider) SetProtocol(proto *protocol.Protocol) {
 }
 
-func (p *StandaloneProvider) WorkerStarted() error {
+func (p *StandaloneProvider) WorkerStarted(state *run.State) error {
 	return nil
 }
 
-func (p *StandaloneProvider) WorkerFinished() error {
+func (p *StandaloneProvider) WorkerFinished(state *run.State) error {
 	return nil
 }
 

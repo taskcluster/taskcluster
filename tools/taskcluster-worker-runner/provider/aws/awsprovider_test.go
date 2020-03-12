@@ -5,10 +5,10 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
-	"github.com/taskcluster/taskcluster/v25/tools/taskcluster-worker-runner/cfg"
-	"github.com/taskcluster/taskcluster/v25/tools/taskcluster-worker-runner/protocol"
-	"github.com/taskcluster/taskcluster/v25/tools/taskcluster-worker-runner/run"
-	"github.com/taskcluster/taskcluster/v25/tools/taskcluster-worker-runner/tc"
+	"github.com/taskcluster/taskcluster/v27/tools/taskcluster-worker-runner/cfg"
+	"github.com/taskcluster/taskcluster/v27/tools/taskcluster-worker-runner/protocol"
+	"github.com/taskcluster/taskcluster/v27/tools/taskcluster-worker-runner/run"
+	"github.com/taskcluster/taskcluster/v27/tools/taskcluster-worker-runner/tc"
 )
 
 func TestAWSConfigureRun(t *testing.T) {
@@ -96,6 +96,14 @@ func TestAWSConfigureRun(t *testing.T) {
 	require.Equal(t, "aws", state.WorkerLocation["cloud"])
 	require.Equal(t, "us-west-2", state.WorkerLocation["region"])
 	require.Equal(t, "us-west-2a", state.WorkerLocation["availabilityZone"])
+
+	transp := protocol.NewFakeTransport()
+	proto := protocol.NewProtocol(transp)
+	proto.SetInitialized()
+
+	p.SetProtocol(proto)
+	require.NoError(t, p.WorkerStarted(&state))
+	require.True(t, proto.Capable("shutdown"))
 }
 
 func TestCheckTerminationTime(t *testing.T) {

@@ -434,12 +434,18 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
     test('sweet success', async function() {
       const worker = await helper.Worker.create({
         ...defaultWorker,
+        providerData: {
+          workerConfig: {
+            "someKey": "someValue",
+          },
+        },
       });
       const workerIdentityProof = {token: 'good'};
       const res = await provider.registerWorker({workerPool, worker, workerIdentityProof});
       // allow +- 10 seconds since time passes while the test executes
       assert(res.expires - new Date() + 10000 > 96 * 3600 * 1000, res.expires);
       assert(res.expires - new Date() - 10000 < 96 * 3600 * 1000, res.expires);
+      assert.equal(res.workerConfig.someKey, 'someValue');
     });
 
     test('sweet success (different reregister)', async function() {
@@ -447,6 +453,9 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
         ...defaultWorker,
         providerData: {
           reregistrationTimeout: 3600 * 10 * 1000,
+          workerConfig: {
+            "someKey": "someValue",
+          },
         },
       });
       const workerIdentityProof = {token: 'good'};
@@ -454,6 +463,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
       // allow +- 10 seconds since time passes while the test executes
       assert(res.expires - new Date() + 10000 > 10 * 3600 * 1000, res.expires);
       assert(res.expires - new Date() - 10000 < 10 * 3600 * 1000, res.expires);
+      assert.equal(res.workerConfig.someKey, 'someValue');
     });
   });
 });

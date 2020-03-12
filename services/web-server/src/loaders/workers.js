@@ -3,7 +3,7 @@ const sift = require('../utils/sift');
 const ConnectionLoader = require('../ConnectionLoader');
 const WorkerCompact = require('../entities/WorkerCompact');
 
-module.exports = ({ queue }) => {
+module.exports = ({ queue }, isAuthed, rootUrl, monitor, strategies, req, cfg, requestId) => {
   const worker = new DataLoader(queries =>
     Promise.all(
       queries.map(async ({ provisionerId, workerType, workerGroup, workerId }) => {

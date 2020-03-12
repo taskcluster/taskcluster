@@ -73,6 +73,8 @@ script/shared-secrets) shift; exec yarn run shared-secrets "${@}";;
 script/heroku-prebuild) shift; exec yarn run heroku-prebuild "${@}";;
 script/heroku-postbuild) shift; exec yarn run heroku-postbuild "${@}";;
 script/dev:init) shift; exec yarn run dev:init "${@}";;
+script/dev:db:upgrade) shift; exec yarn run dev:db:upgrade "${@}";;
+script/dev:db:downgrade) shift; exec yarn run dev:db:downgrade "${@}";;
 script/dev:apply) shift; exec yarn run dev:apply "${@}";;
 script/dev:delete) shift; exec yarn run dev:delete "${@}";;
 script/dev:verify) shift; exec yarn run dev:verify "${@}";;

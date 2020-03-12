@@ -60,7 +60,7 @@ func testServer() *httptest.Server {
 		}
 
 		if r.URL.Path == "/metadata/instance" {
-			if apiVersion != "2019-04-30" {
+			if apiVersion != "2019-08-15" {
 				w.WriteHeader(400)
 				fmt.Fprintf(w, "Bad API version")
 				return
@@ -112,7 +112,7 @@ func testServer() *httptest.Server {
 		}
 
 		if r.URL.Path == "/metadata/attested/document" {
-			if apiVersion != "2019-04-30" {
+			if apiVersion != "2019-08-15" {
 				w.WriteHeader(400)
 				fmt.Fprintf(w, "Bad API version")
 				return

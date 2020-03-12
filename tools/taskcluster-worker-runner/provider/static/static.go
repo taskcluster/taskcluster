@@ -4,13 +4,13 @@ import (
 	"fmt"
 
 	tcurls "github.com/taskcluster/taskcluster-lib-urls"
-	tcclient "github.com/taskcluster/taskcluster/v25/clients/client-go"
-	"github.com/taskcluster/taskcluster/v25/clients/client-go/tcworkermanager"
-	"github.com/taskcluster/taskcluster/v25/tools/taskcluster-worker-runner/cfg"
-	"github.com/taskcluster/taskcluster/v25/tools/taskcluster-worker-runner/protocol"
-	"github.com/taskcluster/taskcluster/v25/tools/taskcluster-worker-runner/provider/provider"
-	"github.com/taskcluster/taskcluster/v25/tools/taskcluster-worker-runner/run"
-	"github.com/taskcluster/taskcluster/v25/tools/taskcluster-worker-runner/tc"
+	tcclient "github.com/taskcluster/taskcluster/v27/clients/client-go"
+	"github.com/taskcluster/taskcluster/v27/clients/client-go/tcworkermanager"
+	"github.com/taskcluster/taskcluster/v27/tools/taskcluster-worker-runner/cfg"
+	"github.com/taskcluster/taskcluster/v27/tools/taskcluster-worker-runner/protocol"
+	"github.com/taskcluster/taskcluster/v27/tools/taskcluster-worker-runner/provider/provider"
+	"github.com/taskcluster/taskcluster/v27/tools/taskcluster-worker-runner/run"
+	"github.com/taskcluster/taskcluster/v27/tools/taskcluster-worker-runner/tc"
 )
 
 type staticProviderConfig struct {
@@ -46,10 +46,18 @@ func (p *StaticProvider) ConfigureRun(state *run.State) error {
 
 	workerIdentityProofMap := map[string]interface{}{"staticSecret": interface{}(pc.StaticSecret)}
 
-	err = provider.RegisterWorker(state, wm, pc.WorkerPoolID, pc.ProviderID, pc.WorkerGroup, pc.WorkerID, workerIdentityProofMap)
+	workerConfig, err := provider.RegisterWorker(state, wm, pc.WorkerPoolID, pc.ProviderID, pc.WorkerGroup, pc.WorkerID, workerIdentityProofMap)
 	if err != nil {
 		return err
 	}
+
+	pwc, err := cfg.ParseProviderWorkerConfig(p.runnercfg, workerConfig)
+	if err != nil {
+		return err
+	}
+
+	state.WorkerConfig = state.WorkerConfig.Merge(pwc.Config)
+	state.Files = append(state.Files, pwc.Files...)
 
 	state.WorkerLocation = map[string]string{
 		"cloud": "static",
@@ -83,11 +91,11 @@ func (p *StaticProvider) SetProtocol(proto *protocol.Protocol) {
 	p.proto = proto
 }
 
-func (p *StaticProvider) WorkerStarted() error {
+func (p *StaticProvider) WorkerStarted(state *run.State) error {
 	return nil
 }
 
-func (p *StaticProvider) WorkerFinished() error {
+func (p *StaticProvider) WorkerFinished(state *run.State) error {
 	return nil
 }
 
