@@ -252,6 +252,7 @@ func initializeWorkerRunnerProtocol(input io.Reader, output io.Writer, withWorke
 	}
 
 	WorkerRunnerProtocol = protocol.NewProtocol(workerRunnerTransport)
+	WorkerRunnerProtocol.Capabilities.Add("graceful-termination")
 	WorkerRunnerProtocol.Start(true)
 
 	// when not using worker-runner, consider the protocol initialized with no capabilities
