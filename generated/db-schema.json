@@ -8,6 +8,7 @@
   },
   "versions": [
     {
+      "downgradeScript": "begin\n  revoke select, insert, update, delete on widgets from $db_user_prefix$_notify;\n  drop table widgets;\nend",
       "methods": {
         "update_widgets": {
           "args": "name_in text",
