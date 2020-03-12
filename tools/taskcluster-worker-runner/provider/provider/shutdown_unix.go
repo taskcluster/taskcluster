@@ -1,3 +1,5 @@
+// +build linux darwin freebsd
+
 package provider
 
 import "os/exec"
