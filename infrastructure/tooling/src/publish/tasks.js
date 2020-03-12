@@ -200,15 +200,31 @@ module.exports = ({tasks, cmdOptions, credentials, baseDir}) => {
       for (let {name, contentType} of files) {
         utils.status({message: `Upload Release asset ${name}`});
         const file = await readFile(path.join(artifactsDir, name));
-        await octokit.repos.uploadReleaseAsset({
-          url: upload_url,
-          headers: {
-            'content-length': file.length,
-            'content-type': contentType,
-          },
-          name,
-          file,
-        });
+
+        /* Artifact uploads to GitHub seem to fail.. a lot.  So we retry each
+         * one a few times with some delay, in hopes of getting lucky.  */
+        let retries = 5;
+        while (retries-- > 0) {
+          try {
+            await octokit.repos.uploadReleaseAsset({
+              url: upload_url,
+              headers: {
+                'content-length': file.length,
+                'content-type': contentType,
+              },
+              name,
+              file,
+            });
+          } catch (err) {
+            if (!retries) {
+              throw err;
+            }
+            await new Promise(resolve => setTimeout(resolve, 5000));
+            utils.status({message: `Upload release asset ${name} - retrying after error`});
+            continue;
+          }
+          break;
+        }
       }
 
       return {
