@@ -1,11 +1,7 @@
-const Debug = require('debug');
 const crypto = require('crypto');
 const APIBuilder = require('taskcluster-lib-api');
 const _ = require('lodash');
 const Entity = require('azure-entities');
-
-const debugPrefix = 'taskcluster-github:api';
-const debug = Debug(debugPrefix);
 
 // Strips/replaces undesirable characters which GitHub allows in
 // repository/organization names (notably .)
@@ -201,7 +197,6 @@ builder.declare({
   ].join('\n'),
 }, async function(req, res) {
   let eventId = req.headers['x-github-delivery'];
-  let debug = Debug(debugPrefix + ':' + eventId);
 
   let eventType = req.headers['x-github-event'];
   if (!eventType) {
@@ -234,7 +229,8 @@ builder.declare({
   let msg = {};
   let publisherKey = '';
 
-  debug('Received ' + eventType + ' event webhook payload. Processing...');
+  const installationId = body.installation && body.installation.id;
+  this.monitor.log.webhookReceived({eventId, eventType, installationId});
 
   try {
     msg.body = body;
@@ -284,20 +280,13 @@ builder.declare({
         return resolve(res, 400, 'No publisher available for X-GitHub-Event: ' + eventType);
     }
   } catch (e) {
-    debug('Error processing webhook payload!');
     e.webhookPayload = body;
     e.eventId = eventId;
     throw e;
   }
 
-  let instGithub;
-  try {
-    debug(`Trying to authenticate as installation for ${eventType}`);
-    instGithub = await this.github.getInstallationGithub(msg.installationId);
-  } catch (e) {
-    debug('Error authenticating as installation');
-    throw e;
-  }
+  // Authenticating as installation.
+  const instGithub = await this.github.getInstallationGithub(installationId);
 
   // Not all webhook payloads include an e-mail for the user who triggered an event
   let headUser = msg.details['event.head.user.login'].toString();
@@ -308,9 +297,7 @@ builder.declare({
   msg.repository = sanitizeGitHubField(body.repository.name);
   msg.eventId = eventId;
 
-  debug('Beginning publishing event message on pulse.');
   await this.publisher[publisherKey](msg);
-  debug('Finished Publishing event message on pulse.');
   res.status(204).send();
 });
 
@@ -526,7 +513,6 @@ builder.declare({
           'Operation was forbidden by Github. The Github App may not be set up for this repo.',
           {});
       }
-      debug(`Error creating status: ${JSON.stringify(e)}`);
       await this.monitor.reportError(e);
       return res.status(500).send();
     }
@@ -576,7 +562,6 @@ builder.declare({
           'Operation was forbidden by Github. The Github App may not be set up for this repo.',
           {});
       }
-      debug(`Error creating comment: ${JSON.stringify(e)}`);
       await this.monitor.reportError(e);
       return res.status(500).send();
     }

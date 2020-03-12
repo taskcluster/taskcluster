@@ -1,4 +1,3 @@
-const debug = require('debug')('taskcluster-github:github-auth');
 const jwt = require('jsonwebtoken');
 
 const retryPlugin = (octokit, options) => {
@@ -13,7 +12,6 @@ const retryPlugin = (octokit, options) => {
         return await request(options);
       } catch (err) {
         if (attempt < retries && err.name === 'HttpError' && (err.status >= 500 || err.status === 404)) {
-          debug(`Request getting retried for eventual consistency. attempt: ${attempt}`);
           await sleep(baseBackoff * Math.pow(2, attempt));
           continue;
         }
@@ -52,14 +50,18 @@ module.exports = async ({cfg}) => {
   };
 
   const getInstallationGithub = async (inst_id) => {
-    const inteGithub = await getAppGithub();
-    // Authenticating as installation
-    const instaToken = (await inteGithub.apps.createInstallationToken({
-      installation_id: inst_id,
-    })).data;
-    const instaGithub = new Octokit({auth: `token ${instaToken.token}`});
-    debug(`Authenticated as installation: ${inst_id}`);
-    return instaGithub;
+    try {
+      const inteGithub = await getAppGithub();
+      // Authenticating as installation
+      const instaToken = (await inteGithub.apps.createInstallationToken({
+        installation_id: inst_id,
+      })).data;
+      const instaGithub = new Octokit({auth: `token ${instaToken.token}`});
+      return instaGithub;
+    } catch (err) {
+      err.installationId = inst_id;
+      throw err;
+    }
   };
 
   // This object insures that the authentication is delayed until we need it.
