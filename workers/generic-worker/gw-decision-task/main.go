@@ -307,6 +307,7 @@ func (dt *DecisionTask) TaskDefinition(workerPool string, name string, descripti
 		ProvisionerID: provisionerID,
 		SchedulerID:   schedulerID,
 		Scopes:        scopes,
+		Routes:        []string{"checks"},
 		TaskGroupID:   dt.TaskGroupID,
 		WorkerType:    workerType,
 	}, nil
