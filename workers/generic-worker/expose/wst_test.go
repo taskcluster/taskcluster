@@ -16,7 +16,7 @@ import (
 	"github.com/gorilla/websocket"
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
-	"github.com/taskcluster/taskcluster/v27/clients/client-go/tcauth"
+	"github.com/taskcluster/taskcluster/v28/clients/client-go/tcauth"
 	"github.com/taskcluster/websocktunnel/wsproxy"
 )
 

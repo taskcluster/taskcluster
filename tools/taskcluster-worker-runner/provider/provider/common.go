@@ -6,9 +6,9 @@ import (
 	"log"
 	"time"
 
-	"github.com/taskcluster/taskcluster/v27/clients/client-go/tcworkermanager"
-	"github.com/taskcluster/taskcluster/v27/tools/taskcluster-worker-runner/run"
-	"github.com/taskcluster/taskcluster/v27/tools/taskcluster-worker-runner/tc"
+	"github.com/taskcluster/taskcluster/v28/clients/client-go/tcworkermanager"
+	"github.com/taskcluster/taskcluster/v28/tools/taskcluster-worker-runner/run"
+	"github.com/taskcluster/taskcluster/v28/tools/taskcluster-worker-runner/tc"
 )
 
 // WorkerInfo contains the information to identify the worker

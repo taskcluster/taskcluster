@@ -5,9 +5,9 @@ import (
 	"strings"
 	"time"
 
-	taskcluster "github.com/taskcluster/taskcluster/v27/clients/client-go"
-	"github.com/taskcluster/taskcluster/v27/tools/taskcluster-worker-runner/cfg"
-	"github.com/taskcluster/taskcluster/v27/tools/taskcluster-worker-runner/files"
+	taskcluster "github.com/taskcluster/taskcluster/v28/clients/client-go"
+	"github.com/taskcluster/taskcluster/v28/tools/taskcluster-worker-runner/cfg"
+	"github.com/taskcluster/taskcluster/v28/tools/taskcluster-worker-runner/files"
 )
 
 // State represents the state of the worker run.  Its contents are built up
