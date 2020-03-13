@@ -19,7 +19,7 @@ let monitorManager = require('./monitor');
 let SchemaSet = require('taskcluster-lib-validate');
 let libReferences = require('taskcluster-lib-references');
 let App = require('taskcluster-lib-app');
-let {sasCredentials} = require('taskcluster-lib-azure');
+const tcdb = require('taskcluster-db');
 let pulse = require('taskcluster-lib-pulse');
 const QuickLRU = require('quick-lru');
 
@@ -94,24 +94,29 @@ let load = loader({
     },
   },
 
+  db: {
+    requires: ["cfg"],
+    setup: ({ cfg }) => tcdb.setup({
+      readDbUrl: cfg.postgres.readDbUrl,
+      writeDbUrl: cfg.postgres.writeDbUrl,
+      serviceName: 'queue',
+    }),
+  },
+
   // Create artifacts table
   Artifact: {
     requires: [
       'cfg', 'monitor', 'process',
-      'publicArtifactBucket', 'privateArtifactBucket',
+      'publicArtifactBucket', 'privateArtifactBucket', 'db',
     ],
     setup: async ({cfg, monitor, process, publicArtifactBucket,
-      privateArtifactBucket}) =>
+      privateArtifactBucket, db}) =>
       data.Artifact.setup({
+        db,
+        serviceName: 'queue',
         tableName: cfg.app.artifactTableName,
         operationReportChance: cfg.app.azureReportChance,
         operationReportThreshold: cfg.app.azureReportThreshold,
-        credentials: sasCredentials({
-          accountId: cfg.azure.accountId,
-          tableName: cfg.app.artifactTableName,
-          rootUrl: cfg.taskcluster.rootUrl,
-          credentials: cfg.taskcluster.credentials,
-        }),
         context: {
           publicBucket: publicArtifactBucket,
           privateBucket: privateArtifactBucket,
@@ -123,110 +128,86 @@ let load = loader({
 
   // Create task table
   Task: {
-    requires: ['cfg', 'monitor', 'process'],
-    setup: async ({cfg, monitor, process}) =>
+    requires: ['cfg', 'monitor', 'process', 'db'],
+    setup: async ({cfg, monitor, process, db}) =>
       data.Task.setup({
+        db,
+        serviceName: 'queue',
         tableName: cfg.app.taskTableName,
         operationReportChance: cfg.app.azureReportChance,
         operationReportThreshold: cfg.app.azureReportThreshold,
-        credentials: sasCredentials({
-          accountId: cfg.azure.accountId,
-          tableName: cfg.app.taskTableName,
-          rootUrl: cfg.taskcluster.rootUrl,
-          credentials: cfg.taskcluster.credentials,
-        }),
         monitor: monitor.childMonitor('table.tasks'),
       }),
   },
 
   // Create task-group table
   TaskGroup: {
-    requires: ['cfg', 'monitor', 'process'],
-    setup: async ({cfg, monitor, process}) =>
+    requires: ['cfg', 'monitor', 'process', 'db'],
+    setup: async ({cfg, monitor, process, db}) =>
       data.TaskGroup.setup({
+        db,
+        serviceName: 'queue',
         tableName: cfg.app.taskGroupTableName,
         operationReportChance: cfg.app.azureReportChance,
         operationReportThreshold: cfg.app.azureReportThreshold,
-        credentials: sasCredentials({
-          accountId: cfg.azure.accountId,
-          tableName: cfg.app.taskGroupTableName,
-          rootUrl: cfg.taskcluster.rootUrl,
-          credentials: cfg.taskcluster.credentials,
-        }),
         monitor: monitor.childMonitor('table.taskgroups'),
       }),
   },
 
   // Create task-group member table
   TaskGroupMember: {
-    requires: ['cfg', 'monitor', 'process'],
-    setup: async ({cfg, monitor, process}) =>
+    requires: ['cfg', 'monitor', 'process', 'db'],
+    setup: async ({cfg, monitor, process, db}) =>
       data.TaskGroupMember.setup({
+        db,
+        serviceName: 'queue',
         tableName: cfg.app.taskGroupMemberTableName,
         operationReportChance: cfg.app.azureReportChance,
         operationReportThreshold: cfg.app.azureReportThreshold,
-        credentials: sasCredentials({
-          accountId: cfg.azure.accountId,
-          tableName: cfg.app.taskGroupMemberTableName,
-          rootUrl: cfg.taskcluster.rootUrl,
-          credentials: cfg.taskcluster.credentials,
-        }),
         monitor: monitor.childMonitor('table.taskgroupmembers'),
       }),
   },
 
   // Create task-group size table (uses TaskGroupMember entity)
   TaskGroupActiveSet: {
-    requires: ['cfg', 'monitor', 'process'],
-    setup: async ({cfg, monitor, process}) =>
+    requires: ['cfg', 'monitor', 'process', 'db'],
+    setup: async ({cfg, monitor, process, db}) =>
       // NOTE: this uses the same entity type definition as TaskGroupMember,
       // but presence in either table indicates different things
       data.TaskGroupMember.setup({
+        db,
+        serviceName: 'queue',
         tableName: cfg.app.taskGroupActiveSetTableName,
         operationReportChance: cfg.app.azureReportChance,
         operationReportThreshold: cfg.app.azureReportThreshold,
-        credentials: sasCredentials({
-          accountId: cfg.azure.accountId,
-          tableName: cfg.app.taskGroupActiveSetTableName,
-          rootUrl: cfg.taskcluster.rootUrl,
-          credentials: cfg.taskcluster.credentials,
-        }),
         monitor: monitor.childMonitor('table.taskgroupactivesets'),
       }),
   },
 
   // Create TaskRequirement table
   TaskRequirement: {
-    requires: ['cfg', 'monitor', 'process'],
-    setup: async ({cfg, monitor, process}) =>
+    requires: ['cfg', 'monitor', 'process', 'db'],
+    setup: async ({cfg, monitor, process, db}) =>
       data.TaskRequirement.setup({
+        db,
+        serviceName: 'queue',
         tableName: cfg.app.taskRequirementTableName,
         operationReportChance: cfg.app.azureReportChance,
         operationReportThreshold: cfg.app.azureReportThreshold,
-        credentials: sasCredentials({
-          accountId: cfg.azure.accountId,
-          tableName: cfg.app.taskRequirementTableName,
-          rootUrl: cfg.taskcluster.rootUrl,
-          credentials: cfg.taskcluster.credentials,
-        }),
         monitor: monitor.childMonitor('table.taskrequirements'),
       }),
   },
 
   // Create TaskDependency table
   TaskDependency: {
-    requires: ['cfg', 'monitor', 'process'],
-    setup: async ({cfg, monitor, process}) => {
+    requires: ['cfg', 'monitor', 'process', 'db'],
+    setup: async ({cfg, monitor, process, db}) => {
       return data.TaskDependency.setup({
+        db,
+        serviceName: 'queue',
         tableName: cfg.app.taskDependencyTableName,
         operationReportChance: cfg.app.azureReportChance,
         operationReportThreshold: cfg.app.azureReportThreshold,
-        credentials: sasCredentials({
-          accountId: cfg.azure.accountId,
-          tableName: cfg.app.taskDependencyTableName,
-          rootUrl: cfg.taskcluster.rootUrl,
-          credentials: cfg.taskcluster.credentials,
-        }),
         monitor: monitor.childMonitor('table.taskdependencies'),
       });
     },
@@ -234,54 +215,42 @@ let load = loader({
 
   // Create Provisioner table
   Provisioner: {
-    requires: ['cfg', 'monitor', 'process'],
-    setup: async ({cfg, monitor, process}) =>
+    requires: ['cfg', 'monitor', 'process', 'db'],
+    setup: async ({cfg, monitor, process, db}) =>
       data.Provisioner.setup({
+        db,
+        serviceName: 'queue',
         tableName: cfg.app.provisionerTableName,
         operationReportChance: cfg.app.azureReportChance,
         operationReportThreshold: cfg.app.azureReportThreshold,
-        credentials: sasCredentials({
-          accountId: cfg.azure.accountId,
-          tableName: cfg.app.provisionerTableName,
-          rootUrl: cfg.taskcluster.rootUrl,
-          credentials: cfg.taskcluster.credentials,
-        }),
         monitor: monitor.childMonitor('table.provisioner'),
       }),
   },
 
   // Create WorkerType table
   WorkerType: {
-    requires: ['cfg', 'monitor', 'process'],
-    setup: async ({cfg, monitor, process}) =>
+    requires: ['cfg', 'monitor', 'process', 'db'],
+    setup: async ({cfg, monitor, process, db}) =>
       data.WorkerType.setup({
+        db,
+        serviceName: 'queue',
         tableName: cfg.app.workerTypeTableName,
         operationReportChance: cfg.app.azureReportChance,
         operationReportThreshold: cfg.app.azureReportThreshold,
-        credentials: sasCredentials({
-          accountId: cfg.azure.accountId,
-          tableName: cfg.app.workerTypeTableName,
-          rootUrl: cfg.taskcluster.rootUrl,
-          credentials: cfg.taskcluster.credentials,
-        }),
         monitor: monitor.childMonitor('table.workerType'),
       }),
   },
 
   // Create Worker table
   Worker: {
-    requires: ['cfg', 'monitor', 'process'],
-    setup: async ({cfg, monitor, process}) =>
+    requires: ['cfg', 'monitor', 'process', 'db'],
+    setup: async ({cfg, monitor, process, db}) =>
       data.Worker.setup({
+        db,
+        serviceName: 'queue',
         tableName: cfg.app.workerTableName,
         operationReportChance: cfg.app.azureReportChance,
         operationReportThreshold: cfg.app.azureReportThreshold,
-        credentials: sasCredentials({
-          accountId: cfg.azure.accountId,
-          tableName: cfg.app.workerTableName,
-          rootUrl: cfg.taskcluster.rootUrl,
-          credentials: cfg.taskcluster.credentials,
-        }),
         monitor: monitor.childMonitor('table.worker'),
       }),
   },

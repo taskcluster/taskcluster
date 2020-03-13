@@ -10,16 +10,16 @@ defaults:
     privateArtifactBucket:        !env PRIVATE_ARTIFACT_BUCKET
 
     # Azure table name for tasks, artifact meta-data
-    taskTableName:                'QueueTasks'
-    artifactTableName:            'QueueArtifacts'
-    taskGroupTableName:           'QueueTaskGroups'
-    taskGroupMemberTableName:     'QueueTaskGroupMembers'
-    taskGroupActiveSetTableName:  'QueueTaskGroupActiveSets'
-    taskRequirementTableName:     'QueueTaskRequirement'
-    taskDependencyTableName:      'QueueTaskDependency'
-    workerTableName:              'QueueWorker'
-    workerTypeTableName:          'QueueWorkerType'
-    provisionerTableName:         'QueueProvisioner'
+    taskTableName:                'queue_tasks'
+    artifactTableName:            'queue_artifacts'
+    taskGroupTableName:           'queue_task_groups'
+    taskGroupMemberTableName:     'queue_task_group_members'
+    taskGroupActiveSetTableName:  'queue_task_group_active_sets'
+    taskRequirementTableName:     'queue_task_requirement'
+    taskDependencyTableName:      'queue_task_dependency'
+    workerTableName:              'queue_worker'
+    workerTypeTableName:          'queue_worker_type'
+    provisionerTableName:         'queue_provisioner'
 
     # Azure monitoring knobs
     azureReportChance:            !env:number:optional AZURE_REPORT_CHANCE # range [0.0, 1.0]
