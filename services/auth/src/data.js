@@ -119,7 +119,7 @@ Client.syncStaticClients = async function(clients = [], azureAccountId) {
   for (const client of clients) {
     assert(typeof client.clientId === 'string', 'expected clientId to be a string');
     assert(typeof client.accessToken === 'string', 'expected accessToken to be a string');
-    // assert(client.accessToken.length >= 22, 'accessToken must have at least 22 chars');
+    assert(client.accessToken.length >= 22, 'accessToken must have at least 22 chars');
     assert(client.accessToken.length <= 66, 'accessToken must have at most 66 chars');
     assert(client.clientId.startsWith('static/'), 'static clients must have clientId = "static/..."');
     if (client.clientId.startsWith('static/taskcluster')) {
