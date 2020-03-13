@@ -27,7 +27,7 @@ The file contains links to reference documents for specific services.
 
 The schema for the reference manifest is as follows:
 
-<SchemaTable schema="/schemas/common/manifest-v3.json" />
+<SchemaTable schema="/schemas/common/manifest-v3.json#" />
 
 ## Reference Documents
 
@@ -37,7 +37,7 @@ Software which interprets the references should use these `name` and `version` f
 
 That metadata is defined in a meta-schema:
 
-<SchemaTable schema="/schemas/common/metadata-metaschema.json" />
+<SchemaTable schema="/schemas/common/metadata-metaschema.json#" />
 
 Note that the manifest document also adheres to the metaschema.
 
@@ -64,14 +64,14 @@ server responses may change by adding additional properties.
 
 The API reference format has the following format:
 
-<SchemaTable schema="/schemas/common/api-reference-v0.json" />
+<SchemaTable schema="/schemas/common/api-reference-v0.json#" />
 
 ### Pulse Exchange References
 
 Each service which sends Pulse messages has its exchanges and messages defined
 in a reference document with metadata name `exchanges` and the following format.
 
-<SchemaTable schema="/schemas/common/exchanges-reference-v0.json" />
+<SchemaTable schema="/schemas/common/exchanges-reference-v0.json#" />
 
 Messages are validated on the server prior to publication.
 Note that clients should not validate received messages against the declared
@@ -82,7 +82,7 @@ schema, as messages may be changed by adding additional properties.
 Each service generates log messages that match formats defined in log references.
 These reference documents have metadata name `logs` and the following schema:
 
-<SchemaTable schema="/schemas/common/logs-reference-v0.json" />
+<SchemaTable schema="/schemas/common/logs-reference-v0.json#" />
 
 ## Rolled-Up References
 
