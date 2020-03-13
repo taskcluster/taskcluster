@@ -1,4 +1,5 @@
 const Debug = require('debug');
+const tcdb = require('taskcluster-db');
 const builder = require('../src/api');
 const data = require('../src/data');
 const loader = require('taskcluster-lib-loader');
@@ -8,7 +9,6 @@ const App = require('taskcluster-lib-app');
 const libReferences = require('taskcluster-lib-references');
 const taskcluster = require('taskcluster-client');
 const config = require('taskcluster-lib-config');
-const {sasCredentials} = require('taskcluster-lib-azure');
 
 let debug = Debug('secrets:server');
 
@@ -34,16 +34,21 @@ let load = loader({
     }),
   },
 
+  db: {
+    requires: ['cfg'],
+    setup: ({cfg}) => tcdb.setup({
+      readDbUrl: cfg.postgres.readDbUrl,
+      writeDbUrl: cfg.postgres.writeDbUrl,
+      serviceName: 'secrets',
+    }),
+  },
+
   Secret: {
-    requires: ['cfg', 'monitor', 'process'],
-    setup: ({cfg, monitor, process}) => data.Secret.setup({
+    requires: ['cfg', 'monitor', 'db', 'process'],
+    setup: ({cfg, monitor, db, process}) => data.Secret.setup({
+      db,
+      serviceName: 'secrets',
       tableName: cfg.app.secretsTableName,
-      credentials: sasCredentials({
-        accountId: cfg.azure.accountId,
-        tableName: cfg.app.secretsTableName,
-        rootUrl: cfg.taskcluster.rootUrl,
-        credentials: cfg.taskcluster.credentials,
-      }),
       cryptoKey: cfg.azure.cryptoKey,
       signingKey: cfg.azure.signingKey,
       monitor: monitor.childMonitor('table.secrets'),
