@@ -176,7 +176,7 @@ helper.dbSuite(path.basename(__filename), function() {
       });
     });
 
-    test.only('can call context method inside handler', async function() {
+    test('can call context method inside handler', async function() {
       db = await helper.withDb({ schema, serviceName });
       const customMethod = () => true;
       const configuredEntity = Entity.configure({
