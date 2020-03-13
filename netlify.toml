@@ -29,9 +29,11 @@
   from = "/docs/*"
   to = "/docs.html"
   status = 200
+  force = true
 
 # Rule for Single Page Applications (app)
 [[redirects]]
   from = "/*"
   to = "/index.html"
   status = 200
+  force = true
