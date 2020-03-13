@@ -5,8 +5,8 @@ defaults:
     routePrefix: 'index'
 
     # Name of task-graph table in azure table storage
-    indexedTaskTableName: 'IndexedTasks'
-    namespaceTableName: 'Namespaces'
+    indexedTaskTableName: 'indexed_tasks'
+    namespaceTableName: 'namespaces'
 
     # Name of pulse queue, if a non-exclusive queue is to be used.
     listenerQueueName: 'index/incoming-tasks2'
