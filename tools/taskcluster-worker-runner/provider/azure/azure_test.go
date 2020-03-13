@@ -117,69 +117,106 @@ func TestConfigureRun(t *testing.T) {
 	require.Equal(t, "uswest", state.WorkerLocation["region"])
 
 	transp := protocol.NewFakeTransport()
+	defer transp.Close()
+	transp.InjectMessage(protocol.Message{
+		Type: "hello",
+		Properties: map[string]interface{}{
+			"capabilities": []interface{}{"shutdown"},
+		},
+	})
 	proto := protocol.NewProtocol(transp)
-	proto.SetInitialized()
 
 	p.SetProtocol(proto)
 	require.NoError(t, p.WorkerStarted(&state))
+	proto.Start(false)
 	require.True(t, proto.Capable("shutdown"))
 }
 
 func TestCheckTerminationTime(t *testing.T) {
-	transp := protocol.NewFakeTransport()
-	proto := protocol.NewProtocol(transp)
-	proto.SetInitialized()
+	test := func(t *testing.T, transp *protocol.FakeTransport, proto *protocol.Protocol, hasCapability bool) {
+		evts := &ScheduledEvents{}
 
-	evts := &ScheduledEvents{}
+		mds := &fakeMetadataService{nil, nil, nil, evts, nil, "", nil, []byte(`{}`)}
+		p := &AzureProvider{
+			runnercfg:                  nil,
+			workerManagerClientFactory: nil,
+			metadataService:            mds,
+			proto:                      proto,
+			terminationTicker:          nil,
+		}
 
-	mds := &fakeMetadataService{nil, nil, nil, evts, nil, "", nil, []byte(`{}`)}
-	p := &AzureProvider{
-		runnercfg:                  nil,
-		workerManagerClientFactory: nil,
-		metadataService:            mds,
-		proto:                      proto,
-		terminationTicker:          nil,
+		p.checkTerminationTime()
+
+		// not time yet..
+		require.Equal(t, []protocol.Message{}, transp.Messages())
+
+		// oops, an error!
+		mds.ScheduledEventsError = fmt.Errorf("uhoh!")
+
+		p.checkTerminationTime()
+		require.Equal(t, []protocol.Message{}, transp.Messages())
+
+		mds.ScheduledEventsError = nil
+
+		evt := struct {
+			EventId      string
+			EventType    string
+			ResourceType string
+			Resources    []string
+			EventStatus  string
+			NotBefore    string
+		}{
+			EventType: "Preempt",
+		}
+		evts.Events = append(evts.Events, evt)
+		p.checkTerminationTime()
+
+		if hasCapability {
+			require.Equal(t, []protocol.Message{
+				protocol.Message{
+					Type: "graceful-termination",
+					Properties: map[string]interface{}{
+						"finish-tasks": false,
+					},
+				},
+			}, transp.Messages())
+		} else {
+			require.Equal(t, []protocol.Message{}, transp.Messages())
+		}
 	}
 
-	p.checkTerminationTime()
-
-	// not time yet..
-	require.Equal(t, []protocol.Message{}, transp.Messages())
-
-	// oops, an error!
-	mds.ScheduledEventsError = fmt.Errorf("uhoh!")
-
-	p.checkTerminationTime()
-	require.Equal(t, []protocol.Message{}, transp.Messages())
-
-	mds.ScheduledEventsError = nil
-
-	evt := struct {
-		EventId      string
-		EventType    string
-		ResourceType string
-		Resources    []string
-		EventStatus  string
-		NotBefore    string
-	}{
-		EventType: "Preempt",
-	}
-	evts.Events = append(evts.Events, evt)
-	p.checkTerminationTime()
-
-	// protocol does not have the capability set..
-	require.Equal(t, []protocol.Message{}, transp.Messages())
-
-	proto.Capabilities.Add("graceful-termination")
-	p.checkTerminationTime()
-
-	// now we send a message..
-	require.Equal(t, []protocol.Message{
-		protocol.Message{
-			Type: "graceful-termination",
+	t.Run("without capability", func(t *testing.T) {
+		transp := protocol.NewFakeTransport()
+		defer transp.Close()
+		transp.InjectMessage(protocol.Message{
+			Type: "hello",
 			Properties: map[string]interface{}{
-				"finish-tasks": false,
+				"capabilities": []interface{}{},
 			},
-		},
-	}, transp.Messages())
+		})
+		proto := protocol.NewProtocol(transp)
+		proto.Start(false)
+		proto.WaitUntilInitialized()
+		transp.ClearMessages()
+
+		test(t, transp, proto, false)
+	})
+
+	t.Run("with capability", func(t *testing.T) {
+		transp := protocol.NewFakeTransport()
+		defer transp.Close()
+		transp.InjectMessage(protocol.Message{
+			Type: "hello",
+			Properties: map[string]interface{}{
+				"capabilities": []interface{}{"graceful-termination"},
+			},
+		})
+		proto := protocol.NewProtocol(transp)
+		proto.AddCapability("graceful-termination")
+		proto.Start(false)
+		proto.WaitUntilInitialized()
+		transp.ClearMessages()
+
+		test(t, transp, proto, true)
+	})
 }

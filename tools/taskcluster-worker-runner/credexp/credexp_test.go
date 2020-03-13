@@ -19,25 +19,38 @@ func TestCredsExpiration(t *testing.T) {
 	ce := New(state)
 
 	transp := protocol.NewFakeTransport()
+	defer transp.Close()
+	transp.InjectMessage(protocol.Message{
+		Type: "hello",
+		Properties: map[string]interface{}{
+			"capabilities": []interface{}{"graceful-termination"},
+		},
+	})
 	proto := protocol.NewProtocol(transp)
-	proto.Capabilities.Add("graceful-termination")
-	proto.SetInitialized()
+	proto.AddCapability("graceful-termination")
+	proto.Start(false)
 
 	ce.SetProtocol(proto)
 
 	err := ce.WorkerStarted()
 	assert.NoError(t, err)
 
-	// and wait until that happens
+	// wait until the protocol negotiation happens and the graceful termination
+	// message is sent
 	for {
 		time.Sleep(10 * time.Millisecond)
-		haveMessage := len(transp.Messages()) != 0
-		if haveMessage {
+		if len(transp.Messages()) >= 2 {
 			break
 		}
 	}
 
 	assert.Equal(t, []protocol.Message{
+		protocol.Message{
+			Type: "welcome",
+			Properties: map[string]interface{}{
+				"capabilities": []string{"graceful-termination"},
+			},
+		},
 		protocol.Message{
 			Type: "graceful-termination",
 			Properties: map[string]interface{}{

@@ -104,10 +104,17 @@ func TestGoogleConfigureRun(t *testing.T) {
 	require.Equal(t, "in-central1-b", state.WorkerLocation["zone"])
 
 	transp := protocol.NewFakeTransport()
+	defer transp.Close()
+	transp.InjectMessage(protocol.Message{
+		Type: "hello",
+		Properties: map[string]interface{}{
+			"capabilities": []interface{}{"shutdown"},
+		},
+	})
 	proto := protocol.NewProtocol(transp)
-	proto.SetInitialized()
 
 	p.SetProtocol(proto)
 	require.NoError(t, p.WorkerStarted(&state))
+	proto.Start(false)
 	require.True(t, proto.Capable("shutdown"))
 }

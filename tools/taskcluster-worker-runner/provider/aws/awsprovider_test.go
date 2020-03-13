@@ -98,51 +98,89 @@ func TestAWSConfigureRun(t *testing.T) {
 	require.Equal(t, "us-west-2a", state.WorkerLocation["availabilityZone"])
 
 	transp := protocol.NewFakeTransport()
+	defer transp.Close()
+	transp.InjectMessage(protocol.Message{
+		Type: "hello",
+		Properties: map[string]interface{}{
+			"capabilities": []interface{}{"shutdown"},
+		},
+	})
 	proto := protocol.NewProtocol(transp)
-	proto.SetInitialized()
 
 	p.SetProtocol(proto)
 	require.NoError(t, p.WorkerStarted(&state))
+	proto.Start(false)
 	require.True(t, proto.Capable("shutdown"))
 }
 
 func TestCheckTerminationTime(t *testing.T) {
-	transp := protocol.NewFakeTransport()
-	proto := protocol.NewProtocol(transp)
-	proto.SetInitialized()
+	test := func(t *testing.T, transp *protocol.FakeTransport, proto *protocol.Protocol, hasCapability bool) {
 
-	metaData := map[string]string{}
-	instanceIdentityDocument := "{\n  \"instanceId\" : \"i-55555nonesense5\",\n  \"region\" : \"us-west-2\",\n  \"availabilityZone\" : \"us-west-2a\",\n  \"instanceType\" : \"t2.micro\",\n  \"imageId\" : \"banana\"\n,  \"privateIp\" : \"1.1.1.1\"\n}"
+		metaData := map[string]string{}
+		instanceIdentityDocument := "{\n  \"instanceId\" : \"i-55555nonesense5\",\n  \"region\" : \"us-west-2\",\n  \"availabilityZone\" : \"us-west-2a\",\n  \"instanceType\" : \"t2.micro\",\n  \"imageId\" : \"banana\"\n,  \"privateIp\" : \"1.1.1.1\"\n}"
 
-	p := &AWSProvider{
-		runnercfg:                  nil,
-		workerManagerClientFactory: nil,
-		metadataService:            &fakeMetadataService{nil, nil, metaData, instanceIdentityDocument},
-		proto:                      proto,
-		terminationTicker:          nil,
+		p := &AWSProvider{
+			runnercfg:                  nil,
+			workerManagerClientFactory: nil,
+			metadataService:            &fakeMetadataService{nil, nil, metaData, instanceIdentityDocument},
+			proto:                      proto,
+			terminationTicker:          nil,
+		}
+
+		p.checkTerminationTime()
+
+		// not time yet..
+		require.Equal(t, []protocol.Message{}, transp.Messages())
+
+		metaData["/meta-data/spot/termination-time"] = "now!"
+		p.checkTerminationTime()
+
+		if hasCapability {
+			require.Equal(t, []protocol.Message{
+				protocol.Message{
+					Type: "graceful-termination",
+					Properties: map[string]interface{}{
+						"finish-tasks": false,
+					},
+				},
+			}, transp.Messages())
+		} else {
+			require.Equal(t, []protocol.Message{}, transp.Messages())
+		}
 	}
 
-	p.checkTerminationTime()
-
-	// not time yet..
-	require.Equal(t, []protocol.Message{}, transp.Messages())
-
-	metaData["/meta-data/spot/termination-time"] = "now!"
-	p.checkTerminationTime()
-
-	// protocol does not have the capability set..
-	require.Equal(t, []protocol.Message{}, transp.Messages())
-
-	proto.Capabilities.Add("graceful-termination")
-	p.checkTerminationTime()
-
-	// now we send a message..
-	require.Equal(t, []protocol.Message{
-		protocol.Message{
-			Type: "graceful-termination",
+	t.Run("without capability", func(t *testing.T) {
+		transp := protocol.NewFakeTransport()
+		defer transp.Close()
+		transp.InjectMessage(protocol.Message{
+			Type: "hello",
 			Properties: map[string]interface{}{
-				"finish-tasks": false,
+				"capabilities": []interface{}{},
 			},
-		},
-	}, transp.Messages())
+		})
+		proto := protocol.NewProtocol(transp)
+		proto.Start(false)
+		proto.WaitUntilInitialized()
+		transp.ClearMessages()
+
+		test(t, transp, proto, false)
+	})
+
+	t.Run("with capability", func(t *testing.T) {
+		transp := protocol.NewFakeTransport()
+		defer transp.Close()
+		transp.InjectMessage(protocol.Message{
+			Type: "hello",
+			Properties: map[string]interface{}{
+				"capabilities": []interface{}{"graceful-termination"},
+			},
+		})
+		proto := protocol.NewProtocol(transp)
+		proto.AddCapability("graceful-termination")
+		proto.Start(false)
+		proto.WaitUntilInitialized()
+		transp.ClearMessages()
+
+		test(t, transp, proto, true)
+	})
 }
