@@ -2,7 +2,7 @@
 defaults:
   app:
     exchangePrefix:              'v1/'
-    cachePurgeTableName:         'CachePurges'
+    cachePurgeTableName:         'purge_cache'
     cachePurgeExpirationDelay:   '- 1 hour'
     cacheTime:                   10
 
