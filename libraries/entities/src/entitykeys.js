@@ -22,6 +22,27 @@ const valueFromOpOrValue = function(opOrValue) {
   return undefined;
 };
 
+/**
+ * Encode string-key, to escape characters for Azure Table Storage and replace
+ * empty strings with a single '!', so that empty strings can be allowed.
+ */
+const encodeStringKey = function(str) {
+  // Check for empty string
+  if (str === '') {
+    return '!';
+  }
+  // 1. URL encode
+  // 2. URL encode all exclamation marks (replace ! with %21)
+  // 3. URL encode all tilde (replace ~ with %7e)
+  //    This ensures that when using ~ as separator in CompositeKey we can
+  //    do prefix matching
+  // 4. Replace % with exclamation marks for Azure compatibility
+  return encodeURIComponent(str)
+    .replace(/!/g, '%21')
+    .replace(/~/g, '%7e')
+    .replace(/%/g, '!');
+};
+
 class StringKey {
   constructor(mapping, key) {
     assert(mapping[key], `key ${key} is not defined in mapping`);
@@ -38,7 +59,7 @@ class StringKey {
     // Check that value was given
     assert(value !== undefined, 'Unable to create key from properties');
     // Return exact key
-    return this.type.string(value);
+    return encodeStringKey(this.type.string(value));
   }
 
   exactFromConditions(properties) {
@@ -47,7 +68,7 @@ class StringKey {
     // Check that value was given
     assert(value !== undefined, 'Unable to create key from properties');
     // Return exact key
-    return this.type.string(value);
+    return encodeStringKey(this.type.string(value));
   }
 }
 
@@ -110,15 +131,16 @@ class ConstantKey {
     assert.equal(typeof constant, 'string', 'ConstantKey takes a string');
 
     this.constant = constant;
+    this.encodedConstant = encodeStringKey(constant);
     this.covers = [];
   }
 
   exact(properties) {
-    return this.constant;
+    return this.encodedConstant;
   }
 
   exactFromConditions(properties) {
-    return this.constant;
+    return this.encodedConstant;
   }
 }
 
@@ -148,7 +170,7 @@ class CompositeKey {
         throw new Error(`Unable to render CompositeKey from properties, missing ${key}`);
       }
 
-      return this.types[index].string(value);
+      return encodeStringKey(this.types[index].string(value));
     }, this).join(COMPOSITE_SEPARATOR); // Join with separator
   }
 
@@ -163,7 +185,7 @@ class CompositeKey {
       }
 
       // Encode as string
-      return this.types[index].string(value);
+      return encodeStringKey(this.types[index].string(value));
     }, this).join(COMPOSITE_SEPARATOR); // Join with separator
   }
 }

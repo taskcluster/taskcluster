@@ -499,18 +499,15 @@ class Entity {
 
     // If we have a handler, then we have to handle the results
     if (handler) {
-      const handleResults = function(res) {
-        return Promise.all(res.entries.map(function(item) {
-          return handler(item);
-        })).then(async function() {
-          if (res.continuation) {
-            return handleResults(await fetchResults(res.continuation));
-          }
-        });
+      const handleResults = async (res) => {
+        await Promise.all(res.entries.map((item) => { return handler.call(this, item); }));
+
+        if (res.continuation) {
+          return await handleResults(await fetchResults(res.continuation));
+        }
       };
       results = await handleResults(results);
     }
-
     return results;
   }
 
@@ -530,6 +527,7 @@ class Entity {
           tableName,
           db,
           serviceName,
+          monitor,
         } = setupOptions;
 
         class subClass extends ConfiguredEntity {}
@@ -562,6 +560,7 @@ class Entity {
         subClass._tableName = tableName;
         subClass.serviceName = serviceName;
         subClass._db = db;
+        subClass.monitor = monitor;
 
         // Define access properties, we do this here, as doing it in Entity.configure
         // means that it could be called more than once.

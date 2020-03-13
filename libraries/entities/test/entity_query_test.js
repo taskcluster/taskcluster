@@ -159,6 +159,23 @@ helper.dbSuite(path.basename(__filename), function() {
       });
     });
 
+    test('can call scan inside handler', async function() {
+      db = await helper.withDb({ schema, serviceName });
+      const TestTable = configuredTestTable.setup({ tableName: 'test_entities', db, serviceName });
+
+      await insertDocuments(TestTable);
+
+      return TestTable.query({
+        id: id,
+        time: new Date(1),
+      }, {
+        handler: async function() {
+          const result = await this.scan({});
+          assert.equal(result.entries.length, 3);
+        },
+      });
+    });
+
     test('Filter by time < Date(1)', async function() {
       db = await helper.withDb({ schema, serviceName });
       const TestTable = configuredTestTable.setup({ tableName: 'test_entities', db, serviceName });

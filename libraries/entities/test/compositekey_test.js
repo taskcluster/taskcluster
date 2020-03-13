@@ -59,7 +59,7 @@ helper.dbSuite(path.basename(__filename), function() {
       });
 
       assert.equal(result._partitionKey, `${id}~42`);
-      assert.equal(result._rowKey, `${entry.text1}~${entry.text2}`);
+      assert.equal(result._rowKey, 'some!20text!20for!20the!20key~another!20string!20for!20the!20key');
     });
   });
 });
