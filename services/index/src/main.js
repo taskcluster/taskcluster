@@ -1,4 +1,4 @@
-#!/usr/bin/env node
+require('../../prelude');
 const debug = require('debug')('index:bin:server');
 const taskcluster = require('taskcluster-client');
 const data = require('./data');

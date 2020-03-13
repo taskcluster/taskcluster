@@ -2,6 +2,17 @@
 title: Monitoring Services
 ---
 
+# Monitoring Services
+
+## New Relic
+
+Taskcluster services *optionally* support New Relic.
+To enable this support, the environment variable `NEW_RELIC_ENABLED` must be set to `true`.
+All other configuration must be supplied via environment variables.
+If this environment variable is not set to `true`, then the new relic module will not be loaded at startup -- if you are not using New Relic, you pay no price.
+
+## Background Processes
+
 Taskcluster has several background processes that you should ensure are running on a schedule. Any of the following will generate messages
 of the form:
 

@@ -1,3 +1,4 @@
+require('../../prelude');
 const debug = require('debug')('purge-cache');
 const config = require('taskcluster-lib-config');
 const loader = require('taskcluster-lib-loader');

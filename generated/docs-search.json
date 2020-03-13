@@ -322,6 +322,27 @@
     "title": "Matrix Integration"
   },
   {
+    "element": "h1",
+    "id": "monitoring-services",
+    "path": "/manual/deploying/monitoring",
+    "subtitle": null,
+    "title": "Monitoring Services"
+  },
+  {
+    "element": "h2",
+    "id": "background-processes",
+    "path": "/manual/deploying/monitoring",
+    "subtitle": "Background Processes",
+    "title": "Monitoring Services"
+  },
+  {
+    "element": "h2",
+    "id": "new-relic",
+    "path": "/manual/deploying/monitoring",
+    "subtitle": "New Relic",
+    "title": "Monitoring Services"
+  },
+  {
     "element": "h2",
     "id": "configuration",
     "path": "/manual/deploying/pulse",

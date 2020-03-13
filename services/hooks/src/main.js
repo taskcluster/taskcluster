@@ -1,3 +1,4 @@
+require('../../prelude');
 const data = require('./data');
 const debug = require('debug')('hooks:bin:server');
 const taskcreator = require('./taskcreator');

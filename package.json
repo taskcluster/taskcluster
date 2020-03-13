@@ -75,6 +75,7 @@
     "morgan-debug": "^2.0.0",
     "mz": "^2.7.0",
     "netmask": "^1.0.5",
+    "newrelic": "^6.4.2",
     "node-fetch": "^2.6.0",
     "node-forge": "^0.9.1",
     "nodemailer": "^6.0.0",
