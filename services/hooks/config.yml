@@ -2,7 +2,7 @@ defaults:
   # defaults outlining all configuration options and some sane defaults
   app:
     component:        hooks
-    hookTableName: Hooks
+    hookTableName: hooks_entities
     lastFireTableName: LastFire3
     queuesTableName: Queues
     lastFiresExpirationDelay: '- 1 day'
