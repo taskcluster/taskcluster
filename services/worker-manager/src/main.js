@@ -9,8 +9,8 @@ const exchanges = require('./exchanges');
 const data = require('./data');
 const builder = require('./api');
 const {Estimator} = require('./estimator');
-const {sasCredentials} = require('taskcluster-lib-azure');
 const {Client, pulseCredentials} = require('taskcluster-lib-pulse');
+const tcdb = require('taskcluster-db');
 const {Provisioner} = require('./provisioner');
 const {Providers} = require('./providers');
 const {WorkerScanner} = require('./worker-scanner');
@@ -30,30 +30,31 @@ let load = loader({
     }),
   },
 
+  db: {
+    requires: ["cfg"],
+    setup: ({ cfg }) => tcdb.setup({
+      readDbUrl: cfg.postgres.readDbUrl,
+      writeDbUrl: cfg.postgres.writeDbUrl,
+      serviceName: 'worker_manager',
+    }),
+  },
+
   Worker: {
-    requires: ['cfg', 'monitor'],
-    setup: ({cfg, monitor}) => data.Worker.setup({
+    requires: ['cfg', 'monitor', 'db'],
+    setup: ({cfg, monitor, db}) => data.Worker.setup({
+      db,
+      serviceName: 'worker_manager',
       tableName: cfg.app.workerTableName,
-      credentials: sasCredentials({
-        accountId: cfg.azure.accountId,
-        tableName: cfg.app.workerTableName,
-        rootUrl: cfg.taskcluster.rootUrl,
-        credentials: cfg.taskcluster.credentials,
-      }),
       monitor: monitor.childMonitor('table.workers'),
     }),
   },
 
   WorkerPool: {
-    requires: ['cfg', 'monitor', 'notify', 'WorkerPoolError'],
-    setup: ({cfg, monitor, notify, WorkerPoolError}) => data.WorkerPool.setup({
+    requires: ['cfg', 'monitor', 'notify', 'WorkerPoolError', 'db'],
+    setup: ({cfg, monitor, notify, WorkerPoolError, db}) => data.WorkerPool.setup({
+      db,
+      serviceName: 'worker_manager',
       tableName: cfg.app.workerPoolTableName,
-      credentials: sasCredentials({
-        accountId: cfg.azure.accountId,
-        tableName: cfg.app.workerPoolTableName,
-        rootUrl: cfg.taskcluster.rootUrl,
-        credentials: cfg.taskcluster.credentials,
-      }),
       monitor: monitor.childMonitor('table.workerPools'),
       context: {
         monitor,
@@ -64,15 +65,11 @@ let load = loader({
   },
 
   WorkerPoolError: {
-    requires: ['cfg', 'monitor'],
-    setup: ({cfg, monitor}) => data.WorkerPoolError.setup({
+    requires: ['cfg', 'monitor', 'db'],
+    setup: ({cfg, monitor, db}) => data.WorkerPoolError.setup({
+      db,
+      serviceName: 'worker_manager',
       tableName: cfg.app.workerPoolErrorTableName,
-      credentials: sasCredentials({
-        accountId: cfg.azure.accountId,
-        tableName: cfg.app.workerPoolErrorTableName,
-        rootUrl: cfg.taskcluster.rootUrl,
-        credentials: cfg.taskcluster.credentials,
-      }),
       monitor: monitor.childMonitor('table.workerPoolErrors'),
     }),
   },

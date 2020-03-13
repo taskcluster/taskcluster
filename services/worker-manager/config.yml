@@ -1,8 +1,8 @@
 defaults:
   app:
-    workerTableName: WMWorkers
-    workerPoolTableName: WMWorkerPools
-    workerPoolErrorTableName: WMWorkerPoolErrors
+    workerTableName: wm_workers
+    workerPoolTableName: wm_worker_pools
+    workerPoolErrorTableName: wm_worker_pool_errors
     errorsExpirationDelay: '-4 days' # Anything older than a few days goes away
     provisionerIterateConfig: !env:json:optional PROVISIONER_ITERATE_CONFIG
     workerScannerIterateConfig: !env:json:optional WORKER_SCANNER_ITERATE_CONFIG
