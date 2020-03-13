@@ -39,6 +39,10 @@ CREATE USER <prefix>_taskcluster_queue PASSWORD '<queue_password>';
 ...
 ```
 
+Every run of `db:upgrade` will check permissions for these users, including permissions bits like SUPERUSER and role memberships.
+Note that some cloud providers create users with elevated permissions by default.
+In such situations, it's best to use commands such as the above instead, or to reduce the new users' permissions after the fact.
+
 ## Read and Write Replicas
 
 Taskcluster assumes full transactional consistency from Postgres.

@@ -250,6 +250,23 @@ class Database {
         }
       }
 
+      // look for unexpected granted roles
+      const roleRes = await client.query(`
+        select
+          r.rolname as role,
+          u.rolname as user
+        from
+          pg_catalog.pg_roles as r,
+          pg_catalog.pg_roles as u,
+          pg_catalog.pg_auth_members
+        where
+         r.oid = roleid and
+         u.oid = member and
+         u.rolname like $1`, [usernamePattern]);
+      for (const row of roleRes.rows) {
+        issues.push(`${row.user} has unexpected role ${row.role}`);
+      }
+
       if (issues.length > 0) {
         throw new Error(`Database privileges are not configured as expected:\n${issues.join('\n')}`);
       }
