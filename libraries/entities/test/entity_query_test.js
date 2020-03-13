@@ -176,6 +176,35 @@ helper.dbSuite(path.basename(__filename), function() {
       });
     });
 
+    test.only('can call context method inside handler', async function() {
+      db = await helper.withDb({ schema, serviceName });
+      const customMethod = () => true;
+      const configuredEntity = Entity.configure({
+        version: 1,
+        partitionKey: Entity.keys.StringKey('id'),
+        rowKey: Entity.keys.StringKey('name'),
+        properties,
+        context: ['customMethod'],
+      });
+      const TestTable = configuredEntity.setup({
+        tableName: 'test_entities',
+        db,
+        serviceName,
+        context: { customMethod },
+      });
+
+      await insertDocuments(TestTable);
+
+      return TestTable.query({
+        id: id,
+        time: new Date(1),
+      }, {
+        handler: async function() {
+          assert.equal(this.customMethod(), true);
+        },
+      });
+    });
+
     test('Filter by time < Date(1)', async function() {
       db = await helper.withDb({ schema, serviceName });
       const TestTable = configuredTestTable.setup({ tableName: 'test_entities', db, serviceName });

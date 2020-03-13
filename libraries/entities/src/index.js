@@ -562,6 +562,10 @@ class Entity {
         subClass._db = db;
         subClass.monitor = monitor;
 
+        Object.entries(subClass.contextEntries).forEach(([key, value]) => {
+          subClass[key] = value;
+        });
+
         // Define access properties, we do this here, as doing it in Entity.configure
         // means that it could be called more than once.
         _.forIn(ConfiguredEntity.mapping, function(type, property) {
