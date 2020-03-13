@@ -18,7 +18,6 @@ const IRC = require('./irc');
 const matrix = require('matrix-js-sdk');
 const MatrixBot = require('./matrix');
 const data = require('./data');
-const {sasCredentials} = require('taskcluster-lib-azure');
 const tcdb = require('taskcluster-db');
 
 // Create component loader
@@ -53,15 +52,11 @@ const load = loader({
   },
 
   DenylistedNotification: {
-    requires: ['cfg', 'monitor', 'process'],
-    setup: ({cfg, monitor, process}) => data.DenylistedNotification.setup({
+    requires: ['cfg', 'monitor', 'process', 'db'],
+    setup: ({cfg, monitor, process, db}) => data.DenylistedNotification.setup({
+      db,
+      serviceName: 'notify',
       tableName: cfg.app.denylistedNotificationTableName,
-      credentials: sasCredentials({
-        accountId: cfg.azure.accountId,
-        tableName: cfg.app.denylistedNotificationTableName,
-        rootUrl: cfg.taskcluster.rootUrl,
-        credentials: cfg.taskcluster.credentials,
-      }),
       monitor: monitor.childMonitor('table.denylist'),
     }),
   },
@@ -70,7 +65,8 @@ const load = loader({
     requires: ['process', 'cfg'],
     setup: ({process, cfg}) => tcdb.setup({
       serviceName: 'notify',
-      ...cfg.postgres,
+      readDbUrl: cfg.postgres.readDbUrl,
+      writeDbUrl: cfg.postgres.writeDbUrl,
       statementTimeout: process === 'server' ? 30000 : 0}),
   },
 

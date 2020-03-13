@@ -10,7 +10,7 @@ defaults:
     maxMessageTime:               600
     # Email address to blacklist, useful to mitigate temporary misuse
     emailBlacklist:               !env:json:optional EMAIL_BLACKLIST
-    denylistedNotificationTableName: DenylistedNotification
+    denylistedNotificationTableName: denylisted_notification
     # ignore tasks with reasonResolved matching something in this list
     ignoreTaskReasonResolved:
         - canceled
