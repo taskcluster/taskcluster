@@ -103,6 +103,12 @@ This directory defines the Taskcluster database:
 
 | Name | Mode | Arguments | Returns | Description |
 | --- | --- | --- | --- | --- |
+| azure_queue_count | read | queue_name text | integer | Count messages in the named queue.<br /> |
+| azure_queue_delete | write | queue_name text, message_id uuid, pop_receipt uuid | void | Delete the message identified by the given `queue_name`, `message_id` and<br />`pop_receipt`.<br /> |
+| azure_queue_delete_expired | write |  | void | Delete all expired messages.  This is a maintenance task that should occur<br />about once an hour.<br /> |
+| azure_queue_get | write | queue_name text, visible timestamp, count integer | table (message_id uuid, message_text text, pop_receipt uuid) | Get up to `count` messages from the given queue, setting the `visible`<br />column of each to the given value.  Returns a `message_id` and<br />`pop_receipt` for each one, for use with `azure_queue_delete` and<br />`azure_queue_update`.<br /> |
+| azure_queue_put | write | queue_name text, message_text text, visible timestamp, expires timestamp | void | Put the given message into the given queue.  The message will not be visible until<br />after the visible timestamp, and will disappear after the expires timestamp.<br /> |
+| azure_queue_update | write | queue_name text, message_text text, message_id uuid, pop_receipt uuid, visible timestamp | void | Update the message identified by the given `queue_name`, `message_id` and<br />`pop_receipt`, setting its `visible` and `message_text` properties as<br />given.<br /> |
 | queue_artifacts_entities_create | write | pk text, rk text, properties jsonb, overwrite boolean, version integer | uuid | See taskcluster-lib-entities |
 | queue_artifacts_entities_load | read | partition_key text, row_key text | table (partition_key_out text, row_key_out text, value jsonb, version integer, etag uuid) | See taskcluster-lib-entities |
 | queue_artifacts_entities_modify | write | partition_key text, row_key text, properties jsonb, version integer, old_etag uuid | table (etag uuid) | See taskcluster-lib-entities |

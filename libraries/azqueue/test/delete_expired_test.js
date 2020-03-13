@@ -1,14 +1,25 @@
 const helper = require('./helper');
-const { Schema } = require('taskcluster-lib-postgres');
 const AZQueue = require('taskcluster-lib-azqueue');
-const path = require('path');
+const testing = require('taskcluster-lib-testing');
 const assert = require('assert').strict;
 const _ = require('lodash');
 
-helper.dbSuite(path.basename(__filename), function() {
-  const schema = Schema.fromDbDirectory(path.join(__dirname, 'db'));
-  const serviceName = 'test-azqueue';
-  helper.withDb({ schema, serviceName, clearBeforeTests: true });
+helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
+  helper.withDb(mock, skipping);
+
+  setup('clear queue', async function() {
+    if (skipping()) {
+      return;
+    }
+
+    if (mock) {
+      await helper.db.queue.reset();
+    } else {
+      await helper.db._withClient('write', async client => {
+        client.query('delete from azure_queue_messages');
+      });
+    }
+  });
 
   test('expired messages are deleted in cleanup', async function() {
     const queue = new AZQueue({ db: helper.db });
@@ -23,9 +34,14 @@ helper.dbSuite(path.basename(__filename), function() {
     assert.deepEqual(result3.map(({messageText}) => messageText), ['bar-3']);
 
     // and now verify that the expired messages are not even in the table
-    await helper.db._withClient('read', async client => {
-      const res = await client.query('select message_text from azure_queue_messages');
-      assert.deepEqual(res.rows, [{message_text: 'bar-3'}]);
-    });
+    if (mock) {
+      const queue = helper.db.queue.getQueueContent('foo');
+      assert.deepEqual(queue.map(({message_text}) => message_text), ['bar-3']);
+    } else {
+      await helper.db._withClient('read', async client => {
+        const res = await client.query('select message_text from azure_queue_messages');
+        assert.deepEqual(res.rows, [{message_text: 'bar-3'}]);
+      });
+    }
   });
 });

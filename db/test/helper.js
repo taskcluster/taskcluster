@@ -4,6 +4,7 @@ const {WRITE} = require('taskcluster-lib-postgres');
 const {resetDb} = require('taskcluster-lib-testing');
 const tcdb = require('taskcluster-db');
 const debug = require('debug')('db-helper');
+const {UNDEFINED_TABLE} = require('taskcluster-lib-postgres');
 
 exports.dbUrl = process.env.TEST_DB_URL;
 assert(exports.dbUrl, "TEST_DB_URL must be set to run db/ tests");
@@ -132,4 +133,25 @@ exports.withDbForProcs = function({ serviceName }) {
       return testFn(exports.fakeDb, true);
     });
   };
+};
+
+/**
+ * Assert that the given table exists and is empty (used to test table creation
+ * in versions)
+ */
+exports.assertTable = async name => {
+  await exports.withDbClient(async client => {
+    const res = await client.query(`select * from ${name}`);
+    assert.deepEqual(res.rows, []);
+  });
+};
+
+/**
+ * Assert that the given table does not exist (used to test table deletion in
+ * downgrade scripts).
+ */
+exports.assertNoTable = async name => {
+  await exports.withDbClient(async client => {
+    await assert.rejects(() => client.query(`select * from ${name}`), err => err.code === UNDEFINED_TABLE);
+  });
 };

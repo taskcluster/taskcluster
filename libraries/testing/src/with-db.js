@@ -89,14 +89,18 @@ module.exports.withDb = (mock, skipping, helper, serviceName) => {
       });
     }
 
-    helper.load.inject('db', helper.db);
+    if (helper.load) {
+      helper.load.inject('db', helper.db);
+    }
   });
 
   suiteTeardown('withDb', async function() {
     if (skipping()) {
       return;
     }
-    await helper.db.close();
+    if (helper.db) {
+      await helper.db.close();
+    }
     delete helper.db;
   });
 };

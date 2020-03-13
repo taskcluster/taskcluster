@@ -76,6 +76,6 @@ There are a few key things to know about how this uses postgres:
 
 ## Using this in Queue service
 
-* Add the db version file in this library's tests to the monorepo's db versions
+* update the queue's QueueService class to use this library
 * Remove queue-deletion logic (including from `procs.yml`)
 * Add a new hourly crontask to call `deleteExpiredMessages`

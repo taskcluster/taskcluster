@@ -1,15 +1,17 @@
 const helper = require('./helper');
-const { Schema } = require('taskcluster-lib-postgres');
 const AZQueue = require('taskcluster-lib-azqueue');
-const path = require('path');
+const testing = require('taskcluster-lib-testing');
 const _ = require('lodash');
 const taskcluster = require('taskcluster-client');
 const assert = require('assert').strict;
 
-helper.dbSuite(path.basename(__filename), function() {
-  const schema = Schema.fromDbDirectory(path.join(__dirname, 'db'));
-  const serviceName = 'test-azqueue';
-  helper.withDb({ schema, serviceName, clearBeforeTests: false });
+helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
+  // these are db-specific tests, so don't even define them in the mock case
+  if (mock) {
+    return;
+  }
+
+  helper.withDb(mock, skipping);
 
   suiteSetup(function() {
     // HINT: run these tests with the following to see explains in the logs:

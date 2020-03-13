@@ -1,4 +1,4 @@
-version: 1
+version: 3
 migrationScript: |-
   begin
     create table azure_queue_messages (
@@ -12,9 +12,11 @@ migrationScript: |-
     );
     -- 'get' operations sort by inserted within a queue
     create index azure_queue_messages_inserted on azure_queue_messages(queue_name, inserted);
+    grant select, insert, update, delete on azure_queue_messages to $db_user_prefix$_queue;
   end
 downgradeScript: |-
   begin
+    revoke select, insert, update, delete on azure_queue_messages from $db_user_prefix$_queue;
     drop table azure_queue_messages;
   end
 methods:
@@ -22,7 +24,7 @@ methods:
     description: |
       Count messages in the named queue.
     mode: read
-    serviceName: test-azqueue
+    serviceName: queue
     args: queue_name text
     returns: integer
     # note that this will block on locked rows.  Such row locks are very quick,
@@ -40,7 +42,7 @@ methods:
       Put the given message into the given queue.  The message will not be visible until
       after the visible timestamp, and will disappear after the expires timestamp.
     mode: write
-    serviceName: test-azqueue
+    serviceName: queue
     args: queue_name text, message_text text, visible timestamp, expires timestamp
     returns: void
     body: |-
@@ -70,7 +72,7 @@ methods:
       `pop_receipt` for each one, for use with `azure_queue_delete` and
       `azure_queue_update`.
     mode: write
-    serviceName: test-azqueue
+    serviceName: queue
     args: queue_name text, visible timestamp, count integer
     returns: table (message_id uuid, message_text text, pop_receipt uuid)
     # This uses the queueing logic described many places around the web but
@@ -95,7 +97,7 @@ methods:
             m1.message_id in (
               select m2.message_id from azure_queue_messages m2
               where m2.queue_name = azure_queue_get.queue_name
-                and m2.visible < now()
+                and m2.visible <= now()
                 and m2.expires > now()
               order by m2.inserted
               for update skip locked
@@ -109,7 +111,7 @@ methods:
       Delete the message identified by the given `queue_name`, `message_id` and
       `pop_receipt`.
     mode: write
-    serviceName: test-azqueue
+    serviceName: queue
     args: queue_name text, message_id uuid, pop_receipt uuid
     returns: void
     body: |-
@@ -126,7 +128,7 @@ methods:
       `pop_receipt`, setting its `visible` and `message_text` properties as
       given.
     mode: write
-    serviceName: test-azqueue
+    serviceName: queue
     args: queue_name text, message_text text, message_id uuid, pop_receipt uuid, visible timestamp
     returns: void
     body: |-
@@ -144,7 +146,7 @@ methods:
       Delete all expired messages.  This is a maintenance task that should occur
       about once an hour.
     mode: write
-    serviceName: test-azqueue
+    serviceName: queue
     args: ''
     returns: void
     body: |-
@@ -152,4 +154,3 @@ methods:
         delete from azure_queue_messages msgs
           where msgs.expires <= now();
       end
-
