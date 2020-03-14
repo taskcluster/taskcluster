@@ -3,12 +3,7 @@ const rmrf = require('rimraf');
 
 module.exports = {
   makeDir(directory) {
-    return new Promise(function(accept, reject) {
-      mkdirp(directory, function (error) {
-        if (error) return reject(error);
-        accept(error);
-      });
-    });
+    return mkdirp(directory);
   },
 
   removeDir(directory) {
