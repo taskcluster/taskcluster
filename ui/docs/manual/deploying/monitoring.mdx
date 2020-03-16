@@ -7,9 +7,15 @@ title: Monitoring Services
 ## New Relic
 
 Taskcluster services *optionally* support New Relic.
-To enable this support, the environment variable `NEW_RELIC_ENABLED` must be set to `true`.
-All other configuration must be supplied via environment variables.
-If this environment variable is not set to `true`, then the new relic module will not be loaded at startup -- if you are not using New Relic, you pay no price.
+To enable this support, add a top-level Helm property named `newRelic` containing a JSON object with [New Relic environment variables](https://docs.newrelic.com/docs/agents/nodejs-agent/installation-configuration/nodejs-agent-configuration) and their values.
+This will be distributed to all services.
+
+```yaml
+newRelic:
+  NEW_RELIC_APP_NAME: my-app
+  NEW_RELIC_LICENSE_KEY: 12345
+  # ...
+```
 
 ## Background Processes
 

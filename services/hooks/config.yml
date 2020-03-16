@@ -42,6 +42,9 @@ defaults:
      # changes to hooks themselves are internal and shouldn't trigger hooks
      - exchange/taskcluster-hooks/.*
 
+  # new relic config (processed in services/prelude.js)
+  newRelic: !env:json:optional NEW_RELIC
+
 test:
   # See user-config-example.yml for secrets credentials required for tests
   taskcluster:

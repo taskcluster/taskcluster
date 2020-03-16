@@ -121,6 +121,9 @@ defaults:
     # If omitted, it defaults to {}
     allowedProjects:          !env:json:optional GCP_CREDENTIALS_ALLOWED_PROJECTS
 
+  # new relic config (processed in services/prelude.js)
+  newRelic: !env:json:optional NEW_RELIC
+
 test:
   app:
     statsComponent:           auth-tests
