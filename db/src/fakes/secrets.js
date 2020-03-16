@@ -106,7 +106,7 @@ class FakeSecrets {
   async secrets_entities_scan(partition_key, row_key, condition, size, page) {
     const entries = getEntries({ partitionKey: partition_key, rowKey: row_key, condition }, this.secrets);
 
-    return entries.slice((page - 1) * size, (page - 1) * size + size);
+    return entries.slice((page - 1) * size, (page - 1) * size + size + 1);
   }
 }
 

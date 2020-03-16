@@ -120,7 +120,7 @@ class FakeNotify {
       condition,
     }, this.denylistedNotifications);
 
-    return entries.slice((page - 1) * size, (page - 1) * size + size);
+    return entries.slice((page - 1) * size, (page - 1) * size + size + 1);
   }
 
   async update_widgets(name) {

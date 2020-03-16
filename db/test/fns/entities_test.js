@@ -162,26 +162,25 @@ for (let service of services) {
       });
 
       helper.dbTest(`${tableName}_scan retrieve documents with limit`, async function(db, isFake) {
+        const additionalEntry = 1;
         // create 3 more values to have 5 in total
         await createThreeValues(db);
         const result = await db.fns[`${tableName}_scan`](undefined, undefined, undefined, 2, 1);
-        assert.equal(result.length, 2);
+        assert.equal(result.length, 2 + additionalEntry);
       });
 
       helper.dbTest(`${tableName}_scan retrieve documents in pages`, async function(db, isFake) {
         // create 3 more values to have 5 in total
         await createThreeValues(db);
+        const additionalEntry = 1;
         let result = await db.fns[`${tableName}_scan`](undefined, undefined, undefined, 2, 1);
-        assert.equal(result.length, 2);
+        assert.equal(result.length, 2 + additionalEntry);
 
         result = await db.fns[`${tableName}_scan`](undefined, undefined, undefined, 2, 2);
-        assert.equal(result.length, 2);
+        assert.equal(result.length, 2 + additionalEntry);
 
         result = await db.fns[`${tableName}_scan`](undefined, undefined, undefined, 2, 3);
         assert.equal(result.length, 1);
-
-        result = await db.fns[`${tableName}_scan`](undefined, undefined, undefined, 2, 4);
-        assert.equal(result.length, 0);
       });
       helper.dbTest(`${tableName}_scan retrieve documents (with date condition)`, async function(db, isFake) {
         // create 3 more values to have 5 in total

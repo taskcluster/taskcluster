@@ -327,7 +327,7 @@ methods:
         sql := sql || ' order by clients_entities.partition_key, clients_entities.row_key';
 
         if size is not null and size > 0 then
-          sql := sql || ' limit ' || size;
+          sql := sql || ' limit ' || size + 1;
 
           if page is not null and page > 0 then
             page_offset := size * (page - 1);
@@ -453,7 +453,7 @@ methods:
         sql := sql || ' order by roles_entities.partition_key, roles_entities.row_key';
 
         if size is not null and size > 0 then
-          sql := sql || ' limit ' || size;
+          sql := sql || ' limit ' || size + 1;
 
           if page is not null and page > 0 then
             page_offset := size * (page - 1);
@@ -579,7 +579,7 @@ methods:
         sql := sql || ' order by taskcluster_github_builds_entities.partition_key, taskcluster_github_builds_entities.row_key';
 
         if size is not null and size > 0 then
-          sql := sql || ' limit ' || size;
+          sql := sql || ' limit ' || size + 1;
 
           if page is not null and page > 0 then
             page_offset := size * (page - 1);
@@ -705,7 +705,7 @@ methods:
         sql := sql || ' order by taskcluster_integration_owners_entities.partition_key, taskcluster_integration_owners_entities.row_key';
 
         if size is not null and size > 0 then
-          sql := sql || ' limit ' || size;
+          sql := sql || ' limit ' || size + 1;
 
           if page is not null and page > 0 then
             page_offset := size * (page - 1);
@@ -831,7 +831,7 @@ methods:
         sql := sql || ' order by taskcluster_checks_to_tasks_entities.partition_key, taskcluster_checks_to_tasks_entities.row_key';
 
         if size is not null and size > 0 then
-          sql := sql || ' limit ' || size;
+          sql := sql || ' limit ' || size + 1;
 
           if page is not null and page > 0 then
             page_offset := size * (page - 1);
@@ -957,7 +957,7 @@ methods:
         sql := sql || ' order by taskcluster_check_runs_entities.partition_key, taskcluster_check_runs_entities.row_key';
 
         if size is not null and size > 0 then
-          sql := sql || ' limit ' || size;
+          sql := sql || ' limit ' || size + 1;
 
           if page is not null and page > 0 then
             page_offset := size * (page - 1);
@@ -1083,7 +1083,7 @@ methods:
         sql := sql || ' order by hooks_entities.partition_key, hooks_entities.row_key';
 
         if size is not null and size > 0 then
-          sql := sql || ' limit ' || size;
+          sql := sql || ' limit ' || size + 1;
 
           if page is not null and page > 0 then
             page_offset := size * (page - 1);
@@ -1209,7 +1209,7 @@ methods:
         sql := sql || ' order by queues_entities.partition_key, queues_entities.row_key';
 
         if size is not null and size > 0 then
-          sql := sql || ' limit ' || size;
+          sql := sql || ' limit ' || size + 1;
 
           if page is not null and page > 0 then
             page_offset := size * (page - 1);
@@ -1335,7 +1335,7 @@ methods:
         sql := sql || ' order by last_fire3_entities.partition_key, last_fire3_entities.row_key';
 
         if size is not null and size > 0 then
-          sql := sql || ' limit ' || size;
+          sql := sql || ' limit ' || size + 1;
 
           if page is not null and page > 0 then
             page_offset := size * (page - 1);
@@ -1461,7 +1461,7 @@ methods:
         sql := sql || ' order by indexed_tasks_entities.partition_key, indexed_tasks_entities.row_key';
 
         if size is not null and size > 0 then
-          sql := sql || ' limit ' || size;
+          sql := sql || ' limit ' || size + 1;
 
           if page is not null and page > 0 then
             page_offset := size * (page - 1);
@@ -1587,7 +1587,7 @@ methods:
         sql := sql || ' order by namespaces_entities.partition_key, namespaces_entities.row_key';
 
         if size is not null and size > 0 then
-          sql := sql || ' limit ' || size;
+          sql := sql || ' limit ' || size + 1;
 
           if page is not null and page > 0 then
             page_offset := size * (page - 1);
@@ -1713,7 +1713,7 @@ methods:
         sql := sql || ' order by denylisted_notification_entities.partition_key, denylisted_notification_entities.row_key';
 
         if size is not null and size > 0 then
-          sql := sql || ' limit ' || size;
+          sql := sql || ' limit ' || size + 1;
 
           if page is not null and page > 0 then
             page_offset := size * (page - 1);
@@ -1839,7 +1839,7 @@ methods:
         sql := sql || ' order by cache_purges_entities.partition_key, cache_purges_entities.row_key';
 
         if size is not null and size > 0 then
-          sql := sql || ' limit ' || size;
+          sql := sql || ' limit ' || size + 1;
 
           if page is not null and page > 0 then
             page_offset := size * (page - 1);
@@ -1965,7 +1965,7 @@ methods:
         sql := sql || ' order by queue_tasks_entities.partition_key, queue_tasks_entities.row_key';
 
         if size is not null and size > 0 then
-          sql := sql || ' limit ' || size;
+          sql := sql || ' limit ' || size + 1;
 
           if page is not null and page > 0 then
             page_offset := size * (page - 1);
@@ -2091,7 +2091,7 @@ methods:
         sql := sql || ' order by queue_artifacts_entities.partition_key, queue_artifacts_entities.row_key';
 
         if size is not null and size > 0 then
-          sql := sql || ' limit ' || size;
+          sql := sql || ' limit ' || size + 1;
 
           if page is not null and page > 0 then
             page_offset := size * (page - 1);
@@ -2217,7 +2217,7 @@ methods:
         sql := sql || ' order by queue_task_groups_entities.partition_key, queue_task_groups_entities.row_key';
 
         if size is not null and size > 0 then
-          sql := sql || ' limit ' || size;
+          sql := sql || ' limit ' || size + 1;
 
           if page is not null and page > 0 then
             page_offset := size * (page - 1);
@@ -2343,7 +2343,7 @@ methods:
         sql := sql || ' order by queue_task_group_members_entities.partition_key, queue_task_group_members_entities.row_key';
 
         if size is not null and size > 0 then
-          sql := sql || ' limit ' || size;
+          sql := sql || ' limit ' || size + 1;
 
           if page is not null and page > 0 then
             page_offset := size * (page - 1);
@@ -2469,7 +2469,7 @@ methods:
         sql := sql || ' order by queue_task_group_active_sets_entities.partition_key, queue_task_group_active_sets_entities.row_key';
 
         if size is not null and size > 0 then
-          sql := sql || ' limit ' || size;
+          sql := sql || ' limit ' || size + 1;
 
           if page is not null and page > 0 then
             page_offset := size * (page - 1);
@@ -2595,7 +2595,7 @@ methods:
         sql := sql || ' order by queue_task_requirement_entities.partition_key, queue_task_requirement_entities.row_key';
 
         if size is not null and size > 0 then
-          sql := sql || ' limit ' || size;
+          sql := sql || ' limit ' || size + 1;
 
           if page is not null and page > 0 then
             page_offset := size * (page - 1);
@@ -2721,7 +2721,7 @@ methods:
         sql := sql || ' order by queue_task_dependency_entities.partition_key, queue_task_dependency_entities.row_key';
 
         if size is not null and size > 0 then
-          sql := sql || ' limit ' || size;
+          sql := sql || ' limit ' || size + 1;
 
           if page is not null and page > 0 then
             page_offset := size * (page - 1);
@@ -2847,7 +2847,7 @@ methods:
         sql := sql || ' order by queue_worker_entities.partition_key, queue_worker_entities.row_key';
 
         if size is not null and size > 0 then
-          sql := sql || ' limit ' || size;
+          sql := sql || ' limit ' || size + 1;
 
           if page is not null and page > 0 then
             page_offset := size * (page - 1);
@@ -2973,7 +2973,7 @@ methods:
         sql := sql || ' order by queue_worker_type_entities.partition_key, queue_worker_type_entities.row_key';
 
         if size is not null and size > 0 then
-          sql := sql || ' limit ' || size;
+          sql := sql || ' limit ' || size + 1;
 
           if page is not null and page > 0 then
             page_offset := size * (page - 1);
@@ -3099,7 +3099,7 @@ methods:
         sql := sql || ' order by queue_provisioner_entities.partition_key, queue_provisioner_entities.row_key';
 
         if size is not null and size > 0 then
-          sql := sql || ' limit ' || size;
+          sql := sql || ' limit ' || size + 1;
 
           if page is not null and page > 0 then
             page_offset := size * (page - 1);
@@ -3225,7 +3225,7 @@ methods:
         sql := sql || ' order by secrets_entities.partition_key, secrets_entities.row_key';
 
         if size is not null and size > 0 then
-          sql := sql || ' limit ' || size;
+          sql := sql || ' limit ' || size + 1;
 
           if page is not null and page > 0 then
             page_offset := size * (page - 1);
@@ -3351,7 +3351,7 @@ methods:
         sql := sql || ' order by authorization_codes_table_entities.partition_key, authorization_codes_table_entities.row_key';
 
         if size is not null and size > 0 then
-          sql := sql || ' limit ' || size;
+          sql := sql || ' limit ' || size + 1;
 
           if page is not null and page > 0 then
             page_offset := size * (page - 1);
@@ -3477,7 +3477,7 @@ methods:
         sql := sql || ' order by access_token_table_entities.partition_key, access_token_table_entities.row_key';
 
         if size is not null and size > 0 then
-          sql := sql || ' limit ' || size;
+          sql := sql || ' limit ' || size + 1;
 
           if page is not null and page > 0 then
             page_offset := size * (page - 1);
@@ -3603,7 +3603,7 @@ methods:
         sql := sql || ' order by session_storage_table_entities.partition_key, session_storage_table_entities.row_key';
 
         if size is not null and size > 0 then
-          sql := sql || ' limit ' || size;
+          sql := sql || ' limit ' || size + 1;
 
           if page is not null and page > 0 then
             page_offset := size * (page - 1);
@@ -3729,7 +3729,7 @@ methods:
         sql := sql || ' order by github_access_token_table_entities.partition_key, github_access_token_table_entities.row_key';
 
         if size is not null and size > 0 then
-          sql := sql || ' limit ' || size;
+          sql := sql || ' limit ' || size + 1;
 
           if page is not null and page > 0 then
             page_offset := size * (page - 1);
@@ -3855,7 +3855,7 @@ methods:
         sql := sql || ' order by wm_workers_entities.partition_key, wm_workers_entities.row_key';
 
         if size is not null and size > 0 then
-          sql := sql || ' limit ' || size;
+          sql := sql || ' limit ' || size + 1;
 
           if page is not null and page > 0 then
             page_offset := size * (page - 1);
@@ -3981,7 +3981,7 @@ methods:
         sql := sql || ' order by wm_worker_pools_entities.partition_key, wm_worker_pools_entities.row_key';
 
         if size is not null and size > 0 then
-          sql := sql || ' limit ' || size;
+          sql := sql || ' limit ' || size + 1;
 
           if page is not null and page > 0 then
             page_offset := size * (page - 1);
@@ -4107,7 +4107,7 @@ methods:
         sql := sql || ' order by wm_worker_pool_errors_entities.partition_key, wm_worker_pool_errors_entities.row_key';
 
         if size is not null and size > 0 then
-          sql := sql || ' limit ' || size;
+          sql := sql || ' limit ' || size + 1;
 
           if page is not null and page > 0 then
             page_offset := size * (page - 1);
