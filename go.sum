@@ -169,8 +169,8 @@ github.com/stretchr/testify v1.5.1 h1:nOGnQDM7FYENwehXlg/kFVnos3rEvtKTjRvOWSzb6H
 github.com/stretchr/testify v1.5.1/go.mod h1:5W2xD1RspED5o8YsWQXVCued0rvSQ+mT+I5cxcmMvtA=
 github.com/taskcluster/go-got v0.0.0-20190401132811-c63e3293a290 h1:04c4QYvYbpX7oycLZwpMP9jffQ3g456Qc2IcpAPsKFk=
 github.com/taskcluster/go-got v0.0.0-20190401132811-c63e3293a290/go.mod h1:HTybyl/tXQVIHGzZDrco0HzB7tixubXMw29q1n8G0Wc=
-github.com/taskcluster/httpbackoff/v3 v3.0.0 h1:Zh2BCW2iA3fzBBuZo2E4MvwyPSB6aimyI4EreeK3TRM=
-github.com/taskcluster/httpbackoff/v3 v3.0.0/go.mod h1:99ubellEC0fmRj7wnGkPftT2xfCY7NmbjT3gzn2ZPUM=
+github.com/taskcluster/httpbackoff/v3 v3.1.0 h1:sa91pm4d5yhsuG7ej3R2Db8IsY3rI8PJ41+tiJ/smqA=
+github.com/taskcluster/httpbackoff/v3 v3.1.0/go.mod h1:RDctDLiKVfdgR3Qq0aS87KdmquezxFjlS0Aw1x0Fi5U=
 github.com/taskcluster/pulse-go v1.0.0 h1:ys4ZUNp5TYiV5LSMxge4YF/AtuBUNH9StAA/bkno+r0=
 github.com/taskcluster/pulse-go v1.0.0/go.mod h1:uuaqnRQj9XqouabCEKjnrlJiC6UT9Gurx2oSe6s+irM=
 github.com/taskcluster/shell v0.0.0-20191115171910-c688067f12d3 h1:5v+o0rYZz+s+qAd3M8mSmAq2g6Isn+chv3dJeMCyHec=
