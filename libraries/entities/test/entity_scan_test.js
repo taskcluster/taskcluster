@@ -167,12 +167,7 @@ helper.dbSuite(path.basename(__filename), function() {
       assert.equal(result.entries.length, 2);
       assert.deepEqual(result.entries[0], documents[8]);
       assert.deepEqual(result.entries[1], documents[9]);
-
-      result = await TestTable.scan(null, {
-        continuation: result.continuation,
-        limit: 4,
-      });
-      assert.equal(result.entries.length, 0);
+      assert(!result.continuation);
     });
   });
 
@@ -310,12 +305,7 @@ helper.dbSuite(path.basename(__filename), function() {
       assert.equal(result.entries.length, 2);
       assert.deepEqual(result.entries[0], documents[8]);
       assert.deepEqual(result.entries[1], documents[9]);
-
-      result = await TestTable.scan(null, {
-        continuation: result.continuation,
-        limit: 4,
-      });
-      assert.equal(result.entries.length, 0);
+      assert(!result.continuation);
     });
   });
   suite('scan SQL injection checks', function() {

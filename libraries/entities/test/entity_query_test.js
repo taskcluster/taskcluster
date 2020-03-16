@@ -116,13 +116,6 @@ helper.dbSuite(path.basename(__filename), function() {
         continuation: result.continuation,
       });
       assert(result.entries.length === 1);
-      assert(result.continuation);
-
-      result = await TestTable.query({ id }, {
-        limit: 2,
-        continuation: result.continuation,
-      });
-      assert(result.entries.length === 0);
       assert(!result.continuation);
     });
 

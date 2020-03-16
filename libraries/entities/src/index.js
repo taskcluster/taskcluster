@@ -478,7 +478,18 @@ class Entity {
     const fetchResults = async (continuation) => {
       const page = decodeContinuationToken(continuation);
       const { partitionKey, rowKey, condition } = this._doCondition(conditions, options);
-      const result = await this._db.fns[`${this._tableName}_scan`](partitionKey, rowKey, condition, Math.min(limit, 1000), page);
+      const size = Math.min(limit, 1000);
+      const result = await this._db.fns[`${this._tableName}_scan`](partitionKey, rowKey, condition, size, page);
+      let hasNextPage;
+
+      if (result.length > size) {
+        hasNextPage = true;
+        // remove last element in place from list
+        result.splice(-1);
+      } else {
+        hasNextPage = false;
+      }
+
       const entries = result.map(entry => (
         new this(entry.value, {
           etag: entry.etag,
@@ -489,7 +500,7 @@ class Entity {
           context: this.contextEntries,
         })
       ));
-      const contToken = result.length ? page + 1 : null;
+      const contToken = hasNextPage ? page + 1 : null;
 
       return { entries, continuation: encodeContinuationToken(contToken) };
     };
