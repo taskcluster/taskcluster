@@ -102,8 +102,10 @@ helper.dbSuite(path.basename(__filename), function() {
 
   const createUsers = async db => {
     await db._withClient('admin', async client => {
-      // create users so the grants will succeed
-      for (let username of ['test_service1', 'test_service2']) {
+      const usernames = ['test_service1', 'test_service2', 'badrole'];
+
+      // create users (same as roles) so the grants will succeed
+      for (const username of usernames) {
         try {
           await client.query(`create user ${username}`);
         } catch (err) {
@@ -111,6 +113,17 @@ helper.dbSuite(path.basename(__filename), function() {
             throw err;
           }
         }
+      }
+
+      // drop attributes and group membership for all test_* users
+      const res = await client.query(`
+        select *
+        from pg_catalog.pg_roles
+        where rolname like 'test\_%'`);
+      for (const row of res.rows) {
+        // both of these are successful if they are no-ops (although they show warnings)
+        await client.query(`alter role ${row.rolname} with nosuperuser nocreatedb nocreaterole noreplication`);
+        await client.query(`revoke badrole from ${row.rolname}`);
       }
     });
   };
@@ -311,10 +324,10 @@ helper.dbSuite(path.basename(__filename), function() {
 
     suiteSetup(async function() {
       db = new Database({urlsByMode: {admin: helper.dbUrl}});
-      await createUsers(db);
     });
 
     setup(async function() {
+      await createUsers(db);
       await db._withClient('admin', async client => {
         // create some tables for permissions
         await client.query('create table tcversion (version int)');
@@ -384,6 +397,36 @@ helper.dbSuite(path.basename(__filename), function() {
       });
       await Database._checkPermissions({db, schema, usernamePrefix: 'test'});
       // does not fail
+    });
+
+    for (const attr of ['superuser', 'createdb', 'createrole', 'replication']) {
+      test(`user with ${attr} attribute`, async function() {
+        await db._withClient('admin', async client => {
+          await client.query('grant select on foo to test_service1');
+          await client.query('grant select, insert, update, delete on foo to test_service2');
+          await client.query(`alter user test_service2 with ${attr}`);
+        });
+        const schema = withAccess({
+          service1: {tables: {foo: 'read'}},
+          service2: {tables: {foo: 'write'}},
+        });
+        await assert.rejects(() => Database._checkPermissions({db, schema, usernamePrefix: 'test'}),
+          new RegExp(`test_service2 has attribute ${attr.toUpperCase()}`));
+      });
+    }
+
+    test(`user a member of badrole`, async function() {
+      await db._withClient('admin', async client => {
+        await client.query('grant select on foo to test_service1');
+        await client.query('grant select, insert, update, delete on foo to test_service2');
+        await client.query(`grant badrole to test_service2`);
+      });
+      const schema = withAccess({
+        service1: {tables: {foo: 'read'}},
+        service2: {tables: {foo: 'write'}},
+      });
+      await assert.rejects(() => Database._checkPermissions({db, schema, usernamePrefix: 'test'}),
+        new RegExp(`test_service2 has unexpected role badrole`));
     });
   });
 
