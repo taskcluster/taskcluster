@@ -16,7 +16,7 @@ relengapi_proxy_version=2.3.1
 taskcluster_proxy_version=5.1.0
 livelog_version=4
 dind_service_version=4.0
-worker_runner_version=0.6.1
+worker_runner_version=28.0.0
 
 ## Get recent CA bundle for papertrail
 sudo curl -o /etc/papertrail-bundle.pem https://papertrailapp.com/tools/papertrail-bundle.pem
@@ -58,7 +58,7 @@ docker pull taskcluster/dind-service:v$dind_service_version
 docker pull taskcluster/relengapi-proxy:$relengapi_proxy_version
 
 # install and configure taskcluster-worker-runner
-sudo curl --fail -L -o /usr/local/bin/start-worker https://github.com/taskcluster/taskcluster-worker-runner/releases/download/v$worker_runner_version/start-worker-linux-amd64
+sudo curl --fail -L -o /usr/local/bin/start-worker https://github.com/taskcluster/taskcluster/releases/download/v$worker_runner_version/start-worker-linux-amd64
 sudo chmod +x /usr/local/bin/start-worker
 
 if [ -z "$providerType" ]; then
