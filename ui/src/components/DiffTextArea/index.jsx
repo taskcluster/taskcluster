@@ -100,8 +100,16 @@ const styles = withStyles(theme => {
  * ref: https://github.com/mozilla-frontend-infra/components/blob/master/src/components/MarkdownTextArea/index.jsx
  */
 function DiffTextArea(props) {
-  const { classes, onChange, rows, initialValue, sort, ...rest } = props;
-  const [tabIndex, setTabIndex] = useState(props.defaultTabIndex);
+  const {
+    classes,
+    onChange,
+    rows,
+    initialValue,
+    sort,
+    defaultTabIndex,
+    ...rest
+   } = props;
+   const [tabIndex, setTabIndex] = useState(defaultTabIndex);
   const [value, setValue] = useState(props.value);
   const isViewDiff = tabIndex === 1;
   const isControlled =
