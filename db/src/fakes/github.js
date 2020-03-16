@@ -160,7 +160,7 @@ class FakeGithub {
       condition,
     }, this.taskclusterGithubBuilds);
 
-    return entries.slice((page - 1) * size, (page - 1) *  size + size + 1);
+    return entries.slice((page - 1) * size, (page - 1) * size + size + 1);
   }
 
   async taskcluster_integration_owners_entities_load(partitionKey, rowKey) {
@@ -368,7 +368,7 @@ class FakeGithub {
       condition,
     }, this.taskclusterChecksToTasks);
 
-    return entries.slice((page - 1) * size, (page - 1) *  size + size + 1);
+    return entries.slice((page - 1) * size, (page - 1) * size + size + 1);
   }
 
   async taskcluster_check_runs_entities_load(partitionKey, rowKey) {
@@ -423,7 +423,7 @@ class FakeGithub {
   async taskcluster_check_runs_entities_scan(partition_key, row_key, condition, size, page) {
     const entries = getEntries({ partitionKey: partition_key, rowKey: row_key, condition }, this.taskclusterCheckRuns);
 
-    return entries.slice((page - 1) * size, (page - 1) *  size + size + 1);
+    return entries.slice((page - 1) * size, (page - 1) * size + size + 1);
   }
 }
 

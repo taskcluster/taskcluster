@@ -497,7 +497,7 @@ class FakeQueue {
   async queue_tasks_entities_scan(partition_key, row_key, condition, size, page) {
     const entries = getEntries({ partitionKey: partition_key, rowKey: row_key, condition }, this.queueTasks);
 
-    return entries.slice((page - 1) * size, (page - 1) *  size + size + 1);
+    return entries.slice((page - 1) * size, (page - 1) * size + size + 1);
   }
 
   async queue_artifacts_entities_load(partitionKey, rowKey) {
@@ -613,7 +613,7 @@ class FakeQueue {
   async queue_task_groups_entities_scan(partition_key, row_key, condition, size, page) {
     const entries = getEntries({ partitionKey: partition_key, rowKey: row_key, condition }, this.queueTaskGroups);
 
-    return entries.slice((page - 1) * size, (page - 1) *  size + size + 1);
+    return entries.slice((page - 1) * size, (page - 1) * size + size + 1);
   }
 
   async queue_task_group_active_sets_entities_load(partitionKey, rowKey) {
@@ -672,7 +672,7 @@ class FakeQueue {
       condition,
     }, this.queueTaskGroupActiveSets);
 
-    return entries.slice((page - 1) * size, (page - 1) *  size + size + 1);
+    return entries.slice((page - 1) * size, (page - 1) * size + size + 1);
   }
 
   async queue_task_requirement_entities_load(partitionKey, rowKey) {
@@ -733,7 +733,7 @@ class FakeQueue {
   async queue_task_requirement_entities_scan(partition_key, row_key, condition, size, page) {
     const entries = getEntries({ partitionKey: partition_key, rowKey: row_key, condition }, this.queueTaskRequirements);
 
-    return entries.slice((page - 1) * size, (page - 1) *  size + size + 1);
+    return entries.slice((page - 1) * size, (page - 1) * size + size + 1);
   }
 
   async queue_task_group_members_entities_load(partitionKey, rowKey) {
@@ -788,7 +788,7 @@ class FakeQueue {
   async queue_task_group_members_entities_scan(partition_key, row_key, condition, size, page) {
     const entries = getEntries({ partitionKey: partition_key, rowKey: row_key, condition }, this.queueTaskGroupMembers);
 
-    return entries.slice((page - 1) * size, (page - 1) *  size + size + 1);
+    return entries.slice((page - 1) * size, (page - 1) * size + size + 1);
   }
 
   async queue_task_dependency_entities_load(partitionKey, rowKey) {
@@ -843,7 +843,7 @@ class FakeQueue {
   async queue_task_dependency_entities_scan(partition_key, row_key, condition, size, page) {
     const entries = getEntries({ partitionKey: partition_key, rowKey: row_key, condition }, this.queueTaskDependencys);
 
-    return entries.slice((page - 1) * size, (page - 1) *  size + size + 1);
+    return entries.slice((page - 1) * size, (page - 1) * size + size + 1);
   }
 
   async queue_worker_entities_load(partitionKey, rowKey) {
@@ -898,7 +898,7 @@ class FakeQueue {
   async queue_worker_entities_scan(partition_key, row_key, condition, size, page) {
     const entries = getEntries({ partitionKey: partition_key, rowKey: row_key, condition }, this.queueWorkers);
 
-    return entries.slice((page - 1) * size, (page - 1) *  size + size + 1);
+    return entries.slice((page - 1) * size, (page - 1) * size + size + 1);
   }
 
   async queue_worker_type_entities_load(partitionKey, rowKey) {
@@ -953,7 +953,7 @@ class FakeQueue {
   async queue_worker_type_entities_scan(partition_key, row_key, condition, size, page) {
     const entries = getEntries({ partitionKey: partition_key, rowKey: row_key, condition }, this.queueWorkerTypes);
 
-    return entries.slice((page - 1) * size, (page - 1) *  size + size + 1);
+    return entries.slice((page - 1) * size, (page - 1) * size + size + 1);
   }
 
   async queue_provisioner_entities_load(partitionKey, rowKey) {
@@ -1008,7 +1008,7 @@ class FakeQueue {
   async queue_provisioner_entities_scan(partition_key, row_key, condition, size, page) {
     const entries = getEntries({ partitionKey: partition_key, rowKey: row_key, condition }, this.queueProvisioners);
 
-    return entries.slice((page - 1) * size, (page - 1) *  size + size + 1);
+    return entries.slice((page - 1) * size, (page - 1) * size + size + 1);
   }
 
   async azure_queue_count(queue_name) {

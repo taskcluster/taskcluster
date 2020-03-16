@@ -186,7 +186,7 @@ class FakeHook {
   async hooks_entities_scan(partition_key, row_key, condition, size, page) {
     const entries = getEntries({ partitionKey: partition_key, rowKey: row_key, condition }, this.hooks);
 
-    return entries.slice((page - 1) * size, (page - 1) *  size + size + 1);
+    return entries.slice((page - 1) * size, (page - 1) * size + size + 1);
   }
 
   async last_fire3_entities_load(partitionKey, rowKey) {
@@ -298,7 +298,7 @@ class FakeHook {
   async queues_entities_scan(partition_key, row_key, condition, size, page) {
     const entries = getEntries({ partitionKey: partition_key, rowKey: row_key, condition }, this.queues);
 
-    return entries.slice((page - 1) * size, (page - 1) *  size + size + 1);
+    return entries.slice((page - 1) * size, (page - 1) * size + size + 1);
   }
 }
 

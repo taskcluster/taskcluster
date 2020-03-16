@@ -239,7 +239,7 @@ class FakeAuth {
       condition,
     }, this.authorizationCodesTables);
 
-    return entries.slice((page - 1) * size, (page - 1) *  size + size + 1);
+    return entries.slice((page - 1) * size, (page - 1) * size + size + 1);
   }
 
   async access_token_table_entities_load(partitionKey, rowKey) {
@@ -294,7 +294,7 @@ class FakeAuth {
   async access_token_table_entities_scan(partition_key, row_key, condition, size, page) {
     const entries = getEntries({ partitionKey: partition_key, rowKey: row_key, condition }, this.accessTokenTables);
 
-    return entries.slice((page - 1) * size, (page - 1) *  size + size + 1);
+    return entries.slice((page - 1) * size, (page - 1) * size + size + 1);
   }
 
   async session_storage_table_entities_load(partitionKey, rowKey) {
@@ -408,7 +408,7 @@ class FakeAuth {
       condition,
     }, this.githubAccessTokenTables);
 
-    return entries.slice((page - 1) * size, (page - 1) *  size + size + 1);
+    return entries.slice((page - 1) * size, (page - 1) * size + size + 1);
   }
 }
 
