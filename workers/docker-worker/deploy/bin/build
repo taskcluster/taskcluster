@@ -54,7 +54,7 @@ cmd_app() {
           # NOTE: if building a new base AMI, either generate for all of these
           # accounts, or comment out the accounts you have not updated so that
           # the next person is not surprised by using an old base
-          mozilla-taskcluster) hvmSourceAMI=ami-020341c6d42f39567;;
+          mozilla-taskcluster) hvmSourceAMI=ami-0714957760d5b7d84;;
           #taskcluster-aws-staging) hvmSourceAMI=ami-0d04f4da59f322673;;
           *)
               echo "No base AMI defined for AWS account $AWS_ACCOUNT; create one" >&2
@@ -166,7 +166,7 @@ if [ -f packer-artifacts.json ]; then
         | split(":")
       ]
       | flatten
-      | { (.[0]): .[1], (.[2]): .[3], (.[4]): .[5], (.[6]): .[7] }
+      | { (.[0]): .[1], (.[2]): .[3] }
     }
   ' packer-artifacts.json | jq -s add > docker-worker-amis.json
 fi

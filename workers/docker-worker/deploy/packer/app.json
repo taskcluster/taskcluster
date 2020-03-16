@@ -44,13 +44,13 @@
         "./gen-ed25519-key.js",
         "rm -rf node_modules package.json"
       ],
-      "only":           ["hvm-builder", "hvm-builder-wm", "gcp"]
+      "only":           ["hvm-builder", "gcp"]
     },
     {
       "type":           "file",
       "source":         "{{user `cotEd25519SigningKey`}}",
       "destination":    "/tmp/docker-worker-ed25519-cot-signing-key.key",
-      "only":           ["hvm-builder-trusted", "hvm-builder-trusted-wm"]
+      "only":           ["hvm-builder-trusted"]
     },
     {
       "type":           "shell",
@@ -63,16 +63,9 @@
     {
       "type":           "shell",
       "inline": [
-        "/tmp/deploy.sh /tmp/deploy.tar.gz /tmp/docker-worker.tgz aws {{user `deployment`}}"
-      ],
-      "only":           ["hvm-builder-trusted", "hvm-builder"]
-    },
-    {
-      "type":           "shell",
-      "inline": [
         "providerType=aws /tmp/deploy.sh /tmp/deploy.tar.gz /tmp/docker-worker.tgz aws {{user `deployment`}}"
       ],
-      "only":           ["hvm-builder-trusted-wm", "hvm-builder-wm"]
+      "only":           ["hvm-builder-trusted", "hvm-builder"]
     },
     {
       "type":           "shell",
@@ -87,11 +80,11 @@
       "type":           "amazon-ebs",
       "name":           "hvm-builder",
       "region":         "us-west-2",
-      "ami_regions":    ["us-west-1", "us-east-1", "eu-central-1"],
+      "ami_regions":    ["us-west-1", "us-east-1"],
       "source_ami":     "{{user `hvmSourceAMI`}}",
       "instance_type":  "m5.large",
       "ssh_username":   "ubuntu",
-      "ami_name":       "taskcluster-docker-worker{{timestamp}}",
+      "ami_name":       "taskcluster-docker-worker-{{timestamp}}",
       "tags": {
         "OS_Version":       "Ubuntu",
         "Release":          "Latest",
@@ -103,43 +96,11 @@
       "type":           "amazon-ebs",
       "name":           "hvm-builder-trusted",
       "region":         "us-west-2",
-      "ami_regions":    ["us-west-1", "us-east-1", "eu-central-1"],
+      "ami_regions":    ["us-west-1", "us-east-1"],
       "source_ami":     "{{user `hvmSourceAMI`}}",
       "instance_type":  "m5.large",
       "ssh_username":   "ubuntu",
       "ami_name":       "taskcluster-docker-worker-trusted-{{timestamp}}",
-      "tags": {
-        "OS_Version":       "Ubuntu",
-        "Release":          "Latest",
-        "Revision":         "{{user `workerRevision`}}",
-        "Base_AMI":         "{{user `hvmSourceAMI`}}"
-      }
-    },
-    {
-      "type":           "amazon-ebs",
-      "name":           "hvm-builder-wm",
-      "region":         "us-west-2",
-      "ami_regions":    ["us-west-1", "us-east-1", "eu-central-1"],
-      "source_ami":     "{{user `hvmSourceAMI`}}",
-      "instance_type":  "m5.large",
-      "ssh_username":   "ubuntu",
-      "ami_name":       "taskcluster-docker-worker-wm-{{timestamp}}",
-      "tags": {
-        "OS_Version":       "Ubuntu",
-        "Release":          "Latest",
-        "Revision":         "{{user `workerRevision`}}",
-        "Base_AMI":         "{{user `hvmSourceAMI`}}"
-      }
-    },
-    {
-      "type":           "amazon-ebs",
-      "name":           "hvm-builder-trusted-wm",
-      "region":         "us-west-2",
-      "ami_regions":    ["us-west-1", "us-east-1", "eu-central-1"],
-      "source_ami":     "{{user `hvmSourceAMI`}}",
-      "instance_type":  "m5.large",
-      "ssh_username":   "ubuntu",
-      "ami_name":       "taskcluster-docker-worker-trusted-wm-{{timestamp}}",
       "tags": {
         "OS_Version":       "Ubuntu",
         "Release":          "Latest",
