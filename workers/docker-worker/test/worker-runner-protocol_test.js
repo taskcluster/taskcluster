@@ -12,11 +12,16 @@ class TestTransport extends EventEmitter {
     this.sent = [];
   }
 
+  start() {
+    this.started = true;
+  }
+
   send(message) {
     this.sent.push(message);
   }
 
   fakeReceive(message) {
+    assert(this.started);
     this.emit('message', message);
   }
 }
@@ -25,17 +30,23 @@ suite('worker-runner-protocol', function() {
   suite('transport', function() {
     test('receive', async function() {
       const messages = [];
-      const input = new Readable();
+      const input = new PassThrough();
       const output = new PassThrough();
-      const sp = new StreamTransport(input, output);
-      sp.on('message', msg => messages.push(msg));
-      const end = endEvent(sp);
+      const st = new StreamTransport(input, output);
+      const end = endEvent(st);
 
       // streams do all manner of buffering internally, so we can't test that
       // here.  However, empirically when the input is stdin, that buffering
       // is disabled and we get new lines immediately.
       input.push('ignored line\n');
       input.push('~{"type": "test"}\n');
+
+      // only add the 'message' listener after the input has been pushed.  This
+      // is a check that the stream doesn't start flowing until the listener
+      // is started.
+      st.start();
+      st.on('message', msg => messages.push(msg));
+
       input.push('~{"xxx": "yyy"}\n'); // also ignored: no type
       input.push('~{"xxx", "yyy"}\n'); // also ignored: invalid JSON
       input.push(null);
@@ -52,11 +63,11 @@ suite('worker-runner-protocol', function() {
       const written = [];
       const input = new Readable();
       const output = new PassThrough();
-      const sp = new StreamTransport(input, output);
+      const st = new StreamTransport(input, output);
       output.on('data', chunk => written.push(chunk));
 
-      sp.send({type: 'test'});
-      sp.send({type: 'test-again'});
+      st.send({type: 'test'});
+      st.send({type: 'test-again'});
 
       input.destroy();
       output.destroy();
@@ -76,6 +87,9 @@ suite('worker-runner-protocol', function() {
       const rightMessages = [];
       right.on('message', msg => rightMessages.push(msg));
 
+      left.start();
+      right.start();
+
       left.send({type: 'from-left'});
       right.send({type: 'from-right'});
 
@@ -90,7 +104,10 @@ suite('worker-runner-protocol', function() {
   suite('protocol', function() {
     test('caps negotiation', async function() {
       const transp = new TestTransport();
-      const prot = new Protocol(transp, new Set(['worker-only', 'shared']));
+      const prot = new Protocol(transp);
+      prot.addCapability('worker-only');
+      prot.addCapability('shared');
+      prot.start();
 
       // `capable` doesn't return yet..
       let returned = false;
@@ -106,15 +123,18 @@ suite('worker-runner-protocol', function() {
 
     test('sending', async function() {
       const transp = new TestTransport();
-      const prot = new Protocol(transp, new Set([]));
+      const prot = new Protocol(transp);
+      prot.start();
+
       prot.send({type: 'test'});
       assert.deepEqual(transp.sent, [{type: 'test'}]);
     });
 
     test('receiving', async function() {
       const transp = new TestTransport();
-      const prot = new Protocol(transp, new Set([]));
+      const prot = new Protocol(transp);
       const received = [];
+      prot.start();
 
       prot.on('test-msg', msg => received.push(msg));
       transp.fakeReceive({type: 'test'});
