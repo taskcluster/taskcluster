@@ -1,5 +1,5 @@
 let assert = require('assert');
-let Entity = require('azure-entities');
+let Entity = require('taskcluster-lib-entities');
 
 /**
  * DependencyTracker tracks dependencies between tasks and ensure that dependent

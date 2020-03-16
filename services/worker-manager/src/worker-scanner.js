@@ -1,4 +1,4 @@
-const Entity = require('azure-entities');
+const Entity = require('taskcluster-lib-entities');
 const Iterate = require('taskcluster-lib-iterate');
 
 /**

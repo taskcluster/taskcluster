@@ -1,7 +1,7 @@
 const crypto = require('crypto');
 const APIBuilder = require('taskcluster-lib-api');
 const _ = require('lodash');
-const Entity = require('azure-entities');
+const Entity = require('taskcluster-lib-entities');
 
 // Strips/replaces undesirable characters which GitHub allows in
 // repository/organization names (notably .)
