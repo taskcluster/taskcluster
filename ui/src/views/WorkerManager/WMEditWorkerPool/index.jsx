@@ -6,11 +6,11 @@ import Spinner from '@mozilla-frontend-infra/components/Spinner';
 import Dashboard from '../../../components/Dashboard';
 import createWorkerPoolQuery from './createWorkerPool.graphql';
 import updateWorkerPoolQuery from './updateWorkerPool.graphql';
+import deleteWorkerPoolQuery from './deleteWorkerPool.graphql';
 import workerPoolQuery from './workerPool.graphql';
 import providersQuery from './providers.graphql';
 import WMWorkerPoolEditor from '../../../components/WMWorkerPoolEditor';
 import ErrorPanel from '../../../components/ErrorPanel';
-import { NULL_PROVIDER } from '../../../utils/constants';
 
 @hot(module)
 @withApollo
@@ -60,17 +60,15 @@ export default class WMEditWorkerPool extends Component {
     });
   };
 
-  deleteRequest = ({ workerPoolId, payload }) => {
+  deleteRequest = ({ workerPoolId }) => {
     this.setState({ dialogError: null });
 
+    // Note that deleting a worker pool doesn't really "delete" it, but just
+    // marks it as to be deleted (NULL_PROVISIONER).
     return this.props.client.mutate({
-      mutation: updateWorkerPoolQuery,
+      mutation: deleteWorkerPoolQuery,
       variables: {
         workerPoolId,
-        payload: {
-          ...payload,
-          providerId: NULL_PROVIDER, // this is how we delete worker pools
-        },
       },
     });
   };

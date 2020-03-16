@@ -1,0 +1,3 @@
+mutation DeleteWorkerPool($workerPoolId: String!) {
+  deleteWorkerPool(workerPoolId: $workerPoolId)
+}
