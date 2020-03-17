@@ -4,7 +4,6 @@ const op = require('./entityops');
 const types = require('./entitytypes');
 const keys = require('./entitykeys');
 const {
-  NUMERIC_VALUE_OUT_OF_RANGE,
   UNIQUE_VIOLATION,
 } = require('taskcluster-lib-postgres');
 const crypto = require('crypto');
@@ -56,6 +55,16 @@ const encodeContinuationToken = token => {
 
   return hashids.encode(token, 10);
 };
+
+const makeError = (message, code, statusCode) => {
+  const err = new Error(message);
+  err.code = code;
+  err.name = `${code}Error`;
+  err.statusCode = statusCode;
+  return err;
+};
+
+const make404 = () => makeError('Resource not found', 'ResourceNotFound', 404);
 
 // ** Coding Style **
 // To ease reading of this component we recommend the following code guidelines:
@@ -137,12 +146,7 @@ class Entity {
     }
 
     if (!result) {
-      const err = new Error('Resource not found');
-
-      err.code = 'ResourceNotFound';
-      err.statusCode = 404;
-
-      throw err;
+      throw make404();
     }
   }
 
@@ -186,12 +190,7 @@ class Entity {
         }
 
         if (e.code === 'P0002') {
-          const err = new Error('Resource not found');
-
-          err.code = 'ResourceNotFound';
-          err.statusCode = 404;
-
-          throw err;
+          throw make404();
         }
 
         throw e;
@@ -215,8 +214,7 @@ class Entity {
     }
 
     if (attemptsLeft <= 0) {
-      const err = new Error('MAX_MODIFY_ATTEMPTS exhausted, check for congestion');
-      err.code = 'EntityWriteCongestionError';
+      const err = makeError('MAX_MODIFY_ATTEMPTS exhausted, check for congestion', 'EntityWriteCongestionError', 409);
       err.originalEntity = this._properties;
       throw err;
     }
@@ -378,14 +376,7 @@ class Entity {
       res = await this._db.fns[`${this._tableName}_create`](partitionKey, rowKey, entity, overwrite, 1);
     } catch (err) {
       if (err.code === UNIQUE_VIOLATION) {
-        const e = new Error('Entity already exists');
-        e.code = 'EntityAlreadyExists';
-        throw e;
-      }
-
-      if (err.code === NUMERIC_VALUE_OUT_OF_RANGE) {
-        const e = new Error('Property too large');
-        e.code = 'PropertyTooLarge';
+        const e = makeError('Entity already exists', 'EntityAlreadyExists', 409);
         throw e;
       }
 
@@ -423,12 +414,7 @@ class Entity {
     }
 
     if (!result) {
-      const err = new Error('Resource not found');
-
-      err.code = 'ResourceNotFound';
-      err.statusCode = 404;
-
-      throw err;
+      throw make404();
     }
   }
 
@@ -441,11 +427,7 @@ class Entity {
     }
 
     if (!result) {
-      const err = new Error('Resource not found');
-
-      err.code = 'ResourceNotFound';
-      err.statusCode = 404;
-      throw err;
+      throw make404();
     }
 
     return new this(result.value, {
