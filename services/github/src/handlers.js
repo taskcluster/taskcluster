@@ -749,7 +749,7 @@ async function jobHandler(message) {
     if (err.code !== 'EntityAlreadyExists') {
       throw err;
     }
-    let build = await this.Builds.load({
+    let build = await this.context.Builds.load({
       taskGroupId,
     });
     assert.equal(build.state, groupState, `State for ${organization}/${repository}@${sha}
