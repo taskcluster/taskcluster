@@ -1,4 +1,4 @@
-#!/usr/bin/env node
+require('../../prelude');
 let debug = require('debug')('app:main');
 let taskcluster = require('taskcluster-client');
 let builder = require('./api');

@@ -1,3 +1,4 @@
+require('../../prelude');
 const Debug = require('debug');
 const builder = require('../src/api');
 const data = require('../src/data');

@@ -1,3 +1,4 @@
+require('../../prelude');
 const Loader = require('taskcluster-lib-loader');
 const SchemaSet = require('taskcluster-lib-validate');
 const libReferences = require('taskcluster-lib-references');
