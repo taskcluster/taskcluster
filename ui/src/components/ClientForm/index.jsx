@@ -382,7 +382,6 @@ export default class ClientForm extends Component {
         ) : (
           <Fragment>
             <Button
-              tooltipOpen
               variant="round"
               onClick={this.handleSaveClient}
               spanProps={{
