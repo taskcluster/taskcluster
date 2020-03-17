@@ -21,6 +21,7 @@ import LockResetIcon from 'mdi-react/LockResetIcon';
 import TextField from '../TextField';
 import MarkdownTextArea from '../MarkdownTextArea';
 import DateDistance from '../DateDistance';
+import DiffTextArea from '../DiffTextArea';
 import SpeedDial from '../SpeedDial';
 import SpeedDialAction from '../SpeedDialAction';
 import DialogAction from '../DialogAction';
@@ -308,16 +309,16 @@ export default class ClientForm extends Component {
             />
           </ListItem>
           <ListItem>
-            <TextField
-              label="Scopes"
+            <DiffTextArea
               name="scopeText"
-              helperText="Enter each scope on its own line"
               onChange={this.handleInputChange}
               fullWidth
               multiline
               spellCheck={false}
               placeholder="new-scope:for-something:*"
               value={scopeText}
+              initialValue={client.scopes.join('\n')}
+              sort
             />
           </ListItem>
           {!isNewClient && client && expandedScopes.length ? (
