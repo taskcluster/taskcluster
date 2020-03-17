@@ -109,7 +109,7 @@ function DiffTextArea(props) {
     defaultTabIndex,
     ...rest
    } = props;
-   const [tabIndex, setTabIndex] = useState(defaultTabIndex);
+  const [tabIndex, setTabIndex] = useState(defaultTabIndex);
   const [value, setValue] = useState(props.value);
   const isViewDiff = tabIndex === 1;
   const isControlled =
