@@ -27,7 +27,16 @@ The set of users that must be configured, then, are:
 
 <!-- USERLIST BEGIN -->
  * `<prefix>` -- admin user
+ * `<prefix>_auth` -- user for Taskcluster auth service
+ * `<prefix>_github` -- user for Taskcluster github service
+ * `<prefix>_hooks` -- user for Taskcluster hooks service
+ * `<prefix>_index` -- user for Taskcluster index service
  * `<prefix>_notify` -- user for Taskcluster notify service
+ * `<prefix>_purge_cache` -- user for Taskcluster purge_cache service
+ * `<prefix>_queue` -- user for Taskcluster queue service
+ * `<prefix>_secrets` -- user for Taskcluster secrets service
+ * `<prefix>_web_server` -- user for Taskcluster web_server service
+ * `<prefix>_worker_manager` -- user for Taskcluster worker_manager service
 <!-- USERLIST END -->
 
 Set these up using something with the following effect:

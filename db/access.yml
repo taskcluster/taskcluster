@@ -4,6 +4,55 @@
 #     <tableName>: [read|write]
 #     <tableName>: [read|write]
 #     - ...
+auth:
+  tables:
+    clients_entities: write
+    roles_entities: write
+github:
+  tables:
+    taskcluster_github_builds_entities: write
+    taskcluster_integration_owners_entities: write
+    taskcluster_checks_to_tasks_entities: write
+    taskcluster_check_runs_entities: write
+hooks:
+  tables:
+    hooks_entities: write
+    queues_entities: write
+    last_fire_3_entities: write
+index:
+  tables:
+    indexed_tasks_entities: write
+    namespaces_entities: write
 notify:
   tables:
+    denylisted_notification_entities: write
     widgets: write
+purge_cache:
+  tables:
+    cache_purges_entities: write
+queue:
+  tables:
+    queue_tasks_entities: write
+    queue_artifacts_entities: write
+    queue_task_groups_entities: write
+    queue_task_group_members_entities: write
+    queue_task_group_active_sets_entities: write
+    queue_task_requirement_entities: write
+    queue_task_dependency_entities: write
+    queue_worker_entities: write
+    queue_worker_type_entities: write
+    queue_provisioner_entities: write
+secrets:
+  tables:
+    secrets_entities: write
+web_server:
+  tables:
+    authorization_codes_table_entities: write
+    access_token_table_entities: write
+    session_storage_table_entities: write
+    github_access_token_table_entities: write
+worker_manager:
+  tables:
+    wmworkers_entities: write
+    wmworker_pools_entities: write
+    wmworker_pool_errors_entities: write

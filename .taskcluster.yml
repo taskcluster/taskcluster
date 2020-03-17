@@ -57,6 +57,7 @@ tasks:
         - name: taskcluster-lib-api
         - name: taskcluster-lib-app
         - name: taskcluster-lib-azure
+        - name: taskcluster-lib-entities
         - name: taskcluster-lib-iterate
         - name: taskcluster-lib-loader
         - name: taskcluster-lib-monitor
