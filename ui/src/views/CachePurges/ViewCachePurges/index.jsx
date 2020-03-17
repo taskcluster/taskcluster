@@ -17,6 +17,7 @@ import cachePurgesQuery from './cachePurges.graphql';
 @hot(module)
 @graphql(cachePurgesQuery, {
   options: () => ({
+    fetchPolicy: 'network-only',
     variables: {
       cachePurgesConnection: {
         limit: VIEW_CACHE_PURGES_PAGE_SIZE,

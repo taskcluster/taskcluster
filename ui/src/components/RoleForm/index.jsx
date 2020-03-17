@@ -284,7 +284,6 @@ export default class RoleForm extends Component {
               spanProps={{
                 className: classNames(classes.fab, classes.saveRoleSpan),
               }}
-              tooltipOpen
               onClick={this.handleSaveRole}
               className={classes.saveIcon}
               variant="round"
