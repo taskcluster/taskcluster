@@ -99,7 +99,8 @@ module.exports.withDb = (mock, skipping, helper, serviceName) => {
       return;
     }
     if (helper.db) {
-      await helper.db.close();
+      // TODO: Uncommenting this throws Error: Cannot use a pool after calling end on the pool for the last test
+      // await helper.db.close();
     }
     delete helper.db;
   });

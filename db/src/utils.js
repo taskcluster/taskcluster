@@ -15,15 +15,15 @@ exports.getEntries = ({ partitionKey, rowKey, condition }, entries) => {
 
       if (operator === "=" && entry.value.expires !== date) {
         return false;
-      } else if (operator === ">") {
+      } else if (operator === ">" && new Date(entry.value.expires) <= new Date(date)) {
         return false;
-      } else if (operator === "<") {
+      } else if (operator === "<" && new Date(entry.value.expires) >= new Date(date)) {
         return false;
-      } else if (operator === ">=") {
+      } else if (operator === ">=" && new Date(entry.value.expires) < new Date(date)) {
         return false;
-      } else if (operator === "<=") {
+      } else if (operator === "<=" && new Date(entry.value.expires) > new Date(date)) {
         return false;
-      } else if (operator === "<>") {
+      } else if (operator === "<>" && new Date(entry.value.expires) === new Date(date)) {
         return false;
       }
     }

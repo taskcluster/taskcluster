@@ -140,6 +140,7 @@ class Entity {
       const err = new Error('Resource not found');
 
       err.code = 'ResourceNotFound';
+      err.name = 'ResourceNotFoundError';
       err.statusCode = 404;
 
       throw err;
@@ -189,6 +190,7 @@ class Entity {
           const err = new Error('Resource not found');
 
           err.code = 'ResourceNotFound';
+          err.name = 'ResourceNotFoundError';
           err.statusCode = 404;
 
           throw err;
@@ -379,6 +381,7 @@ class Entity {
     } catch (err) {
       if (err.code === UNIQUE_VIOLATION) {
         const e = new Error('Entity already exists');
+        e.name = 'EntityAlreadyExistsError';
         e.code = 'EntityAlreadyExists';
         throw e;
       }
@@ -426,6 +429,7 @@ class Entity {
       const err = new Error('Resource not found');
 
       err.code = 'ResourceNotFound';
+      err.name = 'ResourceNotFoundError';
       err.statusCode = 404;
 
       throw err;
@@ -444,6 +448,7 @@ class Entity {
       const err = new Error('Resource not found');
 
       err.code = 'ResourceNotFound';
+      err.name = 'ResourceNotFoundError';
       err.statusCode = 404;
       throw err;
     }
