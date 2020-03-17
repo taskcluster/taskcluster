@@ -1478,26 +1478,6 @@ let resolveTask = async function(req, res, taskId, runId, target) {
     workerId: run.workerId,
   });
 
-  // Ensure that all blob artifacts which were created are present before
-  // allowing resolution as 'completed'
-  if (target === 'completed') {
-    let haveAllBlobs = true;
-    await this.Artifact.query({
-      taskId,
-      runId,
-      storageType: 'blob',
-      present: false,
-    }, {
-      limit: 1,
-      handler: () => { haveAllBlobs = false; },
-    });
-
-    if (!haveAllBlobs) {
-      return res.reportError('RequestConflict',
-        'All blob artifacts must be present to resolve task as completed');
-    }
-  }
-
   await task.modify((task) => {
     let run = task.runs[runId];
 
