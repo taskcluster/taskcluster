@@ -45,9 +45,6 @@ Tasks:
     - WorkerPool: 'proj-taskcluster/gw-ci-macos'
       Env:
         ENGINE: 'simple'
-    - WorkerPool: 'proj-taskcluster/gw-ci-raspbian-stretch'
-      Env:
-        ENGINE: 'simple'
     - WorkerPool: 'proj-taskcluster/gw-ci-ubuntu-18-04'
       Env:
         ENGINE: 'multiuser'
@@ -57,37 +54,36 @@ Tasks:
     - WorkerPool: 'proj-taskcluster/gw-ci-ubuntu-18-04'
       Env:
         ENGINE: 'docker'
-    - WorkerPool: 'proj-taskcluster/gw-ci-windows10-amd64'
-      Env:
-        ENGINE: 'multiuser'
-        # We must set here since this worker pool does not have a Z: drive
-        GW_SKIP_Z_DRIVE_TESTS: 'true'
-        # This worker pool has no mozilla-build installation
-        GW_SKIP_MOZILLA_BUILD_TESTS: 'true'
-        # This worker pool has no python installation
-        GW_SKIP_PYTHON_TESTS: 'true'
-    - WorkerPool: 'proj-taskcluster/gw-ci-windows10-arm'
-      Env:
-        ENGINE: 'multiuser'
-        # We must set here since this worker pool does not have a Z: drive
-        GW_SKIP_Z_DRIVE_TESTS: 'true'
-        # This worker pool has no mozilla-build installation
-        GW_SKIP_MOZILLA_BUILD_TESTS: 'true'
-        # This worker pool has no python installation
-        GW_SKIP_PYTHON_TESTS: 'true'
     - WorkerPool: 'proj-taskcluster/gw-ci-windows2012r2-amd64'
       Env:
         ENGINE: 'multiuser'
         # We must set here since this worker type does not have a Z: drive
         GW_SKIP_Z_DRIVE_TESTS: 'true'
-#####################################################################
-#   #############################################################   #
-#   # DISABLING WINDOWS 7 UNTIL WE HAVE WINDOWS 7 WORKERS AGAIN #   #
-#   #############################################################   #
-#   - WorkerPool: 'proj-taskcluster/gw-ci-windows7-386'             #
-#     Env:                                                          #
-#       ENGINE: 'multiuser'                                         #
-#####################################################################
+# The following are disabled due to insufficient capacity:
+#    - WorkerPool: 'proj-taskcluster/gw-ci-raspbian-stretch'
+#      Env:
+#        ENGINE: 'simple'
+#    - WorkerPool: 'proj-taskcluster/gw-ci-windows10-amd64'
+#      Env:
+#        ENGINE: 'multiuser'
+#        # We must set here since this worker pool does not have a Z: drive
+#        GW_SKIP_Z_DRIVE_TESTS: 'true'
+#        # This worker pool has no mozilla-build installation
+#        GW_SKIP_MOZILLA_BUILD_TESTS: 'true'
+#        # This worker pool has no python installation
+#        GW_SKIP_PYTHON_TESTS: 'true'
+#    - WorkerPool: 'proj-taskcluster/gw-ci-windows10-arm'
+#      Env:
+#        ENGINE: 'multiuser'
+#        # We must set here since this worker pool does not have a Z: drive
+#        GW_SKIP_Z_DRIVE_TESTS: 'true'
+#        # This worker pool has no mozilla-build installation
+#        GW_SKIP_MOZILLA_BUILD_TESTS: 'true'
+#        # This worker pool has no python installation
+#        GW_SKIP_PYTHON_TESTS: 'true'
+#    - WorkerPool: 'proj-taskcluster/gw-ci-windows7-386'
+#      Env:
+#        ENGINE: 'multiuser'
   FormatSource:
     - WorkerPool: 'proj-taskcluster/gw-ci-ubuntu-18-04'
 
