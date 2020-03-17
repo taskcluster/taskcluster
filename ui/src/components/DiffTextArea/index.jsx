@@ -108,7 +108,7 @@ function DiffTextArea(props) {
     sort,
     defaultTabIndex,
     ...rest
-   } = props;
+  } = props;
   const [tabIndex, setTabIndex] = useState(defaultTabIndex);
   const [value, setValue] = useState(props.value);
   const isViewDiff = tabIndex === 1;
