@@ -3,7 +3,7 @@ const {fakeauth, stickyLoader, Secrets, withMonitor} = require('taskcluster-lib-
 const load = require('../src/main');
 const data = require('../src/data');
 const builder = require('../src/api.js');
-const {withEntity} = require('taskcluster-lib-testing');
+const {withEntity, withDb} = require('taskcluster-lib-testing');
 
 exports.load = stickyLoader(load);
 
@@ -18,7 +18,7 @@ withMonitor(exports);
 exports.secrets = new Secrets({
   secretName: 'project/taskcluster/testing/azure',
   secrets: {
-    azure: withEntity.secret,
+    db: withDb.secret,
   },
   load: exports.load,
 });
@@ -28,6 +28,10 @@ exports.secrets = new Secrets({
  */
 exports.withEntities = (mock, skipping) => {
   withEntity(mock, skipping, exports, 'Secret', data.Secret);
+};
+
+exports.withDb = (mock, skipping) => {
+  withDb(mock, skipping, exports, 'secrets');
 };
 
 // Some clients for the tests, with differents scopes.  These are turned
