@@ -70,15 +70,15 @@ exports.tasks.push({
     const schemaFiles = requirements['generic-worker-schemas'].map(({filename, content}) => ({
       $id: content.$id,
       title: content.title,
-      filename: path.basename(content.$id, '.json#').replace('_', '-') + '-payload.mdx',
+      filename_base: path.basename(content.$id, '.json#').replace('_', '-') + '-payload',
     }));
 
-    for (let {$id, title, filename} of schemaFiles) {
-      await writeRepoFile(path.join(gwDocsDir, filename), schemaMdx(title, $id));
+    for (let {$id, title, filename_base} of schemaFiles) {
+      await writeRepoFile(path.join(gwDocsDir, filename_base + '.mdx'), schemaMdx(title, $id));
     }
 
     const links = schemaFiles
-      .map(({title, filename}) => ` * [${title}](/docs/reference/workers/generic-worker/${filename})`)
+      .map(({title, filename_base}) => ` * [${title}](/docs/reference/workers/generic-worker/${filename_base})`)
       .join('\n');
 
     await modifyRepoFile(path.join(gwDocsDir, 'README.mdx'),
