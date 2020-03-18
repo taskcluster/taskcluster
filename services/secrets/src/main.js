@@ -1,3 +1,4 @@
+require('../../prelude');
 const Debug = require('debug');
 const tcdb = require('taskcluster-db');
 const builder = require('../src/api');

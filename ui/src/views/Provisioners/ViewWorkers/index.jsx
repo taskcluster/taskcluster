@@ -218,63 +218,59 @@ export default class ViewWorkers extends Component {
           {shouldIgnoreGraphqlError && this.state.error && (
             <ErrorPanel fixed error={this.state.error} />
           )}
-          {workers && workerType && (
-            <Fragment>
-              <div className={classes.bar}>
-                <Breadcrumbs classes={{ paper: classes.breadcrumbsPaper }}>
-                  <Link to="/provisioners">
-                    <Typography variant="body2" className={classes.link}>
-                      Workers
-                    </Typography>
-                  </Link>
-                  <Link to={`/provisioners/${params.provisionerId}`}>
-                    <Typography variant="body2" className={classes.link}>
-                      {params.provisionerId}
-                    </Typography>
-                  </Link>
-                  <Typography variant="body2" color="textSecondary">
-                    {`${params.workerType}`}
-                  </Typography>
-                </Breadcrumbs>
-                <TextField
-                  disabled={loading}
-                  className={classes.dropdown}
-                  select
-                  label="Filter By"
-                  value={query.filterBy || ''}
-                  onChange={this.handleFilterChange}>
-                  <MenuItem value="">
-                    <em>None</em>
-                  </MenuItem>
-                  <MenuItem value="quarantined">Quarantined</MenuItem>
-                </TextField>
-              </div>
-              <br />
-              <WorkersTable
-                workersConnection={workers}
-                onPageChange={this.handlePageChange}
-                workerType={params.workerType}
-                provisionerId={params.provisionerId}
-              />
-              {workerType.actions.length ? (
-                <SpeedDial>
-                  {workerType.actions.map(action => (
-                    <SpeedDialAction
-                      requiresAuth
-                      tooltipOpen
-                      key={action.title}
-                      FabProps={{
-                        disabled: actionLoading,
-                      }}
-                      icon={<HammerIcon />}
-                      tooltipTitle={action.title}
-                      onClick={() => this.handleActionClick(action)}
-                    />
-                  ))}
-                </SpeedDial>
-              ) : null}
-            </Fragment>
-          )}
+          <div className={classes.bar}>
+            <Breadcrumbs classes={{ paper: classes.breadcrumbsPaper }}>
+              <Link to="/provisioners">
+                <Typography variant="body2" className={classes.link}>
+                  Workers
+                </Typography>
+              </Link>
+              <Link to={`/provisioners/${params.provisionerId}`}>
+                <Typography variant="body2" className={classes.link}>
+                  {params.provisionerId}
+                </Typography>
+              </Link>
+              <Typography variant="body2" color="textSecondary">
+                {`${params.workerType}`}
+              </Typography>
+            </Breadcrumbs>
+            <TextField
+              disabled={loading}
+              className={classes.dropdown}
+              select
+              label="Filter By"
+              value={query.filterBy || ''}
+              onChange={this.handleFilterChange}>
+              <MenuItem value="">
+                <em>None</em>
+              </MenuItem>
+              <MenuItem value="quarantined">Quarantined</MenuItem>
+            </TextField>
+          </div>
+          <br />
+          <WorkersTable
+            workersConnection={workers}
+            onPageChange={this.handlePageChange}
+            workerType={params.workerType}
+            provisionerId={params.provisionerId}
+          />
+          {workerType?.actions?.length ? (
+            <SpeedDial>
+              {workerType.actions.map(action => (
+                <SpeedDialAction
+                  requiresAuth
+                  tooltipOpen
+                  key={action.title}
+                  FabProps={{
+                    disabled: actionLoading,
+                  }}
+                  icon={<HammerIcon />}
+                  tooltipTitle={action.title}
+                  onClick={() => this.handleActionClick(action)}
+                />
+              ))}
+            </SpeedDial>
+          ) : null}
           {dialogOpen && (
             <DialogAction
               error={dialogError}

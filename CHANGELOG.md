@@ -3,6 +3,28 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v28.0.0
+
+▶ [MAJOR] [#2328](https://github.com/taskcluster/taskcluster/issues/2328)
+This version adds a temporary "widgets" API method to the notify service.  This is intended to allow testing of the deployment process for Taskcluster services' backend database, and not for tracking of actual widgets.
+
+This new API requires that Helm properties `notify.read_db_url` and `notify.write_db_url` be set correctly as documented in the [deployment documentation](https://docs.taskcluster.net/docs/manual/deploying/database).
+
+▶ [minor] 
+Add worker-runner binaries to the list of release artifacts
+
+▶ [minor] [bug 1621630](http://bugzil.la/1621630)
+Support for short-circuiting of boolean logic in JSON-e templates such as `.taskcluster.yml` is restored.
+
+▶ [patch] 
+AWS, GCP and Azure providers support the "shutdown" message, which requests
+the worker-manager to terminate the instance
+
+▶ [patch] [bug 1621167](http://bugzil.la/1621167)
+The Taskcluster-GitHub service now uses structured logging to describe its handling of events from GitHub.  See [its logging documentation](https://docs.taskcluster.net/docs/reference/integrations/github/logs) for details.
+
+▶ Additional change not described here: [bug 1621270](http://bugzil.la/1621270).
+
 ## v27.2.0
 
 ▶ [minor] [bug 1621630](http://bugzil.la/1621630)

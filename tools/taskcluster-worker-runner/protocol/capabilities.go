@@ -2,28 +2,28 @@ package protocol
 
 import "sort"
 
-type Capabilities struct {
+type capabilities struct {
 	// use a map as a poor-man's set
 	capabilities map[string]bool
 }
 
-func EmptyCapabilities() *Capabilities {
-	return &Capabilities{
+func EmptyCapabilities() *capabilities {
+	return &capabilities{
 		capabilities: make(map[string]bool),
 	}
 }
 
-func FromCapabilitiesList(caplist []string) *Capabilities {
+func FromCapabilitiesList(caplist []string) *capabilities {
 	caps := make(map[string]bool)
 	for _, c := range caplist {
 		caps[c] = true
 	}
-	return &Capabilities{
+	return &capabilities{
 		capabilities: caps,
 	}
 }
 
-func (caps *Capabilities) List() []string {
+func (caps *capabilities) List() []string {
 	rv := make([]string, 0, len(caps.capabilities))
 	for c := range caps.capabilities {
 		rv = append(rv, c)
@@ -32,20 +32,20 @@ func (caps *Capabilities) List() []string {
 	return rv
 }
 
-func (caps *Capabilities) Add(c string) {
+func (caps *capabilities) Add(c string) {
 	caps.capabilities[c] = true
 }
 
-func (caps *Capabilities) Remove(c string) {
+func (caps *capabilities) Remove(c string) {
 	delete(caps.capabilities, c)
 }
 
-func (caps *Capabilities) Has(c string) bool {
+func (caps *capabilities) Has(c string) bool {
 	_, has := caps.capabilities[c]
 	return has
 }
 
-func (caps *Capabilities) LimitTo(other *Capabilities) {
+func (caps *capabilities) LimitTo(other *capabilities) {
 	newcaps := make(map[string]bool)
 	for c := range caps.capabilities {
 		if other.Has(c) {

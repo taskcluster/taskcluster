@@ -2,6 +2,23 @@
 title: Monitoring Services
 ---
 
+# Monitoring Services
+
+## New Relic
+
+Taskcluster services *optionally* support New Relic.
+To enable this support, add a top-level Helm property named `newRelic` containing a JSON object with [New Relic environment variables](https://docs.newrelic.com/docs/agents/nodejs-agent/installation-configuration/nodejs-agent-configuration) and their values.
+This will be distributed to all services.
+
+```yaml
+newRelic:
+  NEW_RELIC_APP_NAME: my-app
+  NEW_RELIC_LICENSE_KEY: 12345
+  # ...
+```
+
+## Background Processes
+
 Taskcluster has several background processes that you should ensure are running on a schedule. Any of the following will generate messages
 of the form:
 
@@ -20,7 +37,7 @@ They will also have Fields for `status`, `duration`, and a serialized `error` if
 The processes that have `continuous` for their dedaline and schedule run every few minutes and should complete fairly quickly. The rest
 have their schedules and maximum allowed duration defined here. All times are relative to the timezone of the k8s master.
 
-<!-- GENERATED; DO NOT EDIT -->
+<!-- BEGIN MONITORING TABLE --
 | Service        | Name                         | Logger                     | Deadline (seconds) | Schedule    |
 | -------------- | ---------------------------- | -------------------------- | ------------------ | ----------- |
 | auth           | purgeExpiredClients          | taskcluster.auth           | 86400              | At 12:00 AM |
@@ -49,3 +66,4 @@ have their schedules and maximum allowed duration defined here. All times are re
 | worker-manager | expire-workers               | taskcluster.worker-manager | 86400              | At 12:00 AM |
 | worker-manager | expire-worker-pools          | taskcluster.worker-manager | 86400              | At 01:00 AM |
 | worker-manager | expire-errors                | taskcluster.worker-manager | 86400              | At 12:10 AM |
+-- END MONITORING TABLE -->

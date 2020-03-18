@@ -168,6 +168,7 @@ class Database {
 
   static async _checkPermissions({db, schema, usernamePrefix}) {
     await db._withClient('admin', async (client) => {
+      const usernamePattern = usernamePrefix.replace('_', '\\_') + '\\_%';
       // determine current permissions in the form ["username: priv on table"].
       // This includes information from the column_privileges table as if it
       // was granting access to the entire table. We never use column
@@ -177,16 +178,16 @@ class Database {
         select grantee, table_name, privilege_type
           from information_schema.table_privileges
           where table_schema = 'public'
-           and grantee like $1 || '\\_%'
+           and grantee like $1
            and table_catalog = current_catalog
            and table_name != 'tcversion'
         union
         select grantee, table_name, privilege_type
           from information_schema.column_privileges
           where table_schema = 'public'
-           and grantee like $1 || '\\_%'
+           and grantee like $1
            and table_catalog = current_catalog
-           and table_name != 'tcversion'`, [usernamePrefix.replace('_', '\\_')]);
+           and table_name != 'tcversion'`, [usernamePattern]);
       const currentPrivs = new Set(
         res.rows.map(row => `${row.grantee}: ${row.privilege_type} on ${row.table_name}`));
 
@@ -219,6 +220,51 @@ class Database {
         if (!currentPrivs.has(exp)) {
           issues.push(`missing database user grant: ${exp}`);
         }
+      }
+
+      // look for unexpected user attributes
+      const badAttrs = {
+        'superuser': 'rolsuper',
+        'createrole': 'rolcreaterole',
+        'createdb': 'rolcreatedb',
+        'replication': 'rolreplication',
+      };
+
+      const attrRes = await client.query(`
+        select
+          rolname as user,
+          rolsuper,
+          rolcreaterole,
+          rolcreatedb,
+          rolreplication
+        from
+          pg_catalog.pg_roles
+        where
+          (${Object.values(badAttrs).join(' or ')}) and
+          rolname like $1`, [usernamePattern]);
+      for (const row of attrRes.rows) {
+        for (const [attr, col] of Object.entries(badAttrs)) {
+          if (row[col]) {
+            issues.push(`${row.user} has attribute ${attr.toUpperCase()}`);
+          }
+        }
+      }
+
+      // look for unexpected granted roles
+      const roleRes = await client.query(`
+        select
+          r.rolname as role,
+          u.rolname as user
+        from
+          pg_catalog.pg_roles as r,
+          pg_catalog.pg_roles as u,
+          pg_catalog.pg_auth_members
+        where
+         r.oid = roleid and
+         u.oid = member and
+         u.rolname like $1`, [usernamePattern]);
+      for (const row of roleRes.rows) {
+        issues.push(`${row.user} has unexpected role ${row.role}`);
       }
 
       if (issues.length > 0) {

@@ -12,7 +12,7 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/require"
-	"github.com/taskcluster/taskcluster/v27/workers/generic-worker/testutil"
+	"github.com/taskcluster/taskcluster/v28/workers/generic-worker/testutil"
 )
 
 // Test failure should resolve as "failed"
@@ -264,27 +264,21 @@ func (w *FakeWriter) Write(p []byte) (n int, err error) {
 }
 
 func TestProtocolStdio(t *testing.T) {
-	defer func() {
-		WorkerRunnerProtocol = nil
-		workerRunnerTransport = nil
-	}()
 	reader := bytes.NewBufferString(`~{"type":"welcome", "capabilities": ["graceful-termination"]}` + "\n")
 	writer := &FakeWriter{}
 
 	initializeWorkerRunnerProtocol(reader, writer, true)
+	defer teardownWorkerRunnerProtocol()
 	// Capable waits until the protocol is initialized and capabilities are fully determined
 	require.True(t, WorkerRunnerProtocol.Capable("graceful-termination"))
 }
 
 func TestProtocolNull(t *testing.T) {
-	defer func() {
-		WorkerRunnerProtocol = nil
-		workerRunnerTransport = nil
-	}()
 	reader := bytes.NewBufferString(`~{"type":"welcome", "capabilities": ["graceful-termination"]}` + "\n")
 	writer := &FakeWriter{}
 
 	initializeWorkerRunnerProtocol(reader, writer, false)
+	defer teardownWorkerRunnerProtocol()
 	// withWorkerRunner is false, so we are using a NullTransport and the capability is not available
 	require.False(t, WorkerRunnerProtocol.Capable("graceful-termination"))
 }

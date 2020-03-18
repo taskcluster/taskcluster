@@ -4,8 +4,8 @@ import (
 	"log"
 	"time"
 
-	"github.com/taskcluster/taskcluster/v27/tools/taskcluster-worker-runner/protocol"
-	"github.com/taskcluster/taskcluster/v27/tools/taskcluster-worker-runner/run"
+	"github.com/taskcluster/taskcluster/v28/tools/taskcluster-worker-runner/protocol"
+	"github.com/taskcluster/taskcluster/v28/tools/taskcluster-worker-runner/run"
 )
 
 // An object to manage expiration of the credentials by informing the worker
@@ -26,6 +26,7 @@ func New(state *run.State) *CredExp {
 
 func (ce *CredExp) SetProtocol(proto *protocol.Protocol) {
 	ce.proto = proto
+	proto.AddCapability("graceful-termination")
 }
 
 func (ce *CredExp) WorkerStarted() error {

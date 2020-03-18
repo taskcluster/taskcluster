@@ -1,3 +1,4 @@
+require('../../prelude');
 const builder = require('./api');
 const exchanges = require('./exchanges');
 const Handlers = require('./handlers');

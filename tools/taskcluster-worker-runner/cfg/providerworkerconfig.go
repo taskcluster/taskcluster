@@ -6,7 +6,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/taskcluster/taskcluster/v27/tools/taskcluster-worker-runner/files"
+	"github.com/taskcluster/taskcluster/v28/tools/taskcluster-worker-runner/files"
 )
 
 // ProviderWorkerConfig handles the configuration format provided from

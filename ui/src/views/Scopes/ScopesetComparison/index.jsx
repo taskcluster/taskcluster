@@ -53,10 +53,10 @@ const getCellColors = scopesetDiff => {
     ...theme.mixins.listItemButton,
   },
   redCell: {
-    backgroundColor: 'rgba(255, 0, 0, 0.25)',
+    backgroundColor: theme.palette.diff.red.line,
   },
   greenCell: {
-    backgroundColor: 'rgba(0, 255, 0, 0.25)',
+    backgroundColor: theme.palette.diff.green.line,
   },
   yellowCell: {
     backgroundColor: 'rgba(255, 255, 0, 0.25)',

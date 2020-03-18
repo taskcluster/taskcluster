@@ -11,15 +11,16 @@ type Protocol struct {
 	// transport over which this protocol is running
 	transport Transport
 
-	// current set of agreed capabilities (but call WaitUntilInitialized first
-	// to avoid finding the empty set at startup)
-	Capabilities *Capabilities
-
-	// Capabilities of the remote peer
-	RemoteCapabilities *Capabilities
+	// local and remote capabilities
+	localCapabilities  *capabilities
+	remoteCapabilities *capabilities
 
 	// callbacks per message type
 	callbacks map[string][]MessageCallback
+
+	// tracking for whether Start has been called yet
+	started      bool
+	startedMutex sync.Mutex
 
 	// tracking for whether this protocol is intialized
 	initialized     bool
@@ -29,8 +30,8 @@ type Protocol struct {
 func NewProtocol(transport Transport) *Protocol {
 	return &Protocol{
 		transport:          transport,
-		Capabilities:       EmptyCapabilities(),
-		RemoteCapabilities: EmptyCapabilities(),
+		localCapabilities:  EmptyCapabilities(),
+		remoteCapabilities: EmptyCapabilities(),
 		callbacks:          make(map[string][]MessageCallback),
 		initialized:        false,
 		initializedCond: sync.Cond{
@@ -62,28 +63,34 @@ func listOfStrings(val interface{}) []string {
 func (prot *Protocol) Start(asWorker bool) {
 	if asWorker {
 		prot.Register("welcome", func(msg Message) {
-			prot.RemoteCapabilities = FromCapabilitiesList(listOfStrings(msg.Properties["capabilities"]))
+			prot.remoteCapabilities = FromCapabilitiesList(listOfStrings(msg.Properties["capabilities"]))
 			prot.Send(Message{
 				Type: "hello",
 				Properties: map[string]interface{}{
-					"capabilities": prot.Capabilities.List(),
+					"capabilities": prot.localCapabilities.List(),
 				},
 			})
 			prot.SetInitialized()
 		})
 	} else {
 		prot.Register("hello", func(msg Message) {
-			prot.RemoteCapabilities = FromCapabilitiesList(listOfStrings(msg.Properties["capabilities"]))
+			prot.remoteCapabilities = FromCapabilitiesList(listOfStrings(msg.Properties["capabilities"]))
 			prot.SetInitialized()
 		})
 
-		prot.Send(Message{
-			Type: "welcome",
-			Properties: map[string]interface{}{
-				"capabilities": prot.Capabilities.List(),
-			},
-		})
+		// send a welcome message, but don't wait for it to complete
+		go func() {
+			prot.Send(Message{
+				Type: "welcome",
+				Properties: map[string]interface{}{
+					"capabilities": prot.localCapabilities.List(),
+				},
+			})
+		}()
 	}
+	prot.startedMutex.Lock()
+	prot.started = true
+	prot.startedMutex.Unlock()
 	go prot.recvLoop()
 }
 
@@ -107,10 +114,21 @@ func (prot *Protocol) WaitUntilInitialized() {
 	}
 }
 
-// Check if a capability is supported, after waiting for initialization.
+// Add the given capability to the local capabilities
+func (prot *Protocol) AddCapability(c string) {
+	prot.startedMutex.Lock()
+	defer prot.startedMutex.Unlock()
+	if prot.started {
+		panic("Cannot AddCapability after protocol is started")
+	}
+	prot.localCapabilities.Add(c)
+}
+
+// Check if a capability is supported by both ends of the protocol, after
+// waiting for initialization.
 func (prot *Protocol) Capable(c string) bool {
 	prot.WaitUntilInitialized()
-	return prot.Capabilities.Has(c)
+	return prot.localCapabilities.Has(c) && prot.remoteCapabilities.Has(c)
 }
 
 // Send a message.  This happens without waiting for initialization; as the

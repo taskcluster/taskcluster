@@ -316,6 +316,7 @@ const stubbedAuth = () => {
 const stubbedClients = () => {
   const tasks = new Map();
   const roles = new Map();
+  const workerPools = new Map();
   const options = {
     rootUrl: exports.rootUrl,
   };
@@ -323,7 +324,17 @@ const stubbedClients = () => {
   teardown(() => {
     tasks.clear();
     roles.clear();
+    workerPools.clear();
   });
+
+  exports.fakes = {
+    makeWorkerPool: (workerPoolId, workerPool) => {
+      workerPools.set(workerPoolId, workerPool);
+    },
+    hasWorkerPool: workerPoolId => {
+      return workerPools.has(workerPoolId);
+    },
+  };
 
   return () => ({
     github: new taskcluster.Github(options),
@@ -333,7 +344,17 @@ const stubbedClients = () => {
     secrets: new taskcluster.Secrets(options),
     queueEvents: new taskcluster.QueueEvents(options),
     notify: new taskcluster.Notify(options),
-    workerManager: new taskcluster.WorkerManager(options),
+    workerManager: new taskcluster.WorkerManager({
+      ...options,
+      fake: {
+        deleteWorkerPool: async workerPoolId => {
+          if (!workerPools.has(workerPoolId)) {
+            throw new Error(`No such worker pool ${workerPoolId}`);
+          }
+          workerPools.delete(workerPoolId);
+        },
+      },
+    }),
     auth: new taskcluster.Auth({
       ...options,
       fake: {

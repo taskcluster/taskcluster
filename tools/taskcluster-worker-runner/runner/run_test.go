@@ -11,6 +11,8 @@ import (
 
 	"github.com/Flaque/filet"
 	"github.com/stretchr/testify/require"
+	"github.com/taskcluster/taskcluster/v28/tools/taskcluster-worker-runner/logging"
+	loggingCommon "github.com/taskcluster/taskcluster/v28/tools/taskcluster-worker-runner/logging/logging"
 )
 
 func buildFakeGenericWorker(workerPath string) error {
@@ -20,7 +22,23 @@ func buildFakeGenericWorker(workerPath string) error {
 	return cmd.Run()
 }
 
+var oldLoggingDestination loggingCommon.Logger
+
+func setupLogging() *logging.TestLogDestination {
+	oldLoggingDestination = logging.Destination
+	dest := &logging.TestLogDestination{}
+	logging.Destination = dest
+	return dest
+}
+
+func teardownLogging() {
+	logging.Destination = oldLoggingDestination
+}
+
 func TestFakeGenericWorker(t *testing.T) {
+	loggingDestination := setupLogging()
+	defer teardownLogging()
+
 	defer filet.CleanUp(t)
 	dir := filet.TmpDir(t, "")
 	workerPath := filepath.Join(dir, "fake.exe")
@@ -51,6 +69,10 @@ worker:
 	// checks exit code of running fake worker
 	_, err = Run(configPath)
 	require.NoError(t, err)
+
+	require.Equal(t, []map[string]interface{}{
+		map[string]interface{}{"conversationLevel": "low", "textPayload": "workin hard or hardly workin, amirite?"},
+	}, loggingDestination.Messages())
 
 	// sleep a short bit to let NTFS figure out that fake.exe isn't in use anymore
 	// and it's safe to delete

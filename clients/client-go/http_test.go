@@ -15,8 +15,24 @@ import (
 	"testing"
 	"time"
 
-	"github.com/taskcluster/taskcluster/v27/internal/jsontest"
+	"github.com/cenkalti/backoff/v3"
+	"github.com/stretchr/testify/require"
+	"github.com/taskcluster/httpbackoff/v3"
+	"github.com/taskcluster/taskcluster/v28/internal/jsontest"
 )
+
+func quickBackoff() func() {
+	oldBackoff := defaultBackoff
+
+	settings := backoff.NewExponentialBackOff()
+	settings.MaxElapsedTime = 100 * time.Millisecond
+	defaultBackoff = httpbackoff.Client{
+		BackOffSettings: settings,
+	}
+	return func() {
+		defaultBackoff = oldBackoff
+	}
+}
 
 // TestExtHeaderPermAuthScopes checks that the generated hawk ext http header
 // for permanent credentials with authorized scopes listed matches what is
@@ -464,4 +480,24 @@ func TestSignedURL_PartialURL(t *testing.T) {
 		t.Fatalf("Query does not have a 'bewit'")
 		return
 	}
+}
+
+func TestRetryFailure(t *testing.T) {
+	defer quickBackoff()()
+
+	// This mock service just returns 500's
+	s := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(500)
+		_, _ = w.Write([]byte("{}"))
+	}))
+	defer s.Close()
+	client := Client{
+		RootURL:      s.URL,
+		Authenticate: false,
+	}
+
+	// Three following calls should have no Content-Header set since request body is empty
+	// 1) calling APICall with a nil payload
+	_, _, err := client.APICall(nil, "GET", "/whatever", nil, nil)
+	require.Error(t, err)
 }

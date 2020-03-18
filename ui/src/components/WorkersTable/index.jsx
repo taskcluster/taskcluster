@@ -37,13 +37,21 @@ const sorted = pipe(
 export default class WorkersTable extends Component {
   static propTypes = {
     /** Workers GraphQL PageConnection instance. */
-    workersConnection: workers.isRequired,
+    workersConnection: workers,
     /** Callback function fired when a page is changed. */
     onPageChange: func.isRequired,
     /** Worker type name */
     workerType: string.isRequired,
     /** Provisioner identifier */
     provisionerId: string.isRequired,
+  };
+
+  static defaultProps = {
+    /** Workers GraphQL PageConnection instance. */
+    workersConnection: {
+      edges: [],
+      pageInfo: {},
+    },
   };
 
   state = {

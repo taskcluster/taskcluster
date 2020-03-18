@@ -1,3 +1,4 @@
+require('../../prelude');
 const loader = require('taskcluster-lib-loader');
 const taskcluster = require('taskcluster-client');
 const App = require('taskcluster-lib-app');

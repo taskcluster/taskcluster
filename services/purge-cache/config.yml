@@ -36,6 +36,9 @@ defaults:
       clientId:                   !env TASKCLUSTER_CLIENT_ID
       accessToken:                !env TASKCLUSTER_ACCESS_TOKEN
 
+  # new relic config (processed in services/prelude.js)
+  newRelic: !env:json:optional NEW_RELIC
+
 test:
   taskcluster:
     rootUrl: "https://tc.example.com"

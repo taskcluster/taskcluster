@@ -1,4 +1,4 @@
-module github.com/taskcluster/taskcluster/v27
+module github.com/taskcluster/taskcluster/v28
 
 go 1.13
 
@@ -6,6 +6,7 @@ require (
 	github.com/Flaque/filet v0.0.0-20190209224823-fc4d33cfcf93
 	github.com/Microsoft/go-winio v0.4.14
 	github.com/aws/aws-sdk-go v1.29.14
+	github.com/cenkalti/backoff/v3 v3.0.0
 	github.com/certifi/gocertifi v0.0.0-20200211180108-c7c1fbc02894 // indirect
 	github.com/dchest/uniuri v0.0.0-20200228104902-7aecb25e1fe5
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
@@ -33,7 +34,7 @@ require (
 	github.com/streadway/amqp v0.0.0-20200108173154-1c71cc93ed71
 	github.com/stretchr/testify v1.5.1
 	github.com/taskcluster/go-got v0.0.0-20190401132811-c63e3293a290
-	github.com/taskcluster/httpbackoff/v3 v3.0.0
+	github.com/taskcluster/httpbackoff/v3 v3.1.0
 	github.com/taskcluster/pulse-go v1.0.0
 	github.com/taskcluster/shell v0.0.0-20191115171910-c688067f12d3
 	github.com/taskcluster/slugid-go v1.1.0
@@ -47,7 +48,7 @@ require (
 	golang.org/x/crypto v0.0.0-20200302210943-78000ba7a073
 	golang.org/x/net v0.0.0-20200301022130-244492dfa37a
 	golang.org/x/sys v0.0.0-20200302150141-5c8b2ff67527
-	golang.org/x/tools v0.0.0-20200309202150-20ab64c0d93f
+	golang.org/x/tools v0.0.0-20200316212524-3e76bee198d8
 	gopkg.in/tylerb/graceful.v1 v1.2.15
 	gopkg.in/yaml.v2 v2.2.8
 	gopkg.in/yaml.v3 v3.0.0-20200121175148-a6ecf24a6d71

@@ -170,6 +170,11 @@ the following fields:
   Note that the nested `<workerImplementation>.config` structure is not allowed
   here.
 
+* `logging`: configuration for where logs from this application and from the
+  worker should be sent.  This defaults to the `stdio` logging implementation.
+
+  * `implementation`: the name of the logging implementation; see below.
+
 * `getSecrets`: if true (the default), then configuration is fetched from the
   secrets service and merged with the worker configuration.  This option is
   generally only used in testing.
@@ -354,6 +359,19 @@ Windows service that will run the worker.  In the latter case, the configPath
 must match the path configured within the service definition.  See
 [windows-services](./docs/windows-services.md) for details.  Note that running
 as a service requires at least generic-worker v16.6.0.
+
+
+## Logging
+
+The following logging implementations are supported:
+
+### stdio
+
+The "stdio" logging logs to stderr with a timestamp prefix.  It is the default
+if no logging configuration is given.  It does not take any other properties.
+
+    logging:
+        implementation: stdio
 <!-- end-usage -->
 
 # Deployment

@@ -5,9 +5,10 @@ import (
 	"io/ioutil"
 	"strings"
 
-	"github.com/taskcluster/taskcluster/v27/tools/taskcluster-worker-runner/provider"
-	"github.com/taskcluster/taskcluster/v27/tools/taskcluster-worker-runner/runner"
-	"github.com/taskcluster/taskcluster/v27/tools/taskcluster-worker-runner/worker"
+	"github.com/taskcluster/taskcluster/v28/tools/taskcluster-worker-runner/logging"
+	"github.com/taskcluster/taskcluster/v28/tools/taskcluster-worker-runner/provider"
+	"github.com/taskcluster/taskcluster/v28/tools/taskcluster-worker-runner/runner"
+	"github.com/taskcluster/taskcluster/v28/tools/taskcluster-worker-runner/worker"
 )
 
 // copy of Usage from `cmd/startworker/main.go` since go won't allow importing that
@@ -24,7 +25,9 @@ start-worker <runnerConfig>
 
 ` + provider.Usage() + `
 
-` + worker.Usage()
+` + worker.Usage() + `
+
+` + logging.Usage()
 }
 
 const prefix = "<!-- start-usage -->"

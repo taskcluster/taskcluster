@@ -6,13 +6,13 @@ import (
 	"log"
 	"time"
 
-	tcclient "github.com/taskcluster/taskcluster/v27/clients/client-go"
-	"github.com/taskcluster/taskcluster/v27/clients/client-go/tcworkermanager"
-	"github.com/taskcluster/taskcluster/v27/tools/taskcluster-worker-runner/cfg"
-	"github.com/taskcluster/taskcluster/v27/tools/taskcluster-worker-runner/protocol"
-	"github.com/taskcluster/taskcluster/v27/tools/taskcluster-worker-runner/provider/provider"
-	"github.com/taskcluster/taskcluster/v27/tools/taskcluster-worker-runner/run"
-	"github.com/taskcluster/taskcluster/v27/tools/taskcluster-worker-runner/tc"
+	tcclient "github.com/taskcluster/taskcluster/v28/clients/client-go"
+	"github.com/taskcluster/taskcluster/v28/clients/client-go/tcworkermanager"
+	"github.com/taskcluster/taskcluster/v28/tools/taskcluster-worker-runner/cfg"
+	"github.com/taskcluster/taskcluster/v28/tools/taskcluster-worker-runner/protocol"
+	"github.com/taskcluster/taskcluster/v28/tools/taskcluster-worker-runner/provider/provider"
+	"github.com/taskcluster/taskcluster/v28/tools/taskcluster-worker-runner/run"
+	"github.com/taskcluster/taskcluster/v28/tools/taskcluster-worker-runner/tc"
 )
 
 type AzureProvider struct {
@@ -159,8 +159,8 @@ func (p *AzureProvider) WorkerStarted(state *run.State) error {
 			log.Printf("Shutdown error: %v\n", err)
 		}
 	})
-	p.proto.Capabilities.Add("shutdown")
-	p.proto.Capabilities.Add("graceful-termination")
+	p.proto.AddCapability("shutdown")
+	p.proto.AddCapability("graceful-termination")
 
 	// start polling for graceful shutdown
 	p.terminationTicker = time.NewTicker(30 * time.Second)

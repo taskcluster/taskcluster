@@ -12,6 +12,7 @@ import LinkIcon from 'mdi-react/LinkIcon';
 import TextField from '../TextField';
 import MarkdownTextArea from '../MarkdownTextArea';
 import Button from '../Button';
+import DiffTextArea from '../DiffTextArea';
 import SpeedDial from '../SpeedDial';
 import SpeedDialAction from '../SpeedDialAction';
 import DialogAction from '../DialogAction';
@@ -206,16 +207,17 @@ export default class RoleForm extends Component {
             />
           </ListItem>
           <ListItem>
-            <TextField
-              label="Scopes"
+            <DiffTextArea
               name="scopeText"
               helperText="Enter each scope on its own line"
               onChange={this.handleInputChange}
-              spellCheck={false}
               fullWidth
               multiline
+              spellCheck={false}
               placeholder={isNewRole ? 'new-scope:for-something:*' : null}
               value={scopeText}
+              initialValue={role.scopes.join('\n')}
+              sort
             />
           </ListItem>
           {role && expandedScopes.length ? (
@@ -282,7 +284,6 @@ export default class RoleForm extends Component {
               spanProps={{
                 className: classNames(classes.fab, classes.saveRoleSpan),
               }}
-              tooltipOpen
               onClick={this.handleSaveRole}
               className={classes.saveIcon}
               variant="round"

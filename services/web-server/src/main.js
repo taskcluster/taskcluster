@@ -1,3 +1,4 @@
+require('../../prelude');
 const debug = require('debug')('app:main');
 const assert = require('assert');
 const depthLimit = require('graphql-depth-limit');

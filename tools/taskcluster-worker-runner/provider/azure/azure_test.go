@@ -7,10 +7,11 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
-	"github.com/taskcluster/taskcluster/v27/tools/taskcluster-worker-runner/cfg"
-	"github.com/taskcluster/taskcluster/v27/tools/taskcluster-worker-runner/protocol"
-	"github.com/taskcluster/taskcluster/v27/tools/taskcluster-worker-runner/run"
-	"github.com/taskcluster/taskcluster/v27/tools/taskcluster-worker-runner/tc"
+	"github.com/taskcluster/taskcluster/v28/tools/taskcluster-worker-runner/cfg"
+	"github.com/taskcluster/taskcluster/v28/tools/taskcluster-worker-runner/protocol"
+	ptesting "github.com/taskcluster/taskcluster/v28/tools/taskcluster-worker-runner/protocol/testing"
+	"github.com/taskcluster/taskcluster/v28/tools/taskcluster-worker-runner/run"
+	"github.com/taskcluster/taskcluster/v28/tools/taskcluster-worker-runner/tc"
 )
 
 func TestConfigureRun(t *testing.T) {
@@ -116,70 +117,74 @@ func TestConfigureRun(t *testing.T) {
 	require.Equal(t, "azure", state.WorkerLocation["cloud"])
 	require.Equal(t, "uswest", state.WorkerLocation["region"])
 
-	transp := protocol.NewFakeTransport()
-	proto := protocol.NewProtocol(transp)
-	proto.SetInitialized()
+	wkr := ptesting.NewFakeWorkerWithCapabilities("shutdown")
+	defer wkr.Close()
 
-	p.SetProtocol(proto)
+	p.SetProtocol(wkr.RunnerProtocol)
 	require.NoError(t, p.WorkerStarted(&state))
-	require.True(t, proto.Capable("shutdown"))
+	wkr.RunnerProtocol.Start(false)
+	wkr.RunnerProtocol.WaitUntilInitialized()
+	require.True(t, wkr.RunnerProtocol.Capable("shutdown"))
 }
 
 func TestCheckTerminationTime(t *testing.T) {
-	transp := protocol.NewFakeTransport()
-	proto := protocol.NewProtocol(transp)
-	proto.SetInitialized()
+	test := func(t *testing.T, proto *protocol.Protocol, hasCapability bool) {
+		evts := &ScheduledEvents{}
 
-	evts := &ScheduledEvents{}
+		mds := &fakeMetadataService{nil, nil, nil, evts, nil, "", nil, []byte(`{}`)}
+		p := &AzureProvider{
+			runnercfg:                  nil,
+			workerManagerClientFactory: nil,
+			metadataService:            mds,
+			proto:                      proto,
+			terminationTicker:          nil,
+		}
 
-	mds := &fakeMetadataService{nil, nil, nil, evts, nil, "", nil, []byte(`{}`)}
-	p := &AzureProvider{
-		runnercfg:                  nil,
-		workerManagerClientFactory: nil,
-		metadataService:            mds,
-		proto:                      proto,
-		terminationTicker:          nil,
+		proto.AddCapability("graceful-termination")
+		proto.Start(false)
+
+		// not time yet..
+		require.False(t, p.checkTerminationTime())
+
+		// oops, an error!
+		mds.ScheduledEventsError = fmt.Errorf("uhoh!")
+		require.False(t, p.checkTerminationTime())
+
+		mds.ScheduledEventsError = nil
+
+		evt := struct {
+			EventId      string
+			EventType    string
+			ResourceType string
+			Resources    []string
+			EventStatus  string
+			NotBefore    string
+		}{
+			EventType: "Preempt",
+		}
+		evts.Events = append(evts.Events, evt)
+		require.True(t, p.checkTerminationTime())
 	}
 
-	p.checkTerminationTime()
+	t.Run("without capability", func(t *testing.T) {
+		wkr := ptesting.NewFakeWorkerWithCapabilities()
+		defer wkr.Close()
 
-	// not time yet..
-	require.Equal(t, []protocol.Message{}, transp.Messages())
+		gotTerm := wkr.MessageReceivedFunc("graceful-termination", nil)
 
-	// oops, an error!
-	mds.ScheduledEventsError = fmt.Errorf("uhoh!")
+		test(t, wkr.RunnerProtocol, false)
 
-	p.checkTerminationTime()
-	require.Equal(t, []protocol.Message{}, transp.Messages())
+		require.False(t, gotTerm())
+	})
 
-	mds.ScheduledEventsError = nil
+	t.Run("with capability", func(t *testing.T) {
+		wkr := ptesting.NewFakeWorkerWithCapabilities("graceful-termination")
+		defer wkr.Close()
 
-	evt := struct {
-		EventId      string
-		EventType    string
-		ResourceType string
-		Resources    []string
-		EventStatus  string
-		NotBefore    string
-	}{
-		EventType: "Preempt",
-	}
-	evts.Events = append(evts.Events, evt)
-	p.checkTerminationTime()
+		gotTerm := wkr.MessageReceivedFunc("graceful-termination", nil)
 
-	// protocol does not have the capability set..
-	require.Equal(t, []protocol.Message{}, transp.Messages())
+		test(t, wkr.RunnerProtocol, false)
 
-	proto.Capabilities.Add("graceful-termination")
-	p.checkTerminationTime()
-
-	// now we send a message..
-	require.Equal(t, []protocol.Message{
-		protocol.Message{
-			Type: "graceful-termination",
-			Properties: map[string]interface{}{
-				"finish-tasks": false,
-			},
-		},
-	}, transp.Messages())
+		require.True(t, gotTerm())
+	})
 }

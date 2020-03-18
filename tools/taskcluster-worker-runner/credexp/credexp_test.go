@@ -5,8 +5,9 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/taskcluster/taskcluster/v27/tools/taskcluster-worker-runner/protocol"
-	"github.com/taskcluster/taskcluster/v27/tools/taskcluster-worker-runner/run"
+	"github.com/taskcluster/taskcluster/v28/tools/taskcluster-worker-runner/protocol"
+	ptesting "github.com/taskcluster/taskcluster/v28/tools/taskcluster-worker-runner/protocol/testing"
+	"github.com/taskcluster/taskcluster/v28/tools/taskcluster-worker-runner/run"
 )
 
 func TestCredsExpiration(t *testing.T) {
@@ -18,33 +19,27 @@ func TestCredsExpiration(t *testing.T) {
 
 	ce := New(state)
 
-	transp := protocol.NewFakeTransport()
-	proto := protocol.NewProtocol(transp)
-	proto.Capabilities.Add("graceful-termination")
-	proto.SetInitialized()
+	wkr := ptesting.NewFakeWorkerWithCapabilities("graceful-termination")
+	defer wkr.Close()
 
-	ce.SetProtocol(proto)
+	gotTerminated := wkr.MessageReceivedFunc("graceful-termination", func(msg protocol.Message) bool {
+		return msg.Properties["finish-tasks"].(bool) == false
+	})
+
+	ce.SetProtocol(wkr.RunnerProtocol)
 
 	err := ce.WorkerStarted()
+	wkr.RunnerProtocol.Start(false)
 	assert.NoError(t, err)
 
-	// and wait until that happens
+	// wait until the protocol negotiation happens and the graceful termination
+	// message is sent
 	for {
 		time.Sleep(10 * time.Millisecond)
-		haveMessage := len(transp.Messages()) != 0
-		if haveMessage {
+		if gotTerminated() {
 			break
 		}
 	}
-
-	assert.Equal(t, []protocol.Message{
-		protocol.Message{
-			Type: "graceful-termination",
-			Properties: map[string]interface{}{
-				"finish-tasks": false,
-			},
-		},
-	}, transp.Messages())
 
 	err = ce.WorkerFinished()
 	assert.NoError(t, err)

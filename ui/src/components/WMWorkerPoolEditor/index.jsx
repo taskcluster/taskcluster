@@ -278,12 +278,10 @@ export default class WMWorkerPoolEditor extends Component {
   };
 
   handleDeleteWorkerPool = () => {
-    const { workerPoolId1, workerPoolId2, ...rest } = this.state.workerPool;
-    const payload = { ...rest, config: JSON.parse(rest.config) };
+    const { workerPoolId1, workerPoolId2 } = this.state.workerPool;
 
     return this.props.deleteRequest({
       workerPoolId: joinWorkerPoolId(workerPoolId1, workerPoolId2),
-      payload,
     });
   };
 

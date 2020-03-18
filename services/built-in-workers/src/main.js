@@ -1,3 +1,4 @@
+require('../../prelude');
 const loader = require('taskcluster-lib-loader');
 const monitorManager = require('./monitor');
 const libReferences = require('taskcluster-lib-references');

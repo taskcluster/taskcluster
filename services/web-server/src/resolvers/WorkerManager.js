@@ -34,5 +34,10 @@ module.exports = {
     updateWorkerPool(parent, { workerPoolId, payload }, { clients} ) {
       return clients.workerManager.updateWorkerPool(workerPoolId, payload);
     },
+    async deleteWorkerPool(parent, { workerPoolId }, { clients} ) {
+      await clients.workerManager.deleteWorkerPool(workerPoolId);
+
+      return workerPoolId;
+    },
   },
 };

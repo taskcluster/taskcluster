@@ -393,6 +393,7 @@ tasks:
               - secrets:get:project/taskcluster/testing/generic-worker/ci-creds
               - queue:scheduler-id:taskcluster-github
               - queue:create-task:highest:proj-taskcluster/gw-ci-*
+              - queue:route:checks
           releaseTasks:
           - taskId: {$eval: 'as_slugid("release")'}
             taskGroupId: {$eval: as_slugid('taskGroupId')}
