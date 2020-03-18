@@ -4,8 +4,22 @@ exports.getEntries = ({ partitionKey, rowKey, condition }, entries) => {
   }
 
   return [...entries].filter(entry => {
+    let flag = false;
+
     if (entry.partition_key_out === partitionKey && entry.row_key_out === rowKey) {
-      return true;
+      flag = true;
+    }
+
+    if (entry.partition_key_out === partitionKey && !rowKey) {
+      flag = true;
+    }
+
+    if (entry.row_key_out === rowKey && !partitionKey) {
+      flag = true;
+    }
+
+    if (!rowKey && !partitionKey) {
+      flag = true;
     }
 
     if (condition) {
@@ -15,19 +29,19 @@ exports.getEntries = ({ partitionKey, rowKey, condition }, entries) => {
 
       if (operator === "=" && entry.value.expires !== date) {
         return false;
-      } else if (operator === ">") {
+      } else if (operator === ">" && new Date(entry.value.expires) <= new Date(date)) {
         return false;
-      } else if (operator === "<") {
+      } else if (operator === "<" && new Date(entry.value.expires) >= new Date(date)) {
         return false;
-      } else if (operator === ">=") {
+      } else if (operator === ">=" && new Date(entry.value.expires) < new Date(date)) {
         return false;
-      } else if (operator === "<=") {
+      } else if (operator === "<=" && new Date(entry.value.expires) > new Date(date)) {
         return false;
-      } else if (operator === "<>") {
+      } else if (operator === "<>" && new Date(entry.value.expires) === new Date(date)) {
         return false;
       }
     }
 
-    return true;
+    return flag;
   });
 };

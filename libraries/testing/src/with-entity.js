@@ -64,24 +64,8 @@ module.exports = (mock, skipping, helper, loaderComponent, cls,
     }
   });
 
-  // the default cleanup operation is just to delete all rows
   if (!cleanup) {
-    cleanup = async () => {
-      if (!skipping() && component) {
-        await component.scan({}, {
-          handler: async e => {
-            try {
-              await e.remove();
-            } catch (err) {
-              // ResourceNotFoundError is OK, at least it's deleted..
-              if (err.name !== 'ResourceNotFoundError') {
-                throw err;
-              }
-            }
-          },
-        });
-      }
-    };
+    cleanup = () => {};
   }
 
   // if tests are not ordered, empty the table before each test, and for

@@ -47,6 +47,16 @@ const resetDb = async ({testDbUrl}) => {
   }
 };
 
+const resetTable = async ({testDbUrl, tableName}) => {
+  const client = new Client({connectionString: testDbUrl});
+  await client.connect();
+  try {
+    await client.query(`truncate ${tableName}`);
+  } finally {
+    await client.end();
+  }
+};
+
 /**
  * withDb:
  *
@@ -111,3 +121,4 @@ module.exports.withDb.secret = [
 
 // this is useful for taskcluster-db's tests, as well
 module.exports.resetDb = resetDb;
+module.exports.resetTable = resetTable;
