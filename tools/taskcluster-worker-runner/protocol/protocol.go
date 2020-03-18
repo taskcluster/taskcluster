@@ -78,12 +78,15 @@ func (prot *Protocol) Start(asWorker bool) {
 			prot.SetInitialized()
 		})
 
-		prot.Send(Message{
-			Type: "welcome",
-			Properties: map[string]interface{}{
-				"capabilities": prot.localCapabilities.List(),
-			},
-		})
+		// send a welcome message, but don't wait for it to complete
+		go func() {
+			prot.Send(Message{
+				Type: "welcome",
+				Properties: map[string]interface{}{
+					"capabilities": prot.localCapabilities.List(),
+				},
+			})
+		}()
 	}
 	prot.startedMutex.Lock()
 	prot.started = true

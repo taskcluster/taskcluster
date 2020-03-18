@@ -12,6 +12,7 @@ type RunnerConfig struct {
 	Provider             ProviderConfig             `yaml:"provider"`
 	WorkerImplementation WorkerImplementationConfig `yaml:"worker"`
 	WorkerConfig         *WorkerConfig              `yaml:"workerConfig"`
+	Logging              *LoggingConfig             `yaml:"logging"`
 	GetSecrets           bool                       `yaml:"getSecrets"`
 	CacheOverRestarts    string                     `yaml:"cacheOverRestarts"`
 }

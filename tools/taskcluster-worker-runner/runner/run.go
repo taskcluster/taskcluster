@@ -10,6 +10,7 @@ import (
 	"github.com/taskcluster/taskcluster/v28/tools/taskcluster-worker-runner/cfg"
 	"github.com/taskcluster/taskcluster/v28/tools/taskcluster-worker-runner/credexp"
 	"github.com/taskcluster/taskcluster/v28/tools/taskcluster-worker-runner/files"
+	"github.com/taskcluster/taskcluster/v28/tools/taskcluster-worker-runner/logging"
 	"github.com/taskcluster/taskcluster/v28/tools/taskcluster-worker-runner/perms"
 	"github.com/taskcluster/taskcluster/v28/tools/taskcluster-worker-runner/protocol"
 	"github.com/taskcluster/taskcluster/v28/tools/taskcluster-worker-runner/provider"
@@ -28,6 +29,8 @@ func Run(configFile string) (state run.State, err error) {
 		err = fmt.Errorf("Error loading runner config file %s: %s", configFile, err)
 		return
 	}
+
+	logging.Configure(runnercfg)
 
 	runCached := false
 	if runnercfg.CacheOverRestarts != "" {
@@ -165,6 +168,14 @@ func Run(configFile string) (state run.State, err error) {
 	// set up protocol
 
 	proto := protocol.NewProtocol(transp)
+
+	// Register to receive log messages on the given protocol
+	proto.AddCapability("log")
+	proto.Register("log", func(msg protocol.Message) {
+		logging.Destination.LogStructured(msg.Properties["body"].(map[string]interface{}))
+	})
+
+	// inform other components about the protocol
 	provider.SetProtocol(proto)
 	worker.SetProtocol(proto)
 	ce.SetProtocol(proto)

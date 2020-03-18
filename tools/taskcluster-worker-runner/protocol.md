@@ -20,7 +20,7 @@ Each message is in the form of a newline-terminated line of the form
 
 with the `{...}` being a JSON encoding of the message containing at least a `type` property, as described below.
 
-Any line that does not match this pattern is output to the receiving process's stdout in the expectation that it will be fed to a log aggregator.
+Any line that does not match this pattern is logged using the standard `log` package.
 Note that stderr is not included in the protocol.
 
 ## Go Package
@@ -74,5 +74,19 @@ If false, then shutdown is imminent and the worker should simply clean up and ex
 ```
 ~{"type": "graceful-termination", "finish-tasks": false}
 ```
+
+There is no reponse message.
+
+### log
+
+This message type, sent from the worker, contains a structured log message for transmission to a log destination.
+
+```
+~{"type": "log", "body": {"textPayload": "A thing happened!"}}
+~{"type": "log", "body": {"level": "catastrophic", "code": "red"}}
+```
+
+Note that for non-structured log destinations, the body property `textPayload` is treated specially as the primary field of the message.
+Using this property will make non-structured logs much easier to read.
 
 There is no reponse message.

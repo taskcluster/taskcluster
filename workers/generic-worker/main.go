@@ -30,7 +30,6 @@ import (
 	tcclient "github.com/taskcluster/taskcluster/v28/clients/client-go"
 	"github.com/taskcluster/taskcluster/v28/clients/client-go/tcqueue"
 	"github.com/taskcluster/taskcluster/v28/internal/scopes"
-	"github.com/taskcluster/taskcluster/v28/tools/taskcluster-worker-runner/protocol"
 	"github.com/taskcluster/taskcluster/v28/workers/generic-worker/expose"
 	"github.com/taskcluster/taskcluster/v28/workers/generic-worker/fileutil"
 	"github.com/taskcluster/taskcluster/v28/workers/generic-worker/gwconfig"
@@ -62,13 +61,6 @@ var (
 	config         *gwconfig.Config
 	configProvider gwconfig.Provider
 	Features       []Feature
-
-	// Support for communication betweeen this process and
-	// taskcluster-worker-runner.  This is initialized early in the
-	// `generic-worker run` process and can be used by any component after that
-	// time.
-	workerRunnerTransport protocol.Transport
-	WorkerRunnerProtocol  *protocol.Protocol
 
 	logName = "public/logs/live_backing.log"
 	logPath = filepath.Join("generic-worker", "live_backing.log")
@@ -234,30 +226,6 @@ func main() {
 	default:
 		// platform specific...
 		os.Exit(int(platformTargets(arguments)))
-	}
-}
-
-func initializeWorkerRunnerProtocol(input io.Reader, output io.Writer, withWorkerRunner bool) {
-	if withWorkerRunner {
-		transp := protocol.NewStdioTransport()
-		go func() {
-			_, _ = io.Copy(transp, input)
-		}()
-		go func() {
-			_, _ = io.Copy(output, transp)
-		}()
-		workerRunnerTransport = transp
-	} else {
-		workerRunnerTransport = protocol.NewNullTransport()
-	}
-
-	WorkerRunnerProtocol = protocol.NewProtocol(workerRunnerTransport)
-	WorkerRunnerProtocol.AddCapability("graceful-termination")
-	WorkerRunnerProtocol.Start(true)
-
-	// when not using worker-runner, consider the protocol initialized with no capabilities
-	if !withWorkerRunner {
-		WorkerRunnerProtocol.SetInitialized()
 	}
 }
 

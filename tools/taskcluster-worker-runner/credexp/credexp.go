@@ -26,6 +26,7 @@ func New(state *run.State) *CredExp {
 
 func (ce *CredExp) SetProtocol(proto *protocol.Protocol) {
 	ce.proto = proto
+	proto.AddCapability("graceful-termination")
 }
 
 func (ce *CredExp) WorkerStarted() error {

@@ -115,7 +115,7 @@ func (p *AWSProvider) SetProtocol(proto *protocol.Protocol) {
 	p.proto = proto
 }
 
-func (p *AWSProvider) checkTerminationTime() {
+func (p *AWSProvider) checkTerminationTime() bool {
 	_, err := p.metadataService.queryMetadata(TERMINATION_PATH)
 	// if the file exists (so, no error), it's time to go away
 	if err == nil {
@@ -129,7 +129,9 @@ func (p *AWSProvider) checkTerminationTime() {
 				},
 			})
 		}
+		return true
 	}
+	return false
 }
 
 func (p *AWSProvider) WorkerStarted(state *run.State) error {
