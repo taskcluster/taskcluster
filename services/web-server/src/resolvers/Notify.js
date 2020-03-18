@@ -4,6 +4,7 @@ module.exports = {
     PULSE: 'pulse',
     IRC_USER: 'irc-user',
     IRC_CHANNEL: 'irc-channel',
+    MATRIX_ROOM: 'matrix-room',
   },
   Query: {
     listDenylistAddresses(parent, { connection, filter }, { loaders }) {
