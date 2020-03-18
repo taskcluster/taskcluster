@@ -7,6 +7,7 @@ const testing = require('taskcluster-lib-testing');
 const monitorManager = require('../src/monitor');
 const taskcluster = require('taskcluster-client');
 const {LEVELS} = require('taskcluster-lib-monitor');
+const {CHECKRUN_TEXT} = require('../src/constants');
 
 /**
  * This tests the event handlers, faking out all of the services they
@@ -18,6 +19,8 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
   helper.withPulse(mock, skipping);
 
   const URL_PREFIX = 'https://tc-tests.example.com/tasks/groups/';
+  const CUSTOM_CHECKRUN_TASKID = 'apple';
+  const CUSTOM_CHECKRUN_TEXT = 'Hi there! This is your custom text';
 
   let github = null;
   let handlers = null;
@@ -91,15 +94,34 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
     handlers.realCreateTasks = handlers.createTasks;
     handlers.createTasks = sinon.stub();
     handlers.queueClient = {
-      task: (_) => {
-        return Promise.resolve({
-          metadata: {
-            name: 'Task Name',
-            description: 'Task Description',
-          },
-        });
+      task: taskId => {
+        switch (taskId) {
+          case CUSTOM_CHECKRUN_TASKID:
+            return Promise.resolve({
+              metadata: {
+                name: 'Task with custom check run',
+                description: 'Task Description',
+              },
+              extra: {
+                github: {
+                  customCheckRun: {
+                    textArtifactName: 'public/text.md',
+                  },
+                },
+              },
+            });
+
+          default:
+            return Promise.resolve({
+              metadata: {
+                name: 'Task Name',
+                description: 'Task Description',
+              },
+            });
+        }
       },
       listTaskGroup: async () => ({tasks: []}),
+      getArtifact: async() => CUSTOM_CHECKRUN_TEXT,
     };
 
     // set up the allowPullRequests key
@@ -621,7 +643,8 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
 
     teardown(async function() {
       await helper.Builds.remove({taskGroupId: TASKGROUPID}, true);
-      await helper.CheckRuns.remove({taskGroupId: TASKGROUPID, taskId: TASKID});
+      await helper.CheckRuns.remove({taskGroupId: TASKGROUPID, taskId: TASKID}, true);
+      await helper.CheckRuns.remove({taskGroupId: TASKGROUPID, taskId: CUSTOM_CHECKRUN_TASKID}, true);
     });
 
     const TASKGROUPID = 'AXB-sjV-SoCyibyq3P32ow';
@@ -738,6 +761,26 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
       assert(monitorManager.messages.some(({Type, Severity}) => Type === 'monitor.error' && Severity === LEVELS.err));
       monitorManager.reset();
     });
+
+    test('successfully adds custom check run text from an artifact', async function () {
+      await addBuild({state: 'pending', taskGroupId: TASKGROUPID});
+      await addCheckRun({taskGroupId: TASKGROUPID, taskId: CUSTOM_CHECKRUN_TASKID});
+      await simulateExchangeMessage({
+        taskGroupId: TASKGROUPID,
+        exchange: 'exchange/taskcluster-queue/v1/task-completed',
+        routingKey: 'route.checks',
+        taskId: CUSTOM_CHECKRUN_TASKID,
+        reasonResolved: 'completed',
+        state: 'completed',
+      });
+
+      assert(github.inst(9988).checks.update.calledOnce, 'checks.update was not called');
+      let [args] = github.inst(9988).checks.update.firstCall.args;
+      assert.strictEqual(
+        args.output.text,
+        `[${CHECKRUN_TEXT}](${libUrls.testRootUrl()}/tasks/${CUSTOM_CHECKRUN_TASKID})\n${CUSTOM_CHECKRUN_TEXT}`
+      );
+    })
   });
 
   suite('Statuses API: initial status handler', function() {

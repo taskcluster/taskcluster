@@ -3,22 +3,7 @@ const libUrls = require('taskcluster-lib-urls');
 const yaml = require('js-yaml');
 const assert = require('assert');
 const {consume} = require('taskcluster-lib-pulse');
-
-const CONCLUSIONS = { // maps status communicated by the queue service to github checkrun conclusions
-  /*eslint-disable quote-props*/
-  'completed': 'success',
-  'failed': 'failure',
-  'exception': 'failure',
-  'deadline-exceeded': 'timed_out',
-  'canceled': 'cancelled',
-  'superseded': 'neutral', // queue status means: is not relevant anymore
-  'claim-expired': 'failure',
-  'worker-shutdown': 'neutral', // queue status means: will be retried
-  'malformed-payload': 'action_required', // github status means "correct your task definition"
-  'resource-unavailable': 'failure',
-  'internal-error': 'failure',
-  'intermittent-task': 'neutral', // queue status means: will be retried
-};
+const {CONCLUSIONS, CHECKRUN_TEXT} = require('./constants');
 
 /**
  * Create handlers
@@ -523,7 +508,7 @@ async function statusHandler(message) {
         output: {
           title: `${this.context.cfg.app.statusContext} (${eventType.split('.')[0]})`,
           summary: `${taskDefinition.metadata.description}`,
-          text: `[View task in Taskcluster](${taskUI(this.context.cfg.taskcluster.rootUrl, taskGroupId, taskId)})\n${customCheckRunText || ''}`,
+          text: `[${CHECKRUN_TEXT}](${taskUI(this.context.cfg.taskcluster.rootUrl, taskGroupId, taskId)})\n${customCheckRunText || ''}`,
         },
       });
     } else {
@@ -535,7 +520,7 @@ async function statusHandler(message) {
         output: {
           title: `${this.context.cfg.app.statusContext} (${eventType.split('.')[0]})`,
           summary: `${taskDefinition.metadata.description}`,
-          text: `[View task in Taskcluster](${taskUI(this.context.cfg.taskcluster.rootUrl, taskGroupId, taskId)})\n${customCheckRunText || ''}`,
+          text: `[${CHECKRUN_TEXT}](${taskUI(this.context.cfg.taskcluster.rootUrl, taskGroupId, taskId)})\n${customCheckRunText || ''}`,
         },
         details_url: taskGroupUI(this.context.cfg.taskcluster.rootUrl, taskGroupId),
       });
