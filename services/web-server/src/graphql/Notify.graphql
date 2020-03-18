@@ -8,6 +8,7 @@ enum NotificationType {
   PULSE
   IRC_USER
   IRC_CHANNEL
+  MATRIX_ROOM
 }
 
 input NotificationAddressInput {
