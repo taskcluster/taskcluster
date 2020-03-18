@@ -3,7 +3,7 @@ defaults:
   app:
     component: hooks
     hookTableName: hooks_entities
-    lastFireTableName: last_fire3_entities
+    lastFireTableName: last_fire_3_entities
     queuesTableName: queues_entities
     lastFiresExpirationDelay: '- 1 day'
     scheduler:
@@ -55,9 +55,6 @@ test:
 
   app:
     component:        hooks-tests
-    hookTableName:    HooksTestTable2
-    lastFireTableName: LastFireTestTable
-    queuesTableName:  QueueTestTable
     scheduler:
       pollingDelay:   5000
   azure:

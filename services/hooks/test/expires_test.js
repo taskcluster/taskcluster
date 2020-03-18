@@ -4,8 +4,10 @@ const assume = require('assume');
 const testing = require('taskcluster-lib-testing');
 
 suite(testing.suiteName(), function() {
-  helper.secrets.mockSuite('expires_test.js', ['azure'], function(mock, skipping) {
+  helper.secrets.mockSuite('expires_test.js', ['db'], function(mock, skipping) {
+    helper.withDb(mock, skipping);
     helper.withEntities(mock, skipping);
+    helper.resetTables(mock, skipping);
 
     test('expire nothing', async function() {
       const count = await helper.LastFire.expires(helper.Hook, new Date());

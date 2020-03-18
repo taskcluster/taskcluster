@@ -7,11 +7,13 @@ const helper = require('./helper');
 const testing = require('taskcluster-lib-testing');
 const {defaultMonitorManager} = require('taskcluster-lib-monitor');
 
-helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping) {
+helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
+  helper.withDb(mock, skipping);
   helper.withEntities(mock, skipping);
   helper.withTaskCreator(mock, skipping);
   helper.withPulse(mock, skipping);
   helper.withServer(mock, skipping);
+  helper.resetTables(mock, skipping);
 
   // Use the same hook definition for everything
   const hookDef = _.cloneDeep(require('./test_definition'));
@@ -115,12 +117,12 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
 
   suite('createHook', function() {
     subSkip();
-    test('creates a hook', async () => {
+    test("creates a hook", async () => {
       const r1 = await helper.hooks.createHook('foo', 'bar', hookWithTriggerSchema);
       const r2 = await helper.hooks.hook('foo', 'bar');
       assume(r1).deep.equals(r2);
       helper.assertPulseMessage('hook-created', ({payload}) =>
-        _.isEqual({hookGroupId: 'foo', hookId: 'bar'}, payload));
+        _.isEqual({ hookGroupId: 'foo', hookId: 'bar' }, payload));
     });
 
     test('returns 500 when pulse publish fails', async () => {
@@ -263,7 +265,6 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
         () => { throw new Error('Expected an error'); },
         (err) => { assume(err.statusCode).equals(400); });
     });
-
   });
 
   suite('updateHook', function() {
