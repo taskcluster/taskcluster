@@ -506,11 +506,11 @@ async function statusHandler(message) {
   try {
     const taskDefinition = await this.queueClient.task(taskId);
     debug(`Result status. Got task build from DB and task definition for ${taskId} from Queue service`);
-    const {checkRunArtifactName} = taskDefinition.extra.github;
+    const {customCheckRun} = (taskDefinition.extra && taskDefinition.extra.github) || {};
 
-    let checkRunArtifact = '';
-    if (checkRunArtifactName) {
-      checkRunArtifact = (await this.queueClient.getArtifact(taskId, runId, checkRunArtifactName)).toString();
+    let customCheckRunText = '';
+    if (customCheckRun && customCheckRun.textArtifactName) {
+      customCheckRunText = (await this.queueClient.getArtifact(taskId, runId, customCheckRun.textArtifactName)).toString();
     }
 
 
@@ -523,7 +523,7 @@ async function statusHandler(message) {
         output: {
           title: `${this.context.cfg.app.statusContext} (${eventType.split('.')[0]})`,
           summary: `${taskDefinition.metadata.description}`,
-          text: `[View task in Taskcluster](${taskUI(this.context.cfg.taskcluster.rootUrl, taskGroupId, taskId)})\n${checkRunArtifact || ''}`,
+          text: `[View task in Taskcluster](${taskUI(this.context.cfg.taskcluster.rootUrl, taskGroupId, taskId)})\n${customCheckRunText || ''}`,
         },
       });
     } else {
@@ -535,7 +535,7 @@ async function statusHandler(message) {
         output: {
           title: `${this.context.cfg.app.statusContext} (${eventType.split('.')[0]})`,
           summary: `${taskDefinition.metadata.description}`,
-          text: `[View task in Taskcluster](${taskUI(this.context.cfg.taskcluster.rootUrl, taskGroupId, taskId)})\n${checkRunArtifact || ''}`,
+          text: `[View task in Taskcluster](${taskUI(this.context.cfg.taskcluster.rootUrl, taskGroupId, taskId)})\n${customCheckRunText || ''}`,
         },
         details_url: taskGroupUI(this.context.cfg.taskcluster.rootUrl, taskGroupId),
       });
