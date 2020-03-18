@@ -422,6 +422,15 @@ class Database {
       throw new Error(`No DB pool for mode ${mode}`);
     }
     const client = await pool.connect();
+    // while we have the client "checked out" from the pool, the pool has
+    // stopped listening for error events on it.  We don't actually care
+    // about such error events, as they will simply cause an error on the
+    // next attempt to use the client, but we have to handle them anyway
+    // or Node will kill the process.  However, when this happens we must
+    // pass the error back to the pool or it won't know the client is bad.
+    let clientError = undefined;
+    const handleError = err => clientError = err;
+    client.on('error', handleError);
     const wrapped = {
       query: async function(query) {
         try {
@@ -435,7 +444,8 @@ class Database {
     try {
       return await cb(wrapped);
     } finally {
-      client.release();
+      client.removeListener('error', handleError);
+      client.release(clientError);
     }
   }
 
