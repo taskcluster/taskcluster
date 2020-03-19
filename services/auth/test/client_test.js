@@ -6,7 +6,8 @@ const testing = require('taskcluster-lib-testing');
 const taskcluster = require('taskcluster-client');
 const {defaultMonitorManager} = require('taskcluster-lib-monitor');
 
-helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, skipping) {
+helper.secrets.mockSuite(testing.suiteName(), ['db', 'gcp'], function(mock, skipping) {
+  helper.withDb(mock, skipping);
   helper.withCfg(mock, skipping);
   helper.withPulse(mock, skipping);
   helper.withEntities(mock, skipping);

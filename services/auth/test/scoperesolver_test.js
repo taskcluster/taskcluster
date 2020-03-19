@@ -15,7 +15,8 @@ suite(testing.suiteName(), () => {
     scopeResolver = new ScopeResolver({monitor, disableCache: true});
   });
 
-  helper.secrets.mockSuite('setup and listening', ['azure', 'gcp'], function(mock, skipping) {
+  helper.secrets.mockSuite('setup and listening', ['db', 'gcp'], function(mock, skipping) {
+    helper.withDb(mock, skipping);
     helper.withEntities(mock, skipping);
     helper.withRoles(mock, skipping);
     helper.withPulse(mock, skipping);

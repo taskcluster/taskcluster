@@ -8,12 +8,14 @@ helper.secrets.mockSuite(testing.suiteName(), ['gcp'], function(mock, skipping) 
     return; // We don't test this with real credentials for now!
   }
   suite('regular SentryManager with fake client', function() {
+    helper.withDb(mock, skipping);
     helper.withCfg(mock, skipping);
     helper.withSentry(mock, skipping);
     helper.withPulse('mock', skipping);
     helper.withEntities('mock', skipping);
     helper.withRoles('mock', skipping);
     helper.withServers(mock, skipping);
+    helper.resetTables(mock, skipping);
 
     test('sentryDSN api method', async () => {
       await helper.apiClient.sentryDSN('playground');
@@ -41,12 +43,14 @@ helper.secrets.mockSuite(testing.suiteName(), ['gcp'], function(mock, skipping) 
     suiteSetup('zero out sentry config', function() {
       helper.load.cfg('app.sentry', {});
     });
+    helper.withDb(mock, skipping);
     helper.withCfg(mock, skipping);
     helper.withSentry(mock, skipping);
     helper.withPulse('mock', skipping);
     helper.withEntities('mock', skipping);
     helper.withRoles('mock', skipping);
     helper.withServers(mock, skipping);
+    helper.resetTables(mock, skipping);
 
     test('sentryDSN api method', async () => {
       await assert.rejects(
