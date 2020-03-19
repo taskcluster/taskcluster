@@ -1,29 +1,14 @@
-const assert = require('assert').strict;
 const helper = require('../helper');
 const testing = require('taskcluster-lib-testing');
-const {UNDEFINED_TABLE} = require('taskcluster-lib-postgres');
 
 suite(testing.suiteName(), function() {
   helper.withDbForVersion();
 
   test('widgets table created', async function() {
-    const assertNoWidgets =
-      () => helper.withDbClient(async client => {
-        await assert.rejects(
-          () => client.query('select * from widgets'),
-          err => err.code === UNDEFINED_TABLE);
-      });
-
-    const assertWidgets =
-      () => helper.withDbClient(async client => {
-        const res = await client.query('select * from widgets');
-        assert.deepEqual(res.rows, []);
-      });
-
-    await assertNoWidgets();
+    await helper.assertNoTable("widgets");
     await helper.upgradeTo(1);
-    await assertWidgets();
+    await helper.assertTable("widgets");
     await helper.downgradeTo(0);
-    await assertNoWidgets();
+    await helper.assertNoTable("widgets");
   });
 });

@@ -1,0 +1,156 @@
+version: 3
+migrationScript: |-
+  begin
+    create table azure_queue_messages (
+      message_id uuid not null primary key,
+      queue_name text not null,
+      message_text text not null,
+      inserted timestamp not null,
+      visible timestamp not null, -- visible after this time
+      expires timestamp not null,  -- expired after this time
+      pop_receipt uuid -- null means not popped
+    );
+    -- 'get' operations sort by inserted within a queue
+    create index azure_queue_messages_inserted on azure_queue_messages(queue_name, inserted);
+    grant select, insert, update, delete on azure_queue_messages to $db_user_prefix$_queue;
+  end
+downgradeScript: |-
+  begin
+    revoke select, insert, update, delete on azure_queue_messages from $db_user_prefix$_queue;
+    drop table azure_queue_messages;
+  end
+methods:
+  azure_queue_count:
+    description: |
+      Count messages in the named queue.
+    mode: read
+    serviceName: queue
+    args: queue_name text
+    returns: integer
+    # note that this will block on locked rows.  Such row locks are very quick,
+    # only lasting long enough to update the row with a pop_receipt and a new
+    # value of `visible`.
+    body: |-
+      begin
+        return (select count(*)
+        from azure_queue_messages msgs
+        where msgs.queue_name = azure_queue_count.queue_name);
+      end
+
+  azure_queue_put:
+    description: |
+      Put the given message into the given queue.  The message will not be visible until
+      after the visible timestamp, and will disappear after the expires timestamp.
+    mode: write
+    serviceName: queue
+    args: queue_name text, message_text text, visible timestamp, expires timestamp
+    returns: void
+    body: |-
+      begin
+        insert into azure_queue_messages (
+            queue_name,
+            message_id,
+            message_text,
+            inserted,
+            visible,
+            expires
+          ) values (
+            azure_queue_put.queue_name,
+            public.gen_random_uuid(),
+            azure_queue_put.message_text,
+            now(),
+            azure_queue_put.visible,
+            azure_queue_put.expires
+          );
+        execute 'notify ' || quote_ident(queue_name);
+      end
+
+  azure_queue_get:
+    description: |
+      Get up to `count` messages from the given queue, setting the `visible`
+      column of each to the given value.  Returns a `message_id` and
+      `pop_receipt` for each one, for use with `azure_queue_delete` and
+      `azure_queue_update`.
+    mode: write
+    serviceName: queue
+    args: queue_name text, visible timestamp, count integer
+    returns: table (message_id uuid, message_text text, pop_receipt uuid)
+    # This uses the queueing logic described many places around the web but
+    # best in https://tnishimura.github.io/articles/queues-in-postgresql/
+    #
+    # The magic sauce is
+    #
+    #   for update -- locks returned rows
+    #   skip locked -- skips locked rows
+    #
+    # The first ensures that no two concurrent transactions return the
+    # same message, while the second ensures that concurrent transactions
+    # do not serialize themselves but instead immediately return distinct
+    # messages, if they are available.
+    body: |-
+      begin
+        return query update azure_queue_messages m1
+          set
+            pop_receipt = public.gen_random_uuid(),
+            visible = azure_queue_get.visible
+          where
+            m1.message_id in (
+              select m2.message_id from azure_queue_messages m2
+              where m2.queue_name = azure_queue_get.queue_name
+                and m2.visible <= now()
+                and m2.expires > now()
+              order by m2.inserted
+              for update skip locked
+              limit count
+          )
+          returning m1.message_id, m1.message_text, m1.pop_receipt;
+      end
+
+  azure_queue_delete:
+    description: |
+      Delete the message identified by the given `queue_name`, `message_id` and
+      `pop_receipt`.
+    mode: write
+    serviceName: queue
+    args: queue_name text, message_id uuid, pop_receipt uuid
+    returns: void
+    body: |-
+      begin
+        delete from azure_queue_messages msgs
+          where msgs.queue_name = azure_queue_delete.queue_name
+            and msgs.message_id = azure_queue_delete.message_id
+            and msgs.pop_receipt = azure_queue_delete.pop_receipt;
+      end
+
+  azure_queue_update:
+    description: |
+      Update the message identified by the given `queue_name`, `message_id` and
+      `pop_receipt`, setting its `visible` and `message_text` properties as
+      given.
+    mode: write
+    serviceName: queue
+    args: queue_name text, message_text text, message_id uuid, pop_receipt uuid, visible timestamp
+    returns: void
+    body: |-
+      begin
+        update azure_queue_messages msgs
+          set message_text = azure_queue_update.message_text,
+            visible = azure_queue_update.visible
+          where msgs.queue_name = azure_queue_update.queue_name
+            and msgs.message_id = azure_queue_update.message_id
+            and msgs.pop_receipt = azure_queue_update.pop_receipt;
+      end
+
+  azure_queue_delete_expired:
+    description: |
+      Delete all expired messages.  This is a maintenance task that should occur
+      about once an hour.
+    mode: write
+    serviceName: queue
+    args: ''
+    returns: void
+    body: |-
+      begin
+        delete from azure_queue_messages msgs
+          where msgs.expires <= now();
+      end
