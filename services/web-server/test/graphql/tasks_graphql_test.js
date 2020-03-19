@@ -8,10 +8,12 @@ const createTaskQuery = require('../fixtures/createTask.graphql');
 const subscribeTasks = require('../fixtures/tasksSubscriptions.graphql');
 
 helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
+  helper.withDb(mock, skipping);
   helper.withEntities(mock, skipping);
   helper.withClients(mock, skipping);
   helper.withServer(mock, skipping);
   helper.withPulse(helper, skipping);
+  helper.resetTables(mock, skipping);
 
   suite('Task Queries and Mutations', function() {
     test('query works', async function() {

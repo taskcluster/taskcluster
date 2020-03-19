@@ -5,9 +5,11 @@ const helper = require('../helper');
 const deleteWorkerPoolMutation = require('../fixtures/deleteWorkerPool.graphql');
 
 helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
+  helper.withDb(mock, skipping);
   helper.withEntities(mock, skipping);
   helper.withClients(mock, skipping);
   helper.withServer(mock, skipping);
+  helper.resetTables(mock, skipping);
 
   suite('WorkerPools', function() {
     test('deleting a worker pool calls deleteWorkerPool', async function() {

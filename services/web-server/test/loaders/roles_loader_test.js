@@ -11,9 +11,11 @@ const createRoleMutation = require('../fixtures/createRole.graphql');
 const loader = require('../../src/loaders/roles');
 
 helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
+  helper.withDb(mock, skipping);
   helper.withEntities(mock, skipping);
   helper.withClients(mock, skipping);
   helper.withServer(mock, skipping);
+  helper.resetTables(mock, skipping);
 
   const getClient = () => {
     const cache = new InMemoryCache();
