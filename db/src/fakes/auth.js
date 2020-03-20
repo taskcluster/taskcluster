@@ -5,32 +5,23 @@ const { getEntries } = require("../utils");
 
 class FakeAuth {
   constructor() {
-    this.clients = new Set();
-    this.roles = new Set();
+    this.clients = new Map();
+    this.roles = new Map();
   }
 
   /* helpers */
 
   reset() {
-    this.clients = new Set();
-    this.roles = new Set();
+    this.clients = new Map();
+    this.roles = new Map();
   }
 
   _getClient({ partitionKey, rowKey }) {
-    for (let c of [...this.clients]) {
-      if (c.partition_key_out === partitionKey && c.row_key_out === rowKey) {
-        return c;
-      }
-    }
+    return this.clients.get(`${partitionKey}-${rowKey}`);
   }
 
   _removeClient({ partitionKey, rowKey }) {
-    for (let c of [...this.clients]) {
-      if (c.partition_key_out === partitionKey && c.row_key_out === rowKey) {
-        this.clients.delete(c);
-        break;
-      }
-    }
+    this.clients.delete(`${partitionKey}-${rowKey}`);
   }
 
   _addClient(client) {
@@ -48,27 +39,17 @@ class FakeAuth {
       etag,
     };
 
-    this._removeClient({ partitionKey: client.partition_key, rowKey: client.row_key });
-    this.clients.add(c);
+    this.clients.set(`${c.partition_key_out}-${c.row_key_out}`, c);
 
     return c;
   }
 
   _getRole({ partitionKey, rowKey }) {
-    for (let c of [...this.roles]) {
-      if (c.partition_key_out === partitionKey && c.row_key_out === rowKey) {
-        return c;
-      }
-    }
+    return this.roles.get(`${partitionKey}-${rowKey}`);
   }
 
   _removeRole({ partitionKey, rowKey }) {
-    for (let c of [...this.roles]) {
-      if (c.partition_key_out === partitionKey && c.row_key_out === rowKey) {
-        this.roles.delete(c);
-        break;
-      }
-    }
+    this.roles.delete(`${partitionKey}-${rowKey}`);
   }
 
   _addRole(role) {
@@ -86,8 +67,7 @@ class FakeAuth {
       etag,
     };
 
-    this._removeRole({ partitionKey: role.partition_key, rowKey: role.row_key });
-    this.roles.add(c);
+    this.roles.set(`${c.partition_key_out}-${c.row_key_out}`, c);
 
     return c;
   }

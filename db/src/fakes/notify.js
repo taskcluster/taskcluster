@@ -6,14 +6,14 @@ const { getEntries } = require("../utils");
 class FakeNotify {
   constructor() {
     this.widgets = new Set();
-    this.denylistedNotifications = new Set();
+    this.denylistedNotifications = new Map();
   }
 
   /* helpers */
 
   reset() {
     this.widgets = new Set();
-    this.denylistedNotifications = new Set();
+    this.denylistedNotifications = new Map();
   }
 
   addWidget(name) {
@@ -22,20 +22,11 @@ class FakeNotify {
   }
 
   _getDenylistedNotification({ partitionKey, rowKey }) {
-    for (let c of [...this.denylistedNotifications]) {
-      if (c.partition_key_out === partitionKey && c.row_key_out === rowKey) {
-        return c;
-      }
-    }
+    return this.denylistedNotifications.get(`${partitionKey}-${rowKey}`);
   }
 
   _removeDenylistedNotification({ partitionKey, rowKey }) {
-    for (let c of [...this.denylistedNotifications]) {
-      if (c.partition_key_out === partitionKey && c.row_key_out === rowKey) {
-        this.denylistedNotifications.delete(c);
-        break;
-      }
-    }
+    this.denylistedNotifications.delete(`${partitionKey}-${rowKey}`);
   }
 
   _addDenylistedNotification(denylistedNotification) {
@@ -53,11 +44,7 @@ class FakeNotify {
       etag,
     };
 
-    this._removeDenylistedNotification({
-      partitionKey: denylistedNotification.partition_key,
-      rowKey: denylistedNotification.row_key,
-    });
-    this.denylistedNotifications.add(c);
+    this.denylistedNotifications.set(`${c.partition_key_out}-${c.row_key_out}`, c);
 
     return c;
   }

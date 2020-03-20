@@ -5,30 +5,21 @@ const { getEntries } = require('../utils');
 
 class FakePurgeCache {
   constructor() {
-    this.cachePurges = new Set();
+    this.cachePurges = new Map();
   }
 
   /* helpers */
 
   reset() {
-    this.cachePurges = new Set();
+    this.cachePurges = new Map();
   }
 
   _getCachePurge({ partitionKey, rowKey }) {
-    for (let c of [...this.cachePurges]) {
-      if (c.partition_key_out === partitionKey && c.row_key_out === rowKey) {
-        return c;
-      }
-    }
+    return this.cachePurges.get(`${partitionKey}-${rowKey}`);
   }
 
   _removeCachePurge({ partitionKey, rowKey }) {
-    for (let c of [...this.cachePurges]) {
-      if (c.partition_key_out === partitionKey && c.row_key_out === rowKey) {
-        this.cachePurges.delete(c);
-        break;
-      }
-    }
+    this.cachePurges.delete(`${partitionKey}-${rowKey}`);
   }
 
   _addCachePurge(cachePurge) {
@@ -46,8 +37,7 @@ class FakePurgeCache {
       etag,
     };
 
-    this._removeCachePurge({ partitionKey: cachePurge.partition_key, rowKey: cachePurge.row_key });
-    this.cachePurges.add(c);
+    this.cachePurges.set(`${c.partition_key_out}-${c.row_key_out}`, c);
 
     return c;
   }

@@ -5,32 +5,23 @@ const { getEntries } = require('../utils');
 
 class FakeIndex {
   constructor() {
-    this.indexedTasks = new Set();
-    this.namespaces = new Set();
+    this.indexedTasks = new Map();
+    this.namespaces = new Map();
   }
 
   /* helpers */
 
   reset() {
-    this.indexedTasks = new Set();
-    this.namespaces = new Set();
+    this.indexedTasks = new Map();
+    this.namespaces = new Map();
   }
 
   _getIndexedTask({ partitionKey, rowKey }) {
-    for (let c of [...this.indexedTasks]) {
-      if (c.partition_key_out === partitionKey && c.row_key_out === rowKey) {
-        return c;
-      }
-    }
+    return this.indexedTasks.get(`${partitionKey}-${rowKey}`);
   }
 
   _removeIndexedTask({ partitionKey, rowKey }) {
-    for (let c of [...this.indexedTasks]) {
-      if (c.partition_key_out === partitionKey && c.row_key_out === rowKey) {
-        this.indexedTasks.delete(c);
-        break;
-      }
-    }
+    this.indexedTasks.delete(`${partitionKey}-${rowKey}`);
   }
 
   _addIndexedTask(indexedTask) {
@@ -48,27 +39,17 @@ class FakeIndex {
       etag,
     };
 
-    this._removeIndexedTask({ partitionKey: indexedTask.partition_key, rowKey: indexedTask.row_key });
-    this.indexedTasks.add(c);
+    this.indexedTasks.set(`${c.partition_key_out}-${c.row_key_out}`, c);
 
     return c;
   }
 
   _getRole({ partitionKey, rowKey }) {
-    for (let c of [...this.namespaces]) {
-      if (c.partition_key_out === partitionKey && c.row_key_out === rowKey) {
-        return c;
-      }
-    }
+    return this.namespaces.get(`${partitionKey}-${rowKey}`);
   }
 
   _removeRole({ partitionKey, rowKey }) {
-    for (let c of [...this.namespaces]) {
-      if (c.partition_key_out === partitionKey && c.row_key_out === rowKey) {
-        this.namespaces.delete(c);
-        break;
-      }
-    }
+    this.namespaces.delete(`${partitionKey}-${rowKey}`);
   }
 
   _addRole(namespace) {
@@ -86,8 +67,7 @@ class FakeIndex {
       etag,
     };
 
-    this._removeRole({ partitionKey: namespace.partition_key, rowKey: namespace.row_key });
-    this.namespaces.add(c);
+    this.namespaces.set(`${c.partition_key_out}-${c.row_key_out}`, c);
 
     return c;
   }

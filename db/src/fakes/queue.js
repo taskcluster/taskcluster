@@ -6,16 +6,16 @@ const { getEntries } = require('../utils');
 class FakeQueue {
   constructor() {
     this.messages = new Map();
-    this.queueTasks = new Set();
-    this.queueArtifacts = new Set();
-    this.queueTaskGroups = new Set();
-    this.queueTaskGroupMembers = new Set();
-    this.queueTaskGroupActiveSets = new Set();
-    this.queueTaskRequirements = new Set();
-    this.queueTaskDependencys = new Set();
-    this.queueWorkers = new Set();
-    this.queueWorkerTypes = new Set();
-    this.queueProvisioners = new Set();
+    this.queueTasks = new Map();
+    this.queueArtifacts = new Map();
+    this.queueTaskGroups = new Map();
+    this.queueTaskGroupMembers = new Map();
+    this.queueTaskGroupActiveMaps = new Map();
+    this.queueTaskRequirements = new Map();
+    this.queueTaskDependencys = new Map();
+    this.queueWorkers = new Map();
+    this.queueWorkerTypes = new Map();
+    this.queueProvisioners = new Map();
 
   }
 
@@ -23,33 +23,24 @@ class FakeQueue {
 
   reset() {
     this.messages = new Map();
-    this.queueTasks = new Set();
-    this.queueArtifacts = new Set();
-    this.queueTaskGroups = new Set();
-    this.queueTaskGroupMembers = new Set();
-    this.queueTaskGroupActiveSets = new Set();
-    this.queueTaskRequirements = new Set();
-    this.queueTaskDependencys = new Set();
-    this.queueWorkers = new Set();
-    this.queueWorkerTypes = new Set();
-    this.queueProvisioners = new Set();
+    this.queueTasks = new Map();
+    this.queueArtifacts = new Map();
+    this.queueTaskGroups = new Map();
+    this.queueTaskGroupMembers = new Map();
+    this.queueTaskGroupActiveMaps = new Map();
+    this.queueTaskRequirements = new Map();
+    this.queueTaskDependencys = new Map();
+    this.queueWorkers = new Map();
+    this.queueWorkerTypes = new Map();
+    this.queueProvisioners = new Map();
   }
 
   _getQueueTask({ partitionKey, rowKey }) {
-    for (let c of [...this.queueTasks]) {
-      if (c.partition_key_out === partitionKey && c.row_key_out === rowKey) {
-        return c;
-      }
-    }
+    return this.queueTasks.get(`${partitionKey}-${rowKey}`);
   }
 
   _removeQueueTask({ partitionKey, rowKey }) {
-    for (let c of [...this.queueTasks]) {
-      if (c.partition_key_out === partitionKey && c.row_key_out === rowKey) {
-        this.queueTasks.delete(c);
-        break;
-      }
-    }
+    this.queueTasks.delete(`${partitionKey}-${rowKey}`);
   }
 
   _addQueueTask(queueTask) {
@@ -67,30 +58,17 @@ class FakeQueue {
       etag,
     };
 
-    this._removeQueueTask({
-      partitionKey: queueTask.partition_key,
-      rowKey: queueTask.row_key,
-    });
-    this.queueTasks.add(c);
+    this.queueTasks.set(`${c.partition_key_out}-${c.row_key_out}`, c);
 
     return c;
   }
 
   _getQueueArtifact({ partitionKey, rowKey }) {
-    for (let c of [...this.queueArtifacts]) {
-      if (c.partition_key_out === partitionKey && c.row_key_out === rowKey) {
-        return c;
-      }
-    }
+    return this.queueArtifacts.get(`${partitionKey}-${rowKey}`);
   }
 
   _removeQueueArtifact({ partitionKey, rowKey }) {
-    for (let c of [...this.queueArtifacts]) {
-      if (c.partition_key_out === partitionKey && c.row_key_out === rowKey) {
-        this.queueArtifacts.delete(c);
-        break;
-      }
-    }
+    this.queueArtifacts.delete(`${partitionKey}-${rowKey}`);
   }
 
   _addQueueArtifact(queueArtifact) {
@@ -108,30 +86,17 @@ class FakeQueue {
       etag,
     };
 
-    this._removeQueueArtifact({
-      partitionKey: queueArtifact.partition_key,
-      rowKey: queueArtifact.row_key,
-    });
-    this.queueArtifacts.add(c);
+    this.queueArtifacts.set(`${c.partition_key_out}-${c.row_key_out}`, c);
 
     return c;
   }
 
   _getQueueTaskGroup({ partitionKey, rowKey }) {
-    for (let c of [...this.queueTaskGroups]) {
-      if (c.partition_key_out === partitionKey && c.row_key_out === rowKey) {
-        return c;
-      }
-    }
+    return this.queueTaskGroups.get(`${partitionKey}-${rowKey}`);
   }
 
   _removeQueueTaskGroup({ partitionKey, rowKey }) {
-    for (let c of [...this.queueTaskGroups]) {
-      if (c.partition_key_out === partitionKey && c.row_key_out === rowKey) {
-        this.queueTaskGroups.delete(c);
-        break;
-      }
-    }
+    this.queueTaskGroups.delete(`${partitionKey}-${rowKey}`);
   }
 
   _addQueueTaskGroup(queueTaskGroup) {
@@ -149,30 +114,17 @@ class FakeQueue {
       etag,
     };
 
-    this._removeQueueTaskGroup({
-      partitionKey: queueTaskGroup.partition_key,
-      rowKey: queueTaskGroup.row_key,
-    });
-    this.queueTaskGroups.add(c);
+    this.queueTaskGroups.set(`${c.partition_key_out}-${c.row_key_out}`, c);
 
     return c;
   }
 
   _getQueueTaskGroupMember({ partitionKey, rowKey }) {
-    for (let c of [...this.queueTaskGroupMembers]) {
-      if (c.partition_key_out === partitionKey && c.row_key_out === rowKey) {
-        return c;
-      }
-    }
+    return this.queueTaskGroupMembers.get(`${partitionKey}-${rowKey}`);
   }
 
   _removeQueueTaskGroupMember({ partitionKey, rowKey }) {
-    for (let c of [...this.queueTaskGroupMembers]) {
-      if (c.partition_key_out === partitionKey && c.row_key_out === rowKey) {
-        this.queueTaskGroupMembers.delete(c);
-        break;
-      }
-    }
+    this.queueTaskGroupMembers.delete(`${partitionKey}-${rowKey}`);
   }
 
   _addQueueTaskGroupMember(queueTaskGroupMember) {
@@ -190,71 +142,45 @@ class FakeQueue {
       etag,
     };
 
-    this._removeQueueTaskGroupMember({
-      partitionKey: queueTaskGroupMember.partition_key,
-      rowKey: queueTaskGroupMember.row_key,
-    });
-    this.queueTaskGroupMembers.add(c);
+    this.queueTaskGroupMembers.set(`${c.partition_key_out}-${c.row_key_out}`, c);
 
     return c;
   }
 
-  _getQueueTaskGroupActiveSet({ partitionKey, rowKey }) {
-    for (let c of [...this.queueTaskGroupActiveSets]) {
-      if (c.partition_key_out === partitionKey && c.row_key_out === rowKey) {
-        return c;
-      }
-    }
+  _getQueueTaskGroupActiveMap({ partitionKey, rowKey }) {
+    return this.queueTaskGroupActiveMaps.get(`${partitionKey}-${rowKey}`);
   }
 
-  _removeQueueTaskGroupActiveSet({ partitionKey, rowKey }) {
-    for (let c of [...this.queueTaskGroupActiveSets]) {
-      if (c.partition_key_out === partitionKey && c.row_key_out === rowKey) {
-        this.queueTaskGroupActiveSets.delete(c);
-        break;
-      }
-    }
+  _removeQueueTaskGroupActiveMap({ partitionKey, rowKey }) {
+    this.queueTaskGroupActiveMaps.delete(`${partitionKey}-${rowKey}`);
   }
 
-  _addQueueTaskGroupActiveSet(queueTaskGroupActiveSet) {
-    assert(typeof queueTaskGroupActiveSet.partition_key === "string");
-    assert(typeof queueTaskGroupActiveSet.row_key === "string");
-    assert(typeof queueTaskGroupActiveSet.value === "object");
-    assert(typeof queueTaskGroupActiveSet.version === "number");
+  _addQueueTaskGroupActiveMap(queueTaskGroupActiveMap) {
+    assert(typeof queueTaskGroupActiveMap.partition_key === "string");
+    assert(typeof queueTaskGroupActiveMap.row_key === "string");
+    assert(typeof queueTaskGroupActiveMap.value === "object");
+    assert(typeof queueTaskGroupActiveMap.version === "number");
 
     const etag = slugid.v4();
     const c = {
-      partition_key_out: queueTaskGroupActiveSet.partition_key,
-      row_key_out: queueTaskGroupActiveSet.row_key,
-      value: queueTaskGroupActiveSet.value,
-      version: queueTaskGroupActiveSet.version,
+      partition_key_out: queueTaskGroupActiveMap.partition_key,
+      row_key_out: queueTaskGroupActiveMap.row_key,
+      value: queueTaskGroupActiveMap.value,
+      version: queueTaskGroupActiveMap.version,
       etag,
     };
 
-    this._removeQueueTaskGroupActiveSet({
-      partitionKey: queueTaskGroupActiveSet.partition_key,
-      rowKey: queueTaskGroupActiveSet.row_key,
-    });
-    this.queueTaskGroupActiveSets.add(c);
+    this.queueTaskGroupActiveMaps.set(`${c.partition_key_out}-${c.row_key_out}`, c);
 
     return c;
   }
 
   _getQueueTaskRequirement({ partitionKey, rowKey }) {
-    for (let c of [...this.queueTaskRequirements]) {
-      if (c.partition_key_out === partitionKey && c.row_key_out === rowKey) {
-        return c;
-      }
-    }
+    return this.queueTaskRequirements.get(`${partitionKey}-${rowKey}`);
   }
 
   _removeQueueTaskRequirement({ partitionKey, rowKey }) {
-    for (let c of [...this.queueTaskRequirements]) {
-      if (c.partition_key_out === partitionKey && c.row_key_out === rowKey) {
-        this.queueTaskRequirements.delete(c);
-        break;
-      }
-    }
+    this.queueTaskRequirements.delete(`${partitionKey}-${rowKey}`);
   }
 
   _addQueueTaskRequirement(queueTaskRequirement) {
@@ -272,30 +198,17 @@ class FakeQueue {
       etag,
     };
 
-    this._removeQueueTaskRequirement({
-      partitionKey: queueTaskRequirement.partition_key,
-      rowKey: queueTaskRequirement.row_key,
-    });
-    this.queueTaskRequirements.add(c);
+    this.queueTaskRequirements.set(`${c.partition_key_out}-${c.row_key_out}`, c);
 
     return c;
   }
 
   _getQueueTaskDependency({ partitionKey, rowKey }) {
-    for (let c of [...this.queueTaskDependencys]) {
-      if (c.partition_key_out === partitionKey && c.row_key_out === rowKey) {
-        return c;
-      }
-    }
+    return this.queueTaskDependencys.get(`${partitionKey}-${rowKey}`);
   }
 
   _removeQueueTaskDependency({ partitionKey, rowKey }) {
-    for (let c of [...this.queueTaskDependencys]) {
-      if (c.partition_key_out === partitionKey && c.row_key_out === rowKey) {
-        this.queueTaskDependencys.delete(c);
-        break;
-      }
-    }
+    this.queueTaskDependencys.delete(`${partitionKey}-${rowKey}`);
   }
 
   _addQueueTaskDependency(queueTaskDependency) {
@@ -313,30 +226,17 @@ class FakeQueue {
       etag,
     };
 
-    this._removeQueueTaskDependency({
-      partitionKey: queueTaskDependency.partition_key,
-      rowKey: queueTaskDependency.row_key,
-    });
-    this.queueTaskDependencys.add(c);
+    this.queueTaskDependencys.set(`${c.partition_key_out}-${c.row_key_out}`, c);
 
     return c;
   }
 
   _getQueueWorker({ partitionKey, rowKey }) {
-    for (let c of [...this.queueWorkers]) {
-      if (c.partition_key_out === partitionKey && c.row_key_out === rowKey) {
-        return c;
-      }
-    }
+    return this.queueWorkers.get(`${partitionKey}-${rowKey}`);
   }
 
   _removeQueueWorker({ partitionKey, rowKey }) {
-    for (let c of [...this.queueWorkers]) {
-      if (c.partition_key_out === partitionKey && c.row_key_out === rowKey) {
-        this.queueWorkers.delete(c);
-        break;
-      }
-    }
+    this.queueWorkers.delete(`${partitionKey}-${rowKey}`);
   }
 
   _addQueueWorker(queueWorker) {
@@ -354,30 +254,17 @@ class FakeQueue {
       etag,
     };
 
-    this._removeQueueWorker({
-      partitionKey: queueWorker.partition_key,
-      rowKey: queueWorker.row_key,
-    });
-    this.queueWorkers.add(c);
+    this.queueWorkers.set(`${c.partition_key_out}-${c.row_key_out}`, c);
 
     return c;
   }
 
   _getQueueWorkerType({ partitionKey, rowKey }) {
-    for (let c of [...this.queueWorkerTypes]) {
-      if (c.partition_key_out === partitionKey && c.row_key_out === rowKey) {
-        return c;
-      }
-    }
+    return this.queueWorkerTypes.get(`${partitionKey}-${rowKey}`);
   }
 
   _removeQueueWorkerType({ partitionKey, rowKey }) {
-    for (let c of [...this.queueWorkerTypes]) {
-      if (c.partition_key_out === partitionKey && c.row_key_out === rowKey) {
-        this.queueWorkerTypes.delete(c);
-        break;
-      }
-    }
+    this.queueWorkerTypes.delete(`${partitionKey}-${rowKey}`);
   }
 
   _addQueueWorkerType(queueWorkerType) {
@@ -395,27 +282,17 @@ class FakeQueue {
       etag,
     };
 
-    this._removeQueueWorkerType({ partitionKey: queueWorkerType.partition_key, rowKey: queueWorkerType.row_key });
-    this.queueWorkerTypes.add(c);
+    this.queueWorkerTypes.set(`${c.partition_key_out}-${c.row_key_out}`, c);
 
     return c;
   }
 
   _getQueueProvisioner({ partitionKey, rowKey }) {
-    for (let c of [...this.queueProvisioners]) {
-      if (c.partition_key_out === partitionKey && c.row_key_out === rowKey) {
-        return c;
-      }
-    }
+    return this.queueProvisioners.get(`${partitionKey}-${rowKey}`);
   }
 
   _removeQueueProvisioner({ partitionKey, rowKey }) {
-    for (let c of [...this.queueProvisioners]) {
-      if (c.partition_key_out === partitionKey && c.row_key_out === rowKey) {
-        this.queueProvisioners.delete(c);
-        break;
-      }
-    }
+    this.queueProvisioners.delete(`${partitionKey}-${rowKey}`);
   }
 
   _addQueueProvisioner(queueProvisioner) {
@@ -433,8 +310,7 @@ class FakeQueue {
       etag,
     };
 
-    this._removeQueueProvisioner({ partitionKey: queueProvisioner.partition_key, rowKey: queueProvisioner.row_key });
-    this.queueProvisioners.add(c);
+    this.queueProvisioners.set(`${c.partition_key_out}-${c.row_key_out}`, c);
 
     return c;
   }
@@ -617,51 +493,51 @@ class FakeQueue {
   }
 
   async queue_task_group_active_sets_entities_load(partitionKey, rowKey) {
-    const queueTaskGroupActiveSet = this._getQueueTaskGroupActiveSet({ partitionKey, rowKey });
+    const queueTaskGroupActiveMap = this._getQueueTaskGroupActiveMap({ partitionKey, rowKey });
 
-    return queueTaskGroupActiveSet ? [queueTaskGroupActiveSet] : [];
+    return queueTaskGroupActiveMap ? [queueTaskGroupActiveMap] : [];
   }
 
   async queue_task_group_active_sets_entities_create(partition_key, row_key, value, overwrite, version) {
-    if (!overwrite && this._getQueueTaskGroupActiveSet({ partitionKey: partition_key, rowKey: row_key })) {
+    if (!overwrite && this._getQueueTaskGroupActiveMap({ partitionKey: partition_key, rowKey: row_key })) {
       const err = new Error('duplicate key value violates unique constraint');
       err.code = UNIQUE_VIOLATION;
       throw err;
     }
 
-    const queueTaskGroupActiveSet = this._addQueueTaskGroupActiveSet({
+    const queueTaskGroupActiveMap = this._addQueueTaskGroupActiveMap({
       partition_key,
       row_key,
       value,
       version,
     });
 
-    return [{ 'queue_task_group_active_sets_entities_create': queueTaskGroupActiveSet.etag }];
+    return [{ 'queue_task_group_active_sets_entities_create': queueTaskGroupActiveMap.etag }];
   }
 
   async queue_task_group_active_sets_entities_remove(partition_key, row_key) {
-    const queueTaskGroupActiveSet = this._getQueueTaskGroupActiveSet({ partitionKey: partition_key, rowKey: row_key });
-    this._removeQueueTaskGroupActiveSet({ partitionKey: partition_key, rowKey: row_key });
+    const queueTaskGroupActiveMap = this._getQueueTaskGroupActiveMap({ partitionKey: partition_key, rowKey: row_key });
+    this._removeQueueTaskGroupActiveMap({ partitionKey: partition_key, rowKey: row_key });
 
-    return queueTaskGroupActiveSet ? [{ etag: queueTaskGroupActiveSet.etag }] : [];
+    return queueTaskGroupActiveMap ? [{ etag: queueTaskGroupActiveMap.etag }] : [];
   }
 
   async queue_task_group_active_sets_entities_modify(partition_key, row_key, value, version, oldEtag) {
-    const queueTaskGroupActiveSet = this._getQueueTaskGroupActiveSet({ partitionKey: partition_key, rowKey: row_key });
+    const queueTaskGroupActiveMap = this._getQueueTaskGroupActiveMap({ partitionKey: partition_key, rowKey: row_key });
 
-    if (!queueTaskGroupActiveSet) {
+    if (!queueTaskGroupActiveMap) {
       const err = new Error('no such row');
       err.code = 'P0002';
       throw err;
     }
 
-    if (queueTaskGroupActiveSet.etag !== oldEtag) {
+    if (queueTaskGroupActiveMap.etag !== oldEtag) {
       const err = new Error('unsuccessful update');
       err.code = 'P0004';
       throw err;
     }
 
-    const c = this._addQueueTaskGroupActiveSet({ partition_key, row_key, value, version });
+    const c = this._addQueueTaskGroupActiveMap({ partition_key, row_key, value, version });
     return [{ etag: c.etag }];
   }
 
@@ -670,7 +546,7 @@ class FakeQueue {
       partitionKey: partition_key,
       rowKey: row_key,
       condition,
-    }, this.queueTaskGroupActiveSets);
+    }, this.queueTaskGroupActiveMaps);
 
     return entries.slice((page - 1) * size, (page - 1) * size + size + 1);
   }
