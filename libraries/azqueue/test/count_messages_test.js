@@ -43,7 +43,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
     assert.equal(result.messageCount, 1);
   });
 
-  test('count queue with many messages in several queues', async function() {
+  test('count many messages in several queues', async function() {
     const queue = new AZQueue({ db: helper.db });
     for (let i = 0; i < 100; i++) {
       await queue.putMessage('queue-1-ABC', 'foo', { visibilityTimeout: (i % 2) ? 0 : 20, messageTTL: 100 });
