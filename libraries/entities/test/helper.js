@@ -1,6 +1,17 @@
 const {Client} = require('pg');
 const { Database } = require('taskcluster-lib-postgres');
+const {defaultMonitorManager} = require('taskcluster-lib-monitor');
 const dbUrl = process.env.TEST_DB_URL;
+
+defaultMonitorManager.configure({
+  serviceName: 'lib-entities',
+});
+
+const monitor = defaultMonitorManager.setup({
+  fake: true,
+  debug: true,
+  validate: true,
+});
 
 /**
  * dbSuite(..) is a replacement for suite(..) that sets this.dbUrl when
@@ -35,6 +46,7 @@ exports.withDb = async ({ schema, serviceName }) => {
     readDbUrl: exports.dbUrl,
     writeDbUrl: exports.dbUrl,
     serviceName,
+    monitor,
   });
 
   await Database.upgrade({
