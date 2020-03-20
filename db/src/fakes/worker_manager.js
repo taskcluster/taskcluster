@@ -104,13 +104,13 @@ class FakeWorkerManager {
 
   /* fake functions */
 
-  async wmworkers_entities_load(partitionKey, rowKey) {
+  async wm_workers_entities_load(partitionKey, rowKey) {
     const wmWorker = this._getWmWorker({ partitionKey, rowKey });
 
     return wmWorker ? [wmWorker] : [];
   }
 
-  async wmworkers_entities_create(partition_key, row_key, value, overwrite, version) {
+  async wm_workers_entities_create(partition_key, row_key, value, overwrite, version) {
     if (!overwrite && this._getWmWorker({ partitionKey: partition_key, rowKey: row_key })) {
       const err = new Error('duplicate key value violates unique constraint');
       err.code = UNIQUE_VIOLATION;
@@ -124,17 +124,17 @@ class FakeWorkerManager {
       version,
     });
 
-    return [{ 'wmworkers_entities_create': wmWorker.etag }];
+    return [{ 'wm_workers_entities_create': wmWorker.etag }];
   }
 
-  async wmworkers_entities_remove(partition_key, row_key) {
+  async wm_workers_entities_remove(partition_key, row_key) {
     const wmWorker = this._getWmWorker({ partitionKey: partition_key, rowKey: row_key });
     this._removeWmWorker({ partitionKey: partition_key, rowKey: row_key });
 
     return wmWorker ? [{ etag: wmWorker.etag }] : [];
   }
 
-  async wmworkers_entities_modify(partition_key, row_key, value, version, oldEtag) {
+  async wm_workers_entities_modify(partition_key, row_key, value, version, oldEtag) {
     const wmWorker = this._getWmWorker({ partitionKey: partition_key, rowKey: row_key });
 
     if (!wmWorker) {
@@ -153,19 +153,19 @@ class FakeWorkerManager {
     return [{ etag: c.etag }];
   }
 
-  async wmworkers_entities_scan(partition_key, row_key, condition, size, page) {
+  async wm_workers_entities_scan(partition_key, row_key, condition, size, page) {
     const entries = getEntries({ partitionKey: partition_key, rowKey: row_key, condition }, this.wmWorkers);
 
     return entries.slice((page - 1) * size, (page - 1) * size + size + 1);
   }
 
-  async wmworker_pools_entities_load(partitionKey, rowKey) {
+  async wm_worker_pools_entities_load(partitionKey, rowKey) {
     const wmWorkerPool = this._getWmWorkerPool({ partitionKey, rowKey });
 
     return wmWorkerPool ? [wmWorkerPool] : [];
   }
 
-  async wmworker_pools_entities_create(partition_key, row_key, value, overwrite, version) {
+  async wm_worker_pools_entities_create(partition_key, row_key, value, overwrite, version) {
     if (!overwrite && this._getWmWorkerPool({ partitionKey: partition_key, rowKey: row_key })) {
       const err = new Error('duplicate key value violates unique constraint');
       err.code = UNIQUE_VIOLATION;
@@ -179,17 +179,17 @@ class FakeWorkerManager {
       version,
     });
 
-    return [{ 'wmworker_pools_entities_create': wmWorkerPool.etag }];
+    return [{ 'wm_worker_pools_entities_create': wmWorkerPool.etag }];
   }
 
-  async wmworker_pools_entities_remove(partition_key, row_key) {
+  async wm_worker_pools_entities_remove(partition_key, row_key) {
     const wmWorkerPool = this._getWmWorkerPool({ partitionKey: partition_key, rowKey: row_key });
     this._removeWmWorkerPool({ partitionKey: partition_key, rowKey: row_key });
 
     return wmWorkerPool ? [{ etag: wmWorkerPool.etag }] : [];
   }
 
-  async wmworker_pools_entities_modify(partition_key, row_key, value, version, oldEtag) {
+  async wm_worker_pools_entities_modify(partition_key, row_key, value, version, oldEtag) {
     const wmWorkerPool = this._getWmWorkerPool({ partitionKey: partition_key, rowKey: row_key });
 
     if (!wmWorkerPool) {
@@ -208,7 +208,7 @@ class FakeWorkerManager {
     return [{ etag: c.etag }];
   }
 
-  async wmworker_pools_entities_scan(partition_key, row_key, condition, size, page) {
+  async wm_worker_pools_entities_scan(partition_key, row_key, condition, size, page) {
     const entries = getEntries({ partitionKey: partition_key, rowKey: row_key, condition }, this.wmWorkerPools);
 
     return entries.slice((page - 1) * size, (page - 1) * size + size + 1);
@@ -216,13 +216,13 @@ class FakeWorkerManager {
 
   /* fake functions */
 
-  async wmworker_pool_errors_entities_load(partitionKey, rowKey) {
+  async wm_worker_pool_errors_entities_load(partitionKey, rowKey) {
     const wmWorkerPoolError = this._getWmWorkerPoolError({ partitionKey, rowKey });
 
     return wmWorkerPoolError ? [wmWorkerPoolError] : [];
   }
 
-  async wmworker_pool_errors_entities_create(partition_key, row_key, value, overwrite, version) {
+  async wm_worker_pool_errors_entities_create(partition_key, row_key, value, overwrite, version) {
     if (!overwrite && this._getWmWorkerPoolError({ partitionKey: partition_key, rowKey: row_key })) {
       const err = new Error('duplicate key value violates unique constraint');
       err.code = UNIQUE_VIOLATION;
@@ -236,17 +236,17 @@ class FakeWorkerManager {
       version,
     });
 
-    return [{ 'wmworker_pool_errors_entities_create': wmWorkerPoolError.etag }];
+    return [{ 'wm_worker_pool_errors_entities_create': wmWorkerPoolError.etag }];
   }
 
-  async wmworker_pool_errors_entities_remove(partition_key, row_key) {
+  async wm_worker_pool_errors_entities_remove(partition_key, row_key) {
     const wmWorkerPoolError = this._getWmWorkerPoolError({ partitionKey: partition_key, rowKey: row_key });
     this._removeWmWorkerPoolError({ partitionKey: partition_key, rowKey: row_key });
 
     return wmWorkerPoolError ? [{ etag: wmWorkerPoolError.etag }] : [];
   }
 
-  async wmworker_pool_errors_entities_modify(partition_key, row_key, value, version, oldEtag) {
+  async wm_worker_pool_errors_entities_modify(partition_key, row_key, value, version, oldEtag) {
     const wmWorkerPoolError = this._getWmWorkerPoolError({ partitionKey: partition_key, rowKey: row_key });
 
     if (!wmWorkerPoolError) {
@@ -265,7 +265,7 @@ class FakeWorkerManager {
     return [{ etag: c.etag }];
   }
 
-  async wmworker_pool_errors_entities_scan(partition_key, row_key, condition, size, page) {
+  async wm_worker_pool_errors_entities_scan(partition_key, row_key, condition, size, page) {
     const entries = getEntries({ partitionKey: partition_key, rowKey: row_key, condition }, this.wmWorkerPoolErrors);
     return entries.slice((page - 1) * size, (page - 1) * size + size + 1);
   }

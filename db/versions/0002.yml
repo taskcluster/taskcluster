@@ -25,8 +25,8 @@ migrationScript: |-
     create table queues_entities(partition_key text, row_key text, value jsonb not null, version integer not null, etag uuid default public.gen_random_uuid());
     alter table queues_entities add primary key (partition_key, row_key);
 
-    create table last_fire_3_entities(partition_key text, row_key text, value jsonb not null, version integer not null, etag uuid default public.gen_random_uuid());
-    alter table last_fire_3_entities add primary key (partition_key, row_key);
+    create table last_fire3_entities(partition_key text, row_key text, value jsonb not null, version integer not null, etag uuid default public.gen_random_uuid());
+    alter table last_fire3_entities add primary key (partition_key, row_key);
 
     create table indexed_tasks_entities(partition_key text, row_key text, value jsonb not null, version integer not null, etag uuid default public.gen_random_uuid());
     alter table indexed_tasks_entities add primary key (partition_key, row_key);
@@ -85,14 +85,14 @@ migrationScript: |-
     create table github_access_token_table_entities(partition_key text, row_key text, value jsonb not null, version integer not null, etag uuid default public.gen_random_uuid());
     alter table github_access_token_table_entities add primary key (partition_key, row_key);
 
-    create table wmworkers_entities(partition_key text, row_key text, value jsonb not null, version integer not null, etag uuid default public.gen_random_uuid());
-    alter table wmworkers_entities add primary key (partition_key, row_key);
+    create table wm_workers_entities(partition_key text, row_key text, value jsonb not null, version integer not null, etag uuid default public.gen_random_uuid());
+    alter table wm_workers_entities add primary key (partition_key, row_key);
 
-    create table wmworker_pools_entities(partition_key text, row_key text, value jsonb not null, version integer not null, etag uuid default public.gen_random_uuid());
-    alter table wmworker_pools_entities add primary key (partition_key, row_key);
+    create table wm_worker_pools_entities(partition_key text, row_key text, value jsonb not null, version integer not null, etag uuid default public.gen_random_uuid());
+    alter table wm_worker_pools_entities add primary key (partition_key, row_key);
 
-    create table wmworker_pool_errors_entities(partition_key text, row_key text, value jsonb not null, version integer not null, etag uuid default public.gen_random_uuid());
-    alter table wmworker_pool_errors_entities add primary key (partition_key, row_key);
+    create table wm_worker_pool_errors_entities(partition_key text, row_key text, value jsonb not null, version integer not null, etag uuid default public.gen_random_uuid());
+    alter table wm_worker_pool_errors_entities add primary key (partition_key, row_key);
 
     grant select, insert, update, delete on clients_entities to $db_user_prefix$_auth;
     grant select, insert, update, delete on roles_entities to $db_user_prefix$_auth;
@@ -103,7 +103,7 @@ migrationScript: |-
     grant select, insert, update, delete on taskcluster_integration_owners_entities to $db_user_prefix$_github;
 
     grant select, insert, update, delete on hooks_entities to $db_user_prefix$_hooks;
-    grant select, insert, update, delete on last_fire_3_entities to $db_user_prefix$_hooks;
+    grant select, insert, update, delete on last_fire3_entities to $db_user_prefix$_hooks;
     grant select, insert, update, delete on queues_entities to $db_user_prefix$_hooks;
 
     grant select, insert, update, delete on indexed_tasks_entities to $db_user_prefix$_index;
@@ -120,9 +120,9 @@ migrationScript: |-
     grant select, insert, update, delete on github_access_token_table_entities to $db_user_prefix$_web_server;
     grant select, insert, update, delete on session_storage_table_entities to $db_user_prefix$_web_server;
 
-    grant select, insert, update, delete on wmworker_pool_errors_entities to $db_user_prefix$_worker_manager;
-    grant select, insert, update, delete on wmworker_pools_entities to $db_user_prefix$_worker_manager;
-    grant select, insert, update, delete on wmworkers_entities to $db_user_prefix$_worker_manager;
+    grant select, insert, update, delete on wm_worker_pool_errors_entities to $db_user_prefix$_worker_manager;
+    grant select, insert, update, delete on wm_worker_pools_entities to $db_user_prefix$_worker_manager;
+    grant select, insert, update, delete on wm_workers_entities to $db_user_prefix$_worker_manager;
 
     grant select, insert, update, delete on queue_tasks_entities to $db_user_prefix$_queue;
     grant select, insert, update, delete on queue_artifacts_entities to $db_user_prefix$_queue;
@@ -146,7 +146,7 @@ downgradeScript: |-
     revoke select, insert, update, delete on taskcluster_integration_owners_entities from $db_user_prefix$_github;
 
     revoke select, insert, update, delete on hooks_entities from $db_user_prefix$_hooks;
-    revoke select, insert, update, delete on last_fire_3_entities from $db_user_prefix$_hooks;
+    revoke select, insert, update, delete on last_fire3_entities from $db_user_prefix$_hooks;
     revoke select, insert, update, delete on queues_entities from $db_user_prefix$_hooks;
 
     revoke select, insert, update, delete on indexed_tasks_entities from $db_user_prefix$_index;
@@ -163,9 +163,9 @@ downgradeScript: |-
     revoke select, insert, update, delete on github_access_token_table_entities from $db_user_prefix$_web_server;
     revoke select, insert, update, delete on session_storage_table_entities from $db_user_prefix$_web_server;
 
-    revoke select, insert, update, delete on wmworker_pool_errors_entities from $db_user_prefix$_worker_manager;
-    revoke select, insert, update, delete on wmworker_pools_entities from $db_user_prefix$_worker_manager;
-    revoke select, insert, update, delete on wmworkers_entities from $db_user_prefix$_worker_manager;
+    revoke select, insert, update, delete on wm_worker_pool_errors_entities from $db_user_prefix$_worker_manager;
+    revoke select, insert, update, delete on wm_worker_pools_entities from $db_user_prefix$_worker_manager;
+    revoke select, insert, update, delete on wm_workers_entities from $db_user_prefix$_worker_manager;
 
     revoke select, insert, update, delete on queue_tasks_entities from $db_user_prefix$_queue;
     revoke select, insert, update, delete on queue_artifacts_entities from $db_user_prefix$_queue;
@@ -186,7 +186,7 @@ downgradeScript: |-
     drop table taskcluster_check_runs_entities;
     drop table hooks_entities;
     drop table queues_entities;
-    drop table last_fire_3_entities;
+    drop table last_fire3_entities;
     drop table indexed_tasks_entities;
     drop table namespaces_entities;
     drop table denylisted_notification_entities;
@@ -206,9 +206,9 @@ downgradeScript: |-
     drop table access_token_table_entities;
     drop table session_storage_table_entities;
     drop table github_access_token_table_entities;
-    drop table wmworkers_entities;
-    drop table wmworker_pools_entities;
-    drop table wmworker_pool_errors_entities;
+    drop table wm_workers_entities;
+    drop table wm_worker_pools_entities;
+    drop table wm_worker_pool_errors_entities;
   end
 methods:
   clients_entities_load:
@@ -1219,7 +1219,7 @@ methods:
 
         return query execute sql;
       end
-  last_fire_3_entities_load:
+  last_fire3_entities_load:
     description: See taskcluster-lib-entities
     mode: read
     serviceName: hooks
@@ -1228,11 +1228,11 @@ methods:
     body: |-
       begin
         return query
-        select last_fire_3_entities.partition_key, last_fire_3_entities.row_key, last_fire_3_entities.value, last_fire_3_entities.version,
-        last_fire_3_entities.etag from last_fire_3_entities
-        where last_fire_3_entities.partition_key = last_fire_3_entities_load.partition_key and last_fire_3_entities.row_key = last_fire_3_entities_load.row_key;
+        select last_fire3_entities.partition_key, last_fire3_entities.row_key, last_fire3_entities.value, last_fire3_entities.version,
+        last_fire3_entities.etag from last_fire3_entities
+        where last_fire3_entities.partition_key = last_fire3_entities_load.partition_key and last_fire3_entities.row_key = last_fire3_entities_load.row_key;
       end
-  last_fire_3_entities_create:
+  last_fire3_entities_create:
     serviceName: hooks
     description: See taskcluster-lib-entities
     mode: write
@@ -1243,7 +1243,7 @@ methods:
         new_etag uuid := public.gen_random_uuid();
       begin
         if overwrite then
-          insert into last_fire_3_entities(partition_key, row_key, value, version, etag)
+          insert into last_fire3_entities(partition_key, row_key, value, version, etag)
           values (
             pk,
             rk,
@@ -1252,10 +1252,10 @@ methods:
             new_etag
           ) on conflict (partition_key, row_key) do
           update
-          set (value, version, etag) = (properties, last_fire_3_entities_create.version, new_etag)
-          where last_fire_3_entities.partition_key = last_fire_3_entities_create.pk and last_fire_3_entities.row_key = last_fire_3_entities_create.rk;
+          set (value, version, etag) = (properties, last_fire3_entities_create.version, new_etag)
+          where last_fire3_entities.partition_key = last_fire3_entities_create.pk and last_fire3_entities.row_key = last_fire3_entities_create.rk;
         else
-          insert into last_fire_3_entities(partition_key, row_key, value, version, etag)
+          insert into last_fire3_entities(partition_key, row_key, value, version, etag)
           values (
             pk,
             rk,
@@ -1266,7 +1266,7 @@ methods:
         end if;
         return new_etag;
       end
-  last_fire_3_entities_remove:
+  last_fire3_entities_remove:
     serviceName: hooks
     description: See taskcluster-lib-entities
     mode: write
@@ -1274,11 +1274,11 @@ methods:
     returns: table (etag uuid)
     body: |-
       begin
-        return query delete from last_fire_3_entities
-        where last_fire_3_entities.partition_key = last_fire_3_entities_remove.partition_key and last_fire_3_entities.row_key = last_fire_3_entities_remove.row_key
-        returning last_fire_3_entities.etag;
+        return query delete from last_fire3_entities
+        where last_fire3_entities.partition_key = last_fire3_entities_remove.partition_key and last_fire3_entities.row_key = last_fire3_entities_remove.row_key
+        returning last_fire3_entities.etag;
       end
-  last_fire_3_entities_modify:
+  last_fire3_entities_modify:
     serviceName: hooks
     description: See taskcluster-lib-entities
     mode: write
@@ -1288,17 +1288,17 @@ methods:
       declare
         new_etag uuid := public.gen_random_uuid();
       begin
-        update last_fire_3_entities
-        set (value, version, etag) = (properties, last_fire_3_entities_modify.version, new_etag)
-        where last_fire_3_entities.partition_key = last_fire_3_entities_modify.partition_key and last_fire_3_entities.row_key = last_fire_3_entities_modify.row_key and last_fire_3_entities.etag = last_fire_3_entities_modify.old_etag;
+        update last_fire3_entities
+        set (value, version, etag) = (properties, last_fire3_entities_modify.version, new_etag)
+        where last_fire3_entities.partition_key = last_fire3_entities_modify.partition_key and last_fire3_entities.row_key = last_fire3_entities_modify.row_key and last_fire3_entities.etag = last_fire3_entities_modify.old_etag;
 
         if found then
           return query select new_etag;
           return;
         end if;
 
-        perform last_fire_3_entities.etag from last_fire_3_entities
-        where last_fire_3_entities.partition_key = last_fire_3_entities_modify.partition_key and last_fire_3_entities.row_key = last_fire_3_entities_modify.row_key;
+        perform last_fire3_entities.etag from last_fire3_entities
+        where last_fire3_entities.partition_key = last_fire3_entities_modify.partition_key and last_fire3_entities.row_key = last_fire3_entities_modify.row_key;
 
         if found then
           raise exception 'unsuccessful update' using errcode = 'P0004';
@@ -1306,7 +1306,7 @@ methods:
           raise exception 'no such row' using errcode = 'P0002';
         end if;
       end
-  last_fire_3_entities_scan:
+  last_fire3_entities_scan:
     description: See taskcluster-lib-entities
     mode: read
     serviceName: hooks
@@ -1314,25 +1314,25 @@ methods:
     returns: table (partition_key text, row_key text, value jsonb, version integer, etag uuid)
     body: |-
       declare
-        sql text := 'select last_fire_3_entities.partition_key, last_fire_3_entities.row_key, last_fire_3_entities.value, last_fire_3_entities.version, last_fire_3_entities.etag from last_fire_3_entities';
+        sql text := 'select last_fire3_entities.partition_key, last_fire3_entities.row_key, last_fire3_entities.value, last_fire3_entities.version, last_fire3_entities.etag from last_fire3_entities';
         partition_key_var text;
         row_key_var text;
         page_offset integer;
       begin
-        if last_fire_3_entities_scan.pk is not null or last_fire_3_entities_scan.rk is not null or condition is not null then
+        if last_fire3_entities_scan.pk is not null or last_fire3_entities_scan.rk is not null or condition is not null then
           sql := sql || ' where ';
         end if;
 
-        if last_fire_3_entities_scan.pk is not null then
-          partition_key_var := 'partition_key = ' || quote_literal(last_fire_3_entities_scan.pk);
+        if last_fire3_entities_scan.pk is not null then
+          partition_key_var := 'partition_key = ' || quote_literal(last_fire3_entities_scan.pk);
         end if;
 
-        if last_fire_3_entities_scan.rk is not null then
-          row_key_var := 'row_key = ' || quote_literal(last_fire_3_entities_scan.rk);
+        if last_fire3_entities_scan.rk is not null then
+          row_key_var := 'row_key = ' || quote_literal(last_fire3_entities_scan.rk);
         end if;
 
         sql := sql || concat_ws(' and ', partition_key_var, row_key_var, condition);
-        sql := sql || ' order by last_fire_3_entities.partition_key, last_fire_3_entities.row_key';
+        sql := sql || ' order by last_fire3_entities.partition_key, last_fire3_entities.row_key';
 
         if size is not null and size > 0 then
           sql := sql || ' limit ' || size + 1;
@@ -3739,7 +3739,7 @@ methods:
 
         return query execute sql;
       end
-  wmworkers_entities_load:
+  wm_workers_entities_load:
     description: See taskcluster-lib-entities
     mode: read
     serviceName: worker_manager
@@ -3748,11 +3748,11 @@ methods:
     body: |-
       begin
         return query
-        select wmworkers_entities.partition_key, wmworkers_entities.row_key, wmworkers_entities.value, wmworkers_entities.version,
-        wmworkers_entities.etag from wmworkers_entities
-        where wmworkers_entities.partition_key = wmworkers_entities_load.partition_key and wmworkers_entities.row_key = wmworkers_entities_load.row_key;
+        select wm_workers_entities.partition_key, wm_workers_entities.row_key, wm_workers_entities.value, wm_workers_entities.version,
+        wm_workers_entities.etag from wm_workers_entities
+        where wm_workers_entities.partition_key = wm_workers_entities_load.partition_key and wm_workers_entities.row_key = wm_workers_entities_load.row_key;
       end
-  wmworkers_entities_create:
+  wm_workers_entities_create:
     serviceName: worker_manager
     description: See taskcluster-lib-entities
     mode: write
@@ -3763,7 +3763,7 @@ methods:
         new_etag uuid := public.gen_random_uuid();
       begin
         if overwrite then
-          insert into wmworkers_entities(partition_key, row_key, value, version, etag)
+          insert into wm_workers_entities(partition_key, row_key, value, version, etag)
           values (
             pk,
             rk,
@@ -3772,10 +3772,10 @@ methods:
             new_etag
           ) on conflict (partition_key, row_key) do
           update
-          set (value, version, etag) = (properties, wmworkers_entities_create.version, new_etag)
-          where wmworkers_entities.partition_key = wmworkers_entities_create.pk and wmworkers_entities.row_key = wmworkers_entities_create.rk;
+          set (value, version, etag) = (properties, wm_workers_entities_create.version, new_etag)
+          where wm_workers_entities.partition_key = wm_workers_entities_create.pk and wm_workers_entities.row_key = wm_workers_entities_create.rk;
         else
-          insert into wmworkers_entities(partition_key, row_key, value, version, etag)
+          insert into wm_workers_entities(partition_key, row_key, value, version, etag)
           values (
             pk,
             rk,
@@ -3786,7 +3786,7 @@ methods:
         end if;
         return new_etag;
       end
-  wmworkers_entities_remove:
+  wm_workers_entities_remove:
     serviceName: worker_manager
     description: See taskcluster-lib-entities
     mode: write
@@ -3794,11 +3794,11 @@ methods:
     returns: table (etag uuid)
     body: |-
       begin
-        return query delete from wmworkers_entities
-        where wmworkers_entities.partition_key = wmworkers_entities_remove.partition_key and wmworkers_entities.row_key = wmworkers_entities_remove.row_key
-        returning wmworkers_entities.etag;
+        return query delete from wm_workers_entities
+        where wm_workers_entities.partition_key = wm_workers_entities_remove.partition_key and wm_workers_entities.row_key = wm_workers_entities_remove.row_key
+        returning wm_workers_entities.etag;
       end
-  wmworkers_entities_modify:
+  wm_workers_entities_modify:
     serviceName: worker_manager
     description: See taskcluster-lib-entities
     mode: write
@@ -3808,17 +3808,17 @@ methods:
       declare
         new_etag uuid := public.gen_random_uuid();
       begin
-        update wmworkers_entities
-        set (value, version, etag) = (properties, wmworkers_entities_modify.version, new_etag)
-        where wmworkers_entities.partition_key = wmworkers_entities_modify.partition_key and wmworkers_entities.row_key = wmworkers_entities_modify.row_key and wmworkers_entities.etag = wmworkers_entities_modify.old_etag;
+        update wm_workers_entities
+        set (value, version, etag) = (properties, wm_workers_entities_modify.version, new_etag)
+        where wm_workers_entities.partition_key = wm_workers_entities_modify.partition_key and wm_workers_entities.row_key = wm_workers_entities_modify.row_key and wm_workers_entities.etag = wm_workers_entities_modify.old_etag;
 
         if found then
           return query select new_etag;
           return;
         end if;
 
-        perform wmworkers_entities.etag from wmworkers_entities
-        where wmworkers_entities.partition_key = wmworkers_entities_modify.partition_key and wmworkers_entities.row_key = wmworkers_entities_modify.row_key;
+        perform wm_workers_entities.etag from wm_workers_entities
+        where wm_workers_entities.partition_key = wm_workers_entities_modify.partition_key and wm_workers_entities.row_key = wm_workers_entities_modify.row_key;
 
         if found then
           raise exception 'unsuccessful update' using errcode = 'P0004';
@@ -3826,7 +3826,7 @@ methods:
           raise exception 'no such row' using errcode = 'P0002';
         end if;
       end
-  wmworkers_entities_scan:
+  wm_workers_entities_scan:
     description: See taskcluster-lib-entities
     mode: read
     serviceName: worker_manager
@@ -3834,25 +3834,25 @@ methods:
     returns: table (partition_key text, row_key text, value jsonb, version integer, etag uuid)
     body: |-
       declare
-        sql text := 'select wmworkers_entities.partition_key, wmworkers_entities.row_key, wmworkers_entities.value, wmworkers_entities.version, wmworkers_entities.etag from wmworkers_entities';
+        sql text := 'select wm_workers_entities.partition_key, wm_workers_entities.row_key, wm_workers_entities.value, wm_workers_entities.version, wm_workers_entities.etag from wm_workers_entities';
         partition_key_var text;
         row_key_var text;
         page_offset integer;
       begin
-        if wmworkers_entities_scan.pk is not null or wmworkers_entities_scan.rk is not null or condition is not null then
+        if wm_workers_entities_scan.pk is not null or wm_workers_entities_scan.rk is not null or condition is not null then
           sql := sql || ' where ';
         end if;
 
-        if wmworkers_entities_scan.pk is not null then
-          partition_key_var := 'partition_key = ' || quote_literal(wmworkers_entities_scan.pk);
+        if wm_workers_entities_scan.pk is not null then
+          partition_key_var := 'partition_key = ' || quote_literal(wm_workers_entities_scan.pk);
         end if;
 
-        if wmworkers_entities_scan.rk is not null then
-          row_key_var := 'row_key = ' || quote_literal(wmworkers_entities_scan.rk);
+        if wm_workers_entities_scan.rk is not null then
+          row_key_var := 'row_key = ' || quote_literal(wm_workers_entities_scan.rk);
         end if;
 
         sql := sql || concat_ws(' and ', partition_key_var, row_key_var, condition);
-        sql := sql || ' order by wmworkers_entities.partition_key, wmworkers_entities.row_key';
+        sql := sql || ' order by wm_workers_entities.partition_key, wm_workers_entities.row_key';
 
         if size is not null and size > 0 then
           sql := sql || ' limit ' || size + 1;
@@ -3865,7 +3865,7 @@ methods:
 
         return query execute sql;
       end
-  wmworker_pools_entities_load:
+  wm_worker_pools_entities_load:
     description: See taskcluster-lib-entities
     mode: read
     serviceName: worker_manager
@@ -3874,11 +3874,11 @@ methods:
     body: |-
       begin
         return query
-        select wmworker_pools_entities.partition_key, wmworker_pools_entities.row_key, wmworker_pools_entities.value, wmworker_pools_entities.version,
-        wmworker_pools_entities.etag from wmworker_pools_entities
-        where wmworker_pools_entities.partition_key = wmworker_pools_entities_load.partition_key and wmworker_pools_entities.row_key = wmworker_pools_entities_load.row_key;
+        select wm_worker_pools_entities.partition_key, wm_worker_pools_entities.row_key, wm_worker_pools_entities.value, wm_worker_pools_entities.version,
+        wm_worker_pools_entities.etag from wm_worker_pools_entities
+        where wm_worker_pools_entities.partition_key = wm_worker_pools_entities_load.partition_key and wm_worker_pools_entities.row_key = wm_worker_pools_entities_load.row_key;
       end
-  wmworker_pools_entities_create:
+  wm_worker_pools_entities_create:
     serviceName: worker_manager
     description: See taskcluster-lib-entities
     mode: write
@@ -3889,7 +3889,7 @@ methods:
         new_etag uuid := public.gen_random_uuid();
       begin
         if overwrite then
-          insert into wmworker_pools_entities(partition_key, row_key, value, version, etag)
+          insert into wm_worker_pools_entities(partition_key, row_key, value, version, etag)
           values (
             pk,
             rk,
@@ -3898,10 +3898,10 @@ methods:
             new_etag
           ) on conflict (partition_key, row_key) do
           update
-          set (value, version, etag) = (properties, wmworker_pools_entities_create.version, new_etag)
-          where wmworker_pools_entities.partition_key = wmworker_pools_entities_create.pk and wmworker_pools_entities.row_key = wmworker_pools_entities_create.rk;
+          set (value, version, etag) = (properties, wm_worker_pools_entities_create.version, new_etag)
+          where wm_worker_pools_entities.partition_key = wm_worker_pools_entities_create.pk and wm_worker_pools_entities.row_key = wm_worker_pools_entities_create.rk;
         else
-          insert into wmworker_pools_entities(partition_key, row_key, value, version, etag)
+          insert into wm_worker_pools_entities(partition_key, row_key, value, version, etag)
           values (
             pk,
             rk,
@@ -3912,7 +3912,7 @@ methods:
         end if;
         return new_etag;
       end
-  wmworker_pools_entities_remove:
+  wm_worker_pools_entities_remove:
     serviceName: worker_manager
     description: See taskcluster-lib-entities
     mode: write
@@ -3920,11 +3920,11 @@ methods:
     returns: table (etag uuid)
     body: |-
       begin
-        return query delete from wmworker_pools_entities
-        where wmworker_pools_entities.partition_key = wmworker_pools_entities_remove.partition_key and wmworker_pools_entities.row_key = wmworker_pools_entities_remove.row_key
-        returning wmworker_pools_entities.etag;
+        return query delete from wm_worker_pools_entities
+        where wm_worker_pools_entities.partition_key = wm_worker_pools_entities_remove.partition_key and wm_worker_pools_entities.row_key = wm_worker_pools_entities_remove.row_key
+        returning wm_worker_pools_entities.etag;
       end
-  wmworker_pools_entities_modify:
+  wm_worker_pools_entities_modify:
     serviceName: worker_manager
     description: See taskcluster-lib-entities
     mode: write
@@ -3934,17 +3934,17 @@ methods:
       declare
         new_etag uuid := public.gen_random_uuid();
       begin
-        update wmworker_pools_entities
-        set (value, version, etag) = (properties, wmworker_pools_entities_modify.version, new_etag)
-        where wmworker_pools_entities.partition_key = wmworker_pools_entities_modify.partition_key and wmworker_pools_entities.row_key = wmworker_pools_entities_modify.row_key and wmworker_pools_entities.etag = wmworker_pools_entities_modify.old_etag;
+        update wm_worker_pools_entities
+        set (value, version, etag) = (properties, wm_worker_pools_entities_modify.version, new_etag)
+        where wm_worker_pools_entities.partition_key = wm_worker_pools_entities_modify.partition_key and wm_worker_pools_entities.row_key = wm_worker_pools_entities_modify.row_key and wm_worker_pools_entities.etag = wm_worker_pools_entities_modify.old_etag;
 
         if found then
           return query select new_etag;
           return;
         end if;
 
-        perform wmworker_pools_entities.etag from wmworker_pools_entities
-        where wmworker_pools_entities.partition_key = wmworker_pools_entities_modify.partition_key and wmworker_pools_entities.row_key = wmworker_pools_entities_modify.row_key;
+        perform wm_worker_pools_entities.etag from wm_worker_pools_entities
+        where wm_worker_pools_entities.partition_key = wm_worker_pools_entities_modify.partition_key and wm_worker_pools_entities.row_key = wm_worker_pools_entities_modify.row_key;
 
         if found then
           raise exception 'unsuccessful update' using errcode = 'P0004';
@@ -3952,7 +3952,7 @@ methods:
           raise exception 'no such row' using errcode = 'P0002';
         end if;
       end
-  wmworker_pools_entities_scan:
+  wm_worker_pools_entities_scan:
     description: See taskcluster-lib-entities
     mode: read
     serviceName: worker_manager
@@ -3960,25 +3960,25 @@ methods:
     returns: table (partition_key text, row_key text, value jsonb, version integer, etag uuid)
     body: |-
       declare
-        sql text := 'select wmworker_pools_entities.partition_key, wmworker_pools_entities.row_key, wmworker_pools_entities.value, wmworker_pools_entities.version, wmworker_pools_entities.etag from wmworker_pools_entities';
+        sql text := 'select wm_worker_pools_entities.partition_key, wm_worker_pools_entities.row_key, wm_worker_pools_entities.value, wm_worker_pools_entities.version, wm_worker_pools_entities.etag from wm_worker_pools_entities';
         partition_key_var text;
         row_key_var text;
         page_offset integer;
       begin
-        if wmworker_pools_entities_scan.pk is not null or wmworker_pools_entities_scan.rk is not null or condition is not null then
+        if wm_worker_pools_entities_scan.pk is not null or wm_worker_pools_entities_scan.rk is not null or condition is not null then
           sql := sql || ' where ';
         end if;
 
-        if wmworker_pools_entities_scan.pk is not null then
-          partition_key_var := 'partition_key = ' || quote_literal(wmworker_pools_entities_scan.pk);
+        if wm_worker_pools_entities_scan.pk is not null then
+          partition_key_var := 'partition_key = ' || quote_literal(wm_worker_pools_entities_scan.pk);
         end if;
 
-        if wmworker_pools_entities_scan.rk is not null then
-          row_key_var := 'row_key = ' || quote_literal(wmworker_pools_entities_scan.rk);
+        if wm_worker_pools_entities_scan.rk is not null then
+          row_key_var := 'row_key = ' || quote_literal(wm_worker_pools_entities_scan.rk);
         end if;
 
         sql := sql || concat_ws(' and ', partition_key_var, row_key_var, condition);
-        sql := sql || ' order by wmworker_pools_entities.partition_key, wmworker_pools_entities.row_key';
+        sql := sql || ' order by wm_worker_pools_entities.partition_key, wm_worker_pools_entities.row_key';
 
         if size is not null and size > 0 then
           sql := sql || ' limit ' || size + 1;
@@ -3991,7 +3991,7 @@ methods:
 
         return query execute sql;
       end
-  wmworker_pool_errors_entities_load:
+  wm_worker_pool_errors_entities_load:
     description: See taskcluster-lib-entities
     mode: read
     serviceName: worker_manager
@@ -4000,11 +4000,11 @@ methods:
     body: |-
       begin
         return query
-        select wmworker_pool_errors_entities.partition_key, wmworker_pool_errors_entities.row_key, wmworker_pool_errors_entities.value, wmworker_pool_errors_entities.version,
-        wmworker_pool_errors_entities.etag from wmworker_pool_errors_entities
-        where wmworker_pool_errors_entities.partition_key = wmworker_pool_errors_entities_load.partition_key and wmworker_pool_errors_entities.row_key = wmworker_pool_errors_entities_load.row_key;
+        select wm_worker_pool_errors_entities.partition_key, wm_worker_pool_errors_entities.row_key, wm_worker_pool_errors_entities.value, wm_worker_pool_errors_entities.version,
+        wm_worker_pool_errors_entities.etag from wm_worker_pool_errors_entities
+        where wm_worker_pool_errors_entities.partition_key = wm_worker_pool_errors_entities_load.partition_key and wm_worker_pool_errors_entities.row_key = wm_worker_pool_errors_entities_load.row_key;
       end
-  wmworker_pool_errors_entities_create:
+  wm_worker_pool_errors_entities_create:
     serviceName: worker_manager
     description: See taskcluster-lib-entities
     mode: write
@@ -4015,7 +4015,7 @@ methods:
         new_etag uuid := public.gen_random_uuid();
       begin
         if overwrite then
-          insert into wmworker_pool_errors_entities(partition_key, row_key, value, version, etag)
+          insert into wm_worker_pool_errors_entities(partition_key, row_key, value, version, etag)
           values (
             pk,
             rk,
@@ -4024,10 +4024,10 @@ methods:
             new_etag
           ) on conflict (partition_key, row_key) do
           update
-          set (value, version, etag) = (properties, wmworker_pool_errors_entities_create.version, new_etag)
-          where wmworker_pool_errors_entities.partition_key = wmworker_pool_errors_entities_create.pk and wmworker_pool_errors_entities.row_key = wmworker_pool_errors_entities_create.rk;
+          set (value, version, etag) = (properties, wm_worker_pool_errors_entities_create.version, new_etag)
+          where wm_worker_pool_errors_entities.partition_key = wm_worker_pool_errors_entities_create.pk and wm_worker_pool_errors_entities.row_key = wm_worker_pool_errors_entities_create.rk;
         else
-          insert into wmworker_pool_errors_entities(partition_key, row_key, value, version, etag)
+          insert into wm_worker_pool_errors_entities(partition_key, row_key, value, version, etag)
           values (
             pk,
             rk,
@@ -4038,7 +4038,7 @@ methods:
         end if;
         return new_etag;
       end
-  wmworker_pool_errors_entities_remove:
+  wm_worker_pool_errors_entities_remove:
     serviceName: worker_manager
     description: See taskcluster-lib-entities
     mode: write
@@ -4046,11 +4046,11 @@ methods:
     returns: table (etag uuid)
     body: |-
       begin
-        return query delete from wmworker_pool_errors_entities
-        where wmworker_pool_errors_entities.partition_key = wmworker_pool_errors_entities_remove.partition_key and wmworker_pool_errors_entities.row_key = wmworker_pool_errors_entities_remove.row_key
-        returning wmworker_pool_errors_entities.etag;
+        return query delete from wm_worker_pool_errors_entities
+        where wm_worker_pool_errors_entities.partition_key = wm_worker_pool_errors_entities_remove.partition_key and wm_worker_pool_errors_entities.row_key = wm_worker_pool_errors_entities_remove.row_key
+        returning wm_worker_pool_errors_entities.etag;
       end
-  wmworker_pool_errors_entities_modify:
+  wm_worker_pool_errors_entities_modify:
     serviceName: worker_manager
     description: See taskcluster-lib-entities
     mode: write
@@ -4060,17 +4060,17 @@ methods:
       declare
         new_etag uuid := public.gen_random_uuid();
       begin
-        update wmworker_pool_errors_entities
-        set (value, version, etag) = (properties, wmworker_pool_errors_entities_modify.version, new_etag)
-        where wmworker_pool_errors_entities.partition_key = wmworker_pool_errors_entities_modify.partition_key and wmworker_pool_errors_entities.row_key = wmworker_pool_errors_entities_modify.row_key and wmworker_pool_errors_entities.etag = wmworker_pool_errors_entities_modify.old_etag;
+        update wm_worker_pool_errors_entities
+        set (value, version, etag) = (properties, wm_worker_pool_errors_entities_modify.version, new_etag)
+        where wm_worker_pool_errors_entities.partition_key = wm_worker_pool_errors_entities_modify.partition_key and wm_worker_pool_errors_entities.row_key = wm_worker_pool_errors_entities_modify.row_key and wm_worker_pool_errors_entities.etag = wm_worker_pool_errors_entities_modify.old_etag;
 
         if found then
           return query select new_etag;
           return;
         end if;
 
-        perform wmworker_pool_errors_entities.etag from wmworker_pool_errors_entities
-        where wmworker_pool_errors_entities.partition_key = wmworker_pool_errors_entities_modify.partition_key and wmworker_pool_errors_entities.row_key = wmworker_pool_errors_entities_modify.row_key;
+        perform wm_worker_pool_errors_entities.etag from wm_worker_pool_errors_entities
+        where wm_worker_pool_errors_entities.partition_key = wm_worker_pool_errors_entities_modify.partition_key and wm_worker_pool_errors_entities.row_key = wm_worker_pool_errors_entities_modify.row_key;
 
         if found then
           raise exception 'unsuccessful update' using errcode = 'P0004';
@@ -4078,7 +4078,7 @@ methods:
           raise exception 'no such row' using errcode = 'P0002';
         end if;
       end
-  wmworker_pool_errors_entities_scan:
+  wm_worker_pool_errors_entities_scan:
     description: See taskcluster-lib-entities
     mode: read
     serviceName: worker_manager
@@ -4086,25 +4086,25 @@ methods:
     returns: table (partition_key text, row_key text, value jsonb, version integer, etag uuid)
     body: |-
       declare
-        sql text := 'select wmworker_pool_errors_entities.partition_key, wmworker_pool_errors_entities.row_key, wmworker_pool_errors_entities.value, wmworker_pool_errors_entities.version, wmworker_pool_errors_entities.etag from wmworker_pool_errors_entities';
+        sql text := 'select wm_worker_pool_errors_entities.partition_key, wm_worker_pool_errors_entities.row_key, wm_worker_pool_errors_entities.value, wm_worker_pool_errors_entities.version, wm_worker_pool_errors_entities.etag from wm_worker_pool_errors_entities';
         partition_key_var text;
         row_key_var text;
         page_offset integer;
       begin
-        if wmworker_pool_errors_entities_scan.pk is not null or wmworker_pool_errors_entities_scan.rk is not null or condition is not null then
+        if wm_worker_pool_errors_entities_scan.pk is not null or wm_worker_pool_errors_entities_scan.rk is not null or condition is not null then
           sql := sql || ' where ';
         end if;
 
-        if wmworker_pool_errors_entities_scan.pk is not null then
-          partition_key_var := 'partition_key = ' || quote_literal(wmworker_pool_errors_entities_scan.pk);
+        if wm_worker_pool_errors_entities_scan.pk is not null then
+          partition_key_var := 'partition_key = ' || quote_literal(wm_worker_pool_errors_entities_scan.pk);
         end if;
 
-        if wmworker_pool_errors_entities_scan.rk is not null then
-          row_key_var := 'row_key = ' || quote_literal(wmworker_pool_errors_entities_scan.rk);
+        if wm_worker_pool_errors_entities_scan.rk is not null then
+          row_key_var := 'row_key = ' || quote_literal(wm_worker_pool_errors_entities_scan.rk);
         end if;
 
         sql := sql || concat_ws(' and ', partition_key_var, row_key_var, condition);
-        sql := sql || ' order by wmworker_pool_errors_entities.partition_key, wmworker_pool_errors_entities.row_key';
+        sql := sql || ' order by wm_worker_pool_errors_entities.partition_key, wm_worker_pool_errors_entities.row_key';
 
         if size is not null and size > 0 then
           sql := sql || ' limit ' || size + 1;

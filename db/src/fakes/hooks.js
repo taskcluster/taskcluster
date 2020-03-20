@@ -159,13 +159,13 @@ class FakeHook {
     return entries.slice((page - 1) * size, (page - 1) * size + size + 1);
   }
 
-  async last_fire_3_entities_load(partitionKey, rowKey) {
+  async last_fire3_entities_load(partitionKey, rowKey) {
     const lastFire3 = this._getLastFire3({ partitionKey, rowKey });
 
     return lastFire3 ? [lastFire3] : [];
   }
 
-  async last_fire_3_entities_create(partition_key, row_key, value, overwrite, version) {
+  async last_fire3_entities_create(partition_key, row_key, value, overwrite, version) {
     if (!overwrite && this._getLastFire3({ partitionKey: partition_key, rowKey: row_key })) {
       const err = new Error('duplicate key value violates unique constraint');
       err.code = UNIQUE_VIOLATION;
@@ -179,17 +179,17 @@ class FakeHook {
       version,
     });
 
-    return [{ 'last_fire_3_entities_create': lastFire3.etag }];
+    return [{ 'last_fire3_entities_create': lastFire3.etag }];
   }
 
-  async last_fire_3_entities_remove(partition_key, row_key) {
+  async last_fire3_entities_remove(partition_key, row_key) {
     const lastFire3 = this._getLastFire3({ partitionKey: partition_key, rowKey: row_key });
     this._removeLastFire3({ partitionKey: partition_key, rowKey: row_key });
 
     return lastFire3 ? [{ etag: lastFire3.etag }] : [];
   }
 
-  async last_fire_3_entities_modify(partition_key, row_key, value, version, oldEtag) {
+  async last_fire3_entities_modify(partition_key, row_key, value, version, oldEtag) {
     const lastFire3 = this._getLastFire3({ partitionKey: partition_key, rowKey: row_key });
 
     if (!lastFire3) {
@@ -208,7 +208,7 @@ class FakeHook {
     return [{ etag: c.etag }];
   }
 
-  async last_fire_3_entities_scan(partition_key, row_key, condition, size, page) {
+  async last_fire3_entities_scan(partition_key, row_key, condition, size, page) {
     const entries = getEntries({ partitionKey: partition_key, rowKey: row_key, condition }, this.lastFire3s);
 
     return entries.slice((page - 1) * size, (page - 1) * size + size + 1);

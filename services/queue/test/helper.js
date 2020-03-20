@@ -320,7 +320,6 @@ exports.resetTables = (mock, skipping) => {
       await resetTable({ testDbUrl: sec.testDbUrl, tableName: 'queue_worker_entities' });
       await resetTable({ testDbUrl: sec.testDbUrl, tableName: 'queue_worker_type_entities' });
       await resetTable({ testDbUrl: sec.testDbUrl, tableName: 'queue_provisioner_entities' });
-      await resetTable({ testDbUrl: sec.testDbUrl, tableName: 'azure_queue_messages' });
     }
   });
 };

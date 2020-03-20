@@ -38,6 +38,10 @@ exports.secrets = new Secrets({
   ],
   secrets: {
     db: withDb.secret,
+    azure: [
+      {env: 'AZURE_ACCOUNT', cfg: 'azure.accountId', name: 'accountId'},
+      {env: 'AZURE_ACCOUNT_KEY', cfg: 'azure.accessKey', name: 'accessKey'},
+    ],
     aws: [
       {env: 'AWS_ACCESS_KEY_ID', name: 'awsAccessKeyId'},
       {env: 'AWS_SECRET_ACCESS_KEY', name: 'awsSecretAccessKey'},

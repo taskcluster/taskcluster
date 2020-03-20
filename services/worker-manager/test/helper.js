@@ -269,9 +269,9 @@ exports.resetTables = (mock, skipping) => {
     if (mock) {
       exports.db['worker_manager'].reset();
     } {
-      await resetTable({ testDbUrl: sec.testDbUrl, tableName: 'wmworkers_entities' });
-      await resetTable({ testDbUrl: sec.testDbUrl, tableName: 'wmworker_pools_entities' });
-      await resetTable({ testDbUrl: sec.testDbUrl, tableName: 'wmworker_pool_errors_entities' });
+      await resetTable({ testDbUrl: sec.testDbUrl, tableName: 'wm_workers_entities' });
+      await resetTable({ testDbUrl: sec.testDbUrl, tableName: 'wm_worker_pools_entities' });
+      await resetTable({ testDbUrl: sec.testDbUrl, tableName: 'wm_worker_pool_errors_entities' });
     }
   });
 };
