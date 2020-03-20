@@ -1553,6 +1553,13 @@
       },
       "migrationScript": "begin\n  create table azure_queue_messages (\n    message_id uuid not null primary key,\n    queue_name text not null,\n    message_text text not null,\n    inserted timestamp not null,\n    visible timestamp not null, -- visible after this time\n    expires timestamp not null,  -- expired after this time\n    pop_receipt uuid -- null means not popped\n  );\n  -- 'get' operations sort by inserted within a queue\n  create index azure_queue_messages_inserted on azure_queue_messages(queue_name, inserted);\n  grant select, insert, update, delete on azure_queue_messages to $db_user_prefix$_queue;\nend",
       "version": 3
+    },
+    {
+      "downgradeScript": "begin\n  alter table azure_queue_messages\n    alter column inserted type timestamp,\n    alter column visible type timestamp,\n    alter column expires type timestamp;\nend",
+      "methods": {
+      },
+      "migrationScript": "begin\n  alter table azure_queue_messages\n    alter column inserted type timestamptz,\n    alter column visible type timestamptz,\n    alter column expires type timestamptz;\nend",
+      "version": 4
     }
   ]
 }
