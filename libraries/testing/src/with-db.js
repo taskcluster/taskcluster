@@ -1,6 +1,6 @@
 const path = require('path');
 const {Client} = require('pg');
-const {Schema, UNDEFINED_OBJECT} = require('taskcluster-lib-postgres');
+const {Schema, UNDEFINED_OBJECT, UNDEFINED_TABLE} = require('taskcluster-lib-postgres');
 const tcdb = require('taskcluster-db');
 const {URL} = require('url');
 
@@ -51,7 +51,7 @@ const resetTable = async ({testDbUrl, tableName}) => {
   const client = new Client({connectionString: testDbUrl});
   await client.connect();
   try {
-    await client.query(`truncate ${tableName}`);
+    await ignorePgErrors(client.query(`truncate ${tableName}`), UNDEFINED_TABLE);
   } finally {
     await client.end();
   }
