@@ -1,5 +1,3 @@
-const assert = require('assert').strict;
-const {UNDEFINED_TABLE} = require('taskcluster-lib-postgres');
 const helper = require('../helper');
 const testing = require('taskcluster-lib-testing');
 
