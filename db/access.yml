@@ -42,6 +42,7 @@ queue:
     queue_worker_entities: write
     queue_worker_type_entities: write
     queue_provisioner_entities: write
+    azure_queue_messages: write
 secrets:
   tables:
     secrets_entities: write
