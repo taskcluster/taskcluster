@@ -2,13 +2,10 @@ let _ = require('lodash');
 let debug = require('debug')('app:queue');
 let assert = require('assert');
 let base32 = require('thirty-two');
-let azure = require('fast-azure-storage');
 let crypto = require('crypto');
 let taskcluster = require('taskcluster-client');
 let slugid = require('slugid');
-
-/** Timeout for azure queue requests */
-const AZURE_QUEUE_TIMEOUT = 7 * 1000;
+let AZQueue = require('taskcluster-lib-azqueue');
 
 /** Get seconds until `target` relative to now (by default).  This rounds up
  * and always waits at least one second, to avoid races in tests where
@@ -64,12 +61,7 @@ class QueueService {
    *
    * options:
    * {
-   *   prefix:               // Prefix for all pending-task queues, max 6 chars
-   *   credentials: {
-   *     accountId:          // Azure storage account name
-   *     accessKey:          // Azure storage account key
-   *     fake:               // if true, use in-memory version
-   *   },
+   *   db:                   // tc-lib-postgres Database
    *   claimQueue:           // Queue name for the claim expiration queue
    *   resolvedQueue:        // Queue name for the resolved task queue
    *   deadlineQueue:        // Queue name for the deadline queue
@@ -79,8 +71,7 @@ class QueueService {
    */
   constructor(options) {
     assert(options, 'options is required');
-    assert(/^[A-Za-z0-9][A-Za-z0-9-]*$/.test(options.prefix), 'Invalid prefix');
-    assert(options.prefix.length <= 6, 'Prefix is too long');
+    assert(options.db, 'db is required');
     assert(options.resolvedQueue, 'A resolvedQueue name must be given');
     assert(options.claimQueue, 'A claimQueue name must be given');
     assert(options.deadlineQueue, 'A deadlineQueue name must be given');
@@ -89,21 +80,8 @@ class QueueService {
       deadlineDelay: 10 * 60 * 1000,
     });
 
-    this.prefix = options.prefix;
     this.monitor = options.monitor;
-
-    if (options.credentials.fake) {
-      this.client = new FakeQueueClient();
-    } else {
-      this.client = new azure.Queue({
-        accountId: options.credentials.accountId,
-        accessKey: options.credentials.accessKey,
-        timeout: AZURE_QUEUE_TIMEOUT,
-      });
-    }
-
-    // Store account name of use in SAS signed Urls
-    this.accountId = options.credentials.accountId;
+    this.client = new AZQueue({db: options.db});
 
     // Promises that queues are created, return mapping from priority to
     // azure queue names.
@@ -445,56 +423,7 @@ class QueueService {
    * a periodic test tasks.
    */
   async _ensureQueueAndMetadata(queue, provisionerId, workerType) {
-    // Fetch meta-data from queue, checking if it exists
-    try {
-      let {metadata} = await this.client.getMetadata(queue);
-
-      // Check if meta-data is up-to-date
-      let lastUsed = new Date(metadata.last_used);
-      if (metadata.provisioner_id === provisionerId
-          && metadata.worker_type === workerType
-          && isFinite(lastUsed)
-          && lastUsed.getTime() > Date.now() - 23 * 60 * 60 * 1000
-      ) {
-        return; // We're done as meta-data is present
-      }
-
-      // Update meta-data
-      return this.client.setMetadata(queue, {
-        provisioner_id: provisionerId,
-        worker_type: workerType,
-        last_used: taskcluster.fromNowJSON(),
-      });
-    } catch (err) {
-      // We handle queue not found exceptions, because getMetadata is a HEA
-      // request we don't get any error message payload, so we also accept 404
-      // as implying the same.
-      if (err.code !== 'QueueNotFound' &&
-          err.statusCode !== 404) {
-        throw err;
-      }
-
-      // Create the queue with correct meta-data
-      try {
-        await this.client.createQueue(queue, {
-          provisioner_id: provisionerId,
-          worker_type: workerType,
-          last_used: taskcluster.fromNowJSON(),
-        });
-      } catch (err) {
-        // If queue already exists, we must have been racing we assume meta-data
-        // is up to date...
-        if (err.code !== 'QueueAlreadyExists') {
-          // We probably don't have report on all these. But we should
-          // definitely report if we see a QueueBeingDeleted error
-          err.queue = queue;
-          err.provisionerId = provisionerId;
-          err.workerType = workerType;
-          this.monitor.reportError(err);
-          throw err;
-        }
-      }
-    }
+    // NOOP on postgres
   }
 
   /**
@@ -502,55 +431,15 @@ class QueueService {
    * Returns number of queues deleted.
    */
   async deleteUnusedWorkerQueues(now = new Date()) {
-    assert(now instanceof Date, 'Expected now as Date object');
-    let deleteIfNotUsedSince = now.getTime() - 10 * 24 * 60 * 60 * 1000;
-    let deleted = 0; // Number of queues deleted
+    // NOOP on postgres
+    return 0;
+  }
 
-    // Iterate through all pages
-    let marker = undefined;
-    do {
-      // List queues with prefix from marker
-      let {queues, nextMarker} = await this.client.listQueues({
-        marker,
-        prefix: this.prefix + '-',
-        metadata: true,
-      });
-
-      // Set next marker
-      marker = nextMarker;
-
-      // Find queues to delete
-      queues = queues.filter(({metadata}) => {
-        // If meta-data is missing or 10 days old, we mark it for deletion
-        let lastUsed = new Date(metadata.last_used);
-        return (
-          !metadata.provisioner_id
-          || !metadata.worker_type
-          || !isFinite(lastUsed)
-          || lastUsed.getTime() < deleteIfNotUsedSince
-        );
-      });
-
-      // Delete queues, if they are empty
-      await Promise.all(queues.map(async ({name, metadata}) => {
-        // Fetch message count (approximate)
-        let {messageCount} = await this.client.getMetadata(name);
-        if (messageCount > 0) {
-          return; // Abort if there are messages
-        }
-
-        debug('Deleting queue %s with metadata: %j', name, metadata);
-        await this.client.deleteQueue(name);
-
-        // Count queues deleted (for test ability)
-        deleted += 1;
-      }));
-
-      // Keep going until we get an `undefined` marker
-    } while (marker);
-
-    // Return number of queues deleted
-    return deleted;
+  /**
+   * Remove expired messages
+   */
+  async deleteExpiredMessages() {
+    await this.client.deleteExpiredMessages();
   }
 
   /**
@@ -669,124 +558,6 @@ class QueueService {
 
     // Wait for result and return it
     return await entry.count;
-  }
-}
-
-/**
- * Fake, in-memory version of azure.Queue, but without support for signed URLs
- * (which are only used for deprecated polling mechanisms for which we don't
- * need extensive testing).
- */
-class FakeQueueClient {
-  constructor() {
-    this._reset();
-  }
-
-  // used by tests
-  _reset() {
-    this.queues = {};
-    this.metadata = {};
-  }
-
-  _queue(name) {
-    if (!this.queues[name]) {
-      const err = new Error('Queue not found');
-      err.code = 'QueueNotFound';
-      err.statusCode = 404;
-      throw err;
-    }
-    return {queue: this.queues[name], metadata: this.metadata[name]};
-  }
-
-  async createQueue(name, metadata) {
-    this.queues[name] = [];
-    this.metadata[name] = metadata || {};
-  }
-
-  async getMetadata(name) {
-    const {queue, metadata} = this._queue(name);
-    return {
-      metadata,
-      messageCount: queue.length,
-    };
-  }
-
-  async setMetadata(name, update) {
-    const {metadata} = this._queue(name);
-    Object.assign(metadata, update);
-  }
-
-  async putMessage(name, text, {visibilityTimeout, messageTTL}) {
-    const {queue} = this._queue(name);
-    queue.push({
-      messageText: text,
-      messageId: slugid.v4(),
-      _visibleAfter: taskcluster.fromNow(`${visibilityTimeout} seconds`),
-      _expiresAfter: taskcluster.fromNow(`${messageTTL} seconds`),
-    });
-  }
-
-  async getMessages(name, {visibilityTimeout, numberOfMessages}) {
-    const {queue} = this._queue(name);
-    const rv = [];
-    const now = new Date();
-    const visibilityTime = taskcluster.fromNow(`${visibilityTimeout} seconds`);
-
-    for (let msg of queue) {
-      if (now > msg._visibleAfter && now <= msg._expiresAfter) {
-        msg._visibleAfter = visibilityTime;
-        msg._popReceipt = slugid.v4();
-        rv.push({
-          messageText: msg.messageText,
-          messageId: msg.messageId,
-          popReceipt: msg._popReceipt,
-        });
-        if (rv.length === numberOfMessages) {
-          break;
-        }
-      }
-    }
-
-    return rv;
-  }
-
-  async deleteMessage(name, messageId, popReceipt) {
-    const {queue} = this._queue(name);
-    this.queues[name] = queue.filter(m => {
-      if (m.messageId === messageId) {
-        assert.equal(m._popReceipt, popReceipt);
-        return false;
-      }
-      return true;
-    });
-  }
-
-  async updateMessage(name, messageText, messageId, popReceipt, {visibilityTimeout}) {
-    const {queue} = this._queue(name);
-    queue.forEach(msg => {
-      if (msg.messageId !== messageId) {
-        return;
-      }
-
-      assert.equal(msg._popReceipt, popReceipt);
-      msg.messageText = messageText;
-      msg._visibleAfter = taskcluster.fromNow(`${visibilityTimeout} seconds`);
-    });
-  }
-
-  async listQueues({marker, prefix, metadata}) {
-    return {
-      queues: _.map(this.queues, (queue, name) => ({
-        name,
-        metadata: this.metadata[name],
-      })),
-      nextMarker: undefined,
-    };
-  }
-
-  async deleteQueue(name) {
-    delete this.queues[name];
-    delete this.metadata[name];
   }
 }
 

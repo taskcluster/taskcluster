@@ -257,10 +257,9 @@ let load = loader({
 
   // Create QueueService to manage azure queues
   queueService: {
-    requires: ['cfg', 'monitor'],
-    setup: ({cfg, monitor}) => new QueueService({
-      prefix: cfg.app.queuePrefix,
-      credentials: cfg.azure,
+    requires: ['cfg', 'monitor', 'db'],
+    setup: ({cfg, monitor, db}) => new QueueService({
+      db,
       claimQueue: cfg.app.claimQueue,
       resolvedQueue: cfg.app.resolvedQueue,
       deadlineQueue: cfg.app.deadlineQueue,
@@ -455,14 +454,13 @@ let load = loader({
     },
   },
 
-  // Create the queue expiration process (periodic job)
-  'expire-queues': {
+  // Create the queue-message expiration process (periodic job)
+  'expire-queue-messages': {
     requires: ['cfg', 'queueService', 'monitor'],
     setup: ({cfg, queueService, monitor}, ownName) => {
       return monitor.oneShot(ownName, async () => {
-        debug('Expiring queues at: %s', new Date());
-        const count = await queueService.deleteUnusedWorkerQueues();
-        debug('Expired %s queues', count);
+        debug('Expiring azqueue messages at: %s', new Date());
+        await queueService.deleteExpiredMessages();
       });
     },
   },
