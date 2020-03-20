@@ -3,6 +3,7 @@ const pg = require('pg');
 const {dollarQuote, annotateError} = require('./util');
 const assert = require('assert').strict;
 const {READ, WRITE, DUPLICATE_OBJECT, UNDEFINED_TABLE} = require('./constants');
+const {defaultMonitorManager} = require('taskcluster-lib-monitor');
 
 // Postgres extensions to "create".
 const EXTENSIONS = [
@@ -14,17 +15,49 @@ const EXTENSIONS = [
 // questionable decision can be overridden globally:
 pg.defaults.parseInputDatesAsUTC = true;
 
+defaultMonitorManager.register({
+  name: 'dbFunctionCall',
+  title: 'DB Method Call',
+  type: 'db-function-call',
+  level: 'info',
+  version: 1,
+  description: `This message is logged for each invocation of a Postgres stored function.`,
+  fields: {
+    name: 'The name of the DB function',
+  },
+});
+
+defaultMonitorManager.register({
+  name: 'dbPoolCounts',
+  title: 'DB Pool Counts',
+  type: 'db-pool-counts',
+  level: 'notice',
+  version: 1,
+  description: `
+    This message is logged every 5 minutes from each process that is using the database,
+    once for each pool.  Most services have both a "read" pool and a "write" pool.  The
+    fields come from the node-postgres package.
+  `,
+  fields: {
+    pool: 'The name of the pool within the process',
+    totalCount: 'The total number of connections',
+    idleCount: 'The number of connections (out of the total) which are not currently in use',
+    waitingCount: 'The number of operations waiting for an idle connection',
+  },
+});
+
 class Database {
   /**
    * Get a new Database instance
    */
-  static async setup({schema, readDbUrl, writeDbUrl, serviceName, statementTimeout}) {
+  static async setup({schema, readDbUrl, writeDbUrl, serviceName, monitor, statementTimeout}) {
     assert(readDbUrl, 'readDbUrl is required');
     assert(writeDbUrl, 'writeDbUrl is required');
     assert(schema, 'schema is required');
     assert(serviceName, 'serviceName is required');
+    assert(monitor !== undefined, 'monitor is required (but use `false` to disable)');
 
-    const db = new Database({urlsByMode: {[READ]: readDbUrl, [WRITE]: writeDbUrl}, statementTimeout});
+    const db = new Database({urlsByMode: {[READ]: readDbUrl, [WRITE]: writeDbUrl}, monitor, statementTimeout});
     db._createProcs({schema, serviceName});
 
     const dbVersion = await db.currentVersion();
@@ -49,6 +82,8 @@ class Database {
           throw new Error(
             `${serviceName} is not allowed to call read-write methods for other services`);
         }
+
+        this._logDbFunctionCall({name: method.name});
 
         const placeholders = [...new Array(args.length).keys()].map(i => `$${i + 1}`).join(',');
         const res = await this._withClient(method.mode, async client => {
@@ -409,7 +444,7 @@ class Database {
   /**
    * Private constructor (use Database.setup and Database.upgrade instead)
    */
-  constructor({urlsByMode, statementTimeout}) {
+  constructor({urlsByMode, monitor, statementTimeout}) {
     assert(!statementTimeout || typeof statementTimeout === 'number' || typeof statementTimeout === 'boolean');
     const makePool = dbUrl => {
       // use a max of 5 connections. For services running both a read and write
@@ -449,10 +484,14 @@ class Database {
       return pool;
     };
 
+    this.monitor = monitor;
+
     this.pools = {};
     for (let mode of Object.keys(urlsByMode)) {
       this.pools[mode] = makePool(urlsByMode[mode]);
     }
+
+    this._startMonitoringPools();
 
     this.fns = {};
   }
@@ -521,14 +560,55 @@ class Database {
   }
 
   /**
+   * Periodically monitor pool size, producing a measure every 5m.  These values
+   * should represent a long-term trend so more frequent reports are not useful.
+   */
+  _startMonitoringPools() {
+    this._poolMonitorInterval = setInterval(() => {
+      for (const [name, pool] of Object.entries(this.pools)) {
+        this._logDbPoolCounts({
+          pool: name,
+          totalCount: pool.totalCount,
+          idleCount: pool.idleCount,
+          waitingCount: pool.waitingCount,
+        });
+      }
+    }, 300 * 1000);
+  }
+
+  _stopMonitoringPools() {
+    if (this._poolMonitorInterval) {
+      clearInterval(this._poolMonitorInterval);
+    }
+    this._poolMonitorInterval = null;
+  }
+
+  /**
    * Wrap up operations on this DB
    */
   async close() {
+    this._stopMonitoringPools();
     await Promise.all(Object.values(this.pools).map(pool => pool.end()));
   }
 
   static _validUsernamePrefix(usernamePrefix) {
     return usernamePrefix.match(/^[a-z_]+$/);
+  }
+
+  /**
+   * Depending on context, we may not have a monitor (e.g., during upgrade), so
+   * these methods wrap calls to `monitor.<foo>` with a check for monitor being
+   * undefined, ignoring the call in that case.
+   */
+  _logDbFunctionCall(fields) {
+    if (this.monitor) {
+      this.monitor.log.dbFunctionCall(fields);
+    }
+  }
+  _logDbPoolCounts(fields) {
+    if (this.monitor) {
+      this.monitor.log.dbPoolCounts(fields);
+    }
   }
 }
 
