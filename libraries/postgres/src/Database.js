@@ -365,7 +365,10 @@ class Database {
   constructor({urlsByMode, statementTimeout}) {
     assert(!statementTimeout || typeof statementTimeout === 'number');
     const makePool = dbUrl => {
-      const pool = new Pool({connectionString: dbUrl});
+      // use a max of 5 connections. For services running both a read and write
+      // pool, this is a maximum of 10 concurrent connections.  Other requests
+      // will be queued.
+      const pool = new Pool({connectionString: dbUrl, max: 5});
       // ignore errors from *idle* connections.  From the docs:
       //
       // > When a client is sitting idly in the pool it can still emit errors
