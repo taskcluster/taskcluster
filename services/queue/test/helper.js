@@ -91,35 +91,6 @@ exports.withS3 = (mock, skipping) => {
 };
 
 /**
- * Provide a fake QueueService implementation at helper.queueService
- */
-exports.withQueueService = (mock, skipping) => {
-  suiteSetup(async function() {
-    if (skipping()) {
-      return;
-    }
-
-    if (mock) {
-      helper.load.cfg('azure.fake', true);
-      helper.queueService = await helper.load('queueService');
-      helper.queueService.client._reset();
-    } else {
-      // ensure we are using unique queue names from run to run of this service
-      // so that tests do not interfere with one another.  This prefix can only
-      // be 6 characters long..
-      const pfx = 'q' + new Date().getTime().toString().slice(-5);
-      await helper.load('cfg');
-      helper.load.cfg('app.queuePrefix', pfx);
-      helper.load.cfg('app.claimQueue', `${pfx}-claim`);
-      helper.load.cfg('app.deadlineQueue', `${pfx}-deadline`);
-      helper.load.cfg('app.resolvedQueue', `${pfx}-resolved`);
-
-      helper.queueService = await helper.load('queueService');
-    }
-  });
-};
-
-/**
  * Mock the https://ip-ranges.amazonaws.com/ip-ranges.json endpoint
  * to use a fixed set of IP ranges for testing.
  *

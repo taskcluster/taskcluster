@@ -1,6 +1,5 @@
 const slugid = require('slugid');
 const assert = require('assert');
-const crypto = require('crypto');
 const QueueService = require('../src/queueservice');
 const _ = require('lodash');
 const debug = require('debug')('test:queueservice');
@@ -8,7 +7,8 @@ const assume = require('assume');
 const testing = require('taskcluster-lib-testing');
 const helper = require('./helper');
 
-helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping) {
+helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
+  helper.withDb(mock, skipping);
   let queueService;
 
   suiteSetup(async () => {
@@ -18,28 +18,14 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
 
     const cfg = await helper.load('cfg');
 
-    if (mock) {
-      queueService = new QueueService({
-        prefix: cfg.app.queuePrefix2,
-        credentials: {fake: true},
-        claimQueue: cfg.app.claimQueue,
-        resolvedQueue: cfg.app.resolvedQueue,
-        deadlineQueue: cfg.app.deadlineQueue,
-        deadlineDelay: 10,
-        monitor: await helper.load('monitor'),
-      });
-    } else {
-      queueService = new QueueService({
-        // use a unique set of queues for each run
-        prefix: `t${crypto.randomBytes(3).toString('hex').slice(0, 5)}`,
-        credentials: cfg.azure,
-        claimQueue: cfg.app.claimQueue,
-        resolvedQueue: cfg.app.resolvedQueue,
-        deadlineQueue: cfg.app.deadlineQueue,
-        deadlineDelay: 1000,
-        monitor: await helper.load('monitor'),
-      });
-    }
+    queueService = new QueueService({
+      db: await helper.load('db'),
+      claimQueue: cfg.app.claimQueue,
+      resolvedQueue: cfg.app.resolvedQueue,
+      deadlineQueue: cfg.app.deadlineQueue,
+      deadlineDelay: 10,
+      monitor: await helper.load('monitor'),
+    });
   });
 
   suiteTeardown(function() {
@@ -202,49 +188,4 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
     debug('pending message count: %j', count);
     assert(typeof count === 'number', 'Expected count as number!');
   });
-
-  test('deleteUnusedWorkerQueues (respects meta-data)', async () => {
-    // Ensure a queue with updated meta-data exists
-    let provisionerId = slugid.v4();
-    let workerType = slugid.v4();
-    let queueNames = await queueService.ensurePendingQueue(
-      provisionerId, workerType,
-    );
-
-    // Let's delete from now and check that we didn't delete queue just created
-    await queueService.deleteUnusedWorkerQueues();
-
-    // Get meta-data, this will fail if the queue was deleted
-    await Promise.all(_.map(queueNames, queueName => {
-      return queueService.client.getMetadata(queueName);
-    }));
-  });
-
-  test('deleteUnusedWorkerQueues (can delete queues)', async () => {
-    // 11 days into the future, so we'll delete all queues (yay)
-    let now = new Date(Date.now() + 11 * 24 * 60 * 60 * 1000);
-
-    // Ensure a queue with updated meta-data exists
-    let provisionerId = slugid.v4();
-    let workerType = slugid.v4();
-    let queueNames = await queueService.ensurePendingQueue(
-      provisionerId, workerType,
-    );
-
-    // Delete previously created queues
-    let deleted = await queueService.deleteUnusedWorkerQueues(now);
-    assume(deleted).is.atleast(1);
-
-    await Promise.all(_.map(queueNames, async (queueName) => {
-      try {
-        // Get meta-data, this will fail if the queue was deleted
-        await queueService.client.getMetadata(queueName);
-        assert(false, 'Expected the queue to have been deleted!');
-      } catch (err) {
-        assert(err.statusCode === 404, 'Expected 400 error');
-      }
-    }));
-  });
-  // NOTE: deleteUnusedWorkerQueues must be tested last, as Azure does not handle
-  // deletion immediately and it may otherwise "bleed over" into other tests
 });
