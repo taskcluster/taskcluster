@@ -1,4 +1,3 @@
-const Entity = require('taskcluster-lib-entities');
 const taskcluster = require('taskcluster-client');
 const Iterate = require('taskcluster-lib-iterate');
 const {consume} = require('taskcluster-lib-pulse');

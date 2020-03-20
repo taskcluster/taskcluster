@@ -7,7 +7,7 @@ const data = require('../src/data');
 const temporary = require('temporary');
 const mockAwsS3 = require('mock-aws-s3');
 const nock = require('nock');
-const {fakeauth, stickyLoader, Secrets, withEntity, withPulse, withMonitor} = require('taskcluster-lib-testing');
+const {fakeauth, stickyLoader, Secrets, withEntity, withPulse, withMonitor, withDb, resetTable} = require('taskcluster-lib-testing');
 
 const helper = module.exports;
 
@@ -38,6 +38,7 @@ exports.secrets = new Secrets({
         mock: 'us-central-7'},
     ],
     azure: withEntity.secret,
+    db: withDb.secret,
   },
   load: exports.load,
 });
@@ -161,6 +162,10 @@ exports.withEntities = (mock, skipping) => {
   withEntity(mock, skipping, exports, 'WorkerType', data.WorkerType);
   withEntity(mock, skipping, exports, 'Worker', data.Worker);
   //helper.load.inject('publicArtifactBucket', {});
+};
+
+exports.withDb = (mock, skipping) => {
+  withDb(mock, skipping, exports, 'queue');
 };
 
 /**
@@ -297,3 +302,25 @@ helper.runExpiration = async component => {
  * Make a random workerType name
  */
 exports.makeWorkerType = () => `test-${slugid.v4().replace(/[_-]/g, '').toLowerCase()}-a`;
+
+exports.resetTables = (mock, skipping) => {
+  setup('reset tables', async function() {
+    const sec = exports.secrets.get('db');
+
+    if (mock) {
+      exports.db['queue'].reset();
+    } {
+      await resetTable({ testDbUrl: sec.testDbUrl, tableName: 'queue_tasks_entities' });
+      await resetTable({ testDbUrl: sec.testDbUrl, tableName: 'queue_artifacts_entities' });
+      await resetTable({ testDbUrl: sec.testDbUrl, tableName: 'queue_task_groups_entities' });
+      await resetTable({ testDbUrl: sec.testDbUrl, tableName: 'queue_task_group_members_entities' });
+      await resetTable({ testDbUrl: sec.testDbUrl, tableName: 'queue_task_group_active_sets_entities' });
+      await resetTable({ testDbUrl: sec.testDbUrl, tableName: 'queue_task_requirement_entities' });
+      await resetTable({ testDbUrl: sec.testDbUrl, tableName: 'queue_task_dependency_entities' });
+      await resetTable({ testDbUrl: sec.testDbUrl, tableName: 'queue_worker_entities' });
+      await resetTable({ testDbUrl: sec.testDbUrl, tableName: 'queue_worker_type_entities' });
+      await resetTable({ testDbUrl: sec.testDbUrl, tableName: 'queue_provisioner_entities' });
+      await resetTable({ testDbUrl: sec.testDbUrl, tableName: 'azure_queue_messages' });
+    }
+  });
+};

@@ -408,7 +408,6 @@ builder.declare({
     // workerGroup: req.params.workerGroup,
   }, scanOptions);
 
-
   data.entries = data.entries.filter(entry => {
     if (entry.workerGroup !== req.params.workerGroup) {
       return false;
