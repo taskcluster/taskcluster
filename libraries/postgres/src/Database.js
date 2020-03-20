@@ -1,4 +1,5 @@
 const {Pool} = require('pg');
+const pg = require('pg');
 const {dollarQuote, annotateError} = require('./util');
 const assert = require('assert').strict;
 const {READ, WRITE, DUPLICATE_OBJECT, UNDEFINED_TABLE} = require('./constants');
@@ -7,6 +8,11 @@ const {READ, WRITE, DUPLICATE_OBJECT, UNDEFINED_TABLE} = require('./constants');
 const EXTENSIONS = [
   'pgcrypto',
 ];
+
+// Node-postgres assumes that all Date objects are in the local timezone.  In
+// Taskcluster, we always use Date objects in UTC.  Happily, the library's
+// questionable decision can be overridden globally:
+pg.defaults.parseInputDatesAsUTC = true;
 
 class Database {
   /**
