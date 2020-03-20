@@ -36,7 +36,9 @@ func (w *loggingWriter) Write(p []byte) (n int, err error) {
 		WorkerRunnerProtocol.Send(protocol.Message{
 			Type: "log",
 			Properties: map[string]interface{}{
-				"textPayload": message,
+				"body": map[string]interface{}{
+					"textPayload": message,
+				},
 			},
 		})
 	} else {
