@@ -405,8 +405,17 @@ builder.declare({
 
   const data = await this.Worker.scan({
     workerPoolId: req.params.workerPoolId,
-    workerGroup: req.params.workerGroup,
+    // workerGroup: req.params.workerGroup,
   }, scanOptions);
+
+
+  data.entries = data.entries.filter(entry => {
+    if (entry.workerGroup !== req.params.workerGroup) {
+      return false;
+    }
+
+    return true;
+  });
 
   const result = {
     workers: data.entries.map(e => e.serializable()),
