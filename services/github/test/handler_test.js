@@ -8,6 +8,7 @@ const monitorManager = require('../src/monitor');
 const taskcluster = require('taskcluster-client');
 const {LEVELS} = require('taskcluster-lib-monitor');
 const {CHECKRUN_TEXT} = require('../src/constants');
+const utils = require('../src/utils');
 
 /**
  * This tests the event handlers, faking out all of the services they
@@ -124,6 +125,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
       use: () => ({
         getArtifact: async() => CUSTOM_CHECKRUN_TEXT,
       }),
+      buildUrl: () => 'url'
     };
 
     // set up the allowPullRequests key
@@ -767,6 +769,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
     test('successfully adds custom check run text from an artifact', async function () {
       await addBuild({state: 'pending', taskGroupId: TASKGROUPID});
       await addCheckRun({taskGroupId: TASKGROUPID, taskId: CUSTOM_CHECKRUN_TASKID});
+      sinon.stub(utils, "throttleRequest").returns({status: 200, text: CUSTOM_CHECKRUN_TEXT});
       await simulateExchangeMessage({
         taskGroupId: TASKGROUPID,
         exchange: 'exchange/taskcluster-queue/v1/task-completed',
@@ -782,6 +785,24 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
         args.output.text,
         `[${CHECKRUN_TEXT}](${libUrls.testRootUrl()}/tasks/${CUSTOM_CHECKRUN_TASKID})\n${CUSTOM_CHECKRUN_TEXT}`
       );
+      sinon.restore();
+    });
+
+    test('fails to get custom check run text from an artifact - should log an error', async function () {
+      // note: production code doesn't throw the error, just logs it, so the handlers is not interrupted
+      await addBuild({state: 'pending', taskGroupId: TASKGROUPID});
+      await addCheckRun({taskGroupId: TASKGROUPID, taskId: CUSTOM_CHECKRUN_TASKID});
+      sinon.stub(utils, "throttleRequest").returns({status: 418, response: {error: {text: "I'm a tea pot"}}});
+      await simulateExchangeMessage({
+        taskGroupId: TASKGROUPID,
+        exchange: 'exchange/taskcluster-queue/v1/task-completed',
+        routingKey: 'route.checks',
+        taskId: CUSTOM_CHECKRUN_TASKID,
+        reasonResolved: 'completed',
+        state: 'completed',
+      });
+      assert(monitorManager.messages.some(({Type, Severity}) => Type === 'monitor.error' && Severity === LEVELS.err));
+      monitorManager.reset();
     })
   });
 

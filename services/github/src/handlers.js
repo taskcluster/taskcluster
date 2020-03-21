@@ -4,6 +4,7 @@ const yaml = require('js-yaml');
 const assert = require('assert');
 const {consume} = require('taskcluster-lib-pulse');
 const {CONCLUSIONS, CHECKRUN_TEXT} = require('./constants');
+const utils = require('./utils');
 
 /**
  * Create handlers
@@ -227,7 +228,7 @@ class Handlers {
     }
     let body = [
       '<details>\n',
-      '<summary>Submitting the task to Taskcluster failed. Details</summary>',
+      '<summary>Uh oh! Looks like an error! Details</summary>',
       '',
       errorBody, // already in Markdown..
       '',
@@ -495,14 +496,35 @@ async function statusHandler(message) {
 
     let customCheckRunText = '';
     if (customCheckRun && customCheckRun.textArtifactName) {
-      console.log('🧿', taskDefinition.scopes);
       const scopedQueueClient = this.queueClient.use({
         authorizedScopes: taskDefinition.scopes,
         credentials: this.context.cfg.taskcluster.credentials,
       });
-      customCheckRunText = (await scopedQueueClient.getArtifact(taskId, runId, customCheckRun.textArtifactName)).toString();
-    }
 
+      const url = this.queueClient.buildUrl(scopedQueueClient.getArtifact, taskId, runId, customCheckRun.textArtifactName);
+      let res = await utils.throttleRequest({url, method: 'GET'});
+
+      if (res.status >= 400) {
+        /*
+          Some possible errors:
+            - insufficient scopes: statusCode 403, code InsufficientScopes
+            - no artifact entity in DB: statusCode 404, code ResourceNotFound
+            - no artifact in S3: statusCode 404, code UnknownError
+        */
+        await this.createExceptionComment({
+          debug,
+          instGithub,
+          organization,
+          repository,
+          sha,
+          error: new Error(res.response.error.text),
+        });
+
+        await this.monitor.reportError(res);
+      } else if (res.status >= 200 && res.status < 300) {
+        customCheckRunText = res.text;
+      }
+    }
 
     if (checkRun) {
       await instGithub.checks.update({
