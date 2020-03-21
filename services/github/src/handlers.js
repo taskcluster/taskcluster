@@ -495,7 +495,12 @@ async function statusHandler(message) {
 
     let customCheckRunText = '';
     if (customCheckRun && customCheckRun.textArtifactName) {
-      customCheckRunText = (await this.queueClient.getArtifact(taskId, runId, customCheckRun.textArtifactName)).toString();
+      console.log('🧿', taskDefinition.scopes);
+      const scopedQueueClient = this.queueClient.use({
+        authorizedScopes: taskDefinition.scopes,
+        credentials: this.context.cfg.taskcluster.credentials,
+      });
+      customCheckRunText = (await scopedQueueClient.getArtifact(taskId, runId, customCheckRun.textArtifactName)).toString();
     }
 
 

@@ -121,7 +121,9 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
         }
       },
       listTaskGroup: async () => ({tasks: []}),
-      getArtifact: async() => CUSTOM_CHECKRUN_TEXT,
+      use: () => ({
+        getArtifact: async() => CUSTOM_CHECKRUN_TEXT,
+      }),
     };
 
     // set up the allowPullRequests key
