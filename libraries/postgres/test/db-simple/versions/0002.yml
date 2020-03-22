@@ -2,7 +2,7 @@ version: 2
 migrationScript: |-
   begin
     alter table secrets
-      add column expires timestamp not null defeault now() + interval '1000 years';
+      add column expires timestamp not null default now() + interval '1000 years';
   end
 downgradeScript: |-
   begin

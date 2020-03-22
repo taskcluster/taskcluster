@@ -4,11 +4,13 @@ const yaml = require('js-yaml');
 const path = require('path');
 const Version = require('./Version');
 const Access = require('./Access');
+const Relations = require('./Relations');
 
 class Schema {
-  constructor(versions, access) {
+  constructor(versions, access, tables) {
     this.versions = versions;
     this.access = access;
+    this.tables = tables;
   }
 
   /**
@@ -44,20 +46,25 @@ class Schema {
 
     Schema._checkMethodUpdates(versions);
 
-    const content = yaml.safeLoad(fs.readFileSync(path.join(directory, 'access.yml')));
-    const access = Access.fromYamlFileContent(content, 'access.yml');
+    const access = Access.fromYamlFileContent(
+      yaml.safeLoad(fs.readFileSync(path.join(directory, 'access.yml'))),
+      'access.yml');
+    const tables = Relations.fromYamlFileContent(
+      yaml.safeLoad(fs.readFileSync(path.join(directory, 'tables.yml'))),
+      'tables.yml');
 
-    return new Schema(versions, access);
+    return new Schema(versions, access, tables);
   }
 
   /**
    * Load a Schema from a serialized representation
    */
   static fromSerializable(serializable) {
-    assert.deepEqual(Object.keys(serializable).sort(), ['access', 'versions']);
+    assert.deepEqual(Object.keys(serializable).sort(), ['access', 'tables', 'versions']);
     return new Schema(
       serializable.versions.map(s => Version.fromSerializable(s)),
       Access.fromSerializable(serializable.access),
+      Relations.fromSerializable(serializable.tables),
     );
   }
 
@@ -68,6 +75,7 @@ class Schema {
     return {
       versions: this.versions.map(v => v.asSerializable()),
       access: this.access.asSerializable(),
+      tables: this.tables.asSerializable(),
     };
   }
 

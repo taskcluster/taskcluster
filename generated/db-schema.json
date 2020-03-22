@@ -74,6 +74,237 @@
       }
     }
   },
+  "tables": {
+    "access_token_table_entities": {
+      "etag": "uuid",
+      "partition_key": "text not null",
+      "row_key": "text not null",
+      "value": "jsonb not null",
+      "version": "integer not null"
+    },
+    "authorization_codes_table_entities": {
+      "etag": "uuid",
+      "partition_key": "text not null",
+      "row_key": "text not null",
+      "value": "jsonb not null",
+      "version": "integer not null"
+    },
+    "azure_queue_messages": {
+      "expires": "timestamp with time zone not null",
+      "inserted": "timestamp with time zone not null",
+      "message_id": "uuid not null",
+      "message_text": "text not null",
+      "pop_receipt": "uuid",
+      "queue_name": "text not null",
+      "visible": "timestamp with time zone not null"
+    },
+    "cache_purges_entities": {
+      "etag": "uuid",
+      "partition_key": "text not null",
+      "row_key": "text not null",
+      "value": "jsonb not null",
+      "version": "integer not null"
+    },
+    "clients_entities": {
+      "etag": "uuid",
+      "partition_key": "text not null",
+      "row_key": "text not null",
+      "value": "jsonb not null",
+      "version": "integer not null"
+    },
+    "denylisted_notification_entities": {
+      "etag": "uuid",
+      "partition_key": "text not null",
+      "row_key": "text not null",
+      "value": "jsonb not null",
+      "version": "integer not null"
+    },
+    "github_access_token_table_entities": {
+      "etag": "uuid",
+      "partition_key": "text not null",
+      "row_key": "text not null",
+      "value": "jsonb not null",
+      "version": "integer not null"
+    },
+    "hooks_entities": {
+      "etag": "uuid",
+      "partition_key": "text not null",
+      "row_key": "text not null",
+      "value": "jsonb not null",
+      "version": "integer not null"
+    },
+    "indexed_tasks_entities": {
+      "etag": "uuid",
+      "partition_key": "text not null",
+      "row_key": "text not null",
+      "value": "jsonb not null",
+      "version": "integer not null"
+    },
+    "last_fire_3_entities": {
+      "etag": "uuid",
+      "partition_key": "text not null",
+      "row_key": "text not null",
+      "value": "jsonb not null",
+      "version": "integer not null"
+    },
+    "namespaces_entities": {
+      "etag": "uuid",
+      "partition_key": "text not null",
+      "row_key": "text not null",
+      "value": "jsonb not null",
+      "version": "integer not null"
+    },
+    "queue_artifacts_entities": {
+      "etag": "uuid",
+      "partition_key": "text not null",
+      "row_key": "text not null",
+      "value": "jsonb not null",
+      "version": "integer not null"
+    },
+    "queue_provisioner_entities": {
+      "etag": "uuid",
+      "partition_key": "text not null",
+      "row_key": "text not null",
+      "value": "jsonb not null",
+      "version": "integer not null"
+    },
+    "queue_task_dependency_entities": {
+      "etag": "uuid",
+      "partition_key": "text not null",
+      "row_key": "text not null",
+      "value": "jsonb not null",
+      "version": "integer not null"
+    },
+    "queue_task_group_active_sets_entities": {
+      "etag": "uuid",
+      "partition_key": "text not null",
+      "row_key": "text not null",
+      "value": "jsonb not null",
+      "version": "integer not null"
+    },
+    "queue_task_group_members_entities": {
+      "etag": "uuid",
+      "partition_key": "text not null",
+      "row_key": "text not null",
+      "value": "jsonb not null",
+      "version": "integer not null"
+    },
+    "queue_task_groups_entities": {
+      "etag": "uuid",
+      "partition_key": "text not null",
+      "row_key": "text not null",
+      "value": "jsonb not null",
+      "version": "integer not null"
+    },
+    "queue_task_requirement_entities": {
+      "etag": "uuid",
+      "partition_key": "text not null",
+      "row_key": "text not null",
+      "value": "jsonb not null",
+      "version": "integer not null"
+    },
+    "queue_tasks_entities": {
+      "etag": "uuid",
+      "partition_key": "text not null",
+      "row_key": "text not null",
+      "value": "jsonb not null",
+      "version": "integer not null"
+    },
+    "queue_worker_entities": {
+      "etag": "uuid",
+      "partition_key": "text not null",
+      "row_key": "text not null",
+      "value": "jsonb not null",
+      "version": "integer not null"
+    },
+    "queue_worker_type_entities": {
+      "etag": "uuid",
+      "partition_key": "text not null",
+      "row_key": "text not null",
+      "value": "jsonb not null",
+      "version": "integer not null"
+    },
+    "queues_entities": {
+      "etag": "uuid",
+      "partition_key": "text not null",
+      "row_key": "text not null",
+      "value": "jsonb not null",
+      "version": "integer not null"
+    },
+    "roles_entities": {
+      "etag": "uuid",
+      "partition_key": "text not null",
+      "row_key": "text not null",
+      "value": "jsonb not null",
+      "version": "integer not null"
+    },
+    "secrets_entities": {
+      "etag": "uuid",
+      "partition_key": "text not null",
+      "row_key": "text not null",
+      "value": "jsonb not null",
+      "version": "integer not null"
+    },
+    "session_storage_table_entities": {
+      "etag": "uuid",
+      "partition_key": "text not null",
+      "row_key": "text not null",
+      "value": "jsonb not null",
+      "version": "integer not null"
+    },
+    "taskcluster_check_runs_entities": {
+      "etag": "uuid",
+      "partition_key": "text not null",
+      "row_key": "text not null",
+      "value": "jsonb not null",
+      "version": "integer not null"
+    },
+    "taskcluster_checks_to_tasks_entities": {
+      "etag": "uuid",
+      "partition_key": "text not null",
+      "row_key": "text not null",
+      "value": "jsonb not null",
+      "version": "integer not null"
+    },
+    "taskcluster_github_builds_entities": {
+      "etag": "uuid",
+      "partition_key": "text not null",
+      "row_key": "text not null",
+      "value": "jsonb not null",
+      "version": "integer not null"
+    },
+    "taskcluster_integration_owners_entities": {
+      "etag": "uuid",
+      "partition_key": "text not null",
+      "row_key": "text not null",
+      "value": "jsonb not null",
+      "version": "integer not null"
+    },
+    "widgets": {
+      "name": "text"
+    },
+    "wmworker_pool_errors_entities": {
+      "etag": "uuid",
+      "partition_key": "text not null",
+      "row_key": "text not null",
+      "value": "jsonb not null",
+      "version": "integer not null"
+    },
+    "wmworker_pools_entities": {
+      "etag": "uuid",
+      "partition_key": "text not null",
+      "row_key": "text not null",
+      "value": "jsonb not null",
+      "version": "integer not null"
+    },
+    "wmworkers_entities": {
+      "etag": "uuid",
+      "partition_key": "text not null",
+      "row_key": "text not null",
+      "value": "jsonb not null",
+      "version": "integer not null"
+    }
+  },
   "versions": [
     {
       "downgradeScript": "begin\n  revoke select, insert, update, delete on widgets from $db_user_prefix$_notify;\n  drop table widgets;\nend",
