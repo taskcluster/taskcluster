@@ -26,7 +26,7 @@ exports.tasks = [{
 
     const sections = [...services.entries()].map(([serviceName, methods]) => {
       return [
-        `### ${serviceName}`,
+        `## ${serviceName}`,
         '',
         '| Name | Mode | Arguments | Returns | Description |',
         '| --- | --- | --- | --- | --- |',
@@ -34,13 +34,13 @@ exports.tasks = [{
       ].join('\n');
     });
 
-    const content = await readRepoFile(path.join('db', 'README.md'));
+    const content = await readRepoFile(path.join('db', 'fns.md'));
     const newContent = content.replace(
       /(<!-- SP BEGIN -->)(?:.|\n)*(<!-- SP END -->)/m,
       `$1\n${sections.join('\n')}\n$2`);
 
     if (content !== newContent) {
-      await writeRepoFile(path.join('db', 'README.md'), newContent);
+      await writeRepoFile(path.join('db', 'fns.md'), newContent);
     }
   },
 }];
