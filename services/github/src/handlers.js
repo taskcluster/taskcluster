@@ -507,9 +507,8 @@ async function statusHandler(message) {
       if (res.status >= 400) {
         /*
           Some possible errors:
-            - insufficient scopes: statusCode 403, code InsufficientScopes
-            - no artifact entity in DB: statusCode 404, code ResourceNotFound
-            - no artifact in S3: statusCode 404, code UnknownError
+            - insufficient scopes: statusCode 403
+            - no artifact entity in DB, no artifact in S3: statusCode 404
         */
         await this.createExceptionComment({
           debug,
@@ -517,12 +516,12 @@ async function statusHandler(message) {
           organization,
           repository,
           sha,
-          error: new Error(res.response.error.text),
+          error: res.response.error,
         });
+        await this.monitor.reportError(res.response.error);
 
-        await this.monitor.reportError(res);
       } else if (res.status >= 200 && res.status < 300) {
-        customCheckRunText = res.text;
+        customCheckRunText = res.text.toString();
       }
     }
 
