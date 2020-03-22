@@ -2073,6 +2073,34 @@
   },
   {
     "element": "h1",
+    "id": "taskcluster-github-checks",
+    "path": "/reference/integrations/github/checks",
+    "subtitle": null,
+    "title": "Taskcluster-Github Checks"
+  },
+  {
+    "element": "h2",
+    "id": "custom-output-in-checks",
+    "path": "/reference/integrations/github/checks",
+    "subtitle": "Custom Output in Checks",
+    "title": "Taskcluster-Github Checks"
+  },
+  {
+    "element": "h3",
+    "id": "debugging-errors-in-custom-output",
+    "path": "/reference/integrations/github/checks",
+    "subtitle": "Debugging Errors in Custom Output",
+    "title": "Taskcluster-Github Checks"
+  },
+  {
+    "element": "h2",
+    "id": "reporting-bugs",
+    "path": "/reference/integrations/github/checks",
+    "subtitle": "Reporting Bugs",
+    "title": "Taskcluster-Github Checks"
+  },
+  {
+    "element": "h1",
     "id": "taskcluster-yml-version-0",
     "path": "/reference/integrations/github/taskcluster-yml-v0",
     "subtitle": null,
