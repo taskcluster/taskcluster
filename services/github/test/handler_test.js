@@ -125,7 +125,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
       use: () => ({
         getArtifact: async() => CUSTOM_CHECKRUN_TEXT,
       }),
-      buildUrl: () => 'url'
+      buildUrl: () => 'url',
     };
 
     // set up the allowPullRequests key
@@ -781,10 +781,12 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
 
       assert(github.inst(9988).checks.update.calledOnce, 'checks.update was not called');
       let [args] = github.inst(9988).checks.update.firstCall.args;
+      /* eslint-disable comma-dangle */
       assert.strictEqual(
         args.output.text,
         `[${CHECKRUN_TEXT}](${libUrls.testRootUrl()}/tasks/${CUSTOM_CHECKRUN_TASKID})\n${CUSTOM_CHECKRUN_TEXT}`
       );
+      /* eslint-enable comma-dangle */
       sinon.restore();
     });
 
@@ -803,7 +805,8 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
       });
       assert(monitorManager.messages.some(({Type, Severity}) => Type === 'monitor.error' && Severity === LEVELS.err));
       monitorManager.reset();
-    })
+      sinon.restore();
+    });
   });
 
   suite('Statuses API: initial status handler', function() {

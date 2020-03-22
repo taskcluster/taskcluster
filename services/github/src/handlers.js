@@ -501,7 +501,9 @@ async function statusHandler(message) {
         credentials: this.context.cfg.taskcluster.credentials,
       });
 
-      const url = this.queueClient.buildUrl(scopedQueueClient.getArtifact, taskId, runId, customCheckRun.textArtifactName);
+      const url = this.queueClient
+        .buildUrl(scopedQueueClient.getArtifact, taskId, runId, customCheckRun.textArtifactName);
+
       let res = await utils.throttleRequest({url, method: 'GET'});
 
       if (res.status >= 400) {
