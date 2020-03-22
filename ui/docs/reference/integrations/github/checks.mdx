@@ -1,0 +1,43 @@
+# Taskcluster-Github Checks
+
+Taskcluster-Github supports [Github's Checks API](https://developer.github.com/v3/checks/).
+At the moment, the feature is in beta. If you would like to try it out:
+* Make sure you use `.taskcluster.yml` v1
+* Add `reporting: checks-v1` line at the root level of your `.taskcluster.yml`
+* You will need `queue:route:checks` scope
+* If you are using a decision task, make sure you add `route.checks` to the `routes` of your tasks
+
+## Custom Output in Checks
+
+If you need to add some sort of custom output to your checks (for example, you would like to process
+your logs and add some results to the check's body):
+* You need to arrange for an artifact with the custom text (plain or Markdown) you'd like to add to your check 
+ (for the above example, you arrange the processing of your logs in the way you want, 
+ format the result the way you want using Markdown and save the result in an artifact)
+* Add something like 
+    ```YML
+    extra:
+        github:
+            customCheckRun:
+                textArtifactName: <artifact_name>
+    ```
+ to the definition of the task for which you want customize the check.
+* If it's OK with you that the artifact is public, make sure to start the name of your artifact with
+ `public/`, like this: `public/<file_name>` both when you create the artifact and reference it in your
+ task definition. In this case, you will not need any scopes.
+* If you don't want the artifact to be public, name your artifact simply `<file_name>` both when creating it
+ and referencing it in your task definition. In this case, you will need a `queue:get-artifact:<file_name>`
+ scope. Add it to the `scopes` section of the same task.
+ 
+### Debugging Errors in Custom Output
+ 
+* If you see a `Cannot GET blahblah (403)` kind of error, it's likely that your artifact is private and you
+  forgot to add the scope to the `scopes` section of your task definition.
+* If you see a `Cannot GET blahblah (404)` kind of error, it means the artifact wasn't created successfully.
+  Make sure the artifact exists.
+  
+## Reporting Bugs
+
+If you are unhappy with something in Checks, please [file a bug here](https://bugzilla.mozilla.org/enter_bug.cgi?product=Taskcluster&component=Services)
+If you want the bug to be addressed sooner rather than later, do make sure to start the `Summary` field with `[tc-github]`.
+Thank you!
