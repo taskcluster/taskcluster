@@ -237,6 +237,14 @@ and adding the scopes to that role.
 8. If you need functional workers to go with the app, make sure to set up a provider in the cloud you need and then create a workerpool
 for that provider.
 
+### Publishing Pulse Messages in Your Development Cluster
+
+If you set up a taskcluster-github app, you probably want to test a variety of its functionality. So you might need to impersonate a worker (of course, you can also set up an actual worker, but if workers are not what you are trying to test, that might be an overkill). There might be other uses for this as well, as Taskcluster services communicate with each other via pulse messages, so any integration testing would need this.
+1. In your `dev-config.yml`, look up `pulseHostname` and `meta.rabbitAdminUser`. In the passwordstore, get the password for that user.
+2. Put together a body of your pulse message. Make sure you use the schemas. It should be in JSON format.
+3. Look up the routing key and exchange you need (most likely you are testing a handler - so look up the bindings for that handler in the code).
+3. Navigate to the server (the url from `pulseHostname`), login using the above credentials and go to the exchange of interest. You will see *Publish Message* section in the UI. Fill out the *Routing Key* and *Payload* fields (the result of the step 2 goes into the latter). Press *Publish Message* and you're done.
+
 ## Hacking on Clients
 
 The clients are in `clients/`.
