@@ -1,6 +1,11 @@
+---
+title: Generic-Worker Service
+order: 30
+---
+
 # Generic-Worker Service
 
-Taskcluster-Worker-Runner supports starting generic-worker as a Windows service.
+Worker-Runner supports starting generic-worker as a Windows service.
 It is up to you to define such a service, but it must meet a few requirements:
 
  * Uses the configuration file written by `start-worker`
@@ -11,7 +16,7 @@ It is up to you to define such a service, but it must meet a few requirements:
 
 Note that the service created by the built-in `generic-worker install service`
 does not meet these requirements, as it is intended for use without
-Taskcluster-Worker-Runner.
+Worker-Runner.
 
 ## Recommended Setup
 
