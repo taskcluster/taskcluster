@@ -1,4 +1,4 @@
-# Taskcluster Worker Runner
+# Worker Runner
 
 This repository defines a utility for running workers.
 
@@ -151,7 +151,7 @@ start-worker <runnerConfig>
 
 ## Configuration
 
-Configuration for taskcluster-worker-runner is in the form of a YAML file with
+Configuration for worker-runner is in the form of a YAML file with
 the following fields:
 
 * `provider`: (required) information about the provider for this worker
@@ -319,7 +319,7 @@ worker:
     implementation: docker-worker
     # path to the root of the docker-worker repo clone
     path: /path/to/docker-worker/repo
-    # path where taskcluster-worker-runner should write the generated
+    # path where worker-runner should write the generated
     # docker-worker configuration.
     configPath: ..
 ```
@@ -350,7 +350,7 @@ values in the 'worker' section of the runner configuration:
         # (Windows only) named pipe (\\.\pipe\<something>) with which generic-worker
         # will communicate with worker-runner; default value is as shown here:
         protocolPipe: \\.\pipe\generic-worker
-        # path where taskcluster-worker-runner should write the generated
+        # path where worker-runner should write the generated
         # generic-worker configuration.
         configPath: /etc/taskcluster/generic-worker/config.yaml
 
@@ -380,10 +380,5 @@ See [deployment](./docs/deployment.md) for advice on deploying worker-runner its
 
 # Development
 
-This application requires go1.12.
+This application requires go1.13.
 Test with `go test ./...`.
-
-## Releases
-
-To make a new release, run `./release.sh <version>`.
-Examine the resulting commit and tag for completeness, then push to the upstream repository.
