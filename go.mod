@@ -45,10 +45,10 @@ require (
 	github.com/ulikunitz/xz v0.5.7 // indirect
 	github.com/xeipuuv/gojsonpointer v0.0.0-20190905194746-02993c407bfb // indirect
 	github.com/xeipuuv/gojsonschema v1.2.0
-	golang.org/x/crypto v0.0.0-20200302210943-78000ba7a073
-	golang.org/x/net v0.0.0-20200301022130-244492dfa37a
-	golang.org/x/sys v0.0.0-20200302150141-5c8b2ff67527
-	golang.org/x/tools v0.0.0-20200316212524-3e76bee198d8
+	golang.org/x/crypto v0.0.0-20200320181102-891825fb96df
+	golang.org/x/net v0.0.0-20200320220750-118fecf932d8
+	golang.org/x/sys v0.0.0-20200321134203-328b4cd54aae
+	golang.org/x/tools v0.0.0-20200323144430-8dcfad9e016e
 	gopkg.in/tylerb/graceful.v1 v1.2.15
 	gopkg.in/yaml.v2 v2.2.8
 	gopkg.in/yaml.v3 v3.0.0-20200121175148-a6ecf24a6d71
