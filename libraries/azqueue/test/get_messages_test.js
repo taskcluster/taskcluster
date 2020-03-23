@@ -96,6 +96,21 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
     assert.deepEqual(result.map(({messageText}) => messageText).sort(), ['bar-2']);
   });
 
+  test('getting multiple items returns them in insertion order', async function() {
+    const queue = new AZQueue({ db: helper.db });
+
+    await queue.putMessage('foo', 'bar-1', { visibilityTimeout: 0, messageTTL: 100 });
+    await queue.putMessage('foo', 'bar-2', { visibilityTimeout: 0, messageTTL: 100 });
+    await queue.putMessage('foo', 'bar-3', { visibilityTimeout: 0, messageTTL: 100 });
+    await queue.putMessage('foo', 'bar-4', { visibilityTimeout: 0, messageTTL: 100 });
+    await queue.putMessage('foo', 'bar-5', { visibilityTimeout: 0, messageTTL: 100 });
+
+    const result = await queue.getMessages('foo', {visibilityTimeout: 10, numberOfMessages: 4});
+    assert.deepEqual(
+      result.map(({messageText}) => messageText),
+        ['bar-1', 'bar-2', 'bar-3', 'bar-4']);
+  });
+
   test('multiple parallel gets', async function() {
     const queue = new AZQueue({ db: helper.db });
 
