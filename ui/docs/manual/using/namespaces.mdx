@@ -191,7 +191,7 @@ The worker-manager defines the following secrets:
   `worker-pool:<workerPoolId>` -
   Workers are given scopes to read these secrets at startup, allowing them to be configured with secret values.
   The format of such secrets is `{"config": .., "files": ..}`.
-  See [taskcluster-worker-runner](https://github.com/taskcluster/taskcluster-worker-runner) for more on how this is interpreted.
+  See [worker-runner](https://github.com/taskcluster/taskcluster/tree/master/tools/worker-runner) for more on how this is interpreted.
   The second form is preferred, but scopes are provided for both forms.
 
 The following convention is recommended for repository-specific secrets:

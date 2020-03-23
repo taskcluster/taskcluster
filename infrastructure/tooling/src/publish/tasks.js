@@ -146,7 +146,7 @@ module.exports = ({tasks, cmdOptions, credentials, baseDir}) => {
     provides: ['worker-runner-artifacts'],
     run: async (requirements, utils) => {
       await execCommand({
-        dir: path.join(REPO_ROOT, 'tools', 'taskcluster-worker-runner'),
+        dir: path.join(REPO_ROOT, 'tools', 'worker-runner'),
         command: ['./build.sh', artifactsDir],
         utils,
       });

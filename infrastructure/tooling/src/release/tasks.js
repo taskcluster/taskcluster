@@ -186,7 +186,7 @@ module.exports = ({tasks, cmdOptions, credentials}) => {
 
       const otherFiles = [
         'workers/generic-worker/main.go',
-        'tools/taskcluster-worker-runner/version.go',
+        'tools/worker-runner/version.go',
       ];
 
       for (const f of otherFiles) {
