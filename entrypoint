@@ -41,7 +41,7 @@ queue/expireTaskGroupMembers) cd services/queue && exec node src/main expire-tas
 queue/expireTaskGroupSizes) cd services/queue && exec node src/main expire-task-group-sizes;;
 queue/expireTaskDependency) cd services/queue && exec node src/main expire-task-dependency;;
 queue/expireTaskRequirement) cd services/queue && exec node src/main expire-task-requirement;;
-queue/expireQueues) cd services/queue && exec node src/main expire-queues;;
+queue/expireQueueMessages) cd services/queue && exec node src/main expire-queue-messages;;
 queue/expireWorkerInfo) cd services/queue && exec node src/main expire-worker-info;;
 secrets/web) cd services/secrets && exec node src/main.js server;;
 secrets/expire) cd services/secrets && exec node src/main.js expire;;

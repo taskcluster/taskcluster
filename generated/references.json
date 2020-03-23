@@ -8219,7 +8219,7 @@
                   ],
                   "type": "object"
                 },
-                "expireQueues": {
+                "expireQueueMessages": {
                   "additionalProperties": false,
                   "properties": {
                     "cpu": {
@@ -8380,7 +8380,7 @@
                 "expireTaskGroupSizes",
                 "expireTaskDependency",
                 "expireTaskRequirement",
-                "expireQueues",
+                "expireQueueMessages",
                 "expireWorkerInfo"
               ],
               "title": "Process settings for this service",

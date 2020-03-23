@@ -142,7 +142,7 @@ queue:
     expireTaskRequirement:
       cpu: 50m
       memory: 100Mi
-    expireQueues:
+    expireQueueMessages:
       cpu: 50m
       memory: 100Mi
     expireWorkerInfo:
