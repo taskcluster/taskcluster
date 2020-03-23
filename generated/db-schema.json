@@ -1553,6 +1553,22 @@
       },
       "migrationScript": "begin\n  create table azure_queue_messages (\n    message_id uuid not null primary key,\n    queue_name text not null,\n    message_text text not null,\n    inserted timestamp not null,\n    visible timestamp not null, -- visible after this time\n    expires timestamp not null,  -- expired after this time\n    pop_receipt uuid -- null means not popped\n  );\n  -- 'get' operations sort by inserted within a queue\n  create index azure_queue_messages_inserted on azure_queue_messages(queue_name, inserted);\n  grant select, insert, update, delete on azure_queue_messages to $db_user_prefix$_queue;\nend",
       "version": 3
+    },
+    {
+      "downgradeScript": "begin\nend",
+      "methods": {
+        "azure_queue_get": {
+          "args": "queue_name text, visible timestamp, count integer",
+          "body": "begin\n  return query\n    with updated as (\n      update azure_queue_messages m\n      set\n        pop_receipt = public.gen_random_uuid(),\n        visible = azure_queue_get.visible\n      where\n        m.message_id in (\n          select m2.message_id from azure_queue_messages m2\n          where m2.queue_name = azure_queue_get.queue_name\n            and m2.visible <= now()\n            and m2.expires > now()\n          order by m2.inserted\n          for update skip locked\n          limit count\n      )\n      returning m.inserted, m.message_id, m.message_text, m.pop_receipt\n    )\n    select\n      u.message_id, u.message_text, u.pop_receipt\n    from updated as u\n    order by u.inserted;\nend",
+          "deprecated": false,
+          "description": "Get up to `count` messages from the given queue, setting the `visible`\ncolumn of each to the given value.  Returns a `message_id` and\n`pop_receipt` for each one, for use with `azure_queue_delete` and\n`azure_queue_update`.\n",
+          "mode": "write",
+          "returns": "table (message_id uuid, message_text text, pop_receipt uuid)",
+          "serviceName": "queue"
+        }
+      },
+      "migrationScript": "begin\nend",
+      "version": 4
     }
   ]
 }
