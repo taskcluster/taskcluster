@@ -1,0 +1,19 @@
+version: 4
+# in version 3, this table was incorrectly set up with timestamp columns
+# lacking timezones, causing issues when the server and client timezones do not
+# agree.
+migrationScript: |-
+  begin
+    alter table azure_queue_messages
+      alter column inserted type timestamptz,
+      alter column visible type timestamptz,
+      alter column expires type timestamptz;
+  end
+downgradeScript: |-
+  begin
+    alter table azure_queue_messages
+      alter column inserted type timestamp,
+      alter column visible type timestamp,
+      alter column expires type timestamp;
+  end
+methods: []
