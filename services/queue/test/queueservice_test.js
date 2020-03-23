@@ -1,9 +1,7 @@
 const slugid = require('slugid');
 const assert = require('assert');
 const QueueService = require('../src/queueservice');
-const _ = require('lodash');
 const debug = require('debug')('test:queueservice');
-const assume = require('assume');
 const testing = require('taskcluster-lib-testing');
 const helper = require('./helper');
 
