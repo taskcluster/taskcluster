@@ -97,7 +97,7 @@ func AWSUpdateConfig(c *gwconfig.Config) (awsMetadata map[string][]byte, err err
 	//
 	// See:
 	//   * https://github.com/taskcluster/taskcluster-rfcs/blob/master/rfcs/0148-taskcluster-worker-location.md
-	//   * https://github.com/taskcluster/taskcluster-worker-runner#aws
+	//   * https://github.com/taskcluster/taskcluster/tree/master/tools/worker-runner#aws
 	if c.WorkerLocation == "" {
 		workerLocation := &AWSWorkerLocation{
 			Cloud:            "aws",

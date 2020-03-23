@@ -46,10 +46,10 @@ and reports back results to the queue.
                                             to use during install.
                                             [default: generic-worker.config]
     --worker-runner-protocol-pipe PIPE      Use this option when running generic-worker under
-                                            taskcluster-worker-runner, passing the same value as
-                                            given for 'worker.protocolPipe' in the runner
-                                            configuration.  This specifies a named pipe that is used
-                                            for communication between the two processes.
+                                            worker-runner, passing the same value as given for
+                                            'worker.protocolPipe' in the runner configuration.
+                                            This specifies a named pipe that is used for
+                                            communication between the two processes.
     --configure-for-aws                     Use this option when installing or running a worker
                                             that is spawned by the AWS provisioner. It will cause
                                             the worker to query the EC2 metadata service when it
@@ -246,13 +246,13 @@ and reports back results to the queue.
                                             TASKCLUSTER_WORKER_LOCATION environment variable will be set to a
                                             string containing the JSON object:
                                             {"cloud":"aws","region":"<REGION>","availabilityZone":"<AZ>"}
-                                            See: https://github.com/taskcluster/taskcluster-worker-runner#aws
+                                            See: https://github.com/taskcluster/taskcluster/tree/master/tools/worker-runner#aws
 
                                             If an empty string, and --configure-for-gcp is specified,
                                             TASKCLUSTER_WORKER_LOCATION environment variable will be set to a
                                             string containing the JSON object:
                                             {"cloud":"google","region":"<REGION>","zone":"<ZONE>"}
-                                            See: https://github.com/taskcluster/taskcluster-worker-runner#google
+                                            See: https://github.com/taskcluster/taskcluster/tree/master/tools/worker-runner#google
 
                                             Otherwise TASKCLUSTER_WORKER_LOCATION environment
                                             variable will not be implicitly set in task commands.
