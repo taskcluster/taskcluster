@@ -907,9 +907,6 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws', 'db'], function(mock, skip
     const recentTasks = result.recentTasks;
 
     assert.equal(result.recentTasks.length, 20, 'expected to have 20 tasks');
-
-    for (let i = 0; i < 20; i++) {
-      assert(recentTasks[i].taskId === taskIds[i + 10], `expected taskId ${taskIds[i + 10]}`);
-    }
+    assert.deepEqual(recentTasks.map(({taskId}) => taskId), taskIds.slice(10))
   });
 });
