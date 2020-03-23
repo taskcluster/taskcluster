@@ -239,6 +239,13 @@
   },
   {
     "element": "h2",
+    "id": "connection-counts",
+    "path": "/manual/deploying/database",
+    "subtitle": "Connection Counts",
+    "title": "Database Configuration"
+  },
+  {
+    "element": "h2",
     "id": "db-users",
     "path": "/manual/deploying/database",
     "subtitle": "DB Users",
