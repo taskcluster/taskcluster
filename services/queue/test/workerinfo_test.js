@@ -908,6 +908,6 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws', 'db'], function(mock, skip
     const recentTasks = result.recentTasks;
 
     assert.equal(result.recentTasks.length, 20, 'expected to have 20 tasks');
-    assert.deepEqual(recentTasks.map(({taskId}) => taskId), taskIds.slice(10))
+    assert.deepEqual(recentTasks.map(({taskId}) => taskId), taskIds.slice(10));
   });
 });

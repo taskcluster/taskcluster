@@ -108,7 +108,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
     const result = await queue.getMessages('foo', {visibilityTimeout: 10, numberOfMessages: 4});
     assert.deepEqual(
       result.map(({messageText}) => messageText),
-        ['bar-1', 'bar-2', 'bar-3', 'bar-4']);
+      ['bar-1', 'bar-2', 'bar-3', 'bar-4']);
   });
 
   test('multiple parallel gets', async function() {
