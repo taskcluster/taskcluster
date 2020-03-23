@@ -96,7 +96,7 @@ tasks:
           image: taskcluster/node-and-go:node${node}-go${go.release}
           command: yarn lint:go
         - name: test:meta
-          command: "yarn test:meta | cat"
+          command: "set -o pipefail && yarn test:meta | cat"
           # only do cleanup on pushes; no sense doing so on pull requests
         - name: yarn generate
           image: taskcluster/node-and-go:node${node}-go${go.release}
