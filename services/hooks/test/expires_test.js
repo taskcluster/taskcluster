@@ -53,7 +53,7 @@ suite(testing.suiteName(), function() {
       for (const hookId of [hookId1, hookId2]) {
         for(let i = 0; i < 12;i++) {
           hookIdToTaskIds[hookId].push(taskcluster.slugid());
-          await testing.sleep(10);
+          await testing.sleep(200);
           await helper.LastFire.create({...entity, hookId,
             taskId: hookIdToTaskIds[hookId][i],
             taskCreateTime: new Date()});
