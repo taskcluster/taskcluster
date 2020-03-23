@@ -1,5 +1,6 @@
 const slugid = require('slugid');
 const assert = require('assert');
+const crypto = require('crypto');
 const QueueService = require('../src/queueservice');
 const debug = require('debug')('test:queueservice');
 const testing = require('taskcluster-lib-testing');
@@ -16,14 +17,28 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
 
     const cfg = await helper.load('cfg');
 
-    queueService = new QueueService({
-      db: await helper.load('db'),
-      claimQueue: cfg.app.claimQueue,
-      resolvedQueue: cfg.app.resolvedQueue,
-      deadlineQueue: cfg.app.deadlineQueue,
-      deadlineDelay: 10,
-      monitor: await helper.load('monitor'),
-    });
+    if (mock) {
+      queueService = new QueueService({
+        db: await helper.load('db'),
+        prefix: cfg.app.queuePrefix2,
+        claimQueue: cfg.app.claimQueue,
+        resolvedQueue: cfg.app.resolvedQueue,
+        deadlineQueue: cfg.app.deadlineQueue,
+        deadlineDelay: 10,
+        monitor: await helper.load('monitor'),
+      });
+    } else {
+      queueService = new QueueService({
+        db: await helper.load('db'),
+        // use a unique set of queues for each run
+        prefix: `t${crypto.randomBytes(3).toString('hex').slice(0, 5)}`,
+        claimQueue: cfg.app.claimQueue,
+        resolvedQueue: cfg.app.resolvedQueue,
+        deadlineQueue: cfg.app.deadlineQueue,
+        deadlineDelay: 1000,
+        monitor: await helper.load('monitor'),
+      });
+    }
   });
 
   suiteTeardown(function() {
