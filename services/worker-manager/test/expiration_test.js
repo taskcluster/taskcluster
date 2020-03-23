@@ -8,10 +8,6 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
   helper.withEntities(mock, skipping);
   helper.resetTables(mock, skipping);
 
-  if (!mock) {
-    return;
-  }
-
   suite('expireWorkerPools', function() {
     const makeWP = async values => {
       const now = new Date();

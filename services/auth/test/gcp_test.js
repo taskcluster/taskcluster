@@ -3,15 +3,14 @@ const assert = require('assert');
 const helper = require('./helper');
 const testing = require('taskcluster-lib-testing');
 
-helper.secrets.mockSuite(testing.suiteName(), ['gcp', 'db'], function(mock, skipping) {
-  helper.withDb(mock, skipping);
+helper.secrets.mockSuite(testing.suiteName(), ['db', 'gcp', 'azure'], function(mock, skipping) {
   helper.withCfg(mock, skipping);
+  helper.withDb(mock, skipping);
   helper.withGcp(mock, skipping);
   helper.withPulse(mock, skipping);
   helper.withEntities(mock, skipping);
   helper.withRoles(mock, skipping);
   helper.withServers(mock, skipping);
-  helper.resetTables(mock, skipping);
 
   test('gcpCredentials invalid account', async () => {
     try {

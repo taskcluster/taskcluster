@@ -5,8 +5,8 @@ const taskcluster = require('taskcluster-client');
 const testing = require('taskcluster-lib-testing');
 
 helper.secrets.mockSuite(testing.suiteName(), ['db', 'gcp'], function(mock, skipping) {
-  helper.withDb(mock, skipping);
   helper.withCfg(mock, skipping);
+  helper.withDb(mock, skipping);
   helper.withPulse(mock, skipping);
   helper.withEntities(mock, skipping, {orderedTests: true});
   helper.withRoles(mock, skipping, {orderedTests: true});

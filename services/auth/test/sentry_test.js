@@ -3,19 +3,18 @@ const taskcluster = require('taskcluster-client');
 const assert = require('assert');
 const testing = require('taskcluster-lib-testing');
 
-helper.secrets.mockSuite(testing.suiteName(), ['gcp'], function(mock, skipping) {
+helper.secrets.mockSuite(testing.suiteName(), ['gcp', 'db'], function(mock, skipping) {
   if (!mock) {
     return; // We don't test this with real credentials for now!
   }
   suite('regular SentryManager with fake client', function() {
-    helper.withDb(mock, skipping);
     helper.withCfg(mock, skipping);
+    helper.withDb(mock, skipping);
     helper.withSentry(mock, skipping);
-    helper.withPulse('mock', skipping);
-    helper.withEntities('mock', skipping);
-    helper.withRoles('mock', skipping);
+    helper.withPulse(mock, skipping);
+    helper.withEntities(mock, skipping);
+    helper.withRoles(mock, skipping);
     helper.withServers(mock, skipping);
-    helper.resetTables(mock, skipping);
 
     test('sentryDSN api method', async () => {
       await helper.apiClient.sentryDSN('playground');

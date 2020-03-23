@@ -3,14 +3,13 @@ const assume = require('assume');
 const taskcluster = require('taskcluster-client');
 const testing = require('taskcluster-lib-testing');
 
-helper.secrets.mockSuite(testing.suiteName(), ['db', 'gcp'], function(mock, skipping) {
-  helper.withDb(mock, skipping);
+helper.secrets.mockSuite(testing.suiteName(), ['db', 'azure', 'gcp'], function(mock, skipping) {
   helper.withCfg(mock, skipping);
+  helper.withDb(mock, skipping);
   helper.withPulse(mock, skipping);
   helper.withEntities(mock, skipping);
   helper.withRoles(mock, skipping);
   helper.withServers(mock, skipping);
-  helper.resetTables(mock, skipping);
 
   const CLIENT_ID = 'nobody/sds:ad_asd/df-sAdSfchsdfsdfs';
 
