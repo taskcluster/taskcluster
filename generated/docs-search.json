@@ -2850,6 +2850,48 @@
   },
   {
     "element": "h1",
+    "id": "deployment",
+    "path": "/reference/workers/worker-runner/deployment",
+    "subtitle": null,
+    "title": "Deployment"
+  },
+  {
+    "element": "h1",
+    "id": "log-to-console-to-make-output-visible-in-cloud-consoles-and-syslog-for-ease-of",
+    "path": "/reference/workers/worker-runner/linux-services",
+    "subtitle": null,
+    "title": "log to console to make output visible in cloud consoles, and syslog for ease of"
+  },
+  {
+    "element": "h1",
+    "id": "redirecting-to-external-logging-services",
+    "path": "/reference/workers/worker-runner/linux-services",
+    "subtitle": null,
+    "title": "log to console to make output visible in cloud consoles, and syslog for ease of"
+  },
+  {
+    "element": "h2",
+    "id": "linux",
+    "path": "/reference/workers/worker-runner/linux-services",
+    "subtitle": "Linux",
+    "title": "log to console to make output visible in cloud consoles, and syslog for ease of"
+  },
+  {
+    "element": "h1",
+    "id": "generic-worker-service",
+    "path": "/reference/workers/worker-runner/windows-services",
+    "subtitle": null,
+    "title": "Generic-Worker Service"
+  },
+  {
+    "element": "h2",
+    "id": "recommended-setup",
+    "path": "/reference/workers/worker-runner/windows-services",
+    "subtitle": "Recommended Setup",
+    "title": "Generic-Worker Service"
+  },
+  {
+    "element": "h1",
     "id": "welcome-to-taskcluster",
     "path": "/tutorial",
     "subtitle": null,
