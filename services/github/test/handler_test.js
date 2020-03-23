@@ -302,7 +302,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
       let args = github.inst(5828).repos.createCommitComment.args;
       assert.equal(args[0][0].owner, 'TaskclusterRobot');
       assert.equal(args[0][0].repo, 'hooks-testing');
-      assert.equal(args[0][0].sha, '03e9577bc1ec60f2ff0929d5f1554de36b8f48cf');
+      assert.equal(args[0][0].commit_sha, '03e9577bc1ec60f2ff0929d5f1554de36b8f48cf');
       assert(args[0][0].body.indexOf('tasks field  of .taskcluster.yml must be array of tasks or empty array') !== -1);
     });
 
@@ -423,7 +423,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
       let args = github.inst(5828).repos.createCommitComment.args;
       assert.equal(args[0][0].owner, 'TaskclusterRobot');
       assert.equal(args[0][0].repo, 'hooks-testing');
-      assert.equal(args[0][0].sha, '03e9577bc1ec60f2ff0929d5f1554de36b8f48cf');
+      assert.equal(args[0][0].commit_sha, '03e9577bc1ec60f2ff0929d5f1554de36b8f48cf');
       assert(args[0][0].body.indexOf('data should NOT have additional properties') !== -1);
     });
 
@@ -441,7 +441,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
       let args = github.inst(5828).repos.createCommitComment.args;
       assert.equal(args[0][0].owner, 'TaskclusterRobot');
       assert.equal(args[0][0].repo, 'hooks-testing');
-      assert.equal(args[0][0].sha, '03e9577bc1ec60f2ff0929d5f1554de36b8f48cf');
+      assert.equal(args[0][0].commit_sha, '03e9577bc1ec60f2ff0929d5f1554de36b8f48cf');
       assert(args[0][0].body.indexOf('oh noes') !== -1);
     });
 
