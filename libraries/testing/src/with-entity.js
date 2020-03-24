@@ -81,7 +81,6 @@ module.exports = (mock, skipping, helper, loaderComponent, cls,
     if (skipping()) {
       return;
     }
-    await cleanup();
 
     component = helper[loaderComponent] = null;
   });
