@@ -9,7 +9,7 @@ const sorted = (arr) => {
   return arr;
 };
 
-helper.secrets.mockSuite(testing.suiteName(), ['db', 'gcp'], function(mock, skipping) {
+helper.secrets.mockSuite(testing.suiteName(), ['db', 'azure', 'gcp'], function(mock, skipping) {
   helper.withCfg(mock, skipping);
 
   if (mock) {
