@@ -147,7 +147,8 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
     assert(workerPool.previousProviderIds.includes('azure'));
   });
 
-  test('removeWorker deletes VM if it exists and has an id', async function() {
+  // See https://bugzilla.mozilla.org/show_bug.cgi?id=1624719
+  test.skip('removeWorker deletes VM if it exists and has an id', async function() {
     const worker = await helper.Worker.create({
       workerPoolId,
       workerGroup: 'whatever',
