@@ -14,7 +14,7 @@ const main = async ({ operation }) => {
       adminDbUrl: requireEnv('ADMIN_DB_URL'),
     },
   };
-  const db = new Database({ urlsByMode: {admin: credentials.postgres.adminDbUrl}, statementTimeout: 30 });
+  const db = new Database({ urlsByMode: {admin: credentials.postgres.adminDbUrl}, statementTimeout: false });
 
   let tasks;
   if (operation === 'importer') {
@@ -33,8 +33,8 @@ const main = async ({ operation }) => {
   const context = await taskgraph.run();
   await db.close();
 
-  if (context['output']) {
-    console.log(context.output);
+  if (context['metadata']) {
+    console.log(context.metadata);
   }
 };
 

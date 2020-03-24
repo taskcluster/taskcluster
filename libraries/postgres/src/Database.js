@@ -363,7 +363,7 @@ class Database {
    * Private constructor (use Database.setup and Database.upgrade instead)
    */
   constructor({urlsByMode, statementTimeout}) {
-    assert(!statementTimeout || typeof statementTimeout === 'number');
+    assert(!statementTimeout || typeof statementTimeout === 'number' || typeof statementTimeout === 'boolean');
     const makePool = dbUrl => {
       const pool = new Pool({connectionString: dbUrl});
       // ignore errors from *idle* connections.  From the docs:
