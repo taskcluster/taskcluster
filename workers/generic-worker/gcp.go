@@ -88,7 +88,7 @@ func (g *GCPConfigProvider) UpdateConfig(c *gwconfig.Config) error {
 	c.InstanceID = gcpMetadata["id"]
 	c.InstanceType = gcpMetadata["machine-type"]
 
-	// See https://github.com/taskcluster/taskcluster-worker-runner/blob/6b5bbd197eed4be664171a482bf4d8d4f81a21b2/provider/google/google.go#L79-L84
+	// See https://github.com/taskcluster/taskcluster/blob/6b5bbd197eed4be664171a482bf4d8d4f81a21b2/provider/google/google.go#L79-L84
 	c.AvailabilityZone = path.Base(gcpMetadata["zone"])
 	if len(c.AvailabilityZone) < 2 {
 		return fmt.Errorf("GCP availability zone must be at least 2 chars, since region is availability zone minus last two chars. Availability zone %q has only %v chars.", c.AvailabilityZone, len(c.AvailabilityZone))
@@ -113,7 +113,7 @@ func (g *GCPConfigProvider) UpdateConfig(c *gwconfig.Config) error {
 	//
 	// See:
 	//   * https://github.com/taskcluster/taskcluster-rfcs/blob/master/rfcs/0148-taskcluster-worker-location.md
-	//   * https://github.com/taskcluster/taskcluster-worker-runner#google
+	//   * https://github.com/taskcluster/taskcluster/tree/master/tools/worker-runner#google
 	if c.WorkerLocation == "" {
 		workerLocation := &GCPWorkerLocation{
 			Cloud:  "google",

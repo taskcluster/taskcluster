@@ -54,6 +54,6 @@ next-task-user.json
 /revision.txt
 /workers/generic-worker/generic-worker-*
 /workers/generic-worker/generic-worker
-/tools/taskcluster-worker-runner/start-worker
-/tools/taskcluster-worker-runner/start-worker-*-*
-/tools/taskcluster-worker-runner/fake.exe
+/tools/worker-runner/start-worker
+/tools/worker-runner/start-worker-*-*
+/tools/worker-runner/fake.exe

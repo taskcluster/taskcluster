@@ -6,14 +6,13 @@ import (
 	"log"
 	"os"
 
-	"github.com/taskcluster/taskcluster/v28/tools/taskcluster-worker-runner/protocol"
+	"github.com/taskcluster/taskcluster/v28/tools/worker-runner/protocol"
 )
 
 var (
-	// Support for communication betweeen this process and
-	// taskcluster-worker-runner.  This is initialized early in the
-	// `generic-worker run` process and can be used by any component after that
-	// time.
+	// Support for communication betweeen this process and worker-runner.  This
+	// is initialized early in the `generic-worker run` process and can be used
+	// by any component after that time.
 	WorkerRunnerProtocol *protocol.Protocol
 
 	// The transport behind WorkerRunnerProtocol
