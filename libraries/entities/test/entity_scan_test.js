@@ -192,10 +192,10 @@ helper.dbSuite(path.basename(__filename), function() {
       assert.deepEqual(result.entries[0], documents[1]);
       assert(!result.continuation);
     });
-});
+  });
 
-suite('scan compositekey', function() {
-  const properties = {
+  suite('scan compositekey', function() {
+    const properties = {
       text1: Entity.types.String,
       text2: Entity.types.String,
       id: Entity.types.String,
