@@ -40,7 +40,7 @@ const decodeContinuationToken = token => {
   const decodedToken = hashids.decode(token);
 
   if (!decodedToken.length) {
-    return 1;
+    return 0;
   }
 
   return decodedToken[0];
@@ -458,10 +458,10 @@ class Entity {
       typeof limit === 'number', 'options.limit must be a number');
 
     const fetchResults = async (continuation) => {
-      const page = decodeContinuationToken(continuation);
+      const offset = decodeContinuationToken(continuation);
       const { partitionKey, rowKey, condition } = this._doCondition(conditions, options);
       const size = Math.min(limit, 1000);
-      const result = await this._db.fns[`${this._tableName}_scan`](partitionKey, rowKey, condition, size, page);
+      const result = await this._db.fns[`${this._tableName}_scan`](partitionKey, rowKey, condition, size, offset);
       let hasNextPage;
 
       if (result.length > size) {
@@ -482,7 +482,7 @@ class Entity {
           context: this.contextEntries,
         })
       ));
-      const contToken = hasNextPage ? page + 1 : null;
+      const contToken = hasNextPage ? offset + result.length : null;
 
       return { entries, continuation: encodeContinuationToken(contToken) };
     };

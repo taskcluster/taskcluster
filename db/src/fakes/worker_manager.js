@@ -153,10 +153,10 @@ class FakeWorkerManager {
     return [{ etag: c.etag }];
   }
 
-  async wm_workers_entities_scan(partition_key, row_key, condition, size, page) {
+  async wm_workers_entities_scan(partition_key, row_key, condition, size, offset) {
     const entries = getEntries({ partitionKey: partition_key, rowKey: row_key, condition }, this.wmWorkers);
 
-    return entries.slice((page - 1) * size, (page - 1) * size + size + 1);
+    return entries.slice(offset, offset + size + 1);
   }
 
   async wm_worker_pools_entities_load(partitionKey, rowKey) {
@@ -208,10 +208,10 @@ class FakeWorkerManager {
     return [{ etag: c.etag }];
   }
 
-  async wm_worker_pools_entities_scan(partition_key, row_key, condition, size, page) {
+  async wm_worker_pools_entities_scan(partition_key, row_key, condition, size, offset) {
     const entries = getEntries({ partitionKey: partition_key, rowKey: row_key, condition }, this.wmWorkerPools);
 
-    return entries.slice((page - 1) * size, (page - 1) * size + size + 1);
+    return entries.slice(offset, offset + size + 1);
   }
 
   /* fake functions */
@@ -265,9 +265,9 @@ class FakeWorkerManager {
     return [{ etag: c.etag }];
   }
 
-  async wm_worker_pool_errors_entities_scan(partition_key, row_key, condition, size, page) {
+  async wm_worker_pool_errors_entities_scan(partition_key, row_key, condition, size, offset) {
     const entries = getEntries({ partitionKey: partition_key, rowKey: row_key, condition }, this.wmWorkerPoolErrors);
-    return entries.slice((page - 1) * size, (page - 1) * size + size + 1);
+    return entries.slice(offset, offset + size + 1);
   }
 }
 

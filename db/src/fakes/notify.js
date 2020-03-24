@@ -100,14 +100,14 @@ class FakeNotify {
     return [{ etag: c.etag }];
   }
 
-  async denylisted_notification_entities_scan(partition_key, row_key, condition, size, page) {
+  async denylisted_notification_entities_scan(partition_key, row_key, condition, size, offset) {
     const entries = getEntries({
       partitionKey: partition_key,
       rowKey: row_key,
       condition,
     }, this.denylistedNotifications);
 
-    return entries.slice((page - 1) * size, (page - 1) * size + size + 1);
+    return entries.slice(offset, offset + size + 1);
   }
 
   async update_widgets(name) {

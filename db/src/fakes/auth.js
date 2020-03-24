@@ -123,10 +123,10 @@ class FakeAuth {
     return [{ etag: c.etag }];
   }
 
-  async clients_entities_scan(partition_key, row_key, condition, size, page) {
+  async clients_entities_scan(partition_key, row_key, condition, size, offset) {
     const entries = getEntries({ partitionKey: partition_key, rowKey: row_key, condition }, this.clients);
 
-    return entries.slice((page - 1) * size, (page - 1) * size + size + 1);
+    return entries.slice(offset, offset + size + 1);
   }
 
   async roles_entities_load(partitionKey, rowKey) {
@@ -178,10 +178,10 @@ class FakeAuth {
     return [{ etag: c.etag }];
   }
 
-  async roles_entities_scan(partition_key, row_key, condition, size, page) {
+  async roles_entities_scan(partition_key, row_key, condition, size, offset) {
     const entries = getEntries({ partitionKey: partition_key, rowKey: row_key, condition }, this.roles);
 
-    return entries.slice((page - 1) * size, (page - 1) * size + size + 1);
+    return entries.slice(offset, offset + size + 1);
   }
 }
 

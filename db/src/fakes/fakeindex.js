@@ -123,10 +123,10 @@ class FakeIndex {
     return [{ etag: c.etag }];
   }
 
-  async indexed_tasks_entities_scan(partition_key, row_key, condition, size, page) {
+  async indexed_tasks_entities_scan(partition_key, row_key, condition, size, offset) {
     const entries = getEntries({ partitionKey: partition_key, rowKey: row_key, condition }, this.indexedTasks);
 
-    return entries.slice((page - 1) * size, (page - 1) * size + size + 1);
+    return entries.slice(offset, offset + size + 1);
   }
 
   async namespaces_entities_load(partitionKey, rowKey) {
@@ -178,10 +178,10 @@ class FakeIndex {
     return [{ etag: c.etag }];
   }
 
-  async namespaces_entities_scan(partition_key, row_key, condition, size, page) {
+  async namespaces_entities_scan(partition_key, row_key, condition, size, offset) {
     const entries = getEntries({ partitionKey: partition_key, rowKey: row_key, condition }, this.namespaces);
 
-    return entries.slice((page - 1) * size, (page - 1) * size + size + 1);
+    return entries.slice(offset, offset + size + 1);
   }
 }
 

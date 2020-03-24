@@ -127,14 +127,14 @@ class FakeGithub {
     return [{ etag: c.etag }];
   }
 
-  async taskcluster_github_builds_entities_scan(partition_key, row_key, condition, size, page) {
+  async taskcluster_github_builds_entities_scan(partition_key, row_key, condition, size, offset) {
     const entries = getEntries({
       partitionKey: partition_key,
       rowKey: row_key,
       condition,
     }, this.taskclusterGithubBuilds);
 
-    return entries.slice((page - 1) * size, (page - 1) * size + size + 1);
+    return entries.slice(offset, offset + size + 1);
   }
 
   async taskcluster_integration_owners_entities_load(partitionKey, rowKey) {
@@ -192,14 +192,14 @@ class FakeGithub {
     return [{ etag: c.etag }];
   }
 
-  async taskcluster_integration_owners_entities_scan(partition_key, row_key, condition, size, page) {
+  async taskcluster_integration_owners_entities_scan(partition_key, row_key, condition, size, offset) {
     const entries = getEntries({
       partitionKey: partition_key,
       rowKey: row_key,
       condition,
     }, this.taskclusterIntegrationOwners);
 
-    return entries.slice((page - 1) * size, (page - 1) * size + size + 1);
+    return entries.slice(offset, offset + size + 1);
   }
 
   _getTaskclusterChecksToTask({ partitionKey, rowKey }) {
@@ -309,14 +309,14 @@ class FakeGithub {
     return [{ etag: c.etag }];
   }
 
-  async taskcluster_checks_to_tasks_entities_scan(partition_key, row_key, condition, size, page) {
+  async taskcluster_checks_to_tasks_entities_scan(partition_key, row_key, condition, size, offset) {
     const entries = getEntries({
       partitionKey: partition_key,
       rowKey: row_key,
       condition,
     }, this.taskclusterChecksToTasks);
 
-    return entries.slice((page - 1) * size, (page - 1) * size + size + 1);
+    return entries.slice(offset, offset + size + 1);
   }
 
   async taskcluster_check_runs_entities_load(partitionKey, rowKey) {
@@ -368,10 +368,10 @@ class FakeGithub {
     return [{ etag: c.etag }];
   }
 
-  async taskcluster_check_runs_entities_scan(partition_key, row_key, condition, size, page) {
+  async taskcluster_check_runs_entities_scan(partition_key, row_key, condition, size, offset) {
     const entries = getEntries({ partitionKey: partition_key, rowKey: row_key, condition }, this.taskclusterCheckRuns);
 
-    return entries.slice((page - 1) * size, (page - 1) * size + size + 1);
+    return entries.slice(offset, offset + size + 1);
   }
 }
 

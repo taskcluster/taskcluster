@@ -132,6 +132,7 @@ helper.dbSuite(path.basename(__filename), function() {
       assert.equal(result.entries[0].taskId, '3');
       assert.equal(result.entries[0].expires.toJSON(), new Date('4020-01-01').toJSON());
     });
+
     test('retrieve documents in pages', async function() {
       db = await helper.withDb({ schema, serviceName });
       const TestTable = configuredTestTable.setup({ tableName: 'test_entities', db, serviceName });
@@ -169,10 +170,32 @@ helper.dbSuite(path.basename(__filename), function() {
       assert.deepEqual(result.entries[1], documents[9]);
       assert(!result.continuation);
     });
-  });
 
-  suite('scan compositekey', function() {
-    const properties = {
+    test('retrieve documents with continuation but no limit', async function() {
+      db = await helper.withDb({ schema, serviceName });
+      const TestTable = configuredTestTable.setup({ tableName: 'test_entities', db, serviceName });
+
+      const documents = await insertDocuments(TestTable, 2);
+
+      let result = await TestTable.scan(null, {
+        limit: 1,
+      });
+
+      assert.equal(result.entries.length, 1);
+      assert.deepEqual(result.entries[0], documents[0]);
+
+      result = await TestTable.scan(null, {
+        continuation: result.continuation,
+      });
+
+      assert.equal(result.entries.length, 1);
+      assert.deepEqual(result.entries[0], documents[1]);
+      assert(!result.continuation);
+    });
+});
+
+suite('scan compositekey', function() {
+  const properties = {
       text1: Entity.types.String,
       text2: Entity.types.String,
       id: Entity.types.String,

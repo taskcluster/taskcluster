@@ -183,14 +183,14 @@ class FakeAuth {
     return [{ etag: c.etag }];
   }
 
-  async authorization_codes_table_entities_scan(partition_key, row_key, condition, size, page) {
+  async authorization_codes_table_entities_scan(partition_key, row_key, condition, size, offset) {
     const entries = getEntries({
       partitionKey: partition_key,
       rowKey: row_key,
       condition,
     }, this.authorizationCodesTables);
 
-    return entries.slice((page - 1) * size, (page - 1) * size + size + 1);
+    return entries.slice(offset, offset + size + 1);
   }
 
   async access_token_table_entities_load(partitionKey, rowKey) {
@@ -242,10 +242,10 @@ class FakeAuth {
     return [{ etag: c.etag }];
   }
 
-  async access_token_table_entities_scan(partition_key, row_key, condition, size, page) {
+  async access_token_table_entities_scan(partition_key, row_key, condition, size, offset) {
     const entries = getEntries({ partitionKey: partition_key, rowKey: row_key, condition }, this.accessTokenTables);
 
-    return entries.slice((page - 1) * size, (page - 1) * size + size + 1);
+    return entries.slice(offset, offset + size + 1);
   }
 
   async session_storage_table_entities_load(partitionKey, rowKey) {
@@ -297,10 +297,10 @@ class FakeAuth {
     return [{ etag: c.etag }];
   }
 
-  async session_storage_table_entities_scan(partition_key, row_key, condition, size, page) {
+  async session_storage_table_entities_scan(partition_key, row_key, condition, size, offset) {
     const entries = getEntries({ partitionKey: partition_key, rowKey: row_key, condition }, this.sessionStorageTables);
 
-    return entries.slice((page - 1) * size, (page - 1) * size + size + 1);
+    return entries.slice(offset, offset + size + 1);
   }
 
   async github_access_token_table_entities_load(partitionKey, rowKey) {
@@ -352,14 +352,14 @@ class FakeAuth {
     return [{ etag: c.etag }];
   }
 
-  async github_access_token_table_entities_scan(partition_key, row_key, condition, size, page) {
+  async github_access_token_table_entities_scan(partition_key, row_key, condition, size, offset) {
     const entries = getEntries({
       partitionKey: partition_key,
       rowKey: row_key,
       condition,
     }, this.githubAccessTokenTables);
 
-    return entries.slice((page - 1) * size, (page - 1) * size + size + 1);
+    return entries.slice(offset, offset + size + 1);
   }
 }
 
