@@ -520,7 +520,10 @@ async function statusHandler(message) {
           sha,
           error: res.response.error,
         });
-        await this.monitor.reportError(res.response.error);
+
+        if (res.status < 500) {
+          await this.monitor.reportError(res.response.error);
+        }
 
       } else if (res.status >= 200 && res.status < 300) {
         customCheckRunText = res.text.toString();

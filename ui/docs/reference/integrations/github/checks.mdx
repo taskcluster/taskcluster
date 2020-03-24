@@ -4,7 +4,8 @@ Taskcluster-Github supports [Github's Checks API](https://developer.github.com/v
 At the moment, the feature is in beta. If you would like to try it out:
 * Make sure you use `.taskcluster.yml` v1
 * Add `reporting: checks-v1` line at the root level of your `.taskcluster.yml`
-* You will need `queue:route:checks` scope
+* You will need `queue:route:checks` scope for your github client (at the time of writing, you need to contact the
+releng team to get that scope).
 * If you are using a decision task, make sure you add `route.checks` to the `routes` of your tasks
 
 ## Custom Output in Checks
@@ -33,7 +34,8 @@ your logs and add some results to the check's body):
  
 * If you see a `Cannot GET blahblah (403)` kind of error, it's likely that your artifact is private and you
   forgot to add the scope to the `scopes` section of your task definition.
-* If you see a `Cannot GET blahblah (404)` kind of error, it means the artifact wasn't created successfully.
+* If you see a `Cannot GET blahblah (404)` kind of error, it means the artifact wasn't created successfully
+  or there is an error in your `extra.github.customCheckRun` section.
   Make sure the artifact exists.
   
 ## Reporting Bugs
