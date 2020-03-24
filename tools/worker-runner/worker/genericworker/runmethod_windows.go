@@ -62,7 +62,7 @@ func (m *serviceRunMethod) start(w *genericworker, state *run.State) (protocol.T
 // careful configuration of the security descriptor, this provides an
 // additional layer of assurance that this pipe is not used to manipulate the
 // worker or worker-runner.
-func (m *serviceRunMethod) connectPipeToProtocol(protocolPipe string, inputWriter io.Writer, outputReader io.Reader) error {
+func (m *serviceRunMethod) connectPipeToProtocol(protocolPipe string, inputWriter io.WriteCloser, outputReader io.Reader) error {
 	if protocolPipe == "" {
 		protocolPipe = `\\.\pipe\generic-worker`
 	}
@@ -100,9 +100,12 @@ func (m *serviceRunMethod) connectPipeToProtocol(protocolPipe string, inputWrite
 		listener.Close()
 
 		// copy bidirectionally between this connection and the protocol transport, and do not
-		// accept any further connections
+		// accept any further connections.  When the pipe is closed, we close the inputWriter.
 		go io.Copy(conn, outputReader)
-		go io.Copy(inputWriter, conn)
+		go func() {
+			io.Copy(inputWriter, conn)
+			inputWriter.Close()
+		}()
 	}()
 
 	return nil
