@@ -21,14 +21,15 @@ properties:
   reregistrationTimeout:
     title: Checkin Timeout
     type: integer
-    default: 345600
+    default: 345600   # 3 days
+    maximum: 2678400  # 30 days
     description: |
       If specified, workers in this pool must re-register via `reregister()`
       within `reregistrationTimeout` seconds from the initial call to
       `register()` to get new credentials. If the worker has not done so, it
       will be terminated.  This value also dictates the lifetime of the
-      temporary credentials granted to the worker, meaning that it cannot be
-      greater than 31 days.
+      temporary credentials granted to the worker, meaning that it must be
+      less than 30 days.
       
       The default value is 3 days.
 additionalProperties: false
