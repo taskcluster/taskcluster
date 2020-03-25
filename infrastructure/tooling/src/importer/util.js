@@ -20,8 +20,8 @@ exports.requireEnv = name => {
 
 // tables that are allowed to migrate
 exports.ALLOWED_TABLES = [
-  'Clients',
-  'Hooks',
+  // 'Clients',
+  // 'Hooks',
   'TaskclusterGithubBuilds',
   'TaskclusterIntegrationOwners',
   'TaskclusterChecksToTasks',
@@ -43,11 +43,11 @@ exports.ALLOWED_TABLES = [
   'QueueWorker',
   'QueueWorkerType',
   'QueueProvisioner',
-  'Secrets',
+  // 'Secrets',
   'AuthorizationCodesTable',
-  'AccessTokenTable',
-  'SessionStorageTable',
-  'GithubAccessTokenTable',
+  // 'AccessTokenTable',
+  // 'SessionStorageTable',
+  // 'GithubAccessTokenTable',
   'WMWorkers',
   'WMWorkerPools',
   'WMWorkerPoolErrors',
