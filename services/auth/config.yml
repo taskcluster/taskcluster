@@ -6,7 +6,7 @@ defaults:
     clientTableName:          clients_entities
 
     # Azure blob container for the role table
-    rolesContainerName:       auth-production-roles
+    rolesContainerName:       roles_entities
 
     # Name of component in statistics
     statsComponent:           auth
