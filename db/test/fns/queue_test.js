@@ -19,9 +19,11 @@ suite(testing.suiteName(), function() {
   });
 
   helper.dbTest('count queue containing messages', async function(db, isFake) {
+    await db.fns.azure_queue_put("deps", "expired", fromNow('0 seconds'), fromNow('-10 seconds'));
     await db.fns.azure_queue_put("deps", "visible", fromNow('0 seconds'), fromNow('10 seconds'));
     await db.fns.azure_queue_put("deps", "invisible", fromNow('10 seconds'), fromNow('10 seconds'));
     const result = await db.fns.azure_queue_count("deps");
+    // expired message is not counted, leaving only invisible and visible
     assert.deepEqual(result, [{azure_queue_count: 2}]);
   });
 

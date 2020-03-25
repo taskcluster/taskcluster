@@ -1,0 +1,30 @@
+version: 6
+migrationScript: |-
+  begin
+  end
+downgradeScript: |-
+  begin
+  end
+methods:
+  azure_queue_count:
+    description: |
+      Count non-expired messages in the named queue.
+    mode: read
+    serviceName: queue
+    args: queue_name text
+    returns: integer
+    # note that this will block on locked rows.  Such row locks are very quick,
+    # only lasting long enough to update the row with a pop_receipt and a new
+    # value of `visible`.
+    body: |-
+      begin
+        return (
+          select
+            count(*)
+          from
+            azure_queue_messages msgs
+          where
+            msgs.queue_name = azure_queue_count.queue_name
+            and msgs.expires > now()
+        );
+      end

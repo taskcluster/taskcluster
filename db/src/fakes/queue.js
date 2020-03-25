@@ -889,7 +889,8 @@ class FakeQueue {
 
   async azure_queue_count(queue_name) {
     const queue = this.messages.get(queue_name) || [];
-    return [{azure_queue_count: queue.length}];
+    const now = new Date();
+    return [{azure_queue_count: queue.filter(({expires}) => expires >= now).length}];
   }
 
   async azure_queue_put(queue_name, message_text, visible, expires) {

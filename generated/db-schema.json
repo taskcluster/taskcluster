@@ -74,6 +74,237 @@
       }
     }
   },
+  "tables": {
+    "access_token_table_entities": {
+      "etag": "uuid",
+      "partition_key": "text not null",
+      "row_key": "text not null",
+      "value": "jsonb not null",
+      "version": "integer not null"
+    },
+    "authorization_codes_table_entities": {
+      "etag": "uuid",
+      "partition_key": "text not null",
+      "row_key": "text not null",
+      "value": "jsonb not null",
+      "version": "integer not null"
+    },
+    "azure_queue_messages": {
+      "expires": "timestamp with time zone not null",
+      "inserted": "timestamp with time zone not null",
+      "message_id": "uuid not null",
+      "message_text": "text not null",
+      "pop_receipt": "uuid",
+      "queue_name": "text not null",
+      "visible": "timestamp with time zone not null"
+    },
+    "cache_purges_entities": {
+      "etag": "uuid",
+      "partition_key": "text not null",
+      "row_key": "text not null",
+      "value": "jsonb not null",
+      "version": "integer not null"
+    },
+    "clients_entities": {
+      "etag": "uuid",
+      "partition_key": "text not null",
+      "row_key": "text not null",
+      "value": "jsonb not null",
+      "version": "integer not null"
+    },
+    "denylisted_notification_entities": {
+      "etag": "uuid",
+      "partition_key": "text not null",
+      "row_key": "text not null",
+      "value": "jsonb not null",
+      "version": "integer not null"
+    },
+    "github_access_token_table_entities": {
+      "etag": "uuid",
+      "partition_key": "text not null",
+      "row_key": "text not null",
+      "value": "jsonb not null",
+      "version": "integer not null"
+    },
+    "hooks_entities": {
+      "etag": "uuid",
+      "partition_key": "text not null",
+      "row_key": "text not null",
+      "value": "jsonb not null",
+      "version": "integer not null"
+    },
+    "indexed_tasks_entities": {
+      "etag": "uuid",
+      "partition_key": "text not null",
+      "row_key": "text not null",
+      "value": "jsonb not null",
+      "version": "integer not null"
+    },
+    "last_fire_3_entities": {
+      "etag": "uuid",
+      "partition_key": "text not null",
+      "row_key": "text not null",
+      "value": "jsonb not null",
+      "version": "integer not null"
+    },
+    "namespaces_entities": {
+      "etag": "uuid",
+      "partition_key": "text not null",
+      "row_key": "text not null",
+      "value": "jsonb not null",
+      "version": "integer not null"
+    },
+    "queue_artifacts_entities": {
+      "etag": "uuid",
+      "partition_key": "text not null",
+      "row_key": "text not null",
+      "value": "jsonb not null",
+      "version": "integer not null"
+    },
+    "queue_provisioner_entities": {
+      "etag": "uuid",
+      "partition_key": "text not null",
+      "row_key": "text not null",
+      "value": "jsonb not null",
+      "version": "integer not null"
+    },
+    "queue_task_dependency_entities": {
+      "etag": "uuid",
+      "partition_key": "text not null",
+      "row_key": "text not null",
+      "value": "jsonb not null",
+      "version": "integer not null"
+    },
+    "queue_task_group_active_sets_entities": {
+      "etag": "uuid",
+      "partition_key": "text not null",
+      "row_key": "text not null",
+      "value": "jsonb not null",
+      "version": "integer not null"
+    },
+    "queue_task_group_members_entities": {
+      "etag": "uuid",
+      "partition_key": "text not null",
+      "row_key": "text not null",
+      "value": "jsonb not null",
+      "version": "integer not null"
+    },
+    "queue_task_groups_entities": {
+      "etag": "uuid",
+      "partition_key": "text not null",
+      "row_key": "text not null",
+      "value": "jsonb not null",
+      "version": "integer not null"
+    },
+    "queue_task_requirement_entities": {
+      "etag": "uuid",
+      "partition_key": "text not null",
+      "row_key": "text not null",
+      "value": "jsonb not null",
+      "version": "integer not null"
+    },
+    "queue_tasks_entities": {
+      "etag": "uuid",
+      "partition_key": "text not null",
+      "row_key": "text not null",
+      "value": "jsonb not null",
+      "version": "integer not null"
+    },
+    "queue_worker_entities": {
+      "etag": "uuid",
+      "partition_key": "text not null",
+      "row_key": "text not null",
+      "value": "jsonb not null",
+      "version": "integer not null"
+    },
+    "queue_worker_type_entities": {
+      "etag": "uuid",
+      "partition_key": "text not null",
+      "row_key": "text not null",
+      "value": "jsonb not null",
+      "version": "integer not null"
+    },
+    "queues_entities": {
+      "etag": "uuid",
+      "partition_key": "text not null",
+      "row_key": "text not null",
+      "value": "jsonb not null",
+      "version": "integer not null"
+    },
+    "roles_entities": {
+      "etag": "uuid",
+      "partition_key": "text not null",
+      "row_key": "text not null",
+      "value": "jsonb not null",
+      "version": "integer not null"
+    },
+    "secrets_entities": {
+      "etag": "uuid",
+      "partition_key": "text not null",
+      "row_key": "text not null",
+      "value": "jsonb not null",
+      "version": "integer not null"
+    },
+    "session_storage_table_entities": {
+      "etag": "uuid",
+      "partition_key": "text not null",
+      "row_key": "text not null",
+      "value": "jsonb not null",
+      "version": "integer not null"
+    },
+    "taskcluster_check_runs_entities": {
+      "etag": "uuid",
+      "partition_key": "text not null",
+      "row_key": "text not null",
+      "value": "jsonb not null",
+      "version": "integer not null"
+    },
+    "taskcluster_checks_to_tasks_entities": {
+      "etag": "uuid",
+      "partition_key": "text not null",
+      "row_key": "text not null",
+      "value": "jsonb not null",
+      "version": "integer not null"
+    },
+    "taskcluster_github_builds_entities": {
+      "etag": "uuid",
+      "partition_key": "text not null",
+      "row_key": "text not null",
+      "value": "jsonb not null",
+      "version": "integer not null"
+    },
+    "taskcluster_integration_owners_entities": {
+      "etag": "uuid",
+      "partition_key": "text not null",
+      "row_key": "text not null",
+      "value": "jsonb not null",
+      "version": "integer not null"
+    },
+    "widgets": {
+      "name": "text"
+    },
+    "wmworker_pool_errors_entities": {
+      "etag": "uuid",
+      "partition_key": "text not null",
+      "row_key": "text not null",
+      "value": "jsonb not null",
+      "version": "integer not null"
+    },
+    "wmworker_pools_entities": {
+      "etag": "uuid",
+      "partition_key": "text not null",
+      "row_key": "text not null",
+      "value": "jsonb not null",
+      "version": "integer not null"
+    },
+    "wmworkers_entities": {
+      "etag": "uuid",
+      "partition_key": "text not null",
+      "row_key": "text not null",
+      "value": "jsonb not null",
+      "version": "integer not null"
+    }
+  },
   "versions": [
     {
       "downgradeScript": "begin\n  revoke select, insert, update, delete on widgets from $db_user_prefix$_notify;\n  drop table widgets;\nend",
@@ -1569,6 +1800,38 @@
       },
       "migrationScript": "begin\nend",
       "version": 4
+    },
+    {
+      "downgradeScript": "begin\nend",
+      "methods": {
+        "azure_queue_get": {
+          "args": "queue_name text, visible timestamp, count integer",
+          "body": "begin\n  return query\n    with updated as (\n      update azure_queue_messages m\n      set\n        pop_receipt = public.gen_random_uuid(),\n        visible = azure_queue_get.visible\n      where\n        m.message_id in (\n          select m2.message_id from azure_queue_messages m2\n          where m2.queue_name = azure_queue_get.queue_name\n            and m2.visible <= now()\n            and m2.expires > now()\n          order by m2.inserted\n          for update skip locked\n          limit count\n      )\n      returning m.inserted, m.message_id, m.message_text, m.pop_receipt\n    )\n    select\n      u.message_id, u.message_text, u.pop_receipt\n    from updated as u\n    order by u.inserted;\nend",
+          "deprecated": false,
+          "description": "Get up to `count` messages from the given queue, setting the `visible`\ncolumn of each to the given value.  Returns a `message_id` and\n`pop_receipt` for each one, for use with `azure_queue_delete` and\n`azure_queue_update`.\n",
+          "mode": "write",
+          "returns": "table (message_id uuid, message_text text, pop_receipt uuid)",
+          "serviceName": "queue"
+        }
+      },
+      "migrationScript": "begin\nend",
+      "version": 5
+    },
+    {
+      "downgradeScript": "begin\nend",
+      "methods": {
+        "azure_queue_count": {
+          "args": "queue_name text",
+          "body": "begin\n  return (\n    select\n      count(*)\n    from\n      azure_queue_messages msgs\n    where\n      msgs.queue_name = azure_queue_count.queue_name\n      and msgs.expires > now()\n  );\nend",
+          "deprecated": false,
+          "description": "Count non-expired messages in the named queue.\n",
+          "mode": "read",
+          "returns": "integer",
+          "serviceName": "queue"
+        }
+      },
+      "migrationScript": "begin\nend",
+      "version": 6
     }
   ]
 }

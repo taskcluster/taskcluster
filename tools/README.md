@@ -6,5 +6,5 @@ This directory contains executable tools associated with Taskcluster maintenance
 
 <!-- TOC BEGIN -->
 * [jsonschema2go](jsonschema2go#readme)
-* [Taskcluster Worker Runner](taskcluster-worker-runner#readme)
+* [Worker Runner](worker-runner#readme)
 <!-- TOC END -->

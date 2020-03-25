@@ -105,6 +105,7 @@ The directory passed to `Schema.fromDbDirectory` should have the following forma
 
 * `versions/####.yml` - one file for each DB version, starting at 1
 * `access.yml` - per-service access permissions
+* `tables.yml` - summary of table structure at the latest version
 
 ### Version Files
 
@@ -186,6 +187,25 @@ Each service which accesses the database is listed in this file, with the tables
 Read access is translated to SELECT, while write access is translated to SELECT, INSERT, UPDATE, DELETE.
 
 This file provides a simple, verified confirmation of which services have what access, providing a useful aid in reviewing changes as well as verification that no malicious or accidental access changes have been made in a production deployment.
+
+### Tables File
+
+The tables file serves as developer-oriented documentation of the tables available and their columns.
+This helps developers to understand the database structure without poring though version files to find all of the relevant `ALTER TABLE` statements.
+It is verified to match the running database when a database upgrade is complete.
+
+**NOTE**: the tables file *does not* define a public API for the Taskcluster service.
+It is a form of developer documentation only.
+
+The structure is:
+```
+table_name:
+  column_name: column_type
+  ...
+```
+
+column types are a "stripped down" version of the full Postgres type definition, including only a simple type name and if necessary the suffix `not null`.
+Primary keys, constraints, defaults, sequences, and so on are not included.
 
 ## Security Invariants
 

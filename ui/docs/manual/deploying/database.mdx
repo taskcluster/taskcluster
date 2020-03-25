@@ -66,6 +66,17 @@ The read-only configuration will only be used to read from the database.
 This can be used to direct reads to read-only replicas, in cases where the read load is significantly higher than the write load.
 However, note that these read-only replicas must conform to the consistency requirements described above.
 
+## Connection Counts
+
+Each Kubernetes deployment can use up to 10 connections.
+In particular, the `web` pods may, under load, use this maximum.
+Periodic tasks and worker pods will user fewer connections.
+A basic deployment of Taskcluster with the default scale of one for each Kubernetes deployment can use about 150 connections when under load.
+
+We recommend starting Postgres' `max_connections` to 200 for such Taskcluster deployments.
+Adjust that number based on observed connection counts.
+Increase the number as necessary when scaling up Kubernetes deployments.
+
 ## Configuration
 
 Database access is configured with URL-shaped strings as defined by [node-postgres](https://node-postgres.com/features/connecting).

@@ -17,6 +17,14 @@ suite(path.basename(__filename), function() {
 
       assert.deepEqual([...sch.allMethods().map(meth => meth.name)].sort(),
         ['get_secret', 'list_secrets']);
+
+      assert.deepEqual(sch.tables.get(), {
+        secrets: {
+          name: 'text not null',
+          secret: 'text',
+          expires: 'timestamp not null',
+        },
+      });
     });
 
     test('fromDbDirectory with external SQL files', function() {
@@ -51,6 +59,7 @@ suite(path.basename(__filename), function() {
     test('fromSerializable', function() {
       const sch = Schema.fromSerializable({
         access: {},
+        tables: {},
         versions: [
           {
             version: 1,
@@ -104,6 +113,7 @@ suite(path.basename(__filename), function() {
         },
       ],
       access: {},
+      tables: {},
     }).versions;
 
     test('method changes mode', function() {

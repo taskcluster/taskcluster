@@ -1,4 +1,5 @@
 const {Pool} = require('pg');
+const pg = require('pg');
 const {dollarQuote, annotateError} = require('./util');
 const assert = require('assert').strict;
 const {READ, WRITE, DUPLICATE_OBJECT, UNDEFINED_TABLE} = require('./constants');
@@ -7,6 +8,11 @@ const {READ, WRITE, DUPLICATE_OBJECT, UNDEFINED_TABLE} = require('./constants');
 const EXTENSIONS = [
   'pgcrypto',
 ];
+
+// Node-postgres assumes that all Date objects are in the local timezone.  In
+// Taskcluster, we always use Date objects in UTC.  Happily, the library's
+// questionable decision can be overridden globally:
+pg.defaults.parseInputDatesAsUTC = true;
 
 class Database {
   /**
@@ -115,6 +121,8 @@ class Database {
       if (toVersion === schema.latestVersion().version) {
         showProgress('...checking permissions');
         await Database._checkPermissions({db, schema, usernamePrefix});
+        showProgress('...checking table columns');
+        await Database._checkTableColumns({db, schema, usernamePrefix});
       }
     } finally {
       await db.close();
@@ -273,6 +281,45 @@ class Database {
     });
   }
 
+  static async _checkTableColumns({db, schema}) {
+    const current = await db._withClient('admin', async client => {
+      const tables = {};
+
+      const tablesres = await client.query(`
+        select
+          c.relname as tablename,
+          c.oid as oid
+        from
+          pg_catalog.pg_class c
+          left join pg_catalog.pg_namespace n on n.oid = c.relnamespace
+        where
+          c.relkind='r' and
+          n.nspname = 'public' and
+          c.relname != 'tcversion'
+      `);
+
+      for (const {tablename, oid} of tablesres.rows) {
+        const rowsres = await client.query(`
+          select
+            attname,
+            pg_catalog.format_type(a.atttypid, a.atttypmod) as type,
+            a.attnotnull as notnull
+          from
+            pg_catalog.pg_attribute a
+          where
+            -- attnum's < 0 are internal
+            a.attrelid=$1 and a.attnum > 0
+        `, [oid]);
+        tables[tablename] = Object.fromEntries(
+          rowsres.rows.map(({attname, type, notnull}) => ([attname, `${type}${notnull ? ' not null' : ''}`])));
+      }
+
+      return tables;
+    });
+
+    assert.deepEqual(current, schema.tables.get());
+  }
+
   async _createExtensions() {
     await this._withClient('admin', async client => {
       for (let ext of EXTENSIONS) {
@@ -365,7 +412,10 @@ class Database {
   constructor({urlsByMode, statementTimeout}) {
     assert(!statementTimeout || typeof statementTimeout === 'number' || typeof statementTimeout === 'boolean');
     const makePool = dbUrl => {
-      const pool = new Pool({connectionString: dbUrl});
+      // use a max of 5 connections. For services running both a read and write
+      // pool, this is a maximum of 10 concurrent connections.  Other requests
+      // will be queued.
+      const pool = new Pool({connectionString: dbUrl, max: 5});
       // ignore errors from *idle* connections.  From the docs:
       //
       // > When a client is sitting idly in the pool it can still emit errors

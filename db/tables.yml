@@ -1,0 +1,213 @@
+######## IMPORTANT
+#
+# This file DOES NOT DEFINE A PUBLIC API for Taskcluster
+#
+# The columns in the Taskcluster database are considered an implementation detail
+# and may change without notice even in minor versions.  Do not depend on them.
+# Even within the Taskcluster codebase, all access must go though stored functions.
+# The information below is only useful to developers implementing or modifying
+# stored functions.
+
+# Widgets is a temporary API developed to "trial run" the Postgres deployment, and
+# will be removed soon.
+widgets:
+  name: text
+
+# All of the *_entities tables below are used by tc-lib-entities to emulate
+# Azure entities.
+clients_entities:
+  partition_key: text not null
+  row_key: text not null
+  value: jsonb not null
+  version: integer not null
+  etag: uuid
+roles_entities:
+  partition_key: text not null
+  row_key: text not null
+  value: jsonb not null
+  version: integer not null
+  etag: uuid
+taskcluster_check_runs_entities:
+  partition_key: text not null
+  row_key: text not null
+  value: jsonb not null
+  version: integer not null
+  etag: uuid
+taskcluster_checks_to_tasks_entities:
+  partition_key: text not null
+  row_key: text not null
+  value: jsonb not null
+  version: integer not null
+  etag: uuid
+taskcluster_github_builds_entities:
+  partition_key: text not null
+  row_key: text not null
+  value: jsonb not null
+  version: integer not null
+  etag: uuid
+taskcluster_integration_owners_entities:
+  partition_key: text not null
+  row_key: text not null
+  value: jsonb not null
+  version: integer not null
+  etag: uuid
+hooks_entities:
+  partition_key: text not null
+  row_key: text not null
+  value: jsonb not null
+  version: integer not null
+  etag: uuid
+last_fire_3_entities:
+  partition_key: text not null
+  row_key: text not null
+  value: jsonb not null
+  version: integer not null
+  etag: uuid
+queues_entities:
+  partition_key: text not null
+  row_key: text not null
+  value: jsonb not null
+  version: integer not null
+  etag: uuid
+indexed_tasks_entities:
+  partition_key: text not null
+  row_key: text not null
+  value: jsonb not null
+  version: integer not null
+  etag: uuid
+namespaces_entities:
+  partition_key: text not null
+  row_key: text not null
+  value: jsonb not null
+  version: integer not null
+  etag: uuid
+denylisted_notification_entities:
+  partition_key: text not null
+  row_key: text not null
+  value: jsonb not null
+  version: integer not null
+  etag: uuid
+cache_purges_entities:
+  partition_key: text not null
+  row_key: text not null
+  value: jsonb not null
+  version: integer not null
+  etag: uuid
+secrets_entities:
+  partition_key: text not null
+  row_key: text not null
+  value: jsonb not null
+  version: integer not null
+  etag: uuid
+queue_task_group_active_sets_entities:
+  partition_key: text not null
+  row_key: text not null
+  value: jsonb not null
+  version: integer not null
+  etag: uuid
+access_token_table_entities:
+  partition_key: text not null
+  row_key: text not null
+  value: jsonb not null
+  version: integer not null
+  etag: uuid
+authorization_codes_table_entities:
+  partition_key: text not null
+  row_key: text not null
+  value: jsonb not null
+  version: integer not null
+  etag: uuid
+github_access_token_table_entities:
+  partition_key: text not null
+  row_key: text not null
+  value: jsonb not null
+  version: integer not null
+  etag: uuid
+session_storage_table_entities:
+  partition_key: text not null
+  row_key: text not null
+  value: jsonb not null
+  version: integer not null
+  etag: uuid
+wmworker_pool_errors_entities:
+  partition_key: text not null
+  row_key: text not null
+  value: jsonb not null
+  version: integer not null
+  etag: uuid
+wmworker_pools_entities:
+  partition_key: text not null
+  row_key: text not null
+  value: jsonb not null
+  version: integer not null
+  etag: uuid
+wmworkers_entities:
+  partition_key: text not null
+  row_key: text not null
+  value: jsonb not null
+  version: integer not null
+  etag: uuid
+queue_tasks_entities:
+  partition_key: text not null
+  row_key: text not null
+  value: jsonb not null
+  version: integer not null
+  etag: uuid
+queue_task_requirement_entities:
+  partition_key: text not null
+  row_key: text not null
+  value: jsonb not null
+  version: integer not null
+  etag: uuid
+queue_artifacts_entities:
+  partition_key: text not null
+  row_key: text not null
+  value: jsonb not null
+  version: integer not null
+  etag: uuid
+queue_task_groups_entities:
+  partition_key: text not null
+  row_key: text not null
+  value: jsonb not null
+  version: integer not null
+  etag: uuid
+queue_task_group_members_entities:
+  partition_key: text not null
+  row_key: text not null
+  value: jsonb not null
+  version: integer not null
+  etag: uuid
+queue_task_dependency_entities:
+  partition_key: text not null
+  row_key: text not null
+  value: jsonb not null
+  version: integer not null
+  etag: uuid
+queue_worker_entities:
+  partition_key: text not null
+  row_key: text not null
+  value: jsonb not null
+  version: integer not null
+  etag: uuid
+queue_worker_type_entities:
+  partition_key: text not null
+  row_key: text not null
+  value: jsonb not null
+  version: integer not null
+  etag: uuid
+queue_provisioner_entities:
+  partition_key: text not null
+  row_key: text not null
+  value: jsonb not null
+  version: integer not null
+  etag: uuid
+
+# This table is used by tc-lib-azqueue to emulate the Azure Storage API's Queue functionality.
+azure_queue_messages:
+  message_id: uuid not null
+  queue_name: text not null
+  message_text: text not null
+  inserted: timestamp with time zone not null
+  visible: timestamp with time zone not null
+  expires: timestamp with time zone not null
+  pop_receipt: uuid

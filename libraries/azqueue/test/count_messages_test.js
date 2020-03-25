@@ -43,6 +43,17 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
     assert.equal(result.messageCount, 1);
   });
 
+  test('count queue with expired messages', async function() {
+    const queue = new AZQueue({ db: helper.db });
+    await queue.putMessage('foo', 'exp', { visibilityTimeout: 50, messageTTL: -20 });
+    await queue.putMessage('foo', 'exp', { visibilityTimeout: 50, messageTTL: -10 });
+    await queue.putMessage('foo', 'viz', { visibilityTimeout: 50, messageTTL: 100 });
+    await queue.putMessage('foo', 'viz', { visibilityTimeout: 50, messageTTL: 110 });
+    const result = await queue.getMetadata('foo');
+
+    assert.equal(result.messageCount, 2);
+  });
+
   test('count many messages in several queues', async function() {
     const queue = new AZQueue({ db: helper.db });
     for (let i = 0; i < 100; i++) {

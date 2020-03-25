@@ -234,7 +234,8 @@
         },
         "reregistrationTimeout": {
           "default": 345600,
-          "description": "If specified, workers in this pool must re-register via `reregister()`\nwithin `reregistrationTimeout` seconds from the initial call to\n`register()` to get new credentials. If the worker has not done so, it\nwill be terminated.  This value also dictates the lifetime of the\ntemporary credentials granted to the worker, meaning that it cannot be\ngreater than 31 days.\n\nThe default value is 3 days.\n",
+          "description": "If specified, workers in this pool must re-register via `reregister()`\nwithin `reregistrationTimeout` seconds from the initial call to\n`register()` to get new credentials. If the worker has not done so, it\nwill be terminated.  This value also dictates the lifetime of the\ntemporary credentials granted to the worker, meaning that it must be\nless than 30 days.\n\nThe default value is 3 days.\n",
+          "maximum": 2678400,
           "title": "Checkin Timeout",
           "type": "integer"
         }
@@ -466,7 +467,7 @@
         },
         "workerConfig": {
           "additionalProperties": true,
-          "description": "This value is supplied unchanged to the worker from the worker-pool configuration.\nThe expectation is that the worker will merge this information with configuration from other sources,\nand this is precisely what [taskcluster-worker-runner](https://github.com/taskcluster/taskcluster-worker-runner) does.\nThis property must not be used for secret configuration, as it is visible both in the worker pool configuration and in the worker instance's metadata.\nInstead, put secret configuration in the [secrets service](https://github.com/taskcluster/taskcluster-worker-runner#secrets).\n",
+          "description": "This value is supplied unchanged to the worker from the worker-pool configuration.\nThe expectation is that the worker will merge this information with configuration from other sources,\nand this is precisely what [worker-runner](https://github.com/taskcluster/taskcluster/tree/master/tools/worker-runner) does.\nThis property must not be used for secret configuration, as it is visible both in the worker pool configuration and in the worker instance's metadata.\nInstead, put secret configuration in the [secrets service](https://github.com/taskcluster/taskcluster/tree/master/tools/worker-runner#secrets).\n",
           "title": "Worker Config",
           "type": "object"
         }
@@ -769,7 +770,7 @@
         },
         "workerConfig": {
           "additionalProperties": true,
-          "description": "This value is supplied unchanged to the worker from the provider configuration.\nThe expectation is that the worker will merge this information with configuration from other sources,\nand this is precisely what [taskcluster-worker-runner](https://github.com/taskcluster/taskcluster-worker-runner) does.\nThis property must not be used for secret configuration, as it is visible both in the worker pool configuration and in the worker instance's metadata.\nInstead, put secret configuration in the [secrets service](https://github.com/taskcluster/taskcluster-worker-runner#secrets).\n",
+          "description": "This value is supplied unchanged to the worker from the provider configuration.\nThe expectation is that the worker will merge this information with configuration from other sources,\nand this is precisely what [worker-runner](https://github.com/taskcluster/taskcluster/tree/master/tools/worker-runner) does.\nThis property must not be used for secret configuration, as it is visible both in the worker pool configuration and in the worker instance's metadata.\nInstead, put secret configuration in the [secrets service](https://github.com/taskcluster/taskcluster/tree/master/tools/worker-runner#secrets).\n",
           "title": "Worker Config",
           "type": "object"
         }
@@ -840,7 +841,7 @@
               },
               "workerConfig": {
                 "additionalProperties": true,
-                "description": "This value is supplied unchanged as the `workerConfig` property of the `taskcluster` instance metadata attribute.\nThe expectation is that the worker will merge this information with configuration from other sources,\nand this is precisely what [taskcluster-worker-runner](https://github.com/taskcluster/taskcluster-worker-runner) does.\nThis property must not be used for secret configuration, as it is visible both in the worker pool configuration and in the worker instance's metadata.\nInstead, put secret configuration in the [secrets service](https://github.com/taskcluster/taskcluster-worker-runner#secrets).\n",
+                "description": "This value is supplied unchanged as the `workerConfig` property of the `taskcluster` instance metadata attribute.\nThe expectation is that the worker will merge this information with configuration from other sources,\nand this is precisely what [worker-runner](https://github.com/taskcluster/taskcluster/tree/master/tools/worker-runner) does.\nThis property must not be used for secret configuration, as it is visible both in the worker pool configuration and in the worker instance's metadata.\nInstead, put secret configuration in the [secrets service](https://github.com/taskcluster/taskcluster/tree/master/tools/worker-runner#secrets).\n",
                 "title": "Worker Config",
                 "type": "object"
               },
@@ -1032,7 +1033,7 @@
               },
               "workerConfig": {
                 "additionalProperties": true,
-                "description": "This value is supplied unchanged as the `workerConfig` property of the `taskcluster` instance metadata attribute.\nThe expectation is that the worker will merge this information with configuration from other sources,\nand this is precisely what [taskcluster-worker-runner](https://github.com/taskcluster/taskcluster-worker-runner) does.\nThis property must not be used for secret configuration, as it is visible both in the worker pool configuration and in the worker instance's metadata.\nInstead, put secret configuration in the [secrets service](https://github.com/taskcluster/taskcluster-worker-runner#secrets).\n",
+                "description": "This value is supplied unchanged as the `workerConfig` property of the `taskcluster` instance metadata attribute.\nThe expectation is that the worker will merge this information with configuration from other sources,\nand this is precisely what [worker-runner](https://github.com/taskcluster/taskcluster/tree/master/tools/worker-runner) does.\nThis property must not be used for secret configuration, as it is visible both in the worker pool configuration and in the worker instance's metadata.\nInstead, put secret configuration in the [secrets service](https://github.com/taskcluster/taskcluster/tree/master/tools/worker-runner#secrets).\n",
                 "title": "Worker Config",
                 "type": "object"
               }
@@ -1152,7 +1153,7 @@
               },
               "workerConfig": {
                 "additionalProperties": true,
-                "description": "This value is supplied unchanged as the `workerConfig` property of the `taskcluster` instance metadata attribute.\nThe expectation is that the worker will merge this information with configuration from other sources,\nand this is precisely what [taskcluster-worker-runner](https://github.com/taskcluster/taskcluster-worker-runner) does.\nThis property must not be used for secret configuration, as it is visible both in the worker pool configuration and in the worker instance's metadata.\nInstead, put secret configuration in the [secrets service](https://github.com/taskcluster/taskcluster-worker-runner#secrets).\n",
+                "description": "This value is supplied unchanged as the `workerConfig` property of the `taskcluster` instance metadata attribute.\nThe expectation is that the worker will merge this information with configuration from other sources,\nand this is precisely what [worker-runner](https://github.com/taskcluster/taskcluster/tree/master/tools/worker-runner) does.\nThis property must not be used for secret configuration, as it is visible both in the worker pool configuration and in the worker instance's metadata.\nInstead, put secret configuration in the [secrets service](https://github.com/taskcluster/taskcluster/tree/master/tools/worker-runner#secrets).\n",
                 "title": "Worker Config",
                 "type": "object"
               }

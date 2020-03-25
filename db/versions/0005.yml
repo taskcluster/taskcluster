@@ -1,0 +1,45 @@
+version: 5
+migrationScript: |-
+  begin
+  end
+downgradeScript: |-
+  begin
+  end
+methods:
+  azure_queue_get:
+    description: |
+      Get up to `count` messages from the given queue, setting the `visible`
+      column of each to the given value.  Returns a `message_id` and
+      `pop_receipt` for each one, for use with `azure_queue_delete` and
+      `azure_queue_update`.
+    mode: write
+    serviceName: queue
+    args: queue_name text, visible timestamp, count integer
+    returns: table (message_id uuid, message_text text, pop_receipt uuid)
+    # This updates the implementation in version 3 by sorting the results, as
+    # UPDATE .. RETURNING does not honor the order defined in the subquery.
+    body: |-
+      begin
+        return query
+          with updated as (
+            update azure_queue_messages m
+            set
+              pop_receipt = public.gen_random_uuid(),
+              visible = azure_queue_get.visible
+            where
+              m.message_id in (
+                select m2.message_id from azure_queue_messages m2
+                where m2.queue_name = azure_queue_get.queue_name
+                  and m2.visible <= now()
+                  and m2.expires > now()
+                order by m2.inserted
+                for update skip locked
+                limit count
+            )
+            returning m.inserted, m.message_id, m.message_text, m.pop_receipt
+          )
+          select
+            u.message_id, u.message_text, u.pop_receipt
+          from updated as u
+          order by u.inserted;
+      end

@@ -3,6 +3,49 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v28.1.0
+
+▶ [minor] [bug 1436478](http://bugzil.la/1436478)
+Add a new library taskcluster-lib-entities that exposes the same API as azure-entities but uses postgres rather than azure for its database. Note that all of the services are still using azure-entities. Services will eventually switch to using this new library. Date to be decided.
+
+▶ [minor] [bug 1306494](http://bugzil.la/1306494)
+Taskcluster UI now allow users to view the diff for scope changes (similar to the github write/preview functionality).
+
+▶ [patch] [#2292](https://github.com/taskcluster/taskcluster/issues/2292)
+Add a new library taskcluster-lib-azqueue that exposes the same API as the Azure Queue service but uses Postgres rather than Azure. Note that all of the services are still using Azure. Services will eventually switch to using this new library. Date to be decided.
+
+▶ [patch] [bug 1616931](http://bugzil.la/1616931)
+Generic-worker now transmits its logs via taskcluster-worker-runner, in preparation for supporting arbitrary log destinations.
+
+▶ [patch] [bug 1621420](http://bugzil.la/1621420)
+Prepare to update octokit dependency
+
+▶ [patch] [#2503](https://github.com/taskcluster/taskcluster/issues/2503)
+Some schemas in the Taskcluster documentation were not displayed with a "Cannot find .." error.  This has been fixed.
+
+▶ [patch] [#2486](https://github.com/taskcluster/taskcluster/issues/2486)
+Taskcluster UI now allows users to add matrix rooms to the denylist addresses.
+
+▶ [patch] 
+Taskcluster deployments now support sending results to New Relic (optionally).  See the deployment documentation for details.
+
+▶ [patch] [bug 1618991](http://bugzil.la/1618991)
+The Go client now correctly returns an error when 500 responses are retried to exhaustion.
+
+▶ [patch] [#2498](https://github.com/taskcluster/taskcluster/issues/2498)
+The database upgrade command now checks roles and permissions attributes for database users.
+
+▶ [patch] 
+The linux-arm builds of generic-worker are now considered [Tier-2](https://docs.taskcluster.net/docs/reference/workers/generic-worker/support-tiers), meaning that they are not tested in CI (but are still built).  Testing is also disabled on Windows 10 / amd64 due to lack of capacity, but continues for Windows 2012 / amd64 so Windows / amd64 remains a tier-1 platform.
+
+▶ [patch] [#2536](https://github.com/taskcluster/taskcluster/issues/2536)
+The node-postgres library is now configured to correctly handle timezones.  As no data was stored with timestamps until now, this is not a breaking change.
+
+▶ [patch] [bug 1622052](http://bugzil.la/1622052)
+The protocol between workers and worker manager now correctly negotiates capabilities.
+
+▶ Additional changes not described here: [bug 1623183](http://bugzil.la/1623183), [#2527](https://github.com/taskcluster/taskcluster/issues/2527), [#2539](https://github.com/taskcluster/taskcluster/issues/2539).
+
 ## v28.0.0
 
 ▶ [MAJOR] [#2328](https://github.com/taskcluster/taskcluster/issues/2328)
