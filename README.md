@@ -44,8 +44,6 @@ It is not possible to run a full Taskcluster deployment directly from this repos
     * [Taskcluster Client for Shell](clients/client-shell#readme)
     * [Taskcluster Client for Web](clients/client-web#readme)
 * [Taskcluster Database](db#readme)
-* [Taskcluster Database](db#readme)
-* [Taskcluster Database](db#readme)
 * [Development Documentation](dev-docs#readme)
 * [Infrastructure](infrastructure#readme)
     * [Docker Images](infrastructure/docker-images#readme)
