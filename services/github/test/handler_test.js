@@ -645,10 +645,15 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
       }
     });
 
+    setup(function() {
+      sinon.stub(utils, "throttleRequest").returns({status: 404, response: {error: {text: "Resource not found"}}});
+    });
+
     teardown(async function() {
       await helper.Builds.remove({taskGroupId: TASKGROUPID}, true);
       await helper.CheckRuns.remove({taskGroupId: TASKGROUPID, taskId: TASKID}, true);
       await helper.CheckRuns.remove({taskGroupId: TASKGROUPID, taskId: CUSTOM_CHECKRUN_TASKID}, true);
+      sinon.restore();
     });
 
     const TASKGROUPID = 'AXB-sjV-SoCyibyq3P32ow';
@@ -769,6 +774,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
     test('successfully adds custom check run text from an artifact', async function () {
       await addBuild({state: 'pending', taskGroupId: TASKGROUPID});
       await addCheckRun({taskGroupId: TASKGROUPID, taskId: CUSTOM_CHECKRUN_TASKID});
+      sinon.restore();
       sinon.stub(utils, "throttleRequest").returns({status: 200, text: CUSTOM_CHECKRUN_TEXT});
       await simulateExchangeMessage({
         taskGroupId: TASKGROUPID,
@@ -794,6 +800,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
       // note: production code doesn't throw the error, just logs it, so the handlers is not interrupted
       await addBuild({state: 'pending', taskGroupId: TASKGROUPID});
       await addCheckRun({taskGroupId: TASKGROUPID, taskId: CUSTOM_CHECKRUN_TASKID});
+      sinon.restore();
       sinon.stub(utils, "throttleRequest").returns({status: 418, response: {error: {text: "I'm a tea pot"}}});
       await simulateExchangeMessage({
         taskGroupId: TASKGROUPID,

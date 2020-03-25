@@ -3,7 +3,7 @@ const libUrls = require('taskcluster-lib-urls');
 const yaml = require('js-yaml');
 const assert = require('assert');
 const {consume} = require('taskcluster-lib-pulse');
-const {CONCLUSIONS, CHECKRUN_TEXT} = require('./constants');
+const {CONCLUSIONS, CHECKRUN_TEXT, CUSTOM_CHECKRUN_TEXT_ARTIFACT_NAME} = require('./constants');
 const utils = require('./utils');
 
 /**
@@ -492,41 +492,39 @@ async function statusHandler(message) {
   try {
     const taskDefinition = await this.queueClient.task(taskId);
     const {customCheckRun} = (taskDefinition.extra && taskDefinition.extra.github) || {};
+    const {textArtifactName} = customCheckRun || CUSTOM_CHECKRUN_TEXT_ARTIFACT_NAME;
 
     let customCheckRunText = '';
-    if (customCheckRun && customCheckRun.textArtifactName) {
-      const scopedQueueClient = this.queueClient.use({
-        authorizedScopes: taskDefinition.scopes,
-        credentials: this.context.cfg.taskcluster.credentials,
+
+    const scopedQueueClient = this.queueClient.use({
+      authorizedScopes: taskDefinition.scopes,
+      credentials: this.context.cfg.taskcluster.credentials,
+    });
+    const url = this.queueClient
+      .buildUrl(scopedQueueClient.getArtifact, taskId, runId, textArtifactName);
+
+    let res = await utils.throttleRequest({url, method: 'GET'});
+
+    if (res.status >= 400 && res.status !== 404) {
+      /*
+        Some possible errors:
+          - insufficient scopes: statusCode 403
+          - no artifact entity in DB, no artifact in S3: statusCode 404
+      */
+      await this.createExceptionComment({
+        debug,
+        instGithub,
+        organization,
+        repository,
+        sha,
+        error: res.response.error,
       });
 
-      const url = this.queueClient
-        .buildUrl(scopedQueueClient.getArtifact, taskId, runId, customCheckRun.textArtifactName);
-
-      let res = await utils.throttleRequest({url, method: 'GET'});
-
-      if (res.status >= 400) {
-        /*
-          Some possible errors:
-            - insufficient scopes: statusCode 403
-            - no artifact entity in DB, no artifact in S3: statusCode 404
-        */
-        await this.createExceptionComment({
-          debug,
-          instGithub,
-          organization,
-          repository,
-          sha,
-          error: res.response.error,
-        });
-
-        if (res.status < 500) {
-          await this.monitor.reportError(res.response.error);
-        }
-
-      } else if (res.status >= 200 && res.status < 300) {
-        customCheckRunText = res.text.toString();
+      if (res.status < 500) {
+        await this.monitor.reportError(res.response.error);
       }
+    } else if (res.status >= 200 && res.status < 300) {
+      customCheckRunText = res.text.toString();
     }
 
     if (checkRun) {

@@ -15,4 +15,5 @@ module.exports = {
     'intermittent-task': 'neutral', // queue status means: will be retried
   },
   CHECKRUN_TEXT: 'View task in Taskcluster',
+  CUSTOM_CHECKRUN_TEXT_ARTIFACT_NAME: 'customCheckRunText.md',
 };
