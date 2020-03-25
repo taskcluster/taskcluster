@@ -95,7 +95,7 @@
 
 | Name | Mode | Arguments | Returns | Description |
 | --- | --- | --- | --- | --- |
-| azure_queue_count | read | queue_name text | integer | Count messages in the named queue.<br /> |
+| azure_queue_count | read | queue_name text | integer | Count non-expired messages in the named queue.<br /> |
 | azure_queue_delete | write | queue_name text, message_id uuid, pop_receipt uuid | void | Delete the message identified by the given `queue_name`, `message_id` and<br />`pop_receipt`.<br /> |
 | azure_queue_delete_expired | write |  | void | Delete all expired messages.  This is a maintenance task that should occur<br />about once an hour.<br /> |
 | azure_queue_get | write | queue_name text, visible timestamp, count integer | table (message_id uuid, message_text text, pop_receipt uuid) | Get up to `count` messages from the given queue, setting the `visible`<br />column of each to the given value.  Returns a `message_id` and<br />`pop_receipt` for each one, for use with `azure_queue_delete` and<br />`azure_queue_update`.<br /> |
