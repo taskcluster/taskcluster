@@ -1,0 +1,4 @@
+secrets:
+  name: text not null
+  secret: text
+  expires: timestamp not null

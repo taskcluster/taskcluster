@@ -98,7 +98,9 @@ helper.dbSuite(path.basename(__filename), function() {
       },
     },
   ];
-  const schema = Schema.fromSerializable({versions, access: {}});
+  const access = {};
+  const tables = {};
+  const schema = Schema.fromSerializable({versions, access, tables});
 
   const createUsers = async db => {
     await db._withClient('admin', async client => {
@@ -340,7 +342,7 @@ helper.dbSuite(path.basename(__filename), function() {
       await db.close();
     });
 
-    const withAccess = access => Schema.fromSerializable({access, versions: []});
+    const withAccess = access => Schema.fromSerializable({access, tables: {}, versions: []});
 
     test('empty access.yml', async function() {
       const schema = withAccess({service1: {tables: {}}, service2: {tables: {}}});
@@ -547,5 +549,60 @@ helper.dbSuite(path.basename(__filename), function() {
     // this would be a particularly bizarre thing to put in the deployment configuration,
     // but hey, it won't work!
     assert(!Database._validUsernamePrefix(`'; drop table clients`));
+  });
+
+  suite('_checkTableColumns', function() {
+    setup(async function() {
+      db = new Database({urlsByMode: {admin: helper.dbUrl}});
+      await createUsers(db);
+    });
+
+    const makeSchema = (migrationScript, tables) => {
+      const versions = [{
+        version: 1,
+        migrationScript,
+        downgradeScript: 'unused',
+        methods: {},
+      }];
+      return Schema.fromSerializable({versions, access: {}, tables});
+    };
+
+    test('validates a simple table with integer, timestamp, and text cols', async function() {
+      const schema = makeSchema(`
+        begin
+          create table testtable (
+            quantity int,
+            quality text,
+            moment timestamptz
+          );
+        end`, {
+        testtable: {
+          quantity: 'integer',
+          quality: 'text',
+          moment: 'timestamp with time zone',
+        },
+      });
+      await Database.upgrade({schema, adminDbUrl: helper.dbUrl, usernamePrefix: 'test'});
+      const db = new Database({urlsByMode: {admin: helper.dbUrl}});
+      await Database._checkTableColumns({db, schema});
+    });
+
+    test('fails when not null is omitted', async function() {
+      const schema = makeSchema(`
+        begin
+          create table testtable (
+            quantity int not null
+          );
+        end`, {
+        testtable: {
+          quantity: 'integer',
+        },
+      });
+      await Database.upgrade({schema, adminDbUrl: helper.dbUrl, usernamePrefix: 'test'});
+      const db = new Database({urlsByMode: {admin: helper.dbUrl}});
+      await assert.rejects(
+        () => Database._checkTableColumns({db, schema}),
+        err => err.code === 'ERR_ASSERTION');
+    });
   });
 });
