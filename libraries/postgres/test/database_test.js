@@ -116,7 +116,13 @@ helper.dbSuite(path.basename(__filename), function() {
           }
         }
       }
+    });
+    // start off the roles from a clean slate..
+    await resetRoles(db);
+  };
 
+  const resetRoles = async db => {
+    await db._withClient('admin', async client => {
       // drop attributes and group membership for all test_* users
       const res = await client.query(`
         select *
@@ -129,6 +135,11 @@ helper.dbSuite(path.basename(__filename), function() {
       }
     });
   };
+
+  suiteTeardown(async function() {
+    db = new Database({urlsByMode: {admin: helper.dbUrl}});
+    await resetRoles(db);
+  });
 
   teardown(async function() {
     if (db) {
