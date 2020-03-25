@@ -32,11 +32,12 @@ let load = loader({
   },
 
   db: {
-    requires: ["cfg", "process"],
-    setup: ({cfg, process}) => tcdb.setup({
+    requires: ["cfg", "process", "monitor"],
+    setup: ({cfg, process, monitor}) => tcdb.setup({
       readDbUrl: cfg.postgres.readDbUrl,
       writeDbUrl: cfg.postgres.writeDbUrl,
       serviceName: 'worker_manager',
+      monitor: monitor.childMonitor('db'),
       statementTimeout: process === 'server' ? 30000 : 0,
     }),
   },
