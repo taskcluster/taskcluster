@@ -86,11 +86,12 @@ const load = loader({
   },
 
   db: {
-    requires: ["cfg"],
-    setup: ({ cfg }) => tcdb.setup({
+    requires: ["cfg", 'monitor'],
+    setup: ({cfg, monitor}) => tcdb.setup({
       readDbUrl: cfg.postgres.readDbUrl,
       writeDbUrl: cfg.postgres.writeDbUrl,
       serviceName: 'github',
+      monitor,
     }),
   },
 
