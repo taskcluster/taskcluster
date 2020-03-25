@@ -1,4 +1,3 @@
-const containers = require('../src/containers');
 const assert = require('assert');
 const helper = require('./helper');
 const testing = require('taskcluster-lib-testing');
@@ -15,9 +14,6 @@ helper.secrets.mockSuite(testing.suiteName(), ['db', 'azure', 'gcp'], function(m
   helper.withEntities(mock, skipping);
   helper.withServers(mock, skipping);
   helper.resetTables(mock, skipping);
-
-  const containerName = helper.containerName;
-  let credentials;
 
   test('get when blob is empty', async function() {
     assert.deepEqual(await helper.Roles.get(), []);
@@ -58,20 +54,6 @@ helper.secrets.mockSuite(testing.suiteName(), ['db', 'azure', 'gcp'], function(m
       });
     });
     assert.deepEqual(sorted((await helper.Roles.get()).map(r => r.roleId)),
-      sorted(['my-role', 'second-role']));
-  });
-
-  // no longer relevant now that roles is a postgres table
-  // rather than an azure blob
-  test.skip('create a second DataContainer', async function() {
-    // this verifies that creating a container doesn't erase the roles!
-    const roles2 = new containers.Roles({
-      containerName,
-      credentials,
-    });
-    await roles2.setup();
-
-    assert.deepEqual(sorted((await roles2.get()).map(r => r.roleId)),
       sorted(['my-role', 'second-role']));
   });
 });

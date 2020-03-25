@@ -326,7 +326,7 @@ Roles.modifyRole = async function(modifier) {
 Roles._create = async function() {
   try {
     // only create if the blob does not already exist..
-    return await this.create({ blob: [] }, {ifNoneMatch: '*'});
+    return await this.create({ blob: [] });
   } catch (e) {
     if (e.code !== 'EntityAlreadyExists') {
       throw e;
