@@ -496,21 +496,12 @@ async function statusHandler(message) {
 
     let customCheckRunText = '';
 
-    const scopedQueueClient = this.queueClient.use({
-      authorizedScopes: taskDefinition.scopes,
-      credentials: this.context.cfg.taskcluster.credentials,
-    });
     const url = this.queueClient
-      .buildUrl(scopedQueueClient.getArtifact, taskId, runId, textArtifactName);
+      .buildUrl(this.queueClient.getArtifact, taskId, runId, textArtifactName);
 
     let res = await utils.throttleRequest({url, method: 'GET'});
 
     if (res.status >= 400 && res.status !== 404) {
-      /*
-        Some possible errors:
-          - insufficient scopes: statusCode 403
-          - no artifact entity in DB, no artifact in S3: statusCode 404
-      */
       await this.createExceptionComment({
         debug,
         instGithub,

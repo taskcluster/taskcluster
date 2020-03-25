@@ -22,18 +22,15 @@ your logs and add some results to the check's body):
                 textArtifactName: <artifact_name>
     ```
  to the definition of the task for which you want customize the check. If you don't want to bother with that,
- you can just make sure you name your artifact `customCheckRunText.md`, and tc-gh would fetch that automatically
-* If it's OK with you that the artifact is public, make sure to start the name of your artifact with
- `public/`, like this: `public/<file_name>` both when you create the artifact and reference it in your
- task definition. In this case, you will not need any scopes.
-* If you don't want the artifact to be public, name your artifact simply `<file_name>` both when creating it
- and referencing it in your task definition. In this case, you will need a `queue:get-artifact:<file_name>`
- scope. Add it to the `scopes` section of the same task.
+ you can just make sure you name your artifact `customCheckRunText.md`, and tc-gh would fetch that automatically.
+ Please note that at the moment we do not support private artifacts for this functionality, so do make sure
+ to add `public/` prefix to your artifact name when using `Queue.createArtifact` endpoint
+ (like this: `public/<file_name>`).
  
 ### Debugging Errors in Custom Output
  
-* If you see a `Cannot GET blahblah (403)` kind of error, it's likely that your artifact is private and you
-  forgot to add the scope to the `scopes` section of your task definition.
+* If you see a `Cannot GET blahblah (403)` kind of error, it's likely that your artifact is private. Make sure you use
+  a public artifact.
 * If there is no error at all and you don't see your custom text in the checkrun, it means there was a 
   404 kind of error. It can mean the artifact wasn't created successfully or there is a typo in the name of your
   artifact or in your `extra.github.customCheckRun` section if you use one.
@@ -41,6 +38,7 @@ your logs and add some results to the check's body):
   
 ## Reporting Bugs
 
-If you are unhappy with something in Checks, please [file a bug here](https://bugzilla.mozilla.org/enter_bug.cgi?product=Taskcluster&component=Services)
+If you are unhappy with something in Checks or want to make a feature request, please 
+[file a bug here](https://bugzilla.mozilla.org/enter_bug.cgi?product=Taskcluster&component=Services)
 If you want the bug to be addressed sooner rather than later, do make sure to start the `Summary` field with `[tc-github]`.
 Thank you!
