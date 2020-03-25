@@ -8,7 +8,7 @@ defaults:
     authorizationCodeExpirationDelay: '- 10 minutes'
 
     authorizationCodesTableName: authorization_codes_table_entities
-    accessTokenTableName: access_token_table
+    accessTokenTableName: access_token_table_entities
     sessionStorageTableName: session_storage_table_entities
     githubAccessTokenTableName: github_access_token_table_entities
 

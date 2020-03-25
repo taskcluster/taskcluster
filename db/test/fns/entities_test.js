@@ -143,21 +143,21 @@ for (let service of services) {
       helper.dbTest(`${tableName}_scan retrieve all documents (pk, rk, and condition set to undefined)`, async function(db, isFake) {
         // create 3 more values to have 5 in total
         await createThreeValues(db);
-        const result = await db.fns[`${tableName}_scan`](undefined, undefined, undefined, 1000, 1);
+        const result = await db.fns[`${tableName}_scan`](undefined, undefined, undefined, 1000, 0);
         assert.equal(result.length, 5);
       });
 
       helper.dbTest(`${tableName}_scan retrieve all documents (pk, rk, and condition set to null)`, async function(db, isFake) {
         // create 3 more values to have 5 in total
         await createThreeValues(db);
-        const result = await db.fns[`${tableName}_scan`](null, null, null, 1000, 1);
+        const result = await db.fns[`${tableName}_scan`](null, null, null, 1000, 0);
         assert.equal(result.length, 5);
       });
 
       helper.dbTest(`${tableName}_scan retrieve all documents (pk, rk, and condition set to undefined)`, async function(db, isFake) {
         // create 3 more values to have 5 in total
         await createThreeValues(db);
-        const result = await db.fns[`${tableName}_scan`](undefined, undefined, undefined, 1000, 1);
+        const result = await db.fns[`${tableName}_scan`](undefined, undefined, undefined, 1000, 0);
         assert.equal(result.length, 5);
       });
 
@@ -165,7 +165,7 @@ for (let service of services) {
         const additionalEntry = 1;
         // create 3 more values to have 5 in total
         await createThreeValues(db);
-        const result = await db.fns[`${tableName}_scan`](undefined, undefined, undefined, 2, 1);
+        const result = await db.fns[`${tableName}_scan`](undefined, undefined, undefined, 2, 0);
         assert.equal(result.length, 2 + additionalEntry);
       });
 
@@ -173,20 +173,20 @@ for (let service of services) {
         // create 3 more values to have 5 in total
         await createThreeValues(db);
         const additionalEntry = 1;
-        let result = await db.fns[`${tableName}_scan`](undefined, undefined, undefined, 2, 1);
+        let result = await db.fns[`${tableName}_scan`](undefined, undefined, undefined, 2, 0);
         assert.equal(result.length, 2 + additionalEntry);
 
         result = await db.fns[`${tableName}_scan`](undefined, undefined, undefined, 2, 2);
         assert.equal(result.length, 2 + additionalEntry);
 
-        result = await db.fns[`${tableName}_scan`](undefined, undefined, undefined, 2, 3);
+        result = await db.fns[`${tableName}_scan`](undefined, undefined, undefined, 2, 4);
         assert.equal(result.length, 1);
       });
       helper.dbTest(`${tableName}_scan retrieve documents (with date condition)`, async function(db, isFake) {
         // create 3 more values to have 5 in total
         await createThreeValues(db);
         const condition = `value ->> 'expires' = '${new Date(3).toJSON()}'`;
-        const result = await db.fns[`${tableName}_scan`](undefined, undefined, condition, 1000, 1);
+        const result = await db.fns[`${tableName}_scan`](undefined, undefined, condition, 1000, 0);
 
         assert.equal(result.length, 3);
         result.forEach(entry => {

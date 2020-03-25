@@ -5,10 +5,12 @@ const testing = require('taskcluster-lib-testing');
 const monitorManager = require('../src/monitor');
 const {LEVELS} = require('taskcluster-lib-monitor');
 
-helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping) {
+helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
+  helper.withDb(mock, skipping);
   helper.withFakeNotify(mock, skipping);
   helper.withEntities(mock, skipping);
   helper.withPulse(mock, skipping);
+  helper.resetTables(mock, skipping);
 
   test('create worker pool error', async function() {
     await helper.WorkerPoolError.create({

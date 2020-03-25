@@ -6,7 +6,8 @@ const assert = require('assert');
 const taskcluster = require('taskcluster-client');
 const monitorManager = require('../src/monitor');
 
-helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping) {
+helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
+  helper.withDb(mock, skipping);
   helper.withEntities(mock, skipping);
   helper.withServer(mock, skipping);
 

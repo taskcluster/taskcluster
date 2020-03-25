@@ -3,9 +3,11 @@ const testing = require('taskcluster-lib-testing');
 const helper = require('./helper');
 const Github = require('../src/login/strategies/github');
 
-helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping) {
+helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
+  helper.withDb(mock, skipping);
   helper.withEntities(mock, skipping);
   helper.withGithubClient();
+  helper.resetTables(mock, skipping);
 
   suite(testing.suiteName(), () => {
     const makeUser = (options) => {

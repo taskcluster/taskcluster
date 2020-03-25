@@ -104,7 +104,7 @@ methods:
     description: test
     mode: read
     serviceName: test-entities
-    args: pk text, rk text, condition text, size integer, page integer
+    args: pk text, rk text, condition text, size integer, page_offset integer
     returns: table (partition_key text, row_key text, value jsonb, version integer, etag uuid)
     # The limit will always be size + 1 to allow consumers to detect when it's the last page.
     # If the list of result > size then there are more entries to fetch. Else, there are no next pages.
@@ -126,7 +126,6 @@ methods:
         sql text := 'select test_entities.partition_key, test_entities.row_key, test_entities.value, test_entities.version, test_entities.etag from test_entities';
         partition_key_var text;
         row_key_var text;
-        page_offset integer;
       begin
         if test_entities_scan.pk is not null or test_entities_scan.rk is not null or condition is not null then
           sql := sql || ' where ';
@@ -146,8 +145,7 @@ methods:
         if size is not null and size > 0 then
           sql := sql || ' limit ' || size + 1;
 
-          if page is not null and page > 0 then
-            page_offset := size * (page - 1);
+          if page_offset is not null and page_offset > 0 then
             sql := sql || ' offset ' || page_offset;
           end if;
         end if;

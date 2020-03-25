@@ -80,7 +80,6 @@ test:
     sourceEmail: '"Taskcluster Notify Testing" <taskcluster-noreply-testing@mozilla.com>'
     sqsQueueName: taskcluster-notify-test-irc
     routePrefix: test-notify
-    denylistedNotificationTableName: TestDenylistedNotification
     emailBlacklist: []
   azure:
     accountId:        'pamplemousse'

@@ -7,10 +7,12 @@ const moment = require('moment');
 const helper = require('./helper');
 const tryCatch = require('../src/utils/tryCatch');
 
-helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping) {
+helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
+  helper.withDb(mock, skipping);
   helper.withEntities(mock, skipping);
   helper.withFakeAuth(mock, skipping);
   helper.withServer(mock, skipping);
+  helper.resetTables(mock, skipping);
 
   const url = path => `http://127.0.0.1:${helper.serverPort}${path}`;
   const getQuery = (url, sep = '?') => {

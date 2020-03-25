@@ -63,8 +63,6 @@ test:
   taskcluster:
     rootUrl: "https://tc.example.com"
   app:
-    indexedTaskTableName: 'DummyTestIndexedTasks'
-    namespaceTableName: 'DummyTestNamespaces'
     listenerQueueName: 'test-queue'
 
   server:

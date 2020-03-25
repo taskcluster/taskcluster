@@ -55,9 +55,6 @@ test:
 
   app:
     component:        hooks-tests
-    hookTableName:    HooksTestTable2
-    lastFireTableName: LastFireTestTable
-    queuesTableName:  QueueTestTable
     scheduler:
       pollingDelay:   5000
   azure:

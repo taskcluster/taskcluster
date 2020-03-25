@@ -1,6 +1,6 @@
 const path = require('path');
 const {Client} = require('pg');
-const {Schema, UNDEFINED_OBJECT} = require('taskcluster-lib-postgres');
+const {Schema, UNDEFINED_OBJECT, UNDEFINED_TABLE} = require('taskcluster-lib-postgres');
 const tcdb = require('taskcluster-db');
 const {URL} = require('url');
 
@@ -42,6 +42,16 @@ const resetDb = async ({testDbUrl}) => {
         await client.query(`create user ${serviceUsername}`);
       }
     }
+  } finally {
+    await client.end();
+  }
+};
+
+const resetTable = async ({testDbUrl, tableName}) => {
+  const client = new Client({connectionString: testDbUrl});
+  await client.connect();
+  try {
+    await ignorePgErrors(client.query(`truncate ${tableName}`), UNDEFINED_TABLE);
   } finally {
     await client.end();
   }
@@ -111,3 +121,4 @@ module.exports.withDb.secret = [
 
 // this is useful for taskcluster-db's tests, as well
 module.exports.resetDb = resetDb;
+module.exports.resetTable = resetTable;

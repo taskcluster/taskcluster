@@ -3,7 +3,6 @@ let debug = require('debug')('app:queue');
 let assert = require('assert');
 let base32 = require('thirty-two');
 let crypto = require('crypto');
-let taskcluster = require('taskcluster-client');
 let slugid = require('slugid');
 let AZQueue = require('taskcluster-lib-azqueue');
 

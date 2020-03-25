@@ -3,7 +3,7 @@ const builder = require('../src/api');
 const data = require('../src/data');
 const taskcluster = require('taskcluster-client');
 const load = require('../src/main');
-const {stickyLoader, Secrets, fakeauth, withEntity, withMonitor} = require('taskcluster-lib-testing');
+const {withDb, stickyLoader, Secrets, fakeauth, withEntity, withMonitor} = require('taskcluster-lib-testing');
 
 const testclients = {
   'test-client': ['*'],
@@ -26,7 +26,7 @@ withMonitor(exports);
 exports.secrets = new Secrets({
   secretName: 'project/taskcluster/testing/azure',
   secrets: {
-    azure: withEntity.secret,
+    db: withDb.secret,
   },
   load: exports.load,
 });
@@ -36,6 +36,10 @@ exports.secrets = new Secrets({
  */
 exports.withEntities = (mock, skipping, options = {}) => {
   withEntity(mock, skipping, exports, 'CachePurge', data.CachePurge);
+};
+
+exports.withDb = (mock, skipping) => {
+  withDb(mock, skipping, exports, 'purge_cache');
 };
 
 /**

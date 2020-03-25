@@ -2,7 +2,7 @@ const assert = require('assert');
 const path = require('path');
 const aws = require('aws-sdk');
 const taskcluster = require('taskcluster-client');
-const {stickyLoader, Secrets, fakeauth, withEntity, withPulse, withMonitor, withDb} = require('taskcluster-lib-testing');
+const {stickyLoader, Secrets, fakeauth, withEntity, withPulse, withMonitor, withDb, resetTable} = require('taskcluster-lib-testing');
 const builder = require('../src/api');
 const load = require('../src/main');
 const RateLimit = require('../src/ratelimit');
@@ -34,7 +34,6 @@ exports.secrets = new Secrets({
     'project/taskcluster/testing/taskcluster-notify',
   ],
   secrets: {
-    azure: withEntity.secret,
     db: withDb.secret,
     aws: [
       {env: 'AWS_ACCESS_KEY_ID', cfg: 'aws.accessKeyId'},
@@ -321,4 +320,17 @@ exports.withEntities = (mock, skipping) => {
 
 exports.withDb = (mock, skipping) => {
   withDb(mock, skipping, exports, 'notify');
+};
+
+exports.resetTables = (mock, skipping) => {
+  setup('reset tables', async function() {
+    const sec = exports.secrets.get('db');
+
+    if (mock) {
+      exports.db['notify'].reset();
+    } {
+      await resetTable({ testDbUrl: sec.testDbUrl, tableName: 'denylisted_notification_entities' });
+      await resetTable({ testDbUrl: sec.testDbUrl, tableName: 'widgets' });
+    }
+  });
 };
