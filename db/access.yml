@@ -18,7 +18,7 @@ hooks:
   tables:
     hooks_entities: write
     queues_entities: write
-    last_fire3_entities: write
+    last_fire_3_entities: write
 index:
   tables:
     indexed_tasks_entities: write
@@ -54,6 +54,6 @@ web_server:
     github_access_token_table_entities: write
 worker_manager:
   tables:
-    wm_workers_entities: write
-    wm_worker_pools_entities: write
-    wm_worker_pool_errors_entities: write
+    wmworkers_entities: write
+    wmworker_pools_entities: write
+    wmworker_pool_errors_entities: write

@@ -48,11 +48,11 @@
 | hooks_entities_modify | write | partition_key text, row_key text, properties jsonb, version integer, old_etag uuid | table (etag uuid) | See taskcluster-lib-entities |
 | hooks_entities_remove | write | partition_key text, row_key text | table (etag uuid) | See taskcluster-lib-entities |
 | hooks_entities_scan | read | pk text, rk text, condition text, size integer, page_offset integer | table (partition_key text, row_key text, value jsonb, version integer, etag uuid) | See taskcluster-lib-entities |
-| last_fire3_entities_create | write | pk text, rk text, properties jsonb, overwrite boolean, version integer | uuid | See taskcluster-lib-entities |
-| last_fire3_entities_load | read | partition_key text, row_key text | table (partition_key_out text, row_key_out text, value jsonb, version integer, etag uuid) | See taskcluster-lib-entities |
-| last_fire3_entities_modify | write | partition_key text, row_key text, properties jsonb, version integer, old_etag uuid | table (etag uuid) | See taskcluster-lib-entities |
-| last_fire3_entities_remove | write | partition_key text, row_key text | table (etag uuid) | See taskcluster-lib-entities |
-| last_fire3_entities_scan | read | pk text, rk text, condition text, size integer, page_offset integer | table (partition_key text, row_key text, value jsonb, version integer, etag uuid) | See taskcluster-lib-entities |
+| last_fire_3_entities_create | write | pk text, rk text, properties jsonb, overwrite boolean, version integer | uuid | See taskcluster-lib-entities |
+| last_fire_3_entities_load | read | partition_key text, row_key text | table (partition_key_out text, row_key_out text, value jsonb, version integer, etag uuid) | See taskcluster-lib-entities |
+| last_fire_3_entities_modify | write | partition_key text, row_key text, properties jsonb, version integer, old_etag uuid | table (etag uuid) | See taskcluster-lib-entities |
+| last_fire_3_entities_remove | write | partition_key text, row_key text | table (etag uuid) | See taskcluster-lib-entities |
+| last_fire_3_entities_scan | read | pk text, rk text, condition text, size integer, page_offset integer | table (partition_key text, row_key text, value jsonb, version integer, etag uuid) | See taskcluster-lib-entities |
 | queues_entities_create | write | pk text, rk text, properties jsonb, overwrite boolean, version integer | uuid | See taskcluster-lib-entities |
 | queues_entities_load | read | partition_key text, row_key text | table (partition_key_out text, row_key_out text, value jsonb, version integer, etag uuid) | See taskcluster-lib-entities |
 | queues_entities_modify | write | partition_key text, row_key text, properties jsonb, version integer, old_etag uuid | table (etag uuid) | See taskcluster-lib-entities |
@@ -188,20 +188,20 @@
 
 | Name | Mode | Arguments | Returns | Description |
 | --- | --- | --- | --- | --- |
-| wm_worker_pool_errors_entities_create | write | pk text, rk text, properties jsonb, overwrite boolean, version integer | uuid | See taskcluster-lib-entities |
-| wm_worker_pool_errors_entities_load | read | partition_key text, row_key text | table (partition_key_out text, row_key_out text, value jsonb, version integer, etag uuid) | See taskcluster-lib-entities |
-| wm_worker_pool_errors_entities_modify | write | partition_key text, row_key text, properties jsonb, version integer, old_etag uuid | table (etag uuid) | See taskcluster-lib-entities |
-| wm_worker_pool_errors_entities_remove | write | partition_key text, row_key text | table (etag uuid) | See taskcluster-lib-entities |
-| wm_worker_pool_errors_entities_scan | read | pk text, rk text, condition text, size integer, page_offset integer | table (partition_key text, row_key text, value jsonb, version integer, etag uuid) | See taskcluster-lib-entities |
-| wm_worker_pools_entities_create | write | pk text, rk text, properties jsonb, overwrite boolean, version integer | uuid | See taskcluster-lib-entities |
-| wm_worker_pools_entities_load | read | partition_key text, row_key text | table (partition_key_out text, row_key_out text, value jsonb, version integer, etag uuid) | See taskcluster-lib-entities |
-| wm_worker_pools_entities_modify | write | partition_key text, row_key text, properties jsonb, version integer, old_etag uuid | table (etag uuid) | See taskcluster-lib-entities |
-| wm_worker_pools_entities_remove | write | partition_key text, row_key text | table (etag uuid) | See taskcluster-lib-entities |
-| wm_worker_pools_entities_scan | read | pk text, rk text, condition text, size integer, page_offset integer | table (partition_key text, row_key text, value jsonb, version integer, etag uuid) | See taskcluster-lib-entities |
-| wm_workers_entities_create | write | pk text, rk text, properties jsonb, overwrite boolean, version integer | uuid | See taskcluster-lib-entities |
-| wm_workers_entities_load | read | partition_key text, row_key text | table (partition_key_out text, row_key_out text, value jsonb, version integer, etag uuid) | See taskcluster-lib-entities |
-| wm_workers_entities_modify | write | partition_key text, row_key text, properties jsonb, version integer, old_etag uuid | table (etag uuid) | See taskcluster-lib-entities |
-| wm_workers_entities_remove | write | partition_key text, row_key text | table (etag uuid) | See taskcluster-lib-entities |
-| wm_workers_entities_scan | read | pk text, rk text, condition text, size integer, page_offset integer | table (partition_key text, row_key text, value jsonb, version integer, etag uuid) | See taskcluster-lib-entities |
+| wmworker_pool_errors_entities_create | write | pk text, rk text, properties jsonb, overwrite boolean, version integer | uuid | See taskcluster-lib-entities |
+| wmworker_pool_errors_entities_load | read | partition_key text, row_key text | table (partition_key_out text, row_key_out text, value jsonb, version integer, etag uuid) | See taskcluster-lib-entities |
+| wmworker_pool_errors_entities_modify | write | partition_key text, row_key text, properties jsonb, version integer, old_etag uuid | table (etag uuid) | See taskcluster-lib-entities |
+| wmworker_pool_errors_entities_remove | write | partition_key text, row_key text | table (etag uuid) | See taskcluster-lib-entities |
+| wmworker_pool_errors_entities_scan | read | pk text, rk text, condition text, size integer, page_offset integer | table (partition_key text, row_key text, value jsonb, version integer, etag uuid) | See taskcluster-lib-entities |
+| wmworker_pools_entities_create | write | pk text, rk text, properties jsonb, overwrite boolean, version integer | uuid | See taskcluster-lib-entities |
+| wmworker_pools_entities_load | read | partition_key text, row_key text | table (partition_key_out text, row_key_out text, value jsonb, version integer, etag uuid) | See taskcluster-lib-entities |
+| wmworker_pools_entities_modify | write | partition_key text, row_key text, properties jsonb, version integer, old_etag uuid | table (etag uuid) | See taskcluster-lib-entities |
+| wmworker_pools_entities_remove | write | partition_key text, row_key text | table (etag uuid) | See taskcluster-lib-entities |
+| wmworker_pools_entities_scan | read | pk text, rk text, condition text, size integer, page_offset integer | table (partition_key text, row_key text, value jsonb, version integer, etag uuid) | See taskcluster-lib-entities |
+| wmworkers_entities_create | write | pk text, rk text, properties jsonb, overwrite boolean, version integer | uuid | See taskcluster-lib-entities |
+| wmworkers_entities_load | read | partition_key text, row_key text | table (partition_key_out text, row_key_out text, value jsonb, version integer, etag uuid) | See taskcluster-lib-entities |
+| wmworkers_entities_modify | write | partition_key text, row_key text, properties jsonb, version integer, old_etag uuid | table (etag uuid) | See taskcluster-lib-entities |
+| wmworkers_entities_remove | write | partition_key text, row_key text | table (etag uuid) | See taskcluster-lib-entities |
+| wmworkers_entities_scan | read | pk text, rk text, condition text, size integer, page_offset integer | table (partition_key text, row_key text, value jsonb, version integer, etag uuid) | See taskcluster-lib-entities |
 <!-- SP END -->
 

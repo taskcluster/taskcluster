@@ -1,8 +1,8 @@
 const assert = require('assert').strict;
 const path = require('path');
-const { snakeCase } = require('change-case');
 const helper = require('../helper');
 const testing = require('taskcluster-lib-testing');
+const {postgresTableName} = require('taskcluster-lib-entities');
 const tcdb = require('taskcluster-db');
 const {Schema, UNDEFINED_TABLE} = require('taskcluster-lib-postgres');
 
@@ -43,17 +43,17 @@ suite(testing.suiteName(), function() {
     'WMWorkerPoolErrors',
   ];
 
-  const assertNoTable = async postgresTableName => {
+  const assertNoTable = async table => {
     await helper.withDbClient(async client => {
       await assert.rejects(
-        () => client.query(`select * from ${postgresTableName}`),
+        () => client.query(`select * from ${table}`),
         err => err.code === UNDEFINED_TABLE);
     });
   };
 
-  const assertTable = async postgresTableName => {
+  const assertTable = async table => {
     await helper.withDbClient(async client => {
-      const res = await client.query(`select * from ${postgresTableName}`);
+      const res = await client.query(`select * from ${table}`);
       assert.deepEqual(res.rows, []);
     });
   };
@@ -64,23 +64,20 @@ suite(testing.suiteName(), function() {
     await helper.upgradeTo(1);
 
     for (let azureTableName of azureTableNames) {
-      const postgresTableName = `${snakeCase(azureTableName)}_entities`;
-      await assertNoTable(postgresTableName);
+      await assertNoTable(postgresTableName(azureTableName));
     }
 
     await helper.upgradeTo(2);
 
     for (let azureTableName of azureTableNames) {
-      const postgresTableName = `${snakeCase(azureTableName)}_entities`;
-      await assertTable(postgresTableName);
+      await assertTable(postgresTableName(azureTableName));
     }
   });
 
   test(`tables dropped on downgrade`, async function () {
     await helper.downgradeTo(1);
     for (let azureTableName of azureTableNames) {
-      const postgresTableName = `${snakeCase(azureTableName)}_entities`;
-      await assertNoTable(postgresTableName);
+      await assertNoTable(postgresTableName(azureTableName));
     }
   });
 
@@ -94,15 +91,14 @@ suite(testing.suiteName(), function() {
     const realSchema = tcdb.schema({useDbDirectory: true});
     const realVersion = realSchema.getVersion(2);
     for (let azureTableName of azureTableNames) {
-      const postgresTableName = `${snakeCase(azureTableName)}_entities`;
       for (let methodSuffix of ['load', 'create', 'remove', 'modify', 'scan']) {
-        const method = `${postgresTableName}_${methodSuffix}`;
+        const method = `${postgresTableName(azureTableName)}_${methodSuffix}`;
 
         const realMethod = realVersion.methods[method].body;
         assert(realMethod, `Method ${method} not defined`);
 
         const testMethod = testVersion.methods[`test_entities_${methodSuffix}`].body;
-        assert.equal(testMethod.replace(/test_entities/g, postgresTableName), realMethod);
+        assert.equal(testMethod.replace(/test_entities/g, postgresTableName(azureTableName)), realMethod);
       }
     }
   });
