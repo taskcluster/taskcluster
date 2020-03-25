@@ -491,7 +491,6 @@ async function statusHandler(message) {
   );
   try {
     const taskDefinition = await this.queueClient.task(taskId);
-    debug(`Result status. Got task build from DB and task definition for ${taskId} from Queue service`);
     const {customCheckRun} = (taskDefinition.extra && taskDefinition.extra.github) || {};
 
     let customCheckRunText = '';
@@ -551,9 +550,9 @@ async function statusHandler(message) {
         output: {
           title: `${this.context.cfg.app.statusContext} (${eventType.split('.')[0]})`,
           summary: `${taskDefinition.metadata.description}`,
-          text: `[${CHECKRUN_TEXT}](${taskUI(this.context.cfg.taskcluster.rootUrl, taskGroupId, taskId)})\n${customCheckRunText || ''}`,
+          text: `[${CHECKRUN_TEXT}](${taskGroupUI(this.context.cfg.taskcluster.rootUrl, taskGroupId)})\n${customCheckRunText || ''}`,
         },
-        details_url: taskGroupUI(this.context.cfg.taskcluster.rootUrl, taskGroupId),
+        details_url: taskUI(this.context.cfg.taskcluster.rootUrl, taskGroupId, taskId),
       });
 
       await this.context.CheckRuns.create({

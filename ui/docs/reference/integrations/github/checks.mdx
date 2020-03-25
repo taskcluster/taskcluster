@@ -4,8 +4,7 @@ Taskcluster-Github supports [Github's Checks API](https://developer.github.com/v
 At the moment, the feature is in beta. If you would like to try it out:
 * Make sure you use `.taskcluster.yml` v1
 * Add `reporting: checks-v1` line at the root level of your `.taskcluster.yml`
-* You will need `queue:route:checks` scope for your github client (at the time of writing, you need to contact the
-releng team to get that scope).
+* You will need `queue:route:checks` scope for your `repo:github.com/org/repo:<action>` role.
 * If you are using a decision task, make sure you add `route.checks` to the `routes` of your tasks
 
 ## Custom Output in Checks
