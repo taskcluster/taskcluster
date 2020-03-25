@@ -1807,6 +1807,22 @@
       },
       "migrationScript": "begin\nend",
       "version": 5
+    },
+    {
+      "downgradeScript": "begin\nend",
+      "methods": {
+        "azure_queue_count": {
+          "args": "queue_name text",
+          "body": "begin\n  return (\n    select\n      count(*)\n    from\n      azure_queue_messages msgs\n    where\n      msgs.queue_name = azure_queue_count.queue_name\n      and msgs.expires > now()\n  );\nend",
+          "deprecated": false,
+          "description": "Count non-expired messages in the named queue.\n",
+          "mode": "read",
+          "returns": "integer",
+          "serviceName": "queue"
+        }
+      },
+      "migrationScript": "begin\nend",
+      "version": 6
     }
   ]
 }
