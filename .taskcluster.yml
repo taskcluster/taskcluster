@@ -59,6 +59,7 @@ tasks:
         packages:
         - name: taskcluster-lib-api
         - name: taskcluster-lib-app
+        - name: taskcluster-lib-azqueue
         - name: taskcluster-lib-azure
         - name: taskcluster-lib-entities
         - name: taskcluster-lib-iterate

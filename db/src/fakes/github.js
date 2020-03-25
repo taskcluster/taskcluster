@@ -5,36 +5,27 @@ const { getEntries } = require("../utils");
 
 class FakeGithub {
   constructor() {
-    this.taskclusterGithubBuilds = new Set();
-    this.taskclusterIntegrationOwners = new Set();
-    this.taskclusterChecksToTasks = new Set();
-    this.taskclusterCheckRuns = new Set();
+    this.taskclusterGithubBuilds = new Map();
+    this.taskclusterIntegrationOwners = new Map();
+    this.taskclusterChecksToTasks = new Map();
+    this.taskclusterCheckRuns = new Map();
   }
 
   /* helpers */
 
   reset() {
-    this.taskclusterGithubBuilds = new Set();
-    this.taskclusterIntegrationOwners = new Set();
-    this.taskclusterChecksToTasks = new Set();
-    this.taskclusterCheckRuns = new Set();
+    this.taskclusterGithubBuilds = new Map();
+    this.taskclusterIntegrationOwners = new Map();
+    this.taskclusterChecksToTasks = new Map();
+    this.taskclusterCheckRuns = new Map();
   }
 
   _getTaskclusterGithubBuild({ partitionKey, rowKey }) {
-    for (let c of [...this.taskclusterGithubBuilds]) {
-      if (c.partition_key_out === partitionKey && c.row_key_out === rowKey) {
-        return c;
-      }
-    }
+    return this.taskclusterGithubBuilds.get(`${partitionKey}-${rowKey}`);
   }
 
   _removeTaskclusterGithubBuild({ partitionKey, rowKey }) {
-    for (let c of [...this.taskclusterGithubBuilds]) {
-      if (c.partition_key_out === partitionKey && c.row_key_out === rowKey) {
-        this.taskclusterGithubBuilds.delete(c);
-        break;
-      }
-    }
+    this.taskclusterGithubBuilds.delete(`${partitionKey}-${rowKey}`);
   }
 
   _addTaskclusterGithubBuild(taskclusterGithubBuild) {
@@ -52,30 +43,17 @@ class FakeGithub {
       etag,
     };
 
-    this._removeTaskclusterGithubBuild({
-      partitionKey: taskclusterGithubBuild.partition_key,
-      rowKey: taskclusterGithubBuild.row_key,
-    });
-    this.taskclusterGithubBuilds.add(c);
+    this.taskclusterGithubBuilds.set(`${c.partition_key_out}-${c.row_key_out}`, c);
 
     return c;
   }
 
   _getTaskclusterIntegrationOwner({ partitionKey, rowKey }) {
-    for (let c of [...this.taskclusterIntegrationOwners]) {
-      if (c.partition_key_out === partitionKey && c.row_key_out === rowKey) {
-        return c;
-      }
-    }
+    return this.taskclusterIntegrationOwners.get(`${partitionKey}-${rowKey}`);
   }
 
   _removeTaskclusterIntegrationOwner({ partitionKey, rowKey }) {
-    for (let c of [...this.taskclusterIntegrationOwners]) {
-      if (c.partition_key_out === partitionKey && c.row_key_out === rowKey) {
-        this.taskclusterIntegrationOwners.delete(c);
-        break;
-      }
-    }
+    this.taskclusterIntegrationOwners.delete(`${partitionKey}-${rowKey}`);
   }
 
   _addTaskclusterIntegrationOwner(taskclusterIntegrationOwner) {
@@ -93,11 +71,7 @@ class FakeGithub {
       etag,
     };
 
-    this._removeTaskclusterIntegrationOwner({
-      partitionKey: taskclusterIntegrationOwner.partition_key,
-      rowKey: taskclusterIntegrationOwner.row_key,
-    });
-    this.taskclusterIntegrationOwners.add(c);
+    this.taskclusterIntegrationOwners.set(`${c.partition_key_out}-${c.row_key_out}`, c);
 
     return c;
   }
@@ -153,14 +127,14 @@ class FakeGithub {
     return [{ etag: c.etag }];
   }
 
-  async taskcluster_github_builds_entities_scan(partition_key, row_key, condition, size, page) {
+  async taskcluster_github_builds_entities_scan(partition_key, row_key, condition, size, offset) {
     const entries = getEntries({
       partitionKey: partition_key,
       rowKey: row_key,
       condition,
     }, this.taskclusterGithubBuilds);
 
-    return entries.slice((page - 1) * size, (page - 1) * size + size + 1);
+    return entries.slice(offset, offset + size + 1);
   }
 
   async taskcluster_integration_owners_entities_load(partitionKey, rowKey) {
@@ -218,31 +192,22 @@ class FakeGithub {
     return [{ etag: c.etag }];
   }
 
-  async taskcluster_integration_owners_entities_scan(partition_key, row_key, condition, size, page) {
+  async taskcluster_integration_owners_entities_scan(partition_key, row_key, condition, size, offset) {
     const entries = getEntries({
       partitionKey: partition_key,
       rowKey: row_key,
       condition,
     }, this.taskclusterIntegrationOwners);
 
-    return entries.slice((page - 1) * size, (page - 1) * size + size + 1);
+    return entries.slice(offset, offset + size + 1);
   }
 
   _getTaskclusterChecksToTask({ partitionKey, rowKey }) {
-    for (let c of [...this.taskclusterChecksToTasks]) {
-      if (c.partition_key_out === partitionKey && c.row_key_out === rowKey) {
-        return c;
-      }
-    }
+    return this.taskclusterChecksToTasks.get(`${partitionKey}-${rowKey}`);
   }
 
   _removeTaskclusterChecksToTask({ partitionKey, rowKey }) {
-    for (let c of [...this.taskclusterChecksToTasks]) {
-      if (c.partition_key_out === partitionKey && c.row_key_out === rowKey) {
-        this.taskclusterChecksToTasks.delete(c);
-        break;
-      }
-    }
+    this.taskclusterChecksToTasks.delete(`${partitionKey}-${rowKey}`);
   }
 
   _addTaskclusterChecksToTask(taskclusterChecksToTask) {
@@ -260,30 +225,17 @@ class FakeGithub {
       etag,
     };
 
-    this._removeTaskclusterChecksToTask({
-      partitionKey: taskclusterChecksToTask.partition_key,
-      rowKey: taskclusterChecksToTask.row_key,
-    });
-    this.taskclusterChecksToTasks.add(c);
+    this.taskclusterChecksToTasks.set(`${c.partition_key_out}-${c.row_key_out}`, c);
 
     return c;
   }
 
   _getTaskclusterCheckRun({ partitionKey, rowKey }) {
-    for (let c of [...this.taskclusterCheckRuns]) {
-      if (c.partition_key_out === partitionKey && c.row_key_out === rowKey) {
-        return c;
-      }
-    }
+    return this.taskclusterCheckRuns.get(`${partitionKey}-${rowKey}`);
   }
 
   _removeTaskclusterCheckRun({ partitionKey, rowKey }) {
-    for (let c of [...this.taskclusterCheckRuns]) {
-      if (c.partition_key_out === partitionKey && c.row_key_out === rowKey) {
-        this.taskclusterCheckRuns.delete(c);
-        break;
-      }
-    }
+    this.taskclusterCheckRuns.delete(`${partitionKey}-${rowKey}`);
   }
 
   _addTaskclusterCheckRun(taskclusterCheckRun) {
@@ -301,11 +253,7 @@ class FakeGithub {
       etag,
     };
 
-    this._removeTaskclusterCheckRun({
-      partitionKey: taskclusterCheckRun.partition_key,
-      rowKey: taskclusterCheckRun.row_key,
-    });
-    this.taskclusterCheckRuns.add(c);
+    this.taskclusterCheckRuns.set(`${c.partition_key_out}-${c.row_key_out}`, c);
 
     return c;
   }
@@ -361,14 +309,14 @@ class FakeGithub {
     return [{ etag: c.etag }];
   }
 
-  async taskcluster_checks_to_tasks_entities_scan(partition_key, row_key, condition, size, page) {
+  async taskcluster_checks_to_tasks_entities_scan(partition_key, row_key, condition, size, offset) {
     const entries = getEntries({
       partitionKey: partition_key,
       rowKey: row_key,
       condition,
     }, this.taskclusterChecksToTasks);
 
-    return entries.slice((page - 1) * size, (page - 1) * size + size + 1);
+    return entries.slice(offset, offset + size + 1);
   }
 
   async taskcluster_check_runs_entities_load(partitionKey, rowKey) {
@@ -420,10 +368,10 @@ class FakeGithub {
     return [{ etag: c.etag }];
   }
 
-  async taskcluster_check_runs_entities_scan(partition_key, row_key, condition, size, page) {
+  async taskcluster_check_runs_entities_scan(partition_key, row_key, condition, size, offset) {
     const entries = getEntries({ partitionKey: partition_key, rowKey: row_key, condition }, this.taskclusterCheckRuns);
 
-    return entries.slice((page - 1) * size, (page - 1) * size + size + 1);
+    return entries.slice(offset, offset + size + 1);
   }
 }
 

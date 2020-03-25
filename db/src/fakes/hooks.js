@@ -5,34 +5,25 @@ const { getEntries } = require('../utils');
 
 class FakeHook {
   constructor() {
-    this.hooks = new Set();
-    this.lastFire3s = new Set();
-    this.queues = new Set();
+    this.hooks = new Map();
+    this.lastFire3s = new Map();
+    this.queues = new Map();
   }
 
   /* helpers */
 
   reset() {
-    this.hooks = new Set();
-    this.lastFire3s = new Set();
-    this.queues = new Set();
+    this.hooks = new Map();
+    this.lastFire3s = new Map();
+    this.queues = new Map();
   }
 
   _getHook({ partitionKey, rowKey }) {
-    for (let c of [...this.hooks]) {
-      if (c.partition_key_out === partitionKey && c.row_key_out === rowKey) {
-        return c;
-      }
-    }
+    return this.hooks.get(`${partitionKey}-${rowKey}`);
   }
 
   _removeHook({ partitionKey, rowKey }) {
-    for (let c of [...this.hooks]) {
-      if (c.partition_key_out === partitionKey && c.row_key_out === rowKey) {
-        this.hooks.delete(c);
-        break;
-      }
-    }
+    this.hooks.delete(`${partitionKey}-${rowKey}`);
   }
 
   _addHook(hook) {
@@ -50,27 +41,17 @@ class FakeHook {
       etag,
     };
 
-    this._removeHook({ partitionKey: hook.partition_key, rowKey: hook.row_key });
-    this.hooks.add(c);
+    this.hooks.set(`${c.partition_key_out}-${c.row_key_out}`, c);
 
     return c;
   }
 
   _getLastFire3({ partitionKey, rowKey }) {
-    for (let c of [...this.lastFire3s]) {
-      if (c.partition_key_out === partitionKey && c.row_key_out === rowKey) {
-        return c;
-      }
-    }
+    return this.lastFire3s.get(`${partitionKey}-${rowKey}`);
   }
 
   _removeLastFire3({ partitionKey, rowKey }) {
-    for (let c of [...this.lastFire3s]) {
-      if (c.partition_key_out === partitionKey && c.row_key_out === rowKey) {
-        this.lastFire3s.delete(c);
-        break;
-      }
-    }
+    this.lastFire3s.delete(`${partitionKey}-${rowKey}`);
   }
 
   _addLastFire3(lastFire3) {
@@ -88,27 +69,17 @@ class FakeHook {
       etag,
     };
 
-    this._removeLastFire3({ partitionKey: lastFire3.partition_key, rowKey: lastFire3.row_key });
-    this.lastFire3s.add(c);
+    this.lastFire3s.set(`${c.partition_key_out}-${c.row_key_out}`, c);
 
     return c;
   }
 
   _getQueue({ partitionKey, rowKey }) {
-    for (let c of [...this.queues]) {
-      if (c.partition_key_out === partitionKey && c.row_key_out === rowKey) {
-        return c;
-      }
-    }
+    return this.queues.get(`${partitionKey}-${rowKey}`);
   }
 
   _removeQueue({ partitionKey, rowKey }) {
-    for (let c of [...this.queues]) {
-      if (c.partition_key_out === partitionKey && c.row_key_out === rowKey) {
-        this.queues.delete(c);
-        break;
-      }
-    }
+    this.queues.delete(`${partitionKey}-${rowKey}`);
   }
 
   _addQueue(queue) {
@@ -126,8 +97,7 @@ class FakeHook {
       etag,
     };
 
-    this._removeQueue({ partitionKey: queue.partition_key, rowKey: queue.row_key });
-    this.queues.add(c);
+    this.queues.set(`${c.partition_key_out}-${c.row_key_out}`, c);
 
     return c;
   }
@@ -183,10 +153,10 @@ class FakeHook {
     return [{ etag: c.etag }];
   }
 
-  async hooks_entities_scan(partition_key, row_key, condition, size, page) {
+  async hooks_entities_scan(partition_key, row_key, condition, size, offset) {
     const entries = getEntries({ partitionKey: partition_key, rowKey: row_key, condition }, this.hooks);
 
-    return entries.slice((page - 1) * size, (page - 1) * size + size + 1);
+    return entries.slice(offset, offset + size + 1);
   }
 
   async last_fire_3_entities_load(partitionKey, rowKey) {
@@ -238,10 +208,10 @@ class FakeHook {
     return [{ etag: c.etag }];
   }
 
-  async last_fire_3_entities_scan(partition_key, row_key, condition, size, page) {
+  async last_fire_3_entities_scan(partition_key, row_key, condition, size, offset) {
     const entries = getEntries({ partitionKey: partition_key, rowKey: row_key, condition }, this.lastFire3s);
 
-    return entries.slice((page - 1) * size, (page - 1) * size + size + 1);
+    return entries.slice(offset, offset + size + 1);
   }
 
   /* fake functions */
@@ -295,10 +265,10 @@ class FakeHook {
     return [{ etag: c.etag }];
   }
 
-  async queues_entities_scan(partition_key, row_key, condition, size, page) {
+  async queues_entities_scan(partition_key, row_key, condition, size, offset) {
     const entries = getEntries({ partitionKey: partition_key, rowKey: row_key, condition }, this.queues);
 
-    return entries.slice((page - 1) * size, (page - 1) * size + size + 1);
+    return entries.slice(offset, offset + size + 1);
   }
 }
 

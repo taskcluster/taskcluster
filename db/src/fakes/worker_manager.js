@@ -5,34 +5,25 @@ const { getEntries } = require('../utils');
 
 class FakeWorkerManager {
   constructor() {
-    this.wmWorkers = new Set();
-    this.wmWorkerPools = new Set();
-    this.wmWorkerPoolErrors = new Set();
+    this.wmWorkers = new Map();
+    this.wmWorkerPools = new Map();
+    this.wmWorkerPoolErrors = new Map();
   }
 
   /* helpers */
 
   reset() {
-    this.wmWorkers = new Set();
-    this.wmWorkerPools = new Set();
-    this.wmWorkerPoolErrors = new Set();
+    this.wmWorkers = new Map();
+    this.wmWorkerPools = new Map();
+    this.wmWorkerPoolErrors = new Map();
   }
 
   _getWmWorker({ partitionKey, rowKey }) {
-    for (let c of [...this.wmWorkers]) {
-      if (c.partition_key_out === partitionKey && c.row_key_out === rowKey) {
-        return c;
-      }
-    }
+    return this.wmWorkers.get(`${partitionKey}-${rowKey}`);
   }
 
   _removeWmWorker({ partitionKey, rowKey }) {
-    for (let c of [...this.wmWorkers]) {
-      if (c.partition_key_out === partitionKey && c.row_key_out === rowKey) {
-        this.wmWorkers.delete(c);
-        break;
-      }
-    }
+    this.wmWorkers.delete(`${partitionKey}-${rowKey}`);
   }
 
   _addWmWorker(wmWorker) {
@@ -50,27 +41,17 @@ class FakeWorkerManager {
       etag,
     };
 
-    this._removeWmWorker({ partitionKey: wmWorker.partition_key, rowKey: wmWorker.row_key });
-    this.wmWorkers.add(c);
+    this.wmWorkers.set(`${c.partition_key_out}-${c.row_key_out}`, c);
 
     return c;
   }
 
   _getWmWorkerPool({ partitionKey, rowKey }) {
-    for (let c of [...this.wmWorkerPools]) {
-      if (c.partition_key_out === partitionKey && c.row_key_out === rowKey) {
-        return c;
-      }
-    }
+    return this.wmWorkerPools.get(`${partitionKey}-${rowKey}`);
   }
 
   _removeWmWorkerPool({ partitionKey, rowKey }) {
-    for (let c of [...this.wmWorkerPools]) {
-      if (c.partition_key_out === partitionKey && c.row_key_out === rowKey) {
-        this.wmWorkerPools.delete(c);
-        break;
-      }
-    }
+    this.wmWorkerPools.delete(`${partitionKey}-${rowKey}`);
   }
 
   _addWmWorkerPool(wmWorkerPool) {
@@ -88,27 +69,17 @@ class FakeWorkerManager {
       etag,
     };
 
-    this._removeWmWorkerPool({ partitionKey: wmWorkerPool.partition_key, rowKey: wmWorkerPool.row_key });
-    this.wmWorkerPools.add(c);
+    this.wmWorkerPools.set(`${c.partition_key_out}-${c.row_key_out}`, c);
 
     return c;
   }
 
   _getWmWorkerPoolError({ partitionKey, rowKey }) {
-    for (let c of [...this.wmWorkerPoolErrors]) {
-      if (c.partition_key_out === partitionKey && c.row_key_out === rowKey) {
-        return c;
-      }
-    }
+    return this.wmWorkerPoolErrors.get(`${partitionKey}-${rowKey}`);
   }
 
   _removeWmWorkerPoolError({ partitionKey, rowKey }) {
-    for (let c of [...this.wmWorkerPoolErrors]) {
-      if (c.partition_key_out === partitionKey && c.row_key_out === rowKey) {
-        this.wmWorkerPoolErrors.delete(c);
-        break;
-      }
-    }
+    this.wmWorkerPoolErrors.delete(`${partitionKey}-${rowKey}`);
   }
 
   _addWmWorkerPoolError(wmWorkerPoolError) {
@@ -126,8 +97,7 @@ class FakeWorkerManager {
       etag,
     };
 
-    this._removeWmWorkerPoolError({ partitionKey: wmWorkerPoolError.partition_key, rowKey: wmWorkerPoolError.row_key });
-    this.wmWorkerPoolErrors.add(c);
+    this.wmWorkerPoolErrors.set(`${c.partition_key_out}-${c.row_key_out}`, c);
 
     return c;
   }
@@ -183,10 +153,10 @@ class FakeWorkerManager {
     return [{ etag: c.etag }];
   }
 
-  async wmworkers_entities_scan(partition_key, row_key, condition, size, page) {
+  async wmworkers_entities_scan(partition_key, row_key, condition, size, offset) {
     const entries = getEntries({ partitionKey: partition_key, rowKey: row_key, condition }, this.wmWorkers);
 
-    return entries.slice((page - 1) * size, (page - 1) * size + size + 1);
+    return entries.slice(offset, offset + size + 1);
   }
 
   async wmworker_pools_entities_load(partitionKey, rowKey) {
@@ -238,10 +208,10 @@ class FakeWorkerManager {
     return [{ etag: c.etag }];
   }
 
-  async wmworker_pools_entities_scan(partition_key, row_key, condition, size, page) {
+  async wmworker_pools_entities_scan(partition_key, row_key, condition, size, offset) {
     const entries = getEntries({ partitionKey: partition_key, rowKey: row_key, condition }, this.wmWorkerPools);
 
-    return entries.slice((page - 1) * size, (page - 1) * size + size + 1);
+    return entries.slice(offset, offset + size + 1);
   }
 
   /* fake functions */
@@ -295,10 +265,9 @@ class FakeWorkerManager {
     return [{ etag: c.etag }];
   }
 
-  async wmworker_pool_errors_entities_scan(partition_key, row_key, condition, size, page) {
+  async wmworker_pool_errors_entities_scan(partition_key, row_key, condition, size, offset) {
     const entries = getEntries({ partitionKey: partition_key, rowKey: row_key, condition }, this.wmWorkerPoolErrors);
-
-    return entries.slice((page - 1) * size, (page - 1) * size + size + 1);
+    return entries.slice(offset, offset + size + 1);
   }
 }
 

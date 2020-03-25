@@ -5,30 +5,21 @@ const { getEntries } = require('../utils');
 
 class FakeSecrets {
   constructor() {
-    this.secrets = new Set();
+    this.secrets = new Map();
   }
 
   /* helpers */
 
   reset() {
-    this.secrets = new Set();
+    this.secrets = new Map();
   }
 
   _getSecret_({ partitionKey, rowKey }) {
-    for (let c of [...this.secrets]) {
-      if (c.partition_key_out === partitionKey && c.row_key_out === rowKey) {
-        return c;
-      }
-    }
+    return this.secrets.get(`${partitionKey}-${rowKey}`);
   }
 
   _removeSecret_({ partitionKey, rowKey }) {
-    for (let c of [...this.secrets]) {
-      if (c.partition_key_out === partitionKey && c.row_key_out === rowKey) {
-        this.secrets.delete(c);
-        break;
-      }
-    }
+    this.secrets.delete(`${partitionKey}-${rowKey}`);
   }
 
   _addSecret_(secret) {
@@ -46,8 +37,7 @@ class FakeSecrets {
       etag,
     };
 
-    this._removeSecret_({ partitionKey: secret.partition_key, rowKey: secret.row_key });
-    this.secrets.add(c);
+    this.secrets.set(`${c.partition_key_out}-${c.row_key_out}`, c);
 
     return c;
   }
@@ -103,10 +93,10 @@ class FakeSecrets {
     return [{ etag: c.etag }];
   }
 
-  async secrets_entities_scan(partition_key, row_key, condition, size, page) {
+  async secrets_entities_scan(partition_key, row_key, condition, size, offset) {
     const entries = getEntries({ partitionKey: partition_key, rowKey: row_key, condition }, this.secrets);
 
-    return entries.slice((page - 1) * size, (page - 1) * size + size + 1);
+    return entries.slice(offset, offset + size + 1);
   }
 }
 

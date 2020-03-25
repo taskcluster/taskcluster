@@ -410,7 +410,7 @@ class Database {
    * Private constructor (use Database.setup and Database.upgrade instead)
    */
   constructor({urlsByMode, statementTimeout}) {
-    assert(!statementTimeout || typeof statementTimeout === 'number');
+    assert(!statementTimeout || typeof statementTimeout === 'number' || typeof statementTimeout === 'boolean');
     const makePool = dbUrl => {
       // use a max of 5 connections. For services running both a read and write
       // pool, this is a maximum of 10 concurrent connections.  Other requests
