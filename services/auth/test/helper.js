@@ -102,6 +102,7 @@ exports.withEntities = (mock, skipping, {orderedTests} = {}) => {
     orderedTests,
     cleanup,
   });
+  withEntity(mock, skipping, exports, 'Roles', data.Roles);
 };
 
 exports.withDb = (mock, skipping) => {
@@ -143,22 +144,10 @@ exports.withRoles = (mock, skipping, options = {}) => {
     }
   });
 
-  const cleanup = async () => {
-    if (skipping()) {
-      return;
-    }
-
-    // zero out the roles for each suite
-    if (mock) {
-      exports.Roles.roles = [];
-    } else {
-      await exports.Roles.modify(() => ([]));
-    }
-  };
   if (!options.orderedTests) {
-    setup(cleanup);
+    setup();
   }
-  suiteTeardown(cleanup);
+  suiteTeardown();
 };
 
 /**

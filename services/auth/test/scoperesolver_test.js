@@ -18,7 +18,6 @@ suite(testing.suiteName(), () => {
   helper.secrets.mockSuite('setup and listening', ['db', 'azure', 'gcp'], function(mock, skipping) {
     helper.withDb(mock, skipping);
     helper.withEntities(mock, skipping);
-    helper.withRoles(mock, skipping);
     helper.withPulse(mock, skipping);
     let reloads = [];
 

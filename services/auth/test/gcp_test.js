@@ -9,7 +9,6 @@ helper.secrets.mockSuite(testing.suiteName(), ['db', 'gcp', 'azure'], function(m
   helper.withGcp(mock, skipping);
   helper.withPulse(mock, skipping);
   helper.withEntities(mock, skipping);
-  helper.withRoles(mock, skipping);
   helper.withServers(mock, skipping);
 
   test('gcpCredentials invalid account', async () => {

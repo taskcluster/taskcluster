@@ -2,7 +2,6 @@ const containers = require('../src/containers');
 const assert = require('assert');
 const helper = require('./helper');
 const testing = require('taskcluster-lib-testing');
-const azure = require('fast-azure-storage');
 
 const sorted = (arr) => {
   arr.sort();
@@ -10,45 +9,22 @@ const sorted = (arr) => {
 };
 
 helper.secrets.mockSuite(testing.suiteName(), ['db', 'azure', 'gcp'], function(mock, skipping) {
+  helper.withDb(mock, skipping);
   helper.withCfg(mock, skipping);
-
-  if (mock) {
-    return; // This test file only works on real things apparently
-  }
+  helper.withPulse(mock, skipping);
+  helper.withEntities(mock, skipping);
+  helper.withServers(mock, skipping);
+  helper.resetTables(mock, skipping);
 
   const containerName = helper.containerName;
   let credentials;
-  let roles;
-
-  suiteSetup(async function() {
-    if (!mock && !skipping()) {
-      credentials = helper.cfg.azure;
-      roles = new containers.Roles({
-        containerName,
-        credentials,
-      });
-
-      await roles.setup();
-
-      // zero out the container
-      const blobService = new azure.Blob(credentials);
-      try {
-        await blobService.deleteBlob(containerName, "Roles", {});
-      } catch (err) {
-        if (err.code !== 'BlobNotFound') {
-          throw err;
-        }
-        // ignore BlobNotFound here, as that's the desired result
-      }
-    }
-  });
 
   test('get when blob is empty', async function() {
-    assert.deepEqual(await roles.get(), []);
+    assert.deepEqual(await helper.Roles.get(), []);
   });
 
   test('first modification of an empty blob', async function() {
-    await roles.modify((roles) => {
+    await helper.Roles.modifyRole(({ blob: roles }) => {
       roles.push({
         roleId: 'my-role',
         scopes: ['a', 'b'],
@@ -57,12 +33,22 @@ helper.secrets.mockSuite(testing.suiteName(), ['db', 'azure', 'gcp'], function(m
         lastModified: new Date('2017-01-01').toJSON(),
       });
     });
-    assert.deepEqual(sorted((await roles.get()).map(r => r.roleId)),
+
+    assert.deepEqual(sorted((await helper.Roles.get()).map(r => r.roleId)),
       sorted(['my-role']));
   });
 
   test('add a second role', async function() {
-    await roles.modify((roles) => {
+    await helper.Roles.modifyRole(({ blob: roles }) => {
+      roles.push({
+        roleId: 'my-role',
+        scopes: ['a', 'b'],
+        description: 'a role!',
+        created: new Date('2017-01-01').toJSON(),
+        lastModified: new Date('2017-01-01').toJSON(),
+      });
+    });
+    await helper.Roles.modifyRole(({ blob: roles }) => {
       roles.push({
         roleId: 'second-role',
         scopes: ['x', 'y'],
@@ -71,11 +57,13 @@ helper.secrets.mockSuite(testing.suiteName(), ['db', 'azure', 'gcp'], function(m
         lastModified: new Date('2017-01-02').toJSON(),
       });
     });
-    assert.deepEqual(sorted((await roles.get()).map(r => r.roleId)),
+    assert.deepEqual(sorted((await helper.Roles.get()).map(r => r.roleId)),
       sorted(['my-role', 'second-role']));
   });
 
-  test('create a second DataContainer', async function() {
+  // no longer relevant now that roles is a postgres table
+  // rather than an azure blob
+  test.skip('create a second DataContainer', async function() {
     // this verifies that creating a container doesn't erase the roles!
     const roles2 = new containers.Roles({
       containerName,
