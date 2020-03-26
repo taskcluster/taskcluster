@@ -1,0 +1,10 @@
+version: 2
+migrationScript: |-
+  begin
+  end
+downgradeScript: |-
+  begin
+  end
+methods:
+  get_secret:
+    deprecated: true
