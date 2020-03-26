@@ -26,12 +26,10 @@ exports.ALLOWED_TABLES = [
   'TaskclusterIntegrationOwners',
   'TaskclusterChecksToTasks',
   'TaskclusterCheckRuns',
-  'Hooks',
   'Queues',
   'LastFire3',
   'IndexedTasks',
-  'Namespaces',
-  'DenylistedNotification',
+  'Namespaces', 'DenylistedNotification',
   'CachePurges',
   'QueueTasks',
   'QueueArtifacts',
@@ -137,12 +135,13 @@ exports.verifyWithPostgres = async (tableName, entities, db, allowedTables = [],
   const compareTables = ({ azureEntities, postgresEntities }) => {
     const sortedAzureEntities = azureEntities.sort(sort);
     const sortedPostgresEntities = postgresEntities.sort(sort);
+
     assert.equal(sortedAzureEntities.length, sortedPostgresEntities.length);
     assert.deepEqual(sortedAzureEntities, sortedPostgresEntities);
   };
   const sort = (entityA, entityB) => {
-    const keyA = `${entityA.partitionKey}-${entityA.rowKey}`;
-    const keyB = `${entityB.partitionKey}-${entityB.rowKey}`;
+    const keyA = `${entityA.PartitionKey}-${entityA.RowKey}`;
+    const keyB = `${entityB.PartitionKey}-${entityB.RowKey}`;
 
     return keyA.localeCompare(keyB);
   };
@@ -150,13 +149,14 @@ exports.verifyWithPostgres = async (tableName, entities, db, allowedTables = [],
   const postgresTableName = exports.azurePostgresTableNameMapping(tableName);
   const azureKeys = _.head(entities) ? Object.keys(entities).filter(key => key.includes('odata') || key === 'Version') : [];
   // remove azure specific keys before comparing it to the values from postgres
-  const azureEntries = entities.map(
-    entity => {
-      azureKeys.forEach(key => delete entity[key]);
+  const azureEntries = entities
+    ? entities.map(
+      entity => {
+        azureKeys.forEach(key => delete entity[key]);
 
-      return entity;
-    },
-  );
+        return entity;
+      })
+    : [];
   await db._withClient(mode, async client => {
     const result = await client.query(
       `select * from ${postgresTableName}`,

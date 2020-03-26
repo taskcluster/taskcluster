@@ -11,7 +11,9 @@ const importer = async options => {
   for (let path of glob.sync('services/*/azure.yml', {cwd: REPO_ROOT})) {
     const azureYml = await readRepoYAML(path);
     for (let t of azureYml.tables || []) {
-      tables.push(t);
+      if (ALLOWED_TABLES.includes(t)) {
+        tables.push(t);
+      }
     }
   }
 
