@@ -163,7 +163,9 @@ methods:
     returns: table (thing_property text)
 
     # If true, this method won't be available to be called at Database.funcs.  It will
-    # still exist in the database!  Defaults to false, so this is omitted unless needed
+    # still exist in the database!  Defaults to false, so this is omitted unless needed.
+    # All other method fields can be omitted when this is true, thus supporting
+    # deprecating a method without changing it.
     deprecated: true
 
     # The body of the stored function.  This is passed verbatim to `CREATE FUNCTION`.

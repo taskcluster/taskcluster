@@ -53,12 +53,15 @@ class Method {
   }
 
   _check(name, content, filename) {
-    assert(this.description, `method ${name} in ${filename} is missing description`);
-    assert(['read', 'write'].includes(this.mode), `method ${name} in ${filename} has missing or bad mode`);
-    assert(this.serviceName, `method ${name} in ${filename} is missing serviceName`);
-    assert(this.args !== undefined, `method ${name} in ${filename} is missing args (use an empty string?)`);
-    assert(this.returns, `method ${name} in ${filename} is missing returns (use void?)`);
-    assert(this.body, `method ${name} in ${filename} is missing body`);
+    // these fields are required only if the method is not deprecated
+    if (!this.deprecated) {
+      assert(this.description, `method ${name} in ${filename} is missing description`);
+      assert(['read', 'write'].includes(this.mode), `method ${name} in ${filename} has missing or bad mode`);
+      assert(this.serviceName, `method ${name} in ${filename} is missing serviceName`);
+      assert(this.args !== undefined, `method ${name} in ${filename} is missing args (use an empty string?)`);
+      assert(this.returns, `method ${name} in ${filename} is missing returns (use void?)`);
+      assert(this.body, `method ${name} in ${filename} is missing body`);
+    }
     for (let k of Object.keys(content)) {
       if (!['description', 'mode', 'serviceName', 'args', 'returns', 'body', 'deprecated'].includes(k)) {
         throw new Error(`unexpected properties for method ${name} in ${filename}`);
@@ -67,10 +70,20 @@ class Method {
   }
 
   checkUpdateFrom(name, existing, version) {
-    assert.equal(existing.mode, this.mode, `method ${name} changed mode in version ${version.version}`);
-    assert.equal(existing.serviceName, this.serviceName, `method ${name} changed serviceName in version ${version.version}`);
-    assert.equal(existing.args, this.args, `method ${name} changed args in version ${version.version}`);
-    assert.equal(existing.returns, this.returns, `method ${name} changed returns in version ${version.version}`);
+    // these fields may be undefined if the method is deprecated, in which case no change
+    // will take place.
+    if (this.mode !== undefined) {
+      assert.equal(existing.mode, this.mode, `method ${name} changed mode in version ${version.version}`);
+    }
+    if (this.serviceName !== undefined) {
+      assert.equal(existing.serviceName, this.serviceName, `method ${name} changed serviceName in version ${version.version}`);
+    }
+    if (this.args !== undefined) {
+      assert.equal(existing.args, this.args, `method ${name} changed args in version ${version.version}`);
+    }
+    if (this.returns !== undefined) {
+      assert.equal(existing.returns, this.returns, `method ${name} changed returns in version ${version.version}`);
+    }
   }
 }
 

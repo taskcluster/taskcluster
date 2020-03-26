@@ -53,6 +53,12 @@ suite(path.basename(__filename), function() {
         Schema.fromDbDirectory(path.join(__dirname, 'db-with-dupes'));
       }, /duplicate version number 1 in/);
     });
+
+    test('allow method deprecations', function () {
+      Schema.fromDbDirectory(path.join(__dirname, 'db-with-depr'));
+      // does not crash..
+    });
+
   });
 
   suite('fromSerializable', function() {
