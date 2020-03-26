@@ -3,22 +3,8 @@ const libUrls = require('taskcluster-lib-urls');
 const yaml = require('js-yaml');
 const assert = require('assert');
 const {consume} = require('taskcluster-lib-pulse');
-
-const CONCLUSIONS = { // maps status communicated by the queue service to github checkrun conclusions
-  /*eslint-disable quote-props*/
-  'completed': 'success',
-  'failed': 'failure',
-  'exception': 'failure',
-  'deadline-exceeded': 'timed_out',
-  'canceled': 'cancelled',
-  'superseded': 'neutral', // queue status means: is not relevant anymore
-  'claim-expired': 'failure',
-  'worker-shutdown': 'neutral', // queue status means: will be retried
-  'malformed-payload': 'action_required', // github status means "correct your task definition"
-  'resource-unavailable': 'failure',
-  'internal-error': 'failure',
-  'intermittent-task': 'neutral', // queue status means: will be retried
-};
+const {CONCLUSIONS, CHECKRUN_TEXT, CUSTOM_CHECKRUN_TEXT_ARTIFACT_NAME} = require('./constants');
+const utils = require('./utils');
 
 /**
  * Create handlers
@@ -242,7 +228,7 @@ class Handlers {
     }
     let body = [
       '<details>\n',
-      '<summary>Submitting the task to Taskcluster failed. Details</summary>',
+      '<summary>Uh oh! Looks like an error! Details</summary>',
       '',
       errorBody, // already in Markdown..
       '',
@@ -504,17 +490,47 @@ async function statusHandler(message) {
     `Attempting to update status of the checkrun for ${organization}/${repository}@${sha} (${taskState.conclusion})`,
   );
   try {
+    const taskDefinition = await this.queueClient.task(taskId);
+    const {customCheckRun} = (taskDefinition.extra && taskDefinition.extra.github) || {};
+    const {textArtifactName} = customCheckRun || CUSTOM_CHECKRUN_TEXT_ARTIFACT_NAME;
+
+    let customCheckRunText = '';
+
+    const url = this.queueClient
+      .buildUrl(this.queueClient.getArtifact, taskId, runId, textArtifactName);
+
+    let res = await utils.throttleRequest({url, method: 'GET'});
+
+    if (res.status >= 400 && res.status !== 404) {
+      await this.createExceptionComment({
+        debug,
+        instGithub,
+        organization,
+        repository,
+        sha,
+        error: res.response.error,
+      });
+
+      if (res.status < 500) {
+        await this.monitor.reportError(res.response.error);
+      }
+    } else if (res.status >= 200 && res.status < 300) {
+      customCheckRunText = res.text.toString();
+    }
+
     if (checkRun) {
       await instGithub.checks.update({
         ...taskState,
         owner: organization,
         repo: repository,
         check_run_id: checkRun.checkRunId,
+        output: {
+          title: `${this.context.cfg.app.statusContext} (${eventType.split('.')[0]})`,
+          summary: `${taskDefinition.metadata.description}`,
+          text: `[${CHECKRUN_TEXT}](${taskUI(this.context.cfg.taskcluster.rootUrl, taskGroupId, taskId)})\n${customCheckRunText || ''}`,
+        },
       });
     } else {
-      const taskDefinition = await this.queueClient.task(taskId);
-      debug(`Result status. Got task build from DB and task definition for ${taskId} from Queue service`);
-
       const checkRun = await instGithub.checks.create({
         owner: organization,
         repo: repository,
@@ -523,7 +539,7 @@ async function statusHandler(message) {
         output: {
           title: `${this.context.cfg.app.statusContext} (${eventType.split('.')[0]})`,
           summary: `${taskDefinition.metadata.description}`,
-          text: `[Task group](${taskGroupUI(this.context.cfg.taskcluster.rootUrl, taskGroupId)})`,
+          text: `[${CHECKRUN_TEXT}](${taskGroupUI(this.context.cfg.taskcluster.rootUrl, taskGroupId)})\n${customCheckRunText || ''}`,
         },
         details_url: taskUI(this.context.cfg.taskcluster.rootUrl, taskGroupId, taskId),
       });
@@ -737,7 +753,7 @@ async function jobHandler(message) {
     if (err.code !== 'EntityAlreadyExists') {
       throw err;
     }
-    let build = await this.Builds.load({
+    let build = await this.context.Builds.load({
       taskGroupId,
     });
     assert.equal(build.state, groupState, `State for ${organization}/${repository}@${sha}

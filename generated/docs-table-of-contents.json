@@ -3135,13 +3135,35 @@
                 },
                 "name": "taskcluster-yml-v0",
                 "next": {
-                  "path": "reference/workers/README",
-                  "title": "Workers"
+                  "path": "reference/integrations/github/checks",
+                  "title": "checks"
                 },
                 "path": "reference/integrations/github/taskcluster-yml-v0",
                 "prev": {
                   "path": "reference/integrations/github/taskcluster-yml-v1",
                   "title": ".taskcluster.yml version 1"
+                },
+                "up": {
+                  "path": "reference/integrations/github/README",
+                  "title": "github"
+                }
+              },
+              {
+                "children": [
+                ],
+                "data": {
+                  "order": 1000,
+                  "title": "checks"
+                },
+                "name": "checks",
+                "next": {
+                  "path": "reference/workers/README",
+                  "title": "Workers"
+                },
+                "path": "reference/integrations/github/checks",
+                "prev": {
+                  "path": "reference/integrations/github/taskcluster-yml-v0",
+                  "title": ".taskcluster.yml version 0"
                 },
                 "up": {
                   "path": "reference/integrations/github/README",
@@ -3526,8 +3548,8 @@
         },
         "path": "reference/workers/README",
         "prev": {
-          "path": "reference/integrations/github/taskcluster-yml-v0",
-          "title": ".taskcluster.yml version 0"
+          "path": "reference/integrations/github/checks",
+          "title": "checks"
         },
         "up": {
           "path": "reference/README",
