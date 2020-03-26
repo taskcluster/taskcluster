@@ -8,33 +8,44 @@ At the moment, the feature is in beta. If you would like to try it out:
 * If you are using a decision task, make sure you add `route.checks` to the `routes` of your tasks
 
 ## Custom Output in Checks
+ 
+ When a task completes, the Taskcluster-GitHub service can optionally include task-specific information in the check run 
+ displayed in the GitHub checks tab.  To do so, it looks for an artifact on the task named 
+ `public/github/customCheckRunText.md` and uses the artifact content as the check run text.  
+ The artifact name can be customized by setting `task.extra.github.customCheckRun.textArtifactName` in the task definition.  
+ For example:
+```
+payload:
+  ...
+  artifacts:
+    public/github/customCheckRunText.md:
+      type: file
+      path: checkrun.md
+```
+or, if for example all build results are in `public/results`:
+```
+payload:
+  ...
+  artifacts:
+    public/results:
+      type: directory
+      path: results
+task:
+  extra:
+    github:
+      customCheckRun:
+        textArtifactName: public/results/checkrun.md
+```
 
-If you need to add some sort of custom output to your checks (for example, you would like to process
-your logs and add some results to the check's body):
-* You need to arrange for an artifact with the custom text (plain or Markdown) you'd like to add to your check 
- (for the above example, you arrange the processing of your logs in the way you want, 
- format the result the way you want using Markdown and save the result in an artifact)
-* Add something like 
-    ```YML
-    extra:
-        github:
-            customCheckRun:
-                textArtifactName: <artifact_name>
-    ```
- to the definition of the task for which you want customize the check. If you don't want to bother with that,
- you can just make sure you name your artifact `customCheckRunText.md`, and tc-gh would fetch that automatically.
- Please note that at the moment we do not support private artifacts for this functionality, so do make sure
- to add `public/` prefix to your artifact name when using `Queue.createArtifact` endpoint
- (like this: `public/<file_name>`).
  
 ### Debugging Errors in Custom Output
  
 * If you see a `Cannot GET blahblah (403)` kind of error, it's likely that your artifact is private. Make sure you use
-  a public artifact.
+  a public artifact (see note on the naming convention above).
 * If there is no error at all and you don't see your custom text in the checkrun, it means there was a 
   404 kind of error. It can mean the artifact wasn't created successfully or there is a typo in the name of your
   artifact or in your `extra.github.customCheckRun` section if you use one.
-  Make sure the artifact exists and is named correctly.
+  Make sure the artifact exists and is named or referenced correctly.
   
 ## Reporting Bugs
 
