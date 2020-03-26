@@ -8,6 +8,9 @@ const sslify = require('express-sslify');
 const hsts = require('hsts');
 const csp = require('content-security-policy');
 const uuidv4 = require('uuid/v4');
+const path  = require('path');
+const rootdir = require('app-root-dir');
+const fs = require('fs');
 
 /**
  * Create server; this becomes a method of the `app` object, so `this`
@@ -123,6 +126,19 @@ const app = async (options) => {
       res.send('User-Agent: *\nDisallow: /\n');
     });
   }
+
+  app.use('/__version__', (req, res) => {
+    const taskclusterVersionFile = path.resolve(rootdir.get(), '../../taskcluster-version');
+
+    try {
+      const taskclusterVersion = fs.readFileSync(taskclusterVersionFile).toString().trim();
+      res.header('Content-Type', 'text/plain');
+      res.send(taskclusterVersion);
+    } catch (err) {
+      res.header('Content-Type', 'text/plain');
+      res.status(500).send('Could not locate the version file');
+    }
+  });
 
   options.apis.forEach(api => {
     api.express(app);
