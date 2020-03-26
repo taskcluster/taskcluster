@@ -155,3 +155,38 @@ exports.assertNoTable = async name => {
     await assert.rejects(() => client.query(`select * from ${name}`), err => err.code === UNDEFINED_TABLE);
   });
 };
+
+exports.azureTableNames = [
+  'Clients',
+  // roles is actually stored in a azure container but we're putting everything in a table now
+  'Roles',
+  'TaskclusterGithubBuilds',
+  'TaskclusterIntegrationOwners',
+  'TaskclusterChecksToTasks',
+  'TaskclusterCheckRuns',
+  'Hooks',
+  'Queues',
+  'LastFire3',
+  'IndexedTasks',
+  'Namespaces',
+  'DenylistedNotification',
+  'CachePurges',
+  'QueueTasks',
+  'QueueArtifacts',
+  'QueueTaskGroups',
+  'QueueTaskGroupMembers',
+  'QueueTaskGroupActiveSets',
+  'QueueTaskRequirement',
+  'QueueTaskDependency',
+  'QueueWorker',
+  'QueueWorkerType',
+  'QueueProvisioner',
+  'Secrets',
+  'AuthorizationCodesTable',
+  'AccessTokenTable',
+  'SessionStorageTable',
+  'GithubAccessTokenTable',
+  'WMWorkers',
+  'WMWorkerPools',
+  'WMWorkerPoolErrors',
+];
