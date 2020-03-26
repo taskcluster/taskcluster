@@ -9,7 +9,7 @@ To write a changelog entry, use `yarn changelog`, giving the issue or bug if one
 For example:
 
 ```shell
-yarn changelog --issue 1234 --minor
+yarn changelog --issue 1234 --minor --developers
 ```
 
 ## File Format
@@ -22,19 +22,34 @@ Each file is a markdown file with the following format:
 ```
 # (required) the semver level of this change, one of 'patch', 'minor', or 'major'
 level: ..
+# (required) the audience who this is applicable to, one of 'general', 'admins', 'deployers', 'users', or 'developers' (definied below)
+audience: ..
 # (optional) a reference to the bug or issue tracking this change ("bug xxxxxxx" or "issue xxx")
 reference:  ...
 ---
 <Snippet Text>
 ```
 
+## Audiences
+
+Taskcluster has several groups of people who interact with it:
+
+__users:__ people creating tasks (for testing or CI)
+
+__admins:__ people administering the service (managing scopes and roles)
+
+__deployers:__ people deploying the service (running TC services, setting service config values)
+
+__developers:__ people who are working on TC itself, making code changes, etc
+
+Each changelog entry must be addressed to one of these groups *or* if it is more widely applicable, give it a `general` audience.
+
 ## Levels
 
 Every changelog snippet must specify a level.
 These follow [semver](https://semver.org/), with the addition of "silent" changes that are like a patch, but not shown in the release notes.
 
-Taskcluster has several groups of users: people creating tasks (for testing or CI); people administering the service (managing scopes and roles); and people deploying the service (running TC services, setting service config values).
-A major change is one that breaks backward compatibility or could cause disruption for any of these users if not handled carefully.
+A major change is one that breaks backward compatibility or could cause disruption for any of the audiences if not handled carefully.
 Do not be afraid to flag a change as major -- users and operations staff will always prefer to be warned of an issue that does not apply to them, over being surprised by an issue that the developers did not anticipate.
 
 A minor change is one that adds new functionality without breaking backward compatibility.

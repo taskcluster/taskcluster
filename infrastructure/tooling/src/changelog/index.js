@@ -16,6 +16,14 @@ const ALLOWED_LEVELS = {
   'silent': 4,
 };
 
+const ALLOWED_AUDIENCES = [
+  'general',
+  'deployers',
+  'admins',
+  'users',
+  'developers',
+];
+
 /**
  * compare levels, with major being first
  */
@@ -53,17 +61,21 @@ class ChangeLog {
       const snippetContent = await readRepoFile(filename);
       const [headerYaml, body] = snippetContent.split('\n---\n', 2);
 
-      let {level, reference, ...extra} = yaml.safeLoad(headerYaml);
+      let {level, audience, reference, ...extra} = yaml.safeLoad(headerYaml);
       if (Object.keys(extra).length !== 0) {
         throw new Error(`Snippet ${filename}: extra properties in header`);
       }
 
       if (!level || !ALLOWED_LEVELS[level]) {
-        throw new Error(`Snippet ${filename}: invalid level`);
+        throw new Error(`Snippet ${filename}: invalid level. Must be in ${JSON.stringify(ALLOWED_LEVELS)}`);
       }
 
       if (level !== 'silent' && (!body || body.trim().length === 0)) {
         throw new Error(`Snippet ${filename} is malformed or has no body`);
+      }
+
+      if (!audience || !ALLOWED_AUDIENCES.includes(audience)) {
+        throw new Error(`Snippet ${filename}: invalid audience '${audience}'. Must be in ${JSON.stringify(ALLOWED_AUDIENCES)}`);
       }
 
       if (reference) {
@@ -78,7 +90,7 @@ class ChangeLog {
         }
       }
 
-      return {filename, level, reference, body};
+      return {filename, audience, level, reference, body};
     }));
 
     const cmp = (a, b) => {
@@ -132,16 +144,36 @@ class ChangeLog {
     const silentLinks = silent.map(sn => sn.reference).join(', ');
     const silentSuffix = silentCount === 0 ?
       '' :
-      `\n\n▶ Additional change${silentCount === 1 ? '' : 's'} not described here: ${silentLinks}.`;
+      `\n\n### OTHER\n\n▶ Additional change${silentCount === 1 ? '' : 's'} not described here: ${silentLinks}.`;
 
-    return this.snippets
-      .filter(sn => sn.level !== 'silent')
-      .map(({level, reference, body}) => (
-        '▶ ' + levelLabels[level] +
-        (reference ? reference : '') + '\n' +
-        body.trim()
-      ))
-      .join('\n\n') + silentSuffix;
+    // These snippets are already sorted in level-order so when we insert
+    // them here they remain in order. no need to re-sort
+    const categorizedSnippets = this.snippets.reduce((acc, {audience, ...rest}) => {
+      if (rest.level === 'silent') {
+        return acc;
+      }
+      if (!acc[audience]) {
+        acc[audience] = [];
+      }
+      acc[audience].push(rest);
+      return acc;
+    }, {});
+
+    const formatted = ALLOWED_AUDIENCES
+      .map(audience => {
+        if (!categorizedSnippets[audience]) {
+          return '';
+        }
+        const snippets = categorizedSnippets[audience]
+          .map(({level, reference, body}) => (
+            '▶ ' + levelLabels[level] +
+            (reference ? reference : '') + '\n' +
+            body.trim()
+          ))
+          .join('\n\n');
+        return `### ${audience.toUpperCase()}\n\n${snippets}`;
+      }).join('\n');
+    return formatted + silentSuffix;
   }
 
   /**
@@ -215,6 +247,22 @@ const add = async (options) => {
     bad = true;
   }
 
+  let audience;
+  if (options.general) {
+    audience = 'general';
+  } else if (options.deployers) {
+    audience = 'deployers';
+  } else if (options.admins) {
+    audience = 'admins';
+  } else if (options.users) {
+    audience = 'users';
+  } else if (options.developers) {
+    audience = 'developers';
+  } else {
+    console.log('Must specify one of --general, --deployers, --admins, --users, or --developers');
+    bad = true;
+  }
+
   let name, reference;
   if (options.issue) {
     name = `issue-${options.issue}`;
@@ -251,7 +299,7 @@ const add = async (options) => {
 
   const helpText =
     '<!-- replace this text with your changelog entry.  See dev-docs/best-practices/changelog.md for help writing changelog entries. -->';
-  await writeRepoFile(filename, `level: ${level}\n${reference}---\n${level === 'silent' ? '' : helpText}`);
+  await writeRepoFile(filename, `audience: ${audience}\nlevel: ${level}\n${reference}---\n${level === 'silent' ? '' : helpText}`);
   await gitAdd({dir: REPO_ROOT, files: [filename]});
   console.log(`wrote ${filename}`);
 
