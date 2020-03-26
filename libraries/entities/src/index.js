@@ -8,6 +8,7 @@ const {
 } = require('taskcluster-lib-postgres');
 const crypto = require('crypto');
 const Hashids = require('hashids/cjs');
+const { snakeCase } = require('change-case');
 const {
   VALID_ROW_MATCH,
   VALID_PARTITION_MATCH,
@@ -655,5 +656,17 @@ Entity.op = op;
 Entity.keys = keys;
 Entity.types = types;
 Entity.continuationTokenPattern = CONTINUATION_TOKEN_PATTERN;
+
+// due to some differences in different versions of change-case, we
+// have some special-cases.  Everything else follows change-case's
+// snakeCase.
+const POSTGRES_TABLE_NAMES = {
+  LastFire3: 'last_fire_3',
+  WMWorkers: 'wmworkers',
+  WMWorkerPools: 'wmworker_pools',
+  WMWorkerPoolErrors: 'wmworker_pool_errors',
+};
+Entity.postgresTableName = azureTableName =>
+  `${POSTGRES_TABLE_NAMES[azureTableName] || snakeCase(azureTableName)}_entities`;
 
 module.exports = Entity;

@@ -1,15 +1,12 @@
 const _ = require('lodash');
 const azure = require('fast-azure-storage');
-const { snakeCase } = require('change-case');
+const {postgresTableName} = require('taskcluster-lib-entities');
 const assert = require('assert').strict;
 
 exports.fail = msg => {
   console.error(msg);
   process.exit(1);
 };
-
-exports.azurePostgresTableNameMapping = azureTableName =>
-  `${snakeCase(azureTableName)}_entities`;
 
 exports.requireEnv = name => {
   if (process.env[name]) {
@@ -106,17 +103,17 @@ exports.writeToPostgres = async (tableName, entities, db, allowedTables = [], mo
     return;
   }
 
-  const postgresTableName = exports.azurePostgresTableNameMapping(tableName);
+  const pgTable = postgresTableName(tableName);
 
   await db._withClient(mode, async client => {
-    await client.query(`truncate ${postgresTableName}`);
+    await client.query(`truncate ${pgTable}`);
   });
 
   if (entities) {
     for (let entity of entities) {
       await db._withClient(mode, async client => {
         await client.query(
-          `insert into ${postgresTableName}(partition_key, row_key, value, version, etag) values ($1, $2, $3, 1, public.gen_random_uuid())`,
+          `insert into ${pgTable}(partition_key, row_key, value, version, etag) values ($1, $2, $3, 1, public.gen_random_uuid())`,
           [entity.PartitionKey, entity.RowKey, entity],
         );
       });
@@ -146,7 +143,7 @@ exports.verifyWithPostgres = async (tableName, entities, db, allowedTables = [],
     return keyA.localeCompare(keyB);
   };
 
-  const postgresTableName = exports.azurePostgresTableNameMapping(tableName);
+  const pgTable = postgresTableName(tableName);
   const azureKeys = _.head(entities) ? Object.keys(entities).filter(key => key.includes('odata') || key === 'Version') : [];
   // remove azure specific keys before comparing it to the values from postgres
   const azureEntries = entities
@@ -159,7 +156,7 @@ exports.verifyWithPostgres = async (tableName, entities, db, allowedTables = [],
     : [];
   await db._withClient(mode, async client => {
     const result = await client.query(
-      `select * from ${postgresTableName}`,
+      `select * from ${pgTable}`,
     );
     compareTables({ azureEntities: azureEntries, postgresEntities: result.rows.map(({ value }) => value) });
   });

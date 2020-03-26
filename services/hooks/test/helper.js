@@ -127,7 +127,7 @@ exports.resetTables = (mock, skipping) => {
     } {
       await resetTable({ testDbUrl: sec.testDbUrl, tableName: 'hooks_entities' });
       await resetTable({ testDbUrl: sec.testDbUrl, tableName: 'queues_entities' });
-      await resetTable({ testDbUrl: sec.testDbUrl, tableName: 'last_fire3_entities' });
+      await resetTable({ testDbUrl: sec.testDbUrl, tableName: 'last_fire_3_entities' });
     }
   });
 };
