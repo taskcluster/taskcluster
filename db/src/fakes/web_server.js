@@ -5,36 +5,27 @@ const { getEntries } = require("../utils");
 
 class FakeAuth {
   constructor() {
-    this.authorizationCodesTables = new Set();
-    this.accessTokenTables = new Set();
-    this.sessionStorageTables = new Set();
-    this.githubAccessTokenTables = new Set();
+    this.authorizationCodesTables = new Map();
+    this.accessTokenTables = new Map();
+    this.sessionStorageTables = new Map();
+    this.githubAccessTokenTables = new Map();
   }
 
   /* helpers */
 
   reset() {
-    this.authorizationCodesTables = new Set();
-    this.accessTokenTables = new Set();
-    this.sessionStorageTables = new Set();
-    this.githubAccessTokenTables = new Set();
+    this.authorizationCodesTables = new Map();
+    this.accessTokenTables = new Map();
+    this.sessionStorageTables = new Map();
+    this.githubAccessTokenTables = new Map();
   }
 
   _getAuthorizationCodesTable({ partitionKey, rowKey }) {
-    for (let c of [...this.authorizationCodesTables]) {
-      if (c.partition_key_out === partitionKey && c.row_key_out === rowKey) {
-        return c;
-      }
-    }
+    return this.authorizationCodesTables.get(`${partitionKey}-${rowKey}`);
   }
 
   _removeAuthorizationCodesTable({ partitionKey, rowKey }) {
-    for (let c of [...this.authorizationCodesTables]) {
-      if (c.partition_key_out === partitionKey && c.row_key_out === rowKey) {
-        this.authorizationCodesTables.delete(c);
-        break;
-      }
-    }
+    this.authorizationCodesTables.delete(`${partitionKey}-${rowKey}`);
   }
 
   _addAuthorizationCodesTable(authorizationCodesTable) {
@@ -52,30 +43,17 @@ class FakeAuth {
       etag,
     };
 
-    this._removeAuthorizationCodesTable({
-      partitionKey: authorizationCodesTable.partition_key,
-      rowKey: authorizationCodesTable.row_key,
-    });
-    this.authorizationCodesTables.add(c);
+    this.authorizationCodesTables.set(`${c.partition_key_out}-${c.row_key_out}`, c);
 
     return c;
   }
 
   _getAccessTokenTable({ partitionKey, rowKey }) {
-    for (let c of [...this.accessTokenTables]) {
-      if (c.partition_key_out === partitionKey && c.row_key_out === rowKey) {
-        return c;
-      }
-    }
+    return this.accessTokenTables.get(`${partitionKey}-${rowKey}`);
   }
 
   _removeAccessTokenTable({ partitionKey, rowKey }) {
-    for (let c of [...this.accessTokenTables]) {
-      if (c.partition_key_out === partitionKey && c.row_key_out === rowKey) {
-        this.accessTokenTables.delete(c);
-        break;
-      }
-    }
+    this.accessTokenTables.delete(`${partitionKey}-${rowKey}`);
   }
 
   _addAccessTokenTable(accessTokenTable) {
@@ -93,27 +71,17 @@ class FakeAuth {
       etag,
     };
 
-    this._removeAccessTokenTable({ partitionKey: accessTokenTable.partition_key, rowKey: accessTokenTable.row_key });
-    this.accessTokenTables.add(c);
+    this.accessTokenTables.set(`${c.partition_key_out}-${c.row_key_out}`, c);
 
     return c;
   }
 
   _getSessionStorageTable({ partitionKey, rowKey }) {
-    for (let c of [...this.sessionStorageTables]) {
-      if (c.partition_key_out === partitionKey && c.row_key_out === rowKey) {
-        return c;
-      }
-    }
+    return this.sessionStorageTables.get(`${partitionKey}-${rowKey}`);
   }
 
   _removeSessionStorageTable({ partitionKey, rowKey }) {
-    for (let c of [...this.sessionStorageTables]) {
-      if (c.partition_key_out === partitionKey && c.row_key_out === rowKey) {
-        this.sessionStorageTables.delete(c);
-        break;
-      }
-    }
+    this.sessionStorageTables.delete(`${partitionKey}-${rowKey}`);
   }
 
   _addSessionStorageTable(sessionStorageTable) {
@@ -131,30 +99,17 @@ class FakeAuth {
       etag,
     };
 
-    this._removeSessionStorageTable({
-      partitionKey: sessionStorageTable.partition_key,
-      rowKey: sessionStorageTable.row_key,
-    });
-    this.sessionStorageTables.add(c);
+    this.sessionStorageTables.set(`${c.partition_key_out}-${c.row_key_out}`, c);
 
     return c;
   }
 
   _getGithubAccessTokenTable({ partitionKey, rowKey }) {
-    for (let c of [...this.githubAccessTokenTables]) {
-      if (c.partition_key_out === partitionKey && c.row_key_out === rowKey) {
-        return c;
-      }
-    }
+    return this.githubAccessTokenTables.get(`${partitionKey}-${rowKey}`);
   }
 
   _removeGithubAccessTokenTable({ partitionKey, rowKey }) {
-    for (let c of [...this.githubAccessTokenTables]) {
-      if (c.partition_key_out === partitionKey && c.row_key_out === rowKey) {
-        this.githubAccessTokenTables.delete(c);
-        break;
-      }
-    }
+    this.githubAccessTokenTables.delete(`${partitionKey}-${rowKey}`);
   }
 
   _addGithubAccessTokenTable(githubAccessTokenTable) {
@@ -172,11 +127,7 @@ class FakeAuth {
       etag,
     };
 
-    this._removeGithubAccessTokenTable({
-      partitionKey: githubAccessTokenTable.partition_key,
-      rowKey: githubAccessTokenTable.row_key,
-    });
-    this.githubAccessTokenTables.add(c);
+    this.githubAccessTokenTables.set(`${c.partition_key_out}-${c.row_key_out}`, c);
 
     return c;
   }
@@ -232,14 +183,14 @@ class FakeAuth {
     return [{ etag: c.etag }];
   }
 
-  async authorization_codes_table_entities_scan(partition_key, row_key, condition, size, page) {
+  async authorization_codes_table_entities_scan(partition_key, row_key, condition, size, offset) {
     const entries = getEntries({
       partitionKey: partition_key,
       rowKey: row_key,
       condition,
     }, this.authorizationCodesTables);
 
-    return entries.slice((page - 1) * size, (page - 1) * size + size + 1);
+    return entries.slice(offset, offset + size + 1);
   }
 
   async access_token_table_entities_load(partitionKey, rowKey) {
@@ -291,10 +242,10 @@ class FakeAuth {
     return [{ etag: c.etag }];
   }
 
-  async access_token_table_entities_scan(partition_key, row_key, condition, size, page) {
+  async access_token_table_entities_scan(partition_key, row_key, condition, size, offset) {
     const entries = getEntries({ partitionKey: partition_key, rowKey: row_key, condition }, this.accessTokenTables);
 
-    return entries.slice((page - 1) * size, (page - 1) * size + size + 1);
+    return entries.slice(offset, offset + size + 1);
   }
 
   async session_storage_table_entities_load(partitionKey, rowKey) {
@@ -346,10 +297,10 @@ class FakeAuth {
     return [{ etag: c.etag }];
   }
 
-  async session_storage_table_entities_scan(partition_key, row_key, condition, size, page) {
+  async session_storage_table_entities_scan(partition_key, row_key, condition, size, offset) {
     const entries = getEntries({ partitionKey: partition_key, rowKey: row_key, condition }, this.sessionStorageTables);
 
-    return entries.slice((page - 1) * size, (page - 1) * size + size + 1);
+    return entries.slice(offset, offset + size + 1);
   }
 
   async github_access_token_table_entities_load(partitionKey, rowKey) {
@@ -401,14 +352,14 @@ class FakeAuth {
     return [{ etag: c.etag }];
   }
 
-  async github_access_token_table_entities_scan(partition_key, row_key, condition, size, page) {
+  async github_access_token_table_entities_scan(partition_key, row_key, condition, size, offset) {
     const entries = getEntries({
       partitionKey: partition_key,
       rowKey: row_key,
       condition,
     }, this.githubAccessTokenTables);
 
-    return entries.slice((page - 1) * size, (page - 1) * size + size + 1);
+    return entries.slice(offset, offset + size + 1);
   }
 }
 

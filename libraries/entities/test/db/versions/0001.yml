@@ -126,7 +126,6 @@ methods:
         sql text := 'select test_entities.partition_key, test_entities.row_key, test_entities.value, test_entities.version, test_entities.etag from test_entities';
         partition_key_var text;
         row_key_var text;
-        page_offset integer;
       begin
         if test_entities_scan.pk is not null or test_entities_scan.rk is not null or condition is not null then
           sql := sql || ' where ';
@@ -147,8 +146,7 @@ methods:
           sql := sql || ' limit ' || size + 1;
 
           if page is not null and page > 0 then
-            page_offset := size * (page - 1);
-            sql := sql || ' offset ' || page_offset;
+            sql := sql || ' offset ' || page;
           end if;
         end if;
 

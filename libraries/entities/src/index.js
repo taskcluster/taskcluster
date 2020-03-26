@@ -8,6 +8,7 @@ const {
 } = require('taskcluster-lib-postgres');
 const crypto = require('crypto');
 const Hashids = require('hashids/cjs');
+const { snakeCase } = require('change-case');
 const {
   VALID_ROW_MATCH,
   VALID_PARTITION_MATCH,
@@ -40,7 +41,7 @@ const decodeContinuationToken = token => {
   const decodedToken = hashids.decode(token);
 
   if (!decodedToken.length) {
-    return 1;
+    return 0;
   }
 
   return decodedToken[0];
@@ -458,10 +459,10 @@ class Entity {
       typeof limit === 'number', 'options.limit must be a number');
 
     const fetchResults = async (continuation) => {
-      const page = decodeContinuationToken(continuation);
+      const offset = decodeContinuationToken(continuation);
       const { partitionKey, rowKey, condition } = this._doCondition(conditions, options);
       const size = Math.min(limit, 1000);
-      const result = await this._db.fns[`${this._tableName}_scan`](partitionKey, rowKey, condition, size, page);
+      const result = await this._db.fns[`${this._tableName}_scan`](partitionKey, rowKey, condition, size, offset);
       let hasNextPage;
 
       if (result.length > size) {
@@ -482,7 +483,7 @@ class Entity {
           context: this.contextEntries,
         })
       ));
-      const contToken = hasNextPage ? page + 1 : null;
+      const contToken = hasNextPage ? offset + result.length : null;
 
       return { entries, continuation: encodeContinuationToken(contToken) };
     };
@@ -655,5 +656,17 @@ Entity.op = op;
 Entity.keys = keys;
 Entity.types = types;
 Entity.continuationTokenPattern = CONTINUATION_TOKEN_PATTERN;
+
+// due to some differences in different versions of change-case, we
+// have some special-cases.  Everything else follows change-case's
+// snakeCase.
+const POSTGRES_TABLE_NAMES = {
+  LastFire3: 'last_fire_3',
+  WMWorkers: 'wmworkers',
+  WMWorkerPools: 'wmworker_pools',
+  WMWorkerPoolErrors: 'wmworker_pool_errors',
+};
+Entity.postgresTableName = azureTableName =>
+  `${POSTGRES_TABLE_NAMES[azureTableName] || snakeCase(azureTableName)}_entities`;
 
 module.exports = Entity;
