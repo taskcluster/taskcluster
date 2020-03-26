@@ -7,12 +7,11 @@ const testing = require('taskcluster-lib-testing');
 const taskcluster = require('taskcluster-client');
 const {defaultMonitorManager} = require('taskcluster-lib-monitor');
 
-helper.secrets.mockSuite(testing.suiteName(), ['db', 'azure', 'gcp'], function(mock, skipping) {
+helper.secrets.mockSuite(testing.suiteName(), ['db', 'gcp'], function(mock, skipping) {
   helper.withCfg(mock, skipping);
   helper.withDb(mock, skipping);
   helper.withPulse(mock, skipping);
   helper.withEntities(mock, skipping, {orderedTests: true});
-  helper.withRoles(mock, skipping, {orderedTests: true});
   helper.withServers(mock, skipping);
 
   let sorted = (arr) => {
@@ -229,7 +228,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['db', 'azure', 'gcp'], function(m
 
   test('listRoleIds', async () => {
     // Clear existing roles
-    await helper.Roles.modify((roles) => roles.splice(0));
+    await helper.Roles.modifyRole(({ blob: roles }) => roles.splice(0));
 
     // Create 4 dummy roles
     await helper.apiClient.createRole(`thing-id:${clientId}`, {
@@ -283,7 +282,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['db', 'azure', 'gcp'], function(m
 
   test('listRoles2', async () => {
     // Clear existing roles
-    await helper.Roles.modify((roles) => roles.splice(0));
+    await helper.Roles.modifyRole(({ blob: roles }) => roles.splice(0));
 
     // Create 4 dummy roles
     await helper.apiClient.createRole(`thing-id:${clientId}`, {
@@ -347,7 +346,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['db', 'azure', 'gcp'], function(m
 
   test('updateRole (add scope)', async () => {
     // Clearing existing roles
-    await helper.Roles.modify((roles) => roles.splice(0));
+    await helper.Roles.modifyRole(({ blob: roles }) => roles.splice(0));
 
     // Generating dummy roles for the test
     await helper.apiClient.createRole(`thing-id:${clientId}`, {
@@ -475,7 +474,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['db', 'azure', 'gcp'], function(m
         ],
       });
       // clear stuff out
-      await helper.Roles.modify((roles) => roles.splice(0));
+      await helper.Roles.modifyRole(({ blob: roles }) => roles.splice(0));
 
       await helper.apiClient.createRole(roleId, {
         description: 'a role',
@@ -489,7 +488,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['db', 'azure', 'gcp'], function(m
     });
 
     teardown(async function() {
-      await helper.Roles.modify((roles) => roles.splice(0));
+      await helper.Roles.modifyRole(({ blob: roles }) => roles.splice(0));
     });
 
     test('caller has new scope verbatim', async () => {

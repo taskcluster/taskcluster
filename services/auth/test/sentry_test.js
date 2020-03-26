@@ -13,7 +13,6 @@ helper.secrets.mockSuite(testing.suiteName(), ['db', 'azure', 'gcp'], function(m
     helper.withSentry(mock, skipping);
     helper.withPulse(mock, skipping);
     helper.withEntities(mock, skipping);
-    helper.withRoles(mock, skipping);
     helper.withServers(mock, skipping);
 
     test('sentryDSN api method', async () => {
@@ -47,7 +46,6 @@ helper.secrets.mockSuite(testing.suiteName(), ['db', 'azure', 'gcp'], function(m
     helper.withSentry(mock, skipping);
     helper.withPulse('mock', skipping);
     helper.withEntities('mock', skipping);
-    helper.withRoles('mock', skipping);
     helper.withServers(mock, skipping);
     helper.resetTables(mock, skipping);
 

@@ -9,7 +9,6 @@ helper.secrets.mockSuite(testing.suiteName(), ['db', 'azure', 'gcp'], function(m
   helper.withDb(mock, skipping);
   helper.withPulse(mock, skipping);
   helper.withEntities(mock, skipping, {orderedTests: true});
-  helper.withRoles(mock, skipping, {orderedTests: true});
   helper.withServers(mock, skipping);
 
   suite('charlene creates permanent credentials for a test runner', function() {

@@ -248,3 +248,92 @@ Client.purgeExpired = async function(now = new Date()) {
 
 // Export Client
 exports.Client = Client;
+
+const Roles = Entity.configure({
+  version: 1,
+  partitionKey: Entity.keys.ConstantKey('role'),
+  rowKey: Entity.keys.ConstantKey('role'),
+  properties: {
+    blob: Entity.types.Schema({
+      title: 'Roles',
+      type: 'array',
+      items: {
+        type: 'object',
+        properties: {
+          roleId: {
+            type: 'string',
+            pattern: '^[\\x20-\\x7e]+$',
+          },
+          scopes: {
+            type: 'array',
+            items: {
+              type: 'string',
+              pattern: '^[\x20-\x7e]*$',
+            },
+          },
+          description: {
+            type: 'string',
+            maxLength: 1024 * 10,
+          },
+          lastModified: {
+            type: 'string',
+            format: 'date-time',
+          },
+          created: {
+            type: 'string',
+            format: 'date-time',
+          },
+        },
+        additionalProperties: false,
+        required: ['roleId', 'scopes', 'description', 'lastModified', 'created'],
+      },
+    }),
+  },
+});
+
+Roles.get = async function() {
+  try {
+    return (await this.load()).blob;
+  } catch (e) {
+    if (e.code !== 'ResourceNotFound') {
+      throw e;
+    }
+    return [];
+  }
+};
+
+/**
+ * Update the roles, given a modifier function.  The modification is serialized with
+ * any other modifications.  The modifier may be called multiple times.  This function
+ * takes care of initializing the set of roles to [] before beginning.
+ */
+Roles.modifyRole = async function(modifier) {
+  try {
+    const entry = await this.load();
+    await entry.modify(modifier);
+
+  } catch (e) {
+    if (e.code !== 'ResourceNotFound') {
+      throw e;
+    }
+
+    // try to create the blob and update it again
+    await this._create();
+    return await this.modifyRole(modifier);
+  }
+};
+
+Roles._create = async function() {
+  try {
+    // only create if the blob does not already exist..
+    return await this.create({ blob: [] });
+  } catch (e) {
+    if (e.code !== 'EntityAlreadyExists') {
+      throw e;
+    }
+    // fall through - the blob exists, which is what we wanted
+  }
+};
+
+// Export Roles
+exports.Roles = Roles;

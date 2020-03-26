@@ -7,7 +7,6 @@ const monitorManager = require('./monitor');
 const App = require('taskcluster-lib-app');
 const Config = require('taskcluster-lib-config');
 const data = require('./data');
-const containers = require('./containers');
 const builder = require('./api');
 const debug = require('debug')('server');
 const exchanges = require('./exchanges');
@@ -71,14 +70,14 @@ const load = Loader({
   },
 
   Roles: {
-    requires: ['cfg'],
-    setup: async ({cfg}) => {
-      let Roles = new containers.Roles({
-        credentials: cfg.azure || {},
-        containerName: cfg.app.rolesContainerName,
+    requires: ['cfg', 'monitor', 'db'],
+    setup: async ({cfg, monitor, db}) => {
+      return data.Roles.setup({
+        db,
+        serviceName: 'auth',
+        tableName: cfg.app.rolesContainerName,
+        monitor: monitor.childMonitor('table.roles'),
       });
-      await Roles.setup();
-      return Roles;
     },
   },
 
