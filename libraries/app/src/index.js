@@ -8,7 +8,7 @@ const sslify = require('express-sslify');
 const hsts = require('hsts');
 const csp = require('content-security-policy');
 const uuidv4 = require('uuid/v4');
-const path  = require('path');
+const path = require('path');
 const rootdir = require('app-root-dir');
 const fs = require('fs');
 
