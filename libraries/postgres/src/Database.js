@@ -432,7 +432,10 @@ class Database {
       pool.on('error', client => {});
       pool.on('connect', async client => {
         if (statementTimeout) {
-          // note that postgres placeholders don't seem to work here.  So we check
+          // For web API servers, we want to abort queries that take too long, sa
+          // the HTTP client has probably given up.
+          //
+          // Note that postgres placeholders don't seem to work here.  So we check
           // that this is a number (above) and subtitute it directly
           await client.query(`set statement_timeout = ${statementTimeout}`);
         }
