@@ -1,5 +1,6 @@
 const prettyMilliseconds = require('pretty-ms');
 const glob = require('glob');
+const {postgresTableName} = require('taskcluster-lib-entities');
 const {REPO_ROOT, readRepoYAML} = require('../utils');
 const { readAzureTable, writeToPostgres, ALLOWED_TABLES } = require('./util');
 
@@ -25,14 +26,41 @@ const importer = async options => {
       provides: [tableName],
       run: async (requirements, utils) => {
         const start = new Date();
-        const entities = await readAzureTable({azureCreds: credentials.azure, tableName, utils});
 
-        await writeToPostgres(tableName, entities, db, ALLOWED_TABLES);
+        const pgTable = postgresTableName(tableName);
+
+        await db._withClient('admin', async client => {
+          await client.query(`truncate ${pgTable}`);
+        });
+
+        let rowsImported = 0;
+        async function importTable(tableParameters = {}, rowsProcessed = 0) {
+          const result = await readAzureTable({
+            azureCreds: credentials.azure,
+            tableName,
+            utils,
+            tableParams: tableParameters,
+            rowsProcessed,
+          });
+          if (result) {
+            const { entities, tableParams, count } = result;
+
+            await writeToPostgres(tableName, entities, db, ALLOWED_TABLES);
+
+            if (tableParams.nextPartitionKey && tableParams.nextRowKey) {
+              return await importTable(tableParams, count);
+            }
+          }
+
+          return 0;
+        }
+
+        rowsImported = rowsImported + await importTable();
 
         return {
           [tableName]: {
             elapsedTime: new Date() - start,
-            rowsImported: entities ? entities.length : 0,
+            rowsImported,
           },
         };
       },

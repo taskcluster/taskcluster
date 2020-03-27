@@ -50,7 +50,7 @@ exports.ALLOWED_TABLES = [
 
 // read table from azure
 // returns a list of azure entities
-exports.readAzureTable = async ({azureCreds, tableName, utils}) => {
+exports.readAzureTable = async ({azureCreds, tableName, utils, tableParams = {}, rowsProcessed = 0}) => {
   const table = new azure.Table(azureCreds);
   const entities = [];
 
@@ -68,32 +68,23 @@ exports.readAzureTable = async ({azureCreds, tableName, utils}) => {
     entities.push(...filteredEntities);
   };
 
-  let count = 0;
-  let nextUpdateCount = 1000;
-  let tableParams = {};
-  do {
-    let results;
-    try {
-      results = await table.queryEntities(tableName, tableParams);
-      processResult(results);
-    } catch (err) {
-      if (err.statusCode === 404) {
-        utils.skip("no such table");
-        return;
-      }
-      throw err;
+  let results;
+  try {
+    results = await table.queryEntities(tableName, tableParams);
+    processResult(results);
+  } catch (err) {
+    if (err.statusCode === 404) {
+      utils.skip("no such table");
+      return;
     }
-    tableParams = _.pick(results, ['nextPartitionKey', 'nextRowKey']);
-    count = count + results.entities.length;
-    if (count > nextUpdateCount) {
-      utils.status({
-        message: `${count} rows`,
-      });
-      nextUpdateCount = count + 100;
-    }
-  } while (tableParams.nextPartitionKey && tableParams.nextRowKey);
+    throw err;
+  }
+  const count = rowsProcessed + results.entities.length;
+  utils.status({
+    message: `${count} rows`,
+  });
 
-  return entities;
+  return { entities, tableParams: _.pick(results, ['nextPartitionKey', 'nextRowKey']), count };
 };
 
 // Given a list of azure entities, this method will write to a postgres database
@@ -104,10 +95,6 @@ exports.writeToPostgres = async (tableName, entities, db, allowedTables = [], mo
   }
 
   const pgTable = postgresTableName(tableName);
-
-  await db._withClient(mode, async client => {
-    await client.query(`truncate ${pgTable}`);
-  });
 
   if (entities) {
     for (let entity of entities) {
