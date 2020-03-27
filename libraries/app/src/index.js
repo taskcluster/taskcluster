@@ -140,6 +140,11 @@ const app = async (options) => {
     }
   });
 
+  app.use('/__heartbeat__', (req, res) => {
+    res.header('Content-Type', 'application/json');
+    res.status(200).send({});
+  });
+
   app.use('/__lbheartbeat__', (req, res) => {
     res.header('Content-Type', 'application/json');
     res.status(200).send({});

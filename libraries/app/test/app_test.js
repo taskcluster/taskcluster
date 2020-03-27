@@ -93,6 +93,13 @@ suite(testing.suiteName(), function() {
       assert.equal(res.headers['content-type'], 'application/json; charset=utf-8');
     });
 
+    test('/__heartbeat__', async function() {
+      const res = await request.get('http://localhost:1459/__heartbeat__');
+      assert(res.ok, 'Got response');
+      assert.equal(res.status, 200);
+      assert.equal(res.headers['content-type'], 'application/json; charset=utf-8');
+    });
+
     test('/__lbheartbeat__', async function() {
       const res = await request.get('http://localhost:1459/__lbheartbeat__');
       assert(res.ok, 'Got response');
