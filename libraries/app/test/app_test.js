@@ -5,7 +5,8 @@ const express = require('express');
 const isUUID = require('is-uuid');
 const testing = require('taskcluster-lib-testing');
 const path = require('path');
-const fs = require('fs');
+const rootdir = require('app-root-dir');
+const mockFs = require('mock-fs');
 
 suite(testing.suiteName(), function() {
 
@@ -26,19 +27,6 @@ suite(testing.suiteName(), function() {
               header: req.headers['x-request-id'],
               valueSet: req.requestId,
             }));
-          });
-          router.get('/__version__', function(req, res) {
-            const taskclusterVersionFile = path.resolve(__dirname, 'fixtures', 'taskcluster-version');
-
-            try {
-              const taskclusterVersion = fs.readFileSync(taskclusterVersionFile).toString().trim();
-
-              res.header('Content-Type', 'text/plain');
-              res.send(taskclusterVersion);
-            } catch (err) {
-              res.header('Content-Type', 'text/plain');
-              res.status(500).send('Could not locate the version file');
-            }
           });
           app.use('/api/test/v1', router);
         },
@@ -95,10 +83,14 @@ suite(testing.suiteName(), function() {
     });
 
     test('/__version__', async function() {
-      const res = await request.get('http://localhost:1459/api/test/v1/__version__');
+      mockFs({
+        [path.resolve(rootdir.get(), 'version.json')]: JSON.stringify({ version: 'v99.99.99' }),
+      });
+
+      const res = await request.get('http://localhost:1459/__version__');
       assert(res.ok, 'Got response');
-      assert.equal(res.text, '99.99.99', 'Got the right version');
-      assert.equal(res.headers['content-type'], 'text/plain; charset=utf-8');
+      assert.equal(res.body.version, 'v99.99.99', 'Got the right version');
+      assert.equal(res.headers['content-type'], 'application/json; charset=utf-8');
     });
 
     test('/not-found', async function() {
@@ -116,6 +108,10 @@ suite(testing.suiteName(), function() {
         return;
       }
       throw new Error('expected exception not seen');
+    });
+
+    teardown(function() {
+      mockFs.restore();
     });
 
     suiteTeardown(function() {

@@ -128,15 +128,15 @@ const app = async (options) => {
   }
 
   app.use('/__version__', (req, res) => {
-    const taskclusterVersionFile = path.resolve(rootdir.get(), '../../taskcluster-version');
+    const taskclusterVersionFile = path.resolve(rootdir.get(), 'version.json');
 
     try {
       const taskclusterVersion = fs.readFileSync(taskclusterVersionFile).toString().trim();
-      res.header('Content-Type', 'text/plain');
+      res.header('Content-Type', 'application/json');
       res.send(taskclusterVersion);
     } catch (err) {
-      res.header('Content-Type', 'text/plain');
-      res.status(500).send('Could not locate the version file');
+      res.header('Content-Type', 'application/json');
+      res.status(500).send('Not found');
     }
   });
 
