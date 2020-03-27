@@ -68,7 +68,8 @@ const load = loader({
       serviceName: 'notify',
       readDbUrl: cfg.postgres.readDbUrl,
       writeDbUrl: cfg.postgres.writeDbUrl,
-      statementTimeout: process === 'server' ? 30000 : 0}),
+      statementTimeout: process === 'server' ? 30000 : 0,
+    }),
   },
 
   generateReferences: {

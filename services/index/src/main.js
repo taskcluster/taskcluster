@@ -21,11 +21,12 @@ let load = loader({
   },
 
   db: {
-    requires: ["cfg"],
-    setup: ({ cfg }) => tcdb.setup({
+    requires: ["cfg", "process"],
+    setup: ({cfg, process}) => tcdb.setup({
       readDbUrl: cfg.postgres.readDbUrl,
       writeDbUrl: cfg.postgres.writeDbUrl,
       serviceName: 'index',
+      statementTimeout: process === 'server' ? 30000 : 0,
     }),
   },
 
