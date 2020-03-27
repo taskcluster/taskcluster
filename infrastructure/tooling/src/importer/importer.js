@@ -48,10 +48,8 @@ const importer = async options => {
             await writeToPostgres(tableName, entities, db, ALLOWED_TABLES);
 
             if (tableParams.nextPartitionKey && tableParams.nextRowKey) {
-              await importTable(tableParams, count);
+              return await importTable(tableParams, count);
             }
-
-            return count;
           }
 
           return 0;
