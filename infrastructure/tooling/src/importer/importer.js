@@ -35,20 +35,26 @@ const importer = async options => {
 
         let rowsImported = 0;
         async function importTable(tableParameters = {}, rowsProcessed = 0) {
-          const { entities, tableParams, count } = await readAzureTable({
+          const result = await readAzureTable({
             azureCreds: credentials.azure,
             tableName,
             utils,
             tableParams: tableParameters,
             rowsProcessed,
           });
-          await writeToPostgres(tableName, entities, db, ALLOWED_TABLES);
+          if (result) {
+            const { entities, tableParams, count } = result;
 
-          if (tableParams.nextPartitionKey && tableParams.nextRowKey) {
-            await importTable(tableParams, count);
+            await writeToPostgres(tableName, entities, db, ALLOWED_TABLES);
+
+            if (tableParams.nextPartitionKey && tableParams.nextRowKey) {
+              await importTable(tableParams, count);
+            }
+
+            return count;
           }
 
-          return count;
+          return 0;
         }
 
         rowsImported = rowsImported + await importTable();
