@@ -222,9 +222,14 @@ const check_pr = async (pr) => {
     return true;
   }
 
-  const hasChangelog = files.some(filename => filename.startsWith('changelog/'));
+  const changelogFiles = files.filter(filename => filename.startsWith('changelog/'));
 
-  if (hasImportantFiles && !hasChangelog) {
+  if (changelogFiles.some(filename => !filename.endsWith('.md'))) {
+    console.log(`${chalk.bold.red('ERROR:')} Pull Request ${pr} has an invalid file in 'changelog/'. All files must be '.md'`);
+    return false;
+  }
+
+  if (hasImportantFiles && !changelogFiles.length) {
     console.log(`${chalk.bold.red('ERROR:')} Pull Request ${pr} does not modify any files in 'changelog/'`);
     return false;
   }
