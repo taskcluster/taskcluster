@@ -136,8 +136,13 @@ const app = async (options) => {
       res.send(taskclusterVersion);
     } catch (err) {
       res.header('Content-Type', 'application/json');
-      res.status(500).send('Not found');
+      res.status(500).send({ error: 'Not found' });
     }
+  });
+
+  app.use('/__lbheartbeat__', (req, res) => {
+    res.header('Content-Type', 'application/json');
+    res.status(200).send({});
   });
 
   options.apis.forEach(api => {
