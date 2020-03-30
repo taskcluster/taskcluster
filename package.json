@@ -136,6 +136,7 @@
     "apollo-link-ws": "^1.0.19",
     "assume": "^2.1.0",
     "aws-sdk-mock": "^4.3.0",
+    "buffered-async-iterator": "^1.0.0",
     "c8": "^6.0.0",
     "capture-console": "^1.0.1",
     "cliff": "^0.1.10",
