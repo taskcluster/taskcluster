@@ -47,7 +47,7 @@ const importer = async options => {
               tableParams: tableParameters,
               rowsProcessed,
             }),
-            1000
+            1000,
           )) {
             if (result) {
               const { entities, tableParams, count } = result;
