@@ -147,7 +147,7 @@ class ChangeLog {
       '' :
       `\n\n### OTHER\n\n▶ Additional change${silentCount === 1 ? '' : 's'} not described here: ${silentLinks}.`;
 
-    // These snippets are already sorted in level-order so when we insert
+    // These changelog snippets are already sorted in level-order so when we insert
     // them here they remain in order. no need to re-sort
     const categorizedSnippets = this.snippets.reduce((acc, {audience, ...rest}) => {
       if (rest.level === 'silent') {
@@ -172,8 +172,8 @@ class ChangeLog {
             body.trim()
           ))
           .join('\n\n');
-        return `### ${audience.toUpperCase()}\n\n${snippets}`;
-      }).join('\n');
+        return `\n\n### ${audience.toUpperCase()}\n\n${snippets}`;
+      }).join('').trim();
     return formatted + silentSuffix;
   }
 
