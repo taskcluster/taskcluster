@@ -1,3 +1,4 @@
+const buffer = require('buffered-async-iterator');
 const prettyMilliseconds = require('pretty-ms');
 const glob = require('glob');
 const {postgresTableName} = require('taskcluster-lib-entities');
@@ -33,29 +34,36 @@ const importer = async options => {
           await client.query(`truncate ${pgTable}`);
         });
 
-        let rowsImported = 0;
-        async function importTable(tableParameters = {}, rowsProcessed = 0) {
-          const result = await readAzureTable({
-            azureCreds: credentials.azure,
-            tableName,
-            utils,
-            tableParams: tableParameters,
-            rowsProcessed,
-          });
-          if (result) {
-            const { entities, tableParams, count } = result;
-
-            await writeToPostgres(tableName, entities, db, ALLOWED_TABLES);
-
-            if (tableParams.nextPartitionKey && tableParams.nextRowKey) {
-              return await importTable(tableParams, count);
-            }
-          }
-
-          return 0;
+        async function* readAzureTableIterator(args) {
+          yield await readAzureTable(args);
         }
 
-        rowsImported = rowsImported + await importTable();
+        async function importTable(tableParameters = {}, rowsProcessed = 0) {
+          for await (let result of buffer(
+            readAzureTableIterator({
+              azureCreds: credentials.azure,
+              tableName,
+              utils,
+              tableParams: tableParameters,
+              rowsProcessed,
+            }),
+            1000
+          )) {
+            if (result) {
+              const { entities, tableParams, count } = result;
+
+              await writeToPostgres(tableName, entities, db, ALLOWED_TABLES);
+
+              if (tableParams.nextPartitionKey && tableParams.nextRowKey) {
+                return await importTable(tableParams, count);
+              }
+            }
+
+            return result.count;
+          }
+        }
+
+        const rowsImported = await importTable();
 
         return {
           [tableName]: {

@@ -1981,6 +1981,11 @@ buffer@4.9.1:
     ieee754 "^1.1.4"
     isarray "^1.0.0"
 
+buffered-async-iterator@^1.0.0:
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/buffered-async-iterator/-/buffered-async-iterator-1.0.0.tgz#6a35a24fcf8710dc47b458475bc244de79c755dc"
+  integrity sha512-SoC58n2G/w4qAcFqgfQznekqvf3aYiGrMXIl7wOLX4InlvDHZefsUF5j1kUjlLekQur8YeaPimKlkJ3n5ZOIAw==
+
 builtin-modules@^3.0.0:
   version "3.1.0"
   resolved "https://registry.yarnpkg.com/builtin-modules/-/builtin-modules-3.1.0.tgz#aad97c15131eb76b65b50ef208e7584cd76a7484"
