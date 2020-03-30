@@ -32,17 +32,18 @@ reference:  ...
 
 ## Audiences
 
-Taskcluster has several groups of people who interact with it:
-
-__users:__ people creating tasks (for testing or CI)
-
-__admins:__ people administering the service (managing scopes and roles)
-
-__deployers:__ people deploying the service (running TC services, setting service config values)
-
-__developers:__ people who are working on TC itself, making code changes, etc
-
+Taskcluster has several groups of people who interact with it. They are defined in [the docs on docs](/dev-docs/best-practices/docs.md).
 Each changelog entry must be addressed to one of these groups *or* if it is more widely applicable, give it a `general` audience.
+The value of the `audience` field for each audience is as follows:
+
+| Audience         | Value              |
+|------------------|--------------------|
+| General          | `general`          |
+| Users            | `users`            |
+| Administrators   | `admins`           |
+| Deployers        | `deployers`        |
+| Worker Deployers | `worker-deployers` |
+| Developers       | `developers`       |
 
 ## Levels
 

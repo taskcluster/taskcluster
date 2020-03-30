@@ -19,6 +19,7 @@ const ALLOWED_LEVELS = {
 const ALLOWED_AUDIENCES = [
   'general',
   'deployers',
+  'worker-deployers',
   'admins',
   'users',
   'developers',
@@ -257,14 +258,18 @@ const add = async (options) => {
     audience = 'general';
   } else if (options.deployers) {
     audience = 'deployers';
+  } else if (options.workerDeployers) {
+    audience = 'worker-deployers';
   } else if (options.admins) {
     audience = 'admins';
   } else if (options.users) {
     audience = 'users';
   } else if (options.developers) {
     audience = 'developers';
+  } else if (level === 'silent') { // We allow defaulting silent changes to `general` other levels _must_ specify
+    audience = 'general';
   } else {
-    console.log('Must specify one of --general, --deployers, --admins, --users, or --developers');
+    console.log('Must specify one of --general, --deployers, --worker-deployers, --admins, --users, or --developers');
     bad = true;
   }
 
