@@ -152,11 +152,15 @@ export default class IndexedTask extends Component {
               </Link>
               {indexPaths.map((indexName, i) =>
                 indexPaths.length === i + 1 ? (
-                  <Typography variant="body2" color="textSecondary">
+                  <Typography
+                    key={indexName}
+                    variant="body2"
+                    color="textSecondary">
                     {indexName}
                   </Typography>
                 ) : (
                   <Link
+                    key={indexName}
                     to={`/tasks/index/${indexPaths.slice(0, i + 1).join('.')}`}>
                     <Typography variant="body2" className={classes.link}>
                       {indexName}

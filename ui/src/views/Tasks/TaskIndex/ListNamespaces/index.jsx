@@ -209,7 +209,10 @@ export default class ListNamespaces extends Component {
                 </Link>
                 {indexPaths.map((indexName, i) =>
                   indexPaths.length === i + 1 ? (
-                    <Typography variant="body2" color="textSecondary">
+                    <Typography
+                      key={indexName}
+                      variant="body2"
+                      color="textSecondary">
                       {indexName}
                     </Typography>
                   ) : (
