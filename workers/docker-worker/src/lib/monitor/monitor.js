@@ -256,7 +256,12 @@ class Monitor {
     if (this.manager._reporter) {
       extra['reportId'] = this.manager._reporter.report(err);
     }
-    this.log.errorReport({...serialized, ...extra}, {level});
+    try {
+      this.log.errorReport({...serialized, ...extra}, {level});
+    } catch (err) {
+      console.log(`Exception when reporting error:\n${err.stack || err}`);
+      console.log(`Original error:\n${err.stack || err}`);
+    }
   }
 
   /**
