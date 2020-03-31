@@ -1630,10 +1630,10 @@
   resolved "https://registry.yarnpkg.com/@mdx-js/util/-/util-1.5.1.tgz#f5f29bde5b09f8da3f4a4b43fa0a34bcf8ffc7cb"
   integrity sha512-8F8E5FPWKP/cHjjI+O6Sh4KLUktk0KKS1xrxqVoBQd14/PBDH+kUgSJVE99p9jSRGh+OjCBmqx0tXN+m32w1tA==
 
-"@mozilla-frontend-infra/components@^3.0.6":
-  version "3.0.6"
-  resolved "https://registry.yarnpkg.com/@mozilla-frontend-infra/components/-/components-3.0.6.tgz#af37c80f6996daaec2f933baaa8e7f31893279e9"
-  integrity sha512-5X5GCjFdWRp+Lq1CPfJo/cQv+MBenxxW+ibFvRJrLKgi2cHNn8bf5JRUUrPhLvyqJUKCTi1jViK3yjfaHBmvDA==
+"@mozilla-frontend-infra/components@^3.0.7":
+  version "3.0.7"
+  resolved "https://registry.yarnpkg.com/@mozilla-frontend-infra/components/-/components-3.0.7.tgz#a52b7547f07394e2b718c35356612643f98dc26c"
+  integrity sha512-VljjLH/eYTg9AgveLgM629G3q6tF2eNV6Ha525WcZkplruBC9ME7BeEo2Lo/9FIg+FspcTaSQSd2PlyrECKPUA==
   dependencies:
     classnames "^2.2.6"
     codemirror "^5.39.0"
