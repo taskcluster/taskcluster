@@ -1,5 +1,19 @@
 const {Client} = require('pg');
+const {withMonitor} = require('taskcluster-lib-testing');
+const {defaultMonitorManager} = require('taskcluster-lib-monitor');
 const dbUrl = process.env.TEST_DB_URL;
+
+withMonitor(exports, {noLoader: true});
+
+defaultMonitorManager.configure({
+  serviceName: 'lib-postgres',
+});
+
+exports.monitor = defaultMonitorManager.setup({
+  fake: true,
+  debug: true,
+  validate: true,
+});
 
 /**
  * dbSuite(..) is a replacement for suite(..) that sets this.dbUrl when

@@ -14,6 +14,8 @@ const {
 const path = require('path');
 const assert = require('assert').strict;
 
+const monitor = helper.monitor;
+
 helper.dbSuite(path.basename(__filename), function() {
   let db;
 
@@ -446,7 +448,7 @@ helper.dbSuite(path.basename(__filename), function() {
   suite('Database.setup', function() {
     test('setup creates JS methods that can be called', async function() {
       await Database.upgrade({schema, adminDbUrl: helper.dbUrl, usernamePrefix: 'test'});
-      db = await Database.setup({schema, readDbUrl: helper.dbUrl, writeDbUrl: helper.dbUrl, serviceName: 'service-1'});
+      db = await Database.setup({schema, readDbUrl: helper.dbUrl, writeDbUrl: helper.dbUrl, serviceName: 'service-1', monitor});
       await db.fns.testdata();
       const res = await db.fns.addup(13);
       assert.deepEqual(res.map(r => r.total).sort(), [16, 20]);
@@ -454,7 +456,7 @@ helper.dbSuite(path.basename(__filename), function() {
 
     test('setup does not create deprecated methods', async function() {
       await Database.upgrade({schema, adminDbUrl: helper.dbUrl, usernamePrefix: 'test'});
-      db = await Database.setup({schema, readDbUrl: helper.dbUrl, writeDbUrl: helper.dbUrl, serviceName: 'service-1'});
+      db = await Database.setup({schema, readDbUrl: helper.dbUrl, writeDbUrl: helper.dbUrl, serviceName: 'service-1', monitor});
       assert(!db.fns.old);
     });
 
@@ -465,12 +467,13 @@ helper.dbSuite(path.basename(__filename), function() {
         writeDbUrl: helper.dbUrl,
         serviceName: 'service-1',
         statementTimeout: 'about 3 seconds',
+        monitor,
       }), err => err.code === 'ERR_ASSERTION');
     });
 
     test('methods do not allow SQL injection', async function() {
       await Database.upgrade({schema, adminDbUrl: helper.dbUrl, usernamePrefix: 'test'});
-      db = await Database.setup({schema, readDbUrl: helper.dbUrl, writeDbUrl: helper.dbUrl, serviceName: 'service-1'});
+      db = await Database.setup({schema, readDbUrl: helper.dbUrl, writeDbUrl: helper.dbUrl, serviceName: 'service-1', monitor});
       await db.fns.testdata();
       const res = await db.fns.stringparam("' or 1=1; --");
       assert.equal(res[0].stringparam, "got ' or 1=1; --");
@@ -478,7 +481,7 @@ helper.dbSuite(path.basename(__filename), function() {
 
     test('passing too few parameters fails', async function() {
       await Database.upgrade({schema, adminDbUrl: helper.dbUrl, usernamePrefix: 'test'});
-      db = await Database.setup({schema, readDbUrl: helper.dbUrl, writeDbUrl: helper.dbUrl, serviceName: 'service-1'});
+      db = await Database.setup({schema, readDbUrl: helper.dbUrl, writeDbUrl: helper.dbUrl, serviceName: 'service-1', monitor});
       await db.fns.testdata();
       await assert.rejects(
         () => db.fns.addup(),
@@ -487,7 +490,7 @@ helper.dbSuite(path.basename(__filename), function() {
 
     test('passing too many parameters fails', async function() {
       await Database.upgrade({schema, adminDbUrl: helper.dbUrl, usernamePrefix: 'test'});
-      db = await Database.setup({schema, readDbUrl: helper.dbUrl, writeDbUrl: helper.dbUrl, serviceName: 'service-1'});
+      db = await Database.setup({schema, readDbUrl: helper.dbUrl, writeDbUrl: helper.dbUrl, serviceName: 'service-1', monitor});
       await db.fns.testdata();
       await assert.rejects(
         () => db.fns.addup(13, 14),
@@ -502,6 +505,7 @@ helper.dbSuite(path.basename(__filename), function() {
         writeDbUrl: helper.dbUrl,
         serviceName: 'service-1',
         statementTimeout: 100, // 0.1s
+        monitor,
       });
       await assert.rejects(() => db.fns.slow(),
         err => err.code === QUERY_CANCELED);
@@ -509,21 +513,21 @@ helper.dbSuite(path.basename(__filename), function() {
 
     test('read-only methods are called in read-only transactions', async function() {
       await Database.upgrade({schema, adminDbUrl: helper.dbUrl, usernamePrefix: 'test'});
-      db = await Database.setup({schema, readDbUrl: helper.dbUrl, writeDbUrl: helper.dbUrl, serviceName: 'service-1'});
+      db = await Database.setup({schema, readDbUrl: helper.dbUrl, writeDbUrl: helper.dbUrl, serviceName: 'service-1', monitor});
       await assert.rejects(() => db.fns.readonlywrites(),
         err => err.code === READ_ONLY_SQL_TRANSACTION);
     });
 
     test('failing methods correctly reject', async function() {
       await Database.upgrade({schema, adminDbUrl: helper.dbUrl, usernamePrefix: 'test'});
-      db = await Database.setup({schema, readDbUrl: helper.dbUrl, writeDbUrl: helper.dbUrl, serviceName: 'service-1'});
+      db = await Database.setup({schema, readDbUrl: helper.dbUrl, writeDbUrl: helper.dbUrl, serviceName: 'service-1', monitor});
       await assert.rejects(() => db.fns.fail(),
         err => err.code === '0A000');
     });
 
     test('do not allow service A to call any methods for service B which have mode=WRITE', async function() {
       await Database.upgrade({schema, adminDbUrl: helper.dbUrl, usernamePrefix: 'test'});
-      const db = await Database.setup({schema, readDbUrl: helper.dbUrl, writeDbUrl: helper.dbUrl, serviceName: 'service-2'});
+      const db = await Database.setup({schema, readDbUrl: helper.dbUrl, writeDbUrl: helper.dbUrl, serviceName: 'service-2', monitor});
 
       assert.equal(versions[0].methods.testdata.serviceName, 'service-1');
       assert.equal(versions[0].methods.testdata.mode, WRITE);
@@ -533,7 +537,7 @@ helper.dbSuite(path.basename(__filename), function() {
 
     test('allow service A to call any methods for service A which have mode=WRITE', async function() {
       await Database.upgrade({schema, adminDbUrl: helper.dbUrl, usernamePrefix: 'test'});
-      const db = await Database.setup({schema, readDbUrl: helper.dbUrl, writeDbUrl: helper.dbUrl, serviceName: 'service-1'});
+      const db = await Database.setup({schema, readDbUrl: helper.dbUrl, writeDbUrl: helper.dbUrl, serviceName: 'service-1', monitor});
 
       assert.equal(versions[0].methods.testdata.serviceName, 'service-1');
       assert.equal(versions[0].methods.testdata.mode, WRITE);
@@ -543,7 +547,7 @@ helper.dbSuite(path.basename(__filename), function() {
 
     test('allow service A to call any methods for service B which have mode=READ', async function() {
       await Database.upgrade({schema, adminDbUrl: helper.dbUrl, usernamePrefix: 'test'});
-      const db = await Database.setup({schema, readDbUrl: helper.dbUrl, writeDbUrl: helper.dbUrl, serviceName: 'service-1'});
+      const db = await Database.setup({schema, readDbUrl: helper.dbUrl, writeDbUrl: helper.dbUrl, serviceName: 'service-1', monitor});
 
       assert.equal(versions[0].methods.addup.serviceName, 'service-2');
       assert.equal(versions[0].methods.addup.mode, READ);

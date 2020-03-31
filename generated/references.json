@@ -14314,6 +14314,31 @@
           "title": "API Method Report",
           "type": "monitor.apiMethod",
           "version": 1
+        },
+        {
+          "description": "This message is logged for each invocation of a Postgres stored function.",
+          "fields": {
+            "name": "The name of the DB function"
+          },
+          "level": "info",
+          "name": "dbFunctionCall",
+          "title": "DB Method Call",
+          "type": "db-function-call",
+          "version": 1
+        },
+        {
+          "description": "This message is logged every 5 minutes from each process that is using the database,\nonce for each pool.  Most services have both a \"read\" pool and a \"write\" pool.  The\nfields come from the node-postgres package.",
+          "fields": {
+            "idleCount": "The number of connections (out of the total) which are not currently in use",
+            "pool": "The name of the pool within the process",
+            "totalCount": "The total number of connections",
+            "waitingCount": "The number of operations waiting for an idle connection"
+          },
+          "level": "notice",
+          "name": "dbPoolCounts",
+          "title": "DB Pool Counts",
+          "type": "db-pool-counts",
+          "version": 1
         }
       ]
     },

@@ -86,6 +86,7 @@ module.exports.withDb = (mock, skipping, helper, serviceName) => {
         writeDbUrl: serviceDbUrl,
         serviceName,
         useDbDirectory: true,
+        monitor: false,
       });
     }
 
