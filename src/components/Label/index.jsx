@@ -11,7 +11,7 @@ import palette from '../../utils/palette';
     padding: '4px 10px 3px',
   },
   mini: {
-    fontSize: '0.7rem',
+    fontSize: '0.7em',
     padding: '3px 8px 2px',
   },
   disabled: {
