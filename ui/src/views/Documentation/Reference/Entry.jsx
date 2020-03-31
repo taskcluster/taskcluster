@@ -229,19 +229,17 @@ export default class Entry extends Component {
   };
 
   renderSchemaTable = (schemaId, headerTitle) => (
-    <ListItem>
-      <ListItemText
-        primaryTypographyProps={primaryTypographyProps}
-        disableTypography
-        primary={<Typography variant="body2">{headerTitle}</Typography>}
-        secondary={
-          <Fragment>
-            <br />
-            <SchemaTable schema={schemaId} />
-          </Fragment>
-        }
-      />
-    </ListItem>
+    <Fragment>
+      <ListItem>
+        <ListItemText
+          primaryTypographyProps={primaryTypographyProps}
+          disableTypography
+          primary={<Typography variant="body1">{headerTitle}</Typography>}
+          secondary={<SchemaTable schema={schemaId} />}
+        />
+      </ListItem>
+      <br />
+    </Fragment>
   );
 
   renderScopeExpression(scopes) {
