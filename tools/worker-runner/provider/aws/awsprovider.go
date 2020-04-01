@@ -159,7 +159,7 @@ func (p *AWSProvider) WorkerStarted(state *run.State) error {
 
 func (p *AWSProvider) WorkerFinished(state *run.State) error {
 	p.terminationTicker.Stop()
-	return nil
+	return provider.RemoveWorker(state, p.workerManagerClientFactory)
 }
 
 func clientFactory(rootURL string, credentials *tcclient.Credentials) (tc.WorkerManager, error) {

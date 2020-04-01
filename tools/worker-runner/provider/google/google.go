@@ -128,7 +128,7 @@ func (p *GoogleProvider) WorkerStarted(state *run.State) error {
 }
 
 func (p *GoogleProvider) WorkerFinished(state *run.State) error {
-	return nil
+	return provider.RemoveWorker(state, p.workerManagerClientFactory)
 }
 
 func clientFactory(rootURL string, credentials *tcclient.Credentials) (tc.WorkerManager, error) {
