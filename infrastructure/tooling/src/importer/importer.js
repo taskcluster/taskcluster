@@ -57,9 +57,11 @@ const importer = async options => {
               if (tableParams.nextPartitionKey && tableParams.nextRowKey) {
                 return await importTable(tableParams, count);
               }
+
+              return count;
             }
 
-            return result.count;
+            return 0;
           }
         }
 

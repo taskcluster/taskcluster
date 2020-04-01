@@ -21,13 +21,11 @@ exports.ALLOWED_TABLES = [
   // 'Hooks',
   'IndexedTasks',
   'QueueTasks',
-  'TaskclusterGithubBuilds',
-  'TaskclusterIntegrationOwners',
-  'TaskclusterChecksToTasks',
-  'TaskclusterCheckRuns',
+  'WMWorkerPoolErrors',
   // 'Queues',
   // 'LastFire3',
-  'Namespaces', 'DenylistedNotification',
+  'Namespaces',
+  'DenylistedNotification',
   'CachePurges',
   'QueueArtifacts',
   'QueueTaskGroups',
@@ -45,7 +43,10 @@ exports.ALLOWED_TABLES = [
   // 'GithubAccessTokenTable',
   'WMWorkers',
   'WMWorkerPools',
-  'WMWorkerPoolErrors',
+  'TaskclusterGithubBuilds',
+  'TaskclusterIntegrationOwners',
+  'TaskclusterChecksToTasks',
+  'TaskclusterCheckRuns',
 ];
 
 // read table from azure
@@ -149,14 +150,32 @@ exports.writeToPostgres = async (tableName, entities, db, allowedTables = [], mo
   const pgTable = postgresTableName(tableName);
 
   if (entities) {
-    for (let entity of entities) {
-      await db._withClient(mode, async client => {
+    await db._withClient(mode, async client => {
+      const entitiesSize = entities.length;
+
+      const [vars, args] = entities.reduce((acc, curr, i) => {
+        let [vars, args] = acc;
+
+        if (i !== 0) {
+          vars = `${vars},`;
+        }
+
+        vars = `${vars}(\$${i * 3 + 1}, \$${i * 3 + 2}, \$${i * 3 + 3}, 1, public.gen_random_uuid())`;
+
+        args[i * 3] = entities[i].PartitionKey;
+        args[i * 3 + 1] = entities[i].RowKey;
+        args[i * 3 + 2] = entities[i];
+
+        return [vars, args];
+      }, ['', new Array(entitiesSize * 3)]);
+
+      if (args && vars) {
         await client.query(
-          `insert into ${pgTable}(partition_key, row_key, value, version, etag) values ($1, $2, $3, 1, public.gen_random_uuid())`,
-          [entity.PartitionKey, entity.RowKey, entity],
+          `insert into ${pgTable}(partition_key, row_key, value, version, etag) values ${vars}`,
+          args,
         );
-      });
-    }
+      }
+    });
   }
 };
 
