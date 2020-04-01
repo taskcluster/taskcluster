@@ -95,6 +95,7 @@ exports.withDbForProcs = function({ serviceName }) {
       readDbUrl: exports.dbUrl,
       serviceName,
       useDbDirectory: true,
+      monitor: false,
     });
 
     exports.fakeDb = await tcdb.fakeSetup({
