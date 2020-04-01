@@ -16,7 +16,7 @@ relengapi_proxy_version=2.3.1
 taskcluster_proxy_version=5.1.0
 livelog_version=4
 dind_service_version=4.0
-worker_runner_version=28.0.0
+worker_runner_version=28.2.0
 
 ## Get recent CA bundle for papertrail
 sudo curl -o /etc/papertrail-bundle.pem https://papertrailapp.com/tools/papertrail-bundle.pem
