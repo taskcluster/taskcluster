@@ -3,7 +3,7 @@ const prettyMilliseconds = require('pretty-ms');
 const glob = require('glob');
 const {postgresTableName} = require('taskcluster-lib-entities');
 const {REPO_ROOT, readRepoYAML} = require('../utils');
-const { readAzureTable, writeToPostgres, ALLOWED_TABLES } = require('./util');
+const { readAzureTableInChunks, writeToPostgres, ALLOWED_TABLES } = require('./util');
 
 const importer = async options => {
   const { credentials, db } = options;
@@ -35,7 +35,7 @@ const importer = async options => {
         });
 
         async function* readAzureTableIterator(args) {
-          yield await readAzureTable(args);
+          yield await readAzureTableInChunks(args);
         }
 
         async function importTable(tableParameters = {}, rowsProcessed = 0) {

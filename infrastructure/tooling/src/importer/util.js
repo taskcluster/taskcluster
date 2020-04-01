@@ -50,7 +50,59 @@ exports.ALLOWED_TABLES = [
 
 // read table from azure
 // returns a list of azure entities
-exports.readAzureTable = async ({azureCreds, tableName, utils, tableParams = {}, rowsProcessed = 0}) => {
+//
+// Note: Make sure there is enough memory on the machine when running this
+// function on a large table. The full table will be stored in memory
+// so there is a chance of OOM.
+exports.readAzureTable = async ({azureCreds, tableName, utils}) => {
+  const table = new azure.Table(azureCreds);
+  const entities = [];
+
+  const processResult = results => {
+    const firstEntity = _.head(results.entities);
+    const azureKeys = firstEntity ? Object.keys(results.entities[0]).filter(key => key.includes('odata') || key === 'Version') : [];
+    const filteredEntities = results.entities.map(
+      entity => {
+        azureKeys.forEach(key => delete entity[key]);
+
+        return entity;
+      },
+    );
+
+    entities.push(...filteredEntities);
+  };
+
+  let count = 0;
+  let nextUpdateCount = 1000;
+  let tableParams = {};
+  do {
+    let results;
+    try {
+      results = await table.queryEntities(tableName, tableParams);
+      processResult(results);
+    } catch (err) {
+      if (err.statusCode === 404) {
+        utils.skip("no such table");
+        return;
+      }
+      throw err;
+    }
+    tableParams = _.pick(results, ['nextPartitionKey', 'nextRowKey']);
+    count = count + results.entities.length;
+    if (count > nextUpdateCount) {
+      utils.status({
+        message: `${count} rows`,
+      });
+      nextUpdateCount = count + 100;
+    }
+  } while (tableParams.nextPartitionKey && tableParams.nextRowKey);
+
+  return entities;
+};
+
+// read table from azure
+// returns a list of azure entities
+exports.readAzureTableInChunks = async ({azureCreds, tableName, utils, tableParams = {}, rowsProcessed = 0}) => {
   const table = new azure.Table(azureCreds);
   const entities = [];
 
