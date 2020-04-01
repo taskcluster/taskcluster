@@ -1,18 +1,27 @@
 import { hot } from 'react-hot-loader';
-import React, { Component } from 'react';
+import React, { Component, Fragment } from 'react';
 import { graphql } from 'react-apollo';
 import dotProp from 'dot-prop-immutable';
+import { withStyles } from '@material-ui/core/styles';
 import Spinner from '@mozilla-frontend-infra/components/Spinner';
+import Typography from '@material-ui/core/Typography';
 import Dashboard from '../../../../components/Dashboard';
 import HelpView from '../../../../components/HelpView';
 import Search from '../../../../components/Search';
 import IndexedEntry from '../../../../components/IndexedEntry';
 import { ARTIFACTS_PAGE_SIZE } from '../../../../utils/constants';
 import ErrorPanel from '../../../../components/ErrorPanel';
+import Breadcrumbs from '../../../../components/Breadcrumbs';
 import artifactsQuery from './artifacts.graphql';
 import indexedTaskQuery from './indexedTask.graphql';
+import Link from '../../../../utils/Link';
 
 @hot(module)
+@withStyles(theme => ({
+  link: {
+    ...theme.mixins.link,
+  },
+}))
 @graphql(indexedTaskQuery, {
   name: 'indexedTaskData',
   options: props => ({
@@ -99,6 +108,7 @@ export default class IndexedTask extends Component {
 
   render() {
     const {
+      classes,
       latestArtifactsData: {
         latestArtifacts,
         task,
@@ -113,6 +123,7 @@ export default class IndexedTask extends Component {
       description,
     } = this.props;
     const loading = latestArtifactsLoading || indexedTaskLoading;
+    const indexPaths = indexedTask?.namespace?.split('.') ?? [];
 
     return (
       <Dashboard
@@ -132,12 +143,41 @@ export default class IndexedTask extends Component {
           <ErrorPanel fixed error={indexedTaskError || latestArtifactsError} />
         )}
         {latestArtifacts && indexedTask && task && (
-          <IndexedEntry
-            onArtifactsPageChange={this.handleArtifactsPageChange}
-            latestArtifactsConnection={latestArtifacts}
-            indexedTask={indexedTask}
-            created={task.created}
-          />
+          <Fragment>
+            <Breadcrumbs>
+              <Link to="/tasks/index">
+                <Typography variant="body2" className={classes.link}>
+                  Indexes
+                </Typography>
+              </Link>
+              {indexPaths.map((indexName, i) =>
+                indexPaths.length === i + 1 ? (
+                  <Typography
+                    key={indexName}
+                    variant="body2"
+                    color="textSecondary">
+                    {indexName}
+                  </Typography>
+                ) : (
+                  <Link
+                    key={indexName}
+                    to={`/tasks/index/${indexPaths.slice(0, i + 1).join('.')}`}>
+                    <Typography variant="body2" className={classes.link}>
+                      {indexName}
+                    </Typography>
+                  </Link>
+                )
+              )}
+            </Breadcrumbs>
+            <br />
+            <br />
+            <IndexedEntry
+              onArtifactsPageChange={this.handleArtifactsPageChange}
+              latestArtifactsConnection={latestArtifacts}
+              indexedTask={indexedTask}
+              created={task.created}
+            />
+          </Fragment>
         )}
       </Dashboard>
     );

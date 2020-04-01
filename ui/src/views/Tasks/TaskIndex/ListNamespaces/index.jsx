@@ -4,6 +4,7 @@ import React, { Component, Fragment } from 'react';
 import { graphql, withApollo } from 'react-apollo';
 import dotProp from 'dot-prop-immutable';
 import { defaultTo } from 'ramda';
+import { withStyles } from '@material-ui/core/styles';
 import Spinner from '@mozilla-frontend-infra/components/Spinner';
 import Typography from '@material-ui/core/Typography';
 import Dashboard from '../../../../components/Dashboard';
@@ -11,8 +12,10 @@ import HelpView from '../../../../components/HelpView';
 import Search from '../../../../components/Search';
 import IndexNamespacesTable from '../../../../components/IndexNamespacesTable';
 import IndexTaskNamespaceTable from '../../../../components/IndexTaskNamespaceTable';
-import { VIEW_NAMESPACES_PAGE_SIZE } from '../../../../utils/constants';
+import Breadcrumbs from '../../../../components/Breadcrumbs';
 import ErrorPanel from '../../../../components/ErrorPanel';
+import { VIEW_NAMESPACES_PAGE_SIZE } from '../../../../utils/constants';
+import Link from '../../../../utils/Link';
 import namespacesQuery from './namespaces.graphql';
 import taskNamespaceQuery from '../taskNamespace.graphql';
 
@@ -20,6 +23,11 @@ const defaultEmpty = defaultTo('');
 
 @hot(module)
 @withApollo
+@withStyles(theme => ({
+  link: {
+    ...theme.mixins.link,
+  },
+}))
 @graphql(namespacesQuery, {
   name: 'namespacesData',
   options: props => ({
@@ -145,6 +153,7 @@ export default class ListNamespaces extends Component {
 
   render() {
     const {
+      classes,
       namespacesData: {
         namespaces,
         loading: namespacesLoading,
@@ -163,7 +172,8 @@ export default class ListNamespaces extends Component {
     const hasNamespaces =
       namespaces && namespaces.edges && namespaces.edges.length > 0;
     const loading = namespacesLoading || taskNamespaceLoading;
-    const isSinglePath = indexPathInput.split('.').length === 1;
+    const indexPaths = indexPathInput.split('.');
+    const isSinglePath = indexPaths.length === 1;
 
     return (
       <Dashboard
@@ -188,6 +198,38 @@ export default class ListNamespaces extends Component {
                 .slice(0, -1)
                 .join('.')}/${indexPathInput.split('.').slice(-1)[0]}`}
             />
+          )}
+          {!loading && indexPathInput && (
+            <Fragment>
+              <Breadcrumbs>
+                <Link to="/tasks/index">
+                  <Typography variant="body2" className={classes.link}>
+                    Indexes
+                  </Typography>
+                </Link>
+                {indexPaths.map((indexName, i) =>
+                  indexPaths.length === i + 1 ? (
+                    <Typography
+                      key={indexName}
+                      variant="body2"
+                      color="textSecondary">
+                      {indexName}
+                    </Typography>
+                  ) : (
+                    <Link
+                      to={`/tasks/index/${indexPaths
+                        .slice(0, i + 1)
+                        .join('.')}`}>
+                      <Typography variant="body2" className={classes.link}>
+                        {indexName}
+                      </Typography>
+                    </Link>
+                  )
+                )}
+              </Breadcrumbs>
+              <br />
+              <br />
+            </Fragment>
           )}
           {!loading && !hasNamespaces && !hasIndexedTasks && isSinglePath && (
             <Typography variant="body2">No items for this page.</Typography>
