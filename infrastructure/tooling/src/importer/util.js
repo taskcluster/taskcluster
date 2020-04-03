@@ -49,6 +49,13 @@ exports.ALLOWED_TABLES = [
   'TaskclusterCheckRuns',
 ];
 
+// For certain tables, we would like to import faster to make sure we don't
+// spend over 8 hours (TVW duration) importing
+exports.LARGE_TABLES = [
+  'QueueArtifacts',
+  'QueueTasks',
+].filter(tableName => exports.ALLOWED_TABLES.includes(tableName));
+
 // read table from azure
 // returns a list of azure entities
 //
@@ -88,7 +95,7 @@ exports.readAzureTable = async ({azureCreds, tableName, utils}) => {
       }
       throw err;
     }
-    tableParams = _.pick(results, ['nextPartitionKey', 'nextRowKey']);
+    tableParams = { filter: tableParams.filter, ..._.pick(results, ['nextPartitionKey', 'nextRowKey']) };
     count = count + results.entities.length;
     if (count > nextUpdateCount) {
       utils.status({
@@ -136,8 +143,9 @@ exports.readAzureTableInChunks = async ({azureCreds, tableName, utils, tablePara
   utils.status({
     message: `${count} rows`,
   });
+  tableParams = { filter: tableParams.filter, ..._.pick(results, ['nextPartitionKey', 'nextRowKey']) };
 
-  return { entities, tableParams: _.pick(results, ['nextPartitionKey', 'nextRowKey']), count };
+  return { entities, tableParams, count };
 };
 
 // Given a list of azure entities, this method will write to a postgres database
