@@ -90,9 +90,9 @@ const importer = async options => {
         return [
           `--- ${header} ---`,
           `Rows imported: ${rowsImported}`,
-          `Elapsed time: ${prettyMilliseconds(elapsedTime)}`,
+          elapsedTime ? `Elapsed time: ${prettyMilliseconds(elapsedTime)}` : null,
           '',
-        ].join('\n');
+        ].filter(Boolean).join('\n');
       };
       const tablesMetadata = tables
         .map(tableName => {
@@ -104,7 +104,7 @@ const importer = async options => {
           return prettify(tableName, rowsImported, elapsedTime);
         })
         .join('\n');
-      const totalMetadata = prettify('Summary', total.rowsImported, total.elapsedTime);
+      const totalMetadata = prettify('Summary', total.rowsImported);
 
       return {
         metadata: [totalMetadata, tablesMetadata].join('\n'),
