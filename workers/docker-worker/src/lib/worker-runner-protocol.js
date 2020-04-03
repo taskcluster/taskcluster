@@ -4,7 +4,7 @@ const split2 = require('split2');
 
 /**
  * This is an implementation of the worker-runner protocol documented at
- * https://github.com/taskcluster/taskcluster-worker-runner/blob/master/protocol.md
+ * https://github.com/taskcluster/taskcluster/blob/master/tools/worker-runner/protocol.md
  */
 
 /**

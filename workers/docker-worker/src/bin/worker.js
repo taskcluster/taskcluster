@@ -27,7 +27,7 @@ const SchemaSet = require('../lib/validate');
 const { spawn } = require('child_process');
 
 // Available target configurations.
-var allowedHosts = ['aws', 'test', 'packet', 'taskcluster-worker-runner'];
+var allowedHosts = ['aws', 'test', 'packet', 'worker-runner'];
 let debug = Debug('docker-worker:bin:worker');
 
 // All overridable configuration options from the CLI.
