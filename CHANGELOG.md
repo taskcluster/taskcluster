@@ -3,6 +3,13 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v28.2.1
+
+### DEPLOYERS
+
+▶ [patch] 
+Fix error in notify service (monitor is required)
+
 ## v28.2.0
 
 ### GENERAL
