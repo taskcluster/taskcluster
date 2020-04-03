@@ -69,9 +69,9 @@ const load = loader({
 
   db: {
     requires: ['process', 'cfg', 'monitor'],
-    setup: ({process, cfg}) => tcdb.setup({
+    setup: ({process, cfg, monitor}) => tcdb.setup({
       serviceName: 'notify',
-      monitor: monitor.childMonitor('notify'),
+      monitor: monitor.childMonitor('db'),
       ...cfg.postgres,
       statementTimeout: process === 'server' ? 30000 : 0}),
   },
