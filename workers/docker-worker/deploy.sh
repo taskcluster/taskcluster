@@ -11,23 +11,13 @@ fi
 shift
 
 export TEST
-export CLOUD
-for arg in "${@}"; do
-    case $arg in
-        --test) TEST=--test;;
-        --cloud=*) CLOUD=${arg#--cloud=};;
-        --cloud)
-            echo "Use --cloud=.."
-            exit 1;;
-    esac
-done
-
+export CLOUD=aws
 export BUILD_AWS=false
 export BUILD_GCP=false
 case $CLOUD in
     aws) BUILD_AWS=true;;
     gcp) BUILD_GCP=true;;
-    "") BUILD_AWS=true BUILD_GCP=true;;
+    "") BUILD_AWS=true BUILD_GCP=false;;
     *)
         echo "Invalid value for --cloud" >&2
         exit 1
@@ -42,24 +32,13 @@ export DEPLOYMENT
 case "$TASKCLUSTER_ROOT_URL" in
     # note that these names correspond to the deployment names in taskcluster-mozilla-terraform
     https://taskcluster.net) DEPLOYMENT=taskcluster-net;;
-    https://taskcluster-staging.net) DEPLOYMENT=taskcluster-staging-net;;
+    https://firefox-ci-tc*) DEPLOYMENT=taskcluster-net;;
+    https://stage.taskcluster*) DEPLOYMENT=taskcluster-staging-net;;
     https://*.taskcluster-dev.net) DEPLOYMENT=$(echo $TASKCLUSTER_ROOT_URL | sed 's!https://\(.*\)\.taskcluster-dev.net!\1!')-dev;;
     *)
         echo "Unrecognized TASKCLUSTER_ROOT_URL" >&2
         exit 1;;
 esac
-
-UPDATE_WORKER_TYPES=false
-if $BUILD_AWS && [ "$DEPLOYMENT" == "taskcluster-net" -a "$BUILD_TARGET" == "app" ]; then
-    UPDATE_WORKER_TYPES=true
-fi
-
-if $UPDATE_WORKER_TYPES; then
-    if [ "$TASKCLUSTER_CLIENT_ID" == "" -o "$TASKCLUSTER_ACCESS_TOKEN" == "" ]; then
-        echo "You don't seem to have proper Taskcluster credentials, please run 'taskcluster-cli signin' command" >&2
-        exit 1
-    fi
-fi
 
 $BUILD_AWS && echo "Building for AWS"
 $BUILD_GCP && echo "Building for GCP"
@@ -130,9 +109,3 @@ fi
 deploy/bin/import-docker-worker-secrets
 trap 'rm -rf /tmp/docker-worker*' EXIT
 deploy/bin/build $BUILD_TARGET
-
-if $UPDATE_WORKER_TYPES; then
-    deploy/bin/update-worker-types.js $TEST
-else
-    echo "Not deploying worker-types as this is not the AWS / taskcluster-net / app deployment"
-fi
