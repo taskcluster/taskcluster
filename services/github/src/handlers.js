@@ -500,26 +500,28 @@ async function statusHandler(message) {
 
     let customCheckRunText = '';
 
-    const url = this.queueClient
-      .buildUrl(this.queueClient.getArtifact, taskId, runId, textArtifactName);
+    try {
+      const url = this.queueClient.buildUrl(this.queueClient.getArtifact, taskId, runId, textArtifactName);
+      const res = await utils.throttleRequest({url, method: 'GET'});
+      
+      if (res.status >= 400 && res.status !== 404) {
+        await this.createExceptionComment({
+          debug,
+          instGithub,
+          organization,
+          repository,
+          sha,
+          error: res.response.error,
+        });
 
-    let res = await utils.throttleRequest({url, method: 'GET'});
-
-    if (res.status >= 400 && res.status !== 404) {
-      await this.createExceptionComment({
-        debug,
-        instGithub,
-        organization,
-        repository,
-        sha,
-        error: res.response.error,
-      });
-
-      if (res.status < 500) {
-        await this.monitor.reportError(res.response.error);
+        if (res.status < 500) {
+          await this.monitor.reportError(res.response.error);
+        }
+      } else if (res.status >= 200 && res.status < 300) {
+        customCheckRunText = res.text.toString();
       }
-    } else if (res.status >= 200 && res.status < 300) {
-      customCheckRunText = res.text.toString();
+    } catch (e) {
+      await this.monitor.reportError(e);
     }
 
     if (checkRun) {
