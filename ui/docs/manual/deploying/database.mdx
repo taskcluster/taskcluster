@@ -71,11 +71,14 @@ However, note that these read-only replicas must conform to the consistency requ
 Each Kubernetes deployment can use up to 10 connections.
 In particular, the `web` pods may, under load, use this maximum.
 Periodic tasks and worker pods will user fewer connections.
-A basic deployment of Taskcluster with the default scale of one for each Kubernetes deployment can use about 150 connections when under load.
+A basic deployment of Taskcluster with the default scale of one for each Kubernetes deployment can use about 70 connections when under load.
+This may seem a lot, but is relatively small given the number of pods in a running deployment.
 
-We recommend starting Postgres' `max_connections` to 200 for such Taskcluster deployments.
-Adjust that number based on observed connection counts.
-Increase the number as necessary when scaling up Kubernetes deployments.
+When updating Kubernetes deployments, where new pods start up before old pods shut down, the connection count can temporarily double.
+
+We recommend starting Postgres' `max_connections` to 200 for production Taskcluster deployments.
+Adjust that number based on observed connection counts, paying careful attention to spikes during Kubernetes deployments.
+Increase the number as necessary when increasing the replica counts on Kubernetes deployments.
 
 ## Configuration
 
