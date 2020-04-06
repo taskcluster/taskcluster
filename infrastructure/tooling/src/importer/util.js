@@ -50,7 +50,7 @@ exports.ALLOWED_TABLES = [
 ];
 
 // For certain tables, we would like to import faster to make sure we don't
-// spend over 8 hours (TVW duration) importing
+// spend over 8 hours (TCW duration) importing
 exports.LARGE_TABLES = [
   'QueueArtifacts',
   'QueueTasks',
