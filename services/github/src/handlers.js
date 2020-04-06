@@ -503,7 +503,7 @@ async function statusHandler(message) {
     try {
       const url = this.queueClient.buildUrl(this.queueClient.getArtifact, taskId, runId, textArtifactName);
       const res = await utils.throttleRequest({url, method: 'GET'});
-      
+
       if (res.status >= 400 && res.status !== 404) {
         await this.createExceptionComment({
           debug,
