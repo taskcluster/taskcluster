@@ -1,6 +1,6 @@
 {
   "name": "taskcluster-ui",
-  "version": "28.1.0",
+  "version": "28.2.1",
   "private": true,
   "license": "MPL-2.0",
   "engines": {
@@ -23,7 +23,7 @@
     "@material-ui/pickers": "3.2.7",
     "@mdx-js/react": "^1.0.20",
     "@mdx-js/runtime": "^1.0.20",
-    "@mozilla-frontend-infra/components": "^3.0.2",
+    "@mozilla-frontend-infra/components": "^3.0.7",
     "@sentry/browser": "^5.0.0",
     "apollo-cache-inmemory": "^1.5.1",
     "apollo-cache-persist": "^0.1.1",

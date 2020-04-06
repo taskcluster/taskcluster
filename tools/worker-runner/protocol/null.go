@@ -13,6 +13,6 @@ func (transp *NullTransport) Send(msg Message) {
 }
 
 func (transp *NullTransport) Recv() (Message, bool) {
-	// no messages are ever received
-	select {}
+	// immediately return EOF
+	return Message{}, false
 }

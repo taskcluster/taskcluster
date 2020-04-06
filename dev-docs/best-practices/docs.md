@@ -6,6 +6,7 @@ In many cases, documentation changes for a single pull request or feature should
 ## Audience
 
 Taskcluster's documentation serves several audiences:
+<!-- NOTE: Please update dev-docs/best-practices/changelog.md and the changelog cli when updating this list -->
 
  * **Users** -- people creating tasks, consuming Taskcluster APIs, using the UI, and so on
  * **Administrators** -- people managing roles and scopes, creating hooks, and so on

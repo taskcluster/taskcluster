@@ -3,6 +3,58 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v28.2.1
+
+### DEPLOYERS
+
+▶ [patch] 
+Fix error in notify service (monitor is required)
+
+## v28.2.0
+
+### GENERAL
+
+▶ [patch] [bug 1618333](http://bugzil.la/1618333)
+Changelog entries now are categorized by the audience that they are useful for
+
+### WORKER-DEPLOYERS
+
+▶ [patch] 
+Now, if the worker process running in aws/gcp exits, it will be requested to worker-manager to terminate the instance.
+
+### ADMINS
+
+▶ [patch] [bug 1622943](http://bugzil.la/1622943)
+The maximum value for a worker's `lifecycle.reregistrationTimeout` is now 30 days.  Values greater than this cannot be represented in the worker's temporary credentials anyway.
+
+### USERS
+
+▶ [minor] [bug 1552323](http://bugzil.la/1552323)
+Adds ability to customize checks output in taskcluster-github Checks feature.
+Apart from the bug mentioned, fixes the issue https://github.com/mozilla-mobile/fenix/issues/6760
+
+▶ [patch] [#1389](https://github.com/taskcluster/taskcluster/issues/1389)
+Taskcluster UI nows offers a breadcrumbs view to easily jump back and forth when
+viewing indexes (/tasks/index/)
+
+### DEVELOPERS
+
+▶ [minor] [bug 1616998](http://bugzil.la/1616998)
+taskcluster-worker-runner has been renamed to worker-runner and its docs have been added to the reference section of the docs portal.
+
+▶ [patch] [#2522](https://github.com/taskcluster/taskcluster/issues/2522)
+Services that use a database now log information about that database, including connection pool counts and stored-function invocations.
+
+▶ [patch] [#2555](https://github.com/taskcluster/taskcluster/issues/2555)
+The azure-queue emulation library now omits expired messages from its counts.  The visible effect is that pending counts for queues no longer include tasks past their deadline.
+
+▶ [patch] [#2553](https://github.com/taskcluster/taskcluster/issues/2553)
+The taskcluster-lib-azqueue library now returns "batches" of messages in the order they were inserted.
+
+### OTHER
+
+▶ Additional changes not described here: [#1615](https://github.com/taskcluster/taskcluster/issues/1615), [#2541](https://github.com/taskcluster/taskcluster/issues/2541).
+
 ## v28.1.0
 
 ▶ [minor] [bug 1436478](http://bugzil.la/1436478)

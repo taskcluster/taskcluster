@@ -563,7 +563,7 @@ class Database {
   }
 
   /**
-   * Periodically monitor pool size, producing a measure every 5m.  These values
+   * Periodically monitor pool size, producing a measure every 1m.  These values
    * should represent a long-term trend so more frequent reports are not useful.
    */
   _startMonitoringPools() {
@@ -576,7 +576,7 @@ class Database {
           waitingCount: pool.waitingCount,
         });
       }
-    }, 300 * 1000);
+    }, 60 * 1000);
   }
 
   _stopMonitoringPools() {
