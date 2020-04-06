@@ -491,8 +491,12 @@ async function statusHandler(message) {
   );
   try {
     const taskDefinition = await this.queueClient.task(taskId);
-    const {customCheckRun} = (taskDefinition.extra && taskDefinition.extra.github) || {};
-    const {textArtifactName} = customCheckRun || CUSTOM_CHECKRUN_TEXT_ARTIFACT_NAME;
+
+    let textArtifactName = CUSTOM_CHECKRUN_TEXT_ARTIFACT_NAME;
+    if (taskDefinition.extra && taskDefinition.extra.github && taskDefinition.extra.github.customCheckRun) {
+      textArtifactName =
+        taskDefinition.extra.github.customCheckRun.textArtifactName || CUSTOM_CHECKRUN_TEXT_ARTIFACT_NAME;
+    }
 
     let customCheckRunText = '';
 
