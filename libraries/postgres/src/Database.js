@@ -481,8 +481,10 @@ class Database {
         // also prevent vacuuming of tables, both leading to performance
         // issues.  This is here to catch programming errors, but in a case
         // where the server or the client are already overloaded this timer
-        // could also start running.
-        await client.query('set idle_in_transaction_session_timeout = 1000');
+        // could also start running.  The value is set to something fairly
+        // high since in times of high load Node falls behind and leaves
+        // sessions idle (#2577).
+        await client.query('set idle_in_transaction_session_timeout = 20000');
       });
       return pool;
     };
