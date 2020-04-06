@@ -11425,6 +11425,31 @@
           "version": 1
         },
         {
+          "description": "This message is logged for each invocation of a Postgres stored function.",
+          "fields": {
+            "name": "The name of the DB function"
+          },
+          "level": "info",
+          "name": "dbFunctionCall",
+          "title": "DB Method Call",
+          "type": "db-function-call",
+          "version": 1
+        },
+        {
+          "description": "This message is logged every 5 minutes from each process that is using the database,\nonce for each pool.  Most services have both a \"read\" pool and a \"write\" pool.  The\nfields come from the node-postgres package.",
+          "fields": {
+            "idleCount": "The number of connections (out of the total) which are not currently in use",
+            "pool": "The name of the pool within the process",
+            "totalCount": "The total number of connections",
+            "waitingCount": "The number of operations waiting for an idle connection"
+          },
+          "level": "notice",
+          "name": "dbPoolCounts",
+          "title": "DB Pool Counts",
+          "type": "db-pool-counts",
+          "version": 1
+        },
+        {
           "description": "A timer and audit for express API endpoints.\nYou can combine this with auth audit logs to get\na complete picture of what was authorized when.\n\nHere, anything that is not public should have authenticated\nand if it authenticated, we will tell the clientId here. Given\nthat, it is not necessarily true that the endpoint was\n_authorized_. You can tell that by the statusCode.",
           "fields": {
             "apiVersion": "The version of the API (e.g., `v1`)",
@@ -11970,6 +11995,31 @@
           "version": 1
         },
         {
+          "description": "This message is logged for each invocation of a Postgres stored function.",
+          "fields": {
+            "name": "The name of the DB function"
+          },
+          "level": "info",
+          "name": "dbFunctionCall",
+          "title": "DB Method Call",
+          "type": "db-function-call",
+          "version": 1
+        },
+        {
+          "description": "This message is logged every 5 minutes from each process that is using the database,\nonce for each pool.  Most services have both a \"read\" pool and a \"write\" pool.  The\nfields come from the node-postgres package.",
+          "fields": {
+            "idleCount": "The number of connections (out of the total) which are not currently in use",
+            "pool": "The name of the pool within the process",
+            "totalCount": "The total number of connections",
+            "waitingCount": "The number of operations waiting for an idle connection"
+          },
+          "level": "notice",
+          "name": "dbPoolCounts",
+          "title": "DB Pool Counts",
+          "type": "db-pool-counts",
+          "version": 1
+        },
+        {
           "description": "A client has been issued Taskcluster credentials",
           "fields": {
             "clientId": "The clientId of the issued credentials",
@@ -12157,6 +12207,31 @@
           "name": "loggingError",
           "title": "Error in Logging",
           "type": "monitor.loggingError",
+          "version": 1
+        },
+        {
+          "description": "This message is logged for each invocation of a Postgres stored function.",
+          "fields": {
+            "name": "The name of the DB function"
+          },
+          "level": "info",
+          "name": "dbFunctionCall",
+          "title": "DB Method Call",
+          "type": "db-function-call",
+          "version": 1
+        },
+        {
+          "description": "This message is logged every 5 minutes from each process that is using the database,\nonce for each pool.  Most services have both a \"read\" pool and a \"write\" pool.  The\nfields come from the node-postgres package.",
+          "fields": {
+            "idleCount": "The number of connections (out of the total) which are not currently in use",
+            "pool": "The name of the pool within the process",
+            "totalCount": "The total number of connections",
+            "waitingCount": "The number of operations waiting for an idle connection"
+          },
+          "level": "notice",
+          "name": "dbPoolCounts",
+          "title": "DB Pool Counts",
+          "type": "db-pool-counts",
           "version": 1
         },
         {
@@ -12438,6 +12513,31 @@
           "name": "apiMethod",
           "title": "API Method Report",
           "type": "monitor.apiMethod",
+          "version": 1
+        },
+        {
+          "description": "This message is logged for each invocation of a Postgres stored function.",
+          "fields": {
+            "name": "The name of the DB function"
+          },
+          "level": "info",
+          "name": "dbFunctionCall",
+          "title": "DB Method Call",
+          "type": "db-function-call",
+          "version": 1
+        },
+        {
+          "description": "This message is logged every 5 minutes from each process that is using the database,\nonce for each pool.  Most services have both a \"read\" pool and a \"write\" pool.  The\nfields come from the node-postgres package.",
+          "fields": {
+            "idleCount": "The number of connections (out of the total) which are not currently in use",
+            "pool": "The name of the pool within the process",
+            "totalCount": "The total number of connections",
+            "waitingCount": "The number of operations waiting for an idle connection"
+          },
+          "level": "notice",
+          "name": "dbPoolCounts",
+          "title": "DB Pool Counts",
+          "type": "db-pool-counts",
           "version": 1
         },
         {
@@ -14022,6 +14122,31 @@
           "version": 1
         },
         {
+          "description": "This message is logged for each invocation of a Postgres stored function.",
+          "fields": {
+            "name": "The name of the DB function"
+          },
+          "level": "info",
+          "name": "dbFunctionCall",
+          "title": "DB Method Call",
+          "type": "db-function-call",
+          "version": 1
+        },
+        {
+          "description": "This message is logged every 5 minutes from each process that is using the database,\nonce for each pool.  Most services have both a \"read\" pool and a \"write\" pool.  The\nfields come from the node-postgres package.",
+          "fields": {
+            "idleCount": "The number of connections (out of the total) which are not currently in use",
+            "pool": "The name of the pool within the process",
+            "totalCount": "The total number of connections",
+            "waitingCount": "The number of operations waiting for an idle connection"
+          },
+          "level": "notice",
+          "name": "dbPoolCounts",
+          "title": "DB Pool Counts",
+          "type": "db-pool-counts",
+          "version": 1
+        },
+        {
           "description": "A timer and audit for express API endpoints.\nYou can combine this with auth audit logs to get\na complete picture of what was authorized when.\n\nHere, anything that is not public should have authenticated\nand if it authenticated, we will tell the clientId here. Given\nthat, it is not necessarily true that the endpoint was\n_authorized_. You can tell that by the statusCode.",
           "fields": {
             "apiVersion": "The version of the API (e.g., `v1`)",
@@ -14385,6 +14510,31 @@
           "name": "apiMethod",
           "title": "API Method Report",
           "type": "monitor.apiMethod",
+          "version": 1
+        },
+        {
+          "description": "This message is logged for each invocation of a Postgres stored function.",
+          "fields": {
+            "name": "The name of the DB function"
+          },
+          "level": "info",
+          "name": "dbFunctionCall",
+          "title": "DB Method Call",
+          "type": "db-function-call",
+          "version": 1
+        },
+        {
+          "description": "This message is logged every 5 minutes from each process that is using the database,\nonce for each pool.  Most services have both a \"read\" pool and a \"write\" pool.  The\nfields come from the node-postgres package.",
+          "fields": {
+            "idleCount": "The number of connections (out of the total) which are not currently in use",
+            "pool": "The name of the pool within the process",
+            "totalCount": "The total number of connections",
+            "waitingCount": "The number of operations waiting for an idle connection"
+          },
+          "level": "notice",
+          "name": "dbPoolCounts",
+          "title": "DB Pool Counts",
+          "type": "db-pool-counts",
           "version": 1
         }
       ]
@@ -14784,6 +14934,31 @@
           "version": 1
         },
         {
+          "description": "This message is logged for each invocation of a Postgres stored function.",
+          "fields": {
+            "name": "The name of the DB function"
+          },
+          "level": "info",
+          "name": "dbFunctionCall",
+          "title": "DB Method Call",
+          "type": "db-function-call",
+          "version": 1
+        },
+        {
+          "description": "This message is logged every 5 minutes from each process that is using the database,\nonce for each pool.  Most services have both a \"read\" pool and a \"write\" pool.  The\nfields come from the node-postgres package.",
+          "fields": {
+            "idleCount": "The number of connections (out of the total) which are not currently in use",
+            "pool": "The name of the pool within the process",
+            "totalCount": "The total number of connections",
+            "waitingCount": "The number of operations waiting for an idle connection"
+          },
+          "level": "notice",
+          "name": "dbPoolCounts",
+          "title": "DB Pool Counts",
+          "type": "db-pool-counts",
+          "version": 1
+        },
+        {
           "description": "A connection to Pulse has been established.  Taskcluster services\nautomatically reconnect to Pulse periodically and in the event of\nan error, but rapid reconnections may signal a Pulse failure.",
           "fields": {
           },
@@ -15094,6 +15269,31 @@
           "name": "loggingError",
           "title": "Error in Logging",
           "type": "monitor.loggingError",
+          "version": 1
+        },
+        {
+          "description": "This message is logged for each invocation of a Postgres stored function.",
+          "fields": {
+            "name": "The name of the DB function"
+          },
+          "level": "info",
+          "name": "dbFunctionCall",
+          "title": "DB Method Call",
+          "type": "db-function-call",
+          "version": 1
+        },
+        {
+          "description": "This message is logged every 5 minutes from each process that is using the database,\nonce for each pool.  Most services have both a \"read\" pool and a \"write\" pool.  The\nfields come from the node-postgres package.",
+          "fields": {
+            "idleCount": "The number of connections (out of the total) which are not currently in use",
+            "pool": "The name of the pool within the process",
+            "totalCount": "The total number of connections",
+            "waitingCount": "The number of operations waiting for an idle connection"
+          },
+          "level": "notice",
+          "name": "dbPoolCounts",
+          "title": "DB Pool Counts",
+          "type": "db-pool-counts",
           "version": 1
         },
         {
@@ -15637,6 +15837,31 @@
           "name": "apiMethod",
           "title": "API Method Report",
           "type": "monitor.apiMethod",
+          "version": 1
+        },
+        {
+          "description": "This message is logged for each invocation of a Postgres stored function.",
+          "fields": {
+            "name": "The name of the DB function"
+          },
+          "level": "info",
+          "name": "dbFunctionCall",
+          "title": "DB Method Call",
+          "type": "db-function-call",
+          "version": 1
+        },
+        {
+          "description": "This message is logged every 5 minutes from each process that is using the database,\nonce for each pool.  Most services have both a \"read\" pool and a \"write\" pool.  The\nfields come from the node-postgres package.",
+          "fields": {
+            "idleCount": "The number of connections (out of the total) which are not currently in use",
+            "pool": "The name of the pool within the process",
+            "totalCount": "The total number of connections",
+            "waitingCount": "The number of operations waiting for an idle connection"
+          },
+          "level": "notice",
+          "name": "dbPoolCounts",
+          "title": "DB Pool Counts",
+          "type": "db-pool-counts",
           "version": 1
         },
         {
@@ -16268,6 +16493,31 @@
           "name": "loggingError",
           "title": "Error in Logging",
           "type": "monitor.loggingError",
+          "version": 1
+        },
+        {
+          "description": "This message is logged for each invocation of a Postgres stored function.",
+          "fields": {
+            "name": "The name of the DB function"
+          },
+          "level": "info",
+          "name": "dbFunctionCall",
+          "title": "DB Method Call",
+          "type": "db-function-call",
+          "version": 1
+        },
+        {
+          "description": "This message is logged every 5 minutes from each process that is using the database,\nonce for each pool.  Most services have both a \"read\" pool and a \"write\" pool.  The\nfields come from the node-postgres package.",
+          "fields": {
+            "idleCount": "The number of connections (out of the total) which are not currently in use",
+            "pool": "The name of the pool within the process",
+            "totalCount": "The total number of connections",
+            "waitingCount": "The number of operations waiting for an idle connection"
+          },
+          "level": "notice",
+          "name": "dbPoolCounts",
+          "title": "DB Pool Counts",
+          "type": "db-pool-counts",
           "version": 1
         },
         {
