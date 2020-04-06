@@ -190,8 +190,9 @@ func Run(configFile string) (state run.State, err error) {
 
 	proto.Start(false)
 
-	// wait for the worker to terminate
-
+	// wait for the worker to terminate, first reading everything from the
+	// protocol to capture any output just before the process exited
+	proto.WaitForEOF()
 	err = worker.Wait()
 	if err != nil {
 		return

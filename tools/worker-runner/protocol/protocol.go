@@ -25,6 +25,10 @@ type Protocol struct {
 	// tracking for whether this protocol is intialized
 	initialized     bool
 	initializedCond sync.Cond
+
+	// tracking for EOF from the read side of the transport
+	eof     bool
+	eofCond sync.Cond
 }
 
 func NewProtocol(transport Transport) *Protocol {
@@ -35,6 +39,9 @@ func NewProtocol(transport Transport) *Protocol {
 		callbacks:          make(map[string][]MessageCallback),
 		initialized:        false,
 		initializedCond: sync.Cond{
+			L: &sync.Mutex{},
+		},
+		eofCond: sync.Cond{
 			L: &sync.Mutex{},
 		},
 	}
@@ -131,6 +138,15 @@ func (prot *Protocol) Capable(c string) bool {
 	return prot.localCapabilities.Has(c) && prot.remoteCapabilities.Has(c)
 }
 
+// Wait until all message have been read from the transport.
+func (prot *Protocol) WaitForEOF() {
+	prot.eofCond.L.Lock()
+	defer prot.eofCond.L.Unlock()
+	for !prot.eof {
+		prot.eofCond.Wait()
+	}
+}
+
 // Send a message.  This happens without waiting for initialization; as the
 // caller should already have used prot.Capable to determine whether the
 // message was supported.
@@ -142,6 +158,10 @@ func (prot *Protocol) recvLoop() {
 	for {
 		msg, ok := prot.transport.Recv()
 		if !ok {
+			prot.eofCond.L.Lock()
+			prot.eof = true
+			prot.eofCond.Broadcast()
+			prot.eofCond.L.Unlock()
 			return
 		}
 		callbacks, ok := prot.callbacks[msg.Type]
