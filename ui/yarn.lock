@@ -3196,11 +3196,6 @@ buffer@^4.3.0:
     ieee754 "^1.1.4"
     isarray "^1.0.0"
 
-buffered-async-iterator@^1.0.0:
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/buffered-async-iterator/-/buffered-async-iterator-1.0.0.tgz#6a35a24fcf8710dc47b458475bc244de79c755dc"
-  integrity sha512-SoC58n2G/w4qAcFqgfQznekqvf3aYiGrMXIl7wOLX4InlvDHZefsUF5j1kUjlLekQur8YeaPimKlkJ3n5ZOIAw==
-
 bufferutil@^4.0.0:
   version "4.0.1"
   resolved "https://registry.yarnpkg.com/bufferutil/-/bufferutil-4.0.1.tgz#3a177e8e5819a1243fe16b63a199951a7ad8d4a7"
