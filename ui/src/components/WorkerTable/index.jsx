@@ -1,4 +1,6 @@
 import React, { Component } from 'react';
+import { withRouter } from 'react-router-dom';
+import { parse, stringify } from 'qs';
 import TableCell from '@material-ui/core/TableCell';
 import TableRow from '@material-ui/core/TableRow';
 import memoize from 'fast-memoize';
@@ -13,6 +15,7 @@ import { worker } from '../../utils/prop-types';
 import sort from '../../utils/sort';
 import Link from '../../utils/Link';
 
+@withRouter
 @withStyles(theme => ({
   dateListItem: {
     marginLeft: -theme.spacing(1),
@@ -86,15 +89,32 @@ export default class WorkerTable extends Component {
   );
 
   handleHeaderClick = header => {
+    const {
+      location,
+      match: {
+        params: { provisionerId, workerType, workerGroup, workerId },
+      },
+    } = this.props;
+    const query = parse(location.search.slice(1));
     const toggled = this.state.sortDirection === 'desc' ? 'asc' : 'desc';
     const sortDirection = this.state.sortBy === header.id ? toggled : 'desc';
 
     this.setState({ sortBy: header.id, sortDirection });
+
+    query.sortBy = header.id;
+    query.sortDirection = sortDirection;
+    this.props.history.replace(
+      `/provisioners/${provisionerId}/worker-types/${workerType}/workers/${workerGroup}/${workerId}/${stringify(
+        query,
+        { addQueryPrefix: true }
+      )}`
+    );
   };
 
   render() {
     const { classes, worker } = this.props;
-    const { sortBy, sortDirection } = this.state;
+    const query = parse(window.location.search.slice(1));
+    const { sortBy, sortDirection } = query.sortBy ? query : this.state;
     const iconSize = 16;
     const items = this.getTableData({ sortBy, sortDirection, worker });
     const headers = [
