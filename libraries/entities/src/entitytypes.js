@@ -171,7 +171,7 @@ class BaseBufferType extends BaseType {
 
   serialize(target, value, cryptoKey) {
     value = this.toBuffer(value, cryptoKey);
-    checkSize(this.property, value, 256 * 1024);
+    //checkSize(this.property, value, 256 * 1024);
     // We have one chunk per 64kb
     const chunks = Math.ceil(value.length / (64 * 1024));
     for (let i = 0; i < chunks; i++) {
