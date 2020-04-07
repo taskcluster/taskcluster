@@ -47,6 +47,9 @@ exports.ALLOWED_TABLES = [
   'TaskclusterIntegrationOwners',
   'TaskclusterChecksToTasks',
   'TaskclusterCheckRuns',
+
+  // (actually a continer, but that's OK)
+  'Roles',
 ];
 
 // For certain tables, we would like to import faster to make sure we don't

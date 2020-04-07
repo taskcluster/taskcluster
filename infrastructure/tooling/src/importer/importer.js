@@ -1,5 +1,5 @@
 const buffer = require('buffered-async-iterator');
-const { Table } = require('fast-azure-storage');
+const { Table, Blob } = require('fast-azure-storage');
 const prettyMilliseconds = require('pretty-ms');
 const glob = require('glob');
 const {postgresTableName} = require('taskcluster-lib-entities');
@@ -39,6 +39,27 @@ const importer = async options => {
     }
 
     return rowsProcessed;
+  }
+
+  async function importRoles(tableName, utils) {
+    // These are not currently used by the azure-blob-storage library
+    const container = new Blob(credentials.azure);
+    let blobInfo = await container.getBlob('auth-production-roles', 'Roles', {});
+    let {content: blobContent} = blobInfo;
+    let {content: roles} = JSON.parse(blobContent);
+
+    // this is a little tricky, but we *manully* create a single "entity" that can be imported
+    // into postgres
+    const entity = {
+      RowKey: 'role',
+      PartitionKey: 'role',
+      __bufchunks_blob: 1,
+      __buf0_blob: Buffer.from(JSON.stringify(roles)).toString('base64'),
+    };
+
+    await writeToPostgres(tableName, [entity], db, ALLOWED_TABLES);
+
+    return 1;
   }
 
   let largeTableNames = [];
@@ -136,8 +157,38 @@ const importer = async options => {
   }
 
   tasks.push({
+    title: `Import Container Roles`,
+    locks: ['concurrency'],
+    requires: [],
+    provides: ['roles'],
+    run: async (requirements, utils) => {
+      const start = new Date();
+
+      const tableName = 'Roles';
+      const pgTable = postgresTableName(tableName);
+
+      await db._withClient('admin', async client => {
+        await client.query(`truncate ${pgTable}`);
+      });
+
+      const rowsImported = await importRoles(tableName, utils);
+
+      return {
+        'roles': {
+          elapsedTime: new Date() - start,
+          rowsImported,
+        },
+      };
+    },
+  });
+
+  tasks.push({
     title: 'Importer Metadata',
-    requires: tables.filter(tableName => !LARGE_TABLES.includes(tableName)).concat(largeTableNames),
+    requires: [
+      ...tables.filter(tableName => !LARGE_TABLES.includes(tableName)),
+      ...largeTableNames,
+      'roles',
+    ],
     provides: ['metadata'],
     run: async (requirements, utils) => {
       const total = {
