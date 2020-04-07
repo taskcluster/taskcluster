@@ -109,7 +109,7 @@ export default class RoleForm extends Component {
       roleId: role.roleId,
       created: role.created,
       lastModified: role.lastModified,
-      scopeText: role.scopes.join('\n'),
+      scopeText: (role.scopes || []).join('\n'),
       expandedScopes: role.expandedScopes,
     };
   }
@@ -164,7 +164,7 @@ export default class RoleForm extends Component {
     const isRoleDirty =
       isNewRole ||
       description !== role.description ||
-      scopeText !== role.scopes.join('\n');
+      scopeText !== (role.scopes || []).join('\n');
 
     return (
       <Fragment>
@@ -216,7 +216,7 @@ export default class RoleForm extends Component {
               spellCheck={false}
               placeholder={isNewRole ? 'new-scope:for-something:*' : null}
               value={scopeText}
-              initialValue={role.scopes.join('\n')}
+              initialValue={isNewRole ? '' : (role.scopes || []).join('\n')}
               sort
             />
           </ListItem>
