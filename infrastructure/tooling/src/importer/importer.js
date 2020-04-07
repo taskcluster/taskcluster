@@ -20,35 +20,25 @@ const importer = async options => {
     }
   }
 
-  async function* readAzureTableIterator(args) {
-    yield await readAzureTableInChunks(args);
-  }
-
   async function importTable(tableName, tableParameters = {}, rowsProcessed = 0, utils) {
     for await (let result of buffer(
-      readAzureTableIterator({
+      readAzureTableInChunks({
         azureCreds: credentials.azure,
         tableName,
         utils,
         tableParams: tableParameters,
         rowsProcessed,
       }),
-      1000,
+      5,
     )) {
-      if (result) {
-        const { entities, tableParams, count } = result;
+      const { entities, count } = result;
 
-        await writeToPostgres(tableName, entities, db, ALLOWED_TABLES);
+      await writeToPostgres(tableName, entities, db, ALLOWED_TABLES);
 
-        if (tableParams.nextPartitionKey && tableParams.nextRowKey) {
-          return await importTable(tableName, tableParams, count, utils);
-        }
-
-        return count;
-      }
-
-      return 0;
+      rowsProcessed = count;
     }
+
+    return rowsProcessed;
   }
 
   let largeTableNames = [];

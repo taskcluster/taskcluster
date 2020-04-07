@@ -110,42 +110,46 @@ exports.readAzureTable = async ({azureCreds, tableName, utils}) => {
 
 // read table from azure
 // returns a list of azure entities
-exports.readAzureTableInChunks = async ({azureCreds, tableName, utils, tableParams = {}, rowsProcessed = 0}) => {
+exports.readAzureTableInChunks = async function* ({azureCreds, tableName, utils, tableParams = {}, rowsProcessed = 0}) {
   const table = new azure.Table(azureCreds);
-  const entities = [];
+  let entities = [];
 
   const processResult = results => {
     const firstEntity = _.head(results.entities);
     const azureKeys = firstEntity ? Object.keys(results.entities[0]).filter(key => key.includes('odata') || key === 'Version') : [];
-    const filteredEntities = results.entities.map(
+    entities = results.entities.map(
       entity => {
         azureKeys.forEach(key => delete entity[key]);
 
         return entity;
       },
     );
-
-    entities.push(...filteredEntities);
   };
 
-  let results;
-  try {
-    results = await table.queryEntities(tableName, tableParams);
-    processResult(results);
-  } catch (err) {
-    if (err.statusCode === 404) {
-      utils.skip("no such table");
-      return;
-    }
-    throw err;
-  }
-  const count = rowsProcessed + results.entities.length;
-  utils.status({
-    message: `${count} rows`,
-  });
-  tableParams = { filter: tableParams.filter, ..._.pick(results, ['nextPartitionKey', 'nextRowKey']) };
+  while (1) {
+    try {
+      const results = await table.queryEntities(tableName, tableParams);
+      processResult(results);
 
-  return { entities, tableParams, count };
+      const count = rowsProcessed + results.entities.length;
+      utils.status({
+        message: `${count} rows`,
+      });
+      tableParams = { filter: tableParams.filter, ..._.pick(results, ['nextPartitionKey', 'nextRowKey']) };
+
+      yield { entities, count };
+
+      if (!tableParams.nextPartitionKey && !tableParams.nextRowKey) {
+        break;
+      }
+    } catch (err) {
+      if (err.statusCode === 404) {
+        utils.skip("no such table");
+        return;
+      }
+      throw err;
+    }
+  }
 };
 
 // Given a list of azure entities, this method will write to a postgres database
