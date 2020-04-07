@@ -131,13 +131,13 @@ exports.readAzureTableInChunks = async function* ({azureCreds, tableName, utils,
       const results = await table.queryEntities(tableName, tableParams);
       processResult(results);
 
-      const count = rowsProcessed + results.entities.length;
+      rowsProcessed += entities.length;
       utils.status({
-        message: `${count} rows`,
+        message: `${rowsProcessed} rows`,
       });
       tableParams = { filter: tableParams.filter, ..._.pick(results, ['nextPartitionKey', 'nextRowKey']) };
 
-      yield { entities, count };
+      yield { entities, count: rowsProcessed };
 
       if (!tableParams.nextPartitionKey && !tableParams.nextRowKey) {
         break;
