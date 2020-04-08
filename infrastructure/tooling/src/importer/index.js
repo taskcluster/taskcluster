@@ -27,7 +27,7 @@ const main = async ({ operation }) => {
 
   const taskgraph = new TaskGraph(tasks, {
     locks: {
-      concurrency: new Lock(12),
+      concurrency: new Lock(30),
     },
   });
   const context = await taskgraph.run();
