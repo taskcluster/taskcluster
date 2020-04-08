@@ -50,14 +50,19 @@ class Database {
   /**
    * Get a new Database instance
    */
-  static async setup({schema, readDbUrl, writeDbUrl, serviceName, monitor, statementTimeout}) {
+  static async setup({schema, readDbUrl, writeDbUrl, serviceName, monitor, statementTimeout, poolSize}) {
     assert(readDbUrl, 'readDbUrl is required');
     assert(writeDbUrl, 'writeDbUrl is required');
     assert(schema, 'schema is required');
     assert(serviceName, 'serviceName is required');
     assert(monitor !== undefined, 'monitor is required (but use `false` to disable)');
 
-    const db = new Database({urlsByMode: {[READ]: readDbUrl, [WRITE]: writeDbUrl}, monitor, statementTimeout});
+    const db = new Database({
+      urlsByMode: {[READ]: readDbUrl, [WRITE]: writeDbUrl},
+      monitor,
+      statementTimeout,
+      poolSize,
+    });
     db._createProcs({schema, serviceName});
 
     const dbVersion = await db.currentVersion();
@@ -444,13 +449,13 @@ class Database {
   /**
    * Private constructor (use Database.setup and Database.upgrade instead)
    */
-  constructor({urlsByMode, monitor, statementTimeout}) {
+  constructor({urlsByMode, monitor, statementTimeout, poolSize}) {
     assert(!statementTimeout || typeof statementTimeout === 'number' || typeof statementTimeout === 'boolean');
     const makePool = dbUrl => {
-      // use a max of 5 connections. For services running both a read and write
-      // pool, this is a maximum of 10 concurrent connections.  Other requests
-      // will be queued.
-      const pool = new Pool({connectionString: dbUrl, max: 5});
+      // default to a max of 5 connections. For services running both a read
+      // and write pool, this is a maximum of 10 concurrent connections.  Other
+      // requests will be queued.
+      const pool = new Pool({connectionString: dbUrl, max: poolSize || 5});
       // ignore errors from *idle* connections.  From the docs:
       //
       // > When a client is sitting idly in the pool it can still emit errors

@@ -15,6 +15,9 @@ exports.requireEnv = name => {
   throw new Error(`$${name} must be given`);
 };
 
+// number of table (or table-chunk) imports to run in parallel
+exports.CONCURRENCY = 30;
+
 // tables that are allowed to migrate
 exports.ALLOWED_TABLES = [
   // 'Clients',

@@ -21,14 +21,20 @@ const db = Database.setup({
   writeDbUrl: ..,
   readDbUrl: ..,
   serviceName: ...,
+  monitor: ...,
   statementTimeout: ..., // optional
+  poolSize: ..., // optional, default 5
 });
 ```
 
 The read and write URLs typically come from serivce configuration.
 The read URL is used for queries that only read data, and can operate on read-only server mirrors, while queries that will modify the content of the database use the write URL.
+The `monitor` is a taskcluster-lib-monitor instance, used to report database metrics.
 if `statementTimeout` is set, then it is treated as a timeout (in seconds) after which a statement will be aborted.
 This is typically used in web processes to abort statements running longer than 30s, after which time the HTTP client has likely given up.
+
+The `poolSize` parameter specifies the maximum number of Postgres clients in each pool of clients, with two pools (read and write) in use.
+DB function calls made when there are no clients available will be queued and wait until a client is avaliable.
 
 Once that is finished, the methods defined in the schema can be called on the `db.fns` object.
 For example, if the schema defines a `getWidgetsPerWorker` method:
