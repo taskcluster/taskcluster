@@ -53,8 +53,22 @@ auth:
   pulse_password: ...
   aws_credentials_allowed_buckets: {}
   gcp_credentials_allowed_projects: {}
+  procs:
+    web:
+      cpu: 10m
+    expireSentry:
+      cpu: 10m
+    purgeExpiredClients:
+      cpu: 10m
+    write_docs:
+      cpu: 10m
 built_in_workers:
   taskcluster_access_token: ...
+  procs:
+    server:
+      cpu: 10m
+    write_docs:
+      cpu: 10m
 github:
   bot_username: ...
   taskcluster_access_token: ...
@@ -65,6 +79,15 @@ github:
   worker_type: ...
   pulse_username: ...
   pulse_password: ...
+  procs:
+    web:
+      cpu: 10m
+    worker:
+      cpu: 10m
+    sync:
+      cpu: 10m
+    write_docs:
+      cpu: 10m
 hooks:
   influx_connection: ...
   azure_signing_key: ...
@@ -72,10 +95,30 @@ hooks:
   taskcluster_access_token: ...
   pulse_username: ...
   pulse_password: ...
+  procs:
+    web:
+      cpu: 10m
+    scheduler:
+      cpu: 10m
+    write_docs:
+      cpu: 10m
+    listeners:
+      cpu: 10m
+    expires:
+      cpu: 10m
 index:
   taskcluster_access_token: ...
   pulse_username: ...
   pulse_password: ...
+  procs:
+    web:
+      cpu: 10m
+    handlers:
+      cpu: 10m
+    expire:
+      cpu: 10m
+    write_docs:
+      cpu: 10m
 notify:
   email_source_address: ...
   email_blacklist: {}
@@ -97,8 +140,24 @@ notify:
   matrix_base_url: ...
   matrix_access_token: ...
   matrix_user_id: ...
+  procs:
+    web:
+      cpu: 10m
+    irc:
+      cpu: 10m
+    handler:
+      cpu: 10m
+    write_docs:
+      cpu: 10m
 purge_cache:
   taskcluster_access_token: ...
+  procs:
+    web:
+      cpu: 10m
+    expireCachePurges:
+      cpu: 10m
+    write_docs:
+      cpu: 10m
 queue:
   public_artifact_bucket: ...
   private_artifact_bucket: ...
@@ -115,10 +174,46 @@ queue:
   aws_access_key_id: ...
   aws_secret_access_key: ...
   artifact_region: ...
+  procs:
+    web:
+      cpu: 10m
+    write_docs:
+      cpu: 10m
+    claimResolver:
+      cpu: 10m
+    deadlineResolver:
+      cpu: 10m
+    dependencyResolver:
+      cpu: 10m
+    expireArtifacts:
+      cpu: 10m
+    expireTask:
+      cpu: 10m
+    expireTaskGroups:
+      cpu: 10m
+    expireTaskGroupMembers:
+      cpu: 10m
+    expireTaskGroupSizes:
+      cpu: 10m
+    expireTaskDependency:
+      cpu: 10m
+    expireTaskRequirement:
+      cpu: 10m
+    expireQueues:
+      cpu: 10m
+    expireWorkerInfo:
+      cpu: 10m
 secrets:
   taskcluster_access_token: ...
   azure_crypto_key: ...
   azure_signing_key: ...
+  procs:
+    web:
+      cpu: 10m
+    expire:
+      cpu: 10m
+    write_docs:
+      cpu: 10m
 web_server:
   public_url: ...
   additional_allowed_cors_origin: ...
@@ -130,6 +225,17 @@ web_server:
   registered_clients: {}
   ui_login_strategies: {}
   session_secret: ...
+  procs:
+    web:
+      cpu: 10m
+    scanner:
+      cpu: 10m
+    cleanup_expire_auth_codes:
+      cpu: 10m
+    cleanup_expire_access_tokens:
+      cpu: 10m
+    write_docs:
+      cpu: 10m
 worker_manager:
   provisioner_iterate_config: {}
   worker_scanner_iterate_config: {}
@@ -137,9 +243,30 @@ worker_manager:
   pulse_username: ...
   pulse_password: ...
   providers: {}
+  procs:
+    web:
+      cpu: 10m
+    provisioner:
+      cpu: 10m
+    workerscanner:
+      cpu: 10m
+    expire_workers:
+      cpu: 10m
+    expire_worker_pools:
+      cpu: 10m
+    expire_errors:
+      cpu: 10m
+    write_docs:
+      cpu: 10m
 ui:
   graphql_subscription_endpoint: ...
   graphql_endpoint: ...
   ui_login_strategy_names: ...
   banner_message: ...
-references: {}
+  procs:
+    web:
+      cpu: 10m
+references:
+  procs:
+    web:
+      cpu: 10m
