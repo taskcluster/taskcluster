@@ -14,6 +14,7 @@ import (
 	set "github.com/deckarep/golang-set"
 	"github.com/docopt/docopt-go"
 	log "github.com/sirupsen/logrus"
+	"github.com/taskcluster/taskcluster/v28/internal"
 	"github.com/taskcluster/taskcluster/v28/tools/websocktunnel/client"
 )
 
@@ -47,7 +48,7 @@ Options:
 const closeWait = 2 * time.Second
 
 func main() {
-	arguments, _ := docopt.ParseArgs(usage, nil, "wst-client")
+	arguments, _ := docopt.ParseArgs(usage, nil, "wst-client "+internal.Version)
 
 	var jwtToken string
 	wstServer, wstClientID := arguments["<wstServer>"].(string), arguments["<wstClientID>"].(string)

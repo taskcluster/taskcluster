@@ -5,7 +5,7 @@ import (
 	"os"
 
 	docopt "github.com/docopt/docopt-go"
-	tcworkerrunner "github.com/taskcluster/taskcluster/v28/tools/worker-runner"
+	"github.com/taskcluster/taskcluster/v28/internal"
 	"github.com/taskcluster/taskcluster/v28/tools/worker-runner/logging"
 	"github.com/taskcluster/taskcluster/v28/tools/worker-runner/provider"
 	"github.com/taskcluster/taskcluster/v28/tools/worker-runner/runner"
@@ -30,7 +30,7 @@ Usage:
 func main() {
 	logging.PatchStdLogger(nil)
 
-	opts, err := docopt.ParseArgs(Usage(), os.Args[1:], "start-worker "+tcworkerrunner.Version)
+	opts, err := docopt.ParseArgs(Usage(), os.Args[1:], "start-worker "+internal.Version)
 	if err != nil {
 		log.Printf("Error parsing command-line arguments: %s", err)
 		os.Exit(1)

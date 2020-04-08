@@ -12,6 +12,7 @@ import (
 	mozlog "github.com/mozilla-services/go-mozlogrus"
 	log "github.com/sirupsen/logrus"
 	lSyslog "github.com/sirupsen/logrus/hooks/syslog"
+	"github.com/taskcluster/taskcluster/v28/internal"
 	"github.com/taskcluster/taskcluster/v28/tools/websocktunnel/wsproxy"
 )
 
@@ -34,7 +35,7 @@ Options:
 -h --help       Show help`
 
 func main() {
-	_, _ = docopt.ParseArgs(usage, nil, "websocktunnel")
+	_, _ = docopt.ParseArgs(usage, nil, "websocktunnel "+internal.Version)
 
 	urlPrefix := os.Getenv("URL_PREFIX")
 	if urlPrefix == "" {

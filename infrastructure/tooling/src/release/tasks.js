@@ -159,6 +159,12 @@ module.exports = ({tasks, cmdOptions, credentials}) => {
         contents.replace(/download\/v[0-9.]*\/taskcluster-/g, `download/v${requirements['release-version']}/taskcluster-`));
       changed.push(shellreadme);
 
+      const internalVersion = 'internal/version.go';
+      utils.status({message: `Update ${internalVersion}`});
+      await modifyRepoFile(internalVersion, contents =>
+        contents.replace(/^(\s*Version\s*=\s*).*/m, `$1"${requirements['release-version']}"`));
+      changed.push(internalVersion);
+
       // The go libraries require the major version number in their package
       // import paths, so just about every file needs to be edited. This
       // matches the full package path to avoid false positives, but that
@@ -182,18 +188,6 @@ module.exports = ({tasks, cmdOptions, credentials}) => {
         await modifyRepoFile(file, contents =>
           contents.replace(/(github.com\/taskcluster\/taskcluster\/v)\d+/g, `$1${major}`));
         changed.push(file);
-      }
-
-      const otherFiles = [
-        'workers/generic-worker/main.go',
-        'tools/worker-runner/version.go',
-      ];
-
-      for (const f of otherFiles) {
-        utils.status({message: `Update ${f}`});
-        await modifyRepoFile(f, contents =>
-          contents.replace(/^(\s*[vV]ersion\s*=\s*).*/m, `$1"${requirements['release-version']}"`));
-        changed.push(f);
       }
 
       return {'version-updated': changed};
