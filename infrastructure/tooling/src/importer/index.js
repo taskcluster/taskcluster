@@ -2,7 +2,7 @@ const {TaskGraph, Lock} = require('console-taskgraph');
 const { Database } = require('taskcluster-lib-postgres');
 const importer = require('./importer');
 const verifier = require('./verifier');
-const { requireEnv } = require('./util');
+const { requireEnv, CONCURRENCY } = require('./util');
 
 const main = async ({ operation }) => {
   const credentials = {
@@ -14,7 +14,11 @@ const main = async ({ operation }) => {
       adminDbUrl: requireEnv('ADMIN_DB_URL'),
     },
   };
-  const db = new Database({ urlsByMode: {admin: credentials.postgres.adminDbUrl}, statementTimeout: false });
+  const db = new Database({
+    urlsByMode: {admin: credentials.postgres.adminDbUrl},
+    statementTimeout: false,
+    poolSize: CONCURRENCY,
+  });
 
   let tasks;
   if (operation === 'importer') {
@@ -27,7 +31,7 @@ const main = async ({ operation }) => {
 
   const taskgraph = new TaskGraph(tasks, {
     locks: {
-      concurrency: new Lock(30),
+      concurrency: new Lock(CONCURRENCY),
     },
   });
   const context = await taskgraph.run();
