@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strings"
 	"syscall"
 	"time"
 	"unicode/utf16"
@@ -813,4 +814,17 @@ func DeleteProfile(
 		err = os.NewSyscallError("DeleteProfileW", e1)
 	}
 	return
+}
+
+// CMDExeEscape escapes cmd.exe metacharacters
+// See: https://blogs.msdn.microsoft.com/twistylittlepassagesallalike/2011/04/23/everyone-quotes-command-line-arguments-the-wrong-way/
+func CMDExeEscape(text string) string {
+	cmdEscaped := ""
+	for _, c := range text {
+		if strings.ContainsRune(`()%!^"<>&|`, c) {
+			cmdEscaped += "^"
+		}
+		cmdEscaped += string(c)
+	}
+	return cmdEscaped
 }

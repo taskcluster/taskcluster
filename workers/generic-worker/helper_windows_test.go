@@ -7,6 +7,8 @@ import (
 	"strconv"
 	"strings"
 	"syscall"
+
+	"github.com/taskcluster/taskcluster/v28/workers/generic-worker/win32"
 )
 
 func helloGoodbye() []string {
@@ -95,7 +97,7 @@ func goRunFileOutput(outputFile, goFile string, args ...string) []string {
 // run runs the command line args specified in args and redirects the output to
 // file outputFile if it is not an empty string.
 func run(args []string, outputFile string) string {
-	run := cmdExeEscape(makeCmdLine(args))
+	run := win32.CMDExeEscape(makeCmdLine(args))
 
 	if outputFile != "" {
 		run += ` > ` + syscall.EscapeArg(outputFile)
@@ -113,19 +115,6 @@ func makeCmdLine(args []string) string {
 		s += syscall.EscapeArg(v)
 	}
 	return s
-}
-
-// cmdExeEscape escapes cmd.exe metacharacters
-// See: https://blogs.msdn.microsoft.com/twistylittlepassagesallalike/2011/04/23/everyone-quotes-command-line-arguments-the-wrong-way/
-func cmdExeEscape(text string) string {
-	cmdEscaped := ""
-	for _, c := range text {
-		if strings.ContainsRune(`()%!^"<>&|`, c) {
-			cmdEscaped += "^"
-		}
-		cmdEscaped += string(c)
-	}
-	return cmdEscaped
 }
 
 func copyTestdataFile(path string) []string {
