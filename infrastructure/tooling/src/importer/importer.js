@@ -70,64 +70,100 @@ const importer = async options => {
       await db._withClient('admin', async client => {
         await client.query(`truncate ${pgTable}`);
       });
-      const may2020 = new Date(2020, 4, 1);
-      const july2020 = new Date(2020, 6, 1);
-      const september2020 = new Date(2020, 8, 1);
-      const november2020 = new Date(2020, 10, 1);
-      const january2021 = new Date(2020, 12, 1);
 
       [
         {
-          name: `${tableName}-1/6`,
-          filter: `expires ${Table.Operators.LessThan} ${Table.Operators.date(may2020)}`,
-          title: `expires < ${may2020.toJSON()}`,
+          name: `${tableName}-1/14`,
+          filter: `PartitionKey ${Table.Operators.LessThan} ${Table.Operators.string("A")}`,
+          title: `[-]`,
         },
         {
-          name: `${tableName}-2/6`,
-          filter: `expires ${Table.Operators.GreaterThanOrEqual} ${Table.Operators.date(may2020)} ${Table.Operators.And} expires ${Table.Operators.LessThan} ${Table.Operators.date(july2020)}`,
-          title: `expires >= ${may2020.toJSON()} and < ${july2020.toJSON()}`,
+          name: `${tableName}-2/14`,
+          filter: `PartitionKey ${Table.Operators.GreaterThanOrEqual} ${Table.Operators.string("A")} ${Table.Operators.And} PartitionKey ${Table.Operators.LessThan} ${Table.Operators.string("E")} `,
+          title: `[A, E[`,
         },
         {
-          name: `${tableName}-3/6`,
-          filter: `expires ${Table.Operators.GreaterThanOrEqual} ${Table.Operators.date(july2020)} ${Table.Operators.And} expires ${Table.Operators.LessThan} ${Table.Operators.date(september2020)}`,
-          title: `expires >= ${july2020.toJSON()} and < ${september2020.toJSON()}`,
+          name: `${tableName}-3/14`,
+          filter: `PartitionKey ${Table.Operators.GreaterThanOrEqual} ${Table.Operators.string("E")} ${Table.Operators.And} PartitionKey ${Table.Operators.LessThan} ${Table.Operators.string("I")} `,
+          title: `[E, I[`,
         },
         {
-          name: `${tableName}-4/6`,
-          filter: `expires ${Table.Operators.GreaterThanOrEqual} ${Table.Operators.date(september2020)} ${Table.Operators.And} expires ${Table.Operators.LessThan} ${Table.Operators.date(november2020)}`,
-          title: `expires >= ${september2020.toJSON()} and < ${november2020.toJSON()}`,
+          name: `${tableName}-4/14`,
+          filter: `PartitionKey ${Table.Operators.GreaterThanOrEqual} ${Table.Operators.string("I")} ${Table.Operators.And} PartitionKey ${Table.Operators.LessThan} ${Table.Operators.string("N")} `,
+          title: `[I, N[`,
         },
         {
-          name: `${tableName}-5/6`,
-          filter: `expires ${Table.Operators.GreaterThanOrEqual} ${Table.Operators.date(november2020)} ${Table.Operators.And} expires ${Table.Operators.LessThan} ${Table.Operators.date(january2021)}`,
-          title: `expires >= ${november2020.toJSON()} and < ${january2021.toJSON()}`,
+          name: `${tableName}-5/14`,
+          filter: `PartitionKey ${Table.Operators.GreaterThanOrEqual} ${Table.Operators.string("N")} ${Table.Operators.And} PartitionKey ${Table.Operators.LessThan} ${Table.Operators.string("U")} `,
+          title: `[N, U[`,
         },
         {
-          name: `${tableName}-6/6`,
-          filter: `expires ${Table.Operators.GreaterThanOrEqual} ${Table.Operators.date(january2021)}`,
-          title: `expires >= ${january2021.toJSON()}`,
+          name: `${tableName}-6/14`,
+          filter: `PartitionKey ${Table.Operators.GreaterThanOrEqual} ${Table.Operators.string("U")} ${Table.Operators.And} PartitionKey ${Table.Operators.LessThan} ${Table.Operators.string("Z")} `,
+          title: `[U, Z[`,
         },
-      ].forEach(({ name, filter, title }) => {
-        largeTableNames.push(name);
-        tasks.push({
-          title: `Import Table ${tableName} (${title})`,
-          locks: ['concurrency'],
-          requires: [],
-          provides: [name],
-          run: async (requirements, utils) => {
-            const start = new Date();
+        {
+          name: `${tableName}-7/14`,
+          filter: `PartitionKey ${Table.Operators.GreaterThanOrEqual} ${Table.Operators.string("Z")} ${Table.Operators.And} PartitionKey ${Table.Operators.LessThan} ${Table.Operators.string("a")} `,
+          title: `[Z, _]`,
+        },
+        {
+          name: `${tableName}-8/14`,
+          filter: `PartitionKey ${Table.Operators.GreaterThanOrEqual} ${Table.Operators.string("a")} ${Table.Operators.And} PartitionKey ${Table.Operators.LessThan} ${Table.Operators.string("e")} `,
+          title: `[a, e[`,
+        },
+        {
+          name: `${tableName}-9/14`,
+          filter: `PartitionKey ${Table.Operators.GreaterThanOrEqual} ${Table.Operators.string("e")} ${Table.Operators.And} PartitionKey ${Table.Operators.LessThan} ${Table.Operators.string("i")} `,
+          title: `[e, i[`,
+        },
+        {
+          name: `${tableName}-10/14`,
+          filter: `PartitionKey ${Table.Operators.GreaterThanOrEqual} ${Table.Operators.string("i")} ${Table.Operators.And} PartitionKey ${Table.Operators.LessThan} ${Table.Operators.string("n")} `,
+          title: `[i, n[`,
+        },
+        {
+          name: `${tableName}-11/14`,
+          filter: `PartitionKey ${Table.Operators.GreaterThanOrEqual} ${Table.Operators.string("n")} ${Table.Operators.And} PartitionKey ${Table.Operators.LessThan} ${Table.Operators.string("u")} `,
+          title: `[n, u[`,
+        },
+        {
+          name: `${tableName}-12/14`,
+          filter: `PartitionKey ${Table.Operators.GreaterThanOrEqual} ${Table.Operators.string("u")} ${Table.Operators.And} PartitionKey ${Table.Operators.LessThanOrEqual} ${Table.Operators.string("z")} `,
+          title: `[u, z]`,
+        },
+        {
+          name: `${tableName}-13/14`,
+          filter: `PartitionKey ${Table.Operators.GreaterThanOrEqual} ${Table.Operators.string("0")} ${Table.Operators.And} PartitionKey ${Table.Operators.LessThan} ${Table.Operators.string("4")} `,
+          title: `[0, 4[`,
+        },
+        {
+          name: `${tableName}-14/14`,
+          filter: `PartitionKey ${Table.Operators.GreaterThanOrEqual} ${Table.Operators.string("4")} ${Table.Operators.And} PartitionKey ${Table.Operators.LessThanOrEqual} ${Table.Operators.string("9")} `,
+          title: `[4, 9]`,
+        },
+      ]
+        .forEach(({ name, filter, title }) => {
+          largeTableNames.push(name);
+          tasks.push({
+            title: `Import Table ${tableName} (${title})`,
+            locks: ['concurrency'],
+            requires: [],
+            provides: [name],
+            run: async (requirements, utils) => {
+              const start = new Date();
 
-            const rowsImported = await importTable(tableName, { filter }, 0, utils);
+              const rowsImported = await importTable(tableName, { filter }, 0, utils);
 
-            return {
-              [name]: {
-                elapsedTime: new Date() - start,
-                rowsImported,
-              },
-            };
-          },
+              return {
+                [name]: {
+                  elapsedTime: new Date() - start,
+                  rowsImported,
+                },
+              };
+            },
+          });
         });
-      });
     } else {
       tasks.push({
         title: `Import Table ${tableName}`,
