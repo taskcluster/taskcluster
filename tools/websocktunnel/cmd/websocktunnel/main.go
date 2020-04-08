@@ -34,7 +34,7 @@ Options:
 -h --help       Show help`
 
 func main() {
-	_, _ = docopt.Parse(usage, nil, true, "websocktunnel", false)
+	_, _ = docopt.ParseArgs(usage, nil, "websocktunnel")
 
 	urlPrefix := os.Getenv("URL_PREFIX")
 	if urlPrefix == "" {

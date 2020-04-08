@@ -47,7 +47,7 @@ Options:
 const closeWait = 2 * time.Second
 
 func main() {
-	arguments, _ := docopt.Parse(usage, nil, true, "Websocktunnel Client 0.1", false)
+	arguments, _ := docopt.ParseArgs(usage, nil, "wst-client")
 
 	var jwtToken string
 	wstServer, wstClientID := arguments["<wstServer>"].(string), arguments["<wstClientID>"].(string)

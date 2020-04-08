@@ -4,9 +4,9 @@ import (
 	"bufio"
 	"bytes"
 	"io/ioutil"
+	"net"
 	"net/http"
 	"net/http/httptest"
-	"net/url"
 	"sync"
 	"testing"
 
@@ -159,15 +159,12 @@ func TestWebSocket(t *testing.T) {
 		t.Fatal(err)
 	}
 	session := Client(conn, Config{Log: genLogger()})
-	//runtime.Breakpoint()
-	// session.readDeadline = time.Now().Add(10 * time.Second)
-	wsURL := &url.URL{Host: "tcproxy.net", Scheme: "ws"}
-	stream, err := session.Open()
-	if err != nil {
-		t.Fatal(err)
+	dialer := websocket.Dialer{
+		NetDial: func(network, addr string) (net.Conn, error) {
+			return session.Open()
+		},
 	}
-	//runtime.Breakpoint()
-	ws, _, err := websocket.NewClient(stream, wsURL, nil, 1024, 1024)
+	ws, _, err := dialer.Dial("ws://tcproxy.net", nil)
 	if err != nil {
 		t.Fatal(err)
 	}
