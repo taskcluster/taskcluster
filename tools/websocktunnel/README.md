@@ -1,7 +1,6 @@
-# websocktunnel
-[![Task Status](https://github.taskcluster.net/v1/repository/taskcluster/websocktunnel/master/badge.svg)](https://github.taskcluster.net/v1/repository/taskcluster/websocktunnel/master/latest)
+# Websocktunnel
 
-Websocketunnel is a service that allows its clients to publicly expose specific HTTP services without publicly exposing the entire host.
+Websocktunnel is a service that allows its clients to publicly expose specific HTTP services without publicly exposing the entire host.
 "Clients" connect to the websocktunnel service with a specific ID, authenticating with a signed JWT, and upgrade the connection to a websocket.
 "Viewers" then connect to the service using a path containing that ID.
 The viewer's connection is then proxied to the client via its websocket.
@@ -62,10 +61,10 @@ Its `tid` claim must match the client ID exactly.
 ### Multiplexed Websockets
 
 The protocol used within the websocket connection between a client and the websocktunnel service is beyond the scope of this document.
-It is implemented by the [`github.com/taskcluster/websocktunnel/wsmux`](https://godoc.org/github.com/taskcluster/websocktunnel/wsmux) package.
-The [`github.com/taskcluster/websocktunnel/client`](https://godoc.org/github.com/taskcluster/websocktunnel/client) package uses this to implement the client side of the connection.
+It is implemented by the [`github.com/taskcluster/taskcluster/v28/tools/websocktunnel/wsmux`](https://godoc.org/github.com/taskcluster/taskcluster/v28/tools/websocktunnel/wsmux) package.
+The [`github.com/taskcluster/taskcluster/v28/tools/websocktunnel/client`](https://godoc.org/github.com/taskcluster/taskcluster/v28/tools/websocktunnel/client) package uses this to implement the client side of the connection.
 
-The latter package exposes a [`Client`](https://godoc.org/github.com/taskcluster/websocktunnel/client#Client) struct which implements `net.Listener`.
+The latter package exposes a [`Client`](https://godoc.org/github.com/taskcluster/taskcluster/v28/tools/websocktunnel/client#Client) struct which implements `net.Listener`.
 The expectation is that client processes will build a `http.Server` (or equivalent) on top of this `net.Listener`.
 All connections to the server with a URL identifying the client will appear as new connections on this listener (that is, by returning a `net.Conn` from `Accept`.
 The resulting HTTP request will omit the `/<clientId>` portion of the request path.
@@ -86,7 +85,7 @@ That is entirely up to the client.
 
 # API Documentation
 
-See Documentation at [godoc.org](https://godoc.org/github.com/taskcluster/websocktunnel).
+See Documentation at [godoc.org](https://godoc.org/github.com/taskcluster/taskcluster/v28/tools/websocktunnel).
 
 # CLI
 
@@ -103,21 +102,7 @@ How clients are assigned to instances is up to you, but keep in mind that client
 
 # Development
 
-This service is tested only with go1.10.
-
-To hack on this service, install it into your GOPATH with `go get -u github.com/taskcluster/websocktunnel`.
-Run the tests with the usual `go test` invocation (for example, `go test github.com/taskcluster/websocktunnel`).
-
-## Linting
-
-We use [golangci](https://github.com/golangci/golangci-lint) to run lint checks.
-You can install this into your own GOPATH to run the same checks locally with `golangci-lint run`.
-If you see different results from those in CI runs on your pull request, check that you are running the same version as required in `.takcluster.yml`
-
-## Changing Dependencies
-
-To add, remove, or update dependencies, use [dep](https://golang.github.io/dep/docs/installation.html).
-Do not manually edit anything under the `vendor/` directory!
+To hack on this service, follow the instructions in the `dev-docs` directory of this repository.
 
 ## Deployment
 

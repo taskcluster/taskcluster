@@ -80,6 +80,7 @@ It is not possible to run a full Taskcluster deployment directly from this repos
         * [services/worker-manager/src/providers/azure-ca-certs](services/worker-manager/src/providers/azure-ca-certs#readme)
 * [Tools](tools#readme)
     * [jsonschema2go](tools/jsonschema2go#readme)
+    * [Websocktunnel](tools/websocktunnel#readme)
     * [Worker Runner](tools/worker-runner#readme)
 * [Taskcluster UI](ui#readme)
     * [ui/src/components/CopyToClipboardListItem](ui/src/components/CopyToClipboardListItem#readme)

@@ -21,7 +21,6 @@ require (
 	github.com/golang/snappy v0.0.1 // indirect
 	github.com/gorilla/websocket v1.4.1
 	github.com/iancoleman/strcase v0.0.0-20191112232945-16388991a334
-	github.com/konsorten/go-windows-terminal-sequences v1.0.1
 	github.com/kr/text v0.2.0
 	github.com/mholt/archiver v2.1.0+incompatible
 	github.com/mitchellh/go-homedir v1.1.0
@@ -47,7 +46,7 @@ require (
 	github.com/ulikunitz/xz v0.5.7 // indirect
 	github.com/xeipuuv/gojsonpointer v0.0.0-20190905194746-02993c407bfb // indirect
 	github.com/xeipuuv/gojsonschema v1.2.0
-	go.mozilla.org/mozlog v0.0.0-20170222151521-4bb13139d403
+	go.mozilla.org/mozlog v0.0.0-20170222151521-4bb13139d403 // indirect
 	golang.org/x/crypto v0.0.0-20200406173513-056763e48d71
 	golang.org/x/net v0.0.0-20200320220750-118fecf932d8
 	golang.org/x/sys v0.0.0-20200408040146-ea54a3c99b9b
