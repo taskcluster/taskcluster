@@ -190,13 +190,6 @@ tasks:
               cd tools
           command: >-
               go test -v -race ./...
-        - name: check for invalid go pseudo-versions
-          # see https://github.com/taskcluster/taskcluster/issues/1492
-          image: 'golang:${go.release}'
-          install: ":"
-          command: >-
-              (cd clients/client-go && go list -m all) &&
-              (cd clients/client-shell && go list -m all)
         - name: "yarn db:upgrade"
           image: taskcluster/node-and-postgres:node${node}-pg11
           command: >-
