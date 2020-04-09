@@ -1,7 +1,7 @@
 [build]
   base    = "ui"
   command = "GENERATE_ENV_JS=1 yarn build"
-  publish = "ui/build"
+  publish = "build"
   # an exit-code of 1 indicates the contents have changed
   # netlify build will be skipped if the exit-code is 0
   # command will be run from the base directory (i.e., ui)
