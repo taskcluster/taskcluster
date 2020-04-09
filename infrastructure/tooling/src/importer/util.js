@@ -73,7 +73,7 @@ exports.TASKID_RANGES = [
 exports.sleep = ms => new Promise(res => setTimeout(res, ms));
 
 // read table from azure
-// yields "pages" of azure entities
+// yields azure entities
 exports.readAzureTableInChunks = async function* ({azureCreds, tableName, filter}) {
   const table = new azure.Table(azureCreds);
   let tableParams = {filter};
@@ -98,7 +98,9 @@ exports.readAzureTableInChunks = async function* ({azureCreds, tableName, filter
 
       tableParams = { filter: tableParams.filter, ..._.pick(results, ['nextPartitionKey', 'nextRowKey']) };
 
-      yield { entities };
+      for (let entity of entities) {
+        yield entity;
+      }
 
       if (!tableParams.nextPartitionKey && !tableParams.nextRowKey) {
         break;

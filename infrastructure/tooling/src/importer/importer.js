@@ -92,7 +92,10 @@ class TableOperation extends Operation {
     await this.truncateTable(this.tableName);
     this.rowsProcessed(0);
 
-    const BUFFER_SIZE = 5;
+    const BATCH_SIZE = 1000;
+    const BUFFER_SIZE = 2000;
+
+    let chunk = [];
     let buf = buffer(
       readAzureTableInChunks({
         azureCreds: this.credentials.azure,
@@ -100,13 +103,20 @@ class TableOperation extends Operation {
         filter: this.filter,
       }),
       BUFFER_SIZE);
-    for await (let result of buf) {
+    for await (let entity of buf) {
       this.bufferSize = `${Math.floor(buf.length / BUFFER_SIZE * 100)}%`;
-      const { entities } = result;
+      chunk.push(entity);
 
-      await writeToPostgres(this.tableName, entities, this.db);
-
-      this.rowsProcessed(entities.length);
+      // do inserts in batches of BATCH_SIZE
+      if (chunk.length >= BATCH_SIZE) {
+        await writeToPostgres(this.tableName, chunk, this.db);
+        this.rowsProcessed(chunk.length);
+        chunk = [];
+      }
+    }
+    if (chunk.length > 0) {
+      await writeToPostgres(this.tableName, chunk, this.db);
+      this.rowsProcessed(chunk.length);
     }
   }
 }
