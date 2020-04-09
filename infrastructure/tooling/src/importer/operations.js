@@ -1,3 +1,4 @@
+const fs = require('fs');
 const chalk = require('chalk');
 const spinners = require('cli-spinners');
 const {renderGrid} = require('./monitor');
@@ -5,6 +6,7 @@ const {sleep} = require('./util');
 const prettyMilliseconds = require('pretty-ms');
 
 const SPINNER = spinners.bouncingBall;
+const LOGFILE = './importer.json';
 
 class Operations {
   constructor({monitor, config, order}) {
@@ -15,6 +17,9 @@ class Operations {
     this.history = new History();
 
     monitor.output_fn(order, () => this.outputGrid());
+
+    this.log = fs.createWriteStream(LOGFILE);
+    setInterval(() => this.outputLog(), 1000);
   }
 
   add(op) {
@@ -56,7 +61,22 @@ class Operations {
       {text: this.history.rateStr(), formatter: chalk.yellowBright},
     ]);
 
-    return renderGrid(grid);
+    return `log in ${LOGFILE}\n` + renderGrid(grid);
+  }
+
+  outputLog() {
+    const data = {
+      when: new Date().toISOString(),
+      operations: this.operations.map(op => ({
+        title: op.title,
+        status: op.status,
+        count: op.history.count,
+        bufferSize: op.bufferSize,
+        elapsed: op.history.elapsedStr(),
+        rate: op.history.rateStr(),
+      })),
+    };
+    this.log.write(JSON.stringify(data));
   }
 
   rowsProcessed(count) {
