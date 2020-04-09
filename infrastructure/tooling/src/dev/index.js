@@ -8,6 +8,7 @@ const commonPrompts = require('./common');
 const {rabbitPrompts, rabbitResources} = require('./rabbit');
 const {azurePrompts, azureResources} = require('./azure');
 const {postgresPrompts, postgresResources} = require('./postgres');
+const {k8sResources} = require('./k8s');
 const awsResources = require('./aws');
 const taskclusterResources = require('./taskcluster');
 const helm = require('./helm');
@@ -46,6 +47,7 @@ const init = async (options) => {
   userConfig = await azureResources({userConfig, answer, configTmpl});
   userConfig = await postgresResources({userConfig, answer, configTmpl});
   userConfig = await rabbitResources({userConfig, answer, configTmpl});
+  userConfig = await k8sResources({userConfig, answer, configTmpl});
 
   await writeRepoYAML(USER_CONF_FILE, _.merge(userConfig, answer));
 };

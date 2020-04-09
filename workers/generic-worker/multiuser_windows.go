@@ -84,6 +84,10 @@ func (task *TaskRun) prepareCommand(index int) *CommandExecutionError {
 	contents := ":: This script runs command " + strconv.Itoa(index) + " defined in TaskId " + task.TaskID + "..." + "\r\n"
 	contents += "@echo off\r\n"
 
+	setEnvVarCommand := func(name, value string) string {
+		return "set " + name + "=" + win32.CMDExeEscape(value) + "\r\n"
+	}
+
 	// At the end of each command we export all the env vars, and import them
 	// at the start of the next command. Otherwise env variable changes would
 	// be lost. Similarly, we store the current directory at the end of each
@@ -101,40 +105,46 @@ func (task *TaskRun) prepareCommand(index int) *CommandExecutionError {
 		}
 		for envVar, envValue := range envVars {
 			// log.Printf("Setting env var: %v=%v", envVar, envValue)
-			contents += "set " + envVar + "=" + envValue + "\r\n"
+			contents += setEnvVarCommand(envVar, envValue)
 		}
-		contents += "set TASK_ID=" + task.TaskID + "\r\n"
-		contents += "set RUN_ID=" + strconv.Itoa(int(task.RunID)) + "\r\n"
-		contents += "set TASKCLUSTER_ROOT_URL=" + config.RootURL + "\r\n"
+		contents += setEnvVarCommand("TASK_ID", task.TaskID)
+		contents += setEnvVarCommand("RUN_ID", strconv.Itoa(int(task.RunID)))
+		contents += setEnvVarCommand("TASKCLUSTER_ROOT_URL", config.RootURL)
 		if config.RunTasksAsCurrentUser {
-			contents += "set TASK_USER_CREDENTIALS=" + filepath.Join(cwd, "current-task-user.json") + "\r\n"
+			contents += setEnvVarCommand("TASK_USER_CREDENTIALS", filepath.Join(cwd, "current-task-user.json"))
 		}
 		if config.WorkerLocation != "" {
 			// Note, in contrast to other shells, the cmd shell set command
 			// expects literal bytes between the `=` character and the line
 			// ending, i.e. no string escaping required!
-			contents += "set TASKCLUSTER_WORKER_LOCATION=" + config.WorkerLocation + "\r\n"
+			contents += setEnvVarCommand("TASKCLUSTER_WORKER_LOCATION", config.WorkerLocation)
 		}
 		contents += "cd \"" + taskContext.TaskDir + "\"" + "\r\n"
 
 		// Otherwise get the env from the previous command
 	} else {
-		for _, x := range [2][2]string{{env, "set "}, {dir, "cd "}} {
-			file, err := os.Open(x[0])
-			if err != nil {
-				panic(fmt.Errorf("Could not read from file %v\n%v", x[0], err))
-			}
-			defer file.Close()
-
-			scanner := bufio.NewScanner(file)
-			for scanner.Scan() {
-				contents += x[1] + scanner.Text() + "\r\n"
-			}
-
-			if err := scanner.Err(); err != nil {
-				panic(err)
-			}
+		envFile, err := os.Open(env)
+		if err != nil {
+			panic(fmt.Errorf("Could not read from env file %v\n%v", env, err))
 		}
+		defer envFile.Close()
+		scanner := bufio.NewScanner(envFile)
+		for scanner.Scan() {
+			nameAndValue := strings.SplitN(scanner.Text(), "=", 2)
+			contents += setEnvVarCommand(nameAndValue[0], nameAndValue[1])
+		}
+		if err := scanner.Err(); err != nil {
+			panic(err)
+		}
+
+		dirBytes, err := ioutil.ReadFile(dir)
+		dirString := strings.SplitN(strings.Replace(string(dirBytes), "\r\n", "\n", -1), "\n", 2)[0]
+
+		if err != nil {
+			panic(fmt.Errorf("Could not read directory location from file %v\n%v", dir, err))
+		}
+
+		contents += "cd \"" + dirString + "\"\r\n"
 	}
 
 	// see http://blogs.msdn.com/b/oldnewthing/archive/2008/09/26/8965755.aspx

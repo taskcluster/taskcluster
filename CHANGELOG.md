@@ -3,6 +3,18 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v28.2.2
+
+### WORKER-DEPLOYERS
+
+▶ [patch] [bug 1624602](http://bugzil.la/1624602)
+Worker-runner is now more careful to read all output from the worker when the worker exits.
+
+### USERS
+
+▶ [patch] [bug 1552323](http://bugzil.la/1552323)
+Fixes the bug: https://sentry.prod.mozaws.net/operations/taskcluster-community/issues/7766271
+
 ## v28.2.1
 
 ### DEPLOYERS

@@ -191,6 +191,11 @@ module.exports = {
       plugins: [
         'karma-firefox-launcher',
       ],
+      client: {
+        mocha: {
+          ui: 'tdd',
+        },
+      },
     }),
   ],
 };
