@@ -1,49 +1,139 @@
+const { Database } = require('taskcluster-lib-postgres');
 const buffer = require('buffered-async-iterator');
+const { Operation } = require('./operations');
 const { Table, Blob } = require('fast-azure-storage');
-const prettyMilliseconds = require('pretty-ms');
 const glob = require('glob');
 const {postgresTableName} = require('taskcluster-lib-entities');
 const {REPO_ROOT, readRepoYAML} = require('../utils');
-const { readAzureTableInChunks, writeToPostgres, ALLOWED_TABLES, LARGE_TABLES } = require('./util');
+const { readAzureTableInChunks, writeToPostgres, ALLOWED_TABLES, LARGE_TABLES, TASKID_RANGES } = require('./util');
 
-const importer = async options => {
-  const { credentials, db } = options;
-  const tasks = [];
+const createOperations = async ({operations, config, monitor}) => {
+  const credentials = {
+    azure: {
+      accountId: config.AZURE_ACCOUNT,
+      accessKey: config.AZURE_ACCOUNT_KEY,
+    },
+  };
 
-  let tables = [];
+  const db = new Database({
+    urlsByMode: {admin: config.ADMIN_DB_URL},
+    statementTimeout: false,
+    poolSize: config.CONCURRENCY,
+  });
+
+  await makeTableOperations({operations, config, monitor, credentials, db});
+  await makeContainerOperations({operations, config, monitor, credentials, db});
+};
+
+const makeTableOperations = async ({operations, config, monitor, credentials, db}) => {
+  const tableNames = [];
   for (let path of glob.sync('services/*/azure.yml', {cwd: REPO_ROOT})) {
     const azureYml = await readRepoYAML(path);
     for (let t of azureYml.tables || []) {
-      if (ALLOWED_TABLES.includes(t)) {
-        tables.push(t);
+      tableNames.push(t);
+    }
+  }
+
+  // TODO: apply ALLOWED_TABLES
+
+  // support truncating each table exactly once
+  const truncated = {};
+  const truncateTable = tableName => {
+    if (!truncated[tableName]) {
+      truncated[tableName] = (async () => {
+        const pgTable = postgresTableName(tableName);
+        await db._withClient('admin', async client => {
+          await client.query(`truncate ${pgTable}`);
+        });
+      })();
+    }
+    return truncated[tableName];
+  };
+
+  for (let tableName of tableNames) {
+    if (LARGE_TABLES.includes(tableName)) {
+      for (let range of TASKID_RANGES) {
+        operations.add(new TableOperation({tableName, range, db, credentials, truncateTable}));
       }
+    } else {
+      operations.add(new TableOperation({tableName, db, credentials, truncateTable}));
+    }
+  }
+};
+
+class TableOperation extends Operation {
+  constructor({tableName, range, db, credentials, truncateTable}) {
+    super({title: `${tableName} table`});
+    this.tableName = tableName;
+    this.db = db;
+    this.credentials = credentials;
+    this.truncateTable = truncateTable;
+
+    if (range) {
+      const [from, to] = range;
+      if (from && to) {
+        this.filter = `PartitionKey ${Table.Operators.GreaterThanOrEqual} ${Table.Operators.string(from)} ${Table.Operators.And} PartitionKey ${Table.Operators.LessThan} ${Table.Operators.string(to)}`;
+        this.title = `${this.title} ${from} ≤ taskId < ${to}`;
+      } else if (from && !to) {
+        this.filter = `PartitionKey ${Table.Operators.GreaterThanOrEqual} ${Table.Operators.string(from)}`;
+        this.title = `${this.title} ${from} ≤ taskId`;
+      } else if (!from && to) {
+        this.filter = `PartitionKey ${Table.Operators.LessThan} ${Table.Operators.string(to)}`;
+        this.title = `${this.title} taskId < ${to}`;
+      } else {
+        throw new Error('weird range');
+      }
+    } else {
+      this.filter = undefined;
     }
   }
 
-  async function importTable(tableName, tableParameters = {}, rowsProcessed = 0, utils) {
-    for await (let result of buffer(
+  async run() {
+    await this.truncateTable(this.tableName);
+    this.rowsProcessed(0);
+
+    const BUFFER_SIZE = 5;
+    let buf = buffer(
       readAzureTableInChunks({
-        azureCreds: credentials.azure,
-        tableName,
-        utils,
-        tableParams: tableParameters,
-        rowsProcessed,
+        azureCreds: this.credentials.azure,
+        tableName: this.tableName,
+        filter: this.filter,
       }),
-      5,
-    )) {
-      const { entities, count } = result;
+      BUFFER_SIZE);
+    for await (let result of buf) {
+      this.bufferSize = `${Math.floor(buf.length / BUFFER_SIZE * 100)}%`;
+      const { entities } = result;
 
-      await writeToPostgres(tableName, entities, db, ALLOWED_TABLES);
+      await writeToPostgres(this.tableName, entities, this.db);
 
-      rowsProcessed = count;
+      this.rowsProcessed(entities.length);
     }
+  }
+}
 
-    return rowsProcessed;
+const makeContainerOperations = async ({operations, config, monitor, credentials, db}) => {
+  if (!ALLOWED_TABLES.includes('Roles')) {
+    return;
+  }
+  operations.add(new RolesOperation({db, credentials}));
+};
+
+class RolesOperation extends Operation {
+  constructor({db, credentials}) {
+    super({title: `Roles blob`});
+    this.db = db;
+    this.credentials = credentials;
   }
 
-  async function importRoles(tableName, utils) {
-    // These are not currently used by the azure-blob-storage library
-    const container = new Blob(credentials.azure);
+  async run() {
+    const pgTable = postgresTableName('Roles');
+    await this.db._withClient('admin', async client => {
+      await client.query(`truncate ${pgTable}`);
+    });
+
+    this.rowsProcessed(0);
+
+    const container = new Blob(this.credentials.azure);
     let blobInfo = await container.getBlob('auth-production-roles', 'Roles', {});
     let {content: blobContent} = blobInfo;
     let {content: roles} = JSON.parse(blobContent);
@@ -57,193 +147,9 @@ const importer = async options => {
       __buf0_blob: Buffer.from(JSON.stringify(roles)).toString('base64'),
     };
 
-    await writeToPostgres(tableName, [entity], db, ALLOWED_TABLES);
+    await writeToPostgres('Roles', [entity], this.db);
 
-    return 1;
+    this.rowsProcessed(1);
   }
-
-  let largeTableNames = [];
-  for (let tableName of tables) {
-    if (LARGE_TABLES.includes(tableName)) {
-      const pgTable = postgresTableName(tableName);
-
-      await db._withClient('admin', async client => {
-        await client.query(`truncate ${pgTable}`);
-      });
-
-      [
-        {
-          name: `${tableName}-1/12`,
-          filter: `PartitionKey ${Table.Operators.LessThan} ${Table.Operators.string("A")}`,
-          title: `0-9, and -`,
-        },
-        {
-          name: `${tableName}-2/12`,
-          filter: `PartitionKey ${Table.Operators.GreaterThanOrEqual} ${Table.Operators.string("A")} ${Table.Operators.And} PartitionKey ${Table.Operators.LessThan} ${Table.Operators.string("E")} `,
-          title: `[A, E[`,
-        },
-        {
-          name: `${tableName}-3/12`,
-          filter: `PartitionKey ${Table.Operators.GreaterThanOrEqual} ${Table.Operators.string("E")} ${Table.Operators.And} PartitionKey ${Table.Operators.LessThan} ${Table.Operators.string("I")} `,
-          title: `[E, I[`,
-        },
-        {
-          name: `${tableName}-4/12`,
-          filter: `PartitionKey ${Table.Operators.GreaterThanOrEqual} ${Table.Operators.string("I")} ${Table.Operators.And} PartitionKey ${Table.Operators.LessThan} ${Table.Operators.string("N")} `,
-          title: `[I, N[`,
-        },
-        {
-          name: `${tableName}-5/12`,
-          filter: `PartitionKey ${Table.Operators.GreaterThanOrEqual} ${Table.Operators.string("N")} ${Table.Operators.And} PartitionKey ${Table.Operators.LessThan} ${Table.Operators.string("U")} `,
-          title: `[N, U[`,
-        },
-        {
-          name: `${tableName}-6/12`,
-          filter: `PartitionKey ${Table.Operators.GreaterThanOrEqual} ${Table.Operators.string("U")} ${Table.Operators.And} PartitionKey ${Table.Operators.LessThan} ${Table.Operators.string("Z")} `,
-          title: `[U, Z[`,
-        },
-        {
-          name: `${tableName}-7/12`,
-          filter: `PartitionKey ${Table.Operators.GreaterThanOrEqual} ${Table.Operators.string("Z")} ${Table.Operators.And} PartitionKey ${Table.Operators.LessThan} ${Table.Operators.string("a")} `,
-          title: `[Z, _]`,
-        },
-        {
-          name: `${tableName}-8/12`,
-          filter: `PartitionKey ${Table.Operators.GreaterThanOrEqual} ${Table.Operators.string("a")} ${Table.Operators.And} PartitionKey ${Table.Operators.LessThan} ${Table.Operators.string("e")} `,
-          title: `[a, e[`,
-        },
-        {
-          name: `${tableName}-9/12`,
-          filter: `PartitionKey ${Table.Operators.GreaterThanOrEqual} ${Table.Operators.string("e")} ${Table.Operators.And} PartitionKey ${Table.Operators.LessThan} ${Table.Operators.string("i")} `,
-          title: `[e, i[`,
-        },
-        {
-          name: `${tableName}-10/12`,
-          filter: `PartitionKey ${Table.Operators.GreaterThanOrEqual} ${Table.Operators.string("i")} ${Table.Operators.And} PartitionKey ${Table.Operators.LessThan} ${Table.Operators.string("n")} `,
-          title: `[i, n[`,
-        },
-        {
-          name: `${tableName}-11/12`,
-          filter: `PartitionKey ${Table.Operators.GreaterThanOrEqual} ${Table.Operators.string("n")} ${Table.Operators.And} PartitionKey ${Table.Operators.LessThan} ${Table.Operators.string("u")} `,
-          title: `[n, u[`,
-        },
-        {
-          name: `${tableName}-12/12`,
-          filter: `PartitionKey ${Table.Operators.GreaterThanOrEqual} ${Table.Operators.string("u")}`,
-          title: `[u, z]`,
-        },
-      ]
-        .forEach(({ name, filter, title }) => {
-          largeTableNames.push(name);
-          tasks.push({
-            title: `Import Table ${tableName} (${title})`,
-            locks: ['concurrency'],
-            requires: [],
-            provides: [name],
-            run: async (requirements, utils) => {
-              const start = new Date();
-
-              const rowsImported = await importTable(tableName, { filter }, 0, utils);
-
-              return {
-                [name]: {
-                  elapsedTime: new Date() - start,
-                  rowsImported,
-                },
-              };
-            },
-          });
-        });
-    } else {
-      tasks.push({
-        title: `Import Table ${tableName}`,
-        locks: ['concurrency'],
-        requires: [],
-        provides: [tableName],
-        run: async (requirements, utils) => {
-          const start = new Date();
-
-          const pgTable = postgresTableName(tableName);
-
-          await db._withClient('admin', async client => {
-            await client.query(`truncate ${pgTable}`);
-          });
-
-          const rowsImported = await importTable(tableName, {}, 0, utils);
-
-          return {
-            [tableName]: {
-              elapsedTime: new Date() - start,
-              rowsImported,
-            },
-          };
-        },
-      });
-    }
-  }
-
-  tasks.push({
-    title: `Import Container Roles`,
-    locks: ['concurrency'],
-    requires: [],
-    provides: ['roles'],
-    run: async (requirements, utils) => {
-      const start = new Date();
-
-      const tableName = 'Roles';
-      const pgTable = postgresTableName(tableName);
-
-      await db._withClient('admin', async client => {
-        await client.query(`truncate ${pgTable}`);
-      });
-
-      const rowsImported = await importRoles(tableName, utils);
-
-      return {
-        'roles': {
-          elapsedTime: new Date() - start,
-          rowsImported,
-        },
-      };
-    },
-  });
-
-  tasks.push({
-    title: 'Importer Metadata',
-    requires: [
-      ...tables.filter(tableName => !LARGE_TABLES.includes(tableName)),
-      ...largeTableNames,
-      'roles',
-    ],
-    provides: ['metadata'],
-    run: async (requirements, utils) => {
-      const total = {
-        rowsImported: 0,
-        elapsedTime: 0,
-      };
-      const prettify = (header, rowsImported, elapsedTime) => {
-        return [
-          `--- ${header} ---`,
-          `Rows imported: ${rowsImported}`,
-          elapsedTime ? `Elapsed time: ${prettyMilliseconds(elapsedTime)}` : null,
-          '',
-        ].filter(Boolean).join('\n');
-      };
-      const tablesMetadata = Object.entries(requirements).map(([tableName, { rowsImported, elapsedTime }]) => {
-        total.rowsImported += rowsImported;
-        total.elapsedTime += elapsedTime;
-
-        return prettify(tableName, rowsImported, elapsedTime);
-      }).join('\n');
-      const totalMetadata = prettify('Summary', total.rowsImported);
-
-      return {
-        metadata: [totalMetadata, tablesMetadata].join('\n'),
-      };
-    },
-  });
-
-  return tasks;
-};
-
-module.exports = importer;
+}
+exports.createOperations = createOperations;

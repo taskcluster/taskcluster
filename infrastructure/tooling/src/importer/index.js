@@ -1,48 +1,20 @@
-const {TaskGraph, Lock} = require('console-taskgraph');
-const { Database } = require('taskcluster-lib-postgres');
-const importer = require('./importer');
-const verifier = require('./verifier');
-const { requireEnv, CONCURRENCY } = require('./util');
+const { Monitor } = require('./monitor');
+const { Operations } = require('./operations');
+const { Config } = require('./config');
+const { createOperations } = require('./importer');
 
-const main = async ({ operation }) => {
-  const credentials = {
-    azure: {
-      accountId: requireEnv('AZURE_ACCOUNT'),
-      accessKey: requireEnv('AZURE_ACCOUNT_KEY'),
-    },
-    postgres: {
-      adminDbUrl: requireEnv('ADMIN_DB_URL'),
-    },
-  };
-  const db = new Database({
-    urlsByMode: {admin: credentials.postgres.adminDbUrl},
-    statementTimeout: false,
-    poolSize: CONCURRENCY,
-  });
+const main = async () => {
+  const monitor = new Monitor();
+  const config = new Config({monitor, order: 1});
+  const operations = new Operations({monitor, config, order: 5});
 
-  let tasks;
-  if (operation === 'importer') {
-    tasks = await importer({ credentials, db });
-  } else if (operation === 'verifier') {
-    tasks = await verifier({ credentials, db });
-  } else {
-    throw new Error('unknown operation');
-  }
+  await createOperations({operations, config, monitor});
 
-  const taskgraph = new TaskGraph(tasks, {
-    locks: {
-      concurrency: new Lock(CONCURRENCY),
-    },
-  });
-  const context = await taskgraph.run();
-  await db.close();
+  await operations.runAll();
 
-  if (context['metadata']) {
-    console.log(context.metadata);
-  }
+  process.exit(0);
 };
 
 module.exports = {
-  importer: () => main({operation: 'importer' }),
-  verifier: () => main({operation: 'verifier' }),
+  importer: main,
 };
