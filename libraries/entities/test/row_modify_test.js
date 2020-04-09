@@ -34,6 +34,22 @@ helper.dbSuite(path.basename(__filename), function() {
   const serviceName = 'test-entities';
 
   suite('row modify', function() {
+    test('modify without changing anything should not throw', async function() {
+      db = await helper.withDb({ schema, serviceName });
+      const id = slugid.v4();
+      const TestTable = configuredTestTable.setup({ tableName: 'test_entities', db, serviceName });
+
+      const item = await TestTable.create({
+        id: id,
+        name: 'my-test-item',
+        count: 1,
+        time: new Date(),
+      });
+
+      await item.modify(function(entry) {
+        // do nothing
+      });
+    });
     test('Item.create, Item.modify, Item.load', async function() {
       db = await helper.withDb({ schema, serviceName });
       const id = slugid.v4();
