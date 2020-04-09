@@ -1,5 +1,5 @@
 const assert = require('assert');
-const Entity = require('azure-entities');
+const Entity = require('taskcluster-lib-entities');
 
 const AuthorizationCode = Entity.configure({
   version: 1,

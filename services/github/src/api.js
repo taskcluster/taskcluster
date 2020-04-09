@@ -1,7 +1,7 @@
 const crypto = require('crypto');
 const APIBuilder = require('taskcluster-lib-api');
 const _ = require('lodash');
-const Entity = require('azure-entities');
+const Entity = require('taskcluster-lib-entities');
 
 // Strips/replaces undesirable characters which GitHub allows in
 // repository/organization names (notably .)
@@ -325,7 +325,29 @@ builder.declare({
   let continuation = req.query.continuationToken || null;
   let limit = parseInt(req.query.limit || 1000, 10);
   let query = _.pick(req.query, ['organization', 'repository', 'sha']);
-  let builds = await this.Builds.scan(query, {continuation, limit});
+  // We only support conditions on dates, as they cannot
+  // be used to inject SQL -- `Date.toJSON` always produces a simple string
+  // with no SQL metacharacters.
+  //
+  // Previously with azure, we added the query in the scan method
+  // (i.e., this.Builds.scan(query, ...)) but since the query doesn't include
+  // the partition key or row key, we would need to manually filter through
+  // the table.
+  let builds = await this.Builds.scan({}, {continuation, limit});
+
+  // workaround after removing azure-entities
+  builds.entries = builds.entries.filter(build => {
+    const keys = Object.keys(query);
+
+    for (let key of keys) {
+      if (build[key] !== query[key]) {
+        return false;
+      }
+    }
+
+    return true;
+  });
+
   return res.reply({
     continuationToken: builds.continuation || '',
     builds: builds.entries.map(entry => {

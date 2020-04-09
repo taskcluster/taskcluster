@@ -2,11 +2,11 @@ require('../../prelude');
 const Loader = require('taskcluster-lib-loader');
 const SchemaSet = require('taskcluster-lib-validate');
 const libReferences = require('taskcluster-lib-references');
+const tcdb = require('taskcluster-db');
 const monitorManager = require('./monitor');
 const App = require('taskcluster-lib-app');
 const Config = require('taskcluster-lib-config');
 const data = require('./data');
-const containers = require('./containers');
 const builder = require('./api');
 const debug = require('debug')('server');
 const exchanges = require('./exchanges');
@@ -47,12 +47,24 @@ const load = Loader({
     }),
   },
 
+  db: {
+    requires: ['cfg', 'process', 'monitor'],
+    setup: ({cfg, process, monitor}) => tcdb.setup({
+      readDbUrl: cfg.postgres.readDbUrl,
+      writeDbUrl: cfg.postgres.writeDbUrl,
+      serviceName: 'auth',
+      monitor: monitor.childMonitor('db'),
+      statementTimeout: process === 'server' ? 30000 : 0,
+    }),
+  },
+
   Client: {
-    requires: ['cfg', 'monitor'],
-    setup: ({cfg, monitor}) =>
+    requires: ['cfg', 'monitor', 'db'],
+    setup: ({cfg, monitor, db}) =>
       data.Client.setup({
+        db,
+        serviceName: 'auth',
         tableName: cfg.app.clientTableName,
-        credentials: cfg.azure || {},
         signingKey: cfg.azure.signingKey,
         cryptoKey: cfg.azure.cryptoKey,
         monitor: monitor.childMonitor('table.clients'),
@@ -60,14 +72,14 @@ const load = Loader({
   },
 
   Roles: {
-    requires: ['cfg'],
-    setup: async ({cfg}) => {
-      let Roles = new containers.Roles({
-        credentials: cfg.azure || {},
-        containerName: cfg.app.rolesContainerName,
+    requires: ['cfg', 'monitor', 'db'],
+    setup: async ({cfg, monitor, db}) => {
+      return data.Roles.setup({
+        db,
+        serviceName: 'auth',
+        tableName: cfg.app.rolesContainerName,
+        monitor: monitor.childMonitor('table.roles'),
       });
-      await Roles.setup();
-      return Roles;
     },
   },
 

@@ -6,11 +6,11 @@ const testing = require('taskcluster-lib-testing');
 const taskcluster = require('taskcluster-client');
 const {defaultMonitorManager} = require('taskcluster-lib-monitor');
 
-helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, skipping) {
+helper.secrets.mockSuite(testing.suiteName(), ['db', 'azure', 'gcp'], function(mock, skipping) {
+  helper.withDb(mock, skipping);
   helper.withCfg(mock, skipping);
   helper.withPulse(mock, skipping);
   helper.withEntities(mock, skipping);
-  helper.withRoles(mock, skipping);
   helper.withServers(mock, skipping);
 
   test('ping', async () => {
@@ -383,7 +383,6 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
   });
 
   test('auth.expandScopes with expanding scopes', async () => {
-
     await helper.apiClient.createRole('myrole:a', {
       description: 'test role',
       scopes: ['myapi:a:a', 'myapi:a:b'],

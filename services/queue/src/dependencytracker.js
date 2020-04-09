@@ -1,5 +1,5 @@
 let assert = require('assert');
-let Entity = require('azure-entities');
+let Entity = require('taskcluster-lib-entities');
 
 /**
  * DependencyTracker tracks dependencies between tasks and ensure that dependent
@@ -228,15 +228,23 @@ class DependencyTracker {
     let condition = {
       taskId: Entity.op.equal(taskId),
     };
-    if (resolution !== 'completed') {
-      // If the resolution wasn't 'completed', we can only remove
-      // TaskRequirement entries if the 'require' relation is 'resolved'.
-      condition.require = Entity.op.equal('resolved');
-    }
 
+    // We only support conditions on dates, as they cannot
+    // be used to inject SQL -- `Date.toJSON` always produces a simple string
+    // with no SQL metacharacters.
+    //
+    // Previously with azure, we added the `require` field in the scan method
+    // (i.e., this.TaskRequirement.scan({ taskId, require }, ...))
     await this.TaskDependency.query(condition, {
       limit: 250,
       handler: async (dep) => {
+        if (resolution !== 'completed') {
+          // If the resolution wasn't 'completed', we can only remove
+          // TaskRequirement entries if the 'require' relation is 'resolved'.
+          if (dep.require !== 'resolved') {
+            return;
+          }
+        }
         // Remove the requirement that is blocking
         await this.TaskRequirement.remove({
           taskId: dep.dependentTaskId,

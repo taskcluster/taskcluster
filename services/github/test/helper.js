@@ -6,7 +6,7 @@ const taskcluster = require('taskcluster-client');
 const load = require('../src/main');
 const fakeGithubAuth = require('./github-auth');
 const data = require('../src/data');
-const {fakeauth, stickyLoader, Secrets, withEntity, withPulse, withMonitor} = require('taskcluster-lib-testing');
+const {fakeauth, stickyLoader, Secrets, withEntity, withPulse, withMonitor, withDb, resetTable} = require('taskcluster-lib-testing');
 
 exports.load = stickyLoader(load);
 
@@ -21,7 +21,7 @@ withMonitor(exports);
 exports.secrets = new Secrets({
   secretName: 'project/taskcluster/testing/azure',
   secrets: {
-    azure: withEntity.secret,
+    db: withDb.secret,
   },
   load: exports.load,
 });
@@ -58,6 +58,10 @@ exports.withEntities = (mock, skipping) => {
   withEntity(mock, skipping, exports, 'OwnersDirectory', data.OwnersDirectory, {orderedTests: true});
   withEntity(mock, skipping, exports, 'CheckRuns', data.CheckRuns, {orderedTests: true});
   withEntity(mock, skipping, exports, 'ChecksToTasks', data.ChecksToTasks, {orderedTests: true});
+};
+
+exports.withDb = (mock, skipping) => {
+  withDb(mock, skipping, exports, 'github');
 };
 
 exports.withPulse = (mock, skipping) => {
@@ -127,5 +131,20 @@ exports.withServer = (mock, skipping) => {
       webServer = null;
     }
     fakeauth.stop();
+  });
+};
+
+exports.resetTables = (mock, skipping) => {
+  setup('reset tables', async function() {
+    const sec = exports.secrets.get('db');
+
+    if (mock) {
+      exports.db['github'].reset();
+    } {
+      await resetTable({ testDbUrl: sec.testDbUrl, tableName: 'taskcluster_github_builds_entities' });
+      await resetTable({ testDbUrl: sec.testDbUrl, tableName: 'taskcluster_integration_owners_entities' });
+      await resetTable({ testDbUrl: sec.testDbUrl, tableName: 'taskcluster_checks_to_tasks_entities' });
+      await resetTable({ testDbUrl: sec.testDbUrl, tableName: 'taskcluster_check_runs_entities' });
+    }
   });
 };

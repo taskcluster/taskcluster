@@ -6,11 +6,13 @@ const fs = require('fs');
 const path = require('path');
 const {defaultMonitorManager} = require('taskcluster-lib-monitor');
 
-helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping) {
+helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
+  helper.withDb(mock, skipping);
   helper.withEntities(mock, skipping);
   helper.withPulse(mock, skipping);
   helper.withProviders(mock, skipping);
   helper.withServer(mock, skipping);
+  helper.resetTables(mock, skipping);
 
   test('ping', async function() {
     await helper.workerManager.ping();

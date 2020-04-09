@@ -1,6 +1,6 @@
 const APIBuilder = require('taskcluster-lib-api');
 const helpers = require('./helpers');
-const Entity = require('azure-entities');
+const Entity = require('taskcluster-lib-entities');
 
 /**
  * API end-point for version v1/

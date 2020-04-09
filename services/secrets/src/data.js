@@ -1,6 +1,6 @@
 const _ = require('lodash');
 const assert = require('assert');
-const Entity = require('azure-entities');
+const Entity = require('taskcluster-lib-entities');
 
 let Secret = Entity.configure({
   version: 1,

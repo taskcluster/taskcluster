@@ -752,7 +752,7 @@ builder.declare({
 
   // update Roles
   try {
-    await this.Roles.modify(roles => {
+    await this.Roles.modifyRole(({ blob: roles }) => {
       const existing = _.find(roles, {roleId});
       if (existing) {
         // role exists and doesn't match this one -> RequestConflict
@@ -832,7 +832,7 @@ builder.declare({
   // Load and modify role
   let role;
   try {
-    await this.Roles.modify(async (roles) => {
+    await this.Roles.modifyRole(async ({ blob: roles }) => {
       const i = _.findIndex(roles, {roleId});
       if (i === -1) {
         const err = new Error(`Role with roleId '${roleId}' not found`);
@@ -900,7 +900,7 @@ builder.declare({
   // Check scopes
   await req.authorize({roleId});
 
-  await this.Roles.modify(roles => {
+  await this.Roles.modifyRole(({ blob: roles }) => {
     let i = _.findIndex(roles, {roleId});
     if (i !== -1) {
       roles.splice(i, 1);

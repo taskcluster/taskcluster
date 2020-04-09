@@ -139,21 +139,5 @@ helper.dbSuite(path.basename(__filename), function() {
         });
       });
     });
-
-    test('too-large blob (512k)', async function() {
-      db = await helper.withDb({ schema, serviceName });
-      const id = slugid.v4();
-      const TestTable = configuredTestTable.setup({
-        tableName: 'test_entities',
-        db,
-        serviceName,
-      });
-      const buf = crypto.pseudoRandomBytes(512 * 1024);
-      return assert.rejects(() => TestTable.create({
-        id: id,
-        name: 'my-test-item',
-        data: buf,
-      }), err => err.code === 'PropertyTooLarge');
-    });
   });
 });

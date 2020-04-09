@@ -2,7 +2,7 @@
 defaults:
   app:
     exchangePrefix:              'v1/'
-    cachePurgeTableName:         'CachePurges'
+    cachePurgeTableName:         'cache_purges_entities'
     cachePurgeExpirationDelay:   '- 1 hour'
     cacheTime:                   10
 
@@ -25,6 +25,10 @@ defaults:
 
   azure:
     accountId:                !env AZURE_ACCOUNT_ID
+
+  postgres:
+    readDbUrl: !env READ_DB_URL
+    writeDbUrl: !env WRITE_DB_URL
 
   taskcluster:
     rootUrl:                     !env TASKCLUSTER_ROOT_URL

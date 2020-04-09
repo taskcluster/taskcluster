@@ -1,6 +1,7 @@
 require('../../prelude');
 const debug = require('debug')('index:bin:server');
 const taskcluster = require('taskcluster-client');
+const tcdb = require('taskcluster-db');
 const data = require('./data');
 const Handlers = require('./handlers');
 const builder = require('./api');
@@ -10,7 +11,6 @@ const monitorManager = require('./monitor');
 const SchemaSet = require('taskcluster-lib-validate');
 const App = require('taskcluster-lib-app');
 const libReferences = require('taskcluster-lib-references');
-const {sasCredentials} = require('taskcluster-lib-azure');
 const {Client, pulseCredentials} = require('taskcluster-lib-pulse');
 
 // Create component loader
@@ -20,32 +20,35 @@ let load = loader({
     setup: ({profile}) => Config({profile}),
   },
 
+  db: {
+    requires: ["cfg", "process", "monitor"],
+    setup: ({cfg, process, monitor}) => tcdb.setup({
+      readDbUrl: cfg.postgres.readDbUrl,
+      writeDbUrl: cfg.postgres.writeDbUrl,
+      serviceName: 'index',
+      monitor: monitor.childMonitor('db'),
+      statementTimeout: process === 'server' ? 30000 : 0,
+    }),
+  },
+
   // Configure IndexedTask and Namespace entities
   IndexedTask: {
-    requires: ['cfg', 'monitor'],
-    setup: ({cfg, monitor}) => data.IndexedTask.setup({
+    requires: ['cfg', 'monitor', 'db'],
+    setup: ({cfg, monitor, db}) => data.IndexedTask.setup({
+      db,
+      serviceName: 'index',
       tableName: cfg.app.indexedTaskTableName,
       monitor: monitor.childMonitor('table.indexedtask'),
-      credentials: sasCredentials({
-        accountId: cfg.azure.accountId,
-        tableName: cfg.app.indexedTaskTableName,
-        rootUrl: cfg.taskcluster.rootUrl,
-        credentials: cfg.taskcluster.credentials,
-      }),
     }),
   },
 
   Namespace: {
-    requires: ['cfg', 'monitor'],
-    setup: ({cfg, monitor}) => data.Namespace.setup({
+    requires: ['cfg', 'monitor', 'db'],
+    setup: ({cfg, monitor, db}) => data.Namespace.setup({
+      db,
+      serviceName: 'index',
       tableName: cfg.app.namespaceTableName,
       monitor: monitor.childMonitor('table.namespace'),
-      credentials: sasCredentials({
-        accountId: cfg.azure.accountId,
-        tableName: cfg.app.namespaceTableName,
-        rootUrl: cfg.taskcluster.rootUrl,
-        credentials: cfg.taskcluster.credentials,
-      }),
     }),
   },
 

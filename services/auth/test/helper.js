@@ -11,7 +11,7 @@ const Builder = require('taskcluster-lib-api');
 const SchemaSet = require('taskcluster-lib-validate');
 const staticScopes = require('../src/static-scopes.json');
 const makeSentryManager = require('./../src/sentrymanager');
-const {stickyLoader, Secrets, withEntity, withPulse, withMonitor} = require('taskcluster-lib-testing');
+const {stickyLoader, Secrets, withEntity, withPulse, withMonitor, withDb, resetTable} = require('taskcluster-lib-testing');
 
 exports.load = stickyLoader(load);
 
@@ -37,6 +37,7 @@ exports.secrets = new Secrets({
     'project/taskcluster/testing/taskcluster-auth',
   ],
   secrets: {
+    db: withDb.secret,
     azure: [
       {env: 'AZURE_ACCOUNT', cfg: 'azure.accountId', name: 'accountId'},
       {env: 'AZURE_ACCOUNT_KEY', cfg: 'azure.accessKey', name: 'accessKey'},
@@ -101,6 +102,11 @@ exports.withEntities = (mock, skipping, {orderedTests} = {}) => {
     orderedTests,
     cleanup,
   });
+  withEntity(mock, skipping, exports, 'Roles', data.Roles);
+};
+
+exports.withDb = (mock, skipping) => {
+  withDb(mock, skipping, exports, 'auth');
 };
 
 // fake "Roles" container
@@ -138,22 +144,10 @@ exports.withRoles = (mock, skipping, options = {}) => {
     }
   });
 
-  const cleanup = async () => {
-    if (skipping()) {
-      return;
-    }
-
-    // zero out the roles for each suite
-    if (mock) {
-      exports.Roles.roles = [];
-    } else {
-      await exports.Roles.modify(() => ([]));
-    }
-  };
   if (!options.orderedTests) {
-    setup(cleanup);
+    setup();
   }
-  suiteTeardown(cleanup);
+  suiteTeardown();
 };
 
 /**
@@ -426,6 +420,19 @@ exports.withGcp = (mock, skipping) => {
         email: allowedServiceAccounts[0],
         project_id: credentials.project_id,
       };
+    }
+  });
+};
+
+exports.resetTables = (mock, skipping) => {
+  setup('reset tables', async function() {
+    const sec = exports.secrets.get('db');
+
+    if (mock) {
+      exports.db['auth'].reset();
+    } {
+      await resetTable({ testDbUrl: sec.testDbUrl, tableName: 'clients_entities' });
+      await resetTable({ testDbUrl: sec.testDbUrl, tableName: 'roles_entities' });
     }
   });
 };

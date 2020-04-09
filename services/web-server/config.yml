@@ -7,10 +7,10 @@ defaults:
     # Delete expired entries in both the access token and authorization code tables
     authorizationCodeExpirationDelay: '- 10 minutes'
 
-    authorizationCodesTableName: AuthorizationCodesTable
-    accessTokenTableName: AccessTokenTable
-    sessionStorageTableName: SessionStorageTable
-    githubAccessTokenTableName: GithubAccessTokenTable
+    authorizationCodesTableName: authorization_codes_table_entities
+    accessTokenTableName: access_token_table_entities
+    sessionStorageTableName: session_storage_table_entities
+    githubAccessTokenTableName: github_access_token_table_entities
 
   monitoring:
     level: !env:optional LEVEL
@@ -48,6 +48,10 @@ defaults:
     accountId: !env AZURE_ACCOUNT_ID
     signingKey: !env AZURE_SIGNING_KEY
     cryptoKey: !env AZURE_CRYPTO_KEY
+
+  postgres:
+    readDbUrl: !env READ_DB_URL
+    writeDbUrl: !env WRITE_DB_URL
 
   # Pulse credentials
   pulse:

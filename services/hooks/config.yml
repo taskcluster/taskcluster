@@ -1,10 +1,10 @@
 defaults:
   # defaults outlining all configuration options and some sane defaults
   app:
-    component:        hooks
-    hookTableName: Hooks
-    lastFireTableName: LastFire3
-    queuesTableName: Queues
+    component: hooks
+    hookTableName: hooks_entities
+    lastFireTableName: last_fire_3_entities
+    queuesTableName: queues_entities
     lastFiresExpirationDelay: '- 1 day'
     scheduler:
       pollingDelay:   60000
@@ -16,6 +16,9 @@ defaults:
     accountId:        !env AZURE_ACCOUNT_ID
     signingKey:       !env AZURE_SIGNING_KEY
     cryptoKey:        !env AZURE_CRYPTO_KEY
+  postgres:
+    readDbUrl:        !env READ_DB_URL
+    writeDbUrl:       !env WRITE_DB_URL
   taskcluster:
     rootUrl:          !env TASKCLUSTER_ROOT_URL
     credentials:
@@ -52,9 +55,6 @@ test:
 
   app:
     component:        hooks-tests
-    hookTableName:    HooksTestTable2
-    lastFireTableName: LastFireTestTable
-    queuesTableName:  QueueTestTable
     scheduler:
       pollingDelay:   5000
   azure:

@@ -9,8 +9,8 @@ const libReferences = require('taskcluster-lib-references');
 const { createServer } = require('http');
 const { Client, pulseCredentials } = require('taskcluster-lib-pulse');
 const { ApolloServer } = require('apollo-server-express');
-const { sasCredentials } = require('taskcluster-lib-azure');
 const taskcluster = require('taskcluster-client');
+const tcdb = require('taskcluster-db');
 const { Auth } = require('taskcluster-client');
 const monitorManager = require('./monitor');
 const createApp = require('./servers/createApp');
@@ -183,64 +183,59 @@ const load = loader(
       setup: ({ cfg }) => new taskcluster.Auth(cfg.taskcluster),
     },
 
+    db: {
+      requires: ['cfg', 'process', 'monitor'],
+      setup: ({cfg, process, monitor}) => tcdb.setup({
+        readDbUrl: cfg.postgres.readDbUrl,
+        writeDbUrl: cfg.postgres.writeDbUrl,
+        serviceName: 'web_server',
+        monitor: monitor.childMonitor('db'),
+        statementTimeout: process === 'server' ? 30000 : 0,
+      }),
+    },
+
     AuthorizationCode: {
-      requires: ['cfg', 'monitor'],
-      setup: ({cfg, monitor}) => AuthorizationCode.setup({
+      requires: ['cfg', 'monitor', 'db'],
+      setup: ({cfg, monitor, db}) => AuthorizationCode.setup({
+        serviceName: 'web_server',
+        db,
         tableName: cfg.app.authorizationCodesTableName,
         monitor: monitor.childMonitor('table.authorizationCodes'),
-        credentials: sasCredentials({
-          accountId: cfg.azure.accountId,
-          tableName: cfg.app.authorizationCodesTableName,
-          rootUrl: cfg.taskcluster.rootUrl,
-          credentials: cfg.taskcluster.credentials,
-        }),
         signingKey: cfg.azure.signingKey,
       }),
     },
 
     AccessToken: {
-      requires: ['cfg', 'monitor'],
-      setup: ({cfg, monitor}) => AccessToken.setup({
+      requires: ['cfg', 'monitor', 'db'],
+      setup: ({cfg, monitor, db}) => AccessToken.setup({
+        db,
+        serviceName: 'web_server',
         tableName: cfg.app.accessTokenTableName,
         monitor: monitor.childMonitor('table.accessTokenTable'),
-        credentials: sasCredentials({
-          accountId: cfg.azure.accountId,
-          tableName: cfg.app.accessTokenTableName,
-          rootUrl: cfg.taskcluster.rootUrl,
-          credentials: cfg.taskcluster.credentials,
-        }),
         signingKey: cfg.azure.signingKey,
         cryptoKey: cfg.azure.cryptoKey,
       }),
     },
 
     SessionStorage: {
-      requires: ['cfg', 'monitor'],
-      setup: ({cfg, monitor}) => SessionStorage.setup({
+      requires: ['cfg', 'monitor', 'db'],
+      setup: ({cfg, monitor, db}) => SessionStorage.setup({
+        db,
+        serviceName: 'web_server',
         tableName: cfg.app.sessionStorageTableName,
         monitor: monitor.childMonitor('table.sessionStorageTable'),
-        credentials: sasCredentials({
-          accountId: cfg.azure.accountId,
-          tableName: cfg.app.sessionStorageTableName,
-          rootUrl: cfg.taskcluster.rootUrl,
-          credentials: cfg.taskcluster.credentials,
-        }),
         signingKey: cfg.azure.signingKey,
         cryptoKey: cfg.azure.cryptoKey,
       }),
     },
 
     GithubAccessToken: {
-      requires: ['cfg', 'monitor'],
-      setup: ({cfg, monitor}) => GithubAccessToken.setup({
+      requires: ['cfg', 'monitor', 'db'],
+      setup: ({cfg, monitor, db}) => GithubAccessToken.setup({
+        db,
+        serviceName: 'web_server',
         tableName: cfg.app.githubAccessTokenTableName,
         monitor: monitor.childMonitor('table.githubAccessTokenTable'),
-        credentials: sasCredentials({
-          accountId: cfg.azure.accountId,
-          tableName: cfg.app.githubAccessTokenTableName,
-          rootUrl: cfg.taskcluster.rootUrl,
-          credentials: cfg.taskcluster.credentials,
-        }),
         signingKey: cfg.azure.signingKey,
         cryptoKey: cfg.azure.cryptoKey,
       }),

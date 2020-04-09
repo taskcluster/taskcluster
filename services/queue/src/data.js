@@ -1,4 +1,4 @@
-let Entity = require('azure-entities');
+let Entity = require('taskcluster-lib-entities');
 let debug = require('debug')('app:data');
 let assert = require('assert');
 let _ = require('lodash');

@@ -3,6 +3,7 @@ const data = require('./data');
 const debug = require('debug')('hooks:bin:server');
 const taskcreator = require('./taskcreator');
 const SchemaSet = require('taskcluster-lib-validate');
+const tcdb = require('taskcluster-db');
 const builder = require('./api');
 const Scheduler = require('./scheduler');
 const config = require('taskcluster-lib-config');
@@ -11,7 +12,6 @@ const App = require('taskcluster-lib-app');
 const libReferences = require('taskcluster-lib-references');
 const monitorManager = require('./monitor');
 const taskcluster = require('taskcluster-client');
-const {sasCredentials} = require('taskcluster-lib-azure');
 const exchanges = require('./exchanges');
 const libPulse = require('taskcluster-lib-pulse');
 const HookListeners = require('./listeners');
@@ -32,18 +32,25 @@ const load = loader({
     }),
   },
 
+  db: {
+    requires: ["cfg", "process", "monitor"],
+    setup: ({cfg, process, monitor}) => tcdb.setup({
+      readDbUrl: cfg.postgres.readDbUrl,
+      writeDbUrl: cfg.postgres.writeDbUrl,
+      serviceName: 'hooks',
+      monitor: monitor.childMonitor('db'),
+      statementTimeout: process === 'server' ? 30000 : 0,
+    }),
+  },
+
   Hook: {
-    requires: ['cfg', 'process', 'monitor'],
-    setup: ({cfg, process, monitor}) => {
+    requires: ['cfg', 'process', 'monitor', 'db'],
+    setup: ({cfg, process, monitor, db}) => {
       return data.Hook.setup({
+        db,
+        serviceName: 'hooks',
         tableName: cfg.app.hookTableName,
         monitor: monitor.childMonitor('table.hooks'),
-        credentials: sasCredentials({
-          accountId: cfg.azure.accountId,
-          tableName: cfg.app.hookTableName,
-          rootUrl: cfg.taskcluster.rootUrl,
-          credentials: cfg.taskcluster.credentials,
-        }),
         cryptoKey: cfg.azure.cryptoKey,
         signingKey: cfg.azure.signingKey,
       });
@@ -51,17 +58,13 @@ const load = loader({
   },
 
   LastFire: {
-    requires: ['cfg', 'monitor'],
-    setup: ({cfg, monitor}) => {
+    requires: ['cfg', 'monitor', 'db'],
+    setup: ({cfg, monitor, db}) => {
       return data.LastFire.setup({
+        db,
+        serviceName: 'hooks',
         tableName: cfg.app.lastFireTableName,
         monitor: monitor.childMonitor('table.lastFireTable'),
-        credentials: sasCredentials({
-          accountId: cfg.azure.accountId,
-          tableName: cfg.app.lastFireTableName,
-          rootUrl: cfg.taskcluster.rootUrl,
-          credentials: cfg.taskcluster.credentials,
-        }),
         signingKey: cfg.azure.signingKey,
       });
     },
@@ -126,17 +129,13 @@ const load = loader({
   },
 
   Queues: {
-    requires: ['cfg', 'process', 'monitor'],
-    setup: ({cfg, process, monitor}) => {
+    requires: ['cfg', 'process', 'monitor', 'db'],
+    setup: ({cfg, process, monitor, db}) => {
       return data.Queues.setup({
+        db,
+        serviceName: 'hooks',
         tableName: cfg.app.queuesTableName,
         monitor: monitor.childMonitor('table.queues'),
-        credentials: sasCredentials({
-          accountId: cfg.azure.accountId,
-          tableName: cfg.app.queuesTableName,
-          rootUrl: cfg.taskcluster.rootUrl,
-          credentials: cfg.taskcluster.credentials,
-        }),
         signingKey: cfg.azure.signingKey,
       });
     },

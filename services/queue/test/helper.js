@@ -7,7 +7,7 @@ const data = require('../src/data');
 const temporary = require('temporary');
 const mockAwsS3 = require('mock-aws-s3');
 const nock = require('nock');
-const {fakeauth, stickyLoader, Secrets, withEntity, withPulse, withMonitor} = require('taskcluster-lib-testing');
+const {fakeauth, stickyLoader, Secrets, withEntity, withPulse, withMonitor, withDb, resetTable} = require('taskcluster-lib-testing');
 
 const helper = module.exports;
 
@@ -38,6 +38,7 @@ exports.secrets = new Secrets({
         mock: 'us-central-7'},
     ],
     azure: withEntity.secret,
+    db: withDb.secret,
   },
   load: exports.load,
 });
@@ -99,16 +100,13 @@ exports.withQueueService = (mock, skipping) => {
     }
 
     if (mock) {
-      helper.load.cfg('azure.fake', true);
       helper.queueService = await helper.load('queueService');
-      helper.queueService.client._reset();
     } else {
       // ensure we are using unique queue names from run to run of this service
       // so that tests do not interfere with one another.  This prefix can only
       // be 6 characters long..
       const pfx = 'q' + new Date().getTime().toString().slice(-5);
       await helper.load('cfg');
-      helper.load.cfg('app.queuePrefix', pfx);
       helper.load.cfg('app.claimQueue', `${pfx}-claim`);
       helper.load.cfg('app.deadlineQueue', `${pfx}-deadline`);
       helper.load.cfg('app.resolvedQueue', `${pfx}-resolved`);
@@ -161,6 +159,10 @@ exports.withEntities = (mock, skipping) => {
   withEntity(mock, skipping, exports, 'WorkerType', data.WorkerType);
   withEntity(mock, skipping, exports, 'Worker', data.Worker);
   //helper.load.inject('publicArtifactBucket', {});
+};
+
+exports.withDb = (mock, skipping) => {
+  withDb(mock, skipping, exports, 'queue');
 };
 
 /**
@@ -297,3 +299,24 @@ helper.runExpiration = async component => {
  * Make a random workerType name
  */
 exports.makeWorkerType = () => `test-${slugid.v4().replace(/[_-]/g, '').toLowerCase()}-a`;
+
+exports.resetTables = (mock, skipping) => {
+  setup('reset tables', async function() {
+    const sec = exports.secrets.get('db');
+
+    if (mock) {
+      exports.db['queue'].reset();
+    } {
+      await resetTable({ testDbUrl: sec.testDbUrl, tableName: 'queue_tasks_entities' });
+      await resetTable({ testDbUrl: sec.testDbUrl, tableName: 'queue_artifacts_entities' });
+      await resetTable({ testDbUrl: sec.testDbUrl, tableName: 'queue_task_groups_entities' });
+      await resetTable({ testDbUrl: sec.testDbUrl, tableName: 'queue_task_group_members_entities' });
+      await resetTable({ testDbUrl: sec.testDbUrl, tableName: 'queue_task_group_active_sets_entities' });
+      await resetTable({ testDbUrl: sec.testDbUrl, tableName: 'queue_task_requirement_entities' });
+      await resetTable({ testDbUrl: sec.testDbUrl, tableName: 'queue_task_dependency_entities' });
+      await resetTable({ testDbUrl: sec.testDbUrl, tableName: 'queue_worker_entities' });
+      await resetTable({ testDbUrl: sec.testDbUrl, tableName: 'queue_worker_type_entities' });
+      await resetTable({ testDbUrl: sec.testDbUrl, tableName: 'queue_provisioner_entities' });
+    }
+  });
+};

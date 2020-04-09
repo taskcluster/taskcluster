@@ -2,11 +2,11 @@ defaults:
   taskcluster:
     rootUrl:                  !env TASKCLUSTER_ROOT_URL
   app:
-    # Azure table for the client table
-    clientTableName:          Clients
+    # Postgres table for the client table
+    clientTableName:          clients_entities
 
     # Azure blob container for the role table
-    rolesContainerName:       auth-production-roles
+    rolesContainerName:       roles_entities
 
     # Name of component in statistics
     statsComponent:           auth
@@ -86,6 +86,9 @@ defaults:
     # Key for data encryption in base.Entity (32 random bytes as base64)
     cryptoKey:               !env AZURE_CRYPTO_KEY
 
+  postgres:
+    readDbUrl:               !env READ_DB_URL
+    writeDbUrl:              !env WRITE_DB_URL
 
   pulse:
     username:                 !env PULSE_USERNAME
@@ -127,7 +130,7 @@ defaults:
 test:
   app:
     statsComponent:           auth-tests
-    clientTableName:          Clients
+    clientTableName:          clients_entities
     staticClients:  # overridden in helper.js
     # Special value for tests, as we don't want to wait forever
     maxLastUsedDelay:         '- 3 seconds'

@@ -9,11 +9,13 @@ const forge = require('node-forge');
 const fs = require('fs');
 const path = require('path');
 
-helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping) {
+helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
+  helper.withDb(mock, skipping);
   helper.withEntities(mock, skipping);
   helper.withPulse(mock, skipping);
   helper.withFakeQueue(mock, skipping);
   helper.withFakeNotify(mock, skipping);
+  helper.resetTables(mock, skipping);
 
   let provider;
   let workerPool;
@@ -145,7 +147,8 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
     assert(workerPool.previousProviderIds.includes('azure'));
   });
 
-  test('removeWorker deletes VM if it exists and has an id', async function() {
+  // See https://bugzilla.mozilla.org/show_bug.cgi?id=1624719
+  test.skip('removeWorker deletes VM if it exists and has an id', async function() {
     const worker = await helper.Worker.create({
       workerPoolId,
       workerGroup: 'whatever',
