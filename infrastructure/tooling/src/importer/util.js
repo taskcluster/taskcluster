@@ -118,32 +118,42 @@ exports.readAzureTableInChunks = async function* ({azureCreds, tableName, filter
 exports.writeToPostgres = async (tableName, entities, db, mode = 'admin') => {
   const pgTable = postgresTableName(tableName);
 
-  if (entities) {
-    await db._withClient(mode, async client => {
-      const entitiesSize = entities.length;
+  while (1) {
+    try {
+      await db._withClient(mode, async client => {
+        const entitiesSize = entities.length;
 
-      const [vars, args] = entities.reduce((acc, curr, i) => {
-        let [vars, args] = acc;
+        const [vars, args] = entities.reduce((acc, curr, i) => {
+          let [vars, args] = acc;
 
-        if (i !== 0) {
-          vars = `${vars},`;
+          if (i !== 0) {
+            vars = `${vars},`;
+          }
+
+          vars = `${vars}(\$${i * 3 + 1}, \$${i * 3 + 2}, \$${i * 3 + 3}, 1, public.gen_random_uuid())`;
+
+          args[i * 3] = entities[i].PartitionKey;
+          args[i * 3 + 1] = entities[i].RowKey;
+          args[i * 3 + 2] = entities[i];
+
+          return [vars, args];
+        }, ['', new Array(entitiesSize * 3)]);
+
+        if (args && vars) {
+          await client.query(
+            `insert into ${pgTable}(partition_key, row_key, value, version, etag) values ${vars}`,
+            args,
+          );
         }
-
-        vars = `${vars}(\$${i * 3 + 1}, \$${i * 3 + 2}, \$${i * 3 + 3}, 1, public.gen_random_uuid())`;
-
-        args[i * 3] = entities[i].PartitionKey;
-        args[i * 3 + 1] = entities[i].RowKey;
-        args[i * 3 + 2] = entities[i];
-
-        return [vars, args];
-      }, ['', new Array(entitiesSize * 3)]);
-
-      if (args && vars) {
-        await client.query(
-          `insert into ${pgTable}(partition_key, row_key, value, version, etag) values ${vars}`,
-          args,
-        );
+      });
+    } catch (err) {
+      // DB shutting down -- wait and retry
+      if (err.code === '57P03' || err.code === '57P01') {
+        await exports.sleep(1000);
+        continue;
       }
-    });
+      throw err;
+    }
+    break;
   }
 };
