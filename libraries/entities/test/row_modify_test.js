@@ -46,9 +46,10 @@ helper.dbSuite(path.basename(__filename), function() {
         time: new Date(),
       });
 
-      await item.modify(function(entry) {
+      const item2 = await item.modify(function(entry) {
         // do nothing
       });
+      assert.deepEqual(item, item2);
     });
     test('Item.create, Item.modify, Item.load', async function() {
       db = await helper.withDb({ schema, serviceName });
