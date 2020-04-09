@@ -221,7 +221,7 @@ export default class ClientForm extends Component {
       description !== client.description ||
       expires !== client.expires ||
       deleteOnExpiration !== client.deleteOnExpiration ||
-      scopeText !== client.scopes.join('\n');
+      scopeText !== (client.scopes || []).join('\n');
 
     return (
       <Fragment>
@@ -317,7 +317,7 @@ export default class ClientForm extends Component {
               spellCheck={false}
               placeholder="new-scope:for-something:*"
               value={scopeText}
-              initialValue={client.scopes.join('\n')}
+              initialValue={(client.scopes || []).join('\n')}
               sort
             />
           </ListItem>

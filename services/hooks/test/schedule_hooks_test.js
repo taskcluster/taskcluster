@@ -4,7 +4,10 @@ const helper = require('./helper');
 const libUrls = require('taskcluster-lib-urls');
 const testing = require('taskcluster-lib-testing');
 
-suite(testing.suiteName(), function() {
+helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
+  helper.withDb(mock, skipping);
+  helper.resetTables(mock, skipping);
+
   suiteSetup(async function() {
     await helper.secrets.setup();
     helper.load.save();

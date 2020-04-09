@@ -118,6 +118,9 @@
         "pulse_username": {
           "type": "string"
         },
+        "read_db_url": {
+          "type": "string"
+        },
         "refs_bucket": {
           "type": "string"
         },
@@ -152,6 +155,9 @@
         },
         "websocktunnel_secret": {
           "type": "string"
+        },
+        "write_db_url": {
+          "type": "string"
         }
       },
       "required": [
@@ -161,6 +167,8 @@
         "azure_account_key",
         "azure_signing_key",
         "azure_crypto_key",
+        "read_db_url",
+        "write_db_url",
         "pulse_username",
         "pulse_password"
       ],
@@ -344,6 +352,9 @@
         "pulse_username": {
           "type": "string"
         },
+        "read_db_url": {
+          "type": "string"
+        },
         "taskcluster_access_token": {
           "type": "string"
         },
@@ -355,6 +366,9 @@
         },
         "worker_type": {
           "type": "string"
+        },
+        "write_db_url": {
+          "type": "string"
         }
       },
       "required": [
@@ -365,6 +379,8 @@
         "github_private_pem",
         "github_app_id",
         "webhook_secret",
+        "read_db_url",
+        "write_db_url",
         "pulse_username",
         "pulse_password"
       ],
@@ -485,10 +501,16 @@
         "pulse_username": {
           "type": "string"
         },
+        "read_db_url": {
+          "type": "string"
+        },
         "taskcluster_access_token": {
           "type": "string"
         },
         "taskcluster_client_id": {
+          "type": "string"
+        },
+        "write_db_url": {
           "type": "string"
         }
       },
@@ -496,6 +518,8 @@
         "procs",
         "azure_signing_key",
         "azure_crypto_key",
+        "read_db_url",
+        "write_db_url",
         "taskcluster_client_id",
         "taskcluster_access_token",
         "pulse_username",
@@ -588,15 +612,23 @@
         "pulse_username": {
           "type": "string"
         },
+        "read_db_url": {
+          "type": "string"
+        },
         "taskcluster_access_token": {
           "type": "string"
         },
         "taskcluster_client_id": {
           "type": "string"
+        },
+        "write_db_url": {
+          "type": "string"
         }
       },
       "required": [
         "procs",
+        "read_db_url",
+        "write_db_url",
         "taskcluster_client_id",
         "taskcluster_access_token",
         "pulse_username",
@@ -866,15 +898,23 @@
           "title": "Process settings for this service",
           "type": "object"
         },
+        "read_db_url": {
+          "type": "string"
+        },
         "taskcluster_access_token": {
           "type": "string"
         },
         "taskcluster_client_id": {
           "type": "string"
+        },
+        "write_db_url": {
+          "type": "string"
         }
       },
       "required": [
         "procs",
+        "read_db_url",
+        "write_db_url",
         "taskcluster_client_id",
         "taskcluster_access_token"
       ],
@@ -991,7 +1031,7 @@
               ],
               "type": "object"
             },
-            "expireQueues": {
+            "expireQueueMessages": {
               "additionalProperties": false,
               "properties": {
                 "cpu": {
@@ -1152,7 +1192,7 @@
             "expireTaskGroupSizes",
             "expireTaskDependency",
             "expireTaskRequirement",
-            "expireQueues",
+            "expireQueueMessages",
             "expireWorkerInfo"
           ],
           "title": "Process settings for this service",
@@ -1181,6 +1221,9 @@
         "pulse_username": {
           "type": "string"
         },
+        "read_db_url": {
+          "type": "string"
+        },
         "task_cache_max_size": {
           "type": "number"
         },
@@ -1192,6 +1235,9 @@
         },
         "use_cloud_mirror": {
           "type": "boolean"
+        },
+        "write_db_url": {
+          "type": "string"
         }
       },
       "required": [
@@ -1201,6 +1247,8 @@
         "taskcluster_client_id",
         "taskcluster_access_token",
         "azure_account_key",
+        "read_db_url",
+        "write_db_url",
         "pulse_username",
         "pulse_password",
         "aws_access_key_id",
@@ -1322,10 +1370,16 @@
           "title": "Process settings for this service",
           "type": "object"
         },
+        "read_db_url": {
+          "type": "string"
+        },
         "taskcluster_access_token": {
           "type": "string"
         },
         "taskcluster_client_id": {
+          "type": "string"
+        },
+        "write_db_url": {
           "type": "string"
         }
       },
@@ -1334,7 +1388,9 @@
         "taskcluster_client_id",
         "taskcluster_access_token",
         "azure_crypto_key",
-        "azure_signing_key"
+        "azure_signing_key",
+        "read_db_url",
+        "write_db_url"
       ],
       "title": "Configuration options for secrets",
       "type": "object"
@@ -1512,6 +1568,9 @@
         "pulse_username": {
           "type": "string"
         },
+        "read_db_url": {
+          "type": "string"
+        },
         "registered_clients": {
           "oneOf": [
             {
@@ -1542,6 +1601,9 @@
               "type": "array"
             }
           ]
+        },
+        "write_db_url": {
+          "type": "string"
         }
       },
       "required": [
@@ -1552,6 +1614,8 @@
         "taskcluster_access_token",
         "azure_signing_key",
         "azure_crypto_key",
+        "read_db_url",
+        "write_db_url",
         "pulse_username",
         "pulse_password",
         "registered_clients",
@@ -1722,6 +1786,9 @@
         "pulse_username": {
           "type": "string"
         },
+        "read_db_url": {
+          "type": "string"
+        },
         "taskcluster_access_token": {
           "type": "string"
         },
@@ -1738,12 +1805,17 @@
               "type": "array"
             }
           ]
+        },
+        "write_db_url": {
+          "type": "string"
         }
       },
       "required": [
         "procs",
         "taskcluster_client_id",
         "taskcluster_access_token",
+        "read_db_url",
+        "write_db_url",
         "pulse_username",
         "pulse_password",
         "providers"

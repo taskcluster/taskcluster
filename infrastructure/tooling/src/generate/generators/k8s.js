@@ -422,8 +422,14 @@ exports.tasks.push({
 
       // Now for the procs
       const procSettings = schema.properties[confName].properties.procs;
+      exampleConfig[confName].procs = {};
       Object.entries(cfg.procs).forEach(([n, p]) => {
         n = n.replace(/-/g, '_');
+        exampleConfig[confName].procs[n] = {
+          // much smaller cpu defaults for dev deployments, since
+          // they are generally idle
+          cpu: '10m',
+        };
         if (['web', 'background'].includes(p.type)) {
           valuesYAML[confName].procs[n] = {
             replicas: 1,

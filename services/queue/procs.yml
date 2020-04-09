@@ -51,11 +51,11 @@ expireTaskRequirement:
   schedule: '0 0 * * *'
   deadline: 86400
   command: node src/main expire-task-requirement
-expireQueues:
+expireQueueMessages:
   type: cron
-  schedule: '0 0 * * *'
-  deadline: 86400
-  command: node src/main expire-queues
+  schedule: '23 * * * *'
+  deadline: 3600
+  command: node src/main expire-queue-messages
 expireWorkerInfo:
   type: cron
   schedule: '0 0 * * *'

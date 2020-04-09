@@ -1,5 +1,5 @@
 const assert = require('assert');
-const Entity = require('azure-entities');
+const Entity = require('taskcluster-lib-entities');
 
 const SessionStorage = Entity.configure({
   version: 1,

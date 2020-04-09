@@ -1,4 +1,4 @@
-const Entity = require('azure-entities');
+const Entity = require('taskcluster-lib-entities');
 
 const DenylistedNotification = Entity.configure({
   version: 1,

@@ -3,12 +3,13 @@ const assert = require('assert');
 const jwt = require('jsonwebtoken');
 const testing = require('taskcluster-lib-testing');
 
-helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, skipping) {
+helper.secrets.mockSuite(testing.suiteName(), ['db', 'azure', 'gcp'], function(mock, skipping) {
+  helper.withDb(mock, skipping);
   helper.withCfg(mock, skipping);
   helper.withPulse(mock, skipping);
   helper.withEntities(mock, skipping);
-  helper.withRoles(mock, skipping);
   helper.withServers(mock, skipping);
+  helper.resetTables(mock, skipping);
 
   test('websocktunnelToken', async () => {
     const wstAudience = 'websocktunnel-usw2';

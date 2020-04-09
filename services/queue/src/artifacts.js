@@ -3,7 +3,7 @@ const assert = require('assert');
 const APIBuilder = require('taskcluster-lib-api');
 const urllib = require('url');
 const builder = require('./api');
-const Entity = require('azure-entities');
+const Entity = require('taskcluster-lib-entities');
 
 /** Post artifact */
 builder.declare({

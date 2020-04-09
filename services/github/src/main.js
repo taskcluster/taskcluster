@@ -11,7 +11,7 @@ const SchemaSet = require('taskcluster-lib-validate');
 const loader = require('taskcluster-lib-loader');
 const libReferences = require('taskcluster-lib-references');
 const App = require('taskcluster-lib-app');
-const {sasCredentials} = require('taskcluster-lib-azure');
+const tcdb = require('taskcluster-db');
 const githubAuth = require('./github-auth');
 const {Client, pulseCredentials} = require('taskcluster-lib-pulse');
 
@@ -85,58 +85,53 @@ const load = loader({
     setup: ({cfg, schemaset}) => Intree.setup({cfg, schemaset}),
   },
 
+  db: {
+    requires: ["cfg", "process", "monitor"],
+    setup: ({cfg, process, monitor}) => tcdb.setup({
+      readDbUrl: cfg.postgres.readDbUrl,
+      writeDbUrl: cfg.postgres.writeDbUrl,
+      serviceName: 'github',
+      monitor: monitor.childMonitor('db'),
+      statementTimeout: process === 'server' ? 30000 : 0,
+    }),
+  },
+
   Builds: {
-    requires: ['cfg', 'monitor'],
-    setup: async ({cfg, monitor}) => data.Builds.setup({
+    requires: ['cfg', 'monitor', 'db'],
+    setup: async ({cfg, monitor, db}) => data.Builds.setup({
+      db,
+      serviceName: 'github',
       tableName: cfg.app.buildsTableName,
-      credentials: sasCredentials({
-        accountId: cfg.azure.accountId,
-        tableName: cfg.app.buildsTableName,
-        rootUrl: cfg.taskcluster.rootUrl,
-        credentials: cfg.taskcluster.credentials,
-      }),
       monitor: monitor.childMonitor('table.builds'),
     }),
   },
 
   OwnersDirectory: {
-    requires: ['cfg', 'monitor'],
-    setup: async ({cfg, monitor}) => data.OwnersDirectory.setup({
+    requires: ['cfg', 'monitor', 'db'],
+    setup: async ({cfg, monitor, db}) => data.OwnersDirectory.setup({
+      db,
+      serviceName: 'github',
       tableName: cfg.app.ownersDirectoryTableName,
-      credentials: sasCredentials({
-        accountId: cfg.azure.accountId,
-        tableName: cfg.app.ownersDirectoryTableName,
-        rootUrl: cfg.taskcluster.rootUrl,
-        credentials: cfg.taskcluster.credentials,
-      }),
       monitor: monitor.childMonitor('table.ownersdirectory'),
     }),
   },
 
   CheckRuns: {
-    requires: ['cfg', 'monitor'],
-    setup: async ({cfg, monitor}) => data.CheckRuns.setup({
+    requires: ['cfg', 'monitor', 'db'],
+    setup: async ({cfg, monitor, db}) => data.CheckRuns.setup({
+      db,
+      serviceName: 'github',
       tableName: cfg.app.checkRunsTableName,
-      credentials: sasCredentials({
-        accountId: cfg.azure.accountId,
-        tableName: cfg.app.checkRunsTableName,
-        rootUrl: cfg.taskcluster.rootUrl,
-        credentials: cfg.taskcluster.credentials,
-      }),
       monitor: monitor.childMonitor('table.checkruns'),
     }),
   },
 
   ChecksToTasks: {
-    requires: ['cfg', 'monitor'],
-    setup: async ({cfg, monitor}) => data.ChecksToTasks.setup({
+    requires: ['cfg', 'monitor', 'db'],
+    setup: async ({cfg, monitor, db}) => data.ChecksToTasks.setup({
+      db,
+      serviceName: 'github',
       tableName: cfg.app.checksToTasksTableName,
-      credentials: sasCredentials({
-        accountId: cfg.azure.accountId,
-        tableName: cfg.app.checksToTasksTableName,
-        rootUrl: cfg.taskcluster.rootUrl,
-        credentials: cfg.taskcluster.credentials,
-      }),
       monitor: monitor.childMonitor('table.checkstotasks'),
     }),
   },

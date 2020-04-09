@@ -3,6 +3,40 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v29.0.0
+
+### DEPLOYERS
+
+▶ [MAJOR] [bug 1436478](http://bugzil.la/1436478)
+The Taskcluster services now use a Postgres backend, instead of Azure Cables and Azure Containers.  All data in Azure must be migrated to Postgres during a downtime using `yarn importer:run`, and this is planned for all known deployments.  There should be no immediate user-visible impact from this change, aside from faster API responses, but it unlocks many planned improvements.
+
+## v28.2.3
+
+### USERS
+
+▶ [patch] [#2615](https://github.com/taskcluster/taskcluster/issues/2615)
+Fix error showing when creating new client/role in the UI.
+
+▶ [patch] [bug 1525419](http://bugzil.la/1525419)
+Generic worker tasks on Windows can now define environment variables that contain special characters `()%!^"<>&|`. Previously they were not escaped.
+
+### DEVELOPERS
+
+▶ [patch] 
+Development environments now default to a lower per-pod CPU request, which should help reduce the compute cost of idle development environments.  Run `yarn dev:init` to update these defaults for your dev environment.
+
+## v28.2.2
+
+### WORKER-DEPLOYERS
+
+▶ [patch] [bug 1624602](http://bugzil.la/1624602)
+Worker-runner is now more careful to read all output from the worker when the worker exits.
+
+### USERS
+
+▶ [patch] [bug 1552323](http://bugzil.la/1552323)
+Fixes the bug: https://sentry.prod.mozaws.net/operations/taskcluster-community/issues/7766271
+
 ## v28.2.1
 
 ### DEPLOYERS

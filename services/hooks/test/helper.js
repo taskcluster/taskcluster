@@ -1,7 +1,7 @@
 const data = require('../src/data');
 const taskcluster = require('taskcluster-client');
 const taskcreator = require('../src/taskcreator');
-const {stickyLoader, fakeauth, Secrets, withEntity, withPulse, withMonitor} = require('taskcluster-lib-testing');
+const {stickyLoader, fakeauth, Secrets, withEntity, withPulse, withMonitor, withDb, resetTable} = require('taskcluster-lib-testing');
 const builder = require('../src/api');
 const load = require('../src/main');
 
@@ -19,7 +19,7 @@ helper.secrets = new Secrets({
   secretName: 'project/taskcluster/testing/azure',
   load: helper.load,
   secrets: {
-    azure: withEntity.secret,
+    db: withDb.secret,
   },
 });
 
@@ -27,6 +27,10 @@ helper.withEntities = (mock, skipping) => {
   withEntity(mock, skipping, exports, 'Hook', data.Hook);
   withEntity(mock, skipping, exports, 'LastFire', data.LastFire);
   withEntity(mock, skipping, exports, 'Queues', data.Queues);
+};
+
+helper.withDb = (mock, skipping) => {
+  withDb(mock, skipping, exports, 'hooks');
 };
 
 /**
@@ -110,6 +114,20 @@ helper.withServer = (mock, skipping) => {
     if (webServer) {
       await webServer.terminate();
       webServer = null;
+    }
+  });
+};
+
+exports.resetTables = (mock, skipping) => {
+  setup('reset tables', async function() {
+    const sec = helper.secrets.get('db');
+
+    if (mock) {
+      helper.db.hooks.reset();
+    } {
+      await resetTable({ testDbUrl: sec.testDbUrl, tableName: 'hooks_entities' });
+      await resetTable({ testDbUrl: sec.testDbUrl, tableName: 'queues_entities' });
+      await resetTable({ testDbUrl: sec.testDbUrl, tableName: 'last_fire_3_entities' });
     }
   });
 };

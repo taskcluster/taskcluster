@@ -12,5 +12,5 @@ expireTaskGroupMembers: cd services/queue && node src/main expire-task-group-mem
 expireTaskGroupSizes: cd services/queue && node src/main expire-task-group-sizes
 expireTaskDependency: cd services/queue && node src/main expire-task-dependency
 expireTaskRequirement: cd services/queue && node src/main expire-task-requirement
-expireQueues: cd services/queue && node src/main expire-queues
+expireQueueMessages: cd services/queue && node src/main expire-queue-messages
 expireWorkerInfo: cd services/queue && node src/main expire-worker-info

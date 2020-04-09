@@ -4,8 +4,8 @@ import (
 	"os"
 	"os/exec"
 
-	"github.com/taskcluster/taskcluster/v28/tools/worker-runner/protocol"
-	"github.com/taskcluster/taskcluster/v28/tools/worker-runner/run"
+	"github.com/taskcluster/taskcluster/v29/tools/worker-runner/protocol"
+	"github.com/taskcluster/taskcluster/v29/tools/worker-runner/run"
 )
 
 // runMethod allows supporting both run-as-a-service and run-as-an-executable modes.

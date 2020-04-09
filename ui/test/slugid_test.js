@@ -81,8 +81,8 @@ const spreader = generator => {
   return actual;
 };
 
-describe('slugs', () => {
-  it('should spread v4 slugs', () => {
+suite('slugs', () => {
+  test('should spread v4 slugs', () => {
     const charsAll = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_'
       .split('')
       .sort()
@@ -131,7 +131,7 @@ describe('slugs', () => {
     expect(expected).to.deep.equal(actual);
   });
 
-  it('should spread nice slugs', () => {
+  test('should spread nice slugs', () => {
     const charsAll = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_'
       .split('')
       .sort()

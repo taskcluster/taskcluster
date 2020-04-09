@@ -5,13 +5,14 @@ const testing = require('taskcluster-lib-testing');
 const monitorManager = require('../src/monitor');
 const {defaultMonitorManager} = require('taskcluster-lib-monitor');
 
-helper.secrets.mockSuite(testing.suiteName(), ['db', 'azure', 'aws'], function(mock, skipping) {
-  helper.withEntities(mock, skipping);
+helper.secrets.mockSuite(testing.suiteName(), ['db', 'aws'], function(mock, skipping) {
   helper.withDb(mock, skipping);
+  helper.withEntities(mock, skipping);
   helper.withPulse(mock, skipping);
   helper.withFakeMatrix(mock, skipping);
   helper.withSES(mock, skipping);
   helper.withServer(mock, skipping);
+  helper.resetTables(mock, skipping);
 
   // Dummy address for denylist tests
   let dummyAddress1 = {

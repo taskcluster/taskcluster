@@ -1,7 +1,7 @@
 const taskcluster = require('taskcluster-client');
 const {FakeAzure} = require('./fake-azure.js');
 const {FakeGoogle} = require('./fake-google.js');
-const {stickyLoader, Secrets, withEntity, fakeauth, withMonitor, withPulse} = require('taskcluster-lib-testing');
+const {stickyLoader, Secrets, withEntity, fakeauth, withMonitor, withPulse, withDb, resetTable} = require('taskcluster-lib-testing');
 const builder = require('../src/api');
 const data = require('../src/data');
 const load = require('../src/main');
@@ -22,6 +22,7 @@ exports.secrets = new Secrets({
   secretName: 'project/taskcluster/testing/azure',
   secrets: {
     azure: withEntity.secret,
+    db: withDb.secret,
   },
   load: exports.load,
 });
@@ -30,6 +31,10 @@ exports.withEntities = (mock, skipping) => {
   withEntity(mock, skipping, exports, 'WorkerPoolError', data.WorkerPoolError);
   withEntity(mock, skipping, exports, 'Worker', data.Worker);
   withEntity(mock, skipping, exports, 'WorkerPool', data.WorkerPool);
+};
+
+exports.withDb = (mock, skipping) => {
+  withDb(mock, skipping, exports, 'worker_manager');
 };
 
 exports.withPulse = (mock, skipping) => {
@@ -255,4 +260,18 @@ const stubbedNotify = () => {
   notify.emails = emails;
 
   return notify;
+};
+
+exports.resetTables = (mock, skipping) => {
+  setup('reset tables', async function() {
+    const sec = exports.secrets.get('db');
+
+    if (mock) {
+      exports.db['worker_manager'].reset();
+    } {
+      await resetTable({ testDbUrl: sec.testDbUrl, tableName: 'wmworkers_entities' });
+      await resetTable({ testDbUrl: sec.testDbUrl, tableName: 'wmworker_pools_entities' });
+      await resetTable({ testDbUrl: sec.testDbUrl, tableName: 'wmworker_pool_errors_entities' });
+    }
+  });
 };

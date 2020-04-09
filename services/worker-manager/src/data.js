@@ -1,7 +1,7 @@
 const _ = require('lodash');
 const slugid = require('slugid');
 const yaml = require('js-yaml');
-const Entity = require('azure-entities');
+const Entity = require('taskcluster-lib-entities');
 
 const WorkerPool = Entity.configure({
   version: 1,

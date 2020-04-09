@@ -5,8 +5,8 @@ defaults:
     routePrefix: 'index'
 
     # Name of task-graph table in azure table storage
-    indexedTaskTableName: 'IndexedTasks'
-    namespaceTableName: 'Namespaces'
+    indexedTaskTableName: 'indexed_tasks_entities'
+    namespaceTableName: 'namespaces_entities'
 
     # Name of pulse queue, if a non-exclusive queue is to be used.
     listenerQueueName: 'index/incoming-tasks2'
@@ -18,6 +18,10 @@ defaults:
   # Azure account
   azure:
     accountId: !env AZURE_ACCOUNT_ID
+
+  postgres:
+    readDbUrl: !env READ_DB_URL
+    writeDbUrl: !env WRITE_DB_URL
 
   monitoring:
     level: !env:optional LEVEL
@@ -59,8 +63,6 @@ test:
   taskcluster:
     rootUrl: "https://tc.example.com"
   app:
-    indexedTaskTableName: 'DummyTestIndexedTasks'
-    namespaceTableName: 'DummyTestNamespaces'
     listenerQueueName: 'test-queue'
 
   server:

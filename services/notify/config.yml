@@ -10,7 +10,7 @@ defaults:
     maxMessageTime:               600
     # Email address to blacklist, useful to mitigate temporary misuse
     emailBlacklist:               !env:json:optional EMAIL_BLACKLIST
-    denylistedNotificationTableName: DenylistedNotification
+    denylistedNotificationTableName: denylisted_notification_entities
     # ignore tasks with reasonResolved matching something in this list
     ignoreTaskReasonResolved:
         - canceled
@@ -80,7 +80,6 @@ test:
     sourceEmail: '"Taskcluster Notify Testing" <taskcluster-noreply-testing@mozilla.com>'
     sqsQueueName: taskcluster-notify-test-irc
     routePrefix: test-notify
-    denylistedNotificationTableName: TestDenylistedNotification
     emailBlacklist: []
   azure:
     accountId:        'pamplemousse'

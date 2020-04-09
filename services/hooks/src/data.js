@@ -1,4 +1,4 @@
-const Entity = require('azure-entities');
+const Entity = require('taskcluster-lib-entities');
 const _ = require('lodash');
 
 /** Entity for tracking hooks and associated state **/

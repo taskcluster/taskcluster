@@ -1,4 +1,3 @@
-const Entity = require('azure-entities');
 const taskcluster = require('taskcluster-client');
 const Iterate = require('taskcluster-lib-iterate');
 const {consume} = require('taskcluster-lib-pulse');
@@ -139,10 +138,20 @@ class Provisioner {
       };
 
       // Check the state of workers (state is updated by worker-scanner)
-      await this.Worker.scan({
-        state: Entity.op.notEqual(this.Worker.states.STOPPED),
-      }, {
-        handler: seen,
+      await this.Worker.scan({}, {
+        handler: (worker) => {
+          // We only support conditions on dates, as they cannot
+          // be used to inject SQL -- `Date.toJSON` always produces a simple string
+          // with no SQL metacharacters.
+          //
+          // Previously with azure, we added the query in the scan method
+          // (i.e., this.Worker.scan({ state: ... })) but since the query doesn't include
+          // the partition key or row key, we would need to manually filter through
+          // the table.
+          if (worker.state !== this.Worker.states.STOPPED) {
+            seen(worker);
+          }
+        },
       });
 
       // We keep track of which providers are actively managing

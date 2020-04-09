@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/taskcluster/taskcluster/v28/tools/worker-runner/protocol"
+	"github.com/taskcluster/taskcluster/v29/tools/worker-runner/protocol"
 )
 
 func main() {
