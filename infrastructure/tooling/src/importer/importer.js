@@ -73,74 +73,64 @@ const importer = async options => {
 
       [
         {
-          name: `${tableName}-1/14`,
+          name: `${tableName}-1/12`,
           filter: `PartitionKey ${Table.Operators.LessThan} ${Table.Operators.string("A")}`,
-          title: `[-]`,
+          title: `0-9, and -`,
         },
         {
-          name: `${tableName}-2/14`,
+          name: `${tableName}-2/12`,
           filter: `PartitionKey ${Table.Operators.GreaterThanOrEqual} ${Table.Operators.string("A")} ${Table.Operators.And} PartitionKey ${Table.Operators.LessThan} ${Table.Operators.string("E")} `,
           title: `[A, E[`,
         },
         {
-          name: `${tableName}-3/14`,
+          name: `${tableName}-3/12`,
           filter: `PartitionKey ${Table.Operators.GreaterThanOrEqual} ${Table.Operators.string("E")} ${Table.Operators.And} PartitionKey ${Table.Operators.LessThan} ${Table.Operators.string("I")} `,
           title: `[E, I[`,
         },
         {
-          name: `${tableName}-4/14`,
+          name: `${tableName}-4/12`,
           filter: `PartitionKey ${Table.Operators.GreaterThanOrEqual} ${Table.Operators.string("I")} ${Table.Operators.And} PartitionKey ${Table.Operators.LessThan} ${Table.Operators.string("N")} `,
           title: `[I, N[`,
         },
         {
-          name: `${tableName}-5/14`,
+          name: `${tableName}-5/12`,
           filter: `PartitionKey ${Table.Operators.GreaterThanOrEqual} ${Table.Operators.string("N")} ${Table.Operators.And} PartitionKey ${Table.Operators.LessThan} ${Table.Operators.string("U")} `,
           title: `[N, U[`,
         },
         {
-          name: `${tableName}-6/14`,
+          name: `${tableName}-6/12`,
           filter: `PartitionKey ${Table.Operators.GreaterThanOrEqual} ${Table.Operators.string("U")} ${Table.Operators.And} PartitionKey ${Table.Operators.LessThan} ${Table.Operators.string("Z")} `,
           title: `[U, Z[`,
         },
         {
-          name: `${tableName}-7/14`,
+          name: `${tableName}-7/12`,
           filter: `PartitionKey ${Table.Operators.GreaterThanOrEqual} ${Table.Operators.string("Z")} ${Table.Operators.And} PartitionKey ${Table.Operators.LessThan} ${Table.Operators.string("a")} `,
           title: `[Z, _]`,
         },
         {
-          name: `${tableName}-8/14`,
+          name: `${tableName}-8/12`,
           filter: `PartitionKey ${Table.Operators.GreaterThanOrEqual} ${Table.Operators.string("a")} ${Table.Operators.And} PartitionKey ${Table.Operators.LessThan} ${Table.Operators.string("e")} `,
           title: `[a, e[`,
         },
         {
-          name: `${tableName}-9/14`,
+          name: `${tableName}-9/12`,
           filter: `PartitionKey ${Table.Operators.GreaterThanOrEqual} ${Table.Operators.string("e")} ${Table.Operators.And} PartitionKey ${Table.Operators.LessThan} ${Table.Operators.string("i")} `,
           title: `[e, i[`,
         },
         {
-          name: `${tableName}-10/14`,
+          name: `${tableName}-10/12`,
           filter: `PartitionKey ${Table.Operators.GreaterThanOrEqual} ${Table.Operators.string("i")} ${Table.Operators.And} PartitionKey ${Table.Operators.LessThan} ${Table.Operators.string("n")} `,
           title: `[i, n[`,
         },
         {
-          name: `${tableName}-11/14`,
+          name: `${tableName}-11/12`,
           filter: `PartitionKey ${Table.Operators.GreaterThanOrEqual} ${Table.Operators.string("n")} ${Table.Operators.And} PartitionKey ${Table.Operators.LessThan} ${Table.Operators.string("u")} `,
           title: `[n, u[`,
         },
         {
-          name: `${tableName}-12/14`,
+          name: `${tableName}-12/12`,
           filter: `PartitionKey ${Table.Operators.GreaterThanOrEqual} ${Table.Operators.string("u")} ${Table.Operators.And} PartitionKey ${Table.Operators.LessThanOrEqual} ${Table.Operators.string("z")} `,
           title: `[u, z]`,
-        },
-        {
-          name: `${tableName}-13/14`,
-          filter: `PartitionKey ${Table.Operators.GreaterThanOrEqual} ${Table.Operators.string("0")} ${Table.Operators.And} PartitionKey ${Table.Operators.LessThan} ${Table.Operators.string("4")} `,
-          title: `[0, 4[`,
-        },
-        {
-          name: `${tableName}-14/14`,
-          filter: `PartitionKey ${Table.Operators.GreaterThanOrEqual} ${Table.Operators.string("4")} ${Table.Operators.And} PartitionKey ${Table.Operators.LessThanOrEqual} ${Table.Operators.string("9")} `,
-          title: `[4, 9]`,
         },
       ]
         .forEach(({ name, filter, title }) => {
