@@ -4,6 +4,7 @@ const slugid = require('slugid');
 const jsone = require('json-e');
 const tc = require('taskcluster-client');
 const TopoSort = require('topo-sort');
+const utils = require('./utils');
 
 // Assert that only scope-valid characters are in branches
 const branchTest = /^[\x20-\x7e]*$/;
@@ -172,41 +173,6 @@ class VersionOne extends TcYaml {
     this.version = 1;
   }
 
-  /**
- * Get scopes and attach them to the task.
- * v1 function
- */
-  createScopes(cfg, config, payload) {
-    config.scopes = [];
-
-    if (payload.tasks_for === 'github-pull-request') {
-      config.scopes = [
-        `assume:repo:github.com/${ payload.organization }/${ payload.repository }:pull-request`,
-      ];
-    } else if (payload.tasks_for === 'github-push') {
-      if (payload.body.ref.split('/')[1] === 'tags') {
-        let prefix = `assume:repo:github.com/${ payload.organization }/${ payload.repository }:tag:`;
-        config.scopes = [
-          prefix + payload.details['event.head.tag'],
-        ];
-      } else {
-        let prefix = `assume:repo:github.com/${ payload.organization }/${ payload.repository }:branch:`;
-        config.scopes = [
-          prefix + payload.details['event.base.repo.branch'],
-        ];
-      }
-    } else if (payload.tasks_for === 'github-release') {
-      config.scopes = [
-        `assume:repo:github.com/${ payload.organization }/${ payload.repository }:release`,
-      ];
-    }
-
-    config.scopes.push(`queue:route:${config.reporting ? cfg.app.checkTaskRoute : cfg.app.statusTaskRoute}`);
-    config.scopes.push(`queue:scheduler-id:${cfg.taskcluster.schedulerId}`);
-
-    return config;
-  }
-
   substituteParameters(config, cfg, payload) {
     if (!branchTest.test(payload.branch || '')) {
       throw new Error('Cannot have unicode in branch names!');
@@ -300,7 +266,25 @@ class VersionOne extends TcYaml {
       config.tasks = tsort.sort().reverse().map(id => taskMap[id]);
 
     }
-    return this.createScopes(cfg, config, payload);
+
+    let push;
+    if (payload.tasks_for === 'github-push') {
+      if (payload.body.ref.split('/')[1] === 'tags') {
+        push = {type: 'tag', ref: payload.details['event.head.tag']}
+      } else {
+        push = {type: 'branch', ref: payload.details['event.base.repo.branch']}
+      }
+    }
+    const scopes = utils.generateQueueClientScopes({
+      tasks_for: payload.tasks_for,
+      schedulerId: cfg.taskcluster.schedulerId,
+      reportingRoute: config.reporting ? cfg.app.checkTaskRoute : cfg.app.statusTaskRoute,
+      push,
+    });
+
+    config.scopes = scopes;
+
+    return config;
   }
 }
 

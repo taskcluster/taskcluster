@@ -29,6 +29,34 @@ const throttleRequest = async ({url, method, delay = 10, response = {status: 0},
   return res;
 };
 
+const generateQueueClientScopes = ({tasks_for, push, reportingRoute, schedulerId}) => {
+  let scopes = [];
+
+  switch (tasks_for) {
+    case 'github-pull-request':
+      scopes = [`assume:repo:github.com/${ payload.organization }/${ payload.repository }:pull-request`];
+      break;
+    case 'github-push':
+      if (push) {
+        scopes = [`assume:repo:github.com/${ payload.organization }/${ payload.repository }:${push.type}:${push.ref}`]
+      } else {
+        scopes = [];
+      }
+      break;
+    case 'github-release':
+      scopes = [`assume:repo:github.com/${ payload.organization }/${ payload.repository }:release`];
+      break;
+    default:
+      scopes = [];
+  }
+
+  scopes.push(`queue:route:${reportingRoute}`);
+  scopes.push(`queue:scheduler-id:${schedulerId}`);
+
+  return scopes;
+};
+
 module.exports = {
   throttleRequest,
+  generateQueueClientScopes,
 };
