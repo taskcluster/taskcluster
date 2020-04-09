@@ -165,7 +165,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['db', 'azure', 'aws'], function(m
   test('matrix', async () => {
     const route = 'test-notify.matrix-room.!gBxblkbeeBSadzOniu:mozilla.org.on-any';
     const task = makeTask([route]);
-    task.extra = {notify: {matrixFormat: 'matrix.foo', matrixBody: '${taskId}', matrixFormattedBody: '<h1>${taskId}</h1>'}};
+    task.extra = {notify: {matrixFormat: 'matrix.foo', matrixBody: '${taskId}', matrixFormattedBody: '<h1>${taskId}</h1>', matrixNotice: false}};
     helper.queue.addTask(baseStatus.taskId, task);
     await helper.fakePulseMessage({
       payload: {
@@ -180,6 +180,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['db', 'azure', 'aws'], function(m
     assert.equal(helper.matrixClient.sendEvent.args[0][2].format, 'matrix.foo');
     assert.equal(helper.matrixClient.sendEvent.args[0][2].body, 'DKPZPsvvQEiw67Pb3rkdNg');
     assert.equal(helper.matrixClient.sendEvent.args[0][2].formatted_body, '<h1>DKPZPsvvQEiw67Pb3rkdNg</h1>');
+    assert.equal(helper.matrixClient.sendEvent.args[0][2].msgtype, 'm.text');
     assert(monitorManager.messages.find(m => m.Type === 'matrix'));
     assert(monitorManager.messages.find(m => m.Type === 'matrix-forbidden') === undefined);
   });
