@@ -89,12 +89,7 @@ export default class WorkerTable extends Component {
   );
 
   handleHeaderClick = header => {
-    const {
-      location,
-      match: {
-        params: { provisionerId, workerType, workerGroup, workerId },
-      },
-    } = this.props;
+    const { location } = this.props;
     const query = parse(location.search.slice(1));
     const toggled = this.state.sortDirection === 'desc' ? 'asc' : 'desc';
     const sortDirection = this.state.sortBy === header.id ? toggled : 'desc';
@@ -103,12 +98,9 @@ export default class WorkerTable extends Component {
 
     query.sortBy = header.id;
     query.sortDirection = sortDirection;
-    this.props.history.replace(
-      `/provisioners/${provisionerId}/worker-types/${workerType}/workers/${workerGroup}/${workerId}/${stringify(
-        query,
-        { addQueryPrefix: true }
-      )}`
-    );
+    this.props.history.replace({
+      search: stringify(query, { addQueryPrefix: true }),
+    });
   };
 
   render() {
