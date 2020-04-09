@@ -5,6 +5,7 @@ const assert = require('assert');
 const {consume} = require('taskcluster-lib-pulse');
 const {CONCLUSIONS, CHECKRUN_TEXT, CUSTOM_CHECKRUN_TEXT_ARTIFACT_NAME} = require('./constants');
 const utils = require('./utils');
+const TopoSort = require('topo-sort');
 
 /**
  * Create handlers
@@ -914,4 +915,68 @@ async function taskDefinedHandler(message) {
   });
 
   debug(`Status for task ${taskId}, task group ${taskGroupId} created`);
+}
+
+/**
+ * This handler restarts the whole group of tasks. Powers "Re-run All Checks"
+ *
+ * @param object - checkSuite exchange message. Sent by tc-gh
+ * @returns {Promise<void>}
+ */
+async function reRequestChecksuiteHandler(message) {
+  if (message.payload.body.action !== 'rerequested') return;
+
+  const checkSuiteId = message.payload.body.check_suite.id;
+
+  const checksToTasks = (await this.context.ChecksToTasks.query({checkSuiteId})).entries;
+  const {taskGroupId} = checksToTasks[0];
+
+  const now = new Date().toJSON();
+  let tsort = new TopoSort();
+  let oldToNewTaskIdMap = [];
+
+  let taskDefMap = await Promise.all(checksToTasks
+    .map(async t => {
+      const taskDefinition = await this.queueClient.task(t.taskId);
+      return {oldTaskId: t.taskId, taskDefinition};
+    }))
+    .filter(to =>
+      (to.taskDefinition.tags && to.taskDefinition.tags.kind && to.taskDefinition.tags.kind === "decision-task") ||
+      (to.taskDefinition.extra && to.taskDefinition.extra.treeherder &&
+        to.taskDefinition.extra.treeherder.symbol && to.taskDefinition.extra.treeherder.symbol === "D")
+    )
+    .reduce((acc, td) => {
+      const newTaskId = slugid.nice();
+      tsort.add(newTaskId, td.dependencies || []);
+      oldToNewTaskIdMap.push({[td.oldTaskId]: newTaskId});
+      return {...acc, [newTaskId]: {newTaskId, task: {...td.taskDefinition, created: now}}};
+  }, {});
+
+  const taskDefs = tsort.sort().reverse().map(id => taskDefMap[id]);
+
+    await Promise.all(checksToTasks.forEach(async ct => {
+      await this.context.CheckRuns.create({
+        taskGroupId,
+        taskId: oldToNewTaskIdMap[i.taskId],
+        checkSuiteId,
+        checkRunId: ct.checkRunId.toString(),
+      });
+      await ct.modify(i => i.taskId = oldToNewTaskIdMap[i.taskId])
+    }));
+
+
+  const {eventType} = await this.context.Builds.load({taskGroupId});
+  let push;
+  if (eventType === 'github-push') {
+    push = {type: 'branch', ref: message.payload.body.check_suite.head_branch};
+  }
+
+  const scopes = utils.generateQueueClientScopes({
+    tasks_for: eventType,
+    reportingRoute: this.context.cfg.app.checkTaskRoute,
+    schedulerId: this.context.cfg.taskcluster.schedulerId,
+    push,
+  });
+
+  this.createTasks({scopes, taskDefs});
 }
