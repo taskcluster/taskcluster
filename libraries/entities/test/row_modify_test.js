@@ -34,7 +34,7 @@ helper.dbSuite(path.basename(__filename), function() {
   const serviceName = 'test-entities';
 
   suite('row modify', function() {
-    test('modify without changing anything should not throw', async function() {
+    test('modify without changing anything should not call the _modify function', async function() {
       db = await helper.withDb({ schema, serviceName });
       const id = slugid.v4();
       const TestTable = configuredTestTable.setup({ tableName: 'test_entities', db, serviceName });
@@ -46,10 +46,16 @@ helper.dbSuite(path.basename(__filename), function() {
         time: new Date(),
       });
 
-      const item2 = await item.modify(function(entry) {
-        // do nothing
-      });
-      assert.deepEqual(item, item2);
+      const oldModify = db.fns.test_entities_modify;
+      db.fns.test_entities_modify = () => { throw new Error('should not happen'); };
+      try {
+        const item2 = await item.modify(function(entry) {
+          // do nothing
+        });
+        assert.deepEqual(item, item2);
+      } finally {
+        db.fns.test_entities_modify = oldModify;
+      }
     });
     test('Item.create, Item.modify, Item.load', async function() {
       db = await helper.withDb({ schema, serviceName });
