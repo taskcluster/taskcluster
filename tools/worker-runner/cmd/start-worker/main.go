@@ -5,11 +5,11 @@ import (
 	"os"
 
 	docopt "github.com/docopt/docopt-go"
-	tcworkerrunner "github.com/taskcluster/taskcluster/v28/tools/worker-runner"
-	"github.com/taskcluster/taskcluster/v28/tools/worker-runner/logging"
-	"github.com/taskcluster/taskcluster/v28/tools/worker-runner/provider"
-	"github.com/taskcluster/taskcluster/v28/tools/worker-runner/runner"
-	"github.com/taskcluster/taskcluster/v28/tools/worker-runner/worker"
+	tcworkerrunner "github.com/taskcluster/taskcluster/v29/tools/worker-runner"
+	"github.com/taskcluster/taskcluster/v29/tools/worker-runner/logging"
+	"github.com/taskcluster/taskcluster/v29/tools/worker-runner/provider"
+	"github.com/taskcluster/taskcluster/v29/tools/worker-runner/runner"
+	"github.com/taskcluster/taskcluster/v29/tools/worker-runner/worker"
 )
 
 func Usage() string {

@@ -3,6 +3,13 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v29.0.0
+
+### DEPLOYERS
+
+▶ [MAJOR] [bug 1436478](http://bugzil.la/1436478)
+The Taskcluster services now use a Postgres backend, instead of Azure Cables and Azure Containers.  All data in Azure must be migrated to Postgres during a downtime using `yarn importer:run`, and this is planned for all known deployments.  There should be no immediate user-visible impact from this change, aside from faster API responses, but it unlocks many planned improvements.
+
 ## v28.2.3
 
 ### USERS

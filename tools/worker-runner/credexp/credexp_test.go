@@ -5,9 +5,9 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/taskcluster/taskcluster/v28/tools/worker-runner/protocol"
-	ptesting "github.com/taskcluster/taskcluster/v28/tools/worker-runner/protocol/testing"
-	"github.com/taskcluster/taskcluster/v28/tools/worker-runner/run"
+	"github.com/taskcluster/taskcluster/v29/tools/worker-runner/protocol"
+	ptesting "github.com/taskcluster/taskcluster/v29/tools/worker-runner/protocol/testing"
+	"github.com/taskcluster/taskcluster/v29/tools/worker-runner/run"
 )
 
 func TestCredsExpiration(t *testing.T) {
