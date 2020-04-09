@@ -115,12 +115,14 @@ class Handler {
           if (_.has(task, 'extra.notify.matrixFormattedBody')) {
             formattedBody = this.renderMessage(task.extra.notify.matrixFormattedBody, {task, status, taskId});
           }
+          let notice = _.get(task, 'extra.notify.matrixNotice');
           try {
             return await this.notifier.matrix({
               roomId,
               format,
               formattedBody,
               body,
+              notice,
             });
           } catch (err) {
             // This just means that we haven't been invited to the room yet

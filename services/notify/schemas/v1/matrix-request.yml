@@ -21,6 +21,12 @@ properties:
     description: |
       Text that will be rendered by matrix clients that support the given
       format in that format. For instance, `<h1>Header Text</h1>`.
+  notice:
+    type: boolean
+    default: true
+    description: |
+      Send the notification as a notice (`msgtype: m.notice`)
+      instead of a normal message (`msgtype: m.text`). Defaults to true.
 additionalProperties: false
 required:
   - roomId
