@@ -129,7 +129,7 @@ const importer = async options => {
         },
         {
           name: `${tableName}-12/12`,
-          filter: `PartitionKey ${Table.Operators.GreaterThanOrEqual} ${Table.Operators.string("u")} ${Table.Operators.And} PartitionKey ${Table.Operators.LessThanOrEqual} ${Table.Operators.string("z")} `,
+          filter: `PartitionKey ${Table.Operators.GreaterThanOrEqual} ${Table.Operators.string("u")}`,
           title: `[u, z]`,
         },
       ]
