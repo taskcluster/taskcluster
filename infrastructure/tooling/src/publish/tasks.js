@@ -12,6 +12,7 @@ const {
   execCommand,
   pyClientRelease,
   readRepoFile,
+  dockerPush,
   REPO_ROOT,
 } = require('../utils');
 
