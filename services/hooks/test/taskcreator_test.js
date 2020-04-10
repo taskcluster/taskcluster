@@ -11,8 +11,10 @@ const testing = require('taskcluster-lib-testing');
 const {defaultMonitorManager} = require('taskcluster-lib-monitor');
 
 suite(testing.suiteName(), function() {
-  helper.secrets.mockSuite('TaskCreator', ['azure'], function(mock, skipping) {
+  helper.secrets.mockSuite('TaskCreator', ['db'], function(mock, skipping) {
+    helper.withDb(mock, skipping);
     helper.withEntities(mock, skipping);
+    helper.resetTables(mock, skipping);
 
     this.slow(500);
 

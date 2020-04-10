@@ -1,6 +1,6 @@
 const load = require('../src/main');
 const taskcluster = require('taskcluster-client');
-const {Secrets, stickyLoader, withMonitor, withEntity, withPulse} = require('taskcluster-lib-testing');
+const {Secrets, stickyLoader, withMonitor, withEntity, withPulse, withDb, resetTable} = require('taskcluster-lib-testing');
 const sinon = require('sinon');
 const AuthorizationCode = require('../src/data/AuthorizationCode');
 const AccessToken = require('../src/data/AccessToken');
@@ -34,7 +34,7 @@ exports.rootUrl = libUrls.testRootUrl();
 exports.secrets = new Secrets({
   secretName: 'project/taskcluster/testing/azure',
   secrets: {
-    azure: withEntity.secret,
+    db: withDb.secret,
   },
   load: exports.load,
 });
@@ -44,6 +44,10 @@ exports.withEntities = (mock, skipping) => {
   withEntity(mock, skipping, exports, 'AccessToken', AccessToken);
   withEntity(mock, skipping, exports, 'GithubAccessToken', GithubAccessToken);
   withEntity(mock, skipping, exports, 'SessionStorage', SessionStorage);
+};
+
+exports.withDb = (mock, skipping) => {
+  withDb(mock, skipping, exports, 'web_server');
 };
 
 exports.withPulse = (helper, skipping) => {
@@ -479,5 +483,20 @@ const stubbedClients = () => {
         },
       },
     }),
+  });
+};
+
+exports.resetTables = (mock, skipping) => {
+  setup('reset tables', async function() {
+    const sec = exports.secrets.get('db');
+
+    if (mock) {
+      exports.db['web_server'].reset();
+    } {
+      await resetTable({ testDbUrl: sec.testDbUrl, tableName: 'authorization_codes_table_entities' });
+      await resetTable({ testDbUrl: sec.testDbUrl, tableName: 'access_token_table_entities' });
+      await resetTable({ testDbUrl: sec.testDbUrl, tableName: 'session_storage_table_entities' });
+      await resetTable({ testDbUrl: sec.testDbUrl, tableName: 'github_access_token_table_entities' });
+    }
   });
 };

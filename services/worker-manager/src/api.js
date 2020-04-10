@@ -405,8 +405,21 @@ builder.declare({
 
   const data = await this.Worker.scan({
     workerPoolId: req.params.workerPoolId,
-    workerGroup: req.params.workerGroup,
   }, scanOptions);
+
+  // We only support conditions on dates, as they cannot
+  // be used to inject SQL -- `Date.toJSON` always produces a simple string
+  // with no SQL metacharacters.
+  //
+  // Previously with azure, we added the query in the scan method
+  // (i.e., this.Worker.scan({ workerGroup, ... }))
+  data.entries = data.entries.filter(entry => {
+    if (entry.workerGroup !== req.params.workerGroup) {
+      return false;
+    }
+
+    return true;
+  });
 
   const result = {
     workers: data.entries.map(e => e.serializable()),

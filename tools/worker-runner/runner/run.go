@@ -7,17 +7,17 @@ import (
 	"log"
 	"os"
 
-	"github.com/taskcluster/taskcluster/v28/tools/worker-runner/cfg"
-	"github.com/taskcluster/taskcluster/v28/tools/worker-runner/credexp"
-	"github.com/taskcluster/taskcluster/v28/tools/worker-runner/files"
-	"github.com/taskcluster/taskcluster/v28/tools/worker-runner/logging"
-	loggingProtocol "github.com/taskcluster/taskcluster/v28/tools/worker-runner/logging/protocol"
-	"github.com/taskcluster/taskcluster/v28/tools/worker-runner/perms"
-	"github.com/taskcluster/taskcluster/v28/tools/worker-runner/protocol"
-	"github.com/taskcluster/taskcluster/v28/tools/worker-runner/provider"
-	"github.com/taskcluster/taskcluster/v28/tools/worker-runner/run"
-	"github.com/taskcluster/taskcluster/v28/tools/worker-runner/secrets"
-	"github.com/taskcluster/taskcluster/v28/tools/worker-runner/worker"
+	"github.com/taskcluster/taskcluster/v29/tools/worker-runner/cfg"
+	"github.com/taskcluster/taskcluster/v29/tools/worker-runner/credexp"
+	"github.com/taskcluster/taskcluster/v29/tools/worker-runner/files"
+	"github.com/taskcluster/taskcluster/v29/tools/worker-runner/logging"
+	loggingProtocol "github.com/taskcluster/taskcluster/v29/tools/worker-runner/logging/protocol"
+	"github.com/taskcluster/taskcluster/v29/tools/worker-runner/perms"
+	"github.com/taskcluster/taskcluster/v29/tools/worker-runner/protocol"
+	"github.com/taskcluster/taskcluster/v29/tools/worker-runner/provider"
+	"github.com/taskcluster/taskcluster/v29/tools/worker-runner/run"
+	"github.com/taskcluster/taskcluster/v29/tools/worker-runner/secrets"
+	"github.com/taskcluster/taskcluster/v29/tools/worker-runner/worker"
 )
 
 // Run the worker.  This embodies the execution of the start-worker command.

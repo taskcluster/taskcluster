@@ -3,7 +3,7 @@ const data = require('../src/data');
 const builder = require('../src/api');
 const taskcluster = require('taskcluster-client');
 const load = require('../src/main');
-const {fakeauth, stickyLoader, Secrets, withEntity, withPulse, withMonitor} = require('taskcluster-lib-testing');
+const {fakeauth, stickyLoader, Secrets, withEntity, withPulse, withMonitor, withDb, resetTable} = require('taskcluster-lib-testing');
 
 const helper = module.exports;
 
@@ -20,7 +20,7 @@ withMonitor(exports);
 exports.secrets = new Secrets({
   secretName: 'project/taskcluster/testing/azure',
   secrets: {
-    azure: withEntity.secret,
+    db: withDb.secret,
   },
   load: exports.load,
 });
@@ -33,6 +33,10 @@ helper.rootUrl = 'http://localhost:60020';
 exports.withEntities = (mock, skipping) => {
   withEntity(mock, skipping, exports, 'IndexedTask', data.IndexedTask);
   withEntity(mock, skipping, exports, 'Namespace', data.Namespace);
+};
+
+exports.withDb = (mock, skipping) => {
+  withDb(mock, skipping, exports, 'index');
 };
 
 exports.withPulse = (mock, skipping) => {
@@ -148,4 +152,17 @@ const stubbedQueue = () => {
   };
 
   return queue;
+};
+
+exports.resetTables = (mock, skipping) => {
+  setup('reset tables', async function() {
+    const sec = exports.secrets.get('db');
+
+    if (mock) {
+      exports.db['fakeindex'].reset();
+    } {
+      await resetTable({ testDbUrl: sec.testDbUrl, tableName: 'indexed_tasks_entities' });
+      await resetTable({ testDbUrl: sec.testDbUrl, tableName: 'namespaces_entities' });
+    }
+  });
 };

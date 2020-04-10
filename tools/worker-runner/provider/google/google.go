@@ -5,13 +5,13 @@ import (
 	"log"
 	"strings"
 
-	tcclient "github.com/taskcluster/taskcluster/v28/clients/client-go"
-	"github.com/taskcluster/taskcluster/v28/clients/client-go/tcworkermanager"
-	"github.com/taskcluster/taskcluster/v28/tools/worker-runner/cfg"
-	"github.com/taskcluster/taskcluster/v28/tools/worker-runner/protocol"
-	"github.com/taskcluster/taskcluster/v28/tools/worker-runner/provider/provider"
-	"github.com/taskcluster/taskcluster/v28/tools/worker-runner/run"
-	"github.com/taskcluster/taskcluster/v28/tools/worker-runner/tc"
+	tcclient "github.com/taskcluster/taskcluster/v29/clients/client-go"
+	"github.com/taskcluster/taskcluster/v29/clients/client-go/tcworkermanager"
+	"github.com/taskcluster/taskcluster/v29/tools/worker-runner/cfg"
+	"github.com/taskcluster/taskcluster/v29/tools/worker-runner/protocol"
+	"github.com/taskcluster/taskcluster/v29/tools/worker-runner/provider/provider"
+	"github.com/taskcluster/taskcluster/v29/tools/worker-runner/run"
+	"github.com/taskcluster/taskcluster/v29/tools/worker-runner/tc"
 )
 
 type GoogleProvider struct {

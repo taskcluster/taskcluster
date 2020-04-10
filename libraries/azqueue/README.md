@@ -73,9 +73,3 @@ There are a few key things to know about how this uses postgres:
   attention to messages in a single queue, and prioritizes those that were
   inserted earliest, corresponding to FIFO order.  This can get a bit slow in
   cases where most of the earliest messages are invisible or expired.
-
-## Using this in Queue service
-
-* update the queue's QueueService class to use this library
-* Remove queue-deletion logic (including from `procs.yml`)
-* Add a new hourly crontask to call `deleteExpiredMessages`

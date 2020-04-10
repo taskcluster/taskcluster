@@ -1,6 +1,6 @@
 const assert = require('assert');
 const events = require('events');
-const Entity = require('azure-entities');
+const Entity = require('taskcluster-lib-entities');
 const data = require('./data');
 const debug = require('debug')('hooks:scheduler');
 const taskcluster = require('taskcluster-client');

@@ -3,6 +3,41 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v29.0.1
+
+### DEPLOYERS
+
+▶ [patch] 
+The `db:upgrade` and `db:downgrade` commands now correctly roll back on error.
+
+### DEVELOPERS
+
+▶ [patch] [#2634](https://github.com/taskcluster/taskcluster/issues/2634)
+taskcluster-lib-entities `.modify` no longer reaches out to the db when the data
+is not modified.
+
+## v29.0.0
+
+### DEPLOYERS
+
+▶ [MAJOR] [bug 1436478](http://bugzil.la/1436478)
+The Taskcluster services now use a Postgres backend, instead of Azure Cables and Azure Containers.  All data in Azure must be migrated to Postgres during a downtime using `yarn importer:run`, and this is planned for all known deployments.  There should be no immediate user-visible impact from this change, aside from faster API responses, but it unlocks many planned improvements.
+
+## v28.2.3
+
+### USERS
+
+▶ [patch] [#2615](https://github.com/taskcluster/taskcluster/issues/2615)
+Fix error showing when creating new client/role in the UI.
+
+▶ [patch] [bug 1525419](http://bugzil.la/1525419)
+Generic worker tasks on Windows can now define environment variables that contain special characters `()%!^"<>&|`. Previously they were not escaped.
+
+### DEVELOPERS
+
+▶ [patch] 
+Development environments now default to a lower per-pod CPU request, which should help reduce the compute cost of idle development environments.  Run `yarn dev:init` to update these defaults for your dev environment.
+
 ## v28.2.2
 
 ### WORKER-DEPLOYERS

@@ -7,7 +7,8 @@ const assume = require('assume');
 const helper = require('./helper');
 const testing = require('taskcluster-lib-testing');
 
-helper.secrets.mockSuite(testing.suiteName(), ['aws', 'azure'], function(mock, skipping) {
+helper.secrets.mockSuite(testing.suiteName(), ['aws', 'db'], function(mock, skipping) {
+  helper.withDb(mock, skipping);
   helper.withAmazonIPRanges(mock, skipping);
   helper.withPollingServices(mock, skipping);
   helper.withPulse(mock, skipping);
@@ -15,6 +16,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws', 'azure'], function(mock, s
   helper.withQueueService(mock, skipping);
   helper.withEntities(mock, skipping);
   helper.withServer(mock, skipping);
+  helper.resetTables(mock, skipping);
 
   // Use the same task definition for everything
   const taskDef = {

@@ -2,7 +2,7 @@ const _ = require('lodash');
 const debug = require('debug')('purge-cache');
 const APIBuilder = require('taskcluster-lib-api');
 const taskcluster = require('taskcluster-client');
-const Entity = require('azure-entities');
+const Entity = require('taskcluster-lib-entities');
 
 // Common patterns URL parameters
 const GENERIC_ID_PATTERN = /^[a-zA-Z0-9-_]{1,38}$/;

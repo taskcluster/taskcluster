@@ -39,7 +39,7 @@ import (
 	"net/url"
 	"time"
 
-	tcclient "github.com/taskcluster/taskcluster/v28/clients/client-go"
+	tcclient "github.com/taskcluster/taskcluster/v29/clients/client-go"
 )
 
 type Notify tcclient.Client

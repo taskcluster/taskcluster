@@ -19,9 +19,9 @@ import (
 	jwt "github.com/dgrijalva/jwt-go"
 	"github.com/gorilla/websocket"
 	log "github.com/sirupsen/logrus"
-	"github.com/taskcluster/taskcluster/v28/tools/websocktunnel/client"
-	"github.com/taskcluster/taskcluster/v28/tools/websocktunnel/util"
-	"github.com/taskcluster/taskcluster/v28/tools/websocktunnel/wsmux"
+	"github.com/taskcluster/taskcluster/v29/tools/websocktunnel/client"
+	"github.com/taskcluster/taskcluster/v29/tools/websocktunnel/util"
+	"github.com/taskcluster/taskcluster/v29/tools/websocktunnel/wsmux"
 )
 
 var upgrader = websocket.Upgrader{

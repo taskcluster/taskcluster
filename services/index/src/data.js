@@ -1,5 +1,5 @@
 let _ = require('lodash');
-let Entity = require('azure-entities');
+let Entity = require('taskcluster-lib-entities');
 
 /** Entities for indexed tasks */
 let IndexedTask = Entity.configure({
