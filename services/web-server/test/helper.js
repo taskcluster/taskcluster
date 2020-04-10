@@ -488,11 +488,10 @@ const stubbedClients = () => {
 
 exports.resetTables = (mock, skipping) => {
   setup('reset tables', async function() {
-    const sec = exports.secrets.get('db');
-
     if (mock) {
       exports.db['web_server'].reset();
-    } {
+    } else {
+      const sec = exports.secrets.get('db');
       await resetTable({ testDbUrl: sec.testDbUrl, tableName: 'authorization_codes_table_entities' });
       await resetTable({ testDbUrl: sec.testDbUrl, tableName: 'access_token_table_entities' });
       await resetTable({ testDbUrl: sec.testDbUrl, tableName: 'session_storage_table_entities' });

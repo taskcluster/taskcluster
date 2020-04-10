@@ -120,11 +120,10 @@ helper.withServer = (mock, skipping) => {
 
 exports.resetTables = (mock, skipping) => {
   setup('reset tables', async function() {
-    const sec = helper.secrets.get('db');
-
     if (mock) {
       helper.db.hooks.reset();
-    } {
+    } else {
+      const sec = helper.secrets.get('db');
       await resetTable({ testDbUrl: sec.testDbUrl, tableName: 'hooks_entities' });
       await resetTable({ testDbUrl: sec.testDbUrl, tableName: 'queues_entities' });
       await resetTable({ testDbUrl: sec.testDbUrl, tableName: 'last_fire_3_entities' });

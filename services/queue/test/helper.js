@@ -302,11 +302,10 @@ exports.makeWorkerType = () => `test-${slugid.v4().replace(/[_-]/g, '').toLowerC
 
 exports.resetTables = (mock, skipping) => {
   setup('reset tables', async function() {
-    const sec = exports.secrets.get('db');
-
     if (mock) {
       exports.db['queue'].reset();
-    } {
+    } else {
+      const sec = exports.secrets.get('db');
       await resetTable({ testDbUrl: sec.testDbUrl, tableName: 'queue_tasks_entities' });
       await resetTable({ testDbUrl: sec.testDbUrl, tableName: 'queue_artifacts_entities' });
       await resetTable({ testDbUrl: sec.testDbUrl, tableName: 'queue_task_groups_entities' });

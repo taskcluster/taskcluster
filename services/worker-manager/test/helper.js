@@ -264,11 +264,10 @@ const stubbedNotify = () => {
 
 exports.resetTables = (mock, skipping) => {
   setup('reset tables', async function() {
-    const sec = exports.secrets.get('db');
-
     if (mock) {
       exports.db['worker_manager'].reset();
-    } {
+    } else {
+      const sec = exports.secrets.get('db');
       await resetTable({ testDbUrl: sec.testDbUrl, tableName: 'wmworkers_entities' });
       await resetTable({ testDbUrl: sec.testDbUrl, tableName: 'wmworker_pools_entities' });
       await resetTable({ testDbUrl: sec.testDbUrl, tableName: 'wmworker_pool_errors_entities' });
