@@ -1982,9 +1982,9 @@ buffer@4.9.1:
     isarray "^1.0.0"
 
 buffered-async-iterator@^1.0.0:
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/buffered-async-iterator/-/buffered-async-iterator-1.0.0.tgz#6a35a24fcf8710dc47b458475bc244de79c755dc"
-  integrity sha512-SoC58n2G/w4qAcFqgfQznekqvf3aYiGrMXIl7wOLX4InlvDHZefsUF5j1kUjlLekQur8YeaPimKlkJ3n5ZOIAw==
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/buffered-async-iterator/-/buffered-async-iterator-1.1.0.tgz#fd156e0dc933285d4339c39ba647f1593f2fe46a"
+  integrity sha512-fKscEmRE+zvBNUgZcJZXZqfOnA78yccbtoz8xBAuIXXWMoMomljQb4/qBqU4FkpHjqpwtJ3VF6vKiLEyVInxzQ==
 
 builtin-modules@^3.0.0:
   version "3.1.0"
