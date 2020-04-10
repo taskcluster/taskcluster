@@ -1,5 +1,7 @@
 # Github Service
+
 import Warning from 'taskcluster-ui/views/Documentation/components/Warning';
+import SiteSpecific from 'taskcluster-ui/components/SiteSpecific';
 
 This service monitors all of the repositories associated with an organization for changes and schedules Taskcluster tasks for any repository which contains a `.taskcluster.yml` configuration file.
 The goal of this project is to provide project owners a method for scheduling jobs in Taskcluster which is quick and straight forward.
@@ -8,7 +10,22 @@ The goal of this project is to provide project owners a method for scheduling jo
 This project used to provide a base docker image for convenience's sake, but it has been deprecated due to not being that useful and not being kept up-to-date. The image will continue existing, but we recommend migrating to another image.
 </Warning>
 
-### Adding status badges to your project's README:
+## Configuring the GitHub App for an Organization or Repository
 
+The Taskcluster-GitHub service must be connected to a repository before it can begin processing that repository's `.taskcluster.yml`.
+This connection is accomplished by installing a GitHub App on the repository.
+Installing the app both connects the service to notifications about events on the repository, and grants it permission to post status, comments, and so on to the repository.
+
+<SiteSpecific>
+To add the App for this deployment of Taskcluster to a GitHub repository or organization, add [this GitHub App](%github_app_url%).
+</SiteSpecific>
+
+## Adding status badges to your project's README:
+
+The [badge](/docs/reference/integrations/github/api#badge) and [latest](/docs/reference/integrations/github/api#latest) API methods can be used to construct a README badge.
 To include a badge showing the status of the latest build, insert the following string (replacing the words in caps with your Taskcluster root URL, organization or user name, repository name and the branch name) to the README.md file in your project's repository:
 `[![Task Status](https://ROOTURL/api/github/v1/repository/USERNAME/REPONAME/BRANCHNAME/badge.svg)](https://ROOTURL/api/github/v1/repository/USERNAME/REPONAME/BRANCHNAME/latest)`
+
+<SiteSpecific>
+The root URL for this deployment is `%root_url%`.
+</SiteSpecific>

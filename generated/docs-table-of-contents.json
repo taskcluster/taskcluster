@@ -1585,35 +1585,13 @@
             },
             "name": "github",
             "next": {
-              "path": "manual/deploying/login-strategies",
-              "title": "Login Strategies"
+              "path": "manual/deploying/matrix",
+              "title": "Matrix Integration"
             },
             "path": "manual/deploying/github",
             "prev": {
               "path": "manual/deploying/database",
               "title": "Database Configuration"
-            },
-            "up": {
-              "path": "manual/deploying",
-              "title": "Deploying Taskcluster"
-            }
-          },
-          {
-            "children": [
-            ],
-            "data": {
-              "order": 1000,
-              "title": "Login Strategies"
-            },
-            "name": "login-strategies",
-            "next": {
-              "path": "manual/deploying/matrix",
-              "title": "Matrix Integration"
-            },
-            "path": "manual/deploying/login-strategies",
-            "prev": {
-              "path": "manual/deploying/github",
-              "title": "GitHub Integration"
             },
             "up": {
               "path": "manual/deploying",
@@ -1634,8 +1612,8 @@
             },
             "path": "manual/deploying/matrix",
             "prev": {
-              "path": "manual/deploying/login-strategies",
-              "title": "Login Strategies"
+              "path": "manual/deploying/github",
+              "title": "GitHub Integration"
             },
             "up": {
               "path": "manual/deploying",
@@ -1739,13 +1717,35 @@
             },
             "name": "third-party",
             "next": {
-              "path": "reference/README",
-              "title": "Taskcluster Reference"
+              "path": "manual/deploying/ui",
+              "title": "User Interface"
             },
             "path": "manual/deploying/third-party",
             "prev": {
               "path": "manual/deploying/smoketests",
               "title": "Smoketests"
+            },
+            "up": {
+              "path": "manual/deploying",
+              "title": "Deploying Taskcluster"
+            }
+          },
+          {
+            "children": [
+            ],
+            "data": {
+              "order": 1000,
+              "title": "User Interface"
+            },
+            "name": "ui",
+            "next": {
+              "path": "reference/README",
+              "title": "Taskcluster Reference"
+            },
+            "path": "manual/deploying/ui",
+            "prev": {
+              "path": "manual/deploying/third-party",
+              "title": "Third Party"
             },
             "up": {
               "path": "manual/deploying",
@@ -3567,8 +3567,8 @@
     },
     "path": "reference/README",
     "prev": {
-      "path": "manual/deploying/third-party",
-      "title": "Third Party"
+      "path": "manual/deploying/ui",
+      "title": "User Interface"
     }
   },
   "resources": {

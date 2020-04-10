@@ -163,7 +163,8 @@ const extras = {
       {type: '!env', var: 'GRAPHQL_SUBSCRIPTION_ENDPOINT'},
       {type: '!env', var: 'GRAPHQL_ENDPOINT'},
       {type: '!env', var: 'UI_LOGIN_STRATEGY_NAMES'},
-      {type: '!env', var: 'BANNER_MESSAGE'},
+      {type: '!env:string', var: 'BANNER_MESSAGE', optional: true},
+      {type: '!env:json', var: 'SITE_SPECIFIC', optional: true},
     ],
     procs: {
       web: {
@@ -242,6 +243,7 @@ exports.tasks.push({
   provides: [
     'config-values-schema',
     'config-values',
+    'target-k8s',
   ],
   run: async (requirements, utils) => {
     const schema = {
@@ -407,8 +409,6 @@ exports.tasks.push({
         if (NON_CONFIGURABLE.includes(varName) || Object.keys(SHARED_CONFIG).includes(varName)) {
           return;
         }
-        // TODO: In config.ymls somehow mark fields as "required" or "optional" and then assert
-        // that here with  schema.properties[confName].required.push(varName);
         schema.properties[confName].properties[varName] = configToSchema(v.type);
         if (!v.optional) {
           schema.properties[confName].required.push(varName);
@@ -482,6 +482,7 @@ exports.tasks.push({
     return {
       'config-values-schema': schema,
       'config-values': valuesYAML,
+      'target-k8s': true,
     };
   },
 });
