@@ -12,6 +12,7 @@ const {
   execCommand,
   pyClientRelease,
   readRepoFile,
+  dockerPush,
   REPO_ROOT,
 } = require('../utils');
 
@@ -159,7 +160,88 @@ module.exports = ({tasks, cmdOptions, credentials, baseDir}) => {
     },
   });
 
-  /* -- docker image build occurs here -- */
+  ensureTask(tasks, {
+    title: 'Build Websocktunnel Docker Image',
+    requires: [
+      'release-version',
+    ],
+    provides: [
+      'websocktunnel-docker-image', // image tag
+      'monoimage-image-on-registry', // true if the image is already on registry
+    ],
+    locks: ['git'],
+    run: async (requirements, utils) => {
+      utils.step({title: 'Check Repository'});
+
+      const tag = `taskcluster/websocktunnel:${requirements['release-version']}`;
+      const provides = {
+        'websocktunnel-docker-image': tag,
+      };
+
+      utils.step({title: 'Building Websocktunnel'});
+
+      const contextDir = path.join(baseDir, 'websocktunnel-build');
+      await execCommand({
+        command: [
+          'go', 'build',
+          '-o', path.join(contextDir, 'websocktunnel'),
+          './tools/websocktunnel/cmd/websocktunnel',
+        ],
+        dir: REPO_ROOT,
+        logfile: `${baseDir}/websocktunnel-build.log`,
+        utils,
+        env: process.env,
+      });
+
+      utils.step({title: 'Building Docker Image'});
+
+      // this simple Dockerfile just packages the binary into a Docker image
+      const dockerfile = path.join(contextDir, 'Dockerfile');
+      fs.writeFileSync(dockerfile, [
+        'FROM scratch',
+        'COPY websocktunnel /websocktunnel',
+        'ENTRYPOINT ["/websocktunnel"]',
+      ].join('\n'));
+      let command = [
+        'docker', 'build',
+        '--no-cache',
+        '--progress', 'plain',
+        '--tag', tag,
+        contextDir,
+      ];
+      await execCommand({
+        command,
+        dir: REPO_ROOT,
+        logfile: `${baseDir}/websocktunnel-docker-build.log`,
+        utils,
+        env: {DOCKER_BUILDKIT: 1, ...process.env},
+      });
+
+      if (!cmdOptions.staging) {
+        utils.step({title: 'Pushing Docker Image'});
+
+        const dockerPushOptions = {};
+        if (credentials.dockerUsername && credentials.dockerPassword) {
+          dockerPushOptions.credentials = {
+            username: credentials.dockerUsername,
+            password: credentials.dockerPassword,
+          };
+        }
+
+        await dockerPush({
+          logfile: `${baseDir}/docker-push.log`,
+          tag,
+          utils,
+          baseDir,
+          ...dockerPushOptions,
+        });
+      }
+
+      return provides;
+    },
+  });
+
+  /* -- monoimage docker image build occurs here -- */
 
   ensureTask(tasks, {
     title: 'Create GitHub Release',
@@ -170,6 +252,7 @@ module.exports = ({tasks, cmdOptions, credentials, baseDir}) => {
       'worker-runner-artifacts',
       'changelog-text',
       'target-monoimage',
+      'websocktunnel-docker-image',
     ],
     provides: [
       'github-release',

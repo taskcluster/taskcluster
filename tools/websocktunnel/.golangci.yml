@@ -1,0 +1,4 @@
+issues:
+  exclude:
+    # These calls are just in tests, and still work, and it's not clear how to fix
+    - 'websocket.NewClient is deprecated: Use Dialer instead.'
