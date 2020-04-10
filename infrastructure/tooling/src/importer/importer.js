@@ -5,7 +5,7 @@ const { Table, Blob } = require('fast-azure-storage');
 const glob = require('glob');
 const {postgresTableName} = require('taskcluster-lib-entities');
 const {REPO_ROOT, readRepoYAML} = require('../utils');
-const { readAzureTableInChunks, writeToPostgres, ALLOWED_TABLES, LARGE_TABLES, TASKID_RANGES } = require('./util');
+const { readAzureTableInChunks, writeToPostgres, ALLOWED_TABLES, CRYPTO_TABLES, LARGE_TABLES, TASKID_RANGES } = require('./util');
 
 const createOperations = async ({operations, config, monitor}) => {
   const credentials = {
@@ -34,7 +34,15 @@ const makeTableOperations = async ({operations, config, monitor, credentials, db
     }
   }
 
-  // TODO: apply ALLOWED_TABLES
+  const allowedTables = new Set();
+  for (let t of ALLOWED_TABLES) {
+    allowedTables.add(t);
+  }
+  if (config.EXCLUDE_CRYPTO) {
+    for (let t of CRYPTO_TABLES) {
+      allowedTables.delete(t);
+    }
+  }
 
   // support truncating each table exactly once
   const truncated = {};
@@ -51,6 +59,9 @@ const makeTableOperations = async ({operations, config, monitor, credentials, db
   };
 
   for (let tableName of tableNames) {
+    if (!allowedTables.has(tableName)) {
+      continue;
+    }
     if (LARGE_TABLES.includes(tableName)) {
       for (let range of TASKID_RANGES) {
         operations.add(new TableOperation({tableName, range, db, credentials, truncateTable}));

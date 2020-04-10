@@ -44,6 +44,20 @@ exports.ALLOWED_TABLES = [
   'Roles',
 ];
 
+// tables that are either signed or encrypted, and thus can't be imported
+// across deployments.  Set EXCLUDE_CRYPTO=1 to exclude these without modifying
+// the source code.
+exports.CRYPTO_TABLES = [
+  'Clients',
+  'Hooks',
+  'Queues',
+  'LastFire3',
+  'Secrets',
+  'AccessTokenTable',
+  'SessionStorageTable',
+  'GithubAccessTokenTable',
+];
+
 // For certain tables, we would like to import faster to make sure we don't
 // spend over 8 hours (TCW duration) importing
 exports.LARGE_TABLES = [
