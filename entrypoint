@@ -80,12 +80,6 @@ script/dev:delete) shift; exec yarn run dev:delete "${@}";;
 script/dev:verify) shift; exec yarn run dev:verify "${@}";;
 script/smoketest) shift; exec yarn run smoketest "${@}";;
 script/test:meta) shift; exec yarn run test:meta "${@}";;
-<<<<<<< HEAD
-=======
-script/backup:run) shift; exec yarn run backup:run "${@}";;
-script/backup:restore) shift; exec yarn run backup:restore "${@}";;
-script/backup:compare) shift; exec yarn run backup:compare "${@}";;
->>>>>>> changelog + generate
 script/importer:run) shift; exec yarn run importer:run "${@}";;
 script/db:upgrade) shift; exec yarn run db:upgrade "${@}";;
 script/db:downgrade) shift; exec yarn run db:downgrade "${@}";;
