@@ -1,0 +1,7 @@
+query WorkerPool($workerPoolId: String!){
+  WorkerPool(workerPoolId: $workerPoolId){
+    workerPoolId
+    owner
+    pendingTasks
+  }
+}

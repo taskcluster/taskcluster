@@ -11,8 +11,8 @@ module.exports = {
     },
   },
   Query: {
-    WorkerManagerWorkerPoolSummaries(parent, { filter }, { loaders }) {
-      return loaders.WorkerManagerWorkerPoolSummaries.load({ filter });
+    WorkerManagerWorkerPoolSummaries(parent, { connection, filter }, { loaders }) {
+      return loaders.WorkerManagerWorkerPoolSummaries.load({ connection, filter });
     },
     WorkerManagerWorkers(parent, { workerPool, provider, isQuarantined, filter }, { loaders }) {
       return loaders.WorkerManagerWorkers.load({ workerPool, provider, isQuarantined, filter });
