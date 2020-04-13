@@ -3,8 +3,8 @@ package dummy
 import (
 	"log"
 
+	"github.com/taskcluster/taskcluster/v29/internal/workerproto"
 	"github.com/taskcluster/taskcluster/v29/tools/worker-runner/cfg"
-	"github.com/taskcluster/taskcluster/v29/tools/worker-runner/protocol"
 	"github.com/taskcluster/taskcluster/v29/tools/worker-runner/run"
 	"github.com/taskcluster/taskcluster/v29/tools/worker-runner/worker/worker"
 	yaml "gopkg.in/yaml.v3"
@@ -22,16 +22,16 @@ func (d *dummy) UseCachedRun(state *run.State) error {
 	return nil
 }
 
-func (d *dummy) StartWorker(state *run.State) (protocol.Transport, error) {
+func (d *dummy) StartWorker(state *run.State) (workerproto.Transport, error) {
 	out, err := yaml.Marshal(state)
 	if err != nil {
 		return nil, err
 	}
 	log.Printf("State information:\n%s", out)
-	return protocol.NewNullTransport(), nil
+	return workerproto.NewNullTransport(), nil
 }
 
-func (d *dummy) SetProtocol(proto *protocol.Protocol) {
+func (d *dummy) SetProtocol(proto *workerproto.Protocol) {
 	// the protocol is running on a null transport, so mark it as initialized
 	proto.SetInitialized()
 }

@@ -6,17 +6,17 @@ import (
 	"log"
 	"os"
 
-	"github.com/taskcluster/taskcluster/v29/tools/worker-runner/protocol"
+	"github.com/taskcluster/taskcluster/v29/internal/workerproto"
 )
 
 var (
 	// Support for communication betweeen this process and worker-runner.  This
 	// is initialized early in the `generic-worker run` process and can be used
 	// by any component after that time.
-	WorkerRunnerProtocol *protocol.Protocol
+	WorkerRunnerProtocol *workerproto.Protocol
 
 	// The transport behind WorkerRunnerProtocol
-	workerRunnerTransport protocol.Transport
+	workerRunnerTransport workerproto.Transport
 )
 
 // A loggingWriter implements io.Writer and should be passed to a `log` instance
@@ -32,7 +32,7 @@ func (w *loggingWriter) Write(p []byte) (n int, err error) {
 	// > Each logging operation makes a single call to the Writer's Write method.
 	message := string(bytes.TrimRight(p, "\n"))
 	if WorkerRunnerProtocol.Capable("log") {
-		WorkerRunnerProtocol.Send(protocol.Message{
+		WorkerRunnerProtocol.Send(workerproto.Message{
 			Type: "log",
 			Properties: map[string]interface{}{
 				"body": map[string]interface{}{
@@ -52,7 +52,7 @@ func (w *loggingWriter) Write(p []byte) (n int, err error) {
 // set up a "null" protocol that does not claim any capabilities.
 func initializeWorkerRunnerProtocol(input io.Reader, output io.Writer, withWorkerRunner bool) {
 	if withWorkerRunner {
-		transp := protocol.NewPipeTransport(input, output)
+		transp := workerproto.NewPipeTransport(input, output)
 		workerRunnerTransport = transp
 
 		// set up to send everything that goes through the log package's default
@@ -62,10 +62,10 @@ func initializeWorkerRunnerProtocol(input io.Reader, output io.Writer, withWorke
 		log.SetOutput(&loggingWriter{backup})
 		log.SetFlags(0)
 	} else {
-		workerRunnerTransport = protocol.NewNullTransport()
+		workerRunnerTransport = workerproto.NewNullTransport()
 	}
 
-	WorkerRunnerProtocol = protocol.NewProtocol(workerRunnerTransport)
+	WorkerRunnerProtocol = workerproto.NewProtocol(workerRunnerTransport)
 	WorkerRunnerProtocol.AddCapability("graceful-termination")
 	WorkerRunnerProtocol.AddCapability("log")
 	WorkerRunnerProtocol.Start(true)

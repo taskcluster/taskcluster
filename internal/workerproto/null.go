@@ -1,4 +1,4 @@
-package protocol
+package workerproto
 
 // NullTransport implements Transport without doing anything.  It's suitable for
 // workers that do not implement the protocol

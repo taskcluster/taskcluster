@@ -3,20 +3,20 @@ package testing
 import (
 	"encoding/json"
 
-	"github.com/taskcluster/taskcluster/v29/tools/worker-runner/protocol"
+	"github.com/taskcluster/taskcluster/v29/internal/workerproto"
 )
 
 // LocalTransport is a transport for which both sides are in the same process.
 type LocalTransport struct {
 	opposite *LocalTransport
-	input    chan protocol.Message
+	input    chan workerproto.Message
 }
 
 // Create a linked pair of LocalTransport instances.  This is similar to the POSIX pipe()
 // method.
 func NewLocalTransportPair() (*LocalTransport, *LocalTransport) {
-	left := &LocalTransport{input: make(chan protocol.Message, 10)}
-	right := &LocalTransport{input: make(chan protocol.Message, 10)}
+	left := &LocalTransport{input: make(chan workerproto.Message, 10)}
+	right := &LocalTransport{input: make(chan workerproto.Message, 10)}
 	left.opposite = right
 	right.opposite = left
 
@@ -30,9 +30,9 @@ func (transp *LocalTransport) Close() {
 	}
 }
 
-// protocol.Transport interface
+// workerproto.Transport interface
 
-func (transp *LocalTransport) Send(msg protocol.Message) {
+func (transp *LocalTransport) Send(msg workerproto.Message) {
 	if transp.opposite == nil {
 		panic("transport already closed")
 	}
@@ -42,7 +42,7 @@ func (transp *LocalTransport) Send(msg protocol.Message) {
 	if err != nil {
 		panic(err)
 	}
-	var msg2 protocol.Message
+	var msg2 workerproto.Message
 	err = json.Unmarshal(j, &msg2)
 	if err != nil {
 		panic(err)
@@ -51,7 +51,7 @@ func (transp *LocalTransport) Send(msg protocol.Message) {
 	transp.opposite.input <- msg2
 }
 
-func (transp *LocalTransport) Recv() (protocol.Message, bool) {
+func (transp *LocalTransport) Recv() (workerproto.Message, bool) {
 	msg, ok := <-transp.input
 	return msg, ok
 }

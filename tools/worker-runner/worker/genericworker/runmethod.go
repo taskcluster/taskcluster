@@ -4,13 +4,13 @@ import (
 	"os"
 	"os/exec"
 
-	"github.com/taskcluster/taskcluster/v29/tools/worker-runner/protocol"
+	"github.com/taskcluster/taskcluster/v29/internal/workerproto"
 	"github.com/taskcluster/taskcluster/v29/tools/worker-runner/run"
 )
 
 // runMethod allows supporting both run-as-a-service and run-as-an-executable modes.
 type runMethod interface {
-	start(w *genericworker, state *run.State) (protocol.Transport, error)
+	start(w *genericworker, state *run.State) (workerproto.Transport, error)
 	wait() error
 }
 
@@ -24,7 +24,7 @@ type cmdRunMethod struct {
 	cmd *exec.Cmd
 }
 
-func (m *cmdRunMethod) start(w *genericworker, state *run.State) (protocol.Transport, error) {
+func (m *cmdRunMethod) start(w *genericworker, state *run.State) (workerproto.Transport, error) {
 	// path to generic-worker binary
 	cmd := exec.Command(w.wicfg.Path)
 	cmd.Env = os.Environ()
@@ -38,7 +38,7 @@ func (m *cmdRunMethod) start(w *genericworker, state *run.State) (protocol.Trans
 	if err != nil {
 		return nil, err
 	}
-	transp := protocol.NewPipeTransport(cmdStdout, cmdStdin)
+	transp := workerproto.NewPipeTransport(cmdStdout, cmdStdin)
 
 	// pass config to generic-worker
 	cmd.Args = append(cmd.Args, "run", "--config", w.wicfg.ConfigPath, "--with-worker-runner")

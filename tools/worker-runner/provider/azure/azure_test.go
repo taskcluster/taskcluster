@@ -7,9 +7,9 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
+	"github.com/taskcluster/taskcluster/v29/internal/workerproto"
+	ptesting "github.com/taskcluster/taskcluster/v29/internal/workerproto/testing"
 	"github.com/taskcluster/taskcluster/v29/tools/worker-runner/cfg"
-	"github.com/taskcluster/taskcluster/v29/tools/worker-runner/protocol"
-	ptesting "github.com/taskcluster/taskcluster/v29/tools/worker-runner/protocol/testing"
 	"github.com/taskcluster/taskcluster/v29/tools/worker-runner/run"
 	"github.com/taskcluster/taskcluster/v29/tools/worker-runner/tc"
 )
@@ -128,7 +128,7 @@ func TestConfigureRun(t *testing.T) {
 }
 
 func TestCheckTerminationTime(t *testing.T) {
-	test := func(t *testing.T, proto *protocol.Protocol, hasCapability bool) {
+	test := func(t *testing.T, proto *workerproto.Protocol, hasCapability bool) {
 		evts := &ScheduledEvents{}
 
 		mds := &fakeMetadataService{nil, nil, nil, evts, nil, "", nil, []byte(`{}`)}

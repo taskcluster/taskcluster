@@ -1,6 +1,6 @@
 # Runner / Worker Protocol
 
-Start-worker implements a simple protocol for communication between the application and workers.
+This package implements a simple protocol for communication between the application and workers.
 This is a line-based protocol that runs over the worker's stdin/stdout files.
 
 The intent of this protocol is that it is simple for workers to implement desired features, and does not tie workers to any particular cloud provider or other technology.
@@ -25,7 +25,7 @@ Note that stderr is not included in the protocol.
 
 ## Go Package
 
-The `github.com/taskcluster/taskcluster/v29/tools/worker-runner/protocol` package contains an implementation of this protocol suitable for use by `start-worker` and by a worker.
+The `github.com/taskcluster/taskcluster/v29/internal/workerproto` package contains an implementation of this protocol suitable for use by `start-worker` and by a worker.
 
 ## Initialization and Capability Negotiation
 

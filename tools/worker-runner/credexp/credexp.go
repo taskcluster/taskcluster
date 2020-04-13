@@ -4,7 +4,7 @@ import (
 	"log"
 	"time"
 
-	"github.com/taskcluster/taskcluster/v29/tools/worker-runner/protocol"
+	"github.com/taskcluster/taskcluster/v29/internal/workerproto"
 	"github.com/taskcluster/taskcluster/v29/tools/worker-runner/run"
 )
 
@@ -13,7 +13,7 @@ type CredExp struct {
 	state *run.State
 
 	// the protocol (set in SetProtocol)
-	proto *protocol.Protocol
+	proto *workerproto.Protocol
 
 	// a timer to handle sending a graceful-termination request before
 	// the credentials expire
@@ -24,7 +24,7 @@ func New(state *run.State) *CredExp {
 	return &CredExp{state, nil, nil}
 }
 
-func (ce *CredExp) SetProtocol(proto *protocol.Protocol) {
+func (ce *CredExp) SetProtocol(proto *workerproto.Protocol) {
 	ce.proto = proto
 	proto.AddCapability("graceful-termination")
 }
@@ -39,7 +39,7 @@ func (ce *CredExp) WorkerStarted() error {
 	ce.credsExpireTimer = time.AfterFunc(untilExpire-30*time.Second, func() {
 		if ce.proto != nil && ce.proto.Capable("graceful-termination") {
 			log.Println("Taskcluster Credentials are expiring in 30s; stopping worker")
-			ce.proto.Send(protocol.Message{
+			ce.proto.Send(workerproto.Message{
 				Type: "graceful-termination",
 				Properties: map[string]interface{}{
 					// credentials are expiring, so no time to shut down..

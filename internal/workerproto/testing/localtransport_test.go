@@ -4,14 +4,14 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
-	"github.com/taskcluster/taskcluster/v29/tools/worker-runner/protocol"
+	"github.com/taskcluster/taskcluster/v29/internal/workerproto"
 )
 
 func TestLocalTransport(t *testing.T) {
 	worker, runner := NewLocalTransportPair()
 
 	testDirection := func(t *testing.T, a *LocalTransport, b *LocalTransport) {
-		a.Send(protocol.Message{
+		a.Send(workerproto.Message{
 			Type: "test",
 			Properties: map[string]interface{}{
 				"test": true,

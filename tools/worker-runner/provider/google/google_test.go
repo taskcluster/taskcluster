@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"testing"
 
-	ptesting "github.com/taskcluster/taskcluster/v29/tools/worker-runner/protocol/testing"
+	ptesting "github.com/taskcluster/taskcluster/v29/internal/workerproto/testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"

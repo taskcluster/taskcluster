@@ -1,7 +1,7 @@
 package worker
 
 import (
-	"github.com/taskcluster/taskcluster/v29/tools/worker-runner/protocol"
+	"github.com/taskcluster/taskcluster/v29/internal/workerproto"
 	"github.com/taskcluster/taskcluster/v29/tools/worker-runner/run"
 )
 
@@ -18,11 +18,11 @@ type Worker interface {
 	UseCachedRun(run *run.State) error
 
 	// Actually start the worker, returning once it has been started.
-	StartWorker(state *run.State) (protocol.Transport, error)
+	StartWorker(state *run.State) (workerproto.Transport, error)
 
 	// Set the protocol used for communication with this worker.  This is an appropriate
 	// time to register for interesting messages from the worker.
-	SetProtocol(proto *protocol.Protocol)
+	SetProtocol(proto *workerproto.Protocol)
 
 	// Wait for the worker to terminate
 	Wait() error

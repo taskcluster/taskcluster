@@ -49,6 +49,8 @@ It is not possible to run a full Taskcluster deployment directly from this repos
     * [Docker Images](infrastructure/docker-images#readme)
     * [References](infrastructure/references#readme)
     * [Taskcluster Builder](infrastructure/tooling#readme)
+* [Internal Go Packages](internal#readme)
+    * [Runner / Worker Protocol](internal/workerproto#readme)
 * [Libraries](libraries#readme)
     * [API Library](libraries/api#readme)
     * [App Library](libraries/app#readme)
