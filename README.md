@@ -219,6 +219,7 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
     <td align="center"><a href="https://soundharyaam.com/"><img src="https://avatars2.githubusercontent.com/u/24657693?v=4" width="100px;" alt=""/><br /><sub><b>Soundharya AM</b></sub></a><br /><a href="https://github.com/taskcluster/taskcluster/commits?author=Soundharyaam" title="Code">💻</a></td>
     <td align="center"><a href="https://moosej.github.io/"><img src="https://avatars3.githubusercontent.com/u/15016463?v=4" width="100px;" alt=""/><br /><sub><b>Mustafa Jebara</b></sub></a><br /><a href="https://github.com/taskcluster/taskcluster/commits?author=MooseJ" title="Code">💻</a></td>
     <td align="center"><a href="https://aryamanpuri.github.io/"><img src="https://avatars3.githubusercontent.com/u/43513114?v=4" width="100px;" alt=""/><br /><sub><b>Aryaman Puri</b></sub></a><br /><a href="https://github.com/taskcluster/taskcluster/commits?author=aryamanpuri" title="Code">💻</a></td>
+    <td align="center"><a href="https://exyr.org/"><img src="https://avatars0.githubusercontent.com/u/291359?v=4" width="100px;" alt=""/><br /><sub><b>Simon Sapin</b></sub></a><br /><a href="https://github.com/taskcluster/taskcluster/commits?author=SimonSapin" title="Code">💻</a></td>
   </tr>
 </table>
 
