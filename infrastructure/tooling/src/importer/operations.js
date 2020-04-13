@@ -28,7 +28,7 @@ class Operations {
   }
 
   outputGrid() {
-    const frame = Math.round((+new Date()) / SPINNER.interval) % SPINNER.frames.length;
+    const frame = Math.round((+new Date()) / (SPINNER.interval * 2)) % SPINNER.frames.length;
     const spinner = SPINNER.frames[frame];
     const grid = [
       [
