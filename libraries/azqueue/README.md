@@ -12,7 +12,7 @@ temporary shim to assist with migration to a native Postgres backend.
 ## Usage
 
 ```javascript
-const AZQueue = require('taskclsuter-lib-azqueue');
+const AZQueue = require('taskcluster-lib-azqueue');
 
 const db = await Database.setup(...);
 const azqueue = new AZQueue({ db });
