@@ -1,11 +1,10 @@
 import { hot } from 'react-hot-loader';
 import React, { Component, Fragment } from 'react';
 import { withApollo, graphql } from 'react-apollo';
-import { parse, stringify } from 'qs';
 import PlusIcon from 'mdi-react/PlusIcon';
+import escapeStringRegexp from 'escape-string-regexp';
+import dotProp from 'dot-prop-immutable';
 import { withStyles } from '@material-ui/core/styles';
-import Switch from '@material-ui/core/Switch';
-import FormControlLabel from '@material-ui/core/FormControlLabel';
 import Spinner from '@mozilla-frontend-infra/components/Spinner';
 import Dashboard from '../../../components/Dashboard';
 import workerPoolsQuery from './WMWorkerPools.graphql';
@@ -14,12 +13,18 @@ import WorkerManagerWorkerPoolsTable from '../../../components/WMWorkerPoolsTabl
 import Search from '../../../components/Search';
 import Button from '../../../components/Button';
 import updateWorkerPoolQuery from '../WMEditWorkerPool/updateWorkerPool.graphql';
+import { VIEW_WORKER_POOLS_PAGE_SIZE } from '../../../utils/constants';
 
 @hot(module)
 @withApollo
 @graphql(workerPoolsQuery, {
   options: () => ({
     fetchPolicy: 'network-only', // so that it refreshes view after editing/creating
+    variables: {
+      connection: {
+        limit: VIEW_WORKER_POOLS_PAGE_SIZE,
+      },
+    },
   }),
 })
 @withStyles(theme => ({
@@ -38,7 +43,24 @@ export default class WorkerManagerWorkerPoolsView extends Component {
   };
 
   handleWorkerPoolSearchSubmit = workerPoolSearch => {
+    const {
+      data: { refetch },
+    } = this.props;
+
     this.setState({ workerPoolSearch });
+    refetch({
+      workerPoolsConnection: {
+        limit: VIEW_WORKER_POOLS_PAGE_SIZE,
+      },
+      filter: workerPoolSearch
+        ? {
+            workerPoolId: {
+              $regex: escapeStringRegexp(workerPoolSearch),
+              $options: 'i',
+            },
+          }
+        : null,
+    });
   };
 
   handleCreate = () => {
@@ -55,20 +77,51 @@ export default class WorkerManagerWorkerPoolsView extends Component {
           providerId: 'null-provider', // this is how we delete worker pools
         },
       },
-      refetchQueries: ['workerPools'],
+      refetchQueries: ['workerPoolsQuery'],
       awaitRefetchQueries: false,
     });
   };
 
-  handleSwitchChange = ({ target: { checked } }) => {
-    const query = {
-      ...parse(this.props.history.location.search.slice(1)),
-      include_deleted: checked,
-    };
+  handlePageChange = ({ cursor, previousCursor }) => {
+    const {
+      data: { fetchMore },
+    } = this.props;
 
-    this.props.history.replace(
-      `${this.props.match.path}${stringify(query, { addQueryPrefix: true })}`
-    );
+    return fetchMore({
+      query: workerPoolsQuery,
+      variables: {
+        connection: {
+          limit: VIEW_WORKER_POOLS_PAGE_SIZE,
+          cursor,
+          previousCursor,
+        },
+        filter: this.state.workerPoolSearch
+          ? {
+              workerPoolId: {
+                $regex: escapeStringRegexp(this.state.workerPoolSearch),
+                $options: 'i',
+              },
+            }
+          : null,
+      },
+      updateQuery(previousResult, { fetchMoreResult }) {
+        const {
+          edges,
+          pageInfo,
+        } = fetchMoreResult.WorkerManagerWorkerPoolSummaries;
+
+        return dotProp.set(
+          previousResult,
+          'WorkerManagerWorkerPoolSummaries',
+          workerPools =>
+            dotProp.set(
+              dotProp.set(workerPools, 'edges', edges),
+              'pageInfo',
+              pageInfo
+            )
+        );
+      },
+    });
   };
 
   render() {
@@ -76,10 +129,6 @@ export default class WorkerManagerWorkerPoolsView extends Component {
       data: { loading, error, WorkerManagerWorkerPoolSummaries },
       classes,
     } = this.props;
-    const { workerPoolSearch } = this.state;
-    const includeDeleted =
-      parse(this.props.history.location.search.slice(1)).include_deleted ===
-      'true';
 
     return (
       <Dashboard
@@ -96,22 +145,10 @@ export default class WorkerManagerWorkerPoolsView extends Component {
           <ErrorPanel fixed error={error} />
           {WorkerManagerWorkerPoolSummaries && (
             <Fragment>
-              <div className={classes.toolbar}>
-                <FormControlLabel
-                  control={
-                    <Switch
-                      checked={includeDeleted}
-                      onChange={this.handleSwitchChange}
-                    />
-                  }
-                  label="Include worker pools scheduled for deletion"
-                />
-              </div>
               <WorkerManagerWorkerPoolsTable
-                searchTerm={workerPoolSearch}
-                workerPools={WorkerManagerWorkerPoolSummaries}
+                onPageChange={this.handlePageChange}
+                workerPoolsConnection={WorkerManagerWorkerPoolSummaries}
                 deleteRequest={this.deleteRequest}
-                includeDeleted={includeDeleted}
               />
             </Fragment>
           )}
