@@ -1187,7 +1187,7 @@ ajv@^6.10.0, ajv@^6.5.5:
     json-schema-traverse "^0.4.1"
     uri-js "^4.2.2"
 
-ajv@^6.10.2, ajv@^6.9.2:
+ajv@^6.10.2:
   version "6.11.0"
   resolved "https://registry.yarnpkg.com/ajv/-/ajv-6.11.0.tgz#c3607cbc8ae392d8a5a536f25b21f8e5f3f87fe9"
   integrity sha512-nCprB/0syFYy9fVYU1ox1l2KN8S9I+tziH8D4zdZuLT3N6RMlGSGt5FSTpAiHB/Whv8Qs1cWHma1aMKZyaHRKA==
@@ -1750,29 +1750,6 @@ aws4@^1.8.0:
   version "1.9.1"
   resolved "https://registry.yarnpkg.com/aws4/-/aws4-1.9.1.tgz#7e33d8f7d449b3f673cd72deb9abdc552dbe528e"
   integrity sha512-wMHVg2EOHaMRxbzgFJ9gtjOOCrI80OHLG14rxi28XwOW8ux6IiEbRCGGGqCtdAIg4FQCbW20k9RsT4y3gJlFug==
-
-azure-blob-storage@^4.2.3:
-  version "4.2.3"
-  resolved "https://registry.yarnpkg.com/azure-blob-storage/-/azure-blob-storage-4.2.3.tgz#80228a1eac99f804817b173efde2bcabbf2bdf01"
-  integrity sha512-l2Fy7/AnqxTDMJZg7fMtyCIqWnd40pYLp9b0+6C9p7ls7YtbtKVg1aAJaGfh7ls2JkfSZ88H9BLl+YerXCuR3g==
-  dependencies:
-    ajv "^6.10.0"
-    debug "^4.1.1"
-    fast-azure-storage "^3.1.2"
-    lodash "^4.17.11"
-    uuid "^3.3.2"
-
-azure-entities@^5.5.4:
-  version "5.5.4"
-  resolved "https://registry.yarnpkg.com/azure-entities/-/azure-entities-5.5.4.tgz#701f737ab68b60f39fa98cd3ab432e8eca5fc698"
-  integrity sha512-nCiwvXrJWJg1cXg0VZfaHIylBPlkNQe8y8wJrqip+/iA7sfRwRP3OgCTJPxlpus0Eh8kDjQMSwmOmQkuDNyvQg==
-  dependencies:
-    ajv "^6.9.2"
-    debug "^4.1.1"
-    fast-azure-storage "^3.1.2"
-    json-stable-stringify "^1.0.0"
-    lodash "^4.17.11"
-    slugid "^2.0.0"
 
 babel-runtime@^6.23.0, babel-runtime@^6.26.0:
   version "6.26.0"
@@ -4698,7 +4675,7 @@ json-stable-stringify-without-jsonify@^1.0.1:
   resolved "https://registry.yarnpkg.com/json-stable-stringify-without-jsonify/-/json-stable-stringify-without-jsonify-1.0.1.tgz#9db7b59496ad3f3cfef30a75142d2d930ad72651"
   integrity sha1-nbe1lJatPzz+8wp1FC0tkwrXJlE=
 
-json-stable-stringify@^1.0.0, json-stable-stringify@^1.0.1:
+json-stable-stringify@^1.0.1:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/json-stable-stringify/-/json-stable-stringify-1.0.1.tgz#9a759d39c5f2ff503fd5300646ed445f88c4f9af"
   integrity sha1-mnWdOcXy/1A/1TAGRu1EX4jE+a8=
@@ -7705,53 +7682,60 @@ tar-stream@^2.0.0:
     readable-stream "^3.1.1"
 
 "taskcluster-client@link:clients/client":
-  version "29.0.1"
-  dependencies:
-    "@hapi/hawk" "^7.1.2"
-    debug "^4.1.1"
-    lodash "^4.17.4"
-    slugid "^2.0.0"
-    superagent "^5.0.0"
-    taskcluster-lib-urls "^12.0.0"
+  version "0.0.0"
+  uid ""
 
 "taskcluster-db@link:db":
-  version "29.0.1"
+  version "0.0.0"
+  uid ""
 
 "taskcluster-lib-api@link:libraries/api":
-  version "29.0.1"
+  version "0.0.0"
+  uid ""
 
 "taskcluster-lib-app@link:libraries/app":
-  version "29.0.1"
+  version "0.0.0"
+  uid ""
 
 "taskcluster-lib-azqueue@link:libraries/azqueue":
-  version "29.0.1"
+  version "0.0.0"
+  uid ""
 
 "taskcluster-lib-azure@link:libraries/azure":
-  version "29.0.1"
+  version "0.0.0"
+  uid ""
 
 "taskcluster-lib-config@link:libraries/config":
-  version "29.0.1"
+  version "0.0.0"
+  uid ""
 
 "taskcluster-lib-entities@link:libraries/entities":
-  version "29.0.1"
+  version "0.0.0"
+  uid ""
 
 "taskcluster-lib-iterate@link:libraries/iterate":
-  version "29.0.1"
+  version "0.0.0"
+  uid ""
 
 "taskcluster-lib-loader@link:libraries/loader":
-  version "29.0.1"
+  version "0.0.0"
+  uid ""
 
 "taskcluster-lib-monitor@link:libraries/monitor":
-  version "29.0.1"
+  version "0.0.0"
+  uid ""
 
 "taskcluster-lib-postgres@link:libraries/postgres":
-  version "29.0.1"
+  version "0.0.0"
+  uid ""
 
 "taskcluster-lib-pulse@link:libraries/pulse":
-  version "29.0.1"
+  version "0.0.0"
+  uid ""
 
 "taskcluster-lib-references@link:libraries/references":
-  version "29.0.1"
+  version "0.0.0"
+  uid ""
 
 taskcluster-lib-scopes@^11.0.0:
   version "11.0.0"
@@ -7761,7 +7745,8 @@ taskcluster-lib-scopes@^11.0.0:
     fast-json-stable-stringify "^2.1.0"
 
 "taskcluster-lib-testing@link:libraries/testing":
-  version "29.0.1"
+  version "0.0.0"
+  uid ""
 
 taskcluster-lib-urls@^12.0.0:
   version "12.0.0"
@@ -7769,7 +7754,8 @@ taskcluster-lib-urls@^12.0.0:
   integrity sha512-OrEFE0m3p/+mGsmIwjttLhSKg3io6MpJLhYtPNjVSZA9Ix8Y5tprN3vM6a3MjWt5asPF6AKZsfT43cgpGwJB0g==
 
 "taskcluster-lib-validate@link:libraries/validate":
-  version "29.0.1"
+  version "0.0.0"
+  uid ""
 
 temporary@^1.0.0:
   version "1.0.1"

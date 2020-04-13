@@ -25,8 +25,6 @@
     "app-root-dir": "^1.0.2",
     "auth0": "^2.14.0",
     "aws-sdk": "^2.394.0",
-    "azure-blob-storage": "^4.2.3",
-    "azure-entities": "^5.5.4",
     "body-parser": "1.19.0",
     "body-parser-graphql": "^1.0.0",
     "chalk": "^2.4.2",
