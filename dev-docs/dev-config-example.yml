@@ -58,18 +58,12 @@ auth:
   procs:
     web:
       cpu: 10m
-    expireSentry:
-      cpu: 10m
     purgeExpiredClients:
-      cpu: 10m
-    write_docs:
       cpu: 10m
 built_in_workers:
   taskcluster_access_token: ...
   procs:
     server:
-      cpu: 10m
-    write_docs:
       cpu: 10m
 github:
   bot_username: ...
@@ -90,8 +84,6 @@ github:
       cpu: 10m
     sync:
       cpu: 10m
-    write_docs:
-      cpu: 10m
 hooks:
   influx_connection: ...
   azure_signing_key: ...
@@ -105,8 +97,6 @@ hooks:
     web:
       cpu: 10m
     scheduler:
-      cpu: 10m
-    write_docs:
       cpu: 10m
     listeners:
       cpu: 10m
@@ -124,8 +114,6 @@ index:
     handlers:
       cpu: 10m
     expire:
-      cpu: 10m
-    write_docs:
       cpu: 10m
 notify:
   email_source_address: ...
@@ -155,8 +143,6 @@ notify:
       cpu: 10m
     handler:
       cpu: 10m
-    write_docs:
-      cpu: 10m
 purge_cache:
   read_db_url: ...
   write_db_url: ...
@@ -165,8 +151,6 @@ purge_cache:
     web:
       cpu: 10m
     expireCachePurges:
-      cpu: 10m
-    write_docs:
       cpu: 10m
 queue:
   public_artifact_bucket: ...
@@ -188,8 +172,6 @@ queue:
   artifact_region: ...
   procs:
     web:
-      cpu: 10m
-    write_docs:
       cpu: 10m
     claimResolver:
       cpu: 10m
@@ -226,8 +208,6 @@ secrets:
       cpu: 10m
     expire:
       cpu: 10m
-    write_docs:
-      cpu: 10m
 web_server:
   public_url: ...
   additional_allowed_cors_origin: ...
@@ -250,8 +230,6 @@ web_server:
       cpu: 10m
     cleanup_expire_access_tokens:
       cpu: 10m
-    write_docs:
-      cpu: 10m
 worker_manager:
   provisioner_iterate_config: {}
   worker_scanner_iterate_config: {}
@@ -273,8 +251,6 @@ worker_manager:
     expire_worker_pools:
       cpu: 10m
     expire_errors:
-      cpu: 10m
-    write_docs:
       cpu: 10m
 ui:
   graphql_subscription_endpoint: ...
