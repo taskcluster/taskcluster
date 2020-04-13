@@ -426,11 +426,10 @@ exports.withGcp = (mock, skipping) => {
 
 exports.resetTables = (mock, skipping) => {
   setup('reset tables', async function() {
-    const sec = exports.secrets.get('db');
-
     if (mock) {
       exports.db['auth'].reset();
-    } {
+    } else {
+      const sec = exports.secrets.get('db');
       await resetTable({ testDbUrl: sec.testDbUrl, tableName: 'clients_entities' });
       await resetTable({ testDbUrl: sec.testDbUrl, tableName: 'roles_entities' });
     }
