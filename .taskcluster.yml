@@ -92,6 +92,9 @@ tasks:
         others:
         - name: lint
           command: yarn lint
+        - name: lint:go
+          image: taskcluster/node-and-go:node${node}-go${go.release}
+          command: yarn lint:go
         - name: test:meta
           command: "yarn test:meta | cat"
           # only do cleanup on pushes; no sense doing so on pull requests
@@ -168,36 +171,25 @@ tasks:
           install: >-
               cd internal
           command: >-
-              curl -sfL https://install.goreleaser.com/github.com/golangci/golangci-lint.sh | sh -s -- -b $GOPATH/bin v1.23.6 &&
-              golangci-lint run && go test -v -race ./...
+              go test -v -race ./...
         - name: taskcluster-client-go-${go.release}
           image: 'golang:${go.release}'
           install: >-
               cd clients/client-go
           command: >-
-              curl -sfL https://install.goreleaser.com/github.com/golangci/golangci-lint.sh | sh -s -- -b $GOPATH/bin v1.23.6 &&
-              golangci-lint run && go test -v -race ./...
+              go test -v -race ./...
         - name: taskcluster-client-shell-${go.release}
           image: 'golang:${go.release}'
           install: >-
               cd clients/client-shell
           command: >-
-              curl -sfL https://install.goreleaser.com/github.com/golangci/golangci-lint.sh | sh -s -- -b $GOPATH/bin v1.23.6 &&
-              golangci-lint run && go test -v -race ./...
+              go test -v -race ./...
         - name: tools-${go.release}
           image: 'golang:${go.release}'
           install: >-
               cd tools
           command: >-
-              curl -sfL https://install.goreleaser.com/github.com/golangci/golangci-lint.sh | sh -s -- -b $GOPATH/bin v1.23.6 &&
-              golangci-lint run && go test -v -race ./...
-        - name: check for invalid go pseudo-versions
-          # see https://github.com/taskcluster/taskcluster/issues/1492
-          image: 'golang:${go.release}'
-          install: ":"
-          command: >-
-              (cd clients/client-go && go list -m all) &&
-              (cd clients/client-shell && go list -m all)
+              go test -v -race ./...
         - name: "yarn db:upgrade"
           image: taskcluster/node-and-postgres:node${node}-pg11
           command: >-
