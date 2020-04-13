@@ -17,6 +17,11 @@ const (
 	DEFAULT_GET_PORT = 60023
 )
 
+// Run an http.Server.  In production this is just `ListenAndServe`, but
+// is overridden in testing to use ephemeral ports and ensure servers are
+// shut down correctly.
+var runServer func(server *http.Server, addr, crtFile, keyFile string) error
+
 func abort(writer http.ResponseWriter) error {
 	// We need to hijack and abort the request...
 	conn, _, err := writer.(http.Hijacker).Hijack()
@@ -54,7 +59,6 @@ func startLogServe(stream *stream.Stream, getAddr string) {
 	})
 
 	server := http.Server{
-		Addr:    getAddr,
 		Handler: routes,
 	}
 
@@ -64,10 +68,10 @@ func startLogServe(stream *stream.Stream, getAddr string) {
 		log.Printf("Output server listening... %s (with TLS)", server.Addr)
 		log.Printf("key %s ", keyFile)
 		log.Printf("crt %s ", crtFile)
-		server.ListenAndServeTLS(crtFile, keyFile)
+		runServer(&server, getAddr, crtFile, keyFile)
 	} else {
 		log.Printf("Output server listening... %s (without TLS)", server.Addr)
-		server.ListenAndServe()
+		runServer(&server, getAddr, "", "")
 	}
 }
 
@@ -133,15 +137,6 @@ func main() {
 	// clean (memory wise) in the long run as we will terminate the process
 	// frequently per task run.
 
-	handlingPut := false
-	mutex := sync.Mutex{}
-
-	routes := http.NewServeMux()
-
-	if os.Getenv("DEBUG") != "" {
-		attachProfiler(routes)
-	}
-
 	// portAddressOrExit is a helper function to translate a port number in an
 	// envronment variable into a valid address string which can be used when
 	// starting web service. This helper function will cause the go program to
@@ -166,9 +161,25 @@ func main() {
 	putAddr := portAddressOrExit("LIVELOG_PUT_PORT", DEFAULT_PUT_PORT, 64, 65)
 	getAddr := portAddressOrExit("LIVELOG_GET_PORT", DEFAULT_GET_PORT, 66, 67)
 
+	runServer = func(server *http.Server, addr, crtFile, keyFile string) error {
+		server.Addr = addr
+		return server.ListenAndServe()
+	}
+
+	serve(putAddr, getAddr)
+}
+
+func serve(putAddr, getAddr string) {
+	handlingPut := false
+	mutex := sync.Mutex{}
+
+	routes := http.NewServeMux()
+
+	if os.Getenv("DEBUG") != "" {
+		attachProfiler(routes)
+	}
+
 	server := http.Server{
-		// Main put server listens on the public root for the worker.
-		Addr:    putAddr,
 		Handler: routes,
 	}
 
@@ -225,6 +236,9 @@ func main() {
 
 	// Listen forever on the PUT side...
 	log.Printf("input server listening... %s", server.Addr)
-	err := server.ListenAndServe()
-	log.Fatalf("%s", err)
+	// Main put server listens on the public root for the worker.
+	err := runServer(&server, putAddr, "", "")
+	if err != nil && err != http.ErrServerClosed {
+		log.Fatalf("%s", err)
+	}
 }

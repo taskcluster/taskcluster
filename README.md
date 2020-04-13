@@ -138,18 +138,6 @@ amount of writes but drop other clients as needed in a mostly
 first-come-first-server fashion (really also depends on how fast clients
 can read from the socket).
 
-## Tests
-
-Tests are written in Node.JS largely because I wanted to write some
-quickly and node has a great/easy interface to do the nonblocking
-http stuff I wanted.
-
-Usage:
-```sh
-npm install
-npm test
-```
-
 ## Configuration
 The following environment variables can be used to configure the server.
 
