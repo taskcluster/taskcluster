@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"math"
 	"net/http"
 	"net/http/pprof"
 	"os"
@@ -81,16 +82,19 @@ func getLog(
 	writer http.ResponseWriter,
 	req *http.Request,
 ) {
-	rng, rngErr := ParseRange(req.Header)
-
-	if rngErr != nil {
-		log.Printf("Invalid range : %s", req.Header.Get("Range"))
-		writer.WriteHeader(http.StatusRequestedRangeNotSatisfiable)
-		writer.Write([]byte(rngErr.Error()))
-		return
-	}
-
-	handle := stream.Observe(rng.Start, rng.Stop)
+	// NOTE: this once attempted to support Range requests, but did so incorrectly:
+	//
+	// (a) returned bytes beginning at offset zero, even if the range did not
+	//   begin there, when and only when those bytes had already been written to
+	//   the backing store
+	// (b) did not respond with 206 Partial Content
+	// (c) did not respond with a Content-Range header
+	// (d) was tested in such a way to to not trigger bug (a) and not check for
+	//   (b) or (c)
+	//
+	// On the concluaion that such requests are not used, support has been
+	// removed.
+	handle := stream.Observe(0, math.MaxInt64)
 
 	defer func() {
 		// Ensure we close our file handle...
