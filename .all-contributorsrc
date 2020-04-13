@@ -781,6 +781,15 @@
       "contributions": [
         "code"
       ]
+    },
+    {
+      "login": "SimonSapin",
+      "name": "Simon Sapin",
+      "avatar_url": "https://avatars0.githubusercontent.com/u/291359?v=4",
+      "profile": "https://exyr.org/",
+      "contributions": [
+        "code"
+      ]
     }
   ],
   "contributorsPerLine": 7,
