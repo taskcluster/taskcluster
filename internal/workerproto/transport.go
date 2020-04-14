@@ -1,4 +1,4 @@
-package protocol
+package workerproto
 
 // Transport is a means of sending and receiving messages.
 type Transport interface {

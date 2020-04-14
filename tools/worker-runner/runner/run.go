@@ -7,13 +7,13 @@ import (
 	"log"
 	"os"
 
+	"github.com/taskcluster/taskcluster/v29/internal/workerproto"
 	"github.com/taskcluster/taskcluster/v29/tools/worker-runner/cfg"
 	"github.com/taskcluster/taskcluster/v29/tools/worker-runner/credexp"
 	"github.com/taskcluster/taskcluster/v29/tools/worker-runner/files"
 	"github.com/taskcluster/taskcluster/v29/tools/worker-runner/logging"
 	loggingProtocol "github.com/taskcluster/taskcluster/v29/tools/worker-runner/logging/protocol"
 	"github.com/taskcluster/taskcluster/v29/tools/worker-runner/perms"
-	"github.com/taskcluster/taskcluster/v29/tools/worker-runner/protocol"
 	"github.com/taskcluster/taskcluster/v29/tools/worker-runner/provider"
 	"github.com/taskcluster/taskcluster/v29/tools/worker-runner/run"
 	"github.com/taskcluster/taskcluster/v29/tools/worker-runner/secrets"
@@ -168,7 +168,7 @@ func Run(configFile string) (state run.State, err error) {
 
 	// set up protocol
 
-	proto := protocol.NewProtocol(transp)
+	proto := workerproto.NewProtocol(transp)
 
 	// inform other components about the protocol
 	loggingProtocol.SetProtocol(proto)

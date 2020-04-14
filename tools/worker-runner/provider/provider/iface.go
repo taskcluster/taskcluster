@@ -1,7 +1,7 @@
 package provider
 
 import (
-	"github.com/taskcluster/taskcluster/v29/tools/worker-runner/protocol"
+	"github.com/taskcluster/taskcluster/v29/internal/workerproto"
 	"github.com/taskcluster/taskcluster/v29/tools/worker-runner/run"
 )
 
@@ -19,7 +19,7 @@ type Provider interface {
 
 	// Set the protocol used for communication with this worker.  This is an appropriate
 	// time to register for interesting messages from the worker.
-	SetProtocol(proto *protocol.Protocol)
+	SetProtocol(proto *workerproto.Protocol)
 
 	// The worker has started.  This is an appropriate time to set up any
 	// provider-specific things that should occur while the worker is running.

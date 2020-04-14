@@ -1,4 +1,4 @@
-package protocol
+package workerproto
 
 import (
 	"encoding/json"

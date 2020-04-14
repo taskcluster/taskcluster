@@ -7,8 +7,8 @@ import (
 	"log"
 	"strings"
 
+	"github.com/taskcluster/taskcluster/v29/internal/workerproto"
 	"github.com/taskcluster/taskcluster/v29/tools/worker-runner/cfg"
-	"github.com/taskcluster/taskcluster/v29/tools/worker-runner/protocol"
 	"github.com/taskcluster/taskcluster/v29/tools/worker-runner/run"
 	"github.com/taskcluster/taskcluster/v29/tools/worker-runner/worker/worker"
 )
@@ -93,7 +93,7 @@ func (d *genericworker) UseCachedRun(state *run.State) error {
 	return nil
 }
 
-func (d *genericworker) StartWorker(state *run.State) (protocol.Transport, error) {
+func (d *genericworker) StartWorker(state *run.State) (workerproto.Transport, error) {
 	// write out the config file
 	content, err := json.MarshalIndent(state.WorkerConfig, "", "  ")
 	if err != nil {
@@ -119,7 +119,7 @@ func (d *genericworker) StartWorker(state *run.State) (protocol.Transport, error
 	return d.runMethod.start(d, state)
 }
 
-func (d *genericworker) SetProtocol(proto *protocol.Protocol) {
+func (d *genericworker) SetProtocol(proto *workerproto.Protocol) {
 }
 
 func (d *genericworker) Wait() error {

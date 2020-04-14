@@ -5,9 +5,9 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/require"
+	"github.com/taskcluster/taskcluster/v29/internal/workerproto"
+	ptesting "github.com/taskcluster/taskcluster/v29/internal/workerproto/testing"
 	"github.com/taskcluster/taskcluster/v29/tools/worker-runner/logging"
-	"github.com/taskcluster/taskcluster/v29/tools/worker-runner/protocol"
-	ptesting "github.com/taskcluster/taskcluster/v29/tools/worker-runner/protocol/testing"
 )
 
 func TestLoggingProtocol(t *testing.T) {
@@ -37,7 +37,7 @@ func TestLoggingProtocol(t *testing.T) {
 
 	t.Run("well-formed log message from worker", func(t *testing.T) {
 		defer logDest.Clear()
-		wkr.WorkerProtocol.Send(protocol.Message{
+		wkr.WorkerProtocol.Send(workerproto.Message{
 			Type: "log",
 			Properties: map[string]interface{}{
 				"body": map[string]interface{}{
@@ -62,7 +62,7 @@ func TestLoggingProtocol(t *testing.T) {
 
 	t.Run("badly-formed log message from worker", func(t *testing.T) {
 		defer logDest.Clear()
-		wkr.WorkerProtocol.Send(protocol.Message{
+		wkr.WorkerProtocol.Send(workerproto.Message{
 			Type: "log",
 			Properties: map[string]interface{}{
 				"textPayload": "I forgot about the body property, oops",
