@@ -6,6 +6,7 @@ This directory contains executable tools associated with Taskcluster maintenance
 
 <!-- TOC BEGIN -->
 * [jsonschema2go](jsonschema2go#readme)
+* [livelog](livelog#readme)
 * [Websocktunnel](websocktunnel#readme)
 * [Worker Runner](worker-runner#readme)
 <!-- TOC END -->

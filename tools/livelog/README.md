@@ -1,20 +1,5 @@
 # livelog
 
-[![logo](https://tools.taskcluster.net/b2d854df0391f8b777f39a486ebbc868.png)](https://tools.taskcluster.net/b2d854df0391f8b777f39a486ebbc868.png)
-
-[![Build Status](https://travis-ci.org/taskcluster/livelog.svg?branch=master)](http://travis-ci.org/taskcluster/livelog)
-[![GoDoc](https://godoc.org/github.com/taskcluster/livelog?status.svg)](https://godoc.org/github.com/taskcluster/livelog)
-[![Coverage Status](https://coveralls.io/repos/taskcluster/livelog/badge.svg?branch=master&service=github)](https://coveralls.io/github/taskcluster/livelog?branch=master)
-[![License](https://img.shields.io/badge/license-MPL%202.0-orange.svg)](http://mozilla.org/MPL/2.0)
-
-## TODO
-  - [x] byte range fetching
-  - [x] aggregate pending writes into single buffer and/or multiple write
-    then flush when no longer writing.
-  - [ ] cli
-  - [x] cross domain headers
-  - [x] http api
-
 Livelog is a service that enables both secure and insecure streaming of binary
 content (typically log files) over HTTP(S).
 
@@ -61,8 +46,10 @@ https transport. This will cause the GET interface to be served over https.
 port should only be opened on the loopback interface (localhost) in order that
 log content cannot be published from a malicious host over the network!
 
-## Binary packages
-See the [github releases](https://github.com/taskcluster/livelog/releases) page.
+## Releases
+
+Livelog is released with Taskcluster and shares version numbers with other components.
+It is available both as standalone binaries attached to the [Taskcluster releases](https://github.com/taskcluster/taskcluster/releases), and as a docker image `taskcluster/livelog:<version>`.
 
 ## Example Usage
 
