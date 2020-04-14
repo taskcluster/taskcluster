@@ -3,6 +3,19 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v29.0.1
+
+### DEPLOYERS
+
+▶ [patch] 
+The `db:upgrade` and `db:downgrade` commands now correctly roll back on error.
+
+### DEVELOPERS
+
+▶ [patch] [#2634](https://github.com/taskcluster/taskcluster/issues/2634)
+taskcluster-lib-entities `.modify` no longer reaches out to the db when the data
+is not modified.
+
 ## v29.0.0
 
 ### DEPLOYERS

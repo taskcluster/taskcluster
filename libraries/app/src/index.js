@@ -8,6 +8,9 @@ const sslify = require('express-sslify');
 const hsts = require('hsts');
 const csp = require('content-security-policy');
 const uuidv4 = require('uuid/v4');
+const path = require('path');
+const rootdir = require('app-root-dir');
+const fs = require('fs');
 
 /**
  * Create server; this becomes a method of the `app` object, so `this`
@@ -123,6 +126,29 @@ const app = async (options) => {
       res.send('User-Agent: *\nDisallow: /\n');
     });
   }
+
+  app.use('/__version__', (req, res) => {
+    const taskclusterVersionFile = path.resolve(rootdir.get(), 'version.json');
+
+    try {
+      const taskclusterVersion = fs.readFileSync(taskclusterVersionFile).toString().trim();
+      res.header('Content-Type', 'application/json');
+      res.send(taskclusterVersion);
+    } catch (err) {
+      res.header('Content-Type', 'application/json');
+      res.status(500).send({ error: 'Not found' });
+    }
+  });
+
+  app.use('/__heartbeat__', (req, res) => {
+    res.header('Content-Type', 'application/json');
+    res.status(200).send({});
+  });
+
+  app.use('/__lbheartbeat__', (req, res) => {
+    res.header('Content-Type', 'application/json');
+    res.status(200).send({});
+  });
 
   options.apis.forEach(api => {
     api.express(app);

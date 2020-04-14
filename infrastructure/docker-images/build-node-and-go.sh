@@ -22,7 +22,8 @@ FROM node:${node_version}-stretch
 COPY --from=golang /usr/local/go /usr/local/go
 COPY --from=golang /go /go
 ENV GOPATH /go
-ENV PATH $GOPATH/bin:/usr/local/go/bin:$PATH
+ENV PATH \$GOPATH/bin:/usr/local/go/bin:\$PATH
+RUN curl -sfL https://install.goreleaser.com/github.com/golangci/golangci-lint.sh | sh -s -- -b \$GOPATH/bin v1.23.6
 EOF
 
 docker build -t "taskcluster/node-and-go:node${node_version}-go${go_version}" ${tmpdir}

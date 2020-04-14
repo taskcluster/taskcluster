@@ -17,7 +17,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 	"github.com/taskcluster/taskcluster/v29/clients/client-go/tcauth"
-	"github.com/taskcluster/websocktunnel/wsproxy"
+	"github.com/taskcluster/taskcluster/v29/tools/websocktunnel/wsproxy"
 )
 
 const WST_SECRET = "sshhh!"

@@ -29,6 +29,7 @@ import (
 	sysinfo "github.com/elastic/go-sysinfo"
 	tcclient "github.com/taskcluster/taskcluster/v29/clients/client-go"
 	"github.com/taskcluster/taskcluster/v29/clients/client-go/tcqueue"
+	"github.com/taskcluster/taskcluster/v29/internal"
 	"github.com/taskcluster/taskcluster/v29/internal/scopes"
 	"github.com/taskcluster/taskcluster/v29/workers/generic-worker/expose"
 	"github.com/taskcluster/taskcluster/v29/workers/generic-worker/fileutil"
@@ -65,7 +66,7 @@ var (
 	logName = "public/logs/live_backing.log"
 	logPath = filepath.Join("generic-worker", "live_backing.log")
 
-	version  = "29.0.0"
+	version  = internal.Version
 	revision = "" // this is set during build with `-ldflags "-X main.revision=$(git rev-parse HEAD)"`
 )
 

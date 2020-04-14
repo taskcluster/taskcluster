@@ -203,6 +203,8 @@ const check_pr = async (pr) => {
     /package\.json$/,
     /^go\.(mod|sum)$/,
     /^\.yarn$/,
+    /^README.md$/,
+    /^\.all-contributorsrc/,
     /^\.taskcluster.yml/,
     /^infrastructure\//,
     /^generated\//,

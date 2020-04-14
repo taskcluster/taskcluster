@@ -406,7 +406,7 @@ class Database {
         showProgress('..committing transaction');
         await client.query('commit');
       } catch (err) {
-        await client.query('commit');
+        await client.query('rollback');
         throw err;
       }
     });
@@ -440,7 +440,7 @@ class Database {
         showProgress('..committing transaction');
         await client.query('commit');
       } catch (err) {
-        await client.query('commit');
+        await client.query('rollback');
         throw err;
       }
     });

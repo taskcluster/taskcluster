@@ -140,48 +140,6 @@
     "title": "Backups and Restores"
   },
   {
-    "element": "h3",
-    "id": "backup-lifecycle",
-    "path": "/manual/deploying/backups",
-    "subtitle": "Backup Lifecycle",
-    "title": "Backups and Restores"
-  },
-  {
-    "element": "h3",
-    "id": "comparing-resources",
-    "path": "/manual/deploying/backups",
-    "subtitle": "Comparing Resources",
-    "title": "Backups and Restores"
-  },
-  {
-    "element": "h2",
-    "id": "data-covered",
-    "path": "/manual/deploying/backups",
-    "subtitle": "Data Covered",
-    "title": "Backups and Restores"
-  },
-  {
-    "element": "h3",
-    "id": "excluding-and-including",
-    "path": "/manual/deploying/backups",
-    "subtitle": "Excluding and Including",
-    "title": "Backups and Restores"
-  },
-  {
-    "element": "h2",
-    "id": "runing-restores",
-    "path": "/manual/deploying/backups",
-    "subtitle": "Runing Restores",
-    "title": "Backups and Restores"
-  },
-  {
-    "element": "h2",
-    "id": "running-backups",
-    "path": "/manual/deploying/backups",
-    "subtitle": "Running Backups",
-    "title": "Backups and Restores"
-  },
-  {
     "element": "h1",
     "id": "cloud-credentials",
     "path": "/manual/deploying/cloud-credentials",

@@ -642,7 +642,7 @@ func (auth *Auth) SentryDSN_SignedURL(project string, duration time.Duration) (*
 }
 
 // Get a temporary token suitable for use connecting to a
-// [websocktunnel](https://github.com/taskcluster/websocktunnel) server.
+// [websocktunnel](https://github.com/taskcluster/taskcluster/tree/master/tools/websocktunnel) server.
 //
 // The resulting token will only be accepted by servers with a matching audience
 // value.  Reaching such a server is the callers responsibility.  In general,

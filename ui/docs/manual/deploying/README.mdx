@@ -15,6 +15,7 @@ The `/` path is routed to the taskcluster-ui service, which serves a browser-bas
 
 The services all run from a single Docker image, referred to as the "monoimage", that is built by running `yarn release` (or `yarn build` to build a one-off) in this repository.
 A Taskcluster "release" is a semantically versioned docker image along with the repository at that tag (for deployment configuration) and similarly-tagged client libraries in various languages.
+Taskcluster exposes `/__version__`, `__heartbeat__`, `__lbheartbeat__` to comply with the containerized app requirements of [Dockerflow](https://github.com/mozilla-services/Dockerflow/#containerized-app-requirements).
 
 <Warning>
 The "Deploying Taskcluster" section is incomplete, as we iterate to find a suitable approach to deployment.

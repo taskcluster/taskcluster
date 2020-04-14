@@ -1,35 +1,24 @@
 const _ = require('lodash');
 const azure = require('fast-azure-storage');
 const {postgresTableName} = require('taskcluster-lib-entities');
-const assert = require('assert').strict;
 
 exports.fail = msg => {
   console.error(msg);
   process.exit(1);
 };
 
-exports.requireEnv = name => {
-  if (process.env[name]) {
-    return process.env[name];
-  }
-  throw new Error(`$${name} must be given`);
-};
-
-// number of table (or table-chunk) imports to run in parallel
-exports.CONCURRENCY = 30;
-
 // tables that are allowed to migrate
 exports.ALLOWED_TABLES = [
-  // 'Clients',
-  // 'Hooks',
+  'Clients',
+  'Hooks',
   'QueueArtifacts',
   'QueueTasks',
   'QueueTaskDependency',
   'IndexedTasks',
   'QueueTaskGroupMembers',
   'WMWorkerPoolErrors',
-  // 'Queues',
-  // 'LastFire3',
+  'Queues',
+  'LastFire3',
   'Namespaces',
   'DenylistedNotification',
   'CachePurges',
@@ -39,11 +28,11 @@ exports.ALLOWED_TABLES = [
   'QueueWorker',
   'QueueWorkerType',
   'QueueProvisioner',
-  // 'Secrets',
+  'Secrets',
   'AuthorizationCodesTable',
-  // 'AccessTokenTable',
-  // 'SessionStorageTable',
-  // 'GithubAccessTokenTable',
+  'AccessTokenTable',
+  'SessionStorageTable',
+  'GithubAccessTokenTable',
   'WMWorkers',
   'WMWorkerPools',
   'TaskclusterGithubBuilds',
@@ -55,6 +44,20 @@ exports.ALLOWED_TABLES = [
   'Roles',
 ];
 
+// tables that are either signed or encrypted, and thus can't be imported
+// across deployments.  Set EXCLUDE_CRYPTO=1 to exclude these without modifying
+// the source code.
+exports.CRYPTO_TABLES = [
+  'Clients',
+  'Hooks',
+  'Queues',
+  'LastFire3',
+  'Secrets',
+  'AccessTokenTable',
+  'SessionStorageTable',
+  'GithubAccessTokenTable',
+];
+
 // For certain tables, we would like to import faster to make sure we don't
 // spend over 8 hours (TCW duration) importing
 exports.LARGE_TABLES = [
@@ -62,62 +65,32 @@ exports.LARGE_TABLES = [
   'QueueTasks',
 ].filter(tableName => exports.ALLOWED_TABLES.includes(tableName));
 
-// read table from azure
-// returns a list of azure entities
-//
-// Note: Make sure there is enough memory on the machine when running this
-// function on a large table. The full table will be stored in memory
-// so there is a chance of OOM.
-exports.readAzureTable = async ({azureCreds, tableName, utils}) => {
-  const table = new azure.Table(azureCreds);
-  const entities = [];
+// NOTE: Azure's ordering is -, 0-9, A-Z, _, a-z
+exports.TASKID_RANGES = [
+  [undefined, '1'],
+  ['1', '5'],
+  ['5', '8'],
+  ['8', 'A'],
+  ['A', 'E'],
+  ['E', 'I'],
+  ['I', 'N'],
+  ['N', 'U'],
+  ['U', 'Z'],
+  ['Z', 'a'],
+  ['a', 'e'],
+  ['e', 'i'],
+  ['i', 'n'],
+  ['n', 'u'],
+  ['u', undefined],
+];
 
-  const processResult = results => {
-    const firstEntity = _.head(results.entities);
-    const azureKeys = firstEntity ? Object.keys(results.entities[0]).filter(key => key.includes('odata') || key === 'Version') : [];
-    const filteredEntities = results.entities.map(
-      entity => {
-        azureKeys.forEach(key => delete entity[key]);
-
-        return entity;
-      },
-    );
-
-    entities.push(...filteredEntities);
-  };
-
-  let count = 0;
-  let nextUpdateCount = 1000;
-  let tableParams = {};
-  do {
-    let results;
-    try {
-      results = await table.queryEntities(tableName, tableParams);
-      processResult(results);
-    } catch (err) {
-      if (err.statusCode === 404) {
-        utils.skip("no such table");
-        return;
-      }
-      throw err;
-    }
-    tableParams = { filter: tableParams.filter, ..._.pick(results, ['nextPartitionKey', 'nextRowKey']) };
-    count = count + results.entities.length;
-    if (count > nextUpdateCount) {
-      utils.status({
-        message: `${count} rows`,
-      });
-      nextUpdateCount = count + 100;
-    }
-  } while (tableParams.nextPartitionKey && tableParams.nextRowKey);
-
-  return entities;
-};
+exports.sleep = ms => new Promise(res => setTimeout(res, ms));
 
 // read table from azure
-// returns a list of azure entities
-exports.readAzureTableInChunks = async function* ({azureCreds, tableName, utils, tableParams = {}, rowsProcessed = 0}) {
+// yields azure entities
+exports.readAzureTableInChunks = async function* ({azureCreds, tableName, filter}) {
   const table = new azure.Table(azureCreds);
+  let tableParams = {filter};
   let entities = [];
 
   const processResult = results => {
@@ -137,20 +110,17 @@ exports.readAzureTableInChunks = async function* ({azureCreds, tableName, utils,
       const results = await table.queryEntities(tableName, tableParams);
       processResult(results);
 
-      rowsProcessed += entities.length;
-      utils.status({
-        message: `${rowsProcessed} rows`,
-      });
       tableParams = { filter: tableParams.filter, ..._.pick(results, ['nextPartitionKey', 'nextRowKey']) };
 
-      yield { entities, count: rowsProcessed };
+      for (let entity of entities) {
+        yield entity;
+      }
 
       if (!tableParams.nextPartitionKey && !tableParams.nextRowKey) {
         break;
       }
     } catch (err) {
       if (err.statusCode === 404) {
-        utils.skip("no such table");
         return;
       }
       throw err;
@@ -159,81 +129,45 @@ exports.readAzureTableInChunks = async function* ({azureCreds, tableName, utils,
 };
 
 // Given a list of azure entities, this method will write to a postgres database
-exports.writeToPostgres = async (tableName, entities, db, allowedTables = [], mode = 'admin') => {
-  // to allow us to migrate one table at a time
-  if (!allowedTables.includes(tableName)) {
-    return;
-  }
-
+exports.writeToPostgres = async (tableName, entities, db, mode = 'admin') => {
   const pgTable = postgresTableName(tableName);
 
-  if (entities) {
-    await db._withClient(mode, async client => {
-      const entitiesSize = entities.length;
+  while (1) {
+    try {
+      await db._withClient(mode, async client => {
+        const entitiesSize = entities.length;
 
-      const [vars, args] = entities.reduce((acc, curr, i) => {
-        let [vars, args] = acc;
+        const [vars, args] = entities.reduce((acc, curr, i) => {
+          let [vars, args] = acc;
 
-        if (i !== 0) {
-          vars = `${vars},`;
+          if (i !== 0) {
+            vars = `${vars},`;
+          }
+
+          vars = `${vars}(\$${i * 3 + 1}, \$${i * 3 + 2}, \$${i * 3 + 3}, 1, public.gen_random_uuid())`;
+
+          args[i * 3] = entities[i].PartitionKey;
+          args[i * 3 + 1] = entities[i].RowKey;
+          args[i * 3 + 2] = entities[i];
+
+          return [vars, args];
+        }, ['', new Array(entitiesSize * 3)]);
+
+        if (args && vars) {
+          await client.query(
+            `insert into ${pgTable}(partition_key, row_key, value, version, etag) values ${vars}`,
+            args,
+          );
         }
-
-        vars = `${vars}(\$${i * 3 + 1}, \$${i * 3 + 2}, \$${i * 3 + 3}, 1, public.gen_random_uuid())`;
-
-        args[i * 3] = entities[i].PartitionKey;
-        args[i * 3 + 1] = entities[i].RowKey;
-        args[i * 3 + 2] = entities[i];
-
-        return [vars, args];
-      }, ['', new Array(entitiesSize * 3)]);
-
-      if (args && vars) {
-        await client.query(
-          `insert into ${pgTable}(partition_key, row_key, value, version, etag) values ${vars}`,
-          args,
-        );
+      });
+    } catch (err) {
+      // DB shutting down -- wait and retry
+      if (err.code === '57P03' || err.code === '57P01') {
+        await exports.sleep(1000);
+        continue;
       }
-    });
+      throw err;
+    }
+    break;
   }
-};
-
-// Given a list of azure entities, this method will throw an error if the data
-// is not on par with the values in postgres.
-exports.verifyWithPostgres = async (tableName, entities, db, allowedTables = [], mode = 'admin') => {
-  // verify only tables that have been migrated
-  if (!allowedTables.includes(tableName)) {
-    return;
-  }
-
-  const compareTables = ({ azureEntities, postgresEntities }) => {
-    const sortedAzureEntities = azureEntities.sort(sort);
-    const sortedPostgresEntities = postgresEntities.sort(sort);
-
-    assert.equal(sortedAzureEntities.length, sortedPostgresEntities.length);
-    assert.deepEqual(sortedAzureEntities, sortedPostgresEntities);
-  };
-  const sort = (entityA, entityB) => {
-    const keyA = `${entityA.PartitionKey}-${entityA.RowKey}`;
-    const keyB = `${entityB.PartitionKey}-${entityB.RowKey}`;
-
-    return keyA.localeCompare(keyB);
-  };
-
-  const pgTable = postgresTableName(tableName);
-  const azureKeys = _.head(entities) ? Object.keys(entities).filter(key => key.includes('odata') || key === 'Version') : [];
-  // remove azure specific keys before comparing it to the values from postgres
-  const azureEntries = entities
-    ? entities.map(
-      entity => {
-        azureKeys.forEach(key => delete entity[key]);
-
-        return entity;
-      })
-    : [];
-  await db._withClient(mode, async client => {
-    const result = await client.query(
-      `select * from ${pgTable}`,
-    );
-    compareTables({ azureEntities: azureEntries, postgresEntities: result.rows.map(({ value }) => value) });
-  });
 };

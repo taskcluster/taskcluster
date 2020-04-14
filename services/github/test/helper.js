@@ -136,11 +136,10 @@ exports.withServer = (mock, skipping) => {
 
 exports.resetTables = (mock, skipping) => {
   setup('reset tables', async function() {
-    const sec = exports.secrets.get('db');
-
     if (mock) {
       exports.db['github'].reset();
-    } {
+    } else {
+      const sec = exports.secrets.get('db');
       await resetTable({ testDbUrl: sec.testDbUrl, tableName: 'taskcluster_github_builds_entities' });
       await resetTable({ testDbUrl: sec.testDbUrl, tableName: 'taskcluster_integration_owners_entities' });
       await resetTable({ testDbUrl: sec.testDbUrl, tableName: 'taskcluster_checks_to_tasks_entities' });

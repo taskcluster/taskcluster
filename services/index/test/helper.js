@@ -156,11 +156,10 @@ const stubbedQueue = () => {
 
 exports.resetTables = (mock, skipping) => {
   setup('reset tables', async function() {
-    const sec = exports.secrets.get('db');
-
     if (mock) {
       exports.db['fakeindex'].reset();
-    } {
+    } else {
+      const sec = exports.secrets.get('db');
       await resetTable({ testDbUrl: sec.testDbUrl, tableName: 'indexed_tasks_entities' });
       await resetTable({ testDbUrl: sec.testDbUrl, tableName: 'namespaces_entities' });
     }

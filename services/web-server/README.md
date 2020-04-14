@@ -20,7 +20,7 @@ To run this service locally, install dependencies using `yarn`.
 The `taskcluster.rootUrl` configuration setting is required. Either set
 `TASKCLUSTER_ROOT_URL` in your environment, or copy `user-config-template.yml`
 to `user-config.yml` and edit it to include the `rootUrl` for the Taskcluster
-instance you are accessing; for example `https://taskcluster.net`.
+instance you are accessing; for example `https://community-tc.services.mozilla.com`.
 
 The Taskcluster team has a series of [best practices](../../dev-docs/best-practices/microservices.md#taskcluster-web-server)
 for this service which may help guide you in modifying the source code and making a pull request.

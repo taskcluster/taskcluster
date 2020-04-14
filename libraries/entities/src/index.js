@@ -182,23 +182,25 @@ class Entity {
         `You can't modify elements of the partitionKey`,
       );
 
-      try {
-        entity = this.constructor.serialize(newProperties);
-        [result] = await this._db.fns[`${this._tableName}_modify`](this._partitionKey, this._rowKey, entity, 1, this._etag);
-      } catch (e) {
-        if (e.code === 'P0004') {
-          return null;
+      if (!_.isEqual(newProperties, this._properties)) {
+        try {
+          entity = this.constructor.serialize(newProperties);
+          [result] = await this._db.fns[`${this._tableName}_modify`](this._partitionKey, this._rowKey, entity, 1, this._etag);
+        } catch (e) {
+          if (e.code === 'P0004') {
+            return null;
+          }
+
+          if (e.code === 'P0002') {
+            throw make404();
+          }
+
+          throw e;
         }
 
-        if (e.code === 'P0002') {
-          throw make404();
-        }
-
-        throw e;
+        this._getPropertiesFromEntity(entity);
+        this._etag = result.etag;
       }
-
-      this._getPropertiesFromEntity(entity);
-      this._etag = result.etag;
 
       return this;
     };

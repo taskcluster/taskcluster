@@ -425,12 +425,12 @@ exports.tasks.push({
       exampleConfig[confName].procs = {};
       Object.entries(cfg.procs).forEach(([n, p]) => {
         n = n.replace(/-/g, '_');
-        exampleConfig[confName].procs[n] = {
-          // much smaller cpu defaults for dev deployments, since
-          // they are generally idle
-          cpu: '10m',
-        };
         if (['web', 'background'].includes(p.type)) {
+          exampleConfig[confName].procs[n] = {
+            // much smaller cpu defaults for dev deployments, since
+            // they are generally idle
+            cpu: '10m',
+          };
           valuesYAML[confName].procs[n] = {
             replicas: 1,
             cpu: '50m', // TODO: revisit these defaults
@@ -448,6 +448,11 @@ exports.tasks.push({
             additionalProperties: false,
           };
         } else if (p.type === 'cron') {
+          exampleConfig[confName].procs[n] = {
+            // much smaller cpu defaults for dev deployments, since
+            // they are generally idle
+            cpu: '10m',
+          };
           valuesYAML[confName].procs[n] = {
             cpu: '50m', // TODO: revisit these defaults
             memory: '100Mi',

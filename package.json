@@ -1,10 +1,10 @@
 {
   "name": "taskcluster",
-  "version": "29.0.0",
+  "version": "29.0.1",
   "private": true,
   "engine-strict": true,
   "engines": {
-    "node": "12.16.1",
+    "node": "12.16.2",
     "yarn": "^1.22.4"
   },
   "workspaces": [
@@ -187,6 +187,7 @@
   },
   "scripts": {
     "lint": "eslint --cache --ext js --ignore-pattern clients/client-web/build --ignore-pattern clients/client-py libraries services infrastructure clients test db",
+    "lint:go": "sh test/go-lint.sh",
     "test": "yarn workspaces run test",
     "fetch-coverage": "node test/fetch-coverage.js",
     "test:cleanup": "yarn workspace taskcluster-auth test:cleanup",
@@ -208,12 +209,7 @@
     "dev:verify": "node infrastructure/tooling/src/main.js dev:verify",
     "smoketest": "node infrastructure/tooling/src/main.js smoketest",
     "test:meta": "node infrastructure/tooling/src/main.js test:meta",
-    "test:importer": "mocha infrastructure/tooling/src/importer/test/*_test.js",
-    "backup:run": "node infrastructure/tooling/src/main.js backup:run",
-    "backup:restore": "node infrastructure/tooling/src/main.js backup:restore",
-    "backup:compare": "node infrastructure/tooling/src/main.js backup:compare",
     "importer:run": "NODE_OPTIONS=\"--max-old-space-size=12288\" node infrastructure/tooling/src/main.js importer:run",
-    "importer:verify": "node infrastructure/tooling/src/main.js importer:verify",
     "db:upgrade": "node db/src/main.js upgrade",
     "db:downgrade": "node db/src/main.js downgrade"
   },
