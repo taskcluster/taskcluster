@@ -1,31 +1,19 @@
 #! /bin/bash
 
-help() {
-  echo ""
-  echo "Builds log server and deploys it to a docker image."
-  echo "Docker and Go must be installed and able to compile linux/amd64."
-  echo ""
-  echo "  Usage: ./build.sh <docker image name>"
-  echo ""
-}
+outdir="./"
 
-if [ -z "$1" ] ||
-   [ "$1" == "-h" ] ||
-   [ "$1" == "--help" ] ;
-then
-  help
-  exit 0
+if ! test -z "$1"; then
+    outdir=$1
 fi
 
-# cd into the directory of this script, in case called from outside...
-cd "$(dirname "${0}")"
+build() {
+    local output=livelog-${1}-${2}
+    GOOS="${1}" GOARCH="${2}" CGO_ENABLED=0 go build -o $outdir/$output .
+    echo $output
+}
 
-echo "Building proxy server..."
-# Output folder
-mkdir -p target
-go get ./...
-GOARCH=amd64 GOOS=linux go build -o target/livelog .
-
-echo "Building docker image for proxy server"
-docker build -t $1 .
-
+echo "Building livelog:"
+build linux amd64
+build windows amd64
+build windows 386
+build darwin amd64
