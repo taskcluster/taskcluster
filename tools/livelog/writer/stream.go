@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"sync"
 )
 
 const READ_BUFFER_SIZE = 4 * 1024 // XXX: 4kb chosen at random
@@ -26,13 +27,14 @@ type Handles map[*StreamHandle]struct{}
 var emptyStruct = struct{}{}
 
 type Stream struct {
-	Path    string
-	Offset  int64
-	Reader  *io.Reader
-	File    os.File
-	Ended   bool
-	Reading bool
+	Path   string
+	reader *io.Reader
 
+	// mutex covers all of the fields below
+	mutex   sync.Mutex
+	file    os.File
+	offset  int64
+	ended   bool
 	handles Handles
 }
 
@@ -53,12 +55,12 @@ func NewStream(read io.Reader) (*Stream, error) {
 	}
 
 	return &Stream{
-		Path:    path,
-		Offset:  0,
-		Reader:  &read,
-		Reading: false,
-		Ended:   false,
-		File:    *file,
+		Path:   path,
+		mutex:  sync.Mutex{},
+		offset: 0,
+		reader: &read,
+		ended:  false,
+		file:   *file,
 
 		handles: Handles{},
 	}, nil
@@ -66,26 +68,38 @@ func NewStream(read io.Reader) (*Stream, error) {
 
 func (self *Stream) Unobserve(handle *StreamHandle) {
 	log.Print("unobserve")
+	self.mutex.Lock()
+	defer self.mutex.Unlock()
 	delete(self.handles, handle)
 }
 
 func (self *Stream) Observe(start, stop int64) *StreamHandle {
 	// Buffering the channel is very important to avoid writing blocks, etc..
 	handle := newStreamHandle(self, start, stop)
+	self.mutex.Lock()
+	defer self.mutex.Unlock()
 	self.handles[&handle] = emptyStruct
 	return &handle
 }
 
+// Get the state of this stream in a thread-safe fashion
+func (self *Stream) GetState() (offset int64, ended bool) {
+	self.mutex.Lock()
+	offset = self.offset
+	ended = self.ended
+	self.mutex.Unlock()
+	return
+}
+
 func (self *Stream) Consume() error {
 	log.Print("consume")
-	if self.Reading {
-		return fmt.Errorf("Cannot consome twice...")
-	}
 
 	defer func() {
 		log.Print("consume cleanup...")
 
-		self.File.Close()
+		self.mutex.Lock()
+		defer self.mutex.Unlock()
+		self.file.Close()
 
 		// Cleanup all handles after the consumption is complete...
 		log.Printf("removing %d handles", len(self.handles))
@@ -94,16 +108,23 @@ func (self *Stream) Consume() error {
 		}
 	}()
 
-	tee := io.TeeReader(*self.Reader, &self.File)
+	tee := io.TeeReader(*self.reader, &self.file)
 	eventNumber := 0
+	self.mutex.Lock()
+	defer self.mutex.Unlock()
 	for {
+		// read (which may block) without the lock held
+		self.mutex.Unlock()
 		buf := make([]byte, READ_BUFFER_SIZE)
 		bytesRead, readErr := tee.Read(buf)
 
-		startOffset := self.Offset
+		// remainder of the loop body holds the lock
+		self.mutex.Lock()
+
+		startOffset := self.offset
 
 		if bytesRead > 0 {
-			self.Offset += int64(bytesRead)
+			self.offset += int64(bytesRead)
 		}
 
 		eof := readErr == io.EOF
@@ -152,7 +173,7 @@ func (self *Stream) Consume() error {
 
 		// If we are done reading the stream break the loop...
 		if eof {
-			self.Ended = true
+			self.ended = true
 			log.Print("finishing consume eof")
 			break
 		}

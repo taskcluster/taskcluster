@@ -68,12 +68,10 @@ func (self *StreamHandle) writeEvent(event *Event, w io.Writer) (int64, error) {
 // we want to optimize for reuse of buffers across reads/writes in the future we
 // can also extend this mechanism for reading from disk if events "fall behind"
 func (self *StreamHandle) WriteTo(target io.Writer) (n int64, err error) {
-
-	// Figure out if the current file sink is useful
-	initialOffset := int64(self.stream.Offset)
+	streamOffset, streamEnded := self.stream.GetState()
 
 	// Begin by fetching data from the sink first if we can.
-	if initialOffset > self.Start {
+	if streamOffset > self.Start {
 		// Pipe the existing file contents over...
 		file, err := os.Open(self.stream.Path)
 		if err != nil {
@@ -83,8 +81,8 @@ func (self *StreamHandle) WriteTo(target io.Writer) (n int64, err error) {
 		// Determine how much to copy over based on the `Stop` value for this
 		// handle.
 		var offset int64
-		if self.Stop > initialOffset {
-			offset = initialOffset
+		if self.Stop > streamOffset {
+			offset = streamOffset
 		} else {
 			offset = self.Stop
 		}
@@ -101,10 +99,10 @@ func (self *StreamHandle) WriteTo(target io.Writer) (n int64, err error) {
 
 	// If the stream is over or we drained enough of it then stop before event
 	// processing begins...
-	if self.stream.Ended || self.Offset >= self.Stop {
+	if streamEnded || self.Offset >= self.Stop {
 		log.Printf(
 			"Ending stream | ended: %v | offset: %d | stop: %v",
-			self.Offset, self.Stop, self.stream.Ended,
+			self.Offset, self.Stop, streamEnded,
 		)
 		return int64(self.Offset), nil
 	}
