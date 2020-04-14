@@ -56,7 +56,7 @@ In most cases, the `rootUrl` and Taskcluster `credentials` should be provided in
     export TASKCLUSTER_CLIENT_ID=github/1234567|username/clientname
     export TASKCLUSTER_ACCESS_TOKEN=nOtalEgItImAtEbAsE64aCCeStOkEnTWWxdUxbvtiI7Q
 
-Use `taskcluster.optionsFromEnvironment()` to read these variables automatically:
+Use `taskcluster.optionsFromEnvironment()` to read these variables:
 
     ```python
     import taskcluster
