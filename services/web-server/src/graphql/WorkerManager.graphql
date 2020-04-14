@@ -38,20 +38,6 @@ type WorkerManagerErrorsEdge implements Edge {
   node: WorkerManagerError
 }
 
-type WorkerManagerWorker {
-    workerId: String!
-    workerGroup: String!
-    workerAge: DateTime
-    quarantineUntil: DateTime
-
-    latestTaskRun: TaskRun
-
-    recentErrors: Int
-
-    providerId: String!
-    workerPool: String!
-}
-
 type WorkerManagerProvider {
     providerId: String!
     providerType: String!
@@ -77,8 +63,6 @@ input WorkerPoolInput {
 
 extend type Query {
     WorkerManagerWorkerPoolSummaries(connection: PageConnection, filter: JSON): WorkerManagerWorkerPoolSummaryConnection!
-
-    WorkerManagerWorkers(workerPool: String, provider: String, isQuarantined: Boolean): [WorkerManagerWorker]
 
     WorkerManagerErrors(workerPoolId: String, connection: PageConnection, filter: JSON): WorkerManagerErrorsConnection!
 
