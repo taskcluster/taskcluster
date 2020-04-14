@@ -1,0 +1,46 @@
+language: go
+go:
+  - 1.9
+
+env:
+  - "GIMME_OS=linux GIMME_ARCH=amd64"
+  - "GIMME_OS=darwin GIMME_ARCH=amd64"
+  - "GIMME_OS=windows GIMME_ARCH=amd64"
+  - "GIMME_OS=windows GIMME_ARCH=386"
+
+install:
+  - go get -d -t ./...
+  - "if test $GIMME_OS.$GIMME_ARCH = linux.amd64; then npm install; fi"
+
+script:
+  - go install -v ./...
+  - "if test $GIMME_OS.$GIMME_ARCH = linux.amd64; then npm test; fi"
+
+notifications:
+  irc:
+    channels:
+      # encrypt the channel name so that user forks don't spam IRC
+      # decrypted version is "irc.mozilla.org#taskcluster-bots"
+      # see https://github.com/travis-ci/travis-ci/issues/1094
+      - secure: "iWVuoaXyzNFjdDPlo/Jac04n+4yMlcgW0uEMLvF79Z5gqe/K+kbD5iy0lCo9wUIVM9O03/8K+7mNS/SlYMiOpmziyAhEKi3X4CFErNuwy1pyriLJrZZScOqGPKkuP7+m+BBCjVXoyFRYXYQ7SncQsLlE3wtJvA7dNNSLCGUg5ys="
+    on_success: change
+    on_failure: always
+    template:
+      - "%{repository}#%{build_number} (%{branch} - %{commit} : %{author}): %{message}"
+      - "Change view : %{compare_url}"
+      - "Build details : %{build_url}"
+      - "Commit message : %{commit_message}"
+
+before_deploy:
+  - "source .travis_rename_releases.sh"
+
+deploy:
+  provider: releases
+  api_key:
+    secure: fwTLVhfs/5ioduZQdj49n6/4rn7AYcAyAeUcRdA/ezhWAj1KsT6qU7snBdhfEwpo+TaVbLq6SwpknLXax9d6mESs7EOL9EmEt73ocw0OG1omfjrBn5mQuuVIiUky5qhIZy+qufiqUq3iVe/V8cyZSGqcPRbazLIhAAKR0r44dys=
+  file:
+    - "${RELEASE_FILE}"
+  on:
+    repo: taskcluster/livelog
+    tags: true
+  skip_cleanup: true
