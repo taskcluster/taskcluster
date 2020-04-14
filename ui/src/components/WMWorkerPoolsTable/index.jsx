@@ -107,9 +107,9 @@ export default class WorkerManagerWorkerPoolsTable extends Component {
 
   handleHeaderClick = header => {
     const toggled = this.state.sortDirection === 'desc' ? 'asc' : 'desc';
-    const sortDirection = this.state.sortBy === header.id ? toggled : 'desc';
+    const sortDirection = this.state.sortBy === header ? toggled : 'desc';
 
-    this.setState({ sortBy: header.id, sortDirection });
+    this.setState({ sortBy: header, sortDirection });
   };
 
   handleDeleteClick = async () => {

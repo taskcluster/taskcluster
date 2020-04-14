@@ -42,13 +42,12 @@ export default class WorkerManagerWorkerPoolsView extends Component {
     workerPoolSearch: '',
   };
 
-  handleWorkerPoolSearchSubmit = workerPoolSearch => {
+  handleWorkerPoolSearchSubmit = async workerPoolSearch => {
     const {
       data: { refetch },
     } = this.props;
 
-    this.setState({ workerPoolSearch });
-    refetch({
+    await refetch({
       workerPoolsConnection: {
         limit: VIEW_WORKER_POOLS_PAGE_SIZE,
       },
@@ -61,6 +60,7 @@ export default class WorkerManagerWorkerPoolsView extends Component {
           }
         : null,
     });
+    this.setState({ workerPoolSearch });
   };
 
   handleCreate = () => {
@@ -77,7 +77,7 @@ export default class WorkerManagerWorkerPoolsView extends Component {
           providerId: 'null-provider', // this is how we delete worker pools
         },
       },
-      refetchQueries: ['workerPoolsQuery'],
+      refetchQueries: ['workerPools'],
       awaitRefetchQueries: false,
     });
   };
