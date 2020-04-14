@@ -52,7 +52,10 @@ func (p *AzureProvider) ConfigureRun(state *run.State) error {
 	}
 
 	// bug 1621037: revert to using customData once it is fixed
-	taggedData := loadTaggedData(instanceData.Compute.TagsList)
+	taggedData, err := loadTaggedData(instanceData.Compute.TagsList)
+	if err != nil {
+		return err
+	}
 
 	state.RootURL = taggedData.RootURL
 	state.WorkerLocation = map[string]string{
@@ -210,7 +213,7 @@ defined by this provider has the following fields:
 `
 }
 
-func loadTaggedData(tags []Tag) *TaggedData {
+func loadTaggedData(tags []Tag) (*TaggedData, error) {
 	c := &TaggedData{}
 	for _, tag := range tags {
 		if tag.Name == "worker-pool-id" {
@@ -226,7 +229,20 @@ func loadTaggedData(tags []Tag) *TaggedData {
 			c.RootURL = tag.Value
 		}
 	}
-	return c
+	if c.RootURL == "" {
+		return nil, fmt.Errorf("Did not get root-url from instance tagged data")
+	}
+	if c.WorkerPoolId == "" {
+		return nil, fmt.Errorf("Did not get worker-pool-id from instance tagged data")
+	}
+	if c.ProviderId == "" {
+		return nil, fmt.Errorf("Did not get provider-id from instance tagged data")
+	}
+	if c.WorkerGroup == "" {
+		return nil, fmt.Errorf("Did not get worker-group from instance tagged data")
+	}
+
+	return c, nil
 }
 
 // New takes its dependencies as optional arguments, allowing injection of fake dependencies for testing.
