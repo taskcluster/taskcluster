@@ -1,5 +1,7 @@
 import React, { Component, Fragment } from 'react';
 import { withStyles } from '@material-ui/core/styles';
+import { withRouter } from 'react-router-dom';
+import { parse, stringify } from 'qs';
 import TableCell from '@material-ui/core/TableCell';
 import TableRow from '@material-ui/core/TableRow';
 import IconButton from '@material-ui/core/IconButton';
@@ -33,6 +35,7 @@ const sorted = pipe(
   )
 );
 
+@withRouter
 @withStyles(theme => ({
   infoButton: {
     marginLeft: -theme.spacing(2),
@@ -125,15 +128,24 @@ export default class WorkerTypesTable extends Component {
     )(name);
 
   handleHeaderClick = sortBy => {
+    const { location } = this.props;
+    const query = parse(location.search.slice(1));
     const toggled = this.state.sortDirection === 'desc' ? 'asc' : 'desc';
     const sortDirection = this.state.sortBy === sortBy ? toggled : 'desc';
 
     this.setState({ sortBy, sortDirection });
+    query.sortBy = sortBy;
+    query.sortDirection = sortDirection;
+    this.props.history.replace({
+      search: stringify(query, { addQueryPrefix: true }),
+    });
   };
 
   render() {
+    const query = parse(window.location.search.slice(1));
     const { onPageChange, classes, workerTypesConnection } = this.props;
-    const { sortBy, sortDirection, drawerOpen, drawerWorkerType } = this.state;
+    const { drawerOpen, drawerWorkerType } = this.state;
+    const { sortBy, sortDirection } = query.sortBy ? query : this.state;
 
     this.workerTypes = this.createSortedWorkerTypesConnection(
       workerTypesConnection,

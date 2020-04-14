@@ -1,5 +1,7 @@
 import React, { Component } from 'react';
 import { func, string } from 'prop-types';
+import { parse, stringify } from 'qs';
+import { withRouter } from 'react-router-dom';
 import { formatDistanceStrict, parseISO } from 'date-fns';
 import { pipe, map, sort as rSort } from 'ramda';
 import memoize from 'fast-memoize';
@@ -26,6 +28,7 @@ const sorted = pipe(
   )
 );
 
+@withRouter
 @withStyles(theme => ({
   linksIcon: {
     marginLeft: theme.spacing(1),
@@ -91,11 +94,19 @@ export default class WorkersTable extends Component {
   );
 
   handleHeaderClick = sortByHeader => {
+    const { location } = this.props;
+    const query = parse(location.search.slice(1));
     const sortBy = sortByHeader;
     const toggled = this.state.sortDirection === 'desc' ? 'asc' : 'desc';
     const sortDirection = this.state.sortBy === sortBy ? toggled : 'desc';
 
     this.setState({ sortBy, sortDirection });
+
+    query.sortBy = sortBy;
+    query.sortDirection = sortDirection;
+    this.props.history.replace({
+      search: stringify(query, { addQueryPrefix: true }),
+    });
   };
 
   valueFromNode(node) {
@@ -114,7 +125,8 @@ export default class WorkersTable extends Component {
   }
 
   render() {
-    const { sortBy, sortDirection } = this.state;
+    const query = parse(window.location.search.slice(1));
+    const { sortBy, sortDirection } = query.sortBy ? query : this.state;
     const {
       provisionerId,
       workerType,
