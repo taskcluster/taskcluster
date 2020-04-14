@@ -99,7 +99,6 @@ func (self *Stream) Consume() error {
 	for {
 		buf := make([]byte, READ_BUFFER_SIZE)
 		bytesRead, readErr := tee.Read(buf)
-		log.Printf("reading bytes %d", bytesRead)
 
 		startOffset := self.Offset
 
@@ -116,7 +115,6 @@ func (self *Stream) Consume() error {
 			eventErr = readErr
 		}
 
-		log.Printf("read: %d total offset: %d eof: %v", bytesRead, self.Offset, eof)
 		event := Event{
 			Number: eventNumber,
 			Length: int64(bytesRead),
