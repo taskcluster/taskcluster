@@ -9,45 +9,59 @@ This library is a complete interface to Taskcluster in Python.  It provides
 both synchronous and asynchronous interfaces for all Taskcluster API methods,
 in both Python-2 and Python-3 variants.
 
-## Usage
+## Authenticated Client Example
 
-For a general guide to using Taskcluster clients, see [Calling Taskcluster APIs](https://docs.taskcluster.net/docs/manual/using/api).
+For a general guide to using Taskcluster clients, see [Calling Taskcluster APIs](https://docs.taskcluster.net/docs/manual/using/api).     
+                                                                      
+#### Acquire Access Token for Client
 
-### Setup
+The [Community Taskcluster instance]( https://community-tc.services.mozilla.com) will be used as an example. You can use your github account to login. Start the process here: [Create client](https://community-tc.services.mozilla.com/auth/clients/create?scope=)
 
-Before calling an API end-point, you'll need to create a client instance.
-There is a class for each service, e.g., `Queue` and `Auth`.  Each takes the
-same options, described below.  Note that only `rootUrl` is
-required, and it's unusual to configure any other options aside from
-`credentials`.
+Fill in the parameters:
+
+* **Client ID** - whatever you like, but must be prefixed with your user id. Example: `github/1234567|username/clientname`
+* **Expires** - up to 30 days (*default 5 minutes*)
+* **Scope** - list the resources this client is allowed to access
+   
+When you save, you will get an access token. *Ensure you record the `accessToken`, you will not see it again*
+
+#### Create Client
+
+There is a client class for each service, e.g., `Queue` and `Auth`.  Each takes the same options, described below.  Note that only `rootUrl` is required, and it's unusual to configure any other options aside from `credentials`.
 
 For each service, there are sync and async variants.  The classes under
 `taskcluster` (e.g., `taskcluster.Queue`) are Python-2 compatible and operate
 synchronously.  The classes under `taskcluster.aio` (e.g.,
 `taskcluster.aio.Queue`) require Python >= 3.6.
 
-#### Authentication Options
-
-Here is a simple set-up of an Index client:
+Here is a simple set-up of an authenticated `Index` client:
 
     ```python
     import taskcluster
     index = taskcluster.Index({
-      'rootUrl': 'https://tc.example.com',
-      'credentials': {'clientId': 'id', 'accessToken': 'accessToken'},
+        "rootUrl": "https://community-tc.services.mozilla.com"
+        "credentials": {
+            "clientId": "github/1234567|username/clientname"
+            "accessToken": "nOtalEgItImAtEbAsE64aCCeStOkEnTWWxdUxbvtiI7Q",
+        },
     })
 
-The `rootUrl` option is required as it gives the Taskcluster deployment to
-which API requests should be sent.  Credentials are only required if the
-request is to be authenticated -- many Taskcluster API methods do not require
-authentication.
+Credentials are only required if the request is to be authenticated -- many Taskcluster API methods do not require authentication.
 
-In most cases, the root URL and Taskcluster credentials should be provided in [standard environment variables](https://docs.taskcluster.net/docs/manual/design/env-vars).  Use `taskcluster.optionsFromEnvironment()` to read these variables automatically:
+#### Using environment variables
 
-```python
-auth = taskcluster.Auth(taskcluster.optionsFromEnvironment())
-```
+In most cases, the `rootUrl` and Taskcluster `credentials` should be provided in [standard environment variables](https://docs.taskcluster.net/docs/manual/design/env-vars). 
 
+    export TASKCLUSTER_ROOT_URL=https://community-tc.services.mozilla.com
+    export TASKCLUSTER_CLIENT_ID=github/1234567|username/clientname
+    export TASKCLUSTER_ACCESS_TOKEN=nOtalEgItImAtEbAsE64aCCeStOkEnTWWxdUxbvtiI7Q
+
+Use `taskcluster.optionsFromEnvironment()` to read these variables automatically:
+
+    ```python
+    import taskcluster
+    auth = taskcluster.Auth(taskcluster.optionsFromEnvironment())
+    ```
 Note that this function does not respect `TASKCLUSTER_PROXY_URL`.  To use the Taskcluster Proxy from within a task:
 
 ```python
