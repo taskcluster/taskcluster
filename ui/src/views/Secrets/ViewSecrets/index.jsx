@@ -6,6 +6,7 @@ import Spinner from '@mozilla-frontend-infra/components/Spinner';
 import { withStyles } from '@material-ui/core/styles';
 import PlusIcon from 'mdi-react/PlusIcon';
 import escapeStringRegexp from 'escape-string-regexp';
+import qs from 'qs';
 import Dashboard from '../../../components/Dashboard';
 import Search from '../../../components/Search';
 import SecretsTable from '../../../components/SecretsTable';
@@ -49,7 +50,10 @@ export default class ViewSecrets extends Component {
         ? { name: { $regex: escapeStringRegexp(secretSearch), $options: 'i' } }
         : null,
     });
-    this.setState({ secretSearch });
+
+    this.props.history.push(
+      `/secrets${secretSearch ? `?search=${secretSearch}` : ''}`
+    );
   };
 
   handleCreate = () => {
