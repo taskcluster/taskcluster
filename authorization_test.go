@@ -379,7 +379,7 @@ func TestNon200HasErrorBody(t *testing.T) {
 
 		req, err := http.NewRequest(
 			"POST",
-			"http://localhost:60024/queue/v1/task/"+taskID+"/define",
+			"http://localhost:60024/queue/v1/task/"+taskID+"/schedule",
 			bytes.NewBufferString(
 				`{"comment": "Valid json so that we hit endpoint, but should not result in http 200"}`,
 			),
@@ -396,8 +396,8 @@ func TestNon200HasErrorBody(t *testing.T) {
 		return res
 
 	}
-	testWithPermCreds(t, test, 400)
-	testWithTempCreds(t, test, 400)
+	testWithPermCreds(t, test, 404)
+	testWithTempCreds(t, test, 404)
 }
 
 func TestOversteppedScopes(t *testing.T) {
