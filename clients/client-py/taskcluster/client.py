@@ -53,6 +53,9 @@ class BaseClient(object):
     """
 
     def __init__(self, options=None, session=None):
+        """
+        See https://github.com/taskcluster/taskcluster/blob/master/clients/client-py/README.md
+        """
         if options and options.get('baseUrl'):
             raise exceptions.TaskclusterFailure('baseUrl option is no longer allowed')
         o = copy.deepcopy(self.classOptions)
