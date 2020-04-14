@@ -114,47 +114,45 @@ func (self *StreamHandle) WriteTo(target io.Writer) (n int64, err error) {
 		flusher.Flush()
 	}
 
-	for {
-		select {
-		case event := <-self.events:
-			pendingBuf := 0
-			self.pendingEvents[0] = event
+	for event := range self.events {
+		pendingBuf := 0
+		self.pendingEvents[0] = event
 
-			// Build a list of all the pointers to the events we need to update. This
-			// has the very important effect of emptying the channel which may be
-			// building up very quickly.
-			eventChannelPending := len(self.events)
-			if eventChannelPending > 1 {
-				log.Println("Consuming additional events", eventChannelPending)
-			}
-			for i := 0; i < eventChannelPending; i++ {
-				self.pendingEvents[i+1] = <-self.events
-				pendingBuf++
-			}
+		// Build a list of all the pointers to the events we need to update. This
+		// has the very important effect of emptying the channel which may be
+		// building up very quickly.
+		eventChannelPending := len(self.events)
+		if eventChannelPending > 1 {
+			log.Println("Consuming additional events", eventChannelPending)
+		}
+		for i := 0; i < eventChannelPending; i++ {
+			self.pendingEvents[i+1] = <-self.events
+			pendingBuf++
+		}
 
-			for k := 0; k <= pendingBuf; k++ {
-				event := self.pendingEvents[k]
-				if event == nil {
-					return int64(self.Offset), fmt.Errorf("nil event.. channel likely closed due to timeout")
-				}
-
-				written, writeErr := self.writeEvent(event, target)
-				self.Offset += written
-				if writeErr != nil {
-					return int64(self.Offset), writeErr
-				}
-
-				if event.End || self.Offset >= self.Stop {
-					return int64(self.Offset), writeErr
-				}
+		for k := 0; k <= pendingBuf; k++ {
+			event := self.pendingEvents[k]
+			if event == nil {
+				return int64(self.Offset), fmt.Errorf("nil event.. channel likely closed due to timeout")
 			}
 
-			// Note how we batch flushes, flushing here is entirely optional and is
-			// ultimately bad for performance but greatly improves perceived
-			// performance of the logs.
-			if canFlush {
-				flusher.Flush()
+			written, writeErr := self.writeEvent(event, target)
+			self.Offset += written
+			if writeErr != nil {
+				return int64(self.Offset), writeErr
+			}
+
+			if event.End || self.Offset >= self.Stop {
+				return int64(self.Offset), writeErr
 			}
 		}
+
+		// Note how we batch flushes, flushing here is entirely optional and is
+		// ultimately bad for performance but greatly improves perceived
+		// performance of the logs.
+		if canFlush {
+			flusher.Flush()
+		}
 	}
+	return int64(self.Offset), io.EOF
 }

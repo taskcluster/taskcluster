@@ -10,7 +10,7 @@ import (
 	"strconv"
 	"sync"
 
-	stream "github.com/taskcluster/livelog/writer"
+	stream "github.com/taskcluster/taskcluster/v29/tools/livelog/writer"
 )
 
 const (
@@ -23,18 +23,17 @@ const (
 // shut down correctly.
 var runServer func(server *http.Server, addr, crtFile, keyFile string) error
 
-func abort(writer http.ResponseWriter) error {
+func abort(writer http.ResponseWriter) {
 	// We need to hijack and abort the request...
 	conn, _, err := writer.(http.Hijacker).Hijack()
 
 	if err != nil {
-		return err
+		return
 	}
 
 	// Force the connection closed to signal that the response was not
 	// completed...
 	conn.Close()
-	return nil
 }
 
 func startLogServe(stream *stream.Stream, getAddr string) {
@@ -65,14 +64,18 @@ func startLogServe(stream *stream.Stream, getAddr string) {
 
 	crtFile := os.Getenv("SERVER_CRT_FILE")
 	keyFile := os.Getenv("SERVER_KEY_FILE")
+	var err error
 	if crtFile != "" && keyFile != "" {
 		log.Printf("Output server listening... %s (with TLS)", server.Addr)
 		log.Printf("key %s ", keyFile)
 		log.Printf("crt %s ", crtFile)
-		runServer(&server, getAddr, crtFile, keyFile)
+		err = runServer(&server, getAddr, crtFile, keyFile)
 	} else {
 		log.Printf("Output server listening... %s (without TLS)", server.Addr)
-		runServer(&server, getAddr, "", "")
+		err = runServer(&server, getAddr, "", "")
+	}
+	if err != nil && err != http.ErrServerClosed {
+		log.Fatalf("%s", err)
 	}
 }
 
@@ -196,7 +199,7 @@ func serve(putAddr, getAddr string) {
 		if r.Method != "PUT" {
 			log.Print("input not put")
 			w.WriteHeader(http.StatusBadRequest)
-			w.Write([]byte("This endpoint can only handle PUT requests"))
+			_, _ = w.Write([]byte("This endpoint can only handle PUT requests"))
 			return
 		}
 
@@ -205,7 +208,7 @@ func serve(putAddr, getAddr string) {
 		if handlingPut {
 			log.Print("Attempt to put when in progress")
 			w.WriteHeader(http.StatusBadRequest)
-			w.Write([]byte("This endpoint can only process one http PUT at a time"))
+			_, _ = w.Write([]byte("This endpoint can only process one http PUT at a time"))
 			mutex.Unlock() // used instead of defer so we don't block other rejections
 			return
 		}
@@ -216,7 +219,7 @@ func serve(putAddr, getAddr string) {
 		if streamErr != nil {
 			log.Printf("input stream open err %v", streamErr)
 			w.WriteHeader(http.StatusInternalServerError)
-			w.Write([]byte("Could not open stream for body"))
+			_, _ = w.Write([]byte("Could not open stream for body"))
 
 			// Allow for retries of the initial put if something goes wrong...
 			mutex.Lock()
