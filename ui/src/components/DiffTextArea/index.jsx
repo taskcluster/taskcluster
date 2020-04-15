@@ -8,7 +8,7 @@ import Typography from '@material-ui/core/Typography';
 import { withStyles } from '@material-ui/core/styles';
 import { fade } from '@material-ui/core/styles/colorManipulator';
 import { ReactGhLikeDiff } from 'react-gh-like-diff';
-import 'react-gh-like-diff/lib/diff2html.css';
+import 'react-gh-like-diff/dist/css/diff2html.min.css';
 import { THEME } from '../../utils/constants';
 
 const styles = withStyles(theme => {

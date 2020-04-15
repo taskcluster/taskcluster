@@ -1,11 +1,22 @@
-query workerPools {
-  WorkerManagerWorkerPoolSummaries {
-    workerPoolId
-    providerId
-    description
-    owner
-    config
-    emailOnError
-    pendingTasks #this value comes from a separate request to queue
+query workerPools($connection: PageConnection, $filter: JSON) {
+  WorkerManagerWorkerPoolSummaries(connection: $connection, filter: $filter) {
+    pageInfo {
+      hasNextPage
+      hasPreviousPage
+      cursor
+      previousCursor
+      nextCursor
+    }
+    edges {
+      node {
+        workerPoolId
+        providerId
+        description
+        owner
+        config
+        emailOnError
+        pendingTasks #this value comes from a separate request to queue
+      }
+    }
   }
 }

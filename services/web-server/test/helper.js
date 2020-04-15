@@ -333,7 +333,10 @@ const stubbedClients = () => {
 
   exports.fakes = {
     makeWorkerPool: (workerPoolId, workerPool) => {
-      workerPools.set(workerPoolId, workerPool);
+      workerPools.set(workerPoolId, {
+        ...workerPool,
+        workerPoolId,
+      });
     },
     hasWorkerPool: workerPoolId => {
       return workerPools.has(workerPoolId);
@@ -351,6 +354,8 @@ const stubbedClients = () => {
     workerManager: new taskcluster.WorkerManager({
       ...options,
       fake: {
+        workerPool: async workerPoolId => workerPools.get(workerPoolId),
+        listWorkerPools: async ({limit = 1000}) => ({workerPools: [...workerPools.values()].slice(0, limit)}),
         deleteWorkerPool: async workerPoolId => {
           if (!workerPools.has(workerPoolId)) {
             throw new Error(`No such worker pool ${workerPoolId}`);
@@ -481,6 +486,7 @@ const stubbedClients = () => {
           });
           return Promise.resolve({artifacts});
         },
+        pendingTasks: async (provisionerId, workerType) => 0,
       },
     }),
   });

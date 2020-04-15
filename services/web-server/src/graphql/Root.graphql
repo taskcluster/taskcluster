@@ -32,6 +32,7 @@ union Node =
   Client |
   RoleCompact |
   NotificationAddress |
+  WorkerManagerWorkerPoolSummary |
   WorkerManagerProvider |
   WorkerManagerError
 
