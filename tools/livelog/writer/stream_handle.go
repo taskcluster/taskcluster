@@ -58,7 +58,7 @@ func (self *StreamHandle) writeEvent(event *Event, w io.Writer) (int64, error) {
 
 	// Should come before length equality check...
 	if writeErr != nil {
-		return int64(self.Offset), writeErr
+		return int64(0), writeErr
 	}
 
 	return int64(written), writeErr
