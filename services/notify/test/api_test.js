@@ -190,9 +190,21 @@ helper.secrets.mockSuite(testing.suiteName(), ['db', 'aws'], function(mock, skip
   });
 
   test('matrix', async function() {
+    await helper.apiClient.matrix({body: 'Does this work?', roomId: '!foobar:baz.com', msgtype: 'm.text'});
+    assert.equal(helper.matrixClient.sendEvent.callCount, 1);
+    assert.equal(helper.matrixClient.sendEvent.args[0][0], '!foobar:baz.com');
+    assert.equal(helper.matrixClient.sendEvent.args[0][2].body, 'Does this work?');
+    assert.equal(helper.matrixClient.sendEvent.args[0][2].msgtype, 'm.text');
+    assert(monitorManager.messages.find(m => m.Type === 'matrix'));
+    assert(monitorManager.messages.find(m => m.Type === 'matrix-forbidden') === undefined);
+  });
+
+  test('matrix (default msgtype)', async function() {
     await helper.apiClient.matrix({body: 'Does this work?', roomId: '!foobar:baz.com'});
     assert.equal(helper.matrixClient.sendEvent.callCount, 1);
     assert.equal(helper.matrixClient.sendEvent.args[0][0], '!foobar:baz.com');
+    assert.equal(helper.matrixClient.sendEvent.args[0][2].body, 'Does this work?');
+    assert.equal(helper.matrixClient.sendEvent.args[0][2].msgtype, 'm.notice');
     assert(monitorManager.messages.find(m => m.Type === 'matrix'));
     assert(monitorManager.messages.find(m => m.Type === 'matrix-forbidden') === undefined);
   });

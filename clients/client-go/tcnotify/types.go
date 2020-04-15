@@ -137,7 +137,9 @@ type (
 		Template string `json:"template,omitempty"`
 	}
 
-	// Request to send a Matrix notice.
+	// Request to send a Matrix notice. Many of these fields are better understood by
+	// checking the matrix spec itself. The precise definitions of these fields is
+	// beyond the scope of this document.
 	SendMatrixNoticeRequest struct {
 
 		// Unformatted text that will be displayed in the room if you do not
@@ -150,6 +152,17 @@ type (
 		// Text that will be rendered by matrix clients that support the given
 		// format in that format. For instance, `<h1>Header Text</h1>`.
 		FormattedBody string `json:"formattedBody,omitempty"`
+
+		// Which of the `m.room.message` msgtypes to use. At the moment only the
+		// types that take `body`/`format`/`formattedBody` are supported.
+		//
+		// Possible values:
+		//   * "m.notice"
+		//   * "m.text"
+		//   * "m.emote"
+		//
+		// Default:    "m.notice"
+		Msgtype string `json:"msgtype,omitempty"`
 
 		// The fully qualified room name, such as `!whDRjjSmICCgrhFHsQ:mozilla.org`
 		// If you are using riot, you can find this under the advanced settings for a room.

@@ -54,6 +54,7 @@ In irc, matrix, and email you can set custom messages by adding fields to your t
 given a context of the [task definition](/docs/reference/platform/queue/api#get-task-definition)
 and the `status` section of [task status](/docs/reference/platform/queue/references/events#message-payload-4).
 The task definition is in the context under the key `task` and the status is in the context under the key `status`. `taskId` is also provided.
+The matrix fields are defined in detail in the matrix specification.
 The fields you add to your task definition are all in the `task.extra` section under a key `notify`. They are as follows:
 
 __task.extra.notify.ircUserMessage:__ This should evaluate to a string and is the message sent to a user in irc if a `notify.irc-user` event occurs
@@ -66,7 +67,7 @@ __task.extra.notify.matrixFormattedBody:__ This is a rich message suitable to be
 
 __task.extra.notify.matrixFormat:__ The format for `formattedBody`. For instance, `org.matrix.custom.html`
 
-__task.extra.notify.matrixNotice:__ Send the notification as a notice (`msgtype: m.notice`) instead of a normal message (`msgtype: m.text`). Defaults to true.
+__task.extra.notify.matrixMsgtype:__ Which matrix `m.room.message` msgtype to use. Note that it is `Msgtype` and not `msgType` to match matrix naming scheme. Defaults to `m.notice`.
 
 __task.extra.notify.email.content:__ This should evaluate to a markdown string and is the body of an email
 

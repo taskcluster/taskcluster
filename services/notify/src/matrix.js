@@ -25,8 +25,7 @@ class MatrixBot {
     await this._client.startClient();
   }
 
-  async sendMessage({roomId, format, formattedBody, body, notice}) {
-    let msgtype = notice ? 'm.notice' : 'm.text';
+  async sendMessage({roomId, format, formattedBody, body, notice, msgtype}) {
     await this._client.sendEvent(roomId, 'm.room.message', {formatted_body: formattedBody, body, msgtype, format}, '');
   }
 }

@@ -107,6 +107,7 @@ class Handler {
         case 'matrix-room': {
           const roomId = route.slice(2, route.length - 1).join('.');
           let body = `'${task.metadata.name}' resolved as '${status.state}': ${href}`;
+          let msgtype = _.get(task, 'extra.notify.matrixMsgtype') || 'm.notice';
           let formattedBody = undefined;
           let format = _.get(task, 'extra.notify.matrixFormat');
           if (_.has(task, 'extra.notify.matrixBody')) {
@@ -115,14 +116,13 @@ class Handler {
           if (_.has(task, 'extra.notify.matrixFormattedBody')) {
             formattedBody = this.renderMessage(task.extra.notify.matrixFormattedBody, {task, status, taskId});
           }
-          let notice = _.get(task, 'extra.notify.matrixNotice');
           try {
             return await this.notifier.matrix({
               roomId,
               format,
               formattedBody,
               body,
-              notice,
+              msgtype,
             });
           } catch (err) {
             // This just means that we haven't been invited to the room yet
