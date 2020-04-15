@@ -158,11 +158,14 @@ func (self *Stream) Consume() error {
 				continue
 			}
 
+			// If this handle is backed up, drop it..
 			pendingWrites := len(handle.events)
 			if pendingWrites >= EVENT_BUFFER_SIZE-1 {
 				log.Printf("Removing handle with %d pending writes\n", pendingWrites)
-				// Remove the handle from any future event writes...
-				self.Unobserve(handle)
+				// Remove the handle from any future event writes.  We can't use
+				// Unobserve here as it locks self.mutex, which we have already
+				// locked.
+				delete(self.handles, handle)
 				close(handle.events)
 				continue
 			}
