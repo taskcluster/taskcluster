@@ -98,10 +98,6 @@ tasks:
         - name: test:meta
           command: "yarn test:meta | cat"
           # only do cleanup on pushes; no sense doing so on pull requests
-        - $if: 'tasks_for == "github-push" && event["ref"] == "refs/heads/master"'
-          then:
-            name: test:cleanup
-            command: yarn test:cleanup
         - name: yarn generate
           image: taskcluster/node-and-go:node${node}-go${go.release}
           command: >-
