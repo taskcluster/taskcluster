@@ -59,8 +59,6 @@ export default class ProvisionerDetailsTable extends Component {
   };
 
   state = {
-    sortBy: null,
-    sortDirection: null,
     drawerOpen: false,
     drawerProvisioner: null,
     actionLoading: false,
@@ -87,10 +85,8 @@ export default class ProvisionerDetailsTable extends Component {
   handleHeaderClick = ({ id: sortBy }) => {
     const { location } = this.props;
     const query = parse(location.search.slice(1));
-    const toggled = this.state.sortDirection === 'desc' ? 'asc' : 'desc';
-    const sortDirection = this.state.sortBy === sortBy ? toggled : 'desc';
-
-    this.setState({ sortBy, sortDirection });
+    const toggled = query.sortDirection === 'desc' ? 'asc' : 'desc';
+    const sortDirection = query.sortBy === sortBy ? toggled : 'desc';
 
     query.sortBy = sortBy;
     query.sortDirection = sortDirection;
@@ -249,7 +245,9 @@ export default class ProvisionerDetailsTable extends Component {
     const { provisioners } = this.props;
     const query = parse(window.location.search.slice(1));
     const { drawerOpen, dialogError, dialogOpen, selectedAction } = this.state;
-    const { sortBy, sortDirection } = query.sortBy ? query : this.state;
+    const { sortBy, sortDirection } = query.sortBy
+      ? query
+      : { sortBy: null, sortDirection: null };
     const headers = [
       { label: 'Provisioner', id: 'provisionerId', type: 'string' },
       { label: 'Last Active', id: 'lastDateActive', type: 'string' },

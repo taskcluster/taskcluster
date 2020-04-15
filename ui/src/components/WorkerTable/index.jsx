@@ -48,11 +48,6 @@ export default class WorkerTable extends Component {
     worker,
   };
 
-  state = {
-    sortBy: null,
-    sortDirection: null,
-  };
-
   getTableData = memoize(
     ({ sortBy, sortDirection, worker }) => {
       if (!worker) {
@@ -91,10 +86,8 @@ export default class WorkerTable extends Component {
   handleHeaderClick = header => {
     const { location } = this.props;
     const query = parse(location.search.slice(1));
-    const toggled = this.state.sortDirection === 'desc' ? 'asc' : 'desc';
-    const sortDirection = this.state.sortBy === header.id ? toggled : 'desc';
-
-    this.setState({ sortBy: header.id, sortDirection });
+    const toggled = query.sortDirection === 'desc' ? 'asc' : 'desc';
+    const sortDirection = query.sortBy === header.id ? toggled : 'desc';
 
     query.sortBy = header.id;
     query.sortDirection = sortDirection;
@@ -106,7 +99,9 @@ export default class WorkerTable extends Component {
   render() {
     const { classes, worker } = this.props;
     const query = parse(window.location.search.slice(1));
-    const { sortBy, sortDirection } = query.sortBy ? query : this.state;
+    const { sortBy, sortDirection } = query.sortBy
+      ? query
+      : { sortBy: null, sortDirection: null };
     const iconSize = 16;
     const items = this.getTableData({ sortBy, sortDirection, worker });
     const headers = [

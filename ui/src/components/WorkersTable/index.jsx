@@ -57,11 +57,6 @@ export default class WorkersTable extends Component {
     },
   };
 
-  state = {
-    sortBy: null,
-    sortDirection: null,
-  };
-
   createSortedWorkersConnection = memoize(
     (workersConnection, sortBy, sortDirection) => {
       if (!sortBy) {
@@ -97,10 +92,8 @@ export default class WorkersTable extends Component {
     const { location } = this.props;
     const query = parse(location.search.slice(1));
     const sortBy = sortByHeader;
-    const toggled = this.state.sortDirection === 'desc' ? 'asc' : 'desc';
-    const sortDirection = this.state.sortBy === sortBy ? toggled : 'desc';
-
-    this.setState({ sortBy, sortDirection });
+    const toggled = query.sortDirection === 'desc' ? 'asc' : 'desc';
+    const sortDirection = query.sortBy === sortBy ? toggled : 'desc';
 
     query.sortBy = sortBy;
     query.sortDirection = sortDirection;
@@ -110,6 +103,7 @@ export default class WorkersTable extends Component {
   };
 
   valueFromNode(node) {
+    const query = parse(window.location.search.slice(1));
     const mapping = {
       'Worker Group': node.workerGroup,
       'Worker ID': node.workerId,
@@ -121,12 +115,14 @@ export default class WorkersTable extends Component {
       Quarantined: node.quarantineUntil,
     };
 
-    return mapping[this.state.sortBy];
+    return mapping[query.sortBy];
   }
 
   render() {
     const query = parse(window.location.search.slice(1));
-    const { sortBy, sortDirection } = query.sortBy ? query : this.state;
+    const { sortBy, sortDirection } = query.sortBy
+      ? query
+      : { sortBy: null, sortDirection: null };
     const {
       provisionerId,
       workerType,
