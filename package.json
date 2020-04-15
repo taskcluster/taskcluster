@@ -188,7 +188,6 @@
     "lint:go": "sh test/go-lint.sh",
     "test": "yarn workspaces run test",
     "fetch-coverage": "node test/fetch-coverage.js",
-    "test:cleanup": "yarn workspace taskcluster-auth test:cleanup",
     "build": "node infrastructure/tooling/src/main.js build",
     "release": "node infrastructure/tooling/src/main.js release",
     "release:publish": "node infrastructure/tooling/src/main.js release:publish",
