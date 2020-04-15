@@ -3959,7 +3959,7 @@
       "$id": "/schemas/notify/v1/matrix-request.json#",
       "$schema": "/schemas/common/metaschema.json#",
       "additionalProperties": false,
-      "description": "Request to send a Matrix notice.",
+      "description": "Request to send a Matrix notice. Many of these fields are better understood by\nchecking the matrix spec itself. The precise definitions of these fields is\nbeyond the scope of this document.\n",
       "properties": {
         "body": {
           "description": "Unformatted text that will be displayed in the room if you do not\nspecify `formattedBody` or if a user's client can not render the format.\n",
@@ -3971,6 +3971,16 @@
         },
         "formattedBody": {
           "description": "Text that will be rendered by matrix clients that support the given\nformat in that format. For instance, `<h1>Header Text</h1>`.\n",
+          "type": "string"
+        },
+        "msgtype": {
+          "default": "m.notice",
+          "description": "Which of the `m.room.message` msgtypes to use. At the moment only the\ntypes that take `body`/`format`/`formattedBody` are supported.\n",
+          "enum": [
+            "m.notice",
+            "m.text",
+            "m.emote"
+          ],
           "type": "string"
         },
         "roomId": {
