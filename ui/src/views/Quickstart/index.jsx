@@ -23,6 +23,7 @@ import TextField from '../../components/TextField';
 import Dashboard from '../../components/Dashboard';
 import Button from '../../components/Button';
 import HelpView from '../../components/HelpView';
+import SiteSpecific from '../../components/SiteSpecific';
 import urls from '../../utils/urls';
 import ErrorPanel from '../../components/ErrorPanel';
 import githubQuery from './github.graphql';
@@ -437,11 +438,17 @@ export default class QuickStart extends Component {
           </div>
 
           {installedState === 'error' && (
-            <ErrorPanel
-              className={classes.errorPanels}
-              error="The integration has not been set up for this repository. Please
-              contact the organization owner to have it set up!"
-            />
+            <Fragment>
+              <ErrorPanel
+                className={classes.errorPanels}
+                error="The integration has not been set up for this repository."
+              />
+              <SiteSpecific>
+                To use Taskcluster on this repository, add [this
+                app](%github_app_url%). If you do not have permission, you may
+                need to ask the repository or organization owners to do so.
+              </SiteSpecific>
+            </Fragment>
           )}
           <Typography className={classes.mainHeading} variant="h6">
             Create Your Task Definition

@@ -1445,6 +1445,17 @@
           "title": "Process settings for this service",
           "type": "object"
         },
+        "site_specific": {
+          "oneOf": [
+            {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            {
+              "type": "array"
+            }
+          ]
+        },
         "ui_login_strategy_names": {
           "type": "string"
         }
@@ -1453,8 +1464,7 @@
         "procs",
         "graphql_subscription_endpoint",
         "graphql_endpoint",
-        "ui_login_strategy_names",
-        "banner_message"
+        "ui_login_strategy_names"
       ],
       "title": "Configuration options for ui",
       "type": "object"

@@ -1,0 +1,87 @@
+---
+title: User Interface
+---
+
+# User Interface
+
+## Banner
+
+Setting the `ui.banner` Helm variable to a non-empty string will cause a banner announcement to appear on users screens.
+This can be helpful for announcing planned downtimes.
+
+## Site-Specific Documentation
+
+The Taskcluster documentation is a sub-section of the Taskcluster UI.
+It is a copy of the data presented at https://docs.taskcluster.net, but can be customized for the particular deployment.
+
+This is accomplished by configuring the `ui.site_specific` Helm configuration.
+All values are optional, and if they are not set then the corresponding snippet of documentation will be omitted.
+
+```yaml
+ui:
+  site_specific:
+    # The URL to which users should go to configure the taskcluster-github app
+    github_app_url: ..
+```
+
+These values are also used occasionally elsewhere in the UI.
+
+## Login Strategies
+
+The taskcluster-ui and taskcluster-web-server services work together to support configurable login strategies for the Taskcluster UI.
+These are configured with the `web_server.ui_login_strategies` and `ui.ui_login_strategy_names` Helm variables.
+
+The first, `web_server.ui_login_strategies`, is a JSON string containing configuration for the desired strategies, defined below.
+
+For example:
+
+```yaml
+web_server:
+  ui_login_strategies:
+    github:
+      ...
+```
+
+The second, `ui.ui_login_strategy_names,` should be equal to the set of keys in `ui_login_strategies`, but *must not contain secrets* as it is sent to the browser.
+
+### GitHub
+
+In order to enable the GitHub login strategy, specify the GitHub client ID and secret for an OAuth application created for use against this service and its web UI.
+Create it under "Settings" (for yourself or for an org) -> "Developer Settings" -> "OAuth Apps" -> "New OAuth App".
+The name for the app is not critical, but we suggest something like "&lt;deployment-name>-taskcluster-signin".
+
+The callback URL should be `<rootUrl>/login/github/callback`, or `http://localhost:3050/login/github/callback` for local development.
+
+Configure it as:
+
+```yaml
+web_server:
+  ui_login_strategies:
+    github:
+      clientId: ...
+      clientSecret: ...
+```
+
+### Mozilla Auth0
+
+This strategy is specifically tuned to the integration Mozilla has built with Auth0.
+This integration includes many pieces, such as CIS and the People API, which are probably not available outside of Mozilla.
+Deployments outside of Mozilla should not enable this strategy.
+
+To get started, request a new Auth0 application via Hub ("New Single Sign On Application").
+Specify that you want a client with scopes `display:null`, `classification:public`, `display:all`, and `display:public`.
+Use OpenID Connect.
+The Callback URL should be `<rootUrl>/login/mozilla-auth0/callback` or `http://localhost:3050/login/mozilla-auth0/callback` for local development.
+The other options are up to you.
+
+In response, you will get a domain, client ID, and client secret.
+Configure these as follows:
+
+```yaml
+web_server:
+  ui_login_strategies:
+    mozilla-auth0:
+      domain: "<auth0 subdomain>",
+      clientId: "<clientId from registration of client>",
+      clientSecret: "<clientSecret from registration of client>"
+```

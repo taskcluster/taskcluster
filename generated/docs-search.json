@@ -120,6 +120,13 @@
   },
   {
     "element": "h2",
+    "id": "ui",
+    "path": "/manual/deploying",
+    "subtitle": "UI",
+    "title": "Deploying Taskcluster"
+  },
+  {
+    "element": "h2",
     "id": "user-login",
     "path": "/manual/deploying",
     "subtitle": "User Login",
@@ -252,20 +259,6 @@
     "title": "GitHub Integration"
   },
   {
-    "element": "h2",
-    "id": "github",
-    "path": "/manual/deploying/login-strategies",
-    "subtitle": "GitHub",
-    "title": null
-  },
-  {
-    "element": "h3",
-    "id": "mozilla-auth0",
-    "path": "/manual/deploying/login-strategies",
-    "subtitle": "Mozilla Auth0",
-    "title": null
-  },
-  {
     "element": "h1",
     "id": "matrix-integration",
     "path": "/manual/deploying/matrix",
@@ -369,6 +362,48 @@
     "path": "/manual/deploying/static-clients",
     "subtitle": "Static Clients",
     "title": "Static Clients"
+  },
+  {
+    "element": "h1",
+    "id": "user-interface",
+    "path": "/manual/deploying/ui",
+    "subtitle": null,
+    "title": "User Interface"
+  },
+  {
+    "element": "h2",
+    "id": "banner",
+    "path": "/manual/deploying/ui",
+    "subtitle": "Banner",
+    "title": "User Interface"
+  },
+  {
+    "element": "h3",
+    "id": "github",
+    "path": "/manual/deploying/ui",
+    "subtitle": "GitHub",
+    "title": "User Interface"
+  },
+  {
+    "element": "h2",
+    "id": "login-strategies",
+    "path": "/manual/deploying/ui",
+    "subtitle": "Login Strategies",
+    "title": "User Interface"
+  },
+  {
+    "element": "h3",
+    "id": "mozilla-auth0",
+    "path": "/manual/deploying/ui",
+    "subtitle": "Mozilla Auth0",
+    "title": "User Interface"
+  },
+  {
+    "element": "h2",
+    "id": "site-specific-documentation",
+    "path": "/manual/deploying/ui",
+    "subtitle": "Site-Specific Documentation",
+    "title": "User Interface"
   },
   {
     "element": "h1",
@@ -2030,10 +2065,17 @@
     "title": "Github Service"
   },
   {
-    "element": "h3",
+    "element": "h2",
     "id": "adding-status-badges-to-your-projects-readme",
     "path": "/reference/integrations/github",
     "subtitle": "Adding status badges to your project's README:",
+    "title": "Github Service"
+  },
+  {
+    "element": "h2",
+    "id": "configuring-the-github-app-for-an-organization-or-repository",
+    "path": "/reference/integrations/github",
+    "subtitle": "Configuring the GitHub App for an Organization or Repository",
     "title": "Github Service"
   },
   {
@@ -2902,13 +2944,6 @@
     "id": "authenticating-to-taskcluster",
     "path": "/tutorial/authenticate",
     "subtitle": null,
-    "title": "Authenticating to Taskcluster"
-  },
-  {
-    "element": "h2",
-    "id": "alternative-process",
-    "path": "/tutorial/authenticate",
-    "subtitle": "Alternative Process",
     "title": "Authenticating to Taskcluster"
   },
   {
