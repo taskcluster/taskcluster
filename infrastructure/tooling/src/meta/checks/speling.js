@@ -14,6 +14,7 @@ exports.tasks.push({
       "Task [C]luster",
       "[tT]skclsuter",
       "[tT]askclsuter",
+      "[tT]asksluter",
     ];
     for (let pattern of Taskcluster) {
       try {

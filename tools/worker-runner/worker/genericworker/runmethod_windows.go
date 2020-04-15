@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/Microsoft/go-winio"
-	"github.com/taskcluster/taskcluster/v29/tools/worker-runner/protocol"
+	"github.com/taskcluster/taskcluster/v29/internal/workerproto"
 	"github.com/taskcluster/taskcluster/v29/tools/worker-runner/run"
 	"golang.org/x/sys/windows/svc"
 	"golang.org/x/sys/windows/svc/mgr"
@@ -23,7 +23,7 @@ type serviceRunMethod struct {
 	mgr         *mgr.Mgr
 }
 
-func (m *serviceRunMethod) start(w *genericworker, state *run.State) (protocol.Transport, error) {
+func (m *serviceRunMethod) start(w *genericworker, state *run.State) (workerproto.Transport, error) {
 	var err error
 
 	m.serviceName = w.wicfg.Service
@@ -46,7 +46,7 @@ func (m *serviceRunMethod) start(w *genericworker, state *run.State) (protocol.T
 	// connect the transport to the named
 	inputReader, inputWriter := io.Pipe()
 	outputReader, outputWriter := io.Pipe()
-	transp := protocol.NewPipeTransport(inputReader, outputWriter)
+	transp := workerproto.NewPipeTransport(inputReader, outputWriter)
 
 	err = m.connectPipeToProtocol(w.wicfg.ProtocolPipe, inputWriter, outputReader)
 	if err != nil {
@@ -56,7 +56,7 @@ func (m *serviceRunMethod) start(w *genericworker, state *run.State) (protocol.T
 	return transp, nil
 }
 
-// Connect the configured named pipe to the worker-runner protocol.  This opens
+// Connect the configured named pipe to the worker-runner workerproto.  This opens
 // the named pipe and listens for a single connection, which it considers to be
 // from the worker, and does not acccept any further connections.  Aside from
 // careful configuration of the security descriptor, this provides an

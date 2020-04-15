@@ -1,14 +1,14 @@
-package protocol
+package workerproto
 
 import (
 	"bytes"
 	"io"
 	"log"
 	"os"
+	"sync"
 	"testing"
 
 	"github.com/stretchr/testify/require"
-	"github.com/taskcluster/taskcluster/v29/tools/worker-runner/logging"
 )
 
 type chunkReader struct {
@@ -37,6 +37,28 @@ func (cr *chunkReader) Read(p []byte) (n int, err error) {
 	return
 }
 
+type testLogDestination struct {
+	mutex    sync.Mutex
+	messages []string
+}
+
+func (dst *testLogDestination) Messages() []string {
+	dst.mutex.Lock()
+	messages := dst.messages
+	dst.mutex.Unlock()
+	return messages
+}
+
+// Implementation of io.Writer for use as a log output
+func (dst *testLogDestination) Write(p []byte) (n int, err error) {
+	dst.mutex.Lock()
+	message := string(bytes.TrimRight(p, "\n"))
+	dst.messages = append(dst.messages, message)
+	dst.mutex.Unlock()
+	n = len(p)
+	return
+}
+
 var testPipeInputData = []byte(`
 ~{"type": "abc"}
 not a message
@@ -47,16 +69,14 @@ not a message
 func TestPipeWriter(t *testing.T) {
 
 	doTestPipeInput := func(t *testing.T, chunkSize int, eofOnFinalChunk bool) {
-		testLogDest := &logging.TestLogDestination{}
-		oldLogDest := logging.Destination
+		testLogDest := &testLogDestination{}
 		oldLogFlags := log.Flags()
 		defer func() {
-			logging.Destination = oldLogDest
 			log.SetOutput(os.Stderr)
 			log.SetFlags(oldLogFlags)
 		}()
-		logging.Destination = testLogDest
-		logging.PatchStdLogger(nil)
+		log.SetOutput(testLogDest)
+		log.SetFlags(0)
 
 		reader := &chunkReader{
 			chunkSize:       chunkSize,
@@ -80,9 +100,9 @@ func TestPipeWriter(t *testing.T) {
 			Message{Type: "bcdf", Properties: map[string]interface{}{"lengthy": "abc abc abc abc abc abc abc abc abc abc abc abc abc abc"}},
 		}, got, "should have gotten two messages")
 
-		require.Equal(t, []map[string]interface{}{
-			map[string]interface{}{"textPayload": `not a message`},
-			map[string]interface{}{"textPayload": `~{"type": "not valid JSON}`},
+		require.Equal(t, []string{
+			`not a message`,
+			`~{"type": "not valid JSON}`,
 		}, testLogDest.Messages(), "expected two invalid lines")
 	}
 

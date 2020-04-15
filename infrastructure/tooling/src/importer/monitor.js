@@ -2,7 +2,7 @@ const assert = require('assert');
 const _ = require('lodash');
 const logUpdate = require('log-update');
 
-const INTERVAL = 100;
+const INTERVAL = 200;
 
 /**
  * A monitor displays constantly-updated data on the console.

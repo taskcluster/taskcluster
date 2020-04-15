@@ -5,8 +5,8 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/taskcluster/taskcluster/v29/tools/worker-runner/protocol"
-	ptesting "github.com/taskcluster/taskcluster/v29/tools/worker-runner/protocol/testing"
+	"github.com/taskcluster/taskcluster/v29/internal/workerproto"
+	ptesting "github.com/taskcluster/taskcluster/v29/internal/workerproto/testing"
 	"github.com/taskcluster/taskcluster/v29/tools/worker-runner/run"
 )
 
@@ -22,7 +22,7 @@ func TestCredsExpiration(t *testing.T) {
 	wkr := ptesting.NewFakeWorkerWithCapabilities("graceful-termination")
 	defer wkr.Close()
 
-	gotTerminated := wkr.MessageReceivedFunc("graceful-termination", func(msg protocol.Message) bool {
+	gotTerminated := wkr.MessageReceivedFunc("graceful-termination", func(msg workerproto.Message) bool {
 		return msg.Properties["finish-tasks"].(bool) == false
 	})
 

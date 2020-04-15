@@ -63,25 +63,27 @@ exports.CRYPTO_TABLES = [
 exports.LARGE_TABLES = [
   'QueueArtifacts',
   'QueueTasks',
+  'QueueTaskDependency',
 ].filter(tableName => exports.ALLOWED_TABLES.includes(tableName));
 
 // NOTE: Azure's ordering is -, 0-9, A-Z, _, a-z
 exports.TASKID_RANGES = [
-  [undefined, '1'],
-  ['1', '5'],
-  ['5', '8'],
-  ['8', 'A'],
-  ['A', 'E'],
-  ['E', 'I'],
-  ['I', 'N'],
-  ['N', 'U'],
-  ['U', 'Z'],
-  ['Z', 'a'],
-  ['a', 'e'],
-  ['e', 'i'],
-  ['i', 'n'],
-  ['n', 'u'],
-  ['u', undefined],
+  [undefined, '3'],
+  ['3', '7'],
+  ['7', 'B'],
+  ['B', 'F'],
+  ['F', 'J'],
+  ['J', 'N'],
+  ['N', 'R'],
+  ['R', 'V'],
+  ['V', 'Z'],
+  ['Z', 'c'],
+  ['c', 'g'],
+  ['g', 'k'],
+  ['k', 'o'],
+  ['o', 's'],
+  ['s', 'w'],
+  ['w', undefined],
 ];
 
 exports.sleep = ms => new Promise(res => setTimeout(res, ms));

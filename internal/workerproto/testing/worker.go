@@ -4,18 +4,18 @@ import (
 	"sync"
 	"time"
 
-	"github.com/taskcluster/taskcluster/v29/tools/worker-runner/protocol"
+	"github.com/taskcluster/taskcluster/v29/internal/workerproto"
 )
 
 // FakeWorker implements a fake worker, in terms of the protocol at least
 type FakeWorker struct {
 	// The protocol with which to communicate with this worker.  Use this
 	// as a protocol for testing worker-runner.
-	RunnerProtocol *protocol.Protocol
+	RunnerProtocol *workerproto.Protocol
 
 	// The protocol representing the worker side; register for messages on
 	// this to confirm that messages were received
-	WorkerProtocol *protocol.Protocol
+	WorkerProtocol *workerproto.Protocol
 
 	workerTransp *LocalTransport
 	runnerTransp *LocalTransport
@@ -29,11 +29,11 @@ func (wkr *FakeWorker) Close() {
 
 // Generate a function that can be called to assert that message of the given
 // type has or has not been received.  This is useful for building assertions.
-func (wkr *FakeWorker) MessageReceivedFunc(msgType string, matcher func(msg protocol.Message) bool) func() bool {
+func (wkr *FakeWorker) MessageReceivedFunc(msgType string, matcher func(msg workerproto.Message) bool) func() bool {
 	received := false
 	receivedMutex := sync.Mutex{}
 
-	wkr.WorkerProtocol.Register(msgType, func(msg protocol.Message) {
+	wkr.WorkerProtocol.Register(msgType, func(msg workerproto.Message) {
 		if matcher == nil || matcher(msg) {
 			receivedMutex.Lock()
 			defer receivedMutex.Unlock()
@@ -56,8 +56,8 @@ func (wkr *FakeWorker) MessageReceivedFunc(msgType string, matcher func(msg prot
 // to the caller.
 func NewFakeWorkerWithCapabilities(capabilities ...string) *FakeWorker {
 	workerTransp, runnerTransp := NewLocalTransportPair()
-	workerProto := protocol.NewProtocol(workerTransp)
-	runnerProto := protocol.NewProtocol(runnerTransp)
+	workerProto := workerproto.NewProtocol(workerTransp)
+	runnerProto := workerproto.NewProtocol(runnerTransp)
 
 	for _, capability := range capabilities {
 		workerProto.AddCapability(capability)

@@ -8,8 +8,8 @@ import (
 
 	tcclient "github.com/taskcluster/taskcluster/v29/clients/client-go"
 	"github.com/taskcluster/taskcluster/v29/clients/client-go/tcworkermanager"
+	"github.com/taskcluster/taskcluster/v29/internal/workerproto"
 	"github.com/taskcluster/taskcluster/v29/tools/worker-runner/cfg"
-	"github.com/taskcluster/taskcluster/v29/tools/worker-runner/protocol"
 	"github.com/taskcluster/taskcluster/v29/tools/worker-runner/provider/provider"
 	"github.com/taskcluster/taskcluster/v29/tools/worker-runner/run"
 	"github.com/taskcluster/taskcluster/v29/tools/worker-runner/tc"
@@ -19,7 +19,7 @@ type AzureProvider struct {
 	runnercfg                  *cfg.RunnerConfig
 	workerManagerClientFactory tc.WorkerManagerClientFactory
 	metadataService            MetadataService
-	proto                      *protocol.Protocol
+	proto                      *workerproto.Protocol
 	terminationTicker          *time.Ticker
 }
 
@@ -52,7 +52,10 @@ func (p *AzureProvider) ConfigureRun(state *run.State) error {
 	}
 
 	// bug 1621037: revert to using customData once it is fixed
-	taggedData := loadTaggedData(instanceData.Compute.TagsList)
+	taggedData, err := loadTaggedData(instanceData.Compute.TagsList)
+	if err != nil {
+		return err
+	}
 
 	state.RootURL = taggedData.RootURL
 	state.WorkerLocation = map[string]string{
@@ -113,7 +116,7 @@ func (p *AzureProvider) UseCachedRun(run *run.State) error {
 	return nil
 }
 
-func (p *AzureProvider) SetProtocol(proto *protocol.Protocol) {
+func (p *AzureProvider) SetProtocol(proto *workerproto.Protocol) {
 	p.proto = proto
 }
 
@@ -128,7 +131,7 @@ func (p *AzureProvider) checkTerminationTime() bool {
 	if evts != nil && len(evts.Events) != 0 {
 		log.Println("Azure Metadata Service says a maintenance event is imminent")
 		if p.proto != nil && p.proto.Capable("graceful-termination") {
-			p.proto.Send(protocol.Message{
+			p.proto.Send(workerproto.Message{
 				Type: "graceful-termination",
 				Properties: map[string]interface{}{
 					// termination generally doesn't leave time to finish
@@ -153,7 +156,7 @@ func (p *AzureProvider) checkTerminationTime() bool {
 }
 
 func (p *AzureProvider) WorkerStarted(state *run.State) error {
-	p.proto.Register("shutdown", func(msg protocol.Message) {
+	p.proto.Register("shutdown", func(msg workerproto.Message) {
 		err := provider.RemoveWorker(state, p.workerManagerClientFactory)
 		if err != nil {
 			log.Printf("Shutdown error: %v\n", err)
@@ -210,7 +213,7 @@ defined by this provider has the following fields:
 `
 }
 
-func loadTaggedData(tags []Tag) *TaggedData {
+func loadTaggedData(tags []Tag) (*TaggedData, error) {
 	c := &TaggedData{}
 	for _, tag := range tags {
 		if tag.Name == "worker-pool-id" {
@@ -226,7 +229,20 @@ func loadTaggedData(tags []Tag) *TaggedData {
 			c.RootURL = tag.Value
 		}
 	}
-	return c
+	if c.RootURL == "" {
+		return nil, fmt.Errorf("Did not get root-url from instance tagged data")
+	}
+	if c.WorkerPoolId == "" {
+		return nil, fmt.Errorf("Did not get worker-pool-id from instance tagged data")
+	}
+	if c.ProviderId == "" {
+		return nil, fmt.Errorf("Did not get provider-id from instance tagged data")
+	}
+	if c.WorkerGroup == "" {
+		return nil, fmt.Errorf("Did not get worker-group from instance tagged data")
+	}
+
+	return c, nil
 }
 
 // New takes its dependencies as optional arguments, allowing injection of fake dependencies for testing.

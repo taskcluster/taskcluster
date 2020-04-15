@@ -6,8 +6,8 @@ import (
 	tcurls "github.com/taskcluster/taskcluster-lib-urls"
 	tcclient "github.com/taskcluster/taskcluster/v29/clients/client-go"
 	"github.com/taskcluster/taskcluster/v29/clients/client-go/tcworkermanager"
+	"github.com/taskcluster/taskcluster/v29/internal/workerproto"
 	"github.com/taskcluster/taskcluster/v29/tools/worker-runner/cfg"
-	"github.com/taskcluster/taskcluster/v29/tools/worker-runner/protocol"
 	"github.com/taskcluster/taskcluster/v29/tools/worker-runner/provider/provider"
 	"github.com/taskcluster/taskcluster/v29/tools/worker-runner/run"
 	"github.com/taskcluster/taskcluster/v29/tools/worker-runner/tc"
@@ -25,7 +25,7 @@ type staticProviderConfig struct {
 type StaticProvider struct {
 	runnercfg                  *cfg.RunnerConfig
 	workerManagerClientFactory tc.WorkerManagerClientFactory
-	proto                      *protocol.Protocol
+	proto                      *workerproto.Protocol
 }
 
 func (p *StaticProvider) ConfigureRun(state *run.State) error {
@@ -87,7 +87,7 @@ func (p *StaticProvider) UseCachedRun(run *run.State) error {
 	return nil
 }
 
-func (p *StaticProvider) SetProtocol(proto *protocol.Protocol) {
+func (p *StaticProvider) SetProtocol(proto *workerproto.Protocol) {
 	p.proto = proto
 }
 

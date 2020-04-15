@@ -1,4 +1,4 @@
-package protocol
+package workerproto
 
 import (
 	"bytes"
@@ -28,7 +28,7 @@ func NewPipeTransport(input io.Reader, output io.Writer) *PipeTransport {
 	}
 }
 
-// protocol.Transport interface
+// workerproto.Transport interface
 
 func (transp *PipeTransport) Send(msg Message) {
 	j, err := json.Marshal(&msg)

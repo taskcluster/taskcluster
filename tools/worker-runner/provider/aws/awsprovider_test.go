@@ -5,9 +5,9 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
+	"github.com/taskcluster/taskcluster/v29/internal/workerproto"
+	ptesting "github.com/taskcluster/taskcluster/v29/internal/workerproto/testing"
 	"github.com/taskcluster/taskcluster/v29/tools/worker-runner/cfg"
-	"github.com/taskcluster/taskcluster/v29/tools/worker-runner/protocol"
-	ptesting "github.com/taskcluster/taskcluster/v29/tools/worker-runner/protocol/testing"
 	"github.com/taskcluster/taskcluster/v29/tools/worker-runner/run"
 	"github.com/taskcluster/taskcluster/v29/tools/worker-runner/tc"
 )
@@ -109,7 +109,7 @@ func TestAWSConfigureRun(t *testing.T) {
 }
 
 func TestCheckTerminationTime(t *testing.T) {
-	test := func(t *testing.T, proto *protocol.Protocol, hasCapability bool) {
+	test := func(t *testing.T, proto *workerproto.Protocol, hasCapability bool) {
 
 		metaData := map[string]string{}
 		instanceIdentityDocument := "{\n  \"instanceId\" : \"i-55555nonesense5\",\n  \"region\" : \"us-west-2\",\n  \"availabilityZone\" : \"us-west-2a\",\n  \"instanceType\" : \"t2.micro\",\n  \"imageId\" : \"banana\"\n,  \"privateIp\" : \"1.1.1.1\"\n}"

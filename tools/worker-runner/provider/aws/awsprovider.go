@@ -8,8 +8,8 @@ import (
 
 	tcclient "github.com/taskcluster/taskcluster/v29/clients/client-go"
 	"github.com/taskcluster/taskcluster/v29/clients/client-go/tcworkermanager"
+	"github.com/taskcluster/taskcluster/v29/internal/workerproto"
 	"github.com/taskcluster/taskcluster/v29/tools/worker-runner/cfg"
-	"github.com/taskcluster/taskcluster/v29/tools/worker-runner/protocol"
 	"github.com/taskcluster/taskcluster/v29/tools/worker-runner/provider/provider"
 	"github.com/taskcluster/taskcluster/v29/tools/worker-runner/run"
 	"github.com/taskcluster/taskcluster/v29/tools/worker-runner/tc"
@@ -21,7 +21,7 @@ type AWSProvider struct {
 	runnercfg                  *cfg.RunnerConfig
 	workerManagerClientFactory tc.WorkerManagerClientFactory
 	metadataService            MetadataService
-	proto                      *protocol.Protocol
+	proto                      *workerproto.Protocol
 	terminationTicker          *time.Ticker
 }
 
@@ -111,7 +111,7 @@ func (p *AWSProvider) UseCachedRun(run *run.State) error {
 	return nil
 }
 
-func (p *AWSProvider) SetProtocol(proto *protocol.Protocol) {
+func (p *AWSProvider) SetProtocol(proto *workerproto.Protocol) {
 	p.proto = proto
 }
 
@@ -121,7 +121,7 @@ func (p *AWSProvider) checkTerminationTime() bool {
 	if err == nil {
 		log.Println("EC2 Metadata Service says termination is imminent")
 		if p.proto != nil && p.proto.Capable("graceful-termination") {
-			p.proto.Send(protocol.Message{
+			p.proto.Send(workerproto.Message{
 				Type: "graceful-termination",
 				Properties: map[string]interface{}{
 					// spot termination generally doesn't leave time to finish tasks
@@ -138,7 +138,7 @@ func (p *AWSProvider) WorkerStarted(state *run.State) error {
 	// start polling for graceful shutdown
 	p.terminationTicker = time.NewTicker(30 * time.Second)
 
-	p.proto.Register("shutdown", func(msg protocol.Message) {
+	p.proto.Register("shutdown", func(msg workerproto.Message) {
 		if err := provider.RemoveWorker(state, p.workerManagerClientFactory); err != nil {
 			log.Printf("Shutdown error: %v\n", err)
 		}

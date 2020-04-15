@@ -4,17 +4,17 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/taskcluster/taskcluster/v29/tools/worker-runner/protocol"
+	"github.com/taskcluster/taskcluster/v29/internal/workerproto"
 )
 
 func main() {
-	transp := protocol.NewPipeTransport(os.Stdin, os.Stdout)
-	proto := protocol.NewProtocol(transp)
+	transp := workerproto.NewPipeTransport(os.Stdin, os.Stdout)
+	proto := workerproto.NewProtocol(transp)
 	proto.AddCapability("log")
 	proto.Start(true)
 
 	if proto.Capable("log") {
-		proto.Send(protocol.Message{
+		proto.Send(workerproto.Message{
 			Type: "log",
 			Properties: map[string]interface{}{
 				"body": map[string]interface{}{

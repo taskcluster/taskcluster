@@ -5,6 +5,7 @@ import red from '@material-ui/core/colors/red';
 import amber from '@material-ui/core/colors/amber';
 import blue from '@material-ui/core/colors/blue';
 import green from '@material-ui/core/colors/green';
+import purple from '@material-ui/core/colors/purple';
 import { THEME } from './utils/constants';
 
 const Roboto300 = { fontFamily: 'Roboto300, sans-serif' };
@@ -26,6 +27,12 @@ const error = {
   dark: red[700],
   light: red[300],
   contrastText: THEME.PRIMARY_TEXT_DARK,
+};
+const specific = {
+  main: purple[500],
+  dark: purple[700],
+  light: purple[200],
+  contrastText: THEME.PRIMARY_TEXT_LIGHT,
 };
 const createTheme = isDarkTheme => {
   const primaryMain = isDarkTheme ? THEME.PRIMARY_DARK : THEME.PRIMARY_LIGHT;
@@ -86,6 +93,10 @@ const createTheme = isDarkTheme => {
       },
       info: {
         ...blue,
+      },
+      specific: {
+        ...purple,
+        ...specific,
       },
       text: {
         primary: textPrimary,

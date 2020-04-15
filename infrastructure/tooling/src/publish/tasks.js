@@ -161,15 +161,33 @@ module.exports = ({tasks, cmdOptions, credentials, baseDir}) => {
   });
 
   ensureTask(tasks, {
+    title: 'Build livelog artifacts',
+    requires: ['cleaned-release-artifacts'],
+    provides: ['livelog-artifacts'],
+    run: async (requirements, utils) => {
+      await execCommand({
+        dir: path.join(REPO_ROOT, 'tools', 'livelog'),
+        command: ['./build.sh', artifactsDir],
+        utils,
+      });
+
+      const artifacts = glob.sync('livelog-*', {cwd: artifactsDir});
+
+      return {
+        'livelog-artifacts': artifacts,
+      };
+    },
+  });
+
+  ensureTask(tasks, {
     title: 'Build Websocktunnel Docker Image',
     requires: [
       'release-version',
     ],
     provides: [
       'websocktunnel-docker-image', // image tag
-      'monoimage-image-on-registry', // true if the image is already on registry
     ],
-    locks: ['git'],
+    locks: ['docker'],
     run: async (requirements, utils) => {
       utils.step({title: 'Check Repository'});
 
@@ -241,6 +259,88 @@ module.exports = ({tasks, cmdOptions, credentials, baseDir}) => {
     },
   });
 
+  ensureTask(tasks, {
+    title: 'Build livelog Docker Image',
+    requires: [
+      'release-version',
+    ],
+    provides: [
+      'livelog-docker-image', // image tag
+    ],
+    locks: ['docker'],
+    run: async (requirements, utils) => {
+      utils.step({title: 'Check Repository'});
+
+      const tag = `taskcluster/livelog:${requirements['release-version']}`;
+      const provides = {
+        'livelog-docker-image': tag,
+      };
+
+      utils.step({title: 'Building Websocktunnel'});
+
+      const contextDir = path.join(baseDir, 'livelog-build');
+      await execCommand({
+        command: [
+          'go', 'build',
+          '-o', path.join(contextDir, 'livelog'),
+          './tools/livelog',
+        ],
+        dir: REPO_ROOT,
+        logfile: `${baseDir}/livelog-build.log`,
+        utils,
+        env: process.env,
+      });
+
+      utils.step({title: 'Building Docker Image'});
+
+      // this simple Dockerfile just packages the binary into a Docker image
+      const dockerfile = path.join(contextDir, 'Dockerfile');
+      fs.writeFileSync(dockerfile, [
+        'FROM progrium/busybox',
+        'EXPOSE 60023',
+        'EXPOSE 60022',
+        'COPY livelog /livelog',
+        'ENTRYPOINT ["/livelog"]',
+      ].join('\n'));
+      let command = [
+        'docker', 'build',
+        '--no-cache',
+        '--progress', 'plain',
+        '--tag', tag,
+        contextDir,
+      ];
+      await execCommand({
+        command,
+        dir: REPO_ROOT,
+        logfile: `${baseDir}/livelog-docker-build.log`,
+        utils,
+        env: {DOCKER_BUILDKIT: 1, ...process.env},
+      });
+
+      if (!cmdOptions.staging) {
+        utils.step({title: 'Pushing Docker Image'});
+
+        const dockerPushOptions = {};
+        if (credentials.dockerUsername && credentials.dockerPassword) {
+          dockerPushOptions.credentials = {
+            username: credentials.dockerUsername,
+            password: credentials.dockerPassword,
+          };
+        }
+
+        await dockerPush({
+          logfile: `${baseDir}/livelog-docker-push.log`,
+          tag,
+          utils,
+          baseDir,
+          ...dockerPushOptions,
+        });
+      }
+
+      return provides;
+    },
+  });
+
   /* -- monoimage docker image build occurs here -- */
 
   ensureTask(tasks, {
@@ -253,6 +353,8 @@ module.exports = ({tasks, cmdOptions, credentials, baseDir}) => {
       'changelog-text',
       'target-monoimage',
       'websocktunnel-docker-image',
+      'livelog-docker-image',
+      'livelog-artifacts',
     ],
     provides: [
       'github-release',
@@ -279,6 +381,7 @@ module.exports = ({tasks, cmdOptions, credentials, baseDir}) => {
       const files = requirements['client-shell-artifacts']
         .concat(requirements['generic-worker-artifacts'])
         .concat(requirements['worker-runner-artifacts'])
+        .concat(requirements['livelog-artifacts'])
         .map(name => ({name, contentType: 'application/octet-stream'}));
       for (let {name, contentType} of files) {
         utils.status({message: `Upload Release asset ${name}`});

@@ -3,6 +3,8 @@ title: Calling Taskcluster APIs
 order: 0
 ---
 
+import SiteSpecific from 'taskcluster-ui/components/SiteSpecific';
+
 # Calling Taskcluster APIs
 
 Probably the most common way to integrate with Taskcluster is to call its API methods.
@@ -44,9 +46,17 @@ All of the clients provide functionality that makes this easy:
 
 ### Getting Credentials on the Command Line
 
-The [shell client](https://github.com/taskcluster/taskcluster/tree/master/clients/client-shell) provides an easy way to set the necessary environment variables:
+The [shell client](https://github.com/taskcluster/taskcluster/tree/master/clients/client-shell) provides an easy way to set the necessary environment variables.
+Begin by setting the `TASKCLUSTER_ROOT_URL` to the root URL for the deployment you are using.
 
+<SiteSpecific>
+For this deployment, that means:
+```shell
+export TASKCLUSTER_ROOT_URL=%root_url%
 ```
+</SiteSpecific>
+
+```shell
 $ eval `taskcluster signin`
 ```
 
