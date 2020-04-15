@@ -39,22 +39,26 @@ func newStreamHandle(stream *Stream, start, stop int64) StreamHandle {
 }
 
 func (self *StreamHandle) writeEvent(event *Event, w io.Writer) (int64, error) {
-	// Note that while we need to trim buffers here we don't need to exclude any
-	// since the stream type will only dispatch events which apply to handles
-	// with valid offsets...
+	// We may receive events that were generated while we were catching up
+	// in the backing log, so we may need to ignore some or all of the bytes
+	// in this event..
 
 	eventEndOffset := event.Offset + event.Length
+	if self.Offset >= eventEndOffset {
+		return 0, nil
+	}
 
-	startOffset := self.Offset - event.Offset
-	var endOffset int64
+	// calculate the slice of the event's bytes that we need..
+	startInEvent := self.Offset - event.Offset
+	var endInEvent int64
 	if eventEndOffset > self.Stop {
-		endOffset = eventEndOffset - self.Stop
+		endInEvent = eventEndOffset - self.Stop
 	} else {
-		endOffset = event.Length
+		endInEvent = event.Length
 	}
 
 	// As bytes come in write them directly to the target.
-	written, writeErr := w.Write(event.Bytes[startOffset:endOffset])
+	written, writeErr := w.Write(event.Bytes[startInEvent:endInEvent])
 
 	// Should come before length equality check...
 	if writeErr != nil {
