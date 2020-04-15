@@ -1,6 +1,7 @@
 import { hot } from 'react-hot-loader';
 import React, { Component, Fragment } from 'react';
 import { graphql } from 'react-apollo';
+import { parse, stringify } from 'qs';
 import dotProp from 'dot-prop-immutable';
 import Spinner from '@mozilla-frontend-infra/components/Spinner';
 import { withStyles } from '@material-ui/core/styles';
@@ -26,8 +27,15 @@ import scopesQuery from '../scopes.graphql';
 }))
 export default class ViewScope extends Component {
   state = {
-    searchTerm: '',
-    currentTabIndex: 0,
+    searchTerm: this.props.history.location.search
+      ? parse(this.props.history.location.search.slice(1)).searchTerm
+      : '',
+    currentTabIndex: this.props.history.location.search
+      ? parseInt(
+          parse(this.props.history.location.search.slice(1)).tabIndex,
+          10
+        )
+      : 0,
   };
 
   handleClientsPageChange = ({ cursor, previousCursor }) => {
@@ -63,6 +71,17 @@ export default class ViewScope extends Component {
   };
 
   handleSearchSubmit = searchTerm => {
+    if (searchTerm !== this.state.searchTerm) {
+      this.props.history.push(
+        searchTerm.length > 0
+          ? `?${stringify({
+              searchTerm,
+              tabIndex: this.state.currentTabIndex,
+            })}`
+          : this.propss.history.location.pathname
+      );
+    }
+
     this.setState({ searchTerm });
   };
 
