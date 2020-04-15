@@ -26,6 +26,10 @@ type Handles map[*StreamHandle]struct{}
 // emptyStruct cannot be declared as a constant, so var is next best option
 var emptyStruct = struct{}{}
 
+// by default, use the system temp dir; this is overridden in tests so they can
+// reliably clean up.
+var TempDir = ""
+
 type Stream struct {
 	Path   string
 	reader *io.Reader
@@ -39,7 +43,7 @@ type Stream struct {
 }
 
 func NewStream(read io.Reader) (*Stream, error) {
-	dir, err := ioutil.TempDir("", "livelog")
+	dir, err := ioutil.TempDir(TempDir, "livelog")
 	if err != nil {
 		return nil, err
 	}
