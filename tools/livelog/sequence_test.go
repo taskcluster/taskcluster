@@ -20,13 +20,16 @@ type ChunkReader struct {
 }
 
 // read data in units of at most a chunk, somewhat slowly, to test the
-// "streaming" capability of the server
+// "streaming" capability of the server.  Note that if this produces data
+// too quickly, internal buffers will fill up and the connection will be
+// dropped.  ioutil.ReadAll from an http connection is not very quick,
+// particularly when GC pauses occur.
 func (c *ChunkReader) Read(p []byte) (n int, err error) {
 	if c.chunk_num >= len(c.chunks) {
 		err = io.EOF
 		return
 	}
-	time.Sleep(50 * time.Microsecond)
+	time.Sleep(200 * time.Microsecond)
 
 	remaining := len(c.chunks[c.chunk_num]) - c.partial
 	if remaining > len(p) {
@@ -62,7 +65,7 @@ func TestSequence(t *testing.T) {
 
 	// generate some longish chunks
 	var chunks [][]byte
-	for i := 0; i < 10000; i++ {
+	for i := 0; i < 5000; i++ {
 		chunks = append(chunks, []byte(fmt.Sprintf("%d|%s\n", i, TEXT)))
 	}
 
