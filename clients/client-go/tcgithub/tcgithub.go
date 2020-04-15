@@ -7,7 +7,6 @@
 //
 // This package was generated from the schema defined at
 // /references/github/v1/api.json
-
 // The github service is responsible for creating tasks in reposnse
 // to GitHub events, and posting results to the GitHub UI.
 //

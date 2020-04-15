@@ -7,7 +7,6 @@
 //
 // This package was generated from the schema defined at
 // /references/auth/v1/api.json
-
 // Authentication related API end-points for Taskcluster and related
 // services. These API end-points are of interest if you wish to:
 //   * Authorize a request signed with Taskcluster credentials,

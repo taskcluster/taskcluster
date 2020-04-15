@@ -56,6 +56,28 @@ type APIDefinition struct {
 	SchemaURL      string
 }
 
+func GenerateGodocLinkInReadme(amqpLinks string, httpLinks string) {
+
+	path := `../../README.md`
+	formattedContent, err := ioutil.ReadFile(path)
+	if err != nil {
+		panic(err)
+	}
+
+	httpAPI := `<!--HTTP-API-start-->` +
+		amqpLinks +
+		` <!--HTTP-API-end-->`
+
+	AmqpAPI := `<!--AMQP-API-start-->` +
+		httpLinks +
+		` <!--AMQP-API-end-->`
+
+	formattedContent = regexp.MustCompile(`(<!--(AMQP-API-start:?(\w*?):?(\w*?)?)-->)([\s\S]*?)(<!--AMQP-API-end-->)`).ReplaceAll(formattedContent, []byte(AmqpAPI))
+	exitOnFail(ioutil.WriteFile(path, formattedContent, 0644))
+	formattedContent = regexp.MustCompile(`(<!--(HTTP-API-start:?(\w*?):?(\w*?)?)-->)([\s\S]*?)(<!--HTTP-API-end-->)`).ReplaceAll(formattedContent, []byte(httpAPI))
+	exitOnFail(ioutil.WriteFile(path, formattedContent, 0644))
+}
+
 func exitOnFail(err error) {
 	if err != nil {
 		fmt.Printf("%v\n%T\n", err, err)
@@ -178,6 +200,7 @@ type APIDefinitions []*APIDefinition
 // and writes them out as go code.
 func (apiDefs APIDefinitions) GenerateCode(goOutputDir string) {
 	for i := range apiDefs {
+
 		apiDefs[i].PackageName = "tc" + strings.ToLower(apiDefs[i].Data.Name())
 		// Used throughout docs, and also methods that use the class, we need a
 		// variable name to be used when referencing the go type. It should not
@@ -221,10 +244,24 @@ func (apiDefs APIDefinitions) GenerateCode(goOutputDir string) {
 //
 // This package was generated from the schema defined at
 // ` + apiDefs[i].URL + `
-
 `
 		content += apiDefs[i].generateAPICode()
 		sourceFile := filepath.Join(apiDefs[i].PackagePath, apiDefs[i].PackageName+".go")
 		FormatSourceAndSave(sourceFile, []byte(content))
+
 	}
+
+	amqpApiLinks := ""
+	httpApiLinks := ""
+
+	for i := range apiDefs {
+		if strings.Contains(apiDefs[i].PackageName, "events") {
+			amqpApiLinks += "\n" + "* http://godoc.org/github.com/taskcluster/taskcluster/clients/client-go/" + apiDefs[i].PackageName + "\n"
+
+		} else {
+			httpApiLinks += "\n" + "* http://godoc.org/github.com/taskcluster/taskcluster/clients/client-go/" + apiDefs[i].PackageName + "\n"
+
+		}
+	}
+	GenerateGodocLinkInReadme(amqpApiLinks, httpApiLinks)
 }

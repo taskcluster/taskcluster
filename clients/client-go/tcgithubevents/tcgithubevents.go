@@ -7,7 +7,6 @@
 //
 // This package was generated from the schema defined at
 // /references/github/v1/exchanges.json
-
 // The github service publishes a pulse
 // message for supported github events, translating Github webhook
 // events into pulse messages.

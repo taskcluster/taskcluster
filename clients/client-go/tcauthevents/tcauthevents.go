@@ -7,7 +7,6 @@
 //
 // This package was generated from the schema defined at
 // /references/auth/v1/exchanges.json
-
 // The auth service is responsible for storing credentials, managing
 // assignment of scopes, and validation of request signatures from other
 // services.

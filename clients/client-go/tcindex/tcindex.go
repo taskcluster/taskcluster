@@ -7,7 +7,6 @@
 //
 // This package was generated from the schema defined at
 // /references/index/v1/api.json
-
 // The index service is responsible for indexing tasks. The service ensures that
 // tasks can be located by user-defined names.
 //

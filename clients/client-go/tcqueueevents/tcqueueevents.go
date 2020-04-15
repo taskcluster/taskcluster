@@ -7,7 +7,6 @@
 //
 // This package was generated from the schema defined at
 // /references/queue/v1/exchanges.json
-
 // The queue service is responsible for accepting tasks and track their state
 // as they are executed by workers. In order ensure they are eventually
 // resolved.

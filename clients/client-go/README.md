@@ -13,6 +13,46 @@ the API methods.
 
 For a general guide to using Taskcluster clients, see [Calling Taskcluster APIs](https://docs.taskcluster.net/docs/manual/using/api).
 
+This library provides the following packages to interface with Taskcluster:
+
+### HTTP APIs
+
+<!--HTTP-API-start-->
+* http://godoc.org/github.com/taskcluster/taskcluster/clients/client-go/tcauthevents
+
+* http://godoc.org/github.com/taskcluster/taskcluster/clients/client-go/tcgithubevents
+
+* http://godoc.org/github.com/taskcluster/taskcluster/clients/client-go/tchooksevents
+
+* http://godoc.org/github.com/taskcluster/taskcluster/clients/client-go/tcnotifyevents
+
+* http://godoc.org/github.com/taskcluster/taskcluster/clients/client-go/tcqueueevents
+
+* http://godoc.org/github.com/taskcluster/taskcluster/clients/client-go/tcworkermanagerevents
+ <!--HTTP-API-end-->
+
+### AMQP APIs
+
+<!--AMQP-API-start-->
+* http://godoc.org/github.com/taskcluster/taskcluster/clients/client-go/tcauth
+
+* http://godoc.org/github.com/taskcluster/taskcluster/clients/client-go/tcgithub
+
+* http://godoc.org/github.com/taskcluster/taskcluster/clients/client-go/tchooks
+
+* http://godoc.org/github.com/taskcluster/taskcluster/clients/client-go/tcindex
+
+* http://godoc.org/github.com/taskcluster/taskcluster/clients/client-go/tcnotify
+
+* http://godoc.org/github.com/taskcluster/taskcluster/clients/client-go/tcpurgecache
+
+* http://godoc.org/github.com/taskcluster/taskcluster/clients/client-go/tcqueue
+
+* http://godoc.org/github.com/taskcluster/taskcluster/clients/client-go/tcsecrets
+
+* http://godoc.org/github.com/taskcluster/taskcluster/clients/client-go/tcworkermanager
+ <!--AMQP-API-end-->
+
 ### Setup
 
 Before invoking API methods, create a client object corresponding to the service you wish to communicate with.
