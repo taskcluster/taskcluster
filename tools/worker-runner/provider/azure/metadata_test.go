@@ -41,13 +41,6 @@ func (mds *fakeMetadataService) queryAttestedDocument() (string, error) {
 	return mds.AttestedDocument, nil
 }
 
-func (mds *fakeMetadataService) loadCustomData() ([]byte, error) {
-	if mds.LoadCustomDataError != nil {
-		return []byte{}, mds.LoadCustomDataError
-	}
-	return mds.CustomData, nil
-}
-
 func testServer() *httptest.Server {
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		query := r.URL.Query()
