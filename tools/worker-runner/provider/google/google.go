@@ -53,7 +53,14 @@ func (p *GoogleProvider) ConfigureRun(state *run.State) error {
 	// TODO
 	// bug 1591476: we should get workerConfig from RegisterWorker()
 	// and not from the metadata service
-	_, err = provider.RegisterWorker(state, wm, userData.WorkerPoolID, userData.ProviderID, userData.WorkerGroup, workerID, workerIdentityProofMap)
+	workerConfig, err := provider.RegisterWorker(
+		state,
+		wm,
+		userData.WorkerPoolID,
+		userData.ProviderID,
+		userData.WorkerGroup,
+		workerID,
+		workerIdentityProofMap)
 	if err != nil {
 		return err
 	}
@@ -95,7 +102,7 @@ func (p *GoogleProvider) ConfigureRun(state *run.State) error {
 
 	state.ProviderMetadata = providerMetadata
 
-	pwc, err := cfg.ParseProviderWorkerConfig(p.runnercfg, userData.ProviderWorkerConfig)
+	pwc, err := cfg.ParseProviderWorkerConfig(p.runnercfg, workerConfig)
 	if err != nil {
 		return err
 	}

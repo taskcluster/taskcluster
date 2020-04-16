@@ -10,10 +10,13 @@ import (
 var EC2MetadataBaseURL = "http://169.254.169.254/latest"
 
 type UserData struct {
-	WorkerPoolId         string           `json:"workerPoolId"`
-	ProviderId           string           `json:"providerId"`
-	RootURL              string           `json:"rootUrl"`
-	WorkerGroup          string           `json:"workerGroup"`
+	WorkerPoolId string `json:"workerPoolId"`
+	ProviderId   string `json:"providerId"`
+	RootURL      string `json:"rootUrl"`
+	WorkerGroup  string `json:"workerGroup"`
+
+	// NOTE: this is ignored, in preference to the configuration
+	// returned from registerWorker
 	ProviderWorkerConfig *json.RawMessage `json:"workerConfig"`
 }
 

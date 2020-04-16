@@ -58,10 +58,7 @@ func (p *AWSProvider) ConfigureRun(state *run.State) error {
 		"signature": interface{}(instanceIdentityDocumentSignature),
 	}
 
-	// TODO
-	// bug 1591476: we should get workerConfig from RegisterWorker()
-	// and not from the metadata service
-	_, err = provider.RegisterWorker(
+	workerConfig, err := provider.RegisterWorker(
 		state,
 		wm,
 		userData.WorkerPoolId,
@@ -96,7 +93,7 @@ func (p *AWSProvider) ConfigureRun(state *run.State) error {
 
 	state.ProviderMetadata = providerMetadata
 
-	pwc, err := cfg.ParseProviderWorkerConfig(p.runnercfg, userData.ProviderWorkerConfig)
+	pwc, err := cfg.ParseProviderWorkerConfig(p.runnercfg, workerConfig)
 	if err != nil {
 		return err
 	}

@@ -97,7 +97,8 @@ func TestGoogleConfigureRun(t *testing.T) {
 	}, state.ProviderMetadata, "providerMetadata is correct")
 
 	require.Equal(t, true, state.WorkerConfig.MustGet("from-runner-cfg"), "value for from-runner-cfg")
-	require.Equal(t, true, state.WorkerConfig.MustGet("from-ud"), "value for worker-config")
+	require.Equal(t, true, state.WorkerConfig.MustGet("from-register-worker"), "value for from-register-worker")
+	require.Equal(t, false, state.WorkerConfig.Has("from-ud"), "userdata worker-config ignored")
 	require.Equal(t, "a file.", state.Files[0].Description)
 
 	require.Equal(t, "google", state.WorkerLocation["cloud"])
