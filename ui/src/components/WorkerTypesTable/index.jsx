@@ -126,8 +126,7 @@ export default class WorkerTypesTable extends Component {
     )(name);
 
   handleHeaderClick = sortBy => {
-    const { location } = this.props;
-    const query = parse(location.search.slice(1));
+    const query = parse(this.props.location.search.slice(1));
     const toggled = query.sortDirection === 'desc' ? 'asc' : 'desc';
     const sortDirection = query.sortBy === sortBy ? toggled : 'desc';
 
@@ -139,7 +138,7 @@ export default class WorkerTypesTable extends Component {
   };
 
   render() {
-    const query = parse(window.location.search.slice(1));
+    const query = parse(this.props.location.search.slice(1));
     const { onPageChange, classes, workerTypesConnection } = this.props;
     const { drawerOpen, drawerWorkerType } = this.state;
     const { sortBy, sortDirection } = query.sortBy

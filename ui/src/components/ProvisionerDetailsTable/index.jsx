@@ -83,8 +83,7 @@ export default class ProvisionerDetailsTable extends Component {
   };
 
   handleHeaderClick = ({ id: sortBy }) => {
-    const { location } = this.props;
-    const query = parse(location.search.slice(1));
+    const query = parse(this.props.location.search.slice(1));
     const toggled = query.sortDirection === 'desc' ? 'asc' : 'desc';
     const sortDirection = query.sortBy === sortBy ? toggled : 'desc';
 
@@ -243,7 +242,7 @@ export default class ProvisionerDetailsTable extends Component {
 
   render() {
     const { provisioners } = this.props;
-    const query = parse(window.location.search.slice(1));
+    const query = parse(this.props.location.search.slice(1));
     const { drawerOpen, dialogError, dialogOpen, selectedAction } = this.state;
     const { sortBy, sortDirection } = query.sortBy
       ? query

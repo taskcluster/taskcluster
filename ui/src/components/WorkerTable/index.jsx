@@ -84,8 +84,7 @@ export default class WorkerTable extends Component {
   );
 
   handleHeaderClick = header => {
-    const { location } = this.props;
-    const query = parse(location.search.slice(1));
+    const query = parse(this.props.location.search.slice(1));
     const toggled = query.sortDirection === 'desc' ? 'asc' : 'desc';
     const sortDirection = query.sortBy === header.id ? toggled : 'desc';
 
@@ -98,7 +97,7 @@ export default class WorkerTable extends Component {
 
   render() {
     const { classes, worker } = this.props;
-    const query = parse(window.location.search.slice(1));
+    const query = parse(this.props.location.search.slice(1));
     const { sortBy, sortDirection } = query.sortBy
       ? query
       : { sortBy: null, sortDirection: null };
