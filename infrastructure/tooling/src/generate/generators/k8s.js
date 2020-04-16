@@ -37,6 +37,58 @@ const SHARED_CONFIG = {
   new_relic: '.Values.newRelic',
 };
 
+// default cpu, memory values per proc.  These are based on observations of
+// the production systems at Mozilla, and while not perfect for every
+// deployment, provide a good starting point.  Note that all values are
+// "requires", not "limit".  All default to one replica.
+const DEFAULT_RESOURCES = {
+  'auth.web': ['100m', '200Mi'],
+  'auth.purgeExpiredClients': ['800m', '500Mi'],
+  'built_in_workers.server': ['10m', '50Mi'],
+  'github.web': ['10m', '50Mi'],
+  'github.worker': ['200m', '200Mi'],
+  'github.sync': ['800m', '500Mi'],
+  'hooks.web': ['50m', '50Mi'],
+  'hooks.scheduler': ['10m', '50Mi'],
+  'hooks.listeners': ['50m', '50Mi'],
+  'hooks.expires': ['50m', '50Mi'],
+  'index.web': ['50m', '50Mi'],
+  'index.handlers': ['50m', '50Mi'],
+  'index.expire': ['50m', '50Mi'],
+  'notify.web': ['100m', '100Mi'],
+  'notify.irc': ['50m', '100Mi'],
+  'notify.handler': ['50m', '100Mi'],
+  'purge_cache.web': ['100m', '50Mi'],
+  'purge_cache.expireCachePurges': ['800m', '500Mi'],
+  'queue.web': ['400m', '200Mi'],
+  'queue.claimResolver': ['50m', '50Mi'],
+  'queue.deadlineResolver': ['50m', '100Mi'],
+  'queue.dependencyResolver': ['100m', '100Mi'],
+  'queue.expireArtifacts': ['200m', '100Mi'],
+  'queue.expireTask': ['50m', '100Mi'],
+  'queue.expireTaskGroups': ['50m', '50Mi'],
+  'queue.expireTaskGroupMembers': ['100m', '50Mi'],
+  'queue.expireTaskGroupSizes': ['800m', '500Mi'],
+  'queue.expireTaskDependency': ['50m', '50Mi'],
+  'queue.expireTaskRequirement': ['50m', '50Mi'],
+  'queue.expireQueues': ['50m', '200Mi'],
+  'queue.expireWorkerInfo': ['200m', '100Mi'],
+  'secrets.web': ['100m', '50Mi'],
+  'secrets.expire': ['800m', '500Mi'],
+  'web_server.web': ['500m', '300Mi'],
+  'web_server.scanner': ['800m', '500Mi'],
+  'web_server.cleanup_expire_auth_codes': ['800m', '500Mi'],
+  'web_server.cleanup_expire_access_tokens': ['800m', '500Mi'],
+  'worker_manager.web': ['100m', '100Mi'],
+  'worker_manager.provisioner': ['50m', '200Mi'],
+  'worker_manager.workerscanner': ['200m', '200Mi'],
+  'worker_manager.expire_workers': ['200m', '200Mi'],
+  'worker_manager.expire_worker_pools': ['800m', '500Mi'],
+  'worker_manager.expire_errors': ['800m', '500Mi'],
+  'ui.web': ['50m', '10Mi'],
+  'references.web': ['10m', '10Mi'],
+};
+
 const labels = (projectName, component) => ({
   'app.kubernetes.io/name': projectName,
   'app.kubernetes.io/instance': '{{ .Release.Name }}',
@@ -422,9 +474,21 @@ exports.tasks.push({
 
       // Now for the procs
       const procSettings = schema.properties[confName].properties.procs;
+      const defaultResource = (serviceName, proc) => {
+        try {
+          return {
+            cpu: DEFAULT_RESOURCES[`${serviceName}.${proc}`][0],
+            memory: DEFAULT_RESOURCES[`${serviceName}.${proc}`][1],
+          };
+        } catch (e) {
+          // default for the defaults
+          return {cpu: '50m', memory: '100Mi'};
+        }
+      };
       exampleConfig[confName].procs = {};
       Object.entries(cfg.procs).forEach(([n, p]) => {
         n = n.replace(/-/g, '_');
+        console.log(confName, n);
         if (['web', 'background'].includes(p.type)) {
           exampleConfig[confName].procs[n] = {
             // much smaller cpu defaults for dev deployments, since
@@ -433,8 +497,7 @@ exports.tasks.push({
           };
           valuesYAML[confName].procs[n] = {
             replicas: 1,
-            cpu: '50m', // TODO: revisit these defaults
-            memory: '100Mi',
+            ...defaultResource(confName, n),
           };
           procSettings.required.push(n);
           procSettings.properties[n] = {
@@ -454,8 +517,7 @@ exports.tasks.push({
             cpu: '10m',
           };
           valuesYAML[confName].procs[n] = {
-            cpu: '50m', // TODO: revisit these defaults
-            memory: '100Mi',
+            ...defaultResource(confName, n),
           };
           procSettings.required.push(n);
           procSettings.properties[n] = {

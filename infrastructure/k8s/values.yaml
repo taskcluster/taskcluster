@@ -6,19 +6,19 @@ auth:
   procs:
     web:
       replicas: 1
-      cpu: 50m
-      memory: 100Mi
+      cpu: 100m
+      memory: 200Mi
     purgeExpiredClients:
-      cpu: 50m
-      memory: 100Mi
+      cpu: 800m
+      memory: 500Mi
   debug: ''
   level: notice
 built_in_workers:
   procs:
     server:
       replicas: 1
-      cpu: 50m
-      memory: 100Mi
+      cpu: 10m
+      memory: 50Mi
   debug: ''
   taskcluster_client_id: static/taskcluster/built-in-workers
   level: notice
@@ -26,15 +26,15 @@ github:
   procs:
     web:
       replicas: 1
-      cpu: 50m
-      memory: 100Mi
+      cpu: 10m
+      memory: 50Mi
     worker:
       replicas: 1
-      cpu: 50m
-      memory: 100Mi
+      cpu: 200m
+      memory: 200Mi
     sync:
-      cpu: 50m
-      memory: 100Mi
+      cpu: 800m
+      memory: 500Mi
   debug: ''
   taskcluster_client_id: static/taskcluster/github
   level: notice
@@ -43,18 +43,18 @@ hooks:
     web:
       replicas: 1
       cpu: 50m
-      memory: 100Mi
+      memory: 50Mi
     scheduler:
       replicas: 1
-      cpu: 50m
-      memory: 100Mi
+      cpu: 10m
+      memory: 50Mi
     listeners:
       replicas: 1
       cpu: 50m
-      memory: 100Mi
+      memory: 50Mi
     expires:
       cpu: 50m
-      memory: 100Mi
+      memory: 50Mi
   debug: ''
   taskcluster_client_id: static/taskcluster/hooks
   level: notice
@@ -63,14 +63,14 @@ index:
     web:
       replicas: 1
       cpu: 50m
-      memory: 100Mi
+      memory: 50Mi
     handlers:
       replicas: 1
       cpu: 50m
-      memory: 100Mi
+      memory: 50Mi
     expire:
       cpu: 50m
-      memory: 100Mi
+      memory: 50Mi
   debug: ''
   level: notice
   taskcluster_client_id: static/taskcluster/index
@@ -78,7 +78,7 @@ notify:
   procs:
     web:
       replicas: 1
-      cpu: 50m
+      cpu: 100m
       memory: 100Mi
     irc:
       replicas: 1
@@ -95,11 +95,11 @@ purge_cache:
   procs:
     web:
       replicas: 1
-      cpu: 50m
-      memory: 100Mi
+      cpu: 100m
+      memory: 50Mi
     expireCachePurges:
-      cpu: 50m
-      memory: 100Mi
+      cpu: 800m
+      memory: 500Mi
   debug: ''
   level: notice
   taskcluster_client_id: static/taskcluster/purge-cache
@@ -107,46 +107,46 @@ queue:
   procs:
     web:
       replicas: 1
-      cpu: 50m
-      memory: 100Mi
+      cpu: 400m
+      memory: 200Mi
     claimResolver:
       replicas: 1
       cpu: 50m
-      memory: 100Mi
+      memory: 50Mi
     deadlineResolver:
       replicas: 1
       cpu: 50m
       memory: 100Mi
     dependencyResolver:
       replicas: 1
-      cpu: 50m
+      cpu: 100m
       memory: 100Mi
     expireArtifacts:
-      cpu: 50m
+      cpu: 200m
       memory: 100Mi
     expireTask:
       cpu: 50m
       memory: 100Mi
     expireTaskGroups:
       cpu: 50m
-      memory: 100Mi
+      memory: 50Mi
     expireTaskGroupMembers:
-      cpu: 50m
-      memory: 100Mi
+      cpu: 100m
+      memory: 50Mi
     expireTaskGroupSizes:
-      cpu: 50m
-      memory: 100Mi
+      cpu: 800m
+      memory: 500Mi
     expireTaskDependency:
       cpu: 50m
-      memory: 100Mi
+      memory: 50Mi
     expireTaskRequirement:
       cpu: 50m
-      memory: 100Mi
+      memory: 50Mi
     expireQueueMessages:
       cpu: 50m
       memory: 100Mi
     expireWorkerInfo:
-      cpu: 50m
+      cpu: 200m
       memory: 100Mi
   debug: ''
   taskcluster_client_id: static/taskcluster/queue
@@ -155,11 +155,11 @@ secrets:
   procs:
     web:
       replicas: 1
-      cpu: 50m
-      memory: 100Mi
+      cpu: 100m
+      memory: 50Mi
     expire:
-      cpu: 50m
-      memory: 100Mi
+      cpu: 800m
+      memory: 500Mi
   debug: ''
   taskcluster_client_id: static/taskcluster/secrets
   level: notice
@@ -167,17 +167,17 @@ web_server:
   procs:
     web:
       replicas: 1
-      cpu: 50m
-      memory: 100Mi
+      cpu: 500m
+      memory: 300Mi
     scanner:
-      cpu: 50m
-      memory: 100Mi
+      cpu: 800m
+      memory: 500Mi
     cleanup_expire_auth_codes:
-      cpu: 50m
-      memory: 100Mi
+      cpu: 800m
+      memory: 500Mi
     cleanup_expire_access_tokens:
-      cpu: 50m
-      memory: 100Mi
+      cpu: 800m
+      memory: 500Mi
   debug: ''
   level: notice
   taskcluster_client_id: static/taskcluster/web-server
@@ -185,25 +185,25 @@ worker_manager:
   procs:
     web:
       replicas: 1
-      cpu: 50m
+      cpu: 100m
       memory: 100Mi
     provisioner:
       replicas: 1
       cpu: 50m
-      memory: 100Mi
+      memory: 200Mi
     workerscanner:
       replicas: 1
-      cpu: 50m
-      memory: 100Mi
+      cpu: 200m
+      memory: 200Mi
     expire_workers:
-      cpu: 50m
-      memory: 100Mi
+      cpu: 200m
+      memory: 200Mi
     expire_worker_pools:
-      cpu: 50m
-      memory: 100Mi
+      cpu: 800m
+      memory: 500Mi
     expire_errors:
-      cpu: 50m
-      memory: 100Mi
+      cpu: 800m
+      memory: 500Mi
   debug: ''
   level: notice
   taskcluster_client_id: static/taskcluster/worker-manager
@@ -212,12 +212,12 @@ ui:
     web:
       replicas: 1
       cpu: 50m
-      memory: 100Mi
+      memory: 10Mi
   debug: ''
 references:
   procs:
     web:
       replicas: 1
-      cpu: 50m
-      memory: 100Mi
+      cpu: 10m
+      memory: 10Mi
   debug: ''
