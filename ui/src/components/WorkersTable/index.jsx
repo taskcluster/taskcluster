@@ -1,5 +1,7 @@
 import React, { Component } from 'react';
 import { func, string } from 'prop-types';
+import { parse, stringify } from 'qs';
+import { withRouter } from 'react-router-dom';
 import { formatDistanceStrict, parseISO } from 'date-fns';
 import { pipe, map, sort as rSort } from 'ramda';
 import memoize from 'fast-memoize';
@@ -26,6 +28,7 @@ const sorted = pipe(
   )
 );
 
+@withRouter
 @withStyles(theme => ({
   linksIcon: {
     marginLeft: theme.spacing(1),
@@ -52,11 +55,6 @@ export default class WorkersTable extends Component {
       edges: [],
       pageInfo: {},
     },
-  };
-
-  state = {
-    sortBy: null,
-    sortDirection: null,
   };
 
   createSortedWorkersConnection = memoize(
@@ -91,14 +89,20 @@ export default class WorkersTable extends Component {
   );
 
   handleHeaderClick = sortByHeader => {
+    const query = parse(this.props.location.search.slice(1));
     const sortBy = sortByHeader;
-    const toggled = this.state.sortDirection === 'desc' ? 'asc' : 'desc';
-    const sortDirection = this.state.sortBy === sortBy ? toggled : 'desc';
+    const toggled = query.sortDirection === 'desc' ? 'asc' : 'desc';
+    const sortDirection = query.sortBy === sortBy ? toggled : 'desc';
 
-    this.setState({ sortBy, sortDirection });
+    query.sortBy = sortBy;
+    query.sortDirection = sortDirection;
+    this.props.history.replace({
+      search: stringify(query, { addQueryPrefix: true }),
+    });
   };
 
   valueFromNode(node) {
+    const query = parse(this.props.location.search.slice(1));
     const mapping = {
       'Worker Group': node.workerGroup,
       'Worker ID': node.workerId,
@@ -110,11 +114,14 @@ export default class WorkersTable extends Component {
       Quarantined: node.quarantineUntil,
     };
 
-    return mapping[this.state.sortBy];
+    return mapping[query.sortBy];
   }
 
   render() {
-    const { sortBy, sortDirection } = this.state;
+    const query = parse(this.props.location.search.slice(1));
+    const { sortBy, sortDirection } = query.sortBy
+      ? query
+      : { sortBy: null, sortDirection: null };
     const {
       provisionerId,
       workerType,

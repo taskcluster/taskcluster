@@ -3,6 +3,7 @@ import { arrayOf } from 'prop-types';
 import LinkIcon from 'mdi-react/LinkIcon';
 import { withRouter } from 'react-router-dom';
 import { withStyles } from '@material-ui/core/styles';
+import { parse, stringify } from 'qs';
 import TableCell from '@material-ui/core/TableCell';
 import TableRow from '@material-ui/core/TableRow';
 import IconButton from '@material-ui/core/IconButton';
@@ -58,8 +59,6 @@ export default class ProvisionerDetailsTable extends Component {
   };
 
   state = {
-    sortBy: null,
-    sortDirection: null,
     drawerOpen: false,
     drawerProvisioner: null,
     actionLoading: false,
@@ -84,10 +83,15 @@ export default class ProvisionerDetailsTable extends Component {
   };
 
   handleHeaderClick = ({ id: sortBy }) => {
-    const toggled = this.state.sortDirection === 'desc' ? 'asc' : 'desc';
-    const sortDirection = this.state.sortBy === sortBy ? toggled : 'desc';
+    const query = parse(this.props.location.search.slice(1));
+    const toggled = query.sortDirection === 'desc' ? 'asc' : 'desc';
+    const sortDirection = query.sortBy === sortBy ? toggled : 'desc';
 
-    this.setState({ sortBy, sortDirection });
+    query.sortBy = sortBy;
+    query.sortDirection = sortDirection;
+    this.props.history.replace({
+      search: stringify(query, { addQueryPrefix: true }),
+    });
   };
 
   handleDrawerOpen = provisioner => {
@@ -238,14 +242,11 @@ export default class ProvisionerDetailsTable extends Component {
 
   render() {
     const { provisioners } = this.props;
-    const {
-      sortBy,
-      sortDirection,
-      drawerOpen,
-      dialogError,
-      dialogOpen,
-      selectedAction,
-    } = this.state;
+    const query = parse(this.props.location.search.slice(1));
+    const { drawerOpen, dialogError, dialogOpen, selectedAction } = this.state;
+    const { sortBy, sortDirection } = query.sortBy
+      ? query
+      : { sortBy: null, sortDirection: null };
     const headers = [
       { label: 'Provisioner', id: 'provisionerId', type: 'string' },
       { label: 'Last Active', id: 'lastDateActive', type: 'string' },
