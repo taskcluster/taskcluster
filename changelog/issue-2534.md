@@ -2,4 +2,4 @@ audience: users
 level: silent
 reference: issue 2534
 ---
-Adds sticky sort feature to provisioner tables.on refreshing the URL the sort order(if any) is maintained
+Taskcluster UI now includes sitcky sort for all tables under views with URL starting with /provisioners.
