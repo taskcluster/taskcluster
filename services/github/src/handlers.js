@@ -505,13 +505,28 @@ async function statusHandler(message) {
       const res = await utils.throttleRequest({url, method: 'GET'});
 
       if (res.status >= 400 && res.status !== 404) {
+        let errorMessage = "Failed to get your artifact.\n";
+        switch (res.status) {
+          case 403:
+            errorMessage.concat("Make sure your artifact is public. See the documentation on the artifact naming.");
+            break;
+          case 404:
+            errorMessage.concat("Make sure the artifact exists, and there are no typos in its name.");
+            break;
+          case 424:
+            errorMessage.concat("Make sure the artifact exists on the worker or other location.");
+            break;
+          default:
+            errorMessage.concat(res.response.error.message);
+            break;
+        }
         await this.createExceptionComment({
           debug,
           instGithub,
           organization,
           repository,
           sha,
-          error: res.response.error,
+          error: new Error(errorMessage),
         });
 
         if (res.status < 500) {
@@ -597,12 +612,12 @@ async function jobHandler(message) {
   let pullNumber = message.payload.details['event.pullNumber'];
   if (!sha) {
     debug('Trying to get commit info in job handler...');
-    let commitInfo = await instGithub.repos.getCommitRefSha({
+    let commitInfo = await instGithub.git.getRef({
       owner: organization,
       repo: repository,
-      ref: `refs/tags/${message.payload.details['event.version']}`,
+      ref: `tags/${message.payload.details['event.version']}`,
     });
-    sha = commitInfo.data.sha;
+    sha = commitInfo.data.object.sha;
   }
 
   debug(`handling ${message.payload.details['event.type']} webhook for: ${organization}/${repository}@${sha}`);

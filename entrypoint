@@ -62,7 +62,6 @@ script/lint) shift; exec yarn run lint "${@}";;
 script/lint:go) shift; exec yarn run lint:go "${@}";;
 script/test) shift; exec yarn run test "${@}";;
 script/fetch-coverage) shift; exec yarn run fetch-coverage "${@}";;
-script/test:cleanup) shift; exec yarn run test:cleanup "${@}";;
 script/build) shift; exec yarn run build "${@}";;
 script/release) shift; exec yarn run release "${@}";;
 script/release:publish) shift; exec yarn run release:publish "${@}";;

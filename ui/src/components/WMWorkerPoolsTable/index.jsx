@@ -1,7 +1,9 @@
 import React, { Component, Fragment } from 'react';
 import { withStyles } from '@material-ui/core';
 import Label from '@mozilla-frontend-infra/components/Label';
-import { bool, arrayOf, string, func } from 'prop-types';
+import { shape, func, arrayOf } from 'prop-types';
+import { pipe, map, sort as rSort } from 'ramda';
+import { camelCase } from 'change-case/change-case';
 import TableRow from '@material-ui/core/TableRow';
 import TableCell from '@material-ui/core/TableCell';
 import Typography from '@material-ui/core/Typography';
@@ -12,17 +14,26 @@ import WorkerIcon from 'mdi-react/WorkerIcon';
 import MessageAlertIcon from 'mdi-react/MessageAlertIcon';
 import { withRouter } from 'react-router-dom';
 import memoize from 'fast-memoize';
-import { isEmpty } from 'ramda';
-import escapeStringRegexp from 'escape-string-regexp';
-import { WorkerManagerWorkerPoolSummary } from '../../utils/prop-types';
-import DataTable from '../DataTable';
+import {
+  WorkerManagerWorkerPoolSummary,
+  pageInfo,
+} from '../../utils/prop-types';
+import ConnectionDataTable from '../ConnectionDataTable';
 import sort from '../../utils/sort';
 import Link from '../../utils/Link';
 import Button from '../Button';
 import TableCellItem from '../TableCellItem';
 import DialogAction from '../DialogAction';
-import { NULL_PROVIDER } from '../../utils/constants';
+import {
+  NULL_PROVIDER,
+  VIEW_WORKER_POOLS_PAGE_SIZE,
+} from '../../utils/constants';
 import { splitWorkerPoolId } from '../../utils/workerPool';
+
+const sorted = pipe(
+  rSort((a, b) => sort(a.node.workerPoolId, b.node.workerPoolId)),
+  map(({ node: { workerPoolId } }) => workerPoolId)
+);
 
 @withRouter
 @withStyles(theme => ({
@@ -40,15 +51,11 @@ import { splitWorkerPoolId } from '../../utils/workerPool';
 }))
 export default class WorkerManagerWorkerPoolsTable extends Component {
   static propTypes = {
-    workerPools: arrayOf(WorkerManagerWorkerPoolSummary).isRequired,
-    searchTerm: string,
+    workerPoolsConnection: shape({
+      edges: arrayOf(WorkerManagerWorkerPoolSummary),
+      pageInfo,
+    }).isRequired,
     deleteRequest: func.isRequired,
-    includeDeleted: bool,
-  };
-
-  static defaultProps = {
-    searchTerm: '',
-    includeDeleted: false,
   };
 
   state = {
@@ -65,57 +72,44 @@ export default class WorkerManagerWorkerPoolsTable extends Component {
     },
   };
 
-  sortWorkerPools = memoize(
-    (workerPools, sortBy, sortDirection, searchTerm, includeDeleted) => {
-      const filteredWorkerPoolsBySearchTerm = searchTerm
-        ? workerPools.filter(({ workerPoolId }) =>
-            RegExp(escapeStringRegexp(searchTerm), 'i').test(workerPoolId)
-          )
-        : workerPools;
-      const filteredWorkerPools = includeDeleted
-        ? filteredWorkerPoolsBySearchTerm
-        : filteredWorkerPoolsBySearchTerm.filter(
-            ({ providerId }) => providerId !== NULL_PROVIDER
-          );
+  createSortedWorkerPoolsConnection = memoize(
+    (workerPoolsConnection, sortBy, sortDirection) => {
+      const sortByProperty = camelCase(sortBy);
 
-      return isEmpty(filteredWorkerPools)
-        ? filteredWorkerPools
-        : [...filteredWorkerPools].sort((a, b) => {
-            const firstElement =
-              sortDirection === 'desc' ? b[sortBy] : a[sortBy];
-            const secondElement =
-              sortDirection === 'desc' ? a[sortBy] : b[sortBy];
+      if (!sortBy) {
+        return workerPoolsConnection;
+      }
 
-            return sort(firstElement, secondElement);
-          });
+      return {
+        ...workerPoolsConnection,
+        edges: [...workerPoolsConnection.edges].sort((a, b) => {
+          const firstElement =
+            sortDirection === 'desc'
+              ? b.node[sortByProperty]
+              : a.node[sortByProperty];
+          const secondElement =
+            sortDirection === 'desc'
+              ? a.node[sortByProperty]
+              : b.node[sortByProperty];
+
+          return sort(firstElement, secondElement);
+        }),
+      };
     },
     {
-      serializer: ([
-        workerPools,
-        sortBy,
-        sortDirection,
-        searchTerm,
-        includeDeleted,
-      ]) => {
-        // we serialize by workerPool ID - for workerpool addition
-        // and by providerId - for workerpool deletion
-        // (we delete them by changing provider)
-        const ids = workerPools
-          .map(wp => `${wp.workerPoolId}-${wp.providerId}`)
-          .sort();
+      serializer: ([workerPoolsConnection, sortBy, sortDirection]) => {
+        const ids = sorted(workerPoolsConnection.edges);
 
-        return `${ids.join(
-          '-'
-        )}-${sortBy}-${sortDirection}-${searchTerm}-${includeDeleted}`;
+        return `${ids.join('-')}-${sortBy}-${sortDirection}`;
       },
     }
   );
 
   handleHeaderClick = header => {
     const toggled = this.state.sortDirection === 'desc' ? 'asc' : 'desc';
-    const sortDirection = this.state.sortBy === header.id ? toggled : 'desc';
+    const sortDirection = this.state.sortBy === header ? toggled : 'desc';
 
-    this.setState({ sortBy: header.id, sortDirection });
+    this.setState({ sortBy: header, sortDirection });
   };
 
   handleDeleteClick = async () => {
@@ -182,7 +176,7 @@ export default class WorkerManagerWorkerPoolsTable extends Component {
     });
   };
 
-  renderRow = workerPool => {
+  renderRow = ({ node: workerPool }) => {
     const {
       match: { path },
       classes,
@@ -263,47 +257,34 @@ export default class WorkerManagerWorkerPoolsTable extends Component {
   };
 
   render() {
-    const { workerPools, searchTerm, includeDeleted } = this.props;
+    const { onPageChange, workerPoolsConnection } = this.props;
     const {
       sortBy,
       sortDirection,
       dialogState: { open, error, title, confirmText, body },
     } = this.state;
-    const sortedWorkerPools = this.sortWorkerPools(
-      workerPools,
+    const sortedWorkerPoolsConnection = this.createSortedWorkerPoolsConnection(
+      workerPoolsConnection,
       sortBy,
-      sortDirection,
-      searchTerm,
-      includeDeleted
+      sortDirection
     );
     const headers = [
-      { label: 'Worker Pool ID', id: 'workerPoolId', type: 'string' },
-      { label: 'Provider ID', id: 'providerId', type: 'string' },
-      {
-        label: 'Pending Tasks',
-        id: 'pendingTasks',
-        type: 'number',
-      },
-      {
-        label: 'Owner',
-        id: 'owner',
-        type: 'string',
-      },
-      {
-        label: '',
-        id: '',
-        type: 'undefined',
-      },
+      'Worker Pool ID',
+      'Provider ID',
+      'Pending Tasks',
+      'Owner',
+      '',
     ];
 
     return (
       <Fragment>
-        <DataTable
-          items={sortedWorkerPools}
+        <ConnectionDataTable
+          connection={sortedWorkerPoolsConnection}
+          pageSize={VIEW_WORKER_POOLS_PAGE_SIZE}
           headers={headers}
-          sortByLabel={sortBy}
+          sortByHeader={sortBy}
           sortDirection={sortDirection}
-          size="small"
+          onPageChange={onPageChange}
           onHeaderClick={this.handleHeaderClick}
           renderRow={this.renderRow}
         />

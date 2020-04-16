@@ -165,6 +165,29 @@ helper.secrets.mockSuite(testing.suiteName(), ['db', 'aws'], function(mock, skip
   test('matrix', async () => {
     const route = 'test-notify.matrix-room.!gBxblkbeeBSadzOniu:mozilla.org.on-any';
     const task = makeTask([route]);
+    task.extra = {notify: {matrixFormat: 'matrix.foo', matrixBody: '${taskId}', matrixFormattedBody: '<h1>${taskId}</h1>', matrixMsgtype: 'm.text'}};
+    helper.queue.addTask(baseStatus.taskId, task);
+    await helper.fakePulseMessage({
+      payload: {
+        status: baseStatus,
+      },
+      exchange: 'exchange/taskcluster-queue/v1/task-completed',
+      routingKey: 'doesnt-matter',
+      routes: [route],
+    });
+    assert.equal(helper.matrixClient.sendEvent.callCount, 1);
+    assert.equal(helper.matrixClient.sendEvent.args[0][0], '!gBxblkbeeBSadzOniu:mozilla.org');
+    assert.equal(helper.matrixClient.sendEvent.args[0][2].format, 'matrix.foo');
+    assert.equal(helper.matrixClient.sendEvent.args[0][2].body, 'DKPZPsvvQEiw67Pb3rkdNg');
+    assert.equal(helper.matrixClient.sendEvent.args[0][2].formatted_body, '<h1>DKPZPsvvQEiw67Pb3rkdNg</h1>');
+    assert.equal(helper.matrixClient.sendEvent.args[0][2].msgtype, 'm.text');
+    assert(monitorManager.messages.find(m => m.Type === 'matrix'));
+    assert(monitorManager.messages.find(m => m.Type === 'matrix-forbidden') === undefined);
+  });
+
+  test('matrix (default notice)', async () => {
+    const route = 'test-notify.matrix-room.!gBxblkbeeBSadzOniu:mozilla.org.on-any';
+    const task = makeTask([route]);
     task.extra = {notify: {matrixFormat: 'matrix.foo', matrixBody: '${taskId}', matrixFormattedBody: '<h1>${taskId}</h1>'}};
     helper.queue.addTask(baseStatus.taskId, task);
     await helper.fakePulseMessage({
@@ -180,6 +203,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['db', 'aws'], function(mock, skip
     assert.equal(helper.matrixClient.sendEvent.args[0][2].format, 'matrix.foo');
     assert.equal(helper.matrixClient.sendEvent.args[0][2].body, 'DKPZPsvvQEiw67Pb3rkdNg');
     assert.equal(helper.matrixClient.sendEvent.args[0][2].formatted_body, '<h1>DKPZPsvvQEiw67Pb3rkdNg</h1>');
+    assert.equal(helper.matrixClient.sendEvent.args[0][2].msgtype, 'm.notice');
     assert(monitorManager.messages.find(m => m.Type === 'matrix'));
     assert(monitorManager.messages.find(m => m.Type === 'matrix-forbidden') === undefined);
   });

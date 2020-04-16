@@ -1,6 +1,9 @@
 $schema: "/schemas/common/metaschema.json#"
 title: "Send Matrix Notice Request"
-description: Request to send a Matrix notice.
+description: |
+  Request to send a Matrix notice. Many of these fields are better understood by
+  checking the matrix spec itself. The precise definitions of these fields is
+  beyond the scope of this document.
 type: object
 properties:
   roomId:
@@ -21,6 +24,16 @@ properties:
     description: |
       Text that will be rendered by matrix clients that support the given
       format in that format. For instance, `<h1>Header Text</h1>`.
+  msgtype:
+    type: string
+    enum:
+      - m.notice
+      - m.text
+      - m.emote
+    default: m.notice
+    description: |
+      Which of the `m.room.message` msgtypes to use. At the moment only the
+      types that take `body`/`format`/`formattedBody` are supported.
 additionalProperties: false
 required:
   - roomId
