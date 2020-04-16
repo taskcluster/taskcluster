@@ -10,16 +10,20 @@ suite(path.basename(__filename), function() {
         /version field missing/);
     });
 
-    test('migrationScript field required', function() {
+    test('downgradeScript field required if migrationScript present', function() {
       assert.throws(
-        () => Version._checkContent({downgradeScript: 'check', version: 1, methods: {}}, '0001.yml'),
-        /migrationScript field missing/);
+        () => Version._checkContent({version: 1, methods: {}, migrationScript: 'yep'}, '0001.yml'),
+        /Cannot specify just one of/);
     });
 
-    test('downgradeScript field required', function() {
+    test('migrationScript field required if downgradeScript present', function() {
       assert.throws(
-        () => Version._checkContent({migrationScript: 'check', version: 1, methods: {}}, '0001.yml'),
-        /downgradeScript field missing/);
+        () => Version._checkContent({version: 1, methods: {}, downgradeScript: 'yep'}, '0001.yml'),
+        /Cannot specify just one of/);
+    });
+
+    test('missing migrationScript and downgradeScript is OK', function() {
+      Version._checkContent({version: 1, methods: {}}, '0001.yml');
     });
 
     test('methods field required', function() {

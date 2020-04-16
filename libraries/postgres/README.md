@@ -130,7 +130,8 @@ version: 17
 # `$db_user_prefix$`, so such statements can take the form `grant .. to
 # $db_user_prefix$_worker_manager`.  The script can be included inline in the YAML
 # using `|-`, or specify a filename to load the script from an external file in the
-# same directory.
+# same directory.  In cases where no migration is required (such as adding or modifying
+# stored functions), this property can be omitted.
 migrationScript: |-
   begin
     create ...;
@@ -139,7 +140,8 @@ migrationScript: |-
   end
 
 # Similar to migrationScript, but reversing its effects.  It's OK for this to lose data.
-# This can similarly specify a filename.
+# This can similarly specify a filename.  This is only required if migrationScript is
+# present.
 downgradeScript: |-
   begin
     revoke ...;

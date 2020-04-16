@@ -1,10 +1,4 @@
 version: 6
-migrationScript: |-
-  begin
-  end
-downgradeScript: |-
-  begin
-  end
 methods:
   azure_queue_count:
     description: |

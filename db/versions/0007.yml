@@ -1,10 +1,4 @@
 version: 7
-migrationScript: |-
-  begin
-  end
-downgradeScript: |-
-  begin
-  end
 methods:
   # This updates the _scan methods to treat 'page' as an offset.  The previous
   # approach (from verison 2) did not work.
