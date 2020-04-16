@@ -30,7 +30,7 @@ const db = Database.setup({
 The read and write URLs typically come from serivce configuration.
 The read URL is used for queries that only read data, and can operate on read-only server mirrors, while queries that will modify the content of the database use the write URL.
 The `monitor` is a taskcluster-lib-monitor instance, used to report database metrics.
-if `statementTimeout` is set, then it is treated as a timeout (in seconds) after which a statement will be aborted.
+if `statementTimeout` is set, then it is treated as a timeout (in milliseconds) after which a statement will be aborted.
 This is typically used in web processes to abort statements running longer than 30s, after which time the HTTP client has likely given up.
 
 The `poolSize` parameter specifies the maximum number of Postgres clients in each pool of clients, with two pools (read and write) in use.
@@ -198,8 +198,8 @@ This file provides a simple, verified confirmation of which services have what a
 
 ### Tables File
 
-The tables file serves as developer-oriented documentation of the tables available and their columns.
-This helps developers to understand the database structure without poring though version files to find all of the relevant `ALTER TABLE` statements.
+The [tables file](../../db/tables.yml) serves as developer-oriented documentation of the tables available and their columns.
+This helps developers understand the database structure without poring though version files to find all of the relevant `ALTER TABLE` statements.
 It is verified to match the running database when a database upgrade is complete.
 
 **NOTE**: the tables file *does not* define a public API for the Taskcluster service.
@@ -212,7 +212,7 @@ table_name:
   ...
 ```
 
-column types are a "stripped down" version of the full Postgres type definition, including only a simple type name and if necessary the suffix `not null`.
+Column types are a "stripped down" version of the full Postgres type definition, including only a simple type name and if necessary the suffix `not null`.
 Primary keys, constraints, defaults, sequences, and so on are not included.
 
 ## Security Invariants
