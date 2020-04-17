@@ -1,0 +1,98 @@
+version: 8
+migrationScript: |-
+  begin
+    create table cache_purges (
+      provisioner_id text not null,
+      worker_type text not null,
+      cache_name text not null,
+      before timestamptz not null,
+      expires timestamptz not null,
+      etag uuid default public.gen_random_uuid(),
+      PRIMARY KEY(provisioner_id, worker_type, cache_name)
+    );
+    grant select, insert, update, delete on cache_purges to $db_user_prefix$_purge_cache;
+  end
+downgradeScript: |-
+  begin
+    revoke select, insert, update, delete on cache_purges from $db_user_prefix$_purge_cache;
+    drop table cache_purges;
+  end
+methods:
+  cache_purges_load:
+    description: Load a purged cache.
+    mode: read
+    serviceName: purge_cache
+    args: provisioner_id_in text, worker_type_in text, cache_name_in text
+    returns: table (provisioner_id text, worker_type text, cache_name text, before timestamptz, expires timestamptz, etag uuid)
+    body: |-
+      begin
+        return query
+        select cache_purges.provisioner_id, cache_purges.worker_type, cache_purges.cache_name, cache_purges.before,
+        cache_purges.expires, cache_purges.etag from cache_purges
+        where cache_purges.provisioner_id = cache_purges_load.provisioner_id_in and cache_purges.worker_type = cache_purges_load.worker_type_in and cache_purges.cache_name = cache_purges_load.cache_name_in;
+      end
+  all_purge_requests:
+    description: |-
+      List the caches for this `provisionerId`/`workerType` that should to be
+      purged if they are from before the time given in the response.',
+
+      This is intended to be used by workers to determine which caches to purge.'
+
+      Note: The limit will always be size + 1 to allow consumers to detect when it's the last page.
+      If the list of result > size then there are more entries to fetch. Else, there are no next pages.
+    mode: read
+    serviceName: purge_cache
+    args: size integer, page integer
+    returns: table (provisioner_id text, worker_type text, cache_name text, before timestamptz, expires timestamptz, etag uuid)
+    body: |-
+      declare
+      sql text := 'select cache_purges.provisioner_id, cache_purges.worker_type, cache_purges.cache_name, cache_purges.before, cache_purges.expires, cache_purges.etag from cache_purges';
+
+      begin
+        sql := sql || ' order by cache_purges.provisioner_id, cache_purges.worker_type, cache_purges.cache_name';
+
+        if size is not null and size > 0 then
+          sql := sql || ' limit ' || size + 1;
+
+          if page is not null and page > 0 then
+            sql := sql || ' offset ' || page;
+          end if;
+        end if;
+
+        return query execute sql;
+      end
+  purge_cache:
+    serviceName: purge_cache
+    description: Create a purged cache.
+    mode: write
+    args: prov_id text, wt text, c_name text, bef timestamptz, exp timestamptz, overwrite boolean
+    returns: void
+    body: |-
+      declare
+        new_etag uuid := public.gen_random_uuid();
+      begin
+        if overwrite then
+          insert into cache_purges(provisioner_id, worker_type, cache_name, before, expires, etag)
+          values (
+            prov_id,
+            wt,
+            c_name,
+            bef,
+            exp,
+            new_etag
+          ) on conflict (provisioner_id, worker_type, cache_name) do
+          update
+          set (provisioner_id, worker_type, cache_name, before, expires, etag) = (prov_id, wt, c_name, bef, exp, new_etag)
+          where cache_purges.provisioner_id = purge_cache.prov_id and cache_purges.worker_type = purge_cache.wt and cache_purges.cache_name = purge_cache.c_name;
+        else
+          insert into cache_purges(provisioner_id, worker_type, cache_name, before, expires, etag)
+          values (
+            prov_id,
+            wt,
+            c_name,
+            bef,
+            exp,
+            new_etag
+          );
+        end if;
+      end

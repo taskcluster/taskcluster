@@ -18,6 +18,10 @@ class FakePurgeCache {
     return this.cachePurges.get(`${partitionKey}-${rowKey}`);
   }
 
+  _getCachePurge2({ provisionerId, workerType, cacheName }) {
+    return this.cachePurges.get(`${provisionerId}-${workerType}-${cacheName}`);
+  }
+
   _removeCachePurge({ partitionKey, rowKey }) {
     this.cachePurges.delete(`${partitionKey}-${rowKey}`);
   }
@@ -42,10 +46,38 @@ class FakePurgeCache {
     return c;
   }
 
+  _addCachePurge2(cachePurge) {
+    assert(typeof cachePurge.provisioner_id === "string");
+    assert(typeof cachePurge.worker_type === "string");
+    assert(typeof cachePurge.cache_name === "string");
+    assert(cachePurge.before instanceof Date);
+    assert(cachePurge.expires instanceof Date);
+
+    const etag = slugid.v4();
+    const c = {
+      provisioner_id: cachePurge.provisioner_id,
+      worker_type: cachePurge.worker_type,
+      cache_name: cachePurge.cache_name,
+      before: cachePurge.before,
+      expires: cachePurge.expires,
+      etag,
+    };
+
+    this.cachePurges.set(`${c.provisioner_id}-${c.worker_type}-${c.cache_name}`, c);
+
+    return c;
+  }
+
   /* fake functions */
 
   async cache_purges_entities_load(partitionKey, rowKey) {
     const cachePurge = this._getCachePurge({ partitionKey, rowKey });
+
+    return cachePurge ? [cachePurge] : [];
+  }
+
+  async cache_purges_load(provisionerId, workerType, cacheName) {
+    const cachePurge = this._getCachePurge2({ provisionerId, workerType, cacheName });
 
     return cachePurge ? [cachePurge] : [];
   }
@@ -65,6 +97,24 @@ class FakePurgeCache {
     });
 
     return [{ 'cache_purges_entities_create': cachePurge.etag }];
+  }
+
+  async purge_cache(provisioner_id, worker_type, cache_name, before, expires, overwrite) {
+    if (!overwrite && this._getCachePurge2({ provisionerId: provisioner_id, workerType: worker_type, cacheName: cache_name })) {
+      const err = new Error('duplicate key value violates unique constraint');
+      err.code = UNIQUE_VIOLATION;
+      throw err;
+    }
+
+    const cachePurge = this._addCachePurge2({
+      provisioner_id,
+      worker_type,
+      cache_name,
+      before,
+      expires,
+    });
+
+    return [{ 'purge_cache': cachePurge.etag }];
   }
 
   async cache_purges_entities_remove(partition_key, row_key) {
@@ -97,6 +147,10 @@ class FakePurgeCache {
     const entries = getEntries({ partitionKey: partition_key, rowKey: row_key, condition }, this.cachePurges);
 
     return entries.slice(offset, offset + size + 1);
+  }
+
+  async all_purge_requests(size, page) {
+    return [...this.cachePurges.values()].slice(page, page + size + 1);
   }
 }
 
