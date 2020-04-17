@@ -540,4 +540,4 @@ func main() {
 
 # Contributing
 
-Contributions welcome, feel free to contact #taskcluster on irc.mozilla.org, or send a pull request.
+Contributions welcome, feel free to contact us at https://chat.mozilla.org/#/room/#taskcluster:mozilla.org, or send a pull request.

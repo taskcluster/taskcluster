@@ -8,10 +8,10 @@ class IRCBot {
   /**
    * Create IRC bot
    *
-   * optipns:
+   * options:
    * ```js
    * {
-   *   server:   'irc.mozilla.org',
+   *   server:   'chat.freenode.net',
    *   nick:     '',
    *   userName: '',
    *   realName: '',
