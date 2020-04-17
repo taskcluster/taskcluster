@@ -488,7 +488,6 @@ exports.tasks.push({
       exampleConfig[confName].procs = {};
       Object.entries(cfg.procs).forEach(([n, p]) => {
         n = n.replace(/-/g, '_');
-        console.log(confName, n);
         if (['web', 'background'].includes(p.type)) {
           exampleConfig[confName].procs[n] = {
             // much smaller cpu defaults for dev deployments, since
