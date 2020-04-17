@@ -89,7 +89,7 @@ test:
     forceSSL:         false
     trustProxy:       true
   irc:
-    server:           irc.mozilla.org
+    server:           chat.freenode.net
     nick:             taskcluster-test
     userName:         taskcluster-test
     realName:         Taskcluster Test Robot
