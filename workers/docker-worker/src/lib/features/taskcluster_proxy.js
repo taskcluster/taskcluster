@@ -3,6 +3,7 @@ This module handles the creation of the "taskcluster" proxy container which
 allows tasks to talk directly to taskcluster services over a http proxy which
 grants a particular permission level based on the task scopes.
 */
+const promiseRetry = require('promise-retry');
 const waitForPort = require('../wait_for_port');
 const http = require('http');
 
@@ -91,37 +92,43 @@ class TaskclusterProxy {
     task.on('credentials', async (credentials) => {
       let creds = JSON.stringify(credentials);
 
-      await new Promise((accept, reject) => {
-        let req = http.request({
-          hostname: inspect.NetworkSettings.IPAddress,
-          method: 'PUT',
-          path: '/credentials',
-          headers: {
-            'Content-Type': 'text/json',
-            'Content-Length': creds.length
-          }
-        }, res => {
-          if (res.statusCode === 200) {
-            task.runtime.log('Credentials updated', {
-              taskId: task.status.taskId,
-              runId: task.runId,
-              clientId: creds.clientId,
-            });
-            accept();
-          } else {
-            let err = new Error(`Credentials update failed ${res.statusCode}`);
-            task.runtime.log(err, {
-              taskId: task.status.taskId,
-              runId: task.runId
-            });
-            reject(err);
-          }
-        });
+      await promiseRetry(retry => {
+        return new Promise((accept, reject) => {
+          let req = http.request({
+            hostname: inspect.NetworkSettings.IPAddress,
+            method: 'PUT',
+            path: '/credentials',
+            headers: {
+              'Content-Type': 'text/json',
+              'Content-Length': creds.length
+            }
+          }, res => {
+            if (res.statusCode === 200) {
+              task.runtime.log('Credentials updated', {
+                taskId: task.status.taskId,
+                runId: task.runId,
+                clientId: creds.clientId,
+              });
+              accept();
+            } else {
+              let err = new Error(`Credentials update failed ${res.statusCode}`);
+              task.runtime.log(err, {
+                taskId: task.status.taskId,
+                runId: task.runId
+              });
+              reject(err);
+            }
+          });
 
-        req.on('error', err => reject(err));
-        req.write(creds);
-        req.end();
-      });
+          req.on('error', err => reject(err));
+          req.write(creds);
+          req.end();
+        }).catch(retry);
+      }, {
+        maxTimeout: 10000,
+        factor: 1.311,
+        randomize: true
+      }).catch(err => task.runtime.log(err.stack));
     });
 
     return {
