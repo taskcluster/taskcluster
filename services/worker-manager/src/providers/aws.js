@@ -113,11 +113,16 @@ class AwsProvider extends Provider {
       // more than once in tag specifications" errors
       const TagSpecifications = config.launchConfig.TagSpecifications || [];
       let instanceTags = [];
+      let volumeTags = [];
       let otherTagSpecs = [];
       TagSpecifications.forEach(ts => {
-        ts.ResourceType === 'instance'
-          ? instanceTags = instanceTags.concat(ts.Tags)
-          : otherTagSpecs.push(ts);
+        if (ts.ResourceType === 'instance') {
+          instanceTags = instanceTags.concat(ts.Tags);
+        } else if (ts.ResourceType === 'volume') {
+          volumeTags = volumeTags.concat(ts.Tags);
+        } else {
+          otherTagSpecs.push(ts);
+        }
       });
 
       const userData = Buffer.from(JSON.stringify({
@@ -156,6 +161,30 @@ class AwsProvider extends Provider {
               ResourceType: 'instance',
               Tags: [
                 ...instanceTags,
+                {
+                  Key: 'CreatedBy',
+                  Value: `taskcluster-wm-${this.providerId}`,
+                }, {
+                  Key: 'Owner',
+                  Value: workerPool.owner,
+                },
+                {
+                  Key: 'ManagedBy',
+                  Value: 'taskcluster',
+                },
+                {
+                  Key: 'Name',
+                  Value: `${workerPoolId}`,
+                },
+                {
+                  Key: 'WorkerPoolId',
+                  Value: `${workerPoolId}`,
+                }],
+            },
+            {
+              ResourceType: 'volume',
+              Tags: [
+                ...volumeTags,
                 {
                   Key: 'CreatedBy',
                   Value: `taskcluster-wm-${this.providerId}`,
