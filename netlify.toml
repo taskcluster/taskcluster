@@ -12,10 +12,10 @@
   YARN_VERSION = "1.22.4"
   NODE_VERSION = "12.16.2"
   APPLICATION_NAME = "Taskcluster"
-  GRAPHQL_ENDPOINT = "https://community-tc.services.mozilla.com/graphql"
-  GRAPHQL_SUBSCRIPTION_ENDPOINT = "https://community-tc.services.mozilla.com/subscription"
+  GRAPHQL_ENDPOINT = "https://hassan.taskcluster-dev.net/graphql"
+  GRAPHQL_SUBSCRIPTION_ENDPOINT = "https://hassan.taskcluster-dev.net/subscription"
   UI_LOGIN_STRATEGY_NAMES = ""
-  TASKCLUSTER_ROOT_URL = "https://community-tc.services.mozilla.com"
+  TASKCLUSTER_ROOT_URL = "https://hassan.taskcluster-dev.net"
 
 # Rule for redirecting master branch to the heroku app
 [[redirects]]
