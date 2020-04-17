@@ -9,7 +9,7 @@ exports.dollarQuote = str => {
     if (str.indexOf(quote) === -1) {
       return quote + str + quote;
     }
-    i = i + '-';
+    i = i + 'x';
   }
 };
 
