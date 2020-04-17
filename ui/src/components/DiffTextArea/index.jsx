@@ -148,7 +148,7 @@ function DiffTextArea(props) {
     <div className={classNames(classes.tab)}>
       <Tabs value={tabIndex} onChange={handleTabChange}>
         <Tab label="Scopes" />
-        <Tab label="View Diff" />
+        <Tab label="View Diff." />
       </Tabs>
       <div
         style={isViewDiff ? { minHeight: rows * 20 } : null}
