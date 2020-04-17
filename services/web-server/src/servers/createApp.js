@@ -20,6 +20,10 @@ module.exports = async ({ cfg, strategies, AuthorizationCode, AccessToken, auth,
   app.set('view engine', 'ejs');
   app.set('views', 'src/views');
 
+  monitor.debug('allowedCORSOrigins: ', {
+    origins: cfg.server.allowedCORSOrigins,
+  });
+
   const allowedCORSOrigins = cfg.server.allowedCORSOrigins.map(o => {
     if (typeof(o) === 'string' && o.startsWith('/')) {
       return new RegExp(o.slice(1, o.length - 1));
@@ -27,6 +31,7 @@ module.exports = async ({ cfg, strategies, AuthorizationCode, AccessToken, auth,
 
     return o;
   }).filter(o => o && o !== "");
+
   const corsOptions = {
     origin: allowedCORSOrigins,
     credentials: true,
