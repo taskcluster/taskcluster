@@ -7,7 +7,6 @@
 //
 // This package was generated from the schema defined at
 // /references/secrets/v1/api.json
-
 // The secrets service provides a simple key/value store for small bits of secret
 // data.  Access is limited by scopes, so values can be considered secret from
 // those who do not have the relevant scopes.

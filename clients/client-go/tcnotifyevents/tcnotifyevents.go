@@ -7,7 +7,6 @@
 //
 // This package was generated from the schema defined at
 // /references/notify/v1/exchanges.json
-
 // This pretty much only contains the simple free-form
 // message that can be published from this service from a request
 // by anybody with the proper scopes.

@@ -7,7 +7,6 @@
 //
 // This package was generated from the schema defined at
 // /references/purge-cache/v1/api.json
-
 // The purge-cache service is responsible for tracking cache-purge requests.
 //
 // User create purge requests for specific caches on specific workers, and
