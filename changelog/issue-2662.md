@@ -1,4 +1,4 @@
 audience: deployers
-level: minor
+level: silent
 reference: issue 2662
 ---
