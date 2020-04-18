@@ -90,7 +90,9 @@ if (isMainThread) {
     const rootPkg = require(`${REPO_ROOT}/package.json`);
     const deps = Object.keys(rootPkg.dependencies);
     const devDeps = Object.keys(rootPkg.devDependencies).concat(deps);
+    const specials = rootPkg.metatests.specialImports;
 
+    status("listing files");
     // HELLO REVIEWERS: Ideas for a nicer way we can go about doing this?
     let prodFiles = await gitLsFiles({patterns: ['services/*/src/**.js', 'libraries/*/src/**.js', 'db/src/**.js', 'services/prelude.js']});
     prodFiles = prodFiles.filter(f => !f.startsWith('libraries/testing') && f !== 'services/queue/src/load-test.js');
@@ -106,11 +108,13 @@ if (isMainThread) {
     let usedInProd = new Set();
     let usedInDev = new Set();
 
+    status("parsing requires");
     await Promise.all(prodFiles.map(f => handleFile(f, deps, usedInProd, 'dependencies')));
     await Promise.all(devFiles.map(f => handleFile(f, devDeps, usedInDev, 'devDependencies')));
 
+    status("calculating extra dependencies");
     usedInProd = [...usedInProd.keys()];
-    usedInDev = [...usedInDev.keys()];
+    usedInDev = [...usedInDev.keys(), ...specials];
 
     let extraProd = _.difference(deps, usedInProd);
     const shouldBeDev = _.intersection(extraProd, usedInDev);
@@ -124,7 +128,7 @@ if (isMainThread) {
       throw new Error(`Extra production dependencies! Remove ${stringify(extraProd)} from dependencies in package.json`);
     }
     if (extraDev.length) {
-      throw new Error(`Extra development dependencies! Remove ${stringify(extraDev)} from devDependencies in package.json`);
+      throw new Error(`Extra development dependencies! Remove ${stringify(extraDev)} from devDependencies in package.json (or add to metatests.specialImports if required)`);
     }
 
   };
