@@ -91,9 +91,17 @@ if (isMainThread) {
     const deps = Object.keys(rootPkg.dependencies);
     const devDeps = Object.keys(rootPkg.devDependencies).concat(deps);
 
-    let prodFiles = await gitLsFiles({patterns: ['services/*/src/**.js', 'libraries/*/src/**.js', 'db/src/**.js']});
+    // HELLO REVIEWERS: Ideas for a nicer way we can go about doing this?
+    let prodFiles = await gitLsFiles({patterns: ['services/*/src/**.js', 'libraries/*/src/**.js', 'db/src/**.js', 'services/prelude.js']});
     prodFiles = prodFiles.filter(f => !f.startsWith('libraries/testing') && f !== 'services/queue/src/load-test.js');
-    const devFiles = await gitLsFiles({patterns: ['services/*/test/**.js', 'libraries/*/test/**.js', 'db/test/**.js', 'infrastructure/tooling/**.js', 'libraries/testing/src/**.js']});
+    const devFiles = await gitLsFiles({patterns: [
+      'services/*/test/**.js',
+      'libraries/*/test/**.js',
+      'db/test/**.js',
+      'infrastructure/tooling/**.js',
+      'libraries/testing/src/**.js',
+      'test/**.js',
+    ]});
 
     let usedInProd = new Set();
     let usedInDev = new Set();
