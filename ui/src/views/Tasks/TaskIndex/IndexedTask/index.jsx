@@ -133,8 +133,10 @@ export default class IndexedTask extends Component {
           <Search
             disabled={loading}
             value={this.state.indexPathInput}
-            onChange={this.handleIndexPathInputChange}
-            onSubmit={this.handleIndexPathSearchSubmit}
+            onSubmit={() => {
+              this.handleIndexPathInputChange();
+              this.handleIndexPathSearchSubmit();
+            }}
             placeholder="Search path.to.index"
           />
         }>
