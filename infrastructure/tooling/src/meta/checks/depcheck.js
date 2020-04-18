@@ -93,9 +93,8 @@ if (isMainThread) {
     const specials = rootPkg.metatests.specialImports;
 
     status("listing files");
-    // HELLO REVIEWERS: Ideas for a nicer way we can go about doing this?
     let prodFiles = await gitLsFiles({patterns: ['services/*/src/**.js', 'libraries/*/src/**.js', 'db/src/**.js', 'services/prelude.js']});
-    prodFiles = prodFiles.filter(f => !f.startsWith('libraries/testing') && f !== 'services/queue/src/load-test.js');
+    prodFiles = prodFiles.filter(f => !f.startsWith('libraries/testing'));
     const devFiles = await gitLsFiles({patterns: [
       'services/*/test/**.js',
       'libraries/*/test/**.js',
@@ -113,7 +112,7 @@ if (isMainThread) {
     await Promise.all(devFiles.map(f => handleFile(f, devDeps, usedInDev, 'devDependencies')));
 
     status("calculating extra dependencies");
-    usedInProd = [...usedInProd.keys()];
+    usedInProd = [...usedInProd.keys(), ...specials];
     usedInDev = [...usedInDev.keys(), ...specials];
 
     let extraProd = _.difference(deps, usedInProd);
