@@ -49,7 +49,7 @@ require (
 	go.mozilla.org/mozlog v0.0.0-20170222151521-4bb13139d403 // indirect
 	golang.org/x/crypto v0.0.0-20200406173513-056763e48d71
 	golang.org/x/net v0.0.0-20200320220750-118fecf932d8
-	golang.org/x/sys v0.0.0-20200409092240-59c9f1ba88fa
+	golang.org/x/sys v0.0.0-20200413165638-669c56c373c4
 	golang.org/x/tools v0.0.0-20200413015812-1f08ef6002a8
 	gopkg.in/tylerb/graceful.v1 v1.2.15
 	gopkg.in/yaml.v2 v2.2.8
