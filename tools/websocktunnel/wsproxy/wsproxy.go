@@ -106,24 +106,26 @@ func (p *proxy) bridgeConn(conn1 *websocket.Conn, conn2 *websocket.Conn) error {
 		_ = conn2.Close()
 	}()
 
-	kill := make(chan bool, 1)
+	stopper := newStopper()
 	var eSrc, eDest atomic.Value
 	// Wait until errors are written
 
 	go func() {
-		err := copyWsData(conn1, conn2, kill)
+		err := copyWsData(conn1, conn2, stopper)
 		if err != nil {
 			eSrc.Store(err)
 		}
 	}()
 	go func() {
-		err := copyWsData(conn2, conn1, kill)
+		err := copyWsData(conn2, conn1, stopper)
 		if err != nil {
 			eDest.Store(err)
 		}
 	}()
 
-	<-kill
+	// wait for that to finish, before cleaning up
+	stopper.wait()
+
 	if err, ok := eSrc.Load().(error); ok && err != nil {
 		return err
 	}
@@ -133,8 +135,8 @@ func (p *proxy) bridgeConn(conn1 *websocket.Conn, conn2 *websocket.Conn) error {
 	return nil
 }
 
-func copyWsData(dest *websocket.Conn, src *websocket.Conn, kill chan bool) error {
-	defer asyncClose(kill)
+func copyWsData(dest *websocket.Conn, src *websocket.Conn, stopper *stopper) error {
+	defer stopper.stop()
 	for {
 		mtype, reader, err := src.NextReader()
 		if err != nil {
@@ -160,10 +162,8 @@ func copyWsData(dest *websocket.Conn, src *websocket.Conn, kill chan bool) error
 			return err
 		}
 
-		select {
-		case <-kill:
+		if stopper.is_stopped() {
 			return nil
-		default:
 		}
 	}
 }
@@ -171,13 +171,5 @@ func copyWsData(dest *websocket.Conn, src *websocket.Conn, kill chan bool) error
 func forwardControl(messageType int, dest *websocket.Conn) func(string) error {
 	return func(appData string) error {
 		return dest.WriteControl(messageType, []byte(appData), time.Now().Add(20*time.Second))
-	}
-}
-
-func asyncClose(kill chan bool) {
-	select {
-	case <-kill:
-	default:
-		close(kill)
 	}
 }
