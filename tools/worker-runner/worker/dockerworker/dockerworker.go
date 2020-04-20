@@ -12,6 +12,7 @@ import (
 	"github.com/taskcluster/taskcluster/v29/internal/workerproto"
 	"github.com/taskcluster/taskcluster/v29/tools/worker-runner/cfg"
 	"github.com/taskcluster/taskcluster/v29/tools/worker-runner/run"
+	"github.com/taskcluster/taskcluster/v29/tools/worker-runner/util"
 	"github.com/taskcluster/taskcluster/v29/tools/worker-runner/worker/worker"
 )
 
@@ -125,6 +126,10 @@ func (d *dockerworker) StartWorker(state *run.State) (workerproto.Transport, err
 	err = cmd.Start()
 	if err != nil {
 		return nil, err
+	}
+
+	if err = util.DisableOOM(cmd.Process.Pid); err != nil {
+		log.Printf("Error disabling OOM killer for the docker-worker process: %v", err)
 	}
 
 	return transp, nil

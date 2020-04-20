@@ -9,6 +9,7 @@ import (
 	"github.com/taskcluster/taskcluster/v29/tools/worker-runner/logging"
 	"github.com/taskcluster/taskcluster/v29/tools/worker-runner/provider"
 	"github.com/taskcluster/taskcluster/v29/tools/worker-runner/runner"
+	"github.com/taskcluster/taskcluster/v29/tools/worker-runner/util"
 	"github.com/taskcluster/taskcluster/v29/tools/worker-runner/worker"
 )
 
@@ -29,6 +30,10 @@ Usage:
 
 func main() {
 	logging.PatchStdLogger(nil)
+
+	if err := util.DisableOOM(os.Getpid()); err != nil {
+		log.Printf("Error disabling OOM killer for the start-worker process: %v", err)
+	}
 
 	opts, err := docopt.ParseArgs(Usage(), os.Args[1:], "start-worker "+internal.Version)
 	if err != nil {

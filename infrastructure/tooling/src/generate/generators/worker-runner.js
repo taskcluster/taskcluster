@@ -10,7 +10,7 @@ exports.tasks.push({
   run: async (requirements, utils) => {
     await execCommand({
       dir: path.join(REPO_ROOT, 'tools', 'worker-runner'),
-      command: ['go', 'run', path.join('util', 'update-readme.go')],
+      command: ['go', 'run', path.join(REPO_ROOT, 'tools', 'worker-runner', 'cmd', 'update-readme')],
       utils,
     });
   },
