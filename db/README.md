@@ -2,7 +2,7 @@
 
 This directory defines the Taskcluster database:
 
-* [Stored Functions](`fns.md`) -- list of stored functions defined by this package
+* [Stored Functions](./fns.md) -- list of stored functions defined by this package
 * [`versions/`](./versions) -- the migrations that create the most-recent database schema
   * [`tables.yml`](./tables.yml) -- tables in the DB (for internal use only!)
   * [`access.yml`](./access.yml) -- definitions for which services can access which tables
