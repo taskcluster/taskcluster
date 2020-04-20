@@ -47,7 +47,7 @@ require (
 	github.com/xeipuuv/gojsonpointer v0.0.0-20190905194746-02993c407bfb // indirect
 	github.com/xeipuuv/gojsonschema v1.2.0
 	go.mozilla.org/mozlog v0.0.0-20170222151521-4bb13139d403 // indirect
-	golang.org/x/crypto v0.0.0-20200406173513-056763e48d71
+	golang.org/x/crypto v0.0.0-20200420104511-884d27f42877
 	golang.org/x/net v0.0.0-20200320220750-118fecf932d8
 	golang.org/x/sys v0.0.0-20200409092240-59c9f1ba88fa
 	golang.org/x/tools v0.0.0-20200413015812-1f08ef6002a8
