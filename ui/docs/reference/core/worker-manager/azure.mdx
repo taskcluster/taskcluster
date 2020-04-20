@@ -18,7 +18,9 @@ Worker virtual machines have an associated NIC and public IP address which will 
 
 ## Worker Interaction
 
-The Azure metadata service [does not currently have a working feature](https://github.com/MicrosoftDocs/azure-docs/issues/30370) for providing text data to VMs, so while the provider sets a `customData` blob for parity with the other providers, it also provides a set of of tags that provide the same set of properties.
+The Azure metadata service [does not currently have a working feature](https://github.com/MicrosoftDocs/azure-docs/issues/30370) for providing text data to VMs, so while the provider sets a `customData` blob for parity with the other providers, it also provides a set of tags, described below, that are the recommended source of the information a worker requires to start up.
+
+### CustomData
 
 The provider starts workers with an instance attribute named `taskcluster` containing a JSON object with the following properties:
 
@@ -31,6 +33,8 @@ The provider starts workers with an instance attribute named `taskcluster` conta
 
 The worker's `workerId` is identical to its vmId, which can be retrieved from the Azure metadata service at `compute/vmId`.
 
+### Worker Identity Proof
+
 The `workerIdentityProof` contains a [signed attested data document](https://docs.microsoft.com/en-us/azure/virtual-machines/windows/instance-metadata-service#attested-data) in its `document` property:
 
 ```json
@@ -39,7 +43,7 @@ The `workerIdentityProof` contains a [signed attested data document](https://doc
 
 The document should have audience equal to the deployment's `rootUrl` and `format=full`.
 
-## Tags
+### Tags
 
 The provider starts workers with the following labels. The tags `provider-id`, `worker-group`, `worker-pool-id`, and `root-url` are used by the worker for configuration while `customData` is broken in the instance metadata service.
 

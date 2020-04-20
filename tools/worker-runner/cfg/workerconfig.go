@@ -218,6 +218,12 @@ func (wc *WorkerConfig) MustGet(key string) interface{} {
 	return val
 }
 
+// Return true if the property is present
+func (wc *WorkerConfig) Has(key string) bool {
+	_, err := wc.Get(key)
+	return err == nil
+}
+
 func NewWorkerConfig() *WorkerConfig {
 	return &WorkerConfig{
 		data: make(map[string]interface{}),

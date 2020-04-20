@@ -1869,6 +1869,13 @@
     "title": "Azure Provider Type"
   },
   {
+    "element": "h3",
+    "id": "customdata",
+    "path": "/reference/core/worker-manager/azure",
+    "subtitle": "CustomData",
+    "title": "Azure Provider Type"
+  },
+  {
     "element": "h2",
     "id": "removing-workers",
     "path": "/reference/core/worker-manager/azure",
@@ -1876,10 +1883,17 @@
     "title": "Azure Provider Type"
   },
   {
-    "element": "h2",
+    "element": "h3",
     "id": "tags",
     "path": "/reference/core/worker-manager/azure",
     "subtitle": "Tags",
+    "title": "Azure Provider Type"
+  },
+  {
+    "element": "h3",
+    "id": "worker-identity-proof",
+    "path": "/reference/core/worker-manager/azure",
+    "subtitle": "Worker Identity Proof",
     "title": "Azure Provider Type"
   },
   {
