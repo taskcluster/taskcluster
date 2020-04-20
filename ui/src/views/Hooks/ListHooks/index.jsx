@@ -51,7 +51,7 @@ export default class ListHooks extends Component {
       data: { loading, error, hookGroups },
     } = this.props;
     const query = qs.parse(this.props.location.search.slice(1));
-    const hookSearch = query.search ? decodeURIComponent(query.search) : '';
+    const hookSearch = query.search;
     const tree = hookGroups
       ? hookGroups.map(group => ({
           value: group.hookGroupId,
