@@ -1,11 +1,13 @@
 package genericworker
 
 import (
+	"log"
 	"os"
 	"os/exec"
 
 	"github.com/taskcluster/taskcluster/v29/internal/workerproto"
 	"github.com/taskcluster/taskcluster/v29/tools/worker-runner/run"
+	"github.com/taskcluster/taskcluster/v29/tools/worker-runner/util"
 )
 
 // runMethod allows supporting both run-as-a-service and run-as-an-executable modes.
@@ -48,6 +50,10 @@ func (m *cmdRunMethod) start(w *genericworker, state *run.State) (workerproto.Tr
 	err = cmd.Start()
 	if err != nil {
 		return nil, err
+	}
+
+	if err = util.DisableOOM(cmd.Process.Pid); err != nil {
+		log.Printf("Error disabling OOM killer for generic-worker: %v", err)
 	}
 
 	return transp, nil
