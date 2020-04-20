@@ -210,7 +210,6 @@
     "dev:verify": "node infrastructure/tooling/src/main.js dev:verify",
     "smoketest": "node infrastructure/tooling/src/main.js smoketest",
     "test:meta": "node infrastructure/tooling/src/main.js test:meta",
-    "importer:run": "NODE_OPTIONS=\"--max-old-space-size=12288\" node infrastructure/tooling/src/main.js importer:run",
     "db:upgrade": "node db/src/main.js upgrade",
     "db:downgrade": "node db/src/main.js downgrade"
   },

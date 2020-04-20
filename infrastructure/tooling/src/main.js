@@ -217,26 +217,6 @@ program.command('smoketest')
     run(main, options[0]);
   });
 
-program.command('importer:run')
-  .action((...options) => {
-    if (options.length !== 1) {
-      console.error('unexpected command-line arguments');
-      process.exit(1);
-    }
-    const { importer } = require('./importer');
-    run(importer);
-  });
-
-program.command('importer:verify')
-  .action((...options) => {
-    if (options.length !== 1) {
-      console.error('unexpected command-line arguments');
-      process.exit(1);
-    }
-    const { verifier } = require('./importer');
-    run(verifier);
-  });
-
 program.command('*', {noHelp: true})
   .action(() => program.help(txt => txt));
 
