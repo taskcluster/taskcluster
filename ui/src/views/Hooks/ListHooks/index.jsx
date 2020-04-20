@@ -5,7 +5,7 @@ import Spinner from '@mozilla-frontend-infra/components/Spinner';
 import { withStyles } from '@material-ui/core/styles';
 import MuiTreeView from 'material-ui-treeview';
 import PlusIcon from 'mdi-react/PlusIcon';
-import qs from 'qs';
+import qs, { parse, stringify } from 'qs';
 import Dashboard from '../../../components/Dashboard';
 import HelpView from '../../../components/HelpView';
 import Search from '../../../components/Search';
@@ -29,30 +29,19 @@ import hooksQuery from './hooks.graphql';
   },
 }))
 export default class ListHooks extends Component {
-  state = {
-    hookSearch: '',
-  };
-
-  static getDerivedStateFromProps(nextProps, prevState) {
-    const searchString = qs.parse(nextProps.location.search, {
-      ignoreQueryPrefix: true,
-    }).search;
-
-    if (prevState.hookSearch !== searchString) {
-      return { hookSearch: searchString };
-    }
-
-    return null;
-  }
-
   handleCreateHook = () => {
     this.props.history.push('/hooks/create');
   };
 
   handleHookSearchSubmit = hookSearch => {
-    this.props.history.push(
-      `/hooks${hookSearch ? `?search=${hookSearch}` : ''}`
-    );
+    const query = parse(window.location.search.slice(1));
+
+    this.props.history.push({
+      search: stringify({
+        ...query,
+        search: hookSearch,
+      }),
+    });
   };
 
   render() {
@@ -61,7 +50,8 @@ export default class ListHooks extends Component {
       description,
       data: { loading, error, hookGroups },
     } = this.props;
-    const { hookSearch } = this.state;
+    const query = qs.parse(this.props.location.search.slice(1));
+    const hookSearch = query.search ? decodeURIComponent(query.search) : '';
     const tree = hookGroups
       ? hookGroups.map(group => ({
           value: group.hookGroupId,
