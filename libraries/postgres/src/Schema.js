@@ -18,7 +18,7 @@ class Schema {
    */
   static fromDbDirectory(directory) {
     const dentries = fs.readdirSync(path.join(directory, 'versions'));
-    let versions = new Array(dentries.length);
+    let versions = [];
 
     dentries.forEach(dentry => {
       if (dentry.startsWith('.')) {
@@ -28,7 +28,7 @@ class Schema {
       const filename = path.join(directory, 'versions', dentry);
 
       if (fs.lstatSync(filename).isDirectory() || !/\.ya?ml/.test(filename)) {
-        throw new Error(`${filename} is a directory`);
+        return;
       }
 
       const content = yaml.safeLoad(fs.readFileSync(filename));
@@ -36,6 +36,7 @@ class Schema {
       if (versions[version.version - 1]) {
         throw new Error(`duplicate version number ${version.version} in ${filename}`);
       }
+      versions.length = Math.max(versions.length, version.version);
       versions[version.version - 1] = version;
     });
 

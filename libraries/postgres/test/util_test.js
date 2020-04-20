@@ -9,7 +9,7 @@ suite(path.basename(__filename), function() {
     });
 
     test('string containing $$', function() {
-      assert.equal(dollarQuote('pre $$abcd$$ post'), '$-$pre $$abcd$$ post$-$');
+      assert.equal(dollarQuote('pre $$abcd$$ post'), '$x$pre $$abcd$$ post$x$');
     });
   });
 });
