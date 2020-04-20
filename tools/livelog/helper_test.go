@@ -2,12 +2,16 @@ package main
 
 import (
 	"fmt"
+	"io/ioutil"
 	"net"
 	"net/http"
 	"os"
 	"strconv"
 	"sync"
 	"testing"
+
+	"github.com/stretchr/testify/require"
+	"github.com/taskcluster/taskcluster/v29/tools/livelog/writer"
 )
 
 func listenOnRandomPort() (net.Listener, uint16, error) {
@@ -41,9 +45,14 @@ type TestLivelogServer struct {
 	getCond   *sync.Cond
 	getPort   uint16
 	getServer *http.Server
+
+	tempdir string
 }
 
 func StartServer(t *testing.T, tls bool) *TestLivelogServer {
+	tempdir, err := ioutil.TempDir("", "livelog-tests-")
+	require.NoError(t, err)
+
 	ts := &TestLivelogServer{
 		oldRunServer: runServer,
 
@@ -54,6 +63,8 @@ func StartServer(t *testing.T, tls bool) *TestLivelogServer {
 		getCond:   sync.NewCond(&sync.Mutex{}),
 		getPort:   0,
 		getServer: nil,
+
+		tempdir: tempdir,
 	}
 
 	runServer = func(server *http.Server, addr, crtFile, keyFile string) error {
@@ -89,6 +100,9 @@ func StartServer(t *testing.T, tls bool) *TestLivelogServer {
 		}
 	}
 
+	// Set up a temp dir to capture backing files
+	writer.TempDir = tempdir
+
 	// set up some config for the put server
 	os.Setenv("ACCESS_TOKEN", "7_3HoMEbQau1Qlzwx-JZgg")
 	if tls {
@@ -105,6 +119,12 @@ func StartServer(t *testing.T, tls bool) *TestLivelogServer {
 }
 
 func (ts *TestLivelogServer) Close() {
+	err := os.RemoveAll(ts.tempdir)
+	if err != nil {
+		panic(err)
+	}
+	writer.TempDir = ""
+
 	ts.getCond.L.Lock()
 	defer ts.getCond.L.Unlock()
 	if ts.getServer != nil {

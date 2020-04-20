@@ -26,6 +26,10 @@ type Handles map[*StreamHandle]struct{}
 // emptyStruct cannot be declared as a constant, so var is next best option
 var emptyStruct = struct{}{}
 
+// by default, use the system temp dir; this is overridden in tests so they can
+// reliably clean up.
+var TempDir = ""
+
 type Stream struct {
 	Path   string
 	reader *io.Reader
@@ -39,7 +43,7 @@ type Stream struct {
 }
 
 func NewStream(read io.Reader) (*Stream, error) {
-	dir, err := ioutil.TempDir("", "livelog")
+	dir, err := ioutil.TempDir(TempDir, "livelog")
 	if err != nil {
 		return nil, err
 	}
@@ -154,11 +158,14 @@ func (self *Stream) Consume() error {
 				continue
 			}
 
+			// If this handle is backed up, drop it..
 			pendingWrites := len(handle.events)
 			if pendingWrites >= EVENT_BUFFER_SIZE-1 {
-				log.Printf("Removing handle with %d pending writes\n", pendingWrites)
-				// Remove the handle from any future event writes...
-				self.Unobserve(handle)
+				log.Printf("Removing handle that has failed to keep up (losing data)")
+				// Remove the handle from any future event writes.  We can't use
+				// Unobserve here as it locks self.mutex, which we have already
+				// locked.
+				delete(self.handles, handle)
 				close(handle.events)
 				continue
 			}
