@@ -73,6 +73,7 @@ module.exports = async ({ cfg, strategies, AuthorizationCode, AccessToken, auth,
   app.use(compression());
   app.use(bodyParser.urlencoded({ extended: true }));
   app.use(bodyParser.json());
+  app.options('/graphql', cors(corsOptions));
   app.post(
     '/graphql',
     cors(corsOptions),
