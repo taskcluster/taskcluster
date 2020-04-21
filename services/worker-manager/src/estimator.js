@@ -31,8 +31,13 @@ class Estimator {
     // This 1.25 factor is picked arbitrarily. Ideally this never triggers unless
     // we have some bug in the providers (which is somewhat likely especially with
     // new implementations)
+    // We also pick existingCapacity > 25 as a lower threshold to avoid throwing this
+    // when a small pool has worker configs that have more capacity than the max
+    // e.g. a maxCapacity of 2 with a config that has capacity 12
+    // Eventually we can disallow this condition but we allowed it at first so
+    // we have to live with it for a bit.
     let overProvisioned = false;
-    if (existingCapacity > (maxCapacity * 1.25)) {
+    if (existingCapacity > 25 && existingCapacity > (maxCapacity * 1.25)) {
       overProvisioned = true;
     }
 
