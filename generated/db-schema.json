@@ -69,8 +69,8 @@
     "worker_manager": {
       "tables": {
         "wmworker_pool_errors_entities": "write",
-        "wmworker_pools_entities": "write",
-        "wmworkers_entities": "write"
+        "wmworkers_entities": "write",
+        "worker_pools": "write"
       }
     }
   },
@@ -291,19 +291,25 @@
       "value": "jsonb not null",
       "version": "integer not null"
     },
-    "wmworker_pools_entities": {
-      "etag": "uuid",
-      "partition_key": "text not null",
-      "row_key": "text not null",
-      "value": "jsonb not null",
-      "version": "integer not null"
-    },
     "wmworkers_entities": {
       "etag": "uuid",
       "partition_key": "text not null",
       "row_key": "text not null",
       "value": "jsonb not null",
       "version": "integer not null"
+    },
+    "worker_pools": {
+      "config": "jsonb not null",
+      "created": "timestamp with time zone not null",
+      "description": "text not null",
+      "email_on_error": "boolean not null",
+      "etag": "uuid not null",
+      "last_modified": "timestamp with time zone not null",
+      "owner": "text not null",
+      "previous_provider_ids": "jsonb not null",
+      "provider_data": "jsonb not null",
+      "provider_id": "text not null",
+      "worker_pool_id": "text not null"
     }
   },
   "versions": [
@@ -2199,6 +2205,58 @@
       },
       "migrationScript": "begin\n  -- lock this table before reading from it, to prevent loss of concurrent\n  -- updates when the table is dropped.  Note that this may lead to concurrent\n  -- updates failing; the important thing is that they not succeed without\n  -- taking effect.  Failed updates will be retried.\n  lock table cache_purges_entities;\n\n  create table cache_purges\n  as\n    select\n      (value ->> 'provisionerId')::text as provisioner_id,\n      (value ->> 'workerType')::text as worker_type,\n      (value ->> 'cacheName')::text as cache_name,\n      (value ->> 'before')::timestamptz as before,\n      (value ->> 'expires')::timestamptz as expires,\n      etag\n    from cache_purges_entities;\n  alter table cache_purges add primary key (provisioner_id, worker_type, cache_name);\n  alter table cache_purges\n    alter column provisioner_id set not null,\n    alter column worker_type set not null,\n    alter column cache_name set not null,\n    alter column before set not null,\n    alter column expires set not null,\n    alter column etag set not null,\n    alter column etag set default public.gen_random_uuid();\n\n  revoke select, insert, update, delete on cache_purges_entities from $db_user_prefix$_purge_cache;\n  drop table cache_purges_entities;\n  grant select, insert, update, delete on cache_purges to $db_user_prefix$_purge_cache;\n\n  -- Given a page size it returns the limit to use on a paginated db function.\n  create or replace function get_page_limit(page_size integer) RETURNS integer\n  as $$\n      begin\n        return case\n          when (page_size is not null and page_size > 0) then page_size\n          else null\n        end;\n      end;\n  $$\n  language plpgSQL\n  strict immutable;\n\n  -- Given a page offset it returns the offset to use on a paginated db function.\n  create or replace function get_page_offset(page_offset integer) RETURNS integer\n  as $$\n      begin\n        return case\n          when (page_offset is not null and page_offset > 0) then page_offset\n          else 0\n        end;\n      end;\n  $$\n  language plpgSQL\n  strict immutable;\nend",
       "version": 9
+    },
+    {
+      "downgradeScript": "begin\n  -- lock this table before reading from it, to prevent loss of concurrent\n  -- updates when the table is dropped.\n  lock table worker_pools;\n\n  create table wmworker_pools_entities(\n    partition_key text, row_key text,\n    value jsonb not null,\n    version integer not null,\n    etag uuid default public.gen_random_uuid());\n  alter table wmworker_pools_entities add primary key (partition_key, row_key);\n\n  insert into wmworker_pools_entities\n  select\n    encode_string_key(worker_pool_id) as partition_key,\n    'workerPool' as row_key,\n    entity_buf_encode(\n      entity_buf_encode(\n        entity_buf_encode(\n          jsonb_build_object(\n            'PartitionKey', encode_string_key(worker_pool_id),\n            'RowKey', 'workerPool',\n            'workerPoolId', worker_pool_id,\n            'providerId', provider_id,\n            'owner', owner,\n            'description', description,\n            'emailOnError', email_on_error,\n            'created', created,\n            'lastModified', last_modified),\n          'config', config::text),\n        'providerData', provider_data::text),\n      'previousProviderIds', previous_provider_ids::text) as value,\n    1 as version,\n    etag\n  from worker_pools;\n\n  revoke select, insert, update, delete on worker_pools from $db_user_prefix$_worker_manager;\n  drop table worker_pools;\n  grant select, insert, update, delete on wmworker_pools_entities to $db_user_prefix$_worker_manager;\nend\n",
+      "methods": {
+        "wmworker_pools_entities_create": {
+          "args": "pk text, rk text, properties jsonb, overwrite boolean, version integer",
+          "body": "declare\n  new_row worker_pools%ROWTYPE;\nbegin\n  select\n    (properties ->> 'workerPoolId')::text as worker_pool_id,\n    (properties ->> 'providerId')::text as provider_id,\n    (properties ->> 'owner')::text as owner,\n    (properties ->> 'description')::text as description,\n    (properties -> 'emailOnError')::boolean as email_on_error,\n    (properties ->> 'created')::timestamptz as created,\n    (properties ->> 'lastModified')::timestamptz as last_modified,\n    entity_buf_decode(properties, 'config')::jsonb as config,\n    entity_buf_decode(properties, 'providerData')::jsonb as provider_data,\n    entity_buf_decode(properties, 'previousProviderIds')::jsonb as previous_provider_ids,\n    public.gen_random_uuid() as etag\n  into new_row;\n  if overwrite then\n    raise exception 'overwrite not implemented';\n  else\n    execute 'insert into worker_pools select $1.*' using new_row;\n  end if;\n  return new_row.etag;\nend",
+          "deprecated": false,
+          "description": "See taskcluster-lib-entities",
+          "mode": "write",
+          "returns": "uuid",
+          "serviceName": "worker_manager"
+        },
+        "wmworker_pools_entities_load": {
+          "args": "partition_key text, row_key text",
+          "body": "begin\n  return query\n  select\n    wmworker_pools_entities_load.partition_key,\n    'workerPool' as row_key,\n    entity_buf_encode(\n      entity_buf_encode(\n        entity_buf_encode(\n          jsonb_build_object(\n            'PartitionKey', wmworker_pools_entities_load.partition_key,\n            'RowKey', 'workerPool',\n            'workerPoolId', worker_pool_id,\n            'providerId', provider_id,\n            'owner', owner,\n            'description', description,\n            'emailOnError', email_on_error,\n            'created', created,\n            'lastModified', last_modified),\n          'config', config::text),\n        'providerData', provider_data::text),\n      'previousProviderIds', previous_provider_ids::text) as value,\n    1 as version,\n    worker_pools.etag as etag\n  from worker_pools\n  where\n    worker_pools.worker_pool_id = decode_string_key(wmworker_pools_entities_load.partition_key);\nend",
+          "deprecated": false,
+          "description": "See taskcluster-lib-entities",
+          "mode": "read",
+          "returns": "table (partition_key_out text, row_key_out text, value jsonb, version integer, etag uuid)",
+          "serviceName": "worker_manager"
+        },
+        "wmworker_pools_entities_modify": {
+          "args": "partition_key text, row_key text, properties jsonb, version integer, old_etag uuid",
+          "body": "declare\n  new_row worker_pools%ROWTYPE;\nbegin\n  select\n    (properties ->> 'workerPoolId')::text as worker_pool_id,\n    (properties ->> 'providerId')::text as provider_id,\n    (properties ->> 'owner')::text as owner,\n    (properties ->> 'description')::text as description,\n    (properties -> 'emailOnError')::boolean as email_on_error,\n    (properties ->> 'created')::timestamptz as created,\n    (properties ->> 'lastModified')::timestamptz as last_modified,\n    entity_buf_decode(properties, 'config')::jsonb as config,\n    entity_buf_decode(properties, 'providerData')::jsonb as provider_data,\n    entity_buf_decode(properties, 'previousProviderIds')::jsonb as previous_provider_ids,\n    public.gen_random_uuid() as etag\n  into new_row;\n  update worker_pools\n  set (\n    provider_id,\n    owner,\n    description,\n    email_on_error,\n    created,\n    last_modified,\n    config,\n    provider_data,\n    previous_provider_ids,\n    etag\n  ) = (\n    new_row.provider_id,\n    new_row.owner,\n    new_row.description,\n    new_row.email_on_error,\n    new_row.created,\n    new_row.last_modified,\n    new_row.config,\n    new_row.provider_data,\n    new_row.previous_provider_ids,\n    new_row.etag\n  )\n  where\n    worker_pools.worker_pool_id = decode_string_key(wmworker_pools_entities_modify.partition_key) and\n    worker_pools.etag = wmworker_pools_entities_modify.old_etag;\n\n  if found then\n    return query select new_row.etag;\n    return;\n  end if;\n\n  perform worker_pools.etag from worker_pools\n  where worker_pools.worker_pool_id = decode_string_key(wmworker_pools_entities_modify.partition_key);\n\n  if found then\n    raise exception 'unsuccessful update' using errcode = 'P0004';\n  else\n    raise exception 'no such row' using errcode = 'P0002';\n  end if;\nend",
+          "deprecated": false,
+          "description": "See taskcluster-lib-entities",
+          "mode": "write",
+          "returns": "table (etag uuid)",
+          "serviceName": "worker_manager"
+        },
+        "wmworker_pools_entities_remove": {
+          "args": "partition_key text, row_key text",
+          "body": "begin\n  delete\n  from worker_pools\n  where\n    worker_pools.worker_pool_id = decode_string_key(partition_key);\n  -- worker-manager does not care if the row existed\n  return query select gen_random_uuid() as etag;\nend",
+          "deprecated": false,
+          "description": "See taskcluster-lib-entities",
+          "mode": "write",
+          "returns": "table (etag uuid)",
+          "serviceName": "worker_manager"
+        },
+        "wmworker_pools_entities_scan": {
+          "args": "pk text, rk text, condition text, size integer, page integer",
+          "body": "declare\nbegin\n  if not condition is null then\n    raise exception 'condition not supported';\n  end if;\n  return query\n    select\n      wmworker_pools_entities_scan.partition_key,\n      'workerPool' as row_key,\n      entity_buf_encode(\n        entity_buf_encode(\n          entity_buf_encode(\n            jsonb_build_object(\n              'PartitionKey', encode_string_key(worker_pool_id),\n              'RowKey', 'workerPool',\n              'workerPoolId', worker_pool_id,\n              'providerId', provider_id,\n              'owner', owner,\n              'description', description,\n              'emailOnError', email_on_error,\n              'created', created,\n              'lastModified', last_modified),\n            'config', config::text),\n          'providerData', provider_data::text),\n        'previousProviderIds', previous_provider_ids::text) as value,\n      1 as version,\n    worker_pools.etag as etag\n    from worker_pools\n    where\n      partition_key is null or\n      worker_pool_id = decode_string_key(partition_key)\n    order by worker_pool_id\n    limit size + 1\n    offset page;\nend",
+          "deprecated": false,
+          "description": "See taskcluster-lib-entities",
+          "mode": "read",
+          "returns": "table (partition_key text, row_key text, value jsonb, version integer, etag uuid)",
+          "serviceName": "worker_manager"
+        }
+      },
+      "migrationScript": "begin\n  -- lock this table before reading from it, to prevent loss of concurrent\n  -- updates when the table is dropped.  Note that this may lead to concurrent\n  -- updates failing; the important thing is that they not succeed without\n  -- taking effect.  Failed updates will be retried.\n  lock table wmworker_pools_entities;\n\n  create table worker_pools\n  as\n    select\n      (value ->> 'workerPoolId')::text as worker_pool_id,\n      (value ->> 'providerId')::text as provider_id,\n      (value ->> 'owner')::text as owner,\n      (value ->> 'description')::text as description,\n      (value -> 'emailOnError')::boolean as email_on_error,\n      (value ->> 'created')::timestamptz as created,\n      (value ->> 'lastModified')::timestamptz as last_modified,\n      entity_buf_decode(value, 'config')::jsonb as config,\n      entity_buf_decode(value, 'providerData')::jsonb as provider_data,\n      entity_buf_decode(value, 'previousProviderIds')::jsonb as previous_provider_ids,\n      etag\n    from wmworker_pools_entities;\n  alter table worker_pools add primary key (worker_pool_id);\n  alter table worker_pools\n    alter column provider_id set not null,\n    alter column owner set not null,\n    alter column description set not null,\n    alter column email_on_error set not null,\n    alter column created set not null,\n    alter column last_modified set not null,\n    alter column config set not null,\n    alter column provider_data set not null,\n    alter column previous_provider_ids set not null,\n    alter column etag set not null,\n    alter column etag set default public.gen_random_uuid();\n\n  revoke select, insert, update, delete on wmworker_pools_entities from $db_user_prefix$_worker_manager;\n  drop table wmworker_pools_entities;\n  grant select, insert, update, delete on worker_pools to $db_user_prefix$_worker_manager;\nend\n",
+      "version": 10
     }
   ]
 }

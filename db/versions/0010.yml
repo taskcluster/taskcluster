@@ -1,0 +1,190 @@
+version: 10
+migrationScript: 0010-migration.sql
+downgradeScript: 0010-downgrade.sql
+methods:
+  wmworker_pools_entities_load:
+    description: See taskcluster-lib-entities
+    mode: read
+    serviceName: worker_manager
+    args: partition_key text, row_key text
+    returns: table (partition_key_out text, row_key_out text, value jsonb, version integer, etag uuid)
+    body: |-
+      begin
+        return query
+        select
+          wmworker_pools_entities_load.partition_key,
+          'workerPool' as row_key,
+          entity_buf_encode(
+            entity_buf_encode(
+              entity_buf_encode(
+                jsonb_build_object(
+                  'PartitionKey', wmworker_pools_entities_load.partition_key,
+                  'RowKey', 'workerPool',
+                  'workerPoolId', worker_pool_id,
+                  'providerId', provider_id,
+                  'owner', owner,
+                  'description', description,
+                  'emailOnError', email_on_error,
+                  'created', created,
+                  'lastModified', last_modified),
+                'config', config::text),
+              'providerData', provider_data::text),
+            'previousProviderIds', previous_provider_ids::text) as value,
+          1 as version,
+          worker_pools.etag as etag
+        from worker_pools
+        where
+          worker_pools.worker_pool_id = decode_string_key(wmworker_pools_entities_load.partition_key);
+      end
+  wmworker_pools_entities_create:
+    serviceName: worker_manager
+    description: See taskcluster-lib-entities
+    mode: write
+    args: pk text, rk text, properties jsonb, overwrite boolean, version integer
+    returns: uuid
+    body: |-
+      declare
+        new_row worker_pools%ROWTYPE;
+      begin
+        select
+          (properties ->> 'workerPoolId')::text as worker_pool_id,
+          (properties ->> 'providerId')::text as provider_id,
+          (properties ->> 'owner')::text as owner,
+          (properties ->> 'description')::text as description,
+          (properties -> 'emailOnError')::boolean as email_on_error,
+          (properties ->> 'created')::timestamptz as created,
+          (properties ->> 'lastModified')::timestamptz as last_modified,
+          entity_buf_decode(properties, 'config')::jsonb as config,
+          entity_buf_decode(properties, 'providerData')::jsonb as provider_data,
+          entity_buf_decode(properties, 'previousProviderIds')::jsonb as previous_provider_ids,
+          public.gen_random_uuid() as etag
+        into new_row;
+        if overwrite then
+          raise exception 'overwrite not implemented';
+        else
+          execute 'insert into worker_pools select $1.*' using new_row;
+        end if;
+        return new_row.etag;
+      end
+  wmworker_pools_entities_remove:
+    serviceName: worker_manager
+    description: See taskcluster-lib-entities
+    mode: write
+    args: partition_key text, row_key text
+    returns: table (etag uuid)
+    body: |-
+      begin
+        delete
+        from worker_pools
+        where
+          worker_pools.worker_pool_id = decode_string_key(partition_key);
+        -- worker-manager does not care if the row existed
+        return query select gen_random_uuid() as etag;
+      end
+  wmworker_pools_entities_modify:
+    serviceName: worker_manager
+    description: See taskcluster-lib-entities
+    mode: write
+    args: partition_key text, row_key text, properties jsonb, version integer, old_etag uuid
+    returns: table (etag uuid)
+    body: |-
+      declare
+        new_row worker_pools%ROWTYPE;
+      begin
+        select
+          (properties ->> 'workerPoolId')::text as worker_pool_id,
+          (properties ->> 'providerId')::text as provider_id,
+          (properties ->> 'owner')::text as owner,
+          (properties ->> 'description')::text as description,
+          (properties -> 'emailOnError')::boolean as email_on_error,
+          (properties ->> 'created')::timestamptz as created,
+          (properties ->> 'lastModified')::timestamptz as last_modified,
+          entity_buf_decode(properties, 'config')::jsonb as config,
+          entity_buf_decode(properties, 'providerData')::jsonb as provider_data,
+          entity_buf_decode(properties, 'previousProviderIds')::jsonb as previous_provider_ids,
+          public.gen_random_uuid() as etag
+        into new_row;
+        update worker_pools
+        set (
+          provider_id,
+          owner,
+          description,
+          email_on_error,
+          created,
+          last_modified,
+          config,
+          provider_data,
+          previous_provider_ids,
+          etag
+        ) = (
+          new_row.provider_id,
+          new_row.owner,
+          new_row.description,
+          new_row.email_on_error,
+          new_row.created,
+          new_row.last_modified,
+          new_row.config,
+          new_row.provider_data,
+          new_row.previous_provider_ids,
+          new_row.etag
+        )
+        where
+          worker_pools.worker_pool_id = decode_string_key(wmworker_pools_entities_modify.partition_key) and
+          worker_pools.etag = wmworker_pools_entities_modify.old_etag;
+
+        if found then
+          return query select new_row.etag;
+          return;
+        end if;
+
+        perform worker_pools.etag from worker_pools
+        where worker_pools.worker_pool_id = decode_string_key(wmworker_pools_entities_modify.partition_key);
+
+        if found then
+          raise exception 'unsuccessful update' using errcode = 'P0004';
+        else
+          raise exception 'no such row' using errcode = 'P0002';
+        end if;
+      end
+  wmworker_pools_entities_scan:
+    description: See taskcluster-lib-entities
+    mode: read
+    serviceName: worker_manager
+    args: pk text, rk text, condition text, size integer, page integer
+    returns: table (partition_key text, row_key text, value jsonb, version integer, etag uuid)
+    body: |-
+      declare
+      begin
+        if not condition is null then
+          raise exception 'condition not supported';
+        end if;
+        return query
+          select
+            wmworker_pools_entities_scan.partition_key,
+            'workerPool' as row_key,
+            entity_buf_encode(
+              entity_buf_encode(
+                entity_buf_encode(
+                  jsonb_build_object(
+                    'PartitionKey', encode_string_key(worker_pool_id),
+                    'RowKey', 'workerPool',
+                    'workerPoolId', worker_pool_id,
+                    'providerId', provider_id,
+                    'owner', owner,
+                    'description', description,
+                    'emailOnError', email_on_error,
+                    'created', created,
+                    'lastModified', last_modified),
+                  'config', config::text),
+                'providerData', provider_data::text),
+              'previousProviderIds', previous_provider_ids::text) as value,
+            1 as version,
+          worker_pools.etag as etag
+          from worker_pools
+          where
+            partition_key is null or
+            worker_pool_id = decode_string_key(partition_key)
+          order by worker_pool_id
+          limit size + 1
+          offset page;
+      end

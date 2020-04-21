@@ -270,7 +270,7 @@ exports.resetTables = (mock, skipping) => {
     } else {
       const sec = exports.secrets.get('db');
       await resetTable({ testDbUrl: sec.testDbUrl, tableName: 'wmworkers_entities' });
-      await resetTable({ testDbUrl: sec.testDbUrl, tableName: 'wmworker_pools_entities' });
+      await resetTable({ testDbUrl: sec.testDbUrl, tableName: 'worker_pools' });
       await resetTable({ testDbUrl: sec.testDbUrl, tableName: 'wmworker_pool_errors_entities' });
     }
   });

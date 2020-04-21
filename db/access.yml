@@ -55,5 +55,5 @@ web_server:
 worker_manager:
   tables:
     wmworkers_entities: write
-    wmworker_pools_entities: write
+    worker_pools: write
     wmworker_pool_errors_entities: write

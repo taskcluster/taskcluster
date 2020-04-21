@@ -136,12 +136,18 @@ wmworker_pool_errors_entities:
   value: jsonb not null
   version: integer not null
   etag: uuid
-wmworker_pools_entities:
-  partition_key: text not null
-  row_key: text not null
-  value: jsonb not null
-  version: integer not null
-  etag: uuid
+worker_pools:
+  worker_pool_id: text not null
+  provider_id: text not null
+  created: timestamp with time zone not null
+  description: text not null
+  email_on_error: boolean not null
+  owner: text not null
+  last_modified: timestamp with time zone not null
+  config: jsonb not null
+  provider_data: jsonb not null
+  previous_provider_ids: jsonb not null
+  etag: uuid not null
 wmworkers_entities:
   partition_key: text not null
   row_key: text not null
