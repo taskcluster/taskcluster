@@ -230,13 +230,26 @@ helper.dbSuite(path.basename(__filename), function() {
 
   suite('db._doDowngrade', function() {
     suiteSetup(async function() {
-      // TODO: factor to util
       db = new Database({urlsByMode: {admin: helper.dbUrl}});
       await createUsers(db);
     });
 
     const v1 = {
       version: 1,
+      methods: {
+        test: {
+          args: '',
+          returns: 'int',
+          mode: 'read',
+          serviceName: 'service-1',
+          description: 'test v1',
+          body: 'begin return 1; end',
+        },
+      },
+    };
+
+    const v2 = {
+      version: 2,
       migrationScript: `begin
         create table foo as select 1 as bar;
         grant select on foo to $db_user_prefix$_service1;
@@ -245,17 +258,11 @@ helper.dbSuite(path.basename(__filename), function() {
         revoke select on foo from $db_user_prefix$_service1;
         drop table foo;
       end`,
-      methods: {
-        test: {
-          args: '',
-          returns: 'int',
-          body: 'begin return 1; end',
-        },
-      },
+      methods: {},
     };
 
-    const v2 = {
-      version: 2,
+    const v3 = {
+      version: 3,
       migrationScript: `begin
         create table foo2 as select 1 as bar;
         grant select on foo2 to $db_user_prefix$_service2;
@@ -268,10 +275,14 @@ helper.dbSuite(path.basename(__filename), function() {
         test: {
           args: '',
           returns: 'int',
-          body: 'begin return 2; end',
+          mode: 'read',
+          serviceName: 'service-1',
+          description: 'test v3',
+          body: 'begin return 3; end',
         },
       },
     };
+    const schema = Schema.fromSerializable({versions: [v1, v2, v3], access, tables});
 
     const testMethod = async (client, v) => {
       const res = await client.query('select test()');
@@ -280,29 +291,24 @@ helper.dbSuite(path.basename(__filename), function() {
 
     setup(async function() {
       db = new Database({urlsByMode: {[READ]: helper.dbUrl, 'admin': helper.dbUrl}});
-      await db._doUpgrade({
-        version: v1,
-        showProgress: () => {},
-        usernamePrefix: 'test',
-      });
-      await db._doUpgrade({
-        version: v2,
-        showProgress: () => {},
-        usernamePrefix: 'test',
-      });
-      await db._withClient('admin', async client => {
-        await testMethod(client, 2);
-      });
+      for (let version of [v1, v2, v3]) {
+        await db._doUpgrade({
+          version,
+          showProgress: () => {},
+          usernamePrefix: 'test',
+        });
+      }
     });
 
     test('_doDowngrade runs downgrade script with multiple statements and $db_user_prefix$', async function() {
       await db._doDowngrade({
-        fromVersion: v2,
-        toVersion: v1,
+        schema,
+        fromVersion: v3,
+        toVersion: v2,
         showProgress: () => {},
         usernamePrefix: 'test',
       });
-      assert.equal(await db.currentVersion(), 1);
+      assert.equal(await db.currentVersion(), 2);
       await db._withClient('admin', async client => {
         await assert.rejects(async () => {
           await client.query('select * from foo2');
@@ -315,21 +321,22 @@ helper.dbSuite(path.basename(__filename), function() {
     test('failure does not modify version', async function() {
       await assert.rejects(
         async () => db._doDowngrade({
+          schema,
           fromVersion: {
-            ...v2,
+            ...v3,
             downgradeScript: `begin
               drop table NOSUCHTABLE;
             end`,
           },
-          toVersion: v1,
+          toVersion: v2,
           showProgress: () => {},
           usernamePrefix: 'test',
         }),
         err => err.code === UNDEFINED_TABLE);
-      assert.equal(await db.currentVersion(), 2);
+      assert.equal(await db.currentVersion(), 3);
       await db._withClient('admin', async client => {
-        // method is still the v2 method
-        await testMethod(client, 2);
+        // method is still the v3 method
+        await testMethod(client, 3);
       });
     });
   });
