@@ -37,10 +37,10 @@ if ! lvdisplay | grep instance_storage; then
     for d in $devices; do umount $d || true; done
 
     # Create volume group containing all instance storage devices
-    echo $devices | xargs vgcreate instance_storage
+    echo $devices | xargs vgcreate -y instance_storage
 
     # Create logical volume with all storage
-    lvcreate -l 100%VG -n all instance_storage
+    lvcreate -y -l 100%VG -n all instance_storage
 else
     echo "Logical volume 'instance_storage' already exists"
 fi
