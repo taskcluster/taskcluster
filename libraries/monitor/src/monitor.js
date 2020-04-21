@@ -254,7 +254,7 @@ class Monitor {
     }
     const serialized = serializeError(err);
     if (this.manager._reporter) {
-      extra['reportId'] = this.manager._reporter.report(err);
+      extra['reportId'] = this.manager._reporter.report(err, level, extra);
     }
     this.log.errorReport({...serialized, ...extra}, {level});
   }

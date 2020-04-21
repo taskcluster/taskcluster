@@ -7,7 +7,7 @@ class TestReporter {
     this.log = log;
   }
 
-  report(error) {
+  report(error, level, extra) {
     this.internal.push(error);
     return slugid.v4();
   }
