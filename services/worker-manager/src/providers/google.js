@@ -276,6 +276,7 @@ class GoogleProvider extends Provider {
                     providerId: this.providerId,
                     workerGroup: this.providerId,
                     rootUrl: this.rootUrl,
+                    // NOTE: workerConfig is deprecated and isn't used after worker-runner v29.0.1
                     workerConfig: cfg.workerConfig || {},
                   }),
                 },
