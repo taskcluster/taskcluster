@@ -355,10 +355,10 @@ If you set the level during setup to a single valid syslog level, it will be pro
 If you would like more control, you can use a specifically formatted string:
 
 ```
-LEVEL='root:info root.api:debug root.handler:warning'
+LEVEL='root:info api:debug handler:warning'
 ```
 
-When you use this format, you specify a prefix with `root` included and after a `:` you specify a valid syslog level.
+When you use this format, you specify a prefix _without_ `root` included and after a `:` you specify a valid syslog level.
 You _must_ set a value for `root` in these cases and any unspecified prefixes will default to that.
 
 # Mesage Format
