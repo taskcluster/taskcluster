@@ -53,6 +53,7 @@ export default class ViewRoles extends PureComponent {
           <Search
             onSubmit={this.handleRoleSearchSubmit}
             placeholder="Role contains"
+            defaultValue={roleSearch}
           />
         }>
         <Roles searchTerm={roleSearch} />

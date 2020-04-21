@@ -110,6 +110,7 @@ export default class ViewScope extends Component {
           <Search
             onSubmit={this.handleSearchSubmit}
             placeholder="Role/Client contains"
+            defaultValue={searchTerm}
           />
         }>
         <Fragment>
