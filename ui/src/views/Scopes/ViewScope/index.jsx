@@ -71,15 +71,19 @@ export default class ViewScope extends Component {
   };
 
   handleSearchSubmit = searchTerm => {
-    if (searchTerm !== this.state.searchTerm) {
-      this.props.history.push(
-        searchTerm.length > 0
-          ? `?${stringify({
-              searchTerm,
-              tabIndex: this.state.currentTabIndex,
-            })}`
-          : this.propss.history.location.pathname
-      );
+    const { location, history } = this.props;
+    const query = parse(location.search.slice(1));
+
+    if (query.searchTerm !== searchTerm) {
+      const newQuery = {
+        ...query,
+        searchTerm,
+        tabIndex: this.state.currentTabIndex,
+      };
+
+      history.push({
+        search: stringify(newQuery, { addQueryPrefix: true }),
+      });
     }
 
     this.setState({ searchTerm });

@@ -23,10 +23,15 @@ export default class ViewRoles extends PureComponent {
   };
 
   handleRoleSearchSubmit = roleSearch => {
-    if (roleSearch !== this.state.roleSearch) {
-      this.props.history.push(
-        roleSearch.length > 0 ? `?${stringify({ roleSearch })}` : '/auth/roles'
-      );
+    const { location, history } = this.props;
+    const query = parse(location.search.slice(1));
+
+    if (query.roleSearch !== roleSearch) {
+      query.roleSearch = roleSearch;
+
+      history.push({
+        search: stringify(query, { addQueryPrefix: true }),
+      });
     }
 
     this.setState({ roleSearch });
