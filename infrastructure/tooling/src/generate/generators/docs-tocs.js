@@ -152,7 +152,7 @@ function makeToc({ files, rootPath }) {
 
 exports.tasks = [{
   title: 'Docs TOCs',
-  requires: ['target-gw-docs'],
+  requires: ['target-gw-docs', 'target-worker-runner'],
   provides: ['docs-toc'],
   run: async (requirements, utils) => {
     const filesWithExtensions = await mdParseDir(DOCS_DIR, { dirnames: true, filter: '**\/*.mdx' });

@@ -30,7 +30,7 @@ function sort(a, b) {
 
 exports.tasks = [{
   title: 'Docs Search',
-  requires: ['target-gw-docs'],
+  requires: ['target-gw-docs', 'target-worker-runner'],
   provides: ['docs-search'],
   run: (requirements, utils) => {
     const docsSearch = [];

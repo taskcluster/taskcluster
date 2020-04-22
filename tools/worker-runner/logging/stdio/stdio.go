@@ -30,8 +30,10 @@ func Usage() string {
 The "stdio" logging logs to stderr with a timestamp prefix.  It is the default
 if no logging configuration is given.  It does not take any other properties.
 
-	logging:
-		implementation: stdio
+` + "```yaml" + `
+logging:
+	implementation: stdio
+` + "```" + `
 
 `
 

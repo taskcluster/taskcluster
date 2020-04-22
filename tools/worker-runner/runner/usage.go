@@ -4,8 +4,7 @@ import "strings"
 
 // Get a fragment of a usage message that describes the configuration file format
 func Usage() string {
-	return strings.ReplaceAll(`## Configuration
-
+	return strings.ReplaceAll(`
 Configuration for worker-runner is in the form of a YAML file with
 the following fields:
 

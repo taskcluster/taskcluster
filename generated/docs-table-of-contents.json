@@ -3217,94 +3217,6 @@
                 "children": [
                 ],
                 "data": {
-                  "order": 10,
-                  "title": "Deployment"
-                },
-                "name": "deployment",
-                "next": {
-                  "path": "reference/workers/worker-runner/linux-services",
-                  "title": "Linux"
-                },
-                "path": "reference/workers/worker-runner/deployment",
-                "prev": {
-                  "path": "reference/workers/worker-runner",
-                  "title": "Deployment"
-                },
-                "up": {
-                  "path": "reference/workers/worker-runner",
-                  "title": "Deployment"
-                }
-              },
-              {
-                "children": [
-                ],
-                "data": {
-                  "order": 20,
-                  "title": "Linux"
-                },
-                "name": "linux-services",
-                "next": {
-                  "path": "reference/workers/worker-runner/windows-services",
-                  "title": "Generic-Worker Service"
-                },
-                "path": "reference/workers/worker-runner/linux-services",
-                "prev": {
-                  "path": "reference/workers/worker-runner/deployment",
-                  "title": "Deployment"
-                },
-                "up": {
-                  "path": "reference/workers/worker-runner",
-                  "title": "Deployment"
-                }
-              },
-              {
-                "children": [
-                ],
-                "data": {
-                  "order": 30,
-                  "title": "Generic-Worker Service"
-                },
-                "name": "windows-services",
-                "next": {
-                  "path": "reference/workers/built-in-workers/README",
-                  "title": "built-in-workers"
-                },
-                "path": "reference/workers/worker-runner/windows-services",
-                "prev": {
-                  "path": "reference/workers/worker-runner/linux-services",
-                  "title": "Linux"
-                },
-                "up": {
-                  "path": "reference/workers/worker-runner",
-                  "title": "Deployment"
-                }
-              }
-            ],
-            "data": {
-              "order": 10,
-              "title": "Deployment"
-            },
-            "name": "worker-runner",
-            "next": {
-              "path": "reference/workers/worker-runner/deployment",
-              "title": "Deployment"
-            },
-            "path": "reference/workers/worker-runner",
-            "prev": {
-              "path": "reference/workers/README",
-              "title": "Workers"
-            },
-            "up": {
-              "path": "reference/workers/README",
-              "title": "Workers"
-            }
-          },
-          {
-            "children": [
-              {
-                "children": [
-                ],
-                "data": {
                   "inline": true,
                   "order": 2,
                   "title": "logs"
@@ -3335,8 +3247,8 @@
             },
             "path": "reference/workers/built-in-workers/README",
             "prev": {
-              "path": "reference/workers/worker-runner/windows-services",
-              "title": "Generic-Worker Service"
+              "path": "reference/workers/README",
+              "title": "Workers"
             },
             "up": {
               "path": "reference/workers/README",
@@ -3507,6 +3419,10 @@
                   "title": "Task Payload - simple, posix"
                 },
                 "name": "simple-posix-payload",
+                "next": {
+                  "path": "reference/workers/worker-runner/README",
+                  "title": "worker-runner"
+                },
                 "path": "reference/workers/generic-worker/simple-posix-payload",
                 "prev": {
                   "path": "reference/workers/generic-worker/multiuser-windows-payload",
@@ -3535,6 +3451,199 @@
               "path": "reference/workers/README",
               "title": "Workers"
             }
+          },
+          {
+            "children": [
+              {
+                "children": [
+                ],
+                "data": {
+                  "order": 10,
+                  "title": "Worker Configuration"
+                },
+                "name": "worker-configuration",
+                "next": {
+                  "path": "reference/workers/worker-runner/linux-services",
+                  "title": "Linux"
+                },
+                "path": "reference/workers/worker-runner/worker-configuration",
+                "prev": {
+                  "path": "reference/workers/worker-runner/README",
+                  "title": "worker-runner"
+                },
+                "up": {
+                  "path": "reference/workers/worker-runner/README",
+                  "title": "worker-runner"
+                }
+              },
+              {
+                "children": [
+                ],
+                "data": {
+                  "order": 20,
+                  "title": "Linux"
+                },
+                "name": "linux-services",
+                "next": {
+                  "path": "reference/workers/worker-runner/runner-configuration",
+                  "title": "Runner Configuration"
+                },
+                "path": "reference/workers/worker-runner/linux-services",
+                "prev": {
+                  "path": "reference/workers/worker-runner/worker-configuration",
+                  "title": "Worker Configuration"
+                },
+                "up": {
+                  "path": "reference/workers/worker-runner/README",
+                  "title": "worker-runner"
+                }
+              },
+              {
+                "children": [
+                ],
+                "data": {
+                  "order": 20,
+                  "title": "Runner Configuration"
+                },
+                "name": "runner-configuration",
+                "next": {
+                  "path": "reference/workers/worker-runner/providers",
+                  "title": "Providers"
+                },
+                "path": "reference/workers/worker-runner/runner-configuration",
+                "prev": {
+                  "path": "reference/workers/worker-runner/linux-services",
+                  "title": "Linux"
+                },
+                "up": {
+                  "path": "reference/workers/worker-runner/README",
+                  "title": "worker-runner"
+                }
+              },
+              {
+                "children": [
+                ],
+                "data": {
+                  "order": 30,
+                  "title": "Providers"
+                },
+                "name": "providers",
+                "next": {
+                  "path": "reference/workers/worker-runner/windows-services",
+                  "title": "Generic-Worker Service"
+                },
+                "path": "reference/workers/worker-runner/providers",
+                "prev": {
+                  "path": "reference/workers/worker-runner/runner-configuration",
+                  "title": "Runner Configuration"
+                },
+                "up": {
+                  "path": "reference/workers/worker-runner/README",
+                  "title": "worker-runner"
+                }
+              },
+              {
+                "children": [
+                ],
+                "data": {
+                  "order": 30,
+                  "title": "Generic-Worker Service"
+                },
+                "name": "windows-services",
+                "next": {
+                  "path": "reference/workers/worker-runner/workers",
+                  "title": "Workers"
+                },
+                "path": "reference/workers/worker-runner/windows-services",
+                "prev": {
+                  "path": "reference/workers/worker-runner/providers",
+                  "title": "Providers"
+                },
+                "up": {
+                  "path": "reference/workers/worker-runner/README",
+                  "title": "worker-runner"
+                }
+              },
+              {
+                "children": [
+                ],
+                "data": {
+                  "order": 40,
+                  "title": "Workers"
+                },
+                "name": "workers",
+                "next": {
+                  "path": "reference/workers/worker-runner/logging",
+                  "title": "Logging"
+                },
+                "path": "reference/workers/worker-runner/workers",
+                "prev": {
+                  "path": "reference/workers/worker-runner/windows-services",
+                  "title": "Generic-Worker Service"
+                },
+                "up": {
+                  "path": "reference/workers/worker-runner/README",
+                  "title": "worker-runner"
+                }
+              },
+              {
+                "children": [
+                ],
+                "data": {
+                  "order": 50,
+                  "title": "Logging"
+                },
+                "name": "logging",
+                "next": {
+                  "path": "reference/workers/worker-runner/deployment",
+                  "title": "Deployment"
+                },
+                "path": "reference/workers/worker-runner/logging",
+                "prev": {
+                  "path": "reference/workers/worker-runner/workers",
+                  "title": "Workers"
+                },
+                "up": {
+                  "path": "reference/workers/worker-runner/README",
+                  "title": "worker-runner"
+                }
+              },
+              {
+                "children": [
+                ],
+                "data": {
+                  "order": 100,
+                  "title": "Deployment"
+                },
+                "name": "deployment",
+                "path": "reference/workers/worker-runner/deployment",
+                "prev": {
+                  "path": "reference/workers/worker-runner/logging",
+                  "title": "Logging"
+                },
+                "up": {
+                  "path": "reference/workers/worker-runner/README",
+                  "title": "worker-runner"
+                }
+              }
+            ],
+            "data": {
+              "order": 1000
+            },
+            "name": "worker-runner",
+            "next": {
+              "path": "reference/workers/worker-runner/worker-configuration",
+              "title": "Worker Configuration"
+            },
+            "path": "reference/workers/worker-runner/README",
+            "prev": {
+              "path": "reference/workers/generic-worker/simple-posix-payload",
+              "title": "Task Payload - simple, posix"
+            },
+            "up": {
+              "path": "reference/workers/README",
+              "title": "Workers"
+            }
           }
         ],
         "data": {
@@ -3543,8 +3652,8 @@
         },
         "name": "workers",
         "next": {
-          "path": "reference/workers/worker-runner",
-          "title": "Deployment"
+          "path": "reference/workers/built-in-workers/README",
+          "title": "built-in-workers"
         },
         "path": "reference/workers/README",
         "prev": {

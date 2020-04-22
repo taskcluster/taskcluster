@@ -2899,6 +2899,34 @@
   },
   {
     "element": "h1",
+    "id": "worker-runner",
+    "path": "/reference/workers/worker-runner",
+    "subtitle": null,
+    "title": "worker-runner"
+  },
+  {
+    "element": "h2",
+    "id": "details",
+    "path": "/reference/workers/worker-runner",
+    "subtitle": "Details",
+    "title": "worker-runner"
+  },
+  {
+    "element": "h2",
+    "id": "theory-of-operation",
+    "path": "/reference/workers/worker-runner",
+    "subtitle": "Theory of Operation",
+    "title": "worker-runner"
+  },
+  {
+    "element": "h2",
+    "id": "usage",
+    "path": "/reference/workers/worker-runner",
+    "subtitle": "Usage",
+    "title": "worker-runner"
+  },
+  {
+    "element": "h1",
     "id": "deployment",
     "path": "/reference/workers/worker-runner/deployment",
     "subtitle": null,
@@ -2907,37 +2935,170 @@
   {
     "element": "h1",
     "id": "log-to-console-to-make-output-visible-in-cloud-consoles-and-syslog-for-ease-of",
-    "path": "/reference/workers/worker-runner/linux-services",
+    "path": "/reference/workers/worker-runner/deployment",
     "subtitle": null,
-    "title": "log to console to make output visible in cloud consoles, and syslog for ease of"
+    "title": "Deployment"
   },
   {
     "element": "h1",
     "id": "redirecting-to-external-logging-services",
-    "path": "/reference/workers/worker-runner/linux-services",
+    "path": "/reference/workers/worker-runner/deployment",
     "subtitle": null,
-    "title": "log to console to make output visible in cloud consoles, and syslog for ease of"
+    "title": "Deployment"
   },
   {
     "element": "h2",
     "id": "linux",
-    "path": "/reference/workers/worker-runner/linux-services",
+    "path": "/reference/workers/worker-runner/deployment",
     "subtitle": "Linux",
-    "title": "log to console to make output visible in cloud consoles, and syslog for ease of"
+    "title": "Deployment"
   },
   {
-    "element": "h1",
-    "id": "generic-worker-service",
-    "path": "/reference/workers/worker-runner/windows-services",
-    "subtitle": null,
-    "title": "Generic-Worker Service"
+    "element": "h4",
+    "id": "recommended-setup",
+    "path": "/reference/workers/worker-runner/deployment",
+    "subtitle": "Recommended Setup",
+    "title": "Deployment"
   },
   {
     "element": "h2",
-    "id": "recommended-setup",
-    "path": "/reference/workers/worker-runner/windows-services",
-    "subtitle": "Recommended Setup",
-    "title": "Generic-Worker Service"
+    "id": "windows",
+    "path": "/reference/workers/worker-runner/deployment",
+    "subtitle": "Windows",
+    "title": "Deployment"
+  },
+  {
+    "element": "h1",
+    "id": "logging",
+    "path": "/reference/workers/worker-runner/logging",
+    "subtitle": null,
+    "title": "Logging"
+  },
+  {
+    "element": "h2",
+    "id": "stdio",
+    "path": "/reference/workers/worker-runner/logging",
+    "subtitle": "stdio",
+    "title": "Logging"
+  },
+  {
+    "element": "h1",
+    "id": "providers",
+    "path": "/reference/workers/worker-runner/providers",
+    "subtitle": null,
+    "title": "Providers"
+  },
+  {
+    "element": "h2",
+    "id": "aws",
+    "path": "/reference/workers/worker-runner/providers",
+    "subtitle": "aws",
+    "title": "Providers"
+  },
+  {
+    "element": "h2",
+    "id": "azure",
+    "path": "/reference/workers/worker-runner/providers",
+    "subtitle": "azure",
+    "title": "Providers"
+  },
+  {
+    "element": "h2",
+    "id": "google",
+    "path": "/reference/workers/worker-runner/providers",
+    "subtitle": "google",
+    "title": "Providers"
+  },
+  {
+    "element": "h2",
+    "id": "standalone",
+    "path": "/reference/workers/worker-runner/providers",
+    "subtitle": "standalone",
+    "title": "Providers"
+  },
+  {
+    "element": "h2",
+    "id": "static",
+    "path": "/reference/workers/worker-runner/providers",
+    "subtitle": "static",
+    "title": "Providers"
+  },
+  {
+    "element": "h1",
+    "id": "runner-configuration-file",
+    "path": "/reference/workers/worker-runner/runner-configuration",
+    "subtitle": null,
+    "title": "Runner Configuration File"
+  },
+  {
+    "element": "h2",
+    "id": "file-format",
+    "path": "/reference/workers/worker-runner/runner-configuration",
+    "subtitle": "File Format",
+    "title": "Runner Configuration File"
+  },
+  {
+    "element": "h1",
+    "id": "worker-configuration",
+    "path": "/reference/workers/worker-runner/worker-configuration",
+    "subtitle": null,
+    "title": "Worker Configuration"
+  },
+  {
+    "element": "h2",
+    "id": "configuration-from-runner-config",
+    "path": "/reference/workers/worker-runner/worker-configuration",
+    "subtitle": "Configuration from Runner Config",
+    "title": "Worker Configuration"
+  },
+  {
+    "element": "h2",
+    "id": "configuration-from-the-provider",
+    "path": "/reference/workers/worker-runner/worker-configuration",
+    "subtitle": "Configuration from the Provider",
+    "title": "Worker Configuration"
+  },
+  {
+    "element": "h2",
+    "id": "files",
+    "path": "/reference/workers/worker-runner/worker-configuration",
+    "subtitle": "Files",
+    "title": "Worker Configuration"
+  },
+  {
+    "element": "h2",
+    "id": "secrets",
+    "path": "/reference/workers/worker-runner/worker-configuration",
+    "subtitle": "Secrets",
+    "title": "Worker Configuration"
+  },
+  {
+    "element": "h1",
+    "id": "workers",
+    "path": "/reference/workers/worker-runner/workers",
+    "subtitle": null,
+    "title": "Workers"
+  },
+  {
+    "element": "h2",
+    "id": "docker-worker",
+    "path": "/reference/workers/worker-runner/workers",
+    "subtitle": "docker-worker",
+    "title": "Workers"
+  },
+  {
+    "element": "h2",
+    "id": "dummy",
+    "path": "/reference/workers/worker-runner/workers",
+    "subtitle": "dummy",
+    "title": "Workers"
+  },
+  {
+    "element": "h2",
+    "id": "generic-worker",
+    "path": "/reference/workers/worker-runner/workers",
+    "subtitle": "generic-worker",
+    "title": "Workers"
   },
   {
     "element": "h1",
