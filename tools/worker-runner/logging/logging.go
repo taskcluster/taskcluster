@@ -46,9 +46,7 @@ func Configure(runnercfg *cfg.RunnerConfig) {
 }
 
 func Usage() string {
-	rv := []string{`## Logging
-
-The following logging implementations are supported:
+	rv := []string{`The following logging implementations are supported:
 `}
 
 	sortedImpls := make([]string, len(implementations))
@@ -62,7 +60,7 @@ The following logging implementations are supported:
 	for _, n := range sortedImpls {
 		info := implementations[n]
 		usage := strings.Trim(info.usage(), " \n\t")
-		rv = append(rv, fmt.Sprintf("### %s\n\n%s\n", n, usage))
+		rv = append(rv, fmt.Sprintf("#### %s\n\n%s\n", n, usage))
 	}
 	return strings.Join(rv, "\n")
 }

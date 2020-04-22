@@ -36,9 +36,7 @@ func New(runnercfg *cfg.RunnerConfig) (worker.Worker, error) {
 }
 
 func Usage() string {
-	rv := []string{`## Workers
-
-The following worker implementations are supported:
+	rv := []string{`The following worker implementations are supported:
 `}
 
 	sortedWorkers := make([]string, len(workers))
@@ -52,7 +50,7 @@ The following worker implementations are supported:
 	for _, n := range sortedWorkers {
 		info := workers[n]
 		usage := strings.Trim(info.usage(), " \n\t")
-		rv = append(rv, fmt.Sprintf("### %s\n\n%s\n", n, usage))
+		rv = append(rv, fmt.Sprintf("#### %s\n\n%s\n", n, usage))
 	}
 	return strings.Join(rv, "\n")
 }

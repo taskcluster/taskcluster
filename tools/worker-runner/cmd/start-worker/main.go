@@ -7,25 +7,19 @@ import (
 	docopt "github.com/docopt/docopt-go"
 	"github.com/taskcluster/taskcluster/v29/internal"
 	"github.com/taskcluster/taskcluster/v29/tools/worker-runner/logging"
-	"github.com/taskcluster/taskcluster/v29/tools/worker-runner/provider"
 	"github.com/taskcluster/taskcluster/v29/tools/worker-runner/runner"
 	"github.com/taskcluster/taskcluster/v29/tools/worker-runner/util"
-	"github.com/taskcluster/taskcluster/v29/tools/worker-runner/worker"
 )
 
 func Usage() string {
 	return `
 The start-worker command starts Taskcluster workers.  It is typically invoked
-during instance startup.
+during instance startup.  See the Taskcluster reference documentation for your
+deployment for details on how to use this tool.
 
 Usage:
 	start-worker <runnerConfig>
-
-` + runner.Usage() + `
-
-` + provider.Usage() + `
-
-` + worker.Usage()
+`
 }
 
 func main() {

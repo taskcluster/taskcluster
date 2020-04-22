@@ -2899,6 +2899,90 @@
   },
   {
     "element": "h1",
+    "id": "worker-runner",
+    "path": "/reference/workers/worker-runner",
+    "subtitle": null,
+    "title": "worker-runner"
+  },
+  {
+    "element": "h3",
+    "id": "configuration-from-runner-config",
+    "path": "/reference/workers/worker-runner",
+    "subtitle": "Configuration from Runner Config",
+    "title": "worker-runner"
+  },
+  {
+    "element": "h3",
+    "id": "files",
+    "path": "/reference/workers/worker-runner",
+    "subtitle": "Files",
+    "title": "worker-runner"
+  },
+  {
+    "element": "h2",
+    "id": "logging",
+    "path": "/reference/workers/worker-runner",
+    "subtitle": "Logging",
+    "title": "worker-runner"
+  },
+  {
+    "element": "h2",
+    "id": "operation",
+    "path": "/reference/workers/worker-runner",
+    "subtitle": "Operation",
+    "title": "worker-runner"
+  },
+  {
+    "element": "h3",
+    "id": "provider-configuration",
+    "path": "/reference/workers/worker-runner",
+    "subtitle": "Provider Configuration",
+    "title": "worker-runner"
+  },
+  {
+    "element": "h3",
+    "id": "providers",
+    "path": "/reference/workers/worker-runner",
+    "subtitle": "Providers",
+    "title": "worker-runner"
+  },
+  {
+    "element": "h3",
+    "id": "secrets",
+    "path": "/reference/workers/worker-runner",
+    "subtitle": "Secrets",
+    "title": "worker-runner"
+  },
+  {
+    "element": "h2",
+    "id": "usage",
+    "path": "/reference/workers/worker-runner",
+    "subtitle": "Usage",
+    "title": "worker-runner"
+  },
+  {
+    "element": "h2",
+    "id": "worker-configuration",
+    "path": "/reference/workers/worker-runner",
+    "subtitle": "Worker Configuration",
+    "title": "worker-runner"
+  },
+  {
+    "element": "h3",
+    "id": "worker-runner-configuration-file",
+    "path": "/reference/workers/worker-runner",
+    "subtitle": "Worker-Runner Configuration File",
+    "title": "worker-runner"
+  },
+  {
+    "element": "h3",
+    "id": "workers",
+    "path": "/reference/workers/worker-runner",
+    "subtitle": "Workers",
+    "title": "worker-runner"
+  },
+  {
+    "element": "h1",
     "id": "deployment",
     "path": "/reference/workers/worker-runner/deployment",
     "subtitle": null,

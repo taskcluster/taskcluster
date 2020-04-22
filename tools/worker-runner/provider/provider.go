@@ -40,9 +40,7 @@ func New(runnercfg *cfg.RunnerConfig) (provider.Provider, error) {
 }
 
 func Usage() string {
-	rv := []string{`## Providers
-
-Providers configuration depends on the providerType:
+	rv := []string{`Providers configuration depends on the providerType:
 `}
 
 	sortedProviders := make([]string, len(providers))
@@ -56,7 +54,7 @@ Providers configuration depends on the providerType:
 	for _, n := range sortedProviders {
 		info := providers[n]
 		usage := strings.Trim(info.usage(), " \n\t")
-		rv = append(rv, fmt.Sprintf("### %s\n\n%s\n", n, usage))
+		rv = append(rv, fmt.Sprintf("#### %s\n\n%s\n", n, usage))
 	}
 	return strings.Join(rv, "\n")
 }
