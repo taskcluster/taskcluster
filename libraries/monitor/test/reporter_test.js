@@ -8,7 +8,7 @@ suite(testing.suiteName(), function() {
 
   suite('sentry', function() {
     let monitorManager, monitor, scope, reported;
-    suiteSetup(function() {
+    setup(function() {
       scope = nock('https://sentry.example.com')
         .post('/api/448/store/')
         .reply(200, (_, report)=> {reported = report;});
@@ -43,6 +43,33 @@ suite(testing.suiteName(), function() {
       assert.equal(reported.tags.service, 'testing-service');
       assert.equal(reported.tags.proc, 'foo');
       assert.equal(reported.release, '123:foo');
+      assert.equal(reported.level, 'error');
+    });
+    test('error report with level', async function() {
+      monitor.reportError(new Error('hi'), 'notice');
+      await monitor.terminate();
+      assert.equal(reported.tags.service, 'testing-service');
+      assert.equal(reported.tags.proc, 'foo');
+      assert.equal(reported.release, '123:foo');
+      assert.equal(reported.level, 'info');
+    });
+    test('error report with tags', async function() {
+      monitor.reportError(new Error('hi'), {baz: 'bing'});
+      await monitor.terminate();
+      assert.equal(reported.tags.service, 'testing-service');
+      assert.equal(reported.tags.proc, 'foo');
+      assert.equal(reported.tags.baz, 'bing');
+      assert.equal(reported.release, '123:foo');
+      assert.equal(reported.level, 'error');
+    });
+    test('error report with level and tags', async function() {
+      monitor.reportError(new Error('hi'), 'warning', {baz: 'bing'});
+      await monitor.terminate();
+      assert.equal(reported.tags.service, 'testing-service');
+      assert.equal(reported.tags.proc, 'foo');
+      assert.equal(reported.tags.baz, 'bing');
+      assert.equal(reported.release, '123:foo');
+      assert.equal(reported.level, 'warning');
     });
   });
 });

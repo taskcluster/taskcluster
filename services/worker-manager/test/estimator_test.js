@@ -66,7 +66,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
 
   test('over-satisfied estimation', async function() {
     const workerInfo = {
-      existingCapacity: 10,
+      existingCapacity: 50,
       requestedCapacity: 0,
     };
     const estimate = await estimator.simple({
@@ -79,7 +79,25 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
     assert.strictEqual(estimate, 0);
     assert.strictEqual(monitorManager.messages.length, 2);
     assert(monitorManager.messages.some(({Type, Severity}) => Type === 'simple-estimate' && Severity === 3));
-    assert(monitorManager.messages.some(({Type, Fields}) => Type === 'monitor.error' && Fields.existingCapacity === 10));
+    assert(monitorManager.messages.some(({Type, Fields}) => Type === 'monitor.error' && Fields.existingCapacity === 50));
+    monitorManager.reset();
+  });
+
+  test('over-satisfied estimation (false positive is not raised)', async function() {
+    const workerInfo = {
+      existingCapacity: 5,
+      requestedCapacity: 0,
+    };
+    const estimate = await estimator.simple({
+      workerPoolId: 'foo/bar',
+      maxCapacity: 1,
+      minCapacity: 1,
+      workerInfo,
+    });
+
+    assert.strictEqual(estimate, 0);
+    assert.strictEqual(monitorManager.messages.length, 1);
+    assert(monitorManager.messages.some(({Type, Severity}) => Type === 'simple-estimate' && Severity === 5));
     monitorManager.reset();
   });
 });
