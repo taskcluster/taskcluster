@@ -473,6 +473,17 @@ func RunWorker() (exitCode ExitCode) {
 	if RotateTaskEnvironment() {
 		return REBOOT_REQUIRED
 	}
+	// There are always at least 5 seconds between tasks, however, the new task
+	// directory is created as soon as the previous task completes, so it is
+	// possible for the very first task to complete in less than a second, and
+	// the "new" task environment directory to be created, before the time has
+	// incremented by a second, and therefore the very first task directory
+	// could have the same name as the second task directory. To avoid the
+	// problems this could potentially cause (e.g. the task username being the
+	// same, the directory paths being the same) we wait 1.01 seconds before
+	// starting the very first task. After that, the 5 second minimum time
+	// between tasks is enough to ensure this.
+	time.Sleep(time.Millisecond * 1010)
 	for {
 
 		// See https://bugzil.la/1298010 - routinely check if this worker type is
