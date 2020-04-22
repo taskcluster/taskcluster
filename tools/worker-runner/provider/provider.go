@@ -40,8 +40,10 @@ func New(runnercfg *cfg.RunnerConfig) (provider.Provider, error) {
 }
 
 func Usage() string {
-	rv := []string{`Providers configuration depends on the providerType:
-`}
+	rv := []string{strings.ReplaceAll(
+		`Providers are configured in the |provider| portion of the runner configuration.  The |providerType| property
+determines which provider is in use.  The allowed values are:
+`, "|", "`")}
 
 	sortedProviders := make([]string, len(providers))
 	i := 0
@@ -54,7 +56,7 @@ func Usage() string {
 	for _, n := range sortedProviders {
 		info := providers[n]
 		usage := strings.Trim(info.usage(), " \n\t")
-		rv = append(rv, fmt.Sprintf("#### %s\n\n%s\n", n, usage))
+		rv = append(rv, fmt.Sprintf("## %s\n\n%s\n", n, usage))
 	}
 	return strings.Join(rv, "\n")
 }

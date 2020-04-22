@@ -18,17 +18,29 @@ exports.tasks.push({
     };
 
     await modifyRepoFile(
-      path.join('ui', 'docs', 'reference', 'workers', 'worker-runner', 'README.mdx'),
+      path.join('ui', 'docs', 'reference', 'workers', 'worker-runner', 'runner-configuration.mdx'),
       async content => content
         .replace(
           /(<!-- RUNNER-CONFIG BEGIN -->)(?:.|\n)*(<!-- RUNNER-CONFIG END -->)/m,
-          `$1\n${await getDoc('runner-config')}\n$2`)
+          `$1\n${await getDoc('runner-config')}\n$2`));
+
+    await modifyRepoFile(
+      path.join('ui', 'docs', 'reference', 'workers', 'worker-runner', 'providers.mdx'),
+      async content => content
         .replace(
           /(<!-- PROVIDERS BEGIN -->)(?:.|\n)*(<!-- PROVIDERS END -->)/m,
-          `$1\n${await getDoc('providers')}\n$2`)
+          `$1\n${await getDoc('providers')}\n$2`));
+
+    await modifyRepoFile(
+      path.join('ui', 'docs', 'reference', 'workers', 'worker-runner', 'workers.mdx'),
+      async content => content
         .replace(
           /(<!-- WORKERS BEGIN -->)(?:.|\n)*(<!-- WORKERS END -->)/m,
-          `$1\n${await getDoc('workers')}\n$2`)
+          `$1\n${await getDoc('workers')}\n$2`));
+
+    await modifyRepoFile(
+      path.join('ui', 'docs', 'reference', 'workers', 'worker-runner', 'logging.mdx'),
+      async content => content
         .replace(
           /(<!-- LOGGING BEGIN -->)(?:.|\n)*(<!-- LOGGING END -->)/m,
           `$1\n${await getDoc('logging')}\n$2`));
