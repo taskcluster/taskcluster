@@ -16,25 +16,20 @@ import HelpView from '../../../components/HelpView';
   },
 }))
 export default class ViewRoles extends PureComponent {
-  state = {
-    roleSearch: this.props.history.location.search
-      ? parse(this.props.history.location.search.slice(1)).roleSearch
-      : '',
-  };
-
   handleRoleSearchSubmit = roleSearch => {
     const { location, history } = this.props;
     const query = parse(location.search.slice(1));
 
     if (query.roleSearch !== roleSearch) {
-      query.roleSearch = roleSearch;
+      const newQuery = {
+        ...query,
+        roleSearch,
+      };
 
       history.push({
-        search: stringify(query, { addQueryPrefix: true }),
+        search: stringify(newQuery, { addQueryPrefix: true }),
       });
     }
-
-    this.setState({ roleSearch });
   };
 
   handleCreate = () => {
@@ -42,8 +37,9 @@ export default class ViewRoles extends PureComponent {
   };
 
   render() {
-    const { classes, description } = this.props;
-    const { roleSearch } = this.state;
+    const { classes, description, location } = this.props;
+    const query = parse(location.search.slice(1));
+    const { roleSearch = '' } = query;
 
     return (
       <Dashboard

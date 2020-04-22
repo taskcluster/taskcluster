@@ -26,18 +26,6 @@ import scopesQuery from '../scopes.graphql';
   },
 }))
 export default class ViewScope extends Component {
-  state = {
-    searchTerm: this.props.history.location.search
-      ? parse(this.props.history.location.search.slice(1)).searchTerm
-      : '',
-    currentTabIndex: this.props.history.location.search
-      ? parseInt(
-          parse(this.props.history.location.search.slice(1)).tabIndex,
-          10
-        )
-      : 0,
-  };
-
   handleClientsPageChange = ({ cursor, previousCursor }) => {
     const {
       data: { fetchMore },
@@ -78,28 +66,39 @@ export default class ViewScope extends Component {
       const newQuery = {
         ...query,
         searchTerm,
-        tabIndex: this.state.currentTabIndex,
       };
 
       history.push({
         search: stringify(newQuery, { addQueryPrefix: true }),
       });
     }
-
-    this.setState({ searchTerm });
   };
 
   handleTabChange = (event, value) => {
-    this.setState({ currentTabIndex: value });
+    const { location, history } = this.props;
+    const query = parse(location.search.slice(1));
+
+    if (query.currentTabIndex !== value) {
+      const newQuery = {
+        ...query,
+        currentTabValue: value,
+      };
+
+      history.push({
+        search: stringify(newQuery, { addQueryPrefix: true }),
+      });
+    }
   };
 
   render() {
     const {
       classes,
+      location,
       match: { params },
       data: { loading, error, clients, roles },
     } = this.props;
-    const { searchTerm, currentTabIndex } = this.state;
+    const query = parse(location.search.slice(1));
+    const { searchTerm = '', currentTabIndex = 0 } = query;
     const selectedScope = decodeURIComponent(params.selectedScope);
 
     return (
