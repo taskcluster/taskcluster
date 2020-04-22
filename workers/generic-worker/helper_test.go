@@ -80,6 +80,7 @@ func setupEnvironment(t *testing.T) (teardown func()) {
 		// taskContext.TaskDir set to the testdata subfolder, and we don't
 		// want to delete that, which is why we delete testDir and not
 		// config.TasksDir or taskContext.TaskDir
+		t.Logf("Removing test directory %v...", testDir)
 		err := os.RemoveAll(testDir)
 		if err != nil {
 			t.Logf("WARNING: Not able to clean up after test: %v", err)

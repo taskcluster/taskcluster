@@ -130,7 +130,6 @@ func (c *Config) Validate() error {
 		{value: c.LiveLogPUTPort, name: "livelogPUTPort", disallowed: 0},
 		{value: c.LiveLogGETPort, name: "livelogGETPort", disallowed: 0},
 		{value: c.ProvisionerID, name: "provisionerId", disallowed: ""},
-		{value: c.PublicIP, name: "publicIP", disallowed: net.IP(nil)},
 		{value: c.RootURL, name: "rootURL", disallowed: ""},
 		{value: c.Subdomain, name: "subdomain", disallowed: ""},
 		{value: c.TasksDir, name: "tasksDir", disallowed: ""},

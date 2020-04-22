@@ -2,7 +2,6 @@ package win32_test
 
 import (
 	"fmt"
-	"log"
 
 	"github.com/taskcluster/taskcluster/v29/workers/generic-worker/win32"
 )
@@ -20,7 +19,7 @@ func ExampleMergeEnvLists() {
 	}
 	res, err := win32.MergeEnvLists(lists...)
 	if err != nil {
-		log.Fatalf("Hit error: %v", err)
+		fmt.Printf("Hit error: %v\n", err)
 	}
 	fmt.Println(*res)
 	// Output:

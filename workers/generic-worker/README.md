@@ -8,7 +8,7 @@ For documentation of the worker from a user's perspective, see the [online docum
 
 To see a full description of all the config options available to you, run `generic-worker --help`:
 ```
-generic-worker (multiuser engine) 16.6.1
+generic-worker (multiuser engine) 28.2.2
 
 generic-worker is a taskcluster worker that can run on any platform that supports go (golang).
 See http://taskcluster.github.io/generic-worker/ for more details. Essentially, the worker is
@@ -17,6 +17,7 @@ and reports back results to the queue.
 
   Usage:
     generic-worker run                      [--config         CONFIG-FILE]
+                                            [--with-worker-runner]
                                             [--worker-runner-protocol-pipe PIPE]
                                             [--configure-for-aws | --configure-for-gcp | --configure-for-azure]
     generic-worker show-payload-schema
@@ -25,7 +26,9 @@ and reports back results to the queue.
     generic-worker --version
 
   Targets:
-    run                                     Runs the generic-worker.
+    run                                     Runs the generic-worker.  Pass --with-worker-runner if
+                                            running under that service, otherwise generic-worker will
+                                            not communicate with worker-runner.
     show-payload-schema                     Each taskcluster task defines a payload to be
                                             interpreted by the worker that executes it. This
                                             payload is validated against a json schema baked
@@ -84,11 +87,6 @@ and reports back results to the queue.
           clientId                          Taskcluster client ID used by generic worker to
                                             talk to taskcluster queue.
           ed25519SigningKeyLocation         The ed25519 signing key for signing artifacts with.
-          publicIP                          The IP address for clients to be directed to
-                                            for serving live logs; see
-                                            https://github.com/taskcluster/livelog and
-                                            https://github.com/taskcluster/stateless-dns-server
-                                            Also used by chain of trust.
           rootURL                           The root URL of the taskcluster deployment to which
                                             clientId and accessToken grant access. For example,
                                             'https://community-tc.services.mozilla.com/'.
@@ -173,6 +171,11 @@ and reports back results to the queue.
           provisionerId                     The taskcluster provisioner which is taking care
                                             of provisioning environments with generic-worker
                                             running on them. [default: "test-provisioner"]
+          publicIP                          The IP address for clients to be directed to for
+                                            serving live logs when not using websocktunnel; see
+                                            https://github.com/taskcluster/livelog and
+                                            https://github.com/taskcluster/stateless-dns-server
+                                            Also used by chain of trust when present.
           purgeCacheRootURL                 The root URL for taskcluster purge cache API calls.
                                             If not provided, the value from config property
                                             rootURL is used. Intended for development/testing.

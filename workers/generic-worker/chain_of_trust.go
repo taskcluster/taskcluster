@@ -41,7 +41,7 @@ type ArtifactHash struct {
 }
 
 type CoTEnvironment struct {
-	PublicIPAddress  string `json:"publicIpAddress"`
+	PublicIPAddress  string `json:"publicIpAddress,omitempty"`
 	PrivateIPAddress string `json:"privateIpAddress"`
 	InstanceID       string `json:"instanceId"`
 	InstanceType     string `json:"instanceType"`
@@ -156,12 +156,15 @@ func (feature *ChainOfTrustTaskFeature) Stop(err *ExecutionErrors) {
 		WorkerGroup: config.WorkerGroup,
 		WorkerID:    config.WorkerID,
 		Environment: CoTEnvironment{
-			PublicIPAddress:  config.PublicIP.String(),
 			PrivateIPAddress: config.PrivateIP.String(),
 			InstanceID:       config.InstanceID,
 			InstanceType:     config.InstanceType,
 			Region:           config.Region,
 		},
+	}
+
+	if config.PublicIP != nil {
+		cotCert.Environment.PublicIPAddress = config.PublicIP.String()
 	}
 
 	certBytes, e := json.MarshalIndent(cotCert, "", "  ")

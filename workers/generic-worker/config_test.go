@@ -14,22 +14,14 @@ func TestMissingIPConfig(t *testing.T) {
 	file := &gwconfig.File{
 		Path: filepath.Join("testdata", "config", "noip.json"),
 	}
-	const setting = "publicIP"
 	_, err := loadConfig(file, NO_PROVIDER)
 	if err != nil {
 		t.Fatalf("%v", err)
 	}
 	err = config.Validate()
-	if err == nil {
-		t.Fatal("Was expecting to get an error back, but didn't get one!")
-	}
-	switch typ := err.(type) {
-	case gwconfig.MissingConfigError:
-		if typ.Setting != setting {
-			t.Errorf("Error message references the wrong missing setting:\n%s\n\nExpected missing setting %q not %q", typ, setting, typ.Setting)
-		}
-	default:
-		t.Fatalf("Was expecting an error of type gwconfig.MissingConfigError but received error of type %T", err)
+	// See https://bugzil.la/1540804 - publicIP is now optional.
+	if err != nil {
+		t.Fatalf("Was expecting no error, but got: %v", err)
 	}
 }
 

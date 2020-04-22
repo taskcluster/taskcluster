@@ -4,7 +4,6 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"os"
 	"path/filepath"
 	"testing"
@@ -33,18 +32,20 @@ func TestNewTaskDirectoryForEachTask(t *testing.T) {
 	var backingLogsFound uint = 0
 	err := filepath.Walk(config.TasksDir, func(path string, info os.FileInfo, err error) error {
 		if info.IsDir() {
+			t.Logf("Found dir %v", path)
 			return nil
 		}
+		t.Logf("Found file %v", path)
 		if info.Name() != "live_backing.log" {
-			return fmt.Errorf("Discovered file %q but was expecting %q", info.Name(), "live_backing.log")
+			return fmt.Errorf("Discovered file with name %q but was expecting %q", info.Name(), "live_backing.log")
 		}
 		backingLogsFound++
 		return nil
 	})
 	if err != nil {
-		log.Fatal(err)
+		t.Fatalf("%v", err)
 	}
 	if backingLogsFound != config.NumberOfTasksToRun {
-		log.Fatalf("Expected to find %v backing logs, but found %v", config.NumberOfTasksToRun, backingLogsFound)
+		t.Fatalf("Expected to find %v backing logs, but found %v", config.NumberOfTasksToRun, backingLogsFound)
 	}
 }
