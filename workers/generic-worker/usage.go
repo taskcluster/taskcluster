@@ -101,11 +101,6 @@ and reports back results to the queue.
           clientId                          Taskcluster client ID used by generic worker to
                                             talk to taskcluster queue.
           ed25519SigningKeyLocation         The ed25519 signing key for signing artifacts with.
-          publicIP                          The IP address for clients to be directed to
-                                            for serving live logs; see
-                                            https://github.com/taskcluster/livelog and
-                                            https://github.com/taskcluster/stateless-dns-server
-                                            Also used by chain of trust.
           rootURL                           The root URL of the taskcluster deployment to which
                                             clientId and accessToken grant access. For example,
                                             'https://community-tc.services.mozilla.com/'.
@@ -190,6 +185,11 @@ and reports back results to the queue.
           provisionerId                     The taskcluster provisioner which is taking care
                                             of provisioning environments with generic-worker
                                             running on them. [default: "test-provisioner"]
+          publicIP                          The IP address for clients to be directed to for
+                                            serving live logs when not using websocktunnel; see
+                                            https://github.com/taskcluster/livelog and
+                                            https://github.com/taskcluster/stateless-dns-server
+                                            Also used by chain of trust when present.
           purgeCacheRootURL                 The root URL for taskcluster purge cache API calls.
                                             If not provided, the value from config property
                                             rootURL is used. Intended for development/testing.
