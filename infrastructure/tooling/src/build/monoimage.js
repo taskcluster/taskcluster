@@ -30,7 +30,7 @@ const tempDir = path.join(REPO_ROOT, 'temp');
  *  All of this is done using a "hooks" approach to allow segmenting the various oddball bits of
  *  this process by theme.
  */
-const generateMonoimageTasks = ({tasks, baseDir, cmdOptions, credentials}) => {
+const generateMonoimageTasks = ({tasks, baseDir, cmdOptions, credentials, logsDir}) => {
   const sourceDir = appRootDir.get();
 
   ensureTask(tasks, {
@@ -101,7 +101,7 @@ const generateMonoimageTasks = ({tasks, baseDir, cmdOptions, credentials}) => {
       await execCommand({
         command,
         dir: sourceDir,
-        logfile: `${baseDir}/docker-build.log`,
+        logfile: path.join(logsDir, 'docker-build.log'),
         utils,
         env: {DOCKER_BUILDKIT: 1, ...process.env},
       });
@@ -164,7 +164,7 @@ const generateMonoimageTasks = ({tasks, baseDir, cmdOptions, credentials}) => {
         await execCommand({
           command: ['docker', 'build', '--progress', 'plain', '--tag', tag, '.'],
           dir: dockerDir,
-          logfile: `${baseDir}/docker-build-devel.log`,
+          logfile: path.join(logsDir, 'docker-build-devel.log'),
           utils,
           env: {DOCKER_BUILDKIT: 1, ...process.env},
         });
@@ -206,7 +206,7 @@ const generateMonoimageTasks = ({tasks, baseDir, cmdOptions, credentials}) => {
       }
 
       await dockerPush({
-        logfile: `${baseDir}/docker-push.log`,
+        logfile: path.join(logsDir, 'docker-push.log'),
         tag,
         utils,
         baseDir,
@@ -246,7 +246,7 @@ const generateMonoimageTasks = ({tasks, baseDir, cmdOptions, credentials}) => {
       }
 
       await dockerPush({
-        logfile: `${baseDir}/docker-push.log`,
+        logfile: path.join(logsDir, 'docker-push.log'),
         tag,
         utils,
         baseDir,

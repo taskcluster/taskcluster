@@ -1,3 +1,4 @@
+const path = require('path');
 const os = require('os');
 const util = require('util');
 const rimraf = util.promisify(require('rimraf'));
@@ -12,6 +13,7 @@ class Publish {
     this.cmdOptions = cmdOptions;
 
     this.baseDir = cmdOptions['baseDir'] || '/tmp/taskcluster-builder-build';
+    this.logsDir = cmdOptions['logsDir'] || path.join(this.baseDir, 'logs');
 
     // The `yarn build` process is a subgraph of the publish taskgraph, with some
     // options "forced"
@@ -63,6 +65,7 @@ class Publish {
         dockerPassword: process.env.DOCKER_PASSWORD,
       },
       baseDir: this.baseDir,
+      logsDir: this.logsDir,
     });
 
     return tasks;
@@ -78,6 +81,9 @@ class Publish {
       await rimraf(this.baseDir);
     }
     await mkdirp(this.baseDir);
+
+    await rimraf(this.logsDir);
+    await mkdirp(this.logsDir);
 
     let tasks = await this.generateTasks();
 

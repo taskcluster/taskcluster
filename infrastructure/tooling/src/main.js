@@ -20,6 +20,7 @@ program.command('build')
   .option('--no-cache', 'Do not use any cached state, instead building everything from scratch')
   .option('--dry-run', 'Do not run any tasks, but generate the list of tasks')
   .option('--ignore-uncommitted-files', 'Do not fail if there are un-committed files in the working copy')
+  .option('--logs-dir <logs-dir>', 'A directory to put debug logs. default <base-dir>/logs')
   .action((...options) => {
     if (options.length !== 1) {
       console.error('unexpected command-line arguments');
@@ -48,6 +49,7 @@ program.command('release:publish')
   .option('--dry-run', 'Do not run any tasks, but generate the list of tasks')
   .option('--staging', 'Staging run (implies --no-push)')
   .option('--no-push', 'Do not push the GitHub release, docker images, packages, etc.')
+  .option('--logs-dir <logs-dir>', 'A directory to put debug logs. default <base-dir>/logs')
   .on('--help', () => {
     console.log([
       '',
