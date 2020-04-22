@@ -1,7 +1,0 @@
-{
-  "hvm-builder": [
-    "ami-test"
-  ],
-  "hvm-builder-trusted": [
-  ]
-}

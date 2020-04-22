@@ -1,6 +1,0 @@
-#!/bin/sh -vex
-
-modprobe v4l2loopback
-modprobe snd-aloop
-
-systemd-notify --ready
