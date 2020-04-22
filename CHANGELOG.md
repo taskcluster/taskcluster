@@ -3,6 +3,17 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v29.1.1
+
+### WORKER-DEPLOYERS
+
+▶ [patch] [bug 1631414](http://bugzil.la/1631414)
+Worker-Runner is now properly documented in the Taskcluster documentation.
+
+### OTHER
+
+▶ Additional change not described here: [#2681](https://github.com/taskcluster/taskcluster/issues/2681).
+
 ## v29.1.0
 
 ### DEPLOYERS

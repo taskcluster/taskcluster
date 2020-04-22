@@ -1,6 +1,6 @@
 {
   "name": "taskcluster-client-web",
-  "version": "29.1.0",
+  "version": "29.1.1",
   "main": "build/index.js",
   "module": "build/esm/index.js",
   "author": "Eli Perelman <eli@eliperelman.com>",

@@ -1,7 +1,7 @@
 {
   "name": "taskcluster-lib-references",
   "private": true,
-  "version": "29.1.0",
+  "version": "29.1.1",
   "main": "src/index.js",
   "scripts": {
     "coverage": "c8 yarn test",
