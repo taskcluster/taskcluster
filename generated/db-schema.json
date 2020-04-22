@@ -2123,28 +2123,37 @@
       "downgradeScript": "begin\n  revoke select, insert, update, delete on cache_purges from $db_user_prefix$_purge_cache;\n  drop table cache_purges;\nend",
       "methods": {
         "all_purge_requests": {
-          "args": "size integer, page integer",
-          "body": "declare\nsql text := 'select cache_purges.provisioner_id, cache_purges.worker_type, cache_purges.cache_name, cache_purges.before, cache_purges.expires, cache_purges.etag from cache_purges';\n\nbegin\n  sql := sql || ' order by cache_purges.provisioner_id, cache_purges.worker_type, cache_purges.cache_name';\n\n  if size is not null and size > 0 then\n    sql := sql || ' limit ' || size + 1;\n\n    if page is not null and page > 0 then\n      sql := sql || ' offset ' || page;\n    end if;\n  end if;\n\n  return query execute sql;\nend",
+          "args": "size integer, page_offset integer",
+          "body": "declare\nsql text := 'select cache_purges.provisioner_id, cache_purges.worker_type, cache_purges.cache_name, cache_purges.before from cache_purges';\n\nbegin\n  sql := sql || ' order by cache_purges.provisioner_id, cache_purges.worker_type, cache_purges.cache_name';\n\n  if size is not null and size > 0 then\n    sql := sql || ' limit ' || size + 1;\n\n    if page_offset is not null and page_offset > 0 then\n      sql := sql || ' offset ' || page_offset;\n    end if;\n  end if;\n\n  return query execute sql;\nend",
           "deprecated": false,
-          "description": "List the caches for this `provisionerId`/`workerType` that should to be\npurged if they are from before the time given in the response.',\n\nThis is intended to be used by workers to determine which caches to purge.'\n\nNote: The limit will always be size + 1 to allow consumers to detect when it's the last page.\nIf the list of result > size then there are more entries to fetch. Else, there are no next pages.",
+          "description": "View all active purge requests.\n\nThis is useful mostly for administors to view\nthe set of open purge requests. It should not\nbe used by workers. They should use the purgeRequests\nendpoint that is specific to their workerType and\nprovisionerId.\n\nNote: This endpoint supports pagination. The limit will always be size + 1 to allow consumers to detect\nwhen it's the last page. If the list of result > size then there are more entries to fetch.\nElse, there are no next pages.",
           "mode": "read",
-          "returns": "table (provisioner_id text, worker_type text, cache_name text, before timestamptz, expires timestamptz, etag uuid)",
+          "returns": "table (provisioner_id text, worker_type text, cache_name text, before timestamptz)",
           "serviceName": "purge_cache"
         },
-        "cache_purges_load": {
-          "args": "provisioner_id_in text, worker_type_in text, cache_name_in text",
-          "body": "begin\n  return query\n  select cache_purges.provisioner_id, cache_purges.worker_type, cache_purges.cache_name, cache_purges.before,\n  cache_purges.expires, cache_purges.etag from cache_purges\n  where cache_purges.provisioner_id = cache_purges_load.provisioner_id_in and cache_purges.worker_type = cache_purges_load.worker_type_in and cache_purges.cache_name = cache_purges_load.cache_name_in;\nend",
+        "cache_purges_expires": {
+          "args": "exp_in timestamptz",
+          "body": "declare\n  count integer;\nbegin\n  delete from cache_purges where cache_purges.expires < exp_in;\n\n  if found then\n    get diagnostics count = row_count;\n    return count;\n  end if;\n\n  return 0;\nend",
           "deprecated": false,
-          "description": "Load a purged cache.",
+          "description": "Expire cachePurges that are past their expiration.\n\nReturns a promise that all expired cachePurges have been deleted.",
+          "mode": "write",
+          "returns": "integer",
+          "serviceName": "purge_cache"
+        },
+        "cache_purges_to_remove": {
+          "args": "provisioner_id_in text, worker_type_in text, since_in timestamptz",
+          "body": "begin\n  return query\n  select cache_purges.provisioner_id, cache_purges.worker_type, cache_purges.cache_name, cache_purges.before from cache_purges\n  where cache_purges.provisioner_id = cache_purges_to_remove.provisioner_id_in and cache_purges.worker_type = cache_purges_to_remove.worker_type_in and cache_purges.before > cache_purges_to_remove.since_in;\nend",
+          "deprecated": false,
+          "description": "List the caches for this `provisionerId`/`workerType` that should be\npurged if they are from before the time given in the response.\n\nThis is intended to be used by workers to determine which caches to purge.",
           "mode": "read",
-          "returns": "table (provisioner_id text, worker_type text, cache_name text, before timestamptz, expires timestamptz, etag uuid)",
+          "returns": "table (provisioner_id text, worker_type text, cache_name text, before timestamptz)",
           "serviceName": "purge_cache"
         },
         "purge_cache": {
-          "args": "prov_id text, wt text, c_name text, bef timestamptz, exp timestamptz, overwrite boolean",
-          "body": "declare\n  new_etag uuid := public.gen_random_uuid();\nbegin\n  if overwrite then\n    insert into cache_purges(provisioner_id, worker_type, cache_name, before, expires, etag)\n    values (\n      prov_id,\n      wt,\n      c_name,\n      bef,\n      exp,\n      new_etag\n    ) on conflict (provisioner_id, worker_type, cache_name) do\n    update\n    set (provisioner_id, worker_type, cache_name, before, expires, etag) = (prov_id, wt, c_name, bef, exp, new_etag)\n    where cache_purges.provisioner_id = purge_cache.prov_id and cache_purges.worker_type = purge_cache.wt and cache_purges.cache_name = purge_cache.c_name;\n  else\n    insert into cache_purges(provisioner_id, worker_type, cache_name, before, expires, etag)\n    values (\n      prov_id,\n      wt,\n      c_name,\n      bef,\n      exp,\n      new_etag\n    );\n  end if;\nend",
+          "args": "prov_id text, wt text, c_name text, bef timestamptz, exp timestamptz",
+          "body": "declare\n  new_etag uuid := public.gen_random_uuid();\nbegin\n  insert into cache_purges(provisioner_id, worker_type, cache_name, before, expires, etag)\n  values (\n    prov_id,\n    wt,\n    c_name,\n    bef,\n    exp,\n    new_etag\n  ) on conflict (provisioner_id, worker_type, cache_name) do\n  update\n  set (before, expires, etag) = (now(), exp, new_etag)\n  where cache_purges.provisioner_id = purge_cache.prov_id and cache_purges.worker_type = purge_cache.wt and cache_purges.cache_name = purge_cache.c_name;\nend",
           "deprecated": false,
-          "description": "Create a purged cache.",
+          "description": "Publish a request to purge caches named `cacheName` with\non `provisionerId`/`workerType` workers.\n\nIf such a request already exists, its `before` timestamp is updated to\nthe current time.",
           "mode": "write",
           "returns": "void",
           "serviceName": "purge_cache"

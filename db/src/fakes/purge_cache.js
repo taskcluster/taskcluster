@@ -14,6 +14,10 @@ class FakePurgeCache {
     this.cachePurges = new Map();
   }
 
+  _getCaches() {
+    return [...this.cachePurges.values()];
+  }
+
   _getCachePurge({ partitionKey, rowKey }) {
     return this.cachePurges.get(`${partitionKey}-${rowKey}`);
   }
@@ -24,6 +28,10 @@ class FakePurgeCache {
 
   _removeCachePurge({ partitionKey, rowKey }) {
     this.cachePurges.delete(`${partitionKey}-${rowKey}`);
+  }
+
+  _removeCachePurge2(cache) {
+    this.cachePurges.delete(`${cache.provisioner_id}-${cache.worker_type}-${cache.cache_name}`);
   }
 
   _addCachePurge(cachePurge) {
@@ -76,6 +84,37 @@ class FakePurgeCache {
     return cachePurge ? [cachePurge] : [];
   }
 
+  async cache_purges_to_remove(provisionerId, workerType, since) {
+    const cachePurges = this._getCaches();
+
+    return cachePurges
+      .filter(cache => {
+        return cache.provisioner_id === provisionerId && cache.worker_type === workerType && cache.before > since;
+      })
+      .map(cache => {
+        return {
+          provisioner_id: cache.provisioner_id,
+          worker_type: cache.worker_type,
+          cache_name: cache.cache_name,
+          before: cache.before,
+        };
+      });
+  }
+
+  cache_purges_expires(exp) {
+    const cachePurges = this._getCaches();
+    let count = 0;
+
+    cachePurges.forEach(cache => {
+      if (cache.expires < exp) {
+        count += 1;
+        this._removeCachePurge2(cache);
+      }
+    });
+
+    return [{ 'cache_purges_expires': count }];
+  }
+
   async cache_purges_load(provisionerId, workerType, cacheName) {
     const cachePurge = this._getCachePurge2({ provisionerId, workerType, cacheName });
 
@@ -99,13 +138,7 @@ class FakePurgeCache {
     return [{ 'cache_purges_entities_create': cachePurge.etag }];
   }
 
-  async purge_cache(provisioner_id, worker_type, cache_name, before, expires, overwrite) {
-    if (!overwrite && this._getCachePurge2({ provisionerId: provisioner_id, workerType: worker_type, cacheName: cache_name })) {
-      const err = new Error('duplicate key value violates unique constraint');
-      err.code = UNIQUE_VIOLATION;
-      throw err;
-    }
-
+  async purge_cache(provisioner_id, worker_type, cache_name, before, expires) {
     const cachePurge = this._addCachePurge2({
       provisioner_id,
       worker_type,
@@ -150,7 +183,14 @@ class FakePurgeCache {
   }
 
   async all_purge_requests(size, page) {
-    return [...this.cachePurges.values()].slice(page, page + size + 1);
+    return [...this.cachePurges.values()]
+      .map(cache => {
+        delete cache.expires;
+        delete cache.etag;
+
+        return cache;
+      })
+      .slice(page, page + size + 1);
   }
 }
 

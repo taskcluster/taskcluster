@@ -86,14 +86,15 @@
 
 | Name | Mode | Arguments | Returns | Description |
 | --- | --- | --- | --- | --- |
-| all_purge_requests | read | size integer, page integer | table (provisioner_id text, worker_type text, cache_name text, before timestamptz, expires timestamptz, etag uuid) | List the caches for this `provisionerId`/`workerType` that should to be<br />purged if they are from before the time given in the response.',<br /><br />This is intended to be used by workers to determine which caches to purge.'<br /><br />Note: The limit will always be size + 1 to allow consumers to detect when it's the last page.<br />If the list of result > size then there are more entries to fetch. Else, there are no next pages. |
+| all_purge_requests | read | size integer, page_offset integer | table (provisioner_id text, worker_type text, cache_name text, before timestamptz) | View all active purge requests.<br /><br />This is useful mostly for administors to view<br />the set of open purge requests. It should not<br />be used by workers. They should use the purgeRequests<br />endpoint that is specific to their workerType and<br />provisionerId.<br /><br />Note: This endpoint supports pagination. The limit will always be size + 1 to allow consumers to detect<br />when it's the last page. If the list of result > size then there are more entries to fetch.<br />Else, there are no next pages. |
 | cache_purges_entities_create | write | pk text, rk text, properties jsonb, overwrite boolean, version integer | uuid | See taskcluster-lib-entities |
 | cache_purges_entities_load | read | partition_key text, row_key text | table (partition_key_out text, row_key_out text, value jsonb, version integer, etag uuid) | See taskcluster-lib-entities |
 | cache_purges_entities_modify | write | partition_key text, row_key text, properties jsonb, version integer, old_etag uuid | table (etag uuid) | See taskcluster-lib-entities |
 | cache_purges_entities_remove | write | partition_key text, row_key text | table (etag uuid) | See taskcluster-lib-entities |
 | cache_purges_entities_scan | read | pk text, rk text, condition text, size integer, page integer | table (partition_key text, row_key text, value jsonb, version integer, etag uuid) | See taskcluster-lib-entities |
-| cache_purges_load | read | provisioner_id_in text, worker_type_in text, cache_name_in text | table (provisioner_id text, worker_type text, cache_name text, before timestamptz, expires timestamptz, etag uuid) | Load a purged cache. |
-| purge_cache | write | prov_id text, wt text, c_name text, bef timestamptz, exp timestamptz, overwrite boolean | void | Create a purged cache. |
+| cache_purges_expires | write | exp_in timestamptz | integer | Expire cachePurges that are past their expiration.<br /><br />Returns a promise that all expired cachePurges have been deleted. |
+| cache_purges_to_remove | read | provisioner_id_in text, worker_type_in text, since_in timestamptz | table (provisioner_id text, worker_type text, cache_name text, before timestamptz) | List the caches for this `provisionerId`/`workerType` that should be<br />purged if they are from before the time given in the response.<br /><br />This is intended to be used by workers to determine which caches to purge. |
+| purge_cache | write | prov_id text, wt text, c_name text, bef timestamptz, exp timestamptz | void | Publish a request to purge caches named `cacheName` with<br />on `provisionerId`/`workerType` workers.<br /><br />If such a request already exists, its `before` timestamp is updated to<br />the current time. |
 ## queue
 
 | Name | Mode | Arguments | Returns | Description |
