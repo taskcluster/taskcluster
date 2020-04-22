@@ -1,5 +1,6 @@
 import { Redirect } from 'react-router-dom';
 import { hot } from 'react-hot-loader';
+import { string } from 'prop-types';
 import React, { Component, Fragment } from 'react';
 import { graphql, withApollo } from 'react-apollo';
 import dotProp from 'dot-prop-immutable';
@@ -51,6 +52,20 @@ const defaultEmpty = defaultTo('');
   }),
 })
 export default class ListNamespaces extends Component {
+  static propTypes = {
+    /**
+     * A message to display when there is no items to display.
+     */
+    noItemsMessage: string,
+
+    searchTerm: string,
+  };
+
+  static defaultProps = {
+    noItemsMessage: 'No items for this page.',
+    searchTerm: null,
+  };
+
   state = {
     indexPathInput: this.props.match.params.namespace
       ? this.props.match.params.namespace
@@ -154,6 +169,7 @@ export default class ListNamespaces extends Component {
   render() {
     const {
       classes,
+      noItemsMessage,
       namespacesData: {
         namespaces,
         loading: namespacesLoading,
@@ -174,6 +190,7 @@ export default class ListNamespaces extends Component {
     const loading = namespacesLoading || taskNamespaceLoading;
     const indexPaths = indexPathInput.split('.');
     const isSinglePath = indexPaths.length === 1;
+    const searchTerm = this.props.match.params.namespace;
 
     return (
       <Dashboard
@@ -232,7 +249,11 @@ export default class ListNamespaces extends Component {
             </Fragment>
           )}
           {!loading && !hasNamespaces && !hasIndexedTasks && isSinglePath && (
-            <Typography variant="body2">No items for this page.</Typography>
+            <Typography variant="body2">
+              {searchTerm
+                ? `No items for this page with search term ${searchTerm}.`
+                : noItemsMessage}
+            </Typography>
           )}
           {!loading && hasNamespaces && (
             <Fragment>

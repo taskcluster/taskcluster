@@ -19,7 +19,7 @@ export default class ViewRoles extends PureComponent {
     roleSearch: '',
   };
 
-  handleRoleSearchSubmit = roleSearch => {
+  handleRoleSearchSubmit = async roleSearch => {
     this.setState({ roleSearch });
   };
 

@@ -88,6 +88,7 @@ export default class Roles extends PureComponent {
         <ErrorPanel fixed error={error} />
         {listRoleIds && (
           <RolesTable
+            searchTerm={this.props.searchTerm}
             onPageChange={this.handlePageChange}
             rolesConnection={listRoleIds}
           />

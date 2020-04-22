@@ -89,7 +89,7 @@ export default class SecretsTable extends Component {
   }
 
   render() {
-    const { onPageChange, classes, secretsConnection } = this.props;
+    const { onPageChange, classes, secretsConnection, searchTerm } = this.props;
     const { sortBy, sortDirection } = this.state;
     const sortedSecretsConnection = this.createSortedSecretsConnection(
       secretsConnection,
@@ -100,6 +100,7 @@ export default class SecretsTable extends Component {
 
     return (
       <ConnectionDataTable
+        searchTerm={searchTerm}
         connection={sortedSecretsConnection}
         pageSize={VIEW_SECRETS_PAGE_SIZE}
         sortByHeader={sortBy}

@@ -75,12 +75,13 @@ export default class ClientsTable extends Component {
   };
 
   render() {
-    const { onPageChange, clientsConnection } = this.props;
+    const { onPageChange, clientsConnection, searchTerm } = this.props;
     const { sortBy, sortDirection } = this.state;
     const iconSize = 16;
 
     return (
       <ConnectionDataTable
+        searchTerm={searchTerm}
         connection={this.createSortedClientsConnection(
           clientsConnection,
           sortBy,

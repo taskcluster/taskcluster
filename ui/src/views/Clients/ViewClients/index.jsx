@@ -44,6 +44,10 @@ import ErrorPanel from '../../../components/ErrorPanel';
   },
 }))
 export default class ViewClients extends PureComponent {
+  state = {
+    search: '',
+  };
+
   handleClientSearchSubmit = async search => {
     const {
       data: { refetch },
@@ -61,6 +65,7 @@ export default class ViewClients extends PureComponent {
         ? { clientId: { $regex: escapeStringRegexp(search), $options: 'i' } }
         : null,
     });
+    this.setState({ search });
 
     if (search !== searchUri) {
       this.props.history.push(
@@ -138,6 +143,7 @@ export default class ViewClients extends PureComponent {
           <ErrorPanel fixed error={error} />
           {clients && (
             <ClientsTable
+              searchTerm={this.state.search}
               onPageChange={this.handlePageChange}
               clientsConnection={clients}
             />
