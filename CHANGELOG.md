@@ -3,6 +3,78 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v29.1.0
+
+### DEPLOYERS
+
+▶ [minor] [bug 1551846](http://bugzil.la/1551846)
+taskcluster-lib-app now includes endpoints `/__version__`, `/__heartbeat__`, and `/__lbheartbeat__` to be compatible with Dockerflow requirements.
+
+▶ [patch] [bug 1631638](http://bugzil.la/1631638)
+Overprovisioning alerts are now less spammy for small workerpool sizes
+
+▶ [patch] [#2562](https://github.com/taskcluster/taskcluster/issues/2562)
+The Websocktunnel repository has been moved into the monorepo, and websocktunnel is now released at the same time as the rest of the Taskcluster services, and with the same version number.  Aside from a (large) change in version number, nothing else about websocktunnel has changed since v2.0.0.
+
+▶ [patch] [bug 1437952](http://bugzil.la/1437952)
+The `yarn backup:..` commands have been removed, as backups should now be done at the Postgres database level.
+
+▶ [patch] [bug 1628141](http://bugzil.la/1628141)
+The default `cpu` and `memory` for each Kubernetes deployment are now set to better values based on experience at Mozilla.
+
+▶ [patch] [#2395](https://github.com/taskcluster/taskcluster/issues/2395)
+The deployment configuration now allows specification of some site-specific values.  While these are optional, adding these values will help users to better navigate the documentation.  See [the deployment docs](https://docs.taskcluster.net/docs/manual/deploying/ui#site-specific-documentation) for information on the available values.
+
+### WORKER-DEPLOYERS
+
+▶ [minor] [bug 1540804](http://bugzil.la/1540804)
+Config property `publicIP` of generic-worker workers is now optional. When not
+provided, rdp into Windows workers will no longer be possible, Chain of Trust
+environment reports will no longer include the public IP, and livelogs via
+stateless dns server will no longer work (however this will not affect livelog
+served over websocktunnel).
+
+▶ [minor] [#2647](https://github.com/taskcluster/taskcluster/issues/2647)
+The Taskcluster livelog tool has been merged into the Taskcluster monorepo, and will now be released in concert with the rest of Taskcluster.  In the process of merging this tool, it was discovered that it handled HTTP Range requests incorrectly.  On the assumption that this functionality was never used, it has been removed.
+
+▶ [patch] [bug 1591476](http://bugzil.la/1591476)
+Worker-Runner now ignores any worker configuration in a cloud provider's user/meta/custom-data facility, instead using the configuration provided in response to the registerWorker REST API call.  This functionality requires that the service deployment run at least Taskcluster v26.0.0.
+
+▶ [patch] 
+Worker-runner now gives better error messages when it does not have information such as the RootURL in its tagged data.
+
+▶ [patch] [bug 1516575](http://bugzil.la/1516575)
+Worker-runner now protects itself and docker-worker from the Linux OOM killer
+
+### ADMINS
+
+▶ [patch] [bug 1629657](http://bugzil.la/1629657)
+Workerpools are now a paginated list in the web ui.
+
+### USERS
+
+▶ [minor] [bug 1630113](http://bugzil.la/1630113)
+Matrix integration now supports `m.text`, `m.emote`, and `m.notice` msgtypes. The default is
+`m.notice` which was the only value supported previously.
+
+▶ [patch] 
+Make the error messages for custom checkrun text functionality clearer, so that the users don't have to read documentation.
+
+### DEVELOPERS
+
+▶ [patch] 
+The Go implementation of the runner / worker protocol is now an internal library and not accessible from outside the Taskcluster repository.
+
+▶ [patch] 
+The `yarn dev:init` command since 28.2.3 would create `procs` entries for `write_docs` and `expireSentry` that would cause `yarn dev:apply` to fail.  That has been fixed, but such entries must be manually removed from `dev-config.yml` if they have already been added.
+
+▶ [patch] [#2465](https://github.com/taskcluster/taskcluster/issues/2465)
+The task for `yarn test:meta` was not failing properly in CI. This has been fixed, and failing meta checks have been resolved.
+
+### OTHER
+
+▶ Additional changes not described here: [bug 1548036](http://bugzil.la/1548036), [bug 1619286](http://bugzil.la/1619286), [bug 1629168](http://bugzil.la/1629168), [bug 1630023](http://bugzil.la/1630023), [bug 1630124](http://bugzil.la/1630124), [#2268](https://github.com/taskcluster/taskcluster/issues/2268), [#2631](https://github.com/taskcluster/taskcluster/issues/2631), [#2637](https://github.com/taskcluster/taskcluster/issues/2637), [#2534](https://github.com/taskcluster/taskcluster/issues/2534).
+
 ## v29.0.1
 
 ### DEPLOYERS
