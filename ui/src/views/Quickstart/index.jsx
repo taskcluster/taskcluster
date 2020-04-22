@@ -375,16 +375,11 @@ export default class QuickStart extends Component {
                   </Typography>
                 </li>
                 <li>
-                  <Typography paragraph>
-                    Make sure to install the{' '}
-                    <a
-                      href="https://github.com/apps/taskcluster"
-                      target="_blank"
-                      rel="noopener noreferrer">
-                      Taskcluster-GitHub integration
-                    </a>
-                    .
-                  </Typography>
+                  <SiteSpecific>
+                    Make sure to install the [GitHub app](%github_app_url%) on
+                    your repo. If you do not have permission, you may need to
+                    ask the repository or organization owners to do so.
+                  </SiteSpecific>
                 </li>
               </ul>
               <Typography variant="body2" paragraph>
