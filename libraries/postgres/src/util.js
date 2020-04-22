@@ -14,6 +14,11 @@ exports.dollarQuote = str => {
 };
 
 exports.loadSql = (value, dir) => {
+  // sql values are optional
+  if (!value) {
+    return value;
+  }
+
   // if this doesn't look like a filename, treat it literally
   if (value.includes('\n')) {
     return value;

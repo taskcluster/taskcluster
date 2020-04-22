@@ -1,10 +1,4 @@
 version: 5
-migrationScript: |-
-  begin
-  end
-downgradeScript: |-
-  begin
-  end
 methods:
   azure_queue_get:
     description: |
