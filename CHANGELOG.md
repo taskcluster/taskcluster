@@ -3,6 +3,13 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v29.1.2
+
+### DEVELOPERS
+
+▶ [patch] [bug 1632325](http://bugzil.la/1632325)
+release:publish tasks now save debug logs as artifacts
+
 ## v29.1.1
 
 ### WORKER-DEPLOYERS
