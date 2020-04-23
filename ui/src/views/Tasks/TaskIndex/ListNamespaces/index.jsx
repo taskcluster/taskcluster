@@ -1,6 +1,5 @@
 import { Redirect } from 'react-router-dom';
 import { hot } from 'react-hot-loader';
-import { string } from 'prop-types';
 import React, { Component, Fragment } from 'react';
 import { graphql, withApollo } from 'react-apollo';
 import dotProp from 'dot-prop-immutable';
@@ -52,20 +51,6 @@ const defaultEmpty = defaultTo('');
   }),
 })
 export default class ListNamespaces extends Component {
-  static propTypes = {
-    /**
-     * A message to display when there is no items to display.
-     */
-    noItemsMessage: string,
-
-    searchTerm: string,
-  };
-
-  static defaultProps = {
-    noItemsMessage: 'No items for this page.',
-    searchTerm: null,
-  };
-
   state = {
     indexPathInput: this.props.match.params.namespace
       ? this.props.match.params.namespace

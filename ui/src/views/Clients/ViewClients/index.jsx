@@ -126,6 +126,7 @@ export default class ViewClients extends PureComponent {
       description,
       data: { loading, error, clients },
     } = this.props;
+    const { search } = this.state;
 
     return (
       <Dashboard
@@ -143,7 +144,7 @@ export default class ViewClients extends PureComponent {
           <ErrorPanel fixed error={error} />
           {clients && (
             <ClientsTable
-              searchTerm={this.state.search}
+              searchTerm={search}
               onPageChange={this.handlePageChange}
               clientsConnection={clients}
             />

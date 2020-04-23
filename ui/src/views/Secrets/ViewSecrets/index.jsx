@@ -98,6 +98,7 @@ export default class ViewSecrets extends Component {
       description,
       data: { loading, error, secrets },
     } = this.props;
+    const { searchTerm } = this.state;
 
     return (
       <Dashboard
@@ -115,7 +116,7 @@ export default class ViewSecrets extends Component {
           <ErrorPanel fixed error={error} />
           {secrets && (
             <SecretsTable
-              searchTerm={this.state.secretSearch}
+              searchTerm={searchTerm}
               onPageChange={this.handlePageChange}
               secretsConnection={secrets}
             />

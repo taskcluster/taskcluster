@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { shape, func, arrayOf } from 'prop-types';
+import { shape, func, arrayOf, string } from 'prop-types';
 import { pipe, map, sort as rSort } from 'ramda';
 import memoize from 'fast-memoize';
 import { camelCase } from 'change-case/change-case';
@@ -27,6 +27,8 @@ export default class ClientsTable extends Component {
       pageInfo,
     }).isRequired,
     onPageChange: func.isRequired,
+    /** A string to filter the list of results. */
+    searchTerm: string,
   };
 
   state = {

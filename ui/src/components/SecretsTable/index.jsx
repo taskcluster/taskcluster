@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { func, shape } from 'prop-types';
+import { func, shape, string } from 'prop-types';
 import { pipe, map, sort as rSort } from 'ramda';
 import memoize from 'fast-memoize';
 import { withStyles } from '@material-ui/core/styles';
@@ -35,6 +35,8 @@ export default class SecretsTable extends Component {
       edges: secrets,
       pageInfo,
     }).isRequired,
+    /** A string to filter the list of results. */
+    searchTerm: string,
   };
 
   state = {
