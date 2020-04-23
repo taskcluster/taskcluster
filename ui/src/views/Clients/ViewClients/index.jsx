@@ -121,7 +121,6 @@ export default class ViewClients extends PureComponent {
       description,
       data: { loading, error, clients },
     } = this.props;
-
     const searchUri = qs.parse(this.props.history.location.search.slice(1));
     const searchTerm = searchUri.search;
 

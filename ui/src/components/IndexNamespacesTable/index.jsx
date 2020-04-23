@@ -36,7 +36,7 @@ export default class IndexNamespacesTable extends Component {
 
   static defaultProps = {
     searchTerm: null,
-  }
+  };
 
   state = {
     sortBy: null,
