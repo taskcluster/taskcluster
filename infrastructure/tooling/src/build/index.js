@@ -1,3 +1,4 @@
+const path = require('path');
 const os = require('os');
 const util = require('util');
 const rimraf = util.promisify(require('rimraf'));
@@ -10,6 +11,7 @@ class Build {
     this.cmdOptions = cmdOptions;
 
     this.baseDir = cmdOptions['baseDir'] || '/tmp/taskcluster-builder-build';
+    this.logsDir = cmdOptions['logsDir'] || path.join(this.baseDir, 'logs');
   }
 
   /**
@@ -25,6 +27,7 @@ class Build {
     generateMonoimageTasks({
       tasks,
       baseDir: this.baseDir,
+      logsDir: this.logsDir,
       credentials: {
         // these are optional for `yarn build` but will always be supplied with
         // `yarn release`
@@ -42,6 +45,9 @@ class Build {
       await rimraf(this.baseDir);
     }
     await mkdirp(this.baseDir);
+
+    await rimraf(this.logsDir);
+    await mkdirp(this.logsDir);
 
     let tasks = this.generateTasks();
 

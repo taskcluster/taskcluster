@@ -18,7 +18,7 @@ const {
 
 const readFile = util.promisify(fs.readFile);
 
-module.exports = ({tasks, cmdOptions, credentials, baseDir}) => {
+module.exports = ({tasks, cmdOptions, credentials, baseDir, logsDir}) => {
   const artifactsDir = path.join(baseDir, 'release-artifacts');
 
   ensureTask(tasks, {
@@ -206,7 +206,7 @@ module.exports = ({tasks, cmdOptions, credentials, baseDir}) => {
           './tools/websocktunnel/cmd/websocktunnel',
         ],
         dir: REPO_ROOT,
-        logfile: `${baseDir}/websocktunnel-build.log`,
+        logfile: path.join(logsDir, '/websocktunnel-build.log'),
         utils,
         env: process.env,
       });
@@ -230,7 +230,7 @@ module.exports = ({tasks, cmdOptions, credentials, baseDir}) => {
       await execCommand({
         command,
         dir: REPO_ROOT,
-        logfile: `${baseDir}/websocktunnel-docker-build.log`,
+        logfile: path.join(logsDir, 'websocktunnel-docker-build.log'),
         utils,
         env: {DOCKER_BUILDKIT: 1, ...process.env},
       });
@@ -247,7 +247,7 @@ module.exports = ({tasks, cmdOptions, credentials, baseDir}) => {
         }
 
         await dockerPush({
-          logfile: `${baseDir}/docker-push.log`,
+          logfile: path.join(logsDir, 'docker-push.log'),
           tag,
           utils,
           baseDir,
@@ -286,7 +286,7 @@ module.exports = ({tasks, cmdOptions, credentials, baseDir}) => {
           './tools/livelog',
         ],
         dir: REPO_ROOT,
-        logfile: `${baseDir}/livelog-build.log`,
+        logfile: path.join(logsDir, 'livelog-build.log'),
         utils,
         env: process.env,
       });
@@ -312,7 +312,7 @@ module.exports = ({tasks, cmdOptions, credentials, baseDir}) => {
       await execCommand({
         command,
         dir: REPO_ROOT,
-        logfile: `${baseDir}/livelog-docker-build.log`,
+        logfile: path.join(logsDir, 'livelog-docker-build.log'),
         utils,
         env: {DOCKER_BUILDKIT: 1, ...process.env},
       });
@@ -329,7 +329,7 @@ module.exports = ({tasks, cmdOptions, credentials, baseDir}) => {
         }
 
         await dockerPush({
-          logfile: `${baseDir}/livelog-docker-push.log`,
+          logfile: path.join(logsDir, 'livelog-docker-push.log'),
           tag,
           utils,
           baseDir,
@@ -436,7 +436,7 @@ module.exports = ({tasks, cmdOptions, credentials, baseDir}) => {
         await npmPublish({
           dir: path.join(REPO_ROOT, clientName),
           apiToken: credentials.npmToken,
-          logfile: `${baseDir}/publish-${clientName.replace('/', '-')}.log`,
+          logfile: path.join(logsDir, `publish-${clientName.replace('/', '-')}.log`),
           utils});
       },
     }));
@@ -458,7 +458,7 @@ module.exports = ({tasks, cmdOptions, credentials, baseDir}) => {
         dir: path.join(REPO_ROOT, 'clients', 'client-py'),
         username: credentials.pypiUsername,
         password: credentials.pypiPassword,
-        logfile: `${baseDir}/publish-client-py.log`,
+        logfile: path.join(logsDir, 'publish-client-py.log'),
         utils});
     },
   });
