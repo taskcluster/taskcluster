@@ -190,6 +190,12 @@ class AzureProvider extends Provider {
           // we add this when we have the NIC provisioned
           networkInterfaces: [],
         },
+      };
+
+      let providerData = {
+        location: cfg.location,
+        resourceGroupName: this.providerConfig.resourceGroupName,
+        workerConfig: cfg.workerConfig,
         tags: {
           ...cfg.tags || {},
           'created-by': `taskcluster-wm-${this.providerId}`,
@@ -200,12 +206,6 @@ class AzureProvider extends Provider {
           'root-url': this.rootUrl,
           'owner': workerPool.owner,
         },
-      };
-
-      let providerData = {
-        location: cfg.location,
-        resourceGroupName: this.providerConfig.resourceGroupName,
-        workerConfig: cfg.workerConfig,
         vm: {
           name: virtualMachineName,
           computerName,
@@ -508,7 +508,7 @@ class AzureProvider extends Provider {
       let resourceRequest = await this._enqueue('query', () => client.beginCreateOrUpdate(
         worker.providerData.resourceGroupName,
         typeData.name,
-        resourceConfig,
+        {...resourceConfig, ...worker.providerData.tags},
       ));
       // track operation
       await worker.modify(w => {
