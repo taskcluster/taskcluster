@@ -20,10 +20,10 @@ export default class ViewRoles extends PureComponent {
     const { location, history } = this.props;
     const query = parse(location.search.slice(1));
 
-    if (query.roleSearch !== roleSearch) {
+    if (query.search !== roleSearch) {
       const newQuery = {
         ...query,
-        roleSearch,
+        search: roleSearch,
       };
 
       history.push({
@@ -39,7 +39,7 @@ export default class ViewRoles extends PureComponent {
   render() {
     const { classes, description, location } = this.props;
     const query = parse(location.search.slice(1));
-    const { roleSearch = '' } = query;
+    const roleSearch = query.search ? query.search : '';
 
     return (
       <Dashboard

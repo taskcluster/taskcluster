@@ -78,10 +78,10 @@ export default class ViewScope extends Component {
     const { location, history } = this.props;
     const query = parse(location.search.slice(1));
 
-    if (query.currentTabIndex !== value) {
+    if (query.tabIndex !== value) {
       const newQuery = {
         ...query,
-        currentTabValue: value,
+        tabIndex: value,
       };
 
       history.push({
@@ -98,7 +98,8 @@ export default class ViewScope extends Component {
       data: { loading, error, clients, roles },
     } = this.props;
     const query = parse(location.search.slice(1));
-    const { searchTerm = '', currentTabIndex = 0 } = query;
+    const searchTerm = query.searchTerm ? query.searchTerm : '';
+    const currentTabIndex = query.tabIndex ? parseInt(query.tabIndex, 10) : 0;
     const selectedScope = decodeURIComponent(params.selectedScope);
 
     return (
