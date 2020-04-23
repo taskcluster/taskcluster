@@ -12,7 +12,7 @@ const GENERIC_ID_PATTERN = /^[a-zA-Z0-9-_]{1,38}$/;
 const camelCaseKeys = obj => {
   return Object.keys(obj).reduce((acc, curr) => {
     if (obj[curr] instanceof Date) {
-      acc[camelCase(curr)] = obj[curr].toJSON();
+      acc[camelCase(curr)] = obj[curr];
     } else {
       acc[camelCase(curr)] = obj[curr];
     }
@@ -188,7 +188,7 @@ builder.declare({
   if (!cacheCache || Date.now() - cacheCache.touched > this.cfg.app.cacheTime * 1000) {
     cacheCache = this.cachePurgeCache[cacheKey] = {
       reqs: (
-        await this.db.fns.cache_purges_to_remove(provisionerId, workerType, since))
+        await this.db.fns.purge_requests(provisionerId, workerType))
         .map(cache => camelCaseKeys(cache),
         ),
       touched: Date.now(),
@@ -198,6 +198,16 @@ builder.declare({
   let {reqs: openRequests} = cacheCache;
 
   return res.reply({
-    requests: openRequests,
+    requests: _.reduce(openRequests, (l, entry) => {
+      if (entry.before >= since) {
+        l.push({
+          provisionerId: entry.provisionerId,
+          workerType: entry.workerType,
+          cacheName: entry.cacheName,
+          before: entry.before.toJSON(),
+        });
+      }
+      return l;
+    }, []),
   });
 });

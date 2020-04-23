@@ -10,10 +10,6 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
   helper.withDb(mock, skipping);
   helper.withServer(mock, skipping);
 
-  if (!mock) {
-    return;
-  }
-
   test('ping', () => {
     return helper.apiClient.ping();
   });
@@ -76,33 +72,31 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
       {since: spec.requests[0].before},
     );
     assume(spec.requests.length).equals(2);
-    console.log('sonce ', spec.requests[1].before);
     spec = await helper.apiClient.purgeRequests(
       'dummy-provisioner-extended-extended',
-      'dummy-worker-extended-extendeddd',
+      'dummy-worker-extended-extended',
       {since: spec.requests[1].before},
     );
-    // TODO: Fix this
-    // assume(spec.requests.length).equals(1);
-    // spec = await helper.apiClient.purgeRequests(
-    //   'dummy-provisioner-extended-extended',
-    //   'dummy-worker-extended-extended',
-    //   {since: new Date().toJSON()},
-    // );
-    // assume(spec.requests.length).equals(0);
+    assume(spec.requests.length).equals(1);
+    spec = await helper.apiClient.purgeRequests(
+      'dummy-provisioner-extended-extended',
+      'dummy-worker-extended-extended',
+      {since: new Date().toJSON()},
+    );
+    assume(spec.requests.length).equals(0);
   });
 
   test('purgeRequest caching', async function() {
-    sinon.stub(helper.db.fns, 'cache_purges_to_remove').callsFake(async (query) => []);
+    sinon.stub(helper.db.fns, 'purge_requests').callsFake(async (query) => []);
     try {
       const since = taskcluster.fromNow('-1 hour').toString();
       await helper.apiClient.purgeRequests('pp', 'wt', {since});
-      assert.equal(helper.db.fns.cache_purges_to_remove.callCount, 1);
+      assert.equal(helper.db.fns.purge_requests.callCount, 1);
       await helper.apiClient.purgeRequests('pp', 'wt', {since});
       await helper.apiClient.purgeRequests('pp', 'wt', {since});
       await helper.apiClient.purgeRequests('pp', 'wt', {since});
       // not called again..
-      assert.equal(helper.db.fns.cache_purges_to_remove.callCount, 1);
+      assert.equal(helper.db.fns.purge_requests.callCount, 1);
     } finally {
       sinon.restore();
     }
@@ -112,16 +106,16 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
     // client retries could confuse the picture here, so don't do them
     const client = helper.apiClient.use({retries: 0});
 
-    sinon.stub(helper.db.fns, 'cache_purges_to_remove')
+    sinon.stub(helper.db.fns, 'purge_requests')
       .onFirstCall().throws(new Error('uhoh'))
       .onSecondCall().callsFake(async (query) => []);
     try {
       const since = taskcluster.fromNow('-1 hour').toString();
       await assert.rejects(() => client.purgeRequests('pp', 'wt', {since}));
-      assert.equal(helper.db.fns.cache_purges_to_remove.callCount, 1);
+      assert.equal(helper.db.fns.purge_requests.callCount, 1);
       await client.purgeRequests('pp', 'wt', {since});
       // Azure is called again due to error
-      assert.equal(helper.db.fns.cache_purges_to_remove.callCount, 2);
+      assert.equal(helper.db.fns.purge_requests.callCount, 2);
     } finally {
       // clear out the logged error messages from the Azure failure
       monitorManager.messages = [];

@@ -18,7 +18,7 @@ downgradeScript: |-
     drop table cache_purges;
   end
 methods:
-  cache_purges_to_remove:
+  purge_requests:
     description: |-
       List the caches for this `provisionerId`/`workerType` that should be
       purged if they are from before the time given in the response.
@@ -26,13 +26,13 @@ methods:
       This is intended to be used by workers to determine which caches to purge.
     mode: read
     serviceName: purge_cache
-    args: provisioner_id_in text, worker_type_in text, since_in timestamptz
+    args: provisioner_id_in text, worker_type_in text
     returns: table (provisioner_id text, worker_type text, cache_name text, before timestamptz)
     body: |-
       begin
         return query
         select cache_purges.provisioner_id, cache_purges.worker_type, cache_purges.cache_name, cache_purges.before from cache_purges
-        where cache_purges.provisioner_id = cache_purges_to_remove.provisioner_id_in and cache_purges.worker_type = cache_purges_to_remove.worker_type_in and cache_purges.before > cache_purges_to_remove.since_in;
+        where cache_purges.provisioner_id = purge_requests.provisioner_id_in and cache_purges.worker_type = purge_requests.worker_type_in;
       end
   all_purge_requests:
     description: |-
@@ -93,7 +93,7 @@ methods:
           new_etag
         ) on conflict (provisioner_id, worker_type, cache_name) do
         update
-        set (before, expires, etag) = (now(), exp, new_etag)
+        set (before, expires, etag) = (purge_cache.bef, exp, new_etag)
         where cache_purges.provisioner_id = purge_cache.prov_id and cache_purges.worker_type = purge_cache.wt and cache_purges.cache_name = purge_cache.c_name;
       end
   cache_purges_expires:

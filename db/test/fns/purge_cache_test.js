@@ -117,7 +117,7 @@ suite(testing.suiteName(), function() {
     assert(cache2.before.getTime());
   });
 
-  helper.dbTest('cache_purges_to_remove', async function(db, isFake) {
+  helper.dbTest('purge_requests', async function(db, isFake) {
     const dbFns = isFake ? helper.fakeDb['purge_cache'] : db.fns;
     const samples = [
       { provisioner_id: 'prov-3', worker_type: 'wt-3', cache_name: 'cache-3', before: fromNow('4 days'), expires: fromNow('1 day')},
@@ -135,14 +135,14 @@ suite(testing.suiteName(), function() {
       );
     }
 
-    let entries = await dbFns.cache_purges_to_remove("prov-3", "wt-3", fromNow('5 days'));
+    let entries = await dbFns.purge_requests("prov-3", "wt-3", fromNow('5 days'));
     assert.equal(entries.length, 2);
     compare(entries, [samples[1], samples[2]]);
 
-    entries = await dbFns.cache_purges_to_remove('prov-3', 'wt-3', fromNow());
+    entries = await dbFns.purge_requests('prov-3', 'wt-3', fromNow());
     assert.equal(entries.length, 3);
 
-    entries = await dbFns.cache_purges_to_remove('prov-3', 'wt-3', fromNow('7 days'));
+    entries = await dbFns.purge_requests('prov-3', 'wt-3', fromNow('7 days'));
     assert.equal(entries.length, 1);
   });
 

@@ -84,12 +84,12 @@ class FakePurgeCache {
     return cachePurge ? [cachePurge] : [];
   }
 
-  async cache_purges_to_remove(provisionerId, workerType, since) {
+  async purge_requests(provisionerId, workerType) {
     const cachePurges = this._getCaches();
 
     return cachePurges
       .filter(cache => {
-        return cache.provisioner_id === provisionerId && cache.worker_type === workerType && cache.before > since;
+        return cache.provisioner_id === provisionerId && cache.worker_type === workerType;
       })
       .map(cache => {
         return {
