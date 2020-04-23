@@ -19,7 +19,7 @@ import (
 	"github.com/cenkalti/backoff/v3"
 	"github.com/taskcluster/httpbackoff/v3"
 	tcurls "github.com/taskcluster/taskcluster-lib-urls"
-	hawk "github.com/tent/hawk-go"
+	"go.mozilla.org/hawk"
 )
 
 var debug = false

@@ -42,9 +42,9 @@ require (
 	github.com/taskcluster/slugid-go v1.1.0
 	github.com/taskcluster/stateless-dns-go v1.0.6
 	github.com/taskcluster/taskcluster-lib-urls v13.0.0+incompatible
-	github.com/tent/hawk-go v0.0.0-20161026210932-d341ea318957
 	github.com/ulikunitz/xz v0.5.7 // indirect
 	github.com/xeipuuv/gojsonschema v1.2.0
+	go.mozilla.org/hawk v0.0.0-20200327135946-18943cc03d32
 	golang.org/x/crypto v0.0.0-20200420201142-3c4aac89819a
 	golang.org/x/net v0.0.0-20200421231249-e086a090c8fd
 	golang.org/x/sys v0.0.0-20200420163511-1957bb5e6d1f
@@ -52,5 +52,4 @@ require (
 	gopkg.in/tylerb/graceful.v1 v1.2.15
 	gopkg.in/yaml.v2 v2.2.8
 	gopkg.in/yaml.v3 v3.0.0-20200313102051-9f266ea9e77c
-	launchpad.net/gocheck v0.0.0-20140225173054-000000000087 // indirect
 )

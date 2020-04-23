@@ -12,7 +12,7 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/tent/hawk-go"
+	"go.mozilla.org/hawk"
 
 	got "github.com/taskcluster/go-got"
 	tcclient "github.com/taskcluster/taskcluster/v29/clients/client-go"
