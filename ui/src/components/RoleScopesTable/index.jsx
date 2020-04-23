@@ -58,9 +58,7 @@ export default class RoleScopesTable extends Component {
   static propTypes = {
     /** A GraphQL roles response. */
     roles: arrayOf(role).isRequired,
-    /**
-     * A message to display when there is no items to display.
-     */
+    /** A message to display when there are no items to display. */
     noItemsMessage: string,
     /** A string to filter the list of results. */
     searchTerm: string,

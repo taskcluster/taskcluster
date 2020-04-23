@@ -27,7 +27,7 @@ export default class ClientsTable extends Component {
       pageInfo,
     }).isRequired,
     onPageChange: func.isRequired,
-    /** A string to filter the list of results. */
+    /** A search term to refine the list of clients. */
     searchTerm: string,
   };
 

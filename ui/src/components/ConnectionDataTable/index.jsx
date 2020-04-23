@@ -52,7 +52,7 @@ export default class ConnectionDataTable extends Component {
      * A message to display when there is no items to display.
      */
     noItemsMessage: string,
-    /** A string to filter the list of results. */
+    /** A search term to refine the list of results. */
     searchTerm: string,
     /**
      * A GraphQL PageConnection instance.

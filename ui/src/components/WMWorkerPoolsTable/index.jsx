@@ -59,6 +59,10 @@ export default class WorkerManagerWorkerPoolsTable extends Component {
     searchTerm: string,
   };
 
+  static defaultProps = {
+    searchTerm: null,
+  };
+
   state = {
     sortBy: 'workerPoolId',
     sortDirection: 'asc',

@@ -35,8 +35,12 @@ export default class SecretsTable extends Component {
       edges: secrets,
       pageInfo,
     }).isRequired,
-    /** A string to filter the list of results. */
+    /** A search term to refine the list of secrets. */
     searchTerm: string,
+  };
+
+  static defaultProps = {
+    searchTerm: null,
   };
 
   state = {

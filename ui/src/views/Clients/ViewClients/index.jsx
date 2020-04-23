@@ -1,7 +1,7 @@
 import React, { PureComponent, Fragment } from 'react';
 import { hot } from 'react-hot-loader';
 import { graphql } from 'react-apollo';
-import { parse, stringify } from 'qs';
+import qs, { parse, stringify } from 'qs';
 import Spinner from '@mozilla-frontend-infra/components/Spinner';
 import { withStyles } from '@material-ui/core/styles';
 import PlusIcon from 'mdi-react/PlusIcon';
@@ -44,10 +44,6 @@ import ErrorPanel from '../../../components/ErrorPanel';
   },
 }))
 export default class ViewClients extends PureComponent {
-  state = {
-    search: '',
-  };
-
   handleClientSearchSubmit = async search => {
     const {
       data: { refetch },
@@ -65,7 +61,6 @@ export default class ViewClients extends PureComponent {
         ? { clientId: { $regex: escapeStringRegexp(search), $options: 'i' } }
         : null,
     });
-    this.setState({ search });
 
     if (search !== searchUri) {
       this.props.history.push(
@@ -126,7 +121,9 @@ export default class ViewClients extends PureComponent {
       description,
       data: { loading, error, clients },
     } = this.props;
-    const { search } = this.state;
+
+    const searchUri = qs.parse(this.props.history.location.search.slice(1));
+    const searchTerm = searchUri.search;
 
     return (
       <Dashboard
@@ -134,6 +131,7 @@ export default class ViewClients extends PureComponent {
         helpView={<HelpView description={description} />}
         search={
           <Search
+            defaultValue={searchTerm}
             disabled={loading}
             onSubmit={this.handleClientSearchSubmit}
             placeholder="Client contains"
@@ -144,7 +142,7 @@ export default class ViewClients extends PureComponent {
           <ErrorPanel fixed error={error} />
           {clients && (
             <ClientsTable
-              searchTerm={search}
+              searchTerm={searchTerm}
               onPageChange={this.handlePageChange}
               clientsConnection={clients}
             />

@@ -1,5 +1,6 @@
 import React, { PureComponent, Fragment } from 'react';
 import { graphql } from 'react-apollo';
+import { string } from 'prop-types';
 import Spinner from '@mozilla-frontend-infra/components/Spinner';
 import dotProp from 'dot-prop-immutable';
 import escapeStringRegexp from 'escape-string-regexp';
@@ -29,6 +30,15 @@ import { VIEW_ROLES_PAGE_SIZE } from '../../../utils/constants';
   }),
 })
 export default class Roles extends PureComponent {
+  static propTypes = {
+    /** A search term to refine the list of roles. */
+    searchTerm: string,
+  };
+
+  static defaultProps = {
+    searchTerm: null,
+  };
+
   handlePageChange = ({ cursor, previousCursor }) => {
     const {
       searchTerm,
