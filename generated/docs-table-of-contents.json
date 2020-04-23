@@ -3228,11 +3228,11 @@
                 "path": "reference/workers/worker-runner/deployment",
                 "prev": {
                   "path": "reference/workers/worker-runner",
-                  "title": "Deployment"
+                  "title": "Linux"
                 },
                 "up": {
                   "path": "reference/workers/worker-runner",
-                  "title": "Deployment"
+                  "title": "Linux"
                 }
               },
               {
@@ -3254,7 +3254,7 @@
                 },
                 "up": {
                   "path": "reference/workers/worker-runner",
-                  "title": "Deployment"
+                  "title": "Linux"
                 }
               },
               {
@@ -3276,13 +3276,13 @@
                 },
                 "up": {
                   "path": "reference/workers/worker-runner",
-                  "title": "Deployment"
+                  "title": "Linux"
                 }
               }
             ],
             "data": {
-              "order": 10,
-              "title": "Deployment"
+              "order": 20,
+              "title": "Linux"
             },
             "name": "worker-runner",
             "next": {
@@ -3544,7 +3544,7 @@
         "name": "workers",
         "next": {
           "path": "reference/workers/worker-runner",
-          "title": "Deployment"
+          "title": "Linux"
         },
         "path": "reference/workers/README",
         "prev": {

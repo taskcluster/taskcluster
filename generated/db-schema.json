@@ -2140,22 +2140,22 @@
           "returns": "integer",
           "serviceName": "purge_cache"
         },
-        "cache_purges_to_remove": {
-          "args": "provisioner_id_in text, worker_type_in text, since_in timestamptz",
-          "body": "begin\n  return query\n  select cache_purges.provisioner_id, cache_purges.worker_type, cache_purges.cache_name, cache_purges.before from cache_purges\n  where cache_purges.provisioner_id = cache_purges_to_remove.provisioner_id_in and cache_purges.worker_type = cache_purges_to_remove.worker_type_in and cache_purges.before > cache_purges_to_remove.since_in;\nend",
-          "deprecated": false,
-          "description": "List the caches for this `provisionerId`/`workerType` that should be\npurged if they are from before the time given in the response.\n\nThis is intended to be used by workers to determine which caches to purge.",
-          "mode": "read",
-          "returns": "table (provisioner_id text, worker_type text, cache_name text, before timestamptz)",
-          "serviceName": "purge_cache"
-        },
         "purge_cache": {
           "args": "prov_id text, wt text, c_name text, bef timestamptz, exp timestamptz",
-          "body": "declare\n  new_etag uuid := public.gen_random_uuid();\nbegin\n  insert into cache_purges(provisioner_id, worker_type, cache_name, before, expires, etag)\n  values (\n    prov_id,\n    wt,\n    c_name,\n    bef,\n    exp,\n    new_etag\n  ) on conflict (provisioner_id, worker_type, cache_name) do\n  update\n  set (before, expires, etag) = (now(), exp, new_etag)\n  where cache_purges.provisioner_id = purge_cache.prov_id and cache_purges.worker_type = purge_cache.wt and cache_purges.cache_name = purge_cache.c_name;\nend",
+          "body": "declare\n  new_etag uuid := public.gen_random_uuid();\nbegin\n  insert into cache_purges(provisioner_id, worker_type, cache_name, before, expires, etag)\n  values (\n    prov_id,\n    wt,\n    c_name,\n    bef,\n    exp,\n    new_etag\n  ) on conflict (provisioner_id, worker_type, cache_name) do\n  update\n  set (before, expires, etag) = (purge_cache.bef, exp, new_etag)\n  where cache_purges.provisioner_id = purge_cache.prov_id and cache_purges.worker_type = purge_cache.wt and cache_purges.cache_name = purge_cache.c_name;\nend",
           "deprecated": false,
           "description": "Publish a request to purge caches named `cacheName` with\non `provisionerId`/`workerType` workers.\n\nIf such a request already exists, its `before` timestamp is updated to\nthe current time.",
           "mode": "write",
           "returns": "void",
+          "serviceName": "purge_cache"
+        },
+        "purge_requests": {
+          "args": "provisioner_id_in text, worker_type_in text",
+          "body": "begin\n  return query\n  select cache_purges.provisioner_id, cache_purges.worker_type, cache_purges.cache_name, cache_purges.before from cache_purges\n  where cache_purges.provisioner_id = purge_requests.provisioner_id_in and cache_purges.worker_type = purge_requests.worker_type_in;\nend",
+          "deprecated": false,
+          "description": "List the caches for this `provisionerId`/`workerType` that should be\npurged if they are from before the time given in the response.\n\nThis is intended to be used by workers to determine which caches to purge.",
+          "mode": "read",
+          "returns": "table (provisioner_id text, worker_type text, cache_name text, before timestamptz)",
           "serviceName": "purge_cache"
         }
       },
