@@ -227,6 +227,7 @@ const load = loader({
         deprecatedInitialStatusQueueName: cfg.app.deprecatedInitialStatusQueue,
         resultStatusQueueName: cfg.app.resultStatusQueue,
         initialStatusQueueName: cfg.app.initialStatusQueue,
+        checkSuiteQueueName: cfg.app.checkSuiteQueue,
         context: {cfg, github, schemaset, Builds, CheckRuns, ChecksToTasks, publisher},
         pulseClient,
       }),

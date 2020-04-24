@@ -22,6 +22,7 @@ class Handlers {
       deprecatedInitialStatusQueueName,
       resultStatusQueueName,
       initialStatusQueueName,
+      checkSuiteQueueName,
       intree,
       context,
       pulseClient,
@@ -42,6 +43,7 @@ class Handlers {
     this.jobQueueName = jobQueueName;
     this.deprecatedInitialStatusQueueName = deprecatedInitialStatusQueueName;
     this.initialStatusQueueName = initialStatusQueueName;
+    this.checkSuiteQueueName = checkSuiteQueueName;
     this.context = context;
     this.pulseClient = pulseClient;
 
@@ -66,6 +68,7 @@ class Handlers {
     assert(!this.initialTaskStatusPq, 'Cannot setup twice!');
     assert(!this.deprecatedResultStatusPq, 'Cannot setup twice!');
     assert(!this.deprecatedInitialStatusPq, 'Cannot setup twice!');
+    assert(!this.checkSuitePq, 'Cannot setup twice!');
 
     // This is a simple Queue client without scopes to use throughout the handlers for simple things
     // Where scopes are needed, use this.queueClient.use({authorizedScopes: scopes}).blahblah
@@ -110,6 +113,10 @@ class Handlers {
     // Listen for taskDefined event to create initial status on github
     const taskBindings = [
       queueEvents.taskDefined(`route.${this.context.cfg.app.checkTaskRoute}`),
+    ];
+
+    const checkSuiteBindings = [
+      githubEvents.checkSuite(),
     ];
 
     const callHandler = (name, handler) => message => {
@@ -170,6 +177,15 @@ class Handlers {
       this.monitor.timedHandler('tasklistener', callHandler('task', taskDefinedHandler).bind(this)),
     );
 
+    this.checkSuitePq = await consume(
+      {
+        client: this.pulseClient,
+        bindings: checkSuiteBindings,
+        queueName: this.checkSuiteQueueName,
+      },
+      this.monitor.timedHandler('checksuitelistener', callHandler('checksuite', reRequestChecksuiteHandler).bind(this))
+    );
+
   }
 
   async terminate() {
@@ -187,6 +203,9 @@ class Handlers {
     }
     if (this.deprecatedInitialStatusPq) {
       await this.deprecatedInitialStatusPq.stop();
+    }
+    if (this.checkSuitePq) {
+      await this.checkSuitePq.stop();
     }
   }
 
