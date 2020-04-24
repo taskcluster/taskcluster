@@ -1,0 +1,54 @@
+$schema: "/schemas/common/metaschema.json#"
+title: "GitHub Check Suite Message"
+description: Message reporting that a Check Suite event has occurred
+type: object
+properties:
+  version: {$const: message-version}
+  organization:
+    description: The GitHub `organization` which had an event.
+    type: string
+    minLength: {$const: github-identifier-min-length}
+    maxLength: {$const: github-identifier-max-length}
+    pattern: {$const: github-identifier-pattern}
+  repository:
+    description: The GitHub `repository` which had an event.
+    type: string
+    minLength: {$const: github-identifier-min-length}
+    maxLength: {$const: github-identifier-max-length}
+    pattern: {$const: github-identifier-pattern}
+  installationId:
+    description: The installation which had an event.
+    type: integer
+    minimum: {$const: github-installation-minimum}
+    maximum: {$const: github-installation-maximum}
+  action:
+    description: The GitHub `action` which triggered an event.
+    enum: [assigned, unassigned, labeled, unlabeled, opened, edited, closed, reopened, synchronize, review_requested, review_request_removed]
+  eventId:
+    type: string
+    description: The GitHub webhook deliveryId. Extracted from the header 'X-GitHub-Delivery'
+    pattern: {$const: github-guid-pattern}
+  body:
+    type: object
+    description: The raw body of github event (for version 1)
+  tasks_for:
+    type: string
+    description: The type of the event (for version 1)
+  branch:
+    type: string
+    description: The head branch of the event (for version 1)
+  ref:
+    type: string
+    description: The head ref for the event (for version 1)
+additionalProperties: false
+required:
+  - version
+  - organization
+  - repository
+  - action
+  - installationId
+  - eventId
+  - body
+  - tasks_for
+  - branch
+  - ref

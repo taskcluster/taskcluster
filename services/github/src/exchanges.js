@@ -3,8 +3,7 @@ const _ = require('lodash');
 const assert = require('assert');
 
 /** Build common routing key construct for `exchanges.declare` */
-const commonRoutingKey = function(options) {
-  options = options || {};
+const commonRoutingKey = function(options = {}) {
   let routingKey = [
     {
       name: 'routingKeyKind',
@@ -139,6 +138,23 @@ exchanges.declare({
   messageBuilder: commonMessageBuilder,
   routingKeyBuilder: msg => _.pick(msg, 'organization', 'repository'),
   CCBuilder: commonCCBuilder,
+});
+
+/** check suite exchange */
+exchanges.declare({
+  exchange: 'check-suite',
+  name: 'checkSuite',
+  title: 'GitHub Check Suite Event',
+  description: [
+    'When a GitHub check suite event is posted it will be broadcast on this',
+    'exchange with the designated `organization` and `repository`',
+    'in the routing-key along with event specific metadata in the payload.',
+  ].join('\n'),
+  routingKey: commonRoutingKey({hasActions: true}),
+  schema: 'github-check-suite-message.yml',
+  messageBuilder: commonMessageBuilder,
+  routingKeyBuilder: msg => _.pick(msg, 'organization', 'repository', 'action'),
+  CCBuilder: () => [],
 });
 
 // Export exchanges
