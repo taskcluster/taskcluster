@@ -3,6 +3,7 @@ const assert = require('assert');
 const helper = require('./helper');
 const {StaticProvider} = require('../src/providers/static');
 const testing = require('taskcluster-lib-testing');
+const {WorkerPool} = require('../src/data');
 
 helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
   helper.withDb(mock, skipping);
@@ -30,7 +31,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
       WorkerPoolError: helper.WorkerPoolError,
       providerConfig: {},
     });
-    workerPool = await helper.WorkerPool.create({
+    workerPool = WorkerPool.fromApi({
       workerPoolId,
       providerId,
       description: 'none',
@@ -46,6 +47,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
       providerData: {},
       emailOnError: false,
     });
+    await workerPool.create(helper.db);
     await provider.setup();
   });
 

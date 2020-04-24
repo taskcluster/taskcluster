@@ -188,3 +188,183 @@ methods:
           limit size + 1
           offset page;
       end
+  create_worker_pool:
+    description: |-
+      Create a new worker pool.  Raises UNIQUE_VIOLATION if the pool already exists.
+    mode: write
+    serviceName: worker_manager
+    args: worker_pool_id_in text, provider_id_in text, previous_provider_ids_in jsonb, description_in text, config_in jsonb, created_in timestamptz, last_modified_in timestamptz, owner_in text, email_on_error_in boolean, provider_data_in jsonb
+    returns: void
+    body: |-
+      begin
+        insert
+          into worker_pools (worker_pool_id, provider_id, previous_provider_ids, description, config, created, last_modified, owner, email_on_error, provider_data)
+          values (worker_pool_id_in, provider_id_in, previous_provider_ids_in, description_in, config_in, created_in, last_modified_in, owner_in, email_on_error_in, provider_data_in);
+      end
+  get_worker_pool:
+    description: |-
+      Get an existig worker pool.  The returned table will have one or (if no such worker pool is defined) zero rows.
+    mode: read
+    serviceName: worker_manager
+    args: worker_pool_id_in text
+    returns: table(worker_pool_id text, provider_id text, previous_provider_ids jsonb, description text, config jsonb, created timestamptz, last_modified timestamptz, owner text, email_on_error boolean, provider_data jsonb)
+    body: |-
+      begin
+        return query
+        select
+          worker_pools.worker_pool_id,
+          worker_pools.provider_id,
+          worker_pools.previous_provider_ids,
+          worker_pools.description,
+          worker_pools.config,
+          worker_pools.created,
+          worker_pools.last_modified,
+          worker_pools.owner,
+          worker_pools.email_on_error,
+          worker_pools.provider_data
+        from worker_pools
+        where worker_pools.worker_pool_id = worker_pool_id_in;
+      end
+  get_worker_pools:
+    description: |-
+      Get existing worker pools, ordered by `worker_pool_id`.  If the pagination arguments are both NULL, all rows are returned.
+      Otherwise, page_size rows are returned at offset page_offset.
+    mode: read
+    serviceName: worker_manager
+    args: page_size_in integer, page_offset_in integer
+    returns: table(worker_pool_id text, provider_id text, previous_provider_ids jsonb, description text, config jsonb, created timestamptz, last_modified timestamptz, owner text, email_on_error boolean, provider_data jsonb)
+    body: |-
+      begin
+        return query
+        select
+          worker_pools.worker_pool_id,
+          worker_pools.provider_id,
+          worker_pools.previous_provider_ids,
+          worker_pools.description,
+          worker_pools.config,
+          worker_pools.created,
+          worker_pools.last_modified,
+          worker_pools.owner,
+          worker_pools.email_on_error,
+          worker_pools.provider_data
+        from worker_pools
+        order by worker_pool_id
+        limit get_page_limit(page_size_in)
+        offset get_page_offset(page_offset_in);
+      end
+  update_worker_pool:
+    description: |-
+      Update API-accessible columns on an existig worker pool.  All fields are
+      overridden, but if the provider_id changes, then the existing provider_id
+      is added to previous_provider_ids.  The return value contains values
+      required for an API response and previous_provider_id (singular) containing
+      the provider_id found before the update.  If no such worker pool exists,
+      the return value is an empty set.
+    mode: write
+    serviceName: worker_manager
+    args: worker_pool_id_in text, provider_id_in text, description_in text, config_in jsonb, last_modified_in timestamptz, owner_in text, email_on_error_in boolean
+    returns: table(worker_pool_id text, provider_id text, description text, config jsonb, created timestamptz, last_modified timestamptz, owner text, email_on_error boolean, previous_provider_id text)
+    body: |-
+      declare
+        existing record;
+      begin
+        select
+          worker_pools.provider_id,
+          worker_pools.previous_provider_ids
+        from worker_pools
+        where worker_pools.worker_pool_id = worker_pool_id_in
+        -- lock this row for the duration of this transaction..
+        for update
+        into existing;
+
+        -- update previous_provider_ids, if the provider_id has changed
+        if existing.provider_id <> provider_id_in then
+          -- remove both provider IDs to avoid duplicates, then re-add existing.provider_id
+          existing.previous_provider_ids = (existing.previous_provider_ids - provider_id_in - existing.provider_id) || jsonb_build_array(existing.provider_id);
+        end if;
+
+        return query update worker_pools
+        set
+          provider_id = provider_id_in,
+          description = description_in,
+          config = config_in,
+          last_modified = last_modified_in,
+          owner = owner_in,
+          email_on_error = email_on_error_in,
+          previous_provider_ids = existing.previous_provider_ids
+        where worker_pools.worker_pool_id = worker_pool_id_in
+        returning
+          worker_pools.worker_pool_id,
+          worker_pools.provider_id,
+          worker_pools.description,
+          worker_pools.config,
+          worker_pools.created,
+          worker_pools.last_modified,
+          worker_pools.owner,
+          worker_pools.email_on_error,
+          existing.provider_id as previous_provider_id;
+      end
+  expire_worker_pools:
+    description: |-
+      Expire worker pools, deleting those which have provider-id null-provider and
+      no previous_provider_ids.  Returns the worker pool ids that it deletes.
+    mode: write
+    serviceName: worker_manager
+    args: ''
+    returns: table(worker_pool_id text)
+    body: |-
+      begin
+        return query delete
+        from worker_pools
+        where worker_pools.provider_id = 'null-provider'
+        and worker_pools.previous_provider_ids = '[]'::jsonb
+        returning worker_pools.worker_pool_id;
+      end
+  delete_worker_pool:
+    description: |-
+      Delete a worker pool immediately.
+    mode: write
+    serviceName: worker_manager
+    args: worker_pool_id_in text
+    returns: void
+    body: |-
+      begin
+        delete
+        from worker_pools
+        where worker_pools.worker_pool_id = worker_pool_id_in;
+      end
+  remove_worker_pool_previous_provider_id:
+    description: |-
+      Remove the given provider_id from the worker pool's previous_provider_ids.  It is
+      not an error if the worker pool does not exist, or if the provider_id is not in the
+      previous_provider_ids set.
+    mode: write
+    serviceName: worker_manager
+    args: worker_pool_id_in text, provider_id_in text
+    returns: void
+    body: |-
+      begin
+        update worker_pools
+        set
+          previous_provider_ids = previous_provider_ids - provider_id_in
+        where
+          worker_pool_id = worker_pool_id_in;
+      end
+  update_worker_pool_provider_data:
+    description: |-
+      Update the provider_data for the given provider_id in this worker pool.  Note that
+      this sets the provider_data property unconditionally, and it is up to the service
+      to ensure that concurrent modifications do not occur.  It is not an error if the
+      worker pool does not exist.
+    mode: write
+    serviceName: worker_manager
+    args: worker_pool_id_in text, provider_id_in text, provider_data_in jsonb
+    returns: void
+    body: |-
+      begin
+        update worker_pools
+        set
+          provider_data = provider_data || jsonb_build_object(provider_id_in, provider_data_in)
+        where
+          worker_pool_id = worker_pool_id_in;
+      end
