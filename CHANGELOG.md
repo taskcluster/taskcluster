@@ -3,6 +3,19 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v29.1.3
+
+### GENERAL
+
+▶ [patch] 
+A dependency that was mistakenly thought to be unused has been added back
+
+▶ [patch] [bug 1627116](http://bugzil.la/1627116)
+The worker manager AWS provider now tags EBS volumes created for EC2 instances with the same set of tags.
+
+▶ [patch] [bug 1631829](http://bugzil.la/1631829)
+The worker-manager Azure provider now tags all worker related Azure resources with the set of standard tags.
+
 ## v29.1.2
 
 ### DEVELOPERS
