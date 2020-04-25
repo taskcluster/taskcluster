@@ -1,5 +1,3 @@
-<img align="right" src="http://media.taskcluster.net/logo/logo-96x120.png" />
-
 # taskcluster-proxy
 
 taskcluster-proxy is the proxy server which is used by Taskcluster workers to
@@ -10,12 +8,6 @@ scheduler, ...) without hardcoding credentials into the containers themselves.
   container linked to the task docker container.
 * When used by generic-worker, the taskcluster-proxy runs as a separate
   native executable on the host.
-
-[![Build Status](https://travis-ci.org/taskcluster/taskcluster-proxy.svg?branch=master)](http://travis-ci.org/taskcluster/taskcluster-proxy)
-[![GoDoc](https://godoc.org/github.com/taskcluster/taskcluster-proxy?status.svg)](https://godoc.org/github.com/taskcluster/taskcluster-proxy)
-[![Coverage Status](https://coveralls.io/repos/taskcluster/taskcluster-proxy/badge.svg?branch=master&service=github)](https://coveralls.io/github/taskcluster/taskcluster-proxy?branch=master)
-[![License](https://img.shields.io/badge/license-MPL%202.0-orange.svg)](http://mozilla.org/MPL/2.0)
-
 
 ## Download binary release
 
@@ -253,19 +245,3 @@ For example, a PUT request to
 `http://localhost:8080/api/auth/v1/clients/project/nss-nspr/rpi-64`, given a
 rootUrl of `https://tc.example.com`, would be proxied to
 `https://tc.example.com/api/auth/v1/clients/project/nss-nspr/rpi-64`.
-
-## Making a release
-
-The intended audience of this section is the Taskcluster team.
-
-Run the `release.sh` script in the root directory of this project, with a version number, like this:
-
-```
-$ ./release.sh 4.0.6
-```
-
-This should tag sources, publish a [release to
-github](https://github.com/taskcluster/taskcluster-proxy/releases), a [point
-release to
-dockerhub](https://hub.docker.com/r/taskcluster/taskcluster-proxy/tags/), and
-redirect the 'latest' docker on dockerhub.
