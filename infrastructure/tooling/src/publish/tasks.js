@@ -180,9 +180,9 @@ module.exports = ({tasks, cmdOptions, credentials, baseDir, logsDir}) => {
   });
 
   ensureTask(tasks, {
-    title: 'Build tc-proxy artifacts',
+    title: 'Build taskcluster-proxy artifacts',
     requires: ['cleaned-release-artifacts'],
-    provides: ['tc-proxy-artifacts'],
+    provides: ['taskcluster-proxy-artifacts'],
     run: async (requirements, utils) => {
       await execCommand({
         dir: path.join(REPO_ROOT, 'tools', 'taskcluster-proxy'),
@@ -190,10 +190,10 @@ module.exports = ({tasks, cmdOptions, credentials, baseDir, logsDir}) => {
         utils,
       });
 
-      const artifacts = glob.sync('livelog-*', {cwd: artifactsDir});
+      const artifacts = glob.sync('taskcluster-proxy-*', {cwd: artifactsDir});
 
       return {
-        'tc-proxy-artifacts': artifacts,
+        'taskcluster-proxy-artifacts': artifacts,
       };
     },
   });
@@ -361,19 +361,19 @@ module.exports = ({tasks, cmdOptions, credentials, baseDir, logsDir}) => {
   });
 
   ensureTask(tasks, {
-    title: 'Build tc-proxy Docker image',
+    title: 'Build taskcluster-proxy Docker image',
     requires: ['release-version'],
-    provides: ['tc-proxy-docker-image'],
+    provides: ['taskcluster-proxy-docker-image'],
     locks: ['docker'],
     run: async (requirements, utils) => {
       utils.step({title: 'Check Repository'});
 
-      const tag = `taskcluster/tc-proxy:${requirements['release-version']}`;
-      const provides = {'tc-proxy-docker-image': tag};
+      const tag = `taskcluster/taskcluster-proxy:${requirements['release-version']}`;
+      const provides = {'taskcluster-proxy-docker-image': tag};
 
-      utils.step({title: 'Building tc-proxy'});
+      utils.step({title: 'Building taskcluster-proxy'});
 
-      const contextDir = path.join(baseDir, 'tc-proxy-build');
+      const contextDir = path.join(baseDir, 'taskcluster-proxy-build');
       await execCommand({
         command: [
           'go', 'build',
@@ -381,7 +381,7 @@ module.exports = ({tasks, cmdOptions, credentials, baseDir, logsDir}) => {
           './tools/taskcluster-proxy',
         ],
         dir: REPO_ROOT,
-        logfile: path.join(logsDir, 'tc-proxy-build.log'),
+        logfile: path.join(logsDir, 'taskcluster-proxy-build.log'),
         utils,
         env: process.env,
       });
@@ -403,7 +403,7 @@ module.exports = ({tasks, cmdOptions, credentials, baseDir, logsDir}) => {
           'docker', 'rm', '-v', '"${uid}"',
         ],
         dir: REPO_ROOT,
-        logfile: path.join(logsDir, 'tc-proxy-cert-gen.log'),
+        logfile: path.join(logsDir, 'taskcluster-proxy-cert-gen.log'),
         utils,
         env: process.env,
       });
@@ -429,7 +429,7 @@ module.exports = ({tasks, cmdOptions, credentials, baseDir, logsDir}) => {
       await execCommand({
         command,
         dir: REPO_ROOT,
-        logfile: path.join(logsDir, 'tc-proxy-docker-build.log'),
+        logfile: path.join(logsDir, 'taskcluster-proxy-docker-build.log'),
         utils,
         env: {DOCKER_BUILDKIT: 1, ...process.env},
       });
@@ -471,7 +471,7 @@ module.exports = ({tasks, cmdOptions, credentials, baseDir, logsDir}) => {
       'target-monoimage',
       'websocktunnel-docker-image',
       'livelog-docker-image',
-      'tc-proxy-docker-image',
+      'taskcluster-proxy-docker-image',
       'livelog-artifacts',
     ],
     provides: [
@@ -500,7 +500,7 @@ module.exports = ({tasks, cmdOptions, credentials, baseDir, logsDir}) => {
         .concat(requirements['generic-worker-artifacts'])
         .concat(requirements['worker-runner-artifacts'])
         .concat(requirements['livelog-artifacts'])
-        .concat(requirements['tc-proxy-artifacts'])
+        .concat(requirements['taskcluster-proxy-artifacts'])
         .map(name => ({name, contentType: 'application/octet-stream'}));
       for (let {name, contentType} of files) {
         utils.status({message: `Upload Release asset ${name}`});
