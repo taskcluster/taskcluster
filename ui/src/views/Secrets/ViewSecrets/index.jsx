@@ -33,10 +33,6 @@ import secretsQuery from './secrets.graphql';
   },
 }))
 export default class ViewSecrets extends Component {
-  state = {
-    secretSearch: '',
-  };
-
   handleSecretSearchSubmit = async secretSearch => {
     const {
       data: { refetch },
@@ -51,9 +47,14 @@ export default class ViewSecrets extends Component {
         : null,
     });
 
-    this.props.history.push(
-      `/secrets${secretSearch ? `?search=${secretSearch}` : ''}`
-    );
+    const query = qs.parse(window.location.search.slice(1));
+
+    this.props.history.push({
+      search: qs.stringify({
+        ...query,
+        search: secretSearch,
+      }),
+    });
   };
 
   handleCreate = () => {
@@ -64,6 +65,8 @@ export default class ViewSecrets extends Component {
     const {
       data: { fetchMore },
     } = this.props;
+    const query = qs.parse(this.props.location.search.slice(1));
+    const secretSearch = query.search;
 
     return fetchMore({
       query: secretsQuery,
@@ -73,10 +76,10 @@ export default class ViewSecrets extends Component {
           cursor,
           previousCursor,
         },
-        filter: this.state.secretSearch
+        filter: secretSearch
           ? {
               name: {
-                $regex: escapeStringRegexp(this.state.secretSearch),
+                $regex: escapeStringRegexp(secretSearch),
                 $options: 'i',
               },
             }
@@ -102,7 +105,8 @@ export default class ViewSecrets extends Component {
       description,
       data: { loading, error, secrets },
     } = this.props;
-    const { searchTerm } = this.state;
+    const query = qs.parse(this.props.location.search.slice(1));
+    const secretSearch = query.search;
 
     return (
       <Dashboard
@@ -111,6 +115,7 @@ export default class ViewSecrets extends Component {
         search={
           <Search
             disabled={loading}
+            defaultValue={secretSearch}
             onSubmit={this.handleSecretSearchSubmit}
             placeholder="Secret contains"
           />
