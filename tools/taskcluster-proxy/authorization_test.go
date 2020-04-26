@@ -143,7 +143,7 @@ func TestBewit(t *testing.T) {
 			// Test setup
 			routes := NewRoutes(
 				tcclient.Client{
-					RootURL: testrooturl.Get(t),
+					RootURL:     testrooturl.Get(t),
 					Credentials: creds,
 				},
 			)
@@ -212,7 +212,7 @@ func TestBewitArbitraryURL(t *testing.T) {
 		// Test setup
 		routes := NewRoutes(
 			tcclient.Client{
-				RootURL: testrooturl.Get(t),
+				RootURL:     testrooturl.Get(t),
 				Credentials: creds,
 			},
 		)
@@ -275,7 +275,7 @@ func TestAPICallGET(t *testing.T) {
 			routes := NewRoutes(
 				tcclient.Client{
 					Authenticate: true,
-					RootURL: testrooturl.Get(t),
+					RootURL:      testrooturl.Get(t),
 					Credentials: &tcclient.Credentials{
 						ClientID:    creds.ClientID,
 						AccessToken: creds.AccessToken,
@@ -320,7 +320,7 @@ func TestAPICallPOST(t *testing.T) {
 			routes := NewRoutes(
 				tcclient.Client{
 					Authenticate: true,
-					RootURL: testrooturl.Get(t),
+					RootURL:      testrooturl.Get(t),
 					Credentials: &tcclient.Credentials{
 						ClientID:    creds.ClientID,
 						AccessToken: creds.AccessToken,
@@ -364,7 +364,7 @@ func TestNon200HasErrorBody(t *testing.T) {
 		// Test setup
 		routes := NewRoutes(
 			tcclient.Client{
-				RootURL: testrooturl.Get(t),
+				RootURL:      testrooturl.Get(t),
 				Authenticate: true,
 				Credentials:  creds,
 			},
@@ -400,7 +400,7 @@ func TestOversteppedScopes(t *testing.T) {
 		// Test setup
 		routes := NewRoutes(
 			tcclient.Client{
-				RootURL: testrooturl.Get(t),
+				RootURL:      testrooturl.Get(t),
 				Authenticate: true,
 				Credentials:  creds,
 			},
@@ -429,7 +429,7 @@ func TestOversteppedScopes(t *testing.T) {
 			t,
 			res,
 			map[string]string{
-				"X-Taskcluster-Endpoint": tcurls.API(testrooturl.Get(t), "secrets", "v1", "secret/garbage/pmoore/foo"),
+				"X-Taskcluster-Endpoint":          tcurls.API(testrooturl.Get(t), "secrets", "v1", "secret/garbage/pmoore/foo"),
 				"X-Taskcluster-Authorized-Scopes": `["secrets:get:garbage/pmoore/foo"]`,
 			},
 		)
@@ -441,7 +441,7 @@ func TestOversteppedScopes(t *testing.T) {
 func TestBadCredsReturns500(t *testing.T) {
 	routes := NewRoutes(
 		tcclient.Client{
-			RootURL: testrooturl.Get(t),
+			RootURL:      testrooturl.Get(t),
 			Authenticate: true,
 			Credentials: &tcclient.Credentials{
 				ClientID:    "abc",
@@ -472,7 +472,7 @@ func TestInvalidEndpoint(t *testing.T) {
 		// Test setup
 		routes := NewRoutes(
 			tcclient.Client{
-				RootURL: testrooturl.Get(t),
+				RootURL:      testrooturl.Get(t),
 				Authenticate: true,
 				Credentials:  creds,
 			},
@@ -512,9 +512,9 @@ func TestGetResponseBody(t *testing.T) {
 			// Test setup
 			routes := NewRoutes(
 				tcclient.Client{
-					RootURL: testrooturl.Get(t),
+					RootURL:      testrooturl.Get(t),
 					Authenticate: true,
-					Credentials: creds,
+					Credentials:  creds,
 				},
 			)
 
