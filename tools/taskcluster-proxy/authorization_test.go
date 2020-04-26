@@ -17,23 +17,17 @@ import (
 	"github.com/taskcluster/httpbackoff/v3"
 	"github.com/taskcluster/slugid-go/slugid"
 	tcurls "github.com/taskcluster/taskcluster-lib-urls"
-	tcclient "github.com/taskcluster/taskcluster/clients/client-go/v24"
+	tcclient "github.com/taskcluster/taskcluster/clients/client-go/v29"
+	"github.com/taskcluster/taskcluster/v29/internal/testrooturl"
 )
 
 var (
-	testRootURL = os.Getenv("TASKCLUSTER_ROOT_URL")
 	// these are the credentials that the auth service's test endpoints accept:
 	permCredentials = &tcclient.Credentials{
 		ClientID:    "tester",
 		AccessToken: "no-secret",
 	}
 )
-
-func init() {
-	if testRootURL == "" {
-		panic("Set TASKCLUSTER_ROOT_URL")
-	}
-}
 
 func newTestClient() *httpbackoff.Client {
 	return &httpbackoff.Client{
@@ -149,7 +143,7 @@ func TestBewit(t *testing.T) {
 			// Test setup
 			routes := NewRoutes(
 				tcclient.Client{
-					RootURL:     testRootURL,
+					RootURL: testrooturl.Get(t),
 					Credentials: creds,
 				},
 			)
@@ -157,7 +151,7 @@ func TestBewit(t *testing.T) {
 				routes.Credentials.AuthorizedScopes = []string{"test:authenticate-get"}
 			}
 
-			u := tcurls.API(testRootURL, "auth", "v1", "test-authenticate-get")
+			u := tcurls.API(testrooturl.Get(t), "auth", "v1", "test-authenticate-get")
 			req, err := http.NewRequest(
 				"POST",
 				"http://localhost:60024/bewit",
@@ -218,7 +212,7 @@ func TestBewitArbitraryURL(t *testing.T) {
 		// Test setup
 		routes := NewRoutes(
 			tcclient.Client{
-				RootURL:     testRootURL,
+				RootURL: testrooturl.Get(t),
 				Credentials: creds,
 			},
 		)
@@ -281,7 +275,7 @@ func TestAPICallGET(t *testing.T) {
 			routes := NewRoutes(
 				tcclient.Client{
 					Authenticate: true,
-					RootURL:      testRootURL,
+					RootURL: testrooturl.Get(t),
 					Credentials: &tcclient.Credentials{
 						ClientID:    creds.ClientID,
 						AccessToken: creds.AccessToken,
@@ -326,7 +320,7 @@ func TestAPICallPOST(t *testing.T) {
 			routes := NewRoutes(
 				tcclient.Client{
 					Authenticate: true,
-					RootURL:      testRootURL,
+					RootURL: testrooturl.Get(t),
 					Credentials: &tcclient.Credentials{
 						ClientID:    creds.ClientID,
 						AccessToken: creds.AccessToken,
@@ -370,7 +364,7 @@ func TestNon200HasErrorBody(t *testing.T) {
 		// Test setup
 		routes := NewRoutes(
 			tcclient.Client{
-				RootURL:      testRootURL,
+				RootURL: testrooturl.Get(t),
 				Authenticate: true,
 				Credentials:  creds,
 			},
@@ -406,7 +400,7 @@ func TestOversteppedScopes(t *testing.T) {
 		// Test setup
 		routes := NewRoutes(
 			tcclient.Client{
-				RootURL:      testRootURL,
+				RootURL: testrooturl.Get(t),
 				Authenticate: true,
 				Credentials:  creds,
 			},
@@ -435,7 +429,7 @@ func TestOversteppedScopes(t *testing.T) {
 			t,
 			res,
 			map[string]string{
-				"X-Taskcluster-Endpoint":          tcurls.API(testRootURL, "secrets", "v1", "secret/garbage/pmoore/foo"),
+				"X-Taskcluster-Endpoint": tcurls.API(testrooturl.Get(t), "secrets", "v1", "secret/garbage/pmoore/foo"),
 				"X-Taskcluster-Authorized-Scopes": `["secrets:get:garbage/pmoore/foo"]`,
 			},
 		)
@@ -447,7 +441,7 @@ func TestOversteppedScopes(t *testing.T) {
 func TestBadCredsReturns500(t *testing.T) {
 	routes := NewRoutes(
 		tcclient.Client{
-			RootURL:      testRootURL,
+			RootURL: testrooturl.Get(t),
 			Authenticate: true,
 			Credentials: &tcclient.Credentials{
 				ClientID:    "abc",
@@ -478,7 +472,7 @@ func TestInvalidEndpoint(t *testing.T) {
 		// Test setup
 		routes := NewRoutes(
 			tcclient.Client{
-				RootURL:      testRootURL,
+				RootURL: testrooturl.Get(t),
 				Authenticate: true,
 				Credentials:  creds,
 			},
@@ -518,9 +512,9 @@ func TestGetResponseBody(t *testing.T) {
 			// Test setup
 			routes := NewRoutes(
 				tcclient.Client{
-					RootURL:      testRootURL,
+					RootURL: testrooturl.Get(t),
 					Authenticate: true,
-					Credentials:  creds,
+					Credentials: creds,
 				},
 			)
 
