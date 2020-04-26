@@ -81,7 +81,7 @@ func ParseCommandArgs(argv []string, exit bool) (routes Routes, address string, 
 	}
 	log.Printf("Version: %v", fullversion)
 	var arguments map[string]interface{}
-	arguments, err = docopt.Parse(usage, argv, true, fullversion, false, exit)
+	arguments, err = docopt.ParseArgs(usage, argv, fullversion)
 	if err != nil {
 		return
 	}

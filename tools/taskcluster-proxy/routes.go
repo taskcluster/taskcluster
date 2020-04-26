@@ -2,8 +2,6 @@ package main
 
 import (
 	"bytes"
-	"crypto/sha256"
-	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -19,7 +17,6 @@ import (
 	tcUrls "github.com/taskcluster/taskcluster-lib-urls"
 	tc "github.com/taskcluster/taskcluster-proxy/taskcluster"
 	tcclient "github.com/taskcluster/taskcluster/v29/clients/client-go"
-	"github.com/tent/hawk-go"
 )
 
 // Routes represents the context of the running service
@@ -47,62 +44,6 @@ func NewRoutes(client tcclient.Client) Routes {
 	}
 }
 
-func (routes *Routes) getExtHeader() (header string, err error) {
-	// This function is copied from the
-	// github.com/taskcluster/taskcluster/clients/client-go source
-	credentials := routes.Credentials
-	ext := map[string]interface{}{}
-	if credentials.Certificate != "" {
-		var certObj json.RawMessage
-		err = json.Unmarshal([]byte(credentials.Certificate), &certObj)
-		if err != nil {
-			return "", err
-		}
-		ext["certificate"] = certObj
-	}
-
-	if credentials.AuthorizedScopes != nil {
-		ext["authorizedScopes"] = &credentials.AuthorizedScopes
-	}
-
-	extJSON, err := json.Marshal(ext)
-	if err != nil {
-		return "", err
-	}
-	if string(extJSON) != "{}" {
-		return base64.StdEncoding.EncodeToString(extJSON), nil
-	}
-	return "", nil
-}
-
-func (routes *Routes) signURL(u string, duration time.Duration) (parsed *url.URL, err error) {
-	parsed, err = url.Parse(u)
-	if err != nil {
-		return
-	}
-	credentials := &hawk.Credentials{
-		ID:   routes.Credentials.ClientID,
-		Key:  routes.Credentials.AccessToken,
-		Hash: sha256.New,
-	}
-	reqAuth, err := hawk.NewURLAuth(parsed.String(), credentials, duration)
-	if err != nil {
-		return
-	}
-	reqAuth.Ext, err = routes.getExtHeader()
-	if err != nil {
-		return
-	}
-	bewitSignature := reqAuth.Bewit()
-	query := parsed.Query()
-	if query == nil {
-		query = url.Values{}
-	}
-	query.Set("bewit", bewitSignature)
-	parsed.RawQuery = query.Encode()
-	return
-}
-
 func (routes *Routes) setHeaders(res http.ResponseWriter) {
 	headersToSend := res.Header()
 	headersToSend.Set("X-Taskcluster-Proxy-Version", version)
@@ -117,9 +58,9 @@ func (routes *Routes) setHeaders(res http.ResponseWriter) {
 		return
 	}
 	if cert == nil {
-		headersToSend.Set("X-Taskcluster-Proxy-Perm-ClientId", fmt.Sprintf("%s", routes.Credentials.ClientID))
+		headersToSend.Set("X-Taskcluster-Proxy-Perm-ClientId", routes.Credentials.ClientID)
 	} else {
-		headersToSend.Set("X-Taskcluster-Proxy-Temp-ClientId", fmt.Sprintf("%s", routes.Credentials.ClientID))
+		headersToSend.Set("X-Taskcluster-Proxy-Temp-ClientId", routes.Credentials.ClientID)
 		jsonTempScopes, err := json.Marshal(cert.Scopes)
 		if err == nil {
 			headersToSend.Set("X-Taskcluster-Proxy-Temp-Scopes", string(jsonTempScopes))
@@ -339,5 +280,9 @@ func (routes *Routes) commonHandler(res http.ResponseWriter, req *http.Request, 
 	res.WriteHeader(proxyres.StatusCode)
 
 	// Proxy the proxyResponse body from the endpoint to our response.
-	res.Write([]byte(resbody))
+	_, err = res.Write([]byte(resbody))
+	if err != nil {
+		fmt.Fprintf(res, "Error writing res: %s", err)
+		return
+	}
 }
