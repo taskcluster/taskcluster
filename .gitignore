@@ -65,4 +65,5 @@ next-task-user.json
 /tools/taskcluster-proxy/coverage.report
 
 # generated when compiling tests
+/tools/taskcluster-proxy/taskcluster-proxy.test
 /tools/taskcluster-proxy/taskcluster-proxy.test*
