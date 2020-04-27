@@ -14,7 +14,7 @@ scheduler, ...) without hardcoding credentials into the containers themselves.
 You do __not__ need to install go (golang) to run the proxy. It is shipped as a
 native executable.
 
-See [releases page](https://github.com/taskcluster/taskcluster-proxy/releases)
+See [releases page](https://github.com/taskcluster/taskcluster/releases)
 and choose a download that matches your platform.
 
 ## Download source and install via `go get`
@@ -23,7 +23,7 @@ Alternatively you can build and install from source. For this it is recommended
 you install the latest version of go (golang) first.
 
 ```sh
-go get github.com/taskcluster/taskcluster-proxy
+go get github.com/taskcluster/taskcluster/v29/tools/taskcluster-proxy
 ```
 
 ## Building

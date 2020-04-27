@@ -11,7 +11,7 @@ echo "mode: atomic" > "${REPORT}"
 HEAD_REV="$(git rev-parse HEAD)"
 go list ./... | while read package
 do
-  go test -ldflags "-X github.com/taskcluster/taskcluster-proxy.revision=${HEAD_REV}" -race -timeout 1h -covermode=atomic "-coverprofile=${TEMP_SINGLE_REPORT}" "${package}"
+  go test -ldflags "-X github.com/taskcluster/taskcluster.revision=${HEAD_REV}" -race -timeout 1h -covermode=atomic "-coverprofile=${TEMP_SINGLE_REPORT}" "${package}"
   if [ -f "${TEMP_SINGLE_REPORT}" ]; then
     sed 1d "${TEMP_SINGLE_REPORT}" >> "${REPORT}"
     rm "${TEMP_SINGLE_REPORT}"

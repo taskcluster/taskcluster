@@ -187,8 +187,6 @@ github.com/taskcluster/stateless-dns-go v1.0.6 h1:6Nzte8Y+UWCNQCjTUpfs7LU7gA+FG3
 github.com/taskcluster/stateless-dns-go v1.0.6/go.mod h1:Nu9QAMTDA6EdWm4xyQVQurJDRXjhl8R6XDwxU/WNJ40=
 github.com/taskcluster/taskcluster-lib-urls v13.0.0+incompatible h1:JzXbHelZk1Kmi5JftwM47YOdHre2zddpP/cZCgXAkqM=
 github.com/taskcluster/taskcluster-lib-urls v13.0.0+incompatible/go.mod h1:ALqTgi15AmJGEGubRKM0ydlLAFatlQPrQrmal9YZpQs=
-github.com/taskcluster/taskcluster-proxy v5.1.0+incompatible h1:XBrAbzIx5p8rNsfGGrkwANQKLRVhw+3PMPRxhMsIXso=
-github.com/taskcluster/taskcluster-proxy v5.1.0+incompatible/go.mod h1:pXy9r+OopPlNs4pyC00VMh/7Jg/FHbmCZtVTGEbB1Lo=
 github.com/tent/hawk-go v0.0.0-20161026210932-d341ea318957 h1:6Fre/uvwovW5YY4nfHZk66cAg9HjT9YdFSAJHUUgOyQ=
 github.com/tent/hawk-go v0.0.0-20161026210932-d341ea318957/go.mod h1:dch7ywQEefE1ibFqBG1erFibrdUIwovcwQjksYuHuP4=
 github.com/tmc/grpc-websocket-proxy v0.0.0-20190109142713-0ad062ec5ee5/go.mod h1:ncp9v5uamzpCO7NfCPTXjqaC+bZgJeR0sMTm6dMHP7U=

@@ -42,7 +42,6 @@ require (
 	github.com/taskcluster/slugid-go v1.1.0
 	github.com/taskcluster/stateless-dns-go v1.0.6
 	github.com/taskcluster/taskcluster-lib-urls v13.0.0+incompatible
-	github.com/taskcluster/taskcluster-proxy v5.1.0+incompatible
 	github.com/tent/hawk-go v0.0.0-20161026210932-d341ea318957
 	github.com/ulikunitz/xz v0.5.7 // indirect
 	github.com/xeipuuv/gojsonpointer v0.0.0-20190905194746-02993c407bfb // indirect

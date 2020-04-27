@@ -244,7 +244,7 @@ and reports back results to the queue.
                                             https://github.com/taskcluster/stateless-dns-server
                                             [default: "taskcluster-worker.net"]
           taskclusterProxyExecutable        Filepath of taskcluster-proxy executable to use; see
-                                            https://github.com/taskcluster/taskcluster-proxy
+                                            https://github.com/taskcluster/taskcluster/tree/master/tools/taskcluster-proxy
                                             [default: "taskcluster-proxy"]
           taskclusterProxyPort              Port number for taskcluster-proxy HTTP requests.
                                             [default: 80]

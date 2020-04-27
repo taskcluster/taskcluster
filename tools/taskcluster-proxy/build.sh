@@ -2,9 +2,9 @@
 
 cd "$(dirname "${0}")"
 
-# Support go 1 release 1.9 or higher
+# Support go 1 release 1.13 or higher
 GO_MAJOR_VERSION=1
-MIN_GO_MINOR_VERSION=9
+MIN_GO_MINOR_VERSION=13
 
 unset CGO_ENABLED
 unset GOOS
@@ -45,12 +45,12 @@ function install {
     GOOS="${1}" GOARCH="${2}" go get -ldflags "-X main.revision=$(git rev-parse HEAD)" -v ./...
     GOOS="${1}" GOARCH="${2}" go vet ./...
     # note, this just builds tests, it doesn't run them!
-    GOOS="${1}" GOARCH="${2}" go test -c github.com/taskcluster/taskcluster-proxy
+    GOOS="${1}" GOARCH="${2}" go test -c github.com/taskcluster/taskcluster/v29/tools/taskcluster-proxy
   else
     go get -ldflags "-X main.revision=$(git rev-parse HEAD)" -v ./...
     go vet ./...
     # note, this just builds tests, it doesn't run them!
-    go test -c github.com/taskcluster/taskcluster-proxy
+    go test -c github.com/taskcluster/taskcluster/v29/tools/taskcluster-proxy
   fi
 }
 
@@ -73,7 +73,7 @@ fi
 find "${GOPATH}/bin" -name 'taskcluster-proxy*'
 
 if $TEST; then
-  CGO_ENABLED=1 GORACE="history_size=7" go test -v -ldflags "-X github.com/taskcluster/taskcluster-proxy.revision=$(git rev-parse HEAD)" -race -timeout 1h ./...
+  CGO_ENABLED=1 GORACE="history_size=7" go test -v -ldflags "-X github.com/taskcluster/taskcluster.revision=$(git rev-parse HEAD)" -race -timeout 1h ./...
 fi
 go vet ./...
 golint ./...

@@ -377,7 +377,7 @@ type (
 
 		// The taskcluster proxy provides an easy and safe way to make authenticated
 		// taskcluster requests within the scope(s) of a particular task. See
-		// [the github project](https://github.com/taskcluster/taskcluster-proxy) for more information.
+		// [the github project](https://github.com/taskcluster/taskcluster/tree/master/tools/taskcluster-proxy) for more information.
 		//
 		// Since: generic-worker 10.6.0
 		TaskclusterProxy bool `json:"taskclusterProxy,omitempty"`
