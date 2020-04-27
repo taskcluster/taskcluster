@@ -227,7 +227,12 @@ class GoogleProvider extends Provider {
       // workers in taskcluster.
       const poolName = workerPoolId.replace(/[\/_]/g, '-').slice(0, 38);
       const instanceName = `${poolName}-${slugid.nice().replace(/_/g, '-').toLowerCase()}`;
-
+      const labels = {
+        'created-by': `taskcluster-wm-${this.providerId}`.replace(/[^a-zA-Z0-9-]/g, '-'),
+        'managed-by': 'taskcluster',
+        'worker-pool-id': workerPoolId.replace(/[^a-zA-Z0-9-]/g, '-').toLowerCase(),
+        'owner': workerPool.owner.replace(/[^a-zA-Z0-9-]/g, '-').toLowerCase(),
+      };
       let op;
 
       try {
@@ -240,12 +245,13 @@ class GoogleProvider extends Provider {
             name: instanceName,
             labels: {
               ...cfg.labels || {},
-              'created-by': `taskcluster-wm-${this.providerId}`.replace(/[^a-zA-Z0-9-]/g, '-'),
-              'managed-by': 'taskcluster',
-              'worker-pool-id': workerPoolId.replace(/[^a-zA-Z0-9-]/g, '-').toLowerCase(),
-              'owner': workerPool.owner.replace(/[^a-zA-Z0-9-]/g, '-').toLowerCase(),
+              labels,
             },
             description: cfg.description || workerPool.description,
+            disks: {
+              ...cfg.disks || {},
+              labels,
+            },
             serviceAccounts: [{
               email: this.workerServiceAccountEmail,
               scopes: [
