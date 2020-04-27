@@ -46,7 +46,7 @@ require (
 	github.com/ulikunitz/xz v0.5.7 // indirect
 	github.com/xeipuuv/gojsonschema v1.2.0
 	golang.org/x/crypto v0.0.0-20200420201142-3c4aac89819a
-	golang.org/x/net v0.0.0-20200421231249-e086a090c8fd
+	golang.org/x/net ff2c4b7c35a0
 	golang.org/x/sys v0.0.0-20200420163511-1957bb5e6d1f
 	golang.org/x/tools v0.0.0-20200422022333-3d57cf2e726e
 	gopkg.in/tylerb/graceful.v1 v1.2.15
