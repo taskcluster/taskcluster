@@ -62,6 +62,7 @@ class ChangeLog {
       const snippetContent = await readRepoFile(filename);
       const [headerYaml, body] = snippetContent.split('\n---\n', 2);
 
+      console.log(filename);
       let {level, audience, reference, ...extra} = yaml.safeLoad(headerYaml);
       if (Object.keys(extra).length !== 0) {
         throw new Error(`Snippet ${filename}: extra properties in header`);
