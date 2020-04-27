@@ -1,6 +1,7 @@
 import { hot } from 'react-hot-loader';
 import React, { Component, Fragment } from 'react';
 import { graphql } from 'react-apollo';
+import { parse, stringify } from 'qs';
 import dotProp from 'dot-prop-immutable';
 import Spinner from '@mozilla-frontend-infra/components/Spinner';
 import { withStyles } from '@material-ui/core/styles';
@@ -25,11 +26,6 @@ import scopesQuery from '../scopes.graphql';
   },
 }))
 export default class ViewScope extends Component {
-  state = {
-    searchTerm: '',
-    currentTabIndex: 0,
-  };
-
   handleClientsPageChange = ({ cursor, previousCursor }) => {
     const {
       data: { fetchMore },
@@ -63,20 +59,47 @@ export default class ViewScope extends Component {
   };
 
   handleSearchSubmit = searchTerm => {
-    this.setState({ searchTerm });
+    const { location, history } = this.props;
+    const query = parse(location.search.slice(1));
+
+    if (query.searchTerm !== searchTerm) {
+      const newQuery = {
+        ...query,
+        searchTerm,
+      };
+
+      history.push({
+        search: stringify(newQuery, { addQueryPrefix: true }),
+      });
+    }
   };
 
   handleTabChange = (event, value) => {
-    this.setState({ currentTabIndex: value });
+    const { location, history } = this.props;
+    const query = parse(location.search.slice(1));
+
+    if (query.tabIndex !== value) {
+      const newQuery = {
+        ...query,
+        tabIndex: value,
+      };
+
+      history.push({
+        search: stringify(newQuery, { addQueryPrefix: true }),
+      });
+    }
   };
 
   render() {
     const {
       classes,
+      location,
       match: { params },
       data: { loading, error, clients, roles },
     } = this.props;
-    const { searchTerm, currentTabIndex } = this.state;
+    const query = parse(location.search.slice(1));
+    const searchTerm = query.searchTerm ? query.searchTerm : '';
+    const currentTabIndex = query.tabIndex ? parseInt(query.tabIndex, 10) : 0;
     const selectedScope = decodeURIComponent(params.selectedScope);
 
     return (
@@ -87,6 +110,7 @@ export default class ViewScope extends Component {
           <Search
             onSubmit={this.handleSearchSubmit}
             placeholder="Role/Client contains"
+            defaultValue={searchTerm}
           />
         }>
         <Fragment>
