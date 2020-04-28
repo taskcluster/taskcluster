@@ -232,7 +232,7 @@ and reports back results to the queue.
                                             https://github.com/taskcluster/stateless-dns-server
                                             [default: "taskcluster-worker.net"]
           taskclusterProxyExecutable        Filepath of taskcluster-proxy executable to use; see
-                                            https://github.com/taskcluster/taskcluster-proxy
+                                            https://github.com/taskcluster/taskcluster/tree/master/tools/taskcluster-proxy
                                             [default: "taskcluster-proxy"]
           taskclusterProxyPort              Port number for taskcluster-proxy HTTP requests.
                                             [default: 80]
@@ -340,7 +340,7 @@ Set up to build Taskcluster in general.
 See [development process](../../dev-docs/development-process.md).
 
 * Run `go get github.com/taskcluster/livelog`
-* Run `go get github.com/taskcluster/taskcluster-proxy`
+* Run `go get github.com/taskcluster/taskcluster/v29/tools/taskcluster-proxy`
 
 In the `workers/generic-worker` directory, run `./build.sh` to check go version, generate code, build binaries, compile (but not run) tests, perform linting, and ensure there are no ineffective assignments in go code.
 

@@ -44,6 +44,7 @@ require (
 	github.com/taskcluster/taskcluster-lib-urls v13.0.0+incompatible
 	github.com/tent/hawk-go v0.0.0-20161026210932-d341ea318957
 	github.com/ulikunitz/xz v0.5.7 // indirect
+	github.com/xeipuuv/gojsonpointer v0.0.0-20190905194746-02993c407bfb // indirect
 	github.com/xeipuuv/gojsonschema v1.2.0
 	golang.org/x/crypto v0.0.0-20200427165652-729f1e841bcc
 	golang.org/x/net v0.0.0-20200425230154-ff2c4b7c35a0

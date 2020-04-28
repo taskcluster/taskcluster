@@ -180,6 +180,25 @@ module.exports = ({tasks, cmdOptions, credentials, baseDir, logsDir}) => {
   });
 
   ensureTask(tasks, {
+    title: 'Build taskcluster-proxy artifacts',
+    requires: ['cleaned-release-artifacts'],
+    provides: ['taskcluster-proxy-artifacts'],
+    run: async (requirements, utils) => {
+      await execCommand({
+        dir: path.join(REPO_ROOT, 'tools', 'taskcluster-proxy'),
+        command: ['./dockerbuild.sh', artifactsDir],
+        utils,
+      });
+
+      const artifacts = glob.sync('taskcluster-proxy-*', {cwd: artifactsDir});
+
+      return {
+        'taskcluster-proxy-artifacts': artifacts,
+      };
+    },
+  });
+
+  ensureTask(tasks, {
     title: 'Build Websocktunnel Docker Image',
     requires: [
       'release-version',
@@ -276,7 +295,7 @@ module.exports = ({tasks, cmdOptions, credentials, baseDir, logsDir}) => {
         'livelog-docker-image': tag,
       };
 
-      utils.step({title: 'Building Websocktunnel'});
+      utils.step({title: 'Building Livelog'});
 
       const contextDir = path.join(baseDir, 'livelog-build');
       await execCommand({
@@ -341,6 +360,104 @@ module.exports = ({tasks, cmdOptions, credentials, baseDir, logsDir}) => {
     },
   });
 
+  ensureTask(tasks, {
+    title: 'Build taskcluster-proxy Docker image',
+    requires: ['release-version'],
+    provides: ['taskcluster-proxy-docker-image'],
+    locks: ['docker'],
+    run: async (requirements, utils) => {
+      utils.step({title: 'Check Repository'});
+
+      const tag = `taskcluster/taskcluster-proxy:${requirements['release-version']}`;
+      const provides = {'taskcluster-proxy-docker-image': tag};
+
+      utils.step({title: 'Building taskcluster-proxy'});
+
+      const contextDir = path.join(baseDir, 'taskcluster-proxy-build');
+      await execCommand({
+        command: [
+          'go', 'build',
+          '-o', path.join(contextDir, 'taskcluster-proxy'),
+          './tools/taskcluster-proxy',
+        ],
+        dir: REPO_ROOT,
+        logfile: path.join(logsDir, 'taskcluster-proxy-build.log'),
+        utils,
+        env: process.env,
+      });
+
+      utils.step({title: 'Generating ca certs using latest ubuntu version'});
+
+      const cacerts = path.join(contextDir, 'cacerts.docker');
+      fs.writeFileSync(cacerts, [
+        'FROM ubuntu:latest',
+        'RUN apt-get update',
+        'RUN apt-get install -y ca-certificates',
+      ].join('\n'));
+      await execCommand({
+        command: [
+          'uid="$(date +%s)"', '&&',
+          'docker', 'build', '--pull', '-t', '"${uid}"', '-f', 'cacerts.docker', '.', '&&',
+          'docker', 'run', '--name', '"${uid}"', '"${uid}"', '&&',
+          'docker', 'cp', '"${uid}:/etc/ssl/certs/ca-certificates.crt"', 'target', '&&',
+          'docker', 'rm', '-v', '"${uid}"',
+        ],
+        dir: REPO_ROOT,
+        logfile: path.join(logsDir, 'taskcluster-proxy-cert-gen.log'),
+        utils,
+        env: process.env,
+      });
+
+      utils.step({title: 'Building Docker Image'});
+
+      // this simple Dockerfile just packages the binary into a Docker image
+      const dockerfile = path.join(contextDir, 'Dockerfile');
+      fs.writeFileSync(dockerfile, [
+        'FROM scratch',
+        'EXPOSE 80',
+        'COPY target/taskcluster-proxy /taskcluster-proxy',
+        'COPY target/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt',
+        'ENTRYPOINT ["/taskcluster-proxy", "--port", "80"]',
+      ].join('\n'));
+      let command = [
+        'docker', 'build',
+        '--no-cache',
+        '--progress', 'plain',
+        '--tag', tag,
+        contextDir,
+      ];
+      await execCommand({
+        command,
+        dir: REPO_ROOT,
+        logfile: path.join(logsDir, 'taskcluster-proxy-docker-build.log'),
+        utils,
+        env: {DOCKER_BUILDKIT: 1, ...process.env},
+      });
+
+      if (!cmdOptions.staging) {
+        utils.step({title: 'Pushing Docker Image'});
+
+        const dockerPushOptions = {};
+        if (credentials.dockerUsername && credentials.dockerPassword) {
+          dockerPushOptions.credentials = {
+            username: credentials.dockerUsername,
+            password: credentials.dockerPassword,
+          };
+        }
+
+        await dockerPush({
+          logfile: path.join(logsDir, 'docker-push.log'),
+          tag,
+          utils,
+          baseDir,
+          ...dockerPushOptions,
+        });
+      }
+
+      return provides;
+    },
+  });
+
   /* -- monoimage docker image build occurs here -- */
 
   ensureTask(tasks, {
@@ -354,6 +471,7 @@ module.exports = ({tasks, cmdOptions, credentials, baseDir, logsDir}) => {
       'target-monoimage',
       'websocktunnel-docker-image',
       'livelog-docker-image',
+      'taskcluster-proxy-docker-image',
       'livelog-artifacts',
     ],
     provides: [
@@ -382,6 +500,7 @@ module.exports = ({tasks, cmdOptions, credentials, baseDir, logsDir}) => {
         .concat(requirements['generic-worker-artifacts'])
         .concat(requirements['worker-runner-artifacts'])
         .concat(requirements['livelog-artifacts'])
+        .concat(requirements['taskcluster-proxy-artifacts'])
         .map(name => ({name, contentType: 'application/octet-stream'}));
       for (let {name, contentType} of files) {
         utils.status({message: `Upload Release asset ${name}`});

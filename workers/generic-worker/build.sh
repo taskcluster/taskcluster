@@ -102,7 +102,7 @@ ls -1 "$OUTPUT_DIR"/generic-worker-*
 CGO_ENABLED=0 go get github.com/taskcluster/livelog
 
 if $TEST; then
-  go get github.com/taskcluster/taskcluster-proxy
+  go get github.com/taskcluster/taskcluster/v29/tools/taskcluster-proxy
   CGO_ENABLED=1 GORACE="history_size=7" /usr/bin/sudo "GOPATH=$GOPATH" "GW_TESTS_RUN_AS_CURRENT_USER=" "TASKCLUSTER_CERTIFICATE=$TASKCLUSTER_CERTIFICATE" "TASKCLUSTER_ACCESS_TOKEN=$TASKCLUSTER_ACCESS_TOKEN" "TASKCLUSTER_CLIENT_ID=$TASKCLUSTER_CLIENT_ID" "TASKCLUSTER_ROOT_URL=$TASKCLUSTER_ROOT_URL" $(which go) test -v -tags multiuser -ldflags "-X github.com/taskcluster/taskcluster/v29/workers/generic-worker.revision=$(git rev-parse HEAD)" -race -timeout 1h ./...
   MYGOHOSTOS="$(go env GOHOSTOS)"
   if [ "${MYGOHOSTOS}" == "linux" ] || [ "${MYGOHOSTOS}" == "darwin" ]; then

@@ -83,6 +83,7 @@ It is not possible to run a full Taskcluster deployment directly from this repos
 * [Tools](tools#readme)
     * [jsonschema2go](tools/jsonschema2go#readme)
     * [livelog](tools/livelog#readme)
+    * [taskcluster-proxy](tools/taskcluster-proxy#readme)
     * [Websocktunnel](tools/websocktunnel#readme)
     * [Worker Runner](tools/worker-runner#readme)
 * [Taskcluster UI](ui#readme)
