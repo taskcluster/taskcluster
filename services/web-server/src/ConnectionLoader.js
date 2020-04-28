@@ -6,21 +6,9 @@ const FIRST = '$$FIRST$$';
 module.exports = class ConnectionLoader {
   constructor(singleConnectionHandler) {
     const fetch = async ({ connection, options, ...props }) => {
-      const result = connection
+      return connection
         ? await singleConnectionHandler({ connection, options, ...props })
         : await singleConnectionHandler({ options, ...props });
-
-      if (result.continuationToken && !result.items.length) {
-        return fetch({
-          ...props,
-          options: {
-            ...options,
-            continuationToken: result.continuationToken,
-          },
-        });
-      }
-
-      return result;
     };
 
     return new DataLoader(connections =>
