@@ -544,27 +544,56 @@ module.exports = ({tasks, cmdOptions, credentials, baseDir, logsDir}) => {
     },
   });
 
-  ['clients/client', 'clients/client-web'].forEach(clientName =>
-    ensureTask(tasks, {
-      title: `Publish ${clientName} to npm`,
-      requires: [
-        'target-monoimage', // to make sure the build succeeds first..
-      ],
-      provides: [
-        `publish-${clientName}`,
-      ],
-      run: async (requirements, utils) => {
-        if (!cmdOptions.push) {
-          return utils.skip({});
-        }
+  ensureTask(tasks, {
+    title: `Publish clients/client to npm`,
+    requires: [
+      'target-monoimage', // to make sure the build succeeds first..
+    ],
+    provides: [
+      `publish-clients/client`,
+    ],
+    run: async (requirements, utils) => {
+      if (!cmdOptions.push) {
+        return utils.skip({});
+      }
 
-        await npmPublish({
-          dir: path.join(REPO_ROOT, clientName),
-          apiToken: credentials.npmToken,
-          logfile: path.join(logsDir, `publish-${clientName.replace('/', '-')}.log`),
-          utils});
-      },
-    }));
+      await npmPublish({
+        dir: path.join(REPO_ROOT, 'clients/client'),
+        apiToken: credentials.npmToken,
+        logfile: path.join(logsDir, `publish-clients-client.log`),
+        utils});
+    },
+  });
+
+  ensureTask(tasks, {
+    title: `Publish clients/client-web to npm`,
+    requires: [
+      'target-monoimage', // to make sure the build succeeds first..
+    ],
+    provides: [
+      `publish-clients/client-web`,
+    ],
+    run: async (requirements, utils) => {
+      const dir = path.join(REPO_ROOT, 'clients/client-web');
+
+      await execCommand({
+        dir,
+        command: ['yarn', 'install'],
+        utils,
+        logfile: path.join(logsDir, `install-clients-client-web.log`),
+      });
+
+      if (!cmdOptions.push) {
+        return utils.skip({});
+      }
+
+      await npmPublish({
+        dir,
+        apiToken: credentials.npmToken,
+        logfile: path.join(logsDir, `publish-clients-client-web.log`),
+        utils});
+    },
+  });
 
   ensureTask(tasks, {
     title: `Publish clients/client-py to pypi`,
