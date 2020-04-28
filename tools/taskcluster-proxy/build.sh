@@ -59,10 +59,8 @@ if ${ALL_PLATFORMS}; then
   install windows 386
   install windows amd64
   # darwin
-  install darwin     386
   install darwin     amd64
   # linux
-  install linux      386
   install linux      amd64
   install linux      arm
   install linux      arm64
