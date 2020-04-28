@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { func, shape, arrayOf, string } from 'prop-types';
+import { func, shape, arrayOf } from 'prop-types';
 import { pipe, map, sort as rSort } from 'ramda';
 import memoize from 'fast-memoize';
 import TableCell from '@material-ui/core/TableCell';
@@ -30,12 +30,6 @@ export default class IndexNamespacesTable extends Component {
       edges: arrayOf(namespace),
       pageInfo,
     }).isRequired,
-    /** A search term to refine the list of tasks. */
-    searchTerm: string,
-  };
-
-  static defaultProps = {
-    searchTerm: null,
   };
 
   state = {
@@ -84,7 +78,7 @@ export default class IndexNamespacesTable extends Component {
   };
 
   render() {
-    const { onPageChange, connection, searchTerm } = this.props;
+    const { onPageChange, connection } = this.props;
     const { sortBy, sortDirection } = this.state;
     const sortedNamespacesConnection = this.createSortedNamespacesConnection(
       connection,
@@ -95,7 +89,6 @@ export default class IndexNamespacesTable extends Component {
 
     return (
       <ConnectionDataTable
-        searchTerm={searchTerm}
         connection={sortedNamespacesConnection}
         pageSize={VIEW_NAMESPACES_PAGE_SIZE}
         sortByHeader={sortBy}

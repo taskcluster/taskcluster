@@ -233,11 +233,11 @@ export default class ListNamespaces extends Component {
             </Fragment>
           )}
           {!loading && !hasNamespaces && !hasIndexedTasks && isSinglePath && (
-            <IndexNamespacesTable
-              searchTerm={searchTerm}
-              connection={taskNamespace}
-              onPageChange={this.handleTaskNamespacePageChange}
-            />
+            <Typography>
+              {searchTerm
+                ? `No items for this page with search term ${searchTerm}.`
+                : 'No items for this page.'}
+            </Typography>
           )}
           {!loading && hasNamespaces && (
             <Fragment>
