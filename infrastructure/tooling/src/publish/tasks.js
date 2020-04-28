@@ -179,6 +179,8 @@ module.exports = ({tasks, cmdOptions, credentials, baseDir, logsDir}) => {
     },
   });
 
+  /*
+   * https://github.com/taskcluster/taskcluster/issues/2739
   ensureTask(tasks, {
     title: 'Build taskcluster-proxy artifacts',
     requires: ['cleaned-release-artifacts'],
@@ -197,6 +199,7 @@ module.exports = ({tasks, cmdOptions, credentials, baseDir, logsDir}) => {
       };
     },
   });
+  */
 
   ensureTask(tasks, {
     title: 'Build Websocktunnel Docker Image',
@@ -360,6 +363,7 @@ module.exports = ({tasks, cmdOptions, credentials, baseDir, logsDir}) => {
     },
   });
 
+  /* https://github.com/taskcluster/taskcluster/issues/2739
   ensureTask(tasks, {
     title: 'Build taskcluster-proxy Docker image',
     requires: ['release-version'],
@@ -457,6 +461,7 @@ module.exports = ({tasks, cmdOptions, credentials, baseDir, logsDir}) => {
       return provides;
     },
   });
+  /*
 
   /* -- monoimage docker image build occurs here -- */
 
@@ -467,11 +472,12 @@ module.exports = ({tasks, cmdOptions, credentials, baseDir, logsDir}) => {
       'client-shell-artifacts',
       'generic-worker-artifacts',
       'worker-runner-artifacts',
+      //'taskcluster-proxy-artifacts',
       'changelog-text',
       'target-monoimage',
       'websocktunnel-docker-image',
       'livelog-docker-image',
-      'taskcluster-proxy-docker-image',
+      //'taskcluster-proxy-docker-image',
       'livelog-artifacts',
     ],
     provides: [
@@ -500,7 +506,7 @@ module.exports = ({tasks, cmdOptions, credentials, baseDir, logsDir}) => {
         .concat(requirements['generic-worker-artifacts'])
         .concat(requirements['worker-runner-artifacts'])
         .concat(requirements['livelog-artifacts'])
-        .concat(requirements['taskcluster-proxy-artifacts'])
+        //.concat(requirements['taskcluster-proxy-artifacts'])
         .map(name => ({name, contentType: 'application/octet-stream'}));
       for (let {name, contentType} of files) {
         utils.status({message: `Upload Release asset ${name}`});
