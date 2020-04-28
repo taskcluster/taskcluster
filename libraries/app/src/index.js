@@ -2,7 +2,6 @@ const express = require('express');
 const _ = require('lodash');
 const debug = require('debug')('base:app');
 const assert = require('assert');
-const morganDebug = require('morgan-debug');
 const http = require('http');
 const sslify = require('express-sslify');
 const hsts = require('hsts');
@@ -114,11 +113,6 @@ const app = async (options) => {
     res.setHeader('x-for-request-id', reqId);
     next();
   });
-
-  // output user-agent and referrer in production, which can be useful when debugging API (ab)use
-  const format = app.get('env') === 'development' ?
-    'dev' : '[:date[clf]] :method :url -> :status; ip=:remote-addr referrer=":referrer" ua=":user-agent"';
-  app.use(morganDebug('app:request', format));
 
   if (options.robotsTxt) {
     app.use('/robots.txt', (req, res) => {
