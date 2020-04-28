@@ -245,7 +245,7 @@ class GoogleProvider extends Provider {
             name: instanceName,
             labels: {
               ...cfg.labels || {},
-              labels,
+              ...labels,
             },
             description: cfg.description || workerPool.description,
             disks: {
