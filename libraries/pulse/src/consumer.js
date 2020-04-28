@@ -41,7 +41,6 @@ class PulseConsumer {
     if (ephemeral) {
       assert(!queueName, 'Must not pass a queueName for ephemeral consumers');
       assert(onConnected, 'Must pass onConnected for ephemeral consumers');
-      this.queueName = slugid.nice();
     } else {
       assert(queueName, 'Must pass a queueName');
       this.queueName = queueName;
@@ -145,7 +144,11 @@ class PulseConsumer {
   }
 
   async _createAndBindQueue(channel) {
-    const queueName = this.client.fullObjectName('queue', this.queueName);
+    const queueName = this.client.fullObjectName(
+      'queue',
+      // for ephemeral queues, generate a new queueName on every connection,
+      // as autodelete is not an immediate operation
+      this.ephemeral ? slugid.nice() : this.queueName);
     await channel.assertQueue(queueName, {
       exclusive: this.ephemeral,
       durable: true,

@@ -59,7 +59,8 @@ class ChangeLog {
       .filter(filename => filename !== 'changelog/README.md');
 
     this.snippets = await Promise.all(snippetFiles.map(async filename => {
-      const snippetContent = await readRepoFile(filename);
+      // include a trailing newline in case the file lacks one
+      const snippetContent = (await readRepoFile(filename)).trimEnd() + '\n';
       const [headerYaml, body] = snippetContent.split('\n---\n', 2);
 
       let {level, audience, reference, ...extra} = yaml.safeLoad(headerYaml);
