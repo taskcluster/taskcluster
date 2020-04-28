@@ -3,6 +3,25 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v29.2.0
+
+### DEPLOYERS
+
+▶ [patch] [bug 1606006](http://bugzil.la/1606006)
+Services that use ephemeral queues now use a different queue name on each connection.  This avoids issues with RESOURCE-LOCKED from RabbitMQ.
+
+### USERS
+
+▶ [minor] [bug 1629807](http://bugzil.la/1629807)
+Taskcluster login now includes a state token in the url search query during the login transaction to
+conform with the recommendations in rfc-261.
+
+▶ [patch] [bug 1631099](http://bugzil.la/1631099)
+Taskcluster-GitHub now retries on 401 "Bad Credentials" errors from GitHub, as suggested by [GitHub developers](https://github.community/t5/GitHub-API-Development-and/Random-401-errors-after-using-freshly-generated-installation/m-p/23531/highlight/true#M1680).
+
+▶ [patch] [bug 1633622](http://bugzil.la/1633622)
+The taskcluster-client-web package now contains the `build` directory as expected.
+
 ## v29.1.3
 
 ### GENERAL

@@ -44,7 +44,7 @@ var (
 
 	// VersionNumber is a formatted string with the version information. This is
 	// filled in by `yarn release`
-	VersionNumber = "29.1.3"
+	VersionNumber = "29.2.0"
 )
 
 func init() {
