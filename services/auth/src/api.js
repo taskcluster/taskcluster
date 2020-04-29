@@ -1,4 +1,4 @@
-const APIBuilder = require('taskcluster-lib-api');
+const {APIBuilder} = require('taskcluster-lib-api');
 const scopeUtils = require('taskcluster-lib-scopes');
 const slugid = require('slugid');
 const _ = require('lodash');

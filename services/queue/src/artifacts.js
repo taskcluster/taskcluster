@@ -1,6 +1,6 @@
 const _ = require('lodash');
 const assert = require('assert');
-const APIBuilder = require('taskcluster-lib-api');
+const {APIBuilder} = require('taskcluster-lib-api');
 const urllib = require('url');
 const builder = require('./api');
 const Entity = require('taskcluster-lib-entities');

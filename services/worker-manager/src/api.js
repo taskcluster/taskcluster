@@ -1,5 +1,5 @@
 const taskcluster = require('taskcluster-client');
-const APIBuilder = require('taskcluster-lib-api');
+const {APIBuilder} = require('taskcluster-lib-api');
 const assert = require('assert');
 const {ApiError} = require('./providers/provider');
 

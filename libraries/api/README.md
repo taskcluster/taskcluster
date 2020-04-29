@@ -8,7 +8,7 @@ checking, and generation of client libraries.
 ## Quick example
 
 ```js
-let APIBuilder = require('taskcluster-lib-api');
+let {APIBuilder} = require('taskcluster-lib-api');
 
 // First declare API Builder
 let builder = new APIBuilder({
@@ -475,6 +475,39 @@ let load = loader({
 
 Consult the source of some of the existing Taskcluster services direcly for
 more fully-worked examples.
+
+## Pagination
+
+The `paginateResults` function supports paginating results in API methods.
+Use it like this:
+
+```
+const {paginateResults} = require('taskcluster-lib-api');
+
+...
+
+builder.declare({
+  method: 'get',
+  query: paginateResults.query,
+  ...
+}, async function(req, res) {
+  const {continuationToken, rows} = await paginateResults({
+    query: req.query,
+    fetch: (size, offset) => this.db.fns.get_worker_pools(size, offset),
+    maxLimit: 500,
+  });
+  const result = {
+    // apply the appropriate collective noun instead of widgets, creating an appropriate
+    // serialized representation for each row..
+    widgets: rows.map(..),
+    continuationToken,
+  };
+  return res.reply(result);
+});
+```
+
+The function takes care of parsing the continuationToken and limit, applying a
+limit of `maxLimit` (defaulting to 1000).
 
 # Development
 

@@ -1,4 +1,4 @@
-const APIBuilder = require('taskcluster-lib-api');
+const {APIBuilder} = require('taskcluster-lib-api');
 const Entity = require('taskcluster-lib-entities');
 
 const builder = new APIBuilder({

@@ -7,7 +7,7 @@ const taskcluster = require('taskcluster-client');
 const load = require('../src/main');
 const slugid = require('slugid');
 const uuid = require('uuid');
-const Builder = require('taskcluster-lib-api');
+const {APIBuilder} = require('taskcluster-lib-api');
 const SchemaSet = require('taskcluster-lib-validate');
 const staticScopes = require('../src/static-scopes.json');
 const makeSentryManager = require('./../src/sentrymanager');
@@ -208,7 +208,7 @@ exports.withPulse = (mock, skipping) => {
   withPulse({helper: exports, skipping, namespace: 'taskcluster-auth'});
 };
 
-const testServiceBuilder = new Builder({
+const testServiceBuilder = new APIBuilder({
   title: 'Test API Server',
   description: 'API server for testing',
   serviceName: 'authtest',
