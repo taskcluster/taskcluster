@@ -165,6 +165,7 @@ export default class ListNamespaces extends Component {
         error: taskNamespaceError,
       },
       description,
+      match: { params },
     } = this.props;
     const { indexPathInput } = this.state;
     const hasIndexedTasks =
@@ -174,7 +175,7 @@ export default class ListNamespaces extends Component {
     const loading = namespacesLoading || taskNamespaceLoading;
     const indexPaths = indexPathInput.split('.');
     const isSinglePath = indexPaths.length === 1;
-    const searchTerm = this.props.match.params.namespace;
+    const searchTerm = params.namespace;
 
     return (
       <Dashboard

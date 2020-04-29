@@ -48,7 +48,7 @@ export default class ViewClients extends PureComponent {
     const {
       data: { refetch },
     } = this.props;
-    const searchUri = this.props.history.location.search
+    const searchQuery = this.props.history.location.search
       ? parse(this.props.history.location.search.slice(1)).search
       : '';
 
@@ -62,7 +62,7 @@ export default class ViewClients extends PureComponent {
         : null,
     });
 
-    if (search !== searchUri) {
+    if (search !== searchQuery) {
       this.props.history.push(
         search.length > 0 ? `?${stringify({ search })}` : '/auth/clients'
       );
@@ -119,10 +119,11 @@ export default class ViewClients extends PureComponent {
     const {
       classes,
       description,
+      location,
       data: { loading, error, clients },
     } = this.props;
-    const searchUri = qs.parse(this.props.history.location.search.slice(1));
-    const searchTerm = searchUri.search;
+    const searchQuery = qs.parse(location.search.slice(1));
+    const searchTerm = searchQuery.search;
 
     return (
       <Dashboard

@@ -120,6 +120,7 @@ export default class ClientScopesTable extends Component {
 
   render() {
     const {
+      searchTerm,
       clientsConnection,
       selectedScope,
       onPageChange,
@@ -132,6 +133,7 @@ export default class ClientScopesTable extends Component {
 
     return (
       <ConnectionDataTable
+        searchTerm={searchTerm}
         columnsSize={1}
         connection={connection}
         pageSize={VIEW_CLIENT_SCOPES_INSPECT_SIZE}
