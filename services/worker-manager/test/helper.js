@@ -187,6 +187,7 @@ exports.withServer = (mock, skipping) => {
       // preventing tests from exiting
       agent: require('http').globalAgent,
       rootUrl: exports.rootUrl,
+      retries: 0,
       credentials: {
         clientId: 'test-client',
         accessToken: 'none',
