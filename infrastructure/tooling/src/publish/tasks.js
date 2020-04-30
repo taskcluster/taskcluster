@@ -18,7 +18,7 @@ const {
 
 const readFile = util.promisify(fs.readFile);
 
-module.exports = ({tasks, cmdOptions, credentials, baseDir}) => {
+module.exports = ({tasks, cmdOptions, credentials, baseDir, logsDir}) => {
   const artifactsDir = path.join(baseDir, 'release-artifacts');
 
   ensureTask(tasks, {
@@ -179,6 +179,28 @@ module.exports = ({tasks, cmdOptions, credentials, baseDir}) => {
     },
   });
 
+  /*
+   * https://github.com/taskcluster/taskcluster/issues/2739
+  ensureTask(tasks, {
+    title: 'Build taskcluster-proxy artifacts',
+    requires: ['cleaned-release-artifacts'],
+    provides: ['taskcluster-proxy-artifacts'],
+    run: async (requirements, utils) => {
+      await execCommand({
+        dir: path.join(REPO_ROOT, 'tools', 'taskcluster-proxy'),
+        command: ['./dockerbuild.sh', artifactsDir],
+        utils,
+      });
+
+      const artifacts = glob.sync('taskcluster-proxy-*', {cwd: artifactsDir});
+
+      return {
+        'taskcluster-proxy-artifacts': artifacts,
+      };
+    },
+  });
+  */
+
   ensureTask(tasks, {
     title: 'Build Websocktunnel Docker Image',
     requires: [
@@ -206,7 +228,7 @@ module.exports = ({tasks, cmdOptions, credentials, baseDir}) => {
           './tools/websocktunnel/cmd/websocktunnel',
         ],
         dir: REPO_ROOT,
-        logfile: `${baseDir}/websocktunnel-build.log`,
+        logfile: path.join(logsDir, '/websocktunnel-build.log'),
         utils,
         env: process.env,
       });
@@ -230,7 +252,7 @@ module.exports = ({tasks, cmdOptions, credentials, baseDir}) => {
       await execCommand({
         command,
         dir: REPO_ROOT,
-        logfile: `${baseDir}/websocktunnel-docker-build.log`,
+        logfile: path.join(logsDir, 'websocktunnel-docker-build.log'),
         utils,
         env: {DOCKER_BUILDKIT: 1, ...process.env},
       });
@@ -247,7 +269,7 @@ module.exports = ({tasks, cmdOptions, credentials, baseDir}) => {
         }
 
         await dockerPush({
-          logfile: `${baseDir}/docker-push.log`,
+          logfile: path.join(logsDir, 'docker-push.log'),
           tag,
           utils,
           baseDir,
@@ -276,7 +298,7 @@ module.exports = ({tasks, cmdOptions, credentials, baseDir}) => {
         'livelog-docker-image': tag,
       };
 
-      utils.step({title: 'Building Websocktunnel'});
+      utils.step({title: 'Building Livelog'});
 
       const contextDir = path.join(baseDir, 'livelog-build');
       await execCommand({
@@ -286,7 +308,7 @@ module.exports = ({tasks, cmdOptions, credentials, baseDir}) => {
           './tools/livelog',
         ],
         dir: REPO_ROOT,
-        logfile: `${baseDir}/livelog-build.log`,
+        logfile: path.join(logsDir, 'livelog-build.log'),
         utils,
         env: process.env,
       });
@@ -312,7 +334,7 @@ module.exports = ({tasks, cmdOptions, credentials, baseDir}) => {
       await execCommand({
         command,
         dir: REPO_ROOT,
-        logfile: `${baseDir}/livelog-docker-build.log`,
+        logfile: path.join(logsDir, 'livelog-docker-build.log'),
         utils,
         env: {DOCKER_BUILDKIT: 1, ...process.env},
       });
@@ -329,7 +351,7 @@ module.exports = ({tasks, cmdOptions, credentials, baseDir}) => {
         }
 
         await dockerPush({
-          logfile: `${baseDir}/livelog-docker-push.log`,
+          logfile: path.join(logsDir, 'livelog-docker-push.log'),
           tag,
           utils,
           baseDir,
@@ -341,6 +363,106 @@ module.exports = ({tasks, cmdOptions, credentials, baseDir}) => {
     },
   });
 
+  /* https://github.com/taskcluster/taskcluster/issues/2739
+  ensureTask(tasks, {
+    title: 'Build taskcluster-proxy Docker image',
+    requires: ['release-version'],
+    provides: ['taskcluster-proxy-docker-image'],
+    locks: ['docker'],
+    run: async (requirements, utils) => {
+      utils.step({title: 'Check Repository'});
+
+      const tag = `taskcluster/taskcluster-proxy:${requirements['release-version']}`;
+      const provides = {'taskcluster-proxy-docker-image': tag};
+
+      utils.step({title: 'Building taskcluster-proxy'});
+
+      const contextDir = path.join(baseDir, 'taskcluster-proxy-build');
+      await execCommand({
+        command: [
+          'go', 'build',
+          '-o', path.join(contextDir, 'taskcluster-proxy'),
+          './tools/taskcluster-proxy',
+        ],
+        dir: REPO_ROOT,
+        logfile: path.join(logsDir, 'taskcluster-proxy-build.log'),
+        utils,
+        env: process.env,
+      });
+
+      utils.step({title: 'Generating ca certs using latest ubuntu version'});
+
+      const cacerts = path.join(contextDir, 'cacerts.docker');
+      fs.writeFileSync(cacerts, [
+        'FROM ubuntu:latest',
+        'RUN apt-get update',
+        'RUN apt-get install -y ca-certificates',
+      ].join('\n'));
+      await execCommand({
+        command: [
+          'uid="$(date +%s)"', '&&',
+          'docker', 'build', '--pull', '-t', '"${uid}"', '-f', 'cacerts.docker', '.', '&&',
+          'docker', 'run', '--name', '"${uid}"', '"${uid}"', '&&',
+          'docker', 'cp', '"${uid}:/etc/ssl/certs/ca-certificates.crt"', 'target', '&&',
+          'docker', 'rm', '-v', '"${uid}"',
+        ],
+        dir: REPO_ROOT,
+        logfile: path.join(logsDir, 'taskcluster-proxy-cert-gen.log'),
+        utils,
+        env: process.env,
+      });
+
+      utils.step({title: 'Building Docker Image'});
+
+      // this simple Dockerfile just packages the binary into a Docker image
+      const dockerfile = path.join(contextDir, 'Dockerfile');
+      fs.writeFileSync(dockerfile, [
+        'FROM scratch',
+        'EXPOSE 80',
+        'COPY target/taskcluster-proxy /taskcluster-proxy',
+        'COPY target/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt',
+        'ENTRYPOINT ["/taskcluster-proxy", "--port", "80"]',
+      ].join('\n'));
+      let command = [
+        'docker', 'build',
+        '--no-cache',
+        '--progress', 'plain',
+        '--tag', tag,
+        contextDir,
+      ];
+      await execCommand({
+        command,
+        dir: REPO_ROOT,
+        logfile: path.join(logsDir, 'taskcluster-proxy-docker-build.log'),
+        utils,
+        env: {DOCKER_BUILDKIT: 1, ...process.env},
+      });
+
+      if (!cmdOptions.staging) {
+        utils.step({title: 'Pushing Docker Image'});
+
+        const dockerPushOptions = {};
+        if (credentials.dockerUsername && credentials.dockerPassword) {
+          dockerPushOptions.credentials = {
+            username: credentials.dockerUsername,
+            password: credentials.dockerPassword,
+          };
+        }
+
+        await dockerPush({
+          logfile: path.join(logsDir, 'docker-push.log'),
+          tag,
+          utils,
+          baseDir,
+          ...dockerPushOptions,
+        });
+      }
+
+      return provides;
+    },
+  });
+  /*
+
   /* -- monoimage docker image build occurs here -- */
 
   ensureTask(tasks, {
@@ -350,10 +472,12 @@ module.exports = ({tasks, cmdOptions, credentials, baseDir}) => {
       'client-shell-artifacts',
       'generic-worker-artifacts',
       'worker-runner-artifacts',
+      //'taskcluster-proxy-artifacts',
       'changelog-text',
       'target-monoimage',
       'websocktunnel-docker-image',
       'livelog-docker-image',
+      //'taskcluster-proxy-docker-image',
       'livelog-artifacts',
     ],
     provides: [
@@ -382,6 +506,7 @@ module.exports = ({tasks, cmdOptions, credentials, baseDir}) => {
         .concat(requirements['generic-worker-artifacts'])
         .concat(requirements['worker-runner-artifacts'])
         .concat(requirements['livelog-artifacts'])
+        //.concat(requirements['taskcluster-proxy-artifacts'])
         .map(name => ({name, contentType: 'application/octet-stream'}));
       for (let {name, contentType} of files) {
         utils.status({message: `Upload Release asset ${name}`});
@@ -419,27 +544,56 @@ module.exports = ({tasks, cmdOptions, credentials, baseDir}) => {
     },
   });
 
-  ['clients/client', 'clients/client-web'].forEach(clientName =>
-    ensureTask(tasks, {
-      title: `Publish ${clientName} to npm`,
-      requires: [
-        'target-monoimage', // to make sure the build succeeds first..
-      ],
-      provides: [
-        `publish-${clientName}`,
-      ],
-      run: async (requirements, utils) => {
-        if (!cmdOptions.push) {
-          return utils.skip({});
-        }
+  ensureTask(tasks, {
+    title: `Publish clients/client to npm`,
+    requires: [
+      'target-monoimage', // to make sure the build succeeds first..
+    ],
+    provides: [
+      `publish-clients/client`,
+    ],
+    run: async (requirements, utils) => {
+      if (!cmdOptions.push) {
+        return utils.skip({});
+      }
 
-        await npmPublish({
-          dir: path.join(REPO_ROOT, clientName),
-          apiToken: credentials.npmToken,
-          logfile: `${baseDir}/publish-${clientName.replace('/', '-')}.log`,
-          utils});
-      },
-    }));
+      await npmPublish({
+        dir: path.join(REPO_ROOT, 'clients/client'),
+        apiToken: credentials.npmToken,
+        logfile: path.join(logsDir, `publish-clients-client.log`),
+        utils});
+    },
+  });
+
+  ensureTask(tasks, {
+    title: `Publish clients/client-web to npm`,
+    requires: [
+      'target-monoimage', // to make sure the build succeeds first..
+    ],
+    provides: [
+      `publish-clients/client-web`,
+    ],
+    run: async (requirements, utils) => {
+      const dir = path.join(REPO_ROOT, 'clients/client-web');
+
+      await execCommand({
+        dir,
+        command: ['yarn', 'install'],
+        utils,
+        logfile: path.join(logsDir, `install-clients-client-web.log`),
+      });
+
+      if (!cmdOptions.push) {
+        return utils.skip({});
+      }
+
+      await npmPublish({
+        dir,
+        apiToken: credentials.npmToken,
+        logfile: path.join(logsDir, `publish-clients-client-web.log`),
+        utils});
+    },
+  });
 
   ensureTask(tasks, {
     title: `Publish clients/client-py to pypi`,
@@ -458,7 +612,7 @@ module.exports = ({tasks, cmdOptions, credentials, baseDir}) => {
         dir: path.join(REPO_ROOT, 'clients', 'client-py'),
         username: credentials.pypiUsername,
         password: credentials.pypiPassword,
-        logfile: `${baseDir}/publish-client-py.log`,
+        logfile: path.join(logsDir, 'publish-client-py.log'),
         utils});
     },
   });

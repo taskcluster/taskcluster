@@ -154,6 +154,7 @@ export default class ListNamespaces extends Component {
   render() {
     const {
       classes,
+      match: { params },
       namespacesData: {
         namespaces,
         loading: namespacesLoading,
@@ -201,7 +202,7 @@ export default class ListNamespaces extends Component {
                 .join('.')}/${indexPathInput.split('.').slice(-1)[0]}`}
             />
           )}
-          {!loading && indexPathInput && (
+          {!loading && params.namespace && (
             <Fragment>
               <Breadcrumbs>
                 <Link to="/tasks/index">

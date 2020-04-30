@@ -44,7 +44,7 @@ The document should have audience equal to the deployment's `rootUrl` and `forma
 
 ### Tags
 
-The provider starts workers with the following labels. The tags `provider-id`, `worker-group`, `worker-pool-id`, and `root-url` are used by the worker for configuration while `customData` is broken in the instance metadata service.
+The provider creates worker resources with the following labels. The tags `provider-id`, `worker-group`, `worker-pool-id`, and `root-url` are used by the worker for configuration while `customData` is broken in the instance metadata service.
 
  * `provider-id` - provider ID that started the worker
  * `worker-group` - the worker's workerGroup (currently equal to the providerId, but do not depend on this)

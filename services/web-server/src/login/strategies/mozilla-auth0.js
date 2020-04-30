@@ -203,9 +203,7 @@ module.exports = class MozillaAuth0 {
           clientSecret: strategyCfg.clientSecret,
           scope: 'openid profile',
           callbackURL: `${cfg.app.publicUrl}${callback}`,
-          // The state parameter requires session support to be enabled.
-          // We can't use cookies until we implement CORS and revisit the RRA.
-          state: false,
+          state: true,
         },
         // accessToken is the token to call Auth0 API (not needed in most cases)
         // extraParams.id_token has the JSON Web Token

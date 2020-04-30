@@ -1793,7 +1793,6 @@
       "version": 4
     },
     {
-      "downgradeScript": "begin\nend",
       "methods": {
         "azure_queue_get": {
           "args": "queue_name text, visible timestamp, count integer",
@@ -1805,11 +1804,9 @@
           "serviceName": "queue"
         }
       },
-      "migrationScript": "begin\nend",
       "version": 5
     },
     {
-      "downgradeScript": "begin\nend",
       "methods": {
         "azure_queue_count": {
           "args": "queue_name text",
@@ -1821,11 +1818,9 @@
           "serviceName": "queue"
         }
       },
-      "migrationScript": "begin\nend",
       "version": 6
     },
     {
-      "downgradeScript": "begin\nend",
       "methods": {
         "access_token_table_entities_scan": {
           "args": "pk text, rk text, condition text, size integer, page integer",
@@ -2107,7 +2102,6 @@
           "serviceName": "worker_manager"
         }
       },
-      "migrationScript": "begin\nend",
       "version": 7
     }
   ]

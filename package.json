@@ -1,6 +1,6 @@
 {
   "name": "taskcluster",
-  "version": "29.1.0",
+  "version": "29.2.0",
   "private": true,
   "engine-strict": true,
   "engines": {
@@ -37,6 +37,7 @@
     "dataloader": "^1.4.0",
     "debug": "^4.1.1",
     "deepmerge": "^4.0.0",
+    "ejs": "^2.6.1",
     "email-templates": "^6.0.0",
     "express": "4.17.1",
     "express-session": "^1.16.2",
@@ -69,8 +70,6 @@
     "matrix-js-sdk": "^5.0.0",
     "memorystore": "^1.6.1",
     "mkdirp": "^0.5.1",
-    "morgan": "^1.10.0",
-    "morgan-debug": "^2.0.0",
     "netmask": "^1.0.5",
     "newrelic": "^6.4.2",
     "node-fetch": "^2.6.0",
@@ -134,7 +133,6 @@
     "cronstrue": "^1.82.0",
     "cross-env": "^6.0.3",
     "dockerode": "^3.0.0",
-    "ejs": "^2.6.1",
     "error-stack-parser": "^2.0.2",
     "eslint": "^6.6.0",
     "github-slugger": "^1.2.1",
@@ -196,7 +194,7 @@
       "eslint",
       "c8",
       "cross-env",
-      "morgan"
+      "ejs"
     ]
   },
   "renovate": {

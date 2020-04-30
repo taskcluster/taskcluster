@@ -440,6 +440,10 @@ tasks:
               features:
                 taskclusterProxy: true
               maxRunTime: 3600
+              artifacts:
+                - path: taskcluster/release-debug-logs
+                  name: debug-logs # Note: this should never be public because who knows what is in here
+                  type: directory
               command:
                 $let:
                   releaseArgs:
@@ -476,7 +480,7 @@ tasks:
 
                     # publish the release
                     yarn --frozen-lockfile
-                    yarn release:publish ${releaseArgs}
+                    yarn release:publish --logs-dir $(pwd)/release-debug-logs ${releaseArgs}
               mounts:
               - content:
                   url: 'https://storage.googleapis.com/golang/go${go.release}.linux-amd64.tar.gz'

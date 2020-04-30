@@ -5,8 +5,8 @@ go 1.13
 require (
 	github.com/Flaque/filet v0.0.0-20190209224823-fc4d33cfcf93
 	github.com/Microsoft/go-winio v0.4.14
-	github.com/aws/aws-sdk-go v1.29.14
-	github.com/cenkalti/backoff/v3 v3.0.0
+	github.com/aws/aws-sdk-go v1.30.11
+	github.com/cenkalti/backoff/v3 v3.2.2
 	github.com/certifi/gocertifi v0.0.0-20200211180108-c7c1fbc02894 // indirect
 	github.com/dchest/uniuri v0.0.0-20200228104902-7aecb25e1fe5
 	github.com/deckarep/golang-set v1.7.1
@@ -15,23 +15,23 @@ require (
 	github.com/dsnet/compress v0.0.1 // indirect
 	github.com/elastic/go-sysinfo v1.3.0
 	github.com/fatih/camelcase v1.0.0
-	github.com/frankban/quicktest v1.7.3 // indirect
+	github.com/frankban/quicktest v1.9.0 // indirect
 	github.com/getsentry/raven-go v0.2.0
 	github.com/ghodss/yaml v1.0.0
 	github.com/golang/snappy v0.0.1 // indirect
-	github.com/gorilla/websocket v1.4.1
+	github.com/gorilla/websocket v1.4.2
 	github.com/iancoleman/strcase v0.0.0-20191112232945-16388991a334
 	github.com/kr/text v0.2.0
 	github.com/mholt/archiver v2.1.0+incompatible
 	github.com/mitchellh/go-homedir v1.1.0
-	github.com/mozilla-services/go-mozlogrus v1.0.0
+	github.com/mozilla-services/go-mozlogrus v2.0.0+incompatible
 	github.com/nwaples/rardecode v1.1.0 // indirect
 	github.com/pborman/uuid v1.2.0
 	github.com/peterbourgon/mergemap v0.0.0-20130613134717-e21c03b7a721
-	github.com/pierrec/lz4 v2.4.1+incompatible // indirect
+	github.com/pierrec/lz4 v2.5.2+incompatible // indirect
 	github.com/pkg/browser v0.0.0-20180916011732-0a3d74bf9ce4
-	github.com/sirupsen/logrus v1.4.2
-	github.com/spf13/cobra v0.0.6
+	github.com/sirupsen/logrus v1.5.0
+	github.com/spf13/cobra v1.0.0
 	github.com/spf13/pflag v1.0.5
 	github.com/streadway/amqp v0.0.0-20200108173154-1c71cc93ed71
 	github.com/stretchr/testify v1.5.1
@@ -46,13 +46,12 @@ require (
 	github.com/ulikunitz/xz v0.5.7 // indirect
 	github.com/xeipuuv/gojsonpointer v0.0.0-20190905194746-02993c407bfb // indirect
 	github.com/xeipuuv/gojsonschema v1.2.0
-	go.mozilla.org/mozlog v0.0.0-20170222151521-4bb13139d403 // indirect
-	golang.org/x/crypto v0.0.0-20200420104511-884d27f42877
-	golang.org/x/net v0.0.0-20200320220750-118fecf932d8
-	golang.org/x/sys v0.0.0-20200413165638-669c56c373c4
-	golang.org/x/tools v0.0.0-20200420001825-978e26b7c37c
+	golang.org/x/crypto v0.0.0-20200427165652-729f1e841bcc
+	golang.org/x/net v0.0.0-20200425230154-ff2c4b7c35a0
+	golang.org/x/sys v0.0.0-20200420163511-1957bb5e6d1f
+	golang.org/x/tools v0.0.0-20200427214658-4697a2867c88
 	gopkg.in/tylerb/graceful.v1 v1.2.15
 	gopkg.in/yaml.v2 v2.2.8
-	gopkg.in/yaml.v3 v3.0.0-20200121175148-a6ecf24a6d71
+	gopkg.in/yaml.v3 v3.0.0-20200313102051-9f266ea9e77c
 	launchpad.net/gocheck v0.0.0-20140225173054-000000000087 // indirect
 )

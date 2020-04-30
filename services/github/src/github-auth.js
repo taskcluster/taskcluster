@@ -11,7 +11,9 @@ const retryPlugin = (octokit, options) => {
       try {
         return await request(options);
       } catch (err) {
-        if (attempt < retries && err.name === 'HttpError' && (err.status >= 500 || err.status === 404)) {
+        // 404 and 401 are both retried because they can occur spuriously, likely due to MySQL db replication
+        // delays at GitHub.
+        if (attempt < retries && err.name === 'HttpError' && (err.status >= 500 || err.status === 401 || err.status === 404)) {
           await sleep(baseBackoff * Math.pow(2, attempt));
           continue;
         }

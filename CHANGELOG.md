@@ -3,6 +3,56 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v29.2.0
+
+### DEPLOYERS
+
+▶ [patch] [bug 1606006](http://bugzil.la/1606006)
+Services that use ephemeral queues now use a different queue name on each connection.  This avoids issues with RESOURCE-LOCKED from RabbitMQ.
+
+### USERS
+
+▶ [minor] [bug 1629807](http://bugzil.la/1629807)
+Taskcluster login now includes a state token in the url search query during the login transaction to
+conform with the recommendations in rfc-261.
+
+▶ [patch] [bug 1631099](http://bugzil.la/1631099)
+Taskcluster-GitHub now retries on 401 "Bad Credentials" errors from GitHub, as suggested by [GitHub developers](https://github.community/t5/GitHub-API-Development-and/Random-401-errors-after-using-freshly-generated-installation/m-p/23531/highlight/true#M1680).
+
+▶ [patch] [bug 1633622](http://bugzil.la/1633622)
+The taskcluster-client-web package now contains the `build` directory as expected.
+
+## v29.1.3
+
+### GENERAL
+
+▶ [patch] 
+A dependency that was mistakenly thought to be unused has been added back
+
+▶ [patch] [bug 1627116](http://bugzil.la/1627116)
+The worker manager AWS provider now tags EBS volumes created for EC2 instances with the same set of tags.
+
+▶ [patch] [bug 1631829](http://bugzil.la/1631829)
+The worker-manager Azure provider now tags all worker related Azure resources with the set of standard tags.
+
+## v29.1.2
+
+### DEVELOPERS
+
+▶ [patch] [bug 1632325](http://bugzil.la/1632325)
+release:publish tasks now save debug logs as artifacts
+
+## v29.1.1
+
+### WORKER-DEPLOYERS
+
+▶ [patch] [bug 1631414](http://bugzil.la/1631414)
+Worker-Runner is now properly documented in the Taskcluster documentation.
+
+### OTHER
+
+▶ Additional change not described here: [#2681](https://github.com/taskcluster/taskcluster/issues/2681).
+
 ## v29.1.0
 
 ### DEPLOYERS

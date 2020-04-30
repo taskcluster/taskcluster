@@ -1,5 +1,6 @@
 import { hot } from 'react-hot-loader';
 import React, { PureComponent } from 'react';
+import { parse, stringify } from 'qs';
 import { withStyles } from '@material-ui/core/styles';
 import PlusIcon from 'mdi-react/PlusIcon';
 import Roles from './Roles';
@@ -15,12 +16,20 @@ import HelpView from '../../../components/HelpView';
   },
 }))
 export default class ViewRoles extends PureComponent {
-  state = {
-    roleSearch: '',
-  };
-
   handleRoleSearchSubmit = roleSearch => {
-    this.setState({ roleSearch });
+    const { location, history } = this.props;
+    const query = parse(location.search.slice(1));
+
+    if (query.search !== roleSearch) {
+      const newQuery = {
+        ...query,
+        search: roleSearch,
+      };
+
+      history.push({
+        search: stringify(newQuery, { addQueryPrefix: true }),
+      });
+    }
   };
 
   handleCreate = () => {
@@ -28,8 +37,9 @@ export default class ViewRoles extends PureComponent {
   };
 
   render() {
-    const { classes, description } = this.props;
-    const { roleSearch } = this.state;
+    const { classes, description, location } = this.props;
+    const query = parse(location.search.slice(1));
+    const roleSearch = query.search ? query.search : '';
 
     return (
       <Dashboard
@@ -39,6 +49,7 @@ export default class ViewRoles extends PureComponent {
           <Search
             onSubmit={this.handleRoleSearchSubmit}
             placeholder="Role contains"
+            defaultValue={roleSearch}
           />
         }>
         <Roles searchTerm={roleSearch} />

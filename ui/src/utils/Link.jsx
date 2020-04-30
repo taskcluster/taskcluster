@@ -8,7 +8,7 @@ import matchRoutes from './matchRoutes';
  * A react hook which augments `react-router-dom`'s `Link` component
  * with pre-fetching capabilities.
  */
-export default function Link({ nav, to, skipPrefetch, ...props }) {
+const Link = React.forwardRef(({ nav, to, skipPrefetch, ...props }, ref) => {
   let shouldReload = false;
   const path = typeof to === 'string' ? to : to.pathname;
   const isPathAbsolute = isAbsolute(path);
@@ -78,6 +78,7 @@ export default function Link({ nav, to, skipPrefetch, ...props }) {
 
   return (
     <Component
+      ref={ref}
       to={to}
       {...props}
       onFocus={handleFocus}
@@ -85,7 +86,7 @@ export default function Link({ nav, to, skipPrefetch, ...props }) {
       onClick={handleClick}
     />
   );
-}
+});
 
 Link.propTypes = {
   /**
@@ -109,3 +110,7 @@ Link.defaultProps = {
 Link.setRoutes = routes => {
   Link.routes = routes;
 };
+
+Link.displayName = 'Link';
+
+export default Link;

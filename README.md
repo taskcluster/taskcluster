@@ -83,6 +83,7 @@ It is not possible to run a full Taskcluster deployment directly from this repos
 * [Tools](tools#readme)
     * [jsonschema2go](tools/jsonschema2go#readme)
     * [livelog](tools/livelog#readme)
+    * [taskcluster-proxy](tools/taskcluster-proxy#readme)
     * [Websocktunnel](tools/websocktunnel#readme)
     * [Worker Runner](tools/worker-runner#readme)
 * [Taskcluster UI](ui#readme)
@@ -223,6 +224,9 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
     <td align="center"><a href="https://moosej.github.io/"><img src="https://avatars3.githubusercontent.com/u/15016463?v=4" width="100px;" alt=""/><br /><sub><b>Mustafa Jebara</b></sub></a><br /><a href="https://github.com/taskcluster/taskcluster/commits?author=MooseJ" title="Code">💻</a></td>
     <td align="center"><a href="https://aryamanpuri.github.io/"><img src="https://avatars3.githubusercontent.com/u/43513114?v=4" width="100px;" alt=""/><br /><sub><b>Aryaman Puri</b></sub></a><br /><a href="https://github.com/taskcluster/taskcluster/commits?author=aryamanpuri" title="Code">💻</a></td>
     <td align="center"><a href="https://exyr.org/"><img src="https://avatars0.githubusercontent.com/u/291359?v=4" width="100px;" alt=""/><br /><sub><b>Simon Sapin</b></sub></a><br /><a href="https://github.com/taskcluster/taskcluster/commits?author=SimonSapin" title="Code">💻</a></td>
+  </tr>
+  <tr>
+    <td align="center"><a href="http://rohanharikr.github.io"><img src="https://avatars0.githubusercontent.com/u/12775813?v=4" width="100px;" alt=""/><br /><sub><b>thoran</b></sub></a><br /><a href="https://github.com/taskcluster/taskcluster/commits?author=rohanharikr" title="Code">💻</a></td>
   </tr>
 </table>
 

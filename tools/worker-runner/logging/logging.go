@@ -46,10 +46,11 @@ func Configure(runnercfg *cfg.RunnerConfig) {
 }
 
 func Usage() string {
-	rv := []string{`## Logging
-
-The following logging implementations are supported:
-`}
+	rv := []string{strings.ReplaceAll(
+		`Worker-Runner supports plugins to send log messages (both from worker-runner itself and from the worker)
+To various destinations for aggregation.  This is configured with the |logging| property in the runner config,
+with the |implementation| property of that object specifying the plugin to use.  Allowed values are:
+`, "|", "`")}
 
 	sortedImpls := make([]string, len(implementations))
 	i := 0
@@ -62,7 +63,7 @@ The following logging implementations are supported:
 	for _, n := range sortedImpls {
 		info := implementations[n]
 		usage := strings.Trim(info.usage(), " \n\t")
-		rv = append(rv, fmt.Sprintf("### %s\n\n%s\n", n, usage))
+		rv = append(rv, fmt.Sprintf("## %s\n\n%s\n", n, usage))
 	}
 	return strings.Join(rv, "\n")
 }

@@ -4,6 +4,7 @@ const Method = require('./Method');
 const { loadSql } = require('./util');
 
 const objMap = (obj, fn) => Object.fromEntries(Object.entries(obj).map(fn));
+const ALLOWED_KEYS = ['version', 'migrationScript', 'downgradeScript', 'methods'];
 
 class Version {
   /**
@@ -60,11 +61,16 @@ class Version {
 
   static _checkContent(content, filename) {
     assert(content.version, `version field missing in ${filename}`);
-    assert(content.migrationScript, `migrationScript field missing in ${filename}`);
-    assert(content.downgradeScript, `downgradeScript field missing in ${filename}`);
     assert(content.methods, `methods field missing in ${filename}`);
 
-    assert(Object.keys(content).length, 3, `unknown fields in ${filename}`);
+    assert(!(Boolean(content.migrationScript) ^ Boolean(content.downgradeScript)),
+      `Cannot specify just one of migrationScript and downgradeScript in ${filename}`);
+
+    for (const k of Object.keys(content)) {
+      if (!ALLOWED_KEYS.includes(k)) {
+        throw new Error(`Unknown version field ${k} in ${filename}`);
+      }
+    }
 
     const fileBase = path.basename(filename, '.yml');
     assert.equal(content.version, Number(fileBase), `filename ${filename} must match version`);

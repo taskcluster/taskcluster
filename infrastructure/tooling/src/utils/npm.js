@@ -31,7 +31,9 @@ exports.npmPublish = async ({dir, apiToken, logfile, utils}) => {
     // just add the token to both of them..
     fs.writeFileSync(npmrc,
       `//registry.yarnpkg.com/:_authToken=${apiToken}\n` +
-      `//registry.npmjs.org/:_authToken=${apiToken}\n`);
+      `//registry.npmjs.org/:_authToken=${apiToken}\n` +
+      // set unsafe-perm since we run as root when publishing
+      'unsafe-perm=true\n');
 
     await execCommand({
       dir,

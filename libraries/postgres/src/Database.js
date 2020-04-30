@@ -389,10 +389,12 @@ class Database {
         if (res.rowCount !== 1 || res.rows[0].version !== version.version - 1) {
           throw Error('Multiple DB upgrades running simultaneously');
         }
-        showProgress('..running migration script');
-        const migrationScript = version.migrationScript
-          .replace(/\$db_user_prefix\$/g, usernamePrefix);
-        await client.query(`DO ${dollarQuote(migrationScript)}`);
+        if (version.migrationScript) {
+          showProgress('..running migration script');
+          const migrationScript = version.migrationScript
+            .replace(/\$db_user_prefix\$/g, usernamePrefix);
+          await client.query(`DO ${dollarQuote(migrationScript)}`);
+        }
         showProgress('..defining methods');
         for (let [methodName, { args, body, returns}] of Object.entries(version.methods)) {
           await client.query(`create or replace function
@@ -423,10 +425,12 @@ class Database {
         if (res.rowCount !== 1 || res.rows[0].version !== fromVersion.version) {
           throw Error('Multiple DB modifications running simultaneously');
         }
-        showProgress('..running downgrade script');
-        const downgradeScript = fromVersion.downgradeScript
-          .replace(/\$db_user_prefix\$/g, usernamePrefix);
-        await client.query(`DO ${dollarQuote(downgradeScript)}`);
+        if (fromVersion.downgradeScript) {
+          showProgress('..running downgrade script');
+          const downgradeScript = fromVersion.downgradeScript
+            .replace(/\$db_user_prefix\$/g, usernamePrefix);
+          await client.query(`DO ${dollarQuote(downgradeScript)}`);
+        }
         showProgress('..defining methods');
         for (let [methodName, { args, body, returns}] of Object.entries(toVersion.methods)) {
           await client.query(`create or replace function
