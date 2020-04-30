@@ -1,6 +1,6 @@
 # jsonschema2go
 [![Build Status](https://secure.travis-ci.org/taskcluster/jsonschema2go.png)](http://travis-ci.org/taskcluster/jsonschema2go)
-[![GoDoc](https://godoc.org/github.com/taskcluster/jsonschema2go?status.png)](https://godoc.org/github.com/taskcluster/jsonschema2go)
+[![GoDoc](https://godoc.org/github.com/taskcluster/taskcluster/tools/jsonschema2go?status.png)](https://godoc.org/github.com/taskcluster/taskcluster/tools/jsonschema2go)
 # Overview
 Are you writing a service in go that needs to interpret json data, and you already have a json schema definition for the format of the json?
 
