@@ -252,6 +252,16 @@ The symbol names and values are drawn from [PostgreSQL Error Codes](https://www.
 For example `tcLibPg.UNDEFINED_TABLE` is `"42P01"`.
 Feel free to add any additional constants required in [`src/constants.js`](./src/constants.js).
 
+The `ignorePgErrors` function can be useful to perform an operation and ignore some errors, mostly in tests:
+
+```js
+const {UNDEFINED, TABLE, ignorePgErrors} = require('taskcluster-lib-postgres');
+
+# ...
+
+await ignorePgErrors(someOperation(), UNDEFINED_TABLE);
+```
+
 ## Development
 
 To test this library, you will need a Postgres database, running the latest release of Postgres 11.

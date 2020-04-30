@@ -1,18 +1,8 @@
 const path = require('path');
 const {Client} = require('pg');
-const {Schema, UNDEFINED_OBJECT, UNDEFINED_TABLE} = require('taskcluster-lib-postgres');
+const {Schema, ignorePgErrors, UNDEFINED_OBJECT, UNDEFINED_TABLE} = require('taskcluster-lib-postgres');
 const tcdb = require('taskcluster-db');
 const {URL} = require('url');
-
-const ignorePgErrors = async (promise, ...codes) => {
-  try {
-    return await promise;
-  } catch (err) {
-    if (!codes.includes(err.code)) {
-      throw err;
-    }
-  }
-};
 
 const resetDb = async ({testDbUrl}) => {
   const client = new Client({connectionString: testDbUrl});
