@@ -200,7 +200,7 @@ class Database {
           showProgress(`downgrading database to version ${v}`);
           const fromVersion = schema.getVersion(v);
           const toVersion = v === 1 ? {version: 0, methods: []} : schema.getVersion(v - 1);
-          await db._doDowngrade({fromVersion, toVersion, showProgress, usernamePrefix});
+          await db._doDowngrade({schema, fromVersion, toVersion, showProgress, usernamePrefix});
           showProgress(`downgrade to version ${v - 1} successful`);
         }
       } else {
@@ -414,7 +414,7 @@ class Database {
     });
   }
 
-  async _doDowngrade({fromVersion, toVersion, showProgress, usernamePrefix}) {
+  async _doDowngrade({schema, fromVersion, toVersion, showProgress, usernamePrefix}) {
     assert.equal(fromVersion.version, toVersion.version + 1);
     await this._withClient('admin', async client => {
       await client.query('begin');
@@ -431,14 +431,32 @@ class Database {
             .replace(/\$db_user_prefix\$/g, usernamePrefix);
           await client.query(`DO ${dollarQuote(downgradeScript)}`);
         }
-        showProgress('..defining methods');
-        for (let [methodName, { args, body, returns}] of Object.entries(toVersion.methods)) {
-          await client.query(`create or replace function
-          "${methodName}"(${args})
-          returns ${returns}
-          as ${dollarQuote(body)}
-          language plpgsql`);
+
+        // either find the most recent definition of each function,
+        // or drop the function if it was not defined before fromVersion
+        showProgress('..redefining methods');
+        for (let [methodName, {args}] of Object.entries(fromVersion.methods)) {
+          let foundMethod = false;
+          for (let ver = toVersion.version; ver > 0; ver--) {
+            const version = schema.getVersion(ver);
+            if (methodName in version.methods) {
+              const {args, body, returns} = version.methods[methodName];
+              showProgress(`   using ${methodName} from db version ${version.version}`);
+              await client.query(`create or replace function
+                "${methodName}"(${args})
+                returns ${returns}
+                as ${dollarQuote(body)}
+                language plpgsql`);
+              foundMethod = true;
+              break;
+            }
+          }
+          if (!foundMethod) {
+            showProgress(`   dropping ${methodName}`);
+            await client.query(`drop function "${methodName}"(${args})`);
+          }
         }
+
         showProgress('..updating version');
         await client.query('update tcversion set version = $1', [toVersion.version]);
         showProgress('..committing transaction');

@@ -1,0 +1,4 @@
+version: 8
+migrationScript: 0008-migration.sql
+downgradeScript: 0008-downgrade.sql
+methods: []
