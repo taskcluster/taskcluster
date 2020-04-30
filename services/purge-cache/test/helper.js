@@ -1,9 +1,8 @@
 const path = require('path');
 const builder = require('../src/api');
-const data = require('../src/data');
 const taskcluster = require('taskcluster-client');
 const load = require('../src/main');
-const {withDb, stickyLoader, Secrets, fakeauth, withEntity, withMonitor} = require('taskcluster-lib-testing');
+const {withDb, stickyLoader, Secrets, fakeauth, withMonitor} = require('taskcluster-lib-testing');
 
 const testclients = {
   'test-client': ['*'],
@@ -30,13 +29,6 @@ exports.secrets = new Secrets({
   },
   load: exports.load,
 });
-
-/**
- * Set helper.<Class> for each of the Azure entities used in the service
- */
-exports.withEntities = (mock, skipping, options = {}) => {
-  withEntity(mock, skipping, exports, 'CachePurge', data.CachePurge);
-};
 
 exports.withDb = (mock, skipping) => {
   withDb(mock, skipping, exports, 'purge_cache');

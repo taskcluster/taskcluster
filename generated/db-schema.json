@@ -2115,6 +2115,15 @@
     {
       "downgradeScript": "begin\n  -- lock this table before reading from it, to prevent loss of concurrent\n  -- updates when the table is dropped.\n  lock table cache_purges;\n\n  create table cache_purges_entities(\n    partition_key text, row_key text,\n    value jsonb not null,\n    version integer not null,\n    etag uuid default public.gen_random_uuid());\n  alter table cache_purges_entities add primary key (partition_key, row_key);\n\n  insert into cache_purges_entities\n  select\n    encode_composite_key(provisioner_id, worker_type) as partition_key,\n    encode_string_key(cache_name) as row_key,\n    jsonb_build_object(\n      'PartitionKey', decode_string_key(encode_composite_key(provisioner_id, worker_type)),\n      'RowKey', cache_name,\n      'provisionerId', provisioner_id,\n      'workerType', worker_type,\n      'cacheName', cache_name,\n      'before', before,\n      'expires', expires) as value,\n    1 as version,\n    etag\n  from cache_purges;\n\n  revoke select, insert, update, delete on cache_purges from $db_user_prefix$_purge_cache;\n  drop table cache_purges;\n  grant select, insert, update, delete on cache_purges_entities to $db_user_prefix$_purge_cache;\nend",
       "methods": {
+        "all_purge_requests": {
+          "args": "page_size_in integer, page_offset_in integer",
+          "body": "declare\nsql text := 'select cache_purges.provisioner_id, cache_purges.worker_type, cache_purges.cache_name, cache_purges.before from cache_purges';\nbegin\n  return query select cache_purges.provisioner_id, cache_purges.worker_type, cache_purges.cache_name, cache_purges.before\n  from cache_purges\n  order by cache_purges.provisioner_id, cache_purges.worker_type, cache_purges.cache_name\n  limit case\n    when (page_size_in is not null and page_size_in > 0) then page_size_in\n    else null\n  end\n  offset case\n    when (page_offset_in is not null and page_offset_in > 0) then page_offset_in\n    else 0\n  end;\nend",
+          "deprecated": false,
+          "description": "View all active purge requests.\nThis is useful mostly for administors to view\nthe set of open purge requests. It should not\nbe used by workers. They should use the purgeRequests\nendpoint that is specific to their workerType and\nprovisionerId.",
+          "mode": "read",
+          "returns": "table (provisioner_id text, worker_type text, cache_name text, before timestamptz)",
+          "serviceName": "purge_cache"
+        },
         "cache_purges_entities_create": {
           "args": "pk text, rk text, properties jsonb, overwrite boolean, version integer",
           "body": "declare\n  new_row cache_purges%ROWTYPE;\nbegin\n  select\n    (properties ->> 'provisionerId')::text as provisioner_id,\n    (properties ->> 'workerType')::text as worker_type,\n    (properties ->> 'cacheName')::text as cache_name,\n    (properties ->> 'before')::timestamptz as before,\n    (properties ->> 'expires')::timestamptz as expires,\n    public.gen_random_uuid() as etag\n  into new_row;\n  if overwrite then\n    raise exception 'overwrite not implemented';\n  else\n    execute 'insert into cache_purges select $1.*' using new_row;\n  end if;\n  return new_row.etag;\nend",
@@ -2158,6 +2167,33 @@
           "description": "See taskcluster-lib-entities",
           "mode": "read",
           "returns": "table (partition_key text, row_key text, value jsonb, version integer, etag uuid)",
+          "serviceName": "purge_cache"
+        },
+        "cache_purges_expires": {
+          "args": "exp_in timestamptz",
+          "body": "declare\n  count integer;\nbegin\n  delete from cache_purges where cache_purges.expires < exp_in;\n  if found then\n    get diagnostics count = row_count;\n    return count;\n  end if;\n  return 0;\nend",
+          "deprecated": false,
+          "description": "Expire cachePurges that are past their expiration.\nReturns a promise that all expired cachePurges have been deleted.",
+          "mode": "write",
+          "returns": "integer",
+          "serviceName": "purge_cache"
+        },
+        "purge_cache": {
+          "args": "prov_id text, wt text, c_name text, bef timestamptz, exp timestamptz",
+          "body": "declare\n  new_etag uuid := public.gen_random_uuid();\nbegin\n  insert into cache_purges(provisioner_id, worker_type, cache_name, before, expires, etag)\n  values (\n    prov_id,\n    wt,\n    c_name,\n    bef,\n    exp,\n    new_etag\n  ) on conflict (provisioner_id, worker_type, cache_name) do\n  update\n  set (before, expires, etag) = (purge_cache.bef, exp, new_etag)\n  where cache_purges.provisioner_id = purge_cache.prov_id and cache_purges.worker_type = purge_cache.wt and cache_purges.cache_name = purge_cache.c_name;\nend",
+          "deprecated": false,
+          "description": "Publish a request to purge caches named `cacheName` with\non `provisionerId`/`workerType` workers.\nIf such a request already exists, its `before` timestamp is updated to\nthe current time.",
+          "mode": "write",
+          "returns": "void",
+          "serviceName": "purge_cache"
+        },
+        "purge_requests": {
+          "args": "provisioner_id_in text, worker_type_in text",
+          "body": "begin\n  return query\n  select cache_purges.provisioner_id, cache_purges.worker_type, cache_purges.cache_name, cache_purges.before from cache_purges\n  where cache_purges.provisioner_id = purge_requests.provisioner_id_in and cache_purges.worker_type = purge_requests.worker_type_in;\nend",
+          "deprecated": false,
+          "description": "List the caches for this `provisionerId`/`workerType` that should be\npurged if they are from before the time given in the response.\nThis is intended to be used by workers to determine which caches to purge.",
+          "mode": "read",
+          "returns": "table (provisioner_id text, worker_type text, cache_name text, before timestamptz)",
           "serviceName": "purge_cache"
         }
       },

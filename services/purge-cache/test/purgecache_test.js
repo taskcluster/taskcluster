@@ -8,7 +8,6 @@ const monitorManager = require('../src/monitor');
 
 helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
   helper.withDb(mock, skipping);
-  helper.withEntities(mock, skipping);
   helper.withServer(mock, skipping);
 
   test('ping', () => {
@@ -88,35 +87,35 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
   });
 
   test('purgeRequest caching', async function() {
-    sinon.stub(helper.CachePurge, "query").callsFake(async query => ({requests: []}));
+    sinon.stub(helper.db.fns, 'purge_requests').callsFake(async (query) => []);
     try {
       const since = taskcluster.fromNow('-1 hour').toString();
       await helper.apiClient.purgeRequests('pp', 'wt', {since});
-      assert.equal(helper.CachePurge.query.callCount, 1);
+      assert.equal(helper.db.fns.purge_requests.callCount, 1);
       await helper.apiClient.purgeRequests('pp', 'wt', {since});
       await helper.apiClient.purgeRequests('pp', 'wt', {since});
       await helper.apiClient.purgeRequests('pp', 'wt', {since});
       // not called again..
-      assert.equal(helper.CachePurge.query.callCount, 1);
+      assert.equal(helper.db.fns.purge_requests.callCount, 1);
     } finally {
       sinon.restore();
     }
   });
 
-  test('purgeRequest with a failed Azure query', async function() {
+  test('purgeRequest with a failed postgres query', async function() {
     // client retries could confuse the picture here, so don't do them
     const client = helper.apiClient.use({retries: 0});
 
-    sinon.stub(helper.CachePurge, "query")
+    sinon.stub(helper.db.fns, 'purge_requests')
       .onFirstCall().throws(new Error('uhoh'))
-      .onSecondCall().callsFake(async query => ({requests: []}));
+      .onSecondCall().callsFake(async (query) => []);
     try {
       const since = taskcluster.fromNow('-1 hour').toString();
       await assert.rejects(() => client.purgeRequests('pp', 'wt', {since}));
-      assert.equal(helper.CachePurge.query.callCount, 1);
+      assert.equal(helper.db.fns.purge_requests.callCount, 1);
       await client.purgeRequests('pp', 'wt', {since});
       // Azure is called again due to error
-      assert.equal(helper.CachePurge.query.callCount, 2);
+      assert.equal(helper.db.fns.purge_requests.callCount, 2);
     } finally {
       // clear out the logged error messages from the Azure failure
       monitorManager.messages = [];

@@ -86,11 +86,15 @@
 
 | Name | Mode | Arguments | Returns | Description |
 | --- | --- | --- | --- | --- |
+| all_purge_requests | read | page_size_in integer, page_offset_in integer | table (provisioner_id text, worker_type text, cache_name text, before timestamptz) | View all active purge requests.<br />This is useful mostly for administors to view<br />the set of open purge requests. It should not<br />be used by workers. They should use the purgeRequests<br />endpoint that is specific to their workerType and<br />provisionerId. |
 | cache_purges_entities_create | write | pk text, rk text, properties jsonb, overwrite boolean, version integer | uuid | See taskcluster-lib-entities |
 | cache_purges_entities_load | read | partition_key text, row_key text | table (partition_key_out text, row_key_out text, value jsonb, version integer, etag uuid) | See taskcluster-lib-entities |
 | cache_purges_entities_modify | write | partition_key text, row_key text, properties jsonb, version integer, old_etag uuid | table (etag uuid) | See taskcluster-lib-entities |
 | cache_purges_entities_remove | write | partition_key text, row_key text | table (etag uuid) | See taskcluster-lib-entities |
 | cache_purges_entities_scan | read | pk text, rk text, condition text, size integer, page integer | table (partition_key text, row_key text, value jsonb, version integer, etag uuid) | See taskcluster-lib-entities |
+| cache_purges_expires | write | exp_in timestamptz | integer | Expire cachePurges that are past their expiration.<br />Returns a promise that all expired cachePurges have been deleted. |
+| purge_cache | write | prov_id text, wt text, c_name text, bef timestamptz, exp timestamptz | void | Publish a request to purge caches named `cacheName` with<br />on `provisionerId`/`workerType` workers.<br />If such a request already exists, its `before` timestamp is updated to<br />the current time. |
+| purge_requests | read | provisioner_id_in text, worker_type_in text | table (provisioner_id text, worker_type text, cache_name text, before timestamptz) | List the caches for this `provisionerId`/`workerType` that should be<br />purged if they are from before the time given in the response.<br />This is intended to be used by workers to determine which caches to purge. |
 ## queue
 
 | Name | Mode | Arguments | Returns | Description |
