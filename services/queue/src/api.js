@@ -1,6 +1,6 @@
 let assert = require('assert');
 let _ = require('lodash');
-let APIBuilder = require('taskcluster-lib-api');
+let {APIBuilder} = require('taskcluster-lib-api');
 let Entity = require('taskcluster-lib-entities');
 let taskCreds = require('./task-creds');
 

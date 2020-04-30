@@ -1,6 +1,6 @@
 const request = require('superagent');
 const assert = require('assert');
-const APIBuilder = require('../');
+const {APIBuilder} = require('../');
 const slugid = require('slugid');
 const helper = require('./helper');
 const libUrls = require('taskcluster-lib-urls');

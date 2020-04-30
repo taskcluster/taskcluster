@@ -1,5 +1,5 @@
 const crypto = require('crypto');
-const APIBuilder = require('taskcluster-lib-api');
+const {APIBuilder} = require('taskcluster-lib-api');
 const _ = require('lodash');
 const Entity = require('taskcluster-lib-entities');
 

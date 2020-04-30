@@ -1,6 +1,6 @@
 const _ = require('lodash');
 const debug = require('debug')('purge-cache');
-const APIBuilder = require('taskcluster-lib-api');
+const {APIBuilder} = require('taskcluster-lib-api');
 const taskcluster = require('taskcluster-client');
 const Entity = require('taskcluster-lib-entities');
 

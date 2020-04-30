@@ -4,6 +4,7 @@ const utils = require('./utils');
 const errors = require('./middleware/errors');
 const ScopeExpressionTemplate = require('./expressions');
 const API = require('./api');
+const {paginateResults} = require('./pagination');
 
 /**
  * A ping method, added automatically to every service
@@ -208,9 +209,6 @@ class APIBuilder {
   }
 }
 
-// Export APIBuilder
-module.exports = APIBuilder;
-
 /** Stability levels offered by API method */
 const stability = {
   /**
@@ -254,5 +252,9 @@ const stability = {
 const STABILITY_LEVELS = _.values(stability);
 APIBuilder.stability = stability;
 
+exports.APIBuilder = APIBuilder;
+
 // Re-export middleware
 APIBuilder.middleware = require('./middleware');
+
+exports.paginateResults = paginateResults;

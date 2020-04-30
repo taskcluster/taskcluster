@@ -1,6 +1,6 @@
 const parser = require('cron-parser');
 const taskcluster = require('taskcluster-client');
-const APIBuilder = require('taskcluster-lib-api');
+const {APIBuilder} = require('taskcluster-lib-api');
 const nextDate = require('../src/nextdate');
 const _ = require('lodash');
 const Ajv = require('ajv');
