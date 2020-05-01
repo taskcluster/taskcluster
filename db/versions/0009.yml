@@ -214,9 +214,7 @@ methods:
       end
   purge_requests:
     description: |-
-      List the caches for this `provisionerId`/`workerType` that should be
-      purged if they are from before the time given in the response.
-      This is intended to be used by workers to determine which caches to purge.
+      List the caches for this `provisioner_id_in`/`worker_type_in`.
     mode: read
     serviceName: purge_cache
     args: provisioner_id_in text, worker_type_in text
@@ -225,16 +223,11 @@ methods:
       begin
         return query
         select cache_purges.provisioner_id, cache_purges.worker_type, cache_purges.cache_name, cache_purges.before from cache_purges
-        where cache_purges.provisioner_id = purge_requests.provisioner_id_in and cache_purges.worker_type = purge_requests.worker_type_in;
+        where cache_purges.provisioner_id = provisioner_id_in and cache_purges.worker_type = worker_type_in;
       end
   all_purge_requests:
     description: |-
       View all active purge requests.
-      This is useful mostly for administors to view
-      the set of open purge requests. It should not
-      be used by workers. They should use the purgeRequests
-      endpoint that is specific to their workerType and
-      provisionerId.
     mode: read
     serviceName: purge_cache
     args: page_size_in integer, page_offset_in integer
@@ -246,24 +239,16 @@ methods:
         return query select cache_purges.provisioner_id, cache_purges.worker_type, cache_purges.cache_name, cache_purges.before
         from cache_purges
         order by cache_purges.provisioner_id, cache_purges.worker_type, cache_purges.cache_name
-        limit case
-          when (page_size_in is not null and page_size_in > 0) then page_size_in
-          else null
-        end
-        offset case
-          when (page_offset_in is not null and page_offset_in > 0) then page_offset_in
-          else 0
-        end;
+        limit get_page_limit(page_size_in)
+        offset get_page_offset(page_offset_in);
       end
   purge_cache:
     serviceName: purge_cache
     description: |-
-      Publish a request to purge caches named `cacheName` with
-      on `provisionerId`/`workerType` workers.
-      If such a request already exists, its `before` timestamp is updated to
-      the current time.
+      Publish a request to purge caches with name `cache_name_in`
+      on `provisioner_id_in`/`worker_type_in` workers.
     mode: write
-    args: prov_id text, wt text, c_name text, bef timestamptz, exp timestamptz
+    args: provisioner_id_in text, worker_type_in text, cache_name_in text, before_in timestamptz, expires_in timestamptz
     returns: void
     body: |-
       declare
@@ -271,30 +256,30 @@ methods:
       begin
         insert into cache_purges(provisioner_id, worker_type, cache_name, before, expires, etag)
         values (
-          prov_id,
-          wt,
-          c_name,
-          bef,
-          exp,
+          provisioner_id_in,
+          worker_type_in,
+          cache_name_in,
+          before_in,
+          expires_in,
           new_etag
         ) on conflict (provisioner_id, worker_type, cache_name) do
         update
-        set (before, expires, etag) = (purge_cache.bef, exp, new_etag)
-        where cache_purges.provisioner_id = purge_cache.prov_id and cache_purges.worker_type = purge_cache.wt and cache_purges.cache_name = purge_cache.c_name;
+        set (before, expires, etag) = (before_in, expires_in, new_etag)
+        where cache_purges.provisioner_id = provisioner_id_in and cache_purges.worker_type = worker_type_in and cache_purges.cache_name = cache_name_in;
       end
   cache_purges_expires:
     description: |-
-      Expire cachePurges that are past their expiration.
-      Returns a promise that all expired cachePurges have been deleted.
+      Expire cache purges that come before `expires_in`.
+      Returns a count of rows that have been deleted.
     mode: write
     serviceName: purge_cache
-    args: exp_in timestamptz
+    args: expires_in timestamptz
     returns: integer
     body: |-
       declare
         count integer;
       begin
-        delete from cache_purges where cache_purges.expires < exp_in;
+        delete from cache_purges where cache_purges.expires < expires_in;
         if found then
           get diagnostics count = row_count;
           return count;

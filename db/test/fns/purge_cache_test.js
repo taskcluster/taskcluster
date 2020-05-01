@@ -54,7 +54,6 @@ suite(testing.suiteName(), function() {
     const size = 1;
     let offset = 0;
     let caches = await db.fns.all_purge_requests(size, offset);
-    caches.splice(-1);
 
     assert.equal(caches.length, 1);
     compare(caches[0], samples[0]);
@@ -66,16 +65,15 @@ suite(testing.suiteName(), function() {
   });
 
   helper.dbTest('purge_cache (create)', async function(db, isFake) {
-    const dbFns = isFake ? helper.fakeDb['purge_cache'] : db.fns;
     const sample = { provisioner_id: 'prov-3', worker_type: 'wt-3', cache_name: 'cache-3', before: fromNow('0 seconds'), expires: fromNow('1 day')};
 
-    await dbFns.purge_cache(
+    await db.fns.purge_cache(
       sample.provisioner_id,
       sample.worker_type,
       sample.cache_name,
       sample.before, sample.expires,
     );
-    const cache = (await dbFns.all_purge_requests(5, 0))
+    const cache = (await db.fns.all_purge_requests(5, 0))
       .find(({ provisioner_id, worker_type, cache_name }) =>
         provisioner_id === sample.provisioner_id &&
         worker_type === sample.worker_type &&
@@ -90,17 +88,16 @@ suite(testing.suiteName(), function() {
   });
 
   helper.dbTest('purge_cache (upsert)', async function(db, isFake) {
-    const dbFns = isFake ? helper.fakeDb['purge_cache'] : db.fns;
     const sample = { provisioner_id: 'prov-3', worker_type: 'wt-3', cache_name: 'cache-3' };
 
-    await dbFns.purge_cache(sample.provisioner_id, sample.worker_type, sample.cache_name, fromNow('10 seconds'), fromNow('1 day'));
-    const cache = (await dbFns.all_purge_requests(5, 0))
+    await db.fns.purge_cache(sample.provisioner_id, sample.worker_type, sample.cache_name, fromNow('10 seconds'), fromNow('1 day'));
+    const cache = (await db.fns.all_purge_requests(5, 0))
       .find(({ provisioner_id, worker_type, cache_name }) =>
         provisioner_id === sample.provisioner_id &&
         worker_type === sample.worker_type &&
         cache_name === sample.cache_name);
-    await dbFns.purge_cache(sample.provisioner_id, sample.worker_type, sample.cache_name, fromNow('5 seconds'), fromNow('2 day'));
-    const cache2 = (await dbFns.all_purge_requests(5, 0))
+    await db.fns.purge_cache(sample.provisioner_id, sample.worker_type, sample.cache_name, fromNow('5 seconds'), fromNow('2 day'));
+    const cache2 = (await db.fns.all_purge_requests(5, 0))
       .find(({ provisioner_id, worker_type, cache_name }) =>
         provisioner_id === sample.provisioner_id &&
         worker_type === sample.worker_type &&
@@ -118,7 +115,6 @@ suite(testing.suiteName(), function() {
   });
 
   helper.dbTest('purge_requests', async function(db, isFake) {
-    const dbFns = isFake ? helper.fakeDb['purge_cache'] : db.fns;
     const samples = [
       { provisioner_id: 'prov-3', worker_type: 'wt-3', cache_name: 'cache-3', before: fromNow('4 days'), expires: fromNow('1 day')},
       { provisioner_id: 'prov-3', worker_type: 'wt-3', cache_name: 'cache-4', before: fromNow('6 days'), expires: fromNow('1 day')},
@@ -126,7 +122,7 @@ suite(testing.suiteName(), function() {
     ];
 
     for (let i = 0; i < samples.length; i++) {
-      await dbFns.purge_cache(
+      await db.fns.purge_cache(
         samples[i].provisioner_id,
         samples[i].worker_type,
         samples[i].cache_name,
@@ -135,19 +131,12 @@ suite(testing.suiteName(), function() {
       );
     }
 
-    let entries = await dbFns.purge_requests("prov-3", "wt-3", fromNow('5 days'));
-    assert.equal(entries.length, 2);
-    compare(entries, [samples[1], samples[2]]);
-
-    entries = await dbFns.purge_requests('prov-3', 'wt-3', fromNow());
+    let entries = await db.fns.purge_requests("prov-3", "wt-3");
     assert.equal(entries.length, 3);
-
-    entries = await dbFns.purge_requests('prov-3', 'wt-3', fromNow('7 days'));
-    assert.equal(entries.length, 1);
+    compare(entries, samples);
   });
 
   helper.dbTest('cache_purges_expires', async function(db, isFake) {
-    const dbFns = isFake ? helper.fakeDb['purge_cache'] : db.fns;
     const samples = [
       { provisioner_id: 'prov-3', worker_type: 'wt-3', cache_name: 'cache-3', before: fromNow('4 days'), expires: fromNow('- 1 day')},
       { provisioner_id: 'prov-3', worker_type: 'wt-3', cache_name: 'cache-4', before: fromNow('6 days'), expires: fromNow('- 2 days')},
@@ -155,7 +144,7 @@ suite(testing.suiteName(), function() {
     ];
 
     for (let i = 0; i < samples.length; i++) {
-      await dbFns.purge_cache(
+      await db.fns.purge_cache(
         samples[i].provisioner_id,
         samples[i].worker_type,
         samples[i].cache_name,
@@ -164,11 +153,11 @@ suite(testing.suiteName(), function() {
       );
     }
 
-    const count = (await dbFns.cache_purges_expires(fromNow()))[0].cache_purges_expires;
+    const count = (await db.fns.cache_purges_expires(fromNow()))[0].cache_purges_expires;
 
     assert.equal(count, 3);
 
-    const entries = await dbFns.all_purge_requests(5, 0);
+    const entries = await db.fns.all_purge_requests(5, 0);
     assert.equal(entries.length, 2);
   });
 });

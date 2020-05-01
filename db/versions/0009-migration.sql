@@ -21,9 +21,37 @@ begin
     alter column worker_type set not null,
     alter column cache_name set not null,
     alter column before set not null,
-    alter column expires set not null;
+    alter column expires set not null,
+    alter column etag set not null,
+    alter column etag set default public.gen_random_uuid();
 
   revoke select, insert, update, delete on cache_purges_entities from $db_user_prefix$_purge_cache;
   drop table cache_purges_entities;
   grant select, insert, update, delete on cache_purges to $db_user_prefix$_purge_cache;
+
+  -- Given a page size it returns the limit to use on a paginated db function.
+  create or replace function get_page_limit(page_size integer) RETURNS integer
+  as $$
+      begin
+        return case
+          when (page_size is not null and page_size > 0) then page_size
+          else null
+        end;
+      end;
+  $$
+  language plpgSQL
+  strict immutable;
+
+  -- Given a page offset it returns the offset to use on a paginated db function.
+  create or replace function get_page_offset(page_offset integer) RETURNS integer
+  as $$
+      begin
+        return case
+          when (page_offset is not null and page_offset > 0) then page_offset
+          else 0
+        end;
+      end;
+  $$
+  language plpgSQL
+  strict immutable;
 end

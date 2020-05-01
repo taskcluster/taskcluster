@@ -190,7 +190,7 @@ class FakePurgeCache {
 
         return cache;
       })
-      .slice(page, page + size + 1);
+      .slice(page, page + size);
   }
 }
 
