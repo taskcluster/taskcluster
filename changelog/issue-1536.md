@@ -1,4 +1,4 @@
-audience: developers
+audience: users 
 level: patch
 reference: issue 1536
 ---
