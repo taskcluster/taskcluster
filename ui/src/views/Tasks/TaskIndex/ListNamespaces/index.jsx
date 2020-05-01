@@ -154,7 +154,6 @@ export default class ListNamespaces extends Component {
   render() {
     const {
       classes,
-      match: { params },
       namespacesData: {
         namespaces,
         loading: namespacesLoading,
