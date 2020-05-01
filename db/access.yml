@@ -29,7 +29,7 @@ notify:
     widgets: write
 purge_cache:
   tables:
-    cache_purges_entities: write
+    cache_purges: write
 queue:
   tables:
     queue_tasks_entities: write

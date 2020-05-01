@@ -3,6 +3,7 @@ const debug = require('debug')('purge-cache');
 const {APIBuilder} = require('taskcluster-lib-api');
 const taskcluster = require('taskcluster-client');
 const Entity = require('taskcluster-lib-entities');
+const { paginateResults } = require('taskcluster-lib-api');
 
 // Common patterns URL parameters
 const GENERIC_ID_PATTERN = /^[a-zA-Z0-9-_]{1,38}$/;
@@ -12,8 +13,8 @@ const builder = new APIBuilder({
   title: 'Purge Cache API',
   context: [
     'cfg', // A taskcluster-lib-config instance
-    'CachePurge', // A data.CachePurge instance
     'cachePurgeCache', // An Promise for cacheing cachepurge responses
+    'db',
   ],
   params: {
     provisionerId: GENERIC_ID_PATTERN,
@@ -57,31 +58,7 @@ builder.declare({
   debug(`Processing request for ${provisionerId}/${workerType}/${cacheName}.`);
 
   await req.authorize({provisionerId, workerType, cacheName});
-
-  try {
-    await this.CachePurge.create({
-      workerType,
-      provisionerId,
-      cacheName,
-      before: new Date(),
-      expires: taskcluster.fromNow('1 day'),
-    });
-  } catch (err) {
-    if (err.code !== 'EntityAlreadyExists') {
-      throw err;
-    }
-    let cb = await this.CachePurge.load({
-      workerType,
-      provisionerId,
-      cacheName,
-    });
-
-    await cb.modify(cachePurge => {
-      cachePurge.before = new Date();
-      cachePurge.expires = taskcluster.fromNow('1 day');
-    });
-  }
-
+  await this.db.fns.purge_cache(provisionerId, workerType, cacheName, new Date(), taskcluster.fromNow('1 day'));
   // Return 204
   res.reply();
 });
@@ -108,16 +85,18 @@ builder.declare({
     'provisionerId.',
   ].join('\n'),
 }, async function(req, res) {
-  let continuation = req.query.continuationToken || null;
-  let limit = parseInt(req.query.limit || 1000, 10);
-  let openRequests = await this.CachePurge.scan({}, {continuation, limit});
+  // openRequests
+  const {continuationToken, rows} = await paginateResults({
+    query: req.query,
+    fetch: (size, offset) => this.db.fns.all_purge_requests(size, offset),
+  });
   return res.reply({
-    continuationToken: openRequests.continuation || '',
-    requests: _.map(openRequests.entries, entry => {
+    continuationToken: continuationToken || '',
+    requests: _.map(rows, entry => {
       return {
-        provisionerId: entry.provisionerId,
-        workerType: entry.workerType,
-        cacheName: entry.cacheName,
+        provisionerId: entry.provisioner_id,
+        workerType: entry.worker_type,
+        cacheName: entry.cache_name,
         before: entry.before.toJSON(),
       };
     }),
@@ -155,19 +134,19 @@ builder.declare({
   let cacheCache = this.cachePurgeCache[cacheKey];
   if (!cacheCache || Date.now() - cacheCache.touched > this.cfg.app.cacheTime * 1000) {
     cacheCache = this.cachePurgeCache[cacheKey] = {
-      reqs: await this.CachePurge.query({provisionerId, workerType}),
+      reqs: await this.db.fns.purge_requests(provisionerId, workerType),
       touched: Date.now(),
     };
   }
 
   let {reqs: openRequests} = cacheCache;
   return res.reply({
-    requests: _.reduce(openRequests.entries, (l, entry) => {
+    requests: _.reduce(openRequests, (l, entry) => {
       if (entry.before >= since) {
         l.push({
-          provisionerId: entry.provisionerId,
-          workerType: entry.workerType,
-          cacheName: entry.cacheName,
+          provisionerId: entry.provisioner_id,
+          workerType: entry.worker_type,
+          cacheName: entry.cache_name,
           before: entry.before.toJSON(),
         });
       }

@@ -5,10 +5,9 @@ const testing = require('taskcluster-lib-testing');
 
 helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
   helper.withDb(mock, skipping);
-  helper.withEntities(mock, skipping);
 
   test('expire nothing', async function() {
-    const count = await helper.CachePurge.expire(new Date());
+    const count = (await helper.db.fns.cache_purges_expires(new Date()))[0].cache_purges_expires;
     assume(count).to.equal(0);
   });
 
@@ -21,21 +20,16 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
       taskcluster.fromNow('0 hours'),
     ];
 
-    await helper.CachePurge.create({
-      ...wt,
-      cacheName: 'a',
-      before: times[0],
-      expires: times[1]});
-    await helper.CachePurge.create({
-      ...wt,
-      cacheName: 'b',
-      before: times[0],
-      expires: times[3]});
+    await helper.db.fns.purge_cache(wt.provisionerId, wt.workerType, 'a', times[0], times[1]);
+    await helper.db.fns.purge_cache(wt.provisionerId, wt.workerType, 'b', times[0], times[3]);
 
-    const count = await helper.CachePurge.expire(times[2]);
+    const count = (await helper.db.fns.cache_purges_expires(times[2]))[0].cache_purges_expires;
     assume(count).to.equal(1);
 
-    assume(await helper.CachePurge.load({...wt, cacheName: 'a'}, true)).to.equal(null);
-    assume(await helper.CachePurge.load({...wt, cacheName: 'b'}, true)).to.not.equal(null);
+    const caches = await helper.db.fns.all_purge_requests(5, 0);
+    assume(
+      caches.find(cache => cache.provisioner_id === wt.provisionerId && cache.worker_type === wt.workerType && cache.cache_name === 'a'),
+    ).to.equal(undefined);
+    assume(caches.find(cache => cache.provisioner_id === wt.provisionerId && cache.worker_type === wt.workerType && cache.cache_name === 'b'));
   });
 });

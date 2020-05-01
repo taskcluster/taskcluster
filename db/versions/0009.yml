@@ -1,0 +1,288 @@
+version: 9
+migrationScript: 0009-migration.sql
+downgradeScript: 0009-downgrade.sql
+methods:
+  cache_purges_entities_load:
+    description: See taskcluster-lib-entities
+    mode: read
+    serviceName: purge_cache
+    args: partition_key text, row_key text
+    returns: table (partition_key_out text, row_key_out text, value jsonb, version integer, etag uuid)
+    body: |-
+      declare
+        decoded_composite_key text[];
+      begin
+        decoded_composite_key := decode_composite_key(cache_purges_entities_load.partition_key);
+        return query
+        select
+          cache_purges_entities_load.partition_key,
+          cache_purges_entities_load.row_key,
+          jsonb_build_object(
+            'PartitionKey', cache_purges_entities_load.partition_key,
+            'RowKey', cache_purges_entities_load.row_key,
+            'provisionerId', provisioner_id,
+            'workerType', worker_type,
+            'cacheName', cache_name,
+            'before', before,
+            'expires', expires) as value,
+          1 as version,
+          cache_purges.etag as etag
+        from cache_purges
+        where
+          cache_purges.provisioner_id = decoded_composite_key[1] and cache_purges.worker_type = decoded_composite_key[2] and cache_purges.cache_name = decode_string_key(cache_purges_entities_load.row_key);
+      end
+  cache_purges_entities_create:
+    serviceName: purge_cache
+    description: See taskcluster-lib-entities
+    mode: write
+    args: pk text, rk text, properties jsonb, overwrite boolean, version integer
+    returns: uuid
+    body: |-
+      declare
+        new_row cache_purges%ROWTYPE;
+      begin
+        select
+          (properties ->> 'provisionerId')::text as provisioner_id,
+          (properties ->> 'workerType')::text as worker_type,
+          (properties ->> 'cacheName')::text as cache_name,
+          (properties ->> 'before')::timestamptz as before,
+          (properties ->> 'expires')::timestamptz as expires,
+          public.gen_random_uuid() as etag
+        into new_row;
+        if overwrite then
+          raise exception 'overwrite not implemented';
+        else
+          execute 'insert into cache_purges select $1.*' using new_row;
+        end if;
+        return new_row.etag;
+      end
+  cache_purges_entities_remove:
+    serviceName: purge_cache
+    description: See taskcluster-lib-entities
+    mode: write
+    args: partition_key text, row_key text
+    returns: table (etag uuid)
+    body: |-
+      declare
+        decoded_composite_key text[];
+      begin
+        decoded_composite_key := decode_composite_key(cache_purges_entities_remove.partition_key);
+        return query delete from cache_purges
+        where
+          cache_purges.provisioner_id = decoded_composite_key[1] and cache_purges.worker_type = decoded_composite_key[2] and cache_purges.cache_name = decode_string_key(cache_purges_entities_remove.row_key)
+        returning cache_purges.etag;
+      end
+  cache_purges_entities_modify:
+    serviceName: purge_cache
+    description: See taskcluster-lib-entities
+    mode: write
+    args: partition_key text, row_key text, properties jsonb, version integer, old_etag uuid
+    returns: table (etag uuid)
+    body: |-
+      declare
+        new_row cache_purges%ROWTYPE;
+        decoded_composite_key text[];
+      begin
+        decoded_composite_key := decode_composite_key(cache_purges_entities_modify.partition_key);
+        select
+          (properties ->> 'provisionerId')::text as provisioner_id,
+          (properties ->> 'workerType')::text as worker_type,
+          (properties ->> 'cacheName')::text as cache_name,
+          (properties ->> 'before')::timestamptz as before,
+          (properties ->> 'expires')::timestamptz as expires,
+          public.gen_random_uuid() as etag
+        into new_row;
+        update cache_purges
+        set (
+          provisioner_id,
+          worker_type,
+          cache_name,
+          before,
+          expires,
+          etag
+        ) = (
+          new_row.provisioner_id,
+          new_row.worker_type,
+          new_row.cache_name,
+          new_row.before,
+          new_row.expires,
+          new_row.etag
+        )
+        where
+          cache_purges.provisioner_id = decoded_composite_key[1] and
+          cache_purges.worker_type = decoded_composite_key[2] and
+          cache_purges.cache_name = decode_string_key(cache_purges_entities_modify.row_key) and
+          cache_purges.etag = cache_purges_entities_modify.old_etag;
+        if found then
+          return query select new_row.etag;
+          return;
+        end if;
+        perform cache_purges.etag from cache_purges
+        where
+          cache_purges.provisioner_id = decoded_composite_key[1] and
+          cache_purges.worker_type = decoded_composite_key[2] and
+          cache_purges.cache_name = decode_string_key(cache_purges_entities_modify.row_key);
+        if found then
+          raise exception 'unsuccessful update' using errcode = 'P0004';
+        else
+          raise exception 'no such row' using errcode = 'P0002';
+        end if;
+      end
+  cache_purges_entities_scan:
+    description: See taskcluster-lib-entities
+    mode: read
+    serviceName: purge_cache
+    args: pk text, rk text, condition text, size integer, page integer
+    returns: table (partition_key text, row_key text, value jsonb, version integer, etag uuid)
+    body: |-
+      declare
+        cond text[];
+        exp_cond_operator text;
+        exp_cond_operand timestamptz;
+        partition_key_var text;
+        row_key_var text;
+        decoded_composite_key text[];
+      begin
+        decoded_composite_key := decode_composite_key(cache_purges_entities_scan.pk);
+        if not condition is null then
+          cond := regexp_split_to_array(condition, '\s+');
+          exp_cond_operator := cond[4];
+          exp_cond_operand := cond[5] :: timestamptz;
+
+          return query select
+            encode_composite_key(cache_purges.provisioner_id, cache_purges.worker_type) as partition_key,
+            encode_string_key(cache_purges.cache_name) as row_key,
+            jsonb_build_object(
+              'PartitionKey', encode_composite_key(cache_purges.provisioner_id, cache_purges.worker_type),
+              'RowKey', cache_name,
+              'provisionerId', provisioner_id,
+              'workerType', worker_type,
+              'cacheName', cache_name,
+              'before', before,
+              'expires', expires
+            ) as value,
+            1 as version,
+            cache_purges.etag as etag from cache_purges
+          where
+            (cache_purges_entities_scan.pk is null or cache_purges_entities_scan.pk = decoded_composite_key[1] || '~' || decoded_composite_key[2]) and
+            (cache_purges_entities_scan.rk is null or cache_purges_entities_scan.rk = cache_name) and
+            case
+              when exp_cond_operator = '=' then expires = exp_cond_operand
+              when exp_cond_operator = '<' then expires < exp_cond_operand
+              when exp_cond_operator = '<=' then expires <= exp_cond_operand
+              when exp_cond_operator = '>' then expires > exp_cond_operand
+              when exp_cond_operator = '>=' then expires >= exp_cond_operand
+              else expires <> exp_cond_operand
+            end
+          order by cache_purges.provisioner_id, cache_purges.worker_type, cache_purges.cache_name
+          limit case
+            when (size is not null and size > 0) then size + 1
+            else null
+          end
+          offset case
+            when (page is not null and page > 0) then page
+            else 0
+          end;
+        else
+          return query select
+            encode_composite_key(cache_purges.provisioner_id, cache_purges.worker_type) as partition_key,
+            encode_string_key(cache_purges.cache_name) as row_key,
+            jsonb_build_object(
+              'PartitionKey', encode_composite_key(cache_purges.provisioner_id, cache_purges.worker_type),
+              'RowKey', cache_name,
+              'provisionerId', provisioner_id,
+              'workerType', worker_type,
+              'cacheName', cache_name,
+              'before', before,
+              'expires', expires
+            ) as value,
+            1 as version,
+            cache_purges.etag as etag from cache_purges
+          where
+            (cache_purges_entities_scan.pk is null or (cache_purges.provisioner_id = decoded_composite_key[1] and cache_purges.worker_type = decoded_composite_key[2])) and
+            (cache_purges_entities_scan.rk is null or cache_purges_entities_scan.rk = cache_name)
+          order by cache_purges.provisioner_id, cache_purges.worker_type, cache_purges.cache_name
+          limit case
+            when (size is not null and size > 0) then size + 1
+            else null
+          end
+          offset case
+            when (size is not null and size > 0 and page is not null and page > 0) then page
+            else 0
+          end;
+        end if;
+      end
+  purge_requests:
+    description: |-
+      List the caches for this `provisioner_id_in`/`worker_type_in`.
+    mode: read
+    serviceName: purge_cache
+    args: provisioner_id_in text, worker_type_in text
+    returns: table (provisioner_id text, worker_type text, cache_name text, before timestamptz)
+    body: |-
+      begin
+        return query
+        select cache_purges.provisioner_id, cache_purges.worker_type, cache_purges.cache_name, cache_purges.before from cache_purges
+        where cache_purges.provisioner_id = provisioner_id_in and cache_purges.worker_type = worker_type_in;
+      end
+  all_purge_requests:
+    description: |-
+      View all active purge requests.
+    mode: read
+    serviceName: purge_cache
+    args: page_size_in integer, page_offset_in integer
+    returns: table (provisioner_id text, worker_type text, cache_name text, before timestamptz)
+    body: |-
+      declare
+      sql text := 'select cache_purges.provisioner_id, cache_purges.worker_type, cache_purges.cache_name, cache_purges.before from cache_purges';
+      begin
+        return query select cache_purges.provisioner_id, cache_purges.worker_type, cache_purges.cache_name, cache_purges.before
+        from cache_purges
+        order by cache_purges.provisioner_id, cache_purges.worker_type, cache_purges.cache_name
+        limit get_page_limit(page_size_in)
+        offset get_page_offset(page_offset_in);
+      end
+  purge_cache:
+    serviceName: purge_cache
+    description: |-
+      Publish a request to purge caches with name `cache_name_in`
+      on `provisioner_id_in`/`worker_type_in` workers.
+    mode: write
+    args: provisioner_id_in text, worker_type_in text, cache_name_in text, before_in timestamptz, expires_in timestamptz
+    returns: void
+    body: |-
+      declare
+        new_etag uuid := public.gen_random_uuid();
+      begin
+        insert into cache_purges(provisioner_id, worker_type, cache_name, before, expires, etag)
+        values (
+          provisioner_id_in,
+          worker_type_in,
+          cache_name_in,
+          before_in,
+          expires_in,
+          new_etag
+        ) on conflict (provisioner_id, worker_type, cache_name) do
+        update
+        set (before, expires, etag) = (before_in, expires_in, new_etag)
+        where cache_purges.provisioner_id = provisioner_id_in and cache_purges.worker_type = worker_type_in and cache_purges.cache_name = cache_name_in;
+      end
+  cache_purges_expires:
+    description: |-
+      Expire cache purges that come before `expires_in`.
+      Returns a count of rows that have been deleted.
+    mode: write
+    serviceName: purge_cache
+    args: expires_in timestamptz
+    returns: integer
+    body: |-
+      declare
+        count integer;
+      begin
+        delete from cache_purges where cache_purges.expires < expires_in;
+        if found then
+          get diagnostics count = row_count;
+          return count;
+        end if;
+        return 0;
+      end

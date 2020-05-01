@@ -9,7 +9,6 @@ const libReferences = require('taskcluster-lib-references');
 const taskcluster = require('taskcluster-client');
 const tcdb = require('taskcluster-db');
 const builder = require('./api');
-const data = require('./data');
 
 const load = loader({
   cfg: {
@@ -44,23 +43,15 @@ const load = loader({
     }),
   },
 
-  CachePurge: {
-    requires: ['cfg', 'monitor', 'db'],
-    setup: async ({cfg, monitor, db}) => data.CachePurge.setup({
-      db,
-      serviceName: 'purge_cache',
-      tableName: cfg.app.cachePurgeTableName,
-      monitor: monitor.childMonitor('table.purgecaches'),
-    }),
-  },
-
   'expire-cache-purges': {
-    requires: ['cfg', 'CachePurge', 'monitor'],
-    setup: ({cfg, CachePurge, monitor}, ownName) => {
+    requires: ['cfg', 'monitor'],
+    setup: ({cfg, db, monitor}, ownName) => {
       return monitor.oneShot(ownName, async () => {
         const now = taskcluster.fromNow(cfg.app.cachePurgeExpirationDelay);
         debug('Expiring cache-purges at: %s, from before %s', new Date(), now);
-        const count = await CachePurge.expire(now);
+        const count = (
+          await db.fns.cache_purges_expires(now)
+        )[0].cache_purges_expires;
         debug('Expired %s cache-purges', count);
       });
     },
@@ -81,9 +72,9 @@ const load = loader({
   },
 
   api: {
-    requires: ['cfg', 'monitor', 'schemaset', 'CachePurge', 'cachePurgeCache'],
-    setup: ({cfg, monitor, schemaset, CachePurge, cachePurgeCache}) => builder.build({
-      context: {cfg, CachePurge, cachePurgeCache},
+    requires: ['cfg', 'monitor', 'schemaset', 'cachePurgeCache', 'db'],
+    setup: ({cfg, monitor, schemaset, cachePurgeCache, db}) => builder.build({
+      context: {cfg, cachePurgeCache, db},
       rootUrl: cfg.taskcluster.rootUrl,
       schemaset,
       monitor: monitor.childMonitor('api'),

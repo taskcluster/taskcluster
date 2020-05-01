@@ -2,6 +2,16 @@ const fs = require('fs');
 const path = require('path');
 const {SYNTAX_ERROR} = require('./constants');
 
+exports.ignorePgErrors = async (promise, ...codes) => {
+  try {
+    return await promise;
+  } catch (err) {
+    if (!codes.includes(err.code)) {
+      throw err;
+    }
+  }
+};
+
 exports.dollarQuote = str => {
   let i = '';
   while (true) {
