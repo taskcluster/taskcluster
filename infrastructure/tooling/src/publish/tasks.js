@@ -500,7 +500,6 @@ module.exports = ({tasks, cmdOptions, credentials, baseDir, logsDir}) => {
         draft: false,
         prerelease: false,
       });
-      const {upload_url} = release.data;
 
       const files = requirements['client-shell-artifacts']
         .concat(requirements['generic-worker-artifacts'])
@@ -510,7 +509,7 @@ module.exports = ({tasks, cmdOptions, credentials, baseDir, logsDir}) => {
         .map(name => ({name, contentType: 'application/octet-stream'}));
       for (let {name, contentType} of files) {
         utils.status({message: `Upload Release asset ${name}`});
-        const file = await readFile(path.join(artifactsDir, name));
+        const data = await readFile(path.join(artifactsDir, name));
 
         /* Artifact uploads to GitHub seem to fail.. a lot.  So we retry each
          * one a few times with some delay, in hopes of getting lucky.  */
@@ -518,13 +517,15 @@ module.exports = ({tasks, cmdOptions, credentials, baseDir, logsDir}) => {
         while (retries-- > 0) {
           try {
             await octokit.repos.uploadReleaseAsset({
-              url: upload_url,
+              owner: 'taskcluster',
+              repo: 'taskcluster',
+              release_id: release.id,
+              name,
+              data,
               headers: {
-                'content-length': file.length,
+                'content-length': data.length,
                 'content-type': contentType,
               },
-              name,
-              file,
             });
           } catch (err) {
             if (!retries) {
