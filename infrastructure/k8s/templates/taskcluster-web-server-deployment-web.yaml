@@ -19,7 +19,7 @@ spec:
     spec:
       serviceAccountName: taskcluster-web-server
       containers:
-        - name: taskcluster-web-server
+        - name: taskcluster-web-server-web
           image: '{{ .Values.dockerImage }}'
           imagePullPolicy: Always
           args:

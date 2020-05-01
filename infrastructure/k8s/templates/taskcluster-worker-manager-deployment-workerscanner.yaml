@@ -19,7 +19,7 @@ spec:
     spec:
       serviceAccountName: taskcluster-worker-manager
       containers:
-        - name: taskcluster-worker-manager
+        - name: taskcluster-worker-manager-workerscanner
           image: '{{ .Values.dockerImage }}'
           imagePullPolicy: Always
           args:

@@ -19,7 +19,7 @@ spec:
     spec:
       serviceAccountName: taskcluster-ui
       containers:
-        - name: taskcluster-ui
+        - name: taskcluster-ui-web
           image: '{{ .Values.dockerImage }}'
           imagePullPolicy: Always
           args:

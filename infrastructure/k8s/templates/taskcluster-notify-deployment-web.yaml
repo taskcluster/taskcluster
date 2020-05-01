@@ -19,7 +19,7 @@ spec:
     spec:
       serviceAccountName: taskcluster-notify
       containers:
-        - name: taskcluster-notify
+        - name: taskcluster-notify-web
           image: '{{ .Values.dockerImage }}'
           imagePullPolicy: Always
           args:

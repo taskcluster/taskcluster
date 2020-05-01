@@ -19,7 +19,7 @@ spec:
     spec:
       serviceAccountName: taskcluster-github
       containers:
-        - name: taskcluster-github
+        - name: taskcluster-github-worker
           image: '{{ .Values.dockerImage }}'
           imagePullPolicy: Always
           args:

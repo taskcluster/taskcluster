@@ -19,7 +19,7 @@ spec:
     spec:
       serviceAccountName: taskcluster-built-in-workers
       containers:
-        - name: taskcluster-built-in-workers
+        - name: taskcluster-built-in-workers-server
           image: '{{ .Values.dockerImage }}'
           imagePullPolicy: Always
           args:
