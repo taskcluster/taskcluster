@@ -19,7 +19,7 @@ spec:
     spec:
       serviceAccountName: taskcluster-hooks
       containers:
-        - name: taskcluster-hooks
+        - name: taskcluster-hooks-web
           image: '{{ .Values.dockerImage }}'
           imagePullPolicy: Always
           args:

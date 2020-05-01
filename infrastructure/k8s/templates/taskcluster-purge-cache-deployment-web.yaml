@@ -19,7 +19,7 @@ spec:
     spec:
       serviceAccountName: taskcluster-purge-cache
       containers:
-        - name: taskcluster-purge-cache
+        - name: taskcluster-purge-cache-web
           image: '{{ .Values.dockerImage }}'
           imagePullPolicy: Always
           args:
