@@ -4,7 +4,7 @@ const {SYNTAX_ERROR} = require('./constants');
 
 exports.ignorePgErrors = async (promise, ...codes) => {
   try {
-    return await promise;
+    await promise;
   } catch (err) {
     if (!codes.includes(err.code)) {
       throw err;
