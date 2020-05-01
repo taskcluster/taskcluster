@@ -50,8 +50,8 @@ const load = loader({
         const now = taskcluster.fromNow(cfg.app.cachePurgeExpirationDelay);
         debug('Expiring cache-purges at: %s, from before %s', new Date(), now);
         const count = (
-          await db.fns.cache_purges_expires(now)
-        )[0].cache_purges_expires;
+          await db.fns.expire_cache_purges(now)
+        )[0].expire_cache_purges;
         debug('Expired %s cache-purges', count);
       });
     },
