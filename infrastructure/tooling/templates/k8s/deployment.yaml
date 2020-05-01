@@ -15,7 +15,7 @@ spec:
     spec:
       serviceAccountName: ${projectName}
       containers:
-      - name: ${projectName}
+      - name: ${projectName}-${lowercase(procName)}
         image: '{{ .Values.dockerImage }}'
         imagePullPolicy: Always
         args: ['${serviceName}/${procName}']
