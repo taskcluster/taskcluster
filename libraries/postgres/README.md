@@ -262,6 +262,8 @@ const {UNDEFINED, TABLE, ignorePgErrors} = require('taskcluster-lib-postgres');
 await ignorePgErrors(someOperation(), UNDEFINED_TABLE);
 ```
 
+Note that the return promise does not carry a value on success, as that success may have been due to an ignored error.
+
 ## Development
 
 To test this library, you will need a Postgres database, running the latest release of Postgres 11.
