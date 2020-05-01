@@ -45,16 +45,6 @@ module.exports = {
         neutrino.config.externals(undefined);
       } else {
         neutrino.config.devtool('source-map');
-        neutrino.config.externals({
-          hawk: 'hawk',
-          'crypto-js': 'crypto-js',
-          'query-string': {
-            commonjs: 'query-string',
-            commonjs2: 'query-string',
-            amd: 'query-string',
-            root: 'queryString',
-          },
-        });
       }
 
       neutrino.config.resolve.alias.set('hawk', 'hawk/dist/browser.js');
