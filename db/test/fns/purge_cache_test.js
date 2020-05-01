@@ -136,7 +136,7 @@ suite(testing.suiteName(), function() {
     compare(entries, samples);
   });
 
-  helper.dbTest('cache_purges_expires', async function(db, isFake) {
+  helper.dbTest('expire_cache_purges', async function(db, isFake) {
     const samples = [
       { provisioner_id: 'prov-3', worker_type: 'wt-3', cache_name: 'cache-3', before: fromNow('4 days'), expires: fromNow('- 1 day')},
       { provisioner_id: 'prov-3', worker_type: 'wt-3', cache_name: 'cache-4', before: fromNow('6 days'), expires: fromNow('- 2 days')},
@@ -153,7 +153,7 @@ suite(testing.suiteName(), function() {
       );
     }
 
-    const count = (await db.fns.cache_purges_expires(fromNow()))[0].cache_purges_expires;
+    const count = (await db.fns.expire_cache_purges(fromNow()))[0].expire_cache_purges;
 
     assert.equal(count, 3);
 

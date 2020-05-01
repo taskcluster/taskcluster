@@ -101,7 +101,7 @@ class FakePurgeCache {
       });
   }
 
-  cache_purges_expires(exp) {
+  expire_cache_purges(exp) {
     const cachePurges = this._getCaches();
     let count = 0;
 
@@ -112,7 +112,7 @@ class FakePurgeCache {
       }
     });
 
-    return [{ 'cache_purges_expires': count }];
+    return [{ 'expire_cache_purges': count }];
   }
 
   async cache_purges_load(provisionerId, workerType, cacheName) {

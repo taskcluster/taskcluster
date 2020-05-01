@@ -267,7 +267,7 @@ methods:
         set (before, expires, etag) = (before_in, expires_in, new_etag)
         where cache_purges.provisioner_id = provisioner_id_in and cache_purges.worker_type = worker_type_in and cache_purges.cache_name = cache_name_in;
       end
-  cache_purges_expires:
+  expire_cache_purges:
     description: |-
       Expire cache purges that come before `expires_in`.
       Returns a count of rows that have been deleted.

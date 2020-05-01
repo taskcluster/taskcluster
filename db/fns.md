@@ -92,7 +92,7 @@
 | cache_purges_entities_modify | write | partition_key text, row_key text, properties jsonb, version integer, old_etag uuid | table (etag uuid) | See taskcluster-lib-entities |
 | cache_purges_entities_remove | write | partition_key text, row_key text | table (etag uuid) | See taskcluster-lib-entities |
 | cache_purges_entities_scan | read | pk text, rk text, condition text, size integer, page integer | table (partition_key text, row_key text, value jsonb, version integer, etag uuid) | See taskcluster-lib-entities |
-| cache_purges_expires | write | expires_in timestamptz | integer | Expire cache purges that come before `expires_in`.<br />Returns a count of rows that have been deleted. |
+| expire_cache_purges | write | expires_in timestamptz | integer | Expire cache purges that come before `expires_in`.<br />Returns a count of rows that have been deleted. |
 | purge_cache | write | provisioner_id_in text, worker_type_in text, cache_name_in text, before_in timestamptz, expires_in timestamptz | void | Publish a request to purge caches with name `cache_name_in`<br />on `provisioner_id_in`/`worker_type_in` workers. |
 | purge_requests | read | provisioner_id_in text, worker_type_in text | table (provisioner_id text, worker_type text, cache_name text, before timestamptz) | List the caches for this `provisioner_id_in`/`worker_type_in`. |
 ## queue

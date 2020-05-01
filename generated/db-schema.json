@@ -2169,7 +2169,7 @@
           "returns": "table (partition_key text, row_key text, value jsonb, version integer, etag uuid)",
           "serviceName": "purge_cache"
         },
-        "cache_purges_expires": {
+        "expire_cache_purges": {
           "args": "expires_in timestamptz",
           "body": "declare\n  count integer;\nbegin\n  delete from cache_purges where cache_purges.expires < expires_in;\n  if found then\n    get diagnostics count = row_count;\n    return count;\n  end if;\n  return 0;\nend",
           "deprecated": false,
