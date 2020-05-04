@@ -27,3 +27,4 @@ RUN curl -sfL https://install.goreleaser.com/github.com/golangci/golangci-lint.s
 EOF
 
 docker build -t "taskcluster/node-and-go:node${node_version}-go${go_version}" ${tmpdir}
+[ -n "$DOCKER_PUSH" ] && docker push "taskcluster/node-and-go:node${node_version}-go${go_version}"
