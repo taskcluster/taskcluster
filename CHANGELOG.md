@@ -3,6 +3,33 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v29.3.0
+
+### GENERAL
+
+▶ [minor] [bug 1630019](http://bugzil.la/1630019)
+The purge_cache service now uses normalized db tables
+
+▶ [patch] [bug 1633582](http://bugzil.la/1633582)
+The worker-manager Google provider now labels worker disks with the same set of labels as VMs.
+
+### USERS
+
+▶ [patch] [#1536](https://github.com/taskcluster/taskcluster/issues/1536)
+taskcluster-client-web no longer shows the 'hawk is undefined' regression error.
+
+### DEVELOPERS
+
+▶ [patch] [bug 1630023](http://bugzil.la/1630023)
+DB version 8 introduces some utility functions that will be useful in migrating from (and downgrading to) tc-lib-entities-compatible tables.
+
+▶ [patch] 
+The morgan-debug logging for web services has been removed in favor of continued support of our api logging and iprepd logging in production
+
+### OTHER
+
+▶ Additional change not described here: [bug 1633882](http://bugzil.la/1633882).
+
 ## v29.2.0
 
 ### DEPLOYERS
