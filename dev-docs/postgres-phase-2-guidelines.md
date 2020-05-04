@@ -60,7 +60,7 @@ downgrade.
 You will want to lock the table during the migration to prevent concurrent
 updates.
 
-The test in`db/tests/upgrade_downgrade_test.js` test will identify issues with
+The test in `db/tests/upgrade_downgrade_test.js` test will identify issues with
 `db/access.yml` and `db/tables.yml`.
 
 In the version test at this point, just assert that the proper tables exist and don't
@@ -82,7 +82,7 @@ you have written the replacement entity functions, you can rely on
 ### Replacement Entity Functions
 
 At this stage, the stored functions still refer to the old table.  In order to
-support continued operation during the period between running the DB ugprade
+support continued operation during the period between running the DB upgrade
 and deploying the new version of the Taskcluster services, and to support
 downgrades of the deployed services without rollback of the DB, we must supply
 new versions of these functions that refer to the new table.
@@ -96,17 +96,48 @@ In the version test, include a copy of the `Entity` configuration from the
 service's `data.js`, stripped of comments and older versions.  Use
 `helper.testEntityTable` to easily test the version.
 
-When running the serivce's unit tests, you will probably need to update the tests to clear out the new table instead of the old.  This is typically, but not always, a `resetTable` call in `test/helper.js`.
+When running the service's unit tests, you will probably need to update the tests to clear out the new table instead of the old.  This is typically, but not always, a `resetTable` call in `test/helper.js`.
 Try not to make any other changes to the service or its unit tests.
 If you do change the tests, such as to add additional test cases or use encodable characters in strings, do so in a commit *before* this one, so that reviewers can double-check those changes work against the existing entities table.
 
 ## Service Migration
 
-TODO (hassan)
+In the service migration step, the overall goal is to move away from using taskcluster-lib-entities and instead
+communicate directly with the db via stored procedures. This will involve adding new db stored procedures and making
+changes to the underlying service to use these new functions.
 
-- define a data class if necessary
-- experiment to figure out where to put logic (in API method or in DB
-  function)
+Here's a helpful checklist for this step (with more details below):
+* DB Functions
+	* [ ] Add new stored procedure functions. [example](https://github.com/taskcluster/taskcluster/blob/8d0600004fcaff7c1661e650bc48e424e7d409de/db/versions/0009.yml#L215-L288)
+	* [ ] Add mock implementations for the functions in the relevant file under `db/src/fakes/`. [example](https://github.com/taskcluster/taskcluster/blob/8d0600004fcaff7c1661e650bc48e424e7d409de/db/src/fakes/purge_cache.js)
+	* [ ] Create a file `db/test/fns/<service-name>_test.js` and write tests for these newly created functions. [example](https://github.com/taskcluster/taskcluster/pull/2748/commits/a702d2c7dffd0064f1ee4a647b6030b003e52536#diff-24717608297e5956dd619092dd4a135b)
+
+* Service Modifications
+	* [ ] Remove the table(s) being migrated from `main.js`. [example](https://github.com/taskcluster/taskcluster/pull/2716/commits/6727656e05d8204226705dea0777e30d3fd7dd68#diff-4870d07d27bcc1810fa17bd04ee9b80a)
+	* [ ] Update the implementation of the service to use the stored procedure functions for the tables defined in the migration step. [example](https://github.com/taskcluster/taskcluster/pull/2716/commits/6727656e05d8204226705dea0777e30d3fd7dd68#diff-4870d07d27bcc1810fa17bd04ee9b80a)
+	* [ ] Update the service's tests to stop using taskcluster-lib-entities for the table(s) being migrated. [example](https://github.com/taskcluster/taskcluster/pull/2716/commits/6727656e05d8204226705dea0777e30d3fd7dd68#diff-9c318c46f9b923b6018aa4c21a7b67fc)
+
+### DB Functions
+
+Here we'll want to come up with db functions that would later be used in the service directly rather than having them
+interact with taskcluster-lib-entities. Experiment where to put logic (in API method or in DB).
+For example, upserting in azure usually involves invoking a load then modify but in postgres,
+this could easily be done using the `on conflict` clause making it a good choice to integrate the logic
+in the db function.
+
+Each stored procedure function should be tested thoroughly. DB data are at high stake.
+
+### Service Modifications
+
+In this last part of the migration we'll want to change the table(s) being migrated to stop using
+taskcluster-lib-entities and instead communicate with the db directly via the new stored procedure
+functions defined earlier.
+
+If necessary, you might need to define a data class which you could refer to this
+[example](https://github.com/taskcluster/taskcluster/pull/2748/commits/a702d2c7dffd0064f1ee4a647b6030b003e52536#diff-6f428cf68b99354b5770cfca1e00338c)
+for inspiration.
+
+For paginated endpoints, taskcluster-lib-api's `paginateResults` utility function should be used.
 
 # General Advice
 
