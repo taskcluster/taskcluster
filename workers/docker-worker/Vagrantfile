@@ -2,6 +2,7 @@ Vagrant.configure("2") do |config|
   config.vm.box = "phusion/ubuntu-14.04-amd64"
 
   config.vm.synced_folder ENV['HOME'], ENV['HOME']
+  config.vm.synced_folder "../docker-worker-deploy", "/docker-worker-deploy"
 
   # We need to configure docker to expose port 60366
   config.vm.provision "shell", inline: <<-SCRIPT
@@ -17,11 +18,14 @@ Vagrant.configure("2") do |config|
 SCRIPT
 
   config.vm.provision "shell" do |s|
-    s.path = "deploy/packer/base/scripts/packages.sh"
+    s.inline = "/bin/bash -vex -c 'cd /docker-worker-deploy; bash -vex deploy/packer/base/scripts/packages.sh'"
     s.env = {VAGRANT_PROVISION: "1"}
   end
 
-  config.vm.provision "shell", path: 'vagrant.sh'
-  # Requires vagrant-reload plugin
-  config.vm.provision :reload
+  config.vm.provision "shell" do |s|
+    s.inline = "/bin/bash -vex -c 'cd /docker-worker-deploy; bash -vex ./vagrant.sh'"
+    s.env = {VAGRANT_PROVISION: "1"}
+    # Requires vagrant-reload plugin
+    config.vm.provision :reload
+  end
 end
