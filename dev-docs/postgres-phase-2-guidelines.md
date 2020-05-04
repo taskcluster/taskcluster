@@ -136,6 +136,8 @@ functions defined earlier.
 If necessary, you might need to define a data class which you could refer to this
 [example](https://github.com/taskcluster/taskcluster/pull/2748/commits/a702d2c7dffd0064f1ee4a647b6030b003e52536#diff-6f428cf68b99354b5770cfca1e00338c)
 for inspiration.
+This approach is useful in cases where the service passes Entity instances around between components, as instances of the new class can replace the Entity instances.
+In services where all access occurs directly in the API methods, such as purge-cache, a data class may not be necessary.
 
 For paginated endpoints, taskcluster-lib-api's `paginateResults` utility function should be used.
 
