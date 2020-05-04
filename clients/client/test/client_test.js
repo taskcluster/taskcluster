@@ -175,6 +175,44 @@ suite(testing.suiteName(), function() {
         });
       })(),
     },
+    serviceDiscoveryK8sDns: {
+      name: 'using k8s dns service discovery',
+      urlPrefix: 'http://taskcluster-fake2/api/fake2',
+      Fake: taskcluster.createClient(referenceNameStyle),
+      rootUrl: 'https://whatever.net',
+      serviceDiscoveryScheme: 'k8s-dns',
+      client: (() => {
+        const Fake = taskcluster.createClient(referenceNameStyle);
+        return new Fake({
+          rootUrl: 'https://example.not-there',
+          serviceDiscoveryScheme: 'k8s-dns',
+          credentials: {
+            clientId: 'nobody',
+            accessToken: 'nothing',
+          },
+        });
+      })(),
+    },
+    serviceDiscoveryK8sDnsDefault: {
+      name: 'using k8s dns service discovery (default)',
+      urlPrefix: 'http://taskcluster-fake2/api/fake2',
+      Fake: taskcluster.createClient(referenceNameStyle),
+      rootUrl: 'https://whatever.net',
+      serviceDiscoveryScheme: 'k8s-dns',
+      client: (() => {
+        const Fake = taskcluster.createClient(referenceNameStyle);
+        taskcluster.setServiceDiscoveryScheme('k8s-dns');
+        const clnt = new Fake({
+          rootUrl: 'https://example.not-there',
+          credentials: {
+            clientId: 'nobody',
+            accessToken: 'nothing',
+          },
+        });
+        taskcluster.setServiceDiscoveryScheme('default');
+        return clnt;
+      })(),
+    },
     justRootUrl: {
       name: 'rootUrl set via constructor',
       urlPrefix: 'https://whatever.net/api/fake2',
@@ -274,7 +312,7 @@ suite(testing.suiteName(), function() {
   };
 
   Object.keys(subjects).forEach(subject => {
-    const {name, urlPrefix, client, Fake, rootUrl} = subjects[subject];
+    const {name, urlPrefix, client, Fake, rootUrl, serviceDiscoveryScheme} = subjects[subject];
     suite(name, () => {
       test('Simple GET', async () => {
         nock(urlPrefix).get('/v1/get-test')
@@ -355,21 +393,21 @@ suite(testing.suiteName(), function() {
       test('GET public resource', async () => {
         nock(urlPrefix).get('/v1/get-test')
           .reply(200, {});
-        let c = new Fake({rootUrl});
+        let c = new Fake({rootUrl, serviceDiscoveryScheme});
         await c.get();
       });
 
       test('GET public resource with query-string', async () => {
         nock(urlPrefix).get('/v1/query/test?option=31')
           .reply(200, {});
-        let c = new Fake({rootUrl});
+        let c = new Fake({rootUrl, serviceDiscoveryScheme});
         await c.query({option: 31});
       });
 
       test('GET public resource no query-string (supported method)', async () => {
         nock(urlPrefix).get('/v1/query/test')
           .reply(200, {});
-        let c = new Fake({rootUrl});
+        let c = new Fake({rootUrl, serviceDiscoveryScheme});
         await c.query();
       });
 

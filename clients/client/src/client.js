@@ -37,6 +37,23 @@ let DEFAULT_AGENTS = {
 // tests won't terminate (if they are configured with keepAlive)
 exports.agents = DEFAULT_AGENTS;
 
+// By default, all requests to a service go the the rootUrl and
+// are load-balanced to services from there. However, if running
+// inside a kubernetes cluster, you can opt to
+// use kubernetes DNS to access other Taskcluster services
+// These are something like `my-svc.my-namespace.svc.cluster-domain.example`
+// but k8s also sets up search domains where the first one is
+// `my-namespace.svc.cluster-domain.example` so you can just make a
+// request to `my-svc` and it will route correctly
+const SERVICE_DISCOVERY_SCHEMES = ['default', 'k8s-dns'];
+let DEFAULT_SERVICE_DISCOVERY_SCHEME = 'default';
+exports.setServiceDiscoveryScheme = scheme => {
+  if (!SERVICE_DISCOVERY_SCHEMES.includes(scheme)) {
+    throw new Error(`Invalid Taskcluster client service discovery scheme: ${scheme}`);
+  }
+  DEFAULT_SERVICE_DISCOVERY_SCHEME = scheme;
+};
+
 // Default options stored globally for convenience
 let _defaultOptions = {
   credentials: {
@@ -60,6 +77,9 @@ let _defaultOptions = {
 
   // The prefix of any api calls. e.g. https://taskcluster.net/api/
   rootUrl: undefined,
+
+  // See above for what this means
+  serviceDiscoveryScheme: undefined,
 
   // Fake methods, if given this will produce a fake client object.
   // Methods called won't make expected HTTP requests, but instead:
@@ -182,8 +202,13 @@ exports.createClient = function(reference, name) {
       serviceName,
       serviceVersion: 'v1',
     }, _defaultOptions);
+    assert(this._options.rootUrl, 'Must provide a rootUrl'); // We always assert this even with service discovery
 
-    assert(this._options.rootUrl, 'Must provide a rootUrl');
+    const serviceDiscoveryScheme = options.serviceDiscoveryScheme || DEFAULT_SERVICE_DISCOVERY_SCHEME;
+
+    if (serviceDiscoveryScheme === 'k8s-dns') {
+      this._options.rootUrl = `http://taskcluster-${serviceName}`; // Notice this is http, not https
+    }
 
     this._options.rootUrl = this._options.rootUrl.replace(/\/$/, '');
 

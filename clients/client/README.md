@@ -442,6 +442,15 @@ myClient.myMethod(arg1, arg2, payload).then(function(result) {
 });
 ```
 
+### Internal Service Discovery
+
+To allow for more efficient routing between Taskcluster services running alongside each other in
+a Kubernetes cluster, this library has configurable support for using
+[DNS for Services and Pods](https://kubernetes.io/docs/concepts/services-networking/dns-pod-service/). To
+configure this on all clients created from this library, use `taskcluster.setServiceDiscoveryScheme('k8s-dns')`.
+To configure this for an instantiation of a client class **or to override the setting back to default** you
+can `new taskcluster.Auth({..., serviceDiscoveryScheme: 'k8s-dns'});`. The value for default behavior is `default`.
+
 ## Compatibility
 
 This library is co-versioned with Taskcluster itself.
