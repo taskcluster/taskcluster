@@ -3,6 +3,7 @@ const PulseIterator = require('./PulseIterator');
 const MessageIterator = require('./MessageIterator');
 const EventIterator = require('./EventIterator');
 const Subscription = require('./Subscription');
+const pSynchronize = require('p-synchronize');
 
 module.exports = class PulseEngine {
   /* Operation:
@@ -30,8 +31,8 @@ module.exports = class PulseEngine {
     this.reset();
     this.client.onConnected(conn => this.connected(conn));
 
-    // Promise that we're done reloading, used to serialize reload operations
-    this._reloadDone = Promise.resolve();
+    const sync = pSynchronize();
+    this.innerReconcileSubscriptions = sync(() => this._innerReconcileSubscriptions());
   }
 
   reset() {
@@ -88,36 +89,25 @@ module.exports = class PulseEngine {
     });
   }
 
-  /**
-   * Execute async `reloader` function, after any earlier async `reloader`
-   * function given this function has completed. Ensuring that the `reloader`
-   * functions are executed in serial.
-   */
-  _syncReload(reloader) {
-    return this._reloadDone = this._reloadDone.catch(() => {}).then(reloader);
-  }
+  async _innerReconcileSubscriptions() {
+    const { connection, client } = this;
 
-  innerReconcileSubscriptions() {
-    return this._syncReload(async () => {
-      const { connection, client } = this;
+    // if there's no connection, there's nothing to do; reconciliation
+    // will occur again on the next connection
+    if (!connection) {
+      return;
+    }
 
-      // if there's no connection, there's nothing to do; reconciliation
-      // will occur again on the next connection
-      if (!connection) {
-        return;
-      }
+    await Promise.all(
+      Array.from(this.subscriptions.values()).map(sub =>
+        sub.reconcile(client, connection),
+      ),
+    );
 
-      await Promise.all(
-        Array.from(this.subscriptions.values()).map(sub =>
-          sub.reconcile(client, connection),
-        ),
-      );
-
-      // clean up any garbage
-      Array.from(this.subscriptions.values())
-        .filter(sub => sub.garbage)
-        .forEach(sub => this.subscriptions.delete(sub.subscriptionId));
-    });
+    // clean up any garbage
+    Array.from(this.subscriptions.values())
+      .filter(sub => sub.garbage)
+      .forEach(sub => this.subscriptions.delete(sub.subscriptionId));
   }
 
   /**

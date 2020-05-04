@@ -5,6 +5,7 @@ const glob = require('glob');
 const yaml = require('js-yaml');
 const stringify = require('json-stable-stringify');
 const exec = promisify(require('child_process').execFile);
+const pSynchronize = require('p-synchronize');
 
 const readFile = promisify(fs.readFile);
 const writeFile = promisify(fs.writeFile);
@@ -58,23 +59,18 @@ exports.writeRepoJSON = async (filename, data) => {
 
 /**
  * Modify a file in-place in the current working copy, calling `await modifier(contents)`.
- * This function is "sequentialized" so that concurrent modifications do not interfere.
+ * This function is "synchronized" so that concurrent modifications do not interfere.
  *
  * The file is assumed to be utf-8.
  */
-const modifyRepoFile = async (filename, modifier) => {
+const modifySync = pSynchronize();
+exports.modifyRepoFile = modifySync(async (filename, modifier) => {
   const contents = await readFile(
     path.join(REPO_ROOT, filename),
     {encoding: 'utf8'});
   const modified = await modifier(contents);
   await writeFile(filename, modified, {encoding: 'utf8'});
-};
-
-let modifyRepoPromise = Promise.resolve();
-exports.modifyRepoFile = (filename, modifier) => {
-  modifyRepoPromise = modifyRepoPromise.catch(() => {}).then(() => modifyRepoFile(filename, modifier));
-  return modifyRepoPromise;
-};
+});
 
 /**
  * Remove a file from the repo
