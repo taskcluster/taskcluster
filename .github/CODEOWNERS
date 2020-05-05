@@ -17,10 +17,6 @@ go.sum @taskcluster/worker-reviewers
 # python
 clients/client-py @taskcluster/python-reviewers
 
-# db stuff
-db/versions @taskcluster/security-folks
-libraries/postgres/src/Database.js
-
 # exceptions to the above
 ui/docs @taskcluster/services-reviewers
 
