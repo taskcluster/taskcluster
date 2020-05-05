@@ -2,7 +2,7 @@
  * If a bit of context supports per-request configuration, we
  * make sure to set that up here
  */
-const perRequestContext = ({context}) => {
+const perRequestContext = ({entry, context}) => {
   return (req, res, next) => {
     const cache = {};
     req.tcContext = new Proxy(context, {
@@ -14,7 +14,11 @@ const perRequestContext = ({context}) => {
         if (cache[prop]) {
           return cache[prop];
         }
-        cache[prop] = val.taskclusterPerRequestInstance({traceId: req.traceId, requestId: req.requestId});
+        cache[prop] = val.taskclusterPerRequestInstance({
+          entryName: entry.name,
+          traceId: req.traceId,
+          requestId: req.requestId,
+        });
         return cache[prop];
       },
       set(target, prop, value) {

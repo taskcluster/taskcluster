@@ -172,6 +172,7 @@ A monitor instance provides the following functions:
 If you leave out `type`, the first argument will be used for `fields`.
 If fields is a string or number, we will log it in a generic message.
 If fields contains a `traceId` key, it will be moved to the top-level of the log structure.
+If fields contains a `requestId` key, it will be moved to the top-level of the log structure.
 This is useful for something like simple debug logging, that can be enabled in production when necessary.
 For example,
 

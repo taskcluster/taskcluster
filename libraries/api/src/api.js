@@ -94,7 +94,7 @@ class API {
     this.entries.forEach(entry => {
       const middleware = [
         entry.route,
-        perRequestContext({context}),
+        perRequestContext({entry, context}),
         logRequest({builder: this.builder, entry}),
         buildReportErrorMethod(),
         parseBody({inputLimit}),

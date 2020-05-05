@@ -1,3 +1,4 @@
+const _ = require('lodash');
 const assert = require('assert');
 const {serializeError} = require('serialize-error');
 const {Logger} = require('./logger');
@@ -82,10 +83,16 @@ class Monitor {
    * Get a prefixed child monitor
    */
   childMonitor(name, metadata = {}) {
-    assert(name, 'Child monitor name is required');
+    assert(name || Object.keys(metadata).length > 0, 'Child monitor name is required if no metadata');
+    if (_.isString(name)) {
+      name = this.name.concat([name]);
+    } else {
+      metadata = name;
+      name = this.name;
+    }
     return new Monitor({
       manager: this.manager,
-      name: this.name.concat([name]),
+      name,
       metadata: {...this.metadata, ...metadata},
       verify: this.verify,
       fake: this.fake,
@@ -97,6 +104,10 @@ class Monitor {
       processName: this.processName,
       monitorProcess: false,
     });
+  }
+
+  taskclusterPerRequestInstance({requestId, traceId}) {
+    return this.childMonitor({traceId, requestId});
   }
 
   /*

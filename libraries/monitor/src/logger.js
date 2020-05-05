@@ -85,6 +85,10 @@ class Logger {
       this.traceId = metadata.traceId;
       delete metadata.traceId;
     }
+    if (metadata.requestId) {
+      this.requestId = metadata.requestId;
+      delete metadata.requestId;
+    }
     this.metadata = null;
     if (Object.keys(metadata).length > 0) {
       this.metadata = metadata;
@@ -158,6 +162,12 @@ class Logger {
       delete fields.traceId;
     }
 
+    let requestId = this.requestId;
+    if (fields.requestId) {
+      requestId = fields.requestId;
+      delete fields.requestId;
+    }
+
     this.destination.write(stringify({
       Timestamp: Date.now() * 1000000,
       Type: type,
@@ -169,6 +179,7 @@ class Logger {
       Fields: fields,
       message, // will be omitted if undefined
       traceId, // will be omitted if undefined
+      requestId, // will be omitted if undefined
       severity: LEVELS_REVERSE[level], // for stackdriver
       serviceContext: { // for stackdriver
         service: this.service,

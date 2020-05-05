@@ -3,7 +3,7 @@ const SchemaSet = require('taskcluster-lib-validate');
 const {defaultMonitorManager} = require('taskcluster-lib-monitor');
 const assert = require('assert');
 const path = require('path');
-const express = require('express');
+const App = require('taskcluster-lib-app');
 
 let runningServer = null;
 
@@ -47,17 +47,12 @@ exports.setupServer = async ({builder, context}) => {
     context,
   });
 
-  // Create application
-  const app = express();
-  api.express(app);
-
-  return await new Promise(function(accept, reject) {
-    const server = app.listen(23525);
-    server.once('listening', function() {
-      runningServer = server;
-      accept(server);
-    });
-    server.once('error', reject);
+  runningServer = await App({
+    port: 23525,
+    env: 'development',
+    forceSSL: false,
+    trustProxy: false,
+    apis: [api],
   });
 };
 
