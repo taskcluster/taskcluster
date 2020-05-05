@@ -59,6 +59,7 @@ suite(testing.suiteName(), function() {
         .buffer();
       const body = JSON.parse(res.text);
       assert(isUUID.v4(res.headers['x-for-trace-id']));
+      assert(isUUID.v4(res.headers['x-for-request-id']));
       assert(isUUID.v4(body.valueSet));
     });
 

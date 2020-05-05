@@ -1,4 +1,6 @@
 /**
+ * If a bit of context supports per-request configuration, we
+ * make sure to set that up here
  */
 const perRequestContext = ({context}) => {
   return (req, res, next) => {
@@ -12,7 +14,7 @@ const perRequestContext = ({context}) => {
         if (cache[prop]) {
           return cache[prop];
         }
-        cache[prop] = val.taskclusterPerRequestInstance({traceId: req.traceId});
+        cache[prop] = val.taskclusterPerRequestInstance({traceId: req.traceId, requestId: req.requestId});
         return cache[prop];
       },
       set(target, prop, value) {

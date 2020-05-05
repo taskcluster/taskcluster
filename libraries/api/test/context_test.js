@@ -178,7 +178,7 @@ suite(testing.suiteName(), function() {
       category: 'API Library',
       description: 'Place we can call to test something',
     }, function(req, res) {
-      res.status(200).json({foo: this.foo()});
+      res.status(200).json(this.foo());
     });
 
     let fooFake = undefined;
@@ -188,8 +188,8 @@ suite(testing.suiteName(), function() {
       schemaset,
       context: {
         foo: {
-          taskclusterPerRequestInstance: ({traceId}) => {
-            fooFake = sinon.fake.returns(traceId);
+          taskclusterPerRequestInstance: ({traceId, requestId}) => {
+            fooFake = sinon.fake.returns({foo: traceId, bar: requestId});
             return fooFake;
           },
         },
@@ -211,6 +211,7 @@ suite(testing.suiteName(), function() {
       .set('x-taskcluster-trace-id', 'foo/bar')
       .then(function(res) {
         assert.equal(res.body.foo, 'foo/bar');
+        assert(res.body.bar);
       }).then(function() {
         return server.terminate();
       }, function(err) {

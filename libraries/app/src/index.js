@@ -106,7 +106,7 @@ const app = async (options) => {
     next();
   });
 
-  // attach request-id to request object and response
+  // attach trace-id and request-id to request object and response
   app.use((req, res, next) => {
     let traceId;
     // These are split out into if/else in case we want
@@ -121,7 +121,9 @@ const app = async (options) => {
       traceId = uuidv4();
     }
     req.traceId = traceId;
+    req.requestId = uuidv4();
     res.setHeader('x-for-trace-id', traceId);
+    res.setHeader('x-for-request-id', req.requestId);
     next();
   });
 
