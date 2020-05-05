@@ -10,7 +10,7 @@ const callHandler = ({entry, context, monitor}) => {
   assert(entry.handler, 'No handler is provided');
   return (req, res, next) => {
     Promise.resolve(null).then(() => {
-      return entry.handler.call(context, req, res);
+      return entry.handler.call(req.tcContext, req, res);
     }).then(() => {
       if (!req.public && !req.hasAuthed) {
         // Note: This will not fail the request since a response has already

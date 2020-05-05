@@ -4,6 +4,7 @@ const {APIBuilder} = require('../');
 const assert = require('assert');
 const request = require('superagent');
 const slugid = require('slugid');
+const sinon = require('sinon');
 const path = require('path');
 const helper = require('./helper');
 const testing = require('taskcluster-lib-testing');
@@ -153,5 +154,71 @@ suite(testing.suiteName(), function() {
       throw err;
     }
     assert(false, 'Expected an error!');
+  });
+
+  test('Context entries that take per-request data are updated', async () => {
+    const builder = new APIBuilder({
+      title: 'Test Api',
+      description: 'Another test api',
+      context: ['foo'],
+      serviceName: 'test',
+      apiVersion: 'v1',
+    });
+
+    const schemaset = new SchemaSet({
+      serviceName: 'test',
+      folder: path.join(__dirname, 'schemas'),
+    });
+
+    builder.declare({
+      method: 'get',
+      route: '/context/',
+      name: 'getContext',
+      title: 'Test End-Point',
+      category: 'API Library',
+      description: 'Place we can call to test something',
+    }, function(req, res) {
+      res.status(200).json({foo: this.foo()});
+    });
+
+    let fooFake = undefined;
+    const api = await builder.build({
+      rootUrl,
+      monitor: helper.monitor,
+      schemaset,
+      context: {
+        foo: {
+          taskclusterPerRequestInstance: ({traceId}) => {
+            fooFake = sinon.fake.returns(traceId);
+            return fooFake;
+          },
+        },
+      },
+    });
+    // See that it is lazily loaded so it is not instantiated yet
+    assert.equal(fooFake, undefined);
+
+    const server = await App({
+      port: 60872,
+      env: 'development',
+      forceSSL: false,
+      trustProxy: false,
+      apis: [api],
+    });
+
+    await request
+      .get('http://localhost:60872/api/test/v1/context')
+      .set('x-taskcluster-trace-id', 'foo/bar')
+      .then(function(res) {
+        assert.equal(res.body.foo, 'foo/bar');
+      }).then(function() {
+        return server.terminate();
+      }, function(err) {
+        return server.terminate().then(function() {
+          throw err;
+        });
+      });
+
+    assert.equal(fooFake.callCount, 1);
   });
 });

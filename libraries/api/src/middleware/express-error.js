@@ -12,12 +12,12 @@ exports.isProduction = process.env.NODE_ENV === 'production';
  * present must match the pattern given in `options` or the request will be
  * rejected with a 400 error message.
  */
-const expressError = ({errorCodes, entry, monitor}) => {
+const expressError = ({errorCodes, entry}) => {
   const {name: method, cleanPayload} = entry;
   return (err, req, res, next) => {
 
     if (res.headersSent) {
-      monitor.reportError(new Error('API method implementation called res.send twice'));
+      req.tcContext.monitor.reportError(new Error('API method implementation called res.send twice'));
       // nothing more we can do here, since we have already sent the HTTP response
       return;
     }
@@ -33,7 +33,7 @@ const expressError = ({errorCodes, entry, monitor}) => {
         payload = cleanPayload(payload);
       }
       err.payload = payload;
-      monitor.reportError(err);
+      req.tcContext.monitor.reportError(err);
 
       // then formulate a generic error to send to the HTTP client
       const details = {incidentId};
@@ -71,7 +71,7 @@ const expressError = ({errorCodes, entry, monitor}) => {
       err.badMessage = message;
       err.badCode = code;
       err.details = details;
-      monitor.reportError(err);
+      req.tcContext.monitor.reportError(err);
       message = newMessage;
     }
 

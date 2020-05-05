@@ -10,7 +10,7 @@ const assert = require('assert');
  * present must match the pattern given in `options` or the request will be
  * rejected with a 400 error message.
  */
-const parameterValidator = ({context, entry}) => {
+const parameterValidator = ({entry}) => {
   const {params} = entry;
 
   // Validate parameters
@@ -31,7 +31,7 @@ const parameterValidator = ({context, entry}) => {
           );
         }
       } else if (pattern instanceof Function) {
-        const msg = pattern.call(context, val);
+        const msg = pattern.call(req.tcContext, val);
         if (typeof msg === 'string') {
           errors.push(
             'URL parameter \'' + param + '\' given  as \'' + val + '\' is not ' +

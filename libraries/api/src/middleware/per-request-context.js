@@ -1,0 +1,30 @@
+/**
+ */
+const perRequestContext = ({context}) => {
+  return (req, res, next) => {
+    const cache = {};
+    req.tcContext = new Proxy(context, {
+      get(target, prop) {
+        const val = target[prop];
+        if (val.taskclusterPerRequestInstance === undefined) {
+          return val;
+        }
+        if (cache[prop]) {
+          return cache[prop];
+        }
+        cache[prop] = val.taskclusterPerRequestInstance({traceId: req.traceId});
+        return cache[prop];
+      },
+      set(target, prop, value) {
+        throw new Error('Cannot set values in context inside a handler!');
+      },
+      deleteProperty(target, prop) {
+        throw new Error('Cannot delete values in context inside a handler!');
+      },
+    });
+
+    next();
+  };
+};
+
+exports.perRequestContext = perRequestContext;
