@@ -72,10 +72,7 @@ export default class App extends Component {
 
   httpLink = createHttpLink({
     uri: absoluteUrl(window.env.GRAPHQL_ENDPOINT),
-    credentials:
-      window.env.TASKCLUSTER_ROOT_URL === 'https://taskcluster.net'
-        ? 'include'
-        : 'same-origin',
+    credentials: 'same-origin',
   });
 
   wsLink = new WebSocketLink({
