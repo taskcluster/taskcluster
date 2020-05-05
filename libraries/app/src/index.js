@@ -168,4 +168,4 @@ const app = async (options) => {
 };
 
 // Export app creation utility
-module.exports = app;
+module.exports = {App: app};

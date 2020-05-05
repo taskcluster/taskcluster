@@ -3,7 +3,7 @@ const request = require('superagent');
 const hawk = require('@hapi/hawk');
 const assert = require('assert');
 const SchemaSet = require('taskcluster-lib-validate');
-const makeApp = require('taskcluster-lib-app');
+const {App} = require('taskcluster-lib-app');
 const {APIBuilder} = require('../');
 const helper = require('./helper');
 const testing = require('taskcluster-lib-testing');
@@ -54,7 +54,7 @@ suite(testing.suiteName(), function() {
     });
 
     // Create application
-    _apiServer = await makeApp({
+    _apiServer = await App({
       port: 23526,
       env: 'development',
       forceSSL: false,

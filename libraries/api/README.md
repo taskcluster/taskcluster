@@ -449,7 +449,7 @@ and the relevant loader components are defined like this:
 
 ```js
 const builder = require('./api');
-const App = require('taskcluster-lib-app');
+const {App} = require('taskcluster-lib-app');
 
 let load = loader({
   // ...

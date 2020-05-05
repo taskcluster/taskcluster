@@ -1,5 +1,5 @@
 const SchemaSet = require('taskcluster-lib-validate');
-const App = require('taskcluster-lib-app');
+const {App} = require('taskcluster-lib-app');
 const {APIBuilder} = require('../');
 const assert = require('assert');
 const request = require('superagent');

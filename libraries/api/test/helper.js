@@ -3,7 +3,7 @@ const SchemaSet = require('taskcluster-lib-validate');
 const {defaultMonitorManager} = require('taskcluster-lib-monitor');
 const assert = require('assert');
 const path = require('path');
-const App = require('taskcluster-lib-app');
+const {App} = require('taskcluster-lib-app');
 
 let runningServer = null;
 

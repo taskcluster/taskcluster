@@ -8,7 +8,7 @@ The usage is pretty simple.  It is generally invoked in a
 stanza named server, like this:
 
 ```js
-const App = require('taskcluster-lib-app');
+const {App} = require('taskcluster-lib-app');
 ...
   server: {
     requires: ['cfg', 'api', 'docs'],
