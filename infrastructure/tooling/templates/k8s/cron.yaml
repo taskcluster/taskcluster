@@ -27,6 +27,8 @@ spec:
             env:
               - name: TASKCLUSTER_ROOT_URL
                 value: '{{ .Values.rootUrl }}'
+              - name: USE_KUBERNETES_DNS_SERVICE_DISCOVERY
+                value: 'true'
               - name: NODE_ENV
                 value: 'production'
             envFrom:

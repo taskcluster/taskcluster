@@ -12,3 +12,7 @@ if (process.env.NEW_RELIC && process.env.NEW_RELIC !== '') {
   delete process.env['NEW_RELIC'];
   require('newrelic');
 }
+
+if (process.env.USE_KUBERNETES_DNS_SERVICE_DISCOVERY) {
+  require('taskcluster-client').setServiceDiscoveryScheme('k8s-dns');
+}
