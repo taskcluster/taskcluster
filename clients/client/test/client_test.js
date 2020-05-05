@@ -322,6 +322,18 @@ suite(testing.suiteName(), function() {
         await client.get();
       });
 
+      test('GET public resource (sets traceId)', async () => {
+        const requestId = '123';
+        const traceId = '456';
+        nock(urlPrefix).get('/v1/get-test')
+          .reply(function() {
+            return [200, {traceId: this.req.headers['x-taskcluster-trace-id']}];
+          });
+        let c = new Fake({rootUrl, serviceDiscoveryScheme});
+        c = c.taskclusterPerRequestInstance({traceId, requestId});
+        assert.equal((await c.get()).traceId, '456');
+      });
+
       test('Simple GET (unauthorized)', async () => {
         nock(urlPrefix).get('/v1/get-test')
           .reply(403, insufficientScopesError);

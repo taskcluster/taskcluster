@@ -106,6 +106,10 @@ const makeRequest = exports.makeRequest = function(client, method, url, payload,
     req.agent(client._httpAgent);
   }
 
+  if (client._options.traceId) {
+    req.set('x-taskcluster-trace-id', client._options.traceId);
+  }
+
   // Timeout for each individual request.
   req.timeout(client._timeout);
 
@@ -289,6 +293,10 @@ exports.createClient = function(reference, name) {
   Client.prototype.use = function(optionsUpdates) {
     let options = _.defaults({}, optionsUpdates, this._options);
     return new Client(options);
+  };
+
+  Client.prototype.taskclusterPerRequestInstance = function({requestId, traceId}) {
+    return this.use({traceId});
   };
 
   // For each function entry create a method on the Client class
