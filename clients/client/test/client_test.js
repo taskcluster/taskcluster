@@ -178,6 +178,7 @@ suite(testing.suiteName(), function() {
     serviceDiscoveryK8sDns: {
       name: 'using k8s dns service discovery',
       urlPrefix: 'http://taskcluster-fake2/api/fake2',
+      trueUrlPrefix: 'https://example.not-there/api/fake2',
       Fake: taskcluster.createClient(referenceNameStyle),
       rootUrl: 'https://whatever.net',
       serviceDiscoveryScheme: 'k8s-dns',
@@ -196,6 +197,7 @@ suite(testing.suiteName(), function() {
     serviceDiscoveryK8sDnsDefault: {
       name: 'using k8s dns service discovery (default)',
       urlPrefix: 'http://taskcluster-fake2/api/fake2',
+      trueUrlPrefix: 'https://example.not-there/api/fake2',
       Fake: taskcluster.createClient(referenceNameStyle),
       rootUrl: 'https://whatever.net',
       serviceDiscoveryScheme: 'k8s-dns',
@@ -312,7 +314,7 @@ suite(testing.suiteName(), function() {
   };
 
   Object.keys(subjects).forEach(subject => {
-    const {name, urlPrefix, client, Fake, rootUrl, serviceDiscoveryScheme} = subjects[subject];
+    const {name, urlPrefix, trueUrlPrefix, client, Fake, rootUrl, serviceDiscoveryScheme} = subjects[subject];
     suite(name, () => {
       test('Simple GET', async () => {
         nock(urlPrefix).get('/v1/get-test')
@@ -455,161 +457,177 @@ suite(testing.suiteName(), function() {
       };
 
       // note that the signatures for buildSignedUrl are checked in creds_test.js
+      for (const cl of [
+        {
+          buildUrl: (...arg) => client.buildUrl(...arg),
+          buildSignedUrl: (...arg) => client.buildSignedUrl(...arg),
+          urlPrefix,
+          type: 'internal',
+        },
+        {
+          buildUrl: (...arg) => client.externalBuildUrl(...arg),
+          buildSignedUrl: (...arg) => client.externalBuildSignedUrl(...arg),
+          urlPrefix: trueUrlPrefix || urlPrefix,
+          type: 'external',
+        },
+      ]) {
+        suite(cl.type, function() {
+          test('BuildUrl', async () => {
+            let url = cl.buildUrl(client.get);
+            assert.equal(url, `${cl.urlPrefix}/v1/get-test`);
+          });
 
-      test('BuildUrl', async () => {
-        let url = client.buildUrl(client.get);
-        assert.equal(url, `${urlPrefix}/v1/get-test`);
-      });
+          test('BuildSignedUrl', async () => {
+            let url = cl.buildSignedUrl(client.get);
+            assertBewitUrl(url, `${cl.urlPrefix}/v1/get-test?bewit=XXX`);
+          });
 
-      test('BuildSignedUrl', async () => {
-        let url = client.buildSignedUrl(client.get);
-        assertBewitUrl(url, `${urlPrefix}/v1/get-test?bewit=XXX`);
-      });
+          test('BuildUrl with parameter', async () => {
+            let url = cl.buildUrl(client.param, 'test');
+            assert.equal(url, `${cl.urlPrefix}/v1/url-param/test/list`);
+          });
 
-      test('BuildUrl with parameter', async () => {
-        let url = client.buildUrl(client.param, 'test');
-        assert.equal(url, `${urlPrefix}/v1/url-param/test/list`);
-      });
+          test('BuildSignedUrl with parameter', async () => {
+            let url = cl.buildSignedUrl(client.param, 'test');
+            assertBewitUrl(url, `${cl.urlPrefix}/v1/url-param/test/list?bewit=XXX`);
+          });
 
-      test('BuildSignedUrl with parameter', async () => {
-        let url = client.buildSignedUrl(client.param, 'test');
-        assertBewitUrl(url, `${urlPrefix}/v1/url-param/test/list?bewit=XXX`);
-      });
+          test('BuildUrl with two parameters', async () => {
+            let url = cl.buildUrl(client.param2, 'test', 'te/st');
+            assert.equal(url, `${cl.urlPrefix}/v1/url-param2/test/te%2Fst/list`);
+          });
 
-      test('BuildUrl with two parameters', async () => {
-        let url = client.buildUrl(client.param2, 'test', 'te/st');
-        assert.equal(url, `${urlPrefix}/v1/url-param2/test/te%2Fst/list`);
-      });
+          test('BuildSignedUrl with two parameters', async () => {
+            let url = cl.buildSignedUrl(client.param2, 'test', 'te/st');
+            assertBewitUrl(url,
+              `${cl.urlPrefix}/v1/url-param2/test/te%2Fst/list?bewit=XXX`);
+          });
 
-      test('BuildSignedUrl with two parameters', async () => {
-        let url = client.buildSignedUrl(client.param2, 'test', 'te/st');
-        assertBewitUrl(url,
-          `${urlPrefix}/v1/url-param2/test/te%2Fst/list?bewit=XXX`);
-      });
+          test('BuildUrl with missing parameter', async () => {
+            try {
+              cl.buildUrl(client.param2, 'te/st');
+            } catch (err) {
+              return;
+            }
+            assert(false);
+          });
 
-      test('BuildUrl with missing parameter', async () => {
-        try {
-          client.buildUrl(client.param2, 'te/st');
-        } catch (err) {
-          return;
-        }
-        assert(false);
-      });
+          test('BuildSignedUrl with missing parameter', async () => {
+            try {
+              cl.buildSignedUrl(client.param2, 'te/st');
+            } catch (err) {
+              return;
+            }
+            assert(false);
+          });
 
-      test('BuildSignedUrl with missing parameter', async () => {
-        try {
-          client.buildSignedUrl(client.param2, 'te/st');
-        } catch (err) {
-          return;
-        }
-        assert(false);
-      });
+          test('BuildUrl with query-string', async () => {
+            let url = cl.buildUrl(client.query, {option: 2});
+            assert.equal(url, `${cl.urlPrefix}/v1/query/test?option=2`);
+          });
 
-      test('BuildUrl with query-string', async () => {
-        let url = client.buildUrl(client.query, {option: 2});
-        assert.equal(url, `${urlPrefix}/v1/query/test?option=2`);
-      });
+          test('BuildSignedUrl with query-string', async () => {
+            let url = cl.buildSignedUrl(client.query, {option: 2});
+            assertBewitUrl(url, `${cl.urlPrefix}/v1/query/test?option=2&bewit=XXX`);
+          });
 
-      test('BuildSignedUrl with query-string', async () => {
-        let url = client.buildSignedUrl(client.query, {option: 2});
-        assertBewitUrl(url, `${urlPrefix}/v1/query/test?option=2&bewit=XXX`);
-      });
+          test('BuildUrl with empty query-string', async () => {
+            let url = cl.buildUrl(client.query, {});
+            assert.equal(url, `${cl.urlPrefix}/v1/query/test`);
+          });
 
-      test('BuildUrl with empty query-string', async () => {
-        let url = client.buildUrl(client.query, {});
-        assert.equal(url, `${urlPrefix}/v1/query/test`);
-      });
+          test('BuildSignedUrl with query-string', async () => {
+            let url = cl.buildSignedUrl(client.query, {});
+            assertBewitUrl(url, `${cl.urlPrefix}/v1/query/test?bewit=XXX`);
+          });
 
-      test('BuildSignedUrl with query-string', async () => {
-        let url = client.buildSignedUrl(client.query, {});
-        assertBewitUrl(url, `${urlPrefix}/v1/query/test?bewit=XXX`);
-      });
+          test('BuildUrl with query-string (wrong key)', async () => {
+            try {
+              cl.buildUrl(client.query, {wrongKey: 2});
+            } catch (err) {
+              return;
+            }
+            assert(false);
+          });
 
-      test('BuildUrl with query-string (wrong key)', async () => {
-        try {
-          client.buildUrl(client.query, {wrongKey: 2});
-        } catch (err) {
-          return;
-        }
-        assert(false);
-      });
+          test('BuildSignedUrl with query-string (wrong key)', async () => {
+            try {
+              cl.buildSignedUrl(client.query, {wrongKey: 2});
+            } catch (err) {
+              return;
+            }
+            assert(false);
+          });
 
-      test('BuildSignedUrl with query-string (wrong key)', async () => {
-        try {
-          client.buildSignedUrl(client.query, {wrongKey: 2});
-        } catch (err) {
-          return;
-        }
-        assert(false);
-      });
+          test('BuildUrl with param and query-string', async () => {
+            let url = cl.buildUrl(client.paramQuery, 'test', {option: 2});
+            assert.equal(url, `${cl.urlPrefix}/v1/param-query/test?option=2`);
+          });
 
-      test('BuildUrl with param and query-string', async () => {
-        let url = client.buildUrl(client.paramQuery, 'test', {option: 2});
-        assert.equal(url, `${urlPrefix}/v1/param-query/test?option=2`);
-      });
+          test('BuildSignedUrl with param and query-string', async () => {
+            let url = cl.buildSignedUrl(client.paramQuery, 'test', {option: 2});
+            assertBewitUrl(url,
+              `${cl.urlPrefix}/v1/param-query/test?option=2&bewit=XXX`);
+          });
 
-      test('BuildSignedUrl with param and query-string', async () => {
-        let url = client.buildSignedUrl(client.paramQuery, 'test', {option: 2});
-        assertBewitUrl(url,
-          `${urlPrefix}/v1/param-query/test?option=2&bewit=XXX`);
-      });
+          test('BuildUrl with param and no query (when supported)', async () => {
+            let url = cl.buildUrl(client.paramQuery, 'test', {option: 34});
+            assert.equal(url, `${cl.urlPrefix}/v1/param-query/test?option=34`);
+          });
 
-      test('BuildUrl with param and no query (when supported)', async () => {
-        let url = client.buildUrl(client.paramQuery, 'test', {option: 34});
-        assert.equal(url, `${urlPrefix}/v1/param-query/test?option=34`);
-      });
+          test('BuildSignedUrl with param and no query (when supported)', async () => {
+            let url = cl.buildSignedUrl(client.paramQuery, 'test', {option: 34});
+            assertBewitUrl(url,
+              `${cl.urlPrefix}/v1/param-query/test?option=34&bewit=XXX`);
+          });
 
-      test('BuildSignedUrl with param and no query (when supported)', async () => {
-        let url = client.buildSignedUrl(client.paramQuery, 'test', {option: 34});
-        assertBewitUrl(url,
-          `${urlPrefix}/v1/param-query/test?option=34&bewit=XXX`);
-      });
+          test('BuildUrl with param and empty query', async () => {
+            let url = cl.buildUrl(client.paramQuery, 'test', {});
+            assert.equal(url, `${cl.urlPrefix}/v1/param-query/test`);
+          });
 
-      test('BuildUrl with param and empty query', async () => {
-        let url = client.buildUrl(client.paramQuery, 'test', {});
-        assert.equal(url, `${urlPrefix}/v1/param-query/test`);
-      });
+          test('BuildSignedUrl with param and empty query', async () => {
+            let url = cl.buildSignedUrl(client.paramQuery, 'test', {});
+            assertBewitUrl(url, `${cl.urlPrefix}/v1/param-query/test?bewit=XXX`);
+          });
 
-      test('BuildSignedUrl with param and empty query', async () => {
-        let url = client.buildSignedUrl(client.paramQuery, 'test', {});
-        assertBewitUrl(url, `${urlPrefix}/v1/param-query/test?bewit=XXX`);
-      });
+          test('BuildUrl with missing parameter, but query options', async () => {
+            try {
+              cl.buildUrl(client.paramQuery, {option: 2});
+            } catch (err) {
+              return;
+            }
+            assert(false);
+          });
 
-      test('BuildUrl with missing parameter, but query options', async () => {
-        try {
-          client.buildUrl(client.paramQuery, {option: 2});
-        } catch (err) {
-          return;
-        }
-        assert(false);
-      });
+          test('BuildUrl with missing parameter, but query options', async () => {
+            try {
+              cl.buildUrl(client.paramQuery, {option: 2});
+            } catch (err) {
+              return;
+            }
+            assert(false);
+          });
 
-      test('BuildUrl with missing parameter, but query options', async () => {
-        try {
-          client.buildUrl(client.paramQuery, {option: 2});
-        } catch (err) {
-          return;
-        }
-        assert(false);
-      });
+          test('BuildUrl for missing method', async () => {
+            try {
+              cl.buildUrl('test');
+            } catch (err) {
+              return;
+            }
+            assert(false);
+          });
 
-      test('BuildUrl for missing method', async () => {
-        try {
-          client.buildUrl('test');
-        } catch (err) {
-          return;
-        }
-        assert(false);
-      });
-
-      test('buildSignedUrl for missing method', async () => {
-        try {
-          client.buildSignedUrl('test');
-        } catch (err) {
-          return;
-        }
-        assert(false);
-      });
+          test('buildSignedUrl for missing method', async () => {
+            try {
+              cl.buildSignedUrl('test');
+            } catch (err) {
+              return;
+            }
+            assert(false);
+          });
+        });
+      }
     });
   });
 

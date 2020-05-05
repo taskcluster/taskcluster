@@ -177,11 +177,19 @@ console.log(result.status);
 });
 ```
 
-### Generating URLs
+### Generating URLs (Internal and External)
+
+For the following section, there are 2 internal and 2 external functions. The
+external functions should be used when a built url is leaving the deployment. One
+example would be when it results in a redirect to an artifact for users.
+
+|          | Unsigned           | Signed                   |
+| Internal | `buildUrl`         | `buildSignedUrl`         |
+| External | `externalBuildUrl` | `externalBuildSignedUrl` |
 
 You can build a URL for any API method, although this feature is
 mostly useful for request that don't require any authentication. To construct a
-url for a request use the `buildUrl` method, as illustrated in the following
+url for a request use the `buildUrl`/`externalBuildUrl` method, as illustrated in the following
 example:
 
 ```js

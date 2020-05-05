@@ -48,9 +48,6 @@ exports.agents = DEFAULT_AGENTS;
 const SERVICE_DISCOVERY_SCHEMES = ['default', 'k8s-dns'];
 let DEFAULT_SERVICE_DISCOVERY_SCHEME = 'default';
 exports.setServiceDiscoveryScheme = scheme => {
-  if (!SERVICE_DISCOVERY_SCHEMES.includes(scheme)) {
-    throw new Error(`Invalid Taskcluster client service discovery scheme: ${scheme}`);
-  }
   DEFAULT_SERVICE_DISCOVERY_SCHEME = scheme;
 };
 
@@ -203,14 +200,17 @@ exports.createClient = function(reference, name) {
       serviceVersion: 'v1',
     }, _defaultOptions);
     assert(this._options.rootUrl, 'Must provide a rootUrl'); // We always assert this even with service discovery
+    this._options.rootUrl = this._options.rootUrl.replace(/\/$/, '');
+    this._options._trueRootUrl = this._options.rootUrl.replace(/\/$/, ''); // Useful for buildUrl/buildSignedUrl in certain cases
 
     const serviceDiscoveryScheme = options.serviceDiscoveryScheme || DEFAULT_SERVICE_DISCOVERY_SCHEME;
+    if (!SERVICE_DISCOVERY_SCHEMES.includes(serviceDiscoveryScheme)) {
+      throw new Error(`Invalid Taskcluster client service discovery scheme: ${serviceDiscoveryScheme}`);
+    }
 
     if (serviceDiscoveryScheme === 'k8s-dns') {
       this._options.rootUrl = `http://taskcluster-${serviceName}`; // Notice this is http, not https
     }
-
-    this._options.rootUrl = this._options.rootUrl.replace(/\/$/, '');
 
     if (this._options.stats || this._options.monitor) {
       throw new Error('monitoring client calls is no longer supported');
@@ -520,11 +520,7 @@ exports.createClient = function(reference, name) {
     };
   });
 
-  // Utility function to build the request URL for given method and
-  // input parameters
-  Client.prototype.buildUrl = function() {
-    // Convert arguments to actual array
-    let args = Array.prototype.slice.call(arguments);
+  Client.prototype._buildUrl = function(rootUrl, args) {
     if (args.length === 0) {
       throw new Error('buildUrl(method, arg1, arg2, ...) takes a least one ' +
                         'argument!');
@@ -580,13 +576,20 @@ exports.createClient = function(reference, name) {
       }
     }
 
-    return tcUrl.api(this._options.rootUrl, this._options.serviceName, this._options.serviceVersion, endpoint) + query;
+    return tcUrl.api(rootUrl, this._options.serviceName, this._options.serviceVersion, endpoint) + query;
   };
 
-  // Utility function to construct a bewit URL for GET requests
-  Client.prototype.buildSignedUrl = function() {
-    // Convert arguments to actual array
-    let args = Array.prototype.slice.call(arguments);
+  // Utility functions to build the request URL for given method and
+  // input parameters. The first builds with whatever rootUrl currently
+  // is while the latter builds with trueRootUrl for sending to users
+  Client.prototype.buildUrl = function() {
+    return this._buildUrl(this._options.rootUrl, Array.prototype.slice.call(arguments));
+  };
+  Client.prototype.externalBuildUrl = function() {
+    return this._buildUrl(this._options._trueRootUrl, Array.prototype.slice.call(arguments));
+  };
+
+  Client.prototype._buildSignedUrl = function(builder, args) {
     if (args.length === 0) {
       throw new Error('buildSignedUrl(method, arg1, arg2, ..., [options]) ' +
                         'takes a least one argument!');
@@ -624,7 +627,7 @@ exports.createClient = function(reference, name) {
     }
 
     // Build URL
-    let requestUrl = this.buildUrl.apply(this, args);
+    let requestUrl = builder.apply(this, args);
 
     // Check that we have credentials
     if (!this._options.credentials.clientId) {
@@ -655,6 +658,15 @@ exports.createClient = function(reference, name) {
 
     // Return formatted URL
     return url.format(urlParts);
+  };
+
+  // Utility function to construct a bewit URL for GET requests. Same convention
+  // as unsigned buildUrl applies here too
+  Client.prototype.buildSignedUrl = function() {
+    return this._buildSignedUrl(this.buildUrl, Array.prototype.slice.call(arguments));
+  };
+  Client.prototype.externalBuildSignedUrl = function() {
+    return this._buildSignedUrl(this.externalBuildUrl, Array.prototype.slice.call(arguments));
   };
 
   // Return client class
