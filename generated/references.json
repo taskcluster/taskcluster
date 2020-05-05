@@ -12075,13 +12075,12 @@
           "version": 1
         },
         {
-          "description": "A GraphQL request has been received.",
+          "description": "A GraphQL request has been received. The traceId/request is at the top-level of the log message, above these fields.",
           "fields": {
             "operationName": "The name of the graphql query performed. If the operation is anonymous\n(i.e., the operation is query { ... } instead of query NamedQuery { ... })\n, then operationName is null.",
-            "query": "The graphQL query string",
-            "requestId": "A unique request ID for every incoming GraphQL request that the client receives."
+            "query": "The graphQL query string"
           },
-          "level": "info",
+          "level": "notice",
           "name": "requestReceived",
           "title": "Request Received",
           "type": "request-received",
