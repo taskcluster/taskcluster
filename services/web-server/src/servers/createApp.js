@@ -12,6 +12,7 @@ const credentials = require('./credentials');
 const oauth2AccessToken = require('./oauth2AccessToken');
 const oauth2 = require('./oauth2');
 const AzureSessionStore = require('../login/AzureSessionStore');
+const {traceMiddleware} = require('taskcluster-lib-app');
 
 module.exports = async ({ cfg, strategies, AuthorizationCode, AccessToken, auth, monitor, SessionStorage }) => {
   const app = express();
@@ -46,6 +47,7 @@ module.exports = async ({ cfg, strategies, AuthorizationCode, AccessToken, auth,
     },
   });
 
+  app.use(traceMiddleware);
   app.use(session({
     store: process.env.NODE_ENV === 'production' ?
       new SessionStore() :

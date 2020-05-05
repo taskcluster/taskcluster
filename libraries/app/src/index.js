@@ -12,6 +12,31 @@ const rootdir = require('app-root-dir');
 const fs = require('fs');
 
 /**
+ * Attach trace headers to requests. This is exported
+ * to be used in web-server as well sice it doesn't use
+ * lib-app.
+ */
+const traceMiddleware = (req, res, next) => {
+  let traceId;
+  // These are split out into if/else in case we want
+  // to do some extra processing to any of these
+  if (req.headers['x-taskcluster-trace-id']) {
+    traceId = req.headers['x-taskcluster-trace-id'];
+  } else if (req.headers['x-cloud-trace-context']) {
+    traceId = req.headers['x-cloud-trace-context'];
+  } else if (req.headers['x-amzn-trace-id']) {
+    traceId = req.headers['x-amzn-trace-id'];
+  } else {
+    traceId = uuidv4();
+  }
+  req.traceId = traceId;
+  req.requestId = uuidv4();
+  res.setHeader('x-for-trace-id', traceId);
+  res.setHeader('x-for-request-id', req.requestId);
+  next();
+};
+
+/**
  * Create server; this becomes a method of the `app` object, so `this`
  * refers to an Express app.
  */
@@ -107,25 +132,7 @@ const app = async (options) => {
   });
 
   // attach trace-id and request-id to request object and response
-  app.use((req, res, next) => {
-    let traceId;
-    // These are split out into if/else in case we want
-    // to do some extra processing to any of these
-    if (req.headers['x-taskcluster-trace-id']) {
-      traceId = req.headers['x-taskcluster-trace-id'];
-    } else if (req.headers['x-cloud-trace-context']) {
-      traceId = req.headers['x-cloud-trace-context'];
-    } else if (req.headers['x-amzn-trace-id']) {
-      traceId = req.headers['x-amzn-trace-id'];
-    } else {
-      traceId = uuidv4();
-    }
-    req.traceId = traceId;
-    req.requestId = uuidv4();
-    res.setHeader('x-for-trace-id', traceId);
-    res.setHeader('x-for-request-id', req.requestId);
-    next();
-  });
+  app.use(traceMiddleware);
 
   if (options.robotsTxt) {
     app.use('/robots.txt', (req, res) => {
@@ -168,4 +175,4 @@ const app = async (options) => {
 };
 
 // Export app creation utility
-module.exports = {App: app};
+module.exports = {App: app, traceMiddleware};
