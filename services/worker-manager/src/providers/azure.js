@@ -7,6 +7,7 @@ const crypto = require('crypto');
 const path = require('path');
 const fs = require('fs');
 const generator = require('generate-password');
+const {WorkerPool} = require('../data');
 
 const auth = require('@azure/ms-rest-nodeauth');
 const ComputeManagementClient = require('@azure/arm-compute').ComputeManagementClient;
@@ -591,17 +592,17 @@ class AzureProvider extends Provider {
       }
       return this.Worker.states.RUNNING;
     } catch (err) {
-      const {workerPoolId} = worker;
-      const workerPool = await this.WorkerPool.load({
-        workerPoolId,
-      }, true);
+      const workerPool = await WorkerPool.get(this.db, worker.workerPoolId);
       // we create multiple resources in order to provision a VM
       // if we catch an error we want to deprovision those resources
-      await workerPool.reportError({
-        kind: 'creation-error',
-        title: 'VM Creation Error',
-        description: err.message,
-      });
+      if (workerPool) {
+        await this.reportError({
+          workerPool,
+          kind: 'creation-error',
+          title: 'VM Creation Error',
+          description: err.message,
+        });
+      }
       return await this.removeWorker({worker});
     }
   }
@@ -662,14 +663,15 @@ class AzureProvider extends Provider {
         });
       } else {
         const {workerPoolId} = worker;
-        const workerPool = await this.WorkerPool.load({
-          workerPoolId,
-        }, true);
-        await workerPool.reportError({
-          kind: 'creation-error',
-          title: 'Encountered unknown VM provisioningState or powerStates',
-          description: `Unknown provisioningState ${provisioningState} or powerStates: ${powerStates}`,
-        });
+        const workerPool = await WorkerPool.get(this.db, workerPoolId);
+        if (workerPool) {
+          await this.reportError({
+            workerPool,
+            kind: 'creation-error',
+            title: 'Encountered unknown VM provisioningState or powerStates',
+            description: `Unknown provisioningState ${provisioningState} or powerStates: ${powerStates}`,
+          });
+        }
       }
     } catch (err) {
       if (err.statusCode !== 404) {
@@ -701,16 +703,14 @@ class AzureProvider extends Provider {
   async scanCleanup() {
     this.monitor.log.scanSeen({providerId: this.providerId, seen: this.seen});
     await Promise.all(Object.entries(this.seen).map(async ([workerPoolId, seen]) => {
-      const workerPool = await this.WorkerPool.load({
-        workerPoolId,
-      }, true);
+      const workerPool = await WorkerPool.get(this.db, workerPoolId);
 
       if (!workerPool) {
         return; // In this case, the workertype has been deleted so we can just move on
       }
 
       if (this.errors[workerPoolId].length) {
-        await Promise.all(this.errors[workerPoolId].map(error => workerPool.reportError(error)));
+        await Promise.all(this.errors[workerPoolId].map(error => this.reportError({workerPool, ...error})));
       }
     }));
   }

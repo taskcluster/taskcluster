@@ -9,6 +9,7 @@ const fakeAWS = require('./fake-aws');
 const fs = require('fs');
 const path = require('path');
 const taskcluster = require('taskcluster-client');
+const {WorkerPool} = require('../src/data');
 
 helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
   helper.withDb(mock, skipping);
@@ -28,27 +29,6 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
       ImageId: 'banana-123',
     },
     workerConfig: {foo: 5},
-  };
-  let workerPool = {
-    workerPoolId,
-    providerId,
-    description: 'none',
-    previousProviderIds: [],
-    created: new Date(),
-    lastModified: new Date(),
-    config: {
-      launchConfigs: [
-        defaultLaunchConfig,
-      ],
-      minCapacity: 1,
-      maxCapacity: 2,
-      lifecycle: {
-        registrationTimeout: 6000,
-      },
-    },
-    owner: 'whatever@example.com',
-    providerData: {},
-    emailOnError: false,
   };
   const defaultWorker = {
     workerPoolId,
@@ -82,11 +62,11 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
     provider = new AwsProvider({
       providerId,
       notify: await helper.load('notify'),
+      db: helper.db,
       monitor: (await helper.load('monitor')).childMonitor('aws'),
       estimator: await helper.load('estimator'),
       rootUrl: helper.rootUrl,
       Worker: helper.Worker,
-      WorkerPool: helper.WorkerPool,
       WorkerPoolError: helper.WorkerPoolError,
       providerConfig: {
         providerType: 'aws',
@@ -97,20 +77,49 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
       },
     });
 
-    workerPool = await helper.WorkerPool.create(workerPool);
-
     sinon.stub(aws, 'EC2').returns({
       ...fakeAWS.EC2,
       runInstances: fakeAWS.EC2.runInstances(),
       terminateInstances: fakeAWS.EC2.terminateInstances(),
     });
 
+    await helper.db.fns.delete_worker_pool(workerPoolId);
+
     await provider.setup();
   });
+
+  const makeWorkerPool = async (overrides = {}) => {
+    let workerPool = WorkerPool.fromApi({
+      workerPoolId,
+      providerId,
+      description: 'none',
+      previousProviderIds: [],
+      created: new Date(),
+      lastModified: new Date(),
+      config: {
+        launchConfigs: [
+          defaultLaunchConfig,
+        ],
+        minCapacity: 1,
+        maxCapacity: 2,
+        lifecycle: {
+          registrationTimeout: 6000,
+        },
+      },
+      owner: 'whatever@example.com',
+      providerData: {},
+      emailOnError: false,
+      ...overrides,
+    });
+    await workerPool.create(helper.db);
+
+    return workerPool;
+  };
 
   suite('AWS provider - provision', function() {
 
     test('positive test', async function() {
+      const workerPool = await makeWorkerPool();
       const now = Date.now();
       const workerInfo = {
         existingCapacity: 0,
@@ -134,8 +143,8 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
     });
 
     test('spawns an appropriate number of instances', async function() {
-      await workerPool.modify(wp => {
-        wp.config = {
+      const workerPool = await makeWorkerPool({
+        config: {
           launchConfigs: [
             {...defaultLaunchConfig, capacityPerInstance: 6},
             {...defaultLaunchConfig, capacityPerInstance: 6},
@@ -145,7 +154,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
           ],
           minCapacity: 34, // not a multiple of number of configs or capPerInstance
           maxCapacity: 34,
-        };
+        },
       });
       const workerInfo = {
         existingCapacity: 0,
@@ -160,13 +169,25 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
     });
 
     test('instance tags in launch spec - should merge them with our instance tags', async function() {
-      await workerPool.modify(wp => {
-        for (const lc of wp.config.launchConfigs) {
-          lc.launchConfig.TagSpecifications = [{
-            ResourceType: 'instance',
-            Tags: [{Key: 'mytag', Value: 'testy'}],
-          }];
-        }
+      const launchConfigOverrides = {
+        capacityPerInstance: 6,
+        TagSpecifications: [{
+          ResourceType: 'instance',
+          Tags: [{Key: 'mytag', Value: 'testy'}],
+        }],
+      };
+      const workerPool = await makeWorkerPool({
+        config: {
+          launchConfigs: [
+            {...defaultLaunchConfig, ...launchConfigOverrides},
+            {...defaultLaunchConfig, ...launchConfigOverrides},
+            {...defaultLaunchConfig, ...launchConfigOverrides},
+            {...defaultLaunchConfig, ...launchConfigOverrides},
+            {...defaultLaunchConfig, ...launchConfigOverrides},
+          ],
+          minCapacity: 34, // not a multiple of number of configs or capPerInstance
+          maxCapacity: 34,
+        },
       });
 
       const workerInfo = {
@@ -198,13 +219,25 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
     });
 
     test('no instance tags in launch spec, but other tags - should have 1 object per resource type', async function() {
-      await workerPool.modify(wp => {
-        for (const lc of wp.config.launchConfigs) {
-          lc.launchConfig.TagSpecifications = [{
-            ResourceType: 'launch-template',
-            Tags: [{Key: 'fruit', Value: 'banana'}],
-          }];
-        }
+      const launchConfigOverrides = {
+        capacityPerInstance: 6,
+        TagSpecifications: [{
+          ResourceType: 'launch-template',
+          Tags: [{Key: 'fruit', Value: 'banana'}],
+        }],
+      };
+      const workerPool = await makeWorkerPool({
+        config: {
+          launchConfigs: [
+            {...defaultLaunchConfig, ...launchConfigOverrides},
+            {...defaultLaunchConfig, ...launchConfigOverrides},
+            {...defaultLaunchConfig, ...launchConfigOverrides},
+            {...defaultLaunchConfig, ...launchConfigOverrides},
+            {...defaultLaunchConfig, ...launchConfigOverrides},
+          ],
+          minCapacity: 34, // not a multiple of number of configs or capPerInstance
+          maxCapacity: 34,
+        },
       });
 
       const workerInfo = {
@@ -241,12 +274,24 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
     });
 
     test('UserData should be base64 encoded', async function() {
-      await workerPool.modify(wp => {
-        for (const lc of wp.config.launchConfigs) {
-          lc.additionalUserData = {
-            somethingImportant: "apple",
-          };
-        }
+      const launchConfigOverrides = {
+        capacityPerInstance: 6,
+        additionalUserData: {
+          somethingImportant: "apple",
+        },
+      };
+      const workerPool = await makeWorkerPool({
+        config: {
+          launchConfigs: [
+            {...defaultLaunchConfig, ...launchConfigOverrides},
+            {...defaultLaunchConfig, ...launchConfigOverrides},
+            {...defaultLaunchConfig, ...launchConfigOverrides},
+            {...defaultLaunchConfig, ...launchConfigOverrides},
+            {...defaultLaunchConfig, ...launchConfigOverrides},
+          ],
+          minCapacity: 34, // not a multiple of number of configs or capPerInstance
+          maxCapacity: 34,
+        },
       });
 
       const workerInfo = {
@@ -279,6 +324,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
   suite('[UNIT] AWS provider - registerWorker', function() {
 
     test('registerWorker - verifyInstanceIdentityDocument - document is not string', async function() {
+      const workerPool = await makeWorkerPool();
       const workerIdentityProof = {
         "document": {'instanceId': 'abc'},
         "signature": 'abcd',
@@ -292,6 +338,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
     });
 
     test('registerWorker - verifyInstanceIdentityDocument - bad document', async function() {
+      const workerPool = await makeWorkerPool();
       const workerIdentityProof = {
         "document": fs.readFileSync(path.resolve(__dirname, 'fixtures/aws_iid_DOCUMENT_bad')).toString(),
         "signature": fs.readFileSync(path.resolve(__dirname, 'fixtures/aws_iid_SIGNATURE')).toString(),
@@ -306,6 +353,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
     });
 
     test('registerWorker - verifyInstanceIdentityDocument - signature was produced with a wrong key', async function() {
+      const workerPool = await makeWorkerPool();
       const workerIdentityProof = {
         "document": fs.readFileSync(path.resolve(__dirname, 'fixtures/aws_iid_DOCUMENT')).toString(),
         "signature": fs.readFileSync(path.resolve(__dirname, 'fixtures/aws_iid_SIGNATURE_badKey')).toString(),
@@ -319,6 +367,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
     });
 
     test('registerWorker - verifyInstanceIdentityDocument - signature is wrong', async function() {
+      const workerPool = await makeWorkerPool();
       const workerIdentityProof = {
         "document": fs.readFileSync(path.resolve(__dirname, 'fixtures/aws_iid_DOCUMENT')).toString(),
         "signature": fs.readFileSync(path.resolve(__dirname, 'fixtures/aws_iid_SIGNATURE_badSignature')).toString(),
@@ -332,6 +381,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
     });
 
     test('registerWorker - verifyWorkerInstance - document is legit but differs from what we know about the instance', async function() {
+      const workerPool = await makeWorkerPool();
       const differentWorkerInDB = {
         ...defaultWorker,
         workerId: actualWorkerIid.instanceId,
@@ -360,6 +410,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
     });
 
     test('registerWorker - no signature', async function() {
+      const workerPool = await makeWorkerPool();
       const workerIdentityProof = {
         "document": fs.readFileSync(path.resolve(__dirname, 'fixtures/aws_iid_DOCUMENT')).toString(),
         "signature": fs.readFileSync(path.resolve(__dirname, 'fixtures/aws_iid_EMPTYFILE')).toString(),
@@ -372,6 +423,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
     });
 
     test('registerWorker - worker is already running', async function() {
+      const workerPool = await makeWorkerPool();
       const runningWorker = {
         ...workerInDB,
         state: 'running',
@@ -393,6 +445,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
     });
 
     test('registerWorker - success', async function() {
+      const workerPool = await makeWorkerPool();
       const runningWorker = await helper.Worker.create({
         workerId: 'i-02312cd4f06c990ca',
         ...defaultWorker,
@@ -424,6 +477,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
     });
 
     test('registerWorker - success (different reregister)', async function() {
+      const workerPool = await makeWorkerPool();
       const runningWorker = await helper.Worker.create({
         workerId: 'i-02312cd4f06c990ca',
         ...defaultWorker,

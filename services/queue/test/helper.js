@@ -201,6 +201,7 @@ exports.withServer = (mock, skipping) => {
         // preventing tests from exiting
         agent: require('http').globalAgent,
         rootUrl: helper.rootUrl,
+        retries: 0,
       };
       // if called as scopes('none'), don't pass credentials at all
       if (scopes && scopes[0] !== 'none') {

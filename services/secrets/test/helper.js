@@ -73,6 +73,7 @@ exports.withServer = (mock, skipping) => {
       return new SecretsClient({
         credentials: {clientId, accessToken: 'unused'},
         rootUrl,
+        retries: 0,
       });
     };
 

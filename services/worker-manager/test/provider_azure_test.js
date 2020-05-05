@@ -8,6 +8,7 @@ const testing = require('taskcluster-lib-testing');
 const forge = require('node-forge');
 const fs = require('fs');
 const path = require('path');
+const {WorkerPool} = require('../src/data');
 
 helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
   helper.withDb(mock, skipping);
@@ -18,7 +19,6 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
   helper.resetTables(mock, skipping);
 
   let provider;
-  let workerPool;
   let providerId = 'azure';
   let workerPoolId = 'foo/bar';
   let fakeAzure;
@@ -44,6 +44,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
     provider = new AzureProvider({
       providerId,
       notify: await helper.load('notify'),
+      db: helper.db,
       monitor: (await helper.load('monitor')).childMonitor('azure'),
       estimator: await helper.load('estimator'),
       fakeCloudApis: {
@@ -51,7 +52,6 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
       },
       rootUrl: helper.rootUrl,
       Worker: helper.Worker,
-      WorkerPool: helper.WorkerPool,
       WorkerPoolError: helper.WorkerPoolError,
       providerConfig: {
         clientId: 'my client id',
@@ -64,9 +64,17 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
         _backoffDelay: 1,
       },
     });
+
     // So that checked-in certs are still valid
     provider._now = () => taskcluster.fromNow('-10 years');
-    workerPool = await helper.WorkerPool.create({
+
+    await helper.db.fns.delete_worker_pool(workerPoolId);
+
+    await provider.setup();
+  });
+
+  const makeWorkerPool = async (overrides = {}) => {
+    let workerPool = WorkerPool.fromApi({
       workerPoolId,
       providerId,
       description: 'none',
@@ -92,11 +100,15 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
       owner: 'whatever@example.com',
       providerData: {},
       emailOnError: false,
+      ...overrides,
     });
-    await provider.setup();
-  });
+    await workerPool.create(helper.db);
+
+    return workerPool;
+  };
 
   test('provisioning loop', async function() {
+    const workerPool = await makeWorkerPool();
     const now = Date.now();
     const workerInfo = {
       existingCapacity: 0,
@@ -111,6 +123,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
   });
 
   test('provisioning loop with failure', async function() {
+    const workerPool = await makeWorkerPool();
     const workerInfo = {
       existingCapacity: 0,
       requestedCapacity: 0,
@@ -135,12 +148,10 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
   });
 
   test('de-provisioning loop', async function() {
-    // simulate previous provisionig and deleting the workerpool
-    await workerPool.modify(wp => {
-      wp.providerId = 'null-provider';
-      wp.previousProviderIds = ['azure'];
-
-      return wp;
+    const workerPool = await makeWorkerPool({
+      // simulate previous provisionig and deleting the workerpool
+      providerId: 'null-provider',
+      previousProviderIds: ['azure'],
     });
     await provider.deprovision({workerPool});
     // nothing has changed..
@@ -209,6 +220,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
   });
 
   test('worker-scan loop', async function() {
+    const workerPool = await makeWorkerPool();
     const workerInfo = {
       existingCapacity: 0,
       requestedCapacity: 0,
@@ -387,6 +399,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
     };
 
     test('document is not a valid PKCS#7 message', async function() {
+      const workerPool = await makeWorkerPool();
       const worker = await helper.Worker.create({
         ...defaultWorker,
       });
@@ -399,6 +412,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
     });
 
     test('document is empty', async function() {
+      const workerPool = await makeWorkerPool();
       const worker = await helper.Worker.create({
         ...defaultWorker,
       });
@@ -411,6 +425,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
     });
 
     test('message does not match signature', async function() {
+      const workerPool = await makeWorkerPool();
       const worker = await helper.Worker.create({
         ...defaultWorker,
       });
@@ -424,6 +439,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
     });
 
     test('malformed signature', async function() {
+      const workerPool = await makeWorkerPool();
       const worker = await helper.Worker.create({
         ...defaultWorker,
       });
@@ -437,6 +453,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
     });
 
     test('expired message', async function() {
+      const workerPool = await makeWorkerPool();
       const worker = await helper.Worker.create({
         ...defaultWorker,
       });
@@ -450,6 +467,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
     });
 
     test('bad cert', async function() {
+      const workerPool = await makeWorkerPool();
       const worker = await helper.Worker.create({
         ...defaultWorker,
       });
@@ -469,6 +487,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
     });
 
     test('wrong worker state (duplicate call to registerWorker)', async function() {
+      const workerPool = await makeWorkerPool();
       const worker = await helper.Worker.create({
         ...defaultWorker,
         state: 'running',
@@ -482,6 +501,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
     });
 
     test('wrong vmID', async function() {
+      const workerPool = await makeWorkerPool();
       const worker = await helper.Worker.create({
         ...defaultWorker,
         providerData: {
@@ -504,6 +524,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
     });
 
     test('sweet success', async function() {
+      const workerPool = await makeWorkerPool();
       const worker = await helper.Worker.create({
         ...defaultWorker,
         providerData: {
@@ -527,6 +548,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
     });
 
     test('sweet success (different reregister)', async function() {
+      const workerPool = await makeWorkerPool();
       const worker = await helper.Worker.create({
         ...defaultWorker,
         providerData: {

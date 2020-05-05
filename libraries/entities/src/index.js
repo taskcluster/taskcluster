@@ -356,6 +356,9 @@ class Entity {
   deserialize(entity) {
     const deserializedProperties = {};
 
+    assert(entity.PartitionKey, "entity has no PartitionKey in value");
+    assert(entity.RowKey, "enitity has no RowKey in value");
+
     Object.entries(this.constructor.mapping).forEach(([key, keytype]) => {
       deserializedProperties[key] = keytype.deserialize(entity, this.constructor.__cryptoKey);
     });

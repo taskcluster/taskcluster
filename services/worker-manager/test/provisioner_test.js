@@ -4,6 +4,7 @@ const testing = require('taskcluster-lib-testing');
 const taskcluster = require('taskcluster-client');
 const monitorManager = require('../src/monitor');
 const {LEVELS} = require('taskcluster-lib-monitor');
+const {WorkerPool} = require('../src/data');
 
 helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
   helper.withDb(mock, skipping);
@@ -19,11 +20,12 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
   suite('provisioning loop', function() {
     const testCase = async ({workers = [], workerPools = [], assertion, expectErrors = false}) => {
       await Promise.all(workers.map(w => helper.Worker.create(w)));
-      await Promise.all(workerPools.map(async wt => {
-        if (wt.input) {
-          await helper.workerManager.createWorkerPool(wt.workerPoolId, wt.input);
+      await Promise.all(workerPools.map(async wp => {
+        if (wp.input) {
+          await helper.workerManager.createWorkerPool(wp.workerPoolId, wp.input);
         } else {
-          await helper.WorkerPool.create(wt);
+          const workerPool = WorkerPool.fromApi(wp);
+          await workerPool.create(helper.db);
         }
       }));
       return (testing.runWithFakeTime(async function() {
@@ -241,7 +243,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
     let workerPool;
     setup(async function() {
       const now = new Date();
-      workerPool = await helper.WorkerPool.create({
+      workerPool = WorkerPool.fromApi({
         workerPoolId: 'pp/foo',
         providerId: 'testing1',
         description: 'none',
@@ -253,6 +255,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
         providerData: {},
         emailOnError: false,
       });
+      await workerPool.create(helper.db);
       await helper.initiateProvisioner();
     });
     teardown(async function() {
@@ -310,21 +313,19 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
     });
 
     test('worker pool modified, different provider', async function() {
-      await workerPool.modify(wt => {
-        wt.providerId = 'testing2';
-      });
+      // pretend this changed from testing2 to testing1..
       await helper.fakePulseMessage({
         payload: {
           workerPoolId: 'pp/foo',
-          providerId: 'testing2',
-          previousProviderId: 'testing1',
+          providerId: 'testing1',
+          previousProviderId: 'testing2',
         },
         exchange: 'exchange/taskcluster-worker-manager/v1/worker-pool-updated',
         routingKey: 'primary.#',
         routes: [],
       });
       assert.deepEqual(monitorManager.messages.find(msg => msg.Type === 'create-resource'), {
-        Logger: 'taskcluster.worker-manager.provider.testing2',
+        Logger: 'taskcluster.worker-manager.provider.testing1',
         Type: 'create-resource',
         Severity: LEVELS.notice,
         Fields: {workerPoolId: 'pp/foo'},
@@ -334,7 +335,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
 
   suite('provision', function() {
     test('provision scan provisions a worker pool', async function() {
-      await helper.WorkerPool.create({
+      await WorkerPool.fromApi({
         workerPoolId: 'pp/ww',
         providerId: 'testing1',
         previousProviderIds: [],
@@ -345,7 +346,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
         owner: 'me@example.com',
         emailOnError: false,
         providerData: {},
-      });
+      }).create(helper.db);
       const provisioner = await helper.load('provisioner');
       await provisioner.provision();
       assert.deepEqual(
@@ -359,7 +360,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
     });
 
     test('provision scan skips worker pools with unknown providerId', async function() {
-      await helper.WorkerPool.create({
+      await WorkerPool.fromApi({
         workerPoolId: 'pp/ww',
         providerId: 'NO-SUCH',
         previousProviderIds: [],
@@ -370,7 +371,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
         owner: 'me@example.com',
         emailOnError: false,
         providerData: {},
-      });
+      }).create(helper.db);
       const provisioner = await helper.load('provisioner');
       await provisioner.provision();
       assert.deepEqual(
@@ -387,7 +388,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
     });
 
     test('provision scan skips worker pools with unknown previous providerId', async function() {
-      await helper.WorkerPool.create({
+      await WorkerPool.fromApi({
         workerPoolId: 'pp/ww',
         providerId: 'testing1',
         previousProviderIds: ['NO-SUCH'],
@@ -398,7 +399,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
         owner: 'me@example.com',
         emailOnError: false,
         providerData: {},
-      });
+      }).create(helper.db);
       const provisioner = await helper.load('provisioner');
       await provisioner.provision();
       assert.deepEqual(
