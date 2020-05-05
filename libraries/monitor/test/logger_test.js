@@ -28,6 +28,17 @@ suite(testing.suiteName(), function() {
     await monitor.terminate();
   });
 
+  test('logger moves explicitly set traceId up', function() {
+    monitor.info({traceId: 'foo/bar'});
+    assert.equal(monitorManager.messages[0].traceId, 'foo/bar');
+    assert.equal(monitorManager.messages[0].Fields.traceId, undefined);
+  });
+
+  test('logger with no traceId leaves it out', function() {
+    monitor.info({something: 123});
+    assert.equal(monitorManager.messages[0].traceId, undefined);
+  });
+
   test('logger conforms to schema', function() {
     const schema = require('./mozlog_schema.json');
     monitor.info('something', {test: 123});
