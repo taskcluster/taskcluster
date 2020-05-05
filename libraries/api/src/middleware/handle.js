@@ -20,7 +20,7 @@ const callHandler = ({entry, context, monitor}) => {
           'or some parameters were missing from the request', {
           url: req.originalUrl,
           method: req.method,
-          requestId: req.get('x-request-id'),
+          traceId: req.traceId,
         });
       }
     }).catch((err) => {

@@ -108,9 +108,20 @@ const app = async (options) => {
 
   // attach request-id to request object and response
   app.use((req, res, next) => {
-    const reqId = req.headers['x-request-id'] || uuidv4();
-    req.requestId = reqId;
-    res.setHeader('x-for-request-id', reqId);
+    let traceId;
+    // These are split out into if/else in case we want
+    // to do some extra processing to any of these
+    if (req.headers['x-taskcluster-trace-id']) {
+      traceId = req.headers['x-taskcluster-trace-id'];
+    } else if (req.headers['x-cloud-trace-context']) {
+      traceId = req.headers['x-cloud-trace-context'];
+    } else if (req.headers['x-amzn-trace-id']) {
+      traceId = req.headers['x-amzn-trace-id'];
+    } else {
+      traceId = uuidv4();
+    }
+    req.traceId = traceId;
+    res.setHeader('x-for-trace-id', traceId);
     next();
   });
 
