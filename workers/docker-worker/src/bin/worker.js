@@ -221,11 +221,13 @@ program.parse(process.argv);
   runtime.hostManager = host;
   runtime.imageManager = new ImageManager(runtime);
 
+  let shutdownManager;
+
   // Billing cycle logic is host specific so we cannot handle shutdowns without
   // both the host and the configuration to shutdown.
   if (host && config.shutdown) {
     runtime.log('handle shutdowns');
-    var shutdownManager = new ShutdownManager(host, runtime);
+    shutdownManager = new ShutdownManager(host, runtime);
     // Recommended by AWS to query every 5 seconds.  Termination window is 2 minutes
     // so at the very least should have 1m55s to cleanly shutdown.
     await shutdownManager.scheduleTerminationPoll();

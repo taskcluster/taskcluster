@@ -36,7 +36,7 @@ suite('upload to s3 test', function () {
         response.end();
       };
 
-      if (request.method != 'PUT') {
+      if (request.method !== 'PUT') {
         finishRequest(405);
       } else if (!requestState) {
         requestState++;
