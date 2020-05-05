@@ -158,7 +158,7 @@ const remoteAuthentication = ({signatureValidator, entry}) => {
       port: parseInt(port, 10),
       authorization: req.headers.authorization,
       sourceIp: req.ip,
-    }));
+    }, {traceId: req.traceId, requestId: req.requestId}));
 
     // Validate request hash if one is provided
     if (typeof result.hash === 'string' && result.scheme === 'hawk') {

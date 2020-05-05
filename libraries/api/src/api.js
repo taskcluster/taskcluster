@@ -229,7 +229,13 @@ const createRemoteSignatureValidator = (options) => {
     rootUrl: options.rootUrl,
     credentials: {}, // We do this to avoid sending auth headers to authenticateHawk
   });
-  return async (data) => auth.authenticateHawk(data);
+  return async (data, meta) => {
+    let perRequestAuth = auth;
+    if (meta) {
+      perRequestAuth = auth.taskclusterPerRequestInstance(meta);
+    }
+    return perRequestAuth.authenticateHawk(data);
+  };
 };
 
 // for tests
