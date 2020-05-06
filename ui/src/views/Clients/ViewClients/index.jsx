@@ -1,7 +1,7 @@
 import React, { PureComponent, Fragment } from 'react';
 import { hot } from 'react-hot-loader';
 import { graphql } from 'react-apollo';
-import qs, { parse, stringify } from 'qs';
+import { parse, stringify } from 'qs';
 import Spinner from '@mozilla-frontend-infra/components/Spinner';
 import { withStyles } from '@material-ui/core/styles';
 import PlusIcon from 'mdi-react/PlusIcon';
@@ -122,7 +122,7 @@ export default class ViewClients extends PureComponent {
       location,
       data: { loading, error, clients },
     } = this.props;
-    const searchQuery = qs.parse(location.search.slice(1));
+    const searchQuery = parse(location.search.slice(1));
     const searchTerm = searchQuery.search;
 
     return (
