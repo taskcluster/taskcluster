@@ -17,8 +17,8 @@ import (
 )
 
 var (
-	livelogName            = "public/logs/live.log"
-	internalGETPort uint16 = 60099
+	livelogName     = "public/logs/live.log"
+	internalGETPort uint16
 )
 
 type LiveLogFeature struct {
@@ -29,6 +29,7 @@ func (feature *LiveLogFeature) Name() string {
 }
 
 func (feature *LiveLogFeature) Initialise() error {
+	internalGETPort = config.LiveLogGETPort
 	return nil
 }
 
