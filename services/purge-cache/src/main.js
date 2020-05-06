@@ -44,7 +44,7 @@ const load = loader({
   },
 
   'expire-cache-purges': {
-    requires: ['cfg', 'monitor'],
+    requires: ['cfg', 'db', 'monitor'],
     setup: ({cfg, db, monitor}, ownName) => {
       return monitor.oneShot(ownName, async () => {
         const now = taskcluster.fromNow(cfg.app.cachePurgeExpirationDelay);

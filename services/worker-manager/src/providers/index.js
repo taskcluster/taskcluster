@@ -19,7 +19,7 @@ const PROVIDER_TYPES = {
  * their providerType implementation as required
  */
 class Providers {
-  async setup({cfg, monitor, notify, estimator, Worker, WorkerPool, WorkerPoolError, validator, fakeCloudApis}) {
+  async setup({cfg, monitor, notify, db, estimator, Worker, WorkerPoolError, validator, fakeCloudApis}) {
     this._providers = {};
 
     if (cfg.providers['null-provider']) {
@@ -38,11 +38,11 @@ class Providers {
       const provider = new Provider({
         providerId,
         notify,
+        db,
         monitor: monitor.childMonitor(`provider.${providerId}`),
         rootUrl: cfg.taskcluster.rootUrl,
         estimator,
         Worker,
-        WorkerPool,
         WorkerPoolError,
         validator,
         fakeCloudApis,

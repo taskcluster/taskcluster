@@ -117,6 +117,7 @@ exports.withServer = (mock, skipping) => {
     exports.apiClient = new GithubClient({
       credentials: {clientId: 'test-client', accessToken: 'unused'},
       rootUrl,
+      retries: 0,
     });
 
     webServer = await exports.load('server');

@@ -1739,13 +1739,35 @@
             },
             "name": "ui",
             "next": {
-              "path": "reference/README",
-              "title": "Taskcluster Reference"
+              "path": "manual/deploying/websocktunnel",
+              "title": "Websocktunnel"
             },
             "path": "manual/deploying/ui",
             "prev": {
               "path": "manual/deploying/third-party",
               "title": "Third Party"
+            },
+            "up": {
+              "path": "manual/deploying",
+              "title": "Deploying Taskcluster"
+            }
+          },
+          {
+            "children": [
+            ],
+            "data": {
+              "order": 1000,
+              "title": "Websocktunnel"
+            },
+            "name": "websocktunnel",
+            "next": {
+              "path": "reference/README",
+              "title": "Taskcluster Reference"
+            },
+            "path": "manual/deploying/websocktunnel",
+            "prev": {
+              "path": "manual/deploying/ui",
+              "title": "User Interface"
             },
             "up": {
               "path": "manual/deploying",
@@ -3420,8 +3442,8 @@
                 },
                 "name": "simple-posix-payload",
                 "next": {
-                  "path": "reference/workers/worker-runner/README",
-                  "title": "worker-runner"
+                  "path": "reference/workers/websocktunnel/README",
+                  "title": "websocktunnel"
                 },
                 "path": "reference/workers/generic-worker/simple-posix-payload",
                 "prev": {
@@ -3446,6 +3468,27 @@
             "prev": {
               "path": "reference/workers/built-in-workers/logs",
               "title": "logs"
+            },
+            "up": {
+              "path": "reference/workers/README",
+              "title": "Workers"
+            }
+          },
+          {
+            "children": [
+            ],
+            "data": {
+              "order": 1000
+            },
+            "name": "websocktunnel",
+            "next": {
+              "path": "reference/workers/worker-runner/README",
+              "title": "worker-runner"
+            },
+            "path": "reference/workers/websocktunnel/README",
+            "prev": {
+              "path": "reference/workers/generic-worker/simple-posix-payload",
+              "title": "Task Payload - simple, posix"
             },
             "up": {
               "path": "reference/workers/README",
@@ -3637,8 +3680,8 @@
             },
             "path": "reference/workers/worker-runner/README",
             "prev": {
-              "path": "reference/workers/generic-worker/simple-posix-payload",
-              "title": "Task Payload - simple, posix"
+              "path": "reference/workers/websocktunnel/README",
+              "title": "websocktunnel"
             },
             "up": {
               "path": "reference/workers/README",
@@ -3676,8 +3719,8 @@
     },
     "path": "reference/README",
     "prev": {
-      "path": "manual/deploying/ui",
-      "title": "User Interface"
+      "path": "manual/deploying/websocktunnel",
+      "title": "Websocktunnel"
     }
   },
   "resources": {

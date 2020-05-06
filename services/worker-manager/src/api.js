@@ -1,7 +1,10 @@
+const _ = require('lodash');
 const taskcluster = require('taskcluster-client');
-const {APIBuilder} = require('taskcluster-lib-api');
+const {APIBuilder, paginateResults} = require('taskcluster-lib-api');
 const assert = require('assert');
 const {ApiError} = require('./providers/provider');
+const {UNIQUE_VIOLATION} = require('taskcluster-lib-postgres');
+const {WorkerPool} = require('./data');
 
 let builder = new APIBuilder({
   title: 'Taskcluster Worker Manager',
@@ -15,11 +18,13 @@ let builder = new APIBuilder({
   },
   context: [
     'cfg',
+    'db',
     'Worker',
-    'WorkerPool',
     'WorkerPoolError',
     'providers',
     'publisher',
+    'monitor',
+    'notify',
   ],
 });
 
@@ -97,34 +102,17 @@ builder.declare({
     return res.reportError('InputValidationError', error);
   }
 
-  const now = new Date();
-  let workerPool;
-
-  const definition = {
-    workerPoolId,
-    providerId,
-    previousProviderIds: [],
-    description: input.description,
-    config: input.config,
-    created: now,
-    lastModified: now,
-    owner: input.owner,
-    emailOnError: input.emailOnError,
-    providerData: {},
-  };
+  let workerPool = WorkerPool.fromApi({workerPoolId, ...input});
 
   try {
-    workerPool = await this.WorkerPool.create(definition);
+    await workerPool.create(this.db);
   } catch (err) {
-    if (err.code !== 'EntityAlreadyExists') {
+    if (err.code !== UNIQUE_VIOLATION) {
       throw err;
     }
-    workerPool = await this.WorkerPool.load({workerPoolId});
-
-    if (!workerPool.compare(definition)) {
-      return res.reportError('RequestConflict', 'Worker pool already exists', {});
-    }
+    return res.reportError('RequestConflict', 'Worker pool already exists', {});
   }
+
   await this.publisher.workerPoolCreated({workerPoolId, providerId});
   res.reply(workerPool.serializable());
 });
@@ -175,29 +163,25 @@ builder.declare({
     return res.reportError('InputError', 'Incorrect workerPoolId in request body', {});
   }
 
-  const workerPool = await this.WorkerPool.load({
+  const updateResult = await this.db.fns.update_worker_pool(
     workerPoolId,
-  }, true);
+    input.providerId,
+    input.description,
+    input.config,
+    new Date(),
+    input.owner,
+    input.emailOnError);
+  const workerPool = WorkerPool.fromDbRows(updateResult);
+
   if (!workerPool) {
     return res.reportError('ResourceNotFound', 'Worker pool does not exist', {});
   }
 
-  const previousProviderId = workerPool.providerId;
-
-  await workerPool.modify(wt => {
-    wt.config = input.config;
-    wt.description = input.description;
-    wt.providerId = providerId;
-    wt.owner = input.owner;
-    wt.emailOnError = input.emailOnError;
-    wt.lastModified = new Date();
-
-    if (previousProviderId !== providerId && !wt.previousProviderIds.includes(previousProviderId)) {
-      wt.previousProviderIds.push(previousProviderId);
-    }
+  await this.publisher.workerPoolUpdated({
+    workerPoolId,
+    providerId,
+    previousProviderId: updateResult.previous_provider_id,
   });
-
-  await this.publisher.workerPoolUpdated({workerPoolId, providerId, previousProviderId});
   res.reply(workerPool.serializable());
 });
 
@@ -221,23 +205,26 @@ builder.declare({
 
   await req.authorize({workerPoolId});
 
-  const workerPool = await this.WorkerPool.load({
-    workerPoolId,
-  }, true);
+  let workerPool = await WorkerPool.get(this.db, workerPoolId);
   if (!workerPool) {
     return res.reportError('ResourceNotFound', 'Worker pool does not exist', {});
   }
 
-  const previousProviderId = workerPool.providerId;
+  const updateResult = await this.db.fns.update_worker_pool(
+    workerPoolId,
+    providerId,
+    workerPool.description,
+    workerPool.config,
+    new Date(),
+    workerPool.owner,
+    workerPool.emailOnError);
+  workerPool = WorkerPool.fromDbRows(updateResult);
 
-  await workerPool.modify(wt => {
-    wt.providerId = providerId;
-    if (previousProviderId !== providerId && !wt.previousProviderIds.includes(previousProviderId)) {
-      wt.previousProviderIds.push(previousProviderId);
-    }
+  await this.publisher.workerPoolUpdated({
+    workerPoolId,
+    providerId,
+    previousProviderId: updateResult.previous_provider_id,
   });
-
-  await this.publisher.workerPoolUpdated({workerPoolId, providerId, previousProviderId});
   res.reply(workerPool.serializable());
 });
 
@@ -255,9 +242,7 @@ builder.declare({
 }, async function(req, res) {
   const {workerPoolId} = req.params;
 
-  const workerPool = await this.WorkerPool.load({
-    workerPoolId,
-  }, true);
+  const workerPool = await WorkerPool.get(this.db, workerPoolId);
   if (!workerPool) {
     return res.reportError('ResourceNotFound', 'Worker pool does not exist', {});
   }
@@ -267,10 +252,7 @@ builder.declare({
 builder.declare({
   method: 'get',
   route: '/worker-pools',
-  query: {
-    continuationToken: /./,
-    limit: /^[0-9]+$/,
-  },
+  query: paginateResults.query,
   name: 'listWorkerPools',
   title: 'List All Worker Pools',
   stability: APIBuilder.stability.stable,
@@ -280,21 +262,14 @@ builder.declare({
     'Get the list of all the existing worker pools.',
   ].join('\n'),
 }, async function(req, res) {
-  const { continuationToken } = req.query;
-  const limit = parseInt(req.query.limit || 100, 10);
-  const scanOptions = {
-    continuation: continuationToken,
-    limit,
-  };
-
-  const data = await this.WorkerPool.scan({}, scanOptions);
+  const {continuationToken, rows} = await paginateResults({
+    query: req.query,
+    fetch: (size, offset) => this.db.fns.get_worker_pools(size, offset),
+  });
   const result = {
-    workerPools: data.entries.map(e => e.serializable()),
+    workerPools: rows.map(r => WorkerPool.fromDb(r).serializable()),
+    continuationToken,
   };
-
-  if (data.continuation) {
-    result.continuationToken = data.continuation;
-  }
   return res.reply(result);
 });
 
@@ -329,12 +304,18 @@ builder.declare({
 
   await req.authorize({workerPoolId, workerGroup, workerId});
 
-  const workerPool = await this.WorkerPool.load({workerPoolId}, true);
+  const workerPool = await WorkerPool.get(this.db, workerPoolId);
   if (!workerPool) {
     return res.reportError('ResourceNotFound', 'Worker pool does not exist', {});
   }
 
-  const wpe = await workerPool.reportError({
+  // Use the current provider to report the error, even if it didn't create the
+  // worker.  If this distinction becomes important, this can be changed to get
+  // the worker and use its providerId instead of workerPool.providerId.
+  const provider = await this.providers.get(workerPool.providerId);
+
+  const wpe = await provider.reportError({
+    workerPool,
     kind: input.kind,
     title: input.title,
     description: input.description,
@@ -482,7 +463,7 @@ builder.declare({
   ].join('\n'),
 }, async function(req, res) {
   const {workerPoolId, workerGroup, workerId} = req.params;
-  const workerPool = await this.WorkerPool.load({workerPoolId}, true);
+  const workerPool = await WorkerPool.get(this.db, workerPoolId);
   if (!workerPool) {
     return res.reportError('ResourceNotFound',
       `Worker pool ${workerPoolId} does not exist`, {});
@@ -627,7 +608,7 @@ builder.declare({
   // carefully check each value provided, since we have not yet validated the
   // worker's "proof"
 
-  const workerPool = await this.WorkerPool.load({workerPoolId}, true);
+  const workerPool = await WorkerPool.get(this.db, workerPoolId);
   if (!workerPool) {
     return res.reportError('ResourceNotFound',
       `Worker pool ${workerPoolId} does not exist`, {});

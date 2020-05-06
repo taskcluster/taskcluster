@@ -6,6 +6,7 @@ const uuid = require('uuid');
 const {google} = require('googleapis');
 const {ApiError, Provider} = require('./provider');
 const {CloudAPI} = require('./cloudapi');
+const {WorkerPool} = require('../data');
 
 class GoogleProvider extends Provider {
 
@@ -167,10 +168,6 @@ class GoogleProvider extends Provider {
   }
 
   async removeResources({workerPool}) {
-    // remove any remaining providerData when we are no longer responsible for this workerPool
-    await workerPool.modify(wt => {
-      delete wt.providerData[this.providerId];
-    });
   }
 
   async removeWorker({worker}) {
@@ -196,9 +193,8 @@ class GoogleProvider extends Provider {
     const {workerPoolId} = workerPool;
 
     if (!workerPool.providerData[this.providerId]) {
-      await workerPool.modify(wt => {
-        wt.providerData[this.providerId] = wt.providerData[this.providerId] || {};
-      });
+      await this.db.fns.update_worker_pool_provider_data(
+        workerPool.workerPoolId, this.providerId, {});
     }
 
     let toSpawn = await this.estimator.simple({
@@ -296,7 +292,8 @@ class GoogleProvider extends Provider {
           throw err;
         }
         for (const error of err.errors) {
-          await workerPool.reportError({
+          await this.reportError({
+            workerPool,
             kind: 'creation-error',
             title: 'Instance Creation Error',
             description: error.message,
@@ -426,16 +423,13 @@ class GoogleProvider extends Provider {
   async scanCleanup() {
     this.monitor.log.scanSeen({providerId: this.providerId, seen: this.seen});
     await Promise.all(Object.entries(this.seen).map(async ([workerPoolId, seen]) => {
-      const workerPool = await this.WorkerPool.load({
-        workerPoolId,
-      }, true);
-
+      const workerPool = await WorkerPool.get(this.db, workerPoolId);
       if (!workerPool) {
         return; // In this case, the workertype has been deleted so we can just move on
       }
 
       if (this.errors[workerPoolId].length) {
-        await Promise.all(this.errors[workerPoolId].map(error => workerPool.reportError(error)));
+        await Promise.all(this.errors[workerPoolId].map(error => this.reportError({workerPool, ...error})));
       }
     }));
   }

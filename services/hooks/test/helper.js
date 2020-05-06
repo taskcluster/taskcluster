@@ -94,6 +94,7 @@ helper.withServer = (mock, skipping) => {
         // preventing tests from exiting
         agent: require('http').globalAgent,
         rootUrl: helper.rootUrl,
+        retries: 0,
         credentials: {
           clientId: 'test-client',
           accessToken: 'none',

@@ -1,13 +1,19 @@
+const _ = require('lodash');
 const assert = require('assert');
 const slugid = require('slugid');
 const { UNIQUE_VIOLATION } = require('taskcluster-lib-postgres');
 const { getEntries } = require('../utils');
+const {isPlainObject, isDate} = require('lodash');
+
+const errWithCode = (msg, code) => {
+  const err = new Error(msg);
+  err.code = code;
+  return err;
+};
 
 class FakeWorkerManager {
   constructor() {
-    this.wmWorkers = new Map();
-    this.wmWorkerPools = new Map();
-    this.wmWorkerPoolErrors = new Map();
+    this.reset();
   }
 
   /* helpers */
@@ -16,6 +22,7 @@ class FakeWorkerManager {
     this.wmWorkers = new Map();
     this.wmWorkerPools = new Map();
     this.wmWorkerPoolErrors = new Map();
+    this.worker_pools = new Map();
   }
 
   _getWmWorker({ partitionKey, rowKey }) {
@@ -112,9 +119,7 @@ class FakeWorkerManager {
 
   async wmworkers_entities_create(partition_key, row_key, value, overwrite, version) {
     if (!overwrite && this._getWmWorker({ partitionKey: partition_key, rowKey: row_key })) {
-      const err = new Error('duplicate key value violates unique constraint');
-      err.code = UNIQUE_VIOLATION;
-      throw err;
+      throw errWithCode('duplicate key value violates unique constraint', UNIQUE_VIOLATION);
     }
 
     const wmWorker = this._addWmWorker({
@@ -138,15 +143,11 @@ class FakeWorkerManager {
     const wmWorker = this._getWmWorker({ partitionKey: partition_key, rowKey: row_key });
 
     if (!wmWorker) {
-      const err = new Error('no such row');
-      err.code = 'P0002';
-      throw err;
+      throw errWithCode('no such row', 'P0002');
     }
 
     if (wmWorker.etag !== oldEtag) {
-      const err = new Error('unsuccessful update');
-      err.code = 'P0004';
-      throw err;
+      throw errWithCode('unsuccessful update', 'P0004');
     }
 
     const c = this._addWmWorker({ partition_key, row_key, value, version });
@@ -167,9 +168,7 @@ class FakeWorkerManager {
 
   async wmworker_pools_entities_create(partition_key, row_key, value, overwrite, version) {
     if (!overwrite && this._getWmWorkerPool({ partitionKey: partition_key, rowKey: row_key })) {
-      const err = new Error('duplicate key value violates unique constraint');
-      err.code = UNIQUE_VIOLATION;
-      throw err;
+      throw errWithCode('duplicate key value violates unique constraint', UNIQUE_VIOLATION);
     }
 
     const wmWorkerPool = this._addWmWorkerPool({
@@ -193,15 +192,11 @@ class FakeWorkerManager {
     const wmWorkerPool = this._getWmWorkerPool({ partitionKey: partition_key, rowKey: row_key });
 
     if (!wmWorkerPool) {
-      const err = new Error('no such row');
-      err.code = 'P0002';
-      throw err;
+      throw errWithCode('no such row', 'P0002');
     }
 
     if (wmWorkerPool.etag !== oldEtag) {
-      const err = new Error('unsuccessful update');
-      err.code = 'P0004';
-      throw err;
+      throw errWithCode('unsuccessful update', 'P0004');
     }
 
     const c = this._addWmWorkerPool({ partition_key, row_key, value, version });
@@ -224,9 +219,7 @@ class FakeWorkerManager {
 
   async wmworker_pool_errors_entities_create(partition_key, row_key, value, overwrite, version) {
     if (!overwrite && this._getWmWorkerPoolError({ partitionKey: partition_key, rowKey: row_key })) {
-      const err = new Error('duplicate key value violates unique constraint');
-      err.code = UNIQUE_VIOLATION;
-      throw err;
+      throw errWithCode('duplicate key value violates unique constraint', UNIQUE_VIOLATION);
     }
 
     const wmWorkerPoolError = this._addWmWorkerPoolError({
@@ -250,15 +243,11 @@ class FakeWorkerManager {
     const wmWorkerPoolError = this._getWmWorkerPoolError({ partitionKey: partition_key, rowKey: row_key });
 
     if (!wmWorkerPoolError) {
-      const err = new Error('no such row');
-      err.code = 'P0002';
-      throw err;
+      throw errWithCode('no such row', 'P0002');
     }
 
     if (wmWorkerPoolError.etag !== oldEtag) {
-      const err = new Error('unsuccessful update');
-      err.code = 'P0004';
-      throw err;
+      throw errWithCode('unsuccessful update', 'P0004');
     }
 
     const c = this._addWmWorkerPoolError({ partition_key, row_key, value, version });
@@ -268,6 +257,123 @@ class FakeWorkerManager {
   async wmworker_pool_errors_entities_scan(partition_key, row_key, condition, size, offset) {
     const entries = getEntries({ partitionKey: partition_key, rowKey: row_key, condition }, this.wmWorkerPoolErrors);
     return entries.slice(offset, offset + size + 1);
+  }
+
+  async create_worker_pool(
+    worker_pool_id, provider_id, previous_provider_ids, description,
+    config, created, last_modified, owner, email_on_error, provider_data) {
+    assert.equal(typeof worker_pool_id, 'string');
+    assert.equal(typeof provider_id, 'string');
+    // node-pg cannot correctly encode JS arrays as JSONB, so they are given to us
+    // as a JSON string https://github.com/brianc/node-postgres/issues/2012
+    previous_provider_ids = JSON.parse(previous_provider_ids);
+    assert(Array.isArray(previous_provider_ids));
+    assert.equal(typeof description, 'string');
+    assert(isPlainObject(config));
+    assert(isDate(created));
+    assert(isDate(last_modified));
+    assert.equal(typeof owner, 'string');
+    assert.equal(typeof email_on_error, 'boolean');
+    assert(isPlainObject(provider_data));
+
+    if (this.worker_pools.get(worker_pool_id)) {
+      throw errWithCode('row exists', UNIQUE_VIOLATION);
+    }
+
+    this.worker_pools.set(worker_pool_id, {
+      worker_pool_id,
+      provider_id,
+      previous_provider_ids,
+      description,
+      config,
+      created,
+      last_modified,
+      owner,
+      email_on_error,
+      provider_data});
+  }
+
+  async get_worker_pool(worker_pool_id) {
+    assert.equal(typeof worker_pool_id, 'string');
+    if (this.worker_pools.has(worker_pool_id)) {
+      return [this.worker_pools.get(worker_pool_id)];
+    } else {
+      return [];
+    }
+  }
+
+  async get_worker_pools(page_size, page_offset) {
+    const wpids = [...this.worker_pools.keys()];
+    wpids.sort();
+    return wpids
+      .slice(page_offset || 0, page_size ? page_offset + page_size : wpids.length)
+      .map(wpid => this.worker_pools.get(wpid));
+  }
+
+  async update_worker_pool(
+    worker_pool_id, provider_id, description, config, last_modified,
+    owner, email_on_error) {
+    assert.equal(typeof worker_pool_id, 'string');
+    assert.equal(typeof provider_id, 'string');
+    assert.equal(typeof description, 'string');
+    assert(isPlainObject(config));
+    assert(isDate(last_modified));
+    assert.equal(typeof owner, 'string');
+    assert.equal(typeof email_on_error, 'boolean');
+    if (!this.worker_pools.has(worker_pool_id)) {
+      return [];
+    }
+    const wp = this.worker_pools.get(worker_pool_id);
+    const previous_provider_id = wp.provider_id;
+    if (previous_provider_id !== provider_id) {
+      wp.previous_provider_ids = wp.previous_provider_ids
+        .filter(p => p !== provider_id)
+        .filter(p => p !== previous_provider_id)
+        .concat([previous_provider_id]);
+    }
+    wp.provider_id = provider_id;
+    wp.description = description;
+    wp.config = config;
+    wp.last_modified = last_modified;
+    wp.owner = owner;
+    wp.email_on_error = email_on_error;
+
+    return [{..._.omit(wp, 'provider_data', 'previous_provider_ids'), previous_provider_id}];
+  }
+
+  async expire_worker_pools() {
+    const expired = [];
+    for (let [workerPoolId, wp] of this.worker_pools.entries()) {
+      if (wp.provider_id === 'null-provider' &&
+          Object.keys(wp.previous_provider_ids).length === 0) {
+        this.worker_pools.delete(workerPoolId);
+        expired.push({worker_pool_id: workerPoolId});
+      }
+    }
+    return expired;
+  }
+
+  async delete_worker_pool(worker_pool_id) {
+    this.worker_pools.delete(worker_pool_id);
+  }
+
+  async remove_worker_pool_previous_provider_id(worker_pool_id, provider_id) {
+    assert.equal(typeof worker_pool_id, 'string');
+    assert.equal(typeof provider_id, 'string');
+    const wp = this.worker_pools.get(worker_pool_id);
+    if (wp) {
+      wp.previous_provider_ids = wp.previous_provider_ids.filter(p => p !== provider_id);
+    }
+  }
+
+  async update_worker_pool_provider_data(worker_pool_id, provider_id, provider_data) {
+    assert.equal(typeof worker_pool_id, 'string');
+    assert.equal(typeof provider_id, 'string');
+    assert(isPlainObject(provider_data));
+    const wp = this.worker_pools.get(worker_pool_id);
+    if (wp) {
+      wp.provider_data[provider_id] = provider_data;
+    }
   }
 }
 

@@ -30,7 +30,6 @@ exports.secrets = new Secrets({
 exports.withEntities = (mock, skipping) => {
   withEntity(mock, skipping, exports, 'WorkerPoolError', data.WorkerPoolError);
   withEntity(mock, skipping, exports, 'Worker', data.Worker);
-  withEntity(mock, skipping, exports, 'WorkerPool', data.WorkerPool);
 };
 
 exports.withDb = (mock, skipping) => {
@@ -187,6 +186,7 @@ exports.withServer = (mock, skipping) => {
       // preventing tests from exiting
       agent: require('http').globalAgent,
       rootUrl: exports.rootUrl,
+      retries: 0,
       credentials: {
         clientId: 'test-client',
         accessToken: 'none',
@@ -269,7 +269,7 @@ exports.resetTables = (mock, skipping) => {
     } else {
       const sec = exports.secrets.get('db');
       await resetTable({ testDbUrl: sec.testDbUrl, tableName: 'wmworkers_entities' });
-      await resetTable({ testDbUrl: sec.testDbUrl, tableName: 'wmworker_pools_entities' });
+      await resetTable({ testDbUrl: sec.testDbUrl, tableName: 'worker_pools' });
       await resetTable({ testDbUrl: sec.testDbUrl, tableName: 'wmworker_pool_errors_entities' });
     }
   });
