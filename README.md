@@ -94,6 +94,7 @@ It is not possible to run a full Taskcluster deployment directly from this repos
     * [ui/src/components/SpeedDial](ui/src/components/SpeedDial#readme)
     * [ui/src/components/StatusLabel](ui/src/components/StatusLabel#readme)
 * [Workers](workers#readme)
+    * [workers/docker-worker](workers/docker-worker#readme)
     * [Generic Worker](workers/generic-worker#readme)
         * [workers/generic-worker/server-logs](workers/generic-worker/server-logs#readme)
 <!-- TOC END -->
