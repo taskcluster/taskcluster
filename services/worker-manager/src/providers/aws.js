@@ -6,6 +6,7 @@ const fs = require('fs');
 const path = require('path');
 const _ = require('lodash');
 const {CloudAPI} = require('./cloudapi');
+const {WorkerPool} = require('../data');
 
 class AwsProvider extends Provider {
   constructor({
@@ -13,11 +14,11 @@ class AwsProvider extends Provider {
     monitor,
     rootUrl,
     Worker,
-    WorkerPool,
     WorkerPoolError,
     estimator,
     validator,
     notify,
+    db,
     providerConfig,
   }) {
     super({
@@ -25,11 +26,11 @@ class AwsProvider extends Provider {
       monitor,
       rootUrl,
       Worker,
-      WorkerPool,
       WorkerPoolError,
       estimator,
       validator,
       notify,
+      db,
       providerConfig,
     });
     this.configSchema = 'config-aws';
@@ -86,9 +87,8 @@ class AwsProvider extends Provider {
     const {workerPoolId} = workerPool;
 
     if (!workerPool.providerData[this.providerId]) {
-      await workerPool.modify(wt => {
-        wt.providerData[this.providerId] = wt.providerData[this.providerId] || {};
-      });
+      await this.db.fns.update_worker_pool_provider_data(
+        workerPool.workerPoolId, this.providerId, {});
     }
 
     const toSpawn = await this.estimator.simple({
@@ -137,12 +137,11 @@ class AwsProvider extends Provider {
       // https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-instance-metadata.html#instancedata-add-user-data
       // The raw data should be 16KB maximum
       if (userData.length > 16384) {
-        return await workerPool.reportError({
+        return await this.reportError({
+          workerPool,
           kind: 'creation-error',
           title: 'User Data is too long',
           description: 'Try removing some workerConfiguration and consider putting it in a secret',
-          notify: this.notify,
-          WorkerPoolError: this.WorkerPoolError,
         });
       }
 
@@ -209,12 +208,11 @@ class AwsProvider extends Provider {
           ],
         }).promise());
       } catch (e) {
-        return await workerPool.reportError({
+        return await this.reportError({
+          workerPool,
           kind: 'creation-error',
           title: 'Instance Creation Error',
           description: `Error calling AWS API: ${e.message}`,
-          notify: this.notify,
-          WorkerPoolError: this.WorkerPoolError,
         });
       }
 
@@ -376,16 +374,15 @@ class AwsProvider extends Provider {
         InstanceIds: [worker.workerId],
       }).promise());
     } catch (e) {
-      const workerPool = await this.WorkerPool.load({
-        workerPoolId: worker.workerPoolId,
-      });
-      await workerPool.reportError({
-        kind: 'termination-error',
-        title: 'Instance Termination Error',
-        description: `Error terminating AWS instance: ${e.message}`,
-        notify: this.notify,
-        WorkerPoolError: this.WorkerPoolError,
-      });
+      const workerPool = await WorkerPool.get(this.db, worker.workerPoolId);
+      if (workerPool) {
+        await this.reportError({
+          workerPool,
+          kind: 'termination-error',
+          title: 'Instance Termination Error',
+          description: `Error terminating AWS instance: ${e.message}`,
+        });
+      }
 
       return;
     }

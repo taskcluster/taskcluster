@@ -6,7 +6,7 @@ tasks:
   $if: 'tasks_for in ["github-push", "github-pull-request"]'
   then:
     $let:
-      node: '12.16.2'
+      node: '12.16.3'
       go:
         release: '1.13.7'
         linux:

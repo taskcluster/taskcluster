@@ -36,3 +36,4 @@ ENV TEST_DB_URL=postgresql://postgres@localhost/postgres
 EOF
 
 docker build -t "taskcluster/node-and-postgres:node${node_version}-pg${pg_version}" ${tmpdir}
+[ -n "$DOCKER_PUSH" ] && docker push "taskcluster/node-and-postgres:node${node_version}-pg${pg_version}"

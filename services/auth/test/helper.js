@@ -263,6 +263,7 @@ exports.withServers = (mock, skipping) => {
           accessToken: exports.rootAccessToken,
         },
         rootUrl: exports.rootUrl,
+        retries: 0,
         authorizedScopes: scopes.length > 0 ? scopes : undefined,
       });
     };
@@ -275,6 +276,7 @@ exports.withServers = (mock, skipping) => {
         clientId: 'static/taskcluster/root',
         accessToken: exports.rootAccessToken,
       },
+      retries: 0,
       rootUrl: exports.rootUrl,
     });
 

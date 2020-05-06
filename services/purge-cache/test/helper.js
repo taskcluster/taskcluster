@@ -66,6 +66,7 @@ exports.withServer = (mock, skipping) => {
         clientId: 'test-client',
         accessToken: 'doesnt-matter',
       },
+      retries: 0,
       rootUrl: exports.rootUrl,
     });
 

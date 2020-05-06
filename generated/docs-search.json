@@ -407,6 +407,34 @@
   },
   {
     "element": "h1",
+    "id": "websocktunnel",
+    "path": "/manual/deploying/websocktunnel",
+    "subtitle": null,
+    "title": "Websocktunnel"
+  },
+  {
+    "element": "h2",
+    "id": "configuration",
+    "path": "/manual/deploying/websocktunnel",
+    "subtitle": "Configuration",
+    "title": "Websocktunnel"
+  },
+  {
+    "element": "h2",
+    "id": "deployment",
+    "path": "/manual/deploying/websocktunnel",
+    "subtitle": "Deployment",
+    "title": "Websocktunnel"
+  },
+  {
+    "element": "h2",
+    "id": "scaling",
+    "path": "/manual/deploying/websocktunnel",
+    "subtitle": "Scaling",
+    "title": "Websocktunnel"
+  },
+  {
+    "element": "h1",
     "id": "workers",
     "path": "/manual/deploying/workers",
     "subtitle": null,
@@ -2896,6 +2924,76 @@
     "path": "/reference/workers/generic-worker/support-tiers",
     "subtitle": "Tier 3",
     "title": "Support Tiers"
+  },
+  {
+    "element": "h1",
+    "id": "websocktunnel",
+    "path": "/reference/workers/websocktunnel",
+    "subtitle": null,
+    "title": "Websocktunnel"
+  },
+  {
+    "element": "h3",
+    "id": "api-documentation",
+    "path": "/reference/workers/websocktunnel",
+    "subtitle": "API Documentation",
+    "title": "Websocktunnel"
+  },
+  {
+    "element": "h2",
+    "id": "api",
+    "path": "/reference/workers/websocktunnel",
+    "subtitle": "API",
+    "title": "Websocktunnel"
+  },
+  {
+    "element": "h4",
+    "id": "authorization",
+    "path": "/reference/workers/websocktunnel",
+    "subtitle": "Authorization",
+    "title": "Websocktunnel"
+  },
+  {
+    "element": "h2",
+    "id": "cli",
+    "path": "/reference/workers/websocktunnel",
+    "subtitle": "CLI",
+    "title": "Websocktunnel"
+  },
+  {
+    "element": "h3",
+    "id": "client-connections",
+    "path": "/reference/workers/websocktunnel",
+    "subtitle": "Client Connections",
+    "title": "Websocktunnel"
+  },
+  {
+    "element": "h2",
+    "id": "configuration",
+    "path": "/reference/workers/websocktunnel",
+    "subtitle": "Configuration",
+    "title": "Websocktunnel"
+  },
+  {
+    "element": "h2",
+    "id": "deploying-the-server",
+    "path": "/reference/workers/websocktunnel",
+    "subtitle": "Deploying the Server",
+    "title": "Websocktunnel"
+  },
+  {
+    "element": "h4",
+    "id": "multiplexed-websockets",
+    "path": "/reference/workers/websocktunnel",
+    "subtitle": "Multiplexed Websockets",
+    "title": "Websocktunnel"
+  },
+  {
+    "element": "h3",
+    "id": "viewer-connections",
+    "path": "/reference/workers/websocktunnel",
+    "subtitle": "Viewer Connections",
+    "title": "Websocktunnel"
   },
   {
     "element": "h1",
