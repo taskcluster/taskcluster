@@ -1,0 +1,59 @@
+const Debug = require('debug');
+
+const VideoDeviceManager = require('./video_device_manager');
+const AudioDeviceManager = require('./audio_device_manager');
+const CpuDeviceManager = require('./cpu_device_manager');
+const SharedMemoryDeviceManager = require('./shared_memory_device_manager');
+const KvmDeviceManager = require('./kvm_device_manager');
+
+let debug = Debug('taskcluster-docker-worker:deviceManager');
+
+const DEVICE_MANAGERS = {
+  'loopbackVideo': VideoDeviceManager,
+  'loopbackAudio': AudioDeviceManager,
+  'cpu': CpuDeviceManager,
+  'hostSharedMemory': SharedMemoryDeviceManager,
+  'kvm': KvmDeviceManager,
+};
+
+class DeviceManager {
+  constructor(config) {
+    this.config = config;
+    this.managers = this.initializeDeviceManagers();
+    debug(`DeviceManager initialized with ${Object.keys(this.managers)} managers`);
+  }
+
+  initializeDeviceManagers() {
+    let managers = {};
+    for (let deviceManager of Object.keys(DEVICE_MANAGERS)) {
+      let deviceConfig = this.config.deviceManagement[deviceManager] || { enabled: false };
+      if (deviceConfig.enabled) {
+        managers[deviceManager] = new DEVICE_MANAGERS[deviceManager](this.config);
+      }
+    }
+
+    return managers;
+  }
+
+  getDevice(deviceType) {
+    if (!this.managers[deviceType]) {
+      throw new Error('Unrecognized device requested');
+    }
+
+    return this.managers[deviceType].getAvailableDevice();
+  }
+
+  async getAvailableCapacity() {
+    let devices = await Promise.all(Object.keys(this.managers).map(async (manager) => {
+      if (this.managers[manager].unlimitedDevices) {
+        return Infinity;
+      }
+      let availableDevices = await this.managers[manager].getAvailableDevices();
+      return availableDevices.length;
+    }));
+
+    return Math.min(...devices);
+  }
+}
+
+module.exports = DeviceManager;

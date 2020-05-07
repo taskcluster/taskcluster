@@ -1,0 +1,10 @@
+#! /bin/bash
+
+# This script is _only_ ever intended to be run inside of a docker container (as
+# built by the Dockerfile in this folder and assumes it is running inside of the
+# `taskcluster/docker-worker` container.
+
+# shutdown.js is a standalone script which will kill the current running
+# container. `DOCKER_CONTAINER_ID` should be set by the test environment so we
+# can shutdown the currently running worker.
+node --harmony /worker/test/shutdown.js $DOCKER_CONTAINER_ID

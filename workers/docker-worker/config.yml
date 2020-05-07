@@ -1,0 +1,223 @@
+defaults:
+  monitorProject: 'docker-worker'
+  deviceManagement:
+    cpu:
+      enabled: false
+    loopbackAudio:
+      enabled: true
+    loopbackVideo:
+      enabled: true
+    hostSharedMemory:
+      enabled: true
+    kvm:
+      enabled: true
+  phone:
+    enabled: false
+    sims: '1'
+    type: null
+  dockerConfig:
+    # Privileged mode will allow tasks to run with elevated privileges similar
+    # to process running on the host.  The task containers will have access to
+    # all host devices and create docker daemons within containers.  Use this
+    # option with caution.
+    # TODO: Consider killing the node after completing one task or locking down
+    # in other ways.
+    allowPrivileged: false
+    # Default registry to use when making authenticated image requests.  This
+    # is similar to what docker pull does when `docker pull ubuntu:14.10`.
+    defaultRegistry: 'registry.hub.docker.com'
+    # Maximum number of attempts to make when pulling an image
+    maxAttempts: 5
+    # Delay factor rand randomizationFactor used to computer randomized
+    # exponential backoff when attempting to retry docker pulls
+    delayFactor: 15000
+    # Value between 0 and 1
+    randomizationFactor: 0.25
+  features:
+    relengAPIProxy:
+      image: 'taskcluster/relengapi-proxy:2.3.1'
+      token: !env RELENG_API_TOKEN
+  ssl:
+    certificate: '/etc/star_taskcluster-worker_net.crt'
+    key: '/etc/star_taskcluster-worker_net.key'
+
+  # Hostname of this docker worker
+  host: 'localhost'
+
+  statelessHostname:
+    enabled: false
+    secret: !env DNS_SERVER_SECRET
+    domain: 'taskcluster-worker.net'
+
+  # Run test only teardown and logging events.
+  testMode: false
+
+  workerNodeType: 'standalone'
+  instanceId: 'standalone'
+  region: 'none'
+
+  # Run each container in as restrict fashion as possible (one core per container)
+  # When this is true the capacity is always overriden to the number of cores.
+  restrictCPU: false
+
+  # Image used to  create the taskcluster proxy container.
+  taskclusterProxyImage: 'taskcluster/taskcluster-proxy:5.1.0'
+  taskclusterLogImage: 'taskcluster/livelog:v4'
+  testdroidProxyImage: 'taskcluster/testdroid-proxy:0.0.7'
+  balrogVPNProxyImage: 'taskclusterprivate/taskcluster-vpn-proxy:0.0.3'
+  dindImage: 'taskcluster/dind-service:v4.0'
+
+  alivenessCheckInterval: 30000
+
+  # by default, run one task at a time
+  capacity: 1
+
+  capacityManagement:
+    diskspaceThreshold: 30000000000
+
+  dockerVolume: '/mnt'
+
+  # Garbage Collection configuration
+  garbageCollection:
+    imageExpiration: 7200000
+    # Amount of time that should elapse before an exited container that was not
+    # explicitly marked for removal is removed.
+    containerExpiration: 1800000
+    interval: 60000
+
+  # Shutdown configuration...
+  shutdown:
+    enabled: true
+    # Shut down the worker after this many seconds of idle.
+    afterIdleSeconds: 300
+  cache:
+    volumeCachePath: '/mnt/var/cache/docker-worker'
+
+  logging:
+    # When enabled live logs will be served over SSL
+    secureLiveLogging: false
+    # Used by Azure live logger to chunk writes and send on an interval
+    liveLogChunkInterval: 5000 # 5 seconds
+
+  task:
+    # We must reclaim somewhat frequently (but not too frequently) this is the
+    # divisor used to figure out when to issue the reclaim based on taken until
+    # for example `2` would mean half the time between now and taken until.
+    reclaimDivisor: 2
+    # Tasks should be removed from the queue if they have been dequeued a lot.
+    # Possible signs that the task is bad
+    dequeueCount: 15
+
+  taskQueue:
+    # Task queue will be polled on a frequent interval for new pending tasks
+    pollInterval: 5000
+
+  #Registries which we can authenticate against for pulls:
+  #  registries: {
+  #  Note that these match based on the nearest path so the below
+  #  will authenticate for quay.io/mozilla/xfoo, etc...
+  #    'quay.io/mozilla': {
+  #      username: '...',
+  #      password: '...'
+  #    }
+  #  }
+  registries: {}
+
+  # Taskcluster client `credentials`.
+  taskcluster:
+    clientId:    !env TASKCLUSTER_CLIENT_ID
+    accessToken: !env TASKCLUSTER_ACCESS_TOKEN
+  rootUrl:     !env TASKCLUSTER_ROOT_URL
+
+  # When true will create durable queue on pulse.
+  createQueue: true
+
+  # Pulse credentials
+  pulse:
+    username:   !env PULSE_USERNAME
+    password:   !env PULSE_PASSWORD
+
+  metricsCollection:
+    # Only collect host level metrics every minute
+    hostMetricsInterval: 60000
+
+  influx:
+    connectionString: null
+    # Wait no more than 10 minutes before flushing stats
+    maxDelay: 600
+    # Maximum number of points to queue before flush
+    maxPendingPoints: 100
+
+  testdroid:
+    url:      !env TESTDROID_URL
+    username: !env TESTDROID_USERNAME
+    password: !env TESTDROID_PASSWORD
+
+  ed25519SigningKeyLocation: '/etc/docker-worker-ed25519-cot-signing-key.key'
+
+  dockerSave:
+    expiration: '7 days'
+
+  interactive:
+    ssl: true
+    # Minimum time, in seconds, between start of task and end of task
+    # Could be cut short due to worker node shutdown
+    minTime: 180
+    # Extra time the task stays alive after an interactive session finishes
+    expirationAfterSession: 900
+    #base path of the socket artifact
+    artifactName: 'private/docker-worker/'
+
+  schema:
+    region: 'us-west-2'
+    bucket: 'schemas.taskcluster.net'
+    path: 'docker-worker/v1/'
+
+production:
+  logging:
+    secureLiveLogging: true
+
+  # DNS Server secret used for constructing hostnames from using the
+  # stateless dns server
+  statelessHostname:
+    enabled: true
+    secret:  !env DNS_SERVER_SECRET
+    domain:  'taskcluster-worker.net'
+
+test:
+  monitorProject: 'docker-worker-test'
+  capacity: 1
+  testMode: true
+  createQueue: false
+
+  dockerConfig:
+    allowPrivileged: false
+    defaultRegistry: 'registry.hub.docker.com'
+    maxAttempts: 5
+    delayFactor: 100
+    randomizationFactor: 0.25
+
+  taskQueue:
+    pollInterval: 1000
+
+  influx:
+    maxDelay: 1
+    maxPendingPoints: 1
+    allowHTTP: true
+
+  ssl:
+    certificate: '/worker/test/fixtures/ssl_cert.crt'
+    key: '/worker/test/fixtures/ssl_cert.key'
+
+  cache:
+    volumeCachePath: '/tmp/test-cache'
+
+  capacityManagement:
+    diskspaceThreshold: 1000000000
+
+  dockerVolume: '/tmp'
+
+  ed25519SigningKeyLocation: '/worker/test/fixtures/ed25519_private_key'
+
+  interactive:
+    artifactName: 'private/docker-worker-tests/'

@@ -1,0 +1,47 @@
+#!/usr/bin/env babel-node
+
+const program = require('commander');
+const { spawn } = require('child_process');
+const path = require('path');
+const diveSync = require('diveSync');
+
+let baseDir = path.resolve(__dirname, '..');
+let binary = `${baseDir}/node_modules/mocha/bin/mocha`;
+
+program.option('--this-chunk <this-chunk>', 'current chunk');
+program.option('--total-chunks <total-chunks>', 'total number of chunks');
+program.parse(process.argv);
+
+let thisChunk = program.thisChunk;
+let totalChunks = program.totalChunks;
+
+if (!thisChunk || !totalChunks) thisChunk = totalChunks = 1;
+
+
+let files = [];
+diveSync(__dirname, { recursive: true }, (err, file) => {
+  if (err) return;
+
+  if (file.endsWith('_test.js')) files.push(file);
+});
+
+files = files.sort();
+
+if (files.length >= totalChunks) {
+  let chunkLength = parseInt(Math.ceil(files.length / totalChunks));
+  let chunk = parseInt((thisChunk - 1) * chunkLength);
+  files = files.slice(chunk, chunk + chunkLength);
+}
+
+files.unshift('--harmony');
+files.unshift('--exit');
+files.unshift('--grep "@disabled" --invert');
+
+let proc = spawn(binary, files, {
+  env: process.env,
+  stdio: 'inherit'
+});
+
+proc.on('exit', (code) => {
+    process.exit(code);
+});

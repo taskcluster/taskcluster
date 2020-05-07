@@ -1,0 +1,8 @@
+/deploy
+/test
+/build.sh
+/Vagrantfile
+/Dockerfile
+/packer.json
+/worker_config
+/docker-worker-0.0.0.tgz
