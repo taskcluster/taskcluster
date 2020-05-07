@@ -3,6 +3,31 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v29.4.0
+
+### GENERAL
+
+▶ [patch] [bug 1631829](http://bugzil.la/1631829)
+Fixes an issue where azure-provider wasn't properly tagging resources.
+
+### DEPLOYERS
+
+▶ [minor] [bug 1630023](http://bugzil.la/1630023)
+The worker manager's worker pools are now stored in a normal database table.  This table is small, and the DB migration should complete in seconds.
+
+### DEVELOPERS
+
+▶ [patch] 
+Fix missing db TypeError in purge-cache.
+
+▶ [patch] [bug 1633897](http://bugzil.la/1633897)
+Remove outdated check for taskcluster.net when sending cookies. This was used
+back when the UI was hosted in heroku.
+
+### OTHER
+
+▶ Additional change not described here: [bug 1633882](http://bugzil.la/1633882).
+
 ## v29.3.0
 
 ### GENERAL
