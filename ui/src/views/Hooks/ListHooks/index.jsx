@@ -3,6 +3,7 @@ import React, { Component } from 'react';
 import { graphql } from 'react-apollo';
 import Spinner from '@mozilla-frontend-infra/components/Spinner';
 import { withStyles } from '@material-ui/core/styles';
+import Typography from '@material-ui/core/Typography';
 import MuiTreeView from 'material-ui-treeview';
 import PlusIcon from 'mdi-react/PlusIcon';
 import qs, { parse, stringify } from 'qs';
@@ -87,6 +88,11 @@ export default class ListHooks extends Component {
             searchTerm={hookSearch || null}
             softSearch
             tree={tree}
+            onEmptySearch={
+              <Typography variant="subtitle1">
+                No items for search term {hookSearch}
+              </Typography>
+            }
             Link={Link}
           />
         )}
