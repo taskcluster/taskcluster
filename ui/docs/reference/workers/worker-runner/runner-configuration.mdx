@@ -51,3 +51,26 @@ the following fields:
 DOS-style newlines and encodings other than utf-8 are not supported.
 <!-- RUNNER-CONFIG END -->
 
+## Example
+
+What follows is an example runner configuration file, illustrating how these parts
+might come together.
+
+```yaml
+provider:
+  providerType: azure
+
+worker:
+  implementation: generic-worker
+  path: /usr/local/bin/generic-worker
+  configPath: /etc/taskcluster/generic-worker/config.yaml
+
+workerConfig:
+  ed25519SigningKeyLocation: /etc/taskcluster/generic-worker/signing.key
+
+cacheOverRestarts: true
+```
+
+
+While most configuration should come from the worker pool definition in worker-manager, it makes sense to include configuration that is specific to the VM image (such as filesystem paths) in the runner config.
+The `cacheOverRestarts` option is set because the generic-worker build used here (multiuser) will reboot after every task, so worker-runner must cache its state over those reboots.

@@ -3130,6 +3130,13 @@
   },
   {
     "element": "h2",
+    "id": "example",
+    "path": "/reference/workers/worker-runner/runner-configuration",
+    "subtitle": "Example",
+    "title": "Runner Configuration File"
+  },
+  {
+    "element": "h2",
     "id": "file-format",
     "path": "/reference/workers/worker-runner/runner-configuration",
     "subtitle": "File Format",
