@@ -41,7 +41,7 @@ class ChainOfTrust {
   }
 
   async killed(task) {
-    if (task.isCanceled()) return;
+    if (task.isCanceled()) {return;}
 
     // Ensure the stream is completely written prior to uploading the temp file.
     await streamClosed(this.stream);
@@ -59,7 +59,7 @@ class ChainOfTrust {
         logStream, 'public/logs/certified.log', expiration, {
           'content-type': 'text/plain',
           'content-length': stat.size,
-          'content-encoding': 'gzip'
+          'content-encoding': 'gzip',
         });
       await fs.unlink(this.file.path);
     } catch (err) {
@@ -81,8 +81,8 @@ class ChainOfTrust {
       environment: {
         publicIpAddress: task.runtime.publicIp,
         privateIpAddress: task.runtime.privateIp,
-        imageHash: task.imageHash
-      }
+        imageHash: task.imageHash,
+      },
     };
 
     if (task.imageArtifactHash) {
@@ -105,13 +105,13 @@ class ChainOfTrust {
       await uploadToS3(task.queue, task.status.taskId, task.runId,
         cotBufferStream, 'public/chain-of-trust.json', expiration, {
           'content-type': 'text/plain',
-          'content-length': chainOfTrust.length
+          'content-length': chainOfTrust.length,
         });
 
       await uploadToS3(task.queue, task.status.taskId, task.runId,
         sigBufferStream, 'public/chain-of-trust.json.sig', expiration, {
           'content-type': 'application/octet-stream',
-          'content-length': chainOfTrustSig.length
+          'content-length': chainOfTrustSig.length,
         });
     } catch (err) {
       task.stream.write(fmtErrorLog(err));

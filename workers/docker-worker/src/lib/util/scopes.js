@@ -12,9 +12,9 @@ const scopeUtils = require('../scopes');
  * @param {array} expandedScopes
  */
 module.exports = {
-  async hasPrefixedScopes(prefix, resources, expandedScopes=[]) {
+  async hasPrefixedScopes(prefix, resources, expandedScopes = []) {
     let neededScopes = Object.keys(resources).map((r) => { return prefix + r; });
 
     return scopeUtils.scopeMatch(expandedScopes, [neededScopes]);
-  }
+  },
 };

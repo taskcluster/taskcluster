@@ -4,7 +4,7 @@ const DEFAULT_ARTIFACT_PATH = 'public/logs/live.log';
 const BACKING_SUFFIX = '_backing';
 
 function getLogsLocationsFromTask(task) {
-  var logsPaths = {};
+  let logsPaths = {};
 
   logsPaths.live = task && task.payload && task.payload.log ?
     task.payload.log : DEFAULT_ARTIFACT_PATH;

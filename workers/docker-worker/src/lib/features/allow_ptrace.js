@@ -18,7 +18,7 @@ class AllowPtrace {
     if (!scopeMatch(task.task.scopes, [[featureScope]])) {
       throw new Error(
         `Insufficient scopes to use '${this.featureName}' feature.  ` +
-        `Try adding ${featureScope} to the .scopes array.`
+        `Try adding ${featureScope} to the .scopes array.`,
       );
     }
   }

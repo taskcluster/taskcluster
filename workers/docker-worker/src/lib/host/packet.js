@@ -11,7 +11,7 @@ const fs = require('fs');
 const taskcluster = require('taskcluster-client');
 
 const log = createLogger({
-  source: 'host/packet'
+  source: 'host/packet',
 });
 
 function minutes(n) {
@@ -32,7 +32,6 @@ module.exports = {
 
       assert(publicIp);
       assert(privateIp);
-
 
       // User data required fields:
       // * clientId - taskcluster client ID
@@ -65,7 +64,7 @@ module.exports = {
       let secretsData;
       try {
         secretsData = await secrets.get(
-          `worker-type:${userdata.provisionerId}/${userdata.workerType}`
+          `worker-type:${userdata.provisionerId}/${userdata.workerType}`,
         );
       } catch (err) {
         log(err);

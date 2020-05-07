@@ -38,21 +38,21 @@ suite('secure local live logging', () => {
     settings.configure({
       logging: {
         secureLiveLogging: true,
-      }
+      },
     });
 
     let taskId = slugid.v4();
-    var task = {
+    let task = {
       payload: {
         image: 'taskcluster/test-ubuntu',
-        command:        [
+        command: [
           '/bin/bash',
           '-c',
           'echo "first command!"; ' +
-          'for i in {1..3}; do echo "Hello Number $i" && sleep 1; done;'
+          'for i in {1..3}; do echo "Hello Number $i" && sleep 1; done;',
         ],
-        maxRunTime: 3 * 60
-      }
+        maxRunTime: 3 * 60,
+      },
     };
 
     worker = new TestWorker(DockerWorker);
@@ -72,7 +72,7 @@ suite('secure local live logging', () => {
     assert.equal(
       url.parse(logUrl).protocol,
       'https:',
-      'Live log is not served over https'
+      'Live log is not served over https',
     );
   });
 
@@ -80,22 +80,22 @@ suite('secure local live logging', () => {
     settings.configure({
       ssl: {
         certificate: '/some/path/ssl.cert',
-        key: '/some/path/ssl.key'
-      }
+        key: '/some/path/ssl.key',
+      },
     });
 
     let taskId = slugid.v4();
-    var task = {
+    let task = {
       payload: {
         image: 'taskcluster/test-ubuntu',
-        command:        [
+        command: [
           '/bin/bash',
           '-c',
           'echo "first command!"; ' +
-          'for i in {1..3}; do echo "Hello Number $i" && sleep 1; done;'
+          'for i in {1..3}; do echo "Hello Number $i" && sleep 1; done;',
         ],
-        maxRunTime: 3 * 60
-      }
+        maxRunTime: 3 * 60,
+      },
     };
 
     worker = new TestWorker(DockerWorker);
@@ -115,7 +115,7 @@ suite('secure local live logging', () => {
     assert.equal(
       url.parse(logUrl).protocol,
       'http:',
-      'Live log should not be served over https'
+      'Live log should not be served over https',
     );
 
   });
@@ -131,22 +131,22 @@ suite('secure local live logging', () => {
       },
       ssl: {
         certificate: '/some/path/ssl.cert',
-        key: '/some/path/ssl.key'
-      }
+        key: '/some/path/ssl.key',
+      },
     });
 
     let taskId = slugid.v4();
-    var task = {
+    let task = {
       payload: {
         image: 'taskcluster/test-ubuntu',
-        command:        [
+        command: [
           '/bin/bash',
           '-c',
           'echo "first command!"; ' +
-          'for i in {1..3}; do echo "Hello Number $i" && sleep 1; done;'
+          'for i in {1..3}; do echo "Hello Number $i" && sleep 1; done;',
         ],
-        maxRunTime: 3 * 60
-      }
+        maxRunTime: 3 * 60,
+      },
     };
 
     worker = new TestWorker(DockerWorker);

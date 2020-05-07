@@ -12,7 +12,7 @@ module.exports = class IndexedImage extends ArtifactImage {
    * @param {Object}  stream        - task stream object
    * @param {Array}   taskScopes        - Array of task scopes
    */
-  constructor(runtime, imageDetails, stream, task, taskScopes=[]) {
+  constructor(runtime, imageDetails, stream, task, taskScopes = []) {
     super(runtime, imageDetails, stream, task, taskScopes);
     this.runtime = runtime;
     this.taskScopes = taskScopes;
@@ -22,7 +22,7 @@ module.exports = class IndexedImage extends ArtifactImage {
     this.index = new taskcluster.Index({
       rootUrl: this.runtime.rootUrl,
       credentials: this.runtime.taskcluster,
-      authorizedScopes: this.taskScopes
+      authorizedScopes: this.taskScopes,
     });
     this.task = task;
     this.knownHashes = this.runtime.imageManager.imageHashes;
@@ -59,7 +59,7 @@ module.exports = class IndexedImage extends ArtifactImage {
     } catch(e) {
       throw new Error(
         `Could not find a task associated with "${this.namespace}" ` +
-        `namespace. ${e.message}`
+        `namespace. ${e.message}`,
       );
     }
   }

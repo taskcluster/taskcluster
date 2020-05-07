@@ -1,11 +1,11 @@
 /**
 @module taskcluster-client/factory/graph
 */
-var Factory = require('object-factory');
-var Task = require('./task');
-var slugid = require('slugid');
+let Factory = require('object-factory');
+let Task = require('./task');
+let slugid = require('slugid');
 
-var GraphTask = new Factory({
+let GraphTask = new Factory({
   onbuild: function(props) {
     props.requires = props.requires || [];
     props.taskId = props.taskId || slugid.v4();
@@ -15,21 +15,20 @@ var GraphTask = new Factory({
     // requires: []
     label: '',
     reruns: 0,
-    task: Task
-  }
+    task: Task,
+  },
 });
 
-var GraphMetadata = new Factory({
+let GraphMetadata = new Factory({
   properties: {
     name: 'xfoo',
     description: 'bar',
     owner: 'user@local.localhost',
-    source: 'task-factory/'
-  }
+    source: 'task-factory/',
+  },
 });
 
-
-var Graph = new Factory({
+let Graph = new Factory({
   onbuild: function(props) {
     props.tags = props.tags || {};
     props.scopes = props.scopes || [];
@@ -43,8 +42,8 @@ var Graph = new Factory({
   properties: {
     // routing: ''
     // tasks: { 'name': Graph }
-    metadata: GraphMetadata
-  }
+    metadata: GraphMetadata,
+  },
 });
 
 module.exports = Graph;

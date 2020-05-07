@@ -1,5 +1,5 @@
-var Docker = require('dockerode-promise');
-var dockerOpts = require('dockerode-options');
+let Docker = require('dockerode-promise');
+let dockerOpts = require('dockerode-options');
 
 /**
 Tiny wrapper around creating a docker instance.

@@ -10,7 +10,6 @@
   "workspaces": [
     "libraries/*",
     "services/*",
-    "workers/*",
     "db"
   ],
   "dependencies": {
@@ -166,7 +165,7 @@
     "mocha/mkdirp": "^0.5.1"
   },
   "scripts": {
-    "lint": "eslint --cache --ext js --ignore-pattern clients/client-web/build --ignore-pattern clients/client-py libraries services infrastructure clients test db",
+    "lint": "eslint --cache --ext js --ignore-pattern clients/client-web/build --ignore-pattern clients/client-py libraries services infrastructure clients test db workers/docker-worker",
     "lint:go": "sh test/go-lint.sh",
     "test": "yarn workspaces run test",
     "fetch-coverage": "node test/fetch-coverage.js",

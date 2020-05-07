@@ -20,17 +20,17 @@ suite('container startup', () => {
       payload: {
         image: 'taskcluster/test-ubuntu',
         command: [
-          'echo "Hello"'
+          'echo "Hello"',
         ],
-        maxRunTime: 30
-      }
+        maxRunTime: 30,
+      },
     });
 
     assert.equal(result.run.state, 'failed', 'task should be successful');
     assert.equal(result.run.reasonResolved, 'failed', 'task should be successful');
     assert.ok(
       result.log.includes('Failure to properly start execution environment'),
-      'Error message was not written to the task log.'
+      'Error message was not written to the task log.',
     );
   });
 });

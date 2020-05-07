@@ -64,7 +64,7 @@ const elideSecrets = fields => {
  * later if we want.
  */
 class Logger {
-  constructor({name, service, level, destination=process.stdout, metadata=null, taskclusterVersion=undefined}) {
+  constructor({name, service, level, destination = process.stdout, metadata = null, taskclusterVersion = undefined}) {
     assert(name, 'Must specify Logger name.');
 
     this.name = name;

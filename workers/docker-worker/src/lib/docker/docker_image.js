@@ -15,18 +15,18 @@ const IMAGE_SCOPE_PREFIX = 'docker-worker:image:';
 const RETRY_CONFIG = {
   maxAttempts: 5,
   delayFactor: 15 * 1000,
-  randomizationFactor: 0.25
+  randomizationFactor: 0.25,
 };
 
 class DockerImage {
-  constructor(runtime, imageDetails, stream, task, scopes=[]) {
+  constructor(runtime, imageDetails, stream, task, scopes = []) {
     this.runtime = runtime;
     this.imageName = imageDetails.name;
     this.stream = stream;
     this.scopes = scopes;
     this.task = task;
 
-    var parsed = parseImage(this.imageName);
+    let parsed = parseImage(this.imageName);
     this.name = parsed.repository;
     // Default to using the 'latest' tag if none specified to avoid pulling the
     // entire repository. Consistent with `docker run` defaults.
@@ -75,7 +75,7 @@ class DockerImage {
     let dockerImageName = this.fullName;
 
     let pullOptions = {
-      retryConfig: this.runtime.dockerConfig
+      retryConfig: this.runtime.dockerConfig,
     };
 
     if (this.canAuthenticate() && this.credentials) {
@@ -93,13 +93,13 @@ class DockerImage {
       pullOptions);
     this.runtime.monitor.measure(
       'task.dockerImage.downloadTime',
-      Date.now() - start
+      Date.now() - start,
     );
 
     return result;
   }
 
-  async pullImageStreamTo(docker, image, stream, options={}) {
+  async pullImageStreamTo(docker, image, stream, options = {}) {
     let config = options.retryConfig || RETRY_CONFIG;
     let attempts = 0;
 
@@ -136,7 +136,7 @@ class DockerImage {
           delay.toFixed(2),
           image,
           err,
-          err.stack
+          err.stack,
         );
 
         await sleep(delay);
@@ -161,7 +161,7 @@ class DockerImage {
   @return {Boolean}
   */
   canAuthenticate() {
-    var components = this.name.split('/').filter(function(part) {
+    let components = this.name.split('/').filter(function(part) {
       // strip empty parts...
       return !!part;
     });
@@ -174,20 +174,20 @@ class DockerImage {
 
   @return {Object|null} credentials or null...
   */
-  getCredentials(repositories, defaultRegistry='') {
+  getCredentials(repositories, defaultRegistry = '') {
     // We expect the image to be be checked via imageCanAuthenticate first.
     // This could be user/image or host/user/image.  If only user/image, use
     // default registry
-    var parts = this.name.split('/');
-    if (parts.length === 2) parts.unshift(defaultRegistry);
+    let parts = this.name.split('/');
+    if (parts.length === 2) {parts.unshift(defaultRegistry);}
 
-    var registryHost = parts[0];
-    var registryUser = parts[1];
-    var result;
+    let registryHost = parts[0];
+    let registryUser = parts[1];
+    let result;
 
     // Note this may search through all repositories intentionally as to only
     // match the correct (longest match based on slashes).
-    for (var registry in repositories) {
+    for (let registry in repositories) {
 
       // Longest possible match always wins fast path return...
       if (registryHost + '/' + registryUser === registry) {

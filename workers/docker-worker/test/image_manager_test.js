@@ -15,7 +15,7 @@ const DOCKER_CONFIG = {
   defaultRegistry: 'registry.hub.docker.com',
   maxAttempts: 5,
   delayFactor: 1,
-  randomizationFactor: 0.25
+  randomizationFactor: 0.25,
 };
 
 suite('Image Manager', () => {
@@ -45,7 +45,7 @@ suite('Image Manager', () => {
     let image = {
       type: 'task-image',
       taskId: TASK_ID,
-      path: 'public/image.tar'
+      path: 'public/image.tar',
     };
 
     let hashedName = createHash('md5')
@@ -84,7 +84,7 @@ suite('Image Manager', () => {
     let image = {
       type: 'indexed-image',
       namespace: NAMESPACE,
-      path: 'public/image.tar'
+      path: 'public/image.tar',
     };
 
     let index = new taskcluster.Index({
@@ -125,7 +125,7 @@ suite('Image Manager', () => {
     let image = {
       type: 'indexed-image',
       namespace: NAMESPACE,
-      path: 'private/docker-worker-tests/image.tar'
+      path: 'private/docker-worker-tests/image.tar',
     };
 
     let index = new taskcluster.Index({
@@ -169,7 +169,7 @@ suite('Image Manager', () => {
     let image = {
       type: 'indexed-image',
       namespace: NAMESPACE,
-      path: 'private/docker-worker-tests/image.tar'
+      path: 'private/docker-worker-tests/image.tar',
     };
 
     let scopes = ['queue:get-artifact:private/docker-worker-tests/image.tar'];
@@ -211,7 +211,7 @@ suite('Image Manager', () => {
     let image = {
       type: 'indexed-image',
       namespace: NAMESPACE,
-      path: 'public/image.tar'
+      path: 'public/image.tar',
     };
 
     let index = new taskcluster.Index({
@@ -252,7 +252,7 @@ suite('Image Manager', () => {
     let image = {
       type: 'indexed-image',
       namespace: slugid.nice(),
-      path: 'public/image.tar'
+      path: 'public/image.tar',
     };
 
     let runtime = {
@@ -280,7 +280,7 @@ suite('Image Manager', () => {
     } catch(e) {
       assert.ok(
         e.message.includes('Could not find a task associated'),
-        'Error message did not appear indicating a task could not be found.'
+        'Error message did not appear indicating a task could not be found.',
       );
     }
   });
@@ -289,7 +289,7 @@ suite('Image Manager', () => {
     let image = {
       type: 'indexed-image',
       namespace: NAMESPACE,
-      path: 'public/image1.tar'
+      path: 'public/image1.tar',
     };
 
     let runtime = {
@@ -317,7 +317,7 @@ suite('Image Manager', () => {
     } catch(e) {
       assert.ok(
         e.message.includes('Could not download artifact'),
-        `Error message did not appear indicating an artifact could not be found. ${e.message}`
+        `Error message did not appear indicating an artifact could not be found. ${e.message}`,
       );
     }
   });
@@ -325,7 +325,7 @@ suite('Image Manager', () => {
   test('failure when using unrecognied image type', async () => {
     let image = {
       type: 'garbage-image',
-      path: 'public/image1.tar'
+      path: 'public/image1.tar',
     };
 
     let runtime = {
@@ -353,9 +353,8 @@ suite('Image Manager', () => {
     } catch(e) {
       assert.ok(
         e.message.includes('Unrecognized image type'),
-        `Error message did not appear indicating unrecognized image type was used. ${e.message}`
+        `Error message did not appear indicating unrecognized image type was used. ${e.message}`,
       );
     }
   });
 });
-

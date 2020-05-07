@@ -43,7 +43,7 @@ class Artifacts {
     try {
       contentStream = await (new Promise((accept, reject) => {
         return container.getArchive({path}, (err, data) => {
-          if (err) reject(err);
+          if (err) {reject(err);}
           accept(data);
         });
       }));
@@ -59,7 +59,7 @@ class Artifacts {
         storageType: 'error',
         expires: expiry,
         reason: 'file-missing-on-worker',
-        message: error
+        message: error,
       });
 
       // Return without throwing an error that would cause the task to fail.  Too
@@ -110,7 +110,7 @@ class Artifacts {
             storageType: 'error',
             expires: expiry,
             reason: 'invalid-resource-on-worker',
-            message: error
+            message: error,
           });
 
           // Destroy the stream.
@@ -132,7 +132,7 @@ class Artifacts {
 
       let headers = {
         'content-type': mime.lookup(header.name),
-        'content-length': header.size
+        'content-length': header.size,
       };
 
       try {
@@ -167,7 +167,7 @@ class Artifacts {
         // possible before handling the errors.
         errors.push(err);
         taskHandler.stream.write(
-          fmtErrorLog(`Error uploading "${entryName}" artifact. ${err.message}`)
+          fmtErrorLog(`Error uploading "${entryName}" artifact. ${err.message}`),
         );
       }
       // Resume the stream if there is an upload failure otherwise
@@ -194,14 +194,14 @@ class Artifacts {
 
   async stopped(taskHandler) {
     // Can't create artifacts for a task that's been canceled
-    if (taskHandler.isCanceled()) return;
+    if (taskHandler.isCanceled()) {return;}
 
     let artifacts = taskHandler.task.payload.artifacts;
     taskHandler.artifactHashes = {};
     let errors = {};
 
     // Artifacts are optional...
-    if (typeof artifacts !== 'object') return;
+    if (typeof artifacts !== 'object') {return;}
 
     // Upload all the artifacts in parallel.
     await Promise.all(_.map(artifacts, (value, key) => {

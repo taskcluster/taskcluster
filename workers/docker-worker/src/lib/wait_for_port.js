@@ -1,9 +1,9 @@
-var net = require('net');
+let net = require('net');
 
 // Wait for the port to be available at a particular host/port...
 function waitForPort(host, port, timeout) {
   return new Promise(function(accept, reject) {
-    var deadline = Date.now() + timeout;
+    let deadline = Date.now() + timeout;
 
     function connect() {
       if (Date.now() >= deadline) {

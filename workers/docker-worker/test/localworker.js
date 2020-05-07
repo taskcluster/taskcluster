@@ -1,4 +1,4 @@
-var spawn = require('child_process').spawn;
+let spawn = require('child_process').spawn;
 
 /** Binary to launch inorder to get a worker instance running */
 const BINARY = 'node';
@@ -25,8 +25,8 @@ class LocalWorker {
   launch() {
     return new Promise(function(accept, reject) {
       // Clone process environment variables.
-      var envs = {};
-      for (var key in process.env) {
+      let envs = {};
+      for (let key in process.env) {
         envs[key] = process.env[key];
       }
 
@@ -35,7 +35,7 @@ class LocalWorker {
       envs.NODE_ENV = 'test';
 
       // Provide commandline arguments
-      var args = [
+      let args = [
         BINARY,
         '--host', 'test',
         '--provisioner-id', this.provisionerId,
@@ -52,10 +52,10 @@ class LocalWorker {
       args.push('test');
 
       // Launch worker process.
-      var proc = this.process = spawn('babel-node', args, {
+      let proc = this.process = spawn('babel-node', args, {
         execArgv: [],
         env: envs,
-        stdio: 'pipe'
+        stdio: 'pipe',
       });
 
       return accept(proc);
@@ -65,7 +65,7 @@ class LocalWorker {
   /** Terminate local worker instance */
   async terminate() {
     if (this.process) {
-      var proc = this.process;
+      let proc = this.process;
       // Trigger a graceful halt (this waits for tasks to become idle, etc...).
       this.process.kill();
       this.process = null;

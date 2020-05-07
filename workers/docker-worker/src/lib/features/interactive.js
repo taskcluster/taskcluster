@@ -35,14 +35,14 @@ let listDisplays = async (container) => {
     AttachStderr: false,
     AttachStdin: false,
     Tty: false,
-    Cmd: ['/.taskclusterutils/list-displays']
+    Cmd: ['/.taskclusterutils/list-displays'],
   });
   let stream = await exec.start({
     Detach: false,
-    stdin:  false,
+    stdin: false,
     stdout: true,
     stderr: false,
-    stream: true
+    stream: true,
   });
 
   // Capture output
@@ -67,9 +67,9 @@ let listDisplays = async (container) => {
       throw new Error('Unexpected response line: ' + line);
     }
     return {
-      display:  data[1],
-      width:    parseInt(data[2]),
-      height:   parseInt(data[3])
+      display: data[1],
+      width: parseInt(data[2]),
+      height: parseInt(data[3]),
     };
   });
 };
@@ -96,15 +96,15 @@ let OpenDisplay = async (container, display, socketFolder, argv = [], name) => {
       '-timeout', '120',
       '-nopw', '-norc',
       '-desktop', name,
-      '-unixsockonly', '/.taskclusterinteractiveexport/' + socketName
-    ].concat(argv)
+      '-unixsockonly', '/.taskclusterinteractiveexport/' + socketName,
+    ].concat(argv),
   });
   await exec.start({
     Detach: true,
-    stdin:  false,
+    stdin: false,
     stdout: false,
     stderr: false,
-    stream: true
+    stream: true,
   });
 
   // Filename of the socket on our side
@@ -116,7 +116,6 @@ let OpenDisplay = async (container, display, socketFolder, argv = [], name) => {
   // Create connection to VNC socket and return it
   return net.createConnection(socketFile);
 };
-
 
 class WebsocketServer {
   constructor () {
@@ -138,16 +137,16 @@ class WebsocketServer {
       binds: [{
         source: path.join(__dirname, '../../../bin-utils'),
         target: '/.taskclusterutils',
-        readOnly: true
+        readOnly: true,
       }, {
         source: this.lock,
         target: '/.taskclusterinteractivesession.lock',
-        readOnly: false
+        readOnly: false,
       }, {
         source: this.socketsFolder,
         target: '/.taskclusterinteractiveexport',
-        readOnly: false
-      }]
+        readOnly: false,
+      }],
     };
   }
 
@@ -157,7 +156,7 @@ class WebsocketServer {
     if (task.runtime.interactive.ssl) {
       let [key, cert] = await Promise.all([
         readFile(task.runtime.ssl.key),
-        readFile(task.runtime.ssl.certificate)
+        readFile(task.runtime.ssl.certificate),
       ]);
       httpServ = https.createServer({key, cert});
     } else {
@@ -218,15 +217,15 @@ class WebsocketServer {
         'PUT',
         'DELETE',
         'TRACE',
-        'CONNECT'
+        'CONNECT',
       ].join(','));
       res.header('Access-Control-Request-Method', '*');
-      res.header('Access-Control-Allow-Headers',  [
+      res.header('Access-Control-Allow-Headers', [
         'X-Requested-With',
         'Content-Type',
         'Authorization',
         'Accept',
-        'Origin'
+        'Origin',
       ].join(','));
       next();
     });
@@ -255,7 +254,7 @@ class WebsocketServer {
     // Create websockify display server
     this.displayServer = new ws.Server({
       server: this.vnc.httpServ,
-      path:   this.vncPath,
+      path: this.vncPath,
     }, async (client) => {
       try {
         // Parse query string
@@ -277,7 +276,7 @@ class WebsocketServer {
           query.display,
           this.socketsFolder,
           argv,
-          name
+          name,
         );
         stream.pipe(socket);
         socket.pipe(stream);
@@ -351,7 +350,7 @@ class WebsocketServer {
             taskId: task.status.taskId,
             runId: task.runId,
           })),
-      }
+      },
     );
     let toolsDisplayArtifact = queue.createArtifact(
       task.status.taskId,
@@ -368,7 +367,7 @@ class WebsocketServer {
             taskId: task.status.taskId,
             runId: task.runId,
           })),
-      }
+      },
     );
 
     debug('making artifacts');

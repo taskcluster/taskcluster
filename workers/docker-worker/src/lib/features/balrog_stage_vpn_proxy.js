@@ -45,7 +45,7 @@ class BalrogStageVPNProxy {
     if (!scopeMatch(task.task.scopes, [[featureScope]])) {
       throw new Error(
         `Insufficient scopes to use '${this.featureName}' feature. ` +
-        `Try adding ${featureScope} to the .scopes array.`
+        `Try adding ${featureScope} to the .scopes array.`,
       );
     }
 
@@ -56,7 +56,7 @@ class BalrogStageVPNProxy {
     // pulling docker image.  Users are generally unaware of the images and tags
     // used for docker-worker features ahead of time, but they do know what
     // feature they are using.
-    let imageScopes = [`${IMAGE_SCOPE_PREFIX+image}`];
+    let imageScopes = [`${IMAGE_SCOPE_PREFIX + image}`];
 
     debug('ensuring image');
     let imageId = await task.runtime.imageManager.ensureImage(image, process.stdout, task, imageScopes);
@@ -76,9 +76,9 @@ class BalrogStageVPNProxy {
         ExtraHosts: [
           // XXX: hack for now.  Problem in taskcluster-vpn-proxy where resolv.conf
           // isn't updated when vpn'ed in so name resolution does not work.
-          'balrog-admin.stage.mozaws.net:52.71.237.144'
-        ]
-      }
+          'balrog-admin.stage.mozaws.net:52.71.237.144',
+        ],
+      },
     });
 
     // Terrible hack to get container promise proxy.
@@ -123,7 +123,7 @@ class BalrogStageVPNProxy {
 
     return {
       links: [{name, alias: ALIAS}],
-      env: {}
+      env: {},
     };
   }
 

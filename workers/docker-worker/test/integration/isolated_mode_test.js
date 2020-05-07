@@ -6,10 +6,10 @@ const TestWorker = require('../testworker');
 
 suite('Shutdown on idle', () => {
   suite('with retrict CPU enabled', () => {
-    var worker;
+    let worker;
     setup(async function () {
       settings.configure({
-        restrictCPU: true
+        restrictCPU: true,
       });
 
       worker = new TestWorker(DockerWorker);
@@ -26,14 +26,14 @@ suite('Shutdown on idle', () => {
 
       let tasks = 10;
       while (tasks--) {
-        var res = await worker.postToQueue({
+        let res = await worker.postToQueue({
           payload: {
             image: 'taskcluster/test-ubuntu',
             command: cmd(
-              'echo "Processors: $(nproc)"'
+              'echo "Processors: $(nproc)"',
             ),
-            maxRunTime: 60 * 60
-          }
+            maxRunTime: 60 * 60,
+          },
         });
 
         assert.ok(res.log.includes('Processors: 1'), 'container is only using one core');

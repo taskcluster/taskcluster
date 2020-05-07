@@ -1,17 +1,17 @@
-var path = require('path');
-var fs = require('fs');
+let path = require('path');
+let fs = require('fs');
 const {makeDir, removeDir} = require('./util/fs');
-var taskcluster = require('taskcluster-client');
-var uuid = require('uuid');
-var _ = require('lodash');
+let taskcluster = require('taskcluster-client');
+let uuid = require('uuid');
+let _ = require('lodash');
 
-var KEY_DELIMITER = '::';
+let KEY_DELIMITER = '::';
 
 function sortInstanceIds(cache) {
-  var instanceIds = Object.keys(cache);
-  var sorted = instanceIds.sort(function (a, b) {
-    if (cache[a].lastUsed < cache[b].lastUsed) return 1;
-    if (cache[a].lastUsed > cache[b].lastUsed) return -1;
+  let instanceIds = Object.keys(cache);
+  let sorted = instanceIds.sort(function (a, b) {
+    if (cache[a].lastUsed < cache[b].lastUsed) {return 1;}
+    if (cache[a].lastUsed > cache[b].lastUsed) {return -1;}
 
     return 0;
   });
@@ -48,10 +48,10 @@ class VolumeCache {
   @return {Object} Cached volume instance that is not mounted.
   */
   async add(cacheName, instancePath) {
-    var instanceId = uuid.v4();
+    let instanceId = uuid.v4();
 
     if (!instancePath) {
-      var cachePath = path.join(this.rootCachePath, cacheName);
+      let cachePath = path.join(this.rootCachePath, cacheName);
       instancePath = path.join(cachePath, instanceId);
     }
 
@@ -59,42 +59,42 @@ class VolumeCache {
       await makeDir(instancePath);
     }
 
-    var created = Date.now();
+    let created = Date.now();
 
     this.cache[cacheName][instanceId] = {
       path: instancePath,
       mounted: false,
       created: created,
       lastUsed: created,
-      purge: false
+      purge: false,
     };
 
     // Create a cache key that can be used by consumers of the cache in the
     // forma of <cache name>::<instance id>
-    var instance = {key: cacheName + KEY_DELIMITER + instanceId,
+    let instance = {key: cacheName + KEY_DELIMITER + instanceId,
       path: instancePath,
-      lastUsed: created
+      lastUsed: created,
     };
     return instance;
   }
 
   async removeCacheVolume(cacheName, instance) {
-    var cacheKey = cacheName + KEY_DELIMITER + instance;
-    var instancePath = this.cache[cacheName][instance].path;
+    let cacheKey = cacheName + KEY_DELIMITER + instance;
+    let instancePath = this.cache[cacheName][instance].path;
     // Remove instance from the list of managed caches so another worker
     // does not try to claim it.
     delete this.cache[cacheName][instance];
     try {
       await removeDir(instancePath);
       this.log('cache volume removed', {
-        key: cacheKey, path: instancePath
+        key: cacheKey, path: instancePath,
       });
     }
     catch (e) {
       this.log('[alert-operator] volume cache removal error', {
         message: 'Could not remove volume cache directory',
         err: e,
-        stack: e.stack
+        stack: e.stack,
       });
     }
   }
@@ -108,9 +108,9 @@ class VolumeCache {
   async clear(exceedsDiskspaceThreshold) {
     await this.doPurge();
 
-    if (!exceedsDiskspaceThreshold) return;
-    for (var cacheName in this.cache) {
-      for (var instance in this.cache[cacheName]) {
+    if (!exceedsDiskspaceThreshold) {return;}
+    for (let cacheName in this.cache) {
+      for (let instance in this.cache[cacheName]) {
         if (!this.cache[cacheName][instance].mounted) {
           await this.removeCacheVolume(cacheName, instance);
         }
@@ -125,12 +125,12 @@ class VolumeCache {
   @param {String} Name of the cached volume.
   */
   async createCacheVolume(cacheName) {
-    var cachePath = path.join(this.rootCachePath, cacheName);
+    let cachePath = path.join(this.rootCachePath, cacheName);
     this.cache[cacheName] = {};
 
     if(fs.existsSync(cachePath)) {
       await makeDir(cachePath);
-      var cacheDetails = {cacheName: cacheName, cachPath: cachePath};
+      let cacheDetails = {cacheName: cacheName, cachPath: cachePath};
       this.log('cache volume created', cacheDetails);
     }
   }
@@ -148,14 +148,14 @@ class VolumeCache {
         'name does not contain "' + KEY_DELIMITER + '".');
     }
 
-    var instanceId;
+    let instanceId;
 
     if (!this.cache[cacheName]) {
       await this.createCacheVolume(cacheName);
     } else {
-      var instanceIds = sortInstanceIds(this.cache[cacheName]);
-      for (var i = 0; i < instanceIds.length; i++) {
-        var id = instanceIds[i];
+      let instanceIds = sortInstanceIds(this.cache[cacheName]);
+      for (let i = 0; i < instanceIds.length; i++) {
+        let id = instanceIds[i];
         let instance = this.cache[cacheName][id];
         if (!instance.mounted && !instance.purge) {
           instanceId = id;
@@ -166,8 +166,8 @@ class VolumeCache {
       }
     }
 
-    var instance;
-    var logMessage = '';
+    let instance;
+    let logMessage = '';
 
     if (!instanceId) {
       logMessage = 'cache volume miss';
@@ -178,7 +178,7 @@ class VolumeCache {
       logMessage = 'cache volume hit';
       instance = {key: cacheName + KEY_DELIMITER + instanceId,
         path: this.cache[cacheName][instanceId].path,
-        lastUsed: this.cache[cacheName][instanceId].lastUsed
+        lastUsed: this.cache[cacheName][instanceId].lastUsed,
       };
       this.monitor.count('cache.hit');
     }
@@ -210,9 +210,9 @@ class VolumeCache {
   @param {Object} Key name and value for the property to be set.
   */
   async set(cacheKey, value) {
-    var cacheName = cacheKey.split(KEY_DELIMITER)[0];
-    var instanceId = cacheKey.split(KEY_DELIMITER)[1];
-    for (var key in value) {
+    let cacheName = cacheKey.split(KEY_DELIMITER)[0];
+    let instanceId = cacheKey.split(KEY_DELIMITER)[1];
+    for (let key in value) {
       this.cache[cacheName][instanceId][key] = value[key];
     }
   }
@@ -223,10 +223,10 @@ class VolumeCache {
   @param {String} Cache key in the format of <cache name>::<instance id>
   */
   getCacheDetails(cacheKey) {
-    var cacheSplit = cacheKey.split(KEY_DELIMITER);
+    let cacheSplit = cacheKey.split(KEY_DELIMITER);
     return({
       cacheName: cacheSplit[0],
-      cacheLocation: path.join(this.rootCachePath, cacheSplit[0], cacheSplit[1] + '/')
+      cacheLocation: path.join(this.rootCachePath, cacheSplit[0], cacheSplit[1] + '/'),
     });
   }
 
