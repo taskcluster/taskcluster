@@ -18,7 +18,7 @@ module.exports = async (result, path) => {
   // expects rootUrl and credentials from env vars
   let queue = new taskcluster.Queue(taskcluster.fromEnvVars());
   let url = queue.buildUrl(queue.getArtifact, taskId, runId, path);
-  debug('get artifact: '+url);
+  debug('get artifact: ' + url);
 
   return await get(url);
 };

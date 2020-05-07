@@ -14,7 +14,6 @@ const BulkLog = require('./bulk_log');
 const waitForPort = require('../wait_for_port');
 const getLogsLocationsFromTask = require('./logs_location.js');
 
-
 // Maximum time to wait for the put socket to become available.
 const INIT_TIMEOUT = 2000;
 
@@ -61,21 +60,21 @@ class TaskclusterLogs {
       Tty: false,
       Env: [
         'DEBUG=*',
-        `ACCESS_TOKEN=${this.token}`
+        `ACCESS_TOKEN=${this.token}`,
       ],
       //Env: envs,
       AttachStdin: false,
       AttachStdout: true,
       AttachStderr: true,
       ExposedPorts: {
-        '60023/tcp': {}
+        '60023/tcp': {},
       },
       HostConfig: {
         // bind the reading side to the host so we can expose it to the world...
         PortBindings: {
-          '60023/tcp': [{HostPort: '0'}]
-        }
-      }
+          '60023/tcp': [{HostPort: '0'}],
+        },
+      },
     };
 
     if (task.runtime.logging.secureLiveLogging) {
@@ -83,7 +82,7 @@ class TaskclusterLogs {
       createConfig.Env.push('SERVER_KEY_FILE=/etc/sslkey.key');
       createConfig.HostConfig.Binds = [
         `${task.runtime.ssl.certificate}:/etc/sslcert.crt:ro`,
-        `${task.runtime.ssl.key}:/etc/sslkey.key:ro`
+        `${task.runtime.ssl.key}:/etc/sslkey.key:ro`,
       ];
     }
 
@@ -100,12 +99,12 @@ class TaskclusterLogs {
     try {
       // wait for the initial server response...
       await waitForPort(
-        inspect.NetworkSettings.IPAddress, '60022', INIT_TIMEOUT
+        inspect.NetworkSettings.IPAddress, '60022', INIT_TIMEOUT,
       );
     } catch (e) {
       task.runtime.log('Failed to connect to live log server', {
         taskId: task.status.taskId,
-        runId: task.runId
+        runId: task.runId,
       });
       // The killed method below will handle cleanup of resources...
       return;
@@ -125,7 +124,7 @@ class TaskclusterLogs {
       task.runtime.log('Error piping data to live log', {
         err: err.toString(),
         taskId: task.status.taskId,
-        runId: task.runId
+        runId: task.runId,
       });
       task.stream.unpipe(this.stream);
     }.bind(this));
@@ -136,7 +135,7 @@ class TaskclusterLogs {
       protocol: task.runtime.logging.secureLiveLogging ? 'https' : 'http',
       hostname: task.hostname,
       port: publicPort,
-      pathname: `log/${this.token}`
+      pathname: `log/${this.token}`,
     });
     debug('live log running: putUrl', putUrl);
     debug('live log running: publicUrl', this.publicUrl);
@@ -155,13 +154,13 @@ class TaskclusterLogs {
         storageType: 'reference',
         expires: expiration,
         contentType: 'text/plain; charset=utf-8',
-        url: this.publicUrl
-      }
+        url: this.publicUrl,
+      },
     );
 
     return {
       links: [],
-      env: {}
+      env: {},
     };
   }
 
@@ -200,8 +199,8 @@ class TaskclusterLogs {
         storageType: 'reference',
         expires: expiration,
         contentType: 'text/plain; charset=utf-8',
-        url: backingUrl
-      }
+        url: backingUrl,
+      },
     );
 
     // Cleanup all references to the live logging server...

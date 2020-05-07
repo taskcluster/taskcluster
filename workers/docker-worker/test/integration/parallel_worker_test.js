@@ -10,11 +10,11 @@ suite('Parallel workers', () => {
   // Ensure we don't leave behind our test configurations.
   teardown(settings.cleanup);
 
-  var workerA, workerB;
+  let workerA, workerB;
 
   setup(async () => {
     // Each worker should use the same worker type but a unique worker id.
-    var workerType = TestWorker.workerTypeName();
+    let workerType = TestWorker.workerTypeName();
     workerA = new TestWorker(DockerWorker, workerType);
     workerB = new TestWorker(DockerWorker, workerType);
     await [workerA.launch(), workerB.launch()];
@@ -25,29 +25,29 @@ suite('Parallel workers', () => {
   });
 
   test('tasks for two workers running in parallel', async () => {
-    var taskTpl = {
+    let taskTpl = {
       payload: {
         image: 'taskcluster/test-ubuntu',
         command: cmd(
           // Sleep is used to ensure that each worker will get one task
           // (assumption being that both workers are in a running state and can
           // fetch a task in under 5s + overhead)
-          'sleep 5'
+          'sleep 5',
         ),
-        maxRunTime: 60 * 60
-      }
+        maxRunTime: 60 * 60,
+      },
     };
-    var taskIds = [slugid.v4(), slugid.v4()];
+    let taskIds = [slugid.v4(), slugid.v4()];
     workerA.postToQueue(taskTpl, taskIds[0]);
     workerB.postToQueue(taskTpl, taskIds[1]);
 
     await Promise.all([
       waitForEvent(workerA, 'task resolved'),
-      waitForEvent(workerB, 'task resolved')
+      waitForEvent(workerB, 'task resolved'),
     ]);
 
-    var tasks = [];
-    for (var taskId of taskIds) {
+    let tasks = [];
+    for (let taskId of taskIds) {
       let task = await workerA.queue.status(taskId);
       tasks.push(task);
     }
@@ -60,8 +60,7 @@ suite('Parallel workers', () => {
     assert.notEqual(
       tasks[0].status.runs[0].workerId,
       tasks[1].status.runs[0].workerId,
-      'Tasks ran on different workers'
+      'Tasks ran on different workers',
     );
   });
 });
-

@@ -67,7 +67,7 @@ class AudioDeviceManager {
 }
 
 class AudioDevice {
-  constructor(path, active=false) {
+  constructor(path, active = false) {
     this.path = path;
     this.active = active;
     let deviceId = path.match(/^\/dev\/snd\/controlC([0-9]+)$/);
@@ -82,7 +82,7 @@ class AudioDevice {
       `/dev/snd/pcmC${deviceId}D0c`,
       `/dev/snd/pcmC${deviceId}D0p`,
       `/dev/snd/pcmC${deviceId}D1c`,
-      `/dev/snd/pcmC${deviceId}D1p`
+      `/dev/snd/pcmC${deviceId}D1p`,
     ];
   }
 

@@ -34,10 +34,10 @@ suite('use docker-save', () => {
         image: 'busybox',
         command: ['/bin/sh', '-c', 'echo testString > /tmp/test.log'],
         features: {
-          dockerSave: true
+          dockerSave: true,
         },
-        maxRunTime: 5 * 60
-      }
+        maxRunTime: 5 * 60,
+      },
     });
 
     assert.equal(result.run.state, 'completed', 'task should be successful');
@@ -64,7 +64,7 @@ suite('use docker-save', () => {
       AttachStdout: true,
       AttachStderr: true,
       Cmd: ['cat', '/tmp/test.log'],
-      Image: imageName
+      Image: imageName,
     };
     let streamOpts = {
       logs: true,
@@ -76,8 +76,8 @@ suite('use docker-save', () => {
 
     await new Promise((accept, reject) => {
       stream.on('data', (data) => {
-        assert(data.compare(new Buffer(0x01,0x00,0x00,0x00,0x00,0x00,0x00,0x0b, //header
-          0x74,0x65,0x73,0x74,0x53,0x74,0x72,0x69,0x6e,0x67,0x0a))); //testString\n
+        assert(data.compare(new Buffer(0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x0b, //header
+          0x74, 0x65, 0x73, 0x74, 0x53, 0x74, 0x72, 0x69, 0x6e, 0x67, 0x0a))); //testString\n
         accept();
       });
       stream.on('error', reject);
@@ -96,13 +96,13 @@ suite('use docker-save', () => {
         image: 'busybox',
         command: ['/bin/sh', '-c', 'echo testString > /tmp/test-cache/test.log'],
         features: {
-          dockerSave: true
+          dockerSave: true,
         },
         maxRunTime: 5 * 60,
         cache: {
-          'docker-worker-garbage-caches-test-cache': '/tmp/test-cache/'
-        }
-      }
+          'docker-worker-garbage-caches-test-cache': '/tmp/test-cache/',
+        },
+      },
     });
 
     assert.equal(result.run.state, 'completed', 'task should be successful');

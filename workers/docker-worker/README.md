@@ -62,7 +62,7 @@ installed.
 
 Within the root of the repo is a Vagrantfile and vagrant.sh script that simplifies
 creating a local environment that mimics the one uses in production.  This environment
-allows one to not only run the worker tests but also to run images used in TaskCluster
+allows one to not only run the worker tests but also to run images used in Taskcluster
 in an environment similar to production without needing to configure special things
 on the host.
 

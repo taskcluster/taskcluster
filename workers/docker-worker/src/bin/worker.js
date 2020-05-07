@@ -27,17 +27,17 @@ const SchemaSet = require('../lib/validate');
 const { spawn } = require('child_process');
 
 // Available target configurations.
-var allowedHosts = ['aws', 'test', 'packet', 'worker-runner'];
+let allowedHosts = ['aws', 'test', 'packet', 'worker-runner'];
 let debug = Debug('docker-worker:bin:worker');
 
 // All overridable configuration options from the CLI.
-var overridableFields = [
+let overridableFields = [
   'capacity',
   'workerId',
   'workerType',
   'workerGroup',
   'workerNodeType',
-  'provisionerId'
+  'provisionerId',
 ];
 
 function verifySSLCertificates(config) {
@@ -49,8 +49,8 @@ function verifySSLCertificates(config) {
     config.log(
       '[alert-operator] ssl certificate error',
       {
-        error: `Could not locate SSL files. Error code: ${error.code}`
-      }
+        error: `Could not locate SSL files. Error code: ${error.code}`,
+      },
     );
     // If certificates can't be found for some reason, set capacity to 0 so
     // we do not continue to respawn workers that could probably have the same
@@ -66,14 +66,14 @@ function o() {
 
 // Usage.
 program.usage(
-  '[options] <profile>'
+  '[options] <profile>',
 );
 
 // CLI Options.
 o('--host <type>',
   'configure worker for host type [' + allowedHosts.join(', ') + ']');
 o('-c, --capacity <value>', 'capacity override value');
-o('--provisioner-id <provisioner-id>','override provisioner id configuration');
+o('--provisioner-id <provisioner-id>', 'override provisioner id configuration');
 o('--worker-type <worker-type>', 'override workerType configuration');
 o('--worker-group <worker-group>', 'override workerGroup');
 o('--worker-id <worker-id>', 'override the worker id');
@@ -83,27 +83,27 @@ program.parse(process.argv);
 
 // Main.
 (async () => {
-  var profile = program.args[0];
+  let profile = program.args[0];
 
   if (!profile) {
     console.error('Config profile must be specified: test, production');
     return process.exit(1);
   }
 
-  var config = typedEnvConfig({
+  let config = typedEnvConfig({
     files: [`${__dirname}/../../config.yml`],
     profile: profile,
-    env: process.env
+    env: process.env,
   });
 
   // Use a target specific configuration helper if available.
-  var host;
+  let host;
   if (program.host) {
     if (allowedHosts.indexOf(program.host) === -1) {
       console.log(
         '%s is not an allowed host use one of: %s',
         program.host,
-        allowedHosts.join(', ')
+        allowedHosts.join(', '),
       );
       return process.exit(1);
     }
@@ -115,7 +115,7 @@ program.parse(process.argv);
     }
 
     // execute the configuration helper and merge the results
-    var targetConfig = await host.configure();
+    let targetConfig = await host.configure();
     config = _.defaultsDeep(targetConfig, config);
   }
 
@@ -128,10 +128,9 @@ program.parse(process.argv);
     }
   });
 
-
   // process CLI specific overrides
   overridableFields.forEach(function(field) {
-    if (!(field in program)) return;
+    if (!(field in program)) {return;}
     config[field] = program[field];
   });
 
@@ -166,12 +165,12 @@ program.parse(process.argv);
   config.workerTypeMonitor = monitor.childMonitor(`${config.provisionerId}.${config.workerType}`);
   config.monitor = config.workerTypeMonitor.childMonitor(`${config.workerNodeType.replace('.', '')}`);
 
-  config.monitor.measure('workerStart', Date.now()-os.uptime());
+  config.monitor.measure('workerStart', Date.now() - os.uptime());
   config.monitor.count('workerStart');
 
   config.queue = new taskcluster.Queue({
     rootUrl: config.rootUrl,
-    credentials: config.taskcluster
+    credentials: config.taskcluster,
   });
 
   const schemaset = new SchemaSet({
@@ -183,9 +182,9 @@ program.parse(process.argv);
   setInterval(
     reportHostMetrics.bind(this, {
       stats: config.monitor,
-      dockerVolume: config.dockerVolume
+      dockerVolume: config.dockerVolume,
     }),
-    config.metricsCollection.hostMetricsInterval
+    config.metricsCollection.hostMetricsInterval,
   );
 
   config.log = createLogger({
@@ -194,10 +193,10 @@ program.parse(process.argv);
     workerId: config.workerId,
     workerGroup: config.workerGroup,
     workerType: config.workerType,
-    workerNodeType: config.workerNodeType
+    workerNodeType: config.workerNodeType,
   });
 
-  var gcConfig = config.garbageCollection;
+  let gcConfig = config.garbageCollection;
   gcConfig.capacity = config.capacity,
   gcConfig.diskspaceThreshold = config.capacityManagement.diskspaceThreshold;
   gcConfig.dockerVolume = config.dockerVolume;
@@ -217,7 +216,7 @@ program.parse(process.argv);
 
   config.gc.addManager(config.volumeCache);
 
-  var runtime = new Runtime(config);
+  let runtime = new Runtime(config);
 
   runtime.hostManager = host;
   runtime.imageManager = new ImageManager(runtime);
@@ -238,7 +237,7 @@ program.parse(process.argv);
   }
 
   // Build the listener and connect to the queue.
-  var taskListener = new TaskListener(runtime);
+  let taskListener = new TaskListener(runtime);
   runtime.gc.taskListener = taskListener;
   shutdownManager.observe(taskListener);
 
@@ -249,11 +248,11 @@ program.parse(process.argv);
   // Aliveness check logic... Mostly useful in combination with a log inactivity
   // check like papertrail/logentries/loggly have.
   async function alivenessCheck() {
-    var uptime = host.billingCycleUptime();
+    let uptime = host.billingCycleUptime();
     runtime.log('aliveness check', {
       alive: true,
       uptime: uptime,
-      interval: config.alivenessCheckInterval
+      interval: config.alivenessCheckInterval,
     });
     setTimeout(alivenessCheck, config.alivenessCheckInterval);
   }
@@ -266,7 +265,7 @@ program.parse(process.argv);
   if (config.testMode) {
     // Gracefullyish close the connection.
     process.once('message', async (msg) => {
-      if (msg.type !== 'halt') return;
+      if (msg.type !== 'halt') {return;}
       // Halt will wait for the worker to be in an idle state then pause all
       // incoming messages and close the connection...
       async function halt() {
@@ -274,7 +273,7 @@ program.parse(process.argv);
         await taskListener.close();
         await runtime.purgeCacheListener.close();
       }
-      if (taskListener.isIdle()) return await halt;
+      if (taskListener.isIdle()) {return await halt;}
       taskListener.once('idle', halt);
     });
   }

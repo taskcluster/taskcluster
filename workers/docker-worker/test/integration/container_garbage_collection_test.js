@@ -23,31 +23,31 @@ suite('Container garbage collection tests', () => {
   test('containers removed after task completes', async () => {
     settings.configure({
       capacityManagement: {
-        diskspaceThreshold: 10 * 1000000000
+        diskspaceThreshold: 10 * 1000000000,
       },
       garbageCollection: {
         imageExpiration: 2 * 60 * 60 * 1000,
         interval: 15 * 1000,
-        dockerVolume: '/mnt'
-      }
+        dockerVolume: '/mnt',
+      },
     });
 
     let uniqueId = slugid.v4();
     let task = {
       payload: {
         env: {
-          ID: uniqueId
+          ID: uniqueId,
         },
         image: 'taskcluster/test-ubuntu',
         command: cmd(
-          'sleep 10'
+          'sleep 10',
         ),
         features: {
-          localLiveLog: false
+          localLiveLog: false,
         },
         cache: {},
-        maxRunTime: 20
-      }
+        maxRunTime: 20,
+      },
     };
 
     let worker = new TestWorker(DockerWorker);
@@ -76,7 +76,7 @@ suite('Container garbage collection tests', () => {
     let containerRemoved = await waitForEvent(worker, 'container removed');
     assert.ok(
       containerId === containerRemoved.container,
-      'Container removed does not match the task container'
+      'Container removed does not match the task container',
     );
     await worker.terminate();
   });
@@ -84,31 +84,31 @@ suite('Container garbage collection tests', () => {
   test('containers removed after task exceeds max run time', async () => {
     settings.configure({
       capacityManagement: {
-        diskspaceThreshold: 10 * 1000000000
+        diskspaceThreshold: 10 * 1000000000,
       },
       garbageCollection: {
         imageExpiration: 2 * 60 * 60 * 1000,
         interval: 15 * 1000,
-        dockerVolume: '/mnt'
-      }
+        dockerVolume: '/mnt',
+      },
     });
 
     let uniqueId = slugid.v4();
     let task = {
       payload: {
         env: {
-          ID: uniqueId
+          ID: uniqueId,
         },
         image: 'taskcluster/test-ubuntu',
         command: cmd(
-          'sleep 20'
+          'sleep 20',
         ),
         features: {
-          localLiveLog: false
+          localLiveLog: false,
         },
         cache: {},
-        maxRunTime: 10
-      }
+        maxRunTime: 10,
+      },
     };
 
     let worker = new TestWorker(DockerWorker);
@@ -137,7 +137,7 @@ suite('Container garbage collection tests', () => {
     let containerRemoved = await waitForEvent(worker, 'container removed');
     assert.ok(
       containerId === containerRemoved.container,
-      'Container removed does not match the task container'
+      'Container removed does not match the task container',
     );
     await worker.terminate();
   });

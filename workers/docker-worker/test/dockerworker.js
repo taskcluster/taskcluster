@@ -1,13 +1,13 @@
-var devnull = require('dev-null');
-var path = require('path');
-var util = require('util');
-var docker = require('../src/lib/docker')();
-var dockerOpts = require('dockerode-options');
-var DockerProc = require('dockerode-process');
-var dockerUtils = require('dockerode-process/utils');
-var pipe = require('promisepipe');
-var Debug = require('debug');
-var taskcluster = require('taskcluster-client');
+let devnull = require('dev-null');
+let path = require('path');
+let util = require('util');
+let docker = require('../src/lib/docker')();
+let dockerOpts = require('dockerode-options');
+let DockerProc = require('dockerode-process');
+let dockerUtils = require('dockerode-process/utils');
+let pipe = require('promisepipe');
+let Debug = require('debug');
+let taskcluster = require('taskcluster-client');
 
 const debug = Debug('dockerworker');
 
@@ -17,9 +17,8 @@ process.on('unhandledRejection', (reason, p) => {
   console.error(`Unhandled rejection at ${p}.\n${reason.stack || reason}`);
 });
 
-
 // Environment varibles to copy over to the docker instance.
-var COPIED_ENV = [
+let COPIED_ENV = [
   'DEBUG',
   'DOCKER_HOST',
   'AZURE_STORAGE_ACCOUNT',
@@ -29,7 +28,7 @@ var COPIED_ENV = [
   'TASKCLUSTER_ACCESS_TOKEN',
   'PULSE_USERNAME',
   'PULSE_PASSWORD',
-  'INFLUX_CONNECTION_STRING'
+  'INFLUX_CONNECTION_STRING',
 ];
 
 class DockerWorker {
@@ -41,10 +40,10 @@ class DockerWorker {
   }
 
   async launch() {
-    var stream = dockerUtils.pullImageIfMissing(docker, IMAGE);
+    let stream = dockerUtils.pullImageIfMissing(docker, IMAGE);
     await pipe(stream, devnull());
 
-    var createConfig = {
+    let createConfig = {
       name: this.workerId,
       Image: IMAGE,
       Cmd: [
@@ -68,11 +67,11 @@ class DockerWorker {
           '--worker-id', this.workerId,
           '--provisioner-id', this.provisionerId,
           '--worker-type', this.workerType,
-          'test'
-        ].join(' ')
+          'test',
+        ].join(' '),
       ],
       Env: [
-        'DOCKER_CONTAINER_ID=' + this.workerId
+        'DOCKER_CONTAINER_ID=' + this.workerId,
       ],
       AttachStdin: false,
       AttachStdout: true,
@@ -91,23 +90,23 @@ class DockerWorker {
 
     // If docker is supposed to connect over a socket set the socket as a bind
     // mount...
-    var opts = dockerOpts();
+    let opts = dockerOpts();
     if (opts.socketPath) {
       createConfig.Binds.push(util.format(
         '%s:%s',
-        opts.socketPath, '/var/run/docker.sock'
+        opts.socketPath, '/var/run/docker.sock',
       ));
     }
 
     // Copy enviornment variables over.
     COPIED_ENV.forEach(function(key) {
-      if (!(key in process.env)) return;
+      if (!(key in process.env)) {return;}
       createConfig.Env.push(util.format('%s=%s', key, process.env[key]));
     });
 
-    var proc = this.process = new DockerProc(docker, {
+    let proc = this.process = new DockerProc(docker, {
       create: createConfig,
-      start: {}
+      start: {},
     });
 
     proc.run();
@@ -116,7 +115,7 @@ class DockerWorker {
 
   async terminate() {
     if (this.process) {
-      var proc = this.process;
+      let proc = this.process;
       // Ensure the container is killed and removed.
       try {
         await proc.container.kill();

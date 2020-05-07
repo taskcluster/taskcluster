@@ -31,10 +31,10 @@ class TaskListener extends EventEmitter {
     this.lastCapacityState = {
       time: new Date(),
       idle: this.lastKnownCapacity,
-      busy: this.runningTasks.length
+      busy: this.runningTasks.length,
     };
     this.reportCapacityStateIntervalId = setInterval(
-      this.reportCapacityState.bind(this), 60 * 1000
+      this.reportCapacityState.bind(this), 60 * 1000,
     );
     this.capacityMonitor = this.runtime.workerTypeMonitor.childMonitor('capacity');
     this.deviceManager = new DeviceManager(runtime);
@@ -60,12 +60,12 @@ class TaskListener extends EventEmitter {
   }
 
   async cancelTask(message) {
-    var runId = message.payload.runId;
-    var reason = message.payload.status.runs[runId].reasonResolved;
-    if (reason !== 'canceled') return;
+    let runId = message.payload.runId;
+    let reason = message.payload.status.runs[runId].reasonResolved;
+    if (reason !== 'canceled') {return;}
 
-    var taskId = message.payload.status.taskId;
-    var state = this.runningTasks.find((state) => {
+    let taskId = message.payload.status.taskId;
+    let state = this.runningTasks.find((state) => {
       let { handler } = state;
       return (handler.status.taskId === taskId && handler.runId === runId);
     });
@@ -95,8 +95,8 @@ class TaskListener extends EventEmitter {
         {
           message: e.toString(),
           err: e,
-          stack: e.stack
-        }
+          stack: e.stack,
+        },
       );
 
       deviceCapacity = 0;
@@ -111,8 +111,8 @@ class TaskListener extends EventEmitter {
         {
           message: 'The available running capacity of the host has been changed.' +
                    ` Available Capacities: Device: ${deviceCapacity} ` +
-                   `Running: ${runningCapacity} Adjusted Host Capacity: ${hostCapacity}`
-        }
+                   `Running: ${runningCapacity} Adjusted Host Capacity: ${hostCapacity}`,
+        },
       );
     }
 
@@ -129,15 +129,15 @@ class TaskListener extends EventEmitter {
     // Only run a full garbage collection cycle if no tasks are running.
     await this.runtime.gc.sweep(this.runningTasks.length === 0);
 
-    var exceedsThreshold = await exceedsDiskspaceThreshold(
+    let exceedsThreshold = await exceedsDiskspaceThreshold(
       this.runtime.dockerVolume,
       this.runtime.capacityManagement.diskspaceThreshold,
       availableCapacity,
       this.runtime.log,
-      this.runtime.monitor
+      this.runtime.monitor,
     );
     // Do not claim tasks if not enough resources are available
-    if (exceedsThreshold) return;
+    if (exceedsThreshold) {return;}
 
     let claims = await this.taskQueue.claimWork(availableCapacity);
 
@@ -157,7 +157,7 @@ class TaskListener extends EventEmitter {
     });
   }
 
-  scheduleTaskPoll(nextPoll=this.taskPollInterval) {
+  scheduleTaskPoll(nextPoll = this.taskPollInterval) {
     this.pollTimeoutId = setTimeout(async () => {
       try {
         await this.getTasks();
@@ -165,7 +165,7 @@ class TaskListener extends EventEmitter {
         this.runtime.log('[alert-operator] task retrieval error', {
           message: e.toString(),
           err: e,
-          stack: e.stack
+          stack: e.stack,
         });
       }
       this.scheduleTaskPoll();
@@ -216,7 +216,7 @@ class TaskListener extends EventEmitter {
   Cleanup state of a running container (should apply to all states).
   */
   cleanupRunningState(state) {
-    if (!state) return;
+    if (!state) {return;}
 
     if (state.devices) {
       for (let device in state.devices) {
@@ -228,14 +228,14 @@ class TaskListener extends EventEmitter {
   recordCapacity () {
     this.runtime.monitor.measure(
       'capacity.duration.lastTaskEvent',
-      Date.now() - this.lastTaskEvent
+      Date.now() - this.lastTaskEvent,
     );
 
     this.runtime.monitor.count('capacity.idle', this.lastKnownCapacity);
     this.runtime.monitor.count('capacity.runningTasks', this.runningTasks.length);
     this.runtime.monitor.count(
       'capacity.total',
-      this.lastKnownCapacity + this.runningTasks.length
+      this.lastKnownCapacity + this.runningTasks.length,
     );
     this.lastTaskEvent = Date.now();
   }
@@ -263,7 +263,7 @@ class TaskListener extends EventEmitter {
       this.runtime.log('[warning] running task removal error', {
         taskId: runningState.taskId,
         runId: runningState.runId,
-        err: 'Could not find the task Id in the list of running tasks'
+        err: 'Could not find the task Id in the list of running tasks',
       });
       this.cleanupRunningState(runningState);
       return;
@@ -276,7 +276,7 @@ class TaskListener extends EventEmitter {
     this.runningTasks.splice(taskIndex, 1);
     this.lastKnownCapacity += 1;
 
-    if (this.isIdle()) this.emit('idle', this);
+    if (this.isIdle()) {this.emit('idle', this);}
   }
 
   reportCapacityState() {
@@ -389,7 +389,7 @@ class TaskListener extends EventEmitter {
 
       // claim runId 0 for each of those tasks; we can consider adding support
       // for other runIds later.
-      var claims = await Promise.all(tasks.map(async tid => {
+      let claims = await Promise.all(tasks.map(async tid => {
         if (tid == taskId) {
           return claim; // already claimed
         }
@@ -405,7 +405,7 @@ class TaskListener extends EventEmitter {
             runId: 0,
             message: e.toString(),
             stack: e.stack,
-            err: e
+            err: e,
           });
           return;
         }
@@ -421,7 +421,7 @@ class TaskListener extends EventEmitter {
         runId: claim.runId,
         message: e.toString(),
         stack: e.stack,
-        err: e
+        err: e,
       });
 
       // fail quietly by just returning the primary claim
@@ -433,7 +433,7 @@ class TaskListener extends EventEmitter {
     url = url + '?taskId=' + taskId;
     try {
       return await got(url, {
-        timeout: this.supersedingTimeout
+        timeout: this.supersedingTimeout,
       }).then(res => JSON.parse(res.body)['supersedes']);
     } catch(e) {
       throw new Error(`Failure fetching from superseding URL ${url}: ${e}`);
@@ -457,22 +457,22 @@ class TaskListener extends EventEmitter {
         startTime: Date.now(),
         devices: {},
         taskId: claim.status.taskId,
-        runId: claim.runId
+        runId: claim.runId,
       };
 
       this.runtime.log(
         'run task',
         {
           taskId: runningState.taskId,
-          runId: runningState.runId
-        }
+          runId: runningState.runId,
+        },
       );
 
       // Look up full task definition in claim response.
       var task = claim.task;
 
       // Date when the task was created.
-      var created = new Date(task.created);
+      let created = new Date(task.created);
 
       // Only record this value for first run!
       if (!claim.status.runs.length) {
@@ -499,7 +499,7 @@ class TaskListener extends EventEmitter {
       }
 
       // Create "task" to handle all the task specific details.
-      var taskHandler = new Task(this.runtime, task, claims, options);
+      let taskHandler = new Task(this.runtime, task, claims, options);
       runningState.handler = taskHandler;
 
       this.addRunningTask(runningState);
@@ -539,12 +539,12 @@ class TaskListener extends EventEmitter {
           runId: task.runId,
           message: e.toString(),
           stack: e.stack,
-          err: e
+          err: e,
         });
       } else {
         this.runtime.log('task error', {
           message: e.toString(),
-          err: e
+          err: e,
         });
       }
     }

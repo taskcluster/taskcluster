@@ -13,7 +13,7 @@ const hook = createHook({
   },
   destroy(asyncId) {
     allResources.delete(asyncId);
-  }
+  },
 }).enable();
 
 global.asyncDump = module.exports = () => {
@@ -25,4 +25,3 @@ global.asyncDump = module.exports = () => {
     debug('\n');
   });
 };
-

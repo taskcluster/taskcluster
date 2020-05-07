@@ -3,10 +3,10 @@
 @tutorial task_factories
 @module taskcluster-client/factory/task
 */
-var Factory = require('object-factory');
-var Tags = new Factory();
+let Factory = require('object-factory');
+let Tags = new Factory();
 
-var Payload = new Factory({
+let Payload = new Factory({
   onbuild: function(object) {
     object.command = object.command || ['/bin/bash -c', 'ls -lah'];
     object.env = object.env || {};
@@ -18,23 +18,23 @@ var Payload = new Factory({
     maxRunTime: 600,
     // onbuild above handles this
     // command: []
-  }
+  },
 });
 
-var Metadata = new Factory({
+let Metadata = new Factory({
   properties: {
     name: '',
     description: '',
     owner: '',
-    source: 'http://localhost'
-  }
+    source: 'http://localhost',
+  },
 });
 
-var Task = new Factory({
+let Task = new Factory({
   onbuild: function(object) {
     object.created = object.created || new Date();
 
-    var defaultDeadline = new Date(object.created);
+    let defaultDeadline = new Date(object.created);
     defaultDeadline.setHours(defaultDeadline.getHours() + 24);
     object.deadline = object.deadline || defaultDeadline;
     object.scopes = object.scopes || [];
@@ -49,8 +49,8 @@ var Task = new Factory({
     // deadline: new Date()
     payload: Payload,
     metadata: Metadata,
-    tags: Tags
-  }
+    tags: Tags,
+  },
 });
 
 module.exports = Task;

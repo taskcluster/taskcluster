@@ -29,16 +29,16 @@ suite('device linking within containers', () => {
       payload: {
         capabilities: {
           devices: {
-            loopbackVideo: true
-          }
+            loopbackVideo: true,
+          },
         },
         image: 'ubuntu:14.10',
         command: cmd(
           'ls /dev',
-          'test -c /dev/video0 || { echo \'Device not found\' ; exit 1; }'
+          'test -c /dev/video0 || { echo \'Device not found\' ; exit 1; }',
         ),
-        maxRunTime: 5 * 60
-      }
+        maxRunTime: 5 * 60,
+      },
     };
 
     let result = await worker.postToQueue(task);
@@ -47,7 +47,7 @@ suite('device linking within containers', () => {
     assert.equal(
       result.run.reasonResolved,
       'completed',
-      'Task not resolved as complete'
+      'Task not resolved as complete',
     );
   });
 
@@ -59,8 +59,8 @@ suite('device linking within containers', () => {
       payload: {
         capabilities: {
           devices: {
-            loopbackAudio: true
-          }
+            loopbackAudio: true,
+          },
         },
         image: 'ubuntu:14.10',
         command: cmd(
@@ -70,10 +70,10 @@ suite('device linking within containers', () => {
           -c /dev/snd/pcmC0D0p -a \
           -c /dev/snd/pcmC0D1c -a \
           -c /dev/snd/pcmC0D1p \
-          || { echo \'Devices not found\' ; exit 1; }'
+          || { echo \'Devices not found\' ; exit 1; }',
         ),
-        maxRunTime: 5 * 60
-      }
+        maxRunTime: 5 * 60,
+      },
     };
 
     let result = await worker.postToQueue(task);
@@ -82,7 +82,7 @@ suite('device linking within containers', () => {
     assert.equal(
       result.run.reasonResolved,
       'completed',
-      'Task not resolved as complete'
+      'Task not resolved as complete',
     );
   });
 
@@ -95,16 +95,16 @@ suite('device linking within containers', () => {
         capabilities: {
           devices: {
             loopbackVideo: true,
-            loopbackAudio: true
-          }
+            loopbackAudio: true,
+          },
         },
         image: 'ubuntu:14.10',
         command: cmd(
           'ls /dev',
-          'test -c /dev/video0 || { echo \'Device not found\' ; exit 1; }'
+          'test -c /dev/video0 || { echo \'Device not found\' ; exit 1; }',
         ),
-        maxRunTime: 5 * 60
-      }
+        maxRunTime: 5 * 60,
+      },
     };
 
     let result = await worker.postToQueue(task);
@@ -113,12 +113,12 @@ suite('device linking within containers', () => {
     assert.equal(
       result.run.reasonResolved,
       'failed',
-      'Task not resolved as failed'
+      'Task not resolved as failed',
     );
 
     assert.ok(
       result.log.indexOf('Insufficient scopes to attach devices') !== -1,
-      'Error for insufficient scopes does not appear in the logs'
+      'Error for insufficient scopes does not appear in the logs',
     );
   });
 
@@ -127,12 +127,12 @@ suite('device linking within containers', () => {
       capacity: 50,
       deviceManagement: {
         loopbackAudio: {
-          enabled: true
+          enabled: true,
         },
         loopbackVideo: {
-          enabled: true
-        }
-      }
+          enabled: true,
+        },
+      },
     });
 
     worker = new TestWorker(DockerWorker);
@@ -142,36 +142,36 @@ suite('device linking within containers', () => {
       payload: {
         capabilities: {
           devices: {
-            loopbackVideo: true
-          }
+            loopbackVideo: true,
+          },
         },
         image: 'ubuntu:14.10',
         command: cmd('ls /dev'),
-        maxRunTime: 5 * 60
-      }
+        maxRunTime: 5 * 60,
+      },
     };
 
     let result = await Promise.all([
       worker.postToQueue(task),
-      waitForEvent(worker, '[info] host capacity adjusted')
+      waitForEvent(worker, '[info] host capacity adjusted'),
     ]);
 
     assert.equal(result[0].status.state, 'completed', 'Task state is not marked as completed');
     assert.equal(
       result[0].run.reasonResolved,
       'completed',
-      'Task not resolved as complete'
+      'Task not resolved as complete',
     );
 
     const message = result[1].message;
     const possibleMessages = Array.from(
       new Array(50).slice(1),
-      (x, i) => `Adjusted Host Capacity: ${i}`
+      (x, i) => `Adjusted Host Capacity: ${i}`,
     );
 
     assert.ok(
       possibleMessages.some(x => message.includes(x)),
-      `Worker should just capacity based on the number of devices that could be found:\n${message}`
+      `Worker should just capacity based on the number of devices that could be found:\n${message}`,
     );
   });
 
@@ -183,16 +183,16 @@ suite('device linking within containers', () => {
       payload: {
         capabilities: {
           devices: {
-            hostSharedMemory: true
-          }
+            hostSharedMemory: true,
+          },
         },
         image: 'ubuntu:14.10',
         command: cmd(
           'mount | grep dev/shm',
-          'mount | grep dev/shm | grep -vq size= || { echo \'/dev/shm should not contain size\'; exit 1; }'
+          'mount | grep dev/shm | grep -vq size= || { echo \'/dev/shm should not contain size\'; exit 1; }',
         ),
-        maxRunTime: 5 * 60
-      }
+        maxRunTime: 5 * 60,
+      },
     };
 
     let result = await worker.postToQueue(task);
@@ -201,7 +201,7 @@ suite('device linking within containers', () => {
     assert.equal(
       result.run.reasonResolved,
       'completed',
-      'Task not resolved as complete'
+      'Task not resolved as complete',
     );
   });
 });

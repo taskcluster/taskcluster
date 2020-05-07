@@ -8,8 +8,8 @@ suite('Invalid payload schema', () => {
       payload: {
         image: 'taskcluster/test-ubuntu',
         // maxRunTime should be a number.
-        maxRunTime: 'hello'
-      }
+        maxRunTime: 'hello',
+      },
     });
 
     assert.equal(result.run.state, 'exception', 'invalid schema should fail');
@@ -30,10 +30,10 @@ suite('Invalid payload schema', () => {
             type: 'file',
             // expiration should not be past task.expires (default to 1 year if not specified)
             expires: expiration,
-            path: '/artifacts/xfoo.txt'
-          }
-        }
-      }
+            path: '/artifacts/xfoo.txt',
+          },
+        },
+      },
     });
 
     assert.equal(result.run.state, 'exception', 'invalid schema should fail');
@@ -50,9 +50,9 @@ suite('Invalid payload schema', () => {
         cmd: ['/bin/bash', '-c', 'ls'],
         maxRunTime: 60,
         onExitStatus: {
-          retry: ['1']
-        }
-      }
+          retry: ['1'],
+        },
+      },
     });
 
     assert.equal(result.run.state, 'exception', 'invalid schema should fail');
@@ -74,10 +74,10 @@ suite('Invalid payload schema', () => {
             type: 'file',
             // expiration should not be past task.expires (default to 1 year if not specified)
             expires: expiration,
-            path: '/artifacts/xfoo.txt'
-          }
-        }
-      }
+            path: '/artifacts/xfoo.txt',
+          },
+        },
+      },
     });
 
     assert.equal(result.run.state, 'exception', 'invalid schema should fail');

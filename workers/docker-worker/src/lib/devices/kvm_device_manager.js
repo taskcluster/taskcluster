@@ -26,7 +26,7 @@ class KvmDeviceManager {
 class KvmDevice {
   constructor() {
     this.mountPoints = [
-      '/dev/kvm'
+      '/dev/kvm',
     ];
   }
 

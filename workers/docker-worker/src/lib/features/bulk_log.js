@@ -10,9 +10,9 @@ const temporary = require('temporary');
 const uploadToS3 = require('../upload_to_s3');
 const zlib = require('zlib');
 
-var debug = Debug('taskcluster-docker-worker:features:bulk_log');
+let debug = Debug('taskcluster-docker-worker:features:bulk_log');
 
-var ARTIFACT_NAME = 'public/logs/terminal_bulk.log.gz';
+let ARTIFACT_NAME = 'public/logs/terminal_bulk.log.gz';
 
 class BulkLog {
   constructor(artifact) {
@@ -25,7 +25,7 @@ class BulkLog {
   async created(task) {
     // Eventually we want to save the content as gzip on s3 or azure so we
     // incrementally compress it via streams.
-    var gzip = zlib.createGzip();
+    let gzip = zlib.createGzip();
 
     // Pipe the task stream to a temp file on disk.
     this.stream = fs.createWriteStream(this.file.path);
@@ -33,7 +33,7 @@ class BulkLog {
   }
 
   async killed(task) {
-    if (task.isCanceled()) return;
+    if (task.isCanceled()) {return;}
     //this.stream.end();
     // Ensure the stream is completely written prior to uploading the temp file.
     await streamClosed(this.stream);
@@ -52,24 +52,23 @@ class BulkLog {
         diskStream, this.artifactName, expiration, {
           'content-type': 'text/plain; charset=utf-8',
           'content-length': stat.size,
-          'content-encoding': 'gzip'
+          'content-encoding': 'gzip',
         });
     } catch (err) {
       debug(err);
       throw err;
     }
 
-
     // Unlink the temp file.
     await fs.unlink(this.file.path);
 
-    var queue = task.queue;
+    let queue = task.queue;
 
     return queue.buildUrl(
       queue.getArtifact,
       task.status.taskId,
       task.runId,
-      this.artifactName
+      this.artifactName,
     );
   }
 

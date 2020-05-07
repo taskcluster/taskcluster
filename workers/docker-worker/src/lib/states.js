@@ -1,6 +1,6 @@
-var assert = require('assert');
-var debug = require('debug')('docker-worker:states');
-var _ = require('lodash');
+let assert = require('assert');
+let debug = require('debug')('docker-worker:states');
+let _ = require('lodash');
 
 function hasMethod(method, input) {
   return typeof input[method] === 'function';
@@ -52,7 +52,7 @@ class States {
           .catch(err => {
             errors.push(new Error(`Error calling '${method}' for ${hook.featureName} : ${err.stack}`));
           });
-      })
+      }),
     ).then(results => {
       if (errors.length > 0) {
         throw new Error(errors.map(e => e).join(' | '));
@@ -106,9 +106,9 @@ class States {
 
     // Merge env objects and flatten lists of links
     return {
-      links:  _.flatten(listsOfLinks),
-      env:    _.defaults.apply(_, listsOfEnvs),
-      binds:  _.flatten(listsOfBinds)
+      links: _.flatten(listsOfLinks),
+      env: _.defaults.apply(_, listsOfEnvs),
+      binds: _.flatten(listsOfBinds),
     };
   }
 

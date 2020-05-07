@@ -6,14 +6,14 @@ const DockerWorker = require('../dockerworker');
 const TestWorker = require('../testworker');
 
 suite('Shutdown on idle', () => {
-  var worker;
+  let worker;
   setup(async () => {
     settings.cleanup();
     settings.configure({
       shutdown: {
         enabled: true,
         afterIdleSeconds: 5,
-      }
+      },
     });
 
     worker = new TestWorker(DockerWorker);
@@ -34,10 +34,10 @@ suite('Shutdown on idle', () => {
   });
 
   test('shutdown without ever working a task', async () => {
-    var res = await Promise.all([
+    let res = await Promise.all([
       worker.launch(),
       waitForEvent(worker, 'pending shutdown'),
-      waitForEvent(worker, 'exit')
+      waitForEvent(worker, 'exit'),
     ]);
     assert.equal(res[1].time, 5);
   });
@@ -45,7 +45,7 @@ suite('Shutdown on idle', () => {
   test('with timer shutdown', async () => {
     await [worker.launch(), waitForEvent(worker, 'pending shutdown')];
 
-    var res = await Promise.all([
+    let res = await Promise.all([
       worker.postToQueue({
         payload: {
           features: {
@@ -53,14 +53,14 @@ suite('Shutdown on idle', () => {
           },
           image: 'taskcluster/test-ubuntu',
           command: cmd(
-            'echo "Okay, this is now done"'
+            'echo "Okay, this is now done"',
           ),
-          maxRunTime: 60 * 60
-        }
+          maxRunTime: 60 * 60,
+        },
       }),
       waitForEvent(worker, 'task resolved'),
       waitForEvent(worker, 'pending shutdown'),
-      waitForEvent(worker, 'exit')
+      waitForEvent(worker, 'exit'),
     ]);
     // Ensure task completed.
     assert.equal(res[1].taskState, 'completed');
@@ -74,7 +74,7 @@ suite('Shutdown on idle', () => {
     ]);
 
     // Posting work should untrigger the shutdown timer and process the task.
-    var events = await Promise.all([
+    let events = await Promise.all([
       worker.postToQueue({
         payload: {
           features: {
@@ -82,10 +82,10 @@ suite('Shutdown on idle', () => {
           },
           image: 'taskcluster/test-ubuntu',
           command: cmd(
-            'echo "Okay, this is now done"'
+            'echo "Okay, this is now done"',
           ),
-          maxRunTime: 60 * 60
-        }
+          maxRunTime: 60 * 60,
+        },
       }),
       waitForEvent(worker, 'cancel pending shutdown'),
       waitForEvent(worker, 'task resolved'),

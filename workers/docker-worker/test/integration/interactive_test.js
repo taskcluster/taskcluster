@@ -30,8 +30,8 @@ suite('use docker exec websocket server', () => {
       interactive: {
         ssl: true,
         minTime: minTime,
-        expirationAfterSession: expTime
-      }
+        expirationAfterSession: expTime,
+      },
     });
     worker = new TestWorker(DockerWorker);
     await worker.launch();
@@ -72,9 +72,9 @@ suite('use docker exec websocket server', () => {
         command: cmd('sleep 50'),
         maxRunTime: 4 * 60,
         features: {
-          interactive: true
-        }
-      }
+          interactive: true,
+        },
+      },
     };
     debug('posting to queue');
     worker.postToQueue(task, taskId).catch((err) => {debug(err); debug('Error');});
@@ -89,7 +89,7 @@ suite('use docker exec websocket server', () => {
       tty: false,
       command: ['cat'],
       url: url,
-      wsopts: {rejectUnauthorized: false}
+      wsopts: {rejectUnauthorized: false},
     });
     await client.execute();
 
@@ -113,7 +113,7 @@ suite('use docker exec websocket server', () => {
     });
 
     await new Promise(accept => client.socket.once('close', accept));
-    assert(passed,'message not recieved');
+    assert(passed, 'message not recieved');
   });
 
   test('expires', async () => {
@@ -124,9 +124,9 @@ suite('use docker exec websocket server', () => {
         command: cmd('sleep 1'),
         maxRunTime: 4 * 60,
         features: {
-          interactive: true
-        }
-      }
+          interactive: true,
+        },
+      },
     };
     debug('posting to queue');
     worker.postToQueue(task, taskId);
@@ -137,7 +137,7 @@ suite('use docker exec websocket server', () => {
       tty: false,
       command: ['pwd'],
       url: url,
-      wsopts: {rejectUnauthorized: false}
+      wsopts: {rejectUnauthorized: false},
     });
     let connected = false;
 
@@ -155,7 +155,7 @@ suite('use docker exec websocket server', () => {
       tty: false,
       command: ['echo'],
       url: url,
-      wsopts: {rejectUnauthorized: false}
+      wsopts: {rejectUnauthorized: false},
     });
     await failClient.execute().then(() => {
       assert(false, 'Expected an error');
@@ -176,9 +176,9 @@ suite('use docker exec websocket server', () => {
         command: cmd('echo hello'),
         maxRunTime: 4 * 60,
         features: {
-          interactive: true
-        }
-      }
+          interactive: true,
+        },
+      },
     };
     debug('posting to queue');
     const p = worker.postToQueue(task, taskId);
@@ -189,7 +189,7 @@ suite('use docker exec websocket server', () => {
       tty: false,
       command: ['cat'],
       url: url,
-      wsopts: {rejectUnauthorized: false}
+      wsopts: {rejectUnauthorized: false},
     });
     let connected = false;
 
@@ -208,7 +208,7 @@ suite('use docker exec websocket server', () => {
     //This is because cat is still alive
     let status = await worker.queue.status(taskId);
     assert.equal(status.status.state, 'running', 'stopped early!');
-    
+
     client.close();
 
     const result = await p;
@@ -225,9 +225,9 @@ suite('use docker exec websocket server', () => {
         command: cmd('sleep 60'),
         maxRunTime: 4 * 60,
         features: {
-          interactive: true
-        }
-      }
+          interactive: true,
+        },
+      },
     };
     debug('posting to queue');
     worker.postToQueue(task, taskId);
@@ -239,7 +239,7 @@ suite('use docker exec websocket server', () => {
       tty: false,
       command: ['cat'],
       url: url,
-      wsopts: {rejectUnauthorized: false}
+      wsopts: {rejectUnauthorized: false},
     });
     await client.execute();
 
@@ -252,15 +252,15 @@ suite('use docker exec websocket server', () => {
     client.stdout.on('data', d => buffers.push(d));
     await new Promise(accept => client.stdout.on('end', accept));
     let data = Buffer.concat(buffers);
-    assert(data.compare(buf),'buffer mismatch');
+    assert(data.compare(buf), 'buffer mismatch');
   });
 
   test('started hook fails gracefully on crash', async () => {
     settings.configure({
       ssl: {
         certificate: '/some/path/ssl.cert',
-        key: '/some/path/ssl.key'
-      }
+        key: '/some/path/ssl.key',
+      },
     });
 
     worker = new TestWorker(DockerWorker);
@@ -273,9 +273,9 @@ suite('use docker exec websocket server', () => {
         command: cmd('sleep 60'),
         maxRunTime: 2 * 60,
         features: {
-          interactive: true
-        }
-      }
+          interactive: true,
+        },
+      },
     };
     debug('posting to queue');
     let res = await worker.postToQueue(task, taskId);

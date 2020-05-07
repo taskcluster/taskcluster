@@ -35,7 +35,7 @@ exports.scopeMatch = (scopePatterns, scopesets) => {
 
   return scopesets.some(scopeset =>
     scopeset.every(scope =>
-      scopePatterns.some(pattern => patternMatch(pattern, scope))
-    )
+      scopePatterns.some(pattern => patternMatch(pattern, scope)),
+    ),
   );
 };

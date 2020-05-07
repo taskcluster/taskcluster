@@ -44,8 +44,8 @@ class DockerInDocker {
       Env: ['PORT='],
       HostConfig: {
         Privileged: true,
-        Binds: [`${this.tmpFolder}:/opt/dind-service/run`]
-      }
+        Binds: [`${this.tmpFolder}:/opt/dind-service/run`],
+      },
     });
 
     // Terrible hack to get container promise proxy.
@@ -69,8 +69,8 @@ class DockerInDocker {
       binds: [{
         source: socketPath,
         target: '/var/run/docker.sock',
-        readOnly: true
-      }]
+        readOnly: true,
+      }],
     };
   }
 

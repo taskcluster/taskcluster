@@ -14,10 +14,10 @@ const sleep = require('../../src/lib/util/sleep');
 
 suite('volume cache tests', () => {
 
-  var localCacheDir = '/tmp';
-  var volumeCacheDir = path.join('/', 'worker', '.test', 'tmp');
+  let localCacheDir = '/tmp';
+  let volumeCacheDir = path.join('/', 'worker', '.test', 'tmp');
 
-  var purgeCache;
+  let purgeCache;
 
   setup(() => {
     // expects rootUrl, credentials in env vars
@@ -34,34 +34,34 @@ suite('volume cache tests', () => {
   });
 
   test('mount cached volume in docker worker', async () => {
-    var cacheName = 'docker-worker-garbage-caches-tmp-obj-dir-' + Date.now().toString();
-    var neededScope = 'docker-worker:cache:' + cacheName;
-    var fullCacheDir = path.join(localCacheDir, cacheName);
+    let cacheName = 'docker-worker-garbage-caches-tmp-obj-dir-' + Date.now().toString();
+    let neededScope = 'docker-worker:cache:' + cacheName;
+    let fullCacheDir = path.join(localCacheDir, cacheName);
     settings.configure({
       cache: {
-        volumeCachePath: localCacheDir
-      }
+        volumeCachePath: localCacheDir,
+      },
     });
 
-    var task = {
+    let task = {
       payload: {
         image: 'taskcluster/test-ubuntu',
         command: cmd(
           'echo "foo" > /tmp-obj-dir/foo.txt',
-          'ls /tmp-obj-dir'
+          'ls /tmp-obj-dir',
         ),
         features: {
-          localLiveLog: true
+          localLiveLog: true,
         },
         cache: {},
-        maxRunTime:         5 * 60
+        maxRunTime: 5 * 60,
       },
-      scopes: [neededScope]
+      scopes: [neededScope],
     };
 
     task.payload.cache[cacheName] = '/tmp-obj-dir';
 
-    var result = await testworker(task);
+    let result = await testworker(task);
 
     // Get task specific results
     const failureInfo = `log:\n${result.log}`;
@@ -70,40 +70,40 @@ suite('volume cache tests', () => {
     assert.notEqual(result.log.indexOf(cacheName), -1, 'lists cache', failureInfo);
     assert.notEqual(result.log.indexOf(cacheName), -1, '/tmp-obj-dir', failureInfo);
 
-    var objDir = fs.readdirSync(fullCacheDir);
+    let objDir = fs.readdirSync(fullCacheDir);
     assert.ok(fs.existsSync(path.join(fullCacheDir, objDir[0], 'foo.txt')), failureInfo);
   });
 
   test('mount cached volume in docker worker using role', async () => {
     // This is the same as the regular success case but instead it uses roles
     // instead of an explicit scope for the cache
-    var cacheName = 'docker-worker-garbage-caches-tmp-obj-dir-' + Date.now().toString();
-    var fullCacheDir = path.join(localCacheDir, cacheName);
+    let cacheName = 'docker-worker-garbage-caches-tmp-obj-dir-' + Date.now().toString();
+    let fullCacheDir = path.join(localCacheDir, cacheName);
     settings.configure({
       cache: {
-        volumeCachePath: localCacheDir
-      }
+        volumeCachePath: localCacheDir,
+      },
     });
 
-    var task = {
+    let task = {
       payload: {
         image: 'taskcluster/test-ubuntu',
         command: cmd(
           'echo "foo" > /tmp-obj-dir/foo.txt',
-          'ls /tmp-obj-dir'
+          'ls /tmp-obj-dir',
         ),
         features: {
-          localLiveLog: true
+          localLiveLog: true,
         },
         cache: {},
-        maxRunTime: 5 * 60
+        maxRunTime: 5 * 60,
       },
-      scopes: ['docker-worker:cache:docker-worker-garbage-caches-tmp-obj-dir*']
+      scopes: ['docker-worker:cache:docker-worker-garbage-caches-tmp-obj-dir*'],
     };
 
     task.payload.cache[cacheName] = '/tmp-obj-dir';
 
-    var result = await testworker(task);
+    let result = await testworker(task);
 
     // Get task specific results
     const failureInfo = `log:\n${result.log}`;
@@ -112,25 +112,25 @@ suite('volume cache tests', () => {
     assert.notEqual(result.log.indexOf(cacheName), -1, 'lists cache', failureInfo);
     assert.notEqual(result.log.indexOf(cacheName), -1, '/tmp-obj-dir', failureInfo);
 
-    var objDir = fs.readdirSync(fullCacheDir);
+    let objDir = fs.readdirSync(fullCacheDir);
     assert.ok(fs.existsSync(path.join(fullCacheDir, objDir[0], 'foo.txt')), failureInfo);
   });
 
   test('mounted cached volumes are not reused between tasks', async () => {
-    var cacheName = 'docker-worker-garbage-caches-tmp-obj-dir-' + Date.now().toString();
-    var neededScope = 'docker-worker:cache:' + cacheName;
+    let cacheName = 'docker-worker-garbage-caches-tmp-obj-dir-' + Date.now().toString();
+    let neededScope = 'docker-worker:cache:' + cacheName;
 
     settings.configure({
       cache: {
-        volumeCachePath: localCacheDir
+        volumeCachePath: localCacheDir,
       },
       capacity: 2,
     });
 
-    var worker = new TestWorker(DockerWorker);
+    let worker = new TestWorker(DockerWorker);
     await worker.launch();
 
-    var tasks = [];
+    let tasks = [];
 
     // Wait for at least one task to start running
     const taskBarrier = waitForEvent(worker, 'task run')
@@ -161,24 +161,24 @@ suite('volume cache tests', () => {
         }));
       });
 
-    for (var i = 0; i < 2; i++) {
-      var fileName = 'file' + i.toString() + '.txt';
-      var task = {
+    for (let i = 0; i < 2; i++) {
+      let fileName = 'file' + i.toString() + '.txt';
+      let task = {
         payload: {
           image: 'taskcluster/test-ubuntu',
           command: cmd(
             '(while ! test -f /tmp-obj-dir/flag; do sleep 1; done)',
             'echo "foo" > /tmp-obj-dir/' + fileName,
-            'ls -lah /tmp-obj-dir'
+            'ls -lah /tmp-obj-dir',
           ),
           features: {
             // No need to actually issue live logging...
-            localLiveLog: true
+            localLiveLog: true,
           },
           cache: {},
-          maxRunTime: 60 * 60
+          maxRunTime: 60 * 60,
         },
-        scopes: [neededScope]
+        scopes: [neededScope],
       };
       task.payload.cache[cacheName] = '/tmp-obj-dir';
 
@@ -186,7 +186,7 @@ suite('volume cache tests', () => {
     }
 
     await taskBarrier;
-    var results = await Promise.all(tasks);
+    let results = await Promise.all(tasks);
     await worker.terminate();
 
     assert.equal(results.length, 2);
@@ -197,54 +197,54 @@ suite('volume cache tests', () => {
   });
 
   test('cached volumes can be reused between tasks', async () => {
-    var cacheName = 'docker-worker-garbage-caches-tmp-obj-dir-' + Date.now().toString();
-    var neededScope = 'docker-worker:cache:' + cacheName;
+    let cacheName = 'docker-worker-garbage-caches-tmp-obj-dir-' + Date.now().toString();
+    let neededScope = 'docker-worker:cache:' + cacheName;
 
     settings.configure({
       cache: {
-        volumeCachePath: localCacheDir
+        volumeCachePath: localCacheDir,
       },
       capacity: 2,
       capacityManagement: {
-        diskspaceThreshold: 1
+        diskspaceThreshold: 1,
       },
       garbageCollection: {
         imageExpiration: 2 * 60 * 60 * 1000,
         interval: 5000,
-        dockerVolume: '/mnt'
+        dockerVolume: '/mnt',
       },
     });
 
-    var worker = new TestWorker(DockerWorker);
+    let worker = new TestWorker(DockerWorker);
     await worker.launch();
 
-    var task = {
+    let task = {
       payload: {
         image: 'taskcluster/test-ubuntu',
         command: cmd(
-          'echo "This is a shared file." > /tmp-obj-dir/foo.txt'
+          'echo "This is a shared file." > /tmp-obj-dir/foo.txt',
         ),
         features: {
           // No need to actually issue live logging...
-          localLiveLog: false
+          localLiveLog: false,
         },
         cache: {},
-        maxRunTime:         5 * 60
+        maxRunTime: 5 * 60,
       },
-      scopes: [neededScope]
+      scopes: [neededScope],
     };
 
     task.payload.cache[cacheName] = '/tmp-obj-dir';
 
     await Promise.all([
       worker.postToQueue(task),
-      waitForEvent(worker, 'cache volume release')
+      waitForEvent(worker, 'cache volume release'),
     ]);
 
     task.payload.command = cmd('cat /tmp-obj-dir/foo.txt');
     task.payload.features.localLiveLog = true;
 
-    var result2 = await worker.postToQueue(task);
+    let result2 = await worker.postToQueue(task);
     await worker.terminate();
 
     assert.equal(result2.run.state, 'completed');
@@ -253,49 +253,49 @@ suite('volume cache tests', () => {
   });
 
   test('mount multiple cached volumes in docker worker', async () => {
-    var cacheName1 = 'docker-worker-garbage-caches-tmp-obj-dir-' + Date.now().toString();
-    var cacheName2 = 'docker-worker-garbage-caches-tmp-obj-dir-' + (Date.now()+1).toString();
+    let cacheName1 = 'docker-worker-garbage-caches-tmp-obj-dir-' + Date.now().toString();
+    let cacheName2 = 'docker-worker-garbage-caches-tmp-obj-dir-' + (Date.now() + 1).toString();
 
-    var neededScopes = [];
+    let neededScopes = [];
     neededScopes.push('docker-worker:cache:' + cacheName1);
     neededScopes.push('docker-worker:cache:' + cacheName2);
 
-    var fullCache1Dir = path.join(localCacheDir, cacheName1);
-    var fullCache2Dir = path.join(localCacheDir, cacheName2);
+    let fullCache1Dir = path.join(localCacheDir, cacheName1);
+    let fullCache2Dir = path.join(localCacheDir, cacheName2);
 
     settings.configure({
       cache: {
-        volumeCachePath: localCacheDir
-      }
+        volumeCachePath: localCacheDir,
+      },
     });
 
-    var task = {
+    let task = {
       payload: {
         image: 'taskcluster/test-ubuntu',
         command: cmd(
           'echo "foo" > /tmp-obj-dir1/foo.txt',
-          'echo "bar" > /tmp-obj-dir2/bar.txt'
+          'echo "bar" > /tmp-obj-dir2/bar.txt',
         ),
         features: {
           // No need to actually issue live logging...
-          localLiveLog: false
+          localLiveLog: false,
         },
         cache: {},
-        maxRunTime:         5 * 60
+        maxRunTime: 5 * 60,
       },
-      scopes: neededScopes
+      scopes: neededScopes,
     };
 
     task.payload.cache[cacheName1] = '/tmp-obj-dir1';
     task.payload.cache[cacheName2] = '/tmp-obj-dir2';
 
-    var result = await testworker(task);
+    let result = await testworker(task);
 
     // Get task specific results
     assert.equal(result.run.state, 'completed');
     assert.equal(result.run.reasonResolved, 'completed');
 
-    var objDir = fs.readdirSync(fullCache1Dir);
+    let objDir = fs.readdirSync(fullCache1Dir);
     assert.ok(fs.existsSync(path.join(fullCache1Dir, objDir[0], 'foo.txt')));
 
     objDir = fs.readdirSync(fullCache2Dir);
@@ -304,25 +304,25 @@ suite('volume cache tests', () => {
 
   test('task unsuccesful when insufficient cache scope is provided',
     async () => {
-      var cacheName = 'docker-worker-garbage-caches-tmp-obj-dir-' + Date.now().toString();
-      var neededScope = 'docker-worker:cache:docker-worker-garbage-caches-1' + cacheName;
-      var fullCacheDir = path.join(localCacheDir, cacheName);
+      let cacheName = 'docker-worker-garbage-caches-tmp-obj-dir-' + Date.now().toString();
+      let neededScope = 'docker-worker:cache:docker-worker-garbage-caches-1' + cacheName;
+      let fullCacheDir = path.join(localCacheDir, cacheName);
 
-      var task = {
+      let task = {
         payload: {
           image: 'taskcluster/test-ubuntu',
           command: cmd(
-            'echo "foo" > /tmp-obj-dir/foo.txt'
+            'echo "foo" > /tmp-obj-dir/foo.txt',
           ),
           cache: {},
-          maxRunTime:         5 * 60
+          maxRunTime: 5 * 60,
         },
-        scopes: [neededScope]
+        scopes: [neededScope],
       };
 
       task.payload.cache[cacheName] = '/tmp-obj-dir';
 
-      var result = await testworker(task);
+      let result = await testworker(task);
 
       // Get task specific results
       assert.equal(result.run.state, 'failed',
@@ -330,43 +330,43 @@ suite('volume cache tests', () => {
       assert.equal(result.run.reasonResolved, 'failed',
         'Task completed successfully when it should not have.');
 
-      var expectedError = 'Insufficient scopes to attach cache volumes.';
+      let expectedError = 'Insufficient scopes to attach cache volumes.';
       assert.ok(result.log.indexOf(expectedError) !== -1,
-        'Insufficient scopes error message did not appear in the log'
+        'Insufficient scopes error message did not appear in the log',
       );
 
       assert.ok(!fs.existsSync(fullCacheDir),
         'Volume cache created cached volume directory when it should not ' +
-        'have.'
+        'have.',
       );
-    }
+    },
   );
 
   test('task unsuccesful when invalid cache name is requested',
     async () => {
-      var cacheName = 'docker-worker-garbage-caches-tmp-obj-dir::-' + Date.now().toString();
-      var neededScope = 'docker-worker:cache:' + cacheName;
-      var fullCacheDir = path.join(localCacheDir, cacheName);
+      let cacheName = 'docker-worker-garbage-caches-tmp-obj-dir::-' + Date.now().toString();
+      let neededScope = 'docker-worker:cache:' + cacheName;
+      let fullCacheDir = path.join(localCacheDir, cacheName);
 
-      var task = {
+      let task = {
         payload: {
           image: 'taskcluster/test-ubuntu',
           command: cmd(
-            'echo "foo" > /tmp-obj-dir/foo.txt'
+            'echo "foo" > /tmp-obj-dir/foo.txt',
           ),
           features: {
             // No need to actually issue live logging...
-            localLiveLog: true
+            localLiveLog: true,
           },
           cache: {},
-          maxRunTime:         5 * 60
+          maxRunTime: 5 * 60,
         },
-        scopes: [neededScope]
+        scopes: [neededScope],
       };
 
       task.payload.cache[cacheName] = '/tmp-obj-dir';
 
-      var result = await testworker(task);
+      let result = await testworker(task);
 
       // Get task specific results
       assert.equal(result.run.state, 'failed',
@@ -374,93 +374,93 @@ suite('volume cache tests', () => {
       assert.equal(result.run.reasonResolved, 'failed',
         'Task completed successfully when it should not have.');
 
-      var expectedError = 'Error: Invalid key name was provided';
+      let expectedError = 'Error: Invalid key name was provided';
       assert.ok(result.log.indexOf(expectedError) !== -1,
-        'Invalid key name message did not appear in the logs'
+        'Invalid key name message did not appear in the logs',
       );
 
       assert.ok(!fs.existsSync(fullCacheDir),
         'Volume cache created cached volume directory when it should not ' +
-        'have.'
+        'have.',
       );
-    }
+    },
   );
 
   test('cached volumes of aborted tasks are released', async () => {
-    var cacheName = 'docker-worker-garbage-caches-tmp-obj-dir-' + Date.now().toString();
-    var neededScope = 'docker-worker:cache:' + cacheName;
+    let cacheName = 'docker-worker-garbage-caches-tmp-obj-dir-' + Date.now().toString();
+    let neededScope = 'docker-worker:cache:' + cacheName;
     settings.configure({
       cache: {
-        volumeCachePath: localCacheDir
+        volumeCachePath: localCacheDir,
       },
       capacityManagement: {
-        diskspaceThreshold: 1
+        diskspaceThreshold: 1,
       },
       garbageCollection: {
         imageExpiration: 2 * 60 * 60 * 1000,
         interval: 5000,
-        dockerVolume: '/mnt'
+        dockerVolume: '/mnt',
       },
     });
 
-    var task = {
+    let task = {
       payload: {
         image: 'taskcluster/test-ubuntu',
         command: cmd(
           'echo "foo" > /tmp-obj-dir/foo.txt',
-          'sleep 60'
+          'sleep 60',
         ),
         features: {
-          localLiveLog: true
+          localLiveLog: true,
         },
         cache: {},
-        maxRunTime: 10
+        maxRunTime: 10,
       },
-      scopes: [neededScope]
+      scopes: [neededScope],
     };
 
     task.payload.cache[cacheName] = '/tmp-obj-dir';
 
-    var worker = new TestWorker(DockerWorker);
+    let worker = new TestWorker(DockerWorker);
     await worker.launch();
 
     worker.postToQueue(task);
     await waitForEvent(worker, 'task max runtime timeout');
-    var releasedVolume = await waitForEvent(worker, 'cache volume release');
+    let releasedVolume = await waitForEvent(worker, 'cache volume release');
     assert.ok(
       releasedVolume.key.indexOf(cacheName) !== -1,
-      'Cached volume was not released'
+      'Cached volume was not released',
     );
     await worker.terminate();
   });
 
   test('purge cache before run task', async () => {
-    var cacheName = 'docker-worker-garbage-caches-tmp-obj-dir-' + Date.now().toString();
-    var neededScope = 'docker-worker:cache:' + cacheName;
-    var fullCacheDir = path.join(localCacheDir, cacheName);
+    let cacheName = 'docker-worker-garbage-caches-tmp-obj-dir-' + Date.now().toString();
+    let neededScope = 'docker-worker:cache:' + cacheName;
+    let fullCacheDir = path.join(localCacheDir, cacheName);
     settings.configure({
       cache: {
-        volumeCachePath: volumeCacheDir
+        volumeCachePath: volumeCacheDir,
       },
       garbageCollection: {
-        interval: 100
-      }
+        interval: 100,
+      },
     });
 
-    var task = {
+    let task = {
       payload: {
         image: 'taskcluster/test-ubuntu',
         command: cmd(
           'echo "foo" > /tmp-obj-dir/foo.txt',
-          'ls /tmp-obj-dir'
+          'ls /tmp-obj-dir',
         ),
         features: {
-          localLiveLog: true
+          localLiveLog: true,
         },
         cache: {},
-        maxRunTime:         5 * 60
+        maxRunTime: 5 * 60,
       },
-      scopes: [neededScope]
+      scopes: [neededScope],
     };
 
     task.payload.cache[cacheName] = '/tmp-obj-dir';
@@ -475,13 +475,13 @@ suite('volume cache tests', () => {
     await purgeCache.purgeCache(
       worker.provisionerId,
       worker.workerType, {
-        cacheName: cacheName
+        cacheName: cacheName,
       });
     await Promise.all([
       // post a second task to trigger cache purging
       worker.postToQueue(task),
       // and wait for the purge to occur at the same time
-      waitForEvent(worker, 'cache volume removed')
+      waitForEvent(worker, 'cache volume removed'),
     ]);
 
     await worker.terminate();
@@ -490,48 +490,48 @@ suite('volume cache tests', () => {
   });
 
   test('purge cache during run task', async () => {
-    var cacheName = 'docker-worker-garbage-caches-tmp-obj-dir-' + Date.now().toString();
-    var neededScope = 'docker-worker:cache:' + cacheName;
-    var fullCacheDir = path.join(localCacheDir, cacheName);
+    let cacheName = 'docker-worker-garbage-caches-tmp-obj-dir-' + Date.now().toString();
+    let neededScope = 'docker-worker:cache:' + cacheName;
+    let fullCacheDir = path.join(localCacheDir, cacheName);
     settings.configure({
       cache: {
-        volumeCachePath: volumeCacheDir
+        volumeCachePath: volumeCacheDir,
       },
       garbageCollection: {
-        interval: 100
-      }
+        interval: 100,
+      },
     });
 
-    var task = {
+    let task = {
       payload: {
         image: 'taskcluster/test-ubuntu',
         command: cmd(
           'echo "foo" > /tmp-obj-dir/foo.txt',
-          'sleep 30'
+          'sleep 30',
         ),
         features: {
-          localLiveLog: true
+          localLiveLog: true,
         },
         cache: {},
-        maxRunTime:         5 * 60
+        maxRunTime: 5 * 60,
       },
-      scopes: [neededScope]
+      scopes: [neededScope],
     };
 
     task.payload.cache[cacheName] = '/tmp-obj-dir';
 
     let worker = new TestWorker(DockerWorker);
 
-    var cache_purged = false;
+    let cache_purged = false;
     worker.once('task run', async () => {
       // wait until the first task has started to clear the cache
       await Promise.all([
         purgeCache.purgeCache(
           worker.provisionerId,
           worker.workerType, {
-            cacheName: cacheName
+            cacheName: cacheName,
           }),
-        waitForEvent(worker, 'cache volume removed')
+        waitForEvent(worker, 'cache volume removed'),
       ]);
 
       cache_purged = true;
@@ -553,19 +553,19 @@ suite('volume cache tests', () => {
   });
 
   test('purge cache based on exit status', async () => {
-    var cacheName = 'docker-worker-garbage-caches-tmp-obj-dir-' + Date.now().toString();
-    var neededScope = 'docker-worker:cache:' + cacheName;
-    var fullCacheDir = path.join(localCacheDir, cacheName);
+    let cacheName = 'docker-worker-garbage-caches-tmp-obj-dir-' + Date.now().toString();
+    let neededScope = 'docker-worker:cache:' + cacheName;
+    let fullCacheDir = path.join(localCacheDir, cacheName);
     settings.configure({
       cache: {
-        volumeCachePath: volumeCacheDir
+        volumeCachePath: volumeCacheDir,
       },
       garbageCollection: {
-        interval: 100
-      }
+        interval: 100,
+      },
     });
 
-    var task = {
+    let task = {
       payload: {
         image: 'taskcluster/test-ubuntu',
         command: cmd(
@@ -573,15 +573,15 @@ suite('volume cache tests', () => {
           'exit 36',
         ),
         features: {
-          localLiveLog: true
+          localLiveLog: true,
         },
         cache: {},
-        maxRunTime:         5 * 60,
+        maxRunTime: 5 * 60,
         onExitStatus: {
           purgeCaches: [36],
         },
       },
-      scopes: [neededScope]
+      scopes: [neededScope],
     };
 
     task.payload.cache[cacheName] = '/tmp-obj-dir';

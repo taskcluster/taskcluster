@@ -23,9 +23,9 @@ suite('retry intermittent tasks', () => {
         command: ['/bin/bash', '-c', 'exit 36'],
         maxRunTime: 1 * 60,
         onExitStatus: {
-          retry: [36]
-        }
-      }
+          retry: [36],
+        },
+      },
     });
 
     assert.equal(result.run.state, 'pending', 'new pending run should be created');
@@ -41,9 +41,9 @@ suite('retry intermittent tasks', () => {
         command: ['/bin/bash', '-c', 'exit 3'],
         maxRunTime: 1 * 60,
         onExitStatus: {
-          retry: [36]
-        }
-      }
+          retry: [36],
+        },
+      },
     });
 
     assert.equal(result.run.state, 'failed', 'task should fail');
@@ -58,9 +58,9 @@ suite('retry intermittent tasks', () => {
         command: ['/bin/bash', '-c', 'exit 0'],
         maxRunTime: 1 * 60,
         onExitStatus: {
-          retry: [36]
-        }
-      }
+          retry: [36],
+        },
+      },
     });
 
     assert.equal(result.run.state, 'completed', 'task should not fail or be retried');

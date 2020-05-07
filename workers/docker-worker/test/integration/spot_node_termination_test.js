@@ -22,7 +22,7 @@ suite('Spot Node Termination', () => {
       shutdown: {
         enabled: true,
         nodeTerminationPoll: 1,
-      }
+      },
     });
   });
 
@@ -39,10 +39,10 @@ suite('Spot Node Termination', () => {
       payload: {
         image: IMAGE,
         command: [
-          '/bin/bash', '-c', 'echo "Hello"; sleep 15; echo "done";'
+          '/bin/bash', '-c', 'echo "Hello"; sleep 15; echo "done";',
         ],
-        maxRunTime: 60 * 60
-      }
+        maxRunTime: 60 * 60,
+      },
     };
     let taskId = slugid.v4();
     worker = new TestWorker(DockerWorker);
@@ -52,25 +52,25 @@ suite('Spot Node Termination', () => {
     let taskStatus = await worker.queue.status(taskId);
 
     assert.equal(taskStatus.status.runs[0].state, 'exception',
-      'First run should have been marked as exception on worker-shutdown'
+      'First run should have been marked as exception on worker-shutdown',
     );
 
     assert.equal(taskStatus.status.runs[0].reasonResolved, 'worker-shutdown',
-      'First run should be resolved with a reason of "worker-shutdown"'
+      'First run should be resolved with a reason of "worker-shutdown"',
     );
 
     let log = await getArtifact(
-      { taskId: taskId, runId: 0 }, 'public/logs/live_backing.log'
+      { taskId: taskId, runId: 0 }, 'public/logs/live_backing.log',
     );
 
     assert.equal(log.indexOf('Artifact not found'), -1,
-      'Backing log should have been created when task was aborted'
+      'Backing log should have been created when task was aborted',
     );
 
     assert.notEqual(log.indexOf('Hello'), -1, 'Task should have started before being aborted.');
     assert.equal(log.indexOf('Done'), -1, 'Task should have been aborted before finishing');
     assert.notEqual(log.indexOf('Task has been aborted prematurely. Reason: worker-shutdown'), -1,
-      'Log should indicate that task was aborted with a reason of "worker-shutdown"'
+      'Log should indicate that task was aborted with a reason of "worker-shutdown"',
     );
   });
 
@@ -87,10 +87,10 @@ suite('Spot Node Termination', () => {
       payload: {
         image: image,
         command: [
-          '/bin/bash', '-c', 'echo "Hello"; sleep 15; echo "done";'
+          '/bin/bash', '-c', 'echo "Hello"; sleep 15; echo "done";',
         ],
-        maxRunTime: 60 * 60
-      }
+        maxRunTime: 60 * 60,
+      },
     };
     let taskId = slugid.v4();
     worker = new TestWorker(DockerWorker);
@@ -102,36 +102,36 @@ suite('Spot Node Termination', () => {
     let taskStatus = await worker.queue.status(taskId);
 
     assert.equal(taskStatus.status.runs[0].state, 'exception',
-      'First run should have been marked as exception on worker-shutdown'
+      'First run should have been marked as exception on worker-shutdown',
     );
 
     assert.equal(taskStatus.status.runs[0].reasonResolved, 'worker-shutdown',
-      'First run should be resolved with a reason of "worker-shutdown"'
+      'First run should be resolved with a reason of "worker-shutdown"',
     );
 
     let log = await getArtifact(
-      { taskId: taskId, runId: 0 }, 'public/logs/live_backing.log'
+      { taskId: taskId, runId: 0 }, 'public/logs/live_backing.log',
     );
 
     assert.equal(log.indexOf('Artifact not found'), -1,
-      'Backing log should have been created when task was aborted'
+      'Backing log should have been created when task was aborted',
     );
 
     assert.equal(log.indexOf('Hello'), -1, 'Task should not have started after being aborted.');
     assert.notEqual(log.indexOf('Task has been aborted prematurely. Reason: worker-shutdown'), -1,
-      'Log should indicate that task was aborted with a reason of "worker-shutdown"'
+      'Log should indicate that task was aborted with a reason of "worker-shutdown"',
     );
   });
 
   test('task is not claimed on startup if node terminated', async () => {
     settings.configure({
       taskQueue: {
-        pollInterval: 500
+        pollInterval: 500,
       },
       shutdown: {
         enabled: true,
         nodeTerminationPoll: 2000,
-      }
+      },
     });
 
     settings.nodeTermination();
@@ -146,10 +146,10 @@ suite('Spot Node Termination', () => {
       payload: {
         image: 'taskcluster/test-ubuntu',
         command: [
-          '/bin/bash', '-c', 'echo "Hello"'
+          '/bin/bash', '-c', 'echo "Hello"',
         ],
-        maxRunTime: 60 * 60
-      }
+        maxRunTime: 60 * 60,
+      },
     };
 
     worker.postToQueue(taskDefinition);
@@ -170,7 +170,7 @@ suite('Spot Node Termination', () => {
       shutdown: {
         enabled: true,
         nodeTerminationPoll: 1,
-      }
+      },
     });
 
     const task = {
@@ -180,7 +180,7 @@ suite('Spot Node Termination', () => {
           '/bin/bash', '-c', 'echo "Hello"; sleep 600; echo "done";',
         ],
         maxRunTime: 600,
-      }
+      },
     };
 
     const taskIds = [slugid.v4(), slugid.v4()];
@@ -199,8 +199,7 @@ suite('Spot Node Termination', () => {
     await Promise.all(
       status
         .filter(stat => ['pending', 'running'].includes(stat.state))
-        .map(stat => worker.queue.cancelTask(stat.taskId))
+        .map(stat => worker.queue.cancelTask(stat.taskId)),
     );
   });
 });
-

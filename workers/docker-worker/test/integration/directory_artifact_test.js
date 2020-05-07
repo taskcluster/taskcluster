@@ -12,17 +12,17 @@ suite('Directory artifact', function() {
         command: cmd('echo "xfoo" > /xfoo.txt'),
         features: {
           // No need to actually issue live logging...
-          localLiveLog: false
+          localLiveLog: false,
         },
         artifacts: {
           'public/xfoo': {
             type: 'directory',
             expires: expires(),
-            path: '/xfoo.txt'
-          }
+            path: '/xfoo.txt',
+          },
         },
-        maxRunTime: 5 * 60
-      }
+        maxRunTime: 5 * 60,
+      },
     });
 
     // Get task specific results
@@ -40,20 +40,20 @@ suite('Directory artifact', function() {
           'mkdir -p "/xfoo/wow"',
           'echo "xfoo" > /xfoo/wow/bar.txt',
           'echo "text" > /xfoo/wow/another.txt',
-          'dd if=/dev/zero of=/xfoo/test.html  bs=1  count=1000000'
+          'dd if=/dev/zero of=/xfoo/test.html  bs=1  count=1000000',
         ),
         features: {
-          localLiveLog: false
+          localLiveLog: false,
         },
         artifacts: {
           'public/dir': {
             type: 'directory',
             path: '/xfoo/',
-            expires: expires()
+            expires: expires(),
           },
         },
-        maxRunTime: 5 * 60
-      }
+        maxRunTime: 5 * 60,
+      },
     });
 
     assert.equal(result.run.state, 'completed', 'task should be successful');
@@ -64,8 +64,8 @@ suite('Directory artifact', function() {
       [
         'public/dir/test.html',
         'public/dir/wow/bar.txt',
-        'public/dir/wow/another.txt'
-      ].sort()
+        'public/dir/wow/another.txt',
+      ].sort(),
     );
 
     let bar = await getArtifact(result, 'public/dir/wow/bar.txt');
@@ -76,7 +76,7 @@ suite('Directory artifact', function() {
 
     let testHtml = await getArtifact(result, 'public/dir/test.html');
     assert.ok(Buffer.byteLength(testHtml) === 1000000,
-      'Size of uploaded contents of test.html does not match original.'
+      'Size of uploaded contents of test.html does not match original.',
     );
   });
 });

@@ -6,7 +6,7 @@ const DockerImage = require('./docker_image');
 const IMAGE_HANDLERS = {
   'indexed-image': IndexedImage,
   'task-image': TaskImage,
-  'docker-image': DockerImage
+  'docker-image': DockerImage,
 };
 
 /**
@@ -62,14 +62,14 @@ class ImageManager {
     if (typeof imageDetails === 'string') {
       imageDetails = {
         name: imageDetails,
-        type: 'docker-image'
+        type: 'docker-image',
       };
     }
 
     return this._lastImageEnsured = Promise.resolve(this._lastImageEnsured)
       .catch(() => {}).then(async () => {
         this.log('ensure image', {
-          image: imageDetails
+          image: imageDetails,
         });
 
         let imageHandler = this.getImageHandler(imageDetails, stream, task, scopes);
@@ -77,7 +77,7 @@ class ImageManager {
         if (!imageHandler.isAuthorized()) {
           throw new Error(
             `Not authorized to use ${JSON.stringify(imageDetails)}.  Ensure that ` +
-            'the task scopes are correctly defined in the task definition'
+            'the task scopes are correctly defined in the task definition',
           );
         }
 

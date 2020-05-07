@@ -4,4 +4,3 @@ module.exports = (delay) => {
     setTimeout(accept, delay);
   });
 };
-
