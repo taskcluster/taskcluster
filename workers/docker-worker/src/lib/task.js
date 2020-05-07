@@ -67,7 +67,7 @@ function buildStateHandlers(task, monitor) {
     throw new Error(`${diff.join()} ${diff.length > 1 ? 'are' : 'is'} not part of valid features`);
   }
 
-  for (let flag of features) {
+  for (let flag of Object.keys(features)) {
     let enabled = (flag in featureFlags) ?
       featureFlags[flag] : features[flag].defaults;
 
@@ -137,7 +137,7 @@ async function buildDeviceBindings(devices, expandedScopes) {
   }
 
   let deviceBindings = [];
-  for (let deviceType of devices) {
+  for (let deviceType of Object.keys(devices)) {
     let device = devices[deviceType];
     device.mountPoints.forEach((mountPoint) => {
       deviceBindings.push(
@@ -431,7 +431,7 @@ class Task extends EventEmitter {
     //
     // List caches if used...
     if (this.task.payload.cache) {
-      for (let key of this.task.payload.cache) {
+      for (let key of Object.keys(this.task.payload.cache)) {
         let path = this.task.payload.cache[key];
         header.push(`using cache "${key}" -> ${path}`);
       }

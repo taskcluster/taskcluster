@@ -26,7 +26,7 @@ class LocalWorker {
     return new Promise(function(accept, reject) {
       // Clone process environment variables.
       let envs = {};
-      for (let key of process.env) {
+      for (let key of Object.keys(process.env)) {
         envs[key] = process.env[key];
       }
 

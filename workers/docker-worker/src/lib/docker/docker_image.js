@@ -187,7 +187,7 @@ class DockerImage {
 
     // Note this may search through all repositories intentionally as to only
     // match the correct (longest match based on slashes).
-    for (let registry of repositories) {
+    for (let registry of Object.keys(repositories)) {
 
       // Longest possible match always wins fast path return...
       if (registryHost + '/' + registryUser === registry) {
