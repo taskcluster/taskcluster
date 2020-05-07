@@ -6,7 +6,7 @@ let assert = require('assert');
 
 function Runtime(options) {
   assert(typeof options === 'object', 'options must be an object.');
-  for (let key of options) {this[key] = options[key];}
+  Object.assign(this, options);
 
   // Ensure capacity is always a number.
   if (this.capacity) {this.capacity = parseInt(this.capacity, 10);}
