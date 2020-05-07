@@ -7,6 +7,7 @@ import (
 	"bytes"
 	"fmt"
 	"io"
+	"log"
 	"net"
 	"net/http"
 	"os"
@@ -33,6 +34,7 @@ type LiveLog struct {
 	LogWriter io.WriteCloser
 	mutex     sync.Mutex
 	command   *exec.Cmd
+	done      chan (struct{})
 }
 
 // New starts a livelog OS process using the executable specified, and returns
@@ -46,6 +48,7 @@ func New(liveLogExecutable string, putPort, getPort uint16) (*LiveLog, error) {
 		command: exec.Command(liveLogExecutable),
 		PUTPort: putPort,
 		GETPort: getPort,
+		done:    make(chan (struct{})),
 	}
 	l.setRequestURLs()
 
@@ -92,6 +95,13 @@ func New(liveLogExecutable string, putPort, getPort uint16) (*LiveLog, error) {
 
 	select {
 	case err := <-inputStreamConnectionResult:
+		go func() {
+			select {
+			case <-l.done:
+			case pr := <-putResult:
+				log.Printf("WARNING: Livelog failure: error '%v' and livelog output:\n%s", pr.e, pr.b)
+			}
+		}()
 		if err != nil {
 			return nil, err
 		}
@@ -111,6 +121,7 @@ func (l *LiveLog) Terminate() error {
 	// i.e DON'T write `l.logReader.Close()`
 	l.LogWriter.Close()
 	l.mutex.Lock()
+	close(l.done)
 	defer l.mutex.Unlock()
 	return l.command.Process.Kill()
 }
