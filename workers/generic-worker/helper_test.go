@@ -92,8 +92,8 @@ func setupEnvironment(t *testing.T) (teardown func()) {
 	}
 }
 
-func setup(t *testing.T) (teardown func()) {
-	teardown = setupEnvironment(t)
+func setup(t *testing.T) func() {
+	teardown := setupEnvironment(t)
 	// configure the worker
 	testDir := filepath.Join(testdataDir, t.Name())
 	config = &gwconfig.Config{
@@ -163,9 +163,19 @@ func setup(t *testing.T) (teardown func()) {
 			},
 		},
 	}
+
+	// like LiveLogGETPort and LiveLogPUTPort above, we need to use a non-default port for
+	// the livelog internalGETPort, so that we don't conflict with a generic-worker in which
+	// the tests are running
+	oldInternalGETPort := internalGETPort
+	internalGETPort = 30583
+
 	configProvider = &TestProvider{}
 	setConfigRunTasksAsCurrentUser()
-	return teardown
+	return func() {
+		teardown()
+		internalGETPort = oldInternalGETPort
+	}
 }
 
 type TestProvider struct{}

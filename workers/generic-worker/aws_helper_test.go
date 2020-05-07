@@ -56,6 +56,10 @@ func (m *MockAWSProvisionedEnvironment) ValidPublicConfig(t *testing.T) map[stri
 		"ed25519SigningKeyLocation":      filepath.Join(testdataDir, "ed25519_private_key"),
 		"subdomain":                      "taskcluster-worker.net",
 		"tasksDir":                       filepath.Join(testdataDir, t.Name()),
+		// these must be different from the default values, as the worker running the CI
+		// task will be using those values
+		"livelogGETPort": 30582,
+		"livelogPUTPort": 43264,
 		"workerTypeMetadata": map[string]interface{}{
 			"machine-setup": map[string]string{
 				"pretend-metadata": m.PretendMetadata,
@@ -179,6 +183,12 @@ func (m *MockAWSProvisionedEnvironment) Setup(t *testing.T) (teardown func(), er
 	oldEC2MetadataBaseURL := EC2MetadataBaseURL
 	EC2MetadataBaseURL = "http://localhost:13243/latest"
 
+	// like LiveLogGETPort and LiveLogPUTPort above, we need to use a non-default port for
+	// the livelog internalGETPort, so that we don't conflict with a generic-worker in which
+	// the tests are running
+	oldInternalGETPort := internalGETPort
+	internalGETPort = 30583
+
 	// Create custom *http.ServeMux rather than using http.DefaultServeMux, so
 	// registered handler functions won't interfere with future tests that also
 	// use http.DefaultServeMux.
@@ -289,6 +299,7 @@ func (m *MockAWSProvisionedEnvironment) Setup(t *testing.T) (teardown func(), er
 		t.Log("HTTP server for mock Provisioner and EC2 metadata endpoints stopped")
 		EC2MetadataBaseURL = oldEC2MetadataBaseURL
 		configureForAWS = false
+		internalGETPort = oldInternalGETPort
 	}, err
 }
 

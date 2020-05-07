@@ -17,8 +17,12 @@ import (
 )
 
 var (
-	livelogName     = "public/logs/live.log"
-	internalGETPort uint16
+	livelogName = "public/logs/live.log"
+
+	// The port on which the livelog process listens.  This is then proxied
+	// to the user by the exposer.  This port must be different from liveLogGETPort
+	// and liveLogPUTPort.
+	internalGETPort uint16 = 60099
 )
 
 type LiveLogFeature struct {
@@ -29,7 +33,6 @@ func (feature *LiveLogFeature) Name() string {
 }
 
 func (feature *LiveLogFeature) Initialise() error {
-	internalGETPort = config.LiveLogGETPort
 	return nil
 }
 

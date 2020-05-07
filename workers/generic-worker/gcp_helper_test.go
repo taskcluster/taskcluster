@@ -24,6 +24,12 @@ func (m *MockGCPProvisionedEnvironment) Setup(t *testing.T) func() {
 	oldGCPMetadataBaseURL := GCPMetadataBaseURL
 	GCPMetadataBaseURL = "http://localhost:13243/computeMetadata/v1"
 
+	// like LiveLogGETPort and LiveLogPUTPort below, we need to use a non-default port for
+	// the livelog internalGETPort, so that we don't conflict with a generic-worker in which
+	// the tests are running
+	oldInternalGETPort := internalGETPort
+	internalGETPort = 30583
+
 	// Create custom *http.ServeMux rather than using http.DefaultServeMux, so
 	// registered handler functions won't interfere with future tests that also
 	// use http.DefaultServeMux.
@@ -42,7 +48,9 @@ func (m *MockGCPProvisionedEnvironment) Setup(t *testing.T) func() {
 				"workerConfig": map[string]interface{}{
 					"genericWorker": map[string]interface{}{
 						"config": map[string]interface{}{
-							"deploymentId": "12345",
+							"deploymentId":   "12345",
+							"livelogGETPort": 30582,
+							"livelogPUTPort": 43264,
 						},
 					},
 				},
@@ -138,5 +146,6 @@ func (m *MockGCPProvisionedEnvironment) Setup(t *testing.T) func() {
 		t.Log("HTTP server for mock Provisioner and GCP metadata endpoints stopped")
 		GCPMetadataBaseURL = oldGCPMetadataBaseURL
 		configureForGCP = false
+		internalGETPort = oldInternalGETPort
 	}
 }
