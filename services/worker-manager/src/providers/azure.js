@@ -509,7 +509,7 @@ class AzureProvider extends Provider {
       let resourceRequest = await this._enqueue('query', () => client.beginCreateOrUpdate(
         worker.providerData.resourceGroupName,
         typeData.name,
-        {...resourceConfig, ...worker.providerData.tags},
+        {...resourceConfig, tags: worker.providerData.tags},
       ));
       // track operation
       await worker.modify(w => {
