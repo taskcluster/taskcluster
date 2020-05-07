@@ -10,6 +10,7 @@
   "workspaces": [
     "libraries/*",
     "services/*",
+    "workers/*",
     "db"
   ],
   "dependencies": {
