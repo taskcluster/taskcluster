@@ -1,7 +1,7 @@
 import React, { Component, Fragment } from 'react';
 import { withStyles } from '@material-ui/core';
 import Label from '@mozilla-frontend-infra/components/Label';
-import { shape, func, arrayOf } from 'prop-types';
+import { shape, func, arrayOf, string } from 'prop-types';
 import { pipe, map, sort as rSort } from 'ramda';
 import { camelCase } from 'change-case/change-case';
 import TableRow from '@material-ui/core/TableRow';
@@ -56,6 +56,11 @@ export default class WorkerManagerWorkerPoolsTable extends Component {
       pageInfo,
     }).isRequired,
     deleteRequest: func.isRequired,
+    searchTerm: string,
+  };
+
+  static defaultProps = {
+    searchTerm: null,
   };
 
   state = {
@@ -257,7 +262,7 @@ export default class WorkerManagerWorkerPoolsTable extends Component {
   };
 
   render() {
-    const { onPageChange, workerPoolsConnection } = this.props;
+    const { onPageChange, workerPoolsConnection, searchTerm } = this.props;
     const {
       sortBy,
       sortDirection,
@@ -279,6 +284,7 @@ export default class WorkerManagerWorkerPoolsTable extends Component {
     return (
       <Fragment>
         <ConnectionDataTable
+          searchTerm={searchTerm}
           connection={sortedWorkerPoolsConnection}
           pageSize={VIEW_WORKER_POOLS_PAGE_SIZE}
           headers={headers}

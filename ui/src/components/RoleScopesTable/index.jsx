@@ -50,6 +50,7 @@ const sorted = pipe(
 }))
 export default class RoleScopesTable extends Component {
   static defaultProps = {
+    noItemsMessage: 'No roles available.',
     searchTerm: null,
     selectedScope: null,
   };
@@ -57,6 +58,8 @@ export default class RoleScopesTable extends Component {
   static propTypes = {
     /** A GraphQL roles response. */
     roles: arrayOf(role).isRequired,
+    /** A message to display when there are no items to display. */
+    noItemsMessage: string,
     /** A string to filter the list of results. */
     searchTerm: string,
     /**
@@ -122,7 +125,14 @@ export default class RoleScopesTable extends Component {
   };
 
   render() {
-    const { classes, roles, searchTerm, selectedScope, ...props } = this.props;
+    const {
+      classes,
+      roles,
+      searchTerm,
+      selectedScope,
+      noItemsMessage,
+      ...props
+    } = this.props;
     const items = this.createSortedRolesScopes(roles, selectedScope);
     const filteredItems = searchTerm
       ? filter(contains(searchTerm), items)
@@ -139,7 +149,9 @@ export default class RoleScopesTable extends Component {
       </List>
     ) : (
       <Typography variant="body2" className={classes.noRolesText}>
-        No roles available
+        {searchTerm
+          ? `No roles available for search term ${searchTerm}.`
+          : noItemsMessage}
       </Typography>
     );
   }

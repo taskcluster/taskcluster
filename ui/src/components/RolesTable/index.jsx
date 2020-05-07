@@ -20,10 +20,6 @@ const sorted = pipe(
 const tableHeaders = ['Role ID'];
 
 export default class RolesTable extends Component {
-  static defaultProps = {
-    searchTerm: null,
-  };
-
   static propTypes = {
     rolesConnection: shape({
       edges: arrayOf(role),
@@ -32,6 +28,10 @@ export default class RolesTable extends Component {
     onPageChange: func.isRequired,
     /** A search term to refine the list of roles */
     searchTerm: string,
+  };
+
+  static defaultProps = {
+    searchTerm: null,
   };
 
   state = {
@@ -80,7 +80,7 @@ export default class RolesTable extends Component {
   };
 
   render() {
-    const { onPageChange, rolesConnection } = this.props;
+    const { onPageChange, rolesConnection, searchTerm } = this.props;
     const { sortBy, sortDirection } = this.state;
     const iconSize = 16;
     const sortedRolesConnection = this.createSortedRolesConnection(
@@ -91,6 +91,7 @@ export default class RolesTable extends Component {
 
     return (
       <ConnectionDataTable
+        searchTerm={searchTerm}
         connection={sortedRolesConnection}
         pageSize={VIEW_ROLES_PAGE_SIZE}
         onHeaderClick={this.handleHeaderClick}

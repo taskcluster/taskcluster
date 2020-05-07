@@ -36,14 +36,12 @@ export default class ViewSecrets extends Component {
     secretSearch: '',
   };
 
-  handleSecretSearchSubmit = secretSearch => {
+  handleSecretSearchSubmit = async secretSearch => {
     const {
       data: { refetch },
     } = this.props;
 
-    this.setState({ secretSearch });
-
-    refetch({
+    await refetch({
       secretsConnection: {
         limit: VIEW_SECRETS_PAGE_SIZE,
       },
@@ -51,6 +49,7 @@ export default class ViewSecrets extends Component {
         ? { name: { $regex: escapeStringRegexp(secretSearch), $options: 'i' } }
         : null,
     });
+    this.setState({ secretSearch });
   };
 
   handleCreate = () => {
@@ -99,6 +98,7 @@ export default class ViewSecrets extends Component {
       description,
       data: { loading, error, secrets },
     } = this.props;
+    const { searchTerm } = this.state;
 
     return (
       <Dashboard
@@ -116,6 +116,7 @@ export default class ViewSecrets extends Component {
           <ErrorPanel fixed error={error} />
           {secrets && (
             <SecretsTable
+              searchTerm={searchTerm}
               onPageChange={this.handlePageChange}
               secretsConnection={secrets}
             />

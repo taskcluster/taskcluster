@@ -47,17 +47,13 @@ import { pageInfo } from '../../utils/prop-types';
  * A paginated table that operates on a GraphQL PageConnection.
  */
 export default class ConnectionDataTable extends Component {
-  static defaultProps = {
-    columnsSize: null,
-    sortByHeader: null,
-    sortDirection: 'desc',
-    headers: null,
-    onHeaderClick: null,
-    withoutTopPagination: false,
-    size: 'small',
-  };
-
   static propTypes = {
+    /**
+     * A message to display when there is no items to display.
+     */
+    noItemsMessage: string,
+    /** A search term to refine the list of results. */
+    searchTerm: string,
     /**
      * A GraphQL PageConnection instance.
      */
@@ -114,6 +110,18 @@ export default class ConnectionDataTable extends Component {
      * Allows TableCells to inherit size of the Table.
      */
     size: oneOf(['small', 'medium']),
+  };
+
+  static defaultProps = {
+    columnsSize: null,
+    sortByHeader: null,
+    sortDirection: 'desc',
+    headers: null,
+    onHeaderClick: null,
+    withoutTopPagination: false,
+    size: 'small',
+    noItemsMessage: 'No items for this page.',
+    searchTerm: null,
   };
 
   state = {
@@ -219,6 +227,8 @@ export default class ConnectionDataTable extends Component {
       sortByHeader,
       sortDirection,
       withoutTopPagination,
+      noItemsMessage,
+      searchTerm,
       size,
     } = this.props;
     const { count } = this.getPaginationMetadata();
@@ -256,7 +266,11 @@ export default class ConnectionDataTable extends Component {
               {connection.edges.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={colSpan}>
-                    <em>No items for this page.</em>
+                    <em>
+                      {searchTerm
+                        ? `No items for this page with search term ${searchTerm}.`
+                        : noItemsMessage}
+                    </em>
                   </TableCell>
                 </TableRow>
               ) : (

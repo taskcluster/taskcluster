@@ -129,6 +129,7 @@ export default class WorkerManagerWorkerPoolsView extends Component {
       data: { loading, error, WorkerManagerWorkerPoolSummaries },
       classes,
     } = this.props;
+    const { workerPoolSearch } = this.state;
 
     return (
       <Dashboard
@@ -146,6 +147,7 @@ export default class WorkerManagerWorkerPoolsView extends Component {
           {WorkerManagerWorkerPoolSummaries && (
             <Fragment>
               <WorkerManagerWorkerPoolsTable
+                searchTerm={workerPoolSearch}
                 onPageChange={this.handlePageChange}
                 workerPoolsConnection={WorkerManagerWorkerPoolSummaries}
                 deleteRequest={this.deleteRequest}

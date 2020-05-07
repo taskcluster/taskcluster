@@ -154,7 +154,6 @@ export default class ListNamespaces extends Component {
   render() {
     const {
       classes,
-      match: { params },
       namespacesData: {
         namespaces,
         loading: namespacesLoading,
@@ -166,6 +165,7 @@ export default class ListNamespaces extends Component {
         error: taskNamespaceError,
       },
       description,
+      match: { params },
     } = this.props;
     const { indexPathInput } = this.state;
     const hasIndexedTasks =
@@ -175,6 +175,7 @@ export default class ListNamespaces extends Component {
     const loading = namespacesLoading || taskNamespaceLoading;
     const indexPaths = indexPathInput.split('.');
     const isSinglePath = indexPaths.length === 1;
+    const searchTerm = params.namespace;
 
     return (
       <Dashboard
@@ -233,7 +234,11 @@ export default class ListNamespaces extends Component {
             </Fragment>
           )}
           {!loading && !hasNamespaces && !hasIndexedTasks && isSinglePath && (
-            <Typography variant="body2">No items for this page.</Typography>
+            <Typography>
+              {searchTerm
+                ? `No items for this page with search term ${searchTerm}.`
+                : 'No items for this page.'}
+            </Typography>
           )}
           {!loading && hasNamespaces && (
             <Fragment>

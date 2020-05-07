@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { shape, func, arrayOf } from 'prop-types';
+import { shape, func, arrayOf, string } from 'prop-types';
 import { pipe, map, sort as rSort } from 'ramda';
 import memoize from 'fast-memoize';
 import { camelCase } from 'change-case/change-case';
@@ -27,6 +27,8 @@ export default class ClientsTable extends Component {
       pageInfo,
     }).isRequired,
     onPageChange: func.isRequired,
+    /** A search term to refine the list of clients. */
+    searchTerm: string,
   };
 
   state = {
@@ -75,12 +77,13 @@ export default class ClientsTable extends Component {
   };
 
   render() {
-    const { onPageChange, clientsConnection } = this.props;
+    const { onPageChange, clientsConnection, searchTerm } = this.props;
     const { sortBy, sortDirection } = this.state;
     const iconSize = 16;
 
     return (
       <ConnectionDataTable
+        searchTerm={searchTerm}
         connection={this.createSortedClientsConnection(
           clientsConnection,
           sortBy,

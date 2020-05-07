@@ -1,6 +1,6 @@
 import React, { PureComponent, Fragment } from 'react';
-import { string } from 'prop-types';
 import { graphql } from 'react-apollo';
+import { string } from 'prop-types';
 import Spinner from '@mozilla-frontend-infra/components/Spinner';
 import dotProp from 'dot-prop-immutable';
 import escapeStringRegexp from 'escape-string-regexp';
@@ -31,6 +31,7 @@ import { VIEW_ROLES_PAGE_SIZE } from '../../../utils/constants';
 })
 export default class Roles extends PureComponent {
   static propTypes = {
+    /** A search term to refine the list of roles. */
     searchTerm: string,
   };
 
@@ -80,6 +81,7 @@ export default class Roles extends PureComponent {
   render() {
     const {
       data: { loading, error, listRoleIds },
+      searchTerm,
     } = this.props;
 
     return (
@@ -88,6 +90,7 @@ export default class Roles extends PureComponent {
         <ErrorPanel fixed error={error} />
         {listRoleIds && (
           <RolesTable
+            searchTerm={searchTerm}
             onPageChange={this.handlePageChange}
             rolesConnection={listRoleIds}
           />

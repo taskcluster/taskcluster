@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { func, shape } from 'prop-types';
+import { func, shape, string } from 'prop-types';
 import { pipe, map, sort as rSort } from 'ramda';
 import memoize from 'fast-memoize';
 import { withStyles } from '@material-ui/core/styles';
@@ -35,6 +35,12 @@ export default class SecretsTable extends Component {
       edges: secrets,
       pageInfo,
     }).isRequired,
+    /** A search term to refine the list of secrets. */
+    searchTerm: string,
+  };
+
+  static defaultProps = {
+    searchTerm: null,
   };
 
   state = {
@@ -89,7 +95,7 @@ export default class SecretsTable extends Component {
   }
 
   render() {
-    const { onPageChange, classes, secretsConnection } = this.props;
+    const { onPageChange, classes, secretsConnection, searchTerm } = this.props;
     const { sortBy, sortDirection } = this.state;
     const sortedSecretsConnection = this.createSortedSecretsConnection(
       secretsConnection,
@@ -100,6 +106,7 @@ export default class SecretsTable extends Component {
 
     return (
       <ConnectionDataTable
+        searchTerm={searchTerm}
         connection={sortedSecretsConnection}
         pageSize={VIEW_SECRETS_PAGE_SIZE}
         sortByHeader={sortBy}
