@@ -163,6 +163,12 @@ func setup(t *testing.T) (teardown func()) {
 			},
 		},
 	}
+
+	// like LiveLogGETPort and LiveLogPUTPort above, we need to use a non-default port for
+	// the livelog internalGETPort, so that we don't conflict with a generic-worker in which
+	// the tests are running
+	internalGETPort = 30583
+
 	configProvider = &TestProvider{}
 	setConfigRunTasksAsCurrentUser()
 	return teardown
