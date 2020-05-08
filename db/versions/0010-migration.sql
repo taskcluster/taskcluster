@@ -1,4 +1,26 @@
 begin
+  -- decode the __buf encoding defined in tc-lib-entities entitytypes.js.
+  -- This is a re-definition of the function from DB version 8, where it incorrectly
+  -- handled rows with more than one buffer.
+  create or replace function entity_buf_decode(value JSONB, name text) RETURNS text
+  as $$
+      declare
+          buffer text = '';
+          chunks integer;
+          chunk integer = 0;
+      begin
+          chunks = (value ->> ('__bufchunks_' || name))::integer;
+          loop
+              exit when chunks is null or chunk >= chunks;
+              buffer = buffer || convert_from(decode((value ->> ('__buf' || chunk || '_' || name))::text, 'base64'), 'utf8');
+              chunk = chunk + 1;
+          end loop;
+          return buffer;
+      end;
+  $$
+  language plpgSQL
+  strict immutable;
+
   -- lock this table before reading from it, to prevent loss of concurrent
   -- updates when the table is dropped.  Note that this may lead to concurrent
   -- updates failing; the important thing is that they not succeed without
