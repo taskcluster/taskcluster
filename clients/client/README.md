@@ -65,6 +65,9 @@ const queue = new taskcluster.Queue({
 
   // authorized scopes for use in requests by this client
   authorizedScopes: undefined,
+
+  // (optional) If set, this will be added to requests as a `x-taskcluster-trace-id` header
+  traceId: undefined
 });
 ```
 
@@ -78,7 +81,13 @@ queue
   .then(..);
 ```
 
-This replaces any given options with new values.
+This replaces any given options with new values. For `traceId` in particular, you can use
+
+```js
+queue.taskclusterPerRequestInstance({traceId});
+```
+
+Which is a special interface mostly useful for Taskcluster internal use.
 
 #### Authentication Options
 
@@ -181,7 +190,9 @@ console.log(result.status);
 
 For the following section, there are 2 internal and 2 external functions. The
 external functions should be used when a built url is leaving the deployment. One
-example would be when it results in a redirect to an artifact for users.
+example would be when it results in a redirect to an artifact for users. This distinction
+is only important when using a non-default service discovery scheme; with the default
+scheme, internal and external functions behave the same.
 
 |          | Unsigned           | Signed                   |
 | Internal | `buildUrl`         | `buildSignedUrl`         |
