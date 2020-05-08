@@ -30,7 +30,7 @@ suite('TaskListener.applySuperseding', function() {
         pollInterval: 1,
         expiration: 30000,
       },
-      host: {
+      hostManager: {
         billingCycleUptime: () => 1,
       },
       task: {
