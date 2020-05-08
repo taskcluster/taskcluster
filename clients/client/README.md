@@ -68,6 +68,11 @@ const queue = new taskcluster.Queue({
 
   // (optional) If set, this will be added to requests as a `x-taskcluster-trace-id` header
   traceId: undefined
+
+  // (optional) This supports different ways of finding Taskcluster services. Currently only
+  //            values are `default` and `k8s-dns`. The latter of which is for Taskcluster
+  //            internal use only.
+  serviceDiscoveryScheme: 'default'
 });
 ```
 

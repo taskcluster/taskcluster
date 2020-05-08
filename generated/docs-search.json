@@ -973,6 +973,13 @@
     "title": "Structured Logs"
   },
   {
+    "element": "h2",
+    "id": "trace-and-request-ids",
+    "path": "/manual/design/logs",
+    "subtitle": "Trace and Request Ids",
+    "title": "Structured Logs"
+  },
+  {
     "element": "h1",
     "id": "provisioning",
     "path": "/manual/task-execution/provisioning",
