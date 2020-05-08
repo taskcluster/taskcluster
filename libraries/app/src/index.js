@@ -18,14 +18,8 @@ const fs = require('fs');
  */
 const traceMiddleware = (req, res, next) => {
   let traceId;
-  // These are split out into if/else in case we want
-  // to do some extra processing to any of these
   if (req.headers['x-taskcluster-trace-id']) {
     traceId = req.headers['x-taskcluster-trace-id'];
-  } else if (req.headers['x-cloud-trace-context']) {
-    traceId = req.headers['x-cloud-trace-context'];
-  } else if (req.headers['x-amzn-trace-id']) {
-    traceId = req.headers['x-amzn-trace-id'];
   } else {
     traceId = uuidv4();
   }
