@@ -1,6 +1,7 @@
 const assert = require('assert');
 const debug = require('debug')('listeners');
 const pulse = require('taskcluster-lib-pulse');
+const pSynchronize = require('p-synchronize');
 const _ = require('lodash');
 
 /**
@@ -26,7 +27,9 @@ class HookListeners {
     this.monitor = options.monitor;
     this.pulseHookChangedListener = null;
     this.listeners = null;
-    this._reconcileDone = Promise.resolve();
+
+    const sync = pSynchronize();
+    this.reconcileConsumers = sync(() => this._reconcileConsumers());
   }
 
   /**
@@ -191,73 +194,74 @@ class HookListeners {
    * This is a three-way synchronization: the Hooks table is authoritative, and
    * is used both to update the state of the pulse AMQP server and to configure
    * the consumers in this process.
+   *
+   * Note that use of p-synchronize ensures this function is executing at most once
+   * at any time.
    */
-  reconcileConsumers() {
-    return this._synchronise(async () => {
-      let queues = [];
-      await this.Queues.scan({}, {
-        limit: 1000,
-        handler: (queue) => queues.push(queue)});
+  async _reconcileConsumers() {
+    let queues = [];
+    await this.Queues.scan({}, {
+      limit: 1000,
+      handler: (queue) => queues.push(queue)});
 
-      await this.Hook.scan({}, {
-        limit: 1000,
-        handler: async (hook) => {
-          if (hook.bindings.length === 0) {
-            return;
-          }
+    await this.Hook.scan({}, {
+      limit: 1000,
+      handler: async (hook) => {
+        if (hook.bindings.length === 0) {
+          return;
+        }
 
-          const {hookGroupId, hookId} = hook;
-          const queueName = `${hookGroupId}/${hookId}`;
+        const {hookGroupId, hookId} = hook;
+        const queueName = `${hookGroupId}/${hookId}`;
 
-          try {
-            const queue = _.find(queues, {hookGroupId, hookId});
-            if (queue) {
-              if (!this.listeners[queue.queueName]) {
-                await this.createListener(hookGroupId, hookId, queue.queueName);
-              }
+        try {
+          const queue = _.find(queues, {hookGroupId, hookId});
+          if (queue) {
+            if (!this.listeners[queue.queueName]) {
+              await this.createListener(hookGroupId, hookId, queue.queueName);
+            }
 
-              // update the bindings of the queue based on what was actually boubnd; if this
-              // is still not equal to the bindings in the hooks table, then on the next
-              // reconciliation we will try again
-              const boundBindings = await this.syncBindings(queue.queueName, hook.bindings, queue.bindings);
+            // update the bindings of the queue based on what was actually boubnd; if this
+            // is still not equal to the bindings in the hooks table, then on the next
+            // reconciliation we will try again
+            const boundBindings = await this.syncBindings(queue.queueName, hook.bindings, queue.bindings);
 
-              // update the bindings in the Queues Azure table
-              if (!_.isEqual(queue.bindings, hook.bindings)) {
-                await queue.modify((queue) => {
-                  queue.bindings = boundBindings;
-                });
-              }
-
-              // this queue has been reconciled, so remove it from the list
-              _.pull(queues, queue);
-            } else {
-              await this.createListener(hookGroupId, hookId, queueName);
-              const boundBindings = await this.syncBindings(queueName, hook.bindings, []);
-
-              // Add to Queues table
-              await this.Queues.create({
-                hookGroupId,
-                hookId,
-                queueName: `${hookGroupId}/${hookId}`,
-                bindings: boundBindings,
+            // update the bindings in the Queues Azure table
+            if (!_.isEqual(queue.bindings, hook.bindings)) {
+              await queue.modify((queue) => {
+                queue.bindings = boundBindings;
               });
             }
-          } catch (err) {
-            // report errors per hook, and continue on to try to reconcile the next hook.
-            this.monitor.reportError(err, {hookGroupId, hookId});
-          }
-        },
-      });
 
-      // Delete the queues now left in the queues list.
-      for (let queue of queues) {
-        if (this.listeners[queue.queueName]) {
-          await this.removeListener(queue.queueName);
+            // this queue has been reconciled, so remove it from the list
+            _.pull(queues, queue);
+          } else {
+            await this.createListener(hookGroupId, hookId, queueName);
+            const boundBindings = await this.syncBindings(queueName, hook.bindings, []);
+
+            // Add to Queues table
+            await this.Queues.create({
+              hookGroupId,
+              hookId,
+              queueName: `${hookGroupId}/${hookId}`,
+              bindings: boundBindings,
+            });
+          }
+        } catch (err) {
+          // report errors per hook, and continue on to try to reconcile the next hook.
+          this.monitor.reportError(err, {hookGroupId, hookId});
         }
-        await this.deleteQueue(queue.queueName);
-        await queue.remove();
-      }
+      },
     });
+
+    // Delete the queues now left in the queues list.
+    for (let queue of queues) {
+      if (this.listeners[queue.queueName]) {
+        await this.removeListener(queue.queueName);
+      }
+      await this.deleteQueue(queue.queueName);
+      await queue.remove();
+    }
   }
 
   async terminate() {
