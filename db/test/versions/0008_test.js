@@ -2,7 +2,7 @@ const _ = require('lodash');
 const helper = require('../helper');
 const testing = require('taskcluster-lib-testing');
 const assert = require('assert').strict;
-const hugeBufs = require('./huge_bufs.js');
+const hugeBufs = require('./fixtures/huge_bufs.js');
 
 const ASCII = _.range(1, 128).map(i => String.fromCharCode(i)).join(' ');
 

@@ -4,7 +4,7 @@ const helper = require('../helper');
 const testing = require('taskcluster-lib-testing');
 const assert = require('assert').strict;
 const Entity = require('taskcluster-lib-entities');
-const hugeBufs = require('./huge_bufs.js');
+const hugeBufs = require('./fixtures/huge_bufs.js');
 const {entityBufDecodeTest} = require('./0008_test.js');
 
 // (adapted from services/worker-manager/src/data.js) NOTE: this will be
