@@ -547,7 +547,7 @@ module.exports = ({tasks, cmdOptions, credentials, baseDir, logsDir}) => {
   ensureTask(tasks, {
     title: `Publish clients/client to npm`,
     requires: [
-      'target-monoimage', // to make sure the build succeeds first..
+      'github-releaee', // to make sure the release finishes first..
     ],
     provides: [
       `publish-clients/client`,
@@ -568,7 +568,7 @@ module.exports = ({tasks, cmdOptions, credentials, baseDir, logsDir}) => {
   ensureTask(tasks, {
     title: `Publish clients/client-web to npm`,
     requires: [
-      'target-monoimage', // to make sure the build succeeds first..
+      'github-releaee', // to make sure the release finishes first..
     ],
     provides: [
       `publish-clients/client-web`,
@@ -598,7 +598,7 @@ module.exports = ({tasks, cmdOptions, credentials, baseDir, logsDir}) => {
   ensureTask(tasks, {
     title: `Publish clients/client-py to pypi`,
     requires: [
-      'target-monoimage', // to make sure the build succeeds first..
+      'github-releaee', // to make sure the release finishes first..
     ],
     provides: [
       `publish-clients/client-py`,
