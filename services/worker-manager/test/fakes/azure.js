@@ -237,6 +237,8 @@ class VMResourceManager extends ResourceManager {
       provisioningState: 'Succeeded',
       // Azure generates uuids for vmIds, but we'll use something recognizable
       vmId: `vmid/${request.name}`,
+      // Fills in custom options from request
+      ...request.parameters,
     };
   }
 

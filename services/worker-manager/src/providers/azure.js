@@ -52,13 +52,14 @@ function generateAdminPassword() {
 
 function workerConfigWithSecrets(cfg) {
   assert(_.has(cfg, 'osProfile'));
+  let newCfg = _.cloneDeep(cfg);
   // Windows admin user name cannot be more than 20 characters long, be empty,
   // end with a period(.), or contain the following characters: \\ / \" [ ] : | < > + = ; , ? * @.
-  cfg.osProfile.adminUsername = nicerId().slice(0, 20);
+  newCfg.osProfile.adminUsername = nicerId().slice(0, 20);
   // we have to set a password, but we never want it to be used, so we throw it away
   // a legitimate user who needs access can reset the password
-  cfg.osProfile.adminPassword = generateAdminPassword();
-  return cfg;
+  newCfg.osProfile.adminPassword = generateAdminPassword();
+  return newCfg;
 }
 
 class AzureProvider extends Provider {
@@ -148,7 +149,6 @@ class AzureProvider extends Provider {
       const computerName = nicerId().slice(0, 15);
       const ipAddressName = `pip-${nicerId()}`.slice(0, 24);
       const networkInterfaceName = `nic-${nicerId()}`.slice(0, 24);
-      const diskName = `disk-${nicerId()}`.slice(0, 24);
 
       // workerGroup is the azure location; this is a required field in the config
       const workerGroup = cfg.location;
@@ -175,19 +175,21 @@ class AzureProvider extends Provider {
           computerName,
           customData,
         },
-        storageProfile: {
-          ...cfg.storageProfile,
-          osDisk: {
-            ...(cfg.storageProfile || {}).osDisk,
-            name: diskName,
-          },
-        },
         networkProfile: {
           ...cfg.networkProfile,
           // we add this when we have the NIC provisioned
           networkInterfaces: [],
         },
       };
+      let disks = [];
+      if (_.has(cfg, 'storageProfile')) {
+        disks.push({name: cfg.storageProfile.osDisk.name, id: false});
+      }
+      if (_.has(cfg, 'storageProfile.dataDisks')) {
+        for (let disk of cfg.storageProfile.dataDisks) {
+          disks.push({name: disk.name, id: false});
+        }
+      }
 
       let providerData = {
         location: cfg.location,
@@ -221,11 +223,7 @@ class AzureProvider extends Provider {
           operation: false,
           id: false,
         },
-        disk: {
-          // created by the VM operation
-          name: diskName,
-          id: false,
-        },
+        disks,
         subnet: {
           id: cfg.subnetId,
         },
@@ -338,7 +336,7 @@ class AzureProvider extends Provider {
 
     let workerVmId = worker.providerData.vm.vmId;
     if (!workerVmId) {
-      const {vmId} = await this.fetchAndUpdateVm(worker);
+      const {vmId} = await this.fetchVmInfo(worker);
       workerVmId = vmId;
     }
 
@@ -486,8 +484,7 @@ class AzureProvider extends Provider {
       resourceId: typeData.id,
       reosurceName: typeData.name,
     });
-    debug('provisioning resource');
-
+    debug(`provisioning resource ${resourceType}`);
     // we have no id, so we try to lookup resource by name
     if (!typeData.id) {
       try {
@@ -620,13 +617,28 @@ class AzureProvider extends Provider {
       }
 
       // VM
-      // NB: if we ever need disk id for anything, we could get it here
+      let vmModifyFunc = (w, vm) => {
+        let disks = [];
+        disks.push({
+          name: vm.storageProfile.osDisk.name,
+          id: true,
+        });
+        for (let disk of vm.storageProfile.dataDisks) {
+          disks.push(
+            {
+              name: disk.name,
+              id: true,
+            },
+          );
+        }
+        w.providerData.disks = disks;
+      };
       await this.provisionResource({
         worker,
         client: this.computeClient.virtualMachines,
         resourceType: 'vm',
         resourceConfig: workerConfigWithSecrets(worker.providerData.vm.config),
-        modifyFn: () => {},
+        modifyFn: vmModifyFunc,
         monitor,
       });
       if (!worker.providerData.vm.id) {
@@ -651,21 +663,19 @@ class AzureProvider extends Provider {
     }
   }
 
-  async fetchAndUpdateVm(worker) {
-    const {provisioningState, id, vmId} = await this._enqueue('get', () => this.computeClient.virtualMachines.get(
+  async fetchVmInfo(worker) {
+    const {provisioningState, vmId} = await this._enqueue('get', () => this.computeClient.virtualMachines.get(
       worker.providerData.resourceGroupName,
       worker.providerData.vm.name,
     ));
-    // vm has successfully provisioned, we need to set id and vmId
-    // id is the fully qualified azure resource ID
+    // vm has successfully provisioned
     // vmId is a uuid, we use it for registering workers
     if (!worker.providerData.vm.id || !worker.providerData.vm.vmId) {
       await worker.modify(w => {
-        w.providerData.vm.id = id;
         w.providerData.vm.vmId = vmId;
       });
     }
-    return {provisioningState, id, vmId};
+    return {provisioningState, vmId};
   }
 
   async checkWorker({worker}) {
@@ -681,7 +691,7 @@ class AzureProvider extends Provider {
     this.errors[worker.workerPoolId] = this.errors[worker.workerPoolId] || [];
     let state = worker.state || states.REQUESTED;
     try {
-      const {provisioningState} = await this.fetchAndUpdateVm(worker);
+      const {provisioningState} = await this.fetchVmInfo(worker);
       // lets us get power states for the VM
       const instanceView = await this._enqueue('get', () => this.computeClient.virtualMachines.instanceView(
         worker.providerData.resourceGroupName,
@@ -736,7 +746,8 @@ class AzureProvider extends Provider {
         throw err;
       }
       monitor.debug({message: `vm or state not found, in state ${state}`});
-      // we're either provisioning or stopping this worker
+      // in the case that we're either provisioning or stopping this worker
+      // GETs and updates workers that have not registered every loop
       if (state === states.REQUESTED) {
         state = await this.provisionResources({worker, monitor});
       }
@@ -780,25 +791,34 @@ class AzureProvider extends Provider {
    * if the resource has been verified deleted
    *   * sets providerData[resourceType].id = false, signalling it has been deleted
    *   * returns true
+   *
    */
-  async removeResource({client, worker, resourceType, monitor}) {
+  async removeResource({client, worker, resourceType, monitor, index = undefined}) {
     if (!_.has(worker.providerData, resourceType)) {
       throw new Error(`Error removing worker: providerData does not contain resourceType ${resourceType}`);
     }
-    let typeData = worker.providerData[resourceType];
+
+    // if we are deleting multiple resources for a type
+    let typeData;
+    if (index !== undefined) {
+      typeData = worker.providerData[resourceType][index];
+    } else {
+      typeData = worker.providerData[resourceType];
+    }
 
     const debug = message => monitor.debug({
       message,
       resourceType,
       resourceId: typeData.id,
-      reosurceName: typeData.name,
+      resourceName: typeData.name,
     });
+
+    debug(`removeResource for ${resourceType} with index ${index}`);
 
     let shouldDelete = false;
     // lookup resource by name
     if (!typeData.id) {
       try {
-        debug('looking up state by name');
         let {provisioningState} = await this._enqueue('query', () => client.get(
           worker.providerData.resourceGroupName,
           typeData.name,
@@ -811,12 +831,17 @@ class AzureProvider extends Provider {
         }
       } catch (err) {
         if (err.statusCode === 404) {
-          debug('resource not found; removing its id');
+          debug(`resource ${typeData.name} not found; removing its id`);
           // if we check for `true` we repeat lots of GET requests
           // resource has been deleted and isn't in the API or never existed
           await worker.modify(w => {
-            w.providerData[resourceType].operation = undefined;
-            w.providerData[resourceType].id = false;
+            if (index !== undefined) {
+              w.providerData[resourceType][index].operation = undefined;
+              w.providerData[resourceType][index].id = false;
+            } else {
+              w.providerData[resourceType].operation = undefined;
+              w.providerData[resourceType].id = false;
+            }
           });
           return true;
         }
@@ -837,8 +862,16 @@ class AzureProvider extends Provider {
       // record operation (NOTE: this information is never used, as deletion is tracked
       // by name)
       await worker.modify(w => {
-        w.providerData[resourceType].id = false;
-        w.providerData[resourceType].operation = deleteRequest.getPollState().azureAsyncOperationHeaderValue;
+        let resource;
+        if (index !== undefined) {
+          resource = w.providerData[resourceType][index];
+        } else {
+          resource = w.providerData[resourceType];
+        }
+        resource.id = false;
+        if (_.has(deleteRequest, 'azureAsyncOperationHeaderValue')) {
+          resource.operation = deleteRequest.getPollState().azureAsyncOperationHeaderValue;
+        }
       });
     }
     return false;
@@ -904,13 +937,35 @@ class AzureProvider extends Provider {
       if (!ipDeleted || worker.providerData.ip.id) {
         return state;
       }
-      let diskDeleted = await this.removeResource({
-        worker,
-        client: this.computeClient.disks,
-        resourceType: 'disk',
-        monitor,
-      });
-      if (!diskDeleted || worker.providerData.disk.id) {
+
+      // handles deprecated case where we track one disk
+      if (_.has(worker.providerData, 'disk')) {
+        let diskDeleted = await this.removeResource({
+          worker,
+          client: this.computeClient.disks,
+          resourceType: 'disk',
+          monitor,
+        });
+        if (!diskDeleted || worker.providerData.disk.id) {
+          return state;
+        }
+      }
+      // handles deleting osDisks and dataDisks
+      let disksDeleted = true;
+      for (let i = 0; i < worker.providerData.disks.length; i++) {
+        let success = await this.removeResource({
+          worker,
+          client: this.computeClient.disks,
+          resourceType: 'disks',
+          monitor,
+          index: i,
+        });
+        if (!success) {
+          disksDeleted = false;
+        }
+      }
+      // check for un-deleted disks
+      if (!disksDeleted || _.some(worker.providerData.disks.map(i => i['id']))) {
         return state;
       }
 

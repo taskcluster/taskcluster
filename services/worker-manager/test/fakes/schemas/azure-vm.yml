@@ -36,9 +36,18 @@ properties:
           testProperty: {}
         additionalProperties: false
         required: [name]
+      dataDisks:
+        type: array
+        items:
+          type: object
+          properties:
+            name: string
+            testProperty: {}
+          additionalProperties: false
+          required: [name]
       testProperty: {}
     additionalProperties: false
-    required: [osDisk]
+    required: [osDisk, dataDisks]
   # https://docs.microsoft.com/en-us/javascript/api/@azure/arm-compute/networkprofile?view=azure-node-latest
   networkProfile:
     type: object
