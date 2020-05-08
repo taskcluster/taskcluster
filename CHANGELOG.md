@@ -3,6 +3,18 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v29.4.1
+
+### DEPLOYERS
+
+▶ [patch] [bug 1636292](http://bugzil.la/1636292)
+The bug in 29.4.0 which caused DB migration to fail given large WorkerPool table rows has been fixed with a patch to DB version 10.
+
+### DEVELOPERS
+
+▶ [patch] [bug 1635985](http://bugzil.la/1635985)
+Docker Worker code now lives in this repository instead of taskcluster/docker-worker
+
 ## v29.4.0
 
 ### GENERAL
