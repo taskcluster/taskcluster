@@ -19,8 +19,8 @@ values in the 'worker' section of the runner configuration:
 ```yaml
 worker:
     implementation: docker-worker
-    # path to the root of the docker-worker repo clone
-    path: /path/to/docker-worker/repo
+    # path to the 'docker-worker' directory from the docker-worker release tarball
+    path: /path/to/docker-worker
     # path where worker-runner should write the generated
     # docker-worker configuration.
     configPath: ..
