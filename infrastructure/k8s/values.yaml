@@ -2,6 +2,7 @@ dockerImage: 'taskcluster/taskcluster:v29.4.1'
 trustProxy: true
 forceSSL: false
 nodeEnv: production
+useKubernetesDnsServiceDiscovery: true
 auth:
   procs:
     web:

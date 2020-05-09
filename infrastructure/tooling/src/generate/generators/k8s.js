@@ -338,6 +338,11 @@ exports.tasks.push({
           description: 'An azure storage account for this deployment. Note this is a _storage_ account, not a billing one.',
         },
 
+        useKubernetesDnsServiceDiscovery: {
+          type: 'boolean',
+          description: 'If true, requests will not pass back in through load balancer to pass between services.',
+        },
+
         // TODO: iirc google doesn't set the headers that we need to trust proxy so we don't set this, let's fix it
         forceSSL: {
           type: 'boolean',
@@ -385,7 +390,7 @@ exports.tasks.push({
           additionalProperties: {type: 'string'},
         },
       },
-      required: ['rootUrl', 'dockerImage', 'pulseHostname', 'pulseVhost', 'azureAccountId', 'forceSSL', 'trustProxy', 'nodeEnv'],
+      required: ['rootUrl', 'dockerImage', 'pulseHostname', 'pulseVhost', 'azureAccountId', 'forceSSL', 'trustProxy', 'nodeEnv', 'useKubernetesDnsServiceDiscovery'],
       aditionalProperties: false,
     };
 
@@ -413,6 +418,7 @@ exports.tasks.push({
       trustProxy: true,
       forceSSL: false,
       nodeEnv: 'production',
+      useKubernetesDnsServiceDiscovery: true,
     };
 
     let configs = SERVICES.map(name => ({
