@@ -451,7 +451,7 @@ tasks:
               owner: wcosta@mozilla.com
               source: ${repo.url}
           - provisionerId: proj-taskcluster
-            workerType: ci
+            workerType: dw-ci
             taskId: {$eval: as_slugid("docker-worker-test-chunk-1")}
             taskGroupId: {$eval: as_slugid('taskGroupId')}
             created: {$fromNow: ''}
@@ -488,7 +488,7 @@ tasks:
               owner: garndt@mozilla.com
               source: ${repo.url}
           - provisionerId: proj-taskcluster
-            workerType: ci
+            workerType: dw-ci
             taskId: {$eval: as_slugid("docker-worker-test-chunk-2")}
             taskGroupId: {$eval: as_slugid('taskGroupId')}
             created: {$fromNow: ''}
@@ -525,7 +525,7 @@ tasks:
               owner: garndt@mozilla.com
               source: ${repo.url}
           - provisionerId: proj-taskcluster
-            workerType: ci
+            workerType: dw-ci
             taskId: {$eval: as_slugid("docker-worker-test-chunk-3")}
             taskGroupId: {$eval: as_slugid('taskGroupId')}
             created: {$fromNow: ''}
@@ -562,7 +562,7 @@ tasks:
               owner: garndt@mozilla.com
               source: ${repo.url}
           - provisionerId: proj-taskcluster
-            workerType: ci
+            workerType: dw-ci
             taskId: {$eval: as_slugid("docker-worker-test-chunk-4")}
             taskGroupId: {$eval: as_slugid('taskGroupId')}
             created: {$fromNow: ''}
@@ -599,7 +599,7 @@ tasks:
               owner: garndt@mozilla.com
               source: ${repo.url}
           - provisionerId: proj-taskcluster
-            workerType: ci
+            workerType: dw-ci
             taskId: {$eval: as_slugid("docker-worker-test-chunk-5")}
             taskGroupId: {$eval: as_slugid('taskGroupId')}
             created: {$fromNow: ''}
