@@ -434,7 +434,8 @@ tasks:
               maxRunTime: 10800
               command:
                 - >-
-                  while ! yarn install --frozen-lockfile; do rm -rf node_modules; sleep 30; done && yarn lint
+                  yarn install --frozen-lockfile &&
+                  yarn lint
               capabilities:
                 privileged: true
                 devices:
@@ -473,7 +474,8 @@ tasks:
               maxRunTime: 10800
               command:
                 - >-
-                  while ! yarn install --frozen-lockfile; do rm -rf node_modules; sleep 30; done && ./build.sh &&
+                  yarn install --frozen-lockfile &&
+                  ./build.sh &&
                   ./test/docker-worker-test --this-chunk 1 --total-chunks 5
               capabilities:
                 privileged: true
@@ -513,7 +515,8 @@ tasks:
               maxRunTime: 10800
               command:
                 - >-
-                  while ! yarn install --frozen-lockfile; do rm -rf node_modules; sleep 30; done && ./build.sh &&
+                  yarn install --frozen-lockfile &&
+                  ./build.sh &&
                   ./test/docker-worker-test --this-chunk 2 --total-chunks 5
               capabilities:
                 privileged: true
@@ -553,7 +556,8 @@ tasks:
               maxRunTime: 10800
               command:
                 - >-
-                  while ! yarn install --frozen-lockfile; do rm -rf node_modules; sleep 30; done && ./build.sh &&
+                  yarn install --frozen-lockfile &&
+                  ./build.sh &&
                   ./test/docker-worker-test --this-chunk 3 --total-chunks 5
               capabilities:
                 privileged: true
@@ -593,7 +597,8 @@ tasks:
               maxRunTime: 10800
               command:
                 - >-
-                  while ! yarn install --frozen-lockfile; do rm -rf node_modules; sleep 30; done && ./build.sh &&
+                  yarn install --frozen-lockfile &&
+                  ./build.sh &&
                   ./test/docker-worker-test --this-chunk 4 --total-chunks 5
               capabilities:
                 privileged: true
@@ -633,7 +638,8 @@ tasks:
               maxRunTime: 10800
               command:
                 - >-
-                  while ! yarn install --frozen-lockfile; do rm -rf node_modules; sleep 30; done && ./build.sh &&
+                  yarn install --frozen-lockfile &&
+                  ./build.sh &&
                   ./test/docker-worker-test --this-chunk 5 --total-chunks 5
               capabilities:
                 privileged: true
