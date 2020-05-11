@@ -246,7 +246,7 @@ module.exports = ({tasks, cmdOptions, credentials, baseDir, logsDir}) => {
         dir: REPO_ROOT,
         logfile: path.join(logsDir, '/websocktunnel-build.log'),
         utils,
-        env: process.env,
+        env: {CGO_ENABLED: '0', ...process.env},
       });
 
       utils.step({title: 'Building Docker Image'});
@@ -326,7 +326,7 @@ module.exports = ({tasks, cmdOptions, credentials, baseDir, logsDir}) => {
         dir: REPO_ROOT,
         logfile: path.join(logsDir, 'livelog-build.log'),
         utils,
-        env: process.env,
+        env: {CGO_ENABLED: '0', ...process.env},
       });
 
       utils.step({title: 'Building Docker Image'});
@@ -402,7 +402,7 @@ module.exports = ({tasks, cmdOptions, credentials, baseDir, logsDir}) => {
         dir: REPO_ROOT,
         logfile: path.join(logsDir, 'taskcluster-proxy-build.log'),
         utils,
-        env: process.env,
+        env: {CGO_ENABLED: '0', ...process.env},
       });
 
       utils.step({title: 'Building Docker Image'});
