@@ -2,6 +2,7 @@ const appRootDir = require('app-root-dir');
 const {
   gitIsDirty,
   gitDescribe,
+  dockerFlowVersion,
   dockerPull,
   dockerImages,
   dockerRegistryCheck,
@@ -61,7 +62,7 @@ const generateMonoimageTasks = ({tasks, baseDir, cmdOptions, credentials, logsDi
         }
       }
 
-      const {gitDescription} = await gitDescribe({
+      const {gitDescription, revision} = await gitDescribe({
         dir: sourceDir,
         utils,
       });
@@ -93,11 +94,16 @@ const generateMonoimageTasks = ({tasks, baseDir, cmdOptions, credentials, logsDi
 
       utils.step({title: 'Building Docker Image'});
 
+      let versionJson = dockerFlowVersion({gitDescription, revision});
       let command = ['docker', 'build'];
       if (!cmdOptions.cache) {
         command.push('--no-cache');
       }
-      command = command.concat(['--progress', 'plain', '--tag', tag, '.']);
+      command = command.concat([
+        '--progress', 'plain',
+        '--tag', tag,
+        '--build-arg', 'DOCKER_FLOW_VERSION=' + versionJson,
+        '.']);
       await execCommand({
         command,
         dir: sourceDir,

@@ -13,6 +13,7 @@ const {
   pyClientRelease,
   readRepoFile,
   dockerPush,
+  dockerFlowVersion,
   REPO_ROOT,
 } = require('../utils');
 
@@ -24,15 +25,19 @@ module.exports = ({tasks, cmdOptions, credentials, baseDir, logsDir}) => {
   ensureTask(tasks, {
     title: 'Get release version',
     requires: [],
-    provides: ['release-version'],
+    provides: ['release-version', 'docker-flow-version'],
     run: async (requirements, utils) => {
       if (cmdOptions.staging) {
         return {
           'release-version': '9999.99.99',
+          'docker-flow-version': dockerFlowVersion({
+            gitDescription: 'v9999.99.99',
+            revision: '9999999999999999999999999999999999999999',
+          }),
         };
       }
 
-      const {gitDescription} = await gitDescribe({
+      const {gitDescription, revision} = await gitDescribe({
         dir: REPO_ROOT,
         utils,
       });
@@ -43,6 +48,7 @@ module.exports = ({tasks, cmdOptions, credentials, baseDir, logsDir}) => {
 
       return {
         'release-version': gitDescription.slice(1),
+        'docker-flow-version': dockerFlowVersion({gitDescription, revision}),
       };
     },
   });
@@ -221,6 +227,7 @@ module.exports = ({tasks, cmdOptions, credentials, baseDir, logsDir}) => {
     title: 'Build Websocktunnel Docker Image',
     requires: [
       'release-version',
+      'docker-flow-version',
     ],
     provides: [
       'websocktunnel-docker-image', // image tag
@@ -251,11 +258,16 @@ module.exports = ({tasks, cmdOptions, credentials, baseDir, logsDir}) => {
 
       utils.step({title: 'Building Docker Image'});
 
+      fs.writeFileSync(
+        path.join(contextDir, 'version.json'),
+        requirements['docker-flow-version']);
+
       // this simple Dockerfile just packages the binary into a Docker image
       const dockerfile = path.join(contextDir, 'Dockerfile');
       fs.writeFileSync(dockerfile, [
         'FROM scratch',
         'COPY websocktunnel /websocktunnel',
+        'COPY version.json /app/version.json',
         'ENTRYPOINT ["/websocktunnel"]',
       ].join('\n'));
       let command = [
@@ -301,6 +313,7 @@ module.exports = ({tasks, cmdOptions, credentials, baseDir, logsDir}) => {
     title: 'Build livelog Docker Image',
     requires: [
       'release-version',
+      'docker-flow-version',
     ],
     provides: [
       'livelog-docker-image', // image tag
@@ -331,12 +344,17 @@ module.exports = ({tasks, cmdOptions, credentials, baseDir, logsDir}) => {
 
       utils.step({title: 'Building Docker Image'});
 
+      fs.writeFileSync(
+        path.join(contextDir, 'version.json'),
+        requirements['docker-flow-version']);
+
       // this simple Dockerfile just packages the binary into a Docker image
       const dockerfile = path.join(contextDir, 'Dockerfile');
       fs.writeFileSync(dockerfile, [
         'FROM progrium/busybox',
         'EXPOSE 60023',
         'EXPOSE 60022',
+        'COPY version.json /app/version.json',
         'COPY livelog /livelog',
         'ENTRYPOINT ["/livelog"]',
       ].join('\n'));
@@ -381,7 +399,7 @@ module.exports = ({tasks, cmdOptions, credentials, baseDir, logsDir}) => {
 
   ensureTask(tasks, {
     title: 'Build taskcluster-proxy Docker image',
-    requires: ['release-version'],
+    requires: ['release-version', 'docker-flow-version'],
     provides: ['taskcluster-proxy-docker-image'],
     locks: ['docker'],
     run: async (requirements, utils) => {
@@ -407,6 +425,10 @@ module.exports = ({tasks, cmdOptions, credentials, baseDir, logsDir}) => {
 
       utils.step({title: 'Building Docker Image'});
 
+      fs.writeFileSync(
+        path.join(contextDir, 'version.json'),
+        requirements['docker-flow-version']);
+
       // this simple Dockerfile just packages the binary into a Docker image
       const dockerfile = path.join(contextDir, 'Dockerfile');
       fs.writeFileSync(dockerfile, [
@@ -417,6 +439,7 @@ module.exports = ({tasks, cmdOptions, credentials, baseDir, logsDir}) => {
         // start over in an empty image and just copy the certs in
         'FROM scratch',
         'EXPOSE 80',
+        'COPY version.json /app/version.json',
         'COPY taskcluster-proxy /taskcluster-proxy',
         'COPY --from=ubuntu /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt',
         'ENTRYPOINT ["/taskcluster-proxy", "--port", "80"]',
