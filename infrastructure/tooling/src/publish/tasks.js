@@ -123,6 +123,25 @@ module.exports = ({tasks, cmdOptions, credentials, baseDir, logsDir}) => {
   });
 
   ensureTask(tasks, {
+    title: 'Build docker-worker artifacts',
+    requires: ['cleaned-release-artifacts'],
+    provides: ['docker-worker-artifacts'],
+    run: async (requirements, utils) => {
+      await execCommand({
+        dir: path.join(REPO_ROOT, 'workers', 'docker-worker'),
+        command: ['./release.sh', '-o', path.join(artifactsDir, 'docker-worker-x64.tgz')],
+        utils,
+      });
+
+      const artifacts = ['docker-worker-x64.tgz'];
+
+      return {
+        'generic-worker-artifacts': artifacts,
+      };
+    },
+  });
+
+  ensureTask(tasks, {
     title: 'Build generic-worker artifacts',
     requires: ['cleaned-release-artifacts'],
     provides: ['generic-worker-artifacts'],
@@ -471,6 +490,7 @@ module.exports = ({tasks, cmdOptions, credentials, baseDir, logsDir}) => {
       'release-version',
       'client-shell-artifacts',
       'generic-worker-artifacts',
+      'docker-worker-artifacts',
       'worker-runner-artifacts',
       //'taskcluster-proxy-artifacts',
       'changelog-text',
@@ -504,6 +524,7 @@ module.exports = ({tasks, cmdOptions, credentials, baseDir, logsDir}) => {
 
       const files = requirements['client-shell-artifacts']
         .concat(requirements['generic-worker-artifacts'])
+        .concat(requirements['docker-worker-artifacts'])
         .concat(requirements['worker-runner-artifacts'])
         .concat(requirements['livelog-artifacts'])
         //.concat(requirements['taskcluster-proxy-artifacts'])
@@ -547,7 +568,7 @@ module.exports = ({tasks, cmdOptions, credentials, baseDir, logsDir}) => {
   ensureTask(tasks, {
     title: `Publish clients/client to npm`,
     requires: [
-      'target-monoimage', // to make sure the build succeeds first..
+      'github-release', // to make sure the release finishes first..
     ],
     provides: [
       `publish-clients/client`,
@@ -568,7 +589,7 @@ module.exports = ({tasks, cmdOptions, credentials, baseDir, logsDir}) => {
   ensureTask(tasks, {
     title: `Publish clients/client-web to npm`,
     requires: [
-      'target-monoimage', // to make sure the build succeeds first..
+      'github-release', // to make sure the release finishes first..
     ],
     provides: [
       `publish-clients/client-web`,
@@ -598,7 +619,7 @@ module.exports = ({tasks, cmdOptions, credentials, baseDir, logsDir}) => {
   ensureTask(tasks, {
     title: `Publish clients/client-py to pypi`,
     requires: [
-      'target-monoimage', // to make sure the build succeeds first..
+      'github-release', // to make sure the release finishes first..
     ],
     provides: [
       `publish-clients/client-py`,

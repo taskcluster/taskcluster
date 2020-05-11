@@ -7,6 +7,7 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"strings"
 
 	"github.com/taskcluster/taskcluster/v29/internal/workerproto"
@@ -106,8 +107,20 @@ func (d *dockerworker) StartWorker(state *run.State) (workerproto.Transport, err
 
 	// the --host worker-runner instructs docker-worker to merge
 	// config from $DOCKER_WORKER_CONFIG.
-	mainJs := fmt.Sprintf("%s/src/bin/worker.js", d.wicfg.Path)
-	cmd := exec.Command("node", mainJs, "--host", "worker-runner", "production")
+	args := []string{"--host", "worker-runner", "production"}
+
+	// Support the `bin/docker-worker` script in the docker-worker tarball format,
+	// falling back to the old repo format if that is not found
+	var cmd *exec.Cmd
+	dwScript := filepath.Join(d.wicfg.Path, "bin", "docker-worker")
+	if _, err := os.Stat(dwScript); os.IsNotExist(err) {
+		// fall back to running the old path-to-repo format
+		mainJs := fmt.Sprintf("%s/src/bin/worker.js", d.wicfg.Path)
+		args = append([]string{mainJs}, args...)
+		cmd = exec.Command("node", args...)
+	} else {
+		cmd = exec.Command(dwScript, args...)
+	}
 	cmd.Env = os.Environ()
 	cmd.Env = append(cmd.Env, "DOCKER_WORKER_CONFIG="+d.wicfg.ConfigPath)
 	cmd.Stderr = os.Stderr
@@ -161,8 +174,8 @@ values in the 'worker' section of the runner configuration:
 ` + "```yaml" + `
 worker:
     implementation: docker-worker
-    # path to the root of the docker-worker repo clone
-    path: /path/to/docker-worker/repo
+    # path to the 'docker-worker' directory from the docker-worker release tarball
+    path: /path/to/docker-worker
     # path where worker-runner should write the generated
     # docker-worker configuration.
     configPath: ..
