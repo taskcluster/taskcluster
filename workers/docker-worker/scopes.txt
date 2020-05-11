@@ -1,2 +1,2 @@
---scopes assume:repo:github.com/taskcluster/docker-worker:*
+--scopes assume:project:taskcluster:docker-worker-tester
 
