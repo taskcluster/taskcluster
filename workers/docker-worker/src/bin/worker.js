@@ -25,6 +25,7 @@ const ImageManager = require('../lib/docker/image_manager');
 const typedEnvConfig = require('typed-env-config');
 const SchemaSet = require('../lib/validate');
 const { spawn } = require('child_process');
+const { version } = require('../../package.json');
 
 // Available target configurations.
 let allowedHosts = ['aws', 'test', 'packet', 'worker-runner'];
@@ -68,6 +69,7 @@ function o() {
 program.usage(
   '[options] <profile>',
 );
+program.version(version);
 
 // CLI Options.
 o('--host <type>',
