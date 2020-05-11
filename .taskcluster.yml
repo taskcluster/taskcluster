@@ -443,6 +443,9 @@ tasks:
               env:
                 WORKER_CI: '1'
                 TASKCLUSTER_ROOT_URL: https://community-tc.services.mozilla.com
+                GITHUB_REPO_URL: '${repo.git_url}'
+                GITHUB_BRANCH: '${repo.branch}'
+                GITHUB_SHA: '${repo.ref}'
               features:
                 taskclusterProxy: true
             metadata:
@@ -480,12 +483,15 @@ tasks:
               env:
                 WORKER_CI: '1'
                 TASKCLUSTER_ROOT_URL: https://community-tc.services.mozilla.com
+                GITHUB_REPO_URL: '${repo.git_url}'
+                GITHUB_BRANCH: '${repo.branch}'
+                GITHUB_SHA: '${repo.ref}'
               features:
                 taskclusterProxy: true
             metadata:
               name: Docker-worker tests - 1
               description: Runs entire docker-worker test suite
-              owner: garndt@mozilla.com
+              owner: wcosta@mozilla.com
               source: ${repo.url}
           - provisionerId: proj-taskcluster
             workerType: dw-ci
@@ -517,12 +523,15 @@ tasks:
               env:
                 WORKER_CI: '1'
                 TASKCLUSTER_ROOT_URL: https://community-tc.services.mozilla.com
+                GITHUB_REPO_URL: '${repo.git_url}'
+                GITHUB_BRANCH: '${repo.branch}'
+                GITHUB_SHA: '${repo.ref}'
               features:
                 taskclusterProxy: true
             metadata:
               name: Docker-worker tests - 2
               description: Runs entire docker-worker test suite
-              owner: garndt@mozilla.com
+              owner: wcosta@mozilla.com
               source: ${repo.url}
           - provisionerId: proj-taskcluster
             workerType: dw-ci
@@ -554,12 +563,15 @@ tasks:
               env:
                 WORKER_CI: '1'
                 TASKCLUSTER_ROOT_URL: https://community-tc.services.mozilla.com
+                GITHUB_REPO_URL: '${repo.git_url}'
+                GITHUB_BRANCH: '${repo.branch}'
+                GITHUB_SHA: '${repo.ref}'
               features:
                 taskclusterProxy: true
             metadata:
               name: Docker-worker tests - 3
               description: Runs entire docker-worker test suite
-              owner: garndt@mozilla.com
+              owner: wcosta@mozilla.com
               source: ${repo.url}
           - provisionerId: proj-taskcluster
             workerType: dw-ci
@@ -591,12 +603,15 @@ tasks:
               env:
                 WORKER_CI: '1'
                 TASKCLUSTER_ROOT_URL: https://community-tc.services.mozilla.com
+                GITHUB_REPO_URL: '${repo.git_url}'
+                GITHUB_BRANCH: '${repo.branch}'
+                GITHUB_SHA: '${repo.ref}'
               features:
                 taskclusterProxy: true
             metadata:
               name: Docker-worker tests - 4
               description: Runs entire docker-worker test suite
-              owner: garndt@mozilla.com
+              owner: wcosta@mozilla.com
               source: ${repo.url}
           - provisionerId: proj-taskcluster
             workerType: dw-ci
@@ -628,12 +643,15 @@ tasks:
               env:
                 WORKER_CI: '1'
                 TASKCLUSTER_ROOT_URL: https://community-tc.services.mozilla.com
+                GITHUB_REPO_URL: '${repo.git_url}'
+                GITHUB_BRANCH: '${repo.branch}'
+                GITHUB_SHA: '${repo.ref}'
               features:
                 taskclusterProxy: true
             metadata:
               name: Docker-worker tests - 5
               description: Runs entire docker-worker test suite
-              owner: garndt@mozilla.com
+              owner: wcosta@mozilla.com
               source: ${repo.url}
           releaseTasks:
           - taskId: {$eval: 'as_slugid("release")'}
