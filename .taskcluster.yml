@@ -415,7 +415,7 @@ tasks:
               - queue:route:checks
           dockerWorkerTasks: # These remain separate from workerTasks for now until we audit permissions (bug 1635985)
           - provisionerId: proj-taskcluster
-            workerType: ci
+            workerType: dw-ci
             taskId: {$eval: as_slugid("docker-worker-lint")}
             taskGroupId: {$eval: as_slugid('taskGroupId')}
             created: {$fromNow: ''}
