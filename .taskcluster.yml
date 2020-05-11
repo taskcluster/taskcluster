@@ -434,7 +434,7 @@ tasks:
               maxRunTime: 10800
               command:
                 - >-
-                  while ! yarn install --frozen-lockfile; do rm -rf node_modules; sleep 30; done && node_modules/.bin/eslint src test
+                  while ! yarn install --frozen-lockfile; do rm -rf node_modules; sleep 30; done && yarn lint
               capabilities:
                 privileged: true
                 devices:
