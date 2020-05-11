@@ -3,6 +3,7 @@ package wsproxy
 import (
 	"bytes"
 	"fmt"
+	"path"
 	"strings"
 
 	// "crypto/tls"
@@ -16,9 +17,11 @@ import (
 	"testing"
 	"time"
 
+	"github.com/Flaque/filet"
 	jwt "github.com/dgrijalva/jwt-go"
 	"github.com/gorilla/websocket"
 	log "github.com/sirupsen/logrus"
+	"github.com/stretchr/testify/require"
 	"github.com/taskcluster/taskcluster/v29/tools/websocktunnel/client"
 	"github.com/taskcluster/taskcluster/v29/tools/websocktunnel/util"
 	"github.com/taskcluster/taskcluster/v29/tools/websocktunnel/wsmux"
@@ -1249,4 +1252,101 @@ func TestProxyAudClaim(t *testing.T) {
 	if _, _, err := websocket.DefaultDialer.Dial(wsURL, header); err == nil {
 		t.Fatal("Wrong Audience Value accepted")
 	}
+}
+
+func TestProxyHeartbeat(t *testing.T) {
+	//  start proxy server
+	proxyConfig := Config{
+		Upgrader:   upgrader,
+		Logger:     genLogger(),
+		JWTSecretA: []byte("test-secret"),
+		JWTSecretB: []byte("another-secret"),
+		URLPrefix:  "http://localhost",
+	}
+
+	proxy, err := New(proxyConfig)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	server := httptest.NewServer(proxy)
+	defer server.Close()
+
+	viewer := &http.Client{}
+	resp, err := viewer.Get(server.URL + "/__heartbeat__")
+
+	require.NoError(t, err)
+	require.Equal(t, 200, resp.StatusCode)
+
+	resp, err = viewer.Get(server.URL + "/__lbheartbeat__")
+
+	require.NoError(t, err)
+	require.Equal(t, 200, resp.StatusCode)
+}
+
+func TestProxyVersion(t *testing.T) {
+	defer filet.CleanUp(t)
+
+	oldVersionJsonPath := versionJsonPath
+	defer func() { versionJsonPath = oldVersionJsonPath }()
+	versionJsonPath = filet.TmpFile(t, "", `{"version": "1.2.3"}`).Name()
+
+	//  start proxy server
+	proxyConfig := Config{
+		Upgrader:   upgrader,
+		Logger:     genLogger(),
+		JWTSecretA: []byte("test-secret"),
+		JWTSecretB: []byte("another-secret"),
+		URLPrefix:  "http://localhost",
+	}
+
+	proxy, err := New(proxyConfig)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	server := httptest.NewServer(proxy)
+	defer server.Close()
+
+	viewer := &http.Client{}
+	resp, err := viewer.Get(server.URL + "/__version__")
+
+	require.NoError(t, err)
+	require.Equal(t, 200, resp.StatusCode)
+	body, err := ioutil.ReadAll(resp.Body)
+	require.NoError(t, err)
+	require.Equal(t, `{"version": "1.2.3"}`, string(body))
+}
+
+func TestProxyVersionNotFound(t *testing.T) {
+	defer filet.CleanUp(t)
+
+	// If versionPath doesn't point to an existing file, we should fail gracefully
+	// with a 404
+	oldVersionJsonPath := versionJsonPath
+	defer func() { versionJsonPath = oldVersionJsonPath }()
+	versionJsonPath = path.Join(filet.TmpDir(t, ""), "nosuch")
+
+	//  start proxy server
+	proxyConfig := Config{
+		Upgrader:   upgrader,
+		Logger:     genLogger(),
+		JWTSecretA: []byte("test-secret"),
+		JWTSecretB: []byte("another-secret"),
+		URLPrefix:  "http://localhost",
+	}
+
+	proxy, err := New(proxyConfig)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	server := httptest.NewServer(proxy)
+	defer server.Close()
+
+	viewer := &http.Client{}
+	resp, err := viewer.Get(server.URL + "/__version__")
+
+	require.NoError(t, err)
+	require.Equal(t, 404, resp.StatusCode)
 }
