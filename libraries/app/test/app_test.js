@@ -1,5 +1,5 @@
 const assert = require('assert');
-const App = require('../');
+const {App} = require('../');
 const request = require('superagent');
 const express = require('express');
 const isUUID = require('is-uuid');
@@ -24,8 +24,7 @@ suite(testing.suiteName(), function() {
           });
           router.get('/req-id', function(req, res) {
             res.status(200).send(JSON.stringify({
-              header: req.headers['x-request-id'],
-              valueSet: req.requestId,
+              valueSet: req.traceId,
             }));
           });
           app.use('/api/test/v1', router);
@@ -54,32 +53,24 @@ suite(testing.suiteName(), function() {
       assert.equal(res.headers['strict-transport-security'], 'max-age=7776000000; includeSubDomains');
     });
 
-    test('request ids', async function() {
+    test('trace ids', async function() {
+      const res = await request
+        .get('http://localhost:1459/api/test/v1/req-id')
+        .set('x-taskcluster-trace-id', 'foo/123')
+        .buffer();
+      const body = JSON.parse(res.text);
+      assert.equal(res.headers['x-for-trace-id'], 'foo/123');
+      assert.equal(body.valueSet, 'foo/123');
+    });
+
+    test('trace ids (created when none passed in)', async function() {
       const res = await request
         .get('http://localhost:1459/api/test/v1/req-id')
         .buffer();
       const body = JSON.parse(res.text);
+      assert(isUUID.v4(res.headers['x-for-trace-id']));
       assert(isUUID.v4(res.headers['x-for-request-id']));
-      assert(!isUUID.v4(body.header));
       assert(isUUID.v4(body.valueSet));
-    });
-
-    test('request ids (heroku)', async function() {
-      const res = await request
-        .get('http://localhost:1459/api/test/v1/req-id')
-        .set('X-Request-Id', 'TestingRequestId')
-        .buffer();
-      const body = JSON.parse(res.text);
-      assert.equal(res.headers['x-for-request-id'], 'TestingRequestId');
-      assert.equal(body.header, 'TestingRequestId');
-      assert.equal(body.valueSet, 'TestingRequestId');
-    });
-
-    test('/robots.txt', async function() {
-      const res = await request.get('http://localhost:1459/robots.txt');
-      assert(res.ok, 'Got response');
-      assert.equal(res.text, 'User-Agent: *\nDisallow: /\n', 'Got the right text');
-      assert.equal(res.headers['content-type'], 'text/plain; charset=utf-8');
     });
 
     test('/__version__', async function() {

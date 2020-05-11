@@ -49,8 +49,8 @@ module.exports = ({ queue }, isAuthed, rootUrl, monitor, strategies, req, cfg, r
     return {
       ...artifact,
       url: hasRunId
-        ? queue.buildSignedUrl(method, taskId, runId, artifact.name)
-        : queue.buildSignedUrl(method, taskId, artifact.name),
+        ? queue.externalBuildSignedUrl(method, taskId, runId, artifact.name)
+        : queue.externalBuildSignedUrl(method, taskId, artifact.name),
     };
   };
 

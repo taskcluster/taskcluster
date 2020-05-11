@@ -1,7 +1,7 @@
 require('../../prelude');
 const aws = require('aws-sdk');
 const {Client, pulseCredentials} = require('taskcluster-lib-pulse');
-const App = require('taskcluster-lib-app');
+const {App} = require('taskcluster-lib-app');
 const loader = require('taskcluster-lib-loader');
 const config = require('taskcluster-lib-config');
 const SchemaSet = require('taskcluster-lib-validate');

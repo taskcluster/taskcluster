@@ -3,7 +3,7 @@ const request = require('superagent');
 const hawk = require('@hapi/hawk');
 const assert = require('assert');
 const SchemaSet = require('taskcluster-lib-validate');
-const makeApp = require('taskcluster-lib-app');
+const {App} = require('taskcluster-lib-app');
 const {APIBuilder} = require('../');
 const helper = require('./helper');
 const testing = require('taskcluster-lib-testing');
@@ -13,6 +13,9 @@ const debug = require('debug')('auth_test');
 suite(testing.suiteName(), function() {
   // Reference for test api server
   let _apiServer = null;
+  let nockScope = null;
+  let authenticated = false;
+  let traceId = null;
 
   this.timeout(1500);
 
@@ -27,13 +30,18 @@ suite(testing.suiteName(), function() {
   // Create a mock authentication server
   setup(async () => {
     const rootUrl = 'http://localhost:4321/';
-    testing.fakeauth.start({
+    nockScope = testing.fakeauth.start({
       'test-client': ['service:magic'],
       admin: ['*'],
       nobody: ['another-irrelevant-scope'],
       param: ['service:myfolder/resource'],
       param2: ['service:myfolder/resource', 'service:myfolder/other-resource'],
     }, {rootUrl});
+
+    nockScope.on('request', req => {
+      authenticated = true;
+      traceId = req.headers['x-taskcluster-trace-id'];
+    });
 
     // Create API
     const api = await builder.build({
@@ -46,7 +54,7 @@ suite(testing.suiteName(), function() {
     });
 
     // Create application
-    _apiServer = await makeApp({
+    _apiServer = await App({
       port: 23526,
       env: 'development',
       forceSSL: false,
@@ -58,6 +66,13 @@ suite(testing.suiteName(), function() {
   // Close server
   teardown(async () => {
     testing.fakeauth.stop();
+    nockScope = null;
+    if (authenticated) {
+      assert(traceId, 'Call to authenticateHawk did not include traceId');
+      assert.equal(traceId, 'foo/bar', 'Call to authenticateHawk had incorrect traceId');
+    }
+    authenticated = false;
+    traceId = null;
     await _apiServer.terminate();
   });
 
@@ -87,7 +102,7 @@ suite(testing.suiteName(), function() {
       key: 'not-used-by-fakeauth',
       algorithm: 'sha256',
     });
-    tests.forEach(({label, id, desiredStatus = 200, params, tester}) => {
+    tests.forEach(({label, id, desiredStatus = 200, params, tester, shouldCallAuth = true}) => {
       const url = buildUrl(params);
       const auth = buildHawk(id);
       test(label, async () => {
@@ -104,6 +119,9 @@ suite(testing.suiteName(), function() {
             throw err;
           }
         }
+        if (shouldCallAuth) {
+          assert(authenticated, 'Never called auth');
+        }
       });
     });
   };
@@ -113,7 +131,7 @@ suite(testing.suiteName(), function() {
       credentials: auth,
       ext,
     });
-    return request.get(url).set('Authorization', header);
+    return request.get(url).set('Authorization', header).set('x-taskcluster-trace-id', 'foo/bar');
   };
 
   testEndpoint({
@@ -128,6 +146,7 @@ suite(testing.suiteName(), function() {
     tests: [
       {
         label: 'function that still uses satisfies fails',
+        shouldCallAuth: false,
         desiredStatus: 500,
         id: 'nobody',
         tester: (auth, url) => requestWithHawk(url, auth),
@@ -317,6 +336,7 @@ suite(testing.suiteName(), function() {
       },
       {
         label: 'insufficient scopes without auth has documented details',
+        shouldCallAuth: false,
         desiredStatus: 200,
         tester: (auth, url) => request.get(url),
       },
@@ -362,6 +382,7 @@ suite(testing.suiteName(), function() {
     },
     tests: [
       {
+        shouldCallAuth: false,
         label: 'public unauthenticated endpoint',
         tester: (auth, url) => request.get(url),
       },
@@ -543,6 +564,7 @@ suite(testing.suiteName(), function() {
     tests: [
       {
         label: 'scope expression if/then (success)',
+        shouldCallAuth: false,
         id: 'admin',
         tester: (auth, url) => requestWithHawk(url, auth,
           Buffer.from(JSON.stringify({
@@ -554,6 +576,7 @@ suite(testing.suiteName(), function() {
       },
       {
         label: 'scope expression if/then (success with no client)',
+        shouldCallAuth: false,
         tester: (auth, url) => request
           .get(url)
           .send({
@@ -574,6 +597,7 @@ suite(testing.suiteName(), function() {
       },
       {
         label: 'scope expression if/then (failure with no client)',
+        shouldCallAuth: false,
         desiredStatus: 403,
         tester: (auth, url) => request
           .get(url)
@@ -598,6 +622,7 @@ suite(testing.suiteName(), function() {
     tests: [
       {
         label: 'forgot to auth simple',
+        shouldCallAuth: false,
         desiredStatus: 500,
         id: 'admin',
         tester: (auth, url) => requestWithHawk(url, auth).send({}),
@@ -616,6 +641,7 @@ suite(testing.suiteName(), function() {
     tests: [
       {
         label: 'forgot to auth dyn-auth 1',
+        shouldCallAuth: false,
         desiredStatus: 500,
         id: 'admin',
         tester: (auth, url) => requestWithHawk(url, auth,
@@ -644,6 +670,7 @@ suite(testing.suiteName(), function() {
       {
         label: 'forgot to auth dyn-auth 2',
         id: 'admin',
+        shouldCallAuth: false,
         desiredStatus: 500,
         tester: (auth, url) => requestWithHawk(url, auth,
           Buffer.from(JSON.stringify({

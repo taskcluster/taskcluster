@@ -9,7 +9,7 @@ const Config = require('taskcluster-lib-config');
 const loader = require('taskcluster-lib-loader');
 const monitorManager = require('./monitor');
 const SchemaSet = require('taskcluster-lib-validate');
-const App = require('taskcluster-lib-app');
+const {App} = require('taskcluster-lib-app');
 const libReferences = require('taskcluster-lib-references');
 const {Client, pulseCredentials} = require('taskcluster-lib-pulse');
 

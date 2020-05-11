@@ -3,7 +3,7 @@ const assert = require('assert');
 const SchemaSet = require('taskcluster-lib-validate');
 const {APIBuilder} = require('taskcluster-lib-api');
 const testing = require('taskcluster-lib-testing');
-const App = require('taskcluster-lib-app');
+const {App} = require('taskcluster-lib-app');
 const {monitorManager, monitor} = require('./monitor');
 
 const rootUrl = `http://localhost:60526`;

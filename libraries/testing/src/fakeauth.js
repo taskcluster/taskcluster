@@ -9,7 +9,7 @@ let taskcluster = require('taskcluster-client');
 exports.start = function(clients, {rootUrl} = {}) {
   assert(rootUrl, 'rootUrl option is required');
   const authPath = url.parse(libUrls.api(rootUrl, 'auth', 'v1', '/authenticate-hawk')).pathname;
-  nock(rootUrl, {encodedQueryParams: true, allowUnmocked: true})
+  return nock(rootUrl, {encodedQueryParams: true, allowUnmocked: true})
     .persist()
     .filteringRequestBody(/.*/, '*')
     .post(authPath, '*')

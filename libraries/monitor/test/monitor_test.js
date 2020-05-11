@@ -179,6 +179,22 @@ suite(testing.suiteName(), function() {
       assert.equal(monitorManager.messages[2].Fields.val, 7);
     });
 
+    test('traceId becomes top-level', function() {
+      const child = monitor.taskclusterPerRequestInstance({entryName: 'what', traceId: 'foo/bar', requestId: '123/456'});
+      monitor.measure('bazbing', 5);
+      child.measure('bazbing', 6);
+
+      assert.equal(monitorManager.messages.length, 2);
+      assert.equal(monitorManager.messages[0].Logger, 'taskcluster.testing-service');
+      assert.equal(monitorManager.messages[1].Logger, 'taskcluster.testing-service');
+      assert.equal(monitorManager.messages[0].Fields.meta, undefined);
+      assert.equal(monitorManager.messages[1].Fields.meta, undefined);
+      assert.equal(monitorManager.messages[0].traceId, undefined);
+      assert.equal(monitorManager.messages[1].traceId, 'foo/bar');
+      assert.equal(monitorManager.messages[0].requestId, undefined);
+      assert.equal(monitorManager.messages[1].requestId, '123/456');
+    });
+
     test('metadata is merged', function() {
       const child = monitor.childMonitor('api', {addition: 1000});
       monitor.measure('bazbing', 5);

@@ -51,15 +51,14 @@ monitorManager.register({
   title: 'Request Received',
   type: 'request-received',
   version: 1,
-  level: 'info',
-  description: 'A GraphQL request has been received.',
+  level: 'notice',
+  description: 'A GraphQL request has been received. The traceId/request is at the top-level of the log message, above these fields.',
   fields: {
     query: 'The graphQL query string',
     operationName: `
       The name of the graphql query performed. If the operation is anonymous
       (i.e., the operation is query { ... } instead of query NamedQuery { ... })
       , then operationName is null.`,
-    requestId: 'A unique request ID for every incoming GraphQL request that the client receives.',
   },
 });
 

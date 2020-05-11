@@ -10,7 +10,7 @@ const callHandler = ({entry, context, monitor}) => {
   assert(entry.handler, 'No handler is provided');
   return (req, res, next) => {
     Promise.resolve(null).then(() => {
-      return entry.handler.call(context, req, res);
+      return entry.handler.call(req.tcContext, req, res);
     }).then(() => {
       if (!req.public && !req.hasAuthed) {
         // Note: This will not fail the request since a response has already
@@ -20,7 +20,7 @@ const callHandler = ({entry, context, monitor}) => {
           'or some parameters were missing from the request', {
           url: req.originalUrl,
           method: req.method,
-          requestId: req.get('x-request-id'),
+          traceId: req.traceId,
         });
       }
     }).catch((err) => {
