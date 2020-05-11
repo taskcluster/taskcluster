@@ -179,8 +179,6 @@ module.exports = ({tasks, cmdOptions, credentials, baseDir, logsDir}) => {
     },
   });
 
-  /*
-   * https://github.com/taskcluster/taskcluster/issues/2739
   ensureTask(tasks, {
     title: 'Build taskcluster-proxy artifacts',
     requires: ['cleaned-release-artifacts'],
@@ -199,7 +197,6 @@ module.exports = ({tasks, cmdOptions, credentials, baseDir, logsDir}) => {
       };
     },
   });
-  */
 
   ensureTask(tasks, {
     title: 'Build Websocktunnel Docker Image',
@@ -363,7 +360,6 @@ module.exports = ({tasks, cmdOptions, credentials, baseDir, logsDir}) => {
     },
   });
 
-  /* https://github.com/taskcluster/taskcluster/issues/2739
   ensureTask(tasks, {
     title: 'Build taskcluster-proxy Docker image',
     requires: ['release-version'],
@@ -390,37 +386,20 @@ module.exports = ({tasks, cmdOptions, credentials, baseDir, logsDir}) => {
         env: process.env,
       });
 
-      utils.step({title: 'Generating ca certs using latest ubuntu version'});
-
-      const cacerts = path.join(contextDir, 'cacerts.docker');
-      fs.writeFileSync(cacerts, [
-        'FROM ubuntu:latest',
-        'RUN apt-get update',
-        'RUN apt-get install -y ca-certificates',
-      ].join('\n'));
-      await execCommand({
-        command: [
-          'uid="$(date +%s)"', '&&',
-          'docker', 'build', '--pull', '-t', '"${uid}"', '-f', 'cacerts.docker', '.', '&&',
-          'docker', 'run', '--name', '"${uid}"', '"${uid}"', '&&',
-          'docker', 'cp', '"${uid}:/etc/ssl/certs/ca-certificates.crt"', 'target', '&&',
-          'docker', 'rm', '-v', '"${uid}"',
-        ],
-        dir: REPO_ROOT,
-        logfile: path.join(logsDir, 'taskcluster-proxy-cert-gen.log'),
-        utils,
-        env: process.env,
-      });
-
       utils.step({title: 'Building Docker Image'});
 
       // this simple Dockerfile just packages the binary into a Docker image
       const dockerfile = path.join(contextDir, 'Dockerfile');
       fs.writeFileSync(dockerfile, [
+        // get the latest ca-certificates from Ubuntu
+        'FROM ubuntu:latest as ubuntu',
+        'RUN apt-get update',
+        'RUN apt-get install -y ca-certificates',
+        // start over in an empty image and just copy the certs in
         'FROM scratch',
         'EXPOSE 80',
-        'COPY target/taskcluster-proxy /taskcluster-proxy',
-        'COPY target/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt',
+        'COPY taskcluster-proxy /taskcluster-proxy',
+        'COPY --from=ubuntu /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt',
         'ENTRYPOINT ["/taskcluster-proxy", "--port", "80"]',
       ].join('\n'));
       let command = [
@@ -461,7 +440,6 @@ module.exports = ({tasks, cmdOptions, credentials, baseDir, logsDir}) => {
       return provides;
     },
   });
-  /*
 
   /* -- monoimage docker image build occurs here -- */
 
@@ -472,12 +450,12 @@ module.exports = ({tasks, cmdOptions, credentials, baseDir, logsDir}) => {
       'client-shell-artifacts',
       'generic-worker-artifacts',
       'worker-runner-artifacts',
-      //'taskcluster-proxy-artifacts',
+      'taskcluster-proxy-artifacts',
       'changelog-text',
       'target-monoimage',
       'websocktunnel-docker-image',
       'livelog-docker-image',
-      //'taskcluster-proxy-docker-image',
+      'taskcluster-proxy-docker-image',
       'livelog-artifacts',
     ],
     provides: [
@@ -506,7 +484,7 @@ module.exports = ({tasks, cmdOptions, credentials, baseDir, logsDir}) => {
         .concat(requirements['generic-worker-artifacts'])
         .concat(requirements['worker-runner-artifacts'])
         .concat(requirements['livelog-artifacts'])
-        //.concat(requirements['taskcluster-proxy-artifacts'])
+        .concat(requirements['taskcluster-proxy-artifacts'])
         .map(name => ({name, contentType: 'application/octet-stream'}));
       for (let {name, contentType} of files) {
         utils.status({message: `Upload Release asset ${name}`});
