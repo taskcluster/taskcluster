@@ -21,6 +21,7 @@ const uploadToS3 = require('./upload_to_s3');
 const _ = require('lodash');
 const EventEmitter = require('events');
 const libUrls = require('taskcluster-lib-urls');
+const { version } = require('../../package.json');
 
 let debug = new Debug('runTask');
 
@@ -425,6 +426,7 @@ class Task extends EventEmitter {
       `Worker Group: ${this.runtime.workerGroup}`,
       `Worker Node Type: ${this.runtime.workerNodeType}`,
       `Worker Type: ${this.runtime.workerType}`,
+      `Worker Version: ${version}`,
       `Public IP: ${this.runtime.publicIp}`,
       `Hostname: ${os.hostname()}`,
     ];

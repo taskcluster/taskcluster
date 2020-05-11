@@ -23,3 +23,5 @@ worker:
     implementation: docker-worker
     path: /usr/local/docker-worker
 ```
+
+You can check the version of a docker-worker tarball by running `docker-worker/bin/docker-worker --version`.
