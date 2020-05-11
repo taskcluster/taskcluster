@@ -231,7 +231,7 @@ const createRemoteSignatureValidator = (options) => {
   });
   return async (data, meta) => {
     let perRequestAuth = auth;
-    if (meta) {
+    if (meta && auth.taskclusterPerRequestInstance !== undefined) {
       perRequestAuth = auth.taskclusterPerRequestInstance(meta);
     }
     return perRequestAuth.authenticateHawk(data);
