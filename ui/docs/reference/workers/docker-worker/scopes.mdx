@@ -3,6 +3,8 @@ title: Scopes
 order: 10
 ---
 
+# Scopes
+
 Certain task features/capabilities require the use of docker-worker specific scopes in the form of `docker-worker:...` . For details about scopes needed for features, images, and caches, consult the documentation for each topic.
 The scopes must be satisfied by `task.scopes`.
 Since the caller of `queue.createTask` must have credentials satisfying `task.scopes`, this ensures that whoever created the task posesses the necessary docker-worker-related scopes.
