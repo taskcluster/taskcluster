@@ -2710,6 +2710,139 @@
   },
   {
     "element": "h1",
+    "id": "docker-worker",
+    "path": "/reference/workers/docker-worker",
+    "subtitle": null,
+    "title": "Docker Worker"
+  },
+  {
+    "element": "h1",
+    "id": "caches",
+    "path": "/reference/workers/docker-worker/caches",
+    "subtitle": null,
+    "title": "Caches"
+  },
+  {
+    "element": "h1",
+    "id": "environment-variables",
+    "path": "/reference/workers/docker-worker/environment",
+    "subtitle": null,
+    "title": "Environment Variables"
+  },
+  {
+    "element": "h4",
+    "id": "encrypted-environment-variables",
+    "path": "/reference/workers/docker-worker/environment",
+    "subtitle": "Encrypted Environment Variables",
+    "title": "Environment Variables"
+  },
+  {
+    "element": "h4",
+    "id": "reserved-environment-variables",
+    "path": "/reference/workers/docker-worker/environment",
+    "subtitle": "Reserved Environment Variables",
+    "title": "Environment Variables"
+  },
+  {
+    "element": "h1",
+    "id": "features",
+    "path": "/reference/workers/docker-worker/features",
+    "subtitle": null,
+    "title": "Features"
+  },
+  {
+    "element": "h4",
+    "id": "feature-allowptrace",
+    "path": "/reference/workers/docker-worker/features",
+    "subtitle": "Feature: `allowPtrace`",
+    "title": "Features"
+  },
+  {
+    "element": "h4",
+    "id": "feature-balrogstagevpnproxy",
+    "path": "/reference/workers/docker-worker/features",
+    "subtitle": "Feature: `balrogStageVPNProxy`",
+    "title": "Features"
+  },
+  {
+    "element": "h4",
+    "id": "feature-balrogvpnproxy",
+    "path": "/reference/workers/docker-worker/features",
+    "subtitle": "Feature: `balrogVPNProxy`",
+    "title": "Features"
+  },
+  {
+    "element": "h4",
+    "id": "feature-dockersave",
+    "path": "/reference/workers/docker-worker/features",
+    "subtitle": "Feature: `dockerSave`",
+    "title": "Features"
+  },
+  {
+    "element": "h4",
+    "id": "feature-interactive",
+    "path": "/reference/workers/docker-worker/features",
+    "subtitle": "Feature: `interactive`",
+    "title": "Features"
+  },
+  {
+    "element": "h4",
+    "id": "feature-relengapiproxy",
+    "path": "/reference/workers/docker-worker/features",
+    "subtitle": "Feature: `relengAPIProxy`",
+    "title": "Features"
+  },
+  {
+    "element": "h4",
+    "id": "feature-taskclusterproxy",
+    "path": "/reference/workers/docker-worker/features",
+    "subtitle": "Feature: `taskclusterProxy`",
+    "title": "Features"
+  },
+  {
+    "element": "h4",
+    "id": "feature-testdroidproxy",
+    "path": "/reference/workers/docker-worker/features",
+    "subtitle": "Feature: `testdroidProxy`",
+    "title": "Features"
+  },
+  {
+    "element": "h1",
+    "id": "payload-format",
+    "path": "/reference/workers/docker-worker/payload",
+    "subtitle": null,
+    "title": "Payload format"
+  },
+  {
+    "element": "h1",
+    "id": "scopes",
+    "path": "/reference/workers/docker-worker/scopes",
+    "subtitle": null,
+    "title": "Scopes"
+  },
+  {
+    "element": "h4",
+    "id": "caches",
+    "path": "/reference/workers/docker-worker/scopes",
+    "subtitle": "Caches",
+    "title": "Scopes"
+  },
+  {
+    "element": "h4",
+    "id": "features",
+    "path": "/reference/workers/docker-worker/scopes",
+    "subtitle": "Features",
+    "title": "Scopes"
+  },
+  {
+    "element": "h4",
+    "id": "images",
+    "path": "/reference/workers/docker-worker/scopes",
+    "subtitle": "Images",
+    "title": "Scopes"
+  },
+  {
+    "element": "h1",
     "id": "generic-worker",
     "path": "/reference/workers/generic-worker",
     "subtitle": null,

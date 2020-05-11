@@ -3245,8 +3245,8 @@
                 },
                 "name": "logs",
                 "next": {
-                  "path": "reference/workers/generic-worker/README",
-                  "title": "generic-worker"
+                  "path": "reference/workers/docker-worker/README",
+                  "title": "docker-worker"
                 },
                 "path": "reference/workers/built-in-workers/logs",
                 "prev": {
@@ -3271,6 +3271,144 @@
             "prev": {
               "path": "reference/workers/README",
               "title": "Workers"
+            },
+            "up": {
+              "path": "reference/workers/README",
+              "title": "Workers"
+            }
+          },
+          {
+            "children": [
+              {
+                "children": [
+                ],
+                "data": {
+                  "class": "html",
+                  "docref": true,
+                  "docson": true,
+                  "ejs": true,
+                  "layout": "default",
+                  "marked": true,
+                  "order": 1,
+                  "superagent": true,
+                  "title": "Payload Format"
+                },
+                "name": "payload",
+                "next": {
+                  "path": "reference/workers/docker-worker/scopes",
+                  "title": "Scopes"
+                },
+                "path": "reference/workers/docker-worker/payload",
+                "prev": {
+                  "path": "reference/workers/docker-worker/README",
+                  "title": "docker-worker"
+                },
+                "up": {
+                  "path": "reference/workers/docker-worker/README",
+                  "title": "docker-worker"
+                }
+              },
+              {
+                "children": [
+                ],
+                "data": {
+                  "order": 10,
+                  "title": "Scopes"
+                },
+                "name": "scopes",
+                "next": {
+                  "path": "reference/workers/docker-worker/environment",
+                  "title": "Environment Variables"
+                },
+                "path": "reference/workers/docker-worker/scopes",
+                "prev": {
+                  "path": "reference/workers/docker-worker/payload",
+                  "title": "Payload Format"
+                },
+                "up": {
+                  "path": "reference/workers/docker-worker/README",
+                  "title": "docker-worker"
+                }
+              },
+              {
+                "children": [
+                ],
+                "data": {
+                  "order": 20,
+                  "title": "Environment Variables"
+                },
+                "name": "environment",
+                "next": {
+                  "path": "reference/workers/docker-worker/caches",
+                  "title": "Caches"
+                },
+                "path": "reference/workers/docker-worker/environment",
+                "prev": {
+                  "path": "reference/workers/docker-worker/scopes",
+                  "title": "Scopes"
+                },
+                "up": {
+                  "path": "reference/workers/docker-worker/README",
+                  "title": "docker-worker"
+                }
+              },
+              {
+                "children": [
+                ],
+                "data": {
+                  "order": 30,
+                  "title": "Caches"
+                },
+                "name": "caches",
+                "next": {
+                  "path": "reference/workers/docker-worker/features",
+                  "title": "Features"
+                },
+                "path": "reference/workers/docker-worker/caches",
+                "prev": {
+                  "path": "reference/workers/docker-worker/environment",
+                  "title": "Environment Variables"
+                },
+                "up": {
+                  "path": "reference/workers/docker-worker/README",
+                  "title": "docker-worker"
+                }
+              },
+              {
+                "children": [
+                ],
+                "data": {
+                  "order": 40,
+                  "title": "Features"
+                },
+                "name": "features",
+                "next": {
+                  "path": "reference/workers/generic-worker/README",
+                  "title": "generic-worker"
+                },
+                "path": "reference/workers/docker-worker/features",
+                "prev": {
+                  "path": "reference/workers/docker-worker/caches",
+                  "title": "Caches"
+                },
+                "up": {
+                  "path": "reference/workers/docker-worker/README",
+                  "title": "docker-worker"
+                }
+              }
+            ],
+            "data": {
+              "order": 1000
+            },
+            "name": "docker-worker",
+            "next": {
+              "path": "reference/workers/docker-worker/payload",
+              "title": "Payload Format"
+            },
+            "path": "reference/workers/docker-worker/README",
+            "prev": {
+              "path": "reference/workers/built-in-workers/logs",
+              "title": "logs"
             },
             "up": {
               "path": "reference/workers/README",
@@ -3466,8 +3604,8 @@
             },
             "path": "reference/workers/generic-worker/README",
             "prev": {
-              "path": "reference/workers/built-in-workers/logs",
-              "title": "logs"
+              "path": "reference/workers/docker-worker/features",
+              "title": "Features"
             },
             "up": {
               "path": "reference/workers/README",
