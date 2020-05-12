@@ -37,8 +37,13 @@ RUN git pull --tags origin HEAD
 
 RUN chmod +x entrypoint
 
-# Now that node_modules are here, do some generation
-RUN echo \{\"version\": \"$(git describe --tags --always --match v*.*.*)\", \"commit\": \"$(git rev-parse HEAD)\", \"source\": \"https://github.com/taskcluster/taskcluster\", \"build\": \"NONE\"\} > version.json
+# Write out the DockerFlow-compatible version.json file
+ARG DOCKER_FLOW_VERSION
+RUN if [ -n "${DOCKER_FLOW_VERSION}" ]; then \
+    echo "${DOCKER_FLOW_VERSION}" > version.json; \
+else \
+    echo \{\"version\": \"$(git describe --tags --always --match v*.*.*)\", \"commit\": \"$(git rev-parse HEAD)\", \"source\": \"https://github.com/taskcluster/taskcluster\", \"build\": \"NONE\"\} > version.json; \
+fi
 
 # Build the UI and discard everything else in that directory
 WORKDIR /base/app/ui
