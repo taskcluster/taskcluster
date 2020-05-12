@@ -12,6 +12,9 @@ const {
   execCommand,
   pyClientRelease,
   readRepoFile,
+  readRepoJSON,
+  dockerRun,
+  dockerPull,
   dockerPush,
   REPO_ROOT,
 } = require('../utils');
@@ -127,9 +130,38 @@ module.exports = ({tasks, cmdOptions, credentials, baseDir, logsDir}) => {
     requires: ['cleaned-release-artifacts'],
     provides: ['docker-worker-artifacts'],
     run: async (requirements, utils) => {
-      await execCommand({
-        dir: path.join(REPO_ROOT, 'workers', 'docker-worker'),
-        command: ['./release.sh', '-o', path.join(artifactsDir, 'docker-worker-x64.tgz')],
+      // The docker-worker build currently requires npm packages that must be compiled,
+      // and the local system does not have the necessary package installed to do so,
+      // so we build the docker-worker image in a docker container.
+
+      utils.step({title: 'Pull Docker Image'});
+
+      // TODO: align this with the node version used in docker-worker, bug 1636164
+      const nodeVersion = (await readRepoJSON('package.json')).engines.node;
+      const image = 'node:' + nodeVersion;
+      await dockerPull({image, utils, baseDir});
+
+      utils.step({title: 'Build Docker-Worker Tarball'});
+
+      await dockerRun({
+        baseDir,
+        logfile: path.join(logsDir, '/docker-worker-build.log'),
+        image,
+        mounts: [
+          {
+            Type: 'bind',
+            Source: path.join(REPO_ROOT, 'workers', 'docker-worker'),
+            Target: '/src',
+            ReadOnly: true,
+          }, {
+            Type: 'bind',
+            Source: artifactsDir,
+            Target: '/dst',
+            ReadOnly: false,
+          },
+        ],
+        command: ['sh', './release.sh', '-o', '/dst/docker-worker-x64.tgz'],
+        workingDir: '/src',
         utils,
       });
 
