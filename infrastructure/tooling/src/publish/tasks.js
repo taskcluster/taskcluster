@@ -174,7 +174,7 @@ module.exports = ({tasks, cmdOptions, credentials, baseDir, logsDir}) => {
       const artifacts = ['docker-worker-x64.tgz'];
 
       return {
-        'generic-worker-artifacts': artifacts,
+        'docker-worker-artifacts': artifacts,
       };
     },
   });
