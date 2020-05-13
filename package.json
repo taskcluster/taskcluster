@@ -130,7 +130,7 @@
     "builtin-modules": "^3.1.0",
     "c8": "^6.0.0",
     "commander": "^4.0.0",
-    "console-taskgraph": "^1.6.0",
+    "console-taskgraph": "^1.7.2",
     "cronstrue": "^1.82.0",
     "cross-env": "^6.0.3",
     "dockerode": "^3.0.0",

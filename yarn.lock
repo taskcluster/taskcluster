@@ -1977,10 +1977,10 @@ concat-stream@~1.6.0:
     readable-stream "^2.2.2"
     typedarray "^0.0.6"
 
-console-taskgraph@^1.6.0:
-  version "1.6.0"
-  resolved "https://registry.yarnpkg.com/console-taskgraph/-/console-taskgraph-1.6.0.tgz#a4fdef21ac0035ee7c997245b6958ffa8754016e"
-  integrity sha512-QL6nst8TwVB8vvWXb1Xf3QL5gT8OQUECIvtOAqXwpf0rQ76JDyHL5ejOtVQk4awFFiFT1xzvK9zG/yrYMLuPfg==
+console-taskgraph@^1.7.2:
+  version "1.7.2"
+  resolved "https://registry.yarnpkg.com/console-taskgraph/-/console-taskgraph-1.7.2.tgz#e4244dda8eac760812b13c9c56eac796177d5922"
+  integrity sha512-7kEsO5Jbi7XlVMOjPjGGSg2XKWtTEClS4ePeXUQ0ZUCNd6lk00VaItiaph1oP48mc6iltdNDHyAd2TKkMl/taA==
   dependencies:
     assert "^1.4.1"
     chalk "^2.3.2"
@@ -6587,50 +6587,56 @@ tar-stream@^2.0.0:
     readable-stream "^3.1.1"
 
 "taskcluster-client@link:clients/client":
-  version "29.4.1"
-  dependencies:
-    "@hapi/hawk" "^7.1.2"
-    debug "^4.1.1"
-    lodash "^4.17.4"
-    slugid "^2.0.0"
-    superagent "^5.0.0"
-    taskcluster-lib-urls "^12.0.0"
+  version "0.0.0"
+  uid ""
 
 "taskcluster-db@link:db":
-  version "29.4.1"
+  version "0.0.0"
+  uid ""
 
 "taskcluster-lib-api@link:libraries/api":
-  version "29.4.1"
+  version "0.0.0"
+  uid ""
 
 "taskcluster-lib-app@link:libraries/app":
-  version "29.4.1"
+  version "0.0.0"
+  uid ""
 
 "taskcluster-lib-azqueue@link:libraries/azqueue":
-  version "29.4.1"
+  version "0.0.0"
+  uid ""
 
 "taskcluster-lib-config@link:libraries/config":
-  version "29.4.1"
+  version "0.0.0"
+  uid ""
 
 "taskcluster-lib-entities@link:libraries/entities":
-  version "29.4.1"
+  version "0.0.0"
+  uid ""
 
 "taskcluster-lib-iterate@link:libraries/iterate":
-  version "29.4.1"
+  version "0.0.0"
+  uid ""
 
 "taskcluster-lib-loader@link:libraries/loader":
-  version "29.4.1"
+  version "0.0.0"
+  uid ""
 
 "taskcluster-lib-monitor@link:libraries/monitor":
-  version "29.4.1"
+  version "0.0.0"
+  uid ""
 
 "taskcluster-lib-postgres@link:libraries/postgres":
-  version "29.4.1"
+  version "0.0.0"
+  uid ""
 
 "taskcluster-lib-pulse@link:libraries/pulse":
-  version "29.4.1"
+  version "0.0.0"
+  uid ""
 
 "taskcluster-lib-references@link:libraries/references":
-  version "29.4.1"
+  version "0.0.0"
+  uid ""
 
 taskcluster-lib-scopes@^11.0.0:
   version "11.0.0"
@@ -6640,7 +6646,8 @@ taskcluster-lib-scopes@^11.0.0:
     fast-json-stable-stringify "^2.1.0"
 
 "taskcluster-lib-testing@link:libraries/testing":
-  version "29.4.1"
+  version "0.0.0"
+  uid ""
 
 taskcluster-lib-urls@^12.0.0:
   version "12.0.0"
@@ -6648,7 +6655,8 @@ taskcluster-lib-urls@^12.0.0:
   integrity sha512-OrEFE0m3p/+mGsmIwjttLhSKg3io6MpJLhYtPNjVSZA9Ix8Y5tprN3vM6a3MjWt5asPF6AKZsfT43cgpGwJB0g==
 
 "taskcluster-lib-validate@link:libraries/validate":
-  version "29.4.1"
+  version "0.0.0"
+  uid ""
 
 temporary@^1.0.0:
   version "1.0.1"
