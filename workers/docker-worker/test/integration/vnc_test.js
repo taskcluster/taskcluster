@@ -26,8 +26,8 @@ suite('interactive vnc', () => {
       interactive: {
         ssl: true,
         minTime: minTime,
-        expirationAfterSession: expTime,
-      },
+        expirationAfterSession: expTime
+      }
     });
     worker = new TestWorker(DockerWorker);
     await worker.launch();
@@ -68,9 +68,9 @@ suite('interactive vnc', () => {
         command: cmd('Xvfb :0 -screen 0 1024x768x24'),
         maxRunTime: 60,
         features: {
-          interactive: true,
-        },
-      },
+          interactive: true
+        }
+      }
     };
     debug('posting to queue');
     worker.postToQueue(task, taskId);

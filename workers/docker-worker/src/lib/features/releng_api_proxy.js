@@ -23,16 +23,16 @@ class RelengAPIProxy {
   }
 
   async link(task) {
-    let docker = task.runtime.docker;
+    var docker = task.runtime.docker;
 
     // Image name for the proxy container.
-    let image = task.runtime.features.relengAPIProxy.image;
-    let imageId = await task.runtime.imageManager.ensureImage(image, process.stdout, task);
+    var image = task.runtime.features.relengAPIProxy.image;
+    var imageId = await task.runtime.imageManager.ensureImage(image, process.stdout, task);
 
-    let cmd = [
+    var cmd = [
       `--relengapi-token=${task.runtime.features.relengAPIProxy.token}`,
       '--',
-      task.status.taskId,
+      task.status.taskId
     ];
 
     // create the container.
@@ -44,7 +44,7 @@ class RelengAPIProxy {
       AttachStdout: true,
       AttachStderr: true,
 
-      Cmd: cmd,
+      Cmd: cmd
     });
 
     // Terrible hack to get container promise proxy.
@@ -62,8 +62,8 @@ class RelengAPIProxy {
     // this somehow.
     await this.container.start({});
 
-    let inspect = await this.container.inspect();
-    let name = inspect.Name.slice(1);
+    var inspect = await this.container.inspect();
+    var name = inspect.Name.slice(1);
 
     try {
       // wait for the initial server response...
@@ -74,7 +74,7 @@ class RelengAPIProxy {
 
     return {
       links: [{name, alias: ALIAS}],
-      env: {},
+      env: {}
     };
   }
 

@@ -13,15 +13,15 @@ suite('Privileged containers', () => {
 
   teardown(async () => {
     settings.cleanup();
-    if (worker) {await worker.terminate();}
+    if (worker) await worker.terminate();
     worker = null;
   });
 
   test('task error when necessary scopes missing', async () => {
     settings.configure({
       dockerConfig: {
-        allowPrivileged: true,
-      },
+        allowPrivileged: true
+      }
     });
 
     worker = new TestWorker(DockerWorker);
@@ -32,13 +32,13 @@ suite('Privileged containers', () => {
         command: [
           '/bin/bash',
           '-c',
-          'sleep 1',
+          'sleep 1'
         ],
         capabilities: {
-          privileged: true,
+          privileged: true
         },
-        maxRunTime: 5 * 60,
-      },
+        maxRunTime: 5 * 60
+      }
     });
 
     let errorMessage = 'Insufficient scopes to run task in privileged mode';
@@ -57,13 +57,13 @@ suite('Privileged containers', () => {
         command: [
           '/bin/bash',
           '-c',
-          'sleep 1',
+          'sleep 1'
         ],
         capabilities: {
-          privileged: true,
+          privileged: true
         },
-        maxRunTime: 5 * 60,
-      },
+        maxRunTime: 5 * 60
+      }
     });
 
     let errorMessage = 'Error: Cannot run task using docker privileged mode';
@@ -75,8 +75,8 @@ suite('Privileged containers', () => {
   test('allow task to run in privileged mode', async () => {
     settings.configure({
       dockerConfig: {
-        allowPrivileged: true,
-      },
+        allowPrivileged: true
+      }
     });
 
     worker = new TestWorker(DockerWorker);
@@ -88,13 +88,13 @@ suite('Privileged containers', () => {
         command: [
           '/bin/bash',
           '-c',
-          'mount -n -t tmpfs -o uid=0,gid=0,mode=0755 cgroup /sys/fs/cgroup',
+          'mount -n -t tmpfs -o uid=0,gid=0,mode=0755 cgroup /sys/fs/cgroup'
         ],
         capabilities: {
-          privileged: true,
+          privileged: true
         },
-        maxRunTime: 5 * 60,
-      },
+        maxRunTime: 5 * 60
+      }
     });
 
     console.log(result.log);
@@ -112,16 +112,16 @@ suite('Privileged containers', () => {
         command: [
           '/bin/bash',
           '-c',
-          'mount -n -t tmpfs -o uid=0,gid=0,mode=0755 cgroup /sys/fs/cgroup',
+          'mount -n -t tmpfs -o uid=0,gid=0,mode=0755 cgroup /sys/fs/cgroup'
         ],
-        maxRunTime: 5 * 60,
-      },
+        maxRunTime: 5 * 60
+      }
     });
 
     assert.ok(
       result.log.includes('mount: permission denied') ||
       result.log.includes('mount: cannot mount block device'),
-      `Mount denied message did not appear in the log. Message: ${result.log}`,
+      `Mount denied message did not appear in the log. Message: ${result.log}`
     );
     assert.equal(result.run.state, 'failed', 'task should not be successful');
     assert.equal(result.run.reasonResolved, 'failed', 'task should not be successful');

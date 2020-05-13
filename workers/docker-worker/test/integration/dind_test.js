@@ -25,13 +25,13 @@ suite.skip('use dind-service', () => {
         image: 'taskcluster/dind-test:v1',
         command: [
           'docker', 'run', '--rm', 'busybox:buildroot-2014.02',
-          'busybox', '--help',
+          'busybox', '--help'
         ],
         features: {
-          dind: true,
+          dind: true
         },
-        maxRunTime: 5 * 60,
-      },
+        maxRunTime: 5 * 60
+      }
     });
 
     assert.equal(result.run.state, 'completed', 'task should be successful');
@@ -48,20 +48,20 @@ suite.skip('use dind-service', () => {
         command: cmd(
           'mkdir artifacts',
           'docker pull busybox:buildroot-2014.02',
-          'docker save busybox:buildroot-2014.02 > /artifacts/image.tar',
+          'docker save busybox:buildroot-2014.02 > /artifacts/image.tar'
         ),
         features: {
-          dind: true,
+          dind: true
         },
         maxRunTime: 5 * 60,
         artifacts: {
           'public/image.tar': {
             type: 'file',
             expires: expires(),
-            path: '/artifacts/image.tar',
-          },
-        },
-      },
+            path: '/artifacts/image.tar'
+          }
+        }
+      }
     });
 
     assert.equal(result.run.state, 'completed', 'task should be successful');

@@ -60,7 +60,7 @@ class TaskQueue {
     let result = await this.queue.claimWork(this.provisionerId, this.workerType, {
       tasks: capacity,
       workerGroup: this.workerGroup,
-      workerId: this.workerId,
+      workerId: this.workerId
     });
 
     debug(`claimed ${result.tasks.length} tasks`);
@@ -68,7 +68,7 @@ class TaskQueue {
     result.tasks.forEach(claim => {
       this.log('claimed task', {
         taskId: claim.status.taskId,
-        runId: claim.runId,
+        runId: claim.runId
       });
     });
     return result.tasks;

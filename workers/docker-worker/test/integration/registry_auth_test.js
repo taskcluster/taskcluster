@@ -10,7 +10,7 @@ const {removeImage} = require('../../src/lib/util/remove_image');
 const CREDENTIALS = {
   username: 'testuser',
   password: 'testpassword',
-  email: 'xfoo@g.com',
+  email: 'xfoo@g.com'
 };
 
 const IMAGE_NAME = 'busybox:latest';
@@ -64,8 +64,8 @@ suite('Docker custom private registry', () => {
       payload: {
         image: registryImageName,
         command: cmd('ls'),
-        maxRunTime: 60 * 60,
-      },
+        maxRunTime: 60 * 60
+      }
     });
 
     assert.equal(result.run.state, 'completed', 'auth download works');
@@ -87,8 +87,8 @@ suite('Docker custom private registry', () => {
       payload: {
         image: registryImageName,
         command: cmd('ls'),
-        maxRunTime: 60 * 60,
-      },
+        maxRunTime: 60 * 60
+      }
     });
 
     assert.equal(result.run.state, 'completed', 'auth download works');
@@ -110,8 +110,8 @@ suite('Docker custom private registry', () => {
       payload: {
         image: registryImageName,
         command: cmd('ls'),
-        maxRunTime: 60 * 60,
-      },
+        maxRunTime: 60 * 60
+      }
     });
 
     assert.equal(result.run.state, 'failed', 'auth download works');
@@ -125,7 +125,7 @@ suite('Docker custom private registry', () => {
   test('failed auth', async () => {
     let registries = {};
     registries[registryProxy.imageName('')] = {
-      username: 'fail', password: 'fail',
+      username: 'fail', password: 'fail'
     };
     settings.configure({
       registries: registries,
@@ -133,8 +133,8 @@ suite('Docker custom private registry', () => {
         defaultRegistry: 'registry.hub.docker.com',
         maxAttempts: 1,
         delayFactor: 100,
-        randomizationFactor: 0.25,
-      },
+        randomizationFactor: 0.25
+      }
     });
 
     await worker.launch();
@@ -144,8 +144,8 @@ suite('Docker custom private registry', () => {
       payload: {
         image: registryImageName,
         command: cmd('ls'),
-        maxRunTime: 60 * 60,
-      },
+        maxRunTime: 60 * 60
+      }
     });
 
     assert.equal(result.run.state, 'failed', 'auth download works');
@@ -153,7 +153,7 @@ suite('Docker custom private registry', () => {
     assert.ok(
       result.log.includes(`image ${REPO_IMAGE_NAME} not found`)
       || result.log.includes('unauthorized'),
-      'authorization failed',
+      'authorization failed'
     );
 
     await worker.terminate();

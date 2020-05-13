@@ -11,7 +11,7 @@ suite('Aliveness check', function() {
     settings.cleanup();
   });
 
-  let worker;
+  var worker;
   setup(async () => {
     settings.configure({
       alivenessCheckInterval: 200, // 200ms
@@ -24,13 +24,14 @@ suite('Aliveness check', function() {
     // So we don't immediately shutdown.
     await worker.launch();
 
-    let checks = 20;
+    var checks = 20;
 
-    let now = Date.now();
+    var now = Date.now();
     while (checks-- > 0) {
       await waitForEvent(worker, 'aliveness check');
     }
-    let end = Date.now();
+    var end = Date.now();
     assert.ok(end - now > 2000, 'aliveness check ran over 2s');
   });
 });
+

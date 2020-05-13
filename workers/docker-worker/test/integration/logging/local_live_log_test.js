@@ -27,10 +27,10 @@ suite('live logging', () => {
           '/bin/bash',
           '-c',
           'echo "first command!"; ' +
-          'for i in {1..1000}; do echo "Hello Number $i"; done;',
+          'for i in {1..1000}; do echo "Hello Number $i"; done;'
         ],
-        maxRunTime: 5 * 60,
-      },
+        maxRunTime: 5 * 60
+      }
     });
 
     // Expected junk in the log.
@@ -49,14 +49,14 @@ suite('live logging', () => {
     let task = {
       payload: {
         image: 'taskcluster/test-ubuntu',
-        command: [
+        command:        [
           '/bin/bash',
           '-c',
           'echo "first command!"; ' +
-          'for i in {1..3}; do echo "Hello Number $i" && sleep 1; done;',
+          'for i in {1..3}; do echo "Hello Number $i" && sleep 1; done;'
         ],
-        maxRunTime: 3 * 60,
-      },
+        maxRunTime: 3 * 60
+      }
     };
 
     worker.postToQueue(task, taskId);
@@ -74,7 +74,7 @@ suite('live logging', () => {
 
     assert.equal(
       token.length,
-      22, 'Token should be 22 characters long',
+      22, 'Token should be 22 characters long'
     );
   });
 
@@ -87,10 +87,10 @@ suite('live logging', () => {
         command: [
           '/bin/bash',
           '-c',
-          'echo "first command!"',
+          'echo "first command!"'
         ],
-        maxRunTime: 3 * 60,
-      },
+        maxRunTime: 3 * 60
+      }
     });
     assert.equal(result.run.state, 'completed', 'task should be successful');
     assert.equal(result.run.reasonResolved, 'completed', 'task should be successful');
@@ -107,11 +107,11 @@ suite('live logging', () => {
         command: [
           '/bin/bash',
           '-c',
-          'echo "first command!"',
+          'echo "first command!"'
         ],
         log: CUSTOM_LOCATION,
-        maxRunTime: 3 * 60,
-      },
+        maxRunTime: 3 * 60
+      }
     });
     assert.equal(result.run.state, 'completed', 'task should be successful');
     assert.equal(result.run.reasonResolved, 'completed', 'task should be successful');

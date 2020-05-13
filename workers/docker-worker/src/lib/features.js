@@ -25,14 +25,14 @@ const features = {
     description: 'Logs are stored on the worker during the duration of tasks ' +
                  'and available via http chunked streaming then uploaded to s3',
     defaults: true,
-    module: TaskclusterLogs,
+    module: TaskclusterLogs
   },
 
   artifacts: {
     title: 'Artifact uploads',
     description: '',
     defaults: true,
-    module: ArtifactUpload,
+    module: ArtifactUpload
   },
 
   chainOfTrust: {
@@ -43,7 +43,7 @@ const features = {
                  'a level of trust for the artifacts produced by the task and ' +
                  'the environment it ran in.',
     defaults: false,
-    module: ChainOfTrust,
+    module: ChainOfTrust
   },
 
   bulkLog: {
@@ -51,18 +51,18 @@ const features = {
     description: 'Useful if live logging is not interesting but the overall' +
                  'log is later on',
     defaults: false,
-    module: BulkLog,
+    module: BulkLog
   },
 
   taskclusterProxy: {
-    title: 'Taskcluster auth proxy service',
+    title: 'Task cluster auth proxy service',
     description: 'The auth proxy allows making requests to taskcluster/queue ' +
                  'directly from your task with the ' +
                  'same scopes as set in the task. This can be used to make ' +
                  'api calls via the [client](https://github.com/taskcluster/taskcluster-client) ' +
                  'CURL, etc... Without embedding credentials in the task.',
     defaults: false,
-    module: TaskclusterProxy,
+    module: TaskclusterProxy
   },
 
   balrogVPNProxy: {
@@ -71,7 +71,7 @@ const features = {
                  'http://balrog which is a proxied connection through a vpn ' +
                  'tunnel to production balrog update server.',
     defaults: false,
-    module: BalrogVPNProxy,
+    module: BalrogVPNProxy
   },
 
   balrogStageVPNProxy: {
@@ -80,7 +80,7 @@ const features = {
                  'http://balrog which is a proxied connection through a vpn ' +
                  'tunnel to the stage balrog update server.',
     defaults: false,
-    module: BalrogStageVPNProxy,
+    module: BalrogStageVPNProxy
   },
 
   dind: {
@@ -89,7 +89,7 @@ const features = {
                  'into the container. Doesn\'t allow privileged mode, ' +
                  'capabilities or host volume mounts.',
     defaults: false,
-    module: Dind,
+    module: Dind
   },
 
   relengAPIProxy: {
@@ -97,32 +97,32 @@ const features = {
     description: 'The Releng API proxy service allows tasks to talk to releng ' +
                  'api using an authorization token based on the task\'s scopes',
     defaults: false,
-    module: RelengAPIProxy,
+    module: RelengAPIProxy
   },
 
   dockerSave: {
     title: 'Docker save',
     description: 'Uploads docker images as artifacts',
     defaults: false,
-    module: DockerSave,
+    module: DockerSave
   },
 
   interactive: {
     title: 'Docker Exec Interactive',
-    description: 'This allows you to interactively run commands inside the container ' +
+    description: 'This allows you to interactively run commands inside the container ' + 
                  'and attaches you to the stdin/stdout/stderr over a websocket. ' +
                  'Can be used for SSH-like access to docker containers.',
     defaults: false,
-    module: Interactive,
+    module: Interactive
   },
 
   allowPtrace: {
     title: 'Allow ptrace within the container',
-    description: 'This allows you to use the Linux ptrace functionality inside the ' +
+    description: 'This allows you to use the Linux ptrace functionality inside the ' + 
                  'container; it is otherwise disallowed by Docker\'s security policy. ',
     defaults: false,
-    module: AllowPtrace,
-  },
+    module: AllowPtrace
+  }
 };
 
 // Basic sanity check for features

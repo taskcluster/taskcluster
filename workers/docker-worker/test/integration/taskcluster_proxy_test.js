@@ -6,7 +6,7 @@ const TestWorker = require('../testworker');
 
 suite('taskcluster proxy', () => {
 
-  let worker;
+  var worker;
   setup(async () => {
     worker = new TestWorker(DockerWorker);
     await worker.launch();
@@ -17,14 +17,14 @@ suite('taskcluster proxy', () => {
   });
 
   test('issue a request to taskcluster via the proxy', async () => {
-    let payload = {
+    var payload = {
       storageType: 'reference',
       expires: expires().toJSON(),
       contentType: 'text/html',
-      url: 'https://mozilla.com',
+      url: 'https://mozilla.com'
     };
 
-    let result = await worker.postToQueue({
+    var result = await worker.postToQueue({
       scopes: ['queue:create-artifact:custom'],
       payload: {
         image: 'centos:latest',
@@ -34,10 +34,10 @@ suite('taskcluster proxy', () => {
           'curl --retry 5 -X POST ' +
           '-H "Content-Type: application/json" ' +
           '--data \'' + JSON.stringify(payload) + '\' ' +
-          'taskcluster/queue/v1/task/$TASK_ID/runs/$RUN_ID/artifacts/custom',
+          'taskcluster/queue/v1/task/$TASK_ID/runs/$RUN_ID/artifacts/custom'
         ),
-        maxRunTime: 5 * 60,
-      },
+        maxRunTime: 5 * 60
+      }
     });
 
     assert.equal(result.run.state, 'completed', 'task should be successful');

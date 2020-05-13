@@ -16,7 +16,7 @@ class Registry {
   }
 
   async start() {
-    let stream = dockerUtils.pullImageIfMissing(this.docker, DOCKER_IMAGE);
+    var stream = dockerUtils.pullImageIfMissing(this.docker, DOCKER_IMAGE);
     // Ensure the test proxy actually exists...
     await pipe(stream, devnull());
 
@@ -39,26 +39,26 @@ class Registry {
         'REGISTRY_AUTH=htpasswd',
         'REGISTRY_AUTH_HTPASSWD_REALM=Registry Realm',
         'REGISTRY_AUTH_HTPASSWD_PATH=/fixtures/auth/htpasswd',
-        'REGISTRY_HTTP_SECRET=' + slugid.nice(),
+        'REGISTRY_HTTP_SECRET=' + slugid.nice()
       ],
       Image: DOCKER_IMAGE,
       Cmd: [],
       ExposedPorts: {
-        '5000/tcp': {},
+        '5000/tcp': {}
       },
       Volumes: {},
       VolumesFrom: [],
       HostConfig: {
         Binds: [
-          `${baseDir}:/fixtures`,
+          `${baseDir}:/fixtures`
         ],
         PortBindings: {
-          '5000/tcp': [{Hostport: '0'}],
-        },
-      },
+          '5000/tcp': [{Hostport: '0'}]
+        }
+      }
     };
 
-    let container = await this.docker.createContainer(createContainer);
+    var container = await this.docker.createContainer(createContainer);
     this.containerId = container.id;
     this.container = this.docker.getContainer(container.id);
   }
@@ -107,7 +107,7 @@ class Registry {
 
   async loadImageWithTag(imageName, credentials) {
     let docker = this.docker;
-    let stream = dockerUtils.pullImageIfMissing(docker, imageName);
+    var stream = dockerUtils.pullImageIfMissing(docker, imageName);
     // Ensure the test proxy actually exists...
     await pipe(stream, devnull());
 
@@ -118,7 +118,7 @@ class Registry {
     await image.tag({
       repo: newImageName,
       tag: tag,
-      force: true,
+      force: true
     });
 
     let newImage = await docker.getImage(newImageName);
@@ -128,8 +128,8 @@ class Registry {
         username: credentials.username,
         password: credentials.password,
         email: 'test@test.com',
-        serveraddress: 'https://' + this.domain,
-      },
+        serveraddress: 'https://' + this.domain
+      }
     });
 
     // Some reason the push event returns right away even though push hasn't completed

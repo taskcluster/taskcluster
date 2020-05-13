@@ -16,6 +16,7 @@ const DEVICE_MANAGERS = {
   'kvm': KvmDeviceManager,
 };
 
+
 class DeviceManager {
   constructor(config) {
     this.config = config;

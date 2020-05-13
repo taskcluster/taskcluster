@@ -12,7 +12,7 @@ suite('Signals test', () => {
       shutdown: {
         enabled: true,
         afterIdleSeconds: 5,
-      },
+      }
     });
 
     worker = new TestWorker(DockerWorker);
@@ -41,7 +41,7 @@ suite('Signals test', () => {
         },
         image: 'taskcluster/test-ubuntu',
         command: cmd(
-          'sleep 30',
+          'sleep 30'
         ),
         maxRunTime: 60,
       },

@@ -4,10 +4,10 @@ test/settings/ directory. This allows for testing complicated configuration
 situations quickly (and either inside or outside a docker container).
 */
 
-let fs = require('fs');
-let fsPath = require('path');
+var fs = require('fs');
+var fsPath = require('path');
 
-let SETTINGS_DIR = __dirname + '/settings/';
+var SETTINGS_DIR = __dirname + '/settings/';
 
 function write(path, data) {
   if (!fs.existsSync(SETTINGS_DIR)) {
@@ -17,8 +17,8 @@ function write(path, data) {
 }
 
 function unlink(path) {
-  let fullPath = settingsPath(path);
-  if (fs.existsSync(fullPath)) {fs.unlinkSync(fullPath);}
+  var fullPath = settingsPath(path);
+  if (fs.existsSync(fullPath)) fs.unlinkSync(fullPath);
 }
 
 function settingsPath(path) {
@@ -47,5 +47,5 @@ module.exports = {
     unlink('billingCycleUptime');
     unlink('nodeTermination');
     unlink('configure');
-  },
+  }
 };

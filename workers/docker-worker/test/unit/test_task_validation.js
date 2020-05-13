@@ -17,7 +17,7 @@ suite('Task validation', async function() {
     let payload = {
       image: 'taskcluster/test-ubuntu',
       command: ['echo', '5'],
-      maxRunTime: 5 * 60,
+      maxRunTime: 5 * 60
     };
 
     let errors = this.validator(payload, payloadSchema);
@@ -26,7 +26,7 @@ suite('Task validation', async function() {
 
   test('catch invalid schema', async function () {
     let payload = {
-      image: 'taskcluster/test-ubuntu',
+      image: 'taskcluster/test-ubuntu'
       // No maxRunTime is an invalid schema.
     };
 
@@ -38,7 +38,7 @@ suite('Task validation', async function() {
     let payload = {
       image: 'taskcluster/test-ubuntu',
       // No command provided should be ok.
-      maxRunTime: 5 * 60,
+      maxRunTime: 5 * 60
     };
 
     let errors = this.validator(payload, payloadSchema);
@@ -49,9 +49,9 @@ suite('Task validation', async function() {
     let payload = {
       image: {
         type: 'docker-image',
-        name: 'ubuntu:14.04',
+        name: 'ubuntu:14.04'
       },
-      maxRunTime: 60,
+      maxRunTime: 60
     };
 
     let errors = this.validator(payload, payloadSchema);
@@ -61,7 +61,7 @@ suite('Task validation', async function() {
   test('accept docker image as a string', async function () {
     let payload = {
       image: 'ubuntu:14.04',
-      maxRunTime: 60,
+      maxRunTime: 60
     };
 
     let errors = this.validator(payload, payloadSchema);
@@ -72,9 +72,9 @@ suite('Task validation', async function() {
     let payload = {
       image: {
         type: 'dockerimage',
-        name: 'ubuntu:14.04',
+        name: 'ubuntu:14.04'
       },
-      maxRunTime: 60,
+      maxRunTime: 60
     };
 
     let errors = this.validator(payload, payloadSchema);
@@ -86,9 +86,9 @@ suite('Task validation', async function() {
       image: {
         type: 'indexed-image',
         namespace: 'public.test.images.ubuntu.14_04',
-        path: 'public/image.tar',
+        path: 'public/image.tar'
       },
-      maxRunTime: 60,
+      maxRunTime: 60
     };
 
     let errors = this.validator(payload, payloadSchema);
@@ -99,9 +99,9 @@ suite('Task validation', async function() {
     let payload = {
       image: {
         type: 'indexed-image',
-        namespace: 'public.test.images.ubuntu.14_04',
+        namespace: 'public.test.images.ubuntu.14_04'
       },
-      maxRunTime: 60,
+      maxRunTime: 60
     };
 
     let errors = this.validator(payload, payloadSchema);

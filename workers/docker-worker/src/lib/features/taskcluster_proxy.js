@@ -24,15 +24,15 @@ class TaskclusterProxy {
   }
 
   async link(task) {
-    let docker = task.runtime.docker;
+    var docker = task.runtime.docker;
 
     // Image name for the proxy container.
-    let image = task.runtime.taskclusterProxyImage;
-    let imageId = await task.runtime.imageManager.ensureImage(image, process.stdout, task);
+    var image = task.runtime.taskclusterProxyImage;
+    var imageId = await task.runtime.imageManager.ensureImage(image, process.stdout, task);
 
-    let cmd = [
+    var cmd = [
       '--client-id=' + task.claim.credentials.clientId,
-      '--access-token=' + task.claim.credentials.accessToken,
+      '--access-token=' + task.claim.credentials.accessToken
     ];
     // only pass in a certificate if one has been set
     if (task.claim.credentials.certificate) {
@@ -62,7 +62,7 @@ class TaskclusterProxy {
       // to fetch the task and it's scopes to delegate). Note: passing the
       // arguments via 'Cmd' may potentially be a security issue. Alternatives
       // are: 1. Volume mounted files, 2. Docker secret (not landed yet).
-      Cmd: cmd,
+      Cmd: cmd
     });
 
     // Terrible hack to get container promise proxy.
@@ -78,8 +78,8 @@ class TaskclusterProxy {
 
     await this.container.start({});
 
-    let inspect = await this.container.inspect();
-    let name = inspect.Name.slice(1);
+    var inspect = await this.container.inspect();
+    var name = inspect.Name.slice(1);
 
     try {
       // wait for the initial server response...
@@ -100,8 +100,8 @@ class TaskclusterProxy {
             path: '/credentials',
             headers: {
               'Content-Type': 'text/json',
-              'Content-Length': creds.length,
-            },
+              'Content-Length': creds.length
+            }
           }, res => {
             if (res.statusCode === 200) {
               task.runtime.log('Credentials updated', {
@@ -114,7 +114,7 @@ class TaskclusterProxy {
               let err = new Error(`Credentials update failed ${res.statusCode}`);
               task.runtime.log(err, {
                 taskId: task.status.taskId,
-                runId: task.runId,
+                runId: task.runId
               });
               reject(err);
             }
@@ -127,7 +127,7 @@ class TaskclusterProxy {
       }, {
         maxTimeout: 10000,
         factor: 1.311,
-        randomize: true,
+        randomize: true
       }).catch(err => task.runtime.log(err.stack));
     });
 
@@ -135,7 +135,7 @@ class TaskclusterProxy {
       links: [{name, alias: ALIAS}],
       env: {
         TASKCLUSTER_PROXY_URL: `http://${ALIAS}`,
-      },
+      }
     };
   }
 

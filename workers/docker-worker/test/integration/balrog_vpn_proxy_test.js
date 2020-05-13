@@ -10,7 +10,7 @@ let worker;
 suite('balrog vpn proxy', () => {
   setup(async () => {
     settings.configure({
-      balrogVPNProxyImage: IMAGE,
+      balrogVPNProxyImage: IMAGE
     });
     worker = new TestWorker(DockerWorker);
     await worker.launch();
@@ -26,23 +26,23 @@ suite('balrog vpn proxy', () => {
       scopes: ['docker-worker:feature:balrogVPNProxy'],
       payload: {
         features: {
-          balrogVPNProxy: true,
+          balrogVPNProxy: true
         },
         image: 'taskcluster/test-ubuntu',
         command: [
           '/bin/bash',
           '-c',
-          'ping -c1 balrog',
+          'ping -c1 balrog'
         ],
-        maxRunTime: 5 * 60,
-      },
+        maxRunTime: 5 * 60
+      }
     });
 
     assert.equal(result.status.state, 'completed', 'Task not marked as completed');
     assert.equal(
       result.run.reasonResolved,
       'completed',
-      'Task not resolved as complete',
+      'Task not resolved as complete'
     );
     assert.ok(result.log.indexOf('1 received', 'Proxy could not be reached'));
   });
@@ -51,30 +51,30 @@ suite('balrog vpn proxy', () => {
     let result = await worker.postToQueue({
       payload: {
         features: {
-          balrogVPNProxy: true,
+          balrogVPNProxy: true
         },
         image: 'taskcluster/test-ubuntu',
         command: [
           '/bin/bash',
           '-c',
-          'ls',
+          'ls'
         ],
-        maxRunTime: 5 * 60,
-      },
+        maxRunTime: 5 * 60
+      }
     });
 
     assert.ok(
       result.log.includes('[taskcluster:error] Task was aborted because states'),
-      'Error does not container message about states being aborted',
+      'Error does not container message about states being aborted'
     );
 
     assert.ok(
       result.log.includes('Error calling \'link\' for balrogVPNProxy'),
-      'Error does not contain the name of the feature',
+      'Error does not contain the name of the feature'
     );
     assert.ok(
       result.log.includes('Insufficient scopes to use \'balrogVPNProxy\''),
-      'Error does not contain message about insufficient scopes',
+      'Error does not contain message about insufficient scopes'
     );
 
     assert.equal(result.status.state, 'failed', 'Task not marked as failed');

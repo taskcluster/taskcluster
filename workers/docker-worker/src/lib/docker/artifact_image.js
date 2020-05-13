@@ -66,7 +66,7 @@ class ArtifactImage {
    * @param {Object}  stream        - task stream object
    * @param {Array}   taskScopes        - Array of task scopes
    */
-  constructor(runtime, imageDetails, stream, task, taskScopes = []) {
+  constructor(runtime, imageDetails, stream, task, taskScopes=[]) {
     this.runtime = runtime;
     this.taskScopes = taskScopes;
     this.stream = stream;
@@ -89,6 +89,7 @@ class ArtifactImage {
 
     return scopeMatch(this.taskScopes, [[`queue:get-artifact:${this.artifactPath}`]]);
   }
+
 
   /* Downloads an image at the given task ID and path.
    *
@@ -117,7 +118,7 @@ class ArtifactImage {
         this.taskId,
         this.artifactPath,
         downloadedFile,
-        this.runtime.dockerConfig,
+        this.runtime.dockerConfig
       );
       this.runtime.monitor.measure('task.taskImage.downloadTime', Date.now() - start);
 
@@ -218,7 +219,7 @@ class ArtifactImage {
 
       this.stream.write(fmtLog(
         `Image '${this.artifactPath}' from task '${this.taskId}' ` +
-        `loaded.  Using image ID ${this.imageId}.`,
+        `loaded.  Using image ID ${this.imageId}.`
       ));
 
       return true;

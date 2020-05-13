@@ -62,7 +62,7 @@ class VideoDeviceManager {
 }
 
 class VideoDevice {
-  constructor(path, active = false) {
+  constructor(path, active=false) {
     this.active = active;
     this.path = path;
     this.mountPoints = [path];

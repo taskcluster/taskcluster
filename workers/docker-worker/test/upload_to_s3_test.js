@@ -26,7 +26,7 @@ suite('upload to s3 test', function () {
 
     let server = https.createServer({
       key: fs.readFileSync(path.join(__dirname, 'fixtures', 'ssl_cert.key')),
-      cert: fs.readFileSync(path.join(__dirname, 'fixtures', 'ssl_cert.crt')),
+      cert: fs.readFileSync(path.join(__dirname, 'fixtures', 'ssl_cert.crt'))
     });
 
     let requestState = 0;
@@ -67,12 +67,12 @@ suite('upload to s3 test', function () {
     expiry.setDate(expiry.getDate() + 1);
 
     let httpHeader = {
-      'content-length': DATA.length,
+      'content-length': DATA.length
     };
 
     try {
       await uploadToS3(
-        undefined, // since putUrl is supplied, this is unused
+        undefined,  // since putUrl is supplied, this is unused
         1,
         0,
         await getTemporaryStream(tempFile.path, DATA),
@@ -80,7 +80,7 @@ suite('upload to s3 test', function () {
         expiry,
         httpHeader,
         'https://localhost:8000',
-        {rejectUnauthorized: false},
+        {rejectUnauthorized: false}
       );
 
       assert.equal(requestState, 2);

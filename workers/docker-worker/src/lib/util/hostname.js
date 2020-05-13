@@ -14,11 +14,11 @@ module.exports = function getHostname(config, expires) {
 
   let hostname;
   ip = ip.split('.').map((octet) => { return parseInt(octet); });
-  hostname = statelessDNSServer.createHostname(
+  hostname  = statelessDNSServer.createHostname(
     ip,
     expires,
     secret,
-    domain,
+    domain
   );
 
   return hostname;

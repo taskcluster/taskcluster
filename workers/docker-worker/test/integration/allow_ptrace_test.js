@@ -24,8 +24,8 @@ suite.skip('allowPtrace feature', () => {
       payload: {
         image: 'busybox',
         command: ['/bin/sh', '-c', 'od -x /proc/$$/auxv'],
-        maxRunTime: 1 * 60,
-      },
+        maxRunTime: 1 * 60
+      }
     });
 
     assert(result.run.state === 'failed', 'task should fail');
@@ -43,8 +43,8 @@ suite.skip('allowPtrace feature', () => {
         features: {
           allowPtrace: true,
         },
-        maxRunTime: 1 * 60,
-      },
+        maxRunTime: 1 * 60
+      }
     });
 
     debug(result.run);

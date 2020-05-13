@@ -17,26 +17,26 @@ suite('artifact extraction tests', () => {
           'mkdir /artifacts/',
           'echo "xfoo" > /artifacts/xfoo.txt',
           'echo "bar" > /artifacts/bar.txt',
-          'ls /artifacts',
+          'ls /artifacts'
         ),
         features: {
-          localLiveLog: false,
+          localLiveLog: false
         },
         artifacts: {
           'public/xfoo': {
             type: 'file',
             expires: expiration,
-            path: '/artifacts/xfoo.txt',
+            path: '/artifacts/xfoo.txt'
           },
 
           'public/bar': {
             type: 'file',
             expires: expiration,
-            path: '/artifacts/bar.txt',
-          },
+            path: '/artifacts/bar.txt'
+          }
         },
-        maxRunTime: 5 * 60,
-      },
+        maxRunTime: 5 * 60
+      }
     });
 
     // Get task specific results
@@ -44,7 +44,7 @@ suite('artifact extraction tests', () => {
     assert.equal(result.run.reasonResolved, 'completed', 'task should be successful');
 
     assert.deepEqual(
-      Object.keys(result.artifacts).sort(), ['public/xfoo', 'public/bar'].sort(),
+      Object.keys(result.artifacts).sort(), ['public/xfoo', 'public/bar'].sort()
     );
 
     for (let artifact in result.artifacts) {
@@ -66,19 +66,19 @@ suite('artifact extraction tests', () => {
           'mkdir /artifacts/',
           'echo "xfoo" > /artifacts/xfoo.txt',
           'echo "bar" > /artifacts/bar.txt',
-          'ls /artifacts',
+          'ls /artifacts'
         ),
         features: {
-          localLiveLog: false,
+          localLiveLog: false
         },
         artifacts: {
           'public/xfoo': {
             type: 'file',
-            path: '/artifacts/xfoo.txt',
-          },
+            path: '/artifacts/xfoo.txt'
+          }
         },
-        maxRunTime: 5 * 60,
-      },
+        maxRunTime: 5 * 60
+      }
     });
 
     assert.equal(result.run.state, 'completed', 'task should be successful');
@@ -94,21 +94,21 @@ suite('artifact extraction tests', () => {
         image: 'taskcluster/test-ubuntu',
         command: cmd(
           'mkdir /artifacts/',
-          'dd if=/dev/zero of=/artifacts/test.html  bs=1  count=1000000',
+          'dd if=/dev/zero of=/artifacts/test.html  bs=1  count=1000000'
         ),
         features: {
           // No need to actually issue live logging...
-          localLiveLog: false,
+          localLiveLog: false
         },
         artifacts: {
           'public/test.html': {
             type: 'file',
             expires: expires(),
-            path: '/artifacts/test.html',
-          },
+            path: '/artifacts/test.html'
+          }
         },
-        maxRunTime: 5 * 60,
-      },
+        maxRunTime: 5 * 60
+      }
     });
 
     // Get task specific results
@@ -131,21 +131,21 @@ suite('artifact extraction tests', () => {
         command: cmd(
           'mkdir /artifacts/',
           'dd if=/dev/zero of=/artifacts/test  bs=1  count=200000',
-          'tar -czvf artifacts.tar.gz /artifacts',
+          'tar -czvf artifacts.tar.gz /artifacts'
         ),
         features: {
           // No need to actually issue live logging...
-          localLiveLog: false,
+          localLiveLog: false
         },
         artifacts: {
           'public/test': {
             type: 'file',
             expires: expires(),
-            path: '/artifacts/test',
-          },
+            path: '/artifacts/test'
+          }
         },
-        maxRunTime: 5 * 60,
-      },
+        maxRunTime: 5 * 60
+      }
     });
 
     // Get task specific results
@@ -167,11 +167,11 @@ suite('artifact extraction tests', () => {
           'public/etc': {
             type: 'file',
             expires: expires(),
-            path: '/etc/',
-          },
+            path: '/etc/'
+          }
         },
-        maxRunTime: 5 * 60,
-      },
+        maxRunTime: 5 * 60
+      }
     });
 
     // Get task specific results
@@ -184,7 +184,7 @@ suite('artifact extraction tests', () => {
 
     assert.ok(
       result.log.includes(errorMessage),
-      'Error message does not appear in the logs',
+      'Error message does not appear in the logs'
     );
 
     assert.ok(result.artifacts['public/etc'], 'artifact is present when it shouldn\'t be');
@@ -198,24 +198,24 @@ suite('artifact extraction tests', () => {
         command: cmd(
           'echo "the user is:" > /username.txt',
           'whoami >> /username.txt',
-          'echo "Okay, this is now done"',
+          'echo "Okay, this is now done"'
         ),
         artifacts: {
           // Name -> Source
           'public/my-missing.txt': {
             type: 'file',
             path: '/this-file-is-missing.txt',
-            expires: expires(),
-          },
+            expires: expires()
+          }
         },
-        maxRunTime: 5 * 60,
-      },
+        maxRunTime: 5 * 60
+      }
     });
 
     let errorMessage = 'Artifact "public/my-missing.txt" not found at "/this-file-is-missing.txt"';
     assert.ok(
       result.log.includes(errorMessage),
-      'Missing file was not noted in the logs',
+      'Missing file was not noted in the logs'
     );
 
     assert.equal(result.run.state, 'completed', 'task should be unsuccessful');
@@ -231,28 +231,28 @@ suite('artifact extraction tests', () => {
         command: cmd(
           'echo "the user is:" > /username.txt',
           'whoami >> /username.txt',
-          'echo "Okay, this is now done"',
+          'echo "Okay, this is now done"'
         ),
         artifacts: {
           // name -> source
           'public/username.txt': {
             type: 'file',
             path: 'username.txt',
-            expires: expires(),
+            expires: expires()
           },
           'public/passwd.txt': {
             type: 'file',
             path: '/etc/passwd',
-            expires: expires(),
+            expires: expires()
           },
           'public/my-missing.txt': {
             type: 'file',
             path: '/this-file-is-missing.txt',
-            expires: expires(),
-          },
+            expires: expires()
+          }
         },
-        maxRunTime: 5 * 60,
-      },
+        maxRunTime: 5 * 60
+      }
     });
 
     // Get task specific results.
@@ -299,20 +299,20 @@ suite('artifact extraction tests', () => {
           command: cmd(
             'mkdir /artifacts/',
             'echo "xfoo" > /artifacts/xfoo.txt',
-            'ls /artifacts',
+            'ls /artifacts'
           ),
           features: {
-            localLiveLog: false,
+            localLiveLog: false
           },
           artifacts: {
             'public/xfoo': {
               type: 'file',
               expires: expires(),
-              path: '/artifacts/xfoo.txt',
+              path: '/artifacts/xfoo.txt'
             },
           },
-          maxRunTime: 5 * 60,
-        },
+          maxRunTime: 5 * 60
+        }
       });
 
       if (blocked) {
@@ -326,7 +326,7 @@ suite('artifact extraction tests', () => {
       assert.equal(result.run.reasonResolved, 'completed', 'task should be successful');
 
       assert.deepEqual(
-        Object.keys(result.artifacts).sort(), ['public/xfoo'].sort(),
+        Object.keys(result.artifacts).sort(), ['public/xfoo'].sort()
       );
 
       let xfoo = await getArtifact(result, 'public/xfoo');

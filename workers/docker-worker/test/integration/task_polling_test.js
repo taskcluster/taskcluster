@@ -19,8 +19,8 @@ suite('Task Polling', () => {
   test('do not poll if diskspace threshold is reached', async () => {
     settings.configure({
       capacityManagement: {
-        diskspaceThreshold: 50 * 50000000000,
-      },
+        diskspaceThreshold: 50 * 50000000000
+      }
     });
 
     worker = new TestWorker(DockerWorker);
@@ -33,10 +33,10 @@ suite('Task Polling', () => {
           // Sleep is used to ensure that each worker will get one task
           // (assumption being that both workers are in a running state and can
           // fetch a task in under 5s + overhead)
-          'sleep 5',
+          'sleep 5'
         ),
-        maxRunTime: 60 * 60,
-      },
+        maxRunTime: 60 * 60
+      }
     };
 
     worker.postToQueue(taskTpl);

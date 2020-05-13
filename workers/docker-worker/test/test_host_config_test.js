@@ -23,7 +23,7 @@ suite('test host', () => {
         region: 'us-middle-1a',
         rootUrl: libUrls.testRootUrl(),
       },
-      subject.configure(),
+      subject.configure()
     );
   });
 });

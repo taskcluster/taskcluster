@@ -1,21 +1,21 @@
 suite('Reclaimer', function() {
-  let assert = require('assert');
-  let Reclaimer = require('../src/lib/task').Reclaimer;
-  let fakeRuntime, fakeTask;
-  let reclaims;
-  let taskAction;
-  let soon;
-  let reclaimer;
-  let fakeLog = require('debug')('fakeRuntime.log');
-  let EventEmitter = require('events');
+  var assert = require('assert');
+  var Reclaimer = require('../src/lib/task').Reclaimer;
+  var fakeRuntime, fakeTask;
+  var reclaims;
+  var taskAction;
+  var soon;
+  var reclaimer;
+  var fakeLog = require('debug')('fakeRuntime.log');
+  var EventEmitter = require('events');
 
   setup(function() {
     reclaims = [];
     taskAction = null;
 
-    let fakeReclaimTask = async function(taskId, runId) {
+    var fakeReclaimTask = async function(taskId, runId) {
       reclaims.push({taskId, runId});
-      let newTakenUntil = new Date();
+      var newTakenUntil = new Date();
       newTakenUntil.setMinutes(soon.getMinutes() + 1);
       return makeClaim(taskId, runId, newTakenUntil);
     };
@@ -45,7 +45,7 @@ suite('Reclaimer', function() {
         reclaimDivisor: 10,
       },
       queue: {
-        reclaimTask: fakeReclaimTask,
+        reclaimTask: fakeReclaimTask
       },
       log: fakeLog,
     };
@@ -73,7 +73,7 @@ suite('Reclaimer', function() {
   };
 
   test('successful reclaim', async function() {
-    let claim = makeClaim('fakeTid', 0, soon);
+    var claim = makeClaim('fakeTid', 0, soon);
     reclaimer = new Reclaimer(fakeRuntime, fakeTask, claim, claim);
 
     await reclaimer.reclaimTask();
@@ -100,7 +100,7 @@ suite('Reclaimer', function() {
   });
 
   test('reclaim after stop does nothing', async function() {
-    let claim = makeClaim('fakeTid', 0, soon);
+    var claim = makeClaim('fakeTid', 0, soon);
     reclaimer = new Reclaimer(fakeRuntime, fakeTask, claim, claim);
     reclaimer.stop();
 
@@ -110,11 +110,11 @@ suite('Reclaimer', function() {
   });
 
   test('primary reclaim that fails with a 409 cancels the task', async function() {
-    let claim = makeClaim('fakeTid', 0, soon);
+    var claim = makeClaim('fakeTid', 0, soon);
     reclaimer = new Reclaimer(fakeRuntime, fakeTask, claim, claim);
 
-    let failReclaimTask = async function(taskId, runId) {
-      let err = new Error('uhoh');
+    var failReclaimTask = async function(taskId, runId) {
+      var err = new Error('uhoh');
       err.statusCode = 409;
       throw err;
     };
@@ -128,11 +128,11 @@ suite('Reclaimer', function() {
   });
 
   test('primary reclaim that fails with a 401 aborts the task', async function() {
-    let claim = makeClaim('fakeTid', 0, soon);
+    var claim = makeClaim('fakeTid', 0, soon);
     reclaimer = new Reclaimer(fakeRuntime, fakeTask, claim, claim);
 
-    let failReclaimTask = async function(taskId, runId) {
-      let err = new Error('uhoh');
+    var failReclaimTask = async function(taskId, runId) {
+      var err = new Error('uhoh');
       err.statusCode = 401;
       throw err;
     };
@@ -147,12 +147,12 @@ suite('Reclaimer', function() {
 
   test('non-primary reclaim that fails has no effect except to stop reclaims',
     async function() {
-      let claim = makeClaim('fakeTid', 0, soon);
-      let secondClaim = makeClaim('fakeTid2', 0, soon);
+      var claim = makeClaim('fakeTid', 0, soon);
+      var secondClaim = makeClaim('fakeTid2', 0, soon);
       reclaimer = new Reclaimer(fakeRuntime, fakeTask, claim, secondClaim);
 
-      let failReclaimTask = async function(taskId, runId) {
-        let err = new Error('uhoh');
+      var failReclaimTask = async function(taskId, runId) {
+        var err = new Error('uhoh');
         err.statusCode = 409;
         throw err;
       };

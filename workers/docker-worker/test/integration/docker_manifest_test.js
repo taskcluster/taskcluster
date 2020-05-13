@@ -23,11 +23,11 @@ suite('docker image with manifest.json file', function() {
           'public/image.tar.zst': {
             type: 'file',
             expires: expires(),
-            path: '/image.tar.zst',
-          },
+            path: '/image.tar.zst'
+          }
         },
-        maxRunTime: 5 * 60,
-      },
+        maxRunTime: 5 * 60
+      }
     });
     taskDef.provisionerId = 'null-provisioner';
 
@@ -37,14 +37,14 @@ suite('docker image with manifest.json file', function() {
 
     await worker.queue.claimTask(imageTaskId, 0, {
       workerGroup: 'random-local-worker',
-      workerId: 'docker-worker',
+      workerId: 'docker-worker'
     });
 
     await worker.queue.createArtifact(imageTaskId, 0, 'public/image.tar.zst', {
       storageType: 'reference',
       expires: expires(),
       contentType: mime.lookup('image.tar.zst'),
-      url: 'https://s3-us-west-2.amazonaws.com/docker-worker-manifest-test/image.tar.zst',
+      url: 'https://s3-us-west-2.amazonaws.com/docker-worker-manifest-test/image.tar.zst'
     });
 
     await worker.queue.reportCompleted(imageTaskId, 0);
@@ -57,11 +57,11 @@ suite('docker image with manifest.json file', function() {
         image: {
           path: 'public/image.tar.zst',
           type: 'task-image',
-          taskId: imageTaskId,
+          taskId: imageTaskId
         },
         command: cmd('sleep 1'),
-        maxRunTime: 5 * 60,
-      },
+        maxRunTime: 5 * 60
+      }
     });
 
     assert.equal(task.run.state, 'completed', 'task should be successful');

@@ -4,12 +4,12 @@ const nock = require('nock');
 const Debug = require('debug');
 const monitor = require('./fixtures/monitor');
 
-let fakeLog = Debug('fakeRuntime.log');
+var fakeLog = Debug('fakeRuntime.log');
 
 suite('TaskListener.applySuperseding', function() {
-  let listener;
-  let claimTaskResponses;
-  let SUPERSEDER_URL = 'http://supersed.er/superkey/';
+  var listener;
+  var claimTaskResponses;
+  var SUPERSEDER_URL = 'http://supersed.er/superkey/';
 
   class TestTaskListener extends TaskListener {
     constructor(runtime) {
@@ -20,7 +20,7 @@ suite('TaskListener.applySuperseding', function() {
   setup(function() {
     claimTaskResponses = {};
 
-    let fakeRuntime = {
+    var fakeRuntime = {
       log: fakeLog,
       workerId: 'wkri',
       workerGroup: 'wkrg',
@@ -28,13 +28,13 @@ suite('TaskListener.applySuperseding', function() {
       provisionerId: 'provid',
       taskQueue: {
         pollInterval: 1,
-        expiration: 30000,
+        expiration: 30000
       },
       hostManager: {
         billingCycleUptime: () => 1,
       },
       task: {
-        dequeueCount: 5,
+        dequeueCount: 5
       },
       monitor: monitor,
       workerTypeMonitor: monitor,
@@ -63,7 +63,7 @@ suite('TaskListener.applySuperseding', function() {
     assert.deepEqual(nock.pendingMocks(), []);
   });
 
-  let makeTask = function(supersederUrl) {
+  var makeTask = function(supersederUrl) {
     return {
       payload: {
         supersederUrl,
@@ -71,7 +71,7 @@ suite('TaskListener.applySuperseding', function() {
     };
   };
 
-  let makeClaim = function(taskId, runId, task) {
+  var makeClaim = function(taskId, runId, task) {
     return {
       status: { taskId: taskId },
       runId,
@@ -79,7 +79,7 @@ suite('TaskListener.applySuperseding', function() {
     };
   };
 
-  let expectNoSupersederFetch = function() {
+  var expectNoSupersederFetch = function() {
     listener.fetchSupersedingTasks = async function(url) {
       throw new Error('this should not be called');
     };
@@ -87,15 +87,15 @@ suite('TaskListener.applySuperseding', function() {
 
   test('with a claim without a supersederUrl yields that claim',
     async function() {
-      let claim = makeClaim('fakeTask', 1, makeTask(null));
+      var claim = makeClaim('fakeTask', 1, makeTask(null));
       expectNoSupersederFetch();
       assert.deepEqual(await listener.applySuperseding(claim), [claim]);
     });
 
   test('with a claim with a supersederUrl calls the superseder',
     async function() {
-      let task = makeTask(SUPERSEDER_URL);
-      let claim = makeClaim('fakeTask', 1, task);
+      var task = makeTask(SUPERSEDER_URL);
+      var claim = makeClaim('fakeTask', 1, task);
       nock(SUPERSEDER_URL).get('/?taskId=fakeTask')
         .reply(200, {'supersedes': []});
       assert.deepEqual(await listener.applySuperseding(claim), [claim]);
@@ -107,10 +107,10 @@ suite('TaskListener.applySuperseding', function() {
         .reply(200, {'supersedes': ['cTask1', 'fakeTask', 'cTask2']});
       claimTaskResponses['cTask1'] = {status: {taskId: 'cTask1'}, runId: 0};
       claimTaskResponses['cTask2'] = {status: {taskId: 'cTask2'}, runId: 0};
-      let task = makeTask(SUPERSEDER_URL);
-      let claim = makeClaim('fakeTask', 0, task);
-      let claims = await listener.applySuperseding(claim);
-      let claimedTasks = claims.map(c => [c.status.taskId, c.runId]);
+      var task = makeTask(SUPERSEDER_URL);
+      var claim = makeClaim('fakeTask', 0, task);
+      var claims = await listener.applySuperseding(claim);
+      var claimedTasks = claims.map(c => [c.status.taskId, c.runId]);
       assert.deepEqual(claimedTasks, [['cTask1', 0], ['fakeTask', 0], ['cTask2', 0]]);
     });
 
@@ -118,8 +118,8 @@ suite('TaskListener.applySuperseding', function() {
     async function() {
       nock(SUPERSEDER_URL) .get('/?taskId=fakeTask')
         .reply(200, {'supersedes': ['cTask1', 'cTask2']});
-      let task = makeTask(SUPERSEDER_URL);
-      let claim = makeClaim('fakeTask', 0, task);
+      var task = makeTask(SUPERSEDER_URL);
+      var claim = makeClaim('fakeTask', 0, task);
       claimTaskResponses['cTask1'] = {status: {taskId: 'cTask1'}, runId: 0};
       assert.deepEqual(await listener.applySuperseding(claim), [claim]);
     });
@@ -129,8 +129,8 @@ suite('TaskListener.applySuperseding', function() {
       listener.coalescerTimeout = 100;
       nock(SUPERSEDER_URL) .get('/?taskId=fakeTask').delay(400)
         .reply(200, {'supersedes': []});
-      let task = makeTask(SUPERSEDER_URL);
-      let claim = makeClaim('fakeTask', 0, task);
+      var task = makeTask(SUPERSEDER_URL);
+      var claim = makeClaim('fakeTask', 0, task);
       assert.deepEqual(await listener.applySuperseding(claim), [claim]);
     });
 
@@ -139,10 +139,10 @@ suite('TaskListener.applySuperseding', function() {
       nock(SUPERSEDER_URL) .get('/?taskId=fakeTask')
         .reply(200, {'supersedes': ['cTask1', 'fakeTask', 'cTask2']});
       claimTaskResponses['cTask1'] = {status: {taskId: 'cTask1'}, runId: 0};
-      let task = makeTask(SUPERSEDER_URL);
-      let claim = makeClaim('fakeTask', 0, task);
-      let claims = await listener.applySuperseding(claim);
-      let claimedTasks = claims.map(c => [c.status.taskId, c.runId]);
+      var task = makeTask(SUPERSEDER_URL);
+      var claim = makeClaim('fakeTask', 0, task);
+      var claims = await listener.applySuperseding(claim);
+      var claimedTasks = claims.map(c => [c.status.taskId, c.runId]);
       assert.deepEqual(claimedTasks, [['cTask1', 0], ['fakeTask', 0]]);
     });
 });

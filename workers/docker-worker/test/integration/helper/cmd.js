@@ -1,5 +1,5 @@
 module.exports = function cmd() {
-  let args = Array.prototype.slice.call(arguments);
-  let out = ['/bin/sh', '-c'].concat(args.join(' && '));
+  var args = Array.prototype.slice.call(arguments);
+  var out = ['/bin/sh', '-c'].concat(args.join(' && '));
   return out;
 };

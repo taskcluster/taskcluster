@@ -18,8 +18,8 @@ suite('pull image', () => {
       payload: {
         image: image,
         command: cmd('ls'),
-        maxRunTime: 5 * 60,
-      },
+        maxRunTime: 5 * 60
+      }
     });
 
     assert.equal(result.run.state, 'completed', 'task should be successful');
@@ -30,7 +30,7 @@ suite('pull image', () => {
     let image = {
       type: 'task-image',
       taskId: TASK_ID,
-      path: 'public/image.tar',
+      path: 'public/image.tar'
     };
 
     let hashedName = createHash('md5')
@@ -43,8 +43,8 @@ suite('pull image', () => {
       payload: {
         image: image,
         command: cmd('ls /bin'),
-        maxRunTime: 5 * 60,
-      },
+        maxRunTime: 5 * 60
+      }
     });
 
     assert.equal(result.run.state, 'completed', 'task should be successful');
@@ -55,7 +55,7 @@ suite('pull image', () => {
     let image = {
       type: 'task-image',
       taskId: LZ4_TASK_ID,
-      path: 'public/image.tar.lz4',
+      path: 'public/image.tar.lz4'
     };
 
     let hashedName = createHash('md5')
@@ -68,8 +68,8 @@ suite('pull image', () => {
       payload: {
         image: image,
         command: cmd('ls /bin'),
-        maxRunTime: 5 * 60,
-      },
+        maxRunTime: 5 * 60
+      }
     });
 
     assert.equal(result.run.state, 'completed', 'task should be successful');
@@ -80,7 +80,7 @@ suite('pull image', () => {
     let image = {
       type: 'task-image',
       taskId: ZSTD_TASK_ID,
-      path: 'public/image.tar.zst',
+      path: 'public/image.tar.zst'
     };
 
     let hashedName = createHash('md5')
@@ -93,8 +93,8 @@ suite('pull image', () => {
       payload: {
         image: image,
         command: cmd('ls /bin'),
-        maxRunTime: 5 * 60,
-      },
+        maxRunTime: 5 * 60
+      }
     });
 
     assert.equal(result.run.state, 'completed', 'task should be successful');
@@ -105,7 +105,7 @@ suite('pull image', () => {
     let image = {
       type: 'indexed-image',
       namespace: NAMESPACE,
-      path: 'public/image.tar',
+      path: 'public/image.tar'
     };
 
     let hashedName = createHash('md5')
@@ -118,8 +118,8 @@ suite('pull image', () => {
       payload: {
         image: image,
         command: cmd('ls /bin'),
-        maxRunTime: 5 * 60,
-      },
+        maxRunTime: 5 * 60
+      }
     });
 
     assert.equal(result.run.state, 'completed', 'task should be successful');
@@ -130,7 +130,7 @@ suite('pull image', () => {
     let image = {
       type: 'indexed-image',
       namespace: NAMESPACE,
-      path: 'private/docker-worker-tests/image.tar',
+      path: 'private/docker-worker-tests/image.tar'
     };
 
     let hashedName = createHash('md5')
@@ -144,8 +144,8 @@ suite('pull image', () => {
       payload: {
         image: image,
         command: cmd('ls /bin'),
-        maxRunTime: 5 * 60,
-      },
+        maxRunTime: 5 * 60
+      }
     });
 
     assert.equal(result.run.state, 'completed', 'task should be successful');
@@ -156,7 +156,7 @@ suite('pull image', () => {
     let image = {
       type: 'indexed-image',
       namespace: NAMESPACE,
-      path: 'private/docker-worker-tests/image.tar',
+      path: 'private/docker-worker-tests/image.tar'
     };
 
     let hashedName = createHash('md5')
@@ -169,8 +169,8 @@ suite('pull image', () => {
       payload: {
         image: image,
         command: cmd('ls /bin'),
-        maxRunTime: 5 * 60,
-      },
+        maxRunTime: 5 * 60
+      }
     });
 
     assert.ok(result.log.includes('Not authorized to use'), 'Not Authorized error message did not appear in logs');
@@ -179,14 +179,15 @@ suite('pull image', () => {
   });
 
   test('Task marked as failed if non-existent image is specified', async () => {
-    let result = await testworker({
+    var result = await testworker({
       payload: {
         image: 'ubuntu:99.99',
         command: cmd('ls'),
-        maxRunTime: 5 * 60,
-      },
+        maxRunTime: 5 * 60
+      }
     });
     assert.equal(result.run.state, 'failed', 'task should be successful');
     assert.equal(result.run.reasonResolved, 'failed', 'task should be successful');
   });
 });
+

@@ -10,7 +10,7 @@ let deleteRules;
 
 async function init() {
   const ipRanges = await request.get({
-    uri: AWS_IP_ADDRESSES_URL,
+    uri: AWS_IP_ADDRESSES_URL, 
     json: true,
     headers: {
       'User-Agent': 'docker-worker',

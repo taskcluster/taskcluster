@@ -26,7 +26,7 @@ class SharedMemoryDeviceManager {
 class SharedMemoryDevice {
   constructor() {
     this.mountPoints = [
-      '/dev/shm',
+      '/dev/shm'
     ];
   }
 

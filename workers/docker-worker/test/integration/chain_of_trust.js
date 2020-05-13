@@ -19,7 +19,7 @@ suite('certificate of trust', () => {
     let image = {
       type: 'task-image',
       taskId: TASK_ID,
-      path: 'public/image.tar',
+      path: 'public/image.tar'
     };
     let hashedName = crypto.createHash('md5')
       .update(`${TASK_ID}${image.path}`)
@@ -31,29 +31,29 @@ suite('certificate of trust', () => {
       payload: {
         image: image,
         features: {
-          chainOfTrust: true,
+          chainOfTrust: true
         },
         command: cmd(
           'mkdir /artifacts/',
           'echo "xfoo" > /artifacts/xfoo.txt',
           'echo "bar" > /artifacts/bar.txt',
-          'ls /artifacts',
+          'ls /artifacts'
         ),
         artifacts: {
           'public/xfoo': {
             type: 'file',
             expires: expiration,
-            path: '/artifacts/xfoo.txt',
+            path: '/artifacts/xfoo.txt'
           },
 
           'public/bar': {
             type: 'file',
             expires: expiration,
-            path: '/artifacts/bar.txt',
-          },
+            path: '/artifacts/bar.txt'
+          }
         },
-        maxRunTime: 5 * 60,
-      },
+        maxRunTime: 5 * 60
+      }
     };
 
     let result = await testworker(taskDefinition);
@@ -89,7 +89,7 @@ suite('certificate of trust', () => {
     let expectedHashes = {
       'public/xfoo': {sha256: 'cebff86446aff2b1039749f09ef2922f9ad4f35ea2576a84e206708d8e8bf7b4'},
       'public/bar': {sha256: '7d865e959b2466918c9863afca942d0fb89d7c9ac0c99bafc3749504ded97730'},
-      'public/logs/certified.log': {sha256: logHash.digest('hex')},
+      'public/logs/certified.log': {sha256: logHash.digest('hex')}
     };
 
     let data = JSON.parse(chainOfTrust);

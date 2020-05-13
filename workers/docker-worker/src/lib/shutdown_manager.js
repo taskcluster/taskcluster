@@ -42,14 +42,14 @@ class ShutdownManager extends EventEmitter {
   onIdle() {
     let stats = {
       uptime: this.host.billingCycleUptime(),
-      idleInterval: this.config.shutdown.afterIdleSeconds,
+      idleInterval: this.config.shutdown.afterIdleSeconds
     };
 
     this.config.log('uptime', stats);
 
-    let shutdownTime = stats.idleInterval;
+    var shutdownTime = stats.idleInterval;
     this.config.log('pending shutdown', {
-      time: shutdownTime,
+      time: shutdownTime
     });
 
     this.idleTimeout =
@@ -75,12 +75,12 @@ class ShutdownManager extends EventEmitter {
     this.taskListener.on('working', this.onWorking);
 
     // Kick off the idle timer if we started in an idle state.
-    if (taskListener.isIdle()) {this.onIdle();}
+    if (taskListener.isIdle()) this.onIdle();
   }
 
   scheduleTerminationPoll() {
     return (async () => {
-      if (this.terminationTimeout) {clearTimeout(this.terminationTimeout);}
+      if (this.terminationTimeout) clearTimeout(this.terminationTimeout);
 
       let terminated = await this.host.getTerminationTime();
 
@@ -91,7 +91,7 @@ class ShutdownManager extends EventEmitter {
       }
 
       this.terminationTimeout = setTimeout(
-        this.scheduleTerminationPoll.bind(this), this.nodeTerminationPoll,
+        this.scheduleTerminationPoll.bind(this), this.nodeTerminationPoll
       );
     })();
   }

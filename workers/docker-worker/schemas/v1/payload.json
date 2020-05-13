@@ -239,7 +239,7 @@
         },
         "taskclusterProxy": {
           "type": "boolean",
-          "title": "Taskcluster auth proxy service",
+          "title": "Task cluster auth proxy service",
           "description": "The auth proxy allows making requests to taskcluster/queue and taskcluster/scheduler directly from your task with the same scopes as set in the task. This can be used to make api calls via the [client](https://github.com/taskcluster/taskcluster-client) CURL, etc... Without embedding credentials in the task."
         },
         "balrogVPNProxy": {

@@ -51,7 +51,7 @@ class CpuDeviceManager {
 }
 
 class CpuDevice {
-  constructor(id, active = false) {
+  constructor(id, active=false) {
     // ID must be a string to be passed in the docker config option CpusetCpus
     assert(typeof id === 'string', 'ID Must be a string');
     this.id = id;

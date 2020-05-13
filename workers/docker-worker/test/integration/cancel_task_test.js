@@ -13,8 +13,8 @@ suite('Cancel Task', () => {
         // frequent reclaims but allow us to easily test that it reclaims at
         // least once...
         reclaimDivisor: 1000,
-        dequeueCount: 15,
-      },
+        dequeueCount: 15
+      }
     });
 
     // expects rootUrl, credentials in env vars
@@ -22,14 +22,14 @@ suite('Cancel Task', () => {
     let task = {
       payload: {
         image: 'taskcluster/test-ubuntu',
-        command: [
-          '/bin/bash', '-c', 'echo "Hello"; sleep 60; echo "done";',
+        command:        [
+          '/bin/bash', '-c', 'echo "Hello"; sleep 60; echo "done";'
         ],
         features: {
-          localLiveLog: false,
+          localLiveLog: false
         },
-        maxRunTime: 60 * 60,
-      },
+        maxRunTime: 60 * 60
+      }
     };
     let taskId = slugid.v4();
     let worker = new TestWorker(DockerWorker);

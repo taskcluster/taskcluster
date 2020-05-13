@@ -34,10 +34,10 @@ class TestWorker extends EventEmitter {
     // During capacity tests
     this.setMaxListeners(30);
 
-    let config = typedEnvConfig({
+    var config = typedEnvConfig({
       files: [`${__dirname}/../config.yml`],
       profile: 'test',
-      env: process.env,
+      env: process.env
     });
 
     this.provisionerId = PROVISIONER_ID;
@@ -51,10 +51,10 @@ class TestWorker extends EventEmitter {
 
     this.queue = new taskcluster.Queue({
       rootUrl: config.rootUrl,
-      credentials: config.taskcluster,
+      credentials: config.taskcluster
     });
 
-    let deadline = new Date();
+    var deadline = new Date();
     deadline.setMinutes(deadline.getMinutes() + 60);
 
     this.TaskFactory = Task.extend({
@@ -66,9 +66,9 @@ class TestWorker extends EventEmitter {
           description: 'jonas damn you',
           owner: 'unkown@localhost.local',
           name: 'Task from docker-worker test suite',
-          source: 'http://foobar.com',
-        },
-      },
+          source: 'http://foobar.com'
+        }
+      }
     });
   }
 
@@ -76,7 +76,7 @@ class TestWorker extends EventEmitter {
   Ensure the worker is connected.
   */
   async launch() {
-    let proc = await this.worker.launch();
+    var proc = await this.worker.launch();
 
     // Proxy the exit event so we don't need to query .worker.
     this.worker.process.once('exit', this.emit.bind(this, 'exit'));
@@ -89,7 +89,7 @@ class TestWorker extends EventEmitter {
     // Parse stdout and emit non-json bits to stdout.
     proc.stdout.pipe(split(function(line) {
       try {
-        let parsed = JSON.parse(line);
+        var parsed = JSON.parse(line);
         debug('emit', parsed.type, parsed);
         this.emit(parsed.type, parsed);
       } catch (e) {
@@ -137,18 +137,18 @@ class TestWorker extends EventEmitter {
 
     debug('fetch task stats');
     // Just about every single test needs status of the task...
-    let status = await this.queue.status(taskId);
+    var status = await this.queue.status(taskId);
     // Live logging of the task...
-    let log = await getArtifact(
-      { taskId: taskId, runId: runId }, liveLogsLocation,
+    var log = await getArtifact(
+      { taskId: taskId, runId: runId }, liveLogsLocation
     );
 
     // Generally useful for most of the tests...
-    let artifacts = await this.queue.listArtifacts(taskId, runId);
+    var artifacts = await this.queue.listArtifacts(taskId, runId);
 
     // XXX: Ugh status.status...
     status = status.status;
-    let indexedArtifacts =
+    var indexedArtifacts =
       artifacts.artifacts.reduce(function(result, artifact) {
         result[artifact.name] = artifact;
         return result;
@@ -164,7 +164,7 @@ class TestWorker extends EventEmitter {
 
       // Useful if you need to run a secondary queue run, etc...
       taskId: taskId,
-      runId: runId,
+      runId: runId
     };
   }
 
@@ -201,13 +201,13 @@ class TestWorker extends EventEmitter {
     // being finished.
     await Promise.all([
       this.createTask(taskId, task),
-      this.waitForTaskResolution(taskId),
+      this.waitForTaskResolution(taskId)
     ]);
 
-    let taskStatus = await this.queue.status(taskId);
+    var taskStatus = await this.queue.status(taskId);
     // Fetch the final result json.
-    let status = taskStatus.status;
-    let runId = status.runs.pop().runId;
+    var status = taskStatus.status;
+    var runId = status.runs.pop().runId;
 
     // Return uniform stats on the worker run (fetching common useful things).
     task.taskId = taskId;

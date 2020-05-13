@@ -10,7 +10,7 @@ const _ = require('lodash');
 const waitForEvent = require('./wait_for_event');
 const pipe = require('promisepipe');
 
-let log = createLogger({source: 'uploadToS3'});
+var log = createLogger({source: 'uploadToS3'});
 let debug = Debug('taskcluster-docker-worker:uploadToS3');
 
 // Upload an S3 artifact to the queue for the given taskId/runId.  Source can be
@@ -60,7 +60,7 @@ module.exports = async function uploadToS3 (
     await inputEnd;
 
     if (!putUrl) {
-      let artifact = await queue.createArtifact(
+      var artifact = await queue.createArtifact(
         taskId,
         runId,
         artifactName,
@@ -69,8 +69,8 @@ module.exports = async function uploadToS3 (
           // be used with azure simply by changing s3 -> azure.
           storageType: 's3',
           expires: new Date(expiration),
-          contentType: httpsHeaders['content-type'],
-        },
+          contentType: httpsHeaders['content-type']
+        }
       );
 
       putUrl = artifact.putUrl;
@@ -78,20 +78,20 @@ module.exports = async function uploadToS3 (
 
     logDetails.putUrl = putUrl;
 
-    let parsedUrl = url.parse(putUrl);
-    let options = _.defaults({
+    var parsedUrl = url.parse(putUrl);
+    var options = _.defaults({
       hostname: parsedUrl.hostname,
       path: parsedUrl.path,
       method: 'PUT',
       headers: httpsHeaders,
-      port: parsedUrl.port,
+      port: parsedUrl.port
     }, httpOptions);
 
     // promiseRetry defaults to 10 attempts before failing
     await promiseRetry((retry, number) => {
       if (number > 1) { // if it's not the first attempt
         log('retrying artifact upload', _.defaults({}, logDetails, {
-          attemptNumber: number,
+          attemptNumber: number
         }));
       }
 
@@ -104,7 +104,7 @@ module.exports = async function uploadToS3 (
 
           if (response.statusCode !== 200) {
             reject(new Error(
-              `Could not upload artifact. Status Code: ${response.statusCode}`,
+              `Could not upload artifact. Status Code: ${response.statusCode}`
             ));
           } else {
             digest = hash.digest('hex');

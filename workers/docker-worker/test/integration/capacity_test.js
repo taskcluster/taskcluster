@@ -16,18 +16,18 @@ suite('Capacity', () => {
   const CAPACITY = 10;
   const IMAGE = 'taskcluster/test-ubuntu:latest';
 
-  let imageManager = new ImageManager({
+  var imageManager = new ImageManager({
     docker: docker,
     dockerConfig: {
       defaultRegistry: 'registry.hub.docker.com',
       maxAttempts: 5,
       delayFactor: 15 * 1000,
-      randomizationFactor: 0.25,
+      randomizationFactor: 0.25
     },
-    log: createLogger(),
+    log: createLogger()
   });
 
-  let worker;
+  var worker;
   setup(async () => {
     // Ensure that the image is available before starting test to not skew
     // task run times
@@ -35,22 +35,22 @@ suite('Capacity', () => {
     settings.configure({
       deviceManagement: {
         cpu: {
-          enabled: false,
+          enabled: false
         },
         loopbackAudio: {
-          enabled: false,
+          enabled: false
         },
         loopbackVideo: {
-          enabled: false,
-        },
+          enabled: false
+        }
       },
       capacity: CAPACITY,
       capacityManagement: {
-        diskspaceThreshold: 1,
+        diskspaceThreshold: 1
       },
       taskQueue: {
-        pollInterval: 1000,
-      },
+        pollInterval: 1000
+      }
     });
 
     worker = new TestWorker(DockerWorker);
@@ -82,14 +82,14 @@ suite('Capacity', () => {
         tasks.push(worker.postToQueue({
           payload: {
             features: {
-              localLiveLog: false,
+              localLiveLog: false
             },
             image: IMAGE,
             command: cmd(
-              'sleep ' + SLEEP,
+              'sleep ' + SLEEP
             ),
-            maxRunTime: 60 * 60,
-          },
+            maxRunTime: 60 * 60
+          }
         }));
       }
 

@@ -8,7 +8,7 @@ module.exports = {
   */
   createLogger(details) {
     return function(type, values) {
-      let logObject = { type: type };
+      var logObject = { type: type };
       Object.assign(logObject, details);
       if (typeof values === 'object') {
         Object.assign(logObject, values);
@@ -30,5 +30,5 @@ module.exports = {
     // always include a newline before this string, so that it is at the beginning of the line
     // where treeherder expects it, even if the last output was not newline-terminated
     return '\n[taskcluster:error] ' + util.format.apply(this, args) + '\n';
-  },
+  }
 };
