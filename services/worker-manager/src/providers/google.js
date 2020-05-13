@@ -231,9 +231,9 @@ class GoogleProvider extends Provider {
       };
       let op;
 
-      const disks = {
+      const disks = [
         ...cfg.disks || {},
-      };
+      ];
       for (let disk of disks) {
         disk.labels = {...disk.labels, ...labels};
       }
