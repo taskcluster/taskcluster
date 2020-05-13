@@ -612,12 +612,13 @@ async function jobHandler(message) {
   let pullNumber = message.payload.details['event.pullNumber'];
   if (!sha) {
     debug('Trying to get commit info in job handler...');
-    let commitInfo = await instGithub.git.getRef({
+    let commitInfo = await instGithub.repos.getCommit({
+      headers: {accept: 'application/vnd.github.3.sha'},
       owner: organization,
       repo: repository,
-      ref: `tags/${message.payload.details['event.version']}`,
+      ref: `refs/tags/${message.payload.details['event.version']}`,
     });
-    sha = commitInfo.data.object.sha;
+    sha = commitInfo.data;
   }
 
   debug(`handling ${message.payload.details['event.type']} webhook for: ${organization}/${repository}@${sha}`);
