@@ -14,6 +14,7 @@ class FakeGithub {
     this._repositories = {};
     this._statuses = {};
     this._comments = {};
+    this._commits = {};
 
     const throwError = code => {
       let err = new Error();
@@ -53,6 +54,18 @@ class FakeGithub {
         this._comments[key].push(info);
       },
       'repos.createCommitComment': () => {},
+      'repos.getCommit': async ({owner, repo, ref, headers}) => {
+        assert.equal(headers && headers.accept, 'application/vnd.github.3.sha');
+        assert(ref.startsWith('refs/'), 'repos.getCommit requires a full ref path');
+        const key = `${owner}/${repo}@${ref}`;
+        if (!this._commits[key]) {
+          throwError(404);
+        }
+        return {
+          status: 200,
+          data: this._commits[key],
+        };
+      },
       'orgs.checkMembership': async ({org, username}) => {
         if (this._org_membership[org] && this._org_membership[org].has(username)) {
           return {};
@@ -188,6 +201,11 @@ class FakeGithub {
     // This function accepts 1 to n strings
     this._repositories.repositories = [...repoNames].map(repo => {return {name: repo};});
     this._repositories.total_count = this._repositories.repositories.length;
+  }
+
+  setCommit({owner, repo, ref, sha}) {
+    const key = `${owner}/${repo}@${ref}`;
+    this._commits[key] = sha;
   }
 
   setStatuses({owner, repo, ref, info}) {
