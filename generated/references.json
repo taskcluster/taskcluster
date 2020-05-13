@@ -2207,7 +2207,7 @@
           "description": "Link to source of this task, should specify a file, revision and\nrepository. This should be place someone can go an do a git/hg blame\nto who came up with recipe for this task.\n",
           "format": "uri",
           "maxLength": 4096,
-          "pattern": "^https?://",
+          "pattern": "^(https?|ssh)://",
           "title": "Source",
           "type": "string"
         }
