@@ -239,8 +239,8 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws', 'db'], function(mock, skip
     });
   });
 
-  test('Minimum task definition with all possible defaults', async () => {
-    const taskDef = {
+  const makeSourceTask = (source) => {
+    return {
       provisionerId: 'no-provisioner-extended-extended',
       workerType: 'test-worker-extended-extended',
       created: taskcluster.fromNowJSON(),
@@ -250,9 +250,31 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws', 'db'], function(mock, skip
         name: 'Unit testing task',
         description: 'Task created during unit tests',
         owner: 'jonsafj@mozilla.com',
-        source: 'https://github.com/taskcluster/taskcluster-queue',
+        source: source,
       },
     };
+  };
+
+  test('Minimum task definition with all possible defaults', async () => {
+    const taskDef = makeSourceTask('https://github.com/taskcluster/taskcluster-queue');
+    const taskId = slugid.v4();
+
+    helper.scopes(
+      'queue:create-task:lowest:no-provisioner-extended-extended/test-worker-extended-extended',
+      'queue:scheduler-id:-',
+    );
+
+    debug('### Creating task');
+    const r1 = await helper.queue.createTask(taskId, taskDef);
+    helper.assertPulseMessage('task-defined', m => _.isEqual(m.payload.status, r1.status));
+    helper.assertPulseMessage('task-pending', m => _.isEqual(m.payload.status, r1.status));
+
+    const r2 = await helper.queue.status(taskId);
+    assume(r1.status).deep.equals(r2.status);
+  });
+
+  test('Minimum task definition with ssh source', async () => {
+    const taskDef = makeSourceTask('ssh://git@github.com:taskcluster/taskcluster-queue');
     const taskId = slugid.v4();
 
     helper.scopes(
