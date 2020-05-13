@@ -231,6 +231,13 @@ class GoogleProvider extends Provider {
       };
       let op;
 
+      const disks = {
+        ...cfg.disks || {},
+      };
+      for (let disk of disks) {
+        disk.labels = {...disk.labels, ...labels};
+      }
+
       try {
         const res = await this._enqueue('query', () => this.compute.instances.insert({
           project: this.project,
@@ -244,10 +251,7 @@ class GoogleProvider extends Provider {
               ...labels,
             },
             description: cfg.description || workerPool.description,
-            disks: {
-              ...cfg.disks || {},
-              labels,
-            },
+            disks,
             serviceAccounts: [{
               email: this.workerServiceAccountEmail,
               scopes: [
