@@ -3,6 +3,51 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v29.5.0
+
+### GENERAL
+
+▶ [patch] [bug 1633582](http://bugzil.la/1633582)
+Fixes an issue in the worker-manager google provider where improperly configured disk tagging caused worker creation to fail.
+
+### DEPLOYERS
+
+▶ [minor] [bug 1619652](http://bugzil.la/1619652)
+Taskcluster logs now include `traceId` and `requestId` fields on messages that have these in context.
+A `requestId` is per http request and a `traceId` follows a request chain along as far as it goes so
+for example a graphql request to web-server -> queue -> auth.authenticateHawk are all correlatable
+as part of one trace.
+
+As part of this change, by default in Kubernetes, requests between services are now routed directly using
+Kubernetes dns service discovery. To disable this, you can set the top-level `useKubernetesDnsServiceDiscovery`
+to `false` in your helm values.
+
+▶ [patch] [bug 1637104](http://bugzil.la/1637104)
+The livelog, taskcluster-proxy, and websocktunnel Docker images now use statically-linked binaries, meaning they will not fail on startup.
+
+▶ [patch] [bug 1636189](http://bugzil.la/1636189)
+The websocktunnel, livelog, and taskcluster-proxy images now have an `/app/version.json` as required by DockerFlow, and websocktunnel correctly services all three DockerFlow endpoints.  In additional, all `version.json` files including that in the main `taskcluster/taskcluster` image now have a correct build URL.
+
+### WORKER-DEPLOYERS
+
+▶ [patch] [#2788](https://github.com/taskcluster/taskcluster/issues/2788)
+Docker-worker releases are now included in the assets on a Taskcluster release, with a well-documented format.
+
+▶ [patch] [#2739](https://github.com/taskcluster/taskcluster/issues/2739)
+Taskcluster-proxy assets, and a `taskcluster/askcluster-proxy` docker image, are now produced for every TC release.
+
+▶ [patch] [bug 1636163](http://bugzil.la/1636163)
+docker-worker docs now show on docs website
+
+### USERS
+
+▶ [patch] [bug 1635897](http://bugzil.la/1635897)
+Taskcluster-GitHub now correctly determines the sha for releases from signed tags.
+
+### OTHER
+
+▶ Additional changes not described here: [bug 1561668](http://bugzil.la/1561668), [bug 1636165](http://bugzil.la/1636165), [#2783](https://github.com/taskcluster/taskcluster/issues/2783), [#2808](https://github.com/taskcluster/taskcluster/issues/2808).
+
 ## v29.4.1
 
 ### DEPLOYERS
