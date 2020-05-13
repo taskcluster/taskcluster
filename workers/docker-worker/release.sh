@@ -29,6 +29,7 @@ for f in src schemas .npmignore package.json yarn.lock config.yml bin-utils; do
 done
 
 # Install Node
+# TODO: use the same node version as everything else, bug 1636164
 NODE_VERSION=12.11.0
 mkdir $DW_ROOT/node
 curl https://nodejs.org/dist/v${NODE_VERSION}/node-v${NODE_VERSION}-linux-x64.tar.xz | tar -C $DW_ROOT/node --strip-components=1 -xJf -
