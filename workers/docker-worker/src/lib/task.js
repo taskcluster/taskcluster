@@ -98,7 +98,7 @@ async function buildVolumeBindings(taskVolumeBindings, volumeCache, expandedScop
   let bindings = [];
   let caches = [];
 
-  for (let volumeName of taskVolumeBindings) {
+  for (let volumeName of Object.keys(taskVolumeBindings)) {
     let cacheInstance = await volumeCache.get(volumeName);
     let binding = cacheInstance.path + ':' + taskVolumeBindings[volumeName];
     bindings.push(binding);
@@ -854,7 +854,6 @@ class Task extends EventEmitter {
     let imageId;
     try {
       let im = this.runtime.imageManager;
-
       imageId = await promiseRetry(retry => {
         return im.ensureImage(
           this.task.payload.image,
@@ -872,7 +871,6 @@ class Task extends EventEmitter {
       this.imageHash = imageId;
       this.runtime.gc.markImage(imageId);
     } catch (e) {
-
       monitor.count('task.image.pullFailed');
       return await this.abortRun(
         fmtErrorLog('Pulling docker image has failed.') +
