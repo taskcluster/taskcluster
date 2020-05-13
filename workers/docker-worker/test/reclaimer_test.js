@@ -9,14 +9,6 @@ suite('Reclaimer', function() {
   let fakeLog = require('debug')('fakeRuntime.log');
   let EventEmitter = require('events');
 
-  let makeClaim = function(taskId, runId, takenUntil) {
-    return {
-      status: { taskId: taskId },
-      runId,
-      takenUntil,
-    };
-  };
-
   setup(function() {
     reclaims = [];
     taskAction = null;
@@ -71,6 +63,14 @@ suite('Reclaimer', function() {
       reclaimer.stop();
     }
   });
+
+  var makeClaim = function(taskId, runId, takenUntil) {
+    return {
+      status: { taskId: taskId },
+      runId,
+      takenUntil,
+    };
+  };
 
   test('successful reclaim', async function() {
     let claim = makeClaim('fakeTid', 0, soon);

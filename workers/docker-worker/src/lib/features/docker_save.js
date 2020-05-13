@@ -104,7 +104,7 @@ class DockerSave {
 
     if (errors.length > 0) {
       let errorStr = 'cache could not be uploaded: ';
-      errors.forEach((err) => {
+      errors.map((err) => {
         errorStr = errorStr + err + err.stack;
       });
       debug(errorStr);

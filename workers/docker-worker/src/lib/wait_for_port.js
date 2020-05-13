@@ -9,7 +9,7 @@ function waitForPort(host, port, timeout) {
       if (Date.now() >= deadline) {
         return reject(new Error('timed out while opening connection'));
       }
-      const sock = net.connect(port, host, function() {
+      var sock = net.connect(port, host, function() {
         sock.destroy();
         accept();
       });

@@ -23,7 +23,7 @@ function route(context) {
     context.app.provisionerBaseUrl = PROVISIONER_BASE_URL;
     let payload = JSON.stringify({
       url: PROVISIONER_BASE_URL,
-      token: context.app.secretToken,
+      token: context.app.secretToken
     });
     return payload;
   }
@@ -34,7 +34,7 @@ function route(context) {
   case '/meta-data/local-ipv4':
     return '169.254.1.2';
   case '/user-data':
-    return Buffer.from(JSON.stringify({
+    return new Buffer(JSON.stringify({
       capacity: 1,
       provisionerBaseUrl: context.app.provisionerBaseUrl,
       securityToken: context.app.secretToken,
@@ -42,9 +42,9 @@ function route(context) {
       provisionerId: 'aws-provisioner',
       data: {
         dockerConfig: {
-          allowPrivileged: true,
-        },
-      },
+          allowPrivileged: true
+        }
+      }
     }));
   case '/meta-data/ami-id':
     return 'ami-333333';

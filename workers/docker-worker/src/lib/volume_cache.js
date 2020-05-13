@@ -109,8 +109,8 @@ class VolumeCache {
     await this.doPurge();
 
     if (!exceedsDiskspaceThreshold) {return;}
-    for (let cacheName of this.cache) {
-      for (let instance of this.cache[cacheName]) {
+    for (let cacheName in this.cache) {
+      for (let instance in this.cache[cacheName]) {
         if (!this.cache[cacheName][instance].mounted) {
           await this.removeCacheVolume(cacheName, instance);
         }
@@ -212,7 +212,7 @@ class VolumeCache {
   async set(cacheKey, value) {
     let cacheName = cacheKey.split(KEY_DELIMITER)[0];
     let instanceId = cacheKey.split(KEY_DELIMITER)[1];
-    for (let key of value) {
+    for (let key in value) {
       this.cache[cacheName][instanceId][key] = value[key];
     }
   }

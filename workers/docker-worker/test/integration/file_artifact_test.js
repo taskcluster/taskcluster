@@ -47,7 +47,7 @@ suite('artifact extraction tests', () => {
       Object.keys(result.artifacts).sort(), ['public/xfoo', 'public/bar'].sort(),
     );
 
-    for (let artifact of result.artifacts) {
+    for (let artifact in result.artifacts) {
       assert.equal(new Date(result.artifacts[artifact].expires).getTime(), expiration.getTime());
     }
 

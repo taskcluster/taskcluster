@@ -68,7 +68,7 @@ function buildStateHandlers(task, monitor) {
     throw new Error(`${diff.join()} ${diff.length > 1 ? 'are' : 'is'} not part of valid features`);
   }
 
-  for (let flag of features) {
+  for (let flag in features) {
     let enabled = (flag in featureFlags) ?
       featureFlags[flag] : features[flag].defaults;
 
@@ -98,7 +98,7 @@ async function buildVolumeBindings(taskVolumeBindings, volumeCache, expandedScop
   let bindings = [];
   let caches = [];
 
-  for (let volumeName of taskVolumeBindings) {
+  for (let volumeName in taskVolumeBindings) {
     let cacheInstance = await volumeCache.get(volumeName);
     let binding = cacheInstance.path + ':' + taskVolumeBindings[volumeName];
     bindings.push(binding);
@@ -138,7 +138,7 @@ async function buildDeviceBindings(devices, expandedScopes) {
   }
 
   let deviceBindings = [];
-  for (let deviceType of devices) {
+  for (let deviceType in devices) {
     let device = devices[deviceType];
     device.mountPoints.forEach((mountPoint) => {
       deviceBindings.push(
@@ -230,7 +230,7 @@ class Reclaimer {
       // If this is not the primary claim, just stop trying to reclaim.  The task
       // will attempt to resolve it as superseded, and fail, but the primary task
       // and the other superseded tasks will still be resolved correctly.
-      if (this.claim.status.taskId !== this.primaryClaim.status.taskId) {
+      if (this.claim.status.taskId != this.primaryClaim.status.taskId) {
         this.stop();
         return;
       }
@@ -247,7 +247,7 @@ class Reclaimer {
       return;
     }
 
-    if (this.claim.status.taskId === this.primaryClaim.status.taskId) {
+    if (this.claim.status.taskId == this.primaryClaim.status.taskId) {
       this.task.queue = this.task.createQueue(this.claim.credentials);
       this.task.emit('credentials', this.claim.credentials);
     }
@@ -433,7 +433,7 @@ class Task extends EventEmitter {
     //
     // List caches if used...
     if (this.task.payload.cache) {
-      for (let key of this.task.payload.cache) {
+      for (let key in this.task.payload.cache) {
         let path = this.task.payload.cache[key];
         header.push(`using cache "${key}" -> ${path}`);
       }
@@ -604,7 +604,7 @@ class Task extends EventEmitter {
     await Promise.all(this.claims.map(async (c) => {
       let taskId = c.status.taskId;
       let runId = c.runId;
-      if (taskId === primaryTaskId && runId === primaryRunId) {
+      if (taskId == primaryTaskId && runId == primaryRunId) {
         return;
       }
 

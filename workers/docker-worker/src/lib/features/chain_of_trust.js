@@ -99,7 +99,7 @@ class ChainOfTrust {
     let cotBufferStream = new stream.PassThrough();
     cotBufferStream.end(Buffer.from(chainOfTrust));
     let sigBufferStream = new stream.PassThrough();
-    sigBufferStream.end(Buffer.from(chainOfTrustSig));
+    sigBufferStream.end(new Buffer(chainOfTrustSig));
 
     try {
       await uploadToS3(task.queue, task.status.taskId, task.runId,
