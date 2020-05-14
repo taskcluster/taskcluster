@@ -76,8 +76,10 @@ suite('use docker-save', () => {
 
     await new Promise((accept, reject) => {
       stream.on('data', (data) => {
-        assert(data.compare(Buffer.from([0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x0b, //header
-          0x74, 0x65, 0x73, 0x74, 0x53, 0x74, 0x72, 0x69, 0x6e, 0x67, 0x0a]))); //testString\n
+        // See https://nodejs.org/api/buffer.html#buffer_buf_compare_target_targetstart_targetend_sourcestart_sourceend
+        // - compare returns 0 if the buffers are the same, so comparison with 0 necessary since assert(0) is failure.
+        assert.equal(data.compare(Buffer.from([0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x0b, //header
+          0x74, 0x65, 0x73, 0x74, 0x53, 0x74, 0x72, 0x69, 0x6e, 0x67, 0x0a])), 0); //testString\n
         accept();
       });
       stream.on('error', reject);
