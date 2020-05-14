@@ -373,7 +373,7 @@ class TaskListener extends EventEmitter {
       }
 
       let tasks = (await this.fetchSupersedingTasks(supersederUrl, taskId));
-      if (!tasks || tasks.length == 0) {
+      if (!tasks || tasks.length === 0) {
         this.runtime.log('not superseding', {taskId, supersederUrl,
           message: 'no tasks supersede this one'});
         return [claim];
@@ -390,7 +390,7 @@ class TaskListener extends EventEmitter {
       // claim runId 0 for each of those tasks; we can consider adding support
       // for other runIds later.
       let claims = await Promise.all(tasks.map(async tid => {
-        if (tid == taskId) {
+        if (tid === taskId) {
           return claim; // already claimed
         }
 
@@ -449,6 +449,7 @@ class TaskListener extends EventEmitter {
     // first one; the rest will be periodically reclaimed and then resolved,
     // but will not actually execute.
     let claim = claims[0];
+    let task;
 
     try {
 
@@ -469,7 +470,7 @@ class TaskListener extends EventEmitter {
       );
 
       // Look up full task definition in claim response.
-      var task = claim.task;
+      task = claim.task;
 
       // Date when the task was created.
       let created = new Date(task.created);

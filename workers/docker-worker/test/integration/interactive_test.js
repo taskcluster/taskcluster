@@ -100,7 +100,7 @@ suite('use docker exec websocket server', () => {
       debug(message.toString());
     });
 
-    let buf = new Buffer([0xfa, 0xff, 0x0a]);
+    let buf = Buffer.from([0xfa, 0xff, 0x0a]);
     client.stdin.write(buf);
     //message is small enough that it should be returned in one chunk
     client.stdout.on('data', (message) => {

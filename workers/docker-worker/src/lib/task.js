@@ -230,7 +230,7 @@ class Reclaimer {
       // If this is not the primary claim, just stop trying to reclaim.  The task
       // will attempt to resolve it as superseded, and fail, but the primary task
       // and the other superseded tasks will still be resolved correctly.
-      if (this.claim.status.taskId != this.primaryClaim.status.taskId) {
+      if (this.claim.status.taskId !== this.primaryClaim.status.taskId) {
         this.stop();
         return;
       }
@@ -247,7 +247,7 @@ class Reclaimer {
       return;
     }
 
-    if (this.claim.status.taskId == this.primaryClaim.status.taskId) {
+    if (this.claim.status.taskId === this.primaryClaim.status.taskId) {
       this.task.queue = this.task.createQueue(this.claim.credentials);
       this.task.emit('credentials', this.claim.credentials);
     }
@@ -604,7 +604,7 @@ class Task extends EventEmitter {
     await Promise.all(this.claims.map(async (c) => {
       let taskId = c.status.taskId;
       let runId = c.runId;
-      if (taskId == primaryTaskId && runId == primaryRunId) {
+      if (taskId === primaryTaskId && runId === primaryRunId) {
         return;
       }
 

@@ -93,7 +93,7 @@ module.exports = {
           afterIdleSeconds: minutes(60),
         },
         dockerConfig: {
-          allowPrivileged: userdata.allowPrivileged == 'true',
+          allowPrivileged: userdata.allowPrivileged === 'true',
         },
         logging: {
           secureLiveLogging: false,
