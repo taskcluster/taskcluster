@@ -1471,6 +1471,18 @@ let resolveTask = async function(req, res, taskId, runId, target) {
     );
   }
 
+  // only running tasks can be resolved, but allow for idempotency if
+  // the run is already in the desired state.
+  if (run.state !== 'running' && run.state !== target) {
+    return res.reportError('RequestConflict',
+      'Run {{runId}} of task `{{taskId}}` is not running or {{targetState}}.', {
+        taskId,
+        runId,
+        targetState: target,
+      },
+    );
+  }
+
   await req.authorize({
     taskId,
     runId,

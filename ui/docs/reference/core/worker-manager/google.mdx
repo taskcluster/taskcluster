@@ -20,7 +20,7 @@ The provider starts workers with an instance attribute named `taskcluster` conta
 
 * `workerPoolId` -- worker pool for this worker
 * `providerId` -- provider ID that started the worker
-* `workerGroup` -- the worker's workerGroup (currently equal to the providerId, but do not depend on this)
+* `workerGroup` -- the worker's region (taken from the launchConfig used to start the worker)
 * `rootUrl` -- root URL for the Taskcluster deployment
 * `workerConfig` -- worker configuration supplied as part of the worker pool configuration (deprecated; use the result of `registerWorker` instead)
 
