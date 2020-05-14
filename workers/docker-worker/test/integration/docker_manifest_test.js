@@ -18,7 +18,7 @@ suite('docker image with manifest.json file', function() {
       schedulerId: 'docker-worker-tests',
       taskGroupId: imageTaskId,
       payload: {
-        image: 'taskcluster/test-ubuntu',
+        image: 'tutum/curl',
         artifacts: {
           'public/image.tar.zst': {
             type: 'file',
