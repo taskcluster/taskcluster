@@ -166,12 +166,16 @@ class HookListeners {
         // success! add that binding to the list
         result.push({exchange, routingKeyPattern});
       } catch (err) {
-        if (err.code !== 404) {
+        if (err.code !== 404 && err.code !== 403) {
           throw err;
         }
 
-        // no such exchange.. better luck next time..
-        debug(`error binding exchange ${exchange} with ${routingKeyPattern}: ${err} (ignored)`);
+        // No such exchange or no permission.. better luck next time!  There's no practical
+        // way to communicate this back to the user, since the bind is asynchronous and occurs
+        // after the `updateHook` API method has returned, so we just log the issue and move on.
+        // This will be retried on every reconciliation, so if the error is transient it will
+        // eventually succeed.
+        this.monitor.notice(`error binding exchange ${exchange} with ${routingKeyPattern}: ${err} (ignored)`);
       }
     }
 
