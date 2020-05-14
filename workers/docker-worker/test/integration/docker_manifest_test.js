@@ -1,7 +1,6 @@
 const assert = require('assert');
 const cmd = require('./helper/cmd');
 const expires = require('./helper/expires');
-const waitTaskCompletion = require('./helper/wait_task_completion');
 const TestWorker = require('../testworker');
 const DockerWorker = require('../dockerworker');
 const slugid = require('slugid');
