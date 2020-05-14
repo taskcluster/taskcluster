@@ -285,9 +285,4 @@ helper.secrets.mockSuite(testing.suiteName(), ['db', 'aws'], function(mock, skip
     let expectedResult = [dummyAddress1, dummyAddress2].sort();
     assert.deepEqual(addressList.addresses.sort(), expectedResult);
   });
-
-  test('widgets!', async function() {
-    const widgets = await helper.apiClient.updateWidgets({name: 'foober'});
-    assert.deepEqual(widgets, [{name: 'foober'}]);
-  });
 });

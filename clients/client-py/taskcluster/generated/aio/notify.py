@@ -143,20 +143,6 @@ class Notify(AsyncBaseClient):
 
         return await self._makeApiCall(self.funcinfo["listDenylist"], *args, **kwargs)
 
-    async def updateWidgets(self, *args, **kwargs):
-        """
-        Update the Widgets
-
-        This is a temporary API method to exercise infrastructure support for database
-        access and migrations.  It is not advertised and will be removed in a later version.
-
-        Do not call this method.
-
-        This method is ``experimental``
-        """
-
-        return await self._makeApiCall(self.funcinfo["updateWidgets"], *args, **kwargs)
-
     funcinfo = {
         "addDenylistAddress": {
             'args': [],
@@ -220,15 +206,6 @@ class Notify(AsyncBaseClient):
             'method': 'post',
             'name': 'pulse',
             'route': '/pulse',
-            'stability': 'experimental',
-        },
-        "updateWidgets": {
-            'args': [],
-            'input': 'v1/widget.json#',
-            'method': 'post',
-            'name': 'updateWidgets',
-            'output': 'v1/widgets.json#',
-            'route': '/widgets',
             'stability': 'experimental',
         },
     }

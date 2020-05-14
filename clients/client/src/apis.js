@@ -1531,23 +1531,6 @@ module.exports = {
           "stability": "experimental",
           "title": "List Denylisted Notifications",
           "type": "function"
-        },
-        {
-          "args": [
-          ],
-          "category": "Widgets",
-          "description": "This is a temporary API method to exercise infrastructure support for database\naccess and migrations.  It is not advertised and will be removed in a later version.\n\nDo not call this method.",
-          "input": "v1/widget.json#",
-          "method": "post",
-          "name": "updateWidgets",
-          "output": "v1/widgets.json#",
-          "query": [
-          ],
-          "route": "/widgets",
-          "scopes": "notify:manage-widgets",
-          "stability": "experimental",
-          "title": "Update the Widgets",
-          "type": "function"
         }
       ],
       "serviceName": "notify",

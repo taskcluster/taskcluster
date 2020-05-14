@@ -18,7 +18,6 @@ export default class Notify extends Client {
     this.addDenylistAddress.entry = {"args":[],"category":"Denylist","input":true,"method":"post","name":"addDenylistAddress","query":[],"route":"/denylist/add","scopes":"notify:manage-denylist","stability":"experimental","type":"function"}; // eslint-disable-line
     this.deleteDenylistAddress.entry = {"args":[],"category":"Denylist","input":true,"method":"delete","name":"deleteDenylistAddress","query":[],"route":"/denylist/delete","scopes":"notify:manage-denylist","stability":"experimental","type":"function"}; // eslint-disable-line
     this.listDenylist.entry = {"args":[],"category":"Denylist","method":"get","name":"listDenylist","output":true,"query":["continuationToken","limit"],"route":"/denylist/list","scopes":"notify:manage-denylist","stability":"experimental","type":"function"}; // eslint-disable-line
-    this.updateWidgets.entry = {"args":[],"category":"Widgets","input":true,"method":"post","name":"updateWidgets","output":true,"query":[],"route":"/widgets","scopes":"notify:manage-widgets","stability":"experimental","type":"function"}; // eslint-disable-line
   }
   /* eslint-disable max-len */
   // Respond without doing anything.
@@ -110,15 +109,5 @@ export default class Notify extends Client {
     this.validate(this.listDenylist.entry, args);
 
     return this.request(this.listDenylist.entry, args);
-  }
-  /* eslint-disable max-len */
-  // This is a temporary API method to exercise infrastructure support for database
-  // access and migrations.  It is not advertised and will be removed in a later version.
-  // Do not call this method.
-  /* eslint-enable max-len */
-  updateWidgets(...args) {
-    this.validate(this.updateWidgets.entry, args);
-
-    return this.request(this.updateWidgets.entry, args);
   }
 }

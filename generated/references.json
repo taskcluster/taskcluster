@@ -3812,38 +3812,6 @@
   },
   {
     "content": {
-      "$id": "/schemas/notify/v1/widgets.json#",
-      "$schema": "/schemas/common/metaschema.json#",
-      "items": {
-        "$ref": "widget.json#"
-      },
-      "title": "Widgets",
-      "type": "array",
-      "uniqueItems": false
-    },
-    "filename": "schemas/notify/v1/widgets.json"
-  },
-  {
-    "content": {
-      "$id": "/schemas/notify/v1/widget.json#",
-      "$schema": "/schemas/common/metaschema.json#",
-      "additionalProperties": false,
-      "properties": {
-        "name": {
-          "title": "widget name",
-          "type": "string"
-        }
-      },
-      "required": [
-        "name"
-      ],
-      "title": "Widget",
-      "type": "object"
-    },
-    "filename": "schemas/notify/v1/widget.json"
-  },
-  {
-    "content": {
       "$id": "/schemas/notify/v1/pulse-request.json#",
       "$schema": "/schemas/common/metaschema.json#",
       "additionalProperties": false,
@@ -14760,23 +14728,6 @@
           "scopes": "notify:manage-denylist",
           "stability": "experimental",
           "title": "List Denylisted Notifications",
-          "type": "function"
-        },
-        {
-          "args": [
-          ],
-          "category": "Widgets",
-          "description": "This is a temporary API method to exercise infrastructure support for database\naccess and migrations.  It is not advertised and will be removed in a later version.\n\nDo not call this method.",
-          "input": "v1/widget.json#",
-          "method": "post",
-          "name": "updateWidgets",
-          "output": "v1/widgets.json#",
-          "query": [
-          ],
-          "route": "/widgets",
-          "scopes": "notify:manage-widgets",
-          "stability": "experimental",
-          "title": "Update the Widgets",
           "type": "function"
         }
       ],
