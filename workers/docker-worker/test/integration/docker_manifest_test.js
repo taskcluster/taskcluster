@@ -8,14 +8,23 @@ const slugid = require('slugid');
 const debug = require('debug')('docker-worker:test:docker-manifest');
 
 suite('docker image with manifest.json file', function() {
-  test('docker manifest', async () => {
-    let worker = new TestWorker(DockerWorker);
-    await worker.launch();
 
-    const imageTaskId = slugid.v4();
-    const taskDef = worker.TaskFactory.create({
-      schedulerId: 'docker-worker-tests',
-      taskGroupId: imageTaskId,
+  let worker;
+  setup(async () => {
+    worker = new TestWorker(DockerWorker);
+    await worker.launch();
+  });
+
+  teardown(async () => {
+    if (worker) {
+      await worker.terminate();
+      worker = null;
+    }
+  });
+
+  test('docker manifest', async () => {
+
+    let task1 = await worker.postToQueue({
       payload: {
         image: 'tutum/curl',
         artifacts: {
@@ -35,17 +44,11 @@ suite('docker image with manifest.json file', function() {
         maxRunTime: 5 * 60,
       },
     });
-    taskDef.provisionerId = 'null-provisioner';
 
-    debug(`Creating image task ${imageTaskId}`);
-    // create an artifact image with a manifest.json file
-    await worker.queue.createTask(imageTaskId, taskDef);
+    assert.equal(task1.run.state, 'completed', 'task should be successful');
+    assert.equal(task2.run.reasonResolved, 'completed', 'task should be successful');
 
-    const status = await waitTaskCompletion(worker.queue, imageTaskId);
-
-    assert.equal(status.state, 'completed', 'task should be successful');
-
-    let task = await worker.postToQueue({
+    let task2 = await worker.postToQueue({
       payload: {
         image: {
           path: 'public/image.tar.zst',
@@ -57,9 +60,7 @@ suite('docker image with manifest.json file', function() {
       },
     });
 
-    assert.equal(task.run.state, 'completed', 'task should be successful');
-    assert.equal(task.run.reasonResolved, 'completed', 'task should be successful');
-
-    worker.terminate();
+    assert.equal(task2.run.state, 'completed', 'task should be successful');
+    assert.equal(task2.run.reasonResolved, 'completed', 'task should be successful');
   });
 });
