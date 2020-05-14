@@ -5,20 +5,13 @@ const { getEntries } = require("../utils");
 
 class FakeNotify {
   constructor() {
-    this.widgets = new Set();
     this.denylistedNotifications = new Map();
   }
 
   /* helpers */
 
   reset() {
-    this.widgets = new Set();
     this.denylistedNotifications = new Map();
-  }
-
-  addWidget(name) {
-    assert(typeof name === "string");
-    this.widgets.add(name);
   }
 
   _getDenylistedNotification({ partitionKey, rowKey }) {
@@ -111,8 +104,8 @@ class FakeNotify {
   }
 
   async update_widgets(name) {
-    this.widgets.add(name);
-    return [...this.widgets].map(name => ({ name }));
+    // this function now does nothing
+    return [];
   }
 }
 

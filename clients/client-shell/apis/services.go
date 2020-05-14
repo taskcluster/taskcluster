@@ -898,17 +898,6 @@ var services = map[string]definitions.Service{
 				},
 				Input: "",
 			},
-			definitions.Entry{
-				Name:        "updateWidgets",
-				Title:       "Update the Widgets",
-				Description: "This is a temporary API method to exercise infrastructure support for database\naccess and migrations.  It is not advertised and will be removed in a later version.\n\nDo not call this method.",
-				Stability:   "experimental",
-				Method:      "post",
-				Route:       "/widgets",
-				Args:        []string{},
-				Query:       []string{},
-				Input:       "v1/widget.json#",
-			},
 		},
 	},
 	"PurgeCache": definitions.Service{
