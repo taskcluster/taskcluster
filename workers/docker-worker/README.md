@@ -1,14 +1,3 @@
-- [Docker Worker](#docker-worker)
-  - [Requirements](#requirements)
-  - [Usage](#usage)
-    - [Configuration](#configuration)
-    - [Directory Structure](#directory-structure)
-  - [Environment](#environment)
-    - [Loopback Devices](#loopback-devices)
-  - [Running tests](#running-tests)
-    - [Common problems](#common-problems)
-  - [Updating Documentation](#updating-documentation)
-
 # Docker Worker
 
 Docker task host for linux.
