@@ -10,7 +10,7 @@
     "test": "test"
   },
   "scripts": {
-    "test": "mocha --timeout 50000 test/*_test.js test/**/*_test.js",
+    "test": "mocha test/*_test.js test/**/*_test.js",
     "lint": "eslint src test"
   },
   "repository": {
