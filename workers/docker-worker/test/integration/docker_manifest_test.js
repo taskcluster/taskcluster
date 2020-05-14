@@ -35,13 +35,6 @@ suite('docker image with manifest.json file', function() {
     // create an artifact image with a manifest.json file
     await worker.queue.createTask(imageTaskId, taskDef);
 
-    await worker.queue.createArtifact(imageTaskId, 0, 'public/image.tar.zst', {
-      storageType: 'reference',
-      expires: expires(),
-      contentType: mime.lookup('image.tar.zst'),
-      url: 'https://s3-us-west-2.amazonaws.com/docker-worker-manifest-test/image.tar.zst',
-    });
-
     await worker.queue.reportCompleted(imageTaskId, 0);
     const status = await waitTaskCompletion(worker.queue, imageTaskId);
 
