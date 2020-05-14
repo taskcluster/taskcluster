@@ -43,7 +43,7 @@ suite('docker image with manifest.json file', function() {
     });
 
     assert.equal(task1.run.state, 'completed', 'task should be successful');
-    assert.equal(task2.run.reasonResolved, 'completed', 'task should be successful');
+    assert.equal(task1.run.reasonResolved, 'completed', 'task should be successful');
 
     let task2 = await worker.postToQueue({
       payload: {
