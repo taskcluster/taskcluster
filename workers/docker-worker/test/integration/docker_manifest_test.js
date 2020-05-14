@@ -1,24 +1,29 @@
 const assert = require('assert');
 const cmd = require('./helper/cmd');
 const expires = require('./helper/expires');
-const waitTaskCompletion = require('./helper/wait_task_completion');
 const TestWorker = require('../testworker');
 const DockerWorker = require('../dockerworker');
-const slugid = require('slugid');
-const mime = require('mime');
-const debug = require('debug')('docker-worker:test:docker-manifest');
 
 suite('docker image with manifest.json file', function() {
-  test('docker manifest', async () => {
-    let worker = new TestWorker(DockerWorker, 'docker-worker', 'docker-worker');
-    await worker.launch();
 
-    const imageTaskId = slugid.v4();
-    const taskDef = worker.TaskFactory.create({
-      schedulerId: 'docker-worker-tests',
-      taskGroupId: imageTaskId,
+  let worker;
+  setup(async () => {
+    worker = new TestWorker(DockerWorker);
+    await worker.launch();
+  });
+
+  teardown(async () => {
+    if (worker) {
+      await worker.terminate();
+      worker = null;
+    }
+  });
+
+  test('docker manifest', async () => {
+
+    let task1 = await worker.postToQueue({
       payload: {
-        image: 'taskcluster/test-ubuntu',
+        image: 'tutum/curl',
         artifacts: {
           'public/image.tar.zst': {
             type: 'file',
@@ -26,47 +31,33 @@ suite('docker image with manifest.json file', function() {
             path: '/image.tar.zst',
           },
         },
+        command: [
+          'curl',
+          '-o',
+          '/image.tar.zst',
+          '-L',
+          'https://s3-us-west-2.amazonaws.com/docker-worker-manifest-test/image.tar.zst',
+        ],
         maxRunTime: 5 * 60,
       },
     });
-    taskDef.provisionerId = 'null-provisioner';
 
-    debug(`Creating image task ${imageTaskId}`);
-    // create an artifact image with a manifest.json file
-    await worker.queue.createTask(imageTaskId, taskDef);
+    assert.equal(task1.run.state, 'completed', 'task should be successful');
+    assert.equal(task1.run.reasonResolved, 'completed', 'task should be successful');
 
-    await worker.queue.claimTask(imageTaskId, 0, {
-      workerGroup: 'random-local-worker',
-      workerId: 'docker-worker',
-    });
-
-    await worker.queue.createArtifact(imageTaskId, 0, 'public/image.tar.zst', {
-      storageType: 'reference',
-      expires: expires(),
-      contentType: mime.lookup('image.tar.zst'),
-      url: 'https://s3-us-west-2.amazonaws.com/docker-worker-manifest-test/image.tar.zst',
-    });
-
-    await worker.queue.reportCompleted(imageTaskId, 0);
-    const status = await waitTaskCompletion(worker.queue, imageTaskId);
-
-    assert.equal(status.state, 'completed', 'task should be successful');
-
-    let task = await worker.postToQueue({
+    let task2 = await worker.postToQueue({
       payload: {
         image: {
           path: 'public/image.tar.zst',
           type: 'task-image',
-          taskId: imageTaskId,
+          taskId: task1.taskId,
         },
         command: cmd('sleep 1'),
         maxRunTime: 5 * 60,
       },
     });
 
-    assert.equal(task.run.state, 'completed', 'task should be successful');
-    assert.equal(task.run.reasonResolved, 'completed', 'task should be successful');
-
-    worker.terminate();
+    assert.equal(task2.run.state, 'completed', 'task should be successful');
+    assert.equal(task2.run.reasonResolved, 'completed', 'task should be successful');
   });
 });

@@ -85,22 +85,22 @@ async function main() {
       name: 'docker-worker test images',
       description: 'Task with docker images for docker-worker tests',
       owner: 'wcosta@mozilla.com',
-      source: 'https://www.mozilla.org'
+      source: 'https://www.mozilla.org',
     },
-    payload: {}
+    payload: {},
   });
 
   console.log(`Task ${taskId} created successfullly, claiming`);
   const claim = await queue.claimTask(taskId, 0, {
     workerGroup: 'docker-worker',
-    workerId: 'docker-worker'
+    workerId: 'docker-worker',
   });
 
   scheduleReclaim(queue, claim);
 
   await Promise.all([tarImagePath, lz4ImagePath, zstImagePath].map(image => {
     const stat = fs.statSync(image);
-    const sizeInMB = stat.size / (1024*1024);
+    const sizeInMB = stat.size / (1024 * 1024);
     const imageName = path.basename(image).toLowerCase();
 
     console.log(`Uploading ${imageName}, size = ${sizeInMB}MB`);
@@ -115,7 +115,7 @@ async function main() {
         taskcluster.fromNowJSON('60 years'),
         {
           'content-type': mime.lookup(image),
-          'content-length': stat.size
+          'content-length': stat.size,
         },
         null,
         {}

@@ -4,36 +4,24 @@ checkout_path="$PWD/git_checkout"
 
 # Run the checkout to the correct url, etc...
 step_checkout() {
-  if [ "$GITHUB_PULL_REQUEST" -ne "0" ];
-  then
-    time git ci-checkout-pr \
-      $checkout_path \
-      $GITHUB_BASE_REPO_URL \
-      $GITHUB_BASE_BRANCH \
-      $GITHUB_BASE_SHA \
-      $GITHUB_HEAD_REPO_URL \
-      $GITHUB_HEAD_BRANCH \
-      $GITHUB_HEAD_SHA
-  else
-    time git ci-checkout-ref \
-      $checkout_path \
-      $GITHUB_HEAD_REPO_URL \
-      $GITHUB_HEAD_BRANCH \
-      $GITHUB_HEAD_SHA
-  fi
+  time git ci-checkout-ref \
+    $checkout_path \
+    $GITHUB_REPO_URL \
+    $GITHUB_BRANCH \
+    $GITHUB_SHA
 }
 
 # Checkout git repo
 step_checkout
 
-cd $checkout_path
+cd $checkout_path/workers/docker-worker
 
 # Display current revision
 git --no-pager log -n 1
 
 # Link busybox to worker
 mkdir /worker
-ln -s $checkout_path/bin-utils /worker/bin-utils
+ln -s $checkout_path/workers/docker-worker/bin-utils /worker/bin-utils
 
 # Setup test credentials
 export TASKCLUSTER_CLIENT_ID=$(curl -s http://taskcluster/secrets/v1/secret/project/taskcluster/testing/docker-worker/ci-creds | jq -r '.secret.client_id')

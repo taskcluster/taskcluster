@@ -10,7 +10,8 @@
     "test": "test"
   },
   "scripts": {
-    "test": "test/test.sh $(find test -name '*_test.js') --reporter spec"
+    "test": "mocha test/*_test.js test/**/*_test.js",
+    "lint": "eslint src test"
   },
   "repository": {
     "type": "git",

@@ -430,11 +430,12 @@ tasks:
               - 'secrets:get:project/taskcluster/testing/docker-worker/pulse-creds'
             payload:
               image: >-
-                taskcluster/worker-ci@sha256:c0eec8cce5bc3c751e0424d20bb7cfdb8680fc217e62b34e26cc1f48c8dfea9d
+                taskcluster/worker-ci@sha256:e4357e0966e0265a3a45294d5902040b9de0303c3acb3271ee8ed81671b5461c
               maxRunTime: 10800
               command:
                 - >-
-                  while ! yarn install --frozen-lockfile; do rm -rf node_modules; sleep 30; done && node_modules/.bin/eslint src test
+                  yarn install --frozen-lockfile &&
+                  yarn lint
               capabilities:
                 privileged: true
                 devices:
@@ -443,6 +444,9 @@ tasks:
               env:
                 WORKER_CI: '1'
                 TASKCLUSTER_ROOT_URL: https://community-tc.services.mozilla.com
+                GITHUB_REPO_URL: '${repo.git_url}'
+                GITHUB_BRANCH: '${repo.branch}'
+                GITHUB_SHA: '${repo.ref}'
               features:
                 taskclusterProxy: true
             metadata:
@@ -466,11 +470,12 @@ tasks:
               - 'secrets:get:project/taskcluster/testing/docker-worker/pulse-creds'
             payload:
               image: >-
-                taskcluster/worker-ci@sha256:c0eec8cce5bc3c751e0424d20bb7cfdb8680fc217e62b34e26cc1f48c8dfea9d
+                taskcluster/worker-ci@sha256:e4357e0966e0265a3a45294d5902040b9de0303c3acb3271ee8ed81671b5461c
               maxRunTime: 10800
               command:
                 - >-
-                  while ! yarn install --frozen-lockfile; do rm -rf node_modules; sleep 30; done && ./build.sh &&
+                  yarn install --frozen-lockfile &&
+                  ./build.sh &&
                   ./test/docker-worker-test --this-chunk 1 --total-chunks 5
               capabilities:
                 privileged: true
@@ -480,12 +485,15 @@ tasks:
               env:
                 WORKER_CI: '1'
                 TASKCLUSTER_ROOT_URL: https://community-tc.services.mozilla.com
+                GITHUB_REPO_URL: '${repo.git_url}'
+                GITHUB_BRANCH: '${repo.branch}'
+                GITHUB_SHA: '${repo.ref}'
               features:
                 taskclusterProxy: true
             metadata:
               name: Docker-worker tests - 1
               description: Runs entire docker-worker test suite
-              owner: garndt@mozilla.com
+              owner: wcosta@mozilla.com
               source: ${repo.url}
           - provisionerId: proj-taskcluster
             workerType: dw-ci
@@ -503,11 +511,12 @@ tasks:
               - 'secrets:get:project/taskcluster/testing/docker-worker/pulse-creds'
             payload:
               image: >-
-                taskcluster/worker-ci@sha256:c0eec8cce5bc3c751e0424d20bb7cfdb8680fc217e62b34e26cc1f48c8dfea9d
+                taskcluster/worker-ci@sha256:e4357e0966e0265a3a45294d5902040b9de0303c3acb3271ee8ed81671b5461c
               maxRunTime: 10800
               command:
                 - >-
-                  while ! yarn install --frozen-lockfile; do rm -rf node_modules; sleep 30; done && ./build.sh &&
+                  yarn install --frozen-lockfile &&
+                  ./build.sh &&
                   ./test/docker-worker-test --this-chunk 2 --total-chunks 5
               capabilities:
                 privileged: true
@@ -517,12 +526,15 @@ tasks:
               env:
                 WORKER_CI: '1'
                 TASKCLUSTER_ROOT_URL: https://community-tc.services.mozilla.com
+                GITHUB_REPO_URL: '${repo.git_url}'
+                GITHUB_BRANCH: '${repo.branch}'
+                GITHUB_SHA: '${repo.ref}'
               features:
                 taskclusterProxy: true
             metadata:
               name: Docker-worker tests - 2
               description: Runs entire docker-worker test suite
-              owner: garndt@mozilla.com
+              owner: wcosta@mozilla.com
               source: ${repo.url}
           - provisionerId: proj-taskcluster
             workerType: dw-ci
@@ -540,11 +552,12 @@ tasks:
               - 'secrets:get:project/taskcluster/testing/docker-worker/pulse-creds'
             payload:
               image: >-
-                taskcluster/worker-ci@sha256:c0eec8cce5bc3c751e0424d20bb7cfdb8680fc217e62b34e26cc1f48c8dfea9d
+                taskcluster/worker-ci@sha256:e4357e0966e0265a3a45294d5902040b9de0303c3acb3271ee8ed81671b5461c
               maxRunTime: 10800
               command:
                 - >-
-                  while ! yarn install --frozen-lockfile; do rm -rf node_modules; sleep 30; done && ./build.sh &&
+                  yarn install --frozen-lockfile &&
+                  ./build.sh &&
                   ./test/docker-worker-test --this-chunk 3 --total-chunks 5
               capabilities:
                 privileged: true
@@ -554,12 +567,15 @@ tasks:
               env:
                 WORKER_CI: '1'
                 TASKCLUSTER_ROOT_URL: https://community-tc.services.mozilla.com
+                GITHUB_REPO_URL: '${repo.git_url}'
+                GITHUB_BRANCH: '${repo.branch}'
+                GITHUB_SHA: '${repo.ref}'
               features:
                 taskclusterProxy: true
             metadata:
               name: Docker-worker tests - 3
               description: Runs entire docker-worker test suite
-              owner: garndt@mozilla.com
+              owner: wcosta@mozilla.com
               source: ${repo.url}
           - provisionerId: proj-taskcluster
             workerType: dw-ci
@@ -577,11 +593,12 @@ tasks:
               - 'secrets:get:project/taskcluster/testing/docker-worker/pulse-creds'
             payload:
               image: >-
-                taskcluster/worker-ci@sha256:c0eec8cce5bc3c751e0424d20bb7cfdb8680fc217e62b34e26cc1f48c8dfea9d
+                taskcluster/worker-ci@sha256:e4357e0966e0265a3a45294d5902040b9de0303c3acb3271ee8ed81671b5461c
               maxRunTime: 10800
               command:
                 - >-
-                  while ! yarn install --frozen-lockfile; do rm -rf node_modules; sleep 30; done && ./build.sh &&
+                  yarn install --frozen-lockfile &&
+                  ./build.sh &&
                   ./test/docker-worker-test --this-chunk 4 --total-chunks 5
               capabilities:
                 privileged: true
@@ -591,12 +608,15 @@ tasks:
               env:
                 WORKER_CI: '1'
                 TASKCLUSTER_ROOT_URL: https://community-tc.services.mozilla.com
+                GITHUB_REPO_URL: '${repo.git_url}'
+                GITHUB_BRANCH: '${repo.branch}'
+                GITHUB_SHA: '${repo.ref}'
               features:
                 taskclusterProxy: true
             metadata:
               name: Docker-worker tests - 4
               description: Runs entire docker-worker test suite
-              owner: garndt@mozilla.com
+              owner: wcosta@mozilla.com
               source: ${repo.url}
           - provisionerId: proj-taskcluster
             workerType: dw-ci
@@ -614,11 +634,12 @@ tasks:
               - 'secrets:get:project/taskcluster/testing/docker-worker/pulse-creds'
             payload:
               image: >-
-                taskcluster/worker-ci@sha256:c0eec8cce5bc3c751e0424d20bb7cfdb8680fc217e62b34e26cc1f48c8dfea9d
+                taskcluster/worker-ci@sha256:e4357e0966e0265a3a45294d5902040b9de0303c3acb3271ee8ed81671b5461c
               maxRunTime: 10800
               command:
                 - >-
-                  while ! yarn install --frozen-lockfile; do rm -rf node_modules; sleep 30; done && ./build.sh &&
+                  yarn install --frozen-lockfile &&
+                  ./build.sh &&
                   ./test/docker-worker-test --this-chunk 5 --total-chunks 5
               capabilities:
                 privileged: true
@@ -628,12 +649,15 @@ tasks:
               env:
                 WORKER_CI: '1'
                 TASKCLUSTER_ROOT_URL: https://community-tc.services.mozilla.com
+                GITHUB_REPO_URL: '${repo.git_url}'
+                GITHUB_BRANCH: '${repo.branch}'
+                GITHUB_SHA: '${repo.ref}'
               features:
                 taskclusterProxy: true
             metadata:
               name: Docker-worker tests - 5
               description: Runs entire docker-worker test suite
-              owner: garndt@mozilla.com
+              owner: wcosta@mozilla.com
               source: ${repo.url}
           releaseTasks:
           - taskId: {$eval: 'as_slugid("release")'}
@@ -732,6 +756,7 @@ tasks:
             then:
               - $eval: platformTasks
               - $eval: workerTasks
+              - $eval: dockerWorkerTasks
           # Release on tags; note that we must match the `v` to avoid triggering on pushes to golang
           # package tags like `clients/client-go/v1.2.3`.
           - $if: 'tasks_for == "github-push"'
