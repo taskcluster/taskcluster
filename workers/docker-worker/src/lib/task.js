@@ -98,7 +98,7 @@ async function buildVolumeBindings(taskVolumeBindings, volumeCache, expandedScop
   let bindings = [];
   let caches = [];
 
-  for (let volumeName of taskVolumeBindings) {
+  for (let volumeName of Object.keys(taskVolumeBindings)) {
     let cacheInstance = await volumeCache.get(volumeName);
     let binding = cacheInstance.path + ':' + taskVolumeBindings[volumeName];
     bindings.push(binding);
