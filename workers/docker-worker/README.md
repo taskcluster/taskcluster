@@ -143,7 +143,7 @@ dependencies:
 
 #### Running Tests
 
-1. Either all the tests can be run, but running `yarn test` or `./test/test.sh`,
+1. Either all the tests can be run, but running `yarn test`,
    however, under most circumstances one only wants to run a single test suite
 2. For individual test files, run `./node_modules/mocha/bin/mocha --bail .test/<file>`
 3. For running tests within a test file, add "--grep <phrase>" when running
