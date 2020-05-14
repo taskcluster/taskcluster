@@ -68,7 +68,7 @@ function buildStateHandlers(task, monitor) {
     throw new Error(`${diff.join()} ${diff.length > 1 ? 'are' : 'is'} not part of valid features`);
   }
 
-  for (let flag in features) {
+  for (let flag of Object.keys(features)) {
     let enabled = (flag in featureFlags) ?
       featureFlags[flag] : features[flag].defaults;
 
