@@ -35,11 +35,6 @@ suite('docker image with manifest.json file', function() {
     // create an artifact image with a manifest.json file
     await worker.queue.createTask(imageTaskId, taskDef);
 
-    await worker.queue.claimTask(imageTaskId, 0, {
-      workerGroup: 'random-local-worker',
-      workerId: 'docker-worker',
-    });
-
     await worker.queue.createArtifact(imageTaskId, 0, 'public/image.tar.zst', {
       storageType: 'reference',
       expires: expires(),
