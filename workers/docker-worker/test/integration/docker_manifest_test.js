@@ -42,7 +42,6 @@ suite('docker image with manifest.json file', function() {
     // create an artifact image with a manifest.json file
     await worker.queue.createTask(imageTaskId, taskDef);
 
-    await worker.queue.reportCompleted(imageTaskId, 0);
     const status = await waitTaskCompletion(worker.queue, imageTaskId);
 
     assert.equal(status.state, 'completed', 'task should be successful');
