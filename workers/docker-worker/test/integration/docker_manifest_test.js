@@ -10,7 +10,7 @@ const debug = require('debug')('docker-worker:test:docker-manifest');
 
 suite('docker image with manifest.json file', function() {
   test('docker manifest', async () => {
-    let worker = new TestWorker(DockerWorker, 'docker-worker', 'docker-worker');
+    let worker = new TestWorker(DockerWorker);
     await worker.launch();
 
     const imageTaskId = slugid.v4();
