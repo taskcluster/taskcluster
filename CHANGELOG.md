@@ -3,6 +3,25 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v29.6.0
+
+### USERS
+
+▶ [minor] [bug 1638002](http://bugzil.la/1638002)
+The Azure, AWS, and Google worker provisioners now use an instance's region or location as `workerGroup`, instead of the worker pool's `providerId`.
+
+### DEVELOPERS
+
+▶ [minor] [#2811](https://github.com/taskcluster/taskcluster/issues/2811)
+The Queue schema now allows for ssh:// source urls.
+
+▶ [patch] 
+An issue with building external urls with traceId'd clients has been fixed
+
+### OTHER
+
+▶ Additional change not described here: [bug 1637982](http://bugzil.la/1637982).
+
 ## v29.5.2
 
 
