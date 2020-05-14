@@ -10,7 +10,7 @@ var (
 	Command = setUpRootCmd()
 )
 
-// Setup presistent flags and pre-run and return root command
+// Setup presistent flags, pre-run and return root command
 func setUpRootCmd() *cobra.Command {
 	rootCmd := &cobra.Command{
 		Use:   "taskcluster",

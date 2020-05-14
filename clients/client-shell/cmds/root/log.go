@@ -12,16 +12,12 @@ var (
 		Out:       os.Stderr,
 		Formatter: new(logrus.TextFormatter),
 		Hooks:     make(logrus.LevelHooks),
-		Level:     logrus.ErrorLevel,
+		Level:     logrus.InfoLevel,
 	}
 )
 
 // setup log output based on --verbose flag
 func setUpLogs(enable bool) {
-	Logger.SetFormatter(&logrus.TextFormatter{
-		TimestampFormat: "02-01-2006 15:04:05",
-		FullTimestamp:   true,
-	})
 	if enable {
 		Logger.SetLevel(logrus.DebugLevel)
 	}
