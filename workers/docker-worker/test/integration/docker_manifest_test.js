@@ -32,7 +32,7 @@ suite('docker image with manifest.json file', function() {
           '/image.tar.zst',
           '-L',
           'https://s3-us-west-2.amazonaws.com/docker-worker-manifest-test/image.tar.zst',
-        ]
+        ],
         maxRunTime: 5 * 60,
       },
     });
