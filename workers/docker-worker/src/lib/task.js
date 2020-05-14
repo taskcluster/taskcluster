@@ -98,7 +98,7 @@ async function buildVolumeBindings(taskVolumeBindings, volumeCache, expandedScop
   let bindings = [];
   let caches = [];
 
-  for (let volumeName in taskVolumeBindings) {
+  for (let volumeName of Object.keys(taskVolumeBindings)) {
     let cacheInstance = await volumeCache.get(volumeName);
     let binding = cacheInstance.path + ':' + taskVolumeBindings[volumeName];
     bindings.push(binding);
@@ -138,7 +138,7 @@ async function buildDeviceBindings(devices, expandedScopes) {
   }
 
   let deviceBindings = [];
-  for (let deviceType in devices) {
+  for (let deviceType of Object.keys(devices)) {
     let device = devices[deviceType];
     device.mountPoints.forEach((mountPoint) => {
       deviceBindings.push(
@@ -433,7 +433,7 @@ class Task extends EventEmitter {
     //
     // List caches if used...
     if (this.task.payload.cache) {
-      for (let key in this.task.payload.cache) {
+      for (let key of Object.keys(this.task.payload.cache)) {
         let path = this.task.payload.cache[key];
         header.push(`using cache "${key}" -> ${path}`);
       }
