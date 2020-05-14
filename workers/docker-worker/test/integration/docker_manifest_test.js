@@ -3,8 +3,6 @@ const cmd = require('./helper/cmd');
 const expires = require('./helper/expires');
 const TestWorker = require('../testworker');
 const DockerWorker = require('../dockerworker');
-const slugid = require('slugid');
-const debug = require('debug')('docker-worker:test:docker-manifest');
 
 suite('docker image with manifest.json file', function() {
 
@@ -52,7 +50,7 @@ suite('docker image with manifest.json file', function() {
         image: {
           path: 'public/image.tar.zst',
           type: 'task-image',
-          taskId: imageTaskId,
+          taskId: task1.taskId,
         },
         command: cmd('sleep 1'),
         maxRunTime: 5 * 60,
