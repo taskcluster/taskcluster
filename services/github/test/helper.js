@@ -6,7 +6,7 @@ const taskcluster = require('taskcluster-client');
 const load = require('../src/main');
 const fakeGithubAuth = require('./github-auth');
 const data = require('../src/data');
-const {fakeauth, stickyLoader, Secrets, withEntity, withPulse, withMonitor, withDb, resetTable} = require('taskcluster-lib-testing');
+const {fakeauth, stickyLoader, Secrets, withEntity, withPulse, withMonitor, withDb, resetTables} = require('taskcluster-lib-testing');
 
 exports.load = stickyLoader(load);
 
@@ -141,10 +141,12 @@ exports.resetTables = (mock, skipping) => {
       exports.db['github'].reset();
     } else {
       const sec = exports.secrets.get('db');
-      await resetTable({ testDbUrl: sec.testDbUrl, tableName: 'taskcluster_github_builds_entities' });
-      await resetTable({ testDbUrl: sec.testDbUrl, tableName: 'taskcluster_integration_owners_entities' });
-      await resetTable({ testDbUrl: sec.testDbUrl, tableName: 'taskcluster_checks_to_tasks_entities' });
-      await resetTable({ testDbUrl: sec.testDbUrl, tableName: 'taskcluster_check_runs_entities' });
+      await resetTables({ testDbUrl: sec.testDbUrl, tableNames: [
+        'taskcluster_github_builds_entities',
+        'taskcluster_integration_owners_entities',
+        'taskcluster_checks_to_tasks_entities',
+        'taskcluster_check_runs_entities',
+      ]});
     }
   });
 };

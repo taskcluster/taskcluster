@@ -37,11 +37,13 @@ const resetDb = async ({testDbUrl}) => {
   }
 };
 
-const resetTable = async ({testDbUrl, tableName}) => {
+const resetTables = async ({testDbUrl, tableNames}) => {
   const client = new Client({connectionString: testDbUrl});
   await client.connect();
   try {
-    await ignorePgErrors(client.query(`truncate ${tableName}`), UNDEFINED_TABLE);
+    for (let tableName of tableNames) {
+      await ignorePgErrors(client.query(`truncate ${tableName}`), UNDEFINED_TABLE);
+    }
   } finally {
     await client.end();
   }
@@ -112,4 +114,4 @@ module.exports.withDb.secret = [
 
 // this is useful for taskcluster-db's tests, as well
 module.exports.resetDb = resetDb;
-module.exports.resetTable = resetTable;
+module.exports.resetTables = resetTables;
