@@ -223,6 +223,7 @@ class GoogleProvider extends Provider {
       // workers in taskcluster.
       const poolName = workerPoolId.replace(/[\/_]/g, '-').slice(0, 38);
       const instanceName = `${poolName}-${slugid.nice().replace(/_/g, '-').toLowerCase()}`;
+      const workerGroup = cfg.region;
       const labels = {
         'created-by': `taskcluster-wm-${this.providerId}`.replace(/[^a-zA-Z0-9-]/g, '-'),
         'managed-by': 'taskcluster',
@@ -280,7 +281,7 @@ class GoogleProvider extends Provider {
                   value: JSON.stringify({
                     workerPoolId,
                     providerId: this.providerId,
-                    workerGroup: this.providerId,
+                    workerGroup,
                     rootUrl: this.rootUrl,
                     // NOTE: workerConfig is deprecated and isn't used after worker-runner v29.0.1
                     workerConfig: cfg.workerConfig || {},
@@ -309,14 +310,14 @@ class GoogleProvider extends Provider {
       this.monitor.log.workerRequested({
         workerPoolId,
         providerId: this.providerId,
-        workerGroup: this.providerId,
+        workerGroup,
         workerId: op.targetId,
       });
       const now = new Date();
       await this.Worker.create({
         workerPoolId,
         providerId: this.providerId,
-        workerGroup: this.providerId,
+        workerGroup,
         workerId: op.targetId,
         created: now,
         lastModified: now,

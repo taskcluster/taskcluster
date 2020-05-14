@@ -130,7 +130,7 @@ class AwsProvider extends Provider {
         rootUrl: this.rootUrl,
         workerPoolId,
         providerId: this.providerId,
-        workerGroup: this.providerId,
+        workerGroup: config.region,
         // NOTE: workerConfig is deprecated and isn't used after worker-runner v29.0.1
         workerConfig: config.workerConfig || {},
       }));
@@ -224,14 +224,14 @@ class AwsProvider extends Provider {
         this.monitor.log.workerRequested({
           workerPoolId,
           providerId: this.providerId,
-          workerGroup: this.providerId,
+          workerGroup: config.region,
           workerId: i.InstanceId,
         });
         const now = new Date();
         return this.Worker.create({
           workerPoolId,
           providerId: this.providerId,
-          workerGroup: this.providerId,
+          workerGroup: config.region,
           workerId: i.InstanceId,
           created: now,
           lastModified: now,

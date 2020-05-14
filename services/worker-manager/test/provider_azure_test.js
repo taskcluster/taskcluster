@@ -120,6 +120,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
     // for the provisioning loop
     assert(workers.entries[0].providerData.terminateAfter - now - (6000 * 1000) < 5000);
     assert.equal(workers.entries[0].workerPoolId, workerPoolId);
+    assert.equal(workers.entries[0].workerGroup, 'westus');
   });
 
   test('provisioning loop with failure', async function() {
@@ -162,7 +163,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
   test.skip('removeWorker deletes VM if it exists and has an id', async function() {
     const worker = await helper.Worker.create({
       workerPoolId,
-      workerGroup: 'whatever',
+      workerGroup: 'westus',
       workerId: 'whatever',
       providerId,
       created: taskcluster.fromNow('0 seconds'),
@@ -187,7 +188,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
   test('checkWorker calls removeWorker() if worker is stopping', async function() {
     const worker = await helper.Worker.create({
       workerPoolId,
-      workerGroup: 'whatever',
+      workerGroup: 'westus',
       workerId: 'whatever',
       providerId,
       created: taskcluster.fromNow('0 seconds'),
@@ -250,7 +251,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
     const expires = taskcluster.fromNow('-1 week');
     const worker = await helper.Worker.create({
       workerPoolId,
-      workerGroup: 'whatever',
+      workerGroup: 'westus',
       workerId: 'whatever',
       providerId,
       created: taskcluster.fromNow('-2 weeks'),
@@ -272,7 +273,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
   test('remove unregistered workers', async function() {
     const worker = await helper.Worker.create({
       workerPoolId,
-      workerGroup: 'whatever',
+      workerGroup: 'westus',
       workerId: 'whatever',
       providerId,
       capacity: 1,
@@ -299,7 +300,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
   test('don\'t remove unregistered workers that are new', async function() {
     const worker = await helper.Worker.create({
       workerPoolId,
-      workerGroup: 'whatever',
+      workerGroup: 'westus',
       workerId: 'whatever',
       providerId,
       created: taskcluster.fromNow('-1 hour'),
@@ -325,7 +326,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
   test('remove very old workers', async function() {
     const worker = await helper.Worker.create({
       workerPoolId,
-      workerGroup: 'whatever',
+      workerGroup: 'westus',
       workerId: 'whatever',
       providerId,
       capacity: 1,
@@ -352,7 +353,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
   test('don\'t remove current workers', async function() {
     const worker = await helper.Worker.create({
       workerPoolId,
-      workerGroup: 'whatever',
+      workerGroup: 'westus',
       workerId: 'whatever',
       providerId,
       created: taskcluster.fromNow('-1 hour'),
@@ -376,7 +377,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
   });
 
   suite('registerWorker', function() {
-    const workerGroup = providerId;
+    const workerGroup = 'westus';
     const vmId = '5d06deb3-807b-46dd-aef5-78aaf9193f71';
     const defaultWorker = {
       workerPoolId,

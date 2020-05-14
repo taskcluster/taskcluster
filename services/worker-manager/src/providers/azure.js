@@ -158,12 +158,16 @@ class AzureProvider extends Provider {
       const networkInterfaceName = `nic-${nicerId()}`.slice(0, 24);
       const diskName = `disk-${nicerId()}`.slice(0, 24);
 
+      // workerGroup is the azure location; this is a required field in the config
+      const workerGroup = cfg.location;
+      assert(workerGroup, 'cfg.location is not set');
+
       // Note: worker-runner 1.0.3 and higher ignore customData due to
       // https://github.com/MicrosoftDocs/azure-docs/issues/30370
       const customData = Buffer.from(JSON.stringify({
         workerPoolId,
         providerId: this.providerId,
-        workerGroup: this.providerId,
+        workerGroup,
         rootUrl: this.rootUrl,
         // NOTE: workerConfig is deprecated and isn't used after worker-runner v29.0.1
         workerConfig: cfg.workerConfig || {},
@@ -202,7 +206,7 @@ class AzureProvider extends Provider {
           'created-by': `taskcluster-wm-${this.providerId}`,
           'managed-by': 'taskcluster',
           'provider-id': this.providerId,
-          'worker-group': this.providerId,
+          'worker-group': workerGroup,
           'worker-pool-id': workerPoolId,
           'root-url': this.rootUrl,
           'owner': workerPool.owner,
@@ -238,14 +242,14 @@ class AzureProvider extends Provider {
       this.monitor.log.workerRequested({
         workerPoolId,
         providerId: this.providerId,
-        workerGroup: this.providerId,
+        workerGroup,
         workerId: virtualMachineName,
       });
       const now = new Date();
       await this.Worker.create({
         workerPoolId,
         providerId: this.providerId,
-        workerGroup: this.providerId,
+        workerGroup,
         workerId: virtualMachineName,
         created: now,
         lastModified: now,
