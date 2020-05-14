@@ -104,7 +104,7 @@ scope:
     pattern: "^[\x20-\x7e]*$"
 
 # Pattern for source URLs; this rules out insecure URLs like data: or javascript:
-source-pattern: "^https?://"
+source-pattern: "^(https?|ssh)://"
 
 # Maximum number of dependencies a single task can have
 max-task-dependencies: 100
