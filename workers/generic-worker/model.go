@@ -65,7 +65,7 @@ func (task *TaskRun) String() string {
 		response += fmt.Sprintf("  Worker Group:          %v\n", run.WorkerGroup)
 		response += fmt.Sprintf("  Worker Id:             %v\n", run.WorkerID)
 	}
-	response += fmt.Sprintf("==========================================\n")
+	response += "==========================================\n"
 	response += fmt.Sprintf("Status Deadline:         %v\n", task.TaskClaimResponse.Status.Deadline)
 	response += fmt.Sprintf("Status Provisioner Id:   %v\n", task.TaskClaimResponse.Status.ProvisionerID)
 	response += fmt.Sprintf("Status Retries Left:     %v\n", task.TaskClaimResponse.Status.RetriesLeft)
@@ -77,7 +77,7 @@ func (task *TaskRun) String() string {
 	response += fmt.Sprintf("Taken Until:             %v\n", task.TaskClaimResponse.TakenUntil)
 	response += fmt.Sprintf("Worker Group:            %v\n", task.TaskClaimResponse.WorkerGroup)
 	response += fmt.Sprintf("Worker Id:               %v\n", task.TaskClaimResponse.WorkerID)
-	response += fmt.Sprintf("==========================================\n")
+	response += "==========================================\n"
 	response += fmt.Sprintf("Created:                 %v\n", task.Definition.Created)
 	response += fmt.Sprintf("Deadline:                %v\n", task.Definition.Deadline)
 	response += fmt.Sprintf("Expires:                 %v\n", task.Definition.Expires)
@@ -92,11 +92,11 @@ func (task *TaskRun) String() string {
 	response += fmt.Sprintf("Tags:                    %s\n", task.Definition.Tags)
 	response += fmt.Sprintf("Task Group Id:           %v\n", task.Definition.TaskGroupID)
 	response += fmt.Sprintf("Worker Type:             %v\n", task.Definition.WorkerType)
-	response += fmt.Sprintf("==========================================\n")
+	response += "==========================================\n"
 	response += fmt.Sprintf("Artifacts:               %v\n", task.Payload.Artifacts)
 	response += fmt.Sprintf("Command:                 %#v\n", task.Payload.Command)
 	response += fmt.Sprintf("Env:                     %#v\n", task.Payload.Env)
 	response += fmt.Sprintf("Max Run Time:            %v\n", task.Payload.MaxRunTime)
-	response += fmt.Sprintf("==========================================\n")
+	response += "==========================================\n"
 	return response
 }

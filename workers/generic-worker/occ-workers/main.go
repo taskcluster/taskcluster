@@ -193,7 +193,7 @@ func fetchRegion(workerType string, region string, secret RelOpsWorkerTypeSecret
 		for _, i := range r.Instances {
 			creds, err := RelOpsPassword(region, i, secret)
 			if err != nil {
-				out.WriteString(fmt.Sprintf("Could not find password"))
+				out.WriteString("Could not find password")
 				return
 			}
 			for u, p := range creds {
