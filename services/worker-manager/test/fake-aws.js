@@ -15,7 +15,7 @@ module.exports = {
             InstanceType: launchConfig.InstanceType || 'm2.micro',
             Architecture: 'x86',
             Placement: {
-              AvailabilityZone: 'someregion',
+              AvailabilityZone: 'some-region-c',
             },
             PrivateIpAddress: '1.1.1.1',
             OwnerId: '123123123',

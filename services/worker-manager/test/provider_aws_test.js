@@ -32,7 +32,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
   };
   const defaultWorker = {
     workerPoolId,
-    workerGroup: providerId,
+    workerGroup: 'us-west-2',
     providerId,
     created: taskcluster.fromNow('0 seconds'),
     expires: taskcluster.fromNow('90 seconds'),
@@ -132,7 +132,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
 
       workers.entries.forEach(w => {
         assert.strictEqual(w.workerPoolId, workerPoolId, 'Worker was created for a wrong worker pool');
-        assert.strictEqual(w.workerGroup, providerId, 'Worker group id should be the same as provider id');
+        assert.strictEqual(w.workerGroup, 'us-west-2', 'Worker group should be az');
         assert.strictEqual(w.state, helper.Worker.states.REQUESTED, 'Worker should be marked as requested');
         assert.strictEqual(w.providerData.region, defaultLaunchConfig.region, 'Region should come from the chosen config');
         // Check that this is setting times correctly to within a second or so to allow for some time
@@ -312,7 +312,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
           rootUrl: provider.rootUrl,
           workerPoolId: workerPool.workerPoolId,
           providerId: provider.providerId,
-          workerGroup: provider.providerId,
+          workerGroup: 'us-west-2',
           workerConfig: workerPool.config.launchConfigs[0].workerConfig,
         } // eslint-disable-line comma-dangle
       );
