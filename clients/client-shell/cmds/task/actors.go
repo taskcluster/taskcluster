@@ -3,7 +3,6 @@ package task
 import (
 	"fmt"
 	"io"
-	"os"
 	"time"
 
 	"github.com/spf13/pflag"
@@ -33,7 +32,7 @@ func runCancel(credentials *tcclient.Credentials, args []string, out io.Writer, 
 
 	c, err := q.CancelTask(taskID)
 	if err != nil {
-		fmt.Fprintln(os.Stderr, err)
+		log.Error(err)
 		return fmt.Errorf("could not cancel the task %s: %v", taskID, err)
 	}
 

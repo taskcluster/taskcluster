@@ -47,6 +47,8 @@ var (
 	VersionNumber = "29.6.0"
 )
 
+var log = root.Logger
+
 func init() {
 	root.Command.AddCommand(Command)
 	root.Command.AddCommand(Updcommand)
@@ -60,29 +62,29 @@ func update(cmd *cobra.Command, _ []string) {
 	// Check for a new version and report download url.
 	response, err := http.Get("https://api.github.com/repos/taskcluster/taskcluster/releases/latest")
 	if err != nil {
-		fmt.Fprintln(cmd.OutOrStderr(), err)
+		log.Error(err)
 	}
 
 	// Read the whole response body and check for any errors
 	body, err := ioutil.ReadAll(response.Body)
 	if err != nil {
-		fmt.Fprintln(cmd.OutOrStderr(), err)
+		log.Errorln(err)
 	}
 
 	// Create an object for the struct to parse the json data into given structure
 	R := Release{}
 	if err := json.Unmarshal([]byte(body), &R); err != nil {
-		fmt.Fprintln(cmd.OutOrStderr(), err)
+		log.Errorln(err)
 	}
 
 	if s.Contains(R.Message, "API rate limit") {
-		fmt.Fprintf(cmd.OutOrStderr(), "taskcluster update: GitHub API Rate limit exceeded\n")
+		log.Errorln("taskcluster update: GitHub API Rate limit exceeded")
 		return
 	}
 	// Check if taskcluster is already up to date. The published
 	// version shouldn't go backwards, so equality check is fine.
 	if R.Name == "v"+VersionNumber {
-		fmt.Fprintf(cmd.OutOrStdout(), "taskcluster is already on the most recent version.")
+		log.Errorln("taskcluster is already on the most recent version.")
 	} else {
 		for _, asset := range R.Assets {
 			if s.Contains(asset.Download, runtime.GOOS) {

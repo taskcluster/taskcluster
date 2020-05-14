@@ -47,6 +47,8 @@ var (
 	}
 )
 
+var log = root.Logger
+
 func init() {
 	statusCmd.Flags().BoolP("all-runs", "a", false, "Check all runs of the task.")
 	statusCmd.Flags().IntP("run", "r", -1, "Specifies which run to consider.")
