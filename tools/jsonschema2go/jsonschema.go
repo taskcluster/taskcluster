@@ -1068,7 +1068,7 @@ func jsonRawMessageImplementors(rawMessageTypes StringSet) string {
 }
 
 func (s *Properties) AsStruct(disableNested bool, extraPackages StringSet, rawMessageTypes StringSet) (typ string) {
-	typ = fmt.Sprintf("struct {\n")
+	typ = "struct {\n"
 	if s != nil {
 		for _, j := range s.SortedPropertyNames {
 			// recursive call to build structs inside structs

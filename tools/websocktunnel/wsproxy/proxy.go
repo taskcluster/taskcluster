@@ -2,7 +2,6 @@ package wsproxy
 
 import (
 	"bufio"
-	"fmt"
 	"io"
 	"net/http"
 	"net/url"
@@ -248,7 +247,7 @@ func (p *proxy) serveRequest(w http.ResponseWriter, r *http.Request, id string, 
 	// return 504 (bad gateway) if tunnel is not registered on this proxy
 	if !ok {
 		p.logerrorf(id, r.RemoteAddr, "could not find requested tunnel")
-		http.Error(w, fmt.Sprintf("No client is connected with that id"), 504)
+		http.Error(w, "No client is connected with that id", 504)
 		return
 	}
 
