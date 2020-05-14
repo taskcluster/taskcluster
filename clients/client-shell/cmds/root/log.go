@@ -18,6 +18,7 @@ var (
 
 // setup log output based on --verbose flag
 func setUpLogs(enable bool) {
+	Logger.Formatter.(*logrus.TextFormatter).DisableTimestamp = true
 	if enable {
 		Logger.SetLevel(logrus.DebugLevel)
 	}

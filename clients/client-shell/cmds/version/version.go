@@ -68,13 +68,13 @@ func update(cmd *cobra.Command, _ []string) {
 	// Read the whole response body and check for any errors
 	body, err := ioutil.ReadAll(response.Body)
 	if err != nil {
-		log.Error(err)
+		log.Errorln(err)
 	}
 
 	// Create an object for the struct to parse the json data into given structure
 	R := Release{}
 	if err := json.Unmarshal([]byte(body), &R); err != nil {
-		log.Error(err)
+		log.Errorln(err)
 	}
 
 	if s.Contains(R.Message, "API rate limit") {
@@ -84,7 +84,7 @@ func update(cmd *cobra.Command, _ []string) {
 	// Check if taskcluster is already up to date. The published
 	// version shouldn't go backwards, so equality check is fine.
 	if R.Name == "v"+VersionNumber {
-		log.Error("taskcluster is already on the most recent version.")
+		log.Errorln("taskcluster is already on the most recent version.")
 	} else {
 		for _, asset := range R.Assets {
 			if s.Contains(asset.Download, runtime.GOOS) {
