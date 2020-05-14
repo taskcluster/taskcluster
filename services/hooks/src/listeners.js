@@ -1,5 +1,4 @@
 const assert = require('assert');
-const debug = require('debug')('listeners');
 const pulse = require('taskcluster-lib-pulse');
 const pSynchronize = require('p-synchronize');
 const _ = require('lodash');
@@ -38,7 +37,7 @@ class HookListeners {
    * `hook-created, `hook-updated` and  `hook-deleted`
   */
   async setup() {
-    debug('Setting up the listeners');
+    this.monitor.debug('Setting up the listeners');
     assert(this.listeners === null, 'Cannot setup twice');
 
     const client = this.client;
@@ -58,7 +57,7 @@ class HookListeners {
       maxLength: 50,
     }, (msg) => this.reconcileConsumers(),
     );
-    debug('Listening to hook exchanges');
+    this.monitor.debug('Listening to hook exchanges');
     this.pulseHookChangedListener = consumer;
     this.listeners = {};
     // Reconcile on start up
@@ -71,7 +70,7 @@ class HookListeners {
       return;
     }
 
-    debug(`${queueName}: creating listener (and queue if necessary)`);
+    this.monitor.debug(`${queueName}: creating listener (and queue if necessary)`);
 
     const client = this.client;
     const listener = await pulse.consume({
@@ -101,7 +100,7 @@ class HookListeners {
 
   /** Delete a listener for the given queueName  */
   async removeListener(queueName) {
-    debug(`${queueName}: stop listening`);
+    this.monitor.debug(`${queueName}: stop listening`);
     const listener = this.listeners[queueName];
     delete this.listeners[queueName];
     if (listener) {
@@ -111,7 +110,7 @@ class HookListeners {
 
   /** Deletes the amqp queue if it exists for a real pulse client */
   async deleteQueue(queueName) {
-    debug(`${queueName}: delete queue`);
+    this.monitor.debug(`${queueName}: delete queue`);
     const fullQueueName = this.client.fullObjectName('queue', queueName);
     if (!this.client.isFakeClient) {
       await this.client.withChannel(async channel => {
@@ -142,7 +141,7 @@ class HookListeners {
     if (!addBindings.length && !delBindings.length) {
       return newBindings;
     }
-    debug(`${queueName}: updating bindings to ${JSON.stringify(newBindings)}`);
+    this.monitor.debug(`${queueName}: updating bindings to ${JSON.stringify(newBindings)}`);
 
     // unbinding queues will always succeed, even if the binding is not in place, so we don't
     // do any special error handling here.
