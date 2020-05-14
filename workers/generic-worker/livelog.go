@@ -19,9 +19,10 @@ import (
 var (
 	livelogName = "public/logs/live.log"
 
-	// The port on which the livelog process listens.  This is then proxied
-	// to the user by the exposer.  This port must be different from liveLogGETPort
-	// and liveLogPUTPort.
+	// The ports on which the livelog process listens locally.  These ports are not exposed
+	// outside of the host.  However, in CI they must differ from those of the generic-worker
+	// instance running the test suite.
+	internalPUTPort uint16 = 60098
 	internalGETPort uint16 = 60099
 )
 
@@ -70,7 +71,7 @@ func (l *LiveLogTask) RequiredScopes() scopes.Required {
 }
 
 func (l *LiveLogTask) Start() *CommandExecutionError {
-	liveLog, err := livelog.New(config.LiveLogExecutable, config.LiveLogPUTPort, internalGETPort)
+	liveLog, err := livelog.New(config.LiveLogExecutable, internalPUTPort, internalGETPort)
 	if err != nil {
 		log.Printf("WARNING: could not create livelog: %s", err)
 		// then run without livelog, is only a "best effort" service

@@ -54,12 +54,7 @@ func (m *MockAWSProvisionedEnvironment) ValidPublicConfig(t *testing.T) map[stri
 		"shutdownMachineOnIdle":          false,
 		"shutdownMachineOnInternalError": false,
 		"ed25519SigningKeyLocation":      filepath.Join(testdataDir, "ed25519_private_key"),
-		"subdomain":                      "taskcluster-worker.net",
 		"tasksDir":                       filepath.Join(testdataDir, t.Name()),
-		// these must be different from the default values, as the worker running the CI
-		// task will be using those values
-		"livelogGETPort": 30582,
-		"livelogPUTPort": 43264,
 		"workerTypeMetadata": map[string]interface{}{
 			"machine-setup": map[string]string{
 				"pretend-metadata": m.PretendMetadata,
@@ -71,9 +66,7 @@ func (m *MockAWSProvisionedEnvironment) ValidPublicConfig(t *testing.T) map[stri
 }
 
 func (m *MockAWSProvisionedEnvironment) ValidPrivateConfig(t *testing.T) map[string]interface{} {
-	return map[string]interface{}{
-		"livelogSecret": "I have to confess, when me and my friends sort of used to run through the fields of wheat, um, the farmers weren't too pleased about that.",
-	}
+	return map[string]interface{}{}
 }
 
 func WriteJSON(t *testing.T, w http.ResponseWriter, resp interface{}) {
@@ -183,9 +176,11 @@ func (m *MockAWSProvisionedEnvironment) Setup(t *testing.T) (teardown func(), er
 	oldEC2MetadataBaseURL := EC2MetadataBaseURL
 	EC2MetadataBaseURL = "http://localhost:13243/latest"
 
-	// like LiveLogGETPort and LiveLogPUTPort above, we need to use a non-default port for
-	// the livelog internalGETPort, so that we don't conflict with a generic-worker in which
-	// the tests are running
+	// we need to use a non-default port for the livelog internalGETPort, so
+	// that we don't conflict with a generic-worker in which the tests are
+	// running
+	oldInternalPUTPort := internalPUTPort
+	internalPUTPort = 30584
 	oldInternalGETPort := internalGETPort
 	internalGETPort = 30583
 
@@ -299,6 +294,7 @@ func (m *MockAWSProvisionedEnvironment) Setup(t *testing.T) (teardown func(), er
 		t.Log("HTTP server for mock Provisioner and EC2 metadata endpoints stopped")
 		EC2MetadataBaseURL = oldEC2MetadataBaseURL
 		configureForAWS = false
+		internalPUTPort = oldInternalPUTPort
 		internalGETPort = oldInternalGETPort
 	}, err
 }

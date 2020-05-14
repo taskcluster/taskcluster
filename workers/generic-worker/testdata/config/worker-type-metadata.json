@@ -1,5 +1,4 @@
 {
-  "livelogSecret" : "this-is-a-secret",
   "clientId" : "test-client",
   "workerId" : "myworkerid",
   "rootURL" : "https://tc-tests.example.com",

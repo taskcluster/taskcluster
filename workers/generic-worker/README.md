@@ -150,32 +150,17 @@ and reports back results to the queue.
                                             [default: 0]
           instanceID                        The EC2 instance ID of the worker. Used by chain of trust.
           instanceType                      The EC2 instance Type of the worker. Used by chain of trust.
-          livelogCertificate                SSL certificate to be used by livelog for hosting
-                                            logs over https. If not set, http will be used.
           livelogExecutable                 Filepath of LiveLog executable to use; see
                                             https://github.com/taskcluster/livelog
                                             [default: "livelog"]
-          livelogGETPort                    Port number for livelog HTTP GET requests.
-                                            [default: 60023]
-          livelogKey                        SSL key to be used by livelog for hosting logs
-                                            over https. If not set, http will be used.
-          livelogPUTPort                    Port number for livelog HTTP PUT requests.
-                                            [default: 60022]
-          livelogSecret                     This should match the secret used by the
-                                            stateless dns server; see
-                                            https://github.com/taskcluster/stateless-dns-server
-                                            Optional if stateless DNS is not in use.
           numberOfTasksToRun                If zero, run tasks indefinitely. Otherwise, after
                                             this many tasks, exit. [default: 0]
           privateIP                         The private IP of the worker, used by chain of trust.
           provisionerId                     The taskcluster provisioner which is taking care
                                             of provisioning environments with generic-worker
                                             running on them. [default: "test-provisioner"]
-          publicIP                          The IP address for clients to be directed to for
-                                            serving live logs when not using websocktunnel; see
-                                            https://github.com/taskcluster/livelog and
-                                            https://github.com/taskcluster/stateless-dns-server
-                                            Also used by chain of trust when present.
+          publicIP                          The IP address for VNC access.  Also used by chain of
+                                            trust when present.
           purgeCacheRootURL                 The root URL for taskcluster purge cache API calls.
                                             If not provided, the value from config property
                                             rootURL is used. Intended for development/testing.
@@ -227,10 +212,6 @@ and reports back results to the queue.
                                             for machines running in production, such as on AWS
                                             EC2 spot instances. Use with caution!
                                             [default: false]
-          subdomain                         Subdomain to use in stateless dns name for live
-                                            logs; see
-                                            https://github.com/taskcluster/stateless-dns-server
-                                            [default: "taskcluster-worker.net"]
           taskclusterProxyExecutable        Filepath of taskcluster-proxy executable to use; see
                                             https://github.com/taskcluster/taskcluster/tree/master/tools/taskcluster-proxy
                                             [default: "taskcluster-proxy"]
