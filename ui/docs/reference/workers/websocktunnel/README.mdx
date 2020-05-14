@@ -18,9 +18,8 @@ Configuration is via environment variables:
 * `SYSLOG_ADDR` (optional) defines a syslog server to which log messages will be sent in production
 * `TASKCLUSTER_PROXY_SECRET_A` and `TASKCLUSTER_PROXY_SECRET_B` define two secrets, either of which may be used to sign valid JWTs.
   Either secret is accepted, supporting downtime-free rotation of secrets.
-* `TLS_KEY` and `TLS_CERTIFICATE` (both optional) define a TLS certificate that is used for the main HTTP service.
-  If not given, the service will default to plain HTTP.
-  This is not recommended for production usage!
+* `TLS_KEY` and `TLS_CERTIFICATE` (both required) define a TLS certificate that is used for the main HTTP service.
+  Each contains base64-encoded PEM data.
 * `PORT` gives the port on which the HTTP server should run, defaulting to 443 (or if not using TLS, 80).
 * `AUDIENCE` (aud) claim identifies the recipients that the JWT is intended for. Use of this is OPTIONAL.
 
