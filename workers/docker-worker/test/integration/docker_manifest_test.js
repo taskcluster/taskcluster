@@ -5,7 +5,6 @@ const waitTaskCompletion = require('./helper/wait_task_completion');
 const TestWorker = require('../testworker');
 const DockerWorker = require('../dockerworker');
 const slugid = require('slugid');
-const mime = require('mime');
 const debug = require('debug')('docker-worker:test:docker-manifest');
 
 suite('docker image with manifest.json file', function() {

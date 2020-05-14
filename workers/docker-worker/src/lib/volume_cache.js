@@ -212,7 +212,7 @@ class VolumeCache {
   async set(cacheKey, value) {
     let cacheName = cacheKey.split(KEY_DELIMITER)[0];
     let instanceId = cacheKey.split(KEY_DELIMITER)[1];
-    for (let key in value) {
+    for (let key of Object.keys(value)) {
       this.cache[cacheName][instanceId][key] = value[key];
     }
   }
