@@ -14,6 +14,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
+var log = root.Logger
+
 func init() {
 	root.Command.AddCommand(&cobra.Command{
 		Use:   "from-now <duration>",
@@ -124,7 +126,7 @@ func atoiHelper(s string) int {
 
 	// This should never occur because the regex only matches digits.
 	if err != nil {
-		panic("error: given string '" + s + "' is not a valid number.")
+		log.Panic("error: given string '" + s + "' is not a valid number.")
 	}
 
 	return i

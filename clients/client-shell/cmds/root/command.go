@@ -2,18 +2,12 @@
 package root
 
 import (
-	"io/ioutil"
-	"log"
-	"os"
-
 	"github.com/spf13/cobra"
 )
 
 var (
 	// Command is the root of the command tree.
 	Command = setUpRootCmd()
-	// Logger is the default log.Logger of the commands
-	Logger = log.New(ioutil.Discard, "INFO: ", log.Lshortfile)
 )
 
 // Setup presistent flags and pre-run and return root command
@@ -32,11 +26,4 @@ func setUpRootCmd() *cobra.Command {
 	}
 
 	return rootCmd
-}
-
-// setup log output based of --verbose flag
-func setUpLogs(enable bool) {
-	if enable {
-		Logger.SetOutput(os.Stdout)
-	}
 }

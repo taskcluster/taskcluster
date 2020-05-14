@@ -37,6 +37,8 @@ var (
 		Use:   "slugid",
 		Short: "Generates V4 UUIDs and encodes/decodes them from/to 22 character URL-safe base64 slugs.",
 	}
+
+	log = root.Logger
 )
 
 func init() {
