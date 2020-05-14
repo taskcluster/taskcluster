@@ -1977,10 +1977,10 @@ concat-stream@~1.6.0:
     readable-stream "^2.2.2"
     typedarray "^0.0.6"
 
-console-taskgraph@^1.6.0:
-  version "1.6.0"
-  resolved "https://registry.yarnpkg.com/console-taskgraph/-/console-taskgraph-1.6.0.tgz#a4fdef21ac0035ee7c997245b6958ffa8754016e"
-  integrity sha512-QL6nst8TwVB8vvWXb1Xf3QL5gT8OQUECIvtOAqXwpf0rQ76JDyHL5ejOtVQk4awFFiFT1xzvK9zG/yrYMLuPfg==
+console-taskgraph@^1.7.2:
+  version "1.7.2"
+  resolved "https://registry.yarnpkg.com/console-taskgraph/-/console-taskgraph-1.7.2.tgz#e4244dda8eac760812b13c9c56eac796177d5922"
+  integrity sha512-7kEsO5Jbi7XlVMOjPjGGSg2XKWtTEClS4ePeXUQ0ZUCNd6lk00VaItiaph1oP48mc6iltdNDHyAd2TKkMl/taA==
   dependencies:
     assert "^1.4.1"
     chalk "^2.3.2"

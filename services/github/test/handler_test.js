@@ -278,6 +278,15 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
         'event.base.sha': base || '2bad4edf90e7d4fb4643456a4df333da348bbed4',
         'event.head.user.id': 190790,
       };
+      if (eventType === 'release') {
+        // remove a few details fields from the above that aren't present in releases,
+        // and add one that is present.  Note that this isn't incomplete, and leaves some
+        // fields in place that shouldn't be here and omits fields that should be here.
+        // This should be solved in a more reliable fashion.
+        delete details['event.head.sha'];
+        delete details['event.head.ref'];
+        details['event.version'] = 'v1.2.3';
+      }
       if (eventType === 'tag') {
         details['event.head.tag'] = 'v1.0.2';
         delete details['event.head.repo.branch'];
@@ -568,6 +577,25 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
         content: require('./data/yml/valid-yaml.json'),
       });
       await simulateJobMessage({user: 'imbstack', eventType: 'push'});
+
+      assert(github.inst(5828).repos.createCommitComment.callCount === 0);
+    });
+
+    test('sha for release fetched correctly', async function() {
+      github.inst(5828).setTaskclusterYml({
+        owner: 'TaskclusterRobot',
+        repo: 'hooks-testing',
+        ref: '03e9577bc1ec60f2ff0929d5f1554de36b8f48cf',
+        // note that this ends up compiling to zero tasks for a release
+        content: require('./data/yml/valid-yaml.json'),
+      });
+      github.inst(5828).setCommit({
+        owner: 'TaskclusterRobot',
+        repo: 'hooks-testing',
+        ref: 'refs/tags/v1.2.3',
+        sha: '03e9577bc1ec60f2ff0929d5f1554de36b8f48cf',
+      });
+      await simulateJobMessage({user: 'imbstack', eventType: 'release'});
 
       assert(github.inst(5828).repos.createCommitComment.callCount === 0);
     });

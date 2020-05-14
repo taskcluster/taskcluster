@@ -32,7 +32,6 @@
 ## Usage
 
 This repository is used to develop, build, and release the Taskcluster services.
-It is not possible to run a full Taskcluster deployment directly from this repository, although individual services can be run for development purposes.
 
 ## Table of Contents
 
