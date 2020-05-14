@@ -64,4 +64,3 @@ module.exports = app.use(function *() {
   let data = route(this);
   this.body = data;
 });
-

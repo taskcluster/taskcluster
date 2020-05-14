@@ -6,4 +6,3 @@ module.exports = defaultMonitorManager.configure({
   processName: 'docker-worker',
   fake: true,
 });
-
