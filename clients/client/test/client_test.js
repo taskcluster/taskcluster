@@ -482,6 +482,30 @@ suite(testing.suiteName(), function() {
           urlPrefix: trueUrlPrefix || urlPrefix,
           type: 'external',
         },
+        {
+          buildUrl: (...arg) => {
+            const cc = client.taskclusterPerRequestInstance({traceId: 'foo'});
+            return cc.buildUrl(...arg);
+          },
+          buildSignedUrl: (...arg) => {
+            const cc = client.taskclusterPerRequestInstance({traceId: 'foo'});
+            return cc.buildSignedUrl(...arg);
+          },
+          urlPrefix,
+          type: 'internal (per request)',
+        },
+        {
+          buildUrl: (...arg) => {
+            const cc = client.taskclusterPerRequestInstance({traceId: 'foo'});
+            return cc.externalBuildUrl(...arg);
+          },
+          buildSignedUrl: (...arg) => {
+            const cc = client.taskclusterPerRequestInstance({traceId: 'foo'});
+            return cc.externalBuildSignedUrl(...arg);
+          },
+          urlPrefix: trueUrlPrefix || urlPrefix,
+          type: 'external (per request)',
+        },
       ]) {
         suite(cl.type, function() {
           test('BuildUrl', async () => {

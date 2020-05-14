@@ -207,12 +207,12 @@ exports.createClient = function(reference, name) {
     this._options.rootUrl = this._options.rootUrl.replace(/\/$/, '');
     this._options._trueRootUrl = this._options.rootUrl.replace(/\/$/, ''); // Useful for buildUrl/buildSignedUrl in certain cases
 
-    const serviceDiscoveryScheme = options.serviceDiscoveryScheme || DEFAULT_SERVICE_DISCOVERY_SCHEME;
-    if (!SERVICE_DISCOVERY_SCHEMES.includes(serviceDiscoveryScheme)) {
-      throw new Error(`Invalid Taskcluster client service discovery scheme: ${serviceDiscoveryScheme}`);
+    this._options.serviceDiscoveryScheme = options.serviceDiscoveryScheme || DEFAULT_SERVICE_DISCOVERY_SCHEME;
+    if (!SERVICE_DISCOVERY_SCHEMES.includes(this._options.serviceDiscoveryScheme)) {
+      throw new Error(`Invalid Taskcluster client service discovery scheme: ${this._options.serviceDiscoveryScheme}`);
     }
 
-    if (serviceDiscoveryScheme === 'k8s-dns') {
+    if (this._options.serviceDiscoveryScheme === 'k8s-dns') {
       this._options.rootUrl = `http://taskcluster-${serviceName}`; // Notice this is http, not https
     }
 
@@ -291,7 +291,7 @@ exports.createClient = function(reference, name) {
   };
 
   Client.prototype.use = function(optionsUpdates) {
-    let options = _.defaults({}, optionsUpdates, this._options);
+    let options = _.defaults({}, optionsUpdates, {rootUrl: this._options._trueRootUrl}, this._options);
     return new Client(options);
   };
 
