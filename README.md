@@ -93,7 +93,7 @@ This repository is used to develop, build, and release the Taskcluster services.
     * [ui/src/components/SpeedDial](ui/src/components/SpeedDial#readme)
     * [ui/src/components/StatusLabel](ui/src/components/StatusLabel#readme)
 * [Workers](workers#readme)
-    * [workers/docker-worker](workers/docker-worker#readme)
+    * [Docker Worker](workers/docker-worker#readme)
     * [Generic Worker](workers/generic-worker#readme)
         * [workers/generic-worker/server-logs](workers/generic-worker/server-logs#readme)
 <!-- TOC END -->
