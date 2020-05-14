@@ -7,7 +7,7 @@ const data = require('../src/data');
 const temporary = require('temporary');
 const mockAwsS3 = require('mock-aws-s3');
 const nock = require('nock');
-const {fakeauth, stickyLoader, Secrets, withEntity, withPulse, withMonitor, withDb, resetTable} = require('taskcluster-lib-testing');
+const {fakeauth, stickyLoader, Secrets, withEntity, withPulse, withMonitor, withDb, resetTables} = require('taskcluster-lib-testing');
 
 const helper = module.exports;
 
@@ -307,16 +307,18 @@ exports.resetTables = (mock, skipping) => {
       exports.db['queue'].reset();
     } else {
       const sec = exports.secrets.get('db');
-      await resetTable({ testDbUrl: sec.testDbUrl, tableName: 'queue_tasks_entities' });
-      await resetTable({ testDbUrl: sec.testDbUrl, tableName: 'queue_artifacts_entities' });
-      await resetTable({ testDbUrl: sec.testDbUrl, tableName: 'queue_task_groups_entities' });
-      await resetTable({ testDbUrl: sec.testDbUrl, tableName: 'queue_task_group_members_entities' });
-      await resetTable({ testDbUrl: sec.testDbUrl, tableName: 'queue_task_group_active_sets_entities' });
-      await resetTable({ testDbUrl: sec.testDbUrl, tableName: 'queue_task_requirement_entities' });
-      await resetTable({ testDbUrl: sec.testDbUrl, tableName: 'queue_task_dependency_entities' });
-      await resetTable({ testDbUrl: sec.testDbUrl, tableName: 'queue_worker_entities' });
-      await resetTable({ testDbUrl: sec.testDbUrl, tableName: 'queue_worker_type_entities' });
-      await resetTable({ testDbUrl: sec.testDbUrl, tableName: 'queue_provisioner_entities' });
+      await resetTables({ testDbUrl: sec.testDbUrl, tableNames: [
+        'queue_tasks_entities',
+        'queue_artifacts_entities',
+        'queue_task_groups_entities',
+        'queue_task_group_members_entities',
+        'queue_task_group_active_sets_entities',
+        'queue_task_requirement_entities',
+        'queue_task_dependency_entities',
+        'queue_worker_entities',
+        'queue_worker_type_entities',
+        'queue_provisioner_entities',
+      ]});
     }
   });
 };

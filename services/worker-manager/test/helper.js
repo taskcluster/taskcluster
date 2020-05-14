@@ -1,7 +1,7 @@
 const taskcluster = require('taskcluster-client');
 const {FakeAzure} = require('./fake-azure.js');
 const {FakeGoogle} = require('./fake-google.js');
-const {stickyLoader, Secrets, withEntity, fakeauth, withMonitor, withPulse, withDb, resetTable} = require('taskcluster-lib-testing');
+const {stickyLoader, Secrets, withEntity, fakeauth, withMonitor, withPulse, withDb, resetTables} = require('taskcluster-lib-testing');
 const builder = require('../src/api');
 const data = require('../src/data');
 const load = require('../src/main');
@@ -268,9 +268,11 @@ exports.resetTables = (mock, skipping) => {
       exports.db['worker_manager'].reset();
     } else {
       const sec = exports.secrets.get('db');
-      await resetTable({ testDbUrl: sec.testDbUrl, tableName: 'wmworkers_entities' });
-      await resetTable({ testDbUrl: sec.testDbUrl, tableName: 'worker_pools' });
-      await resetTable({ testDbUrl: sec.testDbUrl, tableName: 'wmworker_pool_errors_entities' });
+      await resetTables({ testDbUrl: sec.testDbUrl, tableNames: [
+        'wmworkers_entities',
+        'worker_pools',
+        'wmworker_pool_errors_entities',
+      ]});
     }
   });
 };

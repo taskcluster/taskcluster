@@ -96,7 +96,7 @@ In the version test, include a copy of the `Entity` configuration from the
 service's `data.js`, stripped of comments and older versions.  Use
 `helper.testEntityTable` to easily test the version.
 
-When running the service's unit tests, you will probably need to update the tests to clear out the new table instead of the old.  This is typically, but not always, a `resetTable` call in `test/helper.js`.
+When running the service's unit tests, you will probably need to update the tests to clear out the new table instead of the old.  This is typically, but not always, a `resetTables` call in `test/helper.js`.
 Try not to make any other changes to the service or its unit tests.
 If you do change the tests, such as to add additional test cases or use encodable characters in strings, do so in a commit *before* this one, so that reviewers can double-check those changes work against the existing entities table.
 

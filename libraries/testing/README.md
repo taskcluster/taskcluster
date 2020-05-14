@@ -355,6 +355,28 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
 });
 ```
 
+There is also a utility function, `resetTables`, which will truncate a list of tables.
+This is typically used in a `setup` function to start each test with a clean slate.
+
+```js
+const {resetTables} = require('taskcluster-lib-testing');
+
+exports.resetTables = (mock, skipping) => {
+  setup('reset tables', async function() {
+    if (mock) {
+      // call the reset method on the fake db
+      exports.db['someservice'].reset();
+    } else {
+      const sec = exports.secrets.get('db');
+      await resetTables({ testDbUrl: sec.testDbUrl, tableNames: [
+        'some_table',
+        'another_table',
+      ]});
+    }
+  });
+};
+```
+
 withPulse
 ---------
 
