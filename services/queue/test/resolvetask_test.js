@@ -450,7 +450,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws', 'db'], function(mock, skip
       m.payload.status.runs[1].reasonResolved === 'worker-shutdown'));
   });
 
-  test('reportComplete with bad scopes', async () => {
+  test('reportCompleted with bad scopes', async () => {
     const taskId = slugid.v4();
 
     debug('### Creating task');
@@ -474,6 +474,18 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws', 'db'], function(mock, skip
         throw err;
       }
     });
+  });
+
+  test('reportCompleted with a pending task', async () => {
+    const taskId = slugid.v4();
+
+    debug('### Creating task');
+    await helper.queue.createTask(taskId, taskDef);
+
+    debug('### Reporting task completed');
+    await assert.rejects(
+      () => helper.queue.reportCompleted(taskId, 0),
+      err => err.statusCode === 409);
   });
 
   test('reportException (intermittent-task) is idempotent', async () => {
