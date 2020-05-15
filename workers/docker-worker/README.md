@@ -16,7 +16,7 @@ are for hacking on the worker itself.
 
 ## Requirements
 
-  - Node >= 12.11.0
+  - Node (same version as the rest of Taskcluster)
   - Docker
 
 ## Usage

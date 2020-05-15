@@ -30,7 +30,7 @@ done
 
 # Install Node
 # TODO: use the same node version as everything else, bug 1636164
-NODE_VERSION=12.11.0
+NODE_VERSION=$(echo "console.log(require('./package.json').engines.node)" | node)
 mkdir $DW_ROOT/node
 curl https://nodejs.org/dist/v${NODE_VERSION}/node-v${NODE_VERSION}-linux-x64.tar.xz | tar -C $DW_ROOT/node --strip-components=1 -xJf -
 
