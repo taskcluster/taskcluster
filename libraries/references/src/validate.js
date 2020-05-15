@@ -39,7 +39,7 @@ const forAllRefs = (content, cb) => {
     if (Array.isArray(value)) {
       value.forEach((v, i) => recurse(v, `${path}[${i}]`));
     } else if (typeof value === 'object') {
-      if (value.$ref && Object.keys(value).length === 1) {
+      if (value.$ref) {
         cb(value.$ref, path);
       } else {
         for (const [k, v] of Object.entries(value)) {
