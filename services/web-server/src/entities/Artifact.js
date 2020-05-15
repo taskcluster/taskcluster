@@ -3,7 +3,8 @@ module.exports = class Artifact {
     Object.assign(this, data);
     this.taskId = taskId;
     this.isPublic = /^public\//.test(this.name);
-    this.isLog = /^text\/plain*/.test(this.contentType);
+    // bug 1638047 - limit log viewer to public text/plain *.log files
+    this.isLog = /^text\/plain.*/.test(this.contentType) && /\.log$/.test(this.name);
 
     if (runId) {
       this.runId = runId;
