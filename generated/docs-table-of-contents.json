@@ -3283,14 +3283,7 @@
                 "children": [
                 ],
                 "data": {
-                  "class": "html",
-                  "docref": true,
-                  "docson": true,
-                  "ejs": true,
-                  "layout": "default",
-                  "marked": true,
                   "order": 1,
-                  "superagent": true,
                   "title": "Payload Format"
                 },
                 "name": "payload",
@@ -3383,13 +3376,35 @@
                 },
                 "name": "features",
                 "next": {
-                  "path": "reference/workers/generic-worker/README",
-                  "title": "generic-worker"
+                  "path": "reference/workers/docker-worker/deployment",
+                  "title": "Deployment"
                 },
                 "path": "reference/workers/docker-worker/features",
                 "prev": {
                   "path": "reference/workers/docker-worker/caches",
                   "title": "Caches"
+                },
+                "up": {
+                  "path": "reference/workers/docker-worker/README",
+                  "title": "docker-worker"
+                }
+              },
+              {
+                "children": [
+                ],
+                "data": {
+                  "order": 80,
+                  "title": "Deployment"
+                },
+                "name": "deployment",
+                "next": {
+                  "path": "reference/workers/generic-worker/README",
+                  "title": "generic-worker"
+                },
+                "path": "reference/workers/docker-worker/deployment",
+                "prev": {
+                  "path": "reference/workers/docker-worker/features",
+                  "title": "Features"
                 },
                 "up": {
                   "path": "reference/workers/docker-worker/README",
@@ -3604,8 +3619,8 @@
             },
             "path": "reference/workers/generic-worker/README",
             "prev": {
-              "path": "reference/workers/docker-worker/features",
-              "title": "Features"
+              "path": "reference/workers/docker-worker/deployment",
+              "title": "Deployment"
             },
             "up": {
               "path": "reference/workers/README",

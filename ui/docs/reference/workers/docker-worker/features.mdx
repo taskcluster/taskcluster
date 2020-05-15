@@ -27,7 +27,7 @@ Example:
 }
 ```
 
-#### Feature: `balrogVPNProxy`
+## Feature: `balrogVPNProxy`
 
 Required scopes: `docker-worker:feature:balrogVPNProxy`
 
@@ -60,7 +60,7 @@ References:
 * [taskcluster-vpn-proxy](https://github.com/taskcluster/taskcluster-vpn-proxy)
 * [docker-worker integration](https://github.com/taskcluster/docker-worker/blob/master/src/lib/features/balrog_vpn_proxy.js)
 
-#### Feature: `balrogStageVPNProxy`
+## Feature: `balrogStageVPNProxy`
 
 Required scopes: `docker-worker:feature:balrogStageVPNProxy`
 
@@ -94,7 +94,7 @@ References:
 * [taskcluster-vpn-proxy](https://github.com/taskcluster/taskcluster-vpn-proxy)
 * [docker-worker integration](https://github.com/taskcluster/docker-worker/blob/master/src/lib/features/balrog_stage_vpn_proxy.js)
 
-#### Feature: `taskclusterProxy`
+## Feature: `taskclusterProxy`
 
 The taskcluster proxy provides an easy and safe way to make authenticated
 taskcluster requests within the scope(s) of a particular task.  The proxy
@@ -132,7 +132,7 @@ References:
 * [taskcluster-proxy](https://github.com/taskcluster/taskcluster-proxy)
 * [docker-worker integration](https://github.com/taskcluster/docker-worker/blob/master/lib/features/taskcluster_proxy.js)
 
-#### Feature: `testdroidProxy`
+## Feature: `testdroidProxy`
 
 Source: https://github.com/taskcluster/testdroid-proxy
 
@@ -158,7 +158,7 @@ References:
 * [testdroid-proxy](https://github.com/taskcluster/testdroid-proxy)
 * [docker-worker integration](https://github.com/taskcluster/docker-worker/blob/master/lib/features/testdroid_proxy.js)
 
-#### Feature: `dockerSave`
+## Feature: `dockerSave`
 
 Status: Unstable, api may be changed
 
@@ -191,7 +191,7 @@ References:
 
 * [implementation](https://github.com/taskcluster/docker-worker/blob/master/lib/features/docker_save.js)
 
-#### Feature: `interactive`
+## Feature: `interactive`
 
 Allows ssh-like access to running containers. Will extend the lifetime of a task to allow a user to SSH in before the container dies, so be careful when using this feature. Will also keep the task alive while is connected and a little bit after that so a user can keep working in ssh after the task ends.
 
@@ -213,7 +213,7 @@ References:
 * [docker-worker integration](https://github.com/taskcluster/docker-worker/blob/master/lib/features/interactive.js)
 * [implementation](https://github.com/taskcluster/docker-exec-websocket-server)
 
-#### Feature: `relengAPIProxy`
+## Feature: `relengAPIProxy`
 
 Status: stable, but limited access
 
@@ -248,7 +248,7 @@ References:
 
 * [relengapi-proxy](https://github.com/taskcluster/relengapi-proxy)
 
-#### Feature: `allowPtrace`
+## Feature: `allowPtrace`
 
 Status: stable
 

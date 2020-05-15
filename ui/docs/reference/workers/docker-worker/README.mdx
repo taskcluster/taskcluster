@@ -1,5 +1,20 @@
 # Docker Worker
 
-docker-worker is a worker for Taskcluster, designed to run arbitrary task in a containerized environment.
+docker-worker is a worker for Taskcluster, designed to run arbitrary tasks in a containerized environment.
 
-This documentation is a working in progress.
+This documentation is a work in progress.
+
+## Using the Worker
+
+Given a worker pool that is running docker-worker, you can create tasks with a payload in [this format](/docs/reference/workers/docker-worker/payload).
+
+See also:
+
+ * [Features](/docs/reference/workers/docker-worker/features) - optional additional features of the  worker
+ * [Caches](/docs/reference/workers/docker-worker/caches) - caching data between tasks
+ * [Scopes](/docs/reference/workers/docker-worker/scopes) - additional scopes required for features, capabilities, and caches
+ * [Environment Variables](/docs/reference/workers/docker-worker/environment) - enviroment variables available to running tasks
+
+## Deployment
+
+See [deployment](/docs/reference/workers/docker-worker/deployment) for details on deploying docker-worker.

@@ -51,6 +51,7 @@ exports.tasks.push({
     ...SERVICES.map(name => `refs-${name}`),
     'config-values-schema',
     'generic-worker-schemas',
+    'docker-worker-schemas',
   ],
   provides: [
     'target-references',
@@ -66,6 +67,8 @@ exports.tasks.push({
       name => requirements[`refs-${name}`].forEach(
         ({filename, content}) => files.set(filename, content)));
     requirements['generic-worker-schemas'].forEach(
+      ({filename, content}) => files.set(filename, content));
+    requirements['docker-worker-schemas'].forEach(
       ({filename, content}) => files.set(filename, content));
 
     // add config-values-schema, mostly so that it can be referenced in the manual
