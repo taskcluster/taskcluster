@@ -25,7 +25,7 @@ function scheduleReclaim(queue, claim) {
     try {
       claim = await queue.reclaimTask(
         claim.status.taskId,
-        claim.runId
+        claim.runId,
       );
 
       const takenFor = (new Date(claim.takenUntil) - new Date());
@@ -45,7 +45,7 @@ function run(name, args) {
 
     proc.on('close', code => code
       ? reject(new Error(`${name} exited with code ${code}`))
-      : accept()
+      : accept(),
     );
   });
 
@@ -118,7 +118,7 @@ async function main() {
           'content-length': stat.size,
         },
         null,
-        {}
+        {},
       );
     }));
 

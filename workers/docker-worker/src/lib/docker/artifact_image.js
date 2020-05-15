@@ -122,21 +122,21 @@ class ArtifactImage {
       this.runtime.monitor.measure('task.taskImage.downloadTime', Date.now() - start);
 
       switch (path.extname(downloadedFile)) {
-      case '.lz4':
-        this.stream.write(fmtLog('Decompressing downloaded image'));
-        tarballPath = await decompressLz4File(downloadedFile);
-        fs.unlink(downloadedFile);
-        break;
-      case '.zst':
-        this.stream.write(fmtLog('Decompressing downloaded image'));
-        tarballPath = await decompressZstdFile(downloadedFile);
-        fs.unlink(downloadedFile);
-        break;
-      case '.tar':
-        tarballPath = downloadedFile;
-        break;
-      default:
-        throw new Error('Unsupported image file format. Expected tarball with extension: .tar.zst, .tar.lz4 or .tar');
+        case '.lz4':
+          this.stream.write(fmtLog('Decompressing downloaded image'));
+          tarballPath = await decompressLz4File(downloadedFile);
+          fs.unlink(downloadedFile);
+          break;
+        case '.zst':
+          this.stream.write(fmtLog('Decompressing downloaded image'));
+          tarballPath = await decompressZstdFile(downloadedFile);
+          fs.unlink(downloadedFile);
+          break;
+        case '.tar':
+          tarballPath = downloadedFile;
+          break;
+        default:
+          throw new Error('Unsupported image file format. Expected tarball with extension: .tar.zst, .tar.lz4 or .tar');
       }
 
       await this.renameAndLoad(this.imageName, tarballPath);

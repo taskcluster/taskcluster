@@ -228,7 +228,6 @@
   },
   "eslintIgnore": [
     "**/node_modules/**",
-    "**/test/fixtures/**",
     "services/web-server/build"
   ],
   "heroku-run-build-script": true
