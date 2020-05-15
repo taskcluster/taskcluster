@@ -3,7 +3,7 @@ const pg = require('pg');
 const {dollarQuote, annotateError} = require('./util');
 const assert = require('assert').strict;
 const {READ, WRITE, DUPLICATE_OBJECT, UNDEFINED_TABLE} = require('./constants');
-const {defaultMonitorManager} = require('taskcluster-lib-monitor');
+const {MonitorManager} = require('taskcluster-lib-monitor');
 
 // Postgres extensions to "create".
 const EXTENSIONS = [
@@ -15,7 +15,7 @@ const EXTENSIONS = [
 // questionable decision can be overridden globally:
 pg.defaults.parseInputDatesAsUTC = true;
 
-defaultMonitorManager.register({
+MonitorManager.register({
   name: 'dbFunctionCall',
   title: 'DB Method Call',
   type: 'db-function-call',
@@ -27,7 +27,7 @@ defaultMonitorManager.register({
   },
 });
 
-defaultMonitorManager.register({
+MonitorManager.register({
   name: 'dbPoolCounts',
   title: 'DB Pool Counts',
   type: 'db-pool-counts',

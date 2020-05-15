@@ -4,7 +4,6 @@ const slugid = require('slugid');
 const taskcluster = require('taskcluster-client');
 const helper = require('./helper');
 const testing = require('taskcluster-lib-testing');
-const monitorManager = require('../src/monitor');
 const {LEVELS} = require('taskcluster-lib-monitor');
 
 helper.secrets.mockSuite(testing.suiteName(), ['aws', 'db'], function(mock, skipping) {
@@ -39,6 +38,11 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws', 'db'], function(mock, skip
     };
   };
 
+  let monitor;
+  suiteSetup(async function() {
+    monitor = await helper.load('monitor');
+  });
+
   test('createTask , claimWork, claim expires, retried', async () => {
     let taskId = slugid.v4();
     let task = makeTask(1);
@@ -50,7 +54,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws', 'db'], function(mock, skip
     helper.assertPulseMessage('task-defined');
     helper.assertPulseMessage('task-pending');
 
-    monitorManager.reset(); // clear the first task-pending message
+    monitor.manager.reset(); // clear the first task-pending message
 
     debug('### Claim task');
     let r1 = await helper.queue.claimWork('no-provisioner-extended-extended', workerType, {
@@ -63,8 +67,8 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws', 'db'], function(mock, skip
 
     await testing.poll(
       async () => {
-        assert.deepEqual(monitorManager.messages.find(({Type}) => Type === 'task-pending'), {
-          Logger: 'taskcluster.queue.claim-resolver',
+        assert.deepEqual(monitor.manager.messages.find(({Type}) => Type === 'task-pending'), {
+          Logger: 'taskcluster.test.claim-resolver',
           Type: 'task-pending',
           Fields: {taskId, runId: 1, v: 1},
           Severity: LEVELS.notice,
@@ -86,7 +90,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws', 'db'], function(mock, skip
     helper.assertPulseMessage('task-defined');
     helper.assertPulseMessage('task-pending');
 
-    monitorManager.reset(); // clear the first task-pending message
+    monitor.manager.reset(); // clear the first task-pending message
 
     debug('### Claim task');
     let r1 = await helper.queue.claimWork('no-provisioner-extended-extended', workerType, {
@@ -99,8 +103,8 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws', 'db'], function(mock, skip
 
     await testing.poll(
       async () => {
-        assert.deepEqual(monitorManager.messages.find(({Type}) => Type === 'task-exception'), {
-          Logger: 'taskcluster.queue.claim-resolver',
+        assert.deepEqual(monitor.manager.messages.find(({Type}) => Type === 'task-exception'), {
+          Logger: 'taskcluster.test.claim-resolver',
           Type: 'task-exception',
           Fields: {taskId, runId: 0, v: 1},
           Severity: LEVELS.notice,

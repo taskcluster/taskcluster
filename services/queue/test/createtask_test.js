@@ -6,7 +6,6 @@ const taskcluster = require('taskcluster-client');
 const assume = require('assume');
 const helper = require('./helper');
 const testing = require('taskcluster-lib-testing');
-const monitorManager = require('../src/monitor');
 const {LEVELS} = require('taskcluster-lib-monitor');
 
 helper.secrets.mockSuite(testing.suiteName(), ['aws', 'db'], function(mock, skipping) {
@@ -53,6 +52,11 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws', 'db'], function(mock, skip
     },
   };
 
+  let monitor;
+  suiteSetup(async function() {
+    monitor = await helper.load('monitor');
+  });
+
   test('createTask', async () => {
     const taskId = slugid.v4();
 
@@ -66,14 +70,14 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws', 'db'], function(mock, skip
     const r1 = await helper.queue.createTask(taskId, taskDef);
 
     debug('### Check for log messages');
-    assert.deepEqual(monitorManager.messages.find(({Type}) => Type === 'task-defined'), {
-      Logger: 'taskcluster.queue.api',
+    assert.deepEqual(monitor.manager.messages.find(({Type}) => Type === 'task-defined'), {
+      Logger: 'taskcluster.test.api',
       Type: 'task-defined',
       Fields: {taskId, v: 1},
       Severity: LEVELS.notice,
     });
-    assert.deepEqual(monitorManager.messages.find(({Type}) => Type === 'task-pending'), {
-      Logger: 'taskcluster.queue.api',
+    assert.deepEqual(monitor.manager.messages.find(({Type}) => Type === 'task-pending'), {
+      Logger: 'taskcluster.test.api',
       Type: 'task-pending',
       Fields: {taskId, runId: 0, v: 1},
       Severity: LEVELS.notice,

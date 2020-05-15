@@ -1,4 +1,3 @@
-const {registerBuiltins} = require('../src/builtins');
 const nock = require('nock');
 const assert = require('assert');
 const testing = require('taskcluster-lib-testing');
@@ -7,17 +6,14 @@ const MonitorManager = require('../src/monitormanager');
 suite(testing.suiteName(), function() {
 
   suite('sentry', function() {
-    let monitorManager, monitor, scope, reported;
+    let monitor, scope, reported;
     setup(function() {
       scope = nock('https://sentry.example.com')
         .post('/api/448/store/')
         .reply(200, (_, report)=> {reported = report;});
 
-      monitorManager = new MonitorManager();
-      registerBuiltins(monitorManager);
-      monitor = monitorManager.configure({
+      monitor = MonitorManager.setup({
         serviceName: 'testing-service',
-      }).setup({
         level: 'debug',
         processName: 'foo',
         debug: true,

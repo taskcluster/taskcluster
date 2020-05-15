@@ -1,11 +1,10 @@
-const {defaultMonitorManager} = require('taskcluster-lib-monitor');
+const {MonitorManager} = require('taskcluster-lib-monitor');
 
-exports.monitorManager = defaultMonitorManager.configure({
+exports.monitor = MonitorManager.setup({
   serviceName: 'client',
-});
-
-exports.monitor = exports.monitorManager.setup({
   fake: true,
   debug: true,
   verify: true,
 });
+
+exports.monitorManager = exports.monitor.manager;

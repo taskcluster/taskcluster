@@ -1,9 +1,9 @@
 const assert = require('assert');
 const libUrls = require('taskcluster-lib-urls');
 const debug = require('debug')('taskcluster-lib-pulse.publisher');
-const {defaultMonitorManager} = require('taskcluster-lib-monitor');
+const {MonitorManager} = require('taskcluster-lib-monitor');
 
-defaultMonitorManager.register({
+MonitorManager.register({
   name: 'pulsePublisherBlocked',
   title: 'Pulse server has (un)blocked a publisher',
   type: 'pulsePublisherBlocked',

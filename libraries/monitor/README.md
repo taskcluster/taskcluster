@@ -10,19 +10,12 @@ The Usage section lists these cases and shows how to use this package to measure
 ## Usage
 
 This library is initialized early in the Node process's lifetime, while modules are still being loaded.
-The MonitorManager class is instantiated as `defaultMonitorManager`, which is exported from this package.
+At this time, the static method `MonitorManager.register` can be called to register new log message types:
 
-At this time, two methods can be called: `register` (to register new log message types) and `configure` (to configure the instance for this service.
-
-Typically this occurs in a service's `monitor.js`:
 ```js
-const {defaultMonitorManager} = require('taskcluster-lib-monitor');
+const {MonitorManager} = require('taskcluster-lib-monitor');
 
-const monitorManager = defaultMonitorManager.configure({
-  serviceName: 'someservice',
-});
-
-monitorManager.register({
+MonitorManager.register({
   name: 'somethingHappened',
   title: 'Something Happened',
   type: 'something-happened',
@@ -33,11 +26,11 @@ monitorManager.register({
     thing: 'The thing in question',
   },
 });
-
-module.exports = monitorManager;
 ```
 
-Other Taskcluster libraries used by the service also register message types for messages that they send.
+Typically, message types are registered in the module where they are produced.
+Where multiple modules in a service produce the same message, those can be declared in `src/monitor.js` and that file required from `src/main.js`.
+Other Taskcluster libraries also register message types for messages that they send.
 
 Once the service begins running, call the `setup` method on the monitor manager to get the "root" monitor instance.
 This is typically done in a loader component:
@@ -45,7 +38,8 @@ This is typically done in a loader component:
 ```js
   monitor: {
     requires: ['process', 'profile', 'cfg'],
-    setup: ({process, profile, cfg}) => monitorManager.setup({
+    setup: ({process, profile, cfg}) => MonitorManager.setup({
+      serviceName: 'some-service',
       processName: process,
       verify: profile !== 'production',
       ...cfg.monitoring,
@@ -57,19 +51,13 @@ That monitor can then be used to log, measure, count, or even create child monit
 
 Typically the log references are passed to an instance of `taskcluster-lib-references`.
 
-### configure
-
-The available options to the manager's configure method are:
-
- * `serviceName` - The short name of this service.
-
 ### register
 
 This library allows creating custom message types, and documents those in the service documentation.
 To add a message type, do the following:
 
 ```js
-monitorManager.register({
+MonitorManager.register({
   name: 'email',
   title: 'Email Request',
   type: 'email',
@@ -81,7 +69,7 @@ monitorManager.register({
   },
 });
 
-monitorManager.register({
+MonitorManager.register({
   name: 'errorReport',
   title: 'Error Report',
   type: 'error-report',
@@ -110,7 +98,8 @@ The options to `register` are:
  * `level` - This will be the level that this message logs at. This must either be a syslog level or `any`. If it is `any`, you must pass an object with the
     field `level` as the second argument to the logging function.
  * `description` - A description of what this logging message means
- * `fields`: An object where every key is the name of a required field to be logged. Corresponding values are documentation of the meaning of that field.
+ * `fields` - An object where every key is the name of a required field to be logged. Corresponding values are documentation of the meaning of that field.
+ * `serviceName` - If set, then this log type appears only on this service; otherwise the log type is considered generic to all services.
 
 If the `verify` option is set to true during manager setup, this library will verify that at least the required fields have been passed into the logger
 upon invoking it.
@@ -119,6 +108,7 @@ upon invoking it.
 
 The available options to the setup function are:
 
+ * `serviceName` - The name of the service
  * `level` - A syslog logging level. Any messages with less severity than this level will not be logged.
  * `patchGlobal` - If true (the default), any uncaught errors in the service will be reported.
  * `processName` - If set to a string that identifies this process, cpu and memory

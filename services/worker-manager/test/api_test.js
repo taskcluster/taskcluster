@@ -5,7 +5,6 @@ const {WorkerPool} = require('../src/data');
 const testing = require('taskcluster-lib-testing');
 const fs = require('fs');
 const path = require('path');
-const {defaultMonitorManager} = require('taskcluster-lib-monitor');
 
 helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
   helper.withDb(mock, skipping);
@@ -120,12 +119,13 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
       () => apiClient.createWorkerPool(workerPoolId, input),
       err => err.statusCode === 500);
 
+    const monitor = await helper.load('monitor');
     assert.equal(
-      defaultMonitorManager.messages.filter(
+      monitor.manager.messages.filter(
         ({Type, Fields}) => Type === 'monitor.error' && Fields.message === 'uhoh',
       ).length,
       1);
-    defaultMonitorManager.reset();
+    monitor.manager.reset();
   });
 
   test('update worker pool', async function() {
@@ -177,12 +177,13 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
       () => apiClient.updateWorkerPool(workerPoolId, input),
       err => err.statusCode === 500);
 
+    const monitor = await helper.load('monitor');
     assert.equal(
-      defaultMonitorManager.messages.filter(
+      monitor.manager.messages.filter(
         ({Type, Fields}) => Type === 'monitor.error' && Fields.message === 'uhoh',
       ).length,
       1);
-    defaultMonitorManager.reset();
+    monitor.manager.reset();
   });
 
   test('create worker pool (invalid providerId)', async function() {

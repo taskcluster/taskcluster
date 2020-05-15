@@ -8,7 +8,6 @@ const _ = require('lodash');
 const hookDef = require('./test_definition');
 const libUrls = require('taskcluster-lib-urls');
 const testing = require('taskcluster-lib-testing');
-const {defaultMonitorManager} = require('taskcluster-lib-monitor');
 
 suite(testing.suiteName(), function() {
   helper.secrets.mockSuite('TaskCreator', ['db'], function(mock, skipping) {
@@ -90,7 +89,7 @@ suite(testing.suiteName(), function() {
 
     const assertFireLogged = fields =>
       assert.deepEqual(
-        defaultMonitorManager.messages.find(({Type}) => Type === 'hook-fire'),
+        monitor.manager.messages.find(({Type}) => Type === 'hook-fire'),
         {
           Fields: {
             hookGroupId: 'tc-hooks-tests',
@@ -98,11 +97,15 @@ suite(testing.suiteName(), function() {
             ...fields,
             v: 1,
           },
-          Logger: "taskcluster.hooks.taskcreator",
+          Logger: "taskcluster.test.taskcreator",
           Severity: 6,
           Type: "hook-fire",
         });
 
+    let monitor;
+    suiteSetup(async function() {
+      monitor = await helper.load('monitor');
+    });
     test('firing a real task succeeds', async function() {
       let hook = await createTestHook([], {
         context: '${context}',

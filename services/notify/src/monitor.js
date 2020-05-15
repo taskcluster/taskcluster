@@ -1,10 +1,6 @@
-const {defaultMonitorManager} = require('taskcluster-lib-monitor');
+const {MonitorManager} = require('taskcluster-lib-monitor');
 
-const monitorManager = defaultMonitorManager.configure({
-  serviceName: 'notify',
-});
-
-monitorManager.register({
+MonitorManager.register({
   name: 'email',
   title: 'Email Sent',
   type: 'email',
@@ -16,7 +12,7 @@ monitorManager.register({
   },
 });
 
-monitorManager.register({
+MonitorManager.register({
   name: 'pulse',
   title: 'Pulse Event Published',
   type: 'pulse',
@@ -28,7 +24,7 @@ monitorManager.register({
   },
 });
 
-monitorManager.register({
+MonitorManager.register({
   name: 'irc',
   title: 'IRC Message Sent',
   type: 'irc',
@@ -40,7 +36,7 @@ monitorManager.register({
   },
 });
 
-monitorManager.register({
+MonitorManager.register({
   name: 'matrix',
   title: 'Matrix Message Sent',
   type: 'matrix',
@@ -52,7 +48,7 @@ monitorManager.register({
   },
 });
 
-monitorManager.register({
+MonitorManager.register({
   name: 'matrixSdkDebug',
   title: 'Matrix SDK Debug',
   type: 'matrix-sdk-debug',
@@ -65,7 +61,7 @@ monitorManager.register({
   },
 });
 
-monitorManager.register({
+MonitorManager.register({
   name: 'matrixForbidden',
   title: 'Matrix Forbidden',
   type: 'matrix-forbidden',
@@ -78,5 +74,3 @@ monitorManager.register({
     roomId: 'The roomId that we were forbidden from.',
   },
 });
-
-module.exports = monitorManager;

@@ -7,7 +7,7 @@ const Handlers = require('./handlers');
 const builder = require('./api');
 const Config = require('taskcluster-lib-config');
 const loader = require('taskcluster-lib-loader');
-const monitorManager = require('./monitor');
+const {MonitorManager} = require('taskcluster-lib-monitor');
 const SchemaSet = require('taskcluster-lib-validate');
 const {App} = require('taskcluster-lib-app');
 const libReferences = require('taskcluster-lib-references');
@@ -80,7 +80,8 @@ let load = loader({
 
   monitor: {
     requires: ['process', 'profile', 'cfg'],
-    setup: ({process, profile, cfg}) => monitorManager.setup({
+    setup: ({process, profile, cfg}) => MonitorManager.setup({
+      setviceName: 'index',
       processName: process,
       verify: profile !== 'production',
       ...cfg.monitoring,
@@ -91,7 +92,7 @@ let load = loader({
     requires: ['cfg', 'schemaset'],
     setup: ({cfg, schemaset}) => libReferences.fromService({
       schemaset,
-      references: [builder.reference(), monitorManager.reference()],
+      references: [builder.reference(), MonitorManager.reference('index')],
     }).generateReferences(),
   },
 
