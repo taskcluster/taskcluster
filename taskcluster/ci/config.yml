@@ -1,0 +1,23 @@
+---
+trust-domain: taskcluster
+task-priority: highest
+
+taskgraph:
+  register: src:register
+  repositories:
+    taskcluster:
+      name: taskcluster
+
+workers:
+  # TODO: keep this in sync with community-config maybe? who knows yet
+  aliases:
+    ci:
+      provisioner: proj-taskcluster
+      os: linux
+      implementation: docker-worker
+      worker-type: ci
+    images:
+      provisioner: proj-taskcluster
+      os: linux
+      implementation: docker-worker
+      worker-type: images

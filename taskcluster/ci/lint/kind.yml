@@ -1,0 +1,28 @@
+---
+loader: taskgraph.loader.transform:loader
+
+transforms:
+  - taskgraph.transforms.job:transforms
+  - taskgraph.transforms.task:transforms
+
+job-defaults:
+  worker-type: ci
+  run:
+    using: bare
+  worker:
+    volumes:
+      - /cache
+    max-run-time: 600
+    docker-image: taskcluster/node-and-go:node12.16.3-go1.13.7 # TODO Generate this from .go-version and package.json
+
+jobs:
+  nodejs:
+    description: nodejs lint
+    run:
+      install: yarn install
+      command: yarn lint
+  golang:
+    description: go lint
+    run:
+      install: yarn install
+      command: yarn lint:go
