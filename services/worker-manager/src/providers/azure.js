@@ -277,6 +277,18 @@ class AzureProvider extends Provider {
     // extra information.
     const error = () => new ApiError('Signature validation error');
 
+    // if we for some reason do not have a vmId, get it
+    if (!worker.providerData.vm.id || !worker.providerData.vm.vmId) {
+      const {id, vmId} = await this._enqueue('get', () => this.computeClient.virtualMachines.get(
+        worker.providerData.resourceGroupName,
+        worker.providerData.vm.name,
+      ));
+      await worker.modify(w => {
+        w.providerData.vm.id = id;
+        w.providerData.vm.vmId = vmId;
+      });
+    }
+
     // workerIdentityProof is a signed message
 
     // We need to check that:
@@ -617,6 +629,14 @@ class AzureProvider extends Provider {
         worker.providerData.resourceGroupName,
         worker.providerData.vm.name,
       ));
+      // id is the fully qualified azure resource ID
+      // vmId is a uuid, we use it for registering workers
+      if (!worker.providerData.vm.id || !worker.providerData.vm.vmId) {
+        await worker.modify(w => {
+          w.providerData.vm.id = id;
+          w.providerData.vm.vmId = vmId;
+        });
+      }
       // lets us get power states for the VM
       const instanceView = await this._enqueue('get', () => this.computeClient.virtualMachines.instanceView(
         worker.providerData.resourceGroupName,
@@ -641,19 +661,10 @@ class AzureProvider extends Provider {
         if (worker.providerData.terminateAfter && worker.providerData.terminateAfter < Date.now()) {
           state = await this.removeWorker({worker});
         }
-
-        // vm has successfully provisioned, we need to set id and vmId
-        // id is the fully qualified azure resource ID
-        // vmId is a uuid, we use it for registering workers
-        if (!worker.providerData.vm.id || !worker.providerData.vm.vmId) {
-          await worker.modify(w => {
-            w.providerData.vm.id = id;
-            w.providerData.vm.vmId = vmId;
-          });
-        }
       } else if (failProvisioningStates.has(provisioningState) ||
                 // if the VM has ever been in a failing power state
-                _.some(powerStates, v => failPowerStates.has(v))
+                _.some(powerStates, v => failPowerStates.has(v)) &&
+                this.providerConfig.doNotDeleteFailedVMs
       ) {
         state = await this.removeWorker({worker});
         this.monitor.log.workerStopped({
