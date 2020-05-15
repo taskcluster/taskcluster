@@ -132,7 +132,6 @@ class Artifacts {
 
       let headers = {
         'content-type': mime.lookup(header.name),
-        'content-length': header.size,
       };
 
       // Check file extension

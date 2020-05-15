@@ -626,7 +626,6 @@ class Task extends EventEmitter {
           await uploadToS3(queue, taskId, runId, contentJson,
             'public/superseded-by.json', expiration, {
               'content-type': 'application/json',
-              'content-length': contentJson.length,
             });
 
           supersedes.push({taskId, runId});
@@ -651,7 +650,6 @@ class Task extends EventEmitter {
       await uploadToS3(this.queue, primaryTaskId, primaryRunId, contentJson,
         'public/supersedes.json', expiration, {
           'content-type': 'application/json',
-          'content-length': contentJson.length,
         });
     }
   }
