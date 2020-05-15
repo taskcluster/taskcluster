@@ -133,12 +133,12 @@ expireArtifacts:
   type: cron
   schedule: '0 0 * * *'
   deadline: 86400
-  command: node src/main expire-artifacts
+  command: node services/queue/src/main expire-artifacts
 ```
 
 To run this process locally:
 ```sh
-NODE_ENV=development node src/main expire-artifacts
+NODE_ENV=development node services/queue/src/main expire-artifacts
 ```
 
 You may need to provide additional configuration, either as environment variables or in `user-config.yml`.

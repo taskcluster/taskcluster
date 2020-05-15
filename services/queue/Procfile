@@ -1,16 +1,16 @@
 # GENERATED FILE from `yarn generate`! To update, change procs.yml and regenerate.
 
-web: cd services/queue && node src/main server
-write-docs: cd services/queue && node src/main writeDocs
-claimResolver: cd services/queue && node src/main claim-resolver
-deadlineResolver: cd services/queue && node src/main deadline-resolver
-dependencyResolver: cd services/queue && node src/main dependency-resolver
-expireArtifacts: cd services/queue && node src/main expire-artifacts
-expireTask: cd services/queue && node src/main expire-tasks
-expireTaskGroups: cd services/queue && node src/main expire-task-groups
-expireTaskGroupMembers: cd services/queue && node src/main expire-task-group-members
-expireTaskGroupSizes: cd services/queue && node src/main expire-task-group-sizes
-expireTaskDependency: cd services/queue && node src/main expire-task-dependency
-expireTaskRequirement: cd services/queue && node src/main expire-task-requirement
-expireQueueMessages: cd services/queue && node src/main expire-queue-messages
-expireWorkerInfo: cd services/queue && node src/main expire-worker-info
+web: cd services/queue && node services/queue/src/main server
+write-docs: cd services/queue && node services/queue/src/main writeDocs
+claimResolver: cd services/queue && node services/queue/src/main claim-resolver
+deadlineResolver: cd services/queue && node services/queue/src/main deadline-resolver
+dependencyResolver: cd services/queue && node services/queue/src/main dependency-resolver
+expireArtifacts: cd services/queue && node services/queue/src/main expire-artifacts
+expireTask: cd services/queue && node services/queue/src/main expire-tasks
+expireTaskGroups: cd services/queue && node services/queue/src/main expire-task-groups
+expireTaskGroupMembers: cd services/queue && node services/queue/src/main expire-task-group-members
+expireTaskGroupSizes: cd services/queue && node services/queue/src/main expire-task-group-sizes
+expireTaskDependency: cd services/queue && node services/queue/src/main expire-task-dependency
+expireTaskRequirement: cd services/queue && node services/queue/src/main expire-task-requirement
+expireQueueMessages: cd services/queue && node services/queue/src/main expire-queue-messages
+expireWorkerInfo: cd services/queue && node services/queue/src/main expire-worker-info

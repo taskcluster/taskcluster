@@ -20,7 +20,10 @@ const {WorkerPool} = require('./data');
 let load = loader({
   cfg: {
     requires: ['profile'],
-    setup: ({profile}) => config({profile}),
+    setup: ({profile}) => config({
+      profile,
+      serviceName: 'worker-manager',
+    }),
   },
 
   monitor: {

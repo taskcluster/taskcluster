@@ -1,12 +1,12 @@
 web:
   type: web
-  command: node src/main server
+  command: node services/notify/src/main server
 irc:
   type: background
-  command: node src/main irc
+  command: node services/notify/src/main irc
 handler:
   type: background
-  command: node src/main handler
+  command: node services/notify/src/main handler
 write-docs:
   type: build
-  command: node src/main writeDocs
+  command: node services/notify/src/main writeDocs

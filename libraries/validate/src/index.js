@@ -8,8 +8,8 @@ const assert = require('assert');
 const Ajv = require('ajv');
 const libUrls = require('taskcluster-lib-urls');
 const {renderConstants, checkRefs} = require('./util');
-const rootdir = require('app-root-dir');
 
+const REPO_ROOT = path.join(__dirname, '../../../');
 const ABSTRACT_SCHEMA_ROOT_URL = '';
 
 class SchemaSet {
@@ -18,7 +18,7 @@ class SchemaSet {
 
     this._schemas = {};
 
-    const defaultFolder = path.join(rootdir.get(), 'schemas');
+    const defaultFolder = path.join(REPO_ROOT, 'services', options.serviceName, 'schemas');
     this.cfg = _.defaults(options, {
       folder: defaultFolder,
       constants: path.join(options && options.folder || defaultFolder, 'constants.yml'),

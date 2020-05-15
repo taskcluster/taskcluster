@@ -1,6 +1,6 @@
 # GENERATED FILE from `yarn generate`! To update, change procs.yml and regenerate.
 
-web: cd services/notify && node src/main server
-irc: cd services/notify && node src/main irc
-handler: cd services/notify && node src/main handler
-write-docs: cd services/notify && node src/main writeDocs
+web: cd services/notify && node services/notify/src/main server
+irc: cd services/notify && node services/notify/src/main irc
+handler: cd services/notify && node services/notify/src/main handler
+write-docs: cd services/notify && node services/notify/src/main writeDocs

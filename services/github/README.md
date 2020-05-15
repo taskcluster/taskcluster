@@ -22,8 +22,8 @@ To run all of the tests, you'll first need to set up your credentials based on h
 Run `yarn install` and `yarn workspace taskcluster-secrets test`.
 
 To test the components separately, run:
-- server: `<set the environment variables> node src/main.js server`
-- handlers: `<set the environment variables> node src/main.js worker`
+- server: `<set the environment variables> node services/github/src/main.js server`
+- handlers: `<set the environment variables> node services/github/src/main.js worker`
 
 ## Copyright notes
 

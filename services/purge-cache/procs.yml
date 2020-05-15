@@ -1,11 +1,11 @@
 web:
   type: web
-  command: node src/main server
+  command: node services/purge-cache/src/main server
 expireCachePurges:
   type: cron
   schedule: '0 0 * * *'
   deadline: 86400
-  command: node src/main expire-cache-purges
+  command: node services/purge-cache/src/main expire-cache-purges
 write-docs:
   type: build
-  command: node src/main writeDocs
+  command: node services/purge-cache/src/main writeDocs

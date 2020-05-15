@@ -1,6 +1,6 @@
 web:
   type: web
-  command: node src/main.js server
+  command: node services/web-server/src/main.js server
   readinessPath: .well-known/apollo/server-health
   paths:
     - '/login'
@@ -11,17 +11,17 @@ scanner:
   type: cron
   schedule: '0 0 * * *'
   deadline: 86400
-  command: node src/main.js scanner
+  command: node services/web-server/src/main.js scanner
 cleanup-expire-auth-codes:
   type: cron
   schedule: '0 0 * * *'
   deadline: 86400
-  command: node src/main.js cleanup-expire-auth-codes
+  command: node services/web-server/src/main.js cleanup-expire-auth-codes
 cleanup-expire-access-tokens:
   type: cron
   schedule: '0 0 * * *'
   deadline: 86400
-  command: node src/main.js cleanup-expire-access-tokens
+  command: node services/web-server/src/main.js cleanup-expire-access-tokens
 write-docs:
   type: build
-  command: node src/main.js writeDocs
+  command: node services/web-server/src/main.js writeDocs

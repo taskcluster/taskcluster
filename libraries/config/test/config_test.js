@@ -7,6 +7,7 @@ suite(testing.suiteName(), function() {
 
   test('load yaml', () => {
     let cfg = config({
+      serviceName: 'test',
       files: [
         {path: path.join(__dirname, 'test.yml'), required: true},
       ],
@@ -19,6 +20,7 @@ suite(testing.suiteName(), function() {
 
   test('load profile', () => {
     let cfg = config({
+      serviceName: 'test',
       files: [
         {path: path.join(__dirname, 'test-profile.yml'), required: true},
       ],
@@ -31,6 +33,7 @@ suite(testing.suiteName(), function() {
 
   test('load profile (default)', () => {
     let cfg = config({
+      serviceName: 'test',
       files: [
         {path: path.join(__dirname, 'test-profile.yml'), required: true},
       ],
@@ -43,6 +46,7 @@ suite(testing.suiteName(), function() {
 
   test('load !env', () => {
     let cfg = config({
+      serviceName: 'test',
       files: [
         {path: path.join(__dirname, 'test-env.yml'), required: true},
       ],
@@ -74,6 +78,7 @@ suite(testing.suiteName(), function() {
   test('load missing file', () => {
     assume(() => {
       config({
+        serviceName: 'test',
         files: [
           {path: path.join(__dirname, 'file-that-doesnt-exist.yml'), required: false},
         ],
@@ -83,6 +88,7 @@ suite(testing.suiteName(), function() {
 
   test('load yaml (merge missing file)', () => {
     let cfg = config({
+      serviceName: 'test',
       files: [
         {path: path.join(__dirname, 'test.yml'), required: true},
         {path: path.join(__dirname, 'file-that-doesnt-exist.yml'), required: false},
@@ -96,6 +102,7 @@ suite(testing.suiteName(), function() {
 
   test('load !env and overwrite text', () => {
     let cfg = config({
+      serviceName: 'test',
       files: [
         {path: path.join(__dirname, 'test.yml'), required: true},
         {path: path.join(__dirname, 'test-env.yml'), required: true},
@@ -127,6 +134,7 @@ suite(testing.suiteName(), function() {
 
   test('load !env and fallback text', () => {
     let cfg = config({
+      serviceName: 'test',
       files: [
         {path: path.join(__dirname, 'test.yml'), required: true},
         {path: path.join(__dirname, 'test-env.yml'), required: true},
@@ -157,6 +165,7 @@ suite(testing.suiteName(), function() {
 
   test('load !env listing', () => {
     const vars = config({
+      serviceName: 'test',
       files: [
         {path: path.join(__dirname, 'test-env.yml'), required: true},
       ],

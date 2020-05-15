@@ -8,8 +8,9 @@ const hsts = require('hsts');
 const csp = require('content-security-policy');
 const uuidv4 = require('uuid/v4');
 const path = require('path');
-const rootdir = require('app-root-dir');
 const fs = require('fs');
+
+const REPO_ROOT = path.join(__dirname, '../../../');
 
 /**
  * Attach trace headers to requests. This is exported
@@ -136,7 +137,7 @@ const app = async (options) => {
   }
 
   app.use('/__version__', (req, res) => {
-    const taskclusterVersionFile = path.resolve(rootdir.get(), 'version.json');
+    const taskclusterVersionFile = path.resolve(REPO_ROOT, 'version.json');
 
     try {
       const taskclusterVersion = fs.readFileSync(taskclusterVersionFile).toString().trim();
