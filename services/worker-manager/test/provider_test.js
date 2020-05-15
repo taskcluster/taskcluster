@@ -22,17 +22,17 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
   });
 
   test('no lifecycle', async function() {
-    assert.equal(null, Provider.interpretLifecycle({}).terminateAfter);
+    assert.equal(345600100, Provider.interpretLifecycle({}).terminateAfter);
   });
 
   test('empty lifecycle', async function() {
-    assert.equal(null, Provider.interpretLifecycle({lifecycle: {}}).terminateAfter);
+    assert.equal(345600100, Provider.interpretLifecycle({lifecycle: {}}).terminateAfter);
   });
 
   test('only registrationTimeout', async function() {
     assert.deepEqual({
       terminateAfter: 10100,
-      reregistrationTimeout: null,
+      reregistrationTimeout: 345600000,
     }, Provider.interpretLifecycle({lifecycle: {registrationTimeout: 10}}));
   });
 
