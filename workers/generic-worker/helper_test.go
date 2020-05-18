@@ -98,9 +98,8 @@ func setup(t *testing.T) func() {
 	testDir := filepath.Join(testdataDir, t.Name())
 	config = &gwconfig.Config{
 		PrivateConfig: gwconfig.PrivateConfig{
-			AccessToken:   os.Getenv("TASKCLUSTER_ACCESS_TOKEN"),
-			Certificate:   os.Getenv("TASKCLUSTER_CERTIFICATE"),
-			LiveLogSecret: "xyz",
+			AccessToken: os.Getenv("TASKCLUSTER_ACCESS_TOKEN"),
+			Certificate: os.Getenv("TASKCLUSTER_CERTIFICATE"),
 		},
 		PublicConfig: gwconfig.PublicConfig{
 			AuthRootURL:      "",
@@ -120,11 +119,7 @@ func setup(t *testing.T) func() {
 			IdleTimeoutSecs:           60,
 			InstanceID:                "test-instance-id",
 			InstanceType:              "p3.enormous",
-			LiveLogCertificate:        "",
 			LiveLogExecutable:         "livelog",
-			LiveLogGETPort:            30582,
-			LiveLogKey:                "",
-			LiveLogPUTPort:            43264,
 			NumberOfTasksToRun:        1,
 			PrivateIP:                 net.ParseIP("87.65.43.21"),
 			ProvisionerID:             "test-provisioner",
@@ -140,7 +135,6 @@ func setup(t *testing.T) func() {
 			SentryProject:                  "generic-worker-tests",
 			ShutdownMachineOnIdle:          false,
 			ShutdownMachineOnInternalError: false,
-			Subdomain:                      "taskcluster-worker.net",
 			TaskclusterProxyExecutable:     "taskcluster-proxy",
 			TaskclusterProxyPort:           34569,
 			TasksDir:                       testDir,
@@ -164,9 +158,11 @@ func setup(t *testing.T) func() {
 		},
 	}
 
-	// like LiveLogGETPort and LiveLogPUTPort above, we need to use a non-default port for
-	// the livelog internalGETPort, so that we don't conflict with a generic-worker in which
-	// the tests are running
+	// we need to use a non-default port for the livelog internalGETPort, so
+	// that we don't conflict with a generic-worker in which the tests are
+	// running
+	oldInternalPUTPort := internalPUTPort
+	internalPUTPort = 30584
 	oldInternalGETPort := internalGETPort
 	internalGETPort = 30583
 
@@ -174,6 +170,7 @@ func setup(t *testing.T) func() {
 	setConfigRunTasksAsCurrentUser()
 	return func() {
 		teardown()
+		internalPUTPort = oldInternalPUTPort
 		internalGETPort = oldInternalGETPort
 	}
 }

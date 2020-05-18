@@ -183,8 +183,6 @@ github.com/taskcluster/shell v0.0.0-20191115171910-c688067f12d3 h1:5v+o0rYZz+s+q
 github.com/taskcluster/shell v0.0.0-20191115171910-c688067f12d3/go.mod h1:yFw6QSQUNaHUGVFwQ343WbkPft5hxZIghbdnmu/Gd3E=
 github.com/taskcluster/slugid-go v1.1.0 h1:SWsUplliyamdYzOKVM4+lDohZKuL63fKreGkvIKJ9aI=
 github.com/taskcluster/slugid-go v1.1.0/go.mod h1:5sOAcPHjqso1UkKxSl77CkKgOwha0D9X0msBKBj0AOg=
-github.com/taskcluster/stateless-dns-go v1.0.6 h1:6Nzte8Y+UWCNQCjTUpfs7LU7gA+FG3kjJeEZIhtCcaE=
-github.com/taskcluster/stateless-dns-go v1.0.6/go.mod h1:Nu9QAMTDA6EdWm4xyQVQurJDRXjhl8R6XDwxU/WNJ40=
 github.com/taskcluster/taskcluster-lib-urls v13.0.0+incompatible h1:JzXbHelZk1Kmi5JftwM47YOdHre2zddpP/cZCgXAkqM=
 github.com/taskcluster/taskcluster-lib-urls v13.0.0+incompatible/go.mod h1:ALqTgi15AmJGEGubRKM0ydlLAFatlQPrQrmal9YZpQs=
 github.com/tent/hawk-go v0.0.0-20161026210932-d341ea318957 h1:6Fre/uvwovW5YY4nfHZk66cAg9HjT9YdFSAJHUUgOyQ=

@@ -251,8 +251,6 @@ func loadConfig(configFile *gwconfig.File, provider Provider) (gwconfig.Provider
 			DownloadsDir:                   "downloads",
 			IdleTimeoutSecs:                0,
 			LiveLogExecutable:              "livelog",
-			LiveLogGETPort:                 60023,
-			LiveLogPUTPort:                 60022,
 			NumberOfTasksToRun:             0,
 			ProvisionerID:                  "test-provisioner",
 			PurgeCacheRootURL:              "",
@@ -264,7 +262,6 @@ func loadConfig(configFile *gwconfig.File, provider Provider) (gwconfig.Provider
 			SentryProject:                  "generic-worker",
 			ShutdownMachineOnIdle:          false,
 			ShutdownMachineOnInternalError: false,
-			Subdomain:                      "taskcluster-worker.net",
 			TaskclusterProxyExecutable:     "taskcluster-proxy",
 			TaskclusterProxyPort:           80,
 			TasksDir:                       defaultTasksDir(),
@@ -337,29 +334,6 @@ func setupExposer() (err error) {
 			config.WorkerGroup,
 			config.WorkerID,
 			config.Auth())
-	} else if config.LiveLogSecret != "" && config.LiveLogCertificate != "" && config.LiveLogKey != "" {
-		var cert, key []byte
-		cert, err = ioutil.ReadFile(config.LiveLogCertificate)
-		if err != nil {
-			return
-		}
-
-		key, err = ioutil.ReadFile(config.LiveLogKey)
-		if err != nil {
-			return
-		}
-
-		exposer, err = expose.NewStatelessDNS(
-			config.PublicIP,
-			config.LiveLogGETPort,
-			config.Subdomain,
-			config.LiveLogSecret,
-			// Allow each exposure to last for 24 hours. After the task completes, the exposure URL
-			// will no longer work anyway (because the port number is dynamic), so this extra validity
-			// does not hurt anything.
-			24*time.Hour,
-			string(cert),
-			string(key))
 	} else {
 		exposer, err = expose.NewLocal(config.PublicIP)
 	}

@@ -52,10 +52,10 @@ func TestSecretServiceError(t *testing.T) {
 	m.ExpectError(t, "Error fetching secret worker-pool:"+config.ProvisionerID+"/"+config.WorkerType+" from taskcluster-secrets service", err)
 }
 
-func TestPrivateConfigInUserData(t *testing.T) {
+func TestUnknownConfigInUserData(t *testing.T) {
 	m := &MockAWSProvisionedEnvironment{}
 	m.PublicConfig = m.ValidPublicConfig(t)
-	m.PublicConfig["livelogSecret"] = "this-shouldn't-he-here"
+	m.PublicConfig["nosuchthing"] = "this-shouldn't-he-here"
 	teardown, err := m.Setup(t)
 	defer teardown()
 	m.ExpectError(t, "json: unknown field", err)

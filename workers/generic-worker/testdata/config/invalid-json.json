@@ -1,5 +1,4 @@
 {
-  "livelogSecret" : "this-is-a-secret",
   "clientId" : "test-client",
   "rootURL" : "https://tc-tests.example.com",
   "workerId" : "THERE IS A MISSING COMMA AT THE END OF THIS LINE!!!"
