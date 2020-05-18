@@ -26,12 +26,6 @@ exports.tasks = [{
         /^FROM node:[0-9.]+(.*)$/gm,
         `FROM node:${nodeVersion}$1`));
 
-    utils.status({message: 'docker-worker CI Dockerfile'});
-    await modifyRepoFile('workers/docker-worker/test/images/ci/Dockerfile',
-      contents => contents.replace(
-        /^ENV NODE_VERSION [0-9.]+$/gm,
-        `ENV NODE_VERSION ${nodeVersion}`));
-
     utils.status({message: 'dev-docs/development-process.md'});
     await modifyRepoFile('dev-docs/development-process.md',
       contents => contents.replace(

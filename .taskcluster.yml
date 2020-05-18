@@ -429,8 +429,7 @@ tasks:
               - 'secrets:get:project/taskcluster/testing/docker-worker/ci-creds'
               - 'secrets:get:project/taskcluster/testing/docker-worker/pulse-creds'
             payload:
-              image: >-
-                taskcluster/worker-ci@sha256:e4357e0966e0265a3a45294d5902040b9de0303c3acb3271ee8ed81671b5461c
+              image: taskcluster/worker-ci:node${node}@sha256:3a6572b7462ba28f84e04e4baac304fbbc23bac606746ade9fc409f2da82caa7
               maxRunTime: 10800
               command:
                 - >-
@@ -470,8 +469,7 @@ tasks:
               - 'secrets:get:project/taskcluster/testing/docker-worker/ci-creds'
               - 'secrets:get:project/taskcluster/testing/docker-worker/pulse-creds'
             payload:
-              image: >-
-                taskcluster/worker-ci@sha256:e4357e0966e0265a3a45294d5902040b9de0303c3acb3271ee8ed81671b5461c
+              image: taskcluster/worker-ci:node${node}@sha256:3a6572b7462ba28f84e04e4baac304fbbc23bac606746ade9fc409f2da82caa7
               maxRunTime: 10800
               command:
                 - >-
@@ -511,8 +509,7 @@ tasks:
               - 'secrets:get:project/taskcluster/testing/docker-worker/ci-creds'
               - 'secrets:get:project/taskcluster/testing/docker-worker/pulse-creds'
             payload:
-              image: >-
-                taskcluster/worker-ci@sha256:e4357e0966e0265a3a45294d5902040b9de0303c3acb3271ee8ed81671b5461c
+              image: taskcluster/worker-ci:node${node}@sha256:3a6572b7462ba28f84e04e4baac304fbbc23bac606746ade9fc409f2da82caa7
               maxRunTime: 10800
               command:
                 - >-
@@ -552,8 +549,7 @@ tasks:
               - 'secrets:get:project/taskcluster/testing/docker-worker/ci-creds'
               - 'secrets:get:project/taskcluster/testing/docker-worker/pulse-creds'
             payload:
-              image: >-
-                taskcluster/worker-ci@sha256:e4357e0966e0265a3a45294d5902040b9de0303c3acb3271ee8ed81671b5461c
+              image: taskcluster/worker-ci:node${node}@sha256:3a6572b7462ba28f84e04e4baac304fbbc23bac606746ade9fc409f2da82caa7
               maxRunTime: 10800
               command:
                 - >-
@@ -593,8 +589,7 @@ tasks:
               - 'secrets:get:project/taskcluster/testing/docker-worker/ci-creds'
               - 'secrets:get:project/taskcluster/testing/docker-worker/pulse-creds'
             payload:
-              image: >-
-                taskcluster/worker-ci@sha256:e4357e0966e0265a3a45294d5902040b9de0303c3acb3271ee8ed81671b5461c
+              image: taskcluster/worker-ci:node${node}@sha256:3a6572b7462ba28f84e04e4baac304fbbc23bac606746ade9fc409f2da82caa7
               maxRunTime: 10800
               command:
                 - >-
