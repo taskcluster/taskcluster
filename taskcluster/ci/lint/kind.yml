@@ -2,6 +2,7 @@
 loader: taskgraph.loader.transform:loader
 
 transforms:
+  - src.transforms:taskcluster_images
   - taskgraph.transforms.job:transforms
   - taskgraph.transforms.task:transforms
 
@@ -10,10 +11,8 @@ job-defaults:
   run:
     using: bare
   worker:
-    volumes:
-      - /cache
     max-run-time: 600
-    docker-image: taskcluster/node-and-go:node12.16.3-go1.13.7 # TODO Generate this from .go-version and package.json
+    docker-image: {taskcluster: 'node-and-go'}
 
 jobs:
   nodejs:
