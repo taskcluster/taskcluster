@@ -18,14 +18,21 @@ import secretsQuery from './secrets.graphql';
 
 @hot(module)
 @graphql(secretsQuery, {
-  options: () => ({
-    fetchPolicy: 'network-only',
-    variables: {
-      secretsConnection: {
-        limit: VIEW_SECRETS_PAGE_SIZE,
+  options: props => {
+    const { search } = qs.parse(props.location.search.slice(1));
+
+    return {
+      fetchPolicy: 'network-only',
+      variables: {
+        secretsConnection: {
+          limit: VIEW_SECRETS_PAGE_SIZE,
+        },
+        filter: search
+          ? { name: { $regex: escapeStringRegexp(search), $options: 'i' } }
+          : null,
       },
-    },
-  }),
+    };
+  },
 })
 @withStyles(theme => ({
   plusIconSpan: {
@@ -125,7 +132,7 @@ export default class ViewSecrets extends Component {
           <ErrorPanel fixed error={error} />
           {secrets && (
             <SecretsTable
-              searchTerm={searchTerm}
+              searchTerm={secretSearch}
               onPageChange={this.handlePageChange}
               secretsConnection={secrets}
             />
