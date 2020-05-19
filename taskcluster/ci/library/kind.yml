@@ -1,10 +1,13 @@
 ---
-loader: src.loader:services_loader
+loader: src.loader:services_and_libraries_loader
 
 transforms:
   - src.transforms:taskcluster_images
   - taskgraph.transforms.job:transforms
   - taskgraph.transforms.task:transforms
+
+workspace: libraries
+prefix: 'lib-'
 
 job-defaults:
   worker-type: ci

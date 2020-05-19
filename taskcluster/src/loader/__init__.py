@@ -8,15 +8,16 @@ from taskgraph.util.templates import merge
 logger = logging.getLogger(__name__)
 
 
-def services_loader(kind, path, config, parameters, loaded_tasks):
-    p = Path('./services')
-    for service in [d for d in p.iterdir() if d.is_dir()]:
+def services_and_libraries_loader(kind, path, config, parameters, loaded_tasks):
+    for package in [d for d in Path(config["workspace"]).iterdir() if d.is_dir()]:
         job = merge(config.get("job-defaults", {}), {
-            "name": service.name,
-            "description": "service tests for {}".format(service.name),
+            "name": package.name,
+            "description": "package tests for {}".format(package.name),
             "run": {
-                "command": "./db/test-setup.sh && yarn workspace taskcluster-{} coverage:report".format(service.name)
+                "command": "./db/test-setup.sh && yarn workspace taskcluster-{}{} coverage:report".format(
+                    config.get("prefix", ''),
+                    package.name)
                 }
             })
-        logger.debug("Generating tasks for {} {}".format(kind, service.name))
+        logger.debug("Generating tasks for {} {}".format(kind, package.name))
         yield job
