@@ -379,7 +379,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
   suite('registerWorker', function() {
     const workerGroup = 'westus';
     const vmId = '5d06deb3-807b-46dd-aef5-78aaf9193f71';
-    const defaultWorker = {
+    const baseWorker = {
       workerPoolId,
       workerGroup,
       workerId: 'some-vm',
@@ -399,180 +399,190 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
       },
     };
 
-    test('document is not a valid PKCS#7 message', async function() {
-      const workerPool = await makeWorkerPool();
-      const worker = await helper.Worker.create({
-        ...defaultWorker,
-      });
-      const document = 'this is not a valid PKCS#7 message';
-      const workerIdentityProof = {document};
-      await assert.rejects(() =>
-        provider.registerWorker({workerPool, worker, workerIdentityProof}),
-      /Signature validation error/);
-      assert(monitorManager.messages[0].Fields.error.includes('Too few bytes to read ASN.1 value.'));
-    });
-
-    test('document is empty', async function() {
-      const workerPool = await makeWorkerPool();
-      const worker = await helper.Worker.create({
-        ...defaultWorker,
-      });
-      const document = '';
-      const workerIdentityProof = {document};
-      await assert.rejects(() =>
-        provider.registerWorker({workerPool, worker, workerIdentityProof}),
-      /Signature validation error/);
-      assert(monitorManager.messages[0].Fields.error.includes('Too few bytes to parse DER.'));
-    });
-
-    test('message does not match signature', async function() {
-      const workerPool = await makeWorkerPool();
-      const worker = await helper.Worker.create({
-        ...defaultWorker,
-      });
-      // this file is a version of `azure_signature_good` where vmId has been edited in the message
-      const document = fs.readFileSync(path.resolve(__dirname, 'fixtures/azure_message_bad')).toString();
-      const workerIdentityProof = {document};
-      await assert.rejects(() =>
-        provider.registerWorker({workerPool, worker, workerIdentityProof}),
-      /Signature validation error/);
-      assert(monitorManager.messages[0].Fields.message.includes('Error verifying PKCS#7 message signature'));
-    });
-
-    test('malformed signature', async function() {
-      const workerPool = await makeWorkerPool();
-      const worker = await helper.Worker.create({
-        ...defaultWorker,
-      });
-      // this file is a version of `azure_signature_good` where the message signature has been edited
-      const document = fs.readFileSync(path.resolve(__dirname, 'fixtures/azure_signature_bad')).toString();
-      const workerIdentityProof = {document};
-      await assert.rejects(() =>
-        provider.registerWorker({workerPool, worker, workerIdentityProof}),
-      /Signature validation error/);
-      assert(monitorManager.messages[0].Fields.message.includes('Error verifying PKCS#7 message signature'));
-    });
-
-    test('expired message', async function() {
-      const workerPool = await makeWorkerPool();
-      const worker = await helper.Worker.create({
-        ...defaultWorker,
-      });
-      const document = fs.readFileSync(path.resolve(__dirname, 'fixtures/azure_signature_good')).toString();
-      const workerIdentityProof = {document};
-      provider._now = () => new Date(); // The certs that are checked-in are old so they should be expired now
-      await assert.rejects(() =>
-        provider.registerWorker({workerPool, worker, workerIdentityProof}),
-      /Signature validation error/);
-      assert(monitorManager.messages[0].Fields.message.includes('Expired message'));
-    });
-
-    test('bad cert', async function() {
-      const workerPool = await makeWorkerPool();
-      const worker = await helper.Worker.create({
-        ...defaultWorker,
-      });
-      const document = fs.readFileSync(path.resolve(__dirname, 'fixtures/azure_signature_good')).toString();
-      const workerIdentityProof = {document};
-
-      // Here we replace the intermediate certs with nothing and show that this should reject
-      const oldCaStore = provider.caStore;
-      provider.caStore = forge.pki.createCaStore([]);
-
-      await assert.rejects(() =>
-        provider.registerWorker({workerPool, worker, workerIdentityProof}),
-      /Signature validation error/);
-      assert(monitorManager.messages[0].Fields.message.includes('Error verifying certificate chain'));
-      assert(monitorManager.messages[0].Fields.error.includes('Certificate is not trusted'));
-      provider.caStore = oldCaStore;
-    });
-
-    test('wrong worker state (duplicate call to registerWorker)', async function() {
-      const workerPool = await makeWorkerPool();
-      const worker = await helper.Worker.create({
-        ...defaultWorker,
-        state: 'running',
-      });
-      const document = fs.readFileSync(path.resolve(__dirname, 'fixtures/azure_signature_good')).toString();
-      const workerIdentityProof = {document};
-      await assert.rejects(() =>
-        provider.registerWorker({workerPool, worker, workerIdentityProof}),
-      /Signature validation error/);
-      assert(monitorManager.messages[0].Fields.error.includes('already running'));
-    });
-
-    test('wrong vmID', async function() {
-      const workerPool = await makeWorkerPool();
-      const worker = await helper.Worker.create({
-        ...defaultWorker,
-        providerData: {
-          ...baseProviderData,
-          vm: {
-            name: baseProviderData.vm.name,
-            vmId: 'wrongeba3-807b-46dd-aef5-78aaf9193f71',
+    for (const {name, defaultWorker} of [
+      {name: 'pre-IDd', defaultWorker: baseWorker},
+      {
+        name: 'fetch-in-register',
+        defaultWorker: {
+          ...baseWorker,
+          providerData: {
+            ...baseProviderData,
+            vm: {
+              name: 'some-vm',
+            },
           },
         },
-      });
-      const document = fs.readFileSync(path.resolve(__dirname, 'fixtures/azure_signature_good')).toString();
-      const workerIdentityProof = {document};
-      await assert.rejects(() =>
-        provider.registerWorker({workerPool, worker, workerIdentityProof}),
-      /Signature validation error/);
-      assert(monitorManager.messages[0].Fields.message.includes('vmId mismatch'));
-      assert.equal(monitorManager.messages[0].Fields.vmId, vmId);
-      assert.equal(monitorManager.messages[0].Fields.expectedVmId, 'wrongeba3-807b-46dd-aef5-78aaf9193f71');
-      assert.equal(monitorManager.messages[0].Fields.workerId, 'some-vm');
-    });
+      },
+    ]) {
+      suite(name, function() {
+        test('document is not a valid PKCS#7 message', async function() {
+          const workerPool = await makeWorkerPool();
+          const worker = await helper.Worker.create({
+            ...defaultWorker,
+          });
+          const document = 'this is not a valid PKCS#7 message';
+          const workerIdentityProof = {document};
+          await assert.rejects(() =>
+            provider.registerWorker({workerPool, worker, workerIdentityProof}),
+          /Signature validation error/);
+          assert(monitorManager.messages[0].Fields.error.includes('Too few bytes to read ASN.1 value.'));
+        });
 
-    test('sweet success', async function() {
-      const workerPool = await makeWorkerPool();
-      const worker = await helper.Worker.create({
-        ...defaultWorker,
-        providerData: {
-          ...baseProviderData,
-          vm: {
-            name: 'some-vm',
-            vmId: vmId,
-          },
-          workerConfig: {
-            "someKey": "someValue",
-          },
-        },
-      });
-      const document = fs.readFileSync(path.resolve(__dirname, 'fixtures/azure_signature_good')).toString();
-      const workerIdentityProof = {document};
-      const res = await provider.registerWorker({workerPool, worker, workerIdentityProof});
-      // allow +- 10 seconds since time passes while the test executes
-      assert(res.expires - new Date() + 10000 > 96 * 3600 * 1000, res.expires);
-      assert(res.expires - new Date() - 10000 < 96 * 3600 * 1000, res.expires);
-      assert.equal(res.workerConfig.someKey, 'someValue');
-    });
+        test('document is empty', async function() {
+          const workerPool = await makeWorkerPool();
+          const worker = await helper.Worker.create({
+            ...defaultWorker,
+          });
+          const document = '';
+          const workerIdentityProof = {document};
+          await assert.rejects(() =>
+            provider.registerWorker({workerPool, worker, workerIdentityProof}),
+          /Signature validation error/);
+          assert(monitorManager.messages[0].Fields.error.includes('Too few bytes to parse DER.'));
+        });
 
-    test('sweet success (different reregister)', async function() {
-      const workerPool = await makeWorkerPool();
-      const worker = await helper.Worker.create({
-        ...defaultWorker,
-        providerData: {
-          ...baseProviderData,
-          vm: {
-            name: 'some-vm',
-            vmId: vmId,
-          },
-          workerConfig: {
-            "someKey": "someValue",
-          },
-        },
+        test('message does not match signature', async function() {
+          const workerPool = await makeWorkerPool();
+          const worker = await helper.Worker.create({
+            ...defaultWorker,
+          });
+          // this file is a version of `azure_signature_good` where vmId has been edited in the message
+          const document = fs.readFileSync(path.resolve(__dirname, 'fixtures/azure_message_bad')).toString();
+          const workerIdentityProof = {document};
+          await assert.rejects(() =>
+            provider.registerWorker({workerPool, worker, workerIdentityProof}),
+          /Signature validation error/);
+          assert(monitorManager.messages[0].Fields.message.includes('Error verifying PKCS#7 message signature'));
+        });
+
+        test('malformed signature', async function() {
+          const workerPool = await makeWorkerPool();
+          const worker = await helper.Worker.create({
+            ...defaultWorker,
+          });
+          // this file is a version of `azure_signature_good` where the message signature has been edited
+          const document = fs.readFileSync(path.resolve(__dirname, 'fixtures/azure_signature_bad')).toString();
+          const workerIdentityProof = {document};
+          await assert.rejects(() =>
+            provider.registerWorker({workerPool, worker, workerIdentityProof}),
+          /Signature validation error/);
+          assert(monitorManager.messages[0].Fields.message.includes('Error verifying PKCS#7 message signature'));
+        });
+
+        test('expired message', async function() {
+          const workerPool = await makeWorkerPool();
+          const worker = await helper.Worker.create({
+            ...defaultWorker,
+          });
+          const document = fs.readFileSync(path.resolve(__dirname, 'fixtures/azure_signature_good')).toString();
+          const workerIdentityProof = {document};
+          provider._now = () => new Date(); // The certs that are checked-in are old so they should be expired now
+          await assert.rejects(() =>
+            provider.registerWorker({workerPool, worker, workerIdentityProof}),
+          /Signature validation error/);
+          assert(monitorManager.messages[0].Fields.message.includes('Expired message'));
+        });
+
+        test('bad cert', async function() {
+          const workerPool = await makeWorkerPool();
+          const worker = await helper.Worker.create({
+            ...defaultWorker,
+          });
+          const document = fs.readFileSync(path.resolve(__dirname, 'fixtures/azure_signature_good')).toString();
+          const workerIdentityProof = {document};
+
+          // Here we replace the intermediate certs with nothing and show that this should reject
+          const oldCaStore = provider.caStore;
+          provider.caStore = forge.pki.createCaStore([]);
+
+          await assert.rejects(() =>
+            provider.registerWorker({workerPool, worker, workerIdentityProof}),
+          /Signature validation error/);
+          assert(monitorManager.messages[0].Fields.message.includes('Error verifying certificate chain'));
+          assert(monitorManager.messages[0].Fields.error.includes('Certificate is not trusted'));
+          provider.caStore = oldCaStore;
+        });
+
+        test('wrong worker state (duplicate call to registerWorker)', async function() {
+          const workerPool = await makeWorkerPool();
+          const worker = await helper.Worker.create({
+            ...defaultWorker,
+            state: 'running',
+          });
+          const document = fs.readFileSync(path.resolve(__dirname, 'fixtures/azure_signature_good')).toString();
+          const workerIdentityProof = {document};
+          await assert.rejects(() =>
+            provider.registerWorker({workerPool, worker, workerIdentityProof}),
+          /Signature validation error/);
+          assert(monitorManager.messages[0].Fields.error.includes('already running'));
+        });
+
+        test('wrong vmID', async function() {
+          const workerPool = await makeWorkerPool();
+          const worker = await helper.Worker.create({
+            ...defaultWorker,
+            providerData: {
+              ...baseProviderData,
+              vm: {
+                name: baseProviderData.vm.name,
+                vmId: 'wrongeba3-807b-46dd-aef5-78aaf9193f71',
+              },
+            },
+          });
+          const document = fs.readFileSync(path.resolve(__dirname, 'fixtures/azure_signature_good')).toString();
+          const workerIdentityProof = {document};
+          await assert.rejects(() =>
+            provider.registerWorker({workerPool, worker, workerIdentityProof}),
+          /Signature validation error/);
+          assert(monitorManager.messages[0].Fields.message.includes('vmId mismatch'));
+          assert.equal(monitorManager.messages[0].Fields.vmId, vmId);
+          assert.equal(monitorManager.messages[0].Fields.expectedVmId, 'wrongeba3-807b-46dd-aef5-78aaf9193f71');
+          assert.equal(monitorManager.messages[0].Fields.workerId, 'some-vm');
+        });
+
+        test('sweet success', async function() {
+          const workerPool = await makeWorkerPool();
+          const worker = await helper.Worker.create({
+            ...defaultWorker,
+            providerData: {
+              ...defaultWorker.providerData,
+              workerConfig: {
+                "someKey": "someValue",
+              },
+            },
+          });
+          const document = fs.readFileSync(path.resolve(__dirname, 'fixtures/azure_signature_good')).toString();
+          const workerIdentityProof = {document};
+          const res = await provider.registerWorker({workerPool, worker, workerIdentityProof});
+          // allow +- 10 seconds since time passes while the test executes
+          assert(res.expires - new Date() + 10000 > 96 * 3600 * 1000, res.expires);
+          assert(res.expires - new Date() - 10000 < 96 * 3600 * 1000, res.expires);
+          assert.equal(res.workerConfig.someKey, 'someValue');
+        });
+
+        test('sweet success (different reregister)', async function() {
+          const workerPool = await makeWorkerPool();
+          const worker = await helper.Worker.create({
+            ...defaultWorker,
+            providerData: {
+              ...defaultWorker.providerData,
+              workerConfig: {
+                "someKey": "someValue",
+              },
+            },
+          });
+          await worker.modify(w => {
+            w.providerData.reregistrationTimeout = 10 * 3600 * 1000;
+          });
+          const document = fs.readFileSync(path.resolve(__dirname, 'fixtures/azure_signature_good')).toString();
+          const workerIdentityProof = {document};
+          const res = await provider.registerWorker({workerPool, worker, workerIdentityProof});
+          // allow +- 10 seconds since time passes while the test executes
+          assert(res.expires - new Date() + 10000 > 10 * 3600 * 1000, res.expires);
+          assert(res.expires - new Date() - 10000 < 10 * 3600 * 1000, res.expires);
+          assert.equal(res.workerConfig.someKey, 'someValue');
+        });
       });
-      await worker.modify(w => {
-        w.providerData.reregistrationTimeout = 10 * 3600 * 1000;
-      });
-      const document = fs.readFileSync(path.resolve(__dirname, 'fixtures/azure_signature_good')).toString();
-      const workerIdentityProof = {document};
-      const res = await provider.registerWorker({workerPool, worker, workerIdentityProof});
-      // allow +- 10 seconds since time passes while the test executes
-      assert(res.expires - new Date() + 10000 > 10 * 3600 * 1000, res.expires);
-      assert(res.expires - new Date() - 10000 < 10 * 3600 * 1000, res.expires);
-      assert.equal(res.workerConfig.someKey, 'someValue');
-    });
+    }
   });
 });
