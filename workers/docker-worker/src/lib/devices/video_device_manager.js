@@ -33,6 +33,10 @@ class VideoDeviceManager {
       Devices: ${JSON.stringify(deviceList, null, 2)}
     `);
 
+    if (deviceList.length === 0) {
+      throw new Error('No video devices found; try setting deviceManager.loopbackVideo.enabled = false to disable the feature, or building the v4l2loopback module into the kernel');
+    }
+
     return deviceList;
   }
 
@@ -40,7 +44,7 @@ class VideoDeviceManager {
     let devices = this.getAvailableDevices();
     if (!devices.length) {
       throw new Error(`
-        Fatal error... Could not acquire audio device: ${JSON.stringify(this.devices)}
+        Fatal error... Could not acquire video device: ${JSON.stringify(this.devices)}
       `);
     }
 
