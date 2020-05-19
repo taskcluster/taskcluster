@@ -7279,16 +7279,6 @@
               "title": "Artifact uploads",
               "type": "boolean"
             },
-            "balrogStageVPNProxy": {
-              "description": "The Balrog stage proxy feature allows tasks to make requests to http://balrog which is a proxied connection through a vpn tunnel to the stage balrog update server.",
-              "title": "Balrog stage proxy service",
-              "type": "boolean"
-            },
-            "balrogVPNProxy": {
-              "description": "The Balrog proxy feature allows tasks to make requests to http://balrog which is a proxied connection through a vpn tunnel to production balrog update server.",
-              "title": "Balrog proxy service",
-              "type": "boolean"
-            },
             "bulkLog": {
               "description": "Useful if live logging is not interesting but the overalllog is later on",
               "title": "Bulk upload the task log into a single artifact",
@@ -7317,11 +7307,6 @@
             "localLiveLog": {
               "description": "Logs are stored on the worker during the duration of tasks and available via http chunked streaming then uploaded to s3",
               "title": "Enable live logging (worker local)",
-              "type": "boolean"
-            },
-            "relengAPIProxy": {
-              "description": "The Releng API proxy service allows tasks to talk to releng api using an authorization token based on the task's scopes",
-              "title": "Releng API proxy service",
               "type": "boolean"
             },
             "taskclusterProxy": {
