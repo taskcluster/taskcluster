@@ -1,0 +1,26 @@
+---
+loader: src.loader:services_loader
+
+transforms:
+  - src.transforms:taskcluster_images
+  - taskgraph.transforms.job:transforms
+  - taskgraph.transforms.task:transforms
+
+job-defaults:
+  worker-type: ci
+  run:
+    using: bare
+    install: yarn --frozen-lockfile && eval $(yarn -s shared-secrets)
+  scopes:
+    - secrets:get:project/taskcluster/testing/azure
+    - secrets:get:project/taskcluster/testing/codecov
+    - secrets:get:project/taskcluster/testing/taskcluster-*
+    - docker-worker:cache:taskcluster-test-*
+  worker:
+    taskcluster-proxy: true
+    artifacts:
+      - name: public
+        path: /taskcluster/artifacts
+        type: directory
+    max-run-time: 600
+    docker-image: {taskcluster: 'node-and-postgres'}
