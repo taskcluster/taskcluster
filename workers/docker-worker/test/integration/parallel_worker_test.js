@@ -5,8 +5,14 @@ const slugid = require('slugid');
 const DockerWorker = require('../dockerworker');
 const TestWorker = require('../testworker');
 const assert = require('assert');
+const {suiteName} = require('taskcluster-lib-testing');
+const helper = require('../helper');
 
-suite('Parallel workers', () => {
+helper.secrets.mockSuite(suiteName(), ['docker', 'ci-creds'], function(mock, skipping) {
+  if (mock) {
+    return; // no fake equivalent for integration tests
+  }
+
   // Ensure we don't leave behind our test configurations.
   teardown(settings.cleanup);
 

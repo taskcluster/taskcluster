@@ -3,10 +3,19 @@ const settings = require('../settings');
 const cmd = require('./helper/cmd');
 const DockerWorker = require('../dockerworker');
 const TestWorker = require('../testworker');
+const {suiteName} = require('taskcluster-lib-testing');
+const helper = require('../helper');
 
-suite('Signals test', () => {
+helper.secrets.mockSuite(suiteName(), ['docker', 'ci-creds'], function(mock, skipping) {
+  if (mock) {
+    return; // no fake equivalent for integration tests
+  }
+
   let worker;
   setup(() => {
+    if (skipping()) {
+      return;
+    }
     settings.cleanup();
     settings.configure({
       shutdown: {

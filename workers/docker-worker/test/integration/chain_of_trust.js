@@ -10,6 +10,7 @@ const tweetnacl = require('tweetnacl');
 const taskcluster = require('taskcluster-client');
 const got = require('got');
 const {removeImage} = require('../../src/lib/util/remove_image');
+const helper = require('../helper');
 const {TASK_ID, TASK_IMAGE_HASH, TASK_IMAGE_ARTIFACT_HASH} = require('../fixtures/image_artifacts');
 
 let docker = Docker();
@@ -73,7 +74,7 @@ suite('certificate of trust', () => {
 
     // ed25519 cot
     let chainOfTrust = await getArtifact(result, 'public/chain-of-trust.json');
-    let queue = new taskcluster.Queue(taskcluster.fromEnvVars());
+    let queue = new taskcluster.Queue(helper.optionsFromCiCreds());
     let url = queue.buildUrl(queue.getArtifact, result.taskId, result.runId, 'public/chain-of-trust.json.sig');
     let chainOfTrustSig = (await got(url, {encoding: null})).body;
 

@@ -3,8 +3,14 @@ const settings = require('../settings');
 const DockerWorker = require('../dockerworker');
 const TestWorker = require('../testworker');
 const assert = require('assert');
+const {suiteName} = require('taskcluster-lib-testing');
+const helper = require('../helper');
 
-suite('Aliveness check', function() {
+helper.secrets.mockSuite(suiteName(), ['docker', 'ci-creds'], function(mock, skipping) {
+  if (mock) {
+    return; // no fake equivalent for integration tests
+  }
+
   // Ensure we don't leave behind our test configurations.
   teardown(async () => {
     await worker.terminate();

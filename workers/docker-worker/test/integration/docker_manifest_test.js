@@ -3,8 +3,13 @@ const cmd = require('./helper/cmd');
 const expires = require('./helper/expires');
 const TestWorker = require('../testworker');
 const DockerWorker = require('../dockerworker');
+const {suiteName} = require('taskcluster-lib-testing');
+const helper = require('../helper');
 
-suite('docker image with manifest.json file', function() {
+helper.secrets.mockSuite(suiteName(), ['docker', 'ci-creds'], function(mock, skipping) {
+  if (mock) {
+    return; // no fake equivalent for integration tests
+  }
 
   let worker;
   setup(async () => {

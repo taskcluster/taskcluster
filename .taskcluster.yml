@@ -433,6 +433,7 @@ tasks:
               maxRunTime: 10800
               command:
                 - >-
+                  ( cd ../..; yarn install --frozen-lockfile ) &&
                   yarn install --frozen-lockfile &&
                   ./build.sh &&
                   ./test/docker-worker-test --this-chunk 1 --total-chunks 5
@@ -447,6 +448,8 @@ tasks:
                 GITHUB_REPO_URL: '${repo.git_url}'
                 GITHUB_BRANCH: '${repo.branch}'
                 GITHUB_SHA: '${repo.ref}'
+                NO_TEST_SKIP: 'true'
+                DOCKER_TESTS: 1
               features:
                 taskclusterProxy: true
             metadata:
@@ -473,6 +476,7 @@ tasks:
               maxRunTime: 10800
               command:
                 - >-
+                  ( cd ../..; yarn install --frozen-lockfile ) &&
                   yarn install --frozen-lockfile &&
                   ./build.sh &&
                   ./test/docker-worker-test --this-chunk 2 --total-chunks 5
@@ -487,6 +491,8 @@ tasks:
                 GITHUB_REPO_URL: '${repo.git_url}'
                 GITHUB_BRANCH: '${repo.branch}'
                 GITHUB_SHA: '${repo.ref}'
+                NO_TEST_SKIP: 'true'
+                DOCKER_TESTS: 1
               features:
                 taskclusterProxy: true
             metadata:
@@ -513,6 +519,7 @@ tasks:
               maxRunTime: 10800
               command:
                 - >-
+                  ( cd ../..; yarn install --frozen-lockfile ) &&
                   yarn install --frozen-lockfile &&
                   ./build.sh &&
                   ./test/docker-worker-test --this-chunk 3 --total-chunks 5
@@ -527,6 +534,8 @@ tasks:
                 GITHUB_REPO_URL: '${repo.git_url}'
                 GITHUB_BRANCH: '${repo.branch}'
                 GITHUB_SHA: '${repo.ref}'
+                NO_TEST_SKIP: 'true'
+                DOCKER_TESTS: 1
               features:
                 taskclusterProxy: true
             metadata:
@@ -553,6 +562,7 @@ tasks:
               maxRunTime: 10800
               command:
                 - >-
+                  ( cd ../..; yarn install --frozen-lockfile ) &&
                   yarn install --frozen-lockfile &&
                   ./build.sh &&
                   ./test/docker-worker-test --this-chunk 4 --total-chunks 5
@@ -567,6 +577,8 @@ tasks:
                 GITHUB_REPO_URL: '${repo.git_url}'
                 GITHUB_BRANCH: '${repo.branch}'
                 GITHUB_SHA: '${repo.ref}'
+                NO_TEST_SKIP: 'true'
+                DOCKER_TESTS: 1
               features:
                 taskclusterProxy: true
             metadata:
@@ -593,6 +605,7 @@ tasks:
               maxRunTime: 10800
               command:
                 - >-
+                  ( cd ../..; yarn install --frozen-lockfile ) &&
                   yarn install --frozen-lockfile &&
                   ./build.sh &&
                   ./test/docker-worker-test --this-chunk 5 --total-chunks 5
@@ -607,6 +620,8 @@ tasks:
                 GITHUB_REPO_URL: '${repo.git_url}'
                 GITHUB_BRANCH: '${repo.branch}'
                 GITHUB_SHA: '${repo.ref}'
+                NO_TEST_SKIP: 'true'
+                DOCKER_TESTS: 1
               features:
                 taskclusterProxy: true
             metadata:

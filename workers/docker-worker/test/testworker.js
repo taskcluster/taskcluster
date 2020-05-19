@@ -10,9 +10,9 @@ const split = require('split2');
 const getArtifact = require('./integration/helper/get_artifact');
 const Task = require('./task');
 const taskcluster = require('taskcluster-client');
-const typedEnvConfig = require('typed-env-config');
 const {EventEmitter} = require('events');
 const getLogsLocationsFromTask = require('../src/lib/features/logs_location.js');
+const helper = require('./helper');
 
 let debug = Debug('docker-worker:test:testworker');
 
@@ -34,12 +34,6 @@ class TestWorker extends EventEmitter {
     // During capacity tests
     this.setMaxListeners(30);
 
-    let config = typedEnvConfig({
-      files: [`${__dirname}/../config.yml`],
-      profile: 'test',
-      env: process.env,
-    });
-
     this.provisionerId = PROVISIONER_ID;
     this.workerType = workerType || TestWorker.workerTypeName();
     // remove leading underscores because workerId could be used as container name
@@ -47,12 +41,7 @@ class TestWorker extends EventEmitter {
     this.workerId = workerId || `dummy-worker-${slugid.v4()}`.substring(0, 22);
     this.worker = new Worker(PROVISIONER_ID, this.workerType, this.workerId);
 
-    this.pulse = config.pulse;
-
-    this.queue = new taskcluster.Queue({
-      rootUrl: config.rootUrl,
-      credentials: config.taskcluster,
-    });
+    this.queue = new taskcluster.Queue(helper.optionsFromCiCreds());
 
     let deadline = new Date();
     deadline.setMinutes(deadline.getMinutes() + 60);

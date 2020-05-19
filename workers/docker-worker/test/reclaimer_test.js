@@ -1,13 +1,15 @@
-suite('Reclaimer', function() {
-  let assert = require('assert');
-  let Reclaimer = require('../src/lib/task').Reclaimer;
+const assert = require('assert');
+const Reclaimer = require('../src/lib/task').Reclaimer;
+const fakeLog = require('debug')('fakeRuntime.log');
+const EventEmitter = require('events');
+const {suiteName} = require('taskcluster-lib-testing');
+
+suite(suiteName(), function() {
   let fakeRuntime, fakeTask;
   let reclaims;
   let taskAction;
   let soon;
   let reclaimer;
-  let fakeLog = require('debug')('fakeRuntime.log');
-  let EventEmitter = require('events');
 
   let makeClaim = function(taskId, runId, takenUntil) {
     return {

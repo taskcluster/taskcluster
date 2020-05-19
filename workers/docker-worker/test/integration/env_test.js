@@ -1,7 +1,13 @@
 const assert = require('assert');
 const testworker = require('../post_task');
+const {suiteName} = require('taskcluster-lib-testing');
+const helper = require('../helper');
 
-suite('setting env variables', () => {
+helper.secrets.mockSuite(suiteName(), ['docker', 'ci-creds'], function(mock, skipping) {
+  if (mock) {
+    return; // no fake equivalent for integration tests
+  }
+
   test('echo env variable', async () => {
     let expected = 'is woot';
     let result = await testworker({

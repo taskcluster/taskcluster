@@ -3,10 +3,11 @@ const assert = require('assert');
 const nock = require('nock');
 const Debug = require('debug');
 const monitor = require('./fixtures/monitor');
+const {suiteName} = require('taskcluster-lib-testing');
 
 let fakeLog = Debug('fakeRuntime.log');
 
-suite('TaskListener.applySuperseding', function() {
+suite(suiteName(), function() {
   let listener;
   let claimTaskResponses;
   let SUPERSEDER_URL = 'http://supersed.er/superkey/';

@@ -9,10 +9,16 @@ const TestWorker = require('../testworker');
 const ImageManager = require('../../src/lib/docker/image_manager');
 const {createLogger} = require('../../src/lib/log');
 const promiseRetry = require('promise-retry');
+const {suiteName} = require('taskcluster-lib-testing');
+const helper = require('../helper');
 
 let docker = Docker();
 
-suite('Capacity', () => {
+helper.secrets.mockSuite(suiteName(), ['docker', 'ci-creds'], function(mock, skipping) {
+  if (mock) {
+    return; // no fake equivalent for integration tests
+  }
+
   const CAPACITY = 10;
   const IMAGE = 'taskcluster/test-ubuntu:latest';
 

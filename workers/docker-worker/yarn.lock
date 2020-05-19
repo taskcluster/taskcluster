@@ -2309,6 +2309,10 @@ taskcluster-client@^16.2.0:
     superagent "^5.0.0"
     taskcluster-lib-urls "^12.0.0"
 
+"taskcluster-lib-testing@link:../../libraries/testing":
+  version "0.0.0"
+  uid ""
+
 taskcluster-lib-urls@^12.0.0:
   version "12.0.0"
   resolved "https://registry.yarnpkg.com/taskcluster-lib-urls/-/taskcluster-lib-urls-12.0.0.tgz#f56190eec9e9597d37a42ad0e7f461e8e0e6732b"
