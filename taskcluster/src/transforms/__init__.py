@@ -16,5 +16,8 @@ def taskcluster_images(config, jobs):
                 if isinstance(image, dict) and image.keys()[0] == "taskcluster":
                     repo = image["taskcluster"]
                     if (repo == "node-and-go"):
-                        job["worker"]["docker-image"] = "taskcluster/node-and-go:node{}-{}".format(node_version, go_version).strip()
+                        job["worker"]["docker-image"] = "taskcluster/node-and-go:node{}-{}".format(
+                            node_version,
+                            go_version
+                        ).strip()
                 yield job

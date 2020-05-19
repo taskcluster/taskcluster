@@ -25,3 +25,10 @@ jobs:
     run:
       install: yarn install
       command: yarn lint:go
+  python:
+    description: python flake8
+    worker:
+      docker-image: python:3.7
+    run:
+      install: pip install flake8
+      command: sh test/py-lint.sh
