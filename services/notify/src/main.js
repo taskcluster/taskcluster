@@ -25,7 +25,10 @@ const tcdb = require('taskcluster-db');
 const load = loader({
   cfg: {
     requires: ['profile'],
-    setup: ({profile}) => config({profile}),
+    setup: ({profile}) => config({
+      profile,
+      serviceName: 'notify',
+    }),
   },
 
   monitor: {

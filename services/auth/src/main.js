@@ -22,7 +22,10 @@ const assert = require('assert');
 const load = Loader({
   cfg: {
     requires: ['profile'],
-    setup: ({profile}) => Config({profile}),
+    setup: ({profile}) => Config({
+      profile,
+      serviceName: 'auth',
+    }),
   },
 
   sentryManager: {

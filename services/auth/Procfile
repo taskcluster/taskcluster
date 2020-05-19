@@ -1,6 +1,6 @@
 # GENERATED FILE from `yarn generate`! To update, change procs.yml and regenerate.
 
-web: cd services/auth && node src/main server
-expireSentry: cd services/auth && node src/main expire-sentry
-purgeExpiredClients: cd services/auth && node src/main purge-expired-clients
-write-docs: cd services/auth && node src/main writeDocs
+web: cd services/auth && node services/auth/src/main server
+expireSentry: cd services/auth && node services/auth/src/main expire-sentry
+purgeExpiredClients: cd services/auth && node services/auth/src/main purge-expired-clients
+write-docs: cd services/auth && node services/auth/src/main writeDocs

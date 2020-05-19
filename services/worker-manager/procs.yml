@@ -1,29 +1,29 @@
 web:
   type: web
-  command: node src/main.js server
+  command: node services/worker-manager/src/main.js server
 provisioner:
   type: background
   subType: 'iterate'
-  command: node src/main.js runProvisioner
+  command: node services/worker-manager/src/main.js runProvisioner
 workerscanner:
   type: background
   subType: 'iterate'
-  command: node src/main.js workerScanner
+  command: node services/worker-manager/src/main.js workerScanner
 expire-workers:
   type: cron
   schedule: '0 0 * * *'
   deadline: 86400
-  command: node src/main.js expireWorkers
+  command: node services/worker-manager/src/main.js expireWorkers
 expire-worker-pools:
   type: cron
   schedule: '0 1 * * *'
   deadline: 86400
-  command: node src/main.js expireWorkerPools
+  command: node services/worker-manager/src/main.js expireWorkerPools
 expire-errors:
   type: cron
   schedule: '10 0 * * *'
   deadline: 86400
-  command: node src/main.js expireErrors
+  command: node services/worker-manager/src/main.js expireErrors
 write-docs:
   type: build
-  command: node src/main.js writeDocs
+  command: node services/worker-manager/src/main.js writeDocs

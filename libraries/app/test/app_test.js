@@ -5,8 +5,9 @@ const express = require('express');
 const isUUID = require('is-uuid');
 const testing = require('taskcluster-lib-testing');
 const path = require('path');
-const rootdir = require('app-root-dir');
 const mockFs = require('mock-fs');
+
+const REPO_ROOT = path.join(__dirname, '../../../');
 
 suite(testing.suiteName(), function() {
 
@@ -75,7 +76,7 @@ suite(testing.suiteName(), function() {
 
     test('/__version__', async function() {
       mockFs({
-        [path.resolve(rootdir.get(), 'version.json')]: JSON.stringify({ version: 'v99.99.99' }),
+        [path.resolve(REPO_ROOT, 'version.json')]: JSON.stringify({ version: 'v99.99.99' }),
       });
 
       const res = await request.get('http://localhost:1459/__version__');

@@ -20,7 +20,10 @@ const HookListeners = require('./listeners');
 const load = loader({
   cfg: {
     requires: ['profile'],
-    setup: ({profile}) => config({profile}),
+    setup: ({profile}) => config({
+      profile,
+      serviceName: 'hooks',
+    }),
   },
 
   monitor: {

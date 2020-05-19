@@ -9,7 +9,10 @@ const taskqueue = require('./TaskQueue');
 const load = loader({
   cfg: {
     requires: ['profile'],
-    setup: ({profile}) => config({profile}),
+    setup: ({profile}) => config({
+      profile,
+      serviceName: 'built-in-workers',
+    }),
   },
 
   monitor: {

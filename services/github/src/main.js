@@ -18,7 +18,10 @@ const {Client, pulseCredentials} = require('taskcluster-lib-pulse');
 const load = loader({
   cfg: {
     requires: ['profile'],
-    setup: ({profile}) => config({profile}),
+    setup: ({profile}) => config({
+      profile,
+      serviceName: 'github',
+    }),
   },
 
   monitor: {

@@ -27,7 +27,10 @@ const QuickLRU = require('quick-lru');
 let load = loader({
   cfg: {
     requires: ['profile'],
-    setup: ({profile}) => config({profile}),
+    setup: ({profile}) => config({
+      profile,
+      serviceName: 'queue',
+    }),
   },
 
   monitor: {

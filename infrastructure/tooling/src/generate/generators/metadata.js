@@ -1,7 +1,7 @@
 const _ = require('lodash');
 const path = require('path');
 const config = require('taskcluster-lib-config');
-const {listServices, readRepoYAML, REPO_ROOT} = require('../../utils');
+const {listServices, readRepoYAML} = require('../../utils');
 
 const SERVICES = listServices();
 
@@ -14,10 +14,9 @@ SERVICES.forEach(name => {
     provides: [`configs-${name}`, `procslist-${name}`, `scopes-${name}`, `azure-${name}`],
     run: async (requirements, utils) => {
       const envVars = config({
-        files: [{
-          path: path.join(REPO_ROOT, 'services', name, 'config.yml'),
-          required: true,
-        }],
+        serviceName: name,
+        // only list config.yml, to avoid grabbing information from user-config.yml
+        files: [{path: 'config.yml', required: true}],
         getEnvVars: true,
       });
 

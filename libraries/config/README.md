@@ -66,11 +66,13 @@ var config = require('taskcluster-lib-config');
 
 var cfg = config({
   files: [ // Files to load configuration from
-   {path: 'config.yml', required: true}, // These defaults are relative to process.cwd
+   // Paths are relative to services/<serviceName>
+   {path: 'config.yml', required: true},
    {path: 'user-config.yml', required: false},
   ]
   profile:  undefined, // Profile to apply (default to none)
   env:      process.env, // Environment variables (mapping string to strings)
+  serviceName: undefined, // service to load configuration for
   getEnvVars: false, // If true, rather than returning configuration, this returns the list
                         of possible env vars
 });

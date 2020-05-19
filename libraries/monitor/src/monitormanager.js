@@ -1,5 +1,4 @@
 const assert = require('assert');
-const rootdir = require('app-root-dir');
 const fs = require('fs');
 const path = require('path');
 const stream = require('stream');
@@ -8,6 +7,8 @@ const Monitor = require('./monitor');
 const chalk = require('chalk');
 const Debug = require('debug');
 const plugins = require('./plugins');
+
+const REPO_ROOT = path.join(__dirname, '../../../');
 
 const LEVELS_REVERSE_COLOR = [
   chalk.red.bold('EMERGENCY'),
@@ -36,7 +37,7 @@ class MonitorManager {
     this.serviceName = serviceName;
     // read dockerflow version file, if taskclusterVersion is not set
     if (this.taskclusterVersion === undefined) {
-      const taskclusterVersionFile = path.resolve(rootdir.get(), '../../version.json');
+      const taskclusterVersionFile = path.join(REPO_ROOT, 'version.json');
       try {
         this.taskclusterVersion = JSON.parse(fs.readFileSync(taskclusterVersionFile).toString()).version;
       } catch (err) {

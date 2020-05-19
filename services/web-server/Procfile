@@ -1,7 +1,7 @@
 # GENERATED FILE from `yarn generate`! To update, change procs.yml and regenerate.
 
-web: cd services/web-server && node src/main.js server
-scanner: cd services/web-server && node src/main.js scanner
-cleanup-expire-auth-codes: cd services/web-server && node src/main.js cleanup-expire-auth-codes
-cleanup-expire-access-tokens: cd services/web-server && node src/main.js cleanup-expire-access-tokens
-write-docs: cd services/web-server && node src/main.js writeDocs
+web: cd services/web-server && node services/web-server/src/main.js server
+scanner: cd services/web-server && node services/web-server/src/main.js scanner
+cleanup-expire-auth-codes: cd services/web-server && node services/web-server/src/main.js cleanup-expire-auth-codes
+cleanup-expire-access-tokens: cd services/web-server && node services/web-server/src/main.js cleanup-expire-access-tokens
+write-docs: cd services/web-server && node services/web-server/src/main.js writeDocs

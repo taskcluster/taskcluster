@@ -1,9 +1,12 @@
 const _ = require('lodash');
+const path = require('path');
 const yaml = require('js-yaml');
 const fs = require('fs');
 const debug = require('debug')('taskcluster-lib-config');
 const assert = require('assert');
 const buildSchema = require('./schema');
+
+const REPO_ROOT = path.join(__dirname, '../../../');
 
 const config = ({
   profile = process.env.NODE_ENV,
@@ -12,14 +15,19 @@ const config = ({
     {path: 'config.yml', required: true},
     {path: 'user-config.yml', required: false},
   ],
+  serviceName,
   getEnvVars = false,
 }) => {
   assert(files instanceof Array, 'Expected an array of files');
   assert(typeof env === 'object', 'Expected env to be an object');
+  assert(serviceName, 'serviceName is required');
 
   const envVars = getEnvVars ? [] : null; // This will store the list of possible env vars
 
   const schema = buildSchema(env, envVars);
+
+  // look for files in this service's directory
+  const baseDir = path.join(REPO_ROOT, 'services', serviceName);
 
   const cfgs = [];
   for (const file of files) {
@@ -27,7 +35,7 @@ const config = ({
     assert(file.required !== undefined, 'Config files must be of the form {path: "...", required: true|false}');
     let f;
     try {
-      f = fs.readFileSync(file.path, {encoding: 'utf-8'});
+      f = fs.readFileSync(path.resolve(baseDir, file.path), {encoding: 'utf-8'});
     } catch (err) {
       if (err.code !== 'ENOENT' || file.required) {
         throw err;

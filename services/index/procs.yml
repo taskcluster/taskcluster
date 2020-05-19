@@ -1,14 +1,14 @@
 web:
   type: web
-  command: node src/main server
+  command: node services/index/src/main server
 handlers:
   type: background
-  command: node src/main handlers
+  command: node services/index/src/main handlers
 expire:
   type: cron
   schedule: '0 0 * * *'
   deadline: 86400
-  command: node src/main expire
+  command: node services/index/src/main expire
 write-docs:
   type: build
-  command: node src/main writeDocs
+  command: node services/index/src/main writeDocs

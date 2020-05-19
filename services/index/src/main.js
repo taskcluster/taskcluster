@@ -17,7 +17,10 @@ const {Client, pulseCredentials} = require('taskcluster-lib-pulse');
 let load = loader({
   cfg: {
     requires: ['profile'],
-    setup: ({profile}) => Config({profile}),
+    setup: ({profile}) => Config({
+      profile,
+      serviceName: 'index',
+    }),
   },
 
   db: {
