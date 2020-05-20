@@ -4,7 +4,6 @@ const testing = require('taskcluster-lib-testing');
 const sinon = require('sinon');
 const assert = require('assert');
 const taskcluster = require('taskcluster-client');
-const monitorManager = require('../src/monitor');
 
 helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
   helper.withDb(mock, skipping);
@@ -118,7 +117,8 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
       assert.equal(helper.db.fns.purge_requests.callCount, 2);
     } finally {
       // clear out the logged error messages from the Azure failure
-      monitorManager.messages = [];
+      const monitor = await helper.load('monitor');
+      monitor.manager.reset();
       sinon.restore();
     }
   });

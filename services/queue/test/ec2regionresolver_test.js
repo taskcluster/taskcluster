@@ -2,7 +2,6 @@ const assert = require('assert');
 const helper = require('./helper');
 const nock = require('nock');
 const testing = require('taskcluster-lib-testing');
-const monitorManager = require('../src/monitor');
 const EC2RegionResolver = require('../src/ec2regionresolver');
 const {LEVELS} = require('taskcluster-lib-monitor');
 
@@ -12,7 +11,6 @@ suite(testing.suiteName(), function() {
   let monitor;
   setup(async function() {
     monitor = await helper.load('monitor');
-    monitorManager.reset(); // clear the first task-pending message
   });
 
   const reqWithIp = ip => ({headers: {'x-client-ip': ip}});
@@ -64,8 +62,8 @@ suite(testing.suiteName(), function() {
       nock.cleanAll();
     }
 
-    assert.deepEqual(monitorManager.messages.find(({Type}) => Type === 'monitor.generic'), {
-      Logger: 'taskcluster.queue',
+    assert.deepEqual(monitor.manager.messages.find(({Type}) => Type === 'monitor.generic'), {
+      Logger: 'taskcluster.test',
       Type: 'monitor.generic',
       Fields: {message: 'Failed to download AWS IP ranges (retrying): Error: Internal Server Error'},
       Severity: LEVELS.warning,

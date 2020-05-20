@@ -1,11 +1,9 @@
 const MonitorManager = require('./monitormanager.js');
 const {LEVELS} = require('./logger');
-const {registerBuiltins} = require('./builtins');
 
-const defaultMonitorManager = new MonitorManager();
-registerBuiltins(defaultMonitorManager);
+require('./builtins');
 
 module.exports = {
-  defaultMonitorManager,
+  MonitorManager,
   LEVELS,
 };

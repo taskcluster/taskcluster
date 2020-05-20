@@ -3,7 +3,6 @@ const helper = require('./helper');
 const {Provider} = require('../src/providers/provider');
 const testing = require('taskcluster-lib-testing');
 const {WorkerPool} = require('../src/data');
-const monitorManager = require('../src/monitor');
 const {LEVELS} = require('taskcluster-lib-monitor');
 
 helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
@@ -12,11 +11,17 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
   helper.withFakeNotify(mock, skipping);
   helper.resetTables(mock, skipping);
 
+  let monitor;
+  suiteSetup(async function() {
+    monitor = await helper.load('monitor');
+  });
+
   let oldnow;
   setup(function() {
     oldnow = Date.now;
     Date.now = () => 100;
   });
+
   teardown(function() {
     Date.now = oldnow;
   });
@@ -84,7 +89,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
       provider = new Provider({
         notify: await helper.load('notify'),
         db: helper.db,
-        monitor: await helper.load('monitor'),
+        monitor,
         WorkerPoolError: helper.WorkerPoolError,
         // other stuff omitted..
       });
@@ -152,13 +157,13 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
       assert.equal(helper.notify.emails[0].address, 'whatever@example.com');
       assert(helper.notify.emails[0].content.includes('bar-123-456'));
 
-      const msg = monitorManager.messages.find(msg => msg.Type === 'worker-error');
+      const msg = monitor.manager.messages.find(msg => msg.Type === 'worker-error');
       if (msg) {
         msg.Fields.errorId = 'errorId'; // since it's random otherwise
         msg.Fields.reported = 'now'; // since it's random otherwise
       }
       assert.deepEqual(msg, {
-        Logger: 'taskcluster.worker-manager',
+        Logger: 'taskcluster.test',
         Type: 'worker-error',
         Fields: {
           workerPoolId: 'ww/tt',

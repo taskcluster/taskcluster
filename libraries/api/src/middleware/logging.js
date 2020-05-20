@@ -1,6 +1,6 @@
-const {defaultMonitorManager} = require('taskcluster-lib-monitor');
+const {MonitorManager} = require('taskcluster-lib-monitor');
 
-defaultMonitorManager.register({
+MonitorManager.register({
   name: 'apiMethod',
   title: 'API Method Report',
   type: 'monitor.apiMethod', // `monitor.` prefix is for historical purposes

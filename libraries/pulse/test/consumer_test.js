@@ -6,7 +6,6 @@ const debugModule = require('debug');
 const assert = require('assert');
 const helper = require('./helper');
 const {suiteName} = require('taskcluster-lib-testing');
-const {defaultMonitorManager} = require('taskcluster-lib-monitor');
 
 helper.secrets.mockSuite(suiteName(), ['pulse'], function(mock, skipping) {
   if (mock) {
@@ -127,10 +126,10 @@ helper.secrets.mockSuite(suiteName(), ['pulse'], function(mock, skipping) {
       assume(numbers).to.deeply.equal([0, 1, 2, 4, 5, 6, 7, 8, 9]);
 
       // check that we logged the 'uhoh' error
-      const errors = defaultMonitorManager.messages
+      const errors = monitor.manager.messages
         .filter(({Fields: {message}}) => message === 'uhoh');
       assert.equal(errors.length, 1);
-      defaultMonitorManager.messages = [];
+      monitor.manager.messages = [];
     });
 
     test('handle connection failure during consumption', async function() {
@@ -257,10 +256,10 @@ helper.secrets.mockSuite(suiteName(), ['pulse'], function(mock, skipping) {
       assume(numbers).to.deeply.equal(['connected', 'msg', 'msg', 'msg', 'msg', 'connected']);
 
       // check that we logged the 'uhoh' error
-      const errors = defaultMonitorManager.messages
+      const errors = monitor.manager.messages
         .filter(({Fields: {message}}) => message === 'uhoh');
       assert.equal(errors.length, 1);
-      defaultMonitorManager.messages = [];
+      monitor.manager.messages = [];
     });
 
     test('no queueuName is an error', async function() {

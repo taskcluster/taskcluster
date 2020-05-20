@@ -4,7 +4,6 @@ const assert = require('assert');
 const sinon = require('sinon');
 const libUrls = require('taskcluster-lib-urls');
 const testing = require('taskcluster-lib-testing');
-const monitorManager = require('../src/monitor');
 const taskcluster = require('taskcluster-client');
 const {LEVELS} = require('taskcluster-lib-monitor');
 const {CHECKRUN_TEXT} = require('../src/constants');
@@ -797,8 +796,9 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
       });
       await assertStatusCreate('neutral');
 
-      assert(monitorManager.messages.some(({Type, Severity}) => Type === 'monitor.error' && Severity === LEVELS.err));
-      monitorManager.reset();
+      const monitor = await helper.load('monitor');
+      assert(monitor.manager.messages.some(({Type, Severity}) => Type === 'monitor.error' && Severity === LEVELS.err));
+      monitor.manager.reset();
     });
 
     test('successfully adds custom check run text from an artifact', async function () {
@@ -840,8 +840,9 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
         reasonResolved: 'completed',
         state: 'completed',
       });
-      assert(monitorManager.messages.some(({Type, Severity}) => Type === 'monitor.error' && Severity === LEVELS.err));
-      monitorManager.reset();
+      const monitor = await helper.load('monitor');
+      assert(monitor.manager.messages.some(({Type, Severity}) => Type === 'monitor.error' && Severity === LEVELS.err));
+      monitor.manager.reset();
       sinon.restore();
     });
   });

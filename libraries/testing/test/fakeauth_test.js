@@ -3,7 +3,7 @@ const hawk = require('@hapi/hawk');
 const request = require('superagent');
 const SchemaSet = require('taskcluster-lib-validate');
 const {APIBuilder} = require('taskcluster-lib-api');
-const {defaultMonitorManager} = require('taskcluster-lib-monitor');
+const {MonitorManager} = require('taskcluster-lib-monitor');
 const {App} = require('taskcluster-lib-app');
 const assert = require('assert');
 const taskcluster = require('taskcluster-client');
@@ -11,13 +11,10 @@ const path = require('path');
 const libUrls = require('taskcluster-lib-urls');
 const testing = require('taskcluster-lib-testing');
 
-defaultMonitorManager.configure({
-  serviceName: 'whatever',
-});
-
 let monitor;
 suiteSetup(function() {
-  monitor = defaultMonitorManager.setup({
+  monitor = MonitorManager.setup({
+    serviceName: 'whatever',
     fake: true,
     verify: true,
     debug: true,

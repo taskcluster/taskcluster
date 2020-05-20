@@ -1,10 +1,6 @@
-const {defaultMonitorManager} = require('taskcluster-lib-monitor');
+const {MonitorManager} = require('taskcluster-lib-monitor');
 
-const monitorManager = defaultMonitorManager.configure({
-  serviceName: 'web-server',
-});
-
-monitorManager.register({
+MonitorManager.register({
   name: 'createCredentials',
   title: 'Credentials Created',
   type: 'create-credentials',
@@ -18,7 +14,7 @@ monitorManager.register({
   },
 });
 
-monitorManager.register({
+MonitorManager.register({
   name: 'bindPulseSubscription',
   title: 'Bind a Pulse Subscription',
   type: 'bind-pulse-subscription',
@@ -32,7 +28,7 @@ monitorManager.register({
   },
 });
 
-monitorManager.register({
+MonitorManager.register({
   name: 'unbindPulseSubscription',
   title: 'Unbind a Pulse Subscription',
   type: 'unbind-pulse-subscription',
@@ -46,7 +42,7 @@ monitorManager.register({
   },
 });
 
-monitorManager.register({
+MonitorManager.register({
   name: 'requestReceived',
   title: 'Request Received',
   type: 'request-received',
@@ -61,5 +57,3 @@ monitorManager.register({
       , then operationName is null.`,
   },
 });
-
-module.exports = monitorManager;

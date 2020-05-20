@@ -3,7 +3,7 @@ const Loader = require('taskcluster-lib-loader');
 const SchemaSet = require('taskcluster-lib-validate');
 const libReferences = require('taskcluster-lib-references');
 const tcdb = require('taskcluster-db');
-const monitorManager = require('./monitor');
+const {MonitorManager} = require('taskcluster-lib-monitor');
 const {App} = require('taskcluster-lib-app');
 const Config = require('taskcluster-lib-config');
 const data = require('./data');
@@ -35,7 +35,8 @@ const load = Loader({
 
   monitor: {
     requires: ['cfg', 'profile', 'process'],
-    setup: ({cfg, profile, process}) => monitorManager.setup({
+    setup: ({cfg, profile, process}) => MonitorManager.setup({
+      serviceName: 'auth',
       processName: process,
       verify: profile !== 'production',
       ...cfg.monitoring,
@@ -97,7 +98,7 @@ const load = Loader({
     requires: ['cfg', 'schemaset'],
     setup: ({cfg, schemaset}) => libReferences.fromService({
       schemaset,
-      references: [builder.reference(), exchanges.reference(), monitorManager.reference()],
+      references: [builder.reference(), exchanges.reference(), MonitorManager.reference('auth')],
     }).generateReferences(),
   },
 

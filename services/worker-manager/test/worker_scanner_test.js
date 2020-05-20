@@ -2,7 +2,6 @@ const assert = require('assert');
 const helper = require('./helper');
 const testing = require('taskcluster-lib-testing');
 const taskcluster = require('taskcluster-client');
-const monitorManager = require('../src/monitor');
 const {LEVELS} = require('taskcluster-lib-monitor');
 
 helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
@@ -13,28 +12,33 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
   helper.withWorkerScanner(mock, skipping);
   helper.resetTables(mock, skipping);
 
+  let monitor;
+  suiteSetup(async function() {
+    monitor = await helper.load('monitor');
+  });
+
   const testCase = async ({workers = [], assertion, expectErrors}) => {
     await Promise.all(workers.map(w => helper.Worker.create(w)));
     return (testing.runWithFakeTime(async () => {
       await helper.initiateWorkerScanner();
       await testing.poll(async () => {
         if (!expectErrors) {
-          const error = monitorManager.messages.find(({Type}) => Type === 'monitor.error');
+          const error = monitor.manager.messages.find(({Type}) => Type === 'monitor.error');
           if (error) {
             throw new Error(JSON.stringify(error, null, 2));
           }
         }
         workers.forEach(w => {
-          assert.deepEqual(monitorManager.messages.find(
+          assert.deepEqual(monitor.manager.messages.find(
             msg => msg.Type === 'scan-prepare' && msg.Logger.endsWith(w.providerId)), {
-            Logger: `taskcluster.worker-manager.provider.${w.providerId}`,
+            Logger: `taskcluster.test.provider.${w.providerId}`,
             Type: 'scan-prepare',
             Fields: {},
             Severity: LEVELS.notice,
           });
-          assert.deepEqual(monitorManager.messages.find(
+          assert.deepEqual(monitor.manager.messages.find(
             msg => msg.Type === 'scan-cleanup' && msg.Logger.endsWith(w.providerId)), {
-            Logger: `taskcluster.worker-manager.provider.${w.providerId}`,
+            Logger: `taskcluster.test.provider.${w.providerId}`,
             Type: 'scan-cleanup',
             Fields: {},
             Severity: LEVELS.notice,
@@ -45,7 +49,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
       await helper.terminateWorkerScanner();
 
       if (expectErrors) {
-        monitorManager.messages = [];
+        monitor.manager.reset();
       }
     }, {
       mock,

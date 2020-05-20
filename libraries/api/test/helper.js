@@ -1,6 +1,6 @@
 const testing = require('taskcluster-lib-testing');
 const SchemaSet = require('taskcluster-lib-validate');
-const {defaultMonitorManager} = require('taskcluster-lib-monitor');
+const {MonitorManager} = require('taskcluster-lib-monitor');
 const assert = require('assert');
 const path = require('path');
 const {App} = require('taskcluster-lib-app');
@@ -11,15 +11,14 @@ const rootUrl = 'http://localhost:23525';
 exports.rootUrl = rootUrl;
 
 suiteSetup('set up monitorManager', async function() {
-  exports.monitorManager = defaultMonitorManager.configure({
+  exports.monitor = MonitorManager.setup({
     serviceName: 'lib-api',
-  });
-  exports.monitor = exports.monitorManager.setup({
     fake: true,
     debug: true,
     verify: true,
     level: 'debug',
   });
+  exports.monitorManager = exports.monitor.manager;
 });
 
 teardown(function() {

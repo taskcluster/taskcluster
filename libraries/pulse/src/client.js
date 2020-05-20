@@ -1,11 +1,11 @@
 const events = require('events');
 const amqplib = require('amqplib');
 const assert = require('assert');
-const {defaultMonitorManager} = require('taskcluster-lib-monitor');
+const {MonitorManager} = require('taskcluster-lib-monitor');
 
 let clientCounter = 0;
 
-defaultMonitorManager.register({
+MonitorManager.register({
   name: 'pulseConnected',
   title: 'Connection to pulse established',
   type: 'pulse.connected',
@@ -18,7 +18,7 @@ defaultMonitorManager.register({
   fields: {},
 });
 
-defaultMonitorManager.register({
+MonitorManager.register({
   name: 'pulseDisconnected',
   title: 'Connection to pulse has ended',
   type: 'pulse.disconnected',

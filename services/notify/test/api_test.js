@@ -2,8 +2,6 @@ const _ = require('lodash');
 const assert = require('assert').strict;
 const helper = require('./helper');
 const testing = require('taskcluster-lib-testing');
-const monitorManager = require('../src/monitor');
-const {defaultMonitorManager} = require('taskcluster-lib-monitor');
 
 helper.secrets.mockSuite(testing.suiteName(), ['db', 'aws'], function(mock, skipping) {
   helper.withDb(mock, skipping);
@@ -49,12 +47,13 @@ helper.secrets.mockSuite(testing.suiteName(), ['db', 'aws'], function(mock, skip
       () => apiClient.pulse({routingKey: 'notify-test', message: {test: 456}}),
       err => err.statusCode === 500);
 
+    const monitor = await helper.load('monitor');
     assert.equal(
-      defaultMonitorManager.messages.filter(
+      monitor.manager.messages.filter(
         ({Type, Fields}) => Type === 'monitor.error' && Fields.message === 'uhoh',
       ).length,
       1);
-    defaultMonitorManager.reset();
+    monitor.manager.reset();
   });
 
   test('does not send notifications to denylisted pulse address', async function() {
@@ -150,12 +149,13 @@ helper.secrets.mockSuite(testing.suiteName(), ['db', 'aws'], function(mock, skip
       () => apiClient.irc({message: 'no', channel: '#taskcluster-test'}),
       err => err.statusCode === 500);
 
+    const monitor = await helper.load('monitor');
     assert.equal(
-      defaultMonitorManager.messages.filter(
+      monitor.manager.messages.filter(
         ({Type, Fields}) => Type === 'monitor.error' && Fields.message === 'uhoh',
       ).length,
       1);
-    defaultMonitorManager.reset();
+    monitor.manager.reset();
   });
 
   test('does not send notifications to denylisted irc channel', async function() {
@@ -195,8 +195,9 @@ helper.secrets.mockSuite(testing.suiteName(), ['db', 'aws'], function(mock, skip
     assert.equal(helper.matrixClient.sendEvent.args[0][0], '!foobar:baz.com');
     assert.equal(helper.matrixClient.sendEvent.args[0][2].body, 'Does this work?');
     assert.equal(helper.matrixClient.sendEvent.args[0][2].msgtype, 'm.text');
-    assert(monitorManager.messages.find(m => m.Type === 'matrix'));
-    assert(monitorManager.messages.find(m => m.Type === 'matrix-forbidden') === undefined);
+    const monitor = await helper.load('monitor');
+    assert(monitor.manager.messages.find(m => m.Type === 'matrix'));
+    assert(monitor.manager.messages.find(m => m.Type === 'matrix-forbidden') === undefined);
   });
 
   test('matrix (default msgtype)', async function() {
@@ -205,8 +206,9 @@ helper.secrets.mockSuite(testing.suiteName(), ['db', 'aws'], function(mock, skip
     assert.equal(helper.matrixClient.sendEvent.args[0][0], '!foobar:baz.com');
     assert.equal(helper.matrixClient.sendEvent.args[0][2].body, 'Does this work?');
     assert.equal(helper.matrixClient.sendEvent.args[0][2].msgtype, 'm.notice');
-    assert(monitorManager.messages.find(m => m.Type === 'matrix'));
-    assert(monitorManager.messages.find(m => m.Type === 'matrix-forbidden') === undefined);
+    const monitor = await helper.load('monitor');
+    assert(monitor.manager.messages.find(m => m.Type === 'matrix'));
+    assert(monitor.manager.messages.find(m => m.Type === 'matrix-forbidden') === undefined);
   });
 
   test('matrix (rejected)', async function() {

@@ -1,13 +1,10 @@
 const {Client} = require('pg');
 const { Database } = require('taskcluster-lib-postgres');
-const {defaultMonitorManager} = require('taskcluster-lib-monitor');
+const {MonitorManager} = require('taskcluster-lib-monitor');
 const dbUrl = process.env.TEST_DB_URL;
 
-defaultMonitorManager.configure({
-  serviceName: 'lib-entities',
-});
-
-const monitor = defaultMonitorManager.setup({
+const monitor = MonitorManager.setup({
+  serviceName: 'test',
   fake: true,
   debug: true,
   validate: true,

@@ -8,7 +8,7 @@ const SchemaSet = require('taskcluster-lib-validate');
 const libReferences = require('taskcluster-lib-references');
 const taskcluster = require('taskcluster-client');
 const _ = require('lodash');
-const monitorManager = require('./monitor');
+const {MonitorManager} = require('taskcluster-lib-monitor');
 const builder = require('./api');
 const Notifier = require('./notifier');
 const RateLimit = require('./ratelimit');
@@ -20,6 +20,8 @@ const matrix = require('matrix-js-sdk');
 const MatrixBot = require('./matrix');
 const data = require('./data');
 const tcdb = require('taskcluster-db');
+
+require('./monitor');
 
 // Create component loader
 const load = loader({
@@ -33,7 +35,8 @@ const load = loader({
 
   monitor: {
     requires: ['process', 'profile', 'cfg'],
-    setup: ({process, profile, cfg}) => monitorManager.setup({
+    setup: ({process, profile, cfg}) => MonitorManager.setup({
+      serviceName: 'notify',
       processName: process,
       verify: profile !== 'production',
       ...cfg.monitoring,
@@ -80,7 +83,7 @@ const load = loader({
     requires: ['cfg', 'schemaset'],
     setup: ({cfg, schemaset}) => libReferences.fromService({
       schemaset,
-      references: [builder.reference(), exchanges.reference(), monitorManager.reference()],
+      references: [builder.reference(), exchanges.reference(), MonitorManager.reference('notify')],
     }).generateReferences(),
   },
 

@@ -1,10 +1,6 @@
-const {defaultMonitorManager} = require('taskcluster-lib-monitor');
+const {MonitorManager} = require('taskcluster-lib-monitor');
 
-const monitorManager = defaultMonitorManager.configure({
-  serviceName: 'worker-manager',
-});
-
-monitorManager.register({
+MonitorManager.register({
   name: 'workerPoolProvisioned',
   title: 'Worker Pool Provisioned',
   type: 'worker-pool-provisioned',
@@ -17,7 +13,7 @@ monitorManager.register({
   },
 });
 
-monitorManager.register({
+MonitorManager.register({
   name: 'workerRequested',
   title: 'Worker Requested',
   type: 'worker-requested',
@@ -32,7 +28,7 @@ monitorManager.register({
   },
 });
 
-monitorManager.register({
+MonitorManager.register({
   name: 'workerRunning',
   title: 'Worker Running',
   type: 'worker-running',
@@ -46,7 +42,7 @@ monitorManager.register({
   },
 });
 
-monitorManager.register({
+MonitorManager.register({
   name: 'workerStopped',
   title: 'Worker Stopped',
   type: 'worker-stopped',
@@ -60,7 +56,7 @@ monitorManager.register({
   },
 });
 
-monitorManager.register({
+MonitorManager.register({
   name: 'workerStopping',
   title: 'Worker Stopping',
   type: 'worker-stopping',
@@ -74,7 +70,7 @@ monitorManager.register({
   },
 });
 
-monitorManager.register({
+MonitorManager.register({
   name: 'simpleEstimate',
   title: 'Simple Estimate Provided',
   type: 'simple-estimate',
@@ -92,7 +88,7 @@ monitorManager.register({
   },
 });
 
-monitorManager.register({
+MonitorManager.register({
   name: 'scanSeen',
   title: 'Scan Seen',
   type: 'scan-seen',
@@ -105,7 +101,7 @@ monitorManager.register({
   },
 });
 
-monitorManager.register({
+MonitorManager.register({
   name: 'workerError',
   type: 'worker-error',
   title: 'Worker Error',
@@ -126,7 +122,7 @@ monitorManager.register({
   },
 });
 
-monitorManager.register({
+MonitorManager.register({
   name: 'cloudApiPaused',
   title: 'Cloud API Paused',
   type: 'cloud-api-paused',
@@ -142,7 +138,7 @@ monitorManager.register({
   },
 });
 
-monitorManager.register({
+MonitorManager.register({
   name: 'cloudApiResumed',
   title: 'Cloud API Resumed',
   type: 'cloud-api-resumed',
@@ -155,7 +151,7 @@ monitorManager.register({
   },
 });
 
-monitorManager.register({
+MonitorManager.register({
   name: 'registrationErrorWarning',
   title: 'Registration Error Warning',
   type: 'registration-error-warning',
@@ -170,5 +166,3 @@ monitorManager.register({
     error: 'Error message from cloud that triggered this',
   },
 });
-
-module.exports = monitorManager;

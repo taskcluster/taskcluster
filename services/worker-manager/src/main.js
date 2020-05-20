@@ -2,7 +2,7 @@ require('../../prelude');
 const loader = require('taskcluster-lib-loader');
 const taskcluster = require('taskcluster-client');
 const {App} = require('taskcluster-lib-app');
-const monitorManager = require('./monitor');
+const {MonitorManager} = require('taskcluster-lib-monitor');
 const config = require('taskcluster-lib-config');
 const SchemaSet = require('taskcluster-lib-validate');
 const libReferences = require('taskcluster-lib-references');
@@ -17,6 +17,8 @@ const {Providers} = require('./providers');
 const {WorkerScanner} = require('./worker-scanner');
 const {WorkerPool} = require('./data');
 
+require('./monitor');
+
 let load = loader({
   cfg: {
     requires: ['profile'],
@@ -28,7 +30,8 @@ let load = loader({
 
   monitor: {
     requires: ['process', 'profile', 'cfg'],
-    setup: ({process, profile, cfg}) => monitorManager.setup({
+    setup: ({process, profile, cfg}) => MonitorManager.setup({
+      serviceName: 'worker-manager',
       processName: process,
       verify: profile !== 'production',
       ...cfg.monitoring,
@@ -113,7 +116,7 @@ let load = loader({
     requires: ['cfg', 'schemaset'],
     setup: ({cfg, schemaset}) => libReferences.fromService({
       schemaset,
-      references: [builder.reference(), exchanges.reference(), monitorManager.reference()],
+      references: [builder.reference(), exchanges.reference(), MonitorManager.reference('worker-manager')],
     }).generateReferences(),
   },
 

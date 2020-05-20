@@ -5,7 +5,6 @@ const taskcluster = require('taskcluster-client');
 const assume = require('assume');
 const helper = require('./helper');
 const testing = require('taskcluster-lib-testing');
-const monitorManager = require('../src/monitor');
 const {LEVELS} = require('taskcluster-lib-monitor');
 
 helper.secrets.mockSuite(testing.suiteName(), ['aws', 'db'], function(mock, skipping) {
@@ -39,6 +38,11 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws', 'db'], function(mock, skip
     return {taskId: slugid.v4(), task};
   };
 
+  let monitor;
+  suiteSetup(async function() {
+    monitor = await helper.load('monitor');
+  });
+
   test('Resolve unscheduled task deadline', testing.runWithFakeTime(async () => {
     const {taskId, task} = makeTask();
 
@@ -62,9 +66,9 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws', 'db'], function(mock, skip
         m.payload.status.runs[0].reasonCreated === 'exception' &&
         m.payload.status.runs[0].reasonResolved === 'deadline-exceeded'));
 
-      assert.deepEqual(monitorManager.messages.find(({Type}) => Type === 'task-exception'), {
+      assert.deepEqual(monitor.manager.messages.find(({Type}) => Type === 'task-exception'), {
         Type: 'task-exception',
-        Logger: 'taskcluster.queue.deadline-resolver',
+        Logger: 'taskcluster.test.deadline-resolver',
         Fields: {
           v: 1,
           taskId,

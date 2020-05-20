@@ -2,7 +2,6 @@ const _ = require('lodash');
 const assert = require('assert');
 const helper = require('./helper');
 const testing = require('taskcluster-lib-testing');
-const monitorManager = require('../src/monitor');
 
 helper.secrets.mockSuite(testing.suiteName(), ['db', 'aws'], function(mock, skipping) {
   helper.withDb(mock, skipping);
@@ -67,6 +66,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['db', 'aws'], function(mock, skip
     ],
   };
 
+  let monitor;
   suiteSetup('create handler', async function() {
     if (skipping()) {
       return;
@@ -74,6 +74,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['db', 'aws'], function(mock, skip
 
     // load the handler so it listens for pulse messages
     await helper.load('handler');
+    monitor = await helper.load('monitor');
   });
 
   ['canceled', 'deadline-exceeded'].forEach(reasonResolved => {
@@ -181,8 +182,8 @@ helper.secrets.mockSuite(testing.suiteName(), ['db', 'aws'], function(mock, skip
     assert.equal(helper.matrixClient.sendEvent.args[0][2].body, 'DKPZPsvvQEiw67Pb3rkdNg');
     assert.equal(helper.matrixClient.sendEvent.args[0][2].formatted_body, '<h1>DKPZPsvvQEiw67Pb3rkdNg</h1>');
     assert.equal(helper.matrixClient.sendEvent.args[0][2].msgtype, 'm.text');
-    assert(monitorManager.messages.find(m => m.Type === 'matrix'));
-    assert(monitorManager.messages.find(m => m.Type === 'matrix-forbidden') === undefined);
+    assert(monitor.manager.messages.find(m => m.Type === 'matrix'));
+    assert(monitor.manager.messages.find(m => m.Type === 'matrix-forbidden') === undefined);
   });
 
   test('matrix (default notice)', async () => {
@@ -204,8 +205,8 @@ helper.secrets.mockSuite(testing.suiteName(), ['db', 'aws'], function(mock, skip
     assert.equal(helper.matrixClient.sendEvent.args[0][2].body, 'DKPZPsvvQEiw67Pb3rkdNg');
     assert.equal(helper.matrixClient.sendEvent.args[0][2].formatted_body, '<h1>DKPZPsvvQEiw67Pb3rkdNg</h1>');
     assert.equal(helper.matrixClient.sendEvent.args[0][2].msgtype, 'm.notice');
-    assert(monitorManager.messages.find(m => m.Type === 'matrix'));
-    assert(monitorManager.messages.find(m => m.Type === 'matrix-forbidden') === undefined);
+    assert(monitor.manager.messages.find(m => m.Type === 'matrix'));
+    assert(monitor.manager.messages.find(m => m.Type === 'matrix-forbidden') === undefined);
   });
 
   test('matrix (rejected)', async () => {
@@ -222,6 +223,6 @@ helper.secrets.mockSuite(testing.suiteName(), ['db', 'aws'], function(mock, skip
     });
     assert.equal(helper.matrixClient.sendEvent.callCount, 1);
     assert.equal(helper.matrixClient.sendEvent.args[0][0], '!rejected:mozilla.org');
-    assert(monitorManager.messages.find(m => m.Type === 'matrix-forbidden'));
+    assert(monitor.manager.messages.find(m => m.Type === 'matrix-forbidden'));
   });
 });

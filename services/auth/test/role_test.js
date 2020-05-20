@@ -5,7 +5,6 @@ const _ = require('lodash');
 const assume = require('assume');
 const testing = require('taskcluster-lib-testing');
 const taskcluster = require('taskcluster-client');
-const {defaultMonitorManager} = require('taskcluster-lib-monitor');
 
 helper.secrets.mockSuite(testing.suiteName(), ['db', 'gcp'], function(mock, skipping) {
   helper.withCfg(mock, skipping);
@@ -152,12 +151,13 @@ helper.secrets.mockSuite(testing.suiteName(), ['db', 'gcp'], function(mock, skip
     }),
     err => err.statusCode === 500);
 
+    const monitor = await helper.load('monitor');
     assert.equal(
-      defaultMonitorManager.messages.filter(
+      monitor.manager.messages.filter(
         ({Type, Fields}) => Type === 'monitor.error' && Fields.message === 'uhoh',
       ).length,
       1);
-    defaultMonitorManager.reset();
+    monitor.manager.reset();
 
     helper.onPulsePublish(); // don't fail to publish this time
 
@@ -389,12 +389,13 @@ helper.secrets.mockSuite(testing.suiteName(), ['db', 'gcp'], function(mock, skip
     const apiClient = helper.apiClient.use({retries: 0});
     await assert.rejects(() => apiClient.deleteRole('thing-id:' + clientId));
 
+    const monitor = await helper.load('monitor');
     assert.equal(
-      defaultMonitorManager.messages.filter(
+      monitor.manager.messages.filter(
         ({Type, Fields}) => Type === 'monitor.error' && Fields.message === 'uhoh',
       ).length,
       1);
-    defaultMonitorManager.reset();
+    monitor.manager.reset();
   });
 
   test('deleteRole', async () => {
@@ -522,12 +523,13 @@ helper.secrets.mockSuite(testing.suiteName(), ['db', 'gcp'], function(mock, skip
         scopes: ['scope:role-has:*'],
       }));
 
+      const monitor = await helper.load('monitor');
       assert.equal(
-        defaultMonitorManager.messages.filter(
+        monitor.manager.messages.filter(
           ({Type, Fields}) => Type === 'monitor.error' && Fields.message === 'uhoh',
         ).length,
         1);
-      defaultMonitorManager.reset();
+      monitor.manager.reset();
     });
 
     test('role already has new scope by role expansion', async () => {

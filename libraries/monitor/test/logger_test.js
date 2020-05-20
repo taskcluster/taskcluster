@@ -8,20 +8,17 @@ suite(testing.suiteName(), function() {
   let monitorManager, monitor;
 
   setup(function() {
-    monitorManager = new MonitorManager();
-    monitorManager.configure({
+    monitor = MonitorManager.setup({
       serviceName: 'testing-service',
-    });
-
-    // modify _handleMessage to log the *entire* message
-    monitorManager._handleMessage =
-      message => monitorManager.messages.push(message);
-    monitor = monitorManager.setup({
       level: 'debug',
       debug: true,
       fake: true,
       verify: true,
     });
+    monitorManager = monitor.manager;
+    // modify _handleMessage to log the *entire* message
+    monitorManager._handleMessage =
+      message => monitorManager.messages.push(message);
   });
 
   teardown(async function() {
@@ -57,11 +54,8 @@ suite(testing.suiteName(), function() {
       },
     });
 
-    const b = new MonitorManager();
-    b.configure({
+    const m = MonitorManager.setup({
       serviceName: 'testing-service',
-    });
-    const m = b.setup({
       level: 'debug',
       destination,
     });
@@ -167,19 +161,17 @@ suite(testing.suiteName(), function() {
   });
 
   test('levels work', function() {
-    const b = new MonitorManager();
-    b.configure({
+    const m = MonitorManager.setup({
       serviceName: 'taskcluster-level',
-    });
-    b._handleMessage = message => b.messages.push(message);
-    const m = b.setup({
       level: 'alert',
       fake: true,
       debug: true,
     });
+    const mgr = m.manager;
+    mgr._handleMessage = message => mgr.messages.push(message);
     m.info('something', {whatever: 5}); // This should not get logged
     m.alert('something.else', {whatever: 6});
     m.emerg('something.even.else', {whatever: 7});
-    assert.equal(b.messages.length, 2);
+    assert.equal(mgr.messages.length, 2);
   });
 });

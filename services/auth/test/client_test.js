@@ -4,7 +4,6 @@ const _ = require('lodash');
 const assume = require('assume');
 const testing = require('taskcluster-lib-testing');
 const taskcluster = require('taskcluster-client');
-const {defaultMonitorManager} = require('taskcluster-lib-monitor');
 
 helper.secrets.mockSuite(testing.suiteName(), ['db', 'azure', 'gcp'], function(mock, skipping) {
   helper.withDb(mock, skipping);
@@ -122,12 +121,13 @@ helper.secrets.mockSuite(testing.suiteName(), ['db', 'azure', 'gcp'], function(m
       () => apiClient.createClient(CLIENT_ID, payload),
       err => err.statusCode === 500);
 
+    const monitor = await helper.load('monitor');
     assert.equal(
-      defaultMonitorManager.messages.filter(
+      monitor.manager.messages.filter(
         ({Type, Fields}) => Type === 'monitor.error' && Fields.message === 'uhoh',
       ).length,
       1);
-    defaultMonitorManager.reset();
+    monitor.manager.reset();
 
     helper.onPulsePublish(); // don't fail to publish this time
 
@@ -256,12 +256,13 @@ helper.secrets.mockSuite(testing.suiteName(), ['db', 'azure', 'gcp'], function(m
       () => apiClient.updateClient(CLIENT_ID, {description, expires}),
       err => err.statusCode === 500);
 
+    const monitor = await helper.load('monitor');
     assert.equal(
-      defaultMonitorManager.messages.filter(
+      monitor.manager.messages.filter(
         ({Type, Fields}) => Type === 'monitor.error' && Fields.message === 'uhoh',
       ).length,
       1);
-    defaultMonitorManager.reset();
+    monitor.manager.reset();
   });
 
   test('auth.updateClient (with scope changes)', async () => {
@@ -357,12 +358,13 @@ helper.secrets.mockSuite(testing.suiteName(), ['db', 'azure', 'gcp'], function(m
       () => apiClient.deleteClient(CLIENT_ID),
       err => err.statusCode === 500);
 
+    const monitor = await helper.load('monitor');
     assert.equal(
-      defaultMonitorManager.messages.filter(
+      monitor.manager.messages.filter(
         ({Type, Fields}) => Type === 'monitor.error' && Fields.message === 'uhoh',
       ).length,
       1);
-    defaultMonitorManager.reset();
+    monitor.manager.reset();
   });
 
   let assumeScopesetsEqual = (ss1, ss2) => {
