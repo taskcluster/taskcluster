@@ -284,8 +284,7 @@ and reports back results to the queue.
     64     Not able to load generic-worker config. This could be a problem reading the
            generic-worker config file on the filesystem, a problem talking to AWS/GCP
            metadata service, or a problem retrieving config/files from the taskcluster
-           secrets service.
-    65     Not able to install generic-worker on the system.
+           secrets service.` + exitCode65() + `
     67     A task user has been created, and the generic-worker needs to reboot in order
            to log on as the new task user. Note, the reboot happens automatically unless
            config setting disableReboots is set to true - in either code this exit code will

@@ -8,8 +8,8 @@ const (
 
 func runTasksAsCurrentUserUsage() string {
 	return `
-          runTasksAsCurrentUser             If true, users will not be created for tasks, but
-                                            the current OS user will be used. [default: false]`
+          runTasksAsCurrentUser             If true, users will still be created for tasks, but
+                                            tasks will be executed as the current OS user. [default: false]`
 }
 
 func exitCode77() string {
