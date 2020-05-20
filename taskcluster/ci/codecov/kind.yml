@@ -1,0 +1,29 @@
+---
+loader: taskgraph.loader.transform:loader
+
+transforms:
+  - src.transforms:taskcluster_images
+  - src.transforms:add_gh_env
+  - src.transforms:direct_dependencies
+  - taskgraph.transforms.job:transforms
+  - taskgraph.transforms.task:transforms
+
+kind-dependencies:
+  - service
+  - library
+
+jobs:
+  upload:
+    worker-type: ci
+    worker:
+      env:
+        CODECOV_NAME: codecov-upload
+      max-run-time: 600
+      docker-image: {taskcluster: 'node-and-go'}
+    description: upload nodejs services/libraries coverage
+    run:
+      using: bare
+      install: yarn install && eval $(yarn -s shared-secrets)
+      command: >-
+          yarn fetch-coverage &&
+          bash <(curl -s https://codecov.io/bash) -b $TASK_ID/$RUN_ID
