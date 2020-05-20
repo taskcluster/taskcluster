@@ -1,0 +1,88 @@
+---
+loader: taskgraph.loader.transform:loader
+
+transforms:
+  - src.transforms:taskcluster_images
+  - taskgraph.transforms.job:transforms
+  - taskgraph.transforms.task:transforms
+
+job-defaults:
+  worker-type: ci
+  run:
+    using: bare
+  worker:
+    max-run-time: 600
+
+jobs:
+  nodejs:
+    description: nodejs client tests
+    worker:
+      docker-image: {taskcluster: node-and-go}
+    run:
+      install: >-
+        { yarn --frozen-lockfile || exit 99; } &&
+        cd clients/client &&
+        { yarn --frozen-lockfile || exit 99; }
+      command: >-
+        yarn test &&
+        yarn package-test
+  go:
+    description: golang client tests
+    worker:
+      docker-image: {taskcluster: node-and-go}
+    run:
+      install: cd clients/client-go
+      command: go test -v -race ./...
+  shell:
+    description: cli tests
+    worker:
+      docker-image: {taskcluster: node-and-go}
+    run:
+      install: cd clients/client-shell
+      command: go test -v -race ./...
+  web:
+    description: web js tests
+    worker:
+      docker-image: {taskcluster: browser-test}
+    run:
+      install: >-
+          { yarn --frozen-lockfile || exit 99; } &&
+          cd clients/client-web &&
+          { yarn --frozen-lockfile || exit 99; }
+      command: >-
+          { Xvfb :99 -screen 0 640x480x8 -nolisten tcp & } &&
+          sleep 2 &&
+          CHROME_BIN=firefox DISPLAY=:99 yarn test
+  py27:
+    description: python2.7 client tests
+    worker:
+      docker-image: python:2.7
+    run:
+      install: >-
+          cd clients/client-py &&
+          virtualenv /sandbox &&
+          /sandbox/bin/pip install tox
+      command: >-
+          TOXENV=py27 /sandbox/bin/tox
+  py36:
+    description: python3.6 client tests
+    worker:
+      docker-image: python:3.6
+    run:
+      install: >-
+          cd clients/client-py &&
+          python3 -mvenv /sandbox &&
+          /sandbox/bin/pip install tox
+      command: >-
+          TOXENV=py36 /sandbox/bin/tox
+  py37:
+    description: python3.7 client tests
+    worker:
+      docker-image: python:3.7
+    run:
+      install: >-
+          cd clients/client-py &&
+          python3 -mvenv /sandbox &&
+          /sandbox/bin/pip install tox
+      command: >-
+          TOXENV=py37 /sandbox/bin/tox
