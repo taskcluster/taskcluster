@@ -14,6 +14,7 @@ job-defaults:
     - 'secrets:get:project/taskcluster/testing/docker-worker/pulse-creds'
   run:
     using: bare
+    skip-clone: true
     install: yarn install --frozen-lockfile && ./build.sh
   worker:
     taskcluster-proxy: true
@@ -27,23 +28,23 @@ job-defaults:
       TASKCLUSTER_ROOT_URL: https://community-tc.services.mozilla.com
 
 jobs:
-  chunk1:
+  chunk-1:
     description: 'docker-worker test chunk #1'
     run:
       command: ./test/docker-worker-test --this-chunk 1 --total-chunks 5
-  chunk2:
+  chunk-2:
     description: 'docker-worker test chunk #2'
     run:
       command: ./test/docker-worker-test --this-chunk 2 --total-chunks 5
-  chunk3:
+  chunk-3:
     description: 'docker-worker test chunk #3'
     run:
       command: ./test/docker-worker-test --this-chunk 3 --total-chunks 5
-  chunk4:
+  chunk-4:
     description: 'docker-worker test chunk #4'
     run:
       command: ./test/docker-worker-test --this-chunk 4 --total-chunks 5
-  chunk5:
+  chunk-5:
     description: 'docker-worker test chunk #5'
     run:
       command: ./test/docker-worker-test --this-chunk 5 --total-chunks 5

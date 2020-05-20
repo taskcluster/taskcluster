@@ -7,7 +7,8 @@ gradlew_schema = Schema({
     Required("using"): "bare",
     Required("command"): str,
     Optional("install"): str,
-})
+    Optional("skip-clone"): bool,
+    })
 
 
 @run_job_using("docker-worker", "bare")
@@ -15,18 +16,21 @@ def bare(config, job, taskdesc):
     run = job["run"]
     worker = taskdesc['worker'] = job['worker']
 
-    worker["command"] = [
-        "/bin/bash",
-        "-c",
-        " ".join([
-            "git clone --quiet --depth=20 --no-single-branch {head_repository} taskcluster &&",
-            "cd taskcluster &&",
-            "git checkout {head_rev} &&",
-            "{install_command} &&",
-            "{run_command}",
-        ]).format(
-            install_command=run.get("install", "true"),
-            run_command=run["command"],
-            **config.params
-        ),
-    ]
+    if run.get("skip-clone"):
+        worker["command"] = ["{} && {}".format(run.get("install", "true"), run["command"])]
+    else:
+        worker["command"] = [
+                "/bin/bash",
+                "-c",
+                " ".join([
+                    "git clone --quiet --depth=20 --no-single-branch {head_repository} taskcluster &&",
+                    "cd taskcluster &&",
+                    "git checkout {head_rev} &&",
+                    "{install_command} &&",
+                    "{run_command}",
+                    ]).format(
+                        install_command=run.get("install", "true"),
+                        run_command=run["command"],
+                        **config.params
+                        ),
+                    ]
