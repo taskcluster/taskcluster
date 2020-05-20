@@ -21,7 +21,7 @@ def taskcluster_images(config, jobs):
                     elif (repo == "node-and-postgres"):
                         image = "taskcluster/node-and-postgres:node{node_version}-pg{pg_version}"
                     elif (repo == "browser-test"):
-                        image = "taskcluster/browser-test:node{node_version}"
+                        image = "taskcluster/browser-test:{node_version}"
 
                     job["worker"]["docker-image"] = image.format(
                         node_version=node_version,
