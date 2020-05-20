@@ -38,6 +38,10 @@ class AudioDeviceManager {
       Devices: ${JSON.stringify(deviceList, null, 2)}
     `);
 
+    if (deviceList.length === 0) {
+      throw new Error('No audio devices found; try setting deviceManager.loopbackAudio.enabled = false to disable the feature, or building the snd-aloop module into the kernel and configuring it');
+    }
+
     return deviceList;
   }
 
