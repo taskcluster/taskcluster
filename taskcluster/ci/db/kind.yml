@@ -1,0 +1,33 @@
+---
+loader: taskgraph.loader.transform:loader
+
+transforms:
+  - src.transforms:taskcluster_images
+  - taskgraph.transforms.job:transforms
+  - taskgraph.transforms.task:transforms
+
+job-defaults:
+  worker-type: ci
+  run:
+    using: bare
+  worker:
+    max-run-time: 600
+    docker-image: {taskcluster: 'node-and-postgres'}
+
+jobs:
+  library:
+    description: db library tests
+    run:
+      install: yarn install
+      command: >-
+        ./db/test-setup.sh &&
+        cd db && yarn test
+  upgrade:
+    description: yarn db:upgrade tests
+    run:
+      install: yarn install
+      command: >-
+        ./db/test-setup.sh --users &&
+        export ADMIN_DB_URL="$TEST_DB_URL" &&
+        export USERNAME_PREFIX="test" &&
+        yarn db:upgrade
