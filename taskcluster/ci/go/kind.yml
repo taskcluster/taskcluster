@@ -1,0 +1,27 @@
+---
+loader: taskgraph.loader.transform:loader
+
+transforms:
+  - src.transforms:taskcluster_images
+  - taskgraph.transforms.job:transforms
+  - taskgraph.transforms.task:transforms
+
+job-defaults:
+  worker-type: ci
+  run:
+    using: bare
+  worker:
+    max-run-time: 600
+    docker-image: {taskcluster: 'node-and-go'}
+
+jobs:
+  internal-libraries:
+    description: test internal go libraries
+    run:
+      install: cd internal
+      command: go test -v -race ./...
+  tools:
+    description: test golang tools
+    run:
+      install: cd tools
+      command: go test -v -race ./...
