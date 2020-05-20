@@ -1,0 +1,52 @@
+---
+loader: taskgraph.loader.transform:loader
+
+transforms:
+  - src.transforms:taskcluster_images
+  - taskgraph.transforms.job:transforms
+  - taskgraph.transforms.task:transforms
+
+job-defaults:
+  worker-type: dw-ci
+  scopes:
+    - 'docker-worker:cache:docker-worker-garbage-*'
+    - 'docker-worker:capability:privileged'
+    - 'docker-worker:capability:device:loopbackAudio'
+    - 'docker-worker:capability:device:loopbackVideo'
+    - 'secrets:get:project/taskcluster/testing/docker-worker/ci-creds'
+    - 'secrets:get:project/taskcluster/testing/docker-worker/pulse-creds'
+  run:
+    using: bare
+    install: yarn install --frozen-lockfile && ./build.sh
+  worker:
+    taskcluster-proxy: true
+    privileged: true
+    loopback-video: true
+    loopback-audio: true
+    max-run-time: 10800
+    docker-image: taskcluster/worker-ci@sha256:e4357e0966e0265a3a45294d5902040b9de0303c3acb3271ee8ed81671b5461c
+    env:
+      WORKER_CI: '1'
+      TASKCLUSTER_ROOT_URL: https://community-tc.services.mozilla.com
+
+jobs:
+  chunk1:
+    description: 'docker-worker test chunk #1'
+    run:
+      command: ./test/docker-worker-test --this-chunk 1 --total-chunks 5
+  chunk2:
+    description: 'docker-worker test chunk #2'
+    run:
+      command: ./test/docker-worker-test --this-chunk 2 --total-chunks 5
+  chunk3:
+    description: 'docker-worker test chunk #3'
+    run:
+      command: ./test/docker-worker-test --this-chunk 3 --total-chunks 5
+  chunk4:
+    description: 'docker-worker test chunk #4'
+    run:
+      command: ./test/docker-worker-test --this-chunk 4 --total-chunks 5
+  chunk5:
+    description: 'docker-worker test chunk #5'
+    run:
+      command: ./test/docker-worker-test --this-chunk 5 --total-chunks 5
