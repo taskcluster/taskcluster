@@ -3,6 +3,7 @@ loader: taskgraph.loader.transform:loader
 
 transforms:
   - src.transforms:taskcluster_images
+  - src.transforms:add_dw_env
   - taskgraph.transforms.job:transforms
   - taskgraph.transforms.task:transforms
 

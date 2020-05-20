@@ -30,3 +30,13 @@ def taskcluster_images(config, jobs):
                     ).strip()
 
                 yield job
+
+
+@transforms.add
+def add_dw_env(config, jobs):
+    for job in jobs:
+        env = job["worker"].setdefault("env", {})
+        env["GITHUB_REPO_URL"] = config.params["head_repository"]
+        env["GITHUB_BRANCH"] = config.params["head_ref"]
+        env["GITHUB_SHA"] = config.params["head_rev"]
+        yield job
