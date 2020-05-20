@@ -39,7 +39,7 @@ while getopts ":atpo:" opt; do
             ;;
         p)  PUBLISH=true
             ALL_PLATFORMS=true
-            OUTPUT_ALL_PLATFORMS="Building for all platforms (build.sh -p argument specified)"
+            OUTPUT_ALL_PLATFORMS="Skipping code generation (build.sh -p argument specified)"
             ;;
         o)  OUTPUT_DIR=$OPTARG
             ;;
