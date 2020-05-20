@@ -94,22 +94,21 @@ class Provider {
    * supports this action. Also returns the reregistrationTimeout
    * in milliseconds (as opposed to the seconds it is defined in) for
    * doing date math with easier.
+   * This defaults reregistrationTimeout to 4 days. Note that
+   * this is also set in the lifecycle schema so update there if
+   * changing.
    */
-  static interpretLifecycle({lifecycle}) {
+  static interpretLifecycle({lifecycle: {registrationTimeout, reregistrationTimeout} = {}}) {
+    reregistrationTimeout = reregistrationTimeout || 345600;
     let terminateAfter = null;
-    if (!lifecycle) {
-      return {terminateAfter, reregistrationTimeout: null};
-    }
 
-    let {registrationTimeout, reregistrationTimeout} = lifecycle;
-    if (registrationTimeout !== undefined) {
+    if (registrationTimeout !== undefined && registrationTimeout < reregistrationTimeout) {
       terminateAfter = Date.now() + registrationTimeout * 1000;
-    }
-    if (reregistrationTimeout !== undefined && registrationTimeout === undefined ||
-        reregistrationTimeout < registrationTimeout) {
+    } else {
       terminateAfter = Date.now() + reregistrationTimeout * 1000;
     }
-    return {terminateAfter, reregistrationTimeout: reregistrationTimeout * 1000 || null};
+
+    return {terminateAfter, reregistrationTimeout: reregistrationTimeout * 1000};
   }
 
   // Report an error concerning this worker pool.  This handles notifications and logging.
