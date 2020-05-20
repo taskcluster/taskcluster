@@ -343,16 +343,21 @@ class AzureProvider extends Provider {
       throw error();
     }
 
+    let workerVmId = worker.providerData.vm.vmId;
+    if (!workerVmId) {
+      const {vmId} = await this.fetchAndUpdateVm(worker);
+      workerVmId = vmId;
+    }
+
     // verify that the embedded vmId matches what the worker is sending
     try {
-      assert(worker.providerData.vm.vmId);
-      assert.equal(payload.vmId, worker.providerData.vm.vmId);
+      assert.equal(payload.vmId, workerVmId);
     } catch (err) {
       this.monitor.log.registrationErrorWarning({
         message: 'vmId mismatch',
         error: err.toString(),
         vmId: payload.vmId,
-        expectedVmId: worker.providerData.vm.vmId,
+        expectedVmId: workerVmId,
         workerId: worker.workerId,
       });
       throw error();
@@ -611,16 +616,30 @@ class AzureProvider extends Provider {
     }
   }
 
+  async fetchAndUpdateVm(worker) {
+    const {provisioningState, id, vmId} = await this._enqueue('get', () => this.computeClient.virtualMachines.get(
+      worker.providerData.resourceGroupName,
+      worker.providerData.vm.name,
+    ));
+    // vm has successfully provisioned, we need to set id and vmId
+    // id is the fully qualified azure resource ID
+    // vmId is a uuid, we use it for registering workers
+    if (!worker.providerData.vm.id || !worker.providerData.vm.vmId) {
+      await worker.modify(w => {
+        w.providerData.vm.id = id;
+        w.providerData.vm.vmId = vmId;
+      });
+    }
+    return {provisioningState, id, vmId};
+  }
+
   async checkWorker({worker}) {
     const states = this.Worker.states;
     this.seen[worker.workerPoolId] = this.seen[worker.workerPoolId] || 0;
     this.errors[worker.workerPoolId] = this.errors[worker.workerPoolId] || [];
     let state = worker.state || states.REQUESTED;
     try {
-      const {provisioningState, id, vmId} = await this._enqueue('get', () => this.computeClient.virtualMachines.get(
-        worker.providerData.resourceGroupName,
-        worker.providerData.vm.name,
-      ));
+      const {provisioningState} = await this.fetchAndUpdateVm(worker);
       // lets us get power states for the VM
       const instanceView = await this._enqueue('get', () => this.computeClient.virtualMachines.instanceView(
         worker.providerData.resourceGroupName,
@@ -644,16 +663,6 @@ class AzureProvider extends Provider {
         }
         if (worker.providerData.terminateAfter && worker.providerData.terminateAfter < Date.now()) {
           state = await this.removeWorker({worker});
-        }
-
-        // vm has successfully provisioned, we need to set id and vmId
-        // id is the fully qualified azure resource ID
-        // vmId is a uuid, we use it for registering workers
-        if (!worker.providerData.vm.id || !worker.providerData.vm.vmId) {
-          await worker.modify(w => {
-            w.providerData.vm.id = id;
-            w.providerData.vm.vmId = vmId;
-          });
         }
       } else if (failProvisioningStates.has(provisioningState) ||
                 // if the VM has ever been in a failing power state

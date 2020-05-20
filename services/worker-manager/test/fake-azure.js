@@ -87,7 +87,7 @@ class FakeAzure {
           },
         ],
       },
-      vmId: "a-vm-id",
+      vmId: "5d06deb3-807b-46dd-aef5-78aaf9193f71",
       provisioningState: 'Creating',
     };
 
