@@ -3,6 +3,7 @@ loader: taskgraph.loader.transform:loader
 
 transforms:
   - src.transforms:taskcluster_images
+  - src.transforms:add_gh_env
   - taskgraph.transforms.job:transforms
   - taskgraph.transforms.task:transforms
 
@@ -20,3 +21,32 @@ jobs:
     run:
       install: yarn install
       command: "set -o pipefail && yarn test:meta | cat"
+  generate:
+    description: check that `yarn generate` was run
+    run:
+      install: yarn install
+      command: >-
+        set -o pipefail &&
+        yarn generate | cat &&
+        if ! output=$(git status --porcelain) || [ -n "$output" ]; then
+            echo "*** yarn generate produced changes to the repository; these changes should be checked in ***";
+            git --no-pager diff;
+            exit 1;
+        fi
+  build:
+    description: taskcluster build dry-run
+    run:
+      install: yarn install
+      command: yarn build --dry-run
+  changelog-pr:
+    description: taskcluster changelog checks
+    run-on-tasks-for: [github-pull-request]
+    run:
+      install: yarn install
+      command: yarn changelog:check --pr $TASKCLUSTER_PULL_REQUEST_NUMBER
+  changelog-push:
+    description: taskcluster changelog checks
+    run-on-tasks-for: [github-push]
+    run:
+      install: yarn install
+      command: yarn changelog:check

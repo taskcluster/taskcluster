@@ -44,8 +44,11 @@ def add_gh_env(config, jobs):
         env["GITHUB_SHA"] = config.params["head_rev"]
 
         # These are for the way codecov wants them
-        env["CI_BUILD_URL"] = "{}/tasks/{}".format(os.environ.get('TASKCLUSTER_ROOT_URL'), os.environ.get('TASK_ID'))
+        env["CI_BUILD_URL"] = "{}/tasks/{}".format(os.environ.get("TASKCLUSTER_ROOT_URL"), os.environ.get("TASK_ID"))
         env["GIT_BRANCH"] = config.params["head_ref"]
+
+        # Passing through some things the decision task wants to child tasks
+        env["TASKCLUSTER_PULL_REQUEST_NUMBER"] = os.environ.get("TASKCLUSTER_PULL_REQUEST_NUMBER", "")
         yield job
 
 
