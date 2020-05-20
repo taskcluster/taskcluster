@@ -1,15 +1,7 @@
 ---
 title:        Payload Format
-layout:       default
-class:        html
-docson:       true
-marked:       true
-ejs:          true
-superagent:   true
-docref:       true
 order:        1
 ---
+import SchemaTable from 'taskcluster-ui/components/SchemaTable'
 
-# Payload format
-
-<div data-render-schema='https://schemas.taskcluster.net/docker-worker/v1/payload.json'></div>
+<SchemaTable schema="/schemas/docker-worker/v1/payload.json#" />

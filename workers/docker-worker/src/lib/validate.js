@@ -60,11 +60,6 @@ class SchemaSet {
 
         checkRefs(schema, this.cfg.serviceName);
 
-        if (schema.id || schema.$id) {
-          debug('Schema incorrectly attempts to set own id: %s', name);
-          throw new Error('Schema ' + path.join(root, name) + ' attempts to set own id!');
-        }
-
         this._schemas[jsonName] = schema;
       } catch (err) {
         // walk swallows errors, so we must raise them ourselves
