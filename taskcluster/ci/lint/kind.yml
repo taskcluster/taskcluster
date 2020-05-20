@@ -28,7 +28,7 @@ jobs:
   python:
     description: python flake8
     worker:
-      docker-image: python:3.7
+      docker-image: python:2.7
     run:
       install: pip install flake8
       command: sh test/py-lint.sh

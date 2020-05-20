@@ -1,17 +1,18 @@
 from taskgraph.transforms.job import run_job_using
 from taskgraph.util.schema import Schema
 
-from voluptuous import Required, Optional
+from voluptuous import Required, Optional, Extra
 
-gradlew_schema = Schema({
+bare_schema = Schema({
     Required("using"): "bare",
-    Required("command"): str,
-    Optional("install"): str,
+    Required("command"): basestring,
+    Optional("install"): basestring,
     Optional("skip-clone"): bool,
+    Extra: object
     })
 
 
-@run_job_using("docker-worker", "bare")
+@run_job_using("docker-worker", "bare", schema=bare_schema)
 def bare(config, job, taskdesc):
     run = job["run"]
     worker = taskdesc['worker'] = job['worker']
