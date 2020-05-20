@@ -13,11 +13,8 @@ const ChainOfTrust = require('./features/chain_of_trust');
 const BulkLog = require('./features/bulk_log');
 const TaskclusterProxy = require('./features/taskcluster_proxy');
 const Dind = require('./features/dind');
-const RelengAPIProxy = require('./features/releng_api_proxy');
 const DockerSave = require('./features/docker_save');
 const Interactive = require('./features/interactive.js');
-const BalrogVPNProxy = require('./features/balrog_vpn_proxy');
-const BalrogStageVPNProxy = require('./features/balrog_stage_vpn_proxy');
 
 const features = {
   localLiveLog: {
@@ -65,24 +62,6 @@ const features = {
     module: TaskclusterProxy,
   },
 
-  balrogVPNProxy: {
-    title: 'Balrog proxy service',
-    description: 'The Balrog proxy feature allows tasks to make requests to ' +
-                 'http://balrog which is a proxied connection through a vpn ' +
-                 'tunnel to production balrog update server.',
-    defaults: false,
-    module: BalrogVPNProxy,
-  },
-
-  balrogStageVPNProxy: {
-    title: 'Balrog stage proxy service',
-    description: 'The Balrog stage proxy feature allows tasks to make requests to ' +
-                 'http://balrog which is a proxied connection through a vpn ' +
-                 'tunnel to the stage balrog update server.',
-    defaults: false,
-    module: BalrogStageVPNProxy,
-  },
-
   dind: {
     title: 'Docker in Docker',
     description: 'Runs docker-in-docker and binds `/var/run/docker.sock` ' +
@@ -90,14 +69,6 @@ const features = {
                  'capabilities or host volume mounts.',
     defaults: false,
     module: Dind,
-  },
-
-  relengAPIProxy: {
-    title: 'Releng API proxy service',
-    description: 'The Releng API proxy service allows tasks to talk to releng ' +
-                 'api using an authorization token based on the task\'s scopes',
-    defaults: false,
-    module: RelengAPIProxy,
   },
 
   dockerSave: {

@@ -222,20 +222,6 @@ properties:
           set in the task. This can be used to make api calls via the
           [client](https://github.com/taskcluster/taskcluster-client) CURL,
           etc... Without embedding credentials in the task.
-      balrogVPNProxy:
-        type: boolean
-        title: Balrog proxy service
-        description: >-
-          The Balrog proxy feature allows tasks to make requests to
-          http://balrog which is a proxied connection through a vpn tunnel to
-          production balrog update server.
-      balrogStageVPNProxy:
-        type: boolean
-        title: Balrog stage proxy service
-        description: >-
-          The Balrog stage proxy feature allows tasks to make requests to
-          http://balrog which is a proxied connection through a vpn tunnel to
-          the stage balrog update server.
       artifacts:
         type: boolean
         title: Artifact uploads
@@ -247,12 +233,6 @@ properties:
           Runs docker-in-docker and binds `/var/run/docker.sock` into the
           container. Doesn't allow privileged mode, capabilities or host volume
           mounts.
-      relengAPIProxy:
-        type: boolean
-        title: Releng API proxy service
-        description: >-
-          The Releng API proxy service allows tasks to talk to releng api using
-          an authorization token based on the task's scopes
       dockerSave:
         type: boolean
         title: Docker save

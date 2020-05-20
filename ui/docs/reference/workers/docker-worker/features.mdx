@@ -27,73 +27,6 @@ Example:
 }
 ```
 
-## Feature: `balrogVPNProxy`
-
-Required scopes: `docker-worker:feature:balrogVPNProxy`
-
-Some tasks have the need for communicating with production balrog server over
-port 80 through a vpn tunnel. The balrog vpn proxy feature allows a task to
-direct requests to http://balrog which will proxy the request over a vpn connection
-to production balrog.
-
-This is a restricted feature and taskcluster credentials of the submitter must
-contain scopes for `docker-worker:feature:balrogVPNProxy`.
-
-To enable, the task must contain the proper scope as well as be declared in
-the `features` object within the task payload.
-
-Example:
-
-```js
-{
-  "scopes": ["docker-worker:feature:balrogVPNProxy"],
-  "payload": {
-    "features": {
-      "balrogVPNProxy": true
-    }
-  }
-}
-```
-
-References:
-
-* [taskcluster-vpn-proxy](https://github.com/taskcluster/taskcluster-vpn-proxy)
-* [docker-worker integration](https://github.com/taskcluster/docker-worker/blob/master/src/lib/features/balrog_vpn_proxy.js)
-
-## Feature: `balrogStageVPNProxy`
-
-Required scopes: `docker-worker:feature:balrogStageVPNProxy`
-
-Some tasks have the need for communicating with staging balrog server over
-port 80 through a vpn tunnel. The balrog stage vpn proxy feature allows a task to
-direct requests to http://balrog which will proxy the request over a vpn connection
-to balrog stage. Unless you are working on Release Engineering systems, you probably
-don't want to use this.
-
-This is a restricted feature and taskcluster credentials of the submitter must
-contain scopes for `docker-worker:feature:balrogStageVPNProxy`.
-
-To enable, the task must contain the proper scope as well as be declared in
-the `features` object within the task payload.
-
-Example:
-
-```js
-{
-  "scopes": ["docker-worker:feature:balrogStageVPNProxy"],
-  "payload": {
-    "features": {
-      "balrogStageVPNProxy": true
-    }
-  }
-}
-```
-
-References:
-
-* [taskcluster-vpn-proxy](https://github.com/taskcluster/taskcluster-vpn-proxy)
-* [docker-worker integration](https://github.com/taskcluster/docker-worker/blob/master/src/lib/features/balrog_stage_vpn_proxy.js)
-
 ## Feature: `taskclusterProxy`
 
 The taskcluster proxy provides an easy and safe way to make authenticated
@@ -131,32 +64,6 @@ References:
 
 * [taskcluster-proxy](https://github.com/taskcluster/taskcluster-proxy)
 * [docker-worker integration](https://github.com/taskcluster/docker-worker/blob/master/lib/features/taskcluster_proxy.js)
-
-## Feature: `testdroidProxy`
-
-Source: https://github.com/taskcluster/testdroid-proxy
-
-The testdroid proxy allows a task to request and release a device by making
-the appropriate calls to http://testdroid. These actions are documented in the
-testdroid-proxy
-[documentation](https://github.com/taskcluster/testdroid-proxy/blob/master/README.md).
-
-Example:
-
-```js
-{
-  "payload": {
-    "features": {
-      "testdroidProxy": true
-    },
-  }
-}
-```
-
-References:
-
-* [testdroid-proxy](https://github.com/taskcluster/testdroid-proxy)
-* [docker-worker integration](https://github.com/taskcluster/docker-worker/blob/master/lib/features/testdroid_proxy.js)
 
 ## Feature: `dockerSave`
 
@@ -212,41 +119,6 @@ References:
 
 * [docker-worker integration](https://github.com/taskcluster/docker-worker/blob/master/lib/features/interactive.js)
 * [implementation](https://github.com/taskcluster/docker-exec-websocket-server)
-
-## Feature: `relengAPIProxy`
-
-Status: stable, but limited access
-
-Like the Taskcluster proxy, this proxy allows easy and safe access to RelengAPI without embedding RelengAPI credentials in the task.
-
-The task must indicate the RelengAPI permissions it needs using scopes of the form `docker-worker:relengapi-proxy:<permission>`.
-Wildcard expansion is not allowed.
-
-Example:
-
-```js
-{
-  "scopes": [
-    "docker-worker:relengapi-proxy:tooltool.download.internal"
-  ],
-  "payload": {
-    "features": {
-      "relengAPIProxy": true,
-    }
-  }
-}
-```
-
-Requests can then be made from the task container, using `http://relengapi` in place of `https://api.pub.build.mozilla.org`.
-
-The set of allowed RelengAPI permissions are currently limited to
-
- * `tooltool.download.public`
- * `tooltool.download.internal`
-
-References:
-
-* [relengapi-proxy](https://github.com/taskcluster/relengapi-proxy)
 
 ## Feature: `allowPtrace`
 
