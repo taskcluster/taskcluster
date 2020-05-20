@@ -1,6 +1,10 @@
 const path = require('path');
 const {gitLsFiles, readRepoFile, writeRepoFile} = require('../../utils');
 
+const IGNORE = [
+  'infrastructure/docker-images/worker-ci/git/README.md',
+];
+
 exports.tasks = [{
   title: 'README TOCs',
   provides: ['target-readme-tocs'],
@@ -12,6 +16,8 @@ exports.tasks = [{
       .filter(file => !file.startsWith('ui/docs/'))
       // some test directories have READMEs
       .filter(file => !file.match(/\/test\//))
+      // ignore some other files
+      .filter(file => !IGNORE.includes(file))
       .map(file => ({dir: path.dirname(file).replace(/^.$/, ''), children: []}));
 
     // read each README and extract titles where available

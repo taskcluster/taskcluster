@@ -1,6 +1,6 @@
 FROM ubuntu:14.04
 
-ENV NODE_VERSION 12.11.0
+ARG NODE_VERSION
 ENV DOCKER_VERSION=18.06.3~ce~3-0~ubuntu
 
 RUN apt-get update && apt-get install -y apt-transport-https
@@ -33,9 +33,6 @@ COPY ./wrapdocker /usr/local/bin/wrapdocker
 COPY ./gitconfig /home/tester/.gitconfig
 
 # install our custom git plugin
-COPY git/target/doc/git-ci-checkout-pr.1 /usr/local/man/man1/git-ci-checkout-pr.1
-COPY git/target/doc/git-ci-checkout-ref.1 /usr/local/man/man1/git-ci-checkout-ref.1
-COPY git/target/doc/git-ci-checkout-setup.1 /usr/local/man/man1/git-ci-checkout-setup.1
 COPY git/git-ci-checkout-pr /usr/local/bin/git-ci-checkout-pr
 COPY git/git-ci-checkout-ref /usr/local/bin/git-ci-checkout-ref
 COPY git/git-ci-checkout-setup /usr/local/bin/git-ci-checkout-setup
