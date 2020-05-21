@@ -270,6 +270,8 @@ class AwsProvider extends Provider {
    * @returns {Promise<{expires: *}>}
    */
   async registerWorker({worker, workerPool, workerIdentityProof}) {
+    const monitor = this.workerMonitor({worker});
+
     if (worker.state !== this.Worker.states.REQUESTED) {
       throw new ApiError('This worker is either stopped or running. No need to register');
     }
@@ -298,6 +300,7 @@ class AwsProvider extends Provider {
       providerId: this.providerId,
       workerId: worker.workerId,
     });
+    monitor.debug('setting state to RUNNING');
     await worker.modify(w => {
       w.lastModified = new Date();
       w.state = this.Worker.states.RUNNING;
@@ -310,6 +313,7 @@ class AwsProvider extends Provider {
 
   async checkWorker({worker}) {
     this.seen[worker.workerPoolId] = this.seen[worker.workerPoolId] || 0;
+    const monitor = this.workerMonitor({worker});
 
     let state = worker.state;
     try {
@@ -318,6 +322,7 @@ class AwsProvider extends Provider {
         InstanceIds: [worker.workerId.toString()],
         IncludeAllInstances: true,
       }).promise())).InstanceStatuses;
+      monitor.debug(`instance statuses: ${instanceStatuses.map(is => is.InstanceState.Name).join(', ')}`);
       for (const is of instanceStatuses) {
         switch (is.InstanceState.Name) {
           case 'pending':
@@ -342,12 +347,13 @@ class AwsProvider extends Provider {
         }
       }
       if (worker.providerData.terminateAfter && worker.providerData.terminateAfter < Date.now()) {
-        await this.removeWorker({worker});
+        await this.removeWorker({worker, reason: 'terminateAfter time exceeded'});
       }
     } catch (e) {
       if (e.code !== 'InvalidInstanceID.NotFound') { // aws throws this error for instances that had been terminated, too
         throw e;
       }
+      monitor.debug('instance status not found');
       this.monitor.log.workerStopped({
         workerPoolId: worker.workerPoolId,
         providerId: this.providerId,
@@ -356,6 +362,7 @@ class AwsProvider extends Provider {
       state = this.Worker.states.STOPPED;
     }
 
+    monitor.debug(`setting state to ${state}`);
     await worker.modify(w => {
       const now = new Date();
       if (w.state !== state) {
@@ -366,7 +373,14 @@ class AwsProvider extends Provider {
     });
   }
 
-  async removeWorker({worker}) {
+  async removeWorker({worker, reason}) {
+    this.monitor.log.workerRemoved({
+      workerPoolId: worker.workerPoolId,
+      providerId: worker.providerId,
+      workerId: worker.workerId,
+      reason,
+    });
+
     let result;
     try {
       const region = worker.providerData.region;

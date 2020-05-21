@@ -47,7 +47,14 @@ class StaticProvider extends Provider {
     return worker;
   }
 
-  async removeWorker({worker}) {
+  async removeWorker({worker, reason}) {
+    this.monitor.log.workerRemoved({
+      workerPoolId: worker.workerPoolId,
+      providerId: worker.providerId,
+      workerId: worker.workerId,
+      reason,
+    });
+
     await worker.remove();
   }
 

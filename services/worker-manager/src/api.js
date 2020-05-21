@@ -533,7 +533,7 @@ builder.declare({
   }
 
   try {
-    await provider.removeWorker({worker});
+    await provider.removeWorker({worker, reason: 'workerManager.removeWorker API call'});
   } catch (err) {
     if (!(err instanceof ApiError)) {
       throw err;

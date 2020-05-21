@@ -96,6 +96,7 @@ class GoogleProvider extends Provider {
 
   async registerWorker({worker, workerPool, workerIdentityProof}) {
     const {token} = workerIdentityProof;
+    const monitor = this.workerMonitor({worker});
 
     // use the same message for all errors here, so as not to give an attacker
     // extra information.
@@ -152,6 +153,7 @@ class GoogleProvider extends Provider {
       providerId: this.providerId,
       workerId: worker.workerId,
     });
+    monitor.debug('setting state to RUNNING');
     await worker.modify(w => {
       w.lastModified = new Date();
       w.state = this.Worker.states.RUNNING;
@@ -170,7 +172,14 @@ class GoogleProvider extends Provider {
   async removeResources({workerPool}) {
   }
 
-  async removeWorker({worker}) {
+  async removeWorker({worker, reason}) {
+    this.monitor.log.workerRemoved({
+      workerPoolId: worker.workerPoolId,
+      providerId: worker.providerId,
+      workerId: worker.workerId,
+      reason,
+    });
+
     try {
       // This returns an operation that we could track but the chances
       // that this fails due to user input being wrong are low so
@@ -357,6 +366,8 @@ class GoogleProvider extends Provider {
     this.seen[worker.workerPoolId] = this.seen[worker.workerPoolId] || 0;
     this.errors[worker.workerPoolId] = this.errors[worker.workerPoolId] || [];
 
+    const monitor = this.workerMonitor({worker});
+
     let state = worker.state;
     try {
       const {data} = await this._enqueue('get', () => this.compute.instances.get({
@@ -365,6 +376,7 @@ class GoogleProvider extends Provider {
         instance: worker.workerId,
       }));
       const {status} = data;
+      monitor.debug(`instance status is ${status}`);
       if (['PROVISIONING', 'STAGING', 'RUNNING'].includes(status)) {
         this.seen[worker.workerPoolId] += worker.capacity || 1;
 
@@ -378,7 +390,7 @@ class GoogleProvider extends Provider {
           });
         }
         if (worker.providerData.terminateAfter && worker.providerData.terminateAfter < Date.now()) {
-          await this.removeWorker({worker});
+          await this.removeWorker({worker, reason: 'terminateAfter time exceeded'});
         }
       } else if (['TERMINATED', 'STOPPED'].includes(status)) {
         await this._enqueue('query', () => this.compute.instances.delete({
@@ -397,12 +409,14 @@ class GoogleProvider extends Provider {
       if (err.code !== 404) {
         throw err;
       }
+      monitor.debug(`instance status not found`);
       if (worker.providerData.operation) {
         // We only check in on the operation if the worker failed to
         // start succesfully
         await this.handleOperation({
           op: worker.providerData.operation,
           errors: this.errors[worker.workerPoolId],
+          monitor,
         });
       }
       this.monitor.log.workerStopped({
@@ -412,6 +426,7 @@ class GoogleProvider extends Provider {
       });
       state = states.STOPPED;
     }
+    monitor.debug(`setting state to ${state}`);
     await worker.modify(w => {
       const now = new Date();
       if (w.state !== state) {
@@ -449,7 +464,7 @@ class GoogleProvider extends Provider {
    * op: an object with keys `name` and optionally `region` or `zone` if it is a region or zone based operation
    * errors: a list that will have any errors found for that operation appended to it
    */
-  async handleOperation({op, errors}) {
+  async handleOperation({op, errors, monitor}) {
     let operation;
     let opService;
     const args = {
@@ -478,6 +493,7 @@ class GoogleProvider extends Provider {
 
     // Let's check back in on the next provisioning iteration if unfinished
     if (operation.status !== 'DONE') {
+      monitor.debug(`operation status ${operation.status} is not DONE`);
       return true;
     }
 

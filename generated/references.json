@@ -11696,6 +11696,20 @@
           "version": 1
         },
         {
+          "description": "A request has been made to stop a worker.  This operation can sometimes\ntake some time.",
+          "fields": {
+            "providerId": "The provider that did the work for this worker pool.",
+            "reason": "The reason this worker is being removed",
+            "workerId": "The worker that is being removed",
+            "workerPoolId": "The worker pool ID (provisionerId/workerType)"
+          },
+          "level": "notice",
+          "name": "workerRemoved",
+          "title": "Worker Removed",
+          "type": "worker-removed",
+          "version": 1
+        },
+        {
           "description": "A worker has been requested from a cloud api",
           "fields": {
             "providerId": "The provider that did the work for this worker pool.",
@@ -11713,7 +11727,7 @@
           "description": "A worker has been marked as running",
           "fields": {
             "providerId": "The provider that did the work for this worker pool.",
-            "workerId": "The worker that was created",
+            "workerId": "The worker that is running",
             "workerPoolId": "The worker pool ID (provisionerId/workerType)"
           },
           "level": "notice",
@@ -11726,26 +11740,13 @@
           "description": "A worker has been marked as stopped",
           "fields": {
             "providerId": "The provider that did the work for this worker pool.",
-            "workerId": "The worker that was created",
+            "workerId": "The worker that was stopped",
             "workerPoolId": "The worker pool ID (provisionerId/workerType)"
           },
           "level": "notice",
           "name": "workerStopped",
           "title": "Worker Stopped",
           "type": "worker-stopped",
-          "version": 1
-        },
-        {
-          "description": "A worker has been marked as stopping",
-          "fields": {
-            "providerId": "The provider that did the work for this worker pool.",
-            "workerId": "The worker that was created",
-            "workerPoolId": "The worker pool ID (provisionerId/workerType)"
-          },
-          "level": "notice",
-          "name": "workerStopping",
-          "title": "Worker Stopping",
-          "type": "worker-stopping",
           "version": 1
         }
       ]
