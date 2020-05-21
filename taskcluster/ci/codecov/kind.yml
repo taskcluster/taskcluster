@@ -15,7 +15,10 @@ kind-dependencies:
 jobs:
   upload:
     worker-type: ci
+    scopes:
+      - secrets:get:project/taskcluster/testing/codecov
     worker:
+      taskcluster-proxy: true
       env:
         CODECOV_NAME: codecov-upload
       max-run-time: 600
