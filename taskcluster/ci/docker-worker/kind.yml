@@ -23,7 +23,7 @@ job-defaults:
     loopback-video: true
     loopback-audio: true
     max-run-time: 10800
-    docker-image: taskcluster/worker-ci@sha256:e4357e0966e0265a3a45294d5902040b9de0303c3acb3271ee8ed81671b5461c
+    docker-image: {taskcluster: worker-ci}
     env:
       WORKER_CI: '1'
       TASKCLUSTER_ROOT_URL: https://community-tc.services.mozilla.com

@@ -30,6 +30,8 @@ def taskcluster_images(config, jobs):
                 image = "taskcluster/browser-test:{node_version}"
             elif (repo == "rabbit-test"):
                 image = "taskcluster/rabbit-test:{node_version}"
+            elif (repo == "worker-ci"):
+                image = "taskcluster/worker-ci:node{node_version}"
 
             job["worker"]["docker-image"] = image.format(
                 node_version=node_version,
