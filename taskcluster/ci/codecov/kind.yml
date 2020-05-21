@@ -24,6 +24,7 @@ jobs:
       max-run-time: 600
       docker-image: {taskcluster: 'node-and-go'}
     description: upload nodejs services/libraries coverage
+    requires: all-resolved
     run:
       using: bare
       install: yarn install && eval $(yarn -s shared-secrets)
