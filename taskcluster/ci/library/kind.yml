@@ -14,7 +14,7 @@ job-defaults:
   worker-type: ci
   run:
     using: bare
-    install: yarn --frozen-lockfile && eval $(yarn -s shared-secrets)
+    install: yarn --frozen-lockfile
   scopes:
     - secrets:get:project/taskcluster/testing/azure
     - secrets:get:project/taskcluster/testing/codecov

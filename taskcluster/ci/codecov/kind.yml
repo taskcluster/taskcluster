@@ -27,7 +27,7 @@ jobs:
     requires: all-resolved
     run:
       using: bare
-      install: yarn install && eval $(yarn -s shared-secrets)
+      install: yarn install --frozen-lockfile && eval $(yarn -s shared-secrets)
       command: >-
           yarn fetch-coverage &&
           bash <(curl -s https://codecov.io/bash) -b $TASK_ID/$RUN_ID

@@ -24,7 +24,7 @@ jobs:
   generate:
     description: check that `yarn generate` was run
     run:
-      install: yarn install
+      install: yarn install --frozen-lockfile
       command: >-
         set -o pipefail &&
         yarn generate | cat &&
@@ -36,17 +36,17 @@ jobs:
   build:
     description: taskcluster build dry-run
     run:
-      install: yarn install
+      install: yarn install --frozen-lockfile
       command: yarn build --dry-run
   changelog-pr:
     description: taskcluster changelog checks
     run-on-tasks-for: [github-pull-request]
     run:
-      install: yarn install
+      install: yarn install --frozen-lockfile
       command: yarn changelog:check --pr $TASKCLUSTER_PULL_REQUEST_NUMBER
   changelog-push:
     description: taskcluster changelog checks
     run-on-tasks-for: [github-push]
     run:
-      install: yarn install
+      install: yarn install --frozen-lockfile
       command: yarn changelog:check

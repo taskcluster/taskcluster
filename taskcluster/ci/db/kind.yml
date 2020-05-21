@@ -18,14 +18,14 @@ jobs:
   library:
     description: db library tests
     run:
-      install: yarn install
+      install: yarn install --frozen-lockfile
       command: >-
         ./db/test-setup.sh &&
         cd db && yarn test
   upgrade:
     description: yarn db:upgrade tests
     run:
-      install: yarn install
+      install: yarn install --frozen-lockfile
       command: >-
         ./db/test-setup.sh --users &&
         export ADMIN_DB_URL="$TEST_DB_URL" &&
