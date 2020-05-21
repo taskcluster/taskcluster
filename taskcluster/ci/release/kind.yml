@@ -1,0 +1,59 @@
+---
+loader: taskgraph.loader.transform:loader
+
+transforms:
+  - src.transforms:add_task_env
+  - taskgraph.transforms.job:transforms
+  - taskgraph.transforms.task:transforms
+
+job-defaults:
+  worker-type: release
+  worker:
+    max-run-time: 3600
+    artifacts:
+      - path: taskcluster/release-debug-logs
+        name: debug-logs # Note: this should never be public because who knows what is in here
+        type: directory
+  description: Perform an actual taskcluster release
+  run:
+    using: bare
+    pre-clone: |-
+      # set up golang..
+      export GOROOT="$(pwd)/go/go"
+      export GOPATH="$(pwd)/go/path"
+      mkdir -p ${GOPATH}
+      export PATH="${GOROOT}/bin:${GOPATH}/bin:${PATH}"
+      go version
+      # set up gox
+      go get github.com/mitchellh/gox
+      # set up Node, using nvm (generic-worker does not support .xz, so we can't use mounts)
+      curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.35.2/install.sh | bash
+      . ~/.nvm/nvm.sh
+      nvm install $NODE_VERSION
+      # set up yarn
+      curl -o- -L https://yarnpkg.com/install.sh | bash
+      export PATH="$HOME/.yarn/bin:$HOME/.config/yarn/global/node_modules/.bin:$PATH"
+      # clone the repo (shallow won't work here as it misses tags)
+    install: yarn --frozen-lockfile
+
+jobs:
+  publish:
+
+    attributes:
+      only-on: release
+    run:
+      command: yarn release:publish --logs-dir $(pwd)/release-debug-logs
+    routes:
+      - notify.email.taskcluster-notifications@mozilla.com.on-any
+    scopes:
+      - secrets:get:project/taskcluster/release
+    extra:
+      notify:
+        email:
+          subject: Taskcluster Release Status
+
+  staging:
+    attributes:
+      only-on: staging-release
+    run:
+      command: yarn release:publish --logs-dir $(pwd)/release-debug-logs --no-push --staging

@@ -6,35 +6,41 @@ from taskgraph.transforms.base import TransformSequence
 transforms = TransformSequence()
 
 
-@transforms.add
-def taskcluster_images(config, jobs):
+def _dependency_versions():
     with open('package.json', 'r') as pkg:
         with open('.go-version', 'r') as goversion:
-            node_version = json.load(pkg)["engines"]["node"]
-            go_version = goversion.read()
+            node_version = json.load(pkg)["engines"]["node"].strip()
+            go_version = goversion.read().strip()
             pg_version = 11
-            for job in jobs:
-                image = job["worker"]["docker-image"]
-                if isinstance(image, dict) and image.keys()[0] == "taskcluster":
-                    repo = image["taskcluster"]
-                    if (repo == "node-and-go"):
-                        image = "taskcluster/node-and-go:node{node_version}-{go_version}"
-                    elif (repo == "node-and-postgres"):
-                        image = "taskcluster/node-and-postgres:node{node_version}-pg{pg_version}"
-                    elif (repo == "browser-test"):
-                        image = "taskcluster/browser-test:{node_version}"
-
-                    job["worker"]["docker-image"] = image.format(
-                        node_version=node_version,
-                        go_version=go_version,
-                        pg_version=pg_version
-                    ).strip()
-
-                yield job
+            return (node_version, go_version, pg_version)
 
 
 @transforms.add
-def add_gh_env(config, jobs):
+def taskcluster_images(config, jobs):
+    node_version, go_version, pg_version = _dependency_versions()
+    for job in jobs:
+        image = job["worker"]["docker-image"]
+        if isinstance(image, dict) and image.keys()[0] == "taskcluster":
+            repo = image["taskcluster"]
+            if (repo == "node-and-go"):
+                image = "taskcluster/node-and-go:node{node_version}-{go_version}"
+            elif (repo == "node-and-postgres"):
+                image = "taskcluster/node-and-postgres:node{node_version}-pg{pg_version}"
+            elif (repo == "browser-test"):
+                image = "taskcluster/browser-test:{node_version}"
+
+            job["worker"]["docker-image"] = image.format(
+                node_version=node_version,
+                go_version=go_version,
+                pg_version=pg_version
+            ).strip()
+
+        yield job
+
+
+@transforms.add
+def add_task_env(config, jobs):
+    node_version, go_version, pg_version = _dependency_versions()
     for job in jobs:
         env = job["worker"].setdefault("env", {})
 
@@ -49,6 +55,11 @@ def add_gh_env(config, jobs):
 
         # Passing through some things the decision task wants to child tasks
         env["TASKCLUSTER_PULL_REQUEST_NUMBER"] = os.environ.get("TASKCLUSTER_PULL_REQUEST_NUMBER", "")
+
+        # Make dependency versions available for use
+        env["NODE_VERSION"] = node_version
+        env["GO_VERSION"] = go_version
+        env["POSTGRES_VERSION"] = str(pg_version)
         yield job
 
 

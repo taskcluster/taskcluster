@@ -163,6 +163,7 @@ tasks:
                             --head-rev="$TASKCLUSTER_HEAD_REV"
                             --head-tag="$TASKCLUSTER_HEAD_TAG"
                             --repository-type="$TASKCLUSTER_REPOSITORY_TYPE"
+                            --target-tasks-method=taskcluster-branches
                             --tasks-for='${tasks_for}'
                       artifacts:
                           'public':
