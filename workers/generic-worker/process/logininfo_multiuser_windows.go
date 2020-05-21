@@ -9,7 +9,7 @@ import (
 	"time"
 	"unsafe"
 
-	"github.com/taskcluster/taskcluster/v29/workers/generic-worker/win32"
+	"github.com/taskcluster/taskcluster/v30/workers/generic-worker/win32"
 )
 
 // LoginInfo represents a logged in user session

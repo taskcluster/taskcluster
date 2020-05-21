@@ -15,10 +15,10 @@ import (
 	got "github.com/taskcluster/go-got"
 
 	tcurls "github.com/taskcluster/taskcluster-lib-urls"
-	"github.com/taskcluster/taskcluster/v29/clients/client-shell/apis/definitions"
-	"github.com/taskcluster/taskcluster/v29/clients/client-shell/client"
-	"github.com/taskcluster/taskcluster/v29/clients/client-shell/cmds/root"
-	"github.com/taskcluster/taskcluster/v29/clients/client-shell/config"
+	"github.com/taskcluster/taskcluster/v30/clients/client-shell/apis/definitions"
+	"github.com/taskcluster/taskcluster/v30/clients/client-shell/client"
+	"github.com/taskcluster/taskcluster/v30/clients/client-shell/cmds/root"
+	"github.com/taskcluster/taskcluster/v30/clients/client-shell/config"
 )
 
 var (

@@ -13,7 +13,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/taskcluster/taskcluster/v29/tools/jsonschema2go"
+	"github.com/taskcluster/taskcluster/v30/tools/jsonschema2go"
 	"golang.org/x/tools/imports"
 )
 
@@ -185,7 +185,7 @@ func FormatSourceAndSave(sourceFile string, sourceCode []byte) {
 	// in GOPATH, so reset the TC version to the appropriate value.  Note that
 	// the last argument here will be updated to the current version by `yarn
 	// release`, so this will always substitute the correct version.
-	formattedContent = regexp.MustCompile(`github.com/taskcluster/taskcluster/v[0-9]+/`).ReplaceAll(formattedContent, []byte("github.com/taskcluster/taskcluster/v29/"))
+	formattedContent = regexp.MustCompile(`github.com/taskcluster/taskcluster/v[0-9]+/`).ReplaceAll(formattedContent, []byte("github.com/taskcluster/taskcluster/v30/"))
 
 	// only perform general format, if that worked...
 	formattedContent, err = format.Source(formattedContent)

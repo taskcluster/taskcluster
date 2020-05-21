@@ -4,8 +4,8 @@ import (
 	"log"
 	"time"
 
-	"github.com/taskcluster/taskcluster/v29/internal/workerproto"
-	"github.com/taskcluster/taskcluster/v29/tools/worker-runner/run"
+	"github.com/taskcluster/taskcluster/v30/internal/workerproto"
+	"github.com/taskcluster/taskcluster/v30/tools/worker-runner/run"
 )
 
 // An object to manage expiration of the credentials by informing the worker

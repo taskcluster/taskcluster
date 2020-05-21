@@ -3,6 +3,65 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v30.0.0
+
+### GENERAL
+
+▶ [patch] [bug 1638047](http://bugzil.la/1638047)
+This release fixes a bug where the web UI opens the log viewer for any `text/plain` artifacts, which breaks for private artifacts. The web UI will now only use the log viewer for `text/plain` `*.log` files.
+
+▶ [patch] [bug 1587145](http://bugzil.la/1587145)
+taskcluster-client-web now only builds a single umd asset. This asset is
+compatible with both cjs and esm.
+
+### DEPLOYERS
+
+▶ [minor] 
+Database version 11 removes the `widgets` table that was used to test Postgres deployment.  It contains no useful data.
+The hidden `notify.updateWidgets` API method, but this method was never meant to be used so this removal is not considered a breaking change.
+
+▶ [patch] [bug 1639913](http://bugzil.la/1639913)
+Worker-manager now logs when a worker is removed, and includes debug logging of provisioning and scanning.
+
+### WORKER-DEPLOYERS
+
+▶ [MAJOR] [bug 1636321](http://bugzil.la/1636321)
+The generic-worker configuration parameters `livelogKey`, `livelogCertificate`, `livelogGETPort`, `livelogPUTPort`, and `livelogSecret` are no longer needed and are prohibited in the worker's configuration.
+
+▶ [minor] [#2861](https://github.com/taskcluster/taskcluster/issues/2861)
+The unused and unmaintained docker-worker features balrogVPNProxy, balrogStagingVPNProxy, and relengAPIProxy have been removed.
+
+▶ [patch] [bug 1638370](http://bugzil.la/1638370)
+Azure provider no longer has a race condition between `registerWorker` and `checkWorker`.
+
+▶ [patch] 
+Docker-worker will now fail early with a useful error message if the loopback audio or video devices are not available, but are configured.
+
+▶ [patch] 
+The docker-worker version is now logged in the `serviceContext.version` property of its structured logs.
+
+### ADMINS
+
+▶ [patch] [bug 1627769](http://bugzil.la/1627769)
+Worker lifecycle defaults are now being properly applied.
+
+### USERS
+
+▶ [patch] [#1061](https://github.com/taskcluster/taskcluster/issues/1061)
+In client-shell added flag --verbose/-v for getting log to stderr for all the commands.
+
+▶ [patch] 
+The docker-worker payload format is now available in Taskcluster's online documentation.
+
+### DEVELOPERS
+
+▶ [patch] [#2844](https://github.com/taskcluster/taskcluster/issues/2844)
+All services are now invoked from the root of the monorepo directory.
+
+### OTHER
+
+▶ Additional changes not described here: [bug 1636164](http://bugzil.la/1636164), [bug 1636174](http://bugzil.la/1636174), [#2822](https://github.com/taskcluster/taskcluster/issues/2822), [#2838](https://github.com/taskcluster/taskcluster/issues/2838), [#2844](https://github.com/taskcluster/taskcluster/issues/2844).
+
 ## v29.6.0
 
 ### USERS

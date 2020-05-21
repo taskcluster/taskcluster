@@ -5,7 +5,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/taskcluster/taskcluster/v29/workers/generic-worker/fileutil"
+	"github.com/taskcluster/taskcluster/v30/workers/generic-worker/fileutil"
 )
 
 func TestNoWorkerTypeUserDataGenericWorkerProperty(t *testing.T) {

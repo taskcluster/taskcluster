@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/taskcluster/taskcluster/v29/internal/workerproto"
+	"github.com/taskcluster/taskcluster/v30/internal/workerproto"
 )
 
 func main() {

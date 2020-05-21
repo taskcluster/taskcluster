@@ -4,7 +4,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/taskcluster/taskcluster/v29/internal/workerproto"
+	"github.com/taskcluster/taskcluster/v30/internal/workerproto"
 )
 
 // FakeWorker implements a fake worker, in terms of the protocol at least

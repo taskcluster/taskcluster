@@ -8,8 +8,8 @@ import (
 	"time"
 
 	"github.com/Microsoft/go-winio"
-	"github.com/taskcluster/taskcluster/v29/internal/workerproto"
-	"github.com/taskcluster/taskcluster/v29/tools/worker-runner/run"
+	"github.com/taskcluster/taskcluster/v30/internal/workerproto"
+	"github.com/taskcluster/taskcluster/v30/tools/worker-runner/run"
 	"golang.org/x/sys/windows/svc"
 	"golang.org/x/sys/windows/svc/mgr"
 )

@@ -1,4 +1,4 @@
-module github.com/taskcluster/taskcluster/v29
+module github.com/taskcluster/taskcluster/v30
 
 go 1.13
 

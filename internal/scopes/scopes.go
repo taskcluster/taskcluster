@@ -8,7 +8,7 @@ package scopes
 import (
 	"strings"
 
-	"github.com/taskcluster/taskcluster/v29/clients/client-go/tcauth"
+	"github.com/taskcluster/taskcluster/v30/clients/client-go/tcauth"
 )
 
 type (
@@ -48,7 +48,7 @@ type (
 )
 
 // Note, this is trivially implemented by *Auth in
-// github.com/taskcluster/taskcluster/v29/clients/client-go/tcauth package, so typically
+// github.com/taskcluster/taskcluster/v30/clients/client-go/tcauth package, so typically
 // tcauth.New(nil) will satisfy this interface.
 type ScopeExpander interface {
 	ExpandScopes(*tcauth.SetOfScopes) (*tcauth.SetOfScopes, error)

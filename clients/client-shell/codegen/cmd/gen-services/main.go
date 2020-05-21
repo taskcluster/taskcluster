@@ -4,7 +4,7 @@ import (
 	"io/ioutil"
 	"log"
 
-	"github.com/taskcluster/taskcluster/v29/clients/client-shell/codegen"
+	"github.com/taskcluster/taskcluster/v30/clients/client-shell/codegen"
 )
 
 func main() {

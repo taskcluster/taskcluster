@@ -15,10 +15,10 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/taskcluster/slugid-go/slugid"
 	libUrls "github.com/taskcluster/taskcluster-lib-urls"
-	tcclient "github.com/taskcluster/taskcluster/v29/clients/client-go"
-	"github.com/taskcluster/taskcluster/v29/clients/client-go/tcauth"
-	"github.com/taskcluster/taskcluster/v29/clients/client-shell/cmds/root"
-	"github.com/taskcluster/taskcluster/v29/clients/client-shell/config"
+	tcclient "github.com/taskcluster/taskcluster/v30/clients/client-go"
+	"github.com/taskcluster/taskcluster/v30/clients/client-go/tcauth"
+	"github.com/taskcluster/taskcluster/v30/clients/client-shell/cmds/root"
+	"github.com/taskcluster/taskcluster/v30/clients/client-shell/config"
 	graceful "gopkg.in/tylerb/graceful.v1"
 )
 
