@@ -18,6 +18,6 @@ def services_and_libraries_loader(kind, path, config, parameters, loaded_tasks):
                     config.get("prefix", ''),
                     package.name)
                 }
-            })
+            }, config.get("job-overrides", {}).get(package.name, {}))
         logger.debug("Generating tasks for {} {}".format(kind, package.name))
         yield job
