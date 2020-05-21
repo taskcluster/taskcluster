@@ -146,6 +146,20 @@ class Provider {
       });
     }
   }
+
+  /**
+   * Create a monitor object suitable for logging about a worker
+   */
+  workerMonitor({worker, extra = {}}) {
+    return this.monitor.childMonitor({
+      workerPoolId: worker.workerPoolId,
+      providerId: worker.providerId,
+      workerGroup: worker.workerGroup,
+      workerId: worker.workerId,
+      ...extra,
+    });
+  }
+
 }
 
 /**
