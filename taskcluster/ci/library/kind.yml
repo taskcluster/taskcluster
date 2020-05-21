@@ -32,6 +32,7 @@ job-defaults:
 job-overrides:
   pulse:
     worker:
+      docker-image: {taskcluster: 'rabbit-test'}
       env:
         PULSE_CONNECTION_STRING: amqp://guest:guest@localhost:5672/
     run:
