@@ -38,7 +38,7 @@ MonitorManager.register({
   fields: {
     workerPoolId: 'The worker pool ID (provisionerId/workerType)',
     providerId: 'The provider that did the work for this worker pool.',
-    workerId: 'The worker that was created',
+    workerId: 'The worker that is running',
   },
 });
 
@@ -52,21 +52,25 @@ MonitorManager.register({
   fields: {
     workerPoolId: 'The worker pool ID (provisionerId/workerType)',
     providerId: 'The provider that did the work for this worker pool.',
-    workerId: 'The worker that was created',
+    workerId: 'The worker that was stopped',
   },
 });
 
 MonitorManager.register({
-  name: 'workerStopping',
-  title: 'Worker Stopping',
-  type: 'worker-stopping',
+  name: 'workerRemoved',
+  title: 'Worker Removed',
+  type: 'worker-removed',
   version: 1,
   level: 'notice',
-  description: 'A worker has been marked as stopping',
+  description: `
+    A request has been made to stop a worker.  This operation can sometimes
+    take some time.
+  `,
   fields: {
     workerPoolId: 'The worker pool ID (provisionerId/workerType)',
     providerId: 'The provider that did the work for this worker pool.',
-    workerId: 'The worker that was created',
+    workerId: 'The worker that is being removed',
+    reason: 'The reason this worker is being removed',
   },
 });
 

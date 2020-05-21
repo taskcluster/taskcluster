@@ -507,7 +507,7 @@ class AzureProvider extends Provider {
           if (!op) {
             // if the operation has expired or does not exist
             // chances are our instance has been deleted off band
-            await this.removeWorker({worker});
+            await this.removeWorker({worker, reason: 'operation expired'});
           }
         }
       }
@@ -612,7 +612,7 @@ class AzureProvider extends Provider {
           description: err.message,
         });
       }
-      return await this.removeWorker({worker});
+      return await this.removeWorker({worker, reason: `VM Creation Error: ${err.message}`});
     }
   }
 
@@ -662,17 +662,15 @@ class AzureProvider extends Provider {
           });
         }
         if (worker.providerData.terminateAfter && worker.providerData.terminateAfter < Date.now()) {
-          state = await this.removeWorker({worker});
+          state = await this.removeWorker({worker, reason: 'terminateAfter time exceeded'});
         }
       } else if (failProvisioningStates.has(provisioningState) ||
                 // if the VM has ever been in a failing power state
                 _.some(powerStates, v => failPowerStates.has(v))
       ) {
-        state = await this.removeWorker({worker});
-        this.monitor.log.workerStopped({
-          workerPoolId: worker.workerPoolId,
-          providerId: this.providerId,
-          workerId: worker.workerId,
+        state = await this.removeWorker({
+          worker,
+          reason: `failed state; provisioningState=${provisioningState}, powerStates=${powerStates.join(', ')}`,
         });
       } else {
         const {workerPoolId} = worker;
@@ -696,7 +694,7 @@ class AzureProvider extends Provider {
       }
       // if provisioning went awry
       if (state === states.STOPPING) {
-        state = await this.removeWorker({worker});
+        state = await this.removeWorker({worker, reason: 'provisioning went awry'});
       }
     }
 
@@ -786,12 +784,15 @@ class AzureProvider extends Provider {
 
   /*
    * removeWorker marks a worker for deletion and begins removal
-   *
-   * worker: the worker for which the resource is being provisioned
-   * client: the Azure SDK client for the resource
-   * resourceType: the short name used to identify the resource in providerData
    */
-  async removeWorker({worker}) {
+  async removeWorker({worker, reason}) {
+    this.monitor.log.workerRemoved({
+      workerPoolId: worker.workerPoolId,
+      providerId: worker.providerId,
+      workerId: worker.workerId,
+      reason,
+    });
+
     let states = this.Worker.states;
     if (worker.state === states.STOPPED) {
       // we're done

@@ -342,7 +342,7 @@ class AwsProvider extends Provider {
         }
       }
       if (worker.providerData.terminateAfter && worker.providerData.terminateAfter < Date.now()) {
-        await this.removeWorker({worker});
+        await this.removeWorker({worker, reason: 'terminateAfter time exceeded'});
       }
     } catch (e) {
       if (e.code !== 'InvalidInstanceID.NotFound') { // aws throws this error for instances that had been terminated, too
@@ -366,7 +366,14 @@ class AwsProvider extends Provider {
     });
   }
 
-  async removeWorker({worker}) {
+  async removeWorker({worker, reason}) {
+    this.monitor.log.workerRemoved({
+      workerPoolId: worker.workerPoolId,
+      providerId: worker.providerId,
+      workerId: worker.workerId,
+      reason,
+    });
+
     let result;
     try {
       const region = worker.providerData.region;

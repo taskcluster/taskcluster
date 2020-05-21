@@ -170,7 +170,14 @@ class GoogleProvider extends Provider {
   async removeResources({workerPool}) {
   }
 
-  async removeWorker({worker}) {
+  async removeWorker({worker, reason}) {
+    this.monitor.log.workerRemoved({
+      workerPoolId: worker.workerPoolId,
+      providerId: worker.providerId,
+      workerId: worker.workerId,
+      reason,
+    });
+
     try {
       // This returns an operation that we could track but the chances
       // that this fails due to user input being wrong are low so
@@ -378,7 +385,7 @@ class GoogleProvider extends Provider {
           });
         }
         if (worker.providerData.terminateAfter && worker.providerData.terminateAfter < Date.now()) {
-          await this.removeWorker({worker});
+          await this.removeWorker({worker, reason: 'terminateAfter time exceeded'});
         }
       } else if (['TERMINATED', 'STOPPED'].includes(status)) {
         await this._enqueue('query', () => this.compute.instances.delete({

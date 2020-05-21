@@ -75,7 +75,7 @@ class Provider {
     throw new ApiError('not supported for this provider');
   }
 
-  async removeWorker({worker}) {
+  async removeWorker({worker, reason}) {
     throw new ApiError('not supported for this provider');
   }
 
