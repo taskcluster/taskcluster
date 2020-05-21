@@ -19,21 +19,25 @@ def bare_docker_worker(config, job, taskdesc):
     worker = taskdesc['worker'] = job['worker']
 
     pre_clone = run.get("pre-clone", "")
-    install_command = run.get("install", "true")
+    if pre_clone:
+        pre_clone += " && "
+    install_command = run.get("install", "")
+    if install_command:
+        install_command += " && "
     run_command = run["command"]
 
     if run.get("skip-clone"):
-        worker["command"] = ["{} && {} && {}".format(pre_clone, install_command, run_command)]
+        worker["command"] = ["{}{}{}".format(pre_clone, install_command, run_command)]
     else:
         worker["command"] = [
                 "/bin/bash",
                 "-c",
                 "".join([
-                    "{pre_clone} && ",
+                    "{pre_clone}",
                     "git clone --quiet --depth=20 --no-single-branch {head_repository} taskcluster && ",
                     "cd taskcluster && ",
                     "git checkout {head_rev} && ",
-                    "{install_command} && ",
+                    "{install_command}",
                     "{run_command}",
                     ]).format(
                         install_command=install_command,
