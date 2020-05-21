@@ -60,6 +60,10 @@ def add_task_env(config, jobs):
         env["NODE_VERSION"] = node_version
         env["GO_VERSION"] = go_version
         env["POSTGRES_VERSION"] = str(pg_version)
+
+        # We want to set this everywhere other than lib-testing
+        if job["name"] != "testing":
+            env["NO_TEST_SKIP"] = "true"
         yield job
 
 

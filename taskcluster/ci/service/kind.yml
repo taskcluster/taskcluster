@@ -3,6 +3,7 @@ loader: src.loader:services_and_libraries_loader
 
 transforms:
   - src.transforms:taskcluster_images
+  - src.transforms:add_task_env
   - taskgraph.transforms.job:transforms
   - taskgraph.transforms.task:transforms
 
