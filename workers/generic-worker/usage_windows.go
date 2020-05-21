@@ -48,6 +48,11 @@ func platformCommandLineParameters() string {
                                             installed under. [default: Generic Worker]`
 }
 
+func exitCode65() string {
+	return `
+    65     Not able to install generic-worker on the system.`
+}
+
 func exitCode74() string {
 	return `
     74     Could not grant provided SID full control of interactive windows stations and

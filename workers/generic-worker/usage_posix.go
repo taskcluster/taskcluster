@@ -22,6 +22,10 @@ func platformCommandLineParameters() string {
 	return ""
 }
 
+func exitCode65() string {
+	return ""
+}
+
 func exitCode74() string {
 	return ""
 }
