@@ -81,7 +81,7 @@ let load = loader({
   monitor: {
     requires: ['process', 'profile', 'cfg'],
     setup: ({process, profile, cfg}) => MonitorManager.setup({
-      setviceName: 'index',
+      serviceName: 'index',
       processName: process,
       verify: profile !== 'production',
       ...cfg.monitoring,
