@@ -3,6 +3,13 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v30.0.1
+
+### DEPLOYERS
+
+▶ [patch] 
+A typo causing index service not to start up in 30.0.0 is now fixed.
+
 ## v30.0.0
 
 ### GENERAL
