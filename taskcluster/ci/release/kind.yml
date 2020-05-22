@@ -3,6 +3,7 @@ loader: taskgraph.loader.transform:loader
 
 transforms:
   - src.transforms:add_task_env
+  - src.transforms:parameterize_mounts
   - taskgraph.transforms.job:transforms
   - taskgraph.transforms.task:transforms
 
@@ -14,6 +15,11 @@ job-defaults:
       - path: taskcluster/release-debug-logs
         name: debug-logs # Note: this should never be public because who knows what is in here
         type: directory
+    mounts:
+      - content:
+          url: 'https://storage.googleapis.com/golang/{go_version}.linux-amd64.tar.gz'
+        directory: '{go_version}'
+        format: tar.gz
   description: Perform an actual taskcluster release
   run:
     using: bare

@@ -59,4 +59,3 @@ def bare_generic_worker(config, job, taskdesc):
         worker["command"] = command
     else:
         worker["command"] = [["/bin/bash", "-ec", "\n".join(command)]]
-

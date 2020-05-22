@@ -77,3 +77,21 @@ def direct_dependencies(config, jobs):
         job.setdefault("soft-dependencies", [])
         job["soft-dependencies"] += [task.label for task in config.kind_dependencies_tasks]
         yield job
+
+
+@transforms.add
+def parameterize_mounts(config, jobs):
+    node_version, go_version, pg_version = _dependency_versions()
+    for job in jobs:
+        mounts = job.get("worker", {}).get("mounts")
+        if mounts:
+            for mount in mounts:
+                if mount["content"].get("url"):
+                    mount["content"]["url"] = mount["content"]["url"].format(
+                            go_version=go_version,
+                            node_version=node_version)
+                if mount.get("directory"):
+                    mount["directory"] = mount["directory"].format(
+                            go_version=go_version,
+                            node_version=node_version)
+        yield job
