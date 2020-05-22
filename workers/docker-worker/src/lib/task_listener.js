@@ -219,7 +219,7 @@ class TaskListener extends EventEmitter {
     if (!state) {return;}
 
     if (state.devices) {
-      for (let device of Object.keys(state.devices)) {
+      for (let device of Object.keys(state.devices || {})) {
         state.devices[device].release();
       }
     }
@@ -493,7 +493,7 @@ class TaskListener extends EventEmitter {
         options.devices = {};
         debug('Aquiring task payload specific devices');
 
-        for (let device of Object.keys(taskCapabilities.devices)) {
+        for (let device of Object.keys(taskCapabilities.devices || {})) {
           runningState.devices[device] = await this.deviceManager.getDevice(device);
           options.devices[device] = runningState.devices[device];
         }

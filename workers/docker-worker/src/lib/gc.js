@@ -146,7 +146,7 @@ GarbageCollector.prototype = {
     let containers = await this.docker.listContainers({all: true});
     let runningImages = containers.map((container) => { return container.Image.replace(/:latest$/, ''); });
 
-    for (let image of Object.keys(this.markedImages)) {
+    for (let image of Object.keys(this.markedImages || {})) {
       if (!exceedsThreshold && this.markedImages[image] > new Date()) {
         this.emit('gc:image:info', {info: 'Image expiration has not been reached.',
           image: image});

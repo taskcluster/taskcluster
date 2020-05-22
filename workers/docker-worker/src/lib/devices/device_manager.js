@@ -25,7 +25,7 @@ class DeviceManager {
 
   initializeDeviceManagers() {
     let managers = {};
-    for (let deviceManager of Object.keys(DEVICE_MANAGERS)) {
+    for (let deviceManager of Object.keys(DEVICE_MANAGERS || {})) {
       let deviceConfig = this.config.deviceManagement[deviceManager] || { enabled: false };
       if (deviceConfig.enabled) {
         managers[deviceManager] = new DEVICE_MANAGERS[deviceManager](this.config);
