@@ -32,10 +32,7 @@ withMonitor(exports);
 
 // set up the testing secrets
 exports.secrets = new Secrets({
-  secretName: [
-    'project/taskcluster/testing/azure',
-    'project/taskcluster/testing/taskcluster-auth',
-  ],
+  secretName: 'project/taskcluster/testing/taskcluster-auth',
   secrets: {
     db: withDb.secret,
     azure: [

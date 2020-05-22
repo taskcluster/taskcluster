@@ -32,7 +32,6 @@ exports.rootUrl = libUrls.testRootUrl();
 
 // set up the testing secrets
 exports.secrets = new Secrets({
-  secretName: 'project/taskcluster/testing/azure',
   secrets: {
     db: withDb.secret,
   },

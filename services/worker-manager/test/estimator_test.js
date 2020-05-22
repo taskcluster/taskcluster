@@ -2,7 +2,7 @@ const assert = require('assert');
 const helper = require('./helper');
 const testing = require('taskcluster-lib-testing');
 
-helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping) {
+helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
   helper.withFakeQueue(mock, skipping);
   helper.withFakeNotify(mock, skipping);
 

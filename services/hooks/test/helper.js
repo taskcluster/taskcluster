@@ -16,7 +16,6 @@ helper.load.inject('process', 'test');
 withMonitor(helper);
 
 helper.secrets = new Secrets({
-  secretName: 'project/taskcluster/testing/azure',
   load: helper.load,
   secrets: {
     db: withDb.secret,

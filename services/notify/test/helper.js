@@ -30,7 +30,6 @@ withMonitor(exports);
 // set up the testing secrets
 exports.secrets = new Secrets({
   secretName: [
-    'project/taskcluster/testing/azure',
     'project/taskcluster/testing/taskcluster-notify',
   ],
   secrets: {
