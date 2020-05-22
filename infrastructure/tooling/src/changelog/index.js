@@ -3,7 +3,7 @@ const semver = require('semver');
 const glob = require('glob');
 const chalk = require('chalk');
 const appRootDir = require('app-root-dir');
-const {REPO_ROOT, readRepoFile, readRepoJSON, writeRepoFile, gitAdd} = require('../utils');
+const {REPO_ROOT, readRepoFile, readRepoJSON, writeRepoFile, gitAdd, gitCurrentBranch} = require('../utils');
 const taskcluster = require('taskcluster-client');
 const path = require('path');
 const openEditor = require('open-editor');
@@ -287,8 +287,15 @@ const add = async (options) => {
     name = taskcluster.slugid();
     reference = '';
   } else {
-    console.log('Must specify one of --issue, --bug, or --no-bug');
-    bad = true;
+    const {ref} = await gitCurrentBranch({dir: REPO_ROOT});
+    let m = ref.match(/(bug|issue)-?([0-9]+)/);
+    if (m) {
+      reference = `reference: ${m[1]} ${m[2]}\n`;
+      name = `${m[1]}-${m[2]}`;
+    } else {
+      console.log('Must specify one of --issue, --bug, or --no-bug');
+      bad = true;
+    }
   }
 
   if (bad) {
