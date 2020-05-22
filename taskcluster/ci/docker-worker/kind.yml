@@ -15,7 +15,7 @@ job-defaults:
     - 'secrets:get:project/taskcluster/testing/docker-worker/pulse-creds'
   run:
     using: bare
-    skip-clone: true
+    clone: false
     install: yarn install --frozen-lockfile && ./build.sh
   worker:
     taskcluster-proxy: true

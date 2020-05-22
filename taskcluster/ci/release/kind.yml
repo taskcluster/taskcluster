@@ -17,24 +17,28 @@ job-defaults:
   description: Perform an actual taskcluster release
   run:
     using: bare
-    pre-clone: |-
+    install:
       # set up golang..
-      export GOROOT="$(pwd)/go/go"
-      export GOPATH="$(pwd)/go/path"
-      mkdir -p ${GOPATH}
-      export PATH="${GOROOT}/bin:${GOPATH}/bin:${PATH}"
-      go version
+      - export GOROOT="$(pwd)/go/go"
+      - export GOPATH="$(pwd)/go/path"
+      - mkdir -p ${{GOPATH}}
+      - export PATH="${{GOROOT}}/bin:${{GOPATH}}/bin:${{PATH}}"
+      - go version
       # set up gox
-      go get github.com/mitchellh/gox
+      - go get github.com/mitchellh/gox
       # set up Node, using nvm (generic-worker does not support .xz, so we can't use mounts)
-      curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.35.2/install.sh | bash
-      . ~/.nvm/nvm.sh
-      nvm install $NODE_VERSION
+      - curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.35.2/install.sh | bash
+      - . ~/.nvm/nvm.sh
+      - nvm install $NODE_VERSION
       # set up yarn
-      curl -o- -L https://yarnpkg.com/install.sh | bash
-      export PATH="$HOME/.yarn/bin:$HOME/.config/yarn/global/node_modules/.bin:$PATH"
+      - curl -o- -L https://yarnpkg.com/install.sh | bash
+      - export PATH="$HOME/.yarn/bin:$HOME/.config/yarn/global/node_modules/.bin:$PATH"
       # clone the repo (shallow won't work here as it misses tags)
-    install: yarn --frozen-lockfile
+      - git clone --quiet --no-single-branch --tags {head_repository} taskcluster
+      - cd taskcluster
+      - git checkout {head_rev}
+      # publish the release
+      - yarn --frozen-lockfile
 
 jobs:
   publish:
