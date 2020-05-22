@@ -58,10 +58,16 @@ worker:
 	configPath: /etc/taskcluster/generic-worker/config.yaml
 ```
 
-Specify either 'path' to run the executable directly, or 'service' to name a
-Windows service that will run the worker.  In the latter case, the configPath
-must match the path configured within the service definition.  See
-[windows-services](./docs/windows-services.md) for details.  Note that running
-as a service requires at least generic-worker v16.6.0.
+On Linux, specify only `implementation`, `path`, and `configPath`.
+
+On Windows, worker-runner can start generic-worker in two ways: as a service, or as a child process.
+
+To run generic-worker as a service, specify `implementation`, `service` and `configPath`, and ensure that the `configPath` matches the `--config` path configured within the service definition.
+See [Deployment](/docs/reference/workers/worker-runner/deployment).
+In most cases, `protocolPipe` can be omitted to use the default value.
+This would only need to be overridden if multiple copies of generic-worker are running on the same host.
+
+To run generic-worker as a child process, specify `implementation, `path` and `configPath`.
+In this case, `protocolPipe` is not used.
 
 <!-- WORKERS END -->
