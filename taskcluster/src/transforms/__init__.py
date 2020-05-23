@@ -66,6 +66,10 @@ def add_task_env(config, jobs):
         env["GO_RELEASE"] = go_version[2:]  # Just strip the `go` prefix
         env["POSTGRES_VERSION"] = str(pg_version)
 
+        # Just a nice to have sometimes in child tasks. specifically, g-w decision task needs this
+        # The default here is to allow local running of taskgraph generation
+        env["TASK_GROUP_ID"] = os.environ.get("TASK_ID", "")
+
         # We want to set this everywhere other than lib-testing
         if job["name"] != "testing":
             env["NO_TEST_SKIP"] = "true"
