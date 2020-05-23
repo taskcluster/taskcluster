@@ -18,7 +18,7 @@ job-defaults:
     mounts:
       - content:
           url: 'https://storage.googleapis.com/golang/{go_version}.linux-amd64.tar.gz'
-        directory: '{go_version}'
+        directory: 'go'
         format: tar.gz
   description: Perform an actual taskcluster release
   run:
