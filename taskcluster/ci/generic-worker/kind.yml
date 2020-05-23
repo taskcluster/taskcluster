@@ -3,6 +3,7 @@ loader: taskgraph.loader.transform:loader
 
 transforms:
   - src.transforms:add_task_env
+  - src.transforms:parameterize_mounts
   - taskgraph.transforms.job:transforms
   - taskgraph.transforms.task:transforms
 
@@ -13,9 +14,19 @@ job-defaults:
     max-run-time: 3600
 
 jobs:
-  worker-runnner-windows:
+  windows-worker-runner:
     description: 'test worker-runner under windows as well'
     worker-type: gw-ci-windows2012r2-amd64
+    worker:
+      mounts:
+        - content:
+            url: 'https://storage.googleapis.com/golang/{go_version}.windows-amd64.zip'
+          directory: '{go_version}'
+          format: zip
+        - content:
+            url: 'https://github.com/git-for-windows/git/releases/download/v2.14.1.windows.1/MinGit-2.14.1-64-bit.zip'
+          directory: 'git'
+          format: zip
     run:
       clone: false
       command:
@@ -32,3 +43,40 @@ jobs:
         - git checkout {head_rev}
         - cd tools/worker-runner
         - go test -v ./...
+  decision-task:
+    description: 'decision task for generic-worker tasks'
+    worker-type: gw-ci-ubuntu-18-04
+    scopes:
+      - generic-worker:cache:generic-worker-checkout
+      - secrets:get:project/taskcluster/testing/generic-worker/ci-creds
+      - queue:scheduler-id:taskcluster-github
+      - queue:create-task:highest:proj-taskcluster/gw-ci-*
+      - queue:route:checks
+    worker:
+      taskcluster-proxy: true
+      mounts:
+        - content:
+            url: 'https://storage.googleapis.com/golang/{go_version}.linux-amd64.tar.gz'
+          directory: '{go_version}'
+          format: tar.gz
+    run:
+      clone: false
+      command:
+        - export CGO_ENABLED=0
+        - export GOROOT="$(pwd)/$GO_VERSION/go"
+        - export PATH="${{GOPATH}}/bin:${{GOROOT}}/bin:${{PATH}}"
+        - go version
+        - go env
+        - if [ ! -d taskcluster/.git ]; then
+        -   rm -rf taskcluster
+        -   git clone {head_repository} taskcluster
+        - fi
+        - cd taskcluster
+        - git fetch "{head_repository}" "+${{GITHUB_SHA}}:refs/heads/X${{TASK_ID}}"
+        - git checkout -f "X${{TASK_ID}}"
+        - git reset --hard "${{GITHUB_SHA}}"
+        - git clean -fdx
+        - git checkout -B tmp -t "X${{TASK_ID}}"
+        - cd workers/generic-worker/gw-decision-task
+        - go install
+        - '"$(go env GOPATH)/bin/gw-decision-task" tasks.yml "${{GITHUB_SHA}}"'
