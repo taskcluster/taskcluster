@@ -1,0 +1,34 @@
+---
+loader: taskgraph.loader.transform:loader
+
+transforms:
+  - src.transforms:add_task_env
+  - taskgraph.transforms.job:transforms
+  - taskgraph.transforms.task:transforms
+
+job-defaults:
+  run:
+    using: bare
+  worker:
+    max-run-time: 3600
+
+jobs:
+  worker-runnner-windows:
+    description: 'test worker-runner under windows as well'
+    worker-type: gw-ci-windows2012r2-amd64
+    run:
+      clone: false
+      command:
+        - set CGO_ENABLED=0
+        - set GOPATH=%CD%\gopath%GO_RELEASE%
+        - set GOROOT=%CD%\go%GO_RELEASE%\go
+        - set PATH=%CD%\git\cmd;%GOPATH%\bin;%GOROOT%\bin;%PATH%
+        - git config --global core.autocrlf false
+        - go version
+        - go env
+        - git clone {head_repository} taskcluster
+        - cd taskcluster
+        - git config advice.detachedHead false
+        - git checkout {head_rev}
+        - cd tools/worker-runner
+        - go test -v ./...

@@ -63,6 +63,7 @@ def add_task_env(config, jobs):
         # Make dependency versions available for use
         env["NODE_VERSION"] = node_version
         env["GO_VERSION"] = go_version
+        env["GO_RELEASE"] = go_version[2:]  # Just strip the `go` prefix
         env["POSTGRES_VERSION"] = str(pg_version)
 
         # We want to set this everywhere other than lib-testing
