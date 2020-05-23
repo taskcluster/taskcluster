@@ -49,7 +49,7 @@ jobs:
     scopes:
       - generic-worker:cache:generic-worker-checkout
       - secrets:get:project/taskcluster/testing/generic-worker/ci-creds
-      - queue:scheduler-id:taskcluster-github
+      - queue:scheduler-id:taskcluster-level-1
       - queue:create-task:highest:proj-taskcluster/gw-ci-*
       - queue:route:checks
     worker:
