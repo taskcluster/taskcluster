@@ -85,7 +85,7 @@ tasks:
                   metadata:
                     owner: "${ownerEmail}"
                     source: '${repoUrl}/raw/${head_sha}/.taskcluster.yml'
-                    name: Decision Task
+                    name: Decision Task (${tasks_for})
                     description: Load, transform, optimize, and submit other tasks
                   provisionerId: proj-taskcluster
                   workerType: ci
