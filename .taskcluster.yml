@@ -280,7 +280,6 @@ tasks:
                   - notify.email.${owner}.on-failed
                   - notify.email.${owner}.on-exception
               scopes:
-                - secrets:get:project/taskcluster/testing/azure
                 - secrets:get:project/taskcluster/testing/codecov
                 - secrets:get:project/taskcluster/testing/taskcluster-*
                 - docker-worker:cache:taskcluster-test-*
