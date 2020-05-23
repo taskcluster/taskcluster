@@ -344,7 +344,6 @@ Mounts:
       windows:
         all:
           url: 'http://localhost/secrets/v1/secret/project/taskcluster/testing/generic-worker/ci-creds'
-          sha256: 'ef1d954dbae01a0810fcdb56f56761dbbb26692b0dc8cbb2994101512fc26992'
   golangci-lint-1.23.6:
     # Note - we can't extract to directory '.' since after generic-worker
     # extracts the files as the root user (since generic-worker runs as root),
