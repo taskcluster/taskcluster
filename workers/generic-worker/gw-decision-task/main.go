@@ -195,9 +195,11 @@ func (dt *DecisionTask) GenerateTasks() (*TaskGroup, error) {
 				if content != nil {
 					mountEntry := map[string]interface{}{
 						"content": map[string]string{
-							"url":    content.URL,
-							"sha256": content.SHA256,
+							"url": content.URL,
 						},
+					}
+					if content.SHA256 != "" {
+						mountEntry["content"].(map[string]string)["sha256"] = content.SHA256
 					}
 					if mount.Directory != "" {
 						mountEntry["directory"] = mount.Directory
