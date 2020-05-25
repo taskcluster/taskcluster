@@ -2108,9 +2108,9 @@ cron-parser@2.13.0:
     moment-timezone "^0.5.25"
 
 cronstrue@^1.82.0:
-  version "1.93.0"
-  resolved "https://registry.yarnpkg.com/cronstrue/-/cronstrue-1.93.0.tgz#0406035d733c75547ed3700f4f29050138c429d0"
-  integrity sha512-BXtilIYvSBRZrQshUbMqSZWyI5IYFzLf6WbIXKDtF5B1ORQKexJD3UNRtgTL0Mv6A/SsmwFcmh9//BZ3c+rTLQ==
+  version "1.94.0"
+  resolved "https://registry.yarnpkg.com/cronstrue/-/cronstrue-1.94.0.tgz#d6e545f14daf43a4b4b00b04614ab9ac637174b7"
+  integrity sha512-DW5OIfJwNGj9R8RCRGsFt0lxp0LKUl6BOElhaNAEkswwihbv6s867oKyOVgh/eQt1z90bBpelWMTR5/mGRB9Hw==
 
 cross-env@^6.0.3:
   version "6.0.3"
@@ -6587,50 +6587,56 @@ tar-stream@^2.0.0:
     readable-stream "^3.1.1"
 
 "taskcluster-client@link:clients/client":
-  version "29.6.0"
-  dependencies:
-    "@hapi/hawk" "^7.1.2"
-    debug "^4.1.1"
-    lodash "^4.17.4"
-    slugid "^2.0.0"
-    superagent "^5.0.0"
-    taskcluster-lib-urls "^12.0.0"
+  version "0.0.0"
+  uid ""
 
 "taskcluster-db@link:db":
-  version "29.6.0"
+  version "0.0.0"
+  uid ""
 
 "taskcluster-lib-api@link:libraries/api":
-  version "29.6.0"
+  version "0.0.0"
+  uid ""
 
 "taskcluster-lib-app@link:libraries/app":
-  version "29.6.0"
+  version "0.0.0"
+  uid ""
 
 "taskcluster-lib-azqueue@link:libraries/azqueue":
-  version "29.6.0"
+  version "0.0.0"
+  uid ""
 
 "taskcluster-lib-config@link:libraries/config":
-  version "29.6.0"
+  version "0.0.0"
+  uid ""
 
 "taskcluster-lib-entities@link:libraries/entities":
-  version "29.6.0"
+  version "0.0.0"
+  uid ""
 
 "taskcluster-lib-iterate@link:libraries/iterate":
-  version "29.6.0"
+  version "0.0.0"
+  uid ""
 
 "taskcluster-lib-loader@link:libraries/loader":
-  version "29.6.0"
+  version "0.0.0"
+  uid ""
 
 "taskcluster-lib-monitor@link:libraries/monitor":
-  version "29.6.0"
+  version "0.0.0"
+  uid ""
 
 "taskcluster-lib-postgres@link:libraries/postgres":
-  version "29.6.0"
+  version "0.0.0"
+  uid ""
 
 "taskcluster-lib-pulse@link:libraries/pulse":
-  version "29.6.0"
+  version "0.0.0"
+  uid ""
 
 "taskcluster-lib-references@link:libraries/references":
-  version "29.6.0"
+  version "0.0.0"
+  uid ""
 
 taskcluster-lib-scopes@^11.0.0:
   version "11.0.0"
@@ -6640,7 +6646,8 @@ taskcluster-lib-scopes@^11.0.0:
     fast-json-stable-stringify "^2.1.0"
 
 "taskcluster-lib-testing@link:libraries/testing":
-  version "29.6.0"
+  version "0.0.0"
+  uid ""
 
 taskcluster-lib-urls@^12.0.0:
   version "12.0.0"
@@ -6648,7 +6655,8 @@ taskcluster-lib-urls@^12.0.0:
   integrity sha512-OrEFE0m3p/+mGsmIwjttLhSKg3io6MpJLhYtPNjVSZA9Ix8Y5tprN3vM6a3MjWt5asPF6AKZsfT43cgpGwJB0g==
 
 "taskcluster-lib-validate@link:libraries/validate":
-  version "29.6.0"
+  version "0.0.0"
+  uid ""
 
 temporary@^1.0.0:
   version "1.0.1"
