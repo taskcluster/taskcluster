@@ -556,7 +556,7 @@ helper.secrets.mockSuite(suiteName(), ['docker', 'ci-creds'], function(mock, ski
     assert.throws(() => fs.readdirSync(fullCacheDir), err => err.code === 'ENOENT');
   });
 
-  test.only('empty cache does not throw', async () => {
+  test('empty cache does not throw', async () => {
     settings.configure({
       cache: {
         volumeCachePath: volumeCacheDir,
