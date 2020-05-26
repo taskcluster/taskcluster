@@ -566,19 +566,19 @@ helper.secrets.mockSuite(suiteName(), ['docker', 'ci-creds'], function(mock, ski
       },
     });
     const payload = {
-        image: 'taskcluster/test-ubuntu',
-        command: cmd(
-          'sleep 5',
-        ),
-        features: {
-          localLiveLog: true,
-        },
-        cache: {},
-        maxRunTime: 5 * 60,
+      image: 'taskcluster/test-ubuntu',
+      command: cmd(
+        'sleep 5',
+      ),
+      features: {
+        localLiveLog: true,
+      },
+      cache: {},
+      maxRunTime: 5 * 60,
     };
 
     let task = {
-      payload
+      payload,
     };
     let task2 = {
       payload: {
@@ -594,7 +594,6 @@ helper.secrets.mockSuite(suiteName(), ['docker', 'ci-creds'], function(mock, ski
     };
 
     let worker = new TestWorker(DockerWorker);
-
 
     await worker.launch();
 
