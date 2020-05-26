@@ -10,12 +10,18 @@ const {removeImage} = require('../../src/lib/util/remove_image');
 const pipe = require('promisepipe');
 const sleep = require('./helper/sleep');
 const taskcluster = require('taskcluster-client');
+const {suiteName} = require('taskcluster-lib-testing');
+const helper = require('../helper');
 
 function createImageName(taskId, runId) {
   return `${taskId.toLowerCase().replace(/[_-]/g, '0')}-${runId}`;
 }
 
-suite('use docker-save', () => {
+helper.secrets.mockSuite(suiteName(), ['docker', 'ci-creds'], function(mock, skipping) {
+  if (mock) {
+    return; // no fake equivalent for integration tests
+  }
+
   let worker;
   setup(async () => {
     worker = new TestWorker(DockerWorker);

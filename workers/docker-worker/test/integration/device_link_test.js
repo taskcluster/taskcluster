@@ -4,8 +4,13 @@ const TestWorker = require('../testworker');
 const DockerWorker = require('../dockerworker');
 const cmd = require('./helper/cmd');
 const waitForEvent = require('../../src/lib/wait_for_event');
+const {suiteName} = require('taskcluster-lib-testing');
+const helper = require('../helper');
 
-suite('device linking within containers', () => {
+helper.secrets.mockSuite(suiteName(), ['docker', 'ci-creds'], function(mock, skipping) {
+  if (mock) {
+    return; // no fake equivalent for integration tests
+  }
 
   let worker;
 

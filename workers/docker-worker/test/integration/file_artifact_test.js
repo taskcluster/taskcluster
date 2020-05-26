@@ -6,8 +6,14 @@ const testworker = require('../post_task');
 const TestWorker = require('../testworker');
 const DockerWorker = require('../dockerworker');
 const retryUtil = require('./helper/retry_util');
+const {suiteName} = require('taskcluster-lib-testing');
+const helper = require('../helper');
 
-suite('artifact extraction tests', () => {
+helper.secrets.mockSuite(suiteName(), ['docker', 'ci-creds'], function(mock, skipping) {
+  if (mock) {
+    return; // no fake equivalent for integration tests
+  }
+
   test('extract artifact', async () => {
     let expiration = expires();
     let result = await testworker({

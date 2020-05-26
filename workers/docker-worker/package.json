@@ -80,6 +80,7 @@
     "ws": "^7.1.2"
   },
   "devDependencies": {
-    "github": "^13.1.0"
+    "github": "^13.1.0",
+    "taskcluster-lib-testing": "link:../../libraries/testing"
   }
 }

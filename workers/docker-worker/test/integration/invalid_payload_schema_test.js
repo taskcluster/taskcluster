@@ -1,7 +1,12 @@
 const assert = require('assert');
 const testworker = require('../post_task');
+const {suiteName} = require('taskcluster-lib-testing');
+const helper = require('../helper');
 
-suite('Invalid payload schema', () => {
+helper.secrets.mockSuite(suiteName(), ['docker', 'ci-creds'], function(mock, skipping) {
+  if (mock) {
+    return; // no fake equivalent for integration tests
+  }
 
   test('invalid maxruntime', async () => {
     let result = await testworker({

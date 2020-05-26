@@ -12,14 +12,15 @@ const path = require('path');
 const rmrf = require('rimraf');
 const cmd = require('./integration/helper/cmd');
 const pipe = require('promisepipe');
-const taskcluster = require('taskcluster-client');
 const monitor = require('./fixtures/monitor');
+const {suiteName} = require('taskcluster-lib-testing');
+const libUrls = require('taskcluster-lib-urls');
+const helper = require('./helper');
 
 let debug = Debug('volumeCacheTest');
 let docker = Docker();
 
-suite('volume cache test', function () {
-
+suite(suiteName(), function() {
   // Location on the machine running the test where the cache will live
   let localCacheDir = path.join('/tmp', 'test-cache');
 
@@ -31,10 +32,6 @@ suite('volume cache test', function () {
     workerGroup: 'test_worker_group',
     workerType: 'test_worker_type',
   });
-
-  setup(async () => {
-    taskcluster.config(taskcluster.fromEnvVars());
-  }),
 
   teardown(function () {
     if (fs.existsSync(localCacheDir)) {
@@ -49,6 +46,7 @@ suite('volume cache test', function () {
       },
       log: debug,
       monitor: monitor,
+      rootUrl: libUrls.testRootUrl(),
     });
 
     let cacheName = 'tmp-obj-dir-' + Date.now().toString();
@@ -82,6 +80,7 @@ suite('volume cache test', function () {
       },
       log: debug,
       monitor: monitor,
+      rootUrl: libUrls.testRootUrl(),
     });
 
     let cacheName = 'tmp-obj-dir-' + Date.now().toString();
@@ -103,64 +102,6 @@ suite('volume cache test', function () {
     assert.ok(instance5.lastUsed >= instance2.lastUsed);
   });
 
-  test('cache directory mounted in container', async () => {
-    let cacheName = 'tmp-obj-dir-' + Date.now().toString();
-
-    let cache = new VolumeCache({
-      cache: {
-        volumeCachePath: localCacheDir,
-      },
-      log: debug,
-      monitor: monitor,
-    });
-
-    let gc = new GarbageCollector({
-      capacity: 1,
-      log: debug,
-      docker: docker,
-      interval: 2 * 1000,
-      monitor: monitor,
-      taskListener: { availableCapacity: async () => { return 0; } },
-    });
-
-    clearTimeout(gc.sweepTimeoutId);
-
-    let cacheInstance = await cache.get(cacheName);
-
-    let c = cmd(
-      'echo "foo" > /docker_cache/tmp-obj-dir/blah.txt',
-
-    );
-
-    let pullStream = dockerUtils.pullImageIfMissing(docker, 'taskcluster/test-ubuntu:latest');
-    await pipe(pullStream, devnull());
-
-    let createConfig = {
-      Image: 'taskcluster/test-ubuntu:latest',
-      Cmd: c,
-      AttachStdin: false,
-      AttachStdout: true,
-      AttachStderr: true,
-      Tty: true,
-      HostConfig: {
-        Binds: [cacheInstance.path + ':/docker_cache/tmp-obj-dir/'],
-      },
-    };
-
-    let create = await docker.createContainer(createConfig);
-
-    let container = docker.getContainer(create.id);
-    let stream = await container.attach({stream: true, stdout: true, stderr: true});
-    stream.pipe(process.stdout);
-
-    await container.start({});
-    gc.removeContainer(create.id);
-    gc.sweep();
-    await waitForEvent(gc, 'gc:container:removed');
-
-    assert.ok(fs.existsSync(path.join(cacheInstance.path, 'blah.txt')));
-  });
-
   test('invalid cache name is rejected', async () => {
     let cacheName = 'tmp-obj::dir-' + Date.now().toString();
 
@@ -172,6 +113,7 @@ suite('volume cache test', function () {
       },
       log: debug,
       monitor: monitor,
+      rootUrl: libUrls.testRootUrl(),
     });
 
     try {
@@ -192,6 +134,7 @@ suite('volume cache test', function () {
       },
       log: debug,
       monitor: monitor,
+      rootUrl: libUrls.testRootUrl(),
     });
 
     let cacheName = 'tmp-obj-dir-' + Date.now().toString();
@@ -238,6 +181,7 @@ suite('volume cache test', function () {
       },
       log: debug,
       monitor: monitor,
+      rootUrl: libUrls.testRootUrl(),
     });
 
     let cacheName = 'tmp-obj-dir-' + Date.now().toString();
@@ -249,5 +193,69 @@ suite('volume cache test', function () {
 
     let freshInstance = await cache.get(cacheName);
     assert.notEqual(freshInstance.key, purgedInstance.key);
+  });
+
+  helper.secrets.mockSuite('with docker', ['docker'], function(mock, skipping) {
+    if (mock) {
+      return; // test requires docker
+    }
+    test('cache directory mounted in container', async () => {
+      let cacheName = 'tmp-obj-dir-' + Date.now().toString();
+
+      let cache = new VolumeCache({
+        cache: {
+          volumeCachePath: localCacheDir,
+        },
+        log: debug,
+        monitor: monitor,
+        rootUrl: libUrls.testRootUrl(),
+      });
+
+      let gc = new GarbageCollector({
+        capacity: 1,
+        log: debug,
+        docker: docker,
+        interval: 2 * 1000,
+        monitor: monitor,
+        taskListener: { availableCapacity: async () => { return 0; } },
+      });
+
+      clearTimeout(gc.sweepTimeoutId);
+
+      let cacheInstance = await cache.get(cacheName);
+
+      let c = cmd(
+        'echo "foo" > /docker_cache/tmp-obj-dir/blah.txt',
+
+      );
+
+      let pullStream = dockerUtils.pullImageIfMissing(docker, 'taskcluster/test-ubuntu:latest');
+      await pipe(pullStream, devnull());
+
+      let createConfig = {
+        Image: 'taskcluster/test-ubuntu:latest',
+        Cmd: c,
+        AttachStdin: false,
+        AttachStdout: true,
+        AttachStderr: true,
+        Tty: true,
+        HostConfig: {
+          Binds: [cacheInstance.path + ':/docker_cache/tmp-obj-dir/'],
+        },
+      };
+
+      let create = await docker.createContainer(createConfig);
+
+      let container = docker.getContainer(create.id);
+      let stream = await container.attach({stream: true, stdout: true, stderr: true});
+      stream.pipe(process.stdout);
+
+      await container.start({});
+      gc.removeContainer(create.id);
+      gc.sweep();
+      await waitForEvent(gc, 'gc:container:removed');
+
+      assert.ok(fs.existsSync(path.join(cacheInstance.path, 'blah.txt')));
+    });
   });
 });

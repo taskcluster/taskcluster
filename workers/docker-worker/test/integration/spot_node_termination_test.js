@@ -8,13 +8,22 @@ const getArtifact = require('./helper/get_artifact');
 const sleep = require('./helper/sleep');
 const waitForEvent = require('../../src/lib/wait_for_event');
 const assert = require('assert');
+const {suiteName} = require('taskcluster-lib-testing');
+const helper = require('../helper');
 
-suite('Spot Node Termination', () => {
+helper.secrets.mockSuite(suiteName(), ['docker', 'ci-creds'], function(mock, skipping) {
+  if (mock) {
+    return; // no fake equivalent for integration tests
+  }
+
   let IMAGE = 'taskcluster/test-ubuntu:latest';
   let docker = Docker();
   let worker;
 
   setup(() => {
+    if (skipping()) {
+      return;
+    }
     // clean up any settings that may have been left behind
     settings.cleanup();
 

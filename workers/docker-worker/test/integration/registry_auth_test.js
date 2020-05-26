@@ -6,6 +6,8 @@ const Registry = require('./helper/docker_registry');
 const settings = require('../settings');
 const TestWorker = require('../testworker');
 const {removeImage} = require('../../src/lib/util/remove_image');
+const {suiteName} = require('taskcluster-lib-testing');
+const helper = require('../helper');
 
 const CREDENTIALS = {
   username: 'testuser',
@@ -21,8 +23,15 @@ let worker;
 let registryImageName;
 let docker = Docker();
 
-suite('Docker custom private registry', () => {
+helper.secrets.mockSuite(suiteName(), ['docker', 'ci-creds'], function(mock, skipping) {
+  if (mock) {
+    return; // no fake equivalent for integration tests
+  }
+
   suiteSetup(async () => {
+    if (skipping()) {
+      return;
+    }
     registryProxy = new Registry(docker);
     await registryProxy.start();
     registryImageName = await registryProxy.loadImageWithTag(IMAGE_NAME, CREDENTIALS);
@@ -35,6 +44,9 @@ suite('Docker custom private registry', () => {
   });
 
   setup(() => {
+    if (skipping()) {
+      return;
+    }
     // For interfacing with the docker registry.
     worker = new TestWorker(DockerWorker);
   });

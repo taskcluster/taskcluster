@@ -8,6 +8,7 @@ let dockerUtils = require('dockerode-process/utils');
 let pipe = require('promisepipe');
 let Debug = require('debug');
 let taskcluster = require('taskcluster-client');
+const helper = require('./helper');
 
 const debug = Debug('dockerworker');
 
@@ -21,19 +22,11 @@ process.on('unhandledRejection', (reason, p) => {
 let COPIED_ENV = [
   'DEBUG',
   'DOCKER_HOST',
-  'AZURE_STORAGE_ACCOUNT',
-  'AZURE_STORAGE_ACCESS_KEY',
-  'TASKCLUSTER_CLIENT_ID',
-  'TASKCLUSTER_ROOT_URL',
-  'TASKCLUSTER_ACCESS_TOKEN',
-  'PULSE_USERNAME',
-  'PULSE_PASSWORD',
-  'INFLUX_CONNECTION_STRING',
 ];
 
 class DockerWorker {
   constructor(provisionerId, workerType, workerId) {
-    taskcluster.config(taskcluster.fromEnvVars());
+    taskcluster.config(helper.optionsFromCiCreds());
     this.provisionerId = provisionerId;
     this.workerType = workerType;
     this.workerId = workerId;
@@ -97,6 +90,11 @@ class DockerWorker {
         opts.socketPath, '/var/run/docker.sock',
       ));
     }
+
+    const ciCreds = helper.secrets.get('ci-creds');
+    createConfig.Env.push(`TASKCLUSTER_ROOT_URL=${ciCreds.rootUrl}`);
+    createConfig.Env.push(`TASKCLUSTER_CLIENT_ID=${ciCreds.clientId}`);
+    createConfig.Env.push(`TASKCLUSTER_ACCESS_TOKEN=${ciCreds.accessToken}`);
 
     // Copy enviornment variables over.
     COPIED_ENV.forEach(function(key) {

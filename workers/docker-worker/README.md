@@ -132,11 +132,21 @@ dependencies:
 
 #### Running Tests
 
-1. Either all the tests can be run, but running `yarn test`,
-   however, under most circumstances one only wants to run a single test suite
-2. For individual test files, run `./node_modules/mocha/bin/mocha --bail .test/<file>`
-3. For running tests within a test file, add "--grep <phrase>" when running
-   the above command to capture just the individual test name.
+Like most node projects, `yarn test` will run the docker-worker tests.
+In the default case, this will end up skipping most tests.
+Most of the time, this is OK: if your change is covered by the tests that are not skipped, then it is fine to submit a PR without running the remainder of the tests.
+
+Most tests are skipped because they require Docker.
+If you have Docker installed, set `DOCKER_TESTS=1` to run these tests: `DOCKER_TESTS=1 yarn test`.
+Note that the tests will be merciless with your Docker environment -- do not enable this if you have images or containers that you cannot afford to lose!
+
+Other tests are disabled because they require Taskcluster credentials for the https://community-tc.services.mozilla.com/ deployment.
+These credentials can be acquired, if you have the permission, by running `TASKCLUSTER_ROOT_URL=https://community-tc.services.mozilla.com taskcluster signin  --scope assume:project:taskcluster:docker-worker-tester --name d-w`.
+This will set some environment variables that will be detected by the test suite.
+
+Under most circumstances one only wants to run a single test suite.
+For individual test files, run `./node_modules/mocha/bin/mocha --bail test/<file>`.
+To run tests within a test file, add `--grep <phrase>` when running the above command to capture just the individual test name.
 
 *** Note: Sometimes things don't go as planned and tests will hang until
 they timeout. To get more insight into what went wrong, set "DEBUG=*" when
@@ -146,9 +156,3 @@ running the tests to get more detailed output. ***
 
   - Time synchronization : if you're running docker in a VM your VM may
     drift in time... This often results in stale warnings on the queue.
-    
-## Updating Documentation
-
-Documentation for this project lives under docs/ . Upon merging, documentation
-will be uploaded to s3 to display on docs.taskcluster.net automatically.
-

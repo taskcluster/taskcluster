@@ -3,8 +3,14 @@ const testworker = require('../post_task');
 const getArtifact = require('./helper/get_artifact');
 const cmd = require('./helper/cmd');
 const expires = require('./helper/expires');
+const {suiteName} = require('taskcluster-lib-testing');
+const helper = require('../helper');
 
-suite('Directory artifact', function() {
+helper.secrets.mockSuite(suiteName(), ['docker', 'ci-creds'], function(mock, skipping) {
+  if (mock) {
+    return; // no fake equivalent for integration tests
+  }
+
   test('attempt to upload file as directory', async () => {
     let result = await testworker({
       payload: {

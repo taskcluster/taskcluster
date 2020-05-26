@@ -1,8 +1,14 @@
 const assert = require('assert');
 const testworker = require('../post_task');
 const cmd = require('./helper/cmd');
+const {suiteName} = require('taskcluster-lib-testing');
+const helper = require('../helper');
 
-suite('Header/Footer logs', () => {
+helper.secrets.mockSuite(suiteName(), ['docker', 'ci-creds'], function(mock, skipping) {
+  if (mock) {
+    return; // no fake equivalent for integration tests
+  }
+
   test('Unsuccessful task', async () => {
     let result = await testworker({
       payload: {

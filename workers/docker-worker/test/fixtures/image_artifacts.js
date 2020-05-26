@@ -1,5 +1,5 @@
 // Task that contains both public and private docker image artifacts.  Was much
-// easier to have a task used here that expires in 1 year than trying to recreate
+// easier to have a task used here that expires in 70 years than trying to recreate
 // the test each time.
 
 const IMAGE_TASK_ID = 'csTL863FQYCK82XEFjMhMw';

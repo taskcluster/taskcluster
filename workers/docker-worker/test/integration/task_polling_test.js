@@ -4,9 +4,15 @@ const DockerWorker = require('../dockerworker');
 const settings = require('../settings');
 const TestWorker = require('../testworker');
 const waitForEvent = require('../../src/lib/wait_for_event');
+const {suiteName} = require('taskcluster-lib-testing');
+const helper = require('../helper');
 
 let worker;
-suite('Task Polling', () => {
+helper.secrets.mockSuite(suiteName(), ['docker', 'ci-creds'], function(mock, skipping) {
+  if (mock) {
+    return; // no fake equivalent for integration tests
+  }
+
   // Ensure we don't leave behind our test configurations.
   teardown(async () => {
     if (worker) {
