@@ -1,4 +1,5 @@
 const bodyParser = require('body-parser');
+const path = require('path');
 const bodyParserGraphql = require('body-parser-graphql');
 const session = require('express-session');
 const compression = require('compression');
@@ -19,7 +20,7 @@ module.exports = async ({ cfg, strategies, AuthorizationCode, AccessToken, auth,
 
   app.set('trust proxy', cfg.server.trustProxy);
   app.set('view engine', 'ejs');
-  app.set('views', 'src/views');
+  app.set('views', path.resolve(path.join(__dirname, '../views')));
 
   const allowedCORSOrigins = cfg.server.allowedCORSOrigins.map(o => {
     if (typeof(o) === 'string' && o.startsWith('/')) {
