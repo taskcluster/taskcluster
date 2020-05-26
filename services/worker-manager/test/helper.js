@@ -1,13 +1,12 @@
 const taskcluster = require('taskcluster-client');
 const {FakeAzure} = require('./fake-azure.js');
 const {FakeGoogle} = require('./fake-google.js');
+const {FakeEC2} = require('./fakes');
 const {stickyLoader, Secrets, withEntity, fakeauth, withMonitor, withPulse, withDb, resetTables} = require('taskcluster-lib-testing');
 const builder = require('../src/api');
 const data = require('../src/data');
 const load = require('../src/main');
 const sinon = require('sinon');
-const aws = require('aws-sdk');
-const fakeAWS = require('./fake-aws');
 
 exports.rootUrl = 'http://localhost:60409';
 
@@ -40,14 +39,13 @@ exports.withPulse = (mock, skipping) => {
 };
 
 exports.withProviders = (mock, skipping) => {
+  const fakeEC2 = new FakeEC2();
+  fakeEC2.forSuite();
+
   suiteSetup(function() {
     if (skipping()) {
       return;
     }
-
-    sinon.stub(aws, 'EC2').returns({
-      describeRegions: fakeAWS.EC2.describeRegions,
-    });
 
     exports.load.inject('fakeCloudApis', {
       azure: new FakeAzure(),
