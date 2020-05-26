@@ -392,7 +392,9 @@ exports.testEntityTable = ({
       setup(async function() {
         await resetTables();
         await Promise.all(Object.values(samples).map(
-          sample => Entity.create(sample)));
+          sample => {
+            return Entity.create(sample)
+          }));
       });
 
       makeTests();
@@ -413,6 +415,5 @@ exports.testEntityTable = ({
         });
       }
     });
-
   });
 };

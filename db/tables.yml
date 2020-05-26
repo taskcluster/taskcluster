@@ -143,12 +143,19 @@ worker_pools:
   provider_data: jsonb not null
   previous_provider_ids: jsonb not null
   etag: uuid not null
-wmworkers_entities:
-  partition_key: text not null
-  row_key: text not null
-  value: jsonb not null
-  version: integer not null
-  etag: uuid
+workers:
+  worker_pool_id: text not null
+  worker_group: text not null
+  worker_id: text not null
+  provider_id: text not null
+  created: timestamp with time zone not null
+  expires: timestamp with time zone not null
+  state: text not null
+  provider_data: jsonb not null
+  capacity: integer not null
+  last_modified: timestamp with time zone not null
+  last_checked: timestamp with time zone not null
+  etag: uuid not null
 queue_tasks_entities:
   partition_key: text not null
   row_key: text not null
