@@ -508,6 +508,8 @@ class AzureProvider extends Provider {
           w.providerData[resourceType].id = resource.id;
           modifyFn(w, resource);
         });
+        // no need to try to create the resource again, we're done..
+        return;
       } catch (err) {
         if (err.statusCode !== 404) {
           throw err;
@@ -525,9 +527,13 @@ class AzureProvider extends Provider {
             // chances are our instance has been deleted off band
             await this.removeWorker({worker, reason: 'operation expired'});
           }
+          // operation is still in progress or has failed, so don't try to
+          // create the resource
+          return;
         }
       }
     }
+
     // failed to lookup resource by name
     if (!typeData.id) {
       debug('creating resource');
