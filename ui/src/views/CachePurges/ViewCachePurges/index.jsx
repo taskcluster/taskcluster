@@ -6,6 +6,7 @@ import Spinner from '@mozilla-frontend-infra/components/Spinner';
 import { withStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
 import PlusIcon from 'mdi-react/PlusIcon';
+import qs, { parse, stringify } from 'qs';
 import Dashboard from '../../../components/Dashboard';
 import Button from '../../../components/Button';
 import CachePurgesTable from '../../../components/CachePurgesTable';
@@ -13,6 +14,7 @@ import HelpView from '../../../components/HelpView';
 import { VIEW_CACHE_PURGES_PAGE_SIZE } from '../../../utils/constants';
 import ErrorPanel from '../../../components/ErrorPanel';
 import cachePurgesQuery from './cachePurges.graphql';
+import Search from '../../../components/Search';
 
 @hot(module)
 @graphql(cachePurgesQuery, {
@@ -67,12 +69,25 @@ export default class ViewCachePurges extends Component {
     });
   };
 
+  handlePurgeCacheSubmit = cacheSearch => {
+    const query = parse(window.location.search.slice(1));
+
+    this.props.history.push({
+      search: stringify({
+        ...query,
+        search: cacheSearch,
+      }),
+    });
+  };
+
   render() {
     const {
       classes,
       description,
       data: { loading, error, cachePurges },
     } = this.props;
+    const query = qs.parse(this.props.location.search.slice(1));
+    const cacheSearch = query.search;
 
     return (
       <Dashboard
@@ -87,12 +102,21 @@ export default class ViewCachePurges extends Component {
             </Typography>
           </HelpView>
         }
-        title="Purge Caches">
+        title="Purge Caches"
+        search={
+          <Search
+            disabled={loading}
+            defaultValue={cacheSearch}
+            onSubmit={this.handlePurgeCacheSubmit}
+            placeholder="Cache Name contains"
+          />
+        }>
         <Fragment>
           {!cachePurges && loading && <Spinner loading />}
           <ErrorPanel fixed error={error} />
           {cachePurges && (
             <CachePurgesTable
+              searchTerm={cacheSearch}
               cachePurgesConnection={cachePurges}
               onPageChange={this.handlePageChange}
             />
