@@ -3,6 +3,24 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v30.0.2
+
+### USERS
+
+▶ [patch] 
+An incorrect use of a relative path caused sign-ins to fail in v30.0.1.  This has been fixed.
+
+▶ [patch] 
+Fix docker worker not working in the latest release of Taskcluster. It was
+previously throwing `taskVolumeBindings is not iterable`.
+
+▶ [patch] [#2876](https://github.com/taskcluster/taskcluster/issues/2876)
+The purge cache UI view now allows filtering a search result by cache name.
+
+### OTHER
+
+▶ Additional change not described here: [#2845](https://github.com/taskcluster/taskcluster/issues/2845).
+
 ## v30.0.1
 
 ### DEPLOYERS
