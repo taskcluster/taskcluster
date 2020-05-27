@@ -10,8 +10,8 @@ const generator = require('generate-password');
 const {WorkerPool} = require('../data');
 
 const auth = require('@azure/ms-rest-nodeauth');
-const ComputeManagementClient = require('@azure/arm-compute').ComputeManagementClient;
-const NetworkManagementClient = require('@azure/arm-network').NetworkManagementClient;
+const armCompute = require('@azure/arm-compute');
+const armNetwork = require('@azure/arm-network');
 const msRestJS = require('@azure/ms-rest-js');
 const msRestAzure = require('@azure/ms-rest-azure-js');
 
@@ -65,13 +65,11 @@ class AzureProvider extends Provider {
 
   constructor({
     providerConfig,
-    fakeCloudApis,
     ...conf
   }) {
     super(conf);
     this.configSchema = 'config-azure';
     this.providerConfig = providerConfig;
-    this.fakeCloudApis = fakeCloudApis;
   }
 
   async setup() {
@@ -113,15 +111,9 @@ class AzureProvider extends Provider {
     let intermediateCerts = intermediateFiles.map(forge.pki.certificateFromPem);
     this.caStore = forge.pki.createCaStore(intermediateCerts);
 
-    if (this.fakeCloudApis && this.fakeCloudApis.azure) {
-      this.computeClient = this.fakeCloudApis.azure.compute();
-      this.networkClient = this.fakeCloudApis.azure.network();
-      return;
-    }
-
     let credentials = await auth.loginWithServicePrincipalSecret(clientId, secret, domain);
-    this.computeClient = new ComputeManagementClient(credentials, subscriptionId);
-    this.networkClient = new NetworkManagementClient(credentials, subscriptionId);
+    this.computeClient = new armCompute.ComputeManagementClient(credentials, subscriptionId);
+    this.networkClient = new armNetwork.NetworkManagementClient(credentials, subscriptionId);
     this.restClient = new msRestAzure.AzureServiceClient(credentials);
   }
 
@@ -625,6 +617,8 @@ class AzureProvider extends Provider {
       if (!worker.providerData.vm.id) {
         return worker.state;
       }
+      // XXX note that this doesn't actually change the state to RUNNING
+      // (that happens in registerWorker)
       return this.Worker.states.RUNNING;
     } catch (err) {
       const workerPool = await WorkerPool.get(this.db, worker.workerPoolId);
