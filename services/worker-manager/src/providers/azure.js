@@ -423,13 +423,11 @@ class AzureProvider extends Provider {
       resp = await this._enqueue('opRead', () => this.restClient.sendLongRunningRequest(req));
     } catch (err) {
       monitor.debug({message: 'reading operation failed', op, error: err.message});
-      errors.push({
-        kind: 'operation-error',
-        title: 'Operation Error',
-        description: err.message,
-        notify: this.notify,
-        WorkerPoolError: this.WorkerPoolError,
-      });
+      // this was a connection error of some sort, so we don't really know anything about
+      // the status of the operation.  Return true on the assumption that this was a transient
+      // connection failure and the operation is probably still running.  We'll come back
+      // and poll the operation again on the next checkWorker call.
+      return true;
     }
     // Rest API has different error semantics than the SDK
     if (resp.status === 404) {
