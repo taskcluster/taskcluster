@@ -520,6 +520,7 @@ class AzureProvider extends Provider {
           let op = await this.handleOperation({
             op: typeData.operation,
             errors: this.errors[worker.workerPoolId],
+            monitor,
           });
           if (!op) {
             // if the operation has expired or does not exist
