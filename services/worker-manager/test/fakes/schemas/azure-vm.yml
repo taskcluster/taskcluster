@@ -7,10 +7,6 @@
 # https://docs.microsoft.com/en-us/javascript/api/@azure/arm-compute/virtualmachine?view=azure-node-latest
 type: object
 properties:
-  # TODO: these should not be passed to Azure!
-  capacityPerInstance: {}
-  workerConfig: {}
-
   subnetId: {type: string}
   location: {type: string}
   tags:

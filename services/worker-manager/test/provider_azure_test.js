@@ -372,7 +372,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
       await provider.provisionResources({worker, monitor});
       await assertProvisioningState({nic: 'allocated', vm: 'inprogress'});
       const vmParams = fake.computeClient.virtualMachines.getFakeRequestParameters('rgrp', vmName);
-      //assert(!vmParams.capacityPerInstance); // TODO
+      assert(!vmParams.capacityPerInstance);
       assert.equal(vmParams.location, 'westus');
       assert.deepEqual(vmParams.hardwareProfile, {vmSize: 'Basic_A2'});
       // these must be set, but we don't care to what..

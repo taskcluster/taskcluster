@@ -166,7 +166,7 @@ class AzureProvider extends Provider {
       })).toString('base64');
 
       const config = {
-        ...cfg,
+        ..._.omit(cfg, ['capacityPerInstance', 'workerConfig']),
         osProfile: {
           ...cfg.osProfile,
           // adminUsername and adminPassword will be added later
