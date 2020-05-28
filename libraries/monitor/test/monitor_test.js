@@ -200,8 +200,8 @@ suite(testing.suiteName(), function() {
       assert.equal(monitorManager.messages.length, 2);
       assert.equal(monitorManager.messages[0].Logger, 'taskcluster.testing-service');
       assert.equal(monitorManager.messages[1].Logger, 'taskcluster.testing-service.api');
-      assert.equal(monitorManager.messages[0].Fields.meta, undefined);
-      assert.equal(monitorManager.messages[1].Fields.meta.addition, 1000);
+      assert.equal(monitorManager.messages[0].Fields.addition, undefined);
+      assert.equal(monitorManager.messages[1].Fields.addition, 1000);
     });
 
     test('can configure child loggers with specific levels and default to root', function() {

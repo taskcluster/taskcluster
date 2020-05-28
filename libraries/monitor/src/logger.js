@@ -139,7 +139,8 @@ class Logger {
     elideSecrets(fields);
 
     if (this.metadata) {
-      fields.meta = this.metadata;
+      // include metadata, but prefer a value from fields if set in both places
+      fields = {...this.metadata, fields};
     }
 
     // determine a top-level message for the log entry..
