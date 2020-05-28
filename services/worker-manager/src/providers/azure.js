@@ -10,8 +10,8 @@ const generator = require('generate-password');
 const {WorkerPool} = require('../data');
 
 const auth = require('@azure/ms-rest-nodeauth');
-const ComputeManagementClient = require('@azure/arm-compute').ComputeManagementClient;
-const NetworkManagementClient = require('@azure/arm-network').NetworkManagementClient;
+const armCompute = require('@azure/arm-compute');
+const armNetwork = require('@azure/arm-network');
 const msRestJS = require('@azure/ms-rest-js');
 const msRestAzure = require('@azure/ms-rest-azure-js');
 
@@ -65,13 +65,11 @@ class AzureProvider extends Provider {
 
   constructor({
     providerConfig,
-    fakeCloudApis,
     ...conf
   }) {
     super(conf);
     this.configSchema = 'config-azure';
     this.providerConfig = providerConfig;
-    this.fakeCloudApis = fakeCloudApis;
   }
 
   async setup() {
@@ -113,15 +111,9 @@ class AzureProvider extends Provider {
     let intermediateCerts = intermediateFiles.map(forge.pki.certificateFromPem);
     this.caStore = forge.pki.createCaStore(intermediateCerts);
 
-    if (this.fakeCloudApis && this.fakeCloudApis.azure) {
-      this.computeClient = this.fakeCloudApis.azure.compute();
-      this.networkClient = this.fakeCloudApis.azure.network();
-      return;
-    }
-
     let credentials = await auth.loginWithServicePrincipalSecret(clientId, secret, domain);
-    this.computeClient = new ComputeManagementClient(credentials, subscriptionId);
-    this.networkClient = new NetworkManagementClient(credentials, subscriptionId);
+    this.computeClient = new armCompute.ComputeManagementClient(credentials, subscriptionId);
+    this.networkClient = new armNetwork.NetworkManagementClient(credentials, subscriptionId);
     this.restClient = new msRestAzure.AzureServiceClient(credentials);
   }
 
@@ -174,7 +166,7 @@ class AzureProvider extends Provider {
       })).toString('base64');
 
       const config = {
-        ...cfg,
+        ..._.omit(cfg, ['capacityPerInstance', 'workerConfig']),
         osProfile: {
           ...cfg.osProfile,
           // adminUsername and adminPassword will be added later
@@ -423,13 +415,11 @@ class AzureProvider extends Provider {
       resp = await this._enqueue('opRead', () => this.restClient.sendLongRunningRequest(req));
     } catch (err) {
       monitor.debug({message: 'reading operation failed', op, error: err.message});
-      errors.push({
-        kind: 'operation-error',
-        title: 'Operation Error',
-        description: err.message,
-        notify: this.notify,
-        WorkerPoolError: this.WorkerPoolError,
-      });
+      // this was a connection error of some sort, so we don't really know anything about
+      // the status of the operation.  Return true on the assumption that this was a transient
+      // connection failure and the operation is probably still running.  We'll come back
+      // and poll the operation again on the next checkWorker call.
+      return true;
     }
     // Rest API has different error semantics than the SDK
     if (resp.status === 404) {
@@ -458,6 +448,7 @@ class AzureProvider extends Provider {
           notify: this.notify,
           WorkerPoolError: this.WorkerPoolError,
         });
+        return false;
       }
     }
 
@@ -505,11 +496,24 @@ class AzureProvider extends Provider {
           worker.providerData.resourceGroupName,
           typeData.name,
         ));
-        // we found the resource
-        await worker.modify(w => {
-          w.providerData[resourceType].id = resource.id;
-          modifyFn(w, resource);
-        });
+        if (failProvisioningStates.has(resource.provisioningState)) {
+          // the resource was created but not successfully (how Microsoft!), so
+          // bail out of the whole provisioning process
+          await worker.modify(w => {
+            w.providerData[resourceType].operation = undefined;
+          });
+          await this.removeWorker({worker, reason: `${resourceType} has state ${resource.provisioningState}`});
+        } else {
+          // we found the resource
+          await worker.modify(w => {
+            w.providerData[resourceType].id = resource.id;
+            w.providerData[resourceType].operation = undefined;
+            modifyFn(w, resource);
+          });
+        }
+
+        // no need to try to create the resource again, we're done..
+        return;
       } catch (err) {
         if (err.statusCode !== 404) {
           throw err;
@@ -525,11 +529,18 @@ class AzureProvider extends Provider {
           if (!op) {
             // if the operation has expired or does not exist
             // chances are our instance has been deleted off band
+            await worker.modify(w => {
+              w.providerData[resourceType].operation = undefined;
+            });
             await this.removeWorker({worker, reason: 'operation expired'});
           }
+          // operation is still in progress or has failed, so don't try to
+          // create the resource
+          return;
         }
       }
     }
+
     // failed to lookup resource by name
     if (!typeData.id) {
       debug('creating resource');
@@ -621,6 +632,8 @@ class AzureProvider extends Provider {
       if (!worker.providerData.vm.id) {
         return worker.state;
       }
+      // XXX note that this doesn't actually change the state to RUNNING
+      // (that happens in registerWorker)
       return this.Worker.states.RUNNING;
     } catch (err) {
       const workerPool = await WorkerPool.get(this.db, worker.workerPoolId);
@@ -802,6 +815,7 @@ class AzureProvider extends Provider {
           // if we check for `true` we repeat lots of GET requests
           // resource has been deleted and isn't in the API or never existed
           await worker.modify(w => {
+            w.providerData[resourceType].operation = undefined;
             w.providerData[resourceType].id = false;
           });
           return true;

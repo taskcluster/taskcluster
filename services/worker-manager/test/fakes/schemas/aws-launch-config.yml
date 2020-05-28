@@ -1,0 +1,30 @@
+type: object
+properties:
+  UserData:
+    type: string
+    pattern: '^[a-zA-Z0-9+/]+=*$' # base64
+  MinCount:
+    type: integer
+  MaxCount:
+    type: integer
+  ImageId:
+    type: string
+  TagSpecifications:
+    # https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-ec2-launchtemplate-tagspecification.html
+    type: array
+    items:
+      type: object
+      properties:
+        ResourceType:
+          type: string
+        Tags:
+          type: array
+          items: string
+        additionalItems: false
+        uniqueItems: false
+      additionalProperties: false
+      required: [ResourceType, Tags]
+    additionalItems: false
+    uniqueItems: false
+additionalProperties: false
+required: [UserData, MinCount, MaxCount, ImageId]

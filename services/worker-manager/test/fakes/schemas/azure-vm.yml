@@ -1,0 +1,74 @@
+# This is a partial schema for Azure VM parameters.  Feel free to add additional
+# properties here if necessary, consulting with the relevant bits of Azure documentation.
+#
+# NOTE: the `testProperty` properties here are used in the tests to verify that
+# additional configuration from the user is correctly passed to the Azure endpoint.
+#
+# https://docs.microsoft.com/en-us/javascript/api/@azure/arm-compute/virtualmachine?view=azure-node-latest
+type: object
+properties:
+  subnetId: {type: string}
+  location: {type: string}
+  tags:
+    type: object
+    additionalProperties: {type: string}
+  # https://docs.microsoft.com/en-us/javascript/api/@azure/arm-compute/windowsconfiguration?view=azure-node-latest
+  osProfile:
+    type: object
+    properties:
+      computerName: {type: string}
+      adminUsername: {type: string}
+      adminPassword: {type: string}
+      customData:
+        type: string
+        pattern: '^[a-zA-Z0-9+/]+=*$' # base64
+      testProperty: {}
+    additionalProperties: false
+    required: [computerName, adminUsername, adminPassword, customData]
+  # https://docs.microsoft.com/en-us/javascript/api/@azure/arm-compute/storageprofile?view=azure-node-latest
+  storageProfile:
+    type: object
+    properties:
+      osDisk:
+        type: object
+        properties:
+          name: string
+          testProperty: {}
+        additionalProperties: false
+        required: [name]
+      testProperty: {}
+    additionalProperties: false
+    required: [osDisk]
+  # https://docs.microsoft.com/en-us/javascript/api/@azure/arm-compute/networkprofile?view=azure-node-latest
+  networkProfile:
+    type: object
+    properties:
+      networkInterfaces:
+        type: array
+        items:
+          type: object
+          properties:
+            id: {type: string}
+            primary: {type: boolean}
+          additionalProperties: false
+          required: [id, primary]
+        uniqueItems: false
+      testProperty: {}
+    additionalProperties: false
+    required: [networkInterfaces]
+  # https://docs.microsoft.com/en-us/javascript/api/@azure/arm-compute/hardwareprofile?view=azure-node-latest
+  hardwareProfile:
+    type: object
+    properties:
+      vmSize: {type: string}
+    additionalProperties: false
+    required: []
+  # https://docs.microsoft.com/en-us/javascript/api/@azure/arm-compute/billingprofile?view=azure-node-latest
+  billingProfile:
+    type: object
+    properties:
+      maxPrice: number
+    additionalProperties: false
+    required: []
+additionalProperties: false
+required: [osProfile, storageProfile, networkProfile, location, subnetId]
