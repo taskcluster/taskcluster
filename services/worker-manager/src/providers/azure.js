@@ -448,6 +448,7 @@ class AzureProvider extends Provider {
           notify: this.notify,
           WorkerPoolError: this.WorkerPoolError,
         });
+        return false;
       }
     }
 
@@ -498,6 +499,7 @@ class AzureProvider extends Provider {
         // we found the resource
         await worker.modify(w => {
           w.providerData[resourceType].id = resource.id;
+          w.providerData[resourceType].operation = undefined;
           modifyFn(w, resource);
         });
         // no need to try to create the resource again, we're done..
@@ -517,6 +519,9 @@ class AzureProvider extends Provider {
           if (!op) {
             // if the operation has expired or does not exist
             // chances are our instance has been deleted off band
+            await worker.modify(w => {
+              w.providerData[resourceType].operation = undefined;
+            });
             await this.removeWorker({worker, reason: 'operation expired'});
           }
           // operation is still in progress or has failed, so don't try to
@@ -800,6 +805,7 @@ class AzureProvider extends Provider {
           // if we check for `true` we repeat lots of GET requests
           // resource has been deleted and isn't in the API or never existed
           await worker.modify(w => {
+            w.providerData[resourceType].operation = undefined;
             w.providerData[resourceType].id = false;
           });
           return true;

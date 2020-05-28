@@ -306,8 +306,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
         const name = worker.providerData[resourceType].name;
         switch (expectations[resourceType]) {
           case 'none':
-            // TODO: reset operation on failure
-            //assert(!worker.providerData[resourceType].operation);
+            assert(!worker.providerData[resourceType].operation);
             assert(!worker.providerData[resourceType].id);
             break;
           case 'inprogress':
@@ -315,8 +314,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
             assert(!worker.providerData[resourceType].id);
             break;
           case 'allocated':
-            // TODO: reset operation
-            //assert.equal(worker.providerData[resourceType].operation, `op/${resourceType}/rgrp/${name}`);
+            assert(!worker.providerData[resourceType].operation);
             assert.equal(worker.providerData[resourceType].id, `id/${name}`);
             break;
           case undefined: // caller doesn't care about state of this resource
