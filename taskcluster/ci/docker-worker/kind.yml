@@ -16,7 +16,7 @@ job-defaults:
   run:
     using: bare
     clone: false
-    install: yarn install --frozen-lockfile && ./build.sh
+    install: '"( cd ../..; yarn install --frozen-lockfile ) && yarn install --frozen-lockfile && ./build.sh"'
   worker:
     taskcluster-proxy: true
     privileged: true
@@ -27,6 +27,8 @@ job-defaults:
     env:
       WORKER_CI: '1'
       TASKCLUSTER_ROOT_URL: https://community-tc.services.mozilla.com
+      NO_TEST_SKIP: 'true'
+      DOCKER_TESTS: '1'
 
 jobs:
   chunk-1:
