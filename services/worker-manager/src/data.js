@@ -1,6 +1,18 @@
 const _ = require('lodash');
 const Entity = require('taskcluster-lib-entities');
 const {UNIQUE_VIOLATION} = require('taskcluster-lib-postgres');
+const taskcluster = require('taskcluster-client');
+const {MAX_MODIFY_ATTEMPTS} = require('./util');
+
+const makeError = (message, code, statusCode) => {
+  const err = new Error(message);
+  err.code = code;
+  err.name = `${code}Error`;
+  err.statusCode = statusCode;
+  return err;
+};
+
+const make404 = () => makeError('Resource not found', 'ResourceNotFound', 404);
 
 class WorkerPool {
   // (private constructor)
@@ -168,102 +180,258 @@ WorkerPoolError.expire = async function(threshold) {
   });
 };
 
-const Worker = Entity.configure({
-  version: 1,
-  partitionKey: Entity.keys.StringKey('workerPoolId'),
-  rowKey: Entity.keys.CompositeKey('workerGroup', 'workerId'),
-  properties: {
-    // The worker pool this maps to.
-    workerPoolId: Entity.types.String,
+class Worker {
+  // (private constructor)
+  constructor(props) {
+    Object.assign(this, props);
 
-    // The group and id of this worker
-    workerGroup: Entity.types.String,
-    workerId: Entity.types.String,
+    this._properties = props;
+  }
 
-    // The provider responsible for this worker
-    providerId: Entity.types.String,
+  // Create a single instance from a DB row
+  static fromDb(row) {
+    return new Worker({
+      workerPoolId: row.worker_pool_id,
+      workerGroup: row.worker_group,
+      workerId: row.worker_id,
+      providerId: row.provider_id,
+      created: row.created,
+      expires: row.expires,
+      state: row.state,
+      providerData: row.provider_data,
+      capacity: row.capacity,
+      lastModified: row.last_modified,
+      lastChecked: row.last_checked,
+      etag: row.etag,
+    });
+  }
 
-    // The time that this worker was created
-    created: Entity.types.Date,
-
-    // The time that this worker is no longer needed and
-    // should be deleted
-    expires: Entity.types.Date,
-
-    // A string specifying the state this worker is in
-    // so far as worker-manager knows. This can be any
-    // of the fields defined in the enum below.
-    state: Entity.types.String,
-
-    // Anything a provider may want to remember about this worker
-    providerData: Entity.types.JSON,
-  },
-}).configure({
-  version: 2,
-  properties: {
-    // The worker pool this maps to.
-    workerPoolId: Entity.types.String,
-
-    // The group and id of this worker
-    workerGroup: Entity.types.String,
-    workerId: Entity.types.String,
-
-    // The provider responsible for this worker
-    providerId: Entity.types.String,
-
-    // The time that this worker was created
-    created: Entity.types.Date,
-
-    // The time that this worker is no longer needed and
-    // should be deleted
-    expires: Entity.types.Date,
-
-    // A string specifying the state this worker is in
-    // so far as worker-manager knows. This can be any
-    // of the fields defined in the enum below.
-    state: Entity.types.String,
-
-    // Anything a provider may want to remember about this worker
-    providerData: Entity.types.JSON,
-
-    // Number of tasks this worker can run at one time
-    capacity: Entity.types.Number,
-
-    // Last time that worker-manager updated the state of this
-    // worker
-    lastModified: Entity.types.Date,
-
-    // Last time that worker-manager checked on the state
-    // of this worker in the outside world by checking with
-    // a cloud provider or something else
-    lastChecked: Entity.types.Date,
-  },
-  migrate(item) {
-    item.lastModified = new Date();
-    item.lastChecked = new Date();
-    if (item.providerData.instanceCapacity) {
-      item.capacity = item.providerData.instanceCapacity;
-    } else {
-      item.capacity = 1;
+  // Create a single instance, or undefined, from a set of rows containing zero
+  // or one elements.  This matches the semantics of get_worker_pool.
+  static fromDbRows(rows) {
+    if (rows.length === 1) {
+      return Worker.fromDb(rows[0]);
     }
-    return item;
-  },
-});
+  }
 
-Worker.prototype.serializable = function() {
-  return {
-    workerPoolId: this.workerPoolId,
-    workerGroup: this.workerGroup,
-    workerId: this.workerId,
-    providerId: this.providerId,
-    created: this.created.toJSON(),
-    expires: this.expires.toJSON(),
-    lastModified: this.lastModified.toJSON(),
-    lastChecked: this.lastChecked.toJSON(),
-    capacity: this.capacity,
-    state: this.state,
-  };
-};
+  // Create an instance from API arguments, with default values applied.
+  static fromApi(input) {
+    const now = new Date();
+    return new Worker({
+      state: Worker.states.REQUESTED,
+      providerData: {},
+      created: now,
+      lastModified: now,
+      lastChecked: now,
+      expires: taskcluster.fromNow('1 week'),
+      ...input,
+    });
+  }
+
+  // Get a worker from the DB, or undefined if it does not exist.
+  static async get(db, { workerPoolId, workerGroup, workerId }) {
+    return Worker.fromDbRows(await db.fns.get_worker(workerPoolId, workerGroup, workerId));
+  }
+
+  // Expire workers,
+  // returning the count of workers expired.
+  static async expire({db, monitor}) {
+    return (await db.fns.expire_workers(new Date()))[0].expire_workers;
+  }
+
+  // Call db.create_worker with the content of this instance.  This
+  // implements the usual idempotency checks and returns an error with code
+  // UNIQUE_VIOLATION when those checks fail.
+  async create(db) {
+    try {
+      const etag = (await db.fns.create_worker(
+        this.workerPoolId,
+        this.workerGroup,
+        this.workerId,
+        this.providerId,
+        this.created,
+        this.expires,
+        this.state,
+        this.providerData,
+        this.capacity,
+        this.lastModified,
+        this.lastChecked,
+      ))[0].create_worker;
+
+      return new Worker({
+        workerPoolId: this.workerPoolId,
+        workerGroup: this.workerGroup,
+        workerId: this.workerId,
+        providerId: this.providerId,
+        created: this.created,
+        expires: this.expires,
+        state: this.state,
+        providerData: this.providerData,
+        capacity: this.capacity,
+        lastModified: this.lastModified,
+        lastChecked: this.lastChecked,
+        etag,
+      });
+    } catch (err) {
+      if (err.code !== UNIQUE_VIOLATION) {
+        throw err;
+      }
+      const existing = await Worker.get(db, {
+        workerPoolId: this.workerPoolId,
+        workerGroup: this.workerGroup,
+        workerId: this.workerId,
+      });
+
+      if (!this.equals(existing)) {
+        // new worker does not match, so this is a "real" conflict
+        throw err;
+      }
+
+      return existing;
+    }
+  }
+
+  // Create a serializable representation of this worker suitable for response
+  // from an API method.
+  serializable() {
+    return {
+      workerPoolId: this.workerPoolId,
+      workerGroup: this.workerGroup,
+      workerId: this.workerId,
+      providerId: this.providerId,
+      created: this.created.toJSON(),
+      expires: this.expires.toJSON(),
+      state: this.state,
+      capacity: this.capacity,
+      lastModified: this.lastModified.toJSON(),
+      lastChecked: this.lastChecked.toJSON(),
+    };
+  }
+
+  // Calls db.update_worker given a modifier.
+  // This function shouldn't have side-effects (or these should be contained),
+  // as the modifier may be called more than once, if the update operation fails.
+  // This method will apply modifier to a clone of the current data and attempt
+  // to save it. But if this fails because the entity have been updated by
+  // another process (the etag is out of date), it'll reload the row
+  // from the workers table, invoke the modifier again, and try to save again.
+  //
+  // Returns the updated Worker instance if successful. Otherwise, it will return
+  // * a 404 if it fails to locate the row to update
+  // * a 409 if the number of retries reaches MAX_MODIFY_ATTEMPTS
+  //
+  // Note: modifier is allowed to return a promise.
+  async update(db, modifier) {
+    let attemptsLeft = MAX_MODIFY_ATTEMPTS;
+
+    const attemptModify = async () => {
+      const newProperties = _.cloneDeep(this._properties);
+      let result;
+      await modifier.call(newProperties, newProperties);
+
+      if (!_.isEqual(newProperties, this._properties)) {
+        try {
+          [result] = await db.fns.update_worker(
+            newProperties.workerPoolId,
+            newProperties.workerGroup,
+            newProperties.workerId,
+            newProperties.providerId,
+            newProperties.created,
+            newProperties.expires,
+            newProperties.state,
+            newProperties.providerData,
+            newProperties.capacity,
+            newProperties.lastModified,
+            newProperties.lastChecked,
+            newProperties.etag,
+          );
+
+          const worker = Worker.fromDb(result);
+          this.updateInstanceFields(worker);
+        } catch (e) {
+          if (e.code === 'P0004') {
+            return null;
+          }
+
+          if (e.code === 'P0002') {
+            throw make404();
+          }
+
+          throw e;
+        }
+      }
+
+      return this;
+    };
+
+    let result;
+    while (attemptsLeft--) {
+      result = await attemptModify();
+
+      if (result) {
+        break;
+      }
+
+      await this.reload(db);
+    }
+
+    if (attemptsLeft <= 0) {
+      throw makeError('MAX_MODIFY_ATTEMPTS exhausted, check for congestion', 'EntityWriteCongestionError', 409);
+    }
+
+    return result;
+  }
+
+  updateInstanceFields(worker) {
+    Object.keys(worker).forEach(prop => {
+      this[prop] = worker[prop];
+    });
+
+    this._properties = worker;
+  }
+
+  // Load the properties from the table once more, and update the instance fields.
+  async reload(db) {
+    const worker = await Worker.get(db, {
+      workerPoolId: this.workerPoolId,
+      workerGroup: this.workerGroup,
+      workerId: this.workerId,
+    });
+
+    this.updateInstanceFields(worker);
+  }
+
+  // Call db.get_workers with named arguments.
+  // Returns a list of Worker instances if there is something to show
+  // otherwise an empty list is returned.
+  static async getWorkers(
+    db,
+    { workerPoolId, workerGroup, workerId, providerId, created, expires, state },
+    { size, offset } = {},
+  ) {
+    return (await db.fns.get_workers(
+      workerPoolId || null,
+      workerGroup || null,
+      workerId || null,
+      state || null,
+      size || null,
+      offset || null,
+    )).map(Worker.fromDb);
+  }
+
+  // Compare "important" fields to another worker (used to check idempotency)
+  equals(other) {
+    const fields = [
+      'workerPoolId',
+      'workerGroup',
+      'workerId',
+      'providerId',
+      'state',
+      'capacity',
+    ];
+    return _.isEqual(_.pick(other, fields), _.pick(this, fields));
+  }
+}
 
 // This is made available to make it slightly less likely that people
 // typo worker states. We can change this if there are new requirements
@@ -274,18 +442,6 @@ Worker.states = {
   RUNNING: 'running',
   STOPPING: 'stopping',
   STOPPED: 'stopped',
-};
-
-Worker.expire = async function(monitor) {
-  await this.scan({
-    expires: Entity.op.lessThan(new Date()),
-  }, {
-    limit: 500,
-    handler: async item => {
-      monitor.info(`deleting expired worker ${item.workerGroup}/${item.workerId}`);
-      await item.remove();
-    },
-  });
 };
 
 module.exports = {

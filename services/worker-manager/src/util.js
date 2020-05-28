@@ -22,3 +22,4 @@ const joinWorkerPoolId = (provisionerId, workerType) => {
   return `${provisionerId}/${workerType}`;
 };
 exports.joinWorkerPoolId = joinWorkerPoolId;
+exports.MAX_MODIFY_ATTEMPTS = 5;

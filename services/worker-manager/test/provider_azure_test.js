@@ -1,6 +1,6 @@
+const _ = require('lodash');
 const taskcluster = require('taskcluster-client');
 const sinon = require('sinon');
-const _ = require('lodash');
 const assert = require('assert');
 const helper = require('./helper');
 const {FakeAzure} = require('./fakes');
@@ -9,7 +9,7 @@ const testing = require('taskcluster-lib-testing');
 const forge = require('node-forge');
 const fs = require('fs');
 const path = require('path');
-const {WorkerPool} = require('../src/data');
+const {WorkerPool, Worker} = require('../src/data');
 const Debug = require('debug');
 
 const debug = Debug('provider_azure_test');
@@ -59,7 +59,6 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
       monitor: (await helper.load('monitor')).childMonitor('azure'),
       estimator: await helper.load('estimator'),
       rootUrl: helper.rootUrl,
-      Worker: helper.Worker,
       WorkerPoolError: helper.WorkerPoolError,
       providerConfig: {
         clientId: 'my client id',
@@ -155,9 +154,9 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
         requestedCapacity: 0,
       };
       await provider.provision({workerPool, workerInfo});
-      const workers = await helper.Worker.scan({}, {});
-      assert.equal(workers.entries.length, 1);
-      const worker = workers.entries[0];
+      const workers = await Worker.getWorkers(helper.db, {});
+      assert.equal(workers.length, 1);
+      const worker = workers[0];
 
       // check that the VM config is correct since this suite does not
       // go all the way to creating the VM
@@ -333,9 +332,9 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
         requestedCapacity: 0,
       };
       await provider.provision({workerPool, workerInfo});
-      const workers = await helper.Worker.scan({}, {});
-      assert.equal(workers.entries.length, 1);
-      worker = workers.entries[0];
+      const workers = await Worker.getWorkers(helper.db, {});
+      assert.equal(workers.length, 1);
+      worker = workers[0];
 
       ipName = worker.providerData.ip.name;
       nicName = worker.providerData.nic.name;
@@ -356,9 +355,9 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
 
     const assertProvisioningState = async (expectations) => {
       // re-fetch the worker, since it should have been updated
-      const workers = await helper.Worker.scan({}, {});
-      assert.equal(workers.entries.length, 1);
-      worker = workers.entries[0];
+      const workers = await Worker.getWorkers(helper.db, {});
+      assert.equal(workers.length, 1);
+      worker = workers[0];
 
       for (let resourceType of ['ip', 'vm', 'nic']) {
         const name = worker.providerData[resourceType].name;
@@ -569,9 +568,9 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
         requestedCapacity: 0,
       };
       await provider.provision({workerPool, workerInfo});
-      const workers = await helper.Worker.scan({}, {});
-      assert.equal(workers.entries.length, 1);
-      worker = workers.entries[0];
+      const workers = await Worker.getWorkers(helper.db, {});
+      assert.equal(workers.length, 1);
+      worker = workers[0];
 
       ipName = worker.providerData.ip.name;
       nicName = worker.providerData.nic.name;
@@ -580,9 +579,9 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
 
     const assertRemovalState = async (expectations) => {
       // re-fetch the worker, since it should have been updated
-      const workers = await helper.Worker.scan({}, {});
-      assert.equal(workers.entries.length, 1);
-      worker = workers.entries[0];
+      const workers = await Worker.getWorkers(helper.db, {});
+      assert.equal(workers.length, 1);
+      worker = workers[0];
 
       let checkResourceExpectation = (expectation, resourceType, typeData, index) => {
         const client = clientForResourceType(resourceType);
@@ -643,21 +642,21 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
       // disks start out as [] in providerData
       // mock getting disk info back from azure on VM GET
       if (index !== undefined) {
-        await worker.modify(w => {
-          while (w.providerData[resourceType].length <= index) {
-            w.providerData[resourceType].push({});
+        await worker.update(helper.db, worker => {
+          while (worker.providerData[resourceType].length <= index) {
+            worker.providerData[resourceType].push({});
           }
-          w.providerData[resourceType][index].name = name;
+          worker.providerData[resourceType][index].name = name;
         });
       }
       if (gotId) {
         if (index !== undefined) {
-          await worker.modify(w => {
-            w.providerData[resourceType][index].id = res.id;
+          await worker.update(helper.db, worker => {
+            worker.providerData[resourceType][index].id = res.id;
           });
         } else {
-          await worker.modify(w => {
-            w.providerData[resourceType].id = res.id;
+          await worker.update(helper.db, worker => {
+            worker.providerData[resourceType].id = res.id;
           });
         }
       }
@@ -669,7 +668,9 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
       await makeResource('disks', true, 0); // creates disks0
       await makeResource('disks', true, 1); // creates disks1
       await makeResource('vm', true);
-      await worker.modify(w => w.state = 'running');
+      await worker.update(helper.db, worker => {
+        worker.state = 'running';
+      });
       await assertRemovalState({ip: 'allocated', nic: 'allocated', disks: ['allocated', 'allocated'], vm: 'allocated'});
 
       debug('first call');
@@ -734,7 +735,9 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
       await makeResource('nic', true);
       await makeResource('disks', true, 0);
       await makeResource('vm', true);
-      await worker.modify(w => w.state = 'running');
+      await worker.update(helper.db, worker => {
+        worker.state = 'running';
+      });
 
       debug('first call');
       await provider.removeWorker({worker, reason: 'test'});
@@ -754,7 +757,9 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
       await makeResource('nic', true);
       await makeResource('disks', true, 0);
       await makeResource('vm', false);
-      await worker.modify(w => w.state = 'running');
+      await worker.update(helper.db, worker => {
+        worker.state = 'running';
+      });
 
       await provider.removeWorker({worker, reason: 'test'});
       await assertRemovalState({ip: 'allocated', nic: 'allocated', disks: ['allocated'], vm: 'deleting'});
@@ -767,9 +772,9 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
       await makeResource('disks', false, 0);
       const diskName = worker.providerData.disks[0].name;
 
-      await worker.modify(w => {
-        w.providerData.disks[0].id = undefined;
-        w.state = 'running';
+      await worker.update(helper.db, worker => {
+        worker.providerData.disks[0].id = undefined;
+        worker.state = 'running';
       });
 
       await provider.removeWorker({worker, reason: 'test'});
@@ -797,7 +802,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
     setup('set up for checkWorker', async function() {
       await provider.scanPrepare();
 
-      worker = await helper.Worker.create({
+      worker = Worker.fromApi({
         workerPoolId,
         workerGroup: 'westus',
         workerId: 'whatever',
@@ -810,6 +815,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
         state: 'running',
         providerData: baseProviderData,
       });
+      await worker.create(helper.db);
 
       // stubs for removeWorker and provisionResources
       sandbox.stub(provider, 'removeWorker').returns('stopped');
@@ -821,7 +827,9 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
     });
 
     const setState = async ({state, provisioningState, powerState}) => {
-      await worker.modify(w => w.state = state);
+      await worker.update(helper.db, worker => {
+        worker.state = state;
+      });
       if (provisioningState) {
         fake.computeClient.virtualMachines.makeFakeResource('rgrp', baseProviderData.vm.name, {provisioningState});
       }
@@ -833,19 +841,19 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
     };
 
     test('updates deprecated disk providerdata to disks', async function() {
-      await worker.modify(w => {
-        delete w.providerData.disks;
-        w.providerData.disk = {name: "old_test_disk", id: false};
+      await worker.update(helper.db, worker => {
+        delete worker.providerData.disks;
+        worker.providerData.disk = {name: "old_test_disk", id: false};
       });
       await provider.checkWorker({worker});
-      await worker.reload();
+      await worker.reload(helper.db);
       assert.equal(worker.providerData.disks[0].name, "old_test_disk");
     });
 
     test('does nothing for still-running workers', async function() {
       await setState({state: 'running', provisioningState: 'Succeeded', powerState: 'PowerState/running'});
       await provider.checkWorker({worker});
-      await worker.reload();
+      await worker.reload(helper.db);
       assert.equal(worker.state, 'running');
       assert(!provider.removeWorker.called);
       assert(!provider.provisionResources.called);
@@ -854,7 +862,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
     test('calls provisionResources for requested workers that have no instanceView', async function() {
       await setState({state: 'requested', provisioningState: 'Succeeded', powerState: null});
       await provider.checkWorker({worker});
-      await worker.reload();
+      await worker.reload(helper.db);
       assert.equal(worker.state, 'requested'); // registerWorker changes this, not checkWorker
       assert(!provider.removeWorker.called);
       assert(provider.provisionResources.called);
@@ -863,7 +871,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
     test('calls provisionResources for requested workers that have no vm', async function() {
       await setState({state: 'requested', provisioningState: null, powerState: null});
       await provider.checkWorker({worker});
-      await worker.reload();
+      await worker.reload(helper.db);
       assert.equal(worker.state, 'requested'); // registerWorker changes this, not checkWorker
       assert(!provider.removeWorker.called);
       assert(provider.provisionResources.called);
@@ -872,7 +880,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
     test('does nothing for requested workers that are fully started', async function() {
       await setState({state: 'requested', provisioningState: 'Succeeded', powerState: 'PowerState/running'});
       await provider.checkWorker({worker});
-      await worker.reload();
+      await worker.reload(helper.db);
       assert.equal(worker.state, 'requested'); // registerWorker changes this, not checkWorker
       assert(!provider.removeWorker.called);
       assert(!provider.provisionResources.called);
@@ -881,7 +889,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
     test('calls removeWorker() for a running worker that has no VM', async function() {
       await setState({state: 'running', provisioningState: 'Deleting', powerState: 'PowerState/running'});
       await provider.checkWorker({worker});
-      await worker.reload();
+      await worker.reload(helper.db);
       assert(provider.removeWorker.called);
       assert(!provider.provisionResources.called);
     });
@@ -889,9 +897,11 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
     test('update expires for long-running worker', async function() {
       await setState({state: 'running', provisioningState: 'Succeeded', powerState: 'PowerState/running'});
       const expires = taskcluster.fromNow('-1 week');
-      await worker.modify(w => w.expires = expires);
+      await worker.update(helper.db, worker => {
+        worker.expires = expires;
+      });
       await provider.checkWorker({worker});
-      await worker.reload();
+      await worker.reload(helper.db);
       assert(worker.expires > expires);
       assert(!provider.removeWorker.called);
       assert(!provider.provisionResources.called);
@@ -899,9 +909,11 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
 
     test('remove unregistered workers after terminateAfter', async function() {
       await setState({state: 'requested', provisioningState: 'Succeeded', powerState: 'PowerState/running'});
-      await worker.modify(w => w.providerData.terminateAfter = Date.now() - 1000);
+      await worker.update(helper.db, worker => {
+        worker.providerData.terminateAfter = Date.now() - 1000;
+      });
       await provider.checkWorker({worker});
-      await worker.reload();
+      await worker.reload(helper.db);
       assert(worker.state === 'stopped');
       assert(provider.removeWorker.called);
       assert(!provider.provisionResources.called);
@@ -909,9 +921,11 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
 
     test('do not remove unregistered workers before terminateAfter', async function() {
       await setState({state: 'requested', provisioningState: 'Succeeded', powerState: 'PowerState/running'});
-      await worker.modify(w => w.providerData.terminateAfter = Date.now() + 1000);
+      await worker.update(helper.db, worker => {
+        worker.providerData.terminateAfter = Date.now() + 1000;
+      });
       await provider.checkWorker({worker});
-      await worker.reload();
+      await worker.reload(helper.db);
       assert(worker.state === 'requested');
       assert(!provider.removeWorker.called);
       assert(!provider.provisionResources.called);
@@ -965,9 +979,10 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
       suite(name, function() {
         test('document is not a valid PKCS#7 message', async function() {
           const workerPool = await makeWorkerPool();
-          const worker = await helper.Worker.create({
+          const worker = Worker.fromApi({
             ...defaultWorker,
           });
+          await worker.create(helper.db);
           const document = 'this is not a valid PKCS#7 message';
           const workerIdentityProof = {document};
           await assert.rejects(() =>
@@ -978,9 +993,10 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
 
         test('document is empty', async function() {
           const workerPool = await makeWorkerPool();
-          const worker = await helper.Worker.create({
+          const worker = Worker.fromApi({
             ...defaultWorker,
           });
+          await worker.create(helper.db);
           const document = '';
           const workerIdentityProof = {document};
           await assert.rejects(() =>
@@ -991,9 +1007,10 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
 
         test('message does not match signature', async function() {
           const workerPool = await makeWorkerPool();
-          const worker = await helper.Worker.create({
+          const worker = Worker.fromApi({
             ...defaultWorker,
           });
+          await worker.create(helper.db);
           // this file is a version of `azure_signature_good` where vmId has been edited in the message
           const document = fs.readFileSync(path.resolve(__dirname, 'fixtures/azure_message_bad')).toString();
           const workerIdentityProof = {document};
@@ -1005,9 +1022,10 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
 
         test('malformed signature', async function() {
           const workerPool = await makeWorkerPool();
-          const worker = await helper.Worker.create({
+          const worker = Worker.fromApi({
             ...defaultWorker,
           });
+          await worker.create(helper.db);
           // this file is a version of `azure_signature_good` where the message signature has been edited
           const document = fs.readFileSync(path.resolve(__dirname, 'fixtures/azure_signature_bad')).toString();
           const workerIdentityProof = {document};
@@ -1019,9 +1037,10 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
 
         test('expired message', async function() {
           const workerPool = await makeWorkerPool();
-          const worker = await helper.Worker.create({
+          const worker = Worker.fromApi({
             ...defaultWorker,
           });
+          await worker.create(helper.db);
 
           const document = fs.readFileSync(path.resolve(__dirname, 'fixtures/azure_signature_good')).toString();
           const workerIdentityProof = {document};
@@ -1034,9 +1053,10 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
 
         test('bad cert', async function() {
           const workerPool = await makeWorkerPool();
-          const worker = await helper.Worker.create({
+          const worker = Worker.fromApi({
             ...defaultWorker,
           });
+          await worker.create(helper.db);
           const document = fs.readFileSync(path.resolve(__dirname, 'fixtures/azure_signature_good')).toString();
           const workerIdentityProof = {document};
 
@@ -1054,10 +1074,11 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
 
         test('wrong worker state (duplicate call to registerWorker)', async function() {
           const workerPool = await makeWorkerPool();
-          const worker = await helper.Worker.create({
+          const worker = Worker.fromApi({
             ...defaultWorker,
             state: 'running',
           });
+          await worker.create(helper.db);
           const document = fs.readFileSync(path.resolve(__dirname, 'fixtures/azure_signature_good')).toString();
           const workerIdentityProof = {document};
           await assert.rejects(() =>
@@ -1068,7 +1089,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
 
         test('wrong vmID', async function() {
           const workerPool = await makeWorkerPool();
-          const worker = await helper.Worker.create({
+          const worker = Worker.fromApi({
             ...defaultWorker,
             providerData: {
               ...baseProviderData,
@@ -1078,6 +1099,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
               },
             },
           });
+          await worker.create(helper.db);
           const document = fs.readFileSync(path.resolve(__dirname, 'fixtures/azure_signature_good')).toString();
           const workerIdentityProof = {document};
           await assert.rejects(() =>
@@ -1091,7 +1113,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
 
         test('sweet success', async function() {
           const workerPool = await makeWorkerPool();
-          const worker = await helper.Worker.create({
+          const worker = Worker.fromApi({
             ...defaultWorker,
             providerData: {
               ...defaultWorker.providerData,
@@ -1100,6 +1122,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
               },
             },
           });
+          await worker.create(helper.db);
           const document = fs.readFileSync(path.resolve(__dirname, 'fixtures/azure_signature_good')).toString();
           const workerIdentityProof = {document};
           const res = await provider.registerWorker({workerPool, worker, workerIdentityProof});
@@ -1111,7 +1134,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
 
         test('sweet success (different reregister)', async function() {
           const workerPool = await makeWorkerPool();
-          const worker = await helper.Worker.create({
+          let worker = Worker.fromApi({
             ...defaultWorker,
             providerData: {
               ...defaultWorker.providerData,
@@ -1120,8 +1143,10 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
               },
             },
           });
-          await worker.modify(w => {
-            w.providerData.reregistrationTimeout = 10 * 3600 * 1000;
+          await worker.create(helper.db);
+
+          await worker.update(helper.db, worker => {
+            worker.providerData.reregistrationTimeout = 10 * 3600 * 1000;
           });
           const document = fs.readFileSync(path.resolve(__dirname, 'fixtures/azure_signature_good')).toString();
           const workerIdentityProof = {document};

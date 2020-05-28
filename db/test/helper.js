@@ -393,7 +393,7 @@ exports.testEntityTable = ({
         await resetTables();
         await Promise.all(Object.values(samples).map(
           sample => {
-            return Entity.create(sample)
+            return Entity.create(sample);
           }));
       });
 

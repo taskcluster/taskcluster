@@ -15,7 +15,7 @@ const tcdb = require('taskcluster-db');
 const {Provisioner} = require('./provisioner');
 const {Providers} = require('./providers');
 const {WorkerScanner} = require('./worker-scanner');
-const {WorkerPool} = require('./data');
+const {WorkerPool, Worker} = require('./data');
 
 require('./monitor');
 
@@ -49,16 +49,6 @@ let load = loader({
     }),
   },
 
-  Worker: {
-    requires: ['cfg', 'monitor', 'db'],
-    setup: ({cfg, monitor, db}) => data.Worker.setup({
-      db,
-      serviceName: 'worker_manager',
-      tableName: cfg.app.workerTableName,
-      monitor: monitor.childMonitor('table.workers'),
-    }),
-  },
-
   WorkerPoolError: {
     requires: ['cfg', 'monitor', 'db'],
     setup: ({cfg, monitor, db}) => data.WorkerPoolError.setup({
@@ -82,10 +72,11 @@ let load = loader({
   },
 
   expireWorkers: {
-    requires: ['cfg', 'Worker', 'monitor'],
-    setup: ({cfg, Worker, monitor}, ownName) => {
+    requires: ['cfg', 'monitor', 'db'],
+    setup: ({cfg, monitor, db}, ownName) => {
       return monitor.childMonitor('expireWorkers').oneShot(ownName, async () => {
-        await Worker.expire(monitor);
+        const count = await Worker.expire({db, monitor});
+        monitor.info(`deleted ${count} workers`);
       });
     },
   },
@@ -143,14 +134,13 @@ let load = loader({
 
   api: {
     requires: [
-      'cfg', 'db', 'schemaset', 'monitor', 'Worker', 'WorkerPoolError', 'providers',
+      'cfg', 'db', 'schemaset', 'monitor', 'WorkerPoolError', 'providers',
       'publisher', 'notify'],
     setup: async ({
       cfg,
       db,
       schemaset,
       monitor,
-      Worker,
       WorkerPoolError,
       providers,
       publisher,
@@ -161,7 +151,6 @@ let load = loader({
         cfg,
         db,
         monitor,
-        Worker,
         WorkerPoolError,
         providers,
         publisher,
@@ -199,23 +188,23 @@ let load = loader({
   },
 
   providers: {
-    requires: ['cfg', 'monitor', 'notify', 'db', 'estimator', 'Worker', 'WorkerPoolError', 'schemaset'],
-    setup: async ({cfg, monitor, notify, db, estimator, Worker, WorkerPoolError, schemaset}) =>
+    requires: ['cfg', 'monitor', 'notify', 'db', 'estimator', 'WorkerPoolError', 'schemaset'],
+    setup: async ({cfg, monitor, notify, db, estimator, WorkerPoolError, schemaset}) =>
       new Providers().setup({
-        cfg, monitor, notify, db, estimator, Worker, WorkerPoolError,
+        cfg, monitor, notify, db, estimator, WorkerPoolError,
         validator: await schemaset.validator(cfg.taskcluster.rootUrl),
       }),
   },
 
   workerScanner: {
-    requires: ['cfg', 'monitor', 'Worker', 'providers'],
-    setup: async ({cfg, monitor, Worker, providers}, ownName) => {
+    requires: ['cfg', 'monitor', 'providers', 'db'],
+    setup: async ({cfg, monitor, providers, db}, ownName) => {
       const workerScanner = new WorkerScanner({
         ownName,
-        Worker,
         providers,
         monitor: monitor.childMonitor('worker-scanner'),
         iterateConf: cfg.app.workerScannerIterateConfig || {},
+        db,
       });
       await workerScanner.initiate();
       return workerScanner;
@@ -223,12 +212,11 @@ let load = loader({
   },
 
   provisioner: {
-    requires: ['cfg', 'monitor', 'Worker', 'providers', 'notify', 'pulseClient', 'reference', 'db'],
-    setup: async ({cfg, monitor, Worker, providers, notify, pulseClient, reference, db}, ownName) => {
+    requires: ['cfg', 'monitor', 'providers', 'notify', 'pulseClient', 'reference', 'db'],
+    setup: async ({cfg, monitor, providers, notify, pulseClient, reference, db}, ownName) => {
       return new Provisioner({
         ownName,
         monitor: monitor.childMonitor('provisioner'),
-        Worker,
         providers,
         notify,
         pulseClient,

@@ -24,7 +24,6 @@ exports.secrets = new Secrets({
 
 exports.withEntities = (mock, skipping) => {
   withEntity(mock, skipping, exports, 'WorkerPoolError', data.WorkerPoolError);
-  withEntity(mock, skipping, exports, 'Worker', data.Worker);
 };
 
 exports.withDb = (mock, skipping) => {

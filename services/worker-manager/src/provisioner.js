@@ -1,7 +1,7 @@
 const taskcluster = require('taskcluster-client');
 const Iterate = require('taskcluster-lib-iterate');
 const {consume} = require('taskcluster-lib-pulse');
-const {WorkerPool} = require('./data');
+const {WorkerPool, Worker} = require('./data');
 
 /**
  * Run all provisioning logic
@@ -121,11 +121,11 @@ class Provisioner {
       const providersByPool = new Map();
       const seen = worker => {
         // don't count capacity for stopping workers
-        if (worker.state === this.Worker.states.STOPPING) {
+        if (worker.state === Worker.states.STOPPING) {
           return;
         }
         const v = providersByPool.get(worker.workerPoolId);
-        const isRequested = worker.state === this.Worker.states.REQUESTED;
+        const isRequested = worker.state === Worker.states.REQUESTED;
         // compute the number of instances that have not yet called "registerWorker"
         const requestedCapacity = isRequested ? worker.capacity : 0;
         if (v) {
@@ -142,20 +142,12 @@ class Provisioner {
       };
 
       // Check the state of workers (state is updated by worker-scanner)
-      await this.Worker.scan({}, {
-        handler: (worker) => {
-          // We only support conditions on dates, as they cannot
-          // be used to inject SQL -- `Date.toJSON` always produces a simple string
-          // with no SQL metacharacters.
-          //
-          // Previously with azure, we added the query in the scan method
-          // (i.e., this.Worker.scan({ state: ... })) but since the query doesn't include
-          // the partition key or row key, we would need to manually filter through
-          // the table.
-          if (worker.state !== this.Worker.states.STOPPED) {
-            seen(worker);
-          }
-        },
+      const workers = await Worker.getWorkers(this.db, {});
+
+      workers.forEach(worker => {
+        if (worker.state !== Worker.states.STOPPED) {
+          seen(worker);
+        }
       });
 
       // We keep track of which providers are actively managing

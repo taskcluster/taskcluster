@@ -6,7 +6,7 @@ const fs = require('fs');
 const path = require('path');
 const _ = require('lodash');
 const {CloudAPI} = require('./cloudapi');
-const {WorkerPool} = require('../data');
+const {WorkerPool, Worker} = require('../data');
 
 class AwsProvider extends Provider {
   constructor({
@@ -227,17 +227,13 @@ class AwsProvider extends Provider {
           workerGroup: config.region,
           workerId: i.InstanceId,
         });
-        const now = new Date();
-        return this.Worker.create({
+        const worker = Worker.fromApi({
           workerPoolId,
           providerId: this.providerId,
           workerGroup: config.region,
           workerId: i.InstanceId,
-          created: now,
-          lastModified: now,
-          lastChecked: now,
           expires: taskcluster.fromNow('1 week'),
-          state: this.Worker.states.REQUESTED,
+          state: Worker.states.REQUESTED,
           capacity: config.capacityPerInstance,
           providerData: {
             region: config.region,
@@ -256,6 +252,7 @@ class AwsProvider extends Provider {
             workerConfig: config.workerConfig || {},
           },
         });
+        return worker.create(this.db);
       }));
     }
   }
@@ -272,7 +269,7 @@ class AwsProvider extends Provider {
   async registerWorker({worker, workerPool, workerIdentityProof}) {
     const monitor = this.workerMonitor({worker});
 
-    if (worker.state !== this.Worker.states.REQUESTED) {
+    if (worker.state !== Worker.states.REQUESTED) {
       throw new ApiError('This worker is either stopped or running. No need to register');
     }
 
@@ -301,10 +298,9 @@ class AwsProvider extends Provider {
       workerId: worker.workerId,
     });
     monitor.debug('setting state to RUNNING');
-    await worker.modify(w => {
-      w.lastModified = new Date();
-      w.state = this.Worker.states.RUNNING;
-      w.providerData.terminateAfter = expires.getTime();
+    await worker.update(this.db, worker => {
+      worker.providerData.terminateAfter = expires.getTime();
+      worker.state = Worker.states.RUNNING;
     });
 
     const workerConfig = worker.providerData.workerConfig || {};
@@ -339,7 +335,7 @@ class AwsProvider extends Provider {
               providerId: this.providerId,
               workerId: worker.workerId,
             });
-            state = this.Worker.states.STOPPED;
+            state = Worker.states.STOPPED;
             break;
 
           default:
@@ -359,17 +355,15 @@ class AwsProvider extends Provider {
         providerId: this.providerId,
         workerId: worker.workerId,
       });
-      state = this.Worker.states.STOPPED;
+      state = Worker.states.STOPPED;
     }
 
     monitor.debug(`setting state to ${state}`);
-    await worker.modify(w => {
-      const now = new Date();
-      if (w.state !== state) {
-        w.lastModified = now;
-      }
-      w.lastChecked = now;
-      w.state = state;
+    const now = new Date();
+    await worker.update(this.db, worker => {
+      worker.state = state;
+      worker.lastModified = worker.state !== state ? now : null;
+      worker.lastChecked = now;
     });
   }
 
