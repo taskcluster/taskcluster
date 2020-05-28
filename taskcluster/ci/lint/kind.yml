@@ -1,0 +1,34 @@
+---
+loader: taskgraph.loader.transform:loader
+
+transforms:
+  - src.transforms:taskcluster_images
+  - taskgraph.transforms.job:transforms
+  - taskgraph.transforms.task:transforms
+
+job-defaults:
+  worker-type: ci
+  run:
+    using: bare
+  worker:
+    max-run-time: 600
+    docker-image: {taskcluster: 'node-and-go'}
+
+jobs:
+  nodejs:
+    description: nodejs lint
+    run:
+      install: yarn install
+      command: yarn lint
+  golang:
+    description: go lint
+    run:
+      install: yarn install
+      command: yarn lint:go
+  python:
+    description: python flake8
+    worker:
+      docker-image: python:2.7
+    run:
+      install: pip install flake8
+      command: sh test/py-lint.sh

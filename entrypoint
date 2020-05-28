@@ -60,6 +60,7 @@ worker-manager/expire-errors) exec node services/worker-manager/src/main.js expi
 worker-manager/write-docs) exec node services/worker-manager/src/main.js writeDocs;;
 script/lint) shift; exec yarn run lint "${@}";;
 script/lint:go) shift; exec yarn run lint:go "${@}";;
+script/lint:py) shift; exec yarn run lint:py "${@}";;
 script/test) shift; exec yarn run test "${@}";;
 script/fetch-coverage) shift; exec yarn run fetch-coverage "${@}";;
 script/build) shift; exec yarn run build "${@}";;

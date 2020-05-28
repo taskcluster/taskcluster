@@ -1,734 +1,172 @@
+---
 version: 1
 reporting: checks-v1
 policy:
-  pullRequests: public
+    pullRequests: public
 tasks:
-  $if: 'tasks_for in ["github-push", "github-pull-request"]'
-  then:
-    $let:
-      node: '12.16.3'
-      go:
-        release: '1.13.7'
-        linux:
-          amd64:
-            sha: b3dd4bd781a0271b33168e627f7f43886b4c5d1c794a4015abf34e99c6526ca3
-        windows:
-          amd64:
-            sha: 03befd335ee9ddf1d10cae52e84eb5a37408b8e105acc1c29e30bbbbd8143749
-      artifactsDir:
-        public:
-          # This is not used at the moment other than by the trailer task to upload results. Feel free to bump later
-          expires: {$fromNow: '24 hours'}
-          path: /taskcluster/artifacts
-          type: directory
-    in:
-      $let:
-        debug:
-          $if: 'tasks_for == "github-push"'
-          then:
-            $if: 'event.head_commit.message[:7] == "DEBUG: "'
-            then: ${event.head_commit.message[7:]}
-            else: ''
-          else: ''
-
-        owner: taskcluster-internal@mozilla.com
-
-        # a push to a branch with prefix `staging-release/` on the main repo will trigger a staging release
-        stagingRelease: 
-          $if: 'tasks_for == "github-push"'
-          then: {$eval: 'event.ref[:27] == "refs/heads/staging-release/"'}
-          else: false
-
-        # This only supports pushes and pull requests for now.
-        # If we start responding to another action type, make this
-        # a $match.
-        repo:
-          $if: 'tasks_for == "github-push"'
-          then:
-            git_url: ${event.repository.url}
-            url: ${event.repository.url}
-            ref: ${event.after}
-            branch: ${event.ref}
-          else:
-            git_url: ${event.pull_request.head.repo.git_url}
-            url: ${event.pull_request.head.repo.url}
-            ref: ${event.pull_request.head.sha}
-            branch: ${event.pull_request.head.ref}
-
-        # We keep the separate from "others" so that we can assert a 1-1 mapping onto existing packages
-        packages:
-        - name: taskcluster-lib-api
-        - name: taskcluster-lib-app
-        - name: taskcluster-lib-azqueue
-        - name: taskcluster-lib-azure
-        - name: taskcluster-lib-entities
-        - name: taskcluster-lib-iterate
-        - name: taskcluster-lib-loader
-        - name: taskcluster-lib-monitor
-        - name: taskcluster-lib-postgres
-        - name: taskcluster-lib-pulse
-          image: taskcluster/rabbit-test:${node}
-          env:
-            PULSE_CONNECTION_STRING: amqp://guest:guest@localhost:5672/
-          command: >-
-            service rabbitmq-server start &&
-            yarn workspace taskcluster-lib-pulse coverage:report
-          artifacts: {$eval: artifactsDir}
-        - name: taskcluster-lib-references
-        - name: taskcluster-lib-testing
-        - name: taskcluster-lib-config
-        - name: taskcluster-lib-validate
-        - name: taskcluster-auth
-        - name: taskcluster-built-in-workers
-        - name: taskcluster-github
-        - name: taskcluster-hooks
-        - name: taskcluster-index
-        - name: taskcluster-notify
-        - name: taskcluster-purge-cache
-        - name: taskcluster-queue
-        - name: taskcluster-worker-manager
-        - name: taskcluster-secrets
-        - name: taskcluster-web-server
-        others:
-        - name: lint
-          command: yarn lint
-        - name: lint:go
-          image: taskcluster/node-and-go:node${node}-go${go.release}
-          command: yarn lint:go
-        - name: test:meta
-          command: "set -o pipefail && yarn test:meta | cat"
-          # only do cleanup on pushes; no sense doing so on pull requests
-        - name: yarn generate
-          image: taskcluster/node-and-go:node${node}-go${go.release}
-          command: >-
-              set -o pipefail &&
-              yarn generate | cat &&
-              if ! output=$(git status --porcelain) || [ -n "$output" ]; then
-                  echo "*** yarn generate produced changes to the repository; these changes should be checked in ***";
-                  git --no-pager diff;
-                  exit 1;
-              fi
-        - name: yarn build
-          command: yarn build --dry-run
-        - name: yarn changelog
-          command:
-            $if: 'tasks_for == "github-pull-request"'
-            then: yarn changelog:check --pr ${event.number}
-            else: yarn changelog:check
-        - name: taskcluster-client
-          # taskcluster-client tests use taskcluster-lib-*, including taskcluster-lib-testing,
-          # and thus require a full install at the monorepo root (including devDependencies)
-          install: >-
-              { yarn --frozen-lockfile || exit 99; } &&
-              cd clients/client &&
-              { yarn --frozen-lockfile || exit 99; }
-          command: >-
-              yarn test &&
-              yarn package-test
-        - name: taskcluster-client-web
-          image: 'taskcluster/browser-test:${node}'
-          install: >-
-              { yarn --frozen-lockfile || exit 99; } &&
-              cd clients/client-web &&
-              { yarn --frozen-lockfile || exit 99; }
-          command: >-
-              { Xvfb :99 -screen 0 640x480x8 -nolisten tcp & } &&
-              sleep 2 &&
-              CHROME_BIN=firefox DISPLAY=:99 yarn test
-        - name: taskcluster-client-py-2.7
-          image: 'python:2.7'
-          cache: {taskcluster-test-pip-cache: /cache}
-          install: >-
-              cd clients/client-py &&
-              virtualenv /sandbox &&
-              /sandbox/bin/pip install tox
-          command: >-
-              TOXENV=py27 /sandbox/bin/tox
-        - name: taskcluster-client-py-3.6
-          image: 'python:3.6'
-          cache: {taskcluster-test-pip-cache: /cache}
-          install: >-
-              cd clients/client-py &&
-              python3 -mvenv /sandbox &&
-              /sandbox/bin/pip install tox
-          command: >-
-              TOXENV=py36 /sandbox/bin/tox
-        - name: taskcluster-client-py-3.7
-          image: 'python:3.7'
-          cache: {taskcluster-test-pip-cache: /cache}
-          install: >-
-              cd clients/client-py &&
-              python3 -mvenv /sandbox &&
-              /sandbox/bin/pip install tox
-          command: >-
-              TOXENV=py37 /sandbox/bin/tox
-        - name: internal-go-libraries-${go.release}
-          image: 'golang:${go.release}'
-          install: >-
-              cd internal
-          command: >-
-              go test -v -race ./...
-        - name: taskcluster-client-go-${go.release}
-          image: 'golang:${go.release}'
-          install: >-
-              cd clients/client-go
-          command: >-
-              go test -v -race ./...
-        - name: taskcluster-client-shell-${go.release}
-          image: 'golang:${go.release}'
-          install: >-
-              cd clients/client-shell
-          command: >-
-              go test -v -race ./...
-        - name: tools-${go.release}
-          image: 'golang:${go.release}'
-          install: >-
-              cd tools
-          command: >-
-              go test -v -race ./...
-        - name: "yarn db:upgrade"
-          image: taskcluster/node-and-postgres:node${node}-pg11
-          command: >-
-            ./db/test-setup.sh --users &&
-            export ADMIN_DB_URL="$TEST_DB_URL" &&
-            export USERNAME_PREFIX="test" &&
-            yarn db:upgrade
-        - name: "taskcluster-db"
-          image: taskcluster/node-and-postgres:node${node}-pg11
-          command: >-
-            ./db/test-setup.sh &&
-            cd db && yarn test
-        - name: taskcluster-ui
-          image: 'taskcluster/browser-test:${node}'
-          install: >-
-              { yarn --frozen-lockfile || exit 99; } &&
-              cd ui &&
-              { yarn --frozen-lockfile || exit 99; }
-          command: >-
-              yarn lint &&
-              { Xvfb :99 -screen 0 640x480x8 -nolisten tcp & } &&
-              sleep 2 &&
-              CHROME_BIN=firefox DISPLAY=:99 yarn test
-        - name: upload-coverage
-          command: >-
-              yarn fetch-coverage &&
-              bash <(curl -s https://codecov.io/bash) -b $TASK_ID/$RUN_ID
-          post_packages: true
+    - $let:
+          taskgraph:
+              branch: taskgraph
+              revision: cab4565345d0d0effa66f18fe91335dd6d744031
+          trustDomain: taskcluster
       in:
-        $let:
-          platformTasks:
-            $map:
-              $map:
-                $flatten:
-                  - $map: {$eval: packages}
-                    each(p):
-                      $merge:
-                        - {$eval: p}
-                        - {artifacts: {$eval: artifactsDir}}
-                  - $eval: others
-              each(entry):
-                name: ${entry.name}
-                image:  # use `image` if given, falling back to the node+pg image
-                  $if: entry['image']
-                  then: ${entry.image}
-                  else: taskcluster/node-and-postgres:node${node}-pg11
-                command:  # use `command` if given, falling back to basic yarn test
-                  $if: entry['command']
-                  then: ${entry.command}
-                  else: >-
-                    ./db/test-setup.sh &&
-                    yarn workspace ${entry.name} coverage:report
-                env: # add in any custom env vars that this package needs
-                  $if: entry['env']
-                  then: {$eval: entry.env}
-                  else: {}
-                install:
-                  $if: entry['install']
-                  then: ${entry.install}
-                  else: >-
-                    { yarn --frozen-lockfile || exit 99; } &&
-                    eval "$(yarn -s shared-secrets)"
-                cache:
-                  $if: entry['cache']
-                  then: {$eval: entry.cache}
-                  else: {taskcluster-test-yarn-cache: /cache}
-                dependencies:
-                  $if: entry['post_packages']
-                  then:
-                    $map: {$eval: packages}
-                    each(p): {$eval: as_slugid(p.name)}
-                  else: []
-                artifacts:
-                  $if: entry['artifacts']
-                  then: {$eval: entry.artifacts}
-                  else: {}
-            each(job):
-              taskId: {$eval: as_slugid(job.name)}
-              taskGroupId: {$eval: as_slugid('taskGroupId')}
-              provisionerId: proj-taskcluster
-              workerType: ci
-              created: {$fromNow: ''}
-              deadline: {$fromNow: '3 hours'}
-              dependencies: {$eval: job.dependencies}
-              extra:
-                notify:
-                  email:
-                    subject: 'Failed: $${task.metadata.name} on taskcluster/taskcluster master'
-              routes:
-                $if: 'tasks_for == "github-push" && event["ref"] == "refs/heads/master"'
-                then:
-                  - notify.email.${owner}.on-failed
-                  - notify.email.${owner}.on-exception
-              scopes:
-                - secrets:get:project/taskcluster/testing/codecov
-                - secrets:get:project/taskcluster/testing/taskcluster-*
-                - docker-worker:cache:taskcluster-test-*
-              payload:
-                artifacts: {$eval: job.artifacts}
-                features:
-                  taskclusterProxy: true
-                env:
-                  $merge:
-                  - DEBUG: ${debug}
-                    CODECOV_NAME: ${job.name}
-                    CI_BUILD_URL: 'https://tools.taskcluster.net/tasks/${as_slugid(job.name)}'
-                    GIT_BRANCH: ${repo.branch}
-                    NO_TEST_SKIP:
-                      $if: 'job.name != "taskcluster-lib-testing"'
-                      then: true
-                    YARN_CACHE_FOLDER: /cache
-                    XDG_CACHE_HOME: /cache
-                  - {$eval: job.env}
-                maxRunTime: 1200
-                onExitStatus:
-                  # the `yarn --frozen-lockfile` invocation will exit with this status if it fails,
-                  # in which case we want to retry (assuming it's some upstream issue)
-                  retry: [99]
-                cache: {$eval: job.cache}
-                image: ${job.image}
-                command:
-                  - "/bin/bash"
-                  - "-c"
-                  - >-
-                    git clone --quiet --depth=20 --no-single-branch ${repo.git_url} taskcluster &&
-                    cd taskcluster &&
-                    git checkout ${repo.ref} &&
-                    ${job.install} &&
-                    ${job.command}
-              metadata:
-                name: ${job.name}
-                description: ${job.name}
-                owner: ${owner}
-                source: ${repo.url}
-          workerTasks:
-          - taskId: {$eval: as_slugid("worker-runner-windows-tests")}
-            taskGroupId: {$eval: as_slugid('taskGroupId')}
-            created: {$fromNow: ''}
-            deadline: {$fromNow: '2 hours'}
-            provisionerId: proj-taskcluster
-            workerType: gw-ci-windows2012r2-amd64
-            payload:
-              maxRunTime: 3600
-              command:
-                - set CGO_ENABLED=0
-                - set GOPATH=%CD%\gopath${go.release}
-                - set GOROOT=%CD%\go${go.release}\go
-                - set PATH=%CD%\git\cmd;%GOPATH%\bin;%GOROOT%\bin;%PATH%
-                - git config --global core.autocrlf false
-                - go version
-                - go env
-                - git clone ${repo.git_url} taskcluster
-                - cd taskcluster
-                - git config advice.detachedHead false
-                - git checkout ${repo.ref}
-                - cd tools/worker-runner
-                - go test -v ./...
-              mounts:
-                - content:
-                    url: https://storage.googleapis.com/golang/go${go.release}.windows-amd64.zip
-                    sha256: ${go.windows.amd64.sha}
-                  directory: go${go.release}
-                  format: zip
-                - content:
-                    url: https://github.com/git-for-windows/git/releases/download/v2.14.1.windows.1/MinGit-2.14.1-64-bit.zip
-                    sha256: 65c12e4959b8874187b68ec37e532fe7fc526e10f6f0f29e699fa1d2449e7d92
-                  directory: git
-                  format: zip
-            metadata:
-              name: Worker Runner tests on Windows Server 2012 R2
-              description: Worker Runner tests on Windows Server 2012 R2
-              owner: taskcluster-internal@mozilla.com
-              source: ${repo.url}
-          - taskId: {$eval: as_slugid("generic-worker_decision")}
-            taskGroupId: {$eval: as_slugid('taskGroupId')}
-            created: {$fromNow: ''}
-            deadline: {$fromNow: '2 hours'}
-            provisionerId: proj-taskcluster
-            workerType: gw-ci-ubuntu-18-04
-            payload:
-              maxRunTime: 3600
-              env:
-                GITHUB_SHA: '${repo.ref}'
-                GITHUB_CLONE_URL: '${repo.git_url}'
-                TASK_GROUP_ID: {$eval: as_slugid('taskGroupId')}
-              command:
-                - - /bin/bash
-                  - -vxec
-                  - |
-                    export CGO_ENABLED=0
-                    export GOROOT="$(pwd)/go${go.release}/go"
-                    export PATH="$${GOPATH}/bin:$${GOROOT}/bin:$${PATH}"
-                    go version
-                    go env
-                    if [ ! -d taskcluster/.git ]; then
-                      rm -rf taskcluster
-                      git clone "$${GITHUB_CLONE_URL}" taskcluster
-                    fi
-                    cd taskcluster
-                    git fetch "$${GITHUB_CLONE_URL}" "+$${GITHUB_SHA}:refs/heads/X$${TASK_ID}"
-                    git checkout -f "X$${TASK_ID}"
-                    git reset --hard "$${GITHUB_SHA}"
-                    git clean -fdx
-                    git checkout -B tmp -t "X$${TASK_ID}"
-                    cd workers/generic-worker/gw-decision-task
-                    go install
-                    "$(go env GOPATH)/bin/gw-decision-task" tasks.yml "$${GITHUB_SHA}"
-              features:
-                taskclusterProxy: true
-              mounts:
-                - content:
-                    url: https://storage.googleapis.com/golang/go${go.release}.linux-amd64.tar.gz
-                    sha256: ${go.linux.amd64.sha}
-                  directory: go${go.release}
-                  format: tar.gz
-            metadata:
-              name: Generic Worker CI Decision Task
-              description: Generates the tasks that build and test generic-worker
-              owner: taskcluster-internal@mozilla.com
-              source: ${repo.url}
-            scopes:
-              - generic-worker:cache:generic-worker-checkout
-              - secrets:get:project/taskcluster/testing/generic-worker/ci-creds
-              - queue:scheduler-id:taskcluster-github
-              - queue:create-task:highest:proj-taskcluster/gw-ci-*
-              - queue:route:checks
-          dockerWorkerTasks: # These remain separate from workerTasks for now until we audit permissions (bug 1635985)
-          - provisionerId: proj-taskcluster
-            workerType: dw-ci
-            taskId: {$eval: as_slugid("docker-worker-test-chunk-1")}
-            taskGroupId: {$eval: as_slugid('taskGroupId')}
-            created: {$fromNow: ''}
-            deadline: {$fromNow: '2 hours'}
-            retries: 3
-            scopes:
-              - 'docker-worker:cache:docker-worker-garbage-*'
-              - 'docker-worker:capability:privileged'
-              - 'docker-worker:capability:device:loopbackAudio'
-              - 'docker-worker:capability:device:loopbackVideo'
-              - 'secrets:get:project/taskcluster/testing/docker-worker/ci-creds'
-              - 'secrets:get:project/taskcluster/testing/docker-worker/pulse-creds'
-            payload:
-              image: taskcluster/worker-ci:node${node}@sha256:3a6572b7462ba28f84e04e4baac304fbbc23bac606746ade9fc409f2da82caa7
-              maxRunTime: 10800
-              command:
-                - >-
-                  ( cd ../..; yarn install --frozen-lockfile ) &&
-                  yarn install --frozen-lockfile &&
-                  ./build.sh &&
-                  ./test/docker-worker-test --this-chunk 1 --total-chunks 5
-              capabilities:
-                privileged: true
-                devices:
-                  loopbackAudio: true
-                  loopbackVideo: true
-              env:
-                WORKER_CI: '1'
-                TASKCLUSTER_ROOT_URL: https://community-tc.services.mozilla.com
-                GITHUB_REPO_URL: '${repo.git_url}'
-                GITHUB_BRANCH: '${repo.branch}'
-                GITHUB_SHA: '${repo.ref}'
-                NO_TEST_SKIP: 'true'
-                DOCKER_TESTS: 1
-              features:
-                taskclusterProxy: true
-            metadata:
-              name: Docker-worker tests - 1
-              description: Runs entire docker-worker test suite
-              owner: wcosta@mozilla.com
-              source: ${repo.url}
-          - provisionerId: proj-taskcluster
-            workerType: dw-ci
-            taskId: {$eval: as_slugid("docker-worker-test-chunk-2")}
-            taskGroupId: {$eval: as_slugid('taskGroupId')}
-            created: {$fromNow: ''}
-            deadline: {$fromNow: '2 hours'}
-            retries: 3
-            scopes:
-              - 'docker-worker:cache:docker-worker-garbage-*'
-              - 'docker-worker:capability:privileged'
-              - 'docker-worker:capability:device:loopbackAudio'
-              - 'docker-worker:capability:device:loopbackVideo'
-              - 'secrets:get:project/taskcluster/testing/docker-worker/ci-creds'
-              - 'secrets:get:project/taskcluster/testing/docker-worker/pulse-creds'
-            payload:
-              image: taskcluster/worker-ci:node${node}@sha256:3a6572b7462ba28f84e04e4baac304fbbc23bac606746ade9fc409f2da82caa7
-              maxRunTime: 10800
-              command:
-                - >-
-                  ( cd ../..; yarn install --frozen-lockfile ) &&
-                  yarn install --frozen-lockfile &&
-                  ./build.sh &&
-                  ./test/docker-worker-test --this-chunk 2 --total-chunks 5
-              capabilities:
-                privileged: true
-                devices:
-                  loopbackAudio: true
-                  loopbackVideo: true
-              env:
-                WORKER_CI: '1'
-                TASKCLUSTER_ROOT_URL: https://community-tc.services.mozilla.com
-                GITHUB_REPO_URL: '${repo.git_url}'
-                GITHUB_BRANCH: '${repo.branch}'
-                GITHUB_SHA: '${repo.ref}'
-                NO_TEST_SKIP: 'true'
-                DOCKER_TESTS: 1
-              features:
-                taskclusterProxy: true
-            metadata:
-              name: Docker-worker tests - 2
-              description: Runs entire docker-worker test suite
-              owner: wcosta@mozilla.com
-              source: ${repo.url}
-          - provisionerId: proj-taskcluster
-            workerType: dw-ci
-            taskId: {$eval: as_slugid("docker-worker-test-chunk-3")}
-            taskGroupId: {$eval: as_slugid('taskGroupId')}
-            created: {$fromNow: ''}
-            deadline: {$fromNow: '2 hours'}
-            retries: 3
-            scopes:
-              - 'docker-worker:cache:docker-worker-garbage-*'
-              - 'docker-worker:capability:privileged'
-              - 'docker-worker:capability:device:loopbackAudio'
-              - 'docker-worker:capability:device:loopbackVideo'
-              - 'secrets:get:project/taskcluster/testing/docker-worker/ci-creds'
-              - 'secrets:get:project/taskcluster/testing/docker-worker/pulse-creds'
-            payload:
-              image: taskcluster/worker-ci:node${node}@sha256:3a6572b7462ba28f84e04e4baac304fbbc23bac606746ade9fc409f2da82caa7
-              maxRunTime: 10800
-              command:
-                - >-
-                  ( cd ../..; yarn install --frozen-lockfile ) &&
-                  yarn install --frozen-lockfile &&
-                  ./build.sh &&
-                  ./test/docker-worker-test --this-chunk 3 --total-chunks 5
-              capabilities:
-                privileged: true
-                devices:
-                  loopbackAudio: true
-                  loopbackVideo: true
-              env:
-                WORKER_CI: '1'
-                TASKCLUSTER_ROOT_URL: https://community-tc.services.mozilla.com
-                GITHUB_REPO_URL: '${repo.git_url}'
-                GITHUB_BRANCH: '${repo.branch}'
-                GITHUB_SHA: '${repo.ref}'
-                NO_TEST_SKIP: 'true'
-                DOCKER_TESTS: 1
-              features:
-                taskclusterProxy: true
-            metadata:
-              name: Docker-worker tests - 3
-              description: Runs entire docker-worker test suite
-              owner: wcosta@mozilla.com
-              source: ${repo.url}
-          - provisionerId: proj-taskcluster
-            workerType: dw-ci
-            taskId: {$eval: as_slugid("docker-worker-test-chunk-4")}
-            taskGroupId: {$eval: as_slugid('taskGroupId')}
-            created: {$fromNow: ''}
-            deadline: {$fromNow: '2 hours'}
-            retries: 3
-            scopes:
-              - 'docker-worker:cache:docker-worker-garbage-*'
-              - 'docker-worker:capability:privileged'
-              - 'docker-worker:capability:device:loopbackAudio'
-              - 'docker-worker:capability:device:loopbackVideo'
-              - 'secrets:get:project/taskcluster/testing/docker-worker/ci-creds'
-              - 'secrets:get:project/taskcluster/testing/docker-worker/pulse-creds'
-            payload:
-              image: taskcluster/worker-ci:node${node}@sha256:3a6572b7462ba28f84e04e4baac304fbbc23bac606746ade9fc409f2da82caa7
-              maxRunTime: 10800
-              command:
-                - >-
-                  ( cd ../..; yarn install --frozen-lockfile ) &&
-                  yarn install --frozen-lockfile &&
-                  ./build.sh &&
-                  ./test/docker-worker-test --this-chunk 4 --total-chunks 5
-              capabilities:
-                privileged: true
-                devices:
-                  loopbackAudio: true
-                  loopbackVideo: true
-              env:
-                WORKER_CI: '1'
-                TASKCLUSTER_ROOT_URL: https://community-tc.services.mozilla.com
-                GITHUB_REPO_URL: '${repo.git_url}'
-                GITHUB_BRANCH: '${repo.branch}'
-                GITHUB_SHA: '${repo.ref}'
-                NO_TEST_SKIP: 'true'
-                DOCKER_TESTS: 1
-              features:
-                taskclusterProxy: true
-            metadata:
-              name: Docker-worker tests - 4
-              description: Runs entire docker-worker test suite
-              owner: wcosta@mozilla.com
-              source: ${repo.url}
-          - provisionerId: proj-taskcluster
-            workerType: dw-ci
-            taskId: {$eval: as_slugid("docker-worker-test-chunk-5")}
-            taskGroupId: {$eval: as_slugid('taskGroupId')}
-            created: {$fromNow: ''}
-            deadline: {$fromNow: '2 hours'}
-            retries: 3
-            scopes:
-              - 'docker-worker:cache:docker-worker-garbage-*'
-              - 'docker-worker:capability:privileged'
-              - 'docker-worker:capability:device:loopbackAudio'
-              - 'docker-worker:capability:device:loopbackVideo'
-              - 'secrets:get:project/taskcluster/testing/docker-worker/ci-creds'
-              - 'secrets:get:project/taskcluster/testing/docker-worker/pulse-creds'
-            payload:
-              image: taskcluster/worker-ci:node${node}@sha256:3a6572b7462ba28f84e04e4baac304fbbc23bac606746ade9fc409f2da82caa7
-              maxRunTime: 10800
-              command:
-                - >-
-                  ( cd ../..; yarn install --frozen-lockfile ) &&
-                  yarn install --frozen-lockfile &&
-                  ./build.sh &&
-                  ./test/docker-worker-test --this-chunk 5 --total-chunks 5
-              capabilities:
-                privileged: true
-                devices:
-                  loopbackAudio: true
-                  loopbackVideo: true
-              env:
-                WORKER_CI: '1'
-                TASKCLUSTER_ROOT_URL: https://community-tc.services.mozilla.com
-                GITHUB_REPO_URL: '${repo.git_url}'
-                GITHUB_BRANCH: '${repo.branch}'
-                GITHUB_SHA: '${repo.ref}'
-                NO_TEST_SKIP: 'true'
-                DOCKER_TESTS: 1
-              features:
-                taskclusterProxy: true
-            metadata:
-              name: Docker-worker tests - 5
-              description: Runs entire docker-worker test suite
-              owner: wcosta@mozilla.com
-              source: ${repo.url}
-          releaseTasks:
-          - taskId: {$eval: 'as_slugid("release")'}
-            taskGroupId: {$eval: as_slugid('taskGroupId')}
-            provisionerId: proj-taskcluster
-            workerType: release
-            created: {$fromNow: ''}
-            deadline: {$fromNow: '3 hours'}
-            extra:
-              $if: '!stagingRelease'
+          $let:
+              # We set some of these directly in tc because we don't have some mozilla-specific concepts
+              ownerEmail: taskcluster-internal@mozilla.com
+              level: 1
+
+              # Github events have this stuff in different places...
+              baseRepoUrl:
+                  $if: 'tasks_for in ["github-push", "github-release"]'
+                  then: '${event.repository.html_url}'
+                  else:
+                      $if: 'tasks_for == "github-pull-request"'
+                      then: '${event.pull_request.base.repo.html_url}'
+
+              repoUrl:
+                  $if: 'tasks_for in ["github-push", "github-release"]'
+                  then: '${event.repository.html_url}'
+                  else:
+                      $if: 'tasks_for == "github-pull-request"'
+                      then: '${event.pull_request.head.repo.html_url}'
+
+              project:
+                  $if: 'tasks_for in ["github-push", "github-release"]'
+                  then: '${event.repository.name}'
+                  else:
+                      $if: 'tasks_for == "github-pull-request"'
+                      then: '${event.pull_request.head.repo.name}'
+
+              head_branch:
+                  $if: 'tasks_for == "github-pull-request"'
+                  then: ${event.pull_request.head.ref}
+                  else:
+                      $if: 'tasks_for == "github-push"'
+                      then: ${event.ref}
+                      else:
+                          $if: 'tasks_for == "github-release"'
+                          then: '${event.release.target_commitish}'
+
+              head_sha:
+                  $if: 'tasks_for == "github-push"'
+                  then: '${event.after}'
+                  else:
+                      $if: 'tasks_for == "github-pull-request"'
+                      then: '${event.pull_request.head.sha}'
+                      else:
+                          $if: 'tasks_for == "github-release"'
+                          then: '${event.release.tag_name}'
+
+              head_tag:
+                  $if: 'tasks_for == "github-release"'
+                  then: '${event.release.tag_name}'
+                  else: ''
+
+              ownTaskId: {$eval: as_slugid("decision_task")}
+
+              pullRequestAction:
+                  $if: 'tasks_for == "github-pull-request"'
+                  then: ${event.action}
+                  else: 'UNDEFINED'
+
+          in:
+              $if: >
+                (tasks_for == "github-pull-request" && pullRequestAction in ["opened", "reopened", "synchronize"])
+                || (tasks_for == "github-push" && event["ref"] == "refs/heads/master")
+                || (tasks_for == "github-push" && event["ref"][:11] == "refs/tags/v")
+                || (tasks_for == "github-push" && event["ref"][:27] == "refs/heads/staging-release/")
               then:
-                notify:
-                  email:
-                    subject: 'Taskcluster Release Status'
-              else: {}
-            routes:
-              $if: stagingRelease
-              then: []
-              else:
-              - notify.email.taskcluster-notifications@mozilla.com.on-any
-            scopes:
-              $if: stagingRelease
-              then: []
-              else: [secrets:get:project/taskcluster/release]
-            payload:
-              features:
-                taskclusterProxy: true
-              maxRunTime: 3600
-              artifacts:
-                - path: taskcluster/release-debug-logs
-                  name: debug-logs # Note: this should never be public because who knows what is in here
-                  type: directory
-              command:
-                $let:
-                  releaseArgs:
-                    $if: stagingRelease
-                    then: '--no-push --staging'
-                    else: ''
-                in:
-                - - "/bin/bash"
-                  - "-ec"
-                  - |-
-                    # set up golang..
-                    export GOROOT="$(pwd)/go/go"
-                    export GOPATH="$(pwd)/go/path"
-                    mkdir -p $${GOPATH}
-                    export PATH="$${GOROOT}/bin:$${GOPATH}/bin:$${PATH}"
-                    go version
+                  schedulerId: taskcluster-level-${level}
+                  taskId: '${ownTaskId}'
+                  taskGroupId: '${ownTaskId}'  # same as taskId; this is how automation identifies a decision task
+                  created: {$fromNow: ''}
+                  deadline: {$fromNow: '1 day'}
+                  expires: {$fromNow: '1 year 1 second'}  # 1 second so artifacts expire first, despite rounding errors
+                  metadata:
+                    owner: "${ownerEmail}"
+                    source: '${repoUrl}/raw/${head_sha}/.taskcluster.yml'
+                    name: Decision Task (${tasks_for})
+                    description: Load, transform, optimize, and submit other tasks
+                  provisionerId: proj-taskcluster
+                  workerType: ci
+                  scopes:
+                      # `https://` is 8 characters so, ${repoUrl[8:]} is the repository without the protocol.
+                      $if: 'tasks_for == "github-push"'
+                      then:
+                          $let:
+                              short_head_branch:
+                                  $if: 'head_branch[:11] == "refs/heads/"'
+                                  then: {$eval: 'head_branch[11:]'}
+                                  else: ${head_branch}
+                          in:
+                              - 'assume:repo:${repoUrl[8:]}:branch:${short_head_branch}'
+                      else:
+                          $if: 'tasks_for == "github-pull-request"'
+                          then:
+                              - 'assume:repo:github.com/${event.pull_request.base.repo.full_name}:pull-request'
 
-                    # set up gox
-                    go get github.com/mitchellh/gox
+                  requires: all-completed
+                  priority: lowest
+                  retries: 5
 
-                    # set up Node, using nvm (generic-worker does not support .xz, so we can't use mounts)
-                    curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.35.2/install.sh | bash
-                    . ~/.nvm/nvm.sh
-                    nvm install ${node}
+                  payload:
+                      env:
+                          # run-task uses these to check out the source; the inputs
+                          # to `mach taskgraph decision` are all on the command line.
+                          $merge:
+                              - TASKCLUSTER_BASE_REPOSITORY: '${baseRepoUrl}'
+                                TASKCLUSTER_HEAD_REPOSITORY: '${repoUrl}'
+                                TASKCLUSTER_HEAD_REF: '${head_branch}'
+                                TASKCLUSTER_HEAD_REV: '${head_sha}'
+                                TASKCLUSTER_HEAD_TAG: '${head_tag}'
+                                TASKCLUSTER_REPOSITORY_TYPE: git
+                                TASKGRAPH_BASE_REPOSITORY: https://hg.mozilla.org/ci/taskgraph
+                                TASKGRAPH_HEAD_REPOSITORY: https://hg.mozilla.org/ci/${taskgraph.branch}
+                                TASKGRAPH_HEAD_REV: ${taskgraph.revision}
+                                TASKGRAPH_REPOSITORY_TYPE: hg
+                                REPOSITORIES: {$json: {taskcluster: "taskcluster", taskgraph: "Taskgraph"}}
+                                HG_STORE_PATH: /builds/worker/checkouts/hg-store
+                              - $if: 'tasks_for in ["github-pull-request"]'
+                                then:
+                                    TASKCLUSTER_PULL_REQUEST_NUMBER: '${event.pull_request.number}'
+                      features:
+                          taskclusterProxy: true
+                      # Note: This task is built server side without the context or tooling that
+                      # exist in tree so we must hard code the hash
+                      image:
+                          mozillareleases/taskgraph:decision-21bef1bc0f11e62c7a23384584f9f8f0d96e95eef192e5bb599fc82ba55c81a7
 
-                    # set up yarn
-                    curl -o- -L https://yarnpkg.com/install.sh | bash
-                    export PATH="$HOME/.yarn/bin:$HOME/.config/yarn/global/node_modules/.bin:$PATH"
+                      maxRunTime: 600
 
-                    # clone the repo (shallow won't work here as it misses tags)
-                    git clone --quiet --no-single-branch --tags ${repo.git_url} taskcluster
-                    cd taskcluster
-                    git checkout ${repo.ref}
-
-                    # publish the release
-                    yarn --frozen-lockfile
-                    yarn release:publish --logs-dir $(pwd)/release-debug-logs ${releaseArgs}
-              mounts:
-              - content:
-                  url: 'https://storage.googleapis.com/golang/go${go.release}.linux-amd64.tar.gz'
-                  sha256: '${go.linux.amd64.sha}'
-                directory: go
-                format: tar.gz
-            metadata:
-              name:
-                $if: stagingRelease
-                then: taskcluster-release-publish (STAGING)
-                else: taskcluster-release-publish
-              description: Publish a taskcluster release
-              owner: taskcluster-internal@mozilla.com
-              source: ${repo.url}
-        in:
-          $flattenDeep:
-          # only build pushes to master; everything else should be tested in a PR
-          - $if: 'tasks_for == "github-push" && event["ref"] == "refs/heads/master"'
-            then:
-              - $eval: platformTasks
-              - $eval: workerTasks
-              - $eval: dockerWorkerTasks
-          - $if: stagingRelease
-            then:
-              - $eval: releaseTasks
-          - $if: 'tasks_for == "github-pull-request" && event["action"] in ["opened", "reopened", "synchronize"]'
-            then:
-              - $eval: platformTasks
-              - $eval: workerTasks
-              - $eval: dockerWorkerTasks
-          # Release on tags; note that we must match the `v` to avoid triggering on pushes to golang
-          # package tags like `clients/client-go/v1.2.3`.
-          - $if: 'tasks_for == "github-push"'
-            then:
-              $if: 'event.ref[:11] == "refs/tags/v"'
-              then: {$eval: releaseTasks}
+                      command:
+                          - /usr/local/bin/run-task
+                          - '--taskcluster-checkout=/builds/worker/checkouts/src'
+                          - '--taskgraph-checkout=/builds/worker/checkouts/taskgraph'
+                          - '--task-cwd=/builds/worker/checkouts/src'
+                          - '--'
+                          - bash
+                          - -cx
+                          - >
+                            PIP_IGNORE_INSTALLED=0 pip install --user /builds/worker/checkouts/taskgraph &&
+                            PIP_IGNORE_INSTALLED=0 pip install --user arrow taskcluster pyyaml &&
+                            ln -s /builds/worker/artifacts artifacts &&
+                            ~/.local/bin/taskgraph decision
+                            --pushlog-id='0'
+                            --pushdate='0'
+                            --project='${project}'
+                            --message=""
+                            --owner='${ownerEmail}'
+                            --level='${level}'
+                            --base-repository="$TASKCLUSTER_BASE_REPOSITORY"
+                            --head-repository="$TASKCLUSTER_HEAD_REPOSITORY"
+                            --head-ref="$TASKCLUSTER_HEAD_REF"
+                            --head-rev="$TASKCLUSTER_HEAD_REV"
+                            --head-tag="$TASKCLUSTER_HEAD_TAG"
+                            --repository-type="$TASKCLUSTER_REPOSITORY_TYPE"
+                            --target-tasks-method=taskcluster-branches
+                            --tasks-for='${tasks_for}'
+                      artifacts:
+                          'public':
+                              type: 'directory'
+                              path: '/builds/worker/artifacts'
+                              expires: {$fromNow: '1 year'}

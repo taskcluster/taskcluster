@@ -167,6 +167,7 @@
   "scripts": {
     "lint": "eslint --cache --ext js --ignore-pattern clients/client-web/build --ignore-pattern clients/client-py libraries services infrastructure clients test db workers/docker-worker",
     "lint:go": "sh test/go-lint.sh",
+    "lint:py": "sh test/py-lint.sh",
     "test": "yarn workspaces run test",
     "fetch-coverage": "node test/fetch-coverage.js",
     "build": "node infrastructure/tooling/src/main.js build",

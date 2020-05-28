@@ -1,0 +1,53 @@
+---
+loader: taskgraph.loader.transform:loader
+
+transforms:
+  - src.transforms:taskcluster_images
+  - src.transforms:add_task_env
+  - taskgraph.transforms.job:transforms
+  - taskgraph.transforms.task:transforms
+
+job-defaults:
+  worker-type: dw-ci
+  scopes:
+    - 'docker-worker:cache:docker-worker-garbage-*'
+    - 'secrets:get:project/taskcluster/testing/docker-worker/ci-creds'
+    - 'secrets:get:project/taskcluster/testing/docker-worker/pulse-creds'
+  run:
+    using: bare
+    clone: false
+    install: '"( cd ../..; yarn install --frozen-lockfile ) && yarn install --frozen-lockfile && ./build.sh"'
+  worker:
+    taskcluster-proxy: true
+    privileged: true
+    loopback-video: true
+    loopback-audio: true
+    max-run-time: 10800
+    docker-image: {taskcluster: worker-ci}
+    env:
+      WORKER_CI: '1'
+      TASKCLUSTER_ROOT_URL: https://community-tc.services.mozilla.com
+      NO_TEST_SKIP: 'true'
+      DOCKER_TESTS: '1'
+
+jobs:
+  chunk-1:
+    description: 'docker-worker test chunk #1'
+    run:
+      command: ./test/docker-worker-test --this-chunk 1 --total-chunks 5
+  chunk-2:
+    description: 'docker-worker test chunk #2'
+    run:
+      command: ./test/docker-worker-test --this-chunk 2 --total-chunks 5
+  chunk-3:
+    description: 'docker-worker test chunk #3'
+    run:
+      command: ./test/docker-worker-test --this-chunk 3 --total-chunks 5
+  chunk-4:
+    description: 'docker-worker test chunk #4'
+    run:
+      command: ./test/docker-worker-test --this-chunk 4 --total-chunks 5
+  chunk-5:
+    description: 'docker-worker test chunk #5'
+    run:
+      command: ./test/docker-worker-test --this-chunk 5 --total-chunks 5

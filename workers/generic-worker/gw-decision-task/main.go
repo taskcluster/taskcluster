@@ -279,7 +279,7 @@ func (dt *DecisionTask) TaskDefinition(workerPool string, name string, descripti
 	// Are we running inside a task, or being run e.g. locally by a developer?
 	if dt.TaskID != "" {
 		dependencies = []string{dt.TaskID}
-		schedulerID = "taskcluster-github"
+		schedulerID = "taskcluster-level-1"
 	} else {
 		dependencies = []string{}
 		schedulerID = "-"
