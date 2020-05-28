@@ -166,6 +166,16 @@ class ResourceManager {
   }
 
   /**
+   * Modify a fake resource
+   */
+  modifyFakeResource(resourceGroupName, name, modifier) {
+    const key = `${resourceGroupName}/${name}`;
+    const res = this._resources.get(key);
+    assert(res);
+    modifier(res);
+  }
+
+  /**
    * Get a pending request's parameters
    */
   getFakeRequestParameters(resourceGroupName, name) {

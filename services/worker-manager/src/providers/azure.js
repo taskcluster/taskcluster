@@ -496,12 +496,22 @@ class AzureProvider extends Provider {
           worker.providerData.resourceGroupName,
           typeData.name,
         ));
-        // we found the resource
-        await worker.modify(w => {
-          w.providerData[resourceType].id = resource.id;
-          w.providerData[resourceType].operation = undefined;
-          modifyFn(w, resource);
-        });
+        if (failProvisioningStates.has(resource.provisioningState)) {
+          // the resource was created but not successfully (how Microsoft!), so
+          // bail out of the whole provisioning process
+          await worker.modify(w => {
+            w.providerData[resourceType].operation = undefined;
+          });
+          await this.removeWorker({worker, reason: `${resourceType} has state ${resource.provisioningState}`});
+        } else {
+          // we found the resource
+          await worker.modify(w => {
+            w.providerData[resourceType].id = resource.id;
+            w.providerData[resourceType].operation = undefined;
+            modifyFn(w, resource);
+          });
+        }
+
         // no need to try to create the resource again, we're done..
         return;
       } catch (err) {

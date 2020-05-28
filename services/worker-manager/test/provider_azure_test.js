@@ -406,7 +406,6 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
 
       debug('VM creation finishes');
       fake.computeClient.virtualMachines.fakeFinishRequest('rgrp', vmName);
-      // TODO: can this finish with provisioningState: Failed?
 
       debug('seventh call');
       await provider.provisionResources({worker, monitor});
@@ -424,6 +423,25 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
 
       debug('IP creation fails');
       fake.networkClient.publicIPAddresses.fakeFailRequest('rgrp', ipName, 'uhoh');
+
+      debug('second call');
+      await provider.provisionResources({worker, monitor});
+      await assertProvisioningState({ip: 'none', nic: 'none'});
+      assert(provider.removeWorker.called);
+    });
+
+    test('provisioning process fails creating IP with provisioningState=Failed', async function() {
+      await assertProvisioningState({ip: 'none'});
+
+      debug('first call');
+      await provider.provisionResources({worker, monitor});
+      await assertProvisioningState({ip: 'inprogress'});
+
+      debug('IP creation fails');
+      fake.networkClient.publicIPAddresses.fakeFinishRequest('rgrp', ipName);
+      fake.networkClient.publicIPAddresses.modifyFakeResource('rgrp', ipName, res => {
+        res.provisioningState = 'Failed';
+      });
 
       debug('second call');
       await provider.provisionResources({worker, monitor});
