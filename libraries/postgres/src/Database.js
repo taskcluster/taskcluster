@@ -76,13 +76,14 @@ class Database {
   _createProcs({schema, serviceName}) {
     // generate a JS method for each DB method defined in the schema
     this.fns = {};
+    this.deprecatedFns = {};
     schema.allMethods().forEach(method => {
-      // ignore deprecated methods
+      let collection = this.fns;
       if (method.deprecated) {
-        return;
+        collection = this.deprecatedFns;
       }
 
-      this.fns[method.name] = async (...args) => {
+      collection[method.name] = async (...args) => {
         if (serviceName !== method.serviceName && method.mode !== READ) {
           throw new Error(
             `${serviceName} is not allowed to call read-write methods for ${method.serviceName}`);

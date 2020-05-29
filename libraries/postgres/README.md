@@ -174,6 +174,9 @@ methods:
     # still exist in the database!  Defaults to false, so this is omitted unless needed.
     # All other method fields can be omitted when this is true, thus supporting
     # deprecating a method without changing it.
+    # When a method is deprecated, it is no longer available in `db.fns` but is made
+    # available in `db.deprecatedFns` for use in testing but this method should no
+    # longer be used in production.
     deprecated: true
 
     # The body of the stored function.  This is passed verbatim to `CREATE FUNCTION`.

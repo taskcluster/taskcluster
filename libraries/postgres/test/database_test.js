@@ -87,15 +87,22 @@ helper.dbSuite(path.basename(__filename), function() {
           end`,
         },
         old: {
-          description: 'a method that is deprecated',
+          description: 'a method that will be deprecated',
           mode: 'read',
-          deprecated: true,
           serviceName: 'service-2',
-          args: '',
-          returns: 'void',
+          args: 'x text',
+          returns: 'text',
           body: `begin
-            perform pg_sleep(5);
+            return 'got ' || x;
           end`,
+        },
+      },
+    }, {
+      version: 2,
+      methods: {
+        old: {
+          description: 'a method that is deprecated',
+          deprecated: true,
         },
       },
     },
@@ -513,10 +520,12 @@ helper.dbSuite(path.basename(__filename), function() {
       assert.deepEqual(res.map(r => r.total).sort(), [16, 20]);
     });
 
-    test('setup does not create deprecated methods', async function() {
+    test('setup moves deprecated methods to deprecatedFns', async function() {
       await Database.upgrade({schema, adminDbUrl: helper.dbUrl, usernamePrefix: 'test'});
       db = await Database.setup({schema, readDbUrl: helper.dbUrl, writeDbUrl: helper.dbUrl, serviceName: 'service-1', monitor});
       assert(!db.fns.old);
+      assert(db.deprecatedFns.old);
+      assert.equal((await db.deprecatedFns.old('hi'))[0].old, 'got hi');
     });
 
     test('non-numeric statementTimeout is not alloewd', async function() {
