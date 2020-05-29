@@ -938,18 +938,6 @@ class AzureProvider extends Provider {
         return state;
       }
 
-      // handles deprecated case where we track one disk
-      if (_.has(worker.providerData, 'disk')) {
-        let diskDeleted = await this.removeResource({
-          worker,
-          client: this.computeClient.disks,
-          resourceType: 'disk',
-          monitor,
-        });
-        if (!diskDeleted || worker.providerData.disk.id) {
-          return state;
-        }
-      }
       // handles deleting osDisks and dataDisks
       let disksDeleted = true;
       for (let i = 0; i < worker.providerData.disks.length; i++) {
