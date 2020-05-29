@@ -85,7 +85,7 @@ class Database {
       this.fns[method.name] = async (...args) => {
         if (serviceName !== method.serviceName && method.mode !== READ) {
           throw new Error(
-            `${serviceName} is not allowed to call read-write methods for other services`);
+            `${serviceName} is not allowed to call read-write methods for ${method.serviceName}`);
         }
 
         this._logDbFunctionCall({name: method.name});
