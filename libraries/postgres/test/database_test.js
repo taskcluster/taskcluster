@@ -226,6 +226,34 @@ helper.dbSuite(path.basename(__filename), function() {
       }
       throw new Error('_doUpgrade did not fail');
     });
+
+    test('allows deprecated methods without failing', async function() {
+      await db._doUpgrade({
+        version: {
+          version: 1,
+          methods: {foo_bar: {
+            description: 'whatever',
+            mode: 'read',
+            serviceName: 'baz',
+            args: 'foo integer',
+            returns: 'table (bar integer)',
+            body: 'begin end',
+          }},
+        },
+        showProgress: () => {},
+        usernamePrefix: 'test',
+      });
+      assert.equal(await db.currentVersion(), 1);
+      await db._doUpgrade({
+        version: {
+          version: 2,
+          methods: {foo_bar: {deprecated: true}},
+        },
+        showProgress: () => {},
+        usernamePrefix: 'test',
+      });
+      assert.equal(await db.currentVersion(), 2);
+    });
   });
 
   suite('db._doDowngrade', function() {
@@ -282,7 +310,15 @@ helper.dbSuite(path.basename(__filename), function() {
         },
       },
     };
-    const schema = Schema.fromSerializable({versions: [v1, v2, v3], access, tables});
+    const v4 = {
+      version: 4,
+      methods: {
+        test: {
+          deprecated: true,
+        },
+      },
+    };
+    const schema = Schema.fromSerializable({versions: [v1, v2, v3, v4], access, tables});
 
     const testMethod = async (client, v) => {
       const res = await client.query('select test()');
@@ -338,6 +374,22 @@ helper.dbSuite(path.basename(__filename), function() {
         // method is still the v3 method
         await testMethod(client, 3);
       });
+    });
+
+    test('allows deprecated methods without failing', async function() {
+      await db._doUpgrade({
+        version: v4,
+        showProgress: () => {},
+        usernamePrefix: 'test',
+      });
+      await db._doDowngrade({
+        schema,
+        fromVersion: v4,
+        toVersion: v3,
+        showProgress: () => {},
+        usernamePrefix: 'test',
+      });
+      assert.equal(await db.currentVersion(), 3);
     });
   });
 
