@@ -309,6 +309,9 @@ extend type Query {
   # Query the dependent tasks of this task via its dependencies' task IDs.
   dependentTasks(taskId: ID!): [Task]
 
+  # List tasks that depend on the given `taskId`.
+  dependents(taskId: ID!, connection: PageConnection, filter: JSON): TasksConnection
+
   # Find a task by index path, returning the highest-ranked task with that path.
   # Will be empty if no task exists for the given path.
   indexedTask(indexPath: String!): IndexedTask

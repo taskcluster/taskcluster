@@ -72,8 +72,22 @@ module.exports = ({ queue, index }, isAuthed, rootUrl, monitor, strategies, req,
       }),
     ),
   );
+  const dependents = new ConnectionLoader(
+    async ({ taskId, options, filter }) => {
+      const raw = await queue.listDependentTasks(taskId, options);
+      const tasks = sift(filter, raw.tasks);
+
+      return {
+        ...raw,
+        items: tasks.map(
+          ({ task, status }) => new Task(status.taskId, status, task),
+        ),
+      };
+    },
+  );
 
   return {
+    dependents,
     task,
     indexedTask,
     taskGroup,
