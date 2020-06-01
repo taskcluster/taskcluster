@@ -5,6 +5,7 @@ const armCompute = require('@azure/arm-compute');
 const armNetwork = require('@azure/arm-network');
 //const msRestJS = require('@azure/ms-rest-js');
 const msRestAzure = require('@azure/ms-rest-azure-js');
+const slugid = require('slugid');
 
 /**
  * Fake the Azure SDK.
@@ -232,13 +233,21 @@ class VMResourceManager extends ResourceManager {
   // Subclass Overrides
 
   _requestToResource(request) {
+    let dataDisks = [];
+    for (let i = 0; i < request.parameters.storageProfile.dataDisks.length; i++) {
+      dataDisks.push({name: slugid.nice()});
+    }
     return {
       id: `id/${request.name}`,
       provisioningState: 'Succeeded',
       // Azure generates uuids for vmIds, but we'll use something recognizable
       vmId: `vmid/${request.name}`,
-      // Fills in custom options from request
-      ...request.parameters,
+      storageProfile: {
+        osDisk: {
+          name: slugid.nice(),
+        },
+        dataDisks,
+      },
     };
   }
 

@@ -165,6 +165,17 @@ class AzureProvider extends Provider {
         workerConfig: cfg.workerConfig || {},
       })).toString('base64');
 
+      // Disallow users from naming diss
+      // required
+      let osDisk = {..._.omit(cfg.storageProfile.osDisk, ['name'])};
+      // optional
+      let dataDisks = [];
+      if (_.has(cfg, 'storageProfile.dataDisks')) {
+        for (let disk of cfg.storageProfile.dataDisks) {
+          dataDisks.push({..._.omit(disk, 'name')});
+        }
+      }
+
       const config = {
         ..._.omit(cfg, ['capacityPerInstance', 'workerConfig']),
         osProfile: {
@@ -180,16 +191,12 @@ class AzureProvider extends Provider {
           // we add this when we have the NIC provisioned
           networkInterfaces: [],
         },
+        storageProfile: {
+          ...cfg.storageProfile,
+          osDisk,
+          dataDisks,
+        },
       };
-      let disks = [];
-      if (_.has(cfg, 'storageProfile')) {
-        disks.push({name: cfg.storageProfile.osDisk.name, id: false});
-      }
-      if (_.has(cfg, 'storageProfile.dataDisks')) {
-        for (let disk of cfg.storageProfile.dataDisks) {
-          disks.push({name: disk.name, id: false});
-        }
-      }
 
       let providerData = {
         location: cfg.location,
@@ -223,7 +230,9 @@ class AzureProvider extends Provider {
           operation: false,
           id: false,
         },
-        disks,
+        disks: [
+          // gets populated when we lookup the VM
+        ],
         subnet: {
           id: cfg.subnetId,
         },
@@ -482,7 +491,7 @@ class AzureProvider extends Provider {
       message,
       resourceType,
       resourceId: typeData.id,
-      reosurceName: typeData.name,
+      resourceName: typeData.name,
     });
     debug(`provisioning resource ${resourceType}`);
     // we have no id, so we try to lookup resource by name
@@ -670,7 +679,7 @@ class AzureProvider extends Provider {
     ));
     // vm has successfully provisioned
     // vmId is a uuid, we use it for registering workers
-    if (!worker.providerData.vm.id || !worker.providerData.vm.vmId) {
+    if (!worker.providerData.vm.vmId) {
       await worker.modify(w => {
         w.providerData.vm.vmId = vmId;
       });

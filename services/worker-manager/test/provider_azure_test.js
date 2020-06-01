@@ -1,5 +1,6 @@
 const taskcluster = require('taskcluster-client');
 const sinon = require('sinon');
+const _ = require('lodash');
 const assert = require('assert');
 const helper = require('./helper');
 const {FakeAzure} = require('./fakes');
@@ -102,8 +103,8 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
               vmSize: 'Basic_A2',
             },
             storageProfile: {
-              osDisk: {name: "default_os_disk"},
-              dataDisks: [{name: "default_data_disk"}],
+              osDisk: {},
+              dataDisks: [{}],
             },
           },
         ],
@@ -139,8 +140,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
             location: 'westus',
             hardwareProfile: {vmSize: 'Basic_A2'},
             storageProfile: {
-              osDisk: {name: "provision_default_disk"},
-              dataDisks: [],
+              osDisk: {},
             },
             ...launchConfig,
           }],
@@ -242,6 +242,56 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
       assert.equal(worker.providerData.workerConfig.runTasksFaster, true);
     });
 
+    test('provision with named disks ignores names', async function() {
+      const worker = await provisionWorkerPool({
+        storageProfile: {
+          osDisk: {
+            name: 'my_os_disk',
+            testProperty: 1,
+          },
+          dataDisks: [{
+            name: 'my_data_disk',
+            testProperty: 2,
+          }],
+        },
+      });
+      const vmConfig = worker.providerData.vm.config;
+      assert.notEqual(vmConfig.storageProfile.osDisk.name, 'my_os_disk');
+      assert.equal(vmConfig.storageProfile.osDisk.testProperty, 1);
+      assert.notEqual(vmConfig.storageProfile.dataDisks[0].name, 'my_os_disk');
+      assert.equal(vmConfig.storageProfile.dataDisks[0].testProperty, 2);
+    });
+
+    test('provision with several osDisks', async function() {
+      const worker = await provisionWorkerPool({
+        storageProfile: {
+          osDisk: {
+            testProperty: 1,
+          },
+          dataDisks: [
+            {
+              testProperty: 2,
+            },
+            {
+              testProperty: 3,
+            },
+            {
+              testProperty: 4,
+            },
+            {
+              testProperty: 5,
+            },
+          ],
+        },
+      });
+      const vmConfig = worker.providerData.vm.config;
+      assert.equal(vmConfig.storageProfile.osDisk.testProperty, 1);
+      assert.equal(vmConfig.storageProfile.dataDisks[0].testProperty, 2);
+      assert.equal(vmConfig.storageProfile.dataDisks[1].testProperty, 3);
+      assert.equal(vmConfig.storageProfile.dataDisks[2].testProperty, 4);
+      assert.equal(vmConfig.storageProfile.dataDisks[3].testProperty, 5);
+    });
+
     test('provision with extra azure profiles', async function() {
       const worker = await provisionWorkerPool({
         billingProfile: {
@@ -253,7 +303,6 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
         storageProfile: {
           testProperty: 2,
           osDisk: {
-            name: 'os_disk',
             testProperty: 3,
           },
           dataDisks: [],
@@ -268,7 +317,6 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
       assert(vmConfig.osProfile.computerName); // still set..
       assert.equal(vmConfig.storageProfile.testProperty, 2);
       assert.equal(vmConfig.storageProfile.osDisk.testProperty, 3);
-      assert(vmConfig.storageProfile.osDisk.name); // still set..
       assert.equal(vmConfig.networkProfile.testProperty, 4);
       assert(vmConfig.networkProfile.networkInterfaces); // still set..
     });
@@ -387,8 +435,6 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
       assert(vmParams.osProfile.computerName);
       assert(vmParams.osProfile.adminUsername);
       assert(vmParams.osProfile.adminPassword);
-      assert(vmParams.storageProfile.osDisk.name, worker.providerData.disks[0].name);
-      assert(vmParams.storageProfile.dataDisks[0].name, worker.providerData.disks[1].name);
 
       const customData = JSON.parse(Buffer.from(vmParams.osProfile.customData, 'base64'));
       assert.equal(customData.workerPoolId, workerPoolId);
@@ -515,7 +561,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
   });
 
   suite('removeWorker', function() {
-    let worker, ipName, nicName, vmName, disk0Name, disk1Name;
+    let worker, ipName, nicName, vmName;
     setup('create un-provisioned worker', async function() {
       const workerPool = await makeWorkerPool();
       const workerInfo = {
@@ -530,8 +576,6 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
       ipName = worker.providerData.ip.name;
       nicName = worker.providerData.nic.name;
       vmName = worker.providerData.vm.name;
-      disk0Name = worker.providerData.disks[0].name;
-      disk1Name = worker.providerData.disks[1].name;
     });
 
     const assertRemovalState = async (expectations) => {
@@ -589,12 +633,23 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
     const makeResource = async (resourceType, gotId, index = undefined) => {
       let name;
       if (index !== undefined) {
-        name = worker.providerData[resourceType][index].name;
+        // default name for unnamed multiple resources in arrays
+        name = `${resourceType}${index}`;
       } else {
         name = worker.providerData[resourceType].name;
       }
       const client = clientForResourceType(resourceType);
       const res = client.makeFakeResource('rgrp', name);
+      // disks start out as [] in providerData
+      // mock getting disk info back from azure on VM GET
+      if (index !== undefined) {
+        await worker.modify(w => {
+          while (w.providerData[resourceType].length <= index) {
+            w.providerData[resourceType].push({});
+          }
+          w.providerData[resourceType][index].name = name;
+        });
+      }
       if (gotId) {
         if (index !== undefined) {
           await worker.modify(w => {
@@ -611,11 +666,10 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
     test('full removeWorker process', async function() {
       await makeResource('ip', true);
       await makeResource('nic', true);
-      await makeResource('disks', true, 0);
-      await makeResource('disks', true, 1);
+      await makeResource('disks', true, 0); // creates disks0
+      await makeResource('disks', true, 1); // creates disks1
       await makeResource('vm', true);
       await worker.modify(w => w.state = 'running');
-
       await assertRemovalState({ip: 'allocated', nic: 'allocated', disks: ['allocated', 'allocated'], vm: 'allocated'});
 
       debug('first call');
@@ -659,15 +713,15 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
       await provider.removeWorker({worker, reason: 'test'});
       await assertRemovalState({ip: 'none', nic: 'none', disks: ['deleting', 'deleting'], vm: 'none'});
 
-      debug('disk0 deleted');
-      await fake.computeClient.disks.fakeFinishRequest('rgrp', disk0Name);
+      debug('disks0 deleted');
+      await fake.computeClient.disks.fakeFinishRequest('rgrp', 'disks0');
 
       debug('ninth call');
       await provider.removeWorker({worker, reason: 'test'});
       await assertRemovalState({ip: 'none', nic: 'none', disks: ['none', 'deleting'], vm: 'none'});
 
-      debug('disk1 deleted');
-      await fake.computeClient.disks.fakeFinishRequest('rgrp', disk1Name);
+      debug('disks1 deleted');
+      await fake.computeClient.disks.fakeFinishRequest('rgrp', 'disks1');
 
       debug('tenth call');
       await provider.removeWorker({worker, reason: 'test'});
@@ -711,13 +765,18 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
 
     test('deletes disk by name if no VM/IP/NIC and disk id is missing', async function() {
       await makeResource('disks', false, 0);
-      await worker.modify(w => w.state = 'running');
+      const diskName = worker.providerData.disks[0].name;
+
+      await worker.modify(w => {
+        w.providerData.disks[0].id = undefined;
+        w.state = 'running';
+      });
 
       await provider.removeWorker({worker, reason: 'test'});
       await assertRemovalState({disks: ['deleting']});
 
       // check that there's a request to delete the disk (by name)
-      assert.deepEqual(await fake.computeClient.disks.getFakeRequestParameters('rgrp', disk0Name), {});
+      assert.deepEqual(await fake.computeClient.disks.getFakeRequestParameters('rgrp', diskName), {});
     });
   });
 

@@ -32,22 +32,20 @@ properties:
       osDisk:
         type: object
         properties:
-          name: string
           testProperty: {}
         additionalProperties: false
-        required: [name]
+        required: []
       dataDisks:
         type: array
         items:
           type: object
           properties:
-            name: string
             testProperty: {}
           additionalProperties: false
-          required: [name]
+          required: []
       testProperty: {}
     additionalProperties: false
-    required: [osDisk, dataDisks]
+    required: [osDisk]
   # https://docs.microsoft.com/en-us/javascript/api/@azure/arm-compute/networkprofile?view=azure-node-latest
   networkProfile:
     type: object
