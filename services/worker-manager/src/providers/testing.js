@@ -19,9 +19,9 @@ class TestingProvider extends Provider {
   async removeResources({workerPool}) {
     this.monitor.notice('remove-resource', {workerPoolId: workerPool.workerPoolId});
     if (workerPool.providerData.failRemoveResources) {
-      await workerPool.modify(wp => {
-        wp.providerData.failRemoveResources -= 1;
-      });
+      workerPool.providerData.failRemoveResources -= 1;
+      await this.db.fns.update_worker_pool_provider_data(
+        workerPool.workerPoolId, this.providerId, workerPool.providerData);
       throw new Error('uhoh removing resources');
     }
   }
