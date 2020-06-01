@@ -7,6 +7,7 @@ import (
 	"os"
 
 	"github.com/taskcluster/taskcluster/v30/internal/workerproto"
+	"github.com/taskcluster/taskcluster/v30/workers/generic-worker/graceful"
 )
 
 var (
@@ -66,8 +67,15 @@ func initializeWorkerRunnerProtocol(input io.Reader, output io.Writer, withWorke
 	}
 
 	WorkerRunnerProtocol = workerproto.NewProtocol(workerRunnerTransport)
+
 	WorkerRunnerProtocol.AddCapability("graceful-termination")
+	WorkerRunnerProtocol.Register("graceful-termination", func(msg workerproto.Message) {
+		finishTasks := msg.Properties["finish-tasks"].(bool)
+		graceful.Terminate(finishTasks)
+	})
+
 	WorkerRunnerProtocol.AddCapability("log")
+
 	WorkerRunnerProtocol.Start(true)
 
 	// when not using worker-runner, consider the protocol initialized with no capabilities
