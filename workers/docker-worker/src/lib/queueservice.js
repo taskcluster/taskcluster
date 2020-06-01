@@ -87,7 +87,7 @@ class TaskQueue {
    */
   queueClient() {
     return new taskcluster.Queue({
-      rooturl: this.runtime.rooturl,
+      rootUrl: this.runtime.rootUrl,
       credentials: this.runtime.taskcluster,
     });
   }

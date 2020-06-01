@@ -90,3 +90,16 @@ Note that for non-structured log destinations, the body property `textPayload` i
 Using this property will make non-structured logs much easier to read.
 
 There is no reponse message.
+
+### new-credentials
+
+This message type, sent from worker-runner, contains new credentials which the worker should use for subsequent Taskcluster API calls that are not related to a task.
+This mesage is sent when credentials are renewed.
+The message may or may not contain a `certificate` property.
+
+```
+~{"type": "new-credentials", "clientId": "...", "accessToken": "..."}
+~{"type": "new-credentials", "clientId": "...", "accessToken": "...", "certificate": "..."}
+```
+
+If this message is not supported, worker-runner will attempt to gracefully shut down the worker when credentials expire.

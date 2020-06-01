@@ -54,4 +54,6 @@ module.exports = {
   async shutdown() {
     process.exit(0);
   },
+  async onNewCredentials(cb) {
+  },
 };

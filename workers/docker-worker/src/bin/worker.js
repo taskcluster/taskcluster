@@ -207,9 +207,8 @@ program.parse(process.argv);
 
   config.gc.addManager(config.volumeCache);
 
-  let runtime = new Runtime(config);
+  let runtime = new Runtime({...config, hostManager: host});
 
-  runtime.hostManager = host;
   runtime.imageManager = new ImageManager(runtime);
 
   let shutdownManager;

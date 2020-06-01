@@ -4,7 +4,6 @@ execution of tasks.
 */
 const TaskQueue = require('./queueservice');
 const DeviceManager = require('./devices/device_manager');
-const taskcluster = require('taskcluster-client');
 const Debug = require('debug');
 const got = require('got');
 const { Task } = require('./task');
@@ -386,11 +385,6 @@ class TaskListener extends EventEmitter {
           message: 'initial taskId not included in result from superseder'});
         return [claim];
       }
-
-      const queue = new taskcluster.Queue({
-        rootUrl: this.runtime.rootUrl,
-        credentials: this.runtime.taskcluster,
-      });
 
       // claim runId 0 for each of those tasks; we can consider adding support
       // for other runIds later.
