@@ -28,7 +28,7 @@ const { spawn } = require('child_process');
 const { version } = require('../../package.json');
 
 // Available target configurations.
-let allowedHosts = ['aws', 'test', 'packet', 'worker-runner'];
+let allowedHosts = ['test', 'worker-runner'];
 let debug = Debug('docker-worker:bin:worker');
 
 // All overridable configuration options from the CLI.
