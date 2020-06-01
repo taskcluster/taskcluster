@@ -1,8 +1,10 @@
 const TaskListener = require('../src/lib/task_listener');
+const taskcluster = require('taskcluster-client');
 const assert = require('assert');
 const nock = require('nock');
 const Debug = require('debug');
 const monitor = require('./fixtures/monitor');
+const libUrls = require('taskcluster-lib-urls');
 const {suiteName} = require('taskcluster-lib-testing');
 
 let fakeLog = Debug('fakeRuntime.log');
@@ -40,7 +42,16 @@ suite(suiteName(), function() {
       monitor: monitor,
       workerTypeMonitor: monitor,
       deviceManagement: {enabled: false},
-      queue: {
+      taskcluster: {},
+      rootUrl: libUrls.testRootUrl(),
+    };
+
+    listener = new TestTaskListener(fakeRuntime);
+
+    // Use a fake Queue instance
+    listener.taskQueue.queueClient = () => new taskcluster.Queue({
+      rootUrl: libUrls.testRootUrl(),
+      fake: {
         claimTask: async function(taskId, runId, claimConfig) {
           assert.equal(claimConfig.workerId, 'wkri');
           assert.equal(claimConfig.workerGroup, 'wkrg');
@@ -55,9 +66,7 @@ suite(suiteName(), function() {
           throw err;
         },
       },
-    };
-
-    listener = new TestTaskListener(fakeRuntime);
+    });
   });
 
   teardown(function() {

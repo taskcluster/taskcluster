@@ -4,6 +4,7 @@ execution of tasks.
 */
 const TaskQueue = require('./queueservice');
 const DeviceManager = require('./devices/device_manager');
+const taskcluster = require('taskcluster-client');
 const Debug = require('debug');
 const got = require('got');
 const { Task } = require('./task');
@@ -176,7 +177,6 @@ class TaskListener extends EventEmitter {
     debug('begin consuming tasks');
     //refactor to just have shutdown manager call terminate()
     this.listenForShutdowns();
-    this.taskQueue = new TaskQueue(this.runtime);
 
     this.runtime.logEvent({
       eventType: 'instanceBoot',
@@ -387,6 +387,11 @@ class TaskListener extends EventEmitter {
         return [claim];
       }
 
+      const queue = new taskcluster.Queue({
+        rootUrl: this.runtime.rootUrl,
+        credentials: this.runtime.taskcluster,
+      });
+
       // claim runId 0 for each of those tasks; we can consider adding support
       // for other runIds later.
       let claims = await Promise.all(tasks.map(async tid => {
@@ -395,7 +400,7 @@ class TaskListener extends EventEmitter {
         }
 
         try {
-          return await this.runtime.queue.claimTask(tid, 0, {
+          return await this.taskQueue.claimTask(tid, 0, {
             workerId: this.runtime.workerId,
             workerGroup: this.runtime.workerGroup,
           });

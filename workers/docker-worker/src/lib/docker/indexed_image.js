@@ -19,11 +19,6 @@ module.exports = class IndexedImage extends ArtifactImage {
     this.stream = stream;
     this.namespace = imageDetails.namespace;
     this.artifactPath = imageDetails.path;
-    this.index = new taskcluster.Index({
-      rootUrl: this.runtime.rootUrl,
-      credentials: this.runtime.taskcluster,
-      authorizedScopes: this.taskScopes,
-    });
     this.task = task;
     this.knownHashes = this.runtime.imageManager.imageHashes;
   }
@@ -52,8 +47,14 @@ module.exports = class IndexedImage extends ArtifactImage {
       return this.taskId;
     }
 
+    const index = new taskcluster.Index({
+      rootUrl: this.runtime.rootUrl,
+      credentials: this.runtime.taskcluster,
+      authorizedScopes: this.taskScopes,
+    });
+
     try {
-      let {taskId} = await this.index.findTask(this.namespace);
+      let {taskId} = await index.findTask(this.namespace);
       this.taskId = taskId;
       return taskId;
     } catch(e) {

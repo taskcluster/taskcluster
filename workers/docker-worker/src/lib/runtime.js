@@ -21,13 +21,6 @@ Runtime.prototype = {
   docker: null,
 
   /**
-  Authenticated queue instance.
-
-  @type {taskcluster.Queue}
-  */
-  queue: null,
-
-  /**
   Pulse credentials `{username: '...', password: '...'}`
 
   @type {Object}
