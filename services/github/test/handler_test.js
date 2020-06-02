@@ -284,6 +284,10 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
         // This should be solved in a more reliable fashion.
         delete details['event.head.sha'];
         delete details['event.head.ref'];
+        delete body['pull_request'];
+        body['release'] = {
+          target_commitish: 'refs/tags/v1.2.3',
+        };
         details['event.version'] = 'v1.2.3';
       }
       if (eventType === 'tag') {

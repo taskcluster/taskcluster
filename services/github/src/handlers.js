@@ -610,13 +610,22 @@ async function jobHandler(message) {
   let sha = message.payload.details['event.head.sha'];
   debug = debug.refine({owner: organization, repo: repository, sha});
   let pullNumber = message.payload.details['event.pullNumber'];
+
   if (!sha) {
-    debug('Trying to get commit info in job handler...');
+    // only releases lack event.head.sha
+    if (message.payload.details['event.type'] !== 'release') {
+      debug(`Ignoring ${message.payload.details['event.type']} event with no sha`);
+      return;
+    }
+
+    debug('Trying to get release commit info in job handler...');
     let commitInfo = await instGithub.repos.getCommit({
       headers: {accept: 'application/vnd.github.3.sha'},
       owner: organization,
       repo: repository,
-      ref: `refs/tags/${message.payload.details['event.version']}`,
+      // fetch the target_commitish for the release, as the tag may not
+      // yet have been created
+      ref: message.payload.body.release.target_commitish,
     });
     sha = commitInfo.data;
   }
