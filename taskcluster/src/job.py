@@ -1,12 +1,13 @@
 from taskgraph.transforms.job import run_job_using
 from taskgraph.util.schema import Schema
+import six
 
 from voluptuous import Required, Optional, Extra, Any
 
 bare_schema = Schema({
     Required("using"): "bare",
-    Required("command"): Any(basestring, [basestring]),
-    Optional("install"): Any(basestring, [basestring]),
+    Required("command"): Any(six.text_type, [six.text_type]),
+    Optional("install"): Any(six.text_type, [six.text_type]),
     Optional("clone"): bool,
     Extra: object
     })
