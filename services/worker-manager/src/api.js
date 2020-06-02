@@ -383,7 +383,6 @@ builder.declare({
     limit: parseInt(req.query.limit || 100, 10),
     matchPartition: 'exact',
   };
-  
   const data = await this.Worker.scan({
     workerPoolId: req.params.workerPoolId,
   }, scanOptions);
@@ -566,11 +565,11 @@ builder.declare({
     matchPartition: 'exact',
   };
   const {workerPoolId} = req.params;
-  const workerPool = await WorkerPool.get(this.db,workerPoolId);
+  const workerPool = await WorkerPool.get(this.db, workerPoolId);
 
   if(!workerPool){
     return res.reportError('ResourceNotFound',
-    `Worker Pool does not exist`, {});
+      `Worker Pool does not exist`, {});
   }
 
   const data = await this.Worker.scan({
@@ -580,7 +579,6 @@ builder.declare({
   const result = {
     workers: data.entries.map(e => e.serializable()),
   };
-  
   if (data.continuation) {
     result.continuationToken = data.continuation;
   }

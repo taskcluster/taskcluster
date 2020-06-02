@@ -470,22 +470,14 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
 
     assert.deepStrictEqual(data.workerPools, [], 'Should return an empty array of worker pools');
   });
-  
-  test('get 404 status when worker pool is not present' , async function(){
-       const workerPoolId = 'no/such';
-       try{
-        await helper.workerManager.listWorkersForWorkerPool(workerPoolId);
-       }  catch(err){
-            if(err.code !== 'ResourceNotFound'){
-               throw err;
-            }
-            return;
-          }
-        throw new Error('get of workers from non-existing pool suceeded');   
+
+  test('get 404 status when worker pool is not present', async function(){
+    const workerPoolId = 'no/such';
+    await assert.rejects(()=> helper.workerManager.listWorkersForWorkerPool(workerPoolId),
+      /Worker Pool does not exist/);
   });
 
   test('get one worker for a given worker pool', async function () {
-    //const workerPoolId = 'r/r';
     const now = new Date();
     const input = {
       workerPoolId,
@@ -501,7 +493,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
       providerData: {},
     };
 
-    await createWorkerPool({providerId : 'google'});
+    await createWorkerPool();
 
     await helper.Worker.create(input);
 
@@ -516,7 +508,6 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
   });
 
   test('get many workers for a given worker pool', async function () {
-    //const workerPoolId = 'apple/apple';
     let input = [
       {
         workerPoolId,
@@ -546,7 +537,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
       },
     ];
 
-    await createWorkerPool({providerId : 'google'});
+    await createWorkerPool();
 
     await Promise.all(input.map(i => helper.Worker.create(i)));
 
@@ -565,8 +556,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
   });
 
   test('get workers for a given worker pool - no workers', async function () {
-    //const workerPoolId = 'r/r';
-    await createWorkerPool({providerId : 'google'});
+    await createWorkerPool();
     let data = await helper.workerManager.listWorkersForWorkerPool(workerPoolId);
 
     assert.deepStrictEqual(data.workers, []);
