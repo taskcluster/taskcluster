@@ -493,7 +493,8 @@ helper.secrets.mockSuite(suiteName(), ['docker', 'ci-creds'], function(mock, ski
     assert.throws(() => fs.readdirSync(fullCacheDir), err => err.code === 'ENOENT');
   });
 
-  test('purge cache during run task', async () => {
+  // intermittent - https://bugzilla.mozilla.org/show_bug.cgi?id=1640267
+  test.skip('purge cache during run task', async () => {
     let cacheName = 'docker-worker-garbage-caches-tmp-obj-dir-' + Date.now().toString();
     let neededScope = 'docker-worker:cache:' + cacheName;
     let fullCacheDir = path.join(localCacheDir, cacheName);
