@@ -29,7 +29,6 @@ clients/client-web/src/clients/**
 clients/client-py/taskcluster/generated/**
 clients/client-py/README.md
 clients/client/src/apis.js
-services/*/Procfile
 infrastructure/k8s/templates/**
 clients/client-shell/apis/services.go
 clients/client-go/tc*/**
