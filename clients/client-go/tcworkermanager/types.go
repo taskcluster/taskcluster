@@ -264,10 +264,17 @@ type (
 		ProviderID string `json:"providerId"`
 
 		// A string specifying the state this worker is in so far as worker-manager knows.
+		// A "requested" worker is in the process of starting up, and if successful will enter
+		// the "running" state once it has registered with the `registerWorker` API method.  A
+		// "stopping" worker is in the process of shutting down and deleting resources, while
+		// a "stopped" worker is completely stopped.  Stopped workers are kept for historical
+		// purposes and are purged when they expire.  Note that some providers transition workers
+		// directly from "running" to "stopped".
 		//
 		// Possible values:
 		//   * "requested"
 		//   * "running"
+		//   * "stopping"
 		//   * "stopped"
 		State string `json:"state"`
 
