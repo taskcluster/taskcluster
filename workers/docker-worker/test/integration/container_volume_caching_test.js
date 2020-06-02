@@ -557,6 +557,54 @@ helper.secrets.mockSuite(suiteName(), ['docker', 'ci-creds'], function(mock, ski
     assert.throws(() => fs.readdirSync(fullCacheDir), err => err.code === 'ENOENT');
   });
 
+  test('empty cache does not throw', async () => {
+    settings.configure({
+      cache: {
+        volumeCachePath: volumeCacheDir,
+      },
+      garbageCollection: {
+        interval: 100,
+      },
+    });
+    const payload = {
+      image: 'taskcluster/test-ubuntu',
+      command: cmd(
+        'sleep 5',
+      ),
+      features: {
+        localLiveLog: true,
+      },
+      cache: {},
+      maxRunTime: 5 * 60,
+    };
+
+    let task = {
+      payload,
+    };
+    let task2 = {
+      payload: {
+        ...payload,
+        cache: null,
+      },
+    };
+    let task3 = {
+      payload: {
+        ...payload,
+        cache: undefined,
+      },
+    };
+
+    let worker = new TestWorker(DockerWorker);
+
+    await worker.launch();
+
+    await worker.postToQueue(task);
+    await worker.postToQueue(task2);
+    await worker.postToQueue(task3);
+
+    await worker.terminate();
+  });
+
   test('purge cache based on exit status', async () => {
     let cacheName = 'docker-worker-garbage-caches-tmp-obj-dir-' + Date.now().toString();
     let neededScope = 'docker-worker:cache:' + cacheName;
