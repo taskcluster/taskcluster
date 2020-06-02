@@ -35,6 +35,7 @@ class WorkerPool {
       emailOnError: row.email_on_error,
       previousProviderIds: row.previous_provider_ids,
       providerData: row.provider_data,
+      currentCapacity: row.current_capacity,
     });
   }
 
@@ -54,13 +55,14 @@ class WorkerPool {
       providerData: {},
       lastModified: now,
       created: now,
+      currentCapacity: 0,
       ...input,
     });
   }
 
   // Get a worker pool from the DB, or undefined if it does not exist.
   static async get(db, workerPoolId) {
-    return WorkerPool.fromDbRows(await db.fns.get_worker_pool(workerPoolId));
+    return WorkerPool.fromDbRows(await db.fns.get_worker_pool_with_capacity(workerPoolId));
   }
 
   // Expire worker pools with null-provider that no longer have any workers,
@@ -93,7 +95,7 @@ class WorkerPool {
         throw err;
       }
       const existing = WorkerPool.fromDbRows(
-        await db.fns.get_worker_pool(this.workerPoolId));
+        await db.fns.get_worker_pool_with_capacity(this.workerPoolId));
 
       if (!this.equals(existing)) {
         // new worker pool does not match, so this is a "real" conflict
@@ -114,6 +116,7 @@ class WorkerPool {
       config: this.config,
       owner: this.owner,
       emailOnError: this.emailOnError,
+      currentCapacity: this.currentCapacity,
     };
   }
 

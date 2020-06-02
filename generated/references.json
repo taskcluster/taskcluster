@@ -57,6 +57,12 @@
           "title": "Wants Email",
           "type": "boolean"
         },
+        "existingCapacity": {
+          "description": "Total capacity available across all workers for this worker pool",
+          "minimum": 0,
+          "title": "Existing Capacity",
+          "type": "integer"
+        },
         "lastModified": {
           "description": "Date and time when this worker pool was last updated\n",
           "format": "date-time",
@@ -91,7 +97,8 @@
         "lastModified",
         "config",
         "owner",
-        "emailOnError"
+        "emailOnError",
+        "existingCapacity"
       ],
       "title": "Worker Pool Full Definition",
       "type": "object"
