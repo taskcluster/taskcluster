@@ -273,7 +273,8 @@ helper.secrets.mockSuite(suiteName(), ['docker', 'ci-creds'], function(mock, ski
     assert.equal(result.artifacts['public/my-missing.txt'].storageType, 'error');
   });
 
-  test('upload retry', async () => {
+  // intermittent https://github.com/taskcluster/taskcluster/issues/2951
+  test.skip('upload retry', async () => {
     await retryUtil.init();
     let retry = false;
     let blocked = false;
