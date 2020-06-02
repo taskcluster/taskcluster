@@ -213,7 +213,6 @@ const check_pr = async (pr) => {
     /^clients\/client-py\/taskcluster\/generated\//,
     /^clients\/client-py\/README\.md$/,
     /^clients\/client\/src\/apis\.js$/,
-    /^services\/*\/Procfile$/,
     /^clients\/client-shell\/apis\/services\.go$/,
     /^dev-docs\/dev-config-example\.yml$/,
     /^clients\/client-go\/tc*\//,
