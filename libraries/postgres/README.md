@@ -105,6 +105,18 @@ A downgrade entails running the downgrade script for the buggy DB version, *afte
 Downgrades should not be done lightly, as they can lose data.
 For example, downgrading a version that adds a table entails dropping that table and all data it contains.
 
+### Secret Data
+
+Some data in the database is secret and must be encrypted at rest, and in transit to and from the server.
+To accomplish this, secret data is encapsulated in a "crypto container", and this library supplies functions to construct and parse that container.
+The container embeds a key identifier, allowing smooth rotation of encryption keys by defining a new key in the service deployment and eventually re-encrypting all values in the table to use that new key.
+During the re-encryption process, any queries against the table will select the appropriate key based on the key identifier, ensuring continued operation.
+
+The library provides functionality for automatically re-encrypting all rows in a table in a periodic task.
+The process of rotating encryption keys involves adding a new key to the deployment configuration, waiting until all such periodic tasks have run successfully, and then removing the old key from the configuration.
+
+XXX document that in the deployment docs
+
 ## DB Directory Format
 
 The directory passed to `Schema.fromDbDirectory` should have the following format:
@@ -217,6 +229,65 @@ table_name:
 Column types are a "stripped down" version of the full Postgres type definition, including only a simple type name and if necessary the suffix `not null`.
 Primary keys, constraints, defaults, sequences, and so on are not included.
 
+## Encryption
+
+As described above, secret data is stored in a "crypto container".
+The container is a JSONB column containing properties `kid` and `v` denoting the key-id and version.
+The `kid` column identifies the key used to encrypt the data.
+The `v` column identifies the format version.
+All other properties are specific to the format version.
+
+The library can read all versions, but all write operations use the current version.
+It can also use multiple keys for decryption, but always uses a designated current key for encryption.
+The versions are described below.
+
+Migration scripts run server-side, and thus treat crypto containers as opaque data.
+The exception to this rule is in migrating taskcluster-lib-entities tables to "normal" database tables, in which case the migration script assembles a version-0 container with a key ID of `azure` based on the entity value.
+
+### Encryption and Decryption API
+
+The `encryptColumn` and `decryptColumn` methods serve to encrypt and decrypt values for communication with the database server.
+The former takes a single key `key` and the latter takes a JS `Map` object `keys` mapping key identifiers to key material.
+
+Each key must have the form `{"aes-256": buf}` where `buf` is a Buffer containing the 256-bit (32-byte) key.
+
+```javascript
+const {encryptColumn, decryptColumn} = require('taskcluster-lib-postgres');
+
+const key = {"aes-256": Buffer.from(cryptoKey, 'base64'};
+const keys = new Map();
+keys.set('2020-06-15', key);
+
+await db.fns.create_widget(widgetId, encryptColumn({key, value: Buffer.from(widgetCode, 'utf8')}));
+
+const rows = db.fns.get_widget(widgetId);
+console.log(decryptColumn({keys, value: rows[0].widget_code}).toString('utf8'));
+```
+
+XXX maybe we should define a `Keys` class that stores keys, with one designated the latest?  This would know how to parse keys from config (probably supporting the existing `cfg.azureCryptoKey` to minimize changes for deployers).  That container could check key length, know what keys work with what algorithms, etc.
+XXX what should the config format look like?
+
+### Updating Tables With New Keys
+
+Every service with encrypted data should have a periodic task that updates all rows of the table to use the current key and version.
+In many cases, this can be combined with an expiration task.
+The current version is available in the `CRYPTO_VERSION` constant of this library, and can be passed to an DB function to select rows that need to be updated (`.. where (secret_column -> 'v')::integer != $1 or secret_column -> 'kid' != $2 ..` with parameters `CRYPTO_VERSION` and the current key identifier).
+For any matching rows, the task should simply pass the secret value through `decryptColumn` and `encryptColumn` to generate an up-to-date value for the crypto container.
+
+### Container Version 0
+
+Version 0 corresponds to the encryption format supported by [azure-entities](https://github.com/taskcluster/azure-entities).
+The properties are defined in the [`BaseBufferType` constructor](https://github.com/taskcluster/azure-entities/blob/c6f63e3553c71f0859a5d6338ce5e7c7eb8c9671/src/entitytypes.js#L496-L508):  `__bufchunks_val` and `__bufN_val` for N = 0 to `__bufchunks_val`.
+The binary payload is derived by first base64-decoding each `__bufN_val` property and then concatenating them in order.
+
+That binary payload, in turn, is defined in the [`EncryptedBaseType` constructor](https://github.com/taskcluster/azure-entities/blob/c6f63e3553c71f0859a5d6338ce5e7c7eb8c9671/src/entitytypes.js#L716-L725).
+It is the concatenation of a 128-bit (16-byte) random initialization vector (`iv`) and the ciphertext produced by aes-256 in CBC mode.
+
+The format of the cleartext depends on context -- this library provides the caller with a JS Buffer object.
+In general, this contains either a raw UTF-8 string or a JSON-encoded value.
+
+XXX let's not define version 1 yet, so that DB downgrades will still work by just pulling the `__bufXX` stuff out of the value.  After Phase 2 we can define a version 1 that just puts the whole buffer in a single base64'd string, if we feel like it.
+
 ## Security Invariants
 
 Use of Postgres brings with it the risk of SQL injection vulnerabilities and other security flaws.
@@ -244,6 +315,18 @@ A stored function which uses string concatenation and `return query execute <som
 Prefer to design around the need to do such query generation by creating multiple stored functions or limiting the types of arguments to non-textual types.
 
 **NOTE** The taskcluster-lib-entities support is a notable exception to this rule, and is carefully vetted to avoid SQL injection through coordination of JS and SQL code.
+
+### Encryption Key Protection
+
+We wish to ensure that a compromise of the database server or the connection to that server does not disclose the cleartext content of encrypted columns.
+To accomplish this, we never send encryption keys to the database server, whether for storage or for temporary use.
+Only ciphertext is transmitted and stored.
+All encryption and decryption occurs on the client.
+
+Services do not share encryption keys.
+While the database is configured to limit access for each service's DB user to only the necessary tables, as an additional protection services are unable to decrypt secret data belonging to another service.
+For example, if the `taskcluster_worker_manager` user were accidentally granted read access to the auth service's `clients` table, it could only read the encrypted `access_token` column, and not decrypt it.
+Because all configuration for a service is stored in memory, there is no additional security in using different encryption keys for different tables or columns within the same service.
 
 ## Error Constants
 
