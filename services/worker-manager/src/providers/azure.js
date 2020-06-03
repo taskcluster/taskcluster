@@ -695,6 +695,13 @@ class AzureProvider extends Provider {
         vmName: worker.providerData.vm.name,
       }});
 
+    // update providerdata from deprecated disk to disks if applicable
+    if (_.has(worker.providerData, 'disk')) {
+      await worker.modify(w => {
+        w.providerData.disks = [w.providerData.disk];
+      });
+    }
+
     const states = this.Worker.states;
     this.seen[worker.workerPoolId] = this.seen[worker.workerPoolId] || 0;
     this.errors[worker.workerPoolId] = this.errors[worker.workerPoolId] || [];

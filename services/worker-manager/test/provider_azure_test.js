@@ -832,6 +832,16 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
       }
     };
 
+    test('updates deprecated disk providerdata to disks', async function() {
+      await worker.modify(w => {
+        delete w.providerData.disks;
+        w.providerData.disk = {name: "old_test_disk", id: false};
+      });
+      await provider.checkWorker({worker});
+      await worker.reload();
+      assert.equal(worker.providerData.disks[0].name, "old_test_disk");
+    });
+
     test('does nothing for still-running workers', async function() {
       await setState({state: 'running', provisioningState: 'Succeeded', powerState: 'PowerState/running'});
       await provider.checkWorker({worker});
