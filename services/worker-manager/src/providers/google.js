@@ -12,7 +12,6 @@ class GoogleProvider extends Provider {
 
   constructor({
     providerConfig,
-    fakeCloudApis,
     ...conf
   }) {
     super({providerConfig, ...conf});
@@ -49,14 +48,6 @@ class GoogleProvider extends Provider {
       },
     });
     this._enqueue = cloud.enqueue.bind(cloud);
-
-    if (fakeCloudApis && fakeCloudApis.google) {
-      this.ownClientEmail = 'whatever@example.com';
-      this.compute = fakeCloudApis.google.compute();
-      this.iam = fakeCloudApis.google.iam();
-      this.oauth2 = new fakeCloudApis.google.OAuth2({project});
-      return;
-    }
 
     // If creds are a string or a base64d string, parse them
     if (_.isString(creds)) {

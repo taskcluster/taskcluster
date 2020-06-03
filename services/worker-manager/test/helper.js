@@ -1,11 +1,9 @@
 const taskcluster = require('taskcluster-client');
-const {FakeGoogle} = require('./fake-google.js');
-const {FakeEC2, FakeAzure} = require('./fakes');
+const {FakeEC2, FakeAzure, FakeGoogle} = require('./fakes');
 const {stickyLoader, Secrets, withEntity, fakeauth, withMonitor, withPulse, withDb, resetTables} = require('taskcluster-lib-testing');
 const builder = require('../src/api');
 const data = require('../src/data');
 const load = require('../src/main');
-const sinon = require('sinon');
 
 exports.rootUrl = 'http://localhost:60409';
 
@@ -44,19 +42,8 @@ exports.withProviders = (mock, skipping) => {
   const fakeAzure = new FakeAzure();
   fakeAzure.forSuite();
 
-  suiteSetup(function() {
-    if (skipping()) {
-      return;
-    }
-
-    exports.load.inject('fakeCloudApis', {
-      google: new FakeGoogle(),
-    });
-  });
-
-  suiteTeardown(function() {
-    sinon.restore();
-  });
+  const fakeGoogle = new FakeGoogle;
+  fakeGoogle.forSuite();
 };
 
 exports.withProvisioner = (mock, skipping) => {

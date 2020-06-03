@@ -2,7 +2,7 @@ const taskcluster = require('taskcluster-client');
 const sinon = require('sinon');
 const assert = require('assert');
 const helper = require('./helper');
-const {FakeGoogle} = require('./fake-google');
+const {FakeGoogle} = require('./fakes');
 const {GoogleProvider} = require('../src/providers/google');
 const testing = require('taskcluster-lib-testing');
 const {WorkerPool} = require('../src/data');
@@ -18,26 +18,24 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
   let provider;
   let providerId = 'google';
   let workerPoolId = 'foo/bar';
-  let fakeGoogle;
+
+  const fake = new FakeGoogle;
+  fake.forSuite();
 
   setup(async function() {
-    fakeGoogle = new FakeGoogle();
     provider = new GoogleProvider({
       providerId,
       notify: await helper.load('notify'),
       db: helper.db,
       monitor: (await helper.load('monitor')).childMonitor('google'),
       estimator: await helper.load('estimator'),
-      fakeCloudApis: {
-        google: fakeGoogle,
-      },
       rootUrl: helper.rootUrl,
       Worker: helper.Worker,
       WorkerPoolError: helper.WorkerPoolError,
       providerConfig: {
         project: 'testy',
         instancePermissions: [],
-        creds: '{}',
+        creds: '{"client_id": "fake-creds"}',
         workerServiceAccountId: '12345',
         _backoffDelay: 1,
       },
@@ -84,6 +82,33 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
 
     return workerPool;
   };
+
+  const constructorTest = (name, creds) => {
+    test(name, async function() {
+      // this just has to not fail -- the google.auth.fromJSON call will fail if the creds
+      // are malformed
+      new GoogleProvider({
+        providerId,
+        notify: await helper.load('notify'),
+        db: helper.db,
+        monitor: (await helper.load('monitor')).childMonitor('google'),
+        estimator: await helper.load('estimator'),
+        rootUrl: helper.rootUrl,
+        Worker: helper.Worker,
+        WorkerPoolError: helper.WorkerPoolError,
+        providerConfig: {
+          project: 'testy',
+          instancePermissions: [],
+          creds,
+          workerServiceAccountId: '12345',
+          _backoffDelay: 1,
+        },
+      });
+    });
+  };
+  constructorTest('constructor with creds as object', {"client_id": "fake-creds"});
+  constructorTest('constructor with creds as string', '{"client_id": "fake-creds"}');
+  constructorTest('constructor with creds as base64', Buffer.from('{"client_id": "fake-creds"}', 'utf8').toString('base64'));
 
   test('provisioning loop', async function() {
     const workerPool = await makeWorkerPool();
@@ -172,7 +197,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
       providerData: {zone: 'us-east1-a'},
     });
     await provider.removeWorker({worker});
-    assert(fakeGoogle.instanceDeleteStub.called);
+    assert(fake.compute.instances.delete_called);
   });
 
   test('worker-scan loop', async function() {
@@ -247,7 +272,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
     await provider.scanPrepare();
     await provider.checkWorker({worker});
     await provider.scanCleanup();
-    assert(fakeGoogle.instanceDeleteStub.called);
+    assert(fake.compute.instances.delete_called);
   });
 
   test('don\'t remove unregistered workers that are new', async function() {
@@ -270,7 +295,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
     await provider.scanPrepare();
     await provider.checkWorker({worker});
     await provider.scanCleanup();
-    assert(!fakeGoogle.instanceDeleteStub.called);
+    assert(!fake.compute.instances.delete_called);
   });
 
   test('remove very old workers', async function() {
@@ -293,7 +318,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
     await provider.scanPrepare();
     await provider.checkWorker({worker});
     await provider.scanCleanup();
-    assert(fakeGoogle.instanceDeleteStub.called);
+    assert(fake.compute.instances.delete_called);
   });
 
   test('don\'t remove current workers', async function() {
@@ -316,7 +341,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
     await provider.scanPrepare();
     await provider.checkWorker({worker});
     await provider.scanCleanup();
-    assert(!fakeGoogle.instanceDeleteStub.called);
+    assert(!fake.compute.instances.delete_called);
   });
 
   suite('_enqueue p-queues', function() {
