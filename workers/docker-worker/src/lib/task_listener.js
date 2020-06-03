@@ -141,9 +141,18 @@ class TaskListener extends EventEmitter {
 
     let claims = await this.taskQueue.claimWork(availableCapacity);
 
-    // only purge caches if we're about to start a task; this avoids calling
-    // purge-cache on every getTasks loop
-    if (claims.length !== 0) {
+    if (claims.length === 0) {
+      // If the queue has no work for us, and we are not doing anything, then
+      // we are officially idle.  Note that we do not want to consider ourselves
+      // idle *before* the claimWork call returns, as we may be configured to
+      // shut down very quickly on idle, and shut down while still waiting for
+      // tasks from the queue (issue #2629).
+      if (this.isIdle()) {
+        this.emit('idle', this);
+      }
+    } else {
+      // only purge caches if we're about to start a task; this avoids calling
+      // purge-cache on every getTasks loop
       await this.runtime.volumeCache.purgeCaches();
     }
 
@@ -275,8 +284,6 @@ class TaskListener extends EventEmitter {
     this.totalRunTime += Date.now() - runningState.startTime;
     this.runningTasks.splice(taskIndex, 1);
     this.lastKnownCapacity += 1;
-
-    if (this.isIdle()) {this.emit('idle', this);}
   }
 
   reportCapacityState() {
