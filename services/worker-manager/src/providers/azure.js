@@ -632,7 +632,7 @@ class AzureProvider extends Provider {
           name: vm.storageProfile.osDisk.name,
           id: true,
         });
-        for (let disk of vm.storageProfile.dataDisks) {
+        for (let disk of vm.storageProfile.dataDisks || []) {
           disks.push(
             {
               name: disk.name,
@@ -885,8 +885,9 @@ class AzureProvider extends Provider {
           resource = w.providerData[resourceType];
         }
         resource.id = false;
-        if (_.has(deleteRequest, 'azureAsyncOperationHeaderValue')) {
-          resource.operation = deleteRequest.getPollState().azureAsyncOperationHeaderValue;
+        let pollState = deleteRequest.getPollState();
+        if (_.has(pollState, 'azureAsyncOperationHeaderValue')) {
+          resource.operation = pollState.azureAsyncOperationHeaderValue;
         }
       });
     }
