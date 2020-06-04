@@ -762,14 +762,20 @@ class AzureProvider extends Provider {
         throw err;
       }
       monitor.debug({message: `vm or state not found, in state ${state}`});
-      // in the case that we're either provisioning or stopping this worker
-      // GETs and updates workers that have not registered every loop
+
+      // VM has not been found, so it is either
+      // 1. still being created
+      // 2. already removed but other resources may need to be deleted
+      // 3. deleted outside of provider actions, should start removal
       if (state === states.REQUESTED) {
+        // GETs and updates workers that have not registered every loop
         state = await this.provisionResources({worker, monitor});
-      }
-      // continuing to stop
-      if (state === states.STOPPING) {
+      } else if (state === states.STOPPING) {
+        // continuing to stop
         state = await this.removeWorker({worker, reason: 'continuing removal'});
+      } else {
+        // VM in unknown state not found, deleted outside provider
+        state = await this.removeWorker({worker, reason: `vm in ${state} not found`});
       }
     }
 
