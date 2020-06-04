@@ -32,10 +32,17 @@ properties:
       osDisk:
         type: object
         properties:
-          name: string
           testProperty: {}
         additionalProperties: false
-        required: [name]
+        required: []
+      dataDisks:
+        type: array
+        items:
+          type: object
+          properties:
+            testProperty: {}
+          additionalProperties: false
+          required: []
       testProperty: {}
     additionalProperties: false
     required: [osDisk]
