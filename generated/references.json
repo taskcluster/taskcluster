@@ -1007,7 +1007,7 @@
                   },
                   "osDisk": {
                     "additionalProperties": true,
-                    "description": "https://docs.microsoft.com/en-us/rest/api/compute/virtualmachines/createorupdate#osdisk\n",
+                    "description": "Naming disks is not supported.\nhttps://docs.microsoft.com/en-us/rest/api/compute/virtualmachines/createorupdate#osdisk\n",
                     "properties": {
                       "createOption": {
                         "description": "FromImage creates the disk from the specified image\nhttps://docs.microsoft.com/en-us/rest/api/compute/virtualmachines/createorupdate#diskcreateoptiontypes\n",
