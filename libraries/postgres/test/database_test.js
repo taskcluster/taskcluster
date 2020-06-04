@@ -13,6 +13,7 @@ const {
 } = require('..');
 const path = require('path');
 const assert = require('assert').strict;
+const Entity = require('taskcluster-lib-entities');
 
 const monitor = helper.monitor;
 
@@ -478,6 +479,11 @@ helper.dbSuite(path.basename(__filename), function() {
       }), err => err.code === 'ERR_ASSERTION');
     });
 
+    test('setup creates keyring', async function() {
+      db = await Database.setup({schema, readDbUrl: helper.dbUrl, writeDbUrl: helper.dbUrl, serviceName: 'service-1', monitor});
+      assert(db.keyring);
+    });
+
     test('methods do not allow SQL injection', async function() {
       await Database.upgrade({schema, adminDbUrl: helper.dbUrl, usernamePrefix: 'test'});
       db = await Database.setup({schema, readDbUrl: helper.dbUrl, writeDbUrl: helper.dbUrl, serviceName: 'service-1', monitor});
@@ -625,6 +631,91 @@ helper.dbSuite(path.basename(__filename), function() {
       await assert.rejects(
         () => Database._checkTableColumns({db, schema}),
         err => err.code === 'ERR_ASSERTION');
+    });
+  });
+
+  suite('encrypt/decrypt', function() {
+    const azureCryptoKey = 'aGVsbG8gZnV0dXJlIHBlcnNvbi4gaSdtIGJzdGFjawo=';
+    const pgCryptoKey = 'aSdtIGJzdGFjayEgaGVsbG8gZnV0dXJlIHBlcnNvbgo=';
+
+    setup(async function() {
+      db = await Database.setup({schema, readDbUrl: helper.dbUrl, writeDbUrl: helper.dbUrl,
+        serviceName: 'service-2', monitor, azureCryptoKey});
+    });
+
+    test('encrypt/decrypt simple', async function() {
+      const encrypted = db.encrypt({value: 'hi'});
+      assert.equal(encrypted.v, 0);
+      assert.equal(encrypted.kid, 'azure');
+      assert.equal(encrypted.__bufchunks_val, 1);
+      assert(encrypted.__buf0_val !== undefined);
+
+      // We'll just use decrypt here to assert that it was encrypted correctly otherwise
+      // we'd almost be copy-pasting the decrypt code verbatim here which is kinda brittle
+      const decrypted = db.decrypt({value: encrypted});
+      assert.equal(decrypted.toString(), 'hi');
+    });
+
+    test('encrypt/decrypt multiple keys', async function() {
+      const encrypted = db.encrypt({value: 'hi'});
+      assert.equal(encrypted.v, 0);
+      assert.equal(encrypted.kid, 'azure');
+      assert.equal(encrypted.__bufchunks_val, 1);
+      assert(encrypted.__buf0_val !== undefined);
+
+      // This new_db does not have azureCryptoKey as it's current key but can still read old encryptions
+      const new_db = await Database.setup({schema, readDbUrl: helper.dbUrl, writeDbUrl: helper.dbUrl,
+        serviceName: 'service-2', monitor, azureCryptoKey, cryptoKeys: [
+          {id: 'foo', algo: 'aes-256', key: pgCryptoKey},
+        ]});
+      assert.equal(new_db.keyring.currentCryptoKey('aes-256').id, 'foo');
+      const decrypted = new_db.decrypt({value: encrypted});
+      assert.equal(decrypted.toString(), 'hi');
+
+      const new_encrypted = new_db.encrypt({value: 'new hi'});
+      assert.equal(new_encrypted.kid, 'foo');
+      const new_decrypted = new_db.decrypt({value: new_encrypted});
+      assert.equal(new_decrypted.toString(), 'new hi');
+
+      // This db does not have the new key so it should not be able to decrypt
+      assert.throws(() => {
+        db.decrypt({value: new_encrypted});
+      }, /Crypto key not found: `foo`/);
+    });
+
+    test('decrypt simple from lib-entities', async function() {
+      const entity = Entity.types.EncryptedText('val'); // Migation scripts will hardcode this to val
+      const encrypted = {v: 0, kid: 'azure'}; // Migration scripts also must add these entries
+      entity.serialize(encrypted, 'abc', Buffer.from(azureCryptoKey, 'base64'));
+
+      const decrypted = db.decrypt({value: encrypted});
+      assert.equal(decrypted.toString(), 'abc');
+    });
+
+    test('decrypt multi-chunk from lib-entities', async function() {
+      const entity = Entity.types.EncryptedText('val');
+      const content = new Array(50000).fill(0).map((v, i) => String.fromCharCode(i % 65535)).join('');
+      const encrypted = {v: 0, kid: 'azure'};
+      entity.serialize(encrypted, content, Buffer.from(azureCryptoKey, 'base64'));
+
+      // let's make sure this still tests what we mean it to even if lib-entity impl changes
+      assert(encrypted.__bufchunks_val > 1);
+
+      const decrypted = db.decrypt({value: encrypted});
+      assert.equal(decrypted.toString(), content);
+    });
+
+    test('encrypt/decrypt errors without keys', async function() {
+      const bad_db = await Database.setup({schema, readDbUrl: helper.dbUrl, writeDbUrl: helper.dbUrl,
+        serviceName: 'service-2', monitor});
+      assert.throws(() => {
+        bad_db.encrypt({value: 'hi'});
+      }, /no current key is configured/);
+
+      const encrypted = db.encrypt({value: 'hi'});
+      assert.throws(() => {
+        bad_db.decrypt({value: encrypted});
+      }, /Crypto key not found: `azure`/);
     });
   });
 });

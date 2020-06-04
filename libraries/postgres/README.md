@@ -242,30 +242,39 @@ It can also use multiple keys for decryption, but always uses a designated curre
 The versions are described below.
 
 Migration scripts run server-side, and thus treat crypto containers as opaque data.
-The exception to this rule is in migrating taskcluster-lib-entities tables to "normal" database tables, in which case the migration script assembles a version-0 container with a key ID of `azure` based on the entity value.
+The exception to this rule is in migrating taskcluster-lib-entities tables to "normal" database tables, in which case the migration script assembles a version-0 container with a key ID of `azure` based on the entity value. For this translation, also make the `property` name that used to be used for the taskcluster-lib-entities values to be `val` i.e. `\_\_bufchunks\_val` and `\_\_buf0\_val`.
 
 ### Encryption and Decryption API
 
-The `encryptColumn` and `decryptColumn` methods serve to encrypt and decrypt values for communication with the database server.
-The former takes a single key `key` and the latter takes a JS `Map` object `keys` mapping key identifiers to key material.
+The `db.encrypt` and `db.decrypt` methods serve to encrypt and decrypt values for communication with the database server.
+Both take a parameter named `value` that will either be encrypted and built into a format suitable for storing in the db
+or pulled out of that format and decryped.
 
-Each key must have the form `{"aes-256": buf}` where `buf` is a Buffer containing the 256-bit (32-byte) key.
+To enable encryption/decryption, provide `Database.setup` with at least one of `azureCrytoKey` or `cryptoKeys`. The first
+of which is the key that `lib-entities` used for encryption. The latter is structured like
 
 ```javascript
-const {encryptColumn, decryptColumn} = require('taskcluster-lib-postgres');
-
-const key = {"aes-256": Buffer.from(cryptoKey, 'base64'};
-const keys = new Map();
-keys.set('2020-06-15', key);
-
-await db.fns.create_widget(widgetId, encryptColumn({key, value: Buffer.from(widgetCode, 'utf8')}));
-
-const rows = db.fns.get_widget(widgetId);
-console.log(decryptColumn({keys, value: rows[0].widget_code}).toString('utf8'));
+[
+  {
+    id: '...', // This will be stored with any encrypted values and used to decide what key to decrypt it with later
+    algo: 'aes-256', // Currently this is the only supported algo
+    key: '...', // For aes-256, this must be 32 bytes in base64
+  },
+],
 ```
 
-XXX maybe we should define a `Keys` class that stores keys, with one designated the latest?  This would know how to parse keys from config (probably supporting the existing `cfg.azureCryptoKey` to minimize changes for deployers).  That container could check key length, know what keys work with what algorithms, etc.
-XXX what should the config format look like?
+The last entry in that list will become the "current" encryption key and be used for all encryption. The other keys
+should be kept around to allow decrypting older values. This allows for key rotation support. Once all old values have been
+re-encrypted (see Updating Tables With New Keys below), these old keys can be removed from configuration.
+
+Once the database has been set up, encryption and decryption can be used as follows
+
+```javascript
+await db.fns.create_widget(widgetId, db.encrypt({value: Buffer.from(widgetCode, 'utf8')}));
+
+const rows = db.fns.get_widget(widgetId);
+console.log(db.decrypt({value: rows[0].widget_code}).toString('utf8'));
+```
 
 ### Updating Tables With New Keys
 
@@ -285,8 +294,6 @@ It is the concatenation of a 128-bit (16-byte) random initialization vector (`iv
 
 The format of the cleartext depends on context -- this library provides the caller with a JS Buffer object.
 In general, this contains either a raw UTF-8 string or a JSON-encoded value.
-
-XXX let's not define version 1 yet, so that DB downgrades will still work by just pulling the `__bufXX` stuff out of the value.  After Phase 2 we can define a version 1 that just puts the whole buffer in a single base64'd string, if we feel like it.
 
 ## Security Invariants
 
