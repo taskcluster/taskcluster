@@ -98,8 +98,8 @@ This mesage is sent when credentials are renewed.
 The message may or may not contain a `certificate` property.
 
 ```
-~{"type": "new-credentials", "clientId": "...", "accessToken": "..."}
-~{"type": "new-credentials", "clientId": "...", "accessToken": "...", "certificate": "..."}
+~{"type": "new-credentials", "client-id": "...", "access-token": "..."}
+~{"type": "new-credentials", "client-id": "...", "access-token": "...", "certificate": "..."}
 ```
 
 If this message is not supported, worker-runner will attempt to gracefully shut down the worker when credentials expire.

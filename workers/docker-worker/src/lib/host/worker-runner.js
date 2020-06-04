@@ -26,9 +26,9 @@ module.exports = {
     protocol.on('new-credentials-msg', msg => {
       if (newCredentialsCallback) {
         newCredentialsCallback({
-          clientId: msg.clientId,
-          accessToken: msg.accessToken,
-          certificate: msg.certificate,
+          clientId: msg['client-id'],
+          accessToken: msg['access-token'],
+          certificate: msg['certificate'],
         });
       }
     });
