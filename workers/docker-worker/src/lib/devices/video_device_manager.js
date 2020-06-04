@@ -34,7 +34,7 @@ class VideoDeviceManager {
     `);
 
     if (deviceList.length === 0) {
-      throw new Error('No video devices found; try setting deviceManager.loopbackVideo.enabled = false to disable the feature, or building the v4l2loopback module into the kernel');
+      throw new Error('No video devices found; try setting deviceManagement.loopbackVideo.enabled = false to disable the feature, or building the v4l2loopback module into the kernel');
     }
 
     return deviceList;
