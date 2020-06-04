@@ -55,8 +55,8 @@ test:
       providerType: static
     google:
       providerType: google
-      project: foo
-      creds: {}
+      project: testy
+      creds: {client_id: "fake-creds"}
       workerServiceAccountId: 12345
     aws:
       providerType: aws

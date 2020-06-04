@@ -404,6 +404,7 @@ class GoogleProvider extends Provider {
       if (worker.providerData.operation) {
         // We only check in on the operation if the worker failed to
         // start succesfully
+        // TODO: ignores return value - #2885
         await this.handleOperation({
           op: worker.providerData.operation,
           errors: this.errors[worker.workerPoolId],

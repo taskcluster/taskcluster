@@ -1,5 +1,6 @@
 const {FakeCloud} = require('./fake');
 const assert = require('assert').strict;
+const slugid = require('slugid');
 const {google} = require('googleapis');
 
 const WORKER_SERVICE_ACCOUNT_ID = '12345';
@@ -73,6 +74,16 @@ class FakeGoogle extends FakeCloud {
       },
     };
   }
+
+  /**
+   * Make an API error in the shape the google apis return
+   */
+  makeError(message, code) {
+    const err = new Error(message);
+    err.code = code;
+    err.errors = [{message}];
+    return err;
+  }
 }
 
 class FakeOAuth2 {
@@ -100,70 +111,73 @@ class FakeOAuth2 {
   }
 }
 
-const makeError = (message, code) => {
-  const err = new Error(message);
-  err.code = code;
-  err.errors = [{message}];
-  return err;
-};
-
+/**
+ * The google `instances` API.
+ *
+ * Parameters passed to `insert` are stored in the array `insertCalls`.
+ *
+ * Set failFakeInsertWith to an error instance to have the next insert() call fail
+ */
 class Instances {
   constructor(fake) {
     this.fake = fake;
     this.getCalls = 0;
-    this.insertCalls = 0;
+    this.insertCalls = [];
+    this.instances = new Map();
   }
 
-  async get() {
-    switch (this.getCalls++) {
-      case 0:
-        return {
-          data: {
-            status: 'RUNNING',
-          },
-        };
-      case 1:
-        return {
-          data: {
-            status: 'STOPPED',
-          },
-        };
+  async get({project, zone, instance}) {
+    assert.equal(project, PROJECT);
+    const key = `${zone}/${instance}`;
+    const data = this.instances.get(key);
+    if (!data) {
+      throw this.fake.makeError('no such instance', 404);
     }
+    return {data};
   }
 
-  async insert() {
-    // TODO: validate input
-    switch (this.insertCalls++) {
-      case 0:
-        return {
-          data: {
-            targetId: '123', // This is the instanceId
-            name: 'foo',
-            zone: 'whatever/a',
-          },
-        };
-      case 1:
-        throw makeError('something went wrong');
-      case 2:
-        throw makeError('whatever', 403);
-      case 3:
-        return {
-          data: {
-            targetId: '456', // This is the instanceId
-            name: 'foo',
-            zone: 'whatever/a',
-          },
-        };
+  async insert(parameters) {
+    this.fake.validate(parameters, 'google-instance.yml');
+    assert.equal(parameters.project, PROJECT);
+    this.insertCalls.push(parameters);
+    if (this.failFakeInsertWith) {
+      const err = this.failFakeInsertWith;
+      this.failFakeInsertWith = undefined;
+      throw err;
     }
-  }
-
-  async delete() {
-    this.delete_called = true;
     return {
-      // TODO: no data:?
-      name: 'bar',
-      zone: 'whatever/a',
+      data: {
+        targetId: `instance-${parameters.requestBody.name}`,
+        ...this.fake.compute.zoneOperations.fakeOperation({
+          zone: parameters.zone,
+          status: 'RUNNING',
+        }),
+      },
     };
+  }
+
+  async delete({project, zone, instance}) {
+    assert.equal(project, PROJECT);
+    assert(zone);
+    assert(instance);
+    this.delete_called = true;
+    const key = `${zone}/${instance}`;
+    if (!this.instances.has(key)) {
+      throw this.fake.makeError('no such instance', 404);
+    }
+    this.instances.delete(key);
+    return {}; // provider ignores the return value
+  }
+
+  // fake utilities
+
+  /**
+   * Set an instance's status (creating it in the process)
+   */
+  setFakeInstanceStatus(project, zone, instance, status) {
+    assert.equal(project, PROJECT);
+    const key = `${zone}/${instance}`;
+    this.instances.set(key, {status});
   }
 }
 
@@ -173,8 +187,8 @@ class ServiceAccounts {
   }
 
   async get({name}) {
-    // TODO: more
-    return {data: 12345};
+    const [_, proj, acct] = /^projects\/([^\/]*)\/serviceAccounts\/([^\/]*)$/.exec(name);
+    return {data: {email: `${proj}-${acct}@example.com`}};
   }
 }
 
@@ -182,9 +196,66 @@ class Operations {
   constructor(fake, scope) {
     this.fake = fake;
     this.scope = scope;
+    this.ops = new Map();
   }
 
-  // TODO: apparently not tested?
+  _key(options, name) {
+    switch (this.scope) {
+      case 'region':
+        assert(options.region);
+        assert(!options.zone);
+        return `${options.region}-${name}`;
+      case 'zone':
+        assert(!options.region);
+        assert(options.zone);
+        return `${options.zone}-${name}`;
+      case 'global':
+        assert(!options.region);
+        assert(!options.zone);
+        return `${name}`;
+    }
+  }
+
+  // https://cloud.google.com/resource-manager/reference/rest/v1/operations/get
+  async get({project, operation, ...rest}) {
+    assert.equal(project, PROJECT);
+    const key = this._key(rest, operation);
+
+    if (!this.ops.has(key)) {
+      throw this.fake.makeError('not found', 404);
+    }
+
+    return {data: this.ops.get(key)};
+  }
+
+  // fake utilities
+
+  /**
+   * Create a fake operation.  Pass the appropriate one of zone, region, or
+   * neither depending on the operation scope (zonal, regional, global).  This
+   * will overwrite an existing operation.  This returns the operation.
+   */
+  fakeOperation({zone, region, error, status = 'RUNNING'}) {
+    const name = slugid.nice();
+    const key = this._key({zone, region}, name);
+
+    if (error) {
+      assert(Array.isArray(error.errors));
+    }
+
+    this.ops.set(key, {name, zone, status, error});
+
+    return {name, zone};
+  }
+
+  /**
+   * Return true if the given operation exists
+   */
+  fakeOperationExists({zone, region, name}) {
+    const key = this._key({zone, region}, name);
+
+    return this.ops.has(key);
+  }
 }
 
 exports.FakeGoogle = FakeGoogle;
