@@ -10,6 +10,13 @@ function Runtime(options) {
 
   // Ensure capacity is always a number.
   if (this.capacity) {this.capacity = parseInt(this.capacity, 10);}
+
+  // set up to update credentials as necessary
+  if (this.hostManager) {
+    this.hostManager.onNewCredentials(creds => {
+      this.taskcluster = creds;
+    });
+  }
 }
 
 Runtime.prototype = {
@@ -19,13 +26,6 @@ Runtime.prototype = {
   @type {Dockerode}
   */
   docker: null,
-
-  /**
-  Authenticated queue instance.
-
-  @type {taskcluster.Queue}
-  */
-  queue: null,
 
   /**
   Pulse credentials `{username: '...', password: '...'}`

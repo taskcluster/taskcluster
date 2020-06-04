@@ -185,7 +185,6 @@ class TaskListener extends EventEmitter {
     debug('begin consuming tasks');
     //refactor to just have shutdown manager call terminate()
     this.listenForShutdowns();
-    this.taskQueue = new TaskQueue(this.runtime);
 
     this.runtime.logEvent({
       eventType: 'instanceBoot',
@@ -402,7 +401,7 @@ class TaskListener extends EventEmitter {
         }
 
         try {
-          return await this.runtime.queue.claimTask(tid, 0, {
+          return await this.taskQueue.claimTask(tid, 0, {
             workerId: this.runtime.workerId,
             workerGroup: this.runtime.workerGroup,
           });

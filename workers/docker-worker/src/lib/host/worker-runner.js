@@ -6,18 +6,31 @@ const {StreamTransport, Protocol} = require('../worker-runner-protocol');
 // persistent state is as module-level globals.
 let protocol;
 let gracefulTermination = false;
+let newCredentialsCallback = null;
 
 module.exports = {
   setup() {
     const transp = new StreamTransport(process.stdin, process.stdout);
     protocol = new Protocol(transp);
 
-    // docker-worker doesn't support a finish-your-tasks-first termination,
-    // so we ignore that portion of the message
     protocol.addCapability('graceful-termination');
-    protocol.addCapability('shutdown');
     protocol.on('graceful-termination-msg', () => {
+      // docker-worker doesn't support a finish-your-tasks-first termination,
+      // so we ignore that portion of the message
       gracefulTermination = true;
+    });
+
+    protocol.addCapability('shutdown');
+
+    protocol.addCapability('new-credentials');
+    protocol.on('new-credentials-msg', msg => {
+      if (newCredentialsCallback) {
+        newCredentialsCallback({
+          clientId: msg['client-id'],
+          accessToken: msg['access-token'],
+          certificate: msg['certificate'],
+        });
+      }
     });
 
     protocol.start();
@@ -47,5 +60,9 @@ module.exports = {
       throw new Error('Shutdown called but worker-runner doesn\'t support this capability');
     }
     protocol.send({type: 'shutdown'});
+  },
+
+  async onNewCredentials(cb) {
+    newCredentialsCallback = cb;
   },
 };
