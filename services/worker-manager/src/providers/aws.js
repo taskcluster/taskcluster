@@ -299,6 +299,7 @@ class AwsProvider extends Provider {
     });
     monitor.debug('setting state to RUNNING');
     await worker.update(this.db, worker => {
+      worker.lastModified = new Date();
       worker.providerData.terminateAfter = expires.getTime();
       worker.state = Worker.states.RUNNING;
     });
