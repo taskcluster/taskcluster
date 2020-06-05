@@ -1134,10 +1134,10 @@ apollo-server-caching@^0.5.1:
   dependencies:
     lru-cache "^5.0.0"
 
-apollo-server-core@^2.14.1:
-  version "2.14.1"
-  resolved "https://registry.yarnpkg.com/apollo-server-core/-/apollo-server-core-2.14.1.tgz#d930c62bfbe36e40fa5fce707aa3bfbfe3d1393b"
-  integrity sha512-Uk/jJwLtm+5YvExghNoq9V2ZHJRXPfaVOt4cIyo+mcjWG6YymHhMg5h9pR/auz9HMI8NP7ykmfo/bsTR1qutWQ==
+apollo-server-core@^2.14.2:
+  version "2.14.2"
+  resolved "https://registry.yarnpkg.com/apollo-server-core/-/apollo-server-core-2.14.2.tgz#4ab055b96b8be7821a726c81e8aa412deb7f3644"
+  integrity sha512-8G6Aoz+k+ecuQco1KNLFbMrxhe/8uR4AOaOYEvT/N5m/6lrkPYzvBAxbpRIub5AxEwpBPcIrI452rR3PD9DItA==
   dependencies:
     "@apollographql/apollo-tools" "^0.4.3"
     "@apollographql/graphql-playground-html" "1.6.24"
@@ -1175,10 +1175,10 @@ apollo-server-errors@^2.4.1:
   resolved "https://registry.yarnpkg.com/apollo-server-errors/-/apollo-server-errors-2.4.1.tgz#16ad49de6c9134bfb2b7dede9842e73bb239dbe2"
   integrity sha512-7oEd6pUxqyWYUbQ9TA8tM0NU/3aGtXSEibo6+txUkuHe7QaxfZ2wHRp+pfT1LC1K3RXYjKj61/C2xEO19s3Kdg==
 
-apollo-server-express@^2.9.3:
-  version "2.14.1"
-  resolved "https://registry.yarnpkg.com/apollo-server-express/-/apollo-server-express-2.14.1.tgz#2dd282b3d72348059c3dfc387c23e4af25fa5b78"
-  integrity sha512-Ee1Oc+lzKfHh3BkDNRJL4s7Nnx+Nkmz606TBDi0ETSuNjJqXBNDbDM/YLS3LP7zJ5Oa37U7py72x8rrkPiZZNg==
+apollo-server-express@^2.14.2:
+  version "2.14.2"
+  resolved "https://registry.yarnpkg.com/apollo-server-express/-/apollo-server-express-2.14.2.tgz#662dfeb9c794c1eca59dd93e57e74487a8195ae6"
+  integrity sha512-iYyZm0kQqkM561i9l0WC9HbJsGZJbHP9bhnWaa1Itd+yNBS2AJFp6mRR3hQacsWXUw7ewaKAracMIggvfSH5Aw==
   dependencies:
     "@apollographql/graphql-playground-html" "1.6.24"
     "@types/accepts" "^1.3.5"
@@ -1186,7 +1186,7 @@ apollo-server-express@^2.9.3:
     "@types/cors" "^2.8.4"
     "@types/express" "4.17.4"
     accepts "^1.3.5"
-    apollo-server-core "^2.14.1"
+    apollo-server-core "^2.14.2"
     apollo-server-types "^0.5.0"
     body-parser "^1.18.3"
     cors "^2.8.4"
@@ -6593,50 +6593,56 @@ tar-stream@^2.0.0:
     readable-stream "^3.1.1"
 
 "taskcluster-client@link:clients/client":
-  version "30.0.2"
-  dependencies:
-    "@hapi/hawk" "^7.1.2"
-    debug "^4.1.1"
-    lodash "^4.17.4"
-    slugid "^2.0.0"
-    superagent "^5.0.0"
-    taskcluster-lib-urls "^12.0.0"
+  version "0.0.0"
+  uid ""
 
 "taskcluster-db@link:db":
-  version "30.0.2"
+  version "0.0.0"
+  uid ""
 
 "taskcluster-lib-api@link:libraries/api":
-  version "30.0.2"
+  version "0.0.0"
+  uid ""
 
 "taskcluster-lib-app@link:libraries/app":
-  version "30.0.2"
+  version "0.0.0"
+  uid ""
 
 "taskcluster-lib-azqueue@link:libraries/azqueue":
-  version "30.0.2"
+  version "0.0.0"
+  uid ""
 
 "taskcluster-lib-config@link:libraries/config":
-  version "30.0.2"
+  version "0.0.0"
+  uid ""
 
 "taskcluster-lib-entities@link:libraries/entities":
-  version "30.0.2"
+  version "0.0.0"
+  uid ""
 
 "taskcluster-lib-iterate@link:libraries/iterate":
-  version "30.0.2"
+  version "0.0.0"
+  uid ""
 
 "taskcluster-lib-loader@link:libraries/loader":
-  version "30.0.2"
+  version "0.0.0"
+  uid ""
 
 "taskcluster-lib-monitor@link:libraries/monitor":
-  version "30.0.2"
+  version "0.0.0"
+  uid ""
 
 "taskcluster-lib-postgres@link:libraries/postgres":
-  version "30.0.2"
+  version "0.0.0"
+  uid ""
 
 "taskcluster-lib-pulse@link:libraries/pulse":
-  version "30.0.2"
+  version "0.0.0"
+  uid ""
 
 "taskcluster-lib-references@link:libraries/references":
-  version "30.0.2"
+  version "0.0.0"
+  uid ""
 
 taskcluster-lib-scopes@^11.0.0:
   version "11.0.0"
@@ -6646,7 +6652,8 @@ taskcluster-lib-scopes@^11.0.0:
     fast-json-stable-stringify "^2.1.0"
 
 "taskcluster-lib-testing@link:libraries/testing":
-  version "30.0.2"
+  version "0.0.0"
+  uid ""
 
 taskcluster-lib-urls@^12.0.0:
   version "12.0.0"
@@ -6654,7 +6661,8 @@ taskcluster-lib-urls@^12.0.0:
   integrity sha512-OrEFE0m3p/+mGsmIwjttLhSKg3io6MpJLhYtPNjVSZA9Ix8Y5tprN3vM6a3MjWt5asPF6AKZsfT43cgpGwJB0g==
 
 "taskcluster-lib-validate@link:libraries/validate":
-  version "30.0.2"
+  version "0.0.0"
+  uid ""
 
 temporary@^1.0.0:
   version "1.0.1"
