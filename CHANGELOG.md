@@ -3,6 +3,14 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v30.0.4
+
+
+
+### OTHER
+
+▶ Additional change not described here: [#2921](https://github.com/taskcluster/taskcluster/issues/2921).
+
 ## v30.0.3
 
 ### GENERAL
