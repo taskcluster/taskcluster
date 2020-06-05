@@ -245,7 +245,7 @@ class GoogleProvider extends Provider {
           zone: cfg.zone,
           requestId: uuid.v4(), // This is just for idempotency
           requestBody: {
-            ...cfg, // We spread this in first so that users can't override stuff we set below
+            ..._.omit(cfg, ['region', 'zone', 'workerConfig', 'capacityPerInstance']),
             name: instanceName,
             labels: {
               ...cfg.labels || {},
