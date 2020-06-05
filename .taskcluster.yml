@@ -91,7 +91,7 @@ tasks:
                   workerType: ci
                   scopes:
                       # `https://` is 8 characters so, ${repoUrl[8:]} is the repository without the protocol.
-                      $if: 'tasks_for == "github-push"'
+                      $if: 'tasks_for == "github-push" && event["ref"][:11] != "refs/tags/v"'
                       then:
                           $let:
                               short_head_branch:
@@ -104,6 +104,10 @@ tasks:
                           $if: 'tasks_for == "github-pull-request"'
                           then:
                               - 'assume:repo:github.com/${event.pull_request.base.repo.full_name}:pull-request'
+                          else:
+                            $if: 'tasks_for == "github-push" && event["ref"][:11] == "refs/tags/v"'
+                            then:
+                              - 'assume:repo:${repoUrl[8:]}:tag:${head_branch[10:]}'
 
                   requires: all-completed
                   priority: lowest
