@@ -155,7 +155,7 @@ async function buildDeviceBindings(devices, expandedScopes) {
     }
   }
 
-  return [deviceBindings, bindMounts];
+  return {deviceBindings, bindMounts};
 }
 
 class Reclaimer {
@@ -386,8 +386,8 @@ class Task extends EventEmitter {
 
     if (this.options.devices) {
       let bindings = await buildDeviceBindings(this.options.devices, expandedScopes);
-      procConfig.create.HostConfig['Devices'] = bindings[0];
-      binds = _.union(binds, bindings[1]);
+      procConfig.create.HostConfig['Devices'] = bindings.deviceBindings;
+      binds = _.union(binds, bindings.bindMounts);
     }
 
     if (this.task.payload.cache) {
