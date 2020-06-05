@@ -3,6 +3,13 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v30.0.5
+
+### DEVELOPERS
+
+▶ [patch] 
+Release tasks now have access to taskcluster-proxy
+
 ## v30.0.4
 
 
