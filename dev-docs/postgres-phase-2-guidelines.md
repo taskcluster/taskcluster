@@ -5,7 +5,7 @@ To prepare, you will want to familiarize yourself with:
  * Postgres in general
  * taskcluster-lib-postgres
  * The [azure-entities](https://github.com/taskcluster/azure-entities) API (how it's called from services, not its implementation)
- * taskcluster-lib-entities (how it's implemented, how it calls `db.fns., etc.)
+ * taskcluster-lib-entities (how it's implemented, how it calls `db.fns.`, etc.)
 
 # Guidelines
 
@@ -171,6 +171,16 @@ with `wt~1`.
 and row keys to be returned twice from `_scan` and `_load`: once as return
 values (`partition_key` and `row_key`), and once as `value.PartitionKey` and `value.RowKey`.  In all cases,
 these values are encoded (`encode_string_key`).
+
+**Optimistic Concurrency**. The entities support uses etags to implement a kind of [optimistic concurrency control](https://en.wikipedia.org/wiki/Optimistic_concurrency_control).
+The process is to read a row from the DB, manipulate it in the service, and then write it back to the DB _if the etag column has not changed_.
+If the etag has changed, then the row is re-read, the modification re-applied, and another write attempt performed.
+With a Postgres table, this kind of concurrency is not required when updating a column wholesale (`UPDATE .. SET description = 'xyz'`), as that does not affect other columns.
+But updating a value within a more complex column can be problematic.
+
+[This article](https://www.2ndquadrant.com/en/blog/postgresql-anti-patterns-read-modify-write-cycles/) discusses some of the potential issues.
+In such cases, the existing etag column allows implementation of the OCC approach.
+See worker-manager's `workers` table for an example.
 
 ## Postgres
 
