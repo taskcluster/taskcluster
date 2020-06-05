@@ -12,7 +12,6 @@ class GoogleProvider extends Provider {
 
   constructor({
     providerConfig,
-    fakeCloudApis,
     ...conf
   }) {
     super({providerConfig, ...conf});
@@ -49,14 +48,6 @@ class GoogleProvider extends Provider {
       },
     });
     this._enqueue = cloud.enqueue.bind(cloud);
-
-    if (fakeCloudApis && fakeCloudApis.google) {
-      this.ownClientEmail = 'whatever@example.com';
-      this.compute = fakeCloudApis.google.compute();
-      this.iam = fakeCloudApis.google.iam();
-      this.oauth2 = new fakeCloudApis.google.OAuth2({project});
-      return;
-    }
 
     // If creds are a string or a base64d string, parse them
     if (_.isString(creds)) {
@@ -254,7 +245,7 @@ class GoogleProvider extends Provider {
           zone: cfg.zone,
           requestId: uuid.v4(), // This is just for idempotency
           requestBody: {
-            ...cfg, // We spread this in first so that users can't override stuff we set below
+            ..._.omit(cfg, ['region', 'zone', 'workerConfig', 'capacityPerInstance']),
             name: instanceName,
             labels: {
               ...cfg.labels || {},
@@ -413,11 +404,15 @@ class GoogleProvider extends Provider {
       if (worker.providerData.operation) {
         // We only check in on the operation if the worker failed to
         // start succesfully
-        await this.handleOperation({
+        if (await this.handleOperation({
           op: worker.providerData.operation,
           errors: this.errors[worker.workerPoolId],
           monitor,
-        });
+        })) {
+          monitor.debug('operation still running');
+          // return to poll the operation again..
+          return;
+        }
       }
       this.monitor.log.workerStopped({
         workerPoolId: worker.workerPoolId,
@@ -461,6 +456,8 @@ class GoogleProvider extends Provider {
    * operations when we create them. This is just a nice-to-have for
    * reporting configuration/provisioning errors to the users.
    *
+   * Returns true if the operation is not done yet.
+   *
    * op: an object with keys `name` and optionally `region` or `zone` if it is a region or zone based operation
    * errors: a list that will have any errors found for that operation appended to it
    */
@@ -482,6 +479,7 @@ class GoogleProvider extends Provider {
     }
 
     try {
+      // https://cloud.google.com/compute/docs/reference/rest/v1/regionOperations
       operation = (await this._enqueue('opRead', () => opService.get(args))).data;
     } catch (err) {
       if (err.code !== 404) {
@@ -491,7 +489,8 @@ class GoogleProvider extends Provider {
       return false;
     }
 
-    // Let's check back in on the next provisioning iteration if unfinished
+    // Let's check back in on the next provisioning iteration if unfinished (other options
+    // are PENDING and RUNNING)
     if (operation.status !== 'DONE') {
       monitor.debug(`operation status ${operation.status} is not DONE`);
       return true;
