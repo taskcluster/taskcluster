@@ -216,7 +216,7 @@ class Operations {
     }
   }
 
-  // https://cloud.google.com/resource-manager/reference/rest/v1/operations/get
+  // https://cloud.google.com/compute/docs/reference/rest/v1/regionOperations
   async get({project, operation, ...rest}) {
     assert.equal(project, PROJECT);
     const key = this._key(rest, operation);

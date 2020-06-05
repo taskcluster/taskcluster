@@ -462,8 +462,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
       const operation = fake.compute.zoneOperations.fakeOperation({zone: 'us-east1-a'});
       let worker = await makeWorker({state: 'requested', providerData: {operation}});
       worker = await runCheckWorker(worker);
-      // #2885
-      assert.equal(worker.state, helper.Worker.states.STOPPED);
+      assert.equal(worker.state, helper.Worker.states.REQUESTED);
     });
 
     test('for a nonexistent instance with a failed operation', async function() {

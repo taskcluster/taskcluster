@@ -404,12 +404,15 @@ class GoogleProvider extends Provider {
       if (worker.providerData.operation) {
         // We only check in on the operation if the worker failed to
         // start succesfully
-        // TODO: ignores return value - #2885
-        await this.handleOperation({
+        if (await this.handleOperation({
           op: worker.providerData.operation,
           errors: this.errors[worker.workerPoolId],
           monitor,
-        });
+        })) {
+          monitor.debug('operation still running');
+          // return to poll the operation again..
+          return;
+        }
       }
       this.monitor.log.workerStopped({
         workerPoolId: worker.workerPoolId,
@@ -453,6 +456,8 @@ class GoogleProvider extends Provider {
    * operations when we create them. This is just a nice-to-have for
    * reporting configuration/provisioning errors to the users.
    *
+   * Returns true if the operation is not done yet.
+   *
    * op: an object with keys `name` and optionally `region` or `zone` if it is a region or zone based operation
    * errors: a list that will have any errors found for that operation appended to it
    */
@@ -474,6 +479,7 @@ class GoogleProvider extends Provider {
     }
 
     try {
+      // https://cloud.google.com/compute/docs/reference/rest/v1/regionOperations
       operation = (await this._enqueue('opRead', () => opService.get(args))).data;
     } catch (err) {
       if (err.code !== 404) {
@@ -483,7 +489,8 @@ class GoogleProvider extends Provider {
       return false;
     }
 
-    // Let's check back in on the next provisioning iteration if unfinished
+    // Let's check back in on the next provisioning iteration if unfinished (other options
+    // are PENDING and RUNNING)
     if (operation.status !== 'DONE') {
       monitor.debug(`operation status ${operation.status} is not DONE`);
       return true;
