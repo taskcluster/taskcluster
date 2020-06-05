@@ -167,7 +167,7 @@ Now follow along:
    You can find the assigned IP in `gcloud compute addresses list`, and put it into DNS as an A record.
 1. Create a certificate: `certbot certonly --manual --preferred-challenges dns`.  This will ask you to add a TXT record to the DNS.
    Note that certbot is installed with `brew install letsencrypt` on macOS.
-1. Upload the certificate: `gcloud compute ssl-certificates create <yourname>-ingress --certificate <path-to-fullchain.pem> --private-key <path-to-key>`
+1. Upload the certificate: `gcloud compute ssl-certificates create <yourname>-ingress --certificate <path-to-fullchain.pem> --private-key <path-to-key>`. When the time comes to renew the certificate, simply increment the name (e.g., <yourname>-ingress-1). 
 1. `yarn dev:init` will ask you a bunch of questions and fill out your local
    config for you (most of it anyway).  Once it has done this, your
    `dev-config.yml` is filled with secrets so don't leak it. These are dev-only
