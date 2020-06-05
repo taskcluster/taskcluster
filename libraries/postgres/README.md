@@ -115,8 +115,6 @@ During the re-encryption process, any queries against the table will select the 
 The library provides functionality for automatically re-encrypting all rows in a table in a periodic task.
 The process of rotating encryption keys involves adding a new key to the deployment configuration, waiting until all such periodic tasks have run successfully, and then removing the old key from the configuration.
 
-XXX document that in the deployment docs
-
 ## DB Directory Format
 
 The directory passed to `Schema.fromDbDirectory` should have the following format:

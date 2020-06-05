@@ -99,11 +99,29 @@ For example:
 queue:
   read_db_url: postgresql://prod_taskcluster_queue:sekrit@readonly.tc-db.example.com/taskcluster_prod?ssl=1
   write_db_url: postgresql://prod_taskcluster_queue:sekrit@readwrite.tc-db.example.com/taskcluster_prod?ssl=1
+  db_crypto_keys: [] # (optional) Defined in "Supporting Encrypyed Columns"
 ```
 
 <Warning>
 Note that the admin user's credentials should not appear anywhere in the Helm configuration!
 </Warning>
+
+## Supporting Encrypted Columns
+
+If a service has some data that it wants to be stored at rest, it will require keys in order to do so. The `db_crypto_keys` key of a service config
+is a JSON array where each element is an object of the form
+
+```json
+{
+  "id": "a unique identifier",
+  "algo": "aes-256",
+  "key": "32 bytes of base64 string"
+}
+```
+
+The last element of the array will be the current key and all encryption will be performed with it. Other keys are used in decryption of values that were encrypted with the
+older key. This allows you to rotate your encryption keys. At the current time, we wil also use `azure_crypto_key` as the oldest element of this list to allow for migrations
+from older table formats.
 
 ## Upgrades
 

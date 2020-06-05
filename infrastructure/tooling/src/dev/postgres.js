@@ -57,9 +57,19 @@ const postgresPrompts = ({userConfig, prompts, configTmpl}) => {
 const postgresResources = async ({userConfig, answer, configTmpl}) => {
   let servicesNeedingConfig = [];
   for (const [name, cfg] of Object.entries(configTmpl)) {
-    if (cfg.read_db_url !== undefined && (!userConfig[name] || !userConfig[name].read_db_url)) {
+    if (!userConfig[name]) {
+      userConfig[name] = {};
+    }
+    if (cfg.db_crypto_keys !== undefined && !userConfig[name].db_crypto_keys) {
+      userConfig[name].db_crypto_keys = [{
+        id: 'dev-init',
+        algo: 'aes-256',
+        key: Buffer.from((slugid.v4() + slugid.v4()).slice(0, 32)).toString('base64'),
+      }];
+    }
+    if (cfg.read_db_url !== undefined && !userConfig[name].read_db_url) {
       servicesNeedingConfig.push(name);
-    } else if (cfg.write_db_url !== undefined && (!userConfig[name] || !userConfig[name].write_db_url)) {
+    } else if (cfg.write_db_url !== undefined && !userConfig[name].write_db_url) {
       servicesNeedingConfig.push(name);
     }
   }
