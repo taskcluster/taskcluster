@@ -11,6 +11,7 @@ job-defaults:
   worker-type: release
   worker:
     max-run-time: 3600
+    taskcluster-proxy: true
     artifacts:
       - path: taskcluster/release-debug-logs
         name: debug-logs # Note: this should never be public because who knows what is in here
