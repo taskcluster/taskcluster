@@ -3,6 +3,43 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v30.0.3
+
+### GENERAL
+
+▶ [patch] [bug 1631824](http://bugzil.la/1631824)
+The worker-manager azure provider now properly tracks and deletes all disks when a virtual machine has data disks created for it.
+
+### DEPLOYERS
+
+▶ [patch] 
+A bug in the Azure provider which caused provisioning to fail when handling operations has been fixed.
+
+▶ [patch] 
+Taskcluster services now include metadata at the top level of Fields for `generic.*` logging messages, rather than in `meta` or `fields` sub-properties.
+
+### WORKER-DEPLOYERS
+
+▶ [patch] [#2969](https://github.com/taskcluster/taskcluster/issues/2969)
+Docker-worker now only considers itself idle if its call to `queue.claimWork` returns no tasks.  This prevents the situation where a very short `afterIdleSeconds` causes the worker to shut down *while* calling `claimWork`.
+
+▶ [patch] [#2925](https://github.com/taskcluster/taskcluster/issues/2925)
+Listing workers in the "stopping" state will no longer cause 500 errors.
+
+### USERS
+
+▶ [patch] [bug 1632929](http://bugzil.la/1632929)
+Taskcluster-Github now uses a release event's `target_commitish` property instead of the `tag` property to determine the SHA of the released commit.  This is important in cases where tags are created as part of the release-creation call, as GitHub sends the release event before the tag is created.
+
+### DEVELOPERS
+
+▶ [patch] [bug 1636167](http://bugzil.la/1636167)
+CI tasks are now generated in a decision task by https://hg.mozilla.org/ci/taskgraph
+
+### OTHER
+
+▶ Additional changes not described here: [bug 1640267](http://bugzil.la/1640267), [#2827](https://github.com/taskcluster/taskcluster/issues/2827), [#2890](https://github.com/taskcluster/taskcluster/issues/2890), [#2912](https://github.com/taskcluster/taskcluster/issues/2912), [#2913](https://github.com/taskcluster/taskcluster/issues/2913), [#2951](https://github.com/taskcluster/taskcluster/issues/2951), [#2952](https://github.com/taskcluster/taskcluster/issues/2952), [bug 1634376](http://bugzil.la/1634376).
+
 ## v30.0.2
 
 ### USERS

@@ -1,6 +1,6 @@
 {
   "name": "taskcluster-hooks",
-  "version": "30.0.2",
+  "version": "30.0.3",
   "private": true,
   "scripts": {
     "coverage": "c8 yarn test",
