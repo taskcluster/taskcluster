@@ -7,7 +7,7 @@ const crypto = require('crypto');
 const path = require('path');
 const fs = require('fs');
 const generator = require('generate-password');
-const {WorkerPool} = require('../data');
+const {WorkerPool, Worker} = require('../data');
 
 const auth = require('@azure/ms-rest-nodeauth');
 const armCompute = require('@azure/arm-compute');
@@ -244,17 +244,11 @@ class AzureProvider extends Provider {
         workerGroup,
         workerId: virtualMachineName,
       });
-      const now = new Date();
-      await this.Worker.create({
+      const worker = Worker.fromApi({
         workerPoolId,
         providerId: this.providerId,
         workerGroup,
         workerId: virtualMachineName,
-        created: now,
-        lastModified: now,
-        lastChecked: now,
-        expires: taskcluster.fromNow('1 week'),
-        state: this.Worker.states.REQUESTED,
         capacity: cfg.capacityPerInstance,
         providerData: {
           ...providerData,
@@ -262,6 +256,7 @@ class AzureProvider extends Provider {
           reregistrationTimeout,
         },
       });
+      await worker.create(this.db);
     }));
   }
 
@@ -371,7 +366,7 @@ class AzureProvider extends Provider {
       throw error();
     }
 
-    if (worker.state !== this.Worker.states.REQUESTED) {
+    if (worker.state !== Worker.states.REQUESTED) {
       this.monitor.log.registrationErrorWarning({message: 'Worker was already running.', error: 'Worker was already running.'});
       throw error();
     }
@@ -387,10 +382,10 @@ class AzureProvider extends Provider {
       workerId: worker.workerId,
     });
     monitor.debug('setting state to RUNNING');
-    await worker.modify(w => {
-      w.lastModified = new Date();
-      w.state = this.Worker.states.RUNNING;
-      w.providerData.terminateAfter = expires.getTime();
+    await worker.update(this.db, worker => {
+      worker.lastModified = new Date();
+      worker.state = Worker.states.RUNNING;
+      worker.providerData.terminateAfter = expires.getTime();
     });
     const workerConfig = worker.providerData.workerConfig || {};
     return {expires, workerConfig};
@@ -505,21 +500,21 @@ class AzureProvider extends Provider {
         if (failProvisioningStates.has(resource.provisioningState)) {
           // the resource was created but not successfully (how Microsoft!), so
           // bail out of the whole provisioning process
-          await worker.modify(w => {
-            w.providerData[resourceType].operation = undefined;
+          await worker.update(this.db, worker => {
+            worker.providerData[resourceType].operation = undefined;
           });
           await this.removeWorker({worker, reason: `${resourceType} has state ${resource.provisioningState}`});
         } else {
           // we found the resource
-          await worker.modify(w => {
-            w.providerData[resourceType].id = resource.id;
-            w.providerData[resourceType].operation = undefined;
-            modifyFn(w, resource);
+          await worker.update(this.db, worker => {
+            worker.providerData[resourceType].id = resource.id;
+            worker.providerData[resourceType].operation = undefined;
+            modifyFn(worker, resource);
           });
         }
 
         // no need to try to create the resource again, we're done..
-        return;
+        return worker;
       } catch (err) {
         if (err.statusCode !== 404) {
           throw err;
@@ -535,14 +530,14 @@ class AzureProvider extends Provider {
           if (!op) {
             // if the operation has expired or does not exist
             // chances are our instance has been deleted off band
-            await worker.modify(w => {
-              w.providerData[resourceType].operation = undefined;
+            await worker.update(this.db, worker => {
+              worker.providerData[resourceType].operation = undefined;
             });
             await this.removeWorker({worker, reason: 'operation expired'});
           }
           // operation is still in progress or has failed, so don't try to
           // create the resource
-          return;
+          return worker;
         }
       }
     }
@@ -557,10 +552,12 @@ class AzureProvider extends Provider {
         {...resourceConfig, tags: worker.providerData.tags},
       ));
       // track operation
-      await worker.modify(w => {
-        w.providerData[resourceType].operation = resourceRequest.getPollState().azureAsyncOperationHeaderValue;
+      await worker.update(this.db, worker => {
+        worker.providerData[resourceType].operation = resourceRequest.getPollState().azureAsyncOperationHeaderValue;
       });
     }
+
+    return worker;
   }
 
   /**
@@ -576,7 +573,7 @@ class AzureProvider extends Provider {
         location: worker.providerData.location,
         publicIPAllocationMethod: 'Dynamic',
       };
-      await this.provisionResource({
+      worker = await this.provisionResource({
         worker,
         client: this.networkClient.publicIPAddresses,
         resourceType: 'ip',
@@ -613,7 +610,7 @@ class AzureProvider extends Provider {
           },
         ];
       };
-      await this.provisionResource({
+      worker = await this.provisionResource({
         worker,
         client: this.networkClient.networkInterfaces,
         resourceType: 'nic',
@@ -642,7 +639,7 @@ class AzureProvider extends Provider {
         }
         w.providerData.disks = disks;
       };
-      await this.provisionResource({
+      worker = await this.provisionResource({
         worker,
         client: this.computeClient.virtualMachines,
         resourceType: 'vm',
@@ -655,7 +652,7 @@ class AzureProvider extends Provider {
       }
       // XXX note that this doesn't actually change the state to RUNNING
       // (that happens in registerWorker)
-      return this.Worker.states.RUNNING;
+      return Worker.states.RUNNING;
     } catch (err) {
       const workerPool = await WorkerPool.get(this.db, worker.workerPoolId);
       // we create multiple resources in order to provision a VM
@@ -680,8 +677,8 @@ class AzureProvider extends Provider {
     // vm has successfully provisioned
     // vmId is a uuid, we use it for registering workers
     if (!worker.providerData.vm.vmId) {
-      await worker.modify(w => {
-        w.providerData.vm.vmId = vmId;
+      await worker.update(this.db, worker => {
+        worker.providerData.vm.vmId = vmId;
       });
     }
     return {provisioningState, vmId};
@@ -697,12 +694,12 @@ class AzureProvider extends Provider {
 
     // update providerdata from deprecated disk to disks if applicable
     if (_.has(worker.providerData, 'disk')) {
-      await worker.modify(w => {
-        w.providerData.disks = [w.providerData.disk];
+      await worker.update(this.db, worker => {
+        worker.providerData.disks = [worker.providerData.disk];
       });
     }
 
-    const states = this.Worker.states;
+    const states = Worker.states;
     this.seen[worker.workerPoolId] = this.seen[worker.workerPoolId] || 0;
     this.errors[worker.workerPoolId] = this.errors[worker.workerPoolId] || [];
     let state = worker.state || states.REQUESTED;
@@ -730,8 +727,8 @@ class AzureProvider extends Provider {
         // long-lived instances become orphaned from the provider. We don't update
         // this on every loop just to avoid the extra work when not needed
         if (worker.expires < taskcluster.fromNow('1 day')) {
-          await worker.modify(w => {
-            w.expires = taskcluster.fromNow('1 week');
+          await worker.update(this.db, worker => {
+            worker.expires = taskcluster.fromNow('1 week');
           });
         }
         if (worker.providerData.terminateAfter && worker.providerData.terminateAfter < Date.now()) {
@@ -780,13 +777,13 @@ class AzureProvider extends Provider {
     }
 
     monitor.debug(`setting state to ${state}`);
-    await worker.modify(w => {
+    await worker.update(this.db, worker => {
       const now = new Date();
-      if (w.state !== state) {
-        w.lastModified = now;
+      if (worker.state !== state) {
+        worker.lastModified = now;
       }
-      w.lastChecked = now;
-      w.state = state;
+      worker.lastChecked = now;
+      worker.state = state;
     });
   }
 
@@ -856,15 +853,16 @@ class AzureProvider extends Provider {
           debug(`resource ${typeData.name} not found; removing its id`);
           // if we check for `true` we repeat lots of GET requests
           // resource has been deleted and isn't in the API or never existed
-          await worker.modify(w => {
+          await worker.update(this.db, worker => {
             if (index !== undefined) {
-              w.providerData[resourceType][index].operation = undefined;
-              w.providerData[resourceType][index].id = false;
+              worker.providerData[resourceType][index].operation = undefined;
+              worker.providerData[resourceType][index].id = false;
             } else {
-              w.providerData[resourceType].operation = undefined;
-              w.providerData[resourceType].id = false;
+              worker.providerData[resourceType].operation = undefined;
+              worker.providerData[resourceType].id = false;
             }
           });
+
           return true;
         }
         throw err;
@@ -883,12 +881,12 @@ class AzureProvider extends Provider {
       ));
       // record operation (NOTE: this information is never used, as deletion is tracked
       // by name)
-      await worker.modify(w => {
+      await worker.update(this.db, worker => {
         let resource;
         if (index !== undefined) {
-          resource = w.providerData[resourceType][index];
+          resource = worker.providerData[resourceType][index];
         } else {
-          resource = w.providerData[resourceType];
+          resource = worker.providerData[resourceType];
         }
         resource.id = false;
         let pollState = deleteRequest.getPollState();
@@ -918,7 +916,7 @@ class AzureProvider extends Provider {
         vmName: worker.providerData.vm.name,
       }});
 
-    let states = this.Worker.states;
+    let states = Worker.states;
     if (worker.state === states.STOPPED) {
       // we're done
       return states.STOPPED;
@@ -983,11 +981,11 @@ class AzureProvider extends Provider {
       // change to stopped
       state = states.STOPPED;
       monitor.debug(`setting state to ${state}`);
-      await worker.modify(w => {
+      await worker.update(this.db, worker => {
         const now = new Date();
-        w.lastModified = now;
-        w.lastChecked = now;
-        w.state = state;
+        worker.lastModified = now;
+        worker.lastChecked = now;
+        worker.state = state;
       });
     } catch (err) {
       // if this is called directly and not via checkWorker may not exist

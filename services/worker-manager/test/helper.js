@@ -24,7 +24,6 @@ exports.secrets = new Secrets({
 
 exports.withEntities = (mock, skipping) => {
   withEntity(mock, skipping, exports, 'WorkerPoolError', data.WorkerPoolError);
-  withEntity(mock, skipping, exports, 'Worker', data.Worker);
 };
 
 exports.withDb = (mock, skipping) => {
@@ -254,7 +253,7 @@ exports.resetTables = (mock, skipping) => {
     } else {
       const sec = exports.secrets.get('db');
       await resetTables({ testDbUrl: sec.testDbUrl, tableNames: [
-        'wmworkers_entities',
+        'workers',
         'worker_pools',
         'wmworker_pool_errors_entities',
       ]});

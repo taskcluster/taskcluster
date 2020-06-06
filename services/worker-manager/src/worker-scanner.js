@@ -1,4 +1,5 @@
 const Iterate = require('taskcluster-lib-iterate');
+const { Worker } = require('./data');
 
 /**
  * Make sure that we visit each worker relatively frequently to update its state
@@ -7,13 +8,12 @@ const Iterate = require('taskcluster-lib-iterate');
 class WorkerScanner {
   constructor({
     ownName,
-    Worker,
     WorkerPool,
     providers,
     monitor,
     iterateConf = {},
+    db,
   }) {
-    this.Worker = Worker;
     this.WorkerPool = WorkerPool;
     this.providers = providers;
     this.monitor = monitor;
@@ -33,6 +33,7 @@ class WorkerScanner {
       this.monitor.alert('iteration failed repeatedly; terminating process');
       process.exit(1);
     });
+    this.db = db;
   }
 
   async initiate() {
@@ -45,31 +46,23 @@ class WorkerScanner {
 
   async scan() {
     await this.providers.forAll(p => p.scanPrepare());
-    await this.Worker.scan({}, {
-      handler: async worker => {
-        // We only support conditions on dates, as they cannot
-        // be used to inject SQL -- `Date.toJSON` always produces a simple string
-        // with no SQL metacharacters.
-        //
-        // Previously with azure, we added the query in the scan method
-        // (i.e., this.Worker.scan(query, ...)) but since the query doesn't include
-        // the partition key or row key, we would need to manually filter through
-        // the table.
-        if (worker.state !== this.Worker.states.STOPPED) {
-          const provider = this.providers.get(worker.providerId);
-          if (provider) {
-            try {
-              await provider.checkWorker({worker});
-            } catch (err) {
-              this.monitor.reportError(err); // Just report it and move on so this doesn't block other providers
-            }
-          } else {
-            this.monitor.info(
-              `Worker ${worker.workerGroup}/${worker.workerId} has unknown providerId ${worker.providerId} (ignoring)`);
+    const workers = await Worker.getWorkers(this.db, {});
+
+    for (let worker of workers) {
+      if (worker.state !== Worker.states.STOPPED) {
+        const provider = this.providers.get(worker.providerId);
+        if (provider) {
+          try {
+            await provider.checkWorker({worker});
+          } catch (err) {
+            this.monitor.reportError(err); // Just report it and move on so this doesn't block other providers
           }
+        } else {
+          this.monitor.info(
+            `Worker ${worker.workerGroup}/${worker.workerId} has unknown providerId ${worker.providerId} (ignoring)`);
         }
-      },
-    });
+      }
+    }
     await this.providers.forAll(p => p.scanCleanup());
   }
 }

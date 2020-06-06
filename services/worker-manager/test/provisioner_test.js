@@ -3,7 +3,7 @@ const helper = require('./helper');
 const testing = require('taskcluster-lib-testing');
 const taskcluster = require('taskcluster-client');
 const {LEVELS} = require('taskcluster-lib-monitor');
-const {WorkerPool} = require('../src/data');
+const {WorkerPool, Worker} = require('../src/data');
 
 helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
   helper.withDb(mock, skipping);
@@ -23,7 +23,10 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
 
   suite('provisioning loop', function() {
     const testCase = async ({workers = [], workerPools = [], assertion, expectErrors = false}) => {
-      await Promise.all(workers.map(w => helper.Worker.create(w)));
+      await Promise.all(workers.map(w => {
+        const worker = Worker.fromApi(w);
+        return worker.create(helper.db);
+      }));
       await Promise.all(workerPools.map(async wp => {
         if (wp.input) {
           await helper.workerManager.createWorkerPool(wp.workerPoolId, wp.input);
@@ -108,7 +111,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
           lastChecked: new Date(),
           expires: taskcluster.fromNow('1 hour'),
           capacity: 1,
-          state: helper.Worker.states.RUNNING,
+          state: Worker.states.RUNNING,
           providerData: {},
         },
       ],
@@ -194,7 +197,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
           lastChecked: new Date(),
           expires: taskcluster.fromNow('1 hour'),
           capacity: 1,
-          state: helper.Worker.states.STOPPED,
+          state: Worker.states.STOPPED,
           providerData: {},
         },
         {
@@ -208,7 +211,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
           lastChecked: new Date(),
           expires: taskcluster.fromNow('1 hour'),
           capacity: 1,
-          state: helper.Worker.states.REQUESTED,
+          state: Worker.states.REQUESTED,
           providerData: {},
         },
       ],

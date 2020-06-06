@@ -1,7 +1,7 @@
 const assert = require('assert');
 const helper = require('./helper');
 const testing = require('taskcluster-lib-testing');
-const {WorkerPool} = require('../src/data');
+const {WorkerPool, Worker} = require('../src/data');
 const taskcluster = require('taskcluster-client');
 
 helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
@@ -55,25 +55,21 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
 
   suite('expireWorkers', function() {
     const makeWorker = async values => {
-      const now = new Date();
-      await helper.Worker.create({
+      const worker = Worker.fromApi({
         workerPoolId: 'pp/wt',
         workerGroup: 'wg',
         workerId: 'wid',
         providerId: 'testing',
-        created: now,
-        expires: now,
-        lastModified: now,
-        lastChecked: now,
         capacity: 1,
         state: 'running',
         providerData: {},
         ...values,
       });
+      await worker.create(helper.db);
     };
 
     const checkWorker = async (workerPoolId = 'pp/wt', workerGroup = 'wg', workerId = 'wid') => {
-      return await helper.Worker.load({workerPoolId, workerGroup, workerId}, true);
+      return await Worker.get(helper.db, {workerPoolId, workerGroup, workerId});
     };
 
     setup(function() {

@@ -3,6 +3,7 @@ const helper = require('./helper');
 const testing = require('taskcluster-lib-testing');
 const taskcluster = require('taskcluster-client');
 const {LEVELS} = require('taskcluster-lib-monitor');
+const { Worker } = require('../src/data');
 
 helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
   helper.withDb(mock, skipping);
@@ -18,7 +19,10 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
   });
 
   const testCase = async ({workers = [], assertion, expectErrors}) => {
-    await Promise.all(workers.map(w => helper.Worker.create(w)));
+    await Promise.all(workers.map(w => {
+      const worker = Worker.fromApi(w);
+      return worker.create(helper.db);
+    }));
     return (testing.runWithFakeTime(async () => {
       await helper.initiateWorkerScanner();
       await testing.poll(async () => {
@@ -69,12 +73,12 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
         lastChecked: new Date(),
         expires: taskcluster.fromNow('1 hour'),
         capacity: 1,
-        state: helper.Worker.states.REQUESTED,
+        state: Worker.states.REQUESTED,
         providerData: {},
       },
     ],
     assertion: async () => {
-      const worker = await helper.Worker.load({
+      const worker = await Worker.get(helper.db, {
         workerPoolId: 'ff/ee',
         workerGroup: 'whatever',
         workerId: 'testing-123',
@@ -83,46 +87,46 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
     },
   }));
 
-  test('multiple workers with same provider', () => testCase({
+  test("multiple workers with same provider", () => testCase({
     workers: [
       {
-        workerPoolId: 'ff/ee',
-        workerGroup: 'whatever',
-        workerId: 'testing-123',
-        providerId: 'testing1',
+        workerPoolId: "ff/ee",
+        workerGroup: "whatever",
+        workerId: "testing-123",
+        providerId: "testing1",
         created: new Date(),
         lastModified: new Date(),
         lastChecked: new Date(),
-        expires: taskcluster.fromNow('1 hour'),
+        expires: taskcluster.fromNow("1 hour"),
         capacity: 1,
-        state: helper.Worker.states.REQUESTED,
+        state: Worker.states.REQUESTED,
         providerData: {},
       },
       {
-        workerPoolId: 'ff/dd',
-        workerGroup: 'whatever',
-        workerId: 'testing-124',
-        providerId: 'testing1',
+        workerPoolId: "ff/dd",
+        workerGroup: "whatever",
+        workerId: "testing-124",
+        providerId: "testing1",
         created: new Date(),
         lastModified: new Date(),
         lastChecked: new Date(),
-        expires: taskcluster.fromNow('1 hour'),
+        expires: taskcluster.fromNow("1 hour"),
         capacity: 1,
-        state: helper.Worker.states.REQUESTED,
+        state: Worker.states.REQUESTED,
         providerData: {},
       },
     ],
     assertion: async () => {
-      const worker1 = await helper.Worker.load({
-        workerPoolId: 'ff/ee',
-        workerGroup: 'whatever',
-        workerId: 'testing-123',
+      const worker1 = await Worker.get(helper.db, {
+        workerPoolId: "ff/ee",
+        workerGroup: "whatever",
+        workerId: "testing-123",
       });
       assert(worker1.providerData.checked);
-      const worker2 = await helper.Worker.load({
-        workerPoolId: 'ff/dd',
-        workerGroup: 'whatever',
-        workerId: 'testing-124',
+      const worker2 = await Worker.get(helper.db, {
+        workerPoolId: "ff/dd",
+        workerGroup: "whatever",
+        workerId: "testing-124",
       });
       assert(worker2.providerData.checked);
     },
@@ -140,7 +144,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
         lastChecked: new Date(),
         expires: taskcluster.fromNow('1 hour'),
         capacity: 1,
-        state: helper.Worker.states.REQUESTED,
+        state: Worker.states.REQUESTED,
         providerData: {},
       },
       {
@@ -153,18 +157,18 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
         lastChecked: new Date(),
         expires: taskcluster.fromNow('1 hour'),
         capacity: 1,
-        state: helper.Worker.states.REQUESTED,
+        state: Worker.states.REQUESTED,
         providerData: {},
       },
     ],
     assertion: async () => {
-      const worker1 = await helper.Worker.load({
+      const worker1 = await Worker.get(helper.db, {
         workerPoolId: 'ff/ee',
         workerGroup: 'whatever',
         workerId: 'testing-123',
       });
       assert(worker1.providerData.checked);
-      const worker2 = await helper.Worker.load({
+      const worker2 = await Worker.get(helper.db, {
         workerPoolId: 'ff/dd',
         workerGroup: 'whatever',
         workerId: 'testing-124',
@@ -185,7 +189,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
         lastChecked: new Date(),
         expires: taskcluster.fromNow('1 hour'),
         capacity: 1,
-        state: helper.Worker.states.STOPPED,
+        state: Worker.states.STOPPED,
         providerData: {},
       }, {
         workerPoolId: 'ff/ee',
@@ -197,7 +201,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
         lastChecked: new Date(),
         expires: taskcluster.fromNow('1 hour'),
         capacity: 1,
-        state: helper.Worker.states.REQUESTED,
+        state: Worker.states.REQUESTED,
         providerData: {},
       },
     ],
@@ -221,7 +225,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
     ],
     expectErrors: true,
     assertion: async () => {
-      const worker = await helper.Worker.load({
+      const worker = await Worker.get(helper.db, {
         workerPoolId: 'ff/ee',
         workerGroup: 'whatever',
         workerId: 'testing-123',

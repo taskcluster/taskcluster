@@ -4,7 +4,7 @@ const {APIBuilder, paginateResults} = require('taskcluster-lib-api');
 const assert = require('assert');
 const {ApiError} = require('./providers/provider');
 const {UNIQUE_VIOLATION} = require('taskcluster-lib-postgres');
-const {WorkerPool} = require('./data');
+const {WorkerPool, Worker} = require('./data');
 
 let builder = new APIBuilder({
   title: 'Taskcluster Worker Manager',
@@ -19,7 +19,6 @@ let builder = new APIBuilder({
   context: [
     'cfg',
     'db',
-    'Worker',
     'WorkerPoolError',
     'providers',
     'publisher',
@@ -365,10 +364,7 @@ builder.declare({
 builder.declare({
   method: 'get',
   route: '/workers/:workerPoolId:/:workerGroup',
-  query: {
-    continuationToken: /./,
-    limit: /^[0-9]+$/,
-  },
+  query: paginateResults.query,
   name: 'listWorkersForWorkerGroup',
   title: 'Workers in a specific Worker Group in a Worker Pool',
   stability: APIBuilder.stability.stable,
@@ -378,36 +374,17 @@ builder.declare({
     'Get the list of all the existing workers in a given group in a given worker pool.',
   ].join('\n'),
 }, async function(req, res) {
-  const scanOptions = {
-    continuation: req.query.continuationToken,
-    limit: parseInt(req.query.limit || 100, 10),
-    matchPartition: 'exact',
-  };
-  const data = await this.Worker.scan({
-    workerPoolId: req.params.workerPoolId,
-  }, scanOptions);
-
-  // We only support conditions on dates, as they cannot
-  // be used to inject SQL -- `Date.toJSON` always produces a simple string
-  // with no SQL metacharacters.
-  //
-  // Previously with azure, we added the query in the scan method
-  // (i.e., this.Worker.scan({ workerGroup, ... }))
-  data.entries = data.entries.filter(entry => {
-    if (entry.workerGroup !== req.params.workerGroup) {
-      return false;
-    }
-
-    return true;
+  const { workerPoolId, workerGroup } = req.params;
+  const {continuationToken, rows} = await paginateResults({
+    query: req.query,
+    fetch: (size, offset) => Worker.getWorkers(this.db, { workerPoolId, workerGroup }, { size, offset }),
   });
 
   const result = {
-    workers: data.entries.map(e => e.serializable()),
+    workers: rows.map(r => r.serializable()),
+    continuationToken,
   };
 
-  if (data.continuation) {
-    result.continuationToken = data.continuation;
-  }
   return res.reply(result);
 });
 
@@ -423,17 +400,13 @@ builder.declare({
     'Get a single worker.',
   ].join('\n'),
 }, async function(req, res) {
-  const data = await this.Worker.load({
-    workerPoolId: req.params.workerPoolId,
-    workerGroup: req.params.workerGroup,
-    workerId: req.params.workerId,
-  }, true);
+  const {workerPoolId, workerGroup, workerId} = req.params;
+  const worker = await Worker.get(this.db, { workerPoolId, workerGroup, workerId });
 
-  if (!data) {
+  if (!worker) {
     return res.reportError('ResourceNotFound', 'Worker not found', {});
   }
-
-  return res.reply(data.serializable());
+  res.reply(worker.serializable());
 });
 
 let cleanCreatePayload = payload => {
@@ -519,7 +492,7 @@ builder.declare({
   ].join('\n'),
 }, async function(req, res) {
   const {workerPoolId, workerGroup, workerId} = req.params;
-  const worker = await this.Worker.load({workerPoolId, workerGroup, workerId}, true);
+  const worker = await Worker.get(this.db, { workerPoolId, workerGroup, workerId });
 
   if (!worker) {
     return res.reportError('ResourceNotFound', 'Worker not found', {});
@@ -546,10 +519,7 @@ builder.declare({
 builder.declare({
   method: 'get',
   route: '/workers/:workerPoolId(*)',
-  query: {
-    continuationToken: /./,
-    limit: /^[0-9]+$/,
-  },
+  query: paginateResults.query,
   name: 'listWorkersForWorkerPool',
   title: 'Workers in a Worker Pool',
   category: 'Workers',
@@ -559,11 +529,6 @@ builder.declare({
     'Get the list of all the existing workers in a given worker pool.',
   ].join('\n'),
 }, async function(req, res) {
-  const scanOptions = {
-    continuation: req.query.continuationToken,
-    limit: parseInt(req.query.limit || 100, 10),
-    matchPartition: 'exact',
-  };
   const {workerPoolId} = req.params;
   const workerPool = await WorkerPool.get(this.db, workerPoolId);
 
@@ -572,16 +537,15 @@ builder.declare({
       `Worker Pool does not exist`, {});
   }
 
-  const data = await this.Worker.scan({
-    workerPoolId: req.params.workerPoolId,
-  }, scanOptions);
+  const {continuationToken, rows} = await paginateResults({
+    query: req.query,
+    fetch: (size, offset) => Worker.getWorkers(this.db, { workerPoolId }, { size, offset }),
+  });
 
   const result = {
-    workers: data.entries.map(e => e.serializable()),
+    workers: rows.map(r => r.serializable()),
+    continuationToken,
   };
-  if (data.continuation) {
-    result.continuationToken = data.continuation;
-  }
   return res.reply(result);
 });
 
@@ -630,7 +594,7 @@ builder.declare({
       `Worker pool ${workerPoolId} not associated with provider ${providerId}`, {});
   }
 
-  const worker = await this.Worker.load({workerPoolId, workerGroup, workerId}, true);
+  const worker = await Worker.get(this.db, { workerPoolId, workerGroup, workerId });
   if (!worker) {
     return res.reportError('ResourceNotFound',
       `Worker ${workerGroup}/${workerId} in worker pool ${workerPoolId} does not exist`, {});

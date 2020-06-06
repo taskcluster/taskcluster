@@ -6,7 +6,7 @@ const uuid = require('uuid');
 const {google} = require('googleapis');
 const {ApiError, Provider} = require('./provider');
 const {CloudAPI} = require('./cloudapi');
-const {WorkerPool} = require('../data');
+const {WorkerPool, Worker} = require('../data');
 
 class GoogleProvider extends Provider {
 
@@ -130,7 +130,7 @@ class GoogleProvider extends Provider {
       throw error();
     }
 
-    if (worker.state !== this.Worker.states.REQUESTED) {
+    if (worker.state !== Worker.states.REQUESTED) {
       throw error();
     }
 
@@ -145,10 +145,11 @@ class GoogleProvider extends Provider {
       workerId: worker.workerId,
     });
     monitor.debug('setting state to RUNNING');
-    await worker.modify(w => {
-      w.lastModified = new Date();
-      w.state = this.Worker.states.RUNNING;
-      w.providerData.terminateAfter = expires.getTime();
+
+    await worker.update(this.db, worker => {
+      worker.state = Worker.states.RUNNING;
+      worker.providerData.terminateAfter = expires.getTime();
+      worker.lastModified = new Date();
     });
 
     // assume for the moment that workers self-terminate before 96 hours
@@ -313,17 +314,13 @@ class GoogleProvider extends Provider {
         workerGroup,
         workerId: op.targetId,
       });
-      const now = new Date();
-      await this.Worker.create({
+      const worker = Worker.fromApi({
         workerPoolId,
         providerId: this.providerId,
         workerGroup,
         workerId: op.targetId,
-        created: now,
-        lastModified: now,
-        lastChecked: now,
         expires: taskcluster.fromNow('1 week'),
-        state: this.Worker.states.REQUESTED,
+        state: Worker.states.REQUESTED,
         capacity: cfg.capacityPerInstance,
         providerData: {
           project: this.project,
@@ -337,6 +334,7 @@ class GoogleProvider extends Provider {
           workerConfig: cfg.workerConfig || {},
         },
       });
+      await worker.create(this.db);
     }));
   }
 
@@ -353,7 +351,7 @@ class GoogleProvider extends Provider {
    * the worker locally
    */
   async checkWorker({worker}) {
-    const states = this.Worker.states;
+    const states = Worker.states;
     this.seen[worker.workerPoolId] = this.seen[worker.workerPoolId] || 0;
     this.errors[worker.workerPoolId] = this.errors[worker.workerPoolId] || [];
 
@@ -376,8 +374,8 @@ class GoogleProvider extends Provider {
         // long-lived instances become orphaned from the provider. We don't update
         // this on every loop just to avoid the extra work when not needed
         if (worker.expires < taskcluster.fromNow('1 day')) {
-          await worker.modify(w => {
-            w.expires = taskcluster.fromNow('1 week');
+          await worker.update(this.db, worker => {
+            worker.expires = taskcluster.fromNow('1 week');
           });
         }
         if (worker.providerData.terminateAfter && worker.providerData.terminateAfter < Date.now()) {
@@ -422,13 +420,11 @@ class GoogleProvider extends Provider {
       state = states.STOPPED;
     }
     monitor.debug(`setting state to ${state}`);
-    await worker.modify(w => {
-      const now = new Date();
-      if (w.state !== state) {
-        w.lastModified = now;
-      }
-      w.lastChecked = now;
-      w.state = state;
+    const now = new Date();
+    await worker.update(this.db, worker => {
+      worker.state = state;
+      worker.lastModified = worker.state !== state ? now : null;
+      worker.lastChecked = now;
     });
   }
 
