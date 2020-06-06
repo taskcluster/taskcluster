@@ -11,7 +11,7 @@ import (
 // Makes sure that if a running task gets cancelled externally, the worker does not shut down
 func TestResolveResolvedTask(t *testing.T) {
 	defer setup(t)()
-	td, payload := cancelTask(t)
+	td, payload := CancelTask(t)
 	_ = submitAndAssert(t, td, payload, "exception", "canceled")
 }
 
@@ -25,7 +25,7 @@ func TestReclaimCancelledTask(t *testing.T) {
 		},
 	}
 
-	td, payload := cancelTask(t)
+	td, payload := CancelTask(t)
 	td.Scopes = []string{"generic-worker:cache:banana-cache"}
 	payload.Command = append(payload.Command, sleep(300)...)
 	payload.Mounts = toMountArray(t, &mounts)

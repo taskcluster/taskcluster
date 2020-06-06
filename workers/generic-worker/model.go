@@ -8,6 +8,7 @@ import (
 
 	"github.com/taskcluster/taskcluster/v30/clients/client-go/tcqueue"
 	"github.com/taskcluster/taskcluster/v30/workers/generic-worker/process"
+	"github.com/taskcluster/taskcluster/v30/workers/generic-worker/tc"
 )
 
 type (
@@ -28,7 +29,7 @@ type (
 		logMux         sync.RWMutex
 		logWriter      io.Writer
 		queueMux       sync.RWMutex
-		Queue          *tcqueue.Queue     `json:"-"`
+		Queue          tc.Queue           `json:"-"`
 		StatusManager  *TaskStatusManager `json:"-"`
 		LocalClaimTime time.Time          `json:"-"`
 		// This is a map of artifact names to internal feature names for

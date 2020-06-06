@@ -29,7 +29,8 @@ OUTPUT_ALL_PLATFORMS="Building just for the multiuser platform (build.sh -a argu
 OUTPUT_TEST="Test flag NOT detected (-t) as argument to build.sh script"
 OUTPUT_DIR=.
 ALL_PLATFORMS=false
-while getopts ":atpo:" opt; do
+SKIP_CODE_GEN=false
+while getopts ":atpso:" opt; do
     case "${opt}" in
         a)  ALL_PLATFORMS=true
             OUTPUT_ALL_PLATFORMS="Building for all platforms (build.sh -a argument specified)"
@@ -39,16 +40,19 @@ while getopts ":atpo:" opt; do
             ;;
         p)  PUBLISH=true
             ALL_PLATFORMS=true
-            OUTPUT_ALL_PLATFORMS="Skipping code generation (build.sh -p argument specified)"
+            SKIP_CODE_GEN=true
+            OUTPUT_ALL_PLATFORMS="Publishing (build.sh -p argument specified)"
             ;;
         o)  OUTPUT_DIR=$OPTARG
             ;;
+        s)  SKIP_CODE_GEN=true
+            echo "Skipping code generation (build.sh -s argument specified)"
     esac
 done
 echo "${OUTPUT_ALL_PLATFORMS}"
 echo "${OUTPUT_TEST}"
 
-if ! $PUBLISH; then
+if ! $SKIP_CODE_GEN; then
     go install ./gw-codegen
     export PATH="$(go env GOPATH)/bin:${PATH}"
     go generate ./...

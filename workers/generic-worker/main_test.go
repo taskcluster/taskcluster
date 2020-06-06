@@ -12,7 +12,6 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/require"
-	"github.com/taskcluster/taskcluster/v30/workers/generic-worker/testutil"
 )
 
 // Test failure should resolve as "failed"
@@ -29,7 +28,6 @@ func TestFailureResolvesAsFailure(t *testing.T) {
 
 func TestIdleWithoutCrash(t *testing.T) {
 	defer setup(t)()
-	testutil.RequireTaskclusterCredentials(t)
 	start := time.Now()
 	config.IdleTimeoutSecs = 7
 	exitCode := RunWorker()

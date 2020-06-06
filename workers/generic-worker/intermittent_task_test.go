@@ -1,8 +1,6 @@
 package main
 
 import (
-	"io/ioutil"
-	"path/filepath"
 	"strings"
 	"testing"
 )
@@ -117,11 +115,7 @@ func TestIntermittentNegativeExitCode(t *testing.T) {
 
 	_ = submitAndAssert(t, td, payload, "exception", "malformed-payload")
 
-	bytes, err := ioutil.ReadFile(filepath.Join(taskContext.TaskDir, logPath))
-	if err != nil {
-		t.Fatalf("Error when trying to read log file: %v", err)
-	}
-	logtext := string(bytes)
+	logtext := LogText(t)
 	substring := "onExitStatus.retry.0: Must be greater than or equal to 1"
 	if !strings.Contains(logtext, substring) {
 		t.Log(logtext)

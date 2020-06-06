@@ -13,7 +13,7 @@ func ReportCrashToSentry(r interface{}) {
 		log.Println("No sentry project defined, not reporting to sentry")
 		return
 	}
-	Auth := config.Auth()
+	Auth := serviceFactory.Auth(config.Credentials(), config.RootURL)
 	res, err := Auth.SentryDSN(config.SentryProject)
 	if err != nil {
 		log.Printf("WARNING: Could not get sentry DSN: %v", err)

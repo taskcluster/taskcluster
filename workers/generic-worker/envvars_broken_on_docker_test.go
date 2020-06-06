@@ -18,7 +18,7 @@ func TestWorkerLocation(t *testing.T) {
 
 	payload := GenericWorkerPayload{
 		Env: map[string]string{
-			"STRANGE_VAR": `()%!^"<>&|`,
+			"STRANGE_VAR": `()%!^"<>&|%3 r %!4 %~4RS %3 %PATH% %% "  tt`,
 		},
 		Command: append(
 			// In multiuser engine on Windows, the env vars are exported to a
@@ -36,7 +36,7 @@ func TestWorkerLocation(t *testing.T) {
 				"TASKCLUSTER_ROOT_URL",
 				config.RootURL,
 				"STRANGE_VAR",
-				`()%!^"<>&|`,
+				`()%!^"<>&|%3 r %!4 %~4RS %3 %PATH% %% "  tt`,
 			)...,
 		),
 		MaxRunTime: 180,

@@ -3,13 +3,11 @@
 package main
 
 import (
-	"io/ioutil"
 	"path/filepath"
 	"strings"
 	"testing"
 	"time"
 
-	"github.com/taskcluster/httpbackoff/v3"
 	"github.com/taskcluster/slugid-go/slugid"
 )
 
@@ -45,19 +43,7 @@ func TestAbortAfterMaxRunTime(t *testing.T) {
 	// check uploaded log mentions abortion
 	// note: we do this rather than local log, to check also log got uploaded
 	// as failure path requires that task is resolved before logs are uploaded
-	url, err := testQueue.GetLatestArtifact_SignedURL(taskID, "public/logs/live_backing.log", 10*time.Minute)
-	if err != nil {
-		t.Fatalf("Cannot retrieve url for live_backing.log: %v", err)
-	}
-	resp, _, err := httpbackoff.Get(url.String())
-	if err != nil {
-		t.Fatalf("Could not download log: %v", err)
-	}
-	defer resp.Body.Close()
-	bytes, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		t.Fatalf("Error when trying to read log file over http: %v", err)
-	}
+	bytes, _, _, _ := getArtifactContent(t, taskID, "public/logs/live_backing.log")
 	logtext := string(bytes)
 	if !strings.Contains(logtext, "max run time exceeded") {
 		t.Log("Was expecting log file to mention task abortion, but it doesn't:")
