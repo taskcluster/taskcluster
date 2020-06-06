@@ -3,6 +3,14 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v30.1.0
+
+### DEPLOYERS
+
+▶ [minor] [#2877](https://github.com/taskcluster/taskcluster/issues/2877)
+The `wmworkers_entities` table has now been migrated to use a relational table.
+The new table is called `workers`. `wmworkers_entities` will get deleted.
+
 ## v30.0.5
 
 ### DEVELOPERS
