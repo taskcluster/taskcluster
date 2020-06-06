@@ -24,6 +24,8 @@ const db = Database.setup({
   monitor: ...,
   statementTimeout: ..., // optional
   poolSize: ..., // optional, default 5
+  azureCryptoKey: ..., // optional, only required to read lib-entities encrypted data
+  cryptoKeys: ..., // optional, only required if encrypting columns
 });
 ```
 
@@ -32,6 +34,8 @@ The read URL is used for queries that only read data, and can operate on read-on
 The `monitor` is a taskcluster-lib-monitor instance, used to report database metrics.
 if `statementTimeout` is set, then it is treated as a timeout (in milliseconds) after which a statement will be aborted.
 This is typically used in web processes to abort statements running longer than 30s, after which time the HTTP client has likely given up.
+
+The `azureCryptoKey`, and `cryptoKeys` parameters are explained below in "Secret Data" and "Encryption".
 
 The `poolSize` parameter specifies the maximum number of Postgres clients in each pool of clients, with two pools (read and write) in use.
 DB function calls made when there are no clients available will be queued and wait until a client is avaliable.
@@ -248,7 +252,7 @@ The `db.encrypt` and `db.decrypt` methods serve to encrypt and decrypt values fo
 Both take a parameter named `value` that will either be encrypted and built into a format suitable for storing in the db
 or pulled out of that format and decryped.
 
-To enable encryption/decryption, provide `Database.setup` with at least one of `azureCrytoKey` or `cryptoKeys`. The first
+To enable encryption/decryption, provide `Database.setup` with at least one of `azureCryptoKey` or `cryptoKeys`. The first
 of which is the key that `lib-entities` used for encryption. The latter is structured like
 
 ```javascript
@@ -274,6 +278,9 @@ const rows = db.fns.get_widget(widgetId);
 console.log(db.decrypt({value: rows[0].widget_code}).toString('utf8'));
 ```
 
+The format of the cleartext depends on context -- this library provides the caller with a JS Buffer object.
+In general, this contains either a raw UTF-8 string or a JSON-encoded value.
+
 ### Updating Tables With New Keys
 
 Every service with encrypted data should have a periodic task that updates all rows of the table to use the current key and version.
@@ -289,9 +296,6 @@ The binary payload is derived by first base64-decoding each `__bufN_val` propert
 
 That binary payload, in turn, is defined in the [`EncryptedBaseType` constructor](https://github.com/taskcluster/azure-entities/blob/c6f63e3553c71f0859a5d6338ce5e7c7eb8c9671/src/entitytypes.js#L716-L725).
 It is the concatenation of a 128-bit (16-byte) random initialization vector (`iv`) and the ciphertext produced by aes-256 in CBC mode.
-
-The format of the cleartext depends on context -- this library provides the caller with a JS Buffer object.
-In general, this contains either a raw UTF-8 string or a JSON-encoded value.
 
 ## Security Invariants
 

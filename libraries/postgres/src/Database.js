@@ -659,6 +659,7 @@ class Database {
    * have one property.
    */
   encrypt({value}) {
+    assert(value instanceof Buffer, 'Encrypted values must be Buffers');
     const {id, key} = this.keyring.currentCryptoKey('aes-256');
 
     const iv = crypto.randomBytes(16);

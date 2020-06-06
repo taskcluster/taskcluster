@@ -1,4 +1,5 @@
 const slugid = require('slugid');
+const crypto = require('crypto');
 const {Client} = require('pg');
 const {makePgUrl} = require('./util');
 
@@ -64,7 +65,7 @@ const postgresResources = async ({userConfig, answer, configTmpl}) => {
       userConfig[name].db_crypto_keys = [{
         id: 'dev-init',
         algo: 'aes-256',
-        key: Buffer.from((slugid.v4() + slugid.v4()).slice(0, 32)).toString('base64'),
+        key: crypto.randomBytes(32).toString('base64'),
       }];
     }
     if (cfg.read_db_url !== undefined && !userConfig[name].read_db_url) {

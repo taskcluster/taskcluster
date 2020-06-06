@@ -644,7 +644,7 @@ helper.dbSuite(path.basename(__filename), function() {
     });
 
     test('encrypt/decrypt simple', async function() {
-      const encrypted = db.encrypt({value: 'hi'});
+      const encrypted = db.encrypt({value: Buffer.from('hi')});
       assert.equal(encrypted.v, 0);
       assert.equal(encrypted.kid, 'azure');
       assert.equal(encrypted.__bufchunks_val, 1);
@@ -657,7 +657,7 @@ helper.dbSuite(path.basename(__filename), function() {
     });
 
     test('encrypt/decrypt multiple keys', async function() {
-      const encrypted = db.encrypt({value: 'hi'});
+      const encrypted = db.encrypt({value: Buffer.from('hi')});
       assert.equal(encrypted.v, 0);
       assert.equal(encrypted.kid, 'azure');
       assert.equal(encrypted.__bufchunks_val, 1);
@@ -672,7 +672,7 @@ helper.dbSuite(path.basename(__filename), function() {
       const decrypted = new_db.decrypt({value: encrypted});
       assert.equal(decrypted.toString(), 'hi');
 
-      const new_encrypted = new_db.encrypt({value: 'new hi'});
+      const new_encrypted = new_db.encrypt({value: Buffer.from('new hi')});
       assert.equal(new_encrypted.kid, 'foo');
       const new_decrypted = new_db.decrypt({value: new_encrypted});
       assert.equal(new_decrypted.toString(), 'new hi');
@@ -709,13 +709,19 @@ helper.dbSuite(path.basename(__filename), function() {
       const bad_db = await Database.setup({schema, readDbUrl: helper.dbUrl, writeDbUrl: helper.dbUrl,
         serviceName: 'service-2', monitor});
       assert.throws(() => {
-        bad_db.encrypt({value: 'hi'});
+        bad_db.encrypt({value: Buffer.from('hi')});
       }, /no current key is configured/);
 
-      const encrypted = db.encrypt({value: 'hi'});
+      const encrypted = db.encrypt({value: Buffer.from('hi')});
       assert.throws(() => {
         bad_db.decrypt({value: encrypted});
       }, /Crypto key not found: `azure`/);
+    });
+
+    test('encrypt errors for non-buffers', async function() {
+      assert.throws(() => {
+        db.encrypt({value: 'i am just a string'});
+      }, /Encrypted values must be Buffers/);
     });
   });
 });

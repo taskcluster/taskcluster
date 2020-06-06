@@ -22,7 +22,8 @@ class Keyring {
       this.currentCrypto = 'azure';
     }
 
-    // Our standard postgres keys. This will override any azure keys if they exist
+    // Our standard postgres keys. Anything in here will be considered more current than azure keys.
+    // A key here with the name `azure` will override `azureCryptoKey`.
     if (cryptoKeys) {
       for (const {id, algo, key} of cryptoKeys) {
         assert(id, 'Keyring crypto keys must have `id`');
