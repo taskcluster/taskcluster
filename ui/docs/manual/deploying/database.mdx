@@ -120,7 +120,7 @@ is a JSON array where each element is an object of the form
 ```
 
 The last element of the array will be the current key and all encryption will be performed with it. Other keys are used in decryption of values that were encrypted with the
-older key. This allows you to rotate your encryption keys. At the current time, we wil also use `azure_crypto_key` as the oldest element of this list to allow for migrations
+older key. This allows you to rotate your encryption keys. At the current time, Taskcluster implicitly treats `azure_crypto_key` as the oldest element of this list, with id `azure`, to maintain compatibility with existing configurations.
 from older table formats.
 
 ## Upgrades
