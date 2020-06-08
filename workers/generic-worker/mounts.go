@@ -722,7 +722,7 @@ func (ac *ArtifactContent) Download(task *TaskRun) (file string, sha256 string, 
 	basename := slugid.Nice()
 	file = filepath.Join(config.DownloadsDir, basename)
 	var signedURL *url.URL
-	signedURL, err = queue.GetLatestArtifact_SignedURL(ac.TaskID, ac.Artifact, time.Minute*30)
+	signedURL, err = task.Queue.GetLatestArtifact_SignedURL(ac.TaskID, ac.Artifact, time.Minute*30)
 	if err != nil {
 		return
 	}
