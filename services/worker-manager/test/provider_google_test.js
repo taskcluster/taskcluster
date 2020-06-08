@@ -121,7 +121,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
         const workerInfo = {existingCapacity: 0, requestedCapacity: 0};
         await provider.provision({workerPool, workerInfo});
         const workers = await Worker.getWorkers(helper.db, {});
-        assert.equal(workers.length, expectedWorkers);
+        assert.equal(workers.rows.length, expectedWorkers);
         await check(workers);
       });
     };
@@ -136,7 +136,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
       config,
       expectedWorkers: 1,
     }, async workers => {
-      const worker = workers[0];
+      const worker = workers.rows[0];
 
       assert.equal(worker.workerPoolId, workerPoolId, 'Worker was created for a wrong worker pool');
       assert.equal(worker.workerGroup, defaultLaunchConfig.region, 'Worker group should be region');
@@ -188,7 +188,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
       },
       expectedWorkers: 1,
     }, async workers => {
-      const worker = workers[0];
+      const worker = workers.rows[0];
       // Check that this is setting times correctly to within a second or so to allow for some time
       // for the provisioning loop
       assert(worker.providerData.terminateAfter - new Date() - (6000 * 1000) < 5000);
@@ -325,7 +325,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
       assert.equal(errors.entries.length, 1);
       assert.equal(errors.entries[0].description, 'uhoh');
       const workers = await Worker.getWorkers(helper.db, {});
-      assert.equal(workers.length, 0); // nothing created
+      assert.equal(workers.rows.length, 0); // nothing created
     });
 
     test('rate-limiting from compute.insert', async function() {
@@ -344,7 +344,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
       assert.equal(fake.compute.instances.insertCalls.length, 2);
 
       const workers = await Worker.getWorkers(helper.db, {});
-      assert.equal(workers.length, 1); // created a worker on retry
+      assert.equal(workers.rows.length, 1); // created a worker on retry
     });
   });
 
