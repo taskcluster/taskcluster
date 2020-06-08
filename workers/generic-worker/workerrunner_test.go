@@ -85,7 +85,7 @@ func TestNewCredentials(t *testing.T) {
 			// messages are handled asynchronously, so poll until
 			// seeing the updated creds
 
-			for {
+			for i := 0; i < 200; i++ {
 				creds := config.Credentials()
 				if creds.ClientID != "old" {
 					require.Equal(t, clientID, creds.ClientID)
@@ -95,10 +95,11 @@ func TestNewCredentials(t *testing.T) {
 					} else {
 						require.Equal(t, "", creds.Certificate)
 					}
-					break
+					return
 				}
 				time.Sleep(10 * time.Millisecond)
 			}
+			panic("credentials update not observed")
 		}
 	}
 
