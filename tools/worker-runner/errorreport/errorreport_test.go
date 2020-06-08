@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/require"
+	"github.com/taskcluster/taskcluster/v30/clients/client-go/tcworkermanager"
 	"github.com/taskcluster/taskcluster/v30/internal/workerproto"
 	ptesting "github.com/taskcluster/taskcluster/v30/internal/workerproto/testing"
 	"github.com/taskcluster/taskcluster/v30/tools/worker-runner/run"
@@ -42,10 +43,18 @@ func TestHandleMessage(t *testing.T) {
 			},
 		})
 
-		// delay in between sending message and checking outcome
-		time.Sleep(5 * time.Millisecond)
-
-		reports, err := tc.FakeWorkerManagerWorkerErrorReports()
+		var reports []*tcworkermanager.WorkerErrorReport
+		var err error
+		func() {
+			for i := 0; i < 200; i++ {
+				reports, err = tc.FakeWorkerManagerWorkerErrorReports()
+				if len(reports) == 1 {
+					return
+				}
+				time.Sleep(10 * time.Millisecond)
+			}
+			panic("worker error report not received")
+		}()
 		require.NoError(t, err)
 		require.Len(t, reports, 1)
 
@@ -79,8 +88,8 @@ func TestHandleMessage(t *testing.T) {
 			},
 		})
 
-		// delay in between sending message and checking outcome
-		time.Sleep(1 * time.Millisecond)
+		// note that without a delay we may not have waited
+		// long enough for potential calls to finish
 
 		reports, err := tc.FakeWorkerManagerWorkerErrorReports()
 		require.Errorf(t, err, "No reportWorkerError calls")
