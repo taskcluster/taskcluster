@@ -33,6 +33,7 @@ import (
 	"github.com/taskcluster/taskcluster/v30/internal/scopes"
 	"github.com/taskcluster/taskcluster/v30/workers/generic-worker/expose"
 	"github.com/taskcluster/taskcluster/v30/workers/generic-worker/fileutil"
+	"github.com/taskcluster/taskcluster/v30/workers/generic-worker/graceful"
 	"github.com/taskcluster/taskcluster/v30/workers/generic-worker/gwconfig"
 	"github.com/taskcluster/taskcluster/v30/workers/generic-worker/host"
 	"github.com/taskcluster/taskcluster/v30/workers/generic-worker/process"
@@ -474,6 +475,7 @@ func RunWorker() (exitCode ExitCode) {
 			logEvent("taskStart", task, time.Now())
 
 			errors := task.Run()
+
 			logEvent("taskFinish", task, time.Now())
 			if errors.Occurred() {
 				log.Printf("ERROR(s) encountered: %v", errors)
@@ -539,6 +541,11 @@ func RunWorker() (exitCode ExitCode) {
 				log.Printf("No task claimed. Idle for %v%v.%v", idleTime, remainingIdleTimeText, remainingTaskCountText)
 			}
 		}
+
+		if graceful.TerminationRequested() {
+			return WORKER_SHUTDOWN
+		}
+
 		// To avoid hammering queue, make sure there is at least 5 seconds
 		// between consecutive requests. Note we do this even if a task ran,
 		// since a task could complete in less than that amount of time.
@@ -1078,7 +1085,7 @@ func (task *TaskRun) Run() (err *ExecutionErrors) {
 	// resolve the run as exception and create a new run, if the task has
 	// additional retries left.
 	if configureForAWS {
-		stopHandlingWorkerShutdown := handleWorkerShutdown(func() {
+		stopHandlingAWSWorkerShutdown := handleAWSWorkerShutdown(func() {
 			_ = task.StatusManager.Abort(
 				&CommandExecutionError{
 					Cause:      fmt.Errorf("AWS has issued a spot termination - need to abort task"),
@@ -1087,8 +1094,21 @@ func (task *TaskRun) Run() (err *ExecutionErrors) {
 				},
 			)
 		})
-		defer stopHandlingWorkerShutdown()
+		defer stopHandlingAWSWorkerShutdown()
 	}
+
+	stopHandlingGracefulTermination := graceful.OnTerminationRequest(func(finishTasks bool) {
+		if !finishTasks {
+			_ = task.StatusManager.Abort(
+				&CommandExecutionError{
+					Cause:      fmt.Errorf("graceful termination requested, without time to finish tasks"),
+					Reason:     workerShutdown,
+					TaskStatus: aborted,
+				},
+			)
+		}
+	})
+	defer stopHandlingGracefulTermination()
 
 	started := time.Now()
 	defer func() {
