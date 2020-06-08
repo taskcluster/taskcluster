@@ -60,13 +60,25 @@ fi
 
 function install {
   if ! $PUBLISH; then
-      GOOS="${2}" GOARCH="${3}" CGO_ENABLED=0 go install -ldflags "-X main.revision=$(git rev-parse HEAD)" -tags "${1}" -v ./...
+      GOOS="${2}" GOARCH="${3}" CGO_ENABLED=0 go install -tags "${1}" -v ./...
       GOOS="${2}" GOARCH="${3}" go vet -tags "${1}" ./...
       # note, this just builds tests, it doesn't run them!
       GOOS="${2}" GOARCH="${3}" CGO_ENABLED=0 go test -tags "${1}" -c .
       GOOS="${2}" GOARCH="${3}" CGO_ENABLED=0 go test -tags "${1}" -c ./livelog
   fi
-  GOOS="${2}" GOARCH="${3}" CGO_ENABLED=0 go build -o "$OUTPUT_DIR/generic-worker-${1}-${2}-${3}" -ldflags "-X main.revision=$(git rev-parse HEAD)" -tags "${1}" -v .
+  GOOS="${2}" GOARCH="${3}" CGO_ENABLED=0 go build -o "$OUTPUT_DIR/generic-worker-${1}-${2}-${3}" -ldflags "-X github.com/taskcluster/taskcluster/v30/workers/generic-worker.revision=$(git rev-parse HEAD)" -tags "${1}" -v .
+
+  # verify that the revision has been correctly embedded when publishing
+  if $PUBLISH; then
+      if [ "${2}" = "linux" -a "${3}" = "amd64" ]; then
+          vers=$("$OUTPUT_DIR/generic-worker-${1}-${2}-${3}" --version \
+              | grep -E 'revision: https://github.com/taskcluster/taskcluster/commits/[a-z0-9]{40}')
+          if [ -z "$vers" ]; then
+              echo "The --version option does not output a proper revision link"
+              exit 1
+          fi
+      fi
+  fi
 }
 
 # NOTE: when changing this, also update
@@ -107,10 +119,10 @@ CGO_ENABLED=0 go get github.com/taskcluster/livelog
 
 if $TEST; then
   go get github.com/taskcluster/taskcluster/v30/tools/taskcluster-proxy
-  CGO_ENABLED=1 GORACE="history_size=7" /usr/bin/sudo "GOPATH=$GOPATH" "GW_TESTS_RUN_AS_CURRENT_USER=" "TASKCLUSTER_CERTIFICATE=$TASKCLUSTER_CERTIFICATE" "TASKCLUSTER_ACCESS_TOKEN=$TASKCLUSTER_ACCESS_TOKEN" "TASKCLUSTER_CLIENT_ID=$TASKCLUSTER_CLIENT_ID" "TASKCLUSTER_ROOT_URL=$TASKCLUSTER_ROOT_URL" $(which go) test -v -tags multiuser -ldflags "-X github.com/taskcluster/taskcluster/v30/workers/generic-worker.revision=$(git rev-parse HEAD)" -race -timeout 1h ./...
+  CGO_ENABLED=1 GORACE="history_size=7" /usr/bin/sudo "GOPATH=$GOPATH" "GW_TESTS_RUN_AS_CURRENT_USER=" "TASKCLUSTER_CERTIFICATE=$TASKCLUSTER_CERTIFICATE" "TASKCLUSTER_ACCESS_TOKEN=$TASKCLUSTER_ACCESS_TOKEN" "TASKCLUSTER_CLIENT_ID=$TASKCLUSTER_CLIENT_ID" "TASKCLUSTER_ROOT_URL=$TASKCLUSTER_ROOT_URL" $(which go) test -v -tags multiuser -race -timeout 1h ./...
   MYGOHOSTOS="$(go env GOHOSTOS)"
   if [ "${MYGOHOSTOS}" == "linux" ] || [ "${MYGOHOSTOS}" == "darwin" ]; then
-    CGO_ENABLED=1 GORACE="history_size=7" go test -v -tags docker -ldflags "-X github.com/taskcluster/taskcluster/v30/workers/generic-worker.revision=$(git rev-parse HEAD)" -race -timeout 1h ./...
+    CGO_ENABLED=1 GORACE="history_size=7" go test -v -tags docker -race -timeout 1h ./...
   fi
   go get golang.org/x/lint/golint
   golint $(go list ./...) | sed "s*${PWD}/**"
