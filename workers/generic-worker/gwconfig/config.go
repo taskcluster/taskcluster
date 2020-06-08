@@ -9,6 +9,7 @@ import (
 	"net"
 	"os"
 	"reflect"
+	"sync"
 
 	tcclient "github.com/taskcluster/taskcluster/v30/clients/client-go"
 	"github.com/taskcluster/taskcluster/v30/workers/generic-worker/fileutil"
@@ -19,6 +20,10 @@ type (
 	Config struct {
 		PrivateConfig
 		PublicConfig
+
+		// a lock for access to ClientID, AccessToken, and
+		// Certificate, since these values must change as a group
+		credsMutex sync.Mutex
 	}
 
 	PublicConfig struct {
@@ -133,11 +138,23 @@ func (err MissingConfigError) Error() string {
 }
 
 func (c *Config) Credentials() *tcclient.Credentials {
-	return &tcclient.Credentials{
+	c.credsMutex.Lock()
+	creds := &tcclient.Credentials{
 		AccessToken: c.AccessToken,
 		ClientID:    c.ClientID,
 		Certificate: c.Certificate,
 	}
+	c.credsMutex.Unlock()
+	return creds
+}
+
+func (c *Config) UpdateCredentials(creds *tcclient.Credentials) {
+	c.credsMutex.Lock()
+	c.ClientID = creds.ClientID
+	c.AccessToken = creds.AccessToken
+	c.Certificate = creds.Certificate
+	log.Printf("Using new worker credentials with clientId %s", creds.ClientID)
+	c.credsMutex.Unlock()
 }
 
 type File struct {

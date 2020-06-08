@@ -1,12 +1,15 @@
 package main
 
 import (
+	"fmt"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/require"
 	"github.com/taskcluster/taskcluster/v30/internal/workerproto"
 	wptesting "github.com/taskcluster/taskcluster/v30/internal/workerproto/testing"
 	"github.com/taskcluster/taskcluster/v30/workers/generic-worker/graceful"
+	"github.com/taskcluster/taskcluster/v30/workers/generic-worker/gwconfig"
 )
 
 func setupWorkerRunnerTest(runnerCapabilities ...string) (*workerproto.Protocol, func()) {
@@ -54,4 +57,51 @@ func TestGracefulTermination(t *testing.T) {
 	finishTasks := <-done
 	require.True(t, finishTasks)
 	require.True(t, graceful.TerminationRequested())
+}
+
+func TestNewCredentials(t *testing.T) {
+	runnerProto, cleanup := setupWorkerRunnerTest("new-credentials")
+	defer cleanup()
+
+	test := func(withCert bool) func(*testing.T) {
+		return func(t *testing.T) {
+			config = &gwconfig.Config{}
+			config.ClientID = "old"
+			clientID := fmt.Sprintf("client-cert-%v", withCert)
+
+			properties := map[string]interface{}{
+				"client-id":    clientID,
+				"access-token": "big-secret",
+			}
+			if withCert {
+				properties["certificate"] = "CERT"
+			}
+
+			runnerProto.Send(workerproto.Message{
+				Type:       "new-credentials",
+				Properties: properties,
+			})
+
+			// messages are handled asynchronously, so poll until
+			// seeing the updated creds
+
+			for {
+				creds := config.Credentials()
+				if creds.ClientID != "old" {
+					require.Equal(t, clientID, creds.ClientID)
+					require.Equal(t, "big-secret", creds.AccessToken)
+					if withCert {
+						require.Equal(t, "CERT", creds.Certificate)
+					} else {
+						require.Equal(t, "", creds.Certificate)
+					}
+					break
+				}
+				time.Sleep(10 * time.Millisecond)
+			}
+		}
+	}
+
+	t.Run("WithCertificate", test(true))
+	t.Run("WithoutCertificate", test(false))
 }
