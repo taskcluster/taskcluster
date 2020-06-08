@@ -85,6 +85,7 @@ func scheduleNamedTask(t *testing.T, td *tcqueue.TaskDefinitionRequest, payload 
 	}
 
 	// submit task
+	queue := serviceFactory.Queue(config.Credentials(), config.RootURL)
 	_, err := queue.CreateTask(taskID, td)
 	if err != nil {
 		t.Fatalf("Could not submit task: %v", err)
@@ -141,6 +142,7 @@ func testTask(t *testing.T) *tcqueue.TaskDefinitionRequest {
 }
 
 func getArtifactContent(t *testing.T, taskID string, artifact string) ([]byte, *http.Response, *http.Response, *url.URL) {
+	queue := serviceFactory.Queue(config.Credentials(), config.RootURL)
 	url, err := queue.GetLatestArtifact_SignedURL(taskID, artifact, 10*time.Minute)
 	if err != nil {
 		t.Fatalf("Error trying to fetch artifacts from Amazon...\n%s", err)
@@ -172,6 +174,7 @@ func ensureResolution(t *testing.T, taskID, state, reason string) {
 	} else {
 		execute(t, TASKS_COMPLETE)
 	}
+	queue := serviceFactory.Queue(config.Credentials(), config.RootURL)
 	status, err := queue.Status(taskID)
 	if err != nil {
 		t.Fatal("Error retrieving status from queue")
@@ -294,6 +297,7 @@ func CreateArtifactFromFile(t *testing.T, path string, name string) (taskID stri
 	taskID = slugid.Encode(uuid.UUID(v4uuid))
 
 	// See if task already exists
+	queue := serviceFactory.Queue(config.Credentials(), config.RootURL)
 	tdr, err := queue.Task(taskID)
 	if err != nil {
 		switch e := err.(type) {
@@ -494,7 +498,6 @@ func GWTest(t *testing.T) *Test {
 	}()
 
 	serviceFactory = mocktc.NewServiceFactory(t)
-	queue = serviceFactory.Queue(nil, "")
 
 	// we need to use a non-default port for the livelog internalGETPort, so
 	// that we don't conflict with a generic-worker in which the tests are
@@ -555,7 +558,6 @@ func (gwtest *Test) Teardown() {
 	}
 	taskContext = nil
 	globalTestName = ""
-	queue = nil
 	config = nil
 	// gwtest.srv nil if no services
 	if gwtest.srv != nil {

@@ -57,10 +57,7 @@ var (
 	configureForAzure bool
 	// General platform independent user settings, such as home directory, username...
 	// Platform specific data should be managed in plat_<platform>.go files
-	taskContext = &TaskContext{}
-	// queue is the object we will use for accessing queue api. See
-	// https://docs.taskcluster.net/reference/platform/queue/api-docs
-	queue          tc.Queue
+	taskContext    = &TaskContext{}
 	config         *gwconfig.Config
 	serviceFactory tc.ServiceFactory
 	configProvider gwconfig.Provider
@@ -199,8 +196,6 @@ func main() {
 		//   the current user. In this case we won't change file permissions.
 		secure(configFile.Path)
 
-		queue = serviceFactory.Queue(config.Credentials(), config.RootURL)
-
 		exitCode := RunWorker()
 		log.Printf("Exiting worker with exit code %v", exitCode)
 		switch exitCode {
@@ -330,12 +325,15 @@ var exposer expose.Exposer
 
 func setupExposer() (err error) {
 	if config.WSTAudience != "" && config.WSTServerURL != "" {
+		authClientFactory := func() tc.Auth {
+			return serviceFactory.Auth(config.Credentials(), config.RootURL)
+		}
 		exposer, err = expose.NewWST(
 			config.WSTServerURL,
 			config.WSTAudience,
 			config.WorkerGroup,
 			config.WorkerID,
-			serviceFactory.Auth(config.Credentials(), config.RootURL),
+			authClientFactory,
 		)
 	} else {
 		exposer, err = expose.NewLocal(config.PublicIP)
@@ -587,6 +585,7 @@ func ClaimWork() *TaskRun {
 	// Store local clock time when claiming, rather than queue's claim time, to
 	// avoid problems with clock skew.
 	localClaimTime := time.Now()
+	queue := serviceFactory.Queue(config.Credentials(), config.RootURL)
 	resp, err := queue.ClaimWork(config.ProvisionerID, config.WorkerType, req)
 	if err != nil {
 		log.Printf("Could not claim work. %v", err)
