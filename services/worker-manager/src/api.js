@@ -377,11 +377,18 @@ builder.declare({
   const { workerPoolId, workerGroup } = req.params;
   const {continuationToken, rows} = await paginateResults({
     query: req.query,
-    fetch: (size, offset) => Worker.getWorkers(this.db, { workerPoolId, workerGroup }, { size, offset }),
+    fetch: (size, offset) => this.db.fns.get_workers(
+      workerPoolId, /* worker_pool_id */
+      workerGroup, /* worker_group */
+      null, /* worker_id */
+      null, /* state */
+      size, /* page_size */
+      offset, /* page_offset */
+    ),
   });
 
   const result = {
-    workers: rows.map(r => r.serializable()),
+    workers: rows.map(r => Worker.fromDb(r).serializable()),
     continuationToken,
   };
 
@@ -539,11 +546,18 @@ builder.declare({
 
   const {continuationToken, rows} = await paginateResults({
     query: req.query,
-    fetch: (size, offset) => Worker.getWorkers(this.db, { workerPoolId }, { size, offset }),
+    fetch: (size, offset) => this.db.fns.get_workers(
+      workerPoolId, /* worker_pool_id */
+      null, /* worker_group */
+      null, /* worker_id */
+      null, /* state */
+      size, /* page_size */
+      offset, /* page_offset */
+    ),
   });
 
   const result = {
-    workers: rows.map(r => r.serializable()),
+    workers: rows.map(r => Worker.fromDb(r).serializable()),
     continuationToken,
   };
   return res.reply(result);

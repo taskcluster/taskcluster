@@ -1,8 +1,10 @@
+const assert = require('assert');
 const _ = require('lodash');
 const Entity = require('taskcluster-lib-entities');
 const {UNIQUE_VIOLATION} = require('taskcluster-lib-postgres');
 const taskcluster = require('taskcluster-client');
 const {MAX_MODIFY_ATTEMPTS} = require('./util');
+const { paginateResults } = require('taskcluster-lib-api');
 
 const makeError = (message, code, statusCode) => {
   const err = new Error(message);
@@ -402,21 +404,59 @@ class Worker {
   }
 
   // Call db.get_workers with named arguments.
-  // Returns a list of Worker instances if there is something to show
-  // otherwise an empty list is returned.
+  // You can use this in two ways: with a handler or without a handler.
+  // In the latter case you'll get a list of up to 1000 entries and a
+  // continuation token.
+  // The response will be of the form { rows, continationToken }.
+  // If there are no workers to show, the response will have the
+  // `rows` field set to an empty array.
+  //
+  // If a handler is supplied, then it will invoke the handler
+  // on every item of the scan.
   static async getWorkers(
     db,
     { workerPoolId, workerGroup, workerId, providerId, created, expires, state },
-    { size, offset } = {},
+    {
+      query,
+      handler,
+    } = {},
   ) {
-    return (await db.fns.get_workers(
-      workerPoolId || null,
-      workerGroup || null,
-      workerId || null,
-      state || null,
-      size || null,
-      offset || null,
-    )).map(Worker.fromDb);
+    assert(!handler || handler instanceof Function,
+      'If options.handler is given it must be a function');
+    const fetchResults = async (continuation) => {
+      const query = continuation ? { continuationToken: continuation } : {};
+      const {continuationToken, rows} = await paginateResults({
+        query,
+        fetch: (size, offset) => db.fns.get_workers(
+          workerPoolId || null,
+          workerGroup || null,
+          workerId || null,
+          state || null,
+          size,
+          offset,
+        ),
+      });
+
+      const entries = rows.map(Worker.fromDb);
+
+      return { rows: entries, continuationToken: continuationToken };
+    };
+
+    // Fetch results
+    let results = await fetchResults(query ? query.continuationToken : {});
+
+    // If we have a handler, then we have to handle the results
+    if (handler) {
+      const handleResults = async (res) => {
+        await Promise.all(res.rows.map((item) => handler.call(this, item)));
+
+        if (res.continuationToken) {
+          return await handleResults(await fetchResults(res.continuationToken));
+        }
+      };
+      results = await handleResults(results);
+    }
+    return results;
   }
 
   // Compare "important" fields to another worker (used to check idempotency)
