@@ -115,9 +115,7 @@ class Schema {
       (acc, version) => {
         Object.entries(version.methods).forEach(([name, method]) => {
           if (method.deprecated) {
-            const content = acc.get(name);
-            assert(content, 'Cannot deprecate new functions');
-            Object.assign(method, content, {deprecated: true});
+            Object.assign(method, acc.get(name), {deprecated: true});
           }
           acc.set(name, method);
         });

@@ -397,10 +397,9 @@ class Database {
           await client.query(`DO ${dollarQuote(migrationScript)}`);
         }
         showProgress('..defining methods');
-        for (let [methodName, {deprecated, args, body, returns}] of Object.entries(version.methods)) {
-          // We don't need to do anything for deprecated methods
-          if (deprecated) {
-            continue;
+        for (let [methodName, {args, body, returns, deprecated}] of Object.entries(version.methods)) {
+          if (deprecated && !args && !returns && !body) {
+            continue; // This allows just deprecating without changing a method
           }
           await client.query(`create or replace function
           "${methodName}"(${args})
