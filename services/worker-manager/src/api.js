@@ -375,7 +375,11 @@ builder.declare({
   ].join('\n'),
 }, async function(req, res) {
   const { workerPoolId, workerGroup } = req.params;
-  const { rows: workers, continuationToken } = await Worker.getWorkers(this.db, { workerPoolId, workerGroup }, { query: req.query });
+  const { rows: workers, continuationToken } = await Worker.getWorkers(
+    this.db,
+    { workerPoolId, workerGroup },
+    { query: req.query },
+  );
 
   const result = {
     workers: workers.map(w => w.serializable()),
