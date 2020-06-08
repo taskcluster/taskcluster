@@ -66,5 +66,7 @@ jobs:
   staging:
     attributes:
       only-on: staging-release
+    scopes:
+      - secrets:get:project/taskcluster/staging-release
     run:
-      command: yarn release:publish --logs-dir $(pwd)/release-debug-logs --no-push --staging
+      command: yarn release:publish --logs-dir $(pwd)/release-debug-logs --staging {head_ref}

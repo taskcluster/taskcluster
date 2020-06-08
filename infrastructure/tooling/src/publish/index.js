@@ -25,8 +25,8 @@ class Publish {
 
   async generateTasks() {
     // try loading the secret into process.env
-    if (process.env.TASKCLUSTER_PROXY_URL && !this.cmdOptions.staging) {
-      const secretName = "project/taskcluster/release";
+    if (process.env.TASKCLUSTER_PROXY_URL) {
+      const secretName = `project/taskcluster/${this.cmdOptions.staging ? 'staging-' : ''}release`;
       console.log(`loading secrets from taskcluster secret ${secretName} via taskcluster-proxy`);
       const secrets = new taskcluster.Secrets({rootUrl: process.env.TASKCLUSTER_PROXY_URL});
       const {secret} = await secrets.get(secretName);
@@ -37,20 +37,21 @@ class Publish {
       }
     }
 
-    if (this.cmdOptions.push) {
-      [
-        'GH_TOKEN',
-        'NPM_TOKEN',
-        'PYPI_USERNAME',
-        'PYPI_PASSWORD',
-        'DOCKER_USERNAME',
-        'DOCKER_PASSWORD',
-      ].forEach(e => {
-        if (!process.env[e]) {
-          throw new Error(`$${e} is required (unless --no-push)`);
-        }
-      });
+    const expectedVars = [];
+    expectedVars.push('GH_TOKEN');
+    if (!this.cmdOptions.staging) {
+      expectedVars.push('NPM_TOKEN');
+      expectedVars.push('PYPI_USERNAME');
+      expectedVars.push('PYPI_PASSWORD');
+      expectedVars.push('DOCKER_USERNAME');
+      expectedVars.push('DOCKER_PASSWORD');
     }
+
+    expectedVars.forEach(e => {
+      if (!process.env[e]) {
+        throw new Error(`$${e} is required`);
+      }
+    });
 
     let tasks = this.build.generateTasks();
     generatePublishTasks({
@@ -107,11 +108,7 @@ class Publish {
 
     console.log(`Release version: ${context['release-version']}`);
     console.log(`Release docker image: ${context['monoimage-docker-image']}`);
-    if (!this.cmdOptions.push) {
-      console.log('NOTE: image, git commit + tags, and packages not pushed due to --no-push option');
-    } else {
-      console.log(`GitHub release: ${context['github-release']}`);
-    }
+    console.log(`GitHub release: ${context['github-release']}`);
   }
 }
 
