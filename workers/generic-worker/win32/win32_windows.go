@@ -816,6 +816,32 @@ func DeleteProfile(
 	return
 }
 
+// ArgvToCommandLineW performs the reverse of shell32 CommandLineToArgvW:
+//   https://docs.microsoft.com/en-us/windows/win32/api/shellapi/nf-shellapi-commandlinetoargvw?redirectedfrom=MSDN
+// See: https://blogs.msdn.microsoft.com/twistylittlepassagesallalike/2011/04/23/everyone-quotes-command-line-arguments-the-wrong-way/
+func ArgvToCommandLineW(text string) string {
+	if text != "" && !strings.ContainsAny(text, " \t\n\v\"") {
+		return text
+	}
+	escaped := `"`
+	for i := 0; i < len(text); i++ {
+		backslashes := 0
+		for ; i < len(text) && text[i] == '\\'; i++ {
+			backslashes++
+		}
+		switch {
+		case i == len(text)-1:
+			escaped += strings.Repeat(`\`, backslashes*2)
+		case text[i] == '"':
+			escaped += strings.Repeat(`\`, backslashes*2) + `\"`
+		default:
+			escaped += strings.Repeat(`\`, backslashes)
+		}
+	}
+	escaped += `"`
+	return escaped
+}
+
 // CMDExeEscape escapes cmd.exe metacharacters
 // See: https://blogs.msdn.microsoft.com/twistylittlepassagesallalike/2011/04/23/everyone-quotes-command-line-arguments-the-wrong-way/
 func CMDExeEscape(text string) string {

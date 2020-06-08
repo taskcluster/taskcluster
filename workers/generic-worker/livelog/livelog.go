@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"io"
 	"log"
-	"net"
 	"net/http"
 	"os"
 	"os/exec"
@@ -17,6 +16,7 @@ import (
 	"time"
 
 	"github.com/taskcluster/slugid-go/slugid"
+	"github.com/taskcluster/taskcluster/v30/workers/generic-worker/tchttputil"
 )
 
 // LiveLog provides access to a livelog process running on the OS. Use
@@ -143,9 +143,9 @@ func (l *LiveLog) connectInputStream() error {
 	// livelog process has started...
 	// Note we can't wait for GET port to be active before returning since
 	// livelog will only serve from that port once some content is sent - so no
-	// good to execute waitForPortToBeActive(l.getPort) here...  We would need
-	// to fix this in livelog codebase not here...
-	err = waitForPortToBeActive(l.PUTPort, time.Minute*1)
+	// good to execute tchttputil.WaitForLocalTCPListener(l.getPort) here...  We
+	// would need to fix this in livelog codebase not here...
+	err = tchttputil.WaitForLocalTCPListener(l.PUTPort, time.Minute*1)
 	if err != nil {
 		return err
 	}
@@ -158,18 +158,4 @@ func (l *LiveLog) connectInputStream() error {
 		}
 	}()
 	return nil
-}
-
-func waitForPortToBeActive(port uint16, timeout time.Duration) error {
-	deadline := time.Now().Add(timeout)
-	for time.Now().Before(deadline) {
-		conn, err := net.DialTimeout("tcp", "localhost:"+strconv.Itoa(int(port)), 60*time.Second)
-		if err != nil {
-			time.Sleep(100 * time.Millisecond)
-		} else {
-			_ = conn.Close()
-			return nil
-		}
-	}
-	return fmt.Errorf("Timed out waiting for port %v to be active after %v", port, timeout)
 }

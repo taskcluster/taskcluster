@@ -11,11 +11,6 @@ import (
 	"reflect"
 
 	tcclient "github.com/taskcluster/taskcluster/v30/clients/client-go"
-	"github.com/taskcluster/taskcluster/v30/clients/client-go/tcauth"
-	"github.com/taskcluster/taskcluster/v30/clients/client-go/tcpurgecache"
-	"github.com/taskcluster/taskcluster/v30/clients/client-go/tcqueue"
-	"github.com/taskcluster/taskcluster/v30/clients/client-go/tcsecrets"
-	"github.com/taskcluster/taskcluster/v30/clients/client-go/tcworkermanager"
 	"github.com/taskcluster/taskcluster/v30/workers/generic-worker/fileutil"
 )
 
@@ -28,7 +23,6 @@ type (
 
 	PublicConfig struct {
 		PublicEngineConfig
-		AuthRootURL                    string                 `json:"authRootURL"`
 		AvailabilityZone               string                 `json:"availabilityZone"`
 		CachesDir                      string                 `json:"cachesDir"`
 		CheckForNewDeploymentEverySecs uint                   `json:"checkForNewDeploymentEverySecs"`
@@ -46,13 +40,10 @@ type (
 		PrivateIP                      net.IP                 `json:"privateIP"`
 		ProvisionerID                  string                 `json:"provisionerId"`
 		PublicIP                       net.IP                 `json:"publicIP"`
-		PurgeCacheRootURL              string                 `json:"purgeCacheRootURL"`
-		QueueRootURL                   string                 `json:"queueRootURL"`
 		Region                         string                 `json:"region"`
 		RequiredDiskSpaceMegabytes     uint                   `json:"requiredDiskSpaceMegabytes"`
 		RootURL                        string                 `json:"rootURL"`
 		RunAfterUserCreation           string                 `json:"runAfterUserCreation"`
-		SecretsRootURL                 string                 `json:"secretsRootURL"`
 		SentryProject                  string                 `json:"sentryProject"`
 		ShutdownMachineOnIdle          bool                   `json:"shutdownMachineOnIdle"`
 		ShutdownMachineOnInternalError bool                   `json:"shutdownMachineOnInternalError"`
@@ -61,8 +52,7 @@ type (
 		TasksDir                       string                 `json:"tasksDir"`
 		WorkerGroup                    string                 `json:"workerGroup"`
 		WorkerID                       string                 `json:"workerId"`
-		WorkerLocation                 string                 `json:"workerLocation"`
-		WorkerManagerRootURL           string                 `json:"workerManagerRootURL"`
+		WorkerLocation                 string                 `json:"workerLocation,omitempty"`
 		WorkerType                     string                 `json:"workerType"`
 		WorkerTypeMetadata             map[string]interface{} `json:"workerTypeMetadata"`
 		WSTAudience                    string                 `json:"wstAudience"`
@@ -148,51 +138,6 @@ func (c *Config) Credentials() *tcclient.Credentials {
 		ClientID:    c.ClientID,
 		Certificate: c.Certificate,
 	}
-}
-
-func (c *Config) Auth() *tcauth.Auth {
-	auth := tcauth.New(c.Credentials(), c.RootURL)
-	// If authRootURL provided, it should take precedence over rootURL
-	if c.AuthRootURL != "" {
-		auth.RootURL = c.AuthRootURL
-	}
-	return auth
-}
-
-func (c *Config) Queue() *tcqueue.Queue {
-	queue := tcqueue.New(c.Credentials(), c.RootURL)
-	// If queueRootURL provided, it should take precedence over rootURL
-	if c.QueueRootURL != "" {
-		queue.RootURL = c.QueueRootURL
-	}
-	return queue
-}
-
-func (c *Config) PurgeCache() *tcpurgecache.PurgeCache {
-	purgeCache := tcpurgecache.New(c.Credentials(), c.RootURL)
-	// If purgeCacheRootURL provided, it should take precedence over rootURL
-	if c.PurgeCacheRootURL != "" {
-		purgeCache.RootURL = c.PurgeCacheRootURL
-	}
-	return purgeCache
-}
-
-func (c *Config) Secrets() *tcsecrets.Secrets {
-	secrets := tcsecrets.New(c.Credentials(), c.RootURL)
-	// If secretsRootURL provided, it should take precedence over rootURL
-	if c.SecretsRootURL != "" {
-		secrets.RootURL = c.SecretsRootURL
-	}
-	return secrets
-}
-
-func (c *Config) WorkerManager() *tcworkermanager.WorkerManager {
-	workerManager := tcworkermanager.New(c.Credentials(), c.RootURL)
-	// If workerManagerRootURL provided, it should take precedence over rootURL
-	if c.WorkerManagerRootURL != "" {
-		workerManager.RootURL = c.WorkerManagerRootURL
-	}
-	return workerManager
 }
 
 type File struct {

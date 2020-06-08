@@ -87,7 +87,7 @@ func Bootstrap(c *gwconfig.Config, workerConfig *BootstrapConfig, secretPrefix s
 
 	// Fetch additional (secret) host setup from taskcluster-secrets service.
 	// See: https://bugzil.la/1375200
-	tcsec := c.Secrets()
+	tcsec := serviceFactory.Secrets(c.Credentials(), c.RootURL)
 	secretName := secretPrefix + ":" + c.ProvisionerID + "/" + c.WorkerType
 	sec, err := tcsec.Get(secretName)
 	if err != nil {

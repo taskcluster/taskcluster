@@ -37,6 +37,7 @@ import (
 	"github.com/taskcluster/taskcluster/v30/workers/generic-worker/host"
 	"github.com/taskcluster/taskcluster/v30/workers/generic-worker/process"
 	gwruntime "github.com/taskcluster/taskcluster/v30/workers/generic-worker/runtime"
+	"github.com/taskcluster/taskcluster/v30/workers/generic-worker/tc"
 	"github.com/xeipuuv/gojsonschema"
 )
 
@@ -58,8 +59,9 @@ var (
 	taskContext = &TaskContext{}
 	// queue is the object we will use for accessing queue api. See
 	// https://docs.taskcluster.net/reference/platform/queue/api-docs
-	queue          *tcqueue.Queue
+	queue          tc.Queue
 	config         *gwconfig.Config
+	serviceFactory tc.ServiceFactory
 	configProvider gwconfig.Provider
 	Features       []Feature
 
@@ -160,6 +162,8 @@ func main() {
 			provider = AZURE_PROVIDER
 		}
 
+		serviceFactory = &tc.ClientFactory{}
+
 		configProvider, err = loadConfig(configFile, provider)
 
 		// We need to persist the generic-worker config file if we fetched it
@@ -193,6 +197,8 @@ func main() {
 		//   we can just hope that the config file is at least not writable by
 		//   the current user. In this case we won't change file permissions.
 		secure(configFile.Path)
+
+		queue = serviceFactory.Queue(config.Credentials(), config.RootURL)
 
 		exitCode := RunWorker()
 		log.Printf("Exiting worker with exit code %v", exitCode)
@@ -243,7 +249,6 @@ func loadConfig(configFile *gwconfig.File, provider Provider) (gwconfig.Provider
 	// only one place if possible (defaults also declared in `usage`)
 	config = &gwconfig.Config{
 		PublicConfig: gwconfig.PublicConfig{
-			AuthRootURL:                    "",
 			CachesDir:                      "caches",
 			CheckForNewDeploymentEverySecs: 1800,
 			CleanUpTaskDirs:                true,
@@ -253,12 +258,9 @@ func loadConfig(configFile *gwconfig.File, provider Provider) (gwconfig.Provider
 			LiveLogExecutable:              "livelog",
 			NumberOfTasksToRun:             0,
 			ProvisionerID:                  "test-provisioner",
-			PurgeCacheRootURL:              "",
-			QueueRootURL:                   "",
 			RequiredDiskSpaceMegabytes:     10240,
 			RootURL:                        "",
 			RunAfterUserCreation:           "",
-			SecretsRootURL:                 "",
 			SentryProject:                  "generic-worker",
 			ShutdownMachineOnIdle:          false,
 			ShutdownMachineOnInternalError: false,
@@ -267,7 +269,6 @@ func loadConfig(configFile *gwconfig.File, provider Provider) (gwconfig.Provider
 			TasksDir:                       defaultTasksDir(),
 			WorkerGroup:                    "test-worker-group",
 			WorkerLocation:                 "",
-			WorkerManagerRootURL:           "",
 			WorkerTypeMetadata:             map[string]interface{}{},
 		},
 	}
@@ -333,7 +334,8 @@ func setupExposer() (err error) {
 			config.WSTAudience,
 			config.WorkerGroup,
 			config.WorkerID,
-			config.Auth())
+			serviceFactory.Auth(config.Credentials(), config.RootURL),
+		)
 	} else {
 		exposer, err = expose.NewLocal(config.PublicIP)
 	}
@@ -422,9 +424,6 @@ func RunWorker() (exitCode ExitCode) {
 		}
 	}(&tasksResolved)
 
-	// Queue is the object we will use for accessing queue api
-	queue = config.Queue()
-
 	err = initialiseFeatures()
 	if err != nil {
 		panic(err)
@@ -447,17 +446,6 @@ func RunWorker() (exitCode ExitCode) {
 	if RotateTaskEnvironment() {
 		return REBOOT_REQUIRED
 	}
-	// There are always at least 5 seconds between tasks, however, the new task
-	// directory is created as soon as the previous task completes, so it is
-	// possible for the very first task to complete in less than a second, and
-	// the "new" task environment directory to be created, before the time has
-	// incremented by a second, and therefore the very first task directory
-	// could have the same name as the second task directory. To avoid the
-	// problems this could potentially cause (e.g. the task username being the
-	// same, the directory paths being the same) we wait 1.01 seconds before
-	// starting the very first task. After that, the 5 second minimum time
-	// between tasks is enough to ensure this.
-	time.Sleep(time.Millisecond * 1010)
 	for {
 
 		// See https://bugzil.la/1298010 - routinely check if this worker type is
@@ -611,7 +599,7 @@ func ClaimWork() *TaskRun {
 	default:
 		log.Print("Task found")
 		taskResponse := resp.Tasks[0]
-		taskQueue := tcqueue.New(
+		taskQueue := serviceFactory.Queue(
 			&tcclient.Credentials{
 				ClientID:    taskResponse.Credentials.ClientID,
 				AccessToken: taskResponse.Credentials.AccessToken,
@@ -619,10 +607,6 @@ func ClaimWork() *TaskRun {
 			},
 			config.RootURL,
 		)
-		// if queueRootURL is configured, this takes precedence over rootURL
-		if config.QueueRootURL != "" {
-			taskQueue.RootURL = config.QueueRootURL
-		}
 		task := &TaskRun{
 			TaskID:            taskResponse.Status.TaskID,
 			RunID:             uint(taskResponse.RunID),
@@ -768,8 +752,8 @@ func (task *TaskRun) Error(message string) {
 // Log lines like:
 //  [taskcluster 2017-01-25T23:31:13.787Z] Hey, hey, we're The Monkees.
 func (task *TaskRun) Log(prefix, message string) {
-	task.logMux.RLock()
-	defer task.logMux.RUnlock()
+	task.logMux.Lock()
+	defer task.logMux.Unlock()
 	if task.logWriter != nil {
 		for _, line := range strings.Split(message, "\n") {
 			_, _ = task.logWriter.Write([]byte(prefix + line + "\n"))
@@ -995,7 +979,7 @@ func (task *TaskRun) Run() (err *ExecutionErrors) {
 			log.Printf("Creating task feature %v...", feature.Name())
 			taskFeature := feature.NewTaskFeature(task)
 			requiredScopes := taskFeature.RequiredScopes()
-			scopesSatisfied, scopeValidationErr := scopes.Given(task.Definition.Scopes).Satisfies(requiredScopes, config.Auth())
+			scopesSatisfied, scopeValidationErr := scopes.Given(task.Definition.Scopes).Satisfies(requiredScopes, serviceFactory.Auth(config.Credentials(), config.RootURL))
 			if scopeValidationErr != nil {
 				// presumably we couldn't expand assume:* scopes due to auth
 				// service unavailability
@@ -1155,7 +1139,8 @@ func (task *TaskRun) closeLog(logHandle io.WriteCloser) {
 }
 
 func PrepareTaskEnvironment() (reboot bool) {
-	taskDirName := "task_" + strconv.Itoa(int(time.Now().Unix()))
+	// I've discovered windows has a limit of 20 chars
+	taskDirName := fmt.Sprintf("task_%v", time.Now().UnixNano())[:20]
 	if PlatformTaskEnvironmentSetup(taskDirName) {
 		return true
 	}

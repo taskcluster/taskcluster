@@ -3,27 +3,38 @@
 package main
 
 import (
-	"fmt"
+	"encoding/base64"
 	"os"
 	"testing"
 )
 
 func TestTaskclusterProxy(t *testing.T) {
+
 	defer setup(t)()
 
 	taskID := CreateArtifactFromFile(t, "SampleArtifacts/_/X.txt", "SampleArtifacts/_/X.txt")
 
+	// We base64 encode the url, because I can't get to the bottom of the
+	// windows command escaping issues, so I haven't worked out how to
+	// correctly escape the URL in the batch script that is generated from the
+	// command. Base64 encoded strings don't require any batch script escaping,
+	// so this is a cheap solution to the problem.
+	base64EncodedURL := base64.StdEncoding.EncodeToString(
+		// note that curlget.go substitutes the literal TASKCLUSTER_PROXY_URL
+		// with the actual value of the environment variable in its environment
+		[]byte("TASKCLUSTER_PROXY_URL/queue/v1/task/" + taskID + "/artifacts/SampleArtifacts%2F_%2FX.txt"),
+	)
+
 	payload := GenericWorkerPayload{
 		Command: append(
 			append(
-				goEnv(),
+				GoEnv(),
 				// long enough to reclaim and get new credentials
 				sleep(12)...,
 			),
 			goRun(
 				"curlget.go",
-				// note that curlget.go supports substituting the proxy URL from its runtime environment
-				fmt.Sprintf("TASKCLUSTER_PROXY_URL/queue/v1/task/"+taskID+"/runs/0/artifacts/SampleArtifacts/_/X.txt"),
+				base64EncodedURL,
 			)...,
 		),
 		MaxRunTime: 180,

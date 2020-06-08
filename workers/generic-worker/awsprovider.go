@@ -24,5 +24,6 @@ func (a *AWSProvider) UpdateConfig(c *gwconfig.Config) error {
 		Signature: string(awsMetadata["signature"]),
 	}
 
-	return a.UserData.UpdateConfig(c, providerType)
+	err = a.UserData.UpdateConfig(c, providerType)
+	return err
 }

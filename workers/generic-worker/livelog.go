@@ -135,7 +135,7 @@ func (l *LiveLogTask) Stop(err *ExecutionErrors) {
 		log.Printf("WARNING: could not terminate livelog writer: %s", errTerminate)
 	}
 	log.Printf("Redirecting %v to %v", livelogName, logName)
-	logURL := tcurls.API(queue.RootURL, "queue", "v1", fmt.Sprintf("task/%v/runs/%v/artifacts/%v", l.task.TaskID, l.task.RunID, logName))
+	logURL := tcurls.API(config.RootURL, "queue", "v1", fmt.Sprintf("task/%v/runs/%v/artifacts/%v", l.task.TaskID, l.task.RunID, url.PathEscape(logName)))
 	err.add(l.task.uploadArtifact(
 		&RedirectArtifact{
 			BaseArtifact: &BaseArtifact{

@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"log"
 	"net"
+	"os"
 	"os/exec"
 	"strconv"
 	"sync"
@@ -41,6 +42,8 @@ func New(taskclusterProxyExecutable string, httpPort uint16, rootURL string, cre
 		command:  exec.Command(taskclusterProxyExecutable, args...),
 		HTTPPort: httpPort,
 	}
+	l.command.Stdout = os.Stdout
+	l.command.Stderr = os.Stderr
 	err := l.command.Start()
 	// Note - we're assuming here that if the process fails to launch we'll get
 	// an error. We should test this to be sure.
