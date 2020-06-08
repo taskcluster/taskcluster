@@ -375,13 +375,14 @@ builder.declare({
   ].join('\n'),
 }, async function(req, res) {
   const { workerPoolId, workerGroup } = req.params;
-  const {continuationToken, rows} = await paginateResults({
-    query: req.query,
-    fetch: (size, offset) => Worker.getWorkers(this.db, { workerPoolId, workerGroup }, { size, offset }),
-  });
+  const { rows: workers, continuationToken } = await Worker.getWorkers(
+    this.db,
+    { workerPoolId, workerGroup },
+    { query: req.query },
+  );
 
   const result = {
-    workers: rows.map(r => r.serializable()),
+    workers: workers.map(w => w.serializable()),
     continuationToken,
   };
 
@@ -537,13 +538,10 @@ builder.declare({
       `Worker Pool does not exist`, {});
   }
 
-  const {continuationToken, rows} = await paginateResults({
-    query: req.query,
-    fetch: (size, offset) => Worker.getWorkers(this.db, { workerPoolId }, { size, offset }),
-  });
+  const { rows: workers, continuationToken } = await Worker.getWorkers(this.db, { workerPoolId }, { query: req.query });
 
   const result = {
-    workers: rows.map(r => r.serializable()),
+    workers: workers.map(w => w.serializable()),
     continuationToken,
   };
   return res.reply(result);

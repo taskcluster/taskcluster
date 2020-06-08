@@ -142,12 +142,12 @@ class Provisioner {
       };
 
       // Check the state of workers (state is updated by worker-scanner)
-      const workers = await Worker.getWorkers(this.db, {});
-
-      workers.forEach(worker => {
-        if (worker.state !== Worker.states.STOPPED) {
-          seen(worker);
-        }
+      await Worker.getWorkers(this.db, {}, {
+        handler: (worker) => {
+          if (worker.state !== Worker.states.STOPPED) {
+            seen(worker);
+          }
+        },
       });
 
       // We keep track of which providers are actively managing
