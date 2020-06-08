@@ -6,6 +6,7 @@ import (
 	"log"
 	"time"
 
+	"github.com/pkg/errors"
 	"github.com/taskcluster/taskcluster/v30/clients/client-go/tcworkermanager"
 	"github.com/taskcluster/taskcluster/v30/tools/worker-runner/run"
 	"github.com/taskcluster/taskcluster/v30/tools/worker-runner/tc"
@@ -75,5 +76,17 @@ func RemoveWorker(state *run.State, factory tc.WorkerManagerClientFactory) error
 		return shutdown()
 	}
 
+	return err
+}
+
+// ReportWorkerError will send a worker error report to worker-manager
+func ReportWorkerError(state *run.State, factory tc.WorkerManagerClientFactory, payload *tcworkermanager.WorkerErrorReport) error {
+	wc, err := factory(state.RootURL, &state.Credentials)
+	if err != nil {
+		return errors.Wrap(err, "error instanciating worker-manager client")
+	}
+	if _, err = wc.ReportWorkerError(state.WorkerPoolID, payload); err != nil {
+		log.Printf("Error reporting worker error: %v\n", err)
+	}
 	return err
 }

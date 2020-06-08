@@ -51,6 +51,14 @@ Before the connection is initialized, the connection's capabilities are unknown,
 
 The following sections describe the defined message types, each under a heading giving the corresponding capability.
 
+### error-report
+
+This message type, sent from the worker, contains an error report intended for the worker-manager to display among its worker pool errors.
+
+```
+~{"type": "error-report", "kind": "critical", "title": "a serious error", "description": "bad stuff has happened!", "extra": {"number of failures": 1}}
+```
+
 ### shutdown
 
 When worker-runner receives this message, and the provider supports it, it will invoke the function `RemoveWorker` from
