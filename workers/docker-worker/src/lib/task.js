@@ -138,6 +138,7 @@ async function buildDeviceBindings(devices, expandedScopes) {
   }
 
   let deviceBindings = [];
+  let bindMounts = [];
   for (let deviceType of Object.keys(devices || {})) {
     let device = devices[deviceType];
     device.mountPoints.forEach((mountPoint) => {
@@ -149,9 +150,12 @@ async function buildDeviceBindings(devices, expandedScopes) {
         },
       );
     });
+    if (device.binds) {
+      bindMounts = _.union(bindMounts, device.binds);
+    }
   }
 
-  return deviceBindings;
+  return {deviceBindings, bindMounts};
 }
 
 class Reclaimer {
@@ -365,11 +369,6 @@ class Task extends EventEmitter {
     });
     let expandedScopes = (await auth.expandScopes({scopes: this.task.scopes})).scopes;
 
-    if (this.options.devices) {
-      let bindings = await buildDeviceBindings(this.options.devices, expandedScopes);
-      procConfig.create.HostConfig['Devices'] = bindings;
-    }
-
     if (linkInfo.links) {
       procConfig.create.HostConfig.Links = linkInfo.links.map(link => {
         return link.name + ':' + link.alias;
@@ -384,6 +383,12 @@ class Task extends EventEmitter {
       }
       return binding;
     });
+
+    if (this.options.devices) {
+      let bindings = await buildDeviceBindings(this.options.devices, expandedScopes);
+      procConfig.create.HostConfig['Devices'] = bindings.deviceBindings;
+      binds = _.union(binds, bindings.bindMounts);
+    }
 
     if (this.task.payload.cache) {
       let bindings = await buildVolumeBindings(this.task.payload.cache,
