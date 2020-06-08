@@ -23,14 +23,14 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
   };
 
   const createWorkers = async n => {
-    return _.range(n).map(i => {
+    return Promise.all(_.range(n).map(i => {
       return createWorker({
         workerPoolId: `wp/${i}`,
         workerGroup: `wg/${i}`,
         workerId: `wi/${i}`,
         state: i % 2 === 0 ? 'running' : 'requested',
       });
-    });
+    }));
   };
 
   suite('worker.update', function() {
