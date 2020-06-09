@@ -401,6 +401,73 @@
   },
   {
     "content": {
+      "$id": "/schemas/worker-manager/v1/reregister-worker-response.json#",
+      "$schema": "/schemas/common/metaschema.json#",
+      "additionalProperties": false,
+      "description": "Response body to `reregisterWorker`.",
+      "properties": {
+        "credentials": {
+          "additionalProperties": false,
+          "description": "The credentials the worker\nwill need to perform its work. Specifically, credentials with scopes\n* `assume:worker-pool:<workerPoolId>`\n* `assume:worker-id:<workerGroup>/<workerId>`\n* `queue:worker-id:<workerGroup>/<workerId>`\n* `secrets:get:worker-pool:<workerPoolId>`\n* `queue:claim-work:<workerPoolId>`\n* `worker-manager:remove-worker:<workerPoolId>/<workerGroup>/<workerId>`\n",
+          "properties": {
+            "accessToken": {
+              "type": "string"
+            },
+            "certificate": {
+              "description": "Note that a certificate may not be provided, if the credentials are not temporary.\n",
+              "type": "string"
+            },
+            "clientId": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "accessToken",
+            "clientId"
+          ],
+          "title": "Credentials",
+          "type": "object"
+        },
+        "expires": {
+          "description": "Time at which the included credentials will expire. Workers must either\nre-register (for static workers) or terminate (for dynamically\nprovisioned workers) before this time.\n",
+          "format": "date-time",
+          "title": "Expires",
+          "type": "string"
+        }
+      },
+      "required": [
+        "expires",
+        "credentials"
+      ],
+      "title": "Reregister Worker Response",
+      "type": "object"
+    },
+    "filename": "schemas/worker-manager/v1/reregister-worker-response.json"
+  },
+  {
+    "content": {
+      "$id": "/schemas/worker-manager/v1/reregister-worker-request.json#",
+      "$schema": "/schemas/common/metaschema.json#",
+      "additionalProperties": false,
+      "description": "Request body to `reregisterWorker`.",
+      "properties": {
+        "secret": {
+          "description": "The secret value that was configured when the worker was registered (in `registerWorker`).\n",
+          "pattern": "^[a-zA-Z0-9_-]{44}$",
+          "title": "Secret",
+          "type": "string"
+        }
+      },
+      "required": [
+        "secret"
+      ],
+      "title": "Reregister Worker Request",
+      "type": "object"
+    },
+    "filename": "schemas/worker-manager/v1/reregister-worker-request.json"
+  },
+  {
+    "content": {
       "$id": "/schemas/worker-manager/v1/report-worker-error-request.json#",
       "$schema": "/schemas/common/metaschema.json#",
       "additionalProperties": false,
@@ -12101,6 +12168,23 @@
           "route": "/worker/register",
           "stability": "stable",
           "title": "Register a running worker",
+          "type": "function"
+        },
+        {
+          "args": [
+          ],
+          "category": "Workers",
+          "description": "Reregister a running worker.\n\nThis will generate and return new Taskcluster credentials for the worker\non that instance to use. The credentials will not live longer the the\n`registrationTimeout` for that worker. The endpoint will update `terminateAfter`\nfor the worker so that worker-manager does not terminate the instance.",
+          "input": "v1/reregister-worker-request.json#",
+          "method": "post",
+          "name": "reregisterWorker",
+          "output": "v1/reregister-worker-response.json#",
+          "query": [
+          ],
+          "route": "/worker/reregister",
+          "scopes": "worker-manager:reregister-worker:<workerPoolId>/<workerGroup>/<workerId>",
+          "stability": "experimental",
+          "title": "Reregister a Worker",
           "type": "function"
         }
       ],

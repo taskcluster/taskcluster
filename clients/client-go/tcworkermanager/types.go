@@ -48,6 +48,23 @@ type (
 		ClientID string `json:"clientId"`
 	}
 
+	// The credentials the worker
+	// will need to perform its work. Specifically, credentials with scopes
+	// * `assume:worker-pool:<workerPoolId>`
+	// * `assume:worker-id:<workerGroup>/<workerId>`
+	// * `queue:worker-id:<workerGroup>/<workerId>`
+	// * `secrets:get:worker-pool:<workerPoolId>`
+	// * `queue:claim-work:<workerPoolId>`
+	// * `worker-manager:remove-worker:<workerPoolId>/<workerGroup>/<workerId>`
+	Credentials1 struct {
+		AccessToken string `json:"accessToken"`
+
+		// Note that a certificate may not be provided, if the credentials are not temporary.
+		Certificate string `json:"certificate,omitempty"`
+
+		ClientID string `json:"clientId"`
+	}
+
 	// Proof that this call is coming from the worker identified by the other fields.
 	// The form of this proof varies depending on the provider type.
 	GoogleProviderType struct {
@@ -139,6 +156,34 @@ type (
 		//
 		// Additional properties allowed
 		WorkerConfig json.RawMessage `json:"workerConfig"`
+	}
+
+	// Request body to `reregisterWorker`.
+	ReregisterWorkerRequest struct {
+
+		// The secret value that was configured when the worker was registered (in `registerWorker`).
+		//
+		// Syntax:     ^[a-zA-Z0-9_-]{44}$
+		Secret string `json:"secret"`
+	}
+
+	// Response body to `reregisterWorker`.
+	ReregisterWorkerResponse struct {
+
+		// The credentials the worker
+		// will need to perform its work. Specifically, credentials with scopes
+		// * `assume:worker-pool:<workerPoolId>`
+		// * `assume:worker-id:<workerGroup>/<workerId>`
+		// * `queue:worker-id:<workerGroup>/<workerId>`
+		// * `secrets:get:worker-pool:<workerPoolId>`
+		// * `queue:claim-work:<workerPoolId>`
+		// * `worker-manager:remove-worker:<workerPoolId>/<workerGroup>/<workerId>`
+		Credentials Credentials1 `json:"credentials"`
+
+		// Time at which the included credentials will expire. Workers must either
+		// re-register (for static workers) or terminate (for dynamically
+		// provisioned workers) before this time.
+		Expires tcclient.Time `json:"expires"`
 	}
 
 	// Provider-specific information
