@@ -3,6 +3,23 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v30.1.1
+
+### GENERAL
+
+▶ [patch] 
+Worker Manager now avoids scanning all the workers table in memory to avoid possible OOM issues.
+
+### WORKER-DEPLOYERS
+
+▶ [patch] [bug 1607605](http://bugzil.la/1607605)
+Generic-worker now supports shutting down gracefully when instructed to do so by worker-runner, such as when a cloud VM is being terminated.
+
+### USERS
+
+▶ [patch] [bug 1639713](http://bugzil.la/1639713)
+Tasks using the `hostSharedMemory` device capability will now properly mount `/dev/shm` from the host into the container.
+
 ## v30.1.0
 
 ### DEPLOYERS
