@@ -75,8 +75,6 @@ type (
 )
 
 func (c *Config) String() string {
-	cCopy := *c
-	cCopy.AccessToken = "*************"
 	// This json.Marshal call won't sort all inherited properties
 	// alphabetically, since it sorts properties within each nested struct, but
 	// concatenates the results from each of the nested structs together.
@@ -85,7 +83,7 @@ func (c *Config) String() string {
 	// this by first marshaling to json, then unmarshaling to an interface{}
 	// (so that the structure is flattened), and then finally marshaling back
 	// to json. Whew.
-	j, err := json.Marshal(&cCopy)
+	j, err := json.Marshal(&c.PublicConfig)
 	if err != nil {
 		panic(err)
 	}
@@ -94,6 +92,7 @@ func (c *Config) String() string {
 	if err != nil {
 		panic(err)
 	}
+
 	j, err = json.MarshalIndent(data, "", "  ")
 	if err != nil {
 		panic(err)
