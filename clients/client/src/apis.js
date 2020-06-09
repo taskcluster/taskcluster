@@ -3325,6 +3325,23 @@ module.exports = {
           "stability": "stable",
           "title": "Register a running worker",
           "type": "function"
+        },
+        {
+          "args": [
+          ],
+          "category": "Workers",
+          "description": "Reregister a running worker.\n\nThis will generate and return new Taskcluster credentials for the worker\non that instance to use. The credentials will not live longer the the\n`registrationTimeout` for that worker. The endpoint will update `terminateAfter`\nfor the worker so that worker-manager does not terminate the instance.",
+          "input": "v1/reregister-worker-request.json#",
+          "method": "post",
+          "name": "reregisterWorker",
+          "output": "v1/reregister-worker-response.json#",
+          "query": [
+          ],
+          "route": "/worker/reregister",
+          "scopes": "worker-manager:reregister-worker:<workerPoolId>/<workerGroup>/<workerId>",
+          "stability": "experimental",
+          "title": "Reregister a Worker",
+          "type": "function"
         }
       ],
       "serviceName": "worker-manager",
