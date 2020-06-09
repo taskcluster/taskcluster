@@ -87,15 +87,22 @@ helper.dbSuite(path.basename(__filename), function() {
           end`,
         },
         old: {
-          description: 'a method that is deprecated',
+          description: 'a method that will be deprecated',
           mode: 'read',
-          deprecated: true,
           serviceName: 'service-2',
-          args: '',
-          returns: 'void',
+          args: 'x text',
+          returns: 'text',
           body: `begin
-            perform pg_sleep(5);
+            return 'got ' || x;
           end`,
+        },
+      },
+    }, {
+      version: 2,
+      methods: {
+        old: {
+          description: 'a method that is deprecated',
+          deprecated: true,
         },
       },
     },
@@ -226,6 +233,34 @@ helper.dbSuite(path.basename(__filename), function() {
       }
       throw new Error('_doUpgrade did not fail');
     });
+
+    test('allows deprecated methods without failing', async function() {
+      await db._doUpgrade({
+        version: {
+          version: 1,
+          methods: {foo_bar: {
+            description: 'whatever',
+            mode: 'read',
+            serviceName: 'baz',
+            args: 'foo integer',
+            returns: 'table (bar integer)',
+            body: 'begin end',
+          }},
+        },
+        showProgress: () => {},
+        usernamePrefix: 'test',
+      });
+      assert.equal(await db.currentVersion(), 1);
+      await db._doUpgrade({
+        version: {
+          version: 2,
+          methods: {foo_bar: {deprecated: true}},
+        },
+        showProgress: () => {},
+        usernamePrefix: 'test',
+      });
+      assert.equal(await db.currentVersion(), 2);
+    });
   });
 
   suite('db._doDowngrade', function() {
@@ -282,7 +317,15 @@ helper.dbSuite(path.basename(__filename), function() {
         },
       },
     };
-    const schema = Schema.fromSerializable({versions: [v1, v2, v3], access, tables});
+    const v4 = {
+      version: 4,
+      methods: {
+        test: {
+          deprecated: true,
+        },
+      },
+    };
+    const schema = Schema.fromSerializable({versions: [v1, v2, v3, v4], access, tables});
 
     const testMethod = async (client, v) => {
       const res = await client.query('select test()');
@@ -338,6 +381,22 @@ helper.dbSuite(path.basename(__filename), function() {
         // method is still the v3 method
         await testMethod(client, 3);
       });
+    });
+
+    test('allows deprecated methods without failing', async function() {
+      await db._doUpgrade({
+        version: v4,
+        showProgress: () => {},
+        usernamePrefix: 'test',
+      });
+      await db._doDowngrade({
+        schema,
+        fromVersion: v4,
+        toVersion: v3,
+        showProgress: () => {},
+        usernamePrefix: 'test',
+      });
+      assert.equal(await db.currentVersion(), 3);
     });
   });
 
@@ -461,10 +520,12 @@ helper.dbSuite(path.basename(__filename), function() {
       assert.deepEqual(res.map(r => r.total).sort(), [16, 20]);
     });
 
-    test('setup does not create deprecated methods', async function() {
+    test('setup moves deprecated methods to deprecatedFns', async function() {
       await Database.upgrade({schema, adminDbUrl: helper.dbUrl, usernamePrefix: 'test'});
       db = await Database.setup({schema, readDbUrl: helper.dbUrl, writeDbUrl: helper.dbUrl, serviceName: 'service-1', monitor});
       assert(!db.fns.old);
+      assert(db.deprecatedFns.old);
+      assert.equal((await db.deprecatedFns.old('hi'))[0].old, 'got hi');
     });
 
     test('non-numeric statementTimeout is not alloewd', async function() {

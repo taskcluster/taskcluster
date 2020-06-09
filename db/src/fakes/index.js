@@ -23,14 +23,19 @@ class FakeDatabase {
   constructor({schema, serviceName}) {
     const allMethods = schema.allMethods();
     this.fns = {};
+    this.deprecatedFns = {};
 
     COMPONENT_CLASSES.forEach(({name, cls}) => {
       const instance = new cls({schema, serviceName});
       this[name] = instance;
 
-      allMethods.forEach(({ name: methodName, mode, serviceName: fnServiceName }) => {
+      allMethods.forEach(({ name: methodName, mode, serviceName: fnServiceName, deprecated }) => {
         if (instance[methodName]) {
-          this.fns[methodName] = async (...args) => {
+          let collection = this.fns;
+          if (deprecated) {
+            collection = this.deprecatedFns;
+          }
+          collection[methodName] = async (...args) => {
             if (serviceName !== fnServiceName && mode === WRITE) {
               throw new Error(
                 `${serviceName} is not allowed to call any methods that do not belong to this service and which have mode=WRITE`,

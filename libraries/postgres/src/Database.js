@@ -76,16 +76,17 @@ class Database {
   _createProcs({schema, serviceName}) {
     // generate a JS method for each DB method defined in the schema
     this.fns = {};
+    this.deprecatedFns = {};
     schema.allMethods().forEach(method => {
-      // ignore deprecated methods
+      let collection = this.fns;
       if (method.deprecated) {
-        return;
+        collection = this.deprecatedFns;
       }
 
-      this.fns[method.name] = async (...args) => {
+      collection[method.name] = async (...args) => {
         if (serviceName !== method.serviceName && method.mode !== READ) {
           throw new Error(
-            `${serviceName} is not allowed to call read-write methods for other services`);
+            `${serviceName} is not allowed to call read-write methods for ${method.serviceName}`);
         }
 
         this._logDbFunctionCall({name: method.name});
@@ -396,7 +397,10 @@ class Database {
           await client.query(`DO ${dollarQuote(migrationScript)}`);
         }
         showProgress('..defining methods');
-        for (let [methodName, { args, body, returns}] of Object.entries(version.methods)) {
+        for (let [methodName, {args, body, returns, deprecated}] of Object.entries(version.methods)) {
+          if (deprecated && !args && !returns && !body) {
+            continue; // This allows just deprecating without changing a method
+          }
           await client.query(`create or replace function
           "${methodName}"(${args})
           returns ${returns}
