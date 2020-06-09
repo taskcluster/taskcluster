@@ -10,7 +10,6 @@ import (
 	"github.com/taskcluster/taskcluster/v30/clients/client-go/tcworkermanager"
 	"github.com/taskcluster/taskcluster/v30/internal/workerproto"
 	"github.com/taskcluster/taskcluster/v30/tools/worker-runner/cfg"
-	"github.com/taskcluster/taskcluster/v30/tools/worker-runner/errorreport"
 	"github.com/taskcluster/taskcluster/v30/tools/worker-runner/provider/provider"
 	"github.com/taskcluster/taskcluster/v30/tools/worker-runner/run"
 	"github.com/taskcluster/taskcluster/v30/tools/worker-runner/tc"
@@ -135,9 +134,6 @@ func (p *AWSProvider) checkTerminationTime() bool {
 func (p *AWSProvider) WorkerStarted(state *run.State) error {
 	// start polling for graceful shutdown
 	p.terminationTicker = time.NewTicker(30 * time.Second)
-	p.proto.Register("error-report", func(msg workerproto.Message) {
-		errorreport.HandleMessage(msg, p.workerManagerClientFactory, state)
-	})
 	p.proto.Register("shutdown", func(msg workerproto.Message) {
 		if err := provider.RemoveWorker(state, p.workerManagerClientFactory); err != nil {
 			log.Printf("Shutdown error: %v\n", err)

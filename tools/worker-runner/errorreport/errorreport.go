@@ -6,11 +6,29 @@ import (
 	"reflect"
 
 	"github.com/pkg/errors"
+	tcclient "github.com/taskcluster/taskcluster/v30/clients/client-go"
 	"github.com/taskcluster/taskcluster/v30/clients/client-go/tcworkermanager"
 	"github.com/taskcluster/taskcluster/v30/internal/workerproto"
 	"github.com/taskcluster/taskcluster/v30/tools/worker-runner/run"
 	"github.com/taskcluster/taskcluster/v30/tools/worker-runner/tc"
 )
+
+var workerManagerClientFactory tc.WorkerManagerClientFactory
+
+func clientFactory(rootURL string, credentials *tcclient.Credentials) (tc.WorkerManager, error) {
+	prov := tcworkermanager.New(credentials, rootURL)
+	return prov, nil
+}
+
+func Setup(proto *workerproto.Protocol, state *run.State) {
+	if workerManagerClientFactory == nil {
+		workerManagerClientFactory = clientFactory
+	}
+	proto.Register("error-report", func(msg workerproto.Message) {
+		HandleMessage(msg, workerManagerClientFactory, state)
+	})
+	proto.AddCapability("error-report")
+}
 
 func HandleMessage(msg workerproto.Message, factory tc.WorkerManagerClientFactory, state *run.State) {
 	validate := func(things map[string]interface{}, key, expectedType string) bool {
@@ -42,7 +60,6 @@ func HandleMessage(msg workerproto.Message, factory tc.WorkerManagerClientFactor
 	if err != nil {
 		log.Printf("Error processing error-report message, could not marshal extra")
 	}
-
 	errorReport := tcworkermanager.WorkerErrorReport{
 		Description: msg.Properties["description"].(string),
 		Kind:        msg.Properties["kind"].(string),
