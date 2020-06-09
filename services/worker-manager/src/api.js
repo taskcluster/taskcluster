@@ -1,10 +1,10 @@
-const _ = require('lodash');
-const taskcluster = require('taskcluster-client');
 const {APIBuilder, paginateResults} = require('taskcluster-lib-api');
+const slug = require('slugid');
 const assert = require('assert');
 const {ApiError} = require('./providers/provider');
 const {UNIQUE_VIOLATION} = require('taskcluster-lib-postgres');
 const {WorkerPool, Worker} = require('./data');
+const { createCredentials } = require('./util');
 
 let builder = new APIBuilder({
   title: 'Taskcluster Worker Manager',
@@ -627,23 +627,7 @@ builder.declare({
   // to be passing in the token. This helps avoid slipups later
   // like if we had a scope based on workerGroup alone which we do
   // not verify here
-  const credentials = taskcluster.createTemporaryCredentials({
-    clientId: `worker/${worker.providerId}/${worker.workerPoolId}/${worker.workerGroup}/${worker.workerId}`,
-    scopes: [
-      `assume:worker-type:${worker.workerPoolId}`, // deprecated role
-      `assume:worker-pool:${worker.workerPoolId}`,
-      `assume:worker-id:${worker.workerGroup}/${worker.workerId}`,
-      `queue:worker-id:${worker.workerGroup}/${worker.workerId}`,
-      `secrets:get:worker-type:${worker.workerPoolId}`, // deprecated secret name
-      `secrets:get:worker-pool:${worker.workerPoolId}`,
-      `queue:claim-work:${worker.workerPoolId}`,
-      `worker-manager:remove-worker:${worker.workerPoolId}/${worker.workerGroup}/${worker.workerId}`,
-      `worker-manager:reregister-worker:${workerPoolId}/${workerGroup}/${workerId}`,
-    ],
-    start: taskcluster.fromNow('-15 minutes'),
-    expiry: expires,
-    credentials: this.cfg.taskcluster.credentials,
-  });
+  const credentials = createCredentials(worker, expires, this.cfg);
 
   return res.reply({expires: expires.toJSON(), credentials, workerConfig});
 });
@@ -668,6 +652,27 @@ builder.declare({
     'for the worker so that worker-manager does not terminate the instance.',
   ].join('\n'),
 }, async function(req, res) {
+  const { secret } = req.body;
 
-  return res.reply({});
+  if (secret.length !== 44) {
+    throw new Error('secret must be 44 characters');
+  }
+
+  const worker = Worker.getWorkers(this.db, { secret });
+
+  if (!worker) {
+    return res.reportError('InputError', 'Could not generate credentials for this secret', {});
+  }
+
+  let expires;
+  if (worker.providerData.reregistrationTimeout) {
+    expires = new Date(Date.now() + worker.providerData.reregistrationTimeout);
+  } else {
+    return res.reportError('InputValidationError', 'worker.providerData.reregistrationTimeout is required to reregister a worker');
+  }
+
+  const credentials = createCredentials(worker, expires, this.cfg);
+  const newSecret = `${slug.v4()}${slug.v4()}`;
+
+  return res.reply({ expires, credentials, secret: newSecret });
 });
