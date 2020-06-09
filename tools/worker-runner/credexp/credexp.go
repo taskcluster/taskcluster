@@ -30,6 +30,9 @@ func (ce *CredExp) SetProtocol(proto *workerproto.Protocol) {
 }
 
 func (ce *CredExp) WorkerStarted() error {
+	ce.state.Lock()
+	defer ce.state.Unlock()
+
 	// gracefully terminate the worker when the credentials expire, if they expire
 	if ce.state.CredentialsExpire.IsZero() {
 		return nil

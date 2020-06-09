@@ -24,6 +24,9 @@ func ConfigureRun(runnercfg *cfg.RunnerConfig, state *run.State) error {
 }
 
 func configureRun(runnercfg *cfg.RunnerConfig, state *run.State, secretsClientFactory tc.SecretsClientFactory) error {
+	state.Lock()
+	defer state.Unlock()
+
 	secretsClient, err := secretsClientFactory(state.RootURL, &state.Credentials)
 	if err != nil {
 		return err

@@ -26,6 +26,9 @@ type AWSProvider struct {
 }
 
 func (p *AWSProvider) ConfigureRun(state *run.State) error {
+	state.Lock()
+	defer state.Unlock()
+
 	userData, err := p.metadataService.queryUserData()
 	if err != nil {
 		return fmt.Errorf("Could not query user data: %v", err)

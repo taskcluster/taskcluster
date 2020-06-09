@@ -17,6 +17,7 @@ type WorkerInfo struct {
 }
 
 // Register this worker with the worker-manager, and update the state with the parameters and the results.
+// This is to be called with state already locked
 func RegisterWorker(state *run.State, wm tc.WorkerManager, workerPoolID, providerID, workerGroup, workerID string, workerIdentityProofMap map[string]interface{}) (*json.RawMessage, error) {
 	workerIdentityProof, err := json.Marshal(workerIdentityProofMap)
 	if err != nil {
@@ -53,8 +54,11 @@ func RegisterWorker(state *run.State, wm tc.WorkerManager, workerPoolID, provide
 }
 
 // RemoveWorker will request worker-manager to terminate the given worker, if it
-// fails, it shuts down us
+// fails, it shuts down us.  This is to be called *without* a lock on state
 func RemoveWorker(state *run.State, factory tc.WorkerManagerClientFactory) error {
+	state.Lock()
+	defer state.Unlock()
+
 	shutdown := func() error {
 		log.Printf("Falling back to system shutdown")
 		if err := Shutdown(); err != nil {

@@ -3,6 +3,7 @@ package run
 import (
 	"fmt"
 	"strings"
+	"sync"
 	"time"
 
 	taskcluster "github.com/taskcluster/taskcluster/v30/clients/client-go"
@@ -11,8 +12,11 @@ import (
 )
 
 // State represents the state of the worker run.  Its contents are built up
-// bit-by-bit during the start-worker process.
+// bit-by-bit during the start-worker process.  Access to all fields is gated
+// by the mutex.
 type State struct {
+	sync.RWMutex
+
 	// Information about the Taskcluster deployment where this
 	// worker is running
 	RootURL string
@@ -55,6 +59,9 @@ type State struct {
 
 // Check that the provided provided the information it was supposed to.
 func (state *State) CheckProviderResults() error {
+	state.Lock()
+	defer state.Unlock()
+
 	if state.RootURL == "" {
 		return fmt.Errorf("provider did not set RootURL")
 	}

@@ -24,6 +24,9 @@ type StandaloneProvider struct {
 }
 
 func (p *StandaloneProvider) ConfigureRun(state *run.State) error {
+	state.Lock()
+	defer state.Unlock()
+
 	var pc standaloneProviderConfig
 	err := p.runnercfg.Provider.Unpack(&pc)
 	if err != nil {
