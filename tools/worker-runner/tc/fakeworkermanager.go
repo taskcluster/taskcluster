@@ -3,6 +3,7 @@ package tc
 import (
 	"encoding/json"
 	"fmt"
+	"sync"
 	"time"
 
 	tcclient "github.com/taskcluster/taskcluster/v30/clients/client-go"
@@ -10,8 +11,9 @@ import (
 )
 
 var (
-	wmRegistrations      []*tcworkermanager.RegisterWorkerRequest
-	wmWorkerErrorReports []*tcworkermanager.WorkerErrorReport
+	wmRegistrations          []*tcworkermanager.RegisterWorkerRequest
+	wmWorkerErrorReports     []*tcworkermanager.WorkerErrorReport
+	wmWorkerErrorReportsLock sync.Mutex
 )
 
 type FakeWorkerManager struct {
@@ -60,11 +62,15 @@ func (wm *FakeWorkerManager) ReportWorkerError(workerPoolID string, payload *tcw
 		Reported:     tcclient.Time(time.Date(2009, time.November, 10, 23, 0, 0, 0, time.UTC)),
 		WorkerPoolID: workerPoolID,
 	}
+	wmWorkerErrorReportsLock.Lock()
+	defer wmWorkerErrorReportsLock.Unlock()
 	wmWorkerErrorReports = append(wmWorkerErrorReports, payload)
 	return &workerPoolError, nil
 }
 
 func FakeWorkerManagerWorkerErrorReports() ([]*tcworkermanager.WorkerErrorReport, error) {
+	wmWorkerErrorReportsLock.Lock()
+	defer wmWorkerErrorReportsLock.Unlock()
 	if len(wmWorkerErrorReports) == 0 {
 		return nil, fmt.Errorf("No reportWorkerError calls")
 	} else {
