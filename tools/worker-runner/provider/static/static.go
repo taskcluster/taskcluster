@@ -29,6 +29,9 @@ type StaticProvider struct {
 }
 
 func (p *StaticProvider) ConfigureRun(state *run.State) error {
+	state.Lock()
+	defer state.Unlock()
+
 	var pc staticProviderConfig
 	err := p.runnercfg.Provider.Unpack(&pc)
 	if err != nil {

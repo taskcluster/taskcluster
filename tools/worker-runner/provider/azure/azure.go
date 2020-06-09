@@ -41,6 +41,9 @@ type TaggedData struct {
 }
 
 func (p *AzureProvider) ConfigureRun(state *run.State) error {
+	state.Lock()
+	defer state.Unlock()
+
 	instanceData, err := p.metadataService.queryInstanceData()
 	if err != nil {
 		return fmt.Errorf("Could not query instance data: %v", err)

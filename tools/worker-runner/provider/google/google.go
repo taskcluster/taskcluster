@@ -22,6 +22,9 @@ type GoogleProvider struct {
 }
 
 func (p *GoogleProvider) ConfigureRun(state *run.State) error {
+	state.Lock()
+	defer state.Unlock()
+
 	workerID, err := p.metadataService.queryMetadata("/instance/id")
 	if err != nil {
 		return fmt.Errorf("Could not query metadata: %v", err)
