@@ -8,7 +8,8 @@ properties:
     type: string
     pattern: "^[a-zA-Z0-9_-]{44}$"
     description: |
-      The secret value that was configured when the worker was registered (in `registerWorker`).
+      The secret value that was configured when the worker was registered (in `registerWorker`) or
+      reregistered (in `reregisterWorker`).
 additionalProperties: false
 required:
   - secret

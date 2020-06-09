@@ -23,6 +23,7 @@ properties:
       * `secrets:get:worker-pool:<workerPoolId>`
       * `queue:claim-work:<workerPoolId>`
       * `worker-manager:remove-worker:<workerPoolId>/<workerGroup>/<workerId>`
+      * `worker-manager:reregister-worker:<workerPoolId>/<workerGroup>/<workerId>`
     properties:
       accessToken:
         type: string
@@ -36,7 +37,15 @@ properties:
     required:
       - accessToken
       - clientId
+  secret:
+    title: Secret
+    type: string
+    pattern: "^[a-zA-Z0-9_-]{44}$"
+    description: |
+      The secret value that was configured when the worker was registered (in `registerWorker`) or
+      reregistered (in `reregisterWorker`).
 additionalProperties: false
 required:
   - expires
   - credentials
+  - secret
