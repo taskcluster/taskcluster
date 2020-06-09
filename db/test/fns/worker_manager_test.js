@@ -32,7 +32,7 @@ suite(testing.suiteName(), function() {
     );
   };
   const update_worker_pool = async (db, wp = {}) => {
-    return await db.fns.update_worker_pool(
+    const input = [
       wp.worker_pool_id || 'wp/id',
       wp.provider_id || 'provider',
       wp.description || 'descr',
@@ -40,7 +40,17 @@ suite(testing.suiteName(), function() {
       wp.last_modified || new Date(),
       wp.owner || 'me@me.com',
       wp.email_on_error || false,
-    );
+    ];
+    const with_cap = await db.fns.update_worker_pool_with_capacity(...input);
+    for (const wp of with_cap) {
+      assert(wp.current_capacity !== undefined);
+      delete wp.current_capacity;
+    }
+    const old = await db.deprecatedFns.update_worker_pool(...input);
+    // We override previous_provider_id in this comparison because a side-effect
+    // of calling this function is updating that value so we can't compare here
+    assert.deepEqual({...with_cap[0], previous_provider_id: ''}, {...old[0], previous_provider_id: ''});
+    return with_cap;
   };
   const create_worker = async (db, w = {}) => {
     return (await db.fns.create_worker(
@@ -74,12 +84,34 @@ suite(testing.suiteName(), function() {
     );
   };
 
+  const get_worker_pool = async (db, worker_pool_id) => {
+    const with_cap = await db.fns.get_worker_pool_with_capacity(worker_pool_id);
+    for (const wp of with_cap) {
+      assert(wp.current_capacity !== undefined);
+      delete wp.current_capacity;
+    }
+    const old = await db.deprecatedFns.get_worker_pool(worker_pool_id);
+    assert.deepEqual(with_cap, old);
+    return with_cap;
+  };
+
+  const get_worker_pools = async (db, page_size, page_offset) => {
+    const with_cap = await db.fns.get_worker_pools_with_capacity(page_size, page_offset);
+    for (const wp of with_cap) {
+      assert(wp.current_capacity !== undefined);
+      delete wp.current_capacity;
+    }
+    const old = await db.deprecatedFns.get_worker_pools(page_size, page_offset);
+    assert.deepEqual(with_cap, old);
+    return with_cap;
+  };
+
   suite(`${testing.suiteName()} - worker_pools`, function() {
     helper.dbTest('create_worker_pool/get_worker_pool', async function(db, isFake) {
       const now = new Date();
       await create_worker_pool(db, {created: now, last_modified: now});
 
-      const rows = await db.fns.get_worker_pool('wp/id');
+      const rows = await get_worker_pool(db, 'wp/id');
       assert.equal(rows[0].worker_pool_id, 'wp/id');
       assert.equal(rows[0].provider_id, 'provider');
       assert.deepEqual(rows[0].previous_provider_ids, []);
@@ -93,12 +125,12 @@ suite(testing.suiteName(), function() {
     });
 
     helper.dbTest('get_worker_pool not found', async function(db, isFake) {
-      const rows = await db.fns.get_worker_pool('wp/id');
+      const rows = await get_worker_pool(db, 'wp/id');
       assert.deepEqual(rows, []);
     });
 
     helper.dbTest('get_worker_pools empty', async function(db, isFake) {
-      const rows = await db.fns.get_worker_pools(null, null);
+      const rows = await get_worker_pools(db, null, null);
       assert.deepEqual(rows, []);
     });
 
@@ -107,7 +139,7 @@ suite(testing.suiteName(), function() {
         await create_worker_pool(db, {worker_pool_id: `wp/${i}`});
       }
 
-      let rows = await db.fns.get_worker_pools(null, null);
+      let rows = await get_worker_pools(db, null, null);
       assert.deepEqual(rows.map(r => r.worker_pool_id), _.range(10).map(i => `wp/${i}`));
       assert.equal(rows[0].provider_id, 'provider');
       assert.deepEqual(rows[0].previous_provider_ids, []);
@@ -117,7 +149,7 @@ suite(testing.suiteName(), function() {
       assert.equal(rows[0].email_on_error, false);
       assert.deepEqual(rows[0].provider_data, {providerdata: true});
 
-      rows = await db.fns.get_worker_pools(2, 4);
+      rows = await get_worker_pools(db, 2, 4);
       assert.deepEqual(rows.map(r => r.worker_pool_id), [4, 5].map(i => `wp/${i}`));
     });
 
@@ -126,7 +158,7 @@ suite(testing.suiteName(), function() {
       const upd = await update_worker_pool(db, {provider_id: 'provider2'});
       assert.deepEqual(upd[0].previous_provider_id, 'provider');
 
-      const rows = await db.fns.get_worker_pool('wp/id');
+      const rows = await get_worker_pool(db, 'wp/id');
       assert.deepEqual(rows[0].previous_provider_ids, ['provider']);
     });
 
@@ -135,7 +167,7 @@ suite(testing.suiteName(), function() {
       const upd = await update_worker_pool(db, {provider_id: 'provider2'});
       assert.deepEqual(upd[0].previous_provider_id, 'provider');
 
-      const rows = await db.fns.get_worker_pool('wp/id');
+      const rows = await get_worker_pool(db, 'wp/id');
       assert.deepEqual(rows[0].previous_provider_ids, ['provider']);
     });
 
@@ -144,7 +176,7 @@ suite(testing.suiteName(), function() {
       const upd = await update_worker_pool(db, {provider_id: 'provider2'});
       assert.deepEqual(upd[0].previous_provider_id, 'provider');
 
-      const rows = await db.fns.get_worker_pool('wp/id');
+      const rows = await get_worker_pool(db, 'wp/id');
       assert.deepEqual(rows[0].previous_provider_ids, ['provider']);
     });
 
@@ -174,7 +206,7 @@ suite(testing.suiteName(), function() {
 
       await db.fns.delete_worker_pool('wp/id');
 
-      const rows = await db.fns.get_worker_pool('wp/id');
+      const rows = await get_worker_pool(db, 'wp/id');
       assert.deepEqual(rows, []);
     });
 
@@ -183,14 +215,14 @@ suite(testing.suiteName(), function() {
 
       await db.fns.remove_worker_pool_previous_provider_id('wp/id', 'old1');
 
-      const rows = await db.fns.get_worker_pool('wp/id');
+      const rows = await get_worker_pool(db, 'wp/id');
       assert.deepEqual(rows[0].previous_provider_ids, ['old2']);
     });
 
     helper.dbTest('remove_worker_pool_previous_provider_id, no worker-pool', async function(db, isFake) {
       await db.fns.remove_worker_pool_previous_provider_id('wp/id', 'old1');
 
-      const rows = await db.fns.get_worker_pool('wp/id');
+      const rows = await get_worker_pool(db, 'wp/id');
       assert.deepEqual(rows, []);
     });
 
@@ -199,7 +231,7 @@ suite(testing.suiteName(), function() {
 
       await db.fns.remove_worker_pool_previous_provider_id('wp/id', 'unknown');
 
-      const rows = await db.fns.get_worker_pool('wp/id');
+      const rows = await get_worker_pool(db, 'wp/id');
       assert.deepEqual(rows[0].previous_provider_ids, ['old1', 'old2']);
     });
 
@@ -208,7 +240,7 @@ suite(testing.suiteName(), function() {
 
       await db.fns.update_worker_pool_provider_data('wp/id', 'another', {moredata: true});
 
-      const rows = await db.fns.get_worker_pool('wp/id');
+      const rows = await get_worker_pool(db, 'wp/id');
       assert.deepEqual(rows[0].provider_data, {
         someprov: {somedata: true},
         another: {moredata: true},
@@ -452,6 +484,78 @@ suite(testing.suiteName(), function() {
 
       const rows = await db.fns.get_worker('wp/id', 'w/group', 'w/id');
       assert.deepEqual(rows, []);
+    });
+  });
+
+  suite('existing capacity', function() {
+    helper.dbTest('no workers', async function(db, isFake) {
+      await create_worker_pool(db);
+      assert.equal((await db.fns.get_worker_pool_with_capacity('wp/id'))[0].current_capacity, 0);
+    });
+    helper.dbTest('single worker, capacity 1', async function(db, isFake) {
+      await create_worker_pool(db);
+      await create_worker(db, {capacity: 1, state: 'running'});
+      assert.equal((await db.fns.get_worker_pool_with_capacity('wp/id'))[0].current_capacity, 1);
+    });
+    helper.dbTest('single worker, capacity > 1', async function(db, isFake) {
+      await create_worker_pool(db);
+      await create_worker(db, {capacity: 64, state: 'running'});
+      assert.equal((await db.fns.get_worker_pool_with_capacity('wp/id'))[0].current_capacity, 64);
+    });
+    helper.dbTest('multiple workers, capacity 1', async function(db, isFake) {
+      await create_worker_pool(db);
+      await create_worker(db, {worker_id: 'foo1', capacity: 1, state: 'running'});
+      await create_worker(db, {worker_id: 'foo2', capacity: 1, state: 'running'});
+      await create_worker(db, {worker_id: 'foo3', capacity: 1, state: 'running'});
+      await create_worker(db, {worker_id: 'foo4', capacity: 1, state: 'running'});
+      assert.equal((await db.fns.get_worker_pool_with_capacity('wp/id'))[0].current_capacity, 4);
+    });
+    helper.dbTest('multiple workers, capacity > 1', async function(db, isFake) {
+      await create_worker_pool(db);
+      await create_worker(db, {worker_id: 'foo1', capacity: 32, state: 'running'});
+      await create_worker(db, {worker_id: 'foo2', capacity: 64, state: 'running'});
+      await create_worker(db, {worker_id: 'foo3', capacity: 64, state: 'running'});
+      await create_worker(db, {worker_id: 'foo4', capacity: 1, state: 'running'});
+      assert.equal((await db.fns.get_worker_pool_with_capacity('wp/id'))[0].current_capacity, 161);
+    });
+    helper.dbTest('multiple workers, multiple states', async function(db, isFake) {
+      await create_worker_pool(db);
+      await create_worker(db, {worker_id: 'foo1', capacity: 32, state: 'running'});
+      await create_worker(db, {worker_id: 'foo2', capacity: 64, state: 'stopped'});
+      await create_worker(db, {worker_id: 'foo3', capacity: 64, state: 'running'});
+      await create_worker(db, {worker_id: 'foo4', capacity: 1, state: 'requested'});
+      assert.equal((await db.fns.get_worker_pool_with_capacity('wp/id'))[0].current_capacity, 97);
+    });
+    helper.dbTest('no workers (multiple pools)', async function(db, isFake) {
+      await create_worker_pool(db);
+      await create_worker_pool(db, {worker_pool_id: 'ff/tt'});
+      const pools = (await db.fns.get_worker_pools_with_capacity(null, null)).sort();
+      assert.equal(pools[0].current_capacity, 0);
+      assert.equal(pools[1].current_capacity, 0);
+    });
+    helper.dbTest('single worker (multiple pools)', async function(db, isFake) {
+      await create_worker_pool(db);
+      await create_worker_pool(db, {worker_pool_id: 'ff/tt'});
+      await create_worker(db, {capacity: 4, state: 'running'});
+      const pools = (await db.fns.get_worker_pools_with_capacity(null, null)).sort();
+      assert.equal(pools[0].worker_pool_id, 'ff/tt');
+      assert.equal(pools[1].worker_pool_id, 'wp/id');
+      assert.equal(pools[0].current_capacity, 0);
+      assert.equal(pools[1].current_capacity, 4);
+    });
+    helper.dbTest('multiple workers (multiple pools)', async function(db, isFake) {
+      await create_worker_pool(db);
+      await create_worker_pool(db, {worker_pool_id: 'ff/tt'});
+      await create_worker(db, {worker_id: 'foo1', capacity: 4, state: 'running'});
+      await create_worker(db, {worker_id: 'foo2', capacity: 1, state: 'running'});
+      await create_worker(db, {worker_id: 'foo3', capacity: 10, state: 'running', worker_pool_id: 'ff/tt'});
+      await create_worker(db, {worker_id: 'foo4', capacity: 3, state: 'stopped'});
+      await create_worker(db, {worker_id: 'foo5', capacity: 7, state: 'stopped', worker_pool_id: 'ff/tt'});
+      const pools = (await db.fns.get_worker_pools_with_capacity(null, null)).sort();
+      assert.equal(pools[0].worker_pool_id, 'ff/tt');
+      assert.equal(pools[1].worker_pool_id, 'wp/id');
+      assert.equal(pools[0].current_capacity, 10);
+      assert.equal(pools[1].current_capacity, 5);
     });
   });
 });

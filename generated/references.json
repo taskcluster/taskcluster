@@ -46,6 +46,12 @@
           "title": "Created",
           "type": "string"
         },
+        "currentCapacity": {
+          "description": "Total capacity available across all workers for this worker pool that are currently not \"stopped\"",
+          "minimum": 0,
+          "title": "Current Capacity",
+          "type": "integer"
+        },
         "description": {
           "description": "A description of this worker pool.\n",
           "maxLength": 10240,
@@ -56,12 +62,6 @@
           "description": "If true, the owner should be emailed on provisioning errors",
           "title": "Wants Email",
           "type": "boolean"
-        },
-        "existingCapacity": {
-          "description": "Total capacity available across all workers for this worker pool",
-          "minimum": 0,
-          "title": "Existing Capacity",
-          "type": "integer"
         },
         "lastModified": {
           "description": "Date and time when this worker pool was last updated\n",
@@ -98,7 +98,7 @@
         "config",
         "owner",
         "emailOnError",
-        "existingCapacity"
+        "currentCapacity"
       ],
       "title": "Worker Pool Full Definition",
       "type": "object"

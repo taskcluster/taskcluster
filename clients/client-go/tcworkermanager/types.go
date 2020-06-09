@@ -454,6 +454,11 @@ type (
 		// Date and time when this worker pool was created
 		Created tcclient.Time `json:"created"`
 
+		// Total capacity available across all workers for this worker pool that are currently not "stopped"
+		//
+		// Mininum:    0
+		CurrentCapacity int64 `json:"currentCapacity"`
+
 		// A description of this worker pool.
 		//
 		// Max length: 10240
@@ -461,11 +466,6 @@ type (
 
 		// If true, the owner should be emailed on provisioning errors
 		EmailOnError bool `json:"emailOnError"`
-
-		// Total capacity available across all workers for this worker pool
-		//
-		// Mininum:    0
-		ExistingCapacity int64 `json:"existingCapacity"`
 
 		// Date and time when this worker pool was last updated
 		LastModified tcclient.Time `json:"lastModified"`

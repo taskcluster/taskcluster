@@ -61,7 +61,7 @@ properties:
     title: Current Capacity
     type: integer
     minimum: 0
-    description: Total capacity available across all workers for this worker pool
+    description: Total capacity available across all workers for this worker pool that are currently not "stopped"
 additionalProperties: false
 required:
   - providerId

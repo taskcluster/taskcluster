@@ -252,7 +252,7 @@ methods:
         end if;
       end
   get_worker:
-    description: Get an existig worker. The returned table will have one or (if no such worker is defined) zero rows.
+    description: Get an existing worker. The returned table will have one or (if no such worker is defined) zero rows.
     mode: read
     serviceName: worker_manager
     args: worker_pool_id_in text, worker_group_in text, worker_id_in text

@@ -2270,7 +2270,7 @@
           "args": "worker_pool_id_in text, provider_id_in text, description_in text, config_in jsonb, last_modified_in timestamptz, owner_in text, email_on_error_in boolean",
           "body": "declare\n  existing record;\nbegin\n  select\n    worker_pools.provider_id,\n    worker_pools.previous_provider_ids\n  from worker_pools\n  where worker_pools.worker_pool_id = worker_pool_id_in\n  -- lock this row for the duration of this transaction..\n  for update\n  into existing;\n\n  -- update previous_provider_ids, if the provider_id has changed\n  if existing.provider_id <> provider_id_in then\n    -- remove both provider IDs to avoid duplicates, then re-add existing.provider_id\n    existing.previous_provider_ids = (existing.previous_provider_ids - provider_id_in - existing.provider_id) || jsonb_build_array(existing.provider_id);\n  end if;\n\n  return query update worker_pools\n  set\n    provider_id = provider_id_in,\n    description = description_in,\n    config = config_in,\n    last_modified = last_modified_in,\n    owner = owner_in,\n    email_on_error = email_on_error_in,\n    previous_provider_ids = existing.previous_provider_ids\n  where worker_pools.worker_pool_id = worker_pool_id_in\n  returning\n    worker_pools.worker_pool_id,\n    worker_pools.provider_id,\n    worker_pools.description,\n    worker_pools.config,\n    worker_pools.created,\n    worker_pools.last_modified,\n    worker_pools.owner,\n    worker_pools.email_on_error,\n    existing.provider_id as previous_provider_id;\nend",
           "deprecated": false,
-          "description": "Update API-accessible columns on an existig worker pool.  All fields are\noverridden, but if the provider_id changes, then the existing provider_id\nis added to previous_provider_ids.  The return value contains values\nrequired for an API response and previous_provider_id (singular) containing\nthe provider_id found before the update.  If no such worker pool exists,\nthe return value is an empty set.",
+          "description": "Update API-accessible columns on an existing worker pool.  All fields are\noverridden, but if the provider_id changes, then the existing provider_id\nis added to previous_provider_ids.  The return value contains values\nrequired for an API response and previous_provider_id (singular) containing\nthe provider_id found before the update.  If no such worker pool exists,\nthe return value is an empty set.",
           "mode": "write",
           "returns": "table(worker_pool_id text, provider_id text, description text, config jsonb, created timestamptz, last_modified timestamptz, owner text, email_on_error boolean, previous_provider_id text)",
           "serviceName": "worker_manager"
@@ -2383,7 +2383,7 @@
           "args": "worker_pool_id_in text, worker_group_in text, worker_id_in text",
           "body": "begin\n  return query\n  select\n    workers.worker_pool_id,\n    workers.worker_group,\n    workers.worker_id,\n    workers.provider_id,\n    workers.created,\n    workers.expires,\n    workers.state,\n    workers.provider_data,\n    workers.capacity,\n    workers.last_modified,\n    workers.last_checked,\n    workers.etag\n  from workers\n  where\n    workers.worker_pool_id = worker_pool_id_in and\n    workers.worker_group = worker_group_in and\n    workers.worker_id = worker_id_in;\nend",
           "deprecated": false,
-          "description": "Get an existig worker. The returned table will have one or (if no such worker is defined) zero rows.",
+          "description": "Get an existing worker. The returned table will have one or (if no such worker is defined) zero rows.",
           "mode": "read",
           "returns": "table(worker_pool_id text, worker_group text, worker_id text, provider_id text, created timestamptz, expires timestamptz, state text, provider_data jsonb, capacity integer, last_modified timestamptz, last_checked timestamptz, etag uuid)",
           "serviceName": "worker_manager"
@@ -2454,6 +2454,47 @@
       },
       "migrationScript": "begin\n  -- lock this table before reading from it, to prevent loss of concurrent\n  -- updates when the table is dropped.  Note that this may lead to concurrent\n  -- updates failing; the important thing is that they not succeed without\n  -- taking effect.  Failed updates will be retried.\n  lock table wmworkers_entities;\n\n  create table workers\n  as\n    select\n      (value ->> 'workerPoolId')::text as worker_pool_id,\n      (value ->> 'workerGroup')::text as worker_group,\n      (value ->> 'workerId')::text as worker_id,\n      (value ->> 'providerId')::text as provider_id,\n      (value ->> 'created')::timestamptz as created,\n      (value ->> 'expires')::timestamptz as expires,\n      (value ->> 'state')::text as state,\n      entity_buf_decode(value, 'providerData')::jsonb as provider_data,\n      (value ->> 'capacity')::integer as capacity,\n      (value ->> 'lastModified')::timestamptz as last_modified,\n      (value ->> 'lastChecked')::timestamptz as last_checked,\n      etag\n    from wmworkers_entities;\n  alter table workers add primary key (worker_pool_id, worker_group, worker_id);\n  alter table workers\n    alter column worker_pool_id set not null,\n    alter column worker_group set not null,\n    alter column worker_id set not null,\n    alter column provider_id set not null,\n    alter column created set not null,\n    alter column expires set not null,\n    alter column state set not null,\n    alter column provider_data set not null,\n    alter column capacity set not null,\n    alter column last_modified set not null,\n    alter column last_checked set not null,\n    alter column etag set not null,\n    alter column etag set default public.gen_random_uuid();\n\n  revoke select, insert, update, delete on wmworkers_entities from $db_user_prefix$_worker_manager;\n  drop table wmworkers_entities;\n  grant select, insert, update, delete on workers to $db_user_prefix$_worker_manager;\nend",
       "version": 12
+    },
+    {
+      "methods": {
+        "get_worker_pool": {
+          "deprecated": true
+        },
+        "get_worker_pool_with_capacity": {
+          "args": "worker_pool_id_in text",
+          "body": "begin\n  return query\n  select\n    worker_pools.worker_pool_id,\n    worker_pools.provider_id,\n    worker_pools.previous_provider_ids,\n    worker_pools.description,\n    worker_pools.config,\n    worker_pools.created,\n    worker_pools.last_modified,\n    worker_pools.owner,\n    worker_pools.email_on_error,\n    worker_pools.provider_data,\n    coalesce((\n      select sum(workers.capacity) from workers where\n        workers.worker_pool_id = worker_pool_id_in and\n        workers.state != 'stopped'),\n      0)::integer -- sum always wants to return a bigint but we're always going to be safely within integer range\n  from worker_pools\n  where worker_pools.worker_pool_id = worker_pool_id_in;\nend",
+          "deprecated": false,
+          "description": "Get an existing worker pool.  The returned table will have one or (if no such worker pool is defined) zero rows.",
+          "mode": "read",
+          "returns": "table(worker_pool_id text, provider_id text, previous_provider_ids jsonb, description text, config jsonb, created timestamptz, last_modified timestamptz, owner text, email_on_error boolean, provider_data jsonb, current_capacity integer)",
+          "serviceName": "worker_manager"
+        },
+        "get_worker_pools": {
+          "deprecated": true
+        },
+        "get_worker_pools_with_capacity": {
+          "args": "page_size_in integer, page_offset_in integer",
+          "body": "begin\n  return query\n  select\n    worker_pools.worker_pool_id,\n    worker_pools.provider_id,\n    worker_pools.previous_provider_ids,\n    worker_pools.description,\n    worker_pools.config,\n    worker_pools.created,\n    worker_pools.last_modified,\n    worker_pools.owner,\n    worker_pools.email_on_error,\n    worker_pools.provider_data,\n    coalesce(sum(worker_capacities.capacity), 0)::integer -- sum always wants to return a bigint but we're always going to be safely within integer range\n  from worker_pools\n  left join (\n    select workers.worker_pool_id, workers.capacity from workers\n      where workers.state != 'stopped'\n  ) as worker_capacities\n  on worker_pools.worker_pool_id = worker_capacities.worker_pool_id\n  group by worker_pools.worker_pool_id\n  order by worker_pools.worker_pool_id\n  limit get_page_limit(page_size_in)\n  offset get_page_offset(page_offset_in);\nend",
+          "deprecated": false,
+          "description": "Get existing worker pools, ordered by `worker_pool_id`.  If the pagination arguments are both NULL, all rows are returned.\nOtherwise, page_size rows are returned at offset page_offset.",
+          "mode": "read",
+          "returns": "table(worker_pool_id text, provider_id text, previous_provider_ids jsonb, description text, config jsonb, created timestamptz, last_modified timestamptz, owner text, email_on_error boolean, provider_data jsonb, current_capacity integer)",
+          "serviceName": "worker_manager"
+        },
+        "update_worker_pool": {
+          "deprecated": true
+        },
+        "update_worker_pool_with_capacity": {
+          "args": "worker_pool_id_in text, provider_id_in text, description_in text, config_in jsonb, last_modified_in timestamptz, owner_in text, email_on_error_in boolean",
+          "body": "declare\n  existing record;\nbegin\n  select\n    worker_pools.provider_id,\n    worker_pools.previous_provider_ids\n  from worker_pools\n  where worker_pools.worker_pool_id = worker_pool_id_in\n  -- lock this row for the duration of this transaction..\n  for update\n  into existing;\n\n  -- update previous_provider_ids, if the provider_id has changed\n  if existing.provider_id <> provider_id_in then\n    -- remove both provider IDs to avoid duplicates, then re-add existing.provider_id\n    existing.previous_provider_ids = (existing.previous_provider_ids - provider_id_in - existing.provider_id) || jsonb_build_array(existing.provider_id);\n  end if;\n\n  return query update worker_pools\n  set\n    provider_id = provider_id_in,\n    description = description_in,\n    config = config_in,\n    last_modified = last_modified_in,\n    owner = owner_in,\n    email_on_error = email_on_error_in,\n    previous_provider_ids = existing.previous_provider_ids\n  where worker_pools.worker_pool_id = worker_pool_id_in\n  returning\n    worker_pools.worker_pool_id,\n    worker_pools.provider_id,\n    worker_pools.description,\n    worker_pools.config,\n    worker_pools.created,\n    worker_pools.last_modified,\n    worker_pools.owner,\n    worker_pools.email_on_error,\n    existing.provider_id as previous_provider_id,\n    coalesce((\n      select sum(workers.capacity) from workers where\n        workers.worker_pool_id = worker_pool_id_in and\n        workers.state != 'stopped'),\n      0)::integer; -- sum always wants to return a bigint but we're always going to be safely within integer range\nend",
+          "deprecated": false,
+          "description": "Update API-accessible columns on an existig worker pool.  All fields are\noverridden, but if the provider_id changes, then the existing provider_id\nis added to previous_provider_ids.  The return value contains values\nrequired for an API response and previous_provider_id (singular) containing\nthe provider_id found before the update.  If no such worker pool exists,\nthe return value is an empty set.",
+          "mode": "write",
+          "returns": "table(worker_pool_id text, provider_id text, description text, config jsonb, created timestamptz, last_modified timestamptz, owner text, email_on_error boolean, previous_provider_id text, current_capacity integer)",
+          "serviceName": "worker_manager"
+        }
+      },
+      "version": 13
     }
   ]
 }

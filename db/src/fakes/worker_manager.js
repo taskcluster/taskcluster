@@ -294,6 +294,16 @@ class FakeWorkerManager {
       provider_data});
   }
 
+  async _capacity_for_pool(worker_pool_id) {
+    let capacity = 0;
+    for (const worker of this.workers.values()) {
+      if (worker.worker_pool_id === worker_pool_id && worker.state !== 'stopped') {
+        capacity += worker.capacity;
+      }
+    }
+    return capacity;
+  }
+
   async get_worker_pool(worker_pool_id) {
     assert.equal(typeof worker_pool_id, 'string');
     if (this.worker_pools.has(worker_pool_id)) {
@@ -303,12 +313,28 @@ class FakeWorkerManager {
     }
   }
 
+  async get_worker_pool_with_capacity(worker_pool_id) {
+    const list = await this.get_worker_pool(worker_pool_id);
+    for (const worker_pool of list) {
+      worker_pool.current_capacity = await this._capacity_for_pool(worker_pool_id);
+    }
+    return list;
+  }
+
   async get_worker_pools(page_size, page_offset) {
     const wpids = [...this.worker_pools.keys()];
     wpids.sort();
     return wpids
       .slice(page_offset || 0, page_size ? page_offset + page_size : wpids.length)
       .map(wpid => this.worker_pools.get(wpid));
+  }
+
+  async get_worker_pools_with_capacity(page_size, page_offset) {
+    const list = await this.get_worker_pools(page_size, page_offset);
+    for (const worker_pool of list) {
+      worker_pool.current_capacity = await this._capacity_for_pool(worker_pool.worker_pool_id);
+    }
+    return list;
   }
 
   async update_worker_pool(
@@ -340,6 +366,14 @@ class FakeWorkerManager {
     wp.email_on_error = email_on_error;
 
     return [{..._.omit(wp, 'provider_data', 'previous_provider_ids'), previous_provider_id}];
+  }
+
+  async update_worker_pool_with_capacity(...args) {
+    const list = await this.update_worker_pool(...args);
+    for (const worker_pool of list) {
+      worker_pool.current_capacity = await this._capacity_for_pool(worker_pool.worker_pool_id);
+    }
+    return list;
   }
 
   async expire_worker_pools() {

@@ -254,7 +254,7 @@ methods:
       end
   update_worker_pool:
     description: |-
-      Update API-accessible columns on an existig worker pool.  All fields are
+      Update API-accessible columns on an existing worker pool.  All fields are
       overridden, but if the provider_id changes, then the existing provider_id
       is added to previous_provider_ids.  The return value contains values
       required for an API response and previous_provider_id (singular) containing
