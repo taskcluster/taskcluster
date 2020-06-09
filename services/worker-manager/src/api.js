@@ -638,6 +638,7 @@ builder.declare({
       `secrets:get:worker-pool:${worker.workerPoolId}`,
       `queue:claim-work:${worker.workerPoolId}`,
       `worker-manager:remove-worker:${worker.workerPoolId}/${worker.workerGroup}/${worker.workerId}`,
+      `worker-manager:reregister-worker:${workerPoolId}/${workerGroup}/${workerId}`,
     ],
     start: taskcluster.fromNow('-15 minutes'),
     expiry: expires,
@@ -645,4 +646,28 @@ builder.declare({
   });
 
   return res.reply({expires: expires.toJSON(), credentials, workerConfig});
+});
+
+builder.declare({
+  method: 'post',
+  route: '/worker/reregister',
+  name: 'reregisterWorker',
+  title: 'Reregister a Worker',
+  category: 'Workers',
+  stability: APIBuilder.stability.experimental,
+  input: 'reregister-worker-request.yml',
+  output: 'reregister-worker-response.yml',
+  // note that this pattern relies on workerGroup and workerId not containing `/`
+  scopes: 'worker-manager:reregister-worker:<workerPoolId>/<workerGroup>/<workerId>',
+  description: [
+    'Reregister a running worker.',
+    '',
+    'This will generate and return new Taskcluster credentials for the worker',
+    'on that instance to use. The credentials will not live longer the the',
+    '`registrationTimeout` for that worker. The endpoint will update `terminateAfter`',
+    'for the worker so that worker-manager does not terminate the instance.',
+  ].join('\n'),
+}, async function(req, res) {
+
+  return res.reply({});
 });

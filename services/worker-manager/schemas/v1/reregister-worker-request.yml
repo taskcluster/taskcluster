@@ -1,0 +1,14 @@
+$schema: "/schemas/common/metaschema.json#"
+title: Reregister Worker Request
+description: Request body to `reregisterWorker`.
+type: object
+properties:
+  secret:
+    title: Secret
+    type: string
+    pattern: "^[a-zA-Z0-9_-]{44}$"
+    description: |
+      The secret value that was configured when the worker was registered (in `registerWorker`).
+additionalProperties: false
+required:
+  - secret
