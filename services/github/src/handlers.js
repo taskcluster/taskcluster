@@ -3,7 +3,7 @@ const libUrls = require('taskcluster-lib-urls');
 const yaml = require('js-yaml');
 const assert = require('assert');
 const {consume} = require('taskcluster-lib-pulse');
-const {CONCLUSIONS, CHECKRUN_TEXT, CUSTOM_CHECKRUN_TEXT_ARTIFACT_NAME} = require('./constants');
+const {CONCLUSIONS, CHECKRUN_TEXT, CUSTOM_CHECKRUN_TEXT_ARTIFACT_NAME, CUSTOM_CHECKRUN_ANNOTATIONS_ARTIFACT_NAME} = require('./constants');
 const utils = require('./utils');
 
 /**
@@ -473,8 +473,8 @@ async function statusHandler(message) {
     );
 
     taskState.output = {
-      summary: `Message came with unknown resolution reason or state. 
-        Resolution reason received: ${reasonResolved}. State received: ${state}. The status has been marked as neutral. 
+      summary: `Message came with unknown resolution reason or state.
+        Resolution reason received: ${reasonResolved}. State received: ${state}. The status has been marked as neutral.
         For further information, please inspect the task in Taskcluster`,
       title: 'Unknown Resolution',
     };
@@ -498,46 +498,55 @@ async function statusHandler(message) {
         taskDefinition.extra.github.customCheckRun.textArtifactName || CUSTOM_CHECKRUN_TEXT_ARTIFACT_NAME;
     }
 
-    let customCheckRunText = '';
-
-    try {
-      const url = this.queueClient.buildUrl(this.queueClient.getArtifact, taskId, runId, textArtifactName);
-      const res = await utils.throttleRequest({url, method: 'GET'});
-
-      if (res.status >= 400 && res.status !== 404) {
-        let errorMessage = "Failed to get your artifact.\n";
-        switch (res.status) {
-          case 403:
-            errorMessage.concat("Make sure your artifact is public. See the documentation on the artifact naming.");
-            break;
-          case 404:
-            errorMessage.concat("Make sure the artifact exists, and there are no typos in its name.");
-            break;
-          case 424:
-            errorMessage.concat("Make sure the artifact exists on the worker or other location.");
-            break;
-          default:
-            errorMessage.concat(res.response.error.message);
-            break;
-        }
-        await this.createExceptionComment({
-          debug,
-          instGithub,
-          organization,
-          repository,
-          sha,
-          error: new Error(errorMessage),
-        });
-
-        if (res.status < 500) {
-          await this.monitor.reportError(res.response.error);
-        }
-      } else if (res.status >= 200 && res.status < 300) {
-        customCheckRunText = res.text.toString();
-      }
-    } catch (e) {
-      await this.monitor.reportError(e);
+    let annotationsArtifactName = CUSTOM_CHECKRUN_ANNOTATIONS_ARTIFACT_NAME;
+    if (taskDefinition.extra && taskDefinition.extra.github && taskDefinition.extra.github.customCheckRun) {
+      textArtifactName =
+        taskDefinition.extra.github.customCheckRun.annotationsArtifactName || CUSTOM_CHECKRUN_ANNOTATIONS_ARTIFACT_NAME;
     }
+
+    async function requestArtifact(artifactName) {
+      try {
+        const url = this.queueClient.buildUrl(this.queueClient.getArtifact, taskId, runId, artifactName);
+        const res = await utils.throttleRequest({url, method: 'GET'});
+
+        if (res.status >= 400 && res.status !== 404) {
+          let errorMessage = "Failed to get your artifact.\n";
+          switch (res.status) {
+            case 403:
+              errorMessage.concat("Make sure your artifact is public. See the documentation on the artifact naming.");
+              break;
+            case 404:
+              errorMessage.concat("Make sure the artifact exists, and there are no typos in its name.");
+              break;
+            case 424:
+              errorMessage.concat("Make sure the artifact exists on the worker or other location.");
+              break;
+            default:
+              errorMessage.concat(res.response.error.message);
+              break;
+          }
+          await this.createExceptionComment({
+            debug,
+            instGithub,
+            organization,
+            repository,
+            sha,
+            error: new Error(errorMessage),
+          });
+
+          if (res.status < 500) {
+            await this.monitor.reportError(res.response.error);
+          }
+        } else if (res.status >= 200 && res.status < 300) {
+          return res.text.toString();
+        }
+      } catch (e) {
+        await this.monitor.reportError(e);
+      }
+      return '';
+    }
+
+    const customCheckRunText = await requestArtifact(textArtifactName);
 
     if (checkRun) {
       await instGithub.checks.update({
@@ -552,6 +561,17 @@ async function statusHandler(message) {
         },
       });
     } else {
+      let customCheckRunAnnotations = [];
+      const customCheckRunAnnotationsText = await requestArtifact(annotationsArtifactName);
+      try {
+        const json = JSON.parse(customCheckRunAnnotationsText);
+        if (Array.isArray(json)) {
+          customCheckRunAnnotations = json;
+        }
+      } catch (e) {
+        await this.monitor.reportError(e);
+      }
+
       const checkRun = await instGithub.checks.create({
         owner: organization,
         repo: repository,
@@ -561,6 +581,7 @@ async function statusHandler(message) {
           title: `${this.context.cfg.app.statusContext} (${eventType.split('.')[0]})`,
           summary: `${taskDefinition.metadata.description}`,
           text: `[${CHECKRUN_TEXT}](${taskGroupUI(this.context.cfg.taskcluster.rootUrl, taskGroupId)})\n${customCheckRunText || ''}`,
+          annotations: customCheckRunAnnotations,
         },
         details_url: taskUI(this.context.cfg.taskcluster.rootUrl, taskGroupId, taskId),
       });
@@ -679,7 +700,7 @@ async function jobHandler(message) {
       return;
     }
   } catch (e) {
-    debug(`.taskcluster.yml for ${organization}/${repository}@${sha} was not formatted correctly. 
+    debug(`.taskcluster.yml for ${organization}/${repository}@${sha} was not formatted correctly.
       Leaving comment on Github.`);
     await this.createExceptionComment({debug, instGithub, organization, repository, sha, error: e, pullNumber});
     return;
@@ -812,10 +833,10 @@ async function jobHandler(message) {
       repository,
     }, routes);
   } catch (e) {
-    debug(`Failed to publish to taskGroupCreationRequested exchange. 
+    debug(`Failed to publish to taskGroupCreationRequested exchange.
     Parameters: ${taskGroupId}, ${organization}, ${repository}, ${routes}`);
     debug(`Stack: ${e.stack}`);
-    return debug(`Failed to publish to taskGroupCreationRequested exchange 
+    return debug(`Failed to publish to taskGroupCreationRequested exchange
     for ${organization}/${repository}@${sha} with the error: ${JSON.stringify(e, null, 2)}`);
   }
 
