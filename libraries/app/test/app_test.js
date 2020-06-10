@@ -16,6 +16,10 @@ suite(testing.suiteName(), function() {
     let server;
 
     suiteSetup(async function() {
+      mockFs({
+        [path.resolve(REPO_ROOT, 'version.json')]: JSON.stringify({ version: 'v99.99.99' }),
+      });
+
       // this library expects an "api" to have an express method that sets it up..
       const fakeApi = {
         express(app) {
@@ -75,10 +79,6 @@ suite(testing.suiteName(), function() {
     });
 
     test('/__version__', async function() {
-      mockFs({
-        [path.resolve(REPO_ROOT, 'version.json')]: JSON.stringify({ version: 'v99.99.99' }),
-      });
-
       const res = await request.get('http://localhost:1459/__version__');
       assert(res.ok, 'Got response');
       assert.equal(res.body.version, 'v99.99.99', 'Got the right version');
