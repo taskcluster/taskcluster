@@ -41,6 +41,10 @@ func TestIdleWithoutCrash(t *testing.T) {
 	}
 }
 
+// TestRevisionNumberStored is useful for ensuring that the test binary
+// includes the git revision number, so that it emulates the release binary.
+// There is a separate test that the release binary includes the revision
+// number in build.sh.
 func TestRevisionNumberStored(t *testing.T) {
 	if !regexp.MustCompile("^[0-9a-f]{40}$").MatchString(revision) {
 		t.Fatalf("Git revision could not be determined - got '%v' but expected to match regular expression '^[0-9a-f](40)$'\n"+
