@@ -29,12 +29,11 @@ norm_to_lint=""
 gen_to_lint=""
 
 for file in $all_py ; do
-  grep $file filescreated.dat &> /dev/null && $(which true)
-	if [ $? -eq 0 ] ; then
+  if grep -q 'AUTOMATICALLY GENERATED' $file; then
     gen_to_lint="$gen_to_lint $file"
-	else
+  else
     norm_to_lint="$norm_to_lint $file"
-	fi
+  fi
 done
 
 case "$($python -c 'import sys ; print(sys.version_info.major)')" in

@@ -84,7 +84,6 @@ class AsyncBaseClient(BaseClient):
         routeParams, payload, query, paginationHandler, paginationLimit = x
         route = self._subArgsInRoute(entry, routeParams)
 
-        # TODO: Check for limit being in the Query of the api ref
         if paginationLimit and 'limit' in entry.get('query', []):
             query['limit'] = paginationLimit
 
@@ -187,8 +186,8 @@ class AsyncBaseClient(BaseClient):
                     pass  # Ignore JSON errors in error messages
                 # Find error message
                 message = "Unknown Server Error"
-                if isinstance(data, dict):
-                    message = data.get('message')
+                if isinstance(data, dict) and 'message' in data:
+                    message = data['message']
                 else:
                     if status == 401:
                         message = "Authentication Error"

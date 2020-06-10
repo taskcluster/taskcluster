@@ -4,16 +4,13 @@ from setuptools import setup
 from setuptools.command.test import test as TestCommand
 import sys
 
-# The VERSION variable is automagically changed
-# by release.sh.  Make sure you understand how
-# that script works if you want to change this
-VERSION = '7.0.1'
+VERSION = '30.1.1'
 
 tests_require = [
-    'nose',
-    'nose-exclude',
+    'pytest',
+    'pytest-cov',   
+    'pytest-mock',
     'httmock',
-    'rednose',
     'mock',
     'setuptools-lint',
     'flake8',
@@ -30,7 +27,7 @@ install_requires = [
     'requests>=2.4.3',
     'mohawk>=0.3.4',
     'slugid>=2',
-    'taskcluster-urls>=10.1.0',
+    'taskcluster-urls>=12.1.0',
     'six>=1.10.0',
 ]
 
@@ -69,18 +66,35 @@ elif sys.version_info[:2] >= (3, 5):
         'async_timeout>=2.0.0',
     ])
 
+if sys.version_info.major == 2:
+    with open('README.md') as f:
+        long_description = f.read()
+else:
+    with open('README.md', encoding='utf8') as f:
+        long_description = f.read()
+
 if __name__ == '__main__':
     setup(
         name='taskcluster',
         version=VERSION,
         description='Python client for Taskcluster',
+        long_description=long_description,
+        long_description_content_type="text/markdown",
         author='Mozilla Taskcluster and Release Engineering',
         author_email='release+python@mozilla.com',
-        url='https://github.com/taskcluster/taskcluster-client.py',
-        packages=['taskcluster', 'taskcluster.aio'],
+        url='https://github.com/taskcluster/taskcluster',
+        packages=[
+            "taskcluster",
+            "taskcluster.aio",
+            "taskcluster.generated",
+            "taskcluster.generated.aio",
+        ],
         install_requires=install_requires,
         test_suite="nose.collector",
         tests_require=tests_require,
+        extras_require={
+            'test': tests_require,
+        },
         cmdclass={'test': Tox},
         zip_safe=False,
         classifiers=['Programming Language :: Python :: 2.7',

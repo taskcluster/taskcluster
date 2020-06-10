@@ -79,3 +79,5 @@ target/
 
 # vim's python-mode plugin
 .ropeproject
+
+.release/
