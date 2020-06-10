@@ -2,7 +2,6 @@ package testing
 
 import (
 	"sync"
-	"time"
 
 	"github.com/taskcluster/taskcluster/v30/internal/workerproto"
 )
@@ -19,6 +18,9 @@ type FakeWorker struct {
 
 	workerTransp *LocalTransport
 	runnerTransp *LocalTransport
+
+	// condition variable used to wait for a "test-flush" method
+	flushToWorker *sync.Cond
 }
 
 // Close down the fake worker.  Call this to dispose of resources.
@@ -28,7 +30,9 @@ func (wkr *FakeWorker) Close() {
 }
 
 // Generate a function that can be called to assert that message of the given
-// type has or has not been received.  This is useful for building assertions.
+// type has or has not been received by the worker.  This is useful for
+// building assertions.  This function flushes all messages sent to the worker
+// before performing its check.
 func (wkr *FakeWorker) MessageReceivedFunc(msgType string, matcher func(msg workerproto.Message) bool) func() bool {
 	received := false
 	receivedMutex := sync.Mutex{}
@@ -42,13 +46,24 @@ func (wkr *FakeWorker) MessageReceivedFunc(msgType string, matcher func(msg work
 	})
 
 	return func() bool {
-		// allow the receive goroutine time to receive the message
-		time.Sleep(10 * time.Millisecond)
+		wkr.flushMessagesToWorker()
 
 		receivedMutex.Lock()
 		defer receivedMutex.Unlock()
 		return received
 	}
+}
+
+// Return only after all messages to the worker sent before this call have been
+// received
+func (wkr *FakeWorker) flushMessagesToWorker() {
+	wkr.flushToWorker.L.Lock()
+	// send a flush message, and wait until it is received.  Since messages
+	// are delivered in-order, this indicate that all previously sent messages
+	// have been fully received.
+	wkr.RunnerProtocol.Send(workerproto.Message{Type: "test-flush"})
+	wkr.flushToWorker.Wait()
+	wkr.flushToWorker.L.Unlock()
 }
 
 // Create a new fake worker with the given capabilities.  The worker side
@@ -64,10 +79,21 @@ func NewFakeWorkerWithCapabilities(capabilities ...string) *FakeWorker {
 	}
 	workerProto.Start(true)
 
+	// we "flush" outbound messages by sending a "test-flush" message and
+	// signalling this condition variable when it is received.
+	flushToWorker := sync.NewCond(&sync.Mutex{})
+
+	workerProto.Register("test-flush", func(msg workerproto.Message) {
+		flushToWorker.L.Lock()
+		flushToWorker.Broadcast()
+		flushToWorker.L.Unlock()
+	})
+
 	return &FakeWorker{
 		RunnerProtocol: runnerProto,
 		WorkerProtocol: workerProto,
 		workerTransp:   workerTransp,
 		runnerTransp:   runnerTransp,
+		flushToWorker:  flushToWorker,
 	}
 }
