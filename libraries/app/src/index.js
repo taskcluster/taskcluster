@@ -136,18 +136,19 @@ const app = async (options) => {
     });
   }
 
-  app.use('/__version__', (req, res) => {
+  try {
     const taskclusterVersionFile = path.resolve(REPO_ROOT, 'version.json');
-
-    try {
-      const taskclusterVersion = fs.readFileSync(taskclusterVersionFile).toString().trim();
+    const taskclusterVersion = fs.readFileSync(taskclusterVersionFile).toString().trim();
+    app.use('/__version__', (req, res) => {
       res.header('Content-Type', 'application/json');
       res.send(taskclusterVersion);
-    } catch (err) {
+    });
+  } catch (err) {
+    app.use('/__version__', (req, res) => {
       res.header('Content-Type', 'application/json');
       res.status(500).send({ error: 'Not found' });
-    }
-  });
+    });
+  }
 
   app.use('/__heartbeat__', (req, res) => {
     res.header('Content-Type', 'application/json');

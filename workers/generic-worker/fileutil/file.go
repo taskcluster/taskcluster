@@ -83,6 +83,8 @@ func Unzip(b []byte, dest string) error {
 			}
 		}()
 
+		// note that the ZIP file here is trusted so `..` in this path does not
+		// constitute a vulnerability (just an odd way to get things done)
 		path := filepath.Join(dest, f.Name)
 
 		if f.FileInfo().IsDir() {
