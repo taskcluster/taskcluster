@@ -12,6 +12,11 @@ type Provider interface {
 	// and worker-information fields, but may modify any part of the state it desires.
 	ConfigureRun(state *run.State) error
 
+	// Get the worker identity proof to pass to worker-manager, or return nil
+	// to skip calling workerManager.registerWorker at all, in which case
+	// ConfigureRun should set state.Credentials correctly.
+	GetWorkerIdentityProof() (map[string]interface{}, error)
+
 	// In a subsequent run with cacheOverRestarts set, this method is called
 	// instead of ConfigureRun.  It should recover any provider state required
 	// from the given Run.

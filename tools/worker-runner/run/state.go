@@ -30,6 +30,7 @@ type State struct {
 	WorkerPoolID string
 	WorkerGroup  string
 	WorkerID     string
+	ProviderID   string
 
 	// metadata from the provider (useful to display to the user for
 	// debugging).
@@ -84,6 +85,10 @@ func (state *State) CheckProviderResults() error {
 
 	if state.WorkerID == "" {
 		return fmt.Errorf("provider did not set WorkerID")
+	}
+
+	if state.ProviderID == "" {
+		return fmt.Errorf("provider did not set ProviderID")
 	}
 
 	if state.WorkerLocation["cloud"] == "" {

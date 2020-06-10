@@ -9,13 +9,13 @@ import (
 
 	"github.com/taskcluster/taskcluster/v30/internal/workerproto"
 	"github.com/taskcluster/taskcluster/v30/tools/worker-runner/cfg"
-	"github.com/taskcluster/taskcluster/v30/tools/worker-runner/credexp"
 	"github.com/taskcluster/taskcluster/v30/tools/worker-runner/errorreport"
 	"github.com/taskcluster/taskcluster/v30/tools/worker-runner/files"
 	"github.com/taskcluster/taskcluster/v30/tools/worker-runner/logging"
 	loggingProtocol "github.com/taskcluster/taskcluster/v30/tools/worker-runner/logging/protocol"
 	"github.com/taskcluster/taskcluster/v30/tools/worker-runner/perms"
 	"github.com/taskcluster/taskcluster/v30/tools/worker-runner/provider"
+	"github.com/taskcluster/taskcluster/v30/tools/worker-runner/registration"
 	"github.com/taskcluster/taskcluster/v30/tools/worker-runner/run"
 	"github.com/taskcluster/taskcluster/v30/tools/worker-runner/secrets"
 	"github.com/taskcluster/taskcluster/v30/tools/worker-runner/worker"
@@ -62,12 +62,14 @@ func Run(configFile string) (state run.State, err error) {
 	state.WorkerConfig = state.WorkerConfig.Merge(runnercfg.WorkerConfig)
 	state.Unlock()
 
-	// initialize provider
+	// initialize provider and (re)register the worker
 
 	provider, err := provider.New(runnercfg)
 	if err != nil {
 		return
 	}
+
+	reg := registration.New(runnercfg, &state)
 
 	if !runCached {
 		log.Printf("Configuring with provider %s", runnercfg.Provider.ProviderType)
@@ -75,8 +77,25 @@ func Run(configFile string) (state run.State, err error) {
 		if err != nil {
 			return
 		}
+
+		workerIdentityProof, err2 := provider.GetWorkerIdentityProof()
+		if err2 != nil {
+			err = err2
+			return
+		}
+		if workerIdentityProof != nil {
+			err = reg.RegisterWorker(workerIdentityProof)
+			if err != nil {
+				return
+			}
+		}
 	} else {
 		err = provider.UseCachedRun(&state)
+		if err != nil {
+			return
+		}
+
+		err = reg.UseCachedRun()
 		if err != nil {
 			return
 		}
@@ -162,9 +181,6 @@ func Run(configFile string) (state run.State, err error) {
 		}
 	}
 
-	// handle credential expiratoin
-	ce := credexp.New(&state)
-
 	// start
 
 	log.Printf("Starting worker")
@@ -181,14 +197,14 @@ func Run(configFile string) (state run.State, err error) {
 	loggingProtocol.SetProtocol(proto)
 	provider.SetProtocol(proto)
 	worker.SetProtocol(proto)
-	ce.SetProtocol(proto)
+	reg.SetProtocol(proto)
 
 	// configure error reporting
 	errorreport.Setup(proto, &state)
 
 	// call the WorkerStarted methods before starting the proto so that there
 	// are no race conditions around the capabilities negotiation
-	err = ce.WorkerStarted()
+	err = reg.WorkerStarted()
 	if err != nil {
 		return
 	}
@@ -209,13 +225,14 @@ func Run(configFile string) (state run.State, err error) {
 	}
 
 	// shut things down
+	// NOTE: this section is not reached for generic-worker reboots.
 
 	err = provider.WorkerFinished(&state)
 	if err != nil {
 		return
 	}
 
-	err = ce.WorkerFinished()
+	err = reg.WorkerFinished()
 	if err != nil {
 		return
 	}

@@ -19,6 +19,7 @@ type GoogleProvider struct {
 	workerManagerClientFactory tc.WorkerManagerClientFactory
 	metadataService            MetadataService
 	proto                      *workerproto.Protocol
+	workerIdentityProof        map[string]interface{}
 }
 
 func (p *GoogleProvider) ConfigureRun(state *run.State) error {
@@ -36,37 +37,10 @@ func (p *GoogleProvider) ConfigureRun(state *run.State) error {
 	}
 
 	state.RootURL = userData.RootURL
-
-	// the worker identity
-	proofPath := fmt.Sprintf("/instance/service-accounts/default/identity?audience=%s&format=full", userData.RootURL)
-	proofToken, err := p.metadataService.queryMetadata(proofPath)
-	if err != nil {
-		return err
-	}
-
-	// We need a worker manager client for fetching taskcluster credentials.
-	// Ensure auth is disabled in client, since we don't have credentials yet.
-	wm, err := p.workerManagerClientFactory(state.RootURL, nil)
-	if err != nil {
-		return fmt.Errorf("Could not create worker manager client: %v", err)
-	}
-
-	workerIdentityProofMap := map[string]interface{}{"token": interface{}(proofToken)}
-
-	// TODO
-	// bug 1591476: we should get workerConfig from RegisterWorker()
-	// and not from the metadata service
-	workerConfig, err := provider.RegisterWorker(
-		state,
-		wm,
-		userData.WorkerPoolID,
-		userData.ProviderID,
-		userData.WorkerGroup,
-		workerID,
-		workerIdentityProofMap)
-	if err != nil {
-		return err
-	}
+	state.ProviderID = userData.ProviderID
+	state.WorkerPoolID = userData.WorkerPoolID
+	state.WorkerGroup = userData.WorkerGroup
+	state.WorkerID = workerID
 
 	providerMetadata := map[string]interface{}{
 		"instance-id": workerID,
@@ -105,15 +79,22 @@ func (p *GoogleProvider) ConfigureRun(state *run.State) error {
 
 	state.ProviderMetadata = providerMetadata
 
-	pwc, err := cfg.ParseProviderWorkerConfig(p.runnercfg, workerConfig)
+	// the worker identity
+	proofPath := fmt.Sprintf("/instance/service-accounts/default/identity?audience=%s&format=full", userData.RootURL)
+	proofToken, err := p.metadataService.queryMetadata(proofPath)
 	if err != nil {
 		return err
 	}
 
-	state.WorkerConfig = state.WorkerConfig.Merge(pwc.Config)
-	state.Files = append(state.Files, pwc.Files...)
+	p.workerIdentityProof = map[string]interface{}{
+		"token": interface{}(proofToken),
+	}
 
 	return nil
+}
+
+func (p *GoogleProvider) GetWorkerIdentityProof() (map[string]interface{}, error) {
+	return p.workerIdentityProof, nil
 }
 
 func (p *GoogleProvider) UseCachedRun(run *run.State) error {
