@@ -40,6 +40,7 @@ func TestRegisterWorker(t *testing.T) {
 	require.Equal(t, "at", state.Credentials.AccessToken)
 	require.Equal(t, "cert", state.Credentials.Certificate)
 	require.Equal(t, time.Time(expires), state.CredentialsExpire)
+	require.Equal(t, tc.GetFakeWorkerManagerWorkerSecret(), state.RegistrationSecret)
 
 	require.Equal(t, true, state.WorkerConfig.MustGet("from-register-worker"), "value for from-register-worker")
 	require.Equal(t, "a file.", state.Files[0].Description)
@@ -53,7 +54,7 @@ func TestRegisterWorker(t *testing.T) {
 	require.Equal(t, json.RawMessage([]byte(`{"because":"I said so"}`)), call.WorkerIdentityProof)
 }
 
-func TestCredsExpiration(t *testing.T) {
+func TestCredsExpirationGraceful(t *testing.T) {
 	runnercfg := cfg.RunnerConfig{}
 	state := run.State{
 		// message is sent 30 seconds before expiration, so set expiration
@@ -76,14 +77,62 @@ func TestCredsExpiration(t *testing.T) {
 	wkr.RunnerProtocol.Start(false)
 	assert.NoError(t, err)
 
-	// wait until the protocol negotiation happens and the graceful termination
-	// message is sent
-	for {
-		time.Sleep(10 * time.Millisecond)
-		if gotTerminated() {
-			break
-		}
+	// the expire timer should go off 0ms after workerStarted, so wait a bit to make sure it does..
+	time.Sleep(10 * time.Millisecond)
+	require.True(t, gotTerminated())
+
+	err = reg.WorkerFinished()
+	assert.NoError(t, err)
+}
+
+func TestCredsExpirationNewCredentials(t *testing.T) {
+	runnercfg := cfg.RunnerConfig{}
+	state := run.State{
+		// message is sent 30 seconds before expiration, so set expiration
+		// for 30s from now
+		CredentialsExpire:  time.Now().Add(30 * time.Second),
+		RegistrationSecret: "secret-from-reg",
 	}
+	expires := tcclient.Time(time.Now())
+	tc.SetFakeWorkerManagerWorkerSecret("secret-from-reg")
+	tc.SetFakeWorkerManagerWorkerExpires(expires)
+
+	reg := new(&runnercfg, &state, tc.FakeWorkerManagerClientFactory)
+
+	wkr := ptesting.NewFakeWorkerWithCapabilities("graceful-termination", "new-credentials")
+	defer wkr.Close()
+
+	gotTerminated := wkr.MessageReceivedFunc("graceful-termination", func(msg workerproto.Message) bool {
+		return msg.Properties["finish-tasks"].(bool) == false
+	})
+	gotCredentials := wkr.MessageReceivedFunc("new-credentials", func(msg workerproto.Message) bool {
+		return msg.Properties["client-id"].(string) == "testing-rereg" &&
+			msg.Properties["access-token"].(string) == "at-rereg" &&
+			msg.Properties["certificate"].(string) == "cert-rereg"
+	})
+
+	reg.SetProtocol(wkr.RunnerProtocol)
+
+	err := reg.WorkerStarted()
+	wkr.RunnerProtocol.Start(false)
+	assert.NoError(t, err)
+
+	// the expire timer should go off 0ms after workerStarted, so wait a bit to make sure it does..
+	time.Sleep(10 * time.Millisecond)
+
+	// expect a new set of credentials, but not a termination
+	require.True(t, gotCredentials())
+	require.False(t, gotTerminated())
+
+	require.Equal(t, "testing-rereg", state.Credentials.ClientID)
+	require.Equal(t, "at-rereg", state.Credentials.AccessToken)
+	require.Equal(t, "cert-rereg", state.Credentials.Certificate)
+	require.Equal(t, time.Time(expires), state.CredentialsExpire)
+	require.Equal(t, tc.GetFakeWorkerManagerWorkerSecret(), state.RegistrationSecret)
+
+	call, err := tc.FakeWorkerManagerReregistration()
+	require.NoError(t, err)
+	require.Equal(t, "secret-from-reg", call.Secret)
 
 	err = reg.WorkerFinished()
 	assert.NoError(t, err)
