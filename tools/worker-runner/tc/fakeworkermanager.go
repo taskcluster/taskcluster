@@ -14,6 +14,9 @@ var (
 	wmRegistrations          []*tcworkermanager.RegisterWorkerRequest
 	wmWorkerErrorReports     []*tcworkermanager.WorkerErrorReport
 	wmWorkerErrorReportsLock sync.Mutex
+
+	// the time at which credentials from regitsterWorker and reregsiterWorker will expire
+	workerExpires tcclient.Time
 )
 
 type FakeWorkerManager struct {
@@ -44,7 +47,7 @@ func (wm *FakeWorkerManager) RegisterWorker(payload *tcworkermanager.RegisterWor
 			AccessToken: "at",
 			Certificate: "cert",
 		},
-		Expires:      tcclient.Time(time.Now()),
+		Expires:      workerExpires,
 		WorkerConfig: wc,
 	}, nil
 }
@@ -93,6 +96,10 @@ func FakeWorkerManagerRegistration() (*tcworkermanager.RegisterWorkerRequest, er
 	} else {
 		return nil, fmt.Errorf("Multiple registerWorker calls")
 	}
+}
+
+func SetFakeWorkerManagerWorkerExpires(expires tcclient.Time) {
+	workerExpires = expires
 }
 
 // A function matching WorkerManagerClientFactory that can be used in testing
