@@ -62,6 +62,7 @@ func (reg *RegistrationManager) RegisterWorker(workerIdentityProofMap map[string
 	reg.state.Credentials.Certificate = res.Credentials.Certificate
 
 	reg.state.CredentialsExpire = time.Time(res.Expires)
+	reg.state.RegistrationSecret = res.Secret
 
 	if res.WorkerConfig != nil {
 		pwc, err := cfg.ParseProviderWorkerConfig(reg.runnercfg, &res.WorkerConfig)
@@ -83,6 +84,7 @@ func (reg *RegistrationManager) UseCachedRun() error {
 func (reg *RegistrationManager) SetProtocol(proto *workerproto.Protocol) {
 	reg.proto = proto
 	proto.AddCapability("graceful-termination")
+	proto.AddCapability("new-credentials")
 }
 
 func (reg *RegistrationManager) WorkerStarted() error {
@@ -96,22 +98,81 @@ func (reg *RegistrationManager) WorkerStarted() error {
 
 	untilExpire := time.Until(reg.state.CredentialsExpire)
 	reg.credsExpireTimer = time.AfterFunc(untilExpire-30*time.Second, func() {
-		if reg.proto != nil && reg.proto.Capable("graceful-termination") {
-			log.Println("Taskcluster Credentials are expiring in 30s; stopping worker")
-			reg.proto.Send(workerproto.Message{
-				Type: "graceful-termination",
-				Properties: map[string]interface{}{
-					// credentials are expiring, so no time to shut down..
-					"finish-tasks": false,
-				},
-			})
+		// Prefer to update the worker's credentials, but..
+		if reg.proto.Capable("new-credentials") {
+			reg.reregisterWorker()
+			// fall back to just shutting down the worker
+		} else if reg.proto.Capable("graceful-termination") {
+			reg.terminateWorker()
+		} else {
+			panic("credentials expiring, but no way to tell the worker")
 		}
 	})
 
 	return nil
 }
 
+// Request new credentials and send them to the worker, falling back to requesting
+// a worker termination if anything fails.  Called with reg.state locked
+func (reg *RegistrationManager) reregisterWorker() {
+	log.Println("Taskcluster Credentials are expiring in 30s; re-registering")
+
+	wm, err := reg.factory(reg.state.RootURL, &reg.state.Credentials)
+	if err != nil {
+		log.Printf("Could not create worker-manager client: %v", err)
+		reg.terminateWorker()
+		return
+	}
+
+	res, err := wm.ReregisterWorker(&tcworkermanager.ReregisterWorkerRequest{
+		//WorkerPoolID:        reg.state.WorkerPoolID,
+		//ProviderID:          reg.state.ProviderID,
+		//WorkerGroup:         reg.state.WorkerGroup,
+		//WorkerID:            reg.state.WorkerID,
+		Secret: reg.state.RegistrationSecret,
+	})
+	if err != nil {
+		log.Printf("Error calling reregisterWorker: %v", err)
+		reg.terminateWorker()
+		return
+	}
+
+	reg.state.Credentials.ClientID = res.Credentials.ClientID
+	reg.state.Credentials.AccessToken = res.Credentials.AccessToken
+	reg.state.Credentials.Certificate = res.Credentials.Certificate
+
+	reg.state.CredentialsExpire = time.Time(res.Expires)
+	reg.state.RegistrationSecret = res.Secret
+
+	// TODO: rewrite to disk if necessary - method on reg.state?
+
+	log.Println("Sending new credentials to worker")
+
+	reg.proto.Send(workerproto.Message{
+		Type: "new-credentials",
+		Properties: map[string]interface{}{
+			"client-id":    res.Credentials.ClientID,
+			"access-token": res.Credentials.AccessToken,
+			"certificate":  res.Credentials.Certificate,
+		},
+	})
+}
+
+// Request that the worker shut down gracefully.  Called with reg.state locked.
+func (reg *RegistrationManager) terminateWorker() {
+	log.Println("Taskcluster Credentials are expiring in 30s; stopping worker")
+	reg.proto.Send(workerproto.Message{
+		Type: "graceful-termination",
+		Properties: map[string]interface{}{
+			// credentials are expiring, so no time to shut down..
+			"finish-tasks": false,
+		},
+	})
+}
+
 func (reg *RegistrationManager) WorkerFinished() error {
+	// Note that this is only called when the worker process exits, but not if
+	// the worker halts or reboots out from under us!
 	if reg.credsExpireTimer != nil {
 		reg.credsExpireTimer.Stop()
 		reg.credsExpireTimer = nil
