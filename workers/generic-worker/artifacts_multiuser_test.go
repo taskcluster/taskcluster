@@ -291,6 +291,7 @@ func TestProtectedArtifactsReplaced(t *testing.T) {
 
 	taskID := submitAndAssert(t, td, payload, "completed", "completed")
 
+	queue := serviceFactory.Queue(nil, config.RootURL)
 	artifacts, err := queue.ListArtifacts(taskID, "0", "", "")
 
 	if err != nil {

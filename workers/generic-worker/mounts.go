@@ -20,7 +20,6 @@ import (
 	tcclient "github.com/taskcluster/taskcluster/v30/clients/client-go"
 	"github.com/taskcluster/taskcluster/v30/internal/scopes"
 	"github.com/taskcluster/taskcluster/v30/workers/generic-worker/fileutil"
-	"github.com/taskcluster/taskcluster/v30/workers/generic-worker/tc"
 )
 
 var (
@@ -34,9 +33,6 @@ var (
 	// a preloaded cache will have an associated file cache for the archive it
 	// was created from. The key is the cache name.
 	directoryCaches CacheMap
-	// service to call to see if any caches need to be purged. See
-	// https://docs.taskcluster.net/reference/core/purge-cache
-	pc tc.PurgeCache
 	// we track this in order to reduce number of results we get back from
 	// purge cache service
 	lastQueriedPurgeCacheService time.Time
@@ -157,7 +153,6 @@ func (cm *CacheMap) LoadFromFile(stateFile string, cacheDir string) {
 func (feature *MountsFeature) Initialise() error {
 	fileCaches.LoadFromFile("file-caches.json", config.CachesDir)
 	directoryCaches.LoadFromFile("directory-caches.json", config.DownloadsDir)
-	pc = serviceFactory.PurgeCache(config.Credentials(), config.RootURL)
 	return nil
 }
 
@@ -722,7 +717,7 @@ func (ac *ArtifactContent) Download(task *TaskRun) (file string, sha256 string, 
 	basename := slugid.Nice()
 	file = filepath.Join(config.DownloadsDir, basename)
 	var signedURL *url.URL
-	signedURL, err = queue.GetLatestArtifact_SignedURL(ac.TaskID, ac.Artifact, time.Minute*30)
+	signedURL, err = task.Queue.GetLatestArtifact_SignedURL(ac.TaskID, ac.Artifact, time.Minute*30)
 	if err != nil {
 		return
 	}
@@ -920,6 +915,7 @@ func (taskMount *TaskMount) purgeCaches() error {
 		since = tcclient.Time(lastQueriedPurgeCacheService.Add(-5 * time.Minute)).String()
 	}
 	lastQueriedPurgeCacheService = time.Now()
+	pc := serviceFactory.PurgeCache(config.Credentials(), config.RootURL)
 	purgeRequests, err := pc.PurgeRequests(config.ProvisionerID, config.WorkerType, since)
 	if err != nil {
 		return err

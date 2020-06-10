@@ -257,9 +257,10 @@ func (tsm *TaskStatusManager) UpdateStatus() {
 
 func (tsm *TaskStatusManager) queryQueueForLatestStatus() {
 	log.Printf("Querying queue to get latest status for task %v...", tsm.task.TaskID)
-	// no scopes required for this endpoint, so can use global Queue object
+	// no scopes are required for this endpoint, so can use nil credentials
 	// this is also useful if tsm.task.Queue == nil (which can happen if claim
 	// failed because task is claimed by another worker)
+	queue := serviceFactory.Queue(nil, config.RootURL)
 	tsr, err := queue.Status(tsm.task.TaskID)
 	if err != nil {
 		tsm.task.Status = unknown

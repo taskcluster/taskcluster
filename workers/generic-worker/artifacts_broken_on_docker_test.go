@@ -32,6 +32,7 @@ func TestPublicDirectoryArtifact(t *testing.T) {
 
 	taskID := submitAndAssert(t, td, payload, "completed", "completed")
 
+	queue := serviceFactory.Queue(nil, config.RootURL)
 	artifacts, err := queue.ListArtifacts(taskID, "0", "", "")
 
 	if err != nil {
@@ -85,6 +86,7 @@ func TestConflictingFileArtifactsInPayload(t *testing.T) {
 
 	taskID := submitAndAssert(t, td, payload, "exception", "malformed-payload")
 
+	queue := serviceFactory.Queue(nil, config.RootURL)
 	artifacts, err := queue.ListArtifacts(taskID, "0", "", "")
 
 	if err != nil {
@@ -168,6 +170,7 @@ func TestArtifactIncludedAsFileAndDirectoryInPayload(t *testing.T) {
 
 	taskID := submitAndAssert(t, td, payload, "completed", "completed")
 
+	queue := serviceFactory.Queue(nil, config.RootURL)
 	artifacts, err := queue.ListArtifacts(taskID, "0", "", "")
 
 	if err != nil {
@@ -210,6 +213,7 @@ func TestFileArtifactHasNoExpiry(t *testing.T) {
 
 	taskID := submitAndAssert(t, td, payload, "completed", "completed")
 	// check artifact expiry matches task expiry
+	queue := serviceFactory.Queue(nil, config.RootURL)
 	lar, err := queue.ListArtifacts(taskID, "0", "", "")
 	if err != nil {
 		t.Fatalf("Error listing artifacts of task %v: %v", taskID, err)
@@ -247,6 +251,7 @@ func TestDirectoryArtifactHasNoExpiry(t *testing.T) {
 
 	taskID := submitAndAssert(t, td, payload, "completed", "completed")
 	// check artifact expiry matches task expiry
+	queue := serviceFactory.Queue(nil, config.RootURL)
 	lar, err := queue.ListArtifacts(taskID, "0", "", "")
 	if err != nil {
 		t.Fatalf("Error listing artifacts of task %v: %v", taskID, err)

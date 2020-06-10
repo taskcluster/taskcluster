@@ -78,6 +78,7 @@ type ExpectedArtifacts map[string]ArtifactTraits
 
 func (expectedArtifacts ExpectedArtifacts) Validate(t *testing.T, taskID string, run int) {
 
+	queue := serviceFactory.Queue(nil, config.RootURL)
 	artifacts, err := queue.ListArtifacts(taskID, strconv.Itoa(run), "", "")
 
 	if err != nil {

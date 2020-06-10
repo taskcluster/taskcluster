@@ -9,6 +9,7 @@ import (
 	"net"
 	"os"
 	"reflect"
+	"sync"
 
 	tcclient "github.com/taskcluster/taskcluster/v30/clients/client-go"
 	"github.com/taskcluster/taskcluster/v30/workers/generic-worker/fileutil"
@@ -19,6 +20,10 @@ type (
 	Config struct {
 		PrivateConfig
 		PublicConfig
+
+		// a lock for access to ClientID, AccessToken, and
+		// Certificate, since these values must change as a group
+		credsMutex sync.Mutex
 	}
 
 	PublicConfig struct {
@@ -70,8 +75,6 @@ type (
 )
 
 func (c *Config) String() string {
-	cCopy := *c
-	cCopy.AccessToken = "*************"
 	// This json.Marshal call won't sort all inherited properties
 	// alphabetically, since it sorts properties within each nested struct, but
 	// concatenates the results from each of the nested structs together.
@@ -80,7 +83,7 @@ func (c *Config) String() string {
 	// this by first marshaling to json, then unmarshaling to an interface{}
 	// (so that the structure is flattened), and then finally marshaling back
 	// to json. Whew.
-	j, err := json.Marshal(&cCopy)
+	j, err := json.Marshal(&c.PublicConfig)
 	if err != nil {
 		panic(err)
 	}
@@ -89,6 +92,7 @@ func (c *Config) String() string {
 	if err != nil {
 		panic(err)
 	}
+
 	j, err = json.MarshalIndent(data, "", "  ")
 	if err != nil {
 		panic(err)
@@ -133,11 +137,23 @@ func (err MissingConfigError) Error() string {
 }
 
 func (c *Config) Credentials() *tcclient.Credentials {
-	return &tcclient.Credentials{
+	c.credsMutex.Lock()
+	creds := &tcclient.Credentials{
 		AccessToken: c.AccessToken,
 		ClientID:    c.ClientID,
 		Certificate: c.Certificate,
 	}
+	c.credsMutex.Unlock()
+	return creds
+}
+
+func (c *Config) UpdateCredentials(creds *tcclient.Credentials) {
+	c.credsMutex.Lock()
+	c.ClientID = creds.ClientID
+	c.AccessToken = creds.AccessToken
+	c.Certificate = creds.Certificate
+	log.Printf("Using new worker credentials with clientId %s", creds.ClientID)
+	c.credsMutex.Unlock()
 }
 
 type File struct {

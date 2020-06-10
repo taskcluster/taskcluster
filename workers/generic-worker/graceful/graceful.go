@@ -54,3 +54,12 @@ func Terminate(finishTasks bool) {
 		callback(finishTasks)
 	}
 }
+
+// Reset the package to its initial state (useful in tests)
+func Reset() {
+	m.Lock()
+	defer m.Unlock()
+
+	terminationRequested = false
+	callback = nil
+}
