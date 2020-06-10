@@ -23,6 +23,9 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
   const URL_PREFIX = 'https://tc-tests.example.com/tasks/groups/';
   const CUSTOM_CHECKRUN_TASKID = 'apple';
   const CUSTOM_CHECKRUN_TEXT = 'Hi there! This is your custom text';
+  const CUSTOM_CHECKRUN_ANNOTATIONS = JSON.stringify([
+    {path: 'assets/css/main.css', start_line: 1, end_line: 2, annotation_level: 'notice', message: 'Hi there!'},
+  ]);
 
   let github = null;
   let handlers = null;
@@ -809,7 +812,11 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
       await addBuild({state: 'pending', taskGroupId: TASKGROUPID});
       await addCheckRun({taskGroupId: TASKGROUPID, taskId: CUSTOM_CHECKRUN_TASKID});
       sinon.restore();
-      sinon.stub(utils, "throttleRequest").returns({status: 200, text: CUSTOM_CHECKRUN_TEXT});
+      sinon.stub(utils, "throttleRequest")
+        .onFirstCall()
+        .returns({status: 200, text: CUSTOM_CHECKRUN_TEXT})
+        .onSecondCall()
+        .returns({status: 404});
       await simulateExchangeMessage({
         taskGroupId: TASKGROUPID,
         exchange: 'exchange/taskcluster-queue/v1/task-completed',
@@ -835,7 +842,59 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
       await addBuild({state: 'pending', taskGroupId: TASKGROUPID});
       await addCheckRun({taskGroupId: TASKGROUPID, taskId: CUSTOM_CHECKRUN_TASKID});
       sinon.restore();
-      sinon.stub(utils, "throttleRequest").returns({status: 418, response: {error: {text: "I'm a tea pot"}}});
+      sinon.stub(utils, "throttleRequest")
+        .onFirstCall()
+        .returns({status: 418, response: {error: {text: "I'm a tea pot"}}})
+        .onSecondCall()
+        .returns({status: 404});
+      await simulateExchangeMessage({
+        taskGroupId: TASKGROUPID,
+        exchange: 'exchange/taskcluster-queue/v1/task-completed',
+        routingKey: 'route.checks',
+        taskId: CUSTOM_CHECKRUN_TASKID,
+        reasonResolved: 'completed',
+        state: 'completed',
+      });
+      const monitor = await helper.load('monitor');
+      assert(monitor.manager.messages.some(({Type, Severity}) => Type === 'monitor.error' && Severity === LEVELS.err));
+      monitor.manager.reset();
+      sinon.restore();
+    });
+
+    test('successfully adds custom check run annotations from an artifact', async function () {
+      await addBuild({state: 'pending', taskGroupId: TASKGROUPID});
+      await addCheckRun({taskGroupId: TASKGROUPID, taskId: CUSTOM_CHECKRUN_TASKID});
+      sinon.restore();
+      sinon.stub(utils, "throttleRequest")
+        .onFirstCall()
+        .returns({status: 404})
+        .onSecondCall()
+        .returns({status: 200, text: CUSTOM_CHECKRUN_ANNOTATIONS});
+      await simulateExchangeMessage({
+        taskGroupId: TASKGROUPID,
+        exchange: 'exchange/taskcluster-queue/v1/task-completed',
+        routingKey: 'route.checks',
+        taskId: CUSTOM_CHECKRUN_TASKID,
+        reasonResolved: 'completed',
+        state: 'completed',
+      });
+
+      assert(github.inst(9988).checks.update.calledOnce, 'checks.update was not called');
+      let [args] = github.inst(9988).checks.update.firstCall.args;
+      assert.deepStrictEqual(args.output.annotations, JSON.parse(CUSTOM_CHECKRUN_ANNOTATIONS));
+      sinon.restore();
+    });
+
+    test('fails to get custom check run annotations from an artifact - should log an error', async function () {
+      // note: production code doesn't throw the error, just logs it, so the handlers is not interrupted
+      await addBuild({state: 'pending', taskGroupId: TASKGROUPID});
+      await addCheckRun({taskGroupId: TASKGROUPID, taskId: CUSTOM_CHECKRUN_TASKID});
+      sinon.restore();
+      sinon.stub(utils, "throttleRequest")
+        .onFirstCall()
+        .returns({status: 404})
+        .onSecondCall()
+        .returns({status: 418, response: {error: {text: "I'm a tea pot"}}});
       await simulateExchangeMessage({
         taskGroupId: TASKGROUPID,
         exchange: 'exchange/taskcluster-queue/v1/task-completed',

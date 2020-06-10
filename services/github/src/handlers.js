@@ -434,6 +434,52 @@ async function deprecatedStatusHandler(message) {
 }
 
 /**
+ * Helper to request artifacts from statusHandler.
+ */
+async function requestArtifact(artifactName, {taskId, runId, debug, instGithub, build}) {
+  try {
+    const url = this.queueClient.buildUrl(this.queueClient.getArtifact, taskId, runId, artifactName);
+    const res = await utils.throttleRequest({url, method: 'GET'});
+
+    if (res.status >= 400 && res.status !== 404) {
+      let errorMessage = "Failed to get your artifact.\n";
+      switch (res.status) {
+        case 403:
+          errorMessage.concat("Make sure your artifact is public. See the documentation on the artifact naming.");
+          break;
+        case 404:
+          errorMessage.concat("Make sure the artifact exists, and there are no typos in its name.");
+          break;
+        case 424:
+          errorMessage.concat("Make sure the artifact exists on the worker or other location.");
+          break;
+        default:
+          errorMessage.concat(res.response.error.message);
+          break;
+      }
+      let {organization, repository, sha} = build;
+      await this.createExceptionComment({
+        debug,
+        instGithub,
+        organization,
+        repository,
+        sha,
+        error: new Error(errorMessage),
+      });
+
+      if (res.status < 500) {
+        await this.monitor.reportError(res.response.error);
+      }
+    } else if (res.status >= 200 && res.status < 300) {
+      return res.text.toString();
+    }
+  } catch (e) {
+    await this.monitor.reportError(e);
+  }
+  return '';
+}
+
+/**
  * Post updates to GitHub, when the status of a task changes. Uses Checks API
  **/
 async function statusHandler(message) {
@@ -504,49 +550,13 @@ async function statusHandler(message) {
         taskDefinition.extra.github.customCheckRun.annotationsArtifactName || CUSTOM_CHECKRUN_ANNOTATIONS_ARTIFACT_NAME;
     }
 
-    async function requestArtifact(artifactName) {
-      try {
-        const url = this.queueClient.buildUrl(this.queueClient.getArtifact, taskId, runId, artifactName);
-        const res = await utils.throttleRequest({url, method: 'GET'});
-
-        if (res.status >= 400 && res.status !== 404) {
-          let errorMessage = "Failed to get your artifact.\n";
-          switch (res.status) {
-            case 403:
-              errorMessage.concat("Make sure your artifact is public. See the documentation on the artifact naming.");
-              break;
-            case 404:
-              errorMessage.concat("Make sure the artifact exists, and there are no typos in its name.");
-              break;
-            case 424:
-              errorMessage.concat("Make sure the artifact exists on the worker or other location.");
-              break;
-            default:
-              errorMessage.concat(res.response.error.message);
-              break;
-          }
-          await this.createExceptionComment({
-            debug,
-            instGithub,
-            organization,
-            repository,
-            sha,
-            error: new Error(errorMessage),
-          });
-
-          if (res.status < 500) {
-            await this.monitor.reportError(res.response.error);
-          }
-        } else if (res.status >= 200 && res.status < 300) {
-          return res.text.toString();
-        }
-      } catch (e) {
-        await this.monitor.reportError(e);
-      }
-      return '';
-    }
-
-    const customCheckRunText = await requestArtifact(textArtifactName);
+    const customCheckRunText = await requestArtifact.call(this, textArtifactName, {
+      taskId,
+      runId,
+      debug,
+      instGithub,
+      build,
+    });
 
     if (checkRun) {
       await instGithub.checks.update({
@@ -562,14 +572,22 @@ async function statusHandler(message) {
       });
     } else {
       let customCheckRunAnnotations = [];
-      const customCheckRunAnnotationsText = await requestArtifact(annotationsArtifactName);
-      try {
-        const json = JSON.parse(customCheckRunAnnotationsText);
-        if (Array.isArray(json)) {
-          customCheckRunAnnotations = json;
+      const customCheckRunAnnotationsText = await requestArtifact.call(this, annotationsArtifactName, {
+        taskId,
+        runId,
+        debug,
+        instGithub,
+        build,
+      });
+      if (customCheckRunAnnotationsText) {
+        try {
+          const json = JSON.parse(customCheckRunAnnotationsText);
+          if (Array.isArray(json)) {
+            customCheckRunAnnotations = json;
+          }
+        } catch (e) {
+          await this.monitor.reportError(e);
         }
-      } catch (e) {
-        await this.monitor.reportError(e);
       }
 
       const checkRun = await instGithub.checks.create({
