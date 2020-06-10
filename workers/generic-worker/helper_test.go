@@ -474,6 +474,9 @@ func GWTest(t *testing.T) *Test {
 		for _, s := range mocktc.ServiceProviders(t) {
 			s.RegisterService(r)
 		}
+		testConfig.AccessToken = "test-access-token"
+		testConfig.ClientID = "test-client-id"
+		testConfig.Certificate = ""
 	}
 
 	r.NotFoundHandler = http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {

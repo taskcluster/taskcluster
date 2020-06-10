@@ -72,6 +72,10 @@ func (queue *Queue) ClaimWork(provisionerId, workerType string, payload *tcqueue
 				tcqueue.TaskClaim{
 					Task:   j.Task,
 					Status: j.Status,
+					Credentials: tcqueue.TaskCredentials{
+						ClientID:    "test-task-client-id",
+						AccessToken: "test-task-access-token",
+					},
 				},
 			)
 			if len(tasks) == int(maxTasks) {

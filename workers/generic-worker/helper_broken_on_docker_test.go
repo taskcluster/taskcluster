@@ -39,11 +39,7 @@ func CancelTask(t *testing.T) (td *tcqueue.TaskDefinitionRequest, payload Generi
 		Command:    command,
 		MaxRunTime: 300,
 	}
-	fullCreds := &tcclient.Credentials{
-		AccessToken: config.AccessToken,
-		ClientID:    config.ClientID,
-		Certificate: config.Certificate,
-	}
+	fullCreds := config.Credentials()
 	td = testTask(t)
 	tempCreds, err := fullCreds.CreateNamedTemporaryCredentials("project/taskcluster:generic-worker-tester/"+t.Name(), time.Minute, "queue:cancel-task:"+td.SchedulerID+"/"+td.TaskGroupID+"/*")
 	if err != nil {
