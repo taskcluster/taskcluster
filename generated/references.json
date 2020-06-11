@@ -299,19 +299,6 @@
           "title": "Provider",
           "type": "string"
         },
-        "secret": {
-          "anyOf": [
-            {
-              "pattern": "^[a-zA-Z0-9_-]{44}$",
-              "type": "string"
-            },
-            {
-              "type": "null"
-            }
-          ],
-          "description": "The secret value that was configured when the worker was registered (in `registerWorker`) or\nreregistered (in `reregisterWorker`).\n",
-          "title": "Secret"
-        },
         "state": {
           "description": "A string specifying the state this worker is in so far as worker-manager knows.\nA \"requested\" worker is in the process of starting up, and if successful will enter\nthe \"running\" state once it has registered with the `registerWorker` API method.  A\n\"stopping\" worker is in the process of shutting down and deleting resources, while\na \"stopped\" worker is completely stopped.  Stopped workers are kept for historical\npurposes and are purged when they expire.  Note that some providers transition workers\ndirectly from \"running\" to \"stopped\".\n",
           "enum": [

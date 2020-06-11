@@ -218,16 +218,6 @@ type (
 		Secret string `json:"secret"`
 	}
 
-	// The secret value that was configured when the worker was registered (in `registerWorker`) or
-	// reregistered (in `reregisterWorker`).
-	//
-	// Syntax:     ^[a-zA-Z0-9_-]{44}$
-	Secret string
-
-	// The secret value that was configured when the worker was registered (in `registerWorker`) or
-	// reregistered (in `reregisterWorker`).
-	Secret1 null
-
 	// Provider-specific information
 	StaticProviderType struct {
 
@@ -349,14 +339,6 @@ type (
 		// Min length: 1
 		// Max length: 38
 		ProviderID string `json:"providerId"`
-
-		// The secret value that was configured when the worker was registered (in `registerWorker`) or
-		// reregistered (in `reregisterWorker`).
-		//
-		// Any of:
-		//   * Secret
-		//   * Secret1
-		Secret json.RawMessage `json:"secret,omitempty"`
 
 		// A string specifying the state this worker is in so far as worker-manager knows.
 		// A "requested" worker is in the process of starting up, and if successful will enter
