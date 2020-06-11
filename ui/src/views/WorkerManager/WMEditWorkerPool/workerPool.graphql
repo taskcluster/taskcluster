@@ -5,6 +5,8 @@ query WorkerPool($workerPoolId: String!) {
         owner,
         emailOnError,
         providerId,
-        config
+        config,
+        currentCapacity,
+        pendingTasks
     }
 }

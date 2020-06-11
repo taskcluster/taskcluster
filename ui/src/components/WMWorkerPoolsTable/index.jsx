@@ -211,6 +211,8 @@ export default class WorkerManagerWorkerPoolsTable extends Component {
           )}
         </TableCell>
 
+        <TableCell>{workerPool.currentCapacity}</TableCell>
+
         <TableCell>{workerPool.pendingTasks}</TableCell>
 
         <TableCell>{workerPool.owner}</TableCell>
@@ -276,6 +278,7 @@ export default class WorkerManagerWorkerPoolsTable extends Component {
     const headers = [
       'Worker Pool ID',
       'Provider ID',
+      'Current Capacity',
       'Pending Tasks',
       'Owner',
       '',
