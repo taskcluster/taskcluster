@@ -2,9 +2,13 @@ package registration
 
 import (
 	"encoding/json"
+	"fmt"
+	"io/ioutil"
+	"path/filepath"
 	"testing"
 	"time"
 
+	"github.com/Flaque/filet"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	tcclient "github.com/taskcluster/taskcluster/v30/clients/client-go"
@@ -39,7 +43,7 @@ func TestRegisterWorker(t *testing.T) {
 	require.Equal(t, "testing", state.Credentials.ClientID)
 	require.Equal(t, "at", state.Credentials.AccessToken)
 	require.Equal(t, "cert", state.Credentials.Certificate)
-	require.Equal(t, time.Time(expires), state.CredentialsExpire)
+	require.Equal(t, expires, state.CredentialsExpire)
 	require.Equal(t, tc.GetFakeWorkerManagerWorkerSecret(), state.RegistrationSecret)
 
 	require.Equal(t, true, state.WorkerConfig.MustGet("from-register-worker"), "value for from-register-worker")
@@ -59,7 +63,7 @@ func TestCredsExpirationGraceful(t *testing.T) {
 	state := run.State{
 		// message is sent 30 seconds before expiration, so set expiration
 		// for 30s from now
-		CredentialsExpire: time.Now().Add(30 * time.Second),
+		CredentialsExpire: tcclient.Time(time.Now().Add(30 * time.Second)),
 	}
 
 	reg := new(&runnercfg, &state, tc.FakeWorkerManagerClientFactory)
@@ -86,14 +90,23 @@ func TestCredsExpirationGraceful(t *testing.T) {
 }
 
 func TestCredsExpirationNewCredentials(t *testing.T) {
-	runnercfg := cfg.RunnerConfig{}
+	defer filet.CleanUp(t)
+	dir := filet.TmpDir(t, "")
+	cachePath := filepath.Join(dir, "cache.json")
+
+	runnercfg := cfg.RunnerConfig{
+		CacheOverRestarts: cachePath,
+	}
 	state := run.State{
 		// message is sent 30 seconds before expiration, so set expiration
 		// for 30s from now
-		CredentialsExpire:  time.Now().Add(30 * time.Second),
+		CredentialsExpire:  tcclient.Time(time.Now().Add(30 * time.Second)),
 		RegistrationSecret: "secret-from-reg",
 	}
-	expires := tcclient.Time(time.Now())
+
+	// expires is rounded to a whole second to avoid issues with microsecond
+	// rounding when round-tripping through JSON
+	expires := tcclient.Time(time.Now().Round(time.Second))
 	tc.SetFakeWorkerManagerWorkerSecret("secret-from-reg")
 	tc.SetFakeWorkerManagerWorkerExpires(expires)
 
@@ -127,12 +140,27 @@ func TestCredsExpirationNewCredentials(t *testing.T) {
 	require.Equal(t, "testing-rereg", state.Credentials.ClientID)
 	require.Equal(t, "at-rereg", state.Credentials.AccessToken)
 	require.Equal(t, "cert-rereg", state.Credentials.Certificate)
-	require.Equal(t, time.Time(expires), state.CredentialsExpire)
+	require.Equal(t, expires, state.CredentialsExpire)
 	require.Equal(t, tc.GetFakeWorkerManagerWorkerSecret(), state.RegistrationSecret)
 
 	call, err := tc.FakeWorkerManagerReregistration()
 	require.NoError(t, err)
 	require.Equal(t, "secret-from-reg", call.Secret)
+
+	var cachedState run.State
+	found, err := run.ReadCacheFile(&cachedState, cachePath)
+	assert.True(t, found)
+	assert.NoError(t, err)
+
+	bytes, _ := ioutil.ReadFile(cachePath)
+	fmt.Printf("%s\n", string(bytes))
+
+	require.Equal(t, "testing-rereg", cachedState.Credentials.ClientID)
+	require.Equal(t, "at-rereg", cachedState.Credentials.AccessToken)
+	require.Equal(t, "cert-rereg", cachedState.Credentials.Certificate)
+	// compare strings as internal implementation details differ
+	require.Equal(t, expires.String(), cachedState.CredentialsExpire.String())
+	require.Equal(t, tc.GetFakeWorkerManagerWorkerSecret(), cachedState.RegistrationSecret)
 
 	err = reg.WorkerFinished()
 	assert.NoError(t, err)

@@ -61,7 +61,7 @@ func (reg *RegistrationManager) RegisterWorker(workerIdentityProofMap map[string
 	reg.state.Credentials.AccessToken = res.Credentials.AccessToken
 	reg.state.Credentials.Certificate = res.Credentials.Certificate
 
-	reg.state.CredentialsExpire = time.Time(res.Expires)
+	reg.state.CredentialsExpire = res.Expires
 	reg.state.RegistrationSecret = res.Secret
 
 	if res.WorkerConfig != nil {
@@ -92,11 +92,12 @@ func (reg *RegistrationManager) WorkerStarted() error {
 	defer reg.state.Unlock()
 
 	// gracefully terminate the worker when the credentials expire, if they expire
-	if reg.state.CredentialsExpire.IsZero() {
+	expire := time.Time(reg.state.CredentialsExpire)
+	if expire.IsZero() {
 		return nil
 	}
 
-	untilExpire := time.Until(reg.state.CredentialsExpire)
+	untilExpire := time.Until(expire)
 	reg.credsExpireTimer = time.AfterFunc(untilExpire-30*time.Second, func() {
 		// Prefer to update the worker's credentials, but..
 		if reg.proto.Capable("new-credentials") {
@@ -141,10 +142,8 @@ func (reg *RegistrationManager) reregisterWorker() {
 	reg.state.Credentials.AccessToken = res.Credentials.AccessToken
 	reg.state.Credentials.Certificate = res.Credentials.Certificate
 
-	reg.state.CredentialsExpire = time.Time(res.Expires)
+	reg.state.CredentialsExpire = res.Expires
 	reg.state.RegistrationSecret = res.Secret
-
-	// TODO: rewrite to disk if necessary - method on reg.state?
 
 	log.Println("Sending new credentials to worker")
 
@@ -156,6 +155,15 @@ func (reg *RegistrationManager) reregisterWorker() {
 			"certificate":  res.Credentials.Certificate,
 		},
 	})
+
+	if reg.runnercfg.CacheOverRestarts != "" {
+		err = reg.state.WriteCacheFile(reg.runnercfg.CacheOverRestarts)
+		if err != nil {
+			log.Printf("Error writing state cache file: %v", err)
+			reg.terminateWorker()
+			return
+		}
+	}
 }
 
 // Request that the worker shut down gracefully.  Called with reg.state locked.
