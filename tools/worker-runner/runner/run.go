@@ -1,11 +1,8 @@
 package runner
 
 import (
-	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"log"
-	"os"
 
 	"github.com/taskcluster/taskcluster/v30/internal/workerproto"
 	"github.com/taskcluster/taskcluster/v30/tools/worker-runner/cfg"
@@ -13,7 +10,6 @@ import (
 	"github.com/taskcluster/taskcluster/v30/tools/worker-runner/files"
 	"github.com/taskcluster/taskcluster/v30/tools/worker-runner/logging"
 	loggingProtocol "github.com/taskcluster/taskcluster/v30/tools/worker-runner/logging/protocol"
-	"github.com/taskcluster/taskcluster/v30/tools/worker-runner/perms"
 	"github.com/taskcluster/taskcluster/v30/tools/worker-runner/provider"
 	"github.com/taskcluster/taskcluster/v30/tools/worker-runner/registration"
 	"github.com/taskcluster/taskcluster/v30/tools/worker-runner/run"
@@ -36,24 +32,8 @@ func Run(configFile string) (state run.State, err error) {
 
 	runCached := false
 	if runnercfg.CacheOverRestarts != "" {
-
-		var encoded []byte
-		encoded, err = ioutil.ReadFile(runnercfg.CacheOverRestarts)
-		if err == nil {
-			log.Printf("Loading cached state from %s", runnercfg.CacheOverRestarts)
-
-			err = json.Unmarshal(encoded, &state)
-			if err != nil {
-				return
-			}
-			runCached = true
-
-			// just double-check that the permissions are correct..
-			err = perms.VerifyPrivateToOwner(runnercfg.CacheOverRestarts)
-			if err != nil {
-				return
-			}
-		} else if !os.IsNotExist(err) {
+		runCached, err = run.ReadCacheFile(&state, runnercfg.CacheOverRestarts)
+		if err != nil {
 			return
 		}
 	}
@@ -144,26 +124,7 @@ func Run(configFile string) (state run.State, err error) {
 	// cache the state if we might end up restarting
 
 	if !runCached && runnercfg.CacheOverRestarts != "" {
-		log.Printf("Caching runnercfg at %s", runnercfg.CacheOverRestarts)
-		var encoded []byte
-		encoded, err = json.Marshal(&state)
-		if err != nil {
-			return
-		}
-		err = ioutil.WriteFile(runnercfg.CacheOverRestarts, encoded, 0700)
-		if err != nil {
-			return
-		}
-
-		// This file contains secrets, so ensure that this is really only
-		// accessible to the file owner (and having just created the file, that
-		// should be the current user).
-		err = perms.MakePrivateToOwner(runnercfg.CacheOverRestarts)
-		if err != nil {
-			return
-		}
-
-		err = perms.VerifyPrivateToOwner(runnercfg.CacheOverRestarts)
+		err = state.WriteCacheFile(runnercfg.CacheOverRestarts)
 		if err != nil {
 			return
 		}
