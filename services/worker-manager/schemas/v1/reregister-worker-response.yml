@@ -8,9 +8,8 @@ properties:
     format: date-time
     title: Expires
     description: |
-      Time at which the included credentials will expire. Workers must either
-      re-register (for static workers) or terminate (for dynamically
-      provisioned workers) before this time.
+      Time at which the included credentials will expire. Workers must
+      re-register before this time.
   credentials:
     type: object
     title: Credentials
@@ -42,8 +41,7 @@ properties:
     type: string
     pattern: "^[a-zA-Z0-9_-]{44}$"
     description: |
-      The secret value that was configured when the worker was registered (in `registerWorker`) or
-      reregistered (in `reregisterWorker`).
+      The next secret value needed to reregister the worker (in `reregisterWorker).
 additionalProperties: false
 required:
   - expires

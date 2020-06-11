@@ -1,7 +1,8 @@
+const taskcluster = require('taskcluster-client');
 const {APIBuilder, paginateResults} = require('taskcluster-lib-api');
 const slug = require('slugid');
 const assert = require('assert');
-const {ApiError} = require('./providers/provider');
+const {ApiError, Provider} = require('./providers/provider');
 const {UNIQUE_VIOLATION} = require('taskcluster-lib-postgres');
 const {WorkerPool, Worker} = require('./data');
 const { createCredentials } = require('./util');
@@ -608,11 +609,12 @@ builder.declare({
       `Worker ${workerGroup}/${workerId} does not have provider ${providerId}`, {});
   }
 
-  let expires, workerConfig;
+  let expires, workerConfig, secret;
   try {
     const reg = await provider.registerWorker({worker, workerPool, workerIdentityProof});
     expires = reg.expires;
     workerConfig = reg.workerConfig;
+    secret = reg.secret;
   } catch (err) {
     if (!(err instanceof ApiError)) {
       throw err;
@@ -629,7 +631,7 @@ builder.declare({
   // not verify here
   const credentials = createCredentials(worker, expires, this.cfg);
 
-  return res.reply({expires: expires.toJSON(), credentials, workerConfig});
+  return res.reply({expires: expires.toJSON(), credentials, workerConfig, secret});
 });
 
 builder.declare({
@@ -647,32 +649,46 @@ builder.declare({
     'Reregister a running worker.',
     '',
     'This will generate and return new Taskcluster credentials for the worker',
-    'on that instance to use. The credentials will not live longer the the',
+    'on that instance to use. The credentials will not live longer the',
     '`registrationTimeout` for that worker. The endpoint will update `terminateAfter`',
     'for the worker so that worker-manager does not terminate the instance.',
   ].join('\n'),
 }, async function(req, res) {
-  const { secret } = req.body;
+  const { workerPoolId, workerGroup, workerId, secret } = req.body;
+
+  await req.authorize({workerPoolId, workerGroup, workerId});
 
   if (secret.length !== 44) {
     throw new Error('secret must be 44 characters');
   }
 
-  const worker = Worker.getWorkers(this.db, { secret });
+  const worker = await Worker.get(this.db, { workerPoolId, workerGroup, workerId });
 
   if (!worker) {
     return res.reportError('InputError', 'Could not generate credentials for this secret', {});
   }
 
-  let expires;
-  if (worker.providerData.reregistrationTimeout) {
-    expires = new Date(Date.now() + worker.providerData.reregistrationTimeout);
-  } else {
-    return res.reportError('InputValidationError', 'worker.providerData.reregistrationTimeout is required to reregister a worker');
+  // worker has not been registered yet
+  if (!worker.secret) {
+    return res.reportError('InputError', 'Could not generate credentials for this secret', {});
   }
 
-  const credentials = createCredentials(worker, expires, this.cfg);
-  const newSecret = `${slug.v4()}${slug.v4()}`;
+  if (this.db.decrypt({ value: worker.secret }).toString('utf8') !== secret) {
+    return res.reportError('InputError', 'Could not generate credentials for this secret', {});
+  }
 
-  return res.reply({ expires, credentials, secret: newSecret });
+  // defaults to 96 hours if reregistrationTimeout is not defined
+  const {reregistrationTimeout} = Provider.interpretLifecycle({ lifecycle: {
+    reregistrationTimeout: worker.providerData && worker.providerData.reregistrationTimeout
+  }});
+  const expires = new Date(Date.now() + reregistrationTimeout);
+
+  const credentials = createCredentials(worker, expires, this.cfg);
+  const newSecret = `${slug.nice()}${slug.nice()}`;
+
+  await worker.update(this.db, worker => {
+    worker.secret = this.db.encrypt({ value: Buffer.from(newSecret, 'utf8') });
+  });
+
+  return res.reply({ expires: expires.toJSON(), credentials, secret: newSecret });
 });

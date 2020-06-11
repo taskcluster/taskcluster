@@ -5,6 +5,7 @@ const crypto = require('crypto');
 const fs = require('fs');
 const path = require('path');
 const _ = require('lodash');
+const slug = require('slugid');
 const {CloudAPI} = require('./cloudapi');
 const {WorkerPool, Worker} = require('../data');
 
@@ -298,14 +299,20 @@ class AwsProvider extends Provider {
       workerId: worker.workerId,
     });
     monitor.debug('setting state to RUNNING');
+    const secret = `${slug.nice()}${slug.nice()}`;
     await worker.update(this.db, worker => {
       worker.lastModified = new Date();
       worker.providerData.terminateAfter = expires.getTime();
       worker.state = Worker.states.RUNNING;
+      worker.secret = this.db.encrypt({ value: Buffer.from(secret, 'utf8') });
     });
 
     const workerConfig = worker.providerData.workerConfig || {};
-    return {expires, workerConfig};
+    return {
+      expires,
+      workerConfig,
+      secret,
+    };
   }
 
   async checkWorker({worker}) {
