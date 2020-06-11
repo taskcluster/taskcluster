@@ -1649,6 +1649,9 @@
         "level": {
           "type": "string"
         },
+        "pg_crypto_key": {
+          "type": "string"
+        },
         "procs": {
           "additionalProperties": false,
           "properties": {
@@ -1830,6 +1833,7 @@
         "taskcluster_access_token",
         "read_db_url",
         "write_db_url",
+        "pg_crypto_key",
         "pulse_username",
         "pulse_password",
         "providers"

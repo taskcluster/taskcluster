@@ -220,7 +220,7 @@ class WorkerManager(AsyncBaseClient):
         Reregister a running worker.
 
         This will generate and return new Taskcluster credentials for the worker
-        on that instance to use. The credentials will not live longer the the
+        on that instance to use. The credentials will not live longer the
         `registrationTimeout` for that worker. The endpoint will update `terminateAfter`
         for the worker so that worker-manager does not terminate the instance.
 
