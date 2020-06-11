@@ -4,6 +4,7 @@
   "description": "a workertype",
   "owner": "owlish@mozilla.com",
   "emailOnError": true,
+  "currentCapacity": 0,
   "created": "2019-10-18T21:16:41.593Z",
   "lastModified": "2019-10-18T21:16:41.593Z",
   "config": {

@@ -57,6 +57,11 @@ properties:
     title: Wants Email
     type: boolean
     description: If true, the owner should be emailed on provisioning errors
+  currentCapacity:
+    title: Current Capacity
+    type: integer
+    minimum: 0
+    description: Total capacity available across all workers for this worker pool that are currently not "stopped"
 additionalProperties: false
 required:
   - providerId
@@ -66,3 +71,4 @@ required:
   - config
   - owner
   - emailOnError
+  - currentCapacity

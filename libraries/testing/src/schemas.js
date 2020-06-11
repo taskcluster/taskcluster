@@ -59,7 +59,7 @@ let schemas = function(options) {
           debug('Errors: %j', error);
         }
         assert(error === null,
-          'Schema doesn\'t match test for ' + testCase.path);
+          `Schema doesn\'t match test for ${testCase.path}: ${error}`);
       } else {
         assert(error !== null,
           'Schema matches unexpectedly test for ' + testCase.path);

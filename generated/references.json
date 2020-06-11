@@ -46,6 +46,12 @@
           "title": "Created",
           "type": "string"
         },
+        "currentCapacity": {
+          "description": "Total capacity available across all workers for this worker pool that are currently not \"stopped\"",
+          "minimum": 0,
+          "title": "Current Capacity",
+          "type": "integer"
+        },
         "description": {
           "description": "A description of this worker pool.\n",
           "maxLength": 10240,
@@ -91,7 +97,8 @@
         "lastModified",
         "config",
         "owner",
-        "emailOnError"
+        "emailOnError",
+        "currentCapacity"
       ],
       "title": "Worker Pool Full Definition",
       "type": "object"

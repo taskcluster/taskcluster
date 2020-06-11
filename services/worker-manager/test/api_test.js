@@ -95,9 +95,10 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
   });
 
   const workerPoolCompare = (workerPoolId, input, result) => {
-    const {created, lastModified, ...definition} = result;
+    const {created, lastModified, currentCapacity, ...definition} = result;
     assert(created);
     assert(lastModified);
+    assert(currentCapacity !== undefined);
     assert.deepStrictEqual({workerPoolId, ...input}, definition);
   };
 

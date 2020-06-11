@@ -23,7 +23,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
 
     const checkWP = async workerPoolId => {
       return WorkerPool.fromDbRows(
-        await helper.db.fns.get_worker_pool(workerPoolId));
+        await helper.db.fns.get_worker_pool_with_capacity(workerPoolId));
     };
 
     setup(function() {

@@ -157,7 +157,8 @@ class Provisioner {
       const poolsByProvider = new Map();
 
       // Now for each worker pool we ask the providers to do stuff
-      const workerPools = (await this.db.fns.get_worker_pools(null, null)).map(row => WorkerPool.fromDb(row));
+      const workerPools = (await this.db.fns.get_worker_pools_with_capacity(null, null))
+        .map(row => WorkerPool.fromDb(row));
       for (const workerPool of workerPools) {
         const {providerId, previousProviderIds, workerPoolId} = workerPool;
         const provider = this.providers.get(providerId);
