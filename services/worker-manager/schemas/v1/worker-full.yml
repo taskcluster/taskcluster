@@ -80,16 +80,6 @@ properties:
     type: integer
     minimum: 1
 
-  secret:
-    title: Secret
-    anyOf:
-      - type: "string"
-        pattern: "^[a-zA-Z0-9_-]{44}$"
-      - type: "null"
-    description: |
-      The secret value that was configured when the worker was registered (in `registerWorker`) or
-      reregistered (in `reregisterWorker`).
-
 additionalProperties: false
 required:
   - workerPoolId

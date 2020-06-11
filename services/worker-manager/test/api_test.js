@@ -532,6 +532,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
     input.lastModified = input.lastModified.toJSON();
     input.lastChecked = input.lastChecked.toJSON();
     delete input.providerData;
+    delete input.secret;
 
     assert.deepStrictEqual(data.workers, [input]);
   });
@@ -578,6 +579,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
       i.lastModified = i.lastModified.toJSON();
       i.lastChecked = i.lastChecked.toJSON();
       delete i.providerData;
+      delete i.secret;
       return i;
     });
 
@@ -622,6 +624,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
     });
 
     let data = await helper.workerManager.listWorkersForWorkerGroup(workerPoolId, 'wg-a');
+    delete input[0].secret;
     assert.deepStrictEqual(data.workers, [input[0]]);
   });
 
@@ -1247,7 +1250,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
             secret: `${slug.nice()}${slug.nice()}`,
           });
         },
-        /Could not generate credentials for this secret/
+        /Could not generate credentials for this secret/,
       );
     });
 
@@ -1276,7 +1279,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
             secret: firstResponse.secret,
           });
         },
-        /Could not generate credentials for this secret/
+        /Could not generate credentials for this secret/,
       );
     });
 
@@ -1305,7 +1308,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
             secret: null,
           });
         },
-        /Schema Validation Failed/
+        /Schema Validation Failed/,
       );
     });
   });
