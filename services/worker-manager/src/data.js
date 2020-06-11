@@ -314,7 +314,6 @@ class Worker {
       capacity: this.capacity,
       lastModified: this.lastModified.toJSON(),
       lastChecked: this.lastChecked.toJSON(),
-      secret: this.secret,
     };
   }
 

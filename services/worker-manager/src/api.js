@@ -1,4 +1,3 @@
-const taskcluster = require('taskcluster-client');
 const {APIBuilder, paginateResults} = require('taskcluster-lib-api');
 const slug = require('slugid');
 const assert = require('assert');
@@ -679,7 +678,7 @@ builder.declare({
 
   // defaults to 96 hours if reregistrationTimeout is not defined
   const {reregistrationTimeout} = Provider.interpretLifecycle({ lifecycle: {
-    reregistrationTimeout: worker.providerData && worker.providerData.reregistrationTimeout
+    reregistrationTimeout: worker.providerData && worker.providerData.reregistrationTimeout,
   }});
   const expires = new Date(Date.now() + reregistrationTimeout);
 
