@@ -48,7 +48,7 @@ class Artifacts {
         });
       }));
     } catch (e) {
-      let error = `Artifact "${name}" not found at "${path}"`;
+      let error = `Artifact "${name}" not found at "${path}": ${e.message}`;
       // Log the error but not as an error so that other systems to not think it's
       // a fatal issue
       taskHandler.stream.write(fmtLog(error));
