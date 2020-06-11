@@ -309,7 +309,7 @@
       "last_modified": "timestamp with time zone not null",
       "provider_data": "jsonb not null",
       "provider_id": "text not null",
-      "secret": "jsonb default null",
+      "secret": "jsonb",
       "state": "text not null",
       "worker_group": "text not null",
       "worker_id": "text not null",
