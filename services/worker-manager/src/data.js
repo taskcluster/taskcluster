@@ -208,6 +208,7 @@ class Worker {
       lastModified: row.last_modified,
       lastChecked: row.last_checked,
       etag: row.etag,
+      secret: row.secret,
     });
   }
 
@@ -228,6 +229,7 @@ class Worker {
       created: now,
       lastModified: now,
       lastChecked: now,
+      secret: null,
       expires: taskcluster.fromNow('1 week'),
       ...input,
     });
@@ -235,7 +237,7 @@ class Worker {
 
   // Get a worker from the DB, or undefined if it does not exist.
   static async get(db, { workerPoolId, workerGroup, workerId }) {
-    return Worker.fromDbRows(await db.fns.get_worker(workerPoolId, workerGroup, workerId));
+    return Worker.fromDbRows(await db.fns.get_worker_2(workerPoolId, workerGroup, workerId));
   }
 
   // Expire workers,
@@ -249,7 +251,7 @@ class Worker {
   // UNIQUE_VIOLATION when those checks fail.
   async create(db) {
     try {
-      const etag = (await db.fns.create_worker(
+      const etag = (await db.fns.create_worker_2(
         this.workerPoolId,
         this.workerGroup,
         this.workerId,
@@ -261,7 +263,8 @@ class Worker {
         this.capacity,
         this.lastModified,
         this.lastChecked,
-      ))[0].create_worker;
+        this.secret,
+      ))[0].create_worker_2;
 
       return new Worker({
         workerPoolId: this.workerPoolId,
@@ -276,6 +279,7 @@ class Worker {
         lastModified: this.lastModified,
         lastChecked: this.lastChecked,
         etag,
+        secret: this.secret,
       });
     } catch (err) {
       if (err.code !== UNIQUE_VIOLATION) {
@@ -310,6 +314,7 @@ class Worker {
       capacity: this.capacity,
       lastModified: this.lastModified.toJSON(),
       lastChecked: this.lastChecked.toJSON(),
+      secret: this.secret,
     };
   }
 
@@ -336,7 +341,7 @@ class Worker {
 
       if (!_.isEqual(newProperties, this._properties)) {
         try {
-          [result] = await db.fns.update_worker(
+          [result] = await db.fns.update_worker_2(
             newProperties.workerPoolId,
             newProperties.workerGroup,
             newProperties.workerId,
@@ -349,6 +354,7 @@ class Worker {
             newProperties.lastModified,
             newProperties.lastChecked,
             newProperties.etag,
+            newProperties.secret,
           );
 
           const worker = Worker.fromDb(result);
@@ -406,7 +412,7 @@ class Worker {
     this.updateInstanceFields(worker);
   }
 
-  // Call db.get_workers with named arguments.
+  // Call db.get_workers_2 with named arguments.
   // You can use this in two ways: with a handler or without a handler.
   // In the latter case you'll get a list of up to 1000 entries and a
   // continuation token.
@@ -430,7 +436,7 @@ class Worker {
       const query = continuation ? { continuationToken: continuation } : {};
       const {continuationToken, rows} = await paginateResults({
         query,
-        fetch: (size, offset) => db.fns.get_workers(
+        fetch: (size, offset) => db.fns.get_workers_2(
           workerPoolId || null,
           workerGroup || null,
           workerId || null,

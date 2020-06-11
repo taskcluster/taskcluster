@@ -146,15 +146,21 @@ class GoogleProvider extends Provider {
     });
     monitor.debug('setting state to RUNNING');
 
+    const secret = `${slugid.nice()}${slugid.nice()}`;
     await worker.update(this.db, worker => {
       worker.state = Worker.states.RUNNING;
       worker.providerData.terminateAfter = expires.getTime();
       worker.lastModified = new Date();
+      worker.secret = this.db.encrypt({ value: Buffer.from(secret, 'utf8') });
     });
 
     // assume for the moment that workers self-terminate before 96 hours
     const workerConfig = worker.providerData.workerConfig || {};
-    return {expires, workerConfig};
+    return {
+      expires,
+      workerConfig,
+      secret,
+    };
   }
 
   async deprovision({workerPool}) {

@@ -3,13 +3,16 @@ title: Reregister Worker Request
 description: Request body to `reregisterWorker`.
 type: object
 properties:
+  workerPoolId: {$ref: "worker-pool-full.json#/properties/workerPoolId"}
+  workerGroup: {$ref: "worker-full.json#/properties/workerGroup"}
+  workerId: {$ref: "worker-full.json#/properties/workerId"}
   secret:
     title: Secret
     type: string
     pattern: "^[a-zA-Z0-9_-]{44}$"
     description: |
-      The secret value that was configured when the worker was registered (in `registerWorker`) or
-      reregistered (in `reregisterWorker`).
+      The secret value that was last configured in `registerWorker` (in the case of a newly registerd worker) or
+      `reregisterWorker`.
 additionalProperties: false
 required:
   - secret

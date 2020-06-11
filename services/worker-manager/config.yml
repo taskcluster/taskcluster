@@ -19,6 +19,7 @@ defaults:
   postgres:
     readDbUrl: !env READ_DB_URL
     writeDbUrl: !env WRITE_DB_URL
+    cryptoKey: !env PG_CRYPTO_KEY
   server:
     port: !env:number PORT
     env: !env NODE_ENV
@@ -46,6 +47,8 @@ test:
     accountId: "pamplemousse"
   app:
     errorsExpirationDelay: '-1 hour'
+  postgres:
+    cryptoKey: "aSdtIGJzdGFjayEgaGVsbG8gZnV0dXJlIHBlcnNvbgo="
   providers:
     testing1:
       providerType: testing

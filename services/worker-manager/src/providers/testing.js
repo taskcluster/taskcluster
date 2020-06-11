@@ -1,4 +1,5 @@
 const taskcluster = require('taskcluster-client');
+const slug = require('slugid');
 const {Provider, ApiError} = require('./provider');
 const {Worker} = require('../data');
 
@@ -49,8 +50,10 @@ class TestingProvider extends Provider {
   }
 
   async registerWorker({worker, workerPool, workerIdentityProof}) {
+    const secret = `${slug.nice()}${slug.nice()}`;
     await worker.update(this.db, worker => {
       worker.state = Worker.states.RUNNING;
+      worker.secret = this.db.encrypt({ value: Buffer.from(secret, 'utf8') });
     });
 
     if (worker.providerData.failRegister) {
@@ -60,7 +63,11 @@ class TestingProvider extends Provider {
       return {};
     }
     const workerConfig = worker.providerData.workerConfig || {};
-    return {expires: taskcluster.fromNow('1 hour'), workerConfig};
+    return {
+      expires: taskcluster.fromNow('1 hour'),
+      workerConfig,
+      secret,
+    };
   }
 
   async createWorker({workerPool, workerGroup, workerId, input}) {

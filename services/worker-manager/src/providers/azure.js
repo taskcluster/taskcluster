@@ -382,13 +382,19 @@ class AzureProvider extends Provider {
       workerId: worker.workerId,
     });
     monitor.debug('setting state to RUNNING');
+    const secret = `${slugid.nice()}${slugid.nice()}`;
     await worker.update(this.db, worker => {
       worker.lastModified = new Date();
       worker.state = Worker.states.RUNNING;
       worker.providerData.terminateAfter = expires.getTime();
+      worker.secret = this.db.encrypt({ value: Buffer.from(secret, 'utf8') });
     });
     const workerConfig = worker.providerData.workerConfig || {};
-    return {expires, workerConfig};
+    return {
+      expires,
+      workerConfig,
+      secret,
+    };
   }
 
   async scanPrepare() {

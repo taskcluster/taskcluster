@@ -1,4 +1,5 @@
 const taskcluster = require('taskcluster-client');
+const slug = require('slugid');
 const {ApiError, Provider} = require('./provider');
 const {Worker} = require('../data');
 
@@ -76,7 +77,12 @@ class StaticProvider extends Provider {
       expires = taskcluster.fromNow('96 hours');
     }
     const workerConfig = worker.providerData.workerConfig || {};
-    return {expires, workerConfig};
+    const secret = `${slug.nice()}${slug.nice()}`;
+    return {
+      expires,
+      workerConfig,
+      secret,
+    };
   }
 }
 
