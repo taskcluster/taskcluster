@@ -56,6 +56,7 @@ type (
 	// * `secrets:get:worker-pool:<workerPoolId>`
 	// * `queue:claim-work:<workerPoolId>`
 	// * `worker-manager:remove-worker:<workerPoolId>/<workerGroup>/<workerId>`
+	// * `worker-manager:reregister-worker:<workerPoolId>/<workerGroup>/<workerId>`
 	Credentials1 struct {
 		AccessToken string `json:"accessToken"`
 
@@ -161,7 +162,8 @@ type (
 	// Request body to `reregisterWorker`.
 	ReregisterWorkerRequest struct {
 
-		// The secret value that was configured when the worker was registered (in `registerWorker`).
+		// The secret value that was configured when the worker was registered (in `registerWorker`) or
+		// reregistered (in `reregisterWorker`).
 		//
 		// Syntax:     ^[a-zA-Z0-9_-]{44}$
 		Secret string `json:"secret"`
@@ -178,12 +180,19 @@ type (
 		// * `secrets:get:worker-pool:<workerPoolId>`
 		// * `queue:claim-work:<workerPoolId>`
 		// * `worker-manager:remove-worker:<workerPoolId>/<workerGroup>/<workerId>`
+		// * `worker-manager:reregister-worker:<workerPoolId>/<workerGroup>/<workerId>`
 		Credentials Credentials1 `json:"credentials"`
 
 		// Time at which the included credentials will expire. Workers must either
 		// re-register (for static workers) or terminate (for dynamically
 		// provisioned workers) before this time.
 		Expires tcclient.Time `json:"expires"`
+
+		// The secret value that was configured when the worker was registered (in `registerWorker`) or
+		// reregistered (in `reregisterWorker`).
+		//
+		// Syntax:     ^[a-zA-Z0-9_-]{44}$
+		Secret string `json:"secret"`
 	}
 
 	// Provider-specific information

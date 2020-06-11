@@ -65,8 +65,16 @@ module.exports.withDb = (mock, skipping, helper, serviceName) => {
       return;
     }
 
+    const cryptoKeys = [
+      {
+        id: 'testing',
+        algo: 'aes-256',
+        key: 'aSdtIGJzdGFjayEgaGVsbG8gZnV0dXJlIHBlcnNvbgo',
+      },
+    ];
+
     if (mock) {
-      helper.db = await tcdb.fakeSetup({serviceName});
+      helper.db = await tcdb.fakeSetup({serviceName, cryptoKeys});
     } else {
       const sec = helper.secrets.get('db');
 
@@ -89,6 +97,7 @@ module.exports.withDb = (mock, skipping, helper, serviceName) => {
         serviceName,
         useDbDirectory: true,
         monitor: false,
+        cryptoKeys,
       });
     }
 

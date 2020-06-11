@@ -408,7 +408,7 @@
       "properties": {
         "credentials": {
           "additionalProperties": false,
-          "description": "The credentials the worker\nwill need to perform its work. Specifically, credentials with scopes\n* `assume:worker-pool:<workerPoolId>`\n* `assume:worker-id:<workerGroup>/<workerId>`\n* `queue:worker-id:<workerGroup>/<workerId>`\n* `secrets:get:worker-pool:<workerPoolId>`\n* `queue:claim-work:<workerPoolId>`\n* `worker-manager:remove-worker:<workerPoolId>/<workerGroup>/<workerId>`\n",
+          "description": "The credentials the worker\nwill need to perform its work. Specifically, credentials with scopes\n* `assume:worker-pool:<workerPoolId>`\n* `assume:worker-id:<workerGroup>/<workerId>`\n* `queue:worker-id:<workerGroup>/<workerId>`\n* `secrets:get:worker-pool:<workerPoolId>`\n* `queue:claim-work:<workerPoolId>`\n* `worker-manager:remove-worker:<workerPoolId>/<workerGroup>/<workerId>`\n* `worker-manager:reregister-worker:<workerPoolId>/<workerGroup>/<workerId>`\n",
           "properties": {
             "accessToken": {
               "type": "string"
@@ -433,11 +433,18 @@
           "format": "date-time",
           "title": "Expires",
           "type": "string"
+        },
+        "secret": {
+          "description": "The secret value that was configured when the worker was registered (in `registerWorker`) or\nreregistered (in `reregisterWorker`).\n",
+          "pattern": "^[a-zA-Z0-9_-]{44}$",
+          "title": "Secret",
+          "type": "string"
         }
       },
       "required": [
         "expires",
-        "credentials"
+        "credentials",
+        "secret"
       ],
       "title": "Reregister Worker Response",
       "type": "object"
@@ -452,7 +459,7 @@
       "description": "Request body to `reregisterWorker`.",
       "properties": {
         "secret": {
-          "description": "The secret value that was configured when the worker was registered (in `registerWorker`).\n",
+          "description": "The secret value that was configured when the worker was registered (in `registerWorker`) or\nreregistered (in `reregisterWorker`).\n",
           "pattern": "^[a-zA-Z0-9_-]{44}$",
           "title": "Secret",
           "type": "string"
