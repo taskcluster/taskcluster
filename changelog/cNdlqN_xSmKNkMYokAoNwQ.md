@@ -1,4 +1,4 @@
-audience: developers
-level: minor
+audience: users
+level: patch
 ---
-Include error message when uploadArtifact fails
+Docker-worker now includes an error message in the task log when uploading an artifact fails
