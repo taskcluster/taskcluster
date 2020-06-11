@@ -155,7 +155,7 @@ workers:
   capacity: integer not null
   last_modified: timestamp with time zone not null
   last_checked: timestamp with time zone not null
-  secret: jsonb default null
+  secret: jsonb
   etag: uuid not null
 queue_tasks_entities:
   partition_key: text not null
