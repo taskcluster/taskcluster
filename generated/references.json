@@ -299,6 +299,19 @@
           "title": "Provider",
           "type": "string"
         },
+        "secret": {
+          "anyOf": [
+            {
+              "pattern": "^[a-zA-Z0-9_-]{44}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "The secret value that was configured when the worker was registered (in `registerWorker`) or\nreregistered (in `reregisterWorker`).\n",
+          "title": "Secret"
+        },
         "state": {
           "description": "A string specifying the state this worker is in so far as worker-manager knows.\nA \"requested\" worker is in the process of starting up, and if successful will enter\nthe \"running\" state once it has registered with the `registerWorker` API method.  A\n\"stopping\" worker is in the process of shutting down and deleting resources, while\na \"stopped\" worker is completely stopped.  Stopped workers are kept for historical\npurposes and are purged when they expire.  Note that some providers transition workers\ndirectly from \"running\" to \"stopped\".\n",
           "enum": [
@@ -429,13 +442,13 @@
           "type": "object"
         },
         "expires": {
-          "description": "Time at which the included credentials will expire. Workers must either\nre-register (for static workers) or terminate (for dynamically\nprovisioned workers) before this time.\n",
+          "description": "Time at which the included credentials will expire. Workers must\nre-register before this time.\n",
           "format": "date-time",
           "title": "Expires",
           "type": "string"
         },
         "secret": {
-          "description": "The secret value that was configured when the worker was registered (in `registerWorker`) or\nreregistered (in `reregisterWorker`).\n",
+          "description": "The next secret value needed to reregister the worker (in `reregisterWorker).\n",
           "pattern": "^[a-zA-Z0-9_-]{44}$",
           "title": "Secret",
           "type": "string"
@@ -459,10 +472,19 @@
       "description": "Request body to `reregisterWorker`.",
       "properties": {
         "secret": {
-          "description": "The secret value that was configured when the worker was registered (in `registerWorker`) or\nreregistered (in `reregisterWorker`).\n",
+          "description": "The secret value that was last configured in `registerWorker` (in the case of a newly registerd worker) or\n`reregisterWorker`.\n",
           "pattern": "^[a-zA-Z0-9_-]{44}$",
           "title": "Secret",
           "type": "string"
+        },
+        "workerGroup": {
+          "$ref": "worker-full.json#/properties/workerGroup"
+        },
+        "workerId": {
+          "$ref": "worker-full.json#/properties/workerId"
+        },
+        "workerPoolId": {
+          "$ref": "worker-pool-full.json#/properties/workerPoolId"
         }
       },
       "required": [
@@ -547,6 +569,12 @@
           "title": "Expires",
           "type": "string"
         },
+        "secret": {
+          "description": "The secret value that was configured when the worker was registered (in `registerWorker`).\nThis may be used later to reregister the worker.\n",
+          "pattern": "^[a-zA-Z0-9_-]{44}$",
+          "title": "Secret",
+          "type": "string"
+        },
         "workerConfig": {
           "additionalProperties": true,
           "description": "This value is supplied unchanged to the worker from the worker-pool configuration.\nThe expectation is that the worker will merge this information with configuration from other sources,\nand this is precisely what [worker-runner](https://github.com/taskcluster/taskcluster/tree/master/tools/worker-runner) does.\nThis property must not be used for secret configuration, as it is visible both in the worker pool configuration and in the worker instance's metadata.\nInstead, put secret configuration in the [secrets service](https://github.com/taskcluster/taskcluster/tree/master/tools/worker-runner#secrets).\n",
@@ -557,7 +585,8 @@
       "required": [
         "expires",
         "credentials",
-        "workerConfig"
+        "workerConfig",
+        "secret"
       ],
       "title": "Register Worker Response",
       "type": "object"
@@ -9181,6 +9210,9 @@
             "level": {
               "type": "string"
             },
+            "pg_crypto_key": {
+              "type": "string"
+            },
             "procs": {
               "additionalProperties": false,
               "properties": {
@@ -9362,6 +9394,7 @@
             "taskcluster_access_token",
             "read_db_url",
             "write_db_url",
+            "pg_crypto_key",
             "pulse_username",
             "pulse_password",
             "providers"
@@ -12181,7 +12214,7 @@
           "args": [
           ],
           "category": "Workers",
-          "description": "Reregister a running worker.\n\nThis will generate and return new Taskcluster credentials for the worker\non that instance to use. The credentials will not live longer the the\n`registrationTimeout` for that worker. The endpoint will update `terminateAfter`\nfor the worker so that worker-manager does not terminate the instance.",
+          "description": "Reregister a running worker.\n\nThis will generate and return new Taskcluster credentials for the worker\non that instance to use. The credentials will not live longer the\n`registrationTimeout` for that worker. The endpoint will update `terminateAfter`\nfor the worker so that worker-manager does not terminate the instance.",
           "input": "v1/reregister-worker-request.json#",
           "method": "post",
           "name": "reregisterWorker",

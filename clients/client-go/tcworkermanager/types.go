@@ -149,6 +149,12 @@ type (
 		// provisioned workers) before this time.
 		Expires tcclient.Time `json:"expires"`
 
+		// The secret value that was configured when the worker was registered (in `registerWorker`).
+		// This may be used later to reregister the worker.
+		//
+		// Syntax:     ^[a-zA-Z0-9_-]{44}$
+		Secret string `json:"secret"`
+
 		// This value is supplied unchanged to the worker from the worker-pool configuration.
 		// The expectation is that the worker will merge this information with configuration from other sources,
 		// and this is precisely what [worker-runner](https://github.com/taskcluster/taskcluster/tree/master/tools/worker-runner) does.
@@ -162,11 +168,30 @@ type (
 	// Request body to `reregisterWorker`.
 	ReregisterWorkerRequest struct {
 
-		// The secret value that was configured when the worker was registered (in `registerWorker`) or
-		// reregistered (in `reregisterWorker`).
+		// The secret value that was last configured in `registerWorker` (in the case of a newly registerd worker) or
+		// `reregisterWorker`.
 		//
 		// Syntax:     ^[a-zA-Z0-9_-]{44}$
 		Secret string `json:"secret"`
+
+		// Worker group to which this worker belongs
+		//
+		// Syntax:     ^([a-zA-Z0-9-_]*)$
+		// Min length: 1
+		// Max length: 38
+		WorkerGroup string `json:"workerGroup,omitempty"`
+
+		// Worker ID
+		//
+		// Syntax:     ^([a-zA-Z0-9-_]*)$
+		// Min length: 1
+		// Max length: 38
+		WorkerID string `json:"workerId,omitempty"`
+
+		// The ID of this worker pool (of the form `providerId/workerType` for compatibility)
+		//
+		// Syntax:     ^[a-zA-Z0-9-_]{1,38}/[a-z]([-a-z0-9]{0,36}[a-z0-9])?$
+		WorkerPoolID string `json:"workerPoolId,omitempty"`
 	}
 
 	// Response body to `reregisterWorker`.
@@ -183,17 +208,25 @@ type (
 		// * `worker-manager:reregister-worker:<workerPoolId>/<workerGroup>/<workerId>`
 		Credentials Credentials1 `json:"credentials"`
 
-		// Time at which the included credentials will expire. Workers must either
-		// re-register (for static workers) or terminate (for dynamically
-		// provisioned workers) before this time.
+		// Time at which the included credentials will expire. Workers must
+		// re-register before this time.
 		Expires tcclient.Time `json:"expires"`
 
-		// The secret value that was configured when the worker was registered (in `registerWorker`) or
-		// reregistered (in `reregisterWorker`).
+		// The next secret value needed to reregister the worker (in `reregisterWorker).
 		//
 		// Syntax:     ^[a-zA-Z0-9_-]{44}$
 		Secret string `json:"secret"`
 	}
+
+	// The secret value that was configured when the worker was registered (in `registerWorker`) or
+	// reregistered (in `reregisterWorker`).
+	//
+	// Syntax:     ^[a-zA-Z0-9_-]{44}$
+	Secret string
+
+	// The secret value that was configured when the worker was registered (in `registerWorker`) or
+	// reregistered (in `reregisterWorker`).
+	Secret1 null
 
 	// Provider-specific information
 	StaticProviderType struct {
@@ -316,6 +349,14 @@ type (
 		// Min length: 1
 		// Max length: 38
 		ProviderID string `json:"providerId"`
+
+		// The secret value that was configured when the worker was registered (in `registerWorker`) or
+		// reregistered (in `reregisterWorker`).
+		//
+		// Any of:
+		//   * Secret
+		//   * Secret1
+		Secret json.RawMessage `json:"secret,omitempty"`
 
 		// A string specifying the state this worker is in so far as worker-manager knows.
 		// A "requested" worker is in the process of starting up, and if successful will enter
