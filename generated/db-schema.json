@@ -2500,31 +2500,13 @@
     {
       "downgradeScript": "begin\n  alter table workers\n    drop column secret;\nend\n",
       "methods": {
-        "create_worker_2": {
-          "args": "worker_pool_id_in text, worker_group_in text, worker_id_in text, provider_id_in text, created_in timestamptz, expires_in timestamptz, state_in text, provider_data_in jsonb, capacity_in integer, last_modified_in timestamptz, last_checked_in timestamptz, secret_in jsonb",
-          "body": "declare\n  new_etag uuid := public.gen_random_uuid();\nbegin\n  insert\n    into workers (worker_pool_id, worker_group, worker_id, provider_id, created, expires, state, provider_data, capacity, last_modified, last_checked, etag, secret)\n    values (worker_pool_id_in, worker_group_in, worker_id_in, provider_id_in, created_in, expires_in, state_in, provider_data_in, capacity_in, last_modified_in, last_checked_in, new_etag, secret_in);\n\n  return new_etag;\nend",
-          "deprecated": false,
-          "description": "Create a new worker. Raises UNIQUE_VIOLATION if the worker already exists.\nReturns the etag of the newly created worker.",
-          "mode": "write",
-          "returns": "uuid",
-          "serviceName": "worker_manager"
-        },
         "get_worker_2": {
           "args": "worker_pool_id_in text, worker_group_in text, worker_id_in text",
           "body": "begin\n  return query\n  select\n    workers.worker_pool_id,\n    workers.worker_group,\n    workers.worker_id,\n    workers.provider_id,\n    workers.created,\n    workers.expires,\n    workers.state,\n    workers.provider_data,\n    workers.capacity,\n    workers.last_modified,\n    workers.last_checked,\n    workers.secret,\n    workers.etag\n  from workers\n  where\n    workers.worker_pool_id = worker_pool_id_in and\n    workers.worker_group = worker_group_in and\n    workers.worker_id = worker_id_in;\nend",
           "deprecated": false,
-          "description": "Get an existig worker. The returned table will have one or (if no such worker is defined) zero rows.",
+          "description": "Get an existing worker. The returned table will have one or (if no such worker is defined) zero rows.",
           "mode": "read",
           "returns": "table(worker_pool_id text, worker_group text, worker_id text, provider_id text, created timestamptz, expires timestamptz, state text, provider_data jsonb, capacity integer, last_modified timestamptz, last_checked timestamptz, secret jsonb, etag uuid)",
-          "serviceName": "worker_manager"
-        },
-        "get_workers_2": {
-          "args": "worker_pool_id_in text, worker_group_in text, worker_id_in text, state_in text, page_size_in integer, page_offset_in integer",
-          "body": "begin\n  return query\n  select\n    workers.worker_pool_id,\n    workers.worker_group,\n    workers.worker_id,\n    workers.provider_id,\n    workers.created,\n    workers.expires,\n    workers.state,\n    workers.provider_data,\n    workers.capacity,\n    workers.last_modified,\n    workers.last_checked,\n    workers.secret\n  from workers\n  where\n    (workers.worker_pool_id = worker_pool_id_in or worker_pool_id_in is null) and\n    (workers.worker_group = worker_group_in or worker_group_in is null) and\n    (workers.worker_id = worker_id_in or worker_id_in is null) and\n    (workers.state = state_in or state_in is null)\n  order by worker_pool_id, worker_group, worker_id\n  limit get_page_limit(page_size_in)\n  offset get_page_offset(page_offset_in);\nend",
-          "deprecated": false,
-          "description": "Get existing workers filtered by the optional arguments,\nordered by `worker_pool_id`, `worker_group`, and  `worker_id`.\nIf the pagination arguments are both NULL, all rows are returned.\nOtherwise, page_size rows are returned at offset page_offset.",
-          "mode": "read",
-          "returns": "table(worker_pool_id text, worker_group text, worker_id text, provider_id text, created timestamptz, expires timestamptz, state text, provider_data jsonb, capacity integer, last_modified timestamptz, last_checked timestamptz, secret jsonb)",
           "serviceName": "worker_manager"
         },
         "update_worker_2": {
