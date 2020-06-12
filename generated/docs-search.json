@@ -232,6 +232,13 @@
   },
   {
     "element": "h2",
+    "id": "supporting-encrypted-columns",
+    "path": "/manual/deploying/database",
+    "subtitle": "Supporting Encrypted Columns",
+    "title": "Database Configuration"
+  },
+  {
+    "element": "h2",
     "id": "upgrades",
     "path": "/manual/deploying/database",
     "subtitle": "Upgrades",
