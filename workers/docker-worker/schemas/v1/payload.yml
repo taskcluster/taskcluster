@@ -14,7 +14,7 @@ definitions:
           - file
           - directory
       path:
-        title: Location of artifact in container.
+        title: Location of artifact in container, as an absolute path.
         type: string
       expires:
         title: Date when artifact should expire must be in the future.

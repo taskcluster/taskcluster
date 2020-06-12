@@ -7185,7 +7185,7 @@
               "type": "string"
             },
             "path": {
-              "title": "Location of artifact in container.",
+              "title": "Location of artifact in container, as an absolute path.",
               "type": "string"
             },
             "type": {
