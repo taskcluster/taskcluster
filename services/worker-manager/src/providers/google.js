@@ -85,7 +85,7 @@ class GoogleProvider extends Provider {
     this.workerServiceAccountEmail = workerServiceAccount.email;
   }
 
-  async registerWorker({worker, workerPool, workerIdentityProof}) {
+  async registerWorker({worker, workerPool, workerIdentityProof, secret}) {
     const {token} = workerIdentityProof;
     const monitor = this.workerMonitor({worker});
 
@@ -146,12 +146,11 @@ class GoogleProvider extends Provider {
     });
     monitor.debug('setting state to RUNNING');
 
-    const secret = `${slugid.nice()}${slugid.nice()}`;
     await worker.update(this.db, worker => {
       worker.state = Worker.states.RUNNING;
       worker.providerData.terminateAfter = expires.getTime();
       worker.lastModified = new Date();
-      worker.secret = this.db.encrypt({ value: Buffer.from(secret, 'utf8') });
+      worker.secret = secret;
     });
 
     // assume for the moment that workers self-terminate before 96 hours

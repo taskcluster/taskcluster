@@ -608,12 +608,13 @@ builder.declare({
       `Worker ${workerGroup}/${workerId} does not have provider ${providerId}`, {});
   }
 
-  let expires, workerConfig, secret;
+  let expires, workerConfig;
+  const secret = `${slug.nice()}${slug.nice()}`;
   try {
-    const reg = await provider.registerWorker({worker, workerPool, workerIdentityProof});
+    const encryptedSecret = this.db.encrypt({ value: Buffer.from(secret, 'utf8') });
+    const reg = await provider.registerWorker({worker, workerPool, workerIdentityProof, secret: encryptedSecret });
     expires = reg.expires;
     workerConfig = reg.workerConfig;
-    secret = reg.secret;
   } catch (err) {
     if (!(err instanceof ApiError)) {
       throw err;
@@ -630,7 +631,12 @@ builder.declare({
   // not verify here
   const credentials = createCredentials(worker, expires, this.cfg);
 
-  return res.reply({expires: expires.toJSON(), credentials, workerConfig, secret});
+  return res.reply({
+    expires: expires.toJSON(),
+    credentials,
+    workerConfig,
+    secret,
+  });
 });
 
 builder.declare({

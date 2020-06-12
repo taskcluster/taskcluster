@@ -268,7 +268,7 @@ class AzureProvider extends Provider {
     return new Date();
   }
 
-  async registerWorker({worker, workerPool, workerIdentityProof}) {
+  async registerWorker({worker, workerPool, workerIdentityProof, secret}) {
     const {document} = workerIdentityProof;
     const monitor = this.workerMonitor({worker});
 
@@ -382,12 +382,11 @@ class AzureProvider extends Provider {
       workerId: worker.workerId,
     });
     monitor.debug('setting state to RUNNING');
-    const secret = `${slugid.nice()}${slugid.nice()}`;
     await worker.update(this.db, worker => {
       worker.lastModified = new Date();
       worker.state = Worker.states.RUNNING;
       worker.providerData.terminateAfter = expires.getTime();
-      worker.secret = this.db.encrypt({ value: Buffer.from(secret, 'utf8') });
+      worker.secret = secret;
     });
     const workerConfig = worker.providerData.workerConfig || {};
     return {

@@ -68,22 +68,6 @@ suite(testing.suiteName(), function() {
       w.last_checked || new Date(),
     ))[0].create_worker;
   };
-  const create_worker_2 = async (db, w = {}) => {
-    return (await db.fns.create_worker_2(
-      w.worker_pool_id || 'wp/id',
-      w.worker_group || 'w/group',
-      w.worker_id || 'w/id',
-      w.provider_id || 'provider',
-      w.created || new Date(),
-      w.expires || new Date(),
-      w.state || 'state',
-      w.provider_data || {providerdata: true},
-      w.capacity || 1,
-      w.last_modified || new Date(),
-      w.last_checked || new Date(),
-      w.secret || null,
-    ))[0].create_worker;
-  };
   const update_worker = async (db, w = {}, etag) => {
     return await db.fns.update_worker(
       w.worker_pool_id || 'wp/id',
@@ -113,8 +97,8 @@ suite(testing.suiteName(), function() {
       w.capacity || 1,
       w.last_modified || new Date(),
       w.last_checked || new Date(),
-      w.secret || null,
       etag,
+      w.secret || null,
     );
   };
 
@@ -301,37 +285,14 @@ suite(testing.suiteName(), function() {
       assert.deepEqual(rows[0].last_checked, now);
     });
 
-    helper.dbTest('create_worker_2/get_worker_2', async function(db, isFake) {
+    helper.dbTest('create_worker/get_worker_2', async function(db, isFake) {
       const now = new Date();
-      const secret = `${slug.v4()}${slug.v4()}`;
-      const encryptedSecret = db.encrypt({ value: Buffer.from(secret, 'utf8') });
-      await create_worker_2(db, {
+      await create_worker(db, {
         created: now,
         last_modified: now,
         last_checked: now,
         expires: now,
-        secret: encryptedSecret,
       });
-
-      const rows = await db.fns.get_worker_2('wp/id', 'w/group', 'w/id');
-      assert.equal(rows[0].worker_pool_id, 'wp/id');
-      assert.equal(rows[0].worker_group, 'w/group');
-      assert.equal(rows[0].worker_id, 'w/id');
-      assert.equal(rows[0].provider_id, 'provider');
-      assert.deepEqual(rows[0].created, now);
-      assert.deepEqual(rows[0].expires, now);
-      assert.equal(rows[0].state, 'state');
-      assert.deepEqual(rows[0].provider_data, {providerdata: true});
-      assert.equal(rows[0].capacity, 1);
-      assert.deepEqual(rows[0].last_modified, now);
-      assert.deepEqual(rows[0].last_checked, now);
-      assert.deepEqual(rows[0].secret, encryptedSecret);
-      assert.equal(db.decrypt({ value: rows[0].secret }).toString('utf8'), secret);
-    });
-
-    helper.dbTest('can use create_worker_2 without a secret', async function(db, isFake) {
-      const now = new Date();
-      await create_worker_2(db, {created: now, last_modified: now, last_checked: now, expires: now });
 
       const rows = await db.fns.get_worker_2('wp/id', 'w/group', 'w/id');
       assert.equal(rows[0].worker_pool_id, 'wp/id');
@@ -363,11 +324,6 @@ suite(testing.suiteName(), function() {
       assert.deepEqual(rows, []);
     });
 
-    helper.dbTest('get_workers_2 empty', async function(db, isFake) {
-      const rows = await db.fns.get_workers_2(null, null, null, null, null, null);
-      assert.deepEqual(rows, []);
-    });
-
     helper.dbTest('get_workers full, pagination', async function(db, isFake) {
       const now = new Date();
       for (let i = 0; i < 10; i++) {
@@ -396,42 +352,6 @@ suite(testing.suiteName(), function() {
       assert.deepEqual(rows[0].last_checked, now);
 
       rows = await db.fns.get_workers(null, null, null, null, 2, 4);
-      assert.deepEqual(
-        rows.map(r => ({ worker_pool_id: r.worker_pool_id, worker_group: r.worker_group, worker_id: r.worker_id })),
-        [4, 5].map(i => ({ worker_pool_id: `wp/${i}`, worker_group: `w/group${i}`, worker_id: `w/id${i}` })));
-    });
-
-    helper.dbTest('get_workers_2 full, pagination', async function(db, isFake) {
-      const now = new Date();
-      for (let i = 0; i < 10; i++) {
-        const secret = `${slug.v4()}${slug.v4()}`;
-        const encryptedSecret = db.encrypt({ value: Buffer.from(secret, 'utf8') });
-        await create_worker_2(db, {
-          worker_pool_id: `wp/${i}`,
-          worker_group: `w/group${i}`,
-          worker_id: `w/id${i}`,
-          created: now,
-          last_modified: now,
-          last_checked: now,
-          expires: now,
-          secret: encryptedSecret,
-        });
-      }
-
-      let rows = await db.fns.get_workers_2(null, null, null, null, null, null);
-      assert.deepEqual(
-        rows.map(r => ({ worker_pool_id: r.worker_pool_id, worker_group: r.worker_group, worker_id: r.worker_id })),
-        _.range(10).map(i => ({ worker_pool_id: `wp/${i}`, worker_group: `w/group${i}`, worker_id: `w/id${i}` })));
-      assert.equal(rows[0].provider_id, 'provider');
-      assert.deepEqual(rows[0].created, now);
-      assert.deepEqual(rows[0].expires, now);
-      assert.equal(rows[0].state, 'state');
-      assert.deepEqual(rows[0].provider_data, {providerdata: true});
-      assert.equal(rows[0].capacity, 1);
-      assert.deepEqual(rows[0].last_modified, now);
-      assert.deepEqual(rows[0].last_checked, now);
-
-      rows = await db.fns.get_workers_2(null, null, null, null, 2, 4);
       assert.deepEqual(
         rows.map(r => ({ worker_pool_id: r.worker_pool_id, worker_group: r.worker_group, worker_id: r.worker_id })),
         [4, 5].map(i => ({ worker_pool_id: `wp/${i}`, worker_group: `w/group${i}`, worker_id: `w/id${i}` })));
@@ -480,7 +400,7 @@ suite(testing.suiteName(), function() {
     });
 
     helper.dbTest('update_worker_2, change to a single field', async function(db, isFake) {
-      const etag = await create_worker_2(db);
+      const etag = await create_worker(db);
       const secret = `${slug.v4()}${slug.v4()}`;
       const encryptedSecret = db.encrypt({ value: Buffer.from(secret, 'utf8') });
       await db.fns.update_worker_2(
@@ -538,7 +458,7 @@ suite(testing.suiteName(), function() {
     });
 
     helper.dbTest('update_worker_2, change to a multiple fields', async function(db, isFake) {
-      const etag = await create_worker_2(db);
+      const etag = await create_worker(db);
       const updated = await db.fns.update_worker_2(
         'wp/id',
         'w/group',
@@ -586,7 +506,7 @@ suite(testing.suiteName(), function() {
     });
 
     helper.dbTest('update_worker_2, no changes', async function(db, isFake) {
-      const etag = await create_worker_2(db);
+      const etag = await create_worker(db);
       const updated = await db.fns.update_worker_2(
         'wp/id',
         'w/group',
@@ -622,7 +542,7 @@ suite(testing.suiteName(), function() {
     });
 
     helper.dbTest('update_worker_2, worker doesn\'t exist', async function(db, isFake) {
-      const etag = await create_worker_2(db);
+      const etag = await create_worker(db);
 
       await assert.rejects(
         async () => {
@@ -654,7 +574,7 @@ suite(testing.suiteName(), function() {
     });
 
     helper.dbTest('update_worker_2, override when etag not specified', async function(db, isFake) {
-      await create_worker_2(db);
+      await create_worker(db);
       await db.fns.update_worker_2(
         'wp/id',
         'w/group',
@@ -699,7 +619,7 @@ suite(testing.suiteName(), function() {
     });
 
     helper.dbTest('update_worker_2, throws when etag is wrong', async function(db, isFake) {
-      await create_worker_2(db);
+      await create_worker(db);
       await assert.rejects(
         async () => {
           await db.fns.update_worker_2(
@@ -746,7 +666,7 @@ suite(testing.suiteName(), function() {
     });
 
     helper.dbTest('update_worker_2, throws when row does not exist', async function(db, isFake) {
-      const etag = await create_worker_2(db);
+      const etag = await create_worker(db);
       await assert.rejects(
         async () => {
           await db.fns.update_worker_2(
