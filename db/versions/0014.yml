@@ -3,7 +3,7 @@ migrationScript: 0014-migration.sql
 downgradeScript: 0014-downgrade.sql
 methods:
   get_worker_2:
-    description: Get an existig worker. The returned table will have one or (if no such worker is defined) zero rows.
+    description: Get an existing worker. The returned table will have one or (if no such worker is defined) zero rows.
     mode: read
     serviceName: worker_manager
     args: worker_pool_id_in text, worker_group_in text, worker_id_in text
@@ -30,24 +30,6 @@ methods:
           workers.worker_pool_id = worker_pool_id_in and
           workers.worker_group = worker_group_in and
           workers.worker_id = worker_id_in;
-      end
-  create_worker_2:
-    description: |-
-      Create a new worker. Raises UNIQUE_VIOLATION if the worker already exists.
-      Returns the etag of the newly created worker.
-    mode: write
-    serviceName: worker_manager
-    args: worker_pool_id_in text, worker_group_in text, worker_id_in text, provider_id_in text, created_in timestamptz, expires_in timestamptz, state_in text, provider_data_in jsonb, capacity_in integer, last_modified_in timestamptz, last_checked_in timestamptz, secret_in jsonb
-    returns: uuid
-    body: |-
-      declare
-        new_etag uuid := public.gen_random_uuid();
-      begin
-        insert
-          into workers (worker_pool_id, worker_group, worker_id, provider_id, created, expires, state, provider_data, capacity, last_modified, last_checked, etag, secret)
-          values (worker_pool_id_in, worker_group_in, worker_id_in, provider_id_in, created_in, expires_in, state_in, provider_data_in, capacity_in, last_modified_in, last_checked_in, new_etag, secret_in);
-
-        return new_etag;
       end
   update_worker_2:
     serviceName: worker_manager
@@ -127,40 +109,4 @@ methods:
         else
           raise exception 'no such row' using errcode = 'P0002';
         end if;
-      end
-  get_workers_2:
-    description: |-
-      Get existing workers filtered by the optional arguments,
-      ordered by `worker_pool_id`, `worker_group`, and  `worker_id`.
-      If the pagination arguments are both NULL, all rows are returned.
-      Otherwise, page_size rows are returned at offset page_offset.
-    mode: read
-    serviceName: worker_manager
-    args: worker_pool_id_in text, worker_group_in text, worker_id_in text, state_in text, page_size_in integer, page_offset_in integer
-    returns: table(worker_pool_id text, worker_group text, worker_id text, provider_id text, created timestamptz, expires timestamptz, state text, provider_data jsonb, capacity integer, last_modified timestamptz, last_checked timestamptz, secret jsonb)
-    body: |-
-      begin
-        return query
-        select
-          workers.worker_pool_id,
-          workers.worker_group,
-          workers.worker_id,
-          workers.provider_id,
-          workers.created,
-          workers.expires,
-          workers.state,
-          workers.provider_data,
-          workers.capacity,
-          workers.last_modified,
-          workers.last_checked,
-          workers.secret
-        from workers
-        where
-          (workers.worker_pool_id = worker_pool_id_in or worker_pool_id_in is null) and
-          (workers.worker_group = worker_group_in or worker_group_in is null) and
-          (workers.worker_id = worker_id_in or worker_id_in is null) and
-          (workers.state = state_in or state_in is null)
-        order by worker_pool_id, worker_group, worker_id
-        limit get_page_limit(page_size_in)
-        offset get_page_offset(page_offset_in);
       end
