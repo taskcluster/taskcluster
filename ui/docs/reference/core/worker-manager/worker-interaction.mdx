@@ -48,6 +48,13 @@ It is the responsibility of the worker to finish its work before the credentials
 
 Depending on the provider, `registerWorker` may be called multiple times for the same worker, or may only be called once.
 
+## Reregistration
+
+The worker may reregister itself to renew its credentials with the worker manager by calling [`worker.reregister`](/docs/reference/core/worker-manager/api#reregisterWorker)
+The expiration time of the new credentials can be controlled via `reregistrationTimeout` which gets set when
+calling [`workerManager.registerWorker`](/docs/reference/core/worker-manager/api#registerWorker).
+The default behavior, when `reregistrationTimeout` is omitted, is to extend the credentials by 96 hours.
+
 ## Worker Configuration
 
 Worker images and hosts should generally be kept as generic as possible, with configuration provided via the worker-manager.
