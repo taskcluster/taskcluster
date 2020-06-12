@@ -67,7 +67,6 @@ suite(suiteName(), function () {
     expiry.setDate(expiry.getDate() + 1);
 
     let httpHeader = {
-      'content-length': DATA.length,
     };
 
     try {
