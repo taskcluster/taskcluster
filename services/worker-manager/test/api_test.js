@@ -1195,7 +1195,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
           workerConfig: {
             "someKey": "someValue",
           },
-        }
+        },
       };
       await testExpires(config);
     });
@@ -1208,7 +1208,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
           },
           // 2 hour
           reregistrationTimeout: 2 * 60 * 60,
-        }
+        },
       };
       await testExpires(config);
     });

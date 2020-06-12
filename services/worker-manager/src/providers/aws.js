@@ -5,7 +5,6 @@ const crypto = require('crypto');
 const fs = require('fs');
 const path = require('path');
 const _ = require('lodash');
-const slug = require('slugid');
 const {CloudAPI} = require('./cloudapi');
 const {WorkerPool, Worker} = require('../data');
 
