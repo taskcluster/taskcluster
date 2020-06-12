@@ -30,13 +30,30 @@ Do not run these tests against a database instance that contains any useful data
 To start the server using Docker:
 
 ```shell
-docker run -ti -p 127.0.0.1:5432:5432  --rm postgres:11
+docker run -ti -p 127.0.0.1:5432:5432 -e POSTGRES_HOST_AUTH_METHOD=trust --rm postgres:11
 ```
 
 This will run Docker in the foreground in that terminal (so you'll need to use another terminal for your work, or add the `-d` flag to daemonize the container) and make that available on TCP port 5432, the "normal" Postgres port.
 
-However you decide to run Docker, you will need a DB URL below, as defined by [node-postgres](https://node-postgres.com/features/connecting).
+It can be helpful to log all queries run by the test suite:
+
+```shell
+docker run -ti -p 127.0.0.1:5432:5432 -e POSTGRES_HOST_AUTH_METHOD=trust --rm postgres:11 -c log_statement=all
+```
+
+However you decide to run Postgres, you will need a DB URL, as defined by [node-postgres](https://node-postgres.com/features/connecting).
 For the docker container described above, this is `postgresql://postgres@localhost/postgres`.
+For tests, set:
+
+```shell
+export TEST_DB_URL=postgresql://postgres@localhost/postgres
+```
+
+To access the psql command-line prompt in your docker container, determine the container ID (such as with `docker container ls`) and run
+
+```shell
+docker exec -ti $CONTAINER_ID psql -U postgres
+```
 
 ### Node Dependency Installation
 

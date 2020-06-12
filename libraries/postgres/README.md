@@ -270,26 +270,4 @@ Note that the return promise does not carry a value on success, as that success 
 ## Development
 
 To test this library, you will need a Postgres database, running the latest release of Postgres 11.
-The easiest and best way to do this is to use docker:
-
-```shell
-docker run -ti -p 127.0.0.1:5432:5432  --rm postgres:11
-```
-
-This will run Docker in the foreground in that terminal (so you'll need to use another terminal for your work, or add the `-d` flag to daemonize the container) and make that available on TCP port 5432, the "normal" Postgres port.
-
-*NOTE* the test suite repeatedly drops the `public` schema and re-creates it, effectively deleting all data in the database.
-Do not run these tests against a database instance that contains any useful data!
-
-Once this container is running, set TEST_DB_URL to point to the database, as defined by [node-postgres](https://node-postgres.com/features/connecting).
-For the docker container described above, use
-
-```shell
-export TEST_DB_URL=postgresql://postgres@localhost/postgres
-```
-
-It can be helpful to log all queries run by the test suite:
-
-```shell
-docker run -ti -p 127.0.0.1:5432:5432  --rm postgres:11 -c log_statement=all
-```
+The easiest and best way to do this is to use docker, as described in the [Development Process docs](../dev-docs/development-process.md).
