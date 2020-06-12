@@ -251,7 +251,7 @@ class Worker {
   // UNIQUE_VIOLATION when those checks fail.
   async create(db) {
     try {
-      const etag = (await db.fns.create_worker_2(
+      const etag = (await db.fns.create_worker(
         this.workerPoolId,
         this.workerGroup,
         this.workerId,
@@ -263,8 +263,7 @@ class Worker {
         this.capacity,
         this.lastModified,
         this.lastChecked,
-        this.secret,
-      ))[0].create_worker_2;
+      ))[0].create_worker;
 
       return new Worker({
         workerPoolId: this.workerPoolId,
@@ -411,7 +410,7 @@ class Worker {
     this.updateInstanceFields(worker);
   }
 
-  // Call db.get_workers_2 with named arguments.
+  // Call db.get_workers with named arguments.
   // You can use this in two ways: with a handler or without a handler.
   // In the latter case you'll get a list of up to 1000 entries and a
   // continuation token.
@@ -435,7 +434,7 @@ class Worker {
       const query = continuation ? { continuationToken: continuation } : {};
       const {continuationToken, rows} = await paginateResults({
         query,
-        fetch: (size, offset) => db.fns.get_workers_2(
+        fetch: (size, offset) => db.fns.get_workers(
           workerPoolId || null,
           workerGroup || null,
           workerId || null,

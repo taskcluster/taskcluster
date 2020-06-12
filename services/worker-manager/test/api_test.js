@@ -8,9 +8,6 @@ const fs = require('fs');
 const path = require('path');
 
 helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
-  if (mock) {
-    return;
-  }
   helper.withDb(mock, skipping);
   helper.withEntities(mock, skipping);
   helper.withPulse(mock, skipping);
@@ -1164,15 +1161,14 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
       workerPoolId, providerId, workerGroup, workerId, workerIdentityProof,
     };
 
-    test('works without registrationTimeout', async function() {
+    const testExpires = async (config) => {
       await createWorkerPool({});
-      await createWorker({
-        providerData: {
-          workerConfig: {
-            "someKey": "someValue",
-          },
-        },
-      });
+      await createWorker(config);
+      // default is 96 hours when reregistrationTimeout is not specified.
+      const reregistrationTimeout = config.providerData.reregistrationTimeout ?
+        config.providerData.reregistrationTimeout / 3600 :
+        96;
+
       const firstResponse = await helper.workerManager.registerWorker({
         ...defaultRegisterWorker,
       });
@@ -1187,42 +1183,34 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
         secret: firstResponse.secret,
       });
 
-      // default is 96 hours when reregistrationTimeout is not specified.
-      assert(new Date(secondResponse.expires) - new Date() > 95 * 1000 * 60 * 60);
-      assert(new Date(secondResponse.expires) - new Date() < 96 * 1000 * 60 * 60);
+      assert(new Date(secondResponse.expires) - new Date() > (reregistrationTimeout - 1) * 1000 * 60 * 60);
+      assert(new Date(secondResponse.expires) - new Date() < reregistrationTimeout * 1000 * 60 * 60);
       assert.equal(firstResponse.credentials.clientId, secondResponse.credentials.clientId);
       assert.notStrictEqual(firstResponse.secret, secondResponse.secret);
+    };
+
+    test('works without reregistrationTimeout', async function() {
+      const config = {
+        providerData: {
+          workerConfig: {
+            "someKey": "someValue",
+          },
+        }
+      };
+      await testExpires(config);
     });
 
-    test('works with registrationTimeout', async function() {
-      await createWorkerPool({});
-      await createWorker({
+    test('works with reregistrationTimeout', async function() {
+      const config = {
         providerData: {
           workerConfig: {
             "someKey": "someValue",
           },
           // 2 hour
           reregistrationTimeout: 2 * 60 * 60,
-        },
-      });
-      const firstResponse = await helper.workerManager.registerWorker({
-        ...defaultRegisterWorker,
-      });
-
-      assert.equal(firstResponse.credentials.clientId,
-        `worker/${providerId}/${workerPoolId}/${workerGroup}/${workerId}`);
-
-      const secondResponse = await helper.workerManager.reregisterWorker({
-        workerPoolId,
-        workerGroup,
-        workerId,
-        secret: firstResponse.secret,
-      });
-
-      assert(new Date(secondResponse.expires) - new Date() > 1 * 1000 * 60 * 60);
-      assert(new Date(secondResponse.expires) - new Date() < 2 * 1000 * 60 * 60);
-      assert.equal(firstResponse.credentials.clientId, secondResponse.credentials.clientId);
-      assert.notStrictEqual(firstResponse.secret, secondResponse.secret);
+        }
+      };
+      await testExpires(config);
     });
 
     test('throws when secret is bad', async function() {

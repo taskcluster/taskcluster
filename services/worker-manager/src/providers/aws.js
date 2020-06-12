@@ -261,13 +261,8 @@ class AwsProvider extends Provider {
   /**
    * This method checks instance identity document authenticity
    * If it's authentic it checks whether the data in it corresponds to the worker
-   *
-   * @param worker string
-   * @param workerPool string
-   * @param workerIdentityProof {document: string, signature: string}
-   * @returns {Promise<{expires: *}>}
    */
-  async registerWorker({worker, workerPool, workerIdentityProof}) {
+  async registerWorker({worker, workerPool, workerIdentityProof, secret}) {
     const monitor = this.workerMonitor({worker});
 
     if (worker.state !== Worker.states.REQUESTED) {
@@ -299,12 +294,11 @@ class AwsProvider extends Provider {
       workerId: worker.workerId,
     });
     monitor.debug('setting state to RUNNING');
-    const secret = `${slug.nice()}${slug.nice()}`;
     await worker.update(this.db, worker => {
       worker.lastModified = new Date();
       worker.providerData.terminateAfter = expires.getTime();
       worker.state = Worker.states.RUNNING;
-      worker.secret = this.db.encrypt({ value: Buffer.from(secret, 'utf8') });
+      worker.secret = secret;
     });
 
     const workerConfig = worker.providerData.workerConfig || {};

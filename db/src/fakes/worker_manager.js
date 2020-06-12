@@ -447,51 +447,10 @@ class FakeWorkerManager {
       last_modified,
       last_checked,
       etag,
+      secret: null,
     });
 
     return [{ create_worker: etag }];
-  }
-
-  async create_worker_2(
-    worker_pool_id, worker_group, worker_id, provider_id,
-    created, expires, state, provider_data, capacity,
-    last_modified, last_checked, secret,
-  ) {
-    assert.equal(typeof worker_pool_id, 'string');
-    assert.equal(typeof worker_group, 'string');
-    assert.equal(typeof worker_id, 'string');
-    assert.equal(typeof provider_id, 'string');
-    assert(isDate(created));
-    assert(isDate(expires));
-    assert.equal(typeof state, 'string');
-    assert(isPlainObject(provider_data));
-    assert.equal(typeof capacity, 'number');
-    assert(isDate(last_modified));
-    assert(isDate(last_checked));
-
-    if (this.workers.get(`${worker_pool_id}-${worker_group}-${worker_id}`)) {
-      throw errWithCode('row exists', UNIQUE_VIOLATION);
-    }
-
-    const etag = slugid.v4();
-
-    this.workers.set(`${worker_pool_id}-${worker_group}-${worker_id}`, {
-      worker_pool_id,
-      worker_group,
-      worker_id,
-      provider_id,
-      created,
-      expires,
-      state,
-      provider_data,
-      capacity,
-      last_modified,
-      last_checked,
-      secret: secret || null,
-      etag,
-    });
-
-    return [{ create_worker_2: etag }];
   }
 
   async get_worker(worker_pool_id, worker_group, worker_id) {
@@ -533,10 +492,6 @@ class FakeWorkerManager {
     return filteredWorkerKeys.slice(page_offset || 0, page_size ?
       page_offset + page_size :
       filteredWorkerKeys.length).map(key => this.workers.get(key));
-  }
-
-  async get_workers_2(worker_pool_id, worker_group, worker_id, state, page_size, page_offset) {
-    return this.get_workers(worker_pool_id, worker_group, worker_id, state, page_size, page_offset);
   }
 
   expire_workers(exp) {
