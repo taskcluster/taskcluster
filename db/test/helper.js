@@ -7,7 +7,7 @@ const debug = require('debug')('db-helper');
 const {UNDEFINED_TABLE} = require('taskcluster-lib-postgres');
 
 exports.dbUrl = process.env.TEST_DB_URL;
-assert(exports.dbUrl, "TEST_DB_URL must be set to run db/ tests");
+assert(exports.dbUrl, "TEST_DB_URL must be set to run db/ tests - see dev-docs/development-process.md for more information");
 
 /**
  * Set up to test a DB version.
