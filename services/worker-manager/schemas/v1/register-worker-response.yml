@@ -53,6 +53,7 @@ properties:
     description: |
       The secret value that was configured when the worker was registered (in `registerWorker`).
       This may be used later to reregister the worker.
+      For more information, refer to https://docs.taskcluster.net/docs/reference/core/worker-manager#reregistration.
 additionalProperties: false
 required:
   - expires

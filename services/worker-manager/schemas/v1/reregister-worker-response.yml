@@ -42,6 +42,7 @@ properties:
     pattern: "^[a-zA-Z0-9_-]{44}$"
     description: |
       The next secret value needed to reregister the worker (in `reregisterWorker).
+      For more information, refer to https://docs.taskcluster.net/docs/reference/core/worker-manager#reregistration.
 additionalProperties: false
 required:
   - expires
