@@ -40,7 +40,7 @@ task:
 ## Custom Annotation Output in Checks
 
 When a task completes, the Taskcluster-GitHub service can optionally include task-specific [annotations](https://developer.github.com/v3/checks/runs/#annotations-object)
-in the check run. To do so, it looks for an artifact on the task named `public/github/customCheckRunAnnotations.json` and uses the artifact content as the check run text.
+in the check run. To do so, it looks for an artifact on the task named `public/github/customCheckRunAnnotations.json` and uses the artifact content as the check run annotation.
 The artifact name can be customized by setting `task.extra.github.customCheckRun.annotationsArtifactName` in the task definition.
 The json in that file will be passed along unchanged to Github and should be in their annotation format defined in the link above.
 
