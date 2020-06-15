@@ -435,7 +435,7 @@
           "type": "string"
         },
         "secret": {
-          "description": "The next secret value needed to reregister the worker (in `reregisterWorker).\n",
+          "description": "The next secret value needed to reregister the worker (in `reregisterWorker).\nFor more information, refer to https://docs.taskcluster.net/docs/reference/core/worker-manager#reregistration.\n",
           "pattern": "^[a-zA-Z0-9_-]{44}$",
           "title": "Secret",
           "type": "string"
@@ -459,7 +459,7 @@
       "description": "Request body to `reregisterWorker`.",
       "properties": {
         "secret": {
-          "description": "The secret value that was last configured in `registerWorker` (in the case of a newly registerd worker) or\n`reregisterWorker`.\n",
+          "description": "The secret value that was last configured in `registerWorker` (in the case of a newly registerd worker) or\n`reregisterWorker`.\nFor more information, refer to https://docs.taskcluster.net/docs/reference/core/worker-manager#reregistration.\n",
           "pattern": "^[a-zA-Z0-9_-]{44}$",
           "title": "Secret",
           "type": "string"
@@ -557,7 +557,7 @@
           "type": "string"
         },
         "secret": {
-          "description": "The secret value that was configured when the worker was registered (in `registerWorker`).\nThis may be used later to reregister the worker.\n",
+          "description": "The secret value that was configured when the worker was registered (in `registerWorker`).\nThis may be used later to reregister the worker.\nFor more information, refer to https://docs.taskcluster.net/docs/reference/core/worker-manager#reregistration.\n",
           "pattern": "^[a-zA-Z0-9_-]{44}$",
           "title": "Secret",
           "type": "string"

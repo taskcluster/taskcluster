@@ -151,6 +151,7 @@ type (
 
 		// The secret value that was configured when the worker was registered (in `registerWorker`).
 		// This may be used later to reregister the worker.
+		// For more information, refer to https://docs.taskcluster.net/docs/reference/core/worker-manager#reregistration.
 		//
 		// Syntax:     ^[a-zA-Z0-9_-]{44}$
 		Secret string `json:"secret"`
@@ -170,6 +171,7 @@ type (
 
 		// The secret value that was last configured in `registerWorker` (in the case of a newly registerd worker) or
 		// `reregisterWorker`.
+		// For more information, refer to https://docs.taskcluster.net/docs/reference/core/worker-manager#reregistration.
 		//
 		// Syntax:     ^[a-zA-Z0-9_-]{44}$
 		Secret string `json:"secret"`
@@ -213,6 +215,7 @@ type (
 		Expires tcclient.Time `json:"expires"`
 
 		// The next secret value needed to reregister the worker (in `reregisterWorker).
+		// For more information, refer to https://docs.taskcluster.net/docs/reference/core/worker-manager#reregistration.
 		//
 		// Syntax:     ^[a-zA-Z0-9_-]{44}$
 		Secret string `json:"secret"`
