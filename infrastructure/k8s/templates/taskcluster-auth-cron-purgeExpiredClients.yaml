@@ -8,6 +8,7 @@ metadata:
     app.kubernetes.io/component: taskcluster-auth-purgeexpiredclients
     app.kubernetes.io/part-of: taskcluster
 spec:
+  concurrencyPolicy: Forbid
   schedule: 0 0 * * *
   jobTemplate:
     metadata:
@@ -17,8 +18,8 @@ spec:
         metadata:
           labels: *ref_0
         spec:
-          restartPolicy: OnFailure
-          activeDeadlineSeconds: 86400
+          restartPolicy: Never
+          activeDeadlineSeconds: 86340
           containers:
             - name: taskcluster-auth-purgeexpiredclients
               image: '{{ .Values.dockerImage }}'
