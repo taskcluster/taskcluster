@@ -572,9 +572,10 @@ docker-modem@^1.0.8:
     readable-stream "~1.0.26-4"
     split-ca "^1.0.0"
 
-dockerode-options@^0.1.0:
-  version "0.1.0"
-  resolved "https://registry.yarnpkg.com/dockerode-options/-/dockerode-options-0.1.0.tgz#5694c52e00ae8702a18a43fad4e0417640f54d87"
+dockerode-options@^0.2.0:
+  version "0.2.1"
+  resolved "https://registry.yarnpkg.com/dockerode-options/-/dockerode-options-0.2.1.tgz#137cb809ece7ac5b5ad52b5f7e1cd798f3a3d0b4"
+  integrity sha1-E3y4CeznrFta1StffhzXmPOj0LQ=
 
 dockerode-process@^0.6.1:
   version "0.6.1"
