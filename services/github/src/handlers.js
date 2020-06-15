@@ -558,6 +558,25 @@ async function statusHandler(message) {
       build,
     });
 
+    let customCheckRunAnnotations = [];
+    const customCheckRunAnnotationsText = await requestArtifact.call(this, annotationsArtifactName, {
+      taskId,
+      runId,
+      debug,
+      instGithub,
+      build,
+    });
+    if (customCheckRunAnnotationsText) {
+      try {
+        const json = JSON.parse(customCheckRunAnnotationsText);
+        if (Array.isArray(json)) {
+          customCheckRunAnnotations = json;
+        }
+      } catch (e) {
+        await this.monitor.reportError(e);
+      }
+    }
+
     if (checkRun) {
       await instGithub.checks.update({
         ...taskState,
@@ -568,28 +587,10 @@ async function statusHandler(message) {
           title: `${this.context.cfg.app.statusContext} (${eventType.split('.')[0]})`,
           summary: `${taskDefinition.metadata.description}`,
           text: `[${CHECKRUN_TEXT}](${taskUI(this.context.cfg.taskcluster.rootUrl, taskGroupId, taskId)})\n${customCheckRunText || ''}`,
+          annotations: customCheckRunAnnotations,
         },
       });
     } else {
-      let customCheckRunAnnotations = [];
-      const customCheckRunAnnotationsText = await requestArtifact.call(this, annotationsArtifactName, {
-        taskId,
-        runId,
-        debug,
-        instGithub,
-        build,
-      });
-      if (customCheckRunAnnotationsText) {
-        try {
-          const json = JSON.parse(customCheckRunAnnotationsText);
-          if (Array.isArray(json)) {
-            customCheckRunAnnotations = json;
-          }
-        } catch (e) {
-          await this.monitor.reportError(e);
-        }
-      }
-
       const checkRun = await instGithub.checks.create({
         owner: organization,
         repo: repository,
