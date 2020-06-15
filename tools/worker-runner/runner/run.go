@@ -10,6 +10,7 @@ import (
 	"github.com/taskcluster/taskcluster/v30/internal/workerproto"
 	"github.com/taskcluster/taskcluster/v30/tools/worker-runner/cfg"
 	"github.com/taskcluster/taskcluster/v30/tools/worker-runner/credexp"
+	"github.com/taskcluster/taskcluster/v30/tools/worker-runner/errorreport"
 	"github.com/taskcluster/taskcluster/v30/tools/worker-runner/files"
 	"github.com/taskcluster/taskcluster/v30/tools/worker-runner/logging"
 	loggingProtocol "github.com/taskcluster/taskcluster/v30/tools/worker-runner/logging/protocol"
@@ -175,6 +176,9 @@ func Run(configFile string) (state run.State, err error) {
 	provider.SetProtocol(proto)
 	worker.SetProtocol(proto)
 	ce.SetProtocol(proto)
+
+	// configure error reporting
+	errorreport.Setup(proto, &state)
 
 	// call the WorkerStarted methods before starting the proto so that there
 	// are no race conditions around the capabilities negotiation

@@ -3,6 +3,7 @@ package tc
 import (
 	"encoding/json"
 	"fmt"
+	"sync"
 	"time"
 
 	tcclient "github.com/taskcluster/taskcluster/v30/clients/client-go"
@@ -10,7 +11,9 @@ import (
 )
 
 var (
-	wmRegistrations []*tcworkermanager.RegisterWorkerRequest
+	wmRegistrations          []*tcworkermanager.RegisterWorkerRequest
+	wmWorkerErrorReports     []*tcworkermanager.WorkerErrorReport
+	wmWorkerErrorReportsLock sync.Mutex
 )
 
 type FakeWorkerManager struct {
@@ -50,13 +53,43 @@ func (wm *FakeWorkerManager) RemoveWorker(workerPoolID, workerGroup, workerID st
 	return nil
 }
 
+func (wm *FakeWorkerManager) ReportWorkerError(workerPoolID string, payload *tcworkermanager.WorkerErrorReport) (*tcworkermanager.WorkerPoolError, error) {
+	workerPoolError := tcworkermanager.WorkerPoolError{
+		Description:  payload.Description,
+		Extra:        payload.Extra,
+		ErrorID:      "1",
+		Kind:         payload.Kind,
+		Reported:     tcclient.Time(time.Date(2009, time.November, 10, 23, 0, 0, 0, time.UTC)),
+		WorkerPoolID: workerPoolID,
+	}
+	wmWorkerErrorReportsLock.Lock()
+	defer wmWorkerErrorReportsLock.Unlock()
+	wmWorkerErrorReports = append(wmWorkerErrorReports, payload)
+	return &workerPoolError, nil
+}
+
+func FakeWorkerManagerWorkerErrorReports() ([]*tcworkermanager.WorkerErrorReport, error) {
+	wmWorkerErrorReportsLock.Lock()
+	defer wmWorkerErrorReportsLock.Unlock()
+	if len(wmWorkerErrorReports) == 0 {
+		return nil, fmt.Errorf("No reportWorkerError calls")
+	} else {
+		reports := make([]*tcworkermanager.WorkerErrorReport, len(wmWorkerErrorReports))
+		copy(reports, wmWorkerErrorReports)
+		wmWorkerErrorReports = []*tcworkermanager.WorkerErrorReport{}
+		return reports, nil
+	}
+}
+
 // Get the single registration that has occurred, or an error if there are not
 // exactly one.  This resets the list of registrations in the process.
 func FakeWorkerManagerRegistration() (*tcworkermanager.RegisterWorkerRequest, error) {
 	if len(wmRegistrations) == 0 {
 		return nil, fmt.Errorf("No registerWorker calls")
 	} else if len(wmRegistrations) == 1 {
-		return wmRegistrations[0], nil
+		req := wmRegistrations[0]
+		wmRegistrations = []*tcworkermanager.RegisterWorkerRequest{}
+		return req, nil
 	} else {
 		return nil, fmt.Errorf("Multiple registerWorker calls")
 	}
