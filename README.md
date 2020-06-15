@@ -229,6 +229,7 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
   <tr>
     <td align="center"><a href="http://rohanharikr.github.io"><img src="https://avatars0.githubusercontent.com/u/12775813?v=4" width="100px;" alt=""/><br /><sub><b>thoran</b></sub></a><br /><a href="https://github.com/taskcluster/taskcluster/commits?author=rohanharikr" title="Code">💻</a></td>
     <td align="center"><a href="http://www.manishgiri.net"><img src="https://avatars2.githubusercontent.com/u/11348778?v=4" width="100px;" alt=""/><br /><sub><b>Manish Giri</b></sub></a><br /><a href="https://github.com/taskcluster/taskcluster/commits?author=Manish-Giri" title="Code">💻</a></td>
+    <td align="center"><a href="https://tigeroakes.com"><img src="https://avatars3.githubusercontent.com/u/1782266?v=4" width="100px;" alt=""/><br /><sub><b>Tiger Oakes</b></sub></a><br /><a href="https://github.com/taskcluster/taskcluster/commits?author=NotWoods" title="Code">💻</a></td>
   </tr>
 </table>
 
