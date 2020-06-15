@@ -57,7 +57,7 @@ func TestHandleMessage(t *testing.T) {
 				}
 				time.Sleep(10 * time.Millisecond)
 			}
-			panic("worker error report not received")
+			t.Fatalf("worker error report not received")
 		}()
 		require.NoError(t, err)
 		require.Len(t, reports, 1)
