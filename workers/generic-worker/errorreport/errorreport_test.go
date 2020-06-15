@@ -2,6 +2,7 @@ package errorreport
 
 import (
 	"fmt"
+	"sync"
 	"testing"
 	"time"
 
@@ -23,6 +24,8 @@ func setupProtocols() (*workerproto.Protocol, *workerproto.Protocol) {
 
 func TestSendEmptyExtra(t *testing.T) {
 	errorReported := false
+	lock := sync.Mutex{}
+	defer lock.Unlock()
 
 	workerProto, runnerProto := setupProtocols()
 
@@ -36,14 +39,18 @@ func TestSendEmptyExtra(t *testing.T) {
 		assert.Contains(t, msg.Properties, "extra")
 		assert.Equal(t, msg.Properties["extra"], map[string]interface{}{})
 		errorReported = true
+		lock.Unlock()
 	})
 
 	runnerProto.Start(false)
 	runnerProto.WaitUntilInitialized()
 
+	// unlocked in callback
+	lock.Lock()
 	// report test error
 	Send(workerProto, fmt.Errorf("test error"), nil)
 
+	lock.Lock()
 	for i := 0; i < 200; i++ {
 		if !errorReported {
 			time.Sleep(time.Millisecond * 10)
@@ -56,6 +63,8 @@ func TestSendEmptyExtra(t *testing.T) {
 
 func TestSendExtra(t *testing.T) {
 	errorReported := false
+	lock := sync.Mutex{}
+	defer lock.Unlock()
 
 	workerProto, runnerProto := setupProtocols()
 
@@ -66,17 +75,21 @@ func TestSendExtra(t *testing.T) {
 		assert.Equal(t, "pouches", msg.Properties["extra"].(map[string]interface{})["kangaroo"].(string))
 		assert.Equal(t, "trucks", msg.Properties["extra"].(map[string]interface{})["monster"].(string))
 		errorReported = true
+		lock.Unlock()
 	})
 
 	runnerProto.Start(false)
 	runnerProto.WaitUntilInitialized()
 
+	// unlocked in callback
+	lock.Lock()
 	// report test error
 	Send(workerProto, fmt.Errorf("test error"), map[string]string{
 		"kangaroo": "pouches",
 		"monster":  "trucks",
 	})
 
+	lock.Lock()
 	for i := 0; i < 200; i++ {
 		if !errorReported {
 			time.Sleep(time.Millisecond * 10)
