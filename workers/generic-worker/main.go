@@ -63,8 +63,9 @@ var (
 	configProvider gwconfig.Provider
 	Features       []Feature
 
-	logName = "public/logs/live_backing.log"
-	logPath = filepath.Join("generic-worker", "live_backing.log")
+	logName   = "public/logs/live_backing.log"
+	logPath   = filepath.Join("generic-worker", "live_backing.log")
+	debugInfo map[string]string
 
 	version  = internal.Version
 	revision = "" // this is set during build with `-ldflags "-X main.revision=$(git rev-parse HEAD)"`
@@ -298,6 +299,21 @@ func loadConfig(configFile *gwconfig.File, provider Provider) (gwconfig.Provider
 		gwMetadata["source"] = "https://github.com/taskcluster/taskcluster/commits/" + revision
 	}
 	config.WorkerTypeMetadata["generic-worker"] = gwMetadata
+	debugInfo = map[string]string{
+		"GOARCH":          runtime.GOARCH,
+		"GOOS":            runtime.GOOS,
+		"cleanUpTaskDirs": strconv.FormatBool(config.CleanUpTaskDirs),
+		"deploymentId":    config.DeploymentID,
+		"engine":          engine,
+		"gwRevision":      revision,
+		"gwVersion":       version,
+		"instanceType":    config.InstanceType,
+		"provisionerId":   config.ProvisionerID,
+		"rootURL":         config.RootURL,
+		"workerGroup":     config.WorkerGroup,
+		"workerId":        config.WorkerID,
+		"workerType":      config.WorkerType,
+	}
 	return configProvider, nil
 }
 
@@ -371,6 +387,9 @@ func HandleCrash(r interface{}) {
 	log.Print(string(debug.Stack()))
 	log.Print(" *********** PANIC occurred! *********** ")
 	log.Printf("%v", r)
+	if err, ok := r.(error); ok && err != nil {
+		errorreport.Send(WorkerRunnerProtocol, err, debugInfo)
+	}
 	ReportCrashToSentry(r)
 }
 
@@ -1249,5 +1268,6 @@ func exitOnError(exitCode ExitCode, err error, logMessage string, args ...interf
 	log.Printf(logMessage, args...)
 	log.Printf("Root cause: %v", err)
 	log.Printf("%#v (%T)", err, err)
+	errorreport.Send(WorkerRunnerProtocol, err, debugInfo)
 	os.Exit(int(exitCode))
 }

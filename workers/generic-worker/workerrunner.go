@@ -96,6 +96,7 @@ func startProtocol() {
 		config.UpdateCredentials(&creds)
 	})
 
+	WorkerRunnerProtocol.AddCapability("error-report")
 	WorkerRunnerProtocol.AddCapability("log")
 
 	WorkerRunnerProtocol.Start(true)
