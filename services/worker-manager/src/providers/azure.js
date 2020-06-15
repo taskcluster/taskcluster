@@ -268,7 +268,7 @@ class AzureProvider extends Provider {
     return new Date();
   }
 
-  async registerWorker({worker, workerPool, workerIdentityProof, secret}) {
+  async registerWorker({worker, workerPool, workerIdentityProof}) {
     const {document} = workerIdentityProof;
     const monitor = this.workerMonitor({worker});
 
@@ -386,13 +386,11 @@ class AzureProvider extends Provider {
       worker.lastModified = new Date();
       worker.state = Worker.states.RUNNING;
       worker.providerData.terminateAfter = expires.getTime();
-      worker.secret = secret;
     });
     const workerConfig = worker.providerData.workerConfig || {};
     return {
       expires,
       workerConfig,
-      secret,
     };
   }
 

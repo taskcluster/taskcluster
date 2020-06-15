@@ -85,7 +85,7 @@ class GoogleProvider extends Provider {
     this.workerServiceAccountEmail = workerServiceAccount.email;
   }
 
-  async registerWorker({worker, workerPool, workerIdentityProof, secret}) {
+  async registerWorker({worker, workerPool, workerIdentityProof}) {
     const {token} = workerIdentityProof;
     const monitor = this.workerMonitor({worker});
 
@@ -150,7 +150,6 @@ class GoogleProvider extends Provider {
       worker.state = Worker.states.RUNNING;
       worker.providerData.terminateAfter = expires.getTime();
       worker.lastModified = new Date();
-      worker.secret = secret;
     });
 
     // assume for the moment that workers self-terminate before 96 hours
@@ -158,7 +157,6 @@ class GoogleProvider extends Provider {
     return {
       expires,
       workerConfig,
-      secret,
     };
   }
 

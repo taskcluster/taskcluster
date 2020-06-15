@@ -612,7 +612,10 @@ builder.declare({
   const secret = `${slug.nice()}${slug.nice()}`;
   try {
     const encryptedSecret = this.db.encrypt({ value: Buffer.from(secret, 'utf8') });
-    const reg = await provider.registerWorker({worker, workerPool, workerIdentityProof, secret: encryptedSecret });
+    await worker.update(this.db, worker => {
+      worker.secret = encryptedSecret;
+    });
+    const reg = await provider.registerWorker({worker, workerPool, workerIdentityProof, encryptedSecret });
     expires = reg.expires;
     workerConfig = reg.workerConfig;
   } catch (err) {

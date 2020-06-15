@@ -48,10 +48,9 @@ class TestingProvider extends Provider {
     this.monitor.notice('scan-cleanup', {});
   }
 
-  async registerWorker({worker, workerPool, workerIdentityProof, secret}) {
+  async registerWorker({worker, workerPool, workerIdentityProof}) {
     await worker.update(this.db, worker => {
       worker.state = Worker.states.RUNNING;
-      worker.secret = secret;
     });
 
     if (worker.providerData.failRegister) {
@@ -64,7 +63,6 @@ class TestingProvider extends Provider {
     return {
       expires: taskcluster.fromNow('1 hour'),
       workerConfig,
-      secret,
     };
   }
 
