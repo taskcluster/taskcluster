@@ -44,15 +44,19 @@ func HandleMessage(msg workerproto.Message, factory tc.WorkerManagerClientFactor
 
 	if !validate(msg.Properties, "description", "string") {
 		log.Printf("Error processing error-report message, missing description or not string")
+		return
 	}
 	if !validate(msg.Properties, "kind", "string") {
 		log.Printf("Error processing error-report message, missing kind or not string")
+		return
 	}
 	if !validate(msg.Properties, "title", "string") {
 		log.Printf("Error processing error-report message, missing title or not string")
+		return
 	}
 	if !validate(msg.Properties, "extra", "map[string]interface {}") {
 		log.Printf("Error processing error-report message, missing extra or not map[string]interface{}")
+		return
 	}
 
 	extra := msg.Properties["extra"].(map[string]interface{})
