@@ -31,6 +31,7 @@ import (
 	"github.com/taskcluster/taskcluster/v34/clients/client-go/tcqueue"
 	"github.com/taskcluster/taskcluster/v34/internal"
 	"github.com/taskcluster/taskcluster/v34/internal/scopes"
+	"github.com/taskcluster/taskcluster/v34/workers/generic-worker/errorreport"
 	"github.com/taskcluster/taskcluster/v34/workers/generic-worker/expose"
 	"github.com/taskcluster/taskcluster/v34/workers/generic-worker/fileutil"
 	"github.com/taskcluster/taskcluster/v34/workers/generic-worker/graceful"
@@ -387,9 +388,7 @@ func HandleCrash(r interface{}) {
 	log.Print(string(debug.Stack()))
 	log.Print(" *********** PANIC occurred! *********** ")
 	log.Printf("%v", r)
-	if err, ok := r.(error); ok && err != nil {
-		errorreport.Send(WorkerRunnerProtocol, err, debugInfo)
-	}
+	errorreport.Send(WorkerRunnerProtocol, r, debugInfo)
 	ReportCrashToSentry(r)
 }
 
@@ -1268,6 +1267,7 @@ func exitOnError(exitCode ExitCode, err error, logMessage string, args ...interf
 	log.Printf(logMessage, args...)
 	log.Printf("Root cause: %v", err)
 	log.Printf("%#v (%T)", err, err)
-	errorreport.Send(WorkerRunnerProtocol, err, debugInfo)
+	combinedErr := fmt.Errorf("%s, args: %v, root cause: %v, exit code: %d", logMessage, args, err, exitCode)
+	errorreport.Send(WorkerRunnerProtocol, combinedErr, debugInfo)
 	os.Exit(int(exitCode))
 }

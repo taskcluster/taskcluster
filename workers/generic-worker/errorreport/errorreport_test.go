@@ -4,11 +4,10 @@ import (
 	"fmt"
 	"sync"
 	"testing"
-	"time"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/taskcluster/taskcluster/v30/internal/workerproto"
-	workerProtoTesting "github.com/taskcluster/taskcluster/v30/internal/workerproto/testing"
+	"github.com/taskcluster/taskcluster/v34/internal/workerproto"
+	workerProtoTesting "github.com/taskcluster/taskcluster/v34/internal/workerproto/testing"
 )
 
 func setupProtocols() (*workerproto.Protocol, *workerproto.Protocol) {
@@ -25,7 +24,6 @@ func setupProtocols() (*workerproto.Protocol, *workerproto.Protocol) {
 func TestSendEmptyExtra(t *testing.T) {
 	errorReported := false
 	lock := sync.Mutex{}
-	defer lock.Unlock()
 
 	workerProto, runnerProto := setupProtocols()
 
@@ -33,7 +31,7 @@ func TestSendEmptyExtra(t *testing.T) {
 		assert.Contains(t, msg.Properties, "title")
 		assert.Equal(t, "generic-worker error", msg.Properties["title"])
 		assert.Contains(t, msg.Properties, "kind")
-		assert.Equal(t, "error", msg.Properties["kind"])
+		assert.Equal(t, "worker-error", msg.Properties["kind"])
 		assert.Contains(t, msg.Properties, "description")
 		assert.Equal(t, "test error", msg.Properties["description"].(string))
 		assert.Contains(t, msg.Properties, "extra")
@@ -51,20 +49,14 @@ func TestSendEmptyExtra(t *testing.T) {
 	Send(workerProto, fmt.Errorf("test error"), nil)
 
 	lock.Lock()
-	for i := 0; i < 200; i++ {
-		if !errorReported {
-			time.Sleep(time.Millisecond * 10)
-		} else {
-			return
-		}
-	}
-	t.Fatalf("No error-report was received")
+	defer lock.Unlock()
+
+	assert.True(t, errorReported, "No error-report was received")
 }
 
 func TestSendExtra(t *testing.T) {
 	errorReported := false
 	lock := sync.Mutex{}
-	defer lock.Unlock()
 
 	workerProto, runnerProto := setupProtocols()
 
@@ -90,12 +82,6 @@ func TestSendExtra(t *testing.T) {
 	})
 
 	lock.Lock()
-	for i := 0; i < 200; i++ {
-		if !errorReported {
-			time.Sleep(time.Millisecond * 10)
-		} else {
-			return
-		}
-	}
-	t.Fatalf("No error-report was received")
+	defer lock.Unlock()
+	assert.True(t, errorReported, "No error-report was received")
 }
