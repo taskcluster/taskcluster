@@ -808,6 +808,15 @@
       "contributions": [
         "code"
       ]
+    },
+    {
+      "login": "NotWoods",
+      "name": "Tiger Oakes",
+      "avatar_url": "https://avatars3.githubusercontent.com/u/1782266?v=4",
+      "profile": "https://tigeroakes.com",
+      "contributions": [
+        "code"
+      ]
     }
   ],
   "contributorsPerLine": 7,
