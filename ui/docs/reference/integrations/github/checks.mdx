@@ -7,12 +7,12 @@ At the moment, the feature is in beta. If you would like to try it out:
 * You will need `queue:route:checks` scope for your `repo:github.com/org/repo:<action>` role.
 * If you are using a decision task, make sure you add `route.checks` to the `routes` of your tasks
 
-## Custom Output in Checks
- 
- When a task completes, the Taskcluster-GitHub service can optionally include task-specific information in the check run 
- displayed in the GitHub checks tab.  To do so, it looks for an artifact on the task named 
- `public/github/customCheckRunText.md` and uses the artifact content as the check run text.  
- The artifact name can be customized by setting `task.extra.github.customCheckRun.textArtifactName` in the task definition.  
+## Custom Text Output in Checks
+
+ When a task completes, the Taskcluster-GitHub service can optionally include task-specific information in the check run
+ displayed in the GitHub checks tab.  To do so, it looks for an artifact on the task named
+ `public/github/customCheckRunText.md` and uses the artifact content as the check run text.
+ The artifact name can be customized by setting `task.extra.github.customCheckRun.textArtifactName` in the task definition.
  For example:
 ```
 payload:
@@ -37,19 +37,52 @@ task:
         textArtifactName: public/results/checkrun.md
 ```
 
- 
+## Custom Annotation Output in Checks
+
+When a task completes, the Taskcluster-GitHub service can optionally include task-specific [annotations](https://developer.github.com/v3/checks/runs/#annotations-object)
+in the check run. To do so, it looks for an artifact on the task named `public/github/customCheckRunAnnotations.json` and uses the artifact content as the check run annotation.
+The artifact name can be customized by setting `task.extra.github.customCheckRun.annotationsArtifactName` in the task definition.
+The json in that file will be passed along unchanged to Github and should be in their annotation format defined in the link above.
+
+For example:
+
+```
+payload:
+  ...
+  artifacts:
+    public/github/customCheckRunAnnotations.json:
+      type: file
+      path: checkrun.json
+```
+
+or, if for example all build results are in `public/results`:
+
+```
+payload:
+  ...
+  artifacts:
+    public/results:
+      type: directory
+      path: results
+task:
+  extra:
+    github:
+      customCheckRun:
+        annotationsArtifactName: public/results/checkrun.json
+```
+
 ### Debugging Errors in Custom Output
- 
+
 * If you see a `Cannot GET blahblah (403)` kind of error, it's likely that your artifact is private. Make sure you use
   a public artifact (see note on the naming convention above).
-* If there is no error at all and you don't see your custom text in the checkrun, it means there was a 
+* If there is no error at all and you don't see your custom text in the checkrun, it means there was a
   404 kind of error. It can mean the artifact wasn't created successfully or there is a typo in the name of your
   artifact or in your `extra.github.customCheckRun` section if you use one.
   Make sure the artifact exists and is named or referenced correctly.
-  
+
 ## Reporting Bugs
 
-If you are unhappy with something in Checks or want to make a feature request, please 
+If you are unhappy with something in Checks or want to make a feature request, please
 [file a bug here](https://bugzilla.mozilla.org/enter_bug.cgi?product=Taskcluster&component=Services)
 If you want the bug to be addressed sooner rather than later, do make sure to start the `Summary` field with `[tc-github]`.
 Thank you!

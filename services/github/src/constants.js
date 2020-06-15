@@ -16,4 +16,5 @@ module.exports = {
   },
   CHECKRUN_TEXT: 'View task in Taskcluster',
   CUSTOM_CHECKRUN_TEXT_ARTIFACT_NAME: 'public/github/customCheckRunText.md',
+  CUSTOM_CHECKRUN_ANNOTATIONS_ARTIFACT_NAME: 'public/github/customCheckRunAnnotations.json',
 };

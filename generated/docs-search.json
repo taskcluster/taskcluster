@@ -2143,9 +2143,16 @@
   },
   {
     "element": "h2",
-    "id": "custom-output-in-checks",
+    "id": "custom-annotation-output-in-checks",
     "path": "/reference/integrations/github/checks",
-    "subtitle": "Custom Output in Checks",
+    "subtitle": "Custom Annotation Output in Checks",
+    "title": "Taskcluster-Github Checks"
+  },
+  {
+    "element": "h2",
+    "id": "custom-text-output-in-checks",
+    "path": "/reference/integrations/github/checks",
+    "subtitle": "Custom Text Output in Checks",
     "title": "Taskcluster-Github Checks"
   },
   {
