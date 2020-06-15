@@ -98,18 +98,19 @@ func TestCredsExpirationNewCredentials(t *testing.T) {
 		CacheOverRestarts: cachePath,
 	}
 	state := run.State{
-		// message is sent 30 seconds before expiration, so set expiration
-		// for 30s from now
-		CredentialsExpire:  tcclient.Time(time.Now().Add(30 * time.Second)),
+		// set the credentials to expire such that we reregister
+		// immediately
+		CredentialsExpire:  tcclient.Time(time.Now().Add(1 * time.Second)),
 		RegistrationSecret: "secret-from-reg",
 	}
 
 	// expires is rounded to a whole second to avoid issues with microsecond
 	// rounding when round-tripping through JSON
-	expires := tcclient.Time(time.Now().Round(time.Second))
+	expires := tcclient.Time(time.Now().Add(90 * time.Minute).Round(time.Second))
 	tc.SetFakeWorkerManagerWorkerSecret("secret-from-reg")
 	tc.SetFakeWorkerManagerWorkerExpires(expires)
 
+	fmt.Printf("setting fake expires to %s\n", expires)
 	reg := new(&runnercfg, &state, tc.FakeWorkerManagerClientFactory)
 
 	wkr := ptesting.NewFakeWorkerWithCapabilities("graceful-termination", "new-credentials")
@@ -164,4 +165,29 @@ func TestCredsExpirationNewCredentials(t *testing.T) {
 
 	err = reg.WorkerFinished()
 	assert.NoError(t, err)
+}
+
+func TestUntilRenew(t *testing.T) {
+	t.Run("90m", func(t *testing.T) {
+		// for a long duration, renew longSetback in advance
+		require.Equal(t, 60*time.Minute, renewBeforeExpire(90*time.Minute))
+	})
+	t.Run("31m", func(t *testing.T) {
+		// for a shorter duration, wait at least a bit to renew
+		require.Equal(t, 5*time.Minute, renewBeforeExpire(31*time.Minute))
+	})
+	t.Run("20m", func(t *testing.T) {
+		// similar, but less than longSetback
+		require.Equal(t, 5*time.Minute, renewBeforeExpire(20*time.Minute))
+	})
+	t.Run("4m", func(t *testing.T) {
+		// but don't wait too long
+		require.Equal(t, 210*time.Second, renewBeforeExpire(240*time.Second))
+	})
+	t.Run("30s", func(t *testing.T) {
+		require.Equal(t, time.Duration(0), renewBeforeExpire(30*time.Second))
+	})
+	t.Run("Zero", func(t *testing.T) {
+		require.Equal(t, time.Duration(0), renewBeforeExpire(0))
+	})
 }

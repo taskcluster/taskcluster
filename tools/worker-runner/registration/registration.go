@@ -88,6 +88,11 @@ func (reg *RegistrationManager) SetProtocol(proto *workerproto.Protocol) {
 }
 
 func (reg *RegistrationManager) WorkerStarted() error {
+	log.Printf("Worker credentials expire in %s", reg.untilExpires())
+	return reg.setTimer()
+}
+
+func (reg *RegistrationManager) setTimer() error {
 	reg.state.Lock()
 	defer reg.state.Unlock()
 
@@ -97,8 +102,9 @@ func (reg *RegistrationManager) WorkerStarted() error {
 		return nil
 	}
 
-	untilExpire := time.Until(expire)
-	reg.credsExpireTimer = time.AfterFunc(untilExpire-30*time.Second, func() {
+	untilExpire := time.Until(time.Time(reg.state.CredentialsExpire))
+	untilRenew := renewBeforeExpire(untilExpire)
+	reg.credsExpireTimer = time.AfterFunc(untilRenew, func() {
 		// Prefer to update the worker's credentials, but..
 		if reg.proto.Capable("new-credentials") {
 			reg.reregisterWorker()
@@ -116,7 +122,7 @@ func (reg *RegistrationManager) WorkerStarted() error {
 // Request new credentials and send them to the worker, falling back to requesting
 // a worker termination if anything fails.  Called with reg.state locked
 func (reg *RegistrationManager) reregisterWorker() {
-	log.Println("Taskcluster Credentials are expiring in 30s; re-registering")
+	log.Printf("Taskcluster Credentials are expiring in %s; re-registering", reg.untilExpires())
 
 	wm, err := reg.factory(reg.state.RootURL, &reg.state.Credentials)
 	if err != nil {
@@ -126,11 +132,10 @@ func (reg *RegistrationManager) reregisterWorker() {
 	}
 
 	res, err := wm.ReregisterWorker(&tcworkermanager.ReregisterWorkerRequest{
-		//WorkerPoolID:        reg.state.WorkerPoolID,
-		//ProviderID:          reg.state.ProviderID,
-		//WorkerGroup:         reg.state.WorkerGroup,
-		//WorkerID:            reg.state.WorkerID,
-		Secret: reg.state.RegistrationSecret,
+		WorkerPoolID: reg.state.WorkerPoolID,
+		WorkerGroup:  reg.state.WorkerGroup,
+		WorkerID:     reg.state.WorkerID,
+		Secret:       reg.state.RegistrationSecret,
 	})
 	if err != nil {
 		log.Printf("Error calling reregisterWorker: %v", err)
@@ -144,6 +149,11 @@ func (reg *RegistrationManager) reregisterWorker() {
 
 	reg.state.CredentialsExpire = res.Expires
 	reg.state.RegistrationSecret = res.Secret
+
+	err = reg.setTimer()
+	if err != nil {
+		return
+	}
 
 	log.Println("Sending new credentials to worker")
 
@@ -168,7 +178,7 @@ func (reg *RegistrationManager) reregisterWorker() {
 
 // Request that the worker shut down gracefully.  Called with reg.state locked.
 func (reg *RegistrationManager) terminateWorker() {
-	log.Println("Taskcluster Credentials are expiring in 30s; stopping worker")
+	log.Printf("Taskcluster Credentials are expiring in %s; stopping worker", reg.untilExpires())
 	reg.proto.Send(workerproto.Message{
 		Type: "graceful-termination",
 		Properties: map[string]interface{}{
@@ -186,6 +196,39 @@ func (reg *RegistrationManager) WorkerFinished() error {
 		reg.credsExpireTimer = nil
 	}
 	return nil
+}
+
+// Calculate the time until the credentials expire, rounding to the nearest second
+func (reg *RegistrationManager) untilExpires() time.Duration {
+	untilExpires := time.Until(time.Time(reg.state.CredentialsExpire))
+	return untilExpires.Round(time.Second)
+}
+
+// Calculate the time after which we should renew credentials, given the time until
+// the credentials expire.
+func renewBeforeExpire(expires time.Duration) time.Duration {
+	// The expires duration may be fresh off a (re)registerWorker call, but may also
+	// be an old time from a cached state, in which case it may in fact be very short.
+	// The idea here is to renew pretty early (longSetback) for long durations, but
+	// not re-register too quickly where reregistationTimeout is very short
+	// (waitAtLeast), but still renew early enough to complete the process before
+	// the credentials actually expire.
+	longSetback := 30 * time.Minute
+	waitAtLeast := 5 * time.Minute
+	minSetback := 30 * time.Second
+
+	renew := expires - longSetback
+	if renew < waitAtLeast {
+		renew = waitAtLeast
+		if renew > expires-minSetback {
+			renew = expires - minSetback
+			if renew < 0 {
+				renew = 0
+			}
+		}
+	}
+
+	return renew
 }
 
 // Make a new RegistrationManager object
