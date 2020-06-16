@@ -14,12 +14,12 @@ spec:
     metadata:
       labels: *ref_0
     spec:
+      activeDeadlineSeconds: 3540
       template:
         metadata:
           labels: *ref_0
         spec:
-          restartPolicy: Never
-          activeDeadlineSeconds: 3540
+          restartPolicy: OnFailure
           containers:
             - name: taskcluster-queue-expirequeuemessages
               image: '{{ .Values.dockerImage }}'
