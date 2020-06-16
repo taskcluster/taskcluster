@@ -524,6 +524,9 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
     await createWorker(input);
 
     let data = await helper.workerManager.listWorkersForWorkerPool(workerPoolId);
+    data.workers.forEach(worker => {
+      assert(!('secret' in worker));
+    });
     input.created = input.created.toJSON();
     input.expires = input.expires.toJSON();
     input.lastModified = input.lastModified.toJSON();
@@ -581,6 +584,9 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
     });
 
     let data = await helper.workerManager.listWorkersForWorkerPool(workerPoolId);
+    data.workers.forEach(worker => {
+      assert(!('secret' in worker));
+    });
 
     assert.deepStrictEqual(data.workers, input);
   });
@@ -588,6 +594,9 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
   test('get workers for a given worker pool - no workers', async function () {
     await createWorkerPool();
     let data = await helper.workerManager.listWorkersForWorkerPool(workerPoolId);
+    data.workers.forEach(worker => {
+      assert(!('secret' in worker));
+    });
 
     assert.deepStrictEqual(data.workers, []);
   });
@@ -621,6 +630,11 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
     });
 
     let data = await helper.workerManager.listWorkersForWorkerGroup(workerPoolId, 'wg-a');
+
+    data.workers.forEach(worker => {
+      assert(!('secret' in worker));
+    });
+
     delete input[0].secret;
     assert.deepStrictEqual(data.workers, [input[0]]);
   });
@@ -650,6 +664,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
       workerId: input.workerId,
     });
 
+    assert(!('secret' in data));
     assert.deepStrictEqual(data, worker.serializable());
   });
 
@@ -705,6 +720,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
         expires,
       });
 
+      assert(!('secret' in worker));
       assert.equal(worker.workerPoolId, workerPoolId);
       assert.equal(worker.workerGroup, workerGroup);
       assert.equal(worker.workerId, workerId);

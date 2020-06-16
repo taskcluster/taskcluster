@@ -16,4 +16,7 @@ properties:
       For more information, refer to https://docs.taskcluster.net/docs/reference/core/worker-manager#reregistration.
 additionalProperties: false
 required:
+  - workerPoolId
+  - workerGroup
+  - workerId
   - secret

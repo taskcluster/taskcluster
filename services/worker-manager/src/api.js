@@ -612,10 +612,10 @@ builder.declare({
   const secret = `${slug.nice()}${slug.nice()}`;
   try {
     const encryptedSecret = this.db.encrypt({ value: Buffer.from(secret, 'utf8') });
+    const reg = await provider.registerWorker({worker, workerPool, workerIdentityProof, encryptedSecret });
     await worker.update(this.db, worker => {
       worker.secret = encryptedSecret;
     });
-    const reg = await provider.registerWorker({worker, workerPool, workerIdentityProof, encryptedSecret });
     expires = reg.expires;
     workerConfig = reg.workerConfig;
   } catch (err) {
@@ -691,6 +691,11 @@ builder.declare({
   }});
   const expires = new Date(Date.now() + reregistrationTimeout);
 
+  // We use these fields from inside the worker rather than
+  // what was passed in because that is the thing we have verified
+  // to be passing in the token. This helps avoid slipups later
+  // like if we had a scope based on workerGroup alone which we do
+  // not verify here
   const credentials = createCredentials(worker, expires, this.cfg);
   const newSecret = `${slug.nice()}${slug.nice()}`;
 

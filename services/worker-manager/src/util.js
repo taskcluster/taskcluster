@@ -25,6 +25,11 @@ const joinWorkerPoolId = (provisionerId, workerType) => {
 exports.joinWorkerPoolId = joinWorkerPoolId;
 exports.MAX_MODIFY_ATTEMPTS = 5;
 
+// We use these fields from inside the worker rather than
+// what was passed in the endpoint arguments because that is the thing we have verified
+// to be passing in the token. This helps avoid slipups later
+// like if we had a scope based on workerGroup alone which we do
+// not verify here
 const createCredentials = (worker, expires, cfg) => {
   return taskcluster.createTemporaryCredentials({
     clientId: `worker/${worker.providerId}/${worker.workerPoolId}/${worker.workerGroup}/${worker.workerId}`,

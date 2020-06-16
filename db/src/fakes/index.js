@@ -1,7 +1,5 @@
-const assert = require('assert').strict;
 const fs = require('fs');
-const {WRITE} = require('taskcluster-lib-postgres');
-const crypto = require('crypto');
+const {Database, WRITE, READ} = require('taskcluster-lib-postgres');
 
 const COMPONENT_CLASSES = [];
 
@@ -52,38 +50,21 @@ class FakeDatabase {
   }
 
   encrypt({value}) {
-    assert(value instanceof Buffer, 'Encrypted values must be Buffers');
-    const {id, key} = this.keyring.currentCryptoKey('aes-256');
-
-    const iv = crypto.randomBytes(16);
-    const cipher = crypto.createCipheriv('aes-256-cbc', key, iv);
-    const c1 = cipher.update(value);
-    const c2 = cipher.final();
-
-    return {
-      kid: id,
-      v: 0,
-      __bufchunks_val: 1,
-      __buf0_val: Buffer.concat([iv, c1, c2]).toString('base64'),
-    };
+    const db = new Database({
+      urlsByMode: {[READ]: 'n/a', [WRITE]: 'n/a'},
+      statementTimeout: 0,
+      keyring: this.keyring,
+    });
+    return db.encrypt({ value });
   }
 
   decrypt({value}) {
-    const key = this.keyring.getCryptoKey(value.kid, 'aes-256');
-
-    const n = value['__bufchunks_val'];
-    const chunks = [];
-    for (let i = 0; i < n; i++) {
-      chunks[i] = Buffer.from(value['__buf' + i + '_val'], 'base64');
-    }
-    const buffer = Buffer.concat(chunks);
-
-    const iv = buffer.slice(0, 16);
-    const decipher = crypto.createDecipheriv('aes-256-cbc', key, iv);
-    const b1 = decipher.update(buffer.slice(16));
-    const b2 = decipher.final();
-
-    return Buffer.concat([b1, b2]);
+    const db = new Database({
+      urlsByMode: {[READ]: 'n/a', [WRITE]: 'n/a'},
+      statementTimeout: 0,
+      keyring: this.keyring,
+    });
+    return db.decrypt({ value });
   }
 
   async close() {
