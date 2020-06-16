@@ -6,14 +6,24 @@ import (
 	"sync"
 	"time"
 
+	"github.com/taskcluster/slugid-go/slugid"
 	tcclient "github.com/taskcluster/taskcluster/v30/clients/client-go"
 	"github.com/taskcluster/taskcluster/v30/clients/client-go/tcworkermanager"
 )
 
 var (
-	wmRegistrations          []*tcworkermanager.RegisterWorkerRequest
 	wmWorkerErrorReports     []*tcworkermanager.WorkerErrorReport
 	wmWorkerErrorReportsLock sync.Mutex
+
+	wmRegistrations   []*tcworkermanager.RegisterWorkerRequest
+	wmReregistrations []*tcworkermanager.ReregisterWorkerRequest
+
+	// the time at which credentials from regitsterWorker and reregsiterWorker will expire
+	workerExpires tcclient.Time
+
+	// the secret reregisterWorker will look for.  This is set by registerWorker but can
+	// also be manipulated by test code
+	workerSecret string
 )
 
 type FakeWorkerManager struct {
@@ -38,14 +48,41 @@ func (wm *FakeWorkerManager) RegisterWorker(payload *tcworkermanager.RegisterWor
 
 	wmRegistrations = append(wmRegistrations, payload)
 
+	workerSecret = slugid.V4()
+
 	return &tcworkermanager.RegisterWorkerResponse{
 		Credentials: tcworkermanager.Credentials{
 			ClientID:    "testing",
 			AccessToken: "at",
 			Certificate: "cert",
 		},
-		Expires:      tcclient.Time(time.Now()),
+		Expires:      workerExpires,
+		Secret:       workerSecret,
 		WorkerConfig: wc,
+	}, nil
+}
+
+func (wm *FakeWorkerManager) ReregisterWorker(payload *tcworkermanager.ReregisterWorkerRequest) (*tcworkermanager.ReregisterWorkerResponse, error) {
+	if !wm.authenticated {
+		return nil, fmt.Errorf("must use an authenticated client to reregister")
+	}
+
+	if payload.Secret != workerSecret {
+		return nil, fmt.Errorf("secret does not match fake workerSecret")
+	}
+
+	wmReregistrations = append(wmReregistrations, payload)
+
+	workerSecret = slugid.V4()
+
+	return &tcworkermanager.ReregisterWorkerResponse{
+		Credentials: tcworkermanager.Credentials1{
+			ClientID:    "testing-rereg",
+			AccessToken: "at-rereg",
+			Certificate: "cert-rereg",
+		},
+		Expires: workerExpires,
+		Secret:  workerSecret,
 	}, nil
 }
 
@@ -93,6 +130,30 @@ func FakeWorkerManagerRegistration() (*tcworkermanager.RegisterWorkerRequest, er
 	} else {
 		return nil, fmt.Errorf("Multiple registerWorker calls")
 	}
+}
+
+// Get the single reregistration that has occurred, or an error if there are not
+// exactly one.  This resets the list of registrations in the process.
+func FakeWorkerManagerReregistration() (*tcworkermanager.ReregisterWorkerRequest, error) {
+	if len(wmReregistrations) == 0 {
+		return nil, fmt.Errorf("No reregisterWorker calls")
+	} else if len(wmReregistrations) == 1 {
+		return wmReregistrations[0], nil
+	} else {
+		return nil, fmt.Errorf("Multiple reregisterWorker calls")
+	}
+}
+
+func SetFakeWorkerManagerWorkerExpires(expires tcclient.Time) {
+	workerExpires = expires
+}
+
+func SetFakeWorkerManagerWorkerSecret(secret string) {
+	workerSecret = secret
+}
+
+func GetFakeWorkerManagerWorkerSecret() string {
+	return workerSecret
 }
 
 // A function matching WorkerManagerClientFactory that can be used in testing
