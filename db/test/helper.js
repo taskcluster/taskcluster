@@ -59,7 +59,7 @@ exports.withDbForVersion = function() {
         serviceName,
         useDbDirectory: true,
         monitor: false,
-        cryptoKeys: [
+        dbCryptoKeys: [
           {
             id: 'db-tests',
             algo: 'aes-256',
@@ -127,7 +127,7 @@ exports.withDbForProcs = function({ serviceName }) {
       serviceName,
       useDbDirectory: true,
       monitor: false,
-      cryptoKeys: [
+      dbCryptoKeys: [
         {
           id: 'db-tests',
           algo: 'aes-256',
@@ -139,7 +139,7 @@ exports.withDbForProcs = function({ serviceName }) {
 
     exports.fakeDb = await tcdb.fakeSetup({
       serviceName,
-      cryptoKeys: [
+      dbCryptoKeys: [
         {
           id: 'db-tests',
           algo: 'aes-256',

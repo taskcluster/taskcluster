@@ -52,7 +52,7 @@ class Database {
   /**
    * Get a new Database instance
    */
-  static async setup({schema, readDbUrl, writeDbUrl, cryptoKeys,
+  static async setup({schema, readDbUrl, writeDbUrl, dbCryptoKeys,
     azureCryptoKey, serviceName, monitor, statementTimeout, poolSize}) {
     assert(readDbUrl, 'readDbUrl is required');
     assert(writeDbUrl, 'writeDbUrl is required');
@@ -60,7 +60,7 @@ class Database {
     assert(serviceName, 'serviceName is required');
     assert(monitor !== undefined, 'monitor is required (but use `false` to disable)');
 
-    const keyring = new Keyring({azureCryptoKey, cryptoKeys});
+    const keyring = new Keyring({azureCryptoKey, dbCryptoKeys});
 
     const db = new Database({
       urlsByMode: {[READ]: readDbUrl, [WRITE]: writeDbUrl},
