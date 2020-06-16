@@ -59,14 +59,6 @@ exports.withDbForVersion = function() {
         serviceName,
         useDbDirectory: true,
         monitor: false,
-        cryptoKeys: [
-          {
-            id: 'db-tests',
-            algo: 'aes-256',
-            // only used for tests
-            key: 'aSdtIGJzdGFjayEgaGVsbG8gZnV0dXJlIHBlcnNvbgo',
-          },
-        ],
       });
       dbs[serviceName] = db;
       return db;
@@ -127,26 +119,10 @@ exports.withDbForProcs = function({ serviceName }) {
       serviceName,
       useDbDirectory: true,
       monitor: false,
-      cryptoKeys: [
-        {
-          id: 'db-tests',
-          algo: 'aes-256',
-          // only used for tests
-          key: 'aSdtIGJzdGFjayEgaGVsbG8gZnV0dXJlIHBlcnNvbgo',
-        },
-      ],
     });
 
     exports.fakeDb = await tcdb.fakeSetup({
       serviceName,
-      cryptoKeys: [
-        {
-          id: 'db-tests',
-          algo: 'aes-256',
-          // only used for tests
-          key: 'aSdtIGJzdGFjayEgaGVsbG8gZnV0dXJlIHBlcnNvbgo',
-        },
-      ],
     });
 
     exports.withDbClient = fn => db._withClient(WRITE, fn);

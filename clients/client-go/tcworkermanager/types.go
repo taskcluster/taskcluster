@@ -48,24 +48,6 @@ type (
 		ClientID string `json:"clientId"`
 	}
 
-	// The credentials the worker
-	// will need to perform its work. Specifically, credentials with scopes
-	// * `assume:worker-pool:<workerPoolId>`
-	// * `assume:worker-id:<workerGroup>/<workerId>`
-	// * `queue:worker-id:<workerGroup>/<workerId>`
-	// * `secrets:get:worker-pool:<workerPoolId>`
-	// * `queue:claim-work:<workerPoolId>`
-	// * `worker-manager:remove-worker:<workerPoolId>/<workerGroup>/<workerId>`
-	// * `worker-manager:reregister-worker:<workerPoolId>/<workerGroup>/<workerId>`
-	Credentials1 struct {
-		AccessToken string `json:"accessToken"`
-
-		// Note that a certificate may not be provided, if the credentials are not temporary.
-		Certificate string `json:"certificate,omitempty"`
-
-		ClientID string `json:"clientId"`
-	}
-
 	// Proof that this call is coming from the worker identified by the other fields.
 	// The form of this proof varies depending on the provider type.
 	GoogleProviderType struct {
@@ -149,13 +131,6 @@ type (
 		// provisioned workers) before this time.
 		Expires tcclient.Time `json:"expires"`
 
-		// The secret value that was configured when the worker was registered (in `registerWorker`).
-		// This may be used later to reregister the worker.
-		// For more information, refer to https://docs.taskcluster.net/docs/reference/core/worker-manager#reregistration.
-		//
-		// Syntax:     ^[a-zA-Z0-9_-]{44}$
-		Secret string `json:"secret"`
-
 		// This value is supplied unchanged to the worker from the worker-pool configuration.
 		// The expectation is that the worker will merge this information with configuration from other sources,
 		// and this is precisely what [worker-runner](https://github.com/taskcluster/taskcluster/tree/master/tools/worker-runner) does.
@@ -164,61 +139,6 @@ type (
 		//
 		// Additional properties allowed
 		WorkerConfig json.RawMessage `json:"workerConfig"`
-	}
-
-	// Request body to `reregisterWorker`.
-	ReregisterWorkerRequest struct {
-
-		// The secret value that was last configured in `registerWorker` (in the case of a newly registerd worker) or
-		// `reregisterWorker`.
-		// For more information, refer to https://docs.taskcluster.net/docs/reference/core/worker-manager#reregistration.
-		//
-		// Syntax:     ^[a-zA-Z0-9_-]{44}$
-		Secret string `json:"secret"`
-
-		// Worker group to which this worker belongs
-		//
-		// Syntax:     ^([a-zA-Z0-9-_]*)$
-		// Min length: 1
-		// Max length: 38
-		WorkerGroup string `json:"workerGroup,omitempty"`
-
-		// Worker ID
-		//
-		// Syntax:     ^([a-zA-Z0-9-_]*)$
-		// Min length: 1
-		// Max length: 38
-		WorkerID string `json:"workerId,omitempty"`
-
-		// The ID of this worker pool (of the form `providerId/workerType` for compatibility)
-		//
-		// Syntax:     ^[a-zA-Z0-9-_]{1,38}/[a-z]([-a-z0-9]{0,36}[a-z0-9])?$
-		WorkerPoolID string `json:"workerPoolId,omitempty"`
-	}
-
-	// Response body to `reregisterWorker`.
-	ReregisterWorkerResponse struct {
-
-		// The credentials the worker
-		// will need to perform its work. Specifically, credentials with scopes
-		// * `assume:worker-pool:<workerPoolId>`
-		// * `assume:worker-id:<workerGroup>/<workerId>`
-		// * `queue:worker-id:<workerGroup>/<workerId>`
-		// * `secrets:get:worker-pool:<workerPoolId>`
-		// * `queue:claim-work:<workerPoolId>`
-		// * `worker-manager:remove-worker:<workerPoolId>/<workerGroup>/<workerId>`
-		// * `worker-manager:reregister-worker:<workerPoolId>/<workerGroup>/<workerId>`
-		Credentials Credentials1 `json:"credentials"`
-
-		// Time at which the included credentials will expire. Workers must
-		// re-register before this time.
-		Expires tcclient.Time `json:"expires"`
-
-		// The next secret value needed to reregister the worker (in `reregisterWorker).
-		// For more information, refer to https://docs.taskcluster.net/docs/reference/core/worker-manager#reregistration.
-		//
-		// Syntax:     ^[a-zA-Z0-9_-]{44}$
-		Secret string `json:"secret"`
 	}
 
 	// Provider-specific information

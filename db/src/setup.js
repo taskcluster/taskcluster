@@ -1,5 +1,5 @@
 const {schema} = require('./schema.js');
-const {Database, Keyring} = require('taskcluster-lib-postgres');
+const {Database} = require('taskcluster-lib-postgres');
 const {FakeDatabase} = require('./fakes');
 
 exports.setup = async ({writeDbUrl, readDbUrl, serviceName, useDbDirectory,
@@ -17,11 +17,9 @@ exports.setup = async ({writeDbUrl, readDbUrl, serviceName, useDbDirectory,
   });
 };
 
-exports.fakeSetup = async ({serviceName, azureCryptoKey, cryptoKeys}) => {
-  const keyring = new Keyring({azureCryptoKey, cryptoKeys});
+exports.fakeSetup = async ({serviceName}) => {
   return new FakeDatabase({
     schema: schema({useDbDirectory: true}),
     serviceName,
-    keyring,
   });
 };

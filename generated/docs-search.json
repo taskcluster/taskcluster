@@ -2038,13 +2038,6 @@
   },
   {
     "element": "h2",
-    "id": "reregistration",
-    "path": "/reference/core/worker-manager/worker-interaction",
-    "subtitle": "Reregistration",
-    "title": "Worker-Manager - Worker Interaction"
-  },
-  {
-    "element": "h2",
     "id": "worker-configuration",
     "path": "/reference/core/worker-manager/worker-interaction",
     "subtitle": "Worker Configuration",

@@ -208,7 +208,6 @@ class Worker {
       lastModified: row.last_modified,
       lastChecked: row.last_checked,
       etag: row.etag,
-      secret: row.secret,
     });
   }
 
@@ -229,7 +228,6 @@ class Worker {
       created: now,
       lastModified: now,
       lastChecked: now,
-      secret: null,
       expires: taskcluster.fromNow('1 week'),
       ...input,
     });
@@ -237,7 +235,7 @@ class Worker {
 
   // Get a worker from the DB, or undefined if it does not exist.
   static async get(db, { workerPoolId, workerGroup, workerId }) {
-    return Worker.fromDbRows(await db.fns.get_worker_2(workerPoolId, workerGroup, workerId));
+    return Worker.fromDbRows(await db.fns.get_worker(workerPoolId, workerGroup, workerId));
   }
 
   // Expire workers,
@@ -278,7 +276,6 @@ class Worker {
         lastModified: this.lastModified,
         lastChecked: this.lastChecked,
         etag,
-        secret: this.secret,
       });
     } catch (err) {
       if (err.code !== UNIQUE_VIOLATION) {
@@ -339,7 +336,7 @@ class Worker {
 
       if (!_.isEqual(newProperties, this._properties)) {
         try {
-          [result] = await db.fns.update_worker_2(
+          [result] = await db.fns.update_worker(
             newProperties.workerPoolId,
             newProperties.workerGroup,
             newProperties.workerId,
@@ -352,7 +349,6 @@ class Worker {
             newProperties.lastModified,
             newProperties.lastChecked,
             newProperties.etag,
-            newProperties.secret,
           );
 
           const worker = Worker.fromDb(result);

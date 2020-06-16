@@ -27,9 +27,6 @@ type genericworker struct {
 }
 
 func (d *genericworker) ConfigureRun(state *run.State) error {
-	state.Lock()
-	defer state.Unlock()
-
 	var err error
 
 	// copy some values from the provider metadata, if they are set; if not,
@@ -97,9 +94,6 @@ func (d *genericworker) UseCachedRun(state *run.State) error {
 }
 
 func (d *genericworker) StartWorker(state *run.State) (workerproto.Transport, error) {
-	state.Lock()
-	defer state.Unlock()
-
 	// write out the config file
 	content, err := json.MarshalIndent(state.WorkerConfig, "", "  ")
 	if err != nil {

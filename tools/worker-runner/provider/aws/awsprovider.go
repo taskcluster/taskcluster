@@ -22,14 +22,10 @@ type AWSProvider struct {
 	workerManagerClientFactory tc.WorkerManagerClientFactory
 	metadataService            MetadataService
 	proto                      *workerproto.Protocol
-	workerIdentityProof        map[string]interface{}
 	terminationTicker          *time.Ticker
 }
 
 func (p *AWSProvider) ConfigureRun(state *run.State) error {
-	state.Lock()
-	defer state.Unlock()
-
 	userData, err := p.metadataService.queryUserData()
 	if err != nil {
 		return fmt.Errorf("Could not query user data: %v", err)
@@ -46,15 +42,32 @@ func (p *AWSProvider) ConfigureRun(state *run.State) error {
 	}
 
 	state.RootURL = userData.RootURL
-	state.ProviderID = userData.ProviderId
-	state.WorkerPoolID = userData.WorkerPoolId
-	state.WorkerGroup = userData.WorkerGroup
-	state.WorkerID = iid_json.InstanceId
-
 	state.WorkerLocation = map[string]string{
 		"cloud":            "aws",
 		"availabilityZone": iid_json.AvailabilityZone,
 		"region":           iid_json.Region,
+	}
+
+	wm, err := p.workerManagerClientFactory(state.RootURL, nil)
+	if err != nil {
+		return fmt.Errorf("Could not create worker manager client: %v", err)
+	}
+
+	workerIdentityProofMap := map[string]interface{}{
+		"document":  interface{}(iid_string),
+		"signature": interface{}(instanceIdentityDocumentSignature),
+	}
+
+	workerConfig, err := provider.RegisterWorker(
+		state,
+		wm,
+		userData.WorkerPoolId,
+		userData.ProviderId,
+		userData.WorkerGroup,
+		iid_json.InstanceId,
+		workerIdentityProofMap)
+	if err != nil {
+		return err
 	}
 
 	publicHostname, err := p.metadataService.queryMetadata("/meta-data/public-hostname")
@@ -80,16 +93,15 @@ func (p *AWSProvider) ConfigureRun(state *run.State) error {
 
 	state.ProviderMetadata = providerMetadata
 
-	p.workerIdentityProof = map[string]interface{}{
-		"document":  interface{}(iid_string),
-		"signature": interface{}(instanceIdentityDocumentSignature),
+	pwc, err := cfg.ParseProviderWorkerConfig(p.runnercfg, workerConfig)
+	if err != nil {
+		return err
 	}
 
-	return nil
-}
+	state.WorkerConfig = state.WorkerConfig.Merge(pwc.Config)
+	state.Files = append(state.Files, pwc.Files...)
 
-func (p *AWSProvider) GetWorkerIdentityProof() (map[string]interface{}, error) {
-	return p.workerIdentityProof, nil
+	return nil
 }
 
 func (p *AWSProvider) UseCachedRun(run *run.State) error {

@@ -1,10 +1,10 @@
+const _ = require('lodash');
+const taskcluster = require('taskcluster-client');
 const {APIBuilder, paginateResults} = require('taskcluster-lib-api');
-const slug = require('slugid');
 const assert = require('assert');
-const {ApiError, Provider} = require('./providers/provider');
+const {ApiError} = require('./providers/provider');
 const {UNIQUE_VIOLATION} = require('taskcluster-lib-postgres');
 const {WorkerPool, Worker} = require('./data');
-const { createCredentials } = require('./util');
 
 let builder = new APIBuilder({
   title: 'Taskcluster Worker Manager',
@@ -609,13 +609,8 @@ builder.declare({
   }
 
   let expires, workerConfig;
-  const secret = `${slug.nice()}${slug.nice()}`;
   try {
-    const encryptedSecret = this.db.encrypt({ value: Buffer.from(secret, 'utf8') });
-    await worker.update(this.db, worker => {
-      worker.secret = encryptedSecret;
-    });
-    const reg = await provider.registerWorker({worker, workerPool, workerIdentityProof, encryptedSecret });
+    const reg = await provider.registerWorker({worker, workerPool, workerIdentityProof});
     expires = reg.expires;
     workerConfig = reg.workerConfig;
   } catch (err) {
@@ -632,71 +627,22 @@ builder.declare({
   // to be passing in the token. This helps avoid slipups later
   // like if we had a scope based on workerGroup alone which we do
   // not verify here
-  const credentials = createCredentials(worker, expires, this.cfg);
-
-  return res.reply({
-    expires: expires.toJSON(),
-    credentials,
-    workerConfig,
-    secret,
-  });
-});
-
-builder.declare({
-  method: 'post',
-  route: '/worker/reregister',
-  name: 'reregisterWorker',
-  title: 'Reregister a Worker',
-  category: 'Workers',
-  stability: APIBuilder.stability.experimental,
-  input: 'reregister-worker-request.yml',
-  output: 'reregister-worker-response.yml',
-  // note that this pattern relies on workerGroup and workerId not containing `/`
-  scopes: 'worker-manager:reregister-worker:<workerPoolId>/<workerGroup>/<workerId>',
-  description: [
-    'Reregister a running worker.',
-    '',
-    'This will generate and return new Taskcluster credentials for the worker',
-    'on that instance to use. The credentials will not live longer the',
-    '`registrationTimeout` for that worker. The endpoint will update `terminateAfter`',
-    'for the worker so that worker-manager does not terminate the instance.',
-  ].join('\n'),
-}, async function(req, res) {
-  const { workerPoolId, workerGroup, workerId, secret } = req.body;
-
-  await req.authorize({workerPoolId, workerGroup, workerId});
-
-  if (secret.length !== 44) {
-    throw new Error('secret must be 44 characters');
-  }
-
-  const worker = await Worker.get(this.db, { workerPoolId, workerGroup, workerId });
-
-  if (!worker) {
-    return res.reportError('InputError', 'Could not generate credentials for this secret', {});
-  }
-
-  // worker has not been registered yet
-  if (!worker.secret) {
-    return res.reportError('InputError', 'Could not generate credentials for this secret', {});
-  }
-
-  if (this.db.decrypt({ value: worker.secret }).toString('utf8') !== secret) {
-    return res.reportError('InputError', 'Could not generate credentials for this secret', {});
-  }
-
-  // defaults to 96 hours if reregistrationTimeout is not defined
-  const {reregistrationTimeout} = Provider.interpretLifecycle({ lifecycle: {
-    reregistrationTimeout: worker.providerData && worker.providerData.reregistrationTimeout,
-  }});
-  const expires = new Date(Date.now() + reregistrationTimeout);
-
-  const credentials = createCredentials(worker, expires, this.cfg);
-  const newSecret = `${slug.nice()}${slug.nice()}`;
-
-  await worker.update(this.db, worker => {
-    worker.secret = this.db.encrypt({ value: Buffer.from(newSecret, 'utf8') });
+  const credentials = taskcluster.createTemporaryCredentials({
+    clientId: `worker/${worker.providerId}/${worker.workerPoolId}/${worker.workerGroup}/${worker.workerId}`,
+    scopes: [
+      `assume:worker-type:${worker.workerPoolId}`, // deprecated role
+      `assume:worker-pool:${worker.workerPoolId}`,
+      `assume:worker-id:${worker.workerGroup}/${worker.workerId}`,
+      `queue:worker-id:${worker.workerGroup}/${worker.workerId}`,
+      `secrets:get:worker-type:${worker.workerPoolId}`, // deprecated secret name
+      `secrets:get:worker-pool:${worker.workerPoolId}`,
+      `queue:claim-work:${worker.workerPoolId}`,
+      `worker-manager:remove-worker:${worker.workerPoolId}/${worker.workerGroup}/${worker.workerId}`,
+    ],
+    start: taskcluster.fromNow('-15 minutes'),
+    expiry: expires,
+    credentials: this.cfg.taskcluster.credentials,
   });
 
-  return res.reply({ expires: expires.toJSON(), credentials, secret: newSecret });
+  return res.reply({expires: expires.toJSON(), credentials, workerConfig});
 });

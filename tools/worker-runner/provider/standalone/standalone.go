@@ -24,9 +24,6 @@ type StandaloneProvider struct {
 }
 
 func (p *StandaloneProvider) ConfigureRun(state *run.State) error {
-	state.Lock()
-	defer state.Unlock()
-
 	var pc standaloneProviderConfig
 	err := p.runnercfg.Provider.Unpack(&pc)
 	if err != nil {
@@ -34,7 +31,6 @@ func (p *StandaloneProvider) ConfigureRun(state *run.State) error {
 	}
 
 	state.RootURL = tcurls.NormalizeRootURL(pc.RootURL)
-	state.ProviderID = "standalone"
 	state.Credentials.ClientID = pc.ClientID
 	state.Credentials.AccessToken = pc.AccessToken
 	state.WorkerPoolID = pc.WorkerPoolID
@@ -62,10 +58,6 @@ func (p *StandaloneProvider) ConfigureRun(state *run.State) error {
 	}
 
 	return nil
-}
-
-func (p *StandaloneProvider) GetWorkerIdentityProof() (map[string]interface{}, error) {
-	return nil, nil
 }
 
 func (p *StandaloneProvider) UseCachedRun(run *run.State) error {

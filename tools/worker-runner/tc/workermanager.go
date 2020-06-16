@@ -10,7 +10,6 @@ import (
 type WorkerManager interface {
 	RegisterWorker(payload *tcworkermanager.RegisterWorkerRequest) (*tcworkermanager.RegisterWorkerResponse, error)
 	ReportWorkerError(workerPoolID string, payload *tcworkermanager.WorkerErrorReport) (*tcworkermanager.WorkerPoolError, error)
-	ReregisterWorker(payload *tcworkermanager.ReregisterWorkerRequest) (*tcworkermanager.ReregisterWorkerResponse, error)
 	RemoveWorker(workerPoolID, workerGroup, workerID string) error
 }
 

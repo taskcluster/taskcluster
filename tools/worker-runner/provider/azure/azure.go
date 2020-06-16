@@ -20,7 +20,6 @@ type AzureProvider struct {
 	workerManagerClientFactory tc.WorkerManagerClientFactory
 	metadataService            MetadataService
 	proto                      *workerproto.Protocol
-	workerIdentityProof        map[string]interface{}
 	terminationTicker          *time.Ticker
 }
 
@@ -42,9 +41,6 @@ type TaggedData struct {
 }
 
 func (p *AzureProvider) ConfigureRun(state *run.State) error {
-	state.Lock()
-	defer state.Unlock()
-
 	instanceData, err := p.metadataService.queryInstanceData()
 	if err != nil {
 		return fmt.Errorf("Could not query instance data: %v", err)
@@ -62,14 +58,30 @@ func (p *AzureProvider) ConfigureRun(state *run.State) error {
 	}
 
 	state.RootURL = taggedData.RootURL
-	state.ProviderID = taggedData.ProviderId
-	state.WorkerPoolID = taggedData.WorkerPoolId
-	state.WorkerGroup = taggedData.WorkerGroup
-	state.WorkerID = instanceData.Compute.Name
-
 	state.WorkerLocation = map[string]string{
 		"cloud":  "azure",
 		"region": instanceData.Compute.Location,
+	}
+
+	wm, err := p.workerManagerClientFactory(state.RootURL, nil)
+	if err != nil {
+		return fmt.Errorf("Could not create worker manager client: %v", err)
+	}
+
+	workerIdentityProofMap := map[string]interface{}{
+		"document": interface{}(document),
+	}
+
+	workerConfig, err := provider.RegisterWorker(
+		state,
+		wm,
+		taggedData.WorkerPoolId,
+		taggedData.ProviderId,
+		taggedData.WorkerGroup,
+		instanceData.Compute.Name,
+		workerIdentityProofMap)
+	if err != nil {
+		return err
 	}
 
 	providerMetadata := map[string]interface{}{
@@ -89,15 +101,15 @@ func (p *AzureProvider) ConfigureRun(state *run.State) error {
 
 	state.ProviderMetadata = providerMetadata
 
-	p.workerIdentityProof = map[string]interface{}{
-		"document": interface{}(document),
+	pwc, err := cfg.ParseProviderWorkerConfig(p.runnercfg, workerConfig)
+	if err != nil {
+		return err
 	}
 
-	return nil
-}
+	state.WorkerConfig = state.WorkerConfig.Merge(pwc.Config)
+	state.Files = append(state.Files, pwc.Files...)
 
-func (p *AzureProvider) GetWorkerIdentityProof() (map[string]interface{}, error) {
-	return p.workerIdentityProof, nil
+	return nil
 }
 
 func (p *AzureProvider) UseCachedRun(run *run.State) error {
