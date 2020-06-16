@@ -401,6 +401,89 @@
   },
   {
     "content": {
+      "$id": "/schemas/worker-manager/v1/reregister-worker-response.json#",
+      "$schema": "/schemas/common/metaschema.json#",
+      "additionalProperties": false,
+      "description": "Response body to `reregisterWorker`.",
+      "properties": {
+        "credentials": {
+          "additionalProperties": false,
+          "description": "The credentials the worker\nwill need to perform its work. Specifically, credentials with scopes\n* `assume:worker-pool:<workerPoolId>`\n* `assume:worker-id:<workerGroup>/<workerId>`\n* `queue:worker-id:<workerGroup>/<workerId>`\n* `secrets:get:worker-pool:<workerPoolId>`\n* `queue:claim-work:<workerPoolId>`\n* `worker-manager:remove-worker:<workerPoolId>/<workerGroup>/<workerId>`\n* `worker-manager:reregister-worker:<workerPoolId>/<workerGroup>/<workerId>`\n",
+          "properties": {
+            "accessToken": {
+              "type": "string"
+            },
+            "certificate": {
+              "description": "Note that a certificate may not be provided, if the credentials are not temporary.\n",
+              "type": "string"
+            },
+            "clientId": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "accessToken",
+            "clientId"
+          ],
+          "title": "Credentials",
+          "type": "object"
+        },
+        "expires": {
+          "description": "Time at which the included credentials will expire. Workers must\nre-register before this time.\n",
+          "format": "date-time",
+          "title": "Expires",
+          "type": "string"
+        },
+        "secret": {
+          "description": "The next secret value needed to reregister the worker (in `reregisterWorker).\nFor more information, refer to https://docs.taskcluster.net/docs/reference/core/worker-manager#reregistration.\n",
+          "pattern": "^[a-zA-Z0-9_-]{44}$",
+          "title": "Secret",
+          "type": "string"
+        }
+      },
+      "required": [
+        "expires",
+        "credentials",
+        "secret"
+      ],
+      "title": "Reregister Worker Response",
+      "type": "object"
+    },
+    "filename": "schemas/worker-manager/v1/reregister-worker-response.json"
+  },
+  {
+    "content": {
+      "$id": "/schemas/worker-manager/v1/reregister-worker-request.json#",
+      "$schema": "/schemas/common/metaschema.json#",
+      "additionalProperties": false,
+      "description": "Request body to `reregisterWorker`.",
+      "properties": {
+        "secret": {
+          "description": "The secret value that was last configured in `registerWorker` (in the case of a newly registerd worker) or\n`reregisterWorker`.\nFor more information, refer to https://docs.taskcluster.net/docs/reference/core/worker-manager#reregistration.\n",
+          "pattern": "^[a-zA-Z0-9_-]{44}$",
+          "title": "Secret",
+          "type": "string"
+        },
+        "workerGroup": {
+          "$ref": "worker-full.json#/properties/workerGroup"
+        },
+        "workerId": {
+          "$ref": "worker-full.json#/properties/workerId"
+        },
+        "workerPoolId": {
+          "$ref": "worker-pool-full.json#/properties/workerPoolId"
+        }
+      },
+      "required": [
+        "secret"
+      ],
+      "title": "Reregister Worker Request",
+      "type": "object"
+    },
+    "filename": "schemas/worker-manager/v1/reregister-worker-request.json"
+  },
+  {
+    "content": {
       "$id": "/schemas/worker-manager/v1/report-worker-error-request.json#",
       "$schema": "/schemas/common/metaschema.json#",
       "additionalProperties": false,
@@ -473,6 +556,12 @@
           "title": "Expires",
           "type": "string"
         },
+        "secret": {
+          "description": "The secret value that was configured when the worker was registered (in `registerWorker`).\nThis may be used later to reregister the worker.\nFor more information, refer to https://docs.taskcluster.net/docs/reference/core/worker-manager#reregistration.\n",
+          "pattern": "^[a-zA-Z0-9_-]{44}$",
+          "title": "Secret",
+          "type": "string"
+        },
         "workerConfig": {
           "additionalProperties": true,
           "description": "This value is supplied unchanged to the worker from the worker-pool configuration.\nThe expectation is that the worker will merge this information with configuration from other sources,\nand this is precisely what [worker-runner](https://github.com/taskcluster/taskcluster/tree/master/tools/worker-runner) does.\nThis property must not be used for secret configuration, as it is visible both in the worker pool configuration and in the worker instance's metadata.\nInstead, put secret configuration in the [secrets service](https://github.com/taskcluster/taskcluster/tree/master/tools/worker-runner#secrets).\n",
@@ -483,7 +572,8 @@
       "required": [
         "expires",
         "credentials",
-        "workerConfig"
+        "workerConfig",
+        "secret"
       ],
       "title": "Register Worker Response",
       "type": "object"
@@ -9100,6 +9190,17 @@
         "worker_manager": {
           "additionalProperties": false,
           "properties": {
+            "db_crypto_keys": {
+              "oneOf": [
+                {
+                  "additionalProperties": true,
+                  "type": "object"
+                },
+                {
+                  "type": "array"
+                }
+              ]
+            },
             "debug": {
               "title": "node debug env var",
               "type": "string"
@@ -12101,6 +12202,23 @@
           "route": "/worker/register",
           "stability": "stable",
           "title": "Register a running worker",
+          "type": "function"
+        },
+        {
+          "args": [
+          ],
+          "category": "Workers",
+          "description": "Reregister a running worker.\n\nThis will generate and return new Taskcluster credentials for the worker\non that instance to use. The credentials will not live longer the\n`registrationTimeout` for that worker. The endpoint will update `terminateAfter`\nfor the worker so that worker-manager does not terminate the instance.",
+          "input": "v1/reregister-worker-request.json#",
+          "method": "post",
+          "name": "reregisterWorker",
+          "output": "v1/reregister-worker-response.json#",
+          "query": [
+          ],
+          "route": "/worker/reregister",
+          "scopes": "worker-manager:reregister-worker:<workerPoolId>/<workerGroup>/<workerId>",
+          "stability": "experimental",
+          "title": "Reregister a Worker",
           "type": "function"
         }
       ],

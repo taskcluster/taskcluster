@@ -76,7 +76,10 @@ class StaticProvider extends Provider {
       expires = taskcluster.fromNow('96 hours');
     }
     const workerConfig = worker.providerData.workerConfig || {};
-    return {expires, workerConfig};
+    return {
+      expires,
+      workerConfig,
+    };
   }
 }
 

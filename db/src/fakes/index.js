@@ -1,5 +1,5 @@
 const fs = require('fs');
-const {WRITE} = require('taskcluster-lib-postgres');
+const {Database, WRITE, READ} = require('taskcluster-lib-postgres');
 
 const COMPONENT_CLASSES = [];
 
@@ -20,8 +20,9 @@ fs.readdirSync(`${__dirname}/`).forEach(file => {
  * providing access to various helpers like `db.secrets.makeSecret`.
  */
 class FakeDatabase {
-  constructor({schema, serviceName}) {
+  constructor({schema, serviceName, keyring}) {
     const allMethods = schema.allMethods();
+    this.keyring = keyring;
     this.fns = {};
     this.deprecatedFns = {};
 
@@ -46,6 +47,24 @@ class FakeDatabase {
         }
       });
     });
+  }
+
+  encrypt({value}) {
+    const db = new Database({
+      urlsByMode: {[READ]: 'n/a', [WRITE]: 'n/a'},
+      statementTimeout: 0,
+      keyring: this.keyring,
+    });
+    return db.encrypt({ value });
+  }
+
+  decrypt({value}) {
+    const db = new Database({
+      urlsByMode: {[READ]: 'n/a', [WRITE]: 'n/a'},
+      statementTimeout: 0,
+      keyring: this.keyring,
+    });
+    return db.decrypt({ value });
   }
 
   async close() {

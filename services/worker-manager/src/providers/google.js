@@ -154,7 +154,10 @@ class GoogleProvider extends Provider {
 
     // assume for the moment that workers self-terminate before 96 hours
     const workerConfig = worker.providerData.workerConfig || {};
-    return {expires, workerConfig};
+    return {
+      expires,
+      workerConfig,
+    };
   }
 
   async deprovision({workerPool}) {

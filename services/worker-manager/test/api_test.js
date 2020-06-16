@@ -1,4 +1,5 @@
 const taskcluster = require('taskcluster-client');
+const slug = require('slugid');
 const assert = require('assert');
 const helper = require('./helper');
 const {WorkerPool, Worker} = require('../src/data');
@@ -515,6 +516,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
       state: Worker.states.REQUESTED,
       capacity: 1,
       providerData: {},
+      secret: null,
     };
 
     await createWorkerPool();
@@ -522,11 +524,15 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
     await createWorker(input);
 
     let data = await helper.workerManager.listWorkersForWorkerPool(workerPoolId);
+    data.workers.forEach(worker => {
+      assert(!('secret' in worker));
+    });
     input.created = input.created.toJSON();
     input.expires = input.expires.toJSON();
     input.lastModified = input.lastModified.toJSON();
     input.lastChecked = input.lastChecked.toJSON();
     delete input.providerData;
+    delete input.secret;
 
     assert.deepStrictEqual(data.workers, [input]);
   });
@@ -545,6 +551,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
         state: Worker.states.RUNNING,
         capacity: 1,
         providerData: {},
+        secret: null,
       },
       {
         workerPoolId,
@@ -558,6 +565,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
         state: Worker.states.STOPPED,
         capacity: 1,
         providerData: {},
+        secret: null,
       },
     ];
 
@@ -571,10 +579,14 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
       i.lastModified = i.lastModified.toJSON();
       i.lastChecked = i.lastChecked.toJSON();
       delete i.providerData;
+      delete i.secret;
       return i;
     });
 
     let data = await helper.workerManager.listWorkersForWorkerPool(workerPoolId);
+    data.workers.forEach(worker => {
+      assert(!('secret' in worker));
+    });
 
     assert.deepStrictEqual(data.workers, input);
   });
@@ -582,6 +594,9 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
   test('get workers for a given worker pool - no workers', async function () {
     await createWorkerPool();
     let data = await helper.workerManager.listWorkersForWorkerPool(workerPoolId);
+    data.workers.forEach(worker => {
+      assert(!('secret' in worker));
+    });
 
     assert.deepStrictEqual(data.workers, []);
   });
@@ -600,6 +615,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
       capacity: 1,
       state: Worker.states.RUNNING,
       providerData: {},
+      secret: null,
     }));
 
     await Promise.all(input.map(i => createWorker(i)));
@@ -614,6 +630,12 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
     });
 
     let data = await helper.workerManager.listWorkersForWorkerGroup(workerPoolId, 'wg-a');
+
+    data.workers.forEach(worker => {
+      assert(!('secret' in worker));
+    });
+
+    delete input[0].secret;
     assert.deepStrictEqual(data.workers, [input[0]]);
   });
 
@@ -631,6 +653,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
       capacity: 1,
       state: Worker.states.RUNNING,
       providerData: {},
+      secret: null,
     };
 
     await createWorker(input);
@@ -641,6 +664,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
       workerId: input.workerId,
     });
 
+    assert(!('secret' in data));
     assert.deepStrictEqual(data, worker.serializable());
   });
 
@@ -696,6 +720,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
         expires,
       });
 
+      assert(!('secret' in worker));
       assert.equal(worker.workerPoolId, workerPoolId);
       assert.equal(worker.workerGroup, workerGroup);
       assert.equal(worker.workerId, workerId);
@@ -1067,6 +1092,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
       assert(scopes.has(`assume:worker-id:${workerGroup}/${workerId}`), msg);
       assert(scopes.has(`secrets:get:worker-pool:${workerPoolId}`), msg);
       assert(scopes.has(`queue:claim-work:${workerPoolId}`), msg);
+      assert(scopes.has(`worker-manager:reregister-worker:${workerPoolId}/${workerGroup}/${workerId}`), msg);
     });
 
     test('sweet success for a previous providerId', async function() {
@@ -1125,6 +1151,169 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
       assert(scopes.has(`assume:worker-id:${workerGroup}/${awsWorkerIdentityProofParsed.instanceId}`), msg);
       assert(scopes.has(`secrets:get:worker-pool:${workerPoolId}`), msg);
       assert(scopes.has(`queue:claim-work:${workerPoolId}`), msg);
+      assert(scopes.has(`worker-manager:reregister-worker:${workerPoolId}/${workerGroup}/${awsWorkerIdentityProofParsed.instanceId}`), msg);
+    });
+  });
+
+  suite('reregisterWorker', function() {
+    const providerId = 'testing1';
+    const workerGroup = 'wg';
+    const workerId = 'wi';
+    const workerIdentityProof = {'token': 'tok'};
+
+    suiteSetup(function() {
+      helper.load.save();
+
+      // create fake clientId / accessToken for temporary creds
+      helper.load.cfg('taskcluster.credentials.clientId', 'fake');
+      helper.load.cfg('taskcluster.credentials.accessToken', 'fake');
+    });
+
+    suiteTeardown(function() {
+      helper.load.restore();
+    });
+
+    const defaultRegisterWorker = {
+      workerPoolId, providerId, workerGroup, workerId, workerIdentityProof,
+    };
+
+    const testExpires = async (config) => {
+      await createWorkerPool({});
+      await createWorker(config);
+      // default is 96 hours when reregistrationTimeout is not specified.
+      const reregistrationTimeout = config.providerData.reregistrationTimeout ?
+        config.providerData.reregistrationTimeout / 3600 :
+        96;
+
+      const firstResponse = await helper.workerManager.registerWorker({
+        ...defaultRegisterWorker,
+      });
+
+      assert.equal(firstResponse.credentials.clientId,
+        `worker/${providerId}/${workerPoolId}/${workerGroup}/${workerId}`);
+
+      const secondResponse = await helper.workerManager.reregisterWorker({
+        workerPoolId,
+        workerGroup,
+        workerId,
+        secret: firstResponse.secret,
+      });
+
+      assert(new Date(secondResponse.expires) - new Date() > (reregistrationTimeout - 1) * 1000 * 60 * 60);
+      assert(new Date(secondResponse.expires) - new Date() < reregistrationTimeout * 1000 * 60 * 60);
+      assert.equal(firstResponse.credentials.clientId, secondResponse.credentials.clientId);
+      assert.notStrictEqual(firstResponse.secret, secondResponse.secret);
+    };
+
+    test('works without reregistrationTimeout', async function() {
+      const config = {
+        providerData: {
+          workerConfig: {
+            "someKey": "someValue",
+          },
+        },
+      };
+      await testExpires(config);
+    });
+
+    test('works with reregistrationTimeout', async function() {
+      const config = {
+        providerData: {
+          workerConfig: {
+            "someKey": "someValue",
+          },
+          // 2 hour
+          reregistrationTimeout: 2 * 60 * 60,
+        },
+      };
+      await testExpires(config);
+    });
+
+    test('throws when secret is bad', async function() {
+      await createWorkerPool({});
+      await createWorker({
+        providerData: {
+          workerConfig: {
+            "someKey": "someValue",
+          },
+        },
+      });
+      const firstResponse = await helper.workerManager.registerWorker({
+        ...defaultRegisterWorker,
+      });
+
+      assert.equal(firstResponse.credentials.clientId,
+        `worker/${providerId}/${workerPoolId}/${workerGroup}/${workerId}`);
+
+      await assert.rejects(
+        async () => {
+          await helper.workerManager.reregisterWorker({
+            workerPoolId,
+            workerGroup,
+            workerId,
+            secret: `${slug.nice()}${slug.nice()}`,
+          });
+        },
+        /Could not generate credentials for this secret/,
+      );
+    });
+
+    test('throws when worker does not exist', async function() {
+      await createWorkerPool({});
+      await createWorker({
+        providerData: {
+          workerConfig: {
+            "someKey": "someValue",
+          },
+        },
+      });
+      const firstResponse = await helper.workerManager.registerWorker({
+        ...defaultRegisterWorker,
+      });
+
+      assert.equal(firstResponse.credentials.clientId,
+        `worker/${providerId}/${workerPoolId}/${workerGroup}/${workerId}`);
+
+      await assert.rejects(
+        async () => {
+          await helper.workerManager.reregisterWorker({
+            workerPoolId: 'does-not/exist',
+            workerGroup,
+            workerId,
+            secret: firstResponse.secret,
+          });
+        },
+        /Could not generate credentials for this secret/,
+      );
+    });
+
+    test('throws when secret is not defined', async function() {
+      await createWorkerPool({});
+      await createWorker({
+        providerData: {
+          workerConfig: {
+            "someKey": "someValue",
+          },
+        },
+      });
+      const firstResponse = await helper.workerManager.registerWorker({
+        ...defaultRegisterWorker,
+      });
+
+      assert.equal(firstResponse.credentials.clientId,
+        `worker/${providerId}/${workerPoolId}/${workerGroup}/${workerId}`);
+
+      await assert.rejects(
+        async () => {
+          await helper.workerManager.reregisterWorker({
+            workerPoolId,
+            workerGroup,
+            workerId,
+            secret: null,
+          });
+        },
+        /Schema Validation Failed/,
+      );
     });
   });
 });

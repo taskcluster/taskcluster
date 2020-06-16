@@ -1,0 +1,50 @@
+$schema: "/schemas/common/metaschema.json#"
+title: Reregister Worker Response
+description: Response body to `reregisterWorker`.
+type: object
+properties:
+  expires:
+    type: string
+    format: date-time
+    title: Expires
+    description: |
+      Time at which the included credentials will expire. Workers must
+      re-register before this time.
+  credentials:
+    type: object
+    title: Credentials
+    description: |
+      The credentials the worker
+      will need to perform its work. Specifically, credentials with scopes
+      * `assume:worker-pool:<workerPoolId>`
+      * `assume:worker-id:<workerGroup>/<workerId>`
+      * `queue:worker-id:<workerGroup>/<workerId>`
+      * `secrets:get:worker-pool:<workerPoolId>`
+      * `queue:claim-work:<workerPoolId>`
+      * `worker-manager:remove-worker:<workerPoolId>/<workerGroup>/<workerId>`
+      * `worker-manager:reregister-worker:<workerPoolId>/<workerGroup>/<workerId>`
+    properties:
+      accessToken:
+        type: string
+      clientId:
+        type: string
+      certificate:
+        type: string
+        description: |
+          Note that a certificate may not be provided, if the credentials are not temporary.
+    additionalProperties: false
+    required:
+      - accessToken
+      - clientId
+  secret:
+    title: Secret
+    type: string
+    pattern: "^[a-zA-Z0-9_-]{44}$"
+    description: |
+      The next secret value needed to reregister the worker (in `reregisterWorker).
+      For more information, refer to https://docs.taskcluster.net/docs/reference/core/worker-manager#reregistration.
+additionalProperties: false
+required:
+  - expires
+  - credentials
+  - secret

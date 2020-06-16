@@ -388,7 +388,10 @@ class AzureProvider extends Provider {
       worker.providerData.terminateAfter = expires.getTime();
     });
     const workerConfig = worker.providerData.workerConfig || {};
-    return {expires, workerConfig};
+    return {
+      expires,
+      workerConfig,
+    };
   }
 
   async scanPrepare() {

@@ -1,0 +1,22 @@
+$schema: "/schemas/common/metaschema.json#"
+title: Reregister Worker Request
+description: Request body to `reregisterWorker`.
+type: object
+properties:
+  workerPoolId: {$ref: "worker-pool-full.json#/properties/workerPoolId"}
+  workerGroup: {$ref: "worker-full.json#/properties/workerGroup"}
+  workerId: {$ref: "worker-full.json#/properties/workerId"}
+  secret:
+    title: Secret
+    type: string
+    pattern: "^[a-zA-Z0-9_-]{44}$"
+    description: |
+      The secret value that was last configured in `registerWorker` (in the case of a newly registerd worker) or
+      `reregisterWorker`.
+      For more information, refer to https://docs.taskcluster.net/docs/reference/core/worker-manager#reregistration.
+additionalProperties: false
+required:
+  - workerPoolId
+  - workerGroup
+  - workerId
+  - secret
