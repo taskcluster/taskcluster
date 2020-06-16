@@ -123,6 +123,11 @@ The last element of the array will be the current key and all encryption will be
 older key. This allows you to rotate your encryption keys. At the current time, Taskcluster implicitly treats `azure_crypto_key` as the oldest element of this list, with id `azure`, to maintain compatibility with existing configurations.
 from older table formats.
 
+An easy way to create a random key, using a CSPRNG, is:
+```shell
+$ echo "console.log(require('crypto').randomBytes(32).toString('base64'));" | node
+```
+
 ## Upgrades
 
 Database upgrade must be completed *before* the corresponding code is deployed.
