@@ -8,6 +8,7 @@ metadata:
     app.kubernetes.io/component: taskcluster-queue-expirequeuemessages
     app.kubernetes.io/part-of: taskcluster
 spec:
+  concurrencyPolicy: Forbid
   schedule: 23 * * * *
   jobTemplate:
     metadata:
@@ -17,8 +18,8 @@ spec:
         metadata:
           labels: *ref_0
         spec:
-          restartPolicy: OnFailure
-          activeDeadlineSeconds: 3600
+          restartPolicy: Never
+          activeDeadlineSeconds: 3540
           containers:
             - name: taskcluster-queue-expirequeuemessages
               image: '{{ .Values.dockerImage }}'

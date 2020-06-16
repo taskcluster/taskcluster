@@ -8,6 +8,7 @@ metadata:
     app.kubernetes.io/component: taskcluster-worker-manager-expire-errors
     app.kubernetes.io/part-of: taskcluster
 spec:
+  concurrencyPolicy: Forbid
   schedule: 10 0 * * *
   jobTemplate:
     metadata:
@@ -17,8 +18,8 @@ spec:
         metadata:
           labels: *ref_0
         spec:
-          restartPolicy: OnFailure
-          activeDeadlineSeconds: 86400
+          restartPolicy: Never
+          activeDeadlineSeconds: 86340
           containers:
             - name: taskcluster-worker-manager-expire-errors
               image: '{{ .Values.dockerImage }}'

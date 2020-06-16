@@ -4,6 +4,8 @@ metadata:
   name: ${projectName}-${lowercase(procName)}
   labels: {$eval: labels}
 spec:
+  # TC crontasks assume they are not running concurrently
+  concurrencyPolicy: Forbid
   schedule: ${schedule}
   jobTemplate:
     metadata:
@@ -13,8 +15,10 @@ spec:
         metadata:
           labels: {$eval: labels}
         spec:
-          restartPolicy: OnFailure
-          activeDeadlineSeconds: {$eval: 'deadlineSeconds'}
+          # On failure, just fail and wait for the next scheduled invocation
+          restartPolicy: Never
+          # terminate the pod one minute before the next job begins
+          activeDeadlineSeconds: {$eval: 'deadlineSeconds - 60'}
           containers:
           - name: ${projectName}-${lowercase(procName)}
             image: '{{ .Values.dockerImage }}'
