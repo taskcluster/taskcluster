@@ -22,14 +22,14 @@ suite(path.basename(__filename), function() {
   });
 
   test('only pg (single key)', function() {
-    const keyring = new Keyring({cryptoKeys: [{id: 'foo', algo: 'aes-256', key: pgCryptoKey}]});
+    const keyring = new Keyring({dbCryptoKeys: [{id: 'foo', algo: 'aes-256', key: pgCryptoKey}]});
     const {id, key} = keyring.currentCryptoKey('aes-256');
     assert.equal(id, 'foo');
     assert.equal(key.toString('base64'), pgCryptoKey);
   });
 
   test('only pg (multiple keys)', function() {
-    const keyring = new Keyring({cryptoKeys: [
+    const keyring = new Keyring({dbCryptoKeys: [
       {id: 'foo', algo: 'aes-256', key: pgCryptoKey},
       {id: 'bar', algo: 'aes-256', key: pgCryptoKey2},
     ]});
@@ -42,14 +42,14 @@ suite(path.basename(__filename), function() {
   });
 
   test('pg and azure (single key)', function() {
-    const keyring = new Keyring({cryptoKeys: [{id: 'foo', algo: 'aes-256', key: pgCryptoKey}]});
+    const keyring = new Keyring({dbCryptoKeys: [{id: 'foo', algo: 'aes-256', key: pgCryptoKey}]});
     const {id, key} = keyring.currentCryptoKey('aes-256');
     assert.equal(id, 'foo');
     assert.equal(key.toString('base64'), pgCryptoKey);
   });
 
   test('pg and azure (multiple keys)', function() {
-    const keyring = new Keyring({azureCryptoKey, cryptoKeys: [
+    const keyring = new Keyring({azureCryptoKey, dbCryptoKeys: [
       {id: 'foo', algo: 'aes-256', key: pgCryptoKey},
       {id: 'bar', algo: 'aes-256', key: pgCryptoKey2},
     ]});
@@ -64,31 +64,31 @@ suite(path.basename(__filename), function() {
 
   test('nonexistent algo', function() {
     assert.throws(() => {
-      new Keyring({cryptoKeys: [{id: 'foo', algo: 'bad-algo', key: pgCryptoKey}]});
+      new Keyring({dbCryptoKeys: [{id: 'foo', algo: 'bad-algo', key: pgCryptoKey}]});
     }, /Got bad-algo for foo/);
   });
 
   test('missing key', function() {
     assert.throws(() => {
-      new Keyring({cryptoKeys: [{id: 'foo', algo: 'aes-256'}]});
+      new Keyring({dbCryptoKeys: [{id: 'foo', algo: 'aes-256'}]});
     }, /Keyring crypto keys must have `key`/);
   });
 
   test('missing id', function() {
     assert.throws(() => {
-      new Keyring({cryptoKeys: [{algo: 'aes-256', key: pgCryptoKey}]});
+      new Keyring({dbCryptoKeys: [{algo: 'aes-256', key: pgCryptoKey}]});
     }, /Keyring crypto keys must have `id`/);
   });
 
   test('missing algo', function() {
     assert.throws(() => {
-      new Keyring({cryptoKeys: [{id: 'foo', key: pgCryptoKey}]});
+      new Keyring({dbCryptoKeys: [{id: 'foo', key: pgCryptoKey}]});
     }, /Keyring crypto keys must have `algo`/);
   });
 
   test('bad key', function() {
     assert.throws(() => {
-      new Keyring({cryptoKeys: [{id: 'foo', algo: 'aes-256', key: 'too-short'}]});
+      new Keyring({dbCryptoKeys: [{id: 'foo', algo: 'aes-256', key: 'too-short'}]});
     }, /aes-256 key must be 32 bytes in base64 in foo/);
   });
 });

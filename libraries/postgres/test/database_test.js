@@ -726,7 +726,7 @@ helper.dbSuite(path.basename(__filename), function() {
 
       // This new_db does not have azureCryptoKey as it's current key but can still read old encryptions
       const new_db = await Database.setup({schema, readDbUrl: helper.dbUrl, writeDbUrl: helper.dbUrl,
-        serviceName: 'service-2', monitor, azureCryptoKey, cryptoKeys: [
+        serviceName: 'service-2', monitor, azureCryptoKey, dbCryptoKeys: [
           {id: 'foo', algo: 'aes-256', key: pgCryptoKey},
         ]});
       assert.equal(new_db.keyring.currentCryptoKey('aes-256').id, 'foo');

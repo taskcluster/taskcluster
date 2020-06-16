@@ -4,7 +4,7 @@ class Keyring {
   /**
    * Construct a new keyring from a service's configuration.
    */
-  constructor({azureCryptoKey, cryptoKeys}) {
+  constructor({azureCryptoKey, dbCryptoKeys}) {
     this.crypto = new Map();
     this.currentCrypto = undefined;
 
@@ -24,8 +24,8 @@ class Keyring {
 
     // Our standard postgres keys. Anything in here will be considered more current than azure keys.
     // A key here with the name `azure` will override `azureCryptoKey`.
-    if (cryptoKeys) {
-      for (const {id, algo, key} of cryptoKeys) {
+    if (dbCryptoKeys) {
+      for (const {id, algo, key} of dbCryptoKeys) {
         assert(id, 'Keyring crypto keys must have `id`');
         assert(algo, 'Keyring crypto keys must have `algo`');
         assert(key, 'Keyring crypto keys must have `key`');

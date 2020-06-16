@@ -25,7 +25,7 @@ const db = Database.setup({
   statementTimeout: ..., // optional
   poolSize: ..., // optional, default 5
   azureCryptoKey: ..., // optional, only required to read lib-entities encrypted data
-  cryptoKeys: ..., // optional, only required if encrypting columns
+  dbCryptoKeys: ..., // optional, only required if encrypting columns, usually from cfg.postgres.dbCryptoKeys
 });
 ```
 
@@ -35,7 +35,7 @@ The `monitor` is a taskcluster-lib-monitor instance, used to report database met
 if `statementTimeout` is set, then it is treated as a timeout (in milliseconds) after which a statement will be aborted.
 This is typically used in web processes to abort statements running longer than 30s, after which time the HTTP client has likely given up.
 
-The `azureCryptoKey`, and `cryptoKeys` parameters are explained below in "Secret Data" and "Encryption".
+The `azureCryptoKey`, and `dbCryptoKeys` parameters are explained below in "Secret Data" and "Encryption".
 
 The `poolSize` parameter specifies the maximum number of Postgres clients in each pool of clients, with two pools (read and write) in use.
 DB function calls made when there are no clients available will be queued and wait until a client is avaliable.
@@ -255,7 +255,7 @@ The `db.encrypt` and `db.decrypt` methods serve to encrypt and decrypt values fo
 Both take a parameter named `value` that will either be encrypted and built into a format suitable for storing in the db
 or pulled out of that format and decryped.
 
-To enable encryption/decryption, provide `Database.setup` with at least one of `azureCryptoKey` or `cryptoKeys`. The first
+To enable encryption/decryption, provide `Database.setup` with at least one of `azureCryptoKey` or `dbCryptoKeys`. The first
 of which is the key that `lib-entities` used for encryption. The latter is structured like
 
 ```javascript

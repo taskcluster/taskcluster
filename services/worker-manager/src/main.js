@@ -46,7 +46,7 @@ let load = loader({
       serviceName: 'worker_manager',
       monitor: monitor.childMonitor('db'),
       statementTimeout: process === 'server' ? 30000 : 0,
-      crypoKeys: cfg.postgres.dbCryptoKeys,
+      dbCryptoKeys: cfg.postgres.dbCryptoKeys,
     }),
   },
 
