@@ -14,12 +14,12 @@ spec:
     metadata:
       labels: *ref_0
     spec:
+      activeDeadlineSeconds: 86340
       template:
         metadata:
           labels: *ref_0
         spec:
-          restartPolicy: Never
-          activeDeadlineSeconds: 86340
+          restartPolicy: OnFailure
           containers:
             - name: taskcluster-web-server-cleanup-expire-auth-codes
               image: '{{ .Values.dockerImage }}'

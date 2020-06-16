@@ -11,14 +11,17 @@ spec:
     metadata:
       labels: {$eval: labels}
     spec:
+      # terminate the job one minute before the next job begins, so that a
+      # hung or long-running job is recycled at every scheduled interval
+      activeDeadlineSeconds: {$eval: 'deadlineSeconds - 60'}
       template:
         metadata:
           labels: {$eval: labels}
         spec:
-          # On failure, just fail and wait for the next scheduled invocation
-          restartPolicy: Never
-          # terminate the pod one minute before the next job begins
-          activeDeadlineSeconds: {$eval: 'deadlineSeconds - 60'}
+          # On failure, run the pod again; this lets us run the task even in
+          # the face of k8s node failure, with the concurrencyPolicy ensuring
+          # that two pods never run in parallel.
+          restartPolicy: OnFailure
           containers:
           - name: ${projectName}-${lowercase(procName)}
             image: '{{ .Values.dockerImage }}'
