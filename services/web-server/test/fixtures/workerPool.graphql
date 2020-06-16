@@ -3,5 +3,6 @@ query WorkerPool($workerPoolId: String!){
     workerPoolId
     owner
     pendingTasks
+    currentCapacity
   }
 }

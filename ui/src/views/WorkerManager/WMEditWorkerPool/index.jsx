@@ -94,7 +94,7 @@ export default class WMEditWorkerPool extends Component {
 
   render() {
     const { dialogError, dialogOpen } = this.state;
-    const { isNewWorkerPool, data, providersData } = this.props;
+    const { isNewWorkerPool, data, providersData, match } = this.props;
 
     // detect a ridiculous number of providers and let the user know
     if (
@@ -120,7 +120,13 @@ export default class WMEditWorkerPool extends Component {
       (providersData && providersData.error) || (data && data.error);
 
     return (
-      <Dashboard title={isNewWorkerPool ? 'Create Worker Pool' : 'Worker Pool'}>
+      <Dashboard
+        disableTitleFormatting
+        title={
+          isNewWorkerPool
+            ? 'Create Worker Pool'
+            : `Worker Pool "${decodeURIComponent(match.params.workerPoolId)}"`
+        }>
         <ErrorPanel fixed error={error} />
         {loading && <Spinner loading />}
         {!loading &&

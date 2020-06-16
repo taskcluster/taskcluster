@@ -4,6 +4,8 @@ query ListWorkerPools($connection: PageConnection, $filter: JSON){
       node{
         workerPoolId
         providerId
+        pendingTasks
+        currentCapacity
       }
     }
   }

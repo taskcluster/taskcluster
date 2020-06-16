@@ -5,10 +5,15 @@ import List from '@material-ui/core/List';
 import ListSubheader from '@material-ui/core/ListSubheader';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
+import Chip from '@material-ui/core/Chip';
+import Avatar from '@material-ui/core/Avatar';
 import Typography from '@material-ui/core/Typography';
 import MenuItem from '@material-ui/core/MenuItem';
+import WorkerIcon from 'mdi-react/WorkerIcon';
+import MessageAlertIcon from 'mdi-react/MessageAlertIcon';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
 import FormGroup from '@material-ui/core/FormGroup';
+import Paper from '@material-ui/core/Paper';
 import Switch from '@material-ui/core/Switch';
 import { withStyles } from '@material-ui/core';
 import ContentSaveIcon from 'mdi-react/ContentSaveIcon';
@@ -19,6 +24,7 @@ import MarkdownTextArea from '../MarkdownTextArea';
 import DialogAction from '../DialogAction';
 import Button from '../Button';
 import isWorkerTypeNameValid from '../../utils/isWorkerTypeNameValid';
+import Link from '../../utils/Link';
 import {
   WorkerManagerWorkerPoolSummary,
   providersArray,
@@ -71,6 +77,20 @@ import SpeedDial from '../SpeedDial';
   },
   ownerEmailListItem: {
     display: 'block',
+  },
+  metadata: {
+    marginRight: theme.spacing(1),
+  },
+  overviewList: {
+    padding: theme.spacing(2),
+    paddingBottom: theme.spacing(1),
+    margin: `0 0 ${theme.spacing(1)}px 0`,
+    display: 'flex',
+    flexWrap: 'wrap',
+    listStyle: 'none',
+    '& li': {
+      marginBottom: theme.spacing(1),
+    },
   },
 }))
 export default class WMWorkerPoolEditor extends Component {
@@ -305,6 +325,8 @@ export default class WMWorkerPoolEditor extends Component {
       providerId,
       workerPoolId,
       config,
+      currentCapacity,
+      pendingTasks,
     } = this.props.workerPool;
     const isWorkerPoolDirty =
       isNewWorkerPool ||
@@ -315,10 +337,59 @@ export default class WMWorkerPoolEditor extends Component {
       workerPool.config !== JSON.stringify(config || {}, null, 2) ||
       joinWorkerPoolId(workerPool.workerPoolId1, workerPool.workerPoolId2) !==
         workerPoolId;
+    const { provisionerId, workerType } = splitWorkerPoolId(workerPoolId);
 
     return (
       <Fragment>
         <ErrorPanel fixed error={error} />
+        {!isNewWorkerPool && (
+          <Paper component="ul" className={classes.overviewList}>
+            <li>
+              <Chip
+                variant="outlined"
+                size="small"
+                className={classes.metadata}
+                avatar={<Avatar>{currentCapacity || 0}</Avatar>}
+                label="Current Capacity"
+              />
+            </li>
+            <li>
+              <Chip
+                variant="outlined"
+                size="small"
+                className={classes.metadata}
+                avatar={<Avatar>{pendingTasks || 0}</Avatar>}
+                label="Pending Tasks"
+              />
+            </li>
+            <li>
+              <Chip
+                size="small"
+                className={classes.metadata}
+                icon={<WorkerIcon />}
+                label="Workers (Queue View)"
+                component={Link}
+                clickable
+                to={`/provisioners/${encodeURIComponent(
+                  provisionerId
+                )}/worker-types/${encodeURIComponent(workerType)}`}
+              />
+            </li>
+            <li>
+              <Chip
+                size="small"
+                className={classes.metadata}
+                icon={<MessageAlertIcon />}
+                label="Worker Pool Errors"
+                component={Link}
+                clickable
+                to={`/worker-manager/${encodeURIComponent(
+                  workerPoolId
+                )}/errors`}
+              />
+            </li>
+          </Paper>
+        )}
         <List>
           <div>
             <ListSubheader>Worker Pool ID *</ListSubheader>
