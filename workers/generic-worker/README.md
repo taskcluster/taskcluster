@@ -1,6 +1,6 @@
 # Generic Worker
 
-A generic worker for [Taskcluster](https://tdocs.taskcluster.net/), written in Go.
+A generic worker for [Taskcluster](https://docs.taskcluster.net/), written in Go.
 
 For documentation of the worker from a user's perspective, see the [online documentation](https://docs.taskcluster.net/reference/workers/generic-worker).
 
