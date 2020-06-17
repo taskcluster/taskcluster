@@ -3,7 +3,6 @@ package run
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"os"
 	"strings"
@@ -111,20 +110,7 @@ func (state *State) WriteCacheFile(filename string) error {
 	if err != nil {
 		return err
 	}
-	err = ioutil.WriteFile(filename, encoded, 0700)
-	if err != nil {
-		return err
-	}
-
-	// This file contains secrets, so ensure that this is really only
-	// accessible to the file owner (and having just created the file, that
-	// should be the current user).
-	err = perms.MakePrivateToOwner(filename)
-	if err != nil {
-		return err
-	}
-
-	err = perms.VerifyPrivateToOwner(filename)
+	err = perms.WritePrivateFile(filename, encoded)
 	if err != nil {
 		return err
 	}
@@ -137,14 +123,8 @@ func (state *State) WriteCacheFile(filename string) error {
 func ReadCacheFile(state *State, filename string) (bool, error) {
 	var encoded []byte
 
-	encoded, err := ioutil.ReadFile(filename)
+	encoded, err := perms.ReadPrivateFile(filename)
 	if err == nil {
-		// just double-check that the permissions are correct..
-		err = perms.VerifyPrivateToOwner(filename)
-		if err != nil {
-			return true, err
-		}
-
 		log.Printf("Loading cached state from %s", filename)
 
 		err = json.Unmarshal(encoded, state)
