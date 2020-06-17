@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"sync"
 	"time"
 
 	taskcluster "github.com/taskcluster/taskcluster/v30/clients/client-go"
@@ -27,6 +28,9 @@ type RegistrationManager struct {
 	// a timer to handle sending a new-credentials or graceful-termination
 	// request before the credentials expire
 	credsExpireTimer *time.Timer
+
+	// for testing
+	credsExpireCond *sync.Cond
 }
 
 // Register this worker with the worker-manager, and update the state with the
@@ -105,6 +109,9 @@ func (reg *RegistrationManager) setTimer() error {
 	untilExpire := time.Until(time.Time(reg.state.CredentialsExpire))
 	untilRenew := renewBeforeExpire(untilExpire)
 	reg.credsExpireTimer = time.AfterFunc(untilRenew, func() {
+		if reg.credsExpireCond != nil {
+			reg.credsExpireCond.L.Lock()
+		}
 		// Prefer to update the worker's credentials, but..
 		if reg.proto.Capable("new-credentials") {
 			reg.reregisterWorker()
@@ -113,6 +120,10 @@ func (reg *RegistrationManager) setTimer() error {
 			reg.terminateWorker()
 		} else {
 			panic("credentials expiring, but no way to tell the worker")
+		}
+		if reg.credsExpireCond != nil {
+			reg.credsExpireCond.Broadcast()
+			reg.credsExpireCond.L.Unlock()
 		}
 	})
 
