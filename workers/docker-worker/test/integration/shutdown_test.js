@@ -45,14 +45,14 @@ helper.secrets.mockSuite(suiteName(), ['docker', 'ci-creds'], function(mock, ski
   test('shutdown without ever working a task', async () => {
     let res = await Promise.all([
       worker.launch(),
-      waitForEvent(worker, 'pending shutdown'),
+      waitForEvent(worker, 'worker idle'),
       waitForEvent(worker, 'exit'),
     ]);
-    assert.equal(res[1].time, 5);
+    assert.equal(res[1].afterIdleSeconds, 5);
   });
 
   test('with timer shutdown', async () => {
-    await [worker.launch(), waitForEvent(worker, 'pending shutdown')];
+    await [worker.launch(), waitForEvent(worker, 'worker idle')];
 
     let res = await Promise.all([
       worker.postToQueue({
@@ -68,18 +68,18 @@ helper.secrets.mockSuite(suiteName(), ['docker', 'ci-creds'], function(mock, ski
         },
       }),
       waitForEvent(worker, 'task resolved'),
-      waitForEvent(worker, 'pending shutdown'),
+      waitForEvent(worker, 'worker idle'),
       waitForEvent(worker, 'exit'),
     ]);
     // Ensure task completed.
     assert.equal(res[1].taskState, 'completed');
-    assert.equal(res[2].time, 5);
+    assert.equal(res[2].afterIdleSeconds, 5);
   });
 
   test('cancel idle', async () => {
     await Promise.all([
       worker.launch(),
-      waitForEvent(worker, 'pending shutdown'),
+      waitForEvent(worker, 'worker idle'),
     ]);
 
     // Posting work should untrigger the shutdown timer and process the task.
@@ -96,9 +96,9 @@ helper.secrets.mockSuite(suiteName(), ['docker', 'ci-creds'], function(mock, ski
           maxRunTime: 60 * 60,
         },
       }),
-      waitForEvent(worker, 'cancel pending shutdown'),
+      waitForEvent(worker, 'worker working'),
       waitForEvent(worker, 'task resolved'),
-      waitForEvent(worker, 'pending shutdown'),
+      waitForEvent(worker, 'worker idle'),
     ]);
 
     assert.ok(events[1], 'cancel event fired');

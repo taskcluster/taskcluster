@@ -742,6 +742,7 @@ class Task extends EventEmitter {
    * @param {String} reason - Reason for aborting the test run (Example: worker-shutdown)
   */
   abort(reason) {
+    debug(`aborting task ${this.status.taskId} with reason ${reason}`);
     this.stopReclaims();
     this.taskState = 'aborted';
     this.taskException = reason;
