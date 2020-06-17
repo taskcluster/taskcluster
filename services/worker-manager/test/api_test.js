@@ -1179,7 +1179,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
 
     const testExpires = async (config) => {
       await createWorkerPool({});
-      await createWorker(config);
+      const worker = await createWorker(config);
       // default is 96 hours when reregistrationTimeout is not specified.
       const reregistrationTimeout = config.providerData.reregistrationTimeout ?
         config.providerData.reregistrationTimeout / 3600 :
@@ -1203,6 +1203,11 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
       assert(new Date(secondResponse.expires) - new Date() < reregistrationTimeout * 1000 * 60 * 60);
       assert.equal(firstResponse.credentials.clientId, secondResponse.credentials.clientId);
       assert.notStrictEqual(firstResponse.secret, secondResponse.secret);
+
+      await worker.reload(helper.db);
+      if (worker.providerData.terminateAfter) {
+        assert.equal(worker.providerData.terminateAfter, new Date(secondResponse.expires).getTime());
+      }
     };
 
     test('works without reregistrationTimeout', async function() {
@@ -1224,6 +1229,20 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
           },
           // 2 hour
           reregistrationTimeout: 2 * 60 * 60,
+        },
+      };
+      await testExpires(config);
+    });
+
+    test('works with terminateAfter', async function() {
+      const config = {
+        providerData: {
+          workerConfig: {
+            "someKey": "someValue",
+          },
+          // 2 hour
+          reregistrationTimeout: 2 * 60 * 60,
+          terminateAfter: taskcluster.fromNow('1 day').getTime(),
         },
       };
       await testExpires(config);

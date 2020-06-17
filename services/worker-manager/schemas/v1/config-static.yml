@@ -5,7 +5,15 @@ type: object
 additionalProperties: false
 required: []
 properties:
-  lifecycle: {$ref: 'worker-lifecycle.json#'}
+  lifecycle:
+    description: |
+      The Static provider implements a subset of the lifecycle hooks,
+      only supporting reregistration timeouts
+    type: object
+    properties:
+      reregistrationTimeout: {$ref: 'worker-lifecycle.json#/properties/reregistrationTimeout'}
+    additionalProperties: false
+    required: []
   workerConfig:
     title: Worker Config
     type: object
