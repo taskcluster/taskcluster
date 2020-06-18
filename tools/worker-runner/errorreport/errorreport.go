@@ -28,6 +28,9 @@ func (er *ErrorReporter) SetProtocol(proto *workerproto.Protocol) {
 }
 
 func (er *ErrorReporter) HandleMessage(msg workerproto.Message) {
+	er.state.Lock()
+	defer er.state.Unlock()
+
 	validate := func(things map[string]interface{}, key, expectedType string) bool {
 		if _, ok := things[key]; !ok {
 			return false
