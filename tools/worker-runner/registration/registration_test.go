@@ -3,8 +3,8 @@ package registration
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"path/filepath"
+	"sync"
 	"testing"
 	"time"
 
@@ -67,6 +67,8 @@ func TestCredsExpirationGraceful(t *testing.T) {
 	}
 
 	reg := new(&runnercfg, &state, tc.FakeWorkerManagerClientFactory)
+	reg.credsExpireCond = sync.NewCond(&sync.Mutex{})
+	reg.credsExpireCond.L.Lock()
 
 	wkr := ptesting.NewFakeWorkerWithCapabilities("graceful-termination")
 	defer wkr.Close()
@@ -81,8 +83,9 @@ func TestCredsExpirationGraceful(t *testing.T) {
 	wkr.RunnerProtocol.Start(false)
 	assert.NoError(t, err)
 
-	// the expire timer should go off 0ms after workerStarted, so wait a bit to make sure it does..
-	time.Sleep(10 * time.Millisecond)
+	// wait for the creds to expire..
+	reg.credsExpireCond.Wait()
+
 	require.True(t, gotTerminated())
 
 	err = reg.WorkerFinished()
@@ -112,6 +115,8 @@ func TestCredsExpirationNewCredentials(t *testing.T) {
 
 	fmt.Printf("setting fake expires to %s\n", expires)
 	reg := new(&runnercfg, &state, tc.FakeWorkerManagerClientFactory)
+	reg.credsExpireCond = sync.NewCond(&sync.Mutex{})
+	reg.credsExpireCond.L.Lock()
 
 	wkr := ptesting.NewFakeWorkerWithCapabilities("graceful-termination", "new-credentials")
 	defer wkr.Close()
@@ -131,8 +136,8 @@ func TestCredsExpirationNewCredentials(t *testing.T) {
 	wkr.RunnerProtocol.Start(false)
 	assert.NoError(t, err)
 
-	// the expire timer should go off 0ms after workerStarted, so wait a bit to make sure it does..
-	time.Sleep(10 * time.Millisecond)
+	// wait for the creds to expire..
+	reg.credsExpireCond.Wait()
 
 	// expect a new set of credentials, but not a termination
 	require.True(t, gotCredentials())
@@ -152,9 +157,6 @@ func TestCredsExpirationNewCredentials(t *testing.T) {
 	found, err := run.ReadCacheFile(&cachedState, cachePath)
 	assert.True(t, found)
 	assert.NoError(t, err)
-
-	bytes, _ := ioutil.ReadFile(cachePath)
-	fmt.Printf("%s\n", string(bytes))
 
 	require.Equal(t, "testing-rereg", cachedState.Credentials.ClientID)
 	require.Equal(t, "at-rereg", cachedState.Credentials.AccessToken)
