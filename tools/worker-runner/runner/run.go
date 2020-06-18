@@ -50,6 +50,7 @@ func Run(configFile string) (state run.State, err error) {
 	}
 
 	reg := registration.New(runnercfg, &state)
+	er := errorreport.New(&state)
 
 	if !runCached {
 		log.Printf("Configuring with provider %s", runnercfg.Provider.ProviderType)
@@ -159,9 +160,7 @@ func Run(configFile string) (state run.State, err error) {
 	provider.SetProtocol(proto)
 	worker.SetProtocol(proto)
 	reg.SetProtocol(proto)
-
-	// configure error reporting
-	errorreport.Setup(proto, &state)
+	er.SetProtocol(proto)
 
 	// call the WorkerStarted methods before starting the proto so that there
 	// are no race conditions around the capabilities negotiation

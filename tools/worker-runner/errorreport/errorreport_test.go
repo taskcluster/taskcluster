@@ -13,10 +13,6 @@ import (
 	"github.com/taskcluster/taskcluster/v31/tools/worker-runner/tc"
 )
 
-func init() {
-	workerManagerClientFactory = tc.FakeWorkerManagerClientFactory
-}
-
 func TestHandleMessage(t *testing.T) {
 	description := "this is a serious error"
 	extra := map[string]interface{}{
@@ -30,10 +26,9 @@ func TestHandleMessage(t *testing.T) {
 		defer wkr.Close()
 
 		state := run.State{}
-		wkr.RunnerProtocol.Register("error-report", func(msg workerproto.Message) {
-			HandleMessage(msg, workerManagerClientFactory, &state)
-		})
-		wkr.RunnerProtocol.AddCapability("error-report")
+		er := new(&state, tc.FakeWorkerManagerClientFactory)
+
+		er.SetProtocol(wkr.RunnerProtocol)
 		wkr.RunnerProtocol.Start(false)
 		wkr.RunnerProtocol.WaitUntilInitialized()
 		wkr.WorkerProtocol.Start(true)
@@ -79,6 +74,10 @@ func TestHandleMessage(t *testing.T) {
 		wkr := ptesting.NewFakeWorkerWithCapabilities()
 		defer wkr.Close()
 
+		state := run.State{}
+		er := new(&state, tc.FakeWorkerManagerClientFactory)
+
+		er.SetProtocol(wkr.RunnerProtocol)
 		wkr.RunnerProtocol.Start(false)
 		wkr.RunnerProtocol.WaitUntilInitialized()
 		wkr.WorkerProtocol.Start(true)

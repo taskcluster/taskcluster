@@ -6,31 +6,28 @@ import (
 	"reflect"
 
 	"github.com/pkg/errors"
-	tcclient "github.com/taskcluster/taskcluster/v31/clients/client-go"
+	taskcluster "github.com/taskcluster/taskcluster/v31/clients/client-go"
 	"github.com/taskcluster/taskcluster/v31/clients/client-go/tcworkermanager"
 	"github.com/taskcluster/taskcluster/v31/internal/workerproto"
 	"github.com/taskcluster/taskcluster/v31/tools/worker-runner/run"
 	"github.com/taskcluster/taskcluster/v31/tools/worker-runner/tc"
 )
 
-var workerManagerClientFactory tc.WorkerManagerClientFactory
+type ErrorReporter struct {
+	state *run.State
 
-func clientFactory(rootURL string, credentials *tcclient.Credentials) (tc.WorkerManager, error) {
-	prov := tcworkermanager.New(credentials, rootURL)
-	return prov, nil
+	// Factory for worker-manager clients
+	factory tc.WorkerManagerClientFactory
 }
 
-func Setup(proto *workerproto.Protocol, state *run.State) {
-	if workerManagerClientFactory == nil {
-		workerManagerClientFactory = clientFactory
-	}
+func (er *ErrorReporter) SetProtocol(proto *workerproto.Protocol) {
 	proto.Register("error-report", func(msg workerproto.Message) {
-		HandleMessage(msg, workerManagerClientFactory, state)
+		er.HandleMessage(msg)
 	})
 	proto.AddCapability("error-report")
 }
 
-func HandleMessage(msg workerproto.Message, factory tc.WorkerManagerClientFactory, state *run.State) {
+func (er *ErrorReporter) HandleMessage(msg workerproto.Message) {
 	validate := func(things map[string]interface{}, key, expectedType string) bool {
 		if _, ok := things[key]; !ok {
 			return false
@@ -70,7 +67,7 @@ func HandleMessage(msg workerproto.Message, factory tc.WorkerManagerClientFactor
 		Extra:       extraMsg,
 		Title:       msg.Properties["title"].(string),
 	}
-	err = ReportWorkerError(state, factory, &errorReport)
+	err = ReportWorkerError(er.state, er.factory, &errorReport)
 	if err != nil {
 		log.Printf("Error reporting worker error: %v\n", err)
 	}
@@ -87,4 +84,23 @@ func ReportWorkerError(state *run.State, factory tc.WorkerManagerClientFactory, 
 		log.Printf("Error payload: %v", payload)
 	}
 	return err
+}
+
+// Make a new ErrorReporter object
+func New(state *run.State) *ErrorReporter {
+	return new(state, nil)
+}
+
+// Private constructor to allow injection of a fake factory
+func new(state *run.State, factory tc.WorkerManagerClientFactory) *ErrorReporter {
+	if factory == nil {
+		factory = func(rootURL string, credentials *taskcluster.Credentials) (tc.WorkerManager, error) {
+			prov := tcworkermanager.New(credentials, rootURL)
+			return prov, nil
+		}
+	}
+	return &ErrorReporter{
+		factory: factory,
+		state:   state,
+	}
 }
