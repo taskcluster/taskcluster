@@ -4,17 +4,17 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/taskcluster/taskcluster/v30/internal/workerproto"
-	"github.com/taskcluster/taskcluster/v30/tools/worker-runner/cfg"
-	"github.com/taskcluster/taskcluster/v30/tools/worker-runner/errorreport"
-	"github.com/taskcluster/taskcluster/v30/tools/worker-runner/files"
-	"github.com/taskcluster/taskcluster/v30/tools/worker-runner/logging"
-	loggingProtocol "github.com/taskcluster/taskcluster/v30/tools/worker-runner/logging/protocol"
-	"github.com/taskcluster/taskcluster/v30/tools/worker-runner/provider"
-	"github.com/taskcluster/taskcluster/v30/tools/worker-runner/registration"
-	"github.com/taskcluster/taskcluster/v30/tools/worker-runner/run"
-	"github.com/taskcluster/taskcluster/v30/tools/worker-runner/secrets"
-	"github.com/taskcluster/taskcluster/v30/tools/worker-runner/worker"
+	"github.com/taskcluster/taskcluster/v31/internal/workerproto"
+	"github.com/taskcluster/taskcluster/v31/tools/worker-runner/cfg"
+	"github.com/taskcluster/taskcluster/v31/tools/worker-runner/errorreport"
+	"github.com/taskcluster/taskcluster/v31/tools/worker-runner/files"
+	"github.com/taskcluster/taskcluster/v31/tools/worker-runner/logging"
+	loggingProtocol "github.com/taskcluster/taskcluster/v31/tools/worker-runner/logging/protocol"
+	"github.com/taskcluster/taskcluster/v31/tools/worker-runner/provider"
+	"github.com/taskcluster/taskcluster/v31/tools/worker-runner/registration"
+	"github.com/taskcluster/taskcluster/v31/tools/worker-runner/run"
+	"github.com/taskcluster/taskcluster/v31/tools/worker-runner/secrets"
+	"github.com/taskcluster/taskcluster/v31/tools/worker-runner/worker"
 )
 
 // Run the worker.  This embodies the execution of the start-worker command.

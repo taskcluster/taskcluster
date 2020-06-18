@@ -3,6 +3,70 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v31.0.0
+
+### GENERAL
+
+▶ [patch] [bug 1637302](http://bugzil.la/1637302)
+Docker-worker now automatically gzips artifacts before
+uploading them. It sets content-encoding in the S3 headers so that most
+consumers should be able to transparently handle decompression.
+
+### DEPLOYERS
+
+▶ [MAJOR] [#3012](https://github.com/taskcluster/taskcluster/issues/3012)
+An encrypted column "secret" has been added to the workers table. The
+worker-manager service now requires an additional environment variable `DB_CRYPTO_KEY`
+to be set which is a JSON array where each element is an object of the form.
+
+```json
+{
+  "id": "a unique identifier",
+  "algo": "aes-256",
+  "key": "32 bytes of base64 string"
+}
+```
+
+Note that for this upgrade it will only be an array of a single object.
+
+▶ [patch] [bug 1638921](http://bugzil.la/1638921)
+Kubernetes cron tasks are now configured with concurrencyPolicy: Forbid, to prevent multiple pods of the same job from running concurrently.
+
+### WORKER-DEPLOYERS
+
+▶ [patch] [#3080](https://github.com/taskcluster/taskcluster/issues/3080)
+Docker-worker is now more careful to shut down only when it is idle and has not begun to claim a task, avoiding race conditions that could lead to `claim-expired` tasks.
+
+▶ [patch] [#3012](https://github.com/taskcluster/taskcluster/issues/3012)
+Worker runner can now re-register a worker with worker-manager, refreshing its credentials. This allows workers to run for an unlimited time, so long as they continue to check in with the worker manager periodically.  Both docker-worker and generic-worker, as of this version, support this functionality.  Older worker versions will simply terminate when their credentials expire.
+
+### USERS
+
+▶ [patch] 
+Docker-worker now includes an error message in the task log when uploading an artifact fails
+
+▶ [patch] [#2883](https://github.com/taskcluster/taskcluster/issues/2883)
+Endpoints that return worker pools now contain an `existingCapacity` field that contains the total
+amount of capacity for the worker pool between all workers that are not `stopped`.
+
+▶ [patch] [#3004](https://github.com/taskcluster/taskcluster/issues/3004)
+Generic-worker now uses the task's credentials to fetch artifacts specified in the `mounts` property of the task's payload.  This will allow use of private artifacts in mounts.
+
+▶ [patch] [#2882](https://github.com/taskcluster/taskcluster/issues/2882)
+Workerpools lists and views in the ui now show the amount of currently existing capacity
+is provided by the workers in the pool and the pending count of tasks.
+
+### DEVELOPERS
+
+▶ [minor] [#3013](https://github.com/taskcluster/taskcluster/issues/3013)
+Github integration can now set [annotations](https://developer.github.com/v3/checks/runs/#annotations-object) for check runs.
+By default it will read `public/github/customCheckRunAnnotations.json` but it can be overridden by setting
+`task.extra.github.customCheckRun.annotationsArtifactName`. The json will be passed along unmodified.
+
+### OTHER
+
+▶ Additional changes not described here: [bug 1638921](http://bugzil.la/1638921), [#2887](https://github.com/taskcluster/taskcluster/issues/2887), [#2890](https://github.com/taskcluster/taskcluster/issues/2890), [#3021](https://github.com/taskcluster/taskcluster/issues/3021), [#3067](https://github.com/taskcluster/taskcluster/issues/3067), [#3079](https://github.com/taskcluster/taskcluster/issues/3079), [#2962](https://github.com/taskcluster/taskcluster/issues/2962).
+
 ## v30.1.1
 
 ### GENERAL

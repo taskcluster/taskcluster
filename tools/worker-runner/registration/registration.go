@@ -7,12 +7,12 @@ import (
 	"sync"
 	"time"
 
-	taskcluster "github.com/taskcluster/taskcluster/v30/clients/client-go"
-	"github.com/taskcluster/taskcluster/v30/clients/client-go/tcworkermanager"
-	"github.com/taskcluster/taskcluster/v30/internal/workerproto"
-	"github.com/taskcluster/taskcluster/v30/tools/worker-runner/cfg"
-	"github.com/taskcluster/taskcluster/v30/tools/worker-runner/run"
-	"github.com/taskcluster/taskcluster/v30/tools/worker-runner/tc"
+	taskcluster "github.com/taskcluster/taskcluster/v31/clients/client-go"
+	"github.com/taskcluster/taskcluster/v31/clients/client-go/tcworkermanager"
+	"github.com/taskcluster/taskcluster/v31/internal/workerproto"
+	"github.com/taskcluster/taskcluster/v31/tools/worker-runner/cfg"
+	"github.com/taskcluster/taskcluster/v31/tools/worker-runner/run"
+	"github.com/taskcluster/taskcluster/v31/tools/worker-runner/tc"
 )
 
 type RegistrationManager struct {

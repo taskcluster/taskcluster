@@ -6,11 +6,11 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/require"
-	"github.com/taskcluster/taskcluster/v30/clients/client-go/tcworkermanager"
-	"github.com/taskcluster/taskcluster/v30/internal/workerproto"
-	ptesting "github.com/taskcluster/taskcluster/v30/internal/workerproto/testing"
-	"github.com/taskcluster/taskcluster/v30/tools/worker-runner/run"
-	"github.com/taskcluster/taskcluster/v30/tools/worker-runner/tc"
+	"github.com/taskcluster/taskcluster/v31/clients/client-go/tcworkermanager"
+	"github.com/taskcluster/taskcluster/v31/internal/workerproto"
+	ptesting "github.com/taskcluster/taskcluster/v31/internal/workerproto/testing"
+	"github.com/taskcluster/taskcluster/v31/tools/worker-runner/run"
+	"github.com/taskcluster/taskcluster/v31/tools/worker-runner/tc"
 )
 
 func init() {

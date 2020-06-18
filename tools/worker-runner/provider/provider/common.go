@@ -3,8 +3,8 @@ package provider
 import (
 	"log"
 
-	"github.com/taskcluster/taskcluster/v30/tools/worker-runner/run"
-	"github.com/taskcluster/taskcluster/v30/tools/worker-runner/tc"
+	"github.com/taskcluster/taskcluster/v31/tools/worker-runner/run"
+	"github.com/taskcluster/taskcluster/v31/tools/worker-runner/tc"
 )
 
 // WorkerInfo contains the information to identify the worker
