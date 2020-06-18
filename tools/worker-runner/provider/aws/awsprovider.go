@@ -127,7 +127,6 @@ func (p *AWSProvider) WorkerStarted(state *run.State) error {
 			log.Printf("Shutdown error: %v\n", err)
 		}
 	})
-	p.proto.AddCapability("error-report")
 	p.proto.AddCapability("shutdown")
 	p.proto.AddCapability("graceful-termination")
 
