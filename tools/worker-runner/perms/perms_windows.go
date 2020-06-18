@@ -4,6 +4,8 @@ package perms
 
 import (
 	"fmt"
+	"io/ioutil"
+	"os"
 
 	"golang.org/x/sys/windows"
 )
@@ -11,9 +13,54 @@ import (
 const OWNER_ONLY_SDDL = "D:PAI(A;;FA;;;OW)"
 const NOBODY = "S-1-0-0"
 
+// Make a private file that is only readable by the current user.
+func WritePrivateFile(filename string, content []byte) error {
+	if filename == "" {
+		// regression check for
+		// https://bugzilla.mozilla.org/show_bug.cgi?id=1594353
+		panic("empty filename passed to WritePrivateFile")
+	}
+
+	// NOTE: Go largely ignores permissions bits in os.OpenFile on Windows, so
+	// we must manage permissions directly
+
+	// Begin by creating empty file so that we can adjust the permissions before
+	// putting any sensitive content into it
+	f, err := os.OpenFile(filename, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0600)
+	if err != nil {
+		return fmt.Errorf("Could not open %s for writing: %w", filename, err)
+	}
+
+	err = makePrivateToOwner(filename)
+	if err != nil {
+		_ = f.Close()
+		return err
+	}
+
+	_, err = f.Write(content)
+	if err1 := f.Close(); err == nil {
+		err = err1
+	}
+	if err != nil {
+		return fmt.Errorf("Could not write to file %s: %w", filename, err)
+	}
+
+	return verifyPrivateToOwner(filename)
+}
+
+// Read a file, first verifying that it can only be read by the current user.
+func ReadPrivateFile(filename string) ([]byte, error) {
+	err := verifyPrivateToOwner(filename)
+	if err != nil {
+		return []byte{}, err
+	}
+
+	return ioutil.ReadFile(filename)
+}
+
 // MakePrivateToOwner ensures that the given file is private to the
 // current user.
-func MakePrivateToOwner(filename string) (err error) {
+func makePrivateToOwner(filename string) (err error) {
 	if filename == "" {
 		panic("empty filename passed to MakePrivateToOwner")
 	}
@@ -63,7 +110,7 @@ func MakePrivateToOwner(filename string) (err error) {
 // VerifyPrivateToOwner verifies that the given file can only be read by the
 // file's owner, returning an error if this is not the case, or cannot be
 // determined.
-func VerifyPrivateToOwner(filename string) (err error) {
+func verifyPrivateToOwner(filename string) (err error) {
 	// We want to check the owner, group, and DACL for this file.  The DACL
 	// will be verified in its SDDL form, while the owner and group are
 	// checked directly.
