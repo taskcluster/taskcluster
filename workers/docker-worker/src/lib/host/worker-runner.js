@@ -5,8 +5,8 @@ const {StreamTransport, Protocol} = require('../worker-runner-protocol');
 // This module is imported as an "object", so the only place we have to store
 // persistent state is as module-level globals.
 let protocol;
-let gracefulTermination = false;
 let newCredentialsCallback = null;
+let gracefulTerminationCallback = null;
 
 module.exports = {
   setup() {
@@ -14,10 +14,10 @@ module.exports = {
     protocol = new Protocol(transp);
 
     protocol.addCapability('graceful-termination');
-    protocol.on('graceful-termination-msg', () => {
-      // docker-worker doesn't support a finish-your-tasks-first termination,
-      // so we ignore that portion of the message
-      gracefulTermination = true;
+    protocol.on('graceful-termination-msg', msg => {
+      if (gracefulTerminationCallback) {
+        gracefulTerminationCallback(msg['finish-tasks']);
+      }
     });
 
     protocol.addCapability('shutdown');
@@ -40,12 +40,6 @@ module.exports = {
     return os.uptime();
   },
 
-  getTerminationTime() {
-    // This method name would make you think it returns a time, but it really just
-    // returns a boolean.
-    return gracefulTermination;
-  },
-
   configure() {
     const configFile = process.env.DOCKER_WORKER_CONFIG;
     if (!configFile || !fs.existsSync(configFile)) {
@@ -64,5 +58,9 @@ module.exports = {
 
   async onNewCredentials(cb) {
     newCredentialsCallback = cb;
+  },
+
+  async onGracefulTermination(cb) {
+    gracefulTerminationCallback = cb;
   },
 };

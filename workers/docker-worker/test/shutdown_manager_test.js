@@ -7,13 +7,9 @@ const {suiteName} = require('taskcluster-lib-testing');
 const log = Debug('log');
 
 suite(suiteName(), function() {
-  let terminationTime = false;
   const host = {
     billingCycleUptime() {
       return 13;
-    },
-    getTerminationTime() {
-      return terminationTime;
     },
   };
 
@@ -32,6 +28,18 @@ suite(suiteName(), function() {
     const sm = new ShutdownManager(host, makeConfig());
     process.emit('SIGTERM');
     assert.equal(sm.shouldExit(), 'immediate');
+  });
+
+  test('immediate exit on graceful-termination without finish-tasks', function() {
+    const sm = new ShutdownManager(host, makeConfig());
+    sm.onGracefulTermination(false);
+    assert.equal(sm.shouldExit(), 'immediate');
+  });
+
+  test('graceful exit on graceful-termination without finish-tasks', function() {
+    const sm = new ShutdownManager(host, makeConfig());
+    sm.onGracefulTermination(true);
+    assert.equal(sm.shouldExit(), 'graceful');
   });
 
   test('onIdle does nothing with no config', async function() {

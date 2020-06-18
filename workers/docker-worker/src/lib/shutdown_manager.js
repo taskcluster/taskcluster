@@ -44,12 +44,10 @@ class ShutdownManager extends EventEmitter {
 
     let afterIdleSeconds = this.shutdownCfg.afterIdleSeconds;
 
-    let stats = {
+    this.config.log('uptime', {
       uptime: this.host.billingCycleUptime(),
       idleInterval: afterIdleSeconds,
-    };
-
-    this.config.log('uptime', stats);
+    });
 
     this.config.log('worker idle', {afterIdleSeconds});
 
@@ -76,27 +74,17 @@ class ShutdownManager extends EventEmitter {
     this.idleTimeout = null;
   }
 
+  // Call this on a graceful-termination message from worker-runner
+  onGracefulTermination(graceful) {
+    this._setExit(graceful ? 'graceful' : 'immediate');
+  }
+
   // Set this.exit, but never downgrade (e.g., immediate -> graceful)
   _setExit(exit) {
     if (this.exit === 'immediate' && exit === 'graceful') {
       return;
     }
     this.exit = exit;
-  }
-
-  scheduleTerminationPoll() {
-    return (async () => {
-      if (this.terminationTimeout) {clearTimeout(this.terminationTimeout);}
-
-      let terminated = await this.host.getTerminationTime();
-      if (terminated) {
-        this.exit = 'immediate';
-      }
-
-      this.terminationTimeout = setTimeout(
-        this.scheduleTerminationPoll.bind(this), this.nodeTerminationPoll,
-      );
-    })();
   }
 }
 

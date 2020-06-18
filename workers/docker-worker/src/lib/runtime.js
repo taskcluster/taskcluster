@@ -14,7 +14,12 @@ function Runtime(options) {
   // set up to update credentials as necessary
   if (this.hostManager) {
     this.hostManager.onNewCredentials(creds => {
+      this.log('Got new worker credentials', {clientId: creds.clientId});
       this.taskcluster = creds;
+    });
+    this.hostManager.onGracefulTermination(graceful => {
+      this.log('Got graceful-termination request', {graceful});
+      this.shutdownManager.onGracefulTermination(graceful);
     });
   }
 }

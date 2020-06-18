@@ -211,14 +211,8 @@ program.parse(process.argv);
 
   runtime.imageManager = new ImageManager(runtime);
 
-  let shutdownManager;
-
   config.shutdown = config.shutdown || {};
-  shutdownManager = new ShutdownManager(host, runtime);
-  // Recommended by AWS to query every 5 seconds.  Termination window is 2 minutes
-  // so at the very least should have 1m55s to cleanly shutdown.
-  await shutdownManager.scheduleTerminationPoll();
-  runtime.shutdownManager = shutdownManager;
+  runtime.shutdownManager = new ShutdownManager(host, runtime);
 
   if (runtime.logging.secureLiveLogging) {
     verifySSLCertificates(runtime);
