@@ -67,7 +67,8 @@ Do not reveal any information to a potential attacker in error messages -- avoid
 ### Provider Data
 
 Each worker entry has a `providerData` property which can be used to store arbitrary data about the worker.
-The format of this object is entirely at the discretion of the provider.
+The format of this object is entirely at the discretion of the provider. At this time, all dynamic providers must use
+`terminateAfter` as the key in `providerData` for a time when the machine should be directly shut down. You can see how azure/aws/google providers handle it as an example.
 Note that Azure entities have a fixed maximum size, so it is best to avoid storing any data in this property that grows without bound.
 
 ## Provisioning

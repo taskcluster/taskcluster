@@ -686,10 +686,10 @@ builder.declare({
   }
 
   // defaults to 96 hours if reregistrationTimeout is not defined
-  const {reregistrationTimeout} = Provider.interpretLifecycle({ lifecycle: {
+  const {terminateAfter} = Provider.interpretLifecycle({ lifecycle: {
     reregistrationTimeout: worker.providerData && worker.providerData.reregistrationTimeout,
   }});
-  const expires = new Date(Date.now() + reregistrationTimeout);
+  const expires = new Date(terminateAfter);
 
   // We use these fields from inside the worker rather than
   // what was passed in because that is the thing we have verified
@@ -701,6 +701,10 @@ builder.declare({
 
   await worker.update(this.db, worker => {
     worker.secret = this.db.encrypt({ value: Buffer.from(newSecret, 'utf8') });
+    // All dynamic providers set this value for every worker
+    if (worker.providerData.terminateAfter) {
+      worker.providerData.terminateAfter = terminateAfter;
+    }
   });
 
   return res.reply({ expires: expires.toJSON(), credentials, secret: newSecret });

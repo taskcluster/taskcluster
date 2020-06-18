@@ -867,7 +867,16 @@
       "description": "A configuration for static workertypes",
       "properties": {
         "lifecycle": {
-          "$ref": "worker-lifecycle.json#"
+          "additionalProperties": false,
+          "description": "The Static provider implements a subset of the lifecycle hooks,\nonly supporting reregistration timeouts\n",
+          "properties": {
+            "reregistrationTimeout": {
+              "$ref": "worker-lifecycle.json#/properties/reregistrationTimeout"
+            }
+          },
+          "required": [
+          ],
+          "type": "object"
         },
         "workerConfig": {
           "additionalProperties": true,
