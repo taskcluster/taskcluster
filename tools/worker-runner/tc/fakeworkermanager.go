@@ -17,6 +17,7 @@ var (
 
 	wmRegistrations   []*tcworkermanager.RegisterWorkerRequest
 	wmReregistrations []*tcworkermanager.ReregisterWorkerRequest
+	wmWorkerRemovals  []*removedWorker
 
 	// the time at which credentials from regitsterWorker and reregsiterWorker will expire
 	workerExpires tcclient.Time
@@ -25,6 +26,12 @@ var (
 	// also be manipulated by test code
 	workerSecret string
 )
+
+type removedWorker struct {
+	WorkerPoolID string
+	WorkerGroup  string
+	WorkerID     string
+}
 
 type FakeWorkerManager struct {
 	authenticated bool
@@ -87,6 +94,11 @@ func (wm *FakeWorkerManager) ReregisterWorker(payload *tcworkermanager.Reregiste
 }
 
 func (wm *FakeWorkerManager) RemoveWorker(workerPoolID, workerGroup, workerID string) error {
+	wmWorkerRemovals = append(wmWorkerRemovals, &removedWorker{
+		WorkerPoolID: workerPoolID,
+		WorkerGroup:  workerGroup,
+		WorkerID:     workerID,
+	})
 	return nil
 }
 
@@ -138,10 +150,19 @@ func FakeWorkerManagerReregistration() (*tcworkermanager.ReregisterWorkerRequest
 	if len(wmReregistrations) == 0 {
 		return nil, fmt.Errorf("No reregisterWorker calls")
 	} else if len(wmReregistrations) == 1 {
-		return wmReregistrations[0], nil
+		req := wmReregistrations[0]
+		wmReregistrations = []*tcworkermanager.ReregisterWorkerRequest{}
+		return req, nil
 	} else {
 		return nil, fmt.Errorf("Multiple reregisterWorker calls")
 	}
+}
+
+// Get the worker removals that have occurred.
+func FakeWorkerManagerWorkerRemovals() []*removedWorker {
+	req := wmWorkerRemovals
+	wmWorkerRemovals = []*removedWorker{}
+	return req
 }
 
 func SetFakeWorkerManagerWorkerExpires(expires tcclient.Time) {

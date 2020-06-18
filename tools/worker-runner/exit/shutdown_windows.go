@@ -1,4 +1,4 @@
-package provider
+package exit
 
 import "golang.org/x/sys/windows"
 

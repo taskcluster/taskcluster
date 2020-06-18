@@ -21,6 +21,7 @@ type FakeWorker struct {
 
 	// condition variable used to wait for a "test-flush" method
 	flushToWorker *sync.Cond
+	flushToRunner *sync.Cond
 }
 
 // Close down the fake worker.  Call this to dispose of resources.
@@ -46,7 +47,7 @@ func (wkr *FakeWorker) MessageReceivedFunc(msgType string, matcher func(msg work
 	})
 
 	return func() bool {
-		wkr.flushMessagesToWorker()
+		wkr.FlushMessagesToWorker()
 
 		receivedMutex.Lock()
 		defer receivedMutex.Unlock()
@@ -56,7 +57,7 @@ func (wkr *FakeWorker) MessageReceivedFunc(msgType string, matcher func(msg work
 
 // Return only after all messages to the worker sent before this call have been
 // received
-func (wkr *FakeWorker) flushMessagesToWorker() {
+func (wkr *FakeWorker) FlushMessagesToWorker() {
 	wkr.flushToWorker.L.Lock()
 	// send a flush message, and wait until it is received.  Since messages
 	// are delivered in-order, this indicate that all previously sent messages
@@ -64,6 +65,18 @@ func (wkr *FakeWorker) flushMessagesToWorker() {
 	wkr.RunnerProtocol.Send(workerproto.Message{Type: "test-flush"})
 	wkr.flushToWorker.Wait()
 	wkr.flushToWorker.L.Unlock()
+}
+
+// Return only after all messages to the worker sent before this call have been
+// received
+func (wkr *FakeWorker) FlushMessagesToRunner() {
+	wkr.flushToRunner.L.Lock()
+	// send a flush message, and wait until it is received.  Since messages
+	// are delivered in-order, this indicate that all previously sent messages
+	// have been fully received.
+	wkr.WorkerProtocol.Send(workerproto.Message{Type: "test-flush"})
+	wkr.flushToRunner.Wait()
+	wkr.flushToRunner.L.Unlock()
 }
 
 // Create a new fake worker with the given capabilities.  The worker side
@@ -79,14 +92,21 @@ func NewFakeWorkerWithCapabilities(capabilities ...string) *FakeWorker {
 	}
 	workerProto.Start(true)
 
-	// we "flush" outbound messages by sending a "test-flush" message and
+	// we "flush" messages by sending a "test-flush" message and
 	// signalling this condition variable when it is received.
 	flushToWorker := sync.NewCond(&sync.Mutex{})
+	flushToRunner := sync.NewCond(&sync.Mutex{})
 
 	workerProto.Register("test-flush", func(msg workerproto.Message) {
 		flushToWorker.L.Lock()
 		flushToWorker.Broadcast()
 		flushToWorker.L.Unlock()
+	})
+
+	runnerProto.Register("test-flush", func(msg workerproto.Message) {
+		flushToRunner.L.Lock()
+		flushToRunner.Broadcast()
+		flushToRunner.L.Unlock()
 	})
 
 	return &FakeWorker{
@@ -95,5 +115,6 @@ func NewFakeWorkerWithCapabilities(capabilities ...string) *FakeWorker {
 		workerTransp:   workerTransp,
 		runnerTransp:   runnerTransp,
 		flushToWorker:  flushToWorker,
+		flushToRunner:  flushToRunner,
 	}
 }
