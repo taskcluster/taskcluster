@@ -213,16 +213,12 @@ program.parse(process.argv);
 
   let shutdownManager;
 
-  // Billing cycle logic is host specific so we cannot handle shutdowns without
-  // both the host and the configuration to shutdown.
-  if (host && config.shutdown) {
-    runtime.log('handle shutdowns');
-    shutdownManager = new ShutdownManager(host, runtime);
-    // Recommended by AWS to query every 5 seconds.  Termination window is 2 minutes
-    // so at the very least should have 1m55s to cleanly shutdown.
-    await shutdownManager.scheduleTerminationPoll();
-    runtime.shutdownManager = shutdownManager;
-  }
+  config.shutdown = config.shutdown || {};
+  shutdownManager = new ShutdownManager(host, runtime);
+  // Recommended by AWS to query every 5 seconds.  Termination window is 2 minutes
+  // so at the very least should have 1m55s to cleanly shutdown.
+  await shutdownManager.scheduleTerminationPoll();
+  runtime.shutdownManager = shutdownManager;
 
   if (runtime.logging.secureLiveLogging) {
     verifySSLCertificates(runtime);
@@ -231,7 +227,6 @@ program.parse(process.argv);
   // Build the listener and connect to the queue.
   let taskListener = new TaskListener(runtime);
   runtime.gc.taskListener = taskListener;
-  shutdownManager.observe(taskListener);
 
   await taskListener.connect();
 
