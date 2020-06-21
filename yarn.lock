@@ -1371,9 +1371,9 @@ atob-lite@^2.0.0:
   integrity sha1-D+9a1G8b16hQLGVyfwNn1e5D1pY=
 
 aws-sdk@^2.394.0:
-  version "2.696.0"
-  resolved "https://registry.yarnpkg.com/aws-sdk/-/aws-sdk-2.696.0.tgz#f726932d37ce7db85e4a9ba3160de7846a29d934"
-  integrity sha512-LpEZf0ozwVOARKiqXzJ5njXt9eQswRDCwLNK+iTeADGv1up5g7pwU23itOrSLeer3FHV6iueEr+CxEpjQhrEQw==
+  version "2.701.0"
+  resolved "https://registry.yarnpkg.com/aws-sdk/-/aws-sdk-2.701.0.tgz#9827b7eb2bf87722c348d5195c17620b5fe1bead"
+  integrity sha512-95fWGr6gvyRH408VP5LQAycB8Wqw665ll7q6/soscGFD+2HuQ+gB5qpSlXJwOgSggKQCaExWoQnDABBoTSXM2w==
   dependencies:
     buffer "4.9.2"
     events "1.1.1"
