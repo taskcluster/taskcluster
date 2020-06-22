@@ -172,6 +172,7 @@
     "fetch-coverage": "node test/fetch-coverage.js",
     "build": "node infrastructure/tooling/src/main.js build",
     "release": "node infrastructure/tooling/src/main.js release",
+    "staging-release": "node infrastructure/tooling/src/main.js staging-release",
     "release:publish": "node infrastructure/tooling/src/main.js release:publish",
     "generate": "node infrastructure/tooling/src/main.js generate",
     "changelog": "node infrastructure/tooling/src/main.js changelog",

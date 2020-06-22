@@ -31,10 +31,18 @@ module.exports = ({tasks, cmdOptions, credentials, baseDir, logsDir}) => {
     provides: ['release-version', 'docker-flow-version'],
     run: async (requirements, utils) => {
       if (cmdOptions.staging) {
+        // for staging releases, we get the version from the staging-release/*
+        // branch name, and use a fake revision
+        const match = /staging-release\/v(\d+\.\d+\.\d+)$/.exec(cmdOptions.staging);
+        if (!match) {
+          throw new Error(`Staging releases must have branches named 'staging-release/vX.Y.Z'; got ${cmdOptions.staging}`);
+        }
+        const version = match[1];
+
         return {
-          'release-version': '9999.99.99',
+          'release-version': version,
           'docker-flow-version': dockerFlowVersion({
-            gitDescription: 'v9999.99.99',
+            gitDescription: `v${version}`,
             revision: '9999999999999999999999999999999999999999',
           }),
         };
@@ -142,7 +150,6 @@ module.exports = ({tasks, cmdOptions, credentials, baseDir, logsDir}) => {
 
       utils.step({title: 'Pull Docker Image'});
 
-      // TODO: align this with the node version used in docker-worker, bug 1636164
       const nodeVersion = (await readRepoJSON('package.json')).engines.node;
       const image = 'node:' + nodeVersion;
       await dockerPull({image, utils, baseDir});
@@ -317,25 +324,27 @@ module.exports = ({tasks, cmdOptions, credentials, baseDir, logsDir}) => {
         env: {DOCKER_BUILDKIT: 1, ...process.env},
       });
 
-      if (!cmdOptions.staging) {
-        utils.step({title: 'Pushing Docker Image'});
-
-        const dockerPushOptions = {};
-        if (credentials.dockerUsername && credentials.dockerPassword) {
-          dockerPushOptions.credentials = {
-            username: credentials.dockerUsername,
-            password: credentials.dockerPassword,
-          };
-        }
-
-        await dockerPush({
-          logfile: path.join(logsDir, 'docker-push.log'),
-          tag,
-          utils,
-          baseDir,
-          ...dockerPushOptions,
-        });
+      if (cmdOptions.staging) {
+        return provides;
       }
+
+      utils.step({title: 'Pushing Docker Image'});
+
+      const dockerPushOptions = {};
+      if (credentials.dockerUsername && credentials.dockerPassword) {
+        dockerPushOptions.credentials = {
+          username: credentials.dockerUsername,
+          password: credentials.dockerPassword,
+        };
+      }
+
+      await dockerPush({
+        logfile: path.join(logsDir, 'docker-push.log'),
+        tag,
+        utils,
+        baseDir,
+        ...dockerPushOptions,
+      });
 
       return provides;
     },
@@ -405,25 +414,27 @@ module.exports = ({tasks, cmdOptions, credentials, baseDir, logsDir}) => {
         env: {DOCKER_BUILDKIT: 1, ...process.env},
       });
 
-      if (!cmdOptions.staging) {
-        utils.step({title: 'Pushing Docker Image'});
-
-        const dockerPushOptions = {};
-        if (credentials.dockerUsername && credentials.dockerPassword) {
-          dockerPushOptions.credentials = {
-            username: credentials.dockerUsername,
-            password: credentials.dockerPassword,
-          };
-        }
-
-        await dockerPush({
-          logfile: path.join(logsDir, 'livelog-docker-push.log'),
-          tag,
-          utils,
-          baseDir,
-          ...dockerPushOptions,
-        });
+      if (cmdOptions.staging) {
+        return provides;
       }
+
+      utils.step({title: 'Pushing Docker Image'});
+
+      const dockerPushOptions = {};
+      if (credentials.dockerUsername && credentials.dockerPassword) {
+        dockerPushOptions.credentials = {
+          username: credentials.dockerUsername,
+          password: credentials.dockerPassword,
+        };
+      }
+
+      await dockerPush({
+        logfile: path.join(logsDir, 'livelog-docker-push.log'),
+        tag,
+        utils,
+        baseDir,
+        ...dockerPushOptions,
+      });
 
       return provides;
     },
@@ -491,25 +502,27 @@ module.exports = ({tasks, cmdOptions, credentials, baseDir, logsDir}) => {
         env: {DOCKER_BUILDKIT: 1, ...process.env},
       });
 
-      if (!cmdOptions.staging) {
-        utils.step({title: 'Pushing Docker Image'});
-
-        const dockerPushOptions = {};
-        if (credentials.dockerUsername && credentials.dockerPassword) {
-          dockerPushOptions.credentials = {
-            username: credentials.dockerUsername,
-            password: credentials.dockerPassword,
-          };
-        }
-
-        await dockerPush({
-          logfile: path.join(logsDir, 'docker-push.log'),
-          tag,
-          utils,
-          baseDir,
-          ...dockerPushOptions,
-        });
+      if (cmdOptions.staging) {
+        return provides;
       }
+
+      utils.step({title: 'Pushing Docker Image'});
+
+      const dockerPushOptions = {};
+      if (credentials.dockerUsername && credentials.dockerPassword) {
+        dockerPushOptions.credentials = {
+          username: credentials.dockerUsername,
+          password: credentials.dockerPassword,
+        };
+      }
+
+      await dockerPush({
+        logfile: path.join(logsDir, 'docker-push.log'),
+        tag,
+        utils,
+        baseDir,
+        ...dockerPushOptions,
+      });
 
       return provides;
     },
@@ -537,20 +550,16 @@ module.exports = ({tasks, cmdOptions, credentials, baseDir, logsDir}) => {
       'github-release',
     ],
     run: async (requirements, utils) => {
-      if (!cmdOptions.push) {
-        return utils.skip({});
-      }
-
       const octokit = new Octokit({auth: `token ${credentials.ghToken}`});
 
       utils.status({message: `Create Release`});
       const release = await octokit.repos.createRelease({
         owner: 'taskcluster',
-        repo: 'taskcluster',
+        repo: cmdOptions.staging ? 'staging-releases' : 'taskcluster',
         tag_name: `v${requirements['release-version']}`,
         name: `v${requirements['release-version']}`,
         body: await requirements['changelog-text'],
-        draft: false,
+        draft: cmdOptions.staging ? true : false,
         prerelease: false,
       });
       const {upload_url} = release.data;
@@ -607,8 +616,8 @@ module.exports = ({tasks, cmdOptions, credentials, baseDir, logsDir}) => {
       `publish-clients/client`,
     ],
     run: async (requirements, utils) => {
-      if (!cmdOptions.push) {
-        return utils.skip({});
+      if (cmdOptions.staging) {
+        return utils.skip();
       }
 
       await npmPublish({
@@ -637,8 +646,8 @@ module.exports = ({tasks, cmdOptions, credentials, baseDir, logsDir}) => {
         logfile: path.join(logsDir, `install-clients-client-web.log`),
       });
 
-      if (!cmdOptions.push) {
-        return utils.skip({});
+      if (cmdOptions.staging) {
+        return;
       }
 
       await npmPublish({
@@ -658,8 +667,8 @@ module.exports = ({tasks, cmdOptions, credentials, baseDir, logsDir}) => {
       `publish-clients/client-py`,
     ],
     run: async (requirements, utils) => {
-      if (!cmdOptions.push) {
-        return utils.skip({});
+      if (cmdOptions.staging) {
+        return utils.skip();
       }
 
       await pyClientRelease({

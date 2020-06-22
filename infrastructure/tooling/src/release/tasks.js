@@ -304,9 +304,28 @@ module.exports = ({tasks, cmdOptions, credentials}) => {
         refs: [...tags, 'master'],
         utils,
       });
+    },
+  });
+
+  ensureTask(tasks, {
+    title: 'Push Staging Release',
+    requires: [
+      'release-version',
+    ],
+    provides: [
+      'target-staging-release',
+    ],
+    run: async (requirements, utils) => {
+      const version = requirements['release-version'];
+      await gitPush({
+        dir: REPO_ROOT,
+        remote: 'git@github.com:taskcluster/staging-releases',
+        refs: [`HEAD:staging-release/v${version}`],
+        utils,
+      });
 
       return {
-        'target-release': true,
+        'target-staging-release': `https://github.com/taskcluster/staging-releases/tree/staging-release/v${version}`,
       };
     },
   });
