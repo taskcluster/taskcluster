@@ -1,0 +1,212 @@
+version: 17
+migrationScript: 0017-migration.sql
+downgradeScript: 0017-downgrade.sql
+methods:
+  indexed_tasks_entities_load:
+    description: See taskcluster-lib-entities
+    mode: read
+    serviceName: index
+    args: partition_key text, row_key text
+    returns: table (partition_key_out text, row_key_out text, value jsonb, version integer, etag uuid)
+    body: |-
+      begin
+        return query
+        select
+          indexed_tasks_entities_load.partition_key,
+          indexed_tasks_entities_load.row_key,
+          entity_buf_encode(
+            jsonb_build_object(
+              'PartitionKey', sha512(namespace),
+              'RowKey', encode_string_key(name),
+              'namespace', namespace,
+              'name', name,
+              'rank', rank,
+              'taskId', task_id,
+              'expires', expires),
+            'data', data::text) as value,
+          1 as version,
+          indexed_tasks.etag as etag
+        from indexed_tasks
+        where
+          sha512(indexed_tasks.namespace) = partition_key and
+          indexed_tasks.name = decode_string_key(row_key);
+      end
+  indexed_tasks_entities_create:
+    serviceName: index
+    description: See taskcluster-lib-entities
+    mode: write
+    args: pk text, rk text, properties jsonb, overwrite boolean, version integer
+    returns: uuid
+    body: |-
+      declare
+        new_row indexed_tasks%ROWTYPE;
+      begin
+        select
+          (properties ->> 'namespace')::text,
+          (properties ->> 'name')::text,
+          (properties ->> 'rank')::text,
+          (properties ->> 'taskId')::text,
+          entity_buf_decode(properties, 'data')::jsonb,
+          (properties ->> 'expires')::timestamptz,
+          public.gen_random_uuid()
+        into new_row;
+        if overwrite then
+          raise exception 'overwrite not implemented';
+        else
+          execute 'insert into indexed_tasks select $1.*' using new_row;
+        end if;
+        return new_row.etag;
+      end
+  indexed_tasks_entities_remove:
+    serviceName: index
+    description: See taskcluster-lib-entities
+    mode: write
+    args: partition_key text, row_key text
+    returns: table (etag uuid)
+    body: |-
+      begin
+        return query delete from indexed_tasks
+        where
+          sha512(indexed_tasks.namespace) = indexed_tasks_entities_remove.partition_key and
+          indexed_tasks.name = decode_string_key(indexed_tasks_entities_remove.row_key)
+        returning indexed_tasks.etag;
+      end
+  indexed_tasks_entities_modify:
+    serviceName: index
+    description: See taskcluster-lib-entities
+    mode: write
+    args: partition_key text, row_key text, properties jsonb, version integer, old_etag uuid
+    returns: table (etag uuid)
+    body: |-
+      declare
+        new_row indexed_tasks%ROWTYPE;
+      begin
+        select
+          (properties ->> 'namespace')::text,
+          (properties ->> 'name')::text,
+          (properties ->> 'rank')::integer,
+          (properties ->> 'taskId')::text,
+          entity_buf_decode(properties, 'data')::jsonb,
+          (properties ->> 'expires')::timestamptz,
+          public.gen_random_uuid() as etag
+        into new_row;
+        update indexed_tasks
+        set (
+          namespace,
+          name,
+          rank,
+          task_id,
+          data,
+          expires,
+          etag
+        ) = (
+          new_row.namespace,
+          new_row.name,
+          new_row.rank,
+          new_row.task_id,
+          new_row.data,
+          new_row.expires,
+          new_row.etag
+        )
+        where
+          sha512(indexed_tasks.namespace) = indexed_tasks_entities_modify.partition_key and
+          indexed_tasks.name = decode_string_key(indexed_tasks_entities_modify.row_key) and
+          indexed_tasks.etag = indexed_tasks_entities_modify.old_etag;
+        if found then
+          return query select new_row.etag;
+          return;
+        end if;
+        perform indexed_tasks.etag from indexed_tasks
+        where
+          sha512(indexed_tasks.namespace) = indexed_tasks_entities_modify.partition_key and
+          indexed_tasks.name = decode_string_key(indexed_tasks_entities_modify.row_key);
+        if found then
+          raise exception 'unsuccessful update' using errcode = 'P0004';
+        else
+          raise warning 'no such row... % pk: %, row_key %, new_row.etag %, old_etag %', properties, partition_key, row_key, new_row.etag, old_etag;
+          raise exception 'no such row' using errcode = 'P0002';
+        end if;
+      end
+  indexed_tasks_entities_scan:
+    description: See taskcluster-lib-entities
+    mode: read
+    serviceName: index
+    args: pk text, rk text, condition text, size integer, page integer
+    returns: table (partition_key text, row_key text, value jsonb, version integer, etag uuid)
+    body: |-
+      declare
+        cond text[];
+        exp_cond_operator text;
+        exp_cond_operand timestamptz;
+        partition_key_var text;
+        row_key_var text;
+      begin
+        if not condition is null then
+          cond := regexp_split_to_array(condition, '\s+');
+          exp_cond_operator := cond[4];
+          exp_cond_operand := cond[5] :: timestamptz;
+          return query select
+            sha512(namespace) as partition_key,
+            encode_string_key(name) as row_key,
+            entity_buf_encode(
+              jsonb_build_object(
+                'PartitionKey', sha512(namespace),
+                'RowKey', encode_string_key(name),
+                'namespace', namespace,
+                'name', name,
+                'rank', rank,
+                'taskId', task_id,
+                'expires', expires),
+              'data', data::text) as value,
+            1 as version,
+            indexed_tasks.etag as etag from indexed_tasks
+          where
+            (indexed_tasks_entities_scan.pk is null or sha512(namespace) = indexed_tasks_entities_scan.pk) and
+            (indexed_tasks_entities_scan.rk is null or decode_string_key(indexed_tasks_entities_scan.rk) = name) and
+            case
+              when exp_cond_operator = '=' then expires = exp_cond_operand
+              when exp_cond_operator = '<' then expires < exp_cond_operand
+              when exp_cond_operator = '<=' then expires <= exp_cond_operand
+              when exp_cond_operator = '>' then expires > exp_cond_operand
+              when exp_cond_operator = '>=' then expires >= exp_cond_operand
+              else expires <> exp_cond_operand
+            end
+          order by partition_key, indexed_tasks.name
+          limit case
+            when (size is not null and size > 0) then size + 1
+            else null
+          end
+          offset case
+            when (page is not null and page > 0) then page
+            else 0
+          end;
+        else
+          return query select
+            sha512(namespace) as partition_key,
+            encode_string_key(name) as row_key,
+            entity_buf_encode(
+              jsonb_build_object(
+                'PartitionKey', sha512(namespace),
+                'RowKey', encode_string_key(name),
+                'namespace', namespace,
+                'name', name,
+                'rank', rank,
+                'taskId', task_id,
+                'expires', expires),
+              'data', data::text) as value,
+            1 as version,
+            indexed_tasks.etag as etag from indexed_tasks
+          where
+            (indexed_tasks_entities_scan.pk is null or sha512(namespace) = indexed_tasks_entities_scan.pk) and
+            (indexed_tasks_entities_scan.rk is null or decode_string_key(indexed_tasks_entities_scan.rk) = name)
+          order by partition_key, indexed_tasks.name
+          limit case
+            when (size is not null and size > 0) then size + 1
+            else null
+          end
+          offset case
+            when (size is not null and size > 0 and page is not null and page > 0) then page
+            else 0
+          end;
+        end if;
+      end

@@ -23,7 +23,7 @@
     },
     "index": {
       "tables": {
-        "indexed_tasks_entities": "write",
+        "indexed_tasks": "write",
         "namespaces_entities": "write"
       }
     },
@@ -133,12 +133,14 @@
       "value": "jsonb not null",
       "version": "integer not null"
     },
-    "indexed_tasks_entities": {
-      "etag": "uuid",
-      "partition_key": "text not null",
-      "row_key": "text not null",
-      "value": "jsonb not null",
-      "version": "integer not null"
+    "indexed_tasks": {
+      "data": "jsonb not null",
+      "etag": "uuid not null",
+      "expires": "timestamp with time zone not null",
+      "name": "text not null",
+      "namespace": "text not null",
+      "rank": "integer not null",
+      "task_id": "text not null"
     },
     "last_fire_3_entities": {
       "etag": "uuid",
@@ -2535,6 +2537,58 @@
       },
       "migrationScript": "begin\n  -- SlugIDs are stored as UUIDs in Azure, because Azure stores that efficiently, but this makes it\n  -- difficult to query the DB since everywhere else we deal with SlugIDs in their 22-character\n  -- representation.  So these functions convert uuids to slugids and back.  Refer to\n  -- https://github.com/taskcluster/slugid/blob/53ec9a2de7140afff5b986c7c60a8028512e87d0/slugid.js\n  create or replace function uuid_to_slugid(uuid text) RETURNS text\n  as $$\n    begin\n      return left(replace(replace(encode(decode(replace(uuid, '-', ''), 'hex'), 'base64'), '+', '-'), '/', '_'), 22);\n    end;\n  $$\n  language plpgSQL\n  strict immutable;\n\n  create or replace function slugid_to_uuid(slugid text) RETURNS text\n  as $$\n    begin\n      return (encode(decode(replace(replace(slugid, '_', '/'), '-', '+') || '==', 'base64') , 'hex')::uuid)::text;\n    end;\n  $$\n  language plpgSQL\n  strict immutable;\nend\n",
       "version": 16
+    },
+    {
+      "downgradeScript": "begin\n  -- lock this table before reading from it, to prevent loss of concurrent\n  -- updates when the table is dropped.\n  lock table indexed_tasks;\n\n  create table indexed_tasks_entities(\n    partition_key text, row_key text,\n    value jsonb not null,\n    version integer not null,\n    etag uuid default public.gen_random_uuid());\n  alter table indexed_tasks_entities add primary key (partition_key, row_key);\n\n  insert into indexed_tasks_entities\n  select\n    encode_string_key(namespace) as partition_key,\n    encode_string_key(name) as row_key,\n    entity_buf_encode(\n        jsonb_build_object(\n          'PartitionKey', encode_string_key(namespace),\n          'RowKey', encode_string_key(name),\n          'rank', rank,\n          'taskId', task_id,\n          'expires', expires),\n        'data', data::text) as value,\n    1 as version,\n    etag\n  from indexed_tasks;\n\n  revoke select, insert, update, delete on indexed_tasks from $db_user_prefix$_index;\n  drop table indexed_tasks;\n  grant select, insert, update, delete on indexed_tasks_entities to $db_user_prefix$_index;\nend\n",
+      "methods": {
+        "indexed_tasks_entities_create": {
+          "args": "pk text, rk text, properties jsonb, overwrite boolean, version integer",
+          "body": "declare\n  new_row indexed_tasks%ROWTYPE;\nbegin\n  select\n    (properties ->> 'namespace')::text,\n    (properties ->> 'name')::text,\n    (properties ->> 'rank')::text,\n    (properties ->> 'taskId')::text,\n    entity_buf_decode(properties, 'data')::jsonb,\n    (properties ->> 'expires')::timestamptz,\n    public.gen_random_uuid()\n  into new_row;\n  if overwrite then\n    raise exception 'overwrite not implemented';\n  else\n    execute 'insert into indexed_tasks select $1.*' using new_row;\n  end if;\n  return new_row.etag;\nend",
+          "deprecated": false,
+          "description": "See taskcluster-lib-entities",
+          "mode": "write",
+          "returns": "uuid",
+          "serviceName": "index"
+        },
+        "indexed_tasks_entities_load": {
+          "args": "partition_key text, row_key text",
+          "body": "begin\n  return query\n  select\n    indexed_tasks_entities_load.partition_key,\n    indexed_tasks_entities_load.row_key,\n    entity_buf_encode(\n      jsonb_build_object(\n        'PartitionKey', sha512(namespace),\n        'RowKey', encode_string_key(name),\n        'namespace', namespace,\n        'name', name,\n        'rank', rank,\n        'taskId', task_id,\n        'expires', expires),\n      'data', data::text) as value,\n    1 as version,\n    indexed_tasks.etag as etag\n  from indexed_tasks\n  where\n    sha512(indexed_tasks.namespace) = partition_key and\n    indexed_tasks.name = decode_string_key(row_key);\nend",
+          "deprecated": false,
+          "description": "See taskcluster-lib-entities",
+          "mode": "read",
+          "returns": "table (partition_key_out text, row_key_out text, value jsonb, version integer, etag uuid)",
+          "serviceName": "index"
+        },
+        "indexed_tasks_entities_modify": {
+          "args": "partition_key text, row_key text, properties jsonb, version integer, old_etag uuid",
+          "body": "declare\n  new_row indexed_tasks%ROWTYPE;\nbegin\n  select\n    (properties ->> 'namespace')::text,\n    (properties ->> 'name')::text,\n    (properties ->> 'rank')::integer,\n    (properties ->> 'taskId')::text,\n    entity_buf_decode(properties, 'data')::jsonb,\n    (properties ->> 'expires')::timestamptz,\n    public.gen_random_uuid() as etag\n  into new_row;\n  update indexed_tasks\n  set (\n    namespace,\n    name,\n    rank,\n    task_id,\n    data,\n    expires,\n    etag\n  ) = (\n    new_row.namespace,\n    new_row.name,\n    new_row.rank,\n    new_row.task_id,\n    new_row.data,\n    new_row.expires,\n    new_row.etag\n  )\n  where\n    sha512(indexed_tasks.namespace) = indexed_tasks_entities_modify.partition_key and\n    indexed_tasks.name = decode_string_key(indexed_tasks_entities_modify.row_key) and\n    indexed_tasks.etag = indexed_tasks_entities_modify.old_etag;\n  if found then\n    return query select new_row.etag;\n    return;\n  end if;\n  perform indexed_tasks.etag from indexed_tasks\n  where\n    sha512(indexed_tasks.namespace) = indexed_tasks_entities_modify.partition_key and\n    indexed_tasks.name = decode_string_key(indexed_tasks_entities_modify.row_key);\n  if found then\n    raise exception 'unsuccessful update' using errcode = 'P0004';\n  else\n    raise warning 'no such row... % pk: %, row_key %, new_row.etag %, old_etag %', properties, partition_key, row_key, new_row.etag, old_etag;\n    raise exception 'no such row' using errcode = 'P0002';\n  end if;\nend",
+          "deprecated": false,
+          "description": "See taskcluster-lib-entities",
+          "mode": "write",
+          "returns": "table (etag uuid)",
+          "serviceName": "index"
+        },
+        "indexed_tasks_entities_remove": {
+          "args": "partition_key text, row_key text",
+          "body": "begin\n  return query delete from indexed_tasks\n  where\n    sha512(indexed_tasks.namespace) = indexed_tasks_entities_remove.partition_key and\n    indexed_tasks.name = decode_string_key(indexed_tasks_entities_remove.row_key)\n  returning indexed_tasks.etag;\nend",
+          "deprecated": false,
+          "description": "See taskcluster-lib-entities",
+          "mode": "write",
+          "returns": "table (etag uuid)",
+          "serviceName": "index"
+        },
+        "indexed_tasks_entities_scan": {
+          "args": "pk text, rk text, condition text, size integer, page integer",
+          "body": "declare\n  cond text[];\n  exp_cond_operator text;\n  exp_cond_operand timestamptz;\n  partition_key_var text;\n  row_key_var text;\nbegin\n  if not condition is null then\n    cond := regexp_split_to_array(condition, '\\s+');\n    exp_cond_operator := cond[4];\n    exp_cond_operand := cond[5] :: timestamptz;\n    return query select\n      sha512(namespace) as partition_key,\n      encode_string_key(name) as row_key,\n      entity_buf_encode(\n        jsonb_build_object(\n          'PartitionKey', sha512(namespace),\n          'RowKey', encode_string_key(name),\n          'namespace', namespace,\n          'name', name,\n          'rank', rank,\n          'taskId', task_id,\n          'expires', expires),\n        'data', data::text) as value,\n      1 as version,\n      indexed_tasks.etag as etag from indexed_tasks\n    where\n      (indexed_tasks_entities_scan.pk is null or sha512(namespace) = indexed_tasks_entities_scan.pk) and\n      (indexed_tasks_entities_scan.rk is null or decode_string_key(indexed_tasks_entities_scan.rk) = name) and\n      case\n        when exp_cond_operator = '=' then expires = exp_cond_operand\n        when exp_cond_operator = '<' then expires < exp_cond_operand\n        when exp_cond_operator = '<=' then expires <= exp_cond_operand\n        when exp_cond_operator = '>' then expires > exp_cond_operand\n        when exp_cond_operator = '>=' then expires >= exp_cond_operand\n        else expires <> exp_cond_operand\n      end\n    order by partition_key, indexed_tasks.name\n    limit case\n      when (size is not null and size > 0) then size + 1\n      else null\n    end\n    offset case\n      when (page is not null and page > 0) then page\n      else 0\n    end;\n  else\n    return query select\n      sha512(namespace) as partition_key,\n      encode_string_key(name) as row_key,\n      entity_buf_encode(\n        jsonb_build_object(\n          'PartitionKey', sha512(namespace),\n          'RowKey', encode_string_key(name),\n          'namespace', namespace,\n          'name', name,\n          'rank', rank,\n          'taskId', task_id,\n          'expires', expires),\n        'data', data::text) as value,\n      1 as version,\n      indexed_tasks.etag as etag from indexed_tasks\n    where\n      (indexed_tasks_entities_scan.pk is null or sha512(namespace) = indexed_tasks_entities_scan.pk) and\n      (indexed_tasks_entities_scan.rk is null or decode_string_key(indexed_tasks_entities_scan.rk) = name)\n    order by partition_key, indexed_tasks.name\n    limit case\n      when (size is not null and size > 0) then size + 1\n      else null\n    end\n    offset case\n      when (size is not null and size > 0 and page is not null and page > 0) then page\n      else 0\n    end;\n  end if;\nend",
+          "deprecated": false,
+          "description": "See taskcluster-lib-entities",
+          "mode": "read",
+          "returns": "table (partition_key text, row_key text, value jsonb, version integer, etag uuid)",
+          "serviceName": "index"
+        }
+      },
+      "migrationScript": "begin\n  -- lock this table before reading from it, to prevent loss of concurrent\n  -- updates when the table is dropped.  Note that this may lead to concurrent\n  -- updates failing; the important thing is that they not succeed without\n  -- taking effect.  Failed updates will be retried.\n  lock table indexed_tasks_entities;\n\n  create table indexed_tasks\n  as\n    select\n      (value ->> 'namespace')::text as namespace,\n      (value ->> 'name')::text as name,\n      (value ->> 'rank')::integer as rank,\n      (value ->> 'taskId')::text as task_id,\n      entity_buf_decode(value, 'data')::jsonb as data,\n      (value ->> 'expires')::timestamptz as expires,\n      etag\n    from indexed_tasks_entities;\n  alter table indexed_tasks add primary key (namespace, name);\n  alter table indexed_tasks\n    alter column namespace set not null,\n    alter column name set not null,\n    alter column rank set not null,\n    alter column task_id set not null,\n    alter column expires set not null,\n    alter column data set not null,\n    alter column etag set not null,\n    alter column etag set default public.gen_random_uuid();\n\n  revoke select, insert, update, delete on indexed_tasks_entities from $db_user_prefix$_index;\n  drop table indexed_tasks_entities;\n  grant select, insert, update, delete on indexed_tasks to $db_user_prefix$_index;\n\n  -- Compute the sha512 of the given text data.\n  -- sha512 is the algorithm that will be used to generate the hash.\n  create or replace function sha512(t text) returns text\n  as $$\n      begin\n        return encode(digest(t, 'sha512'), 'hex');\n      end;\n  $$\n  language plpgSQL\n  strict immutable;\nend\n",
+      "version": 17
     }
   ]
 }
