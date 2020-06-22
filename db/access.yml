@@ -21,7 +21,7 @@ hooks:
     last_fire_3_entities: write
 index:
   tables:
-    indexed_tasks_entities: write
+    indexed_tasks: write
     namespaces_entities: write
 notify:
   tables:

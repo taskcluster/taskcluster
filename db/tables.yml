@@ -64,12 +64,14 @@ queues_entities:
   value: jsonb not null
   version: integer not null
   etag: uuid
-indexed_tasks_entities:
-  partition_key: text not null
-  row_key: text not null
-  value: jsonb not null
-  version: integer not null
-  etag: uuid
+indexed_tasks:
+  namespace: text not null
+  name: text not null
+  rank: integer not null
+  task_id: text not null
+  data: jsonb not null
+  expires: timestamp with time zone not null
+  etag: uuid not null
 namespaces_entities:
   partition_key: text not null
   row_key: text not null
