@@ -5,6 +5,7 @@ const assert = require('assert').strict;
 const hugeBufs = require('./fixtures/huge_bufs.js');
 
 const ASCII = _.range(1, 128).map(i => String.fromCharCode(i)).join(' ');
+const THIS_VERSION = parseInt(/.*\/0*(\d+)_test\.js/.exec(__filename)[1]);
 
 // (copied from azure-entities)
 const encodeStringKey = function(str) {
@@ -37,7 +38,6 @@ const decodeCompositeKey = function(key) {
 };
 
 suite(testing.suiteName(), function() {
-  const THIS_VERSION = 8;
   helper.withDbForVersion();
 
   suiteSetup(async function() {

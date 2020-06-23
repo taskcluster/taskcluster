@@ -7,6 +7,9 @@ const Entity = require('taskcluster-lib-entities');
 const hugeBufs = require('./fixtures/huge_bufs.js');
 const {entityBufDecodeTest} = require('./0008_test.js');
 
+const THIS_VERSION = parseInt(/.*\/0*(\d+)_test\.js/.exec(__filename)[1]);
+const PREV_VERSION = THIS_VERSION - 1;
+
 // (adapted from services/worker-manager/src/data.js) NOTE: this will be
 // removed when tc-lib-entities is dropped from the repository
 const WorkerPoolEntity = Entity.configure({
@@ -29,8 +32,6 @@ const WorkerPoolEntity = Entity.configure({
 });
 
 suite(testing.suiteName(), function() {
-  const THIS_VERSION = 10;
-  const PREV_VERSION = THIS_VERSION - 1;
   helper.withDbForVersion();
 
   // version 10 updates entity_buf_decode to fix a bug, so we re-test that function here
