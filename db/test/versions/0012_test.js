@@ -5,7 +5,7 @@ const testing = require('taskcluster-lib-testing');
 const assert = require('assert').strict;
 const Entity = require('taskcluster-lib-entities');
 
-const THIS_VERSION = 12;
+const THIS_VERSION = parseInt(/.*\/0*(\d+)_test\.js/.exec(__filename)[1]);
 const PREV_VERSION = THIS_VERSION - 1;
 
 // (adapted from services/worker-manager/src/data.js) NOTE: this will be

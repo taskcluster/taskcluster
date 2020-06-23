@@ -2,9 +2,10 @@ const assert = require('assert').strict;
 const helper = require('../helper');
 const testing = require('taskcluster-lib-testing');
 
+const THIS_VERSION = parseInt(/.*\/0*(\d+)_test\.js/.exec(__filename)[1]);
+const PREV_VERSION = THIS_VERSION - 1;
+
 suite(testing.suiteName(), function() {
-  const THIS_VERSION = 14;
-  const PREV_VERSION = THIS_VERSION - 1;
   helper.withDbForVersion();
 
   const assertNoColumn = async columnName => {
