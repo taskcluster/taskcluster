@@ -1,0 +1,4 @@
+version: 16
+migrationScript: 0016-migration.sql
+downgradeScript: 0016-downgrade.sql
+methods: []
