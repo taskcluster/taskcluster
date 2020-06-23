@@ -62,6 +62,10 @@
 
 | Name | Mode | Arguments | Returns | Description |
 | --- | --- | --- | --- | --- |
+| create_indexed_task | write | namespace_in text, name_in text, rank_in integer, task_id_in text, data_in jsonb, expires_in timestamptz | uuid | Create a new indexed task. Raises UNIQUE_VIOLATION if the indexed task already exists.<br />Returns the etag of the newly created indexed task. |
+| expire_indexed_tasks | write |  | integer | Expire indexed tasks that come before the current time.<br />Returns a count of rows that have been deleted. |
+| get_indexed_task | read | namespace_in text, name_in text | table(namespace text, name text, rank integer, task_id text, data jsonb, expires timestamptz, etag uuid) | Get a non-expired indexed task. The returned table will have one or (if no such indexed task is defined) zero rows. |
+| get_indexed_tasks | read | namespace_in text, name_in text, page_size_in integer, page_offset_in integer | table(namespace text, name text, rank integer, task_id text, data jsonb, expires timestamptz) | Get existing indexed tasks filtered by the optional arguments,<br />ordered by the `namespace` and `name`.<br />If the pagination arguments are both NULL, all rows are returned.<br />Otherwise, page_size rows are returned at offset page_offset. |
 | indexed_tasks_entities_create | write | pk text, rk text, properties jsonb, overwrite boolean, version integer | uuid | See taskcluster-lib-entities |
 | indexed_tasks_entities_load | read | partition_key text, row_key text | table (partition_key_out text, row_key_out text, value jsonb, version integer, etag uuid) | See taskcluster-lib-entities |
 | indexed_tasks_entities_modify | write | partition_key text, row_key text, properties jsonb, version integer, old_etag uuid | table (etag uuid) | See taskcluster-lib-entities |
@@ -72,6 +76,7 @@
 | namespaces_entities_modify | write | partition_key text, row_key text, properties jsonb, version integer, old_etag uuid | table (etag uuid) | See taskcluster-lib-entities |
 | namespaces_entities_remove | write | partition_key text, row_key text | table (etag uuid) | See taskcluster-lib-entities |
 | namespaces_entities_scan | read | pk text, rk text, condition text, size integer, page integer | table (partition_key text, row_key text, value jsonb, version integer, etag uuid) | See taskcluster-lib-entities |
+| update_indexed_task | write | namespace_in text, name_in text, rank_in integer, task_id_in text, data_in jsonb, expires_in timestamptz, etag_in uuid | table(namespace text, name text, rank integer, task_id text, data jsonb, expires timestamptz, etag uuid) | Update an indexed task.<br />Returns the up-to-date indexed task row that have the same namespace and name.<br />If the etag argument is empty then the update will overwrite the matched row.<br />Else, the function will fail if the etag is out of date. This is useful for concurency handling. |
 ## notify
 
 | Name | Mode | Arguments | Returns | Description |

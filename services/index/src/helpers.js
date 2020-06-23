@@ -1,4 +1,5 @@
 let assert = require('assert');
+const data = require('./data');
 
 /**
  * Insert task into `namespace` where:
@@ -23,10 +24,10 @@ let insertTask = function(namespace, input, options) {
   assert(input.data instanceof Object, 'data must be an object');
   assert(input.taskId, 'taskId must be given');
   assert(typeof input.rank === 'number', 'rank must be a number');
-  assert(options.IndexedTask,
-    'options.IndexedTask must be an instance of data.IndexedTask');
   assert(options.Namespace,
     'options.Namespace must be an instance of data.Namespace');
+  assert(options.db,
+    'options.db must be set');
 
   // Get namespace and ensure that we have a least one dot
   namespace = namespace.split('.');
@@ -39,11 +40,11 @@ let insertTask = function(namespace, input, options) {
   let expires = new Date(input.expires);
 
   // Attempt to load indexed task
-  return options.IndexedTask.load({
+  return data.IndexedTask.get(options.db, {
     namespace: namespace,
     name: name,
   }).then(function(task) {
-    return task.modify(function() {
+    return task.update(options.db, function() {
       // Update if we prefer input over what we have
       if (this.rank <= input.rank) {
         this.rank = input.rank;
@@ -65,7 +66,7 @@ let insertTask = function(namespace, input, options) {
       namespace,
       expires,
     ).then(function() {
-      return options.IndexedTask.create({
+      const indexedTask = data.IndexedTask.fromApi({
         namespace: namespace,
         name: name,
         rank: input.rank,
@@ -73,6 +74,7 @@ let insertTask = function(namespace, input, options) {
         data: input.data,
         expires: expires,
       });
+      return indexedTask.create(options.db);
     });
   });
 };
@@ -109,3 +111,5 @@ exports.listTableEntries = listTableEntries;
 
 /** Regular expression for valid namespaces */
 exports.namespaceFormat = /^([a-zA-Z0-9_!~*'()%-]+\.)*[a-zA-Z0-9_!~*'()%-]+$/;
+
+exports.MAX_MODIFY_ATTEMPTS = 5;

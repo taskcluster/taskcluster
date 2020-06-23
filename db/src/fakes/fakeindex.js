@@ -1,18 +1,28 @@
-const assert = require('assert');
+const assert = require('assert').strict;
 const slugid = require('slugid');
+const {isPlainObject, isDate} = require('lodash');
 const { UNIQUE_VIOLATION } = require('taskcluster-lib-postgres');
 const { getEntries } = require('../utils');
+
+const errWithCode = (msg, code) => {
+  const err = new Error(msg);
+  err.code = code;
+  return err;
+};
 
 class FakeIndex {
   constructor() {
     this.indexedTasks = new Map();
     this.namespaces = new Map();
+    // table for postgres phase 2
+    this.indexedTasks2 = new Map();
   }
 
   /* helpers */
 
   reset() {
     this.indexedTasks = new Map();
+    this.indexedTasks2 = new Map();
     this.namespaces = new Map();
   }
 
@@ -73,6 +83,111 @@ class FakeIndex {
   }
 
   /* fake functions */
+
+  async create_indexed_task(
+    namespace, name, rank, task_id,
+    data, expires,
+  ) {
+    assert.equal(typeof namespace, 'string');
+    assert.equal(typeof name, 'string');
+    assert.equal(typeof rank, 'number');
+    assert.equal(typeof task_id, 'string');
+    assert(isPlainObject(data));
+    assert(isDate(expires));
+
+    if (this.indexedTasks2.get(`${namespace}-${name}`)) {
+      throw errWithCode('row exists', UNIQUE_VIOLATION);
+    }
+
+    const etag = slugid.v4();
+
+    this.indexedTasks2.set(`${namespace}-${name}`, {
+      namespace,
+      name,
+      rank,
+      task_id,
+      data,
+      expires,
+      etag,
+    });
+
+    return [{ create_indexed_task: etag }];
+  }
+
+  async get_indexed_task(namespace, name) {
+    assert.equal(typeof namespace, 'string');
+    assert.equal(typeof name, 'string');
+    const task = this.indexedTasks2.get(`${namespace}-${name}`);
+    if (task && task.expires > new Date()) {
+      return [task];
+    } else {
+      return [];
+    }
+  }
+
+  async get_indexed_tasks(namespace, name, page_size, page_offset) {
+    const indexedTaskKeys = [...this.indexedTasks2.keys()];
+
+    indexedTaskKeys.sort();
+
+    const filteredIndexedTaskKeys = indexedTaskKeys.filter(key => {
+      const t = this.indexedTasks2.get(key);
+      let include = true;
+
+      if (
+        (namespace !== null && namespace !== t.namespace) ||
+        (name !== null && name !== t.name) ||
+        (t.expires < new Date())
+      ) {
+        include = false;
+      }
+
+      return include;
+    });
+
+    return filteredIndexedTaskKeys.slice(page_offset || 0, page_size ?
+      page_offset + page_size :
+      filteredIndexedTaskKeys.length).map(key => this.indexedTasks2.get(key));
+  }
+
+  update_indexed_task(
+    namespace, name, rank, task_id,
+    data, expires, etag,
+  ) {
+    const t = this.indexedTasks2.get(`${namespace}-${name}`);
+
+    if (!t) {
+      throw errWithCode('no such row', 'P0002');
+    }
+
+    if (etag && t.etag !== etag) {
+      throw errWithCode('unsuccessful update', 'P0004');
+    }
+
+    this.indexedTasks2.set(`${namespace}-${name}`, {
+      namespace: namespace || t.namespace,
+      name: name || t.name,
+      rank: rank || t.rank,
+      task_id: task_id || t.task_id,
+      data: data || t.data,
+      expires: expires || t.expires,
+      etag: slugid.v4(),
+    });
+
+    return [this.indexedTasks2.get(`${namespace}-${name}`)];
+  }
+
+  expire_indexed_tasks() {
+    const expired = [];
+    for (let [key, t] of this.indexedTasks2.entries()) {
+      if (t.expires < new Date()) {
+        this.indexedTasks2.delete(key);
+        expired.push(t);
+      }
+    }
+
+    return [{ expire_indexed_tasks: expired.length }];
+  }
 
   async indexed_tasks_entities_load(partitionKey, rowKey) {
     const indexedTask = this._getIndexedTask({ partitionKey, rowKey });

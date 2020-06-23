@@ -5,6 +5,7 @@ const slugid = require('slugid');
 const _ = require('lodash');
 const testing = require('taskcluster-lib-testing');
 const taskcluster = require('taskcluster-client');
+const { IndexedTask } = require('../src/data');
 
 helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
   helper.withDb(mock, skipping);
@@ -188,7 +189,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
     // Set now to one day in the past
     const now = taskcluster.fromNow('- 1 day');
     debug('Expiring indexed tasks at: %s, from before %s', new Date(), now);
-    await helper.IndexedTask.expireTasks(now);
+    await IndexedTask.expire({ db: helper.db });
 
     try {
       await helper.index.findTask(myns + '.my-task');

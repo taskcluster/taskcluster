@@ -34,17 +34,7 @@ let load = loader({
     }),
   },
 
-  // Configure IndexedTask and Namespace entities
-  IndexedTask: {
-    requires: ['cfg', 'monitor', 'db'],
-    setup: ({cfg, monitor, db}) => data.IndexedTask.setup({
-      db,
-      serviceName: 'index',
-      tableName: cfg.app.indexedTaskTableName,
-      monitor: monitor.childMonitor('table.indexedtask'),
-    }),
-  },
-
+  // Configure Namespace entities
   Namespace: {
     requires: ['cfg', 'monitor', 'db'],
     setup: ({cfg, monitor, db}) => data.Namespace.setup({
@@ -97,12 +87,12 @@ let load = loader({
   },
 
   api: {
-    requires: ['cfg', 'schemaset', 'IndexedTask', 'Namespace', 'monitor', 'queue'],
-    setup: async ({cfg, schemaset, IndexedTask, Namespace, monitor, queue}) => builder.build({
+    requires: ['cfg', 'schemaset', 'Namespace', 'monitor', 'queue', 'db'],
+    setup: async ({cfg, schemaset, Namespace, monitor, queue, db}) => builder.build({
       context: {
         queue,
-        IndexedTask,
         Namespace,
+        db,
       },
       rootUrl: cfg.taskcluster.rootUrl,
       schemaset,
@@ -133,10 +123,9 @@ let load = loader({
   },
 
   handlers: {
-    requires: ['IndexedTask', 'Namespace', 'queue', 'queueEvents', 'cfg', 'monitor', 'pulseClient'],
-    setup: async ({IndexedTask, Namespace, queue, queueEvents, cfg, monitor, pulseClient}) => {
+    requires: ['Namespace', 'queue', 'queueEvents', 'cfg', 'monitor', 'pulseClient', 'db'],
+    setup: async ({Namespace, queue, queueEvents, cfg, monitor, pulseClient, db}) => {
       let handlers = new Handlers({
-        IndexedTask: IndexedTask,
         Namespace: Namespace,
         queue: queue,
         queueEvents: queueEvents,
@@ -145,6 +134,7 @@ let load = loader({
         routePrefix: cfg.app.routePrefix,
         monitor: monitor.childMonitor('handlers'),
         pulseClient: pulseClient,
+        db,
       });
 
       // Start listening for events and handle them
@@ -155,8 +145,8 @@ let load = loader({
   },
 
   expire: {
-    requires: ['cfg', 'monitor', 'IndexedTask', 'Namespace'],
-    setup: ({cfg, monitor, IndexedTask, Namespace}, ownName) => {
+    requires: ['cfg', 'monitor', 'Namespace', 'db'],
+    setup: ({cfg, monitor, Namespace, db}, ownName) => {
       return monitor.oneShot(ownName, async () => {
         const now = taskcluster.fromNow(cfg.app.expirationDelay);
 
@@ -164,7 +154,7 @@ let load = loader({
         const namespaces = await Namespace.expireEntries(now);
         debug(`Expired ${namespaces} namespaces`);
         debug('Expiring indexed tasks');
-        const tasks = await IndexedTask.expireTasks(now);
+        const tasks = await data.IndexedTask.expire({ db, monitor});
         debug(`Expired ${tasks} tasks`);
       });
     },

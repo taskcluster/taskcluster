@@ -210,3 +210,152 @@ methods:
           end;
         end if;
       end
+  get_indexed_tasks:
+    description: |-
+      Get existing indexed tasks filtered by the optional arguments,
+      ordered by the `namespace` and `name`.
+      If the pagination arguments are both NULL, all rows are returned.
+      Otherwise, page_size rows are returned at offset page_offset.
+    mode: read
+    serviceName: index
+    args: namespace_in text, name_in text, page_size_in integer, page_offset_in integer
+    returns: table(namespace text, name text, rank integer, task_id text, data jsonb, expires timestamptz)
+    body: |-
+      begin
+        return query
+        select
+          indexed_tasks.namespace,
+          indexed_tasks.name,
+          indexed_tasks.rank,
+          indexed_tasks.task_id,
+          indexed_tasks.data,
+          indexed_tasks.expires
+        from indexed_tasks
+        where
+          (indexed_tasks.namespace = namespace_in or namespace_in is null) and
+          (indexed_tasks.name = name_in or name_in is null) and
+          (indexed_tasks.expires > now())
+        -- we previously used to order by the hashed namespace but there's probably no need to add this complication.
+        order by indexed_tasks.namespace, name
+        limit get_page_limit(page_size_in)
+        offset get_page_offset(page_offset_in);
+      end
+  create_indexed_task:
+    description: |-
+      Create a new indexed task. Raises UNIQUE_VIOLATION if the indexed task already exists.
+      Returns the etag of the newly created indexed task.
+    mode: write
+    serviceName: index
+    args: namespace_in text, name_in text, rank_in integer, task_id_in text, data_in jsonb, expires_in timestamptz
+    returns: uuid
+    body: |-
+      declare
+        new_etag uuid := public.gen_random_uuid();
+      begin
+        insert
+          into indexed_tasks (namespace, name, rank, task_id, data, expires, etag)
+          values (namespace_in, name_in, rank_in, task_id_in, data_in, expires_in, new_etag);
+        return new_etag;
+      end
+  get_indexed_task:
+    description: Get a non-expired indexed task. The returned table will have one or (if no such indexed task is defined) zero rows.
+    mode: read
+    serviceName: index
+    args: namespace_in text, name_in text
+    returns: table(namespace text, name text, rank integer, task_id text, data jsonb, expires timestamptz, etag uuid)
+    body: |-
+      begin
+        return query
+        select
+          indexed_tasks.namespace,
+          indexed_tasks.name,
+          indexed_tasks.rank,
+          indexed_tasks.task_id,
+          indexed_tasks.data,
+          indexed_tasks.expires,
+          indexed_tasks.etag
+        from indexed_tasks
+        where
+          indexed_tasks.namespace = namespace_in and
+          indexed_tasks.name = name_in and
+          indexed_tasks.expires > now();
+      end
+  update_indexed_task:
+    serviceName: index
+    description: |-
+      Update an indexed task.
+      Returns the up-to-date indexed task row that have the same namespace and name.
+      If the etag argument is empty then the update will overwrite the matched row.
+      Else, the function will fail if the etag is out of date. This is useful for concurency handling.
+    mode: write
+    args: namespace_in text, name_in text, rank_in integer, task_id_in text, data_in jsonb, expires_in timestamptz, etag_in uuid
+    returns: table(namespace text, name text, rank integer, task_id text, data jsonb, expires timestamptz, etag uuid)
+    body: |-
+      declare
+        new_etag uuid := public.gen_random_uuid();
+        updated_row indexed_tasks%ROWTYPE;
+      begin
+        update indexed_tasks
+        set (rank, task_id, data, expires, etag) = (
+          coalesce(rank_in, indexed_tasks.rank),
+          coalesce(task_id_in, indexed_tasks.task_id),
+          coalesce(data_in, indexed_tasks.data),
+          coalesce(expires_in, indexed_tasks.expires),
+          new_etag
+        )
+        where
+          indexed_tasks.namespace = namespace_in and
+          indexed_tasks.name = name_in and
+          indexed_tasks.etag = coalesce(etag_in, indexed_tasks.etag)
+        returning
+          indexed_tasks.namespace,
+          indexed_tasks.name,
+          indexed_tasks.rank,
+          indexed_tasks.task_id,
+          indexed_tasks.data,
+          indexed_tasks.expires,
+          indexed_tasks.etag
+        into updated_row;
+
+        if found then
+          return query select
+            updated_row.namespace,
+            updated_row.name,
+            updated_row.rank,
+            updated_row.task_id,
+            updated_row.data,
+            updated_row.expires,
+            updated_row.etag;
+          return;
+        end if;
+
+        perform indexed_tasks.etag from indexed_tasks
+          where
+            indexed_tasks.namespace = namespace_in and
+            indexed_tasks.name = name_in;
+
+        if found then
+          raise exception 'unsuccessful update' using errcode = 'P0004';
+        else
+          raise exception 'no such row' using errcode = 'P0002';
+        end if;
+      end
+  expire_indexed_tasks:
+    description: |-
+      Expire indexed tasks that come before the current time.
+      Returns a count of rows that have been deleted.
+    mode: write
+    serviceName: index
+    args: ''
+    returns: integer
+    body: |-
+      declare
+        count integer;
+      begin
+        delete from indexed_tasks where indexed_tasks.expires < now();
+        if found then
+          get diagnostics count = row_count;
+          return count;
+        end if;
+        return 0;
+      end

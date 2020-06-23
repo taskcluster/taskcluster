@@ -30,7 +30,6 @@ helper.rootUrl = 'http://localhost:60020';
  * Set helper.<Class> for each of the Azure entities used in the service
  */
 exports.withEntities = (mock, skipping) => {
-  withEntity(mock, skipping, exports, 'IndexedTask', data.IndexedTask);
   withEntity(mock, skipping, exports, 'Namespace', data.Namespace);
 };
 
@@ -161,7 +160,7 @@ exports.resetTables = (mock, skipping) => {
     } else {
       const sec = exports.secrets.get('db');
       await resetTables({ testDbUrl: sec.testDbUrl, tableNames: [
-        'indexed_tasks_entities',
+        'indexed_tasks',
         'namespaces_entities',
       ]});
     }
