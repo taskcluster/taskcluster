@@ -302,11 +302,9 @@ exports.makeWorkerType = () => `test-${slugid.v4().replace(/[_-]/g, '').toLowerC
 exports.resetTables = (mock, skipping) => {
   setup('reset tables', async function() {
     await resetTables({tableNames: [
-      'queue_tasks_entities',
+      'tasks',
       'queue_artifacts_entities',
       'queue_task_groups_entities',
-      'queue_task_group_members_entities',
-      'queue_task_group_active_sets_entities',
       'queue_task_requirement_entities',
       'queue_task_dependency_entities',
       'queue_worker_entities',

@@ -94,12 +94,6 @@ secrets_entities:
   value: jsonb not null
   version: integer not null
   etag: uuid
-queue_task_group_active_sets_entities:
-  partition_key: text not null
-  row_key: text not null
-  value: jsonb not null
-  version: integer not null
-  etag: uuid
 access_token_table_entities:
   partition_key: text not null
   row_key: text not null
@@ -156,12 +150,30 @@ workers:
   last_checked: timestamp with time zone not null
   secret: jsonb
   etag: uuid not null
-queue_tasks_entities:
-  partition_key: text not null
-  row_key: text not null
-  value: jsonb not null
-  version: integer not null
-  etag: uuid
+tasks:
+  task_id: text not null
+  created: timestamp with time zone not null
+  deadline: timestamp with time zone not null
+  dependencies: jsonb not null
+  etag: uuid not null
+  expires: timestamp with time zone not null
+  extra: jsonb not null
+  metadata: jsonb not null
+  payload: jsonb not null
+  priority: task_priority not null
+  provisioner_id: text not null
+  requires: task_requires not null
+  ever_resolved: boolean not null
+  retries: integer not null
+  retries_left: integer not null
+  routes: jsonb not null
+  runs: jsonb not null
+  scheduler_id: text not null
+  scopes: jsonb not null
+  tags: jsonb not null
+  taken_until: timestamp with time zone
+  task_group_id: text not null
+  worker_type: text not null
 queue_task_requirement_entities:
   partition_key: text not null
   row_key: text not null
@@ -179,12 +191,6 @@ queue_artifacts:
   present: boolean not null
   etag: uuid not null
 queue_task_groups_entities:
-  partition_key: text not null
-  row_key: text not null
-  value: jsonb not null
-  version: integer not null
-  etag: uuid
-queue_task_group_members_entities:
   partition_key: text not null
   row_key: text not null
   value: jsonb not null
