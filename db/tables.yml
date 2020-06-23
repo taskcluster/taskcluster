@@ -34,12 +34,18 @@ taskcluster_checks_to_tasks_entities:
   value: jsonb not null
   version: integer not null
   etag: uuid
-taskcluster_github_builds_entities:
-  partition_key: text not null
-  row_key: text not null
-  value: jsonb not null
-  version: integer not null
-  etag: uuid
+github_builds:
+  organization: text not null
+  repository: text not null
+  sha: text not null
+  task_group_id: text not null
+  state: text not null
+  created: timestamp with time zone not null
+  updated: timestamp with time zone not null
+  installation_id: integer not null 
+  event_type: text not null 
+  event_id: text not null 
+  etag: uuid not null
 taskcluster_integration_owners_entities:
   partition_key: text not null
   row_key: text not null
