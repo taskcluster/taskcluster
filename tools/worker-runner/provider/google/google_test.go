@@ -70,14 +70,13 @@ func TestGoogleConfigureRun(t *testing.T) {
 	require.Equal(t, "in-central1", state.WorkerLocation["region"])
 	require.Equal(t, "in-central1-b", state.WorkerLocation["zone"])
 
-	wkr := ptesting.NewFakeWorkerWithCapabilities("shutdown")
+	wkr := ptesting.NewFakeWorkerWithCapabilities()
 	defer wkr.Close()
 
 	p.SetProtocol(wkr.RunnerProtocol)
 	require.NoError(t, p.WorkerStarted(&state))
 	wkr.RunnerProtocol.Start(false)
 	wkr.RunnerProtocol.WaitUntilInitialized()
-	require.True(t, wkr.RunnerProtocol.Capable("shutdown"))
 
 	proof, err := p.GetWorkerIdentityProof()
 	require.NoError(t, err)

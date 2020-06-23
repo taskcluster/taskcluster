@@ -144,13 +144,6 @@ func (p *AzureProvider) checkTerminationTime() bool {
 }
 
 func (p *AzureProvider) WorkerStarted(state *run.State) error {
-	p.proto.Register("shutdown", func(msg workerproto.Message) {
-		err := provider.RemoveWorker(state, p.workerManagerClientFactory)
-		if err != nil {
-			log.Printf("Shutdown error: %v\n", err)
-		}
-	})
-	p.proto.AddCapability("shutdown")
 	p.proto.AddCapability("graceful-termination")
 
 	// start polling for graceful shutdown

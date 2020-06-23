@@ -1,6 +1,6 @@
 // +build linux darwin freebsd
 
-package provider
+package exit
 
 import "os/exec"
 

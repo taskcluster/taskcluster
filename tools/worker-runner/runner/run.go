@@ -7,6 +7,7 @@ import (
 	"github.com/taskcluster/taskcluster/v31/internal/workerproto"
 	"github.com/taskcluster/taskcluster/v31/tools/worker-runner/cfg"
 	"github.com/taskcluster/taskcluster/v31/tools/worker-runner/errorreport"
+	"github.com/taskcluster/taskcluster/v31/tools/worker-runner/exit"
 	"github.com/taskcluster/taskcluster/v31/tools/worker-runner/files"
 	"github.com/taskcluster/taskcluster/v31/tools/worker-runner/logging"
 	loggingProtocol "github.com/taskcluster/taskcluster/v31/tools/worker-runner/logging/protocol"
@@ -50,6 +51,8 @@ func Run(configFile string) (state run.State, err error) {
 	}
 
 	reg := registration.New(runnercfg, &state)
+	er := errorreport.New(&state)
+	em := exit.New(runnercfg, &state)
 
 	if !runCached {
 		log.Printf("Configuring with provider %s", runnercfg.Provider.ProviderType)
@@ -159,9 +162,8 @@ func Run(configFile string) (state run.State, err error) {
 	provider.SetProtocol(proto)
 	worker.SetProtocol(proto)
 	reg.SetProtocol(proto)
-
-	// configure error reporting
-	errorreport.Setup(proto, &state)
+	er.SetProtocol(proto)
+	em.SetProtocol(proto)
 
 	// call the WorkerStarted methods before starting the proto so that there
 	// are no race conditions around the capabilities negotiation
@@ -194,6 +196,11 @@ func Run(configFile string) (state run.State, err error) {
 	}
 
 	err = reg.WorkerFinished()
+	if err != nil {
+		return
+	}
+
+	err = em.WorkerFinished()
 	if err != nil {
 		return
 	}

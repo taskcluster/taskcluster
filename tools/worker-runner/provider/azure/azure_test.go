@@ -98,14 +98,13 @@ func TestConfigureRun(t *testing.T) {
 	require.Equal(t, "azure", state.WorkerLocation["cloud"])
 	require.Equal(t, "uswest", state.WorkerLocation["region"])
 
-	wkr := ptesting.NewFakeWorkerWithCapabilities("shutdown")
+	wkr := ptesting.NewFakeWorkerWithCapabilities()
 	defer wkr.Close()
 
 	p.SetProtocol(wkr.RunnerProtocol)
 	require.NoError(t, p.WorkerStarted(&state))
 	wkr.RunnerProtocol.Start(false)
 	wkr.RunnerProtocol.WaitUntilInitialized()
-	require.True(t, wkr.RunnerProtocol.Capable("shutdown"))
 
 	proof, err := p.GetWorkerIdentityProof()
 	require.NoError(t, err)
