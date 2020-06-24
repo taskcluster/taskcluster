@@ -190,12 +190,11 @@ queue_artifacts:
   expires: timestamp with time zone not null
   present: boolean not null
   etag: uuid not null
-queue_task_groups_entities:
-  partition_key: text not null
-  row_key: text not null
-  value: jsonb not null
-  version: integer not null
-  etag: uuid
+task_groups:
+  expires: timestamp with time zone not null
+  scheduler_id: text not null
+  task_group_id: text not null
+  etag: uuid not null
 queue_task_dependency_entities:
   partition_key: text not null
   row_key: text not null

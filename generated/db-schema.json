@@ -42,10 +42,9 @@
         "azure_queue_messages": "write",
         "queue_artifacts": "write",
         "queue_provisioner_entities": "write",
-        "queue_task_dependency_entities": "write",
-        "queue_task_requirement_entities": "write",
         "queue_worker_entities": "write",
         "queue_worker_type_entities": "write",
+        "task_dependencies": "write",
         "task_groups": "write",
         "tasks": "write"
       }
@@ -169,20 +168,6 @@
       "value": "jsonb not null",
       "version": "integer not null"
     },
-    "queue_task_dependency_entities": {
-      "etag": "uuid",
-      "partition_key": "text not null",
-      "row_key": "text not null",
-      "value": "jsonb not null",
-      "version": "integer not null"
-    },
-    "queue_task_requirement_entities": {
-      "etag": "uuid",
-      "partition_key": "text not null",
-      "row_key": "text not null",
-      "value": "jsonb not null",
-      "version": "integer not null"
-    },
     "queue_worker_entities": {
       "etag": "uuid",
       "partition_key": "text not null",
@@ -224,6 +209,14 @@
       "row_key": "text not null",
       "value": "jsonb not null",
       "version": "integer not null"
+    },
+    "task_dependencies": {
+      "dependent_task_id": "text not null",
+      "etag": "uuid not null",
+      "expires": "timestamp with time zone not null",
+      "required_task_id": "text not null",
+      "requires": "task_requires not null",
+      "satisfied": "boolean not null"
     },
     "task_groups": {
       "etag": "uuid not null",
@@ -2961,6 +2954,103 @@
       },
       "migrationScript": "begin\n  -- lock this table before reading from it, to prevent loss of concurrent\n  -- updates when the table is dropped.  Note that this may lead to concurrent\n  -- updates failing; the important thing is that they not succeed without\n  -- taking effect.  Failed updates will be retried.\n  lock table queue_task_groups_entities;\n\n  create table task_groups\n  as\n    select\n      uuid_to_slugid(value ->> 'taskGroupId')::text as task_group_id,\n      (value ->> 'schedulerId')::text as scheduler_id,\n      (value ->> 'expires')::timestamptz as expires,\n      queue_task_groups_entities.etag as etag\n    from queue_task_groups_entities;\n  alter table task_groups add primary key (task_group_id);\n\n  alter table task_groups\n    alter column task_group_id set not null,\n    alter column scheduler_id set not null,\n    alter column expires set not null,\n    alter column etag set not null;\n\n  revoke select, insert, update, delete on queue_task_groups_entities from $db_user_prefix$_queue;\n  drop table queue_task_groups_entities;\n\n  grant select, insert, update, delete on task_groups to $db_user_prefix$_queue;\nend\n",
       "version": 21
+    },
+    {
+      "downgradeScript": "begin\n  -- lock this table before reading from it, to prevent loss of concurrent\n  -- updates when the table is dropped.\n  lock table task_dependencies;\n\n  create table queue_task_dependency_entities(\n    partition_key text, row_key text,\n    value jsonb not null,\n    version integer not null,\n    etag uuid default public.gen_random_uuid());\n  alter table queue_task_dependency_entities add primary key (partition_key, row_key);\n\n  create table queue_task_requirement_entities(\n    partition_key text, row_key text,\n    value jsonb not null,\n    version integer not null,\n    etag uuid default public.gen_random_uuid());\n  alter table queue_task_requirement_entities add primary key (partition_key, row_key);\n\n  insert into queue_task_dependency_entities\n  select\n    required_task_id,\n    dependent_task_id,\n    jsonb_build_object(\n      'PartitionKey', required_task_id,\n      'RowKey', dependent_task_id,\n      'taskId', slugid_to_uuid(required_task_id),\n      'dependentTaskId', slugid_to_uuid(dependent_task_id),\n      'require', replace(requires::text, 'all-', ''),\n      'expires', expires) as value,\n    1 as version,\n    task_dependencies.etag as etag\n  from task_dependencies;\n\n  insert into queue_task_requirement_entities\n  select\n    dependent_task_id,\n    required_task_id,\n    jsonb_build_object(\n      'PartitionKey', dependent_task_id,\n      'RowKey', required_task_id,\n      'taskId', slugid_to_uuid(dependent_task_id),\n      'requiredTaskId', slugid_to_uuid(required_task_id),\n      'expires', expires) as value,\n    1 as version,\n    task_dependencies.etag as etag\n  from task_dependencies\n  where not satisfied;\n\n  revoke select, insert, update, delete on task_dependencies from $db_user_prefix$_queue;\n  drop table task_dependencies;\n\n  grant select, insert, update, delete on queue_task_dependency_entities to $db_user_prefix$_queue;\n  grant select, insert, update, delete on queue_task_requirement_entities to $db_user_prefix$_queue;\nend\n\n",
+      "methods": {
+        "queue_task_dependency_entities_create": {
+          "args": "pk text, rk text, properties jsonb, overwrite boolean, version integer",
+          "body": "declare\n  new_etag uuid;\nbegin\n  -- note that this function always overwrites (queue always calls it that way anyway)\n  new_etag = public.gen_random_uuid();\n  insert into task_dependencies select\n    rk,\n    pk,\n    ('all-' || (properties ->> 'require'))::task_requires,\n    true,\n    (properties ->> 'expires')::timestamptz,\n    new_etag\n  -- if the row already exists, that's because it was created by\n  -- queue_task_requirement_entities_create, so just update the requires value\n  on conflict (required_task_id, dependent_task_id) do\n    update\n    set requires = ('all-' || (properties ->> 'require'))::task_requires\n    where\n      task_dependencies.required_task_id = pk and\n      task_dependencies.dependent_task_id = rk;\n  return new_etag;\nend",
+          "deprecated": false,
+          "description": "See taskcluster-lib-entities",
+          "mode": "write",
+          "returns": "uuid",
+          "serviceName": "queue"
+        },
+        "queue_task_dependency_entities_load": {
+          "args": "partition_key text, row_key text",
+          "body": "begin\n  return query\n  select\n    required_task_id,\n    dependent_task_id,\n    jsonb_build_object(\n      'PartitionKey', required_task_id,\n      'RowKey', dependent_task_id,\n      'taskId', slugid_to_uuid(required_task_id),\n      'dependentTaskId', slugid_to_uuid(dependent_task_id),\n      'require', replace(requires::text, 'all-', ''),\n      'expires', expires) as value,\n    1 as version,\n    task_dependencies.etag as etag\n  from task_dependencies\n  where\n    required_task_id = partition_key and dependent_task_id = row_key;\nend",
+          "deprecated": false,
+          "description": "See taskcluster-lib-entities",
+          "mode": "read",
+          "returns": "table (partition_key_out text, row_key_out text, value jsonb, version integer, etag uuid)",
+          "serviceName": "queue"
+        },
+        "queue_task_dependency_entities_modify": {
+          "args": "partition_key text, row_key text, properties jsonb, version integer, old_etag uuid",
+          "body": "begin\n  raise exception 'not implemented';\nend",
+          "deprecated": false,
+          "description": "See taskcluster-lib-entities",
+          "mode": "write",
+          "returns": "table (etag uuid)",
+          "serviceName": "queue"
+        },
+        "queue_task_dependency_entities_remove": {
+          "args": "partition_key text, row_key text",
+          "body": "begin\n  return query delete from task_dependencies\n  where\n    task_dependencies.required_task_id = partition_key and\n    task_dependencies.dependent_task_id = row_key\n  returning task_dependencies.etag;\nend",
+          "deprecated": false,
+          "description": "See taskcluster-lib-entities",
+          "mode": "write",
+          "returns": "table (etag uuid)",
+          "serviceName": "queue"
+        },
+        "queue_task_dependency_entities_scan": {
+          "args": "pk text, rk text, condition text, size integer, page integer",
+          "body": "declare\n  cond text[];\n  exp_cond_field text;\n  exp_cond_operator text;\n  exp_cond_operand timestamptz;\nbegin\n  if not condition is null then\n    cond := regexp_split_to_array(condition, '\\s+');\n    exp_cond_field := trim(cond[3], '''');\n    exp_cond_operator := cond[4];\n    exp_cond_operand := cond[5] :: timestamptz;\n\n    if not exp_cond_field || exp_cond_operator in ('expires<', 'expires>=') then\n      raise exception 'scan only supports filtering for expired rows, not on %', exp_cond_field || exp_cond_operator;\n    end if;\n  end if;\n\n  return query select\n    required_task_id as partition_key,\n    dependent_task_id as row_key,\n    jsonb_build_object(\n      'PartitionKey', required_task_id,\n      'RowKey', dependent_task_id,\n      'taskId', slugid_to_uuid(required_task_id),\n      'dependentTaskId', slugid_to_uuid(dependent_task_id),\n      'require', replace(requires::text, 'all-', ''),\n      'expires', expires) as value,\n    1 as version,\n    task_dependencies.etag as etag from task_dependencies\n  where\n    (pk is null or required_task_id = pk) and\n    case\n      when exp_cond_field = 'expires' and exp_cond_operator = '<' then expires < exp_cond_operand\n      when exp_cond_field = 'expires' and exp_cond_operator = '>=' then expires >= exp_cond_operand\n      else true\n    end\n  order by task_dependencies.required_task_id, task_dependencies.dependent_task_id\n  limit case\n    when (size is not null and size > 0) then size + 1\n    else null\n  end\n  offset case\n    when (page is not null and page > 0) then page\n    else 0\n  end;\nend",
+          "deprecated": false,
+          "description": "See taskcluster-lib-entities",
+          "mode": "read",
+          "returns": "table (partition_key text, row_key text, value jsonb, version integer, etag uuid)",
+          "serviceName": "queue"
+        },
+        "queue_task_requirement_entities_create": {
+          "args": "pk text, rk text, properties jsonb, overwrite boolean, version integer",
+          "body": "declare\n  new_etag uuid;\nbegin\n  -- note that this function always overwrites (queue always calls it that way anyway)\n  new_etag = public.gen_random_uuid();\n  insert into task_dependencies select\n    pk,\n    rk,\n    -- arbitrary value; in practice TaskDependency.create is called shortly\n    -- after this and will set the value correctly\n    'all-completed',\n    -- if a TaskRequirement exists, then the dependency is not satisified\n    false,\n    (properties ->> 'expires')::timestamptz,\n    new_etag\n  -- if the dependency was created already, just update satisfied\n  on conflict (required_task_id, dependent_task_id) do\n    update\n    set satisfied = false\n    where\n      task_dependencies.required_task_id = rk and\n      task_dependencies.dependent_task_id = pk;\n  return new_etag;\nend",
+          "deprecated": false,
+          "description": "See taskcluster-lib-entities",
+          "mode": "write",
+          "returns": "uuid",
+          "serviceName": "queue"
+        },
+        "queue_task_requirement_entities_load": {
+          "args": "partition_key text, row_key text",
+          "body": "begin\n  return query\n  select\n    dependent_task_id,\n    required_task_id,\n    jsonb_build_object(\n      'PartitionKey', dependent_task_id,\n      'RowKey', required_task_id,\n      'taskId', slugid_to_uuid(dependent_task_id),\n      'requiredTaskId', slugid_to_uuid(required_task_id),\n      'expires', expires) as value,\n    1 as version,\n    task_dependencies.etag as etag\n  from task_dependencies\n  where\n    dependent_task_id = partition_key and required_task_id = row_key and not satisfied;\nend",
+          "deprecated": false,
+          "description": "See taskcluster-lib-entities",
+          "mode": "read",
+          "returns": "table (partition_key_out text, row_key_out text, value jsonb, version integer, etag uuid)",
+          "serviceName": "queue"
+        },
+        "queue_task_requirement_entities_modify": {
+          "args": "partition_key text, row_key text, properties jsonb, version integer, old_etag uuid",
+          "body": "begin\n  raise exception 'not implemented';\nend",
+          "deprecated": false,
+          "description": "See taskcluster-lib-entities",
+          "mode": "write",
+          "returns": "table (etag uuid)",
+          "serviceName": "queue"
+        },
+        "queue_task_requirement_entities_remove": {
+          "args": "partition_key text, row_key text",
+          "body": "begin\n  -- removing the requirement means that this dep is satisfied\n  return query\n  update task_dependencies\n  set satisfied = true\n  where\n    task_dependencies.dependent_task_id = partition_key and\n    task_dependencies.required_task_id = row_key and\n    not task_dependencies.satisfied\n  returning task_dependencies.etag;\nend",
+          "deprecated": false,
+          "description": "See taskcluster-lib-entities",
+          "mode": "write",
+          "returns": "table (etag uuid)",
+          "serviceName": "queue"
+        },
+        "queue_task_requirement_entities_scan": {
+          "args": "pk text, rk text, condition text, size integer, page integer",
+          "body": "declare\n  cond text[];\n  exp_cond_field text;\n  exp_cond_operator text;\n  exp_cond_operand timestamptz;\nbegin\n  if not condition is null then\n    cond := regexp_split_to_array(condition, '\\s+');\n    exp_cond_field := trim(cond[3], '''');\n    exp_cond_operator := cond[4];\n    exp_cond_operand := cond[5] :: timestamptz;\n\n    if exp_cond_field || exp_cond_operator != 'expires<' then\n      raise exception 'scan only supports filtering for expired rows';\n    end if;\n\n    -- if this is the expiration crontask, return an empty set -- expiration of TaskDependency\n    -- is sufficient\n    return;\n  end if;\n\n  return query select\n    dependent_task_id as partition_key,\n    required_task_id as row_key,\n    jsonb_build_object(\n      'PartitionKey', dependent_task_id,\n      'RowKey', required_task_id,\n      'taskId', slugid_to_uuid(dependent_task_id),\n      'requiredTaskId', slugid_to_uuid(required_task_id),\n      'expires', expires) as value,\n    1 as version,\n    task_dependencies.etag as etag from task_dependencies\n  where\n    (pk is null or dependent_task_id = pk) and\n    not satisfied\n  order by task_dependencies.dependent_task_id, task_dependencies.required_task_id\n  limit case\n    when (size is not null and size > 0) then size + 1\n    else null\n  end\n  offset case\n    when (page is not null and page > 0) then page\n    else 0\n  end;\nend",
+          "deprecated": false,
+          "description": "See taskcluster-lib-entities",
+          "mode": "read",
+          "returns": "table (partition_key text, row_key text, value jsonb, version integer, etag uuid)",
+          "serviceName": "queue"
+        }
+      },
+      "migrationScript": "begin\n  -- this migration combines queue_task_dependency_entries (which contains all task\n  -- dependencies) and queue_task_requirement_entities (which contains\n  -- as-yet-unsatisfied dependencies) into a single table with a `satisfied`\n  -- column.  If we consider a dependency to be from \"dependent\" to \"required\", then\n  -- task_dependency_entities has\n  --   partition_key = required_task_id\n  --   row_key = dependent_task_id\n  -- task_requirement_entities has\n  --   partition key = dependent_task_id\n  --   row_key = required_task_id\n  lock table queue_task_dependency_entities;\n  lock table queue_task_requirement_entities;\n\n  create table task_dependencies\n  as\n    select\n      deps.dependent_task_id,\n      deps.required_task_id,\n      deps.requires,\n      reqs.dependent_task_id is null as satisfied,\n      deps.expires,\n      deps.etag as etag\n    from (\n      select\n        partition_key as required_task_id,\n        row_key as dependent_task_id,\n        ('all-' || (value ->> 'require'))::task_requires as requires,\n        (value ->> 'expires')::timestamptz as expires,\n        etag\n      from queue_task_dependency_entities\n    ) as deps\n    left join (\n      select\n        partition_key as dependent_task_id,\n        row_key as required_task_id,\n        etag\n      from queue_task_requirement_entities\n    ) as reqs\n    on deps.dependent_task_id = reqs.dependent_task_id and\n      deps.required_task_id = reqs.required_task_id;\n\n  alter table task_dependencies\n    alter column dependent_task_id set not null,\n    alter column required_task_id set not null,\n    alter column requires set not null,\n    alter column satisfied set not null,\n    alter column expires set not null,\n    alter column etag set not null,\n    alter column etag set default public.gen_random_uuid();\n\n  -- the task itself contains an array of dependent tasks, so querying by\n  -- dependent_task_id is unusual, so primary key begins with required_task_id.\n  alter table task_dependencies add primary key (required_task_id, dependent_task_id);\n\n  -- queue's isBlocked indexes by dependent_task_id, looking only for unsatisfied\n  -- entries.  This index then takes the place of the queue_task_requirement_entities\n  -- table and that these queries can be handled by accessing only the index.\n  create index task_dependencies_dependent_task_id_idx on task_dependencies (dependent_task_id)\n    where not satisfied;\n\n  revoke select, insert, update, delete on queue_task_dependency_entities from $db_user_prefix$_queue;\n  drop table queue_task_dependency_entities;\n  revoke select, insert, update, delete on queue_task_requirement_entities from $db_user_prefix$_queue;\n  drop table queue_task_requirement_entities;\n\n  grant select, insert, update, delete on task_dependencies to $db_user_prefix$_queue;\nend\n",
+      "version": 22
     }
   ]
 }

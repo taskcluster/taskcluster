@@ -1,0 +1,152 @@
+version: 21
+migrationScript: 0021-migration.sql
+downgradeScript: 0021-downgrade.sql
+methods:
+  queue_task_groups_entities_load:
+    description: See taskcluster-lib-entities
+    mode: read
+    serviceName: queue
+    args: partition_key text, row_key text
+    returns: table (partition_key_out text, row_key_out text, value jsonb, version integer, etag uuid)
+    body: |-
+      begin
+        return query
+        select
+          task_group_id,
+          'task-group',
+          jsonb_build_object(
+            'PartitionKey', task_group_id,
+            'RowKey', 'task-group',
+            'taskGroupId', slugid_to_uuid(task_group_id),
+            'schedulerId', scheduler_id,
+            'expires', expires) as value,
+          1 as version,
+          task_groups.etag as etag
+        from task_groups
+        where
+          task_groups.task_group_id = partition_key;
+      end
+  queue_task_groups_entities_create:
+    serviceName: queue
+    description: See taskcluster-lib-entities
+    mode: write
+    args: pk text, rk text, properties jsonb, overwrite boolean, version integer
+    returns: uuid
+    body: |-
+      declare
+        new_etag uuid;
+      begin
+        if overwrite then
+          raise exception 'overwrite not implemented';
+        end if;
+        new_etag = public.gen_random_uuid();
+        insert into task_groups select
+          uuid_to_slugid(properties ->> 'taskGroupId')::text as task_group_id,
+          (properties ->> 'schedulerId')::text as scheduler_id,
+          (properties ->> 'expires')::timestamptz as expires,
+          new_etag as etag;
+        return new_etag;
+      end
+  queue_task_groups_entities_remove:
+    serviceName: queue
+    description: See taskcluster-lib-entities
+    mode: write
+    args: partition_key text, row_key text
+    returns: table (etag uuid)
+    body: |-
+      begin
+        return query delete from task_groups
+        where
+          task_groups.task_group_id = partition_key
+        returning task_groups.etag;
+      end
+  queue_task_groups_entities_modify:
+    serviceName: queue
+    description: See taskcluster-lib-entities
+    mode: write
+    args: partition_key text, row_key text, properties jsonb, version integer, old_etag uuid
+    returns: table (etag uuid)
+    body: |-
+      declare
+        new_etag uuid;
+      begin
+        -- NOTE: queue only updates expires, so that's all that's supported here
+        new_etag = public.gen_random_uuid();
+        update task_groups
+        set (
+          expires,
+          etag
+        ) = (
+          (properties ->> 'expires')::timestamptz,
+          new_etag
+        )
+        where
+          task_groups.task_group_id = partition_key and
+          task_groups.etag = queue_task_groups_entities_modify.old_etag;
+        if found then
+          return query select new_etag;
+          return;
+        end if;
+        perform task_groups.etag from task_groups
+        where
+          task_groups.task_group_id = partition_key;
+        if found then
+          raise exception 'unsuccessful update' using errcode = 'P0004';
+        else
+          raise exception 'no such row' using errcode = 'P0002';
+        end if;
+      end
+  queue_task_groups_entities_scan:
+    description: See taskcluster-lib-entities
+    mode: read
+    serviceName: queue
+    args: pk text, rk text, condition text, size integer, page integer
+    returns: table (partition_key text, row_key text, value jsonb, version integer, etag uuid)
+    body: |-
+      declare
+        cond text[];
+        exp_cond_field text;
+        exp_cond_operator text;
+        exp_cond_operand timestamptz;
+      begin
+        if pk is not null then
+          raise exception 'scanning by primary key is not supported';
+        end if;
+
+        if not condition is null then
+          cond := regexp_split_to_array(condition, '\s+');
+          exp_cond_field := trim(cond[3], '''');
+          exp_cond_operator := cond[4];
+          exp_cond_operand := cond[5] :: timestamptz;
+
+          if exp_cond_field || exp_cond_operator != 'expires<' then
+            raise exception 'queue_task_group_active_sets_entities_scan only supports filtering for expired rows';
+          end if;
+        end if;
+
+        return query select
+          task_group_id as partition_key,
+          'task-group' as row_key,
+          jsonb_build_object(
+            'PartitionKey', task_group_id,
+            'RowKey', 'task-group',
+            'taskGroupId', slugid_to_uuid(task_group_id),
+            'schedulerId', scheduler_id,
+            'expires', expires) as value,
+          1 as version,
+          task_groups.etag as etag from task_groups
+        where
+          case
+            when exp_cond_field = 'expires' then expires < exp_cond_operand
+            else true
+          end
+        order by task_groups.task_group_id
+        limit case
+          when (size is not null and size > 0) then size + 1
+          else null
+        end
+        offset case
+          when (page is not null and page > 0) then page
+          else 0
+        end;
+      end

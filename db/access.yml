@@ -32,7 +32,7 @@ purge_cache:
 queue:
   tables:
     queue_artifacts: write
-    queue_task_groups_entities: write
+    task_groups: write
     queue_task_requirement_entities: write
     queue_task_dependency_entities: write
     queue_worker_entities: write
