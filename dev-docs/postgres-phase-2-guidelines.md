@@ -182,6 +182,15 @@ But updating a value within a more complex column can be problematic.
 In such cases, the existing etag column allows implementation of the OCC approach.
 See worker-manager's `workers` table for an example.
 
+## Rebasing
+
+As many people are writing versions, it's common to need to re-number a DB version.
+There is a temporary script that can help:
+
+```shell
+node infrastructure/renumber-db-version.js <oldversion> <newversion>
+```
+
 ## Postgres
 
 Now's your chance to learn Postgres.  It's a quirky piece of software
