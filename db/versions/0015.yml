@@ -1,0 +1,4 @@
+version: 15
+migrationScript: 0015-migration.sql
+downgradeScript: 0015-downgrade.sql
+methods: []
