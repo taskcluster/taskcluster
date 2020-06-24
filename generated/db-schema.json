@@ -2528,6 +2528,13 @@
       },
       "migrationScript": "begin\n  -- Compute the sha512 of the given text data.\n  -- sha512 is the algorithm that will be used to generate the hash.\n  -- This replaces Entity.keys.HashKey from taskcluster-lib-entities.\n  create or replace function sha512(t text) returns text\n  as $$\n      begin\n        return encode(digest(t, 'sha512'), 'hex');\n      end;\n  $$\n  language plpgSQL\n  strict immutable;\nend\n",
       "version": 15
+    },
+    {
+      "downgradeScript": "begin\n  drop function uuid_to_slugid(uuid text);\n  drop function slugid_to_uuid(slugid text);\nend\n",
+      "methods": {
+      },
+      "migrationScript": "begin\n  -- SlugIDs are stored as UUIDs in Azure, because Azure stores that efficiently, but this makes it\n  -- difficult to query the DB since everywhere else we deal with SlugIDs in their 22-character\n  -- representation.  So these functions convert uuids to slugids and back.  Refer to\n  -- https://github.com/taskcluster/slugid/blob/53ec9a2de7140afff5b986c7c60a8028512e87d0/slugid.js\n  create or replace function uuid_to_slugid(uuid text) RETURNS text\n  as $$\n    begin\n      return left(replace(replace(encode(decode(replace(uuid, '-', ''), 'hex'), 'base64'), '+', '-'), '/', '_'), 22);\n    end;\n  $$\n  language plpgSQL\n  strict immutable;\n\n  create or replace function slugid_to_uuid(slugid text) RETURNS text\n  as $$\n    begin\n      return (encode(decode(replace(replace(slugid, '_', '/'), '-', '+') || '==', 'base64') , 'hex')::uuid)::text;\n    end;\n  $$\n  language plpgSQL\n  strict immutable;\nend\n",
+      "version": 16
     }
   ]
 }
