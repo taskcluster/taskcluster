@@ -1,7 +1,6 @@
 const {APIBuilder, paginateResults} = require('taskcluster-lib-api');
 const helpers = require('./helpers');
-const Entity = require('taskcluster-lib-entities');
-const { IndexedTask } = require('./data');
+const { IndexedTask, Namespace } = require('./data');
 
 /**
  * API end-point for version v1/
@@ -9,8 +8,6 @@ const { IndexedTask } = require('./data');
  * In this API implementation we shall assume the following context:
  * {
  *   queue:             // taskcluster.Queue instance w. "queue:get-artifact:*"
- *   IndexedTask:       // data.IndexedTask instance
- *   Namespace:         // data.Namespace instance
  * }
  */
 let builder = new APIBuilder({
@@ -25,7 +22,7 @@ let builder = new APIBuilder({
   projectName: 'taskcluster-index',
   serviceName: 'index',
   apiVersion: 'v1',
-  context: ['queue', 'Namespace', 'db'],
+  context: ['queue', 'db'],
   params: {
     namespace: helpers.namespaceFormat,
     indexPath: helpers.namespaceFormat,
@@ -82,10 +79,7 @@ builder.declare({
 builder.declare({
   method: 'get',
   route: '/namespaces/:namespace?',
-  query: {
-    continuationToken: Entity.continuationTokenPattern,
-    limit: /^[0-9]+$/,
-  },
+  query: paginateResults.query,
   name: 'listNamespaces',
   stability: APIBuilder.stability.stable,
   output: 'list-namespaces-response.yml',
@@ -101,25 +95,19 @@ builder.declare({
     'object.',
   ].join('\n'),
 }, async function(req, res) {
-  let that = this;
   let namespace = req.params.namespace || '';
-  let continuation = req.query.continuationToken || null;
-  let limit = parseInt(req.query.limit || 1000, 10);
-  let query = {
-    parent: namespace,
-    expires: Entity.op.greaterThan(new Date()),
-  };
 
   // Query with given namespace
-  let namespaces = await helpers.listTableEntries({
-    query,
-    limit,
-    continuation,
-    key: 'namespaces',
-    Table: that.Namespace,
-  });
+  const { continuationToken, rows } = await Namespace.getNamespaces(
+    this.db,
+    { parent: namespace },
+    { query: req.query },
+  );
 
-  res.reply(namespaces);
+  res.reply({
+    namespaces: rows.map(row => row.serializable()),
+    continuationToken,
+  });
 });
 
 /** POST List namespaces inside another namespace */
@@ -143,25 +131,19 @@ builder.declare({
     'object.',
   ].join('\n'),
 }, async function(req, res) {
-  let that = this;
   let namespace = req.params.namespace || '';
-  let limit = req.body.limit;
-  let continuation = req.body.continuationToken;
-  let query = {
-    parent: namespace,
-    expires: Entity.op.greaterThan(new Date()),
-  };
 
   // Query with given namespace
-  let namespaces = await helpers.listTableEntries({
-    query,
-    limit,
-    continuation,
-    key: 'namespaces',
-    Table: that.Namespace,
-  });
+  const { continuationToken, rows } = await Namespace.getNamespaces(
+    this.db,
+    { parent: namespace },
+    { query: req.query },
+  );
 
-  res.reply(namespaces);
+  res.reply({
+    namespaces: rows.map(row => row.serializable()),
+    continuationToken,
+  });
 });
 
 /** List tasks in namespace */
@@ -257,9 +239,9 @@ builder.declare({
 
   // Insert task
   return helpers.insertTask(
+    this.db,
     namespace,
     input,
-    that,
   ).then(function(task) {
     res.reply(task.serializable());
   });

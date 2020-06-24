@@ -1,9 +1,8 @@
 const assert = require('assert');
-const data = require('../src/data');
 const builder = require('../src/api');
 const taskcluster = require('taskcluster-client');
 const load = require('../src/main');
-const {fakeauth, stickyLoader, Secrets, withEntity, withPulse, withMonitor, withDb, resetTables} = require('taskcluster-lib-testing');
+const {fakeauth, stickyLoader, Secrets, withPulse, withMonitor, withDb, resetTables} = require('taskcluster-lib-testing');
 
 const helper = module.exports;
 
@@ -25,13 +24,6 @@ exports.secrets = new Secrets({
 });
 
 helper.rootUrl = 'http://localhost:60020';
-
-/**
- * Set helper.<Class> for each of the Azure entities used in the service
- */
-exports.withEntities = (mock, skipping) => {
-  withEntity(mock, skipping, exports, 'Namespace', data.Namespace);
-};
 
 exports.withDb = (mock, skipping) => {
   withDb(mock, skipping, exports, 'index');

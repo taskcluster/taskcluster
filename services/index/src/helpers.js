@@ -12,22 +12,15 @@ const data = require('./data');
  *   rank:         // IndexedTask.rank
  * }
  *
- * options:
- * {
- *   IndexedTask:    // data.IndexedTask
- *   Namespace:      // data.Namespace
- * }
  */
-let insertTask = function(namespace, input, options) {
+let insertTask = function(db, namespace, input) {
   // Validate input
   assert(input.expires instanceof Date, 'expires must be a Date object');
   assert(input.data instanceof Object, 'data must be an object');
   assert(input.taskId, 'taskId must be given');
   assert(typeof input.rank === 'number', 'rank must be a number');
-  assert(options.Namespace,
-    'options.Namespace must be an instance of data.Namespace');
-  assert(options.db,
-    'options.db must be set');
+  assert(db,
+    'db must be set');
 
   // Get namespace and ensure that we have a least one dot
   namespace = namespace.split('.');
@@ -40,11 +33,11 @@ let insertTask = function(namespace, input, options) {
   let expires = new Date(input.expires);
 
   // Attempt to load indexed task
-  return data.IndexedTask.get(options.db, {
+  return data.IndexedTask.get(db, {
     namespace: namespace,
     name: name,
   }).then(function(task) {
-    return task.update(options.db, function() {
+    return task.update(db, function() {
       // Update if we prefer input over what we have
       if (this.rank <= input.rank) {
         this.rank = input.rank;
@@ -52,7 +45,7 @@ let insertTask = function(namespace, input, options) {
         this.taskId = input.taskId;
         this.expires = expires;
         // Update expires on namespace hierarchy
-        return options.Namespace.ensureNamespace(namespace, expires);
+        return data.Namespace.ensureNamespace(db, namespace, expires);
       }
     });
   }, function(err) {
@@ -62,7 +55,8 @@ let insertTask = function(namespace, input, options) {
     }
 
     // Create namespace hierarchy
-    return options.Namespace.ensureNamespace(
+    return data.Namespace.ensureNamespace(
+      db,
       namespace,
       expires,
     ).then(function() {
@@ -74,40 +68,13 @@ let insertTask = function(namespace, input, options) {
         data: input.data,
         expires: expires,
       });
-      return indexedTask.create(options.db);
+      return indexedTask.create(db);
     });
   });
 };
 
 // Export insertTask
 exports.insertTask = insertTask;
-
-/**
-* Executes a given query on a Table
-* input :
-* {
-*    query:            // Object of the query to executed
-*    limit:            // limit for the number of results
-*    continuation:     // the continuationToken
-*    key :             // key in the results to be used to create output
-*    Table:            // Table on which query is to be executed
-* }
-*/
-
-let listTableEntries = async function({query, limit, continuation, key, Table}) {
-  let data = await Table.query(query, {limit, continuation});
-  let retval = {};
-
-  retval[key] = data.entries.map(function(entry) {
-    return entry.json();
-  });
-
-  retval.continuationToken = data.continuation || undefined;
-  return retval;
-};
-
-// Export listTableEntries
-exports.listTableEntries = listTableEntries;
 
 /** Regular expression for valid namespaces */
 exports.namespaceFormat = /^([a-zA-Z0-9_!~*'()%-]+\.)*[a-zA-Z0-9_!~*'()%-]+$/;

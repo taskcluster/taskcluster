@@ -16,6 +16,7 @@ class FakeIndex {
     this.namespaces = new Map();
     // table for postgres phase 2
     this.indexedTasks2 = new Map();
+    this.namespaces2 = new Map();
   }
 
   /* helpers */
@@ -24,6 +25,7 @@ class FakeIndex {
     this.indexedTasks = new Map();
     this.indexedTasks2 = new Map();
     this.namespaces = new Map();
+    this.namespaces2 = new Map();
   }
 
   _getIndexedTask({ partitionKey, rowKey }) {
@@ -83,6 +85,101 @@ class FakeIndex {
   }
 
   /* fake functions */
+
+  async create_namespace(
+    parent, name, expires,
+  ) {
+    assert.equal(typeof parent, 'string');
+    assert.equal(typeof name, 'string');
+    assert(isDate(expires));
+
+    if (this.namespaces2.get(`${parent}-${name}`)) {
+      throw errWithCode('row exists', UNIQUE_VIOLATION);
+    }
+
+    const etag = slugid.v4();
+
+    this.namespaces2.set(`${parent}-${name}`, {
+      parent,
+      name,
+      expires,
+      etag,
+    });
+
+    return [{ create_namespace: etag }];
+  }
+
+  async get_namespace(parent, name) {
+    assert.equal(typeof parent, 'string');
+    assert.equal(typeof name, 'string');
+    const task = this.namespaces2.get(`${parent}-${name}`);
+
+    if (task) {
+      return [task];
+    } else {
+      return [];
+    }
+  }
+
+  async get_namespaces(parent, name, page_size, page_offset) {
+    const indexedTaskKeys = [...this.namespaces2.keys()];
+
+    indexedTaskKeys.sort();
+
+    const filteredNamespaceKeys = indexedTaskKeys.filter(key => {
+      const t = this.namespaces2.get(key);
+      let include = true;
+
+      if (
+        (parent !== null && parent !== t.parent) ||
+        (name !== null && name !== t.name) ||
+        (t.expires < new Date())
+      ) {
+        include = false;
+      }
+
+      return include;
+    });
+
+    return filteredNamespaceKeys.slice(page_offset || 0, page_size ?
+      page_offset + page_size :
+      filteredNamespaceKeys.length).map(key => this.namespaces2.get(key));
+  }
+
+  update_namespace(
+    parent, name, expires, etag,
+  ) {
+    const t = this.namespaces2.get(`${parent}-${name}`);
+
+    if (!t) {
+      throw errWithCode('no such row', 'P0002');
+    }
+
+    if (etag && t.etag !== etag) {
+      throw errWithCode('unsuccessful update', 'P0004');
+    }
+
+    this.namespaces2.set(`${parent}-${name}`, {
+      parent: parent || t.parent,
+      name: name || t.name,
+      expires: expires || t.expires,
+      etag: slugid.v4(),
+    });
+
+    return [this.namespaces2.get(`${parent}-${name}`)];
+  }
+
+  expire_namespaces() {
+    const expired = [];
+    for (let [key, t] of this.namespaces2.entries()) {
+      if (t.expires < new Date()) {
+        this.namespaces2.delete(key);
+        expired.push(t);
+      }
+    }
+
+    return [{ expire_namespaces: expired.length }];
+  }
 
   async create_indexed_task(
     namespace, name, rank, task_id,

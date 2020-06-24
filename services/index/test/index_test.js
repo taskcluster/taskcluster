@@ -5,11 +5,10 @@ const slugid = require('slugid');
 const _ = require('lodash');
 const testing = require('taskcluster-lib-testing');
 const taskcluster = require('taskcluster-client');
-const { IndexedTask } = require('../src/data');
+const { IndexedTask, Namespace } = require('../src/data');
 
 helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
   helper.withDb(mock, skipping);
-  helper.withEntities(mock, skipping);
   helper.withFakeQueue(mock, skipping);
   helper.withPulse(mock, skipping);
   helper.withServer(mock, skipping);
@@ -235,7 +234,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
     now.setDate(now.getDate() - 1);
 
     debug('Expiring namespace at: %s, from before %s', new Date(), now);
-    await helper.Namespace.expireEntries(now);
+    await Namespace.expire({ db: helper.db });
 
     result = await helper.index.listNamespaces(myns, {});
     assert.equal(result.namespaces.length, 1, 'Expected 1 namespace');

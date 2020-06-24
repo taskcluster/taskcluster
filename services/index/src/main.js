@@ -34,17 +34,6 @@ let load = loader({
     }),
   },
 
-  // Configure Namespace entities
-  Namespace: {
-    requires: ['cfg', 'monitor', 'db'],
-    setup: ({cfg, monitor, db}) => data.Namespace.setup({
-      db,
-      serviceName: 'index',
-      tableName: cfg.app.namespaceTableName,
-      monitor: monitor.childMonitor('table.namespace'),
-    }),
-  },
-
   // Create a validator
   schemaset: {
     requires: ['cfg'],
@@ -87,11 +76,10 @@ let load = loader({
   },
 
   api: {
-    requires: ['cfg', 'schemaset', 'Namespace', 'monitor', 'queue', 'db'],
-    setup: async ({cfg, schemaset, Namespace, monitor, queue, db}) => builder.build({
+    requires: ['cfg', 'schemaset', 'monitor', 'queue', 'db'],
+    setup: async ({cfg, schemaset, monitor, queue, db}) => builder.build({
       context: {
         queue,
-        Namespace,
         db,
       },
       rootUrl: cfg.taskcluster.rootUrl,
@@ -123,10 +111,9 @@ let load = loader({
   },
 
   handlers: {
-    requires: ['Namespace', 'queue', 'queueEvents', 'cfg', 'monitor', 'pulseClient', 'db'],
-    setup: async ({Namespace, queue, queueEvents, cfg, monitor, pulseClient, db}) => {
+    requires: ['queue', 'queueEvents', 'cfg', 'monitor', 'pulseClient', 'db'],
+    setup: async ({queue, queueEvents, cfg, monitor, pulseClient, db}) => {
       let handlers = new Handlers({
-        Namespace: Namespace,
         queue: queue,
         queueEvents: queueEvents,
         credentials: cfg.pulse,
@@ -145,13 +132,13 @@ let load = loader({
   },
 
   expire: {
-    requires: ['cfg', 'monitor', 'Namespace', 'db'],
-    setup: ({cfg, monitor, Namespace, db}, ownName) => {
+    requires: ['cfg', 'monitor', 'db'],
+    setup: ({cfg, monitor, db}, ownName) => {
       return monitor.oneShot(ownName, async () => {
         const now = taskcluster.fromNow(cfg.app.expirationDelay);
 
         debug('Expiring namespaces');
-        const namespaces = await Namespace.expireEntries(now);
+        const namespaces = await data.Namespace.expireEntries(now);
         debug(`Expired ${namespaces} namespaces`);
         debug('Expiring indexed tasks');
         const tasks = await data.IndexedTask.expire({ db, monitor});

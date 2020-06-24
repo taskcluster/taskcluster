@@ -2549,11 +2549,29 @@
           "returns": "uuid",
           "serviceName": "index"
         },
+        "create_namespace": {
+          "args": "parent_in text, name_in text, expires_in timestamptz",
+          "body": "declare\n  new_etag uuid := public.gen_random_uuid();\nbegin\n  insert\n    into namespaces (parent, name, expires, etag)\n    values (parent_in, name_in, expires_in, new_etag);\n  return new_etag;\nend",
+          "deprecated": false,
+          "description": "Create a new namespace. Raises UNIQUE_VIOLATION if the namespace already exists.\nReturns the etag of the newly created namespace.",
+          "mode": "write",
+          "returns": "uuid",
+          "serviceName": "index"
+        },
         "expire_indexed_tasks": {
           "args": "",
           "body": "declare\n  count integer;\nbegin\n  delete from indexed_tasks where indexed_tasks.expires < now();\n  if found then\n    get diagnostics count = row_count;\n    return count;\n  end if;\n  return 0;\nend",
           "deprecated": false,
           "description": "Expire indexed tasks that come before the current time.\nReturns a count of rows that have been deleted.",
+          "mode": "write",
+          "returns": "integer",
+          "serviceName": "index"
+        },
+        "expire_namespaces": {
+          "args": "",
+          "body": "declare\n  count integer;\nbegin\n  delete from namespaces where namespaces.expires < now();\n  if found then\n    get diagnostics count = row_count;\n    return count;\n  end if;\n  return 0;\nend",
+          "deprecated": false,
+          "description": "Expire namespaces that come before the current time.\nReturns a count of rows that have been deleted.",
           "mode": "write",
           "returns": "integer",
           "serviceName": "index"
@@ -2574,6 +2592,24 @@
           "description": "Get existing indexed tasks filtered by the optional arguments,\nordered by the `namespace` and `name`.\nIf the pagination arguments are both NULL, all rows are returned.\nOtherwise, page_size rows are returned at offset page_offset.",
           "mode": "read",
           "returns": "table(namespace text, name text, rank integer, task_id text, data jsonb, expires timestamptz)",
+          "serviceName": "index"
+        },
+        "get_namespace": {
+          "args": "parent_in text, name_in text",
+          "body": "begin\n  return query\n  select\n    namespaces.parent,\n    namespaces.name,\n    namespaces.expires,\n    namespaces.etag\n  from namespaces\n  where\n    namespaces.parent = parent_in and\n    namespaces.name = name_in;\nend",
+          "deprecated": false,
+          "description": "Get a namespace. The returned table will have one or (if no such namespace is defined) zero rows.",
+          "mode": "read",
+          "returns": "table(parent text, name text, expires timestamptz, etag uuid)",
+          "serviceName": "index"
+        },
+        "get_namespaces": {
+          "args": "parent_in text, name_in text, page_size_in integer, page_offset_in integer",
+          "body": "begin\n  return query\n  select\n    namespaces.parent,\n    namespaces.name,\n    namespaces.expires\n  from namespaces\n  where\n    (namespaces.parent = parent_in or parent_in is null) and\n    (namespaces.name = name_in or name_in is null) and\n    (namespaces.expires > now())\n  -- we previously used to order by the hashed parent but there's probably no need to add this complication.\n  order by namespaces.parent, name\n  limit get_page_limit(page_size_in)\n  offset get_page_offset(page_offset_in);\nend",
+          "deprecated": false,
+          "description": "Get existing namespaces filtered by the optional arguments,\nordered by the `parent` and `name`.\nIf the pagination arguments are both NULL, all rows are returned.\nOtherwise, page_size rows are returned at offset page_offset.",
+          "mode": "read",
+          "returns": "table(parent text, name text, expires timestamptz)",
           "serviceName": "index"
         },
         "indexed_tasks_entities_create": {
@@ -2673,6 +2709,15 @@
           "description": "Update an indexed task.\nReturns the up-to-date indexed task row that have the same namespace and name.\nIf the etag argument is empty then the update will overwrite the matched row.\nElse, the function will fail if the etag is out of date. This is useful for concurency handling.",
           "mode": "write",
           "returns": "table(namespace text, name text, rank integer, task_id text, data jsonb, expires timestamptz, etag uuid)",
+          "serviceName": "index"
+        },
+        "update_namespace": {
+          "args": "parent_in text, name_in text, expires_in timestamptz, etag_in uuid",
+          "body": "declare\n  new_etag uuid := public.gen_random_uuid();\n  updated_row namespaces%ROWTYPE;\nbegin\n  update namespaces\n  set (expires, etag) = (\n    coalesce(expires_in, namespaces.expires),\n    new_etag\n  )\n  where\n    namespaces.parent = parent_in and\n    namespaces.name = name_in and\n    namespaces.etag = coalesce(etag_in, namespaces.etag)\n  returning\n    namespaces.parent,\n    namespaces.name,\n    namespaces.expires,\n    namespaces.etag\n  into updated_row;\n\n  if found then\n    return query select\n      updated_row.parent,\n      updated_row.name,\n      updated_row.expires,\n      updated_row.etag;\n    return;\n  end if;\n\n  perform namespaces.etag from namespaces\n    where\n      namespaces.parent = parent_in and\n      namespaces.name = name_in;\n\n  if found then\n    raise exception 'unsuccessful update' using errcode = 'P0004';\n  else\n    raise exception 'no such row' using errcode = 'P0002';\n  end if;\nend",
+          "deprecated": false,
+          "description": "Update a namespace.\nReturns the up-to-date namespace row that have the same parent and name.\nIf the etag argument is empty then the update will overwrite the matched row.\nElse, the function will fail if the etag is out of date. This is useful for concurency handling.",
+          "mode": "write",
+          "returns": "table(parent text, name text, expires timestamptz, etag uuid)",
           "serviceName": "index"
         }
       },

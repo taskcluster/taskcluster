@@ -186,6 +186,140 @@ methods:
           end;
         end if;
       end
+
+  get_namespaces:
+    description: |-
+      Get existing namespaces filtered by the optional arguments,
+      ordered by the `parent` and `name`.
+      If the pagination arguments are both NULL, all rows are returned.
+      Otherwise, page_size rows are returned at offset page_offset.
+    mode: read
+    serviceName: index
+    args: parent_in text, name_in text, page_size_in integer, page_offset_in integer
+    returns: table(parent text, name text, expires timestamptz)
+    body: |-
+      begin
+        return query
+        select
+          namespaces.parent,
+          namespaces.name,
+          namespaces.expires
+        from namespaces
+        where
+          (namespaces.parent = parent_in or parent_in is null) and
+          (namespaces.name = name_in or name_in is null) and
+          (namespaces.expires > now())
+        -- we previously used to order by the hashed parent but there's probably no need to add this complication.
+        order by namespaces.parent, name
+        limit get_page_limit(page_size_in)
+        offset get_page_offset(page_offset_in);
+      end
+  create_namespace:
+    description: |-
+      Create a new namespace. Raises UNIQUE_VIOLATION if the namespace already exists.
+      Returns the etag of the newly created namespace.
+    mode: write
+    serviceName: index
+    args: parent_in text, name_in text, expires_in timestamptz
+    returns: uuid
+    body: |-
+      declare
+        new_etag uuid := public.gen_random_uuid();
+      begin
+        insert
+          into namespaces (parent, name, expires, etag)
+          values (parent_in, name_in, expires_in, new_etag);
+        return new_etag;
+      end
+  get_namespace:
+    description: Get a namespace. The returned table will have one or (if no such namespace is defined) zero rows.
+    mode: read
+    serviceName: index
+    args: parent_in text, name_in text
+    returns: table(parent text, name text, expires timestamptz, etag uuid)
+    body: |-
+      begin
+        return query
+        select
+          namespaces.parent,
+          namespaces.name,
+          namespaces.expires,
+          namespaces.etag
+        from namespaces
+        where
+          namespaces.parent = parent_in and
+          namespaces.name = name_in;
+      end
+  update_namespace:
+    serviceName: index
+    description: |-
+      Update a namespace.
+      Returns the up-to-date namespace row that have the same parent and name.
+      If the etag argument is empty then the update will overwrite the matched row.
+      Else, the function will fail if the etag is out of date. This is useful for concurency handling.
+    mode: write
+    args: parent_in text, name_in text, expires_in timestamptz, etag_in uuid
+    returns: table(parent text, name text, expires timestamptz, etag uuid)
+    body: |-
+      declare
+        new_etag uuid := public.gen_random_uuid();
+        updated_row namespaces%ROWTYPE;
+      begin
+        update namespaces
+        set (expires, etag) = (
+          coalesce(expires_in, namespaces.expires),
+          new_etag
+        )
+        where
+          namespaces.parent = parent_in and
+          namespaces.name = name_in and
+          namespaces.etag = coalesce(etag_in, namespaces.etag)
+        returning
+          namespaces.parent,
+          namespaces.name,
+          namespaces.expires,
+          namespaces.etag
+        into updated_row;
+
+        if found then
+          return query select
+            updated_row.parent,
+            updated_row.name,
+            updated_row.expires,
+            updated_row.etag;
+          return;
+        end if;
+
+        perform namespaces.etag from namespaces
+          where
+            namespaces.parent = parent_in and
+            namespaces.name = name_in;
+
+        if found then
+          raise exception 'unsuccessful update' using errcode = 'P0004';
+        else
+          raise exception 'no such row' using errcode = 'P0002';
+        end if;
+      end
+  expire_namespaces:
+    description: |-
+      Expire namespaces that come before the current time.
+      Returns a count of rows that have been deleted.
+    mode: write
+    serviceName: index
+    args: ''
+    returns: integer
+    body: |-
+      declare
+        count integer;
+      begin
+        delete from namespaces where namespaces.expires < now();
+        if found then
+          get diagnostics count = row_count;
+          return count;
+        end if;
+        return 0;
+      end
   indexed_tasks_entities_load:
     description: See taskcluster-lib-entities
     mode: read
