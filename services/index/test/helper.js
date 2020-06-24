@@ -156,8 +156,8 @@ const stubbedQueue = () => {
 exports.resetTables = (mock, skipping) => {
   setup('reset tables', async function() {
     await resetTables({tableNames: [
-      'indexed_tasks_entities',
-      'namespaces_entities',
+      'indexed_tasks',
+      'namespaces',
     ]});
   });
 };

@@ -25,7 +25,19 @@ const IndexedTaskEntity = Entity.configure({
   },
 });
 
-suite(testing.suiteName(), function() {
+/** Entities for namespaces */
+const NamespaceEntity = Entity.configure({
+  version: 1,
+  partitionKey: Entity.keys.HashKey('parent'),
+  rowKey: Entity.keys.StringKey('name'),
+  properties: {
+    parent: Entity.types.String,
+    name: Entity.types.String,
+    expires: Entity.types.Date,
+  },
+});
+
+suite(`${testing.suiteName()} - indexed_tasks`, function() {
   helper.withDbForVersion();
 
   test('indexed_tasks table created / removed on upgrade and downgrade', async function() {
@@ -97,6 +109,69 @@ suite(testing.suiteName(), function() {
       ],
       checker(ent) {
         assert.equal(ent.rank, 10);
+        assert.equal(ent.expires.toJSON(), new Date(2).toJSON());
+      },
+    }],
+  });
+});
+
+suite(`${testing.suiteName()} - namespaces`, function() {
+  helper.withDbForVersion();
+
+  test('namespaces table created / removed on upgrade and downgrade', async function() {
+    await testing.resetDb({testDbUrl: helper.dbUrl});
+    await helper.upgradeTo(PREV_VERSION);
+
+    await helper.assertTable('namespaces_entities');
+    await helper.assertNoTable('namespaces');
+
+    await helper.upgradeTo(THIS_VERSION);
+    await helper.assertNoTable('namespaces_entities');
+
+    await helper.downgradeTo(PREV_VERSION);
+    await helper.assertNoTable('namespaces');
+  });
+
+  helper.testEntityTable({
+    dbVersion: THIS_VERSION,
+    serviceName: 'index',
+    entityTableName: 'namespaces_entities',
+    newTableName: 'namespaces',
+    EntityClass: NamespaceEntity,
+    samples: {
+      pptt: {
+        parent: 'foo/foo',
+        name: 'bar/bar',
+        expires: fromNow('1 day'),
+      },
+      ...Object.fromEntries(_.range(5).map(i => ([
+        `samp${i}`, {
+          parent: `parent-${i}`,
+          name: `name-${i}`,
+          expires: fromNow('1 day'),
+        }]))),
+    },
+    loadConditions: [
+      {condition: {parent: 'foo/foo', name: 'bar/bar' }, expectedSample: 'pptt'},
+      {condition: {parent: 'parent-1', name: 'name-1' }, expectedSample: 'samp1'},
+    ],
+    scanConditions: [
+      // expected is ordered by the hashed parent
+      {condition: {}, expectedSamples: ['samp4', 'pptt', 'samp3', 'samp1', 'samp2', 'samp0']},
+      {condition: null, expectedSamples: ['samp4', 'pptt', 'samp3', 'samp1', 'samp2', 'samp0']},
+    ],
+    notFoundConditions: [
+      {condition: {parent: 'no/such', name: 'no/such'}},
+    ],
+    notImplemented: ['create-overwrite'],
+    modifications: [{
+      condition: {parent: 'foo/foo', name: 'bar/bar'},
+      modifier: [
+        ent => {
+          ent.expires = new Date(2);
+        },
+      ],
+      checker(ent) {
         assert.equal(ent.expires.toJSON(), new Date(2).toJSON());
       },
     }],
