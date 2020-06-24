@@ -423,21 +423,23 @@ exports.testEntityTable = ({
 
       makeTests();
     });
-    //
-    // suite(`db version ${dbVersion} -> ${prevVersion} preserves data`, function() {
-    //   suiteSetup(async function() {
-    //     await resetTables();
-    //     await Promise.all(Object.values(samples).map(
-    //       sample => Entity.create(sample)));
-    //     await exports.downgradeTo(prevVersion);
-    //   });
-    //
-    //   for (let {condition, expectedSample} of loadConditions) {
-    //     test(`load ${JSON.stringify(condition)}`, async function() {
-    //       const entity = await Entity.load(condition);
-    //       assert.deepEqual(entity._properties, samples[expectedSample]);
-    //     });
-    //   }
-    // });
+
+    suite(`db version ${dbVersion} -> ${prevVersion} preserves data`, function() {
+      suiteSetup(async function() {
+        await resetTables();
+        await Promise.all(Object.values(samples).map(
+          sample => Entity.create(sample)));
+        await exports.downgradeTo(prevVersion);
+      });
+
+      for (let {condition, expectedSample} of loadConditions) {
+        test(`load ${JSON.stringify(condition)}`, async function() {
+          console.log('condition: ', condition);
+          const entity = await Entity.load(condition);
+          console.log('en: ', entity)
+          assert.deepEqual(entity._properties, samples[expectedSample]);
+        });
+      }
+    });
   });
 };

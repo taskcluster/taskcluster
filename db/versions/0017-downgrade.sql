@@ -12,12 +12,14 @@ begin
 
   insert into indexed_tasks_entities
   select
-    encode_string_key(namespace) as partition_key,
+    sha512(namespace) as partition_key,
     encode_string_key(name) as row_key,
     entity_buf_encode(
         jsonb_build_object(
-          'PartitionKey', encode_string_key(namespace),
+          'PartitionKey', sha512(namespace),
           'RowKey', encode_string_key(name),
+          'namespace', namespace,
+          'name', name,
           'rank', rank,
           'taskId', task_id,
           'expires', expires),
