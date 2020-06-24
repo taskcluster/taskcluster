@@ -2521,6 +2521,13 @@
       },
       "migrationScript": "begin\n  -- In an effort to support worker reregistration, an encrypted secret column is required.\n  -- https://github.com/taskcluster/taskcluster/issues/3011\n  alter table workers\n    add column secret jsonb default null;\nend\n",
       "version": 14
+    },
+    {
+      "downgradeScript": "begin\n  drop function sha512(t text);\nend",
+      "methods": {
+      },
+      "migrationScript": "begin\n  -- Compute the sha512 of the given text data.\n  -- sha512 is the algorithm that will be used to generate the hash.\n  -- This replaces Entity.keys.HashKey from taskcluster-lib-entities.\n  create or replace function sha512(t text) returns text\n  as $$\n      begin\n        return encode(digest(t, 'sha512'), 'hex');\n      end;\n  $$\n  language plpgSQL\n  strict immutable;\nend\n",
+      "version": 15
     }
   ]
 }
