@@ -72,12 +72,11 @@ indexed_tasks:
   data: jsonb not null
   expires: timestamp with time zone not null
   etag: uuid not null
-namespaces_entities:
-  partition_key: text not null
-  row_key: text not null
-  value: jsonb not null
-  version: integer not null
-  etag: uuid
+namespaces:
+  parent: text not null
+  name: text not null
+  expires: timestamp with time zone not null
+  etag: uuid not null
 denylisted_notification_entities:
   partition_key: text not null
   row_key: text not null

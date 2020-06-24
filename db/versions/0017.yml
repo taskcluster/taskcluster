@@ -2,6 +2,190 @@ version: 17
 migrationScript: 0017-migration.sql
 downgradeScript: 0017-downgrade.sql
 methods:
+  namespaces_entities_load:
+    description: See taskcluster-lib-entities
+    mode: read
+    serviceName: index
+    args: partition_key text, row_key text
+    returns: table (partition_key_out text, row_key_out text, value jsonb, version integer, etag uuid)
+    body: |-
+      begin
+        return query
+        select
+          namespaces_entities_load.partition_key,
+          namespaces_entities_load.row_key,
+          jsonb_build_object(
+            'PartitionKey', sha512(parent),
+            'RowKey', encode_string_key(name),
+            'parent', parent,
+            'name', name,
+            'expires', expires) as value,
+          1 as version,
+          namespaces.etag as etag
+        from namespaces
+        where
+          sha512(namespaces.parent) = partition_key and
+          namespaces.name = decode_string_key(row_key);
+      end
+  namespaces_entities_create:
+    serviceName: index
+    description: See taskcluster-lib-entities
+    mode: write
+    args: pk text, rk text, properties jsonb, overwrite boolean, version integer
+    returns: uuid
+    body: |-
+      declare
+        new_row namespaces%ROWTYPE;
+      begin
+        select
+          (properties ->> 'parent')::text,
+          (properties ->> 'name')::text,
+          (properties ->> 'expires')::timestamptz,
+          public.gen_random_uuid()
+        into new_row;
+        if overwrite then
+          raise exception 'overwrite not implemented';
+        else
+          execute 'insert into namespaces select $1.*' using new_row;
+        end if;
+        return new_row.etag;
+      end
+  namespaces_entities_remove:
+    serviceName: index
+    description: See taskcluster-lib-entities
+    mode: write
+    args: partition_key text, row_key text
+    returns: table (etag uuid)
+    body: |-
+      begin
+        return query delete from namespaces
+        where
+          sha512(namespaces.parent) = namespaces_entities_remove.partition_key and
+          namespaces.name = decode_string_key(namespaces_entities_remove.row_key)
+        returning namespaces.etag;
+      end
+  namespaces_entities_modify:
+    serviceName: index
+    description: See taskcluster-lib-entities
+    mode: write
+    args: partition_key text, row_key text, properties jsonb, version integer, old_etag uuid
+    returns: table (etag uuid)
+    body: |-
+      declare
+        new_row namespaces%ROWTYPE;
+      begin
+        select
+          (properties ->> 'parent')::text,
+          (properties ->> 'name')::text,
+          (properties ->> 'expires')::timestamptz,
+          public.gen_random_uuid() as etag
+        into new_row;
+        update namespaces
+        set (
+          parent,
+          name,
+          expires,
+          etag
+        ) = (
+          new_row.parent,
+          new_row.name,
+          new_row.expires,
+          new_row.etag
+        )
+        where
+          sha512(namespaces.parent) = namespaces_entities_modify.partition_key and
+          namespaces.name = decode_string_key(namespaces_entities_modify.row_key) and
+          namespaces.etag = namespaces_entities_modify.old_etag;
+        if found then
+          return query select new_row.etag;
+          return;
+        end if;
+        perform namespaces.etag from namespaces
+        where
+          sha512(namespaces.parent) = namespaces_entities_modify.partition_key and
+          namespaces.name = decode_string_key(namespaces_entities_modify.row_key);
+        if found then
+          raise exception 'unsuccessful update' using errcode = 'P0004';
+        else
+          raise warning 'no such row... % pk: %, row_key %, new_row.etag %, old_etag %', properties, partition_key, row_key, new_row.etag, old_etag;
+          raise exception 'no such row' using errcode = 'P0002';
+        end if;
+      end
+  namespaces_entities_scan:
+    description: See taskcluster-lib-entities
+    mode: read
+    serviceName: index
+    args: pk text, rk text, condition text, size integer, page integer
+    returns: table (partition_key text, row_key text, value jsonb, version integer, etag uuid)
+    body: |-
+      declare
+        cond text[];
+        exp_cond_operator text;
+        exp_cond_operand timestamptz;
+        partition_key_var text;
+        row_key_var text;
+      begin
+        if not condition is null then
+          cond := regexp_split_to_array(condition, '\s+');
+          exp_cond_operator := cond[4];
+          exp_cond_operand := cond[5] :: timestamptz;
+          return query select
+            sha512(parent) as partition_key,
+            encode_string_key(name) as row_key,
+            jsonb_build_object(
+              'PartitionKey', sha512(parent),
+              'RowKey', encode_string_key(name),
+              'parent', parent,
+              'name', name,
+              'expires', expires) as value,
+            1 as version,
+            namespaces.etag as etag from namespaces
+          where
+            (namespaces_entities_scan.pk is null or sha512(parent) = namespaces_entities_scan.pk) and
+            (namespaces_entities_scan.rk is null or decode_string_key(namespaces_entities_scan.rk) = name) and
+            case
+              when exp_cond_operator = '=' then expires = exp_cond_operand
+              when exp_cond_operator = '<' then expires < exp_cond_operand
+              when exp_cond_operator = '<=' then expires <= exp_cond_operand
+              when exp_cond_operator = '>' then expires > exp_cond_operand
+              when exp_cond_operator = '>=' then expires >= exp_cond_operand
+              else expires <> exp_cond_operand
+            end
+          order by partition_key, namespaces.name
+          limit case
+            when (size is not null and size > 0) then size + 1
+            else null
+          end
+          offset case
+            when (page is not null and page > 0) then page
+            else 0
+          end;
+        else
+          return query select
+            sha512(parent) as partition_key,
+            encode_string_key(name) as row_key,
+            jsonb_build_object(
+              'PartitionKey', sha512(parent),
+              'RowKey', encode_string_key(name),
+              'parent', parent,
+              'name', name,
+              'expires', expires) as value,
+            1 as version,
+            namespaces.etag as etag from namespaces
+          where
+            (namespaces_entities_scan.pk is null or sha512(parent) = namespaces_entities_scan.pk) and
+            (namespaces_entities_scan.rk is null or decode_string_key(namespaces_entities_scan.rk) = name)
+          order by partition_key, namespaces.name
+          limit case
+            when (size is not null and size > 0) then size + 1
+            else null
+          end
+          offset case
+            when (size is not null and size > 0 and page is not null and page > 0) then page
+            else 0
+          end;
+        end if;
+      end
   indexed_tasks_entities_load:
     description: See taskcluster-lib-entities
     mode: read

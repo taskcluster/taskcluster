@@ -434,9 +434,7 @@ exports.testEntityTable = ({
 
       for (let {condition, expectedSample} of loadConditions) {
         test(`load ${JSON.stringify(condition)}`, async function() {
-          console.log('condition: ', condition);
           const entity = await Entity.load(condition);
-          console.log('en: ', entity)
           assert.deepEqual(entity._properties, samples[expectedSample]);
         });
       }
