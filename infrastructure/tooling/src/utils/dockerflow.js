@@ -6,10 +6,10 @@ exports.dockerFlowVersion = ({gitDescription, revision}) => JSON.stringify({
   commit: revision,
   source: 'https://github.com/taskcluster/taskcluster',
   // https://github.com/mozilla-services/Dockerflow/blob/master/docs/version_object.md specifies a "build" link
-  // pointing to a "CI Job".  It turns out that for Taskcluster this "CI Job" should be a link to a raw log. So
-  // in the case that TASK_ID is set (so we are running in CI), we can set that to point to what we expect will
-  // be a link to this task.
+  // pointing to a "CI Job".  Reference for what that means is basically
+  // https://github.com/mozilla-services/cloudops-infra-deploylib/blob/1bf6de7f5270ec9f3482cd0a70915532e05d5fe7/deploylib/docker.py#L179-L204
+  // so this tries to reverse-engineer that code to get it to find a file with a matching value
   build: process.env.TASK_ID ?
-    `${process.env.TASKCLUSTER_ROOT_URL}/${process.env.TASK_ID}/${process.env.RUN_ID}/public/logs/live.log` :
+    `${process.env.TASKCLUSTER_ROOT_URL}/tasks/${process.env.TASK_ID}` :
     'NONE',
 });
