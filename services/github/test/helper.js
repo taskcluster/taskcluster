@@ -52,7 +52,6 @@ exports.jsonHttpRequest = function(jsonFile, options) {
  * Set helper.<name> for each entity class
  */
 exports.withEntities = (mock, skipping) => {
-  withEntity(mock, skipping, exports, 'Builds', data.Builds, {orderedTests: true});
   withEntity(mock, skipping, exports, 'OwnersDirectory', data.OwnersDirectory, {orderedTests: true});
   withEntity(mock, skipping, exports, 'CheckRuns', data.CheckRuns, {orderedTests: true});
   withEntity(mock, skipping, exports, 'ChecksToTasks', data.ChecksToTasks, {orderedTests: true});

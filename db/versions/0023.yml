@@ -302,3 +302,20 @@ methods:
           github_builds.event_id,
           github_builds.etag;
       end
+  set_github_build_state:
+    description: |-
+      Only update the state of a build and update the `updated` timestamp
+    mode: write
+    serviceName: github
+    args: task_group_id_in text, state_in text
+    returns: void
+    body: |-
+      begin
+        update github_builds
+        set (state, updated, etag) = (
+          state_in,
+          now(),
+          public.gen_random_uuid()
+        )
+        where github_builds.task_group_id = task_group_id_in;
+      end
