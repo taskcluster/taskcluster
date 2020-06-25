@@ -242,13 +242,18 @@ it and cause strange errors.  Try to avoid these cases, but if necessary, just
 JSON-encode the value before passing it to `db.fns.<function>(..)`.  See
 `previous_provider_ids` in worker-manager for an example.
 
-**Utility Functions**.  Version 0008 adds some useful utility functions.
-`{encode,decode}_string_key` encode and decode the urlencoding-like format
+**Utility Functions**.
+
+* `{encode,decode}_string_key` encode and decode the urlencoding-like format
 that taskcluster-lib-azure uses for partition and row keys.
-`{encode,decode}_composite_key` encode and decode CompositeKey values, where
-two strings are combined into a single PartitionKey or RowKey.  And
-`entity_buf_{encode,decode}` encode and decocde the `__buf`+base64 encoding
+* `{encode,decode}_composite_key` encode and decode CompositeKey values, where
+two strings are combined into a single PartitionKey or RowKey.
+* `entity_buf_{encode,decode}` encode and decocde the `__buf`+base64 encoding
 taskcluster-lib-postgres uses to store binary values.
+* `sha512(t)` computes the sha512 hash of a value
+* `uuid_to_slugid(uuid)` and `slugid_to_uuid(slugid)` convert between a uuid
+string and a slugid.  While some entities tables stored slugIds in UUID format,
+we prefer to store them in their 22-character string format in new tables.
 
 ## Pagination
 
