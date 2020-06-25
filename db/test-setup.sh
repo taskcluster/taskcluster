@@ -5,9 +5,11 @@ if [ -z "${TASK_ID}" ]; then
     exit 1;
 fi
 
-# add an HBA entry to allow any user, not just postgres, to connect
-echo 'host all all 127.0.0.1/32 trust' >> /etc/postgresql/11/main/pg_hba.conf
-echo 'host all all ::1/128 trust' >> /etc/postgresql/11/main/pg_hba.conf
+# (redundant to the same script in the docker image; this can be removed a day or two after #3116 lands)
+pg_version=11
+echo 'local all all trust' > /etc/postgresql/$pg_version/main/pg_hba.conf
+echo 'host all all 127.0.0.1/32 trust' >> /etc/postgresql/$pg_version/main/pg_hba.conf
+echo 'host all all ::1/128 trust' >> /etc/postgresql/$pg_version/main/pg_hba.conf
 
 # start the server
 echo "Starting pg server.."
