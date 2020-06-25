@@ -5,7 +5,6 @@ const slugid = require('slugid');
 const _ = require('lodash');
 const testing = require('taskcluster-lib-testing');
 const taskcluster = require('taskcluster-client');
-const { IndexedTask, Namespace } = require('../src/data');
 
 helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
   helper.withDb(mock, skipping);
@@ -188,7 +187,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
     // Set now to one day in the past
     const now = taskcluster.fromNow('- 1 day');
     debug('Expiring indexed tasks at: %s, from before %s', new Date(), now);
-    await IndexedTask.expire({ db: helper.db });
+    await helper.db.fns.expire_indexed_tasks();
 
     try {
       await helper.index.findTask(myns + '.my-task');
@@ -234,7 +233,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
     now.setDate(now.getDate() - 1);
 
     debug('Expiring namespace at: %s, from before %s', new Date(), now);
-    await Namespace.expire({ db: helper.db });
+    await helper.db.fns.expire_index_namespaces();
 
     result = await helper.index.listNamespaces(myns, {});
     assert.equal(result.namespaces.length, 1, 'Expected 1 namespace');

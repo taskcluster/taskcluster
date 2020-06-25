@@ -38,7 +38,7 @@ begin
   -- taking effect.  Failed updates will be retried.
   lock table namespaces_entities;
 
-  create table namespaces
+  create table index_namespaces
   as
     select
       (value ->> 'parent')::text as parent,
@@ -46,8 +46,8 @@ begin
       (value ->> 'expires')::timestamptz as expires,
       etag
     from namespaces_entities;
-  alter table namespaces add primary key (parent, name);
-  alter table namespaces
+  alter table index_namespaces add primary key (parent, name);
+  alter table index_namespaces
     alter column parent set not null,
     alter column name set not null,
     alter column expires set not null,
@@ -56,5 +56,5 @@ begin
 
   revoke select, insert, update, delete on namespaces_entities from $db_user_prefix$_index;
   drop table namespaces_entities;
-  grant select, insert, update, delete on namespaces to $db_user_prefix$_index;
+  grant select, insert, update, delete on index_namespaces to $db_user_prefix$_index;
 end

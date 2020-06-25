@@ -1,6 +1,5 @@
 const {APIBuilder, paginateResults} = require('taskcluster-lib-api');
 const helpers = require('./helpers');
-const { IndexedTask, Namespace } = require('./data');
 
 /**
  * API end-point for version v1/
@@ -56,7 +55,7 @@ builder.declare({
 
   // Load indexed task
   try {
-    const { continuationToken: _, rows } = await IndexedTask.getIndexedTasks(
+    const { continuationToken: _, rows } = await helpers.taskUtils.getIndexedTasks(
       this.db,
       { namespace, name },
       { query: req.query },
@@ -65,7 +64,7 @@ builder.declare({
       return res.reportError('ResourceNotFound', 'Indexed task not found', {});
     }
     const task = rows[0];
-    return res.reply(task.serializable());
+    return res.reply(helpers.taskUtils.serialize(task));
   } catch (err) {
     // Re-throw the error, if it's not a 404
     if (err.code !== 'ResourceNotFound') {
@@ -98,14 +97,14 @@ builder.declare({
   let namespace = req.params.namespace || '';
 
   // Query with given namespace
-  const { continuationToken, rows } = await Namespace.getNamespaces(
+  const { continuationToken, rows } = await helpers.namespaceUtils.getNamespaces(
     this.db,
     { parent: namespace },
     { query: req.query },
   );
 
   res.reply({
-    namespaces: rows.map(row => row.serializable()),
+    namespaces: rows.map(helpers.namespaceUtils.serialize),
     continuationToken,
   });
 });
@@ -134,14 +133,14 @@ builder.declare({
   let namespace = req.params.namespace || '';
 
   // Query with given namespace
-  const { continuationToken, rows } = await Namespace.getNamespaces(
+  const { continuationToken, rows } = await helpers.namespaceUtils.getNamespaces(
     this.db,
     { parent: namespace },
     { query: req.query },
   );
 
   res.reply({
-    namespaces: rows.map(row => row.serializable()),
+    namespaces: rows.map(helpers.namespaceUtils.serialize),
     continuationToken,
   });
 });
@@ -170,14 +169,14 @@ builder.declare({
   ].join('\n'),
 }, async function(req, res) {
   const namespace = req.params.namespace || '';
-  const { continuationToken, rows } = await IndexedTask.getIndexedTasks(
+  const { continuationToken, rows } = await helpers.taskUtils.getIndexedTasks(
     this.db,
     { namespace },
     { query: req.query },
   );
 
   res.reply({
-    tasks: rows.map(row => row.serializable()),
+    tasks: rows.map(helpers.taskUtils.serialize),
     continuationToken,
   });
 });
@@ -196,14 +195,14 @@ builder.declare({
   ].join('\n'),
 }, async function(req, res) {
   const namespace = req.params.namespace || '';
-  const { continuationToken, rows } = await IndexedTask.getIndexedTasks(
+  const { continuationToken, rows } = await helpers.taskUtils.getIndexedTasks(
     this.db,
     { namespace },
     { query: req.query },
   );
 
   res.reply({
-    tasks: rows.map(row => row.serializable()),
+    tasks: rows.map(helpers.taskUtils.serialize),
     continuationToken,
   });
 });
@@ -227,7 +226,6 @@ builder.declare({
     'about indexing successfully completed tasks automatically using custom routes.',
   ].join('\n'),
 }, async function(req, res) {
-  let that = this;
   let input = req.body;
   let namespace = req.params.namespace || '';
 
@@ -238,12 +236,12 @@ builder.declare({
   input.expires = new Date(input.expires);
 
   // Insert task
-  return helpers.insertTask(
+  return helpers.taskUtils.insertTask(
     this.db,
     namespace,
     input,
   ).then(function(task) {
-    res.reply(task.serializable());
+    res.reply(helpers.taskUtils.serialize(task));
   });
 });
 
@@ -290,33 +288,32 @@ builder.declare({
   let namespace = indexPath.join('.');
 
   // Load indexed task
-  return IndexedTask.get(this.db, {
-    namespace: namespace,
-    name: name,
-  }).then(function(task) {
-    // Build signed url for artifact
-    let url = null;
-    if (/^public\//.test(artifactName)) {
-      url = that.queue.externalBuildUrl(
-        that.queue.getLatestArtifact,
-        task.taskId,
-        artifactName,
-      );
-    } else {
-      url = that.queue.externalBuildSignedUrl(
-        that.queue.getLatestArtifact,
-        task.taskId,
-        artifactName, {
-          expiration: 15 * 60,
-        });
-    }
-    // Redirect to artifact
-    return res.redirect(303, url);
-  }, function(err) {
-    // Re-throw the error, if it's not a 404
-    if (err.code !== 'ResourceNotFound') {
-      throw err;
-    }
-    return res.reportError('ResourceNotFound', 'Indexed task not found', {});
-  });
+  return this.db.fns.get_indexed_task(namespace, name)
+    .then(function(t) {
+      const task = helpers.taskUtils.fromDbRows(t);
+      // Build signed url for artifact
+      let url = null;
+      if (/^public\//.test(artifactName)) {
+        url = that.queue.externalBuildUrl(
+          that.queue.getLatestArtifact,
+          task.taskId,
+          artifactName,
+        );
+      } else {
+        url = that.queue.externalBuildSignedUrl(
+          that.queue.getLatestArtifact,
+          task.taskId,
+          artifactName, {
+            expiration: 15 * 60,
+          });
+      }
+      // Redirect to artifact
+      return res.redirect(303, url);
+    }, function(err) {
+      // Re-throw the error, if it's not a 404
+      if (err.code !== 'P0002') {
+        throw err;
+      }
+      return res.reportError('ResourceNotFound', 'Indexed task not found', {});
+    });
 });

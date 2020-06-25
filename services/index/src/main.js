@@ -2,7 +2,6 @@ require('../../prelude');
 const debug = require('debug')('index:bin:server');
 const taskcluster = require('taskcluster-client');
 const tcdb = require('taskcluster-db');
-const data = require('./data');
 const Handlers = require('./handlers');
 const builder = require('./api');
 const Config = require('taskcluster-lib-config');
@@ -135,13 +134,11 @@ let load = loader({
     requires: ['cfg', 'monitor', 'db'],
     setup: ({cfg, monitor, db}, ownName) => {
       return monitor.oneShot(ownName, async () => {
-        const now = taskcluster.fromNow(cfg.app.expirationDelay);
-
         debug('Expiring namespaces');
-        const namespaces = await data.Namespace.expireEntries(now);
+        const namespaces = (await db.fns.expire_index_namespaces())[0].expire_index_namespaces;
         debug(`Expired ${namespaces} namespaces`);
         debug('Expiring indexed tasks');
-        const tasks = await data.IndexedTask.expire({ db, monitor});
+        const tasks = (await db.fns.expire_indexed_tasks())[0].expire_indexed_tasks;
         debug(`Expired ${tasks} tasks`);
       });
     },

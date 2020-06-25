@@ -21,11 +21,11 @@ methods:
             'name', name,
             'expires', expires) as value,
           1 as version,
-          namespaces.etag as etag
-        from namespaces
+          index_namespaces.etag as etag
+        from index_namespaces
         where
-          sha512(namespaces.parent) = partition_key and
-          namespaces.name = decode_string_key(row_key);
+          sha512(index_namespaces.parent) = partition_key and
+          index_namespaces.name = decode_string_key(row_key);
       end
   namespaces_entities_create:
     serviceName: index
@@ -35,7 +35,7 @@ methods:
     returns: uuid
     body: |-
       declare
-        new_row namespaces%ROWTYPE;
+        new_row index_namespaces%ROWTYPE;
       begin
         select
           (properties ->> 'parent')::text,
@@ -46,7 +46,7 @@ methods:
         if overwrite then
           raise exception 'overwrite not implemented';
         else
-          execute 'insert into namespaces select $1.*' using new_row;
+          execute 'insert into index_namespaces select $1.*' using new_row;
         end if;
         return new_row.etag;
       end
@@ -58,11 +58,11 @@ methods:
     returns: table (etag uuid)
     body: |-
       begin
-        return query delete from namespaces
+        return query delete from index_namespaces
         where
-          sha512(namespaces.parent) = namespaces_entities_remove.partition_key and
-          namespaces.name = decode_string_key(namespaces_entities_remove.row_key)
-        returning namespaces.etag;
+          sha512(index_namespaces.parent) = namespaces_entities_remove.partition_key and
+          index_namespaces.name = decode_string_key(namespaces_entities_remove.row_key)
+        returning index_namespaces.etag;
       end
   namespaces_entities_modify:
     serviceName: index
@@ -72,7 +72,7 @@ methods:
     returns: table (etag uuid)
     body: |-
       declare
-        new_row namespaces%ROWTYPE;
+        new_row index_namespaces%ROWTYPE;
       begin
         select
           (properties ->> 'parent')::text,
@@ -80,7 +80,7 @@ methods:
           (properties ->> 'expires')::timestamptz,
           public.gen_random_uuid() as etag
         into new_row;
-        update namespaces
+        update index_namespaces
         set (
           parent,
           name,
@@ -93,17 +93,17 @@ methods:
           new_row.etag
         )
         where
-          sha512(namespaces.parent) = namespaces_entities_modify.partition_key and
-          namespaces.name = decode_string_key(namespaces_entities_modify.row_key) and
-          namespaces.etag = namespaces_entities_modify.old_etag;
+          sha512(index_namespaces.parent) = namespaces_entities_modify.partition_key and
+          index_namespaces.name = decode_string_key(namespaces_entities_modify.row_key) and
+          index_namespaces.etag = namespaces_entities_modify.old_etag;
         if found then
           return query select new_row.etag;
           return;
         end if;
-        perform namespaces.etag from namespaces
+        perform index_namespaces.etag from index_namespaces
         where
-          sha512(namespaces.parent) = namespaces_entities_modify.partition_key and
-          namespaces.name = decode_string_key(namespaces_entities_modify.row_key);
+          sha512(index_namespaces.parent) = namespaces_entities_modify.partition_key and
+          index_namespaces.name = decode_string_key(namespaces_entities_modify.row_key);
         if found then
           raise exception 'unsuccessful update' using errcode = 'P0004';
         else
@@ -139,7 +139,7 @@ methods:
               'name', name,
               'expires', expires) as value,
             1 as version,
-            namespaces.etag as etag from namespaces
+            index_namespaces.etag as etag from index_namespaces
           where
             (namespaces_entities_scan.pk is null or sha512(parent) = namespaces_entities_scan.pk) and
             (namespaces_entities_scan.rk is null or decode_string_key(namespaces_entities_scan.rk) = name) and
@@ -151,7 +151,7 @@ methods:
               when exp_cond_operator = '>=' then expires >= exp_cond_operand
               else expires <> exp_cond_operand
             end
-          order by partition_key, namespaces.name
+          order by partition_key, index_namespaces.name
           limit case
             when (size is not null and size > 0) then size + 1
             else null
@@ -171,11 +171,11 @@ methods:
               'name', name,
               'expires', expires) as value,
             1 as version,
-            namespaces.etag as etag from namespaces
+            index_namespaces.etag as etag from index_namespaces
           where
             (namespaces_entities_scan.pk is null or sha512(parent) = namespaces_entities_scan.pk) and
             (namespaces_entities_scan.rk is null or decode_string_key(namespaces_entities_scan.rk) = name)
-          order by partition_key, namespaces.name
+          order by partition_key, index_namespaces.name
           limit case
             when (size is not null and size > 0) then size + 1
             else null
@@ -187,9 +187,9 @@ methods:
         end if;
       end
 
-  get_namespaces:
+  get_index_namespaces:
     description: |-
-      Get existing namespaces filtered by the optional arguments,
+      Get existing index_namespaces filtered by the optional arguments,
       ordered by the `parent` and `name`.
       If the pagination arguments are both NULL, all rows are returned.
       Otherwise, page_size rows are returned at offset page_offset.
@@ -201,20 +201,20 @@ methods:
       begin
         return query
         select
-          namespaces.parent,
-          namespaces.name,
-          namespaces.expires
-        from namespaces
+          index_namespaces.parent,
+          index_namespaces.name,
+          index_namespaces.expires
+        from index_namespaces
         where
-          (namespaces.parent = parent_in or parent_in is null) and
-          (namespaces.name = name_in or name_in is null) and
-          (namespaces.expires > now())
+          (index_namespaces.parent = parent_in or parent_in is null) and
+          (index_namespaces.name = name_in or name_in is null) and
+          (index_namespaces.expires > now())
         -- we previously used to order by the hashed parent but there's probably no need to add this complication.
-        order by namespaces.parent, name
+        order by index_namespaces.parent, name
         limit get_page_limit(page_size_in)
         offset get_page_offset(page_offset_in);
       end
-  create_namespace:
+  create_index_namespace:
     description: |-
       Create a new namespace. Raises UNIQUE_VIOLATION if the namespace already exists.
       Returns the etag of the newly created namespace.
@@ -227,30 +227,40 @@ methods:
         new_etag uuid := public.gen_random_uuid();
       begin
         insert
-          into namespaces (parent, name, expires, etag)
+          into index_namespaces (parent, name, expires, etag)
           values (parent_in, name_in, expires_in, new_etag);
         return new_etag;
       end
-  get_namespace:
-    description: Get a namespace. The returned table will have one or (if no such namespace is defined) zero rows.
+  get_index_namespace:
+    description: |-
+      Get a namespace. The returned table will have one or
+      (if no such namespace is defined) an exception will be raised with error code 'P0002'.
     mode: read
     serviceName: index
     args: parent_in text, name_in text
     returns: table(parent text, name text, expires timestamptz, etag uuid)
     body: |-
+      declare
+        new_row index_namespaces%ROWTYPE;
       begin
-        return query
         select
-          namespaces.parent,
-          namespaces.name,
-          namespaces.expires,
-          namespaces.etag
-        from namespaces
+          index_namespaces.parent,
+          index_namespaces.name,
+          index_namespaces.expires,
+          index_namespaces.etag
+        from index_namespaces
         where
-          namespaces.parent = parent_in and
-          namespaces.name = name_in;
+          index_namespaces.parent = parent_in and
+          index_namespaces.name = name_in
+        into new_row;
+        if found then
+          return query select new_row.parent, new_row.name, new_row.expires, new_row.etag;
+          return;
+        end if;
+
+        raise exception 'no such row' using errcode = 'P0002';
       end
-  update_namespace:
+  update_index_namespace:
     serviceName: index
     description: |-
       Update a namespace.
@@ -263,22 +273,22 @@ methods:
     body: |-
       declare
         new_etag uuid := public.gen_random_uuid();
-        updated_row namespaces%ROWTYPE;
+        updated_row index_namespaces%ROWTYPE;
       begin
-        update namespaces
+        update index_namespaces
         set (expires, etag) = (
-          coalesce(expires_in, namespaces.expires),
+          coalesce(expires_in, index_namespaces.expires),
           new_etag
         )
         where
-          namespaces.parent = parent_in and
-          namespaces.name = name_in and
-          namespaces.etag = coalesce(etag_in, namespaces.etag)
+          index_namespaces.parent = parent_in and
+          index_namespaces.name = name_in and
+          index_namespaces.etag = coalesce(etag_in, index_namespaces.etag)
         returning
-          namespaces.parent,
-          namespaces.name,
-          namespaces.expires,
-          namespaces.etag
+          index_namespaces.parent,
+          index_namespaces.name,
+          index_namespaces.expires,
+          index_namespaces.etag
         into updated_row;
 
         if found then
@@ -290,10 +300,10 @@ methods:
           return;
         end if;
 
-        perform namespaces.etag from namespaces
+        perform index_namespaces.etag from index_namespaces
           where
-            namespaces.parent = parent_in and
-            namespaces.name = name_in;
+            index_namespaces.parent = parent_in and
+            index_namespaces.name = name_in;
 
         if found then
           raise exception 'unsuccessful update' using errcode = 'P0004';
@@ -301,9 +311,9 @@ methods:
           raise exception 'no such row' using errcode = 'P0002';
         end if;
       end
-  expire_namespaces:
+  expire_index_namespaces:
     description: |-
-      Expire namespaces that come before the current time.
+      Expire index_namespaces that come before the current time.
       Returns a count of rows that have been deleted.
     mode: write
     serviceName: index
@@ -313,7 +323,7 @@ methods:
       declare
         count integer;
       begin
-        delete from namespaces where namespaces.expires < now();
+        delete from index_namespaces where index_namespaces.expires < now();
         if found then
           get diagnostics count = row_count;
           return count;
@@ -576,14 +586,17 @@ methods:
         return new_etag;
       end
   get_indexed_task:
-    description: Get a non-expired indexed task. The returned table will have one or (if no such indexed task is defined) zero rows.
+    description: |-
+      Get a non-expired indexed task. The returned table will have one or
+      (if no such indexed task is defined) an exception will be raised with error code 'P0002'.
     mode: read
     serviceName: index
     args: namespace_in text, name_in text
     returns: table(namespace text, name text, rank integer, task_id text, data jsonb, expires timestamptz, etag uuid)
     body: |-
+      declare
+        new_row indexed_tasks%ROWTYPE;
       begin
-        return query
         select
           indexed_tasks.namespace,
           indexed_tasks.name,
@@ -596,7 +609,14 @@ methods:
         where
           indexed_tasks.namespace = namespace_in and
           indexed_tasks.name = name_in and
-          indexed_tasks.expires > now();
+          indexed_tasks.expires > now()
+        into new_row;
+        if found then
+          return query select new_row.namespace, new_row.name, new_row.rank, new_row.task_id, new_row.data, new_row.expires, new_row.etag;
+          return;
+        end if;
+
+        raise exception 'no such row' using errcode = 'P0002';
       end
   update_indexed_task:
     serviceName: index

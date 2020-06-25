@@ -125,7 +125,7 @@ Handlers.prototype.completed = function(message) {
 
     // Insert everything into the index
     return Promise.all(namespaces.map(function(namespace) {
-      return helpers.insertTask(that.db, namespace, {
+      return helpers.taskUtils.insertTask(that.db, namespace, {
         taskId: message.payload.status.taskId,
         data: options.data,
         expires: expires,

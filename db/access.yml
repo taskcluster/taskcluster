@@ -22,7 +22,7 @@ hooks:
 index:
   tables:
     indexed_tasks: write
-    namespaces: write
+    index_namespaces: write
 notify:
   tables:
     denylisted_notification_entities: write
