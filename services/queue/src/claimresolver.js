@@ -1,7 +1,7 @@
-let assert = require('assert');
-let data = require('./data');
-let QueueService = require('./queueservice');
-let Iterate = require('taskcluster-lib-iterate');
+const assert = require('assert');
+const QueueService = require('./queueservice');
+const Iterate = require('taskcluster-lib-iterate');
+const {Task} = require('./data');
 
 /**
  * Facade that handles resolution of claims by takenUntil, using the advisory
@@ -22,7 +22,6 @@ class ClaimResolver {
    *
    * options:
    * {
-   *   Task:              // instance of data.Task
    *   queueService:      // instance of QueueService
    *   dependencyTracker: // instance of DependencyTracker
    *   publisher:         // publisher from base.Exchanges
@@ -34,8 +33,7 @@ class ClaimResolver {
    */
   constructor(options) {
     assert(options, 'options must be given');
-    assert(options.Task.prototype instanceof data.Task,
-      'Expected data.Task instance');
+    assert(options.db, 'options must include db');
     assert(options.queueService instanceof QueueService,
       'Expected instance of QueueService');
     assert(options.dependencyTracker, 'Expected a DependencyTracker instance');
@@ -46,7 +44,7 @@ class ClaimResolver {
       'Expected parallelism to be a number');
     assert(options.monitor !== null, 'options.monitor required!');
     assert(options.ownName, 'Must provide a name');
-    this.Task = options.Task;
+    this.db = options.db;
     this.queueService = options.queueService;
     this.dependencyTracker = options.dependencyTracker;
     this.publisher = options.publisher;
@@ -122,20 +120,7 @@ class ClaimResolver {
 
   /** Handle advisory message about claim expiration */
   async handleMessage({taskId, runId, takenUntil, remove}) {
-    // Query for entity for which we have exact rowKey too, limit to 1, and
-    // require that takenUntil matches. This is essentially a conditional load
-    // operation. Note, that this possible because we set takenUntil both in
-    // the task.runs[runId].takenUntil property and in the task.takenUntil
-    // property whenever a task is claimed, reclaimed. And task.takenUntil is
-    // cleared whenever a run is resolved, so this conditional load should
-    // significantly reduce the amount of task entities that we load.
-    let {entries: [task]} = await this.Task.query({
-      taskId: taskId, // Matches an exact entity
-      takenUntil: takenUntil, // Load conditionally
-    }, {
-      matchRow: 'exact', // Validate that we match row key exactly
-      limit: 1, // Load at most one entity, no need to search
-    });
+    const task = await Task.get(this.db, taskId);
 
     // If the task doesn't exist, we're done
     if (!task) {
@@ -143,74 +128,13 @@ class ClaimResolver {
       return remove();
     }
 
-    // Check if this is the takenUntil we're supposed to be resolving for, if
-    // this check fails, then the conditional load must have failed so we should
-    // report an error
-    if (task.takenUntil.getTime() !== takenUntil.getTime()) {
-      let err = new Error('Task takenUntil does not match takenUntil from ' +
-                          'message, taskId: ' + taskId + ' this only happens ' +
-                          'if conditional load does not work');
-      err.taskId = taskId;
-      err.taskTakenUntil = task.takenUntil.toJSON();
-      err.messageTakenUntil = takenUntil.toJSON();
-      await this.monitor.reportError(err);
-      return remove();
-    }
+    task.updateStatusWith(await this.db.fns.check_task_claim(taskId, runId, takenUntil));
 
-    // Ensure that all runs are resolved
-    await task.modify((task) => {
-      let run = task.runs[runId];
-      if (!run) {
-        // The run might not have been created, if the claimTask operation
-        // failed
-        return;
-      }
-
-      // If the run isn't running, or takenUntil has been updated, then we're
-      // done. Notice that unlike condition above, we're racing in the
-      // task.modify modifier so reloads can happen if there is concurrency!
-      // Hence, takenUntil being update is both valid and plausible.
-      if (run.state !== 'running' ||
-          new Date(run.takenUntil).getTime() !== takenUntil.getTime()) {
-        return;
-      }
-
-      // If task deadline is exceeded we don't just have claim-expired we, have
-      // deadline, expired... And we choose to forget about claim-expired
-      if (task.deadline.getTime() <= Date.now()) {
-        return;
-      }
-
-      // Update run
-      run.state = 'exception';
-      run.reasonResolved = 'claim-expired';
-      run.resolved = new Date().toJSON();
-
-      // Do **NOT** clear takenUntil on task, as this will prevent the message
-      // from running again. In case something below fails.
-
-      // If the run isn't the last run, then something is very wrong
-      if (task.runs.length - 1 !== runId) {
-        let err = new Error('Running runId: ' + runId + ' resolved exception,' +
-                            'but it was not the last run! taskId: ' + taskId);
-        err.taskId = taskId;
-        err.runId = runId;
-        this.monitor.reportError(err);
-        return;
-      }
-
-      // Add retry, if we have retries left
-      if (task.retriesLeft > 0) {
-        task.retriesLeft -= 1;
-        task.runs.push({
-          state: 'pending',
-          reasonCreated: 'retry',
-          scheduled: new Date().toJSON(),
-        });
-      }
-    });
-
-    // Find the run that we (may) have modified
+    // Find the run that we (may) have modified, or that may have been
+    // modified in a previous attempt to process this message that failed
+    // before reaching remove() below.  In either case, we will publish
+    // messages about it, in keeping with the at-least-once semantics of
+    // TC's messages.
     let run = task.runs[runId];
 
     // If run isn't resolved to exception with 'claim-expired', we had

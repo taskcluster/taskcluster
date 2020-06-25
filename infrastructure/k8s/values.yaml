@@ -131,16 +131,7 @@ queue:
     expireTaskGroups:
       cpu: 50m
       memory: 50Mi
-    expireTaskGroupMembers:
-      cpu: 100m
-      memory: 50Mi
-    expireTaskGroupSizes:
-      cpu: 800m
-      memory: 500Mi
     expireTaskDependency:
-      cpu: 50m
-      memory: 50Mi
-    expireTaskRequirement:
       cpu: 50m
       memory: 50Mi
     expireQueueMessages:

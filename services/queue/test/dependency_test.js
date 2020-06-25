@@ -569,27 +569,25 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     helper.assertNoPulseMessage('task-pending');
     helper.clearPulseMessages();
 
-    debug('### Get new data wrappers');
-    const TaskDependency = helper.TaskDependency;
-    const TaskRequirement = helper.TaskRequirement;
+    const db = await helper.load('db');
 
-    debug('### Load relations to ensure they are present');
-    const r3 = await TaskDependency.load({taskId: taskIdA, dependentTaskId: taskIdA}, true);
-    const r4 = await TaskRequirement.load({taskId: taskIdA, requiredTaskId: taskIdA}, true);
-    assert(r3, 'Expected TaskDependency');
-    assert(r4, 'Expected TaskRequirement');
+    debug('### Load dependencies to ensure they are present');
+    assert.deepEqual(
+      await db.fns.get_dependent_tasks(taskIdA, null, null, null, null),
+      [{dependent_task_id: taskIdA, requires: 'all-completed', satisfied: false}]);
+    assert.deepEqual(
+      await db.fns.get_dependent_tasks(taskIdB, null, null, null, null),
+      [{dependent_task_id: taskIdB, requires: 'all-completed', satisfied: false}]);
 
-    debug('### expire task-requirement/task-dependency');
-    await helper.runExpiration('expire-task-requirement'); // no longer does anything..
+    debug('### expire task-dependency');
     await helper.runExpiration('expire-task-dependency');
-    const r7 = await TaskDependency.load({taskId: taskIdA, dependentTaskId: taskIdA}, true);
-    const r8 = await TaskRequirement.load({taskId: taskIdA, requiredTaskId: taskIdA}, true);
-    assert(!r7, 'Did not expect TaskDependency');
-    assert(!r8, 'Did not expect TaskRequirement');
 
-    const r9 = await TaskDependency.load({taskId: taskIdB, dependentTaskId: taskIdB}, true);
-    const r10 = await TaskRequirement.load({taskId: taskIdB, requiredTaskId: taskIdB}, true);
-    assert(r9, 'Expected TaskDependency');
-    assert(r10, 'Expected TaskRequirement');
+    debug('### Load dependencies to ensure taskA is gone');
+    assert.deepEqual(
+      await db.fns.get_dependent_tasks(taskIdA, null, null, null, null),
+      []);
+    assert.deepEqual(
+      await db.fns.get_dependent_tasks(taskIdB, null, null, null, null),
+      [{dependent_task_id: taskIdB, requires: 'all-completed', satisfied: false}]);
   });
 });

@@ -49,7 +49,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
 
     await helper.startPollingService('claim-resolver');
 
-    debug('### Creating task');
+    debug('### Creating task', taskId);
     await helper.queue.createTask(taskId, task);
     helper.assertPulseMessage('task-defined');
     helper.assertPulseMessage('task-pending');
@@ -65,6 +65,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     assert(r1.tasks.length === 1, 'Expected a single task');
     assert(r1.tasks[0].status.taskId === taskId, 'Expected specific taskId');
 
+    debug('### Wait for claim expiration');
     await testing.poll(
       async () => {
         assert.deepEqual(monitor.manager.messages.find(({Type}) => Type === 'task-pending'), {
@@ -101,6 +102,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     assert.equal(r1.tasks.length, 1, 'Expected a single task');
     assert(r1.tasks[0].status.taskId === taskId, 'Expected specific taskId');
 
+    debug('### Wait for claim expiration');
     await testing.poll(
       async () => {
         assert.deepEqual(monitor.manager.messages.find(({Type}) => Type === 'task-exception'), {
