@@ -174,12 +174,6 @@ tasks:
   taken_until: timestamp with time zone
   task_group_id: text not null
   worker_type: text not null
-queue_task_requirement_entities:
-  partition_key: text not null
-  row_key: text not null
-  value: jsonb not null
-  version: integer not null
-  etag: uuid
 queue_artifacts:
   task_id: text not null
   run_id: integer not null
@@ -195,12 +189,13 @@ task_groups:
   scheduler_id: text not null
   task_group_id: text not null
   etag: uuid not null
-queue_task_dependency_entities:
-  partition_key: text not null
-  row_key: text not null
-  value: jsonb not null
-  version: integer not null
-  etag: uuid
+task_dependencies:
+  dependent_task_id: text not null
+  required_task_id: text not null
+  expires: timestamp with time zone not null
+  requires: task_requires not null
+  satisfied: boolean not null
+  etag: uuid not null
 queue_worker_entities:
   partition_key: text not null
   row_key: text not null

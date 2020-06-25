@@ -304,9 +304,8 @@ exports.resetTables = (mock, skipping) => {
     await resetTables({tableNames: [
       'tasks',
       'task_groups',
+      'task_dependencies',
       'queue_artifacts_entities',
-      'queue_task_requirement_entities',
-      'queue_task_dependency_entities',
       'queue_worker_entities',
       'queue_worker_type_entities',
       'queue_provisioner_entities',

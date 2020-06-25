@@ -33,8 +33,7 @@ queue:
   tables:
     queue_artifacts: write
     task_groups: write
-    queue_task_requirement_entities: write
-    queue_task_dependency_entities: write
+    task_dependencies: write
     queue_worker_entities: write
     queue_worker_type_entities: write
     queue_provisioner_entities: write
