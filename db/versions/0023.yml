@@ -184,3 +184,121 @@ methods:
           raise exception 'no such row' using errcode = 'P0002';
         end if;
       end
+  create_github_build:
+    description: |-
+      Create a new github build.  Raises UNIQUE_VIOLATION if the pool already exists.
+    mode: write
+    serviceName: github
+    args: organization_in text, repository_in text, sha_in text, task_group_id_in text, state_in text, created_in timestamptz, updated_in timestamptz, installation_id_in integer, event_type_in text, event_id_in text
+    returns: void
+    body: |-
+      begin
+        insert
+          into github_builds (organization, repository, sha, task_group_id, state, created, updated, installation_id, event_type, event_id)
+          values (organization_in, repository_in, sha_in, task_group_id_in, state_in, created_in, updated_in, installation_id_in, event_type_in, event_id_in);
+      end
+  get_github_build:
+    description: |-
+      Get a github build. The returned table will have one or zero rows.
+    mode: read
+    serviceName: github
+    args: task_group_id_in text
+    returns: table (organization text, repository text, sha text, task_group_id text, state text, created timestamptz, updated timestamptz, installation_id integer, event_type text, event_id text, etag uuid)
+    body: |-
+      begin
+        return query
+        select
+          github_builds.organization,
+          github_builds.repository,
+          github_builds.sha,
+          github_builds.task_group_id,
+          github_builds.state,
+          github_builds.created,
+          github_builds.updated,
+          github_builds.installation_id,
+          github_builds.event_type,
+          github_builds.event_id,
+          github_builds.etag
+        from github_builds
+        where github_builds.task_group_id = task_group_id_in;
+      end
+  get_github_builds:
+    description: |-
+      Get github builds. 
+    mode: read
+    serviceName: github
+    args: page_size_in integer, page_offset_in integer
+    returns: table (organization text, repository text, sha text, task_group_id text, state text, created timestamptz, updated timestamptz, installation_id integer, event_type text, event_id text, etag uuid)
+    body: |-
+      begin
+        return query
+        select
+          github_builds.organization,
+          github_builds.repository,
+          github_builds.sha,
+          github_builds.task_group_id,
+          github_builds.state,
+          github_builds.created,
+          github_builds.updated,
+          github_builds.installation_id,
+          github_builds.event_type,
+          github_builds.event_id,
+          github_builds.etag
+        from github_builds
+        order by task_group_id
+        limit get_page_limit(page_size_in)
+        offset get_page_offset(page_offset_in);
+      end
+  delete_github_build:
+    description: |-
+      Delete a github build.
+    mode: write
+    serviceName: github
+    args: task_group_id_in text
+    returns: void
+    body: |-
+      begin
+        delete
+        from github_builds
+        where github_builds.task_group_id = task_group_id_in;
+      end
+  update_github_build:
+    description: |-
+      Update a github build. Returns a a single github_build in an array or an empty array if the build did not exist.
+      This does not do anything with optimistic concurrency like some of our other update functions do.
+    mode: write
+    serviceName: github
+    args: organization_in text, repository_in text, sha_in text, task_group_id_in text, state_in text, created_in timestamptz, updated_in timestamptz, installation_id_in integer, event_type_in text, event_id_in text
+    returns: table (organization text, repository text, sha text, task_group_id text, state text, created timestamptz, updated timestamptz, installation_id integer, event_type text, event_id text, etag uuid)
+    body: |-
+      begin
+        return query
+        update github_builds
+        set (organization, repository, sha, task_group_id, state, created, updated, installation_id, event_type, event_id, etag) = (
+          coalesce(organization_in, github_builds.organization),
+          coalesce(repository_in, github_builds.repository),
+          coalesce(sha_in, github_builds.sha),
+          coalesce(task_group_id_in, github_builds.task_group_id),
+          coalesce(state_in, github_builds.state),
+          coalesce(created_in, github_builds.created),
+          coalesce(updated_in, github_builds.updated),
+          coalesce(installation_id_in, github_builds.installation_id),
+          coalesce(event_type_in, github_builds.event_type),
+          coalesce(event_id_in, github_builds.event_id),
+          public.gen_random_uuid()
+        )
+        where
+          github_builds.task_group_id = task_group_id_in
+        returning
+          github_builds.organization,
+          github_builds.repository,
+          github_builds.sha,
+          github_builds.task_group_id,
+          github_builds.state,
+          github_builds.created,
+          github_builds.updated,
+          github_builds.installation_id,
+          github_builds.event_type,
+          github_builds.event_id,
+          github_builds.etag;
+      end
