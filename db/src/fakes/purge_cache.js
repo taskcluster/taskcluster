@@ -101,7 +101,7 @@ class FakePurgeCache {
       });
   }
 
-  expire_cache_purges(exp) {
+  async expire_cache_purges(exp) {
     const cachePurges = this._getCaches();
     let count = 0;
 
