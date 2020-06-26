@@ -169,12 +169,16 @@ queue_task_requirement_entities:
   value: jsonb not null
   version: integer not null
   etag: uuid
-queue_artifacts_entities:
-  partition_key: text not null
-  row_key: text not null
-  value: jsonb not null
-  version: integer not null
-  etag: uuid
+queue_artifacts:
+  task_id: text not null
+  run_id: integer not null
+  name: text not null
+  storage_type: text not null
+  content_type: text not null
+  details: jsonb not null
+  expires: timestamp with time zone not null
+  present: boolean not null
+  etag: uuid not null
 queue_task_groups_entities:
   partition_key: text not null
   row_key: text not null
