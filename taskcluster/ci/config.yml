@@ -1,6 +1,7 @@
 ---
 trust-domain: taskcluster
-task-priority: highest
+# this is lower priority than the decision task
+task-priority: high
 
 taskgraph:
   register: src:register
