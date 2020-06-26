@@ -134,6 +134,7 @@ class Database {
     const db = new Database({urlsByMode: {admin: adminDbUrl, read: adminDbUrl}});
 
     await db._createExtensions();
+    await db._checkDbSettings();
 
     try {
       // perform any necessary upgrades..
@@ -188,6 +189,7 @@ class Database {
     const db = new Database({urlsByMode: {admin: adminDbUrl, read: adminDbUrl}});
 
     await db._createExtensions();
+    await db._checkDbSettings();
 
     if (typeof toVersion !== 'number') {
       throw new Error('Target DB version must be an integer');
@@ -378,6 +380,20 @@ class Database {
             throw err;
           }
         }
+      }
+    });
+  }
+
+  async _checkDbSettings() {
+    await this._withClient('admin', async client => {
+      const res = await client.query(`
+        SELECT datcollate AS collation
+        FROM pg_database 
+        WHERE datname = current_database()`);
+      const collation = res.rows[0].collation;
+      if (collation !== 'en_US.UTF8') {
+        throw new Error(
+          `Postgres database must have default collation en_US.UTF8; this database is using ${collation}.`);
       }
     });
   }

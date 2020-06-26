@@ -30,7 +30,7 @@ Do not run these tests against a database instance that contains any useful data
 To start the server using Docker:
 
 ```shell
-docker run -ti -p 127.0.0.1:5432:5432 -e POSTGRES_HOST_AUTH_METHOD=trust --rm postgres:11
+docker run -ti -p 127.0.0.1:5432:5432 -e POSTGRES_HOST_AUTH_METHOD=trust -e LC_COLLATE=en_US.UTF8 -e LC_CTYPE=en_US.UTF8 --rm postgres:11
 ```
 
 This will run Docker in the foreground in that terminal (so you'll need to use another terminal for your work, or add the `-d` flag to daemonize the container) and make that available on TCP port 5432, the "normal" Postgres port.
@@ -38,7 +38,7 @@ This will run Docker in the foreground in that terminal (so you'll need to use a
 It can be helpful to log all queries run by the test suite:
 
 ```shell
-docker run -ti -p 127.0.0.1:5432:5432 -e POSTGRES_HOST_AUTH_METHOD=trust --rm postgres:11 -c log_statement=all
+docker run -ti -p 127.0.0.1:5432:5432 -e POSTGRES_HOST_AUTH_METHOD=trust -e LC_COLLATE=en_US.UTF8 -e LC_CTYPE=en_US.UTF8 --rm postgres:11 -c log_statement=all
 ```
 
 However you decide to run Postgres, you will need a DB URL, as defined by [node-postgres](https://node-postgres.com/features/connecting).
