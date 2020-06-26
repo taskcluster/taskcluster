@@ -110,7 +110,7 @@ tasks:
                               - 'assume:repo:${repoUrl[8:]}:tag:${head_branch[10:]}'
 
                   requires: all-completed
-                  priority: lowest
+                  priority: highest
                   retries: 5
 
                   payload:
