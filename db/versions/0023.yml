@@ -249,7 +249,7 @@ methods:
           (organization_in is null or github_builds.organization = organization_in) and
           (repository_in is null or github_builds.repository = repository_in) and
           (sha_in is null or github_builds.sha = sha_in)
-        order by github_builds.updated desc
+        order by github_builds.updated asc
         limit get_page_limit(page_size_in)
         offset get_page_offset(page_offset_in);
       end
@@ -280,6 +280,8 @@ methods:
           state_in,
           now(),
           public.gen_random_uuid()
-        )
-        where github_builds.task_group_id = task_group_id_in;
+        ) where github_builds.task_group_id = task_group_id_in;
+        if not found then
+          raise exception 'no such row' using errcode = 'P0002';
+        end if;
       end
