@@ -97,7 +97,7 @@ methods:
           from github_builds
           where
             partition_key is null or
-            task_group_id = decode_string_key(task_group_id)
+            task_group_id = decode_string_key(partition_key)
           order by task_group_id
           limit size + 1
           offset page;
