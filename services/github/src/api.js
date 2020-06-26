@@ -320,34 +320,15 @@ builder.declare({
     'fields.',
   ].join('\n'),
 }, async function(req, res) {
-  let query = _.pick(req.query, ['organization', 'repository', 'sha']);
-  // We only support conditions on dates, as they cannot
-  // be used to inject SQL -- `Date.toJSON` always produces a simple string
-  // with no SQL metacharacters.
-  //
-  // Previously with azure, we added the query in the scan method
-  // (i.e., this.Builds.scan(query, ...)) but since the query doesn't include
-  // the partition key or row key, we would need to manually filter through
-  // the table.
   let {continuationToken, rows: builds} = await paginateResults({
     query: req.query,
     fetch: (size, offset) => this.db.fns.get_github_builds(
       size,
       offset,
+      req.query.organization || null,
+      req.query.repository || null,
+      req.query.sha || null,
     ),
-  });
-
-  // workaround after removing azure-entities
-  builds = builds.filter(build => {
-    const keys = Object.keys(query);
-
-    for (let key of keys) {
-      if (build[key] !== query[key]) {
-        return false;
-      }
-    }
-
-    return true;
   });
 
   return res.reply({
