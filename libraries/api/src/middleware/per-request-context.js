@@ -8,6 +8,9 @@ const perRequestContext = ({entry, context}) => {
     req.tcContext = new Proxy(context, {
       get(target, prop) {
         const val = target[prop];
+        if (!val) {
+          return undefined;
+        }
         if (val.taskclusterPerRequestInstance === undefined) {
           return val;
         }
