@@ -110,7 +110,7 @@ Here's a helpful checklist for this step (with more details below):
 * DB Functions
 	* [ ] Add new stored procedure functions. [example](https://github.com/taskcluster/taskcluster/blob/8d0600004fcaff7c1661e650bc48e424e7d409de/db/versions/0009.yml#L215-L288)
 	* [ ] Add mock implementations for the functions in the relevant file under `db/src/fakes/`. [example](https://github.com/taskcluster/taskcluster/blob/8d0600004fcaff7c1661e650bc48e424e7d409de/db/src/fakes/purge_cache.js)
-	* [ ] Create a file `db/test/fns/<service-name>_test.js` and write tests for these newly created functions. [example](https://github.com/taskcluster/taskcluster/pull/2748/commits/a702d2c7dffd0064f1ee4a647b6030b003e52536#diff-24717608297e5956dd619092dd4a135b)
+	* [ ] Create a file `db/test/fns/<service-name>_test.js` and write tests for these newly created functions. [example](https://github.com/taskcluster/taskcluster/pull/2748/commits/ae8654d3f2f85972a0a8fb11b6d9e9be8bcb83ef#diff-24717608297e5956dd619092dd4a135b)
 
 * Service Modifications
 	* [ ] Remove the table(s) being migrated from `main.js`. [example](https://github.com/taskcluster/taskcluster/pull/2716/commits/6727656e05d8204226705dea0777e30d3fd7dd68#diff-4870d07d27bcc1810fa17bd04ee9b80a)
@@ -134,7 +134,7 @@ taskcluster-lib-entities and instead communicate with the db directly via the ne
 functions defined earlier.
 
 If necessary, you might need to define a data class which you could refer to this
-[example](https://github.com/taskcluster/taskcluster/pull/2748/commits/a702d2c7dffd0064f1ee4a647b6030b003e52536#diff-6f428cf68b99354b5770cfca1e00338c)
+[example](https://github.com/taskcluster/taskcluster/pull/2748/commits/ae8654d3f2f85972a0a8fb11b6d9e9be8bcb83ef#diff-6f428cf68b99354b5770cfca1e00338c)
 for inspiration.
 This approach is useful in cases where the service passes Entity instances around between components, as instances of the new class can replace the Entity instances.
 In services where all access occurs directly in the API methods, such as purge-cache, a data class may not be necessary.
