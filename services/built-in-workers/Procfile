@@ -1,4 +1,0 @@
-# GENERATED FILE from `yarn generate`! To update, change procs.yml and regenerate.
-
-server: cd services/built-in-workers && node src/main.js server
-write-docs: cd services/built-in-workers && node src/main.js writeDocs

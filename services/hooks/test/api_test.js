@@ -5,7 +5,6 @@ const debug = require('debug')('test:api:createhook');
 const taskcluster = require('taskcluster-client');
 const helper = require('./helper');
 const testing = require('taskcluster-lib-testing');
-const {defaultMonitorManager} = require('taskcluster-lib-monitor');
 
 helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
   helper.withDb(mock, skipping);
@@ -130,12 +129,13 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
         () => apiClient.createHook('foo', 'bar', hookWithTriggerSchema),
         err => err.statusCode === 500);
 
+      const monitor = await helper.load('monitor');
       assert.equal(
-        defaultMonitorManager.messages.filter(
+        monitor.manager.messages.filter(
           ({Type, Fields}) => Type === 'monitor.error' && Fields.message === 'uhoh',
         ).length,
         1);
-      defaultMonitorManager.reset();
+      monitor.manager.reset();
     });
 
     test('creates a hook with slash in hookId', async () => {
@@ -289,12 +289,13 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
         () => apiClient.updateHook('foo', 'bar', hookWithTriggerSchema),
         err => err.statusCode === 500);
 
+      const monitor = await helper.load('monitor');
       assert.equal(
-        defaultMonitorManager.messages.filter(
+        monitor.manager.messages.filter(
           ({Type, Fields}) => Type === 'monitor.error' && Fields.message === 'uhoh',
         ).length,
         1);
-      defaultMonitorManager.reset();
+      monitor.manager.reset();
     });
 
     test('fails if resource doesn\'t exist', async () => {
@@ -349,12 +350,13 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
         () => apiClient.removeHook('foo', 'bar'),
         err => err.statusCode === 500);
 
+      const monitor = await helper.load('monitor');
       assert.equal(
-        defaultMonitorManager.messages.filter(
+        monitor.manager.messages.filter(
           ({Type, Fields}) => Type === 'monitor.error' && Fields.message === 'uhoh',
         ).length,
         1);
-      defaultMonitorManager.reset();
+      monitor.manager.reset();
     });
 
     test('remove all lastFires info of the hook ', async () => {

@@ -11,8 +11,8 @@ import (
 	"testing"
 	"time"
 
-	tcclient "github.com/taskcluster/taskcluster/v29/clients/client-go"
-	"github.com/taskcluster/taskcluster/v29/clients/client-go/tcqueue"
+	tcclient "github.com/taskcluster/taskcluster/v31/clients/client-go"
+	"github.com/taskcluster/taskcluster/v31/clients/client-go/tcqueue"
 	"golang.org/x/crypto/ed25519"
 )
 
@@ -159,8 +159,8 @@ func TestChainOfTrustUpload(t *testing.T) {
 	}
 
 	// The Payload, Tags and Extra fields are raw bytes, so differences may not
-	// be valid. Since we are comparing the rest, let's skip these two fields,
-	// as the rest should give us good enough coverage already
+	// be valid. Since we are comparing the rest, let's skip these three fields,
+	// as the rest should give us good enough coverage already.
 	cotCertTaskRequest.Payload = nil
 	cotCertTaskRequest.Tags = nil
 	cotCertTaskRequest.Extra = nil
@@ -222,6 +222,7 @@ func TestChainOfTrustUpload(t *testing.T) {
 }
 
 func TestProtectedArtifactsReplaced(t *testing.T) {
+
 	defer setup(t)()
 
 	expires := tcclient.Time(time.Now().Add(time.Minute * 30))
@@ -290,7 +291,8 @@ func TestProtectedArtifactsReplaced(t *testing.T) {
 
 	taskID := submitAndAssert(t, td, payload, "completed", "completed")
 
-	artifacts, err := testQueue.ListArtifacts(taskID, "0", "", "")
+	queue := serviceFactory.Queue(nil, config.RootURL)
+	artifacts, err := queue.ListArtifacts(taskID, "0", "", "")
 
 	if err != nil {
 		t.Fatalf("Error listing artifacts: %v", err)

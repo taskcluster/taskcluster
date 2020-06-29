@@ -1,23 +1,21 @@
 package runner
 
 import (
-	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"log"
-	"os"
 
-	"github.com/taskcluster/taskcluster/v29/internal/workerproto"
-	"github.com/taskcluster/taskcluster/v29/tools/worker-runner/cfg"
-	"github.com/taskcluster/taskcluster/v29/tools/worker-runner/credexp"
-	"github.com/taskcluster/taskcluster/v29/tools/worker-runner/files"
-	"github.com/taskcluster/taskcluster/v29/tools/worker-runner/logging"
-	loggingProtocol "github.com/taskcluster/taskcluster/v29/tools/worker-runner/logging/protocol"
-	"github.com/taskcluster/taskcluster/v29/tools/worker-runner/perms"
-	"github.com/taskcluster/taskcluster/v29/tools/worker-runner/provider"
-	"github.com/taskcluster/taskcluster/v29/tools/worker-runner/run"
-	"github.com/taskcluster/taskcluster/v29/tools/worker-runner/secrets"
-	"github.com/taskcluster/taskcluster/v29/tools/worker-runner/worker"
+	"github.com/taskcluster/taskcluster/v31/internal/workerproto"
+	"github.com/taskcluster/taskcluster/v31/tools/worker-runner/cfg"
+	"github.com/taskcluster/taskcluster/v31/tools/worker-runner/errorreport"
+	"github.com/taskcluster/taskcluster/v31/tools/worker-runner/exit"
+	"github.com/taskcluster/taskcluster/v31/tools/worker-runner/files"
+	"github.com/taskcluster/taskcluster/v31/tools/worker-runner/logging"
+	loggingProtocol "github.com/taskcluster/taskcluster/v31/tools/worker-runner/logging/protocol"
+	"github.com/taskcluster/taskcluster/v31/tools/worker-runner/provider"
+	"github.com/taskcluster/taskcluster/v31/tools/worker-runner/registration"
+	"github.com/taskcluster/taskcluster/v31/tools/worker-runner/run"
+	"github.com/taskcluster/taskcluster/v31/tools/worker-runner/secrets"
+	"github.com/taskcluster/taskcluster/v31/tools/worker-runner/worker"
 )
 
 // Run the worker.  This embodies the execution of the start-worker command.
@@ -35,36 +33,26 @@ func Run(configFile string) (state run.State, err error) {
 
 	runCached := false
 	if runnercfg.CacheOverRestarts != "" {
-
-		var encoded []byte
-		encoded, err = ioutil.ReadFile(runnercfg.CacheOverRestarts)
-		if err == nil {
-			log.Printf("Loading cached state from %s", runnercfg.CacheOverRestarts)
-
-			err = json.Unmarshal(encoded, &state)
-			if err != nil {
-				return
-			}
-			runCached = true
-
-			// just double-check that the permissions are correct..
-			err = perms.VerifyPrivateToOwner(runnercfg.CacheOverRestarts)
-			if err != nil {
-				return
-			}
-		} else if !os.IsNotExist(err) {
+		runCached, err = run.ReadCacheFile(&state, runnercfg.CacheOverRestarts)
+		if err != nil {
 			return
 		}
 	}
 
+	state.Lock()
 	state.WorkerConfig = state.WorkerConfig.Merge(runnercfg.WorkerConfig)
+	state.Unlock()
 
-	// initialize provider
+	// initialize provider and (re)register the worker
 
 	provider, err := provider.New(runnercfg)
 	if err != nil {
 		return
 	}
+
+	reg := registration.New(runnercfg, &state)
+	er := errorreport.New(&state)
+	em := exit.New(runnercfg, &state)
 
 	if !runCached {
 		log.Printf("Configuring with provider %s", runnercfg.Provider.ProviderType)
@@ -72,8 +60,25 @@ func Run(configFile string) (state run.State, err error) {
 		if err != nil {
 			return
 		}
+
+		workerIdentityProof, err2 := provider.GetWorkerIdentityProof()
+		if err2 != nil {
+			err = err2
+			return
+		}
+		if workerIdentityProof != nil {
+			err = reg.RegisterWorker(workerIdentityProof)
+			if err != nil {
+				return
+			}
+		}
 	} else {
 		err = provider.UseCachedRun(&state)
+		if err != nil {
+			return
+		}
+
+		err = reg.UseCachedRun()
 		if err != nil {
 			return
 		}
@@ -85,7 +90,9 @@ func Run(configFile string) (state run.State, err error) {
 	}
 
 	// log the worker identity; this is useful for finding the worker in logfiles
+	state.Lock()
 	log.Printf("Identified as worker %s/%s", state.WorkerGroup, state.WorkerID)
+	state.Unlock()
 
 	// fetch secrets
 
@@ -120,26 +127,7 @@ func Run(configFile string) (state run.State, err error) {
 	// cache the state if we might end up restarting
 
 	if !runCached && runnercfg.CacheOverRestarts != "" {
-		log.Printf("Caching runnercfg at %s", runnercfg.CacheOverRestarts)
-		var encoded []byte
-		encoded, err = json.Marshal(&state)
-		if err != nil {
-			return
-		}
-		err = ioutil.WriteFile(runnercfg.CacheOverRestarts, encoded, 0700)
-		if err != nil {
-			return
-		}
-
-		// This file contains secrets, so ensure that this is really only
-		// accessible to the file owner (and having just created the file, that
-		// should be the current user).
-		err = perms.MakePrivateToOwner(runnercfg.CacheOverRestarts)
-		if err != nil {
-			return
-		}
-
-		err = perms.VerifyPrivateToOwner(runnercfg.CacheOverRestarts)
+		err = state.WriteCacheFile(runnercfg.CacheOverRestarts)
 		if err != nil {
 			return
 		}
@@ -149,14 +137,13 @@ func Run(configFile string) (state run.State, err error) {
 
 	if !runCached {
 		log.Printf("Writing files")
+		state.Lock()
 		err = files.ExtractAll(state.Files)
+		state.Unlock()
 		if err != nil {
 			return
 		}
 	}
-
-	// handle credential expiratoin
-	ce := credexp.New(&state)
 
 	// start
 
@@ -174,11 +161,13 @@ func Run(configFile string) (state run.State, err error) {
 	loggingProtocol.SetProtocol(proto)
 	provider.SetProtocol(proto)
 	worker.SetProtocol(proto)
-	ce.SetProtocol(proto)
+	reg.SetProtocol(proto)
+	er.SetProtocol(proto)
+	em.SetProtocol(proto)
 
 	// call the WorkerStarted methods before starting the proto so that there
 	// are no race conditions around the capabilities negotiation
-	err = ce.WorkerStarted()
+	err = reg.WorkerStarted()
 	if err != nil {
 		return
 	}
@@ -199,13 +188,19 @@ func Run(configFile string) (state run.State, err error) {
 	}
 
 	// shut things down
+	// NOTE: this section is not reached for generic-worker reboots.
 
 	err = provider.WorkerFinished(&state)
 	if err != nil {
 		return
 	}
 
-	err = ce.WorkerFinished()
+	err = reg.WorkerFinished()
+	if err != nil {
+		return
+	}
+
+	err = em.WorkerFinished()
 	if err != nil {
 		return
 	}

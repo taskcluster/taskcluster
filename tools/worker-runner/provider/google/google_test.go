@@ -1,22 +1,17 @@
 package google
 
 import (
-	"encoding/json"
 	"testing"
 
-	ptesting "github.com/taskcluster/taskcluster/v29/internal/workerproto/testing"
+	ptesting "github.com/taskcluster/taskcluster/v31/internal/workerproto/testing"
 
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/taskcluster/taskcluster/v29/tools/worker-runner/cfg"
-	"github.com/taskcluster/taskcluster/v29/tools/worker-runner/run"
-	"github.com/taskcluster/taskcluster/v29/tools/worker-runner/tc"
+	"github.com/taskcluster/taskcluster/v31/tools/worker-runner/cfg"
+	"github.com/taskcluster/taskcluster/v31/tools/worker-runner/run"
+	"github.com/taskcluster/taskcluster/v31/tools/worker-runner/tc"
 )
 
 func TestGoogleConfigureRun(t *testing.T) {
-	runnerWorkerConfig := cfg.NewWorkerConfig()
-	runnerWorkerConfig, err := runnerWorkerConfig.Set("from-runner-cfg", true)
-	require.NoError(t, err, "setting config")
 	runnercfg := &cfg.RunnerConfig{
 		Provider: cfg.ProviderConfig{
 			ProviderType: "google",
@@ -24,25 +19,13 @@ func TestGoogleConfigureRun(t *testing.T) {
 		WorkerImplementation: cfg.WorkerImplementationConfig{
 			Implementation: "whatever-worker",
 		},
-		WorkerConfig: runnerWorkerConfig,
 	}
 
-	pwcJson := json.RawMessage(`{
-        "whateverWorker": {
-		    "config": {
-				"from-ud": true
-			},
-			"files": [
-			    {"description": "a file."}
-			]
-		}
-	}`)
 	userData := &UserData{
-		WorkerPoolID:         "w/p",
-		ProviderID:           "gcp1",
-		WorkerGroup:          "wg",
-		RootURL:              "https://tc.example.com",
-		ProviderWorkerConfig: &pwcJson,
+		WorkerPoolID: "w/p",
+		ProviderID:   "gcp1",
+		WorkerGroup:  "wg",
+		RootURL:      "https://tc.example.com",
 	}
 	identityPath := "/instance/service-accounts/default/identity?audience=https://tc.example.com&format=full"
 	metaData := map[string]string{
@@ -61,25 +44,12 @@ func TestGoogleConfigureRun(t *testing.T) {
 	p, err := new(runnercfg, tc.FakeWorkerManagerClientFactory, mds)
 	require.NoError(t, err, "creating provider")
 
-	state := run.State{
-		WorkerConfig: runnercfg.WorkerConfig,
-	}
+	state := run.State{}
 	err = p.ConfigureRun(&state)
 	require.NoError(t, err, "ConfigureRun")
 
-	reg, err := tc.FakeWorkerManagerRegistration()
-	if assert.NoError(t, err) {
-		require.Equal(t, userData.ProviderID, reg.ProviderID)
-		require.Equal(t, userData.WorkerGroup, reg.WorkerGroup)
-		require.Equal(t, "i-123", reg.WorkerID)
-		require.Equal(t, json.RawMessage(`{"token":"i-promise"}`), reg.WorkerIdentityProof)
-		require.Equal(t, "w/p", reg.WorkerPoolID)
-	}
-
 	require.Equal(t, "https://tc.example.com", state.RootURL, "rootURL is correct")
-	require.Equal(t, "testing", state.Credentials.ClientID, "clientID is correct")
-	require.Equal(t, "at", state.Credentials.AccessToken, "accessToken is correct")
-	require.Equal(t, "cert", state.Credentials.Certificate, "cert is correct")
+	require.Equal(t, "gcp1", state.ProviderID, "providerID is correct")
 	require.Equal(t, "w/p", state.WorkerPoolID, "workerPoolID is correct")
 	require.Equal(t, "wg", state.WorkerGroup, "workerGroup is correct")
 	require.Equal(t, "i-123", state.WorkerID, "workerID is correct")
@@ -96,21 +66,21 @@ func TestGoogleConfigureRun(t *testing.T) {
 		"local-ipv4":      "192.168.0.1",
 	}, state.ProviderMetadata, "providerMetadata is correct")
 
-	require.Equal(t, true, state.WorkerConfig.MustGet("from-runner-cfg"), "value for from-runner-cfg")
-	require.Equal(t, true, state.WorkerConfig.MustGet("from-register-worker"), "value for from-register-worker")
-	require.Equal(t, false, state.WorkerConfig.Has("from-ud"), "userdata worker-config ignored")
-	require.Equal(t, "a file.", state.Files[0].Description)
-
 	require.Equal(t, "google", state.WorkerLocation["cloud"])
 	require.Equal(t, "in-central1", state.WorkerLocation["region"])
 	require.Equal(t, "in-central1-b", state.WorkerLocation["zone"])
 
-	wkr := ptesting.NewFakeWorkerWithCapabilities("shutdown")
+	wkr := ptesting.NewFakeWorkerWithCapabilities()
 	defer wkr.Close()
 
 	p.SetProtocol(wkr.RunnerProtocol)
 	require.NoError(t, p.WorkerStarted(&state))
 	wkr.RunnerProtocol.Start(false)
 	wkr.RunnerProtocol.WaitUntilInitialized()
-	require.True(t, wkr.RunnerProtocol.Capable("shutdown"))
+
+	proof, err := p.GetWorkerIdentityProof()
+	require.NoError(t, err)
+	require.Equal(t, map[string]interface{}{
+		"token": "i-promise",
+	}, proof)
 }

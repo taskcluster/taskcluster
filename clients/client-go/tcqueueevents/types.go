@@ -3,7 +3,7 @@
 package tcqueueevents
 
 import (
-	tcclient "github.com/taskcluster/taskcluster/v29/clients/client-go"
+	tcclient "github.com/taskcluster/taskcluster/v31/clients/client-go"
 )
 
 type (
@@ -369,7 +369,7 @@ type (
 		// repository. This should be place someone can go an do a git/hg blame
 		// to who came up with recipe for this task.
 		//
-		// Syntax:     ^https?://
+		// Syntax:     ^(https?|ssh)://
 		// Max length: 4096
 		Source string `json:"source"`
 	}

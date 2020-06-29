@@ -9,14 +9,10 @@ import (
 	"net"
 	"os"
 	"reflect"
+	"sync"
 
-	tcclient "github.com/taskcluster/taskcluster/v29/clients/client-go"
-	"github.com/taskcluster/taskcluster/v29/clients/client-go/tcauth"
-	"github.com/taskcluster/taskcluster/v29/clients/client-go/tcpurgecache"
-	"github.com/taskcluster/taskcluster/v29/clients/client-go/tcqueue"
-	"github.com/taskcluster/taskcluster/v29/clients/client-go/tcsecrets"
-	"github.com/taskcluster/taskcluster/v29/clients/client-go/tcworkermanager"
-	"github.com/taskcluster/taskcluster/v29/workers/generic-worker/fileutil"
+	tcclient "github.com/taskcluster/taskcluster/v31/clients/client-go"
+	"github.com/taskcluster/taskcluster/v31/workers/generic-worker/fileutil"
 )
 
 type (
@@ -24,11 +20,14 @@ type (
 	Config struct {
 		PrivateConfig
 		PublicConfig
+
+		// a lock for access to ClientID, AccessToken, and
+		// Certificate, since these values must change as a group
+		credsMutex sync.Mutex
 	}
 
 	PublicConfig struct {
 		PublicEngineConfig
-		AuthRootURL                    string                 `json:"authRootURL"`
 		AvailabilityZone               string                 `json:"availabilityZone"`
 		CachesDir                      string                 `json:"cachesDir"`
 		CheckForNewDeploymentEverySecs uint                   `json:"checkForNewDeploymentEverySecs"`
@@ -41,33 +40,24 @@ type (
 		IdleTimeoutSecs                uint                   `json:"idleTimeoutSecs"`
 		InstanceID                     string                 `json:"instanceId"`
 		InstanceType                   string                 `json:"instanceType"`
-		LiveLogCertificate             string                 `json:"livelogCertificate"`
 		LiveLogExecutable              string                 `json:"livelogExecutable"`
-		LiveLogGETPort                 uint16                 `json:"livelogGETPort"`
-		LiveLogKey                     string                 `json:"livelogKey"`
-		LiveLogPUTPort                 uint16                 `json:"livelogPUTPort"`
 		NumberOfTasksToRun             uint                   `json:"numberOfTasksToRun"`
 		PrivateIP                      net.IP                 `json:"privateIP"`
 		ProvisionerID                  string                 `json:"provisionerId"`
 		PublicIP                       net.IP                 `json:"publicIP"`
-		PurgeCacheRootURL              string                 `json:"purgeCacheRootURL"`
-		QueueRootURL                   string                 `json:"queueRootURL"`
 		Region                         string                 `json:"region"`
 		RequiredDiskSpaceMegabytes     uint                   `json:"requiredDiskSpaceMegabytes"`
 		RootURL                        string                 `json:"rootURL"`
 		RunAfterUserCreation           string                 `json:"runAfterUserCreation"`
-		SecretsRootURL                 string                 `json:"secretsRootURL"`
 		SentryProject                  string                 `json:"sentryProject"`
 		ShutdownMachineOnIdle          bool                   `json:"shutdownMachineOnIdle"`
 		ShutdownMachineOnInternalError bool                   `json:"shutdownMachineOnInternalError"`
-		Subdomain                      string                 `json:"subdomain"`
 		TaskclusterProxyExecutable     string                 `json:"taskclusterProxyExecutable"`
 		TaskclusterProxyPort           uint16                 `json:"taskclusterProxyPort"`
 		TasksDir                       string                 `json:"tasksDir"`
 		WorkerGroup                    string                 `json:"workerGroup"`
 		WorkerID                       string                 `json:"workerId"`
-		WorkerLocation                 string                 `json:"workerLocation"`
-		WorkerManagerRootURL           string                 `json:"workerManagerRootURL"`
+		WorkerLocation                 string                 `json:"workerLocation,omitempty"`
 		WorkerType                     string                 `json:"workerType"`
 		WorkerTypeMetadata             map[string]interface{} `json:"workerTypeMetadata"`
 		WSTAudience                    string                 `json:"wstAudience"`
@@ -75,9 +65,8 @@ type (
 	}
 
 	PrivateConfig struct {
-		AccessToken   string `json:"accessToken"`
-		Certificate   string `json:"certificate"`
-		LiveLogSecret string `json:"livelogSecret"`
+		AccessToken string `json:"accessToken"`
+		Certificate string `json:"certificate"`
 	}
 
 	MissingConfigError struct {
@@ -86,9 +75,6 @@ type (
 )
 
 func (c *Config) String() string {
-	cCopy := *c
-	cCopy.AccessToken = "*************"
-	cCopy.LiveLogSecret = "*************"
 	// This json.Marshal call won't sort all inherited properties
 	// alphabetically, since it sorts properties within each nested struct, but
 	// concatenates the results from each of the nested structs together.
@@ -97,7 +83,7 @@ func (c *Config) String() string {
 	// this by first marshaling to json, then unmarshaling to an interface{}
 	// (so that the structure is flattened), and then finally marshaling back
 	// to json. Whew.
-	j, err := json.Marshal(&cCopy)
+	j, err := json.Marshal(&c.PublicConfig)
 	if err != nil {
 		panic(err)
 	}
@@ -106,6 +92,7 @@ func (c *Config) String() string {
 	if err != nil {
 		panic(err)
 	}
+
 	j, err = json.MarshalIndent(data, "", "  ")
 	if err != nil {
 		panic(err)
@@ -127,11 +114,8 @@ func (c *Config) Validate() error {
 		{value: c.DownloadsDir, name: "downloadsDir", disallowed: ""},
 		{value: c.Ed25519SigningKeyLocation, name: "ed25519SigningKeyLocation", disallowed: ""},
 		{value: c.LiveLogExecutable, name: "livelogExecutable", disallowed: ""},
-		{value: c.LiveLogPUTPort, name: "livelogPUTPort", disallowed: 0},
-		{value: c.LiveLogGETPort, name: "livelogGETPort", disallowed: 0},
 		{value: c.ProvisionerID, name: "provisionerId", disallowed: ""},
 		{value: c.RootURL, name: "rootURL", disallowed: ""},
-		{value: c.Subdomain, name: "subdomain", disallowed: ""},
 		{value: c.TasksDir, name: "tasksDir", disallowed: ""},
 		{value: c.WorkerGroup, name: "workerGroup", disallowed: ""},
 		{value: c.WorkerID, name: "workerId", disallowed: ""},
@@ -153,56 +137,23 @@ func (err MissingConfigError) Error() string {
 }
 
 func (c *Config) Credentials() *tcclient.Credentials {
-	return &tcclient.Credentials{
+	c.credsMutex.Lock()
+	creds := &tcclient.Credentials{
 		AccessToken: c.AccessToken,
 		ClientID:    c.ClientID,
 		Certificate: c.Certificate,
 	}
+	c.credsMutex.Unlock()
+	return creds
 }
 
-func (c *Config) Auth() *tcauth.Auth {
-	auth := tcauth.New(c.Credentials(), c.RootURL)
-	// If authRootURL provided, it should take precedence over rootURL
-	if c.AuthRootURL != "" {
-		auth.RootURL = c.AuthRootURL
-	}
-	return auth
-}
-
-func (c *Config) Queue() *tcqueue.Queue {
-	queue := tcqueue.New(c.Credentials(), c.RootURL)
-	// If queueRootURL provided, it should take precedence over rootURL
-	if c.QueueRootURL != "" {
-		queue.RootURL = c.QueueRootURL
-	}
-	return queue
-}
-
-func (c *Config) PurgeCache() *tcpurgecache.PurgeCache {
-	purgeCache := tcpurgecache.New(c.Credentials(), c.RootURL)
-	// If purgeCacheRootURL provided, it should take precedence over rootURL
-	if c.PurgeCacheRootURL != "" {
-		purgeCache.RootURL = c.PurgeCacheRootURL
-	}
-	return purgeCache
-}
-
-func (c *Config) Secrets() *tcsecrets.Secrets {
-	secrets := tcsecrets.New(c.Credentials(), c.RootURL)
-	// If secretsRootURL provided, it should take precedence over rootURL
-	if c.SecretsRootURL != "" {
-		secrets.RootURL = c.SecretsRootURL
-	}
-	return secrets
-}
-
-func (c *Config) WorkerManager() *tcworkermanager.WorkerManager {
-	workerManager := tcworkermanager.New(c.Credentials(), c.RootURL)
-	// If workerManagerRootURL provided, it should take precedence over rootURL
-	if c.WorkerManagerRootURL != "" {
-		workerManager.RootURL = c.WorkerManagerRootURL
-	}
-	return workerManager
+func (c *Config) UpdateCredentials(creds *tcclient.Credentials) {
+	c.credsMutex.Lock()
+	c.ClientID = creds.ClientID
+	c.AccessToken = creds.AccessToken
+	c.Certificate = creds.Certificate
+	log.Printf("Using new worker credentials with clientId %s", creds.ClientID)
+	c.credsMutex.Unlock()
 }
 
 type File struct {

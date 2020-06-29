@@ -7,10 +7,10 @@ import (
 	"log"
 	"strings"
 
-	"github.com/taskcluster/taskcluster/v29/internal/workerproto"
-	"github.com/taskcluster/taskcluster/v29/tools/worker-runner/cfg"
-	"github.com/taskcluster/taskcluster/v29/tools/worker-runner/run"
-	"github.com/taskcluster/taskcluster/v29/tools/worker-runner/worker/worker"
+	"github.com/taskcluster/taskcluster/v31/internal/workerproto"
+	"github.com/taskcluster/taskcluster/v31/tools/worker-runner/cfg"
+	"github.com/taskcluster/taskcluster/v31/tools/worker-runner/run"
+	"github.com/taskcluster/taskcluster/v31/tools/worker-runner/worker/worker"
 )
 
 type genericworkerConfig struct {
@@ -27,6 +27,9 @@ type genericworker struct {
 }
 
 func (d *genericworker) ConfigureRun(state *run.State) error {
+	state.Lock()
+	defer state.Unlock()
+
 	var err error
 
 	// copy some values from the provider metadata, if they are set; if not,
@@ -94,6 +97,9 @@ func (d *genericworker) UseCachedRun(state *run.State) error {
 }
 
 func (d *genericworker) StartWorker(state *run.State) (workerproto.Transport, error) {
+	state.Lock()
+	defer state.Unlock()
+
 	// write out the config file
 	content, err := json.MarshalIndent(state.WorkerConfig, "", "  ")
 	if err != nil {
@@ -136,13 +142,13 @@ func New(runnercfg *cfg.RunnerConfig) (worker.Worker, error) {
 }
 
 func Usage() string {
-	return `
+	return strings.ReplaceAll(`
 
 The "generic-worker" worker implementation starts generic-worker
 (https://github.com/taskcluster/generic-worker).  It takes the following
 values in the 'worker' section of the runner configuration:
 
-` + "```yaml" + `
+`+"```yaml"+`
 worker:
 	implementation: generic-worker
 	# path to the root of the generic-worker executable
@@ -156,13 +162,18 @@ worker:
 	# path where worker-runner should write the generated
 	# generic-worker configuration.
 	configPath: /etc/taskcluster/generic-worker/config.yaml
-` + "```" + `
+`+"```"+`
 
-Specify either 'path' to run the executable directly, or 'service' to name a
-Windows service that will run the worker.  In the latter case, the configPath
-must match the path configured within the service definition.  See
-[windows-services](./docs/windows-services.md) for details.  Note that running
-as a service requires at least generic-worker v16.6.0.
+On Linux, specify only |implementation|, |path|, and |configPath|.
 
-`
+On Windows, worker-runner can start generic-worker in two ways: as a service, or as a child process.
+
+To run generic-worker as a service, specify |implementation|, |service| and |configPath|, and ensure that the |configPath| matches the |--config| path configured within the service definition.
+See [Deployment](/docs/reference/workers/worker-runner/deployment).
+In most cases, |protocolPipe| can be omitted to use the default value.
+This would only need to be overridden if multiple copies of generic-worker are running on the same host.
+
+To run generic-worker as a child process, specify |implementation, |path| and |configPath|.
+In this case, |protocolPipe| is not used.
+`, "|", "`")
 }

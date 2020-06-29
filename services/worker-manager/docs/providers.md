@@ -46,7 +46,7 @@ The `input` matches the `create-worker-request.yml` schema, and that schema can 
 The return value should be an instance of the Worker azure entity class.
 [Idempotency](../../dev-docs/idempotency.md) of this method is the responsibilty of the provider.
 
-The provider's `removeWorker` method is called with an instance of the Worker Azure entity class.
+The provider's `removeWorker` method is called with an instance of the Worker Azure entity class and a reason.
 There are no restrictions on the state of that instance on return: it may still exist, and even have state RUNNING.
 
 #### Registering
@@ -67,7 +67,8 @@ Do not reveal any information to a potential attacker in error messages -- avoid
 ### Provider Data
 
 Each worker entry has a `providerData` property which can be used to store arbitrary data about the worker.
-The format of this object is entirely at the discretion of the provider.
+The format of this object is entirely at the discretion of the provider. At this time, all dynamic providers must use
+`terminateAfter` as the key in `providerData` for a time when the machine should be directly shut down. You can see how azure/aws/google providers handle it as an example.
 Note that Azure entities have a fixed maximum size, so it is best to avoid storing any data in this property that grows without bound.
 
 ## Provisioning

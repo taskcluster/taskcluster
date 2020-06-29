@@ -3,13 +3,12 @@ package task
 import (
 	"fmt"
 	"io"
-	"os"
 	"time"
 
 	"github.com/spf13/pflag"
 	"github.com/taskcluster/slugid-go/slugid"
-	tcclient "github.com/taskcluster/taskcluster/v29/clients/client-go"
-	"github.com/taskcluster/taskcluster/v29/clients/client-go/tcqueue"
+	tcclient "github.com/taskcluster/taskcluster/v31/clients/client-go"
+	"github.com/taskcluster/taskcluster/v31/clients/client-go/tcqueue"
 )
 
 // runCancel cancels the runs of a given task.
@@ -33,7 +32,7 @@ func runCancel(credentials *tcclient.Credentials, args []string, out io.Writer, 
 
 	c, err := q.CancelTask(taskID)
 	if err != nil {
-		fmt.Fprintln(os.Stderr, err)
+		log.Error(err)
 		return fmt.Errorf("could not cancel the task %s: %v", taskID, err)
 	}
 

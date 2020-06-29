@@ -183,7 +183,10 @@ class PulseConsumer {
       // connection (better safe than sorry)
       channel.on('error', () => conn.failed());
 
-      const consumer = await channel.consume(queueName, async (msg) => {
+      // NOTE: channel.consume is not async!  In fact, await'ing it can
+      // result in a message arriving before the onConnected callback is
+      // invoked.
+      const consumer = channel.consume(queueName, async (msg) => {
         // If the consumer is cancelled by RabbitMQ, the message callback will
         // be invoked with null.  This might happen if the queue is deleted, in
         // which case we probably want to reconnect and redeclare everything.

@@ -28,6 +28,7 @@ const UNREFERENCED_SCHEMAS = [
   {service: 'generic-worker', schema: 'multiuser_windows.json#'},
   {service: 'generic-worker', schema: 'multiuser_posix.json#'},
   {service: 'generic-worker', schema: 'docker_posix.json#'},
+  {service: 'docker-worker', schema: 'v1/payload.json#'},
 ];
 
 /**
@@ -39,7 +40,7 @@ const forAllRefs = (content, cb) => {
     if (Array.isArray(value)) {
       value.forEach((v, i) => recurse(v, `${path}[${i}]`));
     } else if (typeof value === 'object') {
-      if (value.$ref && Object.keys(value).length === 1) {
+      if (value.$ref) {
         cb(value.$ref, path);
       } else {
         for (const [k, v] of Object.entries(value)) {
@@ -63,9 +64,9 @@ exports.validate = (references) => {
 
   let schemaPattern; // capture group 1 === prefix up to and including service name)
   if (references.rootUrl === 'https://taskcluster.net') {
-    schemaPattern = new RegExp('(^https:\/\/schemas\.taskcluster\.net\/[^\/]*\/).*\.json#');
+    schemaPattern = new RegExp('(^https:\/\/schemas\\.taskcluster\\.net\/[^\/]*\/).*\\.json#');
   } else {
-    schemaPattern = new RegExp(`(^${regexEscape(references.rootUrl)}\/schemas\/[^\/]*\/).*\.json#`);
+    schemaPattern = new RegExp(`(^${regexEscape(references.rootUrl)}\/schemas\/[^\/]*\/).*\\.json#`);
   }
 
   for (let {filename, content} of references.schemas) {

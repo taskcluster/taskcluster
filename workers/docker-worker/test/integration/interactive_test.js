@@ -12,10 +12,16 @@ const URL = require('url');
 const poll = require('./helper/poll');
 const sleep = require('./helper/sleep');
 const util = require('util');
+const {suiteName} = require('taskcluster-lib-testing');
+const helper = require('../helper');
 
 const pseudoRandomBytes = util.promisify(crypto.pseudoRandomBytes);
 
-suite('use docker exec websocket server', () => {
+helper.secrets.mockSuite(suiteName(), ['docker', 'ci-creds'], function(mock, skipping) {
+  if (mock) {
+    return; // no fake equivalent for integration tests
+  }
+
   let debug = Debug('docker-worker:test:interactive');
 
   let worker;

@@ -19,6 +19,7 @@ defaults:
   postgres:
     readDbUrl: !env READ_DB_URL
     writeDbUrl: !env WRITE_DB_URL
+    dbCryptoKeys: !env:json:optional DB_CRYPTO_KEYS
   server:
     port: !env:number PORT
     env: !env NODE_ENV
@@ -46,6 +47,11 @@ test:
     accountId: "pamplemousse"
   app:
     errorsExpirationDelay: '-1 hour'
+  postgres:
+    dbCryptoKeys:
+      - id: 'worker-manager'
+        algo: 'aes-256'
+        key: "aSdtIGJzdGFjayEgaGVsbG8gZnV0dXJlIHBlcnNvbgo="
   providers:
     testing1:
       providerType: testing
@@ -55,8 +61,8 @@ test:
       providerType: static
     google:
       providerType: google
-      project: foo
-      creds: {}
+      project: testy
+      creds: {client_id: "fake-creds"}
       workerServiceAccountId: 12345
     aws:
       providerType: aws

@@ -1,12 +1,12 @@
 const uploadToS3 = require('../src/lib/upload_to_s3');
 const assert = require('assert');
+const temporary = require('temporary');
+const fs = require('fs');
+const path = require('path');
+const https = require('https');
+const {suiteName} = require('taskcluster-lib-testing');
 
-suite('upload to s3 test', function () {
-  let temporary = require('temporary');
-  let fs = require('fs');
-  let path = require('path');
-  let https = require('https');
-
+suite(suiteName(), function () {
   async function getTemporaryStream(filename, data) {
     let tempStream = fs.createWriteStream(filename);
     await new Promise(function(accept, reject) {
@@ -67,7 +67,6 @@ suite('upload to s3 test', function () {
     expiry.setDate(expiry.getDate() + 1);
 
     let httpHeader = {
-      'content-length': DATA.length,
     };
 
     try {

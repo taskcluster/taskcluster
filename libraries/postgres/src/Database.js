@@ -1,9 +1,11 @@
 const {Pool} = require('pg');
 const pg = require('pg');
+const crypto = require('crypto');
 const {dollarQuote, annotateError} = require('./util');
+const Keyring = require('./Keyring');
 const assert = require('assert').strict;
 const {READ, WRITE, DUPLICATE_OBJECT, UNDEFINED_TABLE} = require('./constants');
-const {defaultMonitorManager} = require('taskcluster-lib-monitor');
+const {MonitorManager} = require('taskcluster-lib-monitor');
 
 // Postgres extensions to "create".
 const EXTENSIONS = [
@@ -15,7 +17,7 @@ const EXTENSIONS = [
 // questionable decision can be overridden globally:
 pg.defaults.parseInputDatesAsUTC = true;
 
-defaultMonitorManager.register({
+MonitorManager.register({
   name: 'dbFunctionCall',
   title: 'DB Method Call',
   type: 'db-function-call',
@@ -27,7 +29,7 @@ defaultMonitorManager.register({
   },
 });
 
-defaultMonitorManager.register({
+MonitorManager.register({
   name: 'dbPoolCounts',
   title: 'DB Pool Counts',
   type: 'db-pool-counts',
@@ -50,18 +52,22 @@ class Database {
   /**
    * Get a new Database instance
    */
-  static async setup({schema, readDbUrl, writeDbUrl, serviceName, monitor, statementTimeout, poolSize}) {
+  static async setup({schema, readDbUrl, writeDbUrl, dbCryptoKeys,
+    azureCryptoKey, serviceName, monitor, statementTimeout, poolSize}) {
     assert(readDbUrl, 'readDbUrl is required');
     assert(writeDbUrl, 'writeDbUrl is required');
     assert(schema, 'schema is required');
     assert(serviceName, 'serviceName is required');
     assert(monitor !== undefined, 'monitor is required (but use `false` to disable)');
 
+    const keyring = new Keyring({azureCryptoKey, dbCryptoKeys});
+
     const db = new Database({
       urlsByMode: {[READ]: readDbUrl, [WRITE]: writeDbUrl},
       monitor,
       statementTimeout,
       poolSize,
+      keyring,
     });
     db._createProcs({schema, serviceName});
 
@@ -76,16 +82,17 @@ class Database {
   _createProcs({schema, serviceName}) {
     // generate a JS method for each DB method defined in the schema
     this.fns = {};
+    this.deprecatedFns = {};
     schema.allMethods().forEach(method => {
-      // ignore deprecated methods
+      let collection = this.fns;
       if (method.deprecated) {
-        return;
+        collection = this.deprecatedFns;
       }
 
-      this.fns[method.name] = async (...args) => {
+      collection[method.name] = async (...args) => {
         if (serviceName !== method.serviceName && method.mode !== READ) {
           throw new Error(
-            `${serviceName} is not allowed to call read-write methods for other services`);
+            `${serviceName} is not allowed to call read-write methods for ${method.serviceName}`);
         }
 
         this._logDbFunctionCall({name: method.name});
@@ -127,6 +134,7 @@ class Database {
     const db = new Database({urlsByMode: {admin: adminDbUrl, read: adminDbUrl}});
 
     await db._createExtensions();
+    await db._checkDbSettings();
 
     try {
       // perform any necessary upgrades..
@@ -181,6 +189,7 @@ class Database {
     const db = new Database({urlsByMode: {admin: adminDbUrl, read: adminDbUrl}});
 
     await db._createExtensions();
+    await db._checkDbSettings();
 
     if (typeof toVersion !== 'number') {
       throw new Error('Target DB version must be an integer');
@@ -375,6 +384,20 @@ class Database {
     });
   }
 
+  async _checkDbSettings() {
+    await this._withClient('admin', async client => {
+      const res = await client.query(`
+        SELECT datcollate AS collation
+        FROM pg_database 
+        WHERE datname = current_database()`);
+      const collation = res.rows[0].collation;
+      if (collation !== 'en_US.UTF8') {
+        throw new Error(
+          `Postgres database must have default collation en_US.UTF8; this database is using ${collation}.`);
+      }
+    });
+  }
+
   async _doUpgrade({version, showProgress, usernamePrefix}) {
     await this._withClient('admin', async client => {
       await client.query('begin');
@@ -396,7 +419,10 @@ class Database {
           await client.query(`DO ${dollarQuote(migrationScript)}`);
         }
         showProgress('..defining methods');
-        for (let [methodName, { args, body, returns}] of Object.entries(version.methods)) {
+        for (let [methodName, {args, body, returns, deprecated}] of Object.entries(version.methods)) {
+          if (deprecated && !args && !returns && !body) {
+            continue; // This allows just deprecating without changing a method
+          }
           await client.query(`create or replace function
           "${methodName}"(${args})
           returns ${returns}
@@ -471,7 +497,7 @@ class Database {
   /**
    * Private constructor (use Database.setup and Database.upgrade instead)
    */
-  constructor({urlsByMode, monitor, statementTimeout, poolSize}) {
+  constructor({urlsByMode, monitor, statementTimeout, poolSize, keyring}) {
     assert(!statementTimeout || typeof statementTimeout === 'number' || typeof statementTimeout === 'boolean');
     const makePool = dbUrl => {
       // default to a max of 5 connections. For services running both a read
@@ -526,6 +552,7 @@ class Database {
     this._startMonitoringPools();
 
     this.fns = {};
+    this.keyring = keyring;
   }
 
   /**
@@ -641,6 +668,58 @@ class Database {
     if (this.monitor) {
       this.monitor.log.dbPoolCounts(fields);
     }
+  }
+
+  /**
+   * Takes any bytes value (you must ensure this as the caller, e.g. `Buffer.from()`)
+   * and returns an encrypted value for storing in the db with the current crypto key
+   *
+   * This currently only supports lib-entities shaped data but can be extended to support
+   * other formats if needed. The "property name" is hardcoded to `val` since we only
+   * have one property.
+   */
+  encrypt({value}) {
+    assert(value instanceof Buffer, 'Encrypted values must be Buffers');
+    const {id, key} = this.keyring.currentCryptoKey('aes-256');
+
+    const iv = crypto.randomBytes(16);
+    const cipher = crypto.createCipheriv('aes-256-cbc', key, iv);
+    const c1 = cipher.update(value);
+    const c2 = cipher.final();
+
+    return {
+      kid: id,
+      v: 0,
+      __bufchunks_val: 1,
+      __buf0_val: Buffer.concat([iv, c1, c2]).toString('base64'),
+    };
+  }
+
+  /**
+   * Given a value from the db that has been encrypted, figures out which crypto key
+   * to use to decrypt it, and does so. Returns bytes that the caller must reconstruct
+   * into whatever form they want to use.
+   *
+   * This currently only supports lib-entities shaped data but can be extended to support
+   * other formats if needed. The "property name" is hardcoded to `val` since we only
+   * have one property.
+   */
+  decrypt({value}) {
+    const key = this.keyring.getCryptoKey(value.kid, 'aes-256');
+
+    const n = value['__bufchunks_val'];
+    const chunks = [];
+    for (let i = 0; i < n; i++) {
+      chunks[i] = Buffer.from(value['__buf' + i + '_val'], 'base64');
+    }
+    const buffer = Buffer.concat(chunks);
+
+    const iv = buffer.slice(0, 16);
+    const decipher = crypto.createDecipheriv('aes-256-cbc', key, iv);
+    const b1 = decipher.update(buffer.slice(16));
+    const b2 = decipher.final();
+
+    return Buffer.concat([b1, b2]);
   }
 }
 

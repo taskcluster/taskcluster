@@ -4,10 +4,19 @@ const settings = require('../settings');
 const cmd = require('./helper/cmd');
 const DockerWorker = require('../dockerworker');
 const TestWorker = require('../testworker');
+const {suiteName} = require('taskcluster-lib-testing');
+const helper = require('../helper');
 
-suite('Shutdown on idle', () => {
+helper.secrets.mockSuite(suiteName(), ['docker', 'ci-creds'], function(mock, skipping) {
+  if (mock) {
+    return; // no fake equivalent for integration tests
+  }
+
   let worker;
   setup(async () => {
+    if (skipping()) {
+      return;
+    }
     settings.cleanup();
     settings.configure({
       shutdown: {
@@ -36,14 +45,14 @@ suite('Shutdown on idle', () => {
   test('shutdown without ever working a task', async () => {
     let res = await Promise.all([
       worker.launch(),
-      waitForEvent(worker, 'pending shutdown'),
+      waitForEvent(worker, 'worker idle'),
       waitForEvent(worker, 'exit'),
     ]);
-    assert.equal(res[1].time, 5);
+    assert.equal(res[1].afterIdleSeconds, 5);
   });
 
   test('with timer shutdown', async () => {
-    await [worker.launch(), waitForEvent(worker, 'pending shutdown')];
+    await [worker.launch(), waitForEvent(worker, 'worker idle')];
 
     let res = await Promise.all([
       worker.postToQueue({
@@ -59,18 +68,18 @@ suite('Shutdown on idle', () => {
         },
       }),
       waitForEvent(worker, 'task resolved'),
-      waitForEvent(worker, 'pending shutdown'),
+      waitForEvent(worker, 'worker idle'),
       waitForEvent(worker, 'exit'),
     ]);
     // Ensure task completed.
     assert.equal(res[1].taskState, 'completed');
-    assert.equal(res[2].time, 5);
+    assert.equal(res[2].afterIdleSeconds, 5);
   });
 
   test('cancel idle', async () => {
     await Promise.all([
       worker.launch(),
-      waitForEvent(worker, 'pending shutdown'),
+      waitForEvent(worker, 'worker idle'),
     ]);
 
     // Posting work should untrigger the shutdown timer and process the task.
@@ -87,9 +96,9 @@ suite('Shutdown on idle', () => {
           maxRunTime: 60 * 60,
         },
       }),
-      waitForEvent(worker, 'cancel pending shutdown'),
+      waitForEvent(worker, 'worker working'),
       waitForEvent(worker, 'task resolved'),
-      waitForEvent(worker, 'pending shutdown'),
+      waitForEvent(worker, 'worker idle'),
     ]);
 
     assert.ok(events[1], 'cancel event fired');

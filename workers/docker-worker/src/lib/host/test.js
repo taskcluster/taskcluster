@@ -4,6 +4,8 @@ const Debug = require('debug');
 
 let debug = Debug('docker-worker:host:test');
 
+let gracefulTerminationCallback = null;
+
 function billingCycleUptime() {
   let path = settingsPath('billingCycleUptime');
 
@@ -17,17 +19,29 @@ function billingCycleUptime() {
 module.exports = {
   billingCycleUptime,
 
-  getTerminationTime() {
-    let path = settingsPath('nodeTermination');
-    let content;
-    try {
-      content = fs.readFileSync(path, 'utf8');
-    }
-    catch (e) {
-      content = '';
-    }
+  setup() {
+    // fake graceful termination by rapidly polling the file that
+    // test/settings.js will create
+    let interval = setInterval(() => {
+      let path = settingsPath('nodeTermination');
+      let content;
+      try {
+        content = fs.readFileSync(path, 'utf8');
+      }
+      catch (e) {
+        content = '';
+      }
 
-    return content;
+      if (content && gracefulTerminationCallback) {
+        gracefulTerminationCallback(false);
+        gracefulTerminationCallback = null;
+        clearInterval(interval);
+      }
+    }, 100);
+  },
+
+  onGracefulTermination(cb) {
+    gracefulTerminationCallback = cb;
   },
 
   configure() {
@@ -53,5 +67,7 @@ module.exports = {
   },
   async shutdown() {
     process.exit(0);
+  },
+  async onNewCredentials(cb) {
   },
 };

@@ -25,6 +25,7 @@ export default class WorkerManager extends Client {
     this.removeWorker.entry = {"args":["workerPoolId","workerGroup","workerId"],"category":"Workers","method":"delete","name":"removeWorker","query":[],"route":"/workers/<workerPoolId>/<workerGroup>/<workerId>","scopes":"worker-manager:remove-worker:<workerPoolId>/<workerGroup>/<workerId>","stability":"stable","type":"function"}; // eslint-disable-line
     this.listWorkersForWorkerPool.entry = {"args":["workerPoolId"],"category":"Workers","method":"get","name":"listWorkersForWorkerPool","output":true,"query":["continuationToken","limit"],"route":"/workers/<workerPoolId>","stability":"stable","type":"function"}; // eslint-disable-line
     this.registerWorker.entry = {"args":[],"category":"Worker Interface","input":true,"method":"post","name":"registerWorker","output":true,"query":[],"route":"/worker/register","stability":"stable","type":"function"}; // eslint-disable-line
+    this.reregisterWorker.entry = {"args":[],"category":"Workers","input":true,"method":"post","name":"reregisterWorker","output":true,"query":[],"route":"/worker/reregister","scopes":"worker-manager:reregister-worker:<workerPoolId>/<workerGroup>/<workerId>","stability":"experimental","type":"function"}; // eslint-disable-line
   }
   /* eslint-disable max-len */
   // Respond without doing anything.
@@ -168,5 +169,17 @@ export default class WorkerManager extends Client {
     this.validate(this.registerWorker.entry, args);
 
     return this.request(this.registerWorker.entry, args);
+  }
+  /* eslint-disable max-len */
+  // Reregister a running worker.
+  // This will generate and return new Taskcluster credentials for the worker
+  // on that instance to use. The credentials will not live longer the
+  // `registrationTimeout` for that worker. The endpoint will update `terminateAfter`
+  // for the worker so that worker-manager does not terminate the instance.
+  /* eslint-enable max-len */
+  reregisterWorker(...args) {
+    this.validate(this.reregisterWorker.entry, args);
+
+    return this.request(this.reregisterWorker.entry, args);
   }
 }

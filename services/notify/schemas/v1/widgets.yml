@@ -1,6 +1,0 @@
-$schema: "/schemas/common/metaschema.json#"
-title:              "Widgets"
-type:               array
-uniqueItems: false
-items:
-  $ref: "widget.json#"

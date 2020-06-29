@@ -7,17 +7,14 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
-	"github.com/taskcluster/taskcluster/v29/internal/workerproto"
-	ptesting "github.com/taskcluster/taskcluster/v29/internal/workerproto/testing"
-	"github.com/taskcluster/taskcluster/v29/tools/worker-runner/cfg"
-	"github.com/taskcluster/taskcluster/v29/tools/worker-runner/run"
-	"github.com/taskcluster/taskcluster/v29/tools/worker-runner/tc"
+	"github.com/taskcluster/taskcluster/v31/internal/workerproto"
+	ptesting "github.com/taskcluster/taskcluster/v31/internal/workerproto/testing"
+	"github.com/taskcluster/taskcluster/v31/tools/worker-runner/cfg"
+	"github.com/taskcluster/taskcluster/v31/tools/worker-runner/run"
+	"github.com/taskcluster/taskcluster/v31/tools/worker-runner/tc"
 )
 
 func TestConfigureRun(t *testing.T) {
-	runnerWorkerConfig := cfg.NewWorkerConfig()
-	runnerWorkerConfig, err := runnerWorkerConfig.Set("from-runner-cfg", true)
-	require.NoError(t, err, "setting config")
 	runnercfg := &cfg.RunnerConfig{
 		Provider: cfg.ProviderConfig{
 			ProviderType: "azure",
@@ -25,7 +22,6 @@ func TestConfigureRun(t *testing.T) {
 		WorkerImplementation: cfg.WorkerImplementationConfig{
 			Implementation: "whatever-worker",
 		},
-		WorkerConfig: runnerWorkerConfig,
 	}
 
 	workerPoolId := "w/p"
@@ -81,24 +77,12 @@ func TestConfigureRun(t *testing.T) {
 	p, err := new(runnercfg, tc.FakeWorkerManagerClientFactory, mds)
 	require.NoError(t, err, "creating provider")
 
-	state := run.State{
-		WorkerConfig: runnercfg.WorkerConfig,
-	}
+	state := run.State{}
 	err = p.ConfigureRun(&state)
 	require.NoError(t, err)
 
-	reg, err := tc.FakeWorkerManagerRegistration()
-	require.NoError(t, err)
-	require.Equal(t, providerId, reg.ProviderID)
-	require.Equal(t, workerGroup, reg.WorkerGroup)
-	require.Equal(t, "vm-w-p-test", reg.WorkerID)
-	require.Equal(t, json.RawMessage(`{"document":"`+attestedDocument+`"}`), reg.WorkerIdentityProof)
-	require.Equal(t, workerPoolId, reg.WorkerPoolID)
-
 	require.Equal(t, "https://tc.example.com", state.RootURL, "rootURL is correct")
-	require.Equal(t, "testing", state.Credentials.ClientID, "clientID is correct")
-	require.Equal(t, "at", state.Credentials.AccessToken, "accessToken is correct")
-	require.Equal(t, "cert", state.Credentials.Certificate, "cert is correct")
+	require.Equal(t, "azure", state.ProviderID, "providerID is correct")
 	require.Equal(t, "w/p", state.WorkerPoolID, "workerPoolID is correct")
 	require.Equal(t, "wg", state.WorkerGroup, "workerGroup is correct")
 	require.Equal(t, "vm-w-p-test", state.WorkerID, "workerID is correct")
@@ -111,20 +95,22 @@ func TestConfigureRun(t *testing.T) {
 		"public-ipv4":   "104.42.72.130",
 	}, state.ProviderMetadata, "providerMetadata is correct")
 
-	require.Equal(t, true, state.WorkerConfig.MustGet("from-runner-cfg"), "value for from-runner-cfg")
-	require.Equal(t, true, state.WorkerConfig.MustGet("from-register-worker"), "value for worker-config")
-
 	require.Equal(t, "azure", state.WorkerLocation["cloud"])
 	require.Equal(t, "uswest", state.WorkerLocation["region"])
 
-	wkr := ptesting.NewFakeWorkerWithCapabilities("shutdown")
+	wkr := ptesting.NewFakeWorkerWithCapabilities()
 	defer wkr.Close()
 
 	p.SetProtocol(wkr.RunnerProtocol)
 	require.NoError(t, p.WorkerStarted(&state))
 	wkr.RunnerProtocol.Start(false)
 	wkr.RunnerProtocol.WaitUntilInitialized()
-	require.True(t, wkr.RunnerProtocol.Capable("shutdown"))
+
+	proof, err := p.GetWorkerIdentityProof()
+	require.NoError(t, err)
+	require.Equal(t, map[string]interface{}{
+		"document": attestedDocument,
+	}, proof)
 }
 
 func TestCheckTerminationTime(t *testing.T) {

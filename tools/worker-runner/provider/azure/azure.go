@@ -6,13 +6,13 @@ import (
 	"log"
 	"time"
 
-	tcclient "github.com/taskcluster/taskcluster/v29/clients/client-go"
-	"github.com/taskcluster/taskcluster/v29/clients/client-go/tcworkermanager"
-	"github.com/taskcluster/taskcluster/v29/internal/workerproto"
-	"github.com/taskcluster/taskcluster/v29/tools/worker-runner/cfg"
-	"github.com/taskcluster/taskcluster/v29/tools/worker-runner/provider/provider"
-	"github.com/taskcluster/taskcluster/v29/tools/worker-runner/run"
-	"github.com/taskcluster/taskcluster/v29/tools/worker-runner/tc"
+	tcclient "github.com/taskcluster/taskcluster/v31/clients/client-go"
+	"github.com/taskcluster/taskcluster/v31/clients/client-go/tcworkermanager"
+	"github.com/taskcluster/taskcluster/v31/internal/workerproto"
+	"github.com/taskcluster/taskcluster/v31/tools/worker-runner/cfg"
+	"github.com/taskcluster/taskcluster/v31/tools/worker-runner/provider/provider"
+	"github.com/taskcluster/taskcluster/v31/tools/worker-runner/run"
+	"github.com/taskcluster/taskcluster/v31/tools/worker-runner/tc"
 )
 
 type AzureProvider struct {
@@ -20,6 +20,7 @@ type AzureProvider struct {
 	workerManagerClientFactory tc.WorkerManagerClientFactory
 	metadataService            MetadataService
 	proto                      *workerproto.Protocol
+	workerIdentityProof        map[string]interface{}
 	terminationTicker          *time.Ticker
 }
 
@@ -41,6 +42,9 @@ type TaggedData struct {
 }
 
 func (p *AzureProvider) ConfigureRun(state *run.State) error {
+	state.Lock()
+	defer state.Unlock()
+
 	instanceData, err := p.metadataService.queryInstanceData()
 	if err != nil {
 		return fmt.Errorf("Could not query instance data: %v", err)
@@ -58,30 +62,14 @@ func (p *AzureProvider) ConfigureRun(state *run.State) error {
 	}
 
 	state.RootURL = taggedData.RootURL
+	state.ProviderID = taggedData.ProviderId
+	state.WorkerPoolID = taggedData.WorkerPoolId
+	state.WorkerGroup = taggedData.WorkerGroup
+	state.WorkerID = instanceData.Compute.Name
+
 	state.WorkerLocation = map[string]string{
 		"cloud":  "azure",
 		"region": instanceData.Compute.Location,
-	}
-
-	wm, err := p.workerManagerClientFactory(state.RootURL, nil)
-	if err != nil {
-		return fmt.Errorf("Could not create worker manager client: %v", err)
-	}
-
-	workerIdentityProofMap := map[string]interface{}{
-		"document": interface{}(document),
-	}
-
-	workerConfig, err := provider.RegisterWorker(
-		state,
-		wm,
-		taggedData.WorkerPoolId,
-		taggedData.ProviderId,
-		taggedData.WorkerGroup,
-		instanceData.Compute.Name,
-		workerIdentityProofMap)
-	if err != nil {
-		return err
 	}
 
 	providerMetadata := map[string]interface{}{
@@ -101,15 +89,15 @@ func (p *AzureProvider) ConfigureRun(state *run.State) error {
 
 	state.ProviderMetadata = providerMetadata
 
-	pwc, err := cfg.ParseProviderWorkerConfig(p.runnercfg, workerConfig)
-	if err != nil {
-		return err
+	p.workerIdentityProof = map[string]interface{}{
+		"document": interface{}(document),
 	}
 
-	state.WorkerConfig = state.WorkerConfig.Merge(pwc.Config)
-	state.Files = append(state.Files, pwc.Files...)
-
 	return nil
+}
+
+func (p *AzureProvider) GetWorkerIdentityProof() (map[string]interface{}, error) {
+	return p.workerIdentityProof, nil
 }
 
 func (p *AzureProvider) UseCachedRun(run *run.State) error {
@@ -156,13 +144,6 @@ func (p *AzureProvider) checkTerminationTime() bool {
 }
 
 func (p *AzureProvider) WorkerStarted(state *run.State) error {
-	p.proto.Register("shutdown", func(msg workerproto.Message) {
-		err := provider.RemoveWorker(state, p.workerManagerClientFactory)
-		if err != nil {
-			log.Printf("Shutdown error: %v\n", err)
-		}
-	})
-	p.proto.AddCapability("shutdown")
 	p.proto.AddCapability("graceful-termination")
 
 	// start polling for graceful shutdown

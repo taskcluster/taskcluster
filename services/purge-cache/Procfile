@@ -1,5 +1,0 @@
-# GENERATED FILE from `yarn generate`! To update, change procs.yml and regenerate.
-
-web: cd services/purge-cache && node src/main server
-expireCachePurges: cd services/purge-cache && node src/main expire-cache-purges
-write-docs: cd services/purge-cache && node src/main writeDocs

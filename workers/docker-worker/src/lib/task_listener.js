@@ -40,25 +40,6 @@ class TaskListener extends EventEmitter {
     this.deviceManager = new DeviceManager(runtime);
   }
 
-  listenForShutdowns() {
-    // If node will be shutdown, stop consuming events.
-    if (this.runtime.shutdownManager) {
-      this.runtime.shutdownManager.once('nodeTermination', async () => {
-        debug('nodeterm');
-        this.runtime.monitor.count('spotTermination');
-        await this.pause();
-        for (let state of this.runningTasks) {
-          try {
-            state.handler.abort('worker-shutdown');
-          } catch (e) {
-            debug('Caught error, but node is being terminated so continue on.');
-          }
-          this.cleanupRunningState(state);
-        }
-      });
-    }
-  }
-
   async cancelTask(message) {
     let runId = message.payload.runId;
     let reason = message.payload.status.runs[runId].reasonResolved;
@@ -122,6 +103,7 @@ class TaskListener extends EventEmitter {
   async getTasks() {
     let availableCapacity = await this.availableCapacity();
     if (availableCapacity === 0) {
+      debug('not calling claimWork because capacity is zero');
       return;
     }
 
@@ -137,46 +119,102 @@ class TaskListener extends EventEmitter {
       this.runtime.monitor,
     );
     // Do not claim tasks if not enough resources are available
-    if (exceedsThreshold) {return;}
+    if (exceedsThreshold) {
+      debug('not calling claimWork because not enough disk space');
+      return;
+    }
 
     let claims = await this.taskQueue.claimWork(availableCapacity);
 
-    // only purge caches if we're about to start a task; this avoids calling
-    // purge-cache on every getTasks loop
     if (claims.length !== 0) {
+      // only purge caches if we're about to start a task; this avoids calling
+      // purge-cache on every getTasks loop
       await this.runtime.volumeCache.purgeCaches();
+
+      let tasksets = await Promise.all(claims.map(this.applySuperseding.bind(this)));
+      // call runTaskset for each taskset, but do not wait for it to complete
+      Promise.all(tasksets.map(this.runTaskset.bind(this)));
+    }
+  }
+
+  // Poll for tasks.  This happens periodically, even in cases where we have no capacity
+  // for new tasks (in which case getTasks returns immediately).
+  async taskPoll() {
+    try {
+      await this.getTasks();
+    } catch (e) {
+      this.runtime.log('[alert-operator] task retrieval error', {
+        message: e.toString(),
+        err: e,
+        stack: e.stack,
+      });
     }
 
-    let tasksets = await Promise.all(claims.map(this.applySuperseding.bind(this)));
-    // call runTaskset for each taskset, but do not wait for it to complete
-    Promise.all(tasksets.map(this.runTaskset.bind(this))).then(() => {
-      if (this.runtime.shutdownManager.shouldExit()) {
-        this.runtime.logEvent({eventType: 'instanceShutdown'});
-        process.exit();
-      }
-    });
+    // report idle/working state to the shutdown manager
+    if (this.isIdle()) {
+      this.runtime.shutdownManager.onIdle();
+    } else {
+      this.runtime.shutdownManager.onWorking();
+    }
+
+    // check for any reasons we might want to shut down in between claim
+    // attempts.
+    switch (this.runtime.shutdownManager.shouldExit()) {
+      case 'immediate':
+        this.runtime.monitor.count('spotTermination');
+
+        // abruptly terminate existing jobs
+        for (let state of this.runningTasks) {
+          try {
+            state.handler.abort('worker-shutdown');
+          } catch (e) {
+            debug(`error aborting with worker-shutdown: ${e}`);
+            // ignore error in production; queue will treat it as claim-expired
+          }
+          this.cleanupRunningState(state);
+        }
+
+        // wait until all tasks are finished..
+        while (!this.isIdle()) {
+          await new Promise(res => setTimeout(res, 100));
+        }
+
+        // terminate the worker
+        await this.shutdown();
+        break;
+
+      case 'graceful':
+        // stop accepting new jobs
+        this.runtime.capacity = 0;
+
+        // if we're idle, shut down now, otherwise keep polling
+        if (this.isIdle()) {
+          await this.shutdown();
+        }
+        break;
+    }
   }
 
   scheduleTaskPoll(nextPoll = this.taskPollInterval) {
-    this.pollTimeoutId = setTimeout(async () => {
-      try {
-        await this.getTasks();
-      } catch (e) {
-        this.runtime.log('[alert-operator] task retrieval error', {
-          message: e.toString(),
-          err: e,
-          stack: e.stack,
-        });
-      }
-      this.scheduleTaskPoll();
+    if (this.paused) {
+      return;
+    }
+
+    this.pollTimeoutId = setTimeout(() => {
+      this.taskPoll()
+        .catch(err => {
+          this.runtime.log('error polling tasks', {
+            message: err.toString(),
+            err: err,
+            stack: err.stack,
+          });
+        })
+        .then(() => this.scheduleTaskPoll());
     }, nextPoll);
   }
 
   async connect() {
     debug('begin consuming tasks');
-    //refactor to just have shutdown manager call terminate()
-    this.listenForShutdowns();
-    this.taskQueue = new TaskQueue(this.runtime);
 
     this.runtime.logEvent({
       eventType: 'instanceBoot',
@@ -190,14 +228,15 @@ class TaskListener extends EventEmitter {
   }
 
   async close() {
+    await this.pause();
     clearInterval(this.reportCapacityStateIntervalId);
-    clearTimeout(this.pollTimeoutId);
   }
 
   /**
   Halt the flow of incoming tasks (but handle existing ones).
   */
   async pause() {
+    this.paused = true;
     clearTimeout(this.pollTimeoutId);
   }
 
@@ -205,7 +244,27 @@ class TaskListener extends EventEmitter {
   Resume the flow of incoming tasks.
   */
   async resume() {
+    this.paused = false;
     this.scheduleTaskPoll();
+  }
+
+  /**
+   * Shut down the worker
+   */
+  async shutdown() {
+    // stop accepting new tasks
+    await this.pause();
+
+    // (just in case..)
+    this.runtime.capacity = 0;
+
+    // send several historical log messages
+    this.runtime.log('shutdown');
+    this.runtime.logEvent({eventType: 'instanceShutdown'});
+    this.runtime.log('exit');
+
+    // defer to the host impelementation to actually shut down
+    await this.host.shutdown();
   }
 
   isIdle() {
@@ -219,7 +278,7 @@ class TaskListener extends EventEmitter {
     if (!state) {return;}
 
     if (state.devices) {
-      for (let device of Object.keys(state.devices)) {
+      for (let device of Object.keys(state.devices || {})) {
         state.devices[device].release();
       }
     }
@@ -245,12 +304,6 @@ class TaskListener extends EventEmitter {
     this.recordCapacity();
 
     this.runningTasks.push(runningState);
-
-    // After going from an idle to a working state issue a 'working' event.
-    // unless we receive a notification of worker shutdown
-    if (this.runningTasks.length === 1 && !this.runtime.shutdownManager.shouldExit()) {
-      this.emit('working', this);
-    }
   }
 
   removeRunningTask(runningState) {
@@ -275,8 +328,6 @@ class TaskListener extends EventEmitter {
     this.totalRunTime += Date.now() - runningState.startTime;
     this.runningTasks.splice(taskIndex, 1);
     this.lastKnownCapacity += 1;
-
-    if (this.isIdle()) {this.emit('idle', this);}
   }
 
   reportCapacityState() {
@@ -395,7 +446,7 @@ class TaskListener extends EventEmitter {
         }
 
         try {
-          return await this.runtime.queue.claimTask(tid, 0, {
+          return await this.taskQueue.claimTask(tid, 0, {
             workerId: this.runtime.workerId,
             workerGroup: this.runtime.workerGroup,
           });
@@ -493,7 +544,7 @@ class TaskListener extends EventEmitter {
         options.devices = {};
         debug('Aquiring task payload specific devices');
 
-        for (let device of Object.keys(taskCapabilities.devices)) {
+        for (let device of Object.keys(taskCapabilities.devices || {})) {
           runningState.devices[device] = await this.deviceManager.getDevice(device);
           options.devices[device] = runningState.devices[device];
         }
@@ -504,10 +555,6 @@ class TaskListener extends EventEmitter {
       runningState.handler = taskHandler;
 
       this.addRunningTask(runningState);
-
-      if (this.runtime.shutdownManager.shouldExit()) {
-        runningState.handler.abort('worker-shutdown');
-      }
 
       // Run the task and collect runtime metrics.
       try {

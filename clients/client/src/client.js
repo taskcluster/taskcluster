@@ -37,6 +37,20 @@ let DEFAULT_AGENTS = {
 // tests won't terminate (if they are configured with keepAlive)
 exports.agents = DEFAULT_AGENTS;
 
+// By default, all requests to a service go the the rootUrl and
+// are load-balanced to services from there. However, if running
+// inside a kubernetes cluster, you can opt to
+// use kubernetes DNS to access other Taskcluster services
+// These are something like `my-svc.my-namespace.svc.cluster-domain.example`
+// but k8s also sets up search domains where the first one is
+// `my-namespace.svc.cluster-domain.example` so you can just make a
+// request to `my-svc` and it will route correctly
+const SERVICE_DISCOVERY_SCHEMES = ['default', 'k8s-dns'];
+let DEFAULT_SERVICE_DISCOVERY_SCHEME = 'default';
+exports.setServiceDiscoveryScheme = scheme => {
+  DEFAULT_SERVICE_DISCOVERY_SCHEME = scheme;
+};
+
 // Default options stored globally for convenience
 let _defaultOptions = {
   credentials: {
@@ -60,6 +74,9 @@ let _defaultOptions = {
 
   // The prefix of any api calls. e.g. https://taskcluster.net/api/
   rootUrl: undefined,
+
+  // See above for what this means
+  serviceDiscoveryScheme: undefined,
 
   // Fake methods, if given this will produce a fake client object.
   // Methods called won't make expected HTTP requests, but instead:
@@ -87,6 +104,10 @@ const makeRequest = exports.makeRequest = function(client, method, url, payload,
   // environment (browser environment doesn't support http.Agent)
   if (req.agent) {
     req.agent(client._httpAgent);
+  }
+
+  if (client._options.traceId) {
+    req.set('x-taskcluster-trace-id', client._options.traceId);
   }
 
   // Timeout for each individual request.
@@ -182,10 +203,18 @@ exports.createClient = function(reference, name) {
       serviceName,
       serviceVersion: 'v1',
     }, _defaultOptions);
-
-    assert(this._options.rootUrl, 'Must provide a rootUrl');
-
+    assert(this._options.rootUrl, 'Must provide a rootUrl'); // We always assert this even with service discovery
     this._options.rootUrl = this._options.rootUrl.replace(/\/$/, '');
+    this._options._trueRootUrl = this._options.rootUrl.replace(/\/$/, ''); // Useful for buildUrl/buildSignedUrl in certain cases
+
+    this._options.serviceDiscoveryScheme = options.serviceDiscoveryScheme || DEFAULT_SERVICE_DISCOVERY_SCHEME;
+    if (!SERVICE_DISCOVERY_SCHEMES.includes(this._options.serviceDiscoveryScheme)) {
+      throw new Error(`Invalid Taskcluster client service discovery scheme: ${this._options.serviceDiscoveryScheme}`);
+    }
+
+    if (this._options.serviceDiscoveryScheme === 'k8s-dns') {
+      this._options.rootUrl = `http://taskcluster-${serviceName}`; // Notice this is http, not https
+    }
 
     if (this._options.stats || this._options.monitor) {
       throw new Error('monitoring client calls is no longer supported');
@@ -262,8 +291,12 @@ exports.createClient = function(reference, name) {
   };
 
   Client.prototype.use = function(optionsUpdates) {
-    let options = _.defaults({}, optionsUpdates, this._options);
+    let options = _.defaults({}, optionsUpdates, {rootUrl: this._options._trueRootUrl}, this._options);
     return new Client(options);
+  };
+
+  Client.prototype.taskclusterPerRequestInstance = function({requestId, traceId}) {
+    return this.use({traceId});
   };
 
   // For each function entry create a method on the Client class
@@ -495,11 +528,7 @@ exports.createClient = function(reference, name) {
     };
   });
 
-  // Utility function to build the request URL for given method and
-  // input parameters
-  Client.prototype.buildUrl = function() {
-    // Convert arguments to actual array
-    let args = Array.prototype.slice.call(arguments);
+  Client.prototype._buildUrl = function(rootUrl, args) {
     if (args.length === 0) {
       throw new Error('buildUrl(method, arg1, arg2, ...) takes a least one ' +
                         'argument!');
@@ -555,13 +584,20 @@ exports.createClient = function(reference, name) {
       }
     }
 
-    return tcUrl.api(this._options.rootUrl, this._options.serviceName, this._options.serviceVersion, endpoint) + query;
+    return tcUrl.api(rootUrl, this._options.serviceName, this._options.serviceVersion, endpoint) + query;
   };
 
-  // Utility function to construct a bewit URL for GET requests
-  Client.prototype.buildSignedUrl = function() {
-    // Convert arguments to actual array
-    let args = Array.prototype.slice.call(arguments);
+  // Utility functions to build the request URL for given method and
+  // input parameters. The first builds with whatever rootUrl currently
+  // is while the latter builds with trueRootUrl for sending to users
+  Client.prototype.buildUrl = function() {
+    return this._buildUrl(this._options.rootUrl, Array.prototype.slice.call(arguments));
+  };
+  Client.prototype.externalBuildUrl = function() {
+    return this._buildUrl(this._options._trueRootUrl, Array.prototype.slice.call(arguments));
+  };
+
+  Client.prototype._buildSignedUrl = function(builder, args) {
     if (args.length === 0) {
       throw new Error('buildSignedUrl(method, arg1, arg2, ..., [options]) ' +
                         'takes a least one argument!');
@@ -599,7 +635,7 @@ exports.createClient = function(reference, name) {
     }
 
     // Build URL
-    let requestUrl = this.buildUrl.apply(this, args);
+    let requestUrl = builder.apply(this, args);
 
     // Check that we have credentials
     if (!this._options.credentials.clientId) {
@@ -630,6 +666,15 @@ exports.createClient = function(reference, name) {
 
     // Return formatted URL
     return url.format(urlParts);
+  };
+
+  // Utility function to construct a bewit URL for GET requests. Same convention
+  // as unsigned buildUrl applies here too
+  Client.prototype.buildSignedUrl = function() {
+    return this._buildSignedUrl(this.buildUrl, Array.prototype.slice.call(arguments));
+  };
+  Client.prototype.externalBuildSignedUrl = function() {
+    return this._buildSignedUrl(this.externalBuildUrl, Array.prototype.slice.call(arguments));
   };
 
   // Return client class

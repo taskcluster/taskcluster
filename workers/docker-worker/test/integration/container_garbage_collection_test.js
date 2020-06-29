@@ -7,10 +7,15 @@ const TestWorker = require('../testworker');
 const waitForEvent = require('../../src/lib/wait_for_event');
 const assert = require('assert');
 const sleep = require('./helper/sleep');
+const {suiteName} = require('taskcluster-lib-testing');
+const helper = require('../helper');
 
 let docker = new Docker();
 
-suite('Container garbage collection tests', () => {
+helper.secrets.mockSuite(suiteName(), ['docker', 'ci-creds'], function(mock, skipping) {
+  if (mock) {
+    return; // no fake equivalent for integration tests
+  }
 
   setup(() => {
     settings.cleanup();

@@ -1,0 +1,30 @@
+#! /bin/bash -e
+
+checkout_path="$PWD/git_checkout"
+
+# Run the checkout to the correct url, etc...
+step_checkout() {
+  time git ci-checkout-ref \
+    $checkout_path \
+    $GITHUB_REPO_URL \
+    $GITHUB_BRANCH \
+    $GITHUB_SHA
+}
+
+# Checkout git repo
+step_checkout
+
+cd $checkout_path/workers/docker-worker
+
+# Display current revision
+git --no-pager log -n 1
+
+# Link busybox to worker
+mkdir /worker
+ln -s $checkout_path/workers/docker-worker/bin-utils /worker/bin-utils
+
+# Setup test credentials
+export TASKCLUSTER_CLIENT_ID=$(curl -s http://taskcluster/secrets/v1/secret/project/taskcluster/testing/docker-worker/ci-creds | jq -r '.secret.client_id')
+export TASKCLUSTER_ACCESS_TOKEN=$(curl -s http://taskcluster/secrets/v1/secret/project/taskcluster/testing/docker-worker/ci-creds | jq -r '.secret.access_token')
+export PULSE_USERNAME=$(curl -s http://taskcluster/secrets/v1/secret/project/taskcluster/testing/docker-worker/pulse-creds | jq -r '.secret.username')
+export PULSE_PASSWORD=$(curl -s http://taskcluster/secrets/v1/secret/project/taskcluster/testing/docker-worker/pulse-creds | jq -r '.secret.password')

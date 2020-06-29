@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/json"
-	"io/ioutil"
 	"path/filepath"
 	"reflect"
 	"strings"
@@ -10,8 +9,8 @@ import (
 	"time"
 
 	"github.com/taskcluster/slugid-go/slugid"
-	tcclient "github.com/taskcluster/taskcluster/v29/clients/client-go"
-	"github.com/taskcluster/taskcluster/v29/clients/client-go/tcqueue"
+	tcclient "github.com/taskcluster/taskcluster/v31/clients/client-go"
+	"github.com/taskcluster/taskcluster/v31/clients/client-go/tcqueue"
 )
 
 var (
@@ -631,11 +630,7 @@ func TestInvalidContentEncoding(t *testing.T) {
 	_ = submitAndAssert(t, td, payload, "exception", "malformed-payload")
 
 	// check log mentions contentEncoding invalid
-	bytes, err := ioutil.ReadFile(filepath.Join(taskContext.TaskDir, logPath))
-	if err != nil {
-		t.Fatalf("Error when trying to read log file: %v", err)
-	}
-	logtext := string(bytes)
+	logtext := LogText(t)
 	if !strings.Contains(logtext, "[taskcluster:error] - artifacts.0.contentEncoding: artifacts.0.contentEncoding must be one of the following: \"identity\", \"gzip\"") {
 		t.Fatalf("Was expecting log file to explain that contentEncoding was invalid, but it doesn't: \n%v", logtext)
 	}
@@ -668,11 +663,7 @@ func TestInvalidContentEncodingBlacklisted(t *testing.T) {
 	_ = submitAndAssert(t, td, payload, "exception", "malformed-payload")
 
 	// check log mentions contentEncoding invalid
-	bytes, err := ioutil.ReadFile(filepath.Join(taskContext.TaskDir, logPath))
-	if err != nil {
-		t.Fatalf("Error when trying to read log file: %v", err)
-	}
-	logtext := string(bytes)
+	logtext := LogText(t)
 	if !strings.Contains(logtext, "[taskcluster:error] - artifacts.0.contentEncoding: artifacts.0.contentEncoding must be one of the following: \"identity\", \"gzip\"") {
 		t.Fatalf("Was expecting log file to explain that contentEncoding was invalid, but it doesn't: \n%v", logtext)
 	}
@@ -701,12 +692,7 @@ func TestEmptyContentEncoding(t *testing.T) {
 
 	_ = submitAndAssert(t, td, GenericWorkerPayload{}, "exception", "malformed-payload")
 
-	// check log mentions contentEncoding invalid
-	bytes, err := ioutil.ReadFile(filepath.Join(taskContext.TaskDir, logPath))
-	if err != nil {
-		t.Fatalf("Error when trying to read log file: %v", err)
-	}
-	logtext := string(bytes)
+	logtext := LogText(t)
 	if !strings.Contains(logtext, "[taskcluster:error] - artifacts.0.contentEncoding: artifacts.0.contentEncoding must be one of the following: \"identity\", \"gzip\"") {
 		t.Fatalf("Was expecting log file to explain that contentEncoding was invalid, but it doesn't: \n%v", logtext)
 	}

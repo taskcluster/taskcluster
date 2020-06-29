@@ -423,7 +423,9 @@ options to `builder.build` are:
  * `context` - Object to be provided as `this` in handlers.  This must have exactly the properties
    specified in `context` when the API was declared.  The purpose of this parameter is to
    provide uesful application-specific objects such as Azure table objects or
-   other API clients to the API methods.
+   other API clients to the API methods. All handlers get access to the monitor instance
+   provided below added to the context as well. Read the Per Request Context section below
+   for more.
  * `monitor` (required) - an instance of [taskcluster-lib-monitor](../monitor)
  * `schemaset` (required) - a schemaset; this is from
    [taskcluster-lib-validate](../validate).
@@ -449,7 +451,7 @@ and the relevant loader components are defined like this:
 
 ```js
 const builder = require('./api');
-const App = require('taskcluster-lib-app');
+const {App} = require('taskcluster-lib-app');
 
 let load = loader({
   // ...
@@ -508,6 +510,18 @@ builder.declare({
 
 The function takes care of parsing the continuationToken and limit, applying a
 limit of `maxLimit` (defaulting to 1000).
+
+### Per Request Context
+
+Above we describe how all handlers get access to the context of an api via `this` inside the handler itself.
+Most values are passed through directly to the handler when used but some special Taskcluster libraries
+are updated to an instance that is per-request. This is useful for things like having a `requestId` added
+automatically to all log messages made from within a handler and passing along `traceId` to a further call
+made with a Taskcluster client. For Taskcluster library authors, you can make an instance of your library
+support this by having a `taskclusterPerRequestInstance` function on your object that takes `requestId`
+and `traceId` as named arguments and returns an instance of itself that will live for the lifespan of the
+request and be used within. Both `taskcluster-lib-monitor` and `taskcluster-client` support this and
+are good examples of how this can be used.
 
 # Development
 

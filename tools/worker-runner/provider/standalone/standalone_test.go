@@ -6,8 +6,8 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/taskcluster/taskcluster/v29/tools/worker-runner/cfg"
-	"github.com/taskcluster/taskcluster/v29/tools/worker-runner/run"
+	"github.com/taskcluster/taskcluster/v31/tools/worker-runner/cfg"
+	"github.com/taskcluster/taskcluster/v31/tools/worker-runner/run"
 )
 
 func TestConfigureRunNoOptional(t *testing.T) {
@@ -109,6 +109,10 @@ func TestConfigureRunAllOptional(t *testing.T) {
 	require.Equal(t, "1.2.3.4", state.ProviderMetadata["public-ip"])
 	require.Equal(t, "0.0.0.0", state.ProviderMetadata["secret-ip"])
 	require.Equal(t, 2, len(state.ProviderMetadata))
+
+	proof, err := p.GetWorkerIdentityProof()
+	require.NoError(t, err)
+	require.Nil(t, proof)
 }
 
 func TestConfigureRunNonStringLocation(t *testing.T) {

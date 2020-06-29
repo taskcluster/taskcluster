@@ -1,0 +1,42 @@
+---
+loader: src.loader:services_and_libraries_loader
+
+transforms:
+  - src.transforms:taskcluster_images
+  - src.transforms:add_task_env
+  - taskgraph.transforms.job:transforms
+  - taskgraph.transforms.task:transforms
+
+workspace: libraries
+prefix: 'lib-'
+
+job-defaults:
+  worker-type: ci
+  run:
+    using: bare
+    install: yarn --frozen-lockfile
+  scopes:
+    - secrets:get:project/taskcluster/testing/azure
+    - secrets:get:project/taskcluster/testing/codecov
+    - secrets:get:project/taskcluster/testing/taskcluster-*
+    - docker-worker:cache:taskcluster-test-*
+  worker:
+    taskcluster-proxy: true
+    artifacts:
+      - name: public
+        path: /taskcluster/artifacts
+        type: directory
+    max-run-time: 600
+    docker-image: {taskcluster: 'node-and-postgres'}
+
+job-overrides:
+  pulse:
+    worker:
+      docker-image: {taskcluster: 'rabbit-test'}
+      env:
+        PULSE_CONNECTION_STRING: amqp://guest:guest@localhost:5672/
+    run:
+      command: >-
+        service rabbitmq-server start &&
+        yarn workspace taskcluster-lib-pulse coverage:report
+

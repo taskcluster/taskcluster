@@ -2,8 +2,10 @@ const _ = require('lodash');
 const helper = require('../helper');
 const testing = require('taskcluster-lib-testing');
 const assert = require('assert').strict;
+const hugeBufs = require('./fixtures/huge_bufs.js');
 
 const ASCII = _.range(1, 128).map(i => String.fromCharCode(i)).join(' ');
+const THIS_VERSION = parseInt(/.*\/0*(\d+)_test\.js/.exec(__filename)[1]);
 
 // (copied from azure-entities)
 const encodeStringKey = function(str) {
@@ -36,7 +38,6 @@ const decodeCompositeKey = function(key) {
 };
 
 suite(testing.suiteName(), function() {
-  const THIS_VERSION = 8;
   helper.withDbForVersion();
 
   suiteSetup(async function() {
@@ -46,21 +47,29 @@ suite(testing.suiteName(), function() {
 
   const b64 = x => Buffer.from(x).toString('base64');
 
-  const entityBufDecodeTest = (name, encoded, expected) => {
-    test(`entity_buf_decode: ${name}`, async function() {
+  const entityBufDecodeTest = (name, encoded, expected, xfail) => {
+    test(`entity_buf_decode: ${name}${xfail && ' (XFAIL)'}`, async function() {
       await helper.withDbClient(async client => {
         const t = await client.query(`
           select entity_buf_decode($1, 'val') as decoded
         `, [encoded]);
-        assert.equal(t.rows[0].decoded, expected);
+        if (!xfail) {
+          assert.equal(t.rows[0].decoded, expected);
+        } else {
+          assert.notEqual(t.rows[0].decoded, expected);
+        }
       });
     });
   };
+  // (this is used by 0010_test.js, too)
+  exports.entityBufDecodeTest = entityBufDecodeTest;
 
   entityBufDecodeTest('0 bufs', {__bufchunks_val: 0}, '');
   entityBufDecodeTest('empty', {__bufchunks_val: 1, __buf0_val: ''}, '');
   entityBufDecodeTest('simple string', {__bufchunks_val: 1, __buf0_val: b64('Hello')}, 'Hello');
   entityBufDecodeTest('backslashy string', {__bufchunks_val: 1, __buf0_val: b64('uh\\oh')}, 'uh\\oh');
+  // see db version 10 where this expected failure is fixed..
+  entityBufDecodeTest('2 huge bufs', hugeBufs.encoded, hugeBufs.decoded, true);
 
   const entityBufEncodeTest = (name, value) => {
     test(`entity_buf_encode: ${name}`, async function() {

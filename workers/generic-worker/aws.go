@@ -11,7 +11,7 @@ import (
 	"time"
 
 	"github.com/taskcluster/httpbackoff/v3"
-	"github.com/taskcluster/taskcluster/v29/workers/generic-worker/gwconfig"
+	"github.com/taskcluster/taskcluster/v31/workers/generic-worker/gwconfig"
 )
 
 var (
@@ -138,7 +138,7 @@ func InferAWSConfigProvider() (gwconfig.Provider, error) {
 	return nil, fmt.Errorf("Userdata is not recognised as valid AWS Provider userdata: %q", string(userdataBytes))
 }
 
-func handleWorkerShutdown(abort func()) func() {
+func handleAWSWorkerShutdown(abort func()) func() {
 	// Bug 1180187: poll this url every 5 seconds:
 	// http://169.254.169.254/latest/meta-data/spot/termination-time
 	ticker := time.NewTicker(time.Second * 5)

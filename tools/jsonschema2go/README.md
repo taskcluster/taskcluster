@@ -499,7 +499,7 @@ import (
     "io/ioutil"
     "log"
 
-    "github.com/taskcluster/taskcluster/v29/tools/jsonschema2go"
+    "github.com/taskcluster/taskcluster/v31/tools/jsonschema2go"
 )
 
 func main() {

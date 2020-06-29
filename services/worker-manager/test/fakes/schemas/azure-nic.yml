@@ -1,0 +1,34 @@
+# This is a partial schema for Azure NIC parameters.  Feel free to add additional
+# properties here if necessary, consulting with the relevant bits of Azure documentation.
+# https://docs.microsoft.com/en-us/javascript/api/@azure/arm-network/networkinterface?view=azure-node-latest
+type: object
+properties:
+  tags:
+    type: object
+    additionalProperties: {type: string}
+  location: {type: string}
+  ipConfigurations:
+    type: array
+    items:
+      type: object
+      properties:
+        name: {type: string}
+        privateIPAllocationMethod: {enum: ['Static', 'Dynamic']}
+        subnet:
+          type: object
+          properties:
+            id: {type: string}
+          additionalProperties: false
+          required: [id]
+        publicIPAddress:
+          type: object
+          properties:
+            id: {type: string}
+          additionalProperties: false
+          required: [id]
+      additionalProperties: false
+      required: [name, privateIPAllocationMethod, subnet, publicIPAddress]
+    uniqueItems: false
+additionalProperties: false
+required: [location, ipConfigurations]
+

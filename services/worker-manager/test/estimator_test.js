@@ -1,16 +1,16 @@
 const assert = require('assert');
 const helper = require('./helper');
 const testing = require('taskcluster-lib-testing');
-const monitorManager = require('../src/monitor');
 
-helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping) {
+helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
   helper.withFakeQueue(mock, skipping);
   helper.withFakeNotify(mock, skipping);
 
-  let estimator;
+  let estimator, monitor;
 
   setup(async function() {
     estimator = await helper.load('estimator');
+    monitor = await helper.load('monitor');
   });
 
   test('empty estimation', async function() {
@@ -26,8 +26,8 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
     });
 
     assert.strictEqual(estimate, 0);
-    assert.strictEqual(monitorManager.messages.length, 1);
-    assert(monitorManager.messages.some(({Type, Severity}) => Type === 'simple-estimate' && Severity === 5));
+    assert.strictEqual(monitor.manager.messages.length, 1);
+    assert(monitor.manager.messages.some(({Type, Severity}) => Type === 'simple-estimate' && Severity === 5));
   });
 
   test('single estimation', async function() {
@@ -43,8 +43,8 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
     });
 
     assert.strictEqual(estimate, 1);
-    assert.strictEqual(monitorManager.messages.length, 1);
-    assert(monitorManager.messages.some(({Type, Severity}) => Type === 'simple-estimate' && Severity === 5));
+    assert.strictEqual(monitor.manager.messages.length, 1);
+    assert(monitor.manager.messages.some(({Type, Severity}) => Type === 'simple-estimate' && Severity === 5));
   });
 
   test('satisfied estimation', async function() {
@@ -60,8 +60,8 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
     });
 
     assert.strictEqual(estimate, 0);
-    assert.strictEqual(monitorManager.messages.length, 1);
-    assert(monitorManager.messages.some(({Type, Severity}) => Type === 'simple-estimate' && Severity === 5));
+    assert.strictEqual(monitor.manager.messages.length, 1);
+    assert(monitor.manager.messages.some(({Type, Severity}) => Type === 'simple-estimate' && Severity === 5));
   });
 
   test('over-satisfied estimation', async function() {
@@ -77,10 +77,10 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
     });
 
     assert.strictEqual(estimate, 0);
-    assert.strictEqual(monitorManager.messages.length, 2);
-    assert(monitorManager.messages.some(({Type, Severity}) => Type === 'simple-estimate' && Severity === 3));
-    assert(monitorManager.messages.some(({Type, Fields}) => Type === 'monitor.error' && Fields.existingCapacity === 50));
-    monitorManager.reset();
+    assert.strictEqual(monitor.manager.messages.length, 2);
+    assert(monitor.manager.messages.some(({Type, Severity}) => Type === 'simple-estimate' && Severity === 3));
+    assert(monitor.manager.messages.some(({Type, Fields}) => Type === 'monitor.error' && Fields.existingCapacity === 50));
+    monitor.manager.reset();
   });
 
   test('over-satisfied estimation (false positive is not raised)', async function() {
@@ -96,8 +96,8 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping
     });
 
     assert.strictEqual(estimate, 0);
-    assert.strictEqual(monitorManager.messages.length, 1);
-    assert(monitorManager.messages.some(({Type, Severity}) => Type === 'simple-estimate' && Severity === 5));
-    monitorManager.reset();
+    assert.strictEqual(monitor.manager.messages.length, 1);
+    assert(monitor.manager.messages.some(({Type, Severity}) => Type === 'simple-estimate' && Severity === 5));
+    monitor.manager.reset();
   });
 });

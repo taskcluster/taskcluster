@@ -11,7 +11,6 @@ const reportHostMetrics = require('../lib/stats/host_metrics');
 const fs = require('fs');
 const os = require('os');
 const program = require('commander');
-const taskcluster = require('taskcluster-client');
 const createLogger = require('../lib/log').createLogger;
 const Debug = require('debug');
 const _ = require('lodash');
@@ -25,9 +24,10 @@ const ImageManager = require('../lib/docker/image_manager');
 const typedEnvConfig = require('typed-env-config');
 const SchemaSet = require('../lib/validate');
 const { spawn } = require('child_process');
+const { version } = require('../../package.json');
 
 // Available target configurations.
-let allowedHosts = ['aws', 'test', 'packet', 'worker-runner'];
+let allowedHosts = ['test', 'worker-runner'];
 let debug = Debug('docker-worker:bin:worker');
 
 // All overridable configuration options from the CLI.
@@ -68,6 +68,7 @@ function o() {
 program.usage(
   '[options] <profile>',
 );
+program.version(version);
 
 // CLI Options.
 o('--host <type>',
@@ -134,11 +135,6 @@ program.parse(process.argv);
     config[field] = program[field];
   });
 
-  taskcluster.config({
-    rootUrl: config.rootUrl,
-    credentials: config.taskcluster,
-  });
-
   // If restrict CPU is set override capacity (as long as capacity is > 0)
   // Capacity could be set to zero by the host configuration if the credentials and
   // other necessary information could not be retrieved from the meta/user/secret-data
@@ -167,11 +163,6 @@ program.parse(process.argv);
 
   config.monitor.measure('workerStart', Date.now() - os.uptime());
   config.monitor.count('workerStart');
-
-  config.queue = new taskcluster.Queue({
-    rootUrl: config.rootUrl,
-    credentials: config.taskcluster,
-  });
 
   const schemaset = new SchemaSet({
     serviceName: 'docker-worker',
@@ -216,23 +207,12 @@ program.parse(process.argv);
 
   config.gc.addManager(config.volumeCache);
 
-  let runtime = new Runtime(config);
+  let runtime = new Runtime({...config, hostManager: host});
 
-  runtime.hostManager = host;
   runtime.imageManager = new ImageManager(runtime);
 
-  let shutdownManager;
-
-  // Billing cycle logic is host specific so we cannot handle shutdowns without
-  // both the host and the configuration to shutdown.
-  if (host && config.shutdown) {
-    runtime.log('handle shutdowns');
-    shutdownManager = new ShutdownManager(host, runtime);
-    // Recommended by AWS to query every 5 seconds.  Termination window is 2 minutes
-    // so at the very least should have 1m55s to cleanly shutdown.
-    await shutdownManager.scheduleTerminationPoll();
-    runtime.shutdownManager = shutdownManager;
-  }
+  config.shutdown = config.shutdown || {};
+  runtime.shutdownManager = new ShutdownManager(host, runtime);
 
   if (runtime.logging.secureLiveLogging) {
     verifySSLCertificates(runtime);
@@ -241,7 +221,6 @@ program.parse(process.argv);
   // Build the listener and connect to the queue.
   let taskListener = new TaskListener(runtime);
   runtime.gc.taskListener = taskListener;
-  shutdownManager.observe(taskListener);
 
   await taskListener.connect();
 

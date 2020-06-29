@@ -1,13 +1,9 @@
 const taskcluster = require('taskcluster-client');
-const {FakeAzure} = require('./fake-azure.js');
-const {FakeGoogle} = require('./fake-google.js');
-const {stickyLoader, Secrets, withEntity, fakeauth, withMonitor, withPulse, withDb, resetTable} = require('taskcluster-lib-testing');
+const {FakeEC2, FakeAzure, FakeGoogle} = require('./fakes');
+const {stickyLoader, Secrets, withEntity, fakeauth, withMonitor, withPulse, withDb, resetTables} = require('taskcluster-lib-testing');
 const builder = require('../src/api');
 const data = require('../src/data');
 const load = require('../src/main');
-const sinon = require('sinon');
-const aws = require('aws-sdk');
-const fakeAWS = require('./fake-aws');
 
 exports.rootUrl = 'http://localhost:60409';
 
@@ -19,7 +15,6 @@ withMonitor(exports);
 
 // set up the testing secrets
 exports.secrets = new Secrets({
-  secretName: 'project/taskcluster/testing/azure',
   secrets: {
     azure: withEntity.secret,
     db: withDb.secret,
@@ -29,7 +24,6 @@ exports.secrets = new Secrets({
 
 exports.withEntities = (mock, skipping) => {
   withEntity(mock, skipping, exports, 'WorkerPoolError', data.WorkerPoolError);
-  withEntity(mock, skipping, exports, 'Worker', data.Worker);
 };
 
 exports.withDb = (mock, skipping) => {
@@ -41,24 +35,14 @@ exports.withPulse = (mock, skipping) => {
 };
 
 exports.withProviders = (mock, skipping) => {
-  suiteSetup(function() {
-    if (skipping()) {
-      return;
-    }
+  const fakeEC2 = new FakeEC2();
+  fakeEC2.forSuite();
 
-    sinon.stub(aws, 'EC2').returns({
-      describeRegions: fakeAWS.EC2.describeRegions,
-    });
+  const fakeAzure = new FakeAzure();
+  fakeAzure.forSuite();
 
-    exports.load.inject('fakeCloudApis', {
-      azure: new FakeAzure(),
-      google: new FakeGoogle(),
-    });
-  });
-
-  suiteTeardown(function() {
-    sinon.restore();
-  });
+  const fakeGoogle = new FakeGoogle;
+  fakeGoogle.forSuite();
 };
 
 exports.withProvisioner = (mock, skipping) => {
@@ -268,9 +252,11 @@ exports.resetTables = (mock, skipping) => {
       exports.db['worker_manager'].reset();
     } else {
       const sec = exports.secrets.get('db');
-      await resetTable({ testDbUrl: sec.testDbUrl, tableName: 'wmworkers_entities' });
-      await resetTable({ testDbUrl: sec.testDbUrl, tableName: 'worker_pools' });
-      await resetTable({ testDbUrl: sec.testDbUrl, tableName: 'wmworker_pool_errors_entities' });
+      await resetTables({ testDbUrl: sec.testDbUrl, tableNames: [
+        'workers',
+        'worker_pools',
+        'wmworker_pool_errors_entities',
+      ]});
     }
   });
 };

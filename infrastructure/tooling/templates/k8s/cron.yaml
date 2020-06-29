@@ -4,17 +4,24 @@ metadata:
   name: ${projectName}-${lowercase(procName)}
   labels: {$eval: labels}
 spec:
+  # TC crontasks assume they are not running concurrently
+  concurrencyPolicy: Forbid
   schedule: ${schedule}
   jobTemplate:
     metadata:
       labels: {$eval: labels}
     spec:
+      # terminate the job one minute before the next job begins, so that a
+      # hung or long-running job is recycled at every scheduled interval
+      activeDeadlineSeconds: {$eval: 'deadlineSeconds - 60'}
       template:
         metadata:
           labels: {$eval: labels}
         spec:
+          # On failure, run the pod again; this lets us run the task even in
+          # the face of k8s node failure, with the concurrencyPolicy ensuring
+          # that two pods never run in parallel.
           restartPolicy: OnFailure
-          activeDeadlineSeconds: {$eval: 'deadlineSeconds'}
           containers:
           - name: ${projectName}-${lowercase(procName)}
             image: '{{ .Values.dockerImage }}'
@@ -27,6 +34,8 @@ spec:
             env:
               - name: TASKCLUSTER_ROOT_URL
                 value: '{{ .Values.rootUrl }}'
+              - name: USE_KUBERNETES_DNS_SERVICE_DISCOVERY
+                value: '{{ .Values.useKubernetesDnsServiceDiscovery }}'
               - name: NODE_ENV
                 value: 'production'
             envFrom:

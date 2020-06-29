@@ -5,8 +5,14 @@ const cmd = require('./helper/cmd');
 const DockerWorker = require('../dockerworker');
 const TestWorker = require('../testworker');
 const expires = require('./helper/expires');
+const {suiteName} = require('taskcluster-lib-testing');
+const helper = require('../helper');
 
-suite('Reclaiming task', () => {
+helper.secrets.mockSuite(suiteName(), ['docker', 'ci-creds'], function(mock, skipping) {
+  if (mock) {
+    return; // no fake equivalent for integration tests
+  }
+
   // Ensure we don't leave behind our test configurations.
   teardown(settings.cleanup);
 

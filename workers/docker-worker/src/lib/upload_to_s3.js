@@ -1,3 +1,4 @@
+const zlib = require('zlib');
 const Debug = require('debug');
 const crypto = require('crypto');
 const https = require('https');
@@ -24,7 +25,8 @@ module.exports = async function uploadToS3 (
   expiration,
   httpsHeaders,
   putUrl,
-  httpOptions)
+  httpOptions,
+  compress)
 {
   let tmp = new temporary.File();
   debug(`created temporary file $${tmp.path} for ${artifactName}`);
@@ -40,12 +42,21 @@ module.exports = async function uploadToS3 (
       await tmp.writeFile(source);
     } else {
       let stream = fs.createWriteStream(tmp.path);
-      await pipe(source, stream);
+      // TODO: Do we care if this is larger than the original?
+      if (compress) {
+        let gzip = zlib.createGzip();
+        debug(`compressing to ${artifactName} to ${tmp.path}`);
+        await pipe(source, gzip, stream);
+        debug(`compressed ${gzip.bytesWritten} bytes`);
+      } else {
+        await pipe(source, stream);
+      }
     }
-    debug(`wrote source file to ${tmp.path} for ${artifactName}`);
-
     let stat = await fs.stat(tmp.path);
     size = stat.size;
+    httpsHeaders['content-length'] = size;
+
+    debug(`wrote ${size} bytes of source file to ${tmp.path} for ${artifactName}`);
 
     // Can this be done at the same time as piping to the write stream?
     let hash = crypto.createHash('sha256');

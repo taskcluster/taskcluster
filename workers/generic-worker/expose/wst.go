@@ -1,7 +1,7 @@
 package expose
 
 // Expose local HTTP servers and ports via
-// [websocktunnel](https://github.com/taskcluster/taskcluster/v29/tools/websocktunnel).
+// [websocktunnel](https://github.com/taskcluster/taskcluster/v31/tools/websocktunnel).
 //
 // The strategy here is to create a distinct websocktunnel client for each
 // exposure.  The tunnel clientId is based on this worker's workerGroup,
@@ -15,32 +15,26 @@ import (
 	"net/http"
 	"net/url"
 
-	"github.com/taskcluster/taskcluster/v29/clients/client-go/tcauth"
-	"github.com/taskcluster/taskcluster/v29/tools/websocktunnel/client"
+	"github.com/taskcluster/taskcluster/v31/tools/websocktunnel/client"
+	"github.com/taskcluster/taskcluster/v31/workers/generic-worker/tc"
 )
 
 type wstExposer struct {
-	serverURL   string
-	wstAudience string
-	workerGroup string
-	workerId    string
-	authClient  authClient
-}
-
-// Interface matching the necessary bits of tcauth.Auth, so that it can be substituted
-// in tests.  In production, just pass a tcauth.Auth instance.
-type authClient interface {
-	WebsocktunnelToken(string, string) (*tcauth.WebsocktunnelTokenResponse, error)
+	serverURL         string
+	wstAudience       string
+	workerGroup       string
+	workerId          string
+	authClientFactory func() tc.Auth
 }
 
 // Create a websocktunnel-based exposer implementation.
-func NewWST(serverURL, wstAudience, workerGroup, workerId string, authClient authClient) (Exposer, error) {
+func NewWST(serverURL, wstAudience, workerGroup, workerId string, authClientFactory func() tc.Auth) (Exposer, error) {
 	return &wstExposer{
-		serverURL:   serverURL,
-		wstAudience: wstAudience,
-		workerGroup: workerGroup,
-		workerId:    workerId,
-		authClient:  authClient,
+		serverURL:         serverURL,
+		wstAudience:       wstAudience,
+		workerGroup:       workerGroup,
+		workerId:          workerId,
+		authClientFactory: authClientFactory,
 	}, nil
 }
 
@@ -77,7 +71,7 @@ type wstExposure struct {
 func (exposure *wstExposure) start() error {
 	wstClient, err := client.New(func() (client.Config, error) {
 		wstClientId := fmt.Sprintf("%s.%s.%d", exposure.exposer.workerGroup, exposure.exposer.workerId, exposure.targetPort)
-		tokenResponse, err := exposure.exposer.authClient.WebsocktunnelToken(
+		tokenResponse, err := exposure.exposer.authClientFactory().WebsocktunnelToken(
 			exposure.exposer.wstAudience, wstClientId)
 		if err != nil {
 			return client.Config{}, err

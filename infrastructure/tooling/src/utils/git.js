@@ -109,6 +109,26 @@ exports.gitDescribe = async ({dir, utils}) => {
 };
 
 /**
+ * Get the current branch
+ *
+ * - dir -- directory to check
+ *
+ * Returns:
+ * {
+ *   ref: ..., // abbreviated ref
+ * }
+ */
+exports.gitCurrentBranch = async ({dir, utils}) => {
+  const opts = {cwd: dir};
+
+  assert(fs.existsSync(dir), `${dir} does not exist`);
+  const revParse = await exec('git', ['rev-parse', '--abbrev-ref', 'HEAD'], opts);
+  return {
+    ref: revParse.stdout.trim(),
+  };
+};
+
+/**
  * Stage files in git (git add)
  *
  * - dir -- directory to commit in

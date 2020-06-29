@@ -2,10 +2,15 @@ const assert = require('assert');
 const settings = require('../settings');
 const DockerWorker = require('../dockerworker');
 const TestWorker = require('../testworker');
+const {suiteName} = require('taskcluster-lib-testing');
+const helper = require('../helper');
 
 let worker;
 
-suite('Privileged containers', () => {
+helper.secrets.mockSuite(suiteName(), ['docker', 'ci-creds'], function(mock, skipping) {
+  if (mock) {
+    return; // no fake equivalent for integration tests
+  }
 
   setup(() => {
     settings.cleanup();

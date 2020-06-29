@@ -25,7 +25,7 @@ const debug = Debug('api:schema');
  * Handlers may output errors using `req.json`, as `req.reply` will validate
  * against schema and always returns a 200 OK reply.
  */
-const validateSchemas = ({validator, absoluteSchemas, rootUrl, serviceName, entry, monitor}) => {
+const validateSchemas = ({validator, absoluteSchemas, rootUrl, serviceName, entry}) => {
   // convert relative schema references to id's
   const input = entry.input && !entry.skipInputValidation &&
     url.resolve(libUrls.schema(rootUrl, serviceName, ''), entry.input);
@@ -65,7 +65,7 @@ const validateSchemas = ({validator, absoluteSchemas, rootUrl, serviceName, entr
     // code 200... errors should be sent with res.json(code, json)
     res.reply = (json) => {
       if (res.headersSent) {
-        monitor.reportError(new Error('API method implementation called res.send twice'));
+        req.tcContext.monitor.reportError(new Error('API method implementation called res.send twice'));
         return;
       }
       if (!req.public && !req.hasAuthed) {

@@ -1,6 +1,0 @@
-# GENERATED FILE from `yarn generate`! To update, change procs.yml and regenerate.
-
-web: cd services/index && node src/main server
-handlers: cd services/index && node src/main handlers
-expire: cd services/index && node src/main expire
-write-docs: cd services/index && node src/main writeDocs

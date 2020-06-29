@@ -3,7 +3,7 @@ const data = require('../src/data');
 const builder = require('../src/api');
 const taskcluster = require('taskcluster-client');
 const load = require('../src/main');
-const {fakeauth, stickyLoader, Secrets, withEntity, withPulse, withMonitor, withDb, resetTable} = require('taskcluster-lib-testing');
+const {fakeauth, stickyLoader, Secrets, withEntity, withPulse, withMonitor, withDb, resetTables} = require('taskcluster-lib-testing');
 
 const helper = module.exports;
 
@@ -18,7 +18,6 @@ withMonitor(exports);
 
 // set up the testing secrets
 exports.secrets = new Secrets({
-  secretName: 'project/taskcluster/testing/azure',
   secrets: {
     db: withDb.secret,
   },
@@ -161,8 +160,10 @@ exports.resetTables = (mock, skipping) => {
       exports.db['fakeindex'].reset();
     } else {
       const sec = exports.secrets.get('db');
-      await resetTable({ testDbUrl: sec.testDbUrl, tableName: 'indexed_tasks_entities' });
-      await resetTable({ testDbUrl: sec.testDbUrl, tableName: 'namespaces_entities' });
+      await resetTables({ testDbUrl: sec.testDbUrl, tableNames: [
+        'indexed_tasks_entities',
+        'namespaces_entities',
+      ]});
     }
   });
 };

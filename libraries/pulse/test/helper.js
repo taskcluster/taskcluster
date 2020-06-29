@@ -1,13 +1,10 @@
 const {Secrets, withMonitor} = require('taskcluster-lib-testing');
-const {defaultMonitorManager} = require('taskcluster-lib-monitor');
+const {MonitorManager} = require('taskcluster-lib-monitor');
 
 withMonitor(exports, {noLoader: true});
 
-defaultMonitorManager.configure({
+exports.monitor = MonitorManager.setup({
   serviceName: 'lib-pulse',
-});
-
-exports.monitor = defaultMonitorManager.setup({
   fake: true,
   debug: true,
   validate: true,

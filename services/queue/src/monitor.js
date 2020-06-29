@@ -1,8 +1,4 @@
-const {defaultMonitorManager} = require('taskcluster-lib-monitor');
-
-const monitorManager = defaultMonitorManager.configure({
-  serviceName: 'queue',
-});
+const {MonitorManager} = require('taskcluster-lib-monitor');
 
 /**
  * For ease of debugging, all log messages about tasks have a top-level
@@ -10,7 +6,7 @@ const monitorManager = defaultMonitorManager.configure({
  * to make individual log entries for each task.
  */
 
-monitorManager.register({
+MonitorManager.register({
   name: 'azureQueuePoll',
   title: 'Azure Queue Poll',
   type: 'azure-queue-poll',
@@ -24,7 +20,7 @@ monitorManager.register({
   },
 });
 
-monitorManager.register({
+MonitorManager.register({
   name: 'taskDefined',
   title: 'Task Defined',
   type: 'task-defined',
@@ -38,7 +34,7 @@ monitorManager.register({
   },
 });
 
-monitorManager.register({
+MonitorManager.register({
   name: 'taskPending',
   title: 'Task Pending',
   type: 'task-pending',
@@ -53,7 +49,7 @@ monitorManager.register({
   },
 });
 
-monitorManager.register({
+MonitorManager.register({
   name: 'taskRunning',
   title: 'Task Running',
   type: 'task-running',
@@ -67,7 +63,7 @@ monitorManager.register({
   },
 });
 
-monitorManager.register({
+MonitorManager.register({
   name: 'taskCompleted',
   title: 'Task Completed',
   type: 'task-completed',
@@ -82,7 +78,7 @@ monitorManager.register({
   },
 });
 
-monitorManager.register({
+MonitorManager.register({
   name: 'taskFailed',
   title: 'Task Failed',
   type: 'task-failed',
@@ -97,7 +93,7 @@ monitorManager.register({
   },
 });
 
-monitorManager.register({
+MonitorManager.register({
   name: 'taskException',
   title: 'Task Exception',
   type: 'task-exception',
@@ -112,7 +108,7 @@ monitorManager.register({
   },
 });
 
-monitorManager.register({
+MonitorManager.register({
   name: 'taskClaimed',
   title: 'Task Claimed',
   type: 'task-claimed',
@@ -131,7 +127,7 @@ monitorManager.register({
   },
 });
 
-monitorManager.register({
+MonitorManager.register({
   name: 'taskReclaimed',
   title: 'Task Reclaimed',
   type: 'task-reclaimed',
@@ -148,7 +144,7 @@ monitorManager.register({
   },
 });
 
-monitorManager.register({
+MonitorManager.register({
   name: 'hintPoller',
   title: 'Hint Poller Report',
   type: 'hint-poller',
@@ -161,5 +157,3 @@ monitorManager.register({
     slept: 'If true, there were no hints to claim and the poller slept before claiming again.',
   },
 });
-
-module.exports = monitorManager;

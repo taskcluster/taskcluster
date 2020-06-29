@@ -5,6 +5,7 @@ const mime = require('mime');
 const taskcluster = require('taskcluster-client');
 const uploadToS3 = require('../../src/lib/upload_to_s3');
 const Docker = require('dockerode-promise');
+const helper = require('../helper');
 
 function removeFile(filename) {
   try {
@@ -16,7 +17,7 @@ function createQueue() {
   // expects rootUrl and credentials in env vars
   return new taskcluster.Queue({
     timeout: 30 * 1000,
-    ...taskcluster.fromEnvVars(),
+    ...helper.optionsFromCiCreds(),
   });
 }
 
@@ -25,7 +26,7 @@ function scheduleReclaim(queue, claim) {
     try {
       claim = await queue.reclaimTask(
         claim.status.taskId,
-        claim.runId
+        claim.runId,
       );
 
       const takenFor = (new Date(claim.takenUntil) - new Date());
@@ -45,7 +46,7 @@ function run(name, args) {
 
     proc.on('close', code => code
       ? reject(new Error(`${name} exited with code ${code}`))
-      : accept()
+      : accept(),
     );
   });
 
@@ -57,7 +58,7 @@ async function main() {
   const zstImagePath = '/tmp/image.tar.zst';
   const tarImagePath = '/tmp/image.tar';
 
-  const queue = createQueue(taskcluster.fromEnvVars());
+  const queue = createQueue();
   const docker = new Docker();
 
   removeFile(tarImagePath);
@@ -85,22 +86,22 @@ async function main() {
       name: 'docker-worker test images',
       description: 'Task with docker images for docker-worker tests',
       owner: 'wcosta@mozilla.com',
-      source: 'https://www.mozilla.org'
+      source: 'https://www.mozilla.org',
     },
-    payload: {}
+    payload: {},
   });
 
   console.log(`Task ${taskId} created successfullly, claiming`);
   const claim = await queue.claimTask(taskId, 0, {
     workerGroup: 'docker-worker',
-    workerId: 'docker-worker'
+    workerId: 'docker-worker',
   });
 
   scheduleReclaim(queue, claim);
 
   await Promise.all([tarImagePath, lz4ImagePath, zstImagePath].map(image => {
     const stat = fs.statSync(image);
-    const sizeInMB = stat.size / (1024*1024);
+    const sizeInMB = stat.size / (1024 * 1024);
     const imageName = path.basename(image).toLowerCase();
 
     console.log(`Uploading ${imageName}, size = ${sizeInMB}MB`);
@@ -115,10 +116,10 @@ async function main() {
         taskcluster.fromNowJSON('60 years'),
         {
           'content-type': mime.lookup(image),
-          'content-length': stat.size
+          'content-length': stat.size,
         },
         null,
-        {}
+        {},
       );
     }));
 

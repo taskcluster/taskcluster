@@ -1,8 +1,4 @@
-const {defaultMonitorManager} = require('taskcluster-lib-monitor');
-
-const monitorManager = defaultMonitorManager.configure({
-  serviceName: 'github',
-});
+const {MonitorManager} = require('taskcluster-lib-monitor');
 
 /**
  * For ease of debugging, the following top-level fields are shared by all
@@ -16,7 +12,7 @@ const monitorManager = defaultMonitorManager.configure({
  * '111-22-333'` will find all log messages regarding that webhook delivery.
  */
 
-monitorManager.register({
+MonitorManager.register({
   name: 'webhookReceived',
   title: 'Webhook Received',
   type: 'webhook-received',
@@ -30,7 +26,7 @@ monitorManager.register({
   },
 });
 
-monitorManager.register({
+MonitorManager.register({
   name: 'handlerDebug',
   title: 'Event Handler Debug Information',
   type: 'handler-debug',
@@ -53,5 +49,3 @@ monitorManager.register({
     message: 'Free-form message',
   },
 });
-
-module.exports = monitorManager;

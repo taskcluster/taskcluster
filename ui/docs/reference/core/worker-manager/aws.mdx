@@ -15,10 +15,12 @@ The provider starts workers with a JSON object in user-data containing the follo
 * `workerPoolId` -- worker pool for this worker
 * `rootUrl` -- root URL for the Taskcluster deployment
 * `providerId` -- provider ID that started the worker
-* `workerGroup` -- the worker's workerGroup (currently equal to the providerId, but do not depend on this)
+* `workerGroup` -- the worker's region
 * `workerConfig` -- worker configuration supplied as part of the worker pool configuration (deprecated; use the result of `registerWorker` instead)
 
 The worker's `workerId` is identical to its instance ID, which the worker can retrieve from the AWS metadata service.
+This should be unique within the scope of the `workerGroup` (region).
+Note that the `workerGroup` does not include the availability zone, as this information is not always available until after the worker has been created.
 
 The worker should call `workerManager.registerWorker` with an `workerIdentityProof` containing properties
 

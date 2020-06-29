@@ -1,4 +1,4 @@
-module github.com/taskcluster/taskcluster/v29
+module github.com/taskcluster/taskcluster/v31
 
 go 1.13
 
@@ -19,8 +19,10 @@ require (
 	github.com/getsentry/raven-go v0.2.0
 	github.com/ghodss/yaml v1.0.0
 	github.com/golang/snappy v0.0.1 // indirect
+	github.com/gorilla/mux v1.7.4
 	github.com/gorilla/websocket v1.4.2
 	github.com/iancoleman/strcase v0.0.0-20191112232945-16388991a334
+	github.com/johncgriffin/overflow v0.0.0-20170615021017-4d914c927216
 	github.com/kr/text v0.2.0
 	github.com/mholt/archiver v2.1.0+incompatible
 	github.com/mitchellh/go-homedir v1.1.0
@@ -30,6 +32,7 @@ require (
 	github.com/peterbourgon/mergemap v0.0.0-20130613134717-e21c03b7a721
 	github.com/pierrec/lz4 v2.5.2+incompatible // indirect
 	github.com/pkg/browser v0.0.0-20180916011732-0a3d74bf9ce4
+	github.com/pkg/errors v0.9.1
 	github.com/sirupsen/logrus v1.5.0
 	github.com/spf13/cobra v1.0.0
 	github.com/spf13/pflag v1.0.5
@@ -40,16 +43,15 @@ require (
 	github.com/taskcluster/pulse-go v1.0.0
 	github.com/taskcluster/shell v0.0.0-20191115171910-c688067f12d3
 	github.com/taskcluster/slugid-go v1.1.0
-	github.com/taskcluster/stateless-dns-go v1.0.6
 	github.com/taskcluster/taskcluster-lib-urls v13.0.0+incompatible
 	github.com/tent/hawk-go v0.0.0-20161026210932-d341ea318957
 	github.com/ulikunitz/xz v0.5.7 // indirect
 	github.com/xeipuuv/gojsonpointer v0.0.0-20190905194746-02993c407bfb // indirect
 	github.com/xeipuuv/gojsonschema v1.2.0
-	golang.org/x/crypto v0.0.0-20200429183012-4b2356b1ed79
-	golang.org/x/net v0.0.0-20200505041828-1ed23360d12c
-	golang.org/x/sys v0.0.0-20200501145240-bc7a7d42d5c3
-	golang.org/x/tools v0.0.0-20200505023115-26f46d2f7ef8
+	golang.org/x/crypto v0.0.0-20200604202706-70a84ac30bf9
+	golang.org/x/net v0.0.0-20200602114024-627f9648deb9
+	golang.org/x/sys v0.0.0-20200620081246-981b61492c35
+	golang.org/x/tools v0.0.0-20200615172723-1725ffee6d58
 	gopkg.in/tylerb/graceful.v1 v1.2.15
 	gopkg.in/yaml.v2 v2.2.8
 	gopkg.in/yaml.v3 v3.0.0-20200313102051-9f266ea9e77c

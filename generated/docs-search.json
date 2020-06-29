@@ -232,6 +232,13 @@
   },
   {
     "element": "h2",
+    "id": "supporting-encrypted-columns",
+    "path": "/manual/deploying/database",
+    "subtitle": "Supporting Encrypted Columns",
+    "title": "Database Configuration"
+  },
+  {
+    "element": "h2",
     "id": "upgrades",
     "path": "/manual/deploying/database",
     "subtitle": "Upgrades",
@@ -970,6 +977,13 @@
     "id": "log-entry-properties",
     "path": "/manual/design/logs",
     "subtitle": "Log Entry Properties",
+    "title": "Structured Logs"
+  },
+  {
+    "element": "h2",
+    "id": "trace-and-request-ids",
+    "path": "/manual/design/logs",
+    "subtitle": "Trace and Request Ids",
     "title": "Structured Logs"
   },
   {
@@ -2024,6 +2038,13 @@
   },
   {
     "element": "h2",
+    "id": "reregistration",
+    "path": "/reference/core/worker-manager/worker-interaction",
+    "subtitle": "Reregistration",
+    "title": "Worker-Manager - Worker Interaction"
+  },
+  {
+    "element": "h2",
     "id": "worker-configuration",
     "path": "/reference/core/worker-manager/worker-interaction",
     "subtitle": "Worker Configuration",
@@ -2129,9 +2150,16 @@
   },
   {
     "element": "h2",
-    "id": "custom-output-in-checks",
+    "id": "custom-annotation-output-in-checks",
     "path": "/reference/integrations/github/checks",
-    "subtitle": "Custom Output in Checks",
+    "subtitle": "Custom Annotation Output in Checks",
+    "title": "Taskcluster-Github Checks"
+  },
+  {
+    "element": "h2",
+    "id": "custom-text-output-in-checks",
+    "path": "/reference/integrations/github/checks",
+    "subtitle": "Custom Text Output in Checks",
     "title": "Taskcluster-Github Checks"
   },
   {
@@ -2710,6 +2738,132 @@
   },
   {
     "element": "h1",
+    "id": "docker-worker",
+    "path": "/reference/workers/docker-worker",
+    "subtitle": null,
+    "title": "Docker Worker"
+  },
+  {
+    "element": "h2",
+    "id": "deployment",
+    "path": "/reference/workers/docker-worker",
+    "subtitle": "Deployment",
+    "title": "Docker Worker"
+  },
+  {
+    "element": "h2",
+    "id": "using-the-worker",
+    "path": "/reference/workers/docker-worker",
+    "subtitle": "Using the Worker",
+    "title": "Docker Worker"
+  },
+  {
+    "element": "h1",
+    "id": "caches",
+    "path": "/reference/workers/docker-worker/caches",
+    "subtitle": null,
+    "title": "Caches"
+  },
+  {
+    "element": "h1",
+    "id": "deployment",
+    "path": "/reference/workers/docker-worker/deployment",
+    "subtitle": null,
+    "title": "Deployment"
+  },
+  {
+    "element": "h2",
+    "id": "release-format",
+    "path": "/reference/workers/docker-worker/deployment",
+    "subtitle": "Release Format",
+    "title": "Deployment"
+  },
+  {
+    "element": "h1",
+    "id": "environment-variables",
+    "path": "/reference/workers/docker-worker/environment",
+    "subtitle": null,
+    "title": "Environment Variables"
+  },
+  {
+    "element": "h2",
+    "id": "encrypted-environment-variables",
+    "path": "/reference/workers/docker-worker/environment",
+    "subtitle": "Encrypted Environment Variables",
+    "title": "Environment Variables"
+  },
+  {
+    "element": "h2",
+    "id": "reserved-environment-variables",
+    "path": "/reference/workers/docker-worker/environment",
+    "subtitle": "Reserved Environment Variables",
+    "title": "Environment Variables"
+  },
+  {
+    "element": "h1",
+    "id": "features",
+    "path": "/reference/workers/docker-worker/features",
+    "subtitle": null,
+    "title": "Features"
+  },
+  {
+    "element": "h2",
+    "id": "feature-allowptrace",
+    "path": "/reference/workers/docker-worker/features",
+    "subtitle": "Feature: `allowPtrace`",
+    "title": "Features"
+  },
+  {
+    "element": "h2",
+    "id": "feature-dockersave",
+    "path": "/reference/workers/docker-worker/features",
+    "subtitle": "Feature: `dockerSave`",
+    "title": "Features"
+  },
+  {
+    "element": "h2",
+    "id": "feature-interactive",
+    "path": "/reference/workers/docker-worker/features",
+    "subtitle": "Feature: `interactive`",
+    "title": "Features"
+  },
+  {
+    "element": "h2",
+    "id": "feature-taskclusterproxy",
+    "path": "/reference/workers/docker-worker/features",
+    "subtitle": "Feature: `taskclusterProxy`",
+    "title": "Features"
+  },
+  {
+    "element": "h1",
+    "id": "scopes",
+    "path": "/reference/workers/docker-worker/scopes",
+    "subtitle": null,
+    "title": "Scopes"
+  },
+  {
+    "element": "h2",
+    "id": "caches",
+    "path": "/reference/workers/docker-worker/scopes",
+    "subtitle": "Caches",
+    "title": "Scopes"
+  },
+  {
+    "element": "h2",
+    "id": "features",
+    "path": "/reference/workers/docker-worker/scopes",
+    "subtitle": "Features",
+    "title": "Scopes"
+  },
+  {
+    "element": "h2",
+    "id": "images",
+    "path": "/reference/workers/docker-worker/scopes",
+    "subtitle": "Images",
+    "title": "Scopes"
+  },
+  {
+    "element": "h1",
     "id": "generic-worker",
     "path": "/reference/workers/generic-worker",
     "subtitle": null,
@@ -3126,6 +3280,13 @@
     "id": "runner-configuration-file",
     "path": "/reference/workers/worker-runner/runner-configuration",
     "subtitle": null,
+    "title": "Runner Configuration File"
+  },
+  {
+    "element": "h2",
+    "id": "example",
+    "path": "/reference/workers/worker-runner/runner-configuration",
+    "subtitle": "Example",
     "title": "Runner Configuration File"
   },
   {

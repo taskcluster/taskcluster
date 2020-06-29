@@ -3,6 +3,315 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v31.0.0
+
+### GENERAL
+
+▶ [patch] [bug 1637302](http://bugzil.la/1637302)
+Docker-worker now automatically gzips artifacts before
+uploading them. It sets content-encoding in the S3 headers so that most
+consumers should be able to transparently handle decompression.
+
+### DEPLOYERS
+
+▶ [MAJOR] [#3012](https://github.com/taskcluster/taskcluster/issues/3012)
+An encrypted column "secret" has been added to the workers table. The
+worker-manager service now requires an additional environment variable `DB_CRYPTO_KEY`
+to be set which is a JSON array where each element is an object of the form.
+
+```json
+{
+  "id": "a unique identifier",
+  "algo": "aes-256",
+  "key": "32 bytes of base64 string"
+}
+```
+
+Note that for this upgrade it will only be an array of a single object.
+
+▶ [patch] [bug 1638921](http://bugzil.la/1638921)
+Kubernetes cron tasks are now configured with concurrencyPolicy: Forbid, to prevent multiple pods of the same job from running concurrently.
+
+### WORKER-DEPLOYERS
+
+▶ [patch] [#3080](https://github.com/taskcluster/taskcluster/issues/3080)
+Docker-worker is now more careful to shut down only when it is idle and has not begun to claim a task, avoiding race conditions that could lead to `claim-expired` tasks.
+
+▶ [patch] [#3012](https://github.com/taskcluster/taskcluster/issues/3012)
+Worker runner can now re-register a worker with worker-manager, refreshing its credentials. This allows workers to run for an unlimited time, so long as they continue to check in with the worker manager periodically.  Both docker-worker and generic-worker, as of this version, support this functionality.  Older worker versions will simply terminate when their credentials expire.
+
+### USERS
+
+▶ [patch] 
+Docker-worker now includes an error message in the task log when uploading an artifact fails
+
+▶ [patch] [#2883](https://github.com/taskcluster/taskcluster/issues/2883)
+Endpoints that return worker pools now contain an `existingCapacity` field that contains the total
+amount of capacity for the worker pool between all workers that are not `stopped`.
+
+▶ [patch] [#3004](https://github.com/taskcluster/taskcluster/issues/3004)
+Generic-worker now uses the task's credentials to fetch artifacts specified in the `mounts` property of the task's payload.  This will allow use of private artifacts in mounts.
+
+▶ [patch] [#2882](https://github.com/taskcluster/taskcluster/issues/2882)
+Workerpools lists and views in the ui now show the amount of currently existing capacity
+is provided by the workers in the pool and the pending count of tasks.
+
+### DEVELOPERS
+
+▶ [minor] [#3013](https://github.com/taskcluster/taskcluster/issues/3013)
+Github integration can now set [annotations](https://developer.github.com/v3/checks/runs/#annotations-object) for check runs.
+By default it will read `public/github/customCheckRunAnnotations.json` but it can be overridden by setting
+`task.extra.github.customCheckRun.annotationsArtifactName`. The json will be passed along unmodified.
+
+### OTHER
+
+▶ Additional changes not described here: [bug 1638921](http://bugzil.la/1638921), [#2887](https://github.com/taskcluster/taskcluster/issues/2887), [#2890](https://github.com/taskcluster/taskcluster/issues/2890), [#3021](https://github.com/taskcluster/taskcluster/issues/3021), [#3067](https://github.com/taskcluster/taskcluster/issues/3067), [#3079](https://github.com/taskcluster/taskcluster/issues/3079), [#2962](https://github.com/taskcluster/taskcluster/issues/2962).
+
+## v30.1.1
+
+### GENERAL
+
+▶ [patch] 
+Worker Manager now avoids scanning all the workers table in memory to avoid possible OOM issues.
+
+### WORKER-DEPLOYERS
+
+▶ [patch] [bug 1607605](http://bugzil.la/1607605)
+Generic-worker now supports shutting down gracefully when instructed to do so by worker-runner, such as when a cloud VM is being terminated.
+
+### USERS
+
+▶ [patch] [bug 1639713](http://bugzil.la/1639713)
+Tasks using the `hostSharedMemory` device capability will now properly mount `/dev/shm` from the host into the container.
+
+## v30.1.0
+
+### DEPLOYERS
+
+▶ [minor] [#2877](https://github.com/taskcluster/taskcluster/issues/2877)
+The `wmworkers_entities` table has now been migrated to use a relational table.
+The new table is called `workers`. `wmworkers_entities` will get deleted.
+
+## v30.0.5
+
+### DEVELOPERS
+
+▶ [patch] 
+Release tasks now have access to taskcluster-proxy
+
+## v30.0.4
+
+
+
+### OTHER
+
+▶ Additional change not described here: [#2921](https://github.com/taskcluster/taskcluster/issues/2921).
+
+## v30.0.3
+
+### GENERAL
+
+▶ [patch] [bug 1631824](http://bugzil.la/1631824)
+The worker-manager azure provider now properly tracks and deletes all disks when a virtual machine has data disks created for it.
+
+### DEPLOYERS
+
+▶ [patch] 
+A bug in the Azure provider which caused provisioning to fail when handling operations has been fixed.
+
+▶ [patch] 
+Taskcluster services now include metadata at the top level of Fields for `generic.*` logging messages, rather than in `meta` or `fields` sub-properties.
+
+### WORKER-DEPLOYERS
+
+▶ [patch] [#2969](https://github.com/taskcluster/taskcluster/issues/2969)
+Docker-worker now only considers itself idle if its call to `queue.claimWork` returns no tasks.  This prevents the situation where a very short `afterIdleSeconds` causes the worker to shut down *while* calling `claimWork`.
+
+▶ [patch] [#2925](https://github.com/taskcluster/taskcluster/issues/2925)
+Listing workers in the "stopping" state will no longer cause 500 errors.
+
+### USERS
+
+▶ [patch] [bug 1632929](http://bugzil.la/1632929)
+Taskcluster-Github now uses a release event's `target_commitish` property instead of the `tag` property to determine the SHA of the released commit.  This is important in cases where tags are created as part of the release-creation call, as GitHub sends the release event before the tag is created.
+
+### DEVELOPERS
+
+▶ [patch] [bug 1636167](http://bugzil.la/1636167)
+CI tasks are now generated in a decision task by https://hg.mozilla.org/ci/taskgraph
+
+### OTHER
+
+▶ Additional changes not described here: [bug 1640267](http://bugzil.la/1640267), [#2827](https://github.com/taskcluster/taskcluster/issues/2827), [#2890](https://github.com/taskcluster/taskcluster/issues/2890), [#2912](https://github.com/taskcluster/taskcluster/issues/2912), [#2913](https://github.com/taskcluster/taskcluster/issues/2913), [#2951](https://github.com/taskcluster/taskcluster/issues/2951), [#2952](https://github.com/taskcluster/taskcluster/issues/2952), [bug 1634376](http://bugzil.la/1634376).
+
+## v30.0.2
+
+### USERS
+
+▶ [patch] 
+An incorrect use of a relative path caused sign-ins to fail in v30.0.1.  This has been fixed.
+
+▶ [patch] 
+Fix docker worker not working in the latest release of Taskcluster. It was
+previously throwing `taskVolumeBindings is not iterable`.
+
+▶ [patch] [#2876](https://github.com/taskcluster/taskcluster/issues/2876)
+The purge cache UI view now allows filtering a search result by cache name.
+
+### OTHER
+
+▶ Additional change not described here: [#2845](https://github.com/taskcluster/taskcluster/issues/2845).
+
+## v30.0.1
+
+### DEPLOYERS
+
+▶ [patch] 
+A typo causing index service not to start up in 30.0.0 is now fixed.
+
+## v30.0.0
+
+### GENERAL
+
+▶ [patch] [bug 1638047](http://bugzil.la/1638047)
+This release fixes a bug where the web UI opens the log viewer for any `text/plain` artifacts, which breaks for private artifacts. The web UI will now only use the log viewer for `text/plain` `*.log` files.
+
+▶ [patch] [bug 1587145](http://bugzil.la/1587145)
+taskcluster-client-web now only builds a single umd asset. This asset is
+compatible with both cjs and esm.
+
+### DEPLOYERS
+
+▶ [minor] 
+Database version 11 removes the `widgets` table that was used to test Postgres deployment.  It contains no useful data.
+The hidden `notify.updateWidgets` API method, but this method was never meant to be used so this removal is not considered a breaking change.
+
+▶ [patch] [bug 1639913](http://bugzil.la/1639913)
+Worker-manager now logs when a worker is removed, and includes debug logging of provisioning and scanning.
+
+### WORKER-DEPLOYERS
+
+▶ [MAJOR] [bug 1636321](http://bugzil.la/1636321)
+The generic-worker configuration parameters `livelogKey`, `livelogCertificate`, `livelogGETPort`, `livelogPUTPort`, and `livelogSecret` are no longer needed and are prohibited in the worker's configuration.
+
+▶ [minor] [#2861](https://github.com/taskcluster/taskcluster/issues/2861)
+The unused and unmaintained docker-worker features balrogVPNProxy, balrogStagingVPNProxy, and relengAPIProxy have been removed.
+
+▶ [patch] [bug 1638370](http://bugzil.la/1638370)
+Azure provider no longer has a race condition between `registerWorker` and `checkWorker`.
+
+▶ [patch] 
+Docker-worker will now fail early with a useful error message if the loopback audio or video devices are not available, but are configured.
+
+▶ [patch] 
+The docker-worker version is now logged in the `serviceContext.version` property of its structured logs.
+
+### ADMINS
+
+▶ [patch] [bug 1627769](http://bugzil.la/1627769)
+Worker lifecycle defaults are now being properly applied.
+
+### USERS
+
+▶ [patch] [#1061](https://github.com/taskcluster/taskcluster/issues/1061)
+In client-shell added flag --verbose/-v for getting log to stderr for all the commands.
+
+▶ [patch] 
+The docker-worker payload format is now available in Taskcluster's online documentation.
+
+### DEVELOPERS
+
+▶ [patch] [#2844](https://github.com/taskcluster/taskcluster/issues/2844)
+All services are now invoked from the root of the monorepo directory.
+
+### OTHER
+
+▶ Additional changes not described here: [bug 1636164](http://bugzil.la/1636164), [bug 1636174](http://bugzil.la/1636174), [#2822](https://github.com/taskcluster/taskcluster/issues/2822), [#2838](https://github.com/taskcluster/taskcluster/issues/2838), [#2844](https://github.com/taskcluster/taskcluster/issues/2844).
+
+## v29.6.0
+
+### USERS
+
+▶ [minor] [bug 1638002](http://bugzil.la/1638002)
+The Azure, AWS, and Google worker provisioners now use an instance's region or location as `workerGroup`, instead of the worker pool's `providerId`.
+
+### DEVELOPERS
+
+▶ [minor] [#2811](https://github.com/taskcluster/taskcluster/issues/2811)
+The Queue schema now allows for ssh:// source urls.
+
+▶ [patch] 
+An issue with building external urls with traceId'd clients has been fixed
+
+### OTHER
+
+▶ Additional change not described here: [bug 1637982](http://bugzil.la/1637982).
+
+## v29.5.2
+
+
+
+## v29.5.1
+
+No changes
+
+## v29.5.0
+
+### GENERAL
+
+▶ [patch] [bug 1633582](http://bugzil.la/1633582)
+Fixes an issue in the worker-manager google provider where improperly configured disk tagging caused worker creation to fail.
+
+### DEPLOYERS
+
+▶ [minor] [bug 1619652](http://bugzil.la/1619652)
+Taskcluster logs now include `traceId` and `requestId` fields on messages that have these in context.
+A `requestId` is per http request and a `traceId` follows a request chain along as far as it goes so
+for example a graphql request to web-server -> queue -> auth.authenticateHawk are all correlatable
+as part of one trace.
+
+As part of this change, by default in Kubernetes, requests between services are now routed directly using
+Kubernetes dns service discovery. To disable this, you can set the top-level `useKubernetesDnsServiceDiscovery`
+to `false` in your helm values.
+
+▶ [patch] [bug 1637104](http://bugzil.la/1637104)
+The livelog, taskcluster-proxy, and websocktunnel Docker images now use statically-linked binaries, meaning they will not fail on startup.
+
+▶ [patch] [bug 1636189](http://bugzil.la/1636189)
+The websocktunnel, livelog, and taskcluster-proxy images now have an `/app/version.json` as required by DockerFlow, and websocktunnel correctly services all three DockerFlow endpoints.  In additional, all `version.json` files including that in the main `taskcluster/taskcluster` image now have a correct build URL.
+
+### WORKER-DEPLOYERS
+
+▶ [patch] [#2788](https://github.com/taskcluster/taskcluster/issues/2788)
+Docker-worker releases are now included in the assets on a Taskcluster release, with a well-documented format.
+
+▶ [patch] [#2739](https://github.com/taskcluster/taskcluster/issues/2739)
+Taskcluster-proxy assets, and a `taskcluster/askcluster-proxy` docker image, are now produced for every TC release.
+
+▶ [patch] [bug 1636163](http://bugzil.la/1636163)
+docker-worker docs now show on docs website
+
+### USERS
+
+▶ [patch] [bug 1635897](http://bugzil.la/1635897)
+Taskcluster-GitHub now correctly determines the sha for releases from signed tags.
+
+### OTHER
+
+▶ Additional changes not described here: [bug 1561668](http://bugzil.la/1561668), [bug 1636165](http://bugzil.la/1636165), [#2783](https://github.com/taskcluster/taskcluster/issues/2783), [#2808](https://github.com/taskcluster/taskcluster/issues/2808).
+
+## v29.4.1
+
+### DEPLOYERS
+
+▶ [patch] [bug 1636292](http://bugzil.la/1636292)
+The bug in 29.4.0 which caused DB migration to fail given large WorkerPool table rows has been fixed with a patch to DB version 10.
+
+### DEVELOPERS
+
+▶ [patch] [bug 1635985](http://bugzil.la/1635985)
+Docker Worker code now lives in this repository instead of taskcluster/docker-worker
+
 ## v29.4.0
 
 ### GENERAL

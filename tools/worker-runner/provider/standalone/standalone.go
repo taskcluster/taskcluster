@@ -4,10 +4,10 @@ import (
 	"fmt"
 
 	tcurls "github.com/taskcluster/taskcluster-lib-urls"
-	"github.com/taskcluster/taskcluster/v29/internal/workerproto"
-	"github.com/taskcluster/taskcluster/v29/tools/worker-runner/cfg"
-	"github.com/taskcluster/taskcluster/v29/tools/worker-runner/provider/provider"
-	"github.com/taskcluster/taskcluster/v29/tools/worker-runner/run"
+	"github.com/taskcluster/taskcluster/v31/internal/workerproto"
+	"github.com/taskcluster/taskcluster/v31/tools/worker-runner/cfg"
+	"github.com/taskcluster/taskcluster/v31/tools/worker-runner/provider/provider"
+	"github.com/taskcluster/taskcluster/v31/tools/worker-runner/run"
 )
 
 type standaloneProviderConfig struct {
@@ -24,6 +24,9 @@ type StandaloneProvider struct {
 }
 
 func (p *StandaloneProvider) ConfigureRun(state *run.State) error {
+	state.Lock()
+	defer state.Unlock()
+
 	var pc standaloneProviderConfig
 	err := p.runnercfg.Provider.Unpack(&pc)
 	if err != nil {
@@ -31,6 +34,7 @@ func (p *StandaloneProvider) ConfigureRun(state *run.State) error {
 	}
 
 	state.RootURL = tcurls.NormalizeRootURL(pc.RootURL)
+	state.ProviderID = "standalone"
 	state.Credentials.ClientID = pc.ClientID
 	state.Credentials.AccessToken = pc.AccessToken
 	state.WorkerPoolID = pc.WorkerPoolID
@@ -58,6 +62,10 @@ func (p *StandaloneProvider) ConfigureRun(state *run.State) error {
 	}
 
 	return nil
+}
+
+func (p *StandaloneProvider) GetWorkerIdentityProof() (map[string]interface{}, error) {
+	return nil, nil
 }
 
 func (p *StandaloneProvider) UseCachedRun(run *run.State) error {

@@ -9,16 +9,21 @@ import (
 	"time"
 
 	tcurls "github.com/taskcluster/taskcluster-lib-urls"
-	tcclient "github.com/taskcluster/taskcluster/v29/clients/client-go"
-	"github.com/taskcluster/taskcluster/v29/internal/scopes"
-	"github.com/taskcluster/taskcluster/v29/workers/generic-worker/expose"
-	"github.com/taskcluster/taskcluster/v29/workers/generic-worker/livelog"
-	"github.com/taskcluster/taskcluster/v29/workers/generic-worker/process"
+	tcclient "github.com/taskcluster/taskcluster/v31/clients/client-go"
+	"github.com/taskcluster/taskcluster/v31/internal/scopes"
+	"github.com/taskcluster/taskcluster/v31/workers/generic-worker/expose"
+	"github.com/taskcluster/taskcluster/v31/workers/generic-worker/livelog"
+	"github.com/taskcluster/taskcluster/v31/workers/generic-worker/process"
 )
 
 var (
-	livelogName     = "public/logs/live.log"
-	internalGETPort uint16
+	livelogName = "public/logs/live.log"
+
+	// The ports on which the livelog process listens locally.  These ports are not exposed
+	// outside of the host.  However, in CI they must differ from those of the generic-worker
+	// instance running the test suite.
+	internalPUTPort uint16 = 60098
+	internalGETPort uint16 = 60099
 )
 
 type LiveLogFeature struct {
@@ -29,7 +34,6 @@ func (feature *LiveLogFeature) Name() string {
 }
 
 func (feature *LiveLogFeature) Initialise() error {
-	internalGETPort = config.LiveLogGETPort
 	return nil
 }
 
@@ -67,7 +71,7 @@ func (l *LiveLogTask) RequiredScopes() scopes.Required {
 }
 
 func (l *LiveLogTask) Start() *CommandExecutionError {
-	liveLog, err := livelog.New(config.LiveLogExecutable, config.LiveLogPUTPort, internalGETPort)
+	liveLog, err := livelog.New(config.LiveLogExecutable, internalPUTPort, internalGETPort)
 	if err != nil {
 		log.Printf("WARNING: could not create livelog: %s", err)
 		// then run without livelog, is only a "best effort" service
@@ -131,7 +135,7 @@ func (l *LiveLogTask) Stop(err *ExecutionErrors) {
 		log.Printf("WARNING: could not terminate livelog writer: %s", errTerminate)
 	}
 	log.Printf("Redirecting %v to %v", livelogName, logName)
-	logURL := tcurls.API(queue.RootURL, "queue", "v1", fmt.Sprintf("task/%v/runs/%v/artifacts/%v", l.task.TaskID, l.task.RunID, logName))
+	logURL := tcurls.API(config.RootURL, "queue", "v1", fmt.Sprintf("task/%v/runs/%v/artifacts/%v", l.task.TaskID, l.task.RunID, url.PathEscape(logName)))
 	err.add(l.task.uploadArtifact(
 		&RedirectArtifact{
 			BaseArtifact: &BaseArtifact{

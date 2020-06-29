@@ -25,8 +25,9 @@ class SharedMemoryDeviceManager {
 
 class SharedMemoryDevice {
   constructor() {
-    this.mountPoints = [
-      '/dev/shm',
+    this.mountPoints = [];
+    this.binds = [
+      '/dev/shm:/dev/shm',
     ];
   }
 

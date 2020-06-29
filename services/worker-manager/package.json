@@ -1,6 +1,6 @@
 {
   "name": "taskcluster-worker-manager",
-  "version": "29.4.0",
+  "version": "31.0.0",
   "description": "Taskcluster Worker Manager",
   "main": "index.js",
   "author": "John Ford <john@johnford.org>",
@@ -11,6 +11,6 @@
     "coverage:report": "c8 yarn test && c8 report --temp-directory ./coverage/tmp --reporter json --report-dir ../../artifacts",
     "lint": "eslint src/*.js test/*.js",
     "fixlint": "eslint --fix src/*.js test/*.js",
-    "test": "mocha test/*_test.js"
+    "test": "mocha test/*_test.js test/**/*_test.js"
   }
 }

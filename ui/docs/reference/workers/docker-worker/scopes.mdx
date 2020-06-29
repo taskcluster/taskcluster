@@ -1,0 +1,26 @@
+---
+title: Scopes
+order: 10
+---
+
+# Scopes
+
+Certain task features/capabilities require the use of docker-worker specific scopes in the form of `docker-worker:...` . For details about scopes needed for features, images, and caches, consult the documentation for each topic.
+The scopes must be satisfied by `task.scopes`.
+Since the caller of `queue.createTask` must have credentials satisfying `task.scopes`, this ensures that whoever created the task posesses the necessary docker-worker-related scopes.
+
+Currently docker-worker uses these scopes:
+
+## Features
+
+Scope format: `docker-worker:feature:<feature name>`. These are features that will be linked to the container when the task runs.
+
+## Images
+
+Scopes format: `docker-worker:image:<registry>/<user>/<image>:<tag>`. Scopes for images are necessary when the image requires authentication with a registry (e.g. private images). Public images do not require scopes.
+
+## Caches
+
+Scopes begin with `docker-worker:cache:<cache name>`. Tasks that require cached volumes to be mounted must supply a scope for that cache. This is to restrict accessing, and possibly corrupting, caches no related to the scope of credentials provided.
+
+

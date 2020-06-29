@@ -64,16 +64,35 @@ const elideSecrets = fields => {
  * later if we want.
  */
 class Logger {
-  constructor({name, service, level, destination = process.stdout, metadata = null, taskclusterVersion = undefined}) {
+  constructor({
+    name,
+    service,
+    level,
+    destination = process.stdout,
+    metadata = null,
+    taskclusterVersion = undefined,
+  }) {
     assert(name, 'Must specify Logger name.');
 
     this.name = name;
     this.service = service;
     this.destination = destination;
-    this.metadata = Object.keys(metadata).length > 0 ? metadata : null;
     this.pid = process.pid;
     this.hostname = os.hostname();
     this.taskclusterVersion = taskclusterVersion;
+
+    if (metadata.traceId) {
+      this.traceId = metadata.traceId;
+      delete metadata.traceId;
+    }
+    if (metadata.requestId) {
+      this.requestId = metadata.requestId;
+      delete metadata.requestId;
+    }
+    this.metadata = null;
+    if (Object.keys(metadata).length > 0) {
+      this.metadata = metadata;
+    }
 
     level = level.trim().toLowerCase();
     assert(LEVELS[level] !== undefined, `Error levels must correspond to syslog severity levels. ${level} is invalid.`);
@@ -120,7 +139,8 @@ class Logger {
     elideSecrets(fields);
 
     if (this.metadata) {
-      fields.meta = this.metadata;
+      // include metadata, but prefer a value from fields if set in both places
+      fields = {...this.metadata, ...fields};
     }
 
     // determine a top-level message for the log entry..
@@ -137,6 +157,18 @@ class Logger {
       message = fields.message.toString().split('\n', 1)[0];
     }
 
+    let traceId = this.traceId;
+    if (fields.traceId) {
+      traceId = fields.traceId;
+      delete fields.traceId;
+    }
+
+    let requestId = this.requestId;
+    if (fields.requestId) {
+      requestId = fields.requestId;
+      delete fields.requestId;
+    }
+
     this.destination.write(stringify({
       Timestamp: Date.now() * 1000000,
       Type: type,
@@ -147,6 +179,8 @@ class Logger {
       Pid: this.pid,
       Fields: fields,
       message, // will be omitted if undefined
+      traceId, // will be omitted if undefined
+      requestId, // will be omitted if undefined
       severity: LEVELS_REVERSE[level], // for stackdriver
       serviceContext: { // for stackdriver
         service: this.service,

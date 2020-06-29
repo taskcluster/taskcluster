@@ -23,9 +23,20 @@ echo "deb http://apt.postgresql.org/pub/repos/apt/ stretch-pgdg main" > /etc/apt
 apt-get update
 apt-get install -y postgresql-$pg_version
 
+# add the en_US.UTF8 locale to the system
+apt-get install -y --no-install-recommends locales
+rm -rf /var/lib/apt/lists/*
+localedef -i en_US -c -f UTF-8 -A /usr/share/locale/locale.alias en_US.UTF-8
+
+# drop and re-create the default cluster with the appropriate locale
+pg_dropcluster 11 main
+pg_createcluster 11 main --lc-collate=en_US.UTF8 --lc-ctype=en_US.UTF8
+
 # allow postgres to connect locally with no auth -- this is for testing!
-echo 'local all postgres trust' > /etc/postgresql/$pg_version/main/pg_hba.conf
-echo 'host all postgres 127.0.0.1/32 trust' >> /etc/postgresql/$pg_version/main/pg_hba.conf
+echo 'local all all trust' > /etc/postgresql/$pg_version/main/pg_hba.conf
+echo 'host all all 127.0.0.1/32 trust' >> /etc/postgresql/$pg_version/main/pg_hba.conf
+echo 'host all all ::1/128 trust' >> /etc/postgresql/$pg_version/main/pg_hba.conf
+
 EOF
 
 cat > ${tmpdir}/Dockerfile <<EOF

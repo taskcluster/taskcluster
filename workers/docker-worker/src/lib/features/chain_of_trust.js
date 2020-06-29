@@ -51,14 +51,12 @@ class ChainOfTrust {
     // Open a new stream to read the entire log from disk (this in theory could
     // be a huge file).
     debug(`ensuring file ${this.file.path} exists and opening read stream`);
-    let stat = await fs.stat(this.file.path);
     let logStream = fs.createReadStream(this.file.path);
 
     try {
       await uploadToS3(task.queue, task.status.taskId, task.runId,
         logStream, 'public/logs/certified.log', expiration, {
           'content-type': 'text/plain',
-          'content-length': stat.size,
           'content-encoding': 'gzip',
         });
       await fs.unlink(this.file.path);
@@ -105,13 +103,11 @@ class ChainOfTrust {
       await uploadToS3(task.queue, task.status.taskId, task.runId,
         cotBufferStream, 'public/chain-of-trust.json', expiration, {
           'content-type': 'text/plain',
-          'content-length': chainOfTrust.length,
         });
 
       await uploadToS3(task.queue, task.status.taskId, task.runId,
         sigBufferStream, 'public/chain-of-trust.json.sig', expiration, {
           'content-type': 'application/octet-stream',
-          'content-length': chainOfTrustSig.length,
         });
     } catch (err) {
       task.stream.write(fmtErrorLog(err));

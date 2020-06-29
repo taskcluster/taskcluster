@@ -1469,6 +1469,10 @@
       "title": "Configuration options for ui",
       "type": "object"
     },
+    "useKubernetesDnsServiceDiscovery": {
+      "description": "If true, requests will not pass back in through load balancer to pass between services.",
+      "type": "boolean"
+    },
     "web_server": {
       "additionalProperties": false,
       "properties": {
@@ -1638,6 +1642,17 @@
     "worker_manager": {
       "additionalProperties": false,
       "properties": {
+        "db_crypto_keys": {
+          "oneOf": [
+            {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            {
+              "type": "array"
+            }
+          ]
+        },
         "debug": {
           "title": "node debug env var",
           "type": "string"
@@ -1843,6 +1858,7 @@
     "forceSSL",
     "trustProxy",
     "nodeEnv",
+    "useKubernetesDnsServiceDiscovery",
     "auth",
     "built_in_workers",
     "github",

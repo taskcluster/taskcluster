@@ -15,15 +15,11 @@ class StaticProvider extends Provider {
     }
 
     const {workerPoolId, providerId} = workerPool;
-    const now = new Date();
     const workerData = {
       workerPoolId,
       workerGroup,
       workerId,
       providerId,
-      created: now,
-      lastModified: now,
-      lastChecked: now,
       expires: new Date(input.expires),
       capacity: input.capacity,
       state: Worker.states.RUNNING,
@@ -32,12 +28,13 @@ class StaticProvider extends Provider {
 
     let worker;
     try {
-      worker = await this.Worker.create(workerData);
+      worker = Worker.fromApi(workerData);
+      await worker.create(this.db);
     } catch (err) {
       if (!err || err.code !== 'EntityAlreadyExists') {
         throw err;
       }
-      const existing = await this.Worker.load({workerPoolId, workerGroup, workerId}, true);
+      const existing = await Worker.get(this.db, { workerPoolId, workerGroup, workerId });
       if (existing.providerId !== providerId || existing.providerData.staticSecret !== staticSecret) {
         throw new ApiError('worker already exists');
       }
@@ -47,7 +44,14 @@ class StaticProvider extends Provider {
     return worker;
   }
 
-  async removeWorker({worker}) {
+  async removeWorker({worker, reason}) {
+    this.monitor.log.workerRemoved({
+      workerPoolId: worker.workerPoolId,
+      providerId: worker.providerId,
+      workerId: worker.workerId,
+      reason,
+    });
+
     await worker.remove();
   }
 
@@ -72,7 +76,10 @@ class StaticProvider extends Provider {
       expires = taskcluster.fromNow('96 hours');
     }
     const workerConfig = worker.providerData.workerConfig || {};
-    return {expires, workerConfig};
+    return {
+      expires,
+      workerConfig,
+    };
   }
 }
 

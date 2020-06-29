@@ -213,6 +213,22 @@ class WorkerManager(BaseClient):
 
         return self._makeApiCall(self.funcinfo["registerWorker"], *args, **kwargs)
 
+    def reregisterWorker(self, *args, **kwargs):
+        """
+        Reregister a Worker
+
+        Reregister a running worker.
+
+        This will generate and return new Taskcluster credentials for the worker
+        on that instance to use. The credentials will not live longer the
+        `registrationTimeout` for that worker. The endpoint will update `terminateAfter`
+        for the worker so that worker-manager does not terminate the instance.
+
+        This method is ``experimental``
+        """
+
+        return self._makeApiCall(self.funcinfo["reregisterWorker"], *args, **kwargs)
+
     funcinfo = {
         "createWorker": {
             'args': ['workerPoolId', 'workerGroup', 'workerId'],
@@ -316,6 +332,15 @@ class WorkerManager(BaseClient):
             'output': 'v1/worker-pool-error.json#',
             'route': '/worker-pool-errors/<workerPoolId>',
             'stability': 'stable',
+        },
+        "reregisterWorker": {
+            'args': [],
+            'input': 'v1/reregister-worker-request.json#',
+            'method': 'post',
+            'name': 'reregisterWorker',
+            'output': 'v1/reregister-worker-response.json#',
+            'route': '/worker/reregister',
+            'stability': 'experimental',
         },
         "updateWorkerPool": {
             'args': ['workerPoolId'],

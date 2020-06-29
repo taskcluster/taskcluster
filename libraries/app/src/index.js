@@ -8,8 +8,28 @@ const hsts = require('hsts');
 const csp = require('content-security-policy');
 const uuidv4 = require('uuid/v4');
 const path = require('path');
-const rootdir = require('app-root-dir');
 const fs = require('fs');
+
+const REPO_ROOT = path.join(__dirname, '../../../');
+
+/**
+ * Attach trace headers to requests. This is exported
+ * to be used in web-server as well sice it doesn't use
+ * lib-app.
+ */
+const traceMiddleware = (req, res, next) => {
+  let traceId;
+  if (req.headers['x-taskcluster-trace-id']) {
+    traceId = req.headers['x-taskcluster-trace-id'];
+  } else {
+    traceId = uuidv4();
+  }
+  req.traceId = traceId;
+  req.requestId = uuidv4();
+  res.setHeader('x-for-trace-id', traceId);
+  res.setHeader('x-for-request-id', req.requestId);
+  next();
+};
 
 /**
  * Create server; this becomes a method of the `app` object, so `this`
@@ -106,13 +126,8 @@ const app = async (options) => {
     next();
   });
 
-  // attach request-id to request object and response
-  app.use((req, res, next) => {
-    const reqId = req.headers['x-request-id'] || uuidv4();
-    req.requestId = reqId;
-    res.setHeader('x-for-request-id', reqId);
-    next();
-  });
+  // attach trace-id and request-id to request object and response
+  app.use(traceMiddleware);
 
   if (options.robotsTxt) {
     app.use('/robots.txt', (req, res) => {
@@ -121,18 +136,19 @@ const app = async (options) => {
     });
   }
 
-  app.use('/__version__', (req, res) => {
-    const taskclusterVersionFile = path.resolve(rootdir.get(), 'version.json');
-
-    try {
-      const taskclusterVersion = fs.readFileSync(taskclusterVersionFile).toString().trim();
+  try {
+    const taskclusterVersionFile = path.resolve(REPO_ROOT, 'version.json');
+    const taskclusterVersion = fs.readFileSync(taskclusterVersionFile).toString().trim();
+    app.use('/__version__', (req, res) => {
       res.header('Content-Type', 'application/json');
       res.send(taskclusterVersion);
-    } catch (err) {
+    });
+  } catch (err) {
+    app.use('/__version__', (req, res) => {
       res.header('Content-Type', 'application/json');
       res.status(500).send({ error: 'Not found' });
-    }
-  });
+    });
+  }
 
   app.use('/__heartbeat__', (req, res) => {
     res.header('Content-Type', 'application/json');
@@ -155,4 +171,4 @@ const app = async (options) => {
 };
 
 // Export app creation utility
-module.exports = app;
+module.exports = {App: app, traceMiddleware};

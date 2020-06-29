@@ -1,0 +1,112 @@
+version: 14
+migrationScript: 0014-migration.sql
+downgradeScript: 0014-downgrade.sql
+methods:
+  get_worker_2:
+    description: Get an existing worker. The returned table will have one or (if no such worker is defined) zero rows.
+    mode: read
+    serviceName: worker_manager
+    args: worker_pool_id_in text, worker_group_in text, worker_id_in text
+    returns: table(worker_pool_id text, worker_group text, worker_id text, provider_id text, created timestamptz, expires timestamptz, state text, provider_data jsonb, capacity integer, last_modified timestamptz, last_checked timestamptz, secret jsonb, etag uuid)
+    body: |-
+      begin
+        return query
+        select
+          workers.worker_pool_id,
+          workers.worker_group,
+          workers.worker_id,
+          workers.provider_id,
+          workers.created,
+          workers.expires,
+          workers.state,
+          workers.provider_data,
+          workers.capacity,
+          workers.last_modified,
+          workers.last_checked,
+          workers.secret,
+          workers.etag
+        from workers
+        where
+          workers.worker_pool_id = worker_pool_id_in and
+          workers.worker_group = worker_group_in and
+          workers.worker_id = worker_id_in;
+      end
+  update_worker_2:
+    serviceName: worker_manager
+    description: |-
+      Update a worker.
+      Returns the up-to-date worker row that have the same worker_pool_id, worker_group, and worker_id.
+      If the etag argument is empty then the update will overwrite the matched row.
+      Else, the function will fail if the etag is out of date. This is useful for concurency handling.
+    mode: write
+    args: worker_pool_id_in text, worker_group_in text, worker_id_in text, provider_id_in text, created_in timestamptz, expires_in timestamptz, state_in text, provider_data_in jsonb, capacity_in integer, last_modified_in timestamptz, last_checked_in timestamptz, etag_in uuid, secret_in jsonb
+    returns: table(worker_pool_id text, worker_group text, worker_id text, provider_id text, created timestamptz, expires timestamptz, state text, provider_data jsonb, capacity integer, last_modified timestamptz, last_checked timestamptz, etag uuid, secret jsonb)
+    body: |-
+      declare
+        new_etag uuid := public.gen_random_uuid();
+        updated_row workers%ROWTYPE;
+      begin
+        update workers
+        set (provider_id, created, expires, state, provider_data, capacity, last_modified, last_checked, etag, secret) = (
+          coalesce(provider_id_in, workers.provider_id),
+          coalesce(created_in, workers.created),
+          coalesce(expires_in, workers.expires),
+          coalesce(state_in, workers.state),
+          coalesce(provider_data_in, workers.provider_data),
+          coalesce(capacity_in, workers.capacity),
+          coalesce(last_modified_in, workers.last_modified),
+          coalesce(last_checked_in, workers.last_checked),
+          new_etag,
+          coalesce(secret_in, workers.secret)
+        )
+        where
+          workers.worker_pool_id = worker_pool_id_in and
+          workers.worker_group = worker_group_in and
+          workers.worker_id = worker_id_in and
+          workers.etag = coalesce(etag_in, workers.etag)
+        returning
+          workers.worker_pool_id,
+          workers.worker_group,
+          workers.worker_id,
+          workers.provider_id,
+          workers.created,
+          workers.expires,
+          workers.state,
+          workers.provider_data,
+          workers.capacity,
+          workers.last_modified,
+          workers.last_checked,
+          workers.etag,
+          workers.secret
+        into updated_row;
+
+        if found then
+          return query select
+            updated_row.worker_pool_id,
+            updated_row.worker_group,
+            updated_row.worker_id,
+            updated_row.provider_id,
+            updated_row.created,
+            updated_row.expires,
+            updated_row.state,
+            updated_row.provider_data,
+            updated_row.capacity,
+            updated_row.last_modified,
+            updated_row.last_checked,
+            updated_row.etag,
+            updated_row.secret;
+          return;
+        end if;
+
+        perform workers.etag from workers
+          where
+            workers.worker_pool_id = worker_pool_id_in and
+            workers.worker_group = worker_group_in and
+            workers.worker_id = worker_id_in;
+
+        if found then
+          raise exception 'unsuccessful update' using errcode = 'P0004';
+        else
+          raise exception 'no such row' using errcode = 'P0002';
+        end if;
+      end

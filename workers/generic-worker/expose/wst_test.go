@@ -10,40 +10,17 @@ import (
 	"strconv"
 	"strings"
 	"testing"
-	"time"
 
-	jwt "github.com/dgrijalva/jwt-go"
 	"github.com/gorilla/websocket"
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
-	"github.com/taskcluster/taskcluster/v29/clients/client-go/tcauth"
-	"github.com/taskcluster/taskcluster/v29/tools/websocktunnel/wsproxy"
+	"github.com/taskcluster/taskcluster/v31/tools/websocktunnel/wsproxy"
+	"github.com/taskcluster/taskcluster/v31/workers/generic-worker/mocktc"
+	"github.com/taskcluster/taskcluster/v31/workers/generic-worker/tc"
 )
 
-const WST_SECRET = "sshhh!"
-const WST_AUDIENCE = "testing"
 const WST_WORKER_GROUP = "expose-tests"
 const WST_WORKER_ID = "t1"
-
-// A fake authClient implementation that can generate fake tokens
-type fakeAuth struct{}
-
-func (fa fakeAuth) WebsocktunnelToken(wstAudience, wstClientId string) (*tcauth.WebsocktunnelTokenResponse, error) {
-	token, err := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"tid": wstClientId,
-		"iat": time.Now().Unix(),
-		"nbf": time.Now().Add(-1 * time.Minute).Unix(),
-		"exp": time.Now().Add(1 * time.Minute).Unix(),
-		"aud": WST_AUDIENCE,
-	}).SignedString([]byte(WST_SECRET))
-	if err != nil {
-		return nil, err
-	}
-
-	return &tcauth.WebsocktunnelTokenResponse{
-		Token: token,
-	}, nil
-}
 
 // Encapsulation of a websocktunnel server with a close method
 type wstServer struct {
@@ -70,9 +47,9 @@ func makeWSTServer(t *testing.T) wstServer {
 	handler, err := wsproxy.New(wsproxy.Config{
 		Logger:     logger,
 		Upgrader:   upgrader,
-		JWTSecretA: []byte(WST_SECRET),
-		JWTSecretB: []byte(WST_SECRET),
-		Audience:   WST_AUDIENCE,
+		JWTSecretA: []byte(mocktc.WST_SECRET),
+		JWTSecretB: []byte(mocktc.WST_SECRET),
+		Audience:   mocktc.WST_AUDIENCE,
 		URLPrefix:  "http://127.0.0.1:" + strconv.Itoa(int(port)),
 	})
 	if err != nil {
@@ -105,10 +82,12 @@ func (s *wstServer) close() {
 func makeWSTExposer(t *testing.T, serverURL string) Exposer {
 	exposer, err := NewWST(
 		serverURL,
-		WST_AUDIENCE,
+		mocktc.WST_AUDIENCE,
 		WST_WORKER_GROUP,
 		WST_WORKER_ID,
-		fakeAuth{},
+		func() tc.Auth {
+			return mocktc.NewAuth(t)
+		},
 	)
 	if err != nil {
 		t.Fatalf("Constructor returned an error: %v", err)

@@ -104,6 +104,7 @@ properties:
               title: OS Disk
               type: object
               description: |
+                Naming disks is not supported.
                 https://docs.microsoft.com/en-us/rest/api/compute/virtualmachines/createorupdate#osdisk
               additionalProperties: true
               required: []

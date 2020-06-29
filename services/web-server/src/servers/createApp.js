@@ -1,4 +1,5 @@
 const bodyParser = require('body-parser');
+const path = require('path');
 const bodyParserGraphql = require('body-parser-graphql');
 const session = require('express-session');
 const compression = require('compression');
@@ -12,13 +13,14 @@ const credentials = require('./credentials');
 const oauth2AccessToken = require('./oauth2AccessToken');
 const oauth2 = require('./oauth2');
 const AzureSessionStore = require('../login/AzureSessionStore');
+const {traceMiddleware} = require('taskcluster-lib-app');
 
 module.exports = async ({ cfg, strategies, AuthorizationCode, AccessToken, auth, monitor, SessionStorage }) => {
   const app = express();
 
   app.set('trust proxy', cfg.server.trustProxy);
   app.set('view engine', 'ejs');
-  app.set('views', 'src/views');
+  app.set('views', path.resolve(path.join(__dirname, '../views')));
 
   const allowedCORSOrigins = cfg.server.allowedCORSOrigins.map(o => {
     if (typeof(o) === 'string' && o.startsWith('/')) {
@@ -46,6 +48,7 @@ module.exports = async ({ cfg, strategies, AuthorizationCode, AccessToken, auth,
     },
   });
 
+  app.use(traceMiddleware);
   app.use(session({
     store: process.env.NODE_ENV === 'production' ?
       new SessionStore() :

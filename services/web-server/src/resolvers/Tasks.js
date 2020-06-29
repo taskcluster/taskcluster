@@ -89,6 +89,9 @@ module.exports = {
         }
       }));
     },
+    async dependents(parent, { taskId, connection, filter }, { loaders }) {
+      return loaders.dependents.load({ taskId, connection, filter });
+    },
     indexedTask(parent, { indexPath }, { loaders }) {
       return loaders.indexedTask.load(indexPath);
     },

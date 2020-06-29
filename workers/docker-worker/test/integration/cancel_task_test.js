@@ -4,8 +4,14 @@ const settings = require('../settings');
 const taskcluster = require('taskcluster-client');
 const DockerWorker = require('../dockerworker');
 const TestWorker = require('../testworker');
+const {suiteName} = require('taskcluster-lib-testing');
+const helper = require('../helper');
 
-suite('Cancel Task', () => {
+helper.secrets.mockSuite(suiteName(), ['docker', 'ci-creds'], function(mock, skipping) {
+  if (mock) {
+    return; // no fake equivalent for integration tests
+  }
+
   test('cancel', async () => {
     settings.configure({
       task: {
@@ -18,7 +24,7 @@ suite('Cancel Task', () => {
     });
 
     // expects rootUrl, credentials in env vars
-    let queue = new taskcluster.Queue(taskcluster.fromEnvVars());
+    let queue = new taskcluster.Queue(helper.optionsFromCiCreds());
     let task = {
       payload: {
         image: 'taskcluster/test-ubuntu',

@@ -9,12 +9,13 @@ import (
 	"strconv"
 
 	docopt "github.com/docopt/docopt-go"
-	tcclient "github.com/taskcluster/taskcluster/v29/clients/client-go"
-	"github.com/taskcluster/taskcluster/v29/clients/client-go/tcqueue"
+	tcclient "github.com/taskcluster/taskcluster/v31/clients/client-go"
+	"github.com/taskcluster/taskcluster/v31/clients/client-go/tcqueue"
+	"github.com/taskcluster/taskcluster/v31/internal"
 )
 
 var (
-	version  = "5.1.0"
+	version  = internal.Version
 	revision = "" // this is set during build with `-ldflags "-X main.revision=$(git rev-parse HEAD)"`
 	usage    = `
 Taskcluster authentication proxy. By default this pulls all scopes from a
@@ -74,17 +75,16 @@ var getTask = func(rootURL string, taskID string) (task *tcqueue.TaskDefinitionR
 // and port.
 func ParseCommandArgs(argv []string, exit bool) (routes Routes, address string, err error) {
 	fullversion := "Taskcluster proxy " + version
-	if revision == "" {
-		fullversion += " (unknown git revision)"
-	} else {
+	if revision != "" {
 		fullversion += " (git revision " + revision + ")"
 	}
-	log.Printf("Version: %v", fullversion)
 	var arguments map[string]interface{}
 	arguments, err = docopt.ParseArgs(usage, argv, fullversion)
 	if err != nil {
 		return
 	}
+
+	log.Printf("Version: %v", fullversion)
 
 	portStr := arguments["--port"].(string)
 	var port int

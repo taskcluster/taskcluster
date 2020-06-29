@@ -1,5 +1,5 @@
 const _ = require('lodash');
-const assert = require('assert');
+const assert = require('assert').strict;
 const slugid = require('slugid');
 const { UNIQUE_VIOLATION } = require('taskcluster-lib-postgres');
 const { getEntries } = require('../utils');
@@ -23,6 +23,7 @@ class FakeWorkerManager {
     this.wmWorkerPools = new Map();
     this.wmWorkerPoolErrors = new Map();
     this.worker_pools = new Map();
+    this.workers = new Map();
   }
 
   _getWmWorker({ partitionKey, rowKey }) {
@@ -293,6 +294,16 @@ class FakeWorkerManager {
       provider_data});
   }
 
+  async _capacity_for_pool(worker_pool_id) {
+    let capacity = 0;
+    for (const worker of this.workers.values()) {
+      if (worker.worker_pool_id === worker_pool_id && worker.state !== 'stopped') {
+        capacity += worker.capacity;
+      }
+    }
+    return capacity;
+  }
+
   async get_worker_pool(worker_pool_id) {
     assert.equal(typeof worker_pool_id, 'string');
     if (this.worker_pools.has(worker_pool_id)) {
@@ -302,12 +313,28 @@ class FakeWorkerManager {
     }
   }
 
+  async get_worker_pool_with_capacity(worker_pool_id) {
+    const list = await this.get_worker_pool(worker_pool_id);
+    for (const worker_pool of list) {
+      worker_pool.current_capacity = await this._capacity_for_pool(worker_pool_id);
+    }
+    return list;
+  }
+
   async get_worker_pools(page_size, page_offset) {
     const wpids = [...this.worker_pools.keys()];
     wpids.sort();
     return wpids
       .slice(page_offset || 0, page_size ? page_offset + page_size : wpids.length)
       .map(wpid => this.worker_pools.get(wpid));
+  }
+
+  async get_worker_pools_with_capacity(page_size, page_offset) {
+    const list = await this.get_worker_pools(page_size, page_offset);
+    for (const worker_pool of list) {
+      worker_pool.current_capacity = await this._capacity_for_pool(worker_pool.worker_pool_id);
+    }
+    return list;
   }
 
   async update_worker_pool(
@@ -339,6 +366,14 @@ class FakeWorkerManager {
     wp.email_on_error = email_on_error;
 
     return [{..._.omit(wp, 'provider_data', 'previous_provider_ids'), previous_provider_id}];
+  }
+
+  async update_worker_pool_with_capacity(...args) {
+    const list = await this.update_worker_pool(...args);
+    for (const worker_pool of list) {
+      worker_pool.current_capacity = await this._capacity_for_pool(worker_pool.worker_pool_id);
+    }
+    return list;
   }
 
   async expire_worker_pools() {
@@ -374,6 +409,170 @@ class FakeWorkerManager {
     if (wp) {
       wp.provider_data[provider_id] = provider_data;
     }
+  }
+
+  async create_worker(
+    worker_pool_id, worker_group, worker_id, provider_id,
+    created, expires, state, provider_data, capacity,
+    last_modified, last_checked,
+  ) {
+    assert.equal(typeof worker_pool_id, 'string');
+    assert.equal(typeof worker_group, 'string');
+    assert.equal(typeof worker_id, 'string');
+    assert.equal(typeof provider_id, 'string');
+    assert(isDate(created));
+    assert(isDate(expires));
+    assert.equal(typeof state, 'string');
+    assert(isPlainObject(provider_data));
+    assert.equal(typeof capacity, 'number');
+    assert(isDate(last_modified));
+    assert(isDate(last_checked));
+
+    if (this.workers.get(`${worker_pool_id}-${worker_group}-${worker_id}`)) {
+      throw errWithCode('row exists', UNIQUE_VIOLATION);
+    }
+
+    const etag = slugid.v4();
+
+    this.workers.set(`${worker_pool_id}-${worker_group}-${worker_id}`, {
+      worker_pool_id,
+      worker_group,
+      worker_id,
+      provider_id,
+      created,
+      expires,
+      state,
+      provider_data,
+      capacity,
+      last_modified,
+      last_checked,
+      etag,
+      secret: null,
+    });
+
+    return [{ create_worker: etag }];
+  }
+
+  async get_worker(worker_pool_id, worker_group, worker_id) {
+    assert.equal(typeof worker_pool_id, 'string');
+    assert.equal(typeof worker_group, 'string');
+    assert.equal(typeof worker_id, 'string');
+    if (this.workers.has(`${worker_pool_id}-${worker_group}-${worker_id}`)) {
+      return [this.workers.get(`${worker_pool_id}-${worker_group}-${worker_id}`)];
+    } else {
+      return [];
+    }
+  }
+
+  async get_worker_2(worker_pool_id, worker_group, worker_id) {
+    return this.get_worker(worker_pool_id, worker_group, worker_id);
+  }
+
+  async get_workers(worker_pool_id, worker_group, worker_id, state, page_size, page_offset) {
+    const workerKeys = [...this.workers.keys()];
+
+    workerKeys.sort();
+
+    const filteredWorkerKeys = workerKeys.filter(key => {
+      const w = this.workers.get(key);
+      let include = true;
+
+      if (
+        (worker_pool_id && worker_pool_id !== w.worker_pool_id) ||
+        (worker_group && worker_group !== w.worker_group) ||
+        (worker_id && worker_id !== w.worker_id) ||
+        (state && state !== w.state)
+      ) {
+        include = false;
+      }
+
+      return include;
+    });
+
+    return filteredWorkerKeys.slice(page_offset || 0, page_size ?
+      page_offset + page_size :
+      filteredWorkerKeys.length).map(key => this.workers.get(key));
+  }
+
+  expire_workers(exp) {
+    const expired = [];
+    for (let [key, w] of this.workers.entries()) {
+      if (w.expires < exp) {
+        this.workers.delete(key);
+        expired.push(w);
+      }
+    }
+
+    return [{ expire_workers: expired.length }];
+  }
+
+  update_worker(
+    worker_pool_id, worker_group, worker_id, provider_id, created, expires,
+    state, provider_data, capacity, last_modified, last_checked, etag,
+  ) {
+    const w = this.workers.get(`${worker_pool_id}-${worker_group}-${worker_id}`);
+
+    if (!w) {
+      throw errWithCode('no such row', 'P0002');
+    }
+
+    if (etag && w.etag !== etag) {
+      throw errWithCode('unsuccessful update', 'P0004');
+    }
+
+    this.workers.set(`${worker_pool_id}-${worker_group}-${worker_id}`, {
+      worker_pool_id: worker_pool_id || w.worker_pool_id,
+      worker_group: worker_group || w.worker_group,
+      worker_id: worker_id || w.worker_id,
+      provider_id: provider_id || w.provider_id,
+      created: created || w.created,
+      expires: expires || w.expires,
+      state: state || w.state,
+      provider_data: provider_data || w.provider_data,
+      capacity: capacity || w.capacity,
+      last_modified: last_modified || w.last_modified,
+      last_checked: last_checked || w.last_checked,
+      etag: slugid.v4(),
+    });
+
+    return [this.workers.get(`${worker_pool_id}-${worker_group}-${worker_id}`)];
+  }
+
+  update_worker_2(
+    worker_pool_id, worker_group, worker_id, provider_id, created, expires,
+    state, provider_data, capacity, last_modified, last_checked, etag, secret,
+  ) {
+    const w = this.workers.get(`${worker_pool_id}-${worker_group}-${worker_id}`);
+
+    if (!w) {
+      throw errWithCode('no such row', 'P0002');
+    }
+
+    if (etag && w.etag !== etag) {
+      throw errWithCode('unsuccessful update', 'P0004');
+    }
+
+    this.workers.set(`${worker_pool_id}-${worker_group}-${worker_id}`, {
+      worker_pool_id: worker_pool_id || w.worker_pool_id,
+      worker_group: worker_group || w.worker_group,
+      worker_id: worker_id || w.worker_id,
+      provider_id: provider_id || w.provider_id,
+      created: created || w.created,
+      expires: expires || w.expires,
+      state: state || w.state,
+      provider_data: provider_data || w.provider_data,
+      capacity: capacity || w.capacity,
+      last_modified: last_modified || w.last_modified,
+      last_checked: last_checked || w.last_checked,
+      secret: secret || w.secret,
+      etag: slugid.v4(),
+    });
+
+    return [this.workers.get(`${worker_pool_id}-${worker_group}-${worker_id}`)];
+  }
+
+  delete_worker(worker_pool_id, worker_group, worker_id) {
+    this.workers.delete(worker_pool_id, worker_group, worker_id);
   }
 }
 

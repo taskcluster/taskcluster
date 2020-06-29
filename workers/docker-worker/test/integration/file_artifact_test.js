@@ -6,8 +6,16 @@ const testworker = require('../post_task');
 const TestWorker = require('../testworker');
 const DockerWorker = require('../dockerworker');
 const retryUtil = require('./helper/retry_util');
+const {suiteName} = require('taskcluster-lib-testing');
+const helper = require('../helper');
+const taskcluster = require('taskcluster-client');
+const got = require('got');
 
-suite('artifact extraction tests', () => {
+helper.secrets.mockSuite(suiteName(), ['docker', 'ci-creds'], function(mock, skipping) {
+  if (mock) {
+    return; // no fake equivalent for integration tests
+  }
+
   test('extract artifact', async () => {
     let expiration = expires();
     let result = await testworker({
@@ -47,7 +55,7 @@ suite('artifact extraction tests', () => {
       Object.keys(result.artifacts).sort(), ['public/xfoo', 'public/bar'].sort(),
     );
 
-    for (let artifact of Object.keys(result.artifacts)) {
+    for (let artifact of Object.keys(result.artifacts || {})) {
       assert.equal(new Date(result.artifacts[artifact].expires).getTime(), expiration.getTime());
     }
 
@@ -267,7 +275,8 @@ suite('artifact extraction tests', () => {
     assert.equal(result.artifacts['public/my-missing.txt'].storageType, 'error');
   });
 
-  test('upload retry', async () => {
+  // intermittent https://github.com/taskcluster/taskcluster/issues/2951
+  test.skip('upload retry', async () => {
     await retryUtil.init();
     let retry = false;
     let blocked = false;
@@ -336,5 +345,53 @@ suite('artifact extraction tests', () => {
     }
 
     assert.ok(retry);
+  });
+
+  test('automatic gzip compression', async () => {
+    let expiration = expires();
+    let result = await testworker({
+      payload: {
+        image: 'taskcluster/test-ubuntu',
+        command: cmd(
+          'mkdir /artifacts/',
+          'echo "hello" > /artifacts/hello.txt',
+          'echo "world" > /artifacts/world.jpg',
+          'ls /artifacts',
+        ),
+        features: {
+          localLiveLog: false,
+        },
+        artifacts: {
+          'public/hello.txt': {
+            type: 'file',
+            expires: expiration,
+            path: '/artifacts/hello.txt',
+          },
+
+          'public/world.jpg': {
+            type: 'file',
+            expires: expiration,
+            path: '/artifacts/world.jpg',
+          },
+        },
+        maxRunTime: 5 * 60,
+      },
+    });
+
+    // Get task specific results
+    assert.equal(result.run.state, 'completed', 'task should be successful');
+    assert.equal(result.run.reasonResolved, 'completed', 'task should be successful');
+
+    // Check that the artifacts have the right content encoding set
+    // The text file should have gzip content-encoding
+    let queue = new taskcluster.Queue(taskcluster.fromEnvVars());
+    let url = queue.buildUrl(queue.getArtifact, result.taskId, result.runId, 'public/hello.txt');
+    let resp = await got(url, {retries: 5});
+    assert.ok(resp.headers['content-encoding'] === 'gzip', `headers are: ${JSON.stringify(resp.headers)}`);
+
+    // The jpg file should have no encoding
+    url = queue.buildUrl(queue.getArtifact, result.taskId, result.runId, 'public/world.jpg');
+    resp = await got(url, {retries: 5});
+    assert.ok(! ('content-encoding' in resp.headers), `headers are: ${JSON.stringify(resp.headers)}`);
   });
 });

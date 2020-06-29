@@ -13,6 +13,7 @@ const {
 } = require('..');
 const path = require('path');
 const assert = require('assert').strict;
+const Entity = require('taskcluster-lib-entities');
 
 const monitor = helper.monitor;
 
@@ -87,15 +88,22 @@ helper.dbSuite(path.basename(__filename), function() {
           end`,
         },
         old: {
-          description: 'a method that is deprecated',
+          description: 'a method that will be deprecated',
           mode: 'read',
-          deprecated: true,
           serviceName: 'service-2',
-          args: '',
-          returns: 'void',
+          args: 'x text',
+          returns: 'text',
           body: `begin
-            perform pg_sleep(5);
+            return 'got ' || x;
           end`,
+        },
+      },
+    }, {
+      version: 2,
+      methods: {
+        old: {
+          description: 'a method that is deprecated',
+          deprecated: true,
         },
       },
     },
@@ -226,6 +234,34 @@ helper.dbSuite(path.basename(__filename), function() {
       }
       throw new Error('_doUpgrade did not fail');
     });
+
+    test('allows deprecated methods without failing', async function() {
+      await db._doUpgrade({
+        version: {
+          version: 1,
+          methods: {foo_bar: {
+            description: 'whatever',
+            mode: 'read',
+            serviceName: 'baz',
+            args: 'foo integer',
+            returns: 'table (bar integer)',
+            body: 'begin end',
+          }},
+        },
+        showProgress: () => {},
+        usernamePrefix: 'test',
+      });
+      assert.equal(await db.currentVersion(), 1);
+      await db._doUpgrade({
+        version: {
+          version: 2,
+          methods: {foo_bar: {deprecated: true}},
+        },
+        showProgress: () => {},
+        usernamePrefix: 'test',
+      });
+      assert.equal(await db.currentVersion(), 2);
+    });
   });
 
   suite('db._doDowngrade', function() {
@@ -282,7 +318,15 @@ helper.dbSuite(path.basename(__filename), function() {
         },
       },
     };
-    const schema = Schema.fromSerializable({versions: [v1, v2, v3], access, tables});
+    const v4 = {
+      version: 4,
+      methods: {
+        test: {
+          deprecated: true,
+        },
+      },
+    };
+    const schema = Schema.fromSerializable({versions: [v1, v2, v3, v4], access, tables});
 
     const testMethod = async (client, v) => {
       const res = await client.query('select test()');
@@ -338,6 +382,22 @@ helper.dbSuite(path.basename(__filename), function() {
         // method is still the v3 method
         await testMethod(client, 3);
       });
+    });
+
+    test('allows deprecated methods without failing', async function() {
+      await db._doUpgrade({
+        version: v4,
+        showProgress: () => {},
+        usernamePrefix: 'test',
+      });
+      await db._doDowngrade({
+        schema,
+        fromVersion: v4,
+        toVersion: v3,
+        showProgress: () => {},
+        usernamePrefix: 'test',
+      });
+      assert.equal(await db.currentVersion(), 3);
     });
   });
 
@@ -461,10 +521,12 @@ helper.dbSuite(path.basename(__filename), function() {
       assert.deepEqual(res.map(r => r.total).sort(), [16, 20]);
     });
 
-    test('setup does not create deprecated methods', async function() {
+    test('setup moves deprecated methods to deprecatedFns', async function() {
       await Database.upgrade({schema, adminDbUrl: helper.dbUrl, usernamePrefix: 'test'});
       db = await Database.setup({schema, readDbUrl: helper.dbUrl, writeDbUrl: helper.dbUrl, serviceName: 'service-1', monitor});
       assert(!db.fns.old);
+      assert(db.deprecatedFns.old);
+      assert.equal((await db.deprecatedFns.old('hi'))[0].old, 'got hi');
     });
 
     test('non-numeric statementTimeout is not alloewd', async function() {
@@ -476,6 +538,11 @@ helper.dbSuite(path.basename(__filename), function() {
         statementTimeout: 'about 3 seconds',
         monitor,
       }), err => err.code === 'ERR_ASSERTION');
+    });
+
+    test('setup creates keyring', async function() {
+      db = await Database.setup({schema, readDbUrl: helper.dbUrl, writeDbUrl: helper.dbUrl, serviceName: 'service-1', monitor});
+      assert(db.keyring);
     });
 
     test('methods do not allow SQL injection', async function() {
@@ -625,6 +692,97 @@ helper.dbSuite(path.basename(__filename), function() {
       await assert.rejects(
         () => Database._checkTableColumns({db, schema}),
         err => err.code === 'ERR_ASSERTION');
+    });
+  });
+
+  suite('encrypt/decrypt', function() {
+    const azureCryptoKey = 'aGVsbG8gZnV0dXJlIHBlcnNvbi4gaSdtIGJzdGFjawo=';
+    const pgCryptoKey = 'aSdtIGJzdGFjayEgaGVsbG8gZnV0dXJlIHBlcnNvbgo=';
+
+    setup(async function() {
+      db = await Database.setup({schema, readDbUrl: helper.dbUrl, writeDbUrl: helper.dbUrl,
+        serviceName: 'service-2', monitor, azureCryptoKey});
+    });
+
+    test('encrypt/decrypt simple', async function() {
+      const encrypted = db.encrypt({value: Buffer.from('hi')});
+      assert.equal(encrypted.v, 0);
+      assert.equal(encrypted.kid, 'azure');
+      assert.equal(encrypted.__bufchunks_val, 1);
+      assert(encrypted.__buf0_val !== undefined);
+
+      // We'll just use decrypt here to assert that it was encrypted correctly otherwise
+      // we'd almost be copy-pasting the decrypt code verbatim here which is kinda brittle
+      const decrypted = db.decrypt({value: encrypted});
+      assert.equal(decrypted.toString(), 'hi');
+    });
+
+    test('encrypt/decrypt multiple keys', async function() {
+      const encrypted = db.encrypt({value: Buffer.from('hi')});
+      assert.equal(encrypted.v, 0);
+      assert.equal(encrypted.kid, 'azure');
+      assert.equal(encrypted.__bufchunks_val, 1);
+      assert(encrypted.__buf0_val !== undefined);
+
+      // This new_db does not have azureCryptoKey as it's current key but can still read old encryptions
+      const new_db = await Database.setup({schema, readDbUrl: helper.dbUrl, writeDbUrl: helper.dbUrl,
+        serviceName: 'service-2', monitor, azureCryptoKey, dbCryptoKeys: [
+          {id: 'foo', algo: 'aes-256', key: pgCryptoKey},
+        ]});
+      assert.equal(new_db.keyring.currentCryptoKey('aes-256').id, 'foo');
+      const decrypted = new_db.decrypt({value: encrypted});
+      assert.equal(decrypted.toString(), 'hi');
+
+      const new_encrypted = new_db.encrypt({value: Buffer.from('new hi')});
+      assert.equal(new_encrypted.kid, 'foo');
+      const new_decrypted = new_db.decrypt({value: new_encrypted});
+      assert.equal(new_decrypted.toString(), 'new hi');
+
+      // This db does not have the new key so it should not be able to decrypt
+      assert.throws(() => {
+        db.decrypt({value: new_encrypted});
+      }, /Crypto key not found: `foo`/);
+    });
+
+    test('decrypt simple from lib-entities', async function() {
+      const entity = Entity.types.EncryptedText('val'); // Migation scripts will hardcode this to val
+      const encrypted = {v: 0, kid: 'azure'}; // Migration scripts also must add these entries
+      entity.serialize(encrypted, 'abc', Buffer.from(azureCryptoKey, 'base64'));
+
+      const decrypted = db.decrypt({value: encrypted});
+      assert.equal(decrypted.toString(), 'abc');
+    });
+
+    test('decrypt multi-chunk from lib-entities', async function() {
+      const entity = Entity.types.EncryptedText('val');
+      const content = new Array(50000).fill(0).map((v, i) => String.fromCharCode(i % 65535)).join('');
+      const encrypted = {v: 0, kid: 'azure'};
+      entity.serialize(encrypted, content, Buffer.from(azureCryptoKey, 'base64'));
+
+      // let's make sure this still tests what we mean it to even if lib-entity impl changes
+      assert(encrypted.__bufchunks_val > 1);
+
+      const decrypted = db.decrypt({value: encrypted});
+      assert.equal(decrypted.toString(), content);
+    });
+
+    test('encrypt/decrypt errors without keys', async function() {
+      const bad_db = await Database.setup({schema, readDbUrl: helper.dbUrl, writeDbUrl: helper.dbUrl,
+        serviceName: 'service-2', monitor});
+      assert.throws(() => {
+        bad_db.encrypt({value: Buffer.from('hi')});
+      }, /no current key is configured/);
+
+      const encrypted = db.encrypt({value: Buffer.from('hi')});
+      assert.throws(() => {
+        bad_db.decrypt({value: encrypted});
+      }, /Crypto key not found: `azure`/);
+    });
+
+    test('encrypt errors for non-buffers', async function() {
+      assert.throws(() => {
+        db.encrypt({value: 'i am just a string'});
+      }, /Encrypted values must be Buffers/);
     });
   });
 });

@@ -7,10 +7,10 @@ import (
 	"log"
 
 	"github.com/taskcluster/httpbackoff/v3"
-	tcclient "github.com/taskcluster/taskcluster/v29/clients/client-go"
-	"github.com/taskcluster/taskcluster/v29/clients/client-go/tcsecrets"
-	"github.com/taskcluster/taskcluster/v29/workers/generic-worker/fileutil"
-	"github.com/taskcluster/taskcluster/v29/workers/generic-worker/gwconfig"
+	tcclient "github.com/taskcluster/taskcluster/v31/clients/client-go"
+	"github.com/taskcluster/taskcluster/v31/clients/client-go/tcsecrets"
+	"github.com/taskcluster/taskcluster/v31/workers/generic-worker/fileutil"
+	"github.com/taskcluster/taskcluster/v31/workers/generic-worker/gwconfig"
 )
 
 // BootstrapConfig is the data structure used by generic-worker to provide
@@ -87,7 +87,7 @@ func Bootstrap(c *gwconfig.Config, workerConfig *BootstrapConfig, secretPrefix s
 
 	// Fetch additional (secret) host setup from taskcluster-secrets service.
 	// See: https://bugzil.la/1375200
-	tcsec := c.Secrets()
+	tcsec := serviceFactory.Secrets(c.Credentials(), c.RootURL)
 	secretName := secretPrefix + ":" + c.ProvisionerID + "/" + c.WorkerType
 	sec, err := tcsec.Get(secretName)
 	if err != nil {

@@ -5,7 +5,7 @@ To prepare, you will want to familiarize yourself with:
  * Postgres in general
  * taskcluster-lib-postgres
  * The [azure-entities](https://github.com/taskcluster/azure-entities) API (how it's called from services, not its implementation)
- * taskcluster-lib-entities (how it's implemented, how it calls `db.fns., etc.)
+ * taskcluster-lib-entities (how it's implemented, how it calls `db.fns.`, etc.)
 
 # Guidelines
 
@@ -96,7 +96,7 @@ In the version test, include a copy of the `Entity` configuration from the
 service's `data.js`, stripped of comments and older versions.  Use
 `helper.testEntityTable` to easily test the version.
 
-When running the service's unit tests, you will probably need to update the tests to clear out the new table instead of the old.  This is typically, but not always, a `resetTable` call in `test/helper.js`.
+When running the service's unit tests, you will probably need to update the tests to clear out the new table instead of the old.  This is typically, but not always, a `resetTables` call in `test/helper.js`.
 Try not to make any other changes to the service or its unit tests.
 If you do change the tests, such as to add additional test cases or use encodable characters in strings, do so in a commit *before* this one, so that reviewers can double-check those changes work against the existing entities table.
 
@@ -110,7 +110,7 @@ Here's a helpful checklist for this step (with more details below):
 * DB Functions
 	* [ ] Add new stored procedure functions. [example](https://github.com/taskcluster/taskcluster/blob/8d0600004fcaff7c1661e650bc48e424e7d409de/db/versions/0009.yml#L215-L288)
 	* [ ] Add mock implementations for the functions in the relevant file under `db/src/fakes/`. [example](https://github.com/taskcluster/taskcluster/blob/8d0600004fcaff7c1661e650bc48e424e7d409de/db/src/fakes/purge_cache.js)
-	* [ ] Create a file `db/test/fns/<service-name>_test.js` and write tests for these newly created functions. [example](https://github.com/taskcluster/taskcluster/pull/2748/commits/a702d2c7dffd0064f1ee4a647b6030b003e52536#diff-24717608297e5956dd619092dd4a135b)
+	* [ ] Create a file `db/test/fns/<service-name>_test.js` and write tests for these newly created functions. [example](https://github.com/taskcluster/taskcluster/pull/2748/commits/ae8654d3f2f85972a0a8fb11b6d9e9be8bcb83ef#diff-24717608297e5956dd619092dd4a135b)
 
 * Service Modifications
 	* [ ] Remove the table(s) being migrated from `main.js`. [example](https://github.com/taskcluster/taskcluster/pull/2716/commits/6727656e05d8204226705dea0777e30d3fd7dd68#diff-4870d07d27bcc1810fa17bd04ee9b80a)
@@ -134,7 +134,7 @@ taskcluster-lib-entities and instead communicate with the db directly via the ne
 functions defined earlier.
 
 If necessary, you might need to define a data class which you could refer to this
-[example](https://github.com/taskcluster/taskcluster/pull/2748/commits/a702d2c7dffd0064f1ee4a647b6030b003e52536#diff-6f428cf68b99354b5770cfca1e00338c)
+[example](https://github.com/taskcluster/taskcluster/pull/2748/commits/ae8654d3f2f85972a0a8fb11b6d9e9be8bcb83ef#diff-6f428cf68b99354b5770cfca1e00338c)
 for inspiration.
 This approach is useful in cases where the service passes Entity instances around between components, as instances of the new class can replace the Entity instances.
 In services where all access occurs directly in the API methods, such as purge-cache, a data class may not be necessary.
@@ -171,6 +171,25 @@ with `wt~1`.
 and row keys to be returned twice from `_scan` and `_load`: once as return
 values (`partition_key` and `row_key`), and once as `value.PartitionKey` and `value.RowKey`.  In all cases,
 these values are encoded (`encode_string_key`).
+
+**Optimistic Concurrency**. The entities support uses etags to implement a kind of [optimistic concurrency control](https://en.wikipedia.org/wiki/Optimistic_concurrency_control).
+The process is to read a row from the DB, manipulate it in the service, and then write it back to the DB _if the etag column has not changed_.
+If the etag has changed, then the row is re-read, the modification re-applied, and another write attempt performed.
+With a Postgres table, this kind of concurrency is not required when updating a column wholesale (`UPDATE .. SET description = 'xyz'`), as that does not affect other columns.
+But updating a value within a more complex column can be problematic.
+
+[This article](https://www.2ndquadrant.com/en/blog/postgresql-anti-patterns-read-modify-write-cycles/) discusses some of the potential issues.
+In such cases, the existing etag column allows implementation of the OCC approach.
+See worker-manager's `workers` table for an example.
+
+## Rebasing
+
+As many people are writing versions, it's common to need to re-number a DB version.
+There is a temporary script that can help:
+
+```shell
+node infrastructure/renumber-db-version.js <oldversion> <newversion>
+```
 
 ## Postgres
 
@@ -223,13 +242,18 @@ it and cause strange errors.  Try to avoid these cases, but if necessary, just
 JSON-encode the value before passing it to `db.fns.<function>(..)`.  See
 `previous_provider_ids` in worker-manager for an example.
 
-**Utility Functions**.  Version 0008 adds some useful utility functions.
-`{encode,decode}_string_key` encode and decode the urlencoding-like format
+**Utility Functions**.
+
+* `{encode,decode}_string_key` encode and decode the urlencoding-like format
 that taskcluster-lib-azure uses for partition and row keys.
-`{encode,decode}_composite_key` encode and decode CompositeKey values, where
-two strings are combined into a single PartitionKey or RowKey.  And
-`entity_buf_{encode,decode}` encode and decocde the `__buf`+base64 encoding
+* `{encode,decode}_composite_key` encode and decode CompositeKey values, where
+two strings are combined into a single PartitionKey or RowKey.
+* `entity_buf_{encode,decode}` encode and decocde the `__buf`+base64 encoding
 taskcluster-lib-postgres uses to store binary values.
+* `sha512(t)` computes the sha512 hash of a value
+* `uuid_to_slugid(uuid)` and `slugid_to_uuid(slugid)` convert between a uuid
+string and a slugid.  While some entities tables stored slugIds in UUID format,
+we prefer to store them in their 22-character string format in new tables.
 
 ## Pagination
 

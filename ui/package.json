@@ -1,10 +1,10 @@
 {
   "name": "taskcluster-ui",
-  "version": "29.4.0",
+  "version": "31.0.0",
   "private": true,
   "license": "MPL-2.0",
   "engines": {
-    "node": "12.16.3",
+    "node": "12.18.1",
     "yarn": "^1.22.4"
   },
   "scripts": {

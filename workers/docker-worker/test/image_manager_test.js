@@ -8,6 +8,8 @@ const {createLogger} = require('../src/lib/log');
 const {NAMESPACE, TASK_ID, ROOT_URL} = require('./fixtures/image_artifacts');
 const taskcluster = require('taskcluster-client');
 const monitor = require('./fixtures/monitor');
+const {suiteName} = require('taskcluster-lib-testing');
+const helper = require('./helper');
 
 let docker = Docker();
 
@@ -18,10 +20,11 @@ const DOCKER_CONFIG = {
   randomizationFactor: 0.25,
 };
 
-suite('Image Manager', () => {
-  setup(async () => {
-    taskcluster.config(taskcluster.fromEnvVars());
-  });
+helper.secrets.mockSuite(suiteName(), ['docker'], function(mock, skipping) {
+  if (mock) {
+    return; // Only test with docker
+  }
+
   test('download docker image from registry', async () => {
     let image = 'gliderlabs/alpine:latest';
     await dockerUtils.removeImageIfExists(docker, image);
@@ -165,48 +168,6 @@ suite('Image Manager', () => {
     }
   });
 
-  test('private indexed image can be used', async () => {
-    let image = {
-      type: 'indexed-image',
-      namespace: NAMESPACE,
-      path: 'private/docker-worker-tests/image.tar',
-    };
-
-    let scopes = ['queue:get-artifact:private/docker-worker-tests/image.tar'];
-
-    let index = new taskcluster.Index({
-      rootUrl: ROOT_URL,
-    });
-    let {taskId} = await index.findTask(image.namespace);
-    let hashedName = createHash('md5')
-      .update(`${taskId}${image.path}`)
-      .digest('hex');
-
-    await dockerUtils.removeImageIfExists(docker, hashedName);
-
-    let runtime = {
-      docker: docker,
-      dockerConfig: DOCKER_CONFIG,
-      dockerVolume: '/tmp',
-      log: createLogger(),
-      monitor: monitor,
-      rootUrl: ROOT_URL,
-    };
-
-    let task = {
-      queue: new taskcluster.Queue({
-        rootUrl: ROOT_URL,
-        credentials: undefined,
-        scopes: [],
-      }),
-    };
-
-    let im = new ImageManager(runtime);
-    runtime.imageManager = im;
-    let imageId = await im.ensureImage(image, process.stdout, task, scopes);
-
-    assert.ok(imageId, 'Image should have been loaded');
-  });
   test('temporary files removed after loading indexed public image', async () => {
     let image = {
       type: 'indexed-image',
@@ -356,5 +317,55 @@ suite('Image Manager', () => {
         `Error message did not appear indicating unrecognized image type was used. ${e.message}`,
       );
     }
+  });
+
+  helper.secrets.mockSuite(suiteName(), ['docker', 'ci-creds'], function(mock, skipping) {
+    if (mock) {
+      return; // TODO: support this with a mock implementation
+    }
+
+    test('private indexed image can be used', async () => {
+      const ciCreds = helper.secrets.get('ci-creds');
+      assert.equal(
+        ROOT_URL, ciCreds.rootUrl,
+        `Credentials must be for ${ROOT_URL}, as that is the deployment containing the pre-created task`);
+
+      let image = {
+        type: 'indexed-image',
+        namespace: NAMESPACE,
+        path: 'private/docker-worker-tests/image.tar',
+      };
+
+      let scopes = ['queue:get-artifact:private/docker-worker-tests/image.tar'];
+
+      let index = new taskcluster.Index({
+        rootUrl: ROOT_URL,
+      });
+      let {taskId} = await index.findTask(image.namespace);
+      let hashedName = createHash('md5')
+        .update(`${taskId}${image.path}`)
+        .digest('hex');
+
+      await dockerUtils.removeImageIfExists(docker, hashedName);
+
+      let runtime = {
+        docker: docker,
+        dockerConfig: DOCKER_CONFIG,
+        dockerVolume: '/tmp',
+        log: createLogger(),
+        monitor: monitor,
+        rootUrl: ROOT_URL,
+      };
+
+      let task = {
+        queue: new taskcluster.Queue(helper.optionsFromCiCreds()),
+      };
+
+      let im = new ImageManager(runtime);
+      runtime.imageManager = im;
+      let imageId = await im.ensureImage(image, process.stdout, task, scopes);
+
+      assert.ok(imageId, 'Image should have been loaded');
+    });
   });
 });

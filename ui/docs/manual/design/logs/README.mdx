@@ -27,6 +27,8 @@ The fields are:
   "Pid": ..., # (not useful in most deployments)
   "Fields": {...}
   "EnvVersion": "2.0", # defines the version of the log format
+  "traceId": "...", # When this is defined, it is an opaque string that can be used to correlate log events that are part of a single chain of requests
+  "requestId": "..." # When this is defined, this is unique to a particular request within the chain of requests
 }
 ```
 
@@ -35,3 +37,34 @@ in the docs site where we ensure that for any messages with that type, the conte
 of `Fields` will contain certain keys.
 
 The [reference documentation](/docs/reference) defines the log messages output by each service and the meaning assigned to their fields.
+
+## Trace and Request Ids
+
+Not all logs take place inside the context of a web request, but those that do are tagged with `traceId` and `requestId` fields.
+These can be used to correlate related log entries together. A `traceId` is created at the entrypoint to the entire Taskcluster deployment
+and as the request passes through among various services, it stays the same the entire time. An example of this would be a request
+from the UI to create a new task.
+
+```
+UI -> nginx/load-balancer -> web-server -> queue -> auth
+```
+
+The request is received by nginx and a header is added to the request that will then be forwarded along to web-server, queue, and then auth. Each
+one will attach this `traceId` to log events.
+
+Each step in this is a single request and each request will have a unique `requestId`. This can be used in two ways. First is to correlate
+multiple log events that are a part of servicing that request. An example would be:
+
+```
+{requestId: 123, Type: foo-started}
+{requestId: 123, Type: foo-complete}
+{requestId: 123, Type: returned}
+```
+
+The second use-case is for telling apart separate requests to a service as part of a trace that are made because of some sort of retry. This way
+you can tell apart the two requests.
+
+`traceId` is passed around as a header `x-taskcluster-trace-id` between services. If an external request
+sets this header, it will be used. To avoid misuse of this, we recommend running Taskcluster behind
+a reverse proxy that will set this header itself and then using `k8s-dns` serviceDiscoveryScheme for
+your services.

@@ -1,13 +1,16 @@
 const assert = require('assert');
-const rootdir = require('app-root-dir');
 const fs = require('fs');
 const path = require('path');
+const {omit} = require('lodash');
 const stream = require('stream');
 const {LEVELS} = require('./logger');
 const Monitor = require('./monitor');
 const chalk = require('chalk');
 const Debug = require('debug');
 const plugins = require('./plugins');
+const {cleanupDescription} = require('./util');
+
+const REPO_ROOT = path.join(__dirname, '../../../');
 
 const LEVELS_REVERSE_COLOR = [
   chalk.red.bold('EMERGENCY'),
@@ -20,39 +23,13 @@ const LEVELS_REVERSE_COLOR = [
   chalk.magenta('DEBUG'),
 ];
 
+const mmDebug = Debug('taskcluster-lib-monitor.MonitorManager');
+
 class MonitorManager {
-  constructor() {
-    this.types = {};
-  }
-
   /**
-   * Configure this instance; this sets some per-service details.  It
-   * must be called only once per process.
+   * Register a new log message type.
    */
-  configure({serviceName}) {
-    assert(!this._configured, 'MonitorManager is already configured');
-
-    assert(serviceName, 'Must provide a serviceName to MonitorManager.configure');
-    this.serviceName = serviceName;
-    // read dockerflow version file, if taskclusterVersion is not set
-    if (this.taskclusterVersion === undefined) {
-      const taskclusterVersionFile = path.resolve(rootdir.get(), '../../version.json');
-      try {
-        this.taskclusterVersion = JSON.parse(fs.readFileSync(taskclusterVersionFile).toString()).version;
-      } catch (err) {
-        // Do nothing, will just be undefined
-      }
-    }
-
-    this._configured = true;
-    return this;
-  }
-
-  /**
-   * Register a new log message type.  This can be called on the static
-   * defaultMonitorManager by any code at module load time.
-   */
-  register({
+  static register({
     name,
     type,
     title,
@@ -60,36 +37,38 @@ class MonitorManager {
     version,
     description,
     fields = {},
+    serviceName,
   }) {
-    assert(!this._setup, 'Cannot register after MonitorManager has been setup');
     assert(title, `Must provide a human readable title for this log type ${name}`);
     assert(/^[a-z][a-zA-Z0-9]*$/.test(name), `Invalid name type ${name}`);
     assert(/^[a-z][a-zA-Z0-9.\-_]*$/.test(type), `Invalid event type ${type}`);
-    assert(!this.types[name], `Cannot register event ${name} twice`);
+    assert(!MonitorManager.types[name], `Cannot register event ${name} twice`);
     assert(level === 'any' || LEVELS[level] !== undefined, `${level} is not a valid level.`);
     assert(Number.isInteger(version), 'Version must be an integer');
     assert(!fields['v'], '"v" is a reserved field for messages');
     const cleaned = {};
     Object.entries(fields).forEach(([field, desc]) => {
       assert(/^[a-zA-Z0-9_]+$/.test(name), `Invalid field name ${name}.${field}`);
-      cleaned[field] = this.cleanupDescription(desc);
+      cleaned[field] = cleanupDescription(desc);
     });
-    this.types[name] = {
+    mmDebug(`registering log type ${name} ${serviceName ? `for service ${serviceName}` : 'for all services'}`);
+    MonitorManager.types[name] = {
       type,
       title,
       level,
       version,
-      description: this.cleanupDescription(description),
+      description: cleanupDescription(description),
       fields: cleaned,
+      serviceName,
     };
   }
 
   /**
-   * Set up this instance for production use.  This returns a root monitor
-   * which can be used to create child monitors.  This can be called multiple
-   * times in the same process.
+   * Set up an instance for production use.  This returns a root monitor
+   * which can be used to create child monitors.
    */
-  setup({
+  static setup({
+    serviceName,
     level = 'info',
     patchGlobal = true,
     processName = null,
@@ -104,9 +83,22 @@ class MonitorManager {
     errorConfig = null,
     versionOverride = null,
   }) {
-    assert(this._configured, 'must call configure(..) before setup(..)');
-    assert(!this._setup, 'must not call setup(..) more than once');
-    this._setup = true;
+    assert(serviceName, 'Must provide a serviceName to MonitorManager.setup');
+
+    const manager = new MonitorManager();
+
+    manager.types = MonitorManager._typesForService(serviceName);
+    manager.serviceName = serviceName;
+
+    // read dockerflow version file, if taskclusterVersion is not set
+    if (manager.taskclusterVersion === undefined) {
+      const taskclusterVersionFile = path.join(REPO_ROOT, 'version.json');
+      try {
+        manager.taskclusterVersion = JSON.parse(fs.readFileSync(taskclusterVersionFile).toString()).version;
+      } catch (err) {
+        // Do nothing, will just be undefined
+      }
+    }
 
     // in fake mode, don't monitor resources and errors
     if (fake) {
@@ -115,17 +107,17 @@ class MonitorManager {
     }
 
     if (versionOverride) {
-      this.taskclusterVersion = versionOverride;
+      manager.taskclusterVersion = versionOverride;
     }
 
     if (errorConfig) {
       if (!Object.keys(plugins.errorPlugins).includes(errorConfig.reporter)) {
         throw new Error(`Error reporter plugin ${errorConfig.reporter} does not exist.`);
       }
-      this._reporter = new plugins.errorPlugins[errorConfig.reporter]({
+      manager._reporter = new plugins.errorPlugins[errorConfig.reporter]({
         ...errorConfig,
-        serviceName: this.serviceName,
-        taskclusterVersion: this.taskclusterVersion,
+        serviceName: manager.serviceName,
+        taskclusterVersion: manager.taskclusterVersion,
         processName,
       });
     }
@@ -141,28 +133,28 @@ class MonitorManager {
     } else {
       levels['root'] = level;
     }
-    this.levels = levels;
+    manager.levels = levels;
 
-    this.fake = fake;
-    this.destination = destination;
-    this.debug = debug;
+    manager.fake = fake;
+    manager.destination = destination;
+    manager.debug = debug;
     if (destination) {
       assert(!fake && !debug, 'Cannot use fake/debug with a destination');
       assert(destination.write, 'Must provide writeable stream as destination');
     } else if (fake || debug) {
-      this.messages = [];
-      this.destination = new stream.Writable({
+      manager.messages = [];
+      manager.destination = new stream.Writable({
         write: (chunk, encoding, next) => {
-          this._handleMessage(JSON.parse(chunk));
+          manager._handleMessage(JSON.parse(chunk));
           next();
         },
       });
     } else {
-      this.destination = process.stdout;
+      manager.destination = process.stdout;
     }
 
     return new Monitor({
-      manager: this,
+      manager,
       name: [],
       metadata,
       verify,
@@ -175,46 +167,6 @@ class MonitorManager {
     });
   }
 
-  /**
-   * Remove leading trailing cruft and dedent evenly any multiline
-   * strings that were passed in with their indentation intact.
-   *
-   * Example:
-   *
-   * let x = `Foo
-   *          bar
-   *          baz`;
-   *
-   * Normally this prints as:
-   *
-   * Foo
-   *         bar
-   *         baz
-   *
-   * But after using this, it is:
-   *
-   * Foo
-   * bar
-   * baz
-   */
-  cleanupDescription(desc) {
-    desc = desc.trim();
-    const spl = desc.split('\n');
-
-    if (spl.length < 2) {
-      return desc;
-    }
-
-    const match = /^\s+/.exec(spl[1]); // The first line has already been trimmed
-    if (match) {
-      const remove = match[0].length;
-      const fixed = spl.slice(1).map(l => l.slice(remove));
-      return [spl[0], ...fixed].join('\n');
-    }
-
-    return desc;
-  }
-
   /*
    * For use in testing only. Clears the events so this can be used again.
    */
@@ -225,17 +177,30 @@ class MonitorManager {
   /*
    * Generate log message documentation
    */
-  reference() {
+  static reference(serviceName) {
+    assert(serviceName, "serviceName is required");
+    const types = MonitorManager._typesForService(serviceName);
     return {
-      serviceName: this.serviceName,
+      serviceName: serviceName,
       $schema: '/schemas/common/logs-reference-v0.json#',
-      types: Object.entries(this.types).map(([name, type]) => {
+      types: Object.entries(types).map(([name, type]) => {
         return {
           name,
-          ...type,
+          ...omit(type, ['serviceName']),
         };
-      }),
+      }).sort((a, b) => a.name.localeCompare(b.name)),
     };
+  }
+
+  /**
+   * Return the log types for the given serviceName
+   */
+  static _typesForService(serviceName) {
+    return Object.assign(
+      {},
+      ...Object.entries(MonitorManager.types)
+        .filter(([_, {serviceName: sn}]) => !sn || sn === serviceName)
+        .map(([k, v]) => ({[k]: v})));
   }
 
   /**
@@ -255,5 +220,6 @@ class MonitorManager {
     }
   }
 }
+MonitorManager.types = {};
 
 module.exports = MonitorManager;

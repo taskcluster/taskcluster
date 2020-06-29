@@ -12,7 +12,11 @@ const {
   execCommand,
   pyClientRelease,
   readRepoFile,
+  readRepoJSON,
+  dockerRun,
+  dockerPull,
   dockerPush,
+  dockerFlowVersion,
   REPO_ROOT,
 } = require('../utils');
 
@@ -24,15 +28,27 @@ module.exports = ({tasks, cmdOptions, credentials, baseDir, logsDir}) => {
   ensureTask(tasks, {
     title: 'Get release version',
     requires: [],
-    provides: ['release-version'],
+    provides: ['release-version', 'docker-flow-version'],
     run: async (requirements, utils) => {
       if (cmdOptions.staging) {
+        // for staging releases, we get the version from the staging-release/*
+        // branch name, and use a fake revision
+        const match = /staging-release\/v(\d+\.\d+\.\d+)$/.exec(cmdOptions.staging);
+        if (!match) {
+          throw new Error(`Staging releases must have branches named 'staging-release/vX.Y.Z'; got ${cmdOptions.staging}`);
+        }
+        const version = match[1];
+
         return {
-          'release-version': '9999.99.99',
+          'release-version': version,
+          'docker-flow-version': dockerFlowVersion({
+            gitDescription: `v${version}`,
+            revision: '9999999999999999999999999999999999999999',
+          }),
         };
       }
 
-      const {gitDescription} = await gitDescribe({
+      const {gitDescription, revision} = await gitDescribe({
         dir: REPO_ROOT,
         utils,
       });
@@ -43,6 +59,7 @@ module.exports = ({tasks, cmdOptions, credentials, baseDir, logsDir}) => {
 
       return {
         'release-version': gitDescription.slice(1),
+        'docker-flow-version': dockerFlowVersion({gitDescription, revision}),
       };
     },
   });
@@ -123,6 +140,53 @@ module.exports = ({tasks, cmdOptions, credentials, baseDir, logsDir}) => {
   });
 
   ensureTask(tasks, {
+    title: 'Build docker-worker artifacts',
+    requires: ['cleaned-release-artifacts'],
+    provides: ['docker-worker-artifacts'],
+    run: async (requirements, utils) => {
+      // The docker-worker build currently requires npm packages that must be compiled,
+      // and the local system does not have the necessary package installed to do so,
+      // so we build the docker-worker image in a docker container.
+
+      utils.step({title: 'Pull Docker Image'});
+
+      const nodeVersion = (await readRepoJSON('package.json')).engines.node;
+      const image = 'node:' + nodeVersion;
+      await dockerPull({image, utils, baseDir});
+
+      utils.step({title: 'Build Docker-Worker Tarball'});
+
+      await dockerRun({
+        baseDir,
+        logfile: path.join(logsDir, '/docker-worker-build.log'),
+        image,
+        mounts: [
+          {
+            Type: 'bind',
+            Source: path.join(REPO_ROOT, 'workers', 'docker-worker'),
+            Target: '/src',
+            ReadOnly: true,
+          }, {
+            Type: 'bind',
+            Source: artifactsDir,
+            Target: '/dst',
+            ReadOnly: false,
+          },
+        ],
+        command: ['sh', './release.sh', '-o', '/dst/docker-worker-x64.tgz'],
+        workingDir: '/src',
+        utils,
+      });
+
+      const artifacts = ['docker-worker-x64.tgz'];
+
+      return {
+        'docker-worker-artifacts': artifacts,
+      };
+    },
+  });
+
+  ensureTask(tasks, {
     title: 'Build generic-worker artifacts',
     requires: ['cleaned-release-artifacts'],
     provides: ['generic-worker-artifacts'],
@@ -179,8 +243,6 @@ module.exports = ({tasks, cmdOptions, credentials, baseDir, logsDir}) => {
     },
   });
 
-  /*
-   * https://github.com/taskcluster/taskcluster/issues/2739
   ensureTask(tasks, {
     title: 'Build taskcluster-proxy artifacts',
     requires: ['cleaned-release-artifacts'],
@@ -199,12 +261,12 @@ module.exports = ({tasks, cmdOptions, credentials, baseDir, logsDir}) => {
       };
     },
   });
-  */
 
   ensureTask(tasks, {
     title: 'Build Websocktunnel Docker Image',
     requires: [
       'release-version',
+      'docker-flow-version',
     ],
     provides: [
       'websocktunnel-docker-image', // image tag
@@ -230,16 +292,21 @@ module.exports = ({tasks, cmdOptions, credentials, baseDir, logsDir}) => {
         dir: REPO_ROOT,
         logfile: path.join(logsDir, '/websocktunnel-build.log'),
         utils,
-        env: process.env,
+        env: {CGO_ENABLED: '0', ...process.env},
       });
 
       utils.step({title: 'Building Docker Image'});
+
+      fs.writeFileSync(
+        path.join(contextDir, 'version.json'),
+        requirements['docker-flow-version']);
 
       // this simple Dockerfile just packages the binary into a Docker image
       const dockerfile = path.join(contextDir, 'Dockerfile');
       fs.writeFileSync(dockerfile, [
         'FROM scratch',
         'COPY websocktunnel /websocktunnel',
+        'COPY version.json /app/version.json',
         'ENTRYPOINT ["/websocktunnel"]',
       ].join('\n'));
       let command = [
@@ -257,25 +324,27 @@ module.exports = ({tasks, cmdOptions, credentials, baseDir, logsDir}) => {
         env: {DOCKER_BUILDKIT: 1, ...process.env},
       });
 
-      if (!cmdOptions.staging) {
-        utils.step({title: 'Pushing Docker Image'});
-
-        const dockerPushOptions = {};
-        if (credentials.dockerUsername && credentials.dockerPassword) {
-          dockerPushOptions.credentials = {
-            username: credentials.dockerUsername,
-            password: credentials.dockerPassword,
-          };
-        }
-
-        await dockerPush({
-          logfile: path.join(logsDir, 'docker-push.log'),
-          tag,
-          utils,
-          baseDir,
-          ...dockerPushOptions,
-        });
+      if (cmdOptions.staging) {
+        return provides;
       }
+
+      utils.step({title: 'Pushing Docker Image'});
+
+      const dockerPushOptions = {};
+      if (credentials.dockerUsername && credentials.dockerPassword) {
+        dockerPushOptions.credentials = {
+          username: credentials.dockerUsername,
+          password: credentials.dockerPassword,
+        };
+      }
+
+      await dockerPush({
+        logfile: path.join(logsDir, 'docker-push.log'),
+        tag,
+        utils,
+        baseDir,
+        ...dockerPushOptions,
+      });
 
       return provides;
     },
@@ -285,6 +354,7 @@ module.exports = ({tasks, cmdOptions, credentials, baseDir, logsDir}) => {
     title: 'Build livelog Docker Image',
     requires: [
       'release-version',
+      'docker-flow-version',
     ],
     provides: [
       'livelog-docker-image', // image tag
@@ -310,10 +380,14 @@ module.exports = ({tasks, cmdOptions, credentials, baseDir, logsDir}) => {
         dir: REPO_ROOT,
         logfile: path.join(logsDir, 'livelog-build.log'),
         utils,
-        env: process.env,
+        env: {CGO_ENABLED: '0', ...process.env},
       });
 
       utils.step({title: 'Building Docker Image'});
+
+      fs.writeFileSync(
+        path.join(contextDir, 'version.json'),
+        requirements['docker-flow-version']);
 
       // this simple Dockerfile just packages the binary into a Docker image
       const dockerfile = path.join(contextDir, 'Dockerfile');
@@ -321,6 +395,7 @@ module.exports = ({tasks, cmdOptions, credentials, baseDir, logsDir}) => {
         'FROM progrium/busybox',
         'EXPOSE 60023',
         'EXPOSE 60022',
+        'COPY version.json /app/version.json',
         'COPY livelog /livelog',
         'ENTRYPOINT ["/livelog"]',
       ].join('\n'));
@@ -339,34 +414,35 @@ module.exports = ({tasks, cmdOptions, credentials, baseDir, logsDir}) => {
         env: {DOCKER_BUILDKIT: 1, ...process.env},
       });
 
-      if (!cmdOptions.staging) {
-        utils.step({title: 'Pushing Docker Image'});
-
-        const dockerPushOptions = {};
-        if (credentials.dockerUsername && credentials.dockerPassword) {
-          dockerPushOptions.credentials = {
-            username: credentials.dockerUsername,
-            password: credentials.dockerPassword,
-          };
-        }
-
-        await dockerPush({
-          logfile: path.join(logsDir, 'livelog-docker-push.log'),
-          tag,
-          utils,
-          baseDir,
-          ...dockerPushOptions,
-        });
+      if (cmdOptions.staging) {
+        return provides;
       }
+
+      utils.step({title: 'Pushing Docker Image'});
+
+      const dockerPushOptions = {};
+      if (credentials.dockerUsername && credentials.dockerPassword) {
+        dockerPushOptions.credentials = {
+          username: credentials.dockerUsername,
+          password: credentials.dockerPassword,
+        };
+      }
+
+      await dockerPush({
+        logfile: path.join(logsDir, 'livelog-docker-push.log'),
+        tag,
+        utils,
+        baseDir,
+        ...dockerPushOptions,
+      });
 
       return provides;
     },
   });
 
-  /* https://github.com/taskcluster/taskcluster/issues/2739
   ensureTask(tasks, {
     title: 'Build taskcluster-proxy Docker image',
-    requires: ['release-version'],
+    requires: ['release-version', 'docker-flow-version'],
     provides: ['taskcluster-proxy-docker-image'],
     locks: ['docker'],
     run: async (requirements, utils) => {
@@ -387,40 +463,28 @@ module.exports = ({tasks, cmdOptions, credentials, baseDir, logsDir}) => {
         dir: REPO_ROOT,
         logfile: path.join(logsDir, 'taskcluster-proxy-build.log'),
         utils,
-        env: process.env,
-      });
-
-      utils.step({title: 'Generating ca certs using latest ubuntu version'});
-
-      const cacerts = path.join(contextDir, 'cacerts.docker');
-      fs.writeFileSync(cacerts, [
-        'FROM ubuntu:latest',
-        'RUN apt-get update',
-        'RUN apt-get install -y ca-certificates',
-      ].join('\n'));
-      await execCommand({
-        command: [
-          'uid="$(date +%s)"', '&&',
-          'docker', 'build', '--pull', '-t', '"${uid}"', '-f', 'cacerts.docker', '.', '&&',
-          'docker', 'run', '--name', '"${uid}"', '"${uid}"', '&&',
-          'docker', 'cp', '"${uid}:/etc/ssl/certs/ca-certificates.crt"', 'target', '&&',
-          'docker', 'rm', '-v', '"${uid}"',
-        ],
-        dir: REPO_ROOT,
-        logfile: path.join(logsDir, 'taskcluster-proxy-cert-gen.log'),
-        utils,
-        env: process.env,
+        env: {CGO_ENABLED: '0', ...process.env},
       });
 
       utils.step({title: 'Building Docker Image'});
 
+      fs.writeFileSync(
+        path.join(contextDir, 'version.json'),
+        requirements['docker-flow-version']);
+
       // this simple Dockerfile just packages the binary into a Docker image
       const dockerfile = path.join(contextDir, 'Dockerfile');
       fs.writeFileSync(dockerfile, [
+        // get the latest ca-certificates from Ubuntu
+        'FROM ubuntu:latest as ubuntu',
+        'RUN apt-get update',
+        'RUN apt-get install -y ca-certificates',
+        // start over in an empty image and just copy the certs in
         'FROM scratch',
         'EXPOSE 80',
-        'COPY target/taskcluster-proxy /taskcluster-proxy',
-        'COPY target/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt',
+        'COPY version.json /app/version.json',
+        'COPY taskcluster-proxy /taskcluster-proxy',
+        'COPY --from=ubuntu /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt',
         'ENTRYPOINT ["/taskcluster-proxy", "--port", "80"]',
       ].join('\n'));
       let command = [
@@ -438,30 +502,31 @@ module.exports = ({tasks, cmdOptions, credentials, baseDir, logsDir}) => {
         env: {DOCKER_BUILDKIT: 1, ...process.env},
       });
 
-      if (!cmdOptions.staging) {
-        utils.step({title: 'Pushing Docker Image'});
-
-        const dockerPushOptions = {};
-        if (credentials.dockerUsername && credentials.dockerPassword) {
-          dockerPushOptions.credentials = {
-            username: credentials.dockerUsername,
-            password: credentials.dockerPassword,
-          };
-        }
-
-        await dockerPush({
-          logfile: path.join(logsDir, 'docker-push.log'),
-          tag,
-          utils,
-          baseDir,
-          ...dockerPushOptions,
-        });
+      if (cmdOptions.staging) {
+        return provides;
       }
+
+      utils.step({title: 'Pushing Docker Image'});
+
+      const dockerPushOptions = {};
+      if (credentials.dockerUsername && credentials.dockerPassword) {
+        dockerPushOptions.credentials = {
+          username: credentials.dockerUsername,
+          password: credentials.dockerPassword,
+        };
+      }
+
+      await dockerPush({
+        logfile: path.join(logsDir, 'docker-push.log'),
+        tag,
+        utils,
+        baseDir,
+        ...dockerPushOptions,
+      });
 
       return provides;
     },
   });
-  /*
 
   /* -- monoimage docker image build occurs here -- */
 
@@ -471,42 +536,40 @@ module.exports = ({tasks, cmdOptions, credentials, baseDir, logsDir}) => {
       'release-version',
       'client-shell-artifacts',
       'generic-worker-artifacts',
+      'docker-worker-artifacts',
       'worker-runner-artifacts',
-      //'taskcluster-proxy-artifacts',
+      'taskcluster-proxy-artifacts',
       'changelog-text',
       'target-monoimage',
       'websocktunnel-docker-image',
       'livelog-docker-image',
-      //'taskcluster-proxy-docker-image',
+      'taskcluster-proxy-docker-image',
       'livelog-artifacts',
     ],
     provides: [
       'github-release',
     ],
     run: async (requirements, utils) => {
-      if (!cmdOptions.push) {
-        return utils.skip({});
-      }
-
       const octokit = new Octokit({auth: `token ${credentials.ghToken}`});
 
       utils.status({message: `Create Release`});
       const release = await octokit.repos.createRelease({
         owner: 'taskcluster',
-        repo: 'taskcluster',
+        repo: cmdOptions.staging ? 'staging-releases' : 'taskcluster',
         tag_name: `v${requirements['release-version']}`,
         name: `v${requirements['release-version']}`,
         body: await requirements['changelog-text'],
-        draft: false,
+        draft: cmdOptions.staging ? true : false,
         prerelease: false,
       });
       const {upload_url} = release.data;
 
       const files = requirements['client-shell-artifacts']
         .concat(requirements['generic-worker-artifacts'])
+        .concat(requirements['docker-worker-artifacts'])
         .concat(requirements['worker-runner-artifacts'])
         .concat(requirements['livelog-artifacts'])
-        //.concat(requirements['taskcluster-proxy-artifacts'])
+        .concat(requirements['taskcluster-proxy-artifacts'])
         .map(name => ({name, contentType: 'application/octet-stream'}));
       for (let {name, contentType} of files) {
         utils.status({message: `Upload Release asset ${name}`});
@@ -547,14 +610,14 @@ module.exports = ({tasks, cmdOptions, credentials, baseDir, logsDir}) => {
   ensureTask(tasks, {
     title: `Publish clients/client to npm`,
     requires: [
-      'target-monoimage', // to make sure the build succeeds first..
+      'github-release', // to make sure the release finishes first..
     ],
     provides: [
       `publish-clients/client`,
     ],
     run: async (requirements, utils) => {
-      if (!cmdOptions.push) {
-        return utils.skip({});
+      if (cmdOptions.staging) {
+        return utils.skip();
       }
 
       await npmPublish({
@@ -568,7 +631,7 @@ module.exports = ({tasks, cmdOptions, credentials, baseDir, logsDir}) => {
   ensureTask(tasks, {
     title: `Publish clients/client-web to npm`,
     requires: [
-      'target-monoimage', // to make sure the build succeeds first..
+      'github-release', // to make sure the release finishes first..
     ],
     provides: [
       `publish-clients/client-web`,
@@ -583,8 +646,8 @@ module.exports = ({tasks, cmdOptions, credentials, baseDir, logsDir}) => {
         logfile: path.join(logsDir, `install-clients-client-web.log`),
       });
 
-      if (!cmdOptions.push) {
-        return utils.skip({});
+      if (cmdOptions.staging) {
+        return;
       }
 
       await npmPublish({
@@ -598,14 +661,14 @@ module.exports = ({tasks, cmdOptions, credentials, baseDir, logsDir}) => {
   ensureTask(tasks, {
     title: `Publish clients/client-py to pypi`,
     requires: [
-      'target-monoimage', // to make sure the build succeeds first..
+      'github-release', // to make sure the release finishes first..
     ],
     provides: [
       `publish-clients/client-py`,
     ],
     run: async (requirements, utils) => {
-      if (!cmdOptions.push) {
-        return utils.skip({});
+      if (cmdOptions.staging) {
+        return utils.skip();
       }
 
       await pyClientRelease({

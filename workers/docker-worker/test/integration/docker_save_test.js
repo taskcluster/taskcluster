@@ -10,12 +10,18 @@ const {removeImage} = require('../../src/lib/util/remove_image');
 const pipe = require('promisepipe');
 const sleep = require('./helper/sleep');
 const taskcluster = require('taskcluster-client');
+const {suiteName} = require('taskcluster-lib-testing');
+const helper = require('../helper');
 
 function createImageName(taskId, runId) {
   return `${taskId.toLowerCase().replace(/[_-]/g, '0')}-${runId}`;
 }
 
-suite('use docker-save', () => {
+helper.secrets.mockSuite(suiteName(), ['docker', 'ci-creds'], function(mock, skipping) {
+  if (mock) {
+    return; // no fake equivalent for integration tests
+  }
+
   let worker;
   setup(async () => {
     worker = new TestWorker(DockerWorker);
@@ -76,8 +82,10 @@ suite('use docker-save', () => {
 
     await new Promise((accept, reject) => {
       stream.on('data', (data) => {
-        assert(data.compare(Buffer.from([0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x0b, //header
-          0x74, 0x65, 0x73, 0x74, 0x53, 0x74, 0x72, 0x69, 0x6e, 0x67, 0x0a]))); //testString\n
+        // See https://nodejs.org/api/buffer.html#buffer_buf_compare_target_targetstart_targetend_sourcestart_sourceend
+        // - compare returns 0 if the buffers are the same, so comparison with 0 necessary since assert(0) is failure.
+        assert.equal(data.compare(Buffer.from([0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x0b, //header
+          0x74, 0x65, 0x73, 0x74, 0x53, 0x74, 0x72, 0x69, 0x6e, 0x67, 0x0a])), 0); //testString\n
         accept();
       });
       stream.on('error', reject);

@@ -7,11 +7,6 @@ assignees: ''
 
 ---
 
-<!-- NOTE: The Taskcluster team uses Bugzilla as its primary bug-tracking tool.
-  If this issue is not a UI bug or is more than a quick-fix, please file it at
-  https://bugzilla.mozilla.org/enter_bug.cgi?product=Taskcluster
-  -->
-
 **Describe the bug**
 <!-- A clear and concise description of what the bug is. -->
 

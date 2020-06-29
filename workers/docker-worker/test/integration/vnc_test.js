@@ -10,8 +10,14 @@ const URL = require('url');
 const got = require('got');
 const WebSocket = require('ws');
 const poll = require('./helper/poll');
+const {suiteName} = require('taskcluster-lib-testing');
+const helper = require('../helper');
 
-suite('interactive vnc', () => {
+helper.secrets.mockSuite(suiteName(), ['docker', 'ci-creds'], function(mock, skipping) {
+  if (mock) {
+    return; // no fake equivalent for integration tests
+  }
+
   let debug = Debug('docker-worker:test:vnc');
 
   let worker;

@@ -1,6 +1,0 @@
-# GENERATED FILE from `yarn generate`! To update, change procs.yml and regenerate.
-
-web: cd services/github && node src/main server
-worker: cd services/github && node src/main worker
-sync: cd services/github && node src/main syncInstallations
-write-docs: cd services/github && node src/main writeDocs

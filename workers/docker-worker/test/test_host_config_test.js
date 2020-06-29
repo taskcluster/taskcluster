@@ -2,8 +2,9 @@ const assert = require('assert');
 const subject = require('../src/lib/host/test');
 const settings = require('./settings');
 const libUrls = require('taskcluster-lib-urls');
+const {suiteName} = require('taskcluster-lib-testing');
 
-suite('test host', () => {
+suite(suiteName(), () => {
   setup(settings.cleanup);
   teardown(settings.cleanup);
 

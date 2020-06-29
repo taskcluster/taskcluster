@@ -29,8 +29,7 @@
     },
     "notify": {
       "tables": {
-        "denylisted_notification_entities": "write",
-        "widgets": "write"
+        "denylisted_notification_entities": "write"
       }
     },
     "purge_cache": {
@@ -69,8 +68,8 @@
     "worker_manager": {
       "tables": {
         "wmworker_pool_errors_entities": "write",
-        "wmworkers_entities": "write",
-        "worker_pools": "write"
+        "worker_pools": "write",
+        "workers": "write"
       }
     }
   },
@@ -281,17 +280,7 @@
       "value": "jsonb not null",
       "version": "integer not null"
     },
-    "widgets": {
-      "name": "text"
-    },
     "wmworker_pool_errors_entities": {
-      "etag": "uuid",
-      "partition_key": "text not null",
-      "row_key": "text not null",
-      "value": "jsonb not null",
-      "version": "integer not null"
-    },
-    "wmworkers_entities": {
       "etag": "uuid",
       "partition_key": "text not null",
       "row_key": "text not null",
@@ -309,6 +298,21 @@
       "previous_provider_ids": "jsonb not null",
       "provider_data": "jsonb not null",
       "provider_id": "text not null",
+      "worker_pool_id": "text not null"
+    },
+    "workers": {
+      "capacity": "integer not null",
+      "created": "timestamp with time zone not null",
+      "etag": "uuid not null",
+      "expires": "timestamp with time zone not null",
+      "last_checked": "timestamp with time zone not null",
+      "last_modified": "timestamp with time zone not null",
+      "provider_data": "jsonb not null",
+      "provider_id": "text not null",
+      "secret": "jsonb",
+      "state": "text not null",
+      "worker_group": "text not null",
+      "worker_id": "text not null",
       "worker_pool_id": "text not null"
     }
   },
@@ -2123,7 +2127,7 @@
       "methods": {
         "all_purge_requests": {
           "args": "page_size_in integer, page_offset_in integer",
-          "body": "declare\nsql text := 'select cache_purges.provisioner_id, cache_purges.worker_type, cache_purges.cache_name, cache_purges.before from cache_purges';\nbegin\n  return query select cache_purges.provisioner_id, cache_purges.worker_type, cache_purges.cache_name, cache_purges.before\n  from cache_purges\n  order by cache_purges.provisioner_id, cache_purges.worker_type, cache_purges.cache_name\n  limit get_page_limit(page_size_in)\n  offset get_page_offset(page_offset_in);\nend",
+          "body": "begin\n  return query select cache_purges.provisioner_id, cache_purges.worker_type, cache_purges.cache_name, cache_purges.before\n  from cache_purges\n  order by cache_purges.provisioner_id, cache_purges.worker_type, cache_purges.cache_name\n  limit get_page_limit(page_size_in)\n  offset get_page_offset(page_offset_in);\nend",
           "deprecated": false,
           "description": "View all active purge requests.",
           "mode": "read",
@@ -2168,7 +2172,7 @@
         },
         "cache_purges_entities_scan": {
           "args": "pk text, rk text, condition text, size integer, page integer",
-          "body": "declare\n  cond text[];\n  exp_cond_operator text;\n  exp_cond_operand timestamptz;\n  partition_key_var text;\n  row_key_var text;\n  decoded_composite_key text[];\nbegin\n  decoded_composite_key := decode_composite_key(cache_purges_entities_scan.pk);\n  if not condition is null then\n    cond := regexp_split_to_array(condition, '\\s+');\n    exp_cond_operator := cond[4];\n    exp_cond_operand := cond[5] :: timestamptz;\n\n    return query select\n      encode_composite_key(cache_purges.provisioner_id, cache_purges.worker_type) as partition_key,\n      encode_string_key(cache_purges.cache_name) as row_key,\n      jsonb_build_object(\n        'PartitionKey', encode_composite_key(cache_purges.provisioner_id, cache_purges.worker_type),\n        'RowKey', cache_name,\n        'provisionerId', provisioner_id,\n        'workerType', worker_type,\n        'cacheName', cache_name,\n        'before', before,\n        'expires', expires\n      ) as value,\n      1 as version,\n      cache_purges.etag as etag from cache_purges\n    where\n      (cache_purges_entities_scan.pk is null or cache_purges_entities_scan.pk = decoded_composite_key[1] || '~' || decoded_composite_key[2]) and\n      (cache_purges_entities_scan.rk is null or cache_purges_entities_scan.rk = cache_name) and\n      case\n        when exp_cond_operator = '=' then expires = exp_cond_operand\n        when exp_cond_operator = '<' then expires < exp_cond_operand\n        when exp_cond_operator = '<=' then expires <= exp_cond_operand\n        when exp_cond_operator = '>' then expires > exp_cond_operand\n        when exp_cond_operator = '>=' then expires >= exp_cond_operand\n        else expires <> exp_cond_operand\n      end\n    order by cache_purges.provisioner_id, cache_purges.worker_type, cache_purges.cache_name\n    limit case\n      when (size is not null and size > 0) then size + 1\n      else null\n    end\n    offset case\n      when (page is not null and page > 0) then page\n      else 0\n    end;\n  else\n    return query select\n      encode_composite_key(cache_purges.provisioner_id, cache_purges.worker_type) as partition_key,\n      encode_string_key(cache_purges.cache_name) as row_key,\n      jsonb_build_object(\n        'PartitionKey', encode_composite_key(cache_purges.provisioner_id, cache_purges.worker_type),\n        'RowKey', cache_name,\n        'provisionerId', provisioner_id,\n        'workerType', worker_type,\n        'cacheName', cache_name,\n        'before', before,\n        'expires', expires\n      ) as value,\n      1 as version,\n      cache_purges.etag as etag from cache_purges\n    where\n      (cache_purges_entities_scan.pk is null or (cache_purges.provisioner_id = decoded_composite_key[1] and cache_purges.worker_type = decoded_composite_key[2])) and\n      (cache_purges_entities_scan.rk is null or cache_purges_entities_scan.rk = cache_name)\n    order by cache_purges.provisioner_id, cache_purges.worker_type, cache_purges.cache_name\n    limit case\n      when (size is not null and size > 0) then size + 1\n      else null\n    end\n    offset case\n      when (size is not null and size > 0 and page is not null and page > 0) then page\n      else 0\n    end;\n  end if;\nend",
+          "body": "declare\n  cond text[];\n  exp_cond_operator text;\n  exp_cond_operand timestamptz;\n  partition_key_var text;\n  row_key_var text;\n  decoded_composite_key text[];\nbegin\n  decoded_composite_key := decode_composite_key(cache_purges_entities_scan.pk);\n  if not condition is null then\n    cond := regexp_split_to_array(condition, '\\s+');\n    exp_cond_operator := cond[4];\n    exp_cond_operand := cond[5] :: timestamptz;\n\n    return query select\n      encode_composite_key(cache_purges.provisioner_id, cache_purges.worker_type) as partition_key,\n      encode_string_key(cache_purges.cache_name) as row_key,\n      jsonb_build_object(\n        'PartitionKey', encode_composite_key(cache_purges.provisioner_id, cache_purges.worker_type),\n        'RowKey', cache_name,\n        'provisionerId', provisioner_id,\n        'workerType', worker_type,\n        'cacheName', cache_name,\n        'before', before,\n        'expires', expires\n      ) as value,\n      1 as version,\n      cache_purges.etag as etag from cache_purges\n    where\n      (cache_purges_entities_scan.pk is null or cache_purges_entities_scan.pk = decoded_composite_key[1] || '~' || decoded_composite_key[2]) and\n      (cache_purges_entities_scan.rk is null or cache_purges_entities_scan.rk = cache_name) and\n      case\n        when exp_cond_operator = '=' then expires = exp_cond_operand\n        when exp_cond_operator = '<' then expires < exp_cond_operand\n        when exp_cond_operator = '<=' then expires <= exp_cond_operand\n        when exp_cond_operator = '>' then expires > exp_cond_operand\n        when exp_cond_operator = '>=' then expires >= exp_cond_operand\n        else expires <> exp_cond_operand\n      end\n    order by cache_purges.provisioner_id, cache_purges.worker_type, cache_purges.cache_name\n    limit case\n      when (size is not null and size > 0) then size + 1\n      else null\n    end\n    offset case\n      when (page is not null and page > 0) then page\n      else 0\n    end;\n  else\n    return query select\n      encode_composite_key(cache_purges.provisioner_id, cache_purges.worker_type) as partition_key,\n      encode_string_key(cache_purges.cache_name) as row_key,\n      jsonb_build_object(\n        'PartitionKey', encode_composite_key(cache_purges.provisioner_id, cache_purges.worker_type),\n        'RowKey', encode_string_key(cache_name),\n        'provisionerId', provisioner_id,\n        'workerType', worker_type,\n        'cacheName', cache_name,\n        'before', before,\n        'expires', expires\n      ) as value,\n      1 as version,\n      cache_purges.etag as etag from cache_purges\n    where\n      (cache_purges_entities_scan.pk is null or (cache_purges.provisioner_id = decoded_composite_key[1] and cache_purges.worker_type = decoded_composite_key[2])) and\n      (cache_purges_entities_scan.rk is null or cache_purges_entities_scan.rk = cache_name)\n    order by cache_purges.provisioner_id, cache_purges.worker_type, cache_purges.cache_name\n    limit case\n      when (size is not null and size > 0) then size + 1\n      else null\n    end\n    offset case\n      when (size is not null and size > 0 and page is not null and page > 0) then page\n      else 0\n    end;\n  end if;\nend",
           "deprecated": false,
           "description": "See taskcluster-lib-entities",
           "mode": "read",
@@ -2267,7 +2271,7 @@
           "args": "worker_pool_id_in text, provider_id_in text, description_in text, config_in jsonb, last_modified_in timestamptz, owner_in text, email_on_error_in boolean",
           "body": "declare\n  existing record;\nbegin\n  select\n    worker_pools.provider_id,\n    worker_pools.previous_provider_ids\n  from worker_pools\n  where worker_pools.worker_pool_id = worker_pool_id_in\n  -- lock this row for the duration of this transaction..\n  for update\n  into existing;\n\n  -- update previous_provider_ids, if the provider_id has changed\n  if existing.provider_id <> provider_id_in then\n    -- remove both provider IDs to avoid duplicates, then re-add existing.provider_id\n    existing.previous_provider_ids = (existing.previous_provider_ids - provider_id_in - existing.provider_id) || jsonb_build_array(existing.provider_id);\n  end if;\n\n  return query update worker_pools\n  set\n    provider_id = provider_id_in,\n    description = description_in,\n    config = config_in,\n    last_modified = last_modified_in,\n    owner = owner_in,\n    email_on_error = email_on_error_in,\n    previous_provider_ids = existing.previous_provider_ids\n  where worker_pools.worker_pool_id = worker_pool_id_in\n  returning\n    worker_pools.worker_pool_id,\n    worker_pools.provider_id,\n    worker_pools.description,\n    worker_pools.config,\n    worker_pools.created,\n    worker_pools.last_modified,\n    worker_pools.owner,\n    worker_pools.email_on_error,\n    existing.provider_id as previous_provider_id;\nend",
           "deprecated": false,
-          "description": "Update API-accessible columns on an existig worker pool.  All fields are\noverridden, but if the provider_id changes, then the existing provider_id\nis added to previous_provider_ids.  The return value contains values\nrequired for an API response and previous_provider_id (singular) containing\nthe provider_id found before the update.  If no such worker pool exists,\nthe return value is an empty set.",
+          "description": "Update API-accessible columns on an existing worker pool.  All fields are\noverridden, but if the provider_id changes, then the existing provider_id\nis added to previous_provider_ids.  The return value contains values\nrequired for an API response and previous_provider_id (singular) containing\nthe provider_id found before the update.  If no such worker pool exists,\nthe return value is an empty set.",
           "mode": "write",
           "returns": "table(worker_pool_id text, provider_id text, description text, config jsonb, created timestamptz, last_modified timestamptz, owner text, email_on_error boolean, previous_provider_id text)",
           "serviceName": "worker_manager"
@@ -2327,8 +2331,210 @@
           "serviceName": "worker_manager"
         }
       },
-      "migrationScript": "begin\n  -- lock this table before reading from it, to prevent loss of concurrent\n  -- updates when the table is dropped.  Note that this may lead to concurrent\n  -- updates failing; the important thing is that they not succeed without\n  -- taking effect.  Failed updates will be retried.\n  lock table wmworker_pools_entities;\n\n  create table worker_pools\n  as\n    select\n      (value ->> 'workerPoolId')::text as worker_pool_id,\n      (value ->> 'providerId')::text as provider_id,\n      (value ->> 'owner')::text as owner,\n      (value ->> 'description')::text as description,\n      (value -> 'emailOnError')::boolean as email_on_error,\n      (value ->> 'created')::timestamptz as created,\n      (value ->> 'lastModified')::timestamptz as last_modified,\n      entity_buf_decode(value, 'config')::jsonb as config,\n      entity_buf_decode(value, 'providerData')::jsonb as provider_data,\n      entity_buf_decode(value, 'previousProviderIds')::jsonb as previous_provider_ids,\n      etag\n    from wmworker_pools_entities;\n  alter table worker_pools add primary key (worker_pool_id);\n  alter table worker_pools\n    alter column provider_id set not null,\n    alter column owner set not null,\n    alter column description set not null,\n    alter column email_on_error set not null,\n    alter column created set not null,\n    alter column last_modified set not null,\n    alter column config set not null,\n    alter column provider_data set not null,\n    alter column previous_provider_ids set not null,\n    alter column etag set not null,\n    alter column etag set default public.gen_random_uuid();\n\n  revoke select, insert, update, delete on wmworker_pools_entities from $db_user_prefix$_worker_manager;\n  drop table wmworker_pools_entities;\n  grant select, insert, update, delete on worker_pools to $db_user_prefix$_worker_manager;\nend\n",
+      "migrationScript": "begin\n  -- decode the __buf encoding defined in tc-lib-entities entitytypes.js.\n  -- This is a re-definition of the function from DB version 8, where it incorrectly\n  -- handled rows with more than one buffer.\n  create or replace function entity_buf_decode(value JSONB, name text) RETURNS text\n  as $$\n      declare\n          buffer text = '';\n          chunks integer;\n          chunk integer = 0;\n      begin\n          chunks = (value ->> ('__bufchunks_' || name))::integer;\n          loop\n              exit when chunks is null or chunk >= chunks;\n              buffer = buffer || convert_from(decode((value ->> ('__buf' || chunk || '_' || name))::text, 'base64'), 'utf8');\n              chunk = chunk + 1;\n          end loop;\n          return buffer;\n      end;\n  $$\n  language plpgSQL\n  strict immutable;\n\n  -- lock this table before reading from it, to prevent loss of concurrent\n  -- updates when the table is dropped.  Note that this may lead to concurrent\n  -- updates failing; the important thing is that they not succeed without\n  -- taking effect.  Failed updates will be retried.\n  lock table wmworker_pools_entities;\n\n  create table worker_pools\n  as\n    select\n      (value ->> 'workerPoolId')::text as worker_pool_id,\n      (value ->> 'providerId')::text as provider_id,\n      (value ->> 'owner')::text as owner,\n      (value ->> 'description')::text as description,\n      (value -> 'emailOnError')::boolean as email_on_error,\n      (value ->> 'created')::timestamptz as created,\n      (value ->> 'lastModified')::timestamptz as last_modified,\n      entity_buf_decode(value, 'config')::jsonb as config,\n      entity_buf_decode(value, 'providerData')::jsonb as provider_data,\n      entity_buf_decode(value, 'previousProviderIds')::jsonb as previous_provider_ids,\n      etag\n    from wmworker_pools_entities;\n  alter table worker_pools add primary key (worker_pool_id);\n  alter table worker_pools\n    alter column provider_id set not null,\n    alter column owner set not null,\n    alter column description set not null,\n    alter column email_on_error set not null,\n    alter column created set not null,\n    alter column last_modified set not null,\n    alter column config set not null,\n    alter column provider_data set not null,\n    alter column previous_provider_ids set not null,\n    alter column etag set not null,\n    alter column etag set default public.gen_random_uuid();\n\n  revoke select, insert, update, delete on wmworker_pools_entities from $db_user_prefix$_worker_manager;\n  drop table wmworker_pools_entities;\n  grant select, insert, update, delete on worker_pools to $db_user_prefix$_worker_manager;\nend\n",
       "version": 10
+    },
+    {
+      "downgradeScript": "begin\n  create table widgets (\n    name text\n  );\n  grant select, insert, update, delete on widgets to $db_user_prefix$_notify;\nend",
+      "methods": {
+        "update_widgets": {
+          "args": "name_in text",
+          "body": "begin\n  return;\nend",
+          "deprecated": false,
+          "description": "Temporary method to test infrastructure support fo database access",
+          "mode": "write",
+          "returns": "table (name text)",
+          "serviceName": "notify"
+        }
+      },
+      "migrationScript": "begin\n  revoke select, insert, update, delete on widgets from $db_user_prefix$_notify;\n  drop table widgets;\nend",
+      "version": 11
+    },
+    {
+      "downgradeScript": "begin\n  -- lock this table before reading from it, to prevent loss of concurrent\n  -- updates when the table is dropped.\n  lock table workers;\n\n  create table wmworkers_entities(\n    partition_key text, row_key text,\n    value jsonb not null,\n    version integer not null,\n    etag uuid default public.gen_random_uuid());\n  alter table wmworkers_entities add primary key (partition_key, row_key);\n\n  insert into wmworkers_entities\n  select\n    encode_string_key(worker_pool_id) as partition_key,\n    encode_composite_key(worker_group, worker_id) as row_key,\n    entity_buf_encode(\n        jsonb_build_object(\n          'PartitionKey', encode_string_key(worker_pool_id),\n          'RowKey', 'workerPool',\n          'workerPoolId', worker_pool_id,\n          'workerGroup', worker_group,\n          'workerId', worker_id,\n          'providerId', provider_id,\n          'created', created,\n          'expires', expires,\n          'state', state,\n          'capacity', capacity,\n          'lastModified', last_modified,\n          'lastChecked', last_checked),\n        'providerData', provider_data::text) as value,\n    1 as version,\n    etag\n  from workers;\n\n  revoke select, insert, update, delete on workers from $db_user_prefix$_worker_manager;\n  drop table workers;\n  grant select, insert, update, delete on wmworkers_entities to $db_user_prefix$_worker_manager;\nend",
+      "methods": {
+        "create_worker": {
+          "args": "worker_pool_id_in text, worker_group_in text, worker_id_in text, provider_id_in text, created_in timestamptz, expires_in timestamptz, state_in text, provider_data_in jsonb, capacity_in integer, last_modified_in timestamptz, last_checked_in timestamptz",
+          "body": "declare\n  new_etag uuid := public.gen_random_uuid();\nbegin\n  insert\n    into workers (worker_pool_id, worker_group, worker_id, provider_id, created, expires, state, provider_data, capacity, last_modified, last_checked, etag)\n    values (worker_pool_id_in, worker_group_in, worker_id_in, provider_id_in, created_in, expires_in, state_in, provider_data_in, capacity_in, last_modified_in, last_checked_in, new_etag);\n\n  return new_etag;\nend",
+          "deprecated": false,
+          "description": "Create a new worker. Raises UNIQUE_VIOLATION if the worker already exists.\nReturns the etag of the newly created worker.",
+          "mode": "write",
+          "returns": "uuid",
+          "serviceName": "worker_manager"
+        },
+        "delete_worker": {
+          "args": "worker_pool_id_in text, worker_group_in text, worker_id_in text",
+          "body": "begin\n  delete\n  from workers\n  where\n    workers.worker_pool_id = worker_pool_id_in and\n    workers.worker_group = worker_group_in and\n    workers.worker_id = worker_id_in;\nend",
+          "deprecated": false,
+          "description": "Delete a worker.",
+          "mode": "write",
+          "returns": "void",
+          "serviceName": "worker_manager"
+        },
+        "expire_workers": {
+          "args": "expires_in timestamptz",
+          "body": "declare\n  count integer;\nbegin\n  delete from workers where workers.expires < expires_in;\n  if found then\n    get diagnostics count = row_count;\n    return count;\n  end if;\n  return 0;\nend",
+          "deprecated": false,
+          "description": "Expire workers that come before `expires_in`.\nReturns a count of rows that have been deleted.",
+          "mode": "write",
+          "returns": "integer",
+          "serviceName": "worker_manager"
+        },
+        "get_worker": {
+          "args": "worker_pool_id_in text, worker_group_in text, worker_id_in text",
+          "body": "begin\n  return query\n  select\n    workers.worker_pool_id,\n    workers.worker_group,\n    workers.worker_id,\n    workers.provider_id,\n    workers.created,\n    workers.expires,\n    workers.state,\n    workers.provider_data,\n    workers.capacity,\n    workers.last_modified,\n    workers.last_checked,\n    workers.etag\n  from workers\n  where\n    workers.worker_pool_id = worker_pool_id_in and\n    workers.worker_group = worker_group_in and\n    workers.worker_id = worker_id_in;\nend",
+          "deprecated": false,
+          "description": "Get an existing worker. The returned table will have one or (if no such worker is defined) zero rows.",
+          "mode": "read",
+          "returns": "table(worker_pool_id text, worker_group text, worker_id text, provider_id text, created timestamptz, expires timestamptz, state text, provider_data jsonb, capacity integer, last_modified timestamptz, last_checked timestamptz, etag uuid)",
+          "serviceName": "worker_manager"
+        },
+        "get_workers": {
+          "args": "worker_pool_id_in text, worker_group_in text, worker_id_in text, state_in text, page_size_in integer, page_offset_in integer",
+          "body": "begin\n  return query\n  select\n    workers.worker_pool_id,\n    workers.worker_group,\n    workers.worker_id,\n    workers.provider_id,\n    workers.created,\n    workers.expires,\n    workers.state,\n    workers.provider_data,\n    workers.capacity,\n    workers.last_modified,\n    workers.last_checked\n  from workers\n  where\n    (workers.worker_pool_id = worker_pool_id_in or worker_pool_id_in is null) and\n    (workers.worker_group = worker_group_in or worker_group_in is null) and\n    (workers.worker_id = worker_id_in or worker_id_in is null) and\n    (workers.state = state_in or state_in is null)\n  order by worker_pool_id, worker_group, worker_id\n  limit get_page_limit(page_size_in)\n  offset get_page_offset(page_offset_in);\nend",
+          "deprecated": false,
+          "description": "Get existing workers filtered by the optional arguments,\nordered by `worker_pool_id`, `worker_group`, and  `worker_id`.\nIf the pagination arguments are both NULL, all rows are returned.\nOtherwise, page_size rows are returned at offset page_offset.",
+          "mode": "read",
+          "returns": "table(worker_pool_id text, worker_group text, worker_id text, provider_id text, created timestamptz, expires timestamptz, state text, provider_data jsonb, capacity integer, last_modified timestamptz, last_checked timestamptz)",
+          "serviceName": "worker_manager"
+        },
+        "update_worker": {
+          "args": "worker_pool_id_in text, worker_group_in text, worker_id_in text, provider_id_in text, created_in timestamptz, expires_in timestamptz, state_in text, provider_data_in jsonb, capacity_in integer, last_modified_in timestamptz, last_checked_in timestamptz, etag_in uuid",
+          "body": "declare\n  new_etag uuid := public.gen_random_uuid();\n  updated_row workers%ROWTYPE;\nbegin\n  update workers\n  set (provider_id, created, expires, state, provider_data, capacity, last_modified, last_checked, etag) = (\n    coalesce(provider_id_in, workers.provider_id),\n    coalesce(created_in, workers.created),\n    coalesce(expires_in, workers.expires),\n    coalesce(state_in, workers.state),\n    coalesce(provider_data_in, workers.provider_data),\n    coalesce(capacity_in, workers.capacity),\n    coalesce(last_modified_in, workers.last_modified),\n    coalesce(last_checked_in, workers.last_checked),\n    new_etag\n  )\n  where\n    workers.worker_pool_id = worker_pool_id_in and\n    workers.worker_group = worker_group_in and\n    workers.worker_id = worker_id_in and\n    workers.etag = coalesce(etag_in, workers.etag)\n  returning\n    workers.worker_pool_id,\n    workers.worker_group,\n    workers.worker_id,\n    workers.provider_id,\n    workers.created,\n    workers.expires,\n    workers.state,\n    workers.provider_data,\n    workers.capacity,\n    workers.last_modified,\n    workers.last_checked,\n    workers.etag\n  into updated_row;\n\n  if found then\n    return query select\n      updated_row.worker_pool_id,\n      updated_row.worker_group,\n      updated_row.worker_id,\n      updated_row.provider_id,\n      updated_row.created,\n      updated_row.expires,\n      updated_row.state,\n      updated_row.provider_data,\n      updated_row.capacity,\n      updated_row.last_modified,\n      updated_row.last_checked,\n      updated_row.etag;\n    return;\n  end if;\n\n  perform workers.etag from workers\n    where\n      workers.worker_pool_id = worker_pool_id_in and\n      workers.worker_group = worker_group_in and\n      workers.worker_id = worker_id_in;\n\n  if found then\n    raise exception 'unsuccessful update' using errcode = 'P0004';\n  else\n    raise exception 'no such row' using errcode = 'P0002';\n  end if;\nend",
+          "deprecated": false,
+          "description": "Update a worker.\nReturns the up-to-date worker row that have the same worker_pool_id, worker_group, and worker_id.\nIf the etag argument is empty then the update will overwrite the matched row.\nElse, the function will fail if the etag is out of date. This is useful for concurency handling.",
+          "mode": "write",
+          "returns": "table(worker_pool_id text, worker_group text, worker_id text, provider_id text, created timestamptz, expires timestamptz, state text, provider_data jsonb, capacity integer, last_modified timestamptz, last_checked timestamptz, etag uuid)",
+          "serviceName": "worker_manager"
+        },
+        "wmworkers_entities_create": {
+          "args": "pk text, rk text, properties jsonb, overwrite boolean, version integer",
+          "body": "declare\n  new_row workers%ROWTYPE;\nbegin\n  select\n    (properties ->> 'workerPoolId')::text,\n    (properties ->> 'workerGroup')::text,\n    (properties ->> 'workerId')::text,\n    (properties ->> 'providerId')::text,\n    (properties ->> 'created')::timestamptz,\n    (properties ->> 'expires')::timestamptz,\n    (properties ->> 'state')::text,\n    entity_buf_decode(properties, 'providerData')::jsonb,\n    (properties ->> 'capacity')::integer as capacity,\n    (properties ->> 'lastModified')::timestamptz,\n    (properties ->> 'lastChecked')::timestamptz,\n    public.gen_random_uuid()\n  into new_row;\n  if overwrite then\n    raise exception 'overwrite not implemented';\n  else\n    execute 'insert into workers select $1.*' using new_row;\n  end if;\n  return new_row.etag;\nend",
+          "deprecated": false,
+          "description": "See taskcluster-lib-entities",
+          "mode": "write",
+          "returns": "uuid",
+          "serviceName": "worker_manager"
+        },
+        "wmworkers_entities_load": {
+          "args": "partition_key text, row_key text",
+          "body": "declare\n  decoded_composite_key text[];\nbegin\n  decoded_composite_key := decode_composite_key(wmworkers_entities_load.row_key);\n  return query\n  select\n    wmworkers_entities_load.partition_key,\n    wmworkers_entities_load.row_key,\n    entity_buf_encode(\n      jsonb_build_object(\n        'PartitionKey', encode_string_key(worker_pool_id),\n        'RowKey', encode_composite_key(worker_group, worker_id),\n        'workerPoolId', worker_pool_id,\n        'workerGroup', worker_group,\n        'workerId', worker_id,\n        'providerId', provider_id,\n        'created', created,\n        'expires', expires,\n        'state', state,\n        'capacity', capacity,\n        'lastModified', last_modified,\n        'lastChecked', last_checked),\n      'providerData', provider_data::text) as value,\n    1 as version,\n    workers.etag as etag\n  from workers\n  where\n    workers.worker_pool_id = decode_string_key(wmworkers_entities_load.partition_key) and workers.worker_group = decoded_composite_key[1] and workers.worker_id = decoded_composite_key[2];\nend",
+          "deprecated": false,
+          "description": "See taskcluster-lib-entities",
+          "mode": "read",
+          "returns": "table (partition_key_out text, row_key_out text, value jsonb, version integer, etag uuid)",
+          "serviceName": "worker_manager"
+        },
+        "wmworkers_entities_modify": {
+          "args": "partition_key text, row_key text, properties jsonb, version integer, old_etag uuid",
+          "body": "declare\n  new_row workers%ROWTYPE;\n  decoded_composite_key text[];\nbegin\n  decoded_composite_key := decode_composite_key(wmworkers_entities_modify.row_key);\n  select\n    (properties ->> 'workerPoolId')::text,\n    (properties ->> 'workerGroup')::text,\n    (properties ->> 'workerId')::text,\n    (properties ->> 'providerId')::text,\n    (properties ->> 'created')::timestamptz,\n    (properties ->> 'expires')::timestamptz,\n    (properties ->> 'state')::text,\n    entity_buf_decode(properties, 'providerData')::jsonb,\n    (properties ->> 'capacity')::integer,\n    (properties ->> 'lastModified')::timestamptz,\n    (properties ->> 'lastChecked')::timestamptz,\n    public.gen_random_uuid() as etag\n  into new_row;\n  update workers\n  set (\n    provider_id,\n    created,\n    expires,\n    state,\n    capacity,\n    last_modified,\n    last_checked,\n    provider_data,\n    etag\n  ) = (\n    new_row.provider_id,\n    new_row.created,\n    new_row.expires,\n    new_row.state,\n    new_row.capacity,\n    new_row.last_modified,\n    new_row.last_checked,\n    new_row.provider_data,\n    new_row.etag\n  )\n  where\n    workers.worker_pool_id = decode_string_key(wmworkers_entities_modify.partition_key) and\n    workers.worker_group = decoded_composite_key[1] and\n    workers.worker_id = decoded_composite_key[2] and\n    workers.etag = wmworkers_entities_modify.old_etag;\n  if found then\n    return query select new_row.etag;\n    return;\n  end if;\n  perform workers.etag from workers\n  where\n    workers.worker_pool_id = decode_string_key(wmworkers_entities_modify.partition_key) and\n    workers.worker_group = decoded_composite_key[1] and\n    workers.worker_id = decoded_composite_key[2];\n  if found then\n    raise exception 'unsuccessful update' using errcode = 'P0004';\n  else\n    raise exception 'no such row' using errcode = 'P0002';\n  end if;\nend",
+          "deprecated": false,
+          "description": "See taskcluster-lib-entities",
+          "mode": "write",
+          "returns": "table (etag uuid)",
+          "serviceName": "worker_manager"
+        },
+        "wmworkers_entities_remove": {
+          "args": "partition_key text, row_key text",
+          "body": "declare\n  decoded_composite_key text[];\nbegin\n  decoded_composite_key := decode_composite_key(wmworkers_entities_remove.row_key);\n  return query delete from workers\n  where\n    workers.worker_pool_id = decode_string_key(wmworkers_entities_remove.partition_key) and\n    workers.worker_group = decoded_composite_key[1] and\n    workers.worker_id = decoded_composite_key[2]\n  returning workers.etag;\nend",
+          "deprecated": false,
+          "description": "See taskcluster-lib-entities",
+          "mode": "write",
+          "returns": "table (etag uuid)",
+          "serviceName": "worker_manager"
+        },
+        "wmworkers_entities_scan": {
+          "args": "pk text, rk text, condition text, size integer, page integer",
+          "body": "declare\n  cond text[];\n  exp_cond_operator text;\n  exp_cond_operand timestamptz;\n  partition_key_var text;\n  row_key_var text;\n  decoded_composite_key text[];\nbegin\n  decoded_composite_key := decode_composite_key(wmworkers_entities_scan.rk);\n  if not condition is null then\n    cond := regexp_split_to_array(condition, '\\s+');\n    exp_cond_operator := cond[4];\n    exp_cond_operand := cond[5] :: timestamptz;\n\n    return query select\n      encode_string_key(worker_pool_id) as partition_key,\n      encode_composite_key(worker_group, worker_id) as row_key,\n      entity_buf_encode(\n        jsonb_build_object(\n          'PartitionKey', encode_string_key(worker_pool_id),\n          'RowKey', encode_composite_key(worker_group, worker_id),\n          'workerPoolId', worker_pool_id,\n          'workerGroup', worker_group,\n          'workerId', worker_id,\n          'providerId', provider_id,\n          'created', created,\n          'expires', expires,\n          'state', state,\n          'capacity', capacity,\n          'lastModified', last_modified,\n          'lastChecked', last_checked),\n        'providerData', provider_data::text) as value,\n      1 as version,\n      workers.etag as etag from workers\n    where\n      (wmworkers_entities_scan.pk is null or decode_string_key(wmworkers_entities_scan.pk) = worker_pool_id) and\n      (wmworkers_entities_scan.rk is null or wmworkers_entities_scan.rk = decoded_composite_key[1] || '~' || decoded_composite_key[2]) and\n      case\n        when exp_cond_operator = '=' then expires = exp_cond_operand\n        when exp_cond_operator = '<' then expires < exp_cond_operand\n        when exp_cond_operator = '<=' then expires <= exp_cond_operand\n        when exp_cond_operator = '>' then expires > exp_cond_operand\n        when exp_cond_operator = '>=' then expires >= exp_cond_operand\n        else expires <> exp_cond_operand\n      end\n    order by workers.worker_pool_id, workers.worker_group, workers.worker_id\n    limit case\n      when (size is not null and size > 0) then size + 1\n      else null\n    end\n    offset case\n      when (page is not null and page > 0) then page\n      else 0\n    end;\n  else\n    return query select\n      encode_string_key(worker_pool_id) as partition_key,\n      encode_composite_key(worker_group, worker_id) as row_key,\n      entity_buf_encode(\n        jsonb_build_object(\n          'PartitionKey', encode_string_key(worker_pool_id),\n          'RowKey', encode_composite_key(worker_group, worker_id),\n          'workerPoolId', worker_pool_id,\n          'workerGroup', worker_group,\n          'workerId', worker_id,\n          'providerId', provider_id,\n          'created', created,\n          'expires', expires,\n          'state', state,\n          'capacity', capacity,\n          'lastModified', last_modified,\n          'lastChecked', last_checked),\n        'providerData', provider_data::text) as value,\n      1 as version,\n      workers.etag as etag from workers\n    where\n      (wmworkers_entities_scan.pk is null or decode_string_key(wmworkers_entities_scan.pk) = worker_pool_id) and\n      (wmworkers_entities_scan.rk is null or (worker_group = decoded_composite_key[1] and worker_id = decoded_composite_key[2]))\n    order by workers.worker_pool_id, workers.worker_group, workers.worker_id\n    limit case\n      when (size is not null and size > 0) then size + 1\n      else null\n    end\n    offset case\n      when (size is not null and size > 0 and page is not null and page > 0) then page\n      else 0\n    end;\n  end if;\nend",
+          "deprecated": false,
+          "description": "See taskcluster-lib-entities",
+          "mode": "read",
+          "returns": "table (partition_key text, row_key text, value jsonb, version integer, etag uuid)",
+          "serviceName": "worker_manager"
+        }
+      },
+      "migrationScript": "begin\n  -- lock this table before reading from it, to prevent loss of concurrent\n  -- updates when the table is dropped.  Note that this may lead to concurrent\n  -- updates failing; the important thing is that they not succeed without\n  -- taking effect.  Failed updates will be retried.\n  lock table wmworkers_entities;\n\n  create table workers\n  as\n    select\n      (value ->> 'workerPoolId')::text as worker_pool_id,\n      (value ->> 'workerGroup')::text as worker_group,\n      (value ->> 'workerId')::text as worker_id,\n      (value ->> 'providerId')::text as provider_id,\n      (value ->> 'created')::timestamptz as created,\n      (value ->> 'expires')::timestamptz as expires,\n      (value ->> 'state')::text as state,\n      entity_buf_decode(value, 'providerData')::jsonb as provider_data,\n      (value ->> 'capacity')::integer as capacity,\n      (value ->> 'lastModified')::timestamptz as last_modified,\n      (value ->> 'lastChecked')::timestamptz as last_checked,\n      etag\n    from wmworkers_entities;\n  alter table workers add primary key (worker_pool_id, worker_group, worker_id);\n  alter table workers\n    alter column worker_pool_id set not null,\n    alter column worker_group set not null,\n    alter column worker_id set not null,\n    alter column provider_id set not null,\n    alter column created set not null,\n    alter column expires set not null,\n    alter column state set not null,\n    alter column provider_data set not null,\n    alter column capacity set not null,\n    alter column last_modified set not null,\n    alter column last_checked set not null,\n    alter column etag set not null,\n    alter column etag set default public.gen_random_uuid();\n\n  revoke select, insert, update, delete on wmworkers_entities from $db_user_prefix$_worker_manager;\n  drop table wmworkers_entities;\n  grant select, insert, update, delete on workers to $db_user_prefix$_worker_manager;\nend",
+      "version": 12
+    },
+    {
+      "methods": {
+        "get_worker_pool": {
+          "deprecated": true
+        },
+        "get_worker_pool_with_capacity": {
+          "args": "worker_pool_id_in text",
+          "body": "begin\n  return query\n  select\n    worker_pools.worker_pool_id,\n    worker_pools.provider_id,\n    worker_pools.previous_provider_ids,\n    worker_pools.description,\n    worker_pools.config,\n    worker_pools.created,\n    worker_pools.last_modified,\n    worker_pools.owner,\n    worker_pools.email_on_error,\n    worker_pools.provider_data,\n    coalesce((\n      select sum(workers.capacity) from workers where\n        workers.worker_pool_id = worker_pool_id_in and\n        workers.state != 'stopped'),\n      0)::integer -- sum always wants to return a bigint but we're always going to be safely within integer range\n  from worker_pools\n  where worker_pools.worker_pool_id = worker_pool_id_in;\nend",
+          "deprecated": false,
+          "description": "Get an existing worker pool.  The returned table will have one or (if no such worker pool is defined) zero rows.",
+          "mode": "read",
+          "returns": "table(worker_pool_id text, provider_id text, previous_provider_ids jsonb, description text, config jsonb, created timestamptz, last_modified timestamptz, owner text, email_on_error boolean, provider_data jsonb, current_capacity integer)",
+          "serviceName": "worker_manager"
+        },
+        "get_worker_pools": {
+          "deprecated": true
+        },
+        "get_worker_pools_with_capacity": {
+          "args": "page_size_in integer, page_offset_in integer",
+          "body": "begin\n  return query\n  select\n    worker_pools.worker_pool_id,\n    worker_pools.provider_id,\n    worker_pools.previous_provider_ids,\n    worker_pools.description,\n    worker_pools.config,\n    worker_pools.created,\n    worker_pools.last_modified,\n    worker_pools.owner,\n    worker_pools.email_on_error,\n    worker_pools.provider_data,\n    coalesce(sum(worker_capacities.capacity), 0)::integer -- sum always wants to return a bigint but we're always going to be safely within integer range\n  from worker_pools\n  left join (\n    select workers.worker_pool_id, workers.capacity from workers\n      where workers.state != 'stopped'\n  ) as worker_capacities\n  on worker_pools.worker_pool_id = worker_capacities.worker_pool_id\n  group by worker_pools.worker_pool_id\n  order by worker_pools.worker_pool_id\n  limit get_page_limit(page_size_in)\n  offset get_page_offset(page_offset_in);\nend",
+          "deprecated": false,
+          "description": "Get existing worker pools, ordered by `worker_pool_id`.  If the pagination arguments are both NULL, all rows are returned.\nOtherwise, page_size rows are returned at offset page_offset.",
+          "mode": "read",
+          "returns": "table(worker_pool_id text, provider_id text, previous_provider_ids jsonb, description text, config jsonb, created timestamptz, last_modified timestamptz, owner text, email_on_error boolean, provider_data jsonb, current_capacity integer)",
+          "serviceName": "worker_manager"
+        },
+        "update_worker_pool": {
+          "deprecated": true
+        },
+        "update_worker_pool_with_capacity": {
+          "args": "worker_pool_id_in text, provider_id_in text, description_in text, config_in jsonb, last_modified_in timestamptz, owner_in text, email_on_error_in boolean",
+          "body": "declare\n  existing record;\nbegin\n  select\n    worker_pools.provider_id,\n    worker_pools.previous_provider_ids\n  from worker_pools\n  where worker_pools.worker_pool_id = worker_pool_id_in\n  -- lock this row for the duration of this transaction..\n  for update\n  into existing;\n\n  -- update previous_provider_ids, if the provider_id has changed\n  if existing.provider_id <> provider_id_in then\n    -- remove both provider IDs to avoid duplicates, then re-add existing.provider_id\n    existing.previous_provider_ids = (existing.previous_provider_ids - provider_id_in - existing.provider_id) || jsonb_build_array(existing.provider_id);\n  end if;\n\n  return query update worker_pools\n  set\n    provider_id = provider_id_in,\n    description = description_in,\n    config = config_in,\n    last_modified = last_modified_in,\n    owner = owner_in,\n    email_on_error = email_on_error_in,\n    previous_provider_ids = existing.previous_provider_ids\n  where worker_pools.worker_pool_id = worker_pool_id_in\n  returning\n    worker_pools.worker_pool_id,\n    worker_pools.provider_id,\n    worker_pools.description,\n    worker_pools.config,\n    worker_pools.created,\n    worker_pools.last_modified,\n    worker_pools.owner,\n    worker_pools.email_on_error,\n    existing.provider_id as previous_provider_id,\n    coalesce((\n      select sum(workers.capacity) from workers where\n        workers.worker_pool_id = worker_pool_id_in and\n        workers.state != 'stopped'),\n      0)::integer; -- sum always wants to return a bigint but we're always going to be safely within integer range\nend",
+          "deprecated": false,
+          "description": "Update API-accessible columns on an existig worker pool.  All fields are\noverridden, but if the provider_id changes, then the existing provider_id\nis added to previous_provider_ids.  The return value contains values\nrequired for an API response and previous_provider_id (singular) containing\nthe provider_id found before the update.  If no such worker pool exists,\nthe return value is an empty set.",
+          "mode": "write",
+          "returns": "table(worker_pool_id text, provider_id text, description text, config jsonb, created timestamptz, last_modified timestamptz, owner text, email_on_error boolean, previous_provider_id text, current_capacity integer)",
+          "serviceName": "worker_manager"
+        }
+      },
+      "version": 13
+    },
+    {
+      "downgradeScript": "begin\n  alter table workers\n    drop column secret;\nend\n",
+      "methods": {
+        "get_worker_2": {
+          "args": "worker_pool_id_in text, worker_group_in text, worker_id_in text",
+          "body": "begin\n  return query\n  select\n    workers.worker_pool_id,\n    workers.worker_group,\n    workers.worker_id,\n    workers.provider_id,\n    workers.created,\n    workers.expires,\n    workers.state,\n    workers.provider_data,\n    workers.capacity,\n    workers.last_modified,\n    workers.last_checked,\n    workers.secret,\n    workers.etag\n  from workers\n  where\n    workers.worker_pool_id = worker_pool_id_in and\n    workers.worker_group = worker_group_in and\n    workers.worker_id = worker_id_in;\nend",
+          "deprecated": false,
+          "description": "Get an existing worker. The returned table will have one or (if no such worker is defined) zero rows.",
+          "mode": "read",
+          "returns": "table(worker_pool_id text, worker_group text, worker_id text, provider_id text, created timestamptz, expires timestamptz, state text, provider_data jsonb, capacity integer, last_modified timestamptz, last_checked timestamptz, secret jsonb, etag uuid)",
+          "serviceName": "worker_manager"
+        },
+        "update_worker_2": {
+          "args": "worker_pool_id_in text, worker_group_in text, worker_id_in text, provider_id_in text, created_in timestamptz, expires_in timestamptz, state_in text, provider_data_in jsonb, capacity_in integer, last_modified_in timestamptz, last_checked_in timestamptz, etag_in uuid, secret_in jsonb",
+          "body": "declare\n  new_etag uuid := public.gen_random_uuid();\n  updated_row workers%ROWTYPE;\nbegin\n  update workers\n  set (provider_id, created, expires, state, provider_data, capacity, last_modified, last_checked, etag, secret) = (\n    coalesce(provider_id_in, workers.provider_id),\n    coalesce(created_in, workers.created),\n    coalesce(expires_in, workers.expires),\n    coalesce(state_in, workers.state),\n    coalesce(provider_data_in, workers.provider_data),\n    coalesce(capacity_in, workers.capacity),\n    coalesce(last_modified_in, workers.last_modified),\n    coalesce(last_checked_in, workers.last_checked),\n    new_etag,\n    coalesce(secret_in, workers.secret)\n  )\n  where\n    workers.worker_pool_id = worker_pool_id_in and\n    workers.worker_group = worker_group_in and\n    workers.worker_id = worker_id_in and\n    workers.etag = coalesce(etag_in, workers.etag)\n  returning\n    workers.worker_pool_id,\n    workers.worker_group,\n    workers.worker_id,\n    workers.provider_id,\n    workers.created,\n    workers.expires,\n    workers.state,\n    workers.provider_data,\n    workers.capacity,\n    workers.last_modified,\n    workers.last_checked,\n    workers.etag,\n    workers.secret\n  into updated_row;\n\n  if found then\n    return query select\n      updated_row.worker_pool_id,\n      updated_row.worker_group,\n      updated_row.worker_id,\n      updated_row.provider_id,\n      updated_row.created,\n      updated_row.expires,\n      updated_row.state,\n      updated_row.provider_data,\n      updated_row.capacity,\n      updated_row.last_modified,\n      updated_row.last_checked,\n      updated_row.etag,\n      updated_row.secret;\n    return;\n  end if;\n\n  perform workers.etag from workers\n    where\n      workers.worker_pool_id = worker_pool_id_in and\n      workers.worker_group = worker_group_in and\n      workers.worker_id = worker_id_in;\n\n  if found then\n    raise exception 'unsuccessful update' using errcode = 'P0004';\n  else\n    raise exception 'no such row' using errcode = 'P0002';\n  end if;\nend",
+          "deprecated": false,
+          "description": "Update a worker.\nReturns the up-to-date worker row that have the same worker_pool_id, worker_group, and worker_id.\nIf the etag argument is empty then the update will overwrite the matched row.\nElse, the function will fail if the etag is out of date. This is useful for concurency handling.",
+          "mode": "write",
+          "returns": "table(worker_pool_id text, worker_group text, worker_id text, provider_id text, created timestamptz, expires timestamptz, state text, provider_data jsonb, capacity integer, last_modified timestamptz, last_checked timestamptz, etag uuid, secret jsonb)",
+          "serviceName": "worker_manager"
+        }
+      },
+      "migrationScript": "begin\n  -- In an effort to support worker reregistration, an encrypted secret column is required.\n  -- https://github.com/taskcluster/taskcluster/issues/3011\n  alter table workers\n    add column secret jsonb default null;\nend\n",
+      "version": 14
+    },
+    {
+      "downgradeScript": "begin\n  drop function sha512(t text);\nend",
+      "methods": {
+      },
+      "migrationScript": "begin\n  -- Compute the sha512 of the given text data.\n  -- sha512 is the algorithm that will be used to generate the hash.\n  -- This replaces Entity.keys.HashKey from taskcluster-lib-entities.\n  create or replace function sha512(t text) returns text\n  as $$\n      begin\n        return encode(digest(t, 'sha512'), 'hex');\n      end;\n  $$\n  language plpgSQL\n  strict immutable;\nend\n",
+      "version": 15
+    },
+    {
+      "downgradeScript": "begin\n  drop function uuid_to_slugid(uuid text);\n  drop function slugid_to_uuid(slugid text);\nend\n",
+      "methods": {
+      },
+      "migrationScript": "begin\n  -- SlugIDs are stored as UUIDs in Azure, because Azure stores that efficiently, but this makes it\n  -- difficult to query the DB since everywhere else we deal with SlugIDs in their 22-character\n  -- representation.  So these functions convert uuids to slugids and back.  Refer to\n  -- https://github.com/taskcluster/slugid/blob/53ec9a2de7140afff5b986c7c60a8028512e87d0/slugid.js\n  create or replace function uuid_to_slugid(uuid text) RETURNS text\n  as $$\n    begin\n      return left(replace(replace(encode(decode(replace(uuid, '-', ''), 'hex'), 'base64'), '+', '-'), '/', '_'), 22);\n    end;\n  $$\n  language plpgSQL\n  strict immutable;\n\n  create or replace function slugid_to_uuid(slugid text) RETURNS text\n  as $$\n    begin\n      return (encode(decode(replace(replace(slugid, '_', '/'), '-', '+') || '==', 'base64') , 'hex')::uuid)::text;\n    end;\n  $$\n  language plpgSQL\n  strict immutable;\nend\n",
+      "version": 16
     }
   ]
 }

@@ -33,7 +33,6 @@ const repr = v => {
 
 const cleanDocstring = (docstring, indent) => {
   const lines = docstring
-    .replace('"""', '\"\"\"') // does nothing, copied from Python
     .replace('\'\'\'', '\\\'\\\'\\\'')
     .replace('```js', '```')
     .replace('```javascript', '```')

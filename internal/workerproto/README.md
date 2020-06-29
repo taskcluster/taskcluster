@@ -25,7 +25,7 @@ Note that stderr is not included in the protocol.
 
 ## Go Package
 
-The `github.com/taskcluster/taskcluster/v29/internal/workerproto` package contains an implementation of this protocol suitable for use by `start-worker` and by a worker.
+The `github.com/taskcluster/taskcluster/v31/internal/workerproto` package contains an implementation of this protocol suitable for use by `start-worker` and by a worker.
 
 ## Initialization and Capability Negotiation
 
@@ -50,6 +50,16 @@ Before the connection is initialized, the connection's capabilities are unknown,
 ## Messages
 
 The following sections describe the defined message types, each under a heading giving the corresponding capability.
+
+### error-report
+
+This message type, sent from the worker, contains an error report intended for the worker-manager to display among its worker pool errors.
+
+```
+~{"type": "error-report", "kind": "critical", "title": "a serious error", "description": "bad stuff has happened!", "extra": {"number of failures": 1}}
+```
+
+See [here](https://docs.taskcluster.net/docs/reference/core/worker-manager/api#reportWorkerError) for documentation on worker-manager's `reportWorkerError` API.
 
 ### shutdown
 
@@ -90,3 +100,16 @@ Note that for non-structured log destinations, the body property `textPayload` i
 Using this property will make non-structured logs much easier to read.
 
 There is no reponse message.
+
+### new-credentials
+
+This message type, sent from worker-runner, contains new credentials which the worker should use for subsequent Taskcluster API calls that are not related to a task.
+This mesage is sent when credentials are renewed.
+The message may or may not contain a `certificate` property.
+
+```
+~{"type": "new-credentials", "client-id": "...", "access-token": "..."}
+~{"type": "new-credentials", "client-id": "...", "access-token": "...", "certificate": "..."}
+```
+
+If this message is not supported, worker-runner will attempt to gracefully shut down the worker when credentials expire.

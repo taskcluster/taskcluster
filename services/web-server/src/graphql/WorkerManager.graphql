@@ -5,6 +5,7 @@ type WorkerManagerWorkerPoolSummary {
     providerId: String!
     config: JSON
     emailOnError: Boolean!
+    currentCapacity: Int!
     pendingTasks: Int #this value comes from a separate request to queue
 }
 

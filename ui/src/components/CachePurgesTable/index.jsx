@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { func, shape, arrayOf } from 'prop-types';
+import { string, func, shape, arrayOf } from 'prop-types';
 import { pipe, map, sort as rSort } from 'ramda';
 import memoize from 'fast-memoize';
 import { camelCase } from 'change-case/change-case';
@@ -28,6 +28,12 @@ export default class CachePurgesTable extends Component {
       edges: arrayOf(cachePurge),
       pageInfo,
     }).isRequired,
+    /** A search term to refine the list of cache purges. */
+    searchTerm: string,
+  };
+
+  static defaultProps = {
+    searchTerm: null,
   };
 
   state = {
@@ -36,16 +42,17 @@ export default class CachePurgesTable extends Component {
   };
 
   createSortedCachePurgesConnection = memoize(
-    (cachePurgesConnection, sortBy, sortDirection) => {
+    (cachePurgesConnection, sortBy, sortDirection, searchTerm) => {
       const sortByProperty = camelCase(sortBy);
-
-      if (!sortBy) {
-        return cachePurgesConnection;
-      }
+      const filteredCache = searchTerm
+        ? cachePurgesConnection.edges.filter(({ node }) =>
+            node.cacheName.includes(searchTerm)
+          )
+        : cachePurgesConnection.edges;
 
       return {
         ...cachePurgesConnection,
-        edges: [...cachePurgesConnection.edges].sort((a, b) => {
+        edges: [...filteredCache].sort((a, b) => {
           const firstElement =
             sortDirection === 'desc'
               ? b.node[sortByProperty]
@@ -60,10 +67,15 @@ export default class CachePurgesTable extends Component {
       };
     },
     {
-      serializer: ([cachePurgesConnection, sortBy, sortDirection]) => {
+      serializer: ([
+        cachePurgesConnection,
+        sortBy,
+        sortDirection,
+        searchTerm,
+      ]) => {
         const ids = sorted(cachePurgesConnection.edges);
 
-        return `${ids.join('-')}-${sortBy}-${sortDirection}`;
+        return `${ids.join('-')}-${sortBy}-${sortDirection}-${searchTerm}`;
       },
     }
   );
@@ -76,16 +88,18 @@ export default class CachePurgesTable extends Component {
   };
 
   render() {
-    const { onPageChange, cachePurgesConnection } = this.props;
+    const { onPageChange, cachePurgesConnection, searchTerm } = this.props;
     const { sortBy, sortDirection } = this.state;
     const sortedCachePurgesConnection = this.createSortedCachePurgesConnection(
       cachePurgesConnection,
       sortBy,
-      sortDirection
+      sortDirection,
+      searchTerm
     );
 
     return (
       <ConnectionDataTable
+        searchTerm={searchTerm}
         size="medium"
         connection={sortedCachePurgesConnection}
         pageSize={VIEW_CACHE_PURGES_PAGE_SIZE}

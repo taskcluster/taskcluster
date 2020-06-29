@@ -37,11 +37,13 @@ const resetDb = async ({testDbUrl}) => {
   }
 };
 
-const resetTable = async ({testDbUrl, tableName}) => {
+const resetTables = async ({testDbUrl, tableNames}) => {
   const client = new Client({connectionString: testDbUrl});
   await client.connect();
   try {
-    await ignorePgErrors(client.query(`truncate ${tableName}`), UNDEFINED_TABLE);
+    for (let tableName of tableNames) {
+      await ignorePgErrors(client.query(`truncate ${tableName}`), UNDEFINED_TABLE);
+    }
   } finally {
     await client.end();
   }
@@ -63,8 +65,16 @@ module.exports.withDb = (mock, skipping, helper, serviceName) => {
       return;
     }
 
+    const dbCryptoKeys = [
+      {
+        id: 'testing',
+        algo: 'aes-256',
+        key: 'aSdtIGJzdGFjayEgaGVsbG8gZnV0dXJlIHBlcnNvbgo',
+      },
+    ];
+
     if (mock) {
-      helper.db = await tcdb.fakeSetup({serviceName});
+      helper.db = await tcdb.fakeSetup({serviceName, dbCryptoKeys});
     } else {
       const sec = helper.secrets.get('db');
 
@@ -87,6 +97,7 @@ module.exports.withDb = (mock, skipping, helper, serviceName) => {
         serviceName,
         useDbDirectory: true,
         monitor: false,
+        dbCryptoKeys,
       });
     }
 
@@ -112,4 +123,4 @@ module.exports.withDb.secret = [
 
 // this is useful for taskcluster-db's tests, as well
 module.exports.resetDb = resetDb;
-module.exports.resetTable = resetTable;
+module.exports.resetTables = resetTables;

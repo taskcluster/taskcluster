@@ -1,0 +1,445 @@
+version: 12
+migrationScript: 0012-migration.sql
+downgradeScript: 0012-downgrade.sql
+methods:
+  wmworkers_entities_load:
+    description: See taskcluster-lib-entities
+    mode: read
+    serviceName: worker_manager
+    args: partition_key text, row_key text
+    returns: table (partition_key_out text, row_key_out text, value jsonb, version integer, etag uuid)
+    body: |-
+      declare
+        decoded_composite_key text[];
+      begin
+        decoded_composite_key := decode_composite_key(wmworkers_entities_load.row_key);
+        return query
+        select
+          wmworkers_entities_load.partition_key,
+          wmworkers_entities_load.row_key,
+          entity_buf_encode(
+            jsonb_build_object(
+              'PartitionKey', encode_string_key(worker_pool_id),
+              'RowKey', encode_composite_key(worker_group, worker_id),
+              'workerPoolId', worker_pool_id,
+              'workerGroup', worker_group,
+              'workerId', worker_id,
+              'providerId', provider_id,
+              'created', created,
+              'expires', expires,
+              'state', state,
+              'capacity', capacity,
+              'lastModified', last_modified,
+              'lastChecked', last_checked),
+            'providerData', provider_data::text) as value,
+          1 as version,
+          workers.etag as etag
+        from workers
+        where
+          workers.worker_pool_id = decode_string_key(wmworkers_entities_load.partition_key) and workers.worker_group = decoded_composite_key[1] and workers.worker_id = decoded_composite_key[2];
+      end
+  wmworkers_entities_create:
+    serviceName: worker_manager
+    description: See taskcluster-lib-entities
+    mode: write
+    args: pk text, rk text, properties jsonb, overwrite boolean, version integer
+    returns: uuid
+    body: |-
+      declare
+        new_row workers%ROWTYPE;
+      begin
+        select
+          (properties ->> 'workerPoolId')::text,
+          (properties ->> 'workerGroup')::text,
+          (properties ->> 'workerId')::text,
+          (properties ->> 'providerId')::text,
+          (properties ->> 'created')::timestamptz,
+          (properties ->> 'expires')::timestamptz,
+          (properties ->> 'state')::text,
+          entity_buf_decode(properties, 'providerData')::jsonb,
+          (properties ->> 'capacity')::integer as capacity,
+          (properties ->> 'lastModified')::timestamptz,
+          (properties ->> 'lastChecked')::timestamptz,
+          public.gen_random_uuid()
+        into new_row;
+        if overwrite then
+          raise exception 'overwrite not implemented';
+        else
+          execute 'insert into workers select $1.*' using new_row;
+        end if;
+        return new_row.etag;
+      end
+  wmworkers_entities_remove:
+    serviceName: worker_manager
+    description: See taskcluster-lib-entities
+    mode: write
+    args: partition_key text, row_key text
+    returns: table (etag uuid)
+    body: |-
+      declare
+        decoded_composite_key text[];
+      begin
+        decoded_composite_key := decode_composite_key(wmworkers_entities_remove.row_key);
+        return query delete from workers
+        where
+          workers.worker_pool_id = decode_string_key(wmworkers_entities_remove.partition_key) and
+          workers.worker_group = decoded_composite_key[1] and
+          workers.worker_id = decoded_composite_key[2]
+        returning workers.etag;
+      end
+  wmworkers_entities_modify:
+    serviceName: worker_manager
+    description: See taskcluster-lib-entities
+    mode: write
+    args: partition_key text, row_key text, properties jsonb, version integer, old_etag uuid
+    returns: table (etag uuid)
+    body: |-
+      declare
+        new_row workers%ROWTYPE;
+        decoded_composite_key text[];
+      begin
+        decoded_composite_key := decode_composite_key(wmworkers_entities_modify.row_key);
+        select
+          (properties ->> 'workerPoolId')::text,
+          (properties ->> 'workerGroup')::text,
+          (properties ->> 'workerId')::text,
+          (properties ->> 'providerId')::text,
+          (properties ->> 'created')::timestamptz,
+          (properties ->> 'expires')::timestamptz,
+          (properties ->> 'state')::text,
+          entity_buf_decode(properties, 'providerData')::jsonb,
+          (properties ->> 'capacity')::integer,
+          (properties ->> 'lastModified')::timestamptz,
+          (properties ->> 'lastChecked')::timestamptz,
+          public.gen_random_uuid() as etag
+        into new_row;
+        update workers
+        set (
+          provider_id,
+          created,
+          expires,
+          state,
+          capacity,
+          last_modified,
+          last_checked,
+          provider_data,
+          etag
+        ) = (
+          new_row.provider_id,
+          new_row.created,
+          new_row.expires,
+          new_row.state,
+          new_row.capacity,
+          new_row.last_modified,
+          new_row.last_checked,
+          new_row.provider_data,
+          new_row.etag
+        )
+        where
+          workers.worker_pool_id = decode_string_key(wmworkers_entities_modify.partition_key) and
+          workers.worker_group = decoded_composite_key[1] and
+          workers.worker_id = decoded_composite_key[2] and
+          workers.etag = wmworkers_entities_modify.old_etag;
+        if found then
+          return query select new_row.etag;
+          return;
+        end if;
+        perform workers.etag from workers
+        where
+          workers.worker_pool_id = decode_string_key(wmworkers_entities_modify.partition_key) and
+          workers.worker_group = decoded_composite_key[1] and
+          workers.worker_id = decoded_composite_key[2];
+        if found then
+          raise exception 'unsuccessful update' using errcode = 'P0004';
+        else
+          raise exception 'no such row' using errcode = 'P0002';
+        end if;
+      end
+  wmworkers_entities_scan:
+    description: See taskcluster-lib-entities
+    mode: read
+    serviceName: worker_manager
+    args: pk text, rk text, condition text, size integer, page integer
+    returns: table (partition_key text, row_key text, value jsonb, version integer, etag uuid)
+    body: |-
+      declare
+        cond text[];
+        exp_cond_operator text;
+        exp_cond_operand timestamptz;
+        partition_key_var text;
+        row_key_var text;
+        decoded_composite_key text[];
+      begin
+        decoded_composite_key := decode_composite_key(wmworkers_entities_scan.rk);
+        if not condition is null then
+          cond := regexp_split_to_array(condition, '\s+');
+          exp_cond_operator := cond[4];
+          exp_cond_operand := cond[5] :: timestamptz;
+
+          return query select
+            encode_string_key(worker_pool_id) as partition_key,
+            encode_composite_key(worker_group, worker_id) as row_key,
+            entity_buf_encode(
+              jsonb_build_object(
+                'PartitionKey', encode_string_key(worker_pool_id),
+                'RowKey', encode_composite_key(worker_group, worker_id),
+                'workerPoolId', worker_pool_id,
+                'workerGroup', worker_group,
+                'workerId', worker_id,
+                'providerId', provider_id,
+                'created', created,
+                'expires', expires,
+                'state', state,
+                'capacity', capacity,
+                'lastModified', last_modified,
+                'lastChecked', last_checked),
+              'providerData', provider_data::text) as value,
+            1 as version,
+            workers.etag as etag from workers
+          where
+            (wmworkers_entities_scan.pk is null or decode_string_key(wmworkers_entities_scan.pk) = worker_pool_id) and
+            (wmworkers_entities_scan.rk is null or wmworkers_entities_scan.rk = decoded_composite_key[1] || '~' || decoded_composite_key[2]) and
+            case
+              when exp_cond_operator = '=' then expires = exp_cond_operand
+              when exp_cond_operator = '<' then expires < exp_cond_operand
+              when exp_cond_operator = '<=' then expires <= exp_cond_operand
+              when exp_cond_operator = '>' then expires > exp_cond_operand
+              when exp_cond_operator = '>=' then expires >= exp_cond_operand
+              else expires <> exp_cond_operand
+            end
+          order by workers.worker_pool_id, workers.worker_group, workers.worker_id
+          limit case
+            when (size is not null and size > 0) then size + 1
+            else null
+          end
+          offset case
+            when (page is not null and page > 0) then page
+            else 0
+          end;
+        else
+          return query select
+            encode_string_key(worker_pool_id) as partition_key,
+            encode_composite_key(worker_group, worker_id) as row_key,
+            entity_buf_encode(
+              jsonb_build_object(
+                'PartitionKey', encode_string_key(worker_pool_id),
+                'RowKey', encode_composite_key(worker_group, worker_id),
+                'workerPoolId', worker_pool_id,
+                'workerGroup', worker_group,
+                'workerId', worker_id,
+                'providerId', provider_id,
+                'created', created,
+                'expires', expires,
+                'state', state,
+                'capacity', capacity,
+                'lastModified', last_modified,
+                'lastChecked', last_checked),
+              'providerData', provider_data::text) as value,
+            1 as version,
+            workers.etag as etag from workers
+          where
+            (wmworkers_entities_scan.pk is null or decode_string_key(wmworkers_entities_scan.pk) = worker_pool_id) and
+            (wmworkers_entities_scan.rk is null or (worker_group = decoded_composite_key[1] and worker_id = decoded_composite_key[2]))
+          order by workers.worker_pool_id, workers.worker_group, workers.worker_id
+          limit case
+            when (size is not null and size > 0) then size + 1
+            else null
+          end
+          offset case
+            when (size is not null and size > 0 and page is not null and page > 0) then page
+            else 0
+          end;
+        end if;
+      end
+  get_worker:
+    description: Get an existing worker. The returned table will have one or (if no such worker is defined) zero rows.
+    mode: read
+    serviceName: worker_manager
+    args: worker_pool_id_in text, worker_group_in text, worker_id_in text
+    returns: table(worker_pool_id text, worker_group text, worker_id text, provider_id text, created timestamptz, expires timestamptz, state text, provider_data jsonb, capacity integer, last_modified timestamptz, last_checked timestamptz, etag uuid)
+    body: |-
+      begin
+        return query
+        select
+          workers.worker_pool_id,
+          workers.worker_group,
+          workers.worker_id,
+          workers.provider_id,
+          workers.created,
+          workers.expires,
+          workers.state,
+          workers.provider_data,
+          workers.capacity,
+          workers.last_modified,
+          workers.last_checked,
+          workers.etag
+        from workers
+        where
+          workers.worker_pool_id = worker_pool_id_in and
+          workers.worker_group = worker_group_in and
+          workers.worker_id = worker_id_in;
+      end
+  create_worker:
+    description: |-
+      Create a new worker. Raises UNIQUE_VIOLATION if the worker already exists.
+      Returns the etag of the newly created worker.
+    mode: write
+    serviceName: worker_manager
+    args: worker_pool_id_in text, worker_group_in text, worker_id_in text, provider_id_in text, created_in timestamptz, expires_in timestamptz, state_in text, provider_data_in jsonb, capacity_in integer, last_modified_in timestamptz, last_checked_in timestamptz
+    returns: uuid
+    body: |-
+      declare
+        new_etag uuid := public.gen_random_uuid();
+      begin
+        insert
+          into workers (worker_pool_id, worker_group, worker_id, provider_id, created, expires, state, provider_data, capacity, last_modified, last_checked, etag)
+          values (worker_pool_id_in, worker_group_in, worker_id_in, provider_id_in, created_in, expires_in, state_in, provider_data_in, capacity_in, last_modified_in, last_checked_in, new_etag);
+
+        return new_etag;
+      end
+  update_worker:
+    serviceName: worker_manager
+    description: |-
+      Update a worker.
+      Returns the up-to-date worker row that have the same worker_pool_id, worker_group, and worker_id.
+      If the etag argument is empty then the update will overwrite the matched row.
+      Else, the function will fail if the etag is out of date. This is useful for concurency handling.
+    mode: write
+    args: worker_pool_id_in text, worker_group_in text, worker_id_in text, provider_id_in text, created_in timestamptz, expires_in timestamptz, state_in text, provider_data_in jsonb, capacity_in integer, last_modified_in timestamptz, last_checked_in timestamptz, etag_in uuid
+    returns: table(worker_pool_id text, worker_group text, worker_id text, provider_id text, created timestamptz, expires timestamptz, state text, provider_data jsonb, capacity integer, last_modified timestamptz, last_checked timestamptz, etag uuid)
+    body: |-
+      declare
+        new_etag uuid := public.gen_random_uuid();
+        updated_row workers%ROWTYPE;
+      begin
+        update workers
+        set (provider_id, created, expires, state, provider_data, capacity, last_modified, last_checked, etag) = (
+          coalesce(provider_id_in, workers.provider_id),
+          coalesce(created_in, workers.created),
+          coalesce(expires_in, workers.expires),
+          coalesce(state_in, workers.state),
+          coalesce(provider_data_in, workers.provider_data),
+          coalesce(capacity_in, workers.capacity),
+          coalesce(last_modified_in, workers.last_modified),
+          coalesce(last_checked_in, workers.last_checked),
+          new_etag
+        )
+        where
+          workers.worker_pool_id = worker_pool_id_in and
+          workers.worker_group = worker_group_in and
+          workers.worker_id = worker_id_in and
+          workers.etag = coalesce(etag_in, workers.etag)
+        returning
+          workers.worker_pool_id,
+          workers.worker_group,
+          workers.worker_id,
+          workers.provider_id,
+          workers.created,
+          workers.expires,
+          workers.state,
+          workers.provider_data,
+          workers.capacity,
+          workers.last_modified,
+          workers.last_checked,
+          workers.etag
+        into updated_row;
+
+        if found then
+          return query select
+            updated_row.worker_pool_id,
+            updated_row.worker_group,
+            updated_row.worker_id,
+            updated_row.provider_id,
+            updated_row.created,
+            updated_row.expires,
+            updated_row.state,
+            updated_row.provider_data,
+            updated_row.capacity,
+            updated_row.last_modified,
+            updated_row.last_checked,
+            updated_row.etag;
+          return;
+        end if;
+
+        perform workers.etag from workers
+          where
+            workers.worker_pool_id = worker_pool_id_in and
+            workers.worker_group = worker_group_in and
+            workers.worker_id = worker_id_in;
+
+        if found then
+          raise exception 'unsuccessful update' using errcode = 'P0004';
+        else
+          raise exception 'no such row' using errcode = 'P0002';
+        end if;
+      end
+  get_workers:
+    description: |-
+      Get existing workers filtered by the optional arguments,
+      ordered by `worker_pool_id`, `worker_group`, and  `worker_id`.
+      If the pagination arguments are both NULL, all rows are returned.
+      Otherwise, page_size rows are returned at offset page_offset.
+    mode: read
+    serviceName: worker_manager
+    args: worker_pool_id_in text, worker_group_in text, worker_id_in text, state_in text, page_size_in integer, page_offset_in integer
+    returns: table(worker_pool_id text, worker_group text, worker_id text, provider_id text, created timestamptz, expires timestamptz, state text, provider_data jsonb, capacity integer, last_modified timestamptz, last_checked timestamptz)
+    body: |-
+      begin
+        return query
+        select
+          workers.worker_pool_id,
+          workers.worker_group,
+          workers.worker_id,
+          workers.provider_id,
+          workers.created,
+          workers.expires,
+          workers.state,
+          workers.provider_data,
+          workers.capacity,
+          workers.last_modified,
+          workers.last_checked
+        from workers
+        where
+          (workers.worker_pool_id = worker_pool_id_in or worker_pool_id_in is null) and
+          (workers.worker_group = worker_group_in or worker_group_in is null) and
+          (workers.worker_id = worker_id_in or worker_id_in is null) and
+          (workers.state = state_in or state_in is null)
+        order by worker_pool_id, worker_group, worker_id
+        limit get_page_limit(page_size_in)
+        offset get_page_offset(page_offset_in);
+      end
+  expire_workers:
+    description: |-
+      Expire workers that come before `expires_in`.
+      Returns a count of rows that have been deleted.
+    mode: write
+    serviceName: worker_manager
+    args: expires_in timestamptz
+    returns: integer
+    body: |-
+      declare
+        count integer;
+      begin
+        delete from workers where workers.expires < expires_in;
+        if found then
+          get diagnostics count = row_count;
+          return count;
+        end if;
+        return 0;
+      end
+  delete_worker:
+    description: |-
+      Delete a worker.
+    mode: write
+    serviceName: worker_manager
+    args: worker_pool_id_in text, worker_group_in text, worker_id_in text
+    returns: void
+    body: |-
+      begin
+        delete
+        from workers
+        where
+          workers.worker_pool_id = worker_pool_id_in and
+          workers.worker_group = worker_group_in and
+          workers.worker_id = worker_id_in;
+      end

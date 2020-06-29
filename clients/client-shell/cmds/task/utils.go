@@ -6,8 +6,8 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
-	tcclient "github.com/taskcluster/taskcluster/v29/clients/client-go"
-	"github.com/taskcluster/taskcluster/v29/clients/client-shell/config"
+	tcclient "github.com/taskcluster/taskcluster/v31/clients/client-go"
+	"github.com/taskcluster/taskcluster/v31/clients/client-shell/config"
 )
 
 // Executor represents the function interface of the task subcommand.
@@ -39,7 +39,7 @@ func executeHelperE(f Executor) func(*cobra.Command, []string) error {
 func stringFlagHelper(flagset *pflag.FlagSet, flag string) string {
 	val, err := flagset.GetString(flag)
 	if err != nil {
-		panic(fmt.Errorf("could not get the value of %s: %v", flag, err))
+		log.Panicf("could not get the value of %s: %v", flag, err)
 	}
 	return val
 }

@@ -11,7 +11,7 @@ const {APIBuilder} = require('taskcluster-lib-api');
 const SchemaSet = require('taskcluster-lib-validate');
 const staticScopes = require('../src/static-scopes.json');
 const makeSentryManager = require('./../src/sentrymanager');
-const {stickyLoader, Secrets, withEntity, withPulse, withMonitor, withDb, resetTable} = require('taskcluster-lib-testing');
+const {stickyLoader, Secrets, withEntity, withPulse, withMonitor, withDb, resetTables} = require('taskcluster-lib-testing');
 
 exports.load = stickyLoader(load);
 
@@ -32,10 +32,7 @@ withMonitor(exports);
 
 // set up the testing secrets
 exports.secrets = new Secrets({
-  secretName: [
-    'project/taskcluster/testing/azure',
-    'project/taskcluster/testing/taskcluster-auth',
-  ],
+  secretName: 'project/taskcluster/testing/taskcluster-auth',
   secrets: {
     db: withDb.secret,
     azure: [
@@ -432,8 +429,7 @@ exports.resetTables = (mock, skipping) => {
       exports.db['auth'].reset();
     } else {
       const sec = exports.secrets.get('db');
-      await resetTable({ testDbUrl: sec.testDbUrl, tableName: 'clients_entities' });
-      await resetTable({ testDbUrl: sec.testDbUrl, tableName: 'roles_entities' });
+      await resetTables({ testDbUrl: sec.testDbUrl, tableNames: ['clients_entities', 'roles_entities'] });
     }
   });
 };

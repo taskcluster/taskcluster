@@ -31,6 +31,8 @@ func TestUpdateCommand(t *testing.T) {
 
 	buf, cmd := setUpCommand()
 
+	log.SetOutput(buf)
+
 	update(cmd, nil)
 
 	assert.Contains(buf.String(), "taskcluster", "Update command not returning a valid output")

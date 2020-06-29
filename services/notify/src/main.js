@@ -1,14 +1,14 @@
 require('../../prelude');
 const aws = require('aws-sdk');
 const {Client, pulseCredentials} = require('taskcluster-lib-pulse');
-const App = require('taskcluster-lib-app');
+const {App} = require('taskcluster-lib-app');
 const loader = require('taskcluster-lib-loader');
 const config = require('taskcluster-lib-config');
 const SchemaSet = require('taskcluster-lib-validate');
 const libReferences = require('taskcluster-lib-references');
 const taskcluster = require('taskcluster-client');
 const _ = require('lodash');
-const monitorManager = require('./monitor');
+const {MonitorManager} = require('taskcluster-lib-monitor');
 const builder = require('./api');
 const Notifier = require('./notifier');
 const RateLimit = require('./ratelimit');
@@ -21,16 +21,22 @@ const MatrixBot = require('./matrix');
 const data = require('./data');
 const tcdb = require('taskcluster-db');
 
+require('./monitor');
+
 // Create component loader
 const load = loader({
   cfg: {
     requires: ['profile'],
-    setup: ({profile}) => config({profile}),
+    setup: ({profile}) => config({
+      profile,
+      serviceName: 'notify',
+    }),
   },
 
   monitor: {
     requires: ['process', 'profile', 'cfg'],
-    setup: ({process, profile, cfg}) => monitorManager.setup({
+    setup: ({process, profile, cfg}) => MonitorManager.setup({
+      serviceName: 'notify',
       processName: process,
       verify: profile !== 'production',
       ...cfg.monitoring,
@@ -77,7 +83,7 @@ const load = loader({
     requires: ['cfg', 'schemaset'],
     setup: ({cfg, schemaset}) => libReferences.fromService({
       schemaset,
-      references: [builder.reference(), exchanges.reference(), monitorManager.reference()],
+      references: [builder.reference(), exchanges.reference(), MonitorManager.reference('notify')],
     }).generateReferences(),
   },
 

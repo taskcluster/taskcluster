@@ -12,7 +12,7 @@ const { ApolloServer } = require('apollo-server-express');
 const taskcluster = require('taskcluster-client');
 const tcdb = require('taskcluster-db');
 const { Auth } = require('taskcluster-client');
-const monitorManager = require('./monitor');
+const {MonitorManager} = require('taskcluster-lib-monitor');
 const createApp = require('./servers/createApp');
 const formatError = require('./servers/formatError');
 const clients = require('./clients');
@@ -28,17 +28,23 @@ const GithubAccessToken = require('./data/GithubAccessToken');
 const SessionStorage = require('./data/SessionStorage');
 const scanner = require('./login/scanner');
 
+require('./monitor');
+
 const load = loader(
   {
     cfg: {
       requires: ['profile'],
-      setup: ({ profile }) => config({ profile }),
+      setup: ({ profile }) => config({
+        profile,
+        serviceName: 'web-server',
+      }),
     },
 
     monitor: {
       requires: ['cfg', 'profile', 'process'],
       setup: ({ cfg, profile, process }) =>
-        monitorManager.setup({
+        MonitorManager.setup({
+          serviceName: 'web-server',
           processName: process,
           verify: profile !== 'production',
           ...cfg.monitoring,
@@ -108,7 +114,7 @@ const load = loader(
     generateReferences: {
       requires: ['cfg'],
       setup: ({cfg}) => libReferences.fromService({
-        references: [monitorManager.reference()],
+        references: [MonitorManager.reference('web-server')],
       }).generateReferences(),
     },
 

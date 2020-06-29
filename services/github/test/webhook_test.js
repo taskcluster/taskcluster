@@ -2,7 +2,6 @@ const fs = require('fs');
 const helper = require('./helper');
 const assert = require('assert');
 const testing = require('taskcluster-lib-testing');
-const monitorManager = require('../src/monitor');
 const {LEVELS} = require('taskcluster-lib-monitor');
 
 helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
@@ -14,11 +13,13 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
   helper.resetTables(mock, skipping);
 
   let github = null;
+  let monitor;
 
   setup(async function() {
     github = await helper.load('github');
     github.inst(5808).setUser({id: 14795478, email: 'someuser@github.com', username: 'TaskclusterRobot'});
     github.inst(5808).setUser({id: 18102552, email: 'anotheruser@github.com', username: 'owlishDeveloper'});
+    monitor = await helper.load('monitor');
   });
 
   // Check the status code returned from a request containing some test data
@@ -30,9 +31,9 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
       assert.equal(response.statusCode, statusCode);
       response.connection.destroy();
       if (statusCode < 300) {
-        assert.deepEqual(monitorManager.messages.find(({Type}) => Type === 'webhook-received'), {
+        assert.deepEqual(monitor.manager.messages.find(({Type}) => Type === 'webhook-received'), {
           Type: 'webhook-received',
-          Logger: 'taskcluster.github.api',
+          Logger: 'taskcluster.test.api',
           Fields: {
             eventId: request.headers['X-GitHub-Delivery'],
             eventType: request.headers['X-GitHub-Event'],

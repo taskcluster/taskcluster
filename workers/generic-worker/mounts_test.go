@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/json"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -10,7 +9,7 @@ import (
 	"testing"
 
 	"github.com/taskcluster/slugid-go/slugid"
-	"github.com/taskcluster/taskcluster/v29/workers/generic-worker/gwconfig"
+	"github.com/taskcluster/taskcluster/v31/workers/generic-worker/gwconfig"
 )
 
 func TestMissingScopes(t *testing.T) {
@@ -49,12 +48,7 @@ func TestMissingScopes(t *testing.T) {
 
 	_ = submitAndAssert(t, td, payload, "exception", "malformed-payload")
 
-	// check log mentions both missing scopes
-	bytes, err := ioutil.ReadFile(filepath.Join(taskContext.TaskDir, logPath))
-	if err != nil {
-		t.Fatalf("Error when trying to read log file: %v", err)
-	}
-	logtext := string(bytes)
+	logtext := LogText(t)
 	if !strings.Contains(logtext, "queue:get-artifact:SampleArtifacts/_/X.txt") || !strings.Contains(logtext, "generic-worker:cache:banana-cache") {
 		t.Fatalf("Was expecting log file to contain missing scopes, but it doesn't")
 	}
@@ -95,12 +89,7 @@ func TestMissingMountsDependency(t *testing.T) {
 
 	_ = submitAndAssert(t, td, payload, "exception", "malformed-payload")
 
-	// check log mentions task dependency failure
-	bytes, err := ioutil.ReadFile(filepath.Join(taskContext.TaskDir, logPath))
-	if err != nil {
-		t.Fatalf("Error when trying to read log file: %v", err)
-	}
-	logtext := string(bytes)
+	logtext := LogText(t)
 	if !strings.Contains(logtext, "[mounts] task.dependencies needs to include "+pretendTaskID+" since one or more of its artifacts are mounted") {
 		t.Fatalf("Was expecting log file to explain that task dependency was missing, but it doesn't: \n%v", logtext)
 	}
@@ -148,12 +137,7 @@ func TestCorruptZipDoesntCrashWorker(t *testing.T) {
 
 	_ = submitAndAssert(t, td, payload, "failed", "failed")
 
-	// check log mentions zip file is invalid
-	bytes, err := ioutil.ReadFile(filepath.Join(taskContext.TaskDir, logPath))
-	if err != nil {
-		t.Fatalf("Error when trying to read log file: %v", err)
-	}
-	logtext := string(bytes)
+	logtext := LogText(t)
 	if !strings.Contains(logtext, "zip: not a valid zip file") {
 		t.Fatalf("Was expecting log file to contain a zip error message, but it instead contains:\n%v", logtext)
 	}
@@ -200,14 +184,10 @@ func TestNonExistentArtifact(t *testing.T) {
 
 	_ = submitAndAssert(t, td, payload, "failed", "failed")
 
-	// check log mentions zip file is invalid
-	bytes, err := ioutil.ReadFile(filepath.Join(taskContext.TaskDir, logPath))
-	if err != nil {
-		t.Fatalf("Error when trying to read log file: %v", err)
-	}
-	logtext := string(bytes)
-	if !strings.Contains(logtext, "[mounts] Could not fetch from task "+taskID+" artifact SampleArtifacts/_/non-existent-artifact.txt into file") {
-		t.Fatalf("Log did not contain expected text:\n%v", logtext)
+	logtext := LogText(t)
+	expectedText := "[mounts] Could not fetch from task " + taskID + " artifact SampleArtifacts/_/non-existent-artifact.txt into file"
+	if !strings.Contains(logtext, expectedText) {
+		t.Fatalf("Log did not contain expected text %q:\n%v", expectedText, logtext)
 	}
 }
 
@@ -248,12 +228,7 @@ func LogTest(m *MountsLoggingTestCase) {
 		td.Dependencies = m.Dependencies
 		_ = submitAndAssert(m.Test, td, *payload, m.TaskRunResolutionState, m.TaskRunReasonResolved)
 
-		// check log entries
-		bytes, err := ioutil.ReadFile(filepath.Join(taskContext.TaskDir, logPath))
-		if err != nil {
-			m.Test.Fatalf("Error when trying to read log file: %v", err)
-		}
-		logtext := string(bytes)
+		logtext := LogText(m.Test)
 		allLogLines := strings.Split(logtext, "\n")
 		mountsLogLines := make([]string, 0, len(run))
 		for _, logLine := range allLogLines {
@@ -278,7 +253,7 @@ func LogTest(m *MountsLoggingTestCase) {
 				m.Test.Fatalf("Was expecting log line to match pattern '%v', but it does not:\n%v", run[i], mountsLogLines[i])
 			}
 		}
-		err = os.RemoveAll(taskContext.TaskDir)
+		err := os.RemoveAll(taskContext.TaskDir)
 		if err != nil {
 			m.Test.Fatalf("Could not delete task directory: %v", err)
 		}

@@ -32,7 +32,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
   });
 
   test('get single workerpool', async function() {
-    helper.fakes.makeWorkerPool('baz/bing', {owner: 'foo@example.com'});
+    helper.fakes.makeWorkerPool('baz/bing', {owner: 'foo@example.com', currentCapacity: 4});
     const client = helper.getHttpClient();
     const single = await client.query({
       query: gql`${workerPoolQuery}`,
@@ -43,11 +43,12 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
 
     assert.equal(single.data.WorkerPool.workerPoolId, 'baz/bing');
     assert.equal(single.data.WorkerPool.owner, 'foo@example.com');
+    assert.equal(single.data.WorkerPool.currentCapacity, 4);
   });
 
   test('list workerpools', async function() {
-    helper.fakes.makeWorkerPool('foo/bar', {providerId: 'baz'});
-    helper.fakes.makeWorkerPool('baz/bing', {providerId: 'wow'});
+    helper.fakes.makeWorkerPool('foo/bar', {providerId: 'baz', currentCapacity: 0});
+    helper.fakes.makeWorkerPool('baz/bing', {providerId: 'wow', currentCapacity: 2});
     const client = helper.getHttpClient();
     const response = await client.query({
       query: gql`${workerPoolsQuery}`,
@@ -58,6 +59,9 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
     assert.equal(response.data.WorkerManagerWorkerPoolSummaries.edges[1].node.workerPoolId, 'baz/bing');
     assert.equal(response.data.WorkerManagerWorkerPoolSummaries.edges[0].node.providerId, 'baz');
     assert.equal(response.data.WorkerManagerWorkerPoolSummaries.edges[1].node.providerId, 'wow');
+
+    assert.equal(response.data.WorkerManagerWorkerPoolSummaries.edges[0].node.currentCapacity, 0);
+    assert.equal(response.data.WorkerManagerWorkerPoolSummaries.edges[1].node.currentCapacity, 2);
 
     const clippedResponse = await client.query({
       query: gql`${workerPoolsQuery}`,

@@ -7,7 +7,7 @@ const debug = require('debug')('db-helper');
 const {UNDEFINED_TABLE} = require('taskcluster-lib-postgres');
 
 exports.dbUrl = process.env.TEST_DB_URL;
-assert(exports.dbUrl, "TEST_DB_URL must be set to run db/ tests");
+assert(exports.dbUrl, "TEST_DB_URL must be set to run db/ tests - see dev-docs/development-process.md for more information");
 
 /**
  * Set up to test a DB version.
@@ -16,6 +16,7 @@ assert(exports.dbUrl, "TEST_DB_URL must be set to run db/ tests");
  * - helper.withDbClient(fn) to call fn with a pg client.
  * - helper.upgradeTo(v) to upgrade to the given version.
  * - helper.downgradeTo(v) to downgrade to the given version.
+ * - helper.toDbVersion(v) to upgrade or downgrade as necessary to the given version
  * - helper.setupDb(serviceName) returns a setup Database object for that service
  *
  * The database is only reset at the beginning of the suite.  Test suites
@@ -59,6 +60,14 @@ exports.withDbForVersion = function() {
         serviceName,
         useDbDirectory: true,
         monitor: false,
+        dbCryptoKeys: [
+          {
+            id: 'db-tests',
+            algo: 'aes-256',
+            // only used for tests
+            key: 'aSdtIGJzdGFjayEgaGVsbG8gZnV0dXJlIHBlcnNvbgo',
+          },
+        ],
       });
       dbs[serviceName] = db;
       return db;
@@ -74,6 +83,22 @@ exports.withDbForVersion = function() {
     };
 
     exports.downgradeTo = async (toVersion) => {
+      await tcdb.downgrade({
+        adminDbUrl: exports.dbUrl,
+        toVersion,
+        usernamePrefix: 'test',
+        useDbDirectory: true,
+      });
+    };
+
+    exports.toDbVersion = async (toVersion) => {
+      await tcdb.upgrade({
+        adminDbUrl: exports.dbUrl,
+        toVersion,
+        usernamePrefix: 'test',
+        useDbDirectory: true,
+      });
+
       await tcdb.downgrade({
         adminDbUrl: exports.dbUrl,
         toVersion,
@@ -119,10 +144,26 @@ exports.withDbForProcs = function({ serviceName }) {
       serviceName,
       useDbDirectory: true,
       monitor: false,
+      dbCryptoKeys: [
+        {
+          id: 'db-tests',
+          algo: 'aes-256',
+          // only used for tests
+          key: 'aSdtIGJzdGFjayEgaGVsbG8gZnV0dXJlIHBlcnNvbgo',
+        },
+      ],
     });
 
     exports.fakeDb = await tcdb.fakeSetup({
       serviceName,
+      dbCryptoKeys: [
+        {
+          id: 'db-tests',
+          algo: 'aes-256',
+          // only used for tests
+          key: 'aSdtIGJzdGFjayEgaGVsbG8gZnV0dXJlIHBlcnNvbgo',
+        },
+      ],
     });
 
     exports.withDbClient = fn => db._withClient(WRITE, fn);
@@ -247,9 +288,10 @@ exports.testEntityTable = ({
   // it is treated as a collection of modifier functions to run in parallel to check
   // support for concurrent modifications.
   modifications,
-}) => {
+  // customTests can define additional test cases in the usual Mocha style.  The
+  // parameter is true if the tests are run for THIS_VERSION, otherwise for PREV_VERSION.
+}, customTests = (isThisVersion) => {}) => {
   const prevVersion = dbVersion - 1;
-
   // NOTE: these tests must run in order
   suite(`entity methods for ${entityTableName} / ${newTableName}`, function() {
     let Entity;
@@ -369,7 +411,8 @@ exports.testEntityTable = ({
           sample => Entity.create(sample)));
       });
 
-      makeTests();
+      makeTests.call(this);
+      customTests.call(this, false);
     });
 
     suite(`db version ${prevVersion} -> ${dbVersion} preserves data`, function() {
@@ -389,17 +432,25 @@ exports.testEntityTable = ({
     });
 
     suite(`db version ${dbVersion}`, function() {
+      suiteSetup(async function() {
+        await exports.upgradeTo(dbVersion);
+      });
+
       setup(async function() {
         await resetTables();
         await Promise.all(Object.values(samples).map(
-          sample => Entity.create(sample)));
+          sample => {
+            return Entity.create(sample);
+          }));
       });
 
       makeTests();
+      customTests.call(this, true);
     });
 
     suite(`db version ${dbVersion} -> ${prevVersion} preserves data`, function() {
       suiteSetup(async function() {
+        await exports.upgradeTo(dbVersion);
         await resetTables();
         await Promise.all(Object.values(samples).map(
           sample => Entity.create(sample)));
@@ -413,6 +464,5 @@ exports.testEntityTable = ({
         });
       }
     });
-
   });
 };

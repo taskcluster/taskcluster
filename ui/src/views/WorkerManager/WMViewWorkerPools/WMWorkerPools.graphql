@@ -15,6 +15,7 @@ query workerPools($connection: PageConnection, $filter: JSON) {
         owner
         config
         emailOnError
+        currentCapacity
         pendingTasks #this value comes from a separate request to queue
       }
     }

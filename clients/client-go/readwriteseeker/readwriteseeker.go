@@ -3,6 +3,8 @@ package readwriteseeker
 import (
 	"errors"
 	"io"
+
+	"github.com/johncgriffin/overflow"
 )
 
 // ReadWriteSeeker is an in-memory io.ReadWriteSeeker implementation
@@ -13,9 +15,9 @@ type ReadWriteSeeker struct {
 
 // Write implements the io.Writer interface
 func (rws *ReadWriteSeeker) Write(p []byte) (n int, err error) {
-	minCap := rws.pos + len(p)
+	minCap := overflow.Addp(rws.pos, len(p))
 	if minCap > cap(rws.buf) { // Make sure buf has enough capacity:
-		buf2 := make([]byte, len(rws.buf), minCap+len(p)) // add some extra
+		buf2 := make([]byte, len(rws.buf), overflow.Addp(minCap, len(p))) // add some extra
 		copy(buf2, rws.buf)
 		rws.buf = buf2
 	}

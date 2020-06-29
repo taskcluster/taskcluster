@@ -46,6 +46,12 @@
           "title": "Created",
           "type": "string"
         },
+        "currentCapacity": {
+          "description": "Total capacity available across all workers for this worker pool that are currently not \"stopped\"",
+          "minimum": 0,
+          "title": "Current Capacity",
+          "type": "integer"
+        },
         "description": {
           "description": "A description of this worker pool.\n",
           "maxLength": 10240,
@@ -91,7 +97,8 @@
         "lastModified",
         "config",
         "owner",
-        "emailOnError"
+        "emailOnError",
+        "currentCapacity"
       ],
       "title": "Worker Pool Full Definition",
       "type": "object"
@@ -234,7 +241,7 @@
         },
         "reregistrationTimeout": {
           "default": 345600,
-          "description": "If specified, workers in this pool must re-register via `reregister()`\nwithin `reregistrationTimeout` seconds from the initial call to\n`register()` to get new credentials. If the worker has not done so, it\nwill be terminated.  This value also dictates the lifetime of the\ntemporary credentials granted to the worker, meaning that it must be\nless than 30 days.\n\nThe default value is 3 days.\n",
+          "description": "If specified, workers in this pool must re-register via `reregister()`\nwithin `reregistrationTimeout` seconds from the initial call to\n`register()` to get new credentials. If the worker has not done so, it\nwill be terminated.  This value also dictates the lifetime of the\ntemporary credentials granted to the worker, meaning that it must be\nless than 30 days. The default value is 4 days.\n",
           "maximum": 2678400,
           "title": "Checkin Timeout",
           "type": "integer"
@@ -293,10 +300,11 @@
           "type": "string"
         },
         "state": {
-          "description": "A string specifying the state this worker is in so far as worker-manager knows.\n",
+          "description": "A string specifying the state this worker is in so far as worker-manager knows.\nA \"requested\" worker is in the process of starting up, and if successful will enter\nthe \"running\" state once it has registered with the `registerWorker` API method.  A\n\"stopping\" worker is in the process of shutting down and deleting resources, while\na \"stopped\" worker is completely stopped.  Stopped workers are kept for historical\npurposes and are purged when they expire.  Note that some providers transition workers\ndirectly from \"running\" to \"stopped\".\n",
           "enum": [
             "requested",
             "running",
+            "stopping",
             "stopped"
           ],
           "title": "State",
@@ -393,6 +401,92 @@
   },
   {
     "content": {
+      "$id": "/schemas/worker-manager/v1/reregister-worker-response.json#",
+      "$schema": "/schemas/common/metaschema.json#",
+      "additionalProperties": false,
+      "description": "Response body to `reregisterWorker`.",
+      "properties": {
+        "credentials": {
+          "additionalProperties": false,
+          "description": "The credentials the worker\nwill need to perform its work. Specifically, credentials with scopes\n* `assume:worker-pool:<workerPoolId>`\n* `assume:worker-id:<workerGroup>/<workerId>`\n* `queue:worker-id:<workerGroup>/<workerId>`\n* `secrets:get:worker-pool:<workerPoolId>`\n* `queue:claim-work:<workerPoolId>`\n* `worker-manager:remove-worker:<workerPoolId>/<workerGroup>/<workerId>`\n* `worker-manager:reregister-worker:<workerPoolId>/<workerGroup>/<workerId>`\n",
+          "properties": {
+            "accessToken": {
+              "type": "string"
+            },
+            "certificate": {
+              "description": "Note that a certificate may not be provided, if the credentials are not temporary.\n",
+              "type": "string"
+            },
+            "clientId": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "accessToken",
+            "clientId"
+          ],
+          "title": "Credentials",
+          "type": "object"
+        },
+        "expires": {
+          "description": "Time at which the included credentials will expire. Workers must\nre-register before this time.\n",
+          "format": "date-time",
+          "title": "Expires",
+          "type": "string"
+        },
+        "secret": {
+          "description": "The next secret value needed to reregister the worker (in `reregisterWorker).\nFor more information, refer to https://docs.taskcluster.net/docs/reference/core/worker-manager#reregistration.\n",
+          "pattern": "^[a-zA-Z0-9_-]{44}$",
+          "title": "Secret",
+          "type": "string"
+        }
+      },
+      "required": [
+        "expires",
+        "credentials",
+        "secret"
+      ],
+      "title": "Reregister Worker Response",
+      "type": "object"
+    },
+    "filename": "schemas/worker-manager/v1/reregister-worker-response.json"
+  },
+  {
+    "content": {
+      "$id": "/schemas/worker-manager/v1/reregister-worker-request.json#",
+      "$schema": "/schemas/common/metaschema.json#",
+      "additionalProperties": false,
+      "description": "Request body to `reregisterWorker`.",
+      "properties": {
+        "secret": {
+          "description": "The secret value that was last configured in `registerWorker` (in the case of a newly registerd worker) or\n`reregisterWorker`.\nFor more information, refer to https://docs.taskcluster.net/docs/reference/core/worker-manager#reregistration.\n",
+          "pattern": "^[a-zA-Z0-9_-]{44}$",
+          "title": "Secret",
+          "type": "string"
+        },
+        "workerGroup": {
+          "$ref": "worker-full.json#/properties/workerGroup"
+        },
+        "workerId": {
+          "$ref": "worker-full.json#/properties/workerId"
+        },
+        "workerPoolId": {
+          "$ref": "worker-pool-full.json#/properties/workerPoolId"
+        }
+      },
+      "required": [
+        "workerPoolId",
+        "workerGroup",
+        "workerId",
+        "secret"
+      ],
+      "title": "Reregister Worker Request",
+      "type": "object"
+    },
+    "filename": "schemas/worker-manager/v1/reregister-worker-request.json"
+  },
+  {
+    "content": {
       "$id": "/schemas/worker-manager/v1/report-worker-error-request.json#",
       "$schema": "/schemas/common/metaschema.json#",
       "additionalProperties": false,
@@ -465,6 +559,12 @@
           "title": "Expires",
           "type": "string"
         },
+        "secret": {
+          "description": "A secret value generated by worker-manager that can be used in the call to `reregisterWorker`.\nFor more information, refer to https://docs.taskcluster.net/docs/reference/core/worker-manager#reregistration.\n",
+          "pattern": "^[a-zA-Z0-9_-]{44}$",
+          "title": "Secret",
+          "type": "string"
+        },
         "workerConfig": {
           "additionalProperties": true,
           "description": "This value is supplied unchanged to the worker from the worker-pool configuration.\nThe expectation is that the worker will merge this information with configuration from other sources,\nand this is precisely what [worker-runner](https://github.com/taskcluster/taskcluster/tree/master/tools/worker-runner) does.\nThis property must not be used for secret configuration, as it is visible both in the worker pool configuration and in the worker instance's metadata.\nInstead, put secret configuration in the [secrets service](https://github.com/taskcluster/taskcluster/tree/master/tools/worker-runner#secrets).\n",
@@ -475,7 +575,8 @@
       "required": [
         "expires",
         "credentials",
-        "workerConfig"
+        "workerConfig",
+        "secret"
       ],
       "title": "Register Worker Response",
       "type": "object"
@@ -766,7 +867,16 @@
       "description": "A configuration for static workertypes",
       "properties": {
         "lifecycle": {
-          "$ref": "worker-lifecycle.json#"
+          "additionalProperties": false,
+          "description": "The Static provider implements a subset of the lifecycle hooks,\nonly supporting reregistration timeouts\n",
+          "properties": {
+            "reregistrationTimeout": {
+              "$ref": "worker-lifecycle.json#/properties/reregistrationTimeout"
+            }
+          },
+          "required": [
+          ],
+          "type": "object"
         },
         "workerConfig": {
           "additionalProperties": true,
@@ -1007,7 +1117,7 @@
                   },
                   "osDisk": {
                     "additionalProperties": true,
-                    "description": "https://docs.microsoft.com/en-us/rest/api/compute/virtualmachines/createorupdate#osdisk\n",
+                    "description": "Naming disks is not supported.\nhttps://docs.microsoft.com/en-us/rest/api/compute/virtualmachines/createorupdate#osdisk\n",
                     "properties": {
                       "createOption": {
                         "description": "FromImage creates the disk from the specified image\nhttps://docs.microsoft.com/en-us/rest/api/compute/virtualmachines/createorupdate#diskcreateoptiontypes\n",
@@ -2207,7 +2317,7 @@
           "description": "Link to source of this task, should specify a file, revision and\nrepository. This should be place someone can go an do a git/hg blame\nto who came up with recipe for this task.\n",
           "format": "uri",
           "maxLength": 4096,
-          "pattern": "^https?://",
+          "pattern": "^(https?|ssh)://",
           "title": "Source",
           "type": "string"
         }
@@ -3809,38 +3919,6 @@
       "type": "object"
     },
     "filename": "schemas/purge-cache/v1/all-purge-cache-request-list.json"
-  },
-  {
-    "content": {
-      "$id": "/schemas/notify/v1/widgets.json#",
-      "$schema": "/schemas/common/metaschema.json#",
-      "items": {
-        "$ref": "widget.json#"
-      },
-      "title": "Widgets",
-      "type": "array",
-      "uniqueItems": false
-    },
-    "filename": "schemas/notify/v1/widgets.json"
-  },
-  {
-    "content": {
-      "$id": "/schemas/notify/v1/widget.json#",
-      "$schema": "/schemas/common/metaschema.json#",
-      "additionalProperties": false,
-      "properties": {
-        "name": {
-          "title": "widget name",
-          "type": "string"
-        }
-      },
-      "required": [
-        "name"
-      ],
-      "title": "Widget",
-      "type": "object"
-    },
-    "filename": "schemas/notify/v1/widget.json"
   },
   {
     "content": {
@@ -7198,6 +7276,289 @@
   },
   {
     "content": {
+      "$id": "/schemas/docker-worker/v1/payload.json#",
+      "$schema": "http://json-schema.org/draft-06/schema#",
+      "definitions": {
+        "artifact": {
+          "properties": {
+            "expires": {
+              "format": "date-time",
+              "title": "Date when artifact should expire must be in the future.",
+              "type": "string"
+            },
+            "path": {
+              "title": "Location of artifact in container, as an absolute path.",
+              "type": "string"
+            },
+            "type": {
+              "enum": [
+                "file",
+                "directory"
+              ],
+              "title": "Artifact upload type.",
+              "type": "string"
+            }
+          },
+          "required": [
+            "type",
+            "path"
+          ],
+          "type": "object"
+        }
+      },
+      "description": "`.payload` field of the queue.",
+      "properties": {
+        "artifacts": {
+          "additionalProperties": {
+            "$ref": "#/definitions/artifact"
+          },
+          "description": "Artifact upload map example: ```{\"public/build.tar.gz\": {\"path\": \"/home/worker/build.tar.gz\", \"expires\": \"2016-05-28T16:12:56.693817Z\", \"type\": \"file\"}}```",
+          "title": "Artifacts",
+          "type": "object"
+        },
+        "cache": {
+          "description": "Caches are mounted within the docker container at the mount point specified. Example: ```{ \"CACHE NAME\": \"/mount/path/in/container\" }```",
+          "title": "Caches to mount point mapping.",
+          "type": "object"
+        },
+        "capabilities": {
+          "description": "Set of capabilities that must be enabled or made available to the task container Example: ```{ \"capabilities\": { \"privileged\": true }```",
+          "properties": {
+            "devices": {
+              "description": "Allows devices from the host system to be attached to a task container similar to using `--device` in docker. ",
+              "properties": {
+                "hostSharedMemory": {
+                  "description": "Mount /dev/shm from the host in the container.",
+                  "title": "Host shared memory device (Experimental)",
+                  "type": "boolean"
+                },
+                "kvm": {
+                  "description": "Mount /dev/kvm from the host in the container.",
+                  "title": "/dev/kvm device (Experimental)",
+                  "type": "boolean"
+                },
+                "loopbackAudio": {
+                  "description": "Audio loopback device created using snd-aloop",
+                  "title": "Loopback Audio device",
+                  "type": "boolean"
+                },
+                "loopbackVideo": {
+                  "description": "Video loopback device created using v4l2loopback.",
+                  "title": "Loopback Video device",
+                  "type": "boolean"
+                }
+              },
+              "title": "Devices to be attached to task containers",
+              "type": "object"
+            },
+            "privileged": {
+              "default": false,
+              "description": "Allows a task to run in a privileged container, similar to running docker with `--privileged`.  This only works for worker-types configured to enable it.",
+              "title": "Privileged container",
+              "type": "boolean"
+            }
+          },
+          "title": "Capabilities that must be available/enabled for the task container.",
+          "type": "object"
+        },
+        "command": {
+          "default": [
+          ],
+          "description": "Example: `['/bin/bash', '-c', 'ls']`.",
+          "items": {
+            "type": "string"
+          },
+          "title": "Docker command to run (see docker api).",
+          "type": "array"
+        },
+        "env": {
+          "description": "Example: ```\n{\n  \"PATH\": '/borked/path' \n  \"ENV_NAME\": \"VALUE\" \n}\n```",
+          "title": "Environment variable mappings.",
+          "type": "object"
+        },
+        "features": {
+          "description": "Used to enable additional functionality.",
+          "properties": {
+            "allowPtrace": {
+              "description": "This allows you to use the Linux ptrace functionality inside the container; it is otherwise disallowed by Docker's security policy. ",
+              "title": "Allow ptrace within the container",
+              "type": "boolean"
+            },
+            "artifacts": {
+              "description": "",
+              "title": "Artifact uploads",
+              "type": "boolean"
+            },
+            "bulkLog": {
+              "description": "Useful if live logging is not interesting but the overalllog is later on",
+              "title": "Bulk upload the task log into a single artifact",
+              "type": "boolean"
+            },
+            "chainOfTrust": {
+              "description": "Artifacts named chain-of-trust.json and chain-of-trust.json.sig should be generated which will include information for downstream tasks to build a level of trust for the artifacts produced by the task and the environment it ran in.",
+              "title": "Enable generation of ed25519-signed Chain of Trust artifacts",
+              "type": "boolean"
+            },
+            "dind": {
+              "description": "Runs docker-in-docker and binds `/var/run/docker.sock` into the container. Doesn't allow privileged mode, capabilities or host volume mounts.",
+              "title": "Docker in Docker",
+              "type": "boolean"
+            },
+            "dockerSave": {
+              "description": "Uploads docker images as artifacts",
+              "title": "Docker save",
+              "type": "boolean"
+            },
+            "interactive": {
+              "description": "This allows you to interactively run commands inside the container and attaches you to the stdin/stdout/stderr over a websocket. Can be used for SSH-like access to docker containers.",
+              "title": "Docker Exec Interactive",
+              "type": "boolean"
+            },
+            "localLiveLog": {
+              "description": "Logs are stored on the worker during the duration of tasks and available via http chunked streaming then uploaded to s3",
+              "title": "Enable live logging (worker local)",
+              "type": "boolean"
+            },
+            "taskclusterProxy": {
+              "description": "The auth proxy allows making requests to taskcluster/queue and taskcluster/scheduler directly from your task with the same scopes as set in the task. This can be used to make api calls via the [client](https://github.com/taskcluster/taskcluster-client) CURL, etc... Without embedding credentials in the task.",
+              "title": "Taskcluster auth proxy service",
+              "type": "boolean"
+            }
+          },
+          "title": "Feature flags",
+          "type": "object"
+        },
+        "image": {
+          "description": "Image to use for the task.  Images can be specified as an image tag as used by a docker registry, or as an object declaring type and name/namespace",
+          "oneOf": [
+            {
+              "title": "Docker image name",
+              "type": "string"
+            },
+            {
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "type": {
+                  "enum": [
+                    "docker-image"
+                  ],
+                  "type": "string"
+                }
+              },
+              "required": [
+                "type",
+                "name"
+              ],
+              "title": "Named docker image",
+              "type": "object"
+            },
+            {
+              "properties": {
+                "namespace": {
+                  "type": "string"
+                },
+                "path": {
+                  "type": "string"
+                },
+                "type": {
+                  "enum": [
+                    "indexed-image"
+                  ],
+                  "type": "string"
+                }
+              },
+              "required": [
+                "type",
+                "namespace",
+                "path"
+              ],
+              "title": "Indexed docker image",
+              "type": "object"
+            },
+            {
+              "properties": {
+                "path": {
+                  "type": "string"
+                },
+                "taskId": {
+                  "type": "string"
+                },
+                "type": {
+                  "enum": [
+                    "task-image"
+                  ],
+                  "type": "string"
+                }
+              },
+              "required": [
+                "type",
+                "taskId",
+                "path"
+              ],
+              "title": "Docker image artifact",
+              "type": "object"
+            }
+          ],
+          "title": "Docker image."
+        },
+        "log": {
+          "description": "Specifies a custom location for the livelog artifact",
+          "title": "Custom log location",
+          "type": "string"
+        },
+        "maxRunTime": {
+          "description": "Maximum time the task container can run in seconds.  Maximum is one week, as a sanity-check.  A task that takes so long is unlikely to succeed!",
+          "maximum": 604800,
+          "minimum": 1,
+          "multipleOf": 1,
+          "title": "Maximum run time in seconds",
+          "type": "number"
+        },
+        "onExitStatus": {
+          "description": "By default docker-worker will fail a task with a non-zero exit status without retrying.  This payload property allows a task owner to define certain exit statuses that will be marked as a retriable exception.",
+          "properties": {
+            "purgeCaches": {
+              "description": "If the task exists with a purge caches exit status, all caches associated with the task will be purged.",
+              "items": {
+                "title": "Exit statuses",
+                "type": "number"
+              },
+              "title": "Purge caches exit status",
+              "type": "array"
+            },
+            "retry": {
+              "description": "If the task exists with a retriable exit status, the task will be marked as an exception and a new run created.",
+              "items": {
+                "title": "Exit statuses",
+                "type": "number"
+              },
+              "title": "Retriable exit statuses",
+              "type": "array"
+            }
+          },
+          "title": "Exit status handling",
+          "type": "object"
+        },
+        "supersederUrl": {
+          "format": "uri",
+          "pattern": "^https?://[\\x20-\\x7e]*$",
+          "title": "URL of the a service that can indicate tasks superseding this one; the current taskId will be appended as a query argument `taskId`.  The service should return an object with a `supersedes` key containing a list of taskIds, including the supplied taskId.  The tasks should be ordered such that each task supersedes all tasks appearing earlier in the list.  See [superseding](/docs/reference/platform/taskcluster-queue/docs/superseding) for more detail.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "image",
+        "maxRunTime"
+      ],
+      "title": "Docker worker payload",
+      "type": "object"
+    },
+    "filename": "schemas/docker-worker/v1/payload.json"
+  },
+  {
+    "content": {
       "$id": "/schemas/common/values.schema.json#",
       "$schema": "http://json-schema.org/draft-06/schema#",
       "aditionalProperties": false,
@@ -8668,6 +9029,10 @@
           "title": "Configuration options for ui",
           "type": "object"
         },
+        "useKubernetesDnsServiceDiscovery": {
+          "description": "If true, requests will not pass back in through load balancer to pass between services.",
+          "type": "boolean"
+        },
         "web_server": {
           "additionalProperties": false,
           "properties": {
@@ -8837,6 +9202,17 @@
         "worker_manager": {
           "additionalProperties": false,
           "properties": {
+            "db_crypto_keys": {
+              "oneOf": [
+                {
+                  "additionalProperties": true,
+                  "type": "object"
+                },
+                {
+                  "type": "array"
+                }
+              ]
+            },
             "debug": {
               "title": "node debug env var",
               "type": "string"
@@ -9042,6 +9418,7 @@
         "forceSSL",
         "trustProxy",
         "nodeEnv",
+        "useKubernetesDnsServiceDiscovery",
         "auth",
         "built_in_workers",
         "github",
@@ -11132,41 +11509,26 @@
       "serviceName": "worker-manager",
       "types": [
         {
-          "description": "Status and duration of a periodic background process.",
+          "description": "A timer and audit for express API endpoints.\nYou can combine this with auth audit logs to get\na complete picture of what was authorized when.\n\nHere, anything that is not public should have authenticated\nand if it authenticated, we will tell the clientId here. Given\nthat, it is not necessarily true that the endpoint was\n_authorized_. You can tell that by the statusCode.",
           "fields": {
-            "duration": "The duration in ms of the process.",
-            "name": "The name of this process.",
-            "status": "Either success, or exception depending on the outcome."
+            "apiVersion": "The version of the API (e.g., `v1`)",
+            "clientId": "The clientId that made the request, if there was one.",
+            "duration": "The duration in ms of the call.",
+            "expires": "The expiration date of the credentials, if the header was authenticated.",
+            "hasAuthed": "Will be true if the request had req.authorize() called on it.",
+            "method": "The http method of the request.",
+            "name": "The name of the API method",
+            "public": "True if the endpoint requires no scopes.",
+            "query": "Query params that were passed to the request (only ones that are specified as possible in the entry)",
+            "resource": "The path of the http request.",
+            "satisfyingScopes": "The set of scopes posessed by the caller that were\nused to authorize this request, or [] if scopes were not required.\n\nThis set of scopes is intuitively the scopes the caller used to\nauthorize the call.  More precisely, it is the minimal subset of the supplied\nscopes required to satisfy the API method's authorization requirements.\nBut is not quite minimal in one sense: If several alternatives of an\n`AnyOf` in the API method's scope ression are satisfied, then the\nscopes used to satisfy *all* such alternatives are included.",
+            "sourceIp": "The API method caller's IP",
+            "statusCode": "The http status code that the endpoint resolved with."
           },
-          "level": "any",
-          "name": "periodic",
-          "title": "Periodic Process",
-          "type": "monitor.periodic",
-          "version": 1
-        },
-        {
-          "description": "The most basic timer.",
-          "fields": {
-            "duration": "The duration in ms of whatever was timed.",
-            "key": "A key that should be unique to the logger prefix."
-          },
-          "level": "info",
-          "name": "basicTimer",
-          "title": "Basic Timer",
-          "type": "monitor.timer",
-          "version": 1
-        },
-        {
-          "description": "A basic timer applied to a function.",
-          "fields": {
-            "duration": "The duration in ms of the function.",
-            "name": "The name of the handler.",
-            "status": "Whether or not the handler resolved succesfully."
-          },
-          "level": "info",
-          "name": "handlerTimer",
-          "title": "Handler Timer",
-          "type": "monitor.timedHandler",
+          "level": "notice",
+          "name": "apiMethod",
+          "title": "API Method Report",
+          "type": "monitor.apiMethod",
           "version": 1
         },
         {
@@ -11184,193 +11546,15 @@
           "version": 1
         },
         {
-          "description": "Metrics of a node process.",
-          "fields": {
-            "lastCpuUsage": "The output of node's process.cpuUsage",
-            "lastMemoryUsage": "The output of node's process.memoryUsage"
-          },
-          "level": "info",
-          "name": "resourceMetrics",
-          "title": "Resource Usage Metrics",
-          "type": "monitor.resources",
-          "version": 1
-        },
-        {
-          "description": "A simple measurement. The reported values are expected to have statistics calculated over them.",
-          "fields": {
-            "key": "An arbitrary key.",
-            "val": "A number that should be calculated over in a time span."
-          },
-          "level": "info",
-          "name": "measureMetric",
-          "title": "Generic Measure",
-          "type": "monitor.measure",
-          "version": 1
-        },
-        {
-          "description": "A simple count. The reported values should be summed up in a time span.",
-          "fields": {
-            "key": "An arbitrary key.",
-            "val": "A number that should be summed over a time span."
-          },
-          "level": "info",
-          "name": "countMetric",
-          "title": "Generic Count",
-          "type": "monitor.count",
-          "version": 1
-        },
-        {
-          "description": "A specifically formatted error report. Will have at least the following but can contain more.",
-          "fields": {
-            "message": "Whatever message the error contained.",
-            "name": "The name of the error.",
-            "stack": "A nodejs stack trace."
-          },
-          "level": "any",
-          "name": "errorReport",
-          "title": "Error Report",
-          "type": "monitor.error",
-          "version": 1
-        },
-        {
-          "description": "A simple timekeeper for measuring arbitrary time spans.",
+          "description": "The most basic timer.",
           "fields": {
             "duration": "The duration in ms of whatever was timed.",
             "key": "A key that should be unique to the logger prefix."
           },
           "level": "info",
-          "name": "timekeeper",
-          "title": "TimeKeeper Report",
-          "type": "monitor.timekeeper",
-          "version": 1
-        },
-        {
-          "description": "An internal type for logging simple messages. No required fields.",
-          "fields": {
-          },
-          "level": "any",
-          "name": "generic",
-          "title": "Generic Message",
-          "type": "monitor.generic",
-          "version": 1
-        },
-        {
-          "description": "An internal type for reporting malformed logging calls.",
-          "fields": {
-          },
-          "level": "err",
-          "name": "loggingError",
-          "title": "Error in Logging",
-          "type": "monitor.loggingError",
-          "version": 1
-        },
-        {
-          "description": "A worker pool's provisioning run has completed",
-          "fields": {
-            "providerId": "The provider that did the work for this worker pool.",
-            "workerPoolId": "The worker pool ID (provisionerId/workerType)"
-          },
-          "level": "info",
-          "name": "workerPoolProvisioned",
-          "title": "Worker Pool Provisioned",
-          "type": "worker-pool-provisioned",
-          "version": 1
-        },
-        {
-          "description": "A worker has been requested from a cloud api",
-          "fields": {
-            "providerId": "The provider that did the work for this worker pool.",
-            "workerGroup": "The worker group for this worker",
-            "workerId": "The worker that was created",
-            "workerPoolId": "The worker pool ID (provisionerId/workerType)"
-          },
-          "level": "notice",
-          "name": "workerRequested",
-          "title": "Worker Requested",
-          "type": "worker-requested",
-          "version": 1
-        },
-        {
-          "description": "A worker has been marked as running",
-          "fields": {
-            "providerId": "The provider that did the work for this worker pool.",
-            "workerId": "The worker that was created",
-            "workerPoolId": "The worker pool ID (provisionerId/workerType)"
-          },
-          "level": "notice",
-          "name": "workerRunning",
-          "title": "Worker Running",
-          "type": "worker-running",
-          "version": 1
-        },
-        {
-          "description": "A worker has been marked as stopped",
-          "fields": {
-            "providerId": "The provider that did the work for this worker pool.",
-            "workerId": "The worker that was created",
-            "workerPoolId": "The worker pool ID (provisionerId/workerType)"
-          },
-          "level": "notice",
-          "name": "workerStopped",
-          "title": "Worker Stopped",
-          "type": "worker-stopped",
-          "version": 1
-        },
-        {
-          "description": "A worker has been marked as stopping",
-          "fields": {
-            "providerId": "The provider that did the work for this worker pool.",
-            "workerId": "The worker that was created",
-            "workerPoolId": "The worker pool ID (provisionerId/workerType)"
-          },
-          "level": "notice",
-          "name": "workerStopping",
-          "title": "Worker Stopping",
-          "type": "worker-stopping",
-          "version": 1
-        },
-        {
-          "description": "The simple estimator has decided that we need some number of instances.",
-          "fields": {
-            "desiredCapacity": "Amount of capacity that this estimator thinks we should have",
-            "existingCapacity": "Amount of currently requested and available capacity",
-            "maxCapacity": "The maximum amount of capacity that should be running",
-            "minCapacity": "The minimum amount of capacity that should be running",
-            "pendingTasks": "The number of tasks the queue reports are pending for this worker pool",
-            "requestedCapacity": "Amount of capacity that this estimator thinks we should add",
-            "workerPoolId": "The worker pool name (provisionerId/workerType)"
-          },
-          "level": "any",
-          "name": "simpleEstimate",
-          "title": "Simple Estimate Provided",
-          "type": "simple-estimate",
-          "version": 3
-        },
-        {
-          "description": "The results of a worker-scanner run",
-          "fields": {
-            "providerId": "The provider that has completed this scan",
-            "seen": "A map of workerPoolId that were seen to how much capacity was seen"
-          },
-          "level": "notice",
-          "name": "scanSeen",
-          "title": "Scan Seen",
-          "type": "scan-seen",
-          "version": 2
-        },
-        {
-          "description": "An error was reported regarding the given worker pool.  Such errors are generally\nthe responsibility of the owner of the worker pool, but may also indicate issues\nwith the Taskcluster deployment and as such are reported in the service logs as\nwell.  Note that the 'extra' data associated with such a report is not included\nhere.  To see that, use the UI or API to view the worker pool errors directly.",
-          "fields": {
-            "description": "Description of the error",
-            "errorId": "The unique id of this error report",
-            "kind": "The error kind",
-            "title": "The error title",
-            "workerPoolId": "The workerPool where the error occurred"
-          },
-          "level": "notice",
-          "name": "workerError",
-          "title": "Worker Error",
-          "type": "worker-error",
+          "name": "basicTimer",
+          "title": "Basic Timer",
+          "type": "monitor.timer",
           "version": 1
         },
         {
@@ -11401,15 +11585,111 @@
           "version": 1
         },
         {
-          "description": "Something has tried to register as a worker but failed. This could indicate either a bug\nor that somebody is trying to impersonate a worker.",
+          "description": "A simple count. The reported values should be summed up in a time span.",
           "fields": {
-            "error": "Error message from cloud that triggered this",
-            "message": "Description of this error from the taskcluster side"
+            "key": "An arbitrary key.",
+            "val": "A number that should be summed over a time span."
           },
-          "level": "warning",
-          "name": "registrationErrorWarning",
-          "title": "Registration Error Warning",
-          "type": "registration-error-warning",
+          "level": "info",
+          "name": "countMetric",
+          "title": "Generic Count",
+          "type": "monitor.count",
+          "version": 1
+        },
+        {
+          "description": "This message is logged for each invocation of a Postgres stored function.",
+          "fields": {
+            "name": "The name of the DB function"
+          },
+          "level": "info",
+          "name": "dbFunctionCall",
+          "title": "DB Method Call",
+          "type": "db-function-call",
+          "version": 1
+        },
+        {
+          "description": "This message is logged every 5 minutes from each process that is using the database,\nonce for each pool.  Most services have both a \"read\" pool and a \"write\" pool.  The\nfields come from the node-postgres package.",
+          "fields": {
+            "idleCount": "The number of connections (out of the total) which are not currently in use",
+            "pool": "The name of the pool within the process",
+            "totalCount": "The total number of connections",
+            "waitingCount": "The number of operations waiting for an idle connection"
+          },
+          "level": "notice",
+          "name": "dbPoolCounts",
+          "title": "DB Pool Counts",
+          "type": "db-pool-counts",
+          "version": 1
+        },
+        {
+          "description": "A specifically formatted error report. Will have at least the following but can contain more.",
+          "fields": {
+            "message": "Whatever message the error contained.",
+            "name": "The name of the error.",
+            "stack": "A nodejs stack trace."
+          },
+          "level": "any",
+          "name": "errorReport",
+          "title": "Error Report",
+          "type": "monitor.error",
+          "version": 1
+        },
+        {
+          "description": "An internal type for logging simple messages. No required fields.",
+          "fields": {
+          },
+          "level": "any",
+          "name": "generic",
+          "title": "Generic Message",
+          "type": "monitor.generic",
+          "version": 1
+        },
+        {
+          "description": "A basic timer applied to a function.",
+          "fields": {
+            "duration": "The duration in ms of the function.",
+            "name": "The name of the handler.",
+            "status": "Whether or not the handler resolved succesfully."
+          },
+          "level": "info",
+          "name": "handlerTimer",
+          "title": "Handler Timer",
+          "type": "monitor.timedHandler",
+          "version": 1
+        },
+        {
+          "description": "An internal type for reporting malformed logging calls.",
+          "fields": {
+          },
+          "level": "err",
+          "name": "loggingError",
+          "title": "Error in Logging",
+          "type": "monitor.loggingError",
+          "version": 1
+        },
+        {
+          "description": "A simple measurement. The reported values are expected to have statistics calculated over them.",
+          "fields": {
+            "key": "An arbitrary key.",
+            "val": "A number that should be calculated over in a time span."
+          },
+          "level": "info",
+          "name": "measureMetric",
+          "title": "Generic Measure",
+          "type": "monitor.measure",
+          "version": 1
+        },
+        {
+          "description": "Status and duration of a periodic background process.",
+          "fields": {
+            "duration": "The duration in ms of the process.",
+            "name": "The name of this process.",
+            "status": "Either success, or exception depending on the outcome."
+          },
+          "level": "any",
+          "name": "periodic",
+          "title": "Periodic Process",
+          "type": "monitor.periodic",
           "version": 1
         },
         {
@@ -11445,51 +11725,149 @@
           "version": 1
         },
         {
-          "description": "This message is logged for each invocation of a Postgres stored function.",
+          "description": "Something has tried to register as a worker but failed. This could indicate either a bug\nor that somebody is trying to impersonate a worker.",
           "fields": {
-            "name": "The name of the DB function"
+            "error": "Error message from cloud that triggered this",
+            "message": "Description of this error from the taskcluster side"
+          },
+          "level": "warning",
+          "name": "registrationErrorWarning",
+          "title": "Registration Error Warning",
+          "type": "registration-error-warning",
+          "version": 1
+        },
+        {
+          "description": "Metrics of a node process.",
+          "fields": {
+            "lastCpuUsage": "The output of node's process.cpuUsage",
+            "lastMemoryUsage": "The output of node's process.memoryUsage"
           },
           "level": "info",
-          "name": "dbFunctionCall",
-          "title": "DB Method Call",
-          "type": "db-function-call",
+          "name": "resourceMetrics",
+          "title": "Resource Usage Metrics",
+          "type": "monitor.resources",
           "version": 1
         },
         {
-          "description": "This message is logged every 5 minutes from each process that is using the database,\nonce for each pool.  Most services have both a \"read\" pool and a \"write\" pool.  The\nfields come from the node-postgres package.",
+          "description": "The results of a worker-scanner run",
           "fields": {
-            "idleCount": "The number of connections (out of the total) which are not currently in use",
-            "pool": "The name of the pool within the process",
-            "totalCount": "The total number of connections",
-            "waitingCount": "The number of operations waiting for an idle connection"
+            "providerId": "The provider that has completed this scan",
+            "seen": "A map of workerPoolId that were seen to how much capacity was seen"
           },
           "level": "notice",
-          "name": "dbPoolCounts",
-          "title": "DB Pool Counts",
-          "type": "db-pool-counts",
+          "name": "scanSeen",
+          "title": "Scan Seen",
+          "type": "scan-seen",
+          "version": 2
+        },
+        {
+          "description": "The simple estimator has decided that we need some number of instances.",
+          "fields": {
+            "desiredCapacity": "Amount of capacity that this estimator thinks we should have",
+            "existingCapacity": "Amount of currently requested and available capacity",
+            "maxCapacity": "The maximum amount of capacity that should be running",
+            "minCapacity": "The minimum amount of capacity that should be running",
+            "pendingTasks": "The number of tasks the queue reports are pending for this worker pool",
+            "requestedCapacity": "Amount of capacity that this estimator thinks we should add",
+            "workerPoolId": "The worker pool name (provisionerId/workerType)"
+          },
+          "level": "any",
+          "name": "simpleEstimate",
+          "title": "Simple Estimate Provided",
+          "type": "simple-estimate",
+          "version": 3
+        },
+        {
+          "description": "A simple timekeeper for measuring arbitrary time spans.",
+          "fields": {
+            "duration": "The duration in ms of whatever was timed.",
+            "key": "A key that should be unique to the logger prefix."
+          },
+          "level": "info",
+          "name": "timekeeper",
+          "title": "TimeKeeper Report",
+          "type": "monitor.timekeeper",
           "version": 1
         },
         {
-          "description": "A timer and audit for express API endpoints.\nYou can combine this with auth audit logs to get\na complete picture of what was authorized when.\n\nHere, anything that is not public should have authenticated\nand if it authenticated, we will tell the clientId here. Given\nthat, it is not necessarily true that the endpoint was\n_authorized_. You can tell that by the statusCode.",
+          "description": "An error was reported regarding the given worker pool.  Such errors are generally\nthe responsibility of the owner of the worker pool, but may also indicate issues\nwith the Taskcluster deployment and as such are reported in the service logs as\nwell.  Note that the 'extra' data associated with such a report is not included\nhere.  To see that, use the UI or API to view the worker pool errors directly.",
           "fields": {
-            "apiVersion": "The version of the API (e.g., `v1`)",
-            "clientId": "The clientId that made the request, if there was one.",
-            "duration": "The duration in ms of the call.",
-            "expires": "The expiration date of the credentials, if the header was authenticated.",
-            "hasAuthed": "Will be true if the request had req.authorize() called on it.",
-            "method": "The http method of the request.",
-            "name": "The name of the API method",
-            "public": "True if the endpoint requires no scopes.",
-            "query": "Query params that were passed to the request (only ones that are specified as possible in the entry)",
-            "resource": "The path of the http request.",
-            "satisfyingScopes": "The set of scopes posessed by the caller that were\nused to authorize this request, or [] if scopes were not required.\n\nThis set of scopes is intuitively the scopes the caller used to\nauthorize the call.  More precisely, it is the minimal subset of the supplied\nscopes required to satisfy the API method's authorization requirements.\nBut is not quite minimal in one sense: If several alternatives of an\n`AnyOf` in the API method's scope ression are satisfied, then the\nscopes used to satisfy *all* such alternatives are included.",
-            "sourceIp": "The API method caller's IP",
-            "statusCode": "The http status code that the endpoint resolved with."
+            "description": "Description of the error",
+            "errorId": "The unique id of this error report",
+            "kind": "The error kind",
+            "title": "The error title",
+            "workerPoolId": "The workerPool where the error occurred"
           },
           "level": "notice",
-          "name": "apiMethod",
-          "title": "API Method Report",
-          "type": "monitor.apiMethod",
+          "name": "workerError",
+          "title": "Worker Error",
+          "type": "worker-error",
+          "version": 1
+        },
+        {
+          "description": "A worker pool's provisioning run has completed",
+          "fields": {
+            "providerId": "The provider that did the work for this worker pool.",
+            "workerPoolId": "The worker pool ID (provisionerId/workerType)"
+          },
+          "level": "info",
+          "name": "workerPoolProvisioned",
+          "title": "Worker Pool Provisioned",
+          "type": "worker-pool-provisioned",
+          "version": 1
+        },
+        {
+          "description": "A request has been made to stop a worker.  This operation can sometimes\ntake some time.",
+          "fields": {
+            "providerId": "The provider that did the work for this worker pool.",
+            "reason": "The reason this worker is being removed",
+            "workerId": "The worker that is being removed",
+            "workerPoolId": "The worker pool ID (provisionerId/workerType)"
+          },
+          "level": "notice",
+          "name": "workerRemoved",
+          "title": "Worker Removed",
+          "type": "worker-removed",
+          "version": 1
+        },
+        {
+          "description": "A worker has been requested from a cloud api",
+          "fields": {
+            "providerId": "The provider that did the work for this worker pool.",
+            "workerGroup": "The worker group for this worker",
+            "workerId": "The worker that was created",
+            "workerPoolId": "The worker pool ID (provisionerId/workerType)"
+          },
+          "level": "notice",
+          "name": "workerRequested",
+          "title": "Worker Requested",
+          "type": "worker-requested",
+          "version": 1
+        },
+        {
+          "description": "A worker has been marked as running",
+          "fields": {
+            "providerId": "The provider that did the work for this worker pool.",
+            "workerId": "The worker that is running",
+            "workerPoolId": "The worker pool ID (provisionerId/workerType)"
+          },
+          "level": "notice",
+          "name": "workerRunning",
+          "title": "Worker Running",
+          "type": "worker-running",
+          "version": 1
+        },
+        {
+          "description": "A worker has been marked as stopped",
+          "fields": {
+            "providerId": "The provider that did the work for this worker pool.",
+            "workerId": "The worker that was stopped",
+            "workerPoolId": "The worker pool ID (provisionerId/workerType)"
+          },
+          "level": "notice",
+          "name": "workerStopped",
+          "title": "Worker Stopped",
+          "type": "worker-stopped",
           "version": 1
         }
       ]
@@ -11837,6 +12215,23 @@
           "stability": "stable",
           "title": "Register a running worker",
           "type": "function"
+        },
+        {
+          "args": [
+          ],
+          "category": "Workers",
+          "description": "Reregister a running worker.\n\nThis will generate and return new Taskcluster credentials for the worker\non that instance to use. The credentials will not live longer the\n`registrationTimeout` for that worker. The endpoint will update `terminateAfter`\nfor the worker so that worker-manager does not terminate the instance.",
+          "input": "v1/reregister-worker-request.json#",
+          "method": "post",
+          "name": "reregisterWorker",
+          "output": "v1/reregister-worker-response.json#",
+          "query": [
+          ],
+          "route": "/worker/reregister",
+          "scopes": "worker-manager:reregister-worker:<workerPoolId>/<workerGroup>/<workerId>",
+          "stability": "experimental",
+          "title": "Reregister a Worker",
+          "type": "function"
         }
       ],
       "serviceName": "worker-manager",
@@ -11849,44 +12244,6 @@
       "$schema": "/schemas/common/logs-reference-v0.json#",
       "serviceName": "web-server",
       "types": [
-        {
-          "description": "Status and duration of a periodic background process.",
-          "fields": {
-            "duration": "The duration in ms of the process.",
-            "name": "The name of this process.",
-            "status": "Either success, or exception depending on the outcome."
-          },
-          "level": "any",
-          "name": "periodic",
-          "title": "Periodic Process",
-          "type": "monitor.periodic",
-          "version": 1
-        },
-        {
-          "description": "The most basic timer.",
-          "fields": {
-            "duration": "The duration in ms of whatever was timed.",
-            "key": "A key that should be unique to the logger prefix."
-          },
-          "level": "info",
-          "name": "basicTimer",
-          "title": "Basic Timer",
-          "type": "monitor.timer",
-          "version": 1
-        },
-        {
-          "description": "A basic timer applied to a function.",
-          "fields": {
-            "duration": "The duration in ms of the function.",
-            "name": "The name of the handler.",
-            "status": "Whether or not the handler resolved succesfully."
-          },
-          "level": "info",
-          "name": "handlerTimer",
-          "title": "Handler Timer",
-          "type": "monitor.timedHandler",
-          "version": 1
-        },
         {
           "description": "A timer for calls to aws services.",
           "fields": {
@@ -11902,27 +12259,26 @@
           "version": 1
         },
         {
-          "description": "Metrics of a node process.",
+          "description": "The most basic timer.",
           "fields": {
-            "lastCpuUsage": "The output of node's process.cpuUsage",
-            "lastMemoryUsage": "The output of node's process.memoryUsage"
+            "duration": "The duration in ms of whatever was timed.",
+            "key": "A key that should be unique to the logger prefix."
           },
           "level": "info",
-          "name": "resourceMetrics",
-          "title": "Resource Usage Metrics",
-          "type": "monitor.resources",
+          "name": "basicTimer",
+          "title": "Basic Timer",
+          "type": "monitor.timer",
           "version": 1
         },
         {
-          "description": "A simple measurement. The reported values are expected to have statistics calculated over them.",
+          "description": "The PulseEngine has created a queue and bound it to one or more exchanges in\nresponse to a GraphQL subsscription request.",
           "fields": {
-            "key": "An arbitrary key.",
-            "val": "A number that should be calculated over in a time span."
+            "subscriptionId": "The subscriptionId, which will also appear in the AMQP queue name"
           },
-          "level": "info",
-          "name": "measureMetric",
-          "title": "Generic Measure",
-          "type": "monitor.measure",
+          "level": "debug",
+          "name": "bindPulseSubscription",
+          "title": "Bind a Pulse Subscription",
+          "type": "bind-pulse-subscription",
           "version": 1
         },
         {
@@ -11935,6 +12291,44 @@
           "name": "countMetric",
           "title": "Generic Count",
           "type": "monitor.count",
+          "version": 1
+        },
+        {
+          "description": "A client has been issued Taskcluster credentials",
+          "fields": {
+            "clientId": "The clientId of the issued credentials",
+            "expires": "Date time when the issued credentials expires.",
+            "userIdentity": "The identity of the user to which the credentials were issued"
+          },
+          "level": "info",
+          "name": "createCredentials",
+          "title": "Credentials Created",
+          "type": "create-credentials",
+          "version": 1
+        },
+        {
+          "description": "This message is logged for each invocation of a Postgres stored function.",
+          "fields": {
+            "name": "The name of the DB function"
+          },
+          "level": "info",
+          "name": "dbFunctionCall",
+          "title": "DB Method Call",
+          "type": "db-function-call",
+          "version": 1
+        },
+        {
+          "description": "This message is logged every 5 minutes from each process that is using the database,\nonce for each pool.  Most services have both a \"read\" pool and a \"write\" pool.  The\nfields come from the node-postgres package.",
+          "fields": {
+            "idleCount": "The number of connections (out of the total) which are not currently in use",
+            "pool": "The name of the pool within the process",
+            "totalCount": "The total number of connections",
+            "waitingCount": "The number of operations waiting for an idle connection"
+          },
+          "level": "notice",
+          "name": "dbPoolCounts",
+          "title": "DB Pool Counts",
+          "type": "db-pool-counts",
           "version": 1
         },
         {
@@ -11951,18 +12345,6 @@
           "version": 1
         },
         {
-          "description": "A simple timekeeper for measuring arbitrary time spans.",
-          "fields": {
-            "duration": "The duration in ms of whatever was timed.",
-            "key": "A key that should be unique to the logger prefix."
-          },
-          "level": "info",
-          "name": "timekeeper",
-          "title": "TimeKeeper Report",
-          "type": "monitor.timekeeper",
-          "version": 1
-        },
-        {
           "description": "An internal type for logging simple messages. No required fields.",
           "fields": {
           },
@@ -11973,6 +12355,19 @@
           "version": 1
         },
         {
+          "description": "A basic timer applied to a function.",
+          "fields": {
+            "duration": "The duration in ms of the function.",
+            "name": "The name of the handler.",
+            "status": "Whether or not the handler resolved succesfully."
+          },
+          "level": "info",
+          "name": "handlerTimer",
+          "title": "Handler Timer",
+          "type": "monitor.timedHandler",
+          "version": 1
+        },
+        {
           "description": "An internal type for reporting malformed logging calls.",
           "fields": {
           },
@@ -11980,6 +12375,31 @@
           "name": "loggingError",
           "title": "Error in Logging",
           "type": "monitor.loggingError",
+          "version": 1
+        },
+        {
+          "description": "A simple measurement. The reported values are expected to have statistics calculated over them.",
+          "fields": {
+            "key": "An arbitrary key.",
+            "val": "A number that should be calculated over in a time span."
+          },
+          "level": "info",
+          "name": "measureMetric",
+          "title": "Generic Measure",
+          "type": "monitor.measure",
+          "version": 1
+        },
+        {
+          "description": "Status and duration of a periodic background process.",
+          "fields": {
+            "duration": "The duration in ms of the process.",
+            "name": "The name of this process.",
+            "status": "Either success, or exception depending on the outcome."
+          },
+          "level": "any",
+          "name": "periodic",
+          "title": "Periodic Process",
+          "type": "monitor.periodic",
           "version": 1
         },
         {
@@ -12015,137 +12435,15 @@
           "version": 1
         },
         {
-          "description": "This message is logged for each invocation of a Postgres stored function.",
-          "fields": {
-            "name": "The name of the DB function"
-          },
-          "level": "info",
-          "name": "dbFunctionCall",
-          "title": "DB Method Call",
-          "type": "db-function-call",
-          "version": 1
-        },
-        {
-          "description": "This message is logged every 5 minutes from each process that is using the database,\nonce for each pool.  Most services have both a \"read\" pool and a \"write\" pool.  The\nfields come from the node-postgres package.",
-          "fields": {
-            "idleCount": "The number of connections (out of the total) which are not currently in use",
-            "pool": "The name of the pool within the process",
-            "totalCount": "The total number of connections",
-            "waitingCount": "The number of operations waiting for an idle connection"
-          },
-          "level": "notice",
-          "name": "dbPoolCounts",
-          "title": "DB Pool Counts",
-          "type": "db-pool-counts",
-          "version": 1
-        },
-        {
-          "description": "A client has been issued Taskcluster credentials",
-          "fields": {
-            "clientId": "The clientId of the issued credentials",
-            "expires": "Date time when the issued credentials expires.",
-            "userIdentity": "The identity of the user to which the credentials were issued"
-          },
-          "level": "info",
-          "name": "createCredentials",
-          "title": "Credentials Created",
-          "type": "create-credentials",
-          "version": 1
-        },
-        {
-          "description": "The PulseEngine has created a queue and bound it to one or more exchanges in\nresponse to a GraphQL subsscription request.",
-          "fields": {
-            "subscriptionId": "The subscriptionId, which will also appear in the AMQP queue name"
-          },
-          "level": "debug",
-          "name": "bindPulseSubscription",
-          "title": "Bind a Pulse Subscription",
-          "type": "bind-pulse-subscription",
-          "version": 1
-        },
-        {
-          "description": "The PulseEngine has deleted a queue bound to one or more exchanges in\nresponse to termination of a GraphQL subsscription request.",
-          "fields": {
-            "subscriptionId": "The subscriptionId, which will also appear in the AMQP queue name"
-          },
-          "level": "debug",
-          "name": "unbindPulseSubscription",
-          "title": "Unbind a Pulse Subscription",
-          "type": "unbind-pulse-subscription",
-          "version": 1
-        },
-        {
-          "description": "A GraphQL request has been received.",
+          "description": "A GraphQL request has been received. The traceId/request is at the top-level of the log message, above these fields.",
           "fields": {
             "operationName": "The name of the graphql query performed. If the operation is anonymous\n(i.e., the operation is query { ... } instead of query NamedQuery { ... })\n, then operationName is null.",
-            "query": "The graphQL query string",
-            "requestId": "A unique request ID for every incoming GraphQL request that the client receives."
+            "query": "The graphQL query string"
           },
-          "level": "info",
+          "level": "notice",
           "name": "requestReceived",
           "title": "Request Received",
           "type": "request-received",
-          "version": 1
-        }
-      ]
-    },
-    "filename": "references/web-server/v1/logs.json"
-  },
-  {
-    "content": {
-      "$schema": "/schemas/common/logs-reference-v0.json#",
-      "serviceName": "secrets",
-      "types": [
-        {
-          "description": "Status and duration of a periodic background process.",
-          "fields": {
-            "duration": "The duration in ms of the process.",
-            "name": "The name of this process.",
-            "status": "Either success, or exception depending on the outcome."
-          },
-          "level": "any",
-          "name": "periodic",
-          "title": "Periodic Process",
-          "type": "monitor.periodic",
-          "version": 1
-        },
-        {
-          "description": "The most basic timer.",
-          "fields": {
-            "duration": "The duration in ms of whatever was timed.",
-            "key": "A key that should be unique to the logger prefix."
-          },
-          "level": "info",
-          "name": "basicTimer",
-          "title": "Basic Timer",
-          "type": "monitor.timer",
-          "version": 1
-        },
-        {
-          "description": "A basic timer applied to a function.",
-          "fields": {
-            "duration": "The duration in ms of the function.",
-            "name": "The name of the handler.",
-            "status": "Whether or not the handler resolved succesfully."
-          },
-          "level": "info",
-          "name": "handlerTimer",
-          "title": "Handler Timer",
-          "type": "monitor.timedHandler",
-          "version": 1
-        },
-        {
-          "description": "A timer for calls to aws services.",
-          "fields": {
-            "duration": "How long it took to resolve the request in ms.",
-            "operation": "The specific operation of this call.",
-            "region": "The AWS region this service is in.",
-            "service": "The name of the aws service being accessed."
-          },
-          "level": "info",
-          "name": "awsTimer",
-          "title": "AWS Request Report",
-          "type": "monitor.aws",
           "version": 1
         },
         {
@@ -12161,43 +12459,6 @@
           "version": 1
         },
         {
-          "description": "A simple measurement. The reported values are expected to have statistics calculated over them.",
-          "fields": {
-            "key": "An arbitrary key.",
-            "val": "A number that should be calculated over in a time span."
-          },
-          "level": "info",
-          "name": "measureMetric",
-          "title": "Generic Measure",
-          "type": "monitor.measure",
-          "version": 1
-        },
-        {
-          "description": "A simple count. The reported values should be summed up in a time span.",
-          "fields": {
-            "key": "An arbitrary key.",
-            "val": "A number that should be summed over a time span."
-          },
-          "level": "info",
-          "name": "countMetric",
-          "title": "Generic Count",
-          "type": "monitor.count",
-          "version": 1
-        },
-        {
-          "description": "A specifically formatted error report. Will have at least the following but can contain more.",
-          "fields": {
-            "message": "Whatever message the error contained.",
-            "name": "The name of the error.",
-            "stack": "A nodejs stack trace."
-          },
-          "level": "any",
-          "name": "errorReport",
-          "title": "Error Report",
-          "type": "monitor.error",
-          "version": 1
-        },
-        {
           "description": "A simple timekeeper for measuring arbitrary time spans.",
           "fields": {
             "duration": "The duration in ms of whatever was timed.",
@@ -12210,50 +12471,25 @@
           "version": 1
         },
         {
-          "description": "An internal type for logging simple messages. No required fields.",
+          "description": "The PulseEngine has deleted a queue bound to one or more exchanges in\nresponse to termination of a GraphQL subsscription request.",
           "fields": {
+            "subscriptionId": "The subscriptionId, which will also appear in the AMQP queue name"
           },
-          "level": "any",
-          "name": "generic",
-          "title": "Generic Message",
-          "type": "monitor.generic",
+          "level": "debug",
+          "name": "unbindPulseSubscription",
+          "title": "Unbind a Pulse Subscription",
+          "type": "unbind-pulse-subscription",
           "version": 1
-        },
-        {
-          "description": "An internal type for reporting malformed logging calls.",
-          "fields": {
-          },
-          "level": "err",
-          "name": "loggingError",
-          "title": "Error in Logging",
-          "type": "monitor.loggingError",
-          "version": 1
-        },
-        {
-          "description": "This message is logged for each invocation of a Postgres stored function.",
-          "fields": {
-            "name": "The name of the DB function"
-          },
-          "level": "info",
-          "name": "dbFunctionCall",
-          "title": "DB Method Call",
-          "type": "db-function-call",
-          "version": 1
-        },
-        {
-          "description": "This message is logged every 5 minutes from each process that is using the database,\nonce for each pool.  Most services have both a \"read\" pool and a \"write\" pool.  The\nfields come from the node-postgres package.",
-          "fields": {
-            "idleCount": "The number of connections (out of the total) which are not currently in use",
-            "pool": "The name of the pool within the process",
-            "totalCount": "The total number of connections",
-            "waitingCount": "The number of operations waiting for an idle connection"
-          },
-          "level": "notice",
-          "name": "dbPoolCounts",
-          "title": "DB Pool Counts",
-          "type": "db-pool-counts",
-          "version": 1
-        },
+        }
+      ]
+    },
+    "filename": "references/web-server/v1/logs.json"
+  },
+  {
+    "content": {
+      "$schema": "/schemas/common/logs-reference-v0.json#",
+      "serviceName": "secrets",
+      "types": [
         {
           "description": "A timer and audit for express API endpoints.\nYou can combine this with auth audit logs to get\na complete picture of what was authorized when.\n\nHere, anything that is not public should have authenticated\nand if it authenticated, we will tell the clientId here. Given\nthat, it is not necessarily true that the endpoint was\n_authorized_. You can tell that by the statusCode.",
           "fields": {
@@ -12275,6 +12511,164 @@
           "name": "apiMethod",
           "title": "API Method Report",
           "type": "monitor.apiMethod",
+          "version": 1
+        },
+        {
+          "description": "A timer for calls to aws services.",
+          "fields": {
+            "duration": "How long it took to resolve the request in ms.",
+            "operation": "The specific operation of this call.",
+            "region": "The AWS region this service is in.",
+            "service": "The name of the aws service being accessed."
+          },
+          "level": "info",
+          "name": "awsTimer",
+          "title": "AWS Request Report",
+          "type": "monitor.aws",
+          "version": 1
+        },
+        {
+          "description": "The most basic timer.",
+          "fields": {
+            "duration": "The duration in ms of whatever was timed.",
+            "key": "A key that should be unique to the logger prefix."
+          },
+          "level": "info",
+          "name": "basicTimer",
+          "title": "Basic Timer",
+          "type": "monitor.timer",
+          "version": 1
+        },
+        {
+          "description": "A simple count. The reported values should be summed up in a time span.",
+          "fields": {
+            "key": "An arbitrary key.",
+            "val": "A number that should be summed over a time span."
+          },
+          "level": "info",
+          "name": "countMetric",
+          "title": "Generic Count",
+          "type": "monitor.count",
+          "version": 1
+        },
+        {
+          "description": "This message is logged for each invocation of a Postgres stored function.",
+          "fields": {
+            "name": "The name of the DB function"
+          },
+          "level": "info",
+          "name": "dbFunctionCall",
+          "title": "DB Method Call",
+          "type": "db-function-call",
+          "version": 1
+        },
+        {
+          "description": "This message is logged every 5 minutes from each process that is using the database,\nonce for each pool.  Most services have both a \"read\" pool and a \"write\" pool.  The\nfields come from the node-postgres package.",
+          "fields": {
+            "idleCount": "The number of connections (out of the total) which are not currently in use",
+            "pool": "The name of the pool within the process",
+            "totalCount": "The total number of connections",
+            "waitingCount": "The number of operations waiting for an idle connection"
+          },
+          "level": "notice",
+          "name": "dbPoolCounts",
+          "title": "DB Pool Counts",
+          "type": "db-pool-counts",
+          "version": 1
+        },
+        {
+          "description": "A specifically formatted error report. Will have at least the following but can contain more.",
+          "fields": {
+            "message": "Whatever message the error contained.",
+            "name": "The name of the error.",
+            "stack": "A nodejs stack trace."
+          },
+          "level": "any",
+          "name": "errorReport",
+          "title": "Error Report",
+          "type": "monitor.error",
+          "version": 1
+        },
+        {
+          "description": "An internal type for logging simple messages. No required fields.",
+          "fields": {
+          },
+          "level": "any",
+          "name": "generic",
+          "title": "Generic Message",
+          "type": "monitor.generic",
+          "version": 1
+        },
+        {
+          "description": "A basic timer applied to a function.",
+          "fields": {
+            "duration": "The duration in ms of the function.",
+            "name": "The name of the handler.",
+            "status": "Whether or not the handler resolved succesfully."
+          },
+          "level": "info",
+          "name": "handlerTimer",
+          "title": "Handler Timer",
+          "type": "monitor.timedHandler",
+          "version": 1
+        },
+        {
+          "description": "An internal type for reporting malformed logging calls.",
+          "fields": {
+          },
+          "level": "err",
+          "name": "loggingError",
+          "title": "Error in Logging",
+          "type": "monitor.loggingError",
+          "version": 1
+        },
+        {
+          "description": "A simple measurement. The reported values are expected to have statistics calculated over them.",
+          "fields": {
+            "key": "An arbitrary key.",
+            "val": "A number that should be calculated over in a time span."
+          },
+          "level": "info",
+          "name": "measureMetric",
+          "title": "Generic Measure",
+          "type": "monitor.measure",
+          "version": 1
+        },
+        {
+          "description": "Status and duration of a periodic background process.",
+          "fields": {
+            "duration": "The duration in ms of the process.",
+            "name": "The name of this process.",
+            "status": "Either success, or exception depending on the outcome."
+          },
+          "level": "any",
+          "name": "periodic",
+          "title": "Periodic Process",
+          "type": "monitor.periodic",
+          "version": 1
+        },
+        {
+          "description": "Metrics of a node process.",
+          "fields": {
+            "lastCpuUsage": "The output of node's process.cpuUsage",
+            "lastMemoryUsage": "The output of node's process.memoryUsage"
+          },
+          "level": "info",
+          "name": "resourceMetrics",
+          "title": "Resource Usage Metrics",
+          "type": "monitor.resources",
+          "version": 1
+        },
+        {
+          "description": "A simple timekeeper for measuring arbitrary time spans.",
+          "fields": {
+            "duration": "The duration in ms of whatever was timed.",
+            "key": "A key that should be unique to the logger prefix."
+          },
+          "level": "info",
+          "name": "timekeeper",
+          "title": "TimeKeeper Report",
+          "type": "monitor.timekeeper",
           "version": 1
         }
       ]
@@ -12380,139 +12774,6 @@
       "serviceName": "queue",
       "types": [
         {
-          "description": "Status and duration of a periodic background process.",
-          "fields": {
-            "duration": "The duration in ms of the process.",
-            "name": "The name of this process.",
-            "status": "Either success, or exception depending on the outcome."
-          },
-          "level": "any",
-          "name": "periodic",
-          "title": "Periodic Process",
-          "type": "monitor.periodic",
-          "version": 1
-        },
-        {
-          "description": "The most basic timer.",
-          "fields": {
-            "duration": "The duration in ms of whatever was timed.",
-            "key": "A key that should be unique to the logger prefix."
-          },
-          "level": "info",
-          "name": "basicTimer",
-          "title": "Basic Timer",
-          "type": "monitor.timer",
-          "version": 1
-        },
-        {
-          "description": "A basic timer applied to a function.",
-          "fields": {
-            "duration": "The duration in ms of the function.",
-            "name": "The name of the handler.",
-            "status": "Whether or not the handler resolved succesfully."
-          },
-          "level": "info",
-          "name": "handlerTimer",
-          "title": "Handler Timer",
-          "type": "monitor.timedHandler",
-          "version": 1
-        },
-        {
-          "description": "A timer for calls to aws services.",
-          "fields": {
-            "duration": "How long it took to resolve the request in ms.",
-            "operation": "The specific operation of this call.",
-            "region": "The AWS region this service is in.",
-            "service": "The name of the aws service being accessed."
-          },
-          "level": "info",
-          "name": "awsTimer",
-          "title": "AWS Request Report",
-          "type": "monitor.aws",
-          "version": 1
-        },
-        {
-          "description": "Metrics of a node process.",
-          "fields": {
-            "lastCpuUsage": "The output of node's process.cpuUsage",
-            "lastMemoryUsage": "The output of node's process.memoryUsage"
-          },
-          "level": "info",
-          "name": "resourceMetrics",
-          "title": "Resource Usage Metrics",
-          "type": "monitor.resources",
-          "version": 1
-        },
-        {
-          "description": "A simple measurement. The reported values are expected to have statistics calculated over them.",
-          "fields": {
-            "key": "An arbitrary key.",
-            "val": "A number that should be calculated over in a time span."
-          },
-          "level": "info",
-          "name": "measureMetric",
-          "title": "Generic Measure",
-          "type": "monitor.measure",
-          "version": 1
-        },
-        {
-          "description": "A simple count. The reported values should be summed up in a time span.",
-          "fields": {
-            "key": "An arbitrary key.",
-            "val": "A number that should be summed over a time span."
-          },
-          "level": "info",
-          "name": "countMetric",
-          "title": "Generic Count",
-          "type": "monitor.count",
-          "version": 1
-        },
-        {
-          "description": "A specifically formatted error report. Will have at least the following but can contain more.",
-          "fields": {
-            "message": "Whatever message the error contained.",
-            "name": "The name of the error.",
-            "stack": "A nodejs stack trace."
-          },
-          "level": "any",
-          "name": "errorReport",
-          "title": "Error Report",
-          "type": "monitor.error",
-          "version": 1
-        },
-        {
-          "description": "A simple timekeeper for measuring arbitrary time spans.",
-          "fields": {
-            "duration": "The duration in ms of whatever was timed.",
-            "key": "A key that should be unique to the logger prefix."
-          },
-          "level": "info",
-          "name": "timekeeper",
-          "title": "TimeKeeper Report",
-          "type": "monitor.timekeeper",
-          "version": 1
-        },
-        {
-          "description": "An internal type for logging simple messages. No required fields.",
-          "fields": {
-          },
-          "level": "any",
-          "name": "generic",
-          "title": "Generic Message",
-          "type": "monitor.generic",
-          "version": 1
-        },
-        {
-          "description": "An internal type for reporting malformed logging calls.",
-          "fields": {
-          },
-          "level": "err",
-          "name": "loggingError",
-          "title": "Error in Logging",
-          "type": "monitor.loggingError",
-          "version": 1
-        },
-        {
           "description": "A timer and audit for express API endpoints.\nYou can combine this with auth audit logs to get\na complete picture of what was authorized when.\n\nHere, anything that is not public should have authenticated\nand if it authenticated, we will tell the clientId here. Given\nthat, it is not necessarily true that the endpoint was\n_authorized_. You can tell that by the statusCode.",
           "fields": {
             "apiVersion": "The version of the API (e.g., `v1`)",
@@ -12533,6 +12794,57 @@
           "name": "apiMethod",
           "title": "API Method Report",
           "type": "monitor.apiMethod",
+          "version": 1
+        },
+        {
+          "description": "A timer for calls to aws services.",
+          "fields": {
+            "duration": "How long it took to resolve the request in ms.",
+            "operation": "The specific operation of this call.",
+            "region": "The AWS region this service is in.",
+            "service": "The name of the aws service being accessed."
+          },
+          "level": "info",
+          "name": "awsTimer",
+          "title": "AWS Request Report",
+          "type": "monitor.aws",
+          "version": 1
+        },
+        {
+          "description": "Report result of polling messages from an azure queue.",
+          "fields": {
+            "failed": "Number of these messages that failed to be handled.",
+            "messages": "Number of messages fetched.",
+            "resolver": "The name of the queue being polled."
+          },
+          "level": "info",
+          "name": "azureQueuePoll",
+          "title": "Azure Queue Poll",
+          "type": "azure-queue-poll",
+          "version": 1
+        },
+        {
+          "description": "The most basic timer.",
+          "fields": {
+            "duration": "The duration in ms of whatever was timed.",
+            "key": "A key that should be unique to the logger prefix."
+          },
+          "level": "info",
+          "name": "basicTimer",
+          "title": "Basic Timer",
+          "type": "monitor.timer",
+          "version": 1
+        },
+        {
+          "description": "A simple count. The reported values should be summed up in a time span.",
+          "fields": {
+            "key": "An arbitrary key.",
+            "val": "A number that should be summed over a time span."
+          },
+          "level": "info",
+          "name": "countMetric",
+          "title": "Generic Count",
+          "type": "monitor.count",
           "version": 1
         },
         {
@@ -12558,6 +12870,90 @@
           "name": "dbPoolCounts",
           "title": "DB Pool Counts",
           "type": "db-pool-counts",
+          "version": 1
+        },
+        {
+          "description": "A specifically formatted error report. Will have at least the following but can contain more.",
+          "fields": {
+            "message": "Whatever message the error contained.",
+            "name": "The name of the error.",
+            "stack": "A nodejs stack trace."
+          },
+          "level": "any",
+          "name": "errorReport",
+          "title": "Error Report",
+          "type": "monitor.error",
+          "version": 1
+        },
+        {
+          "description": "An internal type for logging simple messages. No required fields.",
+          "fields": {
+          },
+          "level": "any",
+          "name": "generic",
+          "title": "Generic Message",
+          "type": "monitor.generic",
+          "version": 1
+        },
+        {
+          "description": "A basic timer applied to a function.",
+          "fields": {
+            "duration": "The duration in ms of the function.",
+            "name": "The name of the handler.",
+            "status": "Whether or not the handler resolved succesfully."
+          },
+          "level": "info",
+          "name": "handlerTimer",
+          "title": "Handler Timer",
+          "type": "monitor.timedHandler",
+          "version": 1
+        },
+        {
+          "description": "Metrics of an iteration of the hint poller.",
+          "fields": {
+            "claimed": "Number of hints claimed on an iteration.",
+            "released": "Number of hints released on an iteration. Should usually be 0.",
+            "slept": "If true, there were no hints to claim and the poller slept before claiming again."
+          },
+          "level": "info",
+          "name": "hintPoller",
+          "title": "Hint Poller Report",
+          "type": "hint-poller",
+          "version": 1
+        },
+        {
+          "description": "An internal type for reporting malformed logging calls.",
+          "fields": {
+          },
+          "level": "err",
+          "name": "loggingError",
+          "title": "Error in Logging",
+          "type": "monitor.loggingError",
+          "version": 1
+        },
+        {
+          "description": "A simple measurement. The reported values are expected to have statistics calculated over them.",
+          "fields": {
+            "key": "An arbitrary key.",
+            "val": "A number that should be calculated over in a time span."
+          },
+          "level": "info",
+          "name": "measureMetric",
+          "title": "Generic Measure",
+          "type": "monitor.measure",
+          "version": 1
+        },
+        {
+          "description": "Status and duration of a periodic background process.",
+          "fields": {
+            "duration": "The duration in ms of the process.",
+            "name": "The name of this process.",
+            "status": "Either success, or exception depending on the outcome."
+          },
+          "level": "any",
+          "name": "periodic",
+          "title": "Periodic Process",
+          "type": "monitor.periodic",
           "version": 1
         },
         {
@@ -12593,87 +12989,15 @@
           "version": 1
         },
         {
-          "description": "Report result of polling messages from an azure queue.",
+          "description": "Metrics of a node process.",
           "fields": {
-            "failed": "Number of these messages that failed to be handled.",
-            "messages": "Number of messages fetched.",
-            "resolver": "The name of the queue being polled."
+            "lastCpuUsage": "The output of node's process.cpuUsage",
+            "lastMemoryUsage": "The output of node's process.memoryUsage"
           },
           "level": "info",
-          "name": "azureQueuePoll",
-          "title": "Azure Queue Poll",
-          "type": "azure-queue-poll",
-          "version": 1
-        },
-        {
-          "description": "A task has been created (createTask).  This is logged when the task-defined\npulse message is sent.",
-          "fields": {
-            "taskId": "The task's taskId."
-          },
-          "level": "notice",
-          "name": "taskDefined",
-          "title": "Task Defined",
-          "type": "task-defined",
-          "version": 1
-        },
-        {
-          "description": "A task is now pending and ready to be executed.  This is logged when the task-pending pulse\nmessage is sent.",
-          "fields": {
-            "runId": "The runId that is now pending.",
-            "taskId": "The task's taskId."
-          },
-          "level": "notice",
-          "name": "taskPending",
-          "title": "Task Pending",
-          "type": "task-pending",
-          "version": 1
-        },
-        {
-          "description": "A task is now being executed.  This is logged when the task-running pulse message is sent.",
-          "fields": {
-            "runId": "The runId that is now running.",
-            "taskId": "The task's taskId."
-          },
-          "level": "notice",
-          "name": "taskRunning",
-          "title": "Task Running",
-          "type": "task-running",
-          "version": 1
-        },
-        {
-          "description": "A task run has been resolved as completed.  This is logged when the task-completed pulse\nmessage is sent.",
-          "fields": {
-            "runId": "The runId that was resolved.",
-            "taskId": "The task's taskId."
-          },
-          "level": "notice",
-          "name": "taskCompleted",
-          "title": "Task Completed",
-          "type": "task-completed",
-          "version": 1
-        },
-        {
-          "description": "A task run has been resolved as failed.  This is logged when the task-failed pulse\nmessage is sent.",
-          "fields": {
-            "runId": "The runId that was resolved.",
-            "taskId": "The task's taskId."
-          },
-          "level": "notice",
-          "name": "taskFailed",
-          "title": "Task Failed",
-          "type": "task-failed",
-          "version": 1
-        },
-        {
-          "description": "A task run has been resolved as an exception.  This is logged when the task-exception pulse\nmessage is sent.",
-          "fields": {
-            "runId": "The runId that was resolved.",
-            "taskId": "The task's taskId."
-          },
-          "level": "notice",
-          "name": "taskException",
-          "title": "Task Exception",
-          "type": "task-exception",
+          "name": "resourceMetrics",
+          "title": "Resource Usage Metrics",
+          "type": "monitor.resources",
           "version": 1
         },
         {
@@ -12693,6 +13017,65 @@
           "version": 1
         },
         {
+          "description": "A task run has been resolved as completed.  This is logged when the task-completed pulse\nmessage is sent.",
+          "fields": {
+            "runId": "The runId that was resolved.",
+            "taskId": "The task's taskId."
+          },
+          "level": "notice",
+          "name": "taskCompleted",
+          "title": "Task Completed",
+          "type": "task-completed",
+          "version": 1
+        },
+        {
+          "description": "A task has been created (createTask).  This is logged when the task-defined\npulse message is sent.",
+          "fields": {
+            "taskId": "The task's taskId."
+          },
+          "level": "notice",
+          "name": "taskDefined",
+          "title": "Task Defined",
+          "type": "task-defined",
+          "version": 1
+        },
+        {
+          "description": "A task run has been resolved as an exception.  This is logged when the task-exception pulse\nmessage is sent.",
+          "fields": {
+            "runId": "The runId that was resolved.",
+            "taskId": "The task's taskId."
+          },
+          "level": "notice",
+          "name": "taskException",
+          "title": "Task Exception",
+          "type": "task-exception",
+          "version": 1
+        },
+        {
+          "description": "A task run has been resolved as failed.  This is logged when the task-failed pulse\nmessage is sent.",
+          "fields": {
+            "runId": "The runId that was resolved.",
+            "taskId": "The task's taskId."
+          },
+          "level": "notice",
+          "name": "taskFailed",
+          "title": "Task Failed",
+          "type": "task-failed",
+          "version": 1
+        },
+        {
+          "description": "A task is now pending and ready to be executed.  This is logged when the task-pending pulse\nmessage is sent.",
+          "fields": {
+            "runId": "The runId that is now pending.",
+            "taskId": "The task's taskId."
+          },
+          "level": "notice",
+          "name": "taskPending",
+          "title": "Task Pending",
+          "type": "task-pending",
+          "version": 1
+        },
+        {
           "description": "A worker has reclaimed a task it had previously claimed, extending its takenUntil\ntimestamp.",
           "fields": {
             "runId": "The run of this task being reclaimed.",
@@ -12707,16 +13090,27 @@
           "version": 1
         },
         {
-          "description": "Metrics of an iteration of the hint poller.",
+          "description": "A task is now being executed.  This is logged when the task-running pulse message is sent.",
           "fields": {
-            "claimed": "Number of hints claimed on an iteration.",
-            "released": "Number of hints released on an iteration. Should usually be 0.",
-            "slept": "If true, there were no hints to claim and the poller slept before claiming again."
+            "runId": "The runId that is now running.",
+            "taskId": "The task's taskId."
+          },
+          "level": "notice",
+          "name": "taskRunning",
+          "title": "Task Running",
+          "type": "task-running",
+          "version": 1
+        },
+        {
+          "description": "A simple timekeeper for measuring arbitrary time spans.",
+          "fields": {
+            "duration": "The duration in ms of whatever was timed.",
+            "key": "A key that should be unique to the logger prefix."
           },
           "level": "info",
-          "name": "hintPoller",
-          "title": "Hint Poller Report",
-          "type": "hint-poller",
+          "name": "timekeeper",
+          "title": "TimeKeeper Report",
+          "type": "monitor.timekeeper",
           "version": 1
         }
       ]
@@ -14009,41 +14403,26 @@
       "serviceName": "purge-cache",
       "types": [
         {
-          "description": "Status and duration of a periodic background process.",
+          "description": "A timer and audit for express API endpoints.\nYou can combine this with auth audit logs to get\na complete picture of what was authorized when.\n\nHere, anything that is not public should have authenticated\nand if it authenticated, we will tell the clientId here. Given\nthat, it is not necessarily true that the endpoint was\n_authorized_. You can tell that by the statusCode.",
           "fields": {
-            "duration": "The duration in ms of the process.",
-            "name": "The name of this process.",
-            "status": "Either success, or exception depending on the outcome."
+            "apiVersion": "The version of the API (e.g., `v1`)",
+            "clientId": "The clientId that made the request, if there was one.",
+            "duration": "The duration in ms of the call.",
+            "expires": "The expiration date of the credentials, if the header was authenticated.",
+            "hasAuthed": "Will be true if the request had req.authorize() called on it.",
+            "method": "The http method of the request.",
+            "name": "The name of the API method",
+            "public": "True if the endpoint requires no scopes.",
+            "query": "Query params that were passed to the request (only ones that are specified as possible in the entry)",
+            "resource": "The path of the http request.",
+            "satisfyingScopes": "The set of scopes posessed by the caller that were\nused to authorize this request, or [] if scopes were not required.\n\nThis set of scopes is intuitively the scopes the caller used to\nauthorize the call.  More precisely, it is the minimal subset of the supplied\nscopes required to satisfy the API method's authorization requirements.\nBut is not quite minimal in one sense: If several alternatives of an\n`AnyOf` in the API method's scope ression are satisfied, then the\nscopes used to satisfy *all* such alternatives are included.",
+            "sourceIp": "The API method caller's IP",
+            "statusCode": "The http status code that the endpoint resolved with."
           },
-          "level": "any",
-          "name": "periodic",
-          "title": "Periodic Process",
-          "type": "monitor.periodic",
-          "version": 1
-        },
-        {
-          "description": "The most basic timer.",
-          "fields": {
-            "duration": "The duration in ms of whatever was timed.",
-            "key": "A key that should be unique to the logger prefix."
-          },
-          "level": "info",
-          "name": "basicTimer",
-          "title": "Basic Timer",
-          "type": "monitor.timer",
-          "version": 1
-        },
-        {
-          "description": "A basic timer applied to a function.",
-          "fields": {
-            "duration": "The duration in ms of the function.",
-            "name": "The name of the handler.",
-            "status": "Whether or not the handler resolved succesfully."
-          },
-          "level": "info",
-          "name": "handlerTimer",
-          "title": "Handler Timer",
-          "type": "monitor.timedHandler",
+          "level": "notice",
+          "name": "apiMethod",
+          "title": "API Method Report",
+          "type": "monitor.apiMethod",
           "version": 1
         },
         {
@@ -14061,27 +14440,15 @@
           "version": 1
         },
         {
-          "description": "Metrics of a node process.",
+          "description": "The most basic timer.",
           "fields": {
-            "lastCpuUsage": "The output of node's process.cpuUsage",
-            "lastMemoryUsage": "The output of node's process.memoryUsage"
+            "duration": "The duration in ms of whatever was timed.",
+            "key": "A key that should be unique to the logger prefix."
           },
           "level": "info",
-          "name": "resourceMetrics",
-          "title": "Resource Usage Metrics",
-          "type": "monitor.resources",
-          "version": 1
-        },
-        {
-          "description": "A simple measurement. The reported values are expected to have statistics calculated over them.",
-          "fields": {
-            "key": "An arbitrary key.",
-            "val": "A number that should be calculated over in a time span."
-          },
-          "level": "info",
-          "name": "measureMetric",
-          "title": "Generic Measure",
-          "type": "monitor.measure",
+          "name": "basicTimer",
+          "title": "Basic Timer",
+          "type": "monitor.timer",
           "version": 1
         },
         {
@@ -14094,51 +14461,6 @@
           "name": "countMetric",
           "title": "Generic Count",
           "type": "monitor.count",
-          "version": 1
-        },
-        {
-          "description": "A specifically formatted error report. Will have at least the following but can contain more.",
-          "fields": {
-            "message": "Whatever message the error contained.",
-            "name": "The name of the error.",
-            "stack": "A nodejs stack trace."
-          },
-          "level": "any",
-          "name": "errorReport",
-          "title": "Error Report",
-          "type": "monitor.error",
-          "version": 1
-        },
-        {
-          "description": "A simple timekeeper for measuring arbitrary time spans.",
-          "fields": {
-            "duration": "The duration in ms of whatever was timed.",
-            "key": "A key that should be unique to the logger prefix."
-          },
-          "level": "info",
-          "name": "timekeeper",
-          "title": "TimeKeeper Report",
-          "type": "monitor.timekeeper",
-          "version": 1
-        },
-        {
-          "description": "An internal type for logging simple messages. No required fields.",
-          "fields": {
-          },
-          "level": "any",
-          "name": "generic",
-          "title": "Generic Message",
-          "type": "monitor.generic",
-          "version": 1
-        },
-        {
-          "description": "An internal type for reporting malformed logging calls.",
-          "fields": {
-          },
-          "level": "err",
-          "name": "loggingError",
-          "title": "Error in Logging",
-          "type": "monitor.loggingError",
           "version": 1
         },
         {
@@ -14167,26 +14489,98 @@
           "version": 1
         },
         {
-          "description": "A timer and audit for express API endpoints.\nYou can combine this with auth audit logs to get\na complete picture of what was authorized when.\n\nHere, anything that is not public should have authenticated\nand if it authenticated, we will tell the clientId here. Given\nthat, it is not necessarily true that the endpoint was\n_authorized_. You can tell that by the statusCode.",
+          "description": "A specifically formatted error report. Will have at least the following but can contain more.",
           "fields": {
-            "apiVersion": "The version of the API (e.g., `v1`)",
-            "clientId": "The clientId that made the request, if there was one.",
-            "duration": "The duration in ms of the call.",
-            "expires": "The expiration date of the credentials, if the header was authenticated.",
-            "hasAuthed": "Will be true if the request had req.authorize() called on it.",
-            "method": "The http method of the request.",
-            "name": "The name of the API method",
-            "public": "True if the endpoint requires no scopes.",
-            "query": "Query params that were passed to the request (only ones that are specified as possible in the entry)",
-            "resource": "The path of the http request.",
-            "satisfyingScopes": "The set of scopes posessed by the caller that were\nused to authorize this request, or [] if scopes were not required.\n\nThis set of scopes is intuitively the scopes the caller used to\nauthorize the call.  More precisely, it is the minimal subset of the supplied\nscopes required to satisfy the API method's authorization requirements.\nBut is not quite minimal in one sense: If several alternatives of an\n`AnyOf` in the API method's scope ression are satisfied, then the\nscopes used to satisfy *all* such alternatives are included.",
-            "sourceIp": "The API method caller's IP",
-            "statusCode": "The http status code that the endpoint resolved with."
+            "message": "Whatever message the error contained.",
+            "name": "The name of the error.",
+            "stack": "A nodejs stack trace."
           },
-          "level": "notice",
-          "name": "apiMethod",
-          "title": "API Method Report",
-          "type": "monitor.apiMethod",
+          "level": "any",
+          "name": "errorReport",
+          "title": "Error Report",
+          "type": "monitor.error",
+          "version": 1
+        },
+        {
+          "description": "An internal type for logging simple messages. No required fields.",
+          "fields": {
+          },
+          "level": "any",
+          "name": "generic",
+          "title": "Generic Message",
+          "type": "monitor.generic",
+          "version": 1
+        },
+        {
+          "description": "A basic timer applied to a function.",
+          "fields": {
+            "duration": "The duration in ms of the function.",
+            "name": "The name of the handler.",
+            "status": "Whether or not the handler resolved succesfully."
+          },
+          "level": "info",
+          "name": "handlerTimer",
+          "title": "Handler Timer",
+          "type": "monitor.timedHandler",
+          "version": 1
+        },
+        {
+          "description": "An internal type for reporting malformed logging calls.",
+          "fields": {
+          },
+          "level": "err",
+          "name": "loggingError",
+          "title": "Error in Logging",
+          "type": "monitor.loggingError",
+          "version": 1
+        },
+        {
+          "description": "A simple measurement. The reported values are expected to have statistics calculated over them.",
+          "fields": {
+            "key": "An arbitrary key.",
+            "val": "A number that should be calculated over in a time span."
+          },
+          "level": "info",
+          "name": "measureMetric",
+          "title": "Generic Measure",
+          "type": "monitor.measure",
+          "version": 1
+        },
+        {
+          "description": "Status and duration of a periodic background process.",
+          "fields": {
+            "duration": "The duration in ms of the process.",
+            "name": "The name of this process.",
+            "status": "Either success, or exception depending on the outcome."
+          },
+          "level": "any",
+          "name": "periodic",
+          "title": "Periodic Process",
+          "type": "monitor.periodic",
+          "version": 1
+        },
+        {
+          "description": "Metrics of a node process.",
+          "fields": {
+            "lastCpuUsage": "The output of node's process.cpuUsage",
+            "lastMemoryUsage": "The output of node's process.memoryUsage"
+          },
+          "level": "info",
+          "name": "resourceMetrics",
+          "title": "Resource Usage Metrics",
+          "type": "monitor.resources",
+          "version": 1
+        },
+        {
+          "description": "A simple timekeeper for measuring arbitrary time spans.",
+          "fields": {
+            "duration": "The duration in ms of whatever was timed.",
+            "key": "A key that should be unique to the logger prefix."
+          },
+          "level": "info",
+          "name": "timekeeper",
+          "title": "TimeKeeper Report",
+          "type": "monitor.timekeeper",
           "version": 1
         }
       ]
@@ -14278,41 +14672,26 @@
       "serviceName": "notify",
       "types": [
         {
-          "description": "Status and duration of a periodic background process.",
+          "description": "A timer and audit for express API endpoints.\nYou can combine this with auth audit logs to get\na complete picture of what was authorized when.\n\nHere, anything that is not public should have authenticated\nand if it authenticated, we will tell the clientId here. Given\nthat, it is not necessarily true that the endpoint was\n_authorized_. You can tell that by the statusCode.",
           "fields": {
-            "duration": "The duration in ms of the process.",
-            "name": "The name of this process.",
-            "status": "Either success, or exception depending on the outcome."
+            "apiVersion": "The version of the API (e.g., `v1`)",
+            "clientId": "The clientId that made the request, if there was one.",
+            "duration": "The duration in ms of the call.",
+            "expires": "The expiration date of the credentials, if the header was authenticated.",
+            "hasAuthed": "Will be true if the request had req.authorize() called on it.",
+            "method": "The http method of the request.",
+            "name": "The name of the API method",
+            "public": "True if the endpoint requires no scopes.",
+            "query": "Query params that were passed to the request (only ones that are specified as possible in the entry)",
+            "resource": "The path of the http request.",
+            "satisfyingScopes": "The set of scopes posessed by the caller that were\nused to authorize this request, or [] if scopes were not required.\n\nThis set of scopes is intuitively the scopes the caller used to\nauthorize the call.  More precisely, it is the minimal subset of the supplied\nscopes required to satisfy the API method's authorization requirements.\nBut is not quite minimal in one sense: If several alternatives of an\n`AnyOf` in the API method's scope ression are satisfied, then the\nscopes used to satisfy *all* such alternatives are included.",
+            "sourceIp": "The API method caller's IP",
+            "statusCode": "The http status code that the endpoint resolved with."
           },
-          "level": "any",
-          "name": "periodic",
-          "title": "Periodic Process",
-          "type": "monitor.periodic",
-          "version": 1
-        },
-        {
-          "description": "The most basic timer.",
-          "fields": {
-            "duration": "The duration in ms of whatever was timed.",
-            "key": "A key that should be unique to the logger prefix."
-          },
-          "level": "info",
-          "name": "basicTimer",
-          "title": "Basic Timer",
-          "type": "monitor.timer",
-          "version": 1
-        },
-        {
-          "description": "A basic timer applied to a function.",
-          "fields": {
-            "duration": "The duration in ms of the function.",
-            "name": "The name of the handler.",
-            "status": "Whether or not the handler resolved succesfully."
-          },
-          "level": "info",
-          "name": "handlerTimer",
-          "title": "Handler Timer",
-          "type": "monitor.timedHandler",
+          "level": "notice",
+          "name": "apiMethod",
+          "title": "API Method Report",
+          "type": "monitor.apiMethod",
           "version": 1
         },
         {
@@ -14330,27 +14709,15 @@
           "version": 1
         },
         {
-          "description": "Metrics of a node process.",
+          "description": "The most basic timer.",
           "fields": {
-            "lastCpuUsage": "The output of node's process.cpuUsage",
-            "lastMemoryUsage": "The output of node's process.memoryUsage"
+            "duration": "The duration in ms of whatever was timed.",
+            "key": "A key that should be unique to the logger prefix."
           },
           "level": "info",
-          "name": "resourceMetrics",
-          "title": "Resource Usage Metrics",
-          "type": "monitor.resources",
-          "version": 1
-        },
-        {
-          "description": "A simple measurement. The reported values are expected to have statistics calculated over them.",
-          "fields": {
-            "key": "An arbitrary key.",
-            "val": "A number that should be calculated over in a time span."
-          },
-          "level": "info",
-          "name": "measureMetric",
-          "title": "Generic Measure",
-          "type": "monitor.measure",
+          "name": "basicTimer",
+          "title": "Basic Timer",
+          "type": "monitor.timer",
           "version": 1
         },
         {
@@ -14363,6 +14730,42 @@
           "name": "countMetric",
           "title": "Generic Count",
           "type": "monitor.count",
+          "version": 1
+        },
+        {
+          "description": "This message is logged for each invocation of a Postgres stored function.",
+          "fields": {
+            "name": "The name of the DB function"
+          },
+          "level": "info",
+          "name": "dbFunctionCall",
+          "title": "DB Method Call",
+          "type": "db-function-call",
+          "version": 1
+        },
+        {
+          "description": "This message is logged every 5 minutes from each process that is using the database,\nonce for each pool.  Most services have both a \"read\" pool and a \"write\" pool.  The\nfields come from the node-postgres package.",
+          "fields": {
+            "idleCount": "The number of connections (out of the total) which are not currently in use",
+            "pool": "The name of the pool within the process",
+            "totalCount": "The total number of connections",
+            "waitingCount": "The number of operations waiting for an idle connection"
+          },
+          "level": "notice",
+          "name": "dbPoolCounts",
+          "title": "DB Pool Counts",
+          "type": "db-pool-counts",
+          "version": 1
+        },
+        {
+          "description": "Email has been sent.",
+          "fields": {
+            "address": "The requested recepient of the email."
+          },
+          "level": "info",
+          "name": "email",
+          "title": "Email Sent",
+          "type": "email",
           "version": 1
         },
         {
@@ -14379,18 +14782,6 @@
           "version": 1
         },
         {
-          "description": "A simple timekeeper for measuring arbitrary time spans.",
-          "fields": {
-            "duration": "The duration in ms of whatever was timed.",
-            "key": "A key that should be unique to the logger prefix."
-          },
-          "level": "info",
-          "name": "timekeeper",
-          "title": "TimeKeeper Report",
-          "type": "monitor.timekeeper",
-          "version": 1
-        },
-        {
           "description": "An internal type for logging simple messages. No required fields.",
           "fields": {
           },
@@ -14401,6 +14792,30 @@
           "version": 1
         },
         {
+          "description": "A basic timer applied to a function.",
+          "fields": {
+            "duration": "The duration in ms of the function.",
+            "name": "The name of the handler.",
+            "status": "Whether or not the handler resolved succesfully."
+          },
+          "level": "info",
+          "name": "handlerTimer",
+          "title": "Handler Timer",
+          "type": "monitor.timedHandler",
+          "version": 1
+        },
+        {
+          "description": "An irc message has been sent.",
+          "fields": {
+            "dest": "A user or channel. Will begin with \"#\" if a channel."
+          },
+          "level": "info",
+          "name": "irc",
+          "title": "IRC Message Sent",
+          "type": "irc",
+          "version": 1
+        },
+        {
           "description": "An internal type for reporting malformed logging calls.",
           "fields": {
           },
@@ -14408,6 +14823,76 @@
           "name": "loggingError",
           "title": "Error in Logging",
           "type": "monitor.loggingError",
+          "version": 1
+        },
+        {
+          "description": "A matrix message has been sent.",
+          "fields": {
+            "dest": "A user or room."
+          },
+          "level": "info",
+          "name": "matrix",
+          "title": "Matrix Message Sent",
+          "type": "matrix",
+          "version": 1
+        },
+        {
+          "description": "We have been rejected from messaging a room. This is expected if the user\nhas not invited our client into the room yet but we log it as a notice to\nhelp debug confused users.",
+          "fields": {
+            "roomId": "The roomId that we were forbidden from."
+          },
+          "level": "notice",
+          "name": "matrixForbidden",
+          "title": "Matrix Forbidden",
+          "type": "matrix-forbidden",
+          "version": 1
+        },
+        {
+          "description": "Log events from the matrix sdk. Contains arbitrary data from them.",
+          "fields": {
+            "level": "The level that matrix logged this at. We send all logs to debug no matter what.",
+            "message": "Arbitrary message from matrix sdk."
+          },
+          "level": "debug",
+          "name": "matrixSdkDebug",
+          "title": "Matrix SDK Debug",
+          "type": "matrix-sdk-debug",
+          "version": 1
+        },
+        {
+          "description": "A simple measurement. The reported values are expected to have statistics calculated over them.",
+          "fields": {
+            "key": "An arbitrary key.",
+            "val": "A number that should be calculated over in a time span."
+          },
+          "level": "info",
+          "name": "measureMetric",
+          "title": "Generic Measure",
+          "type": "monitor.measure",
+          "version": 1
+        },
+        {
+          "description": "Status and duration of a periodic background process.",
+          "fields": {
+            "duration": "The duration in ms of the process.",
+            "name": "The name of this process.",
+            "status": "Either success, or exception depending on the outcome."
+          },
+          "level": "any",
+          "name": "periodic",
+          "title": "Periodic Process",
+          "type": "monitor.periodic",
+          "version": 1
+        },
+        {
+          "description": "A pulse event has been published.",
+          "fields": {
+            "routingKey": "The requested routingKey of the message."
+          },
+          "level": "info",
+          "name": "pulse",
+          "title": "Pulse Event Published",
+          "type": "pulse",
           "version": 1
         },
         {
@@ -14443,118 +14928,27 @@
           "version": 1
         },
         {
-          "description": "Email has been sent.",
+          "description": "Metrics of a node process.",
           "fields": {
-            "address": "The requested recepient of the email."
+            "lastCpuUsage": "The output of node's process.cpuUsage",
+            "lastMemoryUsage": "The output of node's process.memoryUsage"
           },
           "level": "info",
-          "name": "email",
-          "title": "Email Sent",
-          "type": "email",
+          "name": "resourceMetrics",
+          "title": "Resource Usage Metrics",
+          "type": "monitor.resources",
           "version": 1
         },
         {
-          "description": "A pulse event has been published.",
+          "description": "A simple timekeeper for measuring arbitrary time spans.",
           "fields": {
-            "routingKey": "The requested routingKey of the message."
+            "duration": "The duration in ms of whatever was timed.",
+            "key": "A key that should be unique to the logger prefix."
           },
           "level": "info",
-          "name": "pulse",
-          "title": "Pulse Event Published",
-          "type": "pulse",
-          "version": 1
-        },
-        {
-          "description": "An irc message has been sent.",
-          "fields": {
-            "dest": "A user or channel. Will begin with \"#\" if a channel."
-          },
-          "level": "info",
-          "name": "irc",
-          "title": "IRC Message Sent",
-          "type": "irc",
-          "version": 1
-        },
-        {
-          "description": "A matrix message has been sent.",
-          "fields": {
-            "dest": "A user or room."
-          },
-          "level": "info",
-          "name": "matrix",
-          "title": "Matrix Message Sent",
-          "type": "matrix",
-          "version": 1
-        },
-        {
-          "description": "Log events from the matrix sdk. Contains arbitrary data from them.",
-          "fields": {
-            "level": "The level that matrix logged this at. We send all logs to debug no matter what.",
-            "message": "Arbitrary message from matrix sdk."
-          },
-          "level": "debug",
-          "name": "matrixSdkDebug",
-          "title": "Matrix SDK Debug",
-          "type": "matrix-sdk-debug",
-          "version": 1
-        },
-        {
-          "description": "We have been rejected from messaging a room. This is expected if the user\nhas not invited our client into the room yet but we log it as a notice to\nhelp debug confused users.",
-          "fields": {
-            "roomId": "The roomId that we were forbidden from."
-          },
-          "level": "notice",
-          "name": "matrixForbidden",
-          "title": "Matrix Forbidden",
-          "type": "matrix-forbidden",
-          "version": 1
-        },
-        {
-          "description": "A timer and audit for express API endpoints.\nYou can combine this with auth audit logs to get\na complete picture of what was authorized when.\n\nHere, anything that is not public should have authenticated\nand if it authenticated, we will tell the clientId here. Given\nthat, it is not necessarily true that the endpoint was\n_authorized_. You can tell that by the statusCode.",
-          "fields": {
-            "apiVersion": "The version of the API (e.g., `v1`)",
-            "clientId": "The clientId that made the request, if there was one.",
-            "duration": "The duration in ms of the call.",
-            "expires": "The expiration date of the credentials, if the header was authenticated.",
-            "hasAuthed": "Will be true if the request had req.authorize() called on it.",
-            "method": "The http method of the request.",
-            "name": "The name of the API method",
-            "public": "True if the endpoint requires no scopes.",
-            "query": "Query params that were passed to the request (only ones that are specified as possible in the entry)",
-            "resource": "The path of the http request.",
-            "satisfyingScopes": "The set of scopes posessed by the caller that were\nused to authorize this request, or [] if scopes were not required.\n\nThis set of scopes is intuitively the scopes the caller used to\nauthorize the call.  More precisely, it is the minimal subset of the supplied\nscopes required to satisfy the API method's authorization requirements.\nBut is not quite minimal in one sense: If several alternatives of an\n`AnyOf` in the API method's scope ression are satisfied, then the\nscopes used to satisfy *all* such alternatives are included.",
-            "sourceIp": "The API method caller's IP",
-            "statusCode": "The http status code that the endpoint resolved with."
-          },
-          "level": "notice",
-          "name": "apiMethod",
-          "title": "API Method Report",
-          "type": "monitor.apiMethod",
-          "version": 1
-        },
-        {
-          "description": "This message is logged for each invocation of a Postgres stored function.",
-          "fields": {
-            "name": "The name of the DB function"
-          },
-          "level": "info",
-          "name": "dbFunctionCall",
-          "title": "DB Method Call",
-          "type": "db-function-call",
-          "version": 1
-        },
-        {
-          "description": "This message is logged every 5 minutes from each process that is using the database,\nonce for each pool.  Most services have both a \"read\" pool and a \"write\" pool.  The\nfields come from the node-postgres package.",
-          "fields": {
-            "idleCount": "The number of connections (out of the total) which are not currently in use",
-            "pool": "The name of the pool within the process",
-            "totalCount": "The total number of connections",
-            "waitingCount": "The number of operations waiting for an idle connection"
-          },
-          "level": "notice",
-          "name": "dbPoolCounts",
-          "title": "DB Pool Counts",
-          "type": "db-pool-counts",
+          "name": "timekeeper",
+          "title": "TimeKeeper Report",
+          "type": "monitor.timekeeper",
           "version": 1
         }
       ]
@@ -14757,23 +15151,6 @@
           "stability": "experimental",
           "title": "List Denylisted Notifications",
           "type": "function"
-        },
-        {
-          "args": [
-          ],
-          "category": "Widgets",
-          "description": "This is a temporary API method to exercise infrastructure support for database\naccess and migrations.  It is not advertised and will be removed in a later version.\n\nDo not call this method.",
-          "input": "v1/widget.json#",
-          "method": "post",
-          "name": "updateWidgets",
-          "output": "v1/widgets.json#",
-          "query": [
-          ],
-          "route": "/widgets",
-          "scopes": "notify:manage-widgets",
-          "stability": "experimental",
-          "title": "Update the Widgets",
-          "type": "function"
         }
       ],
       "serviceName": "notify",
@@ -14821,41 +15198,26 @@
       "serviceName": "index",
       "types": [
         {
-          "description": "Status and duration of a periodic background process.",
+          "description": "A timer and audit for express API endpoints.\nYou can combine this with auth audit logs to get\na complete picture of what was authorized when.\n\nHere, anything that is not public should have authenticated\nand if it authenticated, we will tell the clientId here. Given\nthat, it is not necessarily true that the endpoint was\n_authorized_. You can tell that by the statusCode.",
           "fields": {
-            "duration": "The duration in ms of the process.",
-            "name": "The name of this process.",
-            "status": "Either success, or exception depending on the outcome."
+            "apiVersion": "The version of the API (e.g., `v1`)",
+            "clientId": "The clientId that made the request, if there was one.",
+            "duration": "The duration in ms of the call.",
+            "expires": "The expiration date of the credentials, if the header was authenticated.",
+            "hasAuthed": "Will be true if the request had req.authorize() called on it.",
+            "method": "The http method of the request.",
+            "name": "The name of the API method",
+            "public": "True if the endpoint requires no scopes.",
+            "query": "Query params that were passed to the request (only ones that are specified as possible in the entry)",
+            "resource": "The path of the http request.",
+            "satisfyingScopes": "The set of scopes posessed by the caller that were\nused to authorize this request, or [] if scopes were not required.\n\nThis set of scopes is intuitively the scopes the caller used to\nauthorize the call.  More precisely, it is the minimal subset of the supplied\nscopes required to satisfy the API method's authorization requirements.\nBut is not quite minimal in one sense: If several alternatives of an\n`AnyOf` in the API method's scope ression are satisfied, then the\nscopes used to satisfy *all* such alternatives are included.",
+            "sourceIp": "The API method caller's IP",
+            "statusCode": "The http status code that the endpoint resolved with."
           },
-          "level": "any",
-          "name": "periodic",
-          "title": "Periodic Process",
-          "type": "monitor.periodic",
-          "version": 1
-        },
-        {
-          "description": "The most basic timer.",
-          "fields": {
-            "duration": "The duration in ms of whatever was timed.",
-            "key": "A key that should be unique to the logger prefix."
-          },
-          "level": "info",
-          "name": "basicTimer",
-          "title": "Basic Timer",
-          "type": "monitor.timer",
-          "version": 1
-        },
-        {
-          "description": "A basic timer applied to a function.",
-          "fields": {
-            "duration": "The duration in ms of the function.",
-            "name": "The name of the handler.",
-            "status": "Whether or not the handler resolved succesfully."
-          },
-          "level": "info",
-          "name": "handlerTimer",
-          "title": "Handler Timer",
-          "type": "monitor.timedHandler",
+          "level": "notice",
+          "name": "apiMethod",
+          "title": "API Method Report",
+          "type": "monitor.apiMethod",
           "version": 1
         },
         {
@@ -14873,27 +15235,15 @@
           "version": 1
         },
         {
-          "description": "Metrics of a node process.",
+          "description": "The most basic timer.",
           "fields": {
-            "lastCpuUsage": "The output of node's process.cpuUsage",
-            "lastMemoryUsage": "The output of node's process.memoryUsage"
+            "duration": "The duration in ms of whatever was timed.",
+            "key": "A key that should be unique to the logger prefix."
           },
           "level": "info",
-          "name": "resourceMetrics",
-          "title": "Resource Usage Metrics",
-          "type": "monitor.resources",
-          "version": 1
-        },
-        {
-          "description": "A simple measurement. The reported values are expected to have statistics calculated over them.",
-          "fields": {
-            "key": "An arbitrary key.",
-            "val": "A number that should be calculated over in a time span."
-          },
-          "level": "info",
-          "name": "measureMetric",
-          "title": "Generic Measure",
-          "type": "monitor.measure",
+          "name": "basicTimer",
+          "title": "Basic Timer",
+          "type": "monitor.timer",
           "version": 1
         },
         {
@@ -14906,51 +15256,6 @@
           "name": "countMetric",
           "title": "Generic Count",
           "type": "monitor.count",
-          "version": 1
-        },
-        {
-          "description": "A specifically formatted error report. Will have at least the following but can contain more.",
-          "fields": {
-            "message": "Whatever message the error contained.",
-            "name": "The name of the error.",
-            "stack": "A nodejs stack trace."
-          },
-          "level": "any",
-          "name": "errorReport",
-          "title": "Error Report",
-          "type": "monitor.error",
-          "version": 1
-        },
-        {
-          "description": "A simple timekeeper for measuring arbitrary time spans.",
-          "fields": {
-            "duration": "The duration in ms of whatever was timed.",
-            "key": "A key that should be unique to the logger prefix."
-          },
-          "level": "info",
-          "name": "timekeeper",
-          "title": "TimeKeeper Report",
-          "type": "monitor.timekeeper",
-          "version": 1
-        },
-        {
-          "description": "An internal type for logging simple messages. No required fields.",
-          "fields": {
-          },
-          "level": "any",
-          "name": "generic",
-          "title": "Generic Message",
-          "type": "monitor.generic",
-          "version": 1
-        },
-        {
-          "description": "An internal type for reporting malformed logging calls.",
-          "fields": {
-          },
-          "level": "err",
-          "name": "loggingError",
-          "title": "Error in Logging",
-          "type": "monitor.loggingError",
           "version": 1
         },
         {
@@ -14976,6 +15281,77 @@
           "name": "dbPoolCounts",
           "title": "DB Pool Counts",
           "type": "db-pool-counts",
+          "version": 1
+        },
+        {
+          "description": "A specifically formatted error report. Will have at least the following but can contain more.",
+          "fields": {
+            "message": "Whatever message the error contained.",
+            "name": "The name of the error.",
+            "stack": "A nodejs stack trace."
+          },
+          "level": "any",
+          "name": "errorReport",
+          "title": "Error Report",
+          "type": "monitor.error",
+          "version": 1
+        },
+        {
+          "description": "An internal type for logging simple messages. No required fields.",
+          "fields": {
+          },
+          "level": "any",
+          "name": "generic",
+          "title": "Generic Message",
+          "type": "monitor.generic",
+          "version": 1
+        },
+        {
+          "description": "A basic timer applied to a function.",
+          "fields": {
+            "duration": "The duration in ms of the function.",
+            "name": "The name of the handler.",
+            "status": "Whether or not the handler resolved succesfully."
+          },
+          "level": "info",
+          "name": "handlerTimer",
+          "title": "Handler Timer",
+          "type": "monitor.timedHandler",
+          "version": 1
+        },
+        {
+          "description": "An internal type for reporting malformed logging calls.",
+          "fields": {
+          },
+          "level": "err",
+          "name": "loggingError",
+          "title": "Error in Logging",
+          "type": "monitor.loggingError",
+          "version": 1
+        },
+        {
+          "description": "A simple measurement. The reported values are expected to have statistics calculated over them.",
+          "fields": {
+            "key": "An arbitrary key.",
+            "val": "A number that should be calculated over in a time span."
+          },
+          "level": "info",
+          "name": "measureMetric",
+          "title": "Generic Measure",
+          "type": "monitor.measure",
+          "version": 1
+        },
+        {
+          "description": "Status and duration of a periodic background process.",
+          "fields": {
+            "duration": "The duration in ms of the process.",
+            "name": "The name of this process.",
+            "status": "Either success, or exception depending on the outcome."
+          },
+          "level": "any",
+          "name": "periodic",
+          "title": "Periodic Process",
+          "type": "monitor.periodic",
           "version": 1
         },
         {
@@ -15011,26 +15387,27 @@
           "version": 1
         },
         {
-          "description": "A timer and audit for express API endpoints.\nYou can combine this with auth audit logs to get\na complete picture of what was authorized when.\n\nHere, anything that is not public should have authenticated\nand if it authenticated, we will tell the clientId here. Given\nthat, it is not necessarily true that the endpoint was\n_authorized_. You can tell that by the statusCode.",
+          "description": "Metrics of a node process.",
           "fields": {
-            "apiVersion": "The version of the API (e.g., `v1`)",
-            "clientId": "The clientId that made the request, if there was one.",
-            "duration": "The duration in ms of the call.",
-            "expires": "The expiration date of the credentials, if the header was authenticated.",
-            "hasAuthed": "Will be true if the request had req.authorize() called on it.",
-            "method": "The http method of the request.",
-            "name": "The name of the API method",
-            "public": "True if the endpoint requires no scopes.",
-            "query": "Query params that were passed to the request (only ones that are specified as possible in the entry)",
-            "resource": "The path of the http request.",
-            "satisfyingScopes": "The set of scopes posessed by the caller that were\nused to authorize this request, or [] if scopes were not required.\n\nThis set of scopes is intuitively the scopes the caller used to\nauthorize the call.  More precisely, it is the minimal subset of the supplied\nscopes required to satisfy the API method's authorization requirements.\nBut is not quite minimal in one sense: If several alternatives of an\n`AnyOf` in the API method's scope ression are satisfied, then the\nscopes used to satisfy *all* such alternatives are included.",
-            "sourceIp": "The API method caller's IP",
-            "statusCode": "The http status code that the endpoint resolved with."
+            "lastCpuUsage": "The output of node's process.cpuUsage",
+            "lastMemoryUsage": "The output of node's process.memoryUsage"
           },
-          "level": "notice",
-          "name": "apiMethod",
-          "title": "API Method Report",
-          "type": "monitor.apiMethod",
+          "level": "info",
+          "name": "resourceMetrics",
+          "title": "Resource Usage Metrics",
+          "type": "monitor.resources",
+          "version": 1
+        },
+        {
+          "description": "A simple timekeeper for measuring arbitrary time spans.",
+          "fields": {
+            "duration": "The duration in ms of whatever was timed.",
+            "key": "A key that should be unique to the logger prefix."
+          },
+          "level": "info",
+          "name": "timekeeper",
+          "title": "TimeKeeper Report",
+          "type": "monitor.timekeeper",
           "version": 1
         }
       ]
@@ -15159,41 +15536,26 @@
       "serviceName": "hooks",
       "types": [
         {
-          "description": "Status and duration of a periodic background process.",
+          "description": "A timer and audit for express API endpoints.\nYou can combine this with auth audit logs to get\na complete picture of what was authorized when.\n\nHere, anything that is not public should have authenticated\nand if it authenticated, we will tell the clientId here. Given\nthat, it is not necessarily true that the endpoint was\n_authorized_. You can tell that by the statusCode.",
           "fields": {
-            "duration": "The duration in ms of the process.",
-            "name": "The name of this process.",
-            "status": "Either success, or exception depending on the outcome."
+            "apiVersion": "The version of the API (e.g., `v1`)",
+            "clientId": "The clientId that made the request, if there was one.",
+            "duration": "The duration in ms of the call.",
+            "expires": "The expiration date of the credentials, if the header was authenticated.",
+            "hasAuthed": "Will be true if the request had req.authorize() called on it.",
+            "method": "The http method of the request.",
+            "name": "The name of the API method",
+            "public": "True if the endpoint requires no scopes.",
+            "query": "Query params that were passed to the request (only ones that are specified as possible in the entry)",
+            "resource": "The path of the http request.",
+            "satisfyingScopes": "The set of scopes posessed by the caller that were\nused to authorize this request, or [] if scopes were not required.\n\nThis set of scopes is intuitively the scopes the caller used to\nauthorize the call.  More precisely, it is the minimal subset of the supplied\nscopes required to satisfy the API method's authorization requirements.\nBut is not quite minimal in one sense: If several alternatives of an\n`AnyOf` in the API method's scope ression are satisfied, then the\nscopes used to satisfy *all* such alternatives are included.",
+            "sourceIp": "The API method caller's IP",
+            "statusCode": "The http status code that the endpoint resolved with."
           },
-          "level": "any",
-          "name": "periodic",
-          "title": "Periodic Process",
-          "type": "monitor.periodic",
-          "version": 1
-        },
-        {
-          "description": "The most basic timer.",
-          "fields": {
-            "duration": "The duration in ms of whatever was timed.",
-            "key": "A key that should be unique to the logger prefix."
-          },
-          "level": "info",
-          "name": "basicTimer",
-          "title": "Basic Timer",
-          "type": "monitor.timer",
-          "version": 1
-        },
-        {
-          "description": "A basic timer applied to a function.",
-          "fields": {
-            "duration": "The duration in ms of the function.",
-            "name": "The name of the handler.",
-            "status": "Whether or not the handler resolved succesfully."
-          },
-          "level": "info",
-          "name": "handlerTimer",
-          "title": "Handler Timer",
-          "type": "monitor.timedHandler",
+          "level": "notice",
+          "name": "apiMethod",
+          "title": "API Method Report",
+          "type": "monitor.apiMethod",
           "version": 1
         },
         {
@@ -15211,27 +15573,15 @@
           "version": 1
         },
         {
-          "description": "Metrics of a node process.",
+          "description": "The most basic timer.",
           "fields": {
-            "lastCpuUsage": "The output of node's process.cpuUsage",
-            "lastMemoryUsage": "The output of node's process.memoryUsage"
+            "duration": "The duration in ms of whatever was timed.",
+            "key": "A key that should be unique to the logger prefix."
           },
           "level": "info",
-          "name": "resourceMetrics",
-          "title": "Resource Usage Metrics",
-          "type": "monitor.resources",
-          "version": 1
-        },
-        {
-          "description": "A simple measurement. The reported values are expected to have statistics calculated over them.",
-          "fields": {
-            "key": "An arbitrary key.",
-            "val": "A number that should be calculated over in a time span."
-          },
-          "level": "info",
-          "name": "measureMetric",
-          "title": "Generic Measure",
-          "type": "monitor.measure",
+          "name": "basicTimer",
+          "title": "Basic Timer",
+          "type": "monitor.timer",
           "version": 1
         },
         {
@@ -15244,51 +15594,6 @@
           "name": "countMetric",
           "title": "Generic Count",
           "type": "monitor.count",
-          "version": 1
-        },
-        {
-          "description": "A specifically formatted error report. Will have at least the following but can contain more.",
-          "fields": {
-            "message": "Whatever message the error contained.",
-            "name": "The name of the error.",
-            "stack": "A nodejs stack trace."
-          },
-          "level": "any",
-          "name": "errorReport",
-          "title": "Error Report",
-          "type": "monitor.error",
-          "version": 1
-        },
-        {
-          "description": "A simple timekeeper for measuring arbitrary time spans.",
-          "fields": {
-            "duration": "The duration in ms of whatever was timed.",
-            "key": "A key that should be unique to the logger prefix."
-          },
-          "level": "info",
-          "name": "timekeeper",
-          "title": "TimeKeeper Report",
-          "type": "monitor.timekeeper",
-          "version": 1
-        },
-        {
-          "description": "An internal type for logging simple messages. No required fields.",
-          "fields": {
-          },
-          "level": "any",
-          "name": "generic",
-          "title": "Generic Message",
-          "type": "monitor.generic",
-          "version": 1
-        },
-        {
-          "description": "An internal type for reporting malformed logging calls.",
-          "fields": {
-          },
-          "level": "err",
-          "name": "loggingError",
-          "title": "Error in Logging",
-          "type": "monitor.loggingError",
           "version": 1
         },
         {
@@ -15317,26 +15622,39 @@
           "version": 1
         },
         {
-          "description": "A timer and audit for express API endpoints.\nYou can combine this with auth audit logs to get\na complete picture of what was authorized when.\n\nHere, anything that is not public should have authenticated\nand if it authenticated, we will tell the clientId here. Given\nthat, it is not necessarily true that the endpoint was\n_authorized_. You can tell that by the statusCode.",
+          "description": "A specifically formatted error report. Will have at least the following but can contain more.",
           "fields": {
-            "apiVersion": "The version of the API (e.g., `v1`)",
-            "clientId": "The clientId that made the request, if there was one.",
-            "duration": "The duration in ms of the call.",
-            "expires": "The expiration date of the credentials, if the header was authenticated.",
-            "hasAuthed": "Will be true if the request had req.authorize() called on it.",
-            "method": "The http method of the request.",
-            "name": "The name of the API method",
-            "public": "True if the endpoint requires no scopes.",
-            "query": "Query params that were passed to the request (only ones that are specified as possible in the entry)",
-            "resource": "The path of the http request.",
-            "satisfyingScopes": "The set of scopes posessed by the caller that were\nused to authorize this request, or [] if scopes were not required.\n\nThis set of scopes is intuitively the scopes the caller used to\nauthorize the call.  More precisely, it is the minimal subset of the supplied\nscopes required to satisfy the API method's authorization requirements.\nBut is not quite minimal in one sense: If several alternatives of an\n`AnyOf` in the API method's scope ression are satisfied, then the\nscopes used to satisfy *all* such alternatives are included.",
-            "sourceIp": "The API method caller's IP",
-            "statusCode": "The http status code that the endpoint resolved with."
+            "message": "Whatever message the error contained.",
+            "name": "The name of the error.",
+            "stack": "A nodejs stack trace."
           },
-          "level": "notice",
-          "name": "apiMethod",
-          "title": "API Method Report",
-          "type": "monitor.apiMethod",
+          "level": "any",
+          "name": "errorReport",
+          "title": "Error Report",
+          "type": "monitor.error",
+          "version": 1
+        },
+        {
+          "description": "An internal type for logging simple messages. No required fields.",
+          "fields": {
+          },
+          "level": "any",
+          "name": "generic",
+          "title": "Generic Message",
+          "type": "monitor.generic",
+          "version": 1
+        },
+        {
+          "description": "A basic timer applied to a function.",
+          "fields": {
+            "duration": "The duration in ms of the function.",
+            "name": "The name of the handler.",
+            "status": "Whether or not the handler resolved succesfully."
+          },
+          "level": "info",
+          "name": "handlerTimer",
+          "title": "Handler Timer",
+          "type": "monitor.timedHandler",
           "version": 1
         },
         {
@@ -15352,6 +15670,41 @@
           "name": "hookFire",
           "title": "A hook was fired",
           "type": "hook-fire",
+          "version": 1
+        },
+        {
+          "description": "An internal type for reporting malformed logging calls.",
+          "fields": {
+          },
+          "level": "err",
+          "name": "loggingError",
+          "title": "Error in Logging",
+          "type": "monitor.loggingError",
+          "version": 1
+        },
+        {
+          "description": "A simple measurement. The reported values are expected to have statistics calculated over them.",
+          "fields": {
+            "key": "An arbitrary key.",
+            "val": "A number that should be calculated over in a time span."
+          },
+          "level": "info",
+          "name": "measureMetric",
+          "title": "Generic Measure",
+          "type": "monitor.measure",
+          "version": 1
+        },
+        {
+          "description": "Status and duration of a periodic background process.",
+          "fields": {
+            "duration": "The duration in ms of the process.",
+            "name": "The name of this process.",
+            "status": "Either success, or exception depending on the outcome."
+          },
+          "level": "any",
+          "name": "periodic",
+          "title": "Periodic Process",
+          "type": "monitor.periodic",
           "version": 1
         },
         {
@@ -15384,6 +15737,30 @@
           "name": "pulsePublisherBlocked",
           "title": "Pulse server has (un)blocked a publisher",
           "type": "pulsePublisherBlocked",
+          "version": 1
+        },
+        {
+          "description": "Metrics of a node process.",
+          "fields": {
+            "lastCpuUsage": "The output of node's process.cpuUsage",
+            "lastMemoryUsage": "The output of node's process.memoryUsage"
+          },
+          "level": "info",
+          "name": "resourceMetrics",
+          "title": "Resource Usage Metrics",
+          "type": "monitor.resources",
+          "version": 1
+        },
+        {
+          "description": "A simple timekeeper for measuring arbitrary time spans.",
+          "fields": {
+            "duration": "The duration in ms of whatever was timed.",
+            "key": "A key that should be unique to the logger prefix."
+          },
+          "level": "info",
+          "name": "timekeeper",
+          "title": "TimeKeeper Report",
+          "type": "monitor.timekeeper",
           "version": 1
         }
       ]
@@ -15704,139 +16081,6 @@
       "serviceName": "github",
       "types": [
         {
-          "description": "Status and duration of a periodic background process.",
-          "fields": {
-            "duration": "The duration in ms of the process.",
-            "name": "The name of this process.",
-            "status": "Either success, or exception depending on the outcome."
-          },
-          "level": "any",
-          "name": "periodic",
-          "title": "Periodic Process",
-          "type": "monitor.periodic",
-          "version": 1
-        },
-        {
-          "description": "The most basic timer.",
-          "fields": {
-            "duration": "The duration in ms of whatever was timed.",
-            "key": "A key that should be unique to the logger prefix."
-          },
-          "level": "info",
-          "name": "basicTimer",
-          "title": "Basic Timer",
-          "type": "monitor.timer",
-          "version": 1
-        },
-        {
-          "description": "A basic timer applied to a function.",
-          "fields": {
-            "duration": "The duration in ms of the function.",
-            "name": "The name of the handler.",
-            "status": "Whether or not the handler resolved succesfully."
-          },
-          "level": "info",
-          "name": "handlerTimer",
-          "title": "Handler Timer",
-          "type": "monitor.timedHandler",
-          "version": 1
-        },
-        {
-          "description": "A timer for calls to aws services.",
-          "fields": {
-            "duration": "How long it took to resolve the request in ms.",
-            "operation": "The specific operation of this call.",
-            "region": "The AWS region this service is in.",
-            "service": "The name of the aws service being accessed."
-          },
-          "level": "info",
-          "name": "awsTimer",
-          "title": "AWS Request Report",
-          "type": "monitor.aws",
-          "version": 1
-        },
-        {
-          "description": "Metrics of a node process.",
-          "fields": {
-            "lastCpuUsage": "The output of node's process.cpuUsage",
-            "lastMemoryUsage": "The output of node's process.memoryUsage"
-          },
-          "level": "info",
-          "name": "resourceMetrics",
-          "title": "Resource Usage Metrics",
-          "type": "monitor.resources",
-          "version": 1
-        },
-        {
-          "description": "A simple measurement. The reported values are expected to have statistics calculated over them.",
-          "fields": {
-            "key": "An arbitrary key.",
-            "val": "A number that should be calculated over in a time span."
-          },
-          "level": "info",
-          "name": "measureMetric",
-          "title": "Generic Measure",
-          "type": "monitor.measure",
-          "version": 1
-        },
-        {
-          "description": "A simple count. The reported values should be summed up in a time span.",
-          "fields": {
-            "key": "An arbitrary key.",
-            "val": "A number that should be summed over a time span."
-          },
-          "level": "info",
-          "name": "countMetric",
-          "title": "Generic Count",
-          "type": "monitor.count",
-          "version": 1
-        },
-        {
-          "description": "A specifically formatted error report. Will have at least the following but can contain more.",
-          "fields": {
-            "message": "Whatever message the error contained.",
-            "name": "The name of the error.",
-            "stack": "A nodejs stack trace."
-          },
-          "level": "any",
-          "name": "errorReport",
-          "title": "Error Report",
-          "type": "monitor.error",
-          "version": 1
-        },
-        {
-          "description": "A simple timekeeper for measuring arbitrary time spans.",
-          "fields": {
-            "duration": "The duration in ms of whatever was timed.",
-            "key": "A key that should be unique to the logger prefix."
-          },
-          "level": "info",
-          "name": "timekeeper",
-          "title": "TimeKeeper Report",
-          "type": "monitor.timekeeper",
-          "version": 1
-        },
-        {
-          "description": "An internal type for logging simple messages. No required fields.",
-          "fields": {
-          },
-          "level": "any",
-          "name": "generic",
-          "title": "Generic Message",
-          "type": "monitor.generic",
-          "version": 1
-        },
-        {
-          "description": "An internal type for reporting malformed logging calls.",
-          "fields": {
-          },
-          "level": "err",
-          "name": "loggingError",
-          "title": "Error in Logging",
-          "type": "monitor.loggingError",
-          "version": 1
-        },
-        {
           "description": "A timer and audit for express API endpoints.\nYou can combine this with auth audit logs to get\na complete picture of what was authorized when.\n\nHere, anything that is not public should have authenticated\nand if it authenticated, we will tell the clientId here. Given\nthat, it is not necessarily true that the endpoint was\n_authorized_. You can tell that by the statusCode.",
           "fields": {
             "apiVersion": "The version of the API (e.g., `v1`)",
@@ -15857,6 +16101,44 @@
           "name": "apiMethod",
           "title": "API Method Report",
           "type": "monitor.apiMethod",
+          "version": 1
+        },
+        {
+          "description": "A timer for calls to aws services.",
+          "fields": {
+            "duration": "How long it took to resolve the request in ms.",
+            "operation": "The specific operation of this call.",
+            "region": "The AWS region this service is in.",
+            "service": "The name of the aws service being accessed."
+          },
+          "level": "info",
+          "name": "awsTimer",
+          "title": "AWS Request Report",
+          "type": "monitor.aws",
+          "version": 1
+        },
+        {
+          "description": "The most basic timer.",
+          "fields": {
+            "duration": "The duration in ms of whatever was timed.",
+            "key": "A key that should be unique to the logger prefix."
+          },
+          "level": "info",
+          "name": "basicTimer",
+          "title": "Basic Timer",
+          "type": "monitor.timer",
+          "version": 1
+        },
+        {
+          "description": "A simple count. The reported values should be summed up in a time span.",
+          "fields": {
+            "key": "An arbitrary key.",
+            "val": "A number that should be summed over a time span."
+          },
+          "level": "info",
+          "name": "countMetric",
+          "title": "Generic Count",
+          "type": "monitor.count",
           "version": 1
         },
         {
@@ -15882,6 +16164,95 @@
           "name": "dbPoolCounts",
           "title": "DB Pool Counts",
           "type": "db-pool-counts",
+          "version": 1
+        },
+        {
+          "description": "A specifically formatted error report. Will have at least the following but can contain more.",
+          "fields": {
+            "message": "Whatever message the error contained.",
+            "name": "The name of the error.",
+            "stack": "A nodejs stack trace."
+          },
+          "level": "any",
+          "name": "errorReport",
+          "title": "Error Report",
+          "type": "monitor.error",
+          "version": 1
+        },
+        {
+          "description": "An internal type for logging simple messages. No required fields.",
+          "fields": {
+          },
+          "level": "any",
+          "name": "generic",
+          "title": "Generic Message",
+          "type": "monitor.generic",
+          "version": 1
+        },
+        {
+          "description": "Narrative debug logging for event handling.  These messages have attributes that\ncan be useful in filtering to a specific event, but note that all fields are not\nalways available.  For example, when a task completes, the eventId that led to\nthe task's creation is not available and not logged.",
+          "fields": {
+            "eventId": "The GUID of the webhook delivery (`X-GitHub-Delivery` header), if any",
+            "installationId": "The installation ID associated with this event (`installation.id`), if any",
+            "message": "Free-form message",
+            "owner": "The repository owner (organization or username), if any",
+            "repo": "The repository name, if any",
+            "sha": "The SHA of the commit being addressed, if any",
+            "taskGroupId": "The taskGroupId of the affected tasks, if any",
+            "taskId": "The taskId of the affected task, if any"
+          },
+          "level": "debug",
+          "name": "handlerDebug",
+          "title": "Event Handler Debug Information",
+          "type": "handler-debug",
+          "version": 1
+        },
+        {
+          "description": "A basic timer applied to a function.",
+          "fields": {
+            "duration": "The duration in ms of the function.",
+            "name": "The name of the handler.",
+            "status": "Whether or not the handler resolved succesfully."
+          },
+          "level": "info",
+          "name": "handlerTimer",
+          "title": "Handler Timer",
+          "type": "monitor.timedHandler",
+          "version": 1
+        },
+        {
+          "description": "An internal type for reporting malformed logging calls.",
+          "fields": {
+          },
+          "level": "err",
+          "name": "loggingError",
+          "title": "Error in Logging",
+          "type": "monitor.loggingError",
+          "version": 1
+        },
+        {
+          "description": "A simple measurement. The reported values are expected to have statistics calculated over them.",
+          "fields": {
+            "key": "An arbitrary key.",
+            "val": "A number that should be calculated over in a time span."
+          },
+          "level": "info",
+          "name": "measureMetric",
+          "title": "Generic Measure",
+          "type": "monitor.measure",
+          "version": 1
+        },
+        {
+          "description": "Status and duration of a periodic background process.",
+          "fields": {
+            "duration": "The duration in ms of the process.",
+            "name": "The name of this process.",
+            "status": "Either success, or exception depending on the outcome."
+          },
+          "level": "any",
+          "name": "periodic",
+          "title": "Periodic Process",
+          "type": "monitor.periodic",
           "version": 1
         },
         {
@@ -15917,6 +16288,30 @@
           "version": 1
         },
         {
+          "description": "Metrics of a node process.",
+          "fields": {
+            "lastCpuUsage": "The output of node's process.cpuUsage",
+            "lastMemoryUsage": "The output of node's process.memoryUsage"
+          },
+          "level": "info",
+          "name": "resourceMetrics",
+          "title": "Resource Usage Metrics",
+          "type": "monitor.resources",
+          "version": 1
+        },
+        {
+          "description": "A simple timekeeper for measuring arbitrary time spans.",
+          "fields": {
+            "duration": "The duration in ms of whatever was timed.",
+            "key": "A key that should be unique to the logger prefix."
+          },
+          "level": "info",
+          "name": "timekeeper",
+          "title": "TimeKeeper Report",
+          "type": "monitor.timekeeper",
+          "version": 1
+        },
+        {
           "description": "A valid webhook payload was received from GitHub.",
           "fields": {
             "eventId": "The GUID of this webhook delivery (`X-GitHub-Delivery` header)",
@@ -15927,24 +16322,6 @@
           "name": "webhookReceived",
           "title": "Webhook Received",
           "type": "webhook-received",
-          "version": 1
-        },
-        {
-          "description": "Narrative debug logging for event handling.  These messages have attributes that\ncan be useful in filtering to a specific event, but note that all fields are not\nalways available.  For example, when a task completes, the eventId that led to\nthe task's creation is not available and not logged.",
-          "fields": {
-            "eventId": "The GUID of the webhook delivery (`X-GitHub-Delivery` header), if any",
-            "installationId": "The installation ID associated with this event (`installation.id`), if any",
-            "message": "Free-form message",
-            "owner": "The repository owner (organization or username), if any",
-            "repo": "The repository name, if any",
-            "sha": "The SHA of the commit being addressed, if any",
-            "taskGroupId": "The taskGroupId of the affected tasks, if any",
-            "taskId": "The taskId of the affected task, if any"
-          },
-          "level": "debug",
-          "name": "handlerDebug",
-          "title": "Event Handler Debug Information",
-          "type": "handler-debug",
           "version": 1
         }
       ]
@@ -16241,44 +16618,6 @@
       "serviceName": "built-in-workers",
       "types": [
         {
-          "description": "Status and duration of a periodic background process.",
-          "fields": {
-            "duration": "The duration in ms of the process.",
-            "name": "The name of this process.",
-            "status": "Either success, or exception depending on the outcome."
-          },
-          "level": "any",
-          "name": "periodic",
-          "title": "Periodic Process",
-          "type": "monitor.periodic",
-          "version": 1
-        },
-        {
-          "description": "The most basic timer.",
-          "fields": {
-            "duration": "The duration in ms of whatever was timed.",
-            "key": "A key that should be unique to the logger prefix."
-          },
-          "level": "info",
-          "name": "basicTimer",
-          "title": "Basic Timer",
-          "type": "monitor.timer",
-          "version": 1
-        },
-        {
-          "description": "A basic timer applied to a function.",
-          "fields": {
-            "duration": "The duration in ms of the function.",
-            "name": "The name of the handler.",
-            "status": "Whether or not the handler resolved succesfully."
-          },
-          "level": "info",
-          "name": "handlerTimer",
-          "title": "Handler Timer",
-          "type": "monitor.timedHandler",
-          "version": 1
-        },
-        {
           "description": "A timer for calls to aws services.",
           "fields": {
             "duration": "How long it took to resolve the request in ms.",
@@ -16293,27 +16632,15 @@
           "version": 1
         },
         {
-          "description": "Metrics of a node process.",
+          "description": "The most basic timer.",
           "fields": {
-            "lastCpuUsage": "The output of node's process.cpuUsage",
-            "lastMemoryUsage": "The output of node's process.memoryUsage"
+            "duration": "The duration in ms of whatever was timed.",
+            "key": "A key that should be unique to the logger prefix."
           },
           "level": "info",
-          "name": "resourceMetrics",
-          "title": "Resource Usage Metrics",
-          "type": "monitor.resources",
-          "version": 1
-        },
-        {
-          "description": "A simple measurement. The reported values are expected to have statistics calculated over them.",
-          "fields": {
-            "key": "An arbitrary key.",
-            "val": "A number that should be calculated over in a time span."
-          },
-          "level": "info",
-          "name": "measureMetric",
-          "title": "Generic Measure",
-          "type": "monitor.measure",
+          "name": "basicTimer",
+          "title": "Basic Timer",
+          "type": "monitor.timer",
           "version": 1
         },
         {
@@ -16342,18 +16669,6 @@
           "version": 1
         },
         {
-          "description": "A simple timekeeper for measuring arbitrary time spans.",
-          "fields": {
-            "duration": "The duration in ms of whatever was timed.",
-            "key": "A key that should be unique to the logger prefix."
-          },
-          "level": "info",
-          "name": "timekeeper",
-          "title": "TimeKeeper Report",
-          "type": "monitor.timekeeper",
-          "version": 1
-        },
-        {
           "description": "An internal type for logging simple messages. No required fields.",
           "fields": {
           },
@@ -16364,6 +16679,19 @@
           "version": 1
         },
         {
+          "description": "A basic timer applied to a function.",
+          "fields": {
+            "duration": "The duration in ms of the function.",
+            "name": "The name of the handler.",
+            "status": "Whether or not the handler resolved succesfully."
+          },
+          "level": "info",
+          "name": "handlerTimer",
+          "title": "Handler Timer",
+          "type": "monitor.timedHandler",
+          "version": 1
+        },
+        {
           "description": "An internal type for reporting malformed logging calls.",
           "fields": {
           },
@@ -16371,6 +16699,55 @@
           "name": "loggingError",
           "title": "Error in Logging",
           "type": "monitor.loggingError",
+          "version": 1
+        },
+        {
+          "description": "A simple measurement. The reported values are expected to have statistics calculated over them.",
+          "fields": {
+            "key": "An arbitrary key.",
+            "val": "A number that should be calculated over in a time span."
+          },
+          "level": "info",
+          "name": "measureMetric",
+          "title": "Generic Measure",
+          "type": "monitor.measure",
+          "version": 1
+        },
+        {
+          "description": "Status and duration of a periodic background process.",
+          "fields": {
+            "duration": "The duration in ms of the process.",
+            "name": "The name of this process.",
+            "status": "Either success, or exception depending on the outcome."
+          },
+          "level": "any",
+          "name": "periodic",
+          "title": "Periodic Process",
+          "type": "monitor.periodic",
+          "version": 1
+        },
+        {
+          "description": "Metrics of a node process.",
+          "fields": {
+            "lastCpuUsage": "The output of node's process.cpuUsage",
+            "lastMemoryUsage": "The output of node's process.memoryUsage"
+          },
+          "level": "info",
+          "name": "resourceMetrics",
+          "title": "Resource Usage Metrics",
+          "type": "monitor.resources",
+          "version": 1
+        },
+        {
+          "description": "A simple timekeeper for measuring arbitrary time spans.",
+          "fields": {
+            "duration": "The duration in ms of whatever was timed.",
+            "key": "A key that should be unique to the logger prefix."
+          },
+          "level": "info",
+          "name": "timekeeper",
+          "title": "TimeKeeper Report",
+          "type": "monitor.timekeeper",
           "version": 1
         }
       ]
@@ -16383,41 +16760,26 @@
       "serviceName": "auth",
       "types": [
         {
-          "description": "Status and duration of a periodic background process.",
+          "description": "A timer and audit for express API endpoints.\nYou can combine this with auth audit logs to get\na complete picture of what was authorized when.\n\nHere, anything that is not public should have authenticated\nand if it authenticated, we will tell the clientId here. Given\nthat, it is not necessarily true that the endpoint was\n_authorized_. You can tell that by the statusCode.",
           "fields": {
-            "duration": "The duration in ms of the process.",
-            "name": "The name of this process.",
-            "status": "Either success, or exception depending on the outcome."
+            "apiVersion": "The version of the API (e.g., `v1`)",
+            "clientId": "The clientId that made the request, if there was one.",
+            "duration": "The duration in ms of the call.",
+            "expires": "The expiration date of the credentials, if the header was authenticated.",
+            "hasAuthed": "Will be true if the request had req.authorize() called on it.",
+            "method": "The http method of the request.",
+            "name": "The name of the API method",
+            "public": "True if the endpoint requires no scopes.",
+            "query": "Query params that were passed to the request (only ones that are specified as possible in the entry)",
+            "resource": "The path of the http request.",
+            "satisfyingScopes": "The set of scopes posessed by the caller that were\nused to authorize this request, or [] if scopes were not required.\n\nThis set of scopes is intuitively the scopes the caller used to\nauthorize the call.  More precisely, it is the minimal subset of the supplied\nscopes required to satisfy the API method's authorization requirements.\nBut is not quite minimal in one sense: If several alternatives of an\n`AnyOf` in the API method's scope ression are satisfied, then the\nscopes used to satisfy *all* such alternatives are included.",
+            "sourceIp": "The API method caller's IP",
+            "statusCode": "The http status code that the endpoint resolved with."
           },
-          "level": "any",
-          "name": "periodic",
-          "title": "Periodic Process",
-          "type": "monitor.periodic",
-          "version": 1
-        },
-        {
-          "description": "The most basic timer.",
-          "fields": {
-            "duration": "The duration in ms of whatever was timed.",
-            "key": "A key that should be unique to the logger prefix."
-          },
-          "level": "info",
-          "name": "basicTimer",
-          "title": "Basic Timer",
-          "type": "monitor.timer",
-          "version": 1
-        },
-        {
-          "description": "A basic timer applied to a function.",
-          "fields": {
-            "duration": "The duration in ms of the function.",
-            "name": "The name of the handler.",
-            "status": "Whether or not the handler resolved succesfully."
-          },
-          "level": "info",
-          "name": "handlerTimer",
-          "title": "Handler Timer",
-          "type": "monitor.timedHandler",
+          "level": "notice",
+          "name": "apiMethod",
+          "title": "API Method Report",
+          "type": "monitor.apiMethod",
           "version": 1
         },
         {
@@ -16435,27 +16797,15 @@
           "version": 1
         },
         {
-          "description": "Metrics of a node process.",
+          "description": "The most basic timer.",
           "fields": {
-            "lastCpuUsage": "The output of node's process.cpuUsage",
-            "lastMemoryUsage": "The output of node's process.memoryUsage"
+            "duration": "The duration in ms of whatever was timed.",
+            "key": "A key that should be unique to the logger prefix."
           },
           "level": "info",
-          "name": "resourceMetrics",
-          "title": "Resource Usage Metrics",
-          "type": "monitor.resources",
-          "version": 1
-        },
-        {
-          "description": "A simple measurement. The reported values are expected to have statistics calculated over them.",
-          "fields": {
-            "key": "An arbitrary key.",
-            "val": "A number that should be calculated over in a time span."
-          },
-          "level": "info",
-          "name": "measureMetric",
-          "title": "Generic Measure",
-          "type": "monitor.measure",
+          "name": "basicTimer",
+          "title": "Basic Timer",
+          "type": "monitor.timer",
           "version": 1
         },
         {
@@ -16468,51 +16818,6 @@
           "name": "countMetric",
           "title": "Generic Count",
           "type": "monitor.count",
-          "version": 1
-        },
-        {
-          "description": "A specifically formatted error report. Will have at least the following but can contain more.",
-          "fields": {
-            "message": "Whatever message the error contained.",
-            "name": "The name of the error.",
-            "stack": "A nodejs stack trace."
-          },
-          "level": "any",
-          "name": "errorReport",
-          "title": "Error Report",
-          "type": "monitor.error",
-          "version": 1
-        },
-        {
-          "description": "A simple timekeeper for measuring arbitrary time spans.",
-          "fields": {
-            "duration": "The duration in ms of whatever was timed.",
-            "key": "A key that should be unique to the logger prefix."
-          },
-          "level": "info",
-          "name": "timekeeper",
-          "title": "TimeKeeper Report",
-          "type": "monitor.timekeeper",
-          "version": 1
-        },
-        {
-          "description": "An internal type for logging simple messages. No required fields.",
-          "fields": {
-          },
-          "level": "any",
-          "name": "generic",
-          "title": "Generic Message",
-          "type": "monitor.generic",
-          "version": 1
-        },
-        {
-          "description": "An internal type for reporting malformed logging calls.",
-          "fields": {
-          },
-          "level": "err",
-          "name": "loggingError",
-          "title": "Error in Logging",
-          "type": "monitor.loggingError",
           "version": 1
         },
         {
@@ -16541,26 +16846,74 @@
           "version": 1
         },
         {
-          "description": "A timer and audit for express API endpoints.\nYou can combine this with auth audit logs to get\na complete picture of what was authorized when.\n\nHere, anything that is not public should have authenticated\nand if it authenticated, we will tell the clientId here. Given\nthat, it is not necessarily true that the endpoint was\n_authorized_. You can tell that by the statusCode.",
+          "description": "A specifically formatted error report. Will have at least the following but can contain more.",
           "fields": {
-            "apiVersion": "The version of the API (e.g., `v1`)",
-            "clientId": "The clientId that made the request, if there was one.",
-            "duration": "The duration in ms of the call.",
-            "expires": "The expiration date of the credentials, if the header was authenticated.",
-            "hasAuthed": "Will be true if the request had req.authorize() called on it.",
-            "method": "The http method of the request.",
-            "name": "The name of the API method",
-            "public": "True if the endpoint requires no scopes.",
-            "query": "Query params that were passed to the request (only ones that are specified as possible in the entry)",
-            "resource": "The path of the http request.",
-            "satisfyingScopes": "The set of scopes posessed by the caller that were\nused to authorize this request, or [] if scopes were not required.\n\nThis set of scopes is intuitively the scopes the caller used to\nauthorize the call.  More precisely, it is the minimal subset of the supplied\nscopes required to satisfy the API method's authorization requirements.\nBut is not quite minimal in one sense: If several alternatives of an\n`AnyOf` in the API method's scope ression are satisfied, then the\nscopes used to satisfy *all* such alternatives are included.",
-            "sourceIp": "The API method caller's IP",
-            "statusCode": "The http status code that the endpoint resolved with."
+            "message": "Whatever message the error contained.",
+            "name": "The name of the error.",
+            "stack": "A nodejs stack trace."
           },
-          "level": "notice",
-          "name": "apiMethod",
-          "title": "API Method Report",
-          "type": "monitor.apiMethod",
+          "level": "any",
+          "name": "errorReport",
+          "title": "Error Report",
+          "type": "monitor.error",
+          "version": 1
+        },
+        {
+          "description": "An internal type for logging simple messages. No required fields.",
+          "fields": {
+          },
+          "level": "any",
+          "name": "generic",
+          "title": "Generic Message",
+          "type": "monitor.generic",
+          "version": 1
+        },
+        {
+          "description": "A basic timer applied to a function.",
+          "fields": {
+            "duration": "The duration in ms of the function.",
+            "name": "The name of the handler.",
+            "status": "Whether or not the handler resolved succesfully."
+          },
+          "level": "info",
+          "name": "handlerTimer",
+          "title": "Handler Timer",
+          "type": "monitor.timedHandler",
+          "version": 1
+        },
+        {
+          "description": "An internal type for reporting malformed logging calls.",
+          "fields": {
+          },
+          "level": "err",
+          "name": "loggingError",
+          "title": "Error in Logging",
+          "type": "monitor.loggingError",
+          "version": 1
+        },
+        {
+          "description": "A simple measurement. The reported values are expected to have statistics calculated over them.",
+          "fields": {
+            "key": "An arbitrary key.",
+            "val": "A number that should be calculated over in a time span."
+          },
+          "level": "info",
+          "name": "measureMetric",
+          "title": "Generic Measure",
+          "type": "monitor.measure",
+          "version": 1
+        },
+        {
+          "description": "Status and duration of a periodic background process.",
+          "fields": {
+            "duration": "The duration in ms of the process.",
+            "name": "The name of this process.",
+            "status": "Either success, or exception depending on the outcome."
+          },
+          "level": "any",
+          "name": "periodic",
+          "title": "Periodic Process",
+          "type": "monitor.periodic",
           "version": 1
         },
         {
@@ -16593,6 +16946,30 @@
           "name": "pulsePublisherBlocked",
           "title": "Pulse server has (un)blocked a publisher",
           "type": "pulsePublisherBlocked",
+          "version": 1
+        },
+        {
+          "description": "Metrics of a node process.",
+          "fields": {
+            "lastCpuUsage": "The output of node's process.cpuUsage",
+            "lastMemoryUsage": "The output of node's process.memoryUsage"
+          },
+          "level": "info",
+          "name": "resourceMetrics",
+          "title": "Resource Usage Metrics",
+          "type": "monitor.resources",
+          "version": 1
+        },
+        {
+          "description": "A simple timekeeper for measuring arbitrary time spans.",
+          "fields": {
+            "duration": "The duration in ms of whatever was timed.",
+            "key": "A key that should be unique to the logger prefix."
+          },
+          "level": "info",
+          "name": "timekeeper",
+          "title": "TimeKeeper Report",
+          "type": "monitor.timekeeper",
           "version": 1
         }
       ]

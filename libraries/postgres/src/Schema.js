@@ -113,7 +113,12 @@ class Schema {
   allMethods() {
     const map = this.versions.reduce(
       (acc, version) => {
-        Object.entries(version.methods).forEach(([name, method]) => acc.set(name, method));
+        Object.entries(version.methods).forEach(([name, method]) => {
+          if (method.deprecated) {
+            Object.assign(method, acc.get(name), {deprecated: true});
+          }
+          acc.set(name, method);
+        });
         return acc;
       }, new Map());
 

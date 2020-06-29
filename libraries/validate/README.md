@@ -10,7 +10,7 @@ This is tested on and should run on any of node `{8, 10}`.
 ## Usage
 
 This library is used to manage schemas used within an application.
-Schemas are typically stored under `schemas/` in the repository root, with a directory per schema version.
+Schemas are typically stored under `services/<serviceName>/schemas/`, with a directory per schema version.
 Schema files in the repository are `.yml` files, but will be published as `.json` files.
 
 ```javascript

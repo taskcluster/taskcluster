@@ -2,7 +2,6 @@ package wsproxy
 
 import (
 	"bufio"
-	"fmt"
 	"io"
 	"net/http"
 	"net/url"
@@ -13,8 +12,8 @@ import (
 
 	jwt "github.com/dgrijalva/jwt-go"
 	"github.com/gorilla/websocket"
-	"github.com/taskcluster/taskcluster/v29/tools/websocktunnel/util"
-	"github.com/taskcluster/taskcluster/v29/tools/websocktunnel/wsmux"
+	"github.com/taskcluster/taskcluster/v31/tools/websocktunnel/util"
+	"github.com/taskcluster/taskcluster/v31/tools/websocktunnel/wsmux"
 
 	"github.com/sirupsen/logrus"
 	nullLog "github.com/sirupsen/logrus/hooks/test"
@@ -26,6 +25,9 @@ const (
 
 var (
 	clientIdRe = regexp.MustCompile(`^[a-zA-Z0-9_~.%-]+$`)
+
+	// path to the file containing the data for DockerFlow file /__version__
+	versionJsonPath = "/app/version.json"
 )
 
 // Config contains the run time parameters for the proxy
@@ -73,8 +75,11 @@ func (p *proxy) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	p.logf("", r.RemoteAddr, "Host=%s Path=%s", r.Host, r.URL.Path)
 
 	// Dockerflow
-	if r.URL.Path == "/__lbheartbeat__" {
+	if r.URL.Path == "/__lbheartbeat__" || r.URL.Path == "/__heartbeat__" {
 		return
+	}
+	if r.URL.Path == "/__version__" {
+		http.ServeFile(w, r, versionJsonPath)
 	}
 
 	// Client registration requests are a GET of path / with some headers set
@@ -242,7 +247,7 @@ func (p *proxy) serveRequest(w http.ResponseWriter, r *http.Request, id string, 
 	// return 504 (bad gateway) if tunnel is not registered on this proxy
 	if !ok {
 		p.logerrorf(id, r.RemoteAddr, "could not find requested tunnel")
-		http.Error(w, fmt.Sprintf("No client is connected with that id"), 504)
+		http.Error(w, "No client is connected with that id", 504)
 		return
 	}
 

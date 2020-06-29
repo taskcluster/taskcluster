@@ -12,6 +12,12 @@ A single database is shared among all services.
 Taskcluster assumes that it "owns" the database, but can share a single server with other users.
 For production purposes we recommend a dedicated server, due to the possibility of contention for server resources, but sharing a server acceptable for non-production environments.
 
+The default collation (sort order) for the database must be `en_US.UTF8`.
+This can be achieved by setting `LC_CTYPE=en_US.UTF8 LC_COLLATE=en_US.UTF8` when creating the database, using `createdb` option `-l`, or invoking `CREATE DATABASE` with `LC_CTYPE 'en_US.UTF8' LC_COLLATE 'en_US.UTF8'`.
+The choice of en_US is an accident of history, and not meant to demonstrate a preference for that locale over any other.
+Since most sorting is performed on identifiers such as slugIds, `C` would have been a more appropriate choice, but all large production deployments were already using `en_US` as of discovery of this issue, and the default collation cannot be changed after the fact.
+In practice, the difference is minor and only visible when sorting identifiers that differ in case.
+
 ## DB Users
 
 Each service uses its own Postgres user to access the database, and Taskcluster uses this functionality internally to isolate services from one another.
@@ -99,11 +105,34 @@ For example:
 queue:
   read_db_url: postgresql://prod_taskcluster_queue:sekrit@readonly.tc-db.example.com/taskcluster_prod?ssl=1
   write_db_url: postgresql://prod_taskcluster_queue:sekrit@readwrite.tc-db.example.com/taskcluster_prod?ssl=1
+  db_crypto_keys: [] # (optional) Defined in "Supporting Encrypyed Columns"
 ```
 
 <Warning>
 Note that the admin user's credentials should not appear anywhere in the Helm configuration!
 </Warning>
+
+## Supporting Encrypted Columns
+
+If a service has some data that it wants to be stored at rest, it will require keys in order to do so. The `db_crypto_keys` key of a service config
+is a JSON array where each element is an object of the form
+
+```json
+{
+  "id": "a unique identifier",
+  "algo": "aes-256",
+  "key": "32 bytes of base64 string"
+}
+```
+
+The last element of the array will be the current key and all encryption will be performed with it. Other keys are used in decryption of values that were encrypted with the
+older key. This allows you to rotate your encryption keys. At the current time, Taskcluster implicitly treats `azure_crypto_key` as the oldest element of this list, with id `azure`, to maintain compatibility with existing configurations.
+from older table formats.
+
+An easy way to create a random key, using a CSPRNG, is:
+```shell
+$ echo "console.log(require('crypto').randomBytes(32).toString('base64'));" | node
+```
 
 ## Upgrades
 

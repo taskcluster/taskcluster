@@ -1,10 +1,6 @@
-const {defaultMonitorManager} = require('taskcluster-lib-monitor');
+const {MonitorManager} = require('taskcluster-lib-monitor');
 
-const monitorManager = defaultMonitorManager.configure({
-  serviceName: 'web-server',
-});
-
-monitorManager.register({
+MonitorManager.register({
   name: 'createCredentials',
   title: 'Credentials Created',
   type: 'create-credentials',
@@ -18,7 +14,7 @@ monitorManager.register({
   },
 });
 
-monitorManager.register({
+MonitorManager.register({
   name: 'bindPulseSubscription',
   title: 'Bind a Pulse Subscription',
   type: 'bind-pulse-subscription',
@@ -32,7 +28,7 @@ monitorManager.register({
   },
 });
 
-monitorManager.register({
+MonitorManager.register({
   name: 'unbindPulseSubscription',
   title: 'Unbind a Pulse Subscription',
   type: 'unbind-pulse-subscription',
@@ -46,21 +42,18 @@ monitorManager.register({
   },
 });
 
-monitorManager.register({
+MonitorManager.register({
   name: 'requestReceived',
   title: 'Request Received',
   type: 'request-received',
   version: 1,
-  level: 'info',
-  description: 'A GraphQL request has been received.',
+  level: 'notice',
+  description: 'A GraphQL request has been received. The traceId/request is at the top-level of the log message, above these fields.',
   fields: {
     query: 'The graphQL query string',
     operationName: `
       The name of the graphql query performed. If the operation is anonymous
       (i.e., the operation is query { ... } instead of query NamedQuery { ... })
       , then operationName is null.`,
-    requestId: 'A unique request ID for every incoming GraphQL request that the client receives.',
   },
 });
-
-module.exports = monitorManager;

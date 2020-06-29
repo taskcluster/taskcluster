@@ -4,7 +4,6 @@ const assert = require('assert');
 const sinon = require('sinon');
 const libUrls = require('taskcluster-lib-urls');
 const testing = require('taskcluster-lib-testing');
-const monitorManager = require('../src/monitor');
 const taskcluster = require('taskcluster-client');
 const {LEVELS} = require('taskcluster-lib-monitor');
 const {CHECKRUN_TEXT} = require('../src/constants');
@@ -24,6 +23,9 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
   const URL_PREFIX = 'https://tc-tests.example.com/tasks/groups/';
   const CUSTOM_CHECKRUN_TASKID = 'apple';
   const CUSTOM_CHECKRUN_TEXT = 'Hi there! This is your custom text';
+  const CUSTOM_CHECKRUN_ANNOTATIONS = JSON.stringify([
+    {path: 'assets/css/main.css', start_line: 1, end_line: 2, annotation_level: 'notice', message: 'Hi there!'},
+  ]);
 
   let github = null;
   let handlers = null;
@@ -278,6 +280,19 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
         'event.base.sha': base || '2bad4edf90e7d4fb4643456a4df333da348bbed4',
         'event.head.user.id': 190790,
       };
+      if (eventType === 'release') {
+        // remove a few details fields from the above that aren't present in releases,
+        // and add one that is present.  Note that this isn't incomplete, and leaves some
+        // fields in place that shouldn't be here and omits fields that should be here.
+        // This should be solved in a more reliable fashion.
+        delete details['event.head.sha'];
+        delete details['event.head.ref'];
+        delete body['pull_request'];
+        body['release'] = {
+          target_commitish: 'refs/tags/v1.2.3',
+        };
+        details['event.version'] = 'v1.2.3';
+      }
       if (eventType === 'tag') {
         details['event.head.tag'] = 'v1.0.2';
         delete details['event.head.repo.branch'];
@@ -571,6 +586,25 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
 
       assert(github.inst(5828).repos.createCommitComment.callCount === 0);
     });
+
+    test('sha for release fetched correctly', async function() {
+      github.inst(5828).setTaskclusterYml({
+        owner: 'TaskclusterRobot',
+        repo: 'hooks-testing',
+        ref: '03e9577bc1ec60f2ff0929d5f1554de36b8f48cf',
+        // note that this ends up compiling to zero tasks for a release
+        content: require('./data/yml/valid-yaml.json'),
+      });
+      github.inst(5828).setCommit({
+        owner: 'TaskclusterRobot',
+        repo: 'hooks-testing',
+        ref: 'refs/tags/v1.2.3',
+        sha: '03e9577bc1ec60f2ff0929d5f1554de36b8f48cf',
+      });
+      await simulateJobMessage({user: 'imbstack', eventType: 'release'});
+
+      assert(github.inst(5828).repos.createCommitComment.callCount === 0);
+    });
   });
 
   suite('Statuses API: result status handler', function() {
@@ -769,15 +803,20 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
       });
       await assertStatusCreate('neutral');
 
-      assert(monitorManager.messages.some(({Type, Severity}) => Type === 'monitor.error' && Severity === LEVELS.err));
-      monitorManager.reset();
+      const monitor = await helper.load('monitor');
+      assert(monitor.manager.messages.some(({Type, Severity}) => Type === 'monitor.error' && Severity === LEVELS.err));
+      monitor.manager.reset();
     });
 
     test('successfully adds custom check run text from an artifact', async function () {
       await addBuild({state: 'pending', taskGroupId: TASKGROUPID});
       await addCheckRun({taskGroupId: TASKGROUPID, taskId: CUSTOM_CHECKRUN_TASKID});
       sinon.restore();
-      sinon.stub(utils, "throttleRequest").returns({status: 200, text: CUSTOM_CHECKRUN_TEXT});
+      sinon.stub(utils, "throttleRequest")
+        .onFirstCall()
+        .returns({status: 200, text: CUSTOM_CHECKRUN_TEXT})
+        .onSecondCall()
+        .returns({status: 404});
       await simulateExchangeMessage({
         taskGroupId: TASKGROUPID,
         exchange: 'exchange/taskcluster-queue/v1/task-completed',
@@ -803,7 +842,11 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
       await addBuild({state: 'pending', taskGroupId: TASKGROUPID});
       await addCheckRun({taskGroupId: TASKGROUPID, taskId: CUSTOM_CHECKRUN_TASKID});
       sinon.restore();
-      sinon.stub(utils, "throttleRequest").returns({status: 418, response: {error: {text: "I'm a tea pot"}}});
+      sinon.stub(utils, "throttleRequest")
+        .onFirstCall()
+        .returns({status: 418, response: {error: {text: "I'm a tea pot"}}})
+        .onSecondCall()
+        .returns({status: 404});
       await simulateExchangeMessage({
         taskGroupId: TASKGROUPID,
         exchange: 'exchange/taskcluster-queue/v1/task-completed',
@@ -812,8 +855,57 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
         reasonResolved: 'completed',
         state: 'completed',
       });
-      assert(monitorManager.messages.some(({Type, Severity}) => Type === 'monitor.error' && Severity === LEVELS.err));
-      monitorManager.reset();
+      const monitor = await helper.load('monitor');
+      assert(monitor.manager.messages.some(({Type, Severity}) => Type === 'monitor.error' && Severity === LEVELS.err));
+      monitor.manager.reset();
+      sinon.restore();
+    });
+
+    test('successfully adds custom check run annotations from an artifact', async function () {
+      await addBuild({state: 'pending', taskGroupId: TASKGROUPID});
+      await addCheckRun({taskGroupId: TASKGROUPID, taskId: CUSTOM_CHECKRUN_TASKID});
+      sinon.restore();
+      sinon.stub(utils, "throttleRequest")
+        .onFirstCall()
+        .returns({status: 404})
+        .onSecondCall()
+        .returns({status: 200, text: CUSTOM_CHECKRUN_ANNOTATIONS});
+      await simulateExchangeMessage({
+        taskGroupId: TASKGROUPID,
+        exchange: 'exchange/taskcluster-queue/v1/task-completed',
+        routingKey: 'route.checks',
+        taskId: CUSTOM_CHECKRUN_TASKID,
+        reasonResolved: 'completed',
+        state: 'completed',
+      });
+
+      assert(github.inst(9988).checks.update.calledOnce, 'checks.update was not called');
+      let [args] = github.inst(9988).checks.update.firstCall.args;
+      assert.deepStrictEqual(args.output.annotations, JSON.parse(CUSTOM_CHECKRUN_ANNOTATIONS));
+      sinon.restore();
+    });
+
+    test('fails to get custom check run annotations from an artifact - should log an error', async function () {
+      // note: production code doesn't throw the error, just logs it, so the handlers is not interrupted
+      await addBuild({state: 'pending', taskGroupId: TASKGROUPID});
+      await addCheckRun({taskGroupId: TASKGROUPID, taskId: CUSTOM_CHECKRUN_TASKID});
+      sinon.restore();
+      sinon.stub(utils, "throttleRequest")
+        .onFirstCall()
+        .returns({status: 404})
+        .onSecondCall()
+        .returns({status: 418, response: {error: {text: "I'm a tea pot"}}});
+      await simulateExchangeMessage({
+        taskGroupId: TASKGROUPID,
+        exchange: 'exchange/taskcluster-queue/v1/task-completed',
+        routingKey: 'route.checks',
+        taskId: CUSTOM_CHECKRUN_TASKID,
+        reasonResolved: 'completed',
+        state: 'completed',
+      });
+      const monitor = await helper.load('monitor');
+      assert(monitor.manager.messages.some(({Type, Severity}) => Type === 'monitor.error' && Severity === LEVELS.err));
+      monitor.manager.reset();
       sinon.restore();
     });
   });

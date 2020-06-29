@@ -29,7 +29,8 @@ OUTPUT_ALL_PLATFORMS="Building just for the multiuser platform (build.sh -a argu
 OUTPUT_TEST="Test flag NOT detected (-t) as argument to build.sh script"
 OUTPUT_DIR=.
 ALL_PLATFORMS=false
-while getopts ":atpo:" opt; do
+SKIP_CODE_GEN=false
+while getopts ":atpso:" opt; do
     case "${opt}" in
         a)  ALL_PLATFORMS=true
             OUTPUT_ALL_PLATFORMS="Building for all platforms (build.sh -a argument specified)"
@@ -39,16 +40,19 @@ while getopts ":atpo:" opt; do
             ;;
         p)  PUBLISH=true
             ALL_PLATFORMS=true
-            OUTPUT_ALL_PLATFORMS="Building for all platforms (build.sh -p argument specified)"
+            SKIP_CODE_GEN=true
+            OUTPUT_ALL_PLATFORMS="Publishing (build.sh -p argument specified)"
             ;;
         o)  OUTPUT_DIR=$OPTARG
             ;;
+        s)  SKIP_CODE_GEN=true
+            echo "Skipping code generation (build.sh -s argument specified)"
     esac
 done
 echo "${OUTPUT_ALL_PLATFORMS}"
 echo "${OUTPUT_TEST}"
 
-if ! $PUBLISH; then
+if ! $SKIP_CODE_GEN; then
     go install ./gw-codegen
     export PATH="$(go env GOPATH)/bin:${PATH}"
     go generate ./...
@@ -56,13 +60,24 @@ fi
 
 function install {
   if ! $PUBLISH; then
-      GOOS="${2}" GOARCH="${3}" CGO_ENABLED=0 go install -ldflags "-X main.revision=$(git rev-parse HEAD)" -tags "${1}" -v ./...
       GOOS="${2}" GOARCH="${3}" go vet -tags "${1}" ./...
       # note, this just builds tests, it doesn't run them!
-      GOOS="${2}" GOARCH="${3}" CGO_ENABLED=0 go test -tags "${1}" -c .
-      GOOS="${2}" GOARCH="${3}" CGO_ENABLED=0 go test -tags "${1}" -c ./livelog
+      go list ./... | while read package; do
+        GOOS="${2}" GOARCH="${3}" CGO_ENABLED=0 go test -tags "${1}" -c "${package}"
+      done
   fi
   GOOS="${2}" GOARCH="${3}" CGO_ENABLED=0 go build -o "$OUTPUT_DIR/generic-worker-${1}-${2}-${3}" -ldflags "-X main.revision=$(git rev-parse HEAD)" -tags "${1}" -v .
+  # check that revision number made it into target binary
+  if [ "${2}" == "$(go env GOHOSTOS)" ] && [ "${3}" == "$(go env GOHOSTARCH)" ]; then
+    if ! "$OUTPUT_DIR/generic-worker-${1}-${2}-${3}" --version | \
+    grep -Eq 'revision: https://github.com/taskcluster/taskcluster/commits/[a-z0-9]{40}'; then
+      echo "The --version option does not output a proper revision link"
+      exit 1
+    else
+      # ANSI escape sequence for green tick
+      echo -e "\x1b\x5b\x33\x32\x6d\xe2\x9c\x93\x1b\x5b\x30\x6d Revision number included in $OUTPUT_DIR/generic-worker-${1}-${2}-${3}"
+    fi
+  fi
 }
 
 # NOTE: when changing this, also update
@@ -90,7 +105,7 @@ else
      darwin) install simple    "${MY_GOHOSTOS}" "${MY_GOHOSTARCH}"
              install multiuser "${MY_GOHOSTOS}" "${MY_GOHOSTARCH}"
              ;;
-     freebsd) install simple    "${MY_GOHOSTOS}" "${MY_GOHOSTARCH}"
+    freebsd) install simple    "${MY_GOHOSTOS}" "${MY_GOHOSTARCH}"
              ;;
     windows) install multiuser "${MY_GOHOSTOS}" "${MY_GOHOSTARCH}"
              ;;
@@ -99,20 +114,24 @@ fi
 
 ls -1 "$OUTPUT_DIR"/generic-worker-*
 
-CGO_ENABLED=0 go get github.com/taskcluster/livelog
+CGO_ENABLED=0 go get \
+  github.com/taskcluster/taskcluster/v31/tools/livelog \
+  github.com/taskcluster/taskcluster/v31/tools/taskcluster-proxy \
+  golang.org/x/lint/golint \
+  github.com/gordonklaus/ineffassign \
+  golang.org/x/tools/cmd/goimports
+
+# Previous `go get` command modifies go module, so let's clean that up
+go mod tidy
 
 if $TEST; then
-  go get github.com/taskcluster/taskcluster/v29/tools/taskcluster-proxy
-  CGO_ENABLED=1 GORACE="history_size=7" /usr/bin/sudo "GOPATH=$GOPATH" "GW_TESTS_RUN_AS_CURRENT_USER=" "TASKCLUSTER_CERTIFICATE=$TASKCLUSTER_CERTIFICATE" "TASKCLUSTER_ACCESS_TOKEN=$TASKCLUSTER_ACCESS_TOKEN" "TASKCLUSTER_CLIENT_ID=$TASKCLUSTER_CLIENT_ID" "TASKCLUSTER_ROOT_URL=$TASKCLUSTER_ROOT_URL" $(which go) test -v -tags multiuser -ldflags "-X github.com/taskcluster/taskcluster/v29/workers/generic-worker.revision=$(git rev-parse HEAD)" -race -timeout 1h ./...
+  CGO_ENABLED=1 GORACE="history_size=7" go test -v -tags simple -ldflags "-X github.com/taskcluster/taskcluster/v31/workers/generic-worker.revision=$(git rev-parse HEAD)" -race -timeout 1h ./...
   MYGOHOSTOS="$(go env GOHOSTOS)"
   if [ "${MYGOHOSTOS}" == "linux" ] || [ "${MYGOHOSTOS}" == "darwin" ]; then
-    CGO_ENABLED=1 GORACE="history_size=7" go test -v -tags docker -ldflags "-X github.com/taskcluster/taskcluster/v29/workers/generic-worker.revision=$(git rev-parse HEAD)" -race -timeout 1h ./...
+    CGO_ENABLED=1 GORACE="history_size=7" go test -v -tags docker -ldflags "-X github.com/taskcluster/taskcluster/v31/workers/generic-worker.revision=$(git rev-parse HEAD)" -race -timeout 1h ./...
   fi
-  go get golang.org/x/lint/golint
   golint $(go list ./...) | sed "s*${PWD}/**"
-  go get github.com/gordonklaus/ineffassign
   ineffassign .
-  go get golang.org/x/tools/cmd/goimports
 
   # We should uncomment this goimports command once either we no longer have
   # ciruclar go module dependencies that cause an older version of
@@ -122,8 +141,6 @@ if $TEST; then
   # goimports -w .
 
 fi
-
-go mod tidy
 
 echo "Build successful!"
 if ! $PUBLISH; then

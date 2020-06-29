@@ -6,7 +6,9 @@ import (
 	"log"
 	"os"
 
-	"github.com/taskcluster/taskcluster/v29/internal/workerproto"
+	tcclient "github.com/taskcluster/taskcluster/v31/clients/client-go"
+	"github.com/taskcluster/taskcluster/v31/internal/workerproto"
+	"github.com/taskcluster/taskcluster/v31/workers/generic-worker/graceful"
 )
 
 var (
@@ -66,14 +68,37 @@ func initializeWorkerRunnerProtocol(input io.Reader, output io.Writer, withWorke
 	}
 
 	WorkerRunnerProtocol = workerproto.NewProtocol(workerRunnerTransport)
-	WorkerRunnerProtocol.AddCapability("graceful-termination")
-	WorkerRunnerProtocol.AddCapability("log")
-	WorkerRunnerProtocol.Start(true)
+
+	startProtocol()
 
 	// when not using worker-runner, consider the protocol initialized with no capabilities
 	if !withWorkerRunner {
 		WorkerRunnerProtocol.SetInitialized()
 	}
+}
+
+// Start the protocol once WorkerRunnerProtocol has been initialized
+func startProtocol() {
+	WorkerRunnerProtocol.AddCapability("graceful-termination")
+	WorkerRunnerProtocol.Register("graceful-termination", func(msg workerproto.Message) {
+		finishTasks := msg.Properties["finish-tasks"].(bool)
+		log.Printf("Got graceful-termination request with finish-tasks=%v", finishTasks)
+		graceful.Terminate(finishTasks)
+	})
+
+	WorkerRunnerProtocol.AddCapability("new-credentials")
+	WorkerRunnerProtocol.Register("new-credentials", func(msg workerproto.Message) {
+		creds := tcclient.Credentials{
+			ClientID:    msg.Properties["client-id"].(string),
+			AccessToken: msg.Properties["access-token"].(string),
+		}
+		creds.Certificate, _ = msg.Properties["certificate"].(string)
+		config.UpdateCredentials(&creds)
+	})
+
+	WorkerRunnerProtocol.AddCapability("log")
+
+	WorkerRunnerProtocol.Start(true)
 }
 
 func teardownWorkerRunnerProtocol() {

@@ -12,7 +12,6 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/require"
-	"github.com/taskcluster/taskcluster/v29/workers/generic-worker/testutil"
 )
 
 // Test failure should resolve as "failed"
@@ -29,7 +28,6 @@ func TestFailureResolvesAsFailure(t *testing.T) {
 
 func TestIdleWithoutCrash(t *testing.T) {
 	defer setup(t)()
-	testutil.RequireTaskclusterCredentials(t)
 	start := time.Now()
 	config.IdleTimeoutSecs = 7
 	exitCode := RunWorker()
@@ -43,6 +41,10 @@ func TestIdleWithoutCrash(t *testing.T) {
 	}
 }
 
+// TestRevisionNumberStored is useful for ensuring that the test binary
+// includes the git revision number, so that it emulates the release binary.
+// There is a separate test that the release binary includes the revision
+// number in build.sh.
 func TestRevisionNumberStored(t *testing.T) {
 	if !regexp.MustCompile("^[0-9a-f]{40}$").MatchString(revision) {
 		t.Fatalf("Git revision could not be determined - got '%v' but expected to match regular expression '^[0-9a-f](40)$'\n"+

@@ -1,4 +1,6 @@
 const taskcluster = require('taskcluster-client');
+const {suiteName} = require('taskcluster-lib-testing');
+const libUrls = require('taskcluster-lib-urls');
 const ImageManager = require('../src/lib/docker/image_manager');
 const sleep = require('../src/lib/util/sleep');
 const VolumeCache = require('../src/lib/volume_cache');
@@ -13,6 +15,7 @@ const path = require('path');
 const rmrf = require('rimraf');
 const {removeImage} = require('../src/lib/util/remove_image');
 const monitor = require('./fixtures/monitor');
+const helper = require('./helper');
 
 let docker = Docker();
 let debug = Debug('garbageCollectionTests');
@@ -21,14 +24,17 @@ async function getImageId(docker, imageName) {
   let dockerImages = await docker.listImages();
   let imageId;
   dockerImages.forEach((dockerImage) => {
-    if (dockerImage.RepoTags.indexOf(imageName) !== -1) {
+    if ((dockerImage.RepoTags || []).indexOf(imageName) !== -1) {
       imageId = dockerImage.Id;
     }
   });
   return imageId;
 }
 
-suite('garbage collection tests', () => {
+helper.secrets.mockSuite(suiteName(), ['docker'], function(mock, skipping) {
+  if (mock) {
+    return; // Only test with docker
+  }
 
   let IMAGE = 'taskcluster/test-ubuntu';
 
@@ -36,7 +42,7 @@ suite('garbage collection tests', () => {
   let imageManager;
 
   setup(async () => {
-    taskcluster.config(taskcluster.fromEnvVars());
+    taskcluster.config(helper.optionsFromCiCreds());
 
     imageManager = new ImageManager({
       docker: docker,
@@ -308,6 +314,7 @@ suite('garbage collection tests', () => {
       },
       log: debug,
       monitor: monitor,
+      rootUrl: libUrls.testRootUrl(),
     });
 
     gc.addManager(cache);

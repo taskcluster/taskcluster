@@ -65,6 +65,14 @@ const queue = new taskcluster.Queue({
 
   // authorized scopes for use in requests by this client
   authorizedScopes: undefined,
+
+  // (optional) If set, this will be added to requests as a `x-taskcluster-trace-id` header
+  traceId: undefined
+
+  // (optional) This supports different ways of finding Taskcluster services. Currently only
+  //            values are `default` and `k8s-dns`. The latter of which is for Taskcluster
+  //            internal use only.
+  serviceDiscoveryScheme: 'default'
 });
 ```
 
@@ -78,7 +86,13 @@ queue
   .then(..);
 ```
 
-This replaces any given options with new values.
+This replaces any given options with new values. For `traceId` in particular, you can use
+
+```js
+queue.taskclusterPerRequestInstance({traceId});
+```
+
+Which is a special interface mostly useful for Taskcluster internal use.
 
 #### Authentication Options
 
@@ -177,11 +191,21 @@ console.log(result.status);
 });
 ```
 
-### Generating URLs
+### Generating URLs (Internal and External)
+
+For the following section, there are 2 internal and 2 external functions. The
+external functions should be used when a built url is leaving the deployment. One
+example would be when it results in a redirect to an artifact for users. This distinction
+is only important when using a non-default service discovery scheme; with the default
+scheme, internal and external functions behave the same.
+
+|          | Unsigned           | Signed                   |
+| Internal | `buildUrl`         | `buildSignedUrl`         |
+| External | `externalBuildUrl` | `externalBuildSignedUrl` |
 
 You can build a URL for any API method, although this feature is
 mostly useful for request that don't require any authentication. To construct a
-url for a request use the `buildUrl` method, as illustrated in the following
+url for a request use the `buildUrl`/`externalBuildUrl` method, as illustrated in the following
 example:
 
 ```js
@@ -441,6 +465,15 @@ myClient.myMethod(arg1, arg2, payload).then(function(result) {
   // ...
 });
 ```
+
+### Internal Service Discovery
+
+To allow for more efficient routing between Taskcluster services running alongside each other in
+a Kubernetes cluster, this library has configurable support for using
+[DNS for Services and Pods](https://kubernetes.io/docs/concepts/services-networking/dns-pod-service/). To
+configure this on all clients created from this library, use `taskcluster.setServiceDiscoveryScheme('k8s-dns')`.
+To configure this for an instantiation of a client class **or to override the setting back to default** you
+can `new taskcluster.Auth({..., serviceDiscoveryScheme: 'k8s-dns'});`. The value for default behavior is `default`.
 
 ## Compatibility
 

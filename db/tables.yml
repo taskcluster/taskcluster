@@ -8,11 +8,6 @@
 # The information below is only useful to developers implementing or modifying
 # stored functions.
 
-# Widgets is a temporary API developed to "trial run" the Postgres deployment, and
-# will be removed soon.
-widgets:
-  name: text
-
 # All of the *_entities tables below are used by tc-lib-entities to emulate
 # Azure entities.
 clients_entities:
@@ -148,12 +143,20 @@ worker_pools:
   provider_data: jsonb not null
   previous_provider_ids: jsonb not null
   etag: uuid not null
-wmworkers_entities:
-  partition_key: text not null
-  row_key: text not null
-  value: jsonb not null
-  version: integer not null
-  etag: uuid
+workers:
+  worker_pool_id: text not null
+  worker_group: text not null
+  worker_id: text not null
+  provider_id: text not null
+  created: timestamp with time zone not null
+  expires: timestamp with time zone not null
+  state: text not null
+  provider_data: jsonb not null
+  capacity: integer not null
+  last_modified: timestamp with time zone not null
+  last_checked: timestamp with time zone not null
+  secret: jsonb
+  etag: uuid not null
 queue_tasks_entities:
   partition_key: text not null
   row_key: text not null

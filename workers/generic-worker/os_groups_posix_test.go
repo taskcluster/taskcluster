@@ -3,8 +3,6 @@
 package main
 
 import (
-	"io/ioutil"
-	"path/filepath"
 	"strings"
 	"testing"
 )
@@ -32,12 +30,7 @@ func TestNonEmptyOSGroups(t *testing.T) {
 
 	_ = submitAndAssert(t, td, payload, "exception", "malformed-payload")
 
-	// check log mentions issue
-	bytes, err := ioutil.ReadFile(filepath.Join(taskContext.TaskDir, logPath))
-	if err != nil {
-		t.Fatalf("Error when trying to read log file: %v", err)
-	}
-	logtext := string(bytes)
+	logtext := LogText(t)
 	if !strings.Contains(logtext, "- osGroups: Array must have at most 0 items") {
 		t.Fatalf("Was expecting log file to contain '- osGroups: Array must have at most 0 items' but it doesn't")
 	}

@@ -111,9 +111,6 @@ and reports back results to the queue.
         ** OPTIONAL ** properties
         =========================
 
-          authRootURL                       The root URL for taskcluster auth API calls.
-                                            If not provided, the value from config property
-                                            rootURL is used. Intended for development/testing.
           availabilityZone                  The EC2 availability zone of the worker.
           cachesDir                         The directory where task caches should be stored on
                                             the worker. The directory will be created if it does
@@ -164,38 +161,17 @@ and reports back results to the queue.
                                             [default: 0]
           instanceID                        The EC2 instance ID of the worker. Used by chain of trust.
           instanceType                      The EC2 instance Type of the worker. Used by chain of trust.
-          livelogCertificate                SSL certificate to be used by livelog for hosting
-                                            logs over https. If not set, http will be used.
           livelogExecutable                 Filepath of LiveLog executable to use; see
                                             https://github.com/taskcluster/livelog
                                             [default: "livelog"]
-          livelogGETPort                    Port number for livelog HTTP GET requests.
-                                            [default: 60023]
-          livelogKey                        SSL key to be used by livelog for hosting logs
-                                            over https. If not set, http will be used.
-          livelogPUTPort                    Port number for livelog HTTP PUT requests.
-                                            [default: 60022]
-          livelogSecret                     This should match the secret used by the
-                                            stateless dns server; see
-                                            https://github.com/taskcluster/stateless-dns-server
-                                            Optional if stateless DNS is not in use.
           numberOfTasksToRun                If zero, run tasks indefinitely. Otherwise, after
                                             this many tasks, exit. [default: 0]
           privateIP                         The private IP of the worker, used by chain of trust.
           provisionerId                     The taskcluster provisioner which is taking care
                                             of provisioning environments with generic-worker
                                             running on them. [default: "test-provisioner"]
-          publicIP                          The IP address for clients to be directed to for
-                                            serving live logs when not using websocktunnel; see
-                                            https://github.com/taskcluster/livelog and
-                                            https://github.com/taskcluster/stateless-dns-server
-                                            Also used by chain of trust when present.
-          purgeCacheRootURL                 The root URL for taskcluster purge cache API calls.
-                                            If not provided, the value from config property
-                                            rootURL is used. Intended for development/testing.
-          queueRootURL                      The root URL for taskcluster queue API calls.
-                                            If not provided, the value from config property
-                                            rootURL is used. Intended for development/testing.
+          publicIP                          The IP address for VNC access.  Also used by chain of
+                                            trust when present.
           region                            The EC2 region of the worker. Used by chain of trust.
           requiredDiskSpaceMegabytes        The garbage collector will ensure at least this
                                             number of megabytes of disk space are available
@@ -215,9 +191,6 @@ and reports back results to the queue.
                                             runTasksAsCurrentUser is true, the script will still
                                             be executed as the task user, rather than the
                                             current user (that runs the generic-worker process).` + runTasksAsCurrentUserUsage() + `
-          secretsRootURL                    The root URL for taskcluster secrets API calls.
-                                            If not provided, the value from config property
-                                            rootURL is used. Intended for development/testing.
           sentryProject                     The project name used in https://sentry.io for
                                             reporting worker crashes. Permission to publish
                                             crash reports is granted via the scope
@@ -239,10 +212,6 @@ and reports back results to the queue.
                                             for machines running in production, such as on AWS
                                             EC2 spot instances. Use with caution!
                                             [default: false]
-          subdomain                         Subdomain to use in stateless dns name for live
-                                            logs; see
-                                            https://github.com/taskcluster/stateless-dns-server
-                                            [default: "taskcluster-worker.net"]
           taskclusterProxyExecutable        Filepath of taskcluster-proxy executable to use; see
                                             https://github.com/taskcluster/taskcluster/tree/master/tools/taskcluster-proxy
                                             [default: "taskcluster-proxy"]
@@ -272,9 +241,6 @@ and reports back results to the queue.
                                             Otherwise TASKCLUSTER_WORKER_LOCATION environment
                                             variable will not be implicitly set in task commands.
                                             [default: ""]
-          workerManagerRootURL              The root URL for taskcluster worker manager API calls.
-                                            If not provided, the value from config property
-                                            rootURL is used. Intended for development/testing.
           workerTypeMetaData                This arbitrary json blob will be included at the
                                             top of each task log. Providing information here,
                                             such as a URL to the code/config used to set up the
@@ -303,8 +269,7 @@ and reports back results to the queue.
     64     Not able to load generic-worker config. This could be a problem reading the
            generic-worker config file on the filesystem, a problem talking to AWS/GCP
            metadata service, or a problem retrieving config/files from the taskcluster
-           secrets service.
-    65     Not able to install generic-worker on the system.
+           secrets service.` + exitCode65() + `
     67     A task user has been created, and the generic-worker needs to reboot in order
            to log on as the new task user. Note, the reboot happens automatically unless
            config setting disableReboots is set to true - in either code this exit code will

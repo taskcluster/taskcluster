@@ -1,31 +1,40 @@
 package run
 
 import (
+	"encoding/json"
 	"fmt"
+	"log"
+	"os"
 	"strings"
-	"time"
+	"sync"
 
-	taskcluster "github.com/taskcluster/taskcluster/v29/clients/client-go"
-	"github.com/taskcluster/taskcluster/v29/tools/worker-runner/cfg"
-	"github.com/taskcluster/taskcluster/v29/tools/worker-runner/files"
+	taskcluster "github.com/taskcluster/taskcluster/v31/clients/client-go"
+	"github.com/taskcluster/taskcluster/v31/tools/worker-runner/cfg"
+	"github.com/taskcluster/taskcluster/v31/tools/worker-runner/files"
+	"github.com/taskcluster/taskcluster/v31/tools/worker-runner/perms"
 )
 
 // State represents the state of the worker run.  Its contents are built up
-// bit-by-bit during the start-worker process.
+// bit-by-bit during the start-worker process.  Access to all fields is gated
+// by the mutex.
 type State struct {
+	sync.RWMutex
+
 	// Information about the Taskcluster deployment where this
 	// worker is running
 	RootURL string
 
 	// Credentials for the worker, and their expiration time.  Shortly before
 	// this expiration, worker-runner will try to gracefully stop the worker
-	Credentials       taskcluster.Credentials
-	CredentialsExpire time.Time `yaml:",omitempty"`
+	Credentials        taskcluster.Credentials
+	CredentialsExpire  taskcluster.Time `yaml:",omitempty"`
+	RegistrationSecret string
 
 	// Information about this worker
 	WorkerPoolID string
 	WorkerGroup  string
 	WorkerID     string
+	ProviderID   string
 
 	// metadata from the provider (useful to display to the user for
 	// debugging).
@@ -55,6 +64,9 @@ type State struct {
 
 // Check that the provided provided the information it was supposed to.
 func (state *State) CheckProviderResults() error {
+	state.Lock()
+	defer state.Unlock()
+
 	if state.RootURL == "" {
 		return fmt.Errorf("provider did not set RootURL")
 	}
@@ -79,9 +91,52 @@ func (state *State) CheckProviderResults() error {
 		return fmt.Errorf("provider did not set WorkerID")
 	}
 
+	if state.ProviderID == "" {
+		return fmt.Errorf("provider did not set ProviderID")
+	}
+
 	if state.WorkerLocation["cloud"] == "" {
 		return fmt.Errorf("provider did not set the cloud name")
 	}
 
 	return nil
+}
+
+// Write the state to the given cache file, checking permissions along the way
+func (state *State) WriteCacheFile(filename string) error {
+	log.Printf("Caching worker-runner state at %s", filename)
+	var encoded []byte
+	encoded, err := json.Marshal(&state)
+	if err != nil {
+		return err
+	}
+	err = perms.WritePrivateFile(filename, encoded)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// Read a file written by WriteCacheFile.  First return value is true
+// if the file existed and false otherwise.
+func ReadCacheFile(state *State, filename string) (bool, error) {
+	var encoded []byte
+
+	encoded, err := perms.ReadPrivateFile(filename)
+	if err == nil {
+		log.Printf("Loading cached state from %s", filename)
+
+		err = json.Unmarshal(encoded, state)
+		if err != nil {
+			return true, err
+		}
+
+		return true, nil
+	} else if os.IsNotExist(err) {
+		// no such file
+		return false, nil
+	} else {
+		return true, err
+	}
 }

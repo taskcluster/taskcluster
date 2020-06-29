@@ -22,7 +22,7 @@ if (!module.parent) {
   const input = process.argv[2];
   const output = process.argv[3];
   if (!input || !output) {
-    console.error('usage: node src/main.js <input> <output>');
+    console.error('usage: node relativize.js <input> <output>');
     process.exit(1);
   }
 

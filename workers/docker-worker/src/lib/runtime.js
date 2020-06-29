@@ -6,10 +6,22 @@ let assert = require('assert');
 
 function Runtime(options) {
   assert(typeof options === 'object', 'options must be an object.');
-  Object.assign(this, options);
+  for (let key of Object.keys(options || {})) {this[key] = options[key];}
 
   // Ensure capacity is always a number.
   if (this.capacity) {this.capacity = parseInt(this.capacity, 10);}
+
+  // set up to update credentials as necessary
+  if (this.hostManager) {
+    this.hostManager.onNewCredentials(creds => {
+      this.log('Got new worker credentials', {clientId: creds.clientId});
+      this.taskcluster = creds;
+    });
+    this.hostManager.onGracefulTermination(graceful => {
+      this.log('Got graceful-termination request', {graceful});
+      this.shutdownManager.onGracefulTermination(graceful);
+    });
+  }
 }
 
 Runtime.prototype = {
@@ -19,13 +31,6 @@ Runtime.prototype = {
   @type {Dockerode}
   */
   docker: null,
-
-  /**
-  Authenticated queue instance.
-
-  @type {taskcluster.Queue}
-  */
-  queue: null,
 
   /**
   Pulse credentials `{username: '...', password: '...'}`

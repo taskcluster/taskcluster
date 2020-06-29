@@ -8,7 +8,7 @@ import (
 	"strings"
 	"syscall"
 
-	"github.com/taskcluster/taskcluster/v29/workers/generic-worker/win32"
+	"github.com/taskcluster/taskcluster/v31/workers/generic-worker/win32"
 )
 
 func helloGoodbye() []string {
@@ -51,7 +51,7 @@ func incrementCounterInCache() []string {
 	return []string{command}
 }
 
-func goEnv() []string {
+func GoEnv() []string {
 	return []string{
 		"go env",
 		"set",
@@ -83,7 +83,7 @@ func goRunFileOutput(outputFile, goFile string, args ...string) []string {
 		"PATH", "GOPATH", "GOROOT",
 	} {
 		if val, exists := os.LookupEnv(envVar); exists {
-			prepare = append(prepare, "set "+envVar+"="+val)
+			prepare = append(prepare, "set "+envVar+"="+win32.CMDExeEscape(val))
 		}
 	}
 	prepare = append(prepare, copyTestdataFile(goFile)...)
@@ -97,6 +97,27 @@ func goRunFileOutput(outputFile, goFile string, args ...string) []string {
 // run runs the command line args specified in args and redirects the output to
 // file outputFile if it is not an empty string.
 func run(args []string, outputFile string) string {
+	// Goddammit, Windows! Even this double nesting doesn't work sometimes. See
+	// the testdata/curlget.go program - the url needed to be base64 encoded
+	// since the escaping still wasn't sufficient.
+	//
+	// Explanation:
+	//
+	//   https://blogs.msdn.microsoft.com/twistylittlepassagesallalike/2011/04/23/everyone-quotes-command-line-arguments-the-wrong-way/
+	//
+	// The problem seems to be because we generate a bash script that calls
+	// another bash script, and I think something funky is going on when a
+	// `call` is issued inside bash, that the previous guide doesn't cover.
+	// There is some information here, which suggests replacing all % with %%,
+	// but although that solved the issue with the curlget test failure
+	// (TestTaskclusterProxy), it broke another that checks that env vars with
+	// funky characters can be properly encoded (TestWorkerLocation):
+	//
+	//   https://www.robvanderwoude.com/files/testcallescapedstring_nt.txt
+	//
+	// So I've base64 encoded the URL arg of testdata/curlget.go, and leave
+	// this as it is for now, until we have a better idea what might be the
+	// perfect escaping sequence in the general case.
 	run := win32.CMDExeEscape(makeCmdLine(args))
 
 	if outputFile != "" {

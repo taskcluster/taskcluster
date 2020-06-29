@@ -1,4 +1,4 @@
-const {defaultMonitorManager} = require('../');
+const {MonitorManager} = require('../');
 
 const options = {
   shouldError: false,
@@ -15,10 +15,10 @@ process.argv.slice(2).forEach(arg => {
   options[arg.slice(2)] = true;
 });
 
-defaultMonitorManager.configure({
+MonitorManager.setup({
   serviceName: 'foo-testing',
+  ...options,
 });
-defaultMonitorManager.setup(options);
 
 if (options.shouldError) {
   throw new Error('hello there');

@@ -2,7 +2,7 @@
 package task
 
 import (
-	"github.com/taskcluster/taskcluster/v29/clients/client-shell/cmds/root"
+	"github.com/taskcluster/taskcluster/v31/clients/client-shell/cmds/root"
 
 	"github.com/spf13/cobra"
 )
@@ -46,6 +46,8 @@ var (
 		RunE:  executeHelperE(runComplete),
 	}
 )
+
+var log = root.Logger
 
 func init() {
 	statusCmd.Flags().BoolP("all-runs", "a", false, "Check all runs of the task.")

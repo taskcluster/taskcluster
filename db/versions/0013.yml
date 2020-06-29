@@ -1,0 +1,128 @@
+version: 13
+methods:
+  get_worker_pool:
+    deprecated: true
+  get_worker_pools:
+    deprecated: true
+  update_worker_pool:
+    deprecated: true
+  get_worker_pool_with_capacity:
+    description: |-
+      Get an existing worker pool.  The returned table will have one or (if no such worker pool is defined) zero rows.
+    mode: read
+    serviceName: worker_manager
+    args: worker_pool_id_in text
+    returns: table(worker_pool_id text, provider_id text, previous_provider_ids jsonb, description text, config jsonb, created timestamptz, last_modified timestamptz, owner text, email_on_error boolean, provider_data jsonb, current_capacity integer)
+    body: |-
+      begin
+        return query
+        select
+          worker_pools.worker_pool_id,
+          worker_pools.provider_id,
+          worker_pools.previous_provider_ids,
+          worker_pools.description,
+          worker_pools.config,
+          worker_pools.created,
+          worker_pools.last_modified,
+          worker_pools.owner,
+          worker_pools.email_on_error,
+          worker_pools.provider_data,
+          coalesce((
+            select sum(workers.capacity) from workers where
+              workers.worker_pool_id = worker_pool_id_in and
+              workers.state != 'stopped'),
+            0)::integer -- sum always wants to return a bigint but we're always going to be safely within integer range
+        from worker_pools
+        where worker_pools.worker_pool_id = worker_pool_id_in;
+      end
+  get_worker_pools_with_capacity:
+    description: |-
+      Get existing worker pools, ordered by `worker_pool_id`.  If the pagination arguments are both NULL, all rows are returned.
+      Otherwise, page_size rows are returned at offset page_offset.
+    mode: read
+    serviceName: worker_manager
+    args: page_size_in integer, page_offset_in integer
+    returns: table(worker_pool_id text, provider_id text, previous_provider_ids jsonb, description text, config jsonb, created timestamptz, last_modified timestamptz, owner text, email_on_error boolean, provider_data jsonb, current_capacity integer)
+    body: |-
+      begin
+        return query
+        select
+          worker_pools.worker_pool_id,
+          worker_pools.provider_id,
+          worker_pools.previous_provider_ids,
+          worker_pools.description,
+          worker_pools.config,
+          worker_pools.created,
+          worker_pools.last_modified,
+          worker_pools.owner,
+          worker_pools.email_on_error,
+          worker_pools.provider_data,
+          coalesce(sum(worker_capacities.capacity), 0)::integer -- sum always wants to return a bigint but we're always going to be safely within integer range
+        from worker_pools
+        left join (
+          select workers.worker_pool_id, workers.capacity from workers
+            where workers.state != 'stopped'
+        ) as worker_capacities
+        on worker_pools.worker_pool_id = worker_capacities.worker_pool_id
+        group by worker_pools.worker_pool_id
+        order by worker_pools.worker_pool_id
+        limit get_page_limit(page_size_in)
+        offset get_page_offset(page_offset_in);
+      end
+  update_worker_pool_with_capacity:
+    description: |-
+      Update API-accessible columns on an existig worker pool.  All fields are
+      overridden, but if the provider_id changes, then the existing provider_id
+      is added to previous_provider_ids.  The return value contains values
+      required for an API response and previous_provider_id (singular) containing
+      the provider_id found before the update.  If no such worker pool exists,
+      the return value is an empty set.
+    mode: write
+    serviceName: worker_manager
+    args: worker_pool_id_in text, provider_id_in text, description_in text, config_in jsonb, last_modified_in timestamptz, owner_in text, email_on_error_in boolean
+    returns: table(worker_pool_id text, provider_id text, description text, config jsonb, created timestamptz, last_modified timestamptz, owner text, email_on_error boolean, previous_provider_id text, current_capacity integer)
+    body: |-
+      declare
+        existing record;
+      begin
+        select
+          worker_pools.provider_id,
+          worker_pools.previous_provider_ids
+        from worker_pools
+        where worker_pools.worker_pool_id = worker_pool_id_in
+        -- lock this row for the duration of this transaction..
+        for update
+        into existing;
+
+        -- update previous_provider_ids, if the provider_id has changed
+        if existing.provider_id <> provider_id_in then
+          -- remove both provider IDs to avoid duplicates, then re-add existing.provider_id
+          existing.previous_provider_ids = (existing.previous_provider_ids - provider_id_in - existing.provider_id) || jsonb_build_array(existing.provider_id);
+        end if;
+
+        return query update worker_pools
+        set
+          provider_id = provider_id_in,
+          description = description_in,
+          config = config_in,
+          last_modified = last_modified_in,
+          owner = owner_in,
+          email_on_error = email_on_error_in,
+          previous_provider_ids = existing.previous_provider_ids
+        where worker_pools.worker_pool_id = worker_pool_id_in
+        returning
+          worker_pools.worker_pool_id,
+          worker_pools.provider_id,
+          worker_pools.description,
+          worker_pools.config,
+          worker_pools.created,
+          worker_pools.last_modified,
+          worker_pools.owner,
+          worker_pools.email_on_error,
+          existing.provider_id as previous_provider_id,
+          coalesce((
+            select sum(workers.capacity) from workers where
+              workers.worker_pool_id = worker_pool_id_in and
+              workers.state != 'stopped'),
+            0)::integer; -- sum always wants to return a bigint but we're always going to be safely within integer range
+      end

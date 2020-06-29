@@ -1,7 +1,7 @@
 package perms
 
 import (
-	"io/ioutil"
+	"os"
 	"path/filepath"
 	"testing"
 
@@ -9,29 +9,32 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestPermsGood(t *testing.T) {
+func TestPerms(t *testing.T) {
 	defer filet.CleanUp(t)
-
 	dir := filet.TmpDir(t, "")
-	filename := filepath.Join(dir, "test")
-	require.NoError(t, ioutil.WriteFile(filename, []byte("hi"), 0644))
-	makePermsBad(t, filename)
 
-	err := MakePrivateToOwner(filename)
-	require.NoError(t, err)
+	t.Run("Good", func(t *testing.T) {
+		filename := filepath.Join(dir, "good")
+		require.NoError(t, WritePrivateFile(filename, []byte("hi")))
+		content, err := ReadPrivateFile(filename)
+		require.NoError(t, err)
+		require.Equal(t, []byte("hi"), content)
+	})
 
-	err = VerifyPrivateToOwner(filename)
-	require.NoError(t, err)
-}
+	t.Run("Bad", func(t *testing.T) {
+		filename := filepath.Join(dir, "bad")
+		require.NoError(t, WritePrivateFile(filename, []byte("hi")))
+		makePermsBad(t, filename)
+		content, err := ReadPrivateFile(filename)
+		require.Error(t, err)
+		require.Equal(t, []byte{}, content)
+	})
 
-func TestPermsBad(t *testing.T) {
-	defer filet.CleanUp(t)
-
-	dir := filet.TmpDir(t, "")
-	filename := filepath.Join(dir, "test")
-	require.NoError(t, ioutil.WriteFile(filename, []byte("hi"), 0644))
-	makePermsBad(t, filename)
-
-	err := VerifyPrivateToOwner(filename)
-	require.Error(t, err)
+	t.Run("ReadNonexistent", func(t *testing.T) {
+		filename := filepath.Join(dir, "gone")
+		content, err := ReadPrivateFile(filename)
+		require.Error(t, err)
+		require.Equal(t, []byte{}, content)
+		require.True(t, os.IsNotExist(err))
+	})
 }

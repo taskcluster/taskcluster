@@ -12,9 +12,8 @@ import (
 	"testing"
 	"time"
 
-	tcclient "github.com/taskcluster/taskcluster/v29/clients/client-go"
-	"github.com/taskcluster/taskcluster/v29/clients/client-go/tcqueue"
-	"github.com/taskcluster/taskcluster/v29/workers/generic-worker/testutil"
+	tcclient "github.com/taskcluster/taskcluster/v31/clients/client-go"
+	"github.com/taskcluster/taskcluster/v31/clients/client-go/tcqueue"
 )
 
 func checkSHA256(t *testing.T, sha256Hex string, file string) {
@@ -32,7 +31,7 @@ func checkSHA256(t *testing.T, sha256Hex string, file string) {
 	}
 }
 
-func cancelTask(t *testing.T) (td *tcqueue.TaskDefinitionRequest, payload GenericWorkerPayload) {
+func CancelTask(t *testing.T) (td *tcqueue.TaskDefinitionRequest, payload GenericWorkerPayload) {
 	// resolvetask is a go binary; source is in resolvetask subdirectory, binary is built in CI
 	// but if running test manually, you may need to explicitly build it first.
 	command := singleCommandNoArgs("resolvetask")
@@ -40,18 +39,7 @@ func cancelTask(t *testing.T) (td *tcqueue.TaskDefinitionRequest, payload Generi
 		Command:    command,
 		MaxRunTime: 300,
 	}
-	fullCreds := &tcclient.Credentials{
-		AccessToken: config.AccessToken,
-		ClientID:    config.ClientID,
-		Certificate: config.Certificate,
-	}
-	if os.Getenv("GW_SKIP_PERMA_CREDS_TESTS") != "" {
-		t.Skip("Skipping since GW_SKIP_PERMA_CREDS_TESTS env var is set")
-	}
-	testutil.RequireTaskclusterCredentials(t)
-	if fullCreds.Certificate != "" {
-		t.Fatal("Skipping since I need permanent TC credentials for this test and only have temp creds - set GW_SKIP_PERMA_CREDS_TESTS or GW_SKIP_INTEGRATION_TESTS env var to something to skip this test, or change your TASKCLUSTER_* env vars to a permanent client instead of a temporary client")
-	}
+	fullCreds := config.Credentials()
 	td = testTask(t)
 	tempCreds, err := fullCreds.CreateNamedTemporaryCredentials("project/taskcluster:generic-worker-tester/"+t.Name(), time.Minute, "queue:cancel-task:"+td.SchedulerID+"/"+td.TaskGroupID+"/*")
 	if err != nil {
@@ -61,6 +49,7 @@ func cancelTask(t *testing.T) (td *tcqueue.TaskDefinitionRequest, payload Generi
 		"TASKCLUSTER_CLIENT_ID":    tempCreds.ClientID,
 		"TASKCLUSTER_ACCESS_TOKEN": tempCreds.AccessToken,
 		"TASKCLUSTER_CERTIFICATE":  tempCreds.Certificate,
+		"TASKCLUSTER_ROOT_URL":     config.RootURL,
 	}
 	for _, envVar := range []string{
 		"PATH",
@@ -85,7 +74,8 @@ type ExpectedArtifacts map[string]ArtifactTraits
 
 func (expectedArtifacts ExpectedArtifacts) Validate(t *testing.T, taskID string, run int) {
 
-	artifacts, err := testQueue.ListArtifacts(taskID, strconv.Itoa(run), "", "")
+	queue := serviceFactory.Queue(nil, config.RootURL)
+	artifacts, err := queue.ListArtifacts(taskID, strconv.Itoa(run), "", "")
 
 	if err != nil {
 		t.Fatalf("Error listing artifacts: %v", err)

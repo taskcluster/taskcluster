@@ -1,0 +1,13 @@
+# This is a partial schema for Azure Public IP parameters.  Feel free to add additional
+# properties here if necessary, consulting with the relevant bits of Azure documentation.
+# https://docs.microsoft.com/en-us/javascript/api/%40azure/arm-network/publicipaddress?view=azure-node-latest
+type: object
+properties:
+  tags:
+    type: object
+    additionalProperties: {type: string}
+  location: {type: string}
+  publicIPAllocationMethod:
+    enum: [Dynamic, Static]
+additionalProperties: false
+required: [location, publicIPAllocationMethod]

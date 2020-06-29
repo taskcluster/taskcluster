@@ -7,8 +7,8 @@ import (
 	"sync"
 	"time"
 
-	tcclient "github.com/taskcluster/taskcluster/v29/clients/client-go"
-	"github.com/taskcluster/taskcluster/v29/clients/client-go/tcqueue"
+	tcclient "github.com/taskcluster/taskcluster/v31/clients/client-go"
+	"github.com/taskcluster/taskcluster/v31/clients/client-go/tcqueue"
 )
 
 // Enumerate task status to aid life-cycle decision making
@@ -173,11 +173,14 @@ func (tsm *TaskStatusManager) reclaim() error {
 
 			task.TaskReclaimResponse = *tcrsp
 			task.queueMux.Lock()
-			task.Queue.Credentials = &tcclient.Credentials{
-				ClientID:    tcrsp.Credentials.ClientID,
-				AccessToken: tcrsp.Credentials.AccessToken,
-				Certificate: tcrsp.Credentials.Certificate,
-			}
+			task.Queue = serviceFactory.Queue(
+				&tcclient.Credentials{
+					AccessToken: tcrsp.Credentials.AccessToken,
+					ClientID:    tcrsp.Credentials.ClientID,
+					Certificate: tcrsp.Credentials.Certificate,
+				},
+				config.RootURL,
+			)
 			task.queueMux.Unlock()
 			tsm.status = tcrsp.Status
 			tsm.takenUntil = tcrsp.TakenUntil
@@ -254,9 +257,10 @@ func (tsm *TaskStatusManager) UpdateStatus() {
 
 func (tsm *TaskStatusManager) queryQueueForLatestStatus() {
 	log.Printf("Querying queue to get latest status for task %v...", tsm.task.TaskID)
-	// no scopes required for this endpoint, so can use global Queue object
+	// no scopes are required for this endpoint, so can use nil credentials
 	// this is also useful if tsm.task.Queue == nil (which can happen if claim
 	// failed because task is claimed by another worker)
+	queue := serviceFactory.Queue(nil, config.RootURL)
 	tsr, err := queue.Status(tsm.task.TaskID)
 	if err != nil {
 		tsm.task.Status = unknown

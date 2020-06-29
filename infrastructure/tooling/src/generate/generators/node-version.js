@@ -44,5 +44,12 @@ exports.tasks = [{
         contents.engines.node = nodeVersion;
         return contents;
       });
+
+    utils.status({message: 'workers/docker-worker/package.json'});
+    await modifyRepoJSON('workers/docker-worker/package.json',
+      contents => {
+        contents.engines.node = nodeVersion;
+        return contents;
+      });
   },
 }];

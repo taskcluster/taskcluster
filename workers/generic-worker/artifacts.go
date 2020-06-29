@@ -19,8 +19,9 @@ import (
 	"time"
 
 	"github.com/taskcluster/httpbackoff/v3"
-	tcclient "github.com/taskcluster/taskcluster/v29/clients/client-go"
-	"github.com/taskcluster/taskcluster/v29/clients/client-go/tcqueue"
+	tcurls "github.com/taskcluster/taskcluster-lib-urls"
+	tcclient "github.com/taskcluster/taskcluster/v31/clients/client-go"
+	"github.com/taskcluster/taskcluster/v31/clients/client-go/tcqueue"
 )
 
 var (
@@ -176,6 +177,7 @@ func (s3Artifact *S3Artifact) ProcessResponse(resp interface{}, task *TaskRun) (
 	response := resp.(*tcqueue.S3ArtifactResponse)
 
 	task.Infof("Uploading artifact %v from file %v with content encoding %q, mime type %q and expiry %v", s3Artifact.Name, s3Artifact.Path, s3Artifact.ContentEncoding, s3Artifact.ContentType, s3Artifact.Expires)
+
 	transferContentFile := s3Artifact.CreateTempFileForPUTBody()
 	defer os.Remove(transferContentFile)
 
@@ -477,11 +479,11 @@ func (task *TaskRun) uploadArtifact(artifact TaskArtifact) *CommandExecutionErro
 				if rootCause.HttpResponseCode == 409 {
 					fullError := fmt.Errorf(
 						"There was a conflict uploading artifact %v - this suggests artifact %v was already uploaded to this task with different content earlier on in this task.\n"+
-							"Check the artifacts section of the task payload at https://queue.taskcluster.net/v1/task/%v\n"+
+							"Check the artifacts section of the task payload at %v\n"+
 							"%v",
 						artifact.Base().Name,
 						artifact.Base().Name,
-						task.TaskID,
+						tcurls.API(config.RootURL, "queue", "v1", "task/"+task.TaskID),
 						rootCause,
 					)
 					return MalformedPayloadError(fullError)

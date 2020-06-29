@@ -8,6 +8,8 @@ import (
 	"runtime"
 	"testing"
 	"time"
+
+	"github.com/taskcluster/taskcluster/v31/workers/generic-worker/tchttputil"
 )
 
 func TestLiveLog(t *testing.T) {
@@ -42,7 +44,7 @@ func TestLiveLog(t *testing.T) {
 	// writes data to it, which probably should be fixed in the livelog
 	// codebase. Ideally it would serve both ports on initialisation, not
 	// requiring data to be PUT first.
-	err = waitForPortToBeActive(ll.GETPort, time.Minute*1)
+	err = tchttputil.WaitForLocalTCPListener(ll.GETPort, time.Minute*1)
 	if err != nil {
 		t.Fatalf("%s", err)
 	}

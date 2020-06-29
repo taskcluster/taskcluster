@@ -10,7 +10,7 @@ You will probably be working on only one of these pieces, so read carefully belo
 ### Node
 
 <!-- the next line is automatically edited; do not change -->
-You will need Node version 12.16.3 installed.
+You will need Node version 12.18.1 installed.
 We recommend using https://github.com/nvm-sh/nvm to support installing multiple Node versions.
 
 ### Go
@@ -30,13 +30,30 @@ Do not run these tests against a database instance that contains any useful data
 To start the server using Docker:
 
 ```shell
-docker run -ti -p 127.0.0.1:5432:5432  --rm postgres:11
+docker run -ti -p 127.0.0.1:5432:5432 -e POSTGRES_HOST_AUTH_METHOD=trust -e LC_COLLATE=en_US.UTF8 -e LC_CTYPE=en_US.UTF8 --rm postgres:11
 ```
 
 This will run Docker in the foreground in that terminal (so you'll need to use another terminal for your work, or add the `-d` flag to daemonize the container) and make that available on TCP port 5432, the "normal" Postgres port.
 
-However you decide to run Docker, you will need a DB URL below, as defined by [node-postgres](https://node-postgres.com/features/connecting).
+It can be helpful to log all queries run by the test suite:
+
+```shell
+docker run -ti -p 127.0.0.1:5432:5432 -e POSTGRES_HOST_AUTH_METHOD=trust -e LC_COLLATE=en_US.UTF8 -e LC_CTYPE=en_US.UTF8 --rm postgres:11 -c log_statement=all
+```
+
+However you decide to run Postgres, you will need a DB URL, as defined by [node-postgres](https://node-postgres.com/features/connecting).
 For the docker container described above, this is `postgresql://postgres@localhost/postgres`.
+For tests, set:
+
+```shell
+export TEST_DB_URL=postgresql://postgres@localhost/postgres
+```
+
+To access the psql command-line prompt in your docker container, determine the container ID (such as with `docker container ls`) and run
+
+```shell
+docker exec -ti $CONTAINER_ID psql -U postgres
+```
 
 ### Node Dependency Installation
 
@@ -133,12 +150,12 @@ expireArtifacts:
   type: cron
   schedule: '0 0 * * *'
   deadline: 86400
-  command: node src/main expire-artifacts
+  command: node services/queue/src/main expire-artifacts
 ```
 
 To run this process locally:
 ```sh
-NODE_ENV=development node src/main expire-artifacts
+NODE_ENV=development node services/queue/src/main expire-artifacts
 ```
 
 You may need to provide additional configuration, either as environment variables or in `user-config.yml`.
@@ -167,7 +184,7 @@ Now follow along:
    You can find the assigned IP in `gcloud compute addresses list`, and put it into DNS as an A record.
 1. Create a certificate: `certbot certonly --manual --preferred-challenges dns`.  This will ask you to add a TXT record to the DNS.
    Note that certbot is installed with `brew install letsencrypt` on macOS.
-1. Upload the certificate: `gcloud compute ssl-certificates create <yourname>-ingress --certificate <path-to-fullchain.pem> --private-key <path-to-key>`
+1. Upload the certificate: `gcloud compute ssl-certificates create <yourname>-ingress --certificate <path-to-fullchain.pem> --private-key <path-to-key>`. When the time comes to renew the certificate, simply increment the name (e.g., <yourname>-ingress-1). 
 1. `yarn dev:init` will ask you a bunch of questions and fill out your local
    config for you (most of it anyway).  Once it has done this, your
    `dev-config.yml` is filled with secrets so don't leak it. These are dev-only

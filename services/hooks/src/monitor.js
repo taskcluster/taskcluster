@@ -1,10 +1,6 @@
-const {defaultMonitorManager} = require('taskcluster-lib-monitor');
+const {MonitorManager} = require('taskcluster-lib-monitor');
 
-const monitorManager = defaultMonitorManager.configure({
-  serviceName: 'hooks',
-});
-
-monitorManager.register({
+MonitorManager.register({
   name: 'hookFire',
   title: 'A hook was fired',
   type: 'hook-fire',
@@ -25,5 +21,3 @@ monitorManager.register({
     result: '"success" (task created), "failure" (task not created), or "declined" (hook did not generate a task)"',
   },
 });
-
-module.exports = monitorManager;

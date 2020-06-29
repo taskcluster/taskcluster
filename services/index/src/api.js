@@ -335,13 +335,13 @@ builder.declare({
     // Build signed url for artifact
     let url = null;
     if (/^public\//.test(artifactName)) {
-      url = that.queue.buildUrl(
+      url = that.queue.externalBuildUrl(
         that.queue.getLatestArtifact,
         task.taskId,
         artifactName,
       );
     } else {
-      url = that.queue.buildSignedUrl(
+      url = that.queue.externalBuildSignedUrl(
         that.queue.getLatestArtifact,
         task.taskId,
         artifactName, {

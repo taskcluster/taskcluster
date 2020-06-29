@@ -7,8 +7,8 @@ import (
 	"log"
 	"strings"
 
-	"github.com/taskcluster/taskcluster/v29/clients/client-go/tcworkermanager"
-	"github.com/taskcluster/taskcluster/v29/workers/generic-worker/gwconfig"
+	"github.com/taskcluster/taskcluster/v31/clients/client-go/tcworkermanager"
+	"github.com/taskcluster/taskcluster/v31/workers/generic-worker/gwconfig"
 )
 
 type WorkerManagerUserData struct {
@@ -41,9 +41,7 @@ func (userData *WorkerManagerUserData) UpdateConfig(c *gwconfig.Config, provider
 
 	// We need a worker manager client for fetching taskcluster credentials.
 	// Ensure auth is disabled in client, since we don't have credentials yet.
-	wm := c.WorkerManager()
-	wm.Authenticate = false
-	wm.Credentials = nil
+	wm := serviceFactory.WorkerManager(nil, config.RootURL)
 
 	workerIdentityProof, err := json.Marshal(providerType)
 	if err != nil {
@@ -73,7 +71,7 @@ func (userData *WorkerManagerUserData) UpdateConfig(c *gwconfig.Config, provider
 
 func WMDeploymentID() (string, error) {
 	log.Print("Checking if there is a new deploymentId...")
-	wm := config.WorkerManager()
+	wm := serviceFactory.WorkerManager(config.Credentials(), config.RootURL)
 	wpfd, err := wm.WorkerPool(config.ProvisionerID + "/" + config.WorkerType)
 	if err != nil {
 		return "", fmt.Errorf("**** Can't reach worker-manager to see if there is a new deploymentId: %v", err)

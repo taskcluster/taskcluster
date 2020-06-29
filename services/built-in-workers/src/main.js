@@ -1,6 +1,6 @@
 require('../../prelude');
 const loader = require('taskcluster-lib-loader');
-const monitorManager = require('./monitor');
+const {MonitorManager} = require('taskcluster-lib-monitor');
 const libReferences = require('taskcluster-lib-references');
 const taskcluster = require('taskcluster-client');
 const config = require('taskcluster-lib-config');
@@ -9,12 +9,16 @@ const taskqueue = require('./TaskQueue');
 const load = loader({
   cfg: {
     requires: ['profile'],
-    setup: ({profile}) => config({profile}),
+    setup: ({profile}) => config({
+      profile,
+      serviceName: 'built-in-workers',
+    }),
   },
 
   monitor: {
     requires: ['process', 'profile', 'cfg'],
-    setup: ({process, profile, cfg}) => monitorManager.setup({
+    setup: ({process, profile, cfg}) => MonitorManager.setup({
+      serviceName: 'built-in-workers',
       processName: process,
       verify: profile !== 'production',
       ...cfg.monitoring,
@@ -32,7 +36,7 @@ const load = loader({
   generateReferences: {
     requires: ['cfg'],
     setup: ({cfg}) => libReferences.fromService({
-      references: [monitorManager.reference()],
+      references: [MonitorManager.reference('built-in-workers')],
     }).generateReferences(),
   },
 

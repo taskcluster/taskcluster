@@ -17,10 +17,9 @@ import (
 	"github.com/mholt/archiver"
 	"github.com/taskcluster/httpbackoff/v3"
 	"github.com/taskcluster/slugid-go/slugid"
-	tcclient "github.com/taskcluster/taskcluster/v29/clients/client-go"
-	"github.com/taskcluster/taskcluster/v29/clients/client-go/tcpurgecache"
-	"github.com/taskcluster/taskcluster/v29/internal/scopes"
-	"github.com/taskcluster/taskcluster/v29/workers/generic-worker/fileutil"
+	tcclient "github.com/taskcluster/taskcluster/v31/clients/client-go"
+	"github.com/taskcluster/taskcluster/v31/internal/scopes"
+	"github.com/taskcluster/taskcluster/v31/workers/generic-worker/fileutil"
 )
 
 var (
@@ -34,9 +33,6 @@ var (
 	// a preloaded cache will have an associated file cache for the archive it
 	// was created from. The key is the cache name.
 	directoryCaches CacheMap
-	// service to call to see if any caches need to be purged. See
-	// https://docs.taskcluster.net/reference/core/purge-cache
-	pc *tcpurgecache.PurgeCache
 	// we track this in order to reduce number of results we get back from
 	// purge cache service
 	lastQueriedPurgeCacheService time.Time
@@ -157,7 +153,6 @@ func (cm *CacheMap) LoadFromFile(stateFile string, cacheDir string) {
 func (feature *MountsFeature) Initialise() error {
 	fileCaches.LoadFromFile("file-caches.json", config.CachesDir)
 	directoryCaches.LoadFromFile("directory-caches.json", config.DownloadsDir)
-	pc = config.PurgeCache()
 	return nil
 }
 
@@ -629,7 +624,7 @@ func ensureCached(fsContent FSContent, task *TaskRun) (file string, err error) {
 	}
 	file, sha256, err = fsContent.Download(task)
 	if err != nil {
-		task.Errorf("Could not download %v to %v due to %v", fsContent.UniqueKey(), file, err)
+		task.Errorf("[mounts] Could not fetch from %v into file %v due to %v", fsContent, file, err)
 		return
 	}
 	fileCaches[cacheKey] = &Cache{
@@ -722,11 +717,11 @@ func (ac *ArtifactContent) Download(task *TaskRun) (file string, sha256 string, 
 	basename := slugid.Nice()
 	file = filepath.Join(config.DownloadsDir, basename)
 	var signedURL *url.URL
-	signedURL, err = queue.GetLatestArtifact_SignedURL(ac.TaskID, ac.Artifact, time.Minute*30)
+	signedURL, err = task.Queue.GetLatestArtifact_SignedURL(ac.TaskID, ac.Artifact, time.Minute*30)
 	if err != nil {
 		return
 	}
-	sha256, err = downloadURLToFile(signedURL.String(), ac.String(), file, task)
+	sha256, _, err = DownloadFile(signedURL.String(), ac.String(), file, task)
 	return
 }
 
@@ -752,7 +747,7 @@ func (ac *ArtifactContent) TaskDependencies() []string {
 func (uc *URLContent) Download(task *TaskRun) (file string, sha256 string, err error) {
 	basename := slugid.Nice()
 	file = filepath.Join(config.DownloadsDir, basename)
-	sha256, err = downloadURLToFile(uc.URL, uc.String(), file, task)
+	sha256, _, err = DownloadFile(uc.URL, uc.String(), file, task)
 	return
 }
 
@@ -773,32 +768,33 @@ func (uc *URLContent) TaskDependencies() []string {
 }
 
 // Utility function to aggressively download a url to a file location
-func downloadURLToFile(url, contentSource, file string, task *TaskRun) (sha256 string, err error) {
+func DownloadFile(url, contentSource, file string, logger *TaskRun) (sha256, contentType string, err error) {
 	var contentSize int64
 	// httpbackoff.Get(url) is not sufficient as that only guarantees we have
 	// an http response to read from, but does not retry if we lose
 	// connectivity while reading from it. Therefore include the reading of the
 	// response body inside the retry function.
 	retryFunc := func() (resp *http.Response, tempError error, permError error) {
-		task.Infof("[mounts] Downloading %v to %v", contentSource, file)
+		logger.Infof("[mounts] Downloading %v to %v", contentSource, file)
 		resp, err := http.Get(url)
 		// assume all errors should result in a retry
 		if err != nil {
-			task.Warnf("[mounts] Download of %v failed on this attempt: %v", contentSource, err)
+			logger.Warnf("[mounts] Download of %v failed on this attempt: %v", contentSource, err)
 			// temporary error!
 			return resp, err, nil
 		}
 		defer resp.Body.Close()
+		contentType = resp.Header.Get("Content-Type")
 		f, err := os.OpenFile(file, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0600)
 		if err != nil {
-			task.Errorf("[mounts] Could not open file %v: %v", file, err)
+			logger.Errorf("[mounts] Could not open file %v: %v", file, err)
 			// permanent error!
 			return resp, nil, err
 		}
 		defer f.Close()
 		contentSize, err = io.Copy(f, resp.Body)
 		if err != nil {
-			task.Warnf("[mounts] Could not write http response from %v to file %v on this attempt: %v", contentSource, file, err)
+			logger.Warnf("[mounts] Could not write http response from %v to file %v on this attempt: %v", contentSource, file, err)
 			// likely a temporary error - network blip
 			return resp, err, nil
 		}
@@ -807,16 +803,16 @@ func downloadURLToFile(url, contentSource, file string, task *TaskRun) (sha256 s
 	var resp *http.Response
 	resp, _, err = httpbackoff.Retry(retryFunc)
 	if err != nil {
-		task.Errorf("[mounts] Could not fetch from %v into file %v: %v", contentSource, file, err)
+		logger.Errorf("[mounts] Could not fetch from %v into file %v: %v", contentSource, file, err)
 		return
 	}
 	defer resp.Body.Close()
 	sha256, err = fileutil.CalculateSHA256(file)
 	if err != nil {
-		task.Infof("[mounts] Downloaded %v bytes from %v to %v but cannot calculate SHA256", contentSize, contentSource, file)
+		logger.Infof("[mounts] Downloaded %v bytes from %v to %v but cannot calculate SHA256", contentSize, contentSource, file)
 		panic(fmt.Sprintf("Internal worker bug! Cannot calculate SHA256 of file %v that I just downloaded: %v", file, err))
 	}
-	task.Infof("[mounts] Downloaded %v bytes with SHA256 %v from %v to %v", contentSize, sha256, contentSource, file)
+	logger.Infof("[mounts] Downloaded %v bytes with SHA256 %v from %v to %v", contentSize, sha256, contentSource, file)
 	return
 }
 
@@ -919,6 +915,7 @@ func (taskMount *TaskMount) purgeCaches() error {
 		since = tcclient.Time(lastQueriedPurgeCacheService.Add(-5 * time.Minute)).String()
 	}
 	lastQueriedPurgeCacheService = time.Now()
+	pc := serviceFactory.PurgeCache(config.Credentials(), config.RootURL)
 	purgeRequests, err := pc.PurgeRequests(config.ProvisionerID, config.WorkerType, since)
 	if err != nil {
 		return err

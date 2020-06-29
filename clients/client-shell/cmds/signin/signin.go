@@ -15,12 +15,14 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/taskcluster/slugid-go/slugid"
 	libUrls "github.com/taskcluster/taskcluster-lib-urls"
-	tcclient "github.com/taskcluster/taskcluster/v29/clients/client-go"
-	"github.com/taskcluster/taskcluster/v29/clients/client-go/tcauth"
-	"github.com/taskcluster/taskcluster/v29/clients/client-shell/cmds/root"
-	"github.com/taskcluster/taskcluster/v29/clients/client-shell/config"
+	tcclient "github.com/taskcluster/taskcluster/v31/clients/client-go"
+	"github.com/taskcluster/taskcluster/v31/clients/client-go/tcauth"
+	"github.com/taskcluster/taskcluster/v31/clients/client-shell/cmds/root"
+	"github.com/taskcluster/taskcluster/v31/clients/client-shell/config"
 	graceful "gopkg.in/tylerb/graceful.v1"
 )
+
+var log = root.Logger
 
 func init() {
 	cmd := &cobra.Command{
@@ -59,7 +61,7 @@ func cmdSignin(cmd *cobra.Command, _ []string) error {
 	}
 
 	// Load configuration
-	fmt.Fprintln(cmd.OutOrStderr(), "Starting")
+	log.Infoln("Starting")
 
 	// Find port, choose 0 meaning random port, if none
 	port, _ := cmd.Flags().GetInt("port")
@@ -84,7 +86,7 @@ func cmdSignin(cmd *cobra.Command, _ []string) error {
 			fmt.Fprintln(cmd.OutOrStdout(), "export TASKCLUSTER_ACCESS_TOKEN='"+qs.Get("accessToken")+"'")
 			fmt.Fprintln(cmd.OutOrStdout(), "export TASKCLUSTER_ROOT_URL='"+rootURL+"'")
 		}
-		fmt.Fprintln(cmd.OutOrStderr(), "Credentials output as environment variables")
+		log.Infoln("Credentials output as environment variables")
 
 		w.WriteHeader(http.StatusOK)
 		_, _ = w.Write([]byte(`
@@ -140,8 +142,8 @@ func cmdSignin(cmd *cobra.Command, _ []string) error {
 	loginURL += "&description=" + description
 
 	// Display URL to open
-	fmt.Fprintln(cmd.OutOrStderr(), "Listening for a callback on: "+callbackURL)
-	fmt.Fprintln(cmd.OutOrStderr(), "Opening URL: "+loginURL)
+	log.Infoln("Listening for a callback on: " + callbackURL)
+	log.Infoln("Opening URL: " + loginURL)
 
 	// Discard whatever the browser dumps to stdout / stderr
 	browser.Stderr = ioutil.Discard

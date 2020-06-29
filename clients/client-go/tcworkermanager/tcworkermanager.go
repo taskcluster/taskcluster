@@ -36,7 +36,7 @@ package tcworkermanager
 import (
 	"net/url"
 
-	tcclient "github.com/taskcluster/taskcluster/v29/clients/client-go"
+	tcclient "github.com/taskcluster/taskcluster/v31/clients/client-go"
 )
 
 type WorkerManager tcclient.Client
@@ -308,4 +308,23 @@ func (workerManager *WorkerManager) RegisterWorker(payload *RegisterWorkerReques
 	cd := tcclient.Client(*workerManager)
 	responseObject, _, err := (&cd).APICall(payload, "POST", "/worker/register", new(RegisterWorkerResponse), nil)
 	return responseObject.(*RegisterWorkerResponse), err
+}
+
+// Stability: *** EXPERIMENTAL ***
+//
+// Reregister a running worker.
+//
+// This will generate and return new Taskcluster credentials for the worker
+// on that instance to use. The credentials will not live longer the
+// `registrationTimeout` for that worker. The endpoint will update `terminateAfter`
+// for the worker so that worker-manager does not terminate the instance.
+//
+// Required scopes:
+//   worker-manager:reregister-worker:<workerPoolId>/<workerGroup>/<workerId>
+//
+// See #reregisterWorker
+func (workerManager *WorkerManager) ReregisterWorker(payload *ReregisterWorkerRequest) (*ReregisterWorkerResponse, error) {
+	cd := tcclient.Client(*workerManager)
+	responseObject, _, err := (&cd).APICall(payload, "POST", "/worker/reregister", new(ReregisterWorkerResponse), nil)
+	return responseObject.(*ReregisterWorkerResponse), err
 }

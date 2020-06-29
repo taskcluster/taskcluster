@@ -14,6 +14,7 @@ const {remoteAuthentication} = require('./middleware/auth');
 const {parseBody} = require('./middleware/parse');
 const {expressError} = require('./middleware/express-error');
 const {logRequest} = require('./middleware/logging');
+const {perRequestContext} = require('./middleware/per-request-context');
 
 const debug = Debug('api');
 
@@ -68,7 +69,6 @@ class API {
     */
   router() {
     const {
-      monitor,
       allowedCORSOrigin,
       rootUrl,
       inputLimit,
@@ -92,20 +92,19 @@ class API {
 
     // Add entries to router
     this.entries.forEach(entry => {
-      // Route pattern
-      const middleware = [entry.route];
-
-      middleware.push(
-        logRequest({builder: this.builder, entry, monitor}),
+      const middleware = [
+        entry.route,
+        perRequestContext({entry, context}),
+        logRequest({builder: this.builder, entry}),
         buildReportErrorMethod(),
         parseBody({inputLimit}),
         remoteAuthentication({signatureValidator, entry}),
-        parameterValidator({context, entry}),
-        queryValidator({context, entry}),
-        validateSchemas({validator, absoluteSchemas, rootUrl, serviceName, entry, monitor}),
-        callHandler({entry, context, monitor}),
-        expressError({errorCodes, entry, monitor}),
-      );
+        parameterValidator({entry}),
+        queryValidator({entry}),
+        validateSchemas({validator, absoluteSchemas, rootUrl, serviceName, entry}),
+        callHandler({entry}),
+        expressError({errorCodes, entry}),
+      ];
 
       // Create entry on router
       router[entry.method].apply(router, middleware);
@@ -230,7 +229,13 @@ const createRemoteSignatureValidator = (options) => {
     rootUrl: options.rootUrl,
     credentials: {}, // We do this to avoid sending auth headers to authenticateHawk
   });
-  return async (data) => auth.authenticateHawk(data);
+  return async (data, meta) => {
+    let perRequestAuth = auth;
+    if (meta && auth.taskclusterPerRequestInstance !== undefined) {
+      perRequestAuth = auth.taskclusterPerRequestInstance(meta);
+    }
+    return perRequestAuth.authenticateHawk(data);
+  };
 };
 
 // for tests

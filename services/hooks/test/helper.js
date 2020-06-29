@@ -1,7 +1,7 @@
 const data = require('../src/data');
 const taskcluster = require('taskcluster-client');
 const taskcreator = require('../src/taskcreator');
-const {stickyLoader, fakeauth, Secrets, withEntity, withPulse, withMonitor, withDb, resetTable} = require('taskcluster-lib-testing');
+const {stickyLoader, fakeauth, Secrets, withEntity, withPulse, withMonitor, withDb, resetTables} = require('taskcluster-lib-testing');
 const builder = require('../src/api');
 const load = require('../src/main');
 
@@ -16,7 +16,6 @@ helper.load.inject('process', 'test');
 withMonitor(helper);
 
 helper.secrets = new Secrets({
-  secretName: 'project/taskcluster/testing/azure',
   load: helper.load,
   secrets: {
     db: withDb.secret,
@@ -125,9 +124,11 @@ exports.resetTables = (mock, skipping) => {
       helper.db.hooks.reset();
     } else {
       const sec = helper.secrets.get('db');
-      await resetTable({ testDbUrl: sec.testDbUrl, tableName: 'hooks_entities' });
-      await resetTable({ testDbUrl: sec.testDbUrl, tableName: 'queues_entities' });
-      await resetTable({ testDbUrl: sec.testDbUrl, tableName: 'last_fire_3_entities' });
+      await resetTables({ testDbUrl: sec.testDbUrl, tableNames: [
+        'hooks_entities',
+        'queues_entities',
+        'last_fire_3_entities',
+      ]});
     }
   });
 };

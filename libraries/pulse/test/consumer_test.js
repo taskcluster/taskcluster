@@ -6,7 +6,6 @@ const debugModule = require('debug');
 const assert = require('assert');
 const helper = require('./helper');
 const {suiteName} = require('taskcluster-lib-testing');
-const {defaultMonitorManager} = require('taskcluster-lib-monitor');
 
 helper.secrets.mockSuite(suiteName(), ['pulse'], function(mock, skipping) {
   if (mock) {
@@ -53,6 +52,13 @@ helper.secrets.mockSuite(suiteName(), ['pulse'], function(mock, skipping) {
 
       await chan.close();
       await conn.close();
+    };
+
+    // wait until the pq stops
+    const waitUntilStopped = pq => {
+      return new Promise((resolve, reject) => {
+        pq._stoppedCallback = resolve;
+      });
     };
 
     // publish messages and wait until the pq stops
@@ -127,10 +133,10 @@ helper.secrets.mockSuite(suiteName(), ['pulse'], function(mock, skipping) {
       assume(numbers).to.deeply.equal([0, 1, 2, 4, 5, 6, 7, 8, 9]);
 
       // check that we logged the 'uhoh' error
-      const errors = defaultMonitorManager.messages
+      const errors = monitor.manager.messages
         .filter(({Fields: {message}}) => message === 'uhoh');
       assert.equal(errors.length, 1);
-      defaultMonitorManager.messages = [];
+      monitor.manager.messages = [];
     });
 
     test('handle connection failure during consumption', async function() {
@@ -189,6 +195,7 @@ helper.secrets.mockSuite(suiteName(), ['pulse'], function(mock, skipping) {
       });
       const got = [];
 
+      let publishing = false;
       const pq = await consume({
         ephemeral: true,
         client,
@@ -201,6 +208,14 @@ helper.secrets.mockSuite(suiteName(), ['pulse'], function(mock, skipping) {
         onConnected: async () => {
           debug('onConnected');
           got.push({connected: true});
+
+          if (!publishing) {
+            // start publishing after first connection, avoiding a race
+            // between onConnected and handleMessage
+            publishing = true;
+            await publishMessages();
+          }
+
           // if this is the second reconnection, then we're done -- no further
           // messages are expected, as they were lost when we reconnected
           if (got.filter(x => x.connected).length === 2) {
@@ -224,14 +239,14 @@ helper.secrets.mockSuite(suiteName(), ['pulse'], function(mock, skipping) {
           // remaining messages ("ephemeral", right?), so onConnected will resolve
           // the promise once this occurs.
           if (got.length === 4) {
+            debug(`recycling`);
             client.recycle();
           }
           got.push(message);
         },
       });
 
-      await publishUntilStopped(pq);
-
+      await waitUntilStopped(pq);
       await client.stop();
 
       got.forEach(msg => {
@@ -257,13 +272,13 @@ helper.secrets.mockSuite(suiteName(), ['pulse'], function(mock, skipping) {
       assume(numbers).to.deeply.equal(['connected', 'msg', 'msg', 'msg', 'msg', 'connected']);
 
       // check that we logged the 'uhoh' error
-      const errors = defaultMonitorManager.messages
+      const errors = monitor.manager.messages
         .filter(({Fields: {message}}) => message === 'uhoh');
       assert.equal(errors.length, 1);
-      defaultMonitorManager.messages = [];
+      monitor.manager.messages = [];
     });
 
-    test('no queueuName is an error', async function() {
+    test('no queueName is an error', async function() {
       const client = new Client({
         credentials: connectionStringCredentials(connectionString),
         retirementDelay: 50,

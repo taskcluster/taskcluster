@@ -12,7 +12,7 @@ import (
 
 	"github.com/gorilla/websocket"
 
-	"github.com/taskcluster/taskcluster/v29/tools/websocktunnel/util"
+	"github.com/taskcluster/taskcluster/v31/tools/websocktunnel/util"
 )
 
 func TestManyStreamEchoLarge(t *testing.T) {

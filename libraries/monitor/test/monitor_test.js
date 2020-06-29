@@ -1,6 +1,5 @@
 const path = require('path');
 const {fork} = require('child_process');
-const {registerBuiltins} = require('../src/builtins');
 const mockFs = require('mock-fs');
 const assert = require('assert');
 const testing = require('taskcluster-lib-testing');
@@ -11,14 +10,8 @@ suite(testing.suiteName(), function() {
   let errorBucket = [];
 
   suiteSetup(function() {
-    monitorManager = new MonitorManager();
-    registerBuiltins(monitorManager);
-    // modify _handleMessage to log the *entire* message
-    monitorManager._handleMessage =
-      message => monitorManager.messages.push(message);
-    monitor = monitorManager.configure({
+    monitor = MonitorManager.setup({
       serviceName: 'testing-service',
-    }).setup({
       level: 'debug',
       debug: true,
       fake: {
@@ -30,6 +23,10 @@ suite(testing.suiteName(), function() {
         bucket: errorBucket,
       },
     });
+    monitorManager = monitor.manager;
+    // modify _handleMessage to log the *entire* message
+    monitorManager._handleMessage =
+      message => monitorManager.messages.push(message);
   });
 
   teardown(function() {
@@ -179,6 +176,22 @@ suite(testing.suiteName(), function() {
       assert.equal(monitorManager.messages[2].Fields.val, 7);
     });
 
+    test('traceId becomes top-level', function() {
+      const child = monitor.taskclusterPerRequestInstance({entryName: 'what', traceId: 'foo/bar', requestId: '123/456'});
+      monitor.measure('bazbing', 5);
+      child.measure('bazbing', 6);
+
+      assert.equal(monitorManager.messages.length, 2);
+      assert.equal(monitorManager.messages[0].Logger, 'taskcluster.testing-service');
+      assert.equal(monitorManager.messages[1].Logger, 'taskcluster.testing-service');
+      assert.equal(monitorManager.messages[0].Fields.meta, undefined);
+      assert.equal(monitorManager.messages[1].Fields.meta, undefined);
+      assert.equal(monitorManager.messages[0].traceId, undefined);
+      assert.equal(monitorManager.messages[1].traceId, 'foo/bar');
+      assert.equal(monitorManager.messages[0].requestId, undefined);
+      assert.equal(monitorManager.messages[1].requestId, '123/456');
+    });
+
     test('metadata is merged', function() {
       const child = monitor.childMonitor('api', {addition: 1000});
       monitor.measure('bazbing', 5);
@@ -187,16 +200,13 @@ suite(testing.suiteName(), function() {
       assert.equal(monitorManager.messages.length, 2);
       assert.equal(monitorManager.messages[0].Logger, 'taskcluster.testing-service');
       assert.equal(monitorManager.messages[1].Logger, 'taskcluster.testing-service.api');
-      assert.equal(monitorManager.messages[0].Fields.meta, undefined);
-      assert.equal(monitorManager.messages[1].Fields.meta.addition, 1000);
+      assert.equal(monitorManager.messages[0].Fields.addition, undefined);
+      assert.equal(monitorManager.messages[1].Fields.addition, 1000);
     });
 
     test('can configure child loggers with specific levels and default to root', function() {
-      const b = new MonitorManager();
-      b.configure({
+      const m = MonitorManager.setup({
         serviceName: 'testing-service',
-      });
-      const m = b.setup({
         level: 'root:info api:debug',
         fake: true,
         debug: true,
@@ -208,15 +218,13 @@ suite(testing.suiteName(), function() {
       child1.debug('bazbing', 2);
       child2.debug('what', 3);
 
-      assert.equal(b.messages.length, 1);
-      assert.equal(b.messages[0].Logger, 'taskcluster.testing-service.api');
+      assert.equal(m.manager.messages.length, 1);
+      assert.equal(m.manager.messages[0].Logger, 'taskcluster.testing-service.api');
     });
 
     test('if using child logger levels, must specify root', function() {
-      const b = new MonitorManager({
+      assert.throws(() => MonitorManager.setup({
         serviceName: 'testing-service',
-      });
-      assert.throws(() => b.setup({
         level: 'root.api:debug',
         fake: true,
         debug: true,
@@ -461,8 +469,19 @@ suite(testing.suiteName(), function() {
     mockFs({
       '../../version.json': JSON.stringify({version: 'whatever'}),
     });
-    const mm = new MonitorManager();
-    mm.configure({serviceName: 'foo'});
-    assert.equal(mm.taskclusterVersion, 'whatever');
+    const monitor = MonitorManager.setup({
+      serviceName: 'testing-service',
+      level: 'debug',
+      debug: true,
+      fake: {
+        allowExit: true,
+      },
+      verify: true,
+      errorConfig: {
+        reporter: 'TestReporter',
+        bucket: errorBucket,
+      },
+    });
+    assert.equal(monitor.manager.taskclusterVersion, 'whatever');
   });
 });

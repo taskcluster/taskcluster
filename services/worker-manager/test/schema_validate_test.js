@@ -13,7 +13,7 @@ suite(testing.suiteName(), () => {
     cases: [
       {
         schema: 'v1/worker-pool-full.json#',
-        path: 'sample-aws-worker-pull.json',
+        path: 'sample-aws-worker-pool-full.json',
         success: true,
       },
       {

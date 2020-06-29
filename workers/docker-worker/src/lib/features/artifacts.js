@@ -48,7 +48,7 @@ class Artifacts {
         });
       }));
     } catch (e) {
-      let error = `Artifact "${name}" not found at "${path}"`;
+      let error = `Artifact "${name}" not found at "${path}": ${e.message}`;
       // Log the error but not as an error so that other systems to not think it's
       // a fatal issue
       taskHandler.stream.write(fmtLog(error));
@@ -132,8 +132,18 @@ class Artifacts {
 
       let headers = {
         'content-type': mime.lookup(header.name),
-        'content-length': header.size,
       };
+
+      // Check file extension
+      let entryExtension = header.name.split('.').slice(-1)[0];
+      let skipCompressionExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp',
+        '7z', 'zip', 'gz', 'tgz', 'bz2', 'tbz', 'whl', 'xz', 'zst', 'swf',
+        'flv', 'woff', 'woff2'];
+      let compress = false;
+      if (!skipCompressionExtensions.includes(entryExtension)) {
+        headers['content-encoding'] = 'gzip';
+        compress = true;
+      }
 
       try {
         let region = taskHandler.runtime.region;
@@ -143,7 +153,7 @@ class Artifacts {
         let start = process.hrtime();
 
         let {digest, size} = await uploadToS3(taskHandler.queue, taskId, runId, stream,
-          entryName, expiry, headers);
+          entryName, expiry, headers, null, null, compress);
 
         // save the time taken to upload the artifact
         let elapsedTime = process.hrtime(start);

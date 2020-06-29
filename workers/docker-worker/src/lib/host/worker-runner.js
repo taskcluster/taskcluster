@@ -5,19 +5,32 @@ const {StreamTransport, Protocol} = require('../worker-runner-protocol');
 // This module is imported as an "object", so the only place we have to store
 // persistent state is as module-level globals.
 let protocol;
-let gracefulTermination = false;
+let newCredentialsCallback = null;
+let gracefulTerminationCallback = null;
 
 module.exports = {
   setup() {
     const transp = new StreamTransport(process.stdin, process.stdout);
     protocol = new Protocol(transp);
 
-    // docker-worker doesn't support a finish-your-tasks-first termination,
-    // so we ignore that portion of the message
     protocol.addCapability('graceful-termination');
+    protocol.on('graceful-termination-msg', msg => {
+      if (gracefulTerminationCallback) {
+        gracefulTerminationCallback(msg['finish-tasks']);
+      }
+    });
+
     protocol.addCapability('shutdown');
-    protocol.on('graceful-termination-msg', () => {
-      gracefulTermination = true;
+
+    protocol.addCapability('new-credentials');
+    protocol.on('new-credentials-msg', msg => {
+      if (newCredentialsCallback) {
+        newCredentialsCallback({
+          clientId: msg['client-id'],
+          accessToken: msg['access-token'],
+          certificate: msg['certificate'],
+        });
+      }
     });
 
     protocol.start();
@@ -25,12 +38,6 @@ module.exports = {
 
   billingCycleUptime() {
     return os.uptime();
-  },
-
-  getTerminationTime() {
-    // This method name would make you think it returns a time, but it really just
-    // returns a boolean.
-    return gracefulTermination;
   },
 
   configure() {
@@ -47,5 +54,13 @@ module.exports = {
       throw new Error('Shutdown called but worker-runner doesn\'t support this capability');
     }
     protocol.send({type: 'shutdown'});
+  },
+
+  async onNewCredentials(cb) {
+    newCredentialsCallback = cb;
+  },
+
+  async onGracefulTermination(cb) {
+    gracefulTerminationCallback = cb;
   },
 };

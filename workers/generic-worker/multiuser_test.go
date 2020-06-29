@@ -11,6 +11,7 @@ import (
 	"testing"
 
 	"github.com/taskcluster/slugid-go/slugid"
+	"github.com/taskcluster/taskcluster/v31/workers/generic-worker/gwconfig"
 )
 
 // grantingDenying returns regexp strings that match the log lines for granting
@@ -27,7 +28,7 @@ func grantingDenying(t *testing.T, filetype string, taskPath ...string) (grantin
 	// finally to replace the swapped in slug with the desired regexp that we
 	// couldn't include before escaping.
 	slug := slugid.V4()
-	pathRegExp := strings.Replace(regexp.QuoteMeta(filepath.Join(testdataDir, t.Name(), slug, filepath.Join(taskPath...))), slug, "task_[0-9]*", -1)
+	pathRegExp := strings.Replace(regexp.QuoteMeta(filepath.Join(testdataDir, t.Name(), "tasks", slug, filepath.Join(taskPath...))), slug, "task_[0-9]*", -1)
 	return []string{
 			`Granting task_[0-9]* full control of ` + filetype + ` '` + pathRegExp + `'`,
 		}, []string{
@@ -35,12 +36,8 @@ func grantingDenying(t *testing.T, filetype string, taskPath ...string) (grantin
 		}
 }
 
-func setConfigRunTasksAsCurrentUser() {
-	config.RunTasksAsCurrentUser = os.Getenv("GW_TESTS_RUN_AS_CURRENT_USER") != ""
-}
-
-func EngineTestSettings(settings map[string]interface{}) {
-	settings["runTasksAsCurrentUser"] = os.Getenv("GW_TESTS_RUN_AS_CURRENT_USER") != ""
+func setConfigRunTasksAsCurrentUser(conf *gwconfig.Config) {
+	conf.RunTasksAsCurrentUser = os.Getenv("GW_TESTS_RUN_AS_CURRENT_USER") != ""
 }
 
 // TestMissingDependency tests that if artifact content is mounted, it must be included as a task dependency

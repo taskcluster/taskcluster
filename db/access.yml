@@ -26,7 +26,6 @@ index:
 notify:
   tables:
     denylisted_notification_entities: write
-    widgets: write
 purge_cache:
   tables:
     cache_purges: write
@@ -54,6 +53,6 @@ web_server:
     github_access_token_table_entities: write
 worker_manager:
   tables:
-    wmworkers_entities: write
+    workers: write
     worker_pools: write
     wmworker_pool_errors_entities: write

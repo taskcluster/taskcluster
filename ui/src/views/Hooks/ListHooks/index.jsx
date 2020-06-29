@@ -3,6 +3,11 @@ import React, { Component } from 'react';
 import { graphql } from 'react-apollo';
 import Spinner from '@mozilla-frontend-infra/components/Spinner';
 import { withStyles } from '@material-ui/core/styles';
+<<<<<<< HEAD
+=======
+import Typography from '@material-ui/core/Typography';
+import MuiTreeView from 'material-ui-treeview';
+>>>>>>> b80c84f5b1c4fd81c91b3e3da19c1e59b7f250ce
 import PlusIcon from 'mdi-react/PlusIcon';
 import { parse, stringify } from 'qs';
 import Dashboard from '../../../components/Dashboard';
@@ -79,6 +84,7 @@ export default class ListHooks extends Component {
         {!hookGroups && loading && <Spinner loading />}
         <ErrorPanel fixed error={error} />
         {hookGroups && (
+<<<<<<< HEAD
           <TreeView
         className={classes.root}
         defaultCollapseIcon={<ExpandMoreIcon />}
@@ -87,6 +93,23 @@ export default class ListHooks extends Component {
         >
         {renderTree(hookGroups)}
       </TreeView>
+=======
+          <MuiTreeView
+            // key is necessary to expand the list of hook when searching
+            key={hookSearch}
+            defaultExpanded={Boolean(hookSearch)}
+            listItemProps={{ color: classes.listItemProps }}
+            searchTerm={hookSearch || null}
+            softSearch
+            tree={tree}
+            onEmptySearch={
+              <Typography variant="subtitle1">
+                No items for search term {hookSearch}
+              </Typography>
+            }
+            Link={Link}
+          />
+>>>>>>> b80c84f5b1c4fd81c91b3e3da19c1e59b7f250ce
         )}
         <Button
           spanProps={{ className: classes.actionButton }}

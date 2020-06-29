@@ -38,8 +38,6 @@ class BulkLog {
     // Ensure the stream is completely written prior to uploading the temp file.
     await streamClosed(this.stream);
 
-    let stat = await fs.stat(this.file.path);
-
     // Open a new stream to read the entire log from disk (this in theory could
     // be a huge file).
     let diskStream = fs.createReadStream(this.file.path);
@@ -51,7 +49,6 @@ class BulkLog {
       await uploadToS3(task.queue, task.status.taskId, task.runId,
         diskStream, this.artifactName, expiration, {
           'content-type': 'text/plain; charset=utf-8',
-          'content-length': stat.size,
           'content-encoding': 'gzip',
         });
     } catch (err) {

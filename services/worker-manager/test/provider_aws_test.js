@@ -1,15 +1,14 @@
 const {ApiError} = require('../src/providers/provider');
+const _ = require('lodash');
 const assert = require('assert');
-const sinon = require('sinon');
 const helper = require('./helper');
 const {AwsProvider} = require('../src/providers/aws');
 const testing = require('taskcluster-lib-testing');
-const aws = require('aws-sdk');
-const fakeAWS = require('./fake-aws');
 const fs = require('fs');
 const path = require('path');
 const taskcluster = require('taskcluster-client');
-const {WorkerPool} = require('../src/data');
+const {WorkerPool, Worker} = require('../src/data');
+const {FakeEC2} = require('./fakes');
 
 helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
   helper.withDb(mock, skipping);
@@ -28,11 +27,10 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
     launchConfig: {
       ImageId: 'banana-123',
     },
-    workerConfig: {foo: 5},
   };
   const defaultWorker = {
     workerPoolId,
-    workerGroup: providerId,
+    workerGroup: 'us-west-2',
     providerId,
     created: taskcluster.fromNow('0 seconds'),
     expires: taskcluster.fromNow('90 seconds'),
@@ -58,6 +56,9 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
     },
   };
 
+  const fake = new FakeEC2();
+  fake.forSuite();
+
   setup(async function() {
     provider = new AwsProvider({
       providerId,
@@ -66,7 +67,6 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
       monitor: (await helper.load('monitor')).childMonitor('aws'),
       estimator: await helper.load('estimator'),
       rootUrl: helper.rootUrl,
-      Worker: helper.Worker,
       WorkerPoolError: helper.WorkerPoolError,
       providerConfig: {
         providerType: 'aws',
@@ -75,12 +75,6 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
           secretAccessKey: 'topsecret',
         },
       },
-    });
-
-    sinon.stub(aws, 'EC2').returns({
-      ...fakeAWS.EC2,
-      runInstances: fakeAWS.EC2.runInstances(),
-      terminateInstances: fakeAWS.EC2.terminateInstances(),
     });
 
     await helper.db.fns.delete_worker_pool(workerPoolId);
@@ -101,10 +95,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
           defaultLaunchConfig,
         ],
         minCapacity: 1,
-        maxCapacity: 2,
-        lifecycle: {
-          registrationTimeout: 6000,
-        },
+        maxCapacity: 1,
       },
       owner: 'whatever@example.com',
       providerData: {},
@@ -116,208 +107,143 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
     return workerPool;
   };
 
+  const assertHasTag = (runInstanceCall, ResourceType, Key, Value) => {
+    const tagspecs = runInstanceCall.TagSpecifications;
+    const tagspec = _.find(tagspecs, {ResourceType});
+    assert(tagspec, `no tags for resource type ${ResourceType} in ${JSON.stringify(tagspecs)}`);
+    const tag = _.find(tagspec.Tags, {Key});
+    assert(tag, `no tag for key ${Key}, resource type ${ResourceType} in ${JSON.stringify(tagspecs)}`);
+    assert.equal(tag.Value, Value);
+  };
+
   suite('AWS provider - provision', function() {
+    const provisionTest = (name, {config, expectedWorkers}, check) => {
+      test(name, async function() {
+        const workerPool = await makeWorkerPool({config});
+        const workerInfo = {existingCapacity: 0, requestedCapacity: 0};
+        await provider.provision({workerPool, workerInfo});
+        const workers = await Worker.getWorkers(helper.db, {});
+        assert.equal(workers.rows.length, expectedWorkers);
+        await check(workers);
+      });
+    };
 
-    test('positive test', async function() {
-      const workerPool = await makeWorkerPool();
+    provisionTest('simple launchConfig, single worker', {
+      config: {
+        launchConfigs: [defaultLaunchConfig],
+        minCapacity: 1,
+        maxCapacity: 1,
+        lifecycle: {
+          registrationTimeout: 6000,
+        },
+      },
+      expectedWorkers: 1,
+    }, async function(workers) {
       const now = Date.now();
-      const workerInfo = {
-        existingCapacity: 0,
-        requestedCapacity: 0,
-      };
-      await provider.provision({workerPool, workerInfo});
-      const workers = await helper.Worker.scan({}, {});
-
-      assert.notStrictEqual(workers.entries.length, 0);
-
-      workers.entries.forEach(w => {
+      workers.rows.forEach(w => {
         assert.strictEqual(w.workerPoolId, workerPoolId, 'Worker was created for a wrong worker pool');
-        assert.strictEqual(w.workerGroup, providerId, 'Worker group id should be the same as provider id');
-        assert.strictEqual(w.state, helper.Worker.states.REQUESTED, 'Worker should be marked as requested');
+        assert.strictEqual(w.workerGroup, 'us-west-2', 'Worker group should be az');
+        assert.strictEqual(w.state, Worker.states.REQUESTED, 'Worker should be marked as requested');
         assert.strictEqual(w.providerData.region, defaultLaunchConfig.region, 'Region should come from the chosen config');
         // Check that this is setting times correctly to within a second or so to allow for some time
         // for the provisioning loop
-        assert(workers.entries[0].providerData.terminateAfter - now - (6000 * 1000) < 5000);
+        assert(workers.rows[0].providerData.terminateAfter - now - (6000 * 1000) < 5000);
       });
-      sinon.restore();
+      assert.deepEqual(fake.rgn('us-west-2').runInstancesCalls.map(({MinCount}) => MinCount), [1]);
+      assertHasTag(fake.rgn('us-west-2').runInstancesCalls[0], 'instance', 'CreatedBy', 'taskcluster-wm-aws');
+      assertHasTag(fake.rgn('us-west-2').runInstancesCalls[0], 'instance', 'Owner', 'whatever@example.com');
+      assertHasTag(fake.rgn('us-west-2').runInstancesCalls[0], 'instance', 'ManagedBy', 'taskcluster');
+      assertHasTag(fake.rgn('us-west-2').runInstancesCalls[0], 'instance', 'Name', 'foo/bar');
+      assertHasTag(fake.rgn('us-west-2').runInstancesCalls[0], 'instance', 'WorkerPoolId', 'foo/bar');
+      assertHasTag(fake.rgn('us-west-2').runInstancesCalls[0], 'volume', 'CreatedBy', 'taskcluster-wm-aws');
+      assertHasTag(fake.rgn('us-west-2').runInstancesCalls[0], 'volume', 'Owner', 'whatever@example.com');
+      assertHasTag(fake.rgn('us-west-2').runInstancesCalls[0], 'volume', 'ManagedBy', 'taskcluster');
+      assertHasTag(fake.rgn('us-west-2').runInstancesCalls[0], 'volume', 'Name', 'foo/bar');
+      assertHasTag(fake.rgn('us-west-2').runInstancesCalls[0], 'volume', 'WorkerPoolId', 'foo/bar');
     });
 
-    test('spawns an appropriate number of instances', async function() {
-      const workerPool = await makeWorkerPool({
-        config: {
-          launchConfigs: [
-            {...defaultLaunchConfig, capacityPerInstance: 6},
-            {...defaultLaunchConfig, capacityPerInstance: 6},
-            {...defaultLaunchConfig, capacityPerInstance: 6},
-            {...defaultLaunchConfig, capacityPerInstance: 6},
-            {...defaultLaunchConfig, capacityPerInstance: 6},
-          ],
-          minCapacity: 34, // not a multiple of number of configs or capPerInstance
-          maxCapacity: 34,
-        },
-      });
-      const workerInfo = {
-        existingCapacity: 0,
-        requestedCapacity: 0,
-      };
-      await provider.provision({workerPool, workerInfo});
-      const workers = await helper.Worker.scan({}, {});
-
+    provisionTest('spawns instances from across launch configs', {
+      config: {
+        launchConfigs: [
+          {...defaultLaunchConfig, capacityPerInstance: 6},
+          {...defaultLaunchConfig, capacityPerInstance: 6},
+          {...defaultLaunchConfig, capacityPerInstance: 6},
+          {...defaultLaunchConfig, capacityPerInstance: 6},
+          {...defaultLaunchConfig, capacityPerInstance: 6},
+        ],
+        minCapacity: 34, // not a multiple of number of configs or capPerInstance
+        maxCapacity: 34,
+      },
       // capacity 34 at 6 per instance should be 6 instances..
-      assert.strictEqual(workers.entries.length, 6);
-      sinon.restore();
+      expectedWorkers: 6,
+    }, async function(workers) {
+      // spawn two each in three launchConfigs; spawning one each would only get us 5 instances since there
+      // are only 5 launchConfigs
+      assert.deepEqual(fake.rgn('us-west-2').runInstancesCalls.map(({MinCount}) => MinCount), [2, 2, 2]);
     });
 
-    test('instance tags in launch spec - should merge them with our instance tags', async function() {
-      const launchConfigOverrides = {
-        capacityPerInstance: 6,
-        TagSpecifications: [{
-          ResourceType: 'instance',
-          Tags: [{Key: 'mytag', Value: 'testy'}],
-        }],
-      };
-      const workerPool = await makeWorkerPool({
+    for (let ResourceType of ['instance', 'volume', 'launch-template']) {
+      provisionTest(`${ResourceType} tags in launch spec - should merge them`, {
         config: {
           launchConfigs: [
-            {...defaultLaunchConfig, ...launchConfigOverrides},
-            {...defaultLaunchConfig, ...launchConfigOverrides},
-            {...defaultLaunchConfig, ...launchConfigOverrides},
-            {...defaultLaunchConfig, ...launchConfigOverrides},
-            {...defaultLaunchConfig, ...launchConfigOverrides},
+            {
+              ...defaultLaunchConfig,
+              launchConfig: {
+                ...defaultLaunchConfig.launchConfig,
+                TagSpecifications: [
+                  {ResourceType, Tags: [{Key: 'mytag', Value: 'testy'}]},
+                ],
+              },
+            },
           ],
-          minCapacity: 34, // not a multiple of number of configs or capPerInstance
-          maxCapacity: 34,
+          minCapacity: 1,
+          maxCapacity: 1,
         },
+        expectedWorkers: 1,
+      }, async function(workers) {
+        assert.equal(fake.rgn('us-west-2').runInstancesCalls.length, 1);
+        assertHasTag(fake.rgn('us-west-2').runInstancesCalls[0], ResourceType, 'mytag', 'testy');
+        assertHasTag(fake.rgn('us-west-2').runInstancesCalls[0], 'instance', 'CreatedBy', 'taskcluster-wm-aws');
+        assertHasTag(fake.rgn('us-west-2').runInstancesCalls[0], 'instance', 'Owner', 'whatever@example.com');
+        assertHasTag(fake.rgn('us-west-2').runInstancesCalls[0], 'instance', 'ManagedBy', 'taskcluster');
+        assertHasTag(fake.rgn('us-west-2').runInstancesCalls[0], 'instance', 'Name', 'foo/bar');
+        assertHasTag(fake.rgn('us-west-2').runInstancesCalls[0], 'instance', 'WorkerPoolId', 'foo/bar');
+        assertHasTag(fake.rgn('us-west-2').runInstancesCalls[0], 'volume', 'CreatedBy', 'taskcluster-wm-aws');
+        assertHasTag(fake.rgn('us-west-2').runInstancesCalls[0], 'volume', 'Owner', 'whatever@example.com');
+        assertHasTag(fake.rgn('us-west-2').runInstancesCalls[0], 'volume', 'ManagedBy', 'taskcluster');
+        assertHasTag(fake.rgn('us-west-2').runInstancesCalls[0], 'volume', 'Name', 'foo/bar');
+        assertHasTag(fake.rgn('us-west-2').runInstancesCalls[0], 'volume', 'WorkerPoolId', 'foo/bar');
       });
+    }
 
-      const workerInfo = {
-        existingCapacity: 0,
-        requestedCapacity: 0,
-      };
-      await provider.provision({workerPool, workerInfo});
-      const workers = await helper.Worker.scan({}, {});
-
-      assert.notStrictEqual(workers.entries.length, 0);
-      assert.deepStrictEqual(
-        ...aws.EC2().runInstances.calls.map(({launchConfig: {TagSpecifications}}) => TagSpecifications),
-        [
+    provisionTest('UserData contains additionalUserData, workerConfig, etc.', {
+      config: {
+        launchConfigs: [
           {
-            ResourceType: 'instance',
-            Tags: [
-              {Key: 'mytag', Value: 'testy'},
-              {Key: 'CreatedBy', Value: 'taskcluster-wm-aws'},
-              {Key: 'Owner', Value: 'whatever@example.com'},
-              {Key: 'ManagedBy', Value: 'taskcluster'},
-              {Key: 'Name', Value: 'foo/bar'},
-              {Key: "WorkerPoolId", Value: "foo/bar"},
-            ],
+            ...defaultLaunchConfig,
+            workerConfig: {foo: 5},
+            additionalUserData: {
+              somethingImportant: "apple",
+            },
           },
         ],
-      );
-
-      sinon.restore();
-    });
-
-    test('no instance tags in launch spec, but other tags - should have 1 object per resource type', async function() {
-      const launchConfigOverrides = {
-        capacityPerInstance: 6,
-        TagSpecifications: [{
-          ResourceType: 'launch-template',
-          Tags: [{Key: 'fruit', Value: 'banana'}],
-        }],
-      };
-      const workerPool = await makeWorkerPool({
-        config: {
-          launchConfigs: [
-            {...defaultLaunchConfig, ...launchConfigOverrides},
-            {...defaultLaunchConfig, ...launchConfigOverrides},
-            {...defaultLaunchConfig, ...launchConfigOverrides},
-            {...defaultLaunchConfig, ...launchConfigOverrides},
-            {...defaultLaunchConfig, ...launchConfigOverrides},
-          ],
-          minCapacity: 34, // not a multiple of number of configs or capPerInstance
-          maxCapacity: 34,
-        },
+        minCapacity: 1,
+        maxCapacity: 1,
+      },
+      expectedWorkers: 1,
+    }, async function(workers) {
+      const decoded = JSON.parse(Buffer.from(
+        fake.rgn('us-west-2').runInstancesCalls[0].UserData,
+        'base64',
+      ).toString());
+      assert.deepStrictEqual(decoded, {
+        somethingImportant: 'apple',
+        rootUrl: provider.rootUrl,
+        workerPoolId: workerPoolId,
+        providerId: provider.providerId,
+        workerGroup: 'us-west-2',
+        workerConfig: {foo: 5},
       });
-
-      const workerInfo = {
-        existingCapacity: 0,
-        requestedCapacity: 0,
-      };
-      await provider.provision({workerPool, workerInfo});
-      const workers = await helper.Worker.scan({}, {});
-
-      assert.notStrictEqual(workers.entries.length, 0);
-      assert.deepStrictEqual(
-        ...aws.EC2().runInstances.calls.map(({launchConfig: {TagSpecifications}}) => TagSpecifications),
-        [
-          {
-            ResourceType: 'launch-template',
-            Tags: [
-              {Key: 'fruit', Value: 'banana'},
-            ],
-          },
-          {
-            ResourceType: 'instance',
-            Tags: [
-              {Key: 'CreatedBy', Value: 'taskcluster-wm-aws'},
-              {Key: 'Owner', Value: 'whatever@example.com'},
-              {Key: 'ManagedBy', Value: 'taskcluster'},
-              {Key: 'Name', Value: 'foo/bar'},
-              {Key: "WorkerPoolId", Value: "foo/bar"},
-            ],
-          },
-        ],
-      );
-
-      sinon.restore();
-    });
-
-    test('UserData should be base64 encoded', async function() {
-      const launchConfigOverrides = {
-        capacityPerInstance: 6,
-        additionalUserData: {
-          somethingImportant: "apple",
-        },
-      };
-      const workerPool = await makeWorkerPool({
-        config: {
-          launchConfigs: [
-            {...defaultLaunchConfig, ...launchConfigOverrides},
-            {...defaultLaunchConfig, ...launchConfigOverrides},
-            {...defaultLaunchConfig, ...launchConfigOverrides},
-            {...defaultLaunchConfig, ...launchConfigOverrides},
-            {...defaultLaunchConfig, ...launchConfigOverrides},
-          ],
-          minCapacity: 34, // not a multiple of number of configs or capPerInstance
-          maxCapacity: 34,
-        },
-      });
-
-      const workerInfo = {
-        existingCapacity: 0,
-        requestedCapacity: 0,
-      };
-      await provider.provision({workerPool, workerInfo});
-      const workers = await helper.Worker.scan({}, {});
-
-      assert.notStrictEqual(workers.entries.length, 0);
-      assert.deepStrictEqual(
-        JSON.parse(Buffer.from(
-          aws.EC2().runInstances.calls[0].launchConfig.UserData,
-          'base64' // eslint-disable-line comma-dangle
-        ).toString()),
-        {
-          somethingImportant: 'apple',
-          rootUrl: provider.rootUrl,
-          workerPoolId: workerPool.workerPoolId,
-          providerId: provider.providerId,
-          workerGroup: provider.providerId,
-          workerConfig: workerPool.config.launchConfigs[0].workerConfig,
-        } // eslint-disable-line comma-dangle
-      );
-
-      sinon.restore();
     });
   });
 
@@ -334,7 +260,6 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
         () => provider.registerWorker({worker: workerInDB, workerPool, workerIdentityProof}),
         new ApiError('Request must include both a document (string) and a signature'),
       );
-      sinon.restore();
     });
 
     test('registerWorker - verifyInstanceIdentityDocument - bad document', async function() {
@@ -349,7 +274,6 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
         new ApiError('Instance identity document validation error'),
         'Should fail to verify iid (the document has been edited)',
       );
-      sinon.restore();
     });
 
     test('registerWorker - verifyInstanceIdentityDocument - signature was produced with a wrong key', async function() {
@@ -363,7 +287,6 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
         new ApiError('Instance identity document validation error'),
         'Should fail to verify iid (the signature was produced with a wrong key)',
       );
-      sinon.restore();
     });
 
     test('registerWorker - verifyInstanceIdentityDocument - signature is wrong', async function() {
@@ -377,7 +300,6 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
         new ApiError('Instance identity document validation error'),
         'Should fail to verify iid (the signature is wrong)',
       );
-      sinon.restore();
     });
 
     test('registerWorker - verifyWorkerInstance - document is legit but differs from what we know about the instance', async function() {
@@ -406,7 +328,6 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
         new ApiError('Instance validation error'),
         'Should fail to verify worker (info from the signature and info from our DB differ)',
       );
-      sinon.restore();
     });
 
     test('registerWorker - no signature', async function() {
@@ -419,7 +340,6 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
       await assert.rejects(() => provider.registerWorker({worker: workerInDB, workerPool, workerIdentityProof}),
         new ApiError('Request must include both a document (string) and a signature'),
       );
-      sinon.restore();
     });
 
     test('registerWorker - worker is already running', async function() {
@@ -439,14 +359,11 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
         new ApiError('This worker is either stopped or running. No need to register'),
         'Should fail because the worker is already running',
       );
-
-      sinon.restore();
-
     });
 
     test('registerWorker - success', async function() {
       const workerPool = await makeWorkerPool();
-      const runningWorker = await helper.Worker.create({
+      const runningWorker = await Worker.fromApi({
         workerId: 'i-02312cd4f06c990ca',
         ...defaultWorker,
         providerData: {
@@ -462,6 +379,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
           },
         },
       });
+      await runningWorker.create(helper.db);
 
       const workerIdentityProof = {
         "document": fs.readFileSync(path.resolve(__dirname, 'fixtures/aws_iid_DOCUMENT')).toString(),
@@ -472,13 +390,11 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
       assert(resp.expires - new Date() + 10000 > 96 * 3600 * 1000);
       assert(resp.expires - new Date() - 10000 < 96 * 3600 * 1000);
       assert.equal(resp.workerConfig.someConfig, 'someConfigValue');
-
-      sinon.restore();
     });
 
     test('registerWorker - success (different reregister)', async function() {
       const workerPool = await makeWorkerPool();
-      const runningWorker = await helper.Worker.create({
+      const runningWorker = await Worker.fromApi({
         workerId: 'i-02312cd4f06c990ca',
         ...defaultWorker,
         providerData: {
@@ -495,6 +411,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
           },
         },
       });
+      await runningWorker.create(helper.db);
 
       const workerIdentityProof = {
         "document": fs.readFileSync(path.resolve(__dirname, 'fixtures/aws_iid_DOCUMENT')).toString(),
@@ -505,152 +422,148 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
       assert(resp.expires - new Date() + 10000 > 10 * 3600 * 1000);
       assert(resp.expires - new Date() - 10000 < 10 * 3600 * 1000);
       assert.equal(resp.workerConfig.someKey, 'someValue');
-      sinon.restore();
     });
   });
 
   suite('AWS provider - checkWorker', function() {
 
     test('stopped instances - should be marked as STOPPED in DB, should not add to seen', async function() {
-      const worker = await helper.Worker.create({
+      fake.rgn('us-west-2').instanceStatuses['i-123'] = 'stopped';
+      const worker = await Worker.fromApi({
         ...workerInDB,
-        workerId: 'stopped', // stub function will return this as status
-        state: helper.Worker.states.RUNNING,
+        workerId: 'i-123',
+        state: Worker.states.RUNNING,
       });
+      await worker.create(helper.db);
 
       provider.seen = {};
       await provider.checkWorker({worker: worker});
 
-      const workers = await helper.Worker.scan({}, {});
-      assert.notStrictEqual(workers.entries.length, 0);
-      workers.entries.forEach(w =>
-        assert.strictEqual(w.state, helper.Worker.states.STOPPED) // eslint-disable-line comma-dangle
-      );
+      const workers = await Worker.getWorkers(helper.db, {});
+      assert.notStrictEqual(workers.rows.length, 0);
+      workers.rows.forEach(w =>
+        assert.strictEqual(w.state, Worker.states.STOPPED));
       assert.strictEqual(provider.seen[worker.workerPoolId], 0);
-
-      sinon.restore();
     });
 
     test('pending/running,/shutting-down/stopping instances - should not reject', async function() {
-      const worker = await helper.Worker.create({
+      fake.rgn('us-west-2').instanceStatuses['i-123'] = 'running';
+      const worker = await Worker.fromApi({
         ...workerInDB,
-        workerId: 'running', // stub function will return this as status
-        state: helper.Worker.states.REQUESTED,
+        workerId: 'i-123',
+        state: Worker.states.REQUESTED,
       });
+      await worker.create(helper.db);
 
       provider.seen = {};
       await provider.checkWorker({worker: worker});
 
-      const workers = await helper.Worker.scan({}, {});
-      assert.notStrictEqual(workers.entries.length, 0);
-      workers.entries.forEach(w =>
-        assert.strictEqual(w.state, helper.Worker.states.REQUESTED) // eslint-disable-line comma-dangle
-      );
+      const workers = await Worker.getWorkers(helper.db, {});
+      assert.notStrictEqual(workers.rows.length, 0);
+      workers.rows.forEach(w =>
+        assert.strictEqual(w.state, Worker.states.REQUESTED));
       assert.strictEqual(provider.seen[worker.workerPoolId], 1);
-
-      sinon.restore();
     });
 
     test('some strange status - should reject', async function() {
-      const worker = await helper.Worker.create({
+      fake.rgn('us-west-2').instanceStatuses['i-123'] = 'banana';
+      const worker = Worker.fromApi({
         ...workerInDB,
-        workerId: 'banana', // stub function will return this as status
-        state: helper.Worker.states.REQUESTED,
+        workerId: 'i-123',
+        state: Worker.states.REQUESTED,
       });
+      await worker.create(helper.db);
 
       provider.seen = {};
       await assert.rejects(provider.checkWorker({worker: worker}));
       assert.strictEqual(provider.seen[worker.workerPoolId], 0);
-
-      sinon.restore();
     });
 
     test('instance terminated by hand - should be marked as STOPPED in DB; should not reject', async function() {
-      const worker = await helper.Worker.create({
+      fake.rgn('us-west-2').instanceStatuses['i-123'] = 'terminated';
+      const worker = Worker.fromApi({
         ...workerInDB,
-        workerId: 'terminated', // stub function will return this as status
-        state: helper.Worker.states.RUNNING,
+        workerId: 'i-123',
+        state: Worker.states.RUNNING,
       });
+      await worker.create(helper.db);
 
       provider.seen = {};
       await provider.checkWorker({worker: worker});
 
-      const workers = await helper.Worker.scan({}, {});
-      assert.notStrictEqual(workers.entries.length, 0);
-      workers.entries.forEach(w =>
-        assert.strictEqual(w.state, helper.Worker.states.STOPPED) // eslint-disable-line comma-dangle
-      );
+      const workers = await Worker.getWorkers(helper.db, {});
+      assert.notStrictEqual(workers.rows.length, 0);
+      workers.rows.forEach(w =>
+        assert.strictEqual(w.state, Worker.states.STOPPED));
       assert.strictEqual(provider.seen[worker.workerPoolId], 0);
-
-      sinon.restore();
     });
 
     test('remove unregistered workers', async function() {
-      const worker = await helper.Worker.create({
+      fake.rgn('us-west-2').instanceStatuses['i-123'] = 'running';
+      const worker = Worker.fromApi({
         ...workerInDB,
-        workerId: 'running',
-        state: helper.Worker.states.REQUESTED,
+        workerId: 'i-123',
+        state: Worker.states.REQUESTED,
         providerData: {
           ...workerInDB.providerData,
           terminateAfter: Date.now() - 1000,
         },
       });
+      await worker.create(helper.db);
       provider.seen = {};
       await provider.checkWorker({worker: worker});
-      assert.equal(aws.EC2().terminateInstances.calls.length, 1);
-
-      sinon.restore();
+      assert.deepEqual(fake.rgn('us-west-2').terminatedInstances, ['i-123']);
     });
 
     test('don\'t remove unregistered workers that are new', async function() {
-      const worker = await helper.Worker.create({
+      fake.rgn('us-west-2').instanceStatuses['i-123'] = 'running';
+      const worker = Worker.fromApi({
         ...workerInDB,
-        workerId: 'running',
-        state: helper.Worker.states.REQUESTED,
+        workerId: 'i-123',
+        state: Worker.states.REQUESTED,
         providerData: {
           ...workerInDB.providerData,
           terminateAfter: Date.now() + 1000,
         },
       });
+      await worker.create(helper.db);
       provider.seen = {};
       await provider.checkWorker({worker: worker});
-      assert.equal(aws.EC2().terminateInstances.calls.length, 0);
-
-      sinon.restore();
+      assert.deepEqual(fake.rgn('us-west-2').terminatedInstances, []);
     });
 
     test('remove very old workers', async function() {
-      const worker = await helper.Worker.create({
+      fake.rgn('us-west-2').instanceStatuses['i-123'] = 'running';
+      const worker = Worker.fromApi({
         ...workerInDB,
-        workerId: 'running',
-        state: helper.Worker.states.REQUESTED,
+        workerId: 'i-123',
+        state: Worker.states.REQUESTED,
         providerData: {
           ...workerInDB.providerData,
           terminateAfter: Date.now() - 1000,
         },
       });
+      await worker.create(helper.db);
       provider.seen = {};
       await provider.checkWorker({worker: worker});
-      assert.equal(aws.EC2().terminateInstances.calls.length, 1);
-
-      sinon.restore();
+      assert.deepEqual(fake.rgn('us-west-2').terminatedInstances, ['i-123']);
     });
 
     test('don\'t remove current workers', async function() {
-      const worker = await helper.Worker.create({
+      fake.rgn('us-west-2').instanceStatuses['i-123'] = 'running';
+      const worker = Worker.fromApi({
         ...workerInDB,
-        workerId: 'running',
-        state: helper.Worker.states.REQUESTED,
+        workerId: 'i-123',
+        state: Worker.states.REQUESTED,
         providerData: {
           ...workerInDB.providerData,
           terminateAfter: Date.now() + 1000,
         },
       });
+      await worker.create(helper.db);
       provider.seen = {};
       await provider.checkWorker({worker: worker});
-      assert.equal(aws.EC2().terminateInstances.calls.length, 0);
-
-      sinon.restore();
+      assert.deepEqual(fake.rgn('us-west-2').terminatedInstances, []);
     });
   });
 
@@ -665,7 +578,6 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
         },
       };
       await assert.doesNotReject(provider.removeWorker({worker}));
-      sinon.restore();
     });
 
   });

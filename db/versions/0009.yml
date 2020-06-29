@@ -189,7 +189,7 @@ methods:
             encode_string_key(cache_purges.cache_name) as row_key,
             jsonb_build_object(
               'PartitionKey', encode_composite_key(cache_purges.provisioner_id, cache_purges.worker_type),
-              'RowKey', cache_name,
+              'RowKey', encode_string_key(cache_name),
               'provisionerId', provisioner_id,
               'workerType', worker_type,
               'cacheName', cache_name,
@@ -233,8 +233,6 @@ methods:
     args: page_size_in integer, page_offset_in integer
     returns: table (provisioner_id text, worker_type text, cache_name text, before timestamptz)
     body: |-
-      declare
-      sql text := 'select cache_purges.provisioner_id, cache_purges.worker_type, cache_purges.cache_name, cache_purges.before from cache_purges';
       begin
         return query select cache_purges.provisioner_id, cache_purges.worker_type, cache_purges.cache_name, cache_purges.before
         from cache_purges

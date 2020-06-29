@@ -1,7 +1,4 @@
 const assert = require('assert');
-const rootdir = require('app-root-dir');
-const fs = require('fs');
-const path = require('path');
 const stream = require('stream');
 const {LEVELS} = require('./logger');
 const Monitor = require('./monitor');
@@ -34,14 +31,9 @@ class MonitorManager {
 
     assert(serviceName, 'Must provide a serviceName to MonitorManager.configure');
     this.serviceName = serviceName;
-    // read dockerflow version file, if taskclusterVersion is not set
+    // read version from package.json, if taskclusterVersion is not set
     if (this.taskclusterVersion === undefined) {
-      const taskclusterVersionFile = path.resolve(rootdir.get(), '../../version.json');
-      try {
-        this.taskclusterVersion = JSON.parse(fs.readFileSync(taskclusterVersionFile).toString()).version;
-      } catch (err) {
-        // Do nothing, will just be undefined
-      }
+      this.taskclusterVersion = require('../../../package.json').version;
     }
 
     this._configured = true;

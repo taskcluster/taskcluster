@@ -7,4 +7,5 @@ module.exports = {
   ...require('./config'),
   ...require('./npm'),
   ...require('./pypi'),
+  ...require('./dockerflow'),
 };

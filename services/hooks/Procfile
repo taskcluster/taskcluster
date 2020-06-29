@@ -1,7 +1,0 @@
-# GENERATED FILE from `yarn generate`! To update, change procs.yml and regenerate.
-
-web: cd services/hooks && node src/main.js server
-scheduler: cd services/hooks && node src/main.js scheduler
-write-docs: cd services/hooks && node src/main.js writeDocs
-listeners: cd services/hooks && node src/main.js listeners
-expires: cd services/hooks && node src/main.js expires

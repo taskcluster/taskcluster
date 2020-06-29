@@ -19,9 +19,9 @@ class TestingProvider extends Provider {
   async removeResources({workerPool}) {
     this.monitor.notice('remove-resource', {workerPoolId: workerPool.workerPoolId});
     if (workerPool.providerData.failRemoveResources) {
-      await workerPool.modify(wp => {
-        wp.providerData.failRemoveResources -= 1;
-      });
+      workerPool.providerData.failRemoveResources -= 1;
+      await this.db.fns.update_worker_pool_provider_data(
+        workerPool.workerPoolId, this.providerId, workerPool.providerData);
       throw new Error('uhoh removing resources');
     }
   }
@@ -39,8 +39,8 @@ class TestingProvider extends Provider {
   }
 
   async checkWorker({worker}) {
-    await worker.modify(w => {
-      w.providerData.checked = true;
+    await worker.update(this.db, worker => {
+      worker.providerData.checked = true;
     });
   }
 
@@ -49,7 +49,10 @@ class TestingProvider extends Provider {
   }
 
   async registerWorker({worker, workerPool, workerIdentityProof}) {
-    await worker.modify(w => w.state = Worker.states.RUNNING);
+    await worker.update(this.db, worker => {
+      worker.state = Worker.states.RUNNING;
+    });
+
     if (worker.providerData.failRegister) {
       throw new ApiError(worker.providerData.failRegister);
     }
@@ -57,7 +60,10 @@ class TestingProvider extends Provider {
       return {};
     }
     const workerConfig = worker.providerData.workerConfig || {};
-    return {expires: taskcluster.fromNow('1 hour'), workerConfig};
+    return {
+      expires: taskcluster.fromNow('1 hour'),
+      workerConfig,
+    };
   }
 
   async createWorker({workerPool, workerGroup, workerId, input}) {
@@ -65,20 +71,16 @@ class TestingProvider extends Provider {
       throw new ApiError('creating workers is not supported for testing provider');
     }
 
-    const now = new Date();
-    const worker = await this.Worker.create({
+    const worker = Worker.fromApi({
       workerPoolId: workerPool.workerPoolId,
       providerId: this.providerId,
       workerGroup,
       workerId,
-      created: now,
-      lastModified: now,
-      lastChecked: now,
       expires: new Date(input.expires),
       capacity: input.capacity,
-      state: this.Worker.states.RUNNING,
-      providerData: {},
+      state: Worker.states.RUNNING,
     });
+    await worker.create(this.db);
 
     return worker;
   }
@@ -88,7 +90,11 @@ class TestingProvider extends Provider {
       throw new ApiError('removing workers is not supported for testing provider');
     }
 
-    await worker.modify(w => w.state = 'stopped');
+    await worker.update(this.db, worker => {
+      worker.state = Worker.states.STOPPED;
+
+      return worker;
+    });
   }
 }
 

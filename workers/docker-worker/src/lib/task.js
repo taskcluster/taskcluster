@@ -21,6 +21,7 @@ const uploadToS3 = require('./upload_to_s3');
 const _ = require('lodash');
 const EventEmitter = require('events');
 const libUrls = require('taskcluster-lib-urls');
+const { version } = require('../../package.json');
 
 let debug = new Debug('runTask');
 
@@ -67,7 +68,7 @@ function buildStateHandlers(task, monitor) {
     throw new Error(`${diff.join()} ${diff.length > 1 ? 'are' : 'is'} not part of valid features`);
   }
 
-  for (let flag of Object.keys(features)) {
+  for (let flag of Object.keys(features || {})) {
     let enabled = (flag in featureFlags) ?
       featureFlags[flag] : features[flag].defaults;
 
@@ -97,7 +98,7 @@ async function buildVolumeBindings(taskVolumeBindings, volumeCache, expandedScop
   let bindings = [];
   let caches = [];
 
-  for (let volumeName of taskVolumeBindings) {
+  for (let volumeName of Object.keys(taskVolumeBindings || {})) {
     let cacheInstance = await volumeCache.get(volumeName);
     let binding = cacheInstance.path + ':' + taskVolumeBindings[volumeName];
     bindings.push(binding);
@@ -137,7 +138,8 @@ async function buildDeviceBindings(devices, expandedScopes) {
   }
 
   let deviceBindings = [];
-  for (let deviceType of Object.keys(devices)) {
+  let bindMounts = [];
+  for (let deviceType of Object.keys(devices || {})) {
     let device = devices[deviceType];
     device.mountPoints.forEach((mountPoint) => {
       deviceBindings.push(
@@ -148,9 +150,12 @@ async function buildDeviceBindings(devices, expandedScopes) {
         },
       );
     });
+    if (device.binds) {
+      bindMounts = _.union(bindMounts, device.binds);
+    }
   }
 
-  return deviceBindings;
+  return {deviceBindings, bindMounts};
 }
 
 class Reclaimer {
@@ -364,11 +369,6 @@ class Task extends EventEmitter {
     });
     let expandedScopes = (await auth.expandScopes({scopes: this.task.scopes})).scopes;
 
-    if (this.options.devices) {
-      let bindings = await buildDeviceBindings(this.options.devices, expandedScopes);
-      procConfig.create.HostConfig['Devices'] = bindings;
-    }
-
     if (linkInfo.links) {
       procConfig.create.HostConfig.Links = linkInfo.links.map(link => {
         return link.name + ':' + link.alias;
@@ -383,6 +383,12 @@ class Task extends EventEmitter {
       }
       return binding;
     });
+
+    if (this.options.devices) {
+      let bindings = await buildDeviceBindings(this.options.devices, expandedScopes);
+      procConfig.create.HostConfig['Devices'] = bindings.deviceBindings;
+      binds = _.union(binds, bindings.bindMounts);
+    }
 
     if (this.task.payload.cache) {
       let bindings = await buildVolumeBindings(this.task.payload.cache,
@@ -425,13 +431,14 @@ class Task extends EventEmitter {
       `Worker Group: ${this.runtime.workerGroup}`,
       `Worker Node Type: ${this.runtime.workerNodeType}`,
       `Worker Type: ${this.runtime.workerType}`,
+      `Worker Version: ${version}`,
       `Public IP: ${this.runtime.publicIp}`,
       `Hostname: ${os.hostname()}`,
     ];
     //
     // List caches if used...
     if (this.task.payload.cache) {
-      for (let key of Object.keys(this.task.payload.cache)) {
+      for (let key of Object.keys(this.task.payload.cache) || {}) {
         let path = this.task.payload.cache[key];
         header.push(`using cache "${key}" -> ${path}`);
       }
@@ -619,7 +626,6 @@ class Task extends EventEmitter {
           await uploadToS3(queue, taskId, runId, contentJson,
             'public/superseded-by.json', expiration, {
               'content-type': 'application/json',
-              'content-length': contentJson.length,
             });
 
           supersedes.push({taskId, runId});
@@ -644,7 +650,6 @@ class Task extends EventEmitter {
       await uploadToS3(this.queue, primaryTaskId, primaryRunId, contentJson,
         'public/supersedes.json', expiration, {
           'content-type': 'application/json',
-          'content-length': contentJson.length,
         });
     }
   }
@@ -737,6 +742,7 @@ class Task extends EventEmitter {
    * @param {String} reason - Reason for aborting the test run (Example: worker-shutdown)
   */
   abort(reason) {
+    debug(`aborting task ${this.status.taskId} with reason ${reason}`);
     this.stopReclaims();
     this.taskState = 'aborted';
     this.taskException = reason;

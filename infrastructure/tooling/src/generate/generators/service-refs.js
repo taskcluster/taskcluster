@@ -32,8 +32,8 @@ SERVICES.forEach(name => {
       await mkdirp(genDir);
       await rimraf(svcDir);
 
-      const {stdout} = await exec('node', ['src/main', 'generateReferences'], {
-        cwd: path.join(REPO_ROOT, 'services', name),
+      const {stdout} = await exec('node', [`services/${name}/src/main`, 'generateReferences'], {
+        cwd: REPO_ROOT,
         env: Object.assign({}, process.env, {NODE_ENV: 'production'}),
         maxBuffer: 10 * 1024 ** 2, // 10MB should be enough for anyone
       });
@@ -51,6 +51,7 @@ exports.tasks.push({
     ...SERVICES.map(name => `refs-${name}`),
     'config-values-schema',
     'generic-worker-schemas',
+    'docker-worker-schemas',
   ],
   provides: [
     'target-references',
@@ -66,6 +67,8 @@ exports.tasks.push({
       name => requirements[`refs-${name}`].forEach(
         ({filename, content}) => files.set(filename, content)));
     requirements['generic-worker-schemas'].forEach(
+      ({filename, content}) => files.set(filename, content));
+    requirements['docker-worker-schemas'].forEach(
       ({filename, content}) => files.set(filename, content));
 
     // add config-values-schema, mostly so that it can be referenced in the manual

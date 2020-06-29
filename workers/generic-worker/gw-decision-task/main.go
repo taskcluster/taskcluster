@@ -15,8 +15,8 @@ import (
 	"github.com/ghodss/yaml"
 	"github.com/taskcluster/shell"
 	"github.com/taskcluster/slugid-go/slugid"
-	tcclient "github.com/taskcluster/taskcluster/v29/clients/client-go"
-	"github.com/taskcluster/taskcluster/v29/clients/client-go/tcqueue"
+	tcclient "github.com/taskcluster/taskcluster/v31/clients/client-go"
+	"github.com/taskcluster/taskcluster/v31/clients/client-go/tcqueue"
 )
 
 // Data types that map to sections of tasks.yml
@@ -195,9 +195,11 @@ func (dt *DecisionTask) GenerateTasks() (*TaskGroup, error) {
 				if content != nil {
 					mountEntry := map[string]interface{}{
 						"content": map[string]string{
-							"url":    content.URL,
-							"sha256": content.SHA256,
+							"url": content.URL,
 						},
+					}
+					if content.SHA256 != "" {
+						mountEntry["content"].(map[string]string)["sha256"] = content.SHA256
 					}
 					if mount.Directory != "" {
 						mountEntry["directory"] = mount.Directory
@@ -277,7 +279,7 @@ func (dt *DecisionTask) TaskDefinition(workerPool string, name string, descripti
 	// Are we running inside a task, or being run e.g. locally by a developer?
 	if dt.TaskID != "" {
 		dependencies = []string{dt.TaskID}
-		schedulerID = "taskcluster-github"
+		schedulerID = "taskcluster-level-1"
 	} else {
 		dependencies = []string{}
 		schedulerID = "-"

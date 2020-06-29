@@ -1,0 +1,25 @@
+version: 11
+migrationScript: |-
+  begin
+    revoke select, insert, update, delete on widgets from $db_user_prefix$_notify;
+    drop table widgets;
+  end
+downgradeScript: |-
+  begin
+    create table widgets (
+      name text
+    );
+    grant select, insert, update, delete on widgets to $db_user_prefix$_notify;
+  end
+methods:
+  update_widgets:
+    description: |-
+      Temporary method to test infrastructure support fo database access
+    mode: write
+    serviceName: notify
+    args: name_in text
+    returns: table (name text)
+    body: |-
+      begin
+        return;
+      end

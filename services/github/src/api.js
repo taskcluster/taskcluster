@@ -106,7 +106,7 @@ function generateXHubSignature(secret, payload) {
  * https: *www.isecpartners.com/blog/2011/february/double-hmac-verification.aspx
  **/
 function compareSignatures(sOne, sTwo) {
-  let secret = Math.random().toString();
+  const secret = crypto.randomBytes(16).toString('hex');
   let h1 = crypto.createHmac('sha1', secret).update(sOne);
   let h2 = crypto.createHmac('sha1', secret).update(sTwo);
   return h1.digest('hex') === h2.digest('hex');

@@ -1,8 +1,8 @@
 package main
 
 import (
-	"github.com/taskcluster/taskcluster/v29/clients/client-go/tcworkermanager"
-	"github.com/taskcluster/taskcluster/v29/workers/generic-worker/gwconfig"
+	"github.com/taskcluster/taskcluster/v31/clients/client-go/tcworkermanager"
+	"github.com/taskcluster/taskcluster/v31/workers/generic-worker/gwconfig"
 )
 
 type AWSProvider struct {
@@ -24,5 +24,6 @@ func (a *AWSProvider) UpdateConfig(c *gwconfig.Config) error {
 		Signature: string(awsMetadata["signature"]),
 	}
 
-	return a.UserData.UpdateConfig(c, providerType)
+	err = a.UserData.UpdateConfig(c, providerType)
+	return err
 }

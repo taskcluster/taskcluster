@@ -1,17 +1,17 @@
 web:
   type: web
-  command: node src/main.js server
+  command: node services/hooks/src/main.js server
 scheduler:
   type: background
-  command: node src/main.js scheduler
+  command: node services/hooks/src/main.js scheduler
 write-docs:
   type: build
-  command: node src/main.js writeDocs
+  command: node services/hooks/src/main.js writeDocs
 listeners:
   type: background
-  command: node src/main.js listeners
+  command: node services/hooks/src/main.js listeners
 expires:
   type: cron
   schedule: '10 0 * * *'
   deadline: 86400
-  command: node src/main.js expires
+  command: node services/hooks/src/main.js expires

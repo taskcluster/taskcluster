@@ -8,24 +8,30 @@ const builder = require('./api');
 const Scheduler = require('./scheduler');
 const config = require('taskcluster-lib-config');
 const loader = require('taskcluster-lib-loader');
-const App = require('taskcluster-lib-app');
+const {App} = require('taskcluster-lib-app');
 const libReferences = require('taskcluster-lib-references');
-const monitorManager = require('./monitor');
+const {MonitorManager} = require('taskcluster-lib-monitor');
 const taskcluster = require('taskcluster-client');
 const exchanges = require('./exchanges');
 const libPulse = require('taskcluster-lib-pulse');
 const HookListeners = require('./listeners');
 
+require('./monitor');
+
 // Create component loader
 const load = loader({
   cfg: {
     requires: ['profile'],
-    setup: ({profile}) => config({profile}),
+    setup: ({profile}) => config({
+      profile,
+      serviceName: 'hooks',
+    }),
   },
 
   monitor: {
     requires: ['process', 'profile', 'cfg'],
-    setup: ({process, profile, cfg}) => monitorManager.setup({
+    setup: ({process, profile, cfg}) => MonitorManager.setup({
+      serviceName: 'github',
       processName: process,
       verify: profile !== 'production',
       ...cfg.monitoring,
@@ -160,7 +166,7 @@ const load = loader({
     requires: ['cfg', 'schemaset'],
     setup: ({cfg, schemaset}) => libReferences.fromService({
       schemaset,
-      references: [builder.reference(), exchanges.reference(), monitorManager.reference()],
+      references: [builder.reference(), exchanges.reference(), MonitorManager.reference('hooks')],
     }).generateReferences(),
   },
 

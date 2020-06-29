@@ -1,14 +1,14 @@
 web:
   type: web
-  command: node src/main server
+  command: node services/auth/src/main server
 expireSentry:
   type: heroku-only
-  command: node src/main expire-sentry
+  command: node services/auth/src/main expire-sentry
 purgeExpiredClients:
   type: cron
   schedule: '0 0 * * *'
   deadline: 86400
-  command: node src/main purge-expired-clients
+  command: node services/auth/src/main purge-expired-clients
 write-docs:
   type: build
-  command: node src/main writeDocs
+  command: node services/auth/src/main writeDocs

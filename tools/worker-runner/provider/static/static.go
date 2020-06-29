@@ -4,13 +4,13 @@ import (
 	"fmt"
 
 	tcurls "github.com/taskcluster/taskcluster-lib-urls"
-	tcclient "github.com/taskcluster/taskcluster/v29/clients/client-go"
-	"github.com/taskcluster/taskcluster/v29/clients/client-go/tcworkermanager"
-	"github.com/taskcluster/taskcluster/v29/internal/workerproto"
-	"github.com/taskcluster/taskcluster/v29/tools/worker-runner/cfg"
-	"github.com/taskcluster/taskcluster/v29/tools/worker-runner/provider/provider"
-	"github.com/taskcluster/taskcluster/v29/tools/worker-runner/run"
-	"github.com/taskcluster/taskcluster/v29/tools/worker-runner/tc"
+	tcclient "github.com/taskcluster/taskcluster/v31/clients/client-go"
+	"github.com/taskcluster/taskcluster/v31/clients/client-go/tcworkermanager"
+	"github.com/taskcluster/taskcluster/v31/internal/workerproto"
+	"github.com/taskcluster/taskcluster/v31/tools/worker-runner/cfg"
+	"github.com/taskcluster/taskcluster/v31/tools/worker-runner/provider/provider"
+	"github.com/taskcluster/taskcluster/v31/tools/worker-runner/run"
+	"github.com/taskcluster/taskcluster/v31/tools/worker-runner/tc"
 )
 
 type staticProviderConfig struct {
@@ -26,9 +26,13 @@ type StaticProvider struct {
 	runnercfg                  *cfg.RunnerConfig
 	workerManagerClientFactory tc.WorkerManagerClientFactory
 	proto                      *workerproto.Protocol
+	workerIdentityProof        map[string]interface{}
 }
 
 func (p *StaticProvider) ConfigureRun(state *run.State) error {
+	state.Lock()
+	defer state.Unlock()
+
 	var pc staticProviderConfig
 	err := p.runnercfg.Provider.Unpack(&pc)
 	if err != nil {
@@ -36,28 +40,10 @@ func (p *StaticProvider) ConfigureRun(state *run.State) error {
 	}
 
 	state.RootURL = tcurls.NormalizeRootURL(pc.RootURL)
-
-	// We need a worker manager client for fetching taskcluster credentials.
-	// Ensure auth is disabled in client, since we don't have credentials yet.
-	wm, err := p.workerManagerClientFactory(state.RootURL, nil)
-	if err != nil {
-		return fmt.Errorf("Could not create worker manager client: %v", err)
-	}
-
-	workerIdentityProofMap := map[string]interface{}{"staticSecret": interface{}(pc.StaticSecret)}
-
-	workerConfig, err := provider.RegisterWorker(state, wm, pc.WorkerPoolID, pc.ProviderID, pc.WorkerGroup, pc.WorkerID, workerIdentityProofMap)
-	if err != nil {
-		return err
-	}
-
-	pwc, err := cfg.ParseProviderWorkerConfig(p.runnercfg, workerConfig)
-	if err != nil {
-		return err
-	}
-
-	state.WorkerConfig = state.WorkerConfig.Merge(pwc.Config)
-	state.Files = append(state.Files, pwc.Files...)
+	state.ProviderID = pc.ProviderID
+	state.WorkerPoolID = pc.WorkerPoolID
+	state.WorkerGroup = pc.WorkerGroup
+	state.WorkerID = pc.WorkerID
 
 	state.WorkerLocation = map[string]string{
 		"cloud": "static",
@@ -80,7 +66,15 @@ func (p *StaticProvider) ConfigureRun(state *run.State) error {
 		}
 	}
 
+	p.workerIdentityProof = map[string]interface{}{
+		"staticSecret": interface{}(pc.StaticSecret),
+	}
+
 	return nil
+}
+
+func (p *StaticProvider) GetWorkerIdentityProof() (map[string]interface{}, error) {
+	return p.workerIdentityProof, nil
 }
 
 func (p *StaticProvider) UseCachedRun(run *run.State) error {

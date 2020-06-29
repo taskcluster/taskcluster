@@ -34,7 +34,7 @@ func incrementCounterInCache() [][]string {
 	}
 }
 
-func goEnv() [][]string {
+func GoEnv() [][]string {
 	return [][]string{
 		{
 			"go",

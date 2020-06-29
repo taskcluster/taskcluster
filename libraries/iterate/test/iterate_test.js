@@ -1,7 +1,7 @@
 const subject = require('../');
 const assume = require('assume');
 const debug = require('debug')('iterate-test');
-const {defaultMonitorManager} = require('taskcluster-lib-monitor');
+const {MonitorManager} = require('taskcluster-lib-monitor');
 const testing = require('taskcluster-lib-testing');
 
 const possibleEvents = [
@@ -51,9 +51,8 @@ suite(testing.suiteName(), () => {
   let monitor;
 
   suiteSetup(async () => {
-    monitor = defaultMonitorManager.configure({
+    monitor = MonitorManager.setup({
       serviceName: 'lib-iterate',
-    }).setup({
       fake: true,
       debug: true,
       verify: true,
@@ -61,7 +60,7 @@ suite(testing.suiteName(), () => {
   });
 
   suiteTeardown(() => {
-    defaultMonitorManager.reset();
+    monitor.manager.reset();
   });
 
   const runWithFakeTime = fn => {
@@ -99,8 +98,8 @@ suite(testing.suiteName(), () => {
     assume(i.keepGoing).is.ok();
     await i.stop();
     assume(i.keepGoing).is.not.ok();
-    assume(defaultMonitorManager.messages.length).equals(5);
-    defaultMonitorManager.messages.forEach(message => {
+    assume(monitor.manager.messages.length).equals(5);
+    monitor.manager.messages.forEach(message => {
       assume(message.Fields.status).equals('success');
     });
   }));
@@ -121,8 +120,8 @@ suite(testing.suiteName(), () => {
     i.start();
     await i.stop();
 
-    assume(defaultMonitorManager.messages.length).atleast(5);
-    assume(defaultMonitorManager.messages[0].Type).equals('monitor.periodic');
+    assume(monitor.manager.messages.length).atleast(5);
+    assume(monitor.manager.messages[0].Type).equals('monitor.periodic');
 
     assume(+new Date()).atleast(500);
   }));

@@ -1,5 +1,5 @@
 const fs = require('fs');
-const {WRITE} = require('taskcluster-lib-postgres');
+const {Database, WRITE, READ} = require('taskcluster-lib-postgres');
 
 const COMPONENT_CLASSES = [];
 
@@ -20,17 +20,23 @@ fs.readdirSync(`${__dirname}/`).forEach(file => {
  * providing access to various helpers like `db.secrets.makeSecret`.
  */
 class FakeDatabase {
-  constructor({schema, serviceName}) {
+  constructor({schema, serviceName, keyring}) {
     const allMethods = schema.allMethods();
+    this.keyring = keyring;
     this.fns = {};
+    this.deprecatedFns = {};
 
     COMPONENT_CLASSES.forEach(({name, cls}) => {
       const instance = new cls({schema, serviceName});
       this[name] = instance;
 
-      allMethods.forEach(({ name: methodName, mode, serviceName: fnServiceName }) => {
+      allMethods.forEach(({ name: methodName, mode, serviceName: fnServiceName, deprecated }) => {
         if (instance[methodName]) {
-          this.fns[methodName] = async (...args) => {
+          let collection = this.fns;
+          if (deprecated) {
+            collection = this.deprecatedFns;
+          }
+          collection[methodName] = async (...args) => {
             if (serviceName !== fnServiceName && mode === WRITE) {
               throw new Error(
                 `${serviceName} is not allowed to call any methods that do not belong to this service and which have mode=WRITE`,
@@ -41,6 +47,24 @@ class FakeDatabase {
         }
       });
     });
+  }
+
+  encrypt({value}) {
+    const db = new Database({
+      urlsByMode: {[READ]: 'n/a', [WRITE]: 'n/a'},
+      statementTimeout: 0,
+      keyring: this.keyring,
+    });
+    return db.encrypt({ value });
+  }
+
+  decrypt({value}) {
+    const db = new Database({
+      urlsByMode: {[READ]: 'n/a', [WRITE]: 'n/a'},
+      statementTimeout: 0,
+      keyring: this.keyring,
+    });
+    return db.decrypt({ value });
   }
 
   async close() {

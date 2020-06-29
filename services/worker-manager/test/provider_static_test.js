@@ -3,7 +3,7 @@ const assert = require('assert');
 const helper = require('./helper');
 const {StaticProvider} = require('../src/providers/static');
 const testing = require('taskcluster-lib-testing');
-const {WorkerPool} = require('../src/data');
+const {WorkerPool, Worker} = require('../src/data');
 
 helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
   helper.withDb(mock, skipping);
@@ -54,7 +54,6 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
   suite('registerWorker', function() {
     const workerGroup = providerId;
     const workerId = 'abc123';
-
     const defaultWorker = {
       workerPoolId,
       workerGroup,
@@ -71,10 +70,15 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
       },
     };
 
+    // create a test worker pool directly in the DB
+    const createWorker = overrides => {
+      const worker = Worker.fromApi(
+        {...defaultWorker, ...overrides});
+      return worker.create(helper.db);
+    };
+
     test('no token', async function() {
-      const worker = await helper.Worker.create({
-        ...defaultWorker,
-      });
+      const worker = await createWorker({});
       const workerIdentityProof = {};
       await assert.rejects(() =>
         provider.registerWorker({workerPool, worker, workerIdentityProof}),
@@ -82,9 +86,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
     });
 
     test('invalid token', async function() {
-      const worker = await helper.Worker.create({
-        ...defaultWorker,
-      });
+      const worker = await createWorker({});
       const workerIdentityProof = {staticSecret: 'invalid'};
       await assert.rejects(() =>
         provider.registerWorker({workerPool, worker, workerIdentityProof}),
@@ -92,8 +94,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
     });
 
     test('successful registration', async function() {
-      const worker = await helper.Worker.create({
-        ...defaultWorker,
+      const worker = await createWorker({
         providerData: {
           staticSecret: 'good',
           workerConfig: {

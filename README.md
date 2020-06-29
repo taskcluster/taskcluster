@@ -32,7 +32,6 @@
 ## Usage
 
 This repository is used to develop, build, and release the Taskcluster services.
-It is not possible to run a full Taskcluster deployment directly from this repository, although individual services can be run for development purposes.
 
 ## Table of Contents
 
@@ -94,8 +93,9 @@ It is not possible to run a full Taskcluster deployment directly from this repos
     * [ui/src/components/SpeedDial](ui/src/components/SpeedDial#readme)
     * [ui/src/components/StatusLabel](ui/src/components/StatusLabel#readme)
 * [Workers](workers#readme)
-    * [workers/docker-worker](workers/docker-worker#readme)
+    * [Docker Worker](workers/docker-worker#readme)
     * [Generic Worker](workers/generic-worker#readme)
+        * [Mock Services Design](workers/generic-worker/mocktc#readme)
         * [workers/generic-worker/server-logs](workers/generic-worker/server-logs#readme)
 <!-- TOC END -->
 
@@ -228,6 +228,8 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
   </tr>
   <tr>
     <td align="center"><a href="http://rohanharikr.github.io"><img src="https://avatars0.githubusercontent.com/u/12775813?v=4" width="100px;" alt=""/><br /><sub><b>thoran</b></sub></a><br /><a href="https://github.com/taskcluster/taskcluster/commits?author=rohanharikr" title="Code">💻</a></td>
+    <td align="center"><a href="http://www.manishgiri.net"><img src="https://avatars2.githubusercontent.com/u/11348778?v=4" width="100px;" alt=""/><br /><sub><b>Manish Giri</b></sub></a><br /><a href="https://github.com/taskcluster/taskcluster/commits?author=Manish-Giri" title="Code">💻</a></td>
+    <td align="center"><a href="https://tigeroakes.com"><img src="https://avatars3.githubusercontent.com/u/1782266?v=4" width="100px;" alt=""/><br /><sub><b>Tiger Oakes</b></sub></a><br /><a href="https://github.com/taskcluster/taskcluster/commits?author=NotWoods" title="Code">💻</a></td>
   </tr>
 </table>
 

@@ -7,12 +7,13 @@ import (
 	"fmt"
 	"log"
 	"net"
+	"os"
 	"os/exec"
 	"strconv"
 	"sync"
 	"time"
 
-	tcclient "github.com/taskcluster/taskcluster/v29/clients/client-go"
+	tcclient "github.com/taskcluster/taskcluster/v31/clients/client-go"
 )
 
 // TaskclusterProxy provides access to a taskcluster-proxy process running on the OS.
@@ -41,6 +42,8 @@ func New(taskclusterProxyExecutable string, httpPort uint16, rootURL string, cre
 		command:  exec.Command(taskclusterProxyExecutable, args...),
 		HTTPPort: httpPort,
 	}
+	l.command.Stdout = os.Stdout
+	l.command.Stderr = os.Stderr
 	err := l.command.Start()
 	// Note - we're assuming here that if the process fails to launch we'll get
 	// an error. We should test this to be sure.

@@ -20,7 +20,7 @@ exports.tasks.push({
     for (const name of SERVICES) {
       const processes = await readRepoYAML(path.join('services', name, 'procs.yml'));
       Object.entries(processes).forEach(([proc, {command}]) => {
-        procs[`${name}/${proc}`] = `cd services/${name} && exec ${command}`;
+        procs[`${name}/${proc}`] = `exec ${command}`;
       });
     }
 

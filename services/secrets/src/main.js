@@ -5,8 +5,8 @@ const builder = require('../src/api');
 const data = require('../src/data');
 const loader = require('taskcluster-lib-loader');
 const SchemaSet = require('taskcluster-lib-validate');
-const monitorManager = require('./monitor');
-const App = require('taskcluster-lib-app');
+const {MonitorManager} = require('taskcluster-lib-monitor');
+const {App} = require('taskcluster-lib-app');
 const libReferences = require('taskcluster-lib-references');
 const taskcluster = require('taskcluster-client');
 const config = require('taskcluster-lib-config');
@@ -16,12 +16,16 @@ let debug = Debug('secrets:server');
 let load = loader({
   cfg: {
     requires: ['profile'],
-    setup: ({profile}) => config({profile}),
+    setup: ({profile}) => config({
+      profile,
+      serviceName: 'secrets',
+    }),
   },
 
   monitor: {
     requires: ['process', 'profile', 'cfg'],
-    setup: ({process, profile, cfg}) => monitorManager.setup({
+    setup: ({process, profile, cfg}) => MonitorManager.setup({
+      serviceName: 'secrets',
       processName: process,
       verify: profile !== 'production',
       ...cfg.monitoring,
@@ -62,7 +66,7 @@ let load = loader({
     requires: ['cfg', 'schemaset'],
     setup: ({cfg, schemaset}) => libReferences.fromService({
       schemaset,
-      references: [builder.reference(), monitorManager.reference()],
+      references: [builder.reference(), MonitorManager.reference('secrets')],
     }).generateReferences(),
   },
 

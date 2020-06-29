@@ -5,7 +5,6 @@ const taskcluster = require('taskcluster-client');
 const assume = require('assume');
 const helper = require('./helper');
 const testing = require('taskcluster-lib-testing');
-const monitorManager = require('../src/monitor');
 const {LEVELS} = require('taskcluster-lib-monitor');
 
 helper.secrets.mockSuite(testing.suiteName(), ['aws', 'db'], function(mock, skipping) {
@@ -37,6 +36,11 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws', 'db'], function(mock, skip
       },
     };
   };
+
+  let monitor;
+  suiteSetup(async function() {
+    monitor = await helper.load('monitor');
+  });
 
   test('claimWork from empty queue', testing.runWithFakeTime(async function() {
     helper.scopes(
@@ -115,9 +119,9 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws', 'db'], function(mock, skip
     assume(takenUntil.getTime()).is.greaterThan(before.getTime() - 1);
 
     // check that the task was logged
-    assert.deepEqual(monitorManager.messages.find(({Type}) => Type === 'task-claimed'), {
+    assert.deepEqual(monitor.manager.messages.find(({Type}) => Type === 'task-claimed'), {
       Type: 'task-claimed',
-      Logger: 'taskcluster.queue.api',
+      Logger: 'taskcluster.test.api',
       Fields: {
         provisionerId: "no-provisioner-extended-extended",
         v: 1,
@@ -193,9 +197,9 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws', 'db'], function(mock, skip
     assume(takenUntil2.getTime()).is.greaterThan(takenUntil.getTime() - 1);
 
     // check that the task was logged
-    assert.deepEqual(monitorManager.messages.find(({Type}) => Type === 'task-reclaimed'), {
+    assert.deepEqual(monitor.manager.messages.find(({Type}) => Type === 'task-reclaimed'), {
       Type: 'task-reclaimed',
-      Logger: 'taskcluster.queue.api',
+      Logger: 'taskcluster.test.api',
       Fields: {
         workerGroup: 'my-worker-group-extended-extended',
         workerId: 'my-worker-extended-extended',

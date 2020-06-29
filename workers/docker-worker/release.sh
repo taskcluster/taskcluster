@@ -1,30 +1,55 @@
-#!/bin/bash -e
+#! /bin/bash
 
-echo "Releasing docker-worker on Github"
+set -ex
 
-if [ "$DOCKER_WORKER_GITHUB_TOKEN" == "" ]; then
-  echo "You need to define the environment variable DOCKER_WORKER_GITHUB_TOKEN" >&2
-  echo "with a valid Github personal token." >&2
-  echo "If you intended to only deploy AMIs, then run the deploy.sh script." >&2
-  exit 1
-fi
+OUTPUT=docker-worker-x64.tgz
+while getopts "o:" opt; do
+    case "${opt}" in
+        o)  OUTPUT=$OPTARG
+            ;;
+    esac
+done
 
-remote=$(git remote -v | grep 'taskcluster/docker-worker' | head -1 | awk '{print $1}')
-if [ "$remote" == "" ]; then
-  git remote add tcdw git@github.com/taskcluster/docker-worker
-  remote=tcdw
-fi
+DW_ROOT=$(mktemp -d)
+trap "rm -rf $DW_ROOT" EXIT
 
-git fetch $remote
+# create an easy-to-use thing that will find the right paths, etc.
+mkdir -p $DW_ROOT/bin
+cat > $DW_ROOT/bin/docker-worker <<'EOF'
+#! /bin/bash
+DW_ROOT="$( cd "$( dirname "${BASH_SOURCE[0]}" )/.." >/dev/null 2>&1 && pwd )"
+NODE=$DW_ROOT/node/bin/node
+exec $NODE $DW_ROOT/src/bin/worker.js "${@}"
+EOF
+chmod +x $DW_ROOT/bin/docker-worker
 
-branch=$(git rev-parse --abbrev-ref HEAD)
-current_branch_head_sha=$(git rev-parse $branch)
-remote_branch_head_sha=$(git rev-parse $remote/$branch)
+# install docker-worker itself
+for f in src schemas .npmignore package.json yarn.lock config.yml bin-utils; do
+    cp -r $PWD/$f $DW_ROOT
+done
 
-if [ "$current_branch_head_sha" != "$remote_branch_head_sha" ]; then
-  echo "$branch and $remote/$branch mismatch!" >&2
-  exit 1
-fi
+# Install Node
+# TODO: use the same node version as everything else, bug 1636164
+NODE_VERSION=$(echo "console.log(require('./package.json').engines.node)" | node)
+mkdir $DW_ROOT/node
+curl https://nodejs.org/dist/v${NODE_VERSION}/node-v${NODE_VERSION}-linux-x64.tar.xz | tar -C $DW_ROOT/node --strip-components=1 -xJf -
 
-release_name=$(deploy/bin/github-release.js)
-echo "$release_name has been released at https://github.com/taskcluster/docker-worker/releases/tag/$release_name"
+# Install Yarn (later to be removed)
+curl -L https://yarnpkg.com/latest.tar.gz | tar --transform 's|yarn-[^/]*/|yarn/|' -C $DW_ROOT -zvxf -
+
+# Install dependencies
+PATH=$DW_ROOT/node/bin:$DW_ROOT/node_modules/.bin:$PATH
+(
+    cd $DW_ROOT
+    ./yarn/bin/yarn install --dev
+)
+
+# Clean up some stuff
+rm -rf "$DW_ROOT/yarn"
+rm -rf "$DW_ROOT/node/include"
+rm -rf "$DW_ROOT/node/lib/node_modules/npm"
+rm -rf "$DW_ROOT/node/bin/npm"
+rm -rf "$DW_ROOT/node/bin/npx"
+
+# tar up the result..
+tar -C $DW_ROOT --transform 's|^\./|docker-worker/|' -czf $OUTPUT .

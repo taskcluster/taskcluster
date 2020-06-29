@@ -18,7 +18,7 @@ class Release {
     return tasks;
   }
 
-  async run() {
+  async run(staging) {
     let tasks = this.generateTasks();
 
     const taskgraph = new TaskGraph(tasks, {
@@ -28,7 +28,7 @@ class Release {
         // and let's be sane about how many git clones we do..
         git: new Lock(8),
       },
-      target: 'target-release',
+      target: staging ? 'target-staging-release' : 'target-release',
       renderer: process.stdout.isTTY ?
         new ConsoleRenderer({elideCompleted: true}) :
         new LogRenderer(),
@@ -40,7 +40,9 @@ class Release {
     const context = await taskgraph.run();
 
     console.log(`Release version: ${context['release-version']}`);
-    if (!this.cmdOptions.push) {
+    if (staging) {
+      console.log(`Pushed to ${context['target-staging-release']}`);
+    } else if (!this.cmdOptions.push) {
       console.log('NOTE: image, git commit + tags, and packages not pushed due to --no-push option');
     }
   }
@@ -48,7 +50,12 @@ class Release {
 
 const main = async (options) => {
   const release = new Release(options);
-  await release.run();
+  await release.run(false);
 };
 
-module.exports = {main, Release};
+const stagingRelease = async (options) => {
+  const release = new Release(options);
+  await release.run(true);
+};
+
+module.exports = {main, stagingRelease, Release};

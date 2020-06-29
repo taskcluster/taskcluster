@@ -38,7 +38,7 @@ import (
 	"net/url"
 	"time"
 
-	tcclient "github.com/taskcluster/taskcluster/v29/clients/client-go"
+	tcclient "github.com/taskcluster/taskcluster/v31/clients/client-go"
 )
 
 type Notify tcclient.Client
@@ -255,21 +255,4 @@ func (notify *Notify) ListDenylist_SignedURL(continuationToken, limit string, du
 	}
 	cd := tcclient.Client(*notify)
 	return (&cd).SignedURL("/denylist/list", v, duration)
-}
-
-// Stability: *** EXPERIMENTAL ***
-//
-// This is a temporary API method to exercise infrastructure support for database
-// access and migrations.  It is not advertised and will be removed in a later version.
-//
-// Do not call this method.
-//
-// Required scopes:
-//   notify:manage-widgets
-//
-// See #updateWidgets
-func (notify *Notify) UpdateWidgets(payload *Widget) (*Widgets, error) {
-	cd := tcclient.Client(*notify)
-	responseObject, _, err := (&cd).APICall(payload, "POST", "/widgets", new(Widgets), nil)
-	return responseObject.(*Widgets), err
 }
