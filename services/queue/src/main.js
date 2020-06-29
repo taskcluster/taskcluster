@@ -338,9 +338,11 @@ let load = loader({
       'publicArtifactBucket', 'privateArtifactBucket',
       'regionResolver', 'monitor', 'dependencyTracker', 'TaskDependency',
       'workClaimer', 'Provisioner', 'workerInfo', 'WorkerType', 'Worker',
+      'db',
     ],
     setup: (ctx) => builder.build({
       context: {
+        db: ctx.db,
         Task: ctx.Task,
         Artifact: ctx.Artifact,
         TaskGroup: ctx.TaskGroup,

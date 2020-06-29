@@ -147,7 +147,6 @@ exports.withAmazonIPRanges = (mock, skipping) => {
  * Set helper.<Class> for each of the Azure entities used in the service
  */
 exports.withEntities = (mock, skipping) => {
-  withEntity(mock, skipping, exports, 'Artifact', data.Artifact);
   withEntity(mock, skipping, exports, 'Task', data.Task);
   withEntity(mock, skipping, exports, 'TaskGroup', data.TaskGroup);
   withEntity(mock, skipping, exports, 'TaskGroupMember', data.TaskGroupMember);
