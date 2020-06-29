@@ -1,9 +1,10 @@
 const _ = require('lodash');
 const assert = require('assert');
-const {APIBuilder} = require('taskcluster-lib-api');
+const {APIBuilder, paginateResults} = require('taskcluster-lib-api');
 const urllib = require('url');
 const builder = require('./api');
-const Entity = require('taskcluster-lib-entities');
+const { UNIQUE_VIOLATION } = require('taskcluster-lib-postgres');
+const { artifactUtils } = require('./utils');
 
 /** Post artifact */
 builder.declare({
@@ -195,31 +196,31 @@ builder.declare({
 
   let artifact;
   try {
-    artifact = await this.Artifact.create({
+    artifact = artifactUtils.fromDbRows(await this.db.fns.create_queue_artifact(
       taskId,
       runId,
       name,
       storageType,
       contentType,
       details,
-      expires,
       present,
-    });
+      expires,
+    ));
   } catch (err) {
     // Re-throw error if this isn't because the entity already exists
-    if (!err || err.code !== 'EntityAlreadyExists') {
+    if (!err || err.code !== UNIQUE_VIOLATION) {
       throw err;
     }
 
     // Load existing Artifact entity
-    artifact = await this.Artifact.load({taskId, runId, name});
+    artifact = artifactUtils.fromDbRows(await this.db.fns.get_queue_artifact(taskId, runId, name));
 
     // Allow recreating of the same artifact, report conflict if it's not the
     // same artifact (allow for later expiration).
     // Note, we'll check `details` later
     if (artifact.storageType !== storageType ||
-        artifact.contentType !== contentType ||
-        artifact.expires.getTime() > expires.getTime()) {
+      artifact.contentType !== contentType ||
+      artifact.expires.getTime() > expires.getTime()) {
       return res.reportError('RequestConflict',
         'Artifact already exists, with different type or later expiration\n\n' +
         'Existing artifact information: {{originalArtifact}}', {
@@ -232,7 +233,7 @@ builder.declare({
     }
 
     if (storageType !== 'reference' &&
-        !_.isEqual(artifact.details, details)) {
+      !_.isEqual(artifact.details, details)) {
       return res.reportError('RequestConflict',
         'Artifact already exists, with different contentType or error message\n\n' +
         'Existing artifact information: {{originalArtifact}}', {
@@ -245,10 +246,12 @@ builder.declare({
     }
 
     // Update expiration and detail, which may have been modified
-    await artifact.modify((artifact) => {
-      artifact.expires = expires;
-      artifact.details = details;
-    });
+    artifact = artifactUtils.fromDbRows(
+      await this.db.fns.update_queue_artifact(
+        artifact.taskId, artifact.runId, artifact.name, details,
+        expires,
+      ),
+    );
   }
 
   // This event is *invalid* for s3 storage types so we'll stop sending it.
@@ -257,7 +260,7 @@ builder.declare({
     // Publish message about artifact creation
     await this.publisher.artifactCreated({
       status: task.status(),
-      artifact: artifact.json(),
+      artifact: artifactUtils.serialize(artifact),
       workerGroup,
       workerId,
       runId,
@@ -302,9 +305,8 @@ builder.declare({
 /** Reply to an artifact request using taskId, runId, name and context */
 let replyWithArtifact = async function(taskId, runId, name, req, res) {
   // Load artifact meta-data from table storage
-  let artifact = await this.Artifact.load({taskId, runId, name}, true);
+  let artifact = artifactUtils.fromDbRows(await this.db.fns.get_queue_artifact(taskId, runId, name));
 
-  // Give a 404, if the artifact couldn't be loaded
   if (!artifact) {
     return res.reportError('ResourceNotFound', 'Artifact not found', {});
   }
@@ -401,7 +403,7 @@ let replyWithArtifact = async function(taskId, runId, name, req, res) {
 
   // We should never arrive here
   let err = new Error('Unknown artifact storageType: ' + artifact.storageType);
-  err.artifact = artifact.json();
+  err.artifact = artifactUtils.serialize(artifact);
   this.monitor.reportError(err);
 };
 
@@ -573,10 +575,7 @@ builder.declare({
 builder.declare({
   method: 'get',
   route: '/task/:taskId/runs/:runId/artifacts',
-  query: {
-    continuationToken: Entity.continuationTokenPattern,
-    limit: /^[0-9]+$/,
-  },
+  query: paginateResults.query,
   name: 'listArtifacts',
   stability: APIBuilder.stability.stable,
   category: 'Artifacts',
@@ -596,12 +595,13 @@ builder.declare({
 }, async function(req, res) {
   let taskId = req.params.taskId;
   let runId = parseInt(req.params.runId, 10);
-  let continuation = req.query.continuationToken || null;
-  let limit = parseInt(req.query.limit || 1000, 10);
 
   let [task, artifacts] = await Promise.all([
     this.Task.load({taskId}, true),
-    this.Artifact.query({taskId, runId}, {continuation, limit}),
+    paginateResults({
+      query: req.query,
+      fetch: (size, offset) => this.db.fns.get_queue_artifacts(taskId, runId, null, size, offset),
+    }),
   ]);
 
   // Give a 404 if not found
@@ -627,10 +627,10 @@ builder.declare({
   }
 
   let result = {
-    artifacts: artifacts.entries.map(artifact => artifact.json()),
+    artifacts: artifacts.rows.map(r => artifactUtils.serialize(artifactUtils.fromDb(r))),
   };
-  if (artifacts.continuation) {
-    result.continuationToken = artifacts.continuation;
+  if (artifacts.continuationToken) {
+    result.continuationToken = artifacts.continuationToken;
   }
 
   return res.reply(result);
@@ -641,10 +641,7 @@ builder.declare({
   method: 'get',
   route: '/task/:taskId/artifacts',
   name: 'listLatestArtifacts',
-  query: {
-    continuationToken: Entity.continuationTokenPattern,
-    limit: /^[0-9]+$/,
-  },
+  query: paginateResults.query,
   stability: APIBuilder.stability.stable,
   output: 'list-artifacts-response.json#',
   category: 'Artifacts',
@@ -663,8 +660,6 @@ builder.declare({
   ].join('\n'),
 }, async function(req, res) {
   let taskId = req.params.taskId;
-  let continuation = req.query.continuationToken || null;
-  let limit = parseInt(req.query.limit || 1000, 10);
 
   // Load task status structure from table
   let task = await this.Task.load({taskId}, true);
@@ -690,15 +685,16 @@ builder.declare({
   // Find highest runId
   let runId = task.runs.length - 1;
 
-  let artifacts = await this.Artifact.query({
-    taskId, runId,
-  }, {continuation, limit});
+  const artifacts = await paginateResults({
+    query: req.query,
+    fetch: (size, offset) => this.db.fns.get_queue_artifacts(taskId, runId, null, size, offset),
+  });
 
   let result = {
-    artifacts: artifacts.entries.map(artifact => artifact.json()),
+    artifacts: artifacts.rows.map(r => artifactUtils.serialize(artifactUtils.fromDb(r))),
   };
-  if (artifacts.continuation) {
-    result.continuationToken = artifacts.continuation;
+  if (artifacts.continuationToken) {
+    result.continuationToken = artifacts.continuationToken;
   }
 
   return res.reply(result);

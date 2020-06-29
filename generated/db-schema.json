@@ -3154,6 +3154,56 @@
       },
       "migrationScript": "begin\n\n  -- lock this table before reading from it, to prevent loss of concurrent\n  -- updates when the table is dropped.  Note that this may lead to concurrent\n  -- updates failing; the important thing is that they not succeed without\n  -- taking effect.  Failed updates will be retried.\n  lock table taskcluster_github_builds_entities;\n\n  create table github_builds\n  as\n    select\n      (value ->> 'organization')::text as organization,\n      (value ->> 'repository')::text as repository,\n      (value ->> 'sha')::text as sha,\n      (value ->> 'taskGroupId')::text as task_group_id,\n      (value ->> 'state')::text as state,\n      (value ->> 'created')::timestamptz as created,\n      (value ->> 'updated')::timestamptz as updated,\n      (value ->> 'installationId')::integer as installation_id,\n      (value ->> 'eventType')::text as event_type,\n      (value ->> 'eventId')::text as event_id,\n      etag\n    from taskcluster_github_builds_entities;\n  alter table github_builds add primary key (task_group_id);\n  alter table github_builds\n    alter column organization set not null,\n    alter column repository set not null,\n    alter column sha set not null,\n    alter column task_group_id set not null,\n    alter column state set not null,\n    alter column created set not null,\n    alter column updated set not null,\n    alter column installation_id set not null,\n    alter column event_type set not null,\n    alter column event_id set not null,\n    alter column etag set not null,\n    alter column etag set default public.gen_random_uuid();\n  create index on github_builds (organization, repository, sha);\n\n  revoke select, insert, update, delete on taskcluster_github_builds_entities from $db_user_prefix$_github;\n  drop table taskcluster_github_builds_entities;\n  grant select, insert, update, delete on github_builds to $db_user_prefix$_github;\nend",
       "version": 23
+    },
+    {
+      "methods": {
+        "create_queue_artifact": {
+          "args": "task_id_in text, run_id_in integer, name_in text, storage_type_in text, content_type_in text, details_in jsonb, present_in boolean, expires_in timestamptz",
+          "body": "begin\n  return query insert\n    into queue_artifacts (task_id, run_id, name, storage_type, content_type, details, present, expires)\n    values (task_id_in, run_id_in, name_in, storage_type_in, content_type_in, details_in, present_in, expires_in)\n  returning queue_artifacts.task_id, queue_artifacts.run_id, queue_artifacts.name, queue_artifacts.storage_type, queue_artifacts.content_type, queue_artifacts.details, queue_artifacts.present, queue_artifacts.expires;\nend",
+          "deprecated": false,
+          "description": "Create a new artifact. Raises UNIQUE_VIOLATION if the artifact already exists.\nReturns the newly created artifact.",
+          "mode": "write",
+          "returns": "table(task_id text, run_id integer, name text, storage_type text, content_type text, details jsonb, present boolean, expires timestamptz)",
+          "serviceName": "queue"
+        },
+        "delete_queue_artifact": {
+          "args": "task_id_in text, run_id_in integer, name_in text",
+          "body": "begin\n  delete from queue_artifacts\n  where\n    queue_artifacts.task_id = task_id_in and\n    queue_artifacts.run_id = run_id_in and\n    queue_artifacts.name = name_in;\nend",
+          "deprecated": false,
+          "description": "Delete a queue artifact.",
+          "mode": "write",
+          "returns": "void",
+          "serviceName": "queue"
+        },
+        "get_queue_artifact": {
+          "args": "task_id_in text, run_id_in integer, name_in text",
+          "body": "begin\n  return query select\n    queue_artifacts.task_id,\n    queue_artifacts.run_id,\n    queue_artifacts.name,\n    queue_artifacts.storage_type,\n    queue_artifacts.content_type,\n    queue_artifacts.details,\n    queue_artifacts.present,\n    queue_artifacts.expires\n  from queue_artifacts\n  where\n    queue_artifacts.task_id = task_id_in and\n    queue_artifacts.run_id = run_id_in and\n    queue_artifacts.name = name_in;\nend",
+          "deprecated": false,
+          "description": "Get a queue artifact. The returned table will have one or zero row.",
+          "mode": "read",
+          "returns": "table(task_id text, run_id integer, name text, storage_type text, content_type text, details jsonb, present boolean, expires timestamptz)",
+          "serviceName": "queue"
+        },
+        "get_queue_artifacts": {
+          "args": "task_id_in text, run_id_in integer, expires_in timestamptz, page_size_in integer, page_offset_in integer",
+          "body": "begin\n  return query\n  select\n    queue_artifacts.task_id,\n    queue_artifacts.run_id,\n    queue_artifacts.name,\n    queue_artifacts.storage_type,\n    queue_artifacts.content_type,\n    queue_artifacts.details,\n    queue_artifacts.present,\n    queue_artifacts.expires\n  from queue_artifacts\n  where\n    (queue_artifacts.task_id = task_id_in or task_id_in is null) and\n    (queue_artifacts.run_id = run_id_in or run_id_in is null) and\n    (queue_artifacts.expires < expires_in or expires_in is null)\n  order by queue_artifacts.task_id, queue_artifacts.run_id, queue_artifacts.name\n  limit get_page_limit(page_size_in)\n  offset get_page_offset(page_offset_in);\nend",
+          "deprecated": false,
+          "description": "Get existing queue artifacts filtered by the optional arguments,\nordered by the `task_id`, `run_id`, and `name`.\nIf the pagination arguments are both NULL, all rows are returned.\nOtherwise, page_size rows are returned at offset page_offset.",
+          "mode": "read",
+          "returns": "table(task_id text, run_id integer, name text, storage_type text, content_type text, details jsonb, present boolean, expires timestamptz)",
+          "serviceName": "queue"
+        },
+        "update_queue_artifact": {
+          "args": "task_id_in text, run_id_in integer, name_in text, details_in jsonb, expires_in timestamptz",
+          "body": "declare\n  updated_row queue_artifacts%ROWTYPE;\nbegin\n  update queue_artifacts\n  set (details, expires) = (\n    coalesce(details_in, queue_artifacts.details),\n    coalesce(expires_in, queue_artifacts.expires)\n  )\n  where\n    queue_artifacts.task_id = task_id_in and\n    queue_artifacts.run_id = run_id_in and\n    queue_artifacts.name = name_in\n  returning\n    queue_artifacts.task_id,\n    queue_artifacts.run_id,\n    queue_artifacts.name,\n    queue_artifacts.storage_type,\n    queue_artifacts.content_type,\n    queue_artifacts.details,\n    queue_artifacts.present,\n    queue_artifacts.expires\n  into updated_row;\n  if found then\n    return query select\n      updated_row.task_id,\n      updated_row.run_id,\n      updated_row.name,\n      updated_row.storage_type,\n      updated_row.content_type,\n      updated_row.details,\n      updated_row.present,\n      updated_row.expires\n    return;\n  else\n    raise exception 'no such row' using errcode = 'P0002';\n  end if;\nend",
+          "deprecated": false,
+          "description": "Update a queue artifact.\nReturns the up-to-date artifact row that have the same task id, run id, and name.",
+          "mode": "write",
+          "returns": "table(task_id text, run_id integer, name text, storage_type text, content_type text, details jsonb, present boolean, expires timestamptz)",
+          "serviceName": "queue"
+        }
+      },
+      "version": 24
     }
   ]
 }
