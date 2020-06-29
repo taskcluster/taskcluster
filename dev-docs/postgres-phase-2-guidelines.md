@@ -109,7 +109,7 @@ changes to the underlying service to use these new functions.
 Here's a helpful checklist for this step (with more details below):
 * DB Functions
 	* [ ] Add new stored procedure functions. [example](https://github.com/taskcluster/taskcluster/blob/8d0600004fcaff7c1661e650bc48e424e7d409de/db/versions/0009.yml#L215-L288)
-	* [ ] Add mock implementations for the functions in the relevant file under `db/src/fakes/`. [example](https://github.com/taskcluster/taskcluster/blob/8d0600004fcaff7c1661e650bc48e424e7d409de/db/src/fakes/purge_cache.js)
+	* [ ] ~Add mock implementations for the functions in the relevant file under `db/src/fakes/`. [example](https://github.com/taskcluster/taskcluster/blob/8d0600004fcaff7c1661e650bc48e424e7d409de/db/src/fakes/purge_cache.js)~ Mock implementations are no longer needed (see [issue 3131](https://github.com/taskcluster/taskcluster/issues/3131))
 	* [ ] Create a file `db/test/fns/<service-name>_test.js` and write tests for these newly created functions. [example](https://github.com/taskcluster/taskcluster/pull/2748/commits/ae8654d3f2f85972a0a8fb11b6d9e9be8bcb83ef#diff-24717608297e5956dd619092dd4a135b)
 
 * Service Modifications
