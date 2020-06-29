@@ -16,7 +16,7 @@ consumers should be able to transparently handle decompression.
 
 ▶ [MAJOR] [#3012](https://github.com/taskcluster/taskcluster/issues/3012)
 An encrypted column "secret" has been added to the workers table. The
-worker-manager service now requires an additional environment variable `DB_CRYPTO_KEY`
+worker-manager service now requires an additional environment variable `DB_CRYPTO_KEYS`
 to be set which is a JSON array where each element is an object of the form.
 
 ```json
