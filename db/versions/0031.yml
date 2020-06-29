@@ -1,0 +1,242 @@
+version: 31
+migrationScript: 0031-migration.sql
+downgradeScript: 0031-downgrade.sql
+methods:
+  wmworker_pool_errors_entities_load:
+    description: See taskcluster-lib-entities
+    mode: read
+    serviceName: worker_manager
+    args: partition_key text, row_key text
+    returns: table (partition_key_out text, row_key_out text, value jsonb, version integer, etag uuid)
+    body: |-
+      begin
+        return query
+        select
+          wmworker_pool_errors_entities_load.partition_key,
+          wmworker_pool_errors_entities_load.row_key,
+          entity_buf_encode(
+            jsonb_build_object(
+              'PartitionKey', encode_string_key(error_id),
+              'RowKey', encode_string_key(error_id),
+              'errorId', error_id,
+              'workerPoolId', worker_pool_id,
+              'reported', reported,
+              'kind', kind,
+              'title', title,
+              'description', description),
+            'extra', extra::text) as value,
+          1 as version,
+          worker_pool_errors.etag as etag
+        from worker_pool_errors
+        where
+          worker_pool_errors.error_id = decode_string_key(wmworker_pool_errors_entities_load.partition_key);
+      end
+  wmworker_pool_errors_entities_create:
+    serviceName: worker_manager
+    description: See taskcluster-lib-entities
+    mode: write
+    args: pk text, rk text, properties jsonb, overwrite boolean, version integer
+    returns: uuid
+    body: |-
+      declare
+        new_row worker_pool_errors%ROWTYPE;
+      begin
+        select
+          (properties ->> 'errorId')::text as error_id,
+          (properties ->> 'workerPoolId')::text as worker_pool_id,
+          (properties ->> 'reported')::timestamptz as reported,
+          (properties ->> 'kind')::text as kind,
+          (properties ->> 'title')::text as title,
+          (properties ->> 'description')::text as description,
+          entity_buf_decode(properties, 'extra')::jsonb as extra,
+          public.gen_random_uuid() as etag
+        into new_row;
+        if overwrite then
+          raise exception 'overwrite not implemented';
+        else
+          execute 'insert into worker_pool_errors select $1.*' using new_row;
+        end if;
+        return new_row.etag;
+      end
+  wmworker_pool_errors_entities_remove:
+    serviceName: worker_manager
+    description: See taskcluster-lib-entities
+    mode: write
+    args: partition_key text, row_key text
+    returns: table (etag uuid)
+    body: |-
+      begin
+        return query delete from worker_pool_errors
+        where
+          worker_pool_errors.error_id = decode_string_key(wmworker_pool_errors_entities_remove.partition_key)
+        returning worker_pool_errors.etag;
+      end
+  wmworker_pool_errors_entities_modify:
+    serviceName: worker_manager
+    description: See taskcluster-lib-entities
+    mode: write
+    args: partition_key text, row_key text, properties jsonb, version integer, old_etag uuid
+    returns: table (etag uuid)
+    body: |-
+      declare
+        new_row worker_pool_errors%ROWTYPE;
+      begin
+        select
+          (properties ->> 'errorId')::text as error_id,
+          (properties ->> 'workerPoolId')::text as worker_pool_id,
+          (properties ->> 'reported')::timestamptz as reported,
+          (properties ->> 'kind')::text as kind,
+          (properties ->> 'title')::text as title,
+          (properties ->> 'description')::text as description,
+          entity_buf_decode(properties, 'extra')::jsonb as extra,
+          public.gen_random_uuid() as etag
+        into new_row;
+        update worker_pool_errors
+        set (
+          error_id,
+          worker_pool_id,
+          reported,
+          kind,
+          title,
+          description,
+          extra,
+          etag
+        ) = (
+          new_row.error_id,
+          new_row.worker_pool_id,
+          new_row.reported,
+          new_row.kind,
+          new_row.title,
+          new_row.description,
+          new_row.extra,
+          new_row.etag
+        )
+        where
+          worker_pool_errors.error_id = decode_string_key(wmworker_pool_errors_entities_modify.partition_key) and
+          worker_pool_errors.etag = wmworker_pool_errors_entities_modify.old_etag;
+
+        if found then
+          return query select new_row.etag;
+          return;
+        end if;
+
+        perform worker_pool_errors.etag from worker_pool_errors
+        where worker_pool_errors.error_id = decode_string_key(wmworker_pool_errors_entities_modify.partition_key);
+
+        if found then
+          raise exception 'unsuccessful update' using errcode = 'P0004';
+        else
+          raise exception 'no such row' using errcode = 'P0002';
+        end if;
+      end
+  wmworker_pool_errors_entities_scan:
+    description: See taskcluster-lib-entities
+    mode: read
+    serviceName: worker_manager
+    args: pk text, rk text, condition text, size integer, page integer
+    returns: table (partition_key text, row_key text, value jsonb, version integer, etag uuid)
+    body: |-
+      declare
+      begin
+        if not condition is null then
+          raise exception 'condition not supported';
+        end if;
+        return query
+          select
+            wmworker_pool_errors_entities_scan.partition_key,
+            wmworker_pool_errors_entities_scan.row_key,
+            entity_buf_encode(
+              jsonb_build_object(
+                'PartitionKey', encode_string_key(error_id),
+                'RowKey', encode_string_key(error_id),
+                'errorId', error_id,
+                'workerPoolId', worker_pool_id,
+                'reported', reported,
+                'kind', kind,
+                'title', title,
+                'description', description),
+              'extra', extra::text) as value,
+            1 as version,
+          worker_pool_errors.etag as etag
+          from worker_pool_errors
+          where
+            partition_key is null or
+            error_id = decode_string_key(partition_key)
+          order by error_id
+          limit size + 1
+          offset page;
+      end
+  create_worker_pool_error:
+    description: |-
+      Create a new worker pool error.  Raises UNIQUE_VIOLATION if the error already exists.
+    mode: write
+    serviceName: worker_manager
+    args: error_id_in text, worker_pool_id_in text, reported_in text, kind_in text, title_in text, description_in text, extra_in jsonb
+    returns: uuid
+    body: |-
+      declare
+        new_etag uuid := public.gen_random_uuid();
+      begin
+        insert
+          into worker_pool_errors (error_id, worker_pool_id, reported, kind, title, description, extra)
+          values (error_id_in, worker_pool_id_in, reported_in, kind_in, title_in, description_in, extra_in);
+        return new_etag;
+      end
+  get_worker_pool_error:
+    description: |-
+      Get an existing worker pool error.  The returned table will have one or (if no such worker pool error is defined) zero rows.
+    mode: read
+    serviceName: worker_manager
+    args: error_id_in text
+    returns: table(error_id text, worker_pool_id text, reported timestamptz, kind text, title text, description text, extra jsonb)
+    body: |-
+      begin
+        return query
+        select
+          worker_pool_errors.error_id,
+          worker_pool_errors.worker_pool_id,
+          worker_pool_errors.reported,
+          worker_pool_errors.kind,
+          worker_pool_errors.title,
+          worker_pool_errors.description,
+          worker_pool_errors.extra
+        from worker_pool_errors
+        where worker_pool_errors.error_id = error_id_in;
+      end
+  get_worker_pool_errors:
+    description: |-
+      Get existing worker pool errors, ordered by `worker_pool_id`.  If the pagination arguments are both NULL, all rows are returned.
+      Otherwise, page_size rows are returned at offset page_offset.
+    mode: read
+    serviceName: worker_manager
+    args: page_size_in integer, page_offset_in integer
+    returns: table(error_id text, worker_pool_id text, reported timestamptz, kind text, title text, description text, extra jsonb)
+    body: |-
+      begin
+        return query
+        select
+          worker_pool_errors.error_id,
+          worker_pool_errors.worker_pool_id,
+          worker_pool_errors.reported,
+          worker_pool_errors.title,
+          worker_pool_errors.kind,
+          worker_pool_errors.description,
+          worker_pool_errors.extra
+        from worker_pool_errors
+        order by error_id
+        limit get_page_limit(page_size_in)
+        offset get_page_offset(page_offset_in);
+      end
+  delete_worker_pool_error:
+    description: |-
+      Delete a worker pool error immediately.
+    mode: write
+    serviceName: worker_manager
+    args: error_id_in text
+    returns: void
+    body: |-
+      begin
+        delete
+        from worker_pool_errors
+        where worker_pool_errors.error_id = error_id_in;
+      end
