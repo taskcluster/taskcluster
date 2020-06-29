@@ -389,8 +389,9 @@ async function deprecatedStatusHandler(message) {
           state = 'failure';
           break; // one failure is enough
         }
-      } } while (params.continuationToken && state === 'success');
       }
+    } while (params.continuationToken && state === 'success');
+  }
 
   if (message.exchange.endsWith('task-exception') || message.exchange.endsWith('task-failed')) {
     state = 'failure';

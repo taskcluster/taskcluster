@@ -11,7 +11,6 @@ suite(testing.suiteName(), function() {
     await helper.withDbClient(async client => {
       await client.query('delete from github_builds');
     });
-    helper.fakeDb.github.reset();
   });
 
   suite('github_builds', function() {

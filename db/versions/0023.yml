@@ -77,7 +77,7 @@ methods:
         end if;
         return query
           select
-            taskcluster_github_builds_entities_scan.partition_key,
+            encode_string_key(task_group_id),
             'taskGroupId' as row_key,
             jsonb_build_object(
               'PartitionKey', encode_string_key(task_group_id),
@@ -99,8 +99,14 @@ methods:
             partition_key is null or
             task_group_id = decode_string_key(partition_key)
           order by task_group_id
-          limit size + 1
-          offset page;
+          limit case
+            when (size is not null and size > 0) then size + 1
+            else null
+          end
+          offset case
+            when (page is not null and page > 0) then page
+            else 0
+          end;
       end
   taskcluster_github_builds_entities_remove:
     serviceName: github

@@ -35,6 +35,7 @@ begin
     alter column event_id set not null,
     alter column etag set not null,
     alter column etag set default public.gen_random_uuid();
+  create index on github_builds (organization, repository, sha);
 
   revoke select, insert, update, delete on taskcluster_github_builds_entities from $db_user_prefix$_github;
   drop table taskcluster_github_builds_entities;
