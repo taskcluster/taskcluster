@@ -2,7 +2,7 @@ const {Pool} = require('pg');
 const pg = require('pg');
 const crypto = require('crypto');
 const {dollarQuote, annotateError} = require('./util');
-const Keyring = require('./Keyring');
+const {CryptoKeyring} = require('./Keyring');
 const assert = require('assert').strict;
 const {READ, WRITE, DUPLICATE_OBJECT, UNDEFINED_TABLE} = require('./constants');
 const {MonitorManager} = require('taskcluster-lib-monitor');
@@ -60,14 +60,14 @@ class Database {
     assert(serviceName, 'serviceName is required');
     assert(monitor !== undefined, 'monitor is required (but use `false` to disable)');
 
-    const keyring = new Keyring({azureCryptoKey, dbCryptoKeys});
+    const cryptoKeyring = new CryptoKeyring({azureCryptoKey, dbCryptoKeys});
 
     const db = new Database({
       urlsByMode: {[READ]: readDbUrl, [WRITE]: writeDbUrl},
       monitor,
       statementTimeout,
       poolSize,
-      keyring,
+      cryptoKeyring,
     });
     db._createProcs({schema, serviceName});
 
@@ -499,7 +499,7 @@ class Database {
   /**
    * Private constructor (use Database.setup and Database.upgrade instead)
    */
-  constructor({urlsByMode, monitor, statementTimeout, poolSize, keyring}) {
+  constructor({urlsByMode, monitor, statementTimeout, poolSize, cryptoKeyring}) {
     assert(!statementTimeout || typeof statementTimeout === 'number' || typeof statementTimeout === 'boolean');
     const makePool = dbUrl => {
       // default to a max of 5 connections. For services running both a read
@@ -554,7 +554,7 @@ class Database {
     this._startMonitoringPools();
 
     this.fns = {};
-    this.keyring = keyring;
+    this.cryptoKeyring = cryptoKeyring;
   }
 
   /**
@@ -682,7 +682,7 @@ class Database {
    */
   encrypt({value}) {
     assert(value instanceof Buffer, 'Encrypted values must be Buffers');
-    const {id, key} = this.keyring.currentCryptoKey('aes-256');
+    const {id, key} = this.cryptoKeyring.currentKey('aes-256');
 
     const iv = crypto.randomBytes(16);
     const cipher = crypto.createCipheriv('aes-256-cbc', key, iv);
@@ -707,7 +707,7 @@ class Database {
    * have one property.
    */
   decrypt({value}) {
-    const key = this.keyring.getCryptoKey(value.kid, 'aes-256');
+    const key = this.cryptoKeyring.getKey(value.kid, 'aes-256');
 
     const n = value['__bufchunks_val'];
     const chunks = [];

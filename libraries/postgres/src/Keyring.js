@@ -4,64 +4,70 @@ class Keyring {
   /**
    * Construct a new keyring from a service's configuration.
    */
-  constructor({azureCryptoKey, dbCryptoKeys}) {
-    this.crypto = new Map();
-    this.currentCrypto = undefined;
+  constructor({keys, kind}) {
+    this.kind = kind;
+    this.keys = new Map();
+    this.current = undefined;
 
-    const algos = {
-      'aes-256': ({id, key}) => {
-        key = Buffer.from(key, 'base64');
-        assert.equal(key.length, 32, `aes-256 key must be 32 bytes in base64 in ${id}`);
-        return key;
-      },
-    };
-
-    // Azure-compatible configuration format
-    if (azureCryptoKey) {
-      this.crypto.set('azure', {algo: 'aes-256', key: algos['aes-256']({id: 'azure', key: azureCryptoKey})});
-      this.currentCrypto = 'azure';
-    }
-
-    // Our standard postgres keys. Anything in here will be considered more current than azure keys.
-    // A key here with the name `azure` will override `azureCryptoKey`.
-    if (dbCryptoKeys) {
-      for (const {id, algo, key} of dbCryptoKeys) {
-        assert(id, 'Keyring crypto keys must have `id`');
-        assert(algo, 'Keyring crypto keys must have `algo`');
-        assert(key, 'Keyring crypto keys must have `key`');
-        if (!Object.keys(algos).includes(algo)) {
-          throw new Error(`Keyring crypto keys algo must be in ${Object.keys(algos)}. Got ${algo} for ${id}`);
-        }
-        this.crypto.set(id, {algo, key: algos[algo]({id, key})});
-        this.currentCrypto = id;
-      }
+    for (const {id, algo, key} of keys) {
+      assert(id, `${this.kind} key is missing 'id'`);
+      assert(algo, `${this.kind} key ${id} is missing 'algo'`);
+      assert(key, `${this.kind} key ${id} is missing 'key'`);
+      this.keys.set(id, {algo, key: this.processKeyConfig({id, algo, key})});
+      this.current = id;
     }
   }
 
   /**
    * Get the current key, to be used for encryption. This double
    * checks that the key is built for the given algorithm.  The
-   * result is the raw key material.  Throws an exception if no
+   * result is {id, algo, key}.  Throws an exception if no
    * key is available, to avoid accidentally null-encrypting data.
    */
-  currentCryptoKey(algo) {
-    assert(this.currentCrypto, "no current key is configured");
-    const key = this.getCryptoKey(this.currentCrypto, algo);
-    return {id: this.currentCrypto, key};
+  currentKey(algo) {
+    assert(this.current, `no current ${this.kind} key is configured`);
+    const key = this.getKey(this.current, algo);
+    return {id: this.current, algo, key};
   }
 
   /**
    * Get a key by key-id, returning undefined if not found. This
-   * also checks the algorithm, failing if there is no match.
+   * also checks the algorithm, failing if there is no match. This
+   * returns the raw key material.
    */
-  getCryptoKey(kid, algo) {
-    const crypto = this.crypto.get(kid);
-    if (!crypto) {
-      throw new Error(`Crypto key not found: \`${kid}\``);
+  getKey(kid, algo) {
+    const k = this.keys.get(kid);
+    if (!k) {
+      throw new Error(`${this.kind} key not found: \`${kid}\``);
     }
-    assert.equal(crypto.algo, algo, `key ${kid}'s algorithm is not ${algo}`);
-    return crypto.key;
+    assert.equal(k.algo, algo, `key ${kid}'s algorithm is not ${algo}`);
+    return k.key;
   }
 }
 
-module.exports = Keyring;
+class CryptoKeyring extends Keyring {
+  constructor({azureCryptoKey, dbCryptoKeys}) {
+    super({
+      kind: 'crypto',
+      keys: [
+        // begin with the azure-compatible config..
+        ...azureCryptoKey ? [{id: 'azure', key: azureCryptoKey, algo: 'aes-256'}] : [],
+        // ..followed by the normal-style config
+        ...dbCryptoKeys || [],
+      ]});
+  }
+
+  processKeyConfig({id, algo, key}) {
+    switch (algo) {
+      case 'aes-256':
+        key = Buffer.from(key, 'base64');
+        assert.equal(key.length, 32, `aes-256 key must be 32 bytes in base64 in ${id}`);
+        return key;
+
+      default:
+        throw new Error(`crypto key ${id} has invalid algo ${algo}`);
+    }
+  }
+}
+
+module.exports = {CryptoKeyring};

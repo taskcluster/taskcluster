@@ -540,9 +540,9 @@ helper.dbSuite(path.basename(__filename), function() {
       }), err => err.code === 'ERR_ASSERTION');
     });
 
-    test('setup creates keyring', async function() {
+    test('setup creates cryptoKeyring', async function() {
       db = await Database.setup({schema, readDbUrl: helper.dbUrl, writeDbUrl: helper.dbUrl, serviceName: 'service-1', monitor});
-      assert(db.keyring);
+      assert(db.cryptoKeyring);
     });
 
     test('methods do not allow SQL injection', async function() {
@@ -729,7 +729,7 @@ helper.dbSuite(path.basename(__filename), function() {
         serviceName: 'service-2', monitor, azureCryptoKey, dbCryptoKeys: [
           {id: 'foo', algo: 'aes-256', key: pgCryptoKey},
         ]});
-      assert.equal(new_db.keyring.currentCryptoKey('aes-256').id, 'foo');
+      assert.equal(new_db.cryptoKeyring.currentKey('aes-256').id, 'foo');
       const decrypted = new_db.decrypt({value: encrypted});
       assert.equal(decrypted.toString(), 'hi');
 
@@ -741,7 +741,7 @@ helper.dbSuite(path.basename(__filename), function() {
       // This db does not have the new key so it should not be able to decrypt
       assert.throws(() => {
         db.decrypt({value: new_encrypted});
-      }, /Crypto key not found: `foo`/);
+      }, /crypto key not found: `foo`/);
     });
 
     test('decrypt simple from lib-entities', async function() {
@@ -771,12 +771,12 @@ helper.dbSuite(path.basename(__filename), function() {
         serviceName: 'service-2', monitor});
       assert.throws(() => {
         bad_db.encrypt({value: Buffer.from('hi')});
-      }, /no current key is configured/);
+      }, /no current crypto key is configured/);
 
       const encrypted = db.encrypt({value: Buffer.from('hi')});
       assert.throws(() => {
         bad_db.decrypt({value: encrypted});
-      }, /Crypto key not found: `azure`/);
+      }, /crypto key not found: `azure`/);
     });
 
     test('encrypt errors for non-buffers', async function() {
