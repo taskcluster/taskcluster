@@ -14,6 +14,7 @@ const {
 const path = require('path');
 const assert = require('assert').strict;
 const Entity = require('taskcluster-lib-entities');
+const stableStringify = require('fast-json-stable-stringify');
 
 const monitor = helper.monitor;
 
@@ -783,6 +784,66 @@ helper.dbSuite(path.basename(__filename), function() {
       assert.throws(() => {
         db.encrypt({value: 'i am just a string'});
       }, /Encrypted values must be Buffers/);
+    });
+  });
+
+  suite('signing', function() {
+    const azureSigningKey = 'top-secret';
+    const pgSigningKey = 'classified';
+
+    const signingSerializations = [
+      row => stableStringify([row.column1, row.column2]),
+      row => stableStringify([row.column1, row.column2, row.column3]),
+    ];
+
+    setup(async function() {
+      db = await Database.setup({schema, readDbUrl: helper.dbUrl, writeDbUrl: helper.dbUrl,
+        serviceName: 'service-2', monitor, azureSigningKey});
+    });
+
+    test('sign a simple row', async function() {
+      const row = {column1: 'abc', column2: 'def', column3: 'xxx'};
+      const signature = db.sign({row, signingSerializations});
+      assert.equal(signature.v, 0);
+      assert.equal(signature.ser, 1);
+      assert.equal(signature.kid, 'azure');
+      assert.equal(signature.sig, 'A2kh+yXvCqNYF7fL0Nhyo+TcnE6oXsN0k3aylLUzUOtS4PsNj82V+bd7BsLKxNePJ347VbMRgqwUKc3A5xh6vQ==');
+
+      assert(db.verifySignature({row, signature, signingSerializations}));
+    });
+
+    test('bad signature fails to validate', async function() {
+      const row = {column1: 'abc', column2: 'def', column3: 'xxx'};
+      const signature = db.sign({row, signingSerializations});
+      row.column1 = 'ABC';
+      assert(!db.verifySignature({row, signature, signingSerializations}));
+    });
+
+    test('sign a row with an old ser', async function() {
+      const row = {column1: 'abc', column2: 'def'};
+      const signature = db.sign({row, signingSerializations: signingSerializations.slice(0, 1)});
+      assert.equal(signature.v, 0);
+      assert.equal(signature.ser, 0);
+      assert.equal(signature.kid, 'azure');
+      assert.equal(signature.sig, 'yfsG8ASoKihprcz49EGA6sGQdKoslKzp8LPoaZ/lmYyO8QS3TwQnWOYUErBSMhlcUVz5S8JVcJhTNkroy0i4+g==');
+
+      assert(db.verifySignature({row, signature, signingSerializations}));
+    });
+
+    test('sign a row with an old key', async function() {
+      const row = {column1: 'abc', column2: 'def', column3: 'xxx'};
+      const signature = db.sign({row, signingSerializations});
+      assert.equal(signature.v, 0);
+      assert.equal(signature.ser, 1);
+      assert.equal(signature.kid, 'azure');
+      assert.equal(signature.sig, 'A2kh+yXvCqNYF7fL0Nhyo+TcnE6oXsN0k3aylLUzUOtS4PsNj82V+bd7BsLKxNePJ347VbMRgqwUKc3A5xh6vQ==');
+
+      // This new_db does not have azureSigningKey as it's current key but can still read old encryptions
+      const new_db = await Database.setup({schema, readDbUrl: helper.dbUrl, writeDbUrl: helper.dbUrl,
+        serviceName: 'service-2', monitor, azureSigningKey, dbSigningKeys: [
+          {id: 'foo', algo: 'hmac-sha512', key: pgSigningKey},
+        ]});
+      assert(new_db.verifySignature({row, signature, signingSerializations}));
     });
   });
 });

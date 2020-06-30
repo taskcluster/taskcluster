@@ -26,6 +26,8 @@ const db = Database.setup({
   poolSize: ..., // optional, default 5
   azureCryptoKey: ..., // optional, only required to read lib-entities encrypted data
   dbCryptoKeys: ..., // optional, only required if encrypting columns, usually from cfg.postgres.dbCryptoKeys
+  azureSigningKey: ..., // optional, only required to read lib-entities signed data
+  dbSigningKeys: ..., // optional, only required if signing rows, usually from cfg.postgres.dbSigningKeys
 });
 ```
 
@@ -35,7 +37,7 @@ The `monitor` is a taskcluster-lib-monitor instance, used to report database met
 if `statementTimeout` is set, then it is treated as a timeout (in milliseconds) after which a statement will be aborted.
 This is typically used in web processes to abort statements running longer than 30s, after which time the HTTP client has likely given up.
 
-The `azureCryptoKey`, and `dbCryptoKeys` parameters are explained below in "Secret Data" and "Encryption".
+The `azureSigningKey`, `dbSigningKeys`, `azureCryptoKey`, and `dbCryptoKeys` parameters are explained below in "Secret Data", "Encryption", and "Signing".
 
 The `poolSize` parameter specifies the maximum number of Postgres clients in each pool of clients, with two pools (read and write) in use.
 DB function calls made when there are no clients available will be queued and wait until a client is avaliable.
@@ -256,7 +258,7 @@ Both take a parameter named `value` that will either be encrypted and built into
 or pulled out of that format and decryped.
 
 To enable encryption/decryption, provide `Database.setup` with at least one of `azureCryptoKey` or `dbCryptoKeys`. The first
-of which is the key that `lib-entities` used for encryption. The latter is structured like
+of which is the key that `lib-entities` used for encryption. The latter is an array of keys with properties `id`, `algo`, and `key`:
 
 ```javascript
 [
@@ -277,7 +279,7 @@ Once the database has been set up, encryption and decryption can be used as foll
 ```javascript
 await db.fns.create_widget(widgetId, db.encrypt({value: Buffer.from(widgetCode, 'utf8')}));
 
-const rows = db.fns.get_widget(widgetId);
+const rows = await db.fns.get_widget(widgetId);
 console.log(db.decrypt({value: rows[0].widget_code}).toString('utf8'));
 ```
 
@@ -291,7 +293,7 @@ In many cases, this can be combined with an expiration task.
 The current version is available in the `CRYPTO_VERSION` constant of this library, and can be passed to an DB function to select rows that need to be updated (`.. where (secret_column -> 'v')::integer != $1 or secret_column -> 'kid' != $2 ..` with parameters `CRYPTO_VERSION` and the current key identifier).
 For any matching rows, the task should simply pass the secret value through `decryptColumn` and `encryptColumn` to generate an up-to-date value for the crypto container.
 
-### Container Version 0
+### Crypto Container Version 0
 
 Version 0 corresponds to the encryption format supported by [azure-entities](https://github.com/taskcluster/azure-entities).
 The properties are defined in the [`BaseBufferType` constructor](https://github.com/taskcluster/azure-entities/blob/c6f63e3553c71f0859a5d6338ce5e7c7eb8c9671/src/entitytypes.js#L496-L508):  `__bufchunks_val` and `__bufN_val` for N = 0 to `__bufchunks_val`.
@@ -299,6 +301,61 @@ The binary payload is derived by first base64-decoding each `__bufN_val` propert
 
 That binary payload, in turn, is defined in the [`EncryptedBaseType` constructor](https://github.com/taskcluster/azure-entities/blob/c6f63e3553c71f0859a5d6338ce5e7c7eb8c9671/src/entitytypes.js#L716-L725).
 It is the concatenation of a 128-bit (16-byte) random initialization vector (`iv`) and the ciphertext produced by aes-256 in CBC mode.
+
+## Signing
+
+Taskcluster signs database rows, generally including all columns in the row.
+The signature takes the form of a "signature container", similar to a "crypto container", a JSONB object with properties `kid`, `v`, and `ser`.
+The `kid` field references signing keys (a distinct set from crypto keys), and the versions in `v` are numbered distinctly from crypto containers.
+This container is typically stored in a `signature` column.
+
+The versions `v` encompass algorithm and encoding, and are described below.
+
+The `ser` property, short for "serialization", is an integener defining the columns that are included in the serialized input to the signature algorithm.
+When a table migration occurs that adds a column to the signature, a new `ser` must be introduced, with the old version continuing to verify the old data.
+Note that removing a signed column is impossible without dropping all rows from the table, as otherwise existing signatures would become invalid.
+
+Care must be taken when constructing a serialization for data previously signed by taskcluster-lib-entities, as the serialization is done at the byte level and involves carefully formatted inputs for each column.
+
+### Signing and Verification API
+
+Both signing and verification expect a row object an an array of functions for serialization of the row, indexed by `ser`:
+
+```javascript
+const signingSerializations = [
+  row => stableStringify([row.a_column, row.another]),
+  row => stableStringify([row.a_column, row.another, row.new_column]),
+]
+```
+
+Given this definition, the signature can be generated by `db.sign(row, signingSerializations)`, which will use the last-defined signing serialization.
+The signature can then be verified with `db.verifySignature(row, signature, signingSerializations)`.
+
+```javascript
+const row = {widgetId, aColumn, another};
+row.signature = db.sign({row, signingSerializations});
+
+await db.fns.create_widget(row.widgetId, row.aColumn, row.another, row.signature);
+
+const rows = await db.fns.get_widget(widgetId);
+const valid = db.verifySignature({
+  row: rows[0],
+  signature: rows[0].signature,
+  signingSerializations,
+});
+```
+
+### Updating Tables With New Keys or New Serializations
+
+Every service with signed data should have a periodic task that updates all rows of the table to use the current key, version, and serialization version.
+In many cases, this can be combined with an expiration task.
+The current version is available in the `SIGNING_VERSION` constant of this library, and can be passed to an DB function to select rows that need to be updated (`.. where (signature -> 'v')::integer != $1 or signature -> 'kid' != $2 ..` with parameters `SIGNING_VERSION` and the current key identifier).
+For any matching rows, the task should simply verify the signature and then re-calculate the signature and write the row back.
+
+### Signature Container Version 0
+
+Container version 0 corresponds to the signing format supported by [azure-entities](https://github.com/taskcluster/azure-entities).
+A version 0 container has a `sig` property containing the base64-encoded HMAC-512 digest of the signing key and the serialized input.
 
 ## Security Invariants
 

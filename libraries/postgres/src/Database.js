@@ -2,7 +2,7 @@ const {Pool} = require('pg');
 const pg = require('pg');
 const crypto = require('crypto');
 const {dollarQuote, annotateError} = require('./util');
-const {CryptoKeyring} = require('./Keyring');
+const {CryptoKeyring, SigningKeyring} = require('./Keyring');
 const assert = require('assert').strict;
 const {READ, WRITE, DUPLICATE_OBJECT, UNDEFINED_TABLE} = require('./constants');
 const {MonitorManager} = require('taskcluster-lib-monitor');
@@ -48,12 +48,32 @@ MonitorManager.register({
   },
 });
 
+/** Fixed time comparison of two buffers */
+const fixedTimeComparison = function(b1, b2) {
+  let mismatch = 0;
+  mismatch |= !(b1 instanceof Buffer);
+  mismatch |= !(b2 instanceof Buffer);
+  mismatch |= b1.length !== b2.length;
+
+  if (mismatch === 1) {
+    return false;
+  }
+
+  const n = b1.length;
+
+  for (let i = 0; i < n; i++) {
+    mismatch |= b1[i] ^ b2[i];
+  }
+
+  return mismatch === 0;
+};
+
 class Database {
   /**
    * Get a new Database instance
    */
-  static async setup({schema, readDbUrl, writeDbUrl, dbCryptoKeys,
-    azureCryptoKey, serviceName, monitor, statementTimeout, poolSize}) {
+  static async setup({schema, readDbUrl, writeDbUrl, dbCryptoKeys, dbSigningKeys,
+    azureCryptoKey, azureSigningKey, serviceName, monitor, statementTimeout, poolSize}) {
     assert(readDbUrl, 'readDbUrl is required');
     assert(writeDbUrl, 'writeDbUrl is required');
     assert(schema, 'schema is required');
@@ -61,6 +81,7 @@ class Database {
     assert(monitor !== undefined, 'monitor is required (but use `false` to disable)');
 
     const cryptoKeyring = new CryptoKeyring({azureCryptoKey, dbCryptoKeys});
+    const signingKeyring = new SigningKeyring({azureSigningKey, dbSigningKeys});
 
     const db = new Database({
       urlsByMode: {[READ]: readDbUrl, [WRITE]: writeDbUrl},
@@ -68,6 +89,7 @@ class Database {
       statementTimeout,
       poolSize,
       cryptoKeyring,
+      signingKeyring,
     });
     db._createProcs({schema, serviceName});
 
@@ -499,7 +521,7 @@ class Database {
   /**
    * Private constructor (use Database.setup and Database.upgrade instead)
    */
-  constructor({urlsByMode, monitor, statementTimeout, poolSize, cryptoKeyring}) {
+  constructor({urlsByMode, monitor, statementTimeout, poolSize, cryptoKeyring, signingKeyring}) {
     assert(!statementTimeout || typeof statementTimeout === 'number' || typeof statementTimeout === 'boolean');
     const makePool = dbUrl => {
       // default to a max of 5 connections. For services running both a read
@@ -555,6 +577,7 @@ class Database {
 
     this.fns = {};
     this.cryptoKeyring = cryptoKeyring;
+    this.signingKeyring = signingKeyring;
   }
 
   /**
@@ -722,6 +745,49 @@ class Database {
     const b2 = decipher.final();
 
     return Buffer.concat([b1, b2]);
+  }
+
+  /**
+   * Given a row and an array of serialization functions, generate a signature
+   * container using the last serialization in the array.
+   */
+  sign({row, signingSerializations}) {
+    const ser = signingSerializations.length - 1;
+    const v = 0;
+    const {id: kid} = this.signingKeyring.currentKey('hmac-sha512');
+    const sig = this.calculateSignature({row, kid, v, ser, signingSerializations});
+    return {v, ser, kid, sig};
+  }
+
+  /**
+   * Given a row, signature, and serializations, verify the signature.  This
+   * performs a fixed-time comparison to avoid timing attacks on the signature.
+   * Returns true if the signature is valid.
+   */
+  verifySignature({row, signature, signingSerializations}) {
+    const sig = this.calculateSignature({
+      row,
+      kid: signature.kid,
+      v: signature.v,
+      ser: signature.ser,
+      signingSerializations,
+    });
+    return fixedTimeComparison(Buffer.from(signature.sig, 'base64'), Buffer.from(sig, 'base64'));
+  }
+
+  /**
+   * Helper for sign and verifySignature
+   */
+  calculateSignature({row, kid, v, ser, signingSerializations}) {
+    assert.equal(v, 0); // only supported v right now
+
+    const key = this.signingKeyring.getKey(kid, 'hmac-sha512');
+
+    const serialized = signingSerializations[ser](row);
+
+    const hash = crypto.createHmac('sha512', key);
+    hash.update(serialized);
+    return hash.digest().toString('base64');
   }
 }
 

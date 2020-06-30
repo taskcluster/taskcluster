@@ -70,4 +70,28 @@ class CryptoKeyring extends Keyring {
   }
 }
 
-module.exports = {CryptoKeyring};
+class SigningKeyring extends Keyring {
+  constructor({azureSigningKey, dbSigningKeys}) {
+    super({
+      kind: 'signing',
+      keys: [
+        // begin with the azure-compatible config..
+        ...azureSigningKey ? [{id: 'azure', key: azureSigningKey, algo: 'hmac-sha512'}] : [],
+        // ..followed by the normal-style config
+        ...dbSigningKeys || [],
+      ]});
+  }
+
+  processKeyConfig({id, algo, key}) {
+    switch (algo) {
+      case 'hmac-sha512':
+        assert.equal(typeof key, 'string', 'hmac-sha512 key must be a string');
+        return Buffer.from(key, 'utf8');
+
+      default:
+        throw new Error(`crypto key ${id} has invalid algo ${algo}`);
+    }
+  }
+}
+
+module.exports = {CryptoKeyring, SigningKeyring};
