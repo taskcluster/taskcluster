@@ -239,6 +239,13 @@
   },
   {
     "element": "h2",
+    "id": "supporting-signed-rows",
+    "path": "/manual/deploying/database",
+    "subtitle": "Supporting Signed Rows",
+    "title": "Database Configuration"
+  },
+  {
+    "element": "h2",
     "id": "upgrades",
     "path": "/manual/deploying/database",
     "subtitle": "Upgrades",

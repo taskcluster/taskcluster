@@ -291,15 +291,16 @@ they actually exercise all of the DB functionality.  For example, is the list
 endpoint's pagination behavior tested?  Do the tests try to get a resource
 that doesn't exist?
 
+## Signing
+
+Where an Azure table's rows were signed, we need to update that table in such a way that we can still calcluate the exact same inputs for the signing function.
+The migration scripts have no access to the signing secrets, and thus cannot re-sign the table data.
+Instead, they will need to create a "signing container" as documented in the taskcluster-lib-postgres documentation, containing the `Signature` column from the entities table.
+
+The JS code to access the table must then specify a signing serialization that matches that used by Azure entities.
+Use the `azureEntitiesSerialization` function, and provide it inputs based on the `hash` functions defined in `libraries/entities/src/entittypes.js`.
+Of course, use the upgrade and downgrade tests to verify that the signatures validate using both taskcluster-lib-entities and the new validation.
+
 # Future Challenges
 
-A few potential issues remain to be solved, by whichever lucky engineer
-encounters them first:
-
- * encrypted entities properties
- * signed entities rows
- * novel entity property types (Text, SlugIdArray, etc.)
- * migration of huge tables without downtime (or do we just plan the downtime?)
- * more complex conditions in `_scan` functions
-
-Feel free to discuss these with other team members to find a good solution.
+Feel free to discuss any challenges with other team members to find a good solution.

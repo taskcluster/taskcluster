@@ -125,14 +125,39 @@ is a JSON array where each element is an object of the form
 }
 ```
 
-The last element of the array will be the current key and all encryption will be performed with it. Other keys are used in decryption of values that were encrypted with the
-older key. This allows you to rotate your encryption keys. At the current time, Taskcluster implicitly treats `azure_crypto_key` as the oldest element of this list, with id `azure`, to maintain compatibility with existing configurations.
-from older table formats.
+The last element of the array will be the current key and all encryption will
+be performed with it. Other keys are used in decryption of values that were
+encrypted with the older key. This allows you to rotate your encryption keys.
+At the current time, Taskcluster implicitly treats the `azure_crypto_key`
+configuration as the oldest element of this list, with id `azure`, to maintain
+compatibility with existing configurations from older table formats.
 
 An easy way to create a random key, using a CSPRNG, is:
 ```shell
 $ echo "console.log(require('crypto').randomBytes(32).toString('base64'));" | node
 ```
+
+## Supporting Signed Rows
+
+Configuration for signed rows is similar to that for encrypted columns, but uses different configuration and different keys.
+
+The `db_signing_keys` key of a service configuration is a JSON array where each element is of the form
+
+```json
+{
+  "id": "a unique identifier",
+  "algo": "hmac-sha512",
+  "key": "any string"
+}
+```
+
+The key is used as input to HMAC, so it should be long enough to have
+sufficient entropy but otherwise can contain anything.  The same function given
+above to generate encryption keys is suitable.
+
+As with encryption, the last element in this array is used to sign new and
+updated table rows.  If `azure_signing_key` is given, it is treated as if it
+was the first entry in the `db_signing_keys` array, with id "azure".
 
 ## Upgrades
 
