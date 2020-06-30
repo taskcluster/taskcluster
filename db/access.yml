@@ -25,7 +25,7 @@ index:
     namespaces_entities: write
 notify:
   tables:
-    denylisted_notification_entities: write
+    denylisted_notifications: write
 purge_cache:
   tables:
     cache_purges: write

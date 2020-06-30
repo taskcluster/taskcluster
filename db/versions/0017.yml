@@ -1,0 +1,104 @@
+version: 17
+migrationScript: 0017-migration.sql
+downgradeScript: 0017-downgrade.sql
+methods:
+  denylisted_notification_entities_load:
+    description: See taskcluster-lib-entities
+    mode: read
+    serviceName: notify
+    args: partition_key text, row_key text
+    returns: table (partition_key_out text, row_key_out text, value jsonb, version integer, etag uuid)
+    body: |-
+      begin
+        return query
+        select
+          denylisted_notification_entities_load.partition_key,
+          denylisted_notification_entities_load.row_key,
+          jsonb_build_object(
+            'PartitionKey', denylisted_notification_entities_load.partition_key,
+            'RowKey', denylisted_notification_entities_load.row_key,
+            'notificationType', notification_type,
+            'notificationAddress', notification_address) as value,
+          1 as version,
+          denylisted_notifications.etag as etag
+        from denylisted_notifications
+        where
+          denylisted_notifications.notification_type = decode_string_key(denylisted_notification_entities_load.partition_key) and denylisted_notifications.notification_address = decode_string_key(denylisted_notification_entities_load.row_key);
+      end
+  denylisted_notification_entities_create:
+    serviceName: notify
+    description: See taskcluster-lib-entities
+    mode: write
+    args: pk text, rk text, properties jsonb, overwrite boolean, version integer
+    returns: uuid
+    body: |-
+      declare
+        new_row denylisted_notifications%ROWTYPE;
+      begin
+        select
+          (properties ->> 'notificationType')::text as notification_type,
+          (properties ->> 'notificationAddress')::text as notification_address,
+          public.gen_random_uuid() as etag
+        into new_row;
+        if overwrite then
+          raise exception 'overwrite not implemented';
+        else
+          execute 'insert into denylisted_notifications select $1.*' using new_row;
+        end if;
+        return new_row.etag;
+      end
+  denylisted_notification_entities_remove:
+    serviceName: notify
+    description: See taskcluster-lib-entities
+    mode: write
+    args: partition_key text, row_key text
+    returns: table (etag uuid)
+    body: |-
+      begin
+        return query delete from denylisted_notifications
+        where
+          denylisted_notifications.notification_type = decode_string_key(denylisted_notification_entities_remove.partition_key) and denylisted_notifications.notification_address = decode_string_key(denylisted_notification_entities_remove.row_key)
+        returning denylisted_notifications.etag;
+      end
+  denylisted_notification_entities_scan:
+    description: See taskcluster-lib-entities
+    mode: read
+    serviceName: notify
+    args: pk text, rk text, condition text, size integer, page integer
+    returns: table (partition_key text, row_key text, value jsonb, version integer, etag uuid)
+    body: |-
+      declare
+        cond text[];
+        exp_cond_operator text;
+        exp_cond_operand timestamptz;
+        partition_key_var text;
+        row_key_var text;
+      begin
+        if not condition is null then
+          raise exception 'no condition support in denylisted_notification_entities_scan';
+        else
+          return query select
+            encode_string_key(denylisted_notifications.notification_type) as partition_key,
+            encode_string_key(denylisted_notifications.notification_address) as row_key,
+            jsonb_build_object(
+              'PartitionKey', encode_string_key(denylisted_notifications.notification_type),
+              'RowKey', encode_string_key(denylisted_notifications.notification_address),
+              'notificationType', notification_type,
+              'notificationAddress', notification_address
+            ) as value,
+            1 as version,
+            denylisted_notifications.etag as etag from denylisted_notifications
+          where
+            (denylisted_notification_entities_scan.pk is null or decode_string_key(denylisted_notification_entities_scan.pk) = notification_type) and
+            (denylisted_notification_entities_scan.rk is null or decode_string_key(denylisted_notification_entities_scan.rk) = notification_address)
+          order by denylisted_notifications.notification_type, denylisted_notifications.notification_address
+          limit case
+            when (size is not null and size > 0) then size + 1
+            else null
+          end
+          offset case
+            when (size is not null and size > 0 and page is not null and page > 0) then page
+            else 0
+          end;
+        end if;
+      end

@@ -329,7 +329,7 @@ exports.resetTables = (mock, skipping) => {
     } else {
       const sec = exports.secrets.get('db');
       await resetTables({ testDbUrl: sec.testDbUrl, tableNames: [
-        'denylisted_notification_entities',
+        'denylisted_notifications',
         'widgets',
       ]});
     }
