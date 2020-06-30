@@ -315,8 +315,6 @@ The `ser` property, short for "serialization", is an integener defining the colu
 When a table migration occurs that adds a column to the signature, a new `ser` must be introduced, with the old version continuing to verify the old data.
 Note that removing a signed column is impossible without dropping all rows from the table, as otherwise existing signatures would become invalid.
 
-Care must be taken when constructing a serialization for data previously signed by taskcluster-lib-entities, as the serialization is done at the byte level and involves carefully formatted inputs for each column.
-
 ### Signing and Verification API
 
 Both signing and verification expect a row object an an array of functions for serialization of the row, indexed by `ser`:
@@ -343,6 +341,22 @@ const valid = db.verifySignature({
   signature: rows[0].signature,
   signingSerializations,
 });
+```
+
+The `azureEntitiesSerialization` utility function performs part of the serialization operation used by azure-entities.
+It requires as input an object mapping property names to the *hashed* version of their values, where the hashes are defined by each entity value type.
+The function sorts the properties and encodes them using the 32-bit run-length-encoding introduced by azure-entities.
+
+```javascript
+const signingSerializations = [
+  row => azureEntitiesSerialization({
+    // strings hash as themselves
+    id: row.id,
+    name: row.name,
+    // hash value of an integer column is the string form of the integer
+    count: row.count.toString(),
+  }),
+];
 ```
 
 ### Updating Tables With New Keys or New Serializations

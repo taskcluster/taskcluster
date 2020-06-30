@@ -2,6 +2,7 @@ const helper = require('./helper');
 const {
   Schema,
   Database,
+  azureEntitiesSerialization,
   READ,
   WRITE,
   DUPLICATE_OBJECT,
@@ -788,7 +789,7 @@ helper.dbSuite(path.basename(__filename), function() {
   });
 
   suite('signing', function() {
-    const azureSigningKey = 'top-secret';
+    const azureSigningKey = 'no-way-you-can-guess-this';
     const pgSigningKey = 'classified';
 
     const signingSerializations = [
@@ -807,7 +808,7 @@ helper.dbSuite(path.basename(__filename), function() {
       assert.equal(signature.v, 0);
       assert.equal(signature.ser, 1);
       assert.equal(signature.kid, 'azure');
-      assert.equal(signature.sig, 'A2kh+yXvCqNYF7fL0Nhyo+TcnE6oXsN0k3aylLUzUOtS4PsNj82V+bd7BsLKxNePJ347VbMRgqwUKc3A5xh6vQ==');
+      assert.equal(signature.sig, 'zTZt8KxusLG+9mMULV9YjWsMsOU337I1D43kxkl9yur/aGrRAMdp9Yqn4nPpmXpElPbuiEBXH9lUMJzYexOnEg==');
 
       assert(db.verifySignature({row, signature, signingSerializations}));
     });
@@ -825,7 +826,7 @@ helper.dbSuite(path.basename(__filename), function() {
       assert.equal(signature.v, 0);
       assert.equal(signature.ser, 0);
       assert.equal(signature.kid, 'azure');
-      assert.equal(signature.sig, 'yfsG8ASoKihprcz49EGA6sGQdKoslKzp8LPoaZ/lmYyO8QS3TwQnWOYUErBSMhlcUVz5S8JVcJhTNkroy0i4+g==');
+      assert.equal(signature.sig, 'RmFt8jIVO2mR0YgQBSCJTzNV2uCTyJnm0kiNpOuekV9STHHC1sAvwXxNONKolpHmMgELxzun7PW9ytQUoXs5qg==');
 
       assert(db.verifySignature({row, signature, signingSerializations}));
     });
@@ -836,7 +837,7 @@ helper.dbSuite(path.basename(__filename), function() {
       assert.equal(signature.v, 0);
       assert.equal(signature.ser, 1);
       assert.equal(signature.kid, 'azure');
-      assert.equal(signature.sig, 'A2kh+yXvCqNYF7fL0Nhyo+TcnE6oXsN0k3aylLUzUOtS4PsNj82V+bd7BsLKxNePJ347VbMRgqwUKc3A5xh6vQ==');
+      assert.equal(signature.sig, 'zTZt8KxusLG+9mMULV9YjWsMsOU337I1D43kxkl9yur/aGrRAMdp9Yqn4nPpmXpElPbuiEBXH9lUMJzYexOnEg==');
 
       // This new_db does not have azureSigningKey as it's current key but can still read old encryptions
       const new_db = await Database.setup({schema, readDbUrl: helper.dbUrl, writeDbUrl: helper.dbUrl,
@@ -844,6 +845,25 @@ helper.dbSuite(path.basename(__filename), function() {
           {id: 'foo', algo: 'hmac-sha512', key: pgSigningKey},
         ]});
       assert(new_db.verifySignature({row, signature, signingSerializations}));
+    });
+
+    test('azure-compatible signing produces the same signature', async function() {
+      // this is taken from the azure-entities tests
+      const row = {
+        id: 'ZqZrh4PeQp6eS6alJNANLg',
+        name: 'stable entity',
+        count: 42,
+      };
+      const signingSerializations = [
+        row => azureEntitiesSerialization({
+          id: row.id,
+          name: row.name,
+          count: row.count.toString(),
+        }),
+      ];
+      const signature = db.sign({row, signingSerializations});
+      assert.equal(signature.sig,
+        'Ngc8HXokZRUuUJadEPtlYXbDPrV/C52eCR6aviiyLtaxvaV1LrWy0tFOjx0LzsiCd2Tq2dciEtL65cIfK8ohTQ==');
     });
   });
 });

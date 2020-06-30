@@ -1,5 +1,6 @@
 const fs = require('fs');
 const path = require('path');
+const assert = require('assert');
 const {SYNTAX_ERROR} = require('./constants');
 
 exports.ignorePgErrors = async (promise, ...codes) => {
@@ -75,4 +76,41 @@ exports.annotateError = (query, err) => {
       err.message += `\n${p.toUpperCase()}: ${err[p]}`;
     }
   }
+};
+
+/**
+ * Utility function to serialize the way azure-entities always did
+ */
+exports.azureEntitiesSerialization = hashedValues => {
+  const res = [];
+
+  // Order keys for consistency
+  const keys = Object.keys(hashedValues).sort();
+
+  const n = keys.length;
+  for (let i = 0; i < n; i++) {
+    const property = keys[i];
+    const value = hashedValues[property];
+    assert.equal(typeof value, 'string', `${property} value is not a string`);
+
+    // Hash [uint32 - len(property)] [bytes - property]
+    const propLenBuf = Buffer.alloc(4);
+    propLenBuf.writeUInt32BE(Buffer.byteLength(property, 'utf8'), 0);
+    res.push(propLenBuf);
+    res.push(Buffer.from(property, 'utf8'));
+
+    // Hash [uint32 - len(value)] [bytes - value]
+    let len;
+    if (typeof value === 'string') {
+      len = Buffer.byteLength(value, 'utf8');
+    } else {
+      len = value.length;
+    }
+    const valLenBuf = Buffer.alloc(4);
+    valLenBuf.writeUInt32BE(len, 0);
+    res.push(valLenBuf);
+    res.push(Buffer.from(value, 'utf8'));
+  }
+
+  return Buffer.concat(res);
 };
