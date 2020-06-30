@@ -6,8 +6,6 @@ const {UNIQUE_VIOLATION} = require('taskcluster-lib-postgres');
 /** Regular expression for valid namespaces */
 exports.namespaceFormat = /^([a-zA-Z0-9_!~*'()%-]+\.)*[a-zA-Z0-9_!~*'()%-]+$/;
 
-exports.MAX_MODIFY_ATTEMPTS = 5;
-
 const makeError = (message, code, statusCode) => {
   const err = new Error(message);
   err.code = code;
@@ -17,7 +15,6 @@ const makeError = (message, code, statusCode) => {
 };
 
 exports.make404 = () => makeError('Resource not found', 'ResourceNotFound', 404);
-exports.makeMaxModifyAttempts = () => makeError('MAX_MODIFY_ATTEMPTS exhausted, check for congestion', 'EntityWriteCongestionError', 409);
 
 exports.taskUtils = {
   // Create a single instance, or undefined, from a set of rows containing zero
@@ -150,19 +147,13 @@ exports.taskUtils = {
   // The response will be of the form { rows, continationToken }.
   // If there are no indexed tasks to show, the response will have the
   // `rows` field set to an empty array.
-  //
-  // If a handler is supplied, then it will invoke the handler
-  // on every item of the scan.
   async getIndexedTasks(
     db,
     { namespace, name },
     {
       query,
-      handler,
     } = {},
   ) {
-    assert(!handler || handler instanceof Function,
-      'If options.handler is given it must be a function');
     const fetchResults = async (continuation) => {
       let q = query;
 
@@ -186,20 +177,7 @@ exports.taskUtils = {
     };
 
     // Fetch results
-    let results = await fetchResults(query ? query.continuationToken : {});
-
-    // If we have a handler, then we have to handle the results
-    if (handler) {
-      const handleResults = async (res) => {
-        await Promise.all(res.rows.map((item) => handler.call(this, item)));
-
-        if (res.continuationToken) {
-          return await handleResults(await fetchResults(res.continuationToken));
-        }
-      };
-      results = await handleResults(results);
-    }
-    return results;
+    return fetchResults(query ? query.continuationToken : {});
   },
 };
 
@@ -293,7 +271,7 @@ exports.namespaceUtils = {
     return results;
   },
   /** Create parent structure */
-  ensureNamespace(db, namespace, expires) {
+  async ensureNamespace(db, namespace, expires) {
     // Stop recursion at root
     if (namespace.length === 0) {
       return Promise.resolve(null);
@@ -316,45 +294,46 @@ exports.namespaceUtils = {
     let parent = namespace.join('.');
 
     // Load namespace, to check if it exists and if we should update expires
-    return db.fns.get_index_namespace(parent, name)
-      .then(async function(f) {
-        const folder = exports.taskUtils.fromDbRows(f);
-        // Modify the namespace
-        if (folder.expires < expires) {
-          // Update expires
-          const updatedNamespace = await db.fns.update_index_namespace(parent, name, expires);
-          // Update all parents first though
-          await exports.namespaceUtils.ensureNamespace(db, namespace, expires);
+    try {
+      const f = await db.fns.get_index_namespace(parent, name);
+      const folder = exports.taskUtils.fromDbRows(f);
+      // Modify the namespace
+      if (folder.expires < expires) {
+        // Update expires
+        const updatedNamespace = await db.fns.update_index_namespace(parent, name, expires);
+        // Update all parents first though
+        await exports.namespaceUtils.ensureNamespace(db, namespace, expires);
 
-          return exports.taskUtils.fromDbRows(updatedNamespace);
-        }
+        return exports.taskUtils.fromDbRows(updatedNamespace);
+      }
 
-        return folder;
-      }, function(err) {
-        // Re-throw exception, if it's not because the namespace is missing
-        if (!err || err.code !== 'P0002') {
+      return folder;
+    } catch (err) {
+      // Re-throw exception, if it's not because the namespace is missing
+      if (!err || err.code !== 'P0002') {
+        throw err;
+      }
+
+      // Create parent namespaces
+      await exports.namespaceUtils.ensureNamespace(
+        db,
+        namespace,
+        expires,
+      );
+      // Create namespace
+      try {
+        await db.fns.create_index_namespace(parent, name, expires);
+      } catch (err) {
+        // Re-throw error if it's not because the entity was constructed while we
+        // waited
+        if (!err || err.code !== UNIQUE_VIOLATION) {
           throw err;
         }
 
-        // Create parent namespaces
-        return exports.namespaceUtils.ensureNamespace(
-          db,
-          namespace,
-          expires,
-        ).then(async function() {
-          // Create namespace
-          return db.fns.create_index_namespace(parent, name, expires).then(null, async function(err) {
-            // Re-throw error if it's not because the entity was constructed while we
-            // waited
-            if (!err || err.code !== UNIQUE_VIOLATION) {
-              throw err;
-            }
+        const namespace = await db.fns.get_index_namespace(parent, name);
 
-            const namespace = await db.fns.get_index_namespace(parent, name);
-
-            return exports.namespaceUtils.fromDbRows(namespace);
-          });
-        });
-      });
+        return exports.namespaceUtils.fromDbRows(namespace);
+      }
+    }
   },
 };

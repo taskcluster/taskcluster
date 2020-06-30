@@ -265,10 +265,9 @@ methods:
     description: |-
       Update a namespace.
       Returns the up-to-date namespace row that have the same parent and name.
-      If the etag argument is empty then the update will overwrite the matched row.
-      Else, the function will fail if the etag is out of date. This is useful for concurency handling.
+      If the row is not found then an exception with code 'P0002' is thrown.
     mode: write
-    args: parent_in text, name_in text, expires_in timestamptz, etag_in uuid
+    args: parent_in text, name_in text, expires_in timestamptz
     returns: table(parent text, name text, expires timestamptz, etag uuid)
     body: |-
       declare
@@ -282,8 +281,7 @@ methods:
         )
         where
           index_namespaces.parent = parent_in and
-          index_namespaces.name = name_in and
-          index_namespaces.etag = coalesce(etag_in, index_namespaces.etag)
+          index_namespaces.name = name_in
         returning
           index_namespaces.parent,
           index_namespaces.name,
@@ -300,16 +298,7 @@ methods:
           return;
         end if;
 
-        perform index_namespaces.etag from index_namespaces
-          where
-            index_namespaces.parent = parent_in and
-            index_namespaces.name = name_in;
-
-        if found then
-          raise exception 'unsuccessful update' using errcode = 'P0004';
-        else
-          raise exception 'no such row' using errcode = 'P0002';
-        end if;
+        raise exception 'no such row' using errcode = 'P0002';
       end
   expire_index_namespaces:
     description: |-
@@ -587,8 +576,8 @@ methods:
       end
   get_indexed_task:
     description: |-
-      Get a non-expired indexed task. The returned table will have one or
-      (if no such indexed task is defined) an exception will be raised with error code 'P0002'.
+      Get a non-expired indexed task. The returned table will have one row. If no such indexed task is defined then
+      an exception will be raised with error code 'P0002'.
     mode: read
     serviceName: index
     args: namespace_in text, name_in text

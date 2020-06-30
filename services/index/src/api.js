@@ -55,19 +55,12 @@ builder.declare({
 
   // Load indexed task
   try {
-    const { continuationToken: _, rows } = await helpers.taskUtils.getIndexedTasks(
-      this.db,
-      { namespace, name },
-      { query: req.query },
-    );
-    if (!rows.length) {
-      return res.reportError('ResourceNotFound', 'Indexed task not found', {});
-    }
-    const task = rows[0];
-    return res.reply(helpers.taskUtils.serialize(task));
+    const [task] = await this.db.fns.get_indexed_task(namespace, name);
+
+    return res.reply(helpers.taskUtils.serialize(helpers.taskUtils.fromDb(task)));
   } catch (err) {
     // Re-throw the error, if it's not a 404
-    if (err.code !== 'ResourceNotFound') {
+    if (err.code !== 'P0002') {
       throw err;
     }
     return res.reportError('ResourceNotFound', 'Indexed task not found', {});

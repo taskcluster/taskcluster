@@ -142,12 +142,11 @@ suite(testing.suiteName(), function() {
     });
 
     helper.dbTest('update_index_namespace, change to a single field', async function(db, isFake) {
-      const etag = await create_index_namespace(db);
+      await create_index_namespace(db);
       await db.fns.update_index_namespace(
         'par/ent',
         'name',
         null,
-        etag,
       );
 
       const rows = await db.fns.get_index_namespace('par/ent', 'name');
@@ -156,13 +155,12 @@ suite(testing.suiteName(), function() {
       assert(rows[0].expires instanceof Date);
     });
 
-    helper.dbTest('update_index_namespace, change to a multiple fields', async function(db, isFake) {
-      const etag = await create_index_namespace(db);
+    helper.dbTest('update_index_namespace, change to multiple fields', async function(db, isFake) {
+      await create_index_namespace(db);
       const updated = await db.fns.update_index_namespace(
         'par/ent',
         'name',
         null,
-        etag,
       );
 
       const rows = await db.fns.get_index_namespace('par/ent', 'name');
@@ -174,12 +172,11 @@ suite(testing.suiteName(), function() {
     });
 
     helper.dbTest('update_index_namespace, no changes', async function(db, isFake) {
-      const etag = await create_index_namespace(db);
+      await create_index_namespace(db);
       const updated = await db.fns.update_index_namespace(
         'par/ent',
         'name',
         null,
-        etag,
       );
       // this is not 0 because there was a row that matched even though there was no change
       assert.equal(updated.length, 1);
@@ -191,56 +188,14 @@ suite(testing.suiteName(), function() {
       assert(rows[0].expires instanceof Date);
     });
 
-    helper.dbTest('update_index_namespace, indexed task doesn\'t exist', async function(db, isFake) {
-      const etag = await create_index_namespace(db);
-
-      await assert.rejects(
-        async () => {
-          await update_index_namespace(db, { parent: 'does-not-exist' }, etag);
-        },
-        /no such row/,
-      );
-    });
-
-    helper.dbTest('update_index_namespace, override when etag not specified', async function(db, isFake) {
-      const oneWeek = fromNow('1 week');
+    helper.dbTest('update_index_namespace, throws when row does not exist', async function(db, isFake) {
       await create_index_namespace(db);
-      await db.fns.update_index_namespace(
-        'par/ent',
-        'name',
-        oneWeek,
-        null, /* etag */
-      );
-
-      const rows = await db.fns.get_index_namespace('par/ent', 'name');
-      assert.equal(rows[0].expires.toJSON(), oneWeek.toJSON());
-    });
-
-    helper.dbTest('update_index_namespace, throws when etag is wrong', async function(db, isFake) {
-      await create_index_namespace(db);
-      await assert.rejects(
-        async () => {
-          await db.fns.update_index_namespace(
-            'par/ent',
-            'name',
-            null,
-            '915a609a-f3bb-42fa-b584-a1209e7d9a02', /* etag */
-          );
-        },
-        /unsuccessful update/,
-      );
-    });
-
-    helper.dbTest('update_indexed, throws when row does not exist', async function(db, isFake) {
-      const etag = await create_index_namespace(db);
-
       await assert.rejects(
         async () => {
           await db.fns.update_index_namespace(
             'does-not-exist',
             'name',
             null,
-            etag,
           );
         },
         /no such row/,

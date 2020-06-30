@@ -147,16 +147,12 @@ class FakeIndex {
   }
 
   update_index_namespace(
-    parent, name, expires, etag,
+    parent, name, expires,
   ) {
     const t = this.indexNamespaces.get(`${parent}-${name}`);
 
     if (!t) {
       throw errWithCode('no such row', 'P0002');
-    }
-
-    if (etag && t.etag !== etag) {
-      throw errWithCode('unsuccessful update', 'P0004');
     }
 
     this.indexNamespaces.set(`${parent}-${name}`, {
