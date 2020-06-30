@@ -23,18 +23,6 @@ roles:
   description: text not null
   last_modified: timestamp with time zone not null
   etag: uuid not null
-taskcluster_check_runs_entities:
-  partition_key: text not null
-  row_key: text not null
-  value: jsonb not null
-  version: integer not null
-  etag: uuid
-taskcluster_checks_to_tasks_entities:
-  partition_key: text not null
-  row_key: text not null
-  value: jsonb not null
-  version: integer not null
-  etag: uuid
 github_builds:
   organization: text not null
   repository: text not null
@@ -47,12 +35,14 @@ github_builds:
   event_type: text not null 
   event_id: text not null 
   etag: uuid not null
-taskcluster_integration_owners_entities:
-  partition_key: text not null
-  row_key: text not null
-  value: jsonb not null
-  version: integer not null
-  etag: uuid
+github_integrations:
+  installation_id: integer not null
+  owner: text not null
+github_checks:
+  task_group_id: text not null
+  task_id: text not null
+  check_suite_id: text not null
+  check_run_id: text not null
 hooks:
   hook_group_id: text not null
   hook_id: text not null

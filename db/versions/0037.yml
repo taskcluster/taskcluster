@@ -1,0 +1,174 @@
+version: 37
+migrationScript: 0037-migration.sql
+downgradeScript: 0037-downgrade.sql
+methods:
+  taskcluster_check_runs_entities_load:
+    description: See taskcluster-lib-entities
+    mode: read
+    serviceName: github
+    args: partition_key text, row_key text
+    returns: table (partition_key_out text, row_key_out text, value jsonb, version integer, etag uuid)
+    body: |-
+      begin
+       return query
+       select
+          partition_key,
+          row_key,
+          jsonb_build_object(
+            'PartitionKey', partition_key,
+            'RowKey', row_key,
+            'taskGroupId', task_group_id,
+            'taskId', task_id,
+            'checkSuiteId', check_suite_id,
+            'checkRunId', check_run_id) as value,
+          1 as version,
+          public.gen_random_uuid() as etag -- we just return this for api compatibility
+      from github_checks
+      where
+        github_checks.task_group_id = decode_string_key(partition_key) and
+        github_checks.task_id = decode_string_key(row_key);
+      end
+  taskcluster_check_runs_entities_create:
+    description: See taskcluster-lib-entities
+    serviceName: github
+    mode: write
+    args: pk text, rk text, properties jsonb, overwrite boolean, version integer
+    returns: uuid
+    body: |-
+      declare
+        new_row github_checks%ROWTYPE;
+      begin
+        select
+          (properties ->> 'taskGroupId')::text as task_group_id,
+          (properties ->> 'taskId')::text as task_id,
+          (properties ->> 'checkSuiteId')::text as check_suite_id,
+          (properties ->> 'checkRunId')::text as check_run_id
+        into new_row;
+        if overwrite then
+          raise exception 'overwrite not implemented';
+        else
+          execute 'insert into github_checks select $1.*' using new_row;
+        end if;
+        return public.gen_random_uuid(); -- we just return this for api compatibility
+      end
+  taskcluster_check_runs_entities_scan:
+    description: See taskcluster-lib-entities
+    mode: read
+    serviceName: github
+    args: pk text, rk text, condition text, size integer, page integer
+    returns: table (partition_key text, row_key text, value jsonb, version integer, etag uuid)
+    body: |-
+      begin
+          raise exception 'not implemented';
+      end
+  taskcluster_check_runs_entities_remove:
+    serviceName: github
+    description: See taskcluster-lib-entities
+    mode: write
+    args: partition_key text, row_key text
+    returns: table (etag uuid)
+    body: |-
+      begin
+        delete
+        from github_checks
+        where
+          github_checks.task_group_id = decode_string_key(partition_key) and
+          github_checks.task_id = decode_string_key(row_key);
+        -- tc-gh does not care if the row existed
+        return query select gen_random_uuid() as etag;
+      end
+  taskcluster_check_runs_entities_modify:
+    serviceName: github
+    description: See taskcluster-lib-entities
+    mode: write
+    args: partition_key text, row_key text, properties jsonb, version integer, old_etag uuid
+    returns: table (etag uuid)
+    body: |-
+      begin
+          raise exception 'github integrations are immutable';
+      end
+  taskcluster_checks_to_tasks_entities_load:
+    description: See taskcluster-lib-entities
+    mode: read
+    serviceName: github
+    args: partition_key text, row_key text
+    returns: table (partition_key_out text, row_key_out text, value jsonb, version integer, etag uuid)
+    body: |-
+      begin
+       return query
+       select
+          partition_key,
+          row_key,
+          jsonb_build_object(
+            'PartitionKey', partition_key,
+            'RowKey', row_key,
+            'taskGroupId', task_group_id,
+            'taskId', task_id,
+            'checkSuiteId', check_suite_id,
+            'checkRunId', check_run_id) as value,
+          1 as version,
+          public.gen_random_uuid() as etag -- we just return this for api compatibility
+      from github_checks
+      where
+        github_checks.check_suite_id = decode_string_key(partition_key) and
+        github_checks.check_run_id = decode_string_key(row_key);
+      end
+  taskcluster_checks_to_tasks_entities_create:
+    description: See taskcluster-lib-entities
+    serviceName: github
+    mode: write
+    args: pk text, rk text, properties jsonb, overwrite boolean, version integer
+    returns: uuid
+    body: |-
+      declare
+        new_row github_checks%ROWTYPE;
+      begin
+        select
+          (properties ->> 'taskGroupId')::text as task_group_id,
+          (properties ->> 'taskId')::text as task_id,
+          (properties ->> 'checkSuiteId')::text as check_suite_id,
+          (properties ->> 'checkRunId')::text as check_run_id
+        into new_row;
+        if overwrite then
+          raise exception 'overwrite not implemented';
+        else
+          execute 'insert into github_checks select $1.*' using new_row;
+        end if;
+        return public.gen_random_uuid(); -- we just return this for api compatibility
+      end
+  taskcluster_checks_to_tasks_entities_scan:
+    description: See taskcluster-lib-entities
+    mode: read
+    serviceName: github
+    args: pk text, rk text, condition text, size integer, page integer
+    returns: table (partition_key text, row_key text, value jsonb, version integer, etag uuid)
+    body: |-
+      begin
+          raise exception 'not implemented';
+      end
+  taskcluster_checks_to_tasks_entities_remove:
+    serviceName: github
+    description: See taskcluster-lib-entities
+    mode: write
+    args: partition_key text, row_key text
+    returns: table (etag uuid)
+    body: |-
+      begin
+        delete
+        from github_checks
+        where
+        github_checks.check_suite_id = decode_string_key(partition_key) and
+        github_checks.check_run_id = decode_string_key(row_key);
+        -- tc-gh does not care if the row existed
+        return query select gen_random_uuid() as etag;
+      end
+  taskcluster_checks_to_tasks_entities_modify:
+    serviceName: github
+    description: See taskcluster-lib-entities
+    mode: write
+    args: partition_key text, row_key text, properties jsonb, version integer, old_etag uuid
+    returns: table (etag uuid)
+    body: |-
+      begin
+          raise exception 'github integrations are immutable';
+      end
