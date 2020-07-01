@@ -4,6 +4,12 @@ const helper = require('./helper');
 const testing = require('taskcluster-lib-testing');
 
 helper.secrets.mockSuite(testing.suiteName(), ['db', 'aws'], function(mock, skipping) {
+
+  // https://github.com/taskcluster/taskcluster/issues/3131
+  if (mock) {
+    return;
+  }
+
   helper.withDb(mock, skipping);
   helper.withPulse(mock, skipping);
   helper.withFakeMatrix(mock, skipping);

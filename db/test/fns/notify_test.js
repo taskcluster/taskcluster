@@ -19,11 +19,23 @@ suite(testing.suiteName(), function() {
   });
 
   helper.dbTest('list denylisted notifications when there are none', async function(db, isFake) {
+
+    // https://github.com/taskcluster/taskcluster/issues/3131
+    if (isFake) {
+      return;
+    }
+
     const addresses = await db.fns.all_denylist_addresses(10, 0);
     assert.deepEqual(addresses, []);
   });
 
   helper.dbTest('list denylisted notifications when there is one row', async function(db, isFake) {
+
+    // https://github.com/taskcluster/taskcluster/issues/3131
+    if (isFake) {
+      return;
+    }
+
     let n1 = {
       notificationType: "email",
       notificationAddress: "pmoore@mozilla.com",
@@ -36,6 +48,12 @@ suite(testing.suiteName(), function() {
   });
 
   helper.dbTest('add denylist address that already exists', async function(db, isFake) {
+
+    // https://github.com/taskcluster/taskcluster/issues/3131
+    if (isFake) {
+      return;
+    }
+
     let n1 = {
       notificationType: "email",
       notificationAddress: "pmoore@mozilla.com",
@@ -49,6 +67,12 @@ suite(testing.suiteName(), function() {
   });
 
   helper.dbTest('delete denylist address that already exists', async function(db, isFake) {
+
+    // https://github.com/taskcluster/taskcluster/issues/3131
+    if (isFake) {
+      return;
+    }
+
     let n1 = {
       notificationType: "email",
       notificationAddress: "pmoore@mozilla.com",
@@ -60,6 +84,12 @@ suite(testing.suiteName(), function() {
   });
 
   helper.dbTest("delete denylist address that doesn't already exist", async function(db, isFake) {
+
+    // https://github.com/taskcluster/taskcluster/issues/3131
+    if (isFake) {
+      return;
+    }
+
     let n1 = {
       notificationType: "pulse",
       notificationAddress: "routing.key",
@@ -77,6 +107,12 @@ suite(testing.suiteName(), function() {
   });
 
   helper.dbTest('test denylist address pagination', async function(db, isFake) {
+
+    // https://github.com/taskcluster/taskcluster/issues/3131
+    if (isFake) {
+      return;
+    }
+
     let n1 = {
       notificationType: "pulse",
       notificationAddress: "routing.key",
@@ -97,6 +133,12 @@ suite(testing.suiteName(), function() {
   });
 
   helper.dbTest('test denylist existence check', async function(db, isFake) {
+
+    // https://github.com/taskcluster/taskcluster/issues/3131
+    if (isFake) {
+      return;
+    }
+
     let n1 = {
       notificationType: "pulse",
       notificationAddress: "routing.key",
@@ -113,6 +155,12 @@ suite(testing.suiteName(), function() {
   });
 
   helper.dbTest('test denylist nonexistence check', async function(db, isFake) {
+
+    // https://github.com/taskcluster/taskcluster/issues/3131
+    if (isFake) {
+      return;
+    }
+
     let n1 = {
       notificationType: "pulse",
       notificationAddress: "routing.key",
