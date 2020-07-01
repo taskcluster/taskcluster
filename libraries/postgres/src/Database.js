@@ -391,9 +391,10 @@ class Database {
         FROM pg_database 
         WHERE datname = current_database()`);
       const collation = res.rows[0].collation;
-      if (collation !== 'en_US.UTF8') {
+      if (collation !== 'en_US.utf8' && collation !== 'en_US.UTF8') {
         throw new Error(
-          `Postgres database must have default collation en_US.UTF8; this database is using ${collation}.`);
+          `Postgres database must have default collation en_US.utf8 or en_US.UTF8; this database is using ${collation}.`,
+        );
       }
     });
   }

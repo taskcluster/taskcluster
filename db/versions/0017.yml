@@ -102,3 +102,65 @@ methods:
           end;
         end if;
       end
+  add_denylist_address:
+    description: |-
+      If the denylist address already exists, this is a no-op. Otherwise, add the denylist
+      address for the taskcluster-notify service, with a new random etag.
+    mode: write
+    serviceName: notify
+    args: notification_type_in text, notification_address_in text
+    returns: void
+    body: |-
+      begin
+        insert into denylisted_notifications(notification_type, notification_address, etag)
+        values (
+          notification_type_in,
+          notification_address_in,
+          public.gen_random_uuid()
+        ) on conflict do nothing;
+      end
+  delete_denylist_address:
+    description: |-
+      Delete a denylist address for the taskcluster-notify service.
+      Returns number of rows deleted (0 or 1).
+    mode: write
+    serviceName: notify
+    args: notification_type_in text, notification_address_in text
+    returns: integer
+    body: |-
+      begin
+        delete from denylisted_notifications where
+        denylisted_notifications.notification_type = notification_type_in and
+        denylisted_notifications.notification_address = notification_address_in;
+        if found then
+          return 1;
+        end if;
+        return 0;
+      end
+  all_denylist_addresses:
+    description: List all denylist addresses for the taskcluster-notify service.
+    mode: read
+    serviceName: notify
+    args: page_size_in integer, page_offset_in integer
+    returns: table (notification_type text, notification_address text)
+    body: |-
+      begin
+        return query select denylisted_notifications.notification_type, denylisted_notifications.notification_address
+        from denylisted_notifications
+        order by 1, 2
+        limit get_page_limit(page_size_in)
+        offset get_page_offset(page_offset_in);
+      end
+  exists_denylist_address:
+    description: Returns a boolean indicating whether the denylist type/address exists.
+    mode: read
+    serviceName: notify
+    args: notification_type_in text, notification_address_in text
+    returns: boolean
+    body: |-
+      begin
+        perform 1 from denylisted_notifications where
+        denylisted_notifications.notification_type = notification_type_in and
+        denylisted_notifications.notification_address = notification_address_in;
+        return found;
+      end

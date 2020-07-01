@@ -18,7 +18,6 @@ const exchanges = require('./exchanges');
 const IRC = require('./irc');
 const matrix = require('matrix-js-sdk');
 const MatrixBot = require('./matrix');
-const data = require('./data');
 const tcdb = require('taskcluster-db');
 
 require('./monitor');
@@ -55,16 +54,6 @@ const load = loader({
     setup: ({cfg}) => exchanges.reference({
       rootUrl: cfg.taskcluster.rootUrl,
       credentials: cfg.pulse,
-    }),
-  },
-
-  DenylistedNotification: {
-    requires: ['cfg', 'monitor', 'process', 'db'],
-    setup: ({cfg, monitor, process, db}) => data.DenylistedNotification.setup({
-      db,
-      serviceName: 'notify',
-      tableName: cfg.app.denylistedNotificationTableName,
-      monitor: monitor.childMonitor('table.denylist'),
     }),
   },
 
@@ -136,9 +125,9 @@ const load = loader({
   },
 
   denier: {
-    requires: ['cfg', 'DenylistedNotification'],
-    setup: ({cfg, DenylistedNotification}) =>
-      new Denier({DenylistedNotification, emailBlacklist: cfg.app.emailBlacklist}),
+    requires: ['cfg', 'db'],
+    setup: ({cfg, db}) =>
+      new Denier({emailBlacklist: cfg.app.emailBlacklist, db: db}),
   },
 
   matrixClient: {
@@ -210,10 +199,10 @@ const load = loader({
   },
 
   api: {
-    requires: ['cfg', 'monitor', 'schemaset', 'notifier', 'DenylistedNotification', 'denier', 'db'],
-    setup: ({cfg, monitor, schemaset, notifier, DenylistedNotification, denier, db}) => builder.build({
+    requires: ['cfg', 'monitor', 'schemaset', 'notifier', 'denier', 'db'],
+    setup: ({cfg, monitor, schemaset, notifier, denier, db}) => builder.build({
       rootUrl: cfg.taskcluster.rootUrl,
-      context: {notifier, DenylistedNotification, denier, db},
+      context: {notifier, denier, db},
       monitor: monitor.childMonitor('api'),
       schemaset,
     }),
