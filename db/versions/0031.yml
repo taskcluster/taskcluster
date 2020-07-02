@@ -16,7 +16,7 @@ methods:
           wmworker_pool_errors_entities_load.row_key,
           entity_buf_encode(
             jsonb_build_object(
-              'PartitionKey', encode_string_key(error_id),
+              'PartitionKey', encode_string_key(worker_pool_id),
               'RowKey', encode_string_key(error_id),
               'errorId', error_id,
               'workerPoolId', worker_pool_id,
@@ -29,7 +29,8 @@ methods:
           worker_pool_errors.etag as etag
         from worker_pool_errors
         where
-          worker_pool_errors.error_id = decode_string_key(wmworker_pool_errors_entities_load.partition_key);
+          worker_pool_errors.worker_pool_id = decode_string_key(wmworker_pool_errors_entities_load.partition_key) and
+          worker_pool_errors.error_id = decode_string_key(wmworker_pool_errors_entities_load.row_key);
       end
   wmworker_pool_errors_entities_create:
     serviceName: worker_manager
@@ -68,7 +69,8 @@ methods:
       begin
         return query delete from worker_pool_errors
         where
-          worker_pool_errors.error_id = decode_string_key(wmworker_pool_errors_entities_remove.partition_key)
+          worker_pool_errors.worker_pool_id = decode_string_key(wmworker_pool_errors_entities_remove.partition_key) and
+          worker_pool_errors.error_id = decode_string_key(wmworker_pool_errors_entities_remove.row_key)
         returning worker_pool_errors.etag;
       end
   wmworker_pool_errors_entities_modify:
@@ -112,7 +114,8 @@ methods:
           new_row.etag
         )
         where
-          worker_pool_errors.error_id = decode_string_key(wmworker_pool_errors_entities_modify.partition_key) and
+          worker_pool_errors.worker_pool_id = decode_string_key(wmworker_pool_errors_entities_modify.partition_key) and
+          worker_pool_errors.error_id = decode_string_key(wmworker_pool_errors_entities_modify.row_key) and
           worker_pool_errors.etag = wmworker_pool_errors_entities_modify.old_etag;
 
         if found then
@@ -121,7 +124,9 @@ methods:
         end if;
 
         perform worker_pool_errors.etag from worker_pool_errors
-        where worker_pool_errors.error_id = decode_string_key(wmworker_pool_errors_entities_modify.partition_key);
+        where
+          worker_pool_errors.worker_pool_id = decode_string_key(wmworker_pool_errors_entities_modify.partition_key) and
+          worker_pool_errors.error_id = decode_string_key(wmworker_pool_errors_entities_modify.row_key);
 
         if found then
           raise exception 'unsuccessful update' using errcode = 'P0004';
@@ -147,7 +152,7 @@ methods:
             wmworker_pool_errors_entities_scan.row_key,
             entity_buf_encode(
               jsonb_build_object(
-                'PartitionKey', encode_string_key(error_id),
+                'PartitionKey', encode_string_key(worker_pool_id),
                 'RowKey', encode_string_key(error_id),
                 'errorId', error_id,
                 'workerPoolId', worker_pool_id,
@@ -160,11 +165,17 @@ methods:
           worker_pool_errors.etag as etag
           from worker_pool_errors
           where
-            partition_key is null or
-            error_id = decode_string_key(partition_key)
+            row_key is null or
+            error_id = decode_string_key(row_key)
           order by error_id
-          limit size + 1
-          offset page;
+          limit case
+            when (size is not null and size > 0) then size + 1
+            else null
+          end
+          offset case
+            when (page is not null and page > 0) then page
+            else 0
+          end;
       end
   create_worker_pool_error:
     description: |-

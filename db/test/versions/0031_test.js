@@ -10,7 +10,7 @@ const PREV_VERSION = THIS_VERSION - 1;
 // (adapted from services/purge-cache/src/data.js)
 const WorkerPoolErrorEntity = Entity.configure({
   version: 1,
-  partitionKey: Entity.keys.StringKey('errorId'),
+  partitionKey: Entity.keys.StringKey('workerPoolId'),
   rowKey: Entity.keys.StringKey('errorId'),
   properties: {
     errorId: Entity.types.String,
@@ -48,11 +48,11 @@ suite(testing.suiteName(), function() {
     EntityClass: WorkerPoolErrorEntity,
     samples: {
       exampleerror: {
-        errorId: 'error123',
+        errorId: 'error-id-999',
         workerPoolId: 'foo/bar',
         reported: new Date(0),
         kind: 'an error',
-        title: 'error foo 123',
+        title: 'error foo 999',
         description: 'foo error!',
         extra: {},
       },
@@ -68,19 +68,19 @@ suite(testing.suiteName(), function() {
         }]))),
     },
     loadConditions: [
-      {condition: {errorId: 'error123', workerPoolId: 'foo/bar', title: 'error foo 123'}, expectedSample: 'exampleerror'},
+      {condition: {errorId: 'error-id-999', workerPoolId: 'foo/bar', title: 'error foo 999'}, expectedSample: 'exampleerror'},
       {condition: {errorId: 'error-id-1', workerPoolId: 'foo/1', kind: 'an error'}, expectedSample: 'samp1'},
     ],
     scanConditions: [
-      {condition: {}, expectedSamples: ['exampleerror', 'samp0', 'samp1', 'samp2', 'samp3', 'samp4']},
-      {condition: null, expectedSamples: ['exampleerror', 'samp0', 'samp1', 'samp2', 'samp3', 'samp4']},
+      {condition: {}, expectedSamples: ['samp0', 'samp1', 'samp2', 'samp3', 'samp4', 'exampleerror']},
+      {condition: null, expectedSamples: ['samp0', 'samp1', 'samp2', 'samp3', 'samp4', 'exampleerror']},
     ],
     notFoundConditions: [
       {condition: {errorId: 'no/such', workerPoolId: 'no/such', title: 'no/such'}},
     ],
     notImplemented: ['create-overwrite'],
     modifications: [{
-      condition: {errorId: 'error123', workerPoolId: 'foo/bar', title: 'error foo 123', kind: 'an error', description: 'foo error!'},
+      condition: {errorId: 'error-id-999', workerPoolId: 'foo/bar', title: 'error foo 999', kind: 'an error', description: 'foo error!'},
       modifier: [
         ent => {
           ent.reported = new Date(1);
