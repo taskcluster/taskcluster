@@ -72,7 +72,7 @@ indexed_tasks:
   data: jsonb not null
   expires: timestamp with time zone not null
   etag: uuid not null
-namespaces:
+index_namespaces:
   parent: text not null
   name: text not null
   expires: timestamp with time zone not null

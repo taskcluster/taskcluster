@@ -21,11 +21,11 @@ methods:
             'name', name,
             'expires', expires) as value,
           1 as version,
-          namespaces.etag as etag
-        from namespaces
+          index_namespaces.etag as etag
+        from index_namespaces
         where
-          sha512(namespaces.parent) = partition_key and
-          namespaces.name = decode_string_key(row_key);
+          sha512(index_namespaces.parent) = partition_key and
+          index_namespaces.name = decode_string_key(row_key);
       end
   namespaces_entities_create:
     serviceName: index
@@ -35,7 +35,7 @@ methods:
     returns: uuid
     body: |-
       declare
-        new_row namespaces%ROWTYPE;
+        new_row index_namespaces%ROWTYPE;
       begin
         select
           (properties ->> 'parent')::text,
@@ -46,7 +46,7 @@ methods:
         if overwrite then
           raise exception 'overwrite not implemented';
         else
-          execute 'insert into namespaces select $1.*' using new_row;
+          execute 'insert into index_namespaces select $1.*' using new_row;
         end if;
         return new_row.etag;
       end
@@ -58,11 +58,11 @@ methods:
     returns: table (etag uuid)
     body: |-
       begin
-        return query delete from namespaces
+        return query delete from index_namespaces
         where
-          sha512(namespaces.parent) = namespaces_entities_remove.partition_key and
-          namespaces.name = decode_string_key(namespaces_entities_remove.row_key)
-        returning namespaces.etag;
+          sha512(index_namespaces.parent) = namespaces_entities_remove.partition_key and
+          index_namespaces.name = decode_string_key(namespaces_entities_remove.row_key)
+        returning index_namespaces.etag;
       end
   namespaces_entities_modify:
     serviceName: index
@@ -72,7 +72,7 @@ methods:
     returns: table (etag uuid)
     body: |-
       declare
-        new_row namespaces%ROWTYPE;
+        new_row index_namespaces%ROWTYPE;
       begin
         select
           (properties ->> 'parent')::text,
@@ -80,7 +80,7 @@ methods:
           (properties ->> 'expires')::timestamptz,
           public.gen_random_uuid() as etag
         into new_row;
-        update namespaces
+        update index_namespaces
         set (
           parent,
           name,
@@ -93,17 +93,17 @@ methods:
           new_row.etag
         )
         where
-          sha512(namespaces.parent) = namespaces_entities_modify.partition_key and
-          namespaces.name = decode_string_key(namespaces_entities_modify.row_key) and
-          namespaces.etag = namespaces_entities_modify.old_etag;
+          sha512(index_namespaces.parent) = namespaces_entities_modify.partition_key and
+          index_namespaces.name = decode_string_key(namespaces_entities_modify.row_key) and
+          index_namespaces.etag = namespaces_entities_modify.old_etag;
         if found then
           return query select new_row.etag;
           return;
         end if;
-        perform namespaces.etag from namespaces
+        perform index_namespaces.etag from index_namespaces
         where
-          sha512(namespaces.parent) = namespaces_entities_modify.partition_key and
-          namespaces.name = decode_string_key(namespaces_entities_modify.row_key);
+          sha512(index_namespaces.parent) = namespaces_entities_modify.partition_key and
+          index_namespaces.name = decode_string_key(namespaces_entities_modify.row_key);
         if found then
           raise exception 'unsuccessful update' using errcode = 'P0004';
         else
@@ -139,7 +139,7 @@ methods:
               'name', name,
               'expires', expires) as value,
             1 as version,
-            namespaces.etag as etag from namespaces
+            index_namespaces.etag as etag from index_namespaces
           where
             (namespaces_entities_scan.pk is null or sha512(parent) = namespaces_entities_scan.pk) and
             (namespaces_entities_scan.rk is null or decode_string_key(namespaces_entities_scan.rk) = name) and
@@ -151,7 +151,7 @@ methods:
               when exp_cond_operator = '>=' then expires >= exp_cond_operand
               else expires <> exp_cond_operand
             end
-          order by partition_key, namespaces.name
+          order by partition_key, index_namespaces.name
           limit case
             when (size is not null and size > 0) then size + 1
             else null
@@ -171,11 +171,11 @@ methods:
               'name', name,
               'expires', expires) as value,
             1 as version,
-            namespaces.etag as etag from namespaces
+            index_namespaces.etag as etag from index_namespaces
           where
             (namespaces_entities_scan.pk is null or sha512(parent) = namespaces_entities_scan.pk) and
             (namespaces_entities_scan.rk is null or decode_string_key(namespaces_entities_scan.rk) = name)
-          order by partition_key, namespaces.name
+          order by partition_key, index_namespaces.name
           limit case
             when (size is not null and size > 0) then size + 1
             else null

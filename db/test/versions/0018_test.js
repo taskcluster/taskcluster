@@ -136,7 +136,7 @@ suite(`${testing.suiteName()} - namespaces`, function() {
     dbVersion: THIS_VERSION,
     serviceName: 'index',
     entityTableName: 'namespaces_entities',
-    newTableName: 'namespaces',
+    newTableName: 'index_namespaces',
     EntityClass: NamespaceEntity,
     samples: {
       pptt: {

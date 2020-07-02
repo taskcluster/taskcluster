@@ -35,7 +35,7 @@ begin
 
   -- lock this table before reading from it, to prevent loss of concurrent
   -- updates when the table is dropped.
-  lock table namespaces;
+  lock table index_namespaces;
 
   create table namespaces_entities(
     partition_key text, row_key text,
@@ -56,9 +56,9 @@ begin
       'expires', expires),
     1 as version,
     etag
-  from namespaces;
+  from index_namespaces;
 
-  revoke select, insert, update, delete on namespaces from $db_user_prefix$_index;
-  drop table namespaces;
+  revoke select, insert, update, delete on index_namespaces from $db_user_prefix$_index;
+  drop table index_namespaces;
   grant select, insert, update, delete on namespaces_entities to $db_user_prefix$_index;
 end
