@@ -54,6 +54,10 @@ begin
     alter column etag set not null,
     alter column etag set default public.gen_random_uuid();
 
+  -- drop that index later when we drop all of the entities support
+  create index sha512_index_namespaces_idx on index_namespaces (sha512(parent), name);
+  create index sha512_indexed_tasks_idx on indexed_tasks (sha512(namespace), name);
+
   revoke select, insert, update, delete on namespaces_entities from $db_user_prefix$_index;
   drop table namespaces_entities;
   grant select, insert, update, delete on index_namespaces to $db_user_prefix$_index;
