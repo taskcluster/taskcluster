@@ -13,7 +13,7 @@ const badcreds = {
 };
 
 suite(testing.suiteName(), function() {
-  helper.secrets.mockSuite(testing.suiteName(), ['db', 'azure', 'gcp'], function(mock, skipping) {
+  helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, skipping) {
     helper.withDb(mock, skipping);
     helper.withCfg(mock, skipping);
     helper.withPulse(mock, skipping);
@@ -101,7 +101,7 @@ suite(testing.suiteName(), function() {
     });
   });
 
-  helper.secrets.mockSuite('testAuthGet', ['db', 'azure', 'gcp'], function(mock, skipping) {
+  helper.secrets.mockSuite('testAuthGet', ['azure', 'gcp'], function(mock, skipping) {
     helper.withDb(mock, skipping);
     helper.withCfg(mock, skipping);
     helper.withPulse(mock, skipping);

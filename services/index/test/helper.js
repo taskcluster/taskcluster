@@ -19,7 +19,6 @@ withMonitor(exports);
 // set up the testing secrets
 exports.secrets = new Secrets({
   secrets: {
-    db: withDb.secret,
   },
   load: exports.load,
 });
@@ -156,14 +155,9 @@ const stubbedQueue = () => {
 
 exports.resetTables = (mock, skipping) => {
   setup('reset tables', async function() {
-    if (mock) {
-      exports.db['fakeindex'].reset();
-    } else {
-      const sec = exports.secrets.get('db');
-      await resetTables({ testDbUrl: sec.testDbUrl, tableNames: [
-        'indexed_tasks_entities',
-        'namespaces_entities',
-      ]});
-    }
+    await resetTables({tableNames: [
+      'indexed_tasks_entities',
+      'namespaces_entities',
+    ]});
   });
 };

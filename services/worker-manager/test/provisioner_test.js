@@ -5,7 +5,7 @@ const taskcluster = require('taskcluster-client');
 const {LEVELS} = require('taskcluster-lib-monitor');
 const {WorkerPool, Worker} = require('../src/data');
 
-helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
+helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   helper.withDb(mock, skipping);
   helper.withEntities(mock, skipping);
   helper.withPulse(mock, skipping);
@@ -35,52 +35,47 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
           await workerPool.create(helper.db);
         }
       }));
-      return (testing.runWithFakeTime(async function() {
-        await helper.initiateProvisioner();
-        await testing.poll(async () => {
-          if (!expectErrors) {
-            const error = monitor.manager.messages.find(({Type}) => Type === 'monitor.error');
-            if (error) {
-              throw new Error(JSON.stringify(error, null, 2));
-            }
+      await helper.initiateProvisioner();
+      await testing.poll(async () => {
+        if (!expectErrors) {
+          const error = monitor.manager.messages.find(({Type}) => Type === 'monitor.error');
+          if (error) {
+            throw new Error(JSON.stringify(error, null, 2));
           }
-          await Promise.all(workerPools.map(async wt => {
-            const pId = wt.providerId || wt.input.providerId;
-            assert.deepEqual(
-              monitor.manager.messages.find(
-                msg => msg.Type === 'worker-pool-provisioned' && msg.Fields.workerPoolId === wt.workerPoolId), {
-                Logger: 'taskcluster.test.provisioner',
-                Type: 'worker-pool-provisioned',
-                Fields: {workerPoolId: wt.workerPoolId, providerId: pId, v: 1},
-                Severity: LEVELS.info,
-              });
-            const msg = monitor.manager.messages.find(
-              msg => msg.Type === 'test-provision' && msg.Fields.workerPoolId === wt.workerPoolId);
-            assert.deepEqual(msg, {
-              Logger: `taskcluster.test.provider.${pId}`,
-              Type: 'test-provision',
-              Fields: {
-                workerPoolId: wt.workerPoolId,
-                workerInfo: {
-                  existingCapacity: wt.existingCapacity,
-                  requestedCapacity: msg.Fields.workerInfo.requestedCapacity,
-                },
-              },
-              Severity: LEVELS.notice,
-            });
-          }));
-          if (assertion) {
-            await assertion();
-          }
-        });
-        await helper.terminateProvisioner();
-        if (expectErrors) {
-          monitor.manager.reset();
         }
-      }, {
-        mock,
-        maxTime: 30000,
-      }))();
+        await Promise.all(workerPools.map(async wt => {
+          const pId = wt.providerId || wt.input.providerId;
+          assert.deepEqual(
+            monitor.manager.messages.find(
+              msg => msg.Type === 'worker-pool-provisioned' && msg.Fields.workerPoolId === wt.workerPoolId), {
+              Logger: 'taskcluster.test.provisioner',
+              Type: 'worker-pool-provisioned',
+              Fields: {workerPoolId: wt.workerPoolId, providerId: pId, v: 1},
+              Severity: LEVELS.info,
+            });
+          const msg = monitor.manager.messages.find(
+            msg => msg.Type === 'test-provision' && msg.Fields.workerPoolId === wt.workerPoolId);
+          assert.deepEqual(msg, {
+            Logger: `taskcluster.test.provider.${pId}`,
+            Type: 'test-provision',
+            Fields: {
+              workerPoolId: wt.workerPoolId,
+              workerInfo: {
+                existingCapacity: wt.existingCapacity,
+                requestedCapacity: msg.Fields.workerInfo.requestedCapacity,
+              },
+            },
+            Severity: LEVELS.notice,
+          });
+        }));
+        if (assertion) {
+          await assertion();
+        }
+      });
+      await helper.terminateProvisioner();
+      if (expectErrors) {
+        monitor.manager.reset();
+      }
     };
 
     test('single worker pool', () => testCase({

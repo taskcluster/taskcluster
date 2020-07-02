@@ -33,7 +33,6 @@ exports.rootUrl = libUrls.testRootUrl();
 // set up the testing secrets
 exports.secrets = new Secrets({
   secrets: {
-    db: withDb.secret,
   },
   load: exports.load,
 });
@@ -493,16 +492,11 @@ const stubbedClients = () => {
 
 exports.resetTables = (mock, skipping) => {
   setup('reset tables', async function() {
-    if (mock) {
-      exports.db['web_server'].reset();
-    } else {
-      const sec = exports.secrets.get('db');
-      await resetTables({ testDbUrl: sec.testDbUrl, tableNames: [
-        'authorization_codes_table_entities',
-        'access_token_table_entities',
-        'session_storage_table_entities',
-        'github_access_token_table_entities',
-      ]});
-    }
+    await resetTables({tableNames: [
+      'authorization_codes_table_entities',
+      'access_token_table_entities',
+      'session_storage_table_entities',
+      'github_access_token_table_entities',
+    ]});
   });
 };

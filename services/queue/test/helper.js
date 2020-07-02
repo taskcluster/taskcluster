@@ -37,7 +37,6 @@ exports.secrets = new Secrets({
         mock: 'us-central-7'},
     ],
     azure: withEntity.secret,
-    db: withDb.secret,
   },
   load: exports.load,
 });
@@ -302,22 +301,17 @@ exports.makeWorkerType = () => `test-${slugid.v4().replace(/[_-]/g, '').toLowerC
 
 exports.resetTables = (mock, skipping) => {
   setup('reset tables', async function() {
-    if (mock) {
-      exports.db['queue'].reset();
-    } else {
-      const sec = exports.secrets.get('db');
-      await resetTables({ testDbUrl: sec.testDbUrl, tableNames: [
-        'queue_tasks_entities',
-        'queue_artifacts_entities',
-        'queue_task_groups_entities',
-        'queue_task_group_members_entities',
-        'queue_task_group_active_sets_entities',
-        'queue_task_requirement_entities',
-        'queue_task_dependency_entities',
-        'queue_worker_entities',
-        'queue_worker_type_entities',
-        'queue_provisioner_entities',
-      ]});
-    }
+    await resetTables({tableNames: [
+      'queue_tasks_entities',
+      'queue_artifacts_entities',
+      'queue_task_groups_entities',
+      'queue_task_group_members_entities',
+      'queue_task_group_active_sets_entities',
+      'queue_task_requirement_entities',
+      'queue_task_dependency_entities',
+      'queue_worker_entities',
+      'queue_worker_type_entities',
+      'queue_provisioner_entities',
+    ]});
   });
 };

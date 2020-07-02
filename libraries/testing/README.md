@@ -139,7 +139,7 @@ Note, too, that all modern versions of Mocha have [a bug](https://github.com/moc
 A quick (but unfortunate) way to work around this bug is
 
 ```javascript
-suite('mySuite', function() {
+secrets.mockSuite('mySuite', [..], function(mock, skipping) {
   suiteSetup(function() {
     if (skipping()) {
       this.skip();
@@ -199,7 +199,7 @@ secrets.mockSuite('pingdom updates', ['pingdom'], function(mock, skipping) {
 });
 
 // for testing a loader component..
-secrets.mockSuite('Floobits', ['taskcluster'], function(mock) {
+secrets.mockSuite('Floobits', ['taskcluster'], function(mock, skipping) {
   let Floobits;
   suiteSetup(async function() {
     if (mock) {
@@ -231,6 +231,9 @@ The test output for the first suite will contain something like
     - updates once
 ```
 
+Note that even in cases where no secrets are required, `mockSuite` is still
+useful for providing the `mock, skipping` values required by other components
+of taskcluster-lib-testing.
 
 schemas
 -------
@@ -316,14 +319,13 @@ And assumes that the `exports` argument has a `load` function corresponding to a
 withDb
 ------
 
-This function is intended for use with `mockSuite` and the [usual configuration](../../db) for Postgres databases.
-In mock mode, it sets up a FakeDatabase.
-In "real" mode it sets up a "real" database using `$TEST_DB_URL`, accessed with a user corresponding to the given serviceName.
-In either case, the resulting database is injected into the taskcluster-lib-loader as `db` and also available as `helper.db`.
+This function is intended for use with [usual configuration](../../db) for Postgres databases.
+It sets up a "real" database using `$TEST_DB_URL`, accessed with a user corresponding to the given serviceName.
+If `$TEST_DB_URL` is not set, it will exit during test setup.
+The database is upgraded to the latest version at the beginning of the suite.
+The resulting database is injected into the taskcluster-lib-loader as `db` and also available as `helper.db`.
 
-In the real case, the database is upgraded to the latest version at the beginning of the suite.
-
-In both the real and mock cases, is up to the test suite implementation to reset the contents of the database between tests.
+It is up to the test suite implementation to reset the contents of the database between tests.
 Ideally this is done via `helper.db.fns` methods.
 
 Note that this is intended to operate against a temporary Postgres server such as one running in a docker container.
@@ -335,11 +337,7 @@ The function is typically used like this:
 ```javascript
 // helper.js
 exports.secrets = new Secrets({
-  secrets: {
-    db: withDb.secret,
-    ...
-  },
-  ...
+  // ...
 });
 
 exports.withDb = (mock, skipping) => {
@@ -349,11 +347,13 @@ exports.withDb = (mock, skipping) => {
 
 ```javascript
 // some_test.js
-helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
+helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   helper.withDb(mock, skipping);
   ...
 });
 ```
+
+Note that, while it takes `mock, skipping` like other utilities in this library, `withDb` *always* uses a real Postgres DB.
 
 There is also a utility function, `resetTables`, which will truncate a list of tables.
 This is typically used in a `setup` function to start each test with a clean slate.
@@ -363,16 +363,10 @@ const {resetTables} = require('taskcluster-lib-testing');
 
 exports.resetTables = (mock, skipping) => {
   setup('reset tables', async function() {
-    if (mock) {
-      // call the reset method on the fake db
-      exports.db['someservice'].reset();
-    } else {
-      const sec = exports.secrets.get('db');
-      await resetTables({ testDbUrl: sec.testDbUrl, tableNames: [
-        'some_table',
-        'another_table',
-      ]});
-    }
+    await resetTables({tableNames: [
+      'some_table',
+      'another_table',
+    ]});
   });
 };
 ```

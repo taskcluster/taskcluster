@@ -1,7 +1,7 @@
 const helper = require('./helper');
 const testing = require('taskcluster-lib-testing');
 
-helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
+helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   helper.withDb(mock, skipping);
   helper.withQueueService(mock, skipping);
 

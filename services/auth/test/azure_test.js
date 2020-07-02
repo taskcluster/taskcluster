@@ -5,7 +5,7 @@ const azure = require('fast-azure-storage');
 const taskcluster = require('taskcluster-client');
 const testing = require('taskcluster-lib-testing');
 
-helper.secrets.mockSuite(testing.suiteName(), ['db', 'azure', 'gcp'], function(mock, skipping) {
+helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, skipping) {
   if (mock) {
     return; // We only test this with real creds
   }

@@ -7,7 +7,7 @@ const helper = require('./helper');
 const testing = require('taskcluster-lib-testing');
 const {LEVELS} = require('taskcluster-lib-monitor');
 
-helper.secrets.mockSuite(testing.suiteName(), ['aws', 'db'], function(mock, skipping) {
+helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) {
   helper.withDb(mock, skipping);
   helper.withPollingServices(mock, skipping);
   helper.withAmazonIPRanges(mock, skipping);
@@ -43,7 +43,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws', 'db'], function(mock, skip
     monitor = await helper.load('monitor');
   });
 
-  test('Resolve unscheduled task deadline', testing.runWithFakeTime(async () => {
+  test('Resolve unscheduled task deadline', async () => {
     const {taskId, task} = makeTask();
 
     // make task self-dependent so that it does not get scheduled
@@ -84,9 +84,9 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws', 'db'], function(mock, skip
     debug('### Validate task status');
     const r2 = await helper.queue.status(taskId);
     assume(r2.status.state).equals('exception');
-  }, {mock}));
+  });
 
-  test('Resolve pending task deadline', testing.runWithFakeTime(async () => {
+  test('Resolve pending task deadline', async () => {
     const {taskId, task} = makeTask();
 
     debug('### Creating task');
@@ -113,9 +113,9 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws', 'db'], function(mock, skip
     debug('### Validate task status');
     const r2 = await helper.queue.status(taskId);
     assume(r2.status.state).deep.equals('exception');
-  }, {mock}));
+  });
 
-  test('Resolve running task deadline', testing.runWithFakeTime(async () => {
+  test('Resolve running task deadline', async () => {
     const {taskId, task} = makeTask();
 
     debug('### Creating task');
@@ -149,9 +149,9 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws', 'db'], function(mock, skip
     debug('### Validate task status');
     const r3 = await helper.queue.status(taskId);
     assume(r3.status.state).deep.equals('exception');
-  }, {mock}));
+  });
 
-  test('Resolve completed task by deadline (no change)', testing.runWithFakeTime(async () => {
+  test('Resolve completed task by deadline (no change)', async () => {
     const {taskId, task} = makeTask();
 
     debug('### Creating task');
@@ -185,5 +185,5 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws', 'db'], function(mock, skip
     debug('### Validate task status');
     const r4 = await helper.queue.status(taskId);
     assume(r4.status).deep.equals(r3.status);
-  }, {mock}));
+  });
 });

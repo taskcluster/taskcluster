@@ -38,7 +38,6 @@ The following checklist summarizes what needs to be written to modify the databa
   * [ ] test downgrade
   * [ ] test migration after downgrade (ensuring downgrade doesn't leave stray Postgres resources around)
 * for any *new* stored functions:
-  * [ ] fake implementation in `db/src/fakes/<serviceName>.js`
   * [ ] tests for new functions in `db/test/fns`
 
 #### Permissions
@@ -138,22 +137,6 @@ Finally, to get the current Schema instance, call `tcdb.schema({})`.
 
 All of these functions take an optional `useDbDirectory: true` option to indicate that they should read from the YAML files under `db/` instead of using the serialized format.
 This approach is slower, but is appropriate for testing.
-
-### Testing Support
-
-For testing purposes, this package provides a completely *fake* `db` instance, implemented entirely in JS.
-This means that services can be tested without access to a postgres database.
-
-The fake database is available via
-
-```javascript
-const tcdb = require('taskcluster-db');
-const fakeDb = tcdb.fakeSetup({serviceName: 'queue'});
-```
-
-All of the `fakeDb.fns.<name>` methods to which the service has access are available.
-Specific helper methods are available on sub-objects, such as `fakeDb.secrets.makeSecret`.
-See the source code of this package for the specific helpers that are available.
 
 ## Development
 

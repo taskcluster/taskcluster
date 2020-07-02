@@ -20,7 +20,6 @@ withMonitor(exports);
 // set up the testing secrets
 exports.secrets = new Secrets({
   secrets: {
-    db: withDb.secret,
   },
   load: exports.load,
 });
@@ -136,16 +135,11 @@ exports.withServer = (mock, skipping) => {
 
 exports.resetTables = (mock, skipping) => {
   setup('reset tables', async function() {
-    if (mock) {
-      exports.db['github'].reset();
-    } else {
-      const sec = exports.secrets.get('db');
-      await resetTables({ testDbUrl: sec.testDbUrl, tableNames: [
-        'taskcluster_github_builds_entities',
-        'taskcluster_integration_owners_entities',
-        'taskcluster_checks_to_tasks_entities',
-        'taskcluster_check_runs_entities',
-      ]});
-    }
+    await resetTables({ tableNames: [
+      'taskcluster_github_builds_entities',
+      'taskcluster_integration_owners_entities',
+      'taskcluster_checks_to_tasks_entities',
+      'taskcluster_check_runs_entities',
+    ]});
   });
 };

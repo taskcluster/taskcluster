@@ -7,7 +7,7 @@ const testing = require('taskcluster-lib-testing');
 const fs = require('fs');
 const path = require('path');
 
-helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
+helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   helper.withDb(mock, skipping);
   helper.withEntities(mock, skipping);
   helper.withPulse(mock, skipping);

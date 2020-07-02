@@ -1,10 +1,13 @@
 const path = require('path');
+const assert = require('assert');
 const {Client} = require('pg');
 const {Schema, ignorePgErrors, UNDEFINED_OBJECT, UNDEFINED_TABLE} = require('taskcluster-lib-postgres');
 const tcdb = require('taskcluster-db');
 const {URL} = require('url');
 
-const resetDb = async ({testDbUrl}) => {
+const testDbUrl = process.env.TEST_DB_URL;
+
+const resetDb = async () => {
   const client = new Client({connectionString: testDbUrl});
   await client.connect();
   try {
@@ -37,7 +40,7 @@ const resetDb = async ({testDbUrl}) => {
   }
 };
 
-const resetTables = async ({testDbUrl, tableNames}) => {
+const resetTables = async ({tableNames}) => {
   const client = new Client({connectionString: testDbUrl});
   await client.connect();
   try {
@@ -52,19 +55,18 @@ const resetTables = async ({testDbUrl, tableNames}) => {
 /**
  * withDb:
  *
- * - in mock mode, set up helper.db as a FakeDatabase
- * - in real mode, set up helper.db as a real Database, and upgrade that
- *   database to the most recent version.
+ * - set up helper.db as a Database, and upgrade that database to the most recent version.
  *
- * In either case, it's up to the caller to set up and clear any data
- * between test cases.
+ * It's up to the caller to set up and clear any data between test cases.
  */
 module.exports.withDb = (mock, skipping, helper, serviceName) => {
+  assert(testDbUrl,
+    "TEST_DB_URL must be set to run these tests - see dev-docs/development-process.md for more information");
+
   suiteSetup('withDb', async function() {
     if (skipping()) {
       return;
     }
-
     const dbCryptoKeys = [
       {
         id: 'testing',
@@ -73,33 +75,27 @@ module.exports.withDb = (mock, skipping, helper, serviceName) => {
       },
     ];
 
-    if (mock) {
-      helper.db = await tcdb.fakeSetup({serviceName, dbCryptoKeys});
-    } else {
-      const sec = helper.secrets.get('db');
+    await resetDb();
 
-      await resetDb({testDbUrl: sec.testDbUrl});
+    // upgrade..
+    await tcdb.upgrade({
+      adminDbUrl: testDbUrl,
+      usernamePrefix: 'test',
+      useDbDirectory: true,
+    });
 
-      // upgrade..
-      await tcdb.upgrade({
-        adminDbUrl: sec.testDbUrl,
-        usernamePrefix: 'test',
-        useDbDirectory: true,
-      });
+    let serviceDbUrl = new URL(testDbUrl);
+    serviceDbUrl.username = `test_${serviceName.replace(/-/g, '_')}`;
+    serviceDbUrl = serviceDbUrl.toString();
 
-      let serviceDbUrl = new URL(sec.testDbUrl);
-      serviceDbUrl.username = `test_${serviceName.replace(/-/g, '_')}`;
-      serviceDbUrl = serviceDbUrl.toString();
-
-      helper.db = await tcdb.setup({
-        readDbUrl: serviceDbUrl,
-        writeDbUrl: serviceDbUrl,
-        serviceName,
-        useDbDirectory: true,
-        monitor: false,
-        dbCryptoKeys,
-      });
-    }
+    helper.db = await tcdb.setup({
+      readDbUrl: serviceDbUrl,
+      writeDbUrl: serviceDbUrl,
+      serviceName,
+      useDbDirectory: true,
+      monitor: false,
+      dbCryptoKeys,
+    });
 
     if (helper.load) {
       helper.load.inject('db', helper.db);
@@ -116,10 +112,6 @@ module.exports.withDb = (mock, skipping, helper, serviceName) => {
     delete helper.db;
   });
 };
-
-module.exports.withDb.secret = [
-  {env: 'TEST_DB_URL', cfg: 'db.testUrl', name: 'testDbUrl'},
-];
 
 // this is useful for taskcluster-db's tests, as well
 module.exports.resetDb = resetDb;
