@@ -30,6 +30,19 @@ program.command('build')
     run(main, options[0]);
   });
 
+program.command('release')
+  .description('tag a release and push it to GitHub')
+  .option('--dry-run', 'Do not run any tasks, but generate the list of tasks')
+  .option('--no-push', 'Do not push the git commit + tags (but your local repo is still modified)')
+  .action((...options) => {
+    if (options.length !== 1) {
+      console.error('unexpected command-line arguments');
+      process.exit(1);
+    }
+    const {release} = require('./release');
+    run(release, options[0]);
+  });
+
 program.command('staging-release')
   // note that this is not `release --staging` to avoid danger of accidentally doing a real release
   .description('make a staging release')
