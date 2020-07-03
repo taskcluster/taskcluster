@@ -29,7 +29,7 @@
     },
     "notify": {
       "tables": {
-        "denylisted_notification_entities": "write"
+        "denylisted_notifications": "write"
       }
     },
     "purge_cache": {
@@ -112,12 +112,10 @@
       "value": "jsonb not null",
       "version": "integer not null"
     },
-    "denylisted_notification_entities": {
+    "denylisted_notifications": {
       "etag": "uuid",
-      "partition_key": "text not null",
-      "row_key": "text not null",
-      "value": "jsonb not null",
-      "version": "integer not null"
+      "notification_address": "text not null",
+      "notification_type": "text not null"
     },
     "github_access_token_table_entities": {
       "etag": "uuid",
@@ -2535,6 +2533,85 @@
       },
       "migrationScript": "begin\n  -- SlugIDs are stored as UUIDs in Azure, because Azure stores that efficiently, but this makes it\n  -- difficult to query the DB since everywhere else we deal with SlugIDs in their 22-character\n  -- representation.  So these functions convert uuids to slugids and back.  Refer to\n  -- https://github.com/taskcluster/slugid/blob/53ec9a2de7140afff5b986c7c60a8028512e87d0/slugid.js\n  create or replace function uuid_to_slugid(uuid text) RETURNS text\n  as $$\n    begin\n      return left(replace(replace(encode(decode(replace(uuid, '-', ''), 'hex'), 'base64'), '+', '-'), '/', '_'), 22);\n    end;\n  $$\n  language plpgSQL\n  strict immutable;\n\n  create or replace function slugid_to_uuid(slugid text) RETURNS text\n  as $$\n    begin\n      return (encode(decode(replace(replace(slugid, '_', '/'), '-', '+') || '==', 'base64') , 'hex')::uuid)::text;\n    end;\n  $$\n  language plpgSQL\n  strict immutable;\nend\n",
       "version": 16
+    },
+    {
+      "downgradeScript": "begin\n  -- lock this table before reading from it, to prevent loss of concurrent\n  -- updates when the table is dropped.\n  lock table denylisted_notifications;\n\n  create table denylisted_notification_entities(\n    partition_key text, row_key text,\n    value jsonb not null,\n    version integer not null,\n    etag uuid default public.gen_random_uuid());\n  alter table denylisted_notification_entities add primary key (partition_key, row_key);\n\n  insert into denylisted_notification_entities\n  select\n    encode_string_key(notification_type) as partition_key,\n    encode_string_key(notification_address) as row_key,\n    jsonb_build_object(\n      'PartitionKey', encode_string_key(notification_type),\n      'RowKey', encode_string_key(notification_address),\n      'notificationType', notification_type,\n      'notificationAddress', notification_address) as value,\n    1 as version,\n    etag\n  from denylisted_notifications;\n\n  revoke select, insert, update, delete on denylisted_notifications from $db_user_prefix$_notify;\n  drop table denylisted_notifications;\n  grant select, insert, update, delete on denylisted_notification_entities to $db_user_prefix$_notify;\nend\n",
+      "methods": {
+        "add_denylist_address": {
+          "args": "notification_type_in text, notification_address_in text",
+          "body": "begin\n  insert into denylisted_notifications(notification_type, notification_address, etag)\n  values (\n    notification_type_in,\n    notification_address_in,\n    public.gen_random_uuid()\n  ) on conflict do nothing;\nend",
+          "deprecated": false,
+          "description": "If the denylist address already exists, this is a no-op. Otherwise, add the denylist\naddress for the taskcluster-notify service, with a new random etag.",
+          "mode": "write",
+          "returns": "void",
+          "serviceName": "notify"
+        },
+        "all_denylist_addresses": {
+          "args": "page_size_in integer, page_offset_in integer",
+          "body": "begin\n  return query select denylisted_notifications.notification_type, denylisted_notifications.notification_address\n  from denylisted_notifications\n  order by 1, 2\n  limit get_page_limit(page_size_in)\n  offset get_page_offset(page_offset_in);\nend",
+          "deprecated": false,
+          "description": "List all denylist addresses for the taskcluster-notify service.",
+          "mode": "read",
+          "returns": "table (notification_type text, notification_address text)",
+          "serviceName": "notify"
+        },
+        "delete_denylist_address": {
+          "args": "notification_type_in text, notification_address_in text",
+          "body": "begin\n  delete from denylisted_notifications where\n  denylisted_notifications.notification_type = notification_type_in and\n  denylisted_notifications.notification_address = notification_address_in;\n  if found then\n    return 1;\n  end if;\n  return 0;\nend",
+          "deprecated": false,
+          "description": "Delete a denylist address for the taskcluster-notify service.\nReturns number of rows deleted (0 or 1).",
+          "mode": "write",
+          "returns": "integer",
+          "serviceName": "notify"
+        },
+        "denylisted_notification_entities_create": {
+          "args": "pk text, rk text, properties jsonb, overwrite boolean, version integer",
+          "body": "declare\n  new_row denylisted_notifications%ROWTYPE;\nbegin\n  select\n    (properties ->> 'notificationType')::text as notification_type,\n    (properties ->> 'notificationAddress')::text as notification_address,\n    public.gen_random_uuid() as etag\n  into new_row;\n  if overwrite then\n    raise exception 'overwrite not implemented';\n  else\n    execute 'insert into denylisted_notifications select $1.*' using new_row;\n  end if;\n  return new_row.etag;\nend",
+          "deprecated": false,
+          "description": "See taskcluster-lib-entities",
+          "mode": "write",
+          "returns": "uuid",
+          "serviceName": "notify"
+        },
+        "denylisted_notification_entities_load": {
+          "args": "partition_key text, row_key text",
+          "body": "begin\n  return query\n  select\n    denylisted_notification_entities_load.partition_key,\n    denylisted_notification_entities_load.row_key,\n    jsonb_build_object(\n      'PartitionKey', denylisted_notification_entities_load.partition_key,\n      'RowKey', denylisted_notification_entities_load.row_key,\n      'notificationType', notification_type,\n      'notificationAddress', notification_address) as value,\n    1 as version,\n    denylisted_notifications.etag as etag\n  from denylisted_notifications\n  where\n    denylisted_notifications.notification_type = decode_string_key(denylisted_notification_entities_load.partition_key) and denylisted_notifications.notification_address = decode_string_key(denylisted_notification_entities_load.row_key);\nend",
+          "deprecated": false,
+          "description": "See taskcluster-lib-entities",
+          "mode": "read",
+          "returns": "table (partition_key_out text, row_key_out text, value jsonb, version integer, etag uuid)",
+          "serviceName": "notify"
+        },
+        "denylisted_notification_entities_remove": {
+          "args": "partition_key text, row_key text",
+          "body": "begin\n  return query delete from denylisted_notifications\n  where\n    denylisted_notifications.notification_type = decode_string_key(denylisted_notification_entities_remove.partition_key) and denylisted_notifications.notification_address = decode_string_key(denylisted_notification_entities_remove.row_key)\n  returning denylisted_notifications.etag;\nend",
+          "deprecated": false,
+          "description": "See taskcluster-lib-entities",
+          "mode": "write",
+          "returns": "table (etag uuid)",
+          "serviceName": "notify"
+        },
+        "denylisted_notification_entities_scan": {
+          "args": "pk text, rk text, condition text, size integer, page integer",
+          "body": "declare\n  cond text[];\n  exp_cond_operator text;\n  exp_cond_operand timestamptz;\n  partition_key_var text;\n  row_key_var text;\nbegin\n  if not condition is null then\n    raise exception 'no condition support in denylisted_notification_entities_scan';\n  else\n    return query select\n      encode_string_key(denylisted_notifications.notification_type) as partition_key,\n      encode_string_key(denylisted_notifications.notification_address) as row_key,\n      jsonb_build_object(\n        'PartitionKey', encode_string_key(denylisted_notifications.notification_type),\n        'RowKey', encode_string_key(denylisted_notifications.notification_address),\n        'notificationType', notification_type,\n        'notificationAddress', notification_address\n      ) as value,\n      1 as version,\n      denylisted_notifications.etag as etag from denylisted_notifications\n    where\n      (denylisted_notification_entities_scan.pk is null or decode_string_key(denylisted_notification_entities_scan.pk) = notification_type) and\n      (denylisted_notification_entities_scan.rk is null or decode_string_key(denylisted_notification_entities_scan.rk) = notification_address)\n    order by denylisted_notifications.notification_type, denylisted_notifications.notification_address\n    limit case\n      when (size is not null and size > 0) then size + 1\n      else null\n    end\n    offset case\n      when (size is not null and size > 0 and page is not null and page > 0) then page\n      else 0\n    end;\n  end if;\nend",
+          "deprecated": false,
+          "description": "See taskcluster-lib-entities",
+          "mode": "read",
+          "returns": "table (partition_key text, row_key text, value jsonb, version integer, etag uuid)",
+          "serviceName": "notify"
+        },
+        "exists_denylist_address": {
+          "args": "notification_type_in text, notification_address_in text",
+          "body": "begin\n  perform 1 from denylisted_notifications where\n  denylisted_notifications.notification_type = notification_type_in and\n  denylisted_notifications.notification_address = notification_address_in;\n  return found;\nend",
+          "deprecated": false,
+          "description": "Returns a boolean indicating whether the denylist type/address exists.",
+          "mode": "read",
+          "returns": "boolean",
+          "serviceName": "notify"
+        }
+      },
+      "migrationScript": "begin\n  -- lock this table before reading from it, to prevent loss of concurrent\n  -- updates when the table is dropped.  Note that this may lead to concurrent\n  -- updates failing; the important thing is that they not succeed without\n  -- taking effect.  Failed updates will be retried.\n  lock table denylisted_notification_entities;\n\n  create table denylisted_notifications\n  as\n    select\n      (value ->> 'notificationType')::text as notification_type,\n      (value ->> 'notificationAddress')::text as notification_address,\n      etag\n    from denylisted_notification_entities;\n  alter table denylisted_notifications add primary key (notification_type, notification_address);\n  alter table denylisted_notifications\n    alter column notification_type set not null,\n    alter column notification_address set not null,\n    alter column etag set default public.gen_random_uuid();\n\n  revoke select, insert, update, delete on denylisted_notification_entities from $db_user_prefix$_notify;\n  drop table denylisted_notification_entities;\n  grant select, insert, update, delete on denylisted_notifications to $db_user_prefix$_notify;\n\nend\n",
+      "version": 17
     }
   ]
 }

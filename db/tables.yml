@@ -76,11 +76,9 @@ namespaces_entities:
   value: jsonb not null
   version: integer not null
   etag: uuid
-denylisted_notification_entities:
-  partition_key: text not null
-  row_key: text not null
-  value: jsonb not null
-  version: integer not null
+denylisted_notifications:
+  notification_type: text not null
+  notification_address: text not null
   etag: uuid
 cache_purges:
   provisioner_id: text not null

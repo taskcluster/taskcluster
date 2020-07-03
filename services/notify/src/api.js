@@ -1,4 +1,4 @@
-const {APIBuilder} = require('taskcluster-lib-api');
+const {APIBuilder, paginateResults} = require('taskcluster-lib-api');
 const Entity = require('taskcluster-lib-entities');
 
 const builder = new APIBuilder({
@@ -11,7 +11,6 @@ const builder = new APIBuilder({
   apiVersion: 'v1',
   context: [
     'notifier',
-    'DenylistedNotification',
     'denier',
     'db',
   ],
@@ -172,13 +171,7 @@ builder.declare({
   };
 
   await req.authorize(req.body);
-  try {
-    await this.DenylistedNotification.create(address);
-  } catch (e) {
-    if (e.name !== 'EntityAlreadyExistsError') {
-      throw e;
-    }
-  }
+  await this.db.fns.add_denylist_address(address.notificationType, address.notificationAddress);
   res.sendStatus(200);
 });
 
@@ -201,13 +194,7 @@ builder.declare({
   };
 
   await req.authorize(req.body);
-  try {
-    await this.DenylistedNotification.remove(address);
-  } catch (e) {
-    if (e.name !== 'ResourceNotFoundError') {
-      throw e;
-    }
-  }
+  await this.db.fns.delete_denylist_address(address.notificationType, address.notificationAddress);
   res.sendStatus(200);
 });
 
@@ -237,20 +224,20 @@ builder.declare({
     'use the query-string option `limit` to return fewer.',
   ].join('\n'),
 }, async function(req, res) {
-  const continuation = req.query.continuationToken || null;
-  const limit = Math.min(parseInt(req.query.limit || 1000, 10), 1000);
 
   await req.authorize(req.body);
-
-  const query = await this.DenylistedNotification.scan({}, {continuation, limit});
+  const {continuationToken, rows} = await paginateResults({
+    query: req.query,
+    fetch: (size, offset) => this.db.fns.all_denylist_addresses(size, offset),
+  });
 
   return res.reply({
-    addresses: query.entries.map(address => {
+    addresses: rows.map(address => {
       return {
-        notificationType: address.notificationType,
-        notificationAddress: address.notificationAddress,
+        notificationType: address.notification_type,
+        notificationAddress: address.notification_address,
       };
     }),
-    continuationToken: query.continuation || undefined,
+    continuationToken: continuationToken || undefined,
   });
 });

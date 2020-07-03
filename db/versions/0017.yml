@@ -1,0 +1,166 @@
+version: 17
+migrationScript: 0017-migration.sql
+downgradeScript: 0017-downgrade.sql
+methods:
+  denylisted_notification_entities_load:
+    description: See taskcluster-lib-entities
+    mode: read
+    serviceName: notify
+    args: partition_key text, row_key text
+    returns: table (partition_key_out text, row_key_out text, value jsonb, version integer, etag uuid)
+    body: |-
+      begin
+        return query
+        select
+          denylisted_notification_entities_load.partition_key,
+          denylisted_notification_entities_load.row_key,
+          jsonb_build_object(
+            'PartitionKey', denylisted_notification_entities_load.partition_key,
+            'RowKey', denylisted_notification_entities_load.row_key,
+            'notificationType', notification_type,
+            'notificationAddress', notification_address) as value,
+          1 as version,
+          denylisted_notifications.etag as etag
+        from denylisted_notifications
+        where
+          denylisted_notifications.notification_type = decode_string_key(denylisted_notification_entities_load.partition_key) and denylisted_notifications.notification_address = decode_string_key(denylisted_notification_entities_load.row_key);
+      end
+  denylisted_notification_entities_create:
+    serviceName: notify
+    description: See taskcluster-lib-entities
+    mode: write
+    args: pk text, rk text, properties jsonb, overwrite boolean, version integer
+    returns: uuid
+    body: |-
+      declare
+        new_row denylisted_notifications%ROWTYPE;
+      begin
+        select
+          (properties ->> 'notificationType')::text as notification_type,
+          (properties ->> 'notificationAddress')::text as notification_address,
+          public.gen_random_uuid() as etag
+        into new_row;
+        if overwrite then
+          raise exception 'overwrite not implemented';
+        else
+          execute 'insert into denylisted_notifications select $1.*' using new_row;
+        end if;
+        return new_row.etag;
+      end
+  denylisted_notification_entities_remove:
+    serviceName: notify
+    description: See taskcluster-lib-entities
+    mode: write
+    args: partition_key text, row_key text
+    returns: table (etag uuid)
+    body: |-
+      begin
+        return query delete from denylisted_notifications
+        where
+          denylisted_notifications.notification_type = decode_string_key(denylisted_notification_entities_remove.partition_key) and denylisted_notifications.notification_address = decode_string_key(denylisted_notification_entities_remove.row_key)
+        returning denylisted_notifications.etag;
+      end
+  denylisted_notification_entities_scan:
+    description: See taskcluster-lib-entities
+    mode: read
+    serviceName: notify
+    args: pk text, rk text, condition text, size integer, page integer
+    returns: table (partition_key text, row_key text, value jsonb, version integer, etag uuid)
+    body: |-
+      declare
+        cond text[];
+        exp_cond_operator text;
+        exp_cond_operand timestamptz;
+        partition_key_var text;
+        row_key_var text;
+      begin
+        if not condition is null then
+          raise exception 'no condition support in denylisted_notification_entities_scan';
+        else
+          return query select
+            encode_string_key(denylisted_notifications.notification_type) as partition_key,
+            encode_string_key(denylisted_notifications.notification_address) as row_key,
+            jsonb_build_object(
+              'PartitionKey', encode_string_key(denylisted_notifications.notification_type),
+              'RowKey', encode_string_key(denylisted_notifications.notification_address),
+              'notificationType', notification_type,
+              'notificationAddress', notification_address
+            ) as value,
+            1 as version,
+            denylisted_notifications.etag as etag from denylisted_notifications
+          where
+            (denylisted_notification_entities_scan.pk is null or decode_string_key(denylisted_notification_entities_scan.pk) = notification_type) and
+            (denylisted_notification_entities_scan.rk is null or decode_string_key(denylisted_notification_entities_scan.rk) = notification_address)
+          order by denylisted_notifications.notification_type, denylisted_notifications.notification_address
+          limit case
+            when (size is not null and size > 0) then size + 1
+            else null
+          end
+          offset case
+            when (size is not null and size > 0 and page is not null and page > 0) then page
+            else 0
+          end;
+        end if;
+      end
+  add_denylist_address:
+    description: |-
+      If the denylist address already exists, this is a no-op. Otherwise, add the denylist
+      address for the taskcluster-notify service, with a new random etag.
+    mode: write
+    serviceName: notify
+    args: notification_type_in text, notification_address_in text
+    returns: void
+    body: |-
+      begin
+        insert into denylisted_notifications(notification_type, notification_address, etag)
+        values (
+          notification_type_in,
+          notification_address_in,
+          public.gen_random_uuid()
+        ) on conflict do nothing;
+      end
+  delete_denylist_address:
+    description: |-
+      Delete a denylist address for the taskcluster-notify service.
+      Returns number of rows deleted (0 or 1).
+    mode: write
+    serviceName: notify
+    args: notification_type_in text, notification_address_in text
+    returns: integer
+    body: |-
+      begin
+        delete from denylisted_notifications where
+        denylisted_notifications.notification_type = notification_type_in and
+        denylisted_notifications.notification_address = notification_address_in;
+        if found then
+          return 1;
+        end if;
+        return 0;
+      end
+  all_denylist_addresses:
+    description: List all denylist addresses for the taskcluster-notify service.
+    mode: read
+    serviceName: notify
+    args: page_size_in integer, page_offset_in integer
+    returns: table (notification_type text, notification_address text)
+    body: |-
+      begin
+        return query select denylisted_notifications.notification_type, denylisted_notifications.notification_address
+        from denylisted_notifications
+        order by 1, 2
+        limit get_page_limit(page_size_in)
+        offset get_page_offset(page_offset_in);
+      end
+  exists_denylist_address:
+    description: Returns a boolean indicating whether the denylist type/address exists.
+    mode: read
+    serviceName: notify
+    args: notification_type_in text, notification_address_in text
+    returns: boolean
+    body: |-
+      begin
+        perform 1 from denylisted_notifications where
+        denylisted_notifications.notification_type = notification_type_in and
+        denylisted_notifications.notification_address = notification_address_in;
+        return found;
+      end

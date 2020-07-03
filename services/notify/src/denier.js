@@ -1,7 +1,7 @@
 class Denier {
-  constructor({DenylistedNotification, emailBlacklist}) {
-    this.DenylistedNotification = DenylistedNotification;
+  constructor({emailBlacklist, db}) {
     this.emailBlacklist = emailBlacklist;
+    this.db = db;
   }
 
   async isDenied(notificationType, notificationAddress) {
@@ -12,7 +12,12 @@ class Denier {
     }
 
     const address = {notificationType, notificationAddress};
-    return !!await this.DenylistedNotification.load(address, true);
+    let resultAsTable = await this.db.fns.exists_denylist_address(
+      address.notificationType,
+      address.notificationAddress,
+    );
+    let exists = resultAsTable[0]["exists_denylist_address"];
+    return exists;
   }
 }
 
