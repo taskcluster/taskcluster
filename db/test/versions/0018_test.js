@@ -92,6 +92,7 @@ suite(`${testing.suiteName()} - indexed_tasks`, function() {
       // expected is ordered by the hashed namespace
       {condition: {}, expectedSamples: ['pptt', 'samp0', 'samp4', 'samp2', 'samp3', 'samp1']},
       {condition: null, expectedSamples: ['pptt', 'samp0', 'samp4', 'samp2', 'samp3', 'samp1']},
+      {condition: {namespace: 'foo/foo', name: 'bar/bar', expires: Entity.op.greaterThan(new Date())}, expectedSamples: ['pptt']},
     ],
     notFoundConditions: [
       {condition: {namespace: 'no/such', name: 'no/such'}},
