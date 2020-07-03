@@ -33,7 +33,7 @@ methods:
           queue_artifacts.etag as etag
         from queue_artifacts
         where
-          queue_artifacts.task_id = decoded_composite_key[1] and queue_artifacts.run_id::text = decoded_composite_key[2] and queue_artifacts.name = decode_string_key(queue_artifacts_entities_load.row_key);
+          queue_artifacts.task_id = decoded_composite_key[1] and queue_artifacts.run_id = decoded_composite_key[2]::int and queue_artifacts.name = decode_string_key(queue_artifacts_entities_load.row_key);
       end
   queue_artifacts_entities_create:
     serviceName: queue
@@ -76,7 +76,7 @@ methods:
         decoded_composite_key := decode_composite_key(queue_artifacts_entities_remove.partition_key);
         return query delete from queue_artifacts
         where
-          queue_artifacts.task_id = decoded_composite_key[1] and queue_artifacts.run_id::text = decoded_composite_key[2] and queue_artifacts.name = decode_string_key(queue_artifacts_entities_remove.row_key)
+          queue_artifacts.task_id = decoded_composite_key[1] and queue_artifacts.run_id = decoded_composite_key[2]::int and queue_artifacts.name = decode_string_key(queue_artifacts_entities_remove.row_key)
         returning queue_artifacts.etag;
       end
   queue_artifacts_entities_modify:
@@ -120,7 +120,7 @@ methods:
         )
         where
           queue_artifacts.task_id = decoded_composite_key[1] and
-          queue_artifacts.run_id::text = decoded_composite_key[2] and
+          queue_artifacts.run_id = decoded_composite_key[2]::int and
           queue_artifacts.name = decode_string_key(queue_artifacts_entities_modify.row_key) and
           queue_artifacts.etag = queue_artifacts_entities_modify.old_etag;
         if found then
@@ -130,7 +130,7 @@ methods:
         perform queue_artifacts.etag from queue_artifacts
         where
           queue_artifacts.task_id = decoded_composite_key[1] and
-          queue_artifacts.run_id::text = decoded_composite_key[2] and
+          queue_artifacts.run_id = decoded_composite_key[2]::int and
           queue_artifacts.name = decode_string_key(queue_artifacts_entities_modify.row_key);
         if found then
           raise exception 'unsuccessful update' using errcode = 'P0004';
@@ -216,7 +216,7 @@ methods:
             1 as version,
             queue_artifacts.etag as etag from queue_artifacts
           where
-            (queue_artifacts_entities_scan.pk is null or (queue_artifacts.task_id = decoded_composite_key[1] and queue_artifacts.run_id::text = decoded_composite_key[2])) and
+            (queue_artifacts_entities_scan.pk is null or (queue_artifacts.task_id = decoded_composite_key[1] and queue_artifacts.run_id = decoded_composite_key[2]::int)) and
             (queue_artifacts_entities_scan.rk is null or queue_artifacts_entities_scan.rk = name)
           order by queue_artifacts.task_id, queue_artifacts.run_id, queue_artifacts.name
           limit case

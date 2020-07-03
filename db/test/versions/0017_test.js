@@ -91,9 +91,9 @@ suite(testing.suiteName(), function() {
       {condition: {taskId: taskIds[1], runId: 1, name: 'name-1' }, expectedSample: 'samp1'},
     ],
     scanConditions: [
-      // expected is ordered by the hashed namespace
       {condition: {}, expectedSamples: ['samp4', 'pptt', 'samp2', 'samp1', 'samp0', 'samp3']},
       {condition: null, expectedSamples: ['samp4', 'pptt', 'samp2', 'samp1', 'samp0', 'samp3']},
+      {condition: {taskId: 'J6CQMUHpTyGrWDgfp17J8g', runId: 5}, expectedSamples: ['pptt']},
     ],
     notFoundConditions: [
       {condition: {taskId: slug.nice(), name: 'no/such', runId: 0}},
