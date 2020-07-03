@@ -1,0 +1,241 @@
+version: 28
+methods:
+  get_index_namespaces:
+    description: |-
+      Get existing index_namespaces filtered by the optional arguments,
+      ordered by the `parent` and `name`.
+      If the pagination arguments are both NULL, all rows are returned.
+      Otherwise, page_size rows are returned at offset page_offset.
+    mode: read
+    serviceName: index
+    args: parent_in text, name_in text, page_size_in integer, page_offset_in integer
+    returns: table(parent text, name text, expires timestamptz)
+    body: |-
+      begin
+        return query
+        select
+          index_namespaces.parent,
+          index_namespaces.name,
+          index_namespaces.expires
+        from index_namespaces
+        where
+          (index_namespaces.parent = parent_in or parent_in is null) and
+          (index_namespaces.name = name_in or name_in is null) and
+          (index_namespaces.expires > now())
+        -- we previously used to order by the hashed parent but there's probably no need to add this complication.
+        order by index_namespaces.parent, name
+        limit get_page_limit(page_size_in)
+        offset get_page_offset(page_offset_in);
+      end
+  create_index_namespace:
+    description: |-
+      Create a new namespace. Raises UNIQUE_VIOLATION if the namespace already exists.
+      Returns the newly created namespace.
+    mode: write
+    serviceName: index
+    args: parent_in text, name_in text, expires_in timestamptz
+    returns: table(parent text, name text, expires timestamptz)
+    body: |-
+      begin
+        return query insert
+          into index_namespaces (parent, name, expires)
+          values (parent_in, name_in, expires_in)
+          returning index_namespaces.parent, index_namespaces.name, index_namespaces.expires;
+      end
+  get_index_namespace:
+    description: |-
+      Get a namespace. The returned table will have one or zero rows.
+    mode: read
+    serviceName: index
+    args: parent_in text, name_in text
+    returns: table(parent text, name text, expires timestamptz)
+    body: |-
+      begin
+        return query select
+          index_namespaces.parent,
+          index_namespaces.name,
+          index_namespaces.expires
+        from index_namespaces
+        where
+          index_namespaces.parent = parent_in and
+          index_namespaces.name = name_in;
+      end
+  update_index_namespace:
+    serviceName: index
+    description: |-
+      Update a namespace.
+      Returns the up-to-date namespace row that have the same parent and name.
+      If the row is not found then an exception with code 'P0002' is thrown.
+    mode: write
+    args: parent_in text, name_in text, expires_in timestamptz
+    returns: table(parent text, name text, expires timestamptz)
+    body: |-
+      declare
+        updated_row index_namespaces%ROWTYPE;
+      begin
+        update index_namespaces
+        set expires = coalesce(expires_in, index_namespaces.expires)
+        where
+          index_namespaces.parent = parent_in and
+          index_namespaces.name = name_in
+        returning
+          index_namespaces.parent,
+          index_namespaces.name,
+          index_namespaces.expires
+        into updated_row;
+        if found then
+          return query select
+            updated_row.parent,
+            updated_row.name,
+            updated_row.expires;
+          return;
+        end if;
+        raise exception 'no such row' using errcode = 'P0002';
+      end
+  expire_index_namespaces:
+    description: |-
+      Expire index_namespaces that come before the current time.
+      Returns a count of rows that have been deleted.
+    mode: write
+    serviceName: index
+    args: ''
+    returns: integer
+    body: |-
+      declare
+        count integer;
+      begin
+        delete from index_namespaces where index_namespaces.expires < now();
+        if found then
+          get diagnostics count = row_count;
+          return count;
+        end if;
+        return 0;
+      end
+  get_indexed_tasks:
+    description: |-
+      Get existing indexed tasks filtered by the optional arguments,
+      ordered by the `namespace` and `name`.
+      If the pagination arguments are both NULL, all rows are returned.
+      Otherwise, page_size rows are returned at offset page_offset.
+    mode: read
+    serviceName: index
+    args: namespace_in text, name_in text, page_size_in integer, page_offset_in integer
+    returns: table(namespace text, name text, rank integer, task_id text, data jsonb, expires timestamptz)
+    body: |-
+      begin
+        return query
+        select
+          indexed_tasks.namespace,
+          indexed_tasks.name,
+          indexed_tasks.rank,
+          indexed_tasks.task_id,
+          indexed_tasks.data,
+          indexed_tasks.expires
+        from indexed_tasks
+        where
+          (indexed_tasks.namespace = namespace_in or namespace_in is null) and
+          (indexed_tasks.name = name_in or name_in is null) and
+          (indexed_tasks.expires > now())
+        -- we previously used to order by the hashed namespace but there's probably no need to add this complication.
+        order by indexed_tasks.namespace, name
+        limit get_page_limit(page_size_in)
+        offset get_page_offset(page_offset_in);
+      end
+  create_indexed_task:
+    description: |-
+      Create a new indexed task. Raises UNIQUE_VIOLATION if the indexed task already exists.
+      Returns the newly created indexed task.
+    mode: write
+    serviceName: index
+    args: namespace_in text, name_in text, rank_in integer, task_id_in text, data_in jsonb, expires_in timestamptz
+    returns: table(namespace text, name text, rank integer, task_id text, data jsonb, expires timestamptz)
+    body: |-
+      begin
+        return query insert
+          into indexed_tasks (namespace, name, rank, task_id, data, expires)
+          values (namespace_in, name_in, rank_in, task_id_in, data_in, expires_in)
+          returning indexed_tasks.namespace, indexed_tasks.name, indexed_tasks.rank, indexed_tasks.task_id, indexed_tasks.data, indexed_tasks.expires;
+      end
+  get_indexed_task:
+    description: |-
+      Get an indexed task. The returned table will have one or zero rows.
+    mode: read
+    serviceName: index
+    args: namespace_in text, name_in text
+    returns: table(namespace text, name text, rank integer, task_id text, data jsonb, expires timestamptz)
+    body: |-
+      begin
+        return query select
+          indexed_tasks.namespace,
+          indexed_tasks.name,
+          indexed_tasks.rank,
+          indexed_tasks.task_id,
+          indexed_tasks.data,
+          indexed_tasks.expires
+        from indexed_tasks
+        where
+          indexed_tasks.namespace = namespace_in and
+          indexed_tasks.name = name_in;
+      end
+  update_indexed_task:
+    serviceName: index
+    description: |-
+      Update an indexed task.
+      Returns the up-to-date indexed task row that have the same namespace and name.
+    mode: write
+    args: namespace_in text, name_in text, rank_in integer, task_id_in text, data_in jsonb, expires_in timestamptz
+    returns: table(namespace text, name text, rank integer, task_id text, data jsonb, expires timestamptz)
+    body: |-
+      declare
+        updated_row indexed_tasks%ROWTYPE;
+      begin
+        update indexed_tasks
+        set (rank, task_id, data, expires) = (
+          coalesce(rank_in, indexed_tasks.rank),
+          coalesce(task_id_in, indexed_tasks.task_id),
+          coalesce(data_in, indexed_tasks.data),
+          coalesce(expires_in, indexed_tasks.expires)
+        )
+        where
+          indexed_tasks.namespace = namespace_in and
+          indexed_tasks.name = name_in
+        returning
+          indexed_tasks.namespace,
+          indexed_tasks.name,
+          indexed_tasks.rank,
+          indexed_tasks.task_id,
+          indexed_tasks.data,
+          indexed_tasks.expires
+        into updated_row;
+        if found then
+          return query select
+            updated_row.namespace,
+            updated_row.name,
+            updated_row.rank,
+            updated_row.task_id,
+            updated_row.data,
+            updated_row.expires;
+          return;
+        else
+          raise exception 'no such row' using errcode = 'P0002';
+        end if;
+      end
+  expire_indexed_tasks:
+    description: |-
+      Expire indexed tasks that come before the current time.
+      Returns a count of rows that have been deleted.
+    mode: write
+    serviceName: index
+    args: ''
+    returns: integer
+    body: |-
+      declare
+        count integer;
+      begin
+        delete from indexed_tasks where indexed_tasks.expires < now();
+        if found then
+          get diagnostics count = row_count;
+          return count;
+        end if;
+        return 0;
+      end

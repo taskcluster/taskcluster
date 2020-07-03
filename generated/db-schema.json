@@ -3463,6 +3463,101 @@
       },
       "migrationScript": "begin\n  -- convert the postgres string form of a timestamp (which is valid iso8601) into the\n  -- precise format returned by JS's Date.toJSON\n  create or replace function to_js_iso8601(ts_in text) RETURNS text\n  as $$\n    begin\n      return regexp_replace(ts_in, '(.*) (.*)\\+00(:00)?', '\\1T\\2Z');\n    end;\n  $$\n  language plpgSQL\n  strict immutable;\n\n  lock table roles_entities;\n\n  -- Note that roles must be updated as a block, as there are some inter-role\n  -- consistency checks that must be followed and are too complex to describe in\n  -- SQL, but are expressed in JS in the Auth service.\n\n  raise log 'TIMING start roles create table .. as select';\n  create table roles\n  as\n    select \n      (expanded.role ->> 'roleId') as role_id,\n      (expanded.role ->> 'scopes')::jsonb as scopes,\n      (expanded.role ->> 'created')::timestamptz as created,\n      (expanded.role ->> 'description') as description,\n      (expanded.role ->> 'lastModified')::timestamptz as last_modified,\n      expanded.etag as etag\n    from (\n      select\n        jsonb_array_elements(\n          entity_buf_decode(value, 'blob')::jsonb\n        ) as role,\n        etag\n      from roles_entities\n    ) as expanded;\n\n  raise log 'TIMING start roles add primary key';\n  alter table roles add primary key (role_id);\n\n  raise log 'TIMING start roles set not null';\n  alter table roles\n    alter column role_id set not null,\n    alter column scopes set not null,\n    alter column created set not null,\n    alter column description set not null,\n    alter column last_modified set not null,\n    alter column etag set not null;\n\n\n  raise log 'TIMING start roles set permissions';\n  revoke select, insert, update, delete on roles_entities from $db_user_prefix$_auth;\n  drop table roles_entities;\n\n  grant select, insert, update, delete on roles to $db_user_prefix$_auth;\nend\n\n",
       "version": 27
+    },
+    {
+      "methods": {
+        "create_index_namespace": {
+          "args": "parent_in text, name_in text, expires_in timestamptz",
+          "body": "begin\n  return query insert\n    into index_namespaces (parent, name, expires)\n    values (parent_in, name_in, expires_in)\n    returning index_namespaces.parent, index_namespaces.name, index_namespaces.expires;\nend",
+          "deprecated": false,
+          "description": "Create a new namespace. Raises UNIQUE_VIOLATION if the namespace already exists.\nReturns the newly created namespace.",
+          "mode": "write",
+          "returns": "table(parent text, name text, expires timestamptz)",
+          "serviceName": "index"
+        },
+        "create_indexed_task": {
+          "args": "namespace_in text, name_in text, rank_in integer, task_id_in text, data_in jsonb, expires_in timestamptz",
+          "body": "begin\n  return query insert\n    into indexed_tasks (namespace, name, rank, task_id, data, expires)\n    values (namespace_in, name_in, rank_in, task_id_in, data_in, expires_in)\n    returning indexed_tasks.namespace, indexed_tasks.name, indexed_tasks.rank, indexed_tasks.task_id, indexed_tasks.data, indexed_tasks.expires;\nend",
+          "deprecated": false,
+          "description": "Create a new indexed task. Raises UNIQUE_VIOLATION if the indexed task already exists.\nReturns the newly created indexed task.",
+          "mode": "write",
+          "returns": "table(namespace text, name text, rank integer, task_id text, data jsonb, expires timestamptz)",
+          "serviceName": "index"
+        },
+        "expire_index_namespaces": {
+          "args": "",
+          "body": "declare\n  count integer;\nbegin\n  delete from index_namespaces where index_namespaces.expires < now();\n  if found then\n    get diagnostics count = row_count;\n    return count;\n  end if;\n  return 0;\nend",
+          "deprecated": false,
+          "description": "Expire index_namespaces that come before the current time.\nReturns a count of rows that have been deleted.",
+          "mode": "write",
+          "returns": "integer",
+          "serviceName": "index"
+        },
+        "expire_indexed_tasks": {
+          "args": "",
+          "body": "declare\n  count integer;\nbegin\n  delete from indexed_tasks where indexed_tasks.expires < now();\n  if found then\n    get diagnostics count = row_count;\n    return count;\n  end if;\n  return 0;\nend",
+          "deprecated": false,
+          "description": "Expire indexed tasks that come before the current time.\nReturns a count of rows that have been deleted.",
+          "mode": "write",
+          "returns": "integer",
+          "serviceName": "index"
+        },
+        "get_index_namespace": {
+          "args": "parent_in text, name_in text",
+          "body": "begin\n  return query select\n    index_namespaces.parent,\n    index_namespaces.name,\n    index_namespaces.expires\n  from index_namespaces\n  where\n    index_namespaces.parent = parent_in and\n    index_namespaces.name = name_in;\nend",
+          "deprecated": false,
+          "description": "Get a namespace. The returned table will have one or zero rows.",
+          "mode": "read",
+          "returns": "table(parent text, name text, expires timestamptz)",
+          "serviceName": "index"
+        },
+        "get_index_namespaces": {
+          "args": "parent_in text, name_in text, page_size_in integer, page_offset_in integer",
+          "body": "begin\n  return query\n  select\n    index_namespaces.parent,\n    index_namespaces.name,\n    index_namespaces.expires\n  from index_namespaces\n  where\n    (index_namespaces.parent = parent_in or parent_in is null) and\n    (index_namespaces.name = name_in or name_in is null) and\n    (index_namespaces.expires > now())\n  -- we previously used to order by the hashed parent but there's probably no need to add this complication.\n  order by index_namespaces.parent, name\n  limit get_page_limit(page_size_in)\n  offset get_page_offset(page_offset_in);\nend",
+          "deprecated": false,
+          "description": "Get existing index_namespaces filtered by the optional arguments,\nordered by the `parent` and `name`.\nIf the pagination arguments are both NULL, all rows are returned.\nOtherwise, page_size rows are returned at offset page_offset.",
+          "mode": "read",
+          "returns": "table(parent text, name text, expires timestamptz)",
+          "serviceName": "index"
+        },
+        "get_indexed_task": {
+          "args": "namespace_in text, name_in text",
+          "body": "begin\n  return query select\n    indexed_tasks.namespace,\n    indexed_tasks.name,\n    indexed_tasks.rank,\n    indexed_tasks.task_id,\n    indexed_tasks.data,\n    indexed_tasks.expires\n  from indexed_tasks\n  where\n    indexed_tasks.namespace = namespace_in and\n    indexed_tasks.name = name_in;\nend",
+          "deprecated": false,
+          "description": "Get an indexed task. The returned table will have one or zero rows.",
+          "mode": "read",
+          "returns": "table(namespace text, name text, rank integer, task_id text, data jsonb, expires timestamptz)",
+          "serviceName": "index"
+        },
+        "get_indexed_tasks": {
+          "args": "namespace_in text, name_in text, page_size_in integer, page_offset_in integer",
+          "body": "begin\n  return query\n  select\n    indexed_tasks.namespace,\n    indexed_tasks.name,\n    indexed_tasks.rank,\n    indexed_tasks.task_id,\n    indexed_tasks.data,\n    indexed_tasks.expires\n  from indexed_tasks\n  where\n    (indexed_tasks.namespace = namespace_in or namespace_in is null) and\n    (indexed_tasks.name = name_in or name_in is null) and\n    (indexed_tasks.expires > now())\n  -- we previously used to order by the hashed namespace but there's probably no need to add this complication.\n  order by indexed_tasks.namespace, name\n  limit get_page_limit(page_size_in)\n  offset get_page_offset(page_offset_in);\nend",
+          "deprecated": false,
+          "description": "Get existing indexed tasks filtered by the optional arguments,\nordered by the `namespace` and `name`.\nIf the pagination arguments are both NULL, all rows are returned.\nOtherwise, page_size rows are returned at offset page_offset.",
+          "mode": "read",
+          "returns": "table(namespace text, name text, rank integer, task_id text, data jsonb, expires timestamptz)",
+          "serviceName": "index"
+        },
+        "update_index_namespace": {
+          "args": "parent_in text, name_in text, expires_in timestamptz",
+          "body": "declare\n  updated_row index_namespaces%ROWTYPE;\nbegin\n  update index_namespaces\n  set expires = coalesce(expires_in, index_namespaces.expires)\n  where\n    index_namespaces.parent = parent_in and\n    index_namespaces.name = name_in\n  returning\n    index_namespaces.parent,\n    index_namespaces.name,\n    index_namespaces.expires\n  into updated_row;\n  if found then\n    return query select\n      updated_row.parent,\n      updated_row.name,\n      updated_row.expires;\n    return;\n  end if;\n  raise exception 'no such row' using errcode = 'P0002';\nend",
+          "deprecated": false,
+          "description": "Update a namespace.\nReturns the up-to-date namespace row that have the same parent and name.\nIf the row is not found then an exception with code 'P0002' is thrown.",
+          "mode": "write",
+          "returns": "table(parent text, name text, expires timestamptz)",
+          "serviceName": "index"
+        },
+        "update_indexed_task": {
+          "args": "namespace_in text, name_in text, rank_in integer, task_id_in text, data_in jsonb, expires_in timestamptz",
+          "body": "declare\n  updated_row indexed_tasks%ROWTYPE;\nbegin\n  update indexed_tasks\n  set (rank, task_id, data, expires) = (\n    coalesce(rank_in, indexed_tasks.rank),\n    coalesce(task_id_in, indexed_tasks.task_id),\n    coalesce(data_in, indexed_tasks.data),\n    coalesce(expires_in, indexed_tasks.expires)\n  )\n  where\n    indexed_tasks.namespace = namespace_in and\n    indexed_tasks.name = name_in\n  returning\n    indexed_tasks.namespace,\n    indexed_tasks.name,\n    indexed_tasks.rank,\n    indexed_tasks.task_id,\n    indexed_tasks.data,\n    indexed_tasks.expires\n  into updated_row;\n  if found then\n    return query select\n      updated_row.namespace,\n      updated_row.name,\n      updated_row.rank,\n      updated_row.task_id,\n      updated_row.data,\n      updated_row.expires;\n    return;\n  else\n    raise exception 'no such row' using errcode = 'P0002';\n  end if;\nend",
+          "deprecated": false,
+          "description": "Update an indexed task.\nReturns the up-to-date indexed task row that have the same namespace and name.",
+          "mode": "write",
+          "returns": "table(namespace text, name text, rank integer, task_id text, data jsonb, expires timestamptz)",
+          "serviceName": "index"
+        }
+      },
+      "version": 28
     }
   ]
 }

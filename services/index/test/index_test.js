@@ -8,7 +8,6 @@ const taskcluster = require('taskcluster-client');
 
 helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   helper.withDb(mock, skipping);
-  helper.withEntities(mock, skipping);
   helper.withFakeQueue(mock, skipping);
   helper.withPulse(mock, skipping);
   helper.withServer(mock, skipping);
@@ -188,7 +187,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     // Set now to one day in the past
     const now = taskcluster.fromNow('- 1 day');
     debug('Expiring indexed tasks at: %s, from before %s', new Date(), now);
-    await helper.IndexedTask.expireTasks(now);
+    await helper.db.fns.expire_indexed_tasks();
 
     try {
       await helper.index.findTask(myns + '.my-task');
@@ -234,7 +233,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     now.setDate(now.getDate() - 1);
 
     debug('Expiring namespace at: %s, from before %s', new Date(), now);
-    await helper.Namespace.expireEntries(now);
+    await helper.db.fns.expire_index_namespaces();
 
     result = await helper.index.listNamespaces(myns, {});
     assert.equal(result.namespaces.length, 1, 'Expected 1 namespace');
