@@ -4,13 +4,13 @@ import (
 	"fmt"
 
 	tcurls "github.com/taskcluster/taskcluster-lib-urls"
-	tcclient "github.com/taskcluster/taskcluster/v31/clients/client-go"
-	"github.com/taskcluster/taskcluster/v31/clients/client-go/tcworkermanager"
-	"github.com/taskcluster/taskcluster/v31/internal/workerproto"
-	"github.com/taskcluster/taskcluster/v31/tools/worker-runner/cfg"
-	"github.com/taskcluster/taskcluster/v31/tools/worker-runner/provider/provider"
-	"github.com/taskcluster/taskcluster/v31/tools/worker-runner/run"
-	"github.com/taskcluster/taskcluster/v31/tools/worker-runner/tc"
+	tcclient "github.com/taskcluster/taskcluster/v32/clients/client-go"
+	"github.com/taskcluster/taskcluster/v32/clients/client-go/tcworkermanager"
+	"github.com/taskcluster/taskcluster/v32/internal/workerproto"
+	"github.com/taskcluster/taskcluster/v32/tools/worker-runner/cfg"
+	"github.com/taskcluster/taskcluster/v32/tools/worker-runner/provider/provider"
+	"github.com/taskcluster/taskcluster/v32/tools/worker-runner/run"
+	"github.com/taskcluster/taskcluster/v32/tools/worker-runner/tc"
 )
 
 type staticProviderConfig struct {

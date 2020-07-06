@@ -6,10 +6,10 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/require"
-	"github.com/taskcluster/taskcluster/v31/internal/workerproto"
-	wptesting "github.com/taskcluster/taskcluster/v31/internal/workerproto/testing"
-	"github.com/taskcluster/taskcluster/v31/workers/generic-worker/graceful"
-	"github.com/taskcluster/taskcluster/v31/workers/generic-worker/gwconfig"
+	"github.com/taskcluster/taskcluster/v32/internal/workerproto"
+	wptesting "github.com/taskcluster/taskcluster/v32/internal/workerproto/testing"
+	"github.com/taskcluster/taskcluster/v32/workers/generic-worker/graceful"
+	"github.com/taskcluster/taskcluster/v32/workers/generic-worker/gwconfig"
 )
 
 func setupWorkerRunnerTest(runnerCapabilities ...string) (*workerproto.Protocol, func()) {

@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
-	"github.com/taskcluster/taskcluster/v31/clients/client-go/tcauth"
+	"github.com/taskcluster/taskcluster/v32/clients/client-go/tcauth"
 )
 
 type Auth struct {

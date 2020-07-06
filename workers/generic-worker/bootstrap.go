@@ -7,10 +7,10 @@ import (
 	"log"
 
 	"github.com/taskcluster/httpbackoff/v3"
-	tcclient "github.com/taskcluster/taskcluster/v31/clients/client-go"
-	"github.com/taskcluster/taskcluster/v31/clients/client-go/tcsecrets"
-	"github.com/taskcluster/taskcluster/v31/workers/generic-worker/fileutil"
-	"github.com/taskcluster/taskcluster/v31/workers/generic-worker/gwconfig"
+	tcclient "github.com/taskcluster/taskcluster/v32/clients/client-go"
+	"github.com/taskcluster/taskcluster/v32/clients/client-go/tcsecrets"
+	"github.com/taskcluster/taskcluster/v32/workers/generic-worker/fileutil"
+	"github.com/taskcluster/taskcluster/v32/workers/generic-worker/gwconfig"
 )
 
 // BootstrapConfig is the data structure used by generic-worker to provide
