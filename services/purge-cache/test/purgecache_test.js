@@ -5,7 +5,7 @@ const sinon = require('sinon');
 const assert = require('assert');
 const taskcluster = require('taskcluster-client');
 
-helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
+helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   helper.withDb(mock, skipping);
   helper.withServer(mock, skipping);
 

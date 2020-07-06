@@ -32,7 +32,6 @@ exports.secrets = new Secrets({
     'project/taskcluster/testing/taskcluster-notify',
   ],
   secrets: {
-    db: withDb.secret,
     aws: [
       {env: 'AWS_ACCESS_KEY_ID', cfg: 'aws.accessKeyId'},
       {env: 'AWS_SECRET_ACCESS_KEY', cfg: 'aws.secretAccessKey'},
@@ -319,14 +318,8 @@ exports.withDb = (mock, skipping) => {
 
 exports.resetTables = (mock, skipping) => {
   setup('reset tables', async function() {
-    if (mock) {
-      exports.db['notify'].reset();
-    } else {
-      const sec = exports.secrets.get('db');
-      await resetTables({ testDbUrl: sec.testDbUrl, tableNames: [
-        'denylisted_notifications',
-        'widgets',
-      ]});
-    }
+    await resetTables({tableNames: [
+      'denylisted_notifications',
+    ]});
   });
 };

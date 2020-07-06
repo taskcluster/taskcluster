@@ -10,7 +10,7 @@ const libUrls = require('taskcluster-lib-urls');
 const testing = require('taskcluster-lib-testing');
 
 suite(testing.suiteName(), function() {
-  helper.secrets.mockSuite('TaskCreator', ['db'], function(mock, skipping) {
+  helper.secrets.mockSuite('TaskCreator', [], function(mock, skipping) {
     helper.withDb(mock, skipping);
     helper.withEntities(mock, skipping);
     helper.resetTables(mock, skipping);

@@ -118,6 +118,26 @@ class Secrets {
     const that = this;
     let skipping = false;
 
+    // if no secrets are required, just run this as a regular suite with no "(real)" suffix
+    if (secretList.length === 0) {
+      suite(title, function() {
+        suiteSetup(async function() {
+          if (that.load) {
+            that.load.save();
+          }
+        });
+
+        fn.call(this, false, () => skipping);
+
+        suiteTeardown(function() {
+          if (that.load) {
+            that.load.restore();
+          }
+        });
+      });
+      return;
+    }
+
     if (secretList.some(n => ! this.secrets[n])) {
       throw new Error(`Unknown secrets in ${JSON.stringify(secretList)}`);
     }

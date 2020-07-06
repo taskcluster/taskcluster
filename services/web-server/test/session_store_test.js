@@ -5,7 +5,7 @@ const { promisify } = require('util');
 const helper = require('./helper');
 const AzureSessionStore = require('../src/login/AzureSessionStore');
 
-helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
+helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   helper.withDb(mock, skipping);
   helper.withEntities(mock, skipping);
   helper.withFakeAuth(mock, skipping);

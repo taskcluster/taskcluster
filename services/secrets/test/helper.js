@@ -17,7 +17,6 @@ withMonitor(exports);
 // set up the testing secrets
 exports.secrets = new Secrets({
   secrets: {
-    db: withDb.secret,
   },
   load: exports.load,
 });

@@ -34,7 +34,6 @@ withMonitor(exports);
 exports.secrets = new Secrets({
   secretName: 'project/taskcluster/testing/taskcluster-auth',
   secrets: {
-    db: withDb.secret,
     azure: [
       {env: 'AZURE_ACCOUNT', cfg: 'azure.accountId', name: 'accountId'},
       {env: 'AZURE_ACCOUNT_KEY', cfg: 'azure.accessKey', name: 'accessKey'},
@@ -425,11 +424,6 @@ exports.withGcp = (mock, skipping) => {
 
 exports.resetTables = (mock, skipping) => {
   setup('reset tables', async function() {
-    if (mock) {
-      exports.db['auth'].reset();
-    } else {
-      const sec = exports.secrets.get('db');
-      await resetTables({ testDbUrl: sec.testDbUrl, tableNames: ['clients_entities', 'roles_entities'] });
-    }
+    await resetTables({tableNames: ['clients_entities', 'roles_entities'] });
   });
 };

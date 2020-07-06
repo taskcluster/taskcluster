@@ -129,7 +129,6 @@ exports.withDbForVersion = function() {
 /**
  * Set
  * - helper.withDbClient(fn) to call fn with a pg client on the real DB.
- * - helper.fakeDb to an instance of FakeDatabase
  *
  * The database is only reset at the beginning of the suite.  Test suites
  * should implement a `setup` method that sets state for all relevant tables
@@ -144,18 +143,6 @@ exports.withDbForProcs = function({ serviceName }) {
       serviceName,
       useDbDirectory: true,
       monitor: false,
-      dbCryptoKeys: [
-        {
-          id: 'db-tests',
-          algo: 'aes-256',
-          // only used for tests
-          key: 'aSdtIGJzdGFjayEgaGVsbG8gZnV0dXJlIHBlcnNvbgo',
-        },
-      ],
-    });
-
-    exports.fakeDb = await tcdb.fakeSetup({
-      serviceName,
       dbCryptoKeys: [
         {
           id: 'db-tests',
@@ -182,20 +169,16 @@ exports.withDbForProcs = function({ serviceName }) {
       await db.close();
     }
     db = null;
-    delete exports.fakeDb;
     delete exports.withDbClient;
   });
 
   /**
-   * helper.dbTest("description", async (db, isFake) => { .. }) runs the given
+   * helper.dbTest("description", async (db) => { .. }) runs the given
    * test function both with a real and fake db.  This is used for testing functions.
    */
   exports.dbTest = (description, testFn) => {
-    test(`${description} (real)`, async function() {
-      return testFn(db, false);
-    });
-    test(`${description} (fake)`, async function() {
-      return testFn(exports.fakeDb, true);
+    test(description, async function() {
+      return testFn(db);
     });
   };
 };

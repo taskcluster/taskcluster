@@ -11,31 +11,12 @@ suite(testing.suiteName(), function() {
     });
   });
 
-  helper.dbTest('update_widgets', async function(db, isFake) {
-    // this function now does nothing
-    const widgets = await db.fns.update_widgets("checkbox");
-    const names = widgets.map(({name}) => name).sort();
-    assert.deepEqual(names, []);
-  });
-
-  helper.dbTest('list denylisted notifications when there are none', async function(db, isFake) {
-
-    // https://github.com/taskcluster/taskcluster/issues/3131
-    if (isFake) {
-      return;
-    }
-
+  helper.dbTest('list denylisted notifications when there are none', async function(db) {
     const addresses = await db.fns.all_denylist_addresses(10, 0);
     assert.deepEqual(addresses, []);
   });
 
-  helper.dbTest('list denylisted notifications when there is one row', async function(db, isFake) {
-
-    // https://github.com/taskcluster/taskcluster/issues/3131
-    if (isFake) {
-      return;
-    }
-
+  helper.dbTest('list denylisted notifications when there is one row', async function(db) {
     let n1 = {
       notificationType: "email",
       notificationAddress: "pmoore@mozilla.com",
@@ -47,13 +28,7 @@ suite(testing.suiteName(), function() {
     assert.equal(addresses[0]["notification_address"], n1.notificationAddress);
   });
 
-  helper.dbTest('add denylist address that already exists', async function(db, isFake) {
-
-    // https://github.com/taskcluster/taskcluster/issues/3131
-    if (isFake) {
-      return;
-    }
-
+  helper.dbTest('add denylist address that already exists', async function(db) {
     let n1 = {
       notificationType: "email",
       notificationAddress: "pmoore@mozilla.com",
@@ -66,13 +41,7 @@ suite(testing.suiteName(), function() {
     assert.equal(addresses[0]["notification_address"], n1.notificationAddress);
   });
 
-  helper.dbTest('delete denylist address that already exists', async function(db, isFake) {
-
-    // https://github.com/taskcluster/taskcluster/issues/3131
-    if (isFake) {
-      return;
-    }
-
+  helper.dbTest('delete denylist address that already exists', async function(db) {
     let n1 = {
       notificationType: "email",
       notificationAddress: "pmoore@mozilla.com",
@@ -83,13 +52,7 @@ suite(testing.suiteName(), function() {
     assert.equal(addresses.length, 0);
   });
 
-  helper.dbTest("delete denylist address that doesn't already exist", async function(db, isFake) {
-
-    // https://github.com/taskcluster/taskcluster/issues/3131
-    if (isFake) {
-      return;
-    }
-
+  helper.dbTest("delete denylist address that doesn't already exist", async function(db) {
     let n1 = {
       notificationType: "pulse",
       notificationAddress: "routing.key",
@@ -106,13 +69,7 @@ suite(testing.suiteName(), function() {
     assert.equal(addresses[0]["notification_address"], n1.notificationAddress);
   });
 
-  helper.dbTest('test denylist address pagination', async function(db, isFake) {
-
-    // https://github.com/taskcluster/taskcluster/issues/3131
-    if (isFake) {
-      return;
-    }
-
+  helper.dbTest('test denylist address pagination', async function(db) {
     let n1 = {
       notificationType: "pulse",
       notificationAddress: "routing.key",
@@ -132,13 +89,7 @@ suite(testing.suiteName(), function() {
     assert.equal(addresses[0]["notification_address"], n1.notificationAddress);
   });
 
-  helper.dbTest('test denylist existence check', async function(db, isFake) {
-
-    // https://github.com/taskcluster/taskcluster/issues/3131
-    if (isFake) {
-      return;
-    }
-
+  helper.dbTest('test denylist existence check', async function(db) {
     let n1 = {
       notificationType: "pulse",
       notificationAddress: "routing.key",
@@ -154,13 +105,7 @@ suite(testing.suiteName(), function() {
     assert(!!exists[0]["exists_denylist_address"]);
   });
 
-  helper.dbTest('test denylist nonexistence check', async function(db, isFake) {
-
-    // https://github.com/taskcluster/taskcluster/issues/3131
-    if (isFake) {
-      return;
-    }
-
+  helper.dbTest('test denylist nonexistence check', async function(db) {
     let n1 = {
       notificationType: "pulse",
       notificationAddress: "routing.key",

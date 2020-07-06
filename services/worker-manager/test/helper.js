@@ -17,7 +17,6 @@ withMonitor(exports);
 exports.secrets = new Secrets({
   secrets: {
     azure: withEntity.secret,
-    db: withDb.secret,
   },
   load: exports.load,
 });
@@ -248,15 +247,10 @@ const stubbedNotify = () => {
 
 exports.resetTables = (mock, skipping) => {
   setup('reset tables', async function() {
-    if (mock) {
-      exports.db['worker_manager'].reset();
-    } else {
-      const sec = exports.secrets.get('db');
-      await resetTables({ testDbUrl: sec.testDbUrl, tableNames: [
-        'workers',
-        'worker_pools',
-        'wmworker_pool_errors_entities',
-      ]});
-    }
+    await resetTables({tableNames: [
+      'workers',
+      'worker_pools',
+      'wmworker_pool_errors_entities',
+    ]});
   });
 };
