@@ -10,7 +10,7 @@ You will probably be working on only one of these pieces, so read carefully belo
 ### Node
 
 <!-- the next line is automatically edited; do not change -->
-You will need Node version 12.18.1 installed.
+You will need Node version 12.18.2 installed.
 We recommend using https://github.com/nvm-sh/nvm to support installing multiple Node versions.
 
 ### Go
