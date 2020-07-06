@@ -7,7 +7,6 @@ const config = require('taskcluster-lib-config');
 const SchemaSet = require('taskcluster-lib-validate');
 const libReferences = require('taskcluster-lib-references');
 const exchanges = require('./exchanges');
-const data = require('./data');
 const builder = require('./api');
 const {Estimator} = require('./estimator');
 const {Client, pulseCredentials} = require('taskcluster-lib-pulse');
@@ -15,7 +14,7 @@ const tcdb = require('taskcluster-db');
 const {Provisioner} = require('./provisioner');
 const {Providers} = require('./providers');
 const {WorkerScanner} = require('./worker-scanner');
-const {WorkerPool, Worker} = require('./data');
+const {WorkerPool, WorkerPoolError, Worker} = require('./data');
 
 require('./monitor');
 
@@ -50,16 +49,6 @@ let load = loader({
     }),
   },
 
-  WorkerPoolError: {
-    requires: ['cfg', 'monitor', 'db'],
-    setup: ({cfg, monitor, db}) => data.WorkerPoolError.setup({
-      db,
-      serviceName: 'worker_manager',
-      tableName: cfg.app.workerPoolErrorTableName,
-      monitor: monitor.childMonitor('table.workerPoolErrors'),
-    }),
-  },
-
   expireWorkerPools: {
     requires: ['cfg', 'monitor', 'db'],
     setup: ({cfg, monitor, db}, ownName) => {
@@ -82,12 +71,12 @@ let load = loader({
     },
   },
 
-  expireErrors: {
-    requires: ['cfg', 'WorkerPoolError', 'monitor'],
-    setup: ({cfg, WorkerPoolError, monitor}, ownName) => {
-      return monitor.childMonitor('expireErrors').oneShot(ownName, async () => {
-        const threshold = taskcluster.fromNow(cfg.app.errorsExpirationDelay);
-        await WorkerPoolError.expire(threshold);
+  expireWorkerPoolErrors: {
+    requires: ['cfg', 'monitor', 'db'],
+    setup: ({cfg, monitor, db}, ownName) => {
+      return monitor.childMonitor('expireWorkerPoolErrors').oneShot(ownName, async () => {
+        const count = await WorkerPoolError.expire({db, monitor});
+        monitor.info(`deleted ${count} expired worker pool errors`);
       });
     },
   },
@@ -135,14 +124,13 @@ let load = loader({
 
   api: {
     requires: [
-      'cfg', 'db', 'schemaset', 'monitor', 'WorkerPoolError', 'providers',
+      'cfg', 'db', 'schemaset', 'monitor', 'providers',
       'publisher', 'notify'],
     setup: async ({
       cfg,
       db,
       schemaset,
       monitor,
-      WorkerPoolError,
       providers,
       publisher,
       notify,
@@ -152,7 +140,6 @@ let load = loader({
         cfg,
         db,
         monitor,
-        WorkerPoolError,
         providers,
         publisher,
         notify,
@@ -189,10 +176,10 @@ let load = loader({
   },
 
   providers: {
-    requires: ['cfg', 'monitor', 'notify', 'db', 'estimator', 'WorkerPoolError', 'schemaset'],
-    setup: async ({cfg, monitor, notify, db, estimator, WorkerPoolError, schemaset}) =>
+    requires: ['cfg', 'monitor', 'notify', 'db', 'estimator', 'schemaset'],
+    setup: async ({cfg, monitor, notify, db, estimator, schemaset}) =>
       new Providers().setup({
-        cfg, monitor, notify, db, estimator, WorkerPoolError,
+        cfg, monitor, notify, db, estimator, Worker, WorkerPoolError,
         validator: await schemaset.validator(cfg.taskcluster.rootUrl),
       }),
   },

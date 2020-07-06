@@ -182,7 +182,7 @@ methods:
       Create a new worker pool error.  Raises UNIQUE_VIOLATION if the error already exists.
     mode: write
     serviceName: worker_manager
-    args: error_id_in text, worker_pool_id_in text, reported_in text, kind_in text, title_in text, description_in text, extra_in jsonb
+    args: error_id_in text, worker_pool_id_in text, reported_in timestamptz, kind_in text, title_in text, description_in text, extra_in jsonb
     returns: uuid
     body: |-
       declare
@@ -198,7 +198,7 @@ methods:
       Get an existing worker pool error.  The returned table will have one or (if no such worker pool error is defined) zero rows.
     mode: read
     serviceName: worker_manager
-    args: error_id_in text
+    args: error_id_in text, worker_pool_id_in text
     returns: table(error_id text, worker_pool_id text, reported timestamptz, kind text, title text, description text, extra jsonb)
     body: |-
       begin
@@ -212,7 +212,9 @@ methods:
           worker_pool_errors.description,
           worker_pool_errors.extra
         from worker_pool_errors
-        where worker_pool_errors.error_id = error_id_in;
+        where
+          worker_pool_errors.worker_pool_id = worker_pool_id_in and
+          worker_pool_errors.error_id = error_id_in;
       end
   get_worker_pool_errors:
     description: |-
@@ -229,8 +231,8 @@ methods:
           worker_pool_errors.error_id,
           worker_pool_errors.worker_pool_id,
           worker_pool_errors.reported,
-          worker_pool_errors.title,
           worker_pool_errors.kind,
+          worker_pool_errors.title,
           worker_pool_errors.description,
           worker_pool_errors.extra
         from worker_pool_errors
@@ -243,11 +245,32 @@ methods:
       Delete a worker pool error immediately.
     mode: write
     serviceName: worker_manager
-    args: error_id_in text
+    args: error_id_in text, worker_pool_id_in text
     returns: void
     body: |-
       begin
         delete
         from worker_pool_errors
-        where worker_pool_errors.error_id = error_id_in;
+        where
+        worker_pool_errors.worker_pool_id = worker_pool_id_in and
+        worker_pool_errors.error_id = error_id_in;
+      end
+  expire_worker_pool_errors:
+    description: |-
+      Expire worker pool errors reported before `expires_in`.
+      Returns a count of rows that have been deleted.
+    mode: write
+    serviceName: worker_manager
+    args: expires_in timestamptz
+    returns: integer
+    body: |-
+      declare
+        count integer;
+      begin
+        delete from worker_pool_errors where worker_pool_errors.reported < expires_in;
+        if found then
+          get diagnostics count = row_count;
+          return count;
+        end if;
+        return 0;
       end

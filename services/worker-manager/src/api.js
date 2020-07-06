@@ -3,7 +3,7 @@ const slug = require('slugid');
 const assert = require('assert');
 const {ApiError, Provider} = require('./providers/provider');
 const {UNIQUE_VIOLATION} = require('taskcluster-lib-postgres');
-const {WorkerPool, Worker} = require('./data');
+const {WorkerPool, WorkerPoolError, Worker} = require('./data');
 const { createCredentials } = require('./util');
 
 let builder = new APIBuilder({
@@ -19,7 +19,6 @@ let builder = new APIBuilder({
   context: [
     'cfg',
     'db',
-    'WorkerPoolError',
     'providers',
     'publisher',
     'monitor',
@@ -340,24 +339,17 @@ builder.declare({
     'Get the list of worker pool errors.',
   ].join('\n'),
 }, async function(req, res) {
-  const { continuationToken } = req.query;
-  const limit = parseInt(req.query.limit || 100, 10);
-  const scanOptions = {
-    continuation: continuationToken,
-    limit,
-    matchPartition: 'exact',
-  };
-
-  const data = await this.WorkerPoolError.scan({
-    workerPoolId: req.params.workerPoolId,
-  }, scanOptions);
+  const { errorId, workerPoolId } = req.params;
+  const {rows: errors, continuationToken} = await WorkerPoolError.getWorkerPoolErrors(
+    this.db,
+    { errorId, workerPoolId },
+    { query: req.query },
+  );
   const result = {
-    workerPoolErrors: data.entries.map(e => e.serializable()),
+    workerPoolErrors: errors.map(e => e.serializable()),
+    continuationToken,
   };
 
-  if (data.continuation) {
-    result.continuationToken = data.continuation;
-  }
   return res.reply(result);
 });
 
