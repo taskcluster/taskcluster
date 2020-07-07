@@ -172,14 +172,14 @@ suite(testing.suiteName(), function() {
           throw err;
         }
 
-        const lf = await helper.LastFire.load({
-          hookGroupId: hook.hookGroupId,
-          hookId: hook.hookId,
-          taskId: taskId,
-        });
+        const [lf] = await helper.db.fns.get_last_fire(
+          hook.hookGroupId,
+          hook.hookId,
+          taskId,
+        );
         assume(lf.result).to.equal('error');
         assume(lf.error).to.match(/SyntaxError/);
-        assume(lf.firedBy).to.equal('me');
+        assume(lf.fired_by).to.equal('me');
 
         assertFireLogged({firedBy: "me", taskId, result: 'failure'});
 
@@ -271,12 +271,12 @@ suite(testing.suiteName(), function() {
       },
       );
 
-      const res = await helper.LastFire.load({
-        hookGroupId: hook.hookGroupId,
-        hookId: hook.hookId,
-        taskId: hook.nextTaskId,
-      });
-      assume(res.taskId).equals(hook.nextTaskId);
+      const [res] = await helper.db.fns.get_last_fire(
+        hook.hookGroupId,
+        hook.hookId,
+        hook.nextTaskId,
+      );
+      assume(res.task_id).equals(hook.nextTaskId);
     });
 
     test('Fetch two appended lastFire rows independently', async function() {
@@ -308,19 +308,19 @@ suite(testing.suiteName(), function() {
         },
         )]).catch(() => {});
 
-      const res = await helper.LastFire.load({
-        hookGroupId: hook.hookGroupId,
-        hookId: hook.hookId,
-        taskId: hook.nextTaskId,
-      });
+      const [res] = await helper.db.fns.get_last_fire(
+        hook.hookGroupId,
+        hook.hookId,
+        hook.nextTaskId,
+      );
 
-      const res2 = await helper.LastFire.load({
-        hookGroupId: hook2.hookGroupId,
-        hookId: hook2.hookId,
-        taskId: hook2.nextTaskId,
-      });
+      const [res2] = await helper.db.fns.get_last_fire(
+        hook2.hookGroupId,
+        hook2.hookId,
+        hook2.nextTaskId,
+      );
 
-      assume(res.taskId).not.equals(res2.taskId);
+      assume(res.task_id).not.equals(res2.task_id);
     });
   });
 

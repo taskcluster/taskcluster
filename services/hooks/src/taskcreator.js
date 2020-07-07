@@ -21,7 +21,7 @@ class TaskCreator {
 
     this.rootUrl = options.rootUrl;
     this.credentials = options.credentials;
-    this.LastFire = options.LastFire;
+    this.db = options.db;
     this.monitor = options.monitor;
   }
 
@@ -53,15 +53,15 @@ class TaskCreator {
   }
 
   async appendLastFire({hookGroupId, hookId, taskId, taskCreateTime, firedBy, result, error}) {
-    await this.LastFire.create({
+    await this.db.fns.create_last_fire(
       hookGroupId,
       hookId,
-      taskCreateTime,
-      taskId,
       firedBy,
+      taskId,
+      taskCreateTime,
       result,
       error,
-    });
+    );
   }
 
   /**

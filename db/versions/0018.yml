@@ -1,4 +1,110 @@
 version: 18
 migrationScript: 0018-migration.sql
 downgradeScript: 0018-downgrade.sql
-methods:j []
+methods:
+  create_last_fire:
+    description: |-
+      Create a new hook last fire.  Raises UNIQUE_VIOLATION if the hook already exists.
+    mode: write
+    serviceName: hooks
+    args: hook_group_id_in text, hook_id_in text, fired_by_in text, task_id_in text, task_create_time_in timestamptz, result_in text, error_in text
+    returns: uuid
+    body: |-
+      declare
+        new_etag uuid := public.gen_random_uuid();
+      begin
+        insert
+          into hooks_last_fires (hook_group_id, hook_id, fired_by, task_id, task_create_time, result, error, etag)
+          values (hook_group_id_in, hook_id_in, fired_by_in, task_id_in, task_create_time_in, result_in, error_in, new_etag);
+
+          return new_etag;
+      end
+  get_last_fire:
+    description: |-
+      Get a hook last fire.
+    mode: read
+    serviceName: hooks
+    args: hook_group_id_in text, hook_id_in text, task_id_in text
+    returns: table(hook_group_id text, hook_id text, fired_by text, task_id text, task_create_time timestamptz, result text, error text, etag uuid)
+    body: |-
+      begin
+        return query
+        select
+          hooks_last_fires.hook_group_id,
+          hooks_last_fires.hook_id,
+          hooks_last_fires.fired_by,
+          hooks_last_fires.task_id,
+          hooks_last_fires.task_create_time,
+          hooks_last_fires.result,
+          hooks_last_fires.error,
+          hooks_last_fires.etag
+        from hooks_last_fires
+        where
+          hooks_last_fires.hook_group_id = hook_group_id_in and
+          hooks_last_fires.hook_id = hook_id_in and
+          hooks_last_fires.task_id = task_id_in;
+      end
+  get_last_fires:
+    description: |-
+      Get hooks last fires filtered by the optional arguments,
+      ordered by `hook_group_id`, `hook_id`, and  `worker_id`.
+      If the pagination arguments are both NULL, all rows are returned.
+      Otherwise, page_size rows are returned at offset page_offset.
+    mode: read
+    serviceName: hooks
+    args: hook_group_id_in text, hook_id_in text, page_size_in integer, page_offset_in integer
+    returns: table(hook_group_id text, hook_id text, fired_by text, task_id text, task_create_time timestamptz, result text, error text, etag uuid)
+    body: |-
+      begin
+        return query
+        select
+          hooks_last_fires.hook_group_id,
+          hooks_last_fires.hook_id,
+          hooks_last_fires.fired_by,
+          hooks_last_fires.task_id,
+          hooks_last_fires.task_create_time,
+          hooks_last_fires.result,
+          hooks_last_fires.error,
+          hooks_last_fires.etag
+        from hooks_last_fires
+        where
+          hooks_last_fires.hook_group_id = hook_group_id_in and
+          hooks_last_fires.hook_id = hook_id_in
+        order by hook_group_id, hook_id, task_id
+        limit get_page_limit(page_size_in)
+        offset get_page_offset(page_offset_in);
+      end
+  delete_last_fires:
+    description: |-
+      Delete last fires that matche a given `hook_group_id` and `hook_id`.
+    mode: write
+    serviceName: hooks
+    args: hook_group_id_in text, hook_id_in text
+    returns: void
+    body: |-
+      begin
+        delete from hooks_last_fires
+        where
+          hooks_last_fires.hook_group_id = hook_group_id_in and
+          hooks_last_fires.hook_id = hook_id_in;
+      end
+
+  expire_last_fires:
+    description: |-
+      Expire last fires that are older than a year.
+      Returns a count of rows that have been deleted.
+    mode: write
+    serviceName: hooks
+    args: ''
+    returns: integer
+    body: |-
+      declare
+        count integer;
+      begin
+        delete from hooks_last_fires where hooks_last_fires.task_create_time < now() - interval '1 year';
+        if found then
+          get diagnostics count = row_count;
+          return count;
+        end if;
+        return 0;
+      end

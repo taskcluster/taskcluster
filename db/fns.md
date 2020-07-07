@@ -43,6 +43,11 @@
 
 | Name | Mode | Arguments | Returns | Description |
 | --- | --- | --- | --- | --- |
+| create_last_fire | write | hook_group_id_in text, hook_id_in text, fired_by_in text, task_id_in text, task_create_time_in timestamptz, result_in text, error_in text | uuid | Create a new hook last fire.  Raises UNIQUE_VIOLATION if the hook already exists. |
+| delete_last_fires | write | hook_group_id_in text, hook_id_in text | void | Delete last fires that matche a given `hook_group_id` and `hook_id`. |
+| expire_last_fires | write |  | integer | Expire last fires that are older than a year.<br />Returns a count of rows that have been deleted. |
+| get_last_fire | read | hook_group_id_in text, hook_id_in text, task_id_in text | table(hook_group_id text, hook_id text, fired_by text, task_id text, task_create_time timestamptz, result text, error text, etag uuid) | Get a hook last fire. |
+| get_last_fires | read | hook_group_id_in text, hook_id_in text, page_size_in integer, page_offset_in integer | table(hook_group_id text, hook_id text, fired_by text, task_id text, task_create_time timestamptz, result text, error text, etag uuid) | Get hooks last fires filtered by the optional arguments,<br />ordered by `hook_group_id`, `hook_id`, and  `worker_id`.<br />If the pagination arguments are both NULL, all rows are returned.<br />Otherwise, page_size rows are returned at offset page_offset. |
 | hooks_entities_create | write | pk text, rk text, properties jsonb, overwrite boolean, version integer | uuid | See taskcluster-lib-entities |
 | hooks_entities_load | read | partition_key text, row_key text | table (partition_key_out text, row_key_out text, value jsonb, version integer, etag uuid) | See taskcluster-lib-entities |
 | hooks_entities_modify | write | partition_key text, row_key text, properties jsonb, version integer, old_etag uuid | table (etag uuid) | See taskcluster-lib-entities |

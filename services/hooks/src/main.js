@@ -63,19 +63,6 @@ const load = loader({
     },
   },
 
-  LastFire: {
-    requires: ['cfg', 'monitor', 'db'],
-    setup: ({cfg, monitor, db}) => {
-      return data.LastFire.setup({
-        db,
-        serviceName: 'hooks',
-        tableName: cfg.app.lastFireTableName,
-        monitor: monitor.childMonitor('table.lastFireTable'),
-        signingKey: cfg.azure.signingKey,
-      });
-    },
-  },
-
   schemaset: {
     requires: ['cfg'],
     setup: ({cfg}) => {
@@ -107,10 +94,10 @@ const load = loader({
   },
 
   taskcreator: {
-    requires: ['cfg', 'LastFire', 'monitor'],
-    setup: ({cfg, LastFire, monitor}) => new taskcreator.TaskCreator({
+    requires: ['cfg', 'db', 'monitor'],
+    setup: ({cfg, db, monitor}) => new taskcreator.TaskCreator({
       ...cfg.taskcluster,
-      LastFire,
+      db,
       monitor: monitor.childMonitor('taskcreator'),
     }),
   },
@@ -125,10 +112,10 @@ const load = loader({
   },
 
   api: {
-    requires: ['cfg', 'schemaset', 'Hook', 'LastFire', 'taskcreator', 'monitor', 'publisher', 'pulseClient'],
-    setup: ({cfg, schemaset, Hook, LastFire, taskcreator, monitor, publisher, pulseClient}) => builder.build({
+    requires: ['cfg', 'db', 'schemaset', 'Hook', 'taskcreator', 'monitor', 'publisher', 'pulseClient'],
+    setup: ({cfg, db, schemaset, Hook, taskcreator, monitor, publisher, pulseClient}) => builder.build({
       rootUrl: cfg.taskcluster.rootUrl,
-      context: {Hook, LastFire, taskcreator, publisher, denylist: cfg.pulse.denylist},
+      context: {db, Hook, taskcreator, publisher, denylist: cfg.pulse.denylist},
       schemaset,
       monitor: monitor.childMonitor('api'),
     }),
@@ -200,12 +187,11 @@ const load = loader({
   },
 
   expires: {
-    requires: ['cfg', 'Hook', 'LastFire', 'monitor'],
-    setup: ({cfg, Hook, LastFire, monitor}, ownName) => {
+    requires: ['cfg', 'db', 'Hook', 'monitor'],
+    setup: ({cfg, db, Hook, monitor}, ownName) => {
       return monitor.oneShot(ownName, async () => {
-        const expirationTime = taskcluster.fromNow(cfg.app.lastFiresExpirationDelay);
         debug('Expiring lastFires rows');
-        const count = await LastFire.expires(Hook, expirationTime);
+        const count = (await db.fns.expire_last_fires())[0].expire_last_fires;
         debug(`Expired ${count} rows`);
       });
     },
