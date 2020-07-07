@@ -147,6 +147,7 @@ program.command('dev:init')
 
 program.command('dev:db:upgrade')
   .description('Run `yarn db:upgrade` for a development environment')
+  .option('--db-version <v>', 'Downgrade to this DB version (optional, defaults to latest)')
   .action((...options) => {
     if (options.length !== 1) {
       console.error('unexpected command-line arguments');
@@ -158,7 +159,7 @@ program.command('dev:db:upgrade')
 
 program.command('dev:db:downgrade')
   .description('Run `yarn db:downgrade` for a development environment')
-  .option('--db-version <v>', 'Downgrade to this DB version')
+  .option('--db-version <v>', 'Downgrade to this DB version (required)')
   .action((...options) => {
     if (options.length !== 1) {
       console.error('unexpected command-line arguments');

@@ -68,12 +68,15 @@ const dbUpgrade = async (options) => {
   const userConfig = await readUserConfig();
   const meta = userConfig.meta || {};
 
+  const {dbVersion} = options;
+  const toVersion = dbVersion ? parseInt(dbVersion) : undefined;
+
   const {adminDbUrl, usernamePrefix} = dbParams(meta);
   const showProgress = message => {
     util.log(chalk.green(message));
   };
 
-  await upgrade({showProgress, adminDbUrl, usernamePrefix});
+  await upgrade({showProgress, adminDbUrl, usernamePrefix, toVersion});
 };
 
 const dbDowngrade = async (options) => {
