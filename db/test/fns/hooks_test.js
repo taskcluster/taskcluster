@@ -65,6 +65,21 @@ suite(testing.suiteName(), function() {
       assert.equal(rows.length, 0);
     });
 
+    helper.dbTest('get_last_fires full, pagination', async function(db) {
+      for (let i = 0; i < 10; i++) {
+        await create_last_fire(db, {task_id: slug.nice()});
+      }
+
+      let rows = await db.fns.get_last_fires('hook/group/id', 'hook-id', 4, 0);
+      assert.equal(rows.length, 4);
+
+      rows = await db.fns.get_last_fires('hook/group/id', 'hook-id', 4, 4);
+      assert.equal(rows.length, 4);
+
+      rows = await db.fns.get_last_fires('hook/group/id', 'hook-id', 4, 8);
+      assert.equal(rows.length, 2);
+    });
+
     helper.dbTest('delete_last_fires', async function(db) {
       await Promise.all(_.range(5).map(() => {
         const taskId = slug.nice();
@@ -76,6 +91,10 @@ suite(testing.suiteName(), function() {
       await db.fns.delete_last_fires('hook/group/id', 'hook-id');
       rows = await db.fns.get_last_fires('hook/group/id', 'hook-id', 10, 0);
       assert.equal(rows.length, 0);
+    });
+
+    helper.dbTest('delete_last_fires does not throw when no such row', async function(db) {
+      await db.fns.delete_last_fires('hook/group/id', 'hook-id');
     });
 
     helper.dbTest('expire_last_fires does not delete when < 1 year', async function(db) {
