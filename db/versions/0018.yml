@@ -1,0 +1,4 @@
+version: 18
+migrationScript: 0018-migration.sql
+downgradeScript: 0018-downgrade.sql
+methods:j []
