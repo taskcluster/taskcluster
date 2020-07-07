@@ -242,7 +242,6 @@ const generateMonoimageTasks = ({tasks, baseDir, cmdOptions, credentials, logsDi
     title: `Monoimage - Complete`,
     requires: [
       `monoimage-push`,
-      `monoimage-devel-push`,
     ],
     provides: [
       `target-monoimage`,
@@ -253,6 +252,16 @@ const generateMonoimageTasks = ({tasks, baseDir, cmdOptions, credentials, logsDi
 
       return provides;
     },
+  });
+  ensureTask(tasks, {
+    title: `Monoimage Devel - Complete`,
+    requires: [
+      `monoimage-devel-push`,
+    ],
+    provides: [
+      `target-monoimage-devel`,
+    ],
+    run: async (requirements, utils) => {},
   });
 };
 

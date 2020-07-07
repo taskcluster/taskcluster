@@ -79,7 +79,14 @@ class Build {
       },
       target: [
         'target-monoimage',
+        'target-monoimage-devel',
         'target-livelog',
+        'target-client-shell',
+        'target-docker-worker',
+        'target-generic-worker',
+        'target-worker-runner',
+        'target-taskcluster-proxy',
+        'target-websocktunnel',
       ],
       renderer: process.stdout.isTTY ?
         new ConsoleRenderer({elideCompleted: true}) :
