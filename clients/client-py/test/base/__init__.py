@@ -9,7 +9,7 @@ _sleep = time.sleep
 
 TEST_ROOT_URL = "https://tc-tests.example.com"
 # rootUrl of a real deployment (that needs no pre-configuration)
-REAL_ROOT_URL = 'https://taskcluster.net'
+REAL_ROOT_URL = os.environ.get('TASKCLUSTER_ROOT_URL', 'https://community-tc.services.mozilla.com/')
 
 log = logging.getLogger(__name__)
 log.setLevel(logging.DEBUG)
