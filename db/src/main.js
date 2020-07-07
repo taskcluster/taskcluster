@@ -17,12 +17,16 @@ const main = async () => {
     util.log(chalk.green(message));
   };
 
+  const toVersion = process.argv[3] ? parseInt(process.argv[3]) : undefined;
+  if (toVersion !== undefined && (!process.argv[3].match(/^[0-9]+$/) || isNaN(toVersion))) {
+    throw new Error('invalid db version specified -- must be an integer DB version, not a TC release version');
+  }
+
   if (process.argv[2] === 'upgrade') {
-    await upgrade({showProgress, adminDbUrl, usernamePrefix});
+    await upgrade({showProgress, adminDbUrl, usernamePrefix, toVersion});
   } else if (process.argv[2] === 'downgrade') {
-    const toVersion = parseInt(process.argv[3]);
-    if (!process.argv[3].match(/^[0-9]+$/) || isNaN(toVersion)) {
-      throw new Error('invalid version specified for downgrade -- must be an integer DB version, not a TC release version');
+    if (!toVersion) {
+      throw new Error('must specify a version to downgrade to');
     }
     await downgrade({showProgress, adminDbUrl, usernamePrefix, toVersion});
   } else {
