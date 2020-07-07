@@ -6,7 +6,7 @@ const {
   execCommand,
   dockerPush,
   REPO_ROOT,
-} = require('../utils');
+} = require('../../utils');
 
 module.exports = ({tasks, cmdOptions, credentials, baseDir, logsDir}) => {
   ensureTask(tasks, {
@@ -94,7 +94,7 @@ module.exports = ({tasks, cmdOptions, credentials, baseDir, logsDir}) => {
         env: {DOCKER_BUILDKIT: 1, ...process.env},
       });
 
-      if (cmdOptions.staging) {
+      if (cmdOptions.staging || !cmdOptions.push) {
         return provides;
       }
 

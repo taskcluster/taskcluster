@@ -8,7 +8,7 @@ const {
   execCommand,
   writeRepoFile,
   REPO_ROOT,
-} = require('../utils');
+} = require('../../utils');
 const path = require('path');
 const util = require('util');
 const rimraf = util.promisify(require('rimraf'));

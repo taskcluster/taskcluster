@@ -14,7 +14,7 @@ const {
   dockerPull,
   dockerPush,
   REPO_ROOT,
-} = require('../utils');
+} = require('../../utils');
 
 const readFile = util.promisify(fs.readFile);
 
@@ -259,7 +259,7 @@ module.exports = ({tasks, cmdOptions, credentials, baseDir, logsDir}) => {
         env: {DOCKER_BUILDKIT: 1, ...process.env},
       });
 
-      if (cmdOptions.staging) {
+      if (cmdOptions.staging || !cmdOptions.push) {
         return provides;
       }
 
@@ -347,7 +347,7 @@ module.exports = ({tasks, cmdOptions, credentials, baseDir, logsDir}) => {
         env: {DOCKER_BUILDKIT: 1, ...process.env},
       });
 
-      if (cmdOptions.staging) {
+      if (cmdOptions.staging || !cmdOptions.push) {
         return provides;
       }
 
@@ -463,7 +463,7 @@ module.exports = ({tasks, cmdOptions, credentials, baseDir, logsDir}) => {
       `publish-clients/client`,
     ],
     run: async (requirements, utils) => {
-      if (cmdOptions.staging) {
+      if (cmdOptions.staging || !cmdOptions.push) {
         return utils.skip();
       }
 
@@ -493,7 +493,7 @@ module.exports = ({tasks, cmdOptions, credentials, baseDir, logsDir}) => {
         logfile: path.join(logsDir, `install-clients-client-web.log`),
       });
 
-      if (cmdOptions.staging) {
+      if (cmdOptions.staging || !cmdOptions.push) {
         return;
       }
 
@@ -514,7 +514,7 @@ module.exports = ({tasks, cmdOptions, credentials, baseDir, logsDir}) => {
       `publish-clients/client-py`,
     ],
     run: async (requirements, utils) => {
-      if (cmdOptions.staging) {
+      if (cmdOptions.staging || !cmdOptions.push) {
         return utils.skip();
       }
 

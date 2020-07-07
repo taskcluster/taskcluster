@@ -26,8 +26,8 @@ program.command('build')
       console.error('unexpected command-line arguments');
       process.exit(1);
     }
-    const {main} = require('./build');
-    run(main, options[0]);
+    const {build} = require('./build');
+    run(build, options[0]);
   });
 
 program.command('release')
@@ -72,8 +72,8 @@ program.command('release:publish')
       console.error('unexpected command-line arguments');
       process.exit(1);
     }
-    const {main} = require('./publish');
-    run(main, options[0]);
+    const {publish} = require('./build');
+    run(publish, options[0]);
   });
 
 program.command('generate')
