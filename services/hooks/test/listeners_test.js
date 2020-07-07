@@ -4,6 +4,7 @@ const taskcluster = require('taskcluster-client');
 const sinon = require('sinon');
 const helper = require('./helper');
 const testing = require('taskcluster-lib-testing');
+const { queueUtils } = require('../src/utils');
 
 helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   helper.withDb(mock, skipping);
@@ -41,7 +42,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   const makeQueueEntities = async (...queues) => {
     for (let {hookId, bindings} of queues) {
       const queueName = `${hookGroupId}/${hookId}`;
-      await helper.Queues.create({hookGroupId, hookId, queueName, bindings});
+      await helper.db.fns.create_hooks_queue(hookGroupId, hookId, queueName, JSON.stringify(bindings));
     }
   };
 
@@ -49,9 +50,13 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     const exp = queues.reduce(
       (acc, {hookId, bindings}) => Object.assign(acc, {[`${hookGroupId}/${hookId}`]: bindings}), {});
     const got = {};
-    await helper.Queues.scan({}, {
-      handler: ({hookId, bindings}) => got[`${hookGroupId}/${hookId}`] = bindings,
-    });
+
+    const rows = await helper.db.fns.get_hooks_queues(null, null);
+    const q = rows.map(queueUtils.fromDb);
+
+    for (let queue of q) {
+      got[`${hookGroupId}/${queue.hookId}`] = queue.bindings;
+    }
 
     assert.deepEqual(got, exp);
   };

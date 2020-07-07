@@ -6,6 +6,7 @@ const Hook = Entity.configure({
   version: 1,
   partitionKey: Entity.keys.StringKey('hookGroupId'),
   rowKey: Entity.keys.StringKey('hookId'),
+  signEntities: true,
   properties: {
     hookGroupId: Entity.types.String,
     hookId: Entity.types.String,
@@ -30,6 +31,7 @@ const Hook = Entity.configure({
   },
 }).configure({
   version: 2,
+  signEntities: true,
   properties: {
     hookGroupId: Entity.types.String,
     hookId: Entity.types.String,
@@ -62,6 +64,7 @@ const Hook = Entity.configure({
   },
 }).configure({
   version: 3,
+  signEntities: true,
   properties: {
     hookGroupId: Entity.types.String,
     hookId: Entity.types.String,
@@ -92,6 +95,7 @@ const Hook = Entity.configure({
   },
 }).configure({
   version: 4,
+  signEntities: true,
   properties: {
     hookGroupId: Entity.types.String,
     hookId: Entity.types.String,
@@ -124,6 +128,7 @@ const Hook = Entity.configure({
   },
 }).configure({
   version: 5,
+  signEntities: true,
   properties: {
     hookGroupId: Entity.types.String,
     hookId: Entity.types.String,
@@ -154,6 +159,7 @@ const Hook = Entity.configure({
   },
 }).configure({
   version: 6,
+  signEntities: true,
   properties: {
     hookGroupId: Entity.types.String,
     hookId: Entity.types.String,
@@ -193,87 +199,5 @@ Hook.prototype.definition = function() {
   });
 };
 
-const Queues = Entity.configure({
-  version: 1,
-  partitionKey: Entity.keys.StringKey('hookGroupId'),
-  rowKey: Entity.keys.StringKey('hookId'),
-  properties: {
-    hookGroupId: Entity.types.String,
-    hookId: Entity.types.String,
-    queueName: Entity.types.String,
-    bindings: Entity.types.JSON,
-  },
-});
-
 // export Hook and Queues
 exports.Hook = Hook;
-exports.Queues = Queues;
-
-const LastFire = Entity.configure({
-  version: 1,
-  partitionKey: Entity.keys.CompositeKey('hookGroupId', 'hookId'),
-  rowKey: Entity.keys.StringKey('taskId'),
-  properties: {
-    hookGroupId: Entity.types.String,
-    hookId: Entity.types.String,
-    firedBy: Entity.types.String,
-    taskId: Entity.types.String,
-    taskCreateTime: Entity.types.Date,
-    result: Entity.types.String,
-    error: Entity.types.String,
-  },
-});
-
-LastFire.prototype.definition = function() {
-  return Promise.resolve({
-    hookGroupId: this.hookGroupId,
-    hookId: this.hookId,
-    firedBy: this.firedBy,
-    taskId: this.taskId,
-    taskCreateTime: this.taskCreateTime,
-    result: this.result,
-    error: this.error,
-  });
-};
-
-LastFire.expires = async function(Hook, now, n = 100) {
-  const hookKeys = [];
-  let count = 0;
-  await Hook.scan({},
-    {
-      handler: async hook => {
-        const { hookGroupId, hookId } = await hook.definition();
-        hookKeys.push({ hookGroupId, hookId });
-      },
-    },
-  );
-
-  for (const { hookGroupId, hookId } of hookKeys) {
-    const hookData = [];
-    await this.scan({
-      taskCreateTime: Entity.op.lessThan(now),
-      hookGroupId: Entity.op.equal(hookGroupId),
-      hookId: Entity.op.equal(hookId)}, {
-      limit: 500,
-      handler: async item => {
-        const { taskId, taskCreateTime } = await item.definition();
-        hookData.push({taskId, taskCreateTime});
-      },
-    },
-    );
-    hookData.sort((a, b) =>
-      new Date(b.taskCreateTime) - new Date(a.taskCreateTime));
-
-    hookData.splice(0, n);
-    for(let data of hookData) {
-      await this.remove({
-        hookGroupId,
-        hookId,
-        taskId: data.taskId});
-      count++;
-    }
-  }
-  return count;
-};
-// export LastFire
-exports.LastFire = LastFire;

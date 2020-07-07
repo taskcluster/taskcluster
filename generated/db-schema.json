@@ -17,8 +17,8 @@
     "hooks": {
       "tables": {
         "hooks_entities": "write",
-        "last_fire_3_entities": "write",
-        "queues_entities": "write"
+        "hooks_last_fires": "write",
+        "hooks_queues": "write"
       }
     },
     "index": {
@@ -138,6 +138,23 @@
       "value": "jsonb not null",
       "version": "integer not null"
     },
+    "hooks_last_fires": {
+      "error": "text not null",
+      "etag": "uuid not null",
+      "fired_by": "text not null",
+      "hook_group_id": "text not null",
+      "hook_id": "text not null",
+      "result": "text not null",
+      "task_create_time": "timestamp with time zone not null",
+      "task_id": "text not null"
+    },
+    "hooks_queues": {
+      "bindings": "jsonb not null",
+      "etag": "uuid not null",
+      "hook_group_id": "text not null",
+      "hook_id": "text not null",
+      "queue_name": "text not null"
+    },
     "index_namespaces": {
       "etag": "uuid not null",
       "expires": "timestamp with time zone not null",
@@ -152,13 +169,6 @@
       "namespace": "text not null",
       "rank": "integer not null",
       "task_id": "text not null"
-    },
-    "last_fire_3_entities": {
-      "etag": "uuid",
-      "partition_key": "text not null",
-      "row_key": "text not null",
-      "value": "jsonb not null",
-      "version": "integer not null"
     },
     "queue_artifacts": {
       "content_type": "text not null",
@@ -186,13 +196,6 @@
       "version": "integer not null"
     },
     "queue_worker_type_entities": {
-      "etag": "uuid",
-      "partition_key": "text not null",
-      "row_key": "text not null",
-      "value": "jsonb not null",
-      "version": "integer not null"
-    },
-    "queues_entities": {
       "etag": "uuid",
       "partition_key": "text not null",
       "row_key": "text not null",
@@ -3737,6 +3740,191 @@
         }
       },
       "version": 31
+    },
+    {
+      "downgradeScript": "begin\n  -- lock this table before reading from it, to prevent loss of concurrent\n  -- updates when the table is dropped.\n  lock table hooks_last_fires;\n\n  create table last_fire_3_entities(\n    partition_key text, row_key text,\n    value jsonb not null,\n    version integer not null,\n    etag uuid default public.gen_random_uuid());\n  alter table last_fire_3_entities add primary key (partition_key, row_key);\n\n  insert into last_fire_3_entities\n  select\n    encode_composite_key(hook_group_id, hook_id) as partition_key,\n    encode_string_key(task_id) as row_key,\n    jsonb_build_object(\n      'PartitionKey', encode_composite_key(hook_group_id, hook_id),\n      'RowKey', encode_string_key(task_id),\n      'hookGroupId', hook_group_id,\n      'hookId', hook_id,\n      'firedBy', fired_by,\n      'taskId', task_id,\n      'taskCreateTime', task_create_time,\n      'result', result,\n      'error', error) as value,\n    1 as version,\n    etag\n  from hooks_last_fires;\n\n  revoke select, insert, update, delete on hooks_last_fires from $db_user_prefix$_hooks;\n  drop table hooks_last_fires;\n  grant select, insert, update, delete on last_fire_3_entities to $db_user_prefix$_hooks;\nend\n",
+      "methods": {
+        "create_last_fire": {
+          "args": "hook_group_id_in text, hook_id_in text, fired_by_in text, task_id_in text, task_create_time_in timestamptz, result_in text, error_in text",
+          "body": "declare\n  new_etag uuid := public.gen_random_uuid();\nbegin\n  insert\n    into hooks_last_fires (hook_group_id, hook_id, fired_by, task_id, task_create_time, result, error, etag)\n    values (hook_group_id_in, hook_id_in, fired_by_in, task_id_in, task_create_time_in, result_in, error_in, new_etag);\n\n    return new_etag;\nend",
+          "deprecated": false,
+          "description": "Create a new hook last fire.  Raises UNIQUE_VIOLATION if the hook already exists.",
+          "mode": "write",
+          "returns": "uuid",
+          "serviceName": "hooks"
+        },
+        "delete_last_fires": {
+          "args": "hook_group_id_in text, hook_id_in text",
+          "body": "begin\n  delete from hooks_last_fires\n  where\n    hooks_last_fires.hook_group_id = hook_group_id_in and\n    hooks_last_fires.hook_id = hook_id_in;\nend",
+          "deprecated": false,
+          "description": "Delete last fires that match a given `hook_group_id` and `hook_id`.",
+          "mode": "write",
+          "returns": "void",
+          "serviceName": "hooks"
+        },
+        "expire_last_fires": {
+          "args": "",
+          "body": "declare\n  count integer;\nbegin\n  delete from hooks_last_fires where hooks_last_fires.task_create_time < now() - interval '1 year';\n  if found then\n    get diagnostics count = row_count;\n    return count;\n  end if;\n  return 0;\nend",
+          "deprecated": false,
+          "description": "Expire last fires that are older than a year.\nReturns a count of rows that have been deleted.",
+          "mode": "write",
+          "returns": "integer",
+          "serviceName": "hooks"
+        },
+        "get_last_fire": {
+          "args": "hook_group_id_in text, hook_id_in text, task_id_in text",
+          "body": "begin\n  return query\n  select\n    hooks_last_fires.hook_group_id,\n    hooks_last_fires.hook_id,\n    hooks_last_fires.fired_by,\n    hooks_last_fires.task_id,\n    hooks_last_fires.task_create_time,\n    hooks_last_fires.result,\n    hooks_last_fires.error,\n    hooks_last_fires.etag\n  from hooks_last_fires\n  where\n    hooks_last_fires.hook_group_id = hook_group_id_in and\n    hooks_last_fires.hook_id = hook_id_in and\n    hooks_last_fires.task_id = task_id_in;\nend",
+          "deprecated": false,
+          "description": "Get a hook last fire.",
+          "mode": "read",
+          "returns": "table(hook_group_id text, hook_id text, fired_by text, task_id text, task_create_time timestamptz, result text, error text, etag uuid)",
+          "serviceName": "hooks"
+        },
+        "get_last_fires": {
+          "args": "hook_group_id_in text, hook_id_in text, page_size_in integer, page_offset_in integer",
+          "body": "begin\n  return query\n  select\n    hooks_last_fires.hook_group_id,\n    hooks_last_fires.hook_id,\n    hooks_last_fires.fired_by,\n    hooks_last_fires.task_id,\n    hooks_last_fires.task_create_time,\n    hooks_last_fires.result,\n    hooks_last_fires.error,\n    hooks_last_fires.etag\n  from hooks_last_fires\n  where\n    hooks_last_fires.hook_group_id = hook_group_id_in and\n    hooks_last_fires.hook_id = hook_id_in\n  order by hook_group_id, hook_id, task_id\n  limit get_page_limit(page_size_in)\n  offset get_page_offset(page_offset_in);\nend",
+          "deprecated": false,
+          "description": "Get hooks last fires filtered by the `hook_group_id` and `hook_id` arguments,\nordered by `hook_group_id`, `hook_id`, and  `worker_id`.\nIf the pagination arguments are both NULL, all rows are returned.\nOtherwise, page_size rows are returned at offset page_offset.",
+          "mode": "read",
+          "returns": "table(hook_group_id text, hook_id text, fired_by text, task_id text, task_create_time timestamptz, result text, error text, etag uuid)",
+          "serviceName": "hooks"
+        },
+        "last_fire_3_entities_create": {
+          "args": "pk text, rk text, properties jsonb, overwrite boolean, version integer",
+          "body": "begin\nend",
+          "deprecated": false,
+          "description": "See taskcluster-lib-entities",
+          "mode": "write",
+          "returns": "uuid",
+          "serviceName": "hooks"
+        },
+        "last_fire_3_entities_load": {
+          "args": "partition_key text, row_key text",
+          "body": "begin\nend",
+          "deprecated": false,
+          "description": "See taskcluster-lib-entities",
+          "mode": "read",
+          "returns": "table (partition_key_out text, row_key_out text, value jsonb, version integer, etag uuid)",
+          "serviceName": "hooks"
+        },
+        "last_fire_3_entities_modify": {
+          "args": "partition_key text, row_key text, properties jsonb, version integer, old_etag uuid",
+          "body": "begin\nend",
+          "deprecated": false,
+          "description": "See taskcluster-lib-entities",
+          "mode": "write",
+          "returns": "table (etag uuid)",
+          "serviceName": "hooks"
+        },
+        "last_fire_3_entities_remove": {
+          "args": "partition_key text, row_key text",
+          "body": "begin\nend",
+          "deprecated": false,
+          "description": "See taskcluster-lib-entities",
+          "mode": "write",
+          "returns": "table (etag uuid)",
+          "serviceName": "hooks"
+        },
+        "last_fire_3_entities_scan": {
+          "args": "pk text, rk text, condition text, size integer, page integer",
+          "body": "begin\nend",
+          "deprecated": false,
+          "description": "See taskcluster-lib-entities",
+          "mode": "read",
+          "returns": "table (partition_key text, row_key text, value jsonb, version integer, etag uuid)",
+          "serviceName": "hooks"
+        }
+      },
+      "migrationScript": "begin\n  -- lock this table before reading from it, to prevent loss of concurrent\n  -- updates when the table is dropped.  Note that this may lead to concurrent\n  -- updates failing; the important thing is that they not succeed without\n  -- taking effect.  Failed updates will be retried.\n  lock table last_fire_3_entities;\n\n  create table hooks_last_fires\n  as\n    select\n      (value ->> 'hookGroupId')::text as hook_group_id,\n      (value ->> 'hookId')::text as hook_id,\n      (value ->> 'firedBy')::text as fired_by,\n      (value ->> 'taskId')::text as task_id,\n      (value ->> 'taskCreateTime')::timestamptz as task_create_time,\n      (value ->> 'result')::text as result,\n      (value ->> 'error')::text as error,\n      etag\n    from last_fire_3_entities;\n  alter table hooks_last_fires add primary key (hook_group_id, hook_id, task_id);\n  alter table hooks_last_fires\n    alter column hook_group_id set not null,\n    alter column hook_id set not null,\n    alter column fired_by set not null,\n    alter column task_id set not null,\n    alter column task_create_time set not null,\n    alter column result set not null,\n    alter column error set not null,\n    alter column etag set not null,\n    alter column etag set default public.gen_random_uuid();\n\n  revoke select, insert, update, delete on last_fire_3_entities from $db_user_prefix$_hooks;\n  drop table last_fire_3_entities;\n  grant select, insert, update, delete on hooks_last_fires to $db_user_prefix$_hooks;\n\nend\n",
+      "version": 32
+    },
+    {
+      "downgradeScript": "begin\n  -- lock this table before reading from it, to prevent loss of concurrent\n  -- updates when the table is dropped.\n  lock table hooks_queues;\n\n  create table queues_entities(\n    partition_key text, row_key text,\n    value jsonb not null,\n    version integer not null,\n    etag uuid default public.gen_random_uuid());\n  alter table queues_entities add primary key (partition_key, row_key);\n\n  insert into queues_entities\n  select\n    encode_string_key(hook_group_id) as partition_key,\n    encode_string_key(hook_id) as row_key,\n    entity_buf_encode(\n        jsonb_build_object(\n          'PartitionKey', encode_string_key(hook_group_id),\n          'RowKey', encode_string_key(hook_id),\n          'hookGroupId', hook_group_id,\n          'hookId', hook_id,\n          'queueName', queue_name),\n        'bindings', bindings::text) as value,\n    1 as version,\n    etag\n  from hooks_queues;\n\n  revoke select, insert, update, delete on hooks_queues from $db_user_prefix$_hooks;\n  drop table hooks_queues;\n  grant select, insert, update, delete on queues_entities to $db_user_prefix$_hooks;\nend\n",
+      "methods": {
+        "create_hooks_queue": {
+          "args": "hook_group_id_in text, hook_id_in text, queue_name_in text, bindings_in jsonb",
+          "body": "declare\n  new_etag uuid := public.gen_random_uuid();\nbegin\n  insert\n    into hooks_queues (hook_group_id, hook_id, queue_name, bindings, etag)\n    values (hook_group_id_in, hook_id_in, queue_name_in, bindings_in, new_etag);\n\n    return new_etag;\nend",
+          "deprecated": false,
+          "description": "Create a new hooks queue.  Raises UNIQUE_VIOLATION if the hook already exists.",
+          "mode": "write",
+          "returns": "uuid",
+          "serviceName": "hooks"
+        },
+        "delete_hooks_queue": {
+          "args": "hook_group_id_in text, hook_id_in text",
+          "body": "begin\n  delete from hooks_queues\n  where\n    hooks_queues.hook_group_id = hook_group_id_in and\n    hooks_queues.hook_id = hook_id_in;\nend",
+          "deprecated": false,
+          "description": "Delete a hooks queue.",
+          "mode": "write",
+          "returns": "void",
+          "serviceName": "hooks"
+        },
+        "get_hooks_queues": {
+          "args": "page_size_in integer, page_offset_in integer",
+          "body": "begin\n  return query\n  select\n    hooks_queues.hook_group_id,\n    hooks_queues.hook_id,\n    hooks_queues.queue_name,\n    hooks_queues.bindings,\n    hooks_queues.etag\n  from hooks_queues\n  order by hook_group_id, hook_id\n  limit get_page_limit(page_size_in)\n  offset get_page_offset(page_offset_in);\nend",
+          "deprecated": false,
+          "description": "Get hooks queues ordered by `hook_group_id` and `hook_id`.\nIf the pagination arguments are both NULL, all rows are returned.\nOtherwise, page_size rows are returned at offset page_offset.",
+          "mode": "read",
+          "returns": "table(hook_group_id text, hook_id text, queue_name text, bindings jsonb, etag uuid)",
+          "serviceName": "hooks"
+        },
+        "queues_entities_create": {
+          "args": "pk text, rk text, properties jsonb, overwrite boolean, version integer",
+          "body": "declare\n  new_row hooks_queues%ROWTYPE;\nbegin\n  select\n    (properties ->> 'hookGroupId')::text,\n    (properties ->> 'hookId')::text,\n    (properties ->> 'queueName')::text,\n    entity_buf_decode(properties, 'bindings')::jsonb,\n    public.gen_random_uuid()\n  into new_row;\n  if overwrite then\n    raise exception 'overwrite not implemented';\n  else\n    execute 'insert into hooks_queues select $1.*' using new_row;\n  end if;\n  return new_row.etag;\nend",
+          "deprecated": false,
+          "description": "See taskcluster-lib-entities",
+          "mode": "write",
+          "returns": "uuid",
+          "serviceName": "hooks"
+        },
+        "queues_entities_load": {
+          "args": "partition_key text, row_key text",
+          "body": "begin\n  return query\n  select\n    queues_entities_load.partition_key,\n    queues_entities_load.row_key,\n    entity_buf_encode(\n      jsonb_build_object(\n        'PartitionKey', encode_string_key(hook_group_id),\n        'RowKey', encode_string_key(hook_id),\n        'hookGroupId', hook_group_id,\n        'hookId', hook_id,\n        'queueName', queue_name),\n      'bindings', bindings::text) as value,\n    1 as version,\n    hooks_queues.etag as etag\n  from hooks_queues\n  where\n    hooks_queues.hook_group_id = decode_string_key(queues_entities_load.partition_key) and hooks_queues.hook_id = decode_string_key(queues_entities_load.row_key);\nend",
+          "deprecated": false,
+          "description": "See taskcluster-lib-entities",
+          "mode": "read",
+          "returns": "table (partition_key_out text, row_key_out text, value jsonb, version integer, etag uuid)",
+          "serviceName": "hooks"
+        },
+        "queues_entities_modify": {
+          "args": "partition_key text, row_key text, properties jsonb, version integer, old_etag uuid",
+          "body": "declare\n  new_row hooks_queues%ROWTYPE;\nbegin\n  select\n    (properties ->> 'hookGroupId')::text,\n    (properties ->> 'hookId')::text,\n    (properties ->> 'queueName')::text,\n    entity_buf_decode(properties, 'bindings')::jsonb,\n    public.gen_random_uuid() as etag\n  into new_row;\n  update hooks_queues\n  set (\n    queue_name,\n    bindings,\n    etag\n  ) = (\n    new_row.queue_name,\n    new_row.bindings,\n    new_row.etag\n  )\n  where\n    hooks_queues.hook_group_id = decode_string_key(queues_entities_modify.partition_key) and\n    hooks_queues.hook_id = decode_string_key(queues_entities_modify.row_key) and\n    hooks_queues.etag = queues_entities_modify.old_etag;\n  if found then\n    return query select new_row.etag;\n    return;\n  end if;\n  perform hooks_queues.etag from hooks_queues\n  where\n    hooks_queues.hook_group_id = decode_string_key(queues_entities_modify.partition_key) and\n    hooks_queues.hook_id = decode_string_key(queues_entities_modify.row_key);\n  if found then\n    raise exception 'unsuccessful update' using errcode = 'P0004';\n  else\n    raise exception 'no such row' using errcode = 'P0002';\n  end if;\nend",
+          "deprecated": false,
+          "description": "See taskcluster-lib-entities",
+          "mode": "write",
+          "returns": "table (etag uuid)",
+          "serviceName": "hooks"
+        },
+        "queues_entities_remove": {
+          "args": "partition_key text, row_key text",
+          "body": "begin\n  return query delete from hooks_queues\n  where\n    hooks_queues.hook_group_id = decode_string_key(queues_entities_remove.partition_key) and\n    hooks_queues.hook_id = decode_string_key(queues_entities_remove.row_key)\n  returning hooks_queues.etag;\nend",
+          "deprecated": false,
+          "description": "See taskcluster-lib-entities",
+          "mode": "write",
+          "returns": "table (etag uuid)",
+          "serviceName": "hooks"
+        },
+        "queues_entities_scan": {
+          "args": "pk text, rk text, condition text, size integer, page integer",
+          "body": "declare\n  cond text[];\n  exp_cond_operator text;\n  exp_cond_operand timestamptz;\n  partition_key_var text;\n  row_key_var text;\nbegin\n  if not condition is null then\n    cond := regexp_split_to_array(condition, '\\s+');\n    exp_cond_operator := cond[4];\n    exp_cond_operand := cond[5] :: timestamptz;\n\n    return query select\n      encode_string_key(hook_group_id) as partition_key,\n      encode_string_key(hook_id) as row_key,\n      entity_buf_encode(\n        jsonb_build_object(\n          'PartitionKey', encode_string_key(hook_group_id),\n          'RowKey', encode_string_key(hook_id),\n          'hookGroupId', hook_group_id,\n          'hookId', hook_id,\n          'queueName', queue_name),\n        'bindings', bindings::text) as value,\n      1 as version,\n      hooks_queues.etag as etag from hooks_queues\n    where\n      (queues_entities_scan.pk is null or decode_string_key(queues_entities_scan.pk) = hook_group_id) and\n      (queues_entities_scan.rk is null or decode_string_key(queues_entities_scan.rk) = hook_id) and\n      case\n        when exp_cond_operator = '=' then expires = exp_cond_operand\n        when exp_cond_operator = '<' then expires < exp_cond_operand\n        when exp_cond_operator = '<=' then expires <= exp_cond_operand\n        when exp_cond_operator = '>' then expires > exp_cond_operand\n        when exp_cond_operator = '>=' then expires >= exp_cond_operand\n        else expires <> exp_cond_operand\n      end\n    order by hooks_queues.hook_group_id, hooks_queues.hook_id\n    limit case\n      when (size is not null and size > 0) then size + 1\n      else null\n    end\n    offset case\n      when (page is not null and page > 0) then page\n      else 0\n    end;\n  else\n    return query select\n      encode_string_key(hook_group_id) as partition_key,\n      encode_string_key(hook_id) as row_key,\n      entity_buf_encode(\n        jsonb_build_object(\n          'PartitionKey', encode_string_key(hook_group_id),\n          'RowKey', encode_string_key(hook_id),\n          'hookGroupId', hook_group_id,\n          'hookId', hook_id,\n          'queueName', queue_name),\n        'bindings', bindings::text) as value,\n      1 as version,\n      hooks_queues.etag as etag from hooks_queues\n    where\n      (queues_entities_scan.pk is null or decode_string_key(queues_entities_scan.pk) = hook_group_id) and\n      (queues_entities_scan.rk is null or decode_string_key(queues_entities_scan.rk) = hook_id)\n    order by hooks_queues.hook_group_id, hooks_queues.hook_id\n    limit case\n      when (size is not null and size > 0) then size + 1\n      else null\n    end\n    offset case\n      when (size is not null and size > 0 and page is not null and page > 0) then page\n      else 0\n    end;\n  end if;\nend",
+          "deprecated": false,
+          "description": "See taskcluster-lib-entities",
+          "mode": "read",
+          "returns": "table (partition_key text, row_key text, value jsonb, version integer, etag uuid)",
+          "serviceName": "hooks"
+        },
+        "update_hooks_queue_bindings": {
+          "args": "hook_group_id_in text, hook_id_in text, bindings_in jsonb",
+          "body": "declare\n  new_etag uuid := public.gen_random_uuid();\nbegin\n  return query update hooks_queues\n  set\n    bindings = bindings_in,\n    etag = new_etag\n  where\n    hooks_queues.hook_group_id = hook_group_id_in and\n    hooks_queues.hook_id = hook_id_in\n  returning\n    hooks_queues.hook_group_id,\n    hooks_queues.hook_id,\n    hooks_queues.queue_name,\n    hooks_queues.bindings,\n    hooks_queues.etag;\nend",
+          "deprecated": false,
+          "description": "Update bindings of a hooks queue. If no such queue exists,\nthe return value is an empty set.",
+          "mode": "write",
+          "returns": "table(hook_group_id text, hook_id text, queue_name text, bindings jsonb, etag uuid)",
+          "serviceName": "hooks"
+        }
+      },
+      "migrationScript": "begin\n  -- lock this table before reading from it, to prevent loss of concurrent\n  -- updates when the table is dropped.  Note that this may lead to concurrent\n  -- updates failing; the important thing is that they not succeed without\n  -- taking effect.  Failed updates will be retried.\n  lock table queues_entities;\n\n  create table hooks_queues\n  as\n    select\n      (value ->> 'hookGroupId')::text as hook_group_id,\n      (value ->> 'hookId')::text as hook_id,\n      (value ->> 'queueName')::text as queue_name,\n      entity_buf_decode(value, 'bindings')::jsonb as bindings,\n      etag\n    from queues_entities;\n  alter table hooks_queues add primary key (hook_group_id, hook_id);\n  alter table hooks_queues\n    alter column hook_group_id set not null,\n    alter column hook_id set not null,\n    alter column queue_name set not null,\n    alter column bindings set not null,\n    alter column etag set not null,\n    alter column etag set default public.gen_random_uuid();\n\n  revoke select, insert, update, delete on queues_entities from $db_user_prefix$_hooks;\n  drop table queues_entities;\n  grant select, insert, update, delete on hooks_queues to $db_user_prefix$_hooks;\nend\n",
+      "version": 33
     }
   ]
 }
