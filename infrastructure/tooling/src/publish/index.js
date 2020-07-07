@@ -8,6 +8,10 @@ const {Build} = require('../build');
 const generateVersionTasks = require('./version');
 const generatePublishTasks = require('./tasks');
 const taskcluster = require('taskcluster-client');
+const {
+  gitDescribe,
+  REPO_ROOT,
+} = require('../utils');
 
 class Publish {
   constructor(cmdOptions) {
@@ -80,6 +84,36 @@ class Publish {
     return tasks;
   }
 
+  async getVersionInfo() {
+    if (this.cmdOptions.staging) {
+      // for staging releases, we get the version from the staging-release/*
+      // branch name, and use a fake revision
+      const match = /staging-release\/v(\d+\.\d+\.\d+)$/.exec(this.cmdOptions.staging);
+      if (!match) {
+        throw new Error(`Staging releases must have branches named 'staging-release/vX.Y.Z'; got ${this.cmdOptions.staging}`);
+      }
+      const version = match[1];
+
+      return {
+        'release-version': version,
+        'release-revision': '9999999999999999999999999999999999999999',
+      };
+    } else {
+      const {gitDescription, revision} = await gitDescribe({
+        dir: REPO_ROOT,
+      });
+
+      if (!gitDescription.match(/^v\d+\.\d+\.\d+$/)) {
+        throw new Error(`Can only publish releases from git revisions with tags of the form vX.Y.Z, not ${gitDescription}`);
+      }
+
+      return {
+        'release-version': gitDescription.slice(1),
+        'release-revision': revision,
+      };
+    }
+  }
+
   async run() {
     // --staging implies --no-push
     if (this.cmdOptions.staging) {
@@ -112,7 +146,9 @@ class Publish {
       console.log('Dry run successful.');
       return;
     }
-    const context = await taskgraph.run();
+    const context = await taskgraph.run({
+      ...await this.getVersionInfo(),
+    });
 
     console.log(`Release version: ${context['release-version']}`);
     console.log(`Release docker image: ${context['monoimage-docker-image']}`);

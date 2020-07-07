@@ -7,7 +7,11 @@ const {TaskGraph, Lock, ConsoleRenderer, LogRenderer} = require('console-taskgra
 const generateMonoimageTasks = require('./monoimage');
 const generateCommonTasks = require('./common');
 const generateLivelogTasks = require('./livelog');
-const generateVersionTasks = require('./version');
+const {
+  gitIsDirty,
+  gitDescribe,
+  REPO_ROOT,
+} = require('../utils');
 
 class Build {
   constructor(cmdOptions) {
@@ -26,16 +30,6 @@ class Build {
    */
   generateTasks(generateFor) {
     let tasks = [];
-
-    if (generateFor === 'build') {
-      generateVersionTasks({
-        tasks,
-        baseDir: this.baseDir,
-        logsDir: this.logsDir,
-        credentials: {},
-        cmdOptions: this.cmdOptions,
-      });
-    }
 
     generateCommonTasks({
       tasks,
@@ -69,6 +63,33 @@ class Build {
     return tasks;
   }
 
+  async getVersionInfo() {
+    // The docker build clones from the current working copy, rather than anything upstream;
+    // this avoids the need to land-and-push changes.  This is a git clone
+    // operation instead of a raw filesystem copy so that any non-checked-in
+    // files are not accidentally built into docker images.  But it does mean that
+    // changes need to be checked in.
+    if (!this.cmdOptions.ignoreUncommittedFiles) {
+      if (await gitIsDirty({dir: REPO_ROOT})) {
+        throw new Error([
+          'The current git working copy is not clean. Any non-checked-in files will',
+          'not be reflected in the built image, so this is treatd as an error by default.',
+          'Either check in the dirty files, or run with --ignore-uncommitted-files to',
+          'override this error.  Never check in files containing secrets!',
+        ].join(' '));
+      }
+    }
+
+    const {gitDescription, revision} = await gitDescribe({
+      dir: REPO_ROOT,
+    });
+
+    return {
+      'release-version': gitDescription.slice(1),
+      'release-revision': revision,
+    };
+  }
+
   async run() {
     if (!this.cmdOptions.cache) {
       await rimraf(this.baseDir);
@@ -99,7 +120,10 @@ class Build {
       console.log('Dry run successful.');
       return;
     }
-    const context = await taskgraph.run({'build-can-start': true});
+    const context = await taskgraph.run({
+      ...await this.getVersionInfo(),
+      'build-can-start': true,
+    });
 
     console.log(`Monoimage docker image: ${context['monoimage-docker-image']}`);
     if (!this.cmdOptions.push) {
