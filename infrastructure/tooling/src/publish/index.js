@@ -5,6 +5,7 @@ const rimraf = util.promisify(require('rimraf'));
 const mkdirp = util.promisify(require('mkdirp'));
 const {TaskGraph, Lock, ConsoleRenderer, LogRenderer} = require('console-taskgraph');
 const {Build} = require('../build');
+const generateVersionTasks = require('./version');
 const generatePublishTasks = require('./tasks');
 const taskcluster = require('taskcluster-client');
 
@@ -53,7 +54,14 @@ class Publish {
       }
     });
 
-    let tasks = this.build.generateTasks();
+    let tasks = this.build.generateTasks('release');
+    generateVersionTasks({
+      tasks,
+      cmdOptions: this.cmdOptions,
+      credentials: {},
+      baseDir: this.baseDir,
+      logsDir: this.logsDir,
+    });
     generatePublishTasks({
       tasks,
       cmdOptions: this.cmdOptions,

@@ -3,11 +3,8 @@ const fs = require('fs');
 const glob = require('glob');
 const util = require('util');
 const path = require('path');
-const rimraf = util.promisify(require('rimraf'));
-const mkdirp = util.promisify(require('mkdirp'));
 const {
   ensureTask,
-  gitDescribe,
   npmPublish,
   execCommand,
   pyClientRelease,
@@ -16,54 +13,12 @@ const {
   dockerRun,
   dockerPull,
   dockerPush,
-  dockerFlowVersion,
   REPO_ROOT,
 } = require('../utils');
 
 const readFile = util.promisify(fs.readFile);
 
 module.exports = ({tasks, cmdOptions, credentials, baseDir, logsDir}) => {
-  const artifactsDir = path.join(baseDir, 'release-artifacts');
-
-  ensureTask(tasks, {
-    title: 'Get release version',
-    requires: [],
-    provides: ['release-version', 'docker-flow-version'],
-    run: async (requirements, utils) => {
-      if (cmdOptions.staging) {
-        // for staging releases, we get the version from the staging-release/*
-        // branch name, and use a fake revision
-        const match = /staging-release\/v(\d+\.\d+\.\d+)$/.exec(cmdOptions.staging);
-        if (!match) {
-          throw new Error(`Staging releases must have branches named 'staging-release/vX.Y.Z'; got ${cmdOptions.staging}`);
-        }
-        const version = match[1];
-
-        return {
-          'release-version': version,
-          'docker-flow-version': dockerFlowVersion({
-            gitDescription: `v${version}`,
-            revision: '9999999999999999999999999999999999999999',
-          }),
-        };
-      }
-
-      const {gitDescription, revision} = await gitDescribe({
-        dir: REPO_ROOT,
-        utils,
-      });
-
-      if (!gitDescription.match(/^v\d+\.\d+\.\d+$/)) {
-        throw new Error(`Can only publish releases from git revisions with tags of the form vX.Y.Z, not ${gitDescription}`);
-      }
-
-      return {
-        'release-version': gitDescription.slice(1),
-        'docker-flow-version': dockerFlowVersion({gitDescription, revision}),
-      };
-    },
-  });
-
   ensureTask(tasks, {
     title: 'Get ChangeLog',
     requires: ['release-version'],
@@ -96,20 +51,11 @@ module.exports = ({tasks, cmdOptions, credentials, baseDir, logsDir}) => {
   });
 
   ensureTask(tasks, {
-    title: 'Clean release-artifacts',
-    requires: [],
-    provides: ['cleaned-release-artifacts'],
-    run: async (requirements, utils) => {
-      await rimraf(artifactsDir);
-      await mkdirp(artifactsDir);
-    },
-  });
-
-  ensureTask(tasks, {
     title: 'Build client-shell artifacts',
-    requires: ['cleaned-release-artifacts'],
+    requires: ['clean-artifacts-dir'],
     provides: ['client-shell-artifacts'],
     run: async (requirements, utils) => {
+      const artifactsDir = requirements['clean-artifacts-dir'];
       await execCommand({
         dir: artifactsDir,
         command: ['go', 'get', '-u', 'github.com/mitchellh/gox'],
@@ -141,9 +87,11 @@ module.exports = ({tasks, cmdOptions, credentials, baseDir, logsDir}) => {
 
   ensureTask(tasks, {
     title: 'Build docker-worker artifacts',
-    requires: ['cleaned-release-artifacts'],
+    requires: ['clean-artifacts-dir'],
     provides: ['docker-worker-artifacts'],
     run: async (requirements, utils) => {
+      const artifactsDir = requirements['clean-artifacts-dir'];
+
       // The docker-worker build currently requires npm packages that must be compiled,
       // and the local system does not have the necessary package installed to do so,
       // so we build the docker-worker image in a docker container.
@@ -188,9 +136,11 @@ module.exports = ({tasks, cmdOptions, credentials, baseDir, logsDir}) => {
 
   ensureTask(tasks, {
     title: 'Build generic-worker artifacts',
-    requires: ['cleaned-release-artifacts'],
+    requires: ['clean-artifacts-dir'],
     provides: ['generic-worker-artifacts'],
     run: async (requirements, utils) => {
+      const artifactsDir = requirements['clean-artifacts-dir'];
+
       await execCommand({
         dir: path.join(REPO_ROOT, 'workers', 'generic-worker'),
         command: ['./build.sh', '-p', '-o', artifactsDir],
@@ -207,9 +157,11 @@ module.exports = ({tasks, cmdOptions, credentials, baseDir, logsDir}) => {
 
   ensureTask(tasks, {
     title: 'Build worker-runner artifacts',
-    requires: ['cleaned-release-artifacts'],
+    requires: ['clean-artifacts-dir'],
     provides: ['worker-runner-artifacts'],
     run: async (requirements, utils) => {
+      const artifactsDir = requirements['clean-artifacts-dir'];
+
       await execCommand({
         dir: path.join(REPO_ROOT, 'tools', 'worker-runner'),
         command: ['./build.sh', artifactsDir],
@@ -225,29 +177,12 @@ module.exports = ({tasks, cmdOptions, credentials, baseDir, logsDir}) => {
   });
 
   ensureTask(tasks, {
-    title: 'Build livelog artifacts',
-    requires: ['cleaned-release-artifacts'],
-    provides: ['livelog-artifacts'],
-    run: async (requirements, utils) => {
-      await execCommand({
-        dir: path.join(REPO_ROOT, 'tools', 'livelog'),
-        command: ['./build.sh', artifactsDir],
-        utils,
-      });
-
-      const artifacts = glob.sync('livelog-*', {cwd: artifactsDir});
-
-      return {
-        'livelog-artifacts': artifacts,
-      };
-    },
-  });
-
-  ensureTask(tasks, {
     title: 'Build taskcluster-proxy artifacts',
-    requires: ['cleaned-release-artifacts'],
+    requires: ['clean-artifacts-dir'],
     provides: ['taskcluster-proxy-artifacts'],
     run: async (requirements, utils) => {
+      const artifactsDir = requirements['clean-artifacts-dir'];
+
       await execCommand({
         dir: path.join(REPO_ROOT, 'tools', 'taskcluster-proxy'),
         command: ['./dockerbuild.sh', artifactsDir],
@@ -351,96 +286,6 @@ module.exports = ({tasks, cmdOptions, credentials, baseDir, logsDir}) => {
   });
 
   ensureTask(tasks, {
-    title: 'Build livelog Docker Image',
-    requires: [
-      'release-version',
-      'docker-flow-version',
-    ],
-    provides: [
-      'livelog-docker-image', // image tag
-    ],
-    locks: ['docker'],
-    run: async (requirements, utils) => {
-      utils.step({title: 'Check Repository'});
-
-      const tag = `taskcluster/livelog:${requirements['release-version']}`;
-      const provides = {
-        'livelog-docker-image': tag,
-      };
-
-      utils.step({title: 'Building Livelog'});
-
-      const contextDir = path.join(baseDir, 'livelog-build');
-      await execCommand({
-        command: [
-          'go', 'build',
-          '-o', path.join(contextDir, 'livelog'),
-          './tools/livelog',
-        ],
-        dir: REPO_ROOT,
-        logfile: path.join(logsDir, 'livelog-build.log'),
-        utils,
-        env: {CGO_ENABLED: '0', ...process.env},
-      });
-
-      utils.step({title: 'Building Docker Image'});
-
-      fs.writeFileSync(
-        path.join(contextDir, 'version.json'),
-        requirements['docker-flow-version']);
-
-      // this simple Dockerfile just packages the binary into a Docker image
-      const dockerfile = path.join(contextDir, 'Dockerfile');
-      fs.writeFileSync(dockerfile, [
-        'FROM progrium/busybox',
-        'EXPOSE 60023',
-        'EXPOSE 60022',
-        'COPY version.json /app/version.json',
-        'COPY livelog /livelog',
-        'ENTRYPOINT ["/livelog"]',
-      ].join('\n'));
-      let command = [
-        'docker', 'build',
-        '--no-cache',
-        '--progress', 'plain',
-        '--tag', tag,
-        contextDir,
-      ];
-      await execCommand({
-        command,
-        dir: REPO_ROOT,
-        logfile: path.join(logsDir, 'livelog-docker-build.log'),
-        utils,
-        env: {DOCKER_BUILDKIT: 1, ...process.env},
-      });
-
-      if (cmdOptions.staging) {
-        return provides;
-      }
-
-      utils.step({title: 'Pushing Docker Image'});
-
-      const dockerPushOptions = {};
-      if (credentials.dockerUsername && credentials.dockerPassword) {
-        dockerPushOptions.credentials = {
-          username: credentials.dockerUsername,
-          password: credentials.dockerPassword,
-        };
-      }
-
-      await dockerPush({
-        logfile: path.join(logsDir, 'livelog-docker-push.log'),
-        tag,
-        utils,
-        baseDir,
-        ...dockerPushOptions,
-      });
-
-      return provides;
-    },
-  });
-
-  ensureTask(tasks, {
     title: 'Build taskcluster-proxy Docker image',
     requires: ['release-version', 'docker-flow-version'],
     provides: ['taskcluster-proxy-docker-image'],
@@ -533,6 +378,7 @@ module.exports = ({tasks, cmdOptions, credentials, baseDir, logsDir}) => {
   ensureTask(tasks, {
     title: 'Create GitHub Release',
     requires: [
+      'clean-artifacts-dir',
       'release-version',
       'client-shell-artifacts',
       'generic-worker-artifacts',
@@ -551,6 +397,7 @@ module.exports = ({tasks, cmdOptions, credentials, baseDir, logsDir}) => {
     ],
     run: async (requirements, utils) => {
       const octokit = new Octokit({auth: `token ${credentials.ghToken}`});
+      const artifactsDir = requirements['clean-artifacts-dir'];
 
       utils.status({message: `Create Release`});
       const release = await octokit.repos.createRelease({

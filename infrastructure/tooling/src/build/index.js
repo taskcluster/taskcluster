@@ -5,6 +5,9 @@ const rimraf = util.promisify(require('rimraf'));
 const mkdirp = util.promisify(require('mkdirp'));
 const {TaskGraph, Lock, ConsoleRenderer, LogRenderer} = require('console-taskgraph');
 const generateMonoimageTasks = require('./monoimage');
+const generateCommonTasks = require('./common');
+const generateLivelogTasks = require('./livelog');
+const generateVersionTasks = require('./version');
 
 class Build {
   constructor(cmdOptions) {
@@ -21,8 +24,34 @@ class Build {
    * repository depend on `build-can-start` (tasks to download docker images,
    * and other such preparatory work, can begin earlier)
    */
-  generateTasks() {
+  generateTasks(generateFor) {
     let tasks = [];
+
+    if (generateFor === 'build') {
+      generateVersionTasks({
+        tasks,
+        baseDir: this.baseDir,
+        logsDir: this.logsDir,
+        credentials: {},
+        cmdOptions: this.cmdOptions,
+      });
+    }
+
+    generateCommonTasks({
+      tasks,
+      baseDir: this.baseDir,
+      logsDir: this.logsDir,
+      credentials: {},
+      cmdOptions: this.cmdOptions,
+    });
+
+    generateLivelogTasks({
+      tasks,
+      baseDir: this.baseDir,
+      logsDir: this.logsDir,
+      credentials: {},
+      cmdOptions: this.cmdOptions,
+    });
 
     generateMonoimageTasks({
       tasks,
@@ -49,7 +78,7 @@ class Build {
     await rimraf(this.logsDir);
     await mkdirp(this.logsDir);
 
-    let tasks = this.generateTasks();
+    let tasks = this.generateTasks('build');
 
     const taskgraph = new TaskGraph(tasks, {
       locks: {
@@ -58,6 +87,10 @@ class Build {
         // and let's be sane about how many git clones we do..
         git: new Lock(8),
       },
+      target: [
+        'target-monoimage',
+        'target-livelog',
+      ],
       renderer: process.stdout.isTTY ?
         new ConsoleRenderer({elideCompleted: true}) :
         new LogRenderer(),
