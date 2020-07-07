@@ -11,7 +11,7 @@ suite(testing.suiteName(), function() {
   let client = function(options) {
     options = _.defaults({}, options || {}, {
       credentials: {},
-      rootUrl: 'https://taskcluster.net',
+      rootUrl: process.env['TASKCLUSTER_ROOT_URL'] || 'https://community-tc.services.mozilla.com/',
     });
     options.credentials = _.defaults({}, options.credentials, {
       clientId: 'tester',
@@ -349,7 +349,7 @@ suite(testing.suiteName(), function() {
     // Ensure the client is removed from the require cache so it can be
     // reloaded from scratch.
     setup(() => {
-      process.env.TASKCLUSTER_ROOT_URL = 'https://taskcluster.net';
+      process.env.TASKCLUSTER_ROOT_URL = ROOT_URL || 'https://community-tc.services.mozilla.com/';
       process.env.TASKCLUSTER_CLIENT_ID = 'tester';
       process.env.TASKCLUSTER_ACCESS_TOKEN = 'no-secret';
     });
@@ -365,7 +365,7 @@ suite(testing.suiteName(), function() {
       delete process.env.TASKCLUSTER_CLIENT_ID;
       delete process.env.TASKCLUSTER_ACCESS_TOKEN;
       assert.deepEqual(taskcluster.fromEnvVars(),
-        {rootUrl: 'https://taskcluster.net'});
+        {rootUrl: process.env.TASKCLUSTER_ROOT_URL});
     });
 
     test('fromEnvVars with only accessToken', async () => {
