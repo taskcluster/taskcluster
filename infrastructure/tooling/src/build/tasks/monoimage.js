@@ -34,7 +34,6 @@ const generateMonoimageTasks = ({tasks, baseDir, cmdOptions, credentials, logsDi
   ensureTask(tasks, {
     title: 'Build Taskcluster Docker Image',
     requires: [
-      'build-can-start', // (used to delay building in `yarn release`)
       'release-version',
       'docker-flow-version',
     ],

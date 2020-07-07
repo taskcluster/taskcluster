@@ -91,7 +91,6 @@ class Build {
     }
     const context = await taskgraph.run({
       ...await this.getVersionInfo(),
-      'build-can-start': true,
     });
 
     console.log(`Monoimage docker image: ${context['monoimage-docker-image']}`);

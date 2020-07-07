@@ -24,13 +24,11 @@ module.exports = ({tasks, cmdOptions, credentials, baseDir, logsDir}) => {
     requires: ['release-version'],
     provides: [
       'changelog-text',
-      'build-can-start', // wait to build until we're sure this worked..
     ],
     run: async (requirements, utils) => {
       if (cmdOptions.staging) {
         return {
           'changelog-text': '(staging release)',
-          'build-can-start': true,
         };
       }
 
@@ -45,7 +43,6 @@ module.exports = ({tasks, cmdOptions, credentials, baseDir, logsDir}) => {
       }
       return {
         'changelog-text': match[1],
-        'build-can-start': true,
       };
     },
   });
