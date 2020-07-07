@@ -49,6 +49,14 @@ module.exports = ({tasks, cmdOptions, credentials, baseDir, logsDir}) => {
     provides: [
       'target-client-shell',
     ],
-    run: async (requirements, utils) => {},
+    run: async (requirements, utils) => {
+      const artifactsDir = requirements['clean-artifacts-dir'];
+      return {
+        'target-client-shell': [
+          'Client-Shell artifacts:',
+          ...requirements['client-shell-artifacts'].map(a => ` - ${artifactsDir}/${a}`),
+        ].join('\n'),
+      };
+    },
   });
 };

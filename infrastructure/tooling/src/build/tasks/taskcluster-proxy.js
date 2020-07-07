@@ -121,12 +121,22 @@ module.exports = ({tasks, cmdOptions, credentials, baseDir, logsDir}) => {
   ensureTask(tasks, {
     title: 'Taskcluster-Proxy Complete',
     requires: [
+      'clean-artifacts-dir',
       'taskcluster-proxy-artifacts',
       'taskcluster-proxy-docker-image',
     ],
     provides: [
       'target-taskcluster-proxy',
     ],
-    run: async (requirements, utils) => {},
+    run: async (requirements, utils) => {
+      const artifactsDir = requirements['clean-artifacts-dir'];
+      return {
+        'target-taskcluster-proxy': [
+          'Taskcluster-Proxy artifacts:',
+          ...requirements['taskcluster-proxy-artifacts'].map(a => ` - ${artifactsDir}/${a}`),
+          `Taskcluster-Proxy docker image: ${requirements['taskcluster-proxy-docker-image']}`,
+        ].join('\n'),
+      };
+    },
   });
 };

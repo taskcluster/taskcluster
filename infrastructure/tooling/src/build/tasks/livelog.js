@@ -123,12 +123,22 @@ module.exports = ({tasks, cmdOptions, credentials, baseDir, logsDir}) => {
   ensureTask(tasks, {
     title: 'Livelog Build Complete',
     requires: [
+      'clean-artifacts-dir',
       'livelog-artifacts',
       'livelog-docker-image',
     ],
     provides: [
       'target-livelog',
     ],
-    run: async (requirements, utils) => {},
+    run: async (requirements, utils) => {
+      const artifactsDir = requirements['clean-artifacts-dir'];
+      return {
+        'target-livelog': [
+          'Livelog artifacts:',
+          ...requirements['livelog-artifacts'].map(a => ` - ${artifactsDir}/${a}`),
+          `Livelog docker image: ${requirements['livelog-docker-image']}`,
+        ].join('\n'),
+      };
+    },
   });
 };

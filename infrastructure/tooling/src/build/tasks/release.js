@@ -289,6 +289,8 @@ module.exports = ({tasks, cmdOptions, credentials, baseDir, logsDir}) => {
   ensureTask(tasks, {
     title: 'Publish Complete',
     requires: [
+      'release-version',
+      'monoimage-docker-image',
       'github-release',
       'publish-clients/client',
       'publish-clients/client-web',
@@ -298,7 +300,13 @@ module.exports = ({tasks, cmdOptions, credentials, baseDir, logsDir}) => {
       'target-publish',
     ],
     run: async (requirements, utils) => {
-      // this just gathers requirements into a single target..
+      return {
+        'target-publish': [
+          `Release version: ${requirements['release-version']}`,
+          `Release docker image: ${requirements['monoimage-docker-image']}`,
+          `GitHub release: ${requirements['github-release']}`,
+        ].join('\n'),
+      };
     },
   });
 };

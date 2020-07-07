@@ -104,6 +104,10 @@ module.exports = ({tasks, cmdOptions, credentials, baseDir, logsDir}) => {
     provides: [
       'target-websocktunnel',
     ],
-    run: async (requirements, utils) => {},
+    run: async (requirements, utils) => {
+      return {
+        'target-websocktunnel': `Websocktunnel docker image: ${requirements['websocktunnel-docker-image']}`,
+      };
+    },
   });
 };

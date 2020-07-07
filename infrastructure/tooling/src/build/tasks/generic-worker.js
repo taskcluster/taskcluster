@@ -31,11 +31,20 @@ module.exports = ({tasks, cmdOptions, credentials, baseDir, logsDir}) => {
   ensureTask(tasks, {
     title: 'Generic-Worker Complete',
     requires: [
+      'clean-artifacts-dir',
       'generic-worker-artifacts',
     ],
     provides: [
       'target-generic-worker',
     ],
-    run: async (requirements, utils) => {},
+    run: async (requirements, utils) => {
+      const artifactsDir = requirements['clean-artifacts-dir'];
+      return {
+        'target-generic-worker': [
+          'Generic-Worker artifacts:',
+          ...requirements['generic-worker-artifacts'].map(a => ` - ${artifactsDir}/${a}`),
+        ].join('\n'),
+      };
+    },
   });
 };

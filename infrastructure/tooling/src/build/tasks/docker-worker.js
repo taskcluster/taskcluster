@@ -60,11 +60,20 @@ module.exports = ({tasks, cmdOptions, credentials, baseDir, logsDir}) => {
   ensureTask(tasks, {
     title: 'Docker-Worker Complete',
     requires: [
+      'clean-artifacts-dir',
       'docker-worker-artifacts',
     ],
     provides: [
       'target-docker-worker',
     ],
-    run: async (requirements, utils) => {},
+    run: async (requirements, utils) => {
+      const artifactsDir = requirements['clean-artifacts-dir'];
+      return {
+        'target-docker-worker': [
+          'Docker-Worker artifacts:',
+          ...requirements['docker-worker-artifacts'].map(a => ` - ${artifactsDir}/${a}`),
+        ].join('\n'),
+      };
+    },
   });
 };

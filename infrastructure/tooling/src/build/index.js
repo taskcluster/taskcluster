@@ -12,7 +12,7 @@ const {
   REPO_ROOT,
 } = require('../utils');
 
-class Build {
+class Base {
   constructor(cmdOptions) {
     this.cmdOptions = cmdOptions;
 
@@ -20,7 +20,80 @@ class Build {
     this.logsDir = cmdOptions['logsDir'] || path.join(this.baseDir, 'logs');
   }
 
-  async getVersionInfo() {
+  // credentials for the tasks
+  async credentials() {} // implemented in subclasses
+
+  // taskgraph targets
+  async target() {} // implemented in subclasses
+
+  // Return {'release-version', 'release-revision'}
+  async versionInfo() {} // implemented in subclasses
+
+  async run() {
+    if (!this.cmdOptions.cache) {
+      await rimraf(this.baseDir);
+    }
+    await mkdirp(this.baseDir);
+
+    await rimraf(this.logsDir);
+    await mkdirp(this.logsDir);
+
+    // get the subclass-specific data
+    const credentials = await this.credentials();
+    const target = this.target();
+    const versionInfo = await this.versionInfo();
+
+    const tasks = [];
+    generateTasks({
+      tasks,
+      baseDir: this.baseDir,
+      logsDir: this.logsDir,
+      cmdOptions: this.cmdOptions,
+      credentials,
+    });
+
+    const taskgraph = new TaskGraph(tasks, {
+      locks: {
+        // limit ourselves to one docker process per CPU
+        docker: new Lock(os.cpus().length),
+        // and let's be sane about how many git clones we do..
+        git: new Lock(8),
+      },
+      target,
+      renderer: process.stdout.isTTY ?
+        new ConsoleRenderer({elideCompleted: true}) :
+        new LogRenderer(),
+    });
+    if (this.cmdOptions.dryRun) {
+      console.log('Dry run successful.');
+      return;
+    }
+    const context = await taskgraph.run(versionInfo);
+
+    if (!this.cmdOptions.push) {
+      console.log('  NOTE: not pushed (use --push)');
+    }
+
+    // print messges from any of the targets
+    for (let t of target) {
+      if (context[t]) {
+        console.log(context[t]);
+      }
+    }
+  }
+}
+
+class Build extends Base {
+  async credentials() {
+    return {
+      // it's OK for these to be undefined when running locally; docker will
+      // just use the user's credentials
+      dockerUsername: process.env.DOCKER_USERNAME,
+      dockerPassword: process.env.DOCKER_PASSWORD,
+    };
+  }
+
+  async versionInfo() {
     // The docker build clones from the current working copy, rather than anything upstream;
     // this avoids the need to land-and-push changes.  This is a git clone
     // operation instead of a raw filesystem copy so that any non-checked-in
@@ -47,82 +120,43 @@ class Build {
     };
   }
 
-  async run() {
-    if (!this.cmdOptions.cache) {
-      await rimraf(this.baseDir);
+  target() {
+    const all_targets = [
+      'target-monoimage',
+      'target-monoimage-devel',
+      'target-livelog',
+      'target-client-shell',
+      'target-docker-worker',
+      'target-generic-worker',
+      'target-worker-runner',
+      'target-taskcluster-proxy',
+      'target-websocktunnel',
+    ];
+    if (this.cmdOptions.target === 'all') {
+      return all_targets;
+    } else if (this.cmdOptions.target) {
+      const target = `target-${this.cmdOptions.target}`;
+      if (!all_targets.includes(target)) {
+        throw new Error(`unknown --target; use one of ${all_targets.map(t => t.replace(/^target-/, '')).join(', ')}`);
+      }
+      return [target];
     }
-    await mkdirp(this.baseDir);
-
-    await rimraf(this.logsDir);
-    await mkdirp(this.logsDir);
-
-    const tasks = [];
-    generateTasks({
-      tasks,
-      baseDir: this.baseDir,
-      logsDir: this.logsDir,
-      credentials: {
-        // it's OK for these to be undefined when running locally; docker will
-        // just use the user's credentials
-        dockerUsername: process.env.DOCKER_USERNAME,
-        dockerPassword: process.env.DOCKER_PASSWORD,
-      },
-      cmdOptions: this.cmdOptions,
-    });
-
-    const taskgraph = new TaskGraph(tasks, {
-      locks: {
-        // limit ourselves to one docker process per CPU
-        docker: new Lock(os.cpus().length),
-        // and let's be sane about how many git clones we do..
-        git: new Lock(8),
-      },
-      target: [
-        'target-monoimage',
-        'target-monoimage-devel',
-        'target-livelog',
-        'target-client-shell',
-        'target-docker-worker',
-        'target-generic-worker',
-        'target-worker-runner',
-        'target-taskcluster-proxy',
-        'target-websocktunnel',
-      ],
-      renderer: process.stdout.isTTY ?
-        new ConsoleRenderer({elideCompleted: true}) :
-        new LogRenderer(),
-    });
-    if (this.cmdOptions.dryRun) {
-      console.log('Dry run successful.');
-      return;
-    }
-    const context = await taskgraph.run({
-      ...await this.getVersionInfo(),
-    });
-
-    console.log(`Monoimage docker image: ${context['monoimage-docker-image']}`);
-    if (!this.cmdOptions.push) {
-      console.log('  NOTE: image not pushed (use --push)');
-    }
+    return ['target-monoimage'];
   }
 }
 
-class Publish {
+class Publish extends Base {
   constructor(cmdOptions) {
-    this.cmdOptions = cmdOptions;
-
-    this.baseDir = cmdOptions['baseDir'] || '/tmp/taskcluster-builder-build';
-    this.logsDir = cmdOptions['logsDir'] || path.join(this.baseDir, 'logs');
-
-    // The `yarn build` process is a subgraph of the publish taskgraph, with some
-    // options "forced"
-    this.build = new Build({
+    super({
       ...cmdOptions,
-      cache: false, // always build from scratch
+      // always build from scratch
+      cache: false,
+      // to be safe, set push=false for staging runs
+      push: cmdOptions.staging ? false : cmdOptions.push,
     });
   }
 
-  async generateTasks() {
+  async credentials() {
     // try loading the secret into process.env
     if (process.env.TASKCLUSTER_PROXY_URL) {
       const secretName = `project/taskcluster/${this.cmdOptions.staging ? 'staging-' : ''}release`;
@@ -152,26 +186,17 @@ class Publish {
       }
     });
 
-    const tasks = [];
-    generateTasks({
-      tasks,
-      cmdOptions: this.cmdOptions,
-      credentials: {
-        ghToken: process.env.GH_TOKEN,
-        npmToken: process.env.NPM_TOKEN,
-        pypiUsername: process.env.PYPI_USERNAME,
-        pypiPassword: process.env.PYPI_PASSWORD,
-        dockerUsername: process.env.DOCKER_USERNAME,
-        dockerPassword: process.env.DOCKER_PASSWORD,
-      },
-      baseDir: this.baseDir,
-      logsDir: this.logsDir,
-    });
-
-    return tasks;
+    return {
+      ghToken: process.env.GH_TOKEN,
+      npmToken: process.env.NPM_TOKEN,
+      pypiUsername: process.env.PYPI_USERNAME,
+      pypiPassword: process.env.PYPI_PASSWORD,
+      dockerUsername: process.env.DOCKER_USERNAME,
+      dockerPassword: process.env.DOCKER_PASSWORD,
+    };
   }
 
-  async getVersionInfo() {
+  async versionInfo() {
     if (this.cmdOptions.staging) {
       // for staging releases, we get the version from the staging-release/*
       // branch name, and use a fake revision
@@ -201,45 +226,8 @@ class Publish {
     }
   }
 
-  async run() {
-    // --staging implies --no-push
-    if (this.cmdOptions.staging) {
-      this.cmdOptions.push = false;
-    }
-
-    if (!this.cmdOptions.cache) {
-      await rimraf(this.baseDir);
-    }
-    await mkdirp(this.baseDir);
-
-    await rimraf(this.logsDir);
-    await mkdirp(this.logsDir);
-
-    let tasks = await this.generateTasks();
-
-    const taskgraph = new TaskGraph(tasks, {
-      locks: {
-        // limit ourselves to one docker process per CPU
-        docker: new Lock(os.cpus().length),
-        // and let's be sane about how many git clones we do..
-        git: new Lock(8),
-      },
-      target: 'target-publish',
-      renderer: process.stdout.isTTY ?
-        new ConsoleRenderer({elideCompleted: true}) :
-        new LogRenderer(),
-    });
-    if (this.cmdOptions.dryRun) {
-      console.log('Dry run successful.');
-      return;
-    }
-    const context = await taskgraph.run({
-      ...await this.getVersionInfo(),
-    });
-
-    console.log(`Release version: ${context['release-version']}`);
-    console.log(`Release docker image: ${context['monoimage-docker-image']}`);
-    console.log(`GitHub release: ${context['github-release']}`);
+  target() {
+    return ['target-publish'];
   }
 }
 
