@@ -5,6 +5,7 @@ begin
   -- taking effect.  Failed updates will be retried.
   lock table queue_task_groups_entities;
 
+  raise log 'TIMING start task_groups create table .. as select';
   create table task_groups
   as
     select
@@ -13,14 +14,17 @@ begin
       (value ->> 'expires')::timestamptz as expires,
       queue_task_groups_entities.etag as etag
     from queue_task_groups_entities;
+  raise log 'TIMING start task_groups add primary key';
   alter table task_groups add primary key (task_group_id);
 
+  raise log 'TIMING start task_groups set not null';
   alter table task_groups
     alter column task_group_id set not null,
     alter column scheduler_id set not null,
     alter column expires set not null,
     alter column etag set not null;
 
+  raise log 'TIMING start task_groups set permissions';
   revoke select, insert, update, delete on queue_task_groups_entities from $db_user_prefix$_queue;
   drop table queue_task_groups_entities;
 

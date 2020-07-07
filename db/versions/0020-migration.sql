@@ -34,6 +34,7 @@ begin
   -- left join the tasks entities with the task_group_active_sets entities
   -- which tracks whether a task has ever been resolved or not, and reflect
   -- that into an `ever_resolved` boolean
+  raise log 'TIMING start tasks create table .. as select';
   create table tasks
   as
     select
@@ -80,13 +81,17 @@ begin
       tasks_entities.task_id = active_tasks.task_id and
       tasks_entities.task_group_id = active_tasks.task_group_id;
 
+  raise log 'TIMING start tasks add primary key';
   alter table tasks add primary key (task_id);
   -- this index servces the purpose of queue_task_group_members_entities
+  raise log 'TIMING start tasks add tasks_task_group_id_idx';
   create index tasks_task_group_id_idx on tasks (task_group_id);
   -- this index servces the purpose of queue_task_group_active_sets_entities
+  raise log 'TIMING start tasks add tasks_task_group_id_unresolved_idx';
   create index tasks_task_group_id_unresolved_idx on tasks (task_group_id)
     where not ever_resolved;
 
+  raise log 'TIMING start tasks set not null';
   alter table tasks
     alter column task_id set not null,
     alter column provisioner_id set not null,
@@ -113,6 +118,7 @@ begin
     alter column etag set not null,
     alter column etag set default public.gen_random_uuid();
 
+  raise log 'TIMING start tasks set perms';
   revoke select, insert, update, delete on queue_tasks_entities from $db_user_prefix$_queue;
   drop table queue_tasks_entities;
 

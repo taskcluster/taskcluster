@@ -12,6 +12,7 @@ begin
   lock table queue_task_dependency_entities;
   lock table queue_task_requirement_entities;
 
+  raise log 'TIMING start task_dependencies create table .. as select';
   create table task_dependencies
   as
     select
@@ -40,6 +41,7 @@ begin
     on deps.dependent_task_id = reqs.dependent_task_id and
       deps.required_task_id = reqs.required_task_id;
 
+  raise log 'TIMING start task_dependencies set not null';
   alter table task_dependencies
     alter column dependent_task_id set not null,
     alter column required_task_id set not null,
@@ -51,14 +53,17 @@ begin
 
   -- the task itself contains an array of dependent tasks, so querying by
   -- dependent_task_id is unusual, so primary key begins with required_task_id.
+  raise log 'TIMING start task_dependencies add primary key';
   alter table task_dependencies add primary key (required_task_id, dependent_task_id);
 
   -- queue's isBlocked indexes by dependent_task_id, looking only for unsatisfied
   -- entries.  This index then takes the place of the queue_task_requirement_entities
   -- table and that these queries can be handled by accessing only the index.
+  raise log 'TIMING start task_dependencies add task_dependencies_dependent_task_id_idx';
   create index task_dependencies_dependent_task_id_idx on task_dependencies (dependent_task_id)
     where not satisfied;
 
+  raise log 'TIMING start task_dependencies set permissions';
   revoke select, insert, update, delete on queue_task_dependency_entities from $db_user_prefix$_queue;
   drop table queue_task_dependency_entities;
   revoke select, insert, update, delete on queue_task_requirement_entities from $db_user_prefix$_queue;

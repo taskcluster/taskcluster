@@ -5,6 +5,7 @@ begin
   -- taking effect.  Failed updates will be retried.
   lock table queue_artifacts_entities;
 
+  raise log 'TIMING start queue_artifacts create table .. as select';
   create table queue_artifacts
   as
     select
@@ -23,7 +24,9 @@ begin
         uuid_to_slugid(value ->> 'taskId')::text as task_id
       from queue_artifacts_entities
     ) as artifacts_entities;
+  raise log 'TIMING start queue_artifacts add primary key';
   alter table queue_artifacts add primary key (task_id, run_id, name);
+  raise log 'TIMING start queue_artifacts set not null';
   alter table queue_artifacts
     alter column task_id set not null,
     alter column run_id set not null,
@@ -36,6 +39,7 @@ begin
     alter column etag set not null,
     alter column etag set default public.gen_random_uuid();
 
+  raise log 'TIMING start queue_artifacts permissions';
   revoke select, insert, update, delete on queue_artifacts_entities from $db_user_prefix$_queue;
   drop table queue_artifacts_entities;
   grant select, insert, update, delete on queue_artifacts to $db_user_prefix$_queue;

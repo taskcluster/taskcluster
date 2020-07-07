@@ -3,13 +3,17 @@ begin
   -- updates when the table is dropped.
   lock table task_groups;
 
+  raise log 'TIMING start queue_task_groups_entities create table';
   create table queue_task_groups_entities(
     partition_key text, row_key text,
     value jsonb not null,
     version integer not null,
     etag uuid default public.gen_random_uuid());
+
+  raise log 'TIMING start queue_task_groups_entities primary key';
   alter table queue_task_groups_entities add primary key (partition_key, row_key);
 
+  raise log 'TIMING start queue_task_groups_entities insert';
   insert into queue_task_groups_entities
   select
     task_group_id as partition_key,
@@ -24,6 +28,7 @@ begin
     task_groups.etag as etag
   from task_groups;
 
+  raise log 'TIMING start queue_task_groups_entities permissions';
   revoke select, insert, update, delete on task_groups from $db_user_prefix$_queue;
   drop table task_groups;
 
