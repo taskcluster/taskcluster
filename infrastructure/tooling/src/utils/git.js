@@ -171,8 +171,9 @@ exports.gitTag = async ({dir, rev, tag, utils}) => {
  * - dir -- directory to commit in
  * - remote -- remote to push to
  * - refs -- refs to push
+ * - force -- if true, -f
  */
-exports.gitPush = async ({dir, remote, refs, utils}) => {
+exports.gitPush = async ({dir, remote, refs, force, utils}) => {
   const opts = {cwd: dir};
-  await exec('git', ['push', remote, ...refs], opts);
+  await exec('git', ['push', ...(force ? ['-f'] : []), remote, ...refs], opts);
 };
