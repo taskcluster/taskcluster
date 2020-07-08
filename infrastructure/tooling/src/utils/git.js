@@ -88,7 +88,8 @@ exports.gitIsDirty = async ({dir}) => {
  * Get exactRev from an existing repo (usually this one..)
  *
  * - dir -- directory to check
- * - utils -- taskgraph utils (waitFor, etc.)
+ *
+ * (note that utils is not required)
  *
  * Returns:
  * {
@@ -96,7 +97,7 @@ exports.gitIsDirty = async ({dir}) => {
  *   revision: ..,       // sha
  * }
  */
-exports.gitDescribe = async ({dir, utils}) => {
+exports.gitDescribe = async ({dir}) => {
   const opts = {cwd: dir};
 
   assert(fs.existsSync(dir), `${dir} does not exist`);
@@ -170,8 +171,9 @@ exports.gitTag = async ({dir, rev, tag, utils}) => {
  * - dir -- directory to commit in
  * - remote -- remote to push to
  * - refs -- refs to push
+ * - force -- if true, -f
  */
-exports.gitPush = async ({dir, remote, refs, utils}) => {
+exports.gitPush = async ({dir, remote, refs, force, utils}) => {
   const opts = {cwd: dir};
-  await exec('git', ['push', remote, ...refs], opts);
+  await exec('git', ['push', ...(force ? ['-f'] : []), remote, ...refs], opts);
 };

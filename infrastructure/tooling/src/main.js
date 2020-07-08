@@ -21,13 +21,14 @@ program.command('build')
   .option('--dry-run', 'Do not run any tasks, but generate the list of tasks')
   .option('--ignore-uncommitted-files', 'Do not fail if there are un-committed files in the working copy')
   .option('--logs-dir <logs-dir>', 'A directory to put debug logs. default <base-dir>/logs')
+  .option('--target <target>', 'The thing to build, such as `monoimage` or `generic-worker` or `all`; default is monoimage')
   .action((...options) => {
     if (options.length !== 1) {
       console.error('unexpected command-line arguments');
       process.exit(1);
     }
-    const {main} = require('./build');
-    run(main, options[0]);
+    const {build} = require('./build');
+    run(build, options[0]);
   });
 
 program.command('release')
@@ -72,8 +73,8 @@ program.command('release:publish')
       console.error('unexpected command-line arguments');
       process.exit(1);
     }
-    const {main} = require('./publish');
-    run(main, options[0]);
+    const {publish} = require('./build');
+    run(publish, options[0]);
   });
 
 program.command('generate')

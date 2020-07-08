@@ -1,8 +1,5 @@
 const appRootDir = require('app-root-dir');
 const {
-  gitIsDirty,
-  gitDescribe,
-  dockerFlowVersion,
   dockerPull,
   dockerImages,
   dockerRegistryCheck,
@@ -11,7 +8,7 @@ const {
   execCommand,
   writeRepoFile,
   REPO_ROOT,
-} = require('../utils');
+} = require('../../utils');
 const path = require('path');
 const util = require('util');
 const rimraf = util.promisify(require('rimraf'));
@@ -37,7 +34,8 @@ const generateMonoimageTasks = ({tasks, baseDir, cmdOptions, credentials, logsDi
   ensureTask(tasks, {
     title: 'Build Taskcluster Docker Image',
     requires: [
-      'build-can-start', // (used to delay building in `yarn release`)
+      'release-version',
+      'docker-flow-version',
     ],
     provides: [
       'monoimage-docker-image', // image tag
@@ -45,28 +43,7 @@ const generateMonoimageTasks = ({tasks, baseDir, cmdOptions, credentials, logsDi
     ],
     locks: ['git'],
     run: async (requirements, utils) => {
-      utils.step({title: 'Check Repository'});
-
-      // Clone from the current working copy, rather than anything upstream;
-      // this avoids the need to land-and-push changes.  This is a git clone
-      // operation instead of a raw filesystem copy so that any non-checked-in
-      // files are not accidentally built into docker images.
-      if (!cmdOptions.ignoreUncommittedFiles) {
-        if (await gitIsDirty({dir: sourceDir})) {
-          throw new Error([
-            'The current git working copy is not clean. Any non-checked-in files will',
-            'not be reflected in the built image, so this is treatd as an error by default.',
-            'Either check in the dirty files, or run with --ignore-uncommitted-files to',
-            'override this error.  Never check in files containing secrets!',
-          ].join(' '));
-        }
-      }
-
-      const {gitDescription, revision} = await gitDescribe({
-        dir: sourceDir,
-        utils,
-      });
-      const tag = `taskcluster/taskcluster:${gitDescription}`;
+      const tag = `taskcluster/taskcluster:v${requirements['release-version']}`;
 
       utils.step({title: 'Check for Existing Images'});
 
@@ -94,7 +71,7 @@ const generateMonoimageTasks = ({tasks, baseDir, cmdOptions, credentials, logsDi
 
       utils.step({title: 'Building Docker Image'});
 
-      let versionJson = dockerFlowVersion({gitDescription, revision});
+      let versionJson = requirements['docker-flow-version'];
       let command = ['docker', 'build'];
       if (!cmdOptions.cache) {
         command.push('--no-cache');
@@ -265,16 +242,29 @@ const generateMonoimageTasks = ({tasks, baseDir, cmdOptions, credentials, logsDi
     title: `Monoimage - Complete`,
     requires: [
       `monoimage-push`,
-      `monoimage-devel-push`,
     ],
     provides: [
       `target-monoimage`,
     ],
     run: async (requirements, utils) => {
-      const tag = requirements[`monoimage-push`];
-      const provides = {[`target-monoimage`]: tag};
+      return {
+        'target-monoimage': `Monoimage docker image: ${requirements['monoimage-push']}`,
+      };
+    },
+  });
 
-      return provides;
+  ensureTask(tasks, {
+    title: `Monoimage Devel - Complete`,
+    requires: [
+      `monoimage-devel-push`,
+    ],
+    provides: [
+      `target-monoimage-devel`,
+    ],
+    run: async (requirements, utils) => {
+      return {
+        'target-monoimage-devel': `Monoimage devel docker image: ${requirements['monoimage-devel-push']}`,
+      };
     },
   });
 };
