@@ -357,7 +357,8 @@ class Database {
             pg_catalog.pg_attribute a
           where
             -- attnum's < 0 are internal
-            a.attrelid=$1 and a.attnum > 0
+            -- dropped attributes are invisible
+            a.attrelid=$1 and a.attnum > 0 and not attisdropped
         `, [oid]);
         tables[tablename] = Object.fromEntries(
           rowsres.rows.map(({attname, type, notnull}) => ([attname, `${type}${notnull ? ' not null' : ''}`])));
