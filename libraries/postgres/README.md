@@ -315,6 +315,8 @@ The `ser` property, short for "serialization", is an integer defining the column
 When a table migration occurs that adds a column to the signature, a new `ser` must be introduced, with the old version continuing to verify the old data.
 Note that removing a signed column is impossible without dropping all rows from the table, as otherwise existing signatures would become invalid.
 
+It's expected that serializations will cover all columns in the table, except `signature`, although this is [not automatically enforced](https://github.com/taskcluster/taskcluster/issues/3180).
+
 ### Signing and Verification API
 
 Both signing and verification expect a row object an array of functions for serialization of the row, indexed by `ser`:
