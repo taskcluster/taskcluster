@@ -206,7 +206,7 @@ class Database {
       if (dbVersion > toVersion) {
         // run each of the upgrade scripts
         for (let v = dbVersion; v > toVersion; v--) {
-          showProgress(`downgrading database to version ${v}`);
+          showProgress(`downgrading database from version ${v} to version ${v - 1}`);
           const fromVersion = schema.getVersion(v);
           const toVersion = v === 1 ? {version: 0, methods: []} : schema.getVersion(v - 1);
           await db._doDowngrade({schema, fromVersion, toVersion, showProgress, usernamePrefix});
