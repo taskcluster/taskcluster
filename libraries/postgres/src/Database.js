@@ -48,26 +48,6 @@ MonitorManager.register({
   },
 });
 
-/** Fixed time comparison of two buffers */
-const fixedTimeComparison = function(b1, b2) {
-  let mismatch = 0;
-  mismatch |= !(b1 instanceof Buffer);
-  mismatch |= !(b2 instanceof Buffer);
-  mismatch |= b1.length !== b2.length;
-
-  if (mismatch === 1) {
-    return false;
-  }
-
-  const n = b1.length;
-
-  for (let i = 0; i < n; i++) {
-    mismatch |= b1[i] ^ b2[i];
-  }
-
-  return mismatch === 0;
-};
-
 class Database {
   /**
    * Get a new Database instance
@@ -772,7 +752,7 @@ class Database {
       ser: signature.ser,
       signingSerializations,
     });
-    return fixedTimeComparison(Buffer.from(signature.sig, 'base64'), Buffer.from(sig, 'base64'));
+    return crypto.timingSafeEqual(Buffer.from(signature.sig, 'base64'), Buffer.from(sig, 'base64'));
   }
 
   /**
