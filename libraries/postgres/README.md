@@ -311,13 +311,13 @@ This container is typically stored in a `signature` column.
 
 The versions `v` encompass algorithm and encoding, and are described below.
 
-The `ser` property, short for "serialization", is an integener defining the columns that are included in the serialized input to the signature algorithm.
+The `ser` property, short for "serialization", is an integer defining the columns that are included in the serialized input to the signature algorithm.
 When a table migration occurs that adds a column to the signature, a new `ser` must be introduced, with the old version continuing to verify the old data.
 Note that removing a signed column is impossible without dropping all rows from the table, as otherwise existing signatures would become invalid.
 
 ### Signing and Verification API
 
-Both signing and verification expect a row object an an array of functions for serialization of the row, indexed by `ser`:
+Both signing and verification expect a row object an array of functions for serialization of the row, indexed by `ser`:
 
 ```javascript
 const signingSerializations = [
@@ -363,13 +363,24 @@ const signingSerializations = [
 
 Every service with signed data should have a periodic task that updates all rows of the table to use the current key, version, and serialization version.
 In many cases, this can be combined with an expiration task.
-The current version is available in the `SIGNING_VERSION` constant of this library, and can be passed to an DB function to select rows that need to be updated (`.. where (signature -> 'v')::integer != $1 or signature -> 'kid' != $2 ..` with parameters `SIGNING_VERSION` and the current key identifier).
+The current version is available in the `SIGNING_VERSION` constant of this library, and can be passed to a DB function to select rows that need to be updated (`.. where (signature -> 'v')::integer != $1 or signature -> 'kid' != $2 ..` with parameters `SIGNING_VERSION` and the current key identifier).
 For any matching rows, the task should simply verify the signature and then re-calculate the signature and write the row back.
 
 ### Signature Container Version 0
 
 Container version 0 corresponds to the signing format supported by [azure-entities](https://github.com/taskcluster/azure-entities).
 A version 0 container has a `sig` property containing the base64-encoded HMAC-512 digest of the signing key and the serialized input.
+
+The whole thing looks like this (for version 0):
+
+```json
+{
+  "kid": "2023-11-12",
+  "v": 0,
+  "ser": 3,
+  "sig": "zTZt8KxusLG+9mMULV9YjWsMsOU337I1D43kxkl9yur/aGrRAMdp9Yqn4nPpmXpElPbuiEBXH9lUMJzYexOnEg=="
+}
+```
 
 ## Security Invariants
 
