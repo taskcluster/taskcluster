@@ -72,14 +72,11 @@ begin
       from queue_tasks_entities
     ) as tasks_entities
     left join (
-      select
-        partition_key as task_group_id,
-        row_key as task_id
+      select row_key as task_id
       from queue_task_group_active_sets_entities
     ) as active_tasks
     on
-      tasks_entities.task_id = active_tasks.task_id and
-      tasks_entities.task_group_id = active_tasks.task_group_id;
+      tasks_entities.task_id = active_tasks.task_id;
 
   raise log 'TIMING start tasks add primary key';
   alter table tasks add primary key (task_id);
