@@ -50,6 +50,7 @@ const generateMonoimageTasks = ({tasks, baseDir, cmdOptions, credentials, logsDi
       const imageLocal = (await dockerImages({baseDir}))
         .some(image => image.RepoTags && image.RepoTags.indexOf(tag) !== -1);
       const imageOnRegistry = await dockerRegistryCheck({tag});
+      utils.status({message: `Image does ${imageOnRegistry ? '' : 'not '} exist on registry`});
 
       const provides = {
         'monoimage-docker-image': tag,
@@ -113,6 +114,7 @@ const generateMonoimageTasks = ({tasks, baseDir, cmdOptions, credentials, logsDi
       const imageLocal = (await dockerImages({baseDir}))
         .some(image => image.RepoTags && image.RepoTags.indexOf(tag) !== -1);
       const imageOnRegistry = await dockerRegistryCheck({tag});
+      utils.status({message: `Image does ${imageOnRegistry ? '' : 'not '} exist on registry`});
 
       const provides = {
         'monoimage-devel-docker-image': tag,
