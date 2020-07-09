@@ -1,5 +1,5 @@
 audience: deployers
-level: minor
+level: major
 reference: issue 2935
 ---
 The `namespaces_entities` and `indexed_tasks_entities` tables have now been
