@@ -213,13 +213,14 @@ const generateMonoimageTasks = ({tasks, baseDir, cmdOptions, credentials, logsDi
     ],
     run: async (requirements, utils) => {
       const tag = requirements[`monoimage-devel-docker-image`];
+      const provides = {[`monoimage-devel-push`]: tag};
 
       if (!cmdOptions.push) {
-        return utils.skip({reason: "--push not present"});
+        return utils.skip(provides);
       }
 
       if (requirements[`monoimage-devel-image-on-registry`]) {
-        return utils.skip({reason: "already on registry"});
+        return utils.skip(provides);
       }
 
       const dockerPushOptions = {};
