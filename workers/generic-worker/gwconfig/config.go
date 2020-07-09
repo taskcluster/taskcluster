@@ -11,8 +11,8 @@ import (
 	"reflect"
 	"sync"
 
-	tcclient "github.com/taskcluster/taskcluster/v33/clients/client-go"
-	"github.com/taskcluster/taskcluster/v33/workers/generic-worker/fileutil"
+	tcclient "github.com/taskcluster/taskcluster/v34/clients/client-go"
+	"github.com/taskcluster/taskcluster/v34/workers/generic-worker/fileutil"
 )
 
 type (

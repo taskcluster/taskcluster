@@ -1,12 +1,12 @@
 package tc
 
 import (
-	tcclient "github.com/taskcluster/taskcluster/v33/clients/client-go"
-	"github.com/taskcluster/taskcluster/v33/clients/client-go/tcauth"
-	"github.com/taskcluster/taskcluster/v33/clients/client-go/tcpurgecache"
-	"github.com/taskcluster/taskcluster/v33/clients/client-go/tcqueue"
-	"github.com/taskcluster/taskcluster/v33/clients/client-go/tcsecrets"
-	"github.com/taskcluster/taskcluster/v33/clients/client-go/tcworkermanager"
+	tcclient "github.com/taskcluster/taskcluster/v34/clients/client-go"
+	"github.com/taskcluster/taskcluster/v34/clients/client-go/tcauth"
+	"github.com/taskcluster/taskcluster/v34/clients/client-go/tcpurgecache"
+	"github.com/taskcluster/taskcluster/v34/clients/client-go/tcqueue"
+	"github.com/taskcluster/taskcluster/v34/clients/client-go/tcsecrets"
+	"github.com/taskcluster/taskcluster/v34/clients/client-go/tcworkermanager"
 )
 
 type ServiceFactory interface {

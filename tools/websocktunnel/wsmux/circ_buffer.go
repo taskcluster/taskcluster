@@ -1,7 +1,7 @@
 package wsmux
 
 import (
-	"github.com/taskcluster/taskcluster/v33/tools/websocktunnel/util"
+	"github.com/taskcluster/taskcluster/v34/tools/websocktunnel/util"
 )
 
 type buffer struct {

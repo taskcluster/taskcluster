@@ -3,6 +3,20 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v34.0.0
+
+### DEPLOYERS
+
+▶ [MAJOR] [#3112](https://github.com/taskcluster/taskcluster/issues/3112)
+Queue's artifacts table is upgraded to a normalized format. For deployments with
+many (millions) of artifacts, this migration will take too long to perform
+online, and should be performed in a scheduled downtime. Note that the ["service migration"](https://github.com/taskcluster/taskcluster/blob/master/dev-docs/postgres-phase-2-guidelines.md#service-migration) portion of the process is not included here, and the queue artifact code still uses entities-related functions to acces its data.
+
+### WORKER-DEPLOYERS
+
+▶ [patch] [bug 1637302](http://bugzil.la/1637302)
+Docker-worker now correctly calculates artifacts hashes for chain-of-trust before compressing them.
+
 ## v33.0.0
 
 ### DEPLOYERS
