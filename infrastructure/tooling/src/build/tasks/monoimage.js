@@ -50,6 +50,7 @@ const generateMonoimageTasks = ({tasks, baseDir, cmdOptions, credentials, logsDi
       const imageLocal = (await dockerImages({baseDir}))
         .some(image => image.RepoTags && image.RepoTags.indexOf(tag) !== -1);
       const imageOnRegistry = await dockerRegistryCheck({tag});
+      utils.status({message: `Image does ${imageOnRegistry ? '' : 'not '} exist on registry`});
 
       const provides = {
         'monoimage-docker-image': tag,
@@ -113,6 +114,7 @@ const generateMonoimageTasks = ({tasks, baseDir, cmdOptions, credentials, logsDi
       const imageLocal = (await dockerImages({baseDir}))
         .some(image => image.RepoTags && image.RepoTags.indexOf(tag) !== -1);
       const imageOnRegistry = await dockerRegistryCheck({tag});
+      utils.status({message: `Image does ${imageOnRegistry ? '' : 'not '} exist on registry`});
 
       const provides = {
         'monoimage-devel-docker-image': tag,
@@ -211,13 +213,14 @@ const generateMonoimageTasks = ({tasks, baseDir, cmdOptions, credentials, logsDi
     ],
     run: async (requirements, utils) => {
       const tag = requirements[`monoimage-devel-docker-image`];
+      const provides = {[`monoimage-devel-push`]: tag};
 
       if (!cmdOptions.push) {
-        return utils.skip({reason: "--push not present"});
+        return utils.skip(provides);
       }
 
       if (requirements[`monoimage-devel-image-on-registry`]) {
-        return utils.skip({reason: "already on registry"});
+        return utils.skip(provides);
       }
 
       const dockerPushOptions = {};

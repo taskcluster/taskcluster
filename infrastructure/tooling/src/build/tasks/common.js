@@ -33,7 +33,7 @@ module.exports = ({tasks, cmdOptions, credentials, baseDir, logsDir}) => {
       });
 
       return {
-        'docker-flow-version': {
+        'docker-flow-version': JSON.stringify({
           version: requirements['release-version'],
           commit: requirements['release-revision'],
           source: 'https://github.com/taskcluster/taskcluster',
@@ -44,7 +44,7 @@ module.exports = ({tasks, cmdOptions, credentials, baseDir, logsDir}) => {
           build: process.env.TASK_ID ?
             `${process.env.TASKCLUSTER_ROOT_URL}/tasks/${process.env.TASK_ID}` :
             'NONE',
-        },
+        }, null, 2),
       };
     },
   });

@@ -152,7 +152,7 @@ class Publish extends Base {
       // always build from scratch
       cache: false,
       // to be safe, set push=false for staging runs
-      push: cmdOptions.staging ? false : cmdOptions.push,
+      push: cmdOptions.staging ? false : true,
     });
   }
 
