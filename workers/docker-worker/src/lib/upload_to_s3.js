@@ -8,8 +8,8 @@ const temporary = require('temporary');
 const promiseRetry = require('promise-retry');
 const { createLogger } = require('./log');
 const _ = require('lodash');
-const waitForEvent = require('./wait_for_event');
 const pipe = require('promisepipe');
+const { Transform } = require('stream');
 
 let log = createLogger({source: 'uploadToS3'});
 let debug = Debug('taskcluster-docker-worker:uploadToS3');
@@ -36,20 +36,31 @@ module.exports = async function uploadToS3 (
   let size;
 
   try {
+    // Create a transform stream so that we can hash the original file as we
+    // read it from the source stream
+    let hash = crypto.createHash('sha256');
+    let hashingTransform = new Transform({
+      transform(chunk, encoding, callback) {
+        hash.update(chunk);
+        this.push(chunk);
+        callback();
+      },
+    });
+
     // write the source out to a temporary file so that it can be
     // re-read into the request repeatedly
     if (typeof source === 'string') {
       await tmp.writeFile(source);
+      hash.update(source);
     } else {
       let stream = fs.createWriteStream(tmp.path);
-      // TODO: Do we care if this is larger than the original?
       if (compress) {
         let gzip = zlib.createGzip();
         debug(`compressing to ${artifactName} to ${tmp.path}`);
-        await pipe(source, gzip, stream);
+        await pipe(source, hashingTransform, gzip, stream);
         debug(`compressed ${gzip.bytesWritten} bytes`);
       } else {
-        await pipe(source, stream);
+        await pipe(source, hashingTransform, stream);
       }
     }
     let stat = await fs.stat(tmp.path);
@@ -57,18 +68,6 @@ module.exports = async function uploadToS3 (
     httpsHeaders['content-length'] = size;
 
     debug(`wrote ${size} bytes of source file to ${tmp.path} for ${artifactName}`);
-
-    // Can this be done at the same time as piping to the write stream?
-    let hash = crypto.createHash('sha256');
-    let input = fs.createReadStream(tmp.path);
-    const inputEnd = waitForEvent(input, 'end');
-    input.on('readable', () => {
-      let data = input.read();
-      if (data) {
-        hash.update(data);
-      }
-    });
-    await inputEnd;
 
     if (!putUrl) {
       let artifact = await queue.createArtifact(
