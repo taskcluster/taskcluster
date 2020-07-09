@@ -1,8 +1,8 @@
 package main
 
 import (
-	"github.com/taskcluster/taskcluster/v32/clients/client-go/tcworkermanager"
-	"github.com/taskcluster/taskcluster/v32/workers/generic-worker/gwconfig"
+	"github.com/taskcluster/taskcluster/v33/clients/client-go/tcworkermanager"
+	"github.com/taskcluster/taskcluster/v33/workers/generic-worker/gwconfig"
 )
 
 type AWSProvider struct {

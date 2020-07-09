@@ -13,7 +13,7 @@ import (
 
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gorilla/websocket"
-	"github.com/taskcluster/taskcluster/v32/tools/websocktunnel/util"
+	"github.com/taskcluster/taskcluster/v33/tools/websocktunnel/util"
 )
 
 func testConfigurer(id, addr string, retryConfig RetryConfig, logger *log.Logger) Configurer {

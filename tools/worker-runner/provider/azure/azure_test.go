@@ -7,11 +7,11 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
-	"github.com/taskcluster/taskcluster/v32/internal/workerproto"
-	ptesting "github.com/taskcluster/taskcluster/v32/internal/workerproto/testing"
-	"github.com/taskcluster/taskcluster/v32/tools/worker-runner/cfg"
-	"github.com/taskcluster/taskcluster/v32/tools/worker-runner/run"
-	"github.com/taskcluster/taskcluster/v32/tools/worker-runner/tc"
+	"github.com/taskcluster/taskcluster/v33/internal/workerproto"
+	ptesting "github.com/taskcluster/taskcluster/v33/internal/workerproto/testing"
+	"github.com/taskcluster/taskcluster/v33/tools/worker-runner/cfg"
+	"github.com/taskcluster/taskcluster/v33/tools/worker-runner/run"
+	"github.com/taskcluster/taskcluster/v33/tools/worker-runner/tc"
 )
 
 func TestConfigureRun(t *testing.T) {

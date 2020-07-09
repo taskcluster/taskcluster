@@ -3,7 +3,7 @@ package logging
 import (
 	"sync"
 
-	"github.com/taskcluster/taskcluster/v32/tools/worker-runner/logging/logging"
+	"github.com/taskcluster/taskcluster/v33/tools/worker-runner/logging/logging"
 )
 
 type TestLogDestination struct {
