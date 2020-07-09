@@ -98,7 +98,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
       workerId: 'my-worker-extended-extended',
       tasks: 2,
     });
-    assert(r1.tasks.length === 1, 'Expected a single task');
+    assert.equal(r1.tasks.length, 1, 'Expected a single task');
     assert(r1.tasks[0].status.taskId === taskId, 'Expected specific taskId');
 
     await testing.poll(

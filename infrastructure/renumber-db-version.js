@@ -45,13 +45,13 @@ const main = async () => {
 
   versionContent = versionContent.replace(/^version: \d+/, `version: ${parseInt(toVersion)}`);
 
-  if (!version.migrationScript.includes('\n')) {
+  if (version.migrationScript && !version.migrationScript.includes('\n')) {
     const newMigrationScript = version.migrationScript.replace(fromVersion, toVersion);
     console.log( newMigrationScript);
     renames.push([`db/versions/${version.migrationScript}`, `db/versions/${newMigrationScript}`]);
     versionContent = versionContent.replace(`migrationScript: ${version.migrationScript}`, `migrationScript: ${newMigrationScript}`);
   }
-  if (!version.downgradeScript.includes('\n')) {
+  if (version.downgradeScript && !version.downgradeScript.includes('\n')) {
     const newDowngradeScript = version.downgradeScript.replace(fromVersion, toVersion);
     renames.push([`db/versions/${version.downgradeScript}`, `db/versions/${newDowngradeScript}`]);
     versionContent = versionContent.replace(`downgradeScript: ${version.downgradeScript}`, `downgradeScript: ${newDowngradeScript}`);

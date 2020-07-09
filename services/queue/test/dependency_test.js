@@ -579,14 +579,8 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     assert(r3, 'Expected TaskDependency');
     assert(r4, 'Expected TaskRequirement');
 
-    debug('### expire task-requirement');
-    await helper.runExpiration('expire-task-requirement');
-    const r5 = await TaskDependency.load({taskId: taskIdA, dependentTaskId: taskIdA}, true);
-    const r6 = await TaskRequirement.load({taskId: taskIdA, requiredTaskId: taskIdA}, true);
-    assert(r5, 'Expected TaskDependency');
-    assert(!r6, 'Did not expect TaskRequirement');
-
-    debug('### expire task-dependency');
+    debug('### expire task-requirement/task-dependency');
+    await helper.runExpiration('expire-task-requirement'); // no longer does anything..
     await helper.runExpiration('expire-task-dependency');
     const r7 = await TaskDependency.load({taskId: taskIdA, dependentTaskId: taskIdA}, true);
     const r8 = await TaskRequirement.load({taskId: taskIdA, requiredTaskId: taskIdA}, true);
