@@ -171,7 +171,7 @@ func fetchRegion(workerType string, region string, rsaKey interface{}, out *byte
 				d,
 			)
 			if err != nil {
-				out.WriteString(fmt.Sprintf("Could not decrypt password - probably somebody is rebuilding AMIs and the keys in the secret store haven't been updated yet (key: %#v, encrpyted password: %#v) for instance %v in region %v for worker type %v: '%v'", rsaKey, *p.PasswordData, *i.InstanceId, region, workerType, err))
+				out.WriteString(fmt.Sprintf("Could not decrypt password - probably somebody is rebuilding AMIs and the keys in the secret store haven't been updated yet (key: %#v, encrypted password: %#v) for instance %v in region %v for worker type %v: '%v'", rsaKey, *p.PasswordData, *i.InstanceId, region, workerType, err))
 				return
 			}
 			for _, ni := range i.NetworkInterfaces {
