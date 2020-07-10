@@ -320,14 +320,25 @@ builder.declare({
     'fields.',
   ].join('\n'),
 }, async function(req, res) {
+  const {organization, repository, sha} = req.query;
+  if (repository && !organization) {
+    return res.reportError('InputError',
+      'Must provide `organization` if querying `repository`',
+      {});
+  }
+  if (sha && !repository) {
+    return res.reportError('InputError',
+      'Must provide `repository` if querying `sha`',
+      {});
+  }
   let {continuationToken, rows: builds} = await paginateResults({
     query: req.query,
     fetch: (size, offset) => this.db.fns.get_github_builds(
       size,
       offset,
-      req.query.organization || null,
-      req.query.repository || null,
-      req.query.sha || null,
+      organization || null,
+      repository || null,
+      sha || null,
     ),
   });
 

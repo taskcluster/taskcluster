@@ -154,6 +154,21 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     assert.equal(builds.builds[0].sha, 'y650871208002a13ba35cf232c0e30d2c3d64783');
   });
 
+  test('builds invalid queries are rejected', async function() {
+    await assert.rejects(async () => {
+      await helper.apiClient.builds({
+        repository: 'xyz',
+        sha: 'y650871208002a13ba35cf232c0e30d2c3d64783',
+      });
+    }, /Error: Must provide/);
+    await assert.rejects(async () => {
+      await helper.apiClient.builds({
+        repository: 'xyz',
+        sha: 'y650871208002a13ba35cf232c0e30d2c3d64783',
+      });
+    }, /Error: Must provide/);
+  });
+
   test('integration installation', async function() {
     let result = await helper.apiClient.repository('abc123', 'coolRepo');
     assert.deepEqual(result, {installed: true});
