@@ -121,7 +121,7 @@ Artifact names are, by convention, slash-separated.
    Access to such artifacts is not automatically granted, but such a grant could be accomplished by adding scope `queue:get-artifact:login-identity/<..>` to role `login-identity:*`.
 
 <Warning>
-Highly confidential data should not be stored in unencrpyted taskcluster
+Highly confidential data should not be stored in unencrypted taskcluster
 artifacts, since they are only protected by a single (fallible) system. If
 highly sensitive data needs to be persisted, it is recommended to encrypt data
 using the public key of a key-pair whose private key has been highly secured,
