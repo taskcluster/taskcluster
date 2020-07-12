@@ -3,13 +3,14 @@ import React, { Component } from 'react';
 import { graphql } from 'react-apollo';
 import Spinner from '@mozilla-frontend-infra/components/Spinner';
 import { withStyles } from '@material-ui/core/styles';
-<<<<<<< HEAD
-=======
 import Typography from '@material-ui/core/Typography';
 import MuiTreeView from 'material-ui-treeview';
->>>>>>> b80c84f5b1c4fd81c91b3e3da19c1e59b7f250ce
 import PlusIcon from 'mdi-react/PlusIcon';
-import { parse, stringify } from 'qs';
+import qs, { parse, stringify } from 'qs';
+import TreeView from '@material-ui/lab/TreeView';
+import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
+import ChevronRightIcon from '@material-ui/icons/ChevronRight';
+import TreeItem from '@material-ui/lab/TreeItem';
 import Dashboard from '../../../components/Dashboard';
 import HelpView from '../../../components/HelpView';
 import Search from '../../../components/Search';
@@ -17,10 +18,6 @@ import Button from '../../../components/Button';
 import ErrorPanel from '../../../components/ErrorPanel';
 import Link from '../../../utils/Link';
 import hooksQuery from './hooks.graphql';
-import TreeView from '@material-ui/lab/TreeView';
-import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
-import ChevronRightIcon from '@material-ui/icons/ChevronRight';
-import TreeItem from '@material-ui/lab/TreeItem';
 
 @hot(module)
 @graphql(hooksQuery, {
@@ -59,16 +56,26 @@ export default class ListHooks extends Component {
       description,
       data: { loading, error, hookGroups },
     } = this.props;
-    const query = parse(this.props.location.search.slice(1));
+    const query = qs.parse(this.props.location.search.slice(1));
     const hookSearch = query.search;
-
-    let count = 0;
-
-    const renderTree = (nodes) => (nodes.map(
-      <TreeItem key={count++} nodeId={count} label={nodes.hookGroupId}>
-       {Array.isArray(nodes.hooks) ? nodes.hooks.map((node) => renderTree(node)) : null}
+    const tree = hookGroups
+      ? hookGroups.map(group => ({
+          value: group.hookGroupId,
+          nodes: group.hooks.map(hook => ({
+            value: hook.hookId,
+            href: `/hooks/${group.hookGroupId}/${encodeURIComponent(
+              hook.hookId
+            )}`,
+          })),
+        }))
+      : [];
+    const renderTree = yo => (
+      <TreeItem key={yo.value} nodeId={yo.value} label={yo.value}>
+        {Array.isArray(yo.nodes)
+          ? yo.nodes.map(node => renderTree(node))
+          : null}
       </TreeItem>
-    ));
+    );
 
     return (
       <Dashboard
@@ -84,32 +91,16 @@ export default class ListHooks extends Component {
         {!hookGroups && loading && <Spinner loading />}
         <ErrorPanel fixed error={error} />
         {hookGroups && (
-<<<<<<< HEAD
           <TreeView
-        className={classes.root}
-        defaultCollapseIcon={<ExpandMoreIcon />}
-        defaultExpanded={['root']}
-        defaultExpandIcon={<ChevronRightIcon />}
-        >
-        {renderTree(hookGroups)}
-      </TreeView>
-=======
-          <MuiTreeView
-            // key is necessary to expand the list of hook when searching
-            key={hookSearch}
-            defaultExpanded={Boolean(hookSearch)}
-            listItemProps={{ color: classes.listItemProps }}
-            searchTerm={hookSearch || null}
-            softSearch
-            tree={tree}
-            onEmptySearch={
-              <Typography variant="subtitle1">
-                No items for search term {hookSearch}
-              </Typography>
-            }
-            Link={Link}
-          />
->>>>>>> b80c84f5b1c4fd81c91b3e3da19c1e59b7f250ce
+            defaultCollapseIcon={<ExpandMoreIcon />}
+            defaultExpanded={['root']}
+            defaultExpandIcon={<ChevronRightIcon />}>
+            {renderTree(tree[0])}
+            {renderTree(tree[1])}
+            {renderTree(tree[2])}
+            {renderTree(tree[3])}
+            {renderTree(tree[4])}
+          </TreeView>
         )}
         <Button
           spanProps={{ className: classes.actionButton }}
