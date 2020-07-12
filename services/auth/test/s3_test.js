@@ -5,7 +5,7 @@ const helper = require('./helper');
 const debug = require('debug')('s3_test');
 const testing = require('taskcluster-lib-testing');
 
-helper.secrets.mockSuite(testing.suiteName(), ['db', 'azure', 'gcp'], function(mock, skipping) {
+helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, skipping) {
   if (mock) {
     return; // This is actually testing sts tokens and we are not going to mock those
   }

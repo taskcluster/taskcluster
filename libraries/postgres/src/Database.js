@@ -206,7 +206,7 @@ class Database {
       if (dbVersion > toVersion) {
         // run each of the upgrade scripts
         for (let v = dbVersion; v > toVersion; v--) {
-          showProgress(`downgrading database to version ${v}`);
+          showProgress(`downgrading database from version ${v} to version ${v - 1}`);
           const fromVersion = schema.getVersion(v);
           const toVersion = v === 1 ? {version: 0, methods: []} : schema.getVersion(v - 1);
           await db._doDowngrade({schema, fromVersion, toVersion, showProgress, usernamePrefix});
@@ -357,7 +357,8 @@ class Database {
             pg_catalog.pg_attribute a
           where
             -- attnum's < 0 are internal
-            a.attrelid=$1 and a.attnum > 0
+            -- dropped attributes are invisible
+            a.attrelid=$1 and a.attnum > 0 and not attisdropped
         `, [oid]);
         tables[tablename] = Object.fromEntries(
           rowsres.rows.map(({attname, type, notnull}) => ([attname, `${type}${notnull ? ' not null' : ''}`])));
@@ -391,9 +392,10 @@ class Database {
         FROM pg_database 
         WHERE datname = current_database()`);
       const collation = res.rows[0].collation;
-      if (collation !== 'en_US.UTF8') {
+      if (collation !== 'en_US.utf8' && collation !== 'en_US.UTF8') {
         throw new Error(
-          `Postgres database must have default collation en_US.UTF8; this database is using ${collation}.`);
+          `Postgres database must have default collation en_US.utf8 or en_US.UTF8; this database is using ${collation}.`,
+        );
       }
     });
   }

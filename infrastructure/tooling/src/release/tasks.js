@@ -321,6 +321,7 @@ module.exports = ({tasks, cmdOptions, credentials}) => {
         dir: REPO_ROOT,
         remote: 'git@github.com:taskcluster/staging-releases',
         refs: [`HEAD:staging-release/v${version}`],
+        force: true,
         utils,
       });
 

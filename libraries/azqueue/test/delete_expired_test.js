@@ -4,7 +4,7 @@ const testing = require('taskcluster-lib-testing');
 const assert = require('assert').strict;
 const _ = require('lodash');
 
-helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
+helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   helper.withDb(mock, skipping);
 
   setup('clear queue', async function() {
@@ -12,13 +12,9 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
       return;
     }
 
-    if (mock) {
-      await helper.db.queue.reset();
-    } else {
-      await helper.db._withClient('write', async client => {
-        client.query('delete from azure_queue_messages');
-      });
-    }
+    await helper.db._withClient('write', async client => {
+      client.query('delete from azure_queue_messages');
+    });
   });
 
   test('expired messages are deleted in cleanup', async function() {

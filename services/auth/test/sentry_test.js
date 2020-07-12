@@ -3,7 +3,7 @@ const taskcluster = require('taskcluster-client');
 const assert = require('assert');
 const testing = require('taskcluster-lib-testing');
 
-helper.secrets.mockSuite(testing.suiteName(), ['db', 'azure', 'gcp'], function(mock, skipping) {
+helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, skipping) {
   if (!mock) {
     return; // We don't test this with real credentials for now!
   }

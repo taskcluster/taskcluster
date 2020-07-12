@@ -76,11 +76,15 @@
 
 | Name | Mode | Arguments | Returns | Description |
 | --- | --- | --- | --- | --- |
+| add_denylist_address | write | notification_type_in text, notification_address_in text | void | If the denylist address already exists, this is a no-op. Otherwise, add the denylist<br />address for the taskcluster-notify service, with a new random etag. |
+| all_denylist_addresses | read | page_size_in integer, page_offset_in integer | table (notification_type text, notification_address text) | List all denylist addresses for the taskcluster-notify service. |
+| delete_denylist_address | write | notification_type_in text, notification_address_in text | integer | Delete a denylist address for the taskcluster-notify service.<br />Returns number of rows deleted (0 or 1). |
 | denylisted_notification_entities_create | write | pk text, rk text, properties jsonb, overwrite boolean, version integer | uuid | See taskcluster-lib-entities |
 | denylisted_notification_entities_load | read | partition_key text, row_key text | table (partition_key_out text, row_key_out text, value jsonb, version integer, etag uuid) | See taskcluster-lib-entities |
 | denylisted_notification_entities_modify | write | partition_key text, row_key text, properties jsonb, version integer, old_etag uuid | table (etag uuid) | See taskcluster-lib-entities |
 | denylisted_notification_entities_remove | write | partition_key text, row_key text | table (etag uuid) | See taskcluster-lib-entities |
 | denylisted_notification_entities_scan | read | pk text, rk text, condition text, size integer, page integer | table (partition_key text, row_key text, value jsonb, version integer, etag uuid) | See taskcluster-lib-entities |
+| exists_denylist_address | read | notification_type_in text, notification_address_in text | boolean | Returns a boolean indicating whether the denylist type/address exists. |
 | update_widgets | write | name_in text | table (name text) | Temporary method to test infrastructure support fo database access |
 ## purge_cache
 

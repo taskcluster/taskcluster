@@ -18,7 +18,6 @@ withMonitor(helper);
 helper.secrets = new Secrets({
   load: helper.load,
   secrets: {
-    db: withDb.secret,
   },
 });
 
@@ -120,15 +119,10 @@ helper.withServer = (mock, skipping) => {
 
 exports.resetTables = (mock, skipping) => {
   setup('reset tables', async function() {
-    if (mock) {
-      helper.db.hooks.reset();
-    } else {
-      const sec = helper.secrets.get('db');
-      await resetTables({ testDbUrl: sec.testDbUrl, tableNames: [
-        'hooks_entities',
-        'queues_entities',
-        'last_fire_3_entities',
-      ]});
-    }
+    await resetTables({tableNames: [
+      'hooks_entities',
+      'queues_entities',
+      'last_fire_3_entities',
+    ]});
   });
 };

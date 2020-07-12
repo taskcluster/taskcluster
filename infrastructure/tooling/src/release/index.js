@@ -48,7 +48,7 @@ class Release {
   }
 }
 
-const main = async (options) => {
+const release = async (options) => {
   const release = new Release(options);
   await release.run(false);
 };
@@ -58,4 +58,4 @@ const stagingRelease = async (options) => {
   await release.run(true);
 };
 
-module.exports = {main, stagingRelease, Release};
+module.exports = {release, stagingRelease, Release};

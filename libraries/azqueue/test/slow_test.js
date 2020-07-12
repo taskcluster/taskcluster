@@ -5,12 +5,7 @@ const _ = require('lodash');
 const taskcluster = require('taskcluster-client');
 const assert = require('assert').strict;
 
-helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
-  // these are db-specific tests, so don't even define them in the mock case
-  if (mock) {
-    return;
-  }
-
+helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   helper.withDb(mock, skipping);
 
   suiteSetup(function() {

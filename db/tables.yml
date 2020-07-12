@@ -64,23 +64,22 @@ queues_entities:
   value: jsonb not null
   version: integer not null
   etag: uuid
-indexed_tasks_entities:
-  partition_key: text not null
-  row_key: text not null
-  value: jsonb not null
-  version: integer not null
-  etag: uuid
-namespaces_entities:
-  partition_key: text not null
-  row_key: text not null
-  value: jsonb not null
-  version: integer not null
-  etag: uuid
-denylisted_notification_entities:
-  partition_key: text not null
-  row_key: text not null
-  value: jsonb not null
-  version: integer not null
+indexed_tasks:
+  namespace: text not null
+  name: text not null
+  rank: integer not null
+  task_id: text not null
+  data: jsonb not null
+  expires: timestamp with time zone not null
+  etag: uuid not null
+index_namespaces:
+  parent: text not null
+  name: text not null
+  expires: timestamp with time zone not null
+  etag: uuid not null
+denylisted_notifications:
+  notification_type: text not null
+  notification_address: text not null
   etag: uuid
 cache_purges:
   provisioner_id: text not null
@@ -90,12 +89,6 @@ cache_purges:
   expires: timestamp with time zone not null
   etag: uuid not null
 secrets_entities:
-  partition_key: text not null
-  row_key: text not null
-  value: jsonb not null
-  version: integer not null
-  etag: uuid
-queue_task_group_active_sets_entities:
   partition_key: text not null
   row_key: text not null
   value: jsonb not null
@@ -157,42 +150,52 @@ workers:
   last_checked: timestamp with time zone not null
   secret: jsonb
   etag: uuid not null
-queue_tasks_entities:
-  partition_key: text not null
-  row_key: text not null
-  value: jsonb not null
-  version: integer not null
-  etag: uuid
-queue_task_requirement_entities:
-  partition_key: text not null
-  row_key: text not null
-  value: jsonb not null
-  version: integer not null
-  etag: uuid
-queue_artifacts_entities:
-  partition_key: text not null
-  row_key: text not null
-  value: jsonb not null
-  version: integer not null
-  etag: uuid
-queue_task_groups_entities:
-  partition_key: text not null
-  row_key: text not null
-  value: jsonb not null
-  version: integer not null
-  etag: uuid
-queue_task_group_members_entities:
-  partition_key: text not null
-  row_key: text not null
-  value: jsonb not null
-  version: integer not null
-  etag: uuid
-queue_task_dependency_entities:
-  partition_key: text not null
-  row_key: text not null
-  value: jsonb not null
-  version: integer not null
-  etag: uuid
+tasks:
+  task_id: text not null
+  created: timestamp with time zone not null
+  deadline: timestamp with time zone not null
+  dependencies: jsonb not null
+  etag: uuid not null
+  expires: timestamp with time zone not null
+  extra: jsonb not null
+  metadata: jsonb not null
+  payload: jsonb not null
+  priority: task_priority not null
+  provisioner_id: text not null
+  requires: task_requires not null
+  ever_resolved: boolean not null
+  retries: integer not null
+  retries_left: integer not null
+  routes: jsonb not null
+  runs: jsonb not null
+  scheduler_id: text not null
+  scopes: jsonb not null
+  tags: jsonb not null
+  taken_until: timestamp with time zone
+  task_group_id: text not null
+  worker_type: text not null
+queue_artifacts:
+  task_id: text not null
+  run_id: integer not null
+  name: text not null
+  storage_type: text not null
+  content_type: text not null
+  details: jsonb not null
+  expires: timestamp with time zone not null
+  present: boolean not null
+  etag: uuid not null
+task_groups:
+  expires: timestamp with time zone not null
+  scheduler_id: text not null
+  task_group_id: text not null
+  etag: uuid not null
+task_dependencies:
+  dependent_task_id: text not null
+  required_task_id: text not null
+  expires: timestamp with time zone not null
+  requires: task_requires not null
+  satisfied: boolean not null
+  etag: uuid not null
 queue_worker_entities:
   partition_key: text not null
   row_key: text not null

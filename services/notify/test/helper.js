@@ -2,11 +2,10 @@ const assert = require('assert');
 const path = require('path');
 const aws = require('aws-sdk');
 const taskcluster = require('taskcluster-client');
-const {stickyLoader, Secrets, fakeauth, withEntity, withPulse, withMonitor, withDb, resetTables} = require('taskcluster-lib-testing');
+const {stickyLoader, Secrets, fakeauth, withPulse, withMonitor, withDb, resetTables} = require('taskcluster-lib-testing');
 const builder = require('../src/api');
 const load = require('../src/main');
 const RateLimit = require('../src/ratelimit');
-const data = require('../src/data');
 const debug = require('debug')('test');
 const sinon = require('sinon');
 
@@ -33,7 +32,6 @@ exports.secrets = new Secrets({
     'project/taskcluster/testing/taskcluster-notify',
   ],
   secrets: {
-    db: withDb.secret,
     aws: [
       {env: 'AWS_ACCESS_KEY_ID', cfg: 'aws.accessKeyId'},
       {env: 'AWS_SECRET_ACCESS_KEY', cfg: 'aws.secretAccessKey'},
@@ -314,24 +312,14 @@ exports.withServer = (mock, skipping) => {
   });
 };
 
-exports.withEntities = (mock, skipping) => {
-  withEntity(mock, skipping, exports, 'DenylistedNotification', data.DenylistedNotification);
-};
-
 exports.withDb = (mock, skipping) => {
   withDb(mock, skipping, exports, 'notify');
 };
 
 exports.resetTables = (mock, skipping) => {
   setup('reset tables', async function() {
-    if (mock) {
-      exports.db['notify'].reset();
-    } else {
-      const sec = exports.secrets.get('db');
-      await resetTables({ testDbUrl: sec.testDbUrl, tableNames: [
-        'denylisted_notification_entities',
-        'widgets',
-      ]});
-    }
+    await resetTables({tableNames: [
+      'denylisted_notifications',
+    ]});
   });
 };

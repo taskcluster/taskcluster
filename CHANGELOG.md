@@ -3,6 +3,56 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v34.0.1
+
+
+
+## v34.0.0
+
+### DEPLOYERS
+
+▶ [MAJOR] [#3112](https://github.com/taskcluster/taskcluster/issues/3112)
+Queue's artifacts table is upgraded to a normalized format. For deployments with
+many (millions) of artifacts, this migration will take too long to perform
+online, and should be performed in a scheduled downtime. Note that the ["service migration"](https://github.com/taskcluster/taskcluster/blob/master/dev-docs/postgres-phase-2-guidelines.md#service-migration) portion of the process is not included here, and the queue artifact code still uses entities-related functions to acces its data.
+
+### WORKER-DEPLOYERS
+
+▶ [patch] [bug 1637302](http://bugzil.la/1637302)
+Docker-worker now correctly calculates artifacts hashes for chain-of-trust before compressing them.
+
+## v33.0.0
+
+### DEPLOYERS
+
+▶ [MAJOR] [#2935](https://github.com/taskcluster/taskcluster/issues/2935)
+The `namespaces_entities` and `indexed_tasks_entities` tables have now been
+migrated to use relational tables. For deployments with many (millions) of
+tasks, this migration will take too long to perform online, and should be performed in a scheduled downtime.  Note that the ["service migration"](https://github.com/taskcluster/taskcluster/blob/master/dev-docs/postgres-phase-2-guidelines.md#service-migration) portion of the process is not included here, and the index code still uses entities-related functions to acces its data.
+
+▶ [patch] 
+The `db:upgrade` and `dev:db:upgrade` commands can now take an optional database version to upgrade to, defaulting to the most recent version.
+
+### OTHER
+
+▶ Additional changes not described here: [#3092](https://github.com/taskcluster/taskcluster/issues/3092), [#3131](https://github.com/taskcluster/taskcluster/issues/3131).
+
+## v32.0.0
+
+### DEPLOYERS
+
+▶ [MAJOR] [#2934](https://github.com/taskcluster/taskcluster/issues/2934)
+Migrates Postgres Phase I table `notify.denylisted_notification_entities` to
+Postgres Phase II table `notify.denylisted_notifications`.
+
+▶ [patch] [#3116](https://github.com/taskcluster/taskcluster/issues/3116)
+The db upgrade and downgrade scripts now verify that the default database collation is `en_US.UTF8`.  No other collation is allowed.
+Unfortunately, changing the default collation requires dumping and re-creating the database.
+
+### OTHER
+
+▶ Additional changes not described here: [bug 1636193](http://bugzil.la/1636193), [#3093](https://github.com/taskcluster/taskcluster/issues/3093), [#3147](https://github.com/taskcluster/taskcluster/issues/3147), [bug 1635455](http://bugzil.la/1635455).
+
 ## v31.0.0
 
 ### GENERAL
@@ -16,7 +66,7 @@ consumers should be able to transparently handle decompression.
 
 ▶ [MAJOR] [#3012](https://github.com/taskcluster/taskcluster/issues/3012)
 An encrypted column "secret" has been added to the workers table. The
-worker-manager service now requires an additional environment variable `DB_CRYPTO_KEY`
+worker-manager service now requires an additional environment variable `DB_CRYPTO_KEYS`
 to be set which is a JSON array where each element is an object of the form.
 
 ```json

@@ -3,9 +3,8 @@ const assert = require('assert').strict;
 const helper = require('./helper');
 const testing = require('taskcluster-lib-testing');
 
-helper.secrets.mockSuite(testing.suiteName(), ['db', 'aws'], function(mock, skipping) {
+helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) {
   helper.withDb(mock, skipping);
-  helper.withEntities(mock, skipping);
   helper.withPulse(mock, skipping);
   helper.withFakeMatrix(mock, skipping);
   helper.withSES(mock, skipping);
@@ -241,9 +240,17 @@ helper.secrets.mockSuite(testing.suiteName(), ['db', 'aws'], function(mock, skip
     await helper.apiClient.addDenylistAddress(dummyAddress1);
 
     // Check that the address was successfully added
-    let item = await helper.DenylistedNotification.load(dummyAddress1);
-    item = item._properties;
-    assert.deepEqual(item, dummyAddress1);
+    await helper.db.fns.add_denylist_address(
+      dummyAddress1.notificationType,
+      dummyAddress1.notificationAddress,
+    );
+    let existsTable = await helper.db.fns.exists_denylist_address(
+      dummyAddress1.notificationType,
+      dummyAddress1.notificationAddress,
+    );
+    let exists = existsTable[0]["exists_denylist_address"];
+
+    assert(exists);
 
     // Duplicate addresses should not throw an exception
     await helper.apiClient.addDenylistAddress(dummyAddress1);
@@ -255,19 +262,18 @@ helper.secrets.mockSuite(testing.suiteName(), ['db', 'aws'], function(mock, skip
     await helper.apiClient.addDenylistAddress(dummyAddress2);
 
     // Make sure they are added
-    let items = await helper.DenylistedNotification.scan({});
-    items = items.entries;
+    let items = await helper.db.fns.all_denylist_addresses(1000, 0);
     assert(items.length, 2);
 
     // Remove an item and check for success
     await helper.apiClient.deleteDenylistAddress(dummyAddress1);
-    items = await helper.DenylistedNotification.scan({});
-    items = items.entries;
+    items = await helper.db.fns.all_denylist_addresses(1000, 0);
     assert(items.length, 1);
 
     // Only dummyAddress2 should be left in the table
-    let item = items[0]._properties;
-    assert.deepEqual(item, dummyAddress2);
+    let item = items[0];
+    assert.equal(item["notification_address"], dummyAddress2["notificationAddress"]);
+    assert.equal(item["notification_type"], dummyAddress2["notificationType"]);
 
     // Removing non-existant addresses should not throw an exception
     await helper.apiClient.deleteDenylistAddress(dummyAddress1);
@@ -279,8 +285,8 @@ helper.secrets.mockSuite(testing.suiteName(), ['db', 'aws'], function(mock, skip
     assert(addressList.addresses, []);
 
     // Add some items
-    await helper.DenylistedNotification.create(dummyAddress1);
-    await helper.DenylistedNotification.create(dummyAddress2);
+    await helper.apiClient.addDenylistAddress(dummyAddress1);
+    await helper.apiClient.addDenylistAddress(dummyAddress2);
 
     // check the result of listDenylist()
     addressList = await helper.apiClient.listDenylist();

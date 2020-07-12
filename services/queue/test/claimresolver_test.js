@@ -6,7 +6,7 @@ const helper = require('./helper');
 const testing = require('taskcluster-lib-testing');
 const {LEVELS} = require('taskcluster-lib-monitor');
 
-helper.secrets.mockSuite(testing.suiteName(), ['aws', 'db'], function(mock, skipping) {
+helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) {
   helper.withDb(mock, skipping);
   helper.withAmazonIPRanges(mock, skipping);
   helper.withPollingServices(mock, skipping);
@@ -98,7 +98,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws', 'db'], function(mock, skip
       workerId: 'my-worker-extended-extended',
       tasks: 2,
     });
-    assert(r1.tasks.length === 1, 'Expected a single task');
+    assert.equal(r1.tasks.length, 1, 'Expected a single task');
     assert(r1.tasks[0].status.taskId === taskId, 'Expected specific taskId');
 
     await testing.poll(

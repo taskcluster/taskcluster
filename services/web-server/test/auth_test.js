@@ -4,7 +4,7 @@ const helper = require('./helper');
 const testing = require('taskcluster-lib-testing');
 const credentialsQuery = require('./fixtures/credentials.graphql');
 
-helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
+helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   helper.withDb(mock, skipping);
   helper.withEntities(mock, skipping);
   helper.withServer(mock, skipping);

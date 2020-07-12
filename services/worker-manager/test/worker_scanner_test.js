@@ -5,7 +5,7 @@ const taskcluster = require('taskcluster-client');
 const {LEVELS} = require('taskcluster-lib-monitor');
 const { Worker } = require('../src/data');
 
-helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
+helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   helper.withDb(mock, skipping);
   helper.withEntities(mock, skipping);
   helper.withPulse(mock, skipping);
@@ -23,42 +23,37 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
       const worker = Worker.fromApi(w);
       return worker.create(helper.db);
     }));
-    return (testing.runWithFakeTime(async () => {
-      await helper.initiateWorkerScanner();
-      await testing.poll(async () => {
-        if (!expectErrors) {
-          const error = monitor.manager.messages.find(({Type}) => Type === 'monitor.error');
-          if (error) {
-            throw new Error(JSON.stringify(error, null, 2));
-          }
+    await helper.initiateWorkerScanner();
+    await testing.poll(async () => {
+      if (!expectErrors) {
+        const error = monitor.manager.messages.find(({Type}) => Type === 'monitor.error');
+        if (error) {
+          throw new Error(JSON.stringify(error, null, 2));
         }
-        workers.forEach(w => {
-          assert.deepEqual(monitor.manager.messages.find(
-            msg => msg.Type === 'scan-prepare' && msg.Logger.endsWith(w.providerId)), {
-            Logger: `taskcluster.test.provider.${w.providerId}`,
-            Type: 'scan-prepare',
-            Fields: {},
-            Severity: LEVELS.notice,
-          });
-          assert.deepEqual(monitor.manager.messages.find(
-            msg => msg.Type === 'scan-cleanup' && msg.Logger.endsWith(w.providerId)), {
-            Logger: `taskcluster.test.provider.${w.providerId}`,
-            Type: 'scan-cleanup',
-            Fields: {},
-            Severity: LEVELS.notice,
-          });
-        });
-        await assertion();
-      }, 60, 1000);
-      await helper.terminateWorkerScanner();
-
-      if (expectErrors) {
-        monitor.manager.reset();
       }
-    }, {
-      mock,
-      maxTime: 120000,
-    }))();
+      workers.forEach(w => {
+        assert.deepEqual(monitor.manager.messages.find(
+          msg => msg.Type === 'scan-prepare' && msg.Logger.endsWith(w.providerId)), {
+          Logger: `taskcluster.test.provider.${w.providerId}`,
+          Type: 'scan-prepare',
+          Fields: {},
+          Severity: LEVELS.notice,
+        });
+        assert.deepEqual(monitor.manager.messages.find(
+          msg => msg.Type === 'scan-cleanup' && msg.Logger.endsWith(w.providerId)), {
+          Logger: `taskcluster.test.provider.${w.providerId}`,
+          Type: 'scan-cleanup',
+          Fields: {},
+          Severity: LEVELS.notice,
+        });
+      });
+      await assertion();
+    }, 60, 1000);
+    await helper.terminateWorkerScanner();
+
+    if (expectErrors) {
+      monitor.manager.reset();
+    }
   };
 
   test('single worker', () => testCase({

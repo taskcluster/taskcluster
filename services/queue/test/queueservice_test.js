@@ -6,7 +6,7 @@ const debug = require('debug')('test:queueservice');
 const testing = require('taskcluster-lib-testing');
 const helper = require('./helper');
 
-helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
+helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   helper.withDb(mock, skipping);
   let queueService;
 
@@ -55,7 +55,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
   const workerType = 'no-worker';
   const provisionerId = slugid.v4(); // make a unique provisionerId
 
-  test('putDeadlineMessage, pollDeadlineQueue', testing.runWithFakeTime(async () => {
+  test('putDeadlineMessage, pollDeadlineQueue', async () => {
     const taskId = slugid.v4();
     const taskGroupId = slugid.v4();
     const schedulerId = slugid.v4();
@@ -81,9 +81,9 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
       });
       assert(foundTaskId, 'Expected to see taskId at some point');
     }, 100, 250);
-  }, {mock}));
+  });
 
-  test('putClaimMessage, pollClaimQueue', testing.runWithFakeTime(async () => {
+  test('putClaimMessage, pollClaimQueue', async () => {
     const taskId = slugid.v4();
     const takenUntil = new Date(new Date().getTime() + 2 * 1000);
     debug('Putting message with taskId: %s', taskId);
@@ -107,9 +107,9 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
       });
       assert(foundTaskId, 'Expected to see taskId at some point');
     }, 100, 250);
-  }, {mock}));
+  });
 
-  test('putResolvedMessage, pollResolvedQueue', testing.runWithFakeTime(async () => {
+  test('putResolvedMessage, pollResolvedQueue', async () => {
     const taskId = slugid.v4();
     const taskGroupId = slugid.v4();
     const schedulerId = slugid.v4();
@@ -134,10 +134,10 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
       });
       assert(foundTaskId, 'Expected to see taskId at some point');
     }, 100, 250);
-  }, {mock}));
+  });
 
   // not supported for mock QueueService
-  test('put, poll, release, poll, delete (priority: lowest)', testing.runWithFakeTime(async () => {
+  test('put, poll, release, poll, delete (priority: lowest)', async () => {
     const taskId = slugid.v4();
     const runId = 0;
     const task = {
@@ -191,7 +191,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['db'], function(mock, skipping) {
 
     // Remove message
     await message.remove();
-  }, {mock}));
+  });
 
   test('countPendingMessages', async () => {
     const count = await queueService.countPendingMessages(

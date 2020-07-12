@@ -7,7 +7,7 @@ const assume = require('assume');
 const helper = require('./helper');
 const testing = require('taskcluster-lib-testing');
 
-helper.secrets.mockSuite(testing.suiteName(), ['aws', 'db'], function(mock, skipping) {
+helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) {
   helper.withDb(mock, skipping);
   helper.withAmazonIPRanges(mock, skipping);
   helper.withPollingServices(mock, skipping);
@@ -227,55 +227,5 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws', 'db'], function(mock, skip
     }, taskDef)).then(() => {assert(false, 'expected an error');}, err => {
       assert(err.statusCode === 409, 'Expected a 409 error');
     });
-  });
-
-  test('task-group membership expiration', async () => {
-    let taskIdA = slugid.v4();
-    let taskGroupId = slugid.v4();
-
-    debug('### Creating taskA');
-    await helper.queue.createTask(taskIdA, _.defaults({
-      taskGroupId,
-    }, taskDef));
-
-    let result = await helper.queue.listTaskGroup(taskGroupId);
-    assert(!result.continuationToken);
-    assert(members(result).length === 1);
-    assert(_.includes(members(result), taskIdA));
-    assert(result.taskGroupId === taskGroupId);
-
-    debug('### Expire task-group memberships');
-    await helper.runExpiration('expire-task-group-members');
-
-    result = await helper.queue.listTaskGroup(taskGroupId);
-    assert(!result.continuationToken);
-    assert(members(result).length === 0);
-    assert(result.taskGroupId === taskGroupId);
-  });
-
-  test('task-group membership expiration (doesn\'t drop table)', async () => {
-    let taskIdA = slugid.v4();
-    let taskGroupId = slugid.v4();
-
-    debug('### Creating taskA');
-    await helper.queue.createTask(taskIdA, _.defaults({
-      taskGroupId,
-      expires: taskcluster.fromNowJSON('10 days'),
-    }, taskDef));
-
-    let result = await helper.queue.listTaskGroup(taskGroupId);
-    assert(!result.continuationToken);
-    assert(members(result).length === 1);
-    assert(_.includes(members(result), taskIdA));
-    assert(result.taskGroupId === taskGroupId);
-
-    debug('### Expire task-group memberships');
-    await helper.runExpiration('expire-task-group-members');
-
-    result = await helper.queue.listTaskGroup(taskGroupId);
-    assert(!result.continuationToken);
-    assert(members(result).length === 1);
-    assert(_.includes(members(result), taskIdA));
-    assert(result.taskGroupId === taskGroupId);
   });
 });
