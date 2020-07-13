@@ -424,6 +424,10 @@ exports.withGcp = (mock, skipping) => {
 
 exports.resetTables = (mock, skipping) => {
   setup('reset tables', async function() {
-    await resetTables({tableNames: ['clients_entities', 'roles_entities'] });
+    await resetTables({tableNames: [
+      'clients_entities',
+      'roles_entities',
+      'roles',
+    ] });
   });
 };

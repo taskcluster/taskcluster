@@ -3,7 +3,7 @@
     "auth": {
       "tables": {
         "clients_entities": "write",
-        "roles_entities": "write"
+        "roles": "write"
       }
     },
     "github": {
@@ -205,12 +205,13 @@
       "value": "jsonb not null",
       "version": "integer not null"
     },
-    "roles_entities": {
-      "etag": "uuid",
-      "partition_key": "text not null",
-      "row_key": "text not null",
-      "value": "jsonb not null",
-      "version": "integer not null"
+    "roles": {
+      "created": "timestamp with time zone not null",
+      "description": "text not null",
+      "etag": "uuid not null",
+      "last_modified": "timestamp with time zone not null",
+      "role_id": "text not null",
+      "scopes": "jsonb not null"
     },
     "secrets_entities": {
       "etag": "uuid",
@@ -3392,6 +3393,58 @@
       },
       "migrationScript": "begin\n  -- lock this table before reading from it, to prevent loss of concurrent\n  -- updates when the table is dropped.  Note that this may lead to concurrent\n  -- updates failing; the important thing is that they not succeed without\n  -- taking effect.  Failed updates will be retried.\n  lock table queues_entities;\n\n  create table hooks_queues\n  as\n    select\n      (value ->> 'hookGroupId')::text as hook_group_id,\n      (value ->> 'hookId')::text as hook_id,\n      (value ->> 'queueName')::text as queue_name,\n      entity_buf_decode(value, 'bindings')::jsonb as bindings,\n      etag\n    from queues_entities;\n  alter table hooks_queues add primary key (hook_group_id, hook_id);\n  alter table hooks_queues\n    alter column hook_group_id set not null,\n    alter column hook_id set not null,\n    alter column queue_name set not null,\n    alter column bindings set not null,\n    alter column etag set not null,\n    alter column etag set default public.gen_random_uuid();\n\n  revoke select, insert, update, delete on queues_entities from $db_user_prefix$_hooks;\n  drop table queues_entities;\n  grant select, insert, update, delete on hooks_queues to $db_user_prefix$_hooks;\nend\n",
       "version": 26
+    },
+    {
+      "downgradeScript": "begin\n  lock table roles;\n\n  raise log 'TIMING start roles_entities create table';\n  create table roles_entities(\n    partition_key text, row_key text,\n    value jsonb not null,\n    version integer not null,\n    etag uuid default public.gen_random_uuid());\n\n  raise log 'TIMING start roles_entities primary key';\n  alter table roles_entities add primary key (partition_key, row_key);\n\n  raise log 'TIMING start roles_entities insert';\n  perform 1 from roles;\n  if found then\n    insert into roles_entities\n    select\n      'role' as partition_key,\n      'role' as row_key,\n      entity_buf_encode(\n        jsonb_build_object(\n          'PartitionKey', 'roles',\n          'RowKey', 'roles'),\n        'blob', jsonb_agg(\n          jsonb_build_object(\n            'roleId', role_id,\n            'scopes', scopes,\n            'created', to_js_iso8601(created::text),\n            'description', description,\n            'lastModified', to_js_iso8601(last_modified::text))\n        )::text) as value,\n      1 as version,\n      -- use an aggregate function to select the etag (all rows have the same etag)\n      min(etag::text)::uuid as etag\n    from roles;\n  end if;\n\n  raise log 'TIMING start roles_entities permissions';\n  revoke select, insert, update, delete on roles from $db_user_prefix$_auth;\n  drop table roles;\n\n  grant select, insert, update, delete on roles_entities to $db_user_prefix$_auth;\n\n  drop function to_js_iso8601(ts_in text);\nend\n\n",
+      "methods": {
+        "roles_entities_create": {
+          "args": "pk text, rk text, properties jsonb, overwrite boolean, version integer",
+          "body": "declare\n  new_etag uuid = gen_random_uuid();\nbegin\n  -- lock the table, avoiding risk of conflicts when inserting after\n  -- finding no rows\n  lock table roles;\n\n  perform 1 from roles limit 1;\n  if found then\n    raise exception 'roles already exist' using errcode = '23505'; -- unique violation\n  end if;\n\n  insert into roles\n  select \n    (role ->> 'roleId') as role_id,\n    (role ->> 'scopes')::jsonb as scopes,\n    (role ->> 'created')::timestamptz as created,\n    (role ->> 'description') as description,\n    (role ->> 'lastModified')::timestamptz as last_modified,\n    new_etag as etag\n  from jsonb_array_elements(entity_buf_decode(properties, 'blob')::jsonb) as role;\n\n  return new_etag;\nend",
+          "deprecated": false,
+          "description": "See taskcluster-lib-entities",
+          "mode": "write",
+          "returns": "uuid",
+          "serviceName": "auth"
+        },
+        "roles_entities_load": {
+          "args": "partition_key text, row_key text",
+          "body": "begin\n  -- if no roles, return canned \"empty\" value, as the below expression will return NULL\n  perform 1 from roles limit 1;\n  if not found then\n    return query\n    select\n      'role',\n      'role',\n      entity_buf_encode(\n        jsonb_build_object(\n          'PartitionKey', 'role',\n          'RowKey', 'role'),\n        'blob', '[]'),\n      1,\n      gen_random_uuid();\n  end if;\n\n  return query\n  select \n    'role',\n    'role',\n    entity_buf_encode(\n      jsonb_build_object(\n        'PartitionKey', 'role',\n        'RowKey', 'role'),\n      'blob', jsonb_agg(\n        jsonb_build_object(\n          'roleId', role_id,\n          'scopes', scopes,\n          'created', to_js_iso8601(created::text),\n          'description', description,\n          'lastModified', to_js_iso8601(last_modified::text))\n      )::text),\n    1,\n    -- use an aggregate function to select the etag (all rows have the same etag)\n    min(roles.etag::text)::uuid\n  from roles;\nend",
+          "deprecated": false,
+          "description": "See taskcluster-lib-entities",
+          "mode": "read",
+          "returns": "table (partition_key_out text, row_key_out text, value jsonb, version integer, etag uuid)",
+          "serviceName": "auth"
+        },
+        "roles_entities_modify": {
+          "args": "partition_key text, row_key text, properties jsonb, version integer, old_etag uuid",
+          "body": "declare\n  new_etag uuid := public.gen_random_uuid();\nbegin\n  -- lock the table, avoiding risk of conflicts when inserting after\n  -- finding no rows\n  lock table roles;\n\n  delete from roles where roles.etag = old_etag;\n  if not found then\n    -- delete may have done nothing because the table is empty (which is\n    -- ok) or because the etag did not match (which is an unsuccessful\n    -- update)\n    perform role_id from roles limit 1;\n    if found then\n      raise exception 'unsuccessful update' using errcode = 'P0004';\n    end if;\n    -- ..otherwise continue to make the modification\n  end if;\n\n  insert into roles\n  select \n    (role ->> 'roleId') as role_id,\n    (role ->> 'scopes')::jsonb as scopes,\n    (role ->> 'created')::timestamptz as created,\n    (role ->> 'description') as description,\n    (role ->> 'lastModified')::timestamptz as last_modified,\n    new_etag as etag\n  from jsonb_array_elements(entity_buf_decode(properties, 'blob')::jsonb) as role;\n\n  return query select new_etag;\nend",
+          "deprecated": false,
+          "description": "See taskcluster-lib-entities",
+          "mode": "write",
+          "returns": "table (etag uuid)",
+          "serviceName": "auth"
+        },
+        "roles_entities_remove": {
+          "args": "partition_key text, row_key text",
+          "body": "begin\n  raise exception 'not implemented';\nend",
+          "deprecated": false,
+          "description": "See taskcluster-lib-entities",
+          "mode": "write",
+          "returns": "table (etag uuid)",
+          "serviceName": "auth"
+        },
+        "roles_entities_scan": {
+          "args": "pk text, rk text, condition text, size integer, page integer",
+          "body": "begin\n  raise exception 'not implemented';\nend;",
+          "deprecated": false,
+          "description": "See taskcluster-lib-entities",
+          "mode": "read",
+          "returns": "table (partition_key text, row_key text, value jsonb, version integer, etag uuid)",
+          "serviceName": "auth"
+        }
+      },
+      "migrationScript": "begin\n  -- convert the postgres string form of a timestamp (which is valid iso8601) into the\n  -- precise format returned by JS's Date.toJSON\n  create or replace function to_js_iso8601(ts_in text) RETURNS text\n  as $$\n    begin\n      return regexp_replace(ts_in, '(.*) (.*)\\+00(:00)?', '\\1T\\2Z');\n    end;\n  $$\n  language plpgSQL\n  strict immutable;\n\n  lock table roles_entities;\n\n  -- Note that roles must be updated as a block, as there are some inter-role\n  -- consistency checks that must be followed and are too complex to describe in\n  -- SQL, but are expressed in JS in the Auth service.\n\n  raise log 'TIMING start roles create table .. as select';\n  create table roles\n  as\n    select \n      (expanded.role ->> 'roleId') as role_id,\n      (expanded.role ->> 'scopes')::jsonb as scopes,\n      (expanded.role ->> 'created')::timestamptz as created,\n      (expanded.role ->> 'description') as description,\n      (expanded.role ->> 'lastModified')::timestamptz as last_modified,\n      expanded.etag as etag\n    from (\n      select\n        jsonb_array_elements(\n          entity_buf_decode(value, 'blob')::jsonb\n        ) as role,\n        etag\n      from roles_entities\n    ) as expanded;\n\n\n  raise log 'TIMING start roles add primary key';\n  alter table roles add primary key (role_id);\n\n  raise log 'TIMING start roles set not null';\n  alter table roles\n    alter column role_id set not null,\n    alter column scopes set not null,\n    alter column created set not null,\n    alter column description set not null,\n    alter column last_modified set not null,\n    alter column etag set not null;\n\n\n  raise log 'TIMING start roles set permissions';\n  revoke select, insert, update, delete on roles_entities from $db_user_prefix$_auth;\n  drop table roles_entities;\n\n  grant select, insert, update, delete on roles to $db_user_prefix$_auth;\nend\n\n",
+      "version": 27
     }
   ]
 }

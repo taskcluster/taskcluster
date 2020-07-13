@@ -363,23 +363,25 @@ exports.testEntityTable = ({
         });
       }
 
-      for (let {condition} of loadConditions) {
-        test(`remove ${JSON.stringify(condition)}`, async function() {
-          await Entity.remove(condition);
-          const entity = await Entity.load(condition, true);
-          assert.equal(entity, undefined);
+      if (!notImplemented.includes('remove')) {
+        for (let {condition} of loadConditions) {
+          test(`remove ${JSON.stringify(condition)}`, async function() {
+            await Entity.remove(condition);
+            const entity = await Entity.load(condition, true);
+            assert.equal(entity, undefined);
 
-          if (notImplemented.includes('remove-ignore-if-not-exists')) {
-            return;
-          }
+            if (notImplemented.includes('remove-ignore-if-not-exists')) {
+              return;
+            }
 
-          // set ignoreIfNotExists (should not reject)
-          await Entity.remove(condition, true);
+            // set ignoreIfNotExists (should not reject)
+            await Entity.remove(condition, true);
 
-          await assert.rejects(
-            () => Entity.remove(condition),
-            err => err.code === 'ResourceNotFound');
-        });
+            await assert.rejects(
+              () => Entity.remove(condition),
+              err => err.code === 'ResourceNotFound');
+          });
+        }
       }
     };
 
