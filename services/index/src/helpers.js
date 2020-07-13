@@ -268,10 +268,10 @@ exports.namespaceUtils = {
     if (folder) {
       // Modify the namespace
       if (folder.expires < expires) {
-        // Update expires
-        const updatedNamespace = await db.fns.update_index_namespace(parent, name, expires);
         // Update all parents first though
         await exports.namespaceUtils.ensureNamespace(db, namespace, expires);
+        // Update expires
+        const updatedNamespace = await db.fns.update_index_namespace(parent, name, expires);
 
         return exports.taskUtils.fromDbRows(updatedNamespace);
       }

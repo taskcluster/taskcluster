@@ -15,14 +15,14 @@ suite(testing.suiteName(), function() {
     });
   });
 
-  const create_indexed_task = async (db, wp = {}) => {
+  const create_indexed_task = async (db, t = {}) => {
     await db.fns.create_indexed_task(
-      wp.namespace || 'name/space',
-      wp.name || 'name',
-      wp.rank || 1,
-      wp.taskId || slug.nice(),
-      wp.data || { data: true },
-      wp.expires || fromNow('1 day'),
+      t.namespace || 'name/space',
+      t.name || 'name',
+      t.rank || 1,
+      t.taskId || slug.nice(),
+      t.data || { data: true },
+      t.expires || fromNow('1 day'),
     );
   };
   const update_indexed_task = async (db, t = {}) => {
@@ -36,11 +36,11 @@ suite(testing.suiteName(), function() {
     );
   };
 
-  const create_index_namespace = async (db, wp = {}) => {
+  const create_index_namespace = async (db, ns = {}) => {
     await db.fns.create_index_namespace(
-      wp.parent || 'par/ent',
-      wp.name || 'name',
-      wp.expires || fromNow('1 day'),
+      ns.parent || 'par/ent',
+      ns.name || 'name',
+      ns.expires || fromNow('1 day'),
     );
   };
 

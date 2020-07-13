@@ -128,7 +128,7 @@ methods:
           indexed_tasks.namespace,
           indexed_tasks.name,
           indexed_tasks.rank,
-          indexed_tasks.task_id,
+          uuid_to_slugid(indexed_tasks.task_id) as task_id,
           indexed_tasks.data,
           indexed_tasks.expires
         from indexed_tasks
@@ -153,7 +153,7 @@ methods:
       begin
         return query insert
           into indexed_tasks (namespace, name, rank, task_id, data, expires)
-          values (namespace_in, name_in, rank_in, task_id_in, data_in, expires_in)
+          values (namespace_in, name_in, rank_in, slugid_to_uuid(task_id_in), data_in, expires_in)
           returning indexed_tasks.namespace, indexed_tasks.name, indexed_tasks.rank, indexed_tasks.task_id, indexed_tasks.data, indexed_tasks.expires;
       end
   get_indexed_task:
@@ -169,7 +169,7 @@ methods:
           indexed_tasks.namespace,
           indexed_tasks.name,
           indexed_tasks.rank,
-          indexed_tasks.task_id,
+          uuid_to_slugid(indexed_tasks.task_id) as task_id,
           indexed_tasks.data,
           indexed_tasks.expires
         from indexed_tasks
@@ -192,7 +192,7 @@ methods:
         update indexed_tasks
         set (rank, task_id, data, expires) = (
           coalesce(rank_in, indexed_tasks.rank),
-          coalesce(task_id_in, indexed_tasks.task_id),
+          coalesce(slugid_to_uuid(task_id_in), indexed_tasks.task_id),
           coalesce(data_in, indexed_tasks.data),
           coalesce(expires_in, indexed_tasks.expires)
         )
@@ -203,7 +203,7 @@ methods:
           indexed_tasks.namespace,
           indexed_tasks.name,
           indexed_tasks.rank,
-          indexed_tasks.task_id,
+          uuid_to_slugid(indexed_tasks.task_id),
           indexed_tasks.data,
           indexed_tasks.expires
         into updated_row;
