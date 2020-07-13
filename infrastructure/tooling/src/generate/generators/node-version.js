@@ -1,4 +1,4 @@
-const {readRepoFile, modifyRepoFile, modifyRepoJSON} = require('../../utils');
+const {readRepoFile, modifyRepoFile, writeRepoFile, modifyRepoJSON} = require('../../utils');
 
 /**
  * Update the node version to match everywhere, treating that in `package.json`
@@ -25,6 +25,9 @@ exports.tasks = [{
       contents => contents.replace(
         /^FROM node:[0-9.]+(.*)$/gm,
         `FROM node:${nodeVersion}$1`));
+
+    utils.status({message: '.nvmrc'});
+    await writeRepoFile('.nvmrc', nodeVersion + '\n');
 
     utils.status({message: 'dev-docs/development-process.md'});
     await modifyRepoFile('dev-docs/development-process.md',
