@@ -1,5 +1,6 @@
 const assert = require('assert');
 const helper = require('./helper');
+const {modifyRoles} = require('../src/data');
 const slugid = require('slugid');
 const _ = require('lodash');
 const assume = require('assume');
@@ -228,7 +229,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['gcp'], function(mock, skipping) 
 
   test('listRoleIds', async () => {
     // Clear existing roles
-    await helper.Roles.modifyRole(({ blob: roles }) => roles.splice(0));
+    await modifyRoles(helper.db, ({ roles }) => roles.splice(0));
 
     // Create 4 dummy roles
     await helper.apiClient.createRole(`thing-id:${clientId}`, {
@@ -282,7 +283,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['gcp'], function(mock, skipping) 
 
   test('listRoles2', async () => {
     // Clear existing roles
-    await helper.Roles.modifyRole(({ blob: roles }) => roles.splice(0));
+    await modifyRoles(helper.db, ({ roles }) => roles.splice(0));
 
     // Create 4 dummy roles
     await helper.apiClient.createRole(`thing-id:${clientId}`, {
@@ -346,7 +347,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['gcp'], function(mock, skipping) 
 
   test('updateRole (add scope)', async () => {
     // Clearing existing roles
-    await helper.Roles.modifyRole(({ blob: roles }) => roles.splice(0));
+    await modifyRoles(helper.db, ({ roles }) => roles.splice(0));
 
     // Generating dummy roles for the test
     await helper.apiClient.createRole(`thing-id:${clientId}`, {
@@ -475,7 +476,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['gcp'], function(mock, skipping) 
         ],
       });
       // clear stuff out
-      await helper.Roles.modifyRole(({ blob: roles }) => roles.splice(0));
+      await modifyRoles(helper.db, ({ roles }) => roles.splice(0));
 
       await helper.apiClient.createRole(roleId, {
         description: 'a role',
@@ -489,7 +490,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['gcp'], function(mock, skipping) 
     });
 
     teardown(async function() {
-      await helper.Roles.modifyRole(({ blob: roles }) => roles.splice(0));
+      await modifyRoles(helper.db, ({ roles }) => roles.splice(0));
     });
 
     test('caller has new scope verbatim', async () => {

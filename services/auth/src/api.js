@@ -5,15 +5,20 @@ const _ = require('lodash');
 const signaturevalidator = require('./signaturevalidator');
 const ScopeResolver = require('./scoperesolver');
 const Hashids = require('hashids/cjs');
+const {modifyRoles} = require('../src/data');
 
 /**
  * Helper to return a role as defined in the blob to one suitable for return.
  * This involves adding expandedRoles using the resolver.
  */
-const roleToJson = (role, context) => _.defaults(
-  {expandedScopes: context.resolver.resolve([`assume:${role.roleId}`])},
-  role,
-);
+const roleToJson = ({role_id, scopes, description, last_modified, created}, context) => ({
+  roleId: role_id,
+  scopes,
+  expandedScopes: context.resolver.resolve([`assume:${role_id}`]),
+  description,
+  lastModified: last_modified.toJSON(),
+  created: created.toJSON(),
+});
 
 /**
  * Helper to fetch roles
@@ -39,7 +44,8 @@ const rolesResponseBuilder = async (that, req, res) => {
   }
 
   // Load all roles
-  let roles = await that.Roles.get();
+  let roles = await that.db.fns.get_roles();
+
   let length = roles.length;
 
   // Slice the list of roles based on continuationToken and limit
@@ -97,7 +103,10 @@ const builder = new APIBuilder({
   },
   context: [
     // Instances of data tables
-    'Client', 'Roles',
+    'Client',
+
+    // Database
+    'db',
 
     // Publisher from exchanges.js
     'publisher',
@@ -604,7 +613,7 @@ builder.declare({
   ].join('\n'),
 }, async function(req, res) {
   // Load all roles
-  let roles = await this.Roles.get();
+  let roles = await this.db.fns.get_roles();
   res.reply(roles.map(r => roleToJson(r, this)));
 });
 
@@ -667,7 +676,7 @@ builder.declare({
   const { response, roles } = await rolesResponseBuilder(this, req, res);
 
   // Generate a list of roleIds corresponding to the selected roles
-  let roleIds = roles.map(r => r.roleId);
+  let roleIds = roles.map(r => r.role_id);
 
   response.roleIds = roleIds;
 
@@ -692,8 +701,8 @@ builder.declare({
   let roleId = req.params.roleId;
 
   // Load role
-  let roles = await this.Roles.get();
-  let role = _.find(roles, {roleId});
+  let roles = await this.db.fns.get_roles();
+  let role = _.find(roles, {role_id: roleId});
 
   if (!role) {
     return res.reportError('ResourceNotFound', 'Role not found', {});
@@ -743,17 +752,17 @@ builder.declare({
   input.scopes.sort(scopeUtils.scopeCompare);
 
   let role = {
-    roleId,
+    role_id: roleId,
     description: input.description,
     scopes: input.scopes,
-    lastModified: new Date().toJSON(),
-    created: new Date().toJSON(),
+    last_modified: new Date(),
+    created: new Date(),
   };
 
   // update Roles
   try {
-    await this.Roles.modifyRole(({ blob: roles }) => {
-      const existing = _.find(roles, {roleId});
+    await modifyRoles(this.db, ({ roles }) => {
+      const existing = _.find(roles, {role_id: roleId});
       if (existing) {
         // role exists and doesn't match this one -> RequestConflict
         if (existing.description !== input.description || !_.isEqual(existing.scopes, input.scopes)) {
@@ -832,8 +841,8 @@ builder.declare({
   // Load and modify role
   let role;
   try {
-    await this.Roles.modifyRole(async ({ blob: roles }) => {
-      const i = _.findIndex(roles, {roleId});
+    await modifyRoles(this.db, async ({ roles }) => {
+      const i = _.findIndex(roles, {role_id: roleId});
       if (i === -1) {
         const err = new Error(`Role with roleId '${roleId}' not found`);
         err.roleId = roleId;
@@ -857,7 +866,7 @@ builder.declare({
       // finish modification
       role.scopes = input.scopes;
       role.description = input.description;
-      role.lastModified = new Date().toJSON();
+      role.last_modified = new Date();
     });
   } catch (err) {
     switch (err.code) {
@@ -900,8 +909,8 @@ builder.declare({
   // Check scopes
   await req.authorize({roleId});
 
-  await this.Roles.modifyRole(({ blob: roles }) => {
-    let i = _.findIndex(roles, {roleId});
+  await modifyRoles(this.db, ({ roles }) => {
+    let i = _.findIndex(roles, {role_id: roleId});
     if (i !== -1) {
       roles.splice(i, 1);
     }

@@ -136,3 +136,64 @@ methods:
       begin
         raise exception 'not implemented';
       end;
+  get_roles:
+    description: |-
+      Get the full set of roles.  Each result row has an etag, but all such
+      etags will be the same, representing the etag for the most recent
+      modification of the table.  Results are sorted by role_id.
+    mode: read
+    serviceName: auth
+    args: ''
+    returns: table (role_id text, scopes jsonb, created timestamptz, description text, last_modified timestamptz, etag uuid)
+    body: |-
+      begin
+        return query
+        select 
+          roles.role_id,
+          roles.scopes,
+          roles.created,
+          roles.description,
+          roles.last_modified,
+          roles.etag
+        from roles
+        order by role_id;
+      end
+  modify_roles:
+    description: |-
+      Replace the current set of roles entirely with the given set of roles, if the current etag matches the existing etag. 
+      The role objects are specified with underscore spelling (`role_id`).
+      If the etag has changed, this returns P0004 signalling that the caller should fetch a fresh set of roles and try again.
+      If there are no existing roles, then the old etag is not used.
+    mode: write
+    serviceName: auth
+    args: roles_in jsonb, old_etag_in uuid
+    returns: void
+    body: |-
+      declare
+        new_etag uuid := public.gen_random_uuid();
+      begin
+        -- lock the table, avoiding risk of conflicts when inserting after
+        -- finding no rows
+        lock table roles;
+
+        delete from roles where etag = old_etag_in;
+        if not found then
+          -- delete may have done nothing because the table is empty (which is
+          -- ok) or because the etag did not match (which is an unsuccessful
+          -- update)
+          perform role_id from roles limit 1;
+          if found then
+            raise exception 'unsuccessful update' using errcode = 'P0004';
+          end if;
+        end if;
+
+        insert into roles
+        select 
+          (role ->> 'role_id') as role_id,
+          (role ->> 'scopes')::jsonb as scopes,
+          (role ->> 'created')::timestamptz as created,
+          (role ->> 'description') as description,
+          (role ->> 'last_modified')::timestamptz as last_modified,
+          new_etag as etag
+        from jsonb_array_elements(roles_in) as role;
+      end

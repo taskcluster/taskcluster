@@ -35,7 +35,6 @@ begin
       from roles_entities
     ) as expanded;
 
-
   raise log 'TIMING start roles add primary key';
   alter table roles add primary key (role_id);
 
