@@ -5,7 +5,6 @@ defaults:
     hookTableName: hooks_entities
     lastFireTableName: last_fire_3_entities
     queuesTableName: queues_entities
-    lastFiresExpirationDelay: '- 1 day'
     scheduler:
       pollingDelay:   60000
   influx:
