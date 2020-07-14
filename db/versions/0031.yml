@@ -16,9 +16,9 @@ methods:
           wmworker_pool_errors_entities_load.row_key,
           entity_buf_encode(
             jsonb_build_object(
-              'PartitionKey', encode_string_key(worker_pool_id),
-              'RowKey', encode_string_key(error_id),
-              'errorId', error_id,
+              'PartitionKey', wmworker_pool_errors_entities_load.partition_key,
+              'RowKey', wmworker_pool_errors_entities_load.row_key,
+              'errorId', slugid_to_uuid(error_id),
               'workerPoolId', worker_pool_id,
               'reported', reported,
               'kind', kind,
@@ -43,7 +43,7 @@ methods:
         new_row worker_pool_errors%ROWTYPE;
       begin
         select
-          (properties ->> 'errorId')::text as error_id,
+          uuid_to_slugid(properties ->> 'errorId')::text as error_id,
           (properties ->> 'workerPoolId')::text as worker_pool_id,
           (properties ->> 'reported')::timestamptz as reported,
           (properties ->> 'kind')::text as kind,
@@ -84,7 +84,7 @@ methods:
         new_row worker_pool_errors%ROWTYPE;
       begin
         select
-          (properties ->> 'errorId')::text as error_id,
+          uuid_to_slugid(properties ->> 'errorId')::text as error_id,
           (properties ->> 'workerPoolId')::text as worker_pool_id,
           (properties ->> 'reported')::timestamptz as reported,
           (properties ->> 'kind')::text as kind,
@@ -148,13 +148,13 @@ methods:
         end if;
         return query
           select
-            wmworker_pool_errors_entities_scan.partition_key,
-            wmworker_pool_errors_entities_scan.row_key,
+            encode_string_key(wmworker_pool_errors_entities_scan.partition_key),
+            encode_string_key(wmworker_pool_errors_entities_scan.row_key),
             entity_buf_encode(
               jsonb_build_object(
                 'PartitionKey', encode_string_key(worker_pool_id),
                 'RowKey', encode_string_key(error_id),
-                'errorId', error_id,
+                'errorId', slugid_to_uuid(error_id),
                 'workerPoolId', worker_pool_id,
                 'reported', reported,
                 'kind', kind,
@@ -165,6 +165,8 @@ methods:
           worker_pool_errors.etag as etag
           from worker_pool_errors
           where
+            partition_key is null or
+            worker_pool_id = decode_string_key(partition_key) and
             row_key is null or
             error_id = decode_string_key(row_key)
           order by error_id

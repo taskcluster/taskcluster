@@ -1,6 +1,5 @@
 const assert = require('assert');
 const _ = require('lodash');
-const Entity = require('taskcluster-lib-entities');
 const {UNIQUE_VIOLATION} = require('taskcluster-lib-postgres');
 const taskcluster = require('taskcluster-client');
 const {MAX_MODIFY_ATTEMPTS} = require('./util');
@@ -190,11 +189,8 @@ class WorkerPoolError {
     db,
     {
       query,
-      handler,
     } = {},
   ) {
-    assert(!handler || handler instanceof Function,
-      'If options.handler is given it must be a function');
     const fetchResults = async (continuation) => {
       const query = continuation ? { continuationToken: continuation } : {};
       const {continuationToken, rows} = await paginateResults({
@@ -211,20 +207,7 @@ class WorkerPoolError {
     };
 
     // Fetch results
-    let results = await fetchResults(query ? query.continuationToken : {});
-
-    // If we have a handler, then we have to handle the results
-    if (handler) {
-      const handleResults = async (res) => {
-        await Promise.all(res.rows.map((item) => handler.call(this, item)));
-
-        if (res.continuationToken) {
-          return await handleResults(await fetchResults(res.continuationToken));
-        }
-      };
-      results = await handleResults(results);
-    }
-    return results;
+    return await fetchResults(query ? query.continuationToken : {});
   }
 
   // Expire worker pool errors reported before the specified time

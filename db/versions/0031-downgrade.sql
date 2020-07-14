@@ -18,7 +18,7 @@ begin
       jsonb_build_object(
         'PartitionKey', encode_string_key(worker_pool_id),
         'RowKey', encode_string_key(error_id),
-        'errorId', error_id,
+        'errorId', slugid_to_uuid(error_id),
         'workerPoolId', worker_pool_id,
         'reported', reported,
         'kind', kind,

@@ -8,7 +8,7 @@ begin
   create table worker_pool_errors
   as
     select
-      (value ->> 'errorId')::text as error_id,
+      uuid_to_slugid(value ->> 'errorId')::text as error_id,
       (value ->> 'workerPoolId')::text as worker_pool_id,
       (value ->> 'reported')::timestamptz as reported,
       (value ->> 'kind')::text as kind,

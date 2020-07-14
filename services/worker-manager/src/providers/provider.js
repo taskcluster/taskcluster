@@ -2,6 +2,7 @@ const assert = require('assert');
 const libUrls = require('taskcluster-lib-urls');
 const slugid = require('slugid');
 const yaml = require('js-yaml');
+const {Worker, WorkerPoolError} = require('../data.js');
 
 /**
  * The parent class for all providers.
@@ -16,8 +17,6 @@ class Provider {
     monitor,
     rootUrl,
     estimator,
-    Worker,
-    WorkerPoolError,
     validator,
     providerConfig,
   }) {

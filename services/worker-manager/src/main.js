@@ -179,7 +179,7 @@ let load = loader({
     requires: ['cfg', 'monitor', 'notify', 'db', 'estimator', 'schemaset'],
     setup: async ({cfg, monitor, notify, db, estimator, schemaset}) =>
       new Providers().setup({
-        cfg, monitor, notify, db, estimator, Worker, WorkerPoolError,
+        cfg, monitor, notify, db, estimator,
         validator: await schemaset.validator(cfg.taskcluster.rootUrl),
       }),
   },
