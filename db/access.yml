@@ -7,7 +7,7 @@
 auth:
   tables:
     clients_entities: write
-    roles_entities: write
+    roles: write
 github:
   tables:
     taskcluster_integration_owners_entities: write

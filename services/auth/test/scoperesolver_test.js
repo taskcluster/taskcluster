@@ -94,10 +94,10 @@ suite(testing.suiteName(), () => {
 
     testResolver('assume:a* matches, a, aa, ab, a*', {
       roles: [
-        {roleId: 'a', scopes: ['A']},
-        {roleId: 'aa', scopes: ['AA']},
-        {roleId: 'ab', scopes: ['AB']},
-        {roleId: 'a*', scopes: ['ASTAR']},
+        {role_id: 'a', scopes: ['A']},
+        {role_id: 'aa', scopes: ['AA']},
+        {role_id: 'ab', scopes: ['AB']},
+        {role_id: 'a*', scopes: ['ASTAR']},
       ],
       scopes: ['assume:a*'],
       expected: ['assume:a*', 'A', 'AA', 'AB', 'ASTAR'],
@@ -105,9 +105,9 @@ suite(testing.suiteName(), () => {
 
     testResolver('ab* matches ab, abc', {
       roles: [
-        {roleId: 'a', scopes: ['A']},
-        {roleId: 'ab', scopes: ['AB']},
-        {roleId: 'abc', scopes: ['ABC']},
+        {role_id: 'a', scopes: ['A']},
+        {role_id: 'ab', scopes: ['AB']},
+        {role_id: 'abc', scopes: ['ABC']},
       ],
       scopes: ['assume:ab*'],
       expected: ['assume:ab*', 'AB', 'ABC'],
@@ -115,8 +115,8 @@ suite(testing.suiteName(), () => {
 
     testResolver('a gets a*', {
       roles: [
-        {roleId: 'a*', scopes: ['ASTAR']},
-        {roleId: 'ab*', scopes: ['ABSTAR']},
+        {role_id: 'a*', scopes: ['ASTAR']},
+        {role_id: 'ab*', scopes: ['ABSTAR']},
       ],
       scopes: ['assume:a'],
       expected: ['assume:a', 'ASTAR'],
@@ -124,10 +124,10 @@ suite(testing.suiteName(), () => {
 
     testResolver('max sets (with long scopes)', {
       roles: [
-        {roleId: 'ab*', scopes: ['ABSTAR']},
-        {roleId: 'aaaaaaaaaaaaa', scopes: ['long']},
-        {roleId: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', scopes: ['longer']},
-        {roleId: 'ababaabdssafsdcsdcsacwscwcscsesdsdfdsfdsfsdfsfdsdfsdfsdfsafewfsewfwsd', scopes: ['longest']},
+        {role_id: 'ab*', scopes: ['ABSTAR']},
+        {role_id: 'aaaaaaaaaaaaa', scopes: ['long']},
+        {role_id: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', scopes: ['longer']},
+        {role_id: 'ababaabdssafsdcsdcsacwscwcscsesdsdfdsfdsfsdfsfdsdfsdfsdfsafewfsewfwsd', scopes: ['longest']},
       ],
       scopes: ['assume:ab*'],
       expected: ['assume:ab*', 'ABSTAR', 'longest'],
@@ -135,8 +135,8 @@ suite(testing.suiteName(), () => {
 
     testResolver('ab gets ab*, a*', {
       roles: [
-        {roleId: 'ab*', scopes: ['ABSTAR']},
-        {roleId: 'a*', scopes: ['ASTAR']},
+        {role_id: 'ab*', scopes: ['ABSTAR']},
+        {role_id: 'a*', scopes: ['ASTAR']},
       ],
       scopes: ['assume:ab'],
       expected: ['assume:ab', 'ABSTAR', 'ASTAR'],
@@ -144,8 +144,8 @@ suite(testing.suiteName(), () => {
 
     testResolver('a gets * and a', {
       roles: [
-        {roleId: '*', scopes: ['STAR']},
-        {roleId: 'a*', scopes: ['ASTAR']},
+        {role_id: '*', scopes: ['STAR']},
+        {role_id: 'a*', scopes: ['ASTAR']},
       ],
       scopes: ['assume:a'],
       expected: ['assume:a', 'STAR', 'ASTAR'],
@@ -153,10 +153,10 @@ suite(testing.suiteName(), () => {
 
     testResolver('a*, b*, c*', {
       roles: [
-        {roleId: 'a*', scopes: ['ASTAR']},
-        {roleId: 'ab*', scopes: ['ABSTAR']},
-        {roleId: 'ac*', scopes: ['ACSTAR']},
-        {roleId: 'd', scopes: ['D']},
+        {role_id: 'a*', scopes: ['ASTAR']},
+        {role_id: 'ab*', scopes: ['ABSTAR']},
+        {role_id: 'ac*', scopes: ['ACSTAR']},
+        {role_id: 'd', scopes: ['D']},
       ],
       scopes: ['assume:ab'],
       expected: ['assume:ab', 'ASTAR', 'ABSTAR'],
@@ -164,8 +164,8 @@ suite(testing.suiteName(), () => {
 
     testResolver('ab* matches a*', {
       roles: [
-        {roleId: 'a*', scopes: ['ASTAR']},
-        {roleId: 'aabc', scopes: ['AABC']},
+        {role_id: 'a*', scopes: ['ASTAR']},
+        {role_id: 'aabc', scopes: ['AABC']},
       ],
       scopes: ['assume:aa*'],
       expected: ['assume:aa*', 'ASTAR', 'AABC'],
@@ -173,9 +173,9 @@ suite(testing.suiteName(), () => {
 
     testResolver('* get all', {
       roles: [
-        {roleId: 'a', scopes: ['A']},
-        {roleId: 'b', scopes: ['B']},
-        {roleId: 'c', scopes: ['C']},
+        {role_id: 'a', scopes: ['A']},
+        {role_id: 'b', scopes: ['B']},
+        {role_id: 'c', scopes: ['C']},
       ],
       scopes: ['*'],
       expected: ['*'],
@@ -183,9 +183,9 @@ suite(testing.suiteName(), () => {
 
     testResolver('a* get all', {
       roles: [
-        {roleId: 'a', scopes: ['A']},
-        {roleId: 'b', scopes: ['B']},
-        {roleId: 'c', scopes: ['C']},
+        {role_id: 'a', scopes: ['A']},
+        {role_id: 'b', scopes: ['B']},
+        {role_id: 'c', scopes: ['C']},
       ],
       scopes: ['a*'],
       expected: ['a*', 'A', 'B', 'C'],
@@ -193,9 +193,9 @@ suite(testing.suiteName(), () => {
 
     testResolver('assume* get all', {
       roles: [
-        {roleId: 'a', scopes: ['A']},
-        {roleId: 'b', scopes: ['B']},
-        {roleId: 'c', scopes: ['C']},
+        {role_id: 'a', scopes: ['A']},
+        {role_id: 'b', scopes: ['B']},
+        {role_id: 'c', scopes: ['C']},
       ],
       scopes: ['assume*'],
       expected: ['assume*', 'A', 'B', 'C'],
@@ -203,9 +203,9 @@ suite(testing.suiteName(), () => {
 
     testResolver('assume:* get all', {
       roles: [
-        {roleId: 'a', scopes: ['A']},
-        {roleId: 'b', scopes: ['B']},
-        {roleId: 'c', scopes: ['C']},
+        {role_id: 'a', scopes: ['A']},
+        {role_id: 'b', scopes: ['B']},
+        {role_id: 'c', scopes: ['C']},
       ],
       scopes: ['assume:*'],
       expected: ['assume:*', 'A', 'B', 'C'],
@@ -213,9 +213,9 @@ suite(testing.suiteName(), () => {
 
     testResolver('assum* get all', {
       roles: [
-        {roleId: 'a', scopes: ['A']},
-        {roleId: 'b', scopes: ['B']},
-        {roleId: 'c', scopes: ['C']},
+        {role_id: 'a', scopes: ['A']},
+        {role_id: 'b', scopes: ['B']},
+        {role_id: 'c', scopes: ['C']},
       ],
       scopes: ['assum*'],
       expected: ['assum*', 'A', 'B', 'C'],
@@ -223,9 +223,9 @@ suite(testing.suiteName(), () => {
 
     testResolver('assume:a works', {
       roles: [
-        {roleId: 'a', scopes: ['A']},
-        {roleId: 'b', scopes: ['B']},
-        {roleId: 'c', scopes: ['C']},
+        {role_id: 'a', scopes: ['A']},
+        {role_id: 'b', scopes: ['B']},
+        {role_id: 'c', scopes: ['C']},
       ],
       scopes: ['assume:a'],
       expected: ['assume:a', 'A'],
@@ -233,9 +233,9 @@ suite(testing.suiteName(), () => {
 
     testResolver('exact match ab', {
       roles: [
-        {roleId: 'a', scopes: ['A']},
-        {roleId: 'ab', scopes: ['AB']},
-        {roleId: 'abc', scopes: ['ABC']},
+        {role_id: 'a', scopes: ['A']},
+        {role_id: 'ab', scopes: ['AB']},
+        {role_id: 'abc', scopes: ['ABC']},
       ],
       scopes: ['assume:ab'],
       expected: ['assume:ab', 'AB'],
@@ -243,9 +243,9 @@ suite(testing.suiteName(), () => {
 
     testResolver('ab* matches ab, abc', {
       roles: [
-        {roleId: 'a', scopes: ['A']},
-        {roleId: 'ab', scopes: ['AB']},
-        {roleId: 'abc', scopes: ['ABC']},
+        {role_id: 'a', scopes: ['A']},
+        {role_id: 'ab', scopes: ['AB']},
+        {role_id: 'abc', scopes: ['ABC']},
       ],
       scopes: ['assume:ab*'],
       expected: ['assume:ab*', 'AB', 'ABC'],
@@ -253,9 +253,9 @@ suite(testing.suiteName(), () => {
 
     testResolver('ab* matches a*', {
       roles: [
-        {roleId: 'a*', scopes: ['ASTAR']},
-        {roleId: 'ab', scopes: ['AB']},
-        {roleId: 'abc', scopes: ['ABC']},
+        {role_id: 'a*', scopes: ['ASTAR']},
+        {role_id: 'ab', scopes: ['AB']},
+        {role_id: 'abc', scopes: ['ABC']},
       ],
       scopes: ['assume:ab*'],
       expected: ['assume:ab*', 'ASTAR', 'AB', 'ABC'],
@@ -263,9 +263,9 @@ suite(testing.suiteName(), () => {
 
     testResolver('ab match ab,a*', {
       roles: [
-        {roleId: 'a*', scopes: ['ASTAR']},
-        {roleId: 'ab', scopes: ['AB']},
-        {roleId: 'abc', scopes: ['ABC']},
+        {role_id: 'a*', scopes: ['ASTAR']},
+        {role_id: 'ab', scopes: ['AB']},
+        {role_id: 'abc', scopes: ['ABC']},
       ],
       scopes: ['assume:ab'],
       expected: ['assume:ab', 'ASTAR', 'AB'],
@@ -273,14 +273,14 @@ suite(testing.suiteName(), () => {
 
     testResolver('a*b* matches a*b, a*bc', {
       roles: [
-        {roleId: 'a', scopes: ['A']},
-        {roleId: 'a*b', scopes: ['ASTARB']},
-        {roleId: 'a*bc', scopes: ['ASTARBC']},
-        {roleId: 'ab', scopes: ['AB']},
-        {roleId: 'abc', scopes: ['ABC']},
-        {roleId: 'b*', scopes: ['BSTAR']},
-        {roleId: 'c*', scopes: ['CSTAR']},
-        {roleId: 'ab*', scopes: ['ABSTAR']},
+        {role_id: 'a', scopes: ['A']},
+        {role_id: 'a*b', scopes: ['ASTARB']},
+        {role_id: 'a*bc', scopes: ['ASTARBC']},
+        {role_id: 'ab', scopes: ['AB']},
+        {role_id: 'abc', scopes: ['ABC']},
+        {role_id: 'b*', scopes: ['BSTAR']},
+        {role_id: 'c*', scopes: ['CSTAR']},
+        {role_id: 'ab*', scopes: ['ABSTAR']},
       ],
       scopes: ['assume:a*b*'],
       expected: ['assume:a*b*', 'ASTARB', 'ASTARBC'],
@@ -288,14 +288,14 @@ suite(testing.suiteName(), () => {
 
     testResolver('a*b matches a*, a*b', {
       roles: [
-        {roleId: 'a*', scopes: ['ASTAR']},
-        {roleId: 'a*b', scopes: ['ASTARB']},
-        {roleId: 'a*bc', scopes: ['ASTARBC']},
-        {roleId: 'ab', scopes: ['AB']},
-        {roleId: 'abc', scopes: ['ABC']},
-        {roleId: 'b*', scopes: ['BSTAR']},
-        {roleId: 'c*', scopes: ['CSTAR']},
-        {roleId: 'ab*', scopes: ['ABSTAR']},
+        {role_id: 'a*', scopes: ['ASTAR']},
+        {role_id: 'a*b', scopes: ['ASTARB']},
+        {role_id: 'a*bc', scopes: ['ASTARBC']},
+        {role_id: 'ab', scopes: ['AB']},
+        {role_id: 'abc', scopes: ['ABC']},
+        {role_id: 'b*', scopes: ['BSTAR']},
+        {role_id: 'c*', scopes: ['CSTAR']},
+        {role_id: 'ab*', scopes: ['ABSTAR']},
       ],
       scopes: ['assume:a*b'],
       expected: ['assume:a*b', 'ASTARB', 'ASTAR'],
@@ -303,14 +303,14 @@ suite(testing.suiteName(), () => {
 
     testResolver('a*b* matches a*b, a*bc', {
       roles: [
-        {roleId: 'a*', scopes: ['ASTAR']},
-        {roleId: 'a*b', scopes: ['ASTARB']},
-        {roleId: 'a*bc', scopes: ['ASTARBC']},
-        {roleId: 'ab', scopes: ['AB']},
-        {roleId: 'abc', scopes: ['ABC']},
-        {roleId: 'b*', scopes: ['BSTAR']},
-        {roleId: 'c*', scopes: ['CSTAR']},
-        {roleId: 'ab*', scopes: ['ABSTAR']},
+        {role_id: 'a*', scopes: ['ASTAR']},
+        {role_id: 'a*b', scopes: ['ASTARB']},
+        {role_id: 'a*bc', scopes: ['ASTARBC']},
+        {role_id: 'ab', scopes: ['AB']},
+        {role_id: 'abc', scopes: ['ABC']},
+        {role_id: 'b*', scopes: ['BSTAR']},
+        {role_id: 'c*', scopes: ['CSTAR']},
+        {role_id: 'ab*', scopes: ['ABSTAR']},
       ],
       scopes: ['assume:a*b*'],
       expected: ['assume:a*b*', 'ASTARB', 'ASTARBC', 'ASTAR'],
@@ -318,7 +318,7 @@ suite(testing.suiteName(), () => {
 
     testResolver('basic parameterized role', {
       roles: [
-        {roleId: 'a*', scopes: ['A<..>']},
+        {role_id: 'a*', scopes: ['A<..>']},
       ],
       scopes: ['assume:abc'],
       expected: ['assume:abc', 'Abc'],
@@ -326,7 +326,7 @@ suite(testing.suiteName(), () => {
 
     testResolver('basic parameterized role, matched with *', {
       roles: [
-        {roleId: 'a*', scopes: ['A<..>']},
+        {role_id: 'a*', scopes: ['A<..>']},
       ],
       scopes: ['assume:abc*'],
       expected: ['assume:abc*', 'Abc*'],
@@ -334,7 +334,7 @@ suite(testing.suiteName(), () => {
 
     testResolver('parameterized role with suffix', {
       roles: [
-        {roleId: 'a*', scopes: ['A<..>X']},
+        {role_id: 'a*', scopes: ['A<..>X']},
       ],
       scopes: ['assume:abc'],
       expected: ['assume:abc', 'AbcX'],
@@ -342,7 +342,7 @@ suite(testing.suiteName(), () => {
 
     testResolver('parameterized role with suffix, matched with *', {
       roles: [
-        {roleId: 'a*', scopes: ['A<..>X']},
+        {role_id: 'a*', scopes: ['A<..>X']},
       ],
       scopes: ['assume:abc*'],
       expected: ['assume:abc*', 'Abc*'],
@@ -350,7 +350,7 @@ suite(testing.suiteName(), () => {
 
     testResolver('parameterized role with suffix, matched with a shorter *', {
       roles: [
-        {roleId: 'abc*', scopes: ['ABC<..>DEF']},
+        {role_id: 'abc*', scopes: ['ABC<..>DEF']},
       ],
       scopes: ['assume:a*'],
       expected: ['assume:a*', 'ABC*'],
@@ -427,8 +427,8 @@ suite(testing.suiteName(), () => {
     // ch-1 -> ... -> assume:ch-N -> special-scope
     const testChain = N => {
       testResolver(`chain of ${N} roles`, {
-        roles: _.range(N).map(i => ({roleId: `ch-${i}`, scopes: [`assume:ch-${i + 1}`]})).concat([
-          {roleId: `ch-${N}`, scopes: ['special-scope']},
+        roles: _.range(N).map(i => ({role_id: `ch-${i}`, scopes: [`assume:ch-${i + 1}`]})).concat([
+          {role_id: `ch-${N}`, scopes: ['special-scope']},
         ]),
         scopes: ['assume:ch-0'],
         expected: _.range(N).map(i => `assume:ch-${i}`).concat([
@@ -454,13 +454,13 @@ suite(testing.suiteName(), () => {
     const testTree = (W, H) => {
       const roles = [];
       const recur = (prefix, h) => {
-        const roleIds = _.range(W).map(w => `${prefix}-${w}`);
+        const role_ids = _.range(W).map(w => `${prefix}-${w}`);
         if (h !== H) {
-          roleIds.forEach(roleId => recur(roleId, h + 1));
+          role_ids.forEach(role_id => recur(role_id, h + 1));
         }
         roles.push({
-          roleId: prefix,
-          scopes: roleIds.map(roleId => `assume:${roleId}`),
+          role_id: prefix,
+          scopes: role_ids.map(role_id => `assume:${role_id}`),
         });
       };
       recur('t', 0);
@@ -548,193 +548,193 @@ suite(testing.suiteName(), () => {
     };
 
     validateRoles('simple role', [
-      {roleId: 'a', scopes: ['A']},
-      {roleId: 'b', scopes: ['B']},
-      {roleId: 'c', scopes: ['C']},
+      {role_id: 'a', scopes: ['A']},
+      {role_id: 'b', scopes: ['B']},
+      {role_id: 'c', scopes: ['C']},
     ]);
 
     validateRoles('simple role DAG', [
-      {roleId: 'a', scopes: ['assume:c']},
-      {roleId: 'b', scopes: ['assume:c']},
-      {roleId: 'c', scopes: ['assume:e']},
+      {role_id: 'a', scopes: ['assume:c']},
+      {role_id: 'b', scopes: ['assume:c']},
+      {role_id: 'c', scopes: ['assume:e']},
     ]);
 
     validateRoles('simple role cycle', [
-      {roleId: 'a', scopes: ['assume:c']},
-      {roleId: 'b', scopes: ['assume:c']},
-      {roleId: 'c', scopes: ['assume:a']},
+      {role_id: 'a', scopes: ['assume:c']},
+      {role_id: 'b', scopes: ['assume:c']},
+      {role_id: 'c', scopes: ['assume:a']},
     ], 'DependencyCycleError');
 
     validateRoles('simple prefix match role DAG', [
-      {roleId: 'a*', scopes: ['assume:c']},
-      {roleId: 'b*', scopes: ['assume:c']},
-      {roleId: 'c*', scopes: ['assume:e']},
+      {role_id: 'a*', scopes: ['assume:c']},
+      {role_id: 'b*', scopes: ['assume:c']},
+      {role_id: 'c*', scopes: ['assume:e']},
     ]);
 
     validateRoles('simple prefix match role cycle', [
-      {roleId: 'a*', scopes: ['assume:c']},
-      {roleId: 'b*', scopes: ['assume:c']},
-      {roleId: 'c*', scopes: ['assume:a']},
+      {role_id: 'a*', scopes: ['assume:c']},
+      {role_id: 'b*', scopes: ['assume:c']},
+      {role_id: 'c*', scopes: ['assume:a']},
     ], 'DependencyCycleError');
 
     validateRoles('simple parameterized role (1)', [
-      {roleId: 'a*', scopes: ['assume:b']},
+      {role_id: 'a*', scopes: ['assume:b']},
     ]);
 
     validateRoles('simple parameterized role (2)', [
-      {roleId: 'a*', scopes: ['assume:b*']},
+      {role_id: 'a*', scopes: ['assume:b*']},
     ]);
 
     validateRoles('simple parameterized role (3)', [
-      {roleId: 'a*', scopes: ['assume:b<..>']},
+      {role_id: 'a*', scopes: ['assume:b<..>']},
     ]);
 
     validateRoles('simple parameterized role (4)', [
-      {roleId: 'a*', scopes: ['assume:b<..>*']},
+      {role_id: 'a*', scopes: ['assume:b<..>*']},
     ]);
 
     validateRoles('simple parameterized role (5)', [
-      {roleId: 'a*', scopes: ['assume:b<..>c']},
+      {role_id: 'a*', scopes: ['assume:b<..>c']},
     ]);
 
     validateRoles('simple parameterized role (6)', [
-      {roleId: 'a*', scopes: ['assume:b<..>c*']},
+      {role_id: 'a*', scopes: ['assume:b<..>c*']},
     ]);
 
     validateRoles('ambiguous kleene in parameterized role', [
-      {roleId: 'a*', scopes: ['assume:b*<..>']},
+      {role_id: 'a*', scopes: ['assume:b*<..>']},
     ], 'InvalidScopeError');
 
     validateRoles('double parameter in parameterized role (1)', [
-      {roleId: 'a*', scopes: ['assume:b<..>c<..>']},
+      {role_id: 'a*', scopes: ['assume:b<..>c<..>']},
     ], 'InvalidScopeError');
 
     validateRoles('double parameter in parameterized role (2)', [
-      {roleId: 'a*', scopes: ['assume:b<..><..>']},
+      {role_id: 'a*', scopes: ['assume:b<..><..>']},
     ], 'InvalidScopeError');
 
     validateRoles('double parameter in parameterized role (3)', [
-      {roleId: 'a*', scopes: ['assume:b<..>c<..>d']},
+      {role_id: 'a*', scopes: ['assume:b<..>c<..>d']},
     ], 'InvalidScopeError');
 
     validateRoles('simple parameterized role DAG', [
-      {roleId: 'a*', scopes: ['assume:c<..>A']},
-      {roleId: 'b*', scopes: ['assume:c<..>B*']},
-      {roleId: 'c*', scopes: ['assume:e<..>']},
+      {role_id: 'a*', scopes: ['assume:c<..>A']},
+      {role_id: 'b*', scopes: ['assume:c<..>B*']},
+      {role_id: 'c*', scopes: ['assume:e<..>']},
     ]);
 
     validateRoles('simple parameterized role cycle (1)', [
-      {roleId: 'a*', scopes: ['assume:c<..>A']},
-      {roleId: 'b*', scopes: ['assume:c<..>B*']},
-      {roleId: 'c*', scopes: ['assume:a<..>']},
+      {role_id: 'a*', scopes: ['assume:c<..>A']},
+      {role_id: 'b*', scopes: ['assume:c<..>B*']},
+      {role_id: 'c*', scopes: ['assume:a<..>']},
     ], 'DependencyCycleError');
 
     validateRoles('simple parameterized role cycle (2)', [
-      {roleId: 'a*', scopes: ['assume:c<..>A']},
-      {roleId: 'b*', scopes: ['assume:c<..>B*']},
-      {roleId: 'c*', scopes: ['assume:b<..>']},
+      {role_id: 'a*', scopes: ['assume:c<..>A']},
+      {role_id: 'b*', scopes: ['assume:c<..>B*']},
+      {role_id: 'c*', scopes: ['assume:b<..>']},
     ], 'DependencyCycleError');
 
     validateRoles('simple parameterized role cycle (3)', [
-      {roleId: 'a*', scopes: ['assume:c<..>A']},
-      {roleId: 'b*', scopes: ['assume:c<..>B*']},
-      {roleId: 'c*', scopes: ['assume:<..>']},
+      {role_id: 'a*', scopes: ['assume:c<..>A']},
+      {role_id: 'b*', scopes: ['assume:c<..>B*']},
+      {role_id: 'c*', scopes: ['assume:<..>']},
     ], 'DependencyCycleError');
 
     validateRoles('simple parameterized role cycle (4)', [
-      {roleId: 'a*', scopes: ['assume:c<..>A']},
-      {roleId: 'b*', scopes: ['assume:c<..>B*']},
-      {roleId: 'c*', scopes: ['assume:b']},
+      {role_id: 'a*', scopes: ['assume:c<..>A']},
+      {role_id: 'b*', scopes: ['assume:c<..>B*']},
+      {role_id: 'c*', scopes: ['assume:b']},
     ], 'DependencyCycleError');
 
     validateRoles('self-referential simple role', [
-      {roleId: 'abc', scopes: ['assume:abc']},
+      {role_id: 'abc', scopes: ['assume:abc']},
     ], 'DependencyCycleError');
 
     validateRoles('four simple roles, pointing to each other', [
-      {roleId: 'abc', scopes: ['assume:def']},
-      {roleId: 'def', scopes: ['assume:ghi']},
-      {roleId: 'ghi', scopes: ['assume:jkl']},
-      {roleId: 'jkl', scopes: ['assume:abcd']},
+      {role_id: 'abc', scopes: ['assume:def']},
+      {role_id: 'def', scopes: ['assume:ghi']},
+      {role_id: 'ghi', scopes: ['assume:jkl']},
+      {role_id: 'jkl', scopes: ['assume:abcd']},
     ]);
 
     validateRoles('inter-referential roles among others', [
-      {roleId: 'abc', scopes: ['assume:def']},
-      {roleId: 'def', scopes: ['assume:ghi']},
-      {roleId: 'ghi', scopes: ['assume:xyz']},
-      {roleId: 'jkl', scopes: ['assume:xyz']},
+      {role_id: 'abc', scopes: ['assume:def']},
+      {role_id: 'def', scopes: ['assume:ghi']},
+      {role_id: 'ghi', scopes: ['assume:xyz']},
+      {role_id: 'jkl', scopes: ['assume:xyz']},
     ]);
 
     validateRoles('no cycles', [
-      {roleId: 'abc', scopes: ['assume:xyz']},
-      {roleId: 'def', scopes: ['assume:xyz']},
-      {roleId: 'ghi', scopes: ['assume:xyz']},
-      {roleId: 'jkl', scopes: ['assume:xyz']},
-      {roleId: 'xyz', scopes: ['some-scope']},
+      {role_id: 'abc', scopes: ['assume:xyz']},
+      {role_id: 'def', scopes: ['assume:xyz']},
+      {role_id: 'ghi', scopes: ['assume:xyz']},
+      {role_id: 'jkl', scopes: ['assume:xyz']},
+      {role_id: 'xyz', scopes: ['some-scope']},
     ]);
 
     validateRoles('self-referential role with * in scopes', [
-      {roleId: 'abc', scopes: ['assume:ab*']},
+      {role_id: 'abc', scopes: ['assume:ab*']},
     ], 'DependencyCycleError');
 
-    validateRoles('self-referential role with * in roleId', [
-      {roleId: 'ab*', scopes: ['assume:abc']},
+    validateRoles('self-referential role with * in role_id', [
+      {role_id: 'ab*', scopes: ['assume:abc']},
     ], 'DependencyCycleError');
 
-    validateRoles('self-referential role with * in roleId and scopes', [
-      {roleId: 'ab*', scopes: ['assume:abc*']},
+    validateRoles('self-referential role with * in role_id and scopes', [
+      {role_id: 'ab*', scopes: ['assume:abc*']},
     ], 'DependencyCycleError');
 
     validateRoles('four inter-referential roles with *s', [
-      {roleId: 'abc', scopes: ['assume:d*']},
-      {roleId: 'def', scopes: ['assume:ghi']},
-      {roleId: 'g*', scopes: ['assume:jkl']},
-      {roleId: 'jkl', scopes: ['assume:ab']},
+      {role_id: 'abc', scopes: ['assume:d*']},
+      {role_id: 'def', scopes: ['assume:ghi']},
+      {role_id: 'g*', scopes: ['assume:jkl']},
+      {role_id: 'jkl', scopes: ['assume:ab']},
     ]);
 
     validateRoles('cycle containing a single parameterized role with no suffix', [
-      {roleId: 'a*', scopes: ['assume:ab<..>']},
+      {role_id: 'a*', scopes: ['assume:ab<..>']},
     ], 'DependencyCycleError');
 
     validateRoles('cycle containing a single parameterized role with a suffix', [
-      {roleId: 'a*', scopes: ['assume:a<..>x']},
+      {role_id: 'a*', scopes: ['assume:a<..>x']},
     ], 'DependencyCycleError');
 
     validateRoles('cycle containing a single parameterized role with a prefix and suffix', [
-      {roleId: 'a*', scopes: ['assume:ab<..>x']},
+      {role_id: 'a*', scopes: ['assume:ab<..>x']},
     ], 'DependencyCycleError');
 
     validateRoles('cycle containing two parameterized roles', [
-      {roleId: 'a*', scopes: ['assume:b<..>x']},
-      {roleId: 'b*', scopes: ['assume:a<..>']},
+      {role_id: 'a*', scopes: ['assume:b<..>x']},
+      {role_id: 'b*', scopes: ['assume:a<..>']},
     ], 'DependencyCycleError');
 
     validateRoles('cycle containing two parameterized roles where scope is prefix of role', [
-      {roleId: 'a*', scopes: ['assume:b<..>x']},
-      {roleId: 'bstuff*', scopes: ['assume:a<..>']},
+      {role_id: 'a*', scopes: ['assume:b<..>x']},
+      {role_id: 'bstuff*', scopes: ['assume:a<..>']},
     ], 'DependencyCycleError');
 
     validateRoles('cycle containing two parameterized roles where role is prefix of scope', [
-      {roleId: 'a*', scopes: ['assume:bstuff<..>x']},
-      {roleId: 'b*', scopes: ['assume:a<..>']},
+      {role_id: 'a*', scopes: ['assume:bstuff<..>x']},
+      {role_id: 'b*', scopes: ['assume:a<..>']},
     ], 'DependencyCycleError');
 
     validateRoles('cycle with a partial appearance of "assume:"', [
       // note that this would actually be stable, since the replacement is shorter, but we still
       // want to forbid this
-      {roleId: 'b*', scopes: ['as<..>']},
+      {role_id: 'b*', scopes: ['as<..>']},
     ], 'DependencyCycleError');
 
     validateRoles('roles with some parameters', [
-      {roleId: 'bb*', scopes: ['assume:cd<..>']},
-      {roleId: 'cde*', scopes: ['assume:de<..>x']},
-      {roleId: 'd*', scopes: ['assume:b']},
+      {role_id: 'bb*', scopes: ['assume:cd<..>']},
+      {role_id: 'cde*', scopes: ['assume:de<..>x']},
+      {role_id: 'd*', scopes: ['assume:b']},
     ]);
 
     validateRoles('roles with some parameters but a fixed point', [
-      {roleId: 'b*', scopes: ['assume:cd<..>']},
-      {roleId: 'cde*', scopes: ['assume:de<..>x']},
-      {roleId: 'd*', scopes: ['assume:bx']},
+      {role_id: 'b*', scopes: ['assume:cd<..>']},
+      {role_id: 'cde*', scopes: ['assume:de<..>x']},
+      {role_id: 'd*', scopes: ['assume:bx']},
     ], 'DependencyCycleError');
   });
 

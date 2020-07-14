@@ -32,8 +32,9 @@ class ScopeResolver extends events.EventEmitter {
     assert(/^ *-/.test(options.maxLastUsedDelay),
       'maxLastUsedDelay must be negative');
 
-    // Store a reference to the monitor
     this._monitor = options.monitor;
+    this._db = options.db;
+
     this._disableCache = options.disableCache;
 
     // List of client objects on the form:
@@ -48,7 +49,7 @@ class ScopeResolver extends events.EventEmitter {
     // }
     this._clients = [];
     // List of role objects on the form:
-    // {roleId: '...', scopes: [...]}
+    // {role_id: '...', scopes: [...]}
     this._roles = [];
 
     // Mapping from clientId to client objects from _clients,
@@ -68,7 +69,6 @@ class ScopeResolver extends events.EventEmitter {
    * {
    *   rootUrl:             // a Taskcluster rootUrl
    *   Client:              // data.Client object
-   *   Roles:               // data.Roles object
    *   pulseClient:         // tc-lib-pulse Client
    *   exchangeReference:   // reference for exchanges declared
    *   cacheExpiry:         // Time before clearing cache
@@ -79,12 +79,10 @@ class ScopeResolver extends events.EventEmitter {
       cacheExpiry: 20 * 60 * 1000, // default to 20 min
     });
     assert(options.Client, 'Expected options.Client');
-    assert(options.Roles, 'Expected options.Roles');
     assert(options.exchangeReference, 'Expected options.exchangeReference');
     assert(options.pulseClient, 'Expected options.pulseClient');
     assert(options.rootUrl, 'Expected options.rootUrl');
     this._Client = options.Client;
-    this._Roles = options.Roles;
 
     await this.reloadOnNotifications(options);
 
@@ -188,7 +186,7 @@ class ScopeResolver extends events.EventEmitter {
 
   reloadRoles() {
     return this._syncReload(async () => {
-      let roles = await this._Roles.get();
+      let roles = await this._db.fns.get_roles();
       this._rebuildResolver(roles, this._clients);
     });
   }
@@ -222,7 +220,7 @@ class ScopeResolver extends events.EventEmitter {
           },
         }),
         (async () => {
-          roles = await this._Roles.get();
+          roles = await this._db.fns.get_roles();
         })(),
       ]);
 
@@ -255,17 +253,17 @@ class ScopeResolver extends events.EventEmitter {
    * or 'DependencyCycleError', if any of the roles are illegal, or form a cycle.
    */
   static validateRoles(roles = []) {
-    const rules = roles.map(({roleId, scopes}) => ({pattern: `assume:${roleId}`, scopes}));
+    const rules = roles.map(({role_id, scopes}) => ({pattern: `assume:${role_id}`, scopes}));
     trie.dependencyOrdering(rules);
   }
 
   /**
    * Build a resolver which, given a set of scopes, will return the expanded
    * set of scopes based on the given roles.  Roles are an array of elements
-   * {roleId, scopes}.
+   * {role_id, scopes}.
    */
   buildResolver(roles = []) {
-    const rules = roles.map(({roleId, scopes}) => ({pattern: `assume:${roleId}`, scopes}));
+    const rules = roles.map(({role_id, scopes}) => ({pattern: `assume:${role_id}`, scopes}));
     const node = trie.optimize(trie.withPrefix(trie.build(rules), 'assume:'));
 
     // LRU of resolved scope-sets, to increase probability of hits, we shall

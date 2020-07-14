@@ -98,52 +98,10 @@ exports.withEntities = (mock, skipping, {orderedTests} = {}) => {
     orderedTests,
     cleanup,
   });
-  withEntity(mock, skipping, exports, 'Roles', data.Roles);
 };
 
 exports.withDb = (mock, skipping) => {
   withDb(mock, skipping, exports, 'auth');
-};
-
-// fake "Roles" container
-class FakeRoles {
-  constructor() {
-    this.roles = [];
-  }
-
-  async get() {
-    return this.roles;
-  }
-
-  async modify(modifier) {
-    await modifier(this.roles);
-  }
-}
-
-/**
- * Setup the Roles blob
- */
-exports.withRoles = (mock, skipping, options = {}) => {
-  suiteSetup(async function() {
-    if (skipping()) {
-      return;
-    }
-
-    await exports.load('cfg');
-    exports.load.cfg('app.rolesContainerName', exports.containerName);
-
-    if (mock) {
-      exports.Roles = new FakeRoles();
-      exports.load.inject('Roles', exports.Roles);
-    } else {
-      exports.Roles = await exports.load('Roles');
-    }
-  });
-
-  if (!options.orderedTests) {
-    setup();
-  }
-  suiteTeardown();
 };
 
 /**
@@ -424,6 +382,10 @@ exports.withGcp = (mock, skipping) => {
 
 exports.resetTables = (mock, skipping) => {
   setup('reset tables', async function() {
-    await resetTables({tableNames: ['clients_entities', 'roles_entities'] });
+    await resetTables({tableNames: [
+      'clients_entities',
+      'roles_entities',
+      'roles',
+    ] });
   });
 };

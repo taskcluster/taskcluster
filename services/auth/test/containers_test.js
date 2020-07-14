@@ -1,6 +1,7 @@
 const assert = require('assert');
 const helper = require('./helper');
 const testing = require('taskcluster-lib-testing');
+const {modifyRoles} = require('../src/data');
 
 const sorted = (arr) => {
   arr.sort();
@@ -16,44 +17,44 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
   helper.resetTables(mock, skipping);
 
   test('get when blob is empty', async function() {
-    assert.deepEqual(await helper.Roles.get(), []);
+    assert.deepEqual(await helper.db.fns.get_roles(), []);
   });
 
   test('first modification of an empty blob', async function() {
-    await helper.Roles.modifyRole(({ blob: roles }) => {
+    await modifyRoles(helper.db, ({ roles }) => {
       roles.push({
-        roleId: 'my-role',
+        role_id: 'my-role',
         scopes: ['a', 'b'],
         description: 'a role!',
-        created: new Date('2017-01-01').toJSON(),
-        lastModified: new Date('2017-01-01').toJSON(),
+        created: new Date('2017-01-01'),
+        last_modified: new Date('2017-01-01'),
       });
     });
 
-    assert.deepEqual(sorted((await helper.Roles.get()).map(r => r.roleId)),
+    assert.deepEqual(sorted((await helper.db.fns.get_roles()).map(r => r.role_id)),
       sorted(['my-role']));
   });
 
   test('add a second role', async function() {
-    await helper.Roles.modifyRole(({ blob: roles }) => {
+    await modifyRoles(helper.db, ({ roles }) => {
       roles.push({
-        roleId: 'my-role',
+        role_id: 'my-role',
         scopes: ['a', 'b'],
         description: 'a role!',
-        created: new Date('2017-01-01').toJSON(),
-        lastModified: new Date('2017-01-01').toJSON(),
+        created: new Date('2017-01-01'),
+        last_modified: new Date('2017-01-01'),
       });
     });
-    await helper.Roles.modifyRole(({ blob: roles }) => {
+    await modifyRoles(helper.db, ({ roles }) => {
       roles.push({
-        roleId: 'second-role',
+        role_id: 'second-role',
         scopes: ['x', 'y'],
         description: 'a role!',
-        created: new Date('2017-01-02').toJSON(),
-        lastModified: new Date('2017-01-02').toJSON(),
+        created: new Date('2017-01-02'),
+        last_modified: new Date('2017-01-02'),
       });
     });
-    assert.deepEqual(sorted((await helper.Roles.get()).map(r => r.roleId)),
+    assert.deepEqual(sorted((await helper.db.fns.get_roles()).map(r => r.role_id)),
       sorted(['my-role', 'second-role']));
   });
 });
