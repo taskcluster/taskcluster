@@ -1,7 +1,6 @@
 const crypto = require('crypto');
-const {APIBuilder} = require('taskcluster-lib-api');
+const {APIBuilder, paginateResults} = require('taskcluster-lib-api');
 const _ = require('lodash');
-const Entity = require('taskcluster-lib-entities');
 
 // Strips/replaces undesirable characters which GitHub allows in
 // repository/organization names (notably .)
@@ -174,7 +173,7 @@ let builder = new APIBuilder({
   ].join('\n'),
   serviceName: 'github',
   apiVersion: 'v1',
-  context: ['Builds', 'OwnersDirectory', 'monitor', 'publisher', 'cfg', 'ajv', 'github'],
+  context: ['db', 'OwnersDirectory', 'monitor', 'publisher', 'cfg', 'ajv', 'github'],
   errorCodes: {
     ForbiddenByGithub: 403,
   },
@@ -310,8 +309,7 @@ builder.declare({
   category: 'Github Service',
   output: 'build-list.yml',
   query: {
-    continuationToken: Entity.continuationTokenPattern,
-    limit: /^[0-9]+$/,
+    ...paginateResults.query,
     organization: /^([a-zA-Z0-9-_%]*)$/,
     repository: /^([a-zA-Z0-9-_%]*)$/,
     sha: /./,
@@ -322,43 +320,39 @@ builder.declare({
     'fields.',
   ].join('\n'),
 }, async function(req, res) {
-  let continuation = req.query.continuationToken || null;
-  let limit = parseInt(req.query.limit || 1000, 10);
-  let query = _.pick(req.query, ['organization', 'repository', 'sha']);
-  // We only support conditions on dates, as they cannot
-  // be used to inject SQL -- `Date.toJSON` always produces a simple string
-  // with no SQL metacharacters.
-  //
-  // Previously with azure, we added the query in the scan method
-  // (i.e., this.Builds.scan(query, ...)) but since the query doesn't include
-  // the partition key or row key, we would need to manually filter through
-  // the table.
-  let builds = await this.Builds.scan({}, {continuation, limit});
-
-  // workaround after removing azure-entities
-  builds.entries = builds.entries.filter(build => {
-    const keys = Object.keys(query);
-
-    for (let key of keys) {
-      if (build[key] !== query[key]) {
-        return false;
-      }
-    }
-
-    return true;
+  const {organization, repository, sha} = req.query;
+  if (repository && !organization) {
+    return res.reportError('InputError',
+      'Must provide `organization` if querying `repository`',
+      {});
+  }
+  if (sha && !repository) {
+    return res.reportError('InputError',
+      'Must provide `repository` if querying `sha`',
+      {});
+  }
+  let {continuationToken, rows: builds} = await paginateResults({
+    query: req.query,
+    fetch: (size, offset) => this.db.fns.get_github_builds(
+      size,
+      offset,
+      organization || null,
+      repository || null,
+      sha || null,
+    ),
   });
 
   return res.reply({
-    continuationToken: builds.continuation || '',
-    builds: builds.entries.map(entry => {
+    continuationToken,
+    builds: builds.map(entry => {
       return {
         organization: entry.organization,
         repository: entry.repository,
         sha: entry.sha,
         state: entry.state,
-        taskGroupId: entry.taskGroupId,
-        eventType: entry.eventType,
-        eventId: entry.eventId,
+        taskGroupId: entry.task_group_id,
+        eventType: entry.event_type,
+        eventId: entry.event_id,
         created: entry.created.toJSON(),
         updated: entry.updated.toJSON(),
       };

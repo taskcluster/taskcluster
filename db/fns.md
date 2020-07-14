@@ -19,6 +19,11 @@
 
 | Name | Mode | Arguments | Returns | Description |
 | --- | --- | --- | --- | --- |
+| create_github_build | write | organization_in text, repository_in text, sha_in text, task_group_id_in text, state_in text, created_in timestamptz, updated_in timestamptz, installation_id_in integer, event_type_in text, event_id_in text | void | Create a new github build.  Raises UNIQUE_VIOLATION if the pool already exists. |
+| delete_github_build | write | task_group_id_in text | void | Delete a github build. |
+| get_github_build | read | task_group_id_in text | table (organization text, repository text, sha text, task_group_id text, state text, created timestamptz, updated timestamptz, installation_id integer, event_type text, event_id text, etag uuid) | Get a github build. The returned table will have one or zero rows. |
+| get_github_builds | read | page_size_in integer, page_offset_in integer, organization_in text, repository_in text, sha_in text | table (organization text, repository text, sha text, task_group_id text, state text, created timestamptz, updated timestamptz, installation_id integer, event_type text, event_id text, etag uuid) | Get github builds.  |
+| set_github_build_state | write | task_group_id_in text, state_in text | void | Only update the state of a build and update the `updated` timestamp |
 | taskcluster_check_runs_entities_create | write | pk text, rk text, properties jsonb, overwrite boolean, version integer | uuid | See taskcluster-lib-entities |
 | taskcluster_check_runs_entities_load | read | partition_key text, row_key text | table (partition_key_out text, row_key_out text, value jsonb, version integer, etag uuid) | See taskcluster-lib-entities |
 | taskcluster_check_runs_entities_modify | write | partition_key text, row_key text, properties jsonb, version integer, old_etag uuid | table (etag uuid) | See taskcluster-lib-entities |

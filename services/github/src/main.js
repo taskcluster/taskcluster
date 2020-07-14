@@ -102,16 +102,6 @@ const load = loader({
     }),
   },
 
-  Builds: {
-    requires: ['cfg', 'monitor', 'db'],
-    setup: async ({cfg, monitor, db}) => data.Builds.setup({
-      db,
-      serviceName: 'github',
-      tableName: cfg.app.buildsTableName,
-      monitor: monitor.childMonitor('table.builds'),
-    }),
-  },
-
   OwnersDirectory: {
     requires: ['cfg', 'monitor', 'db'],
     setup: async ({cfg, monitor, db}) => data.OwnersDirectory.setup({
@@ -144,16 +134,16 @@ const load = loader({
 
   api: {
     requires: [
-      'cfg', 'monitor', 'schemaset', 'github', 'publisher', 'Builds',
+      'cfg', 'monitor', 'schemaset', 'github', 'publisher', 'db',
       'OwnersDirectory', 'ajv'],
-    setup: ({cfg, monitor, schemaset, github, publisher, Builds,
+    setup: ({cfg, monitor, schemaset, github, publisher, db,
       OwnersDirectory, ajv}) => builder.build({
       rootUrl: cfg.taskcluster.rootUrl,
       context: {
         publisher,
         cfg,
         github,
-        Builds,
+        db,
         OwnersDirectory,
         ajv,
         monitor: monitor.childMonitor('api-context'),
@@ -198,11 +188,11 @@ const load = loader({
       'intree',
       'schemaset',
       'reference',
-      'Builds',
       'pulseClient',
       'publisher',
       'CheckRuns',
       'ChecksToTasks',
+      'db',
     ],
     setup: async ({
       cfg,
@@ -211,11 +201,11 @@ const load = loader({
       intree,
       schemaset,
       reference,
-      Builds,
       pulseClient,
       publisher,
       CheckRuns,
       ChecksToTasks,
+      db,
     }) =>
       new Handlers({
         rootUrl: cfg.taskcluster.rootUrl,
@@ -228,7 +218,7 @@ const load = loader({
         deprecatedInitialStatusQueueName: cfg.app.deprecatedInitialStatusQueue,
         resultStatusQueueName: cfg.app.resultStatusQueue,
         initialStatusQueueName: cfg.app.initialStatusQueue,
-        context: {cfg, github, schemaset, Builds, CheckRuns, ChecksToTasks, publisher},
+        context: {cfg, github, schemaset, db, CheckRuns, ChecksToTasks, publisher},
         pulseClient,
       }),
   },

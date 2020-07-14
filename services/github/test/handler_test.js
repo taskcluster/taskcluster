@@ -32,18 +32,18 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
   async function addBuild({state, taskGroupId}) {
     debug(`adding Build row for ${taskGroupId} in state ${state}`);
-    await helper.Builds.create({
-      organization: 'TaskclusterRobot',
-      repository: 'hooks-testing',
-      sha: '03e9577bc1ec60f2ff0929d5f1554de36b8f48cf',
+    await helper.db.fns.create_github_build(
+      'TaskclusterRobot',
+      'hooks-testing',
+      '03e9577bc1ec60f2ff0929d5f1554de36b8f48cf',
       taskGroupId,
       state,
-      created: new Date(),
-      updated: new Date(),
-      installationId: 9988,
-      eventType: 'push',
-      eventId: 'aaa-bbb',
-    });
+      new Date(),
+      new Date(),
+      9988,
+      'push',
+      'aaa-bbb',
+    );
   }
 
   async function addCheckRun({taskGroupId, taskId}) {
@@ -373,7 +373,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       assert(handlers.createTasks.calledWith({scopes: sinon.match.array, tasks: sinon.match.array}));
       let args = handlers.createTasks.firstCall.args[0];
       let taskGroupId = args.tasks[0].task.taskGroupId;
-      let build = await helper.Builds.load({taskGroupId});
+      let [build] = await helper.db.fns.get_github_build(taskGroupId);
       assert.equal(build.organization, 'TaskclusterRobot');
       assert.equal(build.repository, 'hooks-testing');
       assert.equal(build.sha, '03e9577bc1ec60f2ff0929d5f1554de36b8f48cf');
@@ -404,7 +404,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       assert(handlers.createTasks.calledWith({scopes: sinon.match.array, tasks: sinon.match.array}));
       let args = handlers.createTasks.firstCall.args[0];
       let taskGroupId = args.tasks[0].task.taskGroupId;
-      let build = await helper.Builds.load({taskGroupId});
+      let [build] = await helper.db.fns.get_github_build(taskGroupId);
       assert.equal(build.organization, 'TaskclusterRobot');
       assert.equal(build.repository, 'hooks-testing');
       assert.equal(build.sha, '03e9577bc1ec60f2ff0929d5f1554de36b8f48cf');
@@ -422,7 +422,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
       let args = handlers.createTasks.firstCall.args[0];
       let taskGroupId = args.tasks[0].task.taskGroupId;
-      let build = await helper.Builds.load({taskGroupId});
+      let [build] = await helper.db.fns.get_github_build(taskGroupId);
       assert.equal(build.organization, 'TaskclusterRobot');
       assert.equal(build.repository, 'hooks-testing');
       assert.equal(build.sha, '03e9577bc1ec60f2ff0929d5f1554de36b8f48cf');
@@ -445,7 +445,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       assert(handlers.createTasks.calledWith({scopes: sinon.match.array, tasks: sinon.match.array}));
       let args = handlers.createTasks.firstCall.args[0];
       let taskGroupId = args.tasks[0].task.taskGroupId;
-      let build = await helper.Builds.load({taskGroupId});
+      let [build] = await helper.db.fns.get_github_build(taskGroupId);
       assert.equal(build.organization, 'TaskclusterRobot');
       assert.equal(build.repository, 'hooks-testing');
       assert.equal(build.sha, '03e9577bc1ec60f2ff0929d5f1554de36b8f48cf');
@@ -615,7 +615,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     });
 
     teardown(async function() {
-      await helper.Builds.remove({taskGroupId: TASKGROUPID}, true);
+      await helper.db.fns.delete_github_build(TASKGROUPID);
     });
 
     const TASKGROUPID = 'AXB-sjV-SoCyibyq3P32ow';
@@ -633,7 +633,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     }
 
     async function assertBuildState(state) {
-      let build = await helper.Builds.load({taskGroupId: TASKGROUPID});
+      let [build] = await helper.db.fns.get_github_build(TASKGROUPID);
       assert.equal(build.state, state);
     }
 
@@ -686,7 +686,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     });
 
     teardown(async function() {
-      await helper.Builds.remove({taskGroupId: TASKGROUPID}, true);
+      await helper.db.fns.delete_github_build(TASKGROUPID);
       await helper.CheckRuns.remove({taskGroupId: TASKGROUPID, taskId: TASKID}, true);
       await helper.CheckRuns.remove({taskGroupId: TASKGROUPID, taskId: CUSTOM_CHECKRUN_TASKID}, true);
       sinon.restore();
@@ -918,7 +918,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     });
 
     teardown(async function() {
-      await helper.Builds.remove({taskGroupId: TASKGROUPID}, true);
+      await helper.db.fns.delete_github_build(TASKGROUPID);
     });
 
     const TASKGROUPID = 'AXB-sjV-SoCyibyq3P5555';
@@ -959,7 +959,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     });
 
     teardown(async function() {
-      await helper.Builds.remove({taskGroupId: TASKGROUPID}, true);
+      await helper.db.fns.delete_github_build(TASKGROUPID);
     });
 
     const TASKGROUPID = 'AXB-sjV-SoCyibyq3P5555';

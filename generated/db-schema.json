@@ -8,9 +8,9 @@
     },
     "github": {
       "tables": {
+        "github_builds": "write",
         "taskcluster_check_runs_entities": "write",
         "taskcluster_checks_to_tasks_entities": "write",
-        "taskcluster_github_builds_entities": "write",
         "taskcluster_integration_owners_entities": "write"
       }
     },
@@ -120,6 +120,19 @@
       "row_key": "text not null",
       "value": "jsonb not null",
       "version": "integer not null"
+    },
+    "github_builds": {
+      "created": "timestamp with time zone not null",
+      "etag": "uuid not null",
+      "event_id": "text not null",
+      "event_type": "text not null",
+      "installation_id": "integer not null",
+      "organization": "text not null",
+      "repository": "text not null",
+      "sha": "text not null",
+      "state": "text not null",
+      "task_group_id": "text not null",
+      "updated": "timestamp with time zone not null"
     },
     "hooks_entities": {
       "etag": "uuid",
@@ -232,13 +245,6 @@
       "version": "integer not null"
     },
     "taskcluster_checks_to_tasks_entities": {
-      "etag": "uuid",
-      "partition_key": "text not null",
-      "row_key": "text not null",
-      "value": "jsonb not null",
-      "version": "integer not null"
-    },
-    "taskcluster_github_builds_entities": {
       "etag": "uuid",
       "partition_key": "text not null",
       "row_key": "text not null",
@@ -3051,6 +3057,103 @@
       },
       "migrationScript": "begin\n  -- this migration combines queue_task_dependency_entries (which contains all task\n  -- dependencies) and queue_task_requirement_entities (which contains\n  -- as-yet-unsatisfied dependencies) into a single table with a `satisfied`\n  -- column.  If we consider a dependency to be from \"dependent\" to \"required\", then\n  -- task_dependency_entities has\n  --   partition_key = required_task_id\n  --   row_key = dependent_task_id\n  -- task_requirement_entities has\n  --   partition key = dependent_task_id\n  --   row_key = required_task_id\n  lock table queue_task_dependency_entities;\n  lock table queue_task_requirement_entities;\n\n  raise log 'TIMING start task_dependencies create table .. as select';\n  create table task_dependencies\n  as\n    select\n      deps.dependent_task_id,\n      deps.required_task_id,\n      deps.requires,\n      reqs.dependent_task_id is null as satisfied,\n      deps.expires,\n      deps.etag as etag\n    from (\n      select\n        partition_key as required_task_id,\n        row_key as dependent_task_id,\n        ('all-' || (value ->> 'require'))::task_requires as requires,\n        (value ->> 'expires')::timestamptz as expires,\n        etag\n      from queue_task_dependency_entities\n    ) as deps\n    left join (\n      select\n        partition_key as dependent_task_id,\n        row_key as required_task_id,\n        etag\n      from queue_task_requirement_entities\n    ) as reqs\n    on deps.dependent_task_id = reqs.dependent_task_id and\n      deps.required_task_id = reqs.required_task_id;\n\n  raise log 'TIMING start task_dependencies set not null';\n  alter table task_dependencies\n    alter column dependent_task_id set not null,\n    alter column required_task_id set not null,\n    alter column requires set not null,\n    alter column satisfied set not null,\n    alter column expires set not null,\n    alter column etag set not null,\n    alter column etag set default public.gen_random_uuid();\n\n  -- the task itself contains an array of dependent tasks, so querying by\n  -- dependent_task_id is unusual, so primary key begins with required_task_id.\n  raise log 'TIMING start task_dependencies add primary key';\n  alter table task_dependencies add primary key (required_task_id, dependent_task_id);\n\n  -- queue's isBlocked indexes by dependent_task_id, looking only for unsatisfied\n  -- entries.  This index then takes the place of the queue_task_requirement_entities\n  -- table and that these queries can be handled by accessing only the index.\n  raise log 'TIMING start task_dependencies add task_dependencies_dependent_task_id_idx';\n  create index task_dependencies_dependent_task_id_idx on task_dependencies (dependent_task_id)\n    where not satisfied;\n\n  raise log 'TIMING start task_dependencies set permissions';\n  revoke select, insert, update, delete on queue_task_dependency_entities from $db_user_prefix$_queue;\n  drop table queue_task_dependency_entities;\n  revoke select, insert, update, delete on queue_task_requirement_entities from $db_user_prefix$_queue;\n  drop table queue_task_requirement_entities;\n\n  grant select, insert, update, delete on task_dependencies to $db_user_prefix$_queue;\nend\n",
       "version": 22
+    },
+    {
+      "downgradeScript": "begin\n  -- lock this table before reading from it, to prevent loss of concurrent\n  -- updates when the table is dropped.\n  lock table github_builds;\n\n  create table taskcluster_github_builds_entities(\n    partition_key text, row_key text,\n    value jsonb not null,\n    version integer not null,\n    etag uuid default public.gen_random_uuid());\n  alter table taskcluster_github_builds_entities add primary key (partition_key, row_key);\n\n  insert into taskcluster_github_builds_entities\n  select\n    encode_string_key(task_group_id) as partition_key,\n    'taskGroupId' as row_key,\n    jsonb_build_object(\n      'PartitionKey', encode_string_key(task_group_id),\n      'RowKey', 'taskGroupId',\n      'organization', organization,\n      'repository', repository,\n      'sha', sha,\n      'taskGroupId', task_group_id,\n      'state', state,\n      'created', created,\n      'updated', updated,\n      'installationId', installation_id,\n      'eventType', event_type,\n      'eventId', event_id) as value,\n    1 as version,\n    etag\n  from github_builds;\n\n  revoke select, insert, update, delete on github_builds from $db_user_prefix$_github;\n  drop table github_builds;\n  grant select, insert, update, delete on taskcluster_github_builds_entities to $db_user_prefix$_github;\nend",
+      "methods": {
+        "create_github_build": {
+          "args": "organization_in text, repository_in text, sha_in text, task_group_id_in text, state_in text, created_in timestamptz, updated_in timestamptz, installation_id_in integer, event_type_in text, event_id_in text",
+          "body": "begin\n  insert\n    into github_builds (organization, repository, sha, task_group_id, state, created, updated, installation_id, event_type, event_id)\n    values (organization_in, repository_in, sha_in, task_group_id_in, state_in, created_in, updated_in, installation_id_in, event_type_in, event_id_in);\nend",
+          "deprecated": false,
+          "description": "Create a new github build.  Raises UNIQUE_VIOLATION if the pool already exists.",
+          "mode": "write",
+          "returns": "void",
+          "serviceName": "github"
+        },
+        "delete_github_build": {
+          "args": "task_group_id_in text",
+          "body": "begin\n  delete\n  from github_builds\n  where github_builds.task_group_id = task_group_id_in;\nend",
+          "deprecated": false,
+          "description": "Delete a github build.",
+          "mode": "write",
+          "returns": "void",
+          "serviceName": "github"
+        },
+        "get_github_build": {
+          "args": "task_group_id_in text",
+          "body": "begin\n  return query\n  select\n    github_builds.organization,\n    github_builds.repository,\n    github_builds.sha,\n    github_builds.task_group_id,\n    github_builds.state,\n    github_builds.created,\n    github_builds.updated,\n    github_builds.installation_id,\n    github_builds.event_type,\n    github_builds.event_id,\n    github_builds.etag\n  from github_builds\n  where github_builds.task_group_id = task_group_id_in;\nend",
+          "deprecated": false,
+          "description": "Get a github build. The returned table will have one or zero rows.",
+          "mode": "read",
+          "returns": "table (organization text, repository text, sha text, task_group_id text, state text, created timestamptz, updated timestamptz, installation_id integer, event_type text, event_id text, etag uuid)",
+          "serviceName": "github"
+        },
+        "get_github_builds": {
+          "args": "page_size_in integer, page_offset_in integer, organization_in text, repository_in text, sha_in text",
+          "body": "begin\n  return query\n  select\n    github_builds.organization,\n    github_builds.repository,\n    github_builds.sha,\n    github_builds.task_group_id,\n    github_builds.state,\n    github_builds.created,\n    github_builds.updated,\n    github_builds.installation_id,\n    github_builds.event_type,\n    github_builds.event_id,\n    github_builds.etag\n  from github_builds\n  where\n    (organization_in is null or github_builds.organization = organization_in) and\n    (repository_in is null or github_builds.repository = repository_in) and\n    (sha_in is null or github_builds.sha = sha_in)\n  order by github_builds.updated asc\n  limit get_page_limit(page_size_in)\n  offset get_page_offset(page_offset_in);\nend",
+          "deprecated": false,
+          "description": "Get github builds. ",
+          "mode": "read",
+          "returns": "table (organization text, repository text, sha text, task_group_id text, state text, created timestamptz, updated timestamptz, installation_id integer, event_type text, event_id text, etag uuid)",
+          "serviceName": "github"
+        },
+        "set_github_build_state": {
+          "args": "task_group_id_in text, state_in text",
+          "body": "begin\n  update github_builds\n  set (state, updated, etag) = (\n    state_in,\n    now(),\n    public.gen_random_uuid()\n  ) where github_builds.task_group_id = task_group_id_in;\n  if not found then\n    raise exception 'no such row' using errcode = 'P0002';\n  end if;\nend",
+          "deprecated": false,
+          "description": "Only update the state of a build and update the `updated` timestamp",
+          "mode": "write",
+          "returns": "void",
+          "serviceName": "github"
+        },
+        "taskcluster_github_builds_entities_create": {
+          "args": "pk text, rk text, properties jsonb, overwrite boolean, version integer",
+          "body": "declare\n  new_row github_builds%ROWTYPE;\nbegin\n  select\n    (properties ->> 'organization')::text as organization,\n    (properties ->> 'repository')::text as repository,\n    (properties ->> 'sha')::text as sha,\n    (properties ->> 'taskGroupId')::text as task_group_id,\n    (properties ->> 'state')::text as state,\n    (properties ->> 'created')::timestamptz as created,\n    (properties ->> 'updated')::timestamptz as updated,\n    (properties ->> 'installationId')::integer as installation_id,\n    (properties ->> 'eventType')::text as event_type,\n    (properties ->> 'eventId')::text as event_id,\n    public.gen_random_uuid() as etag\n  into new_row;\n  if overwrite then\n    raise exception 'overwrite not implemented';\n  else\n    execute 'insert into github_builds select $1.*' using new_row;\n  end if;\n  return new_row.etag;\nend",
+          "deprecated": false,
+          "description": "See taskcluster-lib-entities",
+          "mode": "write",
+          "returns": "uuid",
+          "serviceName": "github"
+        },
+        "taskcluster_github_builds_entities_load": {
+          "args": "partition_key text, row_key text",
+          "body": "begin\n return query\n select\n    taskcluster_github_builds_entities_load.partition_key,\n    'taskGroupId' as row_key,\n    jsonb_build_object(\n      'PartitionKey', taskcluster_github_builds_entities_load.partition_key,\n      'RowKey', 'taskGroupId',\n      'organization', organization,\n      'repository', repository,\n      'sha', sha,\n      'taskGroupId', task_group_id,\n      'state', state,\n      'created', created,\n      'updated', updated,\n      'installationId', installation_id,\n      'eventType', event_type,\n      'eventId', event_id) as value,\n    1 as version,\n    github_builds.etag as etag\nfrom github_builds\nwhere\n  github_builds.task_group_id = decode_string_key(taskcluster_github_builds_entities_load.partition_key);\nend",
+          "deprecated": false,
+          "description": "See taskcluster-lib-entities",
+          "mode": "read",
+          "returns": "table (partition_key_out text, row_key_out text, value jsonb, version integer, etag uuid)",
+          "serviceName": "github"
+        },
+        "taskcluster_github_builds_entities_modify": {
+          "args": "partition_key text, row_key text, properties jsonb, version integer, old_etag uuid",
+          "body": "declare\n  new_row github_builds%ROWTYPE;\nbegin\n  select\n    (properties ->> 'organization')::text as organization,\n    (properties ->> 'repository')::text as repository,\n    (properties ->> 'sha')::text as sha,\n    (properties ->> 'taskGroupId')::text as task_group_id,\n    (properties ->> 'state')::text as state,\n    (properties ->> 'created')::timestamptz as created,\n    (properties ->> 'updated')::timestamptz as updated,\n    (properties ->> 'installationId')::integer as installation_id,\n    (properties ->> 'eventType')::text as event_type,\n    (properties ->> 'eventId')::text as event_id,\n    public.gen_random_uuid() as etag\n  into new_row;\n  update github_builds\n  set (\n    organization,\n    repository,\n    sha,\n    task_group_id,\n    state,\n    created,\n    updated,\n    installation_id,\n    event_type,\n    event_id,\n    etag\n  ) = (\n    new_row.organization,\n    new_row.repository,\n    new_row.sha,\n    new_row.task_group_id,\n    new_row.state,\n    new_row.created,\n    new_row.updated,\n    new_row.installation_id,\n    new_row.event_type,\n    new_row.event_id,\n    new_row.etag\n  )\n  where\n    github_builds.task_group_id = decode_string_key(taskcluster_github_builds_entities_modify.partition_key) and\n    github_builds.etag = taskcluster_github_builds_entities_modify.old_etag;\n\n  if found then\n    return query select new_row.etag;\n    return;\n  end if;\n\n  perform github_builds.etag from github_builds\n  where github_builds.task_group_id = decode_string_key(taskcluster_github_builds_entities_modify.partition_key);\n\n  if found then\n    raise exception 'unsuccessful update' using errcode = 'P0004';\n  else\n    raise exception 'no such row' using errcode = 'P0002';\n  end if;\nend",
+          "deprecated": false,
+          "description": "See taskcluster-lib-entities",
+          "mode": "write",
+          "returns": "table (etag uuid)",
+          "serviceName": "github"
+        },
+        "taskcluster_github_builds_entities_remove": {
+          "args": "partition_key text, row_key text",
+          "body": "begin\n  delete\n  from github_builds\n  where\n    github_builds.task_group_id = decode_string_key(partition_key);\n  -- tc-gh does not care if the row existed\n  return query select gen_random_uuid() as etag;\nend",
+          "deprecated": false,
+          "description": "See taskcluster-lib-entities",
+          "mode": "write",
+          "returns": "table (etag uuid)",
+          "serviceName": "github"
+        },
+        "taskcluster_github_builds_entities_scan": {
+          "args": "pk text, rk text, condition text, size integer, page integer",
+          "body": "declare\nbegin\n  if not condition is null then\n    raise exception 'condition not supported';\n  end if;\n  return query\n    select\n      encode_string_key(task_group_id),\n      'taskGroupId' as row_key,\n      jsonb_build_object(\n        'PartitionKey', encode_string_key(task_group_id),\n        'RowKey', 'taskGroupId',\n        'organization', organization,\n        'repository', repository,\n        'sha', sha,\n        'taskGroupId', task_group_id,\n        'state', state,\n        'created', created,\n        'updated', updated,\n        'installationId', installation_id,\n        'eventType', event_type,\n        'eventId', event_id) as value,\n        1 as version,\n    github_builds.etag as etag\n    from github_builds\n    where\n      partition_key is null or\n      task_group_id = decode_string_key(partition_key)\n    order by task_group_id\n    limit case\n      when (size is not null and size > 0) then size + 1\n      else null\n    end\n    offset case\n      when (page is not null and page > 0) then page\n      else 0\n    end;\nend",
+          "deprecated": false,
+          "description": "See taskcluster-lib-entities",
+          "mode": "read",
+          "returns": "table (partition_key text, row_key text, value jsonb, version integer, etag uuid)",
+          "serviceName": "github"
+        }
+      },
+      "migrationScript": "begin\n\n  -- lock this table before reading from it, to prevent loss of concurrent\n  -- updates when the table is dropped.  Note that this may lead to concurrent\n  -- updates failing; the important thing is that they not succeed without\n  -- taking effect.  Failed updates will be retried.\n  lock table taskcluster_github_builds_entities;\n\n  create table github_builds\n  as\n    select\n      (value ->> 'organization')::text as organization,\n      (value ->> 'repository')::text as repository,\n      (value ->> 'sha')::text as sha,\n      (value ->> 'taskGroupId')::text as task_group_id,\n      (value ->> 'state')::text as state,\n      (value ->> 'created')::timestamptz as created,\n      (value ->> 'updated')::timestamptz as updated,\n      (value ->> 'installationId')::integer as installation_id,\n      (value ->> 'eventType')::text as event_type,\n      (value ->> 'eventId')::text as event_id,\n      etag\n    from taskcluster_github_builds_entities;\n  alter table github_builds add primary key (task_group_id);\n  alter table github_builds\n    alter column organization set not null,\n    alter column repository set not null,\n    alter column sha set not null,\n    alter column task_group_id set not null,\n    alter column state set not null,\n    alter column created set not null,\n    alter column updated set not null,\n    alter column installation_id set not null,\n    alter column event_type set not null,\n    alter column event_id set not null,\n    alter column etag set not null,\n    alter column etag set default public.gen_random_uuid();\n  create index on github_builds (organization, repository, sha);\n\n  revoke select, insert, update, delete on taskcluster_github_builds_entities from $db_user_prefix$_github;\n  drop table taskcluster_github_builds_entities;\n  grant select, insert, update, delete on github_builds to $db_user_prefix$_github;\nend",
+      "version": 23
     }
   ]
 }

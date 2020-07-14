@@ -10,10 +10,10 @@ auth:
     roles_entities: write
 github:
   tables:
-    taskcluster_github_builds_entities: write
     taskcluster_integration_owners_entities: write
     taskcluster_checks_to_tasks_entities: write
     taskcluster_check_runs_entities: write
+    github_builds: write
 hooks:
   tables:
     hooks_entities: write
