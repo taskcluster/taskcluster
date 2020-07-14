@@ -90,8 +90,8 @@ let builder = new APIBuilder({
     name: /^[\x20-\x7e]+$/, // Artifact names must be printable ASCII
   },
   context: [
+    'db',
     'Task', // data.Task instance
-    'Artifact', // data.Artifact instance
     'TaskGroup', // data.TaskGroup instance
     'taskGroupExpiresExtension', // Time delay before expiring a task-group
     'TaskGroupMember', // data.TaskGroupMember instance

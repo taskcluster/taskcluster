@@ -22,6 +22,7 @@ let {App} = require('taskcluster-lib-app');
 const tcdb = require('taskcluster-db');
 let pulse = require('taskcluster-lib-pulse');
 const QuickLRU = require('quick-lru');
+const { artifactUtils } = require('./utils');
 
 require('./monitor');
 
@@ -109,29 +110,6 @@ let load = loader({
       monitor: monitor.childMonitor('db'),
       statementTimeout: process === 'server' ? 30000 : 0,
     }),
-  },
-
-  // Create artifacts table
-  Artifact: {
-    requires: [
-      'cfg', 'monitor', 'process',
-      'publicArtifactBucket', 'privateArtifactBucket', 'db',
-    ],
-    setup: async ({cfg, monitor, process, publicArtifactBucket,
-      privateArtifactBucket, db}) =>
-      data.Artifact.setup({
-        db,
-        serviceName: 'queue',
-        tableName: cfg.app.artifactTableName,
-        operationReportChance: cfg.app.azureReportChance,
-        operationReportThreshold: cfg.app.azureReportThreshold,
-        context: {
-          publicBucket: publicArtifactBucket,
-          privateBucket: privateArtifactBucket,
-          monitor: monitor.childMonitor('data.Artifact'),
-        },
-        monitor: monitor.childMonitor('table.artifacts'),
-      }),
   },
 
   // Create task table
@@ -333,16 +311,17 @@ let load = loader({
 
   api: {
     requires: [
-      'cfg', 'publisher', 'schemaset', 'Task', 'Artifact',
+      'cfg', 'publisher', 'schemaset', 'Task',
       'TaskGroup', 'TaskGroupMember', 'TaskGroupActiveSet', 'queueService',
       'publicArtifactBucket', 'privateArtifactBucket',
       'regionResolver', 'monitor', 'dependencyTracker', 'TaskDependency',
       'workClaimer', 'Provisioner', 'workerInfo', 'WorkerType', 'Worker',
+      'db',
     ],
     setup: (ctx) => builder.build({
       context: {
+        db: ctx.db,
         Task: ctx.Task,
-        Artifact: ctx.Artifact,
         TaskGroup: ctx.TaskGroup,
         TaskGroupMember: ctx.TaskGroupMember,
         TaskGroupActiveSet: ctx.TaskGroupActiveSet,
@@ -387,7 +366,7 @@ let load = loader({
 
   // CLI utility to scan tasks
   scan: {
-    requires: ['cfg', 'Artifact', 'Task', 'publicArtifactBucket'],
+    requires: ['cfg', 'Task', 'publicArtifactBucket'],
     setup: options => require('./scan')(options),
   },
 
@@ -451,12 +430,20 @@ let load = loader({
 
   // Create the artifact expiration process (periodic job)
   'expire-artifacts': {
-    requires: ['cfg', 'Artifact', 'monitor'],
-    setup: ({cfg, Artifact, monitor}, ownName) => {
+    requires: ['cfg', 'db', 'publicArtifactBucket', 'privateArtifactBucket', 'monitor'],
+    setup: ({cfg, db, publicArtifactBucket, privateArtifactBucket, monitor}, ownName) => {
       return monitor.oneShot(ownName, async () => {
         const now = taskcluster.fromNow(cfg.app.artifactExpirationDelay);
         debug('Expiring artifacts at: %s, from before %s', new Date(), now);
-        const count = await Artifact.expire(now);
+        const count = await artifactUtils.expire({
+          db,
+          publicBucket: publicArtifactBucket,
+          privateBucket: privateArtifactBucket,
+          monitor,
+          ignoreError: true,
+          expires: now,
+        });
+        // const count = await Artifact.expire(now);
         debug('Expired %s artifacts', count);
       });
     },
