@@ -1,6 +1,5 @@
-const {APIBuilder} = require('taskcluster-lib-api');
+const {APIBuilder, paginateResults} = require('taskcluster-lib-api');
 const helpers = require('./helpers');
-const Entity = require('taskcluster-lib-entities');
 
 /**
  * API end-point for version v1/
@@ -8,8 +7,6 @@ const Entity = require('taskcluster-lib-entities');
  * In this API implementation we shall assume the following context:
  * {
  *   queue:             // taskcluster.Queue instance w. "queue:get-artifact:*"
- *   IndexedTask:       // data.IndexedTask instance
- *   Namespace:         // data.Namespace instance
  * }
  */
 let builder = new APIBuilder({
@@ -24,7 +21,7 @@ let builder = new APIBuilder({
   projectName: 'taskcluster-index',
   serviceName: 'index',
   apiVersion: 'v1',
-  context: ['queue', 'IndexedTask', 'Namespace'],
+  context: ['queue', 'db'],
   params: {
     namespace: helpers.namespaceFormat,
     indexPath: helpers.namespaceFormat,
@@ -57,35 +54,20 @@ builder.declare({
   let namespace = indexPath.join('.');
 
   // Load indexed task
-  let tasks;
-  try {
-    tasks = await this.IndexedTask.query({
-      namespace: namespace,
-      name: name,
-      expires: Entity.op.greaterThan(new Date()),
-    });
-  } catch (err) {
-    // Re-throw the error, if it's not a 404
-    if (err.code !== 'ResourceNotFound') {
-      throw err;
-    }
+  const task = helpers.taskUtils.fromDbRows(await this.db.fns.get_indexed_task(namespace, name));
+
+  if (!task || task.expires <= new Date()) {
     return res.reportError('ResourceNotFound', 'Indexed task not found', {});
   }
-  if (!tasks.entries.length) {
-    return res.reportError('ResourceNotFound', 'Indexed task not found', {});
-  }
-  let task = tasks.entries[0];
-  return res.reply(task.json());
+
+  return res.reply(helpers.taskUtils.serialize(task));
 });
 
 /** GET List namespaces inside another namespace */
 builder.declare({
   method: 'get',
   route: '/namespaces/:namespace?',
-  query: {
-    continuationToken: Entity.continuationTokenPattern,
-    limit: /^[0-9]+$/,
-  },
+  query: paginateResults.query,
   name: 'listNamespaces',
   stability: APIBuilder.stability.stable,
   output: 'list-namespaces-response.yml',
@@ -101,25 +83,19 @@ builder.declare({
     'object.',
   ].join('\n'),
 }, async function(req, res) {
-  let that = this;
   let namespace = req.params.namespace || '';
-  let continuation = req.query.continuationToken || null;
-  let limit = parseInt(req.query.limit || 1000, 10);
-  let query = {
-    parent: namespace,
-    expires: Entity.op.greaterThan(new Date()),
-  };
 
   // Query with given namespace
-  let namespaces = await helpers.listTableEntries({
-    query,
-    limit,
-    continuation,
-    key: 'namespaces',
-    Table: that.Namespace,
-  });
+  const { continuationToken, rows } = await helpers.namespaceUtils.getNamespaces(
+    this.db,
+    { parent: namespace },
+    { query: req.query },
+  );
 
-  res.reply(namespaces);
+  res.reply({
+    namespaces: rows.map(helpers.namespaceUtils.serialize),
+    continuationToken,
+  });
 });
 
 /** POST List namespaces inside another namespace */
@@ -143,35 +119,26 @@ builder.declare({
     'object.',
   ].join('\n'),
 }, async function(req, res) {
-  let that = this;
   let namespace = req.params.namespace || '';
-  let limit = req.body.limit;
-  let continuation = req.body.continuationToken;
-  let query = {
-    parent: namespace,
-    expires: Entity.op.greaterThan(new Date()),
-  };
 
   // Query with given namespace
-  let namespaces = await helpers.listTableEntries({
-    query,
-    limit,
-    continuation,
-    key: 'namespaces',
-    Table: that.Namespace,
-  });
+  const { continuationToken, rows } = await helpers.namespaceUtils.getNamespaces(
+    this.db,
+    { parent: namespace },
+    { query: req.query },
+  );
 
-  res.reply(namespaces);
+  res.reply({
+    namespaces: rows.map(helpers.namespaceUtils.serialize),
+    continuationToken,
+  });
 });
 
 /** List tasks in namespace */
 builder.declare({
   method: 'get',
   route: '/tasks/:namespace?',
-  query: {
-    continuationToken: Entity.continuationTokenPattern,
-    limit: /^[0-9]+$/,
-  },
+  query: paginateResults.query,
   name: 'listTasks',
   stability: APIBuilder.stability.stable,
   category: 'Index Service',
@@ -190,25 +157,17 @@ builder.declare({
     'services, as that makes little sense.',
   ].join('\n'),
 }, async function(req, res) {
-  let that = this;
-  let namespace = req.params.namespace || '';
-  let query = {
-    namespace,
-    expires: Entity.op.greaterThan(new Date()),
-  };
+  const namespace = req.params.namespace || '';
+  const { continuationToken, rows } = await helpers.taskUtils.getIndexedTasks(
+    this.db,
+    { namespace },
+    { query: req.query },
+  );
 
-  let limit = parseInt(req.query.limit || 1000, 10);
-  let continuation = req.query.continuationToken || null;
-
-  let tasks = await helpers.listTableEntries({
-    query,
-    limit,
-    continuation,
-    key: 'tasks',
-    Table: that.IndexedTask,
+  res.reply({
+    tasks: rows.map(helpers.taskUtils.serialize),
+    continuationToken,
   });
-
-  res.reply(tasks);
 });
 
 builder.declare({
@@ -224,25 +183,17 @@ builder.declare({
     '(a version of listTasks with POST for backward compatibility; do not use)',
   ].join('\n'),
 }, async function(req, res) {
-  let that = this;
-  let namespace = req.params.namespace || '';
-  let query = {
-    namespace,
-    expires: Entity.op.greaterThan(new Date()),
-  };
+  const namespace = req.params.namespace || '';
+  const { continuationToken, rows } = await helpers.taskUtils.getIndexedTasks(
+    this.db,
+    { namespace },
+    { query: req.query },
+  );
 
-  let limit = req.body.limit;
-  let continuation = req.body.continuationToken;
-
-  let tasks = await helpers.listTableEntries({
-    query,
-    limit,
-    continuation,
-    key: 'tasks',
-    Table: that.IndexedTask,
+  res.reply({
+    tasks: rows.map(helpers.taskUtils.serialize),
+    continuationToken,
   });
-
-  res.reply(tasks);
 });
 
 /** Insert new task into the index */
@@ -264,7 +215,6 @@ builder.declare({
     'about indexing successfully completed tasks automatically using custom routes.',
   ].join('\n'),
 }, async function(req, res) {
-  let that = this;
   let input = req.body;
   let namespace = req.params.namespace || '';
 
@@ -275,12 +225,12 @@ builder.declare({
   input.expires = new Date(input.expires);
 
   // Insert task
-  return helpers.insertTask(
+  return helpers.taskUtils.insertTask(
+    this.db,
     namespace,
     input,
-    that,
   ).then(function(task) {
-    res.reply(task.json());
+    res.reply(helpers.taskUtils.serialize(task));
   });
 });
 
@@ -327,34 +277,28 @@ builder.declare({
   let namespace = indexPath.join('.');
 
   // Load indexed task
-  return that.IndexedTask.load({
-    namespace: namespace,
-    name: name,
-    expires: Entity.op.greaterThan(new Date()),
-  }).then(function(task) {
-    // Build signed url for artifact
-    let url = null;
-    if (/^public\//.test(artifactName)) {
-      url = that.queue.externalBuildUrl(
-        that.queue.getLatestArtifact,
-        task.taskId,
-        artifactName,
-      );
-    } else {
-      url = that.queue.externalBuildSignedUrl(
-        that.queue.getLatestArtifact,
-        task.taskId,
-        artifactName, {
-          expiration: 15 * 60,
-        });
-    }
-    // Redirect to artifact
-    return res.redirect(303, url);
-  }, function(err) {
-    // Re-throw the error, if it's not a 404
-    if (err.code !== 'ResourceNotFound') {
-      throw err;
-    }
+  const task = helpers.taskUtils.fromDbRows(await this.db.fns.get_indexed_task(namespace, name));
+
+  if (!task || task.expires <= new Date()) {
     return res.reportError('ResourceNotFound', 'Indexed task not found', {});
-  });
+  }
+
+  // Build signed url for artifact
+  let url;
+  if (/^public\//.test(artifactName)) {
+    url = that.queue.externalBuildUrl(
+      that.queue.getLatestArtifact,
+      task.taskId,
+      artifactName,
+    );
+  } else {
+    url = that.queue.externalBuildSignedUrl(
+      that.queue.getLatestArtifact,
+      task.taskId,
+      artifactName, {
+        expiration: 15 * 60,
+      });
+  }
+  // Redirect to artifact
+  return res.redirect(303, url);
 });
