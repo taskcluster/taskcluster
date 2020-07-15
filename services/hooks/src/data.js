@@ -6,7 +6,7 @@ const Hook = Entity.configure({
   version: 1,
   partitionKey: Entity.keys.StringKey('hookGroupId'),
   rowKey: Entity.keys.StringKey('hookId'),
-  signEntities: true,
+  // signEntities: true,
   properties: {
     hookGroupId: Entity.types.String,
     hookId: Entity.types.String,
@@ -31,7 +31,7 @@ const Hook = Entity.configure({
   },
 }).configure({
   version: 2,
-  signEntities: true,
+  // signEntities: true,
   properties: {
     hookGroupId: Entity.types.String,
     hookId: Entity.types.String,
@@ -64,7 +64,7 @@ const Hook = Entity.configure({
   },
 }).configure({
   version: 3,
-  signEntities: true,
+  // signEntities: true,
   properties: {
     hookGroupId: Entity.types.String,
     hookId: Entity.types.String,
@@ -95,7 +95,7 @@ const Hook = Entity.configure({
   },
 }).configure({
   version: 4,
-  signEntities: true,
+  // signEntities: true,
   properties: {
     hookGroupId: Entity.types.String,
     hookId: Entity.types.String,
@@ -128,7 +128,7 @@ const Hook = Entity.configure({
   },
 }).configure({
   version: 5,
-  signEntities: true,
+  // signEntities: true,
   properties: {
     hookGroupId: Entity.types.String,
     hookId: Entity.types.String,
@@ -159,7 +159,7 @@ const Hook = Entity.configure({
   },
 }).configure({
   version: 6,
-  signEntities: true,
+  // signEntities: true,
   properties: {
     hookGroupId: Entity.types.String,
     hookId: Entity.types.String,

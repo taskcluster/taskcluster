@@ -251,6 +251,8 @@ exports.testEntityTable = ({
   entityTableName, newTableName,
   // Entity class
   EntityClass,
+  // Crypto key for when an entity has one or multiple encrypted fields.
+  cryptoKey,
   // named sample values, each given as an object containing entity properties
   samples,
   // array of {condition, expectedSample} where condition are passed to load,
@@ -300,7 +302,7 @@ exports.testEntityTable = ({
         tableName: entityTableName,
         monitor: false,
         context: {},
-        cryptoKey,
+        cryptoKey: cryptoKey ? cryptoKey : undefined,
       });
     });
 

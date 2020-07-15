@@ -118,7 +118,7 @@ helper.withServer = (mock, skipping) => {
 exports.resetTables = (mock, skipping) => {
   setup('reset tables', async function() {
     await resetTables({tableNames: [
-      'hooks_entities',
+      'hooks',
       'hooks_queues',
       'hooks_last_fires',
     ]});

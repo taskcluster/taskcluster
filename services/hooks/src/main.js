@@ -58,7 +58,7 @@ const load = loader({
         tableName: cfg.app.hookTableName,
         monitor: monitor.childMonitor('table.hooks'),
         cryptoKey: cfg.azure.cryptoKey,
-        signingKey: cfg.azure.signingKey,
+        // signingKey: cfg.azure.signingKey,
       });
     },
   },

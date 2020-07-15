@@ -42,7 +42,6 @@ begin
           chunk = chunk + 1;
         end loop;
 
-
         return value;
       end;
     $$

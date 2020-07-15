@@ -1,0 +1,255 @@
+version: 34
+migrationScript: 0034-migration.sql
+downgradeScript: 0034-downgrade.sql
+methods:
+  hooks_entities_load:
+    description: See taskcluster-lib-entities
+    mode: read
+    serviceName: hooks
+    args: partition_key text, row_key text
+    returns: table (partition_key_out text, row_key_out text, value jsonb, version integer, etag uuid)
+    body: |-
+      begin
+        return query
+        select
+          hooks_entities_load.partition_key,
+          hooks_entities_load.row_key,
+          encrypted_entity_buf_encode(
+            encrypted_entity_buf_encode(
+              entity_buf_encode(
+                entity_buf_encode(
+                  entity_buf_encode(
+                    entity_buf_encode(
+                      entity_buf_encode(
+                        jsonb_build_object(
+                          'PartitionKey', encode_string_key(hook_group_id),
+                          'RowKey', encode_string_key(hook_id),
+                          'hookGroupId', hook_group_id,
+                          'hookId', hook_id,
+                          'nextScheduledDate', next_scheduled_date),
+                        'metadata', metadata::text),
+                      'task', task::text),
+                    'bindings', bindings::text),
+                  'schedule', schedule::text),
+                'triggerSchema', trigger_schema::text),
+              'nextTaskId', next_task_id),
+            'triggerToken', trigger_token) as value,
+          1 as version,
+          hooks.etag as etag
+        from hooks
+        where
+          hooks.hook_group_id = decode_string_key(hooks_entities_load.partition_key) and
+          hooks.hook_id = decode_string_key(hooks_entities_load.row_key);
+      end
+  hooks_entities_create:
+    serviceName: hooks
+    description: See taskcluster-lib-entities
+    mode: write
+    args: pk text, rk text, properties jsonb, overwrite boolean, version integer
+    returns: uuid
+    body: |-
+      declare
+        new_row hooks%ROWTYPE;
+      begin
+        select
+          (properties ->> 'hookGroupId')::text,
+          (properties ->> 'hookId')::text,
+          entity_buf_decode(properties, 'metadata')::jsonb,
+          entity_buf_decode(properties, 'task')::jsonb,
+          entity_buf_decode(properties, 'bindings')::jsonb,
+          entity_buf_decode(properties, 'schedule')::jsonb,
+          entity_to_crypto_container_v0(properties, 'triggerToken')::jsonb,
+          entity_to_crypto_container_v0(properties, 'nextTaskId')::jsonb,
+          (properties ->> 'nextScheduledDate')::timestamptz,
+          entity_buf_decode(properties, 'triggerSchema')::jsonb,
+          public.gen_random_uuid()
+        into new_row;
+        if overwrite then
+          raise exception 'overwrite not implemented';
+        else
+          execute 'insert into hooks select $1.*' using new_row;
+        end if;
+        return new_row.etag;
+      end
+  hooks_entities_remove:
+    serviceName: hooks
+    description: See taskcluster-lib-entities
+    mode: write
+    args: partition_key text, row_key text
+    returns: table (etag uuid)
+    body: |-
+      begin
+        return query delete from hooks
+        where
+          hooks.hook_group_id = decode_string_key(hooks_entities_remove.partition_key) and
+          hooks.hook_id = decode_string_key(hooks_entities_remove.row_key)
+        returning hooks.etag;
+      end
+  hooks_entities_modify:
+    serviceName: hooks
+    description: See taskcluster-lib-entities
+    mode: write
+    args: partition_key text, row_key text, properties jsonb, version integer, old_etag uuid
+    returns: table (etag uuid)
+    body: |-
+      declare
+        new_row hooks%ROWTYPE;
+      begin
+        select
+          (properties ->> 'hookGroupId')::text,
+          (properties ->> 'hookId')::text,
+          entity_buf_decode(properties, 'metadata')::jsonb,
+          entity_buf_decode(properties, 'task')::jsonb,
+          entity_buf_decode(properties, 'bindings')::jsonb,
+          entity_buf_decode(properties, 'schedule')::jsonb,
+          entity_to_crypto_container_v0(properties, 'triggerToken')::jsonb,
+          entity_to_crypto_container_v0(properties, 'nextTaskId')::jsonb,
+          (properties ->> 'nextScheduledDate')::timestamptz,
+          entity_buf_decode(properties, 'triggerSchema')::jsonb,
+          public.gen_random_uuid() as etag
+        into new_row;
+        update hooks
+        set (
+          metadata,
+          task,
+          bindings,
+          schedule,
+          trigger_token,
+          next_task_id,
+          next_scheduled_date,
+          trigger_schema,
+          etag
+        ) = (
+          new_row.metadata,
+          new_row.task,
+          new_row.bindings,
+          new_row.schedule,
+          new_row.trigger_token,
+          new_row.next_task_id,
+          new_row.next_scheduled_date,
+          new_row.trigger_schema,
+          new_row.etag
+        )
+        where
+          hooks.hook_group_id = decode_string_key(hooks_entities_modify.partition_key) and
+          hooks.hook_id = decode_string_key(hooks_entities_modify.row_key) and
+          hooks.etag = hooks_entities_modify.old_etag;
+        if found then
+          return query select new_row.etag;
+          return;
+        end if;
+        perform hooks.etag from hooks
+        where
+          hooks.hook_group_id = decode_string_key(hooks_entities_modify.partition_key) and
+          hooks.hook_id = decode_string_key(hooks_entities_modify.row_key);
+        if found then
+          raise exception 'unsuccessful update' using errcode = 'P0004';
+        else
+          raise exception 'no such row' using errcode = 'P0002';
+        end if;
+      end
+  hooks_entities_scan:
+    description: See taskcluster-lib-entities
+    mode: read
+    serviceName: hooks
+    args: pk text, rk text, condition text, size integer, page integer
+    returns: table (partition_key text, row_key text, value jsonb, version integer, etag uuid)
+    body: |-
+      declare
+        cond text[];
+        nsd_cond_operator text;
+        nsd_cond_operand timestamptz;
+        partition_key_var text;
+        row_key_var text;
+      begin
+        if not condition is null then
+          cond := regexp_split_to_array(condition, '\s+');
+          nsd_cond_operator := cond[4];
+          nsd_cond_operand := cond[5] :: timestamptz;
+
+          return query select
+            encode_string_key(hook_group_id) as partition_key,
+            encode_string_key(hook_id) as row_key,
+            encrypted_entity_buf_encode(
+              encrypted_entity_buf_encode(
+                entity_buf_encode(
+                  entity_buf_encode(
+                    entity_buf_encode(
+                      entity_buf_encode(
+                        entity_buf_encode(
+                          jsonb_build_object(
+                            'PartitionKey', encode_string_key(hook_group_id),
+                            'RowKey', encode_string_key(hook_id),
+                            'hookGroupId', hook_group_id,
+                            'hookId', hook_id,
+                            'nextScheduledDate', next_scheduled_date),
+                          'metadata', metadata::text),
+                        'task', task::text),
+                      'bindings', bindings::text),
+                    'schedule', schedule::text),
+                  'triggerSchema', trigger_schema::text),
+                'nextTaskId', next_task_id),
+              'triggerToken', trigger_token) as value,
+            1 as version,
+            hooks.etag as etag from hooks
+          where
+            (hooks_entities_scan.pk is null or decode_string_key(hooks_entities_scan.pk) = hook_group_id) and
+            (hooks_entities_scan.pk is null or decode_string_key(hooks_entities_scan.rk) = hook_id) and
+            case
+              when nsd_cond_operator = '=' then next_scheduled_date = nsd_cond_operand
+              when nsd_cond_operator = '<' then next_scheduled_date < nsd_cond_operand
+              when nsd_cond_operator = '<=' then next_scheduled_date <= nsd_cond_operand
+              when nsd_cond_operator = '>' then next_scheduled_date > nsd_cond_operand
+              when nsd_cond_operator = '>=' then next_scheduled_date >= nsd_cond_operand
+              else next_scheduled_date <> nsd_cond_operand
+            end
+          order by hooks.hook_group_id, hooks.hook_id
+          limit case
+            when (size is not null and size > 0) then size + 1
+            else null
+          end
+          offset case
+            when (page is not null and page > 0) then page
+            else 0
+          end;
+        else
+          return query select
+            encode_string_key(hook_group_id) as partition_key,
+            encode_string_key(hook_id) as row_key,
+            encrypted_entity_buf_encode(
+              encrypted_entity_buf_encode(
+                entity_buf_encode(
+                  entity_buf_encode(
+                    entity_buf_encode(
+                      entity_buf_encode(
+                        entity_buf_encode(
+                          jsonb_build_object(
+                            'PartitionKey', encode_string_key(hook_group_id),
+                            'RowKey', encode_string_key(hook_id),
+                            'hookGroupId', hook_group_id,
+                            'hookId', hook_id,
+                            'nextScheduledDate', next_scheduled_date),
+                          'metadata', metadata::text),
+                        'task', task::text),
+                      'bindings', bindings::text),
+                    'schedule', schedule::text),
+                  'triggerSchema', trigger_schema::text),
+                'nextTaskId', next_task_id),
+              'triggerToken', trigger_token) as value,
+            1 as version,
+            hooks.etag as etag from hooks
+          where
+            (hooks_entities_scan.pk is null or decode_string_key(hooks_entities_scan.pk) = hook_group_id) and
+            (hooks_entities_scan.rk is null or decode_string_key(hooks_entities_scan.rk) = hook_id)
+          order by hooks.hook_group_id, hooks.hook_id
+          limit case
+            when (size is not null and size > 0) then size + 1
+            else null
+          end
+          offset case
+            when (size is not null and size > 0 and page is not null and page > 0) then page
+            else 0
+          end;
+        end if;
+      end
+
