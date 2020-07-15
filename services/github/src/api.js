@@ -122,11 +122,11 @@ function resolve(res, status, message) {
  Receives owner's name, the Azure table, and github object.
  Returns either authenticated github object or null
 ***/
-async function installationAuthenticate(owner, OwnersDirectory, github) {
+async function installationAuthenticate(owner, db, github) {
   // Look up the installation ID in Azure. If no such owner in the table, no error thrown
-  let ownerInfo = await OwnersDirectory.load({owner}, true);
+  let [ownerInfo] = await db.fns.get_github_integration(owner);
   if (ownerInfo) {
-    return await github.getInstallationGithub(ownerInfo.installationId);
+    return await github.getInstallationGithub(ownerInfo.installation_id);
   } else {
     return null;
   }
@@ -173,7 +173,7 @@ let builder = new APIBuilder({
   ].join('\n'),
   serviceName: 'github',
   apiVersion: 'v1',
-  context: ['db', 'OwnersDirectory', 'monitor', 'publisher', 'cfg', 'ajv', 'github'],
+  context: ['db', 'monitor', 'publisher', 'cfg', 'ajv', 'github'],
   errorCodes: {
     ForbiddenByGithub: 403,
   },
@@ -269,10 +269,10 @@ builder.declare({
 
       case 'integration_installation':
       // Creates a new entity or overwrites an existing one
-        await this.OwnersDirectory.create({
-          installationId: body.installation.id,
-          owner: body.installation.account.login,
-        }, true);
+        await this.db.fns.create_github_integration(
+          body.installation.account.login,
+          body.installation.id,
+        );
         return resolve(res, 200, 'Created table row!');
 
       default:
@@ -383,7 +383,7 @@ builder.declare({
     },
   };
 
-  let instGithub = await installationAuthenticate(owner, this.OwnersDirectory, this.github);
+  let instGithub = await installationAuthenticate(owner, this.db, this.github);
 
   if (instGithub) {
     try {
@@ -423,7 +423,7 @@ builder.declare({
   // Extract owner and repo from request into variables
   let {owner, repo} = req.params;
 
-  let instGithub = await installationAuthenticate(owner, this.OwnersDirectory, this.github);
+  let instGithub = await installationAuthenticate(owner, this.db, this.github);
 
   if (instGithub) {
     try {
@@ -469,7 +469,7 @@ builder.declare({
   // Extract owner, repo and branch from request into variables
   let {owner, repo, branch} = req.params;
 
-  let instGithub = await installationAuthenticate(owner, this.OwnersDirectory, this.github);
+  let instGithub = await installationAuthenticate(owner, this.db, this.github);
 
   // Get task group ID
   if (instGithub) {
@@ -506,7 +506,7 @@ builder.declare({
   // Extract other attributes from POST attributes
   let {state, target_url, description, context} = req.body;
 
-  let instGithub = await installationAuthenticate(owner, this.OwnersDirectory, this.github);
+  let instGithub = await installationAuthenticate(owner, this.db, this.github);
 
   if (instGithub) {
     try {
@@ -558,7 +558,7 @@ builder.declare({
   // Extract body from POST attributes
   let {body} = req.body;
 
-  let instGithub = await installationAuthenticate(owner, this.OwnersDirectory, this.github);
+  let instGithub = await installationAuthenticate(owner, this.db, this.github);
 
   if (instGithub) {
     try {

@@ -3,7 +3,6 @@ const helper = require('../helper');
 const testing = require('taskcluster-lib-testing');
 const slugid = require('slugid');
 const Entity = require('taskcluster-lib-entities');
-const { ChecksToTasks } = require('../../../services/github/src/data');
 
 const THIS_VERSION = parseInt(/.*\/0*(\d+)_test\.js/.exec(__filename)[1]);
 const PREV_VERSION = THIS_VERSION - 1;
@@ -21,7 +20,7 @@ const CheckRuns = Entity.configure({
     checkRunId: Entity.types.String,
   },
 });
-module.exports.ChecksToTasks = Entity.configure({
+const ChecksToTasks = Entity.configure({
   version: 1,
   partitionKey: Entity.keys.StringKey('checkSuiteId'),
   rowKey: Entity.keys.StringKey('checkRunId'),

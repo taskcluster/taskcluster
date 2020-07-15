@@ -104,3 +104,40 @@ methods:
       begin
           raise exception 'github integrations are immutable';
       end
+  upsert_github_integration:
+    serviceName: github
+    description: Create a single integration. 
+    mode: write
+    args: owner_in text, installation_id_in integer
+    returns: void
+    body: |-
+      begin
+        insert into github_integrations (owner, installation_id) values (owner_in, installation_id_in)
+        on conflict (owner) do update set installation_id = installation_id_in;
+      end
+  get_github_integration:
+    serviceName: github
+    description: Get a single integration by owner.
+    mode: read
+    args: owner_in text
+    returns: table (owner text, installation_id integer)
+    body: |-
+      begin
+        return query select github_integrations.owner, github_integrations.installation_id from github_integrations where github_integrations.owner = owner_in;
+      end
+  get_github_integrations:
+    serviceName: github
+    description: Get a list of integrations.
+    mode: read
+    args: page_size_in integer, page_offset_in integer
+    returns: table (owner text, installation_id integer)
+    body: |-
+      begin
+        return query select
+          github_integrations.owner,
+          github_integrations.installation_id
+        from github_integrations
+        order by github_integrations.installation_id
+        limit get_page_limit(page_size_in)
+        offset get_page_offset(page_offset_in);
+      end

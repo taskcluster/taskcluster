@@ -11,7 +11,6 @@ const testing = require('taskcluster-lib-testing');
  */
 helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   helper.withDb(mock, skipping);
-  helper.withEntities(mock, skipping);
   helper.withFakeGithub(mock, skipping);
   helper.withPulse(mock, skipping);
   helper.withServer(mock, skipping);
@@ -70,15 +69,15 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       'Unknown',
     );
 
-    await helper.OwnersDirectory.create({
-      installationId: 9090,
-      owner: 'abc123',
-    });
+    await helper.db.fns.upsert_github_integration(
+      'abc123',
+      9090,
+    );
 
-    await helper.OwnersDirectory.create({
-      installationId: 9091,
-      owner: 'qwerty',
-    });
+    await helper.db.fns.upsert_github_integration(
+      'qwerty',
+      9091,
+    );
   });
 
   let github;

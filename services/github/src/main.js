@@ -3,7 +3,6 @@ const builder = require('./api');
 const exchanges = require('./exchanges');
 const Handlers = require('./handlers');
 const Intree = require('./intree');
-const data = require('./data');
 const Ajv = require('ajv');
 const config = require('taskcluster-lib-config');
 const SchemaSet = require('taskcluster-lib-validate');
@@ -102,49 +101,16 @@ const load = loader({
     }),
   },
 
-  OwnersDirectory: {
-    requires: ['cfg', 'monitor', 'db'],
-    setup: async ({cfg, monitor, db}) => data.OwnersDirectory.setup({
-      db,
-      serviceName: 'github',
-      tableName: cfg.app.ownersDirectoryTableName,
-      monitor: monitor.childMonitor('table.ownersdirectory'),
-    }),
-  },
-
-  CheckRuns: {
-    requires: ['cfg', 'monitor', 'db'],
-    setup: async ({cfg, monitor, db}) => data.CheckRuns.setup({
-      db,
-      serviceName: 'github',
-      tableName: cfg.app.checkRunsTableName,
-      monitor: monitor.childMonitor('table.checkruns'),
-    }),
-  },
-
-  ChecksToTasks: {
-    requires: ['cfg', 'monitor', 'db'],
-    setup: async ({cfg, monitor, db}) => data.ChecksToTasks.setup({
-      db,
-      serviceName: 'github',
-      tableName: cfg.app.checksToTasksTableName,
-      monitor: monitor.childMonitor('table.checkstotasks'),
-    }),
-  },
-
   api: {
     requires: [
-      'cfg', 'monitor', 'schemaset', 'github', 'publisher', 'db',
-      'OwnersDirectory', 'ajv'],
-    setup: ({cfg, monitor, schemaset, github, publisher, db,
-      OwnersDirectory, ajv}) => builder.build({
+      'cfg', 'monitor', 'schemaset', 'github', 'publisher', 'db', 'ajv'],
+    setup: ({cfg, monitor, schemaset, github, publisher, db, ajv}) => builder.build({
       rootUrl: cfg.taskcluster.rootUrl,
       context: {
         publisher,
         cfg,
         github,
         db,
-        OwnersDirectory,
         ajv,
         monitor: monitor.childMonitor('api-context'),
       },
@@ -165,16 +131,16 @@ const load = loader({
   },
 
   syncInstallations: {
-    requires: ['github', 'OwnersDirectory', 'monitor'],
-    setup: ({github, OwnersDirectory, monitor}, ownName) => {
+    requires: ['github', 'db', 'monitor'],
+    setup: ({github, db, monitor}, ownName) => {
       return monitor.oneShot(ownName, async () => {
         const gh = await github.getAppGithub();
         const installations = (await gh.apps.listInstallations({})).data;
         await Promise.all(installations.map(i => {
-          return OwnersDirectory.create({
-            installationId: i.id,
-            owner: i.account.login,
-          }, true);
+          return db.fns.upsert_github_integration(
+            i.account.login,
+            i.id,
+          );
         }));
       });
     },
@@ -190,8 +156,6 @@ const load = loader({
       'reference',
       'pulseClient',
       'publisher',
-      'CheckRuns',
-      'ChecksToTasks',
       'db',
     ],
     setup: async ({
@@ -203,8 +167,6 @@ const load = loader({
       reference,
       pulseClient,
       publisher,
-      CheckRuns,
-      ChecksToTasks,
       db,
     }) =>
       new Handlers({
@@ -218,7 +180,7 @@ const load = loader({
         deprecatedInitialStatusQueueName: cfg.app.deprecatedInitialStatusQueue,
         resultStatusQueueName: cfg.app.resultStatusQueue,
         initialStatusQueueName: cfg.app.initialStatusQueue,
-        context: {cfg, github, schemaset, db, CheckRuns, ChecksToTasks, publisher},
+        context: {cfg, github, schemaset, db, publisher},
         pulseClient,
       }),
   },

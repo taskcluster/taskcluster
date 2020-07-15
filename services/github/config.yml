@@ -6,10 +6,6 @@ defaults:
     deprecatedInitialStatusQueue: 'stat-init'
     resultStatusQueue: 'ch-result'
     initialStatusQueue: 'ch-init'
-    buildsTableName: 'taskcluster_github_builds_entities'
-    ownersDirectoryTableName: 'taskcluster_integration_owners_entities'
-    checkRunsTableName: 'taskcluster_check_runs_entities'
-    checksToTasksTableName: 'taskcluster_checks_to_tasks_entities'
     checkTaskRoute: 'checks'
     statusTaskRoute: 'statuses'
     statusContext: !env APPLICATION_NAME

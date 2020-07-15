@@ -5,6 +5,9 @@ const assert = require('assert');
 
 class FakeGithub {
   constructor(installation_id) {
+    if (installation_id === undefined) {
+      throw new Error('Cannot make FakeGithub with undefined id');
+    }
     this._installedOn = null;
     this._taskcluster_yml_files = {};
     this._org_membership = {};
