@@ -159,7 +159,7 @@ const load = loader(
 
         Object.keys(cfg.login.strategies || {}).forEach((name) => {
           const Strategy = require('./login/strategies/' + name);
-          const options = { name, cfg, monitor };
+          const options = { name, cfg, monitor, db };
 
           strategies[name] = new Strategy(options);
         });
