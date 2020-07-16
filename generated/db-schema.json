@@ -2,7 +2,7 @@
   "access": {
     "auth": {
       "tables": {
-        "clients_entities": "write",
+        "clients": "write",
         "roles": "write"
       }
     },
@@ -108,12 +108,19 @@
       "provisioner_id": "text not null",
       "worker_type": "text not null"
     },
-    "clients_entities": {
-      "etag": "uuid",
-      "partition_key": "text not null",
-      "row_key": "text not null",
-      "value": "jsonb not null",
-      "version": "integer not null"
+    "clients": {
+      "client_id": "text not null",
+      "created": "timestamp with time zone not null",
+      "delete_on_expiration": "boolean not null",
+      "description": "text not null",
+      "disabled": "boolean not null",
+      "encrypted_access_token": "jsonb not null",
+      "etag": "uuid not null",
+      "expires": "timestamp with time zone not null",
+      "last_date_used": "timestamp with time zone not null",
+      "last_modified": "timestamp with time zone not null",
+      "last_rotated": "timestamp with time zone not null",
+      "scopes": "jsonb not null"
     },
     "denylisted_notifications": {
       "etag": "uuid",
@@ -4519,6 +4526,58 @@
       },
       "migrationScript": "begin\n\n  create table access_tokens(\n    encrypted_access_token jsonb not null,\n    hashed_access_token text not null,\n    client_id text not null,\n    redirect_uri text not null,\n    identity text not null,\n    identity_provider_id text not null,\n    expires timestamptz not null,\n    client_details jsonb not null,\n    etag uuid not null default public.gen_random_uuid()\n  );\n  alter table access_tokens add primary key (hashed_access_token);\n  grant select, insert, update, delete on access_tokens to $db_user_prefix$_web_server;\n\n  revoke select, insert, update, delete on access_token_table_entities from $db_user_prefix$_web_server;\n  drop table access_token_table_entities;\n\nend\n",
       "version": 40
+    },
+    {
+      "downgradeScript": "begin\n  -- lock this table before reading from it, to prevent loss of concurrent\n  -- updates when the table is dropped.\n  lock table clients;\n\n  create table clients_entities(\n    partition_key text, row_key text,\n    value jsonb not null,\n    version integer not null,\n    etag uuid default public.gen_random_uuid());\n  alter table clients_entities add primary key (partition_key, row_key);\n\n  insert into clients_entities\n  select\n    encode_string_key(client_id) as partition_key,\n    'client' as row_key,\n    entity_buf_encode(\n      encrypted_entity_buf_encode(\n        entity_buf_encode(\n          entity_buf_encode(\n            jsonb_build_object(\n              'PartitionKey', encode_string_key(client_id),\n              'RowKey', 'client',\n              'clientId', client_id,\n              'disabled', disabled::int,\n              'expires', expires),\n            'description', description),\n          'scopes', scopes::text),\n        'accessToken', encrypted_access_token),\n      'details', jsonb_build_object(\n        'created', created,\n        'lastModified', last_modified,\n        'lastDateUsed', last_date_used,\n        'lastRotated', last_rotated,\n        'deleteOnExpiration', delete_on_expiration\n      )::text) as value,\n    1 as version,\n    etag\n  from clients;\n\n  revoke select, insert, update, delete on clients from $db_user_prefix$_hooks;\n  drop table clients;\n  grant select, insert, update, delete on clients_entities to $db_user_prefix$_hooks;\nend\n\n",
+      "methods": {
+        "clients_entities_create": {
+          "args": "pk text, rk text, properties jsonb, overwrite boolean, version integer",
+          "body": "declare\n  new_etag uuid = gen_random_uuid();\nbegin\n  if overwrite then\n    insert into clients\n    select\n      (properties ->> 'clientId')::text as client_id,\n      entity_buf_decode(properties, 'description')::text as description,\n      entity_to_crypto_container_v0(properties, 'accessToken') as encrypted_access_token,\n      (properties ->> 'expires')::timestamptz as expires,\n      (properties ->> 'disabled')::boolean as disabled,\n      entity_buf_decode(properties, 'scopes')::jsonb as scopes,\n      (details ->> 'created')::timestamptz as created,\n      (details ->> 'lastModified')::timestamptz as last_modified,\n      (details ->> 'lastDateUsed')::timestamptz as last_date_used,\n      (details ->> 'lastRotated')::timestamptz as last_rotated,\n      (details ->> 'deleteOnExpiration')::boolean as delete_on_expiration,\n      new_etag as etag\n    from (\n      select\n        entity_buf_decode(clients_entities_create.properties, 'details')::jsonb as details\n    ) as expanded\n    on conflict (client_id) do update set\n      description = excluded.description,\n      encrypted_access_token = excluded.encrypted_access_token,\n      expires = excluded.expires,\n      disabled = excluded.disabled,\n      scopes = excluded.scopes,\n      created = excluded.created,\n      last_modified = excluded.last_modified,\n      last_date_used = excluded.last_date_used,\n      last_rotated = excluded.last_rotated,\n      delete_on_expiration = excluded.delete_on_expiration,\n      etag = excluded.etag;\n  else\n    insert into clients\n    select\n      (properties ->> 'clientId')::text as client_id,\n      entity_buf_decode(properties, 'description')::text as description,\n      entity_to_crypto_container_v0(properties, 'accessToken') as encrypted_access_token,\n      (properties ->> 'expires')::timestamptz as expires,\n      (properties ->> 'disabled')::boolean as disabled,\n      entity_buf_decode(properties, 'scopes')::jsonb as scopes,\n      (details ->> 'created')::timestamptz as created,\n      (details ->> 'lastModified')::timestamptz as last_modified,\n      (details ->> 'lastDateUsed')::timestamptz as last_date_used,\n      (details ->> 'lastRotated')::timestamptz as last_rotated,\n      (details ->> 'deleteOnExpiration')::boolean as delete_on_expiration,\n      new_etag as etag\n    from (\n      select\n        entity_buf_decode(clients_entities_create.properties, 'details')::jsonb as details\n    ) as expanded;\n  end if;\n\n\n  return new_etag;\nend",
+          "deprecated": false,
+          "description": "See taskcluster-lib-entities",
+          "mode": "write",
+          "returns": "uuid",
+          "serviceName": "auth"
+        },
+        "clients_entities_load": {
+          "args": "partition_key text, row_key text",
+          "body": "begin\n  return query\n  select\n    clients_entities_load.partition_key,\n    clients_entities_load.row_key,\n    entity_buf_encode(\n      encrypted_entity_buf_encode(\n        entity_buf_encode(\n          entity_buf_encode(\n            jsonb_build_object(\n              'PartitionKey', clients_entities_load.partition_key,\n              'RowKey', clients_entities_load.row_key,\n              'clientId', client_id,\n              'disabled', disabled::int,\n              'expires', expires),\n            'description', description),\n          'scopes', scopes::text),\n        'accessToken', encrypted_access_token),\n      'details', jsonb_build_object(\n        'created', to_js_iso8601(created::text),\n        'lastModified', to_js_iso8601(last_modified::text),\n        'lastDateUsed', to_js_iso8601(last_date_used::text),\n        'lastRotated', to_js_iso8601(last_rotated::text),\n        'deleteOnExpiration', delete_on_expiration\n      )::text) as value,\n    1 as version,\n    clients.etag as etag\n  from clients\n  where\n    clients.client_id = decode_string_key(clients_entities_load.partition_key);\nend",
+          "deprecated": false,
+          "description": "See taskcluster-lib-entities",
+          "mode": "read",
+          "returns": "table (partition_key_out text, row_key_out text, value jsonb, version integer, etag uuid)",
+          "serviceName": "auth"
+        },
+        "clients_entities_modify": {
+          "args": "partition_key text, row_key text, properties jsonb, version integer, old_etag uuid",
+          "body": "declare\n  new_row clients%ROWTYPE;\nbegin\n  select\n    (properties ->> 'clientId')::text as client_id,\n    entity_buf_decode(properties, 'description')::text as description,\n    entity_to_crypto_container_v0(properties, 'accessToken') as encrypted_access_token,\n    (properties ->> 'expires')::timestamptz as expires,\n    (properties ->> 'disabled')::boolean as disabled,\n    entity_buf_decode(properties, 'scopes')::jsonb as scopes,\n    (details ->> 'created')::timestamptz as created,\n    (details ->> 'lastModified')::timestamptz as last_modified,\n    (details ->> 'lastDateUsed')::timestamptz as last_date_used,\n    (details ->> 'lastRotated')::timestamptz as last_rotated,\n    (details ->> 'deleteOnExpiration')::boolean as delete_on_expiration,\n    public.gen_random_uuid() as etag\n    from (\n      select\n        entity_buf_decode(properties, 'details')::jsonb as details\n    ) as expanded\n  into new_row;\n\n  update clients\n  set (\n    description,\n    encrypted_access_token,\n    expires,\n    disabled,\n    scopes,\n    created,\n    last_modified,\n    last_date_used,\n    last_rotated,\n    delete_on_expiration,\n    etag\n  ) = (\n    new_row.description,\n    new_row.encrypted_access_token,\n    new_row.expires,\n    new_row.disabled,\n    new_row.scopes,\n    new_row.created,\n    new_row.last_modified,\n    new_row.last_date_used,\n    new_row.last_rotated,\n    new_row.delete_on_expiration,\n    new_row.etag\n  )\n  where\n    clients.client_id = decode_string_key(clients_entities_modify.partition_key) and\n    clients.etag = clients_entities_modify.old_etag;\n\n  if found then\n    return query select new_row.etag;\n    return;\n  end if;\n\n  perform clients.etag from clients\n  where\n    clients.client_id = decode_string_key(clients_entities_modify.partition_key);\n  if found then\n    raise exception 'unsuccessful update' using errcode = 'P0004';\n  else\n    raise exception 'no such row' using errcode = 'P0002';\n  end if;\nend",
+          "deprecated": false,
+          "description": "See taskcluster-lib-entities",
+          "mode": "write",
+          "returns": "table (etag uuid)",
+          "serviceName": "auth"
+        },
+        "clients_entities_remove": {
+          "args": "partition_key text, row_key text",
+          "body": "begin\n  return query\n  delete from clients\n  where\n    clients.client_id = decode_string_key(clients_entities_remove.partition_key)\n  returning clients.etag;\nend",
+          "deprecated": false,
+          "description": "See taskcluster-lib-entities",
+          "mode": "write",
+          "returns": "table (etag uuid)",
+          "serviceName": "auth"
+        },
+        "clients_entities_scan": {
+          "args": "pk text, rk text, condition text, size integer, page integer",
+          "body": "declare\n  cond text[];\n  exp_cond_operator text;\n  exp_cond_operand timestamptz;\n  partition_key_var text;\n  row_key_var text;\n  expires_cond timestamptz;\nbegin\n  if not condition is null then\n    -- condition is only used for expiration scan\n    cond := regexp_split_to_array(condition, '\\s+');\n    expires_cond := cond[5]::timestamptz;\n  end if;\n\n  return query select\n    encode_string_key(client_id) as partition_key,\n    'client' as row_key,\n    entity_buf_encode(\n      encrypted_entity_buf_encode(\n        entity_buf_encode(\n          entity_buf_encode(\n            jsonb_build_object(\n              'PartitionKey', encode_string_key(client_id),\n              'RowKey', 'client',\n              'clientId', client_id,\n              'disabled', disabled::int,\n              'expires', expires),\n            'description', description),\n          'scopes', scopes::text),\n        'accessToken', encrypted_access_token),\n      'details', jsonb_build_object(\n        'created', to_js_iso8601(created::text),\n        'lastModified', to_js_iso8601(last_modified::text),\n        'lastDateUsed', to_js_iso8601(last_date_used::text),\n        'lastRotated', to_js_iso8601(last_rotated::text),\n        'deleteOnExpiration', delete_on_expiration\n      )::text) as value,\n    1 as version,\n    clients.etag as etag\n    from clients\n  where\n    (clients_entities_scan.pk is null or decode_string_key(clients_entities_scan.pk) = client_id) and\n    (expires_cond is null or expires < expires_cond)\n  order by clients.client_id\n  limit case\n    when (size is not null and size > 0) then size + 1\n    else null\n  end\n  offset case\n    when (page is not null and page > 0) then page\n    else 0\n  end;\nend",
+          "deprecated": false,
+          "description": "See taskcluster-lib-entities",
+          "mode": "read",
+          "returns": "table (partition_key text, row_key text, value jsonb, version integer, etag uuid)",
+          "serviceName": "auth"
+        }
+      },
+      "migrationScript": "begin\n  -- lock this table before reading from it, to prevent loss of concurrent\n  -- updates when the table is dropped.  Note that this may lead to concurrent\n  -- updates failing; the important thing is that they not succeed without\n  -- taking effect.  Failed updates will be retried.\n  lock table clients_entities;\n\n  create table clients\n  as\n    select\n      (value ->> 'clientId')::text as client_id,\n      entity_buf_decode(value, 'description')::text as description,\n      entity_to_crypto_container_v0(value, 'accessToken') as encrypted_access_token,\n      (value ->> 'expires')::timestamptz as expires,\n      (value ->> 'disabled')::boolean as disabled,\n      entity_buf_decode(value, 'scopes')::jsonb as scopes,\n      (details ->> 'created')::timestamptz as created,\n      (details ->> 'lastModified')::timestamptz as last_modified,\n      (details ->> 'lastDateUsed')::timestamptz as last_date_used,\n      (details ->> 'lastRotated')::timestamptz as last_rotated,\n      (details ->> 'deleteOnExpiration')::boolean as delete_on_expiration,\n      etag\n    from (\n      select\n        value,\n        entity_buf_decode(value, 'details')::jsonb as details,\n        etag\n      from clients_entities\n    ) as expanded;\n  alter table clients add primary key (client_id);\n  alter table clients\n    alter column client_id set not null,\n    alter column description set not null,\n    alter column encrypted_access_token set not null,\n    alter column expires set not null,\n    alter column disabled set not null,\n    alter column scopes set not null,\n    alter column created set not null,\n    alter column last_modified set not null,\n    alter column last_date_used set not null,\n    alter column last_rotated set not null,\n    alter column delete_on_expiration set not null,\n    alter column etag set not null,\n    alter column etag set default public.gen_random_uuid();\n\n  revoke select, insert, update, delete on clients_entities from $db_user_prefix$_auth;\n  drop table clients_entities;\n  grant select, insert, update, delete on clients to $db_user_prefix$_auth;\nend\n",
+      "version": 41
     }
   ]
 }

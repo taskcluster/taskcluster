@@ -6,7 +6,7 @@
 #     - ...
 auth:
   tables:
-    clients_entities: write
+    clients: write
     roles: write
 github:
   tables:

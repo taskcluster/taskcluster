@@ -170,7 +170,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
     helper.assertPulseMessage('client-updated', m => m.payload.clientId === CLIENT_ID);
 
     let client2 = await helper.apiClient.client(CLIENT_ID);
-    assume(client2.lastRotated).equals(client.lastRotated);
+    assume(new Date(client2.lastRotated)).deeply.equals(new Date(client.lastRotated));
     assume(client2).has.not.own('accessToken');
   });
 
@@ -234,7 +234,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
     helper.assertPulseMessage('client-updated', m => m.payload.clientId === CLIENT_ID);
 
     let client2 = await helper.apiClient.client(CLIENT_ID);
-    assume(client2.lastModified).equals(client.lastModified);
+    assume(new Date(client2.lastModified)).deeply.equals(new Date(client.lastModified));
     assume(client2).has.not.own('accessToken');
     assume(client2.scopes).contains('scope1');
     assume(client2.scopes).contains('myapi:*');
@@ -290,7 +290,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
     helper.assertPulseMessage('client-updated', m => m.payload.clientId === CLIENT_ID);
 
     let client2 = await helper.apiClient.client(CLIENT_ID);
-    assume(client2.lastModified).equals(client.lastModified);
+    assume(new Date(client2.lastModified)).deeply.equals(new Date(client.lastModified));
     assume(client2).has.not.own('accessToken');
     assume(client2.scopes).not.contains('scope1');
     assume(client2.scopes).contains('scope2');

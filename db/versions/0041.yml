@@ -1,0 +1,254 @@
+version: 41
+migrationScript: 0041-migration.sql
+downgradeScript: 0041-downgrade.sql
+methods:
+  clients_entities_load:
+    description: See taskcluster-lib-entities
+    mode: read
+    serviceName: auth
+    args: partition_key text, row_key text
+    returns: table (partition_key_out text, row_key_out text, value jsonb, version integer, etag uuid)
+    body: |-
+      begin
+        return query
+        select
+          clients_entities_load.partition_key,
+          clients_entities_load.row_key,
+          entity_buf_encode(
+            encrypted_entity_buf_encode(
+              entity_buf_encode(
+                entity_buf_encode(
+                  jsonb_build_object(
+                    'PartitionKey', clients_entities_load.partition_key,
+                    'RowKey', clients_entities_load.row_key,
+                    'clientId', client_id,
+                    'disabled', disabled::int,
+                    'expires', expires),
+                  'description', description),
+                'scopes', scopes::text),
+              'accessToken', encrypted_access_token),
+            'details', jsonb_build_object(
+              'created', to_js_iso8601(created::text),
+              'lastModified', to_js_iso8601(last_modified::text),
+              'lastDateUsed', to_js_iso8601(last_date_used::text),
+              'lastRotated', to_js_iso8601(last_rotated::text),
+              'deleteOnExpiration', delete_on_expiration
+            )::text) as value,
+          1 as version,
+          clients.etag as etag
+        from clients
+        where
+          clients.client_id = decode_string_key(clients_entities_load.partition_key);
+      end
+  clients_entities_create:
+    serviceName: auth
+    description: See taskcluster-lib-entities
+    mode: write
+    args: pk text, rk text, properties jsonb, overwrite boolean, version integer
+    returns: uuid
+    body: |-
+      declare
+        new_etag uuid = gen_random_uuid();
+      begin
+        if overwrite then
+          insert into clients
+          select
+            (properties ->> 'clientId')::text as client_id,
+            entity_buf_decode(properties, 'description')::text as description,
+            entity_to_crypto_container_v0(properties, 'accessToken') as encrypted_access_token,
+            (properties ->> 'expires')::timestamptz as expires,
+            (properties ->> 'disabled')::boolean as disabled,
+            entity_buf_decode(properties, 'scopes')::jsonb as scopes,
+            (details ->> 'created')::timestamptz as created,
+            (details ->> 'lastModified')::timestamptz as last_modified,
+            (details ->> 'lastDateUsed')::timestamptz as last_date_used,
+            (details ->> 'lastRotated')::timestamptz as last_rotated,
+            (details ->> 'deleteOnExpiration')::boolean as delete_on_expiration,
+            new_etag as etag
+          from (
+            select
+              entity_buf_decode(clients_entities_create.properties, 'details')::jsonb as details
+          ) as expanded
+          on conflict (client_id) do update set
+            description = excluded.description,
+            encrypted_access_token = excluded.encrypted_access_token,
+            expires = excluded.expires,
+            disabled = excluded.disabled,
+            scopes = excluded.scopes,
+            created = excluded.created,
+            last_modified = excluded.last_modified,
+            last_date_used = excluded.last_date_used,
+            last_rotated = excluded.last_rotated,
+            delete_on_expiration = excluded.delete_on_expiration,
+            etag = excluded.etag;
+        else
+          insert into clients
+          select
+            (properties ->> 'clientId')::text as client_id,
+            entity_buf_decode(properties, 'description')::text as description,
+            entity_to_crypto_container_v0(properties, 'accessToken') as encrypted_access_token,
+            (properties ->> 'expires')::timestamptz as expires,
+            (properties ->> 'disabled')::boolean as disabled,
+            entity_buf_decode(properties, 'scopes')::jsonb as scopes,
+            (details ->> 'created')::timestamptz as created,
+            (details ->> 'lastModified')::timestamptz as last_modified,
+            (details ->> 'lastDateUsed')::timestamptz as last_date_used,
+            (details ->> 'lastRotated')::timestamptz as last_rotated,
+            (details ->> 'deleteOnExpiration')::boolean as delete_on_expiration,
+            new_etag as etag
+          from (
+            select
+              entity_buf_decode(clients_entities_create.properties, 'details')::jsonb as details
+          ) as expanded;
+        end if;
+
+
+        return new_etag;
+      end
+  clients_entities_remove:
+    serviceName: auth
+    description: See taskcluster-lib-entities
+    mode: write
+    args: partition_key text, row_key text
+    returns: table (etag uuid)
+    body: |-
+      begin
+        return query
+        delete from clients
+        where
+          clients.client_id = decode_string_key(clients_entities_remove.partition_key)
+        returning clients.etag;
+      end
+  clients_entities_modify:
+    serviceName: auth
+    description: See taskcluster-lib-entities
+    mode: write
+    args: partition_key text, row_key text, properties jsonb, version integer, old_etag uuid
+    returns: table (etag uuid)
+    body: |-
+      declare
+        new_row clients%ROWTYPE;
+      begin
+        select
+          (properties ->> 'clientId')::text as client_id,
+          entity_buf_decode(properties, 'description')::text as description,
+          entity_to_crypto_container_v0(properties, 'accessToken') as encrypted_access_token,
+          (properties ->> 'expires')::timestamptz as expires,
+          (properties ->> 'disabled')::boolean as disabled,
+          entity_buf_decode(properties, 'scopes')::jsonb as scopes,
+          (details ->> 'created')::timestamptz as created,
+          (details ->> 'lastModified')::timestamptz as last_modified,
+          (details ->> 'lastDateUsed')::timestamptz as last_date_used,
+          (details ->> 'lastRotated')::timestamptz as last_rotated,
+          (details ->> 'deleteOnExpiration')::boolean as delete_on_expiration,
+          public.gen_random_uuid() as etag
+          from (
+            select
+              entity_buf_decode(properties, 'details')::jsonb as details
+          ) as expanded
+        into new_row;
+
+        update clients
+        set (
+          description,
+          encrypted_access_token,
+          expires,
+          disabled,
+          scopes,
+          created,
+          last_modified,
+          last_date_used,
+          last_rotated,
+          delete_on_expiration,
+          etag
+        ) = (
+          new_row.description,
+          new_row.encrypted_access_token,
+          new_row.expires,
+          new_row.disabled,
+          new_row.scopes,
+          new_row.created,
+          new_row.last_modified,
+          new_row.last_date_used,
+          new_row.last_rotated,
+          new_row.delete_on_expiration,
+          new_row.etag
+        )
+        where
+          clients.client_id = decode_string_key(clients_entities_modify.partition_key) and
+          clients.etag = clients_entities_modify.old_etag;
+
+        if found then
+          return query select new_row.etag;
+          return;
+        end if;
+
+        perform clients.etag from clients
+        where
+          clients.client_id = decode_string_key(clients_entities_modify.partition_key);
+        if found then
+          raise exception 'unsuccessful update' using errcode = 'P0004';
+        else
+          raise exception 'no such row' using errcode = 'P0002';
+        end if;
+      end
+  clients_entities_scan:
+    description: See taskcluster-lib-entities
+    mode: read
+    serviceName: auth
+    args: pk text, rk text, condition text, size integer, page integer
+    returns: table (partition_key text, row_key text, value jsonb, version integer, etag uuid)
+    body: |-
+      declare
+        cond text[];
+        exp_cond_operator text;
+        exp_cond_operand timestamptz;
+        partition_key_var text;
+        row_key_var text;
+        expires_cond timestamptz;
+      begin
+        if not condition is null then
+          -- condition is only used for expiration scan
+          cond := regexp_split_to_array(condition, '\s+');
+          expires_cond := cond[5]::timestamptz;
+        end if;
+
+        return query select
+          encode_string_key(client_id) as partition_key,
+          'client' as row_key,
+          entity_buf_encode(
+            encrypted_entity_buf_encode(
+              entity_buf_encode(
+                entity_buf_encode(
+                  jsonb_build_object(
+                    'PartitionKey', encode_string_key(client_id),
+                    'RowKey', 'client',
+                    'clientId', client_id,
+                    'disabled', disabled::int,
+                    'expires', expires),
+                  'description', description),
+                'scopes', scopes::text),
+              'accessToken', encrypted_access_token),
+            'details', jsonb_build_object(
+              'created', to_js_iso8601(created::text),
+              'lastModified', to_js_iso8601(last_modified::text),
+              'lastDateUsed', to_js_iso8601(last_date_used::text),
+              'lastRotated', to_js_iso8601(last_rotated::text),
+              'deleteOnExpiration', delete_on_expiration
+            )::text) as value,
+          1 as version,
+          clients.etag as etag
+          from clients
+        where
+          (clients_entities_scan.pk is null or decode_string_key(clients_entities_scan.pk) = client_id) and
+          (expires_cond is null or expires < expires_cond)
+        order by clients.client_id
+        limit case
+          when (size is not null and size > 0) then size + 1
+          else null
+        end
+        offset case
+          when (page is not null and page > 0) then page
+          else 0
+        end;
+      end
