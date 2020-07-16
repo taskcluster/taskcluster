@@ -1,5 +1,4 @@
 require('../../prelude');
-const data = require('./data');
 const debug = require('debug')('hooks:bin:server');
 const taskcreator = require('./taskcreator');
 const SchemaSet = require('taskcluster-lib-validate');
@@ -46,21 +45,8 @@ const load = loader({
       serviceName: 'hooks',
       monitor: monitor.childMonitor('db'),
       statementTimeout: process === 'server' ? 30000 : 0,
+      dbCryptoKeys: cfg.postgres.dbCryptoKeys,
     }),
-  },
-
-  Hook: {
-    requires: ['cfg', 'process', 'monitor', 'db'],
-    setup: ({cfg, process, monitor, db}) => {
-      return data.Hook.setup({
-        db,
-        serviceName: 'hooks',
-        tableName: cfg.app.hookTableName,
-        monitor: monitor.childMonitor('table.hooks'),
-        cryptoKey: cfg.azure.cryptoKey,
-        // signingKey: cfg.azure.signingKey,
-      });
-    },
   },
 
   schemaset: {
@@ -112,21 +98,20 @@ const load = loader({
   },
 
   api: {
-    requires: ['cfg', 'db', 'schemaset', 'Hook', 'taskcreator', 'monitor', 'publisher', 'pulseClient'],
-    setup: ({cfg, db, schemaset, Hook, taskcreator, monitor, publisher, pulseClient}) => builder.build({
+    requires: ['cfg', 'db', 'schemaset', 'taskcreator', 'monitor', 'publisher', 'pulseClient'],
+    setup: ({cfg, db, schemaset, taskcreator, monitor, publisher, pulseClient}) => builder.build({
       rootUrl: cfg.taskcluster.rootUrl,
-      context: {db, Hook, taskcreator, publisher, denylist: cfg.pulse.denylist},
+      context: {db, taskcreator, publisher, denylist: cfg.pulse.denylist},
       schemaset,
       monitor: monitor.childMonitor('api'),
     }),
   },
 
   listeners: {
-    requires: ['db', 'Hook', 'taskcreator', 'pulseClient', 'monitor'],
-    setup: async ({db, Hook, taskcreator, pulseClient, monitor}) => {
+    requires: ['db', 'taskcreator', 'pulseClient', 'monitor'],
+    setup: async ({db, taskcreator, pulseClient, monitor}) => {
       let listeners = new HookListeners({
         db,
-        Hook,
         taskcreator,
         client: pulseClient,
         monitor: monitor.childMonitor('listeners'),
@@ -156,10 +141,10 @@ const load = loader({
   },
 
   schedulerNoStart: {
-    requires: ['cfg', 'Hook', 'taskcreator', 'notify', 'monitor'],
-    setup: ({cfg, Hook, taskcreator, notify, monitor}) => {
+    requires: ['cfg', 'db', 'taskcreator', 'notify', 'monitor'],
+    setup: ({cfg, db, taskcreator, notify, monitor}) => {
       return new Scheduler({
-        Hook,
+        db,
         taskcreator,
         notify,
         monitor: monitor.childMonitor('scheduler'),
@@ -174,8 +159,8 @@ const load = loader({
   },
 
   expires: {
-    requires: ['cfg', 'db', 'Hook', 'monitor'],
-    setup: ({cfg, db, Hook, monitor}, ownName) => {
+    requires: ['cfg', 'db', 'monitor'],
+    setup: ({cfg, db, monitor}, ownName) => {
       return monitor.oneShot(ownName, async () => {
         debug('Expiring lastFires rows');
         const count = (await db.fns.expire_last_fires())[0].expire_last_fires;

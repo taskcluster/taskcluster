@@ -60,8 +60,8 @@ hooks:
   task: jsonb not null
   bindings: jsonb not null
   schedule: jsonb not null
-  trigger_token: jsonb not null
-  next_task_id: jsonb not null
+  encrypted_trigger_token: jsonb not null
+  encrypted_next_task_id: jsonb not null
   next_scheduled_date: timestamp with time zone not null
   trigger_schema: jsonb not null
   etag: uuid not null

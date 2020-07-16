@@ -8,7 +8,6 @@ const { queueUtils } = require('../src/utils');
 
 helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   helper.withDb(mock, skipping);
-  helper.withEntities(mock, skipping);
   helper.withTaskCreator(mock, skipping);
   helper.withPulse(mock, skipping);
   helper.resetTables(mock, skipping);
@@ -18,25 +17,25 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
   const makeHookEntities = async (...hooks) => {
     for (let {hookId, bindings} of hooks) {
-      await helper.Hook.create({
+      await helper.db.fns.create_hook(
         hookGroupId,
         hookId,
-        metadata: {},
-        task: {},
-        bindings,
-        schedule: [],
-        triggerToken: taskcluster.slugid(),
-        lastFire: {},
-        nextTaskId: taskcluster.slugid(),
-        nextScheduledDate: taskcluster.fromNow('1 day'),
-        triggerSchema: {},
-      });
+        {}, /* metadata */
+        {}, /* task */
+        JSON.stringify(bindings), /* bindings */
+        JSON.stringify([]), /* schedule */
+        helper.db.encrypt({ value: Buffer.from(taskcluster.slugid(), 'utf8') }), /* encrypted_trigger_token */
+        helper.db.encrypt({ value: Buffer.from(taskcluster.slugid(), 'utf8') }), /* encrypted_next_task_id */
+        taskcluster.fromNow('1 day'), /* next_scheduled_date */
+        {}, /* trigger_schema */
+      );
     }
   };
 
   const deleteHookEntity = async (hookId) => {
-    const hook = await helper.Hook.load({hookGroupId, hookId});
-    await hook.remove();
+    // const hook = await helper.Hook.load({hookGroupId, hookId});
+    // await hook.remove();
+    await helper.db.fns.delete_hook(hookGroupId, hookId);
   };
 
   const makeQueueEntities = async (...queues) => {

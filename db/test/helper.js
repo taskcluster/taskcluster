@@ -251,7 +251,8 @@ exports.testEntityTable = ({
   entityTableName, newTableName,
   // Entity class
   EntityClass,
-  // Crypto key for when an entity has one or multiple encrypted fields.
+  // a base64 encoded crypto key for encrypting values to insert into, or decrypting
+  // values read from database columns that store encrypted values
   cryptoKey,
   // named sample values, each given as an object containing entity properties
   samples,

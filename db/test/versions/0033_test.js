@@ -19,7 +19,7 @@ suite(testing.suiteName(), function() {
     {__bufchunks_val: 1, __buf0_val: ''},
     {__bufchunks_val: 1, __buf0_val: b64('Hello')},
     {__bufchunks_val: 1, __buf0_val: b64('uh\\oh')},
-    {__bufchunks_val: 2, __buf0_val: b64('Good'), __buf1_val: b64('Morning')}
+    {__bufchunks_val: 2, __buf0_val: b64('Good'), __buf1_val: b64('Morning')},
   ];
 
   const mkContainer = async (properties) => {

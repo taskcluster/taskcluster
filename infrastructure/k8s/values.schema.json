@@ -396,6 +396,17 @@
         "azure_signing_key": {
           "type": "string"
         },
+        "db_crypto_keys": {
+          "oneOf": [
+            {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            {
+              "type": "array"
+            }
+          ]
+        },
         "debug": {
           "title": "node debug env var",
           "type": "string"

@@ -32,8 +32,8 @@ methods:
                     'bindings', bindings::text),
                   'schedule', schedule::text),
                 'triggerSchema', trigger_schema::text),
-              'nextTaskId', next_task_id),
-            'triggerToken', trigger_token) as value,
+              'nextTaskId', encrypted_next_task_id),
+            'triggerToken', encrypted_trigger_token) as value,
           1 as version,
           hooks.etag as etag
         from hooks
@@ -114,8 +114,8 @@ methods:
           task,
           bindings,
           schedule,
-          trigger_token,
-          next_task_id,
+          encrypted_trigger_token,
+          encrypted_next_task_id,
           next_scheduled_date,
           trigger_schema,
           etag
@@ -124,8 +124,8 @@ methods:
           new_row.task,
           new_row.bindings,
           new_row.schedule,
-          new_row.trigger_token,
-          new_row.next_task_id,
+          new_row.encrypted_trigger_token,
+          new_row.encrypted_next_task_id,
           new_row.next_scheduled_date,
           new_row.trigger_schema,
           new_row.etag
@@ -188,8 +188,8 @@ methods:
                       'bindings', bindings::text),
                     'schedule', schedule::text),
                   'triggerSchema', trigger_schema::text),
-                'nextTaskId', next_task_id),
-              'triggerToken', trigger_token) as value,
+                'nextTaskId', encrypted_next_task_id),
+              'triggerToken', encrypted_trigger_token) as value,
             1 as version,
             hooks.etag as etag from hooks
           where
@@ -234,8 +234,8 @@ methods:
                       'bindings', bindings::text),
                     'schedule', schedule::text),
                   'triggerSchema', trigger_schema::text),
-                'nextTaskId', next_task_id),
-              'triggerToken', trigger_token) as value,
+                'nextTaskId', encrypted_next_task_id),
+              'triggerToken', encrypted_trigger_token) as value,
             1 as version,
             hooks.etag as etag from hooks
           where
@@ -252,4 +252,156 @@ methods:
           end;
         end if;
       end
+  get_hook:
+    description: |-
+      Get a hook. The returned table will have one or zero rows.
+    mode: read
+    serviceName: hooks
+    args: hook_group_id_in text, hook_id_in text
+    returns: table(hook_group_id text, hook_id text, metadata jsonb, task jsonb, bindings jsonb, schedule jsonb, encrypted_trigger_token jsonb, encrypted_next_task_id jsonb, next_scheduled_date timestamptz, trigger_schema jsonb)
+    body: |-
+      begin
+        return query select
+          hooks.hook_group_id,
+          hooks.hook_id,
+          hooks.metadata,
+          hooks.task,
+          hooks.bindings,
+          hooks.schedule,
+          hooks.encrypted_trigger_token,
+          hooks.encrypted_next_task_id,
+          hooks.next_scheduled_date,
+          hooks.trigger_schema
+        from hooks
+        where
+          hooks.hook_group_id = hook_group_id_in and
+          hooks.hook_id = hook_id_in;
+      end
 
+  create_hook:
+    description: |-
+      Create a new hook. Raises UNIQUE_VIOLATION if the artifact already exists.
+      Returns the newly created hook.
+    mode: write
+    serviceName: hooks
+    args: hook_group_id_in text, hook_id_in text, metadata_in jsonb, task_in jsonb, bindings_in jsonb, schedule_in jsonb, encrypted_trigger_token_in jsonb, encrypted_next_task_id_in jsonb, next_scheduled_date_in timestamptz, trigger_schema_in jsonb
+    returns: table(hook_group_id text, hook_id text, metadata jsonb, task jsonb, bindings jsonb, schedule jsonb, encrypted_trigger_token jsonb, encrypted_next_task_id jsonb, next_scheduled_date timestamptz, trigger_schema jsonb)
+    body: |-
+      begin
+        return query insert
+          into hooks (hook_group_id, hook_id, metadata, task, bindings, schedule, encrypted_trigger_token, encrypted_next_task_id, next_scheduled_date, trigger_schema)
+          values (hook_group_id_in, hook_id_in, metadata_in, task_in, bindings_in, schedule_in, encrypted_trigger_token_in, encrypted_next_task_id_in, next_scheduled_date_in, trigger_schema_in)
+        returning
+          hooks.hook_group_id,
+          hooks.hook_id,
+          hooks.metadata,
+          hooks.task,
+          hooks.bindings,
+          hooks.schedule,
+          hooks.encrypted_trigger_token,
+          hooks.encrypted_next_task_id,
+          hooks.next_scheduled_date,
+          hooks.trigger_schema;
+      end
+
+  update_hook:
+    serviceName: hooks
+    description: |-
+      Update a queue artifact.
+      Returns the up-to-date hook row that have the same hook group id and hook id.
+    mode: write
+    args: hook_group_id_in text, hook_id_in text, metadata_in jsonb, task_in jsonb, bindings_in jsonb, schedule_in jsonb, encrypted_trigger_token_in jsonb, encrypted_next_task_id_in jsonb, next_scheduled_date_in timestamptz, trigger_schema_in jsonb
+    returns: table(hook_group_id text, hook_id text, metadata jsonb, task jsonb, bindings jsonb, schedule jsonb, encrypted_trigger_token jsonb, encrypted_next_task_id jsonb, next_scheduled_date timestamptz, trigger_schema jsonb)
+    body: |-
+      declare
+        updated_row hooks%ROWTYPE;
+      begin
+        update hooks
+        set (metadata, task, bindings, schedule, encrypted_trigger_token, encrypted_next_task_id, next_scheduled_date, trigger_schema) = (
+          coalesce(metadata_in, hooks.metadata),
+          coalesce(task_in, hooks.task),
+          coalesce(bindings_in, hooks.bindings),
+          coalesce(schedule_in, hooks.schedule),
+          coalesce(encrypted_trigger_token_in, hooks.encrypted_trigger_token),
+          coalesce(encrypted_next_task_id_in, hooks.encrypted_next_task_id),
+          coalesce(next_scheduled_date_in, hooks.next_scheduled_date),
+          coalesce(trigger_schema_in, hooks.trigger_schema)
+        )
+        where
+          hooks.hook_group_id = hook_group_id_in and
+          hooks.hook_id = hook_id_in
+        returning
+          hooks.hook_group_id,
+          hooks.hook_id,
+          hooks.metadata,
+          hooks.task,
+          hooks.bindings,
+          hooks.schedule,
+          hooks.encrypted_trigger_token,
+          hooks.encrypted_next_task_id,
+          hooks.next_scheduled_date,
+          hooks.trigger_schema
+        into updated_row;
+        if found then
+          return query select
+            updated_row.hook_group_id,
+            updated_row.hook_id,
+            updated_row.metadata,
+            updated_row.task,
+            updated_row.bindings,
+            updated_row.schedule,
+            updated_row.encrypted_trigger_token,
+            updated_row.encrypted_next_task_id,
+            updated_row.next_scheduled_date,
+            updated_row.trigger_schema;
+          return;
+        else
+          raise exception 'no such row' using errcode = 'P0002';
+        end if;
+      end
+  get_hooks:
+    description: |-
+      Get existing hooks filtered by the optional `hook_group_id`,
+      ordered by the `hook_group_id` and `hook_id`.
+      If the pagination arguments are both NULL, all rows are returned.
+      Otherwise, page_size rows are returned at offset page_offset.
+    mode: read
+    serviceName: hooks
+    args: hook_group_id_in text, next_scheduled_date_in timestamptz, page_size_in integer, page_offset_in integer
+    returns: table(hook_group_id text, hook_id text, metadata jsonb, task jsonb, bindings jsonb, schedule jsonb, encrypted_trigger_token jsonb, encrypted_next_task_id jsonb, next_scheduled_date timestamptz, trigger_schema jsonb)
+    body: |-
+      begin
+        return query
+        select
+          hooks.hook_group_id,
+          hooks.hook_id,
+          hooks.metadata,
+          hooks.task,
+          hooks.bindings,
+          hooks.schedule,
+          hooks.encrypted_trigger_token,
+          hooks.encrypted_next_task_id,
+          hooks.next_scheduled_date,
+          hooks.trigger_schema
+        from hooks
+        where
+          (hooks.hook_group_id = hook_group_id_in or hook_group_id_in is null) and
+          (hooks.next_scheduled_date < next_scheduled_date_in or next_scheduled_date_in is null)
+        order by hooks.hook_group_id, hooks.hook_id
+        limit get_page_limit(page_size_in)
+        offset get_page_offset(page_offset_in);
+      end
+  delete_hook:
+    description: |-
+      Delete a hook.
+    mode: write
+    serviceName: hooks
+    args: hook_group_id_in text, hook_id_in text
+    returns: void
+    body: |-
+      begin
+        delete from hooks
+        where
+          hooks.hook_group_id = hook_group_id_in and
+          hooks.hook_id = hook_id_in;
+      end

@@ -8,7 +8,6 @@ const testing = require('taskcluster-lib-testing');
 
 helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   helper.withDb(mock, skipping);
-  helper.withEntities(mock, skipping);
   helper.withTaskCreator(mock, skipping);
   helper.withPulse(mock, skipping);
   helper.withServer(mock, skipping);

@@ -32,8 +32,8 @@ begin
               'bindings', bindings::text),
             'schedule', schedule::text),
           'triggerSchema', trigger_schema::text),
-        'nextTaskId', next_task_id),
-      'triggerToken', trigger_token) as value,
+        'nextTaskId', encrypted_next_task_id),
+      'triggerToken', encrypted_trigger_token) as value,
     1 as version,
     etag
   from hooks;
