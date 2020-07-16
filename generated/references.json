@@ -8639,55 +8639,7 @@
                   ],
                   "type": "object"
                 },
-                "expireTaskGroupMembers": {
-                  "additionalProperties": false,
-                  "properties": {
-                    "cpu": {
-                      "type": "string"
-                    },
-                    "memory": {
-                      "type": "string"
-                    }
-                  },
-                  "required": [
-                    "memory",
-                    "cpu"
-                  ],
-                  "type": "object"
-                },
-                "expireTaskGroupSizes": {
-                  "additionalProperties": false,
-                  "properties": {
-                    "cpu": {
-                      "type": "string"
-                    },
-                    "memory": {
-                      "type": "string"
-                    }
-                  },
-                  "required": [
-                    "memory",
-                    "cpu"
-                  ],
-                  "type": "object"
-                },
                 "expireTaskGroups": {
-                  "additionalProperties": false,
-                  "properties": {
-                    "cpu": {
-                      "type": "string"
-                    },
-                    "memory": {
-                      "type": "string"
-                    }
-                  },
-                  "required": [
-                    "memory",
-                    "cpu"
-                  ],
-                  "type": "object"
-                },
-                "expireTaskRequirement": {
                   "additionalProperties": false,
                   "properties": {
                     "cpu": {
@@ -8748,10 +8700,7 @@
                 "expireArtifacts",
                 "expireTask",
                 "expireTaskGroups",
-                "expireTaskGroupMembers",
-                "expireTaskGroupSizes",
                 "expireTaskDependency",
-                "expireTaskRequirement",
                 "expireQueueMessages",
                 "expireWorkerInfo"
               ],

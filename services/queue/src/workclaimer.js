@@ -2,6 +2,7 @@ let assert = require('assert');
 let _ = require('lodash');
 let events = require('events');
 let taskCreds = require('./task-creds');
+const {Task} = require('./data');
 
 /**
  * HintPoller polls for hints for pending tasks.
@@ -126,7 +127,7 @@ class WorkClaimer extends events.EventEmitter {
    * options:
    * {
    *   publisher:     // Pulse publisher from exchanges.js
-   *   Task:          // Task entities from data.js
+   *   db:            // Database object
    *   queueService:  // queueService from queueservice.js
    *   monitor:       // monitor object from taskcluster-lib-monitor
    *   claimTimeout:  // Time for a claim to timeout in ms
@@ -136,7 +137,7 @@ class WorkClaimer extends events.EventEmitter {
   constructor(options) {
     assert(options);
     assert(options.publisher);
-    assert(options.Task);
+    assert(options.db);
     assert(options.queueService);
     assert(options.monitor);
     assert(typeof options.claimTimeout === 'number');
@@ -144,7 +145,7 @@ class WorkClaimer extends events.EventEmitter {
     super();
     this._monitor = options.monitor;
     this._publisher = options.publisher;
-    this._Task = options.Task;
+    this.db = options.db;
     this._queueService = options.queueService;
     this._claimTimeout = options.claimTimeout;
     this._credentials = options.credentials;
@@ -213,7 +214,7 @@ class WorkClaimer extends events.EventEmitter {
   async claimTask(taskId, runId, workerGroup, workerId, task = null, hintId = null) {
     // Load task, if not given
     if (!task) {
-      task = await this._Task.load({taskId}, true);
+      task = await Task.get(this.db, taskId);
       if (!task) {
         return 'task-not-found';
       }
@@ -225,34 +226,12 @@ class WorkClaimer extends events.EventEmitter {
     let takenUntil = new Date();
     takenUntil.setSeconds(Math.ceil(takenUntil.getSeconds() + this._claimTimeout));
 
-    // Modify task, don't send putClaimMessage more than once!
-    let msgSent = false;
-    await task.modify(async (task) => {
-      let run = task.runs[runId];
-
-      // No modifications required if there is no run, or the run isn't pending
-      if (task.runs.length - 1 !== runId || run.state !== 'pending') {
-        return;
-      }
-
-      // Put claim-expiration message in queue, if not already done, remember
-      // that the modifier given to task.modify may be called more than once!
-      if (!msgSent) {
-        await this._queueService.putClaimMessage(taskId, runId, takenUntil);
-        msgSent = true;
-      }
-
-      // Change state of the run (claiming it)
-      run.state = 'running';
-      run.workerGroup = workerGroup;
-      run.workerId = workerId;
-      run.hintId = hintId;
-      run.takenUntil = takenUntil.toJSON();
-      run.started = new Date().toJSON();
-
-      // Set takenUntil on the task
-      task.takenUntil = takenUntil;
-    });
+    // put the claim-expiration message into the queue first.  If the
+    // subsequent claim_task fails, the claim-expiration message will be
+    // ignored when it appears.
+    await this._queueService.putClaimMessage(taskId, runId, takenUntil);
+    task.updateStatusWith(
+      await this.db.fns.claim_task(taskId, runId, workerGroup, workerId, hintId, takenUntil));
 
     // Find run that we (may) have modified
     let run = task.runs[runId];

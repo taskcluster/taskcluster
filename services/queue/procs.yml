@@ -31,26 +31,11 @@ expireTaskGroups:
   schedule: '0 0 * * *'
   deadline: 86400
   command: node services/queue/src/main expire-task-groups
-expireTaskGroupMembers:
-  type: cron
-  schedule: '0 0 * * *'
-  deadline: 86400
-  command: node services/queue/src/main expire-task-group-members
-expireTaskGroupSizes:
-  type: cron
-  schedule: '0 0 * * *'
-  deadline: 86400
-  command: node services/queue/src/main expire-task-group-sizes
 expireTaskDependency:
   type: cron
   schedule: '0 0 * * *'
   deadline: 86400
   command: node services/queue/src/main expire-task-dependency
-expireTaskRequirement:
-  type: cron
-  schedule: '0 0 * * *'
-  deadline: 86400
-  command: node services/queue/src/main expire-task-requirement
 expireQueueMessages:
   type: cron
   schedule: '23 * * * *'

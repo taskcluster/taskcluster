@@ -5,6 +5,7 @@ const urllib = require('url');
 const builder = require('./api');
 const { UNIQUE_VIOLATION } = require('taskcluster-lib-postgres');
 const { artifactUtils } = require('./utils');
+const { Task } = require('./data');
 
 /** Post artifact */
 builder.declare({
@@ -93,7 +94,7 @@ builder.declare({
   }
 
   // Load Task entity
-  let task = await this.Task.load({taskId}, true);
+  let task = await Task.get(this.db, taskId);
 
   // Handle cases where the task doesn't exist
   if (!task) {
@@ -552,7 +553,7 @@ builder.declare({
   });
 
   // Load task status structure from table
-  let task = await this.Task.load({taskId}, true);
+  let task = await Task.get(this.db, taskId);
 
   // Give a 404 if not found
   if (!task) {
@@ -597,7 +598,7 @@ builder.declare({
   let runId = parseInt(req.params.runId, 10);
 
   let [task, artifacts] = await Promise.all([
-    this.Task.load({taskId}, true),
+    Task.get(this.db, taskId),
     paginateResults({
       query: req.query,
       fetch: (size, offset) => this.db.fns.get_queue_artifacts(taskId, runId, null, size, offset),
@@ -662,7 +663,7 @@ builder.declare({
   let taskId = req.params.taskId;
 
   // Load task status structure from table
-  let task = await this.Task.load({taskId}, true);
+  let task = await Task.get(this.db, taskId);
 
   // Give a 404 if not found
   if (!task) {

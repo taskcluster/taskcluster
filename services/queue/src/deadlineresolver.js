@@ -1,16 +1,9 @@
 let debug = require('debug')('app:deadline-resolver');
 let assert = require('assert');
 let _ = require('lodash');
-let data = require('./data');
 let QueueService = require('./queueservice');
 let Iterate = require('taskcluster-lib-iterate');
-
-/** State that are considered resolved */
-const RESOLVED_STATES = [
-  'completed',
-  'failed',
-  'exception',
-];
+const {Task} = require('./data');
 
 /**
  * Facade that handles resolution tasks by deadline, using the advisory messages
@@ -25,7 +18,7 @@ const RESOLVED_STATES = [
  * The deadline message serves 3 purposes:
  * A) Resolve old tasks
  * B) Resolve tasks that failed to create properly
- * C) Clean up TaskGroupActiveSet and publish message about task-group finished.
+ * C) publish message about task-group finished.
  */
 class DeadlineResolver {
   /**
@@ -33,7 +26,6 @@ class DeadlineResolver {
    *
    * options:
    * {
-   *   Task:              // instance of data.Task
    *   queueService:      // instance of QueueService
    *   dependencyTracker: // instance of DependencyTracker
    *   publisher:         // publisher from base.Exchanges
@@ -45,8 +37,7 @@ class DeadlineResolver {
    */
   constructor(options) {
     assert(options, 'options must be given');
-    assert(options.Task.prototype instanceof data.Task,
-      'Expected data.Task instance');
+    assert(options.db, 'Expected db');
     assert(options.queueService instanceof QueueService,
       'Expected instance of QueueService');
     assert(options.dependencyTracker, 'Expected a DependencyTracker instance');
@@ -57,7 +48,7 @@ class DeadlineResolver {
       'Expected parallelism to be a number');
     assert(options.monitor !== null, 'options.monitor required!');
     assert(options.ownName, 'Must provide a name');
-    this.Task = options.Task;
+    this.db = options.db;
     this.queueService = options.queueService;
     this.dependencyTracker = options.dependencyTracker;
     this.publisher = options.publisher;
@@ -133,81 +124,18 @@ class DeadlineResolver {
 
   /** Handle advisory message about deadline expiration */
   async handleMessage({taskId, taskGroupId, schedulerId, deadline, remove}) {
-    // Query for entity for which we have exact rowKey too, limit to 1, and
-    // require that deadline matches. This is essentially a conditional load
-    // operation
-    let {entries: [task]} = await this.Task.query({
-      taskId: taskId, // Matches an exact entity
-      deadline: deadline, // Load conditionally
-    }, {
-      matchRow: 'exact', // Validate that we match row key exactly
-      limit: 1, // Load at most one entity, no need to search
-    });
+    const task = await Task.get(this.db, taskId);
 
-    // If the task doesn't exist we're done
-    if (!task) {
+    // If the task doesn't exist, or if the deadline has changed, then we're done
+    if (!task || task.deadline.getTime() !== deadline.getTime()) {
       await this.dependencyTracker.updateTaskGroupActiveSet(taskId, taskGroupId, schedulerId);
       return remove();
     }
 
-    // Check if this is the deadline we're supposed to be resolving for, if
-    // this check fails, then the conditional load must have failed so we should
-    // report error
-    if (task.deadline.getTime() !== deadline.getTime()) {
-      let err = new Error('Task deadline does not match deadline from ' +
-                    'message, taskId: ' + taskId + ' this only happens ' +
-                    'if conditional load does not work');
-      err.taskId = taskId;
-      err.taskDeadline = task.deadline.toJSON();
-      err.messageDeadline = deadline.toJSON();
-      await this.monitor.reportError(err);
-      return remove();
-    }
+    task.updateStatusWith(await this.db.fns.cancel_task(taskId, 'deadline-exceeded'));
 
-    // Ensure that all runs are resolved
-    await task.modify((task) => {
-      // If there is no run, we add a new one to signal that the task is
-      // resolved. As this run is purely to signal an exception, we set
-      // `reasonCreated: 'exception'`.
-      if (task.runs.length === 0) {
-        let now = new Date().toJSON();
-        task.runs.push({
-          state: 'exception',
-          reasonCreated: 'exception',
-          reasonResolved: 'deadline-exceeded',
-          scheduled: now,
-          resolved: now,
-        });
-      }
-
-      task.runs.forEach((run, runId) => {
-        // don't modify resolved runs
-        if (_.includes(RESOLVED_STATES, run.state)) {
-          return;
-        }
-
-        // If a run that isn't the last run is unresolved, it violates an
-        // invariant and we shall log and error...
-        if (task.runs.length - 1 !== runId) {
-          let err = new Error('runId: ' + runId + ' is not the last of: ' +
-                              taskId + ' but it is not resolved');
-          err.taskId = taskId;
-          err.runId = runId;
-          err.run = run;
-          this.monitor.reportError(err);
-        }
-
-        // Resolve run as deadline-exceeded
-        run.state = 'exception';
-        run.reasonResolved = 'deadline-exceeded';
-        run.resolved = new Date().toJSON();
-      });
-
-      // Clear takenUntil, for ClaimResolver
-      task.takenUntil = new Date(0);
-    });
-
-    // Check if the last run was resolved here
+    // Check if the last run was resolved here (or possibly by a previous
+    // attempt to process this message)
     let run = _.last(task.runs);
     if (run.reasonResolved === 'deadline-exceeded' &&
         run.state === 'exception') {

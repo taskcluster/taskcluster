@@ -112,93 +112,6 @@ let load = loader({
     }),
   },
 
-  // Create task table
-  Task: {
-    requires: ['cfg', 'monitor', 'process', 'db'],
-    setup: async ({cfg, monitor, process, db}) =>
-      data.Task.setup({
-        db,
-        serviceName: 'queue',
-        tableName: cfg.app.taskTableName,
-        operationReportChance: cfg.app.azureReportChance,
-        operationReportThreshold: cfg.app.azureReportThreshold,
-        monitor: monitor.childMonitor('table.tasks'),
-      }),
-  },
-
-  // Create task-group table
-  TaskGroup: {
-    requires: ['cfg', 'monitor', 'process', 'db'],
-    setup: async ({cfg, monitor, process, db}) =>
-      data.TaskGroup.setup({
-        db,
-        serviceName: 'queue',
-        tableName: cfg.app.taskGroupTableName,
-        operationReportChance: cfg.app.azureReportChance,
-        operationReportThreshold: cfg.app.azureReportThreshold,
-        monitor: monitor.childMonitor('table.taskgroups'),
-      }),
-  },
-
-  // Create task-group member table
-  TaskGroupMember: {
-    requires: ['cfg', 'monitor', 'process', 'db'],
-    setup: async ({cfg, monitor, process, db}) =>
-      data.TaskGroupMember.setup({
-        db,
-        serviceName: 'queue',
-        tableName: cfg.app.taskGroupMemberTableName,
-        operationReportChance: cfg.app.azureReportChance,
-        operationReportThreshold: cfg.app.azureReportThreshold,
-        monitor: monitor.childMonitor('table.taskgroupmembers'),
-      }),
-  },
-
-  // Create task-group size table (uses TaskGroupMember entity)
-  TaskGroupActiveSet: {
-    requires: ['cfg', 'monitor', 'process', 'db'],
-    setup: async ({cfg, monitor, process, db}) =>
-      // NOTE: this uses the same entity type definition as TaskGroupMember,
-      // but presence in either table indicates different things
-      data.TaskGroupMember.setup({
-        db,
-        serviceName: 'queue',
-        tableName: cfg.app.taskGroupActiveSetTableName,
-        operationReportChance: cfg.app.azureReportChance,
-        operationReportThreshold: cfg.app.azureReportThreshold,
-        monitor: monitor.childMonitor('table.taskgroupactivesets'),
-      }),
-  },
-
-  // Create TaskRequirement table
-  TaskRequirement: {
-    requires: ['cfg', 'monitor', 'process', 'db'],
-    setup: async ({cfg, monitor, process, db}) =>
-      data.TaskRequirement.setup({
-        db,
-        serviceName: 'queue',
-        tableName: cfg.app.taskRequirementTableName,
-        operationReportChance: cfg.app.azureReportChance,
-        operationReportThreshold: cfg.app.azureReportThreshold,
-        monitor: monitor.childMonitor('table.taskrequirements'),
-      }),
-  },
-
-  // Create TaskDependency table
-  TaskDependency: {
-    requires: ['cfg', 'monitor', 'process', 'db'],
-    setup: async ({cfg, monitor, process, db}) => {
-      return data.TaskDependency.setup({
-        db,
-        serviceName: 'queue',
-        tableName: cfg.app.taskDependencyTableName,
-        operationReportChance: cfg.app.azureReportChance,
-        operationReportThreshold: cfg.app.azureReportThreshold,
-        monitor: monitor.childMonitor('table.taskdependencies'),
-      });
-    },
-  },
-
   // Create Provisioner table
   Provisioner: {
     requires: ['cfg', 'monitor', 'process', 'db'],
@@ -256,10 +169,10 @@ let load = loader({
 
   // Create workClaimer
   workClaimer: {
-    requires: ['cfg', 'publisher', 'Task', 'queueService', 'monitor'],
-    setup: ({cfg, publisher, Task, queueService, monitor}) => new WorkClaimer({
+    requires: ['cfg', 'publisher', 'db', 'queueService', 'monitor'],
+    setup: ({cfg, publisher, db, queueService, monitor}) => new WorkClaimer({
       publisher,
-      Task,
+      db,
       queueService,
       monitor: monitor.childMonitor('work-claimer'),
       claimTimeout: cfg.app.claimTimeout,
@@ -278,8 +191,7 @@ let load = loader({
   // Create dependencyTracker
   dependencyTracker: {
     requires: [
-      'Task', 'publisher', 'queueService', 'TaskDependency',
-      'TaskRequirement', 'TaskGroupActiveSet', 'monitor',
+      'publisher', 'queueService', 'monitor', 'db',
     ],
     setup: ({monitor, ...ctx}) => new DependencyTracker({
       monitor: monitor.childMonitor('dependency-tracker'),
@@ -311,22 +223,16 @@ let load = loader({
 
   api: {
     requires: [
-      'cfg', 'publisher', 'schemaset', 'Task',
-      'TaskGroup', 'TaskGroupMember', 'TaskGroupActiveSet', 'queueService',
+      'cfg', 'publisher', 'schemaset', 'db', 'queueService',
       'publicArtifactBucket', 'privateArtifactBucket',
-      'regionResolver', 'monitor', 'dependencyTracker', 'TaskDependency',
+      'regionResolver', 'monitor', 'dependencyTracker',
       'workClaimer', 'Provisioner', 'workerInfo', 'WorkerType', 'Worker',
       'db',
     ],
     setup: (ctx) => builder.build({
       context: {
         db: ctx.db,
-        Task: ctx.Task,
-        TaskGroup: ctx.TaskGroup,
-        TaskGroupMember: ctx.TaskGroupMember,
-        TaskGroupActiveSet: ctx.TaskGroupActiveSet,
         taskGroupExpiresExtension: ctx.cfg.app.taskGroupExpiresExtension,
-        TaskDependency: ctx.TaskDependency,
         Provisioner: ctx.Provisioner,
         WorkerType: ctx.WorkerType,
         Worker: ctx.Worker,
@@ -364,24 +270,18 @@ let load = loader({
     }),
   },
 
-  // CLI utility to scan tasks
-  scan: {
-    requires: ['cfg', 'Task', 'publicArtifactBucket'],
-    setup: options => require('./scan')(options),
-  },
-
   // Create the claim-resolver process
   'claim-resolver': {
     requires: [
-      'cfg', 'Task', 'queueService', 'publisher', 'monitor',
+      'cfg', 'db', 'queueService', 'publisher', 'monitor',
       'dependencyTracker',
     ],
     setup: async ({
-      cfg, Task, queueService, publisher, dependencyTracker, monitor,
+      cfg, db, queueService, publisher, dependencyTracker, monitor,
     }, ownName) => {
       let resolver = new ClaimResolver({
         ownName,
-        Task, queueService, publisher, dependencyTracker,
+        db, queueService, publisher, dependencyTracker,
         pollingDelay: cfg.app.claimResolver.pollingDelay,
         parallelism: cfg.app.claimResolver.parallelism,
         monitor: monitor.childMonitor('claim-resolver'),
@@ -394,15 +294,15 @@ let load = loader({
   // Create the deadline reaper process
   'deadline-resolver': {
     requires: [
-      'cfg', 'Task', 'queueService', 'publisher', 'monitor',
+      'cfg', 'db', 'queueService', 'publisher', 'monitor',
       'dependencyTracker',
     ],
     setup: async ({
-      cfg, Task, queueService, publisher, dependencyTracker, monitor,
+      cfg, db, queueService, publisher, dependencyTracker, monitor,
     }, ownName) => {
       let resolver = new DeadlineResolver({
         ownName,
-        Task, queueService, publisher, dependencyTracker,
+        db, queueService, publisher, dependencyTracker,
         pollingDelay: cfg.app.deadlineResolver.pollingDelay,
         parallelism: cfg.app.deadlineResolver.parallelism,
         monitor: monitor.childMonitor('deadline-resolver'),
@@ -462,80 +362,39 @@ let load = loader({
 
   // Create the task expiration process (periodic job)
   'expire-tasks': {
-    requires: ['cfg', 'Task', 'monitor'],
-    setup: ({cfg, Task, monitor}, ownName) => {
+    requires: ['cfg', 'db', 'monitor'],
+    setup: ({cfg, db, monitor}, ownName) => {
       return monitor.oneShot(ownName, async () => {
         const now = taskcluster.fromNow(cfg.app.taskExpirationDelay);
         debug('Expiring tasks at: %s, from before %s', new Date(), now);
-        const count = await Task.expire(now);
-        debug('Expired %s tasks', count);
+        const counts = await db.fns.expire_tasks(now);
+        debug('Expired %s tasks', counts[0].expire_tasks);
       });
     },
   },
 
   // Create the task-group expiration process (periodic job)
   'expire-task-groups': {
-    requires: ['cfg', 'TaskGroup', 'monitor'],
-    setup: ({cfg, TaskGroup, monitor}, ownName) => {
+    requires: ['cfg', 'db', 'monitor'],
+    setup: ({cfg, db, monitor}, ownName) => {
       return monitor.oneShot(ownName, async () => {
         const now = taskcluster.fromNow(cfg.app.taskExpirationDelay);
         debug('Expiring task-groups at: %s, from before %s', new Date(), now);
-        const count = await TaskGroup.expire(now);
-        debug('Expired %s task-groups', count);
-      });
-    },
-  },
-
-  // Create the task-group membership expiration process (periodic job)
-  'expire-task-group-members': {
-    requires: ['cfg', 'TaskGroupMember', 'monitor'],
-    setup: ({cfg, TaskGroupMember, monitor}, ownName) => {
-      return monitor.oneShot(ownName, async () => {
-        const now = taskcluster.fromNow(cfg.app.taskExpirationDelay);
-        debug('Expiring task-group members at: %s, from before %s',
-          new Date(), now);
-        const count = await TaskGroupMember.expire(now);
-        debug('Expired %s task-group members', count);
-      });
-    },
-  },
-
-  // Create the task-group size expiration process (periodic job)
-  'expire-task-group-sizes': {
-    requires: ['cfg', 'TaskGroupActiveSet', 'monitor'],
-    setup: ({cfg, TaskGroupActiveSet, monitor}, ownName) => {
-      return monitor.oneShot(ownName, async () => {
-        const now = taskcluster.fromNow(cfg.app.taskExpirationDelay);
-        debug('Expiring task-group sizes at: %s, from before %s',
-          new Date(), now);
-        const count = await TaskGroupActiveSet.expire(now);
-        debug('Expired %s task-group sizes', count);
+        const counts = await db.fns.expire_task_groups(now);
+        debug('Expired %s task-groups', counts[0].expire_task_groups);
       });
     },
   },
 
   // Create the task-dependency expiration process (periodic job)
   'expire-task-dependency': {
-    requires: ['cfg', 'TaskDependency', 'monitor'],
-    setup: ({cfg, TaskDependency, monitor}, ownName) => {
+    requires: ['cfg', 'db', 'monitor'],
+    setup: ({cfg, db, monitor}, ownName) => {
       return monitor.oneShot(ownName, async () => {
         const now = taskcluster.fromNow(cfg.app.taskExpirationDelay);
         debug('Expiring task-dependency at: %s, from before %s', new Date(), now);
-        const count = await TaskDependency.expire(now);
-        debug('Expired %s task-dependency', count);
-      });
-    },
-  },
-
-  // Create the task-requirement expiration process (periodic job)
-  'expire-task-requirement': {
-    requires: ['cfg', 'TaskRequirement', 'monitor'],
-    setup: ({cfg, TaskRequirement, monitor}, ownName) => {
-      return monitor.oneShot(ownName, async () => {
-        const now = taskcluster.fromNow(cfg.app.taskExpirationDelay);
-        debug('Expiring task-requirement at: %s, from before %s', new Date(), now);
-        const count = await TaskRequirement.expire(now);
-        debug('Expired %s task-requirement', count);
+        const counts = await db.fns.expire_task_dependencies(now);
+        debug('Expired %s task-dependency', counts[0].expire_task_dependencies);
       });
     },
   },
