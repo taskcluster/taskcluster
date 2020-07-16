@@ -1,0 +1,331 @@
+version: 44
+migrationScript: 0044-migration.sql
+downgradeScript: 0044-downgrade.sql
+methods:
+  queue_worker_type_entities_load:
+    description: See taskcluster-lib-entities
+    mode: read
+    serviceName: queue
+    args: partition_key text, row_key text
+    returns: table (partition_key_out text, row_key_out text, value jsonb, version integer, etag uuid)
+    body: |-
+      begin
+        return query
+        select
+          queue_worker_type_entities_load.partition_key,
+          queue_worker_type_entities_load.row_key,
+          entity_buf_encode(
+            jsonb_build_object(
+              'PartitionKey', encode_string_key(provisioner_id),
+              'RowKey', encode_string_key(worker_type),
+              'provisionerId', provisioner_id,
+              'workerType', worker_type,
+              'expires', expires,
+              'lastDateActive', last_date_active,
+              'stability', stability),
+            'description', description::text) as value,
+          1 as version,
+          queue_worker_types.etag as etag
+        from queue_worker_types
+        where
+          queue_worker_types.provisioner_id = decode_string_key(partition_key) and
+          queue_worker_types.worker_type = decode_string_key(row_key);
+      end
+  queue_worker_type_entities_create:
+    serviceName: queue
+    description: See taskcluster-lib-entities
+    mode: write
+    args: pk text, rk text, properties jsonb, overwrite boolean, version integer
+    returns: uuid
+    body: |-
+      declare
+        new_row queue_worker_types%ROWTYPE;
+      begin
+        select
+          (properties ->> 'provisionerId')::text,
+          (properties ->> 'workerType')::text,
+          (properties ->> 'expires')::timestamptz,
+          (properties ->> 'lastDateActive')::timestamptz,
+          entity_buf_decode(properties, 'description')::text,
+          (properties ->> 'stability')::text,
+          public.gen_random_uuid()
+        into new_row;
+        if overwrite then
+          raise exception 'overwrite not implemented';
+        else
+          execute 'insert into queue_worker_types select $1.*' using new_row;
+        end if;
+        return new_row.etag;
+      end
+  queue_worker_type_entities_remove:
+    serviceName: queue
+    description: See taskcluster-lib-entities
+    mode: write
+    args: partition_key text, row_key text
+    returns: table (etag uuid)
+    body: |-
+      begin
+        return query delete from queue_worker_types
+        where
+          queue_worker_types.provisioner_id = decode_string_key(partition_key) and
+          queue_worker_types.worker_type = decode_string_key(row_key)
+        returning queue_worker_types.etag;
+      end
+  queue_worker_type_entities_modify:
+    serviceName: queue
+    description: See taskcluster-lib-entities
+    mode: write
+    args: partition_key text, row_key text, properties jsonb, version integer, old_etag uuid
+    returns: table (etag uuid)
+    body: |-
+      declare
+        new_etag uuid;
+      begin
+        new_etag = public.gen_random_uuid();
+        update queue_worker_types
+        set (
+          expires,
+          last_date_active,
+          stability,
+          description,
+          etag
+        ) = (
+          (properties ->> 'expires')::timestamptz,
+          (properties ->> 'lastDateActive')::timestamptz,
+          (properties ->> 'stability')::text,
+          entity_buf_decode(properties, 'description')::text,
+          new_etag
+        )
+        where
+          queue_worker_types.provisioner_id = decode_string_key(partition_key) and
+          queue_worker_types.worker_type = decode_string_key(row_key) and
+          queue_worker_types.etag = queue_worker_type_entities_modify.old_etag;
+        if found then
+          return query select new_etag;
+          return;
+        end if;
+        perform queue_worker_types.etag from queue_worker_types
+        where
+          queue_worker_types.provisioner_id = decode_string_key(partition_key) and
+          queue_worker_types.worker_type = decode_string_key(row_key);
+        if found then
+          raise exception 'unsuccessful update' using errcode = 'P0004';
+        else
+          raise exception 'no such row' using errcode = 'P0002';
+        end if;
+      end
+  queue_worker_type_entities_scan:
+    description: See taskcluster-lib-entities
+    mode: read
+    serviceName: queue
+    args: pk text, rk text, condition text, size integer, page integer
+    returns: table (partition_key text, row_key text, value jsonb, version integer, etag uuid)
+    body: |-
+      declare
+        cond text[];
+        exp_cond_operator text;
+        exp_cond_operand timestamptz;
+      begin
+        if not condition is null then
+          cond := regexp_split_to_array(condition, '\s+');
+          exp_cond_operator := cond[4];
+          exp_cond_operand := cond[5] :: timestamptz;
+
+          return query select
+            encode_string_key(provisioner_id) as partition_key,
+            encode_string_key(worker_type) as row_key,
+            entity_buf_encode(
+              jsonb_build_object(
+                'PartitionKey', encode_string_key(provisioner_id),
+                'RowKey', encode_string_key(worker_type),
+                'provisionerId', provisioner_id,
+                'workerType', worker_type,
+                'expires', expires,
+                'lastDateActive', last_date_active,
+                'stability', stability),
+              'description', description::text) as value,
+            1 as version,
+            queue_worker_types.etag as etag
+          from queue_worker_types
+          where
+            (queue_worker_type_entities_scan.pk is null or decode_string_key(partition_key) = provisioner_id) and
+            (queue_worker_type_entities_scan.rk is null or decode_string_key(row_key) = worker_type) and
+            case
+              when exp_cond_operator = '=' then expires = exp_cond_operand
+              when exp_cond_operator = '<' then expires < exp_cond_operand
+              when exp_cond_operator = '<=' then expires <= exp_cond_operand
+              when exp_cond_operator = '>' then expires > exp_cond_operand
+              when exp_cond_operator = '>=' then expires >= exp_cond_operand
+              else expires <> exp_cond_operand
+            end
+          order by queue_worker_types.provisioner_id, queue_worker_types.worker_type
+          limit case
+            when (size is not null and size > 0) then size + 1
+            else null
+          end
+          offset case
+            when (page is not null and page > 0) then page
+            else 0
+          end;
+        else
+          return query select
+            encode_string_key(provisioner_id) as partition_key,
+            encode_string_key(worker_type) as row_key,
+            entity_buf_encode(
+              jsonb_build_object(
+                'PartitionKey', encode_string_key(provisioner_id),
+                'RowKey', encode_string_key(worker_type),
+                'provisionerId', provisioner_id,
+                'workerType', worker_type,
+                'expires', expires,
+                'lastDateActive', last_date_active,
+                'stability', stability),
+              'description', description::text) as value,
+            1 as version,
+            queue_worker_types.etag as etag
+          from queue_worker_types
+          where
+            (queue_worker_type_entities_scan.pk is null or queue_worker_type_entities_scan.pk = provisioner_id) and
+            (queue_worker_type_entities_scan.rk is null or queue_worker_type_entities_scan.rk = worker_type)
+          order by queue_worker_types.provisioner_id, queue_worker_types.worker_type
+          limit case
+            when (size is not null and size > 0) then size + 1
+            else null
+          end
+          offset case
+            when (size is not null and size > 0 and page is not null and page > 0) then page
+            else 0
+          end;
+        end if;
+      end
+  create_queue_worker_type:
+    description: |-
+      Create a new queue worker type.  Raises UNIQUE_VIOLATION if the worker type already exists.
+    mode: write
+    serviceName: queue
+    args: provisioner_id_in text, worker_type_in text, expires_in timestamptz, last_date_active_in timestamptz, description_in text, stability_in text
+    returns: uuid
+    body: |-
+      declare
+        new_etag uuid := public.gen_random_uuid();
+      begin
+        insert
+          into queue_worker_types (provisioner_id, worker_type, expires, last_date_active, description, stability)
+          values (provisioner_id_in, worker_type_in, expires_in, last_date_active_in, description_in, stability_in);
+          return new_etag;
+      end
+  delete_queue_worker_type:
+    description: |-
+      Delete a queue worker type.
+    mode: write
+    serviceName: queue
+    args: provisioner_id text, worker_type text, stability text, description text
+    returns: void
+    body: |-
+      begin
+        delete from queue_worker_types
+        where
+          queue_worker_types.provisioner_id = provisioner_id_in and
+          queue_worker_types.worker_type = worker_type_in;
+      end
+  get_queue_worker_type:
+    description: |-
+      Get a queue worker type by provisioner_id and worker_type.
+    mode: read
+    serviceName: queue
+    args: provisioner_id_in text, worker_type_in text
+    returns: table(provisioner_id text, worker_type text, expires timestamptz, last_date_active timestamptz, description text, stability text, etag uuid)
+    body: |-
+      begin
+        return query
+        select
+          queue_worker_types.provisioner_id,
+          queue_worker_types.worker_type,
+          queue_worker_types.expires,
+          queue_worker_types.last_date_active,
+          queue_worker_types.description,
+          queue_worker_types.stability,
+          queue_worker_types.etag
+        from queue_worker_types
+        where
+          queue_worker_types.provisioner_id = provisioner_id_in and
+          queue_worker_types.worker_type = worker_type_in;
+        end
+  update_queue_worker_type:
+    serviceName: queue
+    description: |-
+      Update a queue worker type.
+    mode: write
+    args: provisioner_id_in text, worker_type_in text, expires_in timestamptz, last_date_active_in timestamptz, description_in text, stability_in text
+    returns: table(provisioner_id text, worker_type text, expires timestamptz, last_date_active timestamptz, description text, stability text, etag uuid)
+    body: |-
+      declare
+        new_etag uuid := public.gen_random_uuid();
+      begin
+        return query update queue_worker_types
+        set
+          expires = expires_in,
+          last_date_active = last_date_active_in,
+          description = description_in,
+          stability = stability_in,
+          etag = new_etag
+        where
+          queue_worker_types.provisioner_id = provisioner_id_in and
+          queue_worker_types.worker_type = worker_type_in
+        returning
+          queue_worker_types.provisioner_id,
+          queue_worker_types.worker_type,
+          queue_worker_types.expires,
+          queue_worker_types.last_date_active,
+          queue_worker_types.description,
+          queue_worker_types.stability,
+          queue_worker_types.etag;
+      end
+  get_queue_worker_types:
+    description: |-
+      Get queue worker types ordered by `provisioner_id` and `worker_type`.
+      If the pagination arguments are both NULL, all rows are returned.
+      Otherwise, page_size rows are returned at offset page_offset.
+    mode: read
+    serviceName: queue
+    args: provisioner_id_in text, worker_type_in text, page_size_in integer, page_offset_in integer
+    returns: table(provisioner_id text, worker_type text, expires timestamptz, last_date_active timestamptz, description text, stability text, etag uuid)
+    body: |-
+      begin
+        return query
+        select
+          queue_worker_types.provisioner_id,
+          queue_worker_types.worker_type,
+          queue_worker_types.expires,
+          queue_worker_types.last_date_active,
+          queue_worker_types.description,
+          queue_worker_types.stability,
+          queue_worker_types.etag
+        from queue_worker_types
+        where
+          (queue_worker_types.provisioner_id = provisioner_id_in or provisioner_id_in is null) and
+          (queue_worker_types.worker_type = worker_type_in or worker_type_in is null)
+        order by provisioner_id, worker_type
+        limit get_page_limit(page_size_in)
+        offset get_page_offset(page_offset_in);
+      end
+  expire_queue_worker_types:
+    description: |-
+      Expire queue worker types that come before `expires_in`.
+      Returns a count of rows that have been deleted.
+    mode: write
+    serviceName: queue
+    args: expires_in timestamptz
+    returns: integer
+    body: |-
+      declare
+        count integer;
+      begin
+        delete from queue_worker_types
+        where queue_worker_types.expires < expires_in;
+        if found then
+          get diagnostics count = row_count;
+          return count;
+        end if;
+        return 0;
+      end
