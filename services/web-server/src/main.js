@@ -24,7 +24,6 @@ const typeDefs = require('./graphql');
 const PulseEngine = require('./PulseEngine');
 const AuthorizationCode = require('./data/AuthorizationCode');
 const AccessToken = require('./data/AccessToken');
-const GithubAccessToken = require('./data/GithubAccessToken');
 const SessionStorage = require('./data/SessionStorage');
 const scanner = require('./login/scanner');
 
@@ -154,17 +153,13 @@ const load = loader(
 
     // Login strategies
     strategies: {
-      requires: ['cfg', 'GithubAccessToken', 'monitor'],
-      setup: ({ cfg, GithubAccessToken, monitor }) => {
+      requires: ['cfg', 'monitor', 'db'],
+      setup: ({ cfg, monitor, db }) => {
         const strategies = {};
 
         Object.keys(cfg.login.strategies || {}).forEach((name) => {
           const Strategy = require('./login/strategies/' + name);
           const options = { name, cfg, monitor };
-
-          if (name === 'github') {
-            Object.assign(options, { GithubAccessToken });
-          }
 
           strategies[name] = new Strategy(options);
         });
@@ -230,18 +225,6 @@ const load = loader(
         serviceName: 'web_server',
         tableName: cfg.app.sessionStorageTableName,
         monitor: monitor.childMonitor('table.sessionStorageTable'),
-        signingKey: cfg.azure.signingKey,
-        cryptoKey: cfg.azure.cryptoKey,
-      }),
-    },
-
-    GithubAccessToken: {
-      requires: ['cfg', 'monitor', 'db'],
-      setup: ({cfg, monitor, db}) => GithubAccessToken.setup({
-        db,
-        serviceName: 'web_server',
-        tableName: cfg.app.githubAccessTokenTableName,
-        monitor: monitor.childMonitor('table.githubAccessTokenTable'),
         signingKey: cfg.azure.signingKey,
         cryptoKey: cfg.azure.cryptoKey,
       }),

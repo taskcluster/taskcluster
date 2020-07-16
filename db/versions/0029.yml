@@ -1,0 +1,39 @@
+version: 29
+migrationScript: 0029-migration.sql
+downgradeScript: 0029-downgrade.sql
+methods:
+  add_github_access_token:
+    description: |-
+      Sets the encrypted access token for `user_id_in` to
+      `encrypted_access_token_in`.
+
+      If no access token is currently set for `user_id_in`, a new row is
+      inserted, otherwise the existing row's encrypted access token is updated
+      to `encrypted_access_token_in`.
+    mode: write
+    serviceName: web_server
+    args: user_id_in text, encrypted_access_token_in jsonb
+    returns: void
+    body: |-
+      begin
+        insert into github_access_tokens(user_id, encrypted_access_token)
+        values (
+          user_id_in,
+          encrypted_access_token_in
+        ) on conflict (user_id) do
+        update
+        set encrypted_access_token = encrypted_access_token_in
+        where github_access_tokens.user_id = add_github_access_token.user_id_in;
+      end
+  load_github_access_token:
+    description: Returns the encrypted github access token for a given user.
+    mode: read
+    serviceName: web_server
+    args: user_id_in text
+    returns: table(encrypted_access_token jsonb)
+    body: |-
+      begin
+        return query
+        select github_access_tokens.encrypted_access_token from github_access_tokens
+        where github_access_tokens.user_id = user_id_in;
+      end

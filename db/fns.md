@@ -208,6 +208,7 @@
 | access_token_table_entities_modify | write | partition_key text, row_key text, properties jsonb, version integer, old_etag uuid | table (etag uuid) | See taskcluster-lib-entities |
 | access_token_table_entities_remove | write | partition_key text, row_key text | table (etag uuid) | See taskcluster-lib-entities |
 | access_token_table_entities_scan | read | pk text, rk text, condition text, size integer, page integer | table (partition_key text, row_key text, value jsonb, version integer, etag uuid) | See taskcluster-lib-entities |
+| add_github_access_token | write | user_id_in text, encrypted_access_token_in jsonb | void | Sets the encrypted access token for `user_id_in` to<br />`encrypted_access_token_in`.<br /><br />If no access token is currently set for `user_id_in`, a new row is<br />inserted, otherwise the existing row's encrypted access token is updated<br />to `encrypted_access_token_in`. |
 | authorization_codes_table_entities_create | write | pk text, rk text, properties jsonb, overwrite boolean, version integer | uuid | See taskcluster-lib-entities |
 | authorization_codes_table_entities_load | read | partition_key text, row_key text | table (partition_key_out text, row_key_out text, value jsonb, version integer, etag uuid) | See taskcluster-lib-entities |
 | authorization_codes_table_entities_modify | write | partition_key text, row_key text, properties jsonb, version integer, old_etag uuid | table (etag uuid) | See taskcluster-lib-entities |
@@ -218,6 +219,7 @@
 | github_access_token_table_entities_modify | write | partition_key text, row_key text, properties jsonb, version integer, old_etag uuid | table (etag uuid) | See taskcluster-lib-entities |
 | github_access_token_table_entities_remove | write | partition_key text, row_key text | table (etag uuid) | See taskcluster-lib-entities |
 | github_access_token_table_entities_scan | read | pk text, rk text, condition text, size integer, page integer | table (partition_key text, row_key text, value jsonb, version integer, etag uuid) | See taskcluster-lib-entities |
+| load_github_access_token | read | user_id_in text | table(encrypted_access_token jsonb) | Returns the encrypted github access token for a given user. |
 | session_storage_table_entities_create | write | pk text, rk text, properties jsonb, overwrite boolean, version integer | uuid | See taskcluster-lib-entities |
 | session_storage_table_entities_load | read | partition_key text, row_key text | table (partition_key_out text, row_key_out text, value jsonb, version integer, etag uuid) | See taskcluster-lib-entities |
 | session_storage_table_entities_modify | write | partition_key text, row_key text, properties jsonb, version integer, old_etag uuid | table (etag uuid) | See taskcluster-lib-entities |

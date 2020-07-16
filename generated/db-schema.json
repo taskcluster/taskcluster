@@ -58,7 +58,7 @@
       "tables": {
         "access_token_table_entities": "write",
         "authorization_codes_table_entities": "write",
-        "github_access_token_table_entities": "write",
+        "github_access_tokens": "write",
         "session_storage_table_entities": "write"
       }
     },
@@ -114,12 +114,9 @@
       "notification_address": "text not null",
       "notification_type": "text not null"
     },
-    "github_access_token_table_entities": {
-      "etag": "uuid",
-      "partition_key": "text not null",
-      "row_key": "text not null",
-      "value": "jsonb not null",
-      "version": "integer not null"
+    "github_access_tokens": {
+      "encrypted_access_token": "jsonb not null",
+      "user_id": "text not null"
     },
     "github_builds": {
       "created": "timestamp with time zone not null",
@@ -3558,6 +3555,31 @@
         }
       },
       "version": 28
+    },
+    {
+      "downgradeScript": "begin\n\n  create table github_access_token_table_entities(\n    partition_key text,\n    row_key text,\n    value jsonb not null,\n    version integer not null,\n    etag uuid default public.gen_random_uuid());\n  alter table github_access_token_table_entities add primary key (partition_key, row_key);\n  grant select, insert, update, delete on github_access_token_table_entities to $db_user_prefix$_web_server;\n\n  revoke select, insert, update, delete on github_access_tokens from $db_user_prefix$_web_server;\n  drop table github_access_tokens;\n\nend\n",
+      "methods": {
+        "add_github_access_token": {
+          "args": "user_id_in text, encrypted_access_token_in jsonb",
+          "body": "begin\n  insert into github_access_tokens(user_id, encrypted_access_token)\n  values (\n    user_id_in,\n    encrypted_access_token_in\n  ) on conflict (user_id) do\n  update\n  set encrypted_access_token = encrypted_access_token_in\n  where github_access_tokens.user_id = add_github_access_token.user_id_in;\nend",
+          "deprecated": false,
+          "description": "Sets the encrypted access token for `user_id_in` to\n`encrypted_access_token_in`.\n\nIf no access token is currently set for `user_id_in`, a new row is\ninserted, otherwise the existing row's encrypted access token is updated\nto `encrypted_access_token_in`.",
+          "mode": "write",
+          "returns": "void",
+          "serviceName": "web_server"
+        },
+        "load_github_access_token": {
+          "args": "user_id_in text",
+          "body": "begin\n  return query\n  select github_access_tokens.encrypted_access_token from github_access_tokens\n  where github_access_tokens.user_id = user_id_in;\nend",
+          "deprecated": false,
+          "description": "Returns the encrypted github access token for a given user.",
+          "mode": "read",
+          "returns": "table(encrypted_access_token jsonb)",
+          "serviceName": "web_server"
+        }
+      },
+      "migrationScript": "begin\n\n  create table github_access_tokens(\n    user_id text not null,\n    encrypted_access_token jsonb not null);\n  alter table github_access_tokens add primary key (user_id);\n  grant select, insert, update, delete on github_access_tokens to $db_user_prefix$_web_server;\n\n  revoke select, insert, update, delete on github_access_token_table_entities from $db_user_prefix$_web_server;\n  drop table github_access_token_table_entities;\n\nend\n",
+      "version": 29
     }
   ]
 }
