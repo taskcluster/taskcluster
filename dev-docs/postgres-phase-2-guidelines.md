@@ -182,6 +182,9 @@ But updating a value within a more complex column can be problematic.
 In such cases, the existing etag column allows implementation of the OCC approach.
 See worker-manager's `workers` table for an example.
 
+In general, keep etag columns around where doing so is not difficult, but do not return etags from new functions except where that's required to support optimistic concurrency.
+Later, we can drop unnecessary etag columns.
+
 ## Rebasing
 
 As many people are writing versions, it's common to need to re-number a DB version.
