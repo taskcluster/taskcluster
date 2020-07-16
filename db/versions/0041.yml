@@ -252,3 +252,222 @@ methods:
           else 0
         end;
       end
+  get_client:
+    description: |-
+      Get a client. Returns an empty set if the client does not exist.
+    mode: read
+    serviceName: auth
+    args: client_id_in text
+    returns: |-
+      table (
+        client_id text,
+        description text,
+        encrypted_access_token jsonb,
+        expires timestamptz,
+        disabled boolean,
+        scopes jsonb,
+        created timestamptz,
+        last_modified timestamptz,
+        last_date_used timestamptz,
+        last_rotated timestamptz,
+        delete_on_expiration boolean
+      )
+    body: |-
+      begin
+        return query
+        select 
+          clients.client_id,
+          clients.description,
+          clients.encrypted_access_token,
+          clients.expires,
+          clients.disabled,
+          clients.scopes,
+          clients.created,
+          clients.last_modified,
+          clients.last_date_used,
+          clients.last_rotated,
+          clients.delete_on_expiration
+        from clients
+        where clients.client_id = client_id_in;
+      end
+  get_clients:
+    description: |-
+      Get clients, ordered by client_id.   If specified, only clients with
+      client_id beginning with `prefix` are returned.  If the pagination
+      arguments are both NULL, all rows are returned.  Otherwise, page_size
+      rows are returned at offset page_offset.
+    mode: read
+    serviceName: auth
+    args: prefix_in text, page_size_in integer, page_offset_in integer
+    returns: |-
+      table (
+        client_id text,
+        description text,
+        encrypted_access_token jsonb,
+        expires timestamptz,
+        disabled boolean,
+        scopes jsonb,
+        created timestamptz,
+        last_modified timestamptz,
+        last_date_used timestamptz,
+        last_rotated timestamptz,
+        delete_on_expiration boolean
+      )
+    body: |-
+      begin
+        return query
+        select 
+          clients.client_id,
+          clients.description,
+          clients.encrypted_access_token,
+          clients.expires,
+          clients.disabled,
+          clients.scopes,
+          clients.created,
+          clients.last_modified,
+          clients.last_date_used,
+          clients.last_rotated,
+          clients.delete_on_expiration
+        from clients
+        where prefix_in is null or starts_with(clients.client_id, prefix_in)
+        order by clients.client_id
+        limit get_page_limit(page_size_in)
+        offset get_page_offset(page_offset_in);
+      end
+  create_client:
+    description: |-
+      Create a new client.  The created and last_.. timestamps are all
+      initialized to the current time.  Raises UNIQUE_VIOLATION if the client
+      already exists.
+    mode: write
+    serviceName: auth
+    args: |-
+      client_id_in text,
+      description_in text,
+      encrypted_access_token_in jsonb,
+      expires_in timestamptz,
+      disabled_in boolean,
+      scopes_in jsonb,
+      delete_on_expiration_in boolean
+    returns: void
+    body: |-
+      begin
+        insert into clients (
+          client_id,
+          description,
+          encrypted_access_token,
+          expires,
+          disabled,
+          scopes,
+          created,
+          last_modified,
+          last_date_used,
+          last_rotated,
+          delete_on_expiration
+        ) values (
+          client_id_in,
+          description_in,
+          encrypted_access_token_in,
+          expires_in,
+          disabled_in,
+          scopes_in,
+          now(),
+          now(),
+          now(),
+          now(),
+          delete_on_expiration_in
+        );
+      end
+  delete_client:
+    description: |-
+      Delete the given client.  If the client does not exist, nothing happens.
+    mode: write
+    serviceName: auth
+    args: client_id_in text
+    returns: void
+    body: |-
+      begin
+        delete from clients
+        where client_id = client_id_in;
+      end
+  update_client:
+    description: |-
+      Update an existing client, returning the updated client or, if no such client
+      exists, an empty set.  This does not implement optimistic concurrency: any non-null
+      arguments to this function will overwrite existing values.  The last_modified
+      column is updated automatically, as is last_rotated if the access token is set.
+    mode: write
+    serviceName: auth
+    args: |-
+      client_id_in text,
+      description_in text,
+      encrypted_access_token_in jsonb,
+      expires_in timestamptz,
+      disabled_in boolean,
+      scopes_in jsonb,
+      delete_on_expiration_in boolean
+    returns: |-
+      table (
+        client_id text,
+        description text,
+        encrypted_access_token jsonb,
+        expires timestamptz,
+        disabled boolean,
+        scopes jsonb,
+        created timestamptz,
+        last_modified timestamptz,
+        last_date_used timestamptz,
+        last_rotated timestamptz,
+        delete_on_expiration boolean
+      )
+    body: |-
+      begin
+        update clients set
+          description = coalesce(description_in, clients.description),
+          encrypted_access_token = coalesce(encrypted_access_token_in, clients.encrypted_access_token),
+          expires = coalesce(expires_in, clients.expires),
+          disabled = coalesce(disabled_in, clients.disabled),
+          scopes = coalesce(scopes_in, clients.scopes),
+          delete_on_expiration = coalesce(delete_on_expiration_in, clients.delete_on_expiration),
+          last_modified = now(),
+          last_rotated = case when encrypted_access_token_in is null then clients.last_rotated else now() end
+        where clients.client_id = client_id_in;
+
+        if found then
+          return query select * from get_client(client_id_in);
+        end if;
+      end
+  update_client_last_used:
+    description: |-
+      Indicate that this client has been recently used, updating its last_date_used field.
+      Does nothing if the client does not exist.
+    mode: write
+    serviceName: auth
+    args: client_id_in text
+    returns: void
+    body: |-
+      begin
+        update clients
+        set last_date_used = now()
+        where clients.client_id = client_id_in;
+      end
+  expire_clients:
+    description: |-
+      Delete all clients with an 'expires' in the past and with 'delete_on_expiration' set.
+    mode: write
+    serviceName: auth
+    args: ''
+    returns: integer
+    body: |-
+      declare
+        count integer;
+      begin
+        delete from clients
+        where expires < now() and delete_on_expiration;
+
+        if found then
+          get diagnostics count = row_count;
+          return count;
+        end if;
+        return 0;
+      end

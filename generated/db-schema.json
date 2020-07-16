@@ -4574,6 +4574,69 @@
           "mode": "read",
           "returns": "table (partition_key text, row_key text, value jsonb, version integer, etag uuid)",
           "serviceName": "auth"
+        },
+        "create_client": {
+          "args": "client_id_in text,\ndescription_in text,\nencrypted_access_token_in jsonb,\nexpires_in timestamptz,\ndisabled_in boolean,\nscopes_in jsonb,\ndelete_on_expiration_in boolean",
+          "body": "begin\n  insert into clients (\n    client_id,\n    description,\n    encrypted_access_token,\n    expires,\n    disabled,\n    scopes,\n    created,\n    last_modified,\n    last_date_used,\n    last_rotated,\n    delete_on_expiration\n  ) values (\n    client_id_in,\n    description_in,\n    encrypted_access_token_in,\n    expires_in,\n    disabled_in,\n    scopes_in,\n    now(),\n    now(),\n    now(),\n    now(),\n    delete_on_expiration_in\n  );\nend",
+          "deprecated": false,
+          "description": "Create a new client.  The created and last_.. timestamps are all\ninitialized to the current time.  Raises UNIQUE_VIOLATION if the client\nalready exists.",
+          "mode": "write",
+          "returns": "void",
+          "serviceName": "auth"
+        },
+        "delete_client": {
+          "args": "client_id_in text",
+          "body": "begin\n  delete from clients\n  where client_id = client_id_in;\nend",
+          "deprecated": false,
+          "description": "Delete the given client.  If the client does not exist, nothing happens.",
+          "mode": "write",
+          "returns": "void",
+          "serviceName": "auth"
+        },
+        "expire_clients": {
+          "args": "",
+          "body": "declare\n  count integer;\nbegin\n  delete from clients\n  where expires < now() and delete_on_expiration;\n\n  if found then\n    get diagnostics count = row_count;\n    return count;\n  end if;\n  return 0;\nend",
+          "deprecated": false,
+          "description": "Delete all clients with an 'expires' in the past and with 'delete_on_expiration' set.",
+          "mode": "write",
+          "returns": "integer",
+          "serviceName": "auth"
+        },
+        "get_client": {
+          "args": "client_id_in text",
+          "body": "begin\n  return query\n  select \n    clients.client_id,\n    clients.description,\n    clients.encrypted_access_token,\n    clients.expires,\n    clients.disabled,\n    clients.scopes,\n    clients.created,\n    clients.last_modified,\n    clients.last_date_used,\n    clients.last_rotated,\n    clients.delete_on_expiration\n  from clients\n  where clients.client_id = client_id_in;\nend",
+          "deprecated": false,
+          "description": "Get a client. Returns an empty set if the client does not exist.",
+          "mode": "read",
+          "returns": "table (\n  client_id text,\n  description text,\n  encrypted_access_token jsonb,\n  expires timestamptz,\n  disabled boolean,\n  scopes jsonb,\n  created timestamptz,\n  last_modified timestamptz,\n  last_date_used timestamptz,\n  last_rotated timestamptz,\n  delete_on_expiration boolean\n)",
+          "serviceName": "auth"
+        },
+        "get_clients": {
+          "args": "prefix_in text, page_size_in integer, page_offset_in integer",
+          "body": "begin\n  return query\n  select \n    clients.client_id,\n    clients.description,\n    clients.encrypted_access_token,\n    clients.expires,\n    clients.disabled,\n    clients.scopes,\n    clients.created,\n    clients.last_modified,\n    clients.last_date_used,\n    clients.last_rotated,\n    clients.delete_on_expiration\n  from clients\n  where prefix_in is null or starts_with(clients.client_id, prefix_in)\n  order by clients.client_id\n  limit get_page_limit(page_size_in)\n  offset get_page_offset(page_offset_in);\nend",
+          "deprecated": false,
+          "description": "Get clients, ordered by client_id.   If specified, only clients with\nclient_id beginning with `prefix` are returned.  If the pagination\narguments are both NULL, all rows are returned.  Otherwise, page_size\nrows are returned at offset page_offset.",
+          "mode": "read",
+          "returns": "table (\n  client_id text,\n  description text,\n  encrypted_access_token jsonb,\n  expires timestamptz,\n  disabled boolean,\n  scopes jsonb,\n  created timestamptz,\n  last_modified timestamptz,\n  last_date_used timestamptz,\n  last_rotated timestamptz,\n  delete_on_expiration boolean\n)",
+          "serviceName": "auth"
+        },
+        "update_client": {
+          "args": "client_id_in text,\ndescription_in text,\nencrypted_access_token_in jsonb,\nexpires_in timestamptz,\ndisabled_in boolean,\nscopes_in jsonb,\ndelete_on_expiration_in boolean",
+          "body": "begin\n  update clients set\n    description = coalesce(description_in, clients.description),\n    encrypted_access_token = coalesce(encrypted_access_token_in, clients.encrypted_access_token),\n    expires = coalesce(expires_in, clients.expires),\n    disabled = coalesce(disabled_in, clients.disabled),\n    scopes = coalesce(scopes_in, clients.scopes),\n    delete_on_expiration = coalesce(delete_on_expiration_in, clients.delete_on_expiration),\n    last_modified = now(),\n    last_rotated = case when encrypted_access_token_in is null then clients.last_rotated else now() end\n  where clients.client_id = client_id_in;\n\n  if found then\n    return query select * from get_client(client_id_in);\n  end if;\nend",
+          "deprecated": false,
+          "description": "Update an existing client, returning the updated client or, if no such client\nexists, an empty set.  This does not implement optimistic concurrency: any non-null\narguments to this function will overwrite existing values.  The last_modified\ncolumn is updated automatically, as is last_rotated if the access token is set.",
+          "mode": "write",
+          "returns": "table (\n  client_id text,\n  description text,\n  encrypted_access_token jsonb,\n  expires timestamptz,\n  disabled boolean,\n  scopes jsonb,\n  created timestamptz,\n  last_modified timestamptz,\n  last_date_used timestamptz,\n  last_rotated timestamptz,\n  delete_on_expiration boolean\n)",
+          "serviceName": "auth"
+        },
+        "update_client_last_used": {
+          "args": "client_id_in text",
+          "body": "begin\n  update clients\n  set last_date_used = now()\n  where clients.client_id = client_id_in;\nend",
+          "deprecated": false,
+          "description": "Indicate that this client has been recently used, updating its last_date_used field.\nDoes nothing if the client does not exist.",
+          "mode": "write",
+          "returns": "void",
+          "serviceName": "auth"
         }
       },
       "migrationScript": "begin\n  -- lock this table before reading from it, to prevent loss of concurrent\n  -- updates when the table is dropped.  Note that this may lead to concurrent\n  -- updates failing; the important thing is that they not succeed without\n  -- taking effect.  Failed updates will be retried.\n  lock table clients_entities;\n\n  create table clients\n  as\n    select\n      (value ->> 'clientId')::text as client_id,\n      entity_buf_decode(value, 'description')::text as description,\n      entity_to_crypto_container_v0(value, 'accessToken') as encrypted_access_token,\n      (value ->> 'expires')::timestamptz as expires,\n      (value ->> 'disabled')::boolean as disabled,\n      entity_buf_decode(value, 'scopes')::jsonb as scopes,\n      (details ->> 'created')::timestamptz as created,\n      (details ->> 'lastModified')::timestamptz as last_modified,\n      (details ->> 'lastDateUsed')::timestamptz as last_date_used,\n      (details ->> 'lastRotated')::timestamptz as last_rotated,\n      (details ->> 'deleteOnExpiration')::boolean as delete_on_expiration,\n      etag\n    from (\n      select\n        value,\n        entity_buf_decode(value, 'details')::jsonb as details,\n        etag\n      from clients_entities\n    ) as expanded;\n  alter table clients add primary key (client_id);\n  alter table clients\n    alter column client_id set not null,\n    alter column description set not null,\n    alter column encrypted_access_token set not null,\n    alter column expires set not null,\n    alter column disabled set not null,\n    alter column scopes set not null,\n    alter column created set not null,\n    alter column last_modified set not null,\n    alter column last_date_used set not null,\n    alter column last_rotated set not null,\n    alter column delete_on_expiration set not null,\n    alter column etag set not null,\n    alter column etag set default public.gen_random_uuid();\n\n  revoke select, insert, update, delete on clients_entities from $db_user_prefix$_auth;\n  drop table clients_entities;\n  grant select, insert, update, delete on clients to $db_user_prefix$_auth;\nend\n",

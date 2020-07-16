@@ -13,7 +13,6 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
   helper.withDb(mock, skipping);
   helper.withCfg(mock, skipping);
   helper.withPulse(mock, skipping);
-  helper.withEntities(mock, skipping);
   helper.withServers(mock, skipping);
 
   let bucket;

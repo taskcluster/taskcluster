@@ -1,10 +1,11 @@
-const {APIBuilder} = require('taskcluster-lib-api');
+const {APIBuilder, paginateResults} = require('taskcluster-lib-api');
 const scopeUtils = require('taskcluster-lib-scopes');
 const slugid = require('slugid');
 const _ = require('lodash');
 const signaturevalidator = require('./signaturevalidator');
 const ScopeResolver = require('./scoperesolver');
 const Hashids = require('hashids/cjs');
+const {UNIQUE_VIOLATION} = require('taskcluster-lib-postgres');
 const {modifyRoles} = require('../src/data');
 
 /**
@@ -18,6 +19,24 @@ const roleToJson = ({role_id, scopes, description, last_modified, created}, cont
   description,
   lastModified: last_modified.toJSON(),
   created: created.toJSON(),
+});
+
+/**
+ * Helper to return a client from the API.  Note that this does not include the
+ * access token, but does resolve expandedScopes.
+ */
+const clientToJson = (client, context) => ({
+  clientId: client.client_id,
+  description: client.description,
+  expires: client.expires.toJSON(),
+  created: client.created.toJSON(),
+  lastModified: client.last_modified.toJSON(),
+  lastDateUsed: client.last_date_used.toJSON(),
+  lastRotated: client.last_rotated.toJSON(),
+  deleteOnExpiration: client.delete_on_expiration,
+  scopes: client.scopes,
+  expandedScopes: context.resolver.resolve(client.scopes),
+  disabled: client.disabled,
 });
 
 /**
@@ -102,9 +121,6 @@ const builder = new APIBuilder({
     project: /^[a-zA-Z0-9_-]{1,64}$/,
   },
   context: [
-    // Instances of data tables
-    'Client',
-
     // Database
     'db',
 
@@ -144,8 +160,7 @@ builder.declare({
   route: '/clients/',
   query: {
     prefix: /^[A-Za-z0-9!@/:.+|_-]+$/, // should match clientId above
-    continuationToken: /./,
-    limit: /^[0-9]+$/,
+    ...paginateResults.query,
   },
   name: 'listClients',
   output: 'list-clients-response.yml',
@@ -164,28 +179,13 @@ builder.declare({
     'get a result without a `continuationToken`.',
   ].join('\n'),
 }, async function(req, res) {
-  let prefix = req.query.prefix;
-  let limit = parseInt(req.query.limit || 1000, 10);
-  let Client = this.Client;
-  let resolver = this.resolver;
-
-  let response = {clients: []};
-
-  let opts = {limit};
-  if (req.query.continuationToken) {
-    opts.continuation = req.query.continuationToken;
-  }
-  let data = await Client.scan({}, opts);
-  data.entries.forEach(client => {
-    if (!prefix || client.clientId.startsWith(prefix)) {
-      response.clients.push(client.json(resolver));
-    }
+  const {continuationToken, rows} = await paginateResults({
+    query: req.query,
+    fetch: (size, offset) => this.db.fns.get_clients(req.query.prefix, size, offset),
+    maxLimit: 1000,
   });
-  if (data.continuation) {
-    response.continuationToken = data.continuation;
-  }
 
-  res.reply(response);
+  res.reply({clients: rows.map(c => clientToJson(c, this)), continuationToken});
 });
 
 /** Get client */
@@ -201,16 +201,12 @@ builder.declare({
     'Get information about a single client.',
   ].join('\n'),
 }, async function(req, res) {
-  let clientId = req.params.clientId;
-
-  // Load client
-  let client = await this.Client.load({clientId}, true);
-
+  let [client] = await this.db.fns.get_client(req.params.clientId);
   if (!client) {
     return res.reportError('ResourceNotFound', 'Client not found', {});
   }
 
-  res.reply(client.json(this.resolver));
+  res.reply(clientToJson(client, this));
 });
 
 /** Create client */
@@ -265,48 +261,40 @@ builder.declare({
   await req.authorize({clientId, scopes});
 
   let accessToken = slugid.v4() + slugid.v4();
-  let client = await this.Client.create({
-    clientId: clientId,
-    description: input.description,
-    accessToken: accessToken,
-    expires: new Date(input.expires),
-    scopes: scopes,
-    disabled: 0,
-    details: {
-      created: new Date().toJSON(),
-      lastModified: new Date().toJSON(),
-      lastDateUsed: new Date().toJSON(),
-      lastRotated: new Date().toJSON(),
-      deleteOnExpiration: !!input.deleteOnExpiration,
-    },
-  }).catch(async (err) => {
-    // Only handle
-    if (err.code !== 'EntityAlreadyExists') {
+
+  try {
+    await this.db.fns.create_client(
+      clientId,
+      input.description,
+      this.db.encrypt({value: Buffer.from(accessToken, 'utf8')}),
+      new Date(input.expires),
+      false,
+      JSON.stringify(scopes),
+      !!input.deleteOnExpiration,
+    );
+  } catch (err) {
+    if (err.code !== UNIQUE_VIOLATION) {
       throw err;
     }
 
-    // Load client
-    let client = await this.Client.load({clientId});
+    // Load existing client
+    let [client] = await this.db.fns.get_client(clientId);
+    if (!client) {
+      throw err; // exists, or doesn't exist??
+    }
 
     // If stored client different or older than 15 min we return 409
-    let created = new Date(client.details.created).getTime();
+    let created = new Date(client.created).getTime();
 
     if (client.description !== input.description ||
         client.expires.getTime() !== new Date(input.expires).getTime() ||
         !_.isEqual(client.scopes, scopes) ||
-        client.disabled !== 0 ||
+        client.disabled ||
         created < Date.now() - 15 * 60 * 1000) {
       return res.reportError('RequestConflict',
         'client with same clientId already exists, possibly an issue with retry logic or idempotency',
         {});
     }
-
-    return client;
-  });
-
-  // If no client it was already created
-  if (!client) {
-    return;
   }
 
   // Send pulse message
@@ -316,8 +304,9 @@ builder.declare({
   ]);
 
   // Create result with access token
-  let result = client.json(this.resolver);
-  result.accessToken = client.accessToken;
+  let [client] = await this.db.fns.get_client(clientId);
+  let result = clientToJson(client, this);
+  result.accessToken = this.db.decrypt({value: client.encrypted_access_token}).toString('utf8');
   return res.reply(result);
 });
 
@@ -354,17 +343,20 @@ builder.declare({
   // Check scopes
   await req.authorize({clientId});
 
-  // Load client
-  let client = await this.Client.load({clientId}, true);
+  // Reset accessToken
+  const accessToken = slugid.v4() + slugid.v4();
+  const [client] = await this.db.fns.update_client(
+    clientId,
+    null, // description
+    this.db.encrypt({ value: Buffer.from(accessToken, 'utf8') }),
+    null, // expires
+    null, // disabled
+    null, // scopes
+    null, // delete_on_expiration
+  );
   if (!client) {
     return res.reportError('ResourceNotFound', 'Client not found', {});
   }
-
-  // Reset accessToken
-  await client.modify(client => {
-    client.accessToken = slugid.v4() + slugid.v4();
-    client.details.lastRotated = new Date().toJSON();
-  });
 
   // Publish message on pulse to clear caches...
   await Promise.all([
@@ -373,8 +365,8 @@ builder.declare({
   ]);
 
   // Create result with access token
-  let result = client.json(this.resolver);
-  result.accessToken = client.accessToken;
+  let result = clientToJson(client, this);
+  result.accessToken = this.db.decrypt({value: client.encrypted_access_token}).toString('utf8');
   return res.reply(result);
 });
 
@@ -419,7 +411,7 @@ builder.declare({
   }
 
   // Load client
-  let client = await this.Client.load({clientId}, true);
+  let [client] = await this.db.fns.get_client(req.params.clientId);
   if (!client) {
     return res.reportError('ResourceNotFound', 'Client not found', {});
   }
@@ -432,15 +424,18 @@ builder.declare({
   await req.authorize({clientId, scopesAdded});
 
   // Update client
-  await client.modify(client => {
-    client.description = input.description;
-    client.expires = new Date(input.expires);
-    client.details.lastModified = new Date().toJSON();
-    client.details.deleteOnExpiration = !!input.deleteOnExpiration;
-    if (input.scopes) {
-      client.scopes = input.scopes;
-    }
-  });
+  const [updated] = await this.db.fns.update_client(
+    clientId,
+    input.description,
+    null, // encrypted_access_token
+    new Date(input.expires),
+    null, // disabled
+    input.scopes ? JSON.stringify(input.scopes) : null,
+    !!input.deleteOnExpiration,
+  );
+  if (!updated) {
+    return res.reportError('ResourceNotFound', 'Client not found', {});
+  }
 
   // Publish message on pulse to clear caches...
   await Promise.all([
@@ -448,7 +443,7 @@ builder.declare({
     this.resolver.reloadClient(clientId),
   ]);
 
-  return res.reply(client.json(this.resolver));
+  return res.reply(clientToJson(updated, this));
 });
 
 /** Enable client */
@@ -484,16 +479,19 @@ builder.declare({
   // Check scopes
   await req.authorize({clientId});
 
-  // Load client
-  let client = await this.Client.load({clientId}, true);
+  // Update client
+  const [client] = await this.db.fns.update_client(
+    clientId,
+    null, // description
+    null, // encrypted_access_token
+    null, // expires
+    false,
+    null, // scopes
+    null, // delete on expiration
+  );
   if (!client) {
     return res.reportError('ResourceNotFound', 'Client not found', {});
   }
-
-  // Update client
-  await client.modify(client => {
-    client.disabled = 0;
-  });
 
   // Publish message on pulse to clear caches...
   await Promise.all([
@@ -501,7 +499,7 @@ builder.declare({
     this.resolver.reloadClient(clientId),
   ]);
 
-  return res.reply(client.json(this.resolver));
+  return res.reply(clientToJson(client, this));
 });
 
 /** Disable client */
@@ -536,16 +534,19 @@ builder.declare({
   // Check scopes
   await req.authorize({clientId});
 
-  // Load client
-  let client = await this.Client.load({clientId}, true);
+  // Update client
+  const [client] = await this.db.fns.update_client(
+    clientId,
+    null, // description
+    null, // encrypted_access_token
+    null, // expires
+    true,
+    null, // scopes
+    null, // delete on expiration
+  );
   if (!client) {
     return res.reportError('ResourceNotFound', 'Client not found', {});
   }
-
-  // Update client
-  await client.modify(client => {
-    client.disabled = 1;
-  });
 
   // Publish message on pulse to clear caches...
   await Promise.all([
@@ -553,7 +554,7 @@ builder.declare({
     this.resolver.reloadClient(clientId),
   ]);
 
-  return res.reply(client.json(this.resolver));
+  return res.reply(clientToJson(client, this));
 });
 
 /** Delete client */
@@ -584,7 +585,7 @@ builder.declare({
   // Check scopes
   await req.authorize({clientId});
 
-  await this.Client.remove({clientId}, true);
+  await this.db.fns.delete_client(clientId);
 
   await Promise.all([
     this.publisher.clientDeleted({clientId}),

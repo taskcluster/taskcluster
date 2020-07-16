@@ -1,7 +1,6 @@
 const assert = require('assert');
 const debug = require('debug')('test-helper');
 const _ = require('lodash');
-const data = require('../src/data');
 const builder = require('../src/api');
 const taskcluster = require('taskcluster-client');
 const load = require('../src/main');
@@ -11,7 +10,8 @@ const {APIBuilder} = require('taskcluster-lib-api');
 const SchemaSet = require('taskcluster-lib-validate');
 const staticScopes = require('../src/static-scopes.json');
 const makeSentryManager = require('./../src/sentrymanager');
-const {stickyLoader, Secrets, withEntity, withPulse, withMonitor, withDb, resetTables} = require('taskcluster-lib-testing');
+const {syncStaticClients} = require('../src/static-clients');
+const {stickyLoader, Secrets, withPulse, withMonitor, withDb, resetTables} = require('taskcluster-lib-testing');
 
 exports.load = stickyLoader(load);
 
@@ -72,31 +72,6 @@ exports.withCfg = (mock, skipping) => {
 
   suiteTeardown(async function() {
     exports.load.restore();
-  });
-};
-
-/**
- * Set helper.<Class> for each of the Azure entities used in the service
- */
-exports.withEntities = (mock, skipping, {orderedTests} = {}) => {
-  const cleanup = async () => {
-    if (skipping()) {
-      return;
-    }
-
-    await exports.Client.scan({}, {handler: async e => {
-      // This is assumed to exist accross tests in many places
-      if (e.clientId.startsWith('static/')) {
-        return;
-      }
-      await e.remove();
-    }});
-  };
-
-  withEntity(mock, skipping, exports, 'Client', data.Client, {
-    noSasCredentials: true, // this *is* the auth service!
-    orderedTests,
-    cleanup,
   });
 };
 
@@ -383,9 +358,17 @@ exports.withGcp = (mock, skipping) => {
 exports.resetTables = (mock, skipping) => {
   setup('reset tables', async function() {
     await resetTables({tableNames: [
-      'clients_entities',
-      'roles_entities',
       'roles',
+      'clients',
     ] });
+
+    // set up the static clients (which have already been overridden in withCfg)
+    const cfg = await exports.load('cfg');
+    const db = await exports.load('db');
+    await syncStaticClients(db, cfg.app.staticClients || [], cfg.azure.accountId);
+
+    // ..and reload the resolver
+    const resolver = await exports.load('resolver');
+    await resolver.reload();
   });
 };

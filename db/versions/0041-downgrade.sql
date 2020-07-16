@@ -38,8 +38,8 @@ begin
     etag
   from clients;
 
-  revoke select, insert, update, delete on clients from $db_user_prefix$_hooks;
+  revoke select, insert, update, delete on clients from $db_user_prefix$_auth;
   drop table clients;
-  grant select, insert, update, delete on clients_entities to $db_user_prefix$_hooks;
+  grant select, insert, update, delete on clients_entities to $db_user_prefix$_auth;
 end
 

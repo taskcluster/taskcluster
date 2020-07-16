@@ -11,7 +11,6 @@ helper.secrets.mockSuite(testing.suiteName(), ['gcp'], function(mock, skipping) 
   helper.withCfg(mock, skipping);
   helper.withDb(mock, skipping);
   helper.withPulse(mock, skipping);
-  helper.withEntities(mock, skipping, {orderedTests: true});
   helper.withServers(mock, skipping);
 
   let sorted = (arr) => {

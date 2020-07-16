@@ -33,7 +33,7 @@ class ScopeResolver extends events.EventEmitter {
       'maxLastUsedDelay must be negative');
 
     this._monitor = options.monitor;
-    this._db = options.db;
+    this.db = options.db;
 
     this._disableCache = options.disableCache;
 
@@ -68,7 +68,7 @@ class ScopeResolver extends events.EventEmitter {
    * options:
    * {
    *   rootUrl:             // a Taskcluster rootUrl
-   *   Client:              // data.Client object
+   *   db:                  // tc-lib-postgres Database
    *   pulseClient:         // tc-lib-pulse Client
    *   exchangeReference:   // reference for exchanges declared
    *   cacheExpiry:         // Time before clearing cache
@@ -78,11 +78,9 @@ class ScopeResolver extends events.EventEmitter {
     options = _.defaults({}, options || {}, {
       cacheExpiry: 20 * 60 * 1000, // default to 20 min
     });
-    assert(options.Client, 'Expected options.Client');
     assert(options.exchangeReference, 'Expected options.exchangeReference');
     assert(options.pulseClient, 'Expected options.pulseClient');
     assert(options.rootUrl, 'Expected options.rootUrl');
-    this._Client = options.Client;
 
     await this.reloadOnNotifications(options);
 
@@ -140,18 +138,6 @@ class ScopeResolver extends events.EventEmitter {
     });
   }
 
-  /** Update lastDateUsed for a clientId */
-  async _updateLastUsed(clientId) {
-    let client = await this._Client.load({clientId});
-    await client.modify(client => {
-      let lastUsedDate = new Date(client.details.lastDateUsed);
-      let minLastUsed = taskcluster.fromNow(this._maxLastUsedDelay);
-      if (lastUsedDate < minLastUsed) {
-        client.details.lastDateUsed = new Date().toJSON();
-      }
-    });
-  }
-
   /**
    * Execute async `reloader` function, after any earlier async `reloader`
    * function given this function has completed. Ensuring that the `reloader`
@@ -163,19 +149,18 @@ class ScopeResolver extends events.EventEmitter {
 
   reloadClient(clientId) {
     return this._syncReload(async () => {
-      let client = await this._Client.load({clientId}, true);
+      const [client] = await this.db.fns.get_client(clientId);
       // Always remove it
       this._clients = this._clients.filter(c => c.clientId !== clientId);
       // If a client was loaded, add it back
       if (client) {
         // For reasoning on structure, see reload()
-        let lastUsedDate = new Date(client.details.lastDateUsed);
         let minLastUsed = taskcluster.fromNow(this._maxLastUsedDelay);
         this._clients.push({
-          clientId: client.clientId,
-          accessToken: client.accessToken,
+          clientId: client.client_id,
+          accessToken: this.db.decrypt({value: client.encrypted_access_token}),
           expires: client.expires,
-          updateLastUsed: lastUsedDate < minLastUsed,
+          updateLastUsed: client.last_date_used < minLastUsed,
           unexpandedScopes: client.scopes,
           disabled: client.disabled,
         });
@@ -186,7 +171,7 @@ class ScopeResolver extends events.EventEmitter {
 
   reloadRoles() {
     return this._syncReload(async () => {
-      let roles = await this._db.fns.get_roles();
+      let roles = await this.db.fns.get_roles();
       this._rebuildResolver(roles, this._clients);
     });
   }
@@ -199,28 +184,37 @@ class ScopeResolver extends events.EventEmitter {
       let clients = [];
       let roles = [];
       await Promise.all([
-        // Load all clients on a simplified form:
-        // {clientId, accessToken, updateLastUsed}
-        // _rebuildResolver() will construct the `_clientCache` object
-        this._Client.scan({}, {
-          handler: client => {
-            let lastUsedDate = new Date(client.details.lastDateUsed);
-            let minLastUsed = taskcluster.fromNow(this._maxLastUsedDelay);
-            clients.push({
-              clientId: client.clientId,
-              accessToken: client.accessToken,
-              expires: client.expires,
-              // Note that lastUsedDate should be updated, if it's out-dated by
-              // more than 6 hours.
-              // (cheap way to know if it's been used recently)
-              updateLastUsed: lastUsedDate < minLastUsed,
-              unexpandedScopes: client.scopes,
-              disabled: client.disabled,
-            });
-          },
-        }),
         (async () => {
-          roles = await this._db.fns.get_roles();
+          // Load all clients on a simplified form:
+          // {clientId, accessToken, updateLastUsed}
+          // _rebuildResolver() will construct the `_clientCache` object
+          let offset = 0;
+          while (true) {
+            const rows = await this.db.fns.get_clients(null, 1000, offset);
+            if (rows.length === 0) {
+              break;
+            } else {
+              offset += 1000;
+            }
+
+            let minLastUsed = taskcluster.fromNow(this._maxLastUsedDelay);
+            for (const client of rows) {
+              clients.push({
+                clientId: client.client_id,
+                accessToken: this.db.decrypt({value: client.encrypted_access_token }).toString('utf8'),
+                expires: client.expires,
+                // Note that lastUsedDate should be updated, if it's out-dated by
+                // more than 6 hours.
+                // (cheap way to know if it's been used recently)
+                updateLastUsed: client.last_date_used < minLastUsed,
+                unexpandedScopes: client.scopes,
+                disabled: client.disabled,
+              });
+            }
+          }
+        })(),
+        (async () => {
+          roles = await this.db.fns.get_roles();
         })(),
       ]);
 
@@ -327,7 +321,7 @@ class ScopeResolver extends events.EventEmitter {
 
     if (client.updateLastUsed) {
       client.updateLastUsed = false;
-      this._updateLastUsed(clientId).catch(err => this.emit('error', err));
+      await this.db.fns.update_client_last_used(clientId);
     }
     return client;
   }

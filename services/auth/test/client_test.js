@@ -9,8 +9,8 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
   helper.withDb(mock, skipping);
   helper.withCfg(mock, skipping);
   helper.withPulse(mock, skipping);
-  helper.withEntities(mock, skipping);
   helper.withServers(mock, skipping);
+  helper.resetTables(mock, skipping);
 
   test('ping', async () => {
     await helper.apiClient.ping();
@@ -154,18 +154,22 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
     let expires = taskcluster.fromNow('1 hour');
     let description = 'Test client...';
     let scopes = ['scope1', 'myapi:*'];
-    await helper.apiClient.createClient(CLIENT_ID, {
+    const client = await helper.apiClient.createClient(CLIENT_ID, {
       expires, description, scopes,
     });
 
     helper.assertPulseMessage('client-created', m => m.payload.clientId === CLIENT_ID);
+    return client;
   };
 
   test('auth.resetAccessToken', async () => {
-    await createTestClient();
+    const createdClient = await createTestClient();
     let client = await helper.apiClient.resetAccessToken(CLIENT_ID);
+    // lastModified and lastRotated are both updated..
+    assume(new Date(client.lastModified).getTime())
+      .is.greaterThan(new Date(createdClient.lastModified).getTime());
     assume(new Date(client.lastRotated).getTime())
-      .is.greaterThan(new Date(client.lastModified).getTime());
+      .equals(new Date(client.lastModified).getTime());
     assume(client.accessToken).is.a('string');
     helper.assertPulseMessage('client-updated', m => m.payload.clientId === CLIENT_ID);
 
