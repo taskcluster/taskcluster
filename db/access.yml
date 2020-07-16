@@ -47,7 +47,7 @@ web_server:
     authorization_codes_table_entities: write
     access_token_table_entities: write
     session_storage_table_entities: write
-    github_access_token_table_entities: write
+    github_access_tokens: write
 worker_manager:
   tables:
     workers: write

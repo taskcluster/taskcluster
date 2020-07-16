@@ -233,7 +233,6 @@ exports.azureTableNames = [
   'AuthorizationCodesTable',
   'AccessTokenTable',
   'SessionStorageTable',
-  'GithubAccessTokenTable',
   'WMWorkers',
   'WMWorkerPools',
   'WMWorkerPoolErrors',
@@ -262,8 +261,10 @@ exports.testEntityTable = ({
   scanConditions,
   // array of {condition} that should return no results from load
   notFoundConditions,
-  // things to skip because they are not implemented; options are 'create-overwrite'
-  // 'remove-ignore-if-not-exists' (add yours here!)
+  // things to skip because they are not implemented; options are:
+  //   * 'create-overwrite'
+  //   * 'remove-ignore-if-not-exists'
+  // Add yours here!
   notImplemented = [],
   // array of {condition, modifier, checker} where condition are suitable to
   // load a single sample, modififer is suitable for Entity.modify, and checker
@@ -271,6 +272,9 @@ exports.testEntityTable = ({
   // it is treated as a collection of modifier functions to run in parallel to check
   // support for concurrent modifications.
   modifications,
+  // a base64 encoded crypto key for encrypting values to insert into, or decrypting
+  // values read from database columns that store encrypted values
+  cryptoKey,
   // customTests can define additional test cases in the usual Mocha style.  The
   // parameter is true if the tests are run for THIS_VERSION, otherwise for PREV_VERSION.
 }, customTests = (isThisVersion) => {}) => {
@@ -296,6 +300,7 @@ exports.testEntityTable = ({
         tableName: entityTableName,
         monitor: false,
         context: {},
+        cryptoKey,
       });
     });
 
