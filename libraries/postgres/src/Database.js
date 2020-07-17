@@ -387,15 +387,20 @@ class Database {
 
   async _checkDbSettings() {
     await this._withClient('admin', async client => {
-      const res = await client.query(`
-        SELECT datcollate AS collation
-        FROM pg_database 
-        WHERE datname = current_database()`);
-      const collation = res.rows[0].collation;
-      if (collation !== 'en_US.utf8' && collation !== 'en_US.UTF8') {
-        throw new Error(
-          `Postgres database must have default collation en_US.utf8 or en_US.UTF8; this database is using ${collation}.`,
-        );
+      // check the DB collation by its behavior, rather than by name, as names seem to vary.
+      for (const pair of ['aA', 'ab', 'Ab', 'aB', 'AB', '0a', '0A']) {
+        const res = await client.query(`select 1 where $1 >= $2`, [pair[0], pair[1]]);
+        if (res.rows.length > 0) {
+          const res = await client.query(`
+            SELECT datcollate AS collation
+            FROM pg_database 
+            WHERE datname = current_database()`);
+          const collation = res.rows[0].collation;
+          throw new Error([
+            'Postgres database must have default collation en_US.utf8 (and in particular be case-insensitive for ASCII letters);',
+            `this database is using ${collation}, and sorts '${pair[0]}' >= '${pair[1]}'.`,
+          ].join(' '));
+        }
       }
     });
   }
