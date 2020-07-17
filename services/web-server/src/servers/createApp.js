@@ -15,7 +15,7 @@ const oauth2 = require('./oauth2');
 const AzureSessionStore = require('../login/AzureSessionStore');
 const {traceMiddleware} = require('taskcluster-lib-app');
 
-module.exports = async ({ cfg, strategies, AuthorizationCode, AccessToken, auth, monitor, SessionStorage }) => {
+module.exports = async ({ cfg, strategies, AuthorizationCode, AccessToken, auth, monitor, db }) => {
   const app = express();
 
   app.set('trust proxy', cfg.server.trustProxy);
@@ -39,9 +39,10 @@ module.exports = async ({ cfg, strategies, AuthorizationCode, AccessToken, auth,
       ? [...new Set([].concat(...cfg.login.registeredClients.map(({ redirectUri }) => new URL(redirectUri).origin)))]
       : false,
   };
+
   const SessionStore = AzureSessionStore({
     session,
-    SessionStorage,
+    db,
     options: {
       // should be same time as cookie maxAge
       sessionTimeout: '1 week',

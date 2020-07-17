@@ -232,7 +232,6 @@ exports.azureTableNames = [
   'Secrets',
   'AuthorizationCodesTable',
   'AccessTokenTable',
-  'SessionStorageTable',
   'WMWorkers',
   'WMWorkerPools',
   'WMWorkerPoolErrors',

@@ -58,7 +58,7 @@
         "access_token_table_entities": "write",
         "authorization_codes_table_entities": "write",
         "github_access_tokens": "write",
-        "session_storage_table_entities": "write"
+        "sessions": "write"
       }
     },
     "worker_manager": {
@@ -232,12 +232,10 @@
       "value": "jsonb not null",
       "version": "integer not null"
     },
-    "session_storage_table_entities": {
-      "etag": "uuid",
-      "partition_key": "text not null",
-      "row_key": "text not null",
-      "value": "jsonb not null",
-      "version": "integer not null"
+    "sessions": {
+      "data": "jsonb not null",
+      "encrypted_session_id": "jsonb not null",
+      "expires": "timestamp with time zone not null"
     },
     "task_dependencies": {
       "dependent_task_id": "text not null",
@@ -4217,6 +4215,40 @@
       },
       "migrationScript": "begin\n\n  -- lock this table before reading from it, to prevent loss of concurrent\n  -- updates when the table is dropped.  Note that this may lead to concurrent\n  -- updates failing; the important thing is that they not succeed without\n  -- taking effect.  Failed updates will be retried.\n  lock table taskcluster_check_runs_entities;\n  lock table taskcluster_checks_to_tasks_entities;\n\n  create table github_checks\n  as\n    select\n      (value ->> 'taskGroupId')::text as task_group_id,\n      (value ->> 'taskId')::text as task_id,\n      (value ->> 'checkSuiteId')::text as check_suite_id,\n      (value ->> 'checkRunId')::text as check_run_id\n    from taskcluster_check_runs_entities;\n  alter table github_checks add primary key (task_group_id, task_id);\n  alter table github_checks\n    alter column task_group_id set not null,\n    alter column task_id set not null,\n    alter column check_suite_id set not null,\n    alter column check_run_id set not null;\n  create index on github_checks (check_suite_id, check_run_id);\n\n  revoke select, insert, update, delete on taskcluster_check_runs_entities from $db_user_prefix$_github;\n  drop table taskcluster_check_runs_entities;\n  revoke select, insert, update, delete on taskcluster_checks_to_tasks_entities from $db_user_prefix$_github;\n  drop table taskcluster_checks_to_tasks_entities;\n  grant select, insert, update, delete on github_checks to $db_user_prefix$_github;\nend",
       "version": 37
+    },
+    {
+      "downgradeScript": "begin\n\n  create table session_storage_table_entities(\n    partition_key text,\n    row_key text,\n    value jsonb not null,\n    version integer not null,\n    etag uuid default public.gen_random_uuid());\n  alter table session_storage_table_entities add primary key (partition_key, row_key);\n  grant select, insert, update, delete on session_storage_table_entities to $db_user_prefix$_web_server;\n\n  revoke select, insert, update, delete on sessions from $db_user_prefix$_web_server;\n  drop table sessions;\n\nend\n",
+      "methods": {
+        "session_add": {
+          "args": "encrypted_session_id_in jsonb, data_in jsonb, expires_in timestamptz",
+          "body": "begin\n  insert into sessions(encrypted_session_id, data, expires)\n  values (\n    encrypted_session_id_in,\n    data_in,\n    expires_in\n  ) on conflict (encrypted_session_id) do\n  update\n  set (data, expires) = (data_in, expires_in)\n  where sessions.encrypted_session_id = session_add.encrypted_session_id_in;\nend",
+          "deprecated": false,
+          "description": "Sets the session data for `encrypted_session_id_in` to `data_in`.\n\nIf no session exists with encrypted session id `encrypted_session_id_in`,\na new row is inserted, otherwise the existing session's data is replaced\nwith the data in `data_in`.",
+          "mode": "write",
+          "returns": "void",
+          "serviceName": "web_server"
+        },
+        "session_load": {
+          "args": "encrypted_session_id_in jsonb",
+          "body": "begin\n  return query\n  select sessions.data, sessions.expires from sessions\n  where sessions.encrypted_session_id = encrypted_session_id_in;\nend",
+          "deprecated": false,
+          "description": "Returns the session for a given encrypted session id.",
+          "mode": "read",
+          "returns": "table(data jsonb, expires timestamptz)",
+          "serviceName": "web_server"
+        },
+        "session_remove": {
+          "args": "encrypted_session_id_in jsonb",
+          "body": "begin\n  delete from sessions\n  where\n    sessions.encrypted_session_id = encrypted_session_id_in;\nend",
+          "deprecated": false,
+          "description": "Removes a web session",
+          "mode": "write",
+          "returns": "void",
+          "serviceName": "web_server"
+        }
+      },
+      "migrationScript": "begin\n\n  create table sessions(\n    encrypted_session_id jsonb not null,\n    data jsonb not null,\n    expires timestamptz not null\n  );\n  alter table sessions add primary key (encrypted_session_id);\n  grant select, insert, update, delete on sessions to $db_user_prefix$_web_server;\n\n  revoke select, insert, update, delete on session_storage_table_entities from $db_user_prefix$_web_server;\n  drop table session_storage_table_entities;\n\nend\n",
+      "version": 38
     }
   ]
 }

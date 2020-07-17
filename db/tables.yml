@@ -31,9 +31,9 @@ github_builds:
   state: text not null
   created: timestamp with time zone not null
   updated: timestamp with time zone not null
-  installation_id: integer not null 
-  event_type: text not null 
-  event_id: text not null 
+  installation_id: integer not null
+  event_type: text not null
+  event_id: text not null
   etag: uuid not null
 github_integrations:
   installation_id: integer not null
@@ -115,12 +115,10 @@ authorization_codes_table_entities:
 github_access_tokens:
   user_id: text not null
   encrypted_access_token: jsonb not null
-session_storage_table_entities:
-  partition_key: text not null
-  row_key: text not null
-  value: jsonb not null
-  version: integer not null
-  etag: uuid
+sessions:
+  encrypted_session_id: jsonb not null
+  data: jsonb not null
+  expires: timestamp with time zone not null
 worker_pool_errors:
   error_id: text not null
   worker_pool_id: text not null

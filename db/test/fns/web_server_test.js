@@ -8,6 +8,7 @@ suite(testing.suiteName(), function() {
   setup('truncate github_access_tokens', async function() {
     await helper.withDbClient(async client => {
       await client.query('truncate github_access_tokens');
+      await client.query('truncate sessions');
     });
   });
 
@@ -39,5 +40,24 @@ suite(testing.suiteName(), function() {
   helper.dbTest('load non-existent github access token', async function(db) {
     const encryptedAccessTokenAsTable = await db.fns.load_github_access_token("pretend-user");
     assert.equal(encryptedAccessTokenAsTable.length, 0);
+  });
+
+  helper.dbTest('add session data', async function(db) {
+    let sessionData1 = {
+      encryptedSessionID: db.encrypt({ value: Buffer.from('sEssI0n#Id', 'utf8') }),
+      data: {
+        foo: "bar",
+      },
+      expires: new Date(),
+    };
+    await db.fns.session_add(
+      sessionData1.encryptedSessionID,
+      sessionData1.data,
+      sessionData1.expires,
+    );
+    const sessionAsTable = await db.fns.session_load(sessionData1.encryptedSessionID);
+    assert.equal(sessionAsTable.length, 1);
+    assert.deepEqual(sessionAsTable[0]["data"], sessionData1.data);
+    assert.deepEqual(sessionAsTable[0]["expires"], sessionData1.expires);
   });
 });
