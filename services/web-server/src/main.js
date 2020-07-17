@@ -24,7 +24,6 @@ const typeDefs = require('./graphql');
 const PulseEngine = require('./PulseEngine');
 const AuthorizationCode = require('./data/AuthorizationCode');
 const AccessToken = require('./data/AccessToken');
-const SessionStorage = require('./data/SessionStorage');
 const scanner = require('./login/scanner');
 
 require('./monitor');
@@ -118,9 +117,9 @@ const load = loader(
     },
 
     app: {
-      requires: ['cfg', 'strategies', 'AuthorizationCode', 'AccessToken', 'auth', 'monitor', 'SessionStorage'],
-      setup: ({ cfg, strategies, AuthorizationCode, AccessToken, auth, monitor, SessionStorage }) =>
-        createApp({ cfg, strategies, AuthorizationCode, AccessToken, auth, monitor, SessionStorage }),
+      requires: ['cfg', 'strategies', 'AuthorizationCode', 'AccessToken', 'auth', 'monitor', 'db'],
+      setup: ({ cfg, strategies, AuthorizationCode, AccessToken, auth, monitor, db }) =>
+        createApp({ cfg, strategies, AuthorizationCode, AccessToken, auth, monitor, db }),
     },
 
     httpServer: {
@@ -218,18 +217,6 @@ const load = loader(
       }),
     },
 
-    SessionStorage: {
-      requires: ['cfg', 'monitor', 'db'],
-      setup: ({cfg, monitor, db}) => SessionStorage.setup({
-        db,
-        serviceName: 'web_server',
-        tableName: cfg.app.sessionStorageTableName,
-        monitor: monitor.childMonitor('table.sessionStorageTable'),
-        signingKey: cfg.azure.signingKey,
-        cryptoKey: cfg.azure.cryptoKey,
-      }),
-    },
-
     'cleanup-expire-auth-codes': {
       requires: ['cfg', 'AuthorizationCode', 'monitor'],
       setup: ({cfg, AuthorizationCode, monitor}) => {
@@ -259,8 +246,8 @@ const load = loader(
     },
 
     'cleanup-session-storage': {
-      requires: ['cfg', 'SessionStorage', 'monitor'],
-      setup: ({cfg, SessionStorage, monitor}) => {
+      requires: ['cfg', 'monitor', 'db'],
+      setup: ({cfg, monitor, db}) => {
         return monitor.oneShot('cleanup-expire-session-storage', async () => {
           const now = new Date();
 

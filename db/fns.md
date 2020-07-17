@@ -311,6 +311,9 @@ expires_in timestamptz | void | Ensure that the given task group exists, has the
 | github_access_token_table_entities_remove | write | partition_key text, row_key text | table (etag uuid) | See taskcluster-lib-entities |
 | github_access_token_table_entities_scan | read | pk text, rk text, condition text, size integer, page integer | table (partition_key text, row_key text, value jsonb, version integer, etag uuid) | See taskcluster-lib-entities |
 | load_github_access_token | read | user_id_in text | table(encrypted_access_token jsonb) | Returns the encrypted github access token for a given user. |
+| session_add | write | encrypted_session_id_in jsonb, data_in jsonb, expires_in timestamptz | void | Sets the session data for `encrypted_session_id_in` to `data_in`.<br /><br />If no session exists with encrypted session id `encrypted_session_id_in`,<br />a new row is inserted, otherwise the existing session's data is replaced<br />with the data in `data_in`. |
+| session_load | read | encrypted_session_id_in jsonb | table(data jsonb, expires timestamptz) | Returns the session for a given encrypted session id. |
+| session_remove | write | encrypted_session_id_in jsonb | void | Removes a web session |
 | session_storage_table_entities_create | write | pk text, rk text, properties jsonb, overwrite boolean, version integer | uuid | See taskcluster-lib-entities |
 | session_storage_table_entities_load | read | partition_key text, row_key text | table (partition_key_out text, row_key_out text, value jsonb, version integer, etag uuid) | See taskcluster-lib-entities |
 | session_storage_table_entities_modify | write | partition_key text, row_key text, properties jsonb, version integer, old_etag uuid | table (etag uuid) | See taskcluster-lib-entities |
