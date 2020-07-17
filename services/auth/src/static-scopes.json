@@ -75,7 +75,6 @@
       "assume:mozillians-group:*",
       "auth:azure-table:read-write:${azureAccountId}/AccessTokenTable",
       "auth:azure-table:read-write:${azureAccountId}/AuthorizationCodesTable",
-      "auth:azure-table:read-write:${azureAccountId}/SessionStorageTable",
       "auth:create-client:github/*",
       "auth:create-client:mozilla-auth0/*",
       "auth:delete-client:github/*",

@@ -15,7 +15,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   const getStore = (shouldPromisify = true, options) => {
     const SessionStore = AzureSessionStore({
       session,
-      SessionStorage: helper.SessionStorage,
+      db: helper.db,
       monitor: {
         log: {
           sessionStore: () => {},

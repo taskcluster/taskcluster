@@ -4,7 +4,6 @@ const {Secrets, stickyLoader, withMonitor, withEntity, withPulse, withDb, resetT
 const sinon = require('sinon');
 const AuthorizationCode = require('../src/data/AuthorizationCode');
 const AccessToken = require('../src/data/AccessToken');
-const SessionStorage = require('../src/data/SessionStorage');
 const GithubClient = require('../src/login/clients/GithubClient');
 const libUrls = require('taskcluster-lib-urls');
 const request = require('superagent');
@@ -39,7 +38,6 @@ exports.secrets = new Secrets({
 exports.withEntities = (mock, skipping) => {
   withEntity(mock, skipping, exports, 'AuthorizationCode', AuthorizationCode);
   withEntity(mock, skipping, exports, 'AccessToken', AccessToken);
-  withEntity(mock, skipping, exports, 'SessionStorage', SessionStorage);
 };
 
 exports.withDb = (mock, skipping) => {
@@ -493,7 +491,7 @@ exports.resetTables = (mock, skipping) => {
     await resetTables({tableNames: [
       'authorization_codes_table_entities',
       'access_token_table_entities',
-      'session_storage_table_entities',
+      'sessions',
       'github_access_tokens',
     ]});
   });
