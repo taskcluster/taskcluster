@@ -21,6 +21,7 @@ begin
     alter column task_id set not null,
     alter column check_suite_id set not null,
     alter column check_run_id set not null;
+  create index on github_checks (check_suite_id, check_run_id);
 
   revoke select, insert, update, delete on taskcluster_check_runs_entities from $db_user_prefix$_github;
   drop table taskcluster_check_runs_entities;

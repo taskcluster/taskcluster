@@ -120,21 +120,9 @@ methods:
     args: pk text, rk text, properties jsonb, overwrite boolean, version integer
     returns: uuid
     body: |-
-      declare
-        new_row github_checks%ROWTYPE;
       begin
-        select
-          (properties ->> 'taskGroupId')::text as task_group_id,
-          (properties ->> 'taskId')::text as task_id,
-          (properties ->> 'checkSuiteId')::text as check_suite_id,
-          (properties ->> 'checkRunId')::text as check_run_id
-        into new_row;
-        if overwrite then
-          raise exception 'overwrite not implemented';
-        else
-          execute 'insert into github_checks select $1.*' using new_row;
-        end if;
-        return public.gen_random_uuid(); -- we just return this for api compatibility
+        -- We do nothing here because this is always written in tandem with a check_run
+        return gen_random_uuid();
       end
   taskcluster_checks_to_tasks_entities_scan:
     description: See taskcluster-lib-entities

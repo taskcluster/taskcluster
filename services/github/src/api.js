@@ -269,7 +269,7 @@ builder.declare({
 
       case 'integration_installation':
       // Creates a new entity or overwrites an existing one
-        await this.db.fns.create_github_integration(
+        await this.db.fns.upsert_github_integration(
           body.installation.account.login,
           body.installation.id,
         );

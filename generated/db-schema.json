@@ -9,9 +9,8 @@
     "github": {
       "tables": {
         "github_builds": "write",
-        "taskcluster_check_runs_entities": "write",
-        "taskcluster_checks_to_tasks_entities": "write",
-        "taskcluster_integration_owners_entities": "write"
+        "github_checks": "write",
+        "github_integrations": "write"
       }
     },
     "hooks": {
@@ -131,6 +130,16 @@
       "task_group_id": "text not null",
       "updated": "timestamp with time zone not null"
     },
+    "github_checks": {
+      "check_run_id": "text not null",
+      "check_suite_id": "text not null",
+      "task_group_id": "text not null",
+      "task_id": "text not null"
+    },
+    "github_integrations": {
+      "installation_id": "integer not null",
+      "owner": "text not null"
+    },
     "hooks": {
       "bindings": "jsonb not null",
       "encrypted_next_task_id": "jsonb not null",
@@ -243,27 +252,6 @@
       "expires": "timestamp with time zone not null",
       "scheduler_id": "text not null",
       "task_group_id": "text not null"
-    },
-    "taskcluster_check_runs_entities": {
-      "etag": "uuid",
-      "partition_key": "text not null",
-      "row_key": "text not null",
-      "value": "jsonb not null",
-      "version": "integer not null"
-    },
-    "taskcluster_checks_to_tasks_entities": {
-      "etag": "uuid",
-      "partition_key": "text not null",
-      "row_key": "text not null",
-      "value": "jsonb not null",
-      "version": "integer not null"
-    },
-    "taskcluster_integration_owners_entities": {
-      "etag": "uuid",
-      "partition_key": "text not null",
-      "row_key": "text not null",
-      "value": "jsonb not null",
-      "version": "integer not null"
     },
     "tasks": {
       "created": "timestamp with time zone not null",
@@ -4035,6 +4023,200 @@
       },
       "migrationScript": "begin\n  -- lock this table before reading from it, to prevent loss of concurrent\n  -- updates when the table is dropped.  Note that this may lead to concurrent\n  -- updates failing; the important thing is that they not succeed without\n  -- taking effect.  Failed updates will be retried.\n  lock table hooks_entities;\n\n  create table hooks\n  as\n    select\n      (value ->> 'hookGroupId')::text as hook_group_id,\n      (value ->> 'hookId')::text as hook_id,\n      entity_buf_decode(value, 'metadata')::jsonb as metadata,\n      entity_buf_decode(value, 'task')::jsonb as task,\n      entity_buf_decode(value, 'bindings')::jsonb as bindings,\n      entity_buf_decode(value, 'schedule')::jsonb as schedule,\n      entity_to_crypto_container_v0(value, 'triggerToken') as encrypted_trigger_token,\n      entity_to_crypto_container_v0(value, 'nextTaskId') as encrypted_next_task_id,\n      (value ->> 'nextScheduledDate')::timestamptz as next_scheduled_date,\n      entity_buf_decode(value, 'triggerSchema')::jsonb as trigger_schema,\n      etag\n    from hooks_entities;\n  alter table hooks add primary key (hook_group_id, hook_id);\n  alter table hooks\n    alter column hook_group_id set not null,\n    alter column hook_id set not null,\n    alter column metadata set not null,\n    alter column task set not null,\n    alter column bindings set not null,\n    alter column schedule set not null,\n    alter column encrypted_trigger_token set not null,\n    alter column encrypted_next_task_id set not null,\n    alter column next_scheduled_date set not null,\n    alter column trigger_schema set not null,\n    alter column etag set not null,\n    alter column etag set default public.gen_random_uuid();\n\n  revoke select, insert, update, delete on hooks_entities from $db_user_prefix$_hooks;\n  drop table hooks_entities;\n  grant select, insert, update, delete on hooks to $db_user_prefix$_hooks;\nend",
       "version": 35
+    },
+    {
+      "downgradeScript": "begin\n  -- lock this table before reading from it, to prevent loss of concurrent\n  -- updates when the table is dropped.\n  lock table github_integrations;\n\n  create table taskcluster_integration_owners_entities(\n    partition_key text, row_key text,\n    value jsonb not null,\n    version integer not null,\n    etag uuid default public.gen_random_uuid());\n  alter table taskcluster_integration_owners_entities add primary key (partition_key, row_key);\n\n  insert into taskcluster_integration_owners_entities\n  select\n    encode_string_key(owner) as partition_key,\n    'someConstant' as row_key,\n    jsonb_build_object(\n      'PartitionKey', encode_string_key(owner),\n      'RowKey', 'someConstant',\n      'owner', owner,\n      'installationId', installation_id) as value,\n    1 as version,\n    public.gen_random_uuid() as etag\n  from github_integrations;\n\n  revoke select, insert, update, delete on github_integrations from $db_user_prefix$_github;\n  drop table github_integrations;\n  grant select, insert, update, delete on taskcluster_integration_owners_entities to $db_user_prefix$_github;\nend",
+      "methods": {
+        "get_github_integration": {
+          "args": "owner_in text",
+          "body": "begin\n  return query select github_integrations.owner, github_integrations.installation_id from github_integrations where github_integrations.owner = owner_in;\nend",
+          "deprecated": false,
+          "description": "Get a single integration by owner.",
+          "mode": "read",
+          "returns": "table (owner text, installation_id integer)",
+          "serviceName": "github"
+        },
+        "get_github_integrations": {
+          "args": "page_size_in integer, page_offset_in integer",
+          "body": "begin\n  return query select\n    github_integrations.owner,\n    github_integrations.installation_id\n  from github_integrations\n  order by github_integrations.installation_id\n  limit get_page_limit(page_size_in)\n  offset get_page_offset(page_offset_in);\nend",
+          "deprecated": false,
+          "description": "Get a list of integrations.",
+          "mode": "read",
+          "returns": "table (owner text, installation_id integer)",
+          "serviceName": "github"
+        },
+        "taskcluster_integration_owners_entities_create": {
+          "args": "pk text, rk text, properties jsonb, overwrite boolean, version integer",
+          "body": "begin\n  if not overwrite then\n    raise exception 'must allow overwrite';\n  end if;\n  insert into github_integrations (owner, installation_id) values (\n    (properties ->> 'owner')::text,\n    (properties ->> 'installationId')::integer )\n  on conflict (owner) do update set installation_id = (properties ->> 'installationId')::integer;\n  return public.gen_random_uuid(); -- we don't store this or use it so just return anything\nend",
+          "deprecated": false,
+          "description": "See taskcluster-lib-entities",
+          "mode": "write",
+          "returns": "uuid",
+          "serviceName": "github"
+        },
+        "taskcluster_integration_owners_entities_load": {
+          "args": "partition_key text, row_key text",
+          "body": "begin\n return query\n select\n    taskcluster_integration_owners_entities_load.partition_key,\n    'someConstant' as row_key,\n    jsonb_build_object(\n      'PartitionKey', taskcluster_integration_owners_entities_load.partition_key,\n      'RowKey', 'someConstant',\n      'installationId', installation_id,\n      'owner', owner) as value,\n    1 as version,\n    public.gen_random_uuid() as etag -- we just return this for api compatibility\nfrom github_integrations\nwhere\n  github_integrations.owner = decode_string_key(taskcluster_integration_owners_entities_load.partition_key);\nend",
+          "deprecated": false,
+          "description": "See taskcluster-lib-entities",
+          "mode": "read",
+          "returns": "table (partition_key_out text, row_key_out text, value jsonb, version integer, etag uuid)",
+          "serviceName": "github"
+        },
+        "taskcluster_integration_owners_entities_modify": {
+          "args": "partition_key text, row_key text, properties jsonb, version integer, old_etag uuid",
+          "body": "begin\n    raise exception 'github integrations are immutable';\nend",
+          "deprecated": false,
+          "description": "See taskcluster-lib-entities",
+          "mode": "write",
+          "returns": "table (etag uuid)",
+          "serviceName": "github"
+        },
+        "taskcluster_integration_owners_entities_remove": {
+          "args": "partition_key text, row_key text",
+          "body": "begin\n  delete\n  from github_integrations\n  where\n     github_integrations.owner = decode_string_key(partition_key);\n  -- tc-gh does not care if the row existed\n  return query select gen_random_uuid() as etag;\nend",
+          "deprecated": false,
+          "description": "See taskcluster-lib-entities",
+          "mode": "write",
+          "returns": "table (etag uuid)",
+          "serviceName": "github"
+        },
+        "taskcluster_integration_owners_entities_scan": {
+          "args": "pk text, rk text, condition text, size integer, page integer",
+          "body": "declare\nbegin\n  if not condition is null then\n    raise exception 'condition not supported';\n  end if;\n  if not partition_key is null then\n    raise exception 'can only scan entire table';\n  end if;\n  return query\n    select\n      encode_string_key(owner),\n      'someConstant' as row_key,\n      jsonb_build_object(\n        'PartitionKey', encode_string_key(owner),\n        'RowKey', 'someConstant',\n        'installationId', installation_id,\n        'owner', owner) as value,\n      1 as version,\n      public.gen_random_uuid() as etag\n    from github_integrations\n    order by owner\n    limit case\n      when (size is not null and size > 0) then size + 1\n      else null\n    end\n    offset case\n      when (page is not null and page > 0) then page\n      else 0\n    end;\nend",
+          "deprecated": false,
+          "description": "See taskcluster-lib-entities",
+          "mode": "read",
+          "returns": "table (partition_key text, row_key text, value jsonb, version integer, etag uuid)",
+          "serviceName": "github"
+        },
+        "upsert_github_integration": {
+          "args": "owner_in text, installation_id_in integer",
+          "body": "begin\n  insert into github_integrations (owner, installation_id) values (owner_in, installation_id_in)\n  on conflict (owner) do update set installation_id = installation_id_in;\nend",
+          "deprecated": false,
+          "description": "Create a single integration.",
+          "mode": "write",
+          "returns": "void",
+          "serviceName": "github"
+        }
+      },
+      "migrationScript": "begin\n\n  -- lock this table before reading from it, to prevent loss of concurrent\n  -- updates when the table is dropped.  Note that this may lead to concurrent\n  -- updates failing; the important thing is that they not succeed without\n  -- taking effect.  Failed updates will be retried.\n  lock table taskcluster_integration_owners_entities;\n\n  create table github_integrations\n  as\n    select\n      (value ->> 'owner')::text as owner,\n      (value ->> 'installationId')::integer as installation_id\n    from taskcluster_integration_owners_entities;\n  alter table github_integrations add primary key (owner);\n  alter table github_integrations\n    alter column owner set not null,\n    alter column installation_id set not null;\n\n  revoke select, insert, update, delete on taskcluster_integration_owners_entities from $db_user_prefix$_github;\n  drop table taskcluster_integration_owners_entities;\n  grant select, insert, update, delete on github_integrations to $db_user_prefix$_github;\nend",
+      "version": 36
+    },
+    {
+      "downgradeScript": "begin\n  -- lock this table before reading from it, to prevent loss of concurrent\n  -- updates when the table is dropped.\n  lock table github_checks;\n\n  create table taskcluster_check_runs_entities(\n    partition_key text, row_key text,\n    value jsonb not null,\n    version integer not null,\n    etag uuid default public.gen_random_uuid());\n  alter table taskcluster_check_runs_entities add primary key (partition_key, row_key);\n  create table taskcluster_checks_to_tasks_entities(\n    partition_key text, row_key text,\n    value jsonb not null,\n    version integer not null,\n    etag uuid default public.gen_random_uuid());\n  alter table taskcluster_checks_to_tasks_entities add primary key (partition_key, row_key);\n\n  insert into taskcluster_check_runs_entities\n  select\n    encode_string_key(task_group_id) as partition_key,\n    encode_string_key(task_id) as row_key,\n    jsonb_build_object(\n      'PartitionKey', encode_string_key(task_group_id),\n      'RowKey', encode_string_key(task_id),\n      'taskGroupId', task_group_id,\n      'taskId', task_id,\n      'checkSuiteId', check_suite_id,\n      'checkRunId', check_run_id) as value,\n    1 as version,\n    public.gen_random_uuid() as etag\n  from github_checks;\n\n  insert into taskcluster_checks_to_tasks_entities\n  select\n    encode_string_key(check_suite_id) as partition_key,\n    encode_string_key(check_run_id) as row_key,\n    jsonb_build_object(\n      'PartitionKey', encode_string_key(check_suite_id),\n      'RowKey', encode_string_key(check_run_id),\n      'taskGroupId', task_group_id,\n      'taskId', task_id,\n      'checkSuiteId', check_suite_id,\n      'checkRunId', check_run_id) as value,\n    1 as version,\n    public.gen_random_uuid() as etag\n  from github_checks;\n\n  revoke select, insert, update, delete on github_checks from $db_user_prefix$_github;\n  drop table github_checks;\n  grant select, insert, update, delete on taskcluster_check_runs_entities to $db_user_prefix$_github;\n  grant select, insert, update, delete on taskcluster_checks_to_tasks_entities to $db_user_prefix$_github;\nend",
+      "methods": {
+        "create_github_check": {
+          "args": "task_group_id_in text, task_id_in text, check_suite_id_in text, check_run_id_in text",
+          "body": "begin\n  insert into github_checks (task_group_id, task_id, check_suite_id, check_run_id) values (task_group_id_in, task_id_in, check_suite_id_in, check_run_id_in);\nend",
+          "deprecated": false,
+          "description": "Create a single check.",
+          "mode": "write",
+          "returns": "void",
+          "serviceName": "github"
+        },
+        "get_github_check_by_task_id": {
+          "args": "task_id_in text",
+          "body": "begin\n  return query select\n    github_checks.task_group_id,\n    github_checks.task_id,\n    github_checks.check_suite_id,\n    github_checks.check_run_id\n  from github_checks\n  where github_checks.task_id = task_id_in;\nend",
+          "deprecated": false,
+          "description": "Get a single check from a task_id.",
+          "mode": "read",
+          "returns": "table (task_group_id text, task_id text, check_suite_id text, check_run_id text)",
+          "serviceName": "github"
+        },
+        "taskcluster_check_runs_entities_create": {
+          "args": "pk text, rk text, properties jsonb, overwrite boolean, version integer",
+          "body": "declare\n  new_row github_checks%ROWTYPE;\nbegin\n  select\n    (properties ->> 'taskGroupId')::text as task_group_id,\n    (properties ->> 'taskId')::text as task_id,\n    (properties ->> 'checkSuiteId')::text as check_suite_id,\n    (properties ->> 'checkRunId')::text as check_run_id\n  into new_row;\n  if overwrite then\n    raise exception 'overwrite not implemented';\n  else\n    execute 'insert into github_checks select $1.*' using new_row;\n  end if;\n  return public.gen_random_uuid(); -- we just return this for api compatibility\nend",
+          "deprecated": false,
+          "description": "See taskcluster-lib-entities",
+          "mode": "write",
+          "returns": "uuid",
+          "serviceName": "github"
+        },
+        "taskcluster_check_runs_entities_load": {
+          "args": "partition_key text, row_key text",
+          "body": "begin\n return query\n select\n    partition_key,\n    row_key,\n    jsonb_build_object(\n      'PartitionKey', partition_key,\n      'RowKey', row_key,\n      'taskGroupId', task_group_id,\n      'taskId', task_id,\n      'checkSuiteId', check_suite_id,\n      'checkRunId', check_run_id) as value,\n    1 as version,\n    public.gen_random_uuid() as etag -- we just return this for api compatibility\nfrom github_checks\nwhere\n  github_checks.task_group_id = decode_string_key(partition_key) and\n  github_checks.task_id = decode_string_key(row_key);\nend",
+          "deprecated": false,
+          "description": "See taskcluster-lib-entities",
+          "mode": "read",
+          "returns": "table (partition_key_out text, row_key_out text, value jsonb, version integer, etag uuid)",
+          "serviceName": "github"
+        },
+        "taskcluster_check_runs_entities_modify": {
+          "args": "partition_key text, row_key text, properties jsonb, version integer, old_etag uuid",
+          "body": "begin\n    raise exception 'github integrations are immutable';\nend",
+          "deprecated": false,
+          "description": "See taskcluster-lib-entities",
+          "mode": "write",
+          "returns": "table (etag uuid)",
+          "serviceName": "github"
+        },
+        "taskcluster_check_runs_entities_remove": {
+          "args": "partition_key text, row_key text",
+          "body": "begin\n  delete\n  from github_checks\n  where\n    github_checks.task_group_id = decode_string_key(partition_key) and\n    github_checks.task_id = decode_string_key(row_key);\n  -- tc-gh does not care if the row existed\n  return query select gen_random_uuid() as etag;\nend",
+          "deprecated": false,
+          "description": "See taskcluster-lib-entities",
+          "mode": "write",
+          "returns": "table (etag uuid)",
+          "serviceName": "github"
+        },
+        "taskcluster_check_runs_entities_scan": {
+          "args": "pk text, rk text, condition text, size integer, page integer",
+          "body": "begin\n    raise exception 'not implemented';\nend",
+          "deprecated": false,
+          "description": "See taskcluster-lib-entities",
+          "mode": "read",
+          "returns": "table (partition_key text, row_key text, value jsonb, version integer, etag uuid)",
+          "serviceName": "github"
+        },
+        "taskcluster_checks_to_tasks_entities_create": {
+          "args": "pk text, rk text, properties jsonb, overwrite boolean, version integer",
+          "body": "begin\n  -- We do nothing here because this is always written in tandem with a check_run\n  return gen_random_uuid();\nend",
+          "deprecated": false,
+          "description": "See taskcluster-lib-entities",
+          "mode": "write",
+          "returns": "uuid",
+          "serviceName": "github"
+        },
+        "taskcluster_checks_to_tasks_entities_load": {
+          "args": "partition_key text, row_key text",
+          "body": "begin\n return query\n select\n    partition_key,\n    row_key,\n    jsonb_build_object(\n      'PartitionKey', partition_key,\n      'RowKey', row_key,\n      'taskGroupId', task_group_id,\n      'taskId', task_id,\n      'checkSuiteId', check_suite_id,\n      'checkRunId', check_run_id) as value,\n    1 as version,\n    public.gen_random_uuid() as etag -- we just return this for api compatibility\nfrom github_checks\nwhere\n  github_checks.check_suite_id = decode_string_key(partition_key) and\n  github_checks.check_run_id = decode_string_key(row_key);\nend",
+          "deprecated": false,
+          "description": "See taskcluster-lib-entities",
+          "mode": "read",
+          "returns": "table (partition_key_out text, row_key_out text, value jsonb, version integer, etag uuid)",
+          "serviceName": "github"
+        },
+        "taskcluster_checks_to_tasks_entities_modify": {
+          "args": "partition_key text, row_key text, properties jsonb, version integer, old_etag uuid",
+          "body": "begin\n    raise exception 'github integrations are immutable';\nend",
+          "deprecated": false,
+          "description": "See taskcluster-lib-entities",
+          "mode": "write",
+          "returns": "table (etag uuid)",
+          "serviceName": "github"
+        },
+        "taskcluster_checks_to_tasks_entities_remove": {
+          "args": "partition_key text, row_key text",
+          "body": "begin\n  delete\n  from github_checks\n  where\n  github_checks.check_suite_id = decode_string_key(partition_key) and\n  github_checks.check_run_id = decode_string_key(row_key);\n  -- tc-gh does not care if the row existed\n  return query select gen_random_uuid() as etag;\nend",
+          "deprecated": false,
+          "description": "See taskcluster-lib-entities",
+          "mode": "write",
+          "returns": "table (etag uuid)",
+          "serviceName": "github"
+        },
+        "taskcluster_checks_to_tasks_entities_scan": {
+          "args": "pk text, rk text, condition text, size integer, page integer",
+          "body": "begin\n    raise exception 'not implemented';\nend",
+          "deprecated": false,
+          "description": "See taskcluster-lib-entities",
+          "mode": "read",
+          "returns": "table (partition_key text, row_key text, value jsonb, version integer, etag uuid)",
+          "serviceName": "github"
+        }
+      },
+      "migrationScript": "begin\n\n  -- lock this table before reading from it, to prevent loss of concurrent\n  -- updates when the table is dropped.  Note that this may lead to concurrent\n  -- updates failing; the important thing is that they not succeed without\n  -- taking effect.  Failed updates will be retried.\n  lock table taskcluster_check_runs_entities;\n  lock table taskcluster_checks_to_tasks_entities;\n\n  create table github_checks\n  as\n    select\n      (value ->> 'taskGroupId')::text as task_group_id,\n      (value ->> 'taskId')::text as task_id,\n      (value ->> 'checkSuiteId')::text as check_suite_id,\n      (value ->> 'checkRunId')::text as check_run_id\n    from taskcluster_check_runs_entities;\n  alter table github_checks add primary key (task_group_id, task_id);\n  alter table github_checks\n    alter column task_group_id set not null,\n    alter column task_id set not null,\n    alter column check_suite_id set not null,\n    alter column check_run_id set not null;\n  create index on github_checks (check_suite_id, check_run_id);\n\n  revoke select, insert, update, delete on taskcluster_check_runs_entities from $db_user_prefix$_github;\n  drop table taskcluster_check_runs_entities;\n  revoke select, insert, update, delete on taskcluster_checks_to_tasks_entities from $db_user_prefix$_github;\n  drop table taskcluster_checks_to_tasks_entities;\n  grant select, insert, update, delete on github_checks to $db_user_prefix$_github;\nend",
+      "version": 37
     }
   ]
 }

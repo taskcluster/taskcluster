@@ -332,7 +332,7 @@ exports.testEntityTable = ({
         });
       }
 
-			if (!notImplemented.includes('scanning')) {
+      if (!notImplemented.includes('scanning')) {
         for (let {condition, expectedSamples} of scanConditions) {
           test(`scan ${JSON.stringify(condition)} (${expectedSamples.length} results)`, async function() {
             const res = await Entity.scan(condition);

@@ -20,17 +20,9 @@ const CheckRuns = Entity.configure({
     checkRunId: Entity.types.String,
   },
 });
-const ChecksToTasks = Entity.configure({
-  version: 1,
-  partitionKey: Entity.keys.StringKey('checkSuiteId'),
-  rowKey: Entity.keys.StringKey('checkRunId'),
-  properties: {
-    taskGroupId: Entity.types.String,
-    taskId: Entity.types.String,
-    checkSuiteId: Entity.types.String,
-    checkRunId: Entity.types.String,
-  },
-});
+
+// We don't actually test checks_to_task because write function
+// is a noop and it is never read in the code
 
 suite(testing.suiteName(), function() {
   helper.withDbForVersion();
@@ -82,34 +74,6 @@ suite(testing.suiteName(), function() {
     notFoundConditions: [
       {condition: {taskGroupId: 'doesntexist', taskId}},
       {condition: {taskGroupId, taskId: 'doesntexist'}},
-    ],
-    notImplemented: ['remove-ignore-if-not-exists', 'modifications', 'create-overwrite', 'scanning'],
-  });
-  helper.testEntityTable({
-    dbVersion: THIS_VERSION,
-    serviceName: 'github',
-    entityTableName: 'taskcluster_checks_to_tasks_entities',
-    newTableName: 'github_checks',
-    EntityClass: ChecksToTasks,
-    samples: {
-      simple1: {
-        taskGroupId,
-        taskId,
-        checkSuiteId: 'abc',
-        checkRunId: 'def',
-      },
-      simple2: {
-        taskGroupId: slugid.v4(),
-        taskId: slugid.v4(),
-        checkSuiteId: 'ghi',
-        checkRunId: 'jkl',
-      },
-    },
-    loadConditions: [
-      {condition: {checkSuiteId: 'abc', checkRunId: 'def'}, expectedSample: 'simple1'},
-    ],
-    notFoundConditions: [
-      {condition: {checkSuiteId: 'doesntexist', checkRunId: 'def'}},
     ],
     notImplemented: ['remove-ignore-if-not-exists', 'modifications', 'create-overwrite', 'scanning'],
   });
