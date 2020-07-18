@@ -10,6 +10,8 @@
 | clients_entities_modify | write | partition_key text, row_key text, properties jsonb, version integer, old_etag uuid | table (etag uuid) | See taskcluster-lib-entities |
 | clients_entities_remove | write | partition_key text, row_key text | table (etag uuid) | See taskcluster-lib-entities |
 | clients_entities_scan | read | pk text, rk text, condition text, size integer, page integer | table (partition_key text, row_key text, value jsonb, version integer, etag uuid) | See taskcluster-lib-entities |
+| get_roles | read |  | table (role_id text, scopes jsonb, created timestamptz, description text, last_modified timestamptz, etag uuid) | Get the full set of roles.  Each result row has an etag, but all such<br />etags will be the same, representing the etag for the most recent<br />modification of the table.  Results are sorted by role_id. |
+| modify_roles | write | roles_in jsonb, old_etag_in uuid | void | Replace the current set of roles entirely with the given set of roles, if the current etag matches the existing etag. <br />The role objects are specified with underscore spelling (`role_id`).<br />If the etag has changed, this returns P0004 signalling that the caller should fetch a fresh set of roles and try again.<br />If there are no existing roles, then the old etag is not used. |
 | roles_entities_create | write | pk text, rk text, properties jsonb, overwrite boolean, version integer | uuid | See taskcluster-lib-entities |
 | roles_entities_load | read | partition_key text, row_key text | table (partition_key_out text, row_key_out text, value jsonb, version integer, etag uuid) | See taskcluster-lib-entities |
 | roles_entities_modify | write | partition_key text, row_key text, properties jsonb, version integer, old_etag uuid | table (etag uuid) | See taskcluster-lib-entities |
@@ -19,6 +21,11 @@
 
 | Name | Mode | Arguments | Returns | Description |
 | --- | --- | --- | --- | --- |
+| create_github_build | write | organization_in text, repository_in text, sha_in text, task_group_id_in text, state_in text, created_in timestamptz, updated_in timestamptz, installation_id_in integer, event_type_in text, event_id_in text | void | Create a new github build.  Raises UNIQUE_VIOLATION if the pool already exists. |
+| delete_github_build | write | task_group_id_in text | void | Delete a github build. |
+| get_github_build | read | task_group_id_in text | table (organization text, repository text, sha text, task_group_id text, state text, created timestamptz, updated timestamptz, installation_id integer, event_type text, event_id text, etag uuid) | Get a github build. The returned table will have one or zero rows. |
+| get_github_builds | read | page_size_in integer, page_offset_in integer, organization_in text, repository_in text, sha_in text | table (organization text, repository text, sha text, task_group_id text, state text, created timestamptz, updated timestamptz, installation_id integer, event_type text, event_id text, etag uuid) | Get github builds.  |
+| set_github_build_state | write | task_group_id_in text, state_in text | void | Only update the state of a build and update the `updated` timestamp |
 | taskcluster_check_runs_entities_create | write | pk text, rk text, properties jsonb, overwrite boolean, version integer | uuid | See taskcluster-lib-entities |
 | taskcluster_check_runs_entities_load | read | partition_key text, row_key text | table (partition_key_out text, row_key_out text, value jsonb, version integer, etag uuid) | See taskcluster-lib-entities |
 | taskcluster_check_runs_entities_modify | write | partition_key text, row_key text, properties jsonb, version integer, old_etag uuid | table (etag uuid) | See taskcluster-lib-entities |
@@ -43,6 +50,14 @@
 
 | Name | Mode | Arguments | Returns | Description |
 | --- | --- | --- | --- | --- |
+| create_hooks_queue | write | hook_group_id_in text, hook_id_in text, queue_name_in text, bindings_in jsonb | uuid | Create a new hooks queue.  Raises UNIQUE_VIOLATION if the hook already exists. |
+| create_last_fire | write | hook_group_id_in text, hook_id_in text, fired_by_in text, task_id_in text, task_create_time_in timestamptz, result_in text, error_in text | uuid | Create a new hook last fire.  Raises UNIQUE_VIOLATION if the hook already exists. |
+| delete_hooks_queue | write | hook_group_id_in text, hook_id_in text | void | Delete a hooks queue. |
+| delete_last_fires | write | hook_group_id_in text, hook_id_in text | void | Delete last fires that match a given `hook_group_id` and `hook_id`. |
+| expire_last_fires | write |  | integer | Expire last fires that are older than a year.<br />Returns a count of rows that have been deleted. |
+| get_hooks_queues | read | page_size_in integer, page_offset_in integer | table(hook_group_id text, hook_id text, queue_name text, bindings jsonb, etag uuid) | Get hooks queues ordered by `hook_group_id` and `hook_id`.<br />If the pagination arguments are both NULL, all rows are returned.<br />Otherwise, page_size rows are returned at offset page_offset. |
+| get_last_fire | read | hook_group_id_in text, hook_id_in text, task_id_in text | table(hook_group_id text, hook_id text, fired_by text, task_id text, task_create_time timestamptz, result text, error text, etag uuid) | Get a hook last fire. |
+| get_last_fires | read | hook_group_id_in text, hook_id_in text, page_size_in integer, page_offset_in integer | table(hook_group_id text, hook_id text, fired_by text, task_id text, task_create_time timestamptz, result text, error text, etag uuid) | Get hooks last fires filtered by the `hook_group_id` and `hook_id` arguments,<br />ordered by `hook_group_id`, `hook_id`, and  `worker_id`.<br />If the pagination arguments are both NULL, all rows are returned.<br />Otherwise, page_size rows are returned at offset page_offset. |
 | hooks_entities_create | write | pk text, rk text, properties jsonb, overwrite boolean, version integer | uuid | See taskcluster-lib-entities |
 | hooks_entities_load | read | partition_key text, row_key text | table (partition_key_out text, row_key_out text, value jsonb, version integer, etag uuid) | See taskcluster-lib-entities |
 | hooks_entities_modify | write | partition_key text, row_key text, properties jsonb, version integer, old_etag uuid | table (etag uuid) | See taskcluster-lib-entities |
@@ -58,10 +73,19 @@
 | queues_entities_modify | write | partition_key text, row_key text, properties jsonb, version integer, old_etag uuid | table (etag uuid) | See taskcluster-lib-entities |
 | queues_entities_remove | write | partition_key text, row_key text | table (etag uuid) | See taskcluster-lib-entities |
 | queues_entities_scan | read | pk text, rk text, condition text, size integer, page integer | table (partition_key text, row_key text, value jsonb, version integer, etag uuid) | See taskcluster-lib-entities |
+| update_hooks_queue_bindings | write | hook_group_id_in text, hook_id_in text, bindings_in jsonb | table(hook_group_id text, hook_id text, queue_name text, bindings jsonb, etag uuid) | Update bindings of a hooks queue. If no such queue exists,<br />the return value is an empty set. |
 ## index
 
 | Name | Mode | Arguments | Returns | Description |
 | --- | --- | --- | --- | --- |
+| create_index_namespace | write | parent_in text, name_in text, expires_in timestamptz | table(parent text, name text, expires timestamptz) | Create a new namespace. Raises UNIQUE_VIOLATION if the namespace already exists.<br />Returns the newly created namespace. |
+| create_indexed_task | write | namespace_in text, name_in text, rank_in integer, task_id_in text, data_in jsonb, expires_in timestamptz | table(namespace text, name text, rank integer, task_id text, data jsonb, expires timestamptz) | Create a new indexed task. Raises UNIQUE_VIOLATION if the indexed task already exists.<br />Returns the newly created indexed task. |
+| expire_index_namespaces | write |  | integer | Expire index_namespaces that come before the current time.<br />Returns a count of rows that have been deleted. |
+| expire_indexed_tasks | write |  | integer | Expire indexed tasks that come before the current time.<br />Returns a count of rows that have been deleted. |
+| get_index_namespace | read | parent_in text, name_in text | table(parent text, name text, expires timestamptz) | Get a namespace. The returned table will have one or zero rows. |
+| get_index_namespaces | read | parent_in text, name_in text, page_size_in integer, page_offset_in integer | table(parent text, name text, expires timestamptz) | Get existing index_namespaces filtered by the optional arguments,<br />ordered by the `parent` and `name`.<br />If the pagination arguments are both NULL, all rows are returned.<br />Otherwise, page_size rows are returned at offset page_offset. |
+| get_indexed_task | read | namespace_in text, name_in text | table(namespace text, name text, rank integer, task_id text, data jsonb, expires timestamptz) | Get an indexed task. The returned table will have one or zero rows. |
+| get_indexed_tasks | read | namespace_in text, name_in text, page_size_in integer, page_offset_in integer | table(namespace text, name text, rank integer, task_id text, data jsonb, expires timestamptz) | Get existing indexed tasks filtered by the optional arguments,<br />ordered by the `namespace` and `name`.<br />If the pagination arguments are both NULL, all rows are returned.<br />Otherwise, page_size rows are returned at offset page_offset. |
 | indexed_tasks_entities_create | write | pk text, rk text, properties jsonb, overwrite boolean, version integer | uuid | See taskcluster-lib-entities |
 | indexed_tasks_entities_load | read | partition_key text, row_key text | table (partition_key_out text, row_key_out text, value jsonb, version integer, etag uuid) | See taskcluster-lib-entities |
 | indexed_tasks_entities_modify | write | partition_key text, row_key text, properties jsonb, version integer, old_etag uuid | table (etag uuid) | See taskcluster-lib-entities |
@@ -72,6 +96,8 @@
 | namespaces_entities_modify | write | partition_key text, row_key text, properties jsonb, version integer, old_etag uuid | table (etag uuid) | See taskcluster-lib-entities |
 | namespaces_entities_remove | write | partition_key text, row_key text | table (etag uuid) | See taskcluster-lib-entities |
 | namespaces_entities_scan | read | pk text, rk text, condition text, size integer, page integer | table (partition_key text, row_key text, value jsonb, version integer, etag uuid) | See taskcluster-lib-entities |
+| update_index_namespace | write | parent_in text, name_in text, expires_in timestamptz | table(parent text, name text, expires timestamptz) | Update a namespace.<br />Returns the up-to-date namespace row that have the same parent and name.<br />If the row is not found then an exception with code 'P0002' is thrown. |
+| update_indexed_task | write | namespace_in text, name_in text, rank_in integer, task_id_in text, data_in jsonb, expires_in timestamptz | table(namespace text, name text, rank integer, task_id text, data jsonb, expires timestamptz) | Update an indexed task.<br />Returns the up-to-date indexed task row that have the same namespace and name. |
 ## notify
 
 | Name | Mode | Arguments | Returns | Description |
@@ -103,12 +129,99 @@
 
 | Name | Mode | Arguments | Returns | Description |
 | --- | --- | --- | --- | --- |
+| add_task_dependency | write | dependent_task_id_in text, required_task_id_in text, requires_in task_requires, expires_in timestamptz | void | Create an un-satisfied task dependency between the two tasks, with the given<br />requirement style and expiration.  If the dependency already exists, nothing<br />happens. |
 | azure_queue_count | read | queue_name text | integer | Count non-expired messages in the named queue.<br /> |
 | azure_queue_delete | write | queue_name text, message_id uuid, pop_receipt uuid | void | Delete the message identified by the given `queue_name`, `message_id` and<br />`pop_receipt`.<br /> |
 | azure_queue_delete_expired | write |  | void | Delete all expired messages.  This is a maintenance task that should occur<br />about once an hour.<br /> |
 | azure_queue_get | write | queue_name text, visible timestamp, count integer | table (message_id uuid, message_text text, pop_receipt uuid) | Get up to `count` messages from the given queue, setting the `visible`<br />column of each to the given value.  Returns a `message_id` and<br />`pop_receipt` for each one, for use with `azure_queue_delete` and<br />`azure_queue_update`.<br /> |
 | azure_queue_put | write | queue_name text, message_text text, visible timestamp, expires timestamp | void | Put the given message into the given queue.  The message will not be visible until<br />after the visible timestamp, and will disappear after the expires timestamp.<br /> |
 | azure_queue_update | write | queue_name text, message_text text, message_id uuid, pop_receipt uuid, visible timestamp | void | Update the message identified by the given `queue_name`, `message_id` and<br />`pop_receipt`, setting its `visible` and `message_text` properties as<br />given.<br /> |
+| cancel_task | write | task_id text, reason text | table(retries_left integer, runs jsonb, taken_until timestamptz) | If the current run is pending or running, mark it as exception with the given<br />reason.  If the task is unscheduled, a run with that status is<br />created to represent the cancellation.  This returns the task's updated<br />status, or nothing if the current status was not as expected. |
+| check_task_claim | write | task_id text, run_id int, taken_until_in timestamptz | table(retries_left integer, runs jsonb, taken_until timestamptz) | Check the given task for a claim on the given run expiring at the given<br />time.  If the run is still running, it is marked as claim-expired and<br />a retry scheduled (if retries_left).  <br /><br />This returns the task's updated status, or nothing if the current status<br />was not as expected. |
+| claim_task | write | task_id text, run_id int, worker_group text, worker_id text, hint_id text, taken_until_in timestamptz | table(retries_left integer, runs jsonb, taken_until timestamptz) | Claim the given run of the given task for the given worker.  The hint is recorded in the run,<br />for comparison when the claim expires.  This returns the task's updated<br />status, or nothing if the current status was not as expected. |
+| create_queue_artifact | write | task_id_in text, run_id_in integer, name_in text, storage_type_in text, content_type_in text, details_in jsonb, present_in boolean, expires_in timestamptz | table(task_id text, run_id integer, name text, storage_type text, content_type text, details jsonb, present boolean, expires timestamptz) | Create a new artifact. Raises UNIQUE_VIOLATION if the artifact already exists.<br />Returns the newly created artifact. |
+| create_task | write | task_id text,
+provisioner_id text,
+worker_type text,
+scheduler_id text,
+task_group_id text,
+dependencies jsonb,
+requires task_requires,
+routes jsonb,
+priority task_priority,
+retries integer,
+created timestamptz,
+deadline timestamptz,
+expires timestamptz,
+scopes jsonb,
+payload jsonb,
+metadata jsonb,
+tags jsonb,
+extra jsonb | void | Create a new task, without scheduling it, and with empty values<br />for the status information. |
+| delete_queue_artifact | write | task_id_in text, run_id_in integer, name_in text | void | Delete a queue artifact. |
+| ensure_task_group | write | task_group_id_in text,
+scheduler_id_in text,
+expires_in timestamptz | void | Ensure that the given task group exists, has the matching scheduler_id,<br />and has an expiration greater than the given expiration.  Expiration is<br />bumped by an hour at a time to avoid unnecessary updates.  This returns<br />23505 (UNIQUE_VIOLATION) when the group exists with a different<br />scheduler_id. |
+| expire_task_dependencies | write | expires_in timestamptz | integer | Delete task dependencies with expiration dates before `expires_in`.<br />Returns a count of rows that have been deleted. |
+| expire_task_groups | write | expires_in timestamptz | integer | Delete task groups with expiration dates before `expires_in`.<br />Returns a count of rows that have been deleted. |
+| expire_tasks | write | expires_in timestamptz | integer | Delete tasks with expiration dates before `expires_in`.<br />Returns a count of rows that have been deleted. |
+| get_dependent_tasks | read | required_task_id_in text, satisfied_in boolean, tasks_after_in text, page_size_in integer, page_offset_in integer | table(dependent_task_id text, requires task_requires, satisfied boolean) | Get the un-expired tasks that depend on this one, limiting to only (un)satisfied<br />dependencies if `satisfied_in` is not null.<br /><br />Only dependencies with `dependent_task_id > tasks_after_in` are returned.<br />This supports paginated queries that are not susceptible to rows being<br />added or removed.  Typically only one of `page_offset_in` and<br />`tasks_after_in` are non-null. |
+| get_queue_artifact | read | task_id_in text, run_id_in integer, name_in text | table(task_id text, run_id integer, name text, storage_type text, content_type text, details jsonb, present boolean, expires timestamptz) | Get a queue artifact. The returned table will have one or zero row. |
+| get_queue_artifacts | read | task_id_in text, run_id_in integer, expires_in timestamptz, page_size_in integer, page_offset_in integer | table(task_id text, run_id integer, name text, storage_type text, content_type text, details jsonb, present boolean, expires timestamptz) | Get existing queue artifacts filtered by the optional arguments,<br />ordered by the `task_id`, `run_id`, and `name`.<br />If the pagination arguments are both NULL, all rows are returned.<br />Otherwise, page_size rows are returned at offset page_offset. |
+| get_task | read | task_id_in text | table (
+  task_id text,
+  provisioner_id text,
+  worker_type text,
+  scheduler_id text,
+  task_group_id text,
+  dependencies jsonb,
+  requires task_requires,
+  routes jsonb,
+  priority task_priority,
+  retries integer,
+  retries_left int,
+  created timestamptz,
+  deadline timestamptz,
+  expires timestamptz,
+  scopes jsonb,
+  payload jsonb,
+  metadata jsonb,
+  tags jsonb,
+  extra jsonb,
+  runs jsonb,
+  taken_until timestamptz
+) | Get all properties of a task.  Note that all properties but `runs`,<br />`retries_left`, and `taken_until` are immutable. |
+| get_task_group | read | task_group_id_in text | table(
+  task_group_id text,
+  scheduler_id text,
+  expires timestamptz
+) | Get a task group. |
+| get_tasks_by_task_group | read | task_group_id_in text, page_size_in integer, page_offset_in integer | table (
+  task_id text,
+  provisioner_id text,
+  worker_type text,
+  scheduler_id text,
+  task_group_id text,
+  dependencies jsonb,
+  requires task_requires,
+  routes jsonb,
+  priority task_priority,
+  retries integer,
+  retries_left int,
+  created timestamptz,
+  deadline timestamptz,
+  expires timestamptz,
+  scopes jsonb,
+  payload jsonb,
+  metadata jsonb,
+  tags jsonb,
+  extra jsonb,
+  runs jsonb,
+  taken_until timestamptz
+) | Get all properties of all tasks in the given task group. |
+| is_task_blocked | read | dependent_task_id_in text | boolean | Return true if the task has remaining un-satisfied dependencies. |
+| is_task_group_active | read | task_group_id_in text | boolean | temp, removed in next commit |
+| mark_task_ever_resolved | write | task_id_in text | void | temp, removed in next commit |
 | queue_artifacts_entities_create | write | pk text, rk text, properties jsonb, overwrite boolean, version integer | uuid | See taskcluster-lib-entities |
 | queue_artifacts_entities_load | read | partition_key text, row_key text | table (partition_key_out text, row_key_out text, value jsonb, version integer, etag uuid) | See taskcluster-lib-entities |
 | queue_artifacts_entities_modify | write | partition_key text, row_key text, properties jsonb, version integer, old_etag uuid | table (etag uuid) | See taskcluster-lib-entities |
@@ -159,6 +272,15 @@
 | queue_worker_type_entities_modify | write | partition_key text, row_key text, properties jsonb, version integer, old_etag uuid | table (etag uuid) | See taskcluster-lib-entities |
 | queue_worker_type_entities_remove | write | partition_key text, row_key text | table (etag uuid) | See taskcluster-lib-entities |
 | queue_worker_type_entities_scan | read | pk text, rk text, condition text, size integer, page integer | table (partition_key text, row_key text, value jsonb, version integer, etag uuid) | See taskcluster-lib-entities |
+| reclaim_task | write | task_id text, run_id int, taken_until_in timestamptz | table(retries_left integer, runs jsonb, taken_until timestamptz) | Relaim the given run of the given task run, until the new taken_until time.<br />This returns the task's updated status, or nothing if the current status was not as expected. |
+| remove_task | write | task_id text | void | Remove the given task, regardless of its expiration status.  This is<br />typically used when task creation has failed. |
+| remove_task_dependency | write | dependent_task_id_in text, required_task_id_in text | void | Mark the given dependency as satisfied.  If the dependency does not exist, nothing<br />happens. |
+| rerun_task | write | task_id text | table(retries_left integer, runs jsonb, taken_until timestamptz) | Ensure that no run is currently running or pending, and then create a new<br />pending run with the given reason.  This also resets the retries_left<br />column to `retries` (unless the sanity-check maximum runs has been<br />reached).  This returns the task's updated status, or nothing if the<br />current status was not as expected. |
+| resolve_task | write | task_id text, run_id int, state text, reason text, retry_reason text | table(retries_left integer, runs jsonb, taken_until timestamptz) | Resolve the given run with the given state and reason, setting<br />run.resolved and resetting `taken_until`.  If `retry_reason` is not null<br />and there are `retries_left`, a new pending run is added, and<br />`retries_left` is decremented.  This returns the task's updated status,<br />or nothing if the current status was not as expected. |
+| resolve_task_at_deadline | write | task_id text | table(retries_left integer, runs jsonb, taken_until timestamptz) | The given task has reached its deadline, so mark it as resolved, adding a<br />run if necessary.  This returns the task's updated status, or nothing if<br />the current status was not as expected. |
+| satisfy_task_dependency | write | dependent_task_id_in text, required_task_id_in text | void | Mark the given dependency as satisfied.  If the dependency does not exist, nothing<br />happens. |
+| schedule_task | write | task_id text, reason_created text | table(retries_left integer, runs jsonb, taken_until timestamptz) | Schedule the initial run for a task, moving the task from "unscheduled" to "pending".<br />This returns the task's updated status, or nothing if the current status was not<br />as expected. |
+| update_queue_artifact | write | task_id_in text, run_id_in integer, name_in text, details_in jsonb, expires_in timestamptz | table(task_id text, run_id integer, name text, storage_type text, content_type text, details jsonb, present boolean, expires timestamptz) | Update a queue artifact.<br />Returns the up-to-date artifact row that have the same task id, run id, and name. |
 ## secrets
 
 | Name | Mode | Arguments | Returns | Description |
@@ -177,6 +299,7 @@
 | access_token_table_entities_modify | write | partition_key text, row_key text, properties jsonb, version integer, old_etag uuid | table (etag uuid) | See taskcluster-lib-entities |
 | access_token_table_entities_remove | write | partition_key text, row_key text | table (etag uuid) | See taskcluster-lib-entities |
 | access_token_table_entities_scan | read | pk text, rk text, condition text, size integer, page integer | table (partition_key text, row_key text, value jsonb, version integer, etag uuid) | See taskcluster-lib-entities |
+| add_github_access_token | write | user_id_in text, encrypted_access_token_in jsonb | void | Sets the encrypted access token for `user_id_in` to<br />`encrypted_access_token_in`.<br /><br />If no access token is currently set for `user_id_in`, a new row is<br />inserted, otherwise the existing row's encrypted access token is updated<br />to `encrypted_access_token_in`. |
 | authorization_codes_table_entities_create | write | pk text, rk text, properties jsonb, overwrite boolean, version integer | uuid | See taskcluster-lib-entities |
 | authorization_codes_table_entities_load | read | partition_key text, row_key text | table (partition_key_out text, row_key_out text, value jsonb, version integer, etag uuid) | See taskcluster-lib-entities |
 | authorization_codes_table_entities_modify | write | partition_key text, row_key text, properties jsonb, version integer, old_etag uuid | table (etag uuid) | See taskcluster-lib-entities |
@@ -187,6 +310,7 @@
 | github_access_token_table_entities_modify | write | partition_key text, row_key text, properties jsonb, version integer, old_etag uuid | table (etag uuid) | See taskcluster-lib-entities |
 | github_access_token_table_entities_remove | write | partition_key text, row_key text | table (etag uuid) | See taskcluster-lib-entities |
 | github_access_token_table_entities_scan | read | pk text, rk text, condition text, size integer, page integer | table (partition_key text, row_key text, value jsonb, version integer, etag uuid) | See taskcluster-lib-entities |
+| load_github_access_token | read | user_id_in text | table(encrypted_access_token jsonb) | Returns the encrypted github access token for a given user. |
 | session_storage_table_entities_create | write | pk text, rk text, properties jsonb, overwrite boolean, version integer | uuid | See taskcluster-lib-entities |
 | session_storage_table_entities_load | read | partition_key text, row_key text | table (partition_key_out text, row_key_out text, value jsonb, version integer, etag uuid) | See taskcluster-lib-entities |
 | session_storage_table_entities_modify | write | partition_key text, row_key text, properties jsonb, version integer, old_etag uuid | table (etag uuid) | See taskcluster-lib-entities |

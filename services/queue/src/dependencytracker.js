@@ -1,5 +1,5 @@
 let assert = require('assert');
-let Entity = require('taskcluster-lib-entities');
+const {Task} = require('./data');
 
 /**
  * DependencyTracker tracks dependencies between tasks and ensure that dependent
@@ -8,33 +8,23 @@ let Entity = require('taskcluster-lib-entities');
  *
  * Options:
  * {
- *   Task:               data.Task instance
  *   publisher:          publisher from exchanges
  *   queueService:       QueueService instance
- *   TaskDependency:     data.TaskDependency instance
- *   TaskRequirement:    data.TaskRequirement instance
- *   TaskGroupActiveSet: data.TaskGroupMember instance
  * }
  */
 class DependencyTracker {
   constructor(options = {}) {
     // Validate options
     assert(options, 'options are required');
-    assert(options.Task, 'Expected options.Task');
+    assert(options.db, 'Expected options.db');
     assert(options.publisher, 'Expected options.publisher');
     assert(options.queueService, 'Expected options.queueService');
-    assert(options.TaskDependency, 'Expected options.TaskDependency');
-    assert(options.TaskRequirement, 'Expected options.TaskRequirement');
-    assert(options.TaskGroupActiveSet, 'Expected options.TaskGroupActiveSet');
     assert(options.monitor, 'Expected options.monitor');
 
     // Store options on this object
-    this.Task = options.Task;
+    this.db = options.db;
     this.publisher = options.publisher;
     this.queueService = options.queueService;
-    this.TaskDependency = options.TaskDependency;
-    this.TaskRequirement = options.TaskRequirement;
-    this.TaskGroupActiveSet = options.TaskGroupActiveSet;
     this.monitor = options.monitor;
   }
 
@@ -45,32 +35,9 @@ class DependencyTracker {
    * This will return {message, details} if there is an error.
    */
   async trackDependencies(task) {
-
-    // Create TaskRequirement entries, each entry implies that taskId is blocked
-    // by requiredTaskId. This relation is used to track if a taskId is blocked.
-    await Promise.all(task.dependencies.map(requiredTaskId => {
-      return this.TaskRequirement.create({
-        taskId: task.taskId,
-        requiredTaskId,
-        expires: task.expires,
-      }, true);
-    }));
-
-    // Create TaskDependency entries, each entry implies that taskId is required
-    // by dependentTaskId. This relation is used so taskId can find dependent
-    // tasks when it is resolved.
-    let require = 'completed';
-    if (task.requires === 'all-resolved') {
-      require = 'resolved';
+    for (let requiredTaskId of task.dependencies) {
+      await this.db.fns.add_task_dependency(task.taskId, requiredTaskId, task.requires, task.expires);
     }
-    await Promise.all(task.dependencies.map(requiredTaskId => {
-      return this.TaskDependency.create({
-        taskId: requiredTaskId,
-        dependentTaskId: task.taskId,
-        expires: task.expires,
-        require,
-      }, true);
-    }));
 
     // Load all task dependencies to see if they have been resolved.
     // We will also check for missing and expiring dependencies.
@@ -78,7 +45,7 @@ class DependencyTracker {
     let expiring = []; // Dependencies that expire before deadline
     let anySatisfied = false; // Track if any dependencies were satisfied
     await Promise.all(task.dependencies.map(async (requiredTaskId) => {
-      let requiredTask = await this.Task.load({taskId: requiredTaskId}, true);
+      let requiredTask = await Task.get(this.db, requiredTaskId);
 
       // If task is missing, we should report and error
       if (!requiredTask) {
@@ -94,11 +61,7 @@ class DependencyTracker {
       let state = requiredTask.state();
       if (state === 'completed' || task.requires === 'all-resolved' &&
           (state === 'exception' || state === 'failed')) {
-        // If a dependency is satisfied we delete the TaskRequirement entry
-        await this.TaskRequirement.remove({
-          taskId: task.taskId,
-          requiredTaskId,
-        }, true);
+        await this.db.fns.satisfy_task_dependency(task.taskId, requiredTaskId);
         // Track that we've deleted something, now we must check if any are left
         // afterward (using isBlocked)
         anySatisfied = true;
@@ -162,27 +125,13 @@ class DependencyTracker {
       // only see this error while developing their automation, so the fact
       // there is a small risk the task won't be deleted isn't an attack vector.
 
-      // First remove task and TaskDependency entries
-      await Promise.all([
-        task.remove(true),
-        Promise.all(task.dependencies.map(requiredTaskId => {
-          return this.TaskDependency.remove({
-            taskId: requiredTaskId,
-            dependentTaskId: task.taskId,
-          }, true);
-        })),
-      ]);
+      // First remove task
+      await this.db.fns.remove_task(task.taskId);
 
-      // Then remove TaskRequirement entries, because removing these makes it
+      // Then remove depdencies, because removing these makes it
       // easier to trigger the task. So we remove them after removing the task.
-      await Promise.all([
-        Promise.all(task.dependencies.map(requiredTaskId => {
-          return this.TaskRequirement.remove({
-            taskId: task.taskId,
-            requiredTaskId,
-          }, true);
-        })),
-      ]);
+      await Promise.all(task.dependencies.map(requiredTaskId =>
+        this.db.fns.remove_task_dependency(task.taskId, requiredTaskId)));
 
       return {
         message: msg,
@@ -199,19 +148,8 @@ class DependencyTracker {
     if (anySatisfied && !await this.isBlocked(task.taskId) ||
         task.dependencies.length === 0) {
 
-      await task.modify(task => {
-        // Don't modify if there already is a run
-        if (task.runs.length > 0) {
-          return;
-        }
-
-        // Add initial run (runId = 0)
-        task.runs.push({
-          state: 'pending',
-          reasonCreated: 'scheduled',
-          scheduled: new Date().toJSON(),
-        });
-      });
+      task.updateStatusWith(
+        await this.db.fns.schedule_task(task.taskId, 'scheduled'));
     }
 
     // We don't have any error
@@ -224,61 +162,46 @@ class DependencyTracker {
          resolution === 'exception',
     'resolution must be completed, failed or exception');
 
-    // Create query condition
-    let condition = {
-      taskId: Entity.op.equal(taskId),
-    };
+    // iterate through the dependencies in such a way that deletion of
+    // a task does not cause a dependency to be skipped (which might occur
+    // if using offset and limit)
+    let tasksAfter = null;
+    while (true) {
+      const deps = await this.db.fns.get_dependent_tasks(taskId, null, tasksAfter, 100, null);
 
-    // We only support conditions on dates, as they cannot
-    // be used to inject SQL -- `Date.toJSON` always produces a simple string
-    // with no SQL metacharacters.
-    //
-    // Previously with azure, we added the `require` field in the scan method
-    // (i.e., this.TaskRequirement.scan({ taskId, require }, ...))
-    await this.TaskDependency.query(condition, {
-      limit: 250,
-      handler: async (dep) => {
+      for (let dep of deps) {
+        tasksAfter = dep.dependent_task_id;
+
         if (resolution !== 'completed') {
-          // If the resolution wasn't 'completed', we can only remove
-          // TaskRequirement entries if the 'require' relation is 'resolved'.
-          if (dep.require !== 'resolved') {
+          // If the resolution wasn't 'completed', we can only remove mark this
+          // dependency as satisified if the 'require' relation is
+          // 'all-resolved'.
+          if (dep.requires !== 'all-resolved') {
             return;
           }
         }
-        // Remove the requirement that is blocking
-        await this.TaskRequirement.remove({
-          taskId: dep.dependentTaskId,
-          requiredTaskId: taskId,
-        }, true);
 
-        if (!await this.isBlocked(dep.dependentTaskId)) {
-          await this.scheduleTask(dep.dependentTaskId);
+        // Remove the requirement that is blocking
+        await this.db.fns.satisfy_task_dependency(dep.dependent_task_id, taskId);
+
+        if (!await this.isBlocked(dep.dependent_task_id)) {
+          await this.scheduleTask(dep.dependent_task_id);
         }
-      },
-    });
+      }
+
+      // when we've seen all of the dependencies, we're done
+      if (deps.length === 0) {
+        break;
+      }
+    }
 
     await this.updateTaskGroupActiveSet(taskId, taskGroupId, schedulerId);
   }
 
   /** Returns true, if some task requirement is blocking the task */
   async isBlocked(taskId) {
-    let result = await this.TaskRequirement.query({taskId}, {limit: 1});
-
-    // Ensure that we can in-fact make emptiness in a single request. It seems
-    // logical that we can. But Microsoft Azure documentation is sketchy, so
-    // we better not make assumptions about their APIs being sane. But since
-    // we're not filtering here I fully expect that we should able to get the
-    // first entry. Just we could if we specified both partitionKey and rowKey.
-    if (result.entries.length === 0 && result.continuation) {
-      let err = new Error('Single request emptiness check invariant failed. ' +
-                          'This is a flawed assumption in isBlocked()');
-      err.taskId = taskId;
-      err.result = result;
-      throw err;
-    }
-
-    // If we have any entries the taskId is blocked!
-    return result.entries.length > 0;
+    const res = await this.db.fns.is_task_blocked(taskId);
+    return res[0].is_task_blocked;
   }
 
   /**
@@ -288,23 +211,11 @@ class DependencyTracker {
    * that the group is "resolved" for the time being.
    */
   async updateTaskGroupActiveSet(taskId, taskGroupId, schedulerId) {
-    await this.TaskGroupActiveSet.remove({taskId, taskGroupId}, true);
+    await this.db.fns.mark_task_ever_resolved(taskId);
 
-    // check for emptiness of the partition
-    let result = await this.TaskGroupActiveSet.query({taskGroupId}, {limit: 1});
+    const res = await this.db.fns.is_task_group_active(taskGroupId);
 
-    // We assume this generally won't happen, see comment in isBlocked(...)
-    // which also uses a query operation with limit = 1 to check for partition emptiness.
-    if (result.entries.length === 0 && result.continuation) {
-      let err = new Error('Single request emptiness check invariant failed. ' +
-                          'This is a flawed assumption in resolveTask()');
-      err.taskId = taskId;
-      err.taskGroupId = taskGroupId;
-      err.result = result;
-      throw err;
-    }
-
-    if (result.entries.length === 0) {
+    if (!res[0].is_task_group_active) {
       await this.publisher.taskGroupResolved({
         taskGroupId,
         schedulerId,
@@ -322,7 +233,7 @@ class DependencyTracker {
     // Load task, if not already loaded
     let task = taskOrTaskId;
     if (typeof task === 'string') {
-      task = await this.Task.load({taskId: taskOrTaskId}, true);
+      task = await Task.get(this.db, taskOrTaskId);
 
       if (!task) {
         // This happens if we fail half-way through a createTask call.
@@ -340,19 +251,8 @@ class DependencyTracker {
     }
 
     // Ensure that we have an initial run
-    await task.modify(task => {
-      // Don't modify if there already is a run
-      if (task.runs.length > 0) {
-        return;
-      }
-
-      // Add initial run (runId = 0)
-      task.runs.push({
-        state: 'pending',
-        reasonCreated: 'scheduled',
-        scheduled: new Date().toJSON(),
-      });
-    });
+    task.updateStatusWith(
+      await this.db.fns.schedule_task(task.taskId, 'scheduled'));
 
     // Construct status structure
     let status = task.status();

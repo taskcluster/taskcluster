@@ -21,54 +21,54 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       return;
     }
 
-    await helper.Builds.create({
-      organization: 'abc123',
-      repository: 'def456',
-      sha: '7650871208002a13ba35cf232c0e30d2c3d64783',
-      state: 'pending',
-      taskGroupId: 'biizERCQQwi9ZS_WkCSjXQ',
-      created: new Date(),
-      updated: new Date(),
-      installationId: 1,
-      eventType: 'push',
-      eventId: '26370a80-ed65-11e6-8f4c-80082678482d',
-    });
-    await helper.Builds.create({
-      organization: 'ghi789',
-      repository: 'jkl101112',
-      sha: '8650871208002a13ba35cf232c0e30d2c3d64783',
-      state: 'success',
-      taskGroupId: 'aiizERCQQwi9ZS_WkCSjXQ',
-      created: new Date(),
-      updated: new Date(),
-      installationId: 1,
-      eventType: 'push',
-      eventId: '26370a80-ed65-11e6-8f4c-80082678482d',
-    });
-    await helper.Builds.create({
-      organization: 'abc123',
-      repository: 'xyz',
-      sha: 'x650871208002a13ba35cf232c0e30d2c3d64783',
-      state: 'pending',
-      taskGroupId: 'qiizERCQQwi9ZS_WkCSjXQ',
-      created: new Date(),
-      updated: new Date(),
-      installationId: 1,
-      eventType: 'push',
-      eventId: '26370a80-ed65-11e6-8f4c-80082678482d',
-    });
-    await helper.Builds.create({
-      organization: 'abc123',
-      repository: 'xyz',
-      sha: 'y650871208002a13ba35cf232c0e30d2c3d64783',
-      state: 'pending',
-      taskGroupId: 'ziizERCQQwi9ZS_WkCSjXQ',
-      created: new Date(),
-      updated: new Date(),
-      installationId: 1,
-      eventType: 'push',
-      eventId: 'Unknown',
-    });
+    await helper.db.fns.create_github_build(
+      'abc123',
+      'def456',
+      '7650871208002a13ba35cf232c0e30d2c3d64783',
+      'biizERCQQwi9ZS_WkCSjXQ',
+      'pending',
+      new Date(),
+      new Date(),
+      1,
+      'push',
+      '26370a80-ed65-11e6-8f4c-80082678482d',
+    );
+    await helper.db.fns.create_github_build(
+      'ghi789',
+      'jkl101112',
+      '8650871208002a13ba35cf232c0e30d2c3d64783',
+      'aiizERCQQwi9ZS_WkCSjXQ',
+      'success',
+      new Date(),
+      new Date(),
+      1,
+      'push',
+      '26370a80-ed65-11e6-8f4c-80082678482d',
+    );
+    await helper.db.fns.create_github_build(
+      'abc123',
+      'xyz',
+      'x650871208002a13ba35cf232c0e30d2c3d64783',
+      'qiizERCQQwi9ZS_WkCSjXQ',
+      'pending',
+      new Date(),
+      new Date(),
+      1,
+      'push',
+      '26370a80-ed65-11e6-8f4c-80082678482d',
+    );
+    await helper.db.fns.create_github_build(
+      'abc123',
+      'xyz',
+      'y650871208002a13ba35cf232c0e30d2c3d64783',
+      'ziizERCQQwi9ZS_WkCSjXQ',
+      'pending',
+      new Date(),
+      new Date(),
+      1,
+      'push',
+      'Unknown',
+    );
 
     await helper.OwnersDirectory.create({
       installationId: 9090,
@@ -152,6 +152,21 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     assert.equal(builds.builds[0].organization, 'abc123');
     assert.equal(builds.builds[0].repository, 'xyz');
     assert.equal(builds.builds[0].sha, 'y650871208002a13ba35cf232c0e30d2c3d64783');
+  });
+
+  test('builds invalid queries are rejected', async function() {
+    await assert.rejects(async () => {
+      await helper.apiClient.builds({
+        repository: 'xyz',
+        sha: 'y650871208002a13ba35cf232c0e30d2c3d64783',
+      });
+    }, /Error: Must provide/);
+    await assert.rejects(async () => {
+      await helper.apiClient.builds({
+        repository: 'xyz',
+        sha: 'y650871208002a13ba35cf232c0e30d2c3d64783',
+      });
+    }, /Error: Must provide/);
   });
 
   test('integration installation', async function() {

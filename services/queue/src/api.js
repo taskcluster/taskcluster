@@ -1,8 +1,10 @@
-let assert = require('assert');
-let _ = require('lodash');
-let {APIBuilder} = require('taskcluster-lib-api');
-let Entity = require('taskcluster-lib-entities');
-let taskCreds = require('./task-creds');
+const assert = require('assert');
+const _ = require('lodash');
+const {APIBuilder, paginateResults} = require('taskcluster-lib-api');
+const Entity = require('taskcluster-lib-entities');
+const taskCreds = require('./task-creds');
+const {UNIQUE_VIOLATION} = require('taskcluster-lib-postgres');
+const {Task} = require('./data');
 
 // Maximum number runs allowed
 const MAX_RUNS_ALLOWED = 50;
@@ -90,13 +92,8 @@ let builder = new APIBuilder({
     name: /^[\x20-\x7e]+$/, // Artifact names must be printable ASCII
   },
   context: [
-    'Task', // data.Task instance
-    'Artifact', // data.Artifact instance
-    'TaskGroup', // data.TaskGroup instance
+    'db', // Database instance
     'taskGroupExpiresExtension', // Time delay before expiring a task-group
-    'TaskGroupMember', // data.TaskGroupMember instance
-    'TaskGroupActiveSet', // data.TaskGroupMember instance (but in a different table)
-    'TaskDependency', // data.TaskDependency instance
     'Provisioner', // data.Provisioner instance
     'WorkerType', // data.WorkerType instance
     'Worker', // data.Worker instance
@@ -139,13 +136,14 @@ builder.declare({
 }, async function(req, res) {
   const {taskId} = req.params;
 
-  // Load Task entity if it's absent from cache
   let task;
   if (this.LRUcache.has(taskId)) {
     task = this.LRUcache.get(taskId);
   } else {
-    task = await this.Task.load({taskId}, true);
-    this.LRUcache.set(taskId, task);
+    task = await Task.get(this.db, taskId);
+    if (task) {
+      this.LRUcache.set(taskId, task);
+    }
   }
 
   // Handle cases where the task doesn't exist
@@ -176,10 +174,7 @@ builder.declare({
     'Get task status structure from `taskId`',
   ].join('\n'),
 }, async function(req, res) {
-  // Load Task entity
-  let task = await this.Task.load({
-    taskId: req.params.taskId,
-  }, true);
+  let task = await Task.get(this.db, req.params.taskId);
 
   // Handle cases where the task doesn't exist
   if (!task) {
@@ -201,10 +196,7 @@ builder.declare({
 builder.declare({
   method: 'get',
   route: '/task-group/:taskGroupId/list',
-  query: {
-    continuationToken: Entity.continuationTokenPattern,
-    limit: /^[0-9]+$/,
-  },
+  query: paginateResults.query,
   name: 'listTaskGroup',
   stability: APIBuilder.stability.stable,
   category: 'Tasks',
@@ -230,23 +222,21 @@ builder.declare({
   ].join('\n'),
 }, async function(req, res) {
   let taskGroupId = req.params.taskGroupId;
-  let continuation = req.query.continuationToken || null;
-  let limit = parseInt(req.query.limit || 1000, 10);
 
   // Find taskGroup and list of members
   let [
-    taskGroup,
-    members,
+    taskGroups,
+    {continuationToken, rows},
   ] = await Promise.all([
-    this.TaskGroup.load({taskGroupId}, true),
-    this.TaskGroupMember.query({
-      taskGroupId,
-      expires: Entity.op.greaterThanOrEqual(new Date()),
-    }, {continuation, limit}),
+    this.db.fns.get_task_group(taskGroupId),
+    paginateResults({
+      query: req.query,
+      fetch: (size, offset) => this.db.fns.get_tasks_by_task_group(taskGroupId, size, offset),
+    }),
   ]);
 
   // If no taskGroup was found
-  if (!taskGroup) {
+  if (taskGroups.length === 0) {
     return res.reportError('ResourceNotFound',
       'No task-group with taskGroupId: `{{taskGroupId}}`', {
         taskGroupId,
@@ -254,30 +244,19 @@ builder.declare({
     );
   }
 
-  /* eslint-disable no-extra-parens */
-  // Load tasks
-  let tasks = (await Promise.all(members.entries.map(member => {
-    return this.Task.load({taskId: member.taskId}, true);
-  }))).filter(task => {
-    // Remove tasks that don't exist, this happens on creation errors
-    // Remove tasks with wrong schedulerId, this shouldn't happen unless of some
-    // creation errors (probably something that involves dependency errors).
-    return task && task.schedulerId === taskGroup.schedulerId;
-  });
-  /* eslint-enable no-extra-parens */
-
   // Build result
   let result = {
     taskGroupId,
-    tasks: await Promise.all(tasks.map(async (task) => {
+    tasks: rows.map(row => {
+      const task = Task.fromDb(row);
       return {
         status: task.status(),
-        task: await task.definition(),
+        task: task.definition(),
       };
-    })),
+    }),
   };
-  if (members.continuation) {
-    result.continuationToken = members.continuation;
+  if (continuationToken) {
+    result.continuationToken = continuationToken;
   }
 
   return res.reply(result);
@@ -287,10 +266,7 @@ builder.declare({
 builder.declare({
   method: 'get',
   route: '/task/:taskId/dependents',
-  query: {
-    continuationToken: Entity.continuationTokenPattern,
-    limit: /^[0-9]+$/,
-  },
+  query: paginateResults.query,
   name: 'listDependentTasks',
   category: 'Tasks',
   stability: APIBuilder.stability.stable,
@@ -316,19 +292,17 @@ builder.declare({
   ].join('\n'),
 }, async function(req, res) {
   let taskId = req.params.taskId;
-  let continuation = req.query.continuationToken || null;
-  let limit = parseInt(req.query.limit || 1000, 10);
 
   // Find task and list dependents
   let [
     task,
-    dependents,
+    {continuationToken, rows},
   ] = await Promise.all([
-    this.Task.load({taskId}, true),
-    this.TaskDependency.query({
-      taskId,
-      expires: Entity.op.greaterThanOrEqual(new Date()),
-    }, {continuation, limit}),
+    Task.get(this.db, taskId),
+    paginateResults({
+      query: req.query,
+      fetch: (size, offset) => this.db.fns.get_dependent_tasks(taskId, null, null, size, offset),
+    }),
   ]);
 
   // Check if task exists
@@ -340,12 +314,8 @@ builder.declare({
     );
   }
 
-  /* eslint-disable no-extra-parens */
   // Load tasks
-  let tasks = (await Promise.all(dependents.entries.map(dependent => {
-    return this.Task.load({taskId: dependent.dependentTaskId}, true);
-  }))).filter(task => !!task);
-  /* eslint-enable no-extra-parens */
+  let tasks = await Promise.all(rows.map(row => Task.get(this.db, row.dependent_task_id)));
 
   // Build result
   let result = {
@@ -357,8 +327,8 @@ builder.declare({
       };
     })),
   };
-  if (dependents.continuation) {
-    result.continuationToken = dependents.continuation;
+  if (continuationToken) {
+    result.continuationToken = continuationToken;
   }
 
   return res.reply(result);
@@ -467,80 +437,23 @@ let patchAndValidateTaskDef = function(taskId, taskDef) {
 /** Ensure the taskGroup exists and that membership is declared */
 let ensureTaskGroup = async (ctx, taskId, taskDef, res) => {
   let taskGroupId = taskDef.taskGroupId;
-  let taskGroup = await ctx.TaskGroup.load({taskGroupId}, true);
+  let schedulerId = taskDef.schedulerId;
   let expires = new Date(taskDef.expires);
-  let taskGroupExpiration = new Date(
-    expires.getTime() + ctx.taskGroupExpiresExtension * 1000,
-  );
-  if (!taskGroup) {
-    taskGroup = await ctx.TaskGroup.create({
-      taskGroupId,
-      schedulerId: taskDef.schedulerId,
-      expires: taskGroupExpiration,
-    }).catch(err => {
-      // We only handle cases where the entity already exists
-      if (!err || err.code !== 'EntityAlreadyExists') {
-        throw err;
-      }
-      return ctx.TaskGroup.load({taskGroupId});
-    });
-  }
-  if (taskGroup.schedulerId !== taskDef.schedulerId) {
+
+  try {
+    await ctx.db.fns.ensure_task_group(taskGroupId, schedulerId, expires);
+  } catch (err) {
+    if (err.code !== UNIQUE_VIOLATION) {
+      throw err;
+    }
     res.reportError(
       'RequestConflict', [
-        'Task group `{{taskGroupId}}` contains tasks with',
-        'schedulerId `{{taskGroupSchedulerId}}`. You are attempting',
-        'to include tasks from schedulerId `{{taskSchedulerId}}`,',
-        'which is not permitted.',
-        'All tasks in the same task-group must have the same schedulerId.',
-      ].join('\n'), {
-        taskGroupId,
-        taskGroupSchedulerId: taskGroup.schedulerId,
-        taskSchedulerId: taskDef.schedulerId,
-      });
+        'Task group `{{taskGroupId}}` contains tasks with a schedulerId other',
+        'than `{{schedulerId}}`. All tasks in the same task-group must have',
+        'the same schedulerId.',
+      ].join('\n'), {taskGroupId, schedulerId});
     return false;
   }
-  // Update taskGroup.expires if necessary
-  await taskGroup.modify(taskGroup => {
-    if (taskGroup.expires.getTime() < expires.getTime()) {
-      taskGroup.expires = taskGroupExpiration;
-    }
-  });
-
-  // Ensure the group membership relation is constructed too
-  await ctx.TaskGroupMember.create({
-    taskGroupId,
-    taskId,
-    expires,
-  }).catch(err => {
-    // If the entity already exists, then we're happy no need to crash
-    if (!err || err.code !== 'EntityAlreadyExists') {
-      throw err;
-    }
-  });
-
-  // Now we also add the task to the group size counters as well
-  await ctx.TaskGroupActiveSet.create({
-    taskGroupId,
-    taskId,
-    expires,
-  }).catch(async (err) => {
-    // If the entity already exists, then we're happy no need to crash
-    if (!err || err.code !== 'EntityAlreadyExists') {
-      throw err;
-    }
-
-    let active = await ctx.TaskGroupActiveSet.load({taskId, taskGroupId});
-
-    if (!_.isEqual(new Date(active.expires), expires)) {
-      return res.reportError('RequestConflict', [
-        'taskId `{{taskId}}` already used by another task.',
-        'This could be the result of faulty idempotency!',
-      ].join('\n'), {
-        taskId,
-      });
-    }
-  });
 
   return true;
 };
@@ -616,86 +529,33 @@ builder.declare({
     return;
   }
 
-  // Parse timestamps
-  let created = new Date(taskDef.created);
-  let deadline = new Date(taskDef.deadline);
-  let expires = new Date(taskDef.expires);
-
   // Insert entry in deadline queue
   await this.queueService.putDeadlineMessage(
     taskId,
     taskDef.taskGroupId,
     taskDef.schedulerId,
-    deadline,
+    new Date(taskDef.deadline),
   );
 
-  let task;
-
-  // Try to create Task entity
+  let task = Task.fromApi(taskId, taskDef);
   try {
-    let runs = [];
-    // Add run if there is no dependencies
-    if (taskDef.dependencies.length === 0) {
-      runs.push({
-        state: 'pending',
-        reasonCreated: 'scheduled',
-        scheduled: new Date().toJSON(),
-      });
-    }
-    task = await this.Task.create({
-      taskId: taskId,
-      provisionerId: taskDef.provisionerId,
-      workerType: taskDef.workerType,
-      schedulerId: taskDef.schedulerId,
-      taskGroupId: taskDef.taskGroupId,
-      dependencies: taskDef.dependencies,
-      requires: taskDef.requires,
-      routes: taskDef.routes,
-      priority: taskDef.priority,
-      retries: taskDef.retries,
-      retriesLeft: taskDef.retries,
-      created: created,
-      deadline: deadline,
-      expires: expires,
-      scopes: taskDef.scopes,
-      payload: taskDef.payload,
-      metadata: taskDef.metadata,
-      tags: taskDef.tags,
-      extra: taskDef.extra,
-      runs: runs,
-      takenUntil: new Date(0),
-    });
+    await task.create(this.db);
   } catch (err) {
-    if (err && err.code === 'PropertyTooLarge') {
-      return res.reportError('InputError', err.toString(), {});
-    }
-
-    // We can handle cases where entity already exists, not that, we re-throw
-    if (!err || err.code !== 'EntityAlreadyExists') {
+    if (err.code !== UNIQUE_VIOLATION) {
       throw err;
     }
 
-    // load task, and task definition
-    task = await this.Task.load({taskId: taskId});
-    let def = await task.definition();
-
-    // Compare the two task definitions
-    if (!_.isEqual(taskDef, def)) {
-      return res.reportError('RequestConflict', [
-        'taskId `{{taskId}}` already used by another task.',
-        'This could be the result of faulty idempotency!',
-        'Existing task definition was:\n ```js\n{{existingTask}}\n```',
-        'This request tried to define:\n ```js\n{{taskDefinition}}\n```',
-      ].join('\n'), {
-        taskId,
-        existingTask: def,
-        taskDefinition: taskDef,
-      });
-    }
+    return res.reportError('RequestConflict', [
+      'taskId `{{taskId}}` already used by another task.',
+      'This could be the result of faulty idempotency!',
+    ].join('\n'), {taskId});
   }
 
-  // Track dependencies, if not already scheduled
-  if (task.state() === 'unscheduled') {
+  // if the task has no dependencies, schedule a run immediately
+  if (task.dependencies.length === 0) {
+    task.updateStatusWith(
+      await this.db.fns.schedule_task(taskId, 'scheduled'));
+  } else {
     // Track dependencies, adds a pending run if ready to run
     let err = await this.dependencyTracker.trackDependencies(task);
     // If we get an error here the task will be left in state = 'unscheduled',
@@ -776,9 +636,8 @@ builder.declare({
     'To reschedule a task previously resolved, use `rerunTask`.',
   ].join('\n'),
 }, async function(req, res) {
-  // Load Task entity
   let taskId = req.params.taskId;
-  let task = await this.Task.load({taskId: taskId}, true);
+  let task = await Task.get(this.db, taskId);
 
   // If task entity doesn't exists, we return ResourceNotFound
   if (!task) {
@@ -848,9 +707,8 @@ builder.declare({
     'the current task status.',
   ].join('\n'),
 }, async function(req, res) {
-  // Load Task entity
   let taskId = req.params.taskId;
-  let task = await this.Task.load({taskId: taskId}, true);
+  let task = await Task.get(this.db, taskId);
 
   // Report ResourceNotFound, if task entity doesn't exist
   if (!task) {
@@ -880,34 +738,8 @@ builder.declare({
     );
   }
 
-  // Ensure that we have a pending or running run
-  // If creating a new one, then reset retriesLeft
-  await task.modify((task) => {
-    // Don't modify if there already is an active run
-    let state = (_.last(task.runs) || {state: 'unscheduled'}).state;
-    if (state === 'pending' || state === 'running') {
-      return;
-    }
-
-    // Don't create more than MAX_RUNS_ALLOWED runs
-    if (task.runs.length >= MAX_RUNS_ALLOWED) {
-      return;
-    }
-
-    // Add a new run
-    task.runs.push({
-      state: 'pending',
-      reasonCreated: 'rerun',
-      scheduled: new Date().toJSON(),
-    });
-
-    // Calculate maximum number of retries allowed
-    let allowedRetries = MAX_RUNS_ALLOWED - task.runs.length;
-
-    // Reset retries left
-    task.retriesLeft = Math.min(task.retries, allowedRetries);
-    task.takenUntil = new Date(0);
-  });
+  task.updateStatusWith(
+    await this.db.fns.rerun_task(taskId));
 
   let state = task.state();
 
@@ -973,9 +805,8 @@ builder.declare({
     'return the current task status.',
   ].join('\n'),
 }, async function(req, res) {
-  // Load Task entity
   let taskId = req.params.taskId;
-  let task = await this.Task.load({taskId}, true);
+  let task = await Task.get(this.db, taskId);
 
   // Report ResourceNotFound, if task entity doesn't exist
   if (!task) {
@@ -1005,35 +836,8 @@ builder.declare({
   }
 
   // Modify the task
-  await task.modify(async (task) => {
-    let run = _.last(task.runs);
-    let state = (run || {state: 'unscheduled'}).state;
-
-    // If we have a pending task or running task, we cancel the ongoing run
-    if (state === 'pending' || state === 'running') {
-      run.state = 'exception';
-      run.reasonResolved = 'canceled';
-      run.resolved = new Date().toJSON();
-    }
-
-    // If the task wasn't scheduled, we'll add a run and resolved it canceled.
-    // This is almost equivalent to calling scheduleTask and cancelTask, but
-    // instead of setting `reasonCreated` to 'scheduled', we set it 'exception',
-    // because this run was made solely to communicate an exception.
-    if (state === 'unscheduled') {
-      let now = new Date().toJSON();
-      task.runs.push({
-        state: 'exception',
-        reasonCreated: 'exception',
-        reasonResolved: 'canceled',
-        scheduled: now,
-        resolved: now,
-      });
-    }
-
-    // Clear takenUntil
-    task.takenUntil = new Date(0);
-  });
+  task.updateStatusWith(
+    await this.db.fns.cancel_task(taskId, 'canceled'));
 
   // Get the last run, there should always be one
   let run = _.last(task.runs);
@@ -1201,8 +1005,7 @@ builder.declare({
   let workerGroup = req.body.workerGroup;
   let workerId = req.body.workerId;
 
-  // Load Task entity
-  let task = await this.Task.load({taskId}, true);
+  let task = await Task.get(this.db, taskId);
 
   // Handle cases where the task doesn't exist
   if (!task) {
@@ -1323,8 +1126,7 @@ builder.declare({
   let taskId = req.params.taskId;
   let runId = parseInt(req.params.runId, 10);
 
-  // Load Task entity
-  let task = await this.Task.load({taskId}, true);
+  let task = await Task.get(this.db, taskId);
 
   // Handle cases where the task doesn't exist
   if (!task) {
@@ -1371,32 +1173,12 @@ builder.declare({
   let takenUntil = new Date();
   takenUntil.setSeconds(takenUntil.getSeconds() + this.claimTimeout);
 
-  let msgPut = false;
-  await task.modify(async (task) => {
-    let run = task.runs[runId];
-
-    // No modifications required if there is no run or run isn't running
-    if (task.runs.length - 1 !== runId || run.state !== 'running') {
-      return;
-    }
-
-    // Don't update takenUntil if it's further into the future than the one
-    // we're proposing
-    if (new Date(run.takenUntil).getTime() >= takenUntil.getTime()) {
-      return;
-    }
-
-    // Put claim-expiration message in queue, if not already done, remember
-    // that the modifier given to task.modify may be called more than once!
-    if (!msgPut) {
-      await this.queueService.putClaimMessage(taskId, runId, takenUntil);
-      msgPut = true;
-    }
-
-    // Update takenUntil
-    run.takenUntil = takenUntil.toJSON();
-    task.takenUntil = takenUntil;
-  });
+  // Put claim-expiration message in queue, if not already done, before
+  // reclaiming.  If the reclaim DB operation fails, then this message
+  // will be ignored.
+  await this.queueService.putClaimMessage(taskId, runId, takenUntil);
+  task.updateStatusWith(
+    await this.db.fns.reclaim_task(taskId, runId, takenUntil));
 
   // Find the run that we (may) have modified
   run = task.runs[runId];
@@ -1448,8 +1230,7 @@ let resolveTask = async function(req, res, taskId, runId, target) {
   assert(target === 'completed' ||
          target === 'failed', 'Expected a valid target');
 
-  // Load Task entity
-  let task = await this.Task.load({taskId}, true);
+  let task = await Task.get(this.db, taskId);
 
   // Handle cases where the task doesn't exist
   if (!task) {
@@ -1490,22 +1271,8 @@ let resolveTask = async function(req, res, taskId, runId, target) {
     workerId: run.workerId,
   });
 
-  await task.modify((task) => {
-    let run = task.runs[runId];
-
-    // No modification if run isn't running or the run isn't last
-    if (task.runs.length - 1 !== runId || run.state !== 'running') {
-      return;
-    }
-
-    // Update run
-    run.state = target; // completed or failed
-    run.reasonResolved = target; // completed or failed
-    run.resolved = new Date().toJSON();
-
-    // Clear takenUntil on task
-    task.takenUntil = new Date(0);
-  });
+  task.updateStatusWith(
+    await this.db.fns.resolve_task(taskId, runId, target, target, null));
   // Find the run that we (may) have modified
   run = task.runs[runId];
 
@@ -1658,8 +1425,7 @@ builder.declare({
   let runId = parseInt(req.params.runId, 10);
   let reason = req.body.reason;
 
-  // Load Task entity
-  let task = await this.Task.load({taskId}, true);
+  let task = await Task.get(this.db, taskId);
 
   // Handle cases where the task doesn't exist
   if (!task) {
@@ -1689,41 +1455,16 @@ builder.declare({
     workerId: run.workerId,
   });
 
-  await task.modify((task) => {
-    let run = task.runs[runId];
+  // for "infra" issue, we will retry with a specific reason
+  let retryReason;
+  if (reason === 'worker-shutdown') {
+    retryReason = 'retry';
+  } else if (reason === 'intermittent-task') {
+    retryReason = 'task-retry';
+  }
 
-    // No modification if run isn't running or the run isn't last
-    if (task.runs.length - 1 !== runId || run.state !== 'running') {
-      return;
-    }
-
-    // Update run
-    run.state = 'exception';
-    run.reasonResolved = reason;
-    run.resolved = new Date().toJSON();
-
-    // Clear takenUntil on task
-    task.takenUntil = new Date(0);
-
-    // Add retry, if this is a worker-shutdown and we have retries left
-    if (reason === 'worker-shutdown' && task.retriesLeft > 0) {
-      task.retriesLeft -= 1;
-      task.runs.push({
-        state: 'pending',
-        reasonCreated: 'retry',
-        scheduled: new Date().toJSON(),
-      });
-    }
-    // Add task-retry, if this was an intermittent-task and we have retries
-    if (reason === 'intermittent-task' && task.retriesLeft > 0) {
-      task.retriesLeft -= 1;
-      task.runs.push({
-        state: 'pending',
-        reasonCreated: 'task-retry',
-        scheduled: new Date().toJSON(),
-      });
-    }
-  });
+  task.updateStatusWith(
+    await this.db.fns.resolve_task(taskId, runId, 'exception', reason, retryReason));
 
   // Find the run that we (may) have modified
   run = task.runs[runId];

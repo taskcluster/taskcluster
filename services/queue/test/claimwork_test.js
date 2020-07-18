@@ -109,7 +109,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
       workerGroup: 'my-worker-group-extended-extended',
       workerId: 'my-worker-extended-extended',
     });
-    assert(r1.tasks.length === 1, 'Expected a single task');
+    assert.equal(r1.tasks.length, 1, 'Expected a single task');
     assert(r1.tasks[0].status.taskId === taskId, 'Expected specific taskId');
     assert(r1.tasks[0].runId === 0, 'Expected runId = 0');
     let takenUntil = new Date(r1.tasks[0].takenUntil);
@@ -170,7 +170,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
       workerGroup: 'my-worker-group-extended-extended',
       workerId: 'my-worker-extended-extended',
     });
-    assert(r1.tasks.length === 1, 'Expected a single task');
+    assert.equal(r1.tasks.length, 1, 'Expected a single task');
     assert(r1.tasks[0].status.taskId === taskId, 'Expected specific taskId');
     assert(r1.tasks[0].runId === 0, 'Expected runId = 0');
     let takenUntil = new Date(r1.tasks[0].takenUntil);
@@ -290,7 +290,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
       workerId: 'my-worker-extended-extended',
       tasks: 2,
     });
-    assert(r1.tasks.length === 1, 'Expected a single task');
+    assert.equal(r1.tasks.length, 1, 'Expected a single task');
     assert(r1.tasks[0].status.taskId === taskId, 'Expected specific taskId');
     assert(r1.tasks[0].runId === 0, 'Expected runId = 0');
 

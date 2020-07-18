@@ -185,13 +185,7 @@ queue:
       cpu: 10m
     expireTaskGroups:
       cpu: 10m
-    expireTaskGroupMembers:
-      cpu: 10m
-    expireTaskGroupSizes:
-      cpu: 10m
     expireTaskDependency:
-      cpu: 10m
-    expireTaskRequirement:
       cpu: 10m
     expireQueueMessages:
       cpu: 10m

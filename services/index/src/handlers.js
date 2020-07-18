@@ -10,20 +10,17 @@ const {consume} = require('taskcluster-lib-pulse');
  *
  * options:
  * {
- *   IndexedTask:        // data.IndexedTask
- *   Namespace:          // data.Namespace
  *   queue:              // taskcluster.Queue
  *   queueEvents:        // taskcluster.QueueEvents instance
  *   credentials:        // Pulse credentials
  *   queueName:          // Queue name (optional)
  *   routePrefix:        // Routing-key prefix for "route.<routePrefix>.#"
  *   monitor:            // base.monitor({...})
+ *   db:                 // db instance
  * }
  */
 let Handlers = function(options) {
   // Validate options
-  assert(options.IndexedTask, 'A subclass of data.IndexedTask is required');
-  assert(options.Namespace, 'A subclass of data.Namespace is required');
   assert(options.queue, 'An instance of taskcluster.Queue is required');
   assert(options.queueEvents instanceof taskcluster.QueueEvents,
     'An instance of taskcluster.QueueEvents is required');
@@ -31,8 +28,6 @@ let Handlers = function(options) {
   assert(options.routePrefix, 'routePrefix is required');
   assert(options.monitor, 'monitor is required for statistics');
   // Store options on this for use in event handlers
-  this.IndexedTask = options.IndexedTask;
-  this.Namespace = options.Namespace;
   this.queue = options.queue;
   this.queueEvents = options.queueEvents;
   this.credentials = options.credentials;
@@ -43,6 +38,7 @@ let Handlers = function(options) {
   // Binding for completed tasks
   this.binding = options.queueEvents.taskCompleted(`route.${options.routePrefix}.#`);
   this.pulseClient = options.pulseClient;
+  this.db = options.db;
 };
 
 /** Setup handlers and start listening */
@@ -129,12 +125,12 @@ Handlers.prototype.completed = function(message) {
 
     // Insert everything into the index
     return Promise.all(namespaces.map(function(namespace) {
-      return helpers.insertTask(namespace, {
+      return helpers.taskUtils.insertTask(that.db, namespace, {
         taskId: message.payload.status.taskId,
         data: options.data,
         expires: expires,
         rank: options.rank,
-      }, that);
+      });
     })).then(function() {
       debug('Indexed: %s', message.payload.status.taskId);
     });

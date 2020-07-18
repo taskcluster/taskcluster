@@ -10,13 +10,7 @@ defaults:
     privateArtifactBucket:        !env PRIVATE_ARTIFACT_BUCKET
 
     # Azure table name for tasks, artifact meta-data
-    taskTableName:                'queue_tasks_entities'
     artifactTableName:            'queue_artifacts_entities'
-    taskGroupTableName:           'queue_task_groups_entities'
-    taskGroupMemberTableName:     'queue_task_group_members_entities'
-    taskGroupActiveSetTableName:  'queue_task_group_active_sets_entities'
-    taskRequirementTableName:     'queue_task_requirement_entities'
-    taskDependencyTableName:      'queue_task_dependency_entities'
     workerTableName:              'queue_worker_entities'
     workerTypeTableName:          'queue_worker_type_entities'
     provisionerTableName:         'queue_provisioner_entities'

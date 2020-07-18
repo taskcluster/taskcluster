@@ -1,0 +1,133 @@
+version: 24
+methods:
+  delete_queue_artifact:
+    description: |-
+      Delete a queue artifact.
+    mode: write
+    serviceName: queue
+    args: task_id_in text, run_id_in integer, name_in text
+    returns: void
+    body: |-
+      begin
+        delete from queue_artifacts
+        where
+          queue_artifacts.task_id = task_id_in and
+          queue_artifacts.run_id = run_id_in and
+          queue_artifacts.name = name_in;
+      end
+  create_queue_artifact:
+    description: |-
+      Create a new artifact. Raises UNIQUE_VIOLATION if the artifact already exists.
+      Returns the newly created artifact.
+    mode: write
+    serviceName: queue
+    args: task_id_in text, run_id_in integer, name_in text, storage_type_in text, content_type_in text, details_in jsonb, present_in boolean, expires_in timestamptz
+    returns: table(task_id text, run_id integer, name text, storage_type text, content_type text, details jsonb, present boolean, expires timestamptz)
+    body: |-
+      begin
+        return query insert
+          into queue_artifacts (task_id, run_id, name, storage_type, content_type, details, present, expires)
+          values (task_id_in, run_id_in, name_in, storage_type_in, content_type_in, details_in, present_in, expires_in)
+        returning queue_artifacts.task_id, queue_artifacts.run_id, queue_artifacts.name, queue_artifacts.storage_type, queue_artifacts.content_type, queue_artifacts.details, queue_artifacts.present, queue_artifacts.expires;
+      end
+  update_queue_artifact:
+    serviceName: queue
+    description: |-
+      Update a queue artifact.
+      Returns the up-to-date artifact row that have the same task id, run id, and name.
+    mode: write
+    args: task_id_in text, run_id_in integer, name_in text, details_in jsonb, expires_in timestamptz
+    returns: table(task_id text, run_id integer, name text, storage_type text, content_type text, details jsonb, present boolean, expires timestamptz)
+    body: |-
+      declare
+        updated_row queue_artifacts%ROWTYPE;
+      begin
+        update queue_artifacts
+        set (details, expires) = (
+          coalesce(details_in, queue_artifacts.details),
+          coalesce(expires_in, queue_artifacts.expires)
+        )
+        where
+          queue_artifacts.task_id = task_id_in and
+          queue_artifacts.run_id = run_id_in and
+          queue_artifacts.name = name_in
+        returning
+          queue_artifacts.task_id,
+          queue_artifacts.run_id,
+          queue_artifacts.name,
+          queue_artifacts.storage_type,
+          queue_artifacts.content_type,
+          queue_artifacts.details,
+          queue_artifacts.present,
+          queue_artifacts.expires
+        into updated_row;
+        if found then
+          return query select
+            updated_row.task_id,
+            updated_row.run_id,
+            updated_row.name,
+            updated_row.storage_type,
+            updated_row.content_type,
+            updated_row.details,
+            updated_row.present,
+            updated_row.expires
+          return;
+        else
+          raise exception 'no such row' using errcode = 'P0002';
+        end if;
+      end
+  get_queue_artifact:
+    description: |-
+      Get a queue artifact. The returned table will have one or zero row.
+    mode: read
+    serviceName: queue
+    args: task_id_in text, run_id_in integer, name_in text
+    returns: table(task_id text, run_id integer, name text, storage_type text, content_type text, details jsonb, present boolean, expires timestamptz)
+    body: |-
+      begin
+        return query select
+          queue_artifacts.task_id,
+          queue_artifacts.run_id,
+          queue_artifacts.name,
+          queue_artifacts.storage_type,
+          queue_artifacts.content_type,
+          queue_artifacts.details,
+          queue_artifacts.present,
+          queue_artifacts.expires
+        from queue_artifacts
+        where
+          queue_artifacts.task_id = task_id_in and
+          queue_artifacts.run_id = run_id_in and
+          queue_artifacts.name = name_in;
+      end
+  get_queue_artifacts:
+    description: |-
+      Get existing queue artifacts filtered by the optional arguments,
+      ordered by the `task_id`, `run_id`, and `name`.
+      If the pagination arguments are both NULL, all rows are returned.
+      Otherwise, page_size rows are returned at offset page_offset.
+    mode: read
+    serviceName: queue
+    args: task_id_in text, run_id_in integer, expires_in timestamptz, page_size_in integer, page_offset_in integer
+    returns: table(task_id text, run_id integer, name text, storage_type text, content_type text, details jsonb, present boolean, expires timestamptz)
+    body: |-
+      begin
+        return query
+        select
+          queue_artifacts.task_id,
+          queue_artifacts.run_id,
+          queue_artifacts.name,
+          queue_artifacts.storage_type,
+          queue_artifacts.content_type,
+          queue_artifacts.details,
+          queue_artifacts.present,
+          queue_artifacts.expires
+        from queue_artifacts
+        where
+          (queue_artifacts.task_id = task_id_in or task_id_in is null) and
+          (queue_artifacts.run_id = run_id_in or run_id_in is null) and
+          (queue_artifacts.expires < expires_in or expires_in is null)
+        order by queue_artifacts.task_id, queue_artifacts.run_id, queue_artifacts.name
+        limit get_page_limit(page_size_in)
+        offset get_page_offset(page_offset_in);
+      end

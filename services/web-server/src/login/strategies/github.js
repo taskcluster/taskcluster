@@ -10,7 +10,7 @@ const { encode, decode } = require('../../utils/codec');
 const GithubClient = require('../clients/GithubClient');
 
 module.exports = class Github {
-  constructor({ name, cfg, GithubAccessToken, monitor }) {
+  constructor({ name, cfg, monitor, db }) {
     const strategyCfg = cfg.login.strategies[name];
 
     assert(strategyCfg.clientId, `${name}.clientId is required`);
@@ -19,15 +19,17 @@ module.exports = class Github {
     Object.assign(this, strategyCfg);
 
     this.identityProviderId = 'github';
-    this.GithubAccessToken = GithubAccessToken;
     this.monitor = monitor;
+    this.db = db;
   }
 
   async getUser({ username, userId }) {
     const user = new User();
-    const githubEntry = await this.GithubAccessToken.load({ userId: String(userId) }, true);
+    const encryptedAccessTokenAsTable = await this.db.fns.load_github_access_token(
+      String(userId),
+    );
 
-    if (!githubEntry) {
+    if (encryptedAccessTokenAsTable.length === 0) {
       this.monitor.debug('Github user id could not be found in the database.', {
         userId,
       });
@@ -35,7 +37,13 @@ module.exports = class Github {
       return;
     }
 
-    const githubClient = new GithubClient({ accessToken: githubEntry.accessToken });
+    const accessToken = this.db.decrypt(
+      {
+        value: encryptedAccessTokenAsTable[0]["encrypted_access_token"],
+      },
+    ).toString('utf8');
+
+    const githubClient = new GithubClient({ accessToken });
     const [githubErr, githubUser] = await tryCatch(githubClient.userFromUsername(username));
 
     // 404 means the user doesn't exist; otherwise, throw the error up the chain
@@ -62,15 +70,23 @@ module.exports = class Github {
   }
 
   async addRoles(username, userId, user) {
-    const githubEntry = await this.GithubAccessToken.load({ userId: String(userId) }, true);
+    const encryptedAccessTokenAsTable = await this.db.fns.load_github_access_token(
+      String(userId),
+    );
 
-    if (!githubEntry) {
+    if (encryptedAccessTokenAsTable.length === 0) {
       this.monitor.debug(`Github user id ${userId} could not be found in the database.`);
 
       return;
     }
 
-    const githubClient = new GithubClient({ accessToken: githubEntry.accessToken });
+    const accessToken = this.db.decrypt(
+      {
+        value: encryptedAccessTokenAsTable[0]["encrypted_access_token"],
+      },
+    ).toString('utf8');
+
+    const githubClient = new GithubClient({ accessToken });
     const [teamsErr, teams] = await tryCatch(githubClient.listTeams());
 
     if (teamsErr) {
@@ -127,10 +143,10 @@ module.exports = class Github {
           scope: 'repo',
         },
         async (accessToken, refreshToken, profile, next) => {
-          await this.GithubAccessToken.create({
-            userId: profile.id,
-            accessToken,
-          }, true);
+          await this.db.fns.add_github_access_token(
+            profile.id,
+            this.db.encrypt({ value: Buffer.from(accessToken, 'utf8') }),
+          );
           const [userErr, user] = await tryCatch(
             this.getUser({ username: profile.username, userId: Number(profile.id) }),
           );

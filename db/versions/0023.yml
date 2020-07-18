@@ -1,0 +1,293 @@
+version: 23
+migrationScript: 0023-migration.sql
+downgradeScript: 0023-downgrade.sql
+methods:
+  taskcluster_github_builds_entities_load:
+    description: See taskcluster-lib-entities
+    mode: read
+    serviceName: github
+    args: partition_key text, row_key text
+    returns: table (partition_key_out text, row_key_out text, value jsonb, version integer, etag uuid)
+    body: |-
+      begin
+       return query
+       select
+          taskcluster_github_builds_entities_load.partition_key,
+          'taskGroupId' as row_key,
+          jsonb_build_object(
+            'PartitionKey', taskcluster_github_builds_entities_load.partition_key,
+            'RowKey', 'taskGroupId',
+            'organization', organization,
+            'repository', repository,
+            'sha', sha,
+            'taskGroupId', task_group_id,
+            'state', state,
+            'created', created,
+            'updated', updated,
+            'installationId', installation_id,
+            'eventType', event_type,
+            'eventId', event_id) as value,
+          1 as version,
+          github_builds.etag as etag
+      from github_builds
+      where
+        github_builds.task_group_id = decode_string_key(taskcluster_github_builds_entities_load.partition_key);
+      end
+  taskcluster_github_builds_entities_create:
+    description: See taskcluster-lib-entities
+    serviceName: github
+    mode: write
+    args: pk text, rk text, properties jsonb, overwrite boolean, version integer
+    returns: uuid
+    body: |-
+      declare
+        new_row github_builds%ROWTYPE;
+      begin
+        select
+          (properties ->> 'organization')::text as organization,
+          (properties ->> 'repository')::text as repository,
+          (properties ->> 'sha')::text as sha,
+          (properties ->> 'taskGroupId')::text as task_group_id,
+          (properties ->> 'state')::text as state,
+          (properties ->> 'created')::timestamptz as created,
+          (properties ->> 'updated')::timestamptz as updated,
+          (properties ->> 'installationId')::integer as installation_id,
+          (properties ->> 'eventType')::text as event_type,
+          (properties ->> 'eventId')::text as event_id,
+          public.gen_random_uuid() as etag
+        into new_row;
+        if overwrite then
+          raise exception 'overwrite not implemented';
+        else
+          execute 'insert into github_builds select $1.*' using new_row;
+        end if;
+        return new_row.etag;
+      end
+  taskcluster_github_builds_entities_scan:
+    description: See taskcluster-lib-entities
+    mode: read
+    serviceName: github
+    args: pk text, rk text, condition text, size integer, page integer
+    returns: table (partition_key text, row_key text, value jsonb, version integer, etag uuid)
+    body: |-
+      declare
+      begin
+        if not condition is null then
+          raise exception 'condition not supported';
+        end if;
+        return query
+          select
+            encode_string_key(task_group_id),
+            'taskGroupId' as row_key,
+            jsonb_build_object(
+              'PartitionKey', encode_string_key(task_group_id),
+              'RowKey', 'taskGroupId',
+              'organization', organization,
+              'repository', repository,
+              'sha', sha,
+              'taskGroupId', task_group_id,
+              'state', state,
+              'created', created,
+              'updated', updated,
+              'installationId', installation_id,
+              'eventType', event_type,
+              'eventId', event_id) as value,
+              1 as version,
+          github_builds.etag as etag
+          from github_builds
+          where
+            partition_key is null or
+            task_group_id = decode_string_key(partition_key)
+          order by task_group_id
+          limit case
+            when (size is not null and size > 0) then size + 1
+            else null
+          end
+          offset case
+            when (page is not null and page > 0) then page
+            else 0
+          end;
+      end
+  taskcluster_github_builds_entities_remove:
+    serviceName: github
+    description: See taskcluster-lib-entities
+    mode: write
+    args: partition_key text, row_key text
+    returns: table (etag uuid)
+    body: |-
+      begin
+        delete
+        from github_builds
+        where
+          github_builds.task_group_id = decode_string_key(partition_key);
+        -- tc-gh does not care if the row existed
+        return query select gen_random_uuid() as etag;
+      end
+  taskcluster_github_builds_entities_modify:
+    serviceName: github
+    description: See taskcluster-lib-entities
+    mode: write
+    args: partition_key text, row_key text, properties jsonb, version integer, old_etag uuid
+    returns: table (etag uuid)
+    body: |-
+      declare
+        new_row github_builds%ROWTYPE;
+      begin
+        select
+          (properties ->> 'organization')::text as organization,
+          (properties ->> 'repository')::text as repository,
+          (properties ->> 'sha')::text as sha,
+          (properties ->> 'taskGroupId')::text as task_group_id,
+          (properties ->> 'state')::text as state,
+          (properties ->> 'created')::timestamptz as created,
+          (properties ->> 'updated')::timestamptz as updated,
+          (properties ->> 'installationId')::integer as installation_id,
+          (properties ->> 'eventType')::text as event_type,
+          (properties ->> 'eventId')::text as event_id,
+          public.gen_random_uuid() as etag
+        into new_row;
+        update github_builds
+        set (
+          organization,
+          repository,
+          sha,
+          task_group_id,
+          state,
+          created,
+          updated,
+          installation_id,
+          event_type,
+          event_id,
+          etag
+        ) = (
+          new_row.organization,
+          new_row.repository,
+          new_row.sha,
+          new_row.task_group_id,
+          new_row.state,
+          new_row.created,
+          new_row.updated,
+          new_row.installation_id,
+          new_row.event_type,
+          new_row.event_id,
+          new_row.etag
+        )
+        where
+          github_builds.task_group_id = decode_string_key(taskcluster_github_builds_entities_modify.partition_key) and
+          github_builds.etag = taskcluster_github_builds_entities_modify.old_etag;
+
+        if found then
+          return query select new_row.etag;
+          return;
+        end if;
+
+        perform github_builds.etag from github_builds
+        where github_builds.task_group_id = decode_string_key(taskcluster_github_builds_entities_modify.partition_key);
+
+        if found then
+          raise exception 'unsuccessful update' using errcode = 'P0004';
+        else
+          raise exception 'no such row' using errcode = 'P0002';
+        end if;
+      end
+  create_github_build:
+    description: |-
+      Create a new github build.  Raises UNIQUE_VIOLATION if the pool already exists.
+    mode: write
+    serviceName: github
+    args: organization_in text, repository_in text, sha_in text, task_group_id_in text, state_in text, created_in timestamptz, updated_in timestamptz, installation_id_in integer, event_type_in text, event_id_in text
+    returns: void
+    body: |-
+      begin
+        insert
+          into github_builds (organization, repository, sha, task_group_id, state, created, updated, installation_id, event_type, event_id)
+          values (organization_in, repository_in, sha_in, task_group_id_in, state_in, created_in, updated_in, installation_id_in, event_type_in, event_id_in);
+      end
+  get_github_build:
+    description: |-
+      Get a github build. The returned table will have one or zero rows.
+    mode: read
+    serviceName: github
+    args: task_group_id_in text
+    returns: table (organization text, repository text, sha text, task_group_id text, state text, created timestamptz, updated timestamptz, installation_id integer, event_type text, event_id text, etag uuid)
+    body: |-
+      begin
+        return query
+        select
+          github_builds.organization,
+          github_builds.repository,
+          github_builds.sha,
+          github_builds.task_group_id,
+          github_builds.state,
+          github_builds.created,
+          github_builds.updated,
+          github_builds.installation_id,
+          github_builds.event_type,
+          github_builds.event_id,
+          github_builds.etag
+        from github_builds
+        where github_builds.task_group_id = task_group_id_in;
+      end
+  get_github_builds:
+    description: |-
+      Get github builds. 
+    mode: read
+    serviceName: github
+    args: page_size_in integer, page_offset_in integer, organization_in text, repository_in text, sha_in text
+    returns: table (organization text, repository text, sha text, task_group_id text, state text, created timestamptz, updated timestamptz, installation_id integer, event_type text, event_id text, etag uuid)
+    body: |-
+      begin
+        return query
+        select
+          github_builds.organization,
+          github_builds.repository,
+          github_builds.sha,
+          github_builds.task_group_id,
+          github_builds.state,
+          github_builds.created,
+          github_builds.updated,
+          github_builds.installation_id,
+          github_builds.event_type,
+          github_builds.event_id,
+          github_builds.etag
+        from github_builds
+        where
+          (organization_in is null or github_builds.organization = organization_in) and
+          (repository_in is null or github_builds.repository = repository_in) and
+          (sha_in is null or github_builds.sha = sha_in)
+        order by github_builds.updated asc
+        limit get_page_limit(page_size_in)
+        offset get_page_offset(page_offset_in);
+      end
+  delete_github_build:
+    description: |-
+      Delete a github build.
+    mode: write
+    serviceName: github
+    args: task_group_id_in text
+    returns: void
+    body: |-
+      begin
+        delete
+        from github_builds
+        where github_builds.task_group_id = task_group_id_in;
+      end
+  set_github_build_state:
+    description: |-
+      Only update the state of a build and update the `updated` timestamp
+    mode: write
+    serviceName: github
+    args: task_group_id_in text, state_in text
+    returns: void
+    body: |-
+      begin
+        update github_builds
+        set (state, updated, etag) = (
+          state_in,
+          now(),
+          public.gen_random_uuid()
+        ) where github_builds.task_group_id = task_group_id_in;
+        if not found then
+          raise exception 'no such row' using errcode = 'P0002';
+        end if;
+      end

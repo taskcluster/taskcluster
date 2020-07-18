@@ -3,22 +3,22 @@
     "auth": {
       "tables": {
         "clients_entities": "write",
-        "roles_entities": "write"
+        "roles": "write"
       }
     },
     "github": {
       "tables": {
+        "github_builds": "write",
         "taskcluster_check_runs_entities": "write",
         "taskcluster_checks_to_tasks_entities": "write",
-        "taskcluster_github_builds_entities": "write",
         "taskcluster_integration_owners_entities": "write"
       }
     },
     "hooks": {
       "tables": {
         "hooks_entities": "write",
-        "last_fire_3_entities": "write",
-        "queues_entities": "write"
+        "hooks_last_fires": "write",
+        "hooks_queues": "write"
       }
     },
     "index": {
@@ -58,7 +58,7 @@
       "tables": {
         "access_token_table_entities": "write",
         "authorization_codes_table_entities": "write",
-        "github_access_token_table_entities": "write",
+        "github_access_tokens": "write",
         "session_storage_table_entities": "write"
       }
     },
@@ -114,12 +114,22 @@
       "notification_address": "text not null",
       "notification_type": "text not null"
     },
-    "github_access_token_table_entities": {
-      "etag": "uuid",
-      "partition_key": "text not null",
-      "row_key": "text not null",
-      "value": "jsonb not null",
-      "version": "integer not null"
+    "github_access_tokens": {
+      "encrypted_access_token": "jsonb not null",
+      "user_id": "text not null"
+    },
+    "github_builds": {
+      "created": "timestamp with time zone not null",
+      "etag": "uuid not null",
+      "event_id": "text not null",
+      "event_type": "text not null",
+      "installation_id": "integer not null",
+      "organization": "text not null",
+      "repository": "text not null",
+      "sha": "text not null",
+      "state": "text not null",
+      "task_group_id": "text not null",
+      "updated": "timestamp with time zone not null"
     },
     "hooks_entities": {
       "etag": "uuid",
@@ -127,6 +137,23 @@
       "row_key": "text not null",
       "value": "jsonb not null",
       "version": "integer not null"
+    },
+    "hooks_last_fires": {
+      "error": "text not null",
+      "etag": "uuid not null",
+      "fired_by": "text not null",
+      "hook_group_id": "text not null",
+      "hook_id": "text not null",
+      "result": "text not null",
+      "task_create_time": "timestamp with time zone not null",
+      "task_id": "text not null"
+    },
+    "hooks_queues": {
+      "bindings": "jsonb not null",
+      "etag": "uuid not null",
+      "hook_group_id": "text not null",
+      "hook_id": "text not null",
+      "queue_name": "text not null"
     },
     "index_namespaces": {
       "etag": "uuid not null",
@@ -142,13 +169,6 @@
       "namespace": "text not null",
       "rank": "integer not null",
       "task_id": "text not null"
-    },
-    "last_fire_3_entities": {
-      "etag": "uuid",
-      "partition_key": "text not null",
-      "row_key": "text not null",
-      "value": "jsonb not null",
-      "version": "integer not null"
     },
     "queue_artifacts": {
       "content_type": "text not null",
@@ -182,19 +202,13 @@
       "value": "jsonb not null",
       "version": "integer not null"
     },
-    "queues_entities": {
-      "etag": "uuid",
-      "partition_key": "text not null",
-      "row_key": "text not null",
-      "value": "jsonb not null",
-      "version": "integer not null"
-    },
-    "roles_entities": {
-      "etag": "uuid",
-      "partition_key": "text not null",
-      "row_key": "text not null",
-      "value": "jsonb not null",
-      "version": "integer not null"
+    "roles": {
+      "created": "timestamp with time zone not null",
+      "description": "text not null",
+      "etag": "uuid not null",
+      "last_modified": "timestamp with time zone not null",
+      "role_id": "text not null",
+      "scopes": "jsonb not null"
     },
     "secrets_entities": {
       "etag": "uuid",
@@ -232,13 +246,6 @@
       "version": "integer not null"
     },
     "taskcluster_checks_to_tasks_entities": {
-      "etag": "uuid",
-      "partition_key": "text not null",
-      "row_key": "text not null",
-      "value": "jsonb not null",
-      "version": "integer not null"
-    },
-    "taskcluster_github_builds_entities": {
       "etag": "uuid",
       "partition_key": "text not null",
       "row_key": "text not null",
@@ -3051,6 +3058,749 @@
       },
       "migrationScript": "begin\n  -- this migration combines queue_task_dependency_entries (which contains all task\n  -- dependencies) and queue_task_requirement_entities (which contains\n  -- as-yet-unsatisfied dependencies) into a single table with a `satisfied`\n  -- column.  If we consider a dependency to be from \"dependent\" to \"required\", then\n  -- task_dependency_entities has\n  --   partition_key = required_task_id\n  --   row_key = dependent_task_id\n  -- task_requirement_entities has\n  --   partition key = dependent_task_id\n  --   row_key = required_task_id\n  lock table queue_task_dependency_entities;\n  lock table queue_task_requirement_entities;\n\n  raise log 'TIMING start task_dependencies create table .. as select';\n  create table task_dependencies\n  as\n    select\n      deps.dependent_task_id,\n      deps.required_task_id,\n      deps.requires,\n      reqs.dependent_task_id is null as satisfied,\n      deps.expires,\n      deps.etag as etag\n    from (\n      select\n        partition_key as required_task_id,\n        row_key as dependent_task_id,\n        ('all-' || (value ->> 'require'))::task_requires as requires,\n        (value ->> 'expires')::timestamptz as expires,\n        etag\n      from queue_task_dependency_entities\n    ) as deps\n    left join (\n      select\n        partition_key as dependent_task_id,\n        row_key as required_task_id,\n        etag\n      from queue_task_requirement_entities\n    ) as reqs\n    on deps.dependent_task_id = reqs.dependent_task_id and\n      deps.required_task_id = reqs.required_task_id;\n\n  raise log 'TIMING start task_dependencies set not null';\n  alter table task_dependencies\n    alter column dependent_task_id set not null,\n    alter column required_task_id set not null,\n    alter column requires set not null,\n    alter column satisfied set not null,\n    alter column expires set not null,\n    alter column etag set not null,\n    alter column etag set default public.gen_random_uuid();\n\n  -- the task itself contains an array of dependent tasks, so querying by\n  -- dependent_task_id is unusual, so primary key begins with required_task_id.\n  raise log 'TIMING start task_dependencies add primary key';\n  alter table task_dependencies add primary key (required_task_id, dependent_task_id);\n\n  -- queue's isBlocked indexes by dependent_task_id, looking only for unsatisfied\n  -- entries.  This index then takes the place of the queue_task_requirement_entities\n  -- table and that these queries can be handled by accessing only the index.\n  raise log 'TIMING start task_dependencies add task_dependencies_dependent_task_id_idx';\n  create index task_dependencies_dependent_task_id_idx on task_dependencies (dependent_task_id)\n    where not satisfied;\n\n  raise log 'TIMING start task_dependencies set permissions';\n  revoke select, insert, update, delete on queue_task_dependency_entities from $db_user_prefix$_queue;\n  drop table queue_task_dependency_entities;\n  revoke select, insert, update, delete on queue_task_requirement_entities from $db_user_prefix$_queue;\n  drop table queue_task_requirement_entities;\n\n  grant select, insert, update, delete on task_dependencies to $db_user_prefix$_queue;\nend\n",
       "version": 22
+    },
+    {
+      "downgradeScript": "begin\n  -- lock this table before reading from it, to prevent loss of concurrent\n  -- updates when the table is dropped.\n  lock table github_builds;\n\n  create table taskcluster_github_builds_entities(\n    partition_key text, row_key text,\n    value jsonb not null,\n    version integer not null,\n    etag uuid default public.gen_random_uuid());\n  alter table taskcluster_github_builds_entities add primary key (partition_key, row_key);\n\n  insert into taskcluster_github_builds_entities\n  select\n    encode_string_key(task_group_id) as partition_key,\n    'taskGroupId' as row_key,\n    jsonb_build_object(\n      'PartitionKey', encode_string_key(task_group_id),\n      'RowKey', 'taskGroupId',\n      'organization', organization,\n      'repository', repository,\n      'sha', sha,\n      'taskGroupId', task_group_id,\n      'state', state,\n      'created', created,\n      'updated', updated,\n      'installationId', installation_id,\n      'eventType', event_type,\n      'eventId', event_id) as value,\n    1 as version,\n    etag\n  from github_builds;\n\n  revoke select, insert, update, delete on github_builds from $db_user_prefix$_github;\n  drop table github_builds;\n  grant select, insert, update, delete on taskcluster_github_builds_entities to $db_user_prefix$_github;\nend",
+      "methods": {
+        "create_github_build": {
+          "args": "organization_in text, repository_in text, sha_in text, task_group_id_in text, state_in text, created_in timestamptz, updated_in timestamptz, installation_id_in integer, event_type_in text, event_id_in text",
+          "body": "begin\n  insert\n    into github_builds (organization, repository, sha, task_group_id, state, created, updated, installation_id, event_type, event_id)\n    values (organization_in, repository_in, sha_in, task_group_id_in, state_in, created_in, updated_in, installation_id_in, event_type_in, event_id_in);\nend",
+          "deprecated": false,
+          "description": "Create a new github build.  Raises UNIQUE_VIOLATION if the pool already exists.",
+          "mode": "write",
+          "returns": "void",
+          "serviceName": "github"
+        },
+        "delete_github_build": {
+          "args": "task_group_id_in text",
+          "body": "begin\n  delete\n  from github_builds\n  where github_builds.task_group_id = task_group_id_in;\nend",
+          "deprecated": false,
+          "description": "Delete a github build.",
+          "mode": "write",
+          "returns": "void",
+          "serviceName": "github"
+        },
+        "get_github_build": {
+          "args": "task_group_id_in text",
+          "body": "begin\n  return query\n  select\n    github_builds.organization,\n    github_builds.repository,\n    github_builds.sha,\n    github_builds.task_group_id,\n    github_builds.state,\n    github_builds.created,\n    github_builds.updated,\n    github_builds.installation_id,\n    github_builds.event_type,\n    github_builds.event_id,\n    github_builds.etag\n  from github_builds\n  where github_builds.task_group_id = task_group_id_in;\nend",
+          "deprecated": false,
+          "description": "Get a github build. The returned table will have one or zero rows.",
+          "mode": "read",
+          "returns": "table (organization text, repository text, sha text, task_group_id text, state text, created timestamptz, updated timestamptz, installation_id integer, event_type text, event_id text, etag uuid)",
+          "serviceName": "github"
+        },
+        "get_github_builds": {
+          "args": "page_size_in integer, page_offset_in integer, organization_in text, repository_in text, sha_in text",
+          "body": "begin\n  return query\n  select\n    github_builds.organization,\n    github_builds.repository,\n    github_builds.sha,\n    github_builds.task_group_id,\n    github_builds.state,\n    github_builds.created,\n    github_builds.updated,\n    github_builds.installation_id,\n    github_builds.event_type,\n    github_builds.event_id,\n    github_builds.etag\n  from github_builds\n  where\n    (organization_in is null or github_builds.organization = organization_in) and\n    (repository_in is null or github_builds.repository = repository_in) and\n    (sha_in is null or github_builds.sha = sha_in)\n  order by github_builds.updated asc\n  limit get_page_limit(page_size_in)\n  offset get_page_offset(page_offset_in);\nend",
+          "deprecated": false,
+          "description": "Get github builds. ",
+          "mode": "read",
+          "returns": "table (organization text, repository text, sha text, task_group_id text, state text, created timestamptz, updated timestamptz, installation_id integer, event_type text, event_id text, etag uuid)",
+          "serviceName": "github"
+        },
+        "set_github_build_state": {
+          "args": "task_group_id_in text, state_in text",
+          "body": "begin\n  update github_builds\n  set (state, updated, etag) = (\n    state_in,\n    now(),\n    public.gen_random_uuid()\n  ) where github_builds.task_group_id = task_group_id_in;\n  if not found then\n    raise exception 'no such row' using errcode = 'P0002';\n  end if;\nend",
+          "deprecated": false,
+          "description": "Only update the state of a build and update the `updated` timestamp",
+          "mode": "write",
+          "returns": "void",
+          "serviceName": "github"
+        },
+        "taskcluster_github_builds_entities_create": {
+          "args": "pk text, rk text, properties jsonb, overwrite boolean, version integer",
+          "body": "declare\n  new_row github_builds%ROWTYPE;\nbegin\n  select\n    (properties ->> 'organization')::text as organization,\n    (properties ->> 'repository')::text as repository,\n    (properties ->> 'sha')::text as sha,\n    (properties ->> 'taskGroupId')::text as task_group_id,\n    (properties ->> 'state')::text as state,\n    (properties ->> 'created')::timestamptz as created,\n    (properties ->> 'updated')::timestamptz as updated,\n    (properties ->> 'installationId')::integer as installation_id,\n    (properties ->> 'eventType')::text as event_type,\n    (properties ->> 'eventId')::text as event_id,\n    public.gen_random_uuid() as etag\n  into new_row;\n  if overwrite then\n    raise exception 'overwrite not implemented';\n  else\n    execute 'insert into github_builds select $1.*' using new_row;\n  end if;\n  return new_row.etag;\nend",
+          "deprecated": false,
+          "description": "See taskcluster-lib-entities",
+          "mode": "write",
+          "returns": "uuid",
+          "serviceName": "github"
+        },
+        "taskcluster_github_builds_entities_load": {
+          "args": "partition_key text, row_key text",
+          "body": "begin\n return query\n select\n    taskcluster_github_builds_entities_load.partition_key,\n    'taskGroupId' as row_key,\n    jsonb_build_object(\n      'PartitionKey', taskcluster_github_builds_entities_load.partition_key,\n      'RowKey', 'taskGroupId',\n      'organization', organization,\n      'repository', repository,\n      'sha', sha,\n      'taskGroupId', task_group_id,\n      'state', state,\n      'created', created,\n      'updated', updated,\n      'installationId', installation_id,\n      'eventType', event_type,\n      'eventId', event_id) as value,\n    1 as version,\n    github_builds.etag as etag\nfrom github_builds\nwhere\n  github_builds.task_group_id = decode_string_key(taskcluster_github_builds_entities_load.partition_key);\nend",
+          "deprecated": false,
+          "description": "See taskcluster-lib-entities",
+          "mode": "read",
+          "returns": "table (partition_key_out text, row_key_out text, value jsonb, version integer, etag uuid)",
+          "serviceName": "github"
+        },
+        "taskcluster_github_builds_entities_modify": {
+          "args": "partition_key text, row_key text, properties jsonb, version integer, old_etag uuid",
+          "body": "declare\n  new_row github_builds%ROWTYPE;\nbegin\n  select\n    (properties ->> 'organization')::text as organization,\n    (properties ->> 'repository')::text as repository,\n    (properties ->> 'sha')::text as sha,\n    (properties ->> 'taskGroupId')::text as task_group_id,\n    (properties ->> 'state')::text as state,\n    (properties ->> 'created')::timestamptz as created,\n    (properties ->> 'updated')::timestamptz as updated,\n    (properties ->> 'installationId')::integer as installation_id,\n    (properties ->> 'eventType')::text as event_type,\n    (properties ->> 'eventId')::text as event_id,\n    public.gen_random_uuid() as etag\n  into new_row;\n  update github_builds\n  set (\n    organization,\n    repository,\n    sha,\n    task_group_id,\n    state,\n    created,\n    updated,\n    installation_id,\n    event_type,\n    event_id,\n    etag\n  ) = (\n    new_row.organization,\n    new_row.repository,\n    new_row.sha,\n    new_row.task_group_id,\n    new_row.state,\n    new_row.created,\n    new_row.updated,\n    new_row.installation_id,\n    new_row.event_type,\n    new_row.event_id,\n    new_row.etag\n  )\n  where\n    github_builds.task_group_id = decode_string_key(taskcluster_github_builds_entities_modify.partition_key) and\n    github_builds.etag = taskcluster_github_builds_entities_modify.old_etag;\n\n  if found then\n    return query select new_row.etag;\n    return;\n  end if;\n\n  perform github_builds.etag from github_builds\n  where github_builds.task_group_id = decode_string_key(taskcluster_github_builds_entities_modify.partition_key);\n\n  if found then\n    raise exception 'unsuccessful update' using errcode = 'P0004';\n  else\n    raise exception 'no such row' using errcode = 'P0002';\n  end if;\nend",
+          "deprecated": false,
+          "description": "See taskcluster-lib-entities",
+          "mode": "write",
+          "returns": "table (etag uuid)",
+          "serviceName": "github"
+        },
+        "taskcluster_github_builds_entities_remove": {
+          "args": "partition_key text, row_key text",
+          "body": "begin\n  delete\n  from github_builds\n  where\n    github_builds.task_group_id = decode_string_key(partition_key);\n  -- tc-gh does not care if the row existed\n  return query select gen_random_uuid() as etag;\nend",
+          "deprecated": false,
+          "description": "See taskcluster-lib-entities",
+          "mode": "write",
+          "returns": "table (etag uuid)",
+          "serviceName": "github"
+        },
+        "taskcluster_github_builds_entities_scan": {
+          "args": "pk text, rk text, condition text, size integer, page integer",
+          "body": "declare\nbegin\n  if not condition is null then\n    raise exception 'condition not supported';\n  end if;\n  return query\n    select\n      encode_string_key(task_group_id),\n      'taskGroupId' as row_key,\n      jsonb_build_object(\n        'PartitionKey', encode_string_key(task_group_id),\n        'RowKey', 'taskGroupId',\n        'organization', organization,\n        'repository', repository,\n        'sha', sha,\n        'taskGroupId', task_group_id,\n        'state', state,\n        'created', created,\n        'updated', updated,\n        'installationId', installation_id,\n        'eventType', event_type,\n        'eventId', event_id) as value,\n        1 as version,\n    github_builds.etag as etag\n    from github_builds\n    where\n      partition_key is null or\n      task_group_id = decode_string_key(partition_key)\n    order by task_group_id\n    limit case\n      when (size is not null and size > 0) then size + 1\n      else null\n    end\n    offset case\n      when (page is not null and page > 0) then page\n      else 0\n    end;\nend",
+          "deprecated": false,
+          "description": "See taskcluster-lib-entities",
+          "mode": "read",
+          "returns": "table (partition_key text, row_key text, value jsonb, version integer, etag uuid)",
+          "serviceName": "github"
+        }
+      },
+      "migrationScript": "begin\n\n  -- lock this table before reading from it, to prevent loss of concurrent\n  -- updates when the table is dropped.  Note that this may lead to concurrent\n  -- updates failing; the important thing is that they not succeed without\n  -- taking effect.  Failed updates will be retried.\n  lock table taskcluster_github_builds_entities;\n\n  create table github_builds\n  as\n    select\n      (value ->> 'organization')::text as organization,\n      (value ->> 'repository')::text as repository,\n      (value ->> 'sha')::text as sha,\n      (value ->> 'taskGroupId')::text as task_group_id,\n      (value ->> 'state')::text as state,\n      (value ->> 'created')::timestamptz as created,\n      (value ->> 'updated')::timestamptz as updated,\n      (value ->> 'installationId')::integer as installation_id,\n      (value ->> 'eventType')::text as event_type,\n      (value ->> 'eventId')::text as event_id,\n      etag\n    from taskcluster_github_builds_entities;\n  alter table github_builds add primary key (task_group_id);\n  alter table github_builds\n    alter column organization set not null,\n    alter column repository set not null,\n    alter column sha set not null,\n    alter column task_group_id set not null,\n    alter column state set not null,\n    alter column created set not null,\n    alter column updated set not null,\n    alter column installation_id set not null,\n    alter column event_type set not null,\n    alter column event_id set not null,\n    alter column etag set not null,\n    alter column etag set default public.gen_random_uuid();\n  create index on github_builds (organization, repository, sha);\n\n  revoke select, insert, update, delete on taskcluster_github_builds_entities from $db_user_prefix$_github;\n  drop table taskcluster_github_builds_entities;\n  grant select, insert, update, delete on github_builds to $db_user_prefix$_github;\nend",
+      "version": 23
+    },
+    {
+      "methods": {
+        "create_queue_artifact": {
+          "args": "task_id_in text, run_id_in integer, name_in text, storage_type_in text, content_type_in text, details_in jsonb, present_in boolean, expires_in timestamptz",
+          "body": "begin\n  return query insert\n    into queue_artifacts (task_id, run_id, name, storage_type, content_type, details, present, expires)\n    values (task_id_in, run_id_in, name_in, storage_type_in, content_type_in, details_in, present_in, expires_in)\n  returning queue_artifacts.task_id, queue_artifacts.run_id, queue_artifacts.name, queue_artifacts.storage_type, queue_artifacts.content_type, queue_artifacts.details, queue_artifacts.present, queue_artifacts.expires;\nend",
+          "deprecated": false,
+          "description": "Create a new artifact. Raises UNIQUE_VIOLATION if the artifact already exists.\nReturns the newly created artifact.",
+          "mode": "write",
+          "returns": "table(task_id text, run_id integer, name text, storage_type text, content_type text, details jsonb, present boolean, expires timestamptz)",
+          "serviceName": "queue"
+        },
+        "delete_queue_artifact": {
+          "args": "task_id_in text, run_id_in integer, name_in text",
+          "body": "begin\n  delete from queue_artifacts\n  where\n    queue_artifacts.task_id = task_id_in and\n    queue_artifacts.run_id = run_id_in and\n    queue_artifacts.name = name_in;\nend",
+          "deprecated": false,
+          "description": "Delete a queue artifact.",
+          "mode": "write",
+          "returns": "void",
+          "serviceName": "queue"
+        },
+        "get_queue_artifact": {
+          "args": "task_id_in text, run_id_in integer, name_in text",
+          "body": "begin\n  return query select\n    queue_artifacts.task_id,\n    queue_artifacts.run_id,\n    queue_artifacts.name,\n    queue_artifacts.storage_type,\n    queue_artifacts.content_type,\n    queue_artifacts.details,\n    queue_artifacts.present,\n    queue_artifacts.expires\n  from queue_artifacts\n  where\n    queue_artifacts.task_id = task_id_in and\n    queue_artifacts.run_id = run_id_in and\n    queue_artifacts.name = name_in;\nend",
+          "deprecated": false,
+          "description": "Get a queue artifact. The returned table will have one or zero row.",
+          "mode": "read",
+          "returns": "table(task_id text, run_id integer, name text, storage_type text, content_type text, details jsonb, present boolean, expires timestamptz)",
+          "serviceName": "queue"
+        },
+        "get_queue_artifacts": {
+          "args": "task_id_in text, run_id_in integer, expires_in timestamptz, page_size_in integer, page_offset_in integer",
+          "body": "begin\n  return query\n  select\n    queue_artifacts.task_id,\n    queue_artifacts.run_id,\n    queue_artifacts.name,\n    queue_artifacts.storage_type,\n    queue_artifacts.content_type,\n    queue_artifacts.details,\n    queue_artifacts.present,\n    queue_artifacts.expires\n  from queue_artifacts\n  where\n    (queue_artifacts.task_id = task_id_in or task_id_in is null) and\n    (queue_artifacts.run_id = run_id_in or run_id_in is null) and\n    (queue_artifacts.expires < expires_in or expires_in is null)\n  order by queue_artifacts.task_id, queue_artifacts.run_id, queue_artifacts.name\n  limit get_page_limit(page_size_in)\n  offset get_page_offset(page_offset_in);\nend",
+          "deprecated": false,
+          "description": "Get existing queue artifacts filtered by the optional arguments,\nordered by the `task_id`, `run_id`, and `name`.\nIf the pagination arguments are both NULL, all rows are returned.\nOtherwise, page_size rows are returned at offset page_offset.",
+          "mode": "read",
+          "returns": "table(task_id text, run_id integer, name text, storage_type text, content_type text, details jsonb, present boolean, expires timestamptz)",
+          "serviceName": "queue"
+        },
+        "update_queue_artifact": {
+          "args": "task_id_in text, run_id_in integer, name_in text, details_in jsonb, expires_in timestamptz",
+          "body": "declare\n  updated_row queue_artifacts%ROWTYPE;\nbegin\n  update queue_artifacts\n  set (details, expires) = (\n    coalesce(details_in, queue_artifacts.details),\n    coalesce(expires_in, queue_artifacts.expires)\n  )\n  where\n    queue_artifacts.task_id = task_id_in and\n    queue_artifacts.run_id = run_id_in and\n    queue_artifacts.name = name_in\n  returning\n    queue_artifacts.task_id,\n    queue_artifacts.run_id,\n    queue_artifacts.name,\n    queue_artifacts.storage_type,\n    queue_artifacts.content_type,\n    queue_artifacts.details,\n    queue_artifacts.present,\n    queue_artifacts.expires\n  into updated_row;\n  if found then\n    return query select\n      updated_row.task_id,\n      updated_row.run_id,\n      updated_row.name,\n      updated_row.storage_type,\n      updated_row.content_type,\n      updated_row.details,\n      updated_row.present,\n      updated_row.expires\n    return;\n  else\n    raise exception 'no such row' using errcode = 'P0002';\n  end if;\nend",
+          "deprecated": false,
+          "description": "Update a queue artifact.\nReturns the up-to-date artifact row that have the same task id, run id, and name.",
+          "mode": "write",
+          "returns": "table(task_id text, run_id integer, name text, storage_type text, content_type text, details jsonb, present boolean, expires timestamptz)",
+          "serviceName": "queue"
+        }
+      },
+      "version": 24
+    },
+    {
+      "downgradeScript": "begin\n  -- lock this table before reading from it, to prevent loss of concurrent\n  -- updates when the table is dropped.\n  lock table hooks_last_fires;\n\n  create table last_fire_3_entities(\n    partition_key text, row_key text,\n    value jsonb not null,\n    version integer not null,\n    etag uuid default public.gen_random_uuid());\n  alter table last_fire_3_entities add primary key (partition_key, row_key);\n\n  insert into last_fire_3_entities\n  select\n    encode_composite_key(hook_group_id, hook_id) as partition_key,\n    encode_string_key(task_id) as row_key,\n    jsonb_build_object(\n      'PartitionKey', encode_composite_key(hook_group_id, hook_id),\n      'RowKey', encode_string_key(task_id),\n      'hookGroupId', hook_group_id,\n      'hookId', hook_id,\n      'firedBy', fired_by,\n      'taskId', task_id,\n      'taskCreateTime', task_create_time,\n      'result', result,\n      'error', error) as value,\n    1 as version,\n    etag\n  from hooks_last_fires;\n\n  revoke select, insert, update, delete on hooks_last_fires from $db_user_prefix$_hooks;\n  drop table hooks_last_fires;\n  grant select, insert, update, delete on last_fire_3_entities to $db_user_prefix$_hooks;\nend\n",
+      "methods": {
+        "create_last_fire": {
+          "args": "hook_group_id_in text, hook_id_in text, fired_by_in text, task_id_in text, task_create_time_in timestamptz, result_in text, error_in text",
+          "body": "declare\n  new_etag uuid := public.gen_random_uuid();\nbegin\n  insert\n    into hooks_last_fires (hook_group_id, hook_id, fired_by, task_id, task_create_time, result, error, etag)\n    values (hook_group_id_in, hook_id_in, fired_by_in, task_id_in, task_create_time_in, result_in, error_in, new_etag);\n\n    return new_etag;\nend",
+          "deprecated": false,
+          "description": "Create a new hook last fire.  Raises UNIQUE_VIOLATION if the hook already exists.",
+          "mode": "write",
+          "returns": "uuid",
+          "serviceName": "hooks"
+        },
+        "delete_last_fires": {
+          "args": "hook_group_id_in text, hook_id_in text",
+          "body": "begin\n  delete from hooks_last_fires\n  where\n    hooks_last_fires.hook_group_id = hook_group_id_in and\n    hooks_last_fires.hook_id = hook_id_in;\nend",
+          "deprecated": false,
+          "description": "Delete last fires that match a given `hook_group_id` and `hook_id`.",
+          "mode": "write",
+          "returns": "void",
+          "serviceName": "hooks"
+        },
+        "expire_last_fires": {
+          "args": "",
+          "body": "declare\n  count integer;\nbegin\n  delete from hooks_last_fires where hooks_last_fires.task_create_time < now() - interval '1 year';\n  if found then\n    get diagnostics count = row_count;\n    return count;\n  end if;\n  return 0;\nend",
+          "deprecated": false,
+          "description": "Expire last fires that are older than a year.\nReturns a count of rows that have been deleted.",
+          "mode": "write",
+          "returns": "integer",
+          "serviceName": "hooks"
+        },
+        "get_last_fire": {
+          "args": "hook_group_id_in text, hook_id_in text, task_id_in text",
+          "body": "begin\n  return query\n  select\n    hooks_last_fires.hook_group_id,\n    hooks_last_fires.hook_id,\n    hooks_last_fires.fired_by,\n    hooks_last_fires.task_id,\n    hooks_last_fires.task_create_time,\n    hooks_last_fires.result,\n    hooks_last_fires.error,\n    hooks_last_fires.etag\n  from hooks_last_fires\n  where\n    hooks_last_fires.hook_group_id = hook_group_id_in and\n    hooks_last_fires.hook_id = hook_id_in and\n    hooks_last_fires.task_id = task_id_in;\nend",
+          "deprecated": false,
+          "description": "Get a hook last fire.",
+          "mode": "read",
+          "returns": "table(hook_group_id text, hook_id text, fired_by text, task_id text, task_create_time timestamptz, result text, error text, etag uuid)",
+          "serviceName": "hooks"
+        },
+        "get_last_fires": {
+          "args": "hook_group_id_in text, hook_id_in text, page_size_in integer, page_offset_in integer",
+          "body": "begin\n  return query\n  select\n    hooks_last_fires.hook_group_id,\n    hooks_last_fires.hook_id,\n    hooks_last_fires.fired_by,\n    hooks_last_fires.task_id,\n    hooks_last_fires.task_create_time,\n    hooks_last_fires.result,\n    hooks_last_fires.error,\n    hooks_last_fires.etag\n  from hooks_last_fires\n  where\n    hooks_last_fires.hook_group_id = hook_group_id_in and\n    hooks_last_fires.hook_id = hook_id_in\n  order by hook_group_id, hook_id, task_id\n  limit get_page_limit(page_size_in)\n  offset get_page_offset(page_offset_in);\nend",
+          "deprecated": false,
+          "description": "Get hooks last fires filtered by the `hook_group_id` and `hook_id` arguments,\nordered by `hook_group_id`, `hook_id`, and  `worker_id`.\nIf the pagination arguments are both NULL, all rows are returned.\nOtherwise, page_size rows are returned at offset page_offset.",
+          "mode": "read",
+          "returns": "table(hook_group_id text, hook_id text, fired_by text, task_id text, task_create_time timestamptz, result text, error text, etag uuid)",
+          "serviceName": "hooks"
+        },
+        "last_fire_3_entities_create": {
+          "args": "pk text, rk text, properties jsonb, overwrite boolean, version integer",
+          "body": "begin\nend",
+          "deprecated": false,
+          "description": "See taskcluster-lib-entities",
+          "mode": "write",
+          "returns": "uuid",
+          "serviceName": "hooks"
+        },
+        "last_fire_3_entities_load": {
+          "args": "partition_key text, row_key text",
+          "body": "begin\nend",
+          "deprecated": false,
+          "description": "See taskcluster-lib-entities",
+          "mode": "read",
+          "returns": "table (partition_key_out text, row_key_out text, value jsonb, version integer, etag uuid)",
+          "serviceName": "hooks"
+        },
+        "last_fire_3_entities_modify": {
+          "args": "partition_key text, row_key text, properties jsonb, version integer, old_etag uuid",
+          "body": "begin\nend",
+          "deprecated": false,
+          "description": "See taskcluster-lib-entities",
+          "mode": "write",
+          "returns": "table (etag uuid)",
+          "serviceName": "hooks"
+        },
+        "last_fire_3_entities_remove": {
+          "args": "partition_key text, row_key text",
+          "body": "begin\nend",
+          "deprecated": false,
+          "description": "See taskcluster-lib-entities",
+          "mode": "write",
+          "returns": "table (etag uuid)",
+          "serviceName": "hooks"
+        },
+        "last_fire_3_entities_scan": {
+          "args": "pk text, rk text, condition text, size integer, page integer",
+          "body": "begin\nend",
+          "deprecated": false,
+          "description": "See taskcluster-lib-entities",
+          "mode": "read",
+          "returns": "table (partition_key text, row_key text, value jsonb, version integer, etag uuid)",
+          "serviceName": "hooks"
+        }
+      },
+      "migrationScript": "begin\n  -- lock this table before reading from it, to prevent loss of concurrent\n  -- updates when the table is dropped.  Note that this may lead to concurrent\n  -- updates failing; the important thing is that they not succeed without\n  -- taking effect.  Failed updates will be retried.\n  lock table last_fire_3_entities;\n\n  create table hooks_last_fires\n  as\n    select\n      (value ->> 'hookGroupId')::text as hook_group_id,\n      (value ->> 'hookId')::text as hook_id,\n      (value ->> 'firedBy')::text as fired_by,\n      (value ->> 'taskId')::text as task_id,\n      (value ->> 'taskCreateTime')::timestamptz as task_create_time,\n      (value ->> 'result')::text as result,\n      (value ->> 'error')::text as error,\n      etag\n    from last_fire_3_entities;\n  alter table hooks_last_fires add primary key (hook_group_id, hook_id, task_id);\n  alter table hooks_last_fires\n    alter column hook_group_id set not null,\n    alter column hook_id set not null,\n    alter column fired_by set not null,\n    alter column task_id set not null,\n    alter column task_create_time set not null,\n    alter column result set not null,\n    alter column error set not null,\n    alter column etag set not null,\n    alter column etag set default public.gen_random_uuid();\n\n  revoke select, insert, update, delete on last_fire_3_entities from $db_user_prefix$_hooks;\n  drop table last_fire_3_entities;\n  grant select, insert, update, delete on hooks_last_fires to $db_user_prefix$_hooks;\n\nend\n",
+      "version": 25
+    },
+    {
+      "downgradeScript": "begin\n  -- lock this table before reading from it, to prevent loss of concurrent\n  -- updates when the table is dropped.\n  lock table hooks_queues;\n\n  create table queues_entities(\n    partition_key text, row_key text,\n    value jsonb not null,\n    version integer not null,\n    etag uuid default public.gen_random_uuid());\n  alter table queues_entities add primary key (partition_key, row_key);\n\n  insert into queues_entities\n  select\n    encode_string_key(hook_group_id) as partition_key,\n    encode_string_key(hook_id) as row_key,\n    entity_buf_encode(\n        jsonb_build_object(\n          'PartitionKey', encode_string_key(hook_group_id),\n          'RowKey', encode_string_key(hook_id),\n          'hookGroupId', hook_group_id,\n          'hookId', hook_id,\n          'queueName', queue_name),\n        'bindings', bindings::text) as value,\n    1 as version,\n    etag\n  from hooks_queues;\n\n  revoke select, insert, update, delete on hooks_queues from $db_user_prefix$_hooks;\n  drop table hooks_queues;\n  grant select, insert, update, delete on queues_entities to $db_user_prefix$_hooks;\nend\n",
+      "methods": {
+        "create_hooks_queue": {
+          "args": "hook_group_id_in text, hook_id_in text, queue_name_in text, bindings_in jsonb",
+          "body": "declare\n  new_etag uuid := public.gen_random_uuid();\nbegin\n  insert\n    into hooks_queues (hook_group_id, hook_id, queue_name, bindings, etag)\n    values (hook_group_id_in, hook_id_in, queue_name_in, bindings_in, new_etag);\n\n    return new_etag;\nend",
+          "deprecated": false,
+          "description": "Create a new hooks queue.  Raises UNIQUE_VIOLATION if the hook already exists.",
+          "mode": "write",
+          "returns": "uuid",
+          "serviceName": "hooks"
+        },
+        "delete_hooks_queue": {
+          "args": "hook_group_id_in text, hook_id_in text",
+          "body": "begin\n  delete from hooks_queues\n  where\n    hooks_queues.hook_group_id = hook_group_id_in and\n    hooks_queues.hook_id = hook_id_in;\nend",
+          "deprecated": false,
+          "description": "Delete a hooks queue.",
+          "mode": "write",
+          "returns": "void",
+          "serviceName": "hooks"
+        },
+        "get_hooks_queues": {
+          "args": "page_size_in integer, page_offset_in integer",
+          "body": "begin\n  return query\n  select\n    hooks_queues.hook_group_id,\n    hooks_queues.hook_id,\n    hooks_queues.queue_name,\n    hooks_queues.bindings,\n    hooks_queues.etag\n  from hooks_queues\n  order by hook_group_id, hook_id\n  limit get_page_limit(page_size_in)\n  offset get_page_offset(page_offset_in);\nend",
+          "deprecated": false,
+          "description": "Get hooks queues ordered by `hook_group_id` and `hook_id`.\nIf the pagination arguments are both NULL, all rows are returned.\nOtherwise, page_size rows are returned at offset page_offset.",
+          "mode": "read",
+          "returns": "table(hook_group_id text, hook_id text, queue_name text, bindings jsonb, etag uuid)",
+          "serviceName": "hooks"
+        },
+        "queues_entities_create": {
+          "args": "pk text, rk text, properties jsonb, overwrite boolean, version integer",
+          "body": "declare\n  new_row hooks_queues%ROWTYPE;\nbegin\n  select\n    (properties ->> 'hookGroupId')::text,\n    (properties ->> 'hookId')::text,\n    (properties ->> 'queueName')::text,\n    entity_buf_decode(properties, 'bindings')::jsonb,\n    public.gen_random_uuid()\n  into new_row;\n  if overwrite then\n    raise exception 'overwrite not implemented';\n  else\n    execute 'insert into hooks_queues select $1.*' using new_row;\n  end if;\n  return new_row.etag;\nend",
+          "deprecated": false,
+          "description": "See taskcluster-lib-entities",
+          "mode": "write",
+          "returns": "uuid",
+          "serviceName": "hooks"
+        },
+        "queues_entities_load": {
+          "args": "partition_key text, row_key text",
+          "body": "begin\n  return query\n  select\n    queues_entities_load.partition_key,\n    queues_entities_load.row_key,\n    entity_buf_encode(\n      jsonb_build_object(\n        'PartitionKey', encode_string_key(hook_group_id),\n        'RowKey', encode_string_key(hook_id),\n        'hookGroupId', hook_group_id,\n        'hookId', hook_id,\n        'queueName', queue_name),\n      'bindings', bindings::text) as value,\n    1 as version,\n    hooks_queues.etag as etag\n  from hooks_queues\n  where\n    hooks_queues.hook_group_id = decode_string_key(queues_entities_load.partition_key) and hooks_queues.hook_id = decode_string_key(queues_entities_load.row_key);\nend",
+          "deprecated": false,
+          "description": "See taskcluster-lib-entities",
+          "mode": "read",
+          "returns": "table (partition_key_out text, row_key_out text, value jsonb, version integer, etag uuid)",
+          "serviceName": "hooks"
+        },
+        "queues_entities_modify": {
+          "args": "partition_key text, row_key text, properties jsonb, version integer, old_etag uuid",
+          "body": "declare\n  new_row hooks_queues%ROWTYPE;\nbegin\n  select\n    (properties ->> 'hookGroupId')::text,\n    (properties ->> 'hookId')::text,\n    (properties ->> 'queueName')::text,\n    entity_buf_decode(properties, 'bindings')::jsonb,\n    public.gen_random_uuid() as etag\n  into new_row;\n  update hooks_queues\n  set (\n    queue_name,\n    bindings,\n    etag\n  ) = (\n    new_row.queue_name,\n    new_row.bindings,\n    new_row.etag\n  )\n  where\n    hooks_queues.hook_group_id = decode_string_key(queues_entities_modify.partition_key) and\n    hooks_queues.hook_id = decode_string_key(queues_entities_modify.row_key) and\n    hooks_queues.etag = queues_entities_modify.old_etag;\n  if found then\n    return query select new_row.etag;\n    return;\n  end if;\n  perform hooks_queues.etag from hooks_queues\n  where\n    hooks_queues.hook_group_id = decode_string_key(queues_entities_modify.partition_key) and\n    hooks_queues.hook_id = decode_string_key(queues_entities_modify.row_key);\n  if found then\n    raise exception 'unsuccessful update' using errcode = 'P0004';\n  else\n    raise exception 'no such row' using errcode = 'P0002';\n  end if;\nend",
+          "deprecated": false,
+          "description": "See taskcluster-lib-entities",
+          "mode": "write",
+          "returns": "table (etag uuid)",
+          "serviceName": "hooks"
+        },
+        "queues_entities_remove": {
+          "args": "partition_key text, row_key text",
+          "body": "begin\n  return query delete from hooks_queues\n  where\n    hooks_queues.hook_group_id = decode_string_key(queues_entities_remove.partition_key) and\n    hooks_queues.hook_id = decode_string_key(queues_entities_remove.row_key)\n  returning hooks_queues.etag;\nend",
+          "deprecated": false,
+          "description": "See taskcluster-lib-entities",
+          "mode": "write",
+          "returns": "table (etag uuid)",
+          "serviceName": "hooks"
+        },
+        "queues_entities_scan": {
+          "args": "pk text, rk text, condition text, size integer, page integer",
+          "body": "declare\n  cond text[];\n  exp_cond_operator text;\n  exp_cond_operand timestamptz;\n  partition_key_var text;\n  row_key_var text;\nbegin\n  if not condition is null then\n    cond := regexp_split_to_array(condition, '\\s+');\n    exp_cond_operator := cond[4];\n    exp_cond_operand := cond[5] :: timestamptz;\n\n    return query select\n      encode_string_key(hook_group_id) as partition_key,\n      encode_string_key(hook_id) as row_key,\n      entity_buf_encode(\n        jsonb_build_object(\n          'PartitionKey', encode_string_key(hook_group_id),\n          'RowKey', encode_string_key(hook_id),\n          'hookGroupId', hook_group_id,\n          'hookId', hook_id,\n          'queueName', queue_name),\n        'bindings', bindings::text) as value,\n      1 as version,\n      hooks_queues.etag as etag from hooks_queues\n    where\n      (queues_entities_scan.pk is null or decode_string_key(queues_entities_scan.pk) = hook_group_id) and\n      (queues_entities_scan.rk is null or decode_string_key(queues_entities_scan.rk) = hook_id) and\n      case\n        when exp_cond_operator = '=' then expires = exp_cond_operand\n        when exp_cond_operator = '<' then expires < exp_cond_operand\n        when exp_cond_operator = '<=' then expires <= exp_cond_operand\n        when exp_cond_operator = '>' then expires > exp_cond_operand\n        when exp_cond_operator = '>=' then expires >= exp_cond_operand\n        else expires <> exp_cond_operand\n      end\n    order by hooks_queues.hook_group_id, hooks_queues.hook_id\n    limit case\n      when (size is not null and size > 0) then size + 1\n      else null\n    end\n    offset case\n      when (page is not null and page > 0) then page\n      else 0\n    end;\n  else\n    return query select\n      encode_string_key(hook_group_id) as partition_key,\n      encode_string_key(hook_id) as row_key,\n      entity_buf_encode(\n        jsonb_build_object(\n          'PartitionKey', encode_string_key(hook_group_id),\n          'RowKey', encode_string_key(hook_id),\n          'hookGroupId', hook_group_id,\n          'hookId', hook_id,\n          'queueName', queue_name),\n        'bindings', bindings::text) as value,\n      1 as version,\n      hooks_queues.etag as etag from hooks_queues\n    where\n      (queues_entities_scan.pk is null or decode_string_key(queues_entities_scan.pk) = hook_group_id) and\n      (queues_entities_scan.rk is null or decode_string_key(queues_entities_scan.rk) = hook_id)\n    order by hooks_queues.hook_group_id, hooks_queues.hook_id\n    limit case\n      when (size is not null and size > 0) then size + 1\n      else null\n    end\n    offset case\n      when (size is not null and size > 0 and page is not null and page > 0) then page\n      else 0\n    end;\n  end if;\nend",
+          "deprecated": false,
+          "description": "See taskcluster-lib-entities",
+          "mode": "read",
+          "returns": "table (partition_key text, row_key text, value jsonb, version integer, etag uuid)",
+          "serviceName": "hooks"
+        },
+        "update_hooks_queue_bindings": {
+          "args": "hook_group_id_in text, hook_id_in text, bindings_in jsonb",
+          "body": "declare\n  new_etag uuid := public.gen_random_uuid();\nbegin\n  return query update hooks_queues\n  set\n    bindings = bindings_in,\n    etag = new_etag\n  where\n    hooks_queues.hook_group_id = hook_group_id_in and\n    hooks_queues.hook_id = hook_id_in\n  returning\n    hooks_queues.hook_group_id,\n    hooks_queues.hook_id,\n    hooks_queues.queue_name,\n    hooks_queues.bindings,\n    hooks_queues.etag;\nend",
+          "deprecated": false,
+          "description": "Update bindings of a hooks queue. If no such queue exists,\nthe return value is an empty set.",
+          "mode": "write",
+          "returns": "table(hook_group_id text, hook_id text, queue_name text, bindings jsonb, etag uuid)",
+          "serviceName": "hooks"
+        }
+      },
+      "migrationScript": "begin\n  -- lock this table before reading from it, to prevent loss of concurrent\n  -- updates when the table is dropped.  Note that this may lead to concurrent\n  -- updates failing; the important thing is that they not succeed without\n  -- taking effect.  Failed updates will be retried.\n  lock table queues_entities;\n\n  create table hooks_queues\n  as\n    select\n      (value ->> 'hookGroupId')::text as hook_group_id,\n      (value ->> 'hookId')::text as hook_id,\n      (value ->> 'queueName')::text as queue_name,\n      entity_buf_decode(value, 'bindings')::jsonb as bindings,\n      etag\n    from queues_entities;\n  alter table hooks_queues add primary key (hook_group_id, hook_id);\n  alter table hooks_queues\n    alter column hook_group_id set not null,\n    alter column hook_id set not null,\n    alter column queue_name set not null,\n    alter column bindings set not null,\n    alter column etag set not null,\n    alter column etag set default public.gen_random_uuid();\n\n  revoke select, insert, update, delete on queues_entities from $db_user_prefix$_hooks;\n  drop table queues_entities;\n  grant select, insert, update, delete on hooks_queues to $db_user_prefix$_hooks;\nend\n",
+      "version": 26
+    },
+    {
+      "downgradeScript": "begin\n  lock table roles;\n\n  raise log 'TIMING start roles_entities create table';\n  create table roles_entities(\n    partition_key text, row_key text,\n    value jsonb not null,\n    version integer not null,\n    etag uuid default public.gen_random_uuid());\n\n  raise log 'TIMING start roles_entities primary key';\n  alter table roles_entities add primary key (partition_key, row_key);\n\n  raise log 'TIMING start roles_entities insert';\n  perform 1 from roles;\n  if found then\n    insert into roles_entities\n    select\n      'role' as partition_key,\n      'role' as row_key,\n      entity_buf_encode(\n        jsonb_build_object(\n          'PartitionKey', 'roles',\n          'RowKey', 'roles'),\n        'blob', jsonb_agg(\n          jsonb_build_object(\n            'roleId', role_id,\n            'scopes', scopes,\n            'created', to_js_iso8601(created::text),\n            'description', description,\n            'lastModified', to_js_iso8601(last_modified::text))\n        )::text) as value,\n      1 as version,\n      -- use an aggregate function to select the etag (all rows have the same etag)\n      min(etag::text)::uuid as etag\n    from roles;\n  end if;\n\n  raise log 'TIMING start roles_entities permissions';\n  revoke select, insert, update, delete on roles from $db_user_prefix$_auth;\n  drop table roles;\n\n  grant select, insert, update, delete on roles_entities to $db_user_prefix$_auth;\n\n  drop function to_js_iso8601(ts_in text);\nend\n\n",
+      "methods": {
+        "get_roles": {
+          "args": "",
+          "body": "begin\n  return query\n  select \n    roles.role_id,\n    roles.scopes,\n    roles.created,\n    roles.description,\n    roles.last_modified,\n    roles.etag\n  from roles\n  order by role_id;\nend",
+          "deprecated": false,
+          "description": "Get the full set of roles.  Each result row has an etag, but all such\netags will be the same, representing the etag for the most recent\nmodification of the table.  Results are sorted by role_id.",
+          "mode": "read",
+          "returns": "table (role_id text, scopes jsonb, created timestamptz, description text, last_modified timestamptz, etag uuid)",
+          "serviceName": "auth"
+        },
+        "modify_roles": {
+          "args": "roles_in jsonb, old_etag_in uuid",
+          "body": "declare\n  new_etag uuid := public.gen_random_uuid();\nbegin\n  -- lock the table, avoiding risk of conflicts when inserting after\n  -- finding no rows\n  lock table roles;\n\n  delete from roles where etag = old_etag_in;\n  if not found then\n    -- delete may have done nothing because the table is empty (which is\n    -- ok) or because the etag did not match (which is an unsuccessful\n    -- update)\n    perform role_id from roles limit 1;\n    if found then\n      raise exception 'unsuccessful update' using errcode = 'P0004';\n    end if;\n  end if;\n\n  insert into roles\n  select \n    (role ->> 'role_id') as role_id,\n    (role ->> 'scopes')::jsonb as scopes,\n    (role ->> 'created')::timestamptz as created,\n    (role ->> 'description') as description,\n    (role ->> 'last_modified')::timestamptz as last_modified,\n    new_etag as etag\n  from jsonb_array_elements(roles_in) as role;\nend",
+          "deprecated": false,
+          "description": "Replace the current set of roles entirely with the given set of roles, if the current etag matches the existing etag. \nThe role objects are specified with underscore spelling (`role_id`).\nIf the etag has changed, this returns P0004 signalling that the caller should fetch a fresh set of roles and try again.\nIf there are no existing roles, then the old etag is not used.",
+          "mode": "write",
+          "returns": "void",
+          "serviceName": "auth"
+        },
+        "roles_entities_create": {
+          "args": "pk text, rk text, properties jsonb, overwrite boolean, version integer",
+          "body": "declare\n  new_etag uuid = gen_random_uuid();\nbegin\n  -- lock the table, avoiding risk of conflicts when inserting after\n  -- finding no rows\n  lock table roles;\n\n  perform 1 from roles limit 1;\n  if found then\n    raise exception 'roles already exist' using errcode = '23505'; -- unique violation\n  end if;\n\n  insert into roles\n  select \n    (role ->> 'roleId') as role_id,\n    (role ->> 'scopes')::jsonb as scopes,\n    (role ->> 'created')::timestamptz as created,\n    (role ->> 'description') as description,\n    (role ->> 'lastModified')::timestamptz as last_modified,\n    new_etag as etag\n  from jsonb_array_elements(entity_buf_decode(properties, 'blob')::jsonb) as role;\n\n  return new_etag;\nend",
+          "deprecated": false,
+          "description": "See taskcluster-lib-entities",
+          "mode": "write",
+          "returns": "uuid",
+          "serviceName": "auth"
+        },
+        "roles_entities_load": {
+          "args": "partition_key text, row_key text",
+          "body": "begin\n  -- if no roles, return canned \"empty\" value, as the below expression will return NULL\n  perform 1 from roles limit 1;\n  if not found then\n    return query\n    select\n      'role',\n      'role',\n      entity_buf_encode(\n        jsonb_build_object(\n          'PartitionKey', 'role',\n          'RowKey', 'role'),\n        'blob', '[]'),\n      1,\n      gen_random_uuid();\n  end if;\n\n  return query\n  select \n    'role',\n    'role',\n    entity_buf_encode(\n      jsonb_build_object(\n        'PartitionKey', 'role',\n        'RowKey', 'role'),\n      'blob', jsonb_agg(\n        jsonb_build_object(\n          'roleId', role_id,\n          'scopes', scopes,\n          'created', to_js_iso8601(created::text),\n          'description', description,\n          'lastModified', to_js_iso8601(last_modified::text))\n      )::text),\n    1,\n    -- use an aggregate function to select the etag (all rows have the same etag)\n    min(roles.etag::text)::uuid\n  from roles;\nend",
+          "deprecated": false,
+          "description": "See taskcluster-lib-entities",
+          "mode": "read",
+          "returns": "table (partition_key_out text, row_key_out text, value jsonb, version integer, etag uuid)",
+          "serviceName": "auth"
+        },
+        "roles_entities_modify": {
+          "args": "partition_key text, row_key text, properties jsonb, version integer, old_etag uuid",
+          "body": "declare\n  new_etag uuid := public.gen_random_uuid();\nbegin\n  -- lock the table, avoiding risk of conflicts when inserting after\n  -- finding no rows\n  lock table roles;\n\n  delete from roles where roles.etag = old_etag;\n  if not found then\n    -- delete may have done nothing because the table is empty (which is\n    -- ok) or because the etag did not match (which is an unsuccessful\n    -- update)\n    perform role_id from roles limit 1;\n    if found then\n      raise exception 'unsuccessful update' using errcode = 'P0004';\n    end if;\n    -- ..otherwise continue to make the modification\n  end if;\n\n  insert into roles\n  select \n    (role ->> 'roleId') as role_id,\n    (role ->> 'scopes')::jsonb as scopes,\n    (role ->> 'created')::timestamptz as created,\n    (role ->> 'description') as description,\n    (role ->> 'lastModified')::timestamptz as last_modified,\n    new_etag as etag\n  from jsonb_array_elements(entity_buf_decode(properties, 'blob')::jsonb) as role;\n\n  return query select new_etag;\nend",
+          "deprecated": false,
+          "description": "See taskcluster-lib-entities",
+          "mode": "write",
+          "returns": "table (etag uuid)",
+          "serviceName": "auth"
+        },
+        "roles_entities_remove": {
+          "args": "partition_key text, row_key text",
+          "body": "begin\n  raise exception 'not implemented';\nend",
+          "deprecated": false,
+          "description": "See taskcluster-lib-entities",
+          "mode": "write",
+          "returns": "table (etag uuid)",
+          "serviceName": "auth"
+        },
+        "roles_entities_scan": {
+          "args": "pk text, rk text, condition text, size integer, page integer",
+          "body": "begin\n  raise exception 'not implemented';\nend;",
+          "deprecated": false,
+          "description": "See taskcluster-lib-entities",
+          "mode": "read",
+          "returns": "table (partition_key text, row_key text, value jsonb, version integer, etag uuid)",
+          "serviceName": "auth"
+        }
+      },
+      "migrationScript": "begin\n  -- convert the postgres string form of a timestamp (which is valid iso8601) into the\n  -- precise format returned by JS's Date.toJSON\n  create or replace function to_js_iso8601(ts_in text) RETURNS text\n  as $$\n    begin\n      return regexp_replace(ts_in, '(.*) (.*)\\+00(:00)?', '\\1T\\2Z');\n    end;\n  $$\n  language plpgSQL\n  strict immutable;\n\n  lock table roles_entities;\n\n  -- Note that roles must be updated as a block, as there are some inter-role\n  -- consistency checks that must be followed and are too complex to describe in\n  -- SQL, but are expressed in JS in the Auth service.\n\n  raise log 'TIMING start roles create table .. as select';\n  create table roles\n  as\n    select \n      (expanded.role ->> 'roleId') as role_id,\n      (expanded.role ->> 'scopes')::jsonb as scopes,\n      (expanded.role ->> 'created')::timestamptz as created,\n      (expanded.role ->> 'description') as description,\n      (expanded.role ->> 'lastModified')::timestamptz as last_modified,\n      expanded.etag as etag\n    from (\n      select\n        jsonb_array_elements(\n          entity_buf_decode(value, 'blob')::jsonb\n        ) as role,\n        etag\n      from roles_entities\n    ) as expanded;\n\n  raise log 'TIMING start roles add primary key';\n  alter table roles add primary key (role_id);\n\n  raise log 'TIMING start roles set not null';\n  alter table roles\n    alter column role_id set not null,\n    alter column scopes set not null,\n    alter column created set not null,\n    alter column description set not null,\n    alter column last_modified set not null,\n    alter column etag set not null;\n\n\n  raise log 'TIMING start roles set permissions';\n  revoke select, insert, update, delete on roles_entities from $db_user_prefix$_auth;\n  drop table roles_entities;\n\n  grant select, insert, update, delete on roles to $db_user_prefix$_auth;\nend\n\n",
+      "version": 27
+    },
+    {
+      "methods": {
+        "create_index_namespace": {
+          "args": "parent_in text, name_in text, expires_in timestamptz",
+          "body": "begin\n  return query insert\n    into index_namespaces (parent, name, expires)\n    values (parent_in, name_in, expires_in)\n    returning index_namespaces.parent, index_namespaces.name, index_namespaces.expires;\nend",
+          "deprecated": false,
+          "description": "Create a new namespace. Raises UNIQUE_VIOLATION if the namespace already exists.\nReturns the newly created namespace.",
+          "mode": "write",
+          "returns": "table(parent text, name text, expires timestamptz)",
+          "serviceName": "index"
+        },
+        "create_indexed_task": {
+          "args": "namespace_in text, name_in text, rank_in integer, task_id_in text, data_in jsonb, expires_in timestamptz",
+          "body": "begin\n  return query insert\n    into indexed_tasks (namespace, name, rank, task_id, data, expires)\n    values (namespace_in, name_in, rank_in, slugid_to_uuid(task_id_in), data_in, expires_in)\n    returning indexed_tasks.namespace, indexed_tasks.name, indexed_tasks.rank, indexed_tasks.task_id, indexed_tasks.data, indexed_tasks.expires;\nend",
+          "deprecated": false,
+          "description": "Create a new indexed task. Raises UNIQUE_VIOLATION if the indexed task already exists.\nReturns the newly created indexed task.",
+          "mode": "write",
+          "returns": "table(namespace text, name text, rank integer, task_id text, data jsonb, expires timestamptz)",
+          "serviceName": "index"
+        },
+        "expire_index_namespaces": {
+          "args": "",
+          "body": "declare\n  count integer;\nbegin\n  delete from index_namespaces where index_namespaces.expires < now();\n  if found then\n    get diagnostics count = row_count;\n    return count;\n  end if;\n  return 0;\nend",
+          "deprecated": false,
+          "description": "Expire index_namespaces that come before the current time.\nReturns a count of rows that have been deleted.",
+          "mode": "write",
+          "returns": "integer",
+          "serviceName": "index"
+        },
+        "expire_indexed_tasks": {
+          "args": "",
+          "body": "declare\n  count integer;\nbegin\n  delete from indexed_tasks where indexed_tasks.expires < now();\n  if found then\n    get diagnostics count = row_count;\n    return count;\n  end if;\n  return 0;\nend",
+          "deprecated": false,
+          "description": "Expire indexed tasks that come before the current time.\nReturns a count of rows that have been deleted.",
+          "mode": "write",
+          "returns": "integer",
+          "serviceName": "index"
+        },
+        "get_index_namespace": {
+          "args": "parent_in text, name_in text",
+          "body": "begin\n  return query select\n    index_namespaces.parent,\n    index_namespaces.name,\n    index_namespaces.expires\n  from index_namespaces\n  where\n    index_namespaces.parent = parent_in and\n    index_namespaces.name = name_in;\nend",
+          "deprecated": false,
+          "description": "Get a namespace. The returned table will have one or zero rows.",
+          "mode": "read",
+          "returns": "table(parent text, name text, expires timestamptz)",
+          "serviceName": "index"
+        },
+        "get_index_namespaces": {
+          "args": "parent_in text, name_in text, page_size_in integer, page_offset_in integer",
+          "body": "begin\n  return query\n  select\n    index_namespaces.parent,\n    index_namespaces.name,\n    index_namespaces.expires\n  from index_namespaces\n  where\n    (index_namespaces.parent = parent_in or parent_in is null) and\n    (index_namespaces.name = name_in or name_in is null) and\n    (index_namespaces.expires > now())\n  -- we previously used to order by the hashed parent but there's probably no need to add this complication.\n  order by index_namespaces.parent, name\n  limit get_page_limit(page_size_in)\n  offset get_page_offset(page_offset_in);\nend",
+          "deprecated": false,
+          "description": "Get existing index_namespaces filtered by the optional arguments,\nordered by the `parent` and `name`.\nIf the pagination arguments are both NULL, all rows are returned.\nOtherwise, page_size rows are returned at offset page_offset.",
+          "mode": "read",
+          "returns": "table(parent text, name text, expires timestamptz)",
+          "serviceName": "index"
+        },
+        "get_indexed_task": {
+          "args": "namespace_in text, name_in text",
+          "body": "begin\n  return query select\n    indexed_tasks.namespace,\n    indexed_tasks.name,\n    indexed_tasks.rank,\n    uuid_to_slugid(indexed_tasks.task_id) as task_id,\n    indexed_tasks.data,\n    indexed_tasks.expires\n  from indexed_tasks\n  where\n    indexed_tasks.namespace = namespace_in and\n    indexed_tasks.name = name_in;\nend",
+          "deprecated": false,
+          "description": "Get an indexed task. The returned table will have one or zero rows.",
+          "mode": "read",
+          "returns": "table(namespace text, name text, rank integer, task_id text, data jsonb, expires timestamptz)",
+          "serviceName": "index"
+        },
+        "get_indexed_tasks": {
+          "args": "namespace_in text, name_in text, page_size_in integer, page_offset_in integer",
+          "body": "begin\n  return query\n  select\n    indexed_tasks.namespace,\n    indexed_tasks.name,\n    indexed_tasks.rank,\n    uuid_to_slugid(indexed_tasks.task_id) as task_id,\n    indexed_tasks.data,\n    indexed_tasks.expires\n  from indexed_tasks\n  where\n    (indexed_tasks.namespace = namespace_in or namespace_in is null) and\n    (indexed_tasks.name = name_in or name_in is null) and\n    (indexed_tasks.expires > now())\n  -- we previously used to order by the hashed namespace but there's probably no need to add this complication.\n  order by indexed_tasks.namespace, name\n  limit get_page_limit(page_size_in)\n  offset get_page_offset(page_offset_in);\nend",
+          "deprecated": false,
+          "description": "Get existing indexed tasks filtered by the optional arguments,\nordered by the `namespace` and `name`.\nIf the pagination arguments are both NULL, all rows are returned.\nOtherwise, page_size rows are returned at offset page_offset.",
+          "mode": "read",
+          "returns": "table(namespace text, name text, rank integer, task_id text, data jsonb, expires timestamptz)",
+          "serviceName": "index"
+        },
+        "update_index_namespace": {
+          "args": "parent_in text, name_in text, expires_in timestamptz",
+          "body": "declare\n  updated_row index_namespaces%ROWTYPE;\nbegin\n  update index_namespaces\n  set expires = coalesce(expires_in, index_namespaces.expires)\n  where\n    index_namespaces.parent = parent_in and\n    index_namespaces.name = name_in\n  returning\n    index_namespaces.parent,\n    index_namespaces.name,\n    index_namespaces.expires\n  into updated_row;\n  if found then\n    return query select\n      updated_row.parent,\n      updated_row.name,\n      updated_row.expires;\n    return;\n  end if;\n  raise exception 'no such row' using errcode = 'P0002';\nend",
+          "deprecated": false,
+          "description": "Update a namespace.\nReturns the up-to-date namespace row that have the same parent and name.\nIf the row is not found then an exception with code 'P0002' is thrown.",
+          "mode": "write",
+          "returns": "table(parent text, name text, expires timestamptz)",
+          "serviceName": "index"
+        },
+        "update_indexed_task": {
+          "args": "namespace_in text, name_in text, rank_in integer, task_id_in text, data_in jsonb, expires_in timestamptz",
+          "body": "declare\n  updated_row indexed_tasks%ROWTYPE;\nbegin\n  update indexed_tasks\n  set (rank, task_id, data, expires) = (\n    coalesce(rank_in, indexed_tasks.rank),\n    coalesce(slugid_to_uuid(task_id_in), indexed_tasks.task_id),\n    coalesce(data_in, indexed_tasks.data),\n    coalesce(expires_in, indexed_tasks.expires)\n  )\n  where\n    indexed_tasks.namespace = namespace_in and\n    indexed_tasks.name = name_in\n  returning\n    indexed_tasks.namespace,\n    indexed_tasks.name,\n    indexed_tasks.rank,\n    uuid_to_slugid(indexed_tasks.task_id),\n    indexed_tasks.data,\n    indexed_tasks.expires\n  into updated_row;\n  if found then\n    return query select\n      updated_row.namespace,\n      updated_row.name,\n      updated_row.rank,\n      updated_row.task_id,\n      updated_row.data,\n      updated_row.expires;\n    return;\n  else\n    raise exception 'no such row' using errcode = 'P0002';\n  end if;\nend",
+          "deprecated": false,
+          "description": "Update an indexed task.\nReturns the up-to-date indexed task row that have the same namespace and name.",
+          "mode": "write",
+          "returns": "table(namespace text, name text, rank integer, task_id text, data jsonb, expires timestamptz)",
+          "serviceName": "index"
+        }
+      },
+      "version": 28
+    },
+    {
+      "downgradeScript": "begin\n\n  create table github_access_token_table_entities(\n    partition_key text,\n    row_key text,\n    value jsonb not null,\n    version integer not null,\n    etag uuid default public.gen_random_uuid());\n  alter table github_access_token_table_entities add primary key (partition_key, row_key);\n  grant select, insert, update, delete on github_access_token_table_entities to $db_user_prefix$_web_server;\n\n  revoke select, insert, update, delete on github_access_tokens from $db_user_prefix$_web_server;\n  drop table github_access_tokens;\n\nend\n",
+      "methods": {
+        "add_github_access_token": {
+          "args": "user_id_in text, encrypted_access_token_in jsonb",
+          "body": "begin\n  insert into github_access_tokens(user_id, encrypted_access_token)\n  values (\n    user_id_in,\n    encrypted_access_token_in\n  ) on conflict (user_id) do\n  update\n  set encrypted_access_token = encrypted_access_token_in\n  where github_access_tokens.user_id = add_github_access_token.user_id_in;\nend",
+          "deprecated": false,
+          "description": "Sets the encrypted access token for `user_id_in` to\n`encrypted_access_token_in`.\n\nIf no access token is currently set for `user_id_in`, a new row is\ninserted, otherwise the existing row's encrypted access token is updated\nto `encrypted_access_token_in`.",
+          "mode": "write",
+          "returns": "void",
+          "serviceName": "web_server"
+        },
+        "load_github_access_token": {
+          "args": "user_id_in text",
+          "body": "begin\n  return query\n  select github_access_tokens.encrypted_access_token from github_access_tokens\n  where github_access_tokens.user_id = user_id_in;\nend",
+          "deprecated": false,
+          "description": "Returns the encrypted github access token for a given user.",
+          "mode": "read",
+          "returns": "table(encrypted_access_token jsonb)",
+          "serviceName": "web_server"
+        }
+      },
+      "migrationScript": "begin\n\n  create table github_access_tokens(\n    user_id text not null,\n    encrypted_access_token jsonb not null);\n  alter table github_access_tokens add primary key (user_id);\n  grant select, insert, update, delete on github_access_tokens to $db_user_prefix$_web_server;\n\n  revoke select, insert, update, delete on github_access_token_table_entities from $db_user_prefix$_web_server;\n  drop table github_access_token_table_entities;\n\nend\n",
+      "version": 29
+    },
+    {
+      "methods": {
+        "add_task_dependency": {
+          "args": "dependent_task_id_in text, required_task_id_in text, requires_in task_requires, expires_in timestamptz",
+          "body": "begin\n  insert\n  into task_dependencies (dependent_task_id, required_task_id, requires, satisfied, expires, etag)\n  values (\n    dependent_task_id_in,\n    required_task_id_in,\n    requires_in,\n    false,\n    expires_in,\n    public.gen_random_uuid()\n  )\n  on conflict do nothing;\nend",
+          "deprecated": false,
+          "description": "Create an un-satisfied task dependency between the two tasks, with the given\nrequirement style and expiration.  If the dependency already exists, nothing\nhappens.",
+          "mode": "write",
+          "returns": "void",
+          "serviceName": "queue"
+        },
+        "cancel_task": {
+          "args": "task_id text, reason text",
+          "body": "declare\n  runs jsonb;\n  run jsonb;\n  new_runs jsonb;\n  last_run_id int;\nbegin\n  -- lock the task row to prevent concurrent updates\n  select tasks.runs\n  into runs\n  from tasks\n  where tasks.task_id = cancel_task.task_id\n  for update;\n\n  if runs is null then\n    -- the task row was not found\n    return;\n  end if;\n\n  last_run_id := jsonb_array_length(runs) - 1;\n  if last_run_id >= 0 then\n    -- if the most recent run is not pending or running, then\n    -- there is nothing to cancel\n    run = runs -> last_run_id;\n    if not run ->> 'state' in ('pending', 'running') then\n      return;\n    end if;\n\n    -- reconstruct the runs object with an updated run\n    new_runs = (runs - last_run_id) || jsonb_build_array(\n      run || jsonb_build_object(\n        'state', 'exception',\n        'reasonResolved', reason,\n        'resolved', now()));\n  else\n    new_runs = jsonb_build_array(\n      jsonb_build_object(\n        'state', 'exception',\n        'reasonCreated', 'exception',\n        'reasonResolved', reason,\n        'scheduled', now(),\n        'resolved', now()));\n  end if;\n\n  update tasks\n  set\n    runs = new_runs,\n    taken_until = null\n  where tasks.task_id = cancel_task.task_id;\n\n  return query\n  select tasks.retries_left, tasks.runs, tasks.taken_until\n  from tasks\n  where tasks.task_id = cancel_task.task_id;\nend",
+          "deprecated": false,
+          "description": "If the current run is pending or running, mark it as exception with the given\nreason.  If the task is unscheduled, a run with that status is\ncreated to represent the cancellation.  This returns the task's updated\nstatus, or nothing if the current status was not as expected.",
+          "mode": "write",
+          "returns": "table(retries_left integer, runs jsonb, taken_until timestamptz)",
+          "serviceName": "queue"
+        },
+        "check_task_claim": {
+          "args": "task_id text, run_id int, taken_until_in timestamptz",
+          "body": "declare\n  task record;\n  runs jsonb;\n  run jsonb;\n  new_runs jsonb;\n  new_taken_until timestamptz;\nbegin\n  -- lock the task row to prevent concurrent updates\n  select tasks.retries_left, tasks.runs, tasks.deadline\n  into task\n  from tasks\n  where\n    tasks.task_id = check_task_claim.task_id and\n    tasks.taken_until = taken_until_in\n  for update;\n\n  if task.runs is null then\n    -- no such task, or taken_until did not match\n    return;\n  end if;\n\n  if jsonb_array_length(task.runs) != run_id + 1 then\n    -- run_id is not the latest run\n    return;\n  end if;\n\n  run = task.runs -> run_id;\n  if run ->> 'state' != 'running' then\n    -- run is not running\n    return;\n  end if;\n  \n  if (run ->> 'takenUntil')::timestamptz != taken_until_in then\n    -- run has updated takenUntil\n    return;\n  end if;\n  \n  if task.deadline < now() then\n    -- task has passed its deadline, so let check_task_deadline handle it\n    return;\n  end if;\n\n  -- reconstruct the runs object with an updated run\n  new_runs = (task.runs - run_id) || jsonb_build_array(\n    run || jsonb_build_object(\n      'state', 'exception',\n      'reasonResolved', 'claim-expired',\n      'resolved', now()));\n\n  -- add a retry if there are any left\n  if task.retries_left > 0 then\n    new_runs = new_runs || jsonb_build_array(\n      jsonb_build_object(\n        'state', 'pending',\n        'reasonCreated', 'retry',\n        'scheduled', now()));\n    task.retries_left = task.retries_left - 1;\n  end if;\n\n  update tasks\n  set\n    retries_left = task.retries_left,\n    runs = new_runs,\n    taken_until = null\n  where tasks.task_id = check_task_claim.task_id;\n\n  return query\n  select tasks.retries_left, tasks.runs, tasks.taken_until\n  from tasks\n  where tasks.task_id = check_task_claim.task_id;\nend",
+          "deprecated": false,
+          "description": "Check the given task for a claim on the given run expiring at the given\ntime.  If the run is still running, it is marked as claim-expired and\na retry scheduled (if retries_left).  \n\nThis returns the task's updated status, or nothing if the current status\nwas not as expected.",
+          "mode": "write",
+          "returns": "table(retries_left integer, runs jsonb, taken_until timestamptz)",
+          "serviceName": "queue"
+        },
+        "claim_task": {
+          "args": "task_id text, run_id int, worker_group text, worker_id text, hint_id text, taken_until_in timestamptz",
+          "body": "declare\n  runs jsonb;\n  run jsonb;\n  new_runs jsonb;\nbegin\n  -- lock the task row to prevent concurrent updates\n  select tasks.runs\n  into runs\n  from tasks\n  where tasks.task_id = claim_task.task_id\n  for update;\n\n  if runs is null then\n    -- the task row was not found\n    return;\n  end if;\n\n  if jsonb_array_length(runs) != run_id + 1 then\n    -- run_id is not the latest run\n    return;\n  end if;\n\n  run = runs -> run_id;\n  if run ->> 'state' != 'pending' then\n    -- run is not pending\n    return;\n  end if;\n\n  -- reconstruct the runs object with an updated run\n  new_runs = (runs - run_id) || jsonb_build_array(\n    run || jsonb_build_object(\n      'state', 'running',\n      'workerGroup', worker_group,\n      'workerId', worker_id,\n      'hintId', hint_id,\n      'takenUntil', taken_until_in,\n      'started', now()));\n\n  update tasks\n  set\n    runs = new_runs,\n    taken_until = taken_until_in\n  where tasks.task_id = claim_task.task_id;\n\n  return query\n  select tasks.retries_left, tasks.runs, tasks.taken_until\n  from tasks\n  where tasks.task_id = claim_task.task_id;\nend",
+          "deprecated": false,
+          "description": "Claim the given run of the given task for the given worker.  The hint is recorded in the run,\nfor comparison when the claim expires.  This returns the task's updated\nstatus, or nothing if the current status was not as expected.",
+          "mode": "write",
+          "returns": "table(retries_left integer, runs jsonb, taken_until timestamptz)",
+          "serviceName": "queue"
+        },
+        "create_task": {
+          "args": "task_id text,\nprovisioner_id text,\nworker_type text,\nscheduler_id text,\ntask_group_id text,\ndependencies jsonb,\nrequires task_requires,\nroutes jsonb,\npriority task_priority,\nretries integer,\ncreated timestamptz,\ndeadline timestamptz,\nexpires timestamptz,\nscopes jsonb,\npayload jsonb,\nmetadata jsonb,\ntags jsonb,\nextra jsonb",
+          "body": "begin\n  insert\n  into tasks (\n    task_id,\n    provisioner_id,\n    worker_type,\n    scheduler_id,\n    task_group_id,\n    dependencies,\n    requires,\n    routes,\n    priority,\n    retries,\n    created,\n    deadline,\n    expires,\n    scopes,\n    payload,\n    metadata,\n    tags,\n    extra,\n    retries_left,\n    runs,\n    taken_until,\n    ever_resolved,\n    etag\n  )\n  values (\n    task_id,\n    provisioner_id,\n    worker_type,\n    scheduler_id,\n    task_group_id,\n    dependencies,\n    requires,\n    routes,\n    priority,\n    retries,\n    created,\n    deadline,\n    expires,\n    scopes,\n    payload,\n    metadata,\n    tags,\n    extra,\n    -- default values for the mutable bits\n    retries,\n    jsonb_build_array(),\n    null, -- not taken\n    false,\n    public.gen_random_uuid()\n  );\nend",
+          "deprecated": false,
+          "description": "Create a new task, without scheduling it, and with empty values\nfor the status information.",
+          "mode": "write",
+          "returns": "void",
+          "serviceName": "queue"
+        },
+        "ensure_task_group": {
+          "args": "task_group_id_in text,\nscheduler_id_in text,\nexpires_in timestamptz",
+          "body": "declare\n  task_group task_groups%ROWTYPE;\nbegin\n  select *\n  from task_groups\n  where task_groups.task_group_id = task_group_id_in\n  for update\n  into task_group;\n\n  -- insert with expiration one hour later than given\n  if task_group.task_group_id is NULL then\n    begin\n      insert\n      into task_groups (task_group_id, scheduler_id, expires, etag)\n      values (\n        task_group_id_in,\n        scheduler_id_in,\n        expires_in + interval '1 hour',\n        gen_random_uuid()\n      );\n      return;\n    exception\n      when unique_violation then\n        -- we raced with another call's insert, so get that inserted row\n        select *\n        from task_groups\n        where task_groups.task_group_id = task_group_id_in\n        for update\n        into task_group;\n    end;\n  end if;\n\n  if task_group.scheduler_id != scheduler_id_in then\n    raise exception 'task group exists with different scheduler_id'\n      using errcode = '23505';\n  end if;\n\n  -- if necessary, update the expires value\n  if expires_in > task_group.expires then\n    update task_groups\n    set expires = expires_in + interval '1 hour'\n    where task_groups.task_group_id = task_group_id_in;\n  end if;\nend",
+          "deprecated": false,
+          "description": "Ensure that the given task group exists, has the matching scheduler_id,\nand has an expiration greater than the given expiration.  Expiration is\nbumped by an hour at a time to avoid unnecessary updates.  This returns\n23505 (UNIQUE_VIOLATION) when the group exists with a different\nscheduler_id.",
+          "mode": "write",
+          "returns": "void",
+          "serviceName": "queue"
+        },
+        "expire_task_dependencies": {
+          "args": "expires_in timestamptz",
+          "body": "declare\n  count integer;\nbegin\n  delete\n  from task_dependencies\n  where expires < expires_in;\n\n  if found then\n    get diagnostics count = row_count;\n    return count;\n  end if;\n  return 0;\nend",
+          "deprecated": false,
+          "description": "Delete task dependencies with expiration dates before `expires_in`.\nReturns a count of rows that have been deleted.",
+          "mode": "write",
+          "returns": "integer",
+          "serviceName": "queue"
+        },
+        "expire_task_groups": {
+          "args": "expires_in timestamptz",
+          "body": "declare\n  count integer;\nbegin\n  delete\n  from task_groups\n  where expires < expires_in;\n\n  if found then\n    get diagnostics count = row_count;\n    return count;\n  end if;\n  return 0;\nend",
+          "deprecated": false,
+          "description": "Delete task groups with expiration dates before `expires_in`.\nReturns a count of rows that have been deleted.",
+          "mode": "write",
+          "returns": "integer",
+          "serviceName": "queue"
+        },
+        "expire_tasks": {
+          "args": "expires_in timestamptz",
+          "body": "declare\n  count integer;\nbegin\n  delete\n  from tasks\n  where expires < expires_in;\n\n  if found then\n    get diagnostics count = row_count;\n    return count;\n  end if;\n  return 0;\nend",
+          "deprecated": false,
+          "description": "Delete tasks with expiration dates before `expires_in`.\nReturns a count of rows that have been deleted.",
+          "mode": "write",
+          "returns": "integer",
+          "serviceName": "queue"
+        },
+        "get_dependent_tasks": {
+          "args": "required_task_id_in text, satisfied_in boolean, tasks_after_in text, page_size_in integer, page_offset_in integer",
+          "body": "begin\n  return query\n  select\n    task_dependencies.dependent_task_id,\n    task_dependencies.requires,\n    task_dependencies.satisfied\n  from task_dependencies\n  where\n    required_task_id = required_task_id_in and\n    expires > now() and\n    (satisfied_in is null or task_dependencies.satisfied = satisfied_in) and\n    (tasks_after_in is null or task_dependencies.dependent_task_id > tasks_after_in)\n  limit get_page_limit(page_size_in)\n  offset get_page_offset(page_offset_in);\nend",
+          "deprecated": false,
+          "description": "Get the un-expired tasks that depend on this one, limiting to only (un)satisfied\ndependencies if `satisfied_in` is not null.\n\nOnly dependencies with `dependent_task_id > tasks_after_in` are returned.\nThis supports paginated queries that are not susceptible to rows being\nadded or removed.  Typically only one of `page_offset_in` and\n`tasks_after_in` are non-null.",
+          "mode": "read",
+          "returns": "table(dependent_task_id text, requires task_requires, satisfied boolean)",
+          "serviceName": "queue"
+        },
+        "get_task": {
+          "args": "task_id_in text",
+          "body": "begin\n  return query\n  select\n    tasks.task_id,\n    tasks.provisioner_id,\n    tasks.worker_type,\n    tasks.scheduler_id,\n    tasks.task_group_id,\n    tasks.dependencies,\n    tasks.requires,\n    tasks.routes,\n    tasks.priority,\n    tasks.retries,\n    tasks.retries_left,\n    tasks.created,\n    tasks.deadline,\n    tasks.expires,\n    tasks.scopes,\n    tasks.payload,\n    tasks.metadata,\n    tasks.tags,\n    tasks.extra,\n    tasks.runs,\n    tasks.taken_until\n  from tasks\n  where\n    tasks.task_id = task_id_in;\nend",
+          "deprecated": false,
+          "description": "Get all properties of a task.  Note that all properties but `runs`,\n`retries_left`, and `taken_until` are immutable.",
+          "mode": "read",
+          "returns": "table (\n  task_id text,\n  provisioner_id text,\n  worker_type text,\n  scheduler_id text,\n  task_group_id text,\n  dependencies jsonb,\n  requires task_requires,\n  routes jsonb,\n  priority task_priority,\n  retries integer,\n  retries_left int,\n  created timestamptz,\n  deadline timestamptz,\n  expires timestamptz,\n  scopes jsonb,\n  payload jsonb,\n  metadata jsonb,\n  tags jsonb,\n  extra jsonb,\n  runs jsonb,\n  taken_until timestamptz\n)",
+          "serviceName": "queue"
+        },
+        "get_task_group": {
+          "args": "task_group_id_in text",
+          "body": "begin\n  return query\n  select\n    task_groups.task_group_id,\n    task_groups.scheduler_id,\n    task_groups.expires\n  from task_groups\n  where task_groups.task_group_id = task_group_id_in;\nend",
+          "deprecated": false,
+          "description": "Get a task group.",
+          "mode": "read",
+          "returns": "table(\n  task_group_id text,\n  scheduler_id text,\n  expires timestamptz\n)",
+          "serviceName": "queue"
+        },
+        "get_tasks_by_task_group": {
+          "args": "task_group_id_in text, page_size_in integer, page_offset_in integer",
+          "body": "begin\n  return query\n  select\n    tasks.task_id,\n    tasks.provisioner_id,\n    tasks.worker_type,\n    tasks.scheduler_id,\n    tasks.task_group_id,\n    tasks.dependencies,\n    tasks.requires,\n    tasks.routes,\n    tasks.priority,\n    tasks.retries,\n    tasks.retries_left,\n    tasks.created,\n    tasks.deadline,\n    tasks.expires,\n    tasks.scopes,\n    tasks.payload,\n    tasks.metadata,\n    tasks.tags,\n    tasks.extra,\n    tasks.runs,\n    tasks.taken_until\n  from tasks\n  where tasks.task_group_id = task_group_id_in\n  limit get_page_limit(page_size_in)\n  offset get_page_offset(page_offset_in);\nend",
+          "deprecated": false,
+          "description": "Get all properties of all tasks in the given task group.",
+          "mode": "read",
+          "returns": "table (\n  task_id text,\n  provisioner_id text,\n  worker_type text,\n  scheduler_id text,\n  task_group_id text,\n  dependencies jsonb,\n  requires task_requires,\n  routes jsonb,\n  priority task_priority,\n  retries integer,\n  retries_left int,\n  created timestamptz,\n  deadline timestamptz,\n  expires timestamptz,\n  scopes jsonb,\n  payload jsonb,\n  metadata jsonb,\n  tags jsonb,\n  extra jsonb,\n  runs jsonb,\n  taken_until timestamptz\n)",
+          "serviceName": "queue"
+        },
+        "is_task_blocked": {
+          "args": "dependent_task_id_in text",
+          "body": "begin\n  perform 1\n  from task_dependencies\n  where\n    dependent_task_id = dependent_task_id_in and\n    not task_dependencies.satisfied\n  limit 1;\n  return found;\nend",
+          "deprecated": false,
+          "description": "Return true if the task has remaining un-satisfied dependencies.",
+          "mode": "read",
+          "returns": "boolean",
+          "serviceName": "queue"
+        },
+        "is_task_group_active": {
+          "args": "task_group_id_in text",
+          "body": "begin\n  perform true\n  from tasks\n  where\n    task_group_id = task_group_id_in and\n    not ever_resolved\n  limit 1;\n  return found;\nend",
+          "deprecated": false,
+          "description": "temp, removed in next commit",
+          "mode": "read",
+          "returns": "boolean",
+          "serviceName": "queue"
+        },
+        "mark_task_ever_resolved": {
+          "args": "task_id_in text",
+          "body": "begin\n  update tasks\n  set ever_resolved = true\n  where task_id = task_id_in;\nend",
+          "deprecated": false,
+          "description": "temp, removed in next commit",
+          "mode": "write",
+          "returns": "void",
+          "serviceName": "queue"
+        },
+        "reclaim_task": {
+          "args": "task_id text, run_id int, taken_until_in timestamptz",
+          "body": "declare\n  runs jsonb;\n  run jsonb;\n  new_runs jsonb;\n  new_taken_until timestamptz;\nbegin\n  -- lock the task row to prevent concurrent updates\n  select tasks.runs\n  into runs\n  from tasks\n  where tasks.task_id = reclaim_task.task_id\n  for update;\n\n  if runs is null then\n    -- the task row was not found\n    return;\n  end if;\n\n  if jsonb_array_length(runs) != run_id + 1 then\n    -- run_id is not the latest run\n    return;\n  end if;\n\n  run = runs -> run_id;\n  if run ->> 'state' != 'running' then\n    -- run is not running\n    return;\n  end if;\n\n  -- always set the taken_until forward in time\n  new_taken_until = greatest(taken_until_in, (run ->> 'taken_until')::timestamptz);\n\n  -- reconstruct the runs object with an updated run\n  new_runs = (runs - run_id) || jsonb_build_array(\n    run || jsonb_build_object(\n      'takenUntil', new_taken_until));\n\n  update tasks\n  set\n    runs = new_runs,\n    taken_until = new_taken_until\n  where tasks.task_id = reclaim_task.task_id;\n\n  return query\n  select tasks.retries_left, tasks.runs, tasks.taken_until\n  from tasks\n  where tasks.task_id = reclaim_task.task_id;\nend",
+          "deprecated": false,
+          "description": "Relaim the given run of the given task run, until the new taken_until time.\nThis returns the task's updated status, or nothing if the current status was not as expected.",
+          "mode": "write",
+          "returns": "table(retries_left integer, runs jsonb, taken_until timestamptz)",
+          "serviceName": "queue"
+        },
+        "remove_task": {
+          "args": "task_id text",
+          "body": "begin\n  delete\n  from tasks\n  where tasks.task_id = remove_task.task_id;\nend",
+          "deprecated": false,
+          "description": "Remove the given task, regardless of its expiration status.  This is\ntypically used when task creation has failed.",
+          "mode": "write",
+          "returns": "void",
+          "serviceName": "queue"
+        },
+        "remove_task_dependency": {
+          "args": "dependent_task_id_in text, required_task_id_in text",
+          "body": "begin\n  delete from task_dependencies\n  where\n    dependent_task_id = dependent_task_id_in and\n    required_task_id = required_task_id_in;\nend",
+          "deprecated": false,
+          "description": "Mark the given dependency as satisfied.  If the dependency does not exist, nothing\nhappens.",
+          "mode": "write",
+          "returns": "void",
+          "serviceName": "queue"
+        },
+        "rerun_task": {
+          "args": "task_id text",
+          "body": "declare\n  runs jsonb;\n  run jsonb;\n  last_run_id int;\n  max_runs_allowed constant int = 50;\nbegin\n  -- lock the task row to prevent concurrent updates\n  select tasks.runs\n  into runs\n  from tasks\n  where tasks.task_id = rerun_task.task_id\n  for update;\n\n  if runs is null then\n    -- the task row was not found\n    return;\n  end if;\n\n  last_run_id := jsonb_array_length(runs) - 1;\n  if last_run_id >= 0 then\n    -- verify the most recent run is not pending or running\n    run = runs -> last_run_id;\n    if run ->> 'state' in ('pending', 'running') then\n      return;\n    end if;\n  end if;\n\n  -- apply a sanity check on the number of runs\n  if last_run_id + 1 >= max_runs_allowed then\n    return;\n  end if;\n\n  update tasks\n  set\n    retries_left = least(tasks.retries, max_runs_allowed - last_run_id - 2),\n    runs = tasks.runs || jsonb_build_array(\n      jsonb_build_object(\n        'state', 'pending',\n        'reasonCreated', 'rerun',\n        'scheduled', now())),\n    taken_until = null\n  where tasks.task_id = rerun_task.task_id;\n\n  return query\n  select tasks.retries_left, tasks.runs, tasks.taken_until\n  from tasks\n  where tasks.task_id = rerun_task.task_id;\nend",
+          "deprecated": false,
+          "description": "Ensure that no run is currently running or pending, and then create a new\npending run with the given reason.  This also resets the retries_left\ncolumn to `retries` (unless the sanity-check maximum runs has been\nreached).  This returns the task's updated status, or nothing if the\ncurrent status was not as expected.",
+          "mode": "write",
+          "returns": "table(retries_left integer, runs jsonb, taken_until timestamptz)",
+          "serviceName": "queue"
+        },
+        "resolve_task": {
+          "args": "task_id text, run_id int, state text, reason text, retry_reason text",
+          "body": "declare\n  task record;\n  run jsonb;\n  new_runs jsonb;\n  new_taken_until timestamptz;\nbegin\n  -- lock the task row to prevent concurrent updates\n  select tasks.retries_left, tasks.runs\n  into task\n  from tasks\n  where tasks.task_id = resolve_task.task_id\n  for update;\n\n  if task.runs is null then\n    return;\n  end if;\n\n  if jsonb_array_length(task.runs) != run_id + 1 then\n    -- run_id is not the latest run\n    return;\n  end if;\n\n  run = task.runs -> run_id;\n  if run ->> 'state' != 'running' then\n    -- run is not running\n    return;\n  end if;\n\n\n  -- reconstruct the task.runs object with an updated run\n  new_runs = (task.runs - run_id) || jsonb_build_array(\n    run || jsonb_build_object(\n      'state', state,\n      'reasonResolved', reason,\n      'resolved', now()));\n\n  -- add a retry if there are any left\n  if retry_reason is not null and task.retries_left > 0 then\n    new_runs = new_runs || jsonb_build_array(\n      jsonb_build_object(\n        'state', 'pending',\n        'reasonCreated', retry_reason,\n        'scheduled', now()));\n    task.retries_left = task.retries_left - 1;\n  end if;\n\n  update tasks\n  set\n    retries_left = task.retries_left,\n    runs = new_runs,\n    taken_until = null\n  where tasks.task_id = resolve_task.task_id;\n\n  return query\n  select tasks.retries_left, tasks.runs, tasks.taken_until\n  from tasks\n  where tasks.task_id = resolve_task.task_id;\nend",
+          "deprecated": false,
+          "description": "Resolve the given run with the given state and reason, setting\nrun.resolved and resetting `taken_until`.  If `retry_reason` is not null\nand there are `retries_left`, a new pending run is added, and\n`retries_left` is decremented.  This returns the task's updated status,\nor nothing if the current status was not as expected.",
+          "mode": "write",
+          "returns": "table(retries_left integer, runs jsonb, taken_until timestamptz)",
+          "serviceName": "queue"
+        },
+        "resolve_task_at_deadline": {
+          "args": "task_id text",
+          "body": "declare\n  task record;\n  runs jsonb;\n  run jsonb;\n  new_runs jsonb;\n  new_taken_until timestamptz;\nbegin\n  -- lock the task row to prevent concurrent updates\n  select tasks.retries_left, tasks.runs, tasks.deadline\n  into task\n  from tasks\n  where\n    tasks.task_id = check_task_claim.task_id and\n    tasks.taken_until = taken_until_in\n  for update;\n\n  if task.runs is null then\n    -- no such task, or taken_until did not match\n    return;\n  end if;\n\n  if jsonb_array_length(task.runs) != run_id + 1 then\n    -- run_id is not the latest run\n    return;\n  end if;\n\n  run = task.runs -> run_id;\n  if run ->> 'state' != 'running' then\n    -- run is not running\n    return;\n  end if;\n  \n  if (run ->> 'takenUntil')::timestamptz != taken_until_in then\n    -- run has updated takenUntil\n    return;\n  end if;\n  \n  if task.deadline < now() then\n    -- task has passed its deadline, so let check_task_deadline handle it\n    return;\n  end if;\n\n  -- reconstruct the runs object with an updated run\n  new_runs = (task.runs - run_id) || jsonb_build_array(\n    run || jsonb_build_object(\n      'state', 'exception',\n      'reasonResolved', 'claim-expired',\n      'resolved', now()));\n\n  -- add a retry if there are any left\n  if task.retries_left > 0 then\n    new_runs = new_runs || jsonb_build_array(\n      jsonb_build_object(\n        'state', 'pending',\n        'reasonCreated', 'retry',\n        'scheduled', now()));\n    task.retries_left = task.retries_left - 1;\n  end if;\n\n  update tasks\n  set\n    retries_left = task.retries_left,\n    runs = new_runs,\n    taken_until = null\n  where tasks.task_id = check_task_claim.task_id;\n\n  return query\n  select tasks.retries_left, tasks.runs, tasks.taken_until\n  from tasks\n  where tasks.task_id = check_task_claim.task_id;\nend",
+          "deprecated": false,
+          "description": "The given task has reached its deadline, so mark it as resolved, adding a\nrun if necessary.  This returns the task's updated status, or nothing if\nthe current status was not as expected.",
+          "mode": "write",
+          "returns": "table(retries_left integer, runs jsonb, taken_until timestamptz)",
+          "serviceName": "queue"
+        },
+        "satisfy_task_dependency": {
+          "args": "dependent_task_id_in text, required_task_id_in text",
+          "body": "begin\n  update task_dependencies\n  set satisfied = true\n  where\n    dependent_task_id = dependent_task_id_in and\n    required_task_id = required_task_id_in;\nend",
+          "deprecated": false,
+          "description": "Mark the given dependency as satisfied.  If the dependency does not exist, nothing\nhappens.",
+          "mode": "write",
+          "returns": "void",
+          "serviceName": "queue"
+        },
+        "schedule_task": {
+          "args": "task_id text, reason_created text",
+          "body": "declare\n  runs jsonb;\n  run_id int;\nbegin\n  -- lock the task row to prevent concurrent updates\n  select tasks.runs\n  into runs\n  from tasks\n  where tasks.task_id = schedule_task.task_id\n  for update;\n\n  if runs is null then\n    -- the task row was not found\n    return;\n  end if;\n\n  run_id := jsonb_array_length(runs);\n  if run_id != 0 then\n    return;\n  end if;\n\n  update tasks\n  set\n    runs = jsonb_build_array(\n      jsonb_build_object(\n        'state', 'pending',\n        'reasonCreated', reason_created,\n        'scheduled', now())),\n    taken_until = null\n  where tasks.task_id = schedule_task.task_id;\n\n  return query\n  select tasks.retries_left, tasks.runs, tasks.taken_until\n  from tasks\n  where tasks.task_id = schedule_task.task_id;\nend",
+          "deprecated": false,
+          "description": "Schedule the initial run for a task, moving the task from \"unscheduled\" to \"pending\".\nThis returns the task's updated status, or nothing if the current status was not\nas expected.",
+          "mode": "write",
+          "returns": "table(retries_left integer, runs jsonb, taken_until timestamptz)",
+          "serviceName": "queue"
+        }
+      },
+      "version": 30
     }
   ]
 }

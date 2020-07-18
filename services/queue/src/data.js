@@ -1,654 +1,193 @@
 let Entity = require('taskcluster-lib-entities');
-let debug = require('debug')('app:data');
 let assert = require('assert');
 let _ = require('lodash');
+const {UNIQUE_VIOLATION} = require('taskcluster-lib-postgres');
 
-/** Entity for tracking tasks and associated state */
-let Task = Entity.configure({
-  version: 1,
-  partitionKey: Entity.keys.StringKey('taskId'),
-  rowKey: Entity.keys.ConstantKey('task'),
-  properties: {
-    taskId: Entity.types.SlugId,
-    provisionerId: Entity.types.String,
-    workerType: Entity.types.String,
-    schedulerId: Entity.types.String,
-    taskGroupId: Entity.types.SlugId,
-    /** List of custom routes as strings */
-    routes: Entity.types.JSON,
-    retries: Entity.types.Number,
-    retriesLeft: Entity.types.Number,
-    created: Entity.types.Date,
-    deadline: Entity.types.Date,
-    expires: Entity.types.Date,
-    /** List of scopes as strings */
-    scopes: Entity.types.JSON,
-    payload: Entity.types.JSON,
-    /**
-     * Meta-data object with properties:
-     * - name
-     * - description
-     * - owner
-     * - source
-     * See JSON schema for documentation.
-     */
-    metadata: Entity.types.JSON,
-    /** Tags as mapping from tag-key to tag-value as string */
-    tags: Entity.types.JSON,
-    extra: Entity.types.JSON,
-    /**
-     * List of run objects with the following keys:
-     * - state          (required)
-     * - reasonCreated  (required)
-     * - reasonResolved (required)
-     * - workerGroup
-     * - workerId
-     * - takenUntil
-     * - scheduled
-     * - started
-     * - resolved
-     * See schema for task status structure for details.
-     * Remark that `runId` always match the index in the array.
-     */
-    runs: Entity.types.JSON,
-    /** Time at which claim to latest run expires, new Date(0) if none */
-    takenUntil: Entity.types.Date,
-  },
-}).configure({
-  version: 2,
-  properties: {
-    taskId: Entity.types.SlugId,
-    provisionerId: Entity.types.String,
-    workerType: Entity.types.String,
-    schedulerId: Entity.types.String,
-    taskGroupId: Entity.types.SlugId,
-    /** List of custom routes as strings */
-    routes: Entity.types.JSON,
-    priority: Entity.types.String,
-    retries: Entity.types.Number,
-    retriesLeft: Entity.types.Number,
-    created: Entity.types.Date,
-    deadline: Entity.types.Date,
-    expires: Entity.types.Date,
-    /** List of scopes as strings */
-    scopes: Entity.types.JSON,
-    payload: Entity.types.JSON,
-    /**
-     * Meta-data object with properties:
-     * - name
-     * - description
-     * - owner
-     * - source
-     * See JSON schema for documentation.
-     */
-    metadata: Entity.types.JSON,
-    /** Tags as mapping from tag-key to tag-value as string */
-    tags: Entity.types.JSON,
-    extra: Entity.types.JSON,
-    /**
-     * List of run objects with the following keys:
-     * - state          (required)
-     * - reasonCreated  (required)
-     * - reasonResolved (required)
-     * - workerGroup
-     * - workerId
-     * - takenUntil
-     * - scheduled
-     * - started
-     * - resolved
-     * See schema for task status structure for details.
-     * Remark that `runId` always match the index in the array.
-     */
-    runs: Entity.types.JSON,
-    /** Time at which claim to latest run expires, new Date(0) if none */
-    takenUntil: Entity.types.Date,
-  },
-  migrate(item) {
-    item.priority = 'normal';
-    return item;
-  },
-}).configure({
-  version: 3,
-  properties: {
-    taskId: Entity.types.SlugId,
-    provisionerId: Entity.types.String,
-    workerType: Entity.types.String,
-    schedulerId: Entity.types.String,
-    taskGroupId: Entity.types.SlugId,
-    dependencies: Entity.types.JSON,
-    requires: Entity.types.String,
-    /** List of custom routes as strings */
-    routes: Entity.types.JSON,
-    priority: Entity.types.String,
-    retries: Entity.types.Number,
-    retriesLeft: Entity.types.Number,
-    created: Entity.types.Date,
-    deadline: Entity.types.Date,
-    expires: Entity.types.Date,
-    /** List of scopes as strings */
-    scopes: Entity.types.JSON,
-    payload: Entity.types.JSON,
-    /**
-     * Meta-data object with properties:
-     * - name
-     * - description
-     * - owner
-     * - source
-     * See JSON schema for documentation.
-     */
-    metadata: Entity.types.JSON,
-    /** Tags as mapping from tag-key to tag-value as string */
-    tags: Entity.types.JSON,
-    extra: Entity.types.JSON,
-    /**
-     * List of run objects with the following keys:
-     * - state          (required)
-     * - reasonCreated  (required)
-     * - reasonResolved (required)
-     * - workerGroup
-     * - workerId
-     * - hintId         (optional)
-     * - takenUntil
-     * - scheduled
-     * - started
-     * - resolved
-     * See schema for task status structure for details.
-     * Remark that `runId` always match the index in the array.
-     */
-    runs: Entity.types.JSON,
-    /** Time at which claim to latest run expires, new Date(0) if none */
-    takenUntil: Entity.types.Date,
-  },
-  migrate(item) {
-    item.dependencies = [];
-    item.requires = 'all-completed';
-    return item;
-  },
-}).configure({
-  version: 4,
-  properties: {
-    taskId: Entity.types.SlugId,
-    provisionerId: Entity.types.String,
-    workerType: Entity.types.String,
-    schedulerId: Entity.types.String,
-    taskGroupId: Entity.types.SlugId,
-    dependencies: Entity.types.JSON,
-    requires: Entity.types.String,
-    /** List of custom routes as strings */
-    routes: Entity.types.JSON,
-    priority: Entity.types.String,
-    retries: Entity.types.Number,
-    retriesLeft: Entity.types.Number,
-    created: Entity.types.Date,
-    deadline: Entity.types.Date,
-    expires: Entity.types.Date,
-    /** List of scopes as strings */
-    scopes: Entity.types.JSON,
-    payload: Entity.types.JSON,
-    /**
-     * Meta-data object with properties:
-     * - name
-     * - description
-     * - owner
-     * - source
-     * See JSON schema for documentation.
-     */
-    metadata: Entity.types.JSON,
-    /** Tags as mapping from tag-key to tag-value as string */
-    tags: Entity.types.JSON,
-    extra: Entity.types.JSON,
-    /**
-     * List of run objects with the following keys:
-     * - state          (required)
-     * - reasonCreated  (required)
-     * - reasonResolved (required)
-     * - workerGroup
-     * - workerId
-     * - hintId         (optional)
-     * - takenUntil
-     * - scheduled
-     * - started
-     * - resolved
-     * See schema for task status structure for details.
-     * Remark that `runId` always match the index in the array.
-     */
-    runs: Entity.types.JSON,
-    /** Time at which claim to latest run expires, new Date(0) if none */
-    takenUntil: Entity.types.Date,
-  },
-  migrate(item) {
-    if (item.priority === 'normal') {
-      item.priority = 'lowest';
-    }
-    return item;
-  },
-});
+const STATUS_FIELDS = ['retriesLeft', 'runs', 'takenUntil'];
 
-/** Return promise for the task definition */
-Task.prototype.definition = function() {
-  return Promise.resolve({
-    provisionerId: this.provisionerId,
-    workerType: this.workerType,
-    schedulerId: this.schedulerId,
-    taskGroupId: this.taskGroupId,
-    dependencies: _.cloneDeep(this.dependencies),
-    requires: this.requires,
-    routes: _.cloneDeep(this.routes),
-    priority: this.priority,
-    retries: this.retries,
-    created: this.created.toJSON(),
-    deadline: this.deadline.toJSON(),
-    expires: this.expires.toJSON(),
-    scopes: _.cloneDeep(this.scopes),
-    payload: _.cloneDeep(this.payload),
-    metadata: _.cloneDeep(this.metadata),
-    tags: _.cloneDeep(this.tags),
-    extra: _.cloneDeep(this.extra),
-  });
-};
+class Task {
+  // (private constructor)
+  constructor(props) {
+    Object.assign(this, props);
+  }
 
-/** Construct task status structure */
-Task.prototype.status = function() {
-  return {
-    taskId: this.taskId,
-    provisionerId: this.provisionerId,
-    workerType: this.workerType,
-    schedulerId: this.schedulerId,
-    taskGroupId: this.taskGroupId,
-    deadline: this.deadline.toJSON(),
-    expires: this.expires.toJSON(),
-    retriesLeft: this.retriesLeft,
-    state: this.state(),
-    runs: this.runs.map((run, runId) => {
-      return _.defaults({runId}, _.pick(run, [
-        'state',
-        'reasonCreated',
-        'reasonResolved',
-        'workerGroup',
-        'workerId',
-        'takenUntil',
-        'scheduled',
-        'started',
-        'resolved',
-      ]));
-    }),
-  };
-};
+  // Create a single instance from a DB row
+  static fromDb(row) {
+    return new Task({
+      taskId: row.task_id,
+      provisionerId: row.provisioner_id,
+      workerType: row.worker_type,
+      schedulerId: row.scheduler_id,
+      taskGroupId: row.task_group_id,
+      dependencies: row.dependencies,
+      requires: row.requires,
+      routes: row.routes,
+      priority: row.priority,
+      retries: row.retries,
+      retriesLeft: row.retries_left,
+      created: row.created,
+      deadline: row.deadline,
+      expires: row.expires,
+      scopes: row.scopes,
+      payload: row.payload,
+      metadata: row.metadata,
+      tags: row.tags,
+      extra: row.extra,
+      runs: row.runs,
+      takenUntil: row.taken_until,
+    });
+  }
 
-/** Get state of latest run, or 'unscheduled' if no runs */
-Task.prototype.state = function() {
-  return (_.last(this.runs) || {state: 'unscheduled'}).state;
-};
-
-/**
- * Test if there is a claim to task stored in `task.claim`
- *
- * Please, note that the claim may still be timed out and invalid.
- */
-Task.prototype.hasClaim = function() {
-  return this.claim && this.claim.messageId && this.claim.receipt;
-};
-
-/**
- * Expire tasks that are past their expiration.
- *
- * Returns a promise that all expired tasks have been deleted
- */
-Task.expire = async function(now) {
-  assert(now instanceof Date, 'now must be given as option');
-  let count = 0;
-  await Entity.scan.call(this, {
-    expires: Entity.op.lessThan(now),
-  }, {
-    limit: 250, // max number of concurrent delete operations
-    handler: (task) => { count++; return task.remove(true); },
-  });
-  return count;
-};
-
-// Export Task
-exports.Task = Task;
-
-/** Entity for tracking artifacts */
-let Artifact = Entity.configure({
-  version: 1,
-  partitionKey: Entity.keys.CompositeKey('taskId', 'runId'),
-  rowKey: Entity.keys.StringKey('name'),
-  properties: {
-    taskId: Entity.types.SlugId,
-    runId: Entity.types.Number,
-    name: Entity.types.String,
-    storageType: Entity.types.String,
-    contentType: Entity.types.String,
-    /**
-     * Location details storageType,
-     *
-     * storageType: s3
-     *   bucket:        S3 bucket that contains the object
-     *   prefix:        Prefix (path) for the object within the bucket
-     *
-     * storageType: azure
-     *   container:     Azure container that holds the blob
-     *   path:          Path to blob within container
-     *
-     * storageType: reference
-     *   url:           URL that artifact should redirect to
-     *
-     * storageType: error
-     *   reason:        Formalized reason for error artifact, see JSON schema.
-     *   message:       Human readable error message to return
-     */
-    details: Entity.types.JSON,
-    expires: Entity.types.Date,
-  },
-  context: [
-    'privateBucket', // Private artifact bucket wrapping S3
-    'publicBucket', // Public artifact bucket wrapping S3
-    'monitor', // base.monitor instance
-  ],
-}).configure({
-  version: 2,
-  properties: {
-    taskId: Entity.types.SlugId,
-    runId: Entity.types.Number,
-    name: Entity.types.String,
-    storageType: Entity.types.String,
-    contentType: Entity.types.String,
-    /**
-     * Location details storageType,
-     *
-     * storageType: s3
-     *   bucket:        S3 bucket that contains the object
-     *   prefix:        Prefix (path) for the object within the bucket
-     *
-     * storageType: azure
-     *   container:     Azure container that holds the blob
-     *   path:          Path to blob within container
-     *
-     * storageType: reference
-     *   url:           URL that artifact should redirect to
-     *
-     * storageType: error
-     *   reason:        Formalized reason for error artifact, see JSON schema.
-     *   message:       Human readable error message to return
-     * storageType: blob
-     *   contentType
-     *   contentEncoding
-     *   contentSha256: SHA256 hash of the un-encoded artifact
-     *   contentLength: Number of bytes of the un-encoded artifact
-     *   transferSha256: SHA256 hash of the content-encoding encoded artifact
-     *   transferLength: Number of bytes of the content-encoding encoded artifact
-     *   partsHash: Rather than storing the potentially large list of sha256/size
-     *              pairings for each part, we just need to store enough information
-     *              to determine if the operation would result in an idempotency
-     *              error
-     */
-    details: Entity.types.JSON,
-    expires: Entity.types.Date,
-    /**
-     * Present is a number field which represents an artifact being present and
-     * the upload being completed.  The handling logic for the artifact's
-     * storage type will fully define what that means for a given storage type.
-     */
-    present: Entity.types.Boolean,
-  },
-  context: [
-    'privateBucket', // Private artifact bucket wrapping S3
-    'publicBucket', // Public artifact bucket wrapping S3
-    'monitor', // base.monitor instance
-  ],
-  migrate(item) {
-    item.present = true;
-    return item;
-  },
-});
-
-/** Return JSON representation of artifact meta-data */
-Artifact.prototype.json = function() {
-  return {
-    storageType: this.storageType,
-    name: this.name,
-    expires: this.expires.toJSON(),
-    contentType: this.contentType,
-  };
-};
-
-/**
- * Remove underlying artifact and entity representing it.
- *
- * Warning, unlike Entity.remove which this method overwrites, this method will
- * remove both entity and underlying artifact regardless of any changes. But
- * the Entity will not be deleted if there is an error deleting the underlying
- * artifact.
- */
-Artifact.prototype.remove = function(ignoreError) {
-  // Promise that deleted underlying artifact, and keep reference to context
-  let deleted = Promise.resolve();
-
-  // Handle S3 artifacts
-  if (this.storageType === 's3') {
-    debug('Deleting expired s3 artifact from bucket: %s, prefix: %s',
-      this.details.bucket, this.details.prefix);
-    // Delete the right bucket
-    if (this.details.bucket === this.publicBucket.bucket) {
-      deleted = this.publicBucket.deleteObject(this.details.prefix);
-    } else if (this.details.bucket === this.privateBucket.bucket) {
-      deleted = this.privateBucket.deleteObject(this.details.prefix);
-    } else {
-      let err = new Error('Expiring artifact with bucket which isn\'t ' +
-                          'configured for use. Please investigate!');
-      err.bucket = this.details.bucket;
-      err.taskId = this.taskId;
-      err.runId = this.runId;
-      this.monitor.reportError(err);
-      return;
+  // Create a single instance, or undefined, from a set of rows containing zero
+  // or one elements.  This matches the semantics of get_task
+  static fromDbRows(rows) {
+    if (rows.length === 1) {
+      return Task.fromDb(rows[0]);
     }
   }
 
-  // When underlying artifact is deleted (if any underlying artifact exists)
-  // we delete the artifact Entity.
-  return deleted.then(() => {
-    // Delete entity, if underlying resource was successfully deleted
-    return Entity.prototype.remove.call(this, true, true);
-  }, err => {
-    debug('WARNING: Failed to delete expired artifact: %j, details: %j ' +
-          'from taskId: %s, runId: %s with error: %s, as JSON: %j',
-    this.json(), this.details, this.taskId, this.runId, err, err);
-    // Rethrow error, if we're not supposed to ignore it.
-    if (!ignoreError) {
-      throw err;
+  // Create an instance from createTask API request arguments
+  static fromApi(taskId, input) {
+    return new Task({
+      taskId,
+      ...input,
+      // convert to dates
+      created: new Date(input.created),
+      deadline: new Date(input.deadline),
+      expires: new Date(input.expires),
+      // initial value for STATUS_FIELDS
+      retriesLeft: input.retries,
+      runs: [],
+      takenUntil: null,
+    });
+  }
+
+  // Get a task from the DB, or undefined
+  static async get(db, taskId) {
+    return Task.fromDbRows(await db.fns.get_task(taskId));
+  }
+
+  // Call db.create_worker with the content of this instance.  This
+  // implements the usual idempotency checks and returns an error with code
+  // UNIQUE_VIOLATION when those checks fail.
+  async create(db) {
+    // for array values, we need to stringify manually because node-pg
+    // otherwise does not correctly serialize the array values
+    const arr = v => JSON.stringify(v);
+    try {
+      await db.fns.create_task(
+        this.taskId,
+        this.provisionerId,
+        this.workerType,
+        this.schedulerId,
+        this.taskGroupId,
+        arr(this.dependencies),
+        this.requires,
+        arr(this.routes),
+        this.priority,
+        this.retries,
+        this.created,
+        this.deadline,
+        this.expires,
+        arr(this.scopes),
+        this.payload,
+        this.metadata,
+        arr(this.tags),
+        this.extra,
+      );
+    } catch (err) {
+      if (err.code !== UNIQUE_VIOLATION) {
+        throw err;
+      }
+
+      const existing = await Task.get(db, this.taskId);
+      if (!this.equals(existing)) {
+        // new worker does not match, so this is a "real" conflict
+        throw err;
+      }
+      // ..otherwise adopt the identity of the existing task
+      Object.assign(this, existing);
     }
-  });
-};
+  }
 
-/**
- * Expire artifacts that are past their expiration.
- *
- * Returns a promise that all expired artifacts have been deleted
- */
-Artifact.expire = async function(now) {
-  assert(now instanceof Date, 'now must be given as option');
-  let count = 0;
-  await Entity.scan.call(this, {
-    expires: Entity.op.lessThan(now),
-  }, {
-    limit: 250, // max number of concurrent delete operations
-    handler: (item) => { count++; return item.remove(true); },
-  });
-  return count;
-};
+  // return the definition of this task (the immutable data)
+  definition() {
+    return {
+      provisionerId: this.provisionerId,
+      workerType: this.workerType,
+      schedulerId: this.schedulerId,
+      taskGroupId: this.taskGroupId,
+      dependencies: _.cloneDeep(this.dependencies),
+      requires: this.requires,
+      routes: _.cloneDeep(this.routes),
+      priority: this.priority,
+      retries: this.retries,
+      created: this.created.toJSON(),
+      deadline: this.deadline.toJSON(),
+      expires: this.expires.toJSON(),
+      scopes: _.cloneDeep(this.scopes),
+      payload: _.cloneDeep(this.payload),
+      metadata: _.cloneDeep(this.metadata),
+      tags: _.cloneDeep(this.tags),
+      extra: _.cloneDeep(this.extra),
+    };
+  }
 
-// Export Artifact
-exports.Artifact = Artifact;
+  // Return the task status structure
+  status() {
+    return {
+      taskId: this.taskId,
+      provisionerId: this.provisionerId,
+      workerType: this.workerType,
+      schedulerId: this.schedulerId,
+      taskGroupId: this.taskGroupId,
+      deadline: this.deadline.toJSON(),
+      expires: this.expires.toJSON(),
+      retriesLeft: this.retriesLeft,
+      state: this.state(),
+      runs: this.runs.map((run, runId) => {
+        return _.defaults({runId}, _.pick(run, [
+          'state',
+          'reasonCreated',
+          'reasonResolved',
+          'workerGroup',
+          'workerId',
+          'takenUntil',
+          'scheduled',
+          'started',
+          'resolved',
+        ]));
+      }),
+    };
+  }
 
-/**
- * Entity for tracking task-group existence
- * Ensuring that all tasks in a task-group has the same schedulerId.
- */
-let TaskGroup = Entity.configure({
-  version: 1,
-  partitionKey: Entity.keys.StringKey('taskGroupId'),
-  rowKey: Entity.keys.ConstantKey('task-group'),
-  properties: {
-    taskGroupId: Entity.types.SlugId,
-    schedulerId: Entity.types.String,
-    // Expiration date when this entry can be deleted
-    // When adding a task we will update this to task.expires + 72 hours
-    // if taskGroup.expires < task.expires. This way the taskGroup entity
-    // won't be updated 100 times if we submit 100 tasks sequentially, with
-    // slightly higher expiration.
-    expires: Entity.types.Date,
-  },
-});
+  // Get state of latest run, or 'unscheduled' if no runs
+  state() {
+    return (_.last(this.runs) || {state: 'unscheduled'}).state;
+  }
 
-/**
- * Expire task-groups that are past their expiration.
- *
- * Returns a promise that all expired task-groups have been deleted
- */
-TaskGroup.expire = async function(now) {
-  assert(now instanceof Date, 'now must be given as option');
-  let count = 0;
-  await Entity.scan.call(this, {
-    expires: Entity.op.lessThan(now),
-  }, {
-    limit: 250, // max number of concurrent delete operations
-    handler: (taskGroup) => {
-      count++;
-      return taskGroup.remove(true);
-    },
-  });
-  return count;
-};
+  // Update the status of this task using the value returned from one of the task-mutation
+  // functions like schedule_task or cancel_task that returns (retries_left, runs,
+  // taken_until).
+  updateStatusWith(result) {
+    if (result.length) {
+      const row = result[0];
+      this.retriesLeft = row.retries_left;
+      this.runs = row.runs;
+      this.takenUntil = row.taken_until;
+    }
+  }
 
-// Export TaskGroup
-exports.TaskGroup = TaskGroup;
+  // Compare "important" fields to another task (used to check idempotency)
+  equals(other) {
+    return _.isEqual(
+      _.omit(other, STATUS_FIELDS),
+      _.omit(this, STATUS_FIELDS));
+  }
+}
 
-/**
- * Entity registering a task as member of a task-group.
- *
- * Existence of this entity only carries value if the task also exists and has
- * the taskId and taskGroupId given here.
- */
-let TaskGroupMember = Entity.configure({
-  version: 1,
-  partitionKey: Entity.keys.StringKey('taskGroupId'),
-  rowKey: Entity.keys.StringKey('taskId'),
-  properties: {
-    taskGroupId: Entity.types.SlugId,
-    taskId: Entity.types.SlugId,
-    expires: Entity.types.Date,
-  },
-});
-
-/**
- * Expire task-group memberships that are past their expiration.
- *
- * Returns a promise that all expired task-group memberships have been deleted
- */
-TaskGroupMember.expire = async function(now) {
-  assert(now instanceof Date, 'now must be given as option');
-  let count = 0;
-  await Entity.scan.call(this, {
-    expires: Entity.op.lessThan(now),
-  }, {
-    limit: 250, // max number of concurrent delete operations
-    handler: (member) => { count++; return member.remove(true); },
-  });
-  return count;
-};
-
-// Export TaskGroupMember
-exports.TaskGroupMember = TaskGroupMember;
-
-/**
- * TaskRequirement is relation from tasks to dependencies.
- *
- * An entry {taskId, requiredTaskId} implies that taskId is blocked on
- * requiredTaskId.
- *
- * Hence, dependencies from taskId contains requiredTaskId.
- *
- * This is the same relation as TaskRequirement, except it is in the other
- * direction. This relation is used to track if dependencies have been
- * satisfied. This is tracked by deleting satisfied entries, when no entries
- * remains for taskId, the task must be scheduled.
- */
-let TaskRequirement = Entity.configure({
-  version: 1,
-  partitionKey: Entity.keys.StringKey('taskId'),
-  rowKey: Entity.keys.StringKey('requiredTaskId'),
-  properties: {
-    taskId: Entity.types.SlugId,
-    requiredTaskId: Entity.types.SlugId,
-    expires: Entity.types.Date,
-  },
-});
-
-/**
- * Expire TaskRequirement entries.
- *
- * Returns a promise that all expired TaskRequirement entries have been deleted
- */
-TaskRequirement.expire = async function(now) {
-  assert(now instanceof Date, 'now must be given as option');
-  let count = 0;
-  await Entity.scan.call(this, {
-    expires: Entity.op.lessThan(now),
-  }, {
-    limit: 250, // max number of concurrent delete operations
-    handler: entry => { count++; return entry.remove(true); },
-  });
-  return count;
-};
-
-// Export TaskRequirement
-exports.TaskRequirement = TaskRequirement;
-
-/**
- * TaskDependency is a relation from tasks to task dependents.
- *
- * An entry {taskId, dependentTaskId} implies that dependentTaskId depends on
- * taskId.
- *
- * Hence, dependencies from dependentTaskId contains taskId.
- *
- * This is the same relation as TaskRequirement, except it is in the other
- * direction. This relation is used to find tasks to consider for scheduling
- * when taskId is resolved.
- */
-let TaskDependency = Entity.configure({
-  version: 1,
-  partitionKey: Entity.keys.StringKey('taskId'),
-  rowKey: Entity.keys.StringKey('dependentTaskId'),
-  properties: {
-    taskId: Entity.types.SlugId,
-    dependentTaskId: Entity.types.SlugId,
-    // require is 'completed' or 'resolved' from task.requires
-    require: Entity.types.String,
-    expires: Entity.types.Date,
-  },
-});
-
-/**
- * Expire TaskDependency entries.
- *
- * Returns a promise that all expired TaskDependency entries have been deleted
- */
-TaskDependency.expire = async function(now) {
-  assert(now instanceof Date, 'now must be given as option');
-  let count = 0;
-  await Entity.scan.call(this, {
-    expires: Entity.op.lessThan(now),
-  }, {
-    limit: 250, // max number of concurrent delete operations
-    handler: entry => { count++; return entry.remove(true); },
-  });
-  return count;
-};
-
-// Export TaskDependency
-exports.TaskDependency = TaskDependency;
+// Export Task
+exports.Task = Task;
 
 /**
  * Provisioner describes provisioners (construed broadly - a provisionerId doesn't

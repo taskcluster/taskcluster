@@ -44,10 +44,11 @@ const load = Loader({
   },
 
   resolver: {
-    requires: ['cfg', 'monitor'],
-    setup: ({cfg, monitor}) => new ScopeResolver({
+    requires: ['cfg', 'monitor', 'db'],
+    setup: ({cfg, monitor, db}) => new ScopeResolver({
       maxLastUsedDelay: cfg.app.maxLastUsedDelay,
       monitor: monitor.childMonitor('scope-resolver'),
+      db,
     }),
   },
 
@@ -73,18 +74,6 @@ const load = Loader({
         cryptoKey: cfg.azure.cryptoKey,
         monitor: monitor.childMonitor('table.clients'),
       }),
-  },
-
-  Roles: {
-    requires: ['cfg', 'monitor', 'db'],
-    setup: async ({cfg, monitor, db}) => {
-      return data.Roles.setup({
-        db,
-        serviceName: 'auth',
-        tableName: cfg.app.rolesContainerName,
-        monitor: monitor.childMonitor('table.roles'),
-      });
-    },
   },
 
   schemaset: {
@@ -125,11 +114,11 @@ const load = Loader({
 
   api: {
     requires: [
-      'cfg', 'Client', 'Roles', 'schemaset', 'publisher', 'resolver',
+      'cfg', 'Client', 'db', 'schemaset', 'publisher', 'resolver',
       'sentryManager', 'monitor', 'pulseClient', 'gcp',
     ],
     setup: async ({
-      cfg, Client, Roles, schemaset, publisher, resolver, sentryManager,
+      cfg, Client, db, schemaset, publisher, resolver, sentryManager,
       monitor, pulseClient, gcp,
     }) => {
       // Set up the Azure tables
@@ -141,7 +130,7 @@ const load = Loader({
       // Load everything for resolver
       await resolver.setup({
         rootUrl: cfg.taskcluster.rootUrl,
-        Client, Roles,
+        Client,
         exchangeReference: exchanges.reference(),
         pulseClient,
       });
@@ -155,7 +144,7 @@ const load = Loader({
       return builder.build({
         rootUrl: cfg.taskcluster.rootUrl,
         context: {
-          Client, Roles,
+          Client, db,
           publisher,
           resolver,
           cfg,
