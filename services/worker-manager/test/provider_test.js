@@ -2,7 +2,7 @@ const assert = require('assert');
 const helper = require('./helper');
 const {Provider} = require('../src/providers/provider');
 const testing = require('taskcluster-lib-testing');
-const {WorkerPool} = require('../src/data');
+const {WorkerPool, WorkerPoolError} = require('../src/data');
 const {LEVELS} = require('taskcluster-lib-monitor');
 
 helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
@@ -90,7 +90,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         notify: await helper.load('notify'),
         db: helper.db,
         monitor,
-        WorkerPoolError: helper.WorkerPoolError,
+        WorkerPoolError: WorkerPoolError,
         // other stuff omitted..
       });
     });
@@ -104,12 +104,12 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         title: 'And Error about Something',
         description: 'WHO KNOWS',
         notify: helper.notify,
-        WorkerPoolError: helper.WorkerPoolError,
+        WorkerPoolError: WorkerPoolError,
       });
 
-      const errors = await helper.WorkerPoolError.scan({}, {});
-      assert.equal(errors.entries.length, 1);
-      assert.equal(errors.entries[0].workerPoolId, 'ww/tt');
+      const errors = await WorkerPoolError.getWorkerPoolErrors(helper.db, {});
+      assert.equal(errors.rows.length, 1);
+      assert.equal(errors.rows[0].workerPoolId, 'ww/tt');
 
       assert.equal(helper.notify.emails.length, 0);
     });
@@ -123,12 +123,12 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         title: 'And Error about Something',
         description: 'WHO KNOWS',
         notify: helper.notify,
-        WorkerPoolError: helper.WorkerPoolError,
+        WorkerPoolError: WorkerPoolError,
       });
 
-      const errors = await helper.WorkerPoolError.scan({}, {});
-      assert.equal(errors.entries.length, 1);
-      assert.equal(errors.entries[0].workerPoolId, 'ww/tt');
+      const errors = await WorkerPoolError.getWorkerPoolErrors(helper.db, {});
+      assert.equal(errors.rows.length, 1);
+      assert.equal(errors.rows[0].workerPoolId, 'ww/tt');
 
       assert.equal(helper.notify.emails.length, 1);
       assert.equal(helper.notify.emails[0].address, 'whatever@example.com');
@@ -143,15 +143,15 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         title: 'And Error about Something',
         description: 'WHO KNOWS',
         notify: helper.notify,
-        WorkerPoolError: helper.WorkerPoolError,
+        WorkerPoolError: WorkerPoolError,
         extra: {
           foo: 'bar-123-456',
         },
       });
 
-      const errors = await helper.WorkerPoolError.scan({}, {});
-      assert.equal(errors.entries.length, 1);
-      assert.equal(errors.entries[0].workerPoolId, 'ww/tt');
+      const errors = await WorkerPoolError.getWorkerPoolErrors(helper.db, {});
+      assert.equal(errors.rows.length, 1);
+      assert.equal(errors.rows[0].workerPoolId, 'ww/tt');
 
       assert.equal(helper.notify.emails.length, 1);
       assert.equal(helper.notify.emails[0].address, 'whatever@example.com');

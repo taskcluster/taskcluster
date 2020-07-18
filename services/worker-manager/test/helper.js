@@ -2,7 +2,6 @@ const taskcluster = require('taskcluster-client');
 const {FakeEC2, FakeAzure, FakeGoogle} = require('./fakes');
 const {stickyLoader, Secrets, withEntity, fakeauth, withMonitor, withPulse, withDb, resetTables} = require('taskcluster-lib-testing');
 const builder = require('../src/api');
-const data = require('../src/data');
 const load = require('../src/main');
 
 exports.rootUrl = 'http://localhost:60409';
@@ -22,7 +21,6 @@ exports.secrets = new Secrets({
 });
 
 exports.withEntities = (mock, skipping) => {
-  withEntity(mock, skipping, exports, 'WorkerPoolError', data.WorkerPoolError);
 };
 
 exports.withDb = (mock, skipping) => {
@@ -250,7 +248,7 @@ exports.resetTables = (mock, skipping) => {
     await resetTables({tableNames: [
       'workers',
       'worker_pools',
-      'wmworker_pool_errors_entities',
+      'worker_pool_errors',
     ]});
   });
 };
