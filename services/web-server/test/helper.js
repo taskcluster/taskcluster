@@ -2,7 +2,6 @@ const load = require('../src/main');
 const taskcluster = require('taskcluster-client');
 const {Secrets, stickyLoader, withMonitor, withEntity, withPulse, withDb, resetTables} = require('taskcluster-lib-testing');
 const sinon = require('sinon');
-const AuthorizationCode = require('../src/data/AuthorizationCode');
 const AccessToken = require('../src/data/AccessToken');
 const GithubClient = require('../src/login/clients/GithubClient');
 const libUrls = require('taskcluster-lib-urls');
@@ -36,7 +35,6 @@ exports.secrets = new Secrets({
 });
 
 exports.withEntities = (mock, skipping) => {
-  withEntity(mock, skipping, exports, 'AuthorizationCode', AuthorizationCode);
   withEntity(mock, skipping, exports, 'AccessToken', AccessToken);
 };
 

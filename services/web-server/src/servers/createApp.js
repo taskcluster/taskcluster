@@ -15,7 +15,7 @@ const oauth2 = require('./oauth2');
 const PostgresSessionStore = require('../login/PostgresSessionStore');
 const {traceMiddleware} = require('taskcluster-lib-app');
 
-module.exports = async ({ cfg, strategies, AuthorizationCode, AccessToken, auth, monitor, db }) => {
+module.exports = async ({ cfg, strategies, AccessToken, auth, monitor, db }) => {
   const app = express();
 
   app.set('trust proxy', cfg.server.trustProxy);
@@ -127,7 +127,7 @@ module.exports = async ({ cfg, strategies, AuthorizationCode, AccessToken, auth,
     decision,
     token,
     getCredentials,
-  } = oauth2(cfg, AuthorizationCode, AccessToken, strategies, auth, monitor);
+  } = oauth2(cfg, db, AccessToken, strategies, auth, monitor);
 
   // 1. Render a dialog asking the user to grant access
   app.get('/login/oauth/authorize', cors(corsOptions), authorization);

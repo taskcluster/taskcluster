@@ -22,7 +22,6 @@ const createSubscriptionServer = require('./servers/createSubscriptionServer');
 const resolvers = require('./resolvers');
 const typeDefs = require('./graphql');
 const PulseEngine = require('./PulseEngine');
-const AuthorizationCode = require('./data/AuthorizationCode');
 const AccessToken = require('./data/AccessToken');
 const scanner = require('./login/scanner');
 
@@ -117,9 +116,9 @@ const load = loader(
     },
 
     app: {
-      requires: ['cfg', 'strategies', 'AuthorizationCode', 'AccessToken', 'auth', 'monitor', 'db'],
-      setup: ({ cfg, strategies, AuthorizationCode, AccessToken, auth, monitor, db }) =>
-        createApp({ cfg, strategies, AuthorizationCode, AccessToken, auth, monitor, db }),
+      requires: ['cfg', 'strategies', 'AccessToken', 'auth', 'monitor', 'db'],
+      setup: ({ cfg, strategies, AccessToken, auth, monitor, db }) =>
+        createApp({ cfg, strategies, AccessToken, auth, monitor, db }),
     },
 
     httpServer: {
@@ -194,17 +193,6 @@ const load = loader(
       }),
     },
 
-    AuthorizationCode: {
-      requires: ['cfg', 'monitor', 'db'],
-      setup: ({cfg, monitor, db}) => AuthorizationCode.setup({
-        serviceName: 'web_server',
-        db,
-        tableName: cfg.app.authorizationCodesTableName,
-        monitor: monitor.childMonitor('table.authorizationCodes'),
-        signingKey: cfg.azure.signingKey,
-      }),
-    },
-
     AccessToken: {
       requires: ['cfg', 'monitor', 'db'],
       setup: ({cfg, monitor, db}) => AccessToken.setup({
@@ -218,14 +206,14 @@ const load = loader(
     },
 
     'cleanup-expire-auth-codes': {
-      requires: ['cfg', 'AuthorizationCode', 'monitor'],
-      setup: ({cfg, AuthorizationCode, monitor}) => {
+      requires: ['cfg', 'db', 'monitor'],
+      setup: ({cfg, db, monitor}) => {
         return monitor.oneShot('cleanup-expire-authorization-codes', async () => {
           const delay = cfg.app.authorizationCodeExpirationDelay;
           const now = taskcluster.fromNow(delay);
 
           debug('Expiring authorization codes');
-          const count = await AuthorizationCode.expire(now);
+          const count = (await db.fns.expire_authorization_codes(now))[0].expire_authorization_codes;
           debug('Expired ' + count + ' authorization codes');
         });
       },

@@ -1,0 +1,64 @@
+version: 39
+migrationScript: 0039-migration.sql
+downgradeScript: 0039-downgrade.sql
+methods:
+  create_authorization_code:
+    description: |-
+      Create an authorization code.
+    mode: write
+    serviceName: web_server
+    args: code_in text, client_id_in text, redirect_uri_in text, identity_in text, identity_provider_id_in text, expires_in timestamptz, client_details_in jsonb
+    returns: table(code text, client_id text, redirect_uri text, identity text, identity_provider_id text, expires timestamptz, client_details jsonb)
+    body: |-
+      begin
+        return query insert
+          into authorization_codes (code, client_id, redirect_uri, identity, identity_provider_id, expires, client_details)
+          values (code_in, client_id_in, redirect_uri_in, identity_in, identity_provider_id_in, expires_in, client_details_in)
+          returning
+            authorization_codes.code,
+            authorization_codes.client_id,
+            authorization_codes.redirect_uri,
+            authorization_codes.identity,
+            authorization_codes.identity_provider_id,
+            authorization_codes.expires,
+            authorization_codes.client_details;
+      end
+  get_authorization_code:
+    description: Get an authorization code entry given a code.
+    mode: read
+    serviceName: web_server
+    args: code_in text
+    returns: table(code text, client_id text, redirect_uri text, identity text, identity_provider_id text, expires timestamptz, client_details jsonb)
+    body: |-
+      begin
+        return query
+        select
+          authorization_codes.code,
+          authorization_codes.client_id,
+          authorization_codes.redirect_uri,
+          authorization_codes.identity,
+          authorization_codes.identity_provider_id,
+          authorization_codes.expires,
+          authorization_codes.client_details
+        from authorization_codes
+        where authorization_codes.code = code_in;
+      end
+  expire_authorization_codes:
+    description: |-
+      Expire authorization codes that come before `expires_in`.
+      Returns a count of rows that have been deleted.
+    mode: write
+    serviceName: web_server
+    args: expires_in timestamptz
+    returns: integer
+    body: |-
+      declare
+        count integer;
+      begin
+        delete from authorization_codes where authorization_codes.expires < expires_in;
+        if found then
+          get diagnostics count = row_count;
+          return count;
+        end if;
+        return 0;
+      end

@@ -106,12 +106,15 @@ access_token_table_entities:
   value: jsonb not null
   version: integer not null
   etag: uuid
-authorization_codes_table_entities:
-  partition_key: text not null
-  row_key: text not null
-  value: jsonb not null
-  version: integer not null
-  etag: uuid
+authorization_codes:
+  code: text not null
+  client_id: text not null
+  redirect_uri: text not null
+  identity: text not null
+  identity_provider_id: text not null
+  expires: timestamp with time zone not null
+  client_details: jsonb not null
+  etag: uuid not null
 github_access_tokens:
   user_id: text not null
   encrypted_access_token: jsonb not null

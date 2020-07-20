@@ -1,8 +1,10 @@
+const slug = require('slugid');
 const { fromNow } = require('taskcluster-client');
 const crypto = require('crypto');
 const assert = require('assert').strict;
 const helper = require('../helper');
 const testing = require('taskcluster-lib-testing');
+const { UNIQUE_VIOLATION } = require('taskcluster-lib-postgres');
 
 suite(testing.suiteName(), function() {
   helper.withDbForProcs({ serviceName: 'web_server' });
@@ -11,6 +13,7 @@ suite(testing.suiteName(), function() {
     await helper.withDbClient(async client => {
       await client.query('truncate github_access_tokens');
       await client.query('truncate sessions');
+      await client.query('truncate authorization_codes');
     });
   });
 
@@ -193,6 +196,79 @@ suite(testing.suiteName(), function() {
 
       const [entry] = await db.fns.session_load(hash(sessionIds[0]));
       assert(entry);
+    });
+  });
+
+  suite(`${testing.suiteName()} - authorization_codes`, function() {
+    const code = slug.v4();
+    const now = new Date();
+    const clientDetails = {
+      clientId: 'client-id',
+      description: '',
+      scopes: [],
+      expires: now.toJSON(),
+      deleteOnExpiration: true,
+    };
+    const mkAuthorizationCode = (db, overrides = {}) => {
+      return db.fns.create_authorization_code(
+        overrides.code || code,
+        overrides.client_id || 'client-id',
+        overrides.redirect_uri || 'www.example.com',
+        overrides.identity || 'identity',
+        overrides.identity_provider_id || 'identity-provider-id',
+        overrides.expires || now,
+        overrides.client_details || clientDetails
+      );
+    };
+
+    helper.dbTest('get_authorization_code returns an entry', async function(db) {
+      await mkAuthorizationCode(db);
+      const [authorizationCode] = await db.fns.get_authorization_code(code);
+      assert.equal(authorizationCode.code, code);
+      assert.equal(authorizationCode.client_id, 'client-id');
+      assert.equal(authorizationCode.redirect_uri, 'www.example.com');
+      assert.equal(authorizationCode.identity, 'identity');
+      assert.equal(authorizationCode.identity_provider_id, 'identity-provider-id');
+      assert.equal(authorizationCode.expires.toJSON(), now.toJSON());
+      assert.deepEqual(authorizationCode.client_details, clientDetails);
+    });
+
+    helper.dbTest('get_authorization_code does not throw when not found', async function(db) {
+      await db.fns.get_authorization_code('not-found');
+    });
+
+    helper.dbTest('create_authorization_code returns the authorization code', async function(db) {
+      const [authorizationCode] =  await mkAuthorizationCode(db);
+      assert.equal(authorizationCode.code, code);
+      assert.equal(authorizationCode.client_id, 'client-id');
+      assert.equal(authorizationCode.redirect_uri, 'www.example.com');
+      assert.equal(authorizationCode.identity, 'identity');
+      assert.equal(authorizationCode.identity_provider_id, 'identity-provider-id');
+      assert.equal(authorizationCode.expires.toJSON(), now.toJSON());
+      assert.deepEqual(authorizationCode.client_details, clientDetails);
+    });
+
+    helper.dbTest('create_authorization_code throws when row exists', async function(db) {
+      await mkAuthorizationCode(db);
+      await assert.rejects(
+        async () => {
+          await mkAuthorizationCode(db);
+        },
+        err => err.code === UNIQUE_VIOLATION,
+      );
+    });
+
+    helper.dbTest('expire_authorization_codes returns the count', async function(db) {
+      const slugs = [
+        slug.v4(),
+        slug.v4(),
+        slug.v4(),
+      ];
+      await mkAuthorizationCode(db, { code: slugs[0], expires: fromNow('-1 day') });
+      await mkAuthorizationCode(db, { code: slugs[1], expires: fromNow('- 1 day') });
+      await mkAuthorizationCode(db, { code: slugs[2], expires:  fromNow('1 day') });
+      const count = (await db.fns.expire_authorization_codes(new Date()))[0].expire_authorization_codes;
+      assert.equal(count, 2);
     });
   });
 });
