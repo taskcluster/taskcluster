@@ -1,3 +1,4 @@
+const { fromNow } = require('taskcluster-client');
 const crypto = require('crypto');
 const assert = require('assert').strict;
 const helper = require('../helper');
@@ -154,6 +155,44 @@ suite(testing.suiteName(), function() {
 
     helper.dbTest('remove session data does not throw when not found', async function(db) {
       await db.fns.session_remove(hash('not-found'));
+    });
+
+    helper.dbTest('expire_sessions', async function(db) {
+      sessionIds = [
+        'sEssI0n#Id',
+        'sEssI1n#Id',
+        'sEssI2n#Id',
+      ];
+      const samples = [
+        {
+          hashedSessionId: hash(sessionIds[0]),
+          encryptedSessionID: db.encrypt({ value: Buffer.from(sessionIds[0], 'utf8') }),
+          data: { foo: 'bar' },
+          expires: fromNow('1 day'),
+        },
+        {
+          hashedSessionId: hash(sessionIds[1]),
+          encryptedSessionID: db.encrypt({ value: Buffer.from(sessionIds[1], 'utf8') }),
+          data: { foo: 'bar' },
+          expires: fromNow('-1 day'),
+        }
+      ];
+
+      for (let i = 0; i < samples.length; i++) {
+        await db.fns.session_add(
+          samples[i].hashedSessionId,
+          samples[i].encryptedSessionID,
+          samples[i].data,
+          samples[i].expires,
+        );
+      }
+
+      const count = (await db.fns.expire_sessions())[0].expire_sessions;
+
+      assert.equal(count, 1);
+
+      const [entry] = await db.fns.session_load(hash(sessionIds[0]));
+      assert(entry);
     });
   });
 });

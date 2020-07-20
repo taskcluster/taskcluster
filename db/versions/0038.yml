@@ -50,3 +50,22 @@ methods:
         where
           sessions.hashed_session_id = hashed_session_id_in;
       end
+  expire_sessions:
+    description: |-
+      Expire sessions that come before the current time.
+      Returns a count of rows that have been deleted.
+    mode: write
+    serviceName: web_server
+    args: ''
+    returns: integer
+    body: |-
+      declare
+        count integer;
+      begin
+        delete from sessions where sessions.expires < now();
+        if found then
+          get diagnostics count = row_count;
+          return count;
+        end if;
+        return 0;
+      end
