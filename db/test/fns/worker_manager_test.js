@@ -315,12 +315,13 @@ suite(testing.suiteName(), function() {
     });
 
     helper.dbTest('get_worker_pool_errors full, pagination', async function(db, isFake) {
-      const now = new Date();
-      for (let i = 0; i < 10; i++) {
+      let newestDate;
+      for (let i = 9; i >= 0; i--) {
+        newestDate = fromNow(`- ${i} days`);
         await create_worker_pool_error(db, {
           error_id: `e/${i}`,
           worker_pool_id: `wp/${i}`,
-          reported: now,
+          reported: fromNow(`- ${i} days`),
         });
       }
 
@@ -328,7 +329,7 @@ suite(testing.suiteName(), function() {
       assert.deepEqual(
         rows.map(r => ({ error_id: r.error_id, worker_pool_id: r.worker_pool_id })),
         _.range(10).map(i => ({ error_id: `e/${i}`, worker_pool_id: `wp/${i}` })));
-      assert.deepEqual(rows[0].reported, now);
+      assert.deepEqual(rows[0].reported, newestDate);
       assert.equal(rows[0].kind, 'kind');
       assert.equal(rows[0].title, 'title');
       assert.equal(rows[0].description, 'descr');

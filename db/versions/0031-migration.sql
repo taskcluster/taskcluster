@@ -27,6 +27,7 @@ begin
     alter column description set not null,
     alter column etag set not null,
     alter column etag set default public.gen_random_uuid();
+  create index on worker_pool_errors (reported);
 
   revoke select, insert, update, delete on wmworker_pool_errors_entities from $db_user_prefix$_worker_manager;
   drop table wmworker_pool_errors_entities;
