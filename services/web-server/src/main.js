@@ -265,7 +265,7 @@ const load = loader(
           const now = new Date();
 
           debug('Expiring session storage entries');
-          const count = await AuthorizationCode.expire(now);
+          const count = await SessionStorage.expire(now);
           debug('Expired ' + count + ' session storage entries');
         });
       },
