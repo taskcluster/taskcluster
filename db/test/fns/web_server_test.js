@@ -56,7 +56,7 @@ suite(testing.suiteName(), function() {
     helper.dbTest('add session data', async function(db) {
       const sessionId = 'sEssI0n#Id';
       let sessionData1 = {
-        hashedSessionId:  hash(sessionId),
+        hashedSessionId: hash(sessionId),
         encryptedSessionID: db.encrypt({ value: Buffer.from(sessionId, 'utf8') }),
         data: {
           foo: "bar",
@@ -79,7 +79,7 @@ suite(testing.suiteName(), function() {
     helper.dbTest('add session data can overwrite', async function(db) {
       const sessionId = 'sEssI0n#Id';
       let sessionData1 = {
-        hashedSessionId:  hash(sessionId),
+        hashedSessionId: hash(sessionId),
         encryptedSessionID: db.encrypt({ value: Buffer.from(sessionId, 'utf8') }),
         data: {
           foo: "bar",
@@ -114,7 +114,7 @@ suite(testing.suiteName(), function() {
     helper.dbTest('get session data does not throw when not found', async function(db) {
       const sessionId = 'sEssI0n#Id';
       let sessionData1 = {
-        hashedSessionId:  hash(sessionId),
+        hashedSessionId: hash(sessionId),
         encryptedSessionID: db.encrypt({ value: Buffer.from(sessionId, 'utf8') }),
         data: {
           foo: "bar",
@@ -128,7 +128,7 @@ suite(testing.suiteName(), function() {
     helper.dbTest('remove session data', async function(db) {
       const sessionId = 'sEssI0n#Id';
       let sessionData1 = {
-        hashedSessionId:  hash(sessionId),
+        hashedSessionId: hash(sessionId),
         encryptedSessionID: db.encrypt({ value: Buffer.from(sessionId, 'utf8') }),
         data: {
           foo: "bar",
@@ -146,7 +146,6 @@ suite(testing.suiteName(), function() {
       assert(typeof sessionAsTable[0].encrypted_session_id === 'object');
       assert.deepEqual(sessionAsTable[0]["data"], sessionData1.data);
       assert.deepEqual(sessionAsTable[0]["expires"], sessionData1.expires);
-
 
       await db.fns.session_remove(sessionData1.hashedSessionId);
       sessionAsTable = await db.fns.session_load(sessionData1.hashedSessionId);
