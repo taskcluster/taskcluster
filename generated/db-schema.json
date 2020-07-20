@@ -235,7 +235,9 @@
     "sessions": {
       "data": "jsonb not null",
       "encrypted_session_id": "jsonb not null",
-      "expires": "timestamp with time zone not null"
+      "etag": "uuid not null",
+      "expires": "timestamp with time zone not null",
+      "hashed_session_id": "text not null"
     },
     "task_dependencies": {
       "dependent_task_id": "text not null",
@@ -4220,26 +4222,26 @@
       "downgradeScript": "begin\n\n  create table session_storage_table_entities(\n    partition_key text,\n    row_key text,\n    value jsonb not null,\n    version integer not null,\n    etag uuid default public.gen_random_uuid());\n  alter table session_storage_table_entities add primary key (partition_key, row_key);\n  grant select, insert, update, delete on session_storage_table_entities to $db_user_prefix$_web_server;\n\n  revoke select, insert, update, delete on sessions from $db_user_prefix$_web_server;\n  drop table sessions;\n\nend\n",
       "methods": {
         "session_add": {
-          "args": "encrypted_session_id_in jsonb, data_in jsonb, expires_in timestamptz",
-          "body": "begin\n  insert into sessions(encrypted_session_id, data, expires)\n  values (\n    encrypted_session_id_in,\n    data_in,\n    expires_in\n  ) on conflict (encrypted_session_id) do\n  update\n  set (data, expires) = (data_in, expires_in)\n  where sessions.encrypted_session_id = session_add.encrypted_session_id_in;\nend",
+          "args": "hashed_session_id_in text, encrypted_session_id_in jsonb, data_in jsonb, expires_in timestamptz",
+          "body": "begin\n  insert into sessions(hashed_session_id, encrypted_session_id, data, expires)\n  values (\n    hashed_session_id_in,\n    encrypted_session_id_in,\n    data_in,\n    expires_in\n  ) on conflict (hashed_session_id) do\n  update\n  set (encrypted_session_id, data, expires) = (encrypted_session_id_in, data_in, expires_in)\n  where sessions.hashed_session_id = session_add.hashed_session_id_in;\nend",
           "deprecated": false,
-          "description": "Sets the session data for `encrypted_session_id_in` to `data_in`.\n\nIf no session exists with encrypted session id `encrypted_session_id_in`,\na new row is inserted, otherwise the existing session's data is replaced\nwith the data in `data_in`.",
+          "description": "Set a session.\n\nIf no session exists with hashed session id `hashed_session_id_in`,\na new row is inserted, otherwise the existing session's data is replaced\nwith the data in `data_in`.",
           "mode": "write",
           "returns": "void",
           "serviceName": "web_server"
         },
         "session_load": {
-          "args": "encrypted_session_id_in jsonb",
-          "body": "begin\n  return query\n  select sessions.data, sessions.expires from sessions\n  where sessions.encrypted_session_id = encrypted_session_id_in;\nend",
+          "args": "hashed_session_id_in text",
+          "body": "begin\n  return query\n  select sessions.hashed_session_id, sessions.encrypted_session_id, sessions.data, sessions.expires from sessions\n  where sessions.hashed_session_id = hashed_session_id_in;\nend",
           "deprecated": false,
-          "description": "Returns the session for a given encrypted session id.",
+          "description": "Returns the session for a given hashed session id.",
           "mode": "read",
-          "returns": "table(data jsonb, expires timestamptz)",
+          "returns": "table(hashed_session_id text, encrypted_session_id jsonb, data jsonb, expires timestamptz)",
           "serviceName": "web_server"
         },
         "session_remove": {
-          "args": "encrypted_session_id_in jsonb",
-          "body": "begin\n  delete from sessions\n  where\n    sessions.encrypted_session_id = encrypted_session_id_in;\nend",
+          "args": "hashed_session_id_in text",
+          "body": "begin\n  delete from sessions\n  where\n    sessions.hashed_session_id = hashed_session_id_in;\nend",
           "deprecated": false,
           "description": "Removes a web session",
           "mode": "write",
@@ -4247,7 +4249,7 @@
           "serviceName": "web_server"
         }
       },
-      "migrationScript": "begin\n\n  create table sessions(\n    encrypted_session_id jsonb not null,\n    data jsonb not null,\n    expires timestamptz not null\n  );\n  alter table sessions add primary key (encrypted_session_id);\n  grant select, insert, update, delete on sessions to $db_user_prefix$_web_server;\n\n  revoke select, insert, update, delete on session_storage_table_entities from $db_user_prefix$_web_server;\n  drop table session_storage_table_entities;\n\nend\n",
+      "migrationScript": "begin\n\n  create table sessions(\n    hashed_session_id text not null,\n    encrypted_session_id jsonb not null,\n    data jsonb not null,\n    expires timestamptz not null,\n    etag uuid not null default public.gen_random_uuid()\n  );\n  alter table sessions add primary key (hashed_session_id);\n  grant select, insert, update, delete on sessions to $db_user_prefix$_web_server;\n\n  revoke select, insert, update, delete on session_storage_table_entities from $db_user_prefix$_web_server;\n  drop table session_storage_table_entities;\n\nend\n",
       "version": 38
     }
   ]
