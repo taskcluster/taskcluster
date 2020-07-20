@@ -1,3 +1,4 @@
+const crypto = require('crypto');
 const assert = require('assert');
 const taskcluster = require('taskcluster-client');
 const { NOOP } = require('../utils/constants');
@@ -13,7 +14,14 @@ module.exports = function ({ session, db, options = {} }) {
     sessionTimeout = '1 day',
   } = options;
 
-  return class AzureSessionStore extends Store {
+  const hash = (t) => {
+    return crypto
+      .createHash('sha512')
+      .update(t, 'utf8')
+      .digest('hex');
+  };
+
+  return class PostgresSessionStore extends Store {
     /*
      * required
      *
@@ -22,8 +30,9 @@ module.exports = function ({ session, db, options = {} }) {
      */
     async destroy(sessionId, callback = NOOP) {
       try {
-        const encryptedSessionID = db.encrypt({ value: Buffer.from(sessionId, 'utf8') });
-        await db.fns.session_remove(encryptedSessionID);
+        const hashedSessionId = hash(sessionId);
+
+        await db.fns.session_remove(hashedSessionId);
 
         return callback();
       } catch (err) {
@@ -45,10 +54,11 @@ module.exports = function ({ session, db, options = {} }) {
      */
     async get(sessionId, callback = NOOP) {
       try {
-        const encryptedSessionID = db.encrypt({ value: Buffer.from(sessionId, 'utf8') });
-        const entry = await db.fns.session_load(encryptedSessionID);
+        const hashedSessionId = hash(sessionId);
+        const entry = await db.fns.session_load(hashedSessionId);
+
         if (entry.length === 0) {
-          return callback(new Error("Session not found"));
+          return callback();
         }
 
         return callback(null, entry[0]["data"]);
@@ -71,7 +81,10 @@ module.exports = function ({ session, db, options = {} }) {
     async set(sessionId, data, callback = NOOP) {
       try {
         const encryptedSessionID = db.encrypt({ value: Buffer.from(sessionId, 'utf8') });
+        const hashedSessionId = hash(sessionId);
+
         await db.fns.session_add(
+          hashedSessionId,
           encryptedSessionID,
           data,
           taskcluster.fromNow(sessionTimeout),
@@ -97,7 +110,10 @@ module.exports = function ({ session, db, options = {} }) {
     async touch(sessionId, data, callback = NOOP) {
       try {
         const encryptedSessionID = db.encrypt({ value: Buffer.from(sessionId, 'utf8') });
+        const hashedSessionId = hash(sessionId);
+
         await db.fns.session_add(
+          hashedSessionId,
           encryptedSessionID,
           data,
           taskcluster.fromNow(sessionTimeout),

@@ -12,7 +12,7 @@ const MemoryStore = require('memorystore')(session);
 const credentials = require('./credentials');
 const oauth2AccessToken = require('./oauth2AccessToken');
 const oauth2 = require('./oauth2');
-const AzureSessionStore = require('../login/AzureSessionStore');
+const PostgresSessionStore = require('../login/PostgresSessionStore');
 const {traceMiddleware} = require('taskcluster-lib-app');
 
 module.exports = async ({ cfg, strategies, AuthorizationCode, AccessToken, auth, monitor, db }) => {
@@ -40,7 +40,7 @@ module.exports = async ({ cfg, strategies, AuthorizationCode, AccessToken, auth,
       : false,
   };
 
-  const SessionStore = AzureSessionStore({
+  const SessionStore = PostgresSessionStore({
     session,
     db,
     options: {

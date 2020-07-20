@@ -4,48 +4,49 @@ downgradeScript: 0038-downgrade.sql
 methods:
   session_add:
     description: |-
-      Sets the session data for `encrypted_session_id_in` to `data_in`.
+      Set a session.
 
-      If no session exists with encrypted session id `encrypted_session_id_in`,
+      If no session exists with hashed session id `hashed_session_id_in`,
       a new row is inserted, otherwise the existing session's data is replaced
       with the data in `data_in`.
     mode: write
     serviceName: web_server
-    args: encrypted_session_id_in jsonb, data_in jsonb, expires_in timestamptz
+    args: hashed_session_id_in text, encrypted_session_id_in jsonb, data_in jsonb, expires_in timestamptz
     returns: void
     body: |-
       begin
-        insert into sessions(encrypted_session_id, data, expires)
+        insert into sessions(hashed_session_id, encrypted_session_id, data, expires)
         values (
+          hashed_session_id_in,
           encrypted_session_id_in,
           data_in,
           expires_in
-        ) on conflict (encrypted_session_id) do
+        ) on conflict (hashed_session_id) do
         update
-        set (data, expires) = (data_in, expires_in)
-        where sessions.encrypted_session_id = session_add.encrypted_session_id_in;
+        set (encrypted_session_id, data, expires) = (encrypted_session_id_in, data_in, expires_in)
+        where sessions.hashed_session_id = session_add.hashed_session_id_in;
       end
   session_load:
-    description: Returns the session for a given encrypted session id.
+    description: Returns the session for a given hashed session id.
     mode: read
     serviceName: web_server
-    args: encrypted_session_id_in jsonb
-    returns: table(data jsonb, expires timestamptz)
+    args: hashed_session_id_in text
+    returns: table(hashed_session_id text, encrypted_session_id jsonb, data jsonb, expires timestamptz)
     body: |-
       begin
         return query
-        select sessions.data, sessions.expires from sessions
-        where sessions.encrypted_session_id = encrypted_session_id_in;
+        select sessions.hashed_session_id, sessions.encrypted_session_id, sessions.data, sessions.expires from sessions
+        where sessions.hashed_session_id = hashed_session_id_in;
       end
   session_remove:
     description: Removes a web session
     mode: write
     serviceName: web_server
-    args: encrypted_session_id_in jsonb
+    args: hashed_session_id_in text
     returns: void
     body: |-
       begin
         delete from sessions
         where
-          sessions.encrypted_session_id = encrypted_session_id_in;
+          sessions.hashed_session_id = hashed_session_id_in;
       end
