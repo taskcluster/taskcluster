@@ -122,7 +122,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     test('it should not error when touching the session', async function () {
       const store = getStore();
 
-      await  store.touch('foo', { cookie: { maxAge: 300 } });
+      await store.touch('foo', { cookie: { maxAge: 300 } });
     });
   });
 
