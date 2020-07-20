@@ -158,7 +158,7 @@ suite(testing.suiteName(), function() {
     });
 
     helper.dbTest('expire_sessions', async function(db) {
-      sessionIds = [
+      const sessionIds = [
         'sEssI0n#Id',
         'sEssI1n#Id',
         'sEssI2n#Id',
@@ -175,7 +175,7 @@ suite(testing.suiteName(), function() {
           encryptedSessionID: db.encrypt({ value: Buffer.from(sessionIds[1], 'utf8') }),
           data: { foo: 'bar' },
           expires: fromNow('-1 day'),
-        }
+        },
       ];
 
       for (let i = 0; i < samples.length; i++) {

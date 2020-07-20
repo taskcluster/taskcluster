@@ -250,7 +250,7 @@ const load = loader(
       setup: ({cfg, monitor, db}) => {
         return monitor.oneShot('cleanup-expire-session-storage', async () => {
           debug('Expiring session storage entries');
-          const count = await db.fns.expire_sessions();
+          const count = (await db.fns.expire_sessions())[0].expire_sessions;
           debug('Expired ' + count + ' session storage entries');
         });
       },
