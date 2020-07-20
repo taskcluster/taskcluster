@@ -31,7 +31,9 @@ suite("services checks", function() {
 
 for (let service of services) {
   const [serviceName, { tables }] = service;
-  const tableNames = Object.keys(tables).filter(name => name.endsWith("_entities"));
+  const tableNames = Object.keys(tables)
+    .filter(name => name.endsWith("_entities"))
+    .filter(name => !/^queue_task.*/.test(name));
 
   for (let tableName of tableNames) {
     const clients = [

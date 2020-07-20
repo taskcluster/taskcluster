@@ -37,7 +37,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     return {taskId: slugid.v4(), task};
   };
 
-  test('expire completed task', async () => {
+  test.skip('expire completed task', async () => {
     const {taskId, task} = makeTask('2 day');
 
     debug('### Creating task');
@@ -70,7 +70,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     });
   });
 
-  test('expire won\'t drop table', async () => {
+  test.skip('expire won\'t drop table', async () => {
     const {taskId, task} = makeTask('12 day');
 
     debug('### Creating task');

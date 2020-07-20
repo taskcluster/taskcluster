@@ -14,11 +14,14 @@ methods:
     returns: table (partition_key_out text, row_key_out text, value jsonb, version integer, etag uuid)
     body: |-
       begin
-        return query
-        select
-          queue_tasks_entities_load.partition_key,
-          queue_tasks_entities_load.row_key,
-          entity_buf_encode(
+        -- get the task from the new table, falling back to the old
+        perform 1 from tasks where tasks.task_id = partition_key;
+        if found then
+          -- new table (from original version 0020)
+          return query
+          select
+            queue_tasks_entities_load.partition_key,
+            queue_tasks_entities_load.row_key,
             entity_buf_encode(
               entity_buf_encode(
                 entity_buf_encode(
@@ -26,35 +29,43 @@ methods:
                     entity_buf_encode(
                       entity_buf_encode(
                         entity_buf_encode(
-                          jsonb_build_object(
-                            'PartitionKey', task_id,
-                            'RowKey', 'task',
-                            'taskId', slugid_to_uuid(task_id),
-                            'provisionerId', provisioner_id,
-                            'workerType', worker_type,
-                            'schedulerId', scheduler_id,
-                            'taskGroupId', slugid_to_uuid(task_group_id),
-                            'requires', requires::text,
-                            'priority', priority::text,
-                            'retries', retries,
-                            'retriesLeft', retries_left,
-                            'created', created,
-                            'deadline', deadline,
-                            'expires', expires,
-                            'takenUntil', coalesce(taken_until, '1970-01-01 00:00:00+00'::timestamptz)),
-                          'dependencies', dependencies::text),
-                        'routes', routes::text),
-                      'scopes', scopes::text),
-                    'payload', payload::text),
-                  'metadata', metadata::text),
-                'tags', tags::text),
-              'extra', extra::text),
-            'runs', runs::text) as value,
-          1 as version,
-          tasks.etag as etag
-        from tasks
-        where
-          tasks.task_id = partition_key;
+                          entity_buf_encode(
+                            jsonb_build_object(
+                              'PartitionKey', task_id,
+                              'RowKey', 'task',
+                              'taskId', slugid_to_uuid(task_id),
+                              'provisionerId', provisioner_id,
+                              'workerType', worker_type,
+                              'schedulerId', scheduler_id,
+                              'taskGroupId', slugid_to_uuid(task_group_id),
+                              'requires', requires::text,
+                              'priority', priority::text,
+                              'retries', retries,
+                              'retriesLeft', retries_left,
+                              'created', created,
+                              'deadline', deadline,
+                              'expires', expires,
+                              'takenUntil', coalesce(taken_until, '1970-01-01 00:00:00+00'::timestamptz)),
+                            'dependencies', dependencies::text),
+                          'routes', routes::text),
+                        'scopes', scopes::text),
+                      'payload', payload::text),
+                    'metadata', metadata::text),
+                  'tags', tags::text),
+                'extra', extra::text),
+              'runs', runs::text) as value,
+            1 as version,
+            tasks.etag as etag
+          from tasks
+          where
+            tasks.task_id = partition_key;
+        else
+          -- old table (copied from version 0003)
+          return query
+          select queue_tasks_entities.partition_key, queue_tasks_entities.row_key, queue_tasks_entities.value, queue_tasks_entities.version,
+          queue_tasks_entities.etag from queue_tasks_entities
+          where queue_tasks_entities.partition_key = queue_tasks_entities_load.partition_key and queue_tasks_entities.row_key = queue_tasks_entities_load.row_key;
+        end if;
       end
   queue_tasks_entities_create:
     serviceName: queue
@@ -66,6 +77,12 @@ methods:
       declare
         new_row tasks%ROWTYPE;
       begin
+        -- create the task in the new table, checking for conflicts in the old
+        perform 1 from queue_tasks_entities where queue_tasks_entities.partition_key = pk;
+        if found then
+          raise exception 'task exists in queue_tasks_entities' using errcode = 'unique_violation';
+        end if;
+        -- remainder is from original 0020.yml
         select
           uuid_to_slugid(properties ->> 'taskId'),
           (properties ->> 'provisionerId')::text,
@@ -109,6 +126,9 @@ methods:
     returns: table (etag uuid)
     body: |-
       begin
+        -- queue removes tasks for two reasons: during expiration, and when a task is
+        -- partially created before detecting an error (such as missing dependencies).
+        -- So, during this migration, only new tasks can be removed.
         return query delete from tasks
         where
           tasks.task_id = partition_key
@@ -122,40 +142,62 @@ methods:
     returns: table (etag uuid)
     body: |-
       declare
-        new_etag uuid;
+        new_etag uuid := public.gen_random_uuid();
       begin
-        -- NOTE: queue only updates runs, retriesLeft, and takenUntil, so only those fields are
-        -- supported here.
-        new_etag = public.gen_random_uuid();
-        update tasks
-        set (
-          runs,
-          retries_left,
-          taken_until,
-          etag
-        ) = (
-          entity_buf_decode(properties, 'runs')::jsonb,
-          (properties ->> 'retriesLeft')::int,
-          case (properties ->> 'takenUntil')::timestamptz
-            when '1970-01-01 00:00:00+00'::timestamptz then null
-            else (properties ->> 'takenUntil')::timestamptz
-          end,
-          new_etag
-        )
-        where
-          tasks.task_id = partition_key and
-          tasks.etag = queue_tasks_entities_modify.old_etag;
+        perform 1 from tasks where tasks.task_id = partition_key;
         if found then
-          return query select new_etag;
-          return;
-        end if;
-        perform tasks.etag from tasks
-        where
-          tasks.task_id = partition_key;
-        if found then
-          raise exception 'unsuccessful update' using errcode = 'P0004';
+          -- from original 0020
+          -- NOTE: queue only updates runs, retriesLeft, and takenUntil, so only those fields are
+          -- supported here.
+          update tasks
+          set (
+            runs,
+            retries_left,
+            taken_until,
+            etag
+          ) = (
+            entity_buf_decode(properties, 'runs')::jsonb,
+            (properties ->> 'retriesLeft')::int,
+            case (properties ->> 'takenUntil')::timestamptz
+              when '1970-01-01 00:00:00+00'::timestamptz then null
+              else (properties ->> 'takenUntil')::timestamptz
+            end,
+            new_etag
+          )
+          where
+            tasks.task_id = partition_key and
+            tasks.etag = queue_tasks_entities_modify.old_etag;
+          if found then
+            return query select new_etag;
+            return;
+          end if;
+          perform tasks.etag from tasks
+          where
+            tasks.task_id = partition_key;
+          if found then
+            raise exception 'unsuccessful update' using errcode = 'P0004';
+          else
+            raise exception 'no such row' using errcode = 'P0002';
+          end if;
         else
-          raise exception 'no such row' using errcode = 'P0002';
+          -- from 0002
+          update queue_tasks_entities
+          set (value, version, etag) = (properties, queue_tasks_entities_modify.version, new_etag)
+          where queue_tasks_entities.partition_key = queue_tasks_entities_modify.partition_key and queue_tasks_entities.row_key = queue_tasks_entities_modify.row_key and queue_tasks_entities.etag = queue_tasks_entities_modify.old_etag;
+
+          if found then
+            return query select new_etag;
+            return;
+          end if;
+
+          perform queue_tasks_entities.etag from queue_tasks_entities
+          where queue_tasks_entities.partition_key = queue_tasks_entities_modify.partition_key and queue_tasks_entities.row_key = queue_tasks_entities_modify.row_key;
+
+          if found then
+            raise exception 'unsuccessful update' using errcode = 'P0004';
+          else
+            raise exception 'no such row' using errcode = 'P0002';
+          end if;
         end if;
       end
   queue_tasks_entities_scan:
@@ -170,6 +212,9 @@ methods:
         exp_cond_field text;
         exp_cond_operator text;
         exp_cond_operand timestamptz;
+        sql text := 'select queue_tasks_entities.partition_key, queue_tasks_entities.row_key, queue_tasks_entities.value, queue_tasks_entities.version, queue_tasks_entities.etag from queue_tasks_entities';
+        partition_key_var text;
+        row_key_var text;
       begin
         if not condition is null then
           cond := regexp_split_to_array(condition, '\s+');
@@ -177,15 +222,30 @@ methods:
           exp_cond_operator := cond[4];
           exp_cond_operand := cond[5] :: timestamptz;
 
+          if (exp_cond_field || exp_cond_operator) = 'expires<' then
+            -- during the migration, nothing gets expired..
+            return;
+          end if;
+
           if not (exp_cond_field || exp_cond_operator) in ('takenUntil=', 'deadline=', 'expires<') then
             raise exception 'queue_tasks_entities_scan only supports certain takenUntil, deadline, and expires conditions';
           end if;
         end if;
 
-        return query select
-          task_id as partition_key,
-          'task' as row_key,
-          entity_buf_encode(
+        -- pk is set in all circumstances except expires, which is handled above
+        if pk is null then
+          raise exception 'non-expiration task entities scan with null pk?!';
+        end if;
+
+        perform 1
+        from tasks
+        where tasks.task_id = pk;
+
+        if found then
+          -- query from original 0020
+          return query select
+            task_id as partition_key,
+            'task' as row_key,
             entity_buf_encode(
               entity_buf_encode(
                 entity_buf_encode(
@@ -193,57 +253,82 @@ methods:
                     entity_buf_encode(
                       entity_buf_encode(
                         entity_buf_encode(
-                          jsonb_build_object(
-                            'PartitionKey', task_id,
-                            'RowKey', 'task',
-                            'taskId', slugid_to_uuid(task_id),
-                            'provisionerId', provisioner_id,
-                            'workerType', worker_type,
-                            'schedulerId', scheduler_id,
-                            'taskGroupId', slugid_to_uuid(task_group_id),
-                            'requires', requires::text,
-                            'priority', priority::text,
-                            'retries', retries,
-                            'retriesLeft', retries_left,
-                            'created', created,
-                            'deadline', deadline,
-                            'expires', expires,
-                            'takenUntil', coalesce(taken_until, '1970-01-01 00:00:00+00'::timestamptz)),
-                          'dependencies', dependencies::text),
-                        'routes', routes::text),
-                      'scopes', scopes::text),
-                    'payload', payload::text),
-                  'metadata', metadata::text),
-                'tags', tags::text),
-              'extra', extra::text),
-            'runs', runs::text) as value,
-          1 as version,
-          tasks.etag as etag from tasks
-        where
-          (pk is NULL or pk = task_id) and
-          case
-            when exp_cond_field = 'deadline' then deadline = exp_cond_operand
-            -- note that queue never queries for takenUntil = new Date(0)
-            when exp_cond_field = 'takenUntil' then taken_until = exp_cond_operand
-            when exp_cond_field = 'expires' then expires < exp_cond_operand
-            else true
+                          entity_buf_encode(
+                            jsonb_build_object(
+                              'PartitionKey', task_id,
+                              'RowKey', 'task',
+                              'taskId', slugid_to_uuid(task_id),
+                              'provisionerId', provisioner_id,
+                              'workerType', worker_type,
+                              'schedulerId', scheduler_id,
+                              'taskGroupId', slugid_to_uuid(task_group_id),
+                              'requires', requires::text,
+                              'priority', priority::text,
+                              'retries', retries,
+                              'retriesLeft', retries_left,
+                              'created', created,
+                              'deadline', deadline,
+                              'expires', expires,
+                              'takenUntil', coalesce(taken_until, '1970-01-01 00:00:00+00'::timestamptz)),
+                            'dependencies', dependencies::text),
+                          'routes', routes::text),
+                        'scopes', scopes::text),
+                      'payload', payload::text),
+                    'metadata', metadata::text),
+                  'tags', tags::text),
+                'extra', extra::text),
+              'runs', runs::text) as value,
+            1 as version,
+            tasks.etag as etag from tasks
+          where
+            (pk is NULL or pk = task_id) and
+            case
+              when exp_cond_field = 'deadline' then deadline = exp_cond_operand
+              -- note that queue never queries for takenUntil = new Date(0)
+              when exp_cond_field = 'takenUntil' then taken_until = exp_cond_operand
+              when exp_cond_field = 'expires' then expires < exp_cond_operand
+              else true
+            end
+          order by tasks.task_id
+          limit case
+            when (size is not null and size > 0) then size + 1
+            else null
           end
-        order by tasks.task_id
-        limit case
-          when (size is not null and size > 0) then size + 1
-          else null
-        end
-        offset case
-          when (page is not null and page > 0) then page
-          else 0
-        end;
+          offset case
+            when (page is not null and page > 0) then page
+            else 0
+          end;
+        else
+          -- entities scan from 0007
+          if queue_tasks_entities_scan.pk is not null or queue_tasks_entities_scan.rk is not null or condition is not null then
+            sql := sql || ' where ';
+          end if;
+
+          if queue_tasks_entities_scan.pk is not null then
+            partition_key_var := 'partition_key = ' || quote_literal(queue_tasks_entities_scan.pk);
+          end if;
+
+          if queue_tasks_entities_scan.rk is not null then
+            row_key_var := 'row_key = ' || quote_literal(queue_tasks_entities_scan.rk);
+          end if;
+
+          sql := sql || concat_ws(' and ', partition_key_var, row_key_var, condition);
+          sql := sql || ' order by queue_tasks_entities.partition_key, queue_tasks_entities.row_key';
+
+          if size is not null and size > 0 then
+            sql := sql || ' limit ' || size + 1;
+
+            if page is not null and page > 0 then
+              sql := sql || ' offset ' || page;
+            end if;
+          end if;
+
+          return query execute sql;
+        end if;
       end
 
   ####
   # queue_task_group_members_entities
-  #
-  # This table is just an index into tasks by taskGroupId, and is now read-only -- writes
-  # are just ignored.
 
   queue_task_group_members_entities_load:
     description: See taskcluster-lib-entities
@@ -253,22 +338,36 @@ methods:
     returns: table (partition_key_out text, row_key_out text, value jsonb, version integer, etag uuid)
     body: |-
       begin
-        return query
-        select
-          task_group_id,
-          task_id,
-          jsonb_build_object(
-            'PartitionKey', task_group_id,
-            'RowKey', task_id,
-            'taskId', slugid_to_uuid(task_id),
-            'taskGroupId', slugid_to_uuid(task_group_id),
-            'expires', expires) as value,
-          1 as version,
-          tasks.etag as etag
+        perform 1
         from tasks
         where
           tasks.task_group_id = partition_key and
           tasks.task_id = row_key;
+        if found then
+          -- query from original 0020
+          return query
+          select
+            task_group_id,
+            task_id,
+            jsonb_build_object(
+              'PartitionKey', task_group_id,
+              'RowKey', task_id,
+              'taskId', slugid_to_uuid(task_id),
+              'taskGroupId', slugid_to_uuid(task_group_id),
+              'expires', expires) as value,
+            1 as version,
+            tasks.etag as etag
+          from tasks
+          where
+            tasks.task_group_id = partition_key and
+            tasks.task_id = row_key;
+        else
+          -- query from 0002
+          return query
+          select queue_task_group_members_entities.partition_key, queue_task_group_members_entities.row_key, queue_task_group_members_entities.value, queue_task_group_members_entities.version,
+          queue_task_group_members_entities.etag from queue_task_group_members_entities
+          where queue_task_group_members_entities.partition_key = queue_task_group_members_entities_load.partition_key and queue_task_group_members_entities.row_key = queue_task_group_members_entities_load.row_key;
+        end if;
       end
   queue_task_group_members_entities_create:
     serviceName: queue
@@ -278,6 +377,8 @@ methods:
     returns: uuid
     body: |-
       begin
+        -- during the migration, new tasks are created in the tasks table, which implies
+        -- group membership, so there's nothing to do here.
         return public.gen_random_uuid();
       end
   queue_task_group_members_entities_remove:
@@ -288,12 +389,8 @@ methods:
     returns: table (etag uuid)
     body: |-
       begin
-        return query
-        select tasks.etag
-        from tasks
-        where
-          tasks.task_group_id = partition_key and
-          tasks.task_id = row_key;
+        -- during this migration, removing tasks (and their members) does nothing
+        return query select public.gen_random_uuid() as etag;
       end
   queue_task_group_members_entities_modify:
     serviceName: queue
@@ -325,6 +422,8 @@ methods:
           return;
         end if;
 
+        raise log 'here size % page %', size, page;
+
         if not condition is null then
           cond := regexp_split_to_array(condition, '\s+');
           exp_cond_field := trim(cond[3], '''');
@@ -336,23 +435,46 @@ methods:
           end if;
         end if;
 
-        return query
-        select
-          task_group_id,
-          task_id,
-          jsonb_build_object(
-            'PartitionKey', task_group_id,
-            'RowKey', task_id,
-            'taskId', slugid_to_uuid(task_id),
-            'taskGroupId', slugid_to_uuid(task_group_id),
-            'expires', expires) as value,
-          1 as version,
-          tasks.etag as etag
-        from tasks
-        where
-          tasks.task_group_id = pk and
-          (exp_cond_operand is NULL or expires >= exp_cond_operand)
-        order by tasks.task_id
+        -- Here's the plan: construct a union of the query from 0007 and the query from 0020, since some
+        -- of the tasks in this task group may be migrated and others not.  That union is 'results', and
+        -- it is then sorted and paginated.
+        return query with results as (
+
+          -- query from 0007, rewritten to not use conditions or EXECUTE
+          select
+            queue_task_group_members_entities.partition_key,
+            queue_task_group_members_entities.row_key,
+            queue_task_group_members_entities.value,
+            queue_task_group_members_entities.version,
+            queue_task_group_members_entities.etag
+          from queue_task_group_members_entities
+          where 
+            queue_task_group_members_entities.partition_key = pk
+            -- expires condition is handled in the outer query
+
+          union
+
+          -- query from 0020
+          select
+            task_group_id,
+            task_id,
+            jsonb_build_object(
+              'PartitionKey', task_group_id,
+              'RowKey', task_id,
+              'taskId', slugid_to_uuid(task_id),
+              'taskGroupId', slugid_to_uuid(task_group_id),
+              'expires', expires) as value,
+            1 as version,
+            tasks.etag as etag
+          from tasks
+          where
+            tasks.task_group_id = pk
+            -- expires condition is handled in the outer query
+        )
+
+        select * from results
+        where exp_cond_operand is NULL or (results.value ->> 'expires')::timestamptz >= exp_cond_operand
+        order by results.partition_key, results.row_key
         limit case
           when (size is not null and size > 0) then size + 1
           else null
@@ -365,9 +487,6 @@ methods:
 
   ####
   # queue_task_group_active_sets_entities
-  #
-  # This table is just an index into tasks by taskGroupId, and is now read-only -- writes
-  # and removals are translated to changes to the `ever_resolved` column of the tasks table.
 
   queue_task_group_active_sets_entities_load:
     description: See taskcluster-lib-entities
@@ -377,23 +496,37 @@ methods:
     returns: table (partition_key_out text, row_key_out text, value jsonb, version integer, etag uuid)
     body: |-
       begin
-        return query
-        select
-          task_group_id,
-          task_id,
-          jsonb_build_object(
-            'PartitionKey', task_group_id,
-            'RowKey', task_id,
-            'taskId', slugid_to_uuid(task_id),
-            'taskGroupId', slugid_to_uuid(task_group_id),
-            'expires', expires) as value,
-          1 as version,
-          tasks.etag as etag
+        perform 1
         from tasks
         where
-          not ever_resolved and
           tasks.task_group_id = partition_key and
           tasks.task_id = row_key;
+        if found then
+          -- query from original 0020
+          return query
+          select
+            task_group_id,
+            task_id,
+            jsonb_build_object(
+              'PartitionKey', task_group_id,
+              'RowKey', task_id,
+              'taskId', slugid_to_uuid(task_id),
+              'taskGroupId', slugid_to_uuid(task_group_id),
+              'expires', expires) as value,
+            1 as version,
+            tasks.etag as etag
+          from tasks
+          where
+            not ever_resolved and
+            tasks.task_group_id = partition_key and
+            tasks.task_id = row_key;
+        else
+          -- query from 0002
+          return query
+          select queue_task_group_active_sets_entities.partition_key, queue_task_group_active_sets_entities.row_key, queue_task_group_active_sets_entities.value, queue_task_group_active_sets_entities.version,
+          queue_task_group_active_sets_entities.etag from queue_task_group_active_sets_entities
+          where queue_task_group_active_sets_entities.partition_key = queue_task_group_active_sets_entities_load.partition_key and queue_task_group_active_sets_entities.row_key = queue_task_group_active_sets_entities_load.row_key;
+        end if;
       end
   queue_task_group_active_sets_entities_create:
     serviceName: queue
@@ -416,13 +549,26 @@ methods:
     returns: table (etag uuid)
     body: |-
       begin
-        -- DependencyTracker uses this to mark a task as ever_resolved
-        update tasks
-        set ever_resolved = true
-        where 
+        perform 1
+        from tasks
+        where
           tasks.task_group_id = partition_key and
           tasks.task_id = row_key;
-        return query select public.gen_random_uuid() as etag;
+        if found then
+          -- from 0020
+          -- DependencyTracker uses this to mark a task as ever_resolved
+          update tasks
+          set ever_resolved = true
+          where 
+            tasks.task_group_id = partition_key and
+            tasks.task_id = row_key;
+          return query select public.gen_random_uuid() as etag;
+        else
+          -- from 0002
+          return query delete from queue_task_group_active_sets_entities
+          where queue_task_group_active_sets_entities.partition_key = queue_task_group_active_sets_entities_remove.partition_key and queue_task_group_active_sets_entities.row_key = queue_task_group_active_sets_entities_remove.row_key
+          returning queue_task_group_active_sets_entities.etag;
+        end if;
       end
   queue_task_group_active_sets_entities_modify:
     serviceName: queue
@@ -460,23 +606,41 @@ methods:
           return;
         end if;
 
-        -- the idea here is to use the tasks_task_group_id_unresolved_idx index for a quick response
-        return query select
-          task_group_id as partition_key,
-          task_id as row_key,
-          jsonb_build_object(
-            'PartitionKey', task_group_id,
-            'RowKey', task_id,
-            'taskGroupId', slugid_to_uuid(task_group_id),
-            'taskId', slugid_to_uuid(task_id),
-            'expires', expires) as value,
-          1 as version,
-          public.gen_random_uuid() as etag
-        from tasks
-        where
-          (pk is NULL or pk = task_group_id) and
-          not ever_resolved
-        order by tasks.task_group_id, tasks.task_id
+        -- Here's the plan: construct a union of the query from 0007 and the query from 0020, since some
+        -- of the tasks in this task group may be migrated and others not.  That union is 'results', and
+        -- it is then sorted and paginated.
+        return query with results as (
+          select
+            queue_task_group_active_sets_entities.partition_key,
+            queue_task_group_active_sets_entities.row_key,
+            queue_task_group_active_sets_entities.value,
+            queue_task_group_active_sets_entities.version,
+            queue_task_group_active_sets_entities.etag
+          from queue_task_group_active_sets_entities
+          where 
+            queue_task_group_active_sets_entities.partition_key = pk
+
+          union
+
+          -- query from 0020
+          select
+            task_group_id as partition_key,
+            task_id as row_key,
+            jsonb_build_object(
+              'PartitionKey', task_group_id,
+              'RowKey', task_id,
+              'taskGroupId', slugid_to_uuid(task_group_id),
+              'taskId', slugid_to_uuid(task_id),
+              'expires', expires) as value,
+            1 as version,
+            public.gen_random_uuid() as etag
+          from tasks
+          where
+            (pk is NULL or pk = task_group_id) and
+            not ever_resolved
+        )
+        select * from results
+        order by results.partition_key, results.row_key
         limit case
           when (size is not null and size > 0) then size + 1
           else null

@@ -31,12 +31,19 @@ exports.withDbForVersion = function() {
     pool = new Pool({connectionString: exports.dbUrl});
     exports.withDbClient = async (cb) => {
       const client = await pool.connect();
+      let currentQueryText;
+      // log each query..
+      const query = (query, args) => {
+        currentQueryText = query;
+        return client.query(query, args);
+      };
       try {
         try {
-          return await cb(client);
+          return await cb({query});
         } catch (err) {
           // show hints or details from this error in the debug log, to help
           // debugging issues..
+          debug(`QUERY: ${currentQueryText}`);
           if (err.hint) {
             debug(`HINT: ${err.hint}`);
           }
@@ -271,12 +278,16 @@ exports.testEntityTable = ({
   // it is treated as a collection of modifier functions to run in parallel to check
   // support for concurrent modifications.
   modifications,
+  // title is used in the suite title
+  title,
+  // upgradeFunc is called instead of db.upgradeTo(THIS_VERSION).
+  upgradeFunc,
   // customTests can define additional test cases in the usual Mocha style.  The
   // parameter is true if the tests are run for THIS_VERSION, otherwise for PREV_VERSION.
 }, customTests = (isThisVersion) => {}) => {
   const prevVersion = dbVersion - 1;
   // NOTE: these tests must run in order
-  suite(`entity methods for ${entityTableName} / ${newTableName}`, function() {
+  suite(`entity methods for ${entityTableName} / ${newTableName}${title ? ` - ${title}` : ''}`, function() {
     let Entity;
     let db;
 
@@ -365,7 +376,11 @@ exports.testEntityTable = ({
 
       for (let {condition} of loadConditions) {
         test(`remove ${JSON.stringify(condition)}`, async function() {
+          const beforeEntity = await Entity.load(condition, true);
+          assert.notEqual(beforeEntity, undefined);
+
           await Entity.remove(condition);
+
           const entity = await Entity.load(condition, true);
           assert.equal(entity, undefined);
 
@@ -403,7 +418,11 @@ exports.testEntityTable = ({
         await resetTables();
         await Promise.all(Object.values(samples).map(
           sample => Entity.create(sample)));
-        await exports.upgradeTo(dbVersion);
+        if (upgradeFunc) {
+          await upgradeFunc(dbVersion);
+        } else {
+          await exports.upgradeTo(dbVersion);
+        }
       });
 
       for (let {condition, expectedSample} of loadConditions) {

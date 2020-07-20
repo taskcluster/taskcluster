@@ -4,34 +4,46 @@ begin
   lock table tasks;
 
   raise log 'TIMING start queue_tasks_entities create table';
-  create table queue_tasks_entities(
+  create table if not exists queue_tasks_entities(
     partition_key text, row_key text,
     value jsonb not null,
     version integer not null,
     etag uuid default public.gen_random_uuid());
 
   raise log 'TIMING start queue_tasks_entities primary key';
-  alter table queue_tasks_entities add primary key (partition_key, row_key);
+  begin
+    alter table queue_tasks_entities add primary key (partition_key, row_key);
+  exception
+    when SQLSTATE '42P16' then
+  end;
 
   raise log 'TIMING start queue_task_group_members_entities create table';
-  create table queue_task_group_members_entities(
+  create table if not exists queue_task_group_members_entities(
     partition_key text, row_key text,
     value jsonb not null,
     version integer not null,
     etag uuid default public.gen_random_uuid());
 
   raise log 'TIMING start queue_task_group_members_entities primary key';
-  alter table queue_task_group_members_entities add primary key (partition_key, row_key);
+  begin
+    alter table queue_task_group_members_entities add primary key (partition_key, row_key);
+  exception
+    when SQLSTATE '42P16' then -- do nothing when index already exists..
+  end;
 
   raise log 'TIMING start queue_task_group_active_sets_entities create table';
-  create table queue_task_group_active_sets_entities(
+  create table if not exists queue_task_group_active_sets_entities(
     partition_key text, row_key text,
     value jsonb not null,
     version integer not null,
     etag uuid default public.gen_random_uuid());
 
   raise log 'TIMING start queue_task_group_active_sets_entities primary key';
-  alter table queue_task_group_active_sets_entities add primary key (partition_key, row_key);
+  begin
+    alter table queue_task_group_active_sets_entities add primary key (partition_key, row_key);
+  exception
+    when SQLSTATE '42P16' then -- do nothing when index already exists..
+  end;
 
   raise log 'TIMING start queue_tasks_entities insert';
   insert into queue_tasks_entities
@@ -74,7 +86,8 @@ begin
       'runs', runs::text) as value,
     1 as version,
     etag
-  from tasks;
+  from tasks
+  on conflict do nothing;
 
   -- queue_task_group_members_entities is just a different index on the tasks
   -- table, so we reconstruct it from the tasks
@@ -90,7 +103,8 @@ begin
       'taskGroupId', slugid_to_uuid(task_group_id)) as value,
     1 as version,
     etag
-  from tasks;
+  from tasks
+  on conflict do nothing;
 
   -- similarly for queue_task_group_active_sets_entities
   raise log 'TIMING start queue_task_group_active_sets_entities insert';
@@ -106,7 +120,8 @@ begin
     1 as version,
     etag
   from tasks
-  where not ever_resolved;
+  where not ever_resolved
+  on conflict do nothing;
 
   raise log 'TIMING start queue_{tasks,task_group_{active_sets.members}_entities} permissions';
   revoke select, insert, update, delete on tasks from $db_user_prefix$_queue;
