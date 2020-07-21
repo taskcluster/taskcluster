@@ -44,7 +44,7 @@ secrets:
 web_server:
   tables:
     authorization_codes: write
-    access_token_table_entities: write
+    access_tokens: write
     sessions: write
     github_access_tokens: write
 worker_manager:

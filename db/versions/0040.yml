@@ -1,0 +1,4 @@
+version: 40
+migrationScript: 0040-migration.sql
+downgradeScript: 0040-downgrade.sql
+methods: []
