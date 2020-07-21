@@ -22,7 +22,6 @@ const createSubscriptionServer = require('./servers/createSubscriptionServer');
 const resolvers = require('./resolvers');
 const typeDefs = require('./graphql');
 const PulseEngine = require('./PulseEngine');
-const AccessToken = require('./data/AccessToken');
 const scanner = require('./login/scanner');
 
 require('./monitor');
@@ -116,9 +115,9 @@ const load = loader(
     },
 
     app: {
-      requires: ['cfg', 'strategies', 'AccessToken', 'auth', 'monitor', 'db'],
-      setup: ({ cfg, strategies, AccessToken, auth, monitor, db }) =>
-        createApp({ cfg, strategies, AccessToken, auth, monitor, db }),
+      requires: ['cfg', 'strategies', 'auth', 'monitor', 'db'],
+      setup: ({ cfg, strategies, auth, monitor, db }) =>
+        createApp({ cfg, strategies, auth, monitor, db }),
     },
 
     httpServer: {
@@ -190,18 +189,7 @@ const load = loader(
         serviceName: 'web_server',
         monitor: monitor.childMonitor('db'),
         statementTimeout: process === 'server' ? 30000 : 0,
-      }),
-    },
-
-    AccessToken: {
-      requires: ['cfg', 'monitor', 'db'],
-      setup: ({cfg, monitor, db}) => AccessToken.setup({
-        db,
-        serviceName: 'web_server',
-        tableName: cfg.app.accessTokenTableName,
-        monitor: monitor.childMonitor('table.accessTokenTable'),
-        signingKey: cfg.azure.signingKey,
-        cryptoKey: cfg.azure.cryptoKey,
+        dbCryptoKeys: cfg.postgres.dbCryptoKeys,
       }),
     },
 
@@ -220,14 +208,14 @@ const load = loader(
     },
 
     'cleanup-expire-access-tokens': {
-      requires: ['cfg', 'AccessToken', 'monitor'],
-      setup: ({cfg, AccessToken, monitor}) => {
+      requires: ['cfg', 'db', 'monitor'],
+      setup: ({cfg, db, monitor}) => {
         return monitor.oneShot('cleanup-expire-access-tokens', async () => {
           const delay = cfg.app.authorizationCodeExpirationDelay;
           const now = taskcluster.fromNow(delay);
 
           debug('Expiring access tokens');
-          const count = await AccessToken.expire(now);
+          const count = (await db.fns.expire_access_tokens(now))[0].expire_access_tokens;
           debug('Expired ' + count + ' access tokens');
         });
       },

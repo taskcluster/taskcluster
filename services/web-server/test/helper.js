@@ -1,8 +1,7 @@
 const load = require('../src/main');
 const taskcluster = require('taskcluster-client');
-const {Secrets, stickyLoader, withMonitor, withEntity, withPulse, withDb, resetTables} = require('taskcluster-lib-testing');
+const {Secrets, stickyLoader, withMonitor, withPulse, withDb, resetTables} = require('taskcluster-lib-testing');
 const sinon = require('sinon');
-const AccessToken = require('../src/data/AccessToken');
 const GithubClient = require('../src/login/clients/GithubClient');
 const libUrls = require('taskcluster-lib-urls');
 const request = require('superagent');
@@ -33,10 +32,6 @@ exports.secrets = new Secrets({
   },
   load: exports.load,
 });
-
-exports.withEntities = (mock, skipping) => {
-  withEntity(mock, skipping, exports, 'AccessToken', AccessToken);
-};
 
 exports.withDb = (mock, skipping) => {
   withDb(mock, skipping, exports, 'web_server');

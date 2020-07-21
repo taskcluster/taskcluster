@@ -1,7 +1,7 @@
-const crypto = require('crypto');
 const assert = require('assert');
 const taskcluster = require('taskcluster-client');
 const { NOOP } = require('../utils/constants');
+const hash = require('../utils/hash');
 
 module.exports = function ({ session, db, options = {} }) {
   const { Store } = session;
@@ -13,13 +13,6 @@ module.exports = function ({ session, db, options = {} }) {
     // Session timeout in a format that `fromNow` (taskcluster-client) understands. Defaults to 1 day
     sessionTimeout = '1 day',
   } = options;
-
-  const hash = (t) => {
-    return crypto
-      .createHash('sha512')
-      .update(t, 'utf8')
-      .digest('hex');
-  };
 
   return class PostgresSessionStore extends Store {
     /*

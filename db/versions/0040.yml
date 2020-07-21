@@ -1,4 +1,66 @@
 version: 40
 migrationScript: 0040-migration.sql
 downgradeScript: 0040-downgrade.sql
-methods: []
+methods:
+  create_access_token:
+    description: |-
+      Create an access token entry.
+    mode: write
+    serviceName: web_server
+    args: hashed_access_token_in text, encrypted_access_token_in jsonb, client_id_in text, redirect_uri_in text, identity_in text, identity_provider_id_in text, expires_in timestamptz, client_details_in jsonb
+    returns: table(hashed_access_token text, encrypted_access_token jsonb, client_id text, redirect_uri text, identity text, identity_provider_id text, expires timestamptz, client_details jsonb)
+    body: |-
+      begin
+        return query insert
+          into access_tokens (hashed_access_token, encrypted_access_token, client_id, redirect_uri, identity, identity_provider_id, expires, client_details)
+          values (hashed_access_token_in, encrypted_access_token_in, client_id_in, redirect_uri_in, identity_in, identity_provider_id_in, expires_in, client_details_in)
+          returning
+            access_tokens.hashed_access_token,
+            access_tokens.encrypted_access_token,
+            access_tokens.client_id,
+            access_tokens.redirect_uri,
+            access_tokens.identity,
+            access_tokens.identity_provider_id,
+            access_tokens.expires,
+            access_tokens.client_details;
+      end
+  get_access_token:
+    description: Get an access token entry.
+    mode: read
+    serviceName: web_server
+    args: hashed_access_token_in text
+    returns: table(hashed_access_token text, encrypted_access_token jsonb, client_id text, redirect_uri text, identity text, identity_provider_id text, expires timestamptz, client_details jsonb)
+    body: |-
+      begin
+        return query
+        select
+          access_tokens.hashed_access_token,
+          access_tokens.encrypted_access_token,
+          access_tokens.client_id,
+          access_tokens.redirect_uri,
+          access_tokens.identity,
+          access_tokens.identity_provider_id,
+          access_tokens.expires,
+          access_tokens.client_details
+        from access_tokens
+        where access_tokens.hashed_access_token = hashed_access_token_in;
+      end
+  expire_access_tokens:
+    description: |-
+      Expire access token entries that come before the current time.
+      Returns a count of rows that have been deleted.
+    mode: write
+    serviceName: web_server
+    args: expires_in timestamptz
+    returns: integer
+    body: |-
+      declare
+        count integer;
+      begin
+        delete from access_tokens where access_tokens.expires < expires_in;
+        if found then
+          get diagnostics count = row_count;
+          return count;
+        end if;
+        return 0;
+      end

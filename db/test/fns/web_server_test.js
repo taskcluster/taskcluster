@@ -14,6 +14,7 @@ suite(testing.suiteName(), function() {
       await client.query('truncate github_access_tokens');
       await client.query('truncate sessions');
       await client.query('truncate authorization_codes');
+      await client.query('truncate access_tokens');
     });
   });
 
@@ -217,7 +218,7 @@ suite(testing.suiteName(), function() {
         overrides.identity || 'identity',
         overrides.identity_provider_id || 'identity-provider-id',
         overrides.expires || now,
-        overrides.client_details || clientDetails
+        overrides.client_details || clientDetails,
       );
     };
 
@@ -238,7 +239,7 @@ suite(testing.suiteName(), function() {
     });
 
     helper.dbTest('create_authorization_code returns the authorization code', async function(db) {
-      const [authorizationCode] =  await mkAuthorizationCode(db);
+      const [authorizationCode] = await mkAuthorizationCode(db);
       assert.equal(authorizationCode.code, code);
       assert.equal(authorizationCode.client_id, 'client-id');
       assert.equal(authorizationCode.redirect_uri, 'www.example.com');
@@ -266,8 +267,84 @@ suite(testing.suiteName(), function() {
       ];
       await mkAuthorizationCode(db, { code: slugs[0], expires: fromNow('-1 day') });
       await mkAuthorizationCode(db, { code: slugs[1], expires: fromNow('- 1 day') });
-      await mkAuthorizationCode(db, { code: slugs[2], expires:  fromNow('1 day') });
+      await mkAuthorizationCode(db, { code: slugs[2], expires: fromNow('1 day') });
       const count = (await db.fns.expire_authorization_codes(new Date()))[0].expire_authorization_codes;
+      assert.equal(count, 2);
+    });
+  });
+
+  suite(`${testing.suiteName()} - access_tokens`, function() {
+    const accessToken = 'womp';
+    const now = new Date();
+    const clientDetails = {
+      clientId: 'client-id',
+      description: '',
+      scopes: [],
+      expires: now.toJSON(),
+      deleteOnExpiration: true,
+    };
+    const mkAcessToken = (db, overrides = {}) => {
+      return db.fns.create_access_token(
+        overrides.hashed_access_token || hash(accessToken),
+        overrides.encrypted_access_token || db.encrypt({ value: Buffer.from(accessToken, 'utf8') }),
+        overrides.client_id || 'client-id',
+        overrides.redirect_uri || 'www.example.com',
+        overrides.identity || 'identity',
+        overrides.identity_provider_id || 'identity-provider-id',
+        overrides.expires || now,
+        overrides.client_details || clientDetails,
+      );
+    };
+
+    helper.dbTest('get_access_token returns an entry', async function(db) {
+      await mkAcessToken(db);
+      const [at] = await db.fns.get_access_token(hash(accessToken));
+      assert.equal(at.hashed_access_token, hash(accessToken));
+      assert.equal(db.decrypt({ value: at.encrypted_access_token }).toString('utf8'), accessToken);
+      assert.equal(at.client_id, 'client-id');
+      assert.equal(at.redirect_uri, 'www.example.com');
+      assert.equal(at.identity, 'identity');
+      assert.equal(at.identity_provider_id, 'identity-provider-id');
+      assert.equal(at.expires.toJSON(), now.toJSON());
+      assert.deepEqual(at.client_details, clientDetails);
+    });
+
+    helper.dbTest('get_access_token does not throw when not found', async function(db) {
+      await db.fns.get_access_token('not-found');
+    });
+
+    helper.dbTest('create_access_token returns the authorization code', async function(db) {
+      const [at] = await mkAcessToken(db);
+      assert.equal(at.hashed_access_token, hash(accessToken));
+      assert.equal(db.decrypt({ value: at.encrypted_access_token }).toString('utf8'), accessToken);
+      assert.equal(at.client_id, 'client-id');
+      assert.equal(at.redirect_uri, 'www.example.com');
+      assert.equal(at.identity, 'identity');
+      assert.equal(at.identity_provider_id, 'identity-provider-id');
+      assert.equal(at.expires.toJSON(), now.toJSON());
+      assert.deepEqual(at.client_details, clientDetails);
+    });
+
+    helper.dbTest('create_access_token throws when row exists', async function(db) {
+      await mkAcessToken(db);
+      await assert.rejects(
+        async () => {
+          await mkAcessToken(db);
+        },
+        err => err.code === UNIQUE_VIOLATION,
+      );
+    });
+
+    helper.dbTest('expire_authorization_codes returns the count', async function(db) {
+      const slugs = [
+        slug.v4(),
+        slug.v4(),
+        slug.v4(),
+      ];
+      await mkAcessToken(db, { hashed_access_token: hash(slugs[0]), encrypted_hash_token: db.encrypt({ value: Buffer.from(slugs[0], 'utf8') }), expires: fromNow('-1 day') });
+      await mkAcessToken(db, { hashed_access_token: hash(slugs[1]), encrypted_hash_token: db.encrypt({ value: Buffer.from(slugs[1], 'utf8') }), expires: fromNow('-1 day') });
+      await mkAcessToken(db, { hashed_access_token: hash(slugs[2]), encrypted_hash_token: db.encrypt({ value: Buffer.from(slugs[2], 'utf8') }), expires: fromNow('1 day') });
+      const count = (await db.fns.expire_access_tokens(new Date()))[0].expire_access_tokens;
       assert.equal(count, 2);
     });
   });
