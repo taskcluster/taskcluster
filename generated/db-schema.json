@@ -55,7 +55,7 @@
     },
     "web_server": {
       "tables": {
-        "access_token_table_entities": "write",
+        "access_tokens": "write",
         "authorization_codes": "write",
         "github_access_tokens": "write",
         "sessions": "write"
@@ -70,12 +70,16 @@
     }
   },
   "tables": {
-    "access_token_table_entities": {
-      "etag": "uuid",
-      "partition_key": "text not null",
-      "row_key": "text not null",
-      "value": "jsonb not null",
-      "version": "integer not null"
+    "access_tokens": {
+      "client_details": "jsonb not null",
+      "client_id": "text not null",
+      "encrypted_access_token": "jsonb not null",
+      "etag": "uuid not null",
+      "expires": "timestamp with time zone not null",
+      "hashed_access_token": "text not null",
+      "identity": "text not null",
+      "identity_provider_id": "text not null",
+      "redirect_uri": "text not null"
     },
     "authorization_codes": {
       "client_details": "jsonb not null",
@@ -4297,6 +4301,40 @@
       },
       "migrationScript": "begin\n\n  create table authorization_codes(\n    code text not null,\n    client_id text not null,\n    redirect_uri text not null,\n    identity text not null,\n    identity_provider_id text not null,\n    expires timestamptz not null,\n    client_details jsonb not null,\n    etag uuid not null default public.gen_random_uuid()\n  );\n  alter table authorization_codes add primary key (code);\n  grant select, insert, update, delete on authorization_codes to $db_user_prefix$_web_server;\n\n  revoke select, insert, update, delete on authorization_codes_table_entities from $db_user_prefix$_web_server;\n  drop table authorization_codes_table_entities;\n\nend\n",
       "version": 39
+    },
+    {
+      "downgradeScript": "begin\n\n  create table access_token_table_entities(\n    partition_key text,\n    row_key text,\n    value jsonb not null,\n    version integer not null,\n    etag uuid default public.gen_random_uuid());\n  alter table access_token_table_entities add primary key (partition_key, row_key);\n  grant select, insert, update, delete on access_token_table_entities to $db_user_prefix$_web_server;\n\n  revoke select, insert, update, delete on access_tokens from $db_user_prefix$_web_server;\n  drop table access_tokens;\n\nend\n",
+      "methods": {
+        "create_access_token": {
+          "args": "hashed_access_token_in text, encrypted_access_token_in jsonb, client_id_in text, redirect_uri_in text, identity_in text, identity_provider_id_in text, expires_in timestamptz, client_details_in jsonb",
+          "body": "begin\n  return query insert\n    into access_tokens (hashed_access_token, encrypted_access_token, client_id, redirect_uri, identity, identity_provider_id, expires, client_details)\n    values (hashed_access_token_in, encrypted_access_token_in, client_id_in, redirect_uri_in, identity_in, identity_provider_id_in, expires_in, client_details_in)\n    returning\n      access_tokens.hashed_access_token,\n      access_tokens.encrypted_access_token,\n      access_tokens.client_id,\n      access_tokens.redirect_uri,\n      access_tokens.identity,\n      access_tokens.identity_provider_id,\n      access_tokens.expires,\n      access_tokens.client_details;\nend",
+          "deprecated": false,
+          "description": "Create an access token entry.",
+          "mode": "write",
+          "returns": "table(hashed_access_token text, encrypted_access_token jsonb, client_id text, redirect_uri text, identity text, identity_provider_id text, expires timestamptz, client_details jsonb)",
+          "serviceName": "web_server"
+        },
+        "expire_access_tokens": {
+          "args": "expires_in timestamptz",
+          "body": "declare\n  count integer;\nbegin\n  delete from access_tokens where access_tokens.expires < expires_in;\n  if found then\n    get diagnostics count = row_count;\n    return count;\n  end if;\n  return 0;\nend",
+          "deprecated": false,
+          "description": "Expire access token entries that come before the current time.\nReturns a count of rows that have been deleted.",
+          "mode": "write",
+          "returns": "integer",
+          "serviceName": "web_server"
+        },
+        "get_access_token": {
+          "args": "hashed_access_token_in text",
+          "body": "begin\n  return query\n  select\n    access_tokens.hashed_access_token,\n    access_tokens.encrypted_access_token,\n    access_tokens.client_id,\n    access_tokens.redirect_uri,\n    access_tokens.identity,\n    access_tokens.identity_provider_id,\n    access_tokens.expires,\n    access_tokens.client_details\n  from access_tokens\n  where access_tokens.hashed_access_token = hashed_access_token_in;\nend",
+          "deprecated": false,
+          "description": "Get an access token entry.",
+          "mode": "read",
+          "returns": "table(hashed_access_token text, encrypted_access_token jsonb, client_id text, redirect_uri text, identity text, identity_provider_id text, expires timestamptz, client_details jsonb)",
+          "serviceName": "web_server"
+        }
+      },
+      "migrationScript": "begin\n\n  create table access_tokens(\n    encrypted_access_token jsonb not null,\n    hashed_access_token text not null,\n    client_id text not null,\n    redirect_uri text not null,\n    identity text not null,\n    identity_provider_id text not null,\n    expires timestamptz not null,\n    client_details jsonb not null,\n    etag uuid not null default public.gen_random_uuid()\n  );\n  alter table access_tokens add primary key (hashed_access_token);\n  grant select, insert, update, delete on access_tokens to $db_user_prefix$_web_server;\n\n  revoke select, insert, update, delete on access_token_table_entities from $db_user_prefix$_web_server;\n  drop table access_token_table_entities;\n\nend\n",
+      "version": 40
     }
   ]
 }
