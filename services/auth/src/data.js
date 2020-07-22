@@ -9,7 +9,7 @@ const Client = Entity.configure({
   version: 1,
   partitionKey: Entity.keys.StringKey('clientId'),
   rowKey: Entity.keys.ConstantKey('client'),
-  signEntities: true,
+  signEntities: false,
   properties: {
     clientId: Entity.types.String,
     description: Entity.types.Text,
@@ -19,7 +19,7 @@ const Client = Entity.configure({
   },
 }).configure({
   version: 2,
-  signEntities: true,
+  signEntities: false,
   properties: {
     clientId: Entity.types.String,
     description: Entity.types.Text,
@@ -44,7 +44,7 @@ const Client = Entity.configure({
   },
 }).configure({
   version: 3,
-  signEntities: true,
+  signEntities: false,
   properties: {
     clientId: Entity.types.String,
     description: Entity.types.Text,

@@ -4,7 +4,7 @@ const Entity = require('taskcluster-lib-entities');
 
 let Secret = Entity.configure({
   version: 1,
-  signEntities: true,
+  signEntities: false,
   partitionKey: Entity.keys.ConstantKey('secrets'),
   rowKey: Entity.keys.StringKey('name'),
   properties: {
