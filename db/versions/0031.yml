@@ -220,7 +220,7 @@ methods:
       end
   get_worker_pool_errors:
     description: |-
-      Get existing worker pool errors, ordered by `worker_pool_id`.  If the pagination arguments are both NULL, all rows are returned.
+      Get existing worker pool errors, ordered by `reported` date.  If the pagination arguments are both NULL, all rows are returned.
       Otherwise, page_size rows are returned at offset page_offset.
     mode: read
     serviceName: worker_manager
@@ -238,7 +238,7 @@ methods:
           worker_pool_errors.description,
           worker_pool_errors.extra
         from worker_pool_errors
-        order by error_id
+        order by worker_pool_errors.reported desc
         limit get_page_limit(page_size_in)
         offset get_page_offset(page_offset_in);
       end
