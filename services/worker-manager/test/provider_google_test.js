@@ -321,7 +321,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       fake.compute.instances.failFakeInsertWith = fake.makeError('uhoh', 400);
 
       await provider.provision({workerPool, workerInfo});
-      const errors = await WorkerPoolError.getWorkerPoolErrors(helper.db);
+      const errors = await WorkerPoolError.getWorkerPoolErrors(helper.db, {});
       assert.equal(errors.rows.length, 1);
       assert.equal(errors.rows[0].description, 'uhoh');
       const workers = await Worker.getWorkers(helper.db, {});
@@ -337,7 +337,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
       await provider.provision({workerPool, workerInfo});
 
-      const errors = await WorkerPoolError.getWorkerPoolErrors(helper.db);
+      const errors = await WorkerPoolError.getWorkerPoolErrors(helper.db, {});
       assert.equal(errors.rows.length, 0);
 
       // called twice, retrying automatically
@@ -484,7 +484,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       let worker = await suiteMakeWorker({state: 'requested', providerData: {operation}});
       worker = await runCheckWorker(worker);
       assert.equal(worker.state, Worker.states.STOPPED);
-      const errors = await WorkerPoolError.getWorkerPoolErrors(helper.db);
+      const errors = await WorkerPoolError.getWorkerPoolErrors(helper.db, {});
       assert.equal(errors.rows.length, 1);
       assert.equal(errors.rows[0].description, 'uhoh');
       assert.equal(errors.rows[0].title, 'Operation Error');

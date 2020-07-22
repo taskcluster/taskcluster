@@ -175,7 +175,7 @@ class WorkerPoolError {
     return WorkerPoolError.fromDbRows(await db.fns.get_worker_pool_error(errorId));
   }
 
-  // Call db.get_worker_pool_errors.
+  // Call db.get_worker_pool_errors_for_worker_pool.
   // You can use this in two ways: with a handler or without a handler.
   // In the latter case you'll get a list of up to 1000 entries and a
   // continuation token.
@@ -188,14 +188,19 @@ class WorkerPoolError {
   static async getWorkerPoolErrors(
     db,
     {
+      errorId,
+      workerPoolId,
+    },
+    {
       query,
     } = {},
   ) {
-    const fetchResults = async (continuation) => {
-      const query = continuation ? { continuationToken: continuation } : {};
+    const fetchResults = async (query) => {
       const {continuationToken, rows} = await paginateResults({
         query,
-        fetch: (size, offset) => db.fns.get_worker_pool_errors(
+        fetch: (size, offset) => db.fns.get_worker_pool_errors_for_worker_pool(
+          errorId || null,
+          workerPoolId || null,
           size,
           offset,
         ),
@@ -207,7 +212,8 @@ class WorkerPoolError {
     };
 
     // Fetch results
-    return await fetchResults(query ? query.continuationToken : {});
+    const continuation = query ? query : {};
+    return await fetchResults(continuation);
   }
 
   // Expire worker pool errors reported before the specified time

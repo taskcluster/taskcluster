@@ -296,15 +296,15 @@ suite(testing.suiteName(), function() {
       assert.deepEqual(rows, []);
     });
 
-    helper.dbTest('get_worker_pool_errors empty', async function(db, isFake) {
-      const rows = await db.fns.get_worker_pool_errors(null, null);
+    helper.dbTest('get_worker_pool_errors_for_worker_pool empty', async function(db, isFake) {
+      const rows = await db.fns.get_worker_pool_errors_for_worker_pool(null, null, null, null);
       assert.deepEqual(rows, []);
     });
 
-    helper.dbTest('get_worker_pool_errors empty query', async function(db, isFake) {
+    helper.dbTest('get_worker_pool_errors_for_worker_pool empty query', async function(db, isFake) {
       const now = new Date();
       await create_worker_pool_error(db, {reported: now});
-      const rows = await db.fns.get_worker_pool_errors(null, null);
+      const rows = await db.fns.get_worker_pool_errors_for_worker_pool(null, null, null, null);
       assert.equal(rows[0].error_id, 'e/id');
       assert.equal(rows[0].worker_pool_id, 'wp/id');
       assert.deepEqual(rows[0].reported, now);
@@ -314,7 +314,7 @@ suite(testing.suiteName(), function() {
       assert.deepEqual(rows[0].extra, {extra: true});
     });
 
-    helper.dbTest('get_worker_pool_errors full, pagination', async function(db, isFake) {
+    helper.dbTest('get_worker_pool_errors_for_worker_pool full, pagination', async function(db, isFake) {
       let newestDate;
       for (let i = 9; i >= 0; i--) {
         newestDate = fromNow(`- ${i} days`);
@@ -325,7 +325,7 @@ suite(testing.suiteName(), function() {
         });
       }
 
-      let rows = await db.fns.get_worker_pool_errors(null, null);
+      let rows = await db.fns.get_worker_pool_errors_for_worker_pool(null, null, null, null);
       assert.deepEqual(
         rows.map(r => ({ error_id: r.error_id, worker_pool_id: r.worker_pool_id })),
         _.range(10).map(i => ({ error_id: `e/${i}`, worker_pool_id: `wp/${i}` })));
@@ -335,10 +335,11 @@ suite(testing.suiteName(), function() {
       assert.equal(rows[0].description, 'descr');
       assert.deepEqual(rows[0].extra, {extra: true});
 
-      rows = await db.fns.get_worker_pool_errors(2, 4);
+      rows = await db.fns.get_worker_pool_errors_for_worker_pool(null, null, 2, 4);
       assert.deepEqual(
         rows.map(r => ({ error_id: r.error_id, worker_pool_id: r.worker_pool_id })),
-        [4, 5].map(i => ({ error_id: `e/${i}`, worker_pool_id: `wp/${i}` }))); });
+        [4, 5].map(i => ({ error_id: `e/${i}`, worker_pool_id: `wp/${i}` })));
+    });
 
     helper.dbTest('expire_worker_pool_errors', async function(db, isFake) {
       await create_worker_pool_error(db, { error_id: 'done', reported: fromNow('- 1 day') });
@@ -347,7 +348,7 @@ suite(testing.suiteName(), function() {
 
       const count = (await db.fns.expire_worker_pool_errors(fromNow()))[0].expire_worker_pool_errors;
       assert.equal(count, 2);
-      const rows = await db.fns.get_worker_pool_errors(null, null);
+      const rows = await db.fns.get_worker_pool_errors_for_worker_pool(null, null, null, null);
       assert.equal(rows.length, 1);
     });
 

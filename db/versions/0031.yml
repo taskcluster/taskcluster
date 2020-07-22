@@ -1,0 +1,33 @@
+version: 31
+methods:
+  get_worker_pool_errors:
+    deprecated: true
+  get_worker_pool_errors_for_worker_pool:
+    description: |-
+      Get existing worker pool errors filtered by `worker_pool_id` and `error_id`,
+      ordered by `reported`.
+      If the pagination arguments are both NULL, all rows are returned.
+      Otherwise, page_size rows are returned at offset page_offset.
+    mode: read
+    serviceName: worker_manager
+    args: error_id_in text, worker_pool_id_in text, page_size_in integer, page_offset_in integer
+    returns: table(error_id text, worker_pool_id text, reported timestamptz, kind text, title text, description text, extra jsonb)
+    body: |-
+      begin
+        return query
+        select
+          worker_pool_errors.error_id,
+          worker_pool_errors.worker_pool_id,
+          worker_pool_errors.reported,
+          worker_pool_errors.kind,
+          worker_pool_errors.title,
+          worker_pool_errors.description,
+          worker_pool_errors.extra
+        from worker_pool_errors
+        where
+          (worker_pool_errors.worker_pool_id = worker_pool_id_in or worker_pool_id_in is null) and
+          (worker_pool_errors.error_id = error_id_in or error_id_in is null)
+        order by worker_pool_errors.reported desc
+        limit get_page_limit(page_size_in)
+        offset get_page_offset(page_offset_in);
+      end
