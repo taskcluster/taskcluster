@@ -264,8 +264,8 @@ builder.declare({
       hook.hookId,
       hook.metadata,
       hook.task,
-      JSON.stringify(hook.bindings),
-      JSON.stringify(hook.schedule),
+      JSON.stringify(hook.bindings), // N.B JSON-encoded because node-pg has no support for JSON arrays
+      JSON.stringify(hook.schedule), // N.B JSON-encoded because node-pg has no support for JSON arrays
       this.db.encrypt({ value: Buffer.from(hook.triggerToken, 'utf8') }),
       this.db.encrypt({ value: Buffer.from(hook.nextTaskId, 'utf8') }),
       hook.nextScheduledDate,
@@ -376,6 +376,7 @@ builder.declare({
       hook.hookId, /* hook_id */
       hookDef.metadata, /* metadata */
       hookDef.task, /* task */
+      // N.B JSON-encoded because node-pg has no support for JSON arrays
       JSON.stringify(hookDef.bindings), /* bindings */
       JSON.stringify(schedule), /* schedule */
       null, /* encrypted_trigger_token */
