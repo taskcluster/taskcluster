@@ -190,7 +190,8 @@
     "smoketest": "node infrastructure/tooling/src/main.js smoketest",
     "test:meta": "node infrastructure/tooling/src/main.js test:meta",
     "db:upgrade": "node db/src/main.js upgrade",
-    "db:downgrade": "node db/src/main.js downgrade"
+    "db:downgrade": "node db/src/main.js downgrade",
+    "db:0020": "node db/src/main.js 0020"
   },
   "metatests": {
     "specialImports": [

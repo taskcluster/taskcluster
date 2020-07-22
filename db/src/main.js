@@ -29,6 +29,8 @@ const main = async () => {
       throw new Error('must specify a version to downgrade to');
     }
     await downgrade({showProgress, adminDbUrl, usernamePrefix, toVersion});
+  } else if (process.argv[2] === '0020') {
+    await require('./twenty')({showProgress, adminDbUrl, usernamePrefix});
   } else {
     throw new Error('invalid subcommand for db/src/main.js');
   }
