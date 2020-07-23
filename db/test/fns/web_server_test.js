@@ -157,6 +157,46 @@ suite(testing.suiteName(), function() {
       assert.equal(sessionAsTable.length, 0);
     });
 
+    helper.dbTest('touch a session', async function(db) {
+      const sessionId = 'sEssI0n#Id';
+      let sessionData1 = {
+        hashedSessionId: hash(sessionId),
+        encryptedSessionID: db.encrypt({ value: Buffer.from(sessionId, 'utf8') }),
+        data: {
+          foo: "bar",
+        },
+        expires: new Date(),
+      };
+      await db.fns.session_add(
+        sessionData1.hashedSessionId,
+        sessionData1.encryptedSessionID,
+        sessionData1.data,
+        sessionData1.expires,
+      );
+      let sessionAsTable = await db.fns.session_load(sessionData1.hashedSessionId);
+      assert.equal(sessionAsTable.length, 1);
+      assert(typeof sessionAsTable[0].encrypted_session_id === 'object');
+      assert.deepEqual(sessionAsTable[0]["data"], sessionData1.data);
+      assert.deepEqual(sessionAsTable[0]["expires"], sessionData1.expires);
+
+      await db.fns.session_touch(sessionData1.hashedSessionId, { bar: 'baz' }, new Date(2));
+      sessionAsTable = await db.fns.session_load(sessionData1.hashedSessionId);
+      assert.equal(sessionAsTable.length, 1);
+      assert(typeof sessionAsTable[0].encrypted_session_id === 'object');
+      assert.deepEqual(sessionAsTable[0]["data"], { bar: 'baz' });
+      assert.deepEqual(sessionAsTable[0]["expires"], new Date(2));
+    });
+
+    helper.dbTest('touch throws a P0002 when no such row', async function(db) {
+      const sessionId = 'sEssI0n#Id';
+      await assert.rejects(
+        async () => {
+          await db.fns.session_touch(hash(sessionId), { foo: 'bar' }, new Date(1));
+        },
+        /P0002/
+      );
+    });
+
     helper.dbTest('remove session data does not throw when not found', async function(db) {
       await db.fns.session_remove(hash('not-found'));
     });

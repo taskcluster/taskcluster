@@ -102,15 +102,9 @@ module.exports = function ({ session, db, options = {} }) {
      */
     async touch(sessionId, data, callback = NOOP) {
       try {
-        const encryptedSessionID = db.encrypt({ value: Buffer.from(sessionId, 'utf8') });
         const hashedSessionId = hash(sessionId);
 
-        await db.fns.session_add(
-          hashedSessionId,
-          encryptedSessionID,
-          data,
-          taskcluster.fromNow(sessionTimeout),
-        );
+        await db.fns.session_touch(hashedSessionId, data, taskcluster.fromNow(sessionTimeout));
         return callback();
       } catch (err) {
         return callback(err);

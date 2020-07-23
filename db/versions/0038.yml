@@ -86,6 +86,29 @@ methods:
         select sessions.hashed_session_id, sessions.encrypted_session_id, sessions.data, sessions.expires from sessions
         where sessions.hashed_session_id = hashed_session_id_in;
       end
+  session_touch:
+    description: |-
+      Touch a given session given a hashed session id and session `data`.
+      If the hashed session id does not exist, then an error code `P0002` will be thrown.
+    mode: write
+    serviceName: web_server
+    args: hashed_session_id_in text, data_in jsonb, expires_in timestamptz
+    returns: void
+    body: |-
+      begin
+        perform 1 from sessions where sessions.hashed_session_id = hashed_session_id_in;
+
+        if found then
+         update sessions
+           set
+            data = data_in,
+            expires = expires_in
+           where sessions.hashed_session_id = hashed_session_id_in;
+          return;
+        else
+          raise exception 'no such row' using errcode = 'P0002';
+        end if;
+      end
   session_remove:
     description: Removes a web session
     mode: write

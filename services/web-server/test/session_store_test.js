@@ -118,10 +118,13 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         store.touch('foo', { cookie: { maxAge: 300 } }, done);
       });
     });
-    test('it should not error when touching the session', async function () {
+    test('it should error when touching the session', async function () {
       const store = getStore();
 
-      await store.touch('foo', { cookie: { maxAge: 300 } });
+      await assert.rejects(
+        store.touch('foo', { cookie: { maxAge: 300 } }),
+        /P0002/,
+      );
     });
   });
 
