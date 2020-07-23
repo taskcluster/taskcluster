@@ -53,33 +53,24 @@ taskcluster_integration_owners_entities:
   value: jsonb not null
   version: integer not null
   etag: uuid
-hooks:
-  hook_group_id: text not null
-  hook_id: text not null
-  metadata: jsonb not null
-  task: jsonb not null
-  bindings: jsonb not null
-  schedule: jsonb not null
-  encrypted_trigger_token: jsonb not null
-  encrypted_next_task_id: jsonb not null
-  next_scheduled_date: timestamp with time zone not null
-  trigger_schema: jsonb not null
-  etag: uuid not null
-hooks_last_fires:
-  hook_group_id: text not null
-  hook_id: text not null
-  fired_by: text not null
-  task_id: text not null
-  task_create_time: timestamp with time zone not null
-  result: text not null
-  error: text not null
-  etag: uuid not null
-hooks_queues:
-  hook_group_id: text not null
-  hook_id: text not null
-  queue_name: text not null
-  bindings: jsonb not null
-  etag: uuid not null
+hooks_entities:
+  partition_key: text not null
+  row_key: text not null
+  value: jsonb not null
+  version: integer not null
+  etag: uuid
+last_fire_3_entities:
+  partition_key: text not null
+  row_key: text not null
+  value: jsonb not null
+  version: integer not null
+  etag: uuid
+queues_entities:
+  partition_key: text not null
+  row_key: text not null
+  value: jsonb not null
+  version: integer not null
+  etag: uuid
 indexed_tasks:
   namespace: text not null
   name: text not null

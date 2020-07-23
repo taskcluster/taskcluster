@@ -1,4 +1,5 @@
 require('../../prelude');
+const data = require('./data');
 const debug = require('debug')('hooks:bin:server');
 const taskcreator = require('./taskcreator');
 const SchemaSet = require('taskcluster-lib-validate');
@@ -45,8 +46,34 @@ const load = loader({
       serviceName: 'hooks',
       monitor: monitor.childMonitor('db'),
       statementTimeout: process === 'server' ? 30000 : 0,
-      dbCryptoKeys: cfg.postgres.dbCryptoKeys,
     }),
+  },
+
+  Hook: {
+    requires: ['cfg', 'process', 'monitor', 'db'],
+    setup: ({cfg, process, monitor, db}) => {
+      return data.Hook.setup({
+        db,
+        serviceName: 'hooks',
+        tableName: cfg.app.hookTableName,
+        monitor: monitor.childMonitor('table.hooks'),
+        cryptoKey: cfg.azure.cryptoKey,
+        signingKey: cfg.azure.signingKey,
+      });
+    },
+  },
+
+  LastFire: {
+    requires: ['cfg', 'monitor', 'db'],
+    setup: ({cfg, monitor, db}) => {
+      return data.LastFire.setup({
+        db,
+        serviceName: 'hooks',
+        tableName: cfg.app.lastFireTableName,
+        monitor: monitor.childMonitor('table.lastFireTable'),
+        signingKey: cfg.azure.signingKey,
+      });
+    },
   },
 
   schemaset: {
@@ -80,10 +107,10 @@ const load = loader({
   },
 
   taskcreator: {
-    requires: ['cfg', 'db', 'monitor'],
-    setup: ({cfg, db, monitor}) => new taskcreator.TaskCreator({
+    requires: ['cfg', 'LastFire', 'monitor'],
+    setup: ({cfg, LastFire, monitor}) => new taskcreator.TaskCreator({
       ...cfg.taskcluster,
-      db,
+      LastFire,
       monitor: monitor.childMonitor('taskcreator'),
     }),
   },
@@ -98,20 +125,34 @@ const load = loader({
   },
 
   api: {
-    requires: ['cfg', 'db', 'schemaset', 'taskcreator', 'monitor', 'publisher', 'pulseClient'],
-    setup: ({cfg, db, schemaset, taskcreator, monitor, publisher, pulseClient}) => builder.build({
+    requires: ['cfg', 'schemaset', 'Hook', 'LastFire', 'taskcreator', 'monitor', 'publisher', 'pulseClient'],
+    setup: ({cfg, schemaset, Hook, LastFire, taskcreator, monitor, publisher, pulseClient}) => builder.build({
       rootUrl: cfg.taskcluster.rootUrl,
-      context: {db, taskcreator, publisher, denylist: cfg.pulse.denylist},
+      context: {Hook, LastFire, taskcreator, publisher, denylist: cfg.pulse.denylist},
       schemaset,
       monitor: monitor.childMonitor('api'),
     }),
   },
 
-  listeners: {
-    requires: ['db', 'taskcreator', 'pulseClient', 'monitor'],
-    setup: async ({db, taskcreator, pulseClient, monitor}) => {
-      let listeners = new HookListeners({
+  Queues: {
+    requires: ['cfg', 'process', 'monitor', 'db'],
+    setup: ({cfg, process, monitor, db}) => {
+      return data.Queues.setup({
         db,
+        serviceName: 'hooks',
+        tableName: cfg.app.queuesTableName,
+        monitor: monitor.childMonitor('table.queues'),
+        signingKey: cfg.azure.signingKey,
+      });
+    },
+  },
+
+  listeners: {
+    requires: ['Hook', 'taskcreator', 'Queues', 'pulseClient', 'monitor'],
+    setup: async ({Hook, taskcreator, Queues, pulseClient, monitor}) => {
+      let listeners = new HookListeners({
+        Hook,
+        Queues,
         taskcreator,
         client: pulseClient,
         monitor: monitor.childMonitor('listeners'),
@@ -141,10 +182,10 @@ const load = loader({
   },
 
   schedulerNoStart: {
-    requires: ['cfg', 'db', 'taskcreator', 'notify', 'monitor'],
-    setup: ({cfg, db, taskcreator, notify, monitor}) => {
+    requires: ['cfg', 'Hook', 'taskcreator', 'notify', 'monitor'],
+    setup: ({cfg, Hook, taskcreator, notify, monitor}) => {
       return new Scheduler({
-        db,
+        Hook,
         taskcreator,
         notify,
         monitor: monitor.childMonitor('scheduler'),
@@ -159,11 +200,12 @@ const load = loader({
   },
 
   expires: {
-    requires: ['cfg', 'db', 'monitor'],
-    setup: ({cfg, db, monitor}, ownName) => {
+    requires: ['cfg', 'Hook', 'LastFire', 'monitor'],
+    setup: ({cfg, Hook, LastFire, monitor}, ownName) => {
       return monitor.oneShot(ownName, async () => {
+        const expirationTime = taskcluster.fromNow(cfg.app.lastFiresExpirationDelay);
         debug('Expiring lastFires rows');
-        const count = (await db.fns.expire_last_fires())[0].expire_last_fires;
+        const count = await LastFire.expires(Hook, expirationTime);
         debug(`Expired ${count} rows`);
       });
     },

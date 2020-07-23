@@ -1,6 +1,7 @@
+const data = require('../src/data');
 const taskcluster = require('taskcluster-client');
 const taskcreator = require('../src/taskcreator');
-const {stickyLoader, fakeauth, Secrets, withPulse, withMonitor, withDb, resetTables} = require('taskcluster-lib-testing');
+const {stickyLoader, fakeauth, Secrets, withEntity, withPulse, withMonitor, withDb, resetTables} = require('taskcluster-lib-testing');
 const builder = require('../src/api');
 const load = require('../src/main');
 
@@ -19,6 +20,12 @@ helper.secrets = new Secrets({
   secrets: {
   },
 });
+
+helper.withEntities = (mock, skipping) => {
+  withEntity(mock, skipping, exports, 'Hook', data.Hook);
+  withEntity(mock, skipping, exports, 'LastFire', data.LastFire);
+  withEntity(mock, skipping, exports, 'Queues', data.Queues);
+};
 
 helper.withDb = (mock, skipping) => {
   withDb(mock, skipping, exports, 'hooks');
@@ -113,9 +120,9 @@ helper.withServer = (mock, skipping) => {
 exports.resetTables = (mock, skipping) => {
   setup('reset tables', async function() {
     await resetTables({tableNames: [
-      'hooks',
-      'hooks_queues',
-      'hooks_last_fires',
+      'hooks_entities',
+      'queues_entities',
+      'last_fire_3_entities',
     ]});
   });
 };

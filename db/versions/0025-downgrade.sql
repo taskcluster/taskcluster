@@ -1,34 +1,47 @@
 begin
-  -- lock this table before reading from it, to prevent loss of concurrent
-  -- updates when the table is dropped.
-  lock table hooks_last_fires;
+  lock table roles;
 
-  create table last_fire_3_entities(
+  raise log 'TIMING start roles_entities create table';
+  create table roles_entities(
     partition_key text, row_key text,
     value jsonb not null,
     version integer not null,
     etag uuid default public.gen_random_uuid());
-  alter table last_fire_3_entities add primary key (partition_key, row_key);
 
-  insert into last_fire_3_entities
-  select
-    encode_composite_key(hook_group_id, hook_id) as partition_key,
-    encode_string_key(task_id) as row_key,
-    jsonb_build_object(
-      'PartitionKey', encode_composite_key(hook_group_id, hook_id),
-      'RowKey', encode_string_key(task_id),
-      'hookGroupId', hook_group_id,
-      'hookId', hook_id,
-      'firedBy', fired_by,
-      'taskId', task_id,
-      'taskCreateTime', task_create_time,
-      'result', result,
-      'error', error) as value,
-    1 as version,
-    etag
-  from hooks_last_fires;
+  raise log 'TIMING start roles_entities primary key';
+  alter table roles_entities add primary key (partition_key, row_key);
 
-  revoke select, insert, update, delete on hooks_last_fires from $db_user_prefix$_hooks;
-  drop table hooks_last_fires;
-  grant select, insert, update, delete on last_fire_3_entities to $db_user_prefix$_hooks;
+  raise log 'TIMING start roles_entities insert';
+  perform 1 from roles;
+  if found then
+    insert into roles_entities
+    select
+      'role' as partition_key,
+      'role' as row_key,
+      entity_buf_encode(
+        jsonb_build_object(
+          'PartitionKey', 'roles',
+          'RowKey', 'roles'),
+        'blob', jsonb_agg(
+          jsonb_build_object(
+            'roleId', role_id,
+            'scopes', scopes,
+            'created', to_js_iso8601(created::text),
+            'description', description,
+            'lastModified', to_js_iso8601(last_modified::text))
+        )::text) as value,
+      1 as version,
+      -- use an aggregate function to select the etag (all rows have the same etag)
+      min(etag::text)::uuid as etag
+    from roles;
+  end if;
+
+  raise log 'TIMING start roles_entities permissions';
+  revoke select, insert, update, delete on roles from $db_user_prefix$_auth;
+  drop table roles;
+
+  grant select, insert, update, delete on roles_entities to $db_user_prefix$_auth;
+
+  drop function to_js_iso8601(ts_in text);
 end
+

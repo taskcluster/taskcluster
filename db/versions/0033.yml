@@ -1,4 +1,0 @@
-version: 33
-migrationScript: 0033-migration.sql
-downgradeScript: 0033-downgrade.sql
-methods: []

@@ -1,273 +1,241 @@
 version: 26
-migrationScript: 0026-migration.sql
-downgradeScript: 0026-downgrade.sql
 methods:
-  queues_entities_load:
-    description: See taskcluster-lib-entities
+  get_index_namespaces:
+    description: |-
+      Get existing index_namespaces filtered by the optional arguments,
+      ordered by the `parent` and `name`.
+      If the pagination arguments are both NULL, all rows are returned.
+      Otherwise, page_size rows are returned at offset page_offset.
     mode: read
-    serviceName: hooks
-    args: partition_key text, row_key text
-    returns: table (partition_key_out text, row_key_out text, value jsonb, version integer, etag uuid)
+    serviceName: index
+    args: parent_in text, name_in text, page_size_in integer, page_offset_in integer
+    returns: table(parent text, name text, expires timestamptz)
     body: |-
       begin
         return query
         select
-          queues_entities_load.partition_key,
-          queues_entities_load.row_key,
-          entity_buf_encode(
-            jsonb_build_object(
-              'PartitionKey', encode_string_key(hook_group_id),
-              'RowKey', encode_string_key(hook_id),
-              'hookGroupId', hook_group_id,
-              'hookId', hook_id,
-              'queueName', queue_name),
-            'bindings', bindings::text) as value,
-          1 as version,
-          hooks_queues.etag as etag
-        from hooks_queues
+          index_namespaces.parent,
+          index_namespaces.name,
+          index_namespaces.expires
+        from index_namespaces
         where
-          hooks_queues.hook_group_id = decode_string_key(queues_entities_load.partition_key) and hooks_queues.hook_id = decode_string_key(queues_entities_load.row_key);
+          (index_namespaces.parent = parent_in or parent_in is null) and
+          (index_namespaces.name = name_in or name_in is null) and
+          (index_namespaces.expires > now())
+        -- we previously used to order by the hashed parent but there's probably no need to add this complication.
+        order by index_namespaces.parent, name
+        limit get_page_limit(page_size_in)
+        offset get_page_offset(page_offset_in);
       end
-  queues_entities_create:
-    serviceName: hooks
-    description: See taskcluster-lib-entities
+  create_index_namespace:
+    description: |-
+      Create a new namespace. Raises UNIQUE_VIOLATION if the namespace already exists.
+      Returns the newly created namespace.
     mode: write
-    args: pk text, rk text, properties jsonb, overwrite boolean, version integer
-    returns: uuid
+    serviceName: index
+    args: parent_in text, name_in text, expires_in timestamptz
+    returns: table(parent text, name text, expires timestamptz)
+    body: |-
+      begin
+        return query insert
+          into index_namespaces (parent, name, expires)
+          values (parent_in, name_in, expires_in)
+          returning index_namespaces.parent, index_namespaces.name, index_namespaces.expires;
+      end
+  get_index_namespace:
+    description: |-
+      Get a namespace. The returned table will have one or zero rows.
+    mode: read
+    serviceName: index
+    args: parent_in text, name_in text
+    returns: table(parent text, name text, expires timestamptz)
+    body: |-
+      begin
+        return query select
+          index_namespaces.parent,
+          index_namespaces.name,
+          index_namespaces.expires
+        from index_namespaces
+        where
+          index_namespaces.parent = parent_in and
+          index_namespaces.name = name_in;
+      end
+  update_index_namespace:
+    serviceName: index
+    description: |-
+      Update a namespace.
+      Returns the up-to-date namespace row that have the same parent and name.
+      If the row is not found then an exception with code 'P0002' is thrown.
+    mode: write
+    args: parent_in text, name_in text, expires_in timestamptz
+    returns: table(parent text, name text, expires timestamptz)
     body: |-
       declare
-        new_row hooks_queues%ROWTYPE;
+        updated_row index_namespaces%ROWTYPE;
       begin
-        select
-          (properties ->> 'hookGroupId')::text,
-          (properties ->> 'hookId')::text,
-          (properties ->> 'queueName')::text,
-          entity_buf_decode(properties, 'bindings')::jsonb,
-          public.gen_random_uuid()
-        into new_row;
-        if overwrite then
-          raise exception 'overwrite not implemented';
-        else
-          execute 'insert into hooks_queues select $1.*' using new_row;
-        end if;
-        return new_row.etag;
-      end
-  queues_entities_remove:
-    serviceName: hooks
-    description: See taskcluster-lib-entities
-    mode: write
-    args: partition_key text, row_key text
-    returns: table (etag uuid)
-    body: |-
-      begin
-        return query delete from hooks_queues
+        update index_namespaces
+        set expires = coalesce(expires_in, index_namespaces.expires)
         where
-          hooks_queues.hook_group_id = decode_string_key(queues_entities_remove.partition_key) and
-          hooks_queues.hook_id = decode_string_key(queues_entities_remove.row_key)
-        returning hooks_queues.etag;
-      end
-  queues_entities_modify:
-    serviceName: hooks
-    description: See taskcluster-lib-entities
-    mode: write
-    args: partition_key text, row_key text, properties jsonb, version integer, old_etag uuid
-    returns: table (etag uuid)
-    body: |-
-      declare
-        new_row hooks_queues%ROWTYPE;
-      begin
-        select
-          (properties ->> 'hookGroupId')::text,
-          (properties ->> 'hookId')::text,
-          (properties ->> 'queueName')::text,
-          entity_buf_decode(properties, 'bindings')::jsonb,
-          public.gen_random_uuid() as etag
-        into new_row;
-        update hooks_queues
-        set (
-          queue_name,
-          bindings,
-          etag
-        ) = (
-          new_row.queue_name,
-          new_row.bindings,
-          new_row.etag
-        )
-        where
-          hooks_queues.hook_group_id = decode_string_key(queues_entities_modify.partition_key) and
-          hooks_queues.hook_id = decode_string_key(queues_entities_modify.row_key) and
-          hooks_queues.etag = queues_entities_modify.old_etag;
+          index_namespaces.parent = parent_in and
+          index_namespaces.name = name_in
+        returning
+          index_namespaces.parent,
+          index_namespaces.name,
+          index_namespaces.expires
+        into updated_row;
         if found then
-          return query select new_row.etag;
+          return query select
+            updated_row.parent,
+            updated_row.name,
+            updated_row.expires;
           return;
         end if;
-        perform hooks_queues.etag from hooks_queues
-        where
-          hooks_queues.hook_group_id = decode_string_key(queues_entities_modify.partition_key) and
-          hooks_queues.hook_id = decode_string_key(queues_entities_modify.row_key);
+        raise exception 'no such row' using errcode = 'P0002';
+      end
+  expire_index_namespaces:
+    description: |-
+      Expire index_namespaces that come before the current time.
+      Returns a count of rows that have been deleted.
+    mode: write
+    serviceName: index
+    args: ''
+    returns: integer
+    body: |-
+      declare
+        count integer;
+      begin
+        delete from index_namespaces where index_namespaces.expires < now();
         if found then
-          raise exception 'unsuccessful update' using errcode = 'P0004';
+          get diagnostics count = row_count;
+          return count;
+        end if;
+        return 0;
+      end
+  get_indexed_tasks:
+    description: |-
+      Get existing indexed tasks filtered by the optional arguments,
+      ordered by the `namespace` and `name`.
+      If the pagination arguments are both NULL, all rows are returned.
+      Otherwise, page_size rows are returned at offset page_offset.
+    mode: read
+    serviceName: index
+    args: namespace_in text, name_in text, page_size_in integer, page_offset_in integer
+    returns: table(namespace text, name text, rank integer, task_id text, data jsonb, expires timestamptz)
+    body: |-
+      begin
+        return query
+        select
+          indexed_tasks.namespace,
+          indexed_tasks.name,
+          indexed_tasks.rank,
+          uuid_to_slugid(indexed_tasks.task_id) as task_id,
+          indexed_tasks.data,
+          indexed_tasks.expires
+        from indexed_tasks
+        where
+          (indexed_tasks.namespace = namespace_in or namespace_in is null) and
+          (indexed_tasks.name = name_in or name_in is null) and
+          (indexed_tasks.expires > now())
+        -- we previously used to order by the hashed namespace but there's probably no need to add this complication.
+        order by indexed_tasks.namespace, name
+        limit get_page_limit(page_size_in)
+        offset get_page_offset(page_offset_in);
+      end
+  create_indexed_task:
+    description: |-
+      Create a new indexed task. Raises UNIQUE_VIOLATION if the indexed task already exists.
+      Returns the newly created indexed task.
+    mode: write
+    serviceName: index
+    args: namespace_in text, name_in text, rank_in integer, task_id_in text, data_in jsonb, expires_in timestamptz
+    returns: table(namespace text, name text, rank integer, task_id text, data jsonb, expires timestamptz)
+    body: |-
+      begin
+        return query insert
+          into indexed_tasks (namespace, name, rank, task_id, data, expires)
+          values (namespace_in, name_in, rank_in, slugid_to_uuid(task_id_in), data_in, expires_in)
+          returning indexed_tasks.namespace, indexed_tasks.name, indexed_tasks.rank, indexed_tasks.task_id, indexed_tasks.data, indexed_tasks.expires;
+      end
+  get_indexed_task:
+    description: |-
+      Get an indexed task. The returned table will have one or zero rows.
+    mode: read
+    serviceName: index
+    args: namespace_in text, name_in text
+    returns: table(namespace text, name text, rank integer, task_id text, data jsonb, expires timestamptz)
+    body: |-
+      begin
+        return query select
+          indexed_tasks.namespace,
+          indexed_tasks.name,
+          indexed_tasks.rank,
+          uuid_to_slugid(indexed_tasks.task_id) as task_id,
+          indexed_tasks.data,
+          indexed_tasks.expires
+        from indexed_tasks
+        where
+          indexed_tasks.namespace = namespace_in and
+          indexed_tasks.name = name_in;
+      end
+  update_indexed_task:
+    serviceName: index
+    description: |-
+      Update an indexed task.
+      Returns the up-to-date indexed task row that have the same namespace and name.
+    mode: write
+    args: namespace_in text, name_in text, rank_in integer, task_id_in text, data_in jsonb, expires_in timestamptz
+    returns: table(namespace text, name text, rank integer, task_id text, data jsonb, expires timestamptz)
+    body: |-
+      declare
+        updated_row indexed_tasks%ROWTYPE;
+      begin
+        update indexed_tasks
+        set (rank, task_id, data, expires) = (
+          coalesce(rank_in, indexed_tasks.rank),
+          coalesce(slugid_to_uuid(task_id_in), indexed_tasks.task_id),
+          coalesce(data_in, indexed_tasks.data),
+          coalesce(expires_in, indexed_tasks.expires)
+        )
+        where
+          indexed_tasks.namespace = namespace_in and
+          indexed_tasks.name = name_in
+        returning
+          indexed_tasks.namespace,
+          indexed_tasks.name,
+          indexed_tasks.rank,
+          uuid_to_slugid(indexed_tasks.task_id),
+          indexed_tasks.data,
+          indexed_tasks.expires
+        into updated_row;
+        if found then
+          return query select
+            updated_row.namespace,
+            updated_row.name,
+            updated_row.rank,
+            updated_row.task_id,
+            updated_row.data,
+            updated_row.expires;
+          return;
         else
           raise exception 'no such row' using errcode = 'P0002';
         end if;
       end
-  queues_entities_scan:
-    description: See taskcluster-lib-entities
-    mode: read
-    serviceName: hooks
-    args: pk text, rk text, condition text, size integer, page integer
-    returns: table (partition_key text, row_key text, value jsonb, version integer, etag uuid)
+  expire_indexed_tasks:
+    description: |-
+      Expire indexed tasks that come before the current time.
+      Returns a count of rows that have been deleted.
+    mode: write
+    serviceName: index
+    args: ''
+    returns: integer
     body: |-
       declare
-        cond text[];
-        exp_cond_operator text;
-        exp_cond_operand timestamptz;
-        partition_key_var text;
-        row_key_var text;
+        count integer;
       begin
-        if not condition is null then
-          cond := regexp_split_to_array(condition, '\s+');
-          exp_cond_operator := cond[4];
-          exp_cond_operand := cond[5] :: timestamptz;
-
-          return query select
-            encode_string_key(hook_group_id) as partition_key,
-            encode_string_key(hook_id) as row_key,
-            entity_buf_encode(
-              jsonb_build_object(
-                'PartitionKey', encode_string_key(hook_group_id),
-                'RowKey', encode_string_key(hook_id),
-                'hookGroupId', hook_group_id,
-                'hookId', hook_id,
-                'queueName', queue_name),
-              'bindings', bindings::text) as value,
-            1 as version,
-            hooks_queues.etag as etag from hooks_queues
-          where
-            (queues_entities_scan.pk is null or decode_string_key(queues_entities_scan.pk) = hook_group_id) and
-            (queues_entities_scan.rk is null or decode_string_key(queues_entities_scan.rk) = hook_id) and
-            case
-              when exp_cond_operator = '=' then expires = exp_cond_operand
-              when exp_cond_operator = '<' then expires < exp_cond_operand
-              when exp_cond_operator = '<=' then expires <= exp_cond_operand
-              when exp_cond_operator = '>' then expires > exp_cond_operand
-              when exp_cond_operator = '>=' then expires >= exp_cond_operand
-              else expires <> exp_cond_operand
-            end
-          order by hooks_queues.hook_group_id, hooks_queues.hook_id
-          limit case
-            when (size is not null and size > 0) then size + 1
-            else null
-          end
-          offset case
-            when (page is not null and page > 0) then page
-            else 0
-          end;
-        else
-          return query select
-            encode_string_key(hook_group_id) as partition_key,
-            encode_string_key(hook_id) as row_key,
-            entity_buf_encode(
-              jsonb_build_object(
-                'PartitionKey', encode_string_key(hook_group_id),
-                'RowKey', encode_string_key(hook_id),
-                'hookGroupId', hook_group_id,
-                'hookId', hook_id,
-                'queueName', queue_name),
-              'bindings', bindings::text) as value,
-            1 as version,
-            hooks_queues.etag as etag from hooks_queues
-          where
-            (queues_entities_scan.pk is null or decode_string_key(queues_entities_scan.pk) = hook_group_id) and
-            (queues_entities_scan.rk is null or decode_string_key(queues_entities_scan.rk) = hook_id)
-          order by hooks_queues.hook_group_id, hooks_queues.hook_id
-          limit case
-            when (size is not null and size > 0) then size + 1
-            else null
-          end
-          offset case
-            when (size is not null and size > 0 and page is not null and page > 0) then page
-            else 0
-          end;
+        delete from indexed_tasks where indexed_tasks.expires < now();
+        if found then
+          get diagnostics count = row_count;
+          return count;
         end if;
-      end
-  create_hooks_queue:
-    description: |-
-      Create a new hooks queue.  Raises UNIQUE_VIOLATION if the hook already exists.
-    mode: write
-    serviceName: hooks
-    args: hook_group_id_in text, hook_id_in text, queue_name_in text, bindings_in jsonb
-    returns: uuid
-    body: |-
-      declare
-        new_etag uuid := public.gen_random_uuid();
-      begin
-        insert
-          into hooks_queues (hook_group_id, hook_id, queue_name, bindings, etag)
-          values (hook_group_id_in, hook_id_in, queue_name_in, bindings_in, new_etag);
-
-          return new_etag;
-      end
-  delete_hooks_queue:
-    description: |-
-      Delete a hooks queue.
-    mode: write
-    serviceName: hooks
-    args: hook_group_id_in text, hook_id_in text
-    returns: void
-    body: |-
-      begin
-        delete from hooks_queues
-        where
-          hooks_queues.hook_group_id = hook_group_id_in and
-          hooks_queues.hook_id = hook_id_in;
-      end
-  get_hooks_queues:
-    description: |-
-      Get hooks queues ordered by `hook_group_id` and `hook_id`.
-      If the pagination arguments are both NULL, all rows are returned.
-      Otherwise, page_size rows are returned at offset page_offset.
-    mode: read
-    serviceName: hooks
-    args: page_size_in integer, page_offset_in integer
-    returns: table(hook_group_id text, hook_id text, queue_name text, bindings jsonb, etag uuid)
-    body: |-
-      begin
-        return query
-        select
-          hooks_queues.hook_group_id,
-          hooks_queues.hook_id,
-          hooks_queues.queue_name,
-          hooks_queues.bindings,
-          hooks_queues.etag
-        from hooks_queues
-        order by hook_group_id, hook_id
-        limit get_page_limit(page_size_in)
-        offset get_page_offset(page_offset_in);
-      end
-  update_hooks_queue_bindings:
-    description: |-
-      Update bindings of a hooks queue. If no such queue exists,
-      the return value is an empty set.
-    mode: write
-    serviceName: hooks
-    args: hook_group_id_in text, hook_id_in text, bindings_in jsonb
-    returns: table(hook_group_id text, hook_id text, queue_name text, bindings jsonb, etag uuid)
-    body: |-
-      declare
-        new_etag uuid := public.gen_random_uuid();
-      begin
-        return query update hooks_queues
-        set
-          bindings = bindings_in,
-          etag = new_etag
-        where
-          hooks_queues.hook_group_id = hook_group_id_in and
-          hooks_queues.hook_id = hook_id_in
-        returning
-          hooks_queues.hook_group_id,
-          hooks_queues.hook_id,
-          hooks_queues.queue_name,
-          hooks_queues.bindings,
-          hooks_queues.etag;
+        return 0;
       end

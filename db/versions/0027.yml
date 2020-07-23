@@ -2,198 +2,38 @@ version: 27
 migrationScript: 0027-migration.sql
 downgradeScript: 0027-downgrade.sql
 methods:
-  roles_entities_load:
-    description: See taskcluster-lib-entities
-    mode: read
-    serviceName: auth
-    args: partition_key text, row_key text
-    returns: table (partition_key_out text, row_key_out text, value jsonb, version integer, etag uuid)
-    body: |-
-      begin
-        -- if no roles, return canned "empty" value, as the below expression will return NULL
-        perform 1 from roles limit 1;
-        if not found then
-          return query
-          select
-            'role',
-            'role',
-            entity_buf_encode(
-              jsonb_build_object(
-                'PartitionKey', 'role',
-                'RowKey', 'role'),
-              'blob', '[]'),
-            1,
-            gen_random_uuid();
-        end if;
-
-        return query
-        select 
-          'role',
-          'role',
-          entity_buf_encode(
-            jsonb_build_object(
-              'PartitionKey', 'role',
-              'RowKey', 'role'),
-            'blob', jsonb_agg(
-              jsonb_build_object(
-                'roleId', role_id,
-                'scopes', scopes,
-                'created', to_js_iso8601(created::text),
-                'description', description,
-                'lastModified', to_js_iso8601(last_modified::text))
-            )::text),
-          1,
-          -- use an aggregate function to select the etag (all rows have the same etag)
-          min(roles.etag::text)::uuid
-        from roles;
-      end
-  roles_entities_create:
-    serviceName: auth
-    description: See taskcluster-lib-entities
-    mode: write
-    args: pk text, rk text, properties jsonb, overwrite boolean, version integer
-    returns: uuid
-    body: |-
-      declare
-        new_etag uuid = gen_random_uuid();
-      begin
-        -- lock the table, avoiding risk of conflicts when inserting after
-        -- finding no rows
-        lock table roles;
-
-        perform 1 from roles limit 1;
-        if found then
-          raise exception 'roles already exist' using errcode = '23505'; -- unique violation
-        end if;
-
-        insert into roles
-        select 
-          (role ->> 'roleId') as role_id,
-          (role ->> 'scopes')::jsonb as scopes,
-          (role ->> 'created')::timestamptz as created,
-          (role ->> 'description') as description,
-          (role ->> 'lastModified')::timestamptz as last_modified,
-          new_etag as etag
-        from jsonb_array_elements(entity_buf_decode(properties, 'blob')::jsonb) as role;
-
-        return new_etag;
-      end
-  roles_entities_remove:
-    serviceName: auth
-    description: See taskcluster-lib-entities
-    mode: write
-    args: partition_key text, row_key text
-    returns: table (etag uuid)
-    body: |-
-      begin
-        raise exception 'not implemented';
-      end
-  roles_entities_modify:
-    serviceName: auth
-    description: See taskcluster-lib-entities
-    mode: write
-    args: partition_key text, row_key text, properties jsonb, version integer, old_etag uuid
-    returns: table (etag uuid)
-    body: |-
-      declare
-        new_etag uuid := public.gen_random_uuid();
-      begin
-        -- lock the table, avoiding risk of conflicts when inserting after
-        -- finding no rows
-        lock table roles;
-
-        delete from roles where roles.etag = old_etag;
-        if not found then
-          -- delete may have done nothing because the table is empty (which is
-          -- ok) or because the etag did not match (which is an unsuccessful
-          -- update)
-          perform role_id from roles limit 1;
-          if found then
-            raise exception 'unsuccessful update' using errcode = 'P0004';
-          end if;
-          -- ..otherwise continue to make the modification
-        end if;
-
-        insert into roles
-        select 
-          (role ->> 'roleId') as role_id,
-          (role ->> 'scopes')::jsonb as scopes,
-          (role ->> 'created')::timestamptz as created,
-          (role ->> 'description') as description,
-          (role ->> 'lastModified')::timestamptz as last_modified,
-          new_etag as etag
-        from jsonb_array_elements(entity_buf_decode(properties, 'blob')::jsonb) as role;
-
-        return query select new_etag;
-      end
-  roles_entities_scan:
-    description: See taskcluster-lib-entities
-    mode: read
-    serviceName: auth
-    args: pk text, rk text, condition text, size integer, page integer
-    returns: table (partition_key text, row_key text, value jsonb, version integer, etag uuid)
-    body: |-
-      begin
-        raise exception 'not implemented';
-      end;
-  get_roles:
+  add_github_access_token:
     description: |-
-      Get the full set of roles.  Each result row has an etag, but all such
-      etags will be the same, representing the etag for the most recent
-      modification of the table.  Results are sorted by role_id.
-    mode: read
-    serviceName: auth
-    args: ''
-    returns: table (role_id text, scopes jsonb, created timestamptz, description text, last_modified timestamptz, etag uuid)
-    body: |-
-      begin
-        return query
-        select 
-          roles.role_id,
-          roles.scopes,
-          roles.created,
-          roles.description,
-          roles.last_modified,
-          roles.etag
-        from roles
-        order by role_id;
-      end
-  modify_roles:
-    description: |-
-      Replace the current set of roles entirely with the given set of roles, if the current etag matches the existing etag. 
-      The role objects are specified with underscore spelling (`role_id`).
-      If the etag has changed, this returns P0004 signalling that the caller should fetch a fresh set of roles and try again.
-      If there are no existing roles, then the old etag is not used.
+      Sets the encrypted access token for `user_id_in` to
+      `encrypted_access_token_in`.
+
+      If no access token is currently set for `user_id_in`, a new row is
+      inserted, otherwise the existing row's encrypted access token is updated
+      to `encrypted_access_token_in`.
     mode: write
-    serviceName: auth
-    args: roles_in jsonb, old_etag_in uuid
+    serviceName: web_server
+    args: user_id_in text, encrypted_access_token_in jsonb
     returns: void
     body: |-
-      declare
-        new_etag uuid := public.gen_random_uuid();
       begin
-        -- lock the table, avoiding risk of conflicts when inserting after
-        -- finding no rows
-        lock table roles;
-
-        delete from roles where etag = old_etag_in;
-        if not found then
-          -- delete may have done nothing because the table is empty (which is
-          -- ok) or because the etag did not match (which is an unsuccessful
-          -- update)
-          perform role_id from roles limit 1;
-          if found then
-            raise exception 'unsuccessful update' using errcode = 'P0004';
-          end if;
-        end if;
-
-        insert into roles
-        select 
-          (role ->> 'role_id') as role_id,
-          (role ->> 'scopes')::jsonb as scopes,
-          (role ->> 'created')::timestamptz as created,
-          (role ->> 'description') as description,
-          (role ->> 'last_modified')::timestamptz as last_modified,
-          new_etag as etag
-        from jsonb_array_elements(roles_in) as role;
+        insert into github_access_tokens(user_id, encrypted_access_token)
+        values (
+          user_id_in,
+          encrypted_access_token_in
+        ) on conflict (user_id) do
+        update
+        set encrypted_access_token = encrypted_access_token_in
+        where github_access_tokens.user_id = add_github_access_token.user_id_in;
+      end
+  load_github_access_token:
+    description: Returns the encrypted github access token for a given user.
+    mode: read
+    serviceName: web_server
+    args: user_id_in text
+    returns: table(encrypted_access_token jsonb)
+    body: |-
+      begin
+        return query
+        select github_access_tokens.encrypted_access_token from github_access_tokens
+        where github_access_tokens.user_id = user_id_in;
       end

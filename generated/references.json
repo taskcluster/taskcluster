@@ -7601,9 +7601,6 @@
             "azure_crypto_key": {
               "type": "string"
             },
-            "azure_signing_key": {
-              "type": "string"
-            },
             "debug": {
               "title": "node debug env var",
               "type": "string"
@@ -7725,7 +7722,6 @@
             "static_clients",
             "azure_accounts",
             "azure_account_key",
-            "azure_signing_key",
             "azure_crypto_key",
             "read_db_url",
             "write_db_url",
@@ -7953,20 +7949,6 @@
             "azure_crypto_key": {
               "type": "string"
             },
-            "azure_signing_key": {
-              "type": "string"
-            },
-            "db_crypto_keys": {
-              "oneOf": [
-                {
-                  "additionalProperties": true,
-                  "type": "object"
-                },
-                {
-                  "type": "array"
-                }
-              ]
-            },
             "debug": {
               "title": "node debug env var",
               "type": "string"
@@ -8087,7 +8069,6 @@
           },
           "required": [
             "procs",
-            "azure_signing_key",
             "azure_crypto_key",
             "read_db_url",
             "write_db_url",
@@ -8833,9 +8814,6 @@
             "azure_crypto_key": {
               "type": "string"
             },
-            "azure_signing_key": {
-              "type": "string"
-            },
             "debug": {
               "title": "node debug env var",
               "type": "string"
@@ -8908,7 +8886,6 @@
             "taskcluster_client_id",
             "taskcluster_access_token",
             "azure_crypto_key",
-            "azure_signing_key",
             "read_db_url",
             "write_db_url"
           ],

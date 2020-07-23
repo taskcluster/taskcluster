@@ -1,238 +1,1011 @@
 version: 28
 methods:
-  get_index_namespaces:
+  get_task_group:
     description: |-
-      Get existing index_namespaces filtered by the optional arguments,
-      ordered by the `parent` and `name`.
-      If the pagination arguments are both NULL, all rows are returned.
-      Otherwise, page_size rows are returned at offset page_offset.
+      Get a task group.
     mode: read
-    serviceName: index
-    args: parent_in text, name_in text, page_size_in integer, page_offset_in integer
-    returns: table(parent text, name text, expires timestamptz)
+    serviceName: queue
+    args: task_group_id_in text
+    returns: |-
+      table(
+        task_group_id text,
+        scheduler_id text,
+        expires timestamptz
+      )
     body: |-
       begin
         return query
         select
-          index_namespaces.parent,
-          index_namespaces.name,
-          index_namespaces.expires
-        from index_namespaces
-        where
-          (index_namespaces.parent = parent_in or parent_in is null) and
-          (index_namespaces.name = name_in or name_in is null) and
-          (index_namespaces.expires > now())
-        -- we previously used to order by the hashed parent but there's probably no need to add this complication.
-        order by index_namespaces.parent, name
-        limit get_page_limit(page_size_in)
-        offset get_page_offset(page_offset_in);
+          task_groups.task_group_id,
+          task_groups.scheduler_id,
+          task_groups.expires
+        from task_groups
+        where task_groups.task_group_id = task_group_id_in;
       end
-  create_index_namespace:
+  ensure_task_group:
     description: |-
-      Create a new namespace. Raises UNIQUE_VIOLATION if the namespace already exists.
-      Returns the newly created namespace.
+      Ensure that the given task group exists, has the matching scheduler_id,
+      and has an expiration greater than the given expiration.  Expiration is
+      bumped by an hour at a time to avoid unnecessary updates.  This returns
+      23505 (UNIQUE_VIOLATION) when the group exists with a different
+      scheduler_id.
     mode: write
-    serviceName: index
-    args: parent_in text, name_in text, expires_in timestamptz
-    returns: table(parent text, name text, expires timestamptz)
-    body: |-
-      begin
-        return query insert
-          into index_namespaces (parent, name, expires)
-          values (parent_in, name_in, expires_in)
-          returning index_namespaces.parent, index_namespaces.name, index_namespaces.expires;
-      end
-  get_index_namespace:
-    description: |-
-      Get a namespace. The returned table will have one or zero rows.
-    mode: read
-    serviceName: index
-    args: parent_in text, name_in text
-    returns: table(parent text, name text, expires timestamptz)
-    body: |-
-      begin
-        return query select
-          index_namespaces.parent,
-          index_namespaces.name,
-          index_namespaces.expires
-        from index_namespaces
-        where
-          index_namespaces.parent = parent_in and
-          index_namespaces.name = name_in;
-      end
-  update_index_namespace:
-    serviceName: index
-    description: |-
-      Update a namespace.
-      Returns the up-to-date namespace row that have the same parent and name.
-      If the row is not found then an exception with code 'P0002' is thrown.
-    mode: write
-    args: parent_in text, name_in text, expires_in timestamptz
-    returns: table(parent text, name text, expires timestamptz)
+    serviceName: queue
+    args: |-
+      task_group_id_in text,
+      scheduler_id_in text,
+      expires_in timestamptz
+    returns: void
     body: |-
       declare
-        updated_row index_namespaces%ROWTYPE;
+        task_group task_groups%ROWTYPE;
       begin
-        update index_namespaces
-        set expires = coalesce(expires_in, index_namespaces.expires)
-        where
-          index_namespaces.parent = parent_in and
-          index_namespaces.name = name_in
-        returning
-          index_namespaces.parent,
-          index_namespaces.name,
-          index_namespaces.expires
-        into updated_row;
-        if found then
-          return query select
-            updated_row.parent,
-            updated_row.name,
-            updated_row.expires;
-          return;
+        select *
+        from task_groups
+        where task_groups.task_group_id = task_group_id_in
+        for update
+        into task_group;
+
+        -- insert with expiration one hour later than given
+        if task_group.task_group_id is NULL then
+          begin
+            insert
+            into task_groups (task_group_id, scheduler_id, expires, etag)
+            values (
+              task_group_id_in,
+              scheduler_id_in,
+              expires_in + interval '1 hour',
+              gen_random_uuid()
+            );
+            return;
+          exception
+            when unique_violation then
+              -- we raced with another call's insert, so get that inserted row
+              select *
+              from task_groups
+              where task_groups.task_group_id = task_group_id_in
+              for update
+              into task_group;
+          end;
         end if;
-        raise exception 'no such row' using errcode = 'P0002';
+
+        if task_group.scheduler_id != scheduler_id_in then
+          raise exception 'task group exists with different scheduler_id'
+            using errcode = '23505';
+        end if;
+
+        -- if necessary, update the expires value
+        if expires_in > task_group.expires then
+          update task_groups
+          set expires = expires_in + interval '1 hour'
+          where task_groups.task_group_id = task_group_id_in;
+        end if;
       end
-  expire_index_namespaces:
+  is_task_group_active:
+    description: temp, removed in next commit
+    mode: read
+    serviceName: queue
+    args: task_group_id_in text
+    returns: boolean
+    body: |-
+      begin
+        perform true
+        from tasks
+        where
+          task_group_id = task_group_id_in and
+          not ever_resolved
+        limit 1;
+        return found;
+      end
+  expire_task_groups:
     description: |-
-      Expire index_namespaces that come before the current time.
+      Delete task groups with expiration dates before `expires_in`.
       Returns a count of rows that have been deleted.
     mode: write
-    serviceName: index
-    args: ''
+    serviceName: queue
+    args: expires_in timestamptz
     returns: integer
     body: |-
       declare
         count integer;
       begin
-        delete from index_namespaces where index_namespaces.expires < now();
+        delete
+        from task_groups
+        where expires < expires_in;
+
         if found then
           get diagnostics count = row_count;
           return count;
         end if;
         return 0;
       end
-  get_indexed_tasks:
+  create_task:
     description: |-
-      Get existing indexed tasks filtered by the optional arguments,
-      ordered by the `namespace` and `name`.
-      If the pagination arguments are both NULL, all rows are returned.
-      Otherwise, page_size rows are returned at offset page_offset.
+      Create a new task, without scheduling it, and with empty values
+      for the status information.
+    mode: write
+    serviceName: queue
+    args: |-
+      task_id text,
+      provisioner_id text,
+      worker_type text,
+      scheduler_id text,
+      task_group_id text,
+      dependencies jsonb,
+      requires task_requires,
+      routes jsonb,
+      priority task_priority,
+      retries integer,
+      created timestamptz,
+      deadline timestamptz,
+      expires timestamptz,
+      scopes jsonb,
+      payload jsonb,
+      metadata jsonb,
+      tags jsonb,
+      extra jsonb
+    returns: void
+    body: |-
+      begin
+        insert
+        into tasks (
+          task_id,
+          provisioner_id,
+          worker_type,
+          scheduler_id,
+          task_group_id,
+          dependencies,
+          requires,
+          routes,
+          priority,
+          retries,
+          created,
+          deadline,
+          expires,
+          scopes,
+          payload,
+          metadata,
+          tags,
+          extra,
+          retries_left,
+          runs,
+          taken_until,
+          ever_resolved,
+          etag
+        )
+        values (
+          task_id,
+          provisioner_id,
+          worker_type,
+          scheduler_id,
+          task_group_id,
+          dependencies,
+          requires,
+          routes,
+          priority,
+          retries,
+          created,
+          deadline,
+          expires,
+          scopes,
+          payload,
+          metadata,
+          tags,
+          extra,
+          -- default values for the mutable bits
+          retries,
+          jsonb_build_array(),
+          null, -- not taken
+          false,
+          public.gen_random_uuid()
+        );
+      end
+  get_task:
+    description: |-
+      Get all properties of a task.  Note that all properties but `runs`,
+      `retries_left`, and `taken_until` are immutable.
     mode: read
-    serviceName: index
-    args: namespace_in text, name_in text, page_size_in integer, page_offset_in integer
-    returns: table(namespace text, name text, rank integer, task_id text, data jsonb, expires timestamptz)
+    serviceName: queue
+    args: task_id_in text
+    returns: |-
+      table (
+        task_id text,
+        provisioner_id text,
+        worker_type text,
+        scheduler_id text,
+        task_group_id text,
+        dependencies jsonb,
+        requires task_requires,
+        routes jsonb,
+        priority task_priority,
+        retries integer,
+        retries_left int,
+        created timestamptz,
+        deadline timestamptz,
+        expires timestamptz,
+        scopes jsonb,
+        payload jsonb,
+        metadata jsonb,
+        tags jsonb,
+        extra jsonb,
+        runs jsonb,
+        taken_until timestamptz
+      )
     body: |-
       begin
         return query
         select
-          indexed_tasks.namespace,
-          indexed_tasks.name,
-          indexed_tasks.rank,
-          uuid_to_slugid(indexed_tasks.task_id) as task_id,
-          indexed_tasks.data,
-          indexed_tasks.expires
-        from indexed_tasks
+          tasks.task_id,
+          tasks.provisioner_id,
+          tasks.worker_type,
+          tasks.scheduler_id,
+          tasks.task_group_id,
+          tasks.dependencies,
+          tasks.requires,
+          tasks.routes,
+          tasks.priority,
+          tasks.retries,
+          tasks.retries_left,
+          tasks.created,
+          tasks.deadline,
+          tasks.expires,
+          tasks.scopes,
+          tasks.payload,
+          tasks.metadata,
+          tasks.tags,
+          tasks.extra,
+          tasks.runs,
+          tasks.taken_until
+        from tasks
         where
-          (indexed_tasks.namespace = namespace_in or namespace_in is null) and
-          (indexed_tasks.name = name_in or name_in is null) and
-          (indexed_tasks.expires > now())
-        -- we previously used to order by the hashed namespace but there's probably no need to add this complication.
-        order by indexed_tasks.namespace, name
+          tasks.task_id = task_id_in;
+      end
+  get_tasks_by_task_group:
+    description: |-
+      Get all properties of all tasks in the given task group.
+    mode: read
+    serviceName: queue
+    args: task_group_id_in text, page_size_in integer, page_offset_in integer
+    returns: |-
+      table (
+        task_id text,
+        provisioner_id text,
+        worker_type text,
+        scheduler_id text,
+        task_group_id text,
+        dependencies jsonb,
+        requires task_requires,
+        routes jsonb,
+        priority task_priority,
+        retries integer,
+        retries_left int,
+        created timestamptz,
+        deadline timestamptz,
+        expires timestamptz,
+        scopes jsonb,
+        payload jsonb,
+        metadata jsonb,
+        tags jsonb,
+        extra jsonb,
+        runs jsonb,
+        taken_until timestamptz
+      )
+    body: |-
+      begin
+        return query
+        select
+          tasks.task_id,
+          tasks.provisioner_id,
+          tasks.worker_type,
+          tasks.scheduler_id,
+          tasks.task_group_id,
+          tasks.dependencies,
+          tasks.requires,
+          tasks.routes,
+          tasks.priority,
+          tasks.retries,
+          tasks.retries_left,
+          tasks.created,
+          tasks.deadline,
+          tasks.expires,
+          tasks.scopes,
+          tasks.payload,
+          tasks.metadata,
+          tasks.tags,
+          tasks.extra,
+          tasks.runs,
+          tasks.taken_until
+        from tasks
+        where tasks.task_group_id = task_group_id_in
         limit get_page_limit(page_size_in)
         offset get_page_offset(page_offset_in);
       end
-  create_indexed_task:
+  remove_task:
     description: |-
-      Create a new indexed task. Raises UNIQUE_VIOLATION if the indexed task already exists.
-      Returns the newly created indexed task.
+      Remove the given task, regardless of its expiration status.  This is
+      typically used when task creation has failed.
     mode: write
-    serviceName: index
-    args: namespace_in text, name_in text, rank_in integer, task_id_in text, data_in jsonb, expires_in timestamptz
-    returns: table(namespace text, name text, rank integer, task_id text, data jsonb, expires timestamptz)
+    serviceName: queue
+    args: task_id text
+    returns: void
     body: |-
       begin
-        return query insert
-          into indexed_tasks (namespace, name, rank, task_id, data, expires)
-          values (namespace_in, name_in, rank_in, slugid_to_uuid(task_id_in), data_in, expires_in)
-          returning indexed_tasks.namespace, indexed_tasks.name, indexed_tasks.rank, indexed_tasks.task_id, indexed_tasks.data, indexed_tasks.expires;
+        delete
+        from tasks
+        where tasks.task_id = remove_task.task_id;
       end
-  get_indexed_task:
-    description: |-
-      Get an indexed task. The returned table will have one or zero rows.
-    mode: read
-    serviceName: index
-    args: namespace_in text, name_in text
-    returns: table(namespace text, name text, rank integer, task_id text, data jsonb, expires timestamptz)
+  mark_task_ever_resolved:
+    description: temp, removed in next commit
+    mode: write
+    serviceName: queue
+    args: task_id_in text
+    returns: void
     body: |-
       begin
-        return query select
-          indexed_tasks.namespace,
-          indexed_tasks.name,
-          indexed_tasks.rank,
-          uuid_to_slugid(indexed_tasks.task_id) as task_id,
-          indexed_tasks.data,
-          indexed_tasks.expires
-        from indexed_tasks
-        where
-          indexed_tasks.namespace = namespace_in and
-          indexed_tasks.name = name_in;
+        update tasks
+        set ever_resolved = true
+        where task_id = task_id_in;
       end
-  update_indexed_task:
-    serviceName: index
+  schedule_task:
     description: |-
-      Update an indexed task.
-      Returns the up-to-date indexed task row that have the same namespace and name.
+      Schedule the initial run for a task, moving the task from "unscheduled" to "pending".
+      This returns the task's updated status, or nothing if the current status was not
+      as expected.
     mode: write
-    args: namespace_in text, name_in text, rank_in integer, task_id_in text, data_in jsonb, expires_in timestamptz
-    returns: table(namespace text, name text, rank integer, task_id text, data jsonb, expires timestamptz)
+    serviceName: queue
+    args: task_id text, reason_created text
+    returns: table(retries_left integer, runs jsonb, taken_until timestamptz)
     body: |-
       declare
-        updated_row indexed_tasks%ROWTYPE;
+        runs jsonb;
+        run_id int;
       begin
-        update indexed_tasks
-        set (rank, task_id, data, expires) = (
-          coalesce(rank_in, indexed_tasks.rank),
-          coalesce(slugid_to_uuid(task_id_in), indexed_tasks.task_id),
-          coalesce(data_in, indexed_tasks.data),
-          coalesce(expires_in, indexed_tasks.expires)
-        )
-        where
-          indexed_tasks.namespace = namespace_in and
-          indexed_tasks.name = name_in
-        returning
-          indexed_tasks.namespace,
-          indexed_tasks.name,
-          indexed_tasks.rank,
-          uuid_to_slugid(indexed_tasks.task_id),
-          indexed_tasks.data,
-          indexed_tasks.expires
-        into updated_row;
-        if found then
-          return query select
-            updated_row.namespace,
-            updated_row.name,
-            updated_row.rank,
-            updated_row.task_id,
-            updated_row.data,
-            updated_row.expires;
+        -- lock the task row to prevent concurrent updates
+        select tasks.runs
+        into runs
+        from tasks
+        where tasks.task_id = schedule_task.task_id
+        for update;
+
+        if runs is null then
+          -- the task row was not found
           return;
-        else
-          raise exception 'no such row' using errcode = 'P0002';
         end if;
+
+        run_id := jsonb_array_length(runs);
+        if run_id != 0 then
+          return;
+        end if;
+
+        update tasks
+        set
+          runs = jsonb_build_array(
+            jsonb_build_object(
+              'state', 'pending',
+              'reasonCreated', reason_created,
+              'scheduled', now())),
+          taken_until = null
+        where tasks.task_id = schedule_task.task_id;
+
+        return query
+        select tasks.retries_left, tasks.runs, tasks.taken_until
+        from tasks
+        where tasks.task_id = schedule_task.task_id;
       end
-  expire_indexed_tasks:
+  rerun_task:
     description: |-
-      Expire indexed tasks that come before the current time.
+      Ensure that no run is currently running or pending, and then create a new
+      pending run with the given reason.  This also resets the retries_left
+      column to `retries` (unless the sanity-check maximum runs has been
+      reached).  This returns the task's updated status, or nothing if the
+      current status was not as expected.
+    mode: write
+    serviceName: queue
+    args: task_id text
+    returns: table(retries_left integer, runs jsonb, taken_until timestamptz)
+    body: |-
+      declare
+        runs jsonb;
+        run jsonb;
+        last_run_id int;
+        max_runs_allowed constant int = 50;
+      begin
+        -- lock the task row to prevent concurrent updates
+        select tasks.runs
+        into runs
+        from tasks
+        where tasks.task_id = rerun_task.task_id
+        for update;
+
+        if runs is null then
+          -- the task row was not found
+          return;
+        end if;
+
+        last_run_id := jsonb_array_length(runs) - 1;
+        if last_run_id >= 0 then
+          -- verify the most recent run is not pending or running
+          run = runs -> last_run_id;
+          if run ->> 'state' in ('pending', 'running') then
+            return;
+          end if;
+        end if;
+
+        -- apply a sanity check on the number of runs
+        if last_run_id + 1 >= max_runs_allowed then
+          return;
+        end if;
+
+        update tasks
+        set
+          retries_left = least(tasks.retries, max_runs_allowed - last_run_id - 2),
+          runs = tasks.runs || jsonb_build_array(
+            jsonb_build_object(
+              'state', 'pending',
+              'reasonCreated', 'rerun',
+              'scheduled', now())),
+          taken_until = null
+        where tasks.task_id = rerun_task.task_id;
+
+        return query
+        select tasks.retries_left, tasks.runs, tasks.taken_until
+        from tasks
+        where tasks.task_id = rerun_task.task_id;
+      end
+  cancel_task:
+    description: |-
+      If the current run is pending or running, mark it as exception with the given
+      reason.  If the task is unscheduled, a run with that status is
+      created to represent the cancellation.  This returns the task's updated
+      status, or nothing if the current status was not as expected.
+    mode: write
+    serviceName: queue
+    args: task_id text, reason text
+    returns: table(retries_left integer, runs jsonb, taken_until timestamptz)
+    body: |-
+      declare
+        runs jsonb;
+        run jsonb;
+        new_runs jsonb;
+        last_run_id int;
+      begin
+        -- lock the task row to prevent concurrent updates
+        select tasks.runs
+        into runs
+        from tasks
+        where tasks.task_id = cancel_task.task_id
+        for update;
+
+        if runs is null then
+          -- the task row was not found
+          return;
+        end if;
+
+        last_run_id := jsonb_array_length(runs) - 1;
+        if last_run_id >= 0 then
+          -- if the most recent run is not pending or running, then
+          -- there is nothing to cancel
+          run = runs -> last_run_id;
+          if not run ->> 'state' in ('pending', 'running') then
+            return;
+          end if;
+
+          -- reconstruct the runs object with an updated run
+          new_runs = (runs - last_run_id) || jsonb_build_array(
+            run || jsonb_build_object(
+              'state', 'exception',
+              'reasonResolved', reason,
+              'resolved', now()));
+        else
+          new_runs = jsonb_build_array(
+            jsonb_build_object(
+              'state', 'exception',
+              'reasonCreated', 'exception',
+              'reasonResolved', reason,
+              'scheduled', now(),
+              'resolved', now()));
+        end if;
+
+        update tasks
+        set
+          runs = new_runs,
+          taken_until = null
+        where tasks.task_id = cancel_task.task_id;
+
+        return query
+        select tasks.retries_left, tasks.runs, tasks.taken_until
+        from tasks
+        where tasks.task_id = cancel_task.task_id;
+      end
+  claim_task:
+    description: |-
+      Claim the given run of the given task for the given worker.  The hint is recorded in the run,
+      for comparison when the claim expires.  This returns the task's updated
+      status, or nothing if the current status was not as expected.
+    mode: write
+    serviceName: queue
+    args: task_id text, run_id int, worker_group text, worker_id text, hint_id text, taken_until_in timestamptz
+    returns: table(retries_left integer, runs jsonb, taken_until timestamptz)
+    body: |-
+      declare
+        runs jsonb;
+        run jsonb;
+        new_runs jsonb;
+      begin
+        -- lock the task row to prevent concurrent updates
+        select tasks.runs
+        into runs
+        from tasks
+        where tasks.task_id = claim_task.task_id
+        for update;
+
+        if runs is null then
+          -- the task row was not found
+          return;
+        end if;
+
+        if jsonb_array_length(runs) != run_id + 1 then
+          -- run_id is not the latest run
+          return;
+        end if;
+
+        run = runs -> run_id;
+        if run ->> 'state' != 'pending' then
+          -- run is not pending
+          return;
+        end if;
+
+        -- reconstruct the runs object with an updated run
+        new_runs = (runs - run_id) || jsonb_build_array(
+          run || jsonb_build_object(
+            'state', 'running',
+            'workerGroup', worker_group,
+            'workerId', worker_id,
+            'hintId', hint_id,
+            'takenUntil', taken_until_in,
+            'started', now()));
+
+        update tasks
+        set
+          runs = new_runs,
+          taken_until = taken_until_in
+        where tasks.task_id = claim_task.task_id;
+
+        return query
+        select tasks.retries_left, tasks.runs, tasks.taken_until
+        from tasks
+        where tasks.task_id = claim_task.task_id;
+      end
+  reclaim_task:
+    description: |-
+      Relaim the given run of the given task run, until the new taken_until time.
+      This returns the task's updated status, or nothing if the current status was not as expected.
+    mode: write
+    serviceName: queue
+    args: task_id text, run_id int, taken_until_in timestamptz
+    returns: table(retries_left integer, runs jsonb, taken_until timestamptz)
+    body: |-
+      declare
+        runs jsonb;
+        run jsonb;
+        new_runs jsonb;
+        new_taken_until timestamptz;
+      begin
+        -- lock the task row to prevent concurrent updates
+        select tasks.runs
+        into runs
+        from tasks
+        where tasks.task_id = reclaim_task.task_id
+        for update;
+
+        if runs is null then
+          -- the task row was not found
+          return;
+        end if;
+
+        if jsonb_array_length(runs) != run_id + 1 then
+          -- run_id is not the latest run
+          return;
+        end if;
+
+        run = runs -> run_id;
+        if run ->> 'state' != 'running' then
+          -- run is not running
+          return;
+        end if;
+
+        -- always set the taken_until forward in time
+        new_taken_until = greatest(taken_until_in, (run ->> 'taken_until')::timestamptz);
+
+        -- reconstruct the runs object with an updated run
+        new_runs = (runs - run_id) || jsonb_build_array(
+          run || jsonb_build_object(
+            'takenUntil', new_taken_until));
+
+        update tasks
+        set
+          runs = new_runs,
+          taken_until = new_taken_until
+        where tasks.task_id = reclaim_task.task_id;
+
+        return query
+        select tasks.retries_left, tasks.runs, tasks.taken_until
+        from tasks
+        where tasks.task_id = reclaim_task.task_id;
+      end
+  resolve_task:
+    description: |-
+      Resolve the given run with the given state and reason, setting
+      run.resolved and resetting `taken_until`.  If `retry_reason` is not null
+      and there are `retries_left`, a new pending run is added, and
+      `retries_left` is decremented.  This returns the task's updated status,
+      or nothing if the current status was not as expected.
+    mode: write
+    serviceName: queue
+    args: task_id text, run_id int, state text, reason text, retry_reason text
+    returns: table(retries_left integer, runs jsonb, taken_until timestamptz)
+    body: |-
+      declare
+        task record;
+        run jsonb;
+        new_runs jsonb;
+        new_taken_until timestamptz;
+      begin
+        -- lock the task row to prevent concurrent updates
+        select tasks.retries_left, tasks.runs
+        into task
+        from tasks
+        where tasks.task_id = resolve_task.task_id
+        for update;
+
+        if task.runs is null then
+          return;
+        end if;
+
+        if jsonb_array_length(task.runs) != run_id + 1 then
+          -- run_id is not the latest run
+          return;
+        end if;
+
+        run = task.runs -> run_id;
+        if run ->> 'state' != 'running' then
+          -- run is not running
+          return;
+        end if;
+
+
+        -- reconstruct the task.runs object with an updated run
+        new_runs = (task.runs - run_id) || jsonb_build_array(
+          run || jsonb_build_object(
+            'state', state,
+            'reasonResolved', reason,
+            'resolved', now()));
+
+        -- add a retry if there are any left
+        if retry_reason is not null and task.retries_left > 0 then
+          new_runs = new_runs || jsonb_build_array(
+            jsonb_build_object(
+              'state', 'pending',
+              'reasonCreated', retry_reason,
+              'scheduled', now()));
+          task.retries_left = task.retries_left - 1;
+        end if;
+
+        update tasks
+        set
+          retries_left = task.retries_left,
+          runs = new_runs,
+          taken_until = null
+        where tasks.task_id = resolve_task.task_id;
+
+        return query
+        select tasks.retries_left, tasks.runs, tasks.taken_until
+        from tasks
+        where tasks.task_id = resolve_task.task_id;
+      end
+  check_task_claim:
+    description: |-
+      Check the given task for a claim on the given run expiring at the given
+      time.  If the run is still running, it is marked as claim-expired and
+      a retry scheduled (if retries_left).  
+
+      This returns the task's updated status, or nothing if the current status
+      was not as expected.
+    mode: write
+    serviceName: queue
+    args: task_id text, run_id int, taken_until_in timestamptz
+    returns: table(retries_left integer, runs jsonb, taken_until timestamptz)
+    body: |-
+      declare
+        task record;
+        runs jsonb;
+        run jsonb;
+        new_runs jsonb;
+        new_taken_until timestamptz;
+      begin
+        -- lock the task row to prevent concurrent updates
+        select tasks.retries_left, tasks.runs, tasks.deadline
+        into task
+        from tasks
+        where
+          tasks.task_id = check_task_claim.task_id and
+          tasks.taken_until = taken_until_in
+        for update;
+
+        if task.runs is null then
+          -- no such task, or taken_until did not match
+          return;
+        end if;
+
+        if jsonb_array_length(task.runs) != run_id + 1 then
+          -- run_id is not the latest run
+          return;
+        end if;
+
+        run = task.runs -> run_id;
+        if run ->> 'state' != 'running' then
+          -- run is not running
+          return;
+        end if;
+        
+        if (run ->> 'takenUntil')::timestamptz != taken_until_in then
+          -- run has updated takenUntil
+          return;
+        end if;
+        
+        if task.deadline < now() then
+          -- task has passed its deadline, so let check_task_deadline handle it
+          return;
+        end if;
+
+        -- reconstruct the runs object with an updated run
+        new_runs = (task.runs - run_id) || jsonb_build_array(
+          run || jsonb_build_object(
+            'state', 'exception',
+            'reasonResolved', 'claim-expired',
+            'resolved', now()));
+
+        -- add a retry if there are any left
+        if task.retries_left > 0 then
+          new_runs = new_runs || jsonb_build_array(
+            jsonb_build_object(
+              'state', 'pending',
+              'reasonCreated', 'retry',
+              'scheduled', now()));
+          task.retries_left = task.retries_left - 1;
+        end if;
+
+        update tasks
+        set
+          retries_left = task.retries_left,
+          runs = new_runs,
+          taken_until = null
+        where tasks.task_id = check_task_claim.task_id;
+
+        return query
+        select tasks.retries_left, tasks.runs, tasks.taken_until
+        from tasks
+        where tasks.task_id = check_task_claim.task_id;
+      end
+  resolve_task_at_deadline:
+    description: |-
+      The given task has reached its deadline, so mark it as resolved, adding a
+      run if necessary.  This returns the task's updated status, or nothing if
+      the current status was not as expected.
+    mode: write
+    serviceName: queue
+    args: task_id text
+    returns: table(retries_left integer, runs jsonb, taken_until timestamptz)
+    body: |-
+      declare
+        task record;
+        runs jsonb;
+        run jsonb;
+        new_runs jsonb;
+        new_taken_until timestamptz;
+      begin
+        -- lock the task row to prevent concurrent updates
+        select tasks.retries_left, tasks.runs, tasks.deadline
+        into task
+        from tasks
+        where
+          tasks.task_id = check_task_claim.task_id and
+          tasks.taken_until = taken_until_in
+        for update;
+
+        if task.runs is null then
+          -- no such task, or taken_until did not match
+          return;
+        end if;
+
+        if jsonb_array_length(task.runs) != run_id + 1 then
+          -- run_id is not the latest run
+          return;
+        end if;
+
+        run = task.runs -> run_id;
+        if run ->> 'state' != 'running' then
+          -- run is not running
+          return;
+        end if;
+        
+        if (run ->> 'takenUntil')::timestamptz != taken_until_in then
+          -- run has updated takenUntil
+          return;
+        end if;
+        
+        if task.deadline < now() then
+          -- task has passed its deadline, so let check_task_deadline handle it
+          return;
+        end if;
+
+        -- reconstruct the runs object with an updated run
+        new_runs = (task.runs - run_id) || jsonb_build_array(
+          run || jsonb_build_object(
+            'state', 'exception',
+            'reasonResolved', 'claim-expired',
+            'resolved', now()));
+
+        -- add a retry if there are any left
+        if task.retries_left > 0 then
+          new_runs = new_runs || jsonb_build_array(
+            jsonb_build_object(
+              'state', 'pending',
+              'reasonCreated', 'retry',
+              'scheduled', now()));
+          task.retries_left = task.retries_left - 1;
+        end if;
+
+        update tasks
+        set
+          retries_left = task.retries_left,
+          runs = new_runs,
+          taken_until = null
+        where tasks.task_id = check_task_claim.task_id;
+
+        return query
+        select tasks.retries_left, tasks.runs, tasks.taken_until
+        from tasks
+        where tasks.task_id = check_task_claim.task_id;
+      end
+  expire_tasks:
+    description: |-
+      Delete tasks with expiration dates before `expires_in`.
       Returns a count of rows that have been deleted.
     mode: write
-    serviceName: index
-    args: ''
+    serviceName: queue
+    args: expires_in timestamptz
     returns: integer
     body: |-
       declare
         count integer;
       begin
-        delete from indexed_tasks where indexed_tasks.expires < now();
+        delete
+        from tasks
+        where expires < expires_in;
+
+        if found then
+          get diagnostics count = row_count;
+          return count;
+        end if;
+        return 0;
+      end
+  add_task_dependency:
+    description: |-
+      Create an un-satisfied task dependency between the two tasks, with the given
+      requirement style and expiration.  If the dependency already exists, nothing
+      happens.
+    mode: write
+    serviceName: queue
+    args: dependent_task_id_in text, required_task_id_in text, requires_in task_requires, expires_in timestamptz
+    returns: void
+    body: |-
+      begin
+        insert
+        into task_dependencies (dependent_task_id, required_task_id, requires, satisfied, expires, etag)
+        values (
+          dependent_task_id_in,
+          required_task_id_in,
+          requires_in,
+          false,
+          expires_in,
+          public.gen_random_uuid()
+        )
+        on conflict do nothing;
+      end
+  get_dependent_tasks:
+    description: |-
+      Get the un-expired tasks that depend on this one, limiting to only (un)satisfied
+      dependencies if `satisfied_in` is not null.
+      
+      Only dependencies with `dependent_task_id > tasks_after_in` are returned.
+      This supports paginated queries that are not susceptible to rows being
+      added or removed.  Typically only one of `page_offset_in` and
+      `tasks_after_in` are non-null.
+    mode: read
+    serviceName: queue
+    args: required_task_id_in text, satisfied_in boolean, tasks_after_in text, page_size_in integer, page_offset_in integer
+    returns: table(dependent_task_id text, requires task_requires, satisfied boolean)
+    body: |-
+      begin
+        return query
+        select
+          task_dependencies.dependent_task_id,
+          task_dependencies.requires,
+          task_dependencies.satisfied
+        from task_dependencies
+        where
+          required_task_id = required_task_id_in and
+          expires > now() and
+          (satisfied_in is null or task_dependencies.satisfied = satisfied_in) and
+          (tasks_after_in is null or task_dependencies.dependent_task_id > tasks_after_in)
+        limit get_page_limit(page_size_in)
+        offset get_page_offset(page_offset_in);
+      end
+  satisfy_task_dependency:
+    description: |-
+      Mark the given dependency as satisfied.  If the dependency does not exist, nothing
+      happens.
+    mode: write
+    serviceName: queue
+    args: dependent_task_id_in text, required_task_id_in text
+    returns: void
+    body: |-
+      begin
+        update task_dependencies
+        set satisfied = true
+        where
+          dependent_task_id = dependent_task_id_in and
+          required_task_id = required_task_id_in;
+      end
+  remove_task_dependency:
+    description: |-
+      Mark the given dependency as satisfied.  If the dependency does not exist, nothing
+      happens.
+    mode: write
+    serviceName: queue
+    args: dependent_task_id_in text, required_task_id_in text
+    returns: void
+    body: |-
+      begin
+        delete from task_dependencies
+        where
+          dependent_task_id = dependent_task_id_in and
+          required_task_id = required_task_id_in;
+      end
+  is_task_blocked:
+    description: |-
+      Return true if the task has remaining un-satisfied dependencies.
+    mode: read
+    serviceName: queue
+    args: dependent_task_id_in text
+    returns: boolean
+    body: |-
+      begin
+        perform 1
+        from task_dependencies
+        where
+          dependent_task_id = dependent_task_id_in and
+          not task_dependencies.satisfied
+        limit 1;
+        return found;
+      end
+  expire_task_dependencies:
+    description: |-
+      Delete task dependencies with expiration dates before `expires_in`.
+      Returns a count of rows that have been deleted.
+    mode: write
+    serviceName: queue
+    args: expires_in timestamptz
+    returns: integer
+    body: |-
+      declare
+        count integer;
+      begin
+        delete
+        from task_dependencies
+        where expires < expires_in;
+
         if found then
           get diagnostics count = row_count;
           return count;

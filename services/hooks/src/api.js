@@ -1,11 +1,9 @@
 const parser = require('cron-parser');
 const taskcluster = require('taskcluster-client');
 const {APIBuilder} = require('taskcluster-lib-api');
-const { UNIQUE_VIOLATION } = require('taskcluster-lib-postgres');
 const nextDate = require('../src/nextdate');
 const _ = require('lodash');
 const Ajv = require('ajv');
-const { lastFireUtils, hookUtils } = require('./utils');
 
 const builder = new APIBuilder({
   title: 'Hooks API Documentation',
@@ -19,7 +17,7 @@ const builder = new APIBuilder({
     hookGroupId: /^[a-zA-Z0-9-_]{1,64}$/,
     hookId: /^[a-zA-Z0-9-_\/]{1,64}$/,
   },
-  context: ['db', 'taskcreator', 'publisher', 'denylist'],
+  context: ['Hook', 'LastFire', 'taskcreator', 'publisher', 'denylist'],
 });
 
 module.exports = builder;
@@ -39,10 +37,10 @@ builder.declare({
   ].join('\n'),
 }, async function(req, res) {
   const groups = new Set();
-  const hooks = (await this.db.fns.get_hooks(null, null, null, null)).map(hookUtils.fromDb);
-
-  hooks.forEach(hook => {
-    groups.add(hook.hookGroupId);
+  await this.Hook.scan({}, {
+    handler: (item) => {
+      groups.add(item.hookGroupId);
+    },
   });
   return res.reply({groups: Array.from(groups)});
 });
@@ -62,10 +60,14 @@ builder.declare({
     'given hook group.',
   ].join('\n'),
 }, async function(req, res) {
-  const hooks = (await this.db.fns.get_hooks(req.params.hookGroupId, null, null, null))
-    .map(hookUtils.fromDb)
-    .map(hookUtils.definition);
-
+  const hooks = [];
+  await this.Hook.query({
+    hookGroupId: req.params.hookGroupId,
+  }, {
+    handler: async (hook) => {
+      hooks.push(await hook.definition());
+    },
+  });
   if (hooks.length === 0) {
     return res.reportError('ResourceNotFound', 'No such group', {});
   }
@@ -87,8 +89,10 @@ builder.declare({
     'and hookId.',
   ].join('\n'),
 }, async function(req, res) {
-  const { hookGroupId, hookId } = req.params;
-  const hook = hookUtils.fromDbRows(await this.db.fns.get_hook(hookGroupId, hookId));
+  let hook = await this.Hook.load({
+    hookGroupId: req.params.hookGroupId,
+    hookId: req.params.hookId,
+  }, true);
 
   // Handle the case where the hook doesn't exist
   if (!hook) {
@@ -96,7 +100,7 @@ builder.declare({
   }
 
   // Reply with the hook definition
-  let definition = hookUtils.definition(hook);
+  let definition = await hook.definition();
   return res.reply(definition);
 });
 
@@ -118,23 +122,23 @@ builder.declare({
 }, async function(req, res) {
   const {hookGroupId, hookId} = req.params;
 
-  const hook = hookUtils.fromDbRows(await this.db.fns.get_hook(hookGroupId, hookId));
-
+  const hook = await this.Hook.load({hookGroupId, hookId}, true);
   if (!hook) {
     return res.reportError('ResourceNotFound', 'No such hook', {});
   }
 
   // find the latest entry in the LastFire table for this hook
   let latest = {taskCreateTime: new Date(1970, 1, 1)};
-  await lastFireUtils.getLastFires(
-    this.db,
-    { hookGroupId: req.params.hookGroupId, hookId: req.params.hookId },
-    item => {
+  await this.LastFire.scan({
+    hookGroupId: req.params.hookGroupId,
+    hookId: req.params.hookId,
+  }, {
+    handler: item => {
       if (item.taskCreateTime > latest.taskCreateTime) {
         latest = item;
       }
     },
-  );
+  });
 
   let reply;
 
@@ -252,32 +256,26 @@ builder.declare({
 
   // Try to create a Hook entity
   try {
-    const hook = _.defaults({}, hookDef, {
-      bindings: [],
-      triggerToken: taskcluster.slugid(),
-      lastFire: {result: 'no-fire'},
-      nextTaskId: taskcluster.slugid(),
-      nextScheduledDate: nextDate(hookDef.schedule),
-    });
-    await this.db.fns.create_hook(
-      hook.hookGroupId,
-      hook.hookId,
-      hook.metadata,
-      hook.task,
-      JSON.stringify(hook.bindings), // N.B JSON-encoded because node-pg has no support for JSON arrays
-      JSON.stringify(hook.schedule), // N.B JSON-encoded because node-pg has no support for JSON arrays
-      this.db.encrypt({ value: Buffer.from(hook.triggerToken, 'utf8') }),
-      this.db.encrypt({ value: Buffer.from(hook.nextTaskId, 'utf8') }),
-      hook.nextScheduledDate,
-      hook.triggerSchema,
-    );
+    await this.Hook.create(
+      _.defaults({}, hookDef, {
+        bindings: [],
+        triggerToken: taskcluster.slugid(),
+        lastFire: {result: 'no-fire'},
+        nextTaskId: taskcluster.slugid(),
+        nextScheduledDate: nextDate(hookDef.schedule),
+
+      }));
   } catch (err) {
-    if (!err || err.code !== UNIQUE_VIOLATION) {
+    if (err && err.code === 'PropertyTooLarge') {
+      return res.reportError('InputError', err.toString(), {});
+    }
+
+    if (!err || err.code !== 'EntityAlreadyExists') {
       throw err;
     }
-    const existingHook = hookUtils.fromDbRows(await this.db.fns.get_hook(hookGroupId, hookId));
+    const existingHook = await this.Hook.load({hookGroupId, hookId}, true);
 
-    if (!_.isEqual(hookDef, hookUtils.definition(existingHook))) {
+    if (!_.isEqual(hookDef, await existingHook.definition())) {
       return res.reportError('RequestConflict',
         'hook `' + hookGroupId + '/' + hookId + '` already exists.',
         {});
@@ -327,7 +325,7 @@ builder.declare({
 
   await req.authorize({hookGroupId, hookId});
 
-  let hook = hookUtils.fromDbRows(await this.db.fns.get_hook(hookGroupId, hookId));
+  const hook = await this.Hook.load({hookGroupId, hookId}, true);
 
   if (!hook) {
     return res.reportError('ResourceNotFound', 'No such hook', {});
@@ -370,23 +368,24 @@ builder.declare({
     });
   }
 
-  hook = hookUtils.fromDbRows(
-    await this.db.fns.update_hook(
-      hook.hookGroupId, /* hook_group_id */
-      hook.hookId, /* hook_id */
-      hookDef.metadata, /* metadata */
-      hookDef.task, /* task */
-      // N.B JSON-encoded because node-pg has no support for JSON arrays
-      JSON.stringify(hookDef.bindings), /* bindings */
-      JSON.stringify(schedule), /* schedule */
-      null, /* encrypted_trigger_token */
-      this.db.encrypt({ value: Buffer.from(taskcluster.slugid(), 'utf8') }), /* encrypted_next_task_id */
-      nextDate(schedule), /* next_scheduled_date */
-      hookDef.triggerSchema, /* trigger_schema */
-    ),
-  );
+  try {
+    await hook.modify((hook) => {
+      hook.metadata = hookDef.metadata;
+      hook.bindings = hookDef.bindings;
+      hook.task = hookDef.task;
+      hook.triggerSchema = hookDef.triggerSchema;
+      hook.schedule = schedule;
+      hook.nextTaskId = taskcluster.slugid();
+      hook.nextScheduledDate = nextDate(schedule);
+    });
+  } catch (err) {
+    if (err && err.code === 'PropertyTooLarge') {
+      return res.reportError('InputError', err.toString(), {});
+    }
+    throw err;
+  }
 
-  let definition = hookUtils.definition(hook);
+  let definition = await hook.definition();
   await this.publisher.hookUpdated({hookGroupId, hookId});
 
   return res.reply(definition);
@@ -412,10 +411,17 @@ builder.declare({
   await req.authorize({hookGroupId, hookId});
 
   // Remove the resource if it exists
-  await this.db.fns.delete_hook(hookGroupId, hookId);
+  await this.Hook.remove({hookGroupId, hookId}, true);
   await this.publisher.hookDeleted({hookGroupId, hookId});
 
-  await this.db.fns.delete_last_fires(req.params.hookGroupId, req.params.hookId);
+  await this.LastFire.query({
+    hookGroupId: req.params.hookGroupId,
+    hookId: req.params.hookId,
+  }, {
+    handler: async (lastFire) => {
+      await lastFire.remove(false, true);
+    },
+  });
   return res.status(200).json({});
 });
 
@@ -445,7 +451,7 @@ builder.declare({
 
   const payload = req.body;
   const clientId = await req.clientId();
-  const hook = hookUtils.fromDbRows(await this.db.fns.get_hook(hookGroupId, hookId));
+  const hook = await this.Hook.load({hookGroupId, hookId}, true);
 
   if (!hook) {
     return res.reportError('ResourceNotFound', 'No such hook', {});
@@ -473,14 +479,14 @@ builder.declare({
   const hookId = req.params.hookId;
   await req.authorize({hookGroupId, hookId});
 
-  const hook = hookUtils.fromDbRows(await this.db.fns.get_hook(hookGroupId, hookId));
+  const hook = await this.Hook.load({hookGroupId, hookId}, true);
 
   if (!hook) {
     return res.reportError('ResourceNotFound', 'No such hook', {});
   }
 
   return res.reply({
-    token: this.db.decrypt({ value: hook.triggerToken }).toString('utf8'),
+    token: hook.triggerToken,
   });
 });
 
@@ -505,30 +511,18 @@ builder.declare({
 
   await req.authorize({hookGroupId, hookId});
 
-  const hook = hookUtils.fromDbRows(await this.db.fns.get_hook(hookGroupId, hookId));
+  let hook = await this.Hook.load({hookGroupId, hookId}, true);
 
   if (!hook) {
     return res.reportError('ResourceNotFound', 'No such hook', {});
   }
 
-  const triggerToken = taskcluster.slugid();
-  hookUtils.fromDbRows(
-    await this.db.fns.update_hook(
-      hook.hookGroupId, /* hook_group_id */
-      hook.hookId, /* hook_id */
-      null,
-      null,
-      null,
-      null,
-      this.db.encrypt({ value: Buffer.from(triggerToken, 'utf8') }), /* encrypted_trigger_token */
-      null,
-      null,
-      null,
-    ),
-  );
+  await hook.modify((hook) => {
+    hook.triggerToken = taskcluster.slugid();
+  });
 
   return res.reply({
-    token: triggerToken,
+    token: hook.triggerToken,
   });
 });
 
@@ -551,9 +545,11 @@ builder.declare({
   ].join('\n'),
 }, async function(req, res) {
   const payload = req.body;
-  const { hookGroupId, hookId } = req.params;
 
-  const hook = hookUtils.fromDbRows(await this.db.fns.get_hook(hookGroupId, hookId));
+  const hook = await this.Hook.load({
+    hookGroupId: req.params.hookGroupId,
+    hookId: req.params.hookId,
+  }, true);
 
   // Return a 404 if the hook entity doesn't exist
   if (!hook) {
@@ -561,7 +557,7 @@ builder.declare({
   }
 
   // Return 401 if the token doesn't exist or doesn't match
-  if (req.params.token !== this.db.decrypt({ value: hook.triggerToken }).toString('utf8')) {
+  if (req.params.token !== hook.triggerToken) {
     return res.reportError('AuthenticationFailed', 'invalid hook token', {});
   }
 
@@ -656,15 +652,14 @@ builder.declare({
   ].join('\n'),
 }, async function(req, res) {
   let lastFires = [], item;
-  await lastFireUtils.getLastFires(
-    this.db,
-    { hookGroupId: req.params.hookGroupId, hookId: req.params.hookId },
-    async lastFire => {
-      item = lastFireUtils.definition(lastFire);
-      item.taskCreateTime = item.taskCreateTime.toJSON();
-      lastFires.push(item);
-    },
-  );
+  await this.LastFire.query({
+    hookGroupId: req.params.hookGroupId,
+    hookId: req.params.hookId,
+  }, {handler: async (lastFire) => {
+    item = await lastFire.definition();
+    item.taskCreateTime = item.taskCreateTime.toJSON();
+    lastFires.push(item);
+  }});
 
   if (lastFires.length === 0) {
     return res.reportError('ResourceNotFound', 'No such hook', {});

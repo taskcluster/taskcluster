@@ -3,10 +3,10 @@ const assume = require('assume');
 const helper = require('./helper');
 const taskcluster = require('taskcluster-client');
 const testing = require('taskcluster-lib-testing');
-const { hookUtils } = require('../src/utils');
 
 helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   helper.withDb(mock, skipping);
+  helper.withEntities(mock, skipping);
   helper.withTaskCreator(mock, skipping);
   helper.resetTables(mock, skipping);
 
@@ -75,33 +75,29 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         task: {},
         bindings: [],
         schedule: ['0 0 0 * * *'],
+        lastFire: {result: 'no-fire'},
         triggerToken: taskcluster.slugid(),
         triggerSchema: {},
       };
 
-      const mkHook = async ({ hookId, nextScheduledDate }) => {
-        const hook = _.defaults({
-          hookId,
-          nextTaskId: taskcluster.slugid(),
-          nextScheduledDate,
-        }, hookParams);
+      await helper.Hook.create(_.defaults({
+        hookId: 'futureHook',
+        nextTaskId: taskcluster.slugid(),
+        nextScheduledDate: new Date(4000, 0, 0, 0, 0, 0, 0),
+      }, hookParams));
 
-        await helper.db.fns.create_hook(
-          hook, /* hook_group_id */
-          hook.hookId, /* hook_id */
-          hook.metadata, /* metadata */
-          hook.task, /* task */
-          JSON.stringify(hook.bindings), /* bindings */
-          JSON.stringify(hook.schedule), /* schedule */
-          helper.db.encrypt({ value: Buffer.from(hook.triggerToken, 'utf8') }), /* encrypted_encrypted_trigger_token */
-          helper.db.encrypt({ value: Buffer.from(hook.nextTaskId, 'utf8') }), /* encrypted_next_task_id */
-          nextScheduledDate, /* next_scheduled_date */
-          hook.triggerSchema, /* trigger_schema */
-        );
-      };
-      await mkHook({ hookId: 'futureHook', nextScheduledDate: new Date(4000, 0, 0, 0, 0, 0, 0) });
-      await mkHook({ hookId: 'pastHook', nextScheduledDate: new Date(2000, 0, 0, 0, 0, 0, 0) });
-      await mkHook({ hookId: 'pastHookNotScheduled', nextScheduledDate: new Date(2000, 0, 0, 0, 0, 0, 0) });
+      await helper.Hook.create(_.defaults({
+        hookId: 'pastHook',
+        nextTaskId: taskcluster.slugid(),
+        nextScheduledDate: new Date(2000, 0, 0, 0, 0, 0, 0),
+      }, hookParams));
+
+      await helper.Hook.create(_.defaults({
+        hookId: 'pastHookNotScheduled',
+        nextTaskId: taskcluster.slugid(),
+        schedule: [],
+        nextScheduledDate: new Date(2000, 0, 0, 0, 0, 0, 0),
+      }, hookParams));
     });
 
     test('calls handleHook only for past-due hooks', async () => {
@@ -118,23 +114,22 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     let hook;
 
     setup(async () => {
-      hook = hookUtils.fromDbRows(
-        await helper.db.fns.create_hook(
-          'tests', /* hook_group_id */
-          'test', /* hook_id */
-          {
-            owner: 'example@example.com',
-            emailOnError: true,
-          }, /* metadata */
-          {}, /* task */
-          JSON.stringify([]), /* bindings */
-          JSON.stringify(['0 0 0 * * *']), /* schedule */
-          helper.db.encrypt({ value: Buffer.from(taskcluster.slugid(), 'utf8') }), /* encrypted_encrypted_trigger_token */
-          helper.db.encrypt({ value: Buffer.from(taskcluster.slugid(), 'utf8') }), /* encrypted_next_task_id */
-          new Date(3000, 0, 0, 0, 0, 0, 0), /* next_scheduled_date */
-          {}, /* trigger_schema */
-        ),
-      );
+      hook = await helper.Hook.create({
+        hookGroupId: 'tests',
+        hookId: 'test',
+        metadata: {
+          owner: 'example@example.com',
+          emailOnError: true,
+        },
+        task: {},
+        bindings: [],
+        schedule: ['0 0 0 * * *'],
+        triggerToken: taskcluster.slugid(),
+        lastFire: {result: 'no-fire'},
+        nextTaskId: taskcluster.slugid(),
+        nextScheduledDate: new Date(3000, 0, 0, 0, 0, 0, 0),
+        triggerSchema: {},
+      });
     });
 
     test('creates a new task and updates nextTaskId, lastFire, nextScheduledDate', async () => {
@@ -143,14 +138,17 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
       await scheduler.handleHook(hook);
 
-      let updatedHook = hookUtils.fromDbRows(await helper.db.fns.get_hook('tests', 'test'));
+      let updatedHook = await helper.Hook.load({
+        hookGroupId: 'tests',
+        hookId: 'test',
+      }, true);
 
       assume(helper.creator.fireCalls).deep.equals([{
         hookGroupId: 'tests',
         hookId: 'test',
         context: {firedBy: 'schedule'},
         options: {
-          taskId: helper.db.decrypt({ value: oldTaskId }).toString('utf8'),
+          taskId: oldTaskId,
           created: new Date(3000, 0, 0, 0, 0, 0, 0),
           retry: false,
         },
@@ -174,14 +172,17 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
       assume(emailSent).is.equal(true);
 
-      let updatedHook = hookUtils.fromDbRows(await helper.db.fns.get_hook('tests', 'test'));
+      let updatedHook = await helper.Hook.load({
+        hookGroupId: 'tests',
+        hookId: 'test',
+      }, true);
 
-      assume(helper.db.decrypt({ value: updatedHook.nextTaskId }).toString('utf8')).is.not.equal(oldTaskId);
+      assume(updatedHook.nextTaskId).is.not.equal(oldTaskId);
       assume(updatedHook.nextScheduledDate).is.not.equal(oldScheduledDate);
     });
 
     test('on 500 error, no email and nothing changes', async () => {
-      let oldTaskId = helper.db.decrypt({ value: hook.nextTaskId }).toString('utf8');
+      let oldTaskId = hook.nextTaskId;
       let oldScheduledDate = hook.nextScheduledDate;
 
       helper.creator.shouldFail = {
@@ -196,10 +197,13 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       // no email sent for a 500
       assume(emailSent).is.equal(false);
 
-      let updatedHook = hookUtils.fromDbRows(await helper.db.fns.get_hook('tests', 'test'));
+      let updatedHook = await helper.Hook.load({
+        hookGroupId: 'tests',
+        hookId: 'test',
+      }, true);
 
       // nothing got updated..
-      assume(helper.db.decrypt({ value: updatedHook.nextTaskId }).toString('utf8')).is.equal(oldTaskId);
+      assume(updatedHook.nextTaskId).is.equal(oldTaskId);
       assume(updatedHook.nextScheduledDate).is.deeply.equal(oldScheduledDate);
     });
 

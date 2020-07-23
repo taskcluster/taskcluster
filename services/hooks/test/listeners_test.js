@@ -4,10 +4,10 @@ const taskcluster = require('taskcluster-client');
 const sinon = require('sinon');
 const helper = require('./helper');
 const testing = require('taskcluster-lib-testing');
-const { queueUtils } = require('../src/utils');
 
 helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   helper.withDb(mock, skipping);
+  helper.withEntities(mock, skipping);
   helper.withTaskCreator(mock, skipping);
   helper.withPulse(mock, skipping);
   helper.resetTables(mock, skipping);
@@ -17,31 +17,31 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
   const makeHookEntities = async (...hooks) => {
     for (let {hookId, bindings} of hooks) {
-      await helper.db.fns.create_hook(
+      await helper.Hook.create({
         hookGroupId,
         hookId,
-        {}, /* metadata */
-        {}, /* task */
-        JSON.stringify(bindings), /* bindings */
-        JSON.stringify([]), /* schedule */
-        helper.db.encrypt({ value: Buffer.from(taskcluster.slugid(), 'utf8') }), /* encrypted_trigger_token */
-        helper.db.encrypt({ value: Buffer.from(taskcluster.slugid(), 'utf8') }), /* encrypted_next_task_id */
-        taskcluster.fromNow('1 day'), /* next_scheduled_date */
-        {}, /* trigger_schema */
-      );
+        metadata: {},
+        task: {},
+        bindings,
+        schedule: [],
+        triggerToken: taskcluster.slugid(),
+        lastFire: {},
+        nextTaskId: taskcluster.slugid(),
+        nextScheduledDate: taskcluster.fromNow('1 day'),
+        triggerSchema: {},
+      });
     }
   };
 
   const deleteHookEntity = async (hookId) => {
-    // const hook = await helper.Hook.load({hookGroupId, hookId});
-    // await hook.remove();
-    await helper.db.fns.delete_hook(hookGroupId, hookId);
+    const hook = await helper.Hook.load({hookGroupId, hookId});
+    await hook.remove();
   };
 
   const makeQueueEntities = async (...queues) => {
     for (let {hookId, bindings} of queues) {
       const queueName = `${hookGroupId}/${hookId}`;
-      await helper.db.fns.create_hooks_queue(hookGroupId, hookId, queueName, JSON.stringify(bindings));
+      await helper.Queues.create({hookGroupId, hookId, queueName, bindings});
     }
   };
 
@@ -49,13 +49,9 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     const exp = queues.reduce(
       (acc, {hookId, bindings}) => Object.assign(acc, {[`${hookGroupId}/${hookId}`]: bindings}), {});
     const got = {};
-
-    const rows = await helper.db.fns.get_hooks_queues(null, null);
-    const q = rows.map(queueUtils.fromDb);
-
-    for (let queue of q) {
-      got[`${hookGroupId}/${queue.hookId}`] = queue.bindings;
-    }
+    await helper.Queues.scan({}, {
+      handler: ({hookId, bindings}) => got[`${hookGroupId}/${hookId}`] = bindings,
+    });
 
     assert.deepEqual(got, exp);
   };
