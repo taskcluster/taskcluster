@@ -3720,6 +3720,23 @@
       },
       "migrationScript": "begin\n  -- Compute the sha512 of the given text data.\n  -- sha512 is the algorithm that will be used to generate the hash.\n  -- This replaces Entity.keys.HashKey from taskcluster-lib-entities.\n  create or replace function sha512(t text) returns text\n  as $$\n      begin\n        -- note that because this function is called in a restricted context during\n        -- index analysis, it must explicitly reference the schema for the digest\n        -- function; see \n        -- https://www.postgresql.org/message-id/8572.1531922146%40sss.pgh.pa.us\n        return encode(public.digest(t, 'sha512'), 'hex');\n      end;\n  $$\n  language plpgSQL\n  strict immutable;\nend\n",
       "version": 30
+    },
+    {
+      "methods": {
+        "get_worker_pool_errors": {
+          "deprecated": true
+        },
+        "get_worker_pool_errors_for_worker_pool": {
+          "args": "error_id_in text, worker_pool_id_in text, page_size_in integer, page_offset_in integer",
+          "body": "begin\n  return query\n  select\n    worker_pool_errors.error_id,\n    worker_pool_errors.worker_pool_id,\n    worker_pool_errors.reported,\n    worker_pool_errors.kind,\n    worker_pool_errors.title,\n    worker_pool_errors.description,\n    worker_pool_errors.extra\n  from worker_pool_errors\n  where\n    (worker_pool_errors.worker_pool_id = worker_pool_id_in or worker_pool_id_in is null) and\n    (worker_pool_errors.error_id = error_id_in or error_id_in is null)\n  order by worker_pool_errors.reported desc\n  limit get_page_limit(page_size_in)\n  offset get_page_offset(page_offset_in);\nend",
+          "deprecated": false,
+          "description": "Get existing worker pool errors filtered by `worker_pool_id` and `error_id`,\nordered by `reported`.\nIf the pagination arguments are both NULL, all rows are returned.\nOtherwise, page_size rows are returned at offset page_offset.",
+          "mode": "read",
+          "returns": "table(error_id text, worker_pool_id text, reported timestamptz, kind text, title text, description text, extra jsonb)",
+          "serviceName": "worker_manager"
+        }
+      },
+      "version": 31
     }
   ]
 }
