@@ -8,18 +8,17 @@ const _ = require('lodash');
 const hookDef = require('./test_definition');
 const libUrls = require('taskcluster-lib-urls');
 const testing = require('taskcluster-lib-testing');
-const { hookUtils } = require('../src/utils');
 
 suite(testing.suiteName(), function() {
   helper.secrets.mockSuite('TaskCreator', [], function(mock, skipping) {
     helper.withDb(mock, skipping);
+    helper.withEntities(mock, skipping);
     helper.resetTables(mock, skipping);
 
     this.slow(500);
 
     let creator = null;
     setup(async () => {
-      await helper.load('cfg');
       helper.load.remove('taskcreator');
       helper.load.cfg('taskcluster.rootUrl', libUrls.testRootUrl());
       creator = await helper.load('taskcreator');
@@ -75,21 +74,7 @@ suite(testing.suiteName(), function() {
       let hook = _.cloneDeep(defaultHook);
       hook.task.then.extra = extra;
       hook.task.then.scopes = scopes;
-
-      return hookUtils.fromDbRows(
-        await helper.db.fns.create_hook(
-          hook.hookGroupId,
-          hook.hookId,
-          hook.metadata,
-          hook.task,
-          JSON.stringify(hook.bindings),
-          JSON.stringify(hook.schedule),
-          helper.db.encrypt({ value: Buffer.from(hook.triggerToken, 'utf8') }),
-          helper.db.encrypt({ value: Buffer.from(hook.nextTaskId, 'utf8') }),
-          hook.nextScheduledDate,
-          hook.triggerSchema,
-        ),
-      );
+      return await helper.Hook.create(hook);
     };
 
     const fetchFiredTask = async taskId => {
@@ -167,18 +152,7 @@ suite(testing.suiteName(), function() {
     test('firing a hook where the json-e renders to nothing does nothing', async function() {
       const hook = _.cloneDeep(defaultHook);
       hook.task = {$if: 'false', then: hook.task};
-      await helper.db.fns.create_hook(
-        hook.hookGroupId,
-        hook.hookId,
-        hook.metadata,
-        hook.task,
-        JSON.stringify(hook.bindings),
-        JSON.stringify(hook.schedule),
-        helper.db.encrypt({ value: Buffer.from(hook.triggerToken, 'utf8') }),
-        helper.db.encrypt({ value: Buffer.from(hook.nextTaskId, 'utf8') }),
-        hook.nextScheduledDate,
-        hook.triggerSchema,
-      );
+      await helper.Hook.create(hook);
       let taskId = taskcluster.slugid();
       await creator.fire(hook, {firedBy: 'schedule'}, {taskId});
       await assertNoTask(taskId);
@@ -188,18 +162,7 @@ suite(testing.suiteName(), function() {
     test('firing a hook where the json-e fails to render fails', async function() {
       const hook = _.cloneDeep(defaultHook);
       hook.task = {$if: 'uhoh, this is invalid'};
-      await helper.db.fns.create_hook(
-        hook.hookGroupId,
-        hook.hookId,
-        hook.metadata,
-        hook.task,
-        JSON.stringify(hook.bindings),
-        JSON.stringify(hook.schedule),
-        helper.db.encrypt({ value: Buffer.from(hook.triggerToken, 'utf8') }),
-        helper.db.encrypt({ value: Buffer.from(hook.nextTaskId, 'utf8') }),
-        hook.nextScheduledDate,
-        hook.triggerSchema,
-      );
+      await helper.Hook.create(hook);
       const taskId = taskcluster.slugid();
 
       try {
@@ -230,18 +193,7 @@ suite(testing.suiteName(), function() {
       hook.task.then.created = {$fromNow: '0 seconds'};
       hook.task.then.deadline = {$fromNow: '1 minute'};
       hook.task.then.expires = {$fromNow: '2 minutes'};
-      await helper.db.fns.create_hook(
-        hook.hookGroupId,
-        hook.hookId,
-        hook.metadata,
-        hook.task,
-        JSON.stringify(hook.bindings),
-        JSON.stringify(hook.schedule),
-        helper.db.encrypt({ value: Buffer.from(hook.triggerToken, 'utf8') }),
-        helper.db.encrypt({ value: Buffer.from(hook.nextTaskId, 'utf8') }),
-        hook.nextScheduledDate,
-        hook.triggerSchema,
-      );
+      await helper.Hook.create(hook);
       let taskId = taskcluster.slugid();
       await creator.fire(hook, {firedBy: 'foo'}, {taskId});
 
@@ -253,18 +205,7 @@ suite(testing.suiteName(), function() {
     test('firing a real task that sets its own taskGroupId works', async function() {
       let hook = _.cloneDeep(defaultHook);
       hook.task.then.taskGroupId = taskcluster.slugid();
-      await helper.db.fns.create_hook(
-        hook.hookGroupId,
-        hook.hookId,
-        hook.metadata,
-        hook.task,
-        JSON.stringify(hook.bindings),
-        JSON.stringify(hook.schedule),
-        helper.db.encrypt({ value: Buffer.from(hook.triggerToken, 'utf8') }),
-        helper.db.encrypt({ value: Buffer.from(hook.nextTaskId, 'utf8') }),
-        hook.nextScheduledDate,
-        hook.triggerSchema,
-      );
+      await helper.Hook.create(hook);
       let taskId = taskcluster.slugid();
       await creator.fire(hook, {firedBy: 'foo'}, {taskId});
 
@@ -273,18 +214,7 @@ suite(testing.suiteName(), function() {
     });
 
     test('firing a task with options.created always generates the same task', async function() {
-      await helper.db.fns.create_hook(
-        defaultHook.hookGroupId,
-        defaultHook.hookId,
-        defaultHook.metadata,
-        defaultHook.task,
-        JSON.stringify(defaultHook.bindings),
-        JSON.stringify(defaultHook.schedule),
-        helper.db.encrypt({ value: Buffer.from(defaultHook.triggerToken, 'utf8') }),
-        helper.db.encrypt({ value: Buffer.from(defaultHook.nextTaskId, 'utf8') }),
-        defaultHook.nextScheduledDate,
-        defaultHook.triggerSchema,
-      );
+      await helper.Hook.create(defaultHook);
       const now = new Date();
       const taskIdA = taskcluster.slugid();
       await creator.fire(defaultHook, {firedBy: 'foo'}, {taskId: taskIdA, created: now});

@@ -16,7 +16,7 @@
     },
     "hooks": {
       "tables": {
-        "hooks": "write",
+        "hooks_entities": "write",
         "hooks_last_fires": "write",
         "hooks_queues": "write"
       }
@@ -131,18 +131,12 @@
       "task_group_id": "text not null",
       "updated": "timestamp with time zone not null"
     },
-    "hooks": {
-      "bindings": "jsonb not null",
-      "encrypted_next_task_id": "jsonb not null",
-      "encrypted_trigger_token": "jsonb not null",
-      "etag": "uuid not null",
-      "hook_group_id": "text not null",
-      "hook_id": "text not null",
-      "metadata": "jsonb not null",
-      "next_scheduled_date": "timestamp with time zone not null",
-      "schedule": "jsonb not null",
-      "task": "jsonb not null",
-      "trigger_schema": "jsonb not null"
+    "hooks_entities": {
+      "etag": "uuid",
+      "partition_key": "text not null",
+      "row_key": "text not null",
+      "value": "jsonb not null",
+      "version": "integer not null"
     },
     "hooks_last_fires": {
       "error": "text not null",
@@ -3914,110 +3908,6 @@
       },
       "migrationScript": "begin\n  -- Compute the sha512 of the given text data.\n  -- sha512 is the algorithm that will be used to generate the hash.\n  -- This replaces Entity.keys.HashKey from taskcluster-lib-entities.\n  create or replace function sha512(t text) returns text\n  as $$\n      begin\n        -- note that because this function is called in a restricted context during\n        -- index analysis, it must explicitly reference the schema for the digest\n        -- function; see \n        -- https://www.postgresql.org/message-id/8572.1531922146%40sss.pgh.pa.us\n        return encode(public.digest(t, 'sha512'), 'hex');\n      end;\n  $$\n  language plpgSQL\n  strict immutable;\nend\n",
       "version": 32
-    },
-    {
-      "downgradeScript": "begin\n  drop function entity_to_crypto_container_v0(value JSONB, name text);\n  drop function encrypted_entity_buf_encode(value JSONB, name text, data jsonb);\nend\n\n",
-      "methods": {
-      },
-      "migrationScript": "begin\n\n  -- Given an encrypted field from tc-lib-entities, this function will make the required transformations to the data\n  -- structure before storing it in a column.\n  create or replace function entity_to_crypto_container_v0(value jsonb, name text) returns jsonb\n  as $$\n  declare\n    chunks integer;\n    chunk integer = 0;\n    result jsonb = json_build_object('v', 0, 'kid', 'azure');\n    begin\n      chunks = (value ->> ('__bufchunks_' || name))::integer;\n      result = result || jsonb_build_object('__bufchunks_val', chunks);\n\n      loop\n        exit when chunks is null or chunk >= chunks;\n        result = jsonb_set(result, ('{__buf' || chunk || '_val}')::text[], value -> ('__buf' || chunk || '_' || name));\n        chunk = chunk + 1;\n      end loop;\n\n      return result;\n    end;\n  $$\n  language plpgSQL\n  strict immutable;\n\n  -- Replaces the keys in an encrypted column to be compatible with tc-lib-entities.\n  create or replace function encrypted_entity_buf_encode(value jsonb, name text, data jsonb) returns jsonb\n  as $$\n    declare\n      chunks integer;\n      chunk integer = 0;\n      result jsonb = jsonb_build_object();\n      begin\n        chunks = (data -> '__bufchunks_val')::integer;\n        result = jsonb_build_object('__bufchunks_' || name, chunks);\n        value = value || jsonb_build_object('__bufchunks_' || name, chunks);\n\n        loop\n          exit when chunks is null or chunk >= chunks;\n          value = value || jsonb_build_object('__buf' || chunk || '_' || name, data -> ('__buf' || chunk || '_val'));\n          chunk = chunk + 1;\n        end loop;\n\n        return value;\n      end;\n    $$\n    language plpgSQL\n    strict immutable;\n\nend",
-      "version": 33
-    },
-    {
-      "downgradeScript": "begin\n  -- lock this table before reading from it, to prevent loss of concurrent\n  -- updates when the table is dropped.\n  lock table hooks;\n\n  create table hooks_entities(\n    partition_key text, row_key text,\n    value jsonb not null,\n    version integer not null,\n    etag uuid default public.gen_random_uuid());\n  alter table hooks_entities add primary key (partition_key, row_key);\n\n  insert into hooks_entities\n  select\n    encode_string_key(hook_group_id) as partition_key,\n    encode_string_key(hook_id) as row_key,\n    encrypted_entity_buf_encode(\n      encrypted_entity_buf_encode(\n        entity_buf_encode(\n          entity_buf_encode(\n            entity_buf_encode(\n              entity_buf_encode(\n                entity_buf_encode(\n                  jsonb_build_object(\n                    'PartitionKey', encode_string_key(hook_group_id),\n                    'RowKey', encode_string_key(hook_id),\n                    'hookGroupId', hook_group_id,\n                    'hookId', hook_id,\n                    'nextScheduledDate', next_scheduled_date),\n                  'metadata', metadata::text),\n                'task', task::text),\n              'bindings', bindings::text),\n            'schedule', schedule::text),\n          'triggerSchema', trigger_schema::text),\n        'nextTaskId', encrypted_next_task_id),\n      'triggerToken', encrypted_trigger_token) as value,\n    1 as version,\n    etag\n  from hooks;\n\n  revoke select, insert, update, delete on hooks from $db_user_prefix$_hooks;\n  drop table hooks;\n  grant select, insert, update, delete on hooks_entities to $db_user_prefix$_hooks;\nend\n\n",
-      "methods": {
-        "create_hook": {
-          "args": "hook_group_id_in text, hook_id_in text, metadata_in jsonb, task_in jsonb, bindings_in jsonb, schedule_in jsonb, encrypted_trigger_token_in jsonb, encrypted_next_task_id_in jsonb, next_scheduled_date_in timestamptz, trigger_schema_in jsonb",
-          "body": "begin\n  return query insert\n    into hooks (hook_group_id, hook_id, metadata, task, bindings, schedule, encrypted_trigger_token, encrypted_next_task_id, next_scheduled_date, trigger_schema)\n    values (hook_group_id_in, hook_id_in, metadata_in, task_in, bindings_in, schedule_in, encrypted_trigger_token_in, encrypted_next_task_id_in, next_scheduled_date_in, trigger_schema_in)\n  returning\n    hooks.hook_group_id,\n    hooks.hook_id,\n    hooks.metadata,\n    hooks.task,\n    hooks.bindings,\n    hooks.schedule,\n    hooks.encrypted_trigger_token,\n    hooks.encrypted_next_task_id,\n    hooks.next_scheduled_date,\n    hooks.trigger_schema;\nend",
-          "deprecated": false,
-          "description": "Create a new hook. Raises UNIQUE_VIOLATION if the artifact already exists.\nReturns the newly created hook.",
-          "mode": "write",
-          "returns": "table(hook_group_id text, hook_id text, metadata jsonb, task jsonb, bindings jsonb, schedule jsonb, encrypted_trigger_token jsonb, encrypted_next_task_id jsonb, next_scheduled_date timestamptz, trigger_schema jsonb)",
-          "serviceName": "hooks"
-        },
-        "delete_hook": {
-          "args": "hook_group_id_in text, hook_id_in text",
-          "body": "begin\n  delete from hooks\n  where\n    hooks.hook_group_id = hook_group_id_in and\n    hooks.hook_id = hook_id_in;\nend",
-          "deprecated": false,
-          "description": "Delete a hook.",
-          "mode": "write",
-          "returns": "void",
-          "serviceName": "hooks"
-        },
-        "get_hook": {
-          "args": "hook_group_id_in text, hook_id_in text",
-          "body": "begin\n  return query select\n    hooks.hook_group_id,\n    hooks.hook_id,\n    hooks.metadata,\n    hooks.task,\n    hooks.bindings,\n    hooks.schedule,\n    hooks.encrypted_trigger_token,\n    hooks.encrypted_next_task_id,\n    hooks.next_scheduled_date,\n    hooks.trigger_schema\n  from hooks\n  where\n    hooks.hook_group_id = hook_group_id_in and\n    hooks.hook_id = hook_id_in;\nend",
-          "deprecated": false,
-          "description": "Get a hook. The returned table will have one or zero rows.",
-          "mode": "read",
-          "returns": "table(hook_group_id text, hook_id text, metadata jsonb, task jsonb, bindings jsonb, schedule jsonb, encrypted_trigger_token jsonb, encrypted_next_task_id jsonb, next_scheduled_date timestamptz, trigger_schema jsonb)",
-          "serviceName": "hooks"
-        },
-        "get_hooks": {
-          "args": "hook_group_id_in text, next_scheduled_date_in timestamptz, page_size_in integer, page_offset_in integer",
-          "body": "begin\n  return query\n  select\n    hooks.hook_group_id,\n    hooks.hook_id,\n    hooks.metadata,\n    hooks.task,\n    hooks.bindings,\n    hooks.schedule,\n    hooks.encrypted_trigger_token,\n    hooks.encrypted_next_task_id,\n    hooks.next_scheduled_date,\n    hooks.trigger_schema\n  from hooks\n  where\n    (hooks.hook_group_id = hook_group_id_in or hook_group_id_in is null) and\n    (hooks.next_scheduled_date < next_scheduled_date_in or next_scheduled_date_in is null)\n  order by hooks.hook_group_id, hooks.hook_id\n  limit get_page_limit(page_size_in)\n  offset get_page_offset(page_offset_in);\nend",
-          "deprecated": false,
-          "description": "Get existing hooks filtered by the optional `hook_group_id`,\nordered by the `hook_group_id` and `hook_id`.\nIf the pagination arguments are both NULL, all rows are returned.\nOtherwise, page_size rows are returned at offset page_offset.",
-          "mode": "read",
-          "returns": "table(hook_group_id text, hook_id text, metadata jsonb, task jsonb, bindings jsonb, schedule jsonb, encrypted_trigger_token jsonb, encrypted_next_task_id jsonb, next_scheduled_date timestamptz, trigger_schema jsonb)",
-          "serviceName": "hooks"
-        },
-        "hooks_entities_create": {
-          "args": "pk text, rk text, properties jsonb, overwrite boolean, version integer",
-          "body": "declare\n  new_row hooks%ROWTYPE;\nbegin\n  select\n    (properties ->> 'hookGroupId')::text,\n    (properties ->> 'hookId')::text,\n    entity_buf_decode(properties, 'metadata')::jsonb,\n    entity_buf_decode(properties, 'task')::jsonb,\n    entity_buf_decode(properties, 'bindings')::jsonb,\n    entity_buf_decode(properties, 'schedule')::jsonb,\n    entity_to_crypto_container_v0(properties, 'triggerToken')::jsonb,\n    entity_to_crypto_container_v0(properties, 'nextTaskId')::jsonb,\n    (properties ->> 'nextScheduledDate')::timestamptz,\n    entity_buf_decode(properties, 'triggerSchema')::jsonb,\n    public.gen_random_uuid()\n  into new_row;\n  if overwrite then\n    raise exception 'overwrite not implemented';\n  else\n    execute 'insert into hooks select $1.*' using new_row;\n  end if;\n  return new_row.etag;\nend",
-          "deprecated": false,
-          "description": "See taskcluster-lib-entities",
-          "mode": "write",
-          "returns": "uuid",
-          "serviceName": "hooks"
-        },
-        "hooks_entities_load": {
-          "args": "partition_key text, row_key text",
-          "body": "begin\n  return query\n  select\n    hooks_entities_load.partition_key,\n    hooks_entities_load.row_key,\n    encrypted_entity_buf_encode(\n      encrypted_entity_buf_encode(\n        entity_buf_encode(\n          entity_buf_encode(\n            entity_buf_encode(\n              entity_buf_encode(\n                entity_buf_encode(\n                  jsonb_build_object(\n                    'PartitionKey', encode_string_key(hook_group_id),\n                    'RowKey', encode_string_key(hook_id),\n                    'hookGroupId', hook_group_id,\n                    'hookId', hook_id,\n                    'nextScheduledDate', next_scheduled_date),\n                  'metadata', metadata::text),\n                'task', task::text),\n              'bindings', bindings::text),\n            'schedule', schedule::text),\n          'triggerSchema', trigger_schema::text),\n        'nextTaskId', encrypted_next_task_id),\n      'triggerToken', encrypted_trigger_token) as value,\n    1 as version,\n    hooks.etag as etag\n  from hooks\n  where\n    hooks.hook_group_id = decode_string_key(hooks_entities_load.partition_key) and\n    hooks.hook_id = decode_string_key(hooks_entities_load.row_key);\nend",
-          "deprecated": false,
-          "description": "See taskcluster-lib-entities",
-          "mode": "read",
-          "returns": "table (partition_key_out text, row_key_out text, value jsonb, version integer, etag uuid)",
-          "serviceName": "hooks"
-        },
-        "hooks_entities_modify": {
-          "args": "partition_key text, row_key text, properties jsonb, version integer, old_etag uuid",
-          "body": "declare\n  new_row hooks%ROWTYPE;\nbegin\n  select\n    (properties ->> 'hookGroupId')::text,\n    (properties ->> 'hookId')::text,\n    entity_buf_decode(properties, 'metadata')::jsonb,\n    entity_buf_decode(properties, 'task')::jsonb,\n    entity_buf_decode(properties, 'bindings')::jsonb,\n    entity_buf_decode(properties, 'schedule')::jsonb,\n    entity_to_crypto_container_v0(properties, 'triggerToken')::jsonb,\n    entity_to_crypto_container_v0(properties, 'nextTaskId')::jsonb,\n    (properties ->> 'nextScheduledDate')::timestamptz,\n    entity_buf_decode(properties, 'triggerSchema')::jsonb,\n    public.gen_random_uuid() as etag\n  into new_row;\n  update hooks\n  set (\n    metadata,\n    task,\n    bindings,\n    schedule,\n    encrypted_trigger_token,\n    encrypted_next_task_id,\n    next_scheduled_date,\n    trigger_schema,\n    etag\n  ) = (\n    new_row.metadata,\n    new_row.task,\n    new_row.bindings,\n    new_row.schedule,\n    new_row.encrypted_trigger_token,\n    new_row.encrypted_next_task_id,\n    new_row.next_scheduled_date,\n    new_row.trigger_schema,\n    new_row.etag\n  )\n  where\n    hooks.hook_group_id = decode_string_key(hooks_entities_modify.partition_key) and\n    hooks.hook_id = decode_string_key(hooks_entities_modify.row_key) and\n    hooks.etag = hooks_entities_modify.old_etag;\n  if found then\n    return query select new_row.etag;\n    return;\n  end if;\n  perform hooks.etag from hooks\n  where\n    hooks.hook_group_id = decode_string_key(hooks_entities_modify.partition_key) and\n    hooks.hook_id = decode_string_key(hooks_entities_modify.row_key);\n  if found then\n    raise exception 'unsuccessful update' using errcode = 'P0004';\n  else\n    raise exception 'no such row' using errcode = 'P0002';\n  end if;\nend",
-          "deprecated": false,
-          "description": "See taskcluster-lib-entities",
-          "mode": "write",
-          "returns": "table (etag uuid)",
-          "serviceName": "hooks"
-        },
-        "hooks_entities_remove": {
-          "args": "partition_key text, row_key text",
-          "body": "begin\n  return query delete from hooks\n  where\n    hooks.hook_group_id = decode_string_key(hooks_entities_remove.partition_key) and\n    hooks.hook_id = decode_string_key(hooks_entities_remove.row_key)\n  returning hooks.etag;\nend",
-          "deprecated": false,
-          "description": "See taskcluster-lib-entities",
-          "mode": "write",
-          "returns": "table (etag uuid)",
-          "serviceName": "hooks"
-        },
-        "hooks_entities_scan": {
-          "args": "pk text, rk text, condition text, size integer, page integer",
-          "body": "declare\n  cond text[];\n  nsd_cond_operator text;\n  nsd_cond_operand timestamptz;\n  partition_key_var text;\n  row_key_var text;\nbegin\n  if not condition is null then\n    cond := regexp_split_to_array(condition, '\\s+');\n    nsd_cond_operator := cond[4];\n    nsd_cond_operand := cond[5] :: timestamptz;\n\n    return query select\n      encode_string_key(hook_group_id) as partition_key,\n      encode_string_key(hook_id) as row_key,\n      encrypted_entity_buf_encode(\n        encrypted_entity_buf_encode(\n          entity_buf_encode(\n            entity_buf_encode(\n              entity_buf_encode(\n                entity_buf_encode(\n                  entity_buf_encode(\n                    jsonb_build_object(\n                      'PartitionKey', encode_string_key(hook_group_id),\n                      'RowKey', encode_string_key(hook_id),\n                      'hookGroupId', hook_group_id,\n                      'hookId', hook_id,\n                      'nextScheduledDate', next_scheduled_date),\n                    'metadata', metadata::text),\n                  'task', task::text),\n                'bindings', bindings::text),\n              'schedule', schedule::text),\n            'triggerSchema', trigger_schema::text),\n          'nextTaskId', encrypted_next_task_id),\n        'triggerToken', encrypted_trigger_token) as value,\n      1 as version,\n      hooks.etag as etag from hooks\n    where\n      (hooks_entities_scan.pk is null or decode_string_key(hooks_entities_scan.pk) = hook_group_id) and\n      (hooks_entities_scan.pk is null or decode_string_key(hooks_entities_scan.rk) = hook_id) and\n      case\n        when nsd_cond_operator = '=' then next_scheduled_date = nsd_cond_operand\n        when nsd_cond_operator = '<' then next_scheduled_date < nsd_cond_operand\n        when nsd_cond_operator = '<=' then next_scheduled_date <= nsd_cond_operand\n        when nsd_cond_operator = '>' then next_scheduled_date > nsd_cond_operand\n        when nsd_cond_operator = '>=' then next_scheduled_date >= nsd_cond_operand\n        else next_scheduled_date <> nsd_cond_operand\n      end\n    order by hooks.hook_group_id, hooks.hook_id\n    limit case\n      when (size is not null and size > 0) then size + 1\n      else null\n    end\n    offset case\n      when (page is not null and page > 0) then page\n      else 0\n    end;\n  else\n    return query select\n      encode_string_key(hook_group_id) as partition_key,\n      encode_string_key(hook_id) as row_key,\n      encrypted_entity_buf_encode(\n        encrypted_entity_buf_encode(\n          entity_buf_encode(\n            entity_buf_encode(\n              entity_buf_encode(\n                entity_buf_encode(\n                  entity_buf_encode(\n                    jsonb_build_object(\n                      'PartitionKey', encode_string_key(hook_group_id),\n                      'RowKey', encode_string_key(hook_id),\n                      'hookGroupId', hook_group_id,\n                      'hookId', hook_id,\n                      'nextScheduledDate', next_scheduled_date),\n                    'metadata', metadata::text),\n                  'task', task::text),\n                'bindings', bindings::text),\n              'schedule', schedule::text),\n            'triggerSchema', trigger_schema::text),\n          'nextTaskId', encrypted_next_task_id),\n        'triggerToken', encrypted_trigger_token) as value,\n      1 as version,\n      hooks.etag as etag from hooks\n    where\n      (hooks_entities_scan.pk is null or decode_string_key(hooks_entities_scan.pk) = hook_group_id) and\n      (hooks_entities_scan.rk is null or decode_string_key(hooks_entities_scan.rk) = hook_id)\n    order by hooks.hook_group_id, hooks.hook_id\n    limit case\n      when (size is not null and size > 0) then size + 1\n      else null\n    end\n    offset case\n      when (size is not null and size > 0 and page is not null and page > 0) then page\n      else 0\n    end;\n  end if;\nend",
-          "deprecated": false,
-          "description": "See taskcluster-lib-entities",
-          "mode": "read",
-          "returns": "table (partition_key text, row_key text, value jsonb, version integer, etag uuid)",
-          "serviceName": "hooks"
-        },
-        "update_hook": {
-          "args": "hook_group_id_in text, hook_id_in text, metadata_in jsonb, task_in jsonb, bindings_in jsonb, schedule_in jsonb, encrypted_trigger_token_in jsonb, encrypted_next_task_id_in jsonb, next_scheduled_date_in timestamptz, trigger_schema_in jsonb",
-          "body": "declare\n  updated_row hooks%ROWTYPE;\nbegin\n  update hooks\n  set (metadata, task, bindings, schedule, encrypted_trigger_token, encrypted_next_task_id, next_scheduled_date, trigger_schema) = (\n    coalesce(metadata_in, hooks.metadata),\n    coalesce(task_in, hooks.task),\n    coalesce(bindings_in, hooks.bindings),\n    coalesce(schedule_in, hooks.schedule),\n    coalesce(encrypted_trigger_token_in, hooks.encrypted_trigger_token),\n    coalesce(encrypted_next_task_id_in, hooks.encrypted_next_task_id),\n    coalesce(next_scheduled_date_in, hooks.next_scheduled_date),\n    coalesce(trigger_schema_in, hooks.trigger_schema)\n  )\n  where\n    hooks.hook_group_id = hook_group_id_in and\n    hooks.hook_id = hook_id_in\n  returning\n    hooks.hook_group_id,\n    hooks.hook_id,\n    hooks.metadata,\n    hooks.task,\n    hooks.bindings,\n    hooks.schedule,\n    hooks.encrypted_trigger_token,\n    hooks.encrypted_next_task_id,\n    hooks.next_scheduled_date,\n    hooks.trigger_schema\n  into updated_row;\n  if found then\n    return query select\n      updated_row.hook_group_id,\n      updated_row.hook_id,\n      updated_row.metadata,\n      updated_row.task,\n      updated_row.bindings,\n      updated_row.schedule,\n      updated_row.encrypted_trigger_token,\n      updated_row.encrypted_next_task_id,\n      updated_row.next_scheduled_date,\n      updated_row.trigger_schema;\n    return;\n  else\n    raise exception 'no such row' using errcode = 'P0002';\n  end if;\nend",
-          "deprecated": false,
-          "description": "Update a queue artifact.\nReturns the up-to-date hook row that have the same hook group id and hook id.",
-          "mode": "write",
-          "returns": "table(hook_group_id text, hook_id text, metadata jsonb, task jsonb, bindings jsonb, schedule jsonb, encrypted_trigger_token jsonb, encrypted_next_task_id jsonb, next_scheduled_date timestamptz, trigger_schema jsonb)",
-          "serviceName": "hooks"
-        }
-      },
-      "migrationScript": "begin\n  -- lock this table before reading from it, to prevent loss of concurrent\n  -- updates when the table is dropped.  Note that this may lead to concurrent\n  -- updates failing; the important thing is that they not succeed without\n  -- taking effect.  Failed updates will be retried.\n  lock table hooks_entities;\n\n  create table hooks\n  as\n    select\n      (value ->> 'hookGroupId')::text as hook_group_id,\n      (value ->> 'hookId')::text as hook_id,\n      entity_buf_decode(value, 'metadata')::jsonb as metadata,\n      entity_buf_decode(value, 'task')::jsonb as task,\n      entity_buf_decode(value, 'bindings')::jsonb as bindings,\n      entity_buf_decode(value, 'schedule')::jsonb as schedule,\n      entity_to_crypto_container_v0(value, 'triggerToken') as encrypted_trigger_token,\n      entity_to_crypto_container_v0(value, 'nextTaskId') as encrypted_next_task_id,\n      (value ->> 'nextScheduledDate')::timestamptz as next_scheduled_date,\n      entity_buf_decode(value, 'triggerSchema')::jsonb as trigger_schema,\n      etag\n    from hooks_entities;\n  alter table hooks add primary key (hook_group_id, hook_id);\n  alter table hooks\n    alter column hook_group_id set not null,\n    alter column hook_id set not null,\n    alter column metadata set not null,\n    alter column task set not null,\n    alter column bindings set not null,\n    alter column schedule set not null,\n    alter column encrypted_trigger_token set not null,\n    alter column encrypted_next_task_id set not null,\n    alter column next_scheduled_date set not null,\n    alter column trigger_schema set not null,\n    alter column etag set not null,\n    alter column etag set default public.gen_random_uuid();\n\n  revoke select, insert, update, delete on hooks_entities from $db_user_prefix$_hooks;\n  drop table hooks_entities;\n  grant select, insert, update, delete on hooks to $db_user_prefix$_hooks;\nend",
-      "version": 34
     }
   ]
 }

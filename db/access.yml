@@ -16,7 +16,7 @@ github:
     github_builds: write
 hooks:
   tables:
-    hooks: write
+    hooks_entities: write
     hooks_queues: write
     hooks_last_fires: write
 index:

@@ -69,7 +69,7 @@ module.exports.withDb = (mock, skipping, helper, serviceName) => {
     }
     const dbCryptoKeys = [
       {
-        id: 'azure',
+        id: 'testing',
         algo: 'aes-256',
         key: 'aSdtIGJzdGFjayEgaGVsbG8gZnV0dXJlIHBlcnNvbgo',
       },

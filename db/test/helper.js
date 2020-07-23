@@ -251,9 +251,6 @@ exports.testEntityTable = ({
   entityTableName, newTableName,
   // Entity class
   EntityClass,
-  // a base64 encoded crypto key for encrypting values to insert into, or decrypting
-  // values read from database columns that store encrypted values
-  cryptoKey,
   // named sample values, each given as an object containing entity properties
   samples,
   // array of {condition, expectedSample} where condition are passed to load,
@@ -275,6 +272,9 @@ exports.testEntityTable = ({
   // it is treated as a collection of modifier functions to run in parallel to check
   // support for concurrent modifications.
   modifications,
+  // a base64 encoded crypto key for encrypting values to insert into, or decrypting
+  // values read from database columns that store encrypted values
+  cryptoKey,
   // customTests can define additional test cases in the usual Mocha style.  The
   // parameter is true if the tests are run for THIS_VERSION, otherwise for PREV_VERSION.
 }, customTests = (isThisVersion) => {}) => {
