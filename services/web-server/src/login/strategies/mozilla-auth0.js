@@ -102,18 +102,18 @@ module.exports = class MozillaAuth0 {
   }
 
   async userFromIdentity(identity) {
-    let encodedUserId = identity.split('/')[1];
-
-    if (encodedUserId.startsWith('github|') || encodedUserId.startsWith('oauth2|firefoxaccounts|')) {
-      encodedUserId = encodedUserId.replace(/\|[^|]*$/, '');
-    }
-
+    const encodedUserId = identity.split('/')[1];
     const userId = decode(encodedUserId);
     const user = await this.getUser({ userId });
 
     // catch cases where the calculated identity differs, such as when the github username
     // doesn't match the provided identity, and return no user in that case.
     if (user && user.identity !== identity) {
+      this.monitor.warning({
+        message: 'provided identity and user.identity do not match',
+        providedIdentity: identity,
+        userIdentity: user.identity,
+      });
       return;
     }
 
@@ -138,34 +138,7 @@ module.exports = class MozillaAuth0 {
 
   identityFromProfile(profile) {
     const userId = profile.user_id.value;
-    let identity = `${this.identityProviderId}/${encode(userId)}`;
-
-    // if the identity is a github or firefox-accounts identity, then we want
-    // to add the username after a `|` character, to disambiguate the
-    // otherwise-numeric usernames
-    if (userId.startsWith('github|') && profile.identities) {
-      if (profile.identities.github_id_v3 && profile.identities.github_id_v3.value) {
-        const github_user_id = profile.identities.github_id_v3.value;
-
-        assert(userId.endsWith(github_user_id.toString()),
-          `Auth0 user_id ${userId} not formatted as expected (expected |${github_user_id})`);
-
-        identity += `|${profile.nickname}`;
-      }
-    } else if (userId.startsWith('oauth2|firefoxaccounts|') && profile.identities) {
-      if ('firefox_accounts_id' in profile.identities) {
-        const { firefox_accounts_id, firefox_accounts_primary_email } = profile.identities;
-
-        if (firefox_accounts_id) {
-          assert(userId.endsWith(firefox_accounts_id.value),
-            `Auth0 user_id ${userId} not formatted as expected`);
-          const email = firefox_accounts_primary_email.value || profile.primary_email;
-          identity += `|${email}`;
-        }
-      }
-    }
-
-    return identity;
+    return `${this.identityProviderId}/${encode(userId)}`;
   }
 
   addRoles(profile, user) {
