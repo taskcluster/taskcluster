@@ -2,6 +2,54 @@ version: 40
 migrationScript: 0040-migration.sql
 downgradeScript: 0040-downgrade.sql
 methods:
+  access_token_table_entities_load:
+    description: See taskcluster-lib-entities
+    mode: read
+    serviceName: web_server
+    args: partition_key text, row_key text
+    returns: table (partition_key_out text, row_key_out text, value jsonb, version integer, etag uuid)
+    body: |-
+      begin
+      end
+  access_token_table_entities_create:
+    serviceName: web_server
+    description: See taskcluster-lib-entities
+    mode: write
+    args: pk text, rk text, properties jsonb, overwrite boolean, version integer
+    returns: uuid
+    body: |-
+      begin
+        raise exception 'unsuccessful create' using errcode = 'P0004';
+      end
+  access_token_table_entities_remove:
+    serviceName: web_server
+    description: See taskcluster-lib-entities
+    mode: write
+    args: partition_key text, row_key text
+    returns: table (etag uuid)
+    body: |-
+      begin
+        raise exception 'unsuccessful delete' using errcode = 'P0004';
+      end
+  access_token_table_entities_modify:
+    serviceName: web_server
+    description: See taskcluster-lib-entities
+    mode: write
+    args: partition_key text, row_key text, properties jsonb, version integer, old_etag uuid
+    returns: table (etag uuid)
+    body: |-
+      begin
+        raise exception 'unsuccessful update' using errcode = 'P0004';
+      end
+  access_token_table_entities_scan:
+    description: See taskcluster-lib-entities
+    mode: read
+    serviceName: web_server
+    args: pk text, rk text, condition text, size integer, page integer
+    returns: table (partition_key text, row_key text, value jsonb, version integer, etag uuid)
+    body: |-
+      begin
+      end
   create_access_token:
     description: |-
       Create an access token entry.
