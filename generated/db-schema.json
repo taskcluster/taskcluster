@@ -4232,7 +4232,7 @@
           "args": "",
           "body": "declare\n  count integer;\nbegin\n  delete from sessions where sessions.expires < now();\n  if found then\n    get diagnostics count = row_count;\n    return count;\n  end if;\n  return 0;\nend",
           "deprecated": false,
-          "description": "Expire sessions that come before the current time.\nReturns a count of rows that have been deleted.",
+          "description": "Delete sessions that expire before the current time.\nReturns a count of rows that have been deleted.",
           "mode": "write",
           "returns": "integer",
           "serviceName": "web_server"
@@ -4263,6 +4263,60 @@
           "mode": "write",
           "returns": "void",
           "serviceName": "web_server"
+        },
+        "session_storage_table_entities_create": {
+          "args": "pk text, rk text, properties jsonb, overwrite boolean, version integer",
+          "body": "begin\n  raise exception 'unsuccessful create' using errcode = 'P0004';\nend",
+          "deprecated": false,
+          "description": "See taskcluster-lib-entities",
+          "mode": "write",
+          "returns": "uuid",
+          "serviceName": "web_server"
+        },
+        "session_storage_table_entities_load": {
+          "args": "partition_key text, row_key text",
+          "body": "begin\nend",
+          "deprecated": false,
+          "description": "See taskcluster-lib-entities",
+          "mode": "read",
+          "returns": "table (partition_key_out text, row_key_out text, value jsonb, version integer, etag uuid)",
+          "serviceName": "web_server"
+        },
+        "session_storage_table_entities_modify": {
+          "args": "partition_key text, row_key text, properties jsonb, version integer, old_etag uuid",
+          "body": "begin\n  raise exception 'unsuccessful update' using errcode = 'P0004';\nend",
+          "deprecated": false,
+          "description": "See taskcluster-lib-entities",
+          "mode": "write",
+          "returns": "table (etag uuid)",
+          "serviceName": "web_server"
+        },
+        "session_storage_table_entities_remove": {
+          "args": "partition_key text, row_key text",
+          "body": "begin\n  raise exception 'unsuccessful delete' using errcode = 'P0004';\nend",
+          "deprecated": false,
+          "description": "See taskcluster-lib-entities",
+          "mode": "write",
+          "returns": "table (etag uuid)",
+          "serviceName": "web_server"
+        },
+        "session_storage_table_entities_scan": {
+          "args": "pk text, rk text, condition text, size integer, page integer",
+          "body": "begin\nend",
+          "deprecated": false,
+          "description": "See taskcluster-lib-entities",
+          "mode": "read",
+          "returns": "table (partition_key text, row_key text, value jsonb, version integer, etag uuid)",
+          "serviceName": "web_server"
+        },
+        "session_touch": {
+          "args": "hashed_session_id_in text, data_in jsonb, expires_in timestamptz",
+          "body": "begin\n  perform 1 from sessions where sessions.hashed_session_id = hashed_session_id_in;\n\n  if found then\n   update sessions\n     set\n      data = data_in,\n      expires = expires_in\n     where sessions.hashed_session_id = hashed_session_id_in;\n    return;\n  else\n    raise exception 'no such row' using errcode = 'P0002';\n  end if;\nend",
+          "deprecated": false,
+          "description": "Touch a given session given a hashed session id and session `data`.\nIf the hashed session id does not exist, then an error code `P0002` will be thrown.",
+          "mode": "write",
+          "returns": "void",
+          "serviceName": "web_server"
         }
       },
       "migrationScript": "begin\n\n  create table sessions(\n    hashed_session_id text not null,\n    encrypted_session_id jsonb not null,\n    data jsonb not null,\n    expires timestamptz not null,\n    etag uuid not null default public.gen_random_uuid()\n  );\n  alter table sessions add primary key (hashed_session_id);\n  grant select, insert, update, delete on sessions to $db_user_prefix$_web_server;\n\n  revoke select, insert, update, delete on session_storage_table_entities from $db_user_prefix$_web_server;\n  drop table session_storage_table_entities;\n\nend\n",
@@ -4271,6 +4325,51 @@
     {
       "downgradeScript": "begin\n\n  create table authorization_codes_table_entities(\n    partition_key text,\n    row_key text,\n    value jsonb not null,\n    version integer not null,\n    etag uuid default public.gen_random_uuid());\n  alter table authorization_codes_table_entities add primary key (partition_key, row_key);\n  grant select, insert, update, delete on authorization_codes_table_entities to $db_user_prefix$_web_server;\n\n  revoke select, insert, update, delete on authorization_codes from $db_user_prefix$_web_server;\n  drop table authorization_codes;\n\nend\n",
       "methods": {
+        "authorization_codes_table_entities_create": {
+          "args": "pk text, rk text, properties jsonb, overwrite boolean, version integer",
+          "body": "begin\n  raise exception 'unsuccessful create' using errcode = 'P0004';\nend",
+          "deprecated": false,
+          "description": "See taskcluster-lib-entities",
+          "mode": "write",
+          "returns": "uuid",
+          "serviceName": "web_server"
+        },
+        "authorization_codes_table_entities_load": {
+          "args": "partition_key text, row_key text",
+          "body": "begin\nend",
+          "deprecated": false,
+          "description": "See taskcluster-lib-entities",
+          "mode": "read",
+          "returns": "table (partition_key_out text, row_key_out text, value jsonb, version integer, etag uuid)",
+          "serviceName": "web_server"
+        },
+        "authorization_codes_table_entities_modify": {
+          "args": "partition_key text, row_key text, properties jsonb, version integer, old_etag uuid",
+          "body": "begin\n  raise exception 'unsuccessful update' using errcode = 'P0004';\nend",
+          "deprecated": false,
+          "description": "See taskcluster-lib-entities",
+          "mode": "write",
+          "returns": "table (etag uuid)",
+          "serviceName": "web_server"
+        },
+        "authorization_codes_table_entities_remove": {
+          "args": "partition_key text, row_key text",
+          "body": "begin\n  raise exception 'unsuccessful delete' using errcode = 'P0004';\nend",
+          "deprecated": false,
+          "description": "See taskcluster-lib-entities",
+          "mode": "write",
+          "returns": "table (etag uuid)",
+          "serviceName": "web_server"
+        },
+        "authorization_codes_table_entities_scan": {
+          "args": "pk text, rk text, condition text, size integer, page integer",
+          "body": "begin\nend",
+          "deprecated": false,
+          "description": "See taskcluster-lib-entities",
+          "mode": "read",
+          "returns": "table (partition_key text, row_key text, value jsonb, version integer, etag uuid)",
+          "serviceName": "web_server"
+        },
         "create_authorization_code": {
           "args": "code_in text, client_id_in text, redirect_uri_in text, identity_in text, identity_provider_id_in text, expires_in timestamptz, client_details_in jsonb",
           "body": "begin\n  return query insert\n    into authorization_codes (code, client_id, redirect_uri, identity, identity_provider_id, expires, client_details)\n    values (code_in, client_id_in, redirect_uri_in, identity_in, identity_provider_id_in, expires_in, client_details_in)\n    returning\n      authorization_codes.code,\n      authorization_codes.client_id,\n      authorization_codes.redirect_uri,\n      authorization_codes.identity,\n      authorization_codes.identity_provider_id,\n      authorization_codes.expires,\n      authorization_codes.client_details;\nend",
@@ -4284,7 +4383,7 @@
           "args": "expires_in timestamptz",
           "body": "declare\n  count integer;\nbegin\n  delete from authorization_codes where authorization_codes.expires < expires_in;\n  if found then\n    get diagnostics count = row_count;\n    return count;\n  end if;\n  return 0;\nend",
           "deprecated": false,
-          "description": "Expire authorization codes that come before `expires_in`.\nReturns a count of rows that have been deleted.",
+          "description": "Delete authorization codes that expire before `expires_in`.\nReturns a count of rows that have been deleted.",
           "mode": "write",
           "returns": "integer",
           "serviceName": "web_server"
@@ -4305,6 +4404,51 @@
     {
       "downgradeScript": "begin\n\n  create table access_token_table_entities(\n    partition_key text,\n    row_key text,\n    value jsonb not null,\n    version integer not null,\n    etag uuid default public.gen_random_uuid());\n  alter table access_token_table_entities add primary key (partition_key, row_key);\n  grant select, insert, update, delete on access_token_table_entities to $db_user_prefix$_web_server;\n\n  revoke select, insert, update, delete on access_tokens from $db_user_prefix$_web_server;\n  drop table access_tokens;\n\nend\n",
       "methods": {
+        "access_token_table_entities_create": {
+          "args": "pk text, rk text, properties jsonb, overwrite boolean, version integer",
+          "body": "begin\n  raise exception 'unsuccessful create' using errcode = 'P0004';\nend",
+          "deprecated": false,
+          "description": "See taskcluster-lib-entities",
+          "mode": "write",
+          "returns": "uuid",
+          "serviceName": "web_server"
+        },
+        "access_token_table_entities_load": {
+          "args": "partition_key text, row_key text",
+          "body": "begin\nend",
+          "deprecated": false,
+          "description": "See taskcluster-lib-entities",
+          "mode": "read",
+          "returns": "table (partition_key_out text, row_key_out text, value jsonb, version integer, etag uuid)",
+          "serviceName": "web_server"
+        },
+        "access_token_table_entities_modify": {
+          "args": "partition_key text, row_key text, properties jsonb, version integer, old_etag uuid",
+          "body": "begin\n  raise exception 'unsuccessful update' using errcode = 'P0004';\nend",
+          "deprecated": false,
+          "description": "See taskcluster-lib-entities",
+          "mode": "write",
+          "returns": "table (etag uuid)",
+          "serviceName": "web_server"
+        },
+        "access_token_table_entities_remove": {
+          "args": "partition_key text, row_key text",
+          "body": "begin\n  raise exception 'unsuccessful delete' using errcode = 'P0004';\nend",
+          "deprecated": false,
+          "description": "See taskcluster-lib-entities",
+          "mode": "write",
+          "returns": "table (etag uuid)",
+          "serviceName": "web_server"
+        },
+        "access_token_table_entities_scan": {
+          "args": "pk text, rk text, condition text, size integer, page integer",
+          "body": "begin\nend",
+          "deprecated": false,
+          "description": "See taskcluster-lib-entities",
+          "mode": "read",
+          "returns": "table (partition_key text, row_key text, value jsonb, version integer, etag uuid)",
+          "serviceName": "web_server"
+        },
         "create_access_token": {
           "args": "hashed_access_token_in text, encrypted_access_token_in jsonb, client_id_in text, redirect_uri_in text, identity_in text, identity_provider_id_in text, expires_in timestamptz, client_details_in jsonb",
           "body": "begin\n  return query insert\n    into access_tokens (hashed_access_token, encrypted_access_token, client_id, redirect_uri, identity, identity_provider_id, expires, client_details)\n    values (hashed_access_token_in, encrypted_access_token_in, client_id_in, redirect_uri_in, identity_in, identity_provider_id_in, expires_in, client_details_in)\n    returning\n      access_tokens.hashed_access_token,\n      access_tokens.encrypted_access_token,\n      access_tokens.client_id,\n      access_tokens.redirect_uri,\n      access_tokens.identity,\n      access_tokens.identity_provider_id,\n      access_tokens.expires,\n      access_tokens.client_details;\nend",
@@ -4318,7 +4462,7 @@
           "args": "expires_in timestamptz",
           "body": "declare\n  count integer;\nbegin\n  delete from access_tokens where access_tokens.expires < expires_in;\n  if found then\n    get diagnostics count = row_count;\n    return count;\n  end if;\n  return 0;\nend",
           "deprecated": false,
-          "description": "Expire access token entries that come before the current time.\nReturns a count of rows that have been deleted.",
+          "description": "Delete access token entries that expireq before the current time.\nReturns a count of rows that have been deleted.",
           "mode": "write",
           "returns": "integer",
           "serviceName": "web_server"

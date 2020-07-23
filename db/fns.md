@@ -317,9 +317,9 @@ expires_in timestamptz | void | Ensure that the given task group exists, has the
 | authorization_codes_table_entities_scan | read | pk text, rk text, condition text, size integer, page integer | table (partition_key text, row_key text, value jsonb, version integer, etag uuid) | See taskcluster-lib-entities |
 | create_access_token | write | hashed_access_token_in text, encrypted_access_token_in jsonb, client_id_in text, redirect_uri_in text, identity_in text, identity_provider_id_in text, expires_in timestamptz, client_details_in jsonb | table(hashed_access_token text, encrypted_access_token jsonb, client_id text, redirect_uri text, identity text, identity_provider_id text, expires timestamptz, client_details jsonb) | Create an access token entry. |
 | create_authorization_code | write | code_in text, client_id_in text, redirect_uri_in text, identity_in text, identity_provider_id_in text, expires_in timestamptz, client_details_in jsonb | table(code text, client_id text, redirect_uri text, identity text, identity_provider_id text, expires timestamptz, client_details jsonb) | Create an authorization code. |
-| expire_access_tokens | write | expires_in timestamptz | integer | Expire access token entries that come before the current time.<br />Returns a count of rows that have been deleted. |
-| expire_authorization_codes | write | expires_in timestamptz | integer | Expire authorization codes that come before `expires_in`.<br />Returns a count of rows that have been deleted. |
-| expire_sessions | write |  | integer | Expire sessions that come before the current time.<br />Returns a count of rows that have been deleted. |
+| expire_access_tokens | write | expires_in timestamptz | integer | Delete access token entries that expireq before the current time.<br />Returns a count of rows that have been deleted. |
+| expire_authorization_codes | write | expires_in timestamptz | integer | Delete authorization codes that expire before `expires_in`.<br />Returns a count of rows that have been deleted. |
+| expire_sessions | write |  | integer | Delete sessions that expire before the current time.<br />Returns a count of rows that have been deleted. |
 | get_access_token | read | hashed_access_token_in text | table(hashed_access_token text, encrypted_access_token jsonb, client_id text, redirect_uri text, identity text, identity_provider_id text, expires timestamptz, client_details jsonb) | Get an access token entry. |
 | get_authorization_code | read | code_in text | table(code text, client_id text, redirect_uri text, identity text, identity_provider_id text, expires timestamptz, client_details jsonb) | Get an authorization code entry given a code. |
 | github_access_token_table_entities_create | write | pk text, rk text, properties jsonb, overwrite boolean, version integer | uuid | See taskcluster-lib-entities |
@@ -336,6 +336,7 @@ expires_in timestamptz | void | Ensure that the given task group exists, has the
 | session_storage_table_entities_modify | write | partition_key text, row_key text, properties jsonb, version integer, old_etag uuid | table (etag uuid) | See taskcluster-lib-entities |
 | session_storage_table_entities_remove | write | partition_key text, row_key text | table (etag uuid) | See taskcluster-lib-entities |
 | session_storage_table_entities_scan | read | pk text, rk text, condition text, size integer, page integer | table (partition_key text, row_key text, value jsonb, version integer, etag uuid) | See taskcluster-lib-entities |
+| session_touch | write | hashed_session_id_in text, data_in jsonb, expires_in timestamptz | void | Touch a given session given a hashed session id and session `data`.<br />If the hashed session id does not exist, then an error code `P0002` will be thrown. |
 ## worker_manager
 
 | Name | Mode | Arguments | Returns | Description |
