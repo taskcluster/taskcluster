@@ -1,36 +1,57 @@
 begin
-  -- lock this table before reading from it, to prevent loss of concurrent
-  -- updates when the table is dropped.  Note that this may lead to concurrent
-  -- updates failing; the important thing is that they not succeed without
-  -- taking effect.  Failed updates will be retried.
-  lock table last_fire_3_entities;
+  -- convert the postgres string form of a timestamp (which is valid iso8601) into the
+  -- precise format returned by JS's Date.toJSON
+  create or replace function to_js_iso8601(ts_in text) RETURNS text
+  as $$
+    begin
+      return regexp_replace(ts_in, '(.*) (.*)\+00(:00)?', '\1T\2Z');
+    end;
+  $$
+  language plpgSQL
+  strict immutable;
 
-  create table hooks_last_fires
+  lock table roles_entities;
+
+  -- Note that roles must be updated as a block, as there are some inter-role
+  -- consistency checks that must be followed and are too complex to describe in
+  -- SQL, but are expressed in JS in the Auth service.
+
+  raise log 'TIMING start roles create table .. as select';
+  create table roles
   as
-    select
-      (value ->> 'hookGroupId')::text as hook_group_id,
-      (value ->> 'hookId')::text as hook_id,
-      (value ->> 'firedBy')::text as fired_by,
-      (value ->> 'taskId')::text as task_id,
-      (value ->> 'taskCreateTime')::timestamptz as task_create_time,
-      (value ->> 'result')::text as result,
-      (value ->> 'error')::text as error,
-      etag
-    from last_fire_3_entities;
-  alter table hooks_last_fires add primary key (hook_group_id, hook_id, task_id);
-  alter table hooks_last_fires
-    alter column hook_group_id set not null,
-    alter column hook_id set not null,
-    alter column fired_by set not null,
-    alter column task_id set not null,
-    alter column task_create_time set not null,
-    alter column result set not null,
-    alter column error set not null,
-    alter column etag set not null,
-    alter column etag set default public.gen_random_uuid();
+    select 
+      (expanded.role ->> 'roleId') as role_id,
+      (expanded.role ->> 'scopes')::jsonb as scopes,
+      (expanded.role ->> 'created')::timestamptz as created,
+      (expanded.role ->> 'description') as description,
+      (expanded.role ->> 'lastModified')::timestamptz as last_modified,
+      expanded.etag as etag
+    from (
+      select
+        jsonb_array_elements(
+          entity_buf_decode(value, 'blob')::jsonb
+        ) as role,
+        etag
+      from roles_entities
+    ) as expanded;
 
-  revoke select, insert, update, delete on last_fire_3_entities from $db_user_prefix$_hooks;
-  drop table last_fire_3_entities;
-  grant select, insert, update, delete on hooks_last_fires to $db_user_prefix$_hooks;
+  raise log 'TIMING start roles add primary key';
+  alter table roles add primary key (role_id);
 
+  raise log 'TIMING start roles set not null';
+  alter table roles
+    alter column role_id set not null,
+    alter column scopes set not null,
+    alter column created set not null,
+    alter column description set not null,
+    alter column last_modified set not null,
+    alter column etag set not null;
+
+
+  raise log 'TIMING start roles set permissions';
+  revoke select, insert, update, delete on roles_entities from $db_user_prefix$_auth;
+  drop table roles_entities;
+
+  grant select, insert, update, delete on roles to $db_user_prefix$_auth;
 end
+

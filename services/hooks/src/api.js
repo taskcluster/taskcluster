@@ -4,7 +4,6 @@ const {APIBuilder} = require('taskcluster-lib-api');
 const nextDate = require('../src/nextdate');
 const _ = require('lodash');
 const Ajv = require('ajv');
-const { lastFireUtils } = require('./utils');
 
 const builder = new APIBuilder({
   title: 'Hooks API Documentation',
@@ -18,7 +17,7 @@ const builder = new APIBuilder({
     hookGroupId: /^[a-zA-Z0-9-_]{1,64}$/,
     hookId: /^[a-zA-Z0-9-_\/]{1,64}$/,
   },
-  context: ['db', 'Hook', 'taskcreator', 'publisher', 'denylist'],
+  context: ['Hook', 'LastFire', 'taskcreator', 'publisher', 'denylist'],
 });
 
 module.exports = builder;
@@ -130,15 +129,16 @@ builder.declare({
 
   // find the latest entry in the LastFire table for this hook
   let latest = {taskCreateTime: new Date(1970, 1, 1)};
-  await lastFireUtils.getLastFires(
-    this.db,
-    { hookGroupId: req.params.hookGroupId, hookId: req.params.hookId },
-    item => {
+  await this.LastFire.scan({
+    hookGroupId: req.params.hookGroupId,
+    hookId: req.params.hookId,
+  }, {
+    handler: item => {
       if (item.taskCreateTime > latest.taskCreateTime) {
         latest = item;
       }
     },
-  );
+  });
 
   let reply;
 
@@ -414,7 +414,14 @@ builder.declare({
   await this.Hook.remove({hookGroupId, hookId}, true);
   await this.publisher.hookDeleted({hookGroupId, hookId});
 
-  await this.db.fns.delete_last_fires(req.params.hookGroupId, req.params.hookId);
+  await this.LastFire.query({
+    hookGroupId: req.params.hookGroupId,
+    hookId: req.params.hookId,
+  }, {
+    handler: async (lastFire) => {
+      await lastFire.remove(false, true);
+    },
+  });
   return res.status(200).json({});
 });
 
@@ -645,15 +652,14 @@ builder.declare({
   ].join('\n'),
 }, async function(req, res) {
   let lastFires = [], item;
-  await lastFireUtils.getLastFires(
-    this.db,
-    { hookGroupId: req.params.hookGroupId, hookId: req.params.hookId },
-    async lastFire => {
-      item = await lastFireUtils.definition(lastFire);
-      item.taskCreateTime = item.taskCreateTime.toJSON();
-      lastFires.push(item);
-    },
-  );
+  await this.LastFire.query({
+    hookGroupId: req.params.hookGroupId,
+    hookId: req.params.hookId,
+  }, {handler: async (lastFire) => {
+    item = await lastFire.definition();
+    item.taskCreateTime = item.taskCreateTime.toJSON();
+    lastFires.push(item);
+  }});
 
   if (lastFires.length === 0) {
     return res.reportError('ResourceNotFound', 'No such hook', {});

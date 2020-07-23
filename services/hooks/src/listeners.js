@@ -2,17 +2,16 @@ const assert = require('assert');
 const pulse = require('taskcluster-lib-pulse');
 const pSynchronize = require('p-synchronize');
 const _ = require('lodash');
-const { queueUtils } = require('./utils');
 
 /**
  * Create pulse client and consumers to trigger hooks with pulse messages
  *
  * options:
  * {
- *   Hook:              // Azure tables for hooks
- *   taskcreator:       // A TaskCreator instance
+ *   Hook:               // Azure tables for hooks
+ *   Queues:             // Azure tables for AMQP queues
+ *   taskcreator:        // A TaskCreator instance
  *   client:            // A tc-lib-pulse client instance
- *   db:                // A database instance
  * }
  */
 
@@ -20,9 +19,9 @@ class HookListeners {
   constructor(options) {
     assert(options.client, 'tc-lib-pulse client must be provided');
 
-    this.db = options.db;
     this.taskcreator = options.taskcreator;
     this.Hook = options.Hook;
+    this.Queues = options.Queues;
     this.client = options.client;
     this.monitor = options.monitor;
     this.pulseHookChangedListener = null;
@@ -203,8 +202,10 @@ class HookListeners {
    * at any time.
    */
   async _reconcileConsumers() {
-    const rows = await this.db.fns.get_hooks_queues(null, null);
-    const queues = rows.map(queueUtils.fromDb);
+    let queues = [];
+    await this.Queues.scan({}, {
+      limit: 1000,
+      handler: (queue) => queues.push(queue)});
 
     await this.Hook.scan({}, {
       limit: 1000,
@@ -228,13 +229,11 @@ class HookListeners {
             // reconciliation we will try again
             const boundBindings = await this.syncBindings(queue.queueName, hook.bindings, queue.bindings);
 
-            // update the bindings in the hooks_queues table
+            // update the bindings in the Queues Azure table
             if (!_.isEqual(queue.bindings, hook.bindings)) {
-              await this.db.fns.update_hooks_queue_bindings(
-                queue.hookGroupId,
-                queue.hookId,
-                JSON.stringify(boundBindings),
-              );
+              await queue.modify((queue) => {
+                queue.bindings = boundBindings;
+              });
             }
 
             // this queue has been reconciled, so remove it from the list
@@ -243,13 +242,13 @@ class HookListeners {
             await this.createListener(hookGroupId, hookId, queueName);
             const boundBindings = await this.syncBindings(queueName, hook.bindings, []);
 
-            // Add to hooks_queues table
-            await this.db.fns.create_hooks_queue(
+            // Add to Queues table
+            await this.Queues.create({
               hookGroupId,
               hookId,
-              `${hookGroupId}/${hookId}`,
-              JSON.stringify(boundBindings),
-            );
+              queueName: `${hookGroupId}/${hookId}`,
+              bindings: boundBindings,
+            });
           }
         } catch (err) {
           // report errors per hook, and continue on to try to reconcile the next hook.
@@ -264,7 +263,7 @@ class HookListeners {
         await this.removeListener(queue.queueName);
       }
       await this.deleteQueue(queue.queueName);
-      await this.db.fns.delete_hooks_queue(queue.hookGroupId, queue.hookId);
+      await queue.remove();
     }
   }
 

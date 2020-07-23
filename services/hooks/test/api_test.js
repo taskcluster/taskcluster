@@ -79,15 +79,15 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   }, hookWithHookIds);
 
   const appendLastFire = async ({hookGroupId, hookId, taskId, taskCreateTime, firedBy, result, error}) => {
-    await helper.db.fns.create_last_fire(
+    await helper.LastFire.create({
       hookGroupId,
       hookId,
-      firedBy,
-      taskId,
       taskCreateTime,
+      taskId,
+      firedBy,
       result,
       error,
-    );
+    });
   };
 
   const lastFire = {

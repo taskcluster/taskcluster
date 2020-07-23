@@ -17,8 +17,8 @@ github:
 hooks:
   tables:
     hooks_entities: write
-    hooks_queues: write
-    hooks_last_fires: write
+    queues_entities: write
+    last_fire_3_entities: write
 index:
   tables:
     indexed_tasks: write

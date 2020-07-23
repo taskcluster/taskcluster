@@ -23,6 +23,8 @@ helper.secrets = new Secrets({
 
 helper.withEntities = (mock, skipping) => {
   withEntity(mock, skipping, exports, 'Hook', data.Hook);
+  withEntity(mock, skipping, exports, 'LastFire', data.LastFire);
+  withEntity(mock, skipping, exports, 'Queues', data.Queues);
 };
 
 helper.withDb = (mock, skipping) => {
@@ -119,8 +121,8 @@ exports.resetTables = (mock, skipping) => {
   setup('reset tables', async function() {
     await resetTables({tableNames: [
       'hooks_entities',
-      'hooks_queues',
-      'hooks_last_fires',
+      'queues_entities',
+      'last_fire_3_entities',
     ]});
   });
 };

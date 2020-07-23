@@ -1,5 +1,0 @@
-version: 32
-migrationScript: 0032-migration.sql
-# on downgrade, restore the funciton as defined in version 15
-downgradeScript: 0015-migration.sql
-methods: []
