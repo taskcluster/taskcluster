@@ -1,6 +1,5 @@
 audience: deployers
-level: minor
+level: major
 reference: issue 3148
 ---
-Migrates Postgres Phase I table `web_server.github_access_token_table_entities` to
-Postgres Phase II table `web_server.github_access_tokens`.
+The web-server service now stores Github access tokens in a dedicated table and accesses them directly, rather than via taskcluster-lib-entities.  This upgrade drops existing tokens, meaning that users will need to sign in again after the upgrade is applied.  This migration is very fast.
