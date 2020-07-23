@@ -93,7 +93,7 @@ methods:
       end
   expire_authorization_codes:
     description: |-
-      Expire authorization codes that come before `expires_in`.
+      Delete authorization codes that expire before `expires_in`.
       Returns a count of rows that have been deleted.
     mode: write
     serviceName: web_server

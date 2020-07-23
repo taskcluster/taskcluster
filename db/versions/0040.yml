@@ -95,7 +95,7 @@ methods:
       end
   expire_access_tokens:
     description: |-
-      Expire access token entries that come before the current time.
+      Delete access token entries that expireq before the current time.
       Returns a count of rows that have been deleted.
     mode: write
     serviceName: web_server

@@ -100,7 +100,7 @@ methods:
       end
   expire_sessions:
     description: |-
-      Expire sessions that come before the current time.
+      Delete sessions that expire before the current time.
       Returns a count of rows that have been deleted.
     mode: write
     serviceName: web_server
