@@ -300,6 +300,11 @@ The binary payload is derived by first base64-decoding each `__bufN_val` propert
 That binary payload, in turn, is defined in the [`EncryptedBaseType` constructor](https://github.com/taskcluster/azure-entities/blob/c6f63e3553c71f0859a5d6338ce5e7c7eb8c9671/src/entitytypes.js#L716-L725).
 It is the concatenation of a 128-bit (16-byte) random initialization vector (`iv`) and the ciphertext produced by aes-256 in CBC mode.
 
+## Named Arguments with Stored Functions
+
+This library supports calling stored functions with named arguments.
+For this to work, a stored function should have all of this arguments end with "_in".
+
 ## Security Invariants
 
 Use of Postgres brings with it the risk of SQL injection vulnerabilities and other security flaws.
