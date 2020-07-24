@@ -193,7 +193,7 @@ suite(testing.suiteName(), function() {
         async () => {
           await db.fns.session_touch(hash(sessionId), { foo: 'bar' }, new Date(1));
         },
-        /P0002/
+        /P0002/,
       );
     });
 
