@@ -204,7 +204,7 @@
   "renovate": {
     "extends": [
       "config:base",
-      "schedule:earlyMondays"
+      "schedule:daily"
     ],
     "rebaseConflictedPrs": false,
     "prHourlyLimit": 0,
