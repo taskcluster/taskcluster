@@ -43,9 +43,9 @@ secrets:
     secrets_entities: write
 web_server:
   tables:
-    authorization_codes_table_entities: write
-    access_token_table_entities: write
-    session_storage_table_entities: write
+    authorization_codes: write
+    access_tokens: write
+    sessions: write
     github_access_tokens: write
 worker_manager:
   tables:

@@ -12,10 +12,10 @@ const MemoryStore = require('memorystore')(session);
 const credentials = require('./credentials');
 const oauth2AccessToken = require('./oauth2AccessToken');
 const oauth2 = require('./oauth2');
-const AzureSessionStore = require('../login/AzureSessionStore');
+const PostgresSessionStore = require('../login/PostgresSessionStore');
 const {traceMiddleware} = require('taskcluster-lib-app');
 
-module.exports = async ({ cfg, strategies, AuthorizationCode, AccessToken, auth, monitor, SessionStorage }) => {
+module.exports = async ({ cfg, strategies, auth, monitor, db }) => {
   const app = express();
 
   app.set('trust proxy', cfg.server.trustProxy);
@@ -39,9 +39,10 @@ module.exports = async ({ cfg, strategies, AuthorizationCode, AccessToken, auth,
       ? [...new Set([].concat(...cfg.login.registeredClients.map(({ redirectUri }) => new URL(redirectUri).origin)))]
       : false,
   };
-  const SessionStore = AzureSessionStore({
+
+  const SessionStore = PostgresSessionStore({
     session,
-    SessionStorage,
+    db,
     options: {
       // should be same time as cookie maxAge
       sessionTimeout: '1 week',
@@ -126,7 +127,7 @@ module.exports = async ({ cfg, strategies, AuthorizationCode, AccessToken, auth,
     decision,
     token,
     getCredentials,
-  } = oauth2(cfg, AuthorizationCode, AccessToken, strategies, auth, monitor);
+  } = oauth2(cfg, db, strategies, auth, monitor);
 
   // 1. Render a dialog asking the user to grant access
   app.get('/login/oauth/authorize', cors(corsOptions), authorization);

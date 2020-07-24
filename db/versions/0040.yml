@@ -1,0 +1,114 @@
+version: 40
+migrationScript: 0040-migration.sql
+downgradeScript: 0040-downgrade.sql
+methods:
+  access_token_table_entities_load:
+    description: See taskcluster-lib-entities
+    mode: read
+    serviceName: web_server
+    args: partition_key text, row_key text
+    returns: table (partition_key_out text, row_key_out text, value jsonb, version integer, etag uuid)
+    body: |-
+      begin
+      end
+  access_token_table_entities_create:
+    serviceName: web_server
+    description: See taskcluster-lib-entities
+    mode: write
+    args: pk text, rk text, properties jsonb, overwrite boolean, version integer
+    returns: uuid
+    body: |-
+      begin
+        raise exception 'unsuccessful create' using errcode = 'P0004';
+      end
+  access_token_table_entities_remove:
+    serviceName: web_server
+    description: See taskcluster-lib-entities
+    mode: write
+    args: partition_key text, row_key text
+    returns: table (etag uuid)
+    body: |-
+      begin
+        raise exception 'unsuccessful delete' using errcode = 'P0004';
+      end
+  access_token_table_entities_modify:
+    serviceName: web_server
+    description: See taskcluster-lib-entities
+    mode: write
+    args: partition_key text, row_key text, properties jsonb, version integer, old_etag uuid
+    returns: table (etag uuid)
+    body: |-
+      begin
+        raise exception 'unsuccessful update' using errcode = 'P0004';
+      end
+  access_token_table_entities_scan:
+    description: See taskcluster-lib-entities
+    mode: read
+    serviceName: web_server
+    args: pk text, rk text, condition text, size integer, page integer
+    returns: table (partition_key text, row_key text, value jsonb, version integer, etag uuid)
+    body: |-
+      begin
+      end
+  create_access_token:
+    description: |-
+      Create an access token entry.
+    mode: write
+    serviceName: web_server
+    args: hashed_access_token_in text, encrypted_access_token_in jsonb, client_id_in text, redirect_uri_in text, identity_in text, identity_provider_id_in text, expires_in timestamptz, client_details_in jsonb
+    returns: table(hashed_access_token text, encrypted_access_token jsonb, client_id text, redirect_uri text, identity text, identity_provider_id text, expires timestamptz, client_details jsonb)
+    body: |-
+      begin
+        return query insert
+          into access_tokens (hashed_access_token, encrypted_access_token, client_id, redirect_uri, identity, identity_provider_id, expires, client_details)
+          values (hashed_access_token_in, encrypted_access_token_in, client_id_in, redirect_uri_in, identity_in, identity_provider_id_in, expires_in, client_details_in)
+          returning
+            access_tokens.hashed_access_token,
+            access_tokens.encrypted_access_token,
+            access_tokens.client_id,
+            access_tokens.redirect_uri,
+            access_tokens.identity,
+            access_tokens.identity_provider_id,
+            access_tokens.expires,
+            access_tokens.client_details;
+      end
+  get_access_token:
+    description: Get an access token entry.
+    mode: read
+    serviceName: web_server
+    args: hashed_access_token_in text
+    returns: table(hashed_access_token text, encrypted_access_token jsonb, client_id text, redirect_uri text, identity text, identity_provider_id text, expires timestamptz, client_details jsonb)
+    body: |-
+      begin
+        return query
+        select
+          access_tokens.hashed_access_token,
+          access_tokens.encrypted_access_token,
+          access_tokens.client_id,
+          access_tokens.redirect_uri,
+          access_tokens.identity,
+          access_tokens.identity_provider_id,
+          access_tokens.expires,
+          access_tokens.client_details
+        from access_tokens
+        where access_tokens.hashed_access_token = hashed_access_token_in;
+      end
+  expire_access_tokens:
+    description: |-
+      Delete access token entries that expireq before the current time.
+      Returns a count of rows that have been deleted.
+    mode: write
+    serviceName: web_server
+    args: expires_in timestamptz
+    returns: integer
+    body: |-
+      declare
+        count integer;
+      begin
+        delete from access_tokens where access_tokens.expires < expires_in;
+        if found then
+          get diagnostics count = row_count;
+          return count;
+        end if;
+        return 0;
+      end

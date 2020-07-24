@@ -1,10 +1,7 @@
 const load = require('../src/main');
 const taskcluster = require('taskcluster-client');
-const {Secrets, stickyLoader, withMonitor, withEntity, withPulse, withDb, resetTables} = require('taskcluster-lib-testing');
+const {Secrets, stickyLoader, withMonitor, withPulse, withDb, resetTables} = require('taskcluster-lib-testing');
 const sinon = require('sinon');
-const AuthorizationCode = require('../src/data/AuthorizationCode');
-const AccessToken = require('../src/data/AccessToken');
-const SessionStorage = require('../src/data/SessionStorage');
 const GithubClient = require('../src/login/clients/GithubClient');
 const libUrls = require('taskcluster-lib-urls');
 const request = require('superagent');
@@ -35,12 +32,6 @@ exports.secrets = new Secrets({
   },
   load: exports.load,
 });
-
-exports.withEntities = (mock, skipping) => {
-  withEntity(mock, skipping, exports, 'AuthorizationCode', AuthorizationCode);
-  withEntity(mock, skipping, exports, 'AccessToken', AccessToken);
-  withEntity(mock, skipping, exports, 'SessionStorage', SessionStorage);
-};
 
 exports.withDb = (mock, skipping) => {
   withDb(mock, skipping, exports, 'web_server');
@@ -493,7 +484,7 @@ exports.resetTables = (mock, skipping) => {
     await resetTables({tableNames: [
       'authorization_codes_table_entities',
       'access_token_table_entities',
-      'session_storage_table_entities',
+      'sessions',
       'github_access_tokens',
     ]});
   });
