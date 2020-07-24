@@ -303,7 +303,8 @@ It is the concatenation of a 128-bit (16-byte) random initialization vector (`iv
 ## Named Arguments with Stored Functions
 
 This library supports calling stored functions with named arguments.
-For this to work, a stored function should have all of this arguments end with "_in".
+For this to work, a stored function should have all of its arguments end with "_in". For example, a db method with signature
+`add_two_numbers(a_in int, b_in int)` can now be invoked with `db.fns.add_two_numbers({ a_in: 1, b_in: 2 })` in addition to `db.fns.add_two_numbers(1, 2)`.
 
 ## Security Invariants
 
