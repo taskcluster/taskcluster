@@ -1,4 +1,4 @@
-const _  = require('lodash');
+const _ = require('lodash');
 const {Pool} = require('pg');
 const pg = require('pg');
 const crypto = require('crypto');
@@ -7,7 +7,7 @@ const Keyring = require('./Keyring');
 const assert = require('assert').strict;
 const {READ, WRITE, DUPLICATE_OBJECT, UNDEFINED_TABLE} = require('./constants');
 const {MonitorManager} = require('taskcluster-lib-monitor');
-const named = require('yesql').pg
+const named = require('yesql').pg;
 
 // Postgres extensions to "create".
 const EXTENSIONS = [

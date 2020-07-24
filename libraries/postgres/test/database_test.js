@@ -820,8 +820,8 @@ helper.dbSuite(path.basename(__filename), function() {
         async () => {
           await db.fns.add_from_numbers({ a: 1, b: 2 });
         },
-        /function add_from_numbers(unknown) does not exist/
-      )
+        err => err.code === UNDEFINED_FUNCTION,
+      );
     });
-  })
+  });
 });
