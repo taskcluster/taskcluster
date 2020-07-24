@@ -10,6 +10,7 @@ suite(testing.suiteName(), function() {
   setup('reset table', async function() {
     await helper.withDbClient(async client => {
       await client.query('delete from github_builds');
+      await client.query('delete from github_integrations');
     });
   });
 
@@ -107,5 +108,77 @@ suite(testing.suiteName(), function() {
         );
       }, /no such row/);
     });
+  });
+
+  suite('github_integrations', function() {
+    const integrations = [];
+    for (let i = 0; i < 10; i++) {
+      integrations[i] = {
+        owner: `user-${i}`,
+        installation_id: i,
+      };
+    }
+
+    const upsert_integration = async (db, integration) => await db.fns.upsert_github_integration(
+      integration.owner,
+      integration.installation_id,
+    );
+
+    helper.dbTest('create and get', async function(db, isFake) {
+      await upsert_integration(db, integrations[0]);
+      let [fetched] = await db.fns.get_github_integration(integrations[0].owner);
+      assert.deepEqual(fetched, integrations[0]);
+
+      assert.deepEqual([], await db.fns.get_github_integration(null));
+      assert.deepEqual([], await db.fns.get_github_integration('doesntexist'));
+
+      // this should not reject, just overwrite
+      await upsert_integration(db, {...integrations[0], installation_id: 12345});
+      [fetched] = await db.fns.get_github_integration(integrations[0].owner);
+      assert.deepEqual(fetched, {...integrations[0], installation_id: 12345});
+    });
+    helper.dbTest('list', async function(db, isFake) {
+      for (let i = 0; i < 10; i++) {
+        await upsert_integration(db, integrations[i]);
+      }
+      const fetched = await db.fns.get_github_integrations(null, null);
+      assert.equal(fetched.length, 10);
+      fetched.forEach((integration, i) => {
+        assert.deepEqual(integration, integrations[i]);
+      });
+    });
+  });
+
+  suite('github_checks', function() {
+    const checks = [];
+    for (let i = 0; i < 10; i++) {
+      checks[i] = {
+        task_group_id: slugid.v4(),
+        task_id: slugid.v4(),
+        check_suite_id: `suite-${i}`,
+        check_run_id: `run-${i}`,
+      };
+    }
+
+    const create_check = async (db, check) => await db.fns.create_github_check(
+      check.task_group_id,
+      check.task_id,
+      check.check_suite_id,
+      check.check_run_id,
+    );
+
+    helper.dbTest('create and get', async function(db, isFake) {
+      await create_check(db, checks[0]);
+      let [fetched] = await db.fns.get_github_check_by_task_id(checks[0].task_id);
+      assert.deepEqual(fetched, checks[0]);
+
+      assert.deepEqual([], await db.fns.get_github_check_by_task_id(null));
+      assert.deepEqual([], await db.fns.get_github_check_by_task_id('doesntexist'));
+
+      await assert.rejects(async () => {
+        await create_check(db, checks[0]);
+      }, /duplicate key value violates unique constraint/);
+    });
+
   });
 });

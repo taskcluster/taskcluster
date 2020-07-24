@@ -22,9 +22,13 @@
 | Name | Mode | Arguments | Returns | Description |
 | --- | --- | --- | --- | --- |
 | create_github_build | write | organization_in text, repository_in text, sha_in text, task_group_id_in text, state_in text, created_in timestamptz, updated_in timestamptz, installation_id_in integer, event_type_in text, event_id_in text | void | Create a new github build.  Raises UNIQUE_VIOLATION if the pool already exists. |
+| create_github_check | write | task_group_id_in text, task_id_in text, check_suite_id_in text, check_run_id_in text | void | Create a single check. |
 | delete_github_build | write | task_group_id_in text | void | Delete a github build. |
 | get_github_build | read | task_group_id_in text | table (organization text, repository text, sha text, task_group_id text, state text, created timestamptz, updated timestamptz, installation_id integer, event_type text, event_id text, etag uuid) | Get a github build. The returned table will have one or zero rows. |
 | get_github_builds | read | page_size_in integer, page_offset_in integer, organization_in text, repository_in text, sha_in text | table (organization text, repository text, sha text, task_group_id text, state text, created timestamptz, updated timestamptz, installation_id integer, event_type text, event_id text, etag uuid) | Get github builds.  |
+| get_github_check_by_task_id | read | task_id_in text | table (task_group_id text, task_id text, check_suite_id text, check_run_id text) | Get a single check from a task_id. |
+| get_github_integration | read | owner_in text | table (owner text, installation_id integer) | Get a single integration by owner. |
+| get_github_integrations | read | page_size_in integer, page_offset_in integer | table (owner text, installation_id integer) | Get a list of integrations. |
 | set_github_build_state | write | task_group_id_in text, state_in text | void | Only update the state of a build and update the `updated` timestamp |
 | taskcluster_check_runs_entities_create | write | pk text, rk text, properties jsonb, overwrite boolean, version integer | uuid | See taskcluster-lib-entities |
 | taskcluster_check_runs_entities_load | read | partition_key text, row_key text | table (partition_key_out text, row_key_out text, value jsonb, version integer, etag uuid) | See taskcluster-lib-entities |
@@ -46,6 +50,7 @@
 | taskcluster_integration_owners_entities_modify | write | partition_key text, row_key text, properties jsonb, version integer, old_etag uuid | table (etag uuid) | See taskcluster-lib-entities |
 | taskcluster_integration_owners_entities_remove | write | partition_key text, row_key text | table (etag uuid) | See taskcluster-lib-entities |
 | taskcluster_integration_owners_entities_scan | read | pk text, rk text, condition text, size integer, page integer | table (partition_key text, row_key text, value jsonb, version integer, etag uuid) | See taskcluster-lib-entities |
+| upsert_github_integration | write | owner_in text, installation_id_in integer | void | Create a single integration. |
 ## hooks
 
 | Name | Mode | Arguments | Returns | Description |

@@ -1,6 +1,6 @@
 const assert = require('assert');
 const _ = require('lodash');
-const github = require('@octokit/rest');
+const {Octokit: github} = require('@octokit/rest');
 const fakeGithubAuth = require('./github-auth');
 const testing = require('taskcluster-lib-testing');
 
@@ -18,7 +18,7 @@ suite(testing.suiteName(), function() {
   }
 
   test('matches real lib', async function() {
-    let inst = await fakeGithubAuth().getInstallationGithub();
+    let inst = await fakeGithubAuth().getInstallationGithub('doesntmatter');
     checkKeys(inst, github());
   });
 });
