@@ -1,3 +1,4 @@
+const _  = require('lodash');
 const {Pool} = require('pg');
 const pg = require('pg');
 const crypto = require('crypto');
@@ -6,6 +7,7 @@ const Keyring = require('./Keyring');
 const assert = require('assert').strict;
 const {READ, WRITE, DUPLICATE_OBJECT, UNDEFINED_TABLE} = require('./constants');
 const {MonitorManager} = require('taskcluster-lib-monitor');
+const named = require('yesql').pg
 
 // Postgres extensions to "create".
 const EXTENSIONS = [
@@ -97,11 +99,21 @@ class Database {
 
         this._logDbFunctionCall({name: method.name});
 
-        const placeholders = [...new Array(args.length).keys()].map(i => `$${i + 1}`).join(',');
+        // For now we only support named arguments that end with "_in" to make sure
+        // functions that take a single object argument are not incorrectly labeled as named arguments.
+        const hasNamedArguments = args.length === 1 && _.isPlainObject(args[0]) && Object.keys(args[0]).every(key => key.endsWith('_in'));
         const res = await this._withClient(method.mode, async client => {
           await client.query(method.mode === READ ? 'begin read only' : 'begin read write');
           try {
-            let res = await client.query(`select * from "${method.name}"(${placeholders})`, args);
+            let res;
+            if (hasNamedArguments) {
+              const placeholders = Object.keys(args[0]).map(arg => `:${arg}`).join(',');
+              const { text, values } = named(`select * from "${method.name}"(${placeholders})`, { useNullForMissing: true })(args[0]);
+              res = await client.query(text, values);
+            } else {
+              const placeholders = [...new Array(args.length).keys()].map(i => `$${i + 1}`).join(',');
+              res = await client.query(`select * from "${method.name}"(${placeholders})`, args);
+            }
             await client.query('commit');
             return res;
           } catch (err) {

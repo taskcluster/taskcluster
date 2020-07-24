@@ -7364,6 +7364,11 @@ yargs@~3.10.0:
     decamelize "^1.0.0"
     window-size "0.1.0"
 
+yesql@^4.1.3:
+  version "4.1.3"
+  resolved "https://registry.yarnpkg.com/yesql/-/yesql-4.1.3.tgz#eb64c6e3b80c30960de0b464ae1a9780746388df"
+  integrity sha512-AqKwYcyjWmjzNYNSah53siLLt3xTblCQcAMuw5E9TX8P4X/tRmBUFtryhjP1NwmwHEqiYHhIPGtWUdkqqPkVig==
+
 zen-observable-ts@^0.8.21:
   version "0.8.21"
   resolved "https://registry.yarnpkg.com/zen-observable-ts/-/zen-observable-ts-0.8.21.tgz#85d0031fbbde1eba3cd07d3ba90da241215f421d"
