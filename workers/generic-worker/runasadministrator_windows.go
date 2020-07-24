@@ -3,8 +3,8 @@ package main
 import (
 	"fmt"
 
-	"github.com/taskcluster/taskcluster/v34/internal/scopes"
-	"github.com/taskcluster/taskcluster/v34/workers/generic-worker/win32"
+	"github.com/taskcluster/taskcluster/v35/internal/scopes"
+	"github.com/taskcluster/taskcluster/v35/workers/generic-worker/win32"
 )
 
 type RunAsAdministratorFeature struct {

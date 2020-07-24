@@ -9,7 +9,7 @@ import (
 	"testing"
 
 	"github.com/taskcluster/slugid-go/slugid"
-	"github.com/taskcluster/taskcluster/v34/workers/generic-worker/gwconfig"
+	"github.com/taskcluster/taskcluster/v35/workers/generic-worker/gwconfig"
 )
 
 func TestMissingScopes(t *testing.T) {

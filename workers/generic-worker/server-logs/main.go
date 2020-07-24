@@ -9,7 +9,7 @@ import (
 
 	"github.com/taskcluster/shell"
 	"github.com/taskcluster/slugid-go/slugid"
-	"github.com/taskcluster/taskcluster/v34/clients/client-go/tcqueue"
+	"github.com/taskcluster/taskcluster/v35/clients/client-go/tcqueue"
 )
 
 func main() {
