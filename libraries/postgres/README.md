@@ -164,9 +164,12 @@ downgradeScript: |-
   end
 
 # Methods for database access.  Each entry either defines a new stored function, or
-# redefines an existing function (without changing argument or return types).
+# redefines an existing function.
 methods:
   method_name:  # name for the stored function and the corresponding JS method
+    # Version of the stored function. Starts at version 0.
+    # A version bump is required when an existent function changes its `args` or `returns` value.
+    version: 0
     # Description of the stored function, for inclusion in `db/README.md`
     description: |-
       ...

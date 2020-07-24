@@ -125,25 +125,57 @@ suite(path.basename(__filename), function() {
     test('method changes mode', function() {
       assert.throws(
         () => Schema._checkMethodUpdates(versions({mode: 'write'})),
-        /method whatever changed mode in version 2/);
+        /method whatever changed mode in db version 2/);
     });
 
     test('method changes serviceName', function() {
       assert.throws(
         () => Schema._checkMethodUpdates(versions({serviceName: 'queue'})),
-        /method whatever changed serviceName in version 2/);
+        /method whatever changed serviceName in db version 2/);
     });
 
     test('method changes args', function() {
       assert.throws(
         () => Schema._checkMethodUpdates(versions({args: 'x text'})),
-        /method whatever changed args in version 2/);
+        /method whatever changed args in db version 2/);
     });
 
     test('method changes returns', function() {
       assert.throws(
         () => Schema._checkMethodUpdates(versions({returns: 'text'})),
-        /method whatever changed returns in version 2/);
+        /method whatever changed returns in db version 2/);
+    });
+
+    test('changes mode in a different method version', function() {
+      assert.throws(
+        () => Schema._checkMethodUpdates(versions({version: 1, mode: 'write'})),
+        /method whatever changed mode in db version 2/);
+    });
+
+    test('changes serviceName in a different method version', function() {
+      assert.throws(
+        () => Schema._checkMethodUpdates(versions({version: 1, serviceName: 'queue'})),
+        /method whatever changed serviceName in db version 2/);
+    });
+
+    test('changes args in a different method version', function() {
+      Schema._checkMethodUpdates(versions({version: 1, args: 'x text'}));
+    });
+
+    test('changes returns in a different method version', function() {
+      Schema._checkMethodUpdates(versions({version: 1, returns: 'text'}));
+    });
+
+    test('increments version by more than 1', function() {
+      assert.throws(
+        () => Schema._checkMethodUpdates(versions({version: 2, returns: 'text'})),
+        /method incremented version by more than one. The next version for whatever is 1/);
+    });
+
+    test('downgrade method version', function() {
+      assert.throws(
+        () => Schema._checkMethodUpdates(versions({version: -1, returns: 'text'})),
+        /method whatever is not allowed to downgrade/);
     });
   });
 
