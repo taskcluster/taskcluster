@@ -8,7 +8,6 @@ const testing = require('taskcluster-lib-testing');
 
 helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   helper.withDb(mock, skipping);
-  helper.withEntities(mock, skipping);
   helper.withTaskCreator(mock, skipping);
   helper.withPulse(mock, skipping);
   helper.withServer(mock, skipping);
@@ -79,15 +78,15 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   }, hookWithHookIds);
 
   const appendLastFire = async ({hookGroupId, hookId, taskId, taskCreateTime, firedBy, result, error}) => {
-    await helper.LastFire.create({
+    await helper.db.fns.create_last_fire(
       hookGroupId,
       hookId,
-      taskCreateTime,
-      taskId,
       firedBy,
+      taskId,
+      taskCreateTime,
       result,
       error,
-    });
+    );
   };
 
   const lastFire = {
