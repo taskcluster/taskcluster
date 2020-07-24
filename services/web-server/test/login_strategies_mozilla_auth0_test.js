@@ -117,12 +117,12 @@ suite(testing.suiteName(), () => {
               access_information: {},
               identities,
             };
-          case 'oauth2|firefoxaccounts|noidentities':
+          case 'oauth2|firefoxaccounts|012345abcdef':
             return {
-              user_id: { value: 'oauth2|firefoxaccounts|noidentities' },
+              user_id: { value: 'oauth2|firefoxaccounts|012345abcdef' },
               access_information: {},
               primary_email: 'rockets@ksc',
-              fxa_sub: 'noidentities',
+              fxa_sub: '012345abcdef',
             };
           default:
             return null;
@@ -151,30 +151,20 @@ suite(testing.suiteName(), () => {
     });
 
     test('GitHub', async function() {
-      const user = await strategy.userFromIdentity('mozilla-auth0/github|1234|helfi92');
-      assert.equal(user.identity, 'mozilla-auth0/github|1234|helfi92');
+      const user = await strategy.userFromIdentity('mozilla-auth0/github|1234');
+      assert.equal(user.identity, 'mozilla-auth0/github|1234');
       assert.deepEqual(user.roles, []);
     });
 
-    test('GitHub with wrong username', async function() {
-      const user = await strategy.userFromIdentity('mozilla-auth0/github|1234|OTHERNAME');
-      assert.equal(user, undefined);
-    });
-
     test('GitHub inactive', async function() {
-      const user = await strategy.userFromIdentity('mozilla-auth0/github|9999|inactive');
+      const user = await strategy.userFromIdentity('mozilla-auth0/github|9999');
       assert.equal(user, undefined);
     });
 
     test('Firefox Accounts', async function() {
-      const user = await strategy.userFromIdentity('mozilla-auth0/oauth2|firefoxaccounts|abcdef|rockets@ksc');
-      assert.equal(user.identity, 'mozilla-auth0/oauth2|firefoxaccounts|abcdef|rockets@ksc');
+      const user = await strategy.userFromIdentity('mozilla-auth0/oauth2|firefoxaccounts|abcdef');
+      assert.equal(user.identity, 'mozilla-auth0/oauth2|firefoxaccounts|abcdef');
       assert.deepEqual(user.roles, []);
-    });
-
-    test('Firefox Accounts with wrong email', async function() {
-      const user = await strategy.userFromIdentity('mozilla-auth0/oauth2|firefoxaccounts|abcdef|wizards@ksc');
-      assert.equal(user, undefined);
     });
 
     test('Email (with a slash)', async function() {
@@ -183,10 +173,9 @@ suite(testing.suiteName(), () => {
       assert.deepEqual(user.roles, []);
     });
 
-    test('profile without identities should not return a user', async function() {
-      const user = await strategy.userFromIdentity('mozilla-auth0/oauth2|firefoxaccounts|noidentities');
-
-      assert.equal(user, null);
+    test('profile without identities should not have no roles', async function() {
+      const user = await strategy.userFromIdentity('mozilla-auth0/oauth2|firefoxaccounts|012345abcdef');
+      assert.deepEqual(user.roles, []);
     });
   });
 });
