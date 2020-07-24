@@ -1,5 +1,6 @@
 const _ = require('lodash');
 const assume = require('assume');
+const assert = require('assert');
 const helper = require('./helper');
 const taskcluster = require('taskcluster-client');
 const testing = require('taskcluster-lib-testing');
@@ -180,6 +181,27 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       assume(updatedHook.nextScheduledDate).is.not.equal(oldScheduledDate);
     });
 
+    test('on error, an error sending email is handled', async () => {
+      helper.creator.shouldFail = {
+        statusCode: 499,
+      };
+
+      let emailSent = false;
+      scheduler.sendFailureEmail = async (hook, err) => { emailSent = true; throw new Error('uhoh'); };
+
+      await scheduler.handleHook(hook);
+
+      assume(emailSent).is.equal(true);
+
+      const monitor = await helper.load('monitor');
+      assert.equal(
+        monitor.manager.messages.filter(
+          ({Type, Fields}) => Type === 'monitor.error' && Fields.message === 'uhoh',
+        ).length,
+        1);
+      monitor.manager.reset();
+    });
+
     test('on 500 error, no email and nothing changes', async () => {
       let oldTaskId = helper.db.decrypt({ value: hook.nextTaskId }).toString('utf8');
       let oldScheduledDate = hook.nextScheduledDate;
@@ -227,6 +249,28 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
       phrase = 'Taskcluster Automation';
       assume(lastEmail.content.search(phrase)).is.not.equal(-1);
+    });
+
+    test('sendFailureEmail warns on denylisted addresses', async () => {
+      const notify = await helper.load('notify');
+      notify.email = async () => {
+        const err = new Error('uhoh');
+        err.code = 'DenylistedAddress';
+        throw err;
+      };
+
+      helper.creator.shouldFail = true;
+      await scheduler.handleHook(hook);
+
+      const monitor = await helper.load('monitor');
+      assert.equal(
+        monitor.manager.messages.filter(
+          ({Type, Fields}) =>
+            Type === 'monitor.generic' &&
+            Fields.message === 'Hook failure email rejected: example@example.com is denylisted',
+        ).length,
+        1);
+      monitor.manager.reset();
     });
   });
 });
