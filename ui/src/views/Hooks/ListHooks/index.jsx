@@ -3,8 +3,6 @@ import React, { Component } from 'react';
 import { graphql } from 'react-apollo';
 import Spinner from '@mozilla-frontend-infra/components/Spinner';
 import { withStyles } from '@material-ui/core/styles';
-import Typography from '@material-ui/core/Typography';
-import MuiTreeView from 'material-ui-treeview';
 import PlusIcon from 'mdi-react/PlusIcon';
 import qs, { parse, stringify } from 'qs';
 import TreeView from '@material-ui/lab/TreeView';
@@ -16,7 +14,6 @@ import HelpView from '../../../components/HelpView';
 import Search from '../../../components/Search';
 import Button from '../../../components/Button';
 import ErrorPanel from '../../../components/ErrorPanel';
-import Link from '../../../utils/Link';
 import hooksQuery from './hooks.graphql';
 
 @hot(module)
@@ -69,10 +66,13 @@ export default class ListHooks extends Component {
           })),
         }))
       : [];
-    const renderTree = yo => (
-      <TreeItem key={yo.value} nodeId={yo.value} label={yo.value}>
-        {Array.isArray(yo.nodes)
-          ? yo.nodes.map(node => renderTree(node))
+    const renderTree = treeItem => (
+      <TreeItem
+        key={treeItem.value}
+        nodeId={treeItem.value}
+        label={treeItem.value}>
+        {Array.isArray(treeItem.nodes)
+          ? treeItem.nodes.map(node => renderTree(node))
           : null}
       </TreeItem>
     );
