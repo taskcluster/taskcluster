@@ -1,6 +1,6 @@
 {
   "name": "taskcluster-ui",
-  "version": "34.0.1",
+  "version": "35.0.0",
   "private": true,
   "license": "MPL-2.0",
   "engines": {
@@ -90,7 +90,7 @@
     "taskcluster-lib-scopes": "^11.0.0",
     "taskcluster-lib-urls": "^12.0.0",
     "typeface-roboto": "^0.0.75",
-    "ws-shell": "^0.1.5"
+    "ws-shell": "^0.2.1"
   },
   "devDependencies": {
     "@babel/core": "^7.2.2",

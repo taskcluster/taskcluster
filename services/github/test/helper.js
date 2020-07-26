@@ -5,8 +5,7 @@ const builder = require('../src/api');
 const taskcluster = require('taskcluster-client');
 const load = require('../src/main');
 const fakeGithubAuth = require('./github-auth');
-const data = require('../src/data');
-const {fakeauth, stickyLoader, Secrets, withEntity, withPulse, withMonitor, withDb, resetTables} = require('taskcluster-lib-testing');
+const {fakeauth, stickyLoader, Secrets, withPulse, withMonitor, withDb, resetTables} = require('taskcluster-lib-testing');
 
 exports.load = stickyLoader(load);
 
@@ -48,15 +47,6 @@ exports.jsonHttpRequest = function(jsonFile, options) {
   });
 };
 
-/**
- * Set helper.<name> for each entity class
- */
-exports.withEntities = (mock, skipping) => {
-  withEntity(mock, skipping, exports, 'OwnersDirectory', data.OwnersDirectory, {orderedTests: true});
-  withEntity(mock, skipping, exports, 'CheckRuns', data.CheckRuns, {orderedTests: true});
-  withEntity(mock, skipping, exports, 'ChecksToTasks', data.ChecksToTasks, {orderedTests: true});
-};
-
 exports.withDb = (mock, skipping) => {
   withDb(mock, skipping, exports, 'github');
 };
@@ -85,7 +75,7 @@ exports.withFakeGithub = (mock, skipping) => {
 };
 
 /**
- * Set up an API server.  Call this after withEntities, so the server
+ * Set up an API server.  Call this after withDb, so the server
  * uses the same entities classes.
  *
  * This also sets up helper.apiClient as a client of the service API.
@@ -135,10 +125,9 @@ exports.withServer = (mock, skipping) => {
 exports.resetTables = (mock, skipping) => {
   setup('reset tables', async function() {
     await resetTables({ tableNames: [
-      'taskcluster_github_builds_entities',
-      'taskcluster_integration_owners_entities',
-      'taskcluster_checks_to_tasks_entities',
-      'taskcluster_check_runs_entities',
+      'github_builds',
+      'github_checks',
+      'github_integrations',
     ]});
   });
 };

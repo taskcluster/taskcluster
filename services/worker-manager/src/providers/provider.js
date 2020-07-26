@@ -2,6 +2,7 @@ const assert = require('assert');
 const libUrls = require('taskcluster-lib-urls');
 const slugid = require('slugid');
 const yaml = require('js-yaml');
+const {Worker, WorkerPoolError} = require('../data.js');
 
 /**
  * The parent class for all providers.
@@ -16,8 +17,6 @@ class Provider {
     monitor,
     rootUrl,
     estimator,
-    Worker,
-    WorkerPoolError,
     validator,
     providerConfig,
   }) {
@@ -114,6 +113,15 @@ class Provider {
   // Report an error concerning this worker pool.  This handles notifications and logging.
   async reportError({workerPool, kind, title, description, extra = {}}) {
     const errorId = slugid.v4();
+    let error = this.WorkerPoolError.fromApi({
+      workerPoolId: workerPool.workerPoolId,
+      errorId,
+      reported: new Date(),
+      kind,
+      title,
+      description,
+      extra,
+    });
 
     try {
       if (workerPool.emailOnError) {
@@ -133,17 +141,21 @@ class Provider {
         description,
       });
 
+      try {
+        await error.create(this.db);
+      } catch (err) {
+        if (!err || err.code !== 'EntityAlreadyExists') {
+          throw err;
+        }
+        const existing = await this.WorkerPoolError.get(this.db, { errorId, workerPoolId: workerPool.workerPoolId });
+        if (existing.title !== title || existing.providerData.kind !== kind) {
+          throw new ApiError('error already exists');
+        }
+        error = existing;
+      }
     } finally {
       // eslint-disable-next-line no-unsafe-finally
-      return await this.WorkerPoolError.create({
-        workerPoolId: workerPool.workerPoolId,
-        errorId,
-        reported: new Date(),
-        kind,
-        title,
-        description,
-        extra,
-      });
+      return error;
     }
   }
 

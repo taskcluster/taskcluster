@@ -4,7 +4,7 @@ const helper = require('./helper');
 const {FakeGoogle} = require('./fakes');
 const {GoogleProvider} = require('../src/providers/google');
 const testing = require('taskcluster-lib-testing');
-const {WorkerPool, Worker} = require('../src/data');
+const {WorkerPool, WorkerPoolError, Worker} = require('../src/data');
 
 helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   helper.withDb(mock, skipping);
@@ -30,7 +30,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       monitor: (await helper.load('monitor')).childMonitor('google'),
       estimator: await helper.load('estimator'),
       rootUrl: helper.rootUrl,
-      WorkerPoolError: helper.WorkerPoolError,
+      WorkerPoolError: WorkerPoolError,
       providerConfig: {
         project,
         instancePermissions: [],
@@ -321,9 +321,9 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       fake.compute.instances.failFakeInsertWith = fake.makeError('uhoh', 400);
 
       await provider.provision({workerPool, workerInfo});
-      const errors = await helper.WorkerPoolError.scan({}, {});
-      assert.equal(errors.entries.length, 1);
-      assert.equal(errors.entries[0].description, 'uhoh');
+      const errors = await WorkerPoolError.getWorkerPoolErrors(helper.db, {});
+      assert.equal(errors.rows.length, 1);
+      assert.equal(errors.rows[0].description, 'uhoh');
       const workers = await Worker.getWorkers(helper.db, {});
       assert.equal(workers.rows.length, 0); // nothing created
     });
@@ -337,8 +337,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
       await provider.provision({workerPool, workerInfo});
 
-      const errors = await helper.WorkerPoolError.scan({}, {});
-      assert.equal(errors.entries.length, 0);
+      const errors = await WorkerPoolError.getWorkerPoolErrors(helper.db, {});
+      assert.equal(errors.rows.length, 0);
 
       // called twice, retrying automatically
       assert.equal(fake.compute.instances.insertCalls.length, 2);
@@ -484,10 +484,10 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       let worker = await suiteMakeWorker({state: 'requested', providerData: {operation}});
       worker = await runCheckWorker(worker);
       assert.equal(worker.state, Worker.states.STOPPED);
-      const errors = await helper.WorkerPoolError.scan({}, {});
-      assert.equal(errors.entries.length, 1);
-      assert.equal(errors.entries[0].description, 'uhoh');
-      assert.equal(errors.entries[0].title, 'Operation Error');
+      const errors = await WorkerPoolError.getWorkerPoolErrors(helper.db, {});
+      assert.equal(errors.rows.length, 1);
+      assert.equal(errors.rows[0].description, 'uhoh');
+      assert.equal(errors.rows[0].title, 'Operation Error');
     });
 
     test('update expiration for a long-running worker', async function() {

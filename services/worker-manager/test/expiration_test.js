@@ -1,7 +1,7 @@
 const assert = require('assert');
 const helper = require('./helper');
 const testing = require('taskcluster-lib-testing');
-const {WorkerPool, Worker} = require('../src/data');
+const {WorkerPool, WorkerPoolError, Worker} = require('../src/data');
 const taskcluster = require('taskcluster-client');
 
 helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
@@ -93,13 +93,13 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     });
   });
 
-  suite('expireErrors', function() {
+  suite('expireWorkerPoolErrors', function() {
     const eid = taskcluster.slugid();
     const makeWPE = async values => {
       const now = new Date();
-      await helper.WorkerPoolError.create({
-        workerPoolId: 'pp/wt',
+      const e = await WorkerPoolError.fromApi({
         errorId: eid,
+        workerPoolId: 'pp/wt',
         reported: now,
         kind: 'uhoh',
         title: 'Uh.. Oh!',
@@ -107,30 +107,32 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         extra: {},
         ...values,
       });
+      await e.create(helper.db);
     };
 
     const checkWPE = async (workerPoolId = 'pp/wt', errorId = eid) => {
-      return await helper.WorkerPoolError.load({workerPoolId, errorId}, true);
+      return (await WorkerPoolError.getWorkerPoolErrors(helper.db, {errorId: eid, workerPoolId: 'pp/wt'})).rows;
     };
 
     setup(function() {
-      helper.load.remove('expireErrors');
+      helper.load.remove('expireWorkerPoolErrors');
     });
 
-    test('scan of empty set of errors', async function() {
-      await helper.load('expireErrors');
+    test('expire an empty set of errors', async function() {
+      await helper.load('expireWorkerPoolErrors');
+      assert.equal((await checkWPE()).length, 0);
     });
 
     test('active error', async function() {
-      await makeWPE({reported: taskcluster.fromNow('0 seconds')});
-      await helper.load('expireErrors');
-      assert(await checkWPE());
+      await makeWPE({reported: taskcluster.fromNow('10 hours')});
+      await helper.load('expireWorkerPoolErrors');
+      assert.equal((await checkWPE()).length, 1);
     });
 
     test('old error', async function() {
       await makeWPE({reported: taskcluster.fromNow('-10 hours')});
-      await helper.load('expireErrors');
-      assert.equal(await checkWPE(), undefined);
+      await helper.load('expireWorkerPoolErrors');
+      assert.equal((await checkWPE()).length, 0);
     });
   });
 });

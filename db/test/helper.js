@@ -232,7 +232,6 @@ exports.azureTableNames = [
   'Secrets',
   'AuthorizationCodesTable',
   'AccessTokenTable',
-  'SessionStorageTable',
   'WMWorkers',
   'WMWorkerPools',
   'WMWorkerPoolErrors',
@@ -264,6 +263,8 @@ exports.testEntityTable = ({
   // things to skip because they are not implemented; options are:
   //   * 'create-overwrite'
   //   * 'remove-ignore-if-not-exists'
+  //   * 'modifications'
+  //   * 'scanning'
   // Add yours here!
   notImplemented = [],
   // array of {condition, modifier, checker} where condition are suitable to
@@ -330,42 +331,46 @@ exports.testEntityTable = ({
         });
       }
 
-      for (let {condition, expectedSamples} of scanConditions) {
-        test(`scan ${JSON.stringify(condition)} (${expectedSamples.length} results)`, async function() {
-          const res = await Entity.scan(condition);
-          const expected = expectedSamples.map(n => samples[n]);
-          assert.deepEqual(res.entries.map(e => e._properties), expected);
-        });
-
-        if (expectedSamples.length > 1) {
-          test(`scan ${JSON.stringify(condition)} (${expectedSamples.length} results) with pagination`, async function() {
-            const batches = [];
-            const query = {limit: 1};
-            while (true) {
-              const res = await Entity.scan(condition, query);
-              batches.push(res.entries.map(e => e._properties));
-              if (res.continuation) {
-                query.continuation = res.continuation;
-              } else {
-                break;
-              }
-            }
-            const expected = expectedSamples.map(n => [samples[n]]);
-            assert.deepEqual(batches, expected);
+      if (!notImplemented.includes('scanning')) {
+        for (let {condition, expectedSamples} of scanConditions) {
+          test(`scan ${JSON.stringify(condition)} (${expectedSamples.length} results)`, async function() {
+            const res = await Entity.scan(condition);
+            const expected = expectedSamples.map(n => samples[n]);
+            assert.deepEqual(res.entries.map(e => e._properties), expected);
           });
+
+          if (expectedSamples.length > 1) {
+            test(`scan ${JSON.stringify(condition)} (${expectedSamples.length} results) with pagination`, async function() {
+              const batches = [];
+              const query = {limit: 1};
+              while (true) {
+                const res = await Entity.scan(condition, query);
+                batches.push(res.entries.map(e => e._properties));
+                if (res.continuation) {
+                  query.continuation = res.continuation;
+                } else {
+                  break;
+                }
+              }
+              const expected = expectedSamples.map(n => [samples[n]]);
+              assert.deepEqual(batches, expected);
+            });
+          }
         }
       }
 
-      for (let {condition, modifier, checker} of modifications) {
-        if (!Array.isArray(modifier)) {
-          modifier = [modifier];
+      if (!notImplemented.includes('modifications')) {
+        for (let {condition, modifier, checker} of modifications) {
+          if (!Array.isArray(modifier)) {
+            modifier = [modifier];
+          }
+          test(`modify ${JSON.stringify(condition)}`, async function() {
+            const ent = await Entity.load(condition);
+            await Promise.all(modifier.map(mod => ent.modify(mod)));
+            const ent3 = await Entity.load(condition);
+            checker(ent3);
+          });
         }
-        test(`modify ${JSON.stringify(condition)}`, async function() {
-          const ent = await Entity.load(condition);
-          await Promise.all(modifier.map(mod => ent.modify(mod)));
-          const ent3 = await Entity.load(condition);
-          checker(ent3);
-        });
       }
 
       if (!notImplemented.includes('remove')) {

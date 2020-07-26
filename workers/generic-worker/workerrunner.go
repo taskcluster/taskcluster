@@ -6,9 +6,9 @@ import (
 	"log"
 	"os"
 
-	tcclient "github.com/taskcluster/taskcluster/v34/clients/client-go"
-	"github.com/taskcluster/taskcluster/v34/internal/workerproto"
-	"github.com/taskcluster/taskcluster/v34/workers/generic-worker/graceful"
+	tcclient "github.com/taskcluster/taskcluster/v35/clients/client-go"
+	"github.com/taskcluster/taskcluster/v35/internal/workerproto"
+	"github.com/taskcluster/taskcluster/v35/workers/generic-worker/graceful"
 )
 
 var (
@@ -96,6 +96,7 @@ func startProtocol() {
 		config.UpdateCredentials(&creds)
 	})
 
+	WorkerRunnerProtocol.AddCapability("error-report")
 	WorkerRunnerProtocol.AddCapability("log")
 
 	WorkerRunnerProtocol.Start(true)

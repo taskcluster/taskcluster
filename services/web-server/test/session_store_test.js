@@ -3,19 +3,18 @@ const testing = require('taskcluster-lib-testing');
 const session = require('express-session');
 const { promisify } = require('util');
 const helper = require('./helper');
-const AzureSessionStore = require('../src/login/AzureSessionStore');
+const PostgresSessionStore = require('../src/login/PostgresSessionStore');
 
 helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   helper.withDb(mock, skipping);
-  helper.withEntities(mock, skipping);
   helper.withFakeAuth(mock, skipping);
   helper.withServer(mock, skipping);
   helper.resetTables(mock, skipping);
 
   const getStore = (shouldPromisify = true, options) => {
-    const SessionStore = AzureSessionStore({
+    const SessionStore = PostgresSessionStore({
       session,
-      SessionStorage: helper.SessionStorage,
+      db: helper.db,
       monitor: {
         log: {
           sessionStore: () => {},
@@ -124,7 +123,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
       await assert.rejects(
         store.touch('foo', { cookie: { maxAge: 300 } }),
-        /ResourceNotFound/,
+        /P0002/,
       );
     });
   });

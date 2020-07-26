@@ -13,11 +13,11 @@ defaults:
     maxPendingPoints: 300
   azure:
     accountId:        !env AZURE_ACCOUNT_ID
-    signingKey:       !env AZURE_SIGNING_KEY
     cryptoKey:        !env AZURE_CRYPTO_KEY
   postgres:
     readDbUrl:        !env READ_DB_URL
     writeDbUrl:       !env WRITE_DB_URL
+    dbCryptoKeys:     !env:json:optional DB_CRYPTO_KEYS
   taskcluster:
     rootUrl:          !env TASKCLUSTER_ROOT_URL
     credentials:
@@ -56,9 +56,13 @@ test:
     component:        hooks-tests
     scheduler:
       pollingDelay:   5000
+  postgres:
+    dbCryptoKeys:
+      - id: 'hooks'
+        algo: 'aes-256'
+        key: "aSdtIGJzdGFjayEgaGVsbG8gZnV0dXJlIHBlcnNvbgo="
   azure:
     accountId:        'pamplemousse'
-    signingKey:       'not a secret'
     cryptoKey:        'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA='
   server:
     port:             60401

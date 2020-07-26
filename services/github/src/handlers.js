@@ -513,8 +513,7 @@ async function statusHandler(message) {
     };
   }
 
-  // true means we'll get null if the record doesn't exist
-  let checkRun = await this.context.CheckRuns.load({taskGroupId, taskId}, true);
+  let [checkRun] = await this.context.db.fns.get_github_check_by_task_id(taskId);
 
   // Authenticating as installation.
   let instGithub = await this.context.github.getInstallationGithub(installation_id);
@@ -569,7 +568,7 @@ async function statusHandler(message) {
         ...taskState,
         owner: organization,
         repo: repository,
-        check_run_id: checkRun.checkRunId,
+        check_run_id: checkRun.check_run_id,
         output: {
           title: `${this.context.cfg.app.statusContext} (${event_type.split('.')[0]})`,
           summary: `${taskDefinition.metadata.description}`,
@@ -592,19 +591,12 @@ async function statusHandler(message) {
         details_url: taskUI(this.context.cfg.taskcluster.rootUrl, taskGroupId, taskId),
       });
 
-      await this.context.CheckRuns.create({
-        taskGroupId: taskGroupId,
-        taskId: taskId,
-        checkSuiteId: checkRun.data.check_suite.id.toString(),
-        checkRunId: checkRun.data.id.toString(),
-      });
-
-      await this.context.ChecksToTasks.create({
+      await this.context.db.fns.create_github_check(
         taskGroupId,
         taskId,
-        checkSuiteId: checkRun.data.check_suite.id.toString(),
-        checkRunId: checkRun.data.id.toString(),
-      });
+        checkRun.data.check_suite.id.toString(),
+        checkRun.data.id.toString(),
+      );
     }
   } catch (e) {
     e.owner = build.organization;
@@ -942,22 +934,12 @@ async function taskDefinedHandler(message) {
 
   debug(`Created check run for task ${taskId}, task group ${taskGroupId}. Now updating data base`);
 
-  await this.context.CheckRuns.create({
+  await this.context.db.fns.create_github_check(
     taskGroupId,
     taskId,
-    checkSuiteId: checkRun.data.check_suite.id.toString(),
-    checkRunId: checkRun.data.id.toString(),
-  }).catch(async (err) => {
-    await this.createExceptionComment({debug, instGithub, organization, repository, sha, error: err});
-    throw err;
-  });
-
-  await this.context.ChecksToTasks.create({
-    taskGroupId,
-    taskId,
-    checkSuiteId: checkRun.data.check_suite.id.toString(),
-    checkRunId: checkRun.data.id.toString(),
-  }).catch(async (err) => {
+    checkRun.data.check_suite.id.toString(),
+    checkRun.data.id.toString(),
+  ).catch(async (err) => {
     await this.createExceptionComment({debug, instGithub, organization, repository, sha, error: err});
     throw err;
   });

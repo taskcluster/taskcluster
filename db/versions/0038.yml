@@ -1,0 +1,142 @@
+version: 38
+migrationScript: 0038-migration.sql
+downgradeScript: 0038-downgrade.sql
+methods:
+  session_storage_table_entities_load:
+    description: See taskcluster-lib-entities
+    mode: read
+    serviceName: web_server
+    args: partition_key text, row_key text
+    returns: table (partition_key_out text, row_key_out text, value jsonb, version integer, etag uuid)
+    body: |-
+      begin
+      end
+  session_storage_table_entities_create:
+    serviceName: web_server
+    description: See taskcluster-lib-entities
+    mode: write
+    args: pk text, rk text, properties jsonb, overwrite boolean, version integer
+    returns: uuid
+    body: |-
+      begin
+        raise exception 'unsuccessful create' using errcode = 'P0004';
+      end
+  session_storage_table_entities_remove:
+    serviceName: web_server
+    description: See taskcluster-lib-entities
+    mode: write
+    args: partition_key text, row_key text
+    returns: table (etag uuid)
+    body: |-
+      begin
+        raise exception 'unsuccessful delete' using errcode = 'P0004';
+      end
+  session_storage_table_entities_modify:
+    serviceName: web_server
+    description: See taskcluster-lib-entities
+    mode: write
+    args: partition_key text, row_key text, properties jsonb, version integer, old_etag uuid
+    returns: table (etag uuid)
+    body: |-
+      begin
+        raise exception 'unsuccessful update' using errcode = 'P0004';
+      end
+  session_storage_table_entities_scan:
+    description: See taskcluster-lib-entities
+    mode: read
+    serviceName: web_server
+    args: pk text, rk text, condition text, size integer, page integer
+    returns: table (partition_key text, row_key text, value jsonb, version integer, etag uuid)
+    body: |-
+      begin
+      end
+  session_add:
+    description: |-
+      Set a session.
+
+      If no session exists with hashed session id `hashed_session_id_in`,
+      a new row is inserted, otherwise the existing session's data is replaced
+      with the data in `data_in`.
+    mode: write
+    serviceName: web_server
+    args: hashed_session_id_in text, encrypted_session_id_in jsonb, data_in jsonb, expires_in timestamptz
+    returns: void
+    body: |-
+      begin
+        insert into sessions(hashed_session_id, encrypted_session_id, data, expires)
+        values (
+          hashed_session_id_in,
+          encrypted_session_id_in,
+          data_in,
+          expires_in
+        ) on conflict (hashed_session_id) do
+        update
+        set (encrypted_session_id, data, expires) = (encrypted_session_id_in, data_in, expires_in)
+        where sessions.hashed_session_id = session_add.hashed_session_id_in;
+      end
+  session_load:
+    description: Returns the session for a given hashed session id.
+    mode: read
+    serviceName: web_server
+    args: hashed_session_id_in text
+    returns: table(hashed_session_id text, encrypted_session_id jsonb, data jsonb, expires timestamptz)
+    body: |-
+      begin
+        return query
+        select sessions.hashed_session_id, sessions.encrypted_session_id, sessions.data, sessions.expires from sessions
+        where sessions.hashed_session_id = hashed_session_id_in;
+      end
+  session_touch:
+    description: |-
+      Touch a given session given a hashed session id and session `data`.
+      If the hashed session id does not exist, then an error code `P0002` will be thrown.
+    mode: write
+    serviceName: web_server
+    args: hashed_session_id_in text, data_in jsonb, expires_in timestamptz
+    returns: void
+    body: |-
+      begin
+        perform 1 from sessions where sessions.hashed_session_id = hashed_session_id_in;
+
+        if found then
+         update sessions
+           set
+            data = data_in,
+            expires = expires_in
+           where sessions.hashed_session_id = hashed_session_id_in;
+          return;
+        else
+          raise exception 'no such row' using errcode = 'P0002';
+        end if;
+      end
+  session_remove:
+    description: Removes a web session
+    mode: write
+    serviceName: web_server
+    args: hashed_session_id_in text
+    returns: void
+    body: |-
+      begin
+        delete from sessions
+        where
+          sessions.hashed_session_id = hashed_session_id_in;
+      end
+  expire_sessions:
+    description: |-
+      Delete sessions that expire before the current time.
+      Returns a count of rows that have been deleted.
+    mode: write
+    serviceName: web_server
+    args: ''
+    returns: integer
+    body: |-
+      declare
+        count integer;
+      begin
+        delete from sessions where sessions.expires < now();
+        if found then
+          get diagnostics count = row_count;
+          return count;
+        end if;
+        return 0;
+      end

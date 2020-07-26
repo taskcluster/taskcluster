@@ -1,11 +1,10 @@
 const assert = require('assert');
 const events = require('events');
-const Entity = require('taskcluster-lib-entities');
-const data = require('./data');
 const debug = require('debug')('hooks:scheduler');
 const taskcluster = require('taskcluster-client');
 const nextDate = require('./nextdate');
 const taskcreator = require('./taskcreator');
+const { hookUtils } = require('./utils');
 
 /**
  * The Scheduler will periodically check for tasks in azure storage that are
@@ -18,7 +17,6 @@ class Scheduler extends events.EventEmitter {
    *
    * options:
    * {
-   *   Hook:          // instance of data.Hook
    *   taskcreator:   // instance of taskcreator.TaskCreator
    *   pollingDelay:  // number of ms to sleep between polling
    * }
@@ -26,17 +24,19 @@ class Scheduler extends events.EventEmitter {
   constructor(options) {
     super();
     assert(options, 'options must be given');
-    assert(options.Hook.prototype instanceof data.Hook,
-      'Expected data.Hook instance');
     assert(options.taskcreator instanceof taskcreator.TaskCreator,
       'An instance of taskcreator.TaskCreator is required');
+    assert(options.monitor, 'a monitor is required');
     assert(typeof options.pollingDelay === 'number',
       'Expected pollingDelay to be a number');
+    assert(options.db, 'db must be set');
     // Store options on this for use in event handlers
-    this.Hook = options.Hook;
     this.taskcreator = options.taskcreator;
     this.notify = options.notify;
     this.pollingDelay = options.pollingDelay;
+    this.db = options.db;
+    this.monitor = options.monitor;
+
     // Promise that the polling is done
     this.done = null;
 
@@ -68,12 +68,9 @@ class Scheduler extends events.EventEmitter {
 
   async poll() {
     // Get all hooks that have a scheduled date that is earlier than now
-    await this.Hook.scan({
-      nextScheduledDate: Entity.op.lessThan(new Date()),
-    }, {
-      limit: 100,
-      handler: (hook) => this.handleHook(hook),
-    });
+    const hooks = (await this.db.fns.get_hooks(null, new Date(), null, null)).map(hookUtils.fromDb);
+
+    await hooks.map(this.handleHook);
   }
 
   /** Polls for hooks that need to be scheduled and handles them in a loop */
@@ -91,42 +88,58 @@ class Scheduler extends events.EventEmitter {
 
   /** Handle spawning a new task for a given hook that needs to be scheduled */
   async handleHook(hook) {
-    debug('firing hook %s/%s with taskId %s', hook.hookGroupId, hook.hookId, hook.nextTaskId);
     try {
-      await this.taskcreator.fire(hook, {firedBy: 'schedule'}, {
-        taskId: hook.nextTaskId,
-        // use the next scheduled date as task.created, to ensure idempotency
-        created: hook.nextScheduledDate,
-        // don't retry, as a 5xx error will cause a retry on the next scheduler
-        // polling interval, and we do not want to get behind waiting for each
-        // createTask operation to time out
-        retry: false,
-      });
-    } catch (err) {
-      debug('Failed to handle hook: %s/%s, with err: %s', hook.hookGroupId, hook.hookId, err);
+      const nextTaskId = this.db.decrypt({ value: hook.nextTaskId }).toString('utf8');
+      debug('firing hook %s/%s with taskId %s', hook.hookGroupId, hook.hookId, nextTaskId);
+      try {
+        await this.taskcreator.fire(hook, {firedBy: 'schedule'}, {
+          taskId: nextTaskId,
+          // use the next scheduled date as task.created, to ensure idempotency
+          created: hook.nextScheduledDate,
+          // don't retry, as a 5xx error will cause a retry on the next scheduler
+          // polling interval, and we do not want to get behind waiting for each
+          // createTask operation to time out
+          retry: false,
+        });
+      } catch (err) {
+        debug('Failed to handle hook: %s/%s, with err: %s', hook.hookGroupId, hook.hookId, err);
 
-      // for 500's, pretend nothing happend and we'll try again on the next go-round.
-      if (err.statusCode >= 500) {
-        return;
+        // for 500's, pretend nothing happend and we'll try again on the next go-round.
+        if (err.statusCode >= 500) {
+          return;
+        }
+
+        // In the case of a 4xx error, retrying on the next scheduler loop is a
+        // waste of time, so consider the hook fired (and failed)
+        await this.sendFailureEmail(hook, err);
       }
 
-      // In the case of a 4xx error, retrying on the next scheduler loop is a
-      // waste of time, so consider the hook fired (and failed)
-      await this.sendFailureEmail(hook, err);
-    }
-
-    try {
-      let oldTaskId = hook.nextTaskId;
-      await hook.modify((hook) => {
+      try {
+        let oldTaskId = hook.nextTaskId;
         // only modify if another scheduler isn't racing with us
         if (hook.nextTaskId === oldTaskId) {
-          hook.nextTaskId = taskcluster.slugid();
-          hook.nextScheduledDate = nextDate(hook.schedule);
+          hook = hookUtils.fromDbRows(
+            await this.db.fns.update_hook(
+              hook.hookGroupId,
+              hook.hookId,
+              null,
+              null,
+              null,
+              null,
+              null,
+              this.db.encrypt({ value: Buffer.from(taskcluster.slugid(), 'utf8') }), /* encrypted_next_task_id */
+              nextDate(hook.schedule), /* next_scheduled_date */
+              null,
+            ),
+          );
         }
-      });
+      } catch (err) {
+        debug('Failed to update hook (will re-fire): %s/%s, with err: %s', hook.hookGroupId, hook.hookId, err);
+        return;
+      }
     } catch (err) {
-      debug('Failed to update hook (will re-fire): %s/%s, with err: %s', hook.hookGroupId, hook.hookId, err);
-      return;
+      // ensure that handleHook *never* throws an exception by logging and returning
+      this.monitor.reportError(err);
     }
   }
 
@@ -135,15 +148,25 @@ class Scheduler extends events.EventEmitter {
       return;
     }
 
-    let errJson;
     try {
-      errJson = JSON.stringify(err, null, 2);
-    } catch (e) {
-      errJson = `(error formatting JSON: ${e})`;
-    }
+      let errJson;
+      try {
+        errJson = JSON.stringify(err, null, 2);
+      } catch (e) {
+        errJson = `(error formatting JSON: ${e})`;
+      }
 
-    let email = this.createEmail(hook, err, errJson);
-    await this.notify.email(email);
+      let email = this.createEmail(hook, err, errJson);
+      await this.notify.email(email);
+    } catch (err) {
+      if (err.code === 'DenylistedAddress') {
+        this.monitor.warning(`Hook failure email rejected: ${hook.metadata.owner} is denylisted`);
+        return;
+      }
+
+      // report the error and pretend we sent the email
+      this.monitor.reportError(err);
+    }
   }
 
   createEmail(hook, err, errJson) {

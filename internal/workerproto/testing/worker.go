@@ -3,7 +3,7 @@ package testing
 import (
 	"sync"
 
-	"github.com/taskcluster/taskcluster/v34/internal/workerproto"
+	"github.com/taskcluster/taskcluster/v35/internal/workerproto"
 )
 
 // FakeWorker implements a fake worker, in terms of the protocol at least

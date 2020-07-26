@@ -1,6 +1,5 @@
 const assert = require('assert');
 const _ = require('lodash');
-const Entity = require('taskcluster-lib-entities');
 const {UNIQUE_VIOLATION} = require('taskcluster-lib-postgres');
 const taskcluster = require('taskcluster-client');
 const {MAX_MODIFY_ATTEMPTS} = require('./util');
@@ -134,56 +133,147 @@ class WorkerPool {
   }
 }
 
-const WorkerPoolError = Entity.configure({
-  version: 1,
-  partitionKey: Entity.keys.StringKey('workerPoolId'),
-  rowKey: Entity.keys.StringKey('errorId'),
-  properties: {
-    // The worker pool this maps to.
-    workerPoolId: Entity.types.String,
+class WorkerPoolError {
+  // (private constructor)
+  constructor(props) {
+    Object.assign(this, props);
+  }
 
-    // An arbitrary id for this error
-    errorId: Entity.types.SlugId,
+  // Create a single instance from a DB row
+  static fromDb(row) {
+    return new WorkerPoolError({
+      errorId: row.error_id,
+      workerPoolId: row.worker_pool_id,
+      reported: row.reported,
+      kind: row.kind,
+      title: row.title,
+      description: row.description,
+      extra: row.extra,
+    });
+  }
 
-    // The datetime this error occured
-    reported: Entity.types.Date,
+  // Create a single instance, or undefined, from a set of rows containing zero
+  // or one elements.  This matches the semantics of get_worker_pool_error.
+  static fromDbRows(rows) {
+    if (rows.length === 1) {
+      return WorkerPool.fromDb(rows[0]);
+    }
+  }
 
-    // The sort of error this is. Can be used by UIs to differentiate
-    kind: Entity.types.String,
+  // Create an instance from API arguments, with default values applied.
+  static fromApi(input) {
+    const now = new Date();
+    return new WorkerPoolError({
+      extra: {},
+      reported: now,
+      ...input,
+    });
+  }
 
-    // A human readable name for this error
-    title: Entity.types.String,
+  // Get a worker pool error from the DB, or undefined if it does not exist.
+  static async get(db, errorId) {
+    return WorkerPoolError.fromDbRows(await db.fns.get_worker_pool_error(errorId));
+  }
 
-    // A human readable description of this error and what can be done to fix it
-    description: Entity.types.String,
-
-    // Anything else that a reporter may want to add in a structured way
-    extra: Entity.types.JSON,
-  },
-});
-
-WorkerPoolError.prototype.serializable = function() {
-  return {
-    workerPoolId: this.workerPoolId,
-    errorId: this.errorId,
-    reported: this.reported.toJSON(),
-    kind: this.kind,
-    title: this.title,
-    description: this.description,
-    extra: this.extra,
-  };
-};
-
-WorkerPoolError.expire = async function(threshold) {
-  await this.scan({
-    reported: Entity.op.lessThan(threshold),
-  }, {
-    limit: 500,
-    handler: async item => {
-      await item.remove();
+  // Call db.get_worker_pool_errors_for_worker_pool.
+  // You can use this in two ways: with a handler or without a handler.
+  // In the latter case you'll get a list of up to 1000 entries and a
+  // continuation token.
+  // The response will be of the form { rows, continationToken }.
+  // If there are no workers to show, the response will have the
+  // `rows` field set to an empty array.
+  //
+  // If a handler is supplied, then it will invoke the handler
+  // on every item of the scan.
+  static async getWorkerPoolErrors(
+    db,
+    {
+      errorId,
+      workerPoolId,
     },
-  });
-};
+    {
+      query,
+    } = {},
+  ) {
+    const fetchResults = async (query) => {
+      const {continuationToken, rows} = await paginateResults({
+        query,
+        fetch: (size, offset) => db.fns.get_worker_pool_errors_for_worker_pool(
+          errorId || null,
+          workerPoolId || null,
+          size,
+          offset,
+        ),
+      });
+
+      const entries = rows.map(WorkerPoolError.fromDb);
+
+      return { rows: entries, continuationToken: continuationToken };
+    };
+
+    // Fetch results
+    const continuation = query ? query : {};
+    return await fetchResults(continuation);
+  }
+
+  // Expire worker pool errors reported before the specified time
+  static async expire({db, monitor}) {
+    return (await (db.fns.expire_worker_pool_errors(new Date())))[0].expire_worker_pool_errors;
+  }
+
+  // Call db.create_worker_pool_error with the content of this instance.  This
+  // implements the usual idempotency checks and returns an error with code
+  // UNIQUE_VIOLATION when those checks fail.
+  async create(db) {
+    try {
+      await db.fns.create_worker_pool_error(
+        this.errorId,
+        this.workerPoolId,
+        this.reported,
+        this.kind,
+        this.title,
+        this.description,
+        this.extra);
+    } catch (err) {
+      if (err.code !== UNIQUE_VIOLATION) {
+        throw err;
+      }
+      const existing = WorkerPoolError.fromDbRows(
+        await db.fns.get_worker_pool_error(this.errorId));
+
+      if (!this.equals(existing)) {
+        // new worker pool error does not match, so this is a "real" conflict
+        throw err;
+      }
+    }
+  }
+
+  // Create a serializable representation of this worker pool error suitable for response
+  // from an API method.
+  serializable() {
+    return {
+      errorId: this.errorId,
+      workerPoolId: this.workerPoolId,
+      reported: this.reported.toJSON(),
+      kind: this.kind,
+      title: this.title,
+      description: this.description,
+      extra: this.extra,
+    };
+  }
+
+  // Compare "important" fields to another worker pool error (used to check idempotency)
+  equals(other) {
+    const fields = [
+      'errorId',
+      'workerPoolId',
+      'kind',
+      'title',
+      'description',
+    ];
+    return _.isEqual(_.pick(other, fields), _.pick(this, fields));
+  }
+}
 
 class Worker {
   // (private constructor)

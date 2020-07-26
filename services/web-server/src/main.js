@@ -22,9 +22,6 @@ const createSubscriptionServer = require('./servers/createSubscriptionServer');
 const resolvers = require('./resolvers');
 const typeDefs = require('./graphql');
 const PulseEngine = require('./PulseEngine');
-const AuthorizationCode = require('./data/AuthorizationCode');
-const AccessToken = require('./data/AccessToken');
-const SessionStorage = require('./data/SessionStorage');
 const scanner = require('./login/scanner');
 
 require('./monitor');
@@ -118,9 +115,9 @@ const load = loader(
     },
 
     app: {
-      requires: ['cfg', 'strategies', 'AuthorizationCode', 'AccessToken', 'auth', 'monitor', 'SessionStorage'],
-      setup: ({ cfg, strategies, AuthorizationCode, AccessToken, auth, monitor, SessionStorage }) =>
-        createApp({ cfg, strategies, AuthorizationCode, AccessToken, auth, monitor, SessionStorage }),
+      requires: ['cfg', 'strategies', 'auth', 'monitor', 'db'],
+      setup: ({ cfg, strategies, auth, monitor, db }) =>
+        createApp({ cfg, strategies, auth, monitor, db }),
     },
 
     httpServer: {
@@ -192,80 +189,44 @@ const load = loader(
         serviceName: 'web_server',
         monitor: monitor.childMonitor('db'),
         statementTimeout: process === 'server' ? 30000 : 0,
-      }),
-    },
-
-    AuthorizationCode: {
-      requires: ['cfg', 'monitor', 'db'],
-      setup: ({cfg, monitor, db}) => AuthorizationCode.setup({
-        serviceName: 'web_server',
-        db,
-        tableName: cfg.app.authorizationCodesTableName,
-        monitor: monitor.childMonitor('table.authorizationCodes'),
-        signingKey: cfg.azure.signingKey,
-      }),
-    },
-
-    AccessToken: {
-      requires: ['cfg', 'monitor', 'db'],
-      setup: ({cfg, monitor, db}) => AccessToken.setup({
-        db,
-        serviceName: 'web_server',
-        tableName: cfg.app.accessTokenTableName,
-        monitor: monitor.childMonitor('table.accessTokenTable'),
-        signingKey: cfg.azure.signingKey,
-        cryptoKey: cfg.azure.cryptoKey,
-      }),
-    },
-
-    SessionStorage: {
-      requires: ['cfg', 'monitor', 'db'],
-      setup: ({cfg, monitor, db}) => SessionStorage.setup({
-        db,
-        serviceName: 'web_server',
-        tableName: cfg.app.sessionStorageTableName,
-        monitor: monitor.childMonitor('table.sessionStorageTable'),
-        signingKey: cfg.azure.signingKey,
-        cryptoKey: cfg.azure.cryptoKey,
+        dbCryptoKeys: cfg.postgres.dbCryptoKeys,
       }),
     },
 
     'cleanup-expire-auth-codes': {
-      requires: ['cfg', 'AuthorizationCode', 'monitor'],
-      setup: ({cfg, AuthorizationCode, monitor}) => {
+      requires: ['cfg', 'db', 'monitor'],
+      setup: ({cfg, db, monitor}) => {
         return monitor.oneShot('cleanup-expire-authorization-codes', async () => {
           const delay = cfg.app.authorizationCodeExpirationDelay;
           const now = taskcluster.fromNow(delay);
 
           debug('Expiring authorization codes');
-          const count = await AuthorizationCode.expire(now);
+          const count = (await db.fns.expire_authorization_codes(now))[0].expire_authorization_codes;
           debug('Expired ' + count + ' authorization codes');
         });
       },
     },
 
     'cleanup-expire-access-tokens': {
-      requires: ['cfg', 'AccessToken', 'monitor'],
-      setup: ({cfg, AccessToken, monitor}) => {
+      requires: ['cfg', 'db', 'monitor'],
+      setup: ({cfg, db, monitor}) => {
         return monitor.oneShot('cleanup-expire-access-tokens', async () => {
           const delay = cfg.app.authorizationCodeExpirationDelay;
           const now = taskcluster.fromNow(delay);
 
           debug('Expiring access tokens');
-          const count = await AccessToken.expire(now);
+          const count = (await db.fns.expire_access_tokens(now))[0].expire_access_tokens;
           debug('Expired ' + count + ' access tokens');
         });
       },
     },
 
     'cleanup-session-storage': {
-      requires: ['cfg', 'SessionStorage', 'monitor'],
-      setup: ({cfg, SessionStorage, monitor}) => {
+      requires: ['cfg', 'monitor', 'db'],
+      setup: ({cfg, monitor, db}) => {
         return monitor.oneShot('cleanup-expire-session-storage', async () => {
-          const now = new Date();
-
           debug('Expiring session storage entries');
-          const count = await AuthorizationCode.expire(now);
+          const count = (await db.fns.expire_sessions())[0].expire_sessions;
           debug('Expired ' + count + ' session storage entries');
         });
       },

@@ -1,0 +1,143 @@
+version: 36
+migrationScript: 0036-migration.sql
+downgradeScript: 0036-downgrade.sql
+methods:
+  taskcluster_integration_owners_entities_load:
+    description: See taskcluster-lib-entities
+    mode: read
+    serviceName: github
+    args: partition_key text, row_key text
+    returns: table (partition_key_out text, row_key_out text, value jsonb, version integer, etag uuid)
+    body: |-
+      begin
+       return query
+       select
+          taskcluster_integration_owners_entities_load.partition_key,
+          'someConstant' as row_key,
+          jsonb_build_object(
+            'PartitionKey', taskcluster_integration_owners_entities_load.partition_key,
+            'RowKey', 'someConstant',
+            'installationId', installation_id,
+            'owner', owner) as value,
+          1 as version,
+          public.gen_random_uuid() as etag -- we just return this for api compatibility
+      from github_integrations
+      where
+        github_integrations.owner = decode_string_key(taskcluster_integration_owners_entities_load.partition_key);
+      end
+  taskcluster_integration_owners_entities_create:
+    description: See taskcluster-lib-entities
+    serviceName: github
+    mode: write
+    args: pk text, rk text, properties jsonb, overwrite boolean, version integer
+    returns: uuid
+    body: |-
+      begin
+        if not overwrite then
+          raise exception 'must allow overwrite';
+        end if;
+        insert into github_integrations (owner, installation_id) values (
+          (properties ->> 'owner')::text,
+          (properties ->> 'installationId')::integer )
+        on conflict (owner) do update set installation_id = (properties ->> 'installationId')::integer;
+        return public.gen_random_uuid(); -- we don't store this or use it so just return anything
+      end
+  taskcluster_integration_owners_entities_scan:
+    description: See taskcluster-lib-entities
+    mode: read
+    serviceName: github
+    args: pk text, rk text, condition text, size integer, page integer
+    returns: table (partition_key text, row_key text, value jsonb, version integer, etag uuid)
+    body: |-
+      declare
+      begin
+        if not condition is null then
+          raise exception 'condition not supported';
+        end if;
+        if not partition_key is null then
+          raise exception 'can only scan entire table';
+        end if;
+        return query
+          select
+            encode_string_key(owner),
+            'someConstant' as row_key,
+            jsonb_build_object(
+              'PartitionKey', encode_string_key(owner),
+              'RowKey', 'someConstant',
+              'installationId', installation_id,
+              'owner', owner) as value,
+            1 as version,
+            public.gen_random_uuid() as etag
+          from github_integrations
+          order by owner
+          limit case
+            when (size is not null and size > 0) then size + 1
+            else null
+          end
+          offset case
+            when (page is not null and page > 0) then page
+            else 0
+          end;
+      end
+  taskcluster_integration_owners_entities_remove:
+    serviceName: github
+    description: See taskcluster-lib-entities
+    mode: write
+    args: partition_key text, row_key text
+    returns: table (etag uuid)
+    body: |-
+      begin
+        delete
+        from github_integrations
+        where
+           github_integrations.owner = decode_string_key(partition_key);
+        -- tc-gh does not care if the row existed
+        return query select gen_random_uuid() as etag;
+      end
+  taskcluster_integration_owners_entities_modify:
+    serviceName: github
+    description: See taskcluster-lib-entities
+    mode: write
+    args: partition_key text, row_key text, properties jsonb, version integer, old_etag uuid
+    returns: table (etag uuid)
+    body: |-
+      begin
+          raise exception 'github integrations are immutable';
+      end
+  upsert_github_integration:
+    serviceName: github
+    description: Create a single integration. 
+    mode: write
+    args: owner_in text, installation_id_in integer
+    returns: void
+    body: |-
+      begin
+        insert into github_integrations (owner, installation_id) values (owner_in, installation_id_in)
+        on conflict (owner) do update set installation_id = installation_id_in;
+      end
+  get_github_integration:
+    serviceName: github
+    description: Get a single integration by owner.
+    mode: read
+    args: owner_in text
+    returns: table (owner text, installation_id integer)
+    body: |-
+      begin
+        return query select github_integrations.owner, github_integrations.installation_id from github_integrations where github_integrations.owner = owner_in;
+      end
+  get_github_integrations:
+    serviceName: github
+    description: Get a list of integrations.
+    mode: read
+    args: page_size_in integer, page_offset_in integer
+    returns: table (owner text, installation_id integer)
+    body: |-
+      begin
+        return query select
+          github_integrations.owner,
+          github_integrations.installation_id
+        from github_integrations
+        order by github_integrations.installation_id
+        limit get_page_limit(page_size_in)
+        offset get_page_offset(page_offset_in);
+      end

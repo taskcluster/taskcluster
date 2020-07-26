@@ -18,7 +18,7 @@ import (
 	"github.com/cenkalti/backoff/v3"
 	"github.com/stretchr/testify/require"
 	"github.com/taskcluster/httpbackoff/v3"
-	"github.com/taskcluster/taskcluster/v34/internal/jsontest"
+	"github.com/taskcluster/taskcluster/v35/internal/jsontest"
 )
 
 func quickBackoff() func() {

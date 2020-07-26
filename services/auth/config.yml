@@ -80,9 +80,6 @@ defaults:
     # Azure table storage account key
     accessKey:               !env AZURE_ACCOUNT_KEY
 
-    # Key for signing in base.Entity (sufficiently random string required)
-    signingKey:              !env AZURE_SIGNING_KEY
-
     # Key for data encryption in base.Entity (32 random bytes as base64)
     cryptoKey:               !env AZURE_CRYPTO_KEY
 
@@ -143,7 +140,6 @@ test:
     websocktunnel:
       secret:                   'test-secret'
   azure:
-    signingKey:          not-a-secret-so-you-cant-guess-it
     cryptoKey:           AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=
   server:
     forceSSL:                 false

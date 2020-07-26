@@ -1,3 +1,4 @@
+const _ = require('lodash');
 const {Pool} = require('pg');
 const pg = require('pg');
 const crypto = require('crypto');
@@ -6,6 +7,7 @@ const Keyring = require('./Keyring');
 const assert = require('assert').strict;
 const {READ, WRITE, DUPLICATE_OBJECT, UNDEFINED_TABLE} = require('./constants');
 const {MonitorManager} = require('taskcluster-lib-monitor');
+const named = require('yesql').pg;
 
 // Postgres extensions to "create".
 const EXTENSIONS = [
@@ -97,11 +99,21 @@ class Database {
 
         this._logDbFunctionCall({name: method.name});
 
-        const placeholders = [...new Array(args.length).keys()].map(i => `$${i + 1}`).join(',');
+        // For now we only support named arguments that end with "_in" to make sure
+        // functions that take a single object argument are not incorrectly labeled as named arguments.
+        const hasNamedArguments = args.length === 1 && _.isPlainObject(args[0]) && Object.keys(args[0]).every(key => key.endsWith('_in'));
         const res = await this._withClient(method.mode, async client => {
           await client.query(method.mode === READ ? 'begin read only' : 'begin read write');
           try {
-            let res = await client.query(`select * from "${method.name}"(${placeholders})`, args);
+            let res;
+            if (hasNamedArguments) {
+              const placeholders = Object.keys(args[0]).map(arg => `:${arg}`).join(',');
+              const { text, values } = named(`select * from "${method.name}"(${placeholders})`, { useNullForMissing: true })(args[0]);
+              res = await client.query(text, values);
+            } else {
+              const placeholders = [...new Array(args.length).keys()].map(i => `$${i + 1}`).join(',');
+              res = await client.query(`select * from "${method.name}"(${placeholders})`, args);
+            }
             await client.query('commit');
             return res;
           } catch (err) {
@@ -387,15 +399,20 @@ class Database {
 
   async _checkDbSettings() {
     await this._withClient('admin', async client => {
-      const res = await client.query(`
-        SELECT datcollate AS collation
-        FROM pg_database 
-        WHERE datname = current_database()`);
-      const collation = res.rows[0].collation;
-      if (collation !== 'en_US.utf8' && collation !== 'en_US.UTF8') {
-        throw new Error(
-          `Postgres database must have default collation en_US.utf8 or en_US.UTF8; this database is using ${collation}.`,
-        );
+      // check the DB collation by its behavior, rather than by name, as names seem to vary.
+      for (const pair of ['aA', 'ab', 'Ab', 'aB', 'AB', '0a', '0A']) {
+        const res = await client.query(`select 1 where $1 >= $2`, [pair[0], pair[1]]);
+        if (res.rows.length > 0) {
+          const res = await client.query(`
+            SELECT datcollate AS collation
+            FROM pg_database 
+            WHERE datname = current_database()`);
+          const collation = res.rows[0].collation;
+          throw new Error([
+            'Postgres database must have default collation en_US.utf8 (and in particular be case-insensitive for ASCII letters);',
+            `this database is using ${collation}, and sorts '${pair[0]}' >= '${pair[1]}'.`,
+          ].join(' '));
+        }
       }
     });
   }

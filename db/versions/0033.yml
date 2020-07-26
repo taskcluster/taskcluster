@@ -1,0 +1,273 @@
+version: 33
+migrationScript: 0033-migration.sql
+downgradeScript: 0033-downgrade.sql
+methods:
+  queues_entities_load:
+    description: See taskcluster-lib-entities
+    mode: read
+    serviceName: hooks
+    args: partition_key text, row_key text
+    returns: table (partition_key_out text, row_key_out text, value jsonb, version integer, etag uuid)
+    body: |-
+      begin
+        return query
+        select
+          queues_entities_load.partition_key,
+          queues_entities_load.row_key,
+          entity_buf_encode(
+            jsonb_build_object(
+              'PartitionKey', encode_string_key(hook_group_id),
+              'RowKey', encode_string_key(hook_id),
+              'hookGroupId', hook_group_id,
+              'hookId', hook_id,
+              'queueName', queue_name),
+            'bindings', bindings::text) as value,
+          1 as version,
+          hooks_queues.etag as etag
+        from hooks_queues
+        where
+          hooks_queues.hook_group_id = decode_string_key(queues_entities_load.partition_key) and hooks_queues.hook_id = decode_string_key(queues_entities_load.row_key);
+      end
+  queues_entities_create:
+    serviceName: hooks
+    description: See taskcluster-lib-entities
+    mode: write
+    args: pk text, rk text, properties jsonb, overwrite boolean, version integer
+    returns: uuid
+    body: |-
+      declare
+        new_row hooks_queues%ROWTYPE;
+      begin
+        select
+          (properties ->> 'hookGroupId')::text,
+          (properties ->> 'hookId')::text,
+          (properties ->> 'queueName')::text,
+          entity_buf_decode(properties, 'bindings')::jsonb,
+          public.gen_random_uuid()
+        into new_row;
+        if overwrite then
+          raise exception 'overwrite not implemented';
+        else
+          execute 'insert into hooks_queues select $1.*' using new_row;
+        end if;
+        return new_row.etag;
+      end
+  queues_entities_remove:
+    serviceName: hooks
+    description: See taskcluster-lib-entities
+    mode: write
+    args: partition_key text, row_key text
+    returns: table (etag uuid)
+    body: |-
+      begin
+        return query delete from hooks_queues
+        where
+          hooks_queues.hook_group_id = decode_string_key(queues_entities_remove.partition_key) and
+          hooks_queues.hook_id = decode_string_key(queues_entities_remove.row_key)
+        returning hooks_queues.etag;
+      end
+  queues_entities_modify:
+    serviceName: hooks
+    description: See taskcluster-lib-entities
+    mode: write
+    args: partition_key text, row_key text, properties jsonb, version integer, old_etag uuid
+    returns: table (etag uuid)
+    body: |-
+      declare
+        new_row hooks_queues%ROWTYPE;
+      begin
+        select
+          (properties ->> 'hookGroupId')::text,
+          (properties ->> 'hookId')::text,
+          (properties ->> 'queueName')::text,
+          entity_buf_decode(properties, 'bindings')::jsonb,
+          public.gen_random_uuid() as etag
+        into new_row;
+        update hooks_queues
+        set (
+          queue_name,
+          bindings,
+          etag
+        ) = (
+          new_row.queue_name,
+          new_row.bindings,
+          new_row.etag
+        )
+        where
+          hooks_queues.hook_group_id = decode_string_key(queues_entities_modify.partition_key) and
+          hooks_queues.hook_id = decode_string_key(queues_entities_modify.row_key) and
+          hooks_queues.etag = queues_entities_modify.old_etag;
+        if found then
+          return query select new_row.etag;
+          return;
+        end if;
+        perform hooks_queues.etag from hooks_queues
+        where
+          hooks_queues.hook_group_id = decode_string_key(queues_entities_modify.partition_key) and
+          hooks_queues.hook_id = decode_string_key(queues_entities_modify.row_key);
+        if found then
+          raise exception 'unsuccessful update' using errcode = 'P0004';
+        else
+          raise exception 'no such row' using errcode = 'P0002';
+        end if;
+      end
+  queues_entities_scan:
+    description: See taskcluster-lib-entities
+    mode: read
+    serviceName: hooks
+    args: pk text, rk text, condition text, size integer, page integer
+    returns: table (partition_key text, row_key text, value jsonb, version integer, etag uuid)
+    body: |-
+      declare
+        cond text[];
+        exp_cond_operator text;
+        exp_cond_operand timestamptz;
+        partition_key_var text;
+        row_key_var text;
+      begin
+        if not condition is null then
+          cond := regexp_split_to_array(condition, '\s+');
+          exp_cond_operator := cond[4];
+          exp_cond_operand := cond[5] :: timestamptz;
+
+          return query select
+            encode_string_key(hook_group_id) as partition_key,
+            encode_string_key(hook_id) as row_key,
+            entity_buf_encode(
+              jsonb_build_object(
+                'PartitionKey', encode_string_key(hook_group_id),
+                'RowKey', encode_string_key(hook_id),
+                'hookGroupId', hook_group_id,
+                'hookId', hook_id,
+                'queueName', queue_name),
+              'bindings', bindings::text) as value,
+            1 as version,
+            hooks_queues.etag as etag from hooks_queues
+          where
+            (queues_entities_scan.pk is null or decode_string_key(queues_entities_scan.pk) = hook_group_id) and
+            (queues_entities_scan.rk is null or decode_string_key(queues_entities_scan.rk) = hook_id) and
+            case
+              when exp_cond_operator = '=' then expires = exp_cond_operand
+              when exp_cond_operator = '<' then expires < exp_cond_operand
+              when exp_cond_operator = '<=' then expires <= exp_cond_operand
+              when exp_cond_operator = '>' then expires > exp_cond_operand
+              when exp_cond_operator = '>=' then expires >= exp_cond_operand
+              else expires <> exp_cond_operand
+            end
+          order by hooks_queues.hook_group_id, hooks_queues.hook_id
+          limit case
+            when (size is not null and size > 0) then size + 1
+            else null
+          end
+          offset case
+            when (page is not null and page > 0) then page
+            else 0
+          end;
+        else
+          return query select
+            encode_string_key(hook_group_id) as partition_key,
+            encode_string_key(hook_id) as row_key,
+            entity_buf_encode(
+              jsonb_build_object(
+                'PartitionKey', encode_string_key(hook_group_id),
+                'RowKey', encode_string_key(hook_id),
+                'hookGroupId', hook_group_id,
+                'hookId', hook_id,
+                'queueName', queue_name),
+              'bindings', bindings::text) as value,
+            1 as version,
+            hooks_queues.etag as etag from hooks_queues
+          where
+            (queues_entities_scan.pk is null or decode_string_key(queues_entities_scan.pk) = hook_group_id) and
+            (queues_entities_scan.rk is null or decode_string_key(queues_entities_scan.rk) = hook_id)
+          order by hooks_queues.hook_group_id, hooks_queues.hook_id
+          limit case
+            when (size is not null and size > 0) then size + 1
+            else null
+          end
+          offset case
+            when (size is not null and size > 0 and page is not null and page > 0) then page
+            else 0
+          end;
+        end if;
+      end
+  create_hooks_queue:
+    description: |-
+      Create a new hooks queue.  Raises UNIQUE_VIOLATION if the hook already exists.
+    mode: write
+    serviceName: hooks
+    args: hook_group_id_in text, hook_id_in text, queue_name_in text, bindings_in jsonb
+    returns: uuid
+    body: |-
+      declare
+        new_etag uuid := public.gen_random_uuid();
+      begin
+        insert
+          into hooks_queues (hook_group_id, hook_id, queue_name, bindings, etag)
+          values (hook_group_id_in, hook_id_in, queue_name_in, bindings_in, new_etag);
+
+          return new_etag;
+      end
+  delete_hooks_queue:
+    description: |-
+      Delete a hooks queue.
+    mode: write
+    serviceName: hooks
+    args: hook_group_id_in text, hook_id_in text
+    returns: void
+    body: |-
+      begin
+        delete from hooks_queues
+        where
+          hooks_queues.hook_group_id = hook_group_id_in and
+          hooks_queues.hook_id = hook_id_in;
+      end
+  get_hooks_queues:
+    description: |-
+      Get hooks queues ordered by `hook_group_id` and `hook_id`.
+      If the pagination arguments are both NULL, all rows are returned.
+      Otherwise, page_size rows are returned at offset page_offset.
+    mode: read
+    serviceName: hooks
+    args: page_size_in integer, page_offset_in integer
+    returns: table(hook_group_id text, hook_id text, queue_name text, bindings jsonb, etag uuid)
+    body: |-
+      begin
+        return query
+        select
+          hooks_queues.hook_group_id,
+          hooks_queues.hook_id,
+          hooks_queues.queue_name,
+          hooks_queues.bindings,
+          hooks_queues.etag
+        from hooks_queues
+        order by hook_group_id, hook_id
+        limit get_page_limit(page_size_in)
+        offset get_page_offset(page_offset_in);
+      end
+  update_hooks_queue_bindings:
+    description: |-
+      Update bindings of a hooks queue. If no such queue exists,
+      the return value is an empty set.
+    mode: write
+    serviceName: hooks
+    args: hook_group_id_in text, hook_id_in text, bindings_in jsonb
+    returns: table(hook_group_id text, hook_id text, queue_name text, bindings jsonb, etag uuid)
+    body: |-
+      declare
+        new_etag uuid := public.gen_random_uuid();
+      begin
+        return query update hooks_queues
+        set
+          bindings = bindings_in,
+          etag = new_etag
+        where
+          hooks_queues.hook_group_id = hook_group_id_in and
+          hooks_queues.hook_id = hook_id_in
+        returning
+          hooks_queues.hook_group_id,
+          hooks_queues.hook_id,
+          hooks_queues.queue_name,
+          hooks_queues.bindings,
+          hooks_queues.etag;
+      end

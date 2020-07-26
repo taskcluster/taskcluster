@@ -5,7 +5,6 @@ const testing = require('taskcluster-lib-testing');
 
 helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   helper.withDb(mock, skipping);
-  helper.withEntities(mock, skipping);
   helper.resetTables(mock, skipping);
 
   const makeSuite = (allowedCORSOrigins, requestOrigin, responseOrigin) => {

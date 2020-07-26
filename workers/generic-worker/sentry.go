@@ -2,8 +2,6 @@ package main
 
 import (
 	"log"
-	"runtime"
-	"strconv"
 
 	raven "github.com/getsentry/raven-go"
 )
@@ -28,20 +26,6 @@ func ReportCrashToSentry(r interface{}) {
 		func() {
 			panic(r)
 		},
-		map[string]string{
-			"GOARCH":          runtime.GOARCH,
-			"GOOS":            runtime.GOOS,
-			"cleanUpTaskDirs": strconv.FormatBool(config.CleanUpTaskDirs),
-			"deploymentId":    config.DeploymentID,
-			"engine":          engine,
-			"gwRevision":      revision,
-			"gwVersion":       version,
-			"instanceType":    config.InstanceType,
-			"provisionerId":   config.ProvisionerID,
-			"rootURL":         config.RootURL,
-			"workerGroup":     config.WorkerGroup,
-			"workerId":        config.WorkerID,
-			"workerType":      config.WorkerType,
-		},
+		debugInfo,
 	)
 }

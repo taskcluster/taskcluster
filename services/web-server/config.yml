@@ -52,6 +52,7 @@ defaults:
   postgres:
     readDbUrl: !env READ_DB_URL
     writeDbUrl: !env WRITE_DB_URL
+    dbCryptoKeys: !env:json:optional DB_CRYPTO_KEYS
 
   # Pulse credentials
   pulse:
@@ -116,6 +117,12 @@ test:
   azure:
     signingKey: 'REALULTIMATEPOWER.NET'
     cryptoKey: 'CNcj2aOozdo7Pn+HEkAIixwninIwKnbYc6JPS9mNxZk='
+
+  postgres:
+    dbCryptoKeys:
+      - id: 'web_server'
+        algo: 'aes-256'
+        key: "aSdtIGJzdGFjayEgaGVsbG8gZnV0dXJlIHBlcnNvbgo="
 
   login:
     strategies: {test: true}

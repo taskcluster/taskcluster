@@ -23,18 +23,6 @@ roles:
   description: text not null
   last_modified: timestamp with time zone not null
   etag: uuid not null
-taskcluster_check_runs_entities:
-  partition_key: text not null
-  row_key: text not null
-  value: jsonb not null
-  version: integer not null
-  etag: uuid
-taskcluster_checks_to_tasks_entities:
-  partition_key: text not null
-  row_key: text not null
-  value: jsonb not null
-  version: integer not null
-  etag: uuid
 github_builds:
   organization: text not null
   repository: text not null
@@ -43,22 +31,30 @@ github_builds:
   state: text not null
   created: timestamp with time zone not null
   updated: timestamp with time zone not null
-  installation_id: integer not null 
-  event_type: text not null 
-  event_id: text not null 
+  installation_id: integer not null
+  event_type: text not null
+  event_id: text not null
   etag: uuid not null
-taskcluster_integration_owners_entities:
-  partition_key: text not null
-  row_key: text not null
-  value: jsonb not null
-  version: integer not null
-  etag: uuid
-hooks_entities:
-  partition_key: text not null
-  row_key: text not null
-  value: jsonb not null
-  version: integer not null
-  etag: uuid
+github_integrations:
+  installation_id: integer not null
+  owner: text not null
+github_checks:
+  task_group_id: text not null
+  task_id: text not null
+  check_suite_id: text not null
+  check_run_id: text not null
+hooks:
+  hook_group_id: text not null
+  hook_id: text not null
+  metadata: jsonb not null
+  task: jsonb not null
+  bindings: jsonb not null
+  schedule: jsonb not null
+  encrypted_trigger_token: jsonb not null
+  encrypted_next_task_id: jsonb not null
+  next_scheduled_date: timestamp with time zone not null
+  trigger_schema: jsonb not null
+  etag: uuid not null
 hooks_last_fires:
   hook_group_id: text not null
   hook_id: text not null
@@ -104,33 +100,43 @@ secrets_entities:
   value: jsonb not null
   version: integer not null
   etag: uuid
-access_token_table_entities:
-  partition_key: text not null
-  row_key: text not null
-  value: jsonb not null
-  version: integer not null
-  etag: uuid
-authorization_codes_table_entities:
-  partition_key: text not null
-  row_key: text not null
-  value: jsonb not null
-  version: integer not null
-  etag: uuid
+access_tokens:
+  encrypted_access_token: jsonb not null
+  hashed_access_token: text not null
+  client_id: text not null
+  redirect_uri: text not null
+  identity: text not null
+  identity_provider_id: text not null
+  expires: timestamp with time zone not null
+  client_details: jsonb not null
+  etag: uuid not null
+authorization_codes:
+  code: text not null
+  client_id: text not null
+  redirect_uri: text not null
+  identity: text not null
+  identity_provider_id: text not null
+  expires: timestamp with time zone not null
+  client_details: jsonb not null
+  etag: uuid not null
 github_access_tokens:
   user_id: text not null
   encrypted_access_token: jsonb not null
-session_storage_table_entities:
-  partition_key: text not null
-  row_key: text not null
-  value: jsonb not null
-  version: integer not null
-  etag: uuid
-wmworker_pool_errors_entities:
-  partition_key: text not null
-  row_key: text not null
-  value: jsonb not null
-  version: integer not null
-  etag: uuid
+sessions:
+  hashed_session_id: text not null
+  encrypted_session_id: jsonb not null
+  data: jsonb not null
+  expires: timestamp with time zone not null
+  etag: uuid not null
+worker_pool_errors:
+  error_id: text not null
+  worker_pool_id: text not null
+  reported: timestamp with time zone not null
+  title: text not null
+  kind: text not null
+  description: text not null
+  extra: jsonb
+  etag: uuid not null
 worker_pools:
   worker_pool_id: text not null
   provider_id: text not null

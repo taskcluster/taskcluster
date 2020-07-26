@@ -15,7 +15,6 @@ const utils = require('../src/utils');
  */
 helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   helper.withDb(mock, skipping);
-  helper.withEntities(mock, skipping);
   helper.withFakeGithub(mock, skipping);
   helper.withPulse(mock, skipping);
   helper.resetTables(mock, skipping);
@@ -48,12 +47,12 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
   async function addCheckRun({taskGroupId, taskId}) {
     debug(`adding CheckRun row for task ${taskId} of group ${taskGroupId}`);
-    await helper.CheckRuns.create({
+    await helper.db.fns.create_github_check(
       taskGroupId,
       taskId,
-      checkSuiteId: '11111',
-      checkRunId: '22222',
-    });
+      '11111',
+      '22222',
+    );
   }
 
   async function simulateExchangeMessage({taskGroupId, exchange, routingKey, taskId, state, reasonResolved}) {
@@ -687,8 +686,6 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
     teardown(async function() {
       await helper.db.fns.delete_github_build(TASKGROUPID);
-      await helper.CheckRuns.remove({taskGroupId: TASKGROUPID, taskId: TASKID}, true);
-      await helper.CheckRuns.remove({taskGroupId: TASKGROUPID, taskId: CUSTOM_CHECKRUN_TASKID}, true);
       sinon.restore();
     });
 

@@ -3,6 +3,59 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v35.0.0
+
+### GENERAL
+
+▶ [patch] [#2887](https://github.com/taskcluster/taskcluster/issues/2887)
+Generic-worker now supports reporting runtime errors to worker-manager via worker-runner.
+
+### DEPLOYERS
+
+▶ [MAJOR] [#3148](https://github.com/taskcluster/taskcluster/issues/3148)
+The web-server service now stores Github access tokens in a dedicated table and accesses them directly, rather than via taskcluster-lib-entities.  This upgrade drops existing tokens, meaning that users will need to sign in again after the upgrade is applied.  This migration is very fast.
+
+▶ [MAJOR] 
+With this version, the auth, hooks, and secrets services no longer verify signatures on rows read from database tables.  This is in preparation for a future version where these tables will no longer contain signatures.
+
+▶ [minor] [#2937](https://github.com/taskcluster/taskcluster/issues/2937)
+Github builds are now stored in a table called `github_builds`, and accessed directly rather than via taskcluster-lib-entities.  This migration can process at least 40,000 rows in no more than a few seconds.  For a table larger than that, deleting the table contents before running the migration is an option.  This table backs the "status" and "badge" endpoints, so missing data is of minor consequence.
+
+▶ [minor] [#2938](https://github.com/taskcluster/taskcluster/issues/2938)
+The auth service's roles are now stored in a normal database table and accessed directly.  This is a quick migration.
+
+▶ [minor] [#2935](https://github.com/taskcluster/taskcluster/issues/2935)
+The index service now uses its tables directly, rather than via taskcluster-lib-entities.  This is step 2, a continuation of https://github.com/taskcluster/taskcluster/pull/3141. Step 2 involved creating new DB functions and refactoring the service itself to use the new functions. The db upgrade should be very fast.
+
+▶ [minor] [#3112](https://github.com/taskcluster/taskcluster/issues/3112)
+The queue service now uses its artifact-related database tables directly, rather than via taskcluster-lib-entities.
+
+▶ [minor] [#2932](https://github.com/taskcluster/taskcluster/issues/2932)
+The queue service now uses its task- and task-group-related database tables directly, rather than via taskcluster-lib-entities.
+
+▶ [minor] [#3030](https://github.com/taskcluster/taskcluster/issues/3030)
+The worker manager's worker pool errors are now stored in a normal database table. This should be a small migration.
+
+▶ [minor] [#3240](https://github.com/taskcluster/taskcluster/issues/3240)
+Worker pool errors are now properly listable by workerPoolId.
+
+▶ [patch] [#3222](https://github.com/taskcluster/taskcluster/issues/3222)
+The persistent errors about missing function `digest(text, unknown)` logged by the database are now fixed.
+
+### USERS
+
+▶ [patch] [#3191](https://github.com/taskcluster/taskcluster/issues/3191)
+The `task.extra.github.customCheckRun.annotationsArtifactName` property is now correctly consulted for the name of the annotations artifact, as documented.
+
+### DEVELOPERS
+
+▶ [patch] 
+The taskcluster-lib-postgres library now allows any Postgres collation that sorts ASCII characters correctly.
+
+### OTHER
+
+▶ Additional changes not described here: [#3160](https://github.com/taskcluster/taskcluster/issues/3160), [#3238](https://github.com/taskcluster/taskcluster/issues/3238).
+
 ## v34.0.1
 
 

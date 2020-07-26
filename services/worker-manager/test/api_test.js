@@ -920,10 +920,9 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       delete wpe.errorId;
     });
 
-    // Just sort on an arbitrary field
-    const sorter = (x, y) => x.kind.localeCompare(y.kind);
-
-    assert.deepStrictEqual(data.workerPoolErrors.sort(sorter), [
+    // should be ordered by reported desc, so
+    // first inserted comes second
+    assert.deepStrictEqual(data.workerPoolErrors, [
       {
         description: "huh",
         extra: {
@@ -933,7 +932,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         kind: "another-error",
         title: "And Error about another something",
         workerPoolId: "foobar/baz",
-      }, {
+      },
+      {
         description: "WHO KNOWS",
         extra: {
           foo: "bar-123-456",
@@ -944,7 +944,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         title: "And Error about Something",
         workerPoolId: "foobar/baz",
       },
-    ].sort(sorter));
+    ]);
   });
 
   const googleInput = {
