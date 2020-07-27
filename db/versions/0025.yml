@@ -1,3 +1,4 @@
+description: auth roles phase 2
 version: 25
 migrationScript: 0025-migration.sql
 downgradeScript: 0025-downgrade.sql

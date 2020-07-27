@@ -1,4 +1,5 @@
 version: 36
+description: github integrations phase 2
 migrationScript: 0036-migration.sql
 downgradeScript: 0036-downgrade.sql
 methods:

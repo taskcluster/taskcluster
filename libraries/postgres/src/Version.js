@@ -4,7 +4,7 @@ const Method = require('./Method');
 const { loadSql } = require('./util');
 
 const objMap = (obj, fn) => Object.fromEntries(Object.entries(obj).map(fn));
-const ALLOWED_KEYS = ['version', 'migrationScript', 'downgradeScript', 'methods'];
+const ALLOWED_KEYS = ['version', 'migrationScript', 'downgradeScript', 'methods', 'description'];
 
 class Version {
   /**
@@ -17,6 +17,7 @@ class Version {
       content.version,
       loadSql(content.migrationScript, path.dirname(filename)),
       loadSql(content.downgradeScript, path.dirname(filename)),
+      content.description,
       objMap(content.methods,
         ([name, meth]) => [name, Method.fromYamlFileContent(name, meth, filename)]),
     );
@@ -27,7 +28,7 @@ class Version {
    */
   static fromSerializable(serializable) {
     for (let k of Object.keys(serializable)) {
-      if (!['methods', 'migrationScript', 'downgradeScript', 'version'].includes(k)) {
+      if (!ALLOWED_KEYS.includes(k)) {
         throw new Error(`unexpected version key ${k}`);
       }
     }
@@ -35,6 +36,7 @@ class Version {
       serializable.version,
       serializable.migrationScript,
       serializable.downgradeScript,
+      serializable.description,
       objMap(serializable.methods,
         ([name, meth]) => [name, Method.fromSerializable(name, meth)]),
     );
@@ -48,14 +50,16 @@ class Version {
       version: this.version,
       migrationScript: this.migrationScript,
       downgradeScript: this.downgradeScript,
+      description: this.description,
       methods: objMap(this.methods, ([name, meth]) => [name, meth.asSerializable()]),
     };
   }
 
-  constructor(version, migrationScript, downgradeScript, methods) {
+  constructor(version, migrationScript, downgradeScript, description, methods) {
     this.version = version;
     this.migrationScript = migrationScript;
     this.downgradeScript = downgradeScript;
+    this.description = description;
     this.methods = methods;
   }
 

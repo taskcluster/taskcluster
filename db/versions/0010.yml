@@ -1,4 +1,5 @@
 version: 10
+description: worker-manager worker pools phase 2
 migrationScript: 0010-migration.sql
 downgradeScript: 0010-downgrade.sql
 methods:

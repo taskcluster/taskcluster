@@ -1,4 +1,5 @@
 version: 1
+description: fake wigets table for DB deployment testing
 migrationScript: |-
   begin
     create table widgets (

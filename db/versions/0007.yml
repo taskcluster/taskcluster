@@ -1,4 +1,5 @@
 version: 7
+description: bugfix for `.._scan` taskcluster-lib-entities methods
 methods:
   # This updates the _scan methods to treat 'page' as an offset.  The previous
   # approach (from verison 2) did not work.

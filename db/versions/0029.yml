@@ -1,4 +1,5 @@
 version: 29
+description: worker-manager worker pools phase 2
 migrationScript: 0029-migration.sql
 downgradeScript: 0029-downgrade.sql
 methods:
