@@ -154,9 +154,9 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         requestedCapacity: 0,
       };
       await provider.provision({workerPool, workerInfo});
-      const workers = await Worker.getWorkers(helper.db, {});
-      assert.equal(workers.rows.length, 1);
-      const worker = workers.rows[0];
+      const workers = await helper.getWorkers();
+      assert.equal(workers.length, 1);
+      const worker = workers[0];
 
       // check that the VM config is correct since this suite does not
       // go all the way to creating the VM
@@ -332,9 +332,9 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         requestedCapacity: 0,
       };
       await provider.provision({workerPool, workerInfo});
-      const workers = await Worker.getWorkers(helper.db, {});
-      assert.equal(workers.rows.length, 1);
-      worker = workers.rows[0];
+      const workers = await helper.getWorkers();
+      assert.equal(workers.length, 1);
+      worker = workers[0];
 
       ipName = worker.providerData.ip.name;
       nicName = worker.providerData.nic.name;
@@ -355,9 +355,9 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
     const assertProvisioningState = async (expectations) => {
       // re-fetch the worker, since it should have been updated
-      const workers = await Worker.getWorkers(helper.db, {});
-      assert.equal(workers.rows.length, 1);
-      worker = workers.rows[0];
+      const workers = await helper.getWorkers();
+      assert.equal(workers.length, 1);
+      worker = workers[0];
 
       for (let resourceType of ['ip', 'vm', 'nic']) {
         const name = worker.providerData[resourceType].name;
@@ -568,9 +568,9 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         requestedCapacity: 0,
       };
       await provider.provision({workerPool, workerInfo});
-      const workers = await Worker.getWorkers(helper.db, {});
-      assert.equal(workers.rows.length, 1);
-      worker = workers.rows[0];
+      const workers = await helper.getWorkers();
+      assert.equal(workers.length, 1);
+      worker = workers[0];
 
       ipName = worker.providerData.ip.name;
       nicName = worker.providerData.nic.name;
@@ -579,9 +579,9 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
     const assertRemovalState = async (expectations) => {
       // re-fetch the worker, since it should have been updated
-      const workers = await Worker.getWorkers(helper.db, {});
-      assert.equal(workers.rows.length, 1);
-      worker = workers.rows[0];
+      const workers = await helper.getWorkers();
+      assert.equal(workers.length, 1);
+      worker = workers[0];
 
       let checkResourceExpectation = (expectation, resourceType, typeData, index) => {
         const client = clientForResourceType(resourceType);

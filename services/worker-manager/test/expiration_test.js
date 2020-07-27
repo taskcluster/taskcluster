@@ -111,7 +111,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     };
 
     const checkWPE = async (workerPoolId = 'pp/wt', errorId = eid) => {
-      return (await WorkerPoolError.getWorkerPoolErrors(helper.db, {errorId: eid, workerPoolId: 'pp/wt'})).rows;
+      return await helper.db.fns.get_worker_pool_errors_for_worker_pool(eid, 'pp/wt', null, null);
     };
 
     setup(function() {

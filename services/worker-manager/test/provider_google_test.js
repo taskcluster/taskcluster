@@ -120,8 +120,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         const workerPool = await makeWorkerPool({config});
         const workerInfo = {existingCapacity: 0, requestedCapacity: 0};
         await provider.provision({workerPool, workerInfo});
-        const workers = await Worker.getWorkers(helper.db, {});
-        assert.equal(workers.rows.length, expectedWorkers);
+        const workers = await helper.getWorkers();
+        assert.equal(workers.length, expectedWorkers);
         await check(workers);
       });
     };
@@ -136,7 +136,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       config,
       expectedWorkers: 1,
     }, async workers => {
-      const worker = workers.rows[0];
+      const worker = workers[0];
 
       assert.equal(worker.workerPoolId, workerPoolId, 'Worker was created for a wrong worker pool');
       assert.equal(worker.workerGroup, defaultLaunchConfig.region, 'Worker group should be region');
@@ -188,7 +188,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       },
       expectedWorkers: 1,
     }, async workers => {
-      const worker = workers.rows[0];
+      const worker = workers[0];
       // Check that this is setting times correctly to within a second or so to allow for some time
       // for the provisioning loop
       assert(worker.providerData.terminateAfter - new Date() - (6000 * 1000) < 5000);
@@ -321,11 +321,11 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       fake.compute.instances.failFakeInsertWith = fake.makeError('uhoh', 400);
 
       await provider.provision({workerPool, workerInfo});
-      const errors = await WorkerPoolError.getWorkerPoolErrors(helper.db, {});
-      assert.equal(errors.rows.length, 1);
-      assert.equal(errors.rows[0].description, 'uhoh');
-      const workers = await Worker.getWorkers(helper.db, {});
-      assert.equal(workers.rows.length, 0); // nothing created
+      const errors = await helper.db.fns.get_worker_pool_errors_for_worker_pool(null, null, null, null);
+      assert.equal(errors.length, 1);
+      assert.equal(errors[0].description, 'uhoh');
+      const workers = await helper.getWorkers();
+      assert.equal(workers.length, 0); // nothing created
     });
 
     test('rate-limiting from compute.insert', async function() {
@@ -337,14 +337,14 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
       await provider.provision({workerPool, workerInfo});
 
-      const errors = await WorkerPoolError.getWorkerPoolErrors(helper.db, {});
-      assert.equal(errors.rows.length, 0);
+      const errors = await helper.db.fns.get_worker_pool_errors_for_worker_pool(null, null, null, null);
+      assert.equal(errors.length, 0);
 
       // called twice, retrying automatically
       assert.equal(fake.compute.instances.insertCalls.length, 2);
 
-      const workers = await Worker.getWorkers(helper.db, {});
-      assert.equal(workers.rows.length, 1); // created a worker on retry
+      const workers = await helper.getWorkers();
+      assert.equal(workers.length, 1); // created a worker on retry
     });
   });
 
@@ -484,10 +484,10 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       let worker = await suiteMakeWorker({state: 'requested', providerData: {operation}});
       worker = await runCheckWorker(worker);
       assert.equal(worker.state, Worker.states.STOPPED);
-      const errors = await WorkerPoolError.getWorkerPoolErrors(helper.db, {});
-      assert.equal(errors.rows.length, 1);
-      assert.equal(errors.rows[0].description, 'uhoh');
-      assert.equal(errors.rows[0].title, 'Operation Error');
+      const errors = await helper.db.fns.get_worker_pool_errors_for_worker_pool(null, null, null, null);
+      assert.equal(errors.length, 1);
+      assert.equal(errors[0].description, 'uhoh');
+      assert.equal(errors[0].title, 'Operation Error');
     });
 
     test('update expiration for a long-running worker', async function() {

@@ -1,11 +1,11 @@
 const parser = require('cron-parser');
 const taskcluster = require('taskcluster-client');
 const {APIBuilder} = require('taskcluster-lib-api');
-const { UNIQUE_VIOLATION } = require('taskcluster-lib-postgres');
+const { UNIQUE_VIOLATION, paginatedIterator } = require('taskcluster-lib-postgres');
 const nextDate = require('../src/nextdate');
 const _ = require('lodash');
 const Ajv = require('ajv');
-const { lastFireUtils, hookUtils } = require('./utils');
+const { hookUtils } = require('./utils');
 
 const builder = new APIBuilder({
   title: 'Hooks API Documentation',
@@ -125,27 +125,24 @@ builder.declare({
   }
 
   // find the latest entry in the LastFire table for this hook
-  let latest = {taskCreateTime: new Date(1970, 1, 1)};
-  await lastFireUtils.getLastFires(
-    this.db,
-    { hookGroupId: req.params.hookGroupId, hookId: req.params.hookId },
-    item => {
-      if (item.taskCreateTime > latest.taskCreateTime) {
-        latest = item;
-      }
-    },
-  );
+  let latest = {task_create_time: new Date(1970, 1, 1)};
+  const fetch = (size, offset) => this.db.fns.get_last_fires(hookGroupId, hookId, size, offset);
+  for await (let item of paginatedIterator({fetch})) {
+    if (item.task_create_time > latest.task_create_time) {
+      latest = item;
+    }
+  }
 
   let reply;
 
-  if (!latest.hookId) {
+  if (!latest.hook_id) {
     reply = {lastFire: {result: 'no-fire'}};
   } else if (latest.result === 'success') {
     reply = {
       lastFire: {
         result: latest.result,
-        taskId: latest.taskId,
-        time: latest.taskCreateTime.toJSON(),
+        taskId: latest.task_id,
+        time: latest.task_create_time.toJSON(),
       },
     };
   } else {
@@ -160,7 +157,7 @@ builder.declare({
       lastFire: {
         result: latest.result,
         error,
-        time: latest.taskCreateTime.toJSON(),
+        time: latest.task_create_time.toJSON(),
       },
     };
   }
@@ -654,19 +651,25 @@ builder.declare({
     'fired, including whether the hook was fired successfully or not',
   ].join('\n'),
 }, async function(req, res) {
-  let lastFires = [], item;
-  await lastFireUtils.getLastFires(
-    this.db,
-    { hookGroupId: req.params.hookGroupId, hookId: req.params.hookId },
-    async lastFire => {
-      item = lastFireUtils.definition(lastFire);
-      item.taskCreateTime = item.taskCreateTime.toJSON();
-      lastFires.push(item);
-    },
-  );
+  const {hookGroupId, hookId} = req.params;
+  let lastFires = [];
+
+  const fetch = (size, offset) => this.db.fns.get_last_fires(hookGroupId, hookId, size, offset);
+  for await (let row of paginatedIterator({fetch})) {
+    const item = {
+      hookGroupId: row.hook_group_id,
+      hookId: row.hook_id,
+      firedBy: row.fired_by,
+      taskId: row.task_id,
+      taskCreateTime: row.task_create_time.toJSON(),
+      result: row.result,
+      error: row.error,
+    };
+    lastFires.push(item);
+  }
 
   if (lastFires.length === 0) {
-    return res.reportError('ResourceNotFound', 'No such hook', {});
+    return res.reportError('ResourceNotFound', 'No such hook or never fired', {});
   }
   return res.reply({lastFires: lastFires});
 });
