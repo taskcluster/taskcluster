@@ -8,4 +8,5 @@ module.exports = {
   ...require('./npm'),
   ...require('./pypi'),
   ...require('./dockerflow'),
+  ...require('./db'),
 };
