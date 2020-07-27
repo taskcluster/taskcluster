@@ -4,7 +4,7 @@ const {APIBuilder, paginateResults} = require('taskcluster-lib-api');
 const Entity = require('taskcluster-lib-entities');
 const taskCreds = require('./task-creds');
 const {UNIQUE_VIOLATION} = require('taskcluster-lib-postgres');
-const {Task} = require('./data');
+const {Task, Worker, WorkerType, Provisioner} = require('./data');
 
 // Maximum number runs allowed
 const MAX_RUNS_ALLOWED = 50;
@@ -94,9 +94,6 @@ let builder = new APIBuilder({
   context: [
     'db', // Database instance
     'taskGroupExpiresExtension', // Time delay before expiring a task-group
-    'Provisioner', // data.Provisioner instance
-    'WorkerType', // data.WorkerType instance
-    'Worker', // data.Worker instance
     'publicBucket', // bucket instance for public artifacts
     'privateBucket', // bucket instance for private artifacts
     'publisher', // publisher from base.Exchanges
@@ -923,12 +920,7 @@ builder.declare({
     workerType,
   });
 
-  const worker = await this.Worker.load({
-    provisionerId,
-    workerType,
-    workerGroup,
-    workerId,
-  }, true);
+  const worker = await Worker.get(this.db, provisionerId, workerType, workerGroup, workerId);
 
   // Don't claim tasks when worker is quarantined (but do record the worker
   // being seen, and be sure to wait the 20 seconds so as not to cause a
@@ -1036,12 +1028,7 @@ builder.declare({
     );
   }
 
-  const worker = await this.Worker.load({
-    provisionerId: task.provisionerId,
-    workerType: task.workerType,
-    workerGroup,
-    workerId,
-  }, true);
+  const worker = await Worker.get(this.db, null, null, workerGroup, workerId);
 
   // Don't record task when worker is quarantined
   if (worker && worker.quarantineUntil.getTime() > new Date().getTime()) {
@@ -1562,15 +1549,17 @@ builder.declare({
   const continuation = req.query.continuationToken || null;
   const limit = Math.min(1000, parseInt(req.query.limit || 1000, 10));
 
-  const provisioners = await this.Provisioner.scan({}, {continuation, limit});
+  const {rows: provisioners, continuationToken} = await Provisioner.getProvisioners(
+    this.db,
+    { query: {continuationToken: continuation, limit} },
+  );
   const result = {
-    provisioners: provisioners.entries.map(provisioner => provisioner.json()),
+    provisioners: provisioners.map(provisioner => provisioner.serialize()),
   };
 
-  if (provisioners.continuation) {
-    result.continuationToken = provisioners.continuation;
+  if (continuationToken) {
+    result.continuationToken = provisioners.continuationToken;
   }
-
   return res.reply(result);
 });
 
@@ -1592,13 +1581,9 @@ builder.declare({
   ].join('\n'),
 }, async function(req, res) {
   const provisionerId = req.params.provisionerId;
+  const provisioner = await Provisioner.get(this.db, provisionerId);
 
-  const provisioner = await this.Provisioner.load({
-    provisionerId,
-    expires: Entity.op.greaterThan(new Date()),
-  }, true);
-
-  if (!provisioner) {
+  if (!provisioner || provisioner.expires < new Date() ) {
     return res.reportError('ResourceNotFound',
       'Provisioner `{{provisionerId}}` not found. Are you sure it was created?', {
         provisionerId,
@@ -1606,7 +1591,7 @@ builder.declare({
     );
   }
 
-  return res.reply(provisioner.json());
+  return res.reply(provisioner.serialize());
 });
 
 /** Update a provisioner */
@@ -1653,7 +1638,7 @@ builder.declare({
     actions,
   });
 
-  return res.reply(provisioner.json());
+  return res.reply(provisioner.serialize());
 });
 
 /** Count pending tasks for workerType */
@@ -1713,18 +1698,18 @@ builder.declare({
     'page. You may limit this with the query-string parameter `limit`.',
   ].join('\n'),
 }, async function(req, res) {
-  const continuation = req.query.continuationToken || null;
   const provisionerId = req.params.provisionerId;
-  const limit = Math.min(1000, parseInt(req.query.limit || 1000, 10));
-
-  const workerTypes = await this.WorkerType.scan({provisionerId}, {continuation, limit});
-
+  const {rows: workerTypes, continuationToken} = await WorkerType.getWorkerTypes(
+    this.db,
+    { provisionerId },
+    { query: req.query },
+  );
   const result = {
-    workerTypes: workerTypes.entries.map(workerType => workerType.json()),
+    workerTypes: workerTypes.map(workerType => workerType.serialize()),
   };
 
-  if (workerTypes.continuation) {
-    result.continuationToken = workerTypes.continuation;
+  if (continuationToken) {
+    result.continuationToken = continuationToken;
   }
 
   return res.reply(result);
@@ -1746,15 +1731,11 @@ builder.declare({
   const {provisionerId, workerType} = req.params;
 
   const [wType, provisioner] = await Promise.all([
-    this.WorkerType.load({
-      provisionerId,
-      workerType,
-      expires: Entity.op.greaterThan(new Date()),
-    }, true),
-    this.Provisioner.load({provisionerId}, true),
+    WorkerType.get(this.db, provisionerId, workerType),
+    Provisioner.get(this.db, provisionerId),
   ]);
 
-  if (!wType || !provisioner) {
+  if (!wType || wType.expires < new Date() || !provisioner) {
     return res.reportError('ResourceNotFound',
       'Worker-type `{{workerType}}` with Provisioner `{{provisionerId}}` not found. Are you sure it was created?', {
         workerType,
@@ -1764,7 +1745,7 @@ builder.declare({
   }
 
   const actions = provisioner.actions.filter(action => action.context === 'worker-type');
-  return res.reply(Object.assign({}, wType.json(), {actions}));
+  return res.reply(Object.assign({}, wType.serialize(), {actions}));
 });
 
 /** Update a worker-type */
@@ -1812,9 +1793,8 @@ builder.declare({
     }),
     this.workerInfo.upsertProvisioner({provisionerId}),
   ]);
-
   const actions = provisioner.actions.filter(action => action.context === 'worker-type');
-  return res.reply(Object.assign({}, wType.json(), {actions}));
+  return res.reply(Object.assign({}, wType.serialize(), {actions}));
 });
 
 /** List all active workerGroup/workerId of a workerType */
@@ -1844,31 +1824,28 @@ builder.declare({
     'page. You may limit this with the query-string parameter `limit`.',
   ].join('\n'),
 }, async function(req, res) {
-  const continuation = req.query.continuationToken || null;
   const quarantined = req.query.quarantined || null;
   const provisionerId = req.params.provisionerId;
   const workerType = req.params.workerType;
-  const limit = Math.min(1000, parseInt(req.query.limit || 1000, 10));
   const now = new Date();
 
-  const workerQuery = {
-    provisionerId,
-    workerType,
-  };
-
-  if (quarantined === 'true') {
-    workerQuery.quarantineUntil = Entity.op.greaterThan(now);
-  } else if (quarantined === 'false') {
-    workerQuery.quarantineUntil = Entity.op.lessThan(now);
-  }
-
-  const workers = await this.Worker.scan(workerQuery, {continuation, limit});
+  const {rows: workers, continuationToken} = await Worker.getWorkers(
+    this.db,
+    { provisionerId, workerType },
+    { query: req.query },
+  );
 
   const result = {
-    workers: workers.entries.filter(worker => {
+    workers: workers.filter(worker => {
+      let quarantineFilter = true;
+      if (quarantined === 'true') {
+        quarantineFilter = worker.quarantineUntil >= now;
+      } else if (quarantined === 'false') {
+        quarantineFilter = worker.quarantineUntil < now;
+      }
       // filter out anything that is both expired and not quarantined,
       // so that quarantined workers remain visible even after expiration
-      return worker.expires >= now || worker.quarantineUntil >= now;
+      return (worker.expires >= now || worker.quarantineUntil >= now) && quarantineFilter;
     }).map(worker => {
       let entry = {
         workerGroup: worker.workerGroup,
@@ -1885,8 +1862,8 @@ builder.declare({
     }),
   };
 
-  if (workers.continuation) {
-    result.continuationToken = workers.continuation;
+  if (continuationToken) {
+    result.continuationToken = continuationToken;
   }
 
   return res.reply(result);
@@ -1908,14 +1885,9 @@ builder.declare({
   const {provisionerId, workerType, workerGroup, workerId} = req.params;
 
   const [worker, wType, provisioner] = await Promise.all([
-    this.Worker.load({
-      provisionerId,
-      workerType,
-      workerGroup,
-      workerId,
-    }, true),
-    this.WorkerType.load({provisionerId, workerType}, true),
-    this.Provisioner.load({provisionerId}, true),
+    Worker.get(this.db, provisionerId, workerType, workerGroup, workerId),
+    WorkerType.get(this.db, provisionerId, workerType),
+    Provisioner.get(this.db, provisionerId),
   ]);
 
   // do not consider workers expired until their quarantine date expires.
@@ -1936,7 +1908,7 @@ builder.declare({
   }
 
   const actions = provisioner.actions.filter(action => action.context === 'worker');
-  return res.reply(Object.assign({}, worker.json(), {actions}));
+  return res.reply(Object.assign({}, worker.serialize(), {actions}));
 });
 
 /** Quarantine a Worker */
@@ -1959,9 +1931,9 @@ builder.declare({
   let result;
   const {provisionerId, workerType, workerGroup, workerId} = req.params;
   const {quarantineUntil} = req.body;
-  const [worker, provisioner] = await Promise.all([
-    this.Worker.load({provisionerId, workerType, workerGroup, workerId}, true),
-    this.Provisioner.load({provisionerId}, true),
+  let [worker, provisioner] = await Promise.all([
+    Worker.get(this.db, provisionerId, workerType, workerGroup, workerId),
+    Provisioner.get(this.db, provisionerId),
   ]);
 
   if (!worker) {
@@ -1977,12 +1949,11 @@ builder.declare({
     );
   }
 
-  result = await worker.modify((entity) => {
-    entity.quarantineUntil = new Date(quarantineUntil);
-  });
+  result = await worker.update(this.db, {quarantineUntil});
+  worker = Worker.fromDbRows(result);
 
   const actions = provisioner.actions.filter(action => action.context === 'worker');
-  return res.reply(Object.assign({}, result.json(), {actions}));
+  return res.reply(Object.assign({}, worker.serialize(), {actions}));
 });
 
 /** Update a worker */
@@ -2027,5 +1998,5 @@ builder.declare({
   ]);
 
   const actions = provisioner.actions.filter(action => action.context === 'worker');
-  return res.reply(Object.assign({}, worker.json(), {actions}));
+  return res.reply(Object.assign({}, worker.serialize(), {actions}));
 });

@@ -142,15 +142,7 @@ exports.withAmazonIPRanges = (mock, skipping) => {
   });
 };
 
-/**
- * Set helper.<Class> for each of the Azure entities used in the service
- */
-exports.withEntities = (mock, skipping) => {
-  withEntity(mock, skipping, exports, 'Provisioner', data.Provisioner);
-  withEntity(mock, skipping, exports, 'WorkerType', data.WorkerType);
-  withEntity(mock, skipping, exports, 'Worker', data.Worker);
-  //helper.load.inject('publicArtifactBucket', {});
-};
+exports.withEntities = (mock, skipping) => {};
 
 exports.withDb = (mock, skipping) => {
   withDb(mock, skipping, exports, 'queue');
@@ -299,9 +291,6 @@ exports.resetTables = (mock, skipping) => {
       'task_groups',
       'task_dependencies',
       'queue_artifacts_entities',
-      'queue_worker_entities',
-      'queue_worker_type_entities',
-      'queue_provisioner_entities',
       'queue_workers',
       'queue_worker_types',
       'queue_provisioners',

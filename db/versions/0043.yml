@@ -361,3 +361,13 @@ methods:
         end if;
         return 0;
       end
+  remove_queue_workers_table:
+    description: |-
+      Removes the queue workers table in case of backouts.
+    mode: write
+    serviceName: queue
+    args: []
+    returns: void
+    body: |-
+      begin
+        drop table queue_workers;

@@ -329,3 +329,13 @@ methods:
         end if;
         return 0;
       end
+  remove_queue_worker_types_table:
+    description: |-
+      Removes the queue worker types table in case of backouts.
+    mode: write
+    serviceName: queue
+    args: []
+    returns: void
+    body: |-
+      begin
+        drop table queue_worker_types;

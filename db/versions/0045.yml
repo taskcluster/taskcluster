@@ -321,3 +321,13 @@ methods:
         end if;
         return 0;
       end
+  remove_queue_provisioners_table:
+    description: |-
+      Removes the queue provisioners table in case of backouts.
+    mode: write
+    serviceName: queue
+    args: []
+    returns: void
+    body: |-
+      begin
+        drop table queue_provisioners;

@@ -1,6 +1,7 @@
 let Entity = require('taskcluster-lib-entities');
 let assert = require('assert');
 let _ = require('lodash');
+const { paginateResults } = require('taskcluster-lib-api');
 const {UNIQUE_VIOLATION} = require('taskcluster-lib-postgres');
 
 const STATUS_FIELDS = ['retriesLeft', 'runs', 'takenUntil'];
@@ -189,320 +190,430 @@ class Task {
 // Export Task
 exports.Task = Task;
 
-/**
- * Provisioner describes provisioners (construed broadly - a provisionerId doesn't
- * necessarily correspond to a running service).
- *
- */
-let Provisioner = Entity.configure({
-  version: 1,
-  partitionKey: Entity.keys.StringKey('provisionerId'),
-  rowKey: Entity.keys.ConstantKey('provisioner'),
-  properties: {
-    provisionerId: Entity.types.String,
-    // the time at which this provisioner should no longer be displayed
-    expires: Entity.types.Date,
-  },
-}).configure({
-  version: 2,
-  properties: {
-    provisionerId: Entity.types.String,
-    // the time at which this provisioner should no longer be displayed
-    expires: Entity.types.Date,
-    description: Entity.types.String,
-    stability: Entity.types.String,
-  },
-  migrate(item) {
-    item.description = '';
-    item.stability = 'experimental';
+class Provisioner {
+  // (private constructor)
+  constructor(props) {
+    Object.assign(this, props);
+  }
 
-    return item;
-  },
-}).configure({
-  version: 3,
-  properties: {
-    provisionerId: Entity.types.String,
-    // the time at which this provisioner should no longer be displayed
-    expires: Entity.types.Date,
-    lastDateActive: Entity.types.Date,
-    description: Entity.types.Text,
-    stability: Entity.types.String,
-  },
-  migrate(item) {
-    item.lastDateActive = new Date(2000, 0, 1);
+  // Create a single instance from a DB row
+  static fromDb(row) {
+    return new Provisioner({
+      provisionerId: row.provisioner_id,
+      expires: row.expires,
+      lastDateActive: row.last_date_active,
+      description: row.description,
+      stability: row.stability,
+      actions: row.actions,
+    });
+  }
 
-    return item;
-  },
-}).configure({
-  version: 4,
-  properties: {
-    provisionerId: Entity.types.String,
-    // the time at which this provisioner should no longer be displayed
-    expires: Entity.types.Date,
-    lastDateActive: Entity.types.Date,
-    description: Entity.types.Text,
-    stability: Entity.types.String,
-    actions: Entity.types.JSON,
-  },
-  migrate(item) {
-    item.actions = [];
+  // Create a single instance, or undefined, from a set of rows containing zero
+  // or one elements.  This matches the semantics of get_provisioner
+  static fromDbRows(rows) {
+    if (rows.length === 1) {
+      return Provisioner.fromDb(rows[0]);
+    }
+  }
 
-    return item;
-  },
-});
+  // Create an instance from createProvisioner API request arguments
+  static fromApi(provisioner, input) {
+    assert(input.expires);
+    assert(input.lastDateActive);
+    return new Provisioner({
+      provisioner,
+      ...input,
+      // convert to dates
+      expires: new Date(input.expires),
+      lastDateActive: new Date(input.lastDateActive),
+      actions: input.actions || [],
+    });
+  }
 
-/**
- * Expire Provisioner entries.
- *
- * Returns a promise that all expired Provisioner entries have been deleted
- */
-Provisioner.expire = async function(now) {
-  assert(now instanceof Date, 'now must be given as option');
-  let count = 0;
+  // Get a provisioner from the DB, or undefined
+  static async get(db, provisionerId) {
+    return Provisioner.fromDbRows(await db.fns.get_queue_provisioner(provisionerId));
+  }
 
-  await Entity.scan.call(this, {
-    expires: Entity.op.lessThan(now),
-  }, {
-    limit: 250, // max number of concurrent delete operations
-    handler: entry => { count++; return entry.remove(true); },
-  });
+  // Call db.get_queue_provisioners.
+  // The response will be of the form { rows, continationToken }.
+  // If there are no provisioners to show, the response will have the
+  // `rows` field set to an empty array.
+  static async getProvisioners(
+    db,
+    {
+      query,
+    } = {},
+  ) {
+    const fetchResults = async (query) => {
+      const {continuationToken, rows} = await paginateResults({
+        query,
+        fetch: (size, offset) => db.fns.get_queue_provisioners(
+          size,
+          offset,
+        ),
+      });
+      const entries = rows.map(Provisioner.fromDb);
 
-  return count;
-};
+      return { rows: entries, continuationToken: continuationToken };
+    };
 
-/** Return JSON representation of provisioner meta-data */
-Provisioner.prototype.json = function() {
-  return {
-    provisionerId: this.provisionerId,
-    expires: this.expires.toJSON(),
-    lastDateActive: this.lastDateActive.toJSON(),
-    description: this.description,
-    stability: this.stability,
-    actions: this.actions,
-  };
-};
+    // Fetch results
+    return await fetchResults(query || {});
+  }
+
+  // Call db.create_provisioner with the content of this instance.  This
+  // implements the usual idempotency checks and returns an error with code
+  // UNIQUE_VIOLATION when those checks fail.
+  async create(db) {
+    // for array values, we need to stringify manually because node-pg
+    // otherwise does not correctly serialize the array values
+    const arr = v => JSON.stringify(v);
+    try {
+      await db.fns.create_queue_provisioner(
+        this.provisionerId,
+        this.expires,
+        this.lastDateActive,
+        this.description,
+        this.stability,
+        arr(this.actions),
+      );
+    } catch (err) {
+      if (err.code !== UNIQUE_VIOLATION) {
+        throw err;
+      }
+
+      const existing = await Provisioner.get(db, this.provisionerId);
+      if (!this.equals(existing)) {
+        // new provisioner does not match, so this is a "real" conflict
+        throw err;
+      }
+      // ..otherwise adopt the identity of the existing provisioner
+      Object.assign(this, existing);
+    }
+  }
+
+  async update(db, {description, expires, lastDateActive, stability, actions}) {
+    return await db.fns.update_queue_provisioner(
+      this.provisionerId,
+      expires || this.expires,
+      lastDateActive || this.lastDateActive,
+      description || this.description,
+      stability || this.stability,
+      JSON.stringify(actions) || JSON.stringify(this.actions),
+    );
+  }
+
+  // return the serialization of this provisioner
+  serialize() {
+    return {
+      provisionerId: this.provisionerId,
+      expires: this.expires.toJSON(),
+      lastDateActive: this.lastDateActive.toJSON(),
+      description: this.description,
+      stability: this.stability,
+      actions: _.cloneDeep(this.actions),
+    };
+  }
+
+  // Compare to another provisioner (used to check idempotency)
+  equals(other) {
+    return _.isEqual(other, this);
+  }
+}
 
 // Export Provisioner
 exports.Provisioner = Provisioner;
 
-/**
- * Entity for tracking worker-types.
- */
-let WorkerType = Entity.configure({
-  version: 1,
-  partitionKey: Entity.keys.StringKey('provisionerId'),
-  rowKey: Entity.keys.StringKey('workerType'),
-  properties: {
-    provisionerId: Entity.types.String,
-    workerType: Entity.types.String,
-    // the time at which this worker-type should no longer be displayed
-    expires: Entity.types.Date,
-  },
-}).configure({
-  version: 2,
-  properties: {
-    provisionerId: Entity.types.String,
-    workerType: Entity.types.String,
-    // the time at which this worker-type should no longer be displayed
-    expires: Entity.types.Date,
-    description: Entity.types.Text,
-    stability: Entity.types.String,
-  },
-  migrate(item) {
-    item.description = '';
-    item.stability = 'experimental';
+class WorkerType {
+  // (private constructor)
+  constructor(props) {
+    Object.assign(this, props);
+  }
 
-    return item;
-  },
-}).configure({
-  version: 3,
-  properties: {
-    provisionerId: Entity.types.String,
-    workerType: Entity.types.String,
-    // the time at which this worker-type should no longer be displayed
-    expires: Entity.types.Date,
-    lastDateActive: Entity.types.Date,
-    description: Entity.types.Text,
-    stability: Entity.types.String,
-  },
-  migrate(item) {
-    item.lastDateActive = new Date(2000, 0, 1);
+  // Create a single instance from a DB row
+  static fromDb(row) {
+    return new WorkerType({
+      provisionerId: row.provisioner_id,
+      workerType: row.worker_type,
+      expires: row.expires,
+      lastDateActive: row.last_date_active,
+      description: row.description,
+      stability: row.stability,
+    });
+  }
 
-    return item;
-  },
-});
+  // Create a single instance, or undefined, from a set of rows containing zero
+  // or one elements.  This matches the semantics of get_worker_type
+  static fromDbRows(rows) {
+    if (rows.length === 1) {
+      return WorkerType.fromDb(rows[0]);
+    }
+  }
 
-/**
- * Expire WorkerType entries.
- *
- * Returns a promise that all expired WorkerType entries have been deleted
- */
-WorkerType.expire = async function(now) {
-  assert(now instanceof Date, 'now must be given as option');
-  let count = 0;
+  // Create an instance from createWorkerType API request arguments
+  static fromApi(workerType, input) {
+    assert(input.expires);
+    assert(input.lastDateActive);
+    return new WorkerType({
+      workerType,
+      ...input,
+      // convert to dates
+      expires: new Date(input.expires),
+      lastDateActive: new Date(input.lastDateActive),
+    });
+  }
 
-  await Entity.scan.call(this, {
-    expires: Entity.op.lessThan(now),
-  }, {
-    limit: 250, // max number of concurrent delete operations
-    handler: entry => { count++; return entry.remove(true); },
-  });
+  // Get a worker type from the DB, or undefined
+  static async get(db, provisionerId, workerType) {
+    return WorkerType.fromDbRows(await db.fns.get_queue_worker_type(provisionerId, workerType));
+  }
 
-  return count;
-};
+  // Call db.get_queue_worker_types.
+  // The response will be of the form { rows, continationToken }.
+  // If there are no worker types to show, the response will have the
+  // `rows` field set to an empty array.
+  static async getWorkerTypes(
+    db,
+    {
+      provisionerId,
+      workerType,
+    },
+    {
+      query,
+    } = {},
+  ) {
+    const fetchResults = async (query) => {
+      const {continuationToken, rows} = await paginateResults({
+        query,
+        fetch: (size, offset) => db.fns.get_queue_worker_types(
+          provisionerId || null,
+          workerType || null,
+          size,
+          offset,
+        ),
+      });
+      const entries = rows.map(WorkerType.fromDb);
 
-WorkerType.prototype.json = function() {
-  return {
-    workerType: this.workerType,
-    provisionerId: this.provisionerId,
-    expires: this.expires.toJSON(),
-    lastDateActive: this.lastDateActive.toJSON(),
-    description: this.description,
-    stability: this.stability,
-  };
-};
+      return { rows: entries, continuationToken: continuationToken };
+    };
+
+    // Fetch results
+    return await fetchResults(query || {});
+  }
+
+  // Call db.create_worker_type with the content of this instance.  This
+  // implements the usual idempotency checks and returns an error with code
+  // UNIQUE_VIOLATION when those checks fail.
+  async create(db) {
+    try {
+      await db.fns.create_queue_worker_type(
+        this.provisionerId,
+        this.workerType,
+        this.expires,
+        this.lastDateActive,
+        this.description,
+        this.stability,
+      );
+    } catch (err) {
+      if (err.code !== UNIQUE_VIOLATION) {
+        throw err;
+      }
+
+      const existing = await WorkerType.get(db, this.provisionerId, this.workerType);
+      if (!this.equals(existing)) {
+        // new worker type does not match, so this is a "real" conflict
+        throw err;
+      }
+      // ..otherwise adopt the identity of the existing worker type
+      Object.assign(this, existing);
+    }
+  }
+
+  async update(db, {description, expires, lastDateActive, stability}) {
+    return await db.fns.update_queue_worker_type(
+      this.provisionerId,
+      this.workerType,
+      expires || this.expires,
+      lastDateActive || this.lastDateActive,
+      description || this.description,
+      stability || this.stability,
+    );
+  }
+
+  // return the serialization of this worker type
+  serialize() {
+    return {
+      provisionerId: this.provisionerId,
+      workerType: this.workerType,
+      expires: this.expires.toJSON(),
+      lastDateActive: this.lastDateActive.toJSON(),
+      description: this.description,
+      stability: this.stability,
+    };
+  }
+
+  // Compare to another worker type (used to check idempotency)
+  equals(other) {
+    return _.isEqual(other, this);
+  }
+}
 
 // Export WorkerType
 exports.WorkerType = WorkerType;
 
-/**
- * Entity for tracking workers.
- */
-let Worker = Entity.configure({
-  version: 1,
-  partitionKey: Entity.keys.CompositeKey('provisionerId', 'workerType'),
-  rowKey: Entity.keys.CompositeKey('workerGroup', 'workerId'),
-  properties: {
-    provisionerId: Entity.types.String,
-    workerType: Entity.types.String,
-    workerGroup: Entity.types.String,
-    workerId: Entity.types.String,
-    // the time at which this worker should no longer be displayed
-    expires: Entity.types.Date,
-  },
-}).configure({
-  version: 2,
-  properties: {
-    provisionerId: Entity.types.String,
-    workerType: Entity.types.String,
-    workerGroup: Entity.types.String,
-    workerId: Entity.types.String,
-    recentTasks: Entity.types.SlugIdArray,
-    // the time at which this worker should no longer be displayed
-    expires: Entity.types.Date,
-    firstClaim: Entity.types.Date,
-  },
-  migrate(item) {
-    item.firstClaim = new Date(2000, 0, 1);
-    item.recentTasks = Entity.types.SlugIdArray.create();
-
-    return item;
-  },
-}).configure({
-  version: 3,
-  properties: {
-    provisionerId: Entity.types.String,
-    workerType: Entity.types.String,
-    workerGroup: Entity.types.String,
-    workerId: Entity.types.String,
-    recentTasks: Entity.types.SlugIdArray,
-    disabled: Entity.types.Boolean,
-    // the time at which this worker should no longer be displayed
-    expires: Entity.types.Date,
-    firstClaim: Entity.types.Date,
-  },
-  migrate(item) {
-    item.firstClaim = new Date(2000, 0, 1);
-    item.recentTasks = Entity.types.SlugIdArray.create();
-    item.disabled = false;
-
-    return item;
-  },
-}).configure({
-  version: 4,
-  properties: {
-    provisionerId: Entity.types.String,
-    workerType: Entity.types.String,
-    workerGroup: Entity.types.String,
-    workerId: Entity.types.String,
-    /**
-     * List of objects with properties:
-     * - taskId
-     * - runId
-     * See JSON schema for documentation.
-     */
-    recentTasks: Entity.types.JSON,
-    disabled: Entity.types.Boolean,
-    // the time at which this worker should no longer be displayed
-    expires: Entity.types.Date,
-    firstClaim: Entity.types.Date,
-  },
-  migrate(item) {
-    item.recentTasks = [];
-
-    return item;
-  },
-}).configure({
-  version: 5,
-  properties: {
-    provisionerId: Entity.types.String,
-    workerType: Entity.types.String,
-    workerGroup: Entity.types.String,
-    workerId: Entity.types.String,
-    /**
-     * List of objects with properties:
-     * - taskId
-     * - runId
-     * See JSON schema for documentation.
-     */
-    recentTasks: Entity.types.JSON,
-    quarantineUntil: Entity.types.Date,
-    // the time at which this worker should no longer be displayed
-    expires: Entity.types.Date,
-    firstClaim: Entity.types.Date,
-  },
-  migrate(item) {
-    item.quarantineUntil = new Date(0);
-
-    return item;
-  },
-});
-
-/**
- * Expire Worker entries.
- *
- * Returns a promise that all expired Worker entries have been deleted
- */
-Worker.expire = async function(now) {
-  assert(now instanceof Date, 'now must be given as option');
-  let count = 0;
-
-  await Entity.scan.call(this, {
-    expires: Entity.op.lessThan(now),
-    // don't expire quarantined hosts (as they might come out of quarantine..)
-    quarantineUntil: Entity.op.lessThan(now),
-  }, {
-    limit: 250, // max number of concurrent delete operations
-    handler: entry => { count++; return entry.remove(true); },
-  });
-
-  return count;
-};
-
-Worker.prototype.json = function() {
-  const worker = {
-    workerType: this.workerType,
-    provisionerId: this.provisionerId,
-    workerId: this.workerId,
-    workerGroup: this.workerGroup,
-    recentTasks: this.recentTasks,
-    expires: this.expires.toJSON(),
-    firstClaim: this.firstClaim.toJSON(),
-  };
-  if (this.quarantineUntil.getTime() > new Date().getTime()) {
-    worker.quarantineUntil = this.quarantineUntil.toJSON();
+class Worker {
+  // (private constructor)
+  constructor(props) {
+    Object.assign(this, props);
   }
-  return worker;
-};
 
+  // Create a single instance from a DB row
+  static fromDb(row) {
+    return new Worker({
+      provisionerId: row.provisioner_id,
+      workerType: row.worker_type,
+      workerGroup: row.worker_group,
+      workerId: row.worker_id,
+      quarantineUntil: row.quarantine_until,
+      expires: row.expires,
+      firstClaim: row.first_claim,
+      recentTasks: row.recent_tasks,
+    });
+  }
+
+  // Create a single instance, or undefined, from a set of rows containing zero
+  // or one elements.  This matches the semantics of get_worker
+  static fromDbRows(rows) {
+    if (rows.length === 1) {
+      return Worker.fromDb(rows[0]);
+    }
+  }
+
+  // Create an instance from createWorker API request arguments
+  static fromApi(workerId, input) {
+    assert(input.quarantineUntil);
+    assert(input.expires);
+    assert(input.firstClaim);
+    return new Worker({
+      workerId,
+      ...input,
+      // convert to dates
+      quarantineUntil: new Date(input.quarantineUntil),
+      expires: new Date(input.expires),
+      firstClaim: new Date(input.firstClaim),
+      recentTasks: input.recentTasks || [],
+    });
+  }
+
+  // Get a worker from the DB, or undefined
+  static async get(db, provisionerId, workerType, workerGroup, workerId) {
+    return Worker.fromDbRows(await db.fns.get_queue_worker(provisionerId, workerType, workerGroup, workerId));
+  }
+
+  // Call db.get_queue_workers.
+  // The response will be of the form { rows, continationToken }.
+  // If there are no workers to show, the response will have the
+  // `rows` field set to an empty array.
+  static async getWorkers(
+    db,
+    {
+      provisionerId,
+      workerType,
+    },
+    {
+      query,
+    } = {},
+  ) {
+    const fetchResults = async (query) => {
+      const {continuationToken, rows} = await paginateResults({
+        query,
+        fetch: (size, offset) => db.fns.get_queue_workers(
+          provisionerId || null,
+          workerType || null,
+          size,
+          offset,
+        ),
+      });
+
+      const entries = rows.map(Worker.fromDb);
+
+      return { rows: entries, continuationToken: continuationToken };
+    };
+
+    // Fetch results
+    return await fetchResults(query || {});
+  }
+
+  // Call db.create_worker with the content of this instance.  This
+  // implements the usual idempotency checks and returns an error with code
+  // UNIQUE_VIOLATION when those checks fail.
+  async create(db) {
+    // for array values, we need to stringify manually because node-pg
+    // otherwise does not correctly serialize the array values
+    const arr = v => JSON.stringify(v);
+    try {
+      await db.fns.create_queue_worker(
+        this.provisionerId,
+        this.workerType,
+        this.workerGroup,
+        this.workerId,
+        this.quarantineUntil,
+        this.expires,
+        this.firstClaim,
+        arr(this.recentTasks),
+      );
+    } catch (err) {
+      if (err.code !== UNIQUE_VIOLATION) {
+        throw err;
+      }
+
+      const existing = await Worker.get(
+        db,
+        this.provisionerId,
+        this.workerType,
+        this.workerGroup,
+        this.workerId);
+      if (!this.equals(existing)) {
+        // new worker does not match, so this is a "real" conflict
+        throw err;
+      }
+      // ..otherwise adopt the identity of the existing worker
+      Object.assign(this, existing);
+    }
+  }
+
+  async update(db, {quarantineUntil, expires, recentTasks}) {
+    return await db.fns.update_queue_worker(
+      this.provisionerId,
+      this.workerType,
+      this.workerGroup,
+      this.workerId,
+      quarantineUntil || this.quarantineUntil,
+      expires || this.expires,
+      JSON.stringify(recentTasks) || JSON.stringify(this.recentTasks),
+    );
+  }
+
+  // return the serialization of this worker
+  serialize() {
+    return {
+      provisionerId: this.provisionerId,
+      workerType: this.workerType,
+      workerGroup: this.workerGroup,
+      workerId: this.workerId,
+      quarantineUntil: this.quarantineUntil.toJSON(),
+      expires: this.expires.toJSON(),
+      firstClaim: this.firstClaim.toJSON(),
+      recentTasks: _.cloneDeep(this.recentTasks),
+    };
+  }
+
+  // Compare to another worker (used to check idempotency)
+  equals(other) {
+    return _.isEqual(other, this);
+  }
+}
+
+// Export Worker
 exports.Worker = Worker;
