@@ -1,5 +1,6 @@
 const taskcluster = require('taskcluster-client');
 const assert = require('assert');
+const { retryAssertionFailures } = require('../util');
 
 exports.scopeExpression = {
   AllOf: [
@@ -19,7 +20,7 @@ exports.tasks.push({
   provides: [
     'target-roles',
   ],
-  run: async () => {
+  run: async (requirements, utils) => {
     const auth = new taskcluster.Auth(taskcluster.fromEnvVars());
     const randomId = taskcluster.slugid();
     const roleId = `project:taskcluster:smoketest:${randomId}:*`;
@@ -30,17 +31,23 @@ exports.tasks.push({
     };
     await auth.createRole(roleId, payload);
 
-    const expandPayload = {
-      scopes: [`assume:project:taskcluster:smoketest:${randomId}:abc`],
-    };
-    const expandedRole = await auth.expandScopes(expandPayload);
+    // roles are not *immediately* available for expansion, especially in
+    // deployments with lots of processes running the auth service.  It takes
+    // a short while for all of those processes to hear about the new role and
+    // update their scope resolvers.  So, we poll..
+    await retryAssertionFailures(10, utils, async () => {
+      const expandPayload = {
+        scopes: [`assume:project:taskcluster:smoketest:${randomId}:abc`],
+      };
+      const expandedRole = await auth.expandScopes(expandPayload);
 
-    const expectedScopes = {
-      scopes:
-      [ `assume:project:taskcluster:smoketest:${randomId}:abc`,
-        'project:taskcluster:smoketest:abc/*' ],
-    };
-    assert.deepEqual(expandedRole.scopes, expectedScopes.scopes);
+      const expectedScopes = {
+        scopes:
+        [ `assume:project:taskcluster:smoketest:${randomId}:abc`,
+          'project:taskcluster:smoketest:abc/*' ],
+      };
+      assert.deepEqual(expandedRole.scopes, expectedScopes.scopes);
+    });
 
     // clean up our own role..
     await auth.deleteRole(roleId);
