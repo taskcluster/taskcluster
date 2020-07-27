@@ -40,7 +40,7 @@ queue:
     tasks: write
 secrets:
   tables:
-    secrets_entities: write
+    secrets: write
 web_server:
   tables:
     authorization_codes: write
