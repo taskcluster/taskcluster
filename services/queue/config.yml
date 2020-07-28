@@ -9,12 +9,6 @@ defaults:
     publicArtifactBucket:         !env PUBLIC_ARTIFACT_BUCKET
     privateArtifactBucket:        !env PRIVATE_ARTIFACT_BUCKET
 
-    # Azure table name for tasks, artifact meta-data
-    artifactTableName:            'queue_artifacts_entities'
-    workerTableName:              'queue_worker_entities'
-    workerTypeTableName:          'queue_worker_type_entities'
-    provisionerTableName:         'queue_provisioner_entities'
-
     # Azure monitoring knobs
     azureReportChance:            !env:number:optional AZURE_REPORT_CHANCE # range [0.0, 1.0]
     azureReportThreshold:         !env:number:optional AZURE_REPORT_THRESHOLD # in milliseconds

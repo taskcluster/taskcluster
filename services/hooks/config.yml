@@ -2,9 +2,6 @@ defaults:
   # defaults outlining all configuration options and some sane defaults
   app:
     component: hooks
-    hookTableName: hooks_entities
-    lastFireTableName: last_fire_3_entities
-    queuesTableName: queues_entities
     scheduler:
       pollingDelay:   60000
   influx:
