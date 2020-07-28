@@ -1,4 +1,5 @@
 version: 32
+description: hooks last-fire phase 2
 migrationScript: 0032-migration.sql
 downgradeScript: 0032-downgrade.sql
 methods:

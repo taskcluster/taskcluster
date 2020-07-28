@@ -1,4 +1,5 @@
 version: 16
+description: add `uuid_to_slugid` and `slugid_to_uuid` functions
 migrationScript: 0016-migration.sql
 downgradeScript: 0016-downgrade.sql
 methods: []

@@ -1,4 +1,5 @@
 version: 35
+description: hooks hooks phase 2
 migrationScript: 0035-migration.sql
 downgradeScript: 0035-downgrade.sql
 methods:

@@ -1,4 +1,5 @@
 version: 34
+description: "add crypto container functions `entity_to_crypto_container_v0` and `encrypted_entity_buf_encode`"
 migrationScript: 0034-migration.sql
 downgradeScript: 0034-downgrade.sql
 methods: []

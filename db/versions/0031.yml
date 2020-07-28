@@ -1,4 +1,5 @@
 version: 31
+description: bugfix for get_worker_pool_errors_for_worker_pool
 methods:
   get_worker_pool_errors:
     deprecated: true

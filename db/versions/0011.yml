@@ -1,4 +1,5 @@
 version: 11
+description: drop widgets table from version 1
 migrationScript: |-
   begin
     revoke select, insert, update, delete on widgets from $db_user_prefix$_notify;

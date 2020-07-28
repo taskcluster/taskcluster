@@ -1,4 +1,5 @@
 version: 17
+description: notify phase 2 step 1+2
 migrationScript: 0017-migration.sql
 downgradeScript: 0017-downgrade.sql
 methods:

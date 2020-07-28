@@ -1,4 +1,5 @@
 version: 24
+description: queue artifacts phase 2 step 2
 methods:
   delete_queue_artifact:
     description: |-

@@ -1,4 +1,5 @@
 version: 5
+description: fix ordering of results returned from `azure_queue_get`
 methods:
   azure_queue_get:
     description: |

@@ -1,4 +1,5 @@
 version: 21
+description: queue task groups phase 2 step 1
 migrationScript: 0021-migration.sql
 downgradeScript: 0021-downgrade.sql
 methods:

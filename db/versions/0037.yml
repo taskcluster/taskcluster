@@ -1,4 +1,5 @@
 version: 37
+description: github checks phase 2
 migrationScript: 0037-migration.sql
 downgradeScript: 0037-downgrade.sql
 methods:

@@ -1,4 +1,5 @@
 version: 30
+description: bugfix for sha512()
 migrationScript: 0030-migration.sql
 # on downgrade, restore the function as defined in version 15
 downgradeScript: 0015-migration.sql

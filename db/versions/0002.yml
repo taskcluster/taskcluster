@@ -1,4 +1,5 @@
 version: 2
+description: define all taskcluster-lib-entities tables and functions
 migrationScript: |-
   begin
     create table clients_entities(partition_key text, row_key text, value jsonb not null, version integer not null, etag uuid default public.gen_random_uuid());

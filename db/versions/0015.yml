@@ -1,4 +1,5 @@
 version: 15
+description: add `sha512` function
 migrationScript: 0015-migration.sql
 downgradeScript: 0015-downgrade.sql
 methods: []

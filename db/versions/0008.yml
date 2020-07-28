@@ -1,4 +1,5 @@
 version: 8
+description: introduce `encode/decode_composite_key`, `encode/decode_string_key`, and `entity_buf_encode/decode`
 migrationScript: 0008-migration.sql
 downgradeScript: 0008-downgrade.sql
 methods: []

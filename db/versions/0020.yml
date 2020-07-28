@@ -1,4 +1,5 @@
 version: 20
+description: "queue tasks phase 2 step 1 (slow migration: 700-2000μs per row in table `queue_tasks_entities`)"
 migrationScript: 0020-migration.sql
 downgradeScript: 0020-downgrade.sql
 methods:

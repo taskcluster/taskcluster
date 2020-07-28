@@ -1,4 +1,5 @@
 version: 3
+description: define all taskcluster-lib-azqueue tables and functions
 migrationScript: |-
   begin
     create table azure_queue_messages (
