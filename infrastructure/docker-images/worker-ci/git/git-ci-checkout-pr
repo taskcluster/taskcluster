@@ -9,7 +9,7 @@ USAGE="git ci-checkout-pr <directory> <source_repository> <source_ref> <source_r
 # Arguments:
 #  - directory
 #  - source repository [ex: http://github.com/mozilla-b2g/gaia]
-#  - source ref [ex: master]
+#  - source ref [ex: main]
 #  - source rev [ex: sha]
 #  - target repository [ex: http://github.com/lightsofapollo/gaia]
 #  - target ref [ex: pr]

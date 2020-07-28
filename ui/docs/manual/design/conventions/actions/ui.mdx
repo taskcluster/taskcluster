@@ -67,7 +67,7 @@ the original decision task couldn't do.
 
 Hook actions are a bit different, as they are intended to allow actions the
 decision task does not have scopes to perform. For example, while many
-developers may be able to push to the master branch of a repository (and thus
+developers may be able to push to the `main` branch of a repository (and thus
 create a decision task), a "release" action might be limited to only a few
 project members.
 
@@ -147,5 +147,5 @@ process for hook actions if any of
 * it can limit the scopes available using
   [authorizedScopes](/docs/manual/design/apis/hawk/authorized-scopes)
   based on some other definitive information about the task -- for example,
-  actions on a task not created from a Github "master" branch might use
+  actions on a task not created from a Github `main` branch might use
   authorizedScopes to limit access to only pull-request-related actions.

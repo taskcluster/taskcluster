@@ -4,7 +4,7 @@
   "author": "Jonas Finnemann Jensen <jopsen@gmail.com>",
   "description": "Client for interfacing taskcluster components",
   "license": "MPL-2.0",
-  "repository": "https://github.com/taskcluster/taskcluster/tree/master/clients/client",
+  "repository": "https://github.com/taskcluster/taskcluster/tree/main/clients/client",
   "scripts": {
     "test": "mocha test/*_test.js",
     "package-test": "sh package_test.sh"

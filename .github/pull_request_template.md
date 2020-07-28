@@ -1,5 +1,5 @@
 <!-- Did you remember to add a changelog snippet? See
-     https://github.com/taskcluster/taskcluster/blob/master/dev-docs/best-practices/changelog.md
+     https://github.com/taskcluster/taskcluster/blob/main/dev-docs/best-practices/changelog.md
 
      If this is related to a Bugzilla bug, please begin your title with [Bug XXXXX]
      and update this link.  Otherwise, just remove it from your PR comment.  -->

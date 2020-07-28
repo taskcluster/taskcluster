@@ -60,7 +60,7 @@ on the host.
 The v4l2loopback and snd-aloop kernel modules are installed to allow loopback audio/video
 devices to be available within tasks that require them.  For information on how to
 configure these modules like production, consult the
-[vagrant script](https://github.com/taskcluster/docker-worker/blob/master/vagrant.sh)
+[vagrant script](docker-worker/vagrant.sh)
 used for creating a local environment.
 
 ## Running tests

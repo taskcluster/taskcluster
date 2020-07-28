@@ -41,7 +41,7 @@ Here's a helpful checklist for this step (with more details below):
   * [ ] Update [`db/tables.yml`](https://github.com/taskcluster/taskcluster/blob/9f2d526729ee191f3f7be077a689710478b8c040/db/tables.yml#L90-L96) and [`db/access.yml`](https://github.com/taskcluster/taskcluster/blob/9f2d526729ee191f3f7be077a689710478b8c040/db/access.yml#L32) accordingly.
   * [ ] Add a DB version test that tests this upgrade. [example](https://github.com/taskcluster/taskcluster/blob/9f2d526729ee191f3f7be077a689710478b8c040/db/test/versions/0009_test.js#L28-L36)
 * Downgrade
-  * [ ] Write a downgrade script that reverses the effects of the upgrade. [example][https://github.com/taskcluster/taskcluster/blob/master/db/versions/0009-downgrade.sql)
+  * [ ] Write a downgrade script that reverses the effects of the upgrade. [example][https://github.com/taskcluster/taskcluster/blob/main/db/versions/0009-downgrade.sql)
   * [ ] Update the version tests to verify this as well. [example](https://github.com/taskcluster/taskcluster/blob/9f2d526729ee191f3f7be077a689710478b8c040/db/test/versions/0009_test.js#L38-L39)
 * Replacement Entity Functions
   * [ ] Add new implementations of the `<tablename>_load`, `_create`, `_remove`, `_modify`, and `_scan` functions based on the new table. [example](https://github.com/taskcluster/taskcluster/blob/9f2d526729ee191f3f7be077a689710478b8c040/db/versions/0009.yml#L4-L214)

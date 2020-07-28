@@ -13,7 +13,7 @@ const main = async (options) => {
       'Must provide TASKCLUSTER_ROOT_URL, TASKCLUSTER_CLIENT_ID, and TASKCLUSTER_ACCESS_TOKEN as',
       'environment variables. We recommend using signin from:',
       '',
-      'https://github.com/taskcluster/taskcluster/tree/master/clients/client-shell#taskcluster-shell-client',
+      'https://github.com/taskcluster/taskcluster/tree/main/clients/client-shell#taskcluster-shell-client',
     ].join('\n'));
     process.exit(1);
   }

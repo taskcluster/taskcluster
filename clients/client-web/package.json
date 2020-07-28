@@ -4,7 +4,7 @@
   "main": "build/index.js",
   "author": "Eli Perelman <eli@eliperelman.com>",
   "license": "MPL-2.0",
-  "repository": "https://github.com/taskcluster/taskcluster/tree/master/clients/client-web",
+  "repository": "https://github.com/taskcluster/taskcluster/tree/main/clients/client-web",
   "files": [
     "src",
     "build"

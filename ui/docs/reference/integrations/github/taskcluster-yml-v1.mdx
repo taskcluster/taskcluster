@@ -23,7 +23,7 @@ The core of Taskcluster-Github's operation is this: when an event occurs on Gith
 
 ## Policies
 
-The `policy` property defines policies for what is allowed on the repository. Policies are always read from the default branch (generally `master`) of the repository. This prevents a malicious contributor from changing the policy applied to a pull request in the pull request itself.
+The `policy` property defines policies for what is allowed on the repository. Policies are always read from the default branch of the repository, as configured in the repository settings on GitHub. This prevents a malicious contributor from changing the policy applied to a pull request in the pull request itself.
 
 Policies are not rendered as a part of a task.
 
@@ -158,14 +158,14 @@ More on routes you can read [here](/docs/reference/core/notify/) and [here](/doc
 
 #### Branch Filtering
 
-You can also add a branch clause to your `$if` - `then` statement so that the task will only run for events on certain branches. For example, the task defined below will only run for pushes to the master branch:
+You can also add a branch clause to your `$if` - `then` statement so that the task will only run for events on certain branches. For example, the task defined below will only run for pushes to the `main` branch:
 
 ```yaml
 version: 1
 tasks:
   - $if: 'tasks_for == "github-push"'
     then:
-      $if: 'event.ref == "refs/heads/master"'
+      $if: 'event.ref == "refs/heads/main"'
       then:
         ...
         ...
@@ -300,7 +300,7 @@ tasks:
                                          | "{{ event.pullNumber }}"       |
   event.pull_request.title               | GITHUB_PULL_TITLE              | Update README.md
                                          | "{{ event.title }}"            |
-  event.pull_request.head.ref            | GITHUB_BRANCH                  | master
+  event.pull_request.head.ref            | GITHUB_BRANCH                  | main
                                          | "{{ event.head.repo.branch }}" |
   event.pull_request.base.user.login     | GITHUB_BASE_USER               | johndoe
                                          | "{{ event.base.user.login }}"  |
@@ -310,9 +310,9 @@ tasks:
                                          | "{{ event.base.repo.url }}"    |
   event.pull_request.base.sha            | GITHUB_BASE_SHA                | ee6a2fc800cdab6a98bf24b5af1cd34bf36d41ec
                                          | "{{ event.base.sha }}"         |
-  event.pull_request.base.ref            | GITHUB_BASE_BRANCH             | master
+  event.pull_request.base.ref            | GITHUB_BASE_BRANCH             | main
                                          | "{{ event.base.repo.branch }}" |
-  -                                      | GITHUB_BASE_REF                | refs/heads/master
+  -                                      | GITHUB_BASE_REF                | refs/heads/main
                                          | "{{ event.base.ref }}"         |
                                          |                                |
   event.sender.login                     | GITHUB_HEAD_USER               | maryscott
@@ -378,7 +378,7 @@ tasks:
   -                                      | GITHUB_EVENT                   | release
                                          | "{{ event.type }}"
   event.action                           | -                              | published
-  event.release.target_commitish         | GITHUB_BRANCH                  | master
+  event.release.target_commitish         | GITHUB_BRANCH                  | main
                                          | "{{ event.base.repo.branch }}" |
                                          |                                |
   event.sender.login                     | GITHUB_HEAD_USER               | maryscott

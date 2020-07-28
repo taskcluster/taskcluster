@@ -1,7 +1,7 @@
 # Purge-Cache Service
 
 Many taskcluster workers implements some generic form cache folders.
-These cache often have a `name` that identifies them, for example a task that builds code may have a cache folder called `master-object-directory` which stores object directory for the master branch.
+These cache often have a `name` that identifies them, for example a task that builds code may have a cache folder called `object-directory` which stores object directory for the latest changes to the `main` branch.
 Note, your organization maybe have different naming scheme.
 
 This service provides a broker for requests to purge these caches across all workers of a specific `provisionerId`/`workerType`.

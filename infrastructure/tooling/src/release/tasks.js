@@ -81,7 +81,7 @@ module.exports = ({tasks, cmdOptions, credentials}) => {
   });
 
   ensureTask(tasks, {
-    title: 'Check Repo is Up To Date with Upstream master',
+    title: 'Check Repo is Up To Date with Upstream main',
     requires: [],
     provides: [
       'repo-up-to-date',
@@ -92,7 +92,7 @@ module.exports = ({tasks, cmdOptions, credentials}) => {
       const { revision: remoteRevision } = await gitRemoteRev({
         dir: REPO_ROOT,
         remote: UPSTREAM_REMOTE,
-        ref: 'master',
+        ref: 'main',
         utils,
       });
       if (localRevision !== remoteRevision) {
@@ -335,7 +335,7 @@ module.exports = ({tasks, cmdOptions, credentials}) => {
       await gitPush({
         dir: REPO_ROOT,
         remote: 'git@github.com:taskcluster/taskcluster',
-        refs: [...tags, 'master'],
+        refs: [...tags, 'main'],
         utils,
       });
     },

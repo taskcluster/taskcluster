@@ -69,7 +69,7 @@ func TestEnvVarsMustBeStrings(t *testing.T) {
   "env": {
     "XPI_NAME": "dist/example_add-on-0.0.1.zip",
     "GITHUB_PULL_REQUEST": 37,
-    "GITHUB_BASE_BRANCH": "master"
+    "GITHUB_BASE_BRANCH": "main"
   },
   "maxRunTime": 1200,
   "command": [`+rawHelloGoodbye()+`]
