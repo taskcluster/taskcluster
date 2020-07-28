@@ -101,7 +101,7 @@ UI_LOGIN_STRATEGY_NAMES="github mozilla-auth0"
 ```
 
 _Note: Each strategy requires its own set of config in `web-server`. Be sure to reference the
-[web-server instructions](https://github.com/taskcluster/taskcluster/tree/master/services/web-server#login-strategies)
+[web-server instructions](../services/web-server#login-strategies)
 for properly configuring the server._
 
 ### Tracking Events

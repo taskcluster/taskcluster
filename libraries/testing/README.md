@@ -81,7 +81,7 @@ const {Secrets} = require('taskcluster-lib-testing');
 exports.secrets = new Secrets({
   secretName: [
     'project/taskcluster/testing/taskcluster-foo',
-    'project/taskcluster/testing/taskcluster-foo/master-only',
+    'project/taskcluster/testing/taskcluster-foo/main-only',
   ],
   // (optional) provide a stickyLoader instance for use in mockSuite
   load,
@@ -115,7 +115,7 @@ In fact, `mockSuite` (below) will call it for you.
 In CI (when `$TASK_ID` is set), the `setup` method will attempt to fetch the secrets named in `secretName` from the secrets service.
 It expects the fetch value to be a map from environment variable name to value.
 If a fetch fails, it is considered equivalent to fetching an empty map.
-This allows, for example, secrets that can only be fetched on pushes to the master branch, and not pull requests.
+This allows, for example, secrets that can only be fetched on pushes to the `main` branch, and not pull requests.
 
 The secrets object has a few useful methods, all of which can only be called *after* `setup`, and thus only in a setup function or a test:
 

@@ -3,8 +3,8 @@ const {EventEmitter} = require('events');
 const split2 = require('split2');
 
 /**
- * This is an implementation of the worker-runner protocol documented at
- * https://github.com/taskcluster/taskcluster/blob/master/tools/worker-runner/protocol.md
+ * This is an implementation of the worker-runner protocol as documented at
+ * `internal/workerproto` in this repo.
  */
 
 /**

@@ -24,7 +24,7 @@ initial_checkout() {
 # Arguments:
 #  - directory
 #  - source repository [ex: http://github.com/mozilla-b2g/gaia]
-#  - source branch [ex: master]
+#  - source branch [ex: main]
 #  - source version [ex: sha/tag/etc..]
 checkout_repository() {
   local checkout_path=$1

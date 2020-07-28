@@ -38,8 +38,8 @@ a website without giving them the password.
 
 In order to enable a specific strategy, changes to both
 `taskcluster-ui` and `web-server` are required. The changes are outlined in
-[taskcluster-ui's (login strategies)](https://github.com/taskcluster/taskcluster/tree/master/ui#login-strategies) and
-[web-server (login strategies)](https://github.com/taskcluster/taskcluster/tree/master/services/web-server#login-strategies).
+[taskcluster-ui's (login strategies)](..//ui#login-strategies) and
+[web-server (login strategies)](../services/web-server#login-strategies).
 
 ### Data Flow
 
@@ -61,7 +61,7 @@ triggers the callback middleware in the web server. The callback function
 is responsible for communicating the user’s information to the front-end
 application via the Web API
 [`window.postMessage`](https://developer.mozilla.org/en-US/docs/Web/API/Window/postMessage)
-in `callback.ejs`(https://github.com/taskcluster/taskcluster/blob/master/services/web-server/src/views/callback.ejs).
+in [`callback.ejs`](..//services/web-server/src/views/callback.ejs).
 For the message to be received successfully, the front-end application
 needs to be listening to the `message` event.
 

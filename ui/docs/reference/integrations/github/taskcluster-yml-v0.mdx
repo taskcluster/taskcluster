@@ -68,7 +68,7 @@ In almost all cases, you'll only want `[push, pull_request.opened, pull_request.
 
 #### Branch Filtering
 
-You can also modify a task definition so that it will only run for events on certain branches. For example, the task defined below will only run for pushes to the master branch:
+You can also modify a task definition so that it will only run for events on certain branches. For example, the task defined below will only run for pushes to the `main` branch:
 
 ```yaml
 version: 0
@@ -79,10 +79,10 @@ tasks:
         events:
           - push
         branches:
-          - master
+          - main
 ```
 
-You can even choose to exclude certain branches from your task run. The task will run only if it is not on one of the excluded branches. For example, the task defined below will only run for pushes **not** to the master branch:
+You can even choose to exclude certain branches from your task run. The task will run only if it is not on one of the excluded branches. For example, the task defined below will only run for pushes **not** to the `main` branch:
 
 ```yaml
 version: 0
@@ -93,7 +93,7 @@ tasks:
         events:
           - push
         excludeBranches:
-          - master
+          - main
 ```
 
 You may not specify both an `excludeBranches` and `branches` at the same time.
@@ -178,14 +178,14 @@ milliseconds.
                          |                                |
   GITHUB_PULL_REQUEST    | "{{ event.pullNumber }}"       | 18
   GITHUB_PULL_TITLE      | "{{ event.title }}"            | Update README.md
-  GITHUB_BRANCH          | "{{ event.head.repo.branch }}" | master
+  GITHUB_BRANCH          | "{{ event.head.repo.branch }}" | main
                          |                                |
   GITHUB_BASE_USER       | "{{ event.base.user.login }}"  | johndoe
   GITHUB_BASE_REPO_NAME  | "{{ event.base.repo.name }}"   | somerepo
   GITHUB_BASE_REPO_URL   | "{{ event.base.repo.url }}"    | https://github.com/johndoe/somerepo
   GITHUB_BASE_SHA        | "{{ event.base.sha }}"         | ee6a2fc800cdab6a98bf24b5af1cd34bf36d41ec
-  GITHUB_BASE_BRANCH     | "{{ event.base.repo.branch }}" | master
-  GITHUB_BASE_REF        | "{{ event.base.ref }}"         | refs/heads/master
+  GITHUB_BASE_BRANCH     | "{{ event.base.repo.branch }}" | main
+  GITHUB_BASE_REF        | "{{ event.base.ref }}"         | refs/heads/main
                          |                                |
   GITHUB_HEAD_USER       | "{{ event.head.user.login }}"  | maryscott
   GITHUB_HEAD_REPO_NAME  | "{{ event.head.repo.name }}"   | somerepo
@@ -226,7 +226,7 @@ milliseconds.
   Environment Variable   | Token Placeholder              | Example Value
   -----------------------+--------------------------------+-------------------------------------------------------------------------
   GITHUB_EVENT           | "{{ event.type }}"             | release
-  GITHUB_BRANCH          | "{{ event.base.repo.branch }}" | master
+  GITHUB_BRANCH          | "{{ event.base.repo.branch }}" | main
                          |                                |
   GITHUB_HEAD_USER       | "{{ event.head.user.login }}"  | maryscott
   GITHUB_HEAD_REPO_NAME  | "{{ event.head.repo.name }}"   | somerepo

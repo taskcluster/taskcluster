@@ -20,7 +20,7 @@ Client libraries are available in a number of languages, and are co-versioned wi
 That is, a client with version x.y.z contains API methods corresponding to Taskcluster version x.y.z.
 Taskcluster is careful to maintain API compatibility, and guarantees it within a major version.
 That means that any client with major version x will work against any Taskcluster services with major version x, and is very likely to work for many other major versions of the Taskcluster services.
-Any incompatibilities are noted in the [Changelog](https://github.com/taskcluster/taskcluster/blob/master/CHANGELOG.md).
+Any incompatibilities are noted in the [Changelog](https://github.com/taskcluster/taskcluster/blob/main/CHANGELOG.md).
 
 Each client library behaves a little differently, conforming to the customs of its language.
 
@@ -29,8 +29,8 @@ The client libraries are:
 * Server-Side JavaScript - https://yarnpkg.com/en/package/taskcluster-client
 * Browser-Side JavaScript - https://yarnpkg.com/en/package/taskcluster-client-web
 * Python (Python 2 and 3, sync and async) - https://pypi.python.org/pypi/taskcluster
-* Go - https://github.com/taskcluster/taskcluster-client-go
-* Shell - https://github.com/taskcluster/taskcluster/tree/master/clients/client-shell
+* Go - https://github.com/taskcluster/taskcluster/tree/main/clients/client-go
+* Shell - https://github.com/taskcluster/taskcluster/tree/main/clients/client-shell
 
 ## Authentication
 
@@ -46,7 +46,7 @@ All of the clients provide functionality that makes this easy:
 
 ### Getting Credentials on the Command Line
 
-The [shell client](https://github.com/taskcluster/taskcluster/tree/master/clients/client-shell) provides an easy way to set the necessary environment variables.
+The [shell client](https://github.com/taskcluster/taskcluster/tree/main/clients/client-shell) provides an easy way to set the necessary environment variables.
 Begin by setting the `TASKCLUSTER_ROOT_URL` to the root URL for the deployment you are using.
 
 <SiteSpecific>

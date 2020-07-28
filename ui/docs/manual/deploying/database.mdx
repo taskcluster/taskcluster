@@ -139,7 +139,7 @@ $ echo "console.log(require('crypto').randomBytes(32).toString('base64'));" | no
 Taskcluster is designed to modify its database structure as it is upgraded, in a fashion that often requires little or no downtime.
 This is accomplished by tracking the current version of the database with an integer "database version", and upgrading from one version to the next using the process described below.
 A single Taskcluster release may contain many database versions, corresponding to the changes made in that release.
-A list of the database versions with brief descriptions can be found in [the source code](https://github.com/taskcluster/taskcluster/tree/master/db/versions).
+A list of the database versions with brief descriptions can be found in [the source code](https://github.com/taskcluster/taskcluster/tree/main/db/versions).
 
 Taskcluster maintains the invariant that older code is compatible with newer databases, so an existing services deployment will continue to function after a database upgrade is committed.
 This compatibility is limited to major Taskcluster versions: code in version `vN.x.y` will function against database versions released in `v(N+1).x.y`.

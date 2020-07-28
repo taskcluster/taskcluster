@@ -17,7 +17,7 @@ const assert = require('assert');
  * }
  */
 exports.gitClone = async ({dir, url, sha, utils}) => {
-  const [repo, ref = 'master'] = url.split('#');
+  const [repo, ref = 'main'] = url.split('#');
   const opts = {cwd: dir};
 
   if (fs.existsSync(dir)) {
