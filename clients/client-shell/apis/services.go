@@ -409,7 +409,7 @@ var services = map[string]definitions.Service{
 		APIVersion:  "v1",
 		ServiceName: "github",
 		Title:       "Taskcluster GitHub API Documentation",
-		Description: "The github service is responsible for creating tasks in reposnse\nto GitHub events, and posting results to the GitHub UI.\n\nThis document describes the API end-point for consuming GitHub\nweb hooks, as well as some useful consumer APIs.\n\nWhen Github forbids an action, this service returns an HTTP 403\nwith code ForbiddenByGithub.",
+		Description: "The github service is responsible for creating tasks in response\nto GitHub events, and posting results to the GitHub UI.\n\nThis document describes the API end-point for consuming GitHub\nweb hooks, as well as some useful consumer APIs.\n\nWhen Github forbids an action, this service returns an HTTP 403\nwith code ForbiddenByGithub.",
 		Entries: []definitions.Entry{
 			definitions.Entry{
 				Name:        "ping",
