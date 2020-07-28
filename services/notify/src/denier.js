@@ -12,12 +12,11 @@ class Denier {
     }
 
     const address = {notificationType, notificationAddress};
-    let resultAsTable = await this.db.fns.exists_denylist_address(
+    let [{exists_denylist_address}] = await this.db.fns.exists_denylist_address(
       address.notificationType,
       address.notificationAddress,
     );
-    let exists = resultAsTable[0]["exists_denylist_address"];
-    return exists;
+    return exists_denylist_address;
   }
 }
 
