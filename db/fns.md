@@ -10,6 +10,41 @@
 | clients_entities_modify | write | partition_key text, row_key text, properties jsonb, version integer, old_etag uuid | table (etag uuid) | See taskcluster-lib-entities |
 | clients_entities_remove | write | partition_key text, row_key text | table (etag uuid) | See taskcluster-lib-entities |
 | clients_entities_scan | read | pk text, rk text, condition text, size integer, page integer | table (partition_key text, row_key text, value jsonb, version integer, etag uuid) | See taskcluster-lib-entities |
+| create_client | write | client_id_in text,
+description_in text,
+encrypted_access_token_in jsonb,
+expires_in timestamptz,
+disabled_in boolean,
+scopes_in jsonb,
+delete_on_expiration_in boolean | void | Create a new client.  The created and last_.. timestamps are all<br />initialized to the current time.  If the row exists but scopes,<br />description, and expires match, disabled is false, and it was created in<br />the last 15 minutes, then nothing is changed.  Otherwise, a<br />UNIQUE_VIOLATION is raised. |
+| delete_client | write | client_id_in text | void | Delete the given client.  If the client does not exist, nothing happens. |
+| expire_clients | write |  | integer | Delete all clients with an 'expires' in the past and with 'delete_on_expiration' set. |
+| get_client | read | client_id_in text | table (
+  client_id text,
+  description text,
+  encrypted_access_token jsonb,
+  expires timestamptz,
+  disabled boolean,
+  scopes jsonb,
+  created timestamptz,
+  last_modified timestamptz,
+  last_date_used timestamptz,
+  last_rotated timestamptz,
+  delete_on_expiration boolean
+) | Get a client. Returns an empty set if the client does not exist. |
+| get_clients | read | prefix_in text, page_size_in integer, page_offset_in integer | table (
+  client_id text,
+  description text,
+  encrypted_access_token jsonb,
+  expires timestamptz,
+  disabled boolean,
+  scopes jsonb,
+  created timestamptz,
+  last_modified timestamptz,
+  last_date_used timestamptz,
+  last_rotated timestamptz,
+  delete_on_expiration boolean
+) | Get clients, ordered by client_id.   If specified, only clients with<br />client_id beginning with `prefix` are returned.  If the pagination<br />arguments are both NULL, all rows are returned.  Otherwise, page_size<br />rows are returned at offset page_offset. |
 | get_roles | read |  | table (role_id text, scopes jsonb, created timestamptz, description text, last_modified timestamptz, etag uuid) | Get the full set of roles.  Each result row has an etag, but all such<br />etags will be the same, representing the etag for the most recent<br />modification of the table.  Results are sorted by role_id. |
 | modify_roles | write | roles_in jsonb, old_etag_in uuid | void | Replace the current set of roles entirely with the given set of roles, if the current etag matches the existing etag. <br />The role objects are specified with underscore spelling (`role_id`).<br />If the etag has changed, this returns P0004 signalling that the caller should fetch a fresh set of roles and try again.<br />If there are no existing roles, then the old etag is not used. |
 | roles_entities_create | write | pk text, rk text, properties jsonb, overwrite boolean, version integer | uuid | See taskcluster-lib-entities |
@@ -17,6 +52,26 @@
 | roles_entities_modify | write | partition_key text, row_key text, properties jsonb, version integer, old_etag uuid | table (etag uuid) | See taskcluster-lib-entities |
 | roles_entities_remove | write | partition_key text, row_key text | table (etag uuid) | See taskcluster-lib-entities |
 | roles_entities_scan | read | pk text, rk text, condition text, size integer, page integer | table (partition_key text, row_key text, value jsonb, version integer, etag uuid) | See taskcluster-lib-entities |
+| update_client | write | client_id_in text,
+description_in text,
+encrypted_access_token_in jsonb,
+expires_in timestamptz,
+disabled_in boolean,
+scopes_in jsonb,
+delete_on_expiration_in boolean | table (
+  client_id text,
+  description text,
+  encrypted_access_token jsonb,
+  expires timestamptz,
+  disabled boolean,
+  scopes jsonb,
+  created timestamptz,
+  last_modified timestamptz,
+  last_date_used timestamptz,
+  last_rotated timestamptz,
+  delete_on_expiration boolean
+) | Update an existing client, returning the updated client or, if no such client<br />exists, an empty set.  This does not implement optimistic concurrency: any non-null<br />arguments to this function will overwrite existing values.  The last_modified<br />column is updated automatically, as is last_rotated if the access token is set. |
+| update_client_last_used | write | client_id_in text | void | Indicate that this client has been recently used, updating its last_date_used field.<br />Does nothing if the client does not exist. |
 ## github
 
 | Name | Mode | Arguments | Returns | Description |

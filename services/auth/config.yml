@@ -86,6 +86,7 @@ defaults:
   postgres:
     readDbUrl:               !env READ_DB_URL
     writeDbUrl:              !env WRITE_DB_URL
+    dbCryptoKeys:            !env:json:optional DB_CRYPTO_KEYS
 
   pulse:
     username:                 !env PULSE_USERNAME

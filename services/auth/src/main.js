@@ -6,7 +6,6 @@ const tcdb = require('taskcluster-db');
 const {MonitorManager} = require('taskcluster-lib-monitor');
 const {App} = require('taskcluster-lib-app');
 const Config = require('taskcluster-lib-config');
-const data = require('./data');
 const builder = require('./api');
 const debug = require('debug')('server');
 const exchanges = require('./exchanges');
@@ -17,6 +16,7 @@ const makeSentryManager = require('./sentrymanager');
 const libPulse = require('taskcluster-lib-pulse');
 const {google: googleapis} = require('googleapis');
 const assert = require('assert');
+const {syncStaticClients} = require('./static-clients');
 
 // Create component loader
 const load = Loader({
@@ -60,20 +60,9 @@ const load = Loader({
       serviceName: 'auth',
       monitor: monitor.childMonitor('db'),
       statementTimeout: process === 'server' ? 30000 : 0,
+      azureCryptoKey: cfg.azure.cryptoKey,
+      dbCryptoKeys: cfg.postgres.dbCryptoKeys,
     }),
-  },
-
-  Client: {
-    requires: ['cfg', 'monitor', 'db'],
-    setup: ({cfg, monitor, db}) =>
-      data.Client.setup({
-        db,
-        serviceName: 'auth',
-        tableName: cfg.app.clientTableName,
-        signingKey: cfg.azure.signingKey,
-        cryptoKey: cfg.azure.cryptoKey,
-        monitor: monitor.childMonitor('table.clients'),
-      }),
   },
 
   schemaset: {
@@ -114,23 +103,19 @@ const load = Loader({
 
   api: {
     requires: [
-      'cfg', 'Client', 'db', 'schemaset', 'publisher', 'resolver',
+      'cfg', 'db', 'schemaset', 'publisher', 'resolver',
       'sentryManager', 'monitor', 'pulseClient', 'gcp',
     ],
     setup: async ({
-      cfg, Client, db, schemaset, publisher, resolver, sentryManager,
+      cfg, db, schemaset, publisher, resolver, sentryManager,
       monitor, pulseClient, gcp,
     }) => {
-      // Set up the Azure tables
-      await Client.ensureTable();
-
       // set up the static clients
-      await Client.syncStaticClients(cfg.app.staticClients || [], cfg.azure.accountId);
+      await syncStaticClients(db, cfg.app.staticClients || [], cfg.azure.accountId);
 
       // Load everything for resolver
       await resolver.setup({
         rootUrl: cfg.taskcluster.rootUrl,
-        Client,
         exchangeReference: exchanges.reference(),
         pulseClient,
       });
@@ -144,7 +129,7 @@ const load = Loader({
       return builder.build({
         rootUrl: cfg.taskcluster.rootUrl,
         context: {
-          Client, db,
+          db,
           publisher,
           resolver,
           cfg,
@@ -232,13 +217,12 @@ const load = Loader({
   },
 
   'purge-expired-clients': {
-    requires: ['cfg', 'Client', 'monitor'],
-    setup: ({cfg, Client, monitor}, ownName) => {
+    requires: ['cfg', 'db', 'monitor'],
+    setup: ({cfg, db, monitor}, ownName) => {
       return monitor.oneShot(ownName, async () => {
-        const now = taskcluster.fromNow(cfg.app.clientExpirationDelay);
         debug('Purging expired clients');
-        await Client.purgeExpired(now);
-        debug('Purged expired clients');
+        const [{expire_clients: count}] = await db.fns.expire_clients();
+        debug(`Purged ${count} expired clients`);
       });
     },
   },

@@ -10,12 +10,19 @@
 
 # All of the *_entities tables below are used by tc-lib-entities to emulate
 # Azure entities.
-clients_entities:
-  partition_key: text not null
-  row_key: text not null
-  value: jsonb not null
-  version: integer not null
-  etag: uuid
+clients:
+  client_id: text not null
+  created: timestamp with time zone not null
+  delete_on_expiration: boolean not null
+  description: text not null
+  disabled: boolean not null
+  encrypted_access_token: jsonb not null
+  expires: timestamp with time zone not null
+  last_date_used: timestamp with time zone not null
+  last_modified: timestamp with time zone not null
+  last_rotated: timestamp with time zone not null
+  scopes: jsonb not null
+  etag: uuid not null
 roles:
   role_id: text not null
   scopes: jsonb not null

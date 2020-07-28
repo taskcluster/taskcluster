@@ -1,0 +1,492 @@
+version: 41
+description: auth clients phase 2
+migrationScript: 0041-migration.sql
+downgradeScript: 0041-downgrade.sql
+methods:
+  clients_entities_load:
+    description: See taskcluster-lib-entities
+    mode: read
+    serviceName: auth
+    args: partition_key text, row_key text
+    returns: table (partition_key_out text, row_key_out text, value jsonb, version integer, etag uuid)
+    body: |-
+      begin
+        return query
+        select
+          clients_entities_load.partition_key,
+          clients_entities_load.row_key,
+          entity_buf_encode(
+            encrypted_entity_buf_encode(
+              entity_buf_encode(
+                entity_buf_encode(
+                  jsonb_build_object(
+                    'PartitionKey', clients_entities_load.partition_key,
+                    'RowKey', clients_entities_load.row_key,
+                    'clientId', client_id,
+                    'disabled', disabled::int,
+                    'expires', expires),
+                  'description', description),
+                'scopes', scopes::text),
+              'accessToken', encrypted_access_token),
+            'details', jsonb_build_object(
+              'created', to_js_iso8601(created::text),
+              'lastModified', to_js_iso8601(last_modified::text),
+              'lastDateUsed', to_js_iso8601(last_date_used::text),
+              'lastRotated', to_js_iso8601(last_rotated::text),
+              'deleteOnExpiration', delete_on_expiration
+            )::text) as value,
+          1 as version,
+          clients.etag as etag
+        from clients
+        where
+          clients.client_id = decode_string_key(clients_entities_load.partition_key);
+      end
+  clients_entities_create:
+    serviceName: auth
+    description: See taskcluster-lib-entities
+    mode: write
+    args: pk text, rk text, properties jsonb, overwrite boolean, version integer
+    returns: uuid
+    body: |-
+      declare
+        new_etag uuid = gen_random_uuid();
+      begin
+        if overwrite then
+          insert into clients
+          select
+            (properties ->> 'clientId')::text as client_id,
+            entity_buf_decode(properties, 'description')::text as description,
+            entity_to_crypto_container_v0(properties, 'accessToken') as encrypted_access_token,
+            (properties ->> 'expires')::timestamptz as expires,
+            (properties ->> 'disabled')::boolean as disabled,
+            entity_buf_decode(properties, 'scopes')::jsonb as scopes,
+            (details ->> 'created')::timestamptz as created,
+            (details ->> 'lastModified')::timestamptz as last_modified,
+            (details ->> 'lastDateUsed')::timestamptz as last_date_used,
+            (details ->> 'lastRotated')::timestamptz as last_rotated,
+            (details ->> 'deleteOnExpiration')::boolean as delete_on_expiration,
+            new_etag as etag
+          from (
+            select
+              entity_buf_decode(clients_entities_create.properties, 'details')::jsonb as details
+          ) as expanded
+          on conflict (client_id) do update set
+            description = excluded.description,
+            encrypted_access_token = excluded.encrypted_access_token,
+            expires = excluded.expires,
+            disabled = excluded.disabled,
+            scopes = excluded.scopes,
+            created = excluded.created,
+            last_modified = excluded.last_modified,
+            last_date_used = excluded.last_date_used,
+            last_rotated = excluded.last_rotated,
+            delete_on_expiration = excluded.delete_on_expiration,
+            etag = excluded.etag;
+        else
+          insert into clients
+          select
+            (properties ->> 'clientId')::text as client_id,
+            entity_buf_decode(properties, 'description')::text as description,
+            entity_to_crypto_container_v0(properties, 'accessToken') as encrypted_access_token,
+            (properties ->> 'expires')::timestamptz as expires,
+            (properties ->> 'disabled')::boolean as disabled,
+            entity_buf_decode(properties, 'scopes')::jsonb as scopes,
+            (details ->> 'created')::timestamptz as created,
+            (details ->> 'lastModified')::timestamptz as last_modified,
+            (details ->> 'lastDateUsed')::timestamptz as last_date_used,
+            (details ->> 'lastRotated')::timestamptz as last_rotated,
+            (details ->> 'deleteOnExpiration')::boolean as delete_on_expiration,
+            new_etag as etag
+          from (
+            select
+              entity_buf_decode(clients_entities_create.properties, 'details')::jsonb as details
+          ) as expanded;
+        end if;
+
+
+        return new_etag;
+      end
+  clients_entities_remove:
+    serviceName: auth
+    description: See taskcluster-lib-entities
+    mode: write
+    args: partition_key text, row_key text
+    returns: table (etag uuid)
+    body: |-
+      begin
+        return query
+        delete from clients
+        where
+          clients.client_id = decode_string_key(clients_entities_remove.partition_key)
+        returning clients.etag;
+      end
+  clients_entities_modify:
+    serviceName: auth
+    description: See taskcluster-lib-entities
+    mode: write
+    args: partition_key text, row_key text, properties jsonb, version integer, old_etag uuid
+    returns: table (etag uuid)
+    body: |-
+      declare
+        new_row clients%ROWTYPE;
+      begin
+        select
+          (properties ->> 'clientId')::text as client_id,
+          entity_buf_decode(properties, 'description')::text as description,
+          entity_to_crypto_container_v0(properties, 'accessToken') as encrypted_access_token,
+          (properties ->> 'expires')::timestamptz as expires,
+          (properties ->> 'disabled')::boolean as disabled,
+          entity_buf_decode(properties, 'scopes')::jsonb as scopes,
+          (details ->> 'created')::timestamptz as created,
+          (details ->> 'lastModified')::timestamptz as last_modified,
+          (details ->> 'lastDateUsed')::timestamptz as last_date_used,
+          (details ->> 'lastRotated')::timestamptz as last_rotated,
+          (details ->> 'deleteOnExpiration')::boolean as delete_on_expiration,
+          public.gen_random_uuid() as etag
+          from (
+            select
+              entity_buf_decode(properties, 'details')::jsonb as details
+          ) as expanded
+        into new_row;
+
+        update clients
+        set (
+          description,
+          encrypted_access_token,
+          expires,
+          disabled,
+          scopes,
+          created,
+          last_modified,
+          last_date_used,
+          last_rotated,
+          delete_on_expiration,
+          etag
+        ) = (
+          new_row.description,
+          new_row.encrypted_access_token,
+          new_row.expires,
+          new_row.disabled,
+          new_row.scopes,
+          new_row.created,
+          new_row.last_modified,
+          new_row.last_date_used,
+          new_row.last_rotated,
+          new_row.delete_on_expiration,
+          new_row.etag
+        )
+        where
+          clients.client_id = decode_string_key(clients_entities_modify.partition_key) and
+          clients.etag = clients_entities_modify.old_etag;
+
+        if found then
+          return query select new_row.etag;
+          return;
+        end if;
+
+        perform clients.etag from clients
+        where
+          clients.client_id = decode_string_key(clients_entities_modify.partition_key);
+        if found then
+          raise exception 'unsuccessful update' using errcode = 'P0004';
+        else
+          raise exception 'no such row' using errcode = 'P0002';
+        end if;
+      end
+  clients_entities_scan:
+    description: See taskcluster-lib-entities
+    mode: read
+    serviceName: auth
+    args: pk text, rk text, condition text, size integer, page integer
+    returns: table (partition_key text, row_key text, value jsonb, version integer, etag uuid)
+    body: |-
+      declare
+        cond text[];
+        exp_cond_operator text;
+        exp_cond_operand timestamptz;
+        partition_key_var text;
+        row_key_var text;
+        expires_cond timestamptz;
+      begin
+        if not condition is null then
+          -- condition is only used for expiration scan
+          cond := regexp_split_to_array(condition, '\s+');
+          expires_cond := cond[5]::timestamptz;
+        end if;
+
+        return query select
+          encode_string_key(client_id) as partition_key,
+          'client' as row_key,
+          entity_buf_encode(
+            encrypted_entity_buf_encode(
+              entity_buf_encode(
+                entity_buf_encode(
+                  jsonb_build_object(
+                    'PartitionKey', encode_string_key(client_id),
+                    'RowKey', 'client',
+                    'clientId', client_id,
+                    'disabled', disabled::int,
+                    'expires', expires),
+                  'description', description),
+                'scopes', scopes::text),
+              'accessToken', encrypted_access_token),
+            'details', jsonb_build_object(
+              'created', to_js_iso8601(created::text),
+              'lastModified', to_js_iso8601(last_modified::text),
+              'lastDateUsed', to_js_iso8601(last_date_used::text),
+              'lastRotated', to_js_iso8601(last_rotated::text),
+              'deleteOnExpiration', delete_on_expiration
+            )::text) as value,
+          1 as version,
+          clients.etag as etag
+          from clients
+        where
+          (clients_entities_scan.pk is null or decode_string_key(clients_entities_scan.pk) = client_id) and
+          (expires_cond is null or expires < expires_cond)
+        order by clients.client_id
+        limit case
+          when (size is not null and size > 0) then size + 1
+          else null
+        end
+        offset case
+          when (page is not null and page > 0) then page
+          else 0
+        end;
+      end
+  get_client:
+    description: |-
+      Get a client. Returns an empty set if the client does not exist.
+    mode: read
+    serviceName: auth
+    args: client_id_in text
+    returns: |-
+      table (
+        client_id text,
+        description text,
+        encrypted_access_token jsonb,
+        expires timestamptz,
+        disabled boolean,
+        scopes jsonb,
+        created timestamptz,
+        last_modified timestamptz,
+        last_date_used timestamptz,
+        last_rotated timestamptz,
+        delete_on_expiration boolean
+      )
+    body: |-
+      begin
+        return query
+        select 
+          clients.client_id,
+          clients.description,
+          clients.encrypted_access_token,
+          clients.expires,
+          clients.disabled,
+          clients.scopes,
+          clients.created,
+          clients.last_modified,
+          clients.last_date_used,
+          clients.last_rotated,
+          clients.delete_on_expiration
+        from clients
+        where clients.client_id = client_id_in;
+      end
+  get_clients:
+    description: |-
+      Get clients, ordered by client_id.   If specified, only clients with
+      client_id beginning with `prefix` are returned.  If the pagination
+      arguments are both NULL, all rows are returned.  Otherwise, page_size
+      rows are returned at offset page_offset.
+    mode: read
+    serviceName: auth
+    args: prefix_in text, page_size_in integer, page_offset_in integer
+    returns: |-
+      table (
+        client_id text,
+        description text,
+        encrypted_access_token jsonb,
+        expires timestamptz,
+        disabled boolean,
+        scopes jsonb,
+        created timestamptz,
+        last_modified timestamptz,
+        last_date_used timestamptz,
+        last_rotated timestamptz,
+        delete_on_expiration boolean
+      )
+    body: |-
+      begin
+        return query
+        select 
+          clients.client_id,
+          clients.description,
+          clients.encrypted_access_token,
+          clients.expires,
+          clients.disabled,
+          clients.scopes,
+          clients.created,
+          clients.last_modified,
+          clients.last_date_used,
+          clients.last_rotated,
+          clients.delete_on_expiration
+        from clients
+        where prefix_in is null or starts_with(clients.client_id, prefix_in)
+        order by clients.client_id
+        limit get_page_limit(page_size_in)
+        offset get_page_offset(page_offset_in);
+      end
+  create_client:
+    description: |-
+      Create a new client.  The created and last_.. timestamps are all
+      initialized to the current time.  If the row exists but scopes,
+      description, and expires match, disabled is false, and it was created in
+      the last 15 minutes, then nothing is changed.  Otherwise, a
+      UNIQUE_VIOLATION is raised.
+    mode: write
+    serviceName: auth
+    args: |-
+      client_id_in text,
+      description_in text,
+      encrypted_access_token_in jsonb,
+      expires_in timestamptz,
+      disabled_in boolean,
+      scopes_in jsonb,
+      delete_on_expiration_in boolean
+    returns: void
+    body: |-
+      begin
+        begin
+          insert into clients (
+            client_id,
+            description,
+            encrypted_access_token,
+            expires,
+            disabled,
+            scopes,
+            created,
+            last_modified,
+            last_date_used,
+            last_rotated,
+            delete_on_expiration
+          ) values (
+            client_id_in,
+            description_in,
+            encrypted_access_token_in,
+            expires_in,
+            disabled_in,
+            scopes_in,
+            now(),
+            now(),
+            now(),
+            now(),
+            delete_on_expiration_in
+          );
+        exception
+          when UNIQUE_VIOLATION then
+            perform 1
+            from clients
+            where
+              client_id = client_id_in and
+              scopes = scopes_in and
+              expires = expires_in and
+              description = description_in and
+              not disabled and
+              created > now() - interval '15 minutes';
+            if not found then
+              raise exception 'client already exists with different values' using errcode = 'unique_violation';
+            end if;
+        end;
+      end
+  delete_client:
+    description: |-
+      Delete the given client.  If the client does not exist, nothing happens.
+    mode: write
+    serviceName: auth
+    args: client_id_in text
+    returns: void
+    body: |-
+      begin
+        delete from clients
+        where client_id = client_id_in;
+      end
+  update_client:
+    description: |-
+      Update an existing client, returning the updated client or, if no such client
+      exists, an empty set.  This does not implement optimistic concurrency: any non-null
+      arguments to this function will overwrite existing values.  The last_modified
+      column is updated automatically, as is last_rotated if the access token is set.
+    mode: write
+    serviceName: auth
+    args: |-
+      client_id_in text,
+      description_in text,
+      encrypted_access_token_in jsonb,
+      expires_in timestamptz,
+      disabled_in boolean,
+      scopes_in jsonb,
+      delete_on_expiration_in boolean
+    returns: |-
+      table (
+        client_id text,
+        description text,
+        encrypted_access_token jsonb,
+        expires timestamptz,
+        disabled boolean,
+        scopes jsonb,
+        created timestamptz,
+        last_modified timestamptz,
+        last_date_used timestamptz,
+        last_rotated timestamptz,
+        delete_on_expiration boolean
+      )
+    body: |-
+      begin
+        update clients set
+          description = coalesce(description_in, clients.description),
+          encrypted_access_token = coalesce(encrypted_access_token_in, clients.encrypted_access_token),
+          expires = coalesce(expires_in, clients.expires),
+          disabled = coalesce(disabled_in, clients.disabled),
+          scopes = coalesce(scopes_in, clients.scopes),
+          delete_on_expiration = coalesce(delete_on_expiration_in, clients.delete_on_expiration),
+          last_modified = now(),
+          last_rotated = case when encrypted_access_token_in is null then clients.last_rotated else now() end
+        where clients.client_id = client_id_in;
+
+        if found then
+          return query select * from get_client(client_id_in);
+        end if;
+      end
+  update_client_last_used:
+    description: |-
+      Indicate that this client has been recently used, updating its last_date_used field.
+      Does nothing if the client does not exist.
+    mode: write
+    serviceName: auth
+    args: client_id_in text
+    returns: void
+    body: |-
+      begin
+        update clients
+        set last_date_used = now()
+        where clients.client_id = client_id_in;
+      end
+  expire_clients:
+    description: |-
+      Delete all clients with an 'expires' in the past and with 'delete_on_expiration' set.
+    mode: write
+    serviceName: auth
+    args: ''
+    returns: integer
+    body: |-
+      declare
+        count integer;
+      begin
+        delete from clients
+        where expires < now() and delete_on_expiration;
+
+        if found then
+          get diagnostics count = row_count;
+          return count;
+        end if;
+        return 0;
+      end

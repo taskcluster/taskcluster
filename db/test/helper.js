@@ -62,7 +62,7 @@ exports.withDbForVersion = function() {
         monitor: false,
         dbCryptoKeys: [
           {
-            id: 'db-tests',
+            id: 'azure',
             algo: 'aes-256',
             // only used for tests
             key: 'aSdtIGJzdGFjayEgaGVsbG8gZnV0dXJlIHBlcnNvbgo',
@@ -145,7 +145,7 @@ exports.withDbForProcs = function({ serviceName }) {
       monitor: false,
       dbCryptoKeys: [
         {
-          id: 'db-tests',
+          id: 'azure',
           algo: 'aes-256',
           // only used for tests
           key: 'aSdtIGJzdGFjayEgaGVsbG8gZnV0dXJlIHBlcnNvbgo',
@@ -250,6 +250,9 @@ exports.testEntityTable = ({
   entityTableName, newTableName,
   // Entity class
   EntityClass,
+  // normalize the value of an entity, for better comparison; modifying in-place is
+  // OK.
+  normalizeEntity = e => e,
   // named sample values, each given as an object containing entity properties
   samples,
   // array of {condition, expectedSample} where condition are passed to load,
@@ -280,6 +283,10 @@ exports.testEntityTable = ({
   // parameter is true if the tests are run for THIS_VERSION, otherwise for PREV_VERSION.
 }, customTests = (isThisVersion) => {}) => {
   const prevVersion = dbVersion - 1;
+
+  // norm will ignore null values and otherwise call normalizeEntity
+  const norm = e => e ? normalizeEntity(e) : e;
+
   // NOTE: these tests must run in order
   suite(`entity methods for ${entityTableName} / ${newTableName}`, function() {
     let Entity;
@@ -316,14 +323,14 @@ exports.testEntityTable = ({
 
       for (let {condition, expectedSample} of loadConditions) {
         test(`load ${JSON.stringify(condition)}`, async function() {
-          const entity = await Entity.load(condition);
+          const entity = norm(await Entity.load(condition));
           assert.deepEqual(entity._properties, samples[expectedSample]);
         });
       }
 
       for (let {condition} of notFoundConditions) {
         test(`load ${JSON.stringify(condition)} (not found)`, async function() {
-          const entity = await Entity.load(condition, true);
+          const entity = norm(await Entity.load(condition, true));
           assert.deepEqual(entity, undefined);
           await assert.rejects(
             () => Entity.load(condition),
@@ -336,7 +343,7 @@ exports.testEntityTable = ({
           test(`scan ${JSON.stringify(condition)} (${expectedSamples.length} results)`, async function() {
             const res = await Entity.scan(condition);
             const expected = expectedSamples.map(n => samples[n]);
-            assert.deepEqual(res.entries.map(e => e._properties), expected);
+            assert.deepEqual(res.entries.map(norm).map(e => e._properties), expected);
           });
 
           if (expectedSamples.length > 1) {
@@ -345,7 +352,7 @@ exports.testEntityTable = ({
               const query = {limit: 1};
               while (true) {
                 const res = await Entity.scan(condition, query);
-                batches.push(res.entries.map(e => e._properties));
+                batches.push(res.entries.map(norm).map(e => e._properties));
                 if (res.continuation) {
                   query.continuation = res.continuation;
                 } else {
@@ -377,7 +384,7 @@ exports.testEntityTable = ({
         for (let {condition} of loadConditions) {
           test(`remove ${JSON.stringify(condition)}`, async function() {
             await Entity.remove(condition);
-            const entity = await Entity.load(condition, true);
+            const entity = norm(await Entity.load(condition, true));
             assert.equal(entity, undefined);
 
             if (notImplemented.includes('remove-ignore-if-not-exists')) {
@@ -420,7 +427,7 @@ exports.testEntityTable = ({
 
       for (let {condition, expectedSample} of loadConditions) {
         test(`load ${JSON.stringify(condition)}`, async function() {
-          const entity = await Entity.load(condition);
+          const entity = norm(await Entity.load(condition));
           assert.deepEqual(entity._properties, samples[expectedSample]);
         });
       }
@@ -454,7 +461,7 @@ exports.testEntityTable = ({
 
       for (let {condition, expectedSample} of loadConditions) {
         test(`load ${JSON.stringify(condition)}`, async function() {
-          const entity = await Entity.load(condition);
+          const entity = norm(await Entity.load(condition));
           assert.deepEqual(entity._properties, samples[expectedSample]);
         });
       }
