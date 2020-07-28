@@ -5,7 +5,6 @@ const _ = require('lodash');
 const signaturevalidator = require('./signaturevalidator');
 const ScopeResolver = require('./scoperesolver');
 const Hashids = require('hashids/cjs');
-const {UNIQUE_VIOLATION} = require('taskcluster-lib-postgres');
 const {modifyRoles} = require('../src/data');
 
 /**
@@ -262,40 +261,15 @@ builder.declare({
 
   let accessToken = slugid.v4() + slugid.v4();
 
-  try {
-    await this.db.fns.create_client(
-      clientId,
-      input.description,
-      this.db.encrypt({value: Buffer.from(accessToken, 'utf8')}),
-      new Date(input.expires),
-      false,
-      JSON.stringify(scopes),
-      !!input.deleteOnExpiration,
-    );
-  } catch (err) {
-    if (err.code !== UNIQUE_VIOLATION) {
-      throw err;
-    }
-
-    // Load existing client
-    let [client] = await this.db.fns.get_client(clientId);
-    if (!client) {
-      throw err; // exists, or doesn't exist??
-    }
-
-    // If stored client different or older than 15 min we return 409
-    let created = new Date(client.created).getTime();
-
-    if (client.description !== input.description ||
-        client.expires.getTime() !== new Date(input.expires).getTime() ||
-        !_.isEqual(client.scopes, scopes) ||
-        client.disabled ||
-        created < Date.now() - 15 * 60 * 1000) {
-      return res.reportError('RequestConflict',
-        'client with same clientId already exists, possibly an issue with retry logic or idempotency',
-        {});
-    }
-  }
+  await this.db.fns.create_client(
+    clientId,
+    input.description,
+    this.db.encrypt({value: Buffer.from(accessToken, 'utf8')}),
+    new Date(input.expires),
+    false,
+    JSON.stringify(scopes),
+    !!input.deleteOnExpiration,
+  );
 
   // Send pulse message
   await Promise.all([

@@ -338,8 +338,10 @@ methods:
   create_client:
     description: |-
       Create a new client.  The created and last_.. timestamps are all
-      initialized to the current time.  Raises UNIQUE_VIOLATION if the client
-      already exists.
+      initialized to the current time.  If the row exists but scopes,
+      description, and expires match, disabled is false, and it was created in
+      the last 15 minutes, then nothing is changed.  Otherwise, a
+      UNIQUE_VIOLATION is raised.
     mode: write
     serviceName: auth
     args: |-
@@ -353,31 +355,47 @@ methods:
     returns: void
     body: |-
       begin
-        insert into clients (
-          client_id,
-          description,
-          encrypted_access_token,
-          expires,
-          disabled,
-          scopes,
-          created,
-          last_modified,
-          last_date_used,
-          last_rotated,
-          delete_on_expiration
-        ) values (
-          client_id_in,
-          description_in,
-          encrypted_access_token_in,
-          expires_in,
-          disabled_in,
-          scopes_in,
-          now(),
-          now(),
-          now(),
-          now(),
-          delete_on_expiration_in
-        );
+        begin
+          insert into clients (
+            client_id,
+            description,
+            encrypted_access_token,
+            expires,
+            disabled,
+            scopes,
+            created,
+            last_modified,
+            last_date_used,
+            last_rotated,
+            delete_on_expiration
+          ) values (
+            client_id_in,
+            description_in,
+            encrypted_access_token_in,
+            expires_in,
+            disabled_in,
+            scopes_in,
+            now(),
+            now(),
+            now(),
+            now(),
+            delete_on_expiration_in
+          );
+        exception
+          when UNIQUE_VIOLATION then
+            perform 1
+            from clients
+            where
+              client_id = client_id_in and
+              scopes = scopes_in and
+              expires = expires_in and
+              description = description_in and
+              not disabled and
+              created > now() - interval '15 minutes';
+            if not found then
+              raise exception 'client already exists with different values' using errcode = 'unique_violation';
+            end if;
+        end;
       end
   delete_client:
     description: |-

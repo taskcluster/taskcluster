@@ -16,7 +16,7 @@ encrypted_access_token_in jsonb,
 expires_in timestamptz,
 disabled_in boolean,
 scopes_in jsonb,
-delete_on_expiration_in boolean | void | Create a new client.  The created and last_.. timestamps are all<br />initialized to the current time.  Raises UNIQUE_VIOLATION if the client<br />already exists. |
+delete_on_expiration_in boolean | void | Create a new client.  The created and last_.. timestamps are all<br />initialized to the current time.  If the row exists but scopes,<br />description, and expires match, disabled is false, and it was created in<br />the last 15 minutes, then nothing is changed.  Otherwise, a<br />UNIQUE_VIOLATION is raised. |
 | delete_client | write | client_id_in text | void | Delete the given client.  If the client does not exist, nothing happens. |
 | expire_clients | write |  | integer | Delete all clients with an 'expires' in the past and with 'delete_on_expiration' set. |
 | get_client | read | client_id_in text | table (
