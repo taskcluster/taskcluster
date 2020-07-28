@@ -111,7 +111,7 @@ const load = Loader({
       monitor, pulseClient, gcp,
     }) => {
       // set up the static clients
-      await syncStaticClients(db, cfg.app.staticClients || [], cfg.azure.accountId);
+      await syncStaticClients(db, cfg.app.staticClients || []);
 
       // Load everything for resolver
       await resolver.setup({

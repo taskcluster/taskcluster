@@ -365,7 +365,7 @@ exports.resetTables = (mock, skipping) => {
     // set up the static clients (which have already been overridden in withCfg)
     const cfg = await exports.load('cfg');
     const db = await exports.load('db');
-    await syncStaticClients(db, cfg.app.staticClients || [], cfg.azure.accountId);
+    await syncStaticClients(db, cfg.app.staticClients || []);
 
     // ..and reload the resolver
     const resolver = await exports.load('resolver');
