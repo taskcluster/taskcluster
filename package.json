@@ -214,7 +214,8 @@
       {
         "packageNames": [
           "aws-sdk",
-          "golang.org/x/sys"
+          "golang.org/x/sys",
+          "golang.org/x/tools"
         ],
         "schedule": [
           "after 9pm on sunday"
