@@ -1,5 +1,6 @@
 const taskcluster = require('taskcluster-client');
 const {FakeEC2, FakeAzure, FakeGoogle} = require('./fakes');
+const {Worker} = require('../src/data');
 const {stickyLoader, Secrets, withEntity, fakeauth, withMonitor, withPulse, withDb, resetTables} = require('taskcluster-lib-testing');
 const builder = require('../src/api');
 const load = require('../src/main');
@@ -242,6 +243,12 @@ const stubbedNotify = () => {
 
   return notify;
 };
+
+/**
+ * Get all workers
+ */
+exports.getWorkers = async () =>
+  (await exports.db.fns.get_workers(null, null, null, null, null, null)).map(r => Worker.fromDb(r));
 
 exports.resetTables = (mock, skipping) => {
   setup('reset tables', async function() {

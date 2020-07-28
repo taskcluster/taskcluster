@@ -107,9 +107,9 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         WorkerPoolError: WorkerPoolError,
       });
 
-      const errors = await WorkerPoolError.getWorkerPoolErrors(helper.db, {workerPoolId: 'ww/tt'});
-      assert.equal(errors.rows.length, 1);
-      assert.equal(errors.rows[0].workerPoolId, 'ww/tt');
+      const errors = await helper.db.fns.get_worker_pool_errors_for_worker_pool(null, 'ww/tt', null, null);
+      assert.equal(errors.length, 1);
+      assert.equal(errors[0].worker_pool_id, 'ww/tt');
 
       assert.equal(helper.notify.emails.length, 0);
     });
@@ -126,43 +126,12 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         WorkerPoolError: WorkerPoolError,
       });
 
-      const errors = await WorkerPoolError.getWorkerPoolErrors(helper.db, {workerPoolId: 'ww/tt'});
-      assert.equal(errors.rows.length, 1);
-      assert.equal(errors.rows[0].workerPoolId, 'ww/tt');
+      const errors = await helper.db.fns.get_worker_pool_errors_for_worker_pool(null, 'ww/tt', null, null);
+      assert.equal(errors.length, 1);
+      assert.equal(errors[0].worker_pool_id, 'ww/tt');
 
       assert.equal(helper.notify.emails.length, 1);
       assert.equal(helper.notify.emails[0].address, 'whatever@example.com');
-    });
-
-    test('getWorkerPoolErrors pagination', async function() {
-      const workerPool = await createWP({emailOnError: true});
-      for (let i = 0; i < 110; i++) {
-        await provider.reportError({
-          workerPool,
-          kind: 'something-error',
-          title: 'And Error about Something',
-          description: 'WHO KNOWS',
-          notify: helper.notify,
-          WorkerPoolError: WorkerPoolError,
-          extra: {
-            foo: `bar-${i}`,
-          },
-        });
-      }
-      let pages = 0;
-      let errorIds = [];
-      const query = {limit: 1};
-      while (true) {
-        const res = await WorkerPoolError.getWorkerPoolErrors(helper.db, {}, {query});
-        pages += 1;
-        res.rows.forEach(({errorId}) => errorIds.push(errorId));
-        if (res.continuationToken) {
-          query.continuationToken = res.continuationToken;
-        } else {
-          break;
-        }
-      }
-      assert.equal(pages, 110);
     });
 
     test('report errors (w/ email and extraInfo)', async function() {
@@ -180,9 +149,9 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         },
       });
 
-      const errors = await WorkerPoolError.getWorkerPoolErrors(helper.db, {});
-      assert.equal(errors.rows.length, 1);
-      assert.equal(errors.rows[0].workerPoolId, 'ww/tt');
+      const errors = await helper.db.fns.get_worker_pool_errors_for_worker_pool(null, 'ww/tt', null, null);
+      assert.equal(errors.length, 1);
+      assert.equal(errors[0].worker_pool_id, 'ww/tt');
 
       assert.equal(helper.notify.emails.length, 1);
       assert.equal(helper.notify.emails[0].address, 'whatever@example.com');

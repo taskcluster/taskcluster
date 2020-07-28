@@ -326,10 +326,7 @@ builder.declare({
 builder.declare({
   method: 'get',
   route: '/worker-pool-errors/:workerPoolId(*)',
-  query: {
-    continuationToken: /./,
-    limit: /^[0-9]+$/,
-  },
+  query: paginateResults.query,
   name: 'listWorkerPoolErrors',
   title: 'List Worker Pool Errors',
   category: 'Worker Pools',
@@ -340,17 +337,20 @@ builder.declare({
   ].join('\n'),
 }, async function(req, res) {
   const { errorId, workerPoolId } = req.params;
-  const {rows: errors, continuationToken} = await WorkerPoolError.getWorkerPoolErrors(
-    this.db,
-    { errorId, workerPoolId },
-    { query: req.query },
-  );
-  const result = {
-    workerPoolErrors: errors.map(e => e.serializable()),
-    continuationToken,
-  };
+  const {continuationToken, rows} = await paginateResults({
+    query: req.query,
+    fetch: (size, offset) => this.db.fns.get_worker_pool_errors_for_worker_pool(
+      errorId || null,
+      workerPoolId || null,
+      size,
+      offset,
+    ),
+  });
 
-  return res.reply(result);
+  return res.reply({
+    workerPoolErrors: rows.map(e => WorkerPoolError.fromDb(e).serializable()),
+    continuationToken,
+  });
 });
 
 builder.declare({
@@ -367,18 +367,22 @@ builder.declare({
   ].join('\n'),
 }, async function(req, res) {
   const { workerPoolId, workerGroup } = req.params;
-  const { rows: workers, continuationToken } = await Worker.getWorkers(
-    this.db,
-    { workerPoolId, workerGroup },
-    { query: req.query },
-  );
 
-  const result = {
-    workers: workers.map(w => w.serializable()),
+  const { rows, continuationToken } = await paginateResults({
+    query: req.query,
+    fetch: (size, offset) => this.db.fns.get_workers(
+      workerPoolId,
+      workerGroup,
+      null,
+      null,
+      size,
+      offset),
+  });
+
+  return res.reply({
+    workers: rows.map(w => Worker.fromDb(w).serializable()),
     continuationToken,
-  };
-
-  return res.reply(result);
+  });
 });
 
 builder.declare({
@@ -530,13 +534,22 @@ builder.declare({
       `Worker Pool does not exist`, {});
   }
 
-  const { rows: workers, continuationToken } = await Worker.getWorkers(this.db, { workerPoolId }, { query: req.query });
+  const { rows, continuationToken } = await paginateResults({
+    query: req.query,
+    fetch: (size, offset) => this.db.fns.get_workers({
+      worker_pool_in: workerPoolId,
+      worker_group_in: null,
+      worker_id_in: null,
+      state_in: null,
+      page_size_in: size,
+      page_offset_in: offset,
+    }),
+  });
 
-  const result = {
-    workers: workers.map(w => w.serializable()),
+  return res.reply({
+    workers: rows.map(w => Worker.fromDb(w).serializable()),
     continuationToken,
-  };
-  return res.reply(result);
+  });
 });
 
 let cleanPayload = payload => {

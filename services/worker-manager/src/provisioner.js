@@ -1,6 +1,7 @@
 const taskcluster = require('taskcluster-client');
 const Iterate = require('taskcluster-lib-iterate');
 const {consume} = require('taskcluster-lib-pulse');
+const {paginatedIterator} = require('taskcluster-lib-postgres');
 const {WorkerPool, Worker} = require('./data');
 
 /**
@@ -142,13 +143,13 @@ class Provisioner {
       };
 
       // Check the state of workers (state is updated by worker-scanner)
-      await Worker.getWorkers(this.db, {}, {
-        handler: (worker) => {
-          if (worker.state !== Worker.states.STOPPED) {
-            seen(worker);
-          }
-        },
-      });
+      const fetch = async (size, offset) => await this.db.fns.get_workers(null, null, null, null, size, offset);
+      for await (let row of paginatedIterator({fetch})) {
+        const worker = Worker.fromDb(row);
+        if (worker.state !== Worker.states.STOPPED) {
+          seen(worker);
+        }
+      }
 
       // We keep track of which providers are actively managing
       // each workerpool so that the provider can update the
