@@ -367,8 +367,8 @@ let load = loader({
       return monitor.oneShot(ownName, async () => {
         const now = taskcluster.fromNow(cfg.app.taskExpirationDelay);
         debug('Expiring tasks at: %s, from before %s', new Date(), now);
-        const counts = await db.fns.expire_tasks(now);
-        debug('Expired %s tasks', counts[0].expire_tasks);
+        const [{expire_tasks}] = await db.fns.expire_tasks(now);
+        debug('Expired %s tasks', expire_tasks);
       });
     },
   },
@@ -380,8 +380,8 @@ let load = loader({
       return monitor.oneShot(ownName, async () => {
         const now = taskcluster.fromNow(cfg.app.taskExpirationDelay);
         debug('Expiring task-groups at: %s, from before %s', new Date(), now);
-        const counts = await db.fns.expire_task_groups(now);
-        debug('Expired %s task-groups', counts[0].expire_task_groups);
+        const [{expire_task_groups}] = await db.fns.expire_task_groups(now);
+        debug('Expired %s task-groups', expire_task_groups);
       });
     },
   },
@@ -393,8 +393,8 @@ let load = loader({
       return monitor.oneShot(ownName, async () => {
         const now = taskcluster.fromNow(cfg.app.taskExpirationDelay);
         debug('Expiring task-dependency at: %s, from before %s', new Date(), now);
-        const counts = await db.fns.expire_task_dependencies(now);
-        debug('Expired %s task-dependency', counts[0].expire_task_dependencies);
+        const [{expire_task_dependencies}] = await db.fns.expire_task_dependencies(now);
+        debug('Expired %s task-dependency', expire_task_dependencies);
       });
     },
   },

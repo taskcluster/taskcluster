@@ -161,7 +161,7 @@ builder.declare({
     return res.reportError('InputError', 'Incorrect workerPoolId in request body', {});
   }
 
-  const updateResult = await this.db.fns.update_worker_pool_with_capacity(
+  const [row] = await this.db.fns.update_worker_pool_with_capacity(
     workerPoolId,
     input.providerId,
     input.description,
@@ -169,16 +169,16 @@ builder.declare({
     new Date(),
     input.owner,
     input.emailOnError);
-  const workerPool = WorkerPool.fromDbRows(updateResult);
-
-  if (!workerPool) {
+  if (!row) {
     return res.reportError('ResourceNotFound', 'Worker pool does not exist', {});
   }
+
+  const workerPool = WorkerPool.fromDb(row);
 
   await this.publisher.workerPoolUpdated({
     workerPoolId,
     providerId,
-    previousProviderId: updateResult.previous_provider_id,
+    previousProviderId: row.previous_provider_id,
   });
   res.reply(workerPool.serializable());
 });
@@ -208,7 +208,7 @@ builder.declare({
     return res.reportError('ResourceNotFound', 'Worker pool does not exist', {});
   }
 
-  const updateResult = await this.db.fns.update_worker_pool_with_capacity(
+  const [row] = await this.db.fns.update_worker_pool_with_capacity(
     workerPoolId,
     providerId,
     workerPool.description,
@@ -216,12 +216,15 @@ builder.declare({
     new Date(),
     workerPool.owner,
     workerPool.emailOnError);
-  workerPool = WorkerPool.fromDbRows(updateResult);
+  if (!row) {
+    return res.reportError('ResourceNotFound', 'Worker pool does not exist', {});
+  }
+  workerPool = WorkerPool.fromDb(row);
 
   await this.publisher.workerPoolUpdated({
     workerPoolId,
     providerId,
-    previousProviderId: updateResult.previous_provider_id,
+    previousProviderId: row.previous_provider_id,
   });
   res.reply(workerPool.serializable());
 });

@@ -48,13 +48,13 @@ module.exports = function ({ session, db, options = {} }) {
     async get(sessionId, callback = NOOP) {
       try {
         const hashedSessionId = hash(sessionId);
-        const entry = await db.fns.session_load(hashedSessionId);
+        const [row] = await db.fns.session_load(hashedSessionId);
 
-        if (entry.length === 0) {
+        if (!row) {
           return callback();
         }
 
-        return callback(null, entry[0]["data"]);
+        return callback(null, row.data);
       } catch (err) {
         if (err.statusCode === 404) {
           return callback(null, null);

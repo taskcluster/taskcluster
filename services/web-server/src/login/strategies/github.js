@@ -25,11 +25,9 @@ module.exports = class Github {
 
   async getUser({ username, userId }) {
     const user = new User();
-    const encryptedAccessTokenAsTable = await this.db.fns.load_github_access_token(
-      String(userId),
-    );
+    const [token] = await this.db.fns.load_github_access_token(String(userId));
 
-    if (encryptedAccessTokenAsTable.length === 0) {
+    if (!token) {
       this.monitor.debug('Github user id could not be found in the database.', {
         userId,
       });
@@ -37,11 +35,7 @@ module.exports = class Github {
       return;
     }
 
-    const accessToken = this.db.decrypt(
-      {
-        value: encryptedAccessTokenAsTable[0]["encrypted_access_token"],
-      },
-    ).toString('utf8');
+    const accessToken = this.db.decrypt({ value: token.encrypted_access_token }).toString('utf8');
 
     const githubClient = new GithubClient({ accessToken });
     const [githubErr, githubUser] = await tryCatch(githubClient.userFromUsername(username));
@@ -70,21 +64,15 @@ module.exports = class Github {
   }
 
   async addRoles(username, userId, user) {
-    const encryptedAccessTokenAsTable = await this.db.fns.load_github_access_token(
-      String(userId),
-    );
+    const [token] = await this.db.fns.load_github_access_token(String(userId));
 
-    if (encryptedAccessTokenAsTable.length === 0) {
+    if (!token) {
       this.monitor.debug(`Github user id ${userId} could not be found in the database.`);
 
       return;
     }
 
-    const accessToken = this.db.decrypt(
-      {
-        value: encryptedAccessTokenAsTable[0]["encrypted_access_token"],
-      },
-    ).toString('utf8');
+    const accessToken = this.db.decrypt({ value: token.encrypted_access_token }).toString('utf8');
 
     const githubClient = new GithubClient({ accessToken });
     const [teamsErr, teams] = await tryCatch(githubClient.listTeams());
