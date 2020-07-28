@@ -69,13 +69,8 @@ defaults:
     trustProxy:               !env:bool TRUST_PROXY
 
   azure:
-    # Azure table storage account name
-    accountId:               !env AZURE_ACCOUNT_ID
-    # Azure table storage account key
-    accessKey:               !env AZURE_ACCOUNT_KEY
-
-    # Key for data encryption in base.Entity (32 random bytes as base64)
-    cryptoKey:               !env AZURE_CRYPTO_KEY
+    # deprecated way of specifying an encryption key
+    cryptoKey:               !env:optional AZURE_CRYPTO_KEY
 
   postgres:
     readDbUrl:               !env READ_DB_URL

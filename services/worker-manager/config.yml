@@ -11,8 +11,6 @@ defaults:
     credentials:
       clientId: !env TASKCLUSTER_CLIENT_ID
       accessToken: !env TASKCLUSTER_ACCESS_TOKEN
-  azure:
-    accountId: !env AZURE_ACCOUNT_ID
   postgres:
     readDbUrl: !env READ_DB_URL
     writeDbUrl: !env WRITE_DB_URL
@@ -40,8 +38,6 @@ test:
     trustProxy: false
   taskcluster:
     rootUrl: "https://tc.example.com"
-  azure:
-    accountId: "pamplemousse"
   app:
     errorsExpirationDelay: '-1 hour'
   postgres:

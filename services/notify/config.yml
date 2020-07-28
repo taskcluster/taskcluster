@@ -21,9 +21,6 @@ defaults:
       clientId:       !env TASKCLUSTER_CLIENT_ID
       accessToken:    !env TASKCLUSTER_ACCESS_TOKEN
 
-  azure:
-    accountId:                    !env AZURE_ACCOUNT_ID
-
   postgres:
     readDbUrl:                    !env READ_DB_URL
     writeDbUrl:                   !env WRITE_DB_URL
@@ -80,8 +77,6 @@ test:
     sqsQueueName: taskcluster-notify-test-irc
     routePrefix: test-notify
     emailBlacklist: []
-  azure:
-    accountId:        'pamplemousse'
   server:
     port:             60401
     env:              development

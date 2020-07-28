@@ -22,9 +22,6 @@ defaults:
     # Trust a forwarding proxy
     trustProxy:                     !env:bool TRUST_PROXY
 
-  azure:
-    accountId:                !env AZURE_ACCOUNT_ID
-
   postgres:
     readDbUrl: !env READ_DB_URL
     writeDbUrl: !env WRITE_DB_URL
@@ -45,9 +42,6 @@ test:
   app:
     cachePurgeExpirationDelay:   '7 days'
     cacheTime:                   300    # safely long enough to finish a test
-
-  azure:
-    accountId:                    'pamplemousse'
 
   server:
     port:                         60415
