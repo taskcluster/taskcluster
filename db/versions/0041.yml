@@ -1,4 +1,5 @@
 version: 41
+description: auth clients phase 2
 migrationScript: 0041-migration.sql
 downgradeScript: 0041-downgrade.sql
 methods:
