@@ -1,4 +1,5 @@
 const taskcluster = require('taskcluster-client');
+const { retryAssertionFailures } = require('../util');
 
 exports.scopeExpression = {
   AllOf: [
@@ -16,7 +17,7 @@ exports.tasks.push({
   provides: [
     'target-client',
   ],
-  run: async () => {
+  run: async (requirements, utils) => {
     const auth = new taskcluster.Auth(taskcluster.fromEnvVars());
     const randomId = taskcluster.slugid();
 
@@ -29,13 +30,16 @@ exports.tasks.push({
     };
     const created = await auth.createClient(clientId, payload);
 
-    // try using that new client
-    const accessToken = created.accessToken;
-    const auth2 = new taskcluster.Auth({
-      rootUrl: process.env.TASKCLUSTER_ROOT_URL,
-      credentials: {clientId, accessToken},
+    // try using that new client, retrying until the auth service has synchronized
+    // the existence of the client.
+    await retryAssertionFailures(10, utils, async () => {
+      const accessToken = created.accessToken;
+      const auth2 = new taskcluster.Auth({
+        rootUrl: process.env.TASKCLUSTER_ROOT_URL,
+        credentials: {clientId, accessToken},
+      });
+      await auth2.resetAccessToken(clientId);
     });
-    await auth2.resetAccessToken(clientId);
 
     // delete the new client
     await auth.deleteClient(clientId);
