@@ -119,7 +119,7 @@ func (secrets *Secrets) Set(name string, payload *Secret) error {
 	return err
 }
 
-// Delete the secret associated with some key.
+// Delete the secret associated with some key. It will succeed whether or not the secret exists
 //
 // Required scopes:
 //   secrets:set:<name>

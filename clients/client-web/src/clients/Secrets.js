@@ -35,7 +35,7 @@ export default class Secrets extends Client {
     return this.request(this.set.entry, args);
   }
   /* eslint-disable max-len */
-  // Delete the secret associated with some key.
+  // Delete the secret associated with some key. It will succeed whether or not the secret exists
   /* eslint-enable max-len */
   remove(...args) {
     this.validate(this.remove.entry, args);

@@ -211,11 +211,16 @@
    * [`schedule_task`](#schedule_task)
    * [`update_queue_artifact`](#update_queue_artifact)
  * [secrets functions](#secrets)
+   * [`delete_secret`](#delete_secret)
+   * [`expire_secrets`](#expire_secrets)
+   * [`get_secret`](#get_secret)
+   * [`get_secrets`](#get_secrets)
    * [`secrets_entities_create`](#secrets_entities_create)
    * [`secrets_entities_load`](#secrets_entities_load)
    * [`secrets_entities_modify`](#secrets_entities_modify)
    * [`secrets_entities_remove`](#secrets_entities_remove)
    * [`secrets_entities_scan`](#secrets_entities_scan)
+   * [`upsert_secret`](#upsert_secret)
  * [web_server functions](#web_server)
    * [`access_token_table_entities_create`](#access_token_table_entities_create)
    * [`access_token_table_entities_load`](#access_token_table_entities_load)
@@ -3502,11 +3507,57 @@ Returns the up-to-date artifact row that have the same task id, run id, and name
 
 ## secrets
 
+* [`delete_secret`](#delete_secret)
+* [`expire_secrets`](#expire_secrets)
+* [`get_secret`](#get_secret)
+* [`get_secrets`](#get_secrets)
 * [`secrets_entities_create`](#secrets_entities_create)
 * [`secrets_entities_load`](#secrets_entities_load)
 * [`secrets_entities_modify`](#secrets_entities_modify)
 * [`secrets_entities_remove`](#secrets_entities_remove)
 * [`secrets_entities_scan`](#secrets_entities_scan)
+* [`upsert_secret`](#upsert_secret)
+
+### delete_secret
+
+* *Mode*: write
+* *Arguments*:
+  * `name_in text`
+* *Returns*: `void`
+
+Delete a secret entirely
+
+### expire_secrets
+
+* *Mode*: write
+* *Arguments*:
+* *Returns*: `integer`
+
+Delete all secrets with an 'expires' in the past.
+
+### get_secret
+
+* *Mode*: read
+* *Arguments*:
+  * `name_in text`
+* *Returns*: `table`
+  * `name text`
+  * `encrypted_secret jsonb`
+  * `expires timestamptz`
+
+Get a single secret (including secret content and expiration)
+
+### get_secrets
+
+* *Mode*: read
+* *Arguments*:
+  * `page_size_in integer`
+  * `page_offset_in integer`
+* *Returns*: `table`
+  * `name text`
+
+Get many secrets at once. This only includes names.
+Fetch an individual secret to get the contents
 
 ### secrets_entities_create
 
@@ -3578,6 +3629,17 @@ See taskcluster-lib-entities
   * `etag uuid`
 
 See taskcluster-lib-entities
+
+### upsert_secret
+
+* *Mode*: write
+* *Arguments*:
+  * `name_in text`
+  * `encrypted_secret_in jsonb`
+  * `expires_in timestamptz`
+* *Returns*: `void`
+
+Store an encrypted secret whether it is new or being updated
 
 ## web_server
 

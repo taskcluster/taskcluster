@@ -6,7 +6,6 @@ const testing = require('taskcluster-lib-testing');
 
 helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   helper.withDb(mock, skipping);
-  helper.withEntities(mock, skipping);
   helper.withServer(mock, skipping);
 
   const SECRET_NAME = `captain:${slugid.v4()}`;
@@ -146,7 +145,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       name: SECRET_NAME,
       res: {},
     });
-    assert(!await helper.Secret.load({name: SECRET_NAME}, true));
+    const [result] = await helper.db.fns.get_secret(SECRET_NAME);
+    assert.equal(result, undefined);
   });
 
   test('getting a missing secret is a 404', async function() {
@@ -159,13 +159,12 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     });
   });
 
-  test('deleting a missing secret is a 404', function() {
+  test('deleting a missing secret "succeeds"', function() {
     return makeApiCall({
       clientName: 'captain-write',
       apiCall: 'remove',
       name: SECRET_NAME,
-      statusCode: 404,
-      errMessage: 'Secret not found',
+      res: {},
     });
   });
 
@@ -176,20 +175,27 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       clientName: 'captain-read',
       apiCall: 'get',
       name: SECRET_NAME,
-      statusCode: 410,
-      errMessage: 'The requested resource has expired.',
+      statusCode: 404,
+      errMessage: 'Secret not found',
     });
   });
 
   test('Expire secrets', async () => {
     let client = await helper.client('captain-read-write');
-    let key = 'captain:' + slugid.v4();
+    let expireKey = 'captain:' + slugid.v4();
+    let saveKey = 'captain:' + slugid.v4();
 
     helper.load.save();
 
     try {
-      // Create a secret
-      await client.set(key, {
+      await client.set(expireKey, {
+        secret: {
+          message: 'get rid of this secret',
+          list: ['goodbye', 'world'],
+        },
+        expires: taskcluster.fromNowJSON('-2 hours'),
+      });
+      await client.set(saveKey, {
         secret: {
           message: 'keep this secret!!',
           list: ['hello', 'world'],
@@ -197,18 +203,16 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         expires: taskcluster.fromNowJSON('2 hours'),
       });
 
-      let {secret} = await client.get(key);
+      await helper.load('expire');
+
+      let {secret} = await client.get(saveKey);
       assert.deepEqual(secret, {
         message: 'keep this secret!!',
         list: ['hello', 'world'],
       });
 
-      // config.yml sets the expiration to 4 days into the
-      // future so we really expect secrets to be deleted
-      await helper.load('expire');
-
       try {
-        await client.get(key);
+        await client.get(expireKey);
       } catch (err) {
         if (err.statusCode === 404) {
           return;

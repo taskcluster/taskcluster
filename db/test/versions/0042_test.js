@@ -1,5 +1,4 @@
 const _ = require('lodash');
-const assert = require('assert').strict;
 const Entity = require('taskcluster-lib-entities');
 const helper = require('../helper');
 const testing = require('taskcluster-lib-testing');
@@ -63,16 +62,5 @@ suite(testing.suiteName(), function() {
       {condition: {name: 'notathing'}},
     ],
     notImplemented: ['modifications'],
-    modifications: [{
-      condition: {name: 'secret/4'},
-      modifier: [
-        ent => {
-          ent.secret = {somethingNew: 'abc'};
-        },
-      ],
-      checker(ent) {
-        assert.equal(ent.secret.somethingNew, 'abc');
-      },
-    }],
   });
 });

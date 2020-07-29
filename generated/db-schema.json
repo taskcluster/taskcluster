@@ -4642,8 +4642,45 @@
       "version": 41
     },
     {
+      "description": "secrets phase 2",
       "downgradeScript": "begin\n  -- lock this table before reading from it, to prevent loss of concurrent\n  -- updates when the table is dropped.\n  lock table secrets;\n\n  create table secrets_entities(\n    partition_key text, row_key text,\n    value jsonb not null,\n    version integer not null,\n    etag uuid default public.gen_random_uuid());\n  alter table secrets_entities add primary key (partition_key, row_key);\n\n  insert into secrets_entities\n  select\n    encode_string_key('secrets') as partition_key,\n    encode_string_key(name) as row_key,\n    encrypted_entity_buf_encode(\n      jsonb_build_object(\n        'PartitionKey', encode_string_key('secrets'),\n        'RowKey', encode_string_key(name),\n        'expires', secrets.expires,\n        'name', secrets.name),\n      'secret', secrets.encrypted_secret) as value,\n    1 as version,\n    public.gen_random_uuid() as etag\n  from secrets;\n\n  revoke select, insert, update, delete on secrets from $db_user_prefix$_secrets;\n  drop table secrets;\n  grant select, insert, update, delete on secrets_entities to $db_user_prefix$_secrets;\nend\n",
       "methods": {
+        "delete_secret": {
+          "args": "name_in text",
+          "body": "begin\n  delete from secrets\n  where\n    secrets.name = name_in;\nend",
+          "deprecated": false,
+          "description": "Delete a secret entirely",
+          "mode": "write",
+          "returns": "void",
+          "serviceName": "secrets"
+        },
+        "expire_secrets": {
+          "args": "",
+          "body": "declare\n  count integer;\nbegin\n  delete from secrets where secrets.expires < now();\n  if found then\n    get diagnostics count = row_count;\n    return count;\n  end if;\n  return 0;\nend ",
+          "deprecated": false,
+          "description": "Delete all secrets with an 'expires' in the past.",
+          "mode": "write",
+          "returns": "integer",
+          "serviceName": "secrets"
+        },
+        "get_secret": {
+          "args": "name_in text",
+          "body": "begin\n  return query select secrets.name, secrets.encrypted_secret, secrets.expires from secrets\n  where\n    secrets.name = name_in and\n    secrets.expires >= now()\n  limit 1;\nend",
+          "deprecated": false,
+          "description": "Get a single secret (including secret content and expiration)",
+          "mode": "read",
+          "returns": "table(name text, encrypted_secret jsonb, expires timestamptz)",
+          "serviceName": "secrets"
+        },
+        "get_secrets": {
+          "args": "page_size_in integer, page_offset_in integer",
+          "body": "begin\n  return query select secrets.name from secrets\n  where\n    secrets.expires >= now()\n  order by secrets.name\n  limit get_page_limit(page_size_in)\n  offset get_page_offset(page_offset_in); \nend",
+          "deprecated": false,
+          "description": "Get many secrets at once. This only includes names.\nFetch an individual secret to get the contents",
+          "mode": "read",
+          "returns": "table(name text)",
+          "serviceName": "secrets"
+        },
         "secrets_entities_create": {
           "args": "pk text, rk text, properties jsonb, overwrite boolean, version integer",
           "body": "begin\n  if not overwrite then\n    raise exception 'must overwrite';\n  end if;\n  insert into secrets (name, encrypted_secret, expires) values (\n    (properties ->> 'name')::text,\n    entity_to_crypto_container_v0(properties, 'secret'),\n    (properties ->> 'expires')::timestamptz\n  ) on conflict (name) do update set\n    encrypted_secret = entity_to_crypto_container_v0(properties, 'secret'),\n    expires = (properties ->> 'expires')::timestamptz;\n  return public.gen_random_uuid();\nend",
@@ -4687,6 +4724,15 @@
           "description": "See taskcluster-lib-entities",
           "mode": "read",
           "returns": "table (partition_key text, row_key text, value jsonb, version integer, etag uuid)",
+          "serviceName": "secrets"
+        },
+        "upsert_secret": {
+          "args": "name_in text, encrypted_secret_in jsonb, expires_in timestamptz",
+          "body": "begin\n  insert into secrets (name, encrypted_secret, expires) values (\n    name_in,\n    encrypted_secret_in,\n    expires_in\n  ) on conflict (name) do update set\n    encrypted_secret = encrypted_secret_in,\n    expires = expires_in;\nend",
+          "deprecated": false,
+          "description": "Store an encrypted secret whether it is new or being updated",
+          "mode": "write",
+          "returns": "void",
           "serviceName": "secrets"
         }
       },

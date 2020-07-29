@@ -1,4 +1,5 @@
 version: 42
+description: secrets phase 2
 migrationScript: 0042-migration.sql
 downgradeScript: 0042-downgrade.sql
 methods:
@@ -121,3 +122,79 @@ methods:
             else 0
           end;
       end
+  upsert_secret:
+    serviceName: secrets
+    description: Store an encrypted secret whether it is new or being updated
+    mode: write
+    args: name_in text, encrypted_secret_in jsonb, expires_in timestamptz
+    returns: void
+    body: |-
+      begin
+        insert into secrets (name, encrypted_secret, expires) values (
+          name_in,
+          encrypted_secret_in,
+          expires_in
+        ) on conflict (name) do update set
+          encrypted_secret = encrypted_secret_in,
+          expires = expires_in;
+      end
+  get_secret:
+    serviceName: secrets
+    description: Get a single secret (including secret content and expiration)
+    mode: read
+    args: name_in text
+    returns: table(name text, encrypted_secret jsonb, expires timestamptz)
+    body: |-
+      begin
+        return query select secrets.name, secrets.encrypted_secret, secrets.expires from secrets
+        where
+          secrets.name = name_in and
+          secrets.expires >= now()
+        limit 1;
+      end
+  get_secrets:
+    serviceName: secrets
+    description: |-
+      Get many secrets at once. This only includes names.
+      Fetch an individual secret to get the contents
+    mode: read
+    args: page_size_in integer, page_offset_in integer
+    returns: table(name text)
+    body: |-
+      begin
+        return query select secrets.name from secrets
+        where
+          secrets.expires >= now()
+        order by secrets.name
+        limit get_page_limit(page_size_in)
+        offset get_page_offset(page_offset_in); 
+      end
+  delete_secret:
+    serviceName: secrets
+    description: Delete a secret entirely
+    mode: write
+    args: name_in text
+    returns: void
+    body: |-
+      begin
+        delete from secrets
+        where
+          secrets.name = name_in;
+      end
+  expire_secrets:
+    description: Delete all secrets with an 'expires' in the past.
+    mode: write
+    serviceName: secrets
+    args: ''
+    returns: integer
+    body: |-
+      declare
+        count integer;
+      begin
+        delete from secrets where secrets.expires < now();
+        if found then
+          get diagnostics count = row_count;
+          return count;
+        end if;
+        return 0;
+      end 
