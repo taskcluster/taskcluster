@@ -4,6 +4,7 @@ This directory defines the Taskcluster database:
 
 * [Stored Functions](./fns.md) -- list of stored functions defined by this package
 * [`versions/`](./versions) -- the migrations that create the most-recent database schema
+  * [`schema.md`](./schema.md) -- tables and indexes in the DB (for internal use only!)
   * [`tables.yml`](./tables.yml) -- tables in the DB (for internal use only!)
   * [`access.yml`](./access.yml) -- definitions for which services can access which tables
 * [`test/`](./test) -- tests for the contents of this directory
@@ -32,7 +33,7 @@ The script runs in a single transaction.
 The following checklist summarizes what needs to be written to modify the database.
 
 * [ ] new version file in `db/versions` that updates all impacted stored functions
-* [ ] any necessary updates in `db/tables.yml` and `db/access.yml`
+* [ ] any necessary updates in `db/access.yml`
 * [ ] new test script in `db/test/versions`
   * [ ] test forward migration
   * [ ] test downgrade

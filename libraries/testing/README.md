@@ -371,6 +371,15 @@ exports.resetTables = (mock, skipping) => {
 };
 ```
 
+Finally, to completely reset the DB to an empty state (but with per-service users defined), call `resetDb`:
+
+```javascript
+const {resetDb} = require('taskcluster-lib-testing');
+
+// this automatically uses TEST_DB_URL.
+await resetDb();
+```
+
 withPulse
 ---------
 

@@ -9,6 +9,7 @@ const {Transform} = require('stream');
  * - command -- command to run (list of arguments)
  * - utils -- taskgraph utils (waitFor, etc.)
  * - logfile -- log file to which to record output of command
+ * - keepAllOutput -- if true, keep and return the stdout
  * - env -- optional environment variables for the command
  */
 exports.execCommand = async ({
