@@ -231,8 +231,8 @@ class Provisioner {
   }
 
   // Get a provisioner from the DB, or undefined
-  static async get(db, provisionerId) {
-    return Provisioner.fromDbRows(await db.fns.get_queue_provisioner(provisionerId));
+  static async get(db, provisionerId, expires) {
+    return Provisioner.fromDbRows(await db.fns.get_queue_provisioner(provisionerId, expires));
   }
 
   // Call db.get_queue_provisioners.
@@ -242,6 +242,9 @@ class Provisioner {
   static async getProvisioners(
     db,
     {
+      expires,
+    },
+    {
       query,
     } = {},
   ) {
@@ -249,6 +252,7 @@ class Provisioner {
       const {continuationToken, rows} = await paginateResults({
         query,
         fetch: (size, offset) => db.fns.get_queue_provisioners(
+          expires,
           size,
           offset,
         ),
@@ -283,7 +287,7 @@ class Provisioner {
         throw err;
       }
 
-      const existing = await Provisioner.get(db, this.provisionerId);
+      const existing = await Provisioner.get(db, this.provisionerId, new Date());
       if (!this.equals(existing)) {
         // new provisioner does not match, so this is a "real" conflict
         throw err;
@@ -365,8 +369,8 @@ class WorkerType {
   }
 
   // Get a worker type from the DB, or undefined
-  static async get(db, provisionerId, workerType) {
-    return WorkerType.fromDbRows(await db.fns.get_queue_worker_type(provisionerId, workerType));
+  static async get(db, provisionerId, workerType, expires) {
+    return WorkerType.fromDbRows(await db.fns.get_queue_worker_type(provisionerId, workerType, expires));
   }
 
   // Call db.get_queue_worker_types.
@@ -378,6 +382,7 @@ class WorkerType {
     {
       provisionerId,
       workerType,
+      expires,
     },
     {
       query,
@@ -389,6 +394,7 @@ class WorkerType {
         fetch: (size, offset) => db.fns.get_queue_worker_types(
           provisionerId || null,
           workerType || null,
+          expires || null,
           size,
           offset,
         ),
@@ -420,7 +426,7 @@ class WorkerType {
         throw err;
       }
 
-      const existing = await WorkerType.get(db, this.provisionerId, this.workerType);
+      const existing = await WorkerType.get(db, this.provisionerId, this.workerType, new Date());
       if (!this.equals(existing)) {
         // new worker type does not match, so this is a "real" conflict
         throw err;
@@ -507,8 +513,8 @@ class Worker {
   }
 
   // Get a worker from the DB, or undefined
-  static async get(db, provisionerId, workerType, workerGroup, workerId) {
-    return Worker.fromDbRows(await db.fns.get_queue_worker(provisionerId, workerType, workerGroup, workerId));
+  static async get(db, provisionerId, workerType, workerGroup, workerId, expires) {
+    return Worker.fromDbRows(await db.fns.get_queue_worker(provisionerId, workerType, workerGroup, workerId, expires));
   }
 
   // Call db.get_queue_workers.
@@ -520,6 +526,7 @@ class Worker {
     {
       provisionerId,
       workerType,
+      expires,
     },
     {
       query,
@@ -531,6 +538,7 @@ class Worker {
         fetch: (size, offset) => db.fns.get_queue_workers(
           provisionerId || null,
           workerType || null,
+          expires || null,
           size,
           offset,
         ),
@@ -573,7 +581,8 @@ class Worker {
         this.provisionerId,
         this.workerType,
         this.workerGroup,
-        this.workerId);
+        this.workerId,
+        new Date());
       if (!this.equals(existing)) {
         // new worker does not match, so this is a "real" conflict
         throw err;

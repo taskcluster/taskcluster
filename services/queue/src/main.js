@@ -3,7 +3,6 @@ let debug = require('debug')('app:main');
 let taskcluster = require('taskcluster-client');
 let builder = require('./api');
 let exchanges = require('./exchanges');
-let {Worker, WorkerType, Provisioner} = require('./data');
 let Bucket = require('./bucket');
 let QueueService = require('./queueservice');
 let EC2RegionResolver = require('./ec2regionresolver');
@@ -361,17 +360,6 @@ let load = loader({
         const count = await workerInfo.expire(now);
         debug('Expired %s worker-info', count);
       });
-    },
-  },
-
-  // drop the provisioner / workerType / worker tracking tables (in case
-  // of backouts). Intended to be run from a one-off heroku dyno
-  'remove-all-worker-tables': {
-    requires: ['db'],
-    setup: async (db) => {
-      await db.fns.remove_queue_provisioners_table();
-      await db.fns.remove_queue_worker_types_table();
-      await db.fns.remove_queue_workers_table();
     },
   },
 

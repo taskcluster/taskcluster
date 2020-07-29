@@ -3,6 +3,7 @@ const _ = require('lodash');
 const helper = require('../helper');
 const testing = require('taskcluster-lib-testing');
 const Entity = require('taskcluster-lib-entities');
+const { fromNow } = require('taskcluster-client/src/utils');
 
 const THIS_VERSION = parseInt(/.*\/0*(\d+)_test\.js/.exec(__filename)[1]);
 const PREV_VERSION = THIS_VERSION - 1;
@@ -52,7 +53,7 @@ suite(testing.suiteName(), function() {
       aabbccddeeff: {
         provisionerId: 'aaa/provisioner',
         workerType: 'aaa/workertype',
-        expires: new Date(1),
+        expires: fromNow('1 day'),
         lastDateActive: new Date(2),
         description: 'aaa/description',
         stability: 'aaa/stability',
@@ -74,6 +75,8 @@ suite(testing.suiteName(), function() {
     scanConditions: [
       {condition: {}, expectedSamples: ['aabbccddeeff', 'samp0', 'samp1', 'samp2', 'samp3', 'samp4']},
       {condition: null, expectedSamples: ['aabbccddeeff', 'samp0', 'samp1', 'samp2', 'samp3', 'samp4']},
+      {condition: {provisionerId: 'aaa/provisioner', workerType: 'aaa/workertype'}, expectedSamples: ['aabbccddeeff']},
+      {condition: {provisionerId: 'some/provisioner0'}, expectedSamples: ['samp0']},
     ],
     notFoundConditions: [
       {condition: {provisionerId: 'no/such', workerType: 'no/such'}},

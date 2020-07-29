@@ -855,7 +855,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     });
 
     const db = await helper.load('db');
-    const result = await Worker.get(db, provisionerId, workerType, workerGroup, workerId);
+    const result = await Worker.get(db, provisionerId, workerType, workerGroup, workerId, new Date());
 
     assert(result.recentTasks[0].taskId === taskId, `expected taskId ${taskId}`);
     assert(result.recentTasks[0].runId === 0, 'expected runId 0');

@@ -86,10 +86,12 @@ suite(testing.suiteName(), function() {
       modifier: [
         ent => {
           ent.expires = new Date(3);
+          ent.actions = [{thing: 1}];
         },
       ],
       checker(ent) {
         assert.deepEqual(ent.expires, new Date(3));
+        assert.deepEqual(ent.actions, [{thing: 1}]),
       },
     }],
   });

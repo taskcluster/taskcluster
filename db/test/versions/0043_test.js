@@ -3,6 +3,7 @@ const _ = require('lodash');
 const helper = require('../helper');
 const testing = require('taskcluster-lib-testing');
 const Entity = require('taskcluster-lib-entities');
+const { fromNow } = require('taskcluster-client/src/utils');
 
 const THIS_VERSION = parseInt(/.*\/0*(\d+)_test\.js/.exec(__filename)[1]);
 const PREV_VERSION = THIS_VERSION - 1;
@@ -66,7 +67,7 @@ suite(testing.suiteName(), function() {
           'taskId': 'aaa/taskid',
         }],
         quarantineUntil: new Date(0),
-        expires: new Date(1),
+        expires: fromNow('1 day'),
         firstClaim: new Date(2),
       },
       ...Object.fromEntries(_.range(5).map(i => ([
@@ -90,6 +91,8 @@ suite(testing.suiteName(), function() {
     scanConditions: [
       {condition: {}, expectedSamples: ['aabbccddeeff', 'samp0', 'samp1', 'samp2', 'samp3', 'samp4']},
       {condition: null, expectedSamples: ['aabbccddeeff', 'samp0', 'samp1', 'samp2', 'samp3', 'samp4']},
+      {condition: {provisionerId: 'aaa/provisioner', workerType: 'aaa/workertype', workerGroup: 'aaa/workergroup'}, expectedSamples: ['aabbccddeeff']},
+      {condition: {provisionerId: 'some/provisioner0', workerType: 'some/workertype0'}, expectedSamples: ['samp0']},
     ],
     notFoundConditions: [
       {condition: {provisionerId: 'no/such', workerType: 'no/such', workerGroup: 'no/such', workerId: 'no/such'}},
@@ -100,10 +103,12 @@ suite(testing.suiteName(), function() {
       modifier: [
         ent => {
           ent.expires = new Date(3);
+          ent.recentTasks = [{'taskId': 'bbb/taskid'}];
         },
       ],
       checker(ent) {
         assert.deepEqual(ent.expires, new Date(3));
+        assert.deepEqual(ent.recentTasks, [{'taskId': 'bbb/taskid'}]);
       },
     }],
   });

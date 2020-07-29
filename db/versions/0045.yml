@@ -229,7 +229,7 @@ methods:
       Get a queue provisioner by provisioner_id.
     mode: read
     serviceName: queue
-    args: provisioner_id_in text
+    args: provisioner_id_in text, expires_in timestamptz
     returns: table(provisioner_id text, expires timestamptz, last_date_active timestamptz, description text, stability text, actions jsonb, etag uuid)
     body: |-
       begin
@@ -244,12 +244,14 @@ methods:
           queue_provisioners.etag
         from queue_provisioners
         where
-          queue_provisioners.provisioner_id = provisioner_id_in;
+          queue_provisioners.provisioner_id = provisioner_id_in and
+          queue_provisioners.expires > expires_in;
         end
   update_queue_provisioner:
     serviceName: queue
     description: |-
-      Update a queue provisioner.
+      Update a queue provisioner's expires, last_date_active, description, stability, and actions.
+      All parameters must be supplied.
     mode: write
     args: provisioner_id_in text, expires_in timestamptz, last_date_active_in timestamptz, description_in text, stability_in text, actions_in jsonb
     returns: table(provisioner_id text, expires timestamptz, last_date_active timestamptz, description text, stability text, actions jsonb, etag uuid)
@@ -283,7 +285,7 @@ methods:
       Otherwise, page_size rows are returned at offset page_offset.
     mode: read
     serviceName: queue
-    args: page_size_in integer, page_offset_in integer
+    args: expires_in timestamptz, page_size_in integer, page_offset_in integer
     returns: table(provisioner_id text, expires timestamptz, last_date_active timestamptz, description text, stability text, actions jsonb, etag uuid)
     body: |-
       begin
@@ -297,6 +299,7 @@ methods:
           queue_provisioners.actions,
           queue_provisioners.etag
         from queue_provisioners
+        where (queue_provisioners.expires > expires_in or expires_in is null)
         order by provisioner_id
         limit get_page_limit(page_size_in)
         offset get_page_offset(page_offset_in);
@@ -321,13 +324,3 @@ methods:
         end if;
         return 0;
       end
-  remove_queue_provisioners_table:
-    description: |-
-      Removes the queue provisioners table in case of backouts.
-    mode: write
-    serviceName: queue
-    args: []
-    returns: void
-    body: |-
-      begin
-        drop table queue_provisioners;

@@ -185,8 +185,8 @@ methods:
             queue_worker_types.etag as etag
           from queue_worker_types
           where
-            (queue_worker_type_entities_scan.pk is null or queue_worker_type_entities_scan.pk = provisioner_id) and
-            (queue_worker_type_entities_scan.rk is null or queue_worker_type_entities_scan.rk = worker_type)
+            (queue_worker_type_entities_scan.pk is null or decode_string_key(queue_worker_type_entities_scan.pk) = provisioner_id) and
+            (queue_worker_type_entities_scan.rk is null or decode_string_key(queue_worker_type_entities_scan.rk) = worker_type)
           order by queue_worker_types.provisioner_id, queue_worker_types.worker_type
           limit case
             when (size is not null and size > 0) then size + 1
@@ -230,10 +230,10 @@ methods:
       end
   get_queue_worker_type:
     description: |-
-      Get a queue worker type by provisioner_id and worker_type.
+      Get a non-expired queue worker type by provisioner_id and worker_type.
     mode: read
     serviceName: queue
-    args: provisioner_id_in text, worker_type_in text
+    args: provisioner_id_in text, worker_type_in text, expires_in timestamptz
     returns: table(provisioner_id text, worker_type text, expires timestamptz, last_date_active timestamptz, description text, stability text, etag uuid)
     body: |-
       begin
@@ -249,12 +249,14 @@ methods:
         from queue_worker_types
         where
           queue_worker_types.provisioner_id = provisioner_id_in and
-          queue_worker_types.worker_type = worker_type_in;
+          queue_worker_types.worker_type = worker_type_in and
+          queue_worker_types.expires > expires_in;
         end
   update_queue_worker_type:
     serviceName: queue
     description: |-
-      Update a queue worker type.
+      Update a queue worker type's expires, last_date_active, description, and stability.
+      All parameters must be supplied.
     mode: write
     args: provisioner_id_in text, worker_type_in text, expires_in timestamptz, last_date_active_in timestamptz, description_in text, stability_in text
     returns: table(provisioner_id text, worker_type text, expires timestamptz, last_date_active timestamptz, description text, stability text, etag uuid)
@@ -288,7 +290,7 @@ methods:
       Otherwise, page_size rows are returned at offset page_offset.
     mode: read
     serviceName: queue
-    args: provisioner_id_in text, worker_type_in text, page_size_in integer, page_offset_in integer
+    args: provisioner_id_in text, worker_type_in text, expires_in timestamptz, page_size_in integer, page_offset_in integer
     returns: table(provisioner_id text, worker_type text, expires timestamptz, last_date_active timestamptz, description text, stability text, etag uuid)
     body: |-
       begin
@@ -304,7 +306,8 @@ methods:
         from queue_worker_types
         where
           (queue_worker_types.provisioner_id = provisioner_id_in or provisioner_id_in is null) and
-          (queue_worker_types.worker_type = worker_type_in or worker_type_in is null)
+          (queue_worker_types.worker_type = worker_type_in or worker_type_in is null) and
+          (queue_worker_types.expires > expires_in or expires_in is null)
         order by provisioner_id, worker_type
         limit get_page_limit(page_size_in)
         offset get_page_offset(page_offset_in);
@@ -329,13 +332,3 @@ methods:
         end if;
         return 0;
       end
-  remove_queue_worker_types_table:
-    description: |-
-      Removes the queue worker types table in case of backouts.
-    mode: write
-    serviceName: queue
-    args: []
-    returns: void
-    body: |-
-      begin
-        drop table queue_worker_types;

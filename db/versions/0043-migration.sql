@@ -18,7 +18,7 @@ begin
       (value ->> 'firstClaim')::timestamptz as first_claim,
       etag
     from queue_worker_entities;
-  alter table queue_workers add primary key (provisioner_id, worker_id);
+  alter table queue_workers add primary key (provisioner_id, worker_type, worker_group, worker_id);
   alter table queue_workers
     alter column provisioner_id set not null,
     alter column worker_type set not null,

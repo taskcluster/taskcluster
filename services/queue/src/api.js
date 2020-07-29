@@ -920,7 +920,7 @@ builder.declare({
     workerType,
   });
 
-  const worker = await Worker.get(this.db, provisionerId, workerType, workerGroup, workerId);
+  const worker = await Worker.get(this.db, provisionerId, workerType, workerGroup, workerId, new Date());
 
   // Don't claim tasks when worker is quarantined (but do record the worker
   // being seen, and be sure to wait the 20 seconds so as not to cause a
@@ -1028,7 +1028,7 @@ builder.declare({
     );
   }
 
-  const worker = await Worker.get(this.db, null, null, workerGroup, workerId);
+  const worker = await Worker.get(this.db, null, null, workerGroup, workerId, new Date());
 
   // Don't record task when worker is quarantined
   if (worker && worker.quarantineUntil.getTime() > new Date().getTime()) {
@@ -1551,6 +1551,7 @@ builder.declare({
 
   const {rows: provisioners, continuationToken} = await Provisioner.getProvisioners(
     this.db,
+    { expires: new Date() },
     { query: {continuationToken: continuation, limit} },
   );
   const result = {
@@ -1581,9 +1582,9 @@ builder.declare({
   ].join('\n'),
 }, async function(req, res) {
   const provisionerId = req.params.provisionerId;
-  const provisioner = await Provisioner.get(this.db, provisionerId);
+  const provisioner = await Provisioner.get(this.db, provisionerId, new Date());
 
-  if (!provisioner || provisioner.expires < new Date() ) {
+  if (!provisioner) {
     return res.reportError('ResourceNotFound',
       'Provisioner `{{provisionerId}}` not found. Are you sure it was created?', {
         provisionerId,
@@ -1701,7 +1702,7 @@ builder.declare({
   const provisionerId = req.params.provisionerId;
   const {rows: workerTypes, continuationToken} = await WorkerType.getWorkerTypes(
     this.db,
-    { provisionerId },
+    { provisionerId, expires: new Date() },
     { query: req.query },
   );
   const result = {
@@ -1730,12 +1731,13 @@ builder.declare({
 }, async function(req, res) {
   const {provisionerId, workerType} = req.params;
 
+  const expires = new Date();
   const [wType, provisioner] = await Promise.all([
-    WorkerType.get(this.db, provisionerId, workerType),
-    Provisioner.get(this.db, provisionerId),
+    WorkerType.get(this.db, provisionerId, workerType, expires),
+    Provisioner.get(this.db, provisionerId, expires),
   ]);
 
-  if (!wType || wType.expires < new Date() || !provisioner) {
+  if (!wType || !provisioner) {
     return res.reportError('ResourceNotFound',
       'Worker-type `{{workerType}}` with Provisioner `{{provisionerId}}` not found. Are you sure it was created?', {
         workerType,
@@ -1884,14 +1886,14 @@ builder.declare({
 }, async function(req, res) {
   const {provisionerId, workerType, workerGroup, workerId} = req.params;
 
+  const now = new Date();
   const [worker, wType, provisioner] = await Promise.all([
-    Worker.get(this.db, provisionerId, workerType, workerGroup, workerId),
-    WorkerType.get(this.db, provisionerId, workerType),
-    Provisioner.get(this.db, provisionerId),
+    Worker.get(this.db, provisionerId, workerType, workerGroup, workerId, now),
+    WorkerType.get(this.db, provisionerId, workerType, now),
+    Provisioner.get(this.db, provisionerId, now),
   ]);
 
   // do not consider workers expired until their quarantine date expires.
-  const now = new Date();
   const expired = worker && worker.expires < now && worker.quarantineUntil < now;
 
   if (expired || !worker || !wType || !provisioner) {
@@ -1931,9 +1933,11 @@ builder.declare({
   let result;
   const {provisionerId, workerType, workerGroup, workerId} = req.params;
   const {quarantineUntil} = req.body;
+
+  const expires = new Date();
   let [worker, provisioner] = await Promise.all([
-    Worker.get(this.db, provisionerId, workerType, workerGroup, workerId),
-    Provisioner.get(this.db, provisionerId),
+    Worker.get(this.db, provisionerId, workerType, workerGroup, workerId, expires),
+    Provisioner.get(this.db, provisionerId, expires),
   ]);
 
   if (!worker) {

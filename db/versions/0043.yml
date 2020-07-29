@@ -251,10 +251,11 @@ methods:
       end
   get_queue_worker:
     description: |-
-      Get a queue worker by provisioner_id, worker_type, worker_group, and worker_id.
+      Get a non-expired queue worker by provisioner_id, worker_type, worker_group, and worker_id.
+      Workers are not considered expired until after their quarantine date expires.
     mode: read
     serviceName: queue
-    args: provisioner_id_in text, worker_type_in text, worker_group_in text, worker_id_in text
+    args: provisioner_id_in text, worker_type_in text, worker_group_in text, worker_id_in text, expires_in timestamptz
     returns: table(provisioner_id text, worker_type text, worker_group text, worker_id text, quarantine_until timestamptz, expires timestamptz, first_claim timestamptz, recent_tasks jsonb, etag uuid)
     body: |-
       begin
@@ -274,12 +275,14 @@ methods:
           queue_workers.provisioner_id = provisioner_id_in and
           queue_workers.worker_type = worker_type_in and
           queue_workers.worker_group = worker_group_in and
-          queue_workers.worker_id = worker_id_in;
+          queue_workers.worker_id = worker_id_in and
+          (queue_workers.expires > expires_in or queue_workers.quarantine_until > expires_in);
         end
   update_queue_worker:
     serviceName: queue
     description: |-
-      Update a queue worker.
+      Update a queue worker's quarantine_until, expires, and recent_tasks.
+      All parameters must be supplied.
     mode: write
     args: provisioner_id_in text, worker_type_in text, worker_group_in text, worker_id_in text, quarantine_until_in timestamptz, expires_in timestamptz, recent_tasks_in jsonb
     returns: table(provisioner_id text, worker_type text, worker_group text, worker_id text, quarantine_until timestamptz, expires timestamptz, first_claim timestamptz, recent_tasks jsonb, etag uuid)
@@ -311,12 +314,13 @@ methods:
       end
   get_queue_workers:
     description: |-
-      Get queue workers ordered by provisioner_id, worker_type, worker_group, and worker_id.
+      Get non-expired queue workers ordered by provisioner_id, worker_type, worker_group, and worker_id.
+      Workers are not considered expired until after their quarantine date expires.
       If the pagination arguments are both NULL, all rows are returned.
       Otherwise, page_size rows are returned at offset page_offset.
     mode: read
     serviceName: queue
-    args: provisioner_id_in text, worker_type_in text, page_size_in integer, page_offset_in integer
+    args: provisioner_id_in text, worker_type_in text, expires_in timestamptz, page_size_in integer, page_offset_in integer
     returns: table(provisioner_id text, worker_type text, worker_group text, worker_id text, quarantine_until timestamptz, expires timestamptz, first_claim timestamptz, recent_tasks jsonb, etag uuid)
     body: |-
       begin
@@ -334,7 +338,8 @@ methods:
         from queue_workers
         where
           (queue_workers.provisioner_id = provisioner_id_in or get_queue_workers.provisioner_id_in is null) and
-          (queue_workers.worker_type = worker_type_in or get_queue_workers.worker_type_in is null)
+          (queue_workers.worker_type = worker_type_in or get_queue_workers.worker_type_in is null) and
+          ((queue_workers.expires > expires_in and queue_workers.quarantine_until < expires_in) or get_queue_workers.expires_in is null)
         order by provisioner_id, worker_type, worker_group, worker_id
         limit get_page_limit(page_size_in)
         offset get_page_offset(page_offset_in);
@@ -354,20 +359,10 @@ methods:
         delete from queue_workers
         where
           queue_workers.expires < expires_in and
-          queue_workers.quarantine_until < expires_in;
+          (queue_workers.expires < expires_in and queue_workers.quarantine_until < expires_in);
         if found then
           get diagnostics count = row_count;
           return count;
         end if;
         return 0;
       end
-  remove_queue_workers_table:
-    description: |-
-      Removes the queue workers table in case of backouts.
-    mode: write
-    serviceName: queue
-    args: []
-    returns: void
-    body: |-
-      begin
-        drop table queue_workers;

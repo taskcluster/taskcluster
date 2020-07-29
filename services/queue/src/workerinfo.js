@@ -30,7 +30,7 @@ class WorkerInfo {
    * Thus the `expires` value on a row may be out-of-date by `updateFrequency`.
    *
    * Note that the cache is never purged of outdated entries; this assumes that
-   * the process is restarted on a daily 267985
+   * the process is restarted on a daily
    * basis, so there is not too much time
    * for stale cache entries to accumulate.
    */
@@ -45,22 +45,22 @@ class WorkerInfo {
   }
 
   async seen(provisionerId, workerType, workerGroup, workerId) {
-    const expires = workerId ? taskcluster.fromNow('1 day') : taskcluster.fromNow('5 days');
+    const newExpiration = workerId ? taskcluster.fromNow('1 day') : taskcluster.fromNow('5 days');
+    const expires = new Date();
     const promises = [];
-
     // provisioner seen
     if (provisionerId) {
       promises.push(this.valueSeen(provisionerId, async () => {
-        let provisioner = await Provisioner.get(this.db, provisionerId);
+        let provisioner = await Provisioner.get(this.db, provisionerId, expires);
         if (provisioner) {
           return provisioner.update(this.db, {
-            expires: expired(provisioner.expires) ? expires : provisioner.expires,
+            expires: expired(provisioner.expires) ? newExpiration : provisioner.expires,
             lastDateActive: shouldUpdateLastDateActive(provisioner.lastDateActive) ? new Date() : provisioner.lastDateActive,
           });
         }
         provisioner = await Provisioner.fromApi(provisionerId, {
           provisionerId,
-          expires,
+          expires: newExpiration,
           lastDateActive: new Date(),
           description: '',
           stability: 'experimental',
@@ -80,11 +80,11 @@ class WorkerInfo {
     if (provisionerId && workerType) {
       promises.push(this.valueSeen(`${provisionerId}/${workerType}`, async () => {
         // perform an Azure upsert, trying the update first as it is more common
-        let wType = await WorkerType.get(this.db, provisionerId, workerType);
+        let wType = await WorkerType.get(this.db, provisionerId, workerType, expires);
 
         if (wType) {
           return wType.update(this.db, {
-            expires: expired(wType.expires) ? expires : wType.expires,
+            expires: expired(wType.expires) ? newExpiration : wType.expires,
             lastDateActive: shouldUpdateLastDateActive(wType.lastDateActive) ? new Date() : wType.lastDateActive,
           });
         }
@@ -92,7 +92,7 @@ class WorkerInfo {
         wType = await WorkerType.fromApi(workerType, {
           workerType,
           provisionerId,
-          expires,
+          expires: newExpiration,
           lastDateActive: new Date(),
           description: '',
           stability: 'experimental',
@@ -111,10 +111,10 @@ class WorkerInfo {
     if (provisionerId && workerType && workerGroup && workerId) {
       promises.push(this.valueSeen(`${provisionerId}/${workerType}/${workerGroup}/${workerId}`, async () => {
         // perform an Azure upsert, trying the update first as it is more common
-        let worker = await Worker.get(this.db, provisionerId, workerType, workerGroup, workerId);
+        let worker = await Worker.get(this.db, provisionerId, workerType, workerGroup, workerId, expires);
 
         if (worker) {
-          let rows = await worker.update(this.db, {expires});
+          let rows = await worker.update(this.db, {expires: newExpiration});
           return Worker.fromDbRows(rows);
         }
 
@@ -122,7 +122,7 @@ class WorkerInfo {
           provisionerId,
           workerType,
           workerGroup,
-          expires,
+          expires: newExpiration,
           recentTasks: [],
           quarantineUntil: new Date(),
           firstClaim: new Date(),
@@ -162,7 +162,7 @@ class WorkerInfo {
     }
 
     // Keep track of most recent tasks of a worker
-    const worker = await Worker.get(this.db, provisionerId, workerType, workerGroup, workerId);
+    const worker = await Worker.get(this.db, provisionerId, workerType, workerGroup, workerId, new Date());
 
     if (!worker || worker.quarantineUntil.getTime() > new Date().getTime()) {
       return;
@@ -176,7 +176,7 @@ class WorkerInfo {
   }
 
   async upsertProvisioner({provisionerId, stability, description, actions, expires}) {
-    let provisioner = await Provisioner.get(this.db, provisionerId);
+    let provisioner = await Provisioner.get(this.db, provisionerId, new Date());
     let result;
     if (provisioner) {
       let rows = await provisioner.update(this.db, {
@@ -209,7 +209,7 @@ class WorkerInfo {
   }
 
   async upsertWorkerType({provisionerId, workerType, stability, description, expires}) {
-    let wType = await WorkerType.get(this.db, provisionerId, workerType);
+    let wType = await WorkerType.get(this.db, provisionerId, workerType, new Date());
     let result;
 
     if (wType) {
@@ -242,7 +242,7 @@ class WorkerInfo {
   }
 
   async upsertWorker({provisionerId, workerType, workerGroup, workerId, expires}) {
-    let worker = await Worker.get(this.db, provisionerId, workerType, workerGroup, workerId);
+    let worker = await Worker.get(this.db, provisionerId, workerType, workerGroup, workerId, new Date());
     let result;
 
     if (worker) {
