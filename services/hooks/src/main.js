@@ -45,6 +45,7 @@ const load = loader({
       serviceName: 'hooks',
       monitor: monitor.childMonitor('db'),
       statementTimeout: process === 'server' ? 30000 : 0,
+      azureCryptoKey: cfg.azure.cryptoKey,
       dbCryptoKeys: cfg.postgres.dbCryptoKeys,
     }),
   },
