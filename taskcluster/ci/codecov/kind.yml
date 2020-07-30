@@ -22,7 +22,7 @@ jobs:
       env:
         CODECOV_NAME: codecov-upload
       max-run-time: 600
-      docker-image: {taskcluster: 'node-and-go'}
+      docker-image: {taskcluster: 'ci-image'}
     description: upload nodejs services/libraries coverage
     requires: all-resolved
     run:

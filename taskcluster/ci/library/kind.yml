@@ -27,7 +27,7 @@ job-defaults:
         path: /taskcluster/artifacts
         type: directory
     max-run-time: 600
-    docker-image: {taskcluster: 'node-and-postgres'}
+    docker-image: {taskcluster: 'ci-image'}
 
 job-overrides:
   pulse:
