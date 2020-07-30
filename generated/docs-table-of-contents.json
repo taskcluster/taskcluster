@@ -3595,7 +3595,7 @@
                 },
                 "name": "simple-posix-payload",
                 "next": {
-                  "path": "reference/workers/websocktunnel/README",
+                  "path": "reference/workers/websocktunnel",
                   "title": "websocktunnel"
                 },
                 "path": "reference/workers/generic-worker/simple-posix-payload",
@@ -3631,14 +3631,15 @@
             "children": [
             ],
             "data": {
-              "order": 1000
+              "order": 1000,
+              "title": "websocktunnel"
             },
             "name": "websocktunnel",
             "next": {
               "path": "reference/workers/worker-runner/README",
               "title": "worker-runner"
             },
-            "path": "reference/workers/websocktunnel/README",
+            "path": "reference/workers/websocktunnel",
             "prev": {
               "path": "reference/workers/generic-worker/simple-posix-payload",
               "title": "Task Payload - simple, posix"
@@ -3789,7 +3790,7 @@
             },
             "path": "reference/workers/worker-runner/README",
             "prev": {
-              "path": "reference/workers/websocktunnel/README",
+              "path": "reference/workers/websocktunnel",
               "title": "websocktunnel"
             },
             "up": {
