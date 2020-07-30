@@ -1,5 +1,10 @@
-const {APIBuilder} = require('taskcluster-lib-api');
-const Entity = require('taskcluster-lib-entities');
+const _ = require('lodash');
+const {APIBuilder, paginateResults} = require('taskcluster-lib-api');
+
+const secretToJson = (db, item) => ({
+  secret: _.cloneDeep(JSON.parse(db.decrypt({value: item.encrypted_secret}).toString('utf8'))),
+  expires: item.expires.toJSON(),
+});
 
 /** API end-point for version v1/
  *
@@ -17,7 +22,7 @@ let builder = new APIBuilder({
   ].join('\n'),
   serviceName: 'secrets',
   apiVersion: 'v1',
-  context: ['cfg', 'Secret'],
+  context: ['cfg', 'db'],
 });
 
 // Export API
@@ -43,26 +48,11 @@ builder.declare({
     'updated instead.',
   ].join('\n'),
 }, async function(req, res) {
-  let {name} = req.params;
-  let {secret, expires} = req.body;
-  try {
-    await this.Secret.create({
-      name: name,
-      secret: secret,
-      expires: new Date(expires),
-    });
-  } catch (e) {
-    // If the entity exists, update it
-    if (e.name === 'EntityAlreadyExistsError') {
-      let item = await this.Secret.load({name});
-      await item.modify(function() {
-        this.secret = secret;
-        this.expires = new Date(expires);
-      });
-    } else {
-      throw e;
-    }
-  }
+  const {name} = req.params;
+  const {secret, expires} = req.body;
+  await this.db.fns.upsert_secret(name, this.db.encrypt({
+    value: Buffer.from(JSON.stringify(secret), 'utf8'),
+  }), new Date(expires));
   res.reply({});
 });
 
@@ -75,19 +65,11 @@ builder.declare({
   stability: 'stable',
   category: 'Secrets Service',
   description: [
-    'Delete the secret associated with some key.',
+    'Delete the secret associated with some key. It will succeed whether or not the secret exists',
   ].join('\n'),
 }, async function(req, res) {
-  let {name} = req.params;
-  try {
-    await this.Secret.remove({name: name});
-  } catch (e) {
-    if (e.name === 'ResourceNotFoundError') {
-      return res.reportError('ResourceNotFound', 'Secret not found', {});
-    } else {
-      throw e;
-    }
-  }
+  const {name} = req.params;
+  await this.db.fns.delete_secret(name);
   res.reply({});
 });
 
@@ -107,22 +89,12 @@ builder.declare({
     'regardless of whether the secret exists.',
   ].join('\n'),
 }, async function(req, res) {
-  let {name} = req.params;
-  let item = undefined;
-  try {
-    item = await this.Secret.load({name});
-  } catch (e) {
-    if (e.name === 'ResourceNotFoundError') {
-      return res.reportError('ResourceNotFound', 'Secret not found', {});
-    } else {
-      throw e;
-    }
+  const {name} = req.params;
+  const [item] = await this.db.fns.get_secret(name);
+  if (item === undefined) {
+    return res.reportError('ResourceNotFound', 'Secret not found', {});
   }
-  if (item.isExpired()) {
-    return res.reportError('ResourceExpired', 'The requested resource has expired.', {});
-  } else {
-    res.reply(item.json());
-  }
+  return res.reply(secretToJson(this.db, item));
 });
 
 builder.declare({
@@ -133,10 +105,7 @@ builder.declare({
   title: 'List Secrets',
   stability: 'stable',
   category: 'Secrets Service',
-  query: {
-    continuationToken: Entity.continuationTokenPattern,
-    limit: /^[0-9]+$/,
-  },
+  query: paginateResults.query,
   description: [
     'List the names of all secrets.',
     '',
@@ -151,12 +120,16 @@ builder.declare({
     'use the query-string option `limit` to return fewer.',
   ].join('\n'),
 }, async function(req, res) {
-  const continuation = req.query.continuationToken || null;
-  const limit = Math.min(parseInt(req.query.limit || 1000, 10), 1000);
-  const query = await this.Secret.scan({}, {continuation, limit});
+  const {continuationToken, rows: secrets} = await paginateResults({
+    query: req.query,
+    fetch: (size, offset) => this.db.fns.get_secrets(
+      size,
+      offset,
+    ),
+  });
 
   return res.reply({
-    secrets: query.entries.map(secret => secret.name),
-    continuationToken: query.continuation || undefined,
+    secrets: secrets.map(secret => secret.name),
+    continuationToken,
   });
 });

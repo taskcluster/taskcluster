@@ -50,7 +50,7 @@
     },
     "secrets": {
       "tables": {
-        "secrets_entities": "write"
+        "secrets": "write"
       }
     },
     "web_server": {
@@ -239,12 +239,10 @@
       "role_id": "text not null",
       "scopes": "jsonb not null"
     },
-    "secrets_entities": {
-      "etag": "uuid",
-      "partition_key": "text not null",
-      "row_key": "text not null",
-      "value": "jsonb not null",
-      "version": "integer not null"
+    "secrets": {
+      "encrypted_secret": "jsonb not null",
+      "expires": "timestamp with time zone not null",
+      "name": "text not null"
     },
     "sessions": {
       "data": "jsonb not null",
@@ -4642,6 +4640,104 @@
       },
       "migrationScript": "begin\n  -- lock this table before reading from it, to prevent loss of concurrent\n  -- updates when the table is dropped.  Note that this may lead to concurrent\n  -- updates failing; the important thing is that they not succeed without\n  -- taking effect.  Failed updates will be retried.\n  lock table clients_entities;\n\n  create table clients\n  as\n    select\n      (value ->> 'clientId')::text as client_id,\n      entity_buf_decode(value, 'description')::text as description,\n      entity_to_crypto_container_v0(value, 'accessToken') as encrypted_access_token,\n      (value ->> 'expires')::timestamptz as expires,\n      (value ->> 'disabled')::boolean as disabled,\n      entity_buf_decode(value, 'scopes')::jsonb as scopes,\n      (details ->> 'created')::timestamptz as created,\n      (details ->> 'lastModified')::timestamptz as last_modified,\n      (details ->> 'lastDateUsed')::timestamptz as last_date_used,\n      (details ->> 'lastRotated')::timestamptz as last_rotated,\n      (details ->> 'deleteOnExpiration')::boolean as delete_on_expiration,\n      etag\n    from (\n      select\n        value,\n        entity_buf_decode(value, 'details')::jsonb as details,\n        etag\n      from clients_entities\n    ) as expanded;\n  alter table clients add primary key (client_id);\n  alter table clients\n    alter column client_id set not null,\n    alter column description set not null,\n    alter column encrypted_access_token set not null,\n    alter column expires set not null,\n    alter column disabled set not null,\n    alter column scopes set not null,\n    alter column created set not null,\n    alter column last_modified set not null,\n    alter column last_date_used set not null,\n    alter column last_rotated set not null,\n    alter column delete_on_expiration set not null,\n    alter column etag set not null,\n    alter column etag set default public.gen_random_uuid();\n\n  revoke select, insert, update, delete on clients_entities from $db_user_prefix$_auth;\n  drop table clients_entities;\n  grant select, insert, update, delete on clients to $db_user_prefix$_auth;\nend\n",
       "version": 41
+    },
+    {
+      "description": "secrets phase 2",
+      "downgradeScript": "begin\n  -- lock this table before reading from it, to prevent loss of concurrent\n  -- updates when the table is dropped.\n  lock table secrets;\n\n  create table secrets_entities(\n    partition_key text, row_key text,\n    value jsonb not null,\n    version integer not null,\n    etag uuid default public.gen_random_uuid());\n  alter table secrets_entities add primary key (partition_key, row_key);\n\n  insert into secrets_entities\n  select\n    encode_string_key('secrets') as partition_key,\n    encode_string_key(name) as row_key,\n    encrypted_entity_buf_encode(\n      jsonb_build_object(\n        'PartitionKey', encode_string_key('secrets'),\n        'RowKey', encode_string_key(name),\n        'expires', secrets.expires,\n        'name', secrets.name),\n      'secret', secrets.encrypted_secret) as value,\n    1 as version,\n    public.gen_random_uuid() as etag\n  from secrets;\n\n  revoke select, insert, update, delete on secrets from $db_user_prefix$_secrets;\n  drop table secrets;\n  grant select, insert, update, delete on secrets_entities to $db_user_prefix$_secrets;\nend\n",
+      "methods": {
+        "delete_secret": {
+          "args": "name_in text",
+          "body": "begin\n  delete from secrets\n  where\n    secrets.name = name_in;\nend",
+          "deprecated": false,
+          "description": "Delete a secret entirely",
+          "mode": "write",
+          "returns": "void",
+          "serviceName": "secrets"
+        },
+        "expire_secrets": {
+          "args": "",
+          "body": "declare\n  count integer;\nbegin\n  delete from secrets where secrets.expires < now();\n  if found then\n    get diagnostics count = row_count;\n    return count;\n  end if;\n  return 0;\nend ",
+          "deprecated": false,
+          "description": "Delete all secrets with an 'expires' in the past.",
+          "mode": "write",
+          "returns": "integer",
+          "serviceName": "secrets"
+        },
+        "get_secret": {
+          "args": "name_in text",
+          "body": "begin\n  return query select secrets.name, secrets.encrypted_secret, secrets.expires from secrets\n  where\n    secrets.name = name_in and\n    secrets.expires >= now()\n  limit 1;\nend",
+          "deprecated": false,
+          "description": "Get a single secret (including secret content and expiration)",
+          "mode": "read",
+          "returns": "table(name text, encrypted_secret jsonb, expires timestamptz)",
+          "serviceName": "secrets"
+        },
+        "get_secrets": {
+          "args": "page_size_in integer, page_offset_in integer",
+          "body": "begin\n  return query select secrets.name from secrets\n  where\n    secrets.expires >= now()\n  order by secrets.name\n  limit get_page_limit(page_size_in)\n  offset get_page_offset(page_offset_in); \nend",
+          "deprecated": false,
+          "description": "Get many secrets at once. This only includes names.\nFetch an individual secret to get the contents",
+          "mode": "read",
+          "returns": "table(name text)",
+          "serviceName": "secrets"
+        },
+        "secrets_entities_create": {
+          "args": "pk text, rk text, properties jsonb, overwrite boolean, version integer",
+          "body": "begin\n  if not overwrite then\n    raise exception 'must overwrite';\n  end if;\n  insert into secrets (name, encrypted_secret, expires) values (\n    (properties ->> 'name')::text,\n    entity_to_crypto_container_v0(properties, 'secret'),\n    (properties ->> 'expires')::timestamptz\n  ) on conflict (name) do update set\n    encrypted_secret = entity_to_crypto_container_v0(properties, 'secret'),\n    expires = (properties ->> 'expires')::timestamptz;\n  return public.gen_random_uuid();\nend",
+          "deprecated": false,
+          "description": "See taskcluster-lib-entities",
+          "mode": "write",
+          "returns": "uuid",
+          "serviceName": "secrets"
+        },
+        "secrets_entities_load": {
+          "args": "partition_key text, row_key text",
+          "body": "begin\n  return query\n  select\n    secrets_entities_load.partition_key,\n    secrets_entities_load.row_key,\n    encrypted_entity_buf_encode(\n      jsonb_build_object(\n        'PartitionKey', secrets_entities_load.partition_key,\n        'RowKey', secrets_entities_load.row_key,\n        'expires', secrets.expires,\n        'name', secrets.name),\n      'secret', secrets.encrypted_secret) as value,\n    1 as version,\n    public.gen_random_uuid() as etag\n  from secrets\n  where\n    secrets.name = decode_string_key(secrets_entities_load.row_key);\nend",
+          "deprecated": false,
+          "description": "See taskcluster-lib-entities",
+          "mode": "read",
+          "returns": "table (partition_key_out text, row_key_out text, value jsonb, version integer, etag uuid)",
+          "serviceName": "secrets"
+        },
+        "secrets_entities_modify": {
+          "args": "partition_key text, row_key text, properties jsonb, version integer, old_etag uuid",
+          "body": "begin\n  raise exception 'not implemented';\nend",
+          "deprecated": false,
+          "description": "See taskcluster-lib-entities",
+          "mode": "write",
+          "returns": "table (etag uuid)",
+          "serviceName": "secrets"
+        },
+        "secrets_entities_remove": {
+          "args": "partition_key text, row_key text",
+          "body": "begin\n  return query delete from secrets\n  where\n    secrets.name = decode_string_key(row_key)\n  returning public.gen_random_uuid();\nend",
+          "deprecated": false,
+          "description": "See taskcluster-lib-entities",
+          "mode": "write",
+          "returns": "table (etag uuid)",
+          "serviceName": "secrets"
+        },
+        "secrets_entities_scan": {
+          "args": "pk text, rk text, condition text, size integer, page integer",
+          "body": "declare\ncond text[];\nexp_cond_field text;\nexp_cond_operator text;\nexp_cond_operand timestamptz;\nbegin\n  if not condition is null then\n    cond := regexp_split_to_array(condition, '\\s+');\n    exp_cond_field := trim(cond[3], '''');\n    exp_cond_operator := cond[4];\n    exp_cond_operand := cond[5] :: timestamptz;\n\n    if exp_cond_operator != '<' or exp_cond_field != 'expires' then\n      raise exception 'secrets_entities_scan only supports `expires < <timestamp>` conditions. Got (%)', exp_cond_operator;\n    end if;\n  end if;\n  return query\n    select\n      encode_string_key('secrets'),\n      encode_string_key(secrets.name),\n      encrypted_entity_buf_encode(\n        jsonb_build_object(\n          'PartitionKey', encode_string_key('secrets'),\n          'RowKey', encode_string_key(secrets.name),\n          'expires', secrets.expires,\n          'name', secrets.name),\n        'secret', secrets.encrypted_secret) as value,\n      1 as version,\n    public.gen_random_uuid() as etag\n    from secrets\n    where\n      row_key is null or\n      secrets.name = decode_string_key(row_key) or\n      (exp_cond_operand is NULL or expires < exp_cond_operand)\n    order by name\n    limit case\n      when (size is not null and size > 0) then size + 1\n      else null\n    end\n    offset case\n      when (page is not null and page > 0) then page\n      else 0\n    end;\nend",
+          "deprecated": false,
+          "description": "See taskcluster-lib-entities",
+          "mode": "read",
+          "returns": "table (partition_key text, row_key text, value jsonb, version integer, etag uuid)",
+          "serviceName": "secrets"
+        },
+        "upsert_secret": {
+          "args": "name_in text, encrypted_secret_in jsonb, expires_in timestamptz",
+          "body": "begin\n  insert into secrets (name, encrypted_secret, expires) values (\n    name_in,\n    encrypted_secret_in,\n    expires_in\n  ) on conflict (name) do update set\n    encrypted_secret = encrypted_secret_in,\n    expires = expires_in;\nend",
+          "deprecated": false,
+          "description": "Store an encrypted secret whether it is new or being updated",
+          "mode": "write",
+          "returns": "void",
+          "serviceName": "secrets"
+        }
+      },
+      "migrationScript": "begin\n  -- lock this table before reading from it, to prevent loss of concurrent\n  -- updates when the table is dropped.  Note that this may lead to concurrent\n  -- updates failing; the important thing is that they not succeed without\n  -- taking effect.  Failed updates will be retried.\n  lock table secrets_entities;\n\n  create table secrets\n  as\n    select\n      (value ->> 'name')::text as name,\n      entity_to_crypto_container_v0(value,'secret') as encrypted_secret,\n      (value ->> 'expires')::timestamptz as expires\n    from secrets_entities;\n  alter table secrets add primary key (name);\n  alter table secrets\n    alter column name set not null,\n    alter column encrypted_secret set not null,\n    alter column expires set not null;\n\n  revoke select, insert, update, delete on secrets_entities from $db_user_prefix$_secrets;\n  drop table secrets_entities;\n  grant select, insert, update, delete on secrets to $db_user_prefix$_secrets;\nend\n",
+      "version": 42
     }
   ]
 }

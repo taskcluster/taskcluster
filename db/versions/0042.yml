@@ -1,0 +1,200 @@
+version: 42
+description: secrets phase 2
+migrationScript: 0042-migration.sql
+downgradeScript: 0042-downgrade.sql
+methods:
+  secrets_entities_load:
+    description: See taskcluster-lib-entities
+    mode: read
+    serviceName: secrets
+    args: partition_key text, row_key text
+    returns: table (partition_key_out text, row_key_out text, value jsonb, version integer, etag uuid)
+    body: |-
+      begin
+        return query
+        select
+          secrets_entities_load.partition_key,
+          secrets_entities_load.row_key,
+          encrypted_entity_buf_encode(
+            jsonb_build_object(
+              'PartitionKey', secrets_entities_load.partition_key,
+              'RowKey', secrets_entities_load.row_key,
+              'expires', secrets.expires,
+              'name', secrets.name),
+            'secret', secrets.encrypted_secret) as value,
+          1 as version,
+          public.gen_random_uuid() as etag
+        from secrets
+        where
+          secrets.name = decode_string_key(secrets_entities_load.row_key);
+      end
+  secrets_entities_create:
+    serviceName: secrets
+    description: See taskcluster-lib-entities
+    mode: write
+    args: pk text, rk text, properties jsonb, overwrite boolean, version integer
+    returns: uuid
+    body: |-
+      begin
+        if not overwrite then
+          raise exception 'must overwrite';
+        end if;
+        insert into secrets (name, encrypted_secret, expires) values (
+          (properties ->> 'name')::text,
+          entity_to_crypto_container_v0(properties, 'secret'),
+          (properties ->> 'expires')::timestamptz
+        ) on conflict (name) do update set
+          encrypted_secret = entity_to_crypto_container_v0(properties, 'secret'),
+          expires = (properties ->> 'expires')::timestamptz;
+        return public.gen_random_uuid();
+      end
+  secrets_entities_remove:
+    serviceName: secrets
+    description: See taskcluster-lib-entities
+    mode: write
+    args: partition_key text, row_key text
+    returns: table (etag uuid)
+    body: |-
+      begin
+        return query delete from secrets
+        where
+          secrets.name = decode_string_key(row_key)
+        returning public.gen_random_uuid();
+      end
+  secrets_entities_modify:
+    serviceName: secrets
+    description: See taskcluster-lib-entities
+    mode: write
+    args: partition_key text, row_key text, properties jsonb, version integer, old_etag uuid
+    returns: table (etag uuid)
+    body: |-
+      begin
+        raise exception 'not implemented';
+      end
+  secrets_entities_scan:
+    description: See taskcluster-lib-entities
+    mode: read
+    serviceName: secrets
+    args: pk text, rk text, condition text, size integer, page integer
+    returns: table (partition_key text, row_key text, value jsonb, version integer, etag uuid)
+    body: |-
+      declare
+      cond text[];
+      exp_cond_field text;
+      exp_cond_operator text;
+      exp_cond_operand timestamptz;
+      begin
+        if not condition is null then
+          cond := regexp_split_to_array(condition, '\s+');
+          exp_cond_field := trim(cond[3], '''');
+          exp_cond_operator := cond[4];
+          exp_cond_operand := cond[5] :: timestamptz;
+
+          if exp_cond_operator != '<' or exp_cond_field != 'expires' then
+            raise exception 'secrets_entities_scan only supports `expires < <timestamp>` conditions. Got (%)', exp_cond_operator;
+          end if;
+        end if;
+        return query
+          select
+            encode_string_key('secrets'),
+            encode_string_key(secrets.name),
+            encrypted_entity_buf_encode(
+              jsonb_build_object(
+                'PartitionKey', encode_string_key('secrets'),
+                'RowKey', encode_string_key(secrets.name),
+                'expires', secrets.expires,
+                'name', secrets.name),
+              'secret', secrets.encrypted_secret) as value,
+            1 as version,
+          public.gen_random_uuid() as etag
+          from secrets
+          where
+            row_key is null or
+            secrets.name = decode_string_key(row_key) or
+            (exp_cond_operand is NULL or expires < exp_cond_operand)
+          order by name
+          limit case
+            when (size is not null and size > 0) then size + 1
+            else null
+          end
+          offset case
+            when (page is not null and page > 0) then page
+            else 0
+          end;
+      end
+  upsert_secret:
+    serviceName: secrets
+    description: Store an encrypted secret whether it is new or being updated
+    mode: write
+    args: name_in text, encrypted_secret_in jsonb, expires_in timestamptz
+    returns: void
+    body: |-
+      begin
+        insert into secrets (name, encrypted_secret, expires) values (
+          name_in,
+          encrypted_secret_in,
+          expires_in
+        ) on conflict (name) do update set
+          encrypted_secret = encrypted_secret_in,
+          expires = expires_in;
+      end
+  get_secret:
+    serviceName: secrets
+    description: Get a single secret (including secret content and expiration)
+    mode: read
+    args: name_in text
+    returns: table(name text, encrypted_secret jsonb, expires timestamptz)
+    body: |-
+      begin
+        return query select secrets.name, secrets.encrypted_secret, secrets.expires from secrets
+        where
+          secrets.name = name_in and
+          secrets.expires >= now()
+        limit 1;
+      end
+  get_secrets:
+    serviceName: secrets
+    description: |-
+      Get many secrets at once. This only includes names.
+      Fetch an individual secret to get the contents
+    mode: read
+    args: page_size_in integer, page_offset_in integer
+    returns: table(name text)
+    body: |-
+      begin
+        return query select secrets.name from secrets
+        where
+          secrets.expires >= now()
+        order by secrets.name
+        limit get_page_limit(page_size_in)
+        offset get_page_offset(page_offset_in); 
+      end
+  delete_secret:
+    serviceName: secrets
+    description: Delete a secret entirely
+    mode: write
+    args: name_in text
+    returns: void
+    body: |-
+      begin
+        delete from secrets
+        where
+          secrets.name = name_in;
+      end
+  expire_secrets:
+    description: Delete all secrets with an 'expires' in the past.
+    mode: write
+    serviceName: secrets
+    args: ''
+    returns: integer
+    body: |-
+      declare
+        count integer;
+      begin
+        delete from secrets where secrets.expires < now();
+        if found then
+          get diagnostics count = row_count;
+          return count;
+        end if;
+        return 0;
+      end 

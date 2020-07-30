@@ -55,7 +55,7 @@ class Secrets(AsyncBaseClient):
         """
         Delete Secret
 
-        Delete the secret associated with some key.
+        Delete the secret associated with some key. It will succeed whether or not the secret exists
 
         This method is ``stable``
         """

@@ -101,12 +101,10 @@ cache_purges:
   before: timestamp with time zone not null
   expires: timestamp with time zone not null
   etag: uuid not null
-secrets_entities:
-  partition_key: text not null
-  row_key: text not null
-  value: jsonb not null
-  version: integer not null
-  etag: uuid
+secrets:
+  name: text not null
+  encrypted_secret: jsonb not null
+  expires: timestamp with time zone not null
 access_tokens:
   encrypted_access_token: jsonb not null
   hashed_access_token: text not null
