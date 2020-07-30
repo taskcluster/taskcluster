@@ -21,7 +21,7 @@ module.exports = ({tasks, cmdOptions, credentials, baseDir, logsDir}) => {
     run: async (requirements, utils) => {
       utils.step({title: 'Check Repository'});
 
-      const tag = `taskcluster/websocktunnel:${requirements['release-version']}`;
+      const tag = `taskcluster/websocktunnel:v${requirements['release-version']}`;
       const provides = {
         'websocktunnel-docker-image': tag,
       };

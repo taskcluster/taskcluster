@@ -43,7 +43,7 @@ module.exports = ({tasks, cmdOptions, credentials, baseDir, logsDir}) => {
     run: async (requirements, utils) => {
       utils.step({title: 'Check Repository'});
 
-      const tag = `taskcluster/livelog:${requirements['release-version']}`;
+      const tag = `taskcluster/livelog:v${requirements['release-version']}`;
       const provides = {
         'livelog-docker-image': tag,
       };
