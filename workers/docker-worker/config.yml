@@ -33,10 +33,6 @@ defaults:
     delayFactor: 15000
     # Value between 0 and 1
     randomizationFactor: 0.25
-  features:
-    relengAPIProxy:
-      image: 'taskcluster/relengapi-proxy:2.3.1'
-      token: !env RELENG_API_TOKEN
   ssl:
     certificate: '/etc/star_taskcluster-worker_net.crt'
     key: '/etc/star_taskcluster-worker_net.key'
@@ -60,11 +56,6 @@ defaults:
   # When this is true the capacity is always overriden to the number of cores.
   restrictCPU: false
 
-  # Image used to  create the taskcluster proxy container.
-  taskclusterProxyImage: 'taskcluster/taskcluster-proxy:5.1.0'
-  taskclusterLogImage: 'taskcluster/livelog:v4'
-  testdroidProxyImage: 'taskcluster/testdroid-proxy:0.0.7'
-  balrogVPNProxyImage: 'taskclusterprivate/taskcluster-vpn-proxy:0.0.3'
   dindImage: 'taskcluster/dind-service:v4.0'
 
   alivenessCheckInterval: 30000
