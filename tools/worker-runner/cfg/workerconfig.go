@@ -199,11 +199,11 @@ func (wc *WorkerConfig) Get(key string) (interface{}, error) {
 	for _, k := range splitkey {
 		valmap, ok := val.(map[string]interface{})
 		if !ok {
-			return nil, fmt.Errorf("key not found")
+			return nil, fmt.Errorf("key %s not found", key)
 		}
 		val, ok = valmap[k]
 		if !ok {
-			return nil, fmt.Errorf("key not found")
+			return nil, fmt.Errorf("key %s not found", key)
 		}
 	}
 	return val, nil

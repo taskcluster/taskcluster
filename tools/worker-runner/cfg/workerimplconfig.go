@@ -12,16 +12,16 @@ import (
 // plus any additional worker implementation-specific properties.
 type WorkerImplementationConfig struct {
 	Implementation string
-	data           map[string]interface{}
+	Data           map[string]interface{}
 }
 
 func (pc *WorkerImplementationConfig) UnmarshalYAML(node *yaml.Node) error {
-	err := node.Decode(&pc.data)
+	err := node.Decode(&pc.Data)
 	if err != nil {
 		return err
 	}
 
-	pt, ok := pc.data["implementation"]
+	pt, ok := pc.Data["implementation"]
 	if !ok {
 		return fmt.Errorf("worker implementation config must have an `implementation` property")
 	}
@@ -30,7 +30,7 @@ func (pc *WorkerImplementationConfig) UnmarshalYAML(node *yaml.Node) error {
 	if !ok {
 		return fmt.Errorf("worker implementation config's `implementation` property must be a string")
 	}
-	delete(pc.data, "implementation")
+	delete(pc.Data, "implementation")
 
 	return nil
 }
@@ -72,12 +72,12 @@ func (pc *WorkerImplementationConfig) Unpack(out interface{}) error {
 		}
 
 		// get the value
-		val, ok := pc.data[name]
+		val, ok := pc.Data[name]
 		if !ok {
 			if optional {
 				continue
 			}
-			return fmt.Errorf("Configuration value `worker.%s` not found", name)
+			return fmt.Errorf("Configuration value `worker.%s` not found in %#v", name, pc.Data)
 		}
 
 		// check types and set the struct field
