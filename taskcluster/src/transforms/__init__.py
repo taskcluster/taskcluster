@@ -22,10 +22,8 @@ def taskcluster_images(config, jobs):
         image = job["worker"]["docker-image"]
         if isinstance(image, dict) and image.keys()[0] == "taskcluster":
             repo = image["taskcluster"]
-            if (repo == "node-and-go"):
-                image = "taskcluster/node-and-go:node{node_version}-{go_version}"
-            elif (repo == "node-and-postgres"):
-                image = "taskcluster/node-and-postgres:node{node_version}-pg{pg_version}"
+            if (repo == "ci-image"):
+                image = "taskcluster/ci-image:node{node_version}-pg{pg_version}-{go_version}"
             elif (repo == "browser-test"):
                 image = "taskcluster/browser-test:{node_version}"
             elif (repo == "rabbit-test"):
