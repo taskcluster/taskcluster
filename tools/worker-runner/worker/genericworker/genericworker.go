@@ -36,9 +36,7 @@ func (d *genericworker) ConfigureRun(state *run.State) error {
 	// generic-worker will fall back to defaults
 	for cfg, md := range map[string]string{
 		// generic-worker config : providerMetadata
-		// required
-		"publicIp": "public-ipv4",
-		// optional
+		"publicIP":         "public-ipv4",
 		"privateIP":        "local-ipv4",
 		"instanceType":     "instance-type",
 		"instanceID":       "instance-id",
