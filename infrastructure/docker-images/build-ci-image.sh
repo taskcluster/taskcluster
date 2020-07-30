@@ -7,6 +7,13 @@ if [ -z "${node_version}" ]; then
     exit 1
 fi
 
+go_version=$(<${repo_root}/.go-version)
+go_version=${go_version#go}
+if [ -z "${go_version}" ]; then
+    echo "Could not determine go version from top-level .go-version"
+    exit 1
+fi
+
 pg_version=11
 
 tmpdir=$(mktemp -d)
@@ -40,11 +47,17 @@ echo 'host all all ::1/128 trust' >> /etc/postgresql/$pg_version/main/pg_hba.con
 EOF
 
 cat > ${tmpdir}/Dockerfile <<EOF
+FROM golang:${go_version}-stretch as golang
 FROM node:${node_version}-stretch
+COPY --from=golang /usr/local/go /usr/local/go
+COPY --from=golang /go /go
+ENV GOPATH /go
+ENV PATH \$GOPATH/bin:/usr/local/go/bin:\$PATH
+RUN curl -sfL https://install.goreleaser.com/github.com/golangci/golangci-lint.sh | sh -s -- -b \$GOPATH/bin v1.27.0
 COPY pginstall /pginstall
 RUN bash /pginstall && rm /pginstall
 ENV TEST_DB_URL=postgresql://postgres@localhost/postgres
 EOF
 
-docker build -t "taskcluster/node-and-postgres:node${node_version}-pg${pg_version}" ${tmpdir}
-[ -n "$DOCKER_PUSH" ] && docker push "taskcluster/node-and-postgres:node${node_version}-pg${pg_version}"
+docker build -t "taskcluster/ci-image:node${node_version}-pg${pg_version}-go${go_version}" ${tmpdir}
+[ -n "$DOCKER_PUSH" ] && docker push "taskcluster/ci-image:node${node_version}-pg${pg_version}-go${go_version}"
