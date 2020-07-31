@@ -97,16 +97,20 @@ methods:
         decoded_composite_row_key text[];
         new_etag uuid;
       begin
-        -- NOTE: queue only updates expires, so that's all that's supported here
+        -- NOTE: queue only updates expires, quarantine_until, and recent_tasks, so that's all that's supported here
         new_etag = public.gen_random_uuid();
         decoded_composite_partition_key := decode_composite_key(queue_worker_entities_modify.partition_key);
         decoded_composite_row_key := decode_composite_key(queue_worker_entities_modify.row_key);
         update queue_workers
         set (
           expires,
+          quarantine_until,
+          recent_tasks,
           etag
         ) = (
           (properties ->> 'expires')::timestamptz,
+          (properties ->> 'quarantineUntil')::timestamptz,
+          entity_buf_decode(properties, 'recentTasks')::jsonb,
           new_etag
         )
         where
