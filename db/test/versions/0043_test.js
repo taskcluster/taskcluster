@@ -91,7 +91,7 @@ suite(testing.suiteName(), function() {
     scanConditions: [
       {condition: {}, expectedSamples: ['aabbccddeeff', 'samp0', 'samp1', 'samp2', 'samp3', 'samp4']},
       {condition: null, expectedSamples: ['aabbccddeeff', 'samp0', 'samp1', 'samp2', 'samp3', 'samp4']},
-      {condition: {provisionerId: 'aaa/provisioner', workerType: 'aaa/workertype', workerGroup: 'aaa/workergroup'}, expectedSamples: ['aabbccddeeff']},
+      // note that we cannot scan by workerGroup, since that's only part of a compound key
       {condition: {provisionerId: 'some/provisioner0', workerType: 'some/workertype0'}, expectedSamples: ['samp0']},
     ],
     notFoundConditions: [
