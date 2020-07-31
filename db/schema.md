@@ -21,7 +21,7 @@
  * [`queue_worker_entities`](#queue_worker_entities)
  * [`queue_worker_type_entities`](#queue_worker_type_entities)
  * [`roles`](#roles)
- * [`secrets_entities`](#secrets_entities)
+ * [`secrets`](#secrets)
  * [`sessions`](#sessions)
  * [`task_dependencies`](#task_dependencies)
  * [`task_groups`](#task_groups)
@@ -346,18 +346,16 @@ ALTER TABLE roles
     ADD CONSTRAINT roles_pkey PRIMARY KEY (role_id);
 ```
 
-## secrets_entities
+## secrets
 
 ```sql
-CREATE TABLE secrets_entities (
-    partition_key text NOT NULL,
-    row_key text NOT NULL,
-    value jsonb NOT NULL,
-    version integer NOT NULL,
-    etag uuid DEFAULT public.gen_random_uuid()
+CREATE TABLE secrets (
+    name text NOT NULL,
+    encrypted_secret jsonb NOT NULL,
+    expires timestamp with time zone NOT NULL
 );
-ALTER TABLE secrets_entities
-    ADD CONSTRAINT secrets_entities_pkey PRIMARY KEY (partition_key, row_key);
+ALTER TABLE secrets
+    ADD CONSTRAINT secrets_pkey PRIMARY KEY (name);
 ```
 
 ## sessions
