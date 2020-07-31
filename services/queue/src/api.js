@@ -1028,7 +1028,7 @@ builder.declare({
     );
   }
 
-  const worker = await Worker.get(this.db, null, null, workerGroup, workerId, new Date());
+  const worker = await Worker.get(this.db, task.provisionerId, task.workerType, workerGroup, workerId, new Date());
 
   // Don't record task when worker is quarantined
   if (worker && worker.quarantineUntil.getTime() > new Date().getTime()) {
