@@ -8,6 +8,12 @@ const IGNORE = [
 exports.tasks = [{
   title: 'README TOCs',
   provides: ['target-readme-tocs'],
+  requires: [
+    'target-worker-runner',
+    'target-generic-worker',
+    'db-versions-readme',
+    'readme-stored-procedures',
+  ],
   run: async (requirements, utils) => {
     utils.status({message: 'gathering READMEs'});
     let readmes = (await gitLsFiles())
