@@ -941,12 +941,6 @@
         "aws_secret_access_key": {
           "type": "string"
         },
-        "azure_report_chance": {
-          "type": "number"
-        },
-        "azure_report_threshold": {
-          "type": "number"
-        },
         "debug": {
           "title": "node debug env var",
           "type": "string"

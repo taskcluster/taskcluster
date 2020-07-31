@@ -9,10 +9,6 @@ defaults:
     publicArtifactBucket:         !env PUBLIC_ARTIFACT_BUCKET
     privateArtifactBucket:        !env PRIVATE_ARTIFACT_BUCKET
 
-    # Azure monitoring knobs
-    azureReportChance:            !env:number:optional AZURE_REPORT_CHANCE # range [0.0, 1.0]
-    azureReportThreshold:         !env:number:optional AZURE_REPORT_THRESHOLD # in milliseconds
-
     # Time delay before expiring artifacts, in readable format, see:
     # taskcluster.fromNow, notice this should be negative!
     artifactExpirationDelay:      '- 30 minutes'
