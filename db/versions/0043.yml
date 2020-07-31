@@ -142,6 +142,7 @@ methods:
         cond text[];
         decoded_composite_partition_key text[];
         decoded_composite_row_key text[];
+        exp_cond_field text;
         exp_cond_operator text;
         exp_cond_operand timestamptz;
       begin
@@ -149,6 +150,7 @@ methods:
         decoded_composite_row_key := decode_composite_key(rk);
         if not condition is null then
           cond := regexp_split_to_array(condition, '\s+');
+          exp_cond_field := cond[3];
           exp_cond_operator := cond[4];
           exp_cond_operand := cond[5] :: timestamptz;
 
@@ -174,12 +176,20 @@ methods:
             (queue_worker_entities_scan.pk is null or decoded_composite_partition_key[1] = provisioner_id and decoded_composite_partition_key[2] = worker_type) and
             (queue_worker_entities_scan.rk is null or decoded_composite_row_key[1] = worker_group and decoded_composite_row_key[2] = worker_id) and
             case
-              when exp_cond_operator = '=' then expires = exp_cond_operand
-              when exp_cond_operator = '<' then expires < exp_cond_operand
-              when exp_cond_operator = '<=' then expires <= exp_cond_operand
-              when exp_cond_operator = '>' then expires > exp_cond_operand
-              when exp_cond_operator = '>=' then expires >= exp_cond_operand
-              else expires <> exp_cond_operand
+              when exp_cond_field = '''quarantineUntil''' then
+              case
+                when exp_cond_operator = '<' then quarantine_until < exp_cond_operand
+                when exp_cond_operator = '>' then quarantine_until > exp_cond_operand
+              end
+              when exp_cond_field = '''expires''' then
+              case
+                when exp_cond_operator = '=' then expires = exp_cond_operand
+                when exp_cond_operator = '<' then expires < exp_cond_operand
+                when exp_cond_operator = '<=' then expires <= exp_cond_operand
+                when exp_cond_operator = '>' then expires > exp_cond_operand
+                when exp_cond_operator = '>=' then expires >= exp_cond_operand
+                else expires <> exp_cond_operand
+              end
             end
           order by queue_workers.provisioner_id, queue_workers.worker_type, queue_workers.worker_group, queue_workers.worker_id
           limit case
