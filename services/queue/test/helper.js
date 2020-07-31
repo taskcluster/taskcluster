@@ -3,7 +3,6 @@ const slugid = require('slugid');
 const taskcluster = require('taskcluster-client');
 const builder = require('../src/api');
 const load = require('../src/main');
-const data = require('../src/data');
 const temporary = require('temporary');
 const mockAwsS3 = require('mock-aws-s3');
 const nock = require('nock');

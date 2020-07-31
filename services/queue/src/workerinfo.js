@@ -55,7 +55,8 @@ class WorkerInfo {
         if (provisioner) {
           return provisioner.update(this.db, {
             expires: expired(provisioner.expires) ? newExpiration : provisioner.expires,
-            lastDateActive: shouldUpdateLastDateActive(provisioner.lastDateActive) ? new Date() : provisioner.lastDateActive,
+            lastDateActive: shouldUpdateLastDateActive(
+              provisioner.lastDateActive) ? new Date() : provisioner.lastDateActive,
           });
         }
         provisioner = await Provisioner.fromApi(provisionerId, {

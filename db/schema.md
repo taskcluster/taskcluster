@@ -336,7 +336,7 @@ CREATE TABLE queue_workers (
     etag uuid DEFAULT public.gen_random_uuid() NOT NULL
 );
 ALTER TABLE queue_workers
-    ADD CONSTRAINT queue_workers_pkey PRIMARY KEY (provisioner_id, worker_id);
+    ADD CONSTRAINT queue_workers_pkey PRIMARY KEY (provisioner_id, worker_type, worker_group, worker_id);
 ```
 
 ## roles

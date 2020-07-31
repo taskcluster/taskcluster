@@ -1,4 +1,3 @@
-let Entity = require('taskcluster-lib-entities');
 let assert = require('assert');
 let _ = require('lodash');
 const { paginateResults } = require('taskcluster-lib-api');

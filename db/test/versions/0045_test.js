@@ -91,7 +91,7 @@ suite(testing.suiteName(), function() {
       ],
       checker(ent) {
         assert.deepEqual(ent.expires, new Date(3));
-        assert.deepEqual(ent.actions, [{thing: 1}]),
+        assert.deepEqual(ent.actions, [{thing: 1}]);
       },
     }],
   });

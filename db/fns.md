@@ -2695,6 +2695,7 @@ Otherwise, page_size rows are returned at offset page_offset.
 * *Mode*: read
 * *Arguments*:
   * `provisioner_id_in text`
+  * `expires_in timestamptz`
 * *Returns*: `table`
   * `provisioner_id text`
   * `expires timestamptz`
@@ -2710,6 +2711,7 @@ Get a queue provisioner by provisioner_id.
 
 * *Mode*: read
 * *Arguments*:
+  * `expires_in timestamptz`
   * `page_size_in integer`
   * `page_offset_in integer`
 * *Returns*: `table`
@@ -2733,6 +2735,7 @@ Otherwise, page_size rows are returned at offset page_offset.
   * `worker_type_in text`
   * `worker_group_in text`
   * `worker_id_in text`
+  * `expires_in timestamptz`
 * *Returns*: `table`
   * `provisioner_id text`
   * `worker_type text`
@@ -2744,7 +2747,8 @@ Otherwise, page_size rows are returned at offset page_offset.
   * `recent_tasks jsonb`
   * `etag uuid`
 
-Get a queue worker by provisioner_id, worker_type, worker_group, and worker_id.
+Get a non-expired queue worker by provisioner_id, worker_type, worker_group, and worker_id.
+Workers are not considered expired until after their quarantine date expires.
 
 ### get_queue_worker_type
 
@@ -2752,6 +2756,7 @@ Get a queue worker by provisioner_id, worker_type, worker_group, and worker_id.
 * *Arguments*:
   * `provisioner_id_in text`
   * `worker_type_in text`
+  * `expires_in timestamptz`
 * *Returns*: `table`
   * `provisioner_id text`
   * `worker_type text`
@@ -2761,7 +2766,7 @@ Get a queue worker by provisioner_id, worker_type, worker_group, and worker_id.
   * `stability text`
   * `etag uuid`
 
-Get a queue worker type by provisioner_id and worker_type.
+Get a non-expired queue worker type by provisioner_id and worker_type.
 
 ### get_queue_worker_types
 
@@ -2769,6 +2774,7 @@ Get a queue worker type by provisioner_id and worker_type.
 * *Arguments*:
   * `provisioner_id_in text`
   * `worker_type_in text`
+  * `expires_in timestamptz`
   * `page_size_in integer`
   * `page_offset_in integer`
 * *Returns*: `table`
@@ -2790,6 +2796,7 @@ Otherwise, page_size rows are returned at offset page_offset.
 * *Arguments*:
   * `provisioner_id_in text`
   * `worker_type_in text`
+  * `expires_in timestamptz`
   * `page_size_in integer`
   * `page_offset_in integer`
 * *Returns*: `table`
@@ -2803,7 +2810,8 @@ Otherwise, page_size rows are returned at offset page_offset.
   * `recent_tasks jsonb`
   * `etag uuid`
 
-Get queue workers ordered by provisioner_id, worker_type, worker_group, and worker_id.
+Get non-expired queue workers ordered by provisioner_id, worker_type, worker_group, and worker_id.
+Workers are not considered expired until after their quarantine date expires.
 If the pagination arguments are both NULL, all rows are returned.
 Otherwise, page_size rows are returned at offset page_offset.
 
@@ -3772,7 +3780,8 @@ Returns the up-to-date artifact row that have the same task id, run id, and name
   * `actions jsonb`
   * `etag uuid`
 
-Update a queue provisioner.
+Update a queue provisioner's expires, last_date_active, description, stability, and actions.
+All parameters must be supplied.
 
 ### update_queue_worker
 
@@ -3796,7 +3805,8 @@ Update a queue provisioner.
   * `recent_tasks jsonb`
   * `etag uuid`
 
-Update a queue worker.
+Update a queue worker's quarantine_until, expires, and recent_tasks.
+All parameters must be supplied.
 
 ### update_queue_worker_type
 
@@ -3817,7 +3827,8 @@ Update a queue worker.
   * `stability text`
   * `etag uuid`
 
-Update a queue worker type.
+Update a queue worker type's expires, last_date_active, description, and stability.
+All parameters must be supplied.
 
 ## secrets
 
