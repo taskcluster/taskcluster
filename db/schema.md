@@ -17,9 +17,9 @@
  * [`index_namespaces`](#index_namespaces)
  * [`indexed_tasks`](#indexed_tasks)
  * [`queue_artifacts`](#queue_artifacts)
- * [`queue_provisioner_entities`](#queue_provisioner_entities)
- * [`queue_worker_entities`](#queue_worker_entities)
- * [`queue_worker_type_entities`](#queue_worker_type_entities)
+ * [`queue_provisioners`](#queue_provisioners)
+ * [`queue_worker_types`](#queue_worker_types)
+ * [`queue_workers`](#queue_workers)
  * [`roles`](#roles)
  * [`secrets`](#secrets)
  * [`sessions`](#sessions)
@@ -289,46 +289,54 @@ ALTER TABLE queue_artifacts
     ADD CONSTRAINT queue_artifacts_pkey PRIMARY KEY (task_id, run_id, name);
 ```
 
-## queue_provisioner_entities
+## queue_provisioners
 
 ```sql
-CREATE TABLE queue_provisioner_entities (
-    partition_key text NOT NULL,
-    row_key text NOT NULL,
-    value jsonb NOT NULL,
-    version integer NOT NULL,
-    etag uuid DEFAULT public.gen_random_uuid()
+CREATE TABLE queue_provisioners (
+    provisioner_id text NOT NULL,
+    expires timestamp with time zone NOT NULL,
+    last_date_active timestamp with time zone NOT NULL,
+    description text NOT NULL,
+    stability text NOT NULL,
+    actions jsonb NOT NULL,
+    etag uuid DEFAULT public.gen_random_uuid() NOT NULL
 );
-ALTER TABLE queue_provisioner_entities
-    ADD CONSTRAINT queue_provisioner_entities_pkey PRIMARY KEY (partition_key, row_key);
+ALTER TABLE queue_provisioners
+    ADD CONSTRAINT queue_provisioners_pkey PRIMARY KEY (provisioner_id);
 ```
 
-## queue_worker_entities
+## queue_worker_types
 
 ```sql
-CREATE TABLE queue_worker_entities (
-    partition_key text NOT NULL,
-    row_key text NOT NULL,
-    value jsonb NOT NULL,
-    version integer NOT NULL,
-    etag uuid DEFAULT public.gen_random_uuid()
+CREATE TABLE queue_worker_types (
+    provisioner_id text NOT NULL,
+    worker_type text NOT NULL,
+    expires timestamp with time zone NOT NULL,
+    last_date_active timestamp with time zone NOT NULL,
+    description text NOT NULL,
+    stability text NOT NULL,
+    etag uuid DEFAULT public.gen_random_uuid() NOT NULL
 );
-ALTER TABLE queue_worker_entities
-    ADD CONSTRAINT queue_worker_entities_pkey PRIMARY KEY (partition_key, row_key);
+ALTER TABLE queue_worker_types
+    ADD CONSTRAINT queue_worker_types_pkey PRIMARY KEY (provisioner_id, worker_type);
 ```
 
-## queue_worker_type_entities
+## queue_workers
 
 ```sql
-CREATE TABLE queue_worker_type_entities (
-    partition_key text NOT NULL,
-    row_key text NOT NULL,
-    value jsonb NOT NULL,
-    version integer NOT NULL,
-    etag uuid DEFAULT public.gen_random_uuid()
+CREATE TABLE queue_workers (
+    provisioner_id text NOT NULL,
+    worker_type text NOT NULL,
+    worker_group text NOT NULL,
+    worker_id text NOT NULL,
+    recent_tasks jsonb NOT NULL,
+    quarantine_until timestamp with time zone NOT NULL,
+    expires timestamp with time zone NOT NULL,
+    first_claim timestamp with time zone NOT NULL,
+    etag uuid DEFAULT public.gen_random_uuid() NOT NULL
 );
-ALTER TABLE queue_worker_type_entities
-    ADD CONSTRAINT queue_worker_type_entities_pkey PRIMARY KEY (partition_key, row_key);
+ALTER TABLE queue_workers
+    ADD CONSTRAINT queue_workers_pkey PRIMARY KEY (provisioner_id, worker_type, worker_group, worker_id);
 ```
 
 ## roles

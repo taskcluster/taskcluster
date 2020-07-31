@@ -3,7 +3,6 @@ let debug = require('debug')('app:main');
 let taskcluster = require('taskcluster-client');
 let builder = require('./api');
 let exchanges = require('./exchanges');
-let data = require('./data');
 let Bucket = require('./bucket');
 let QueueService = require('./queueservice');
 let EC2RegionResolver = require('./ec2regionresolver');
@@ -112,48 +111,6 @@ let load = loader({
     }),
   },
 
-  // Create Provisioner table
-  Provisioner: {
-    requires: ['cfg', 'monitor', 'process', 'db'],
-    setup: async ({cfg, monitor, process, db}) =>
-      data.Provisioner.setup({
-        db,
-        serviceName: 'queue',
-        tableName: cfg.app.provisionerTableName,
-        operationReportChance: cfg.app.azureReportChance,
-        operationReportThreshold: cfg.app.azureReportThreshold,
-        monitor: monitor.childMonitor('table.provisioner'),
-      }),
-  },
-
-  // Create WorkerType table
-  WorkerType: {
-    requires: ['cfg', 'monitor', 'process', 'db'],
-    setup: async ({cfg, monitor, process, db}) =>
-      data.WorkerType.setup({
-        db,
-        serviceName: 'queue',
-        tableName: cfg.app.workerTypeTableName,
-        operationReportChance: cfg.app.azureReportChance,
-        operationReportThreshold: cfg.app.azureReportThreshold,
-        monitor: monitor.childMonitor('table.workerType'),
-      }),
-  },
-
-  // Create Worker table
-  Worker: {
-    requires: ['cfg', 'monitor', 'process', 'db'],
-    setup: async ({cfg, monitor, process, db}) =>
-      data.Worker.setup({
-        db,
-        serviceName: 'queue',
-        tableName: cfg.app.workerTableName,
-        operationReportChance: cfg.app.azureReportChance,
-        operationReportThreshold: cfg.app.azureReportThreshold,
-        monitor: monitor.childMonitor('table.worker'),
-      }),
-  },
-
   // Create QueueService to manage azure queues
   queueService: {
     requires: ['cfg', 'monitor', 'db'],
@@ -182,10 +139,8 @@ let load = loader({
 
   // Create workerInfo
   workerInfo: {
-    requires: ['Provisioner', 'WorkerType', 'Worker'],
-    setup: ({Provisioner, WorkerType, Worker}) => new WorkerInfo({
-      Provisioner, WorkerType, Worker,
-    }),
+    requires: ['db'],
+    setup: ({db}) => new WorkerInfo({db}),
   },
 
   // Create dependencyTracker
@@ -226,16 +181,12 @@ let load = loader({
       'cfg', 'publisher', 'schemaset', 'db', 'queueService',
       'publicArtifactBucket', 'privateArtifactBucket',
       'regionResolver', 'monitor', 'dependencyTracker',
-      'workClaimer', 'Provisioner', 'workerInfo', 'WorkerType', 'Worker',
-      'db',
+      'workClaimer', 'workerInfo',
     ],
     setup: (ctx) => builder.build({
       context: {
         db: ctx.db,
         taskGroupExpiresExtension: ctx.cfg.app.taskGroupExpiresExtension,
-        Provisioner: ctx.Provisioner,
-        WorkerType: ctx.WorkerType,
-        Worker: ctx.Worker,
         dependencyTracker: ctx.dependencyTracker,
         publisher: ctx.publisher,
         claimTimeout: ctx.cfg.app.claimTimeout,
@@ -409,17 +360,6 @@ let load = loader({
         const count = await workerInfo.expire(now);
         debug('Expired %s worker-info', count);
       });
-    },
-  },
-
-  // drop the provisioner / workerType / worker tracking tables (in case
-  // of backouts). Intended to be run from a one-off heroku dyno
-  'remove-all-worker-tables': {
-    requires: ['Provisioner', 'WorkerType', 'Worker'],
-    setup: async ({Provisioner, WorkerType, Worker}) => {
-      await Provisioner.removeTable();
-      await WorkerType.removeTable();
-      await Worker.removeTable();
     },
   },
 
