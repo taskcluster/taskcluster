@@ -286,7 +286,6 @@ exports.resetTables = (mock, skipping) => {
       'tasks',
       'task_groups',
       'task_dependencies',
-      'queue_artifacts_entities',
       'queue_workers',
       'queue_worker_types',
       'queue_provisioners',
