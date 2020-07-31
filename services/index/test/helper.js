@@ -51,7 +51,7 @@ exports.withFakeQueue = (mock, skipping) => {
 };
 
 /**
- * Set up an API server.  Call this after withEntities, so the server
+ * Set up an API server.  Call this after withDb, so the server
  * uses the same Entities classes.
  *
  * This also sets up helper.scopes to set the scopes for helper.queue, the

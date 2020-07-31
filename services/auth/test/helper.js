@@ -160,7 +160,7 @@ testServiceBuilder.declare({
 });
 
 /**
- * Set up API servers.  Call this after withEntities, so the server
+ * Set up API servers.  Call this after withDb, so the server
  * uses the same entities classes.
  *
  * This is both the auth service and a testing service running behind
