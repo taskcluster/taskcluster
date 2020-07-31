@@ -800,7 +800,6 @@ suite(testing.suiteName(), function() {
     helper.dbTest('create_queue_worker / get_queue_worker', async function(db) {
       await create(db);
       const res = await db.fns.get_queue_worker('prov', 'wt', 'wg', 'wi', new Date());
-      console.log(res);
       assert.equal(res[0].provisioner_id, 'prov');
       assert.equal(res[0].worker_type, 'wt');
       assert.equal(res[0].worker_group, 'wg');
@@ -851,16 +850,34 @@ suite(testing.suiteName(), function() {
       assert.deepEqual(res, []);
     });
 
-    helper.dbTest('get_queue_workers pagination', async function(db) {
+    helper.dbTest('get_queue_workers full results', async function(db) {
       for (let i = 0; i < 10; i++) {
         await create(db, {workerId: `w/${i}`});
       }
       const res = await db.fns.get_queue_workers(null, null, null, null, null);
       assert.equal(res.length, 10);
-      console.log(res);
       assert.equal(res[3].worker_id, 'w/3');
       assert.equal(res[4].worker_id, 'w/4');
       assert.equal(res[5].worker_id, 'w/5');
+    });
+
+    helper.dbTest('get_queue_workers with pagination', async function(db) {
+      for (let i = 0; i < 10; i++) {
+        await create(db, {workerId: `w/${i}`});
+      }
+      let results = [];
+      while (true) {
+        const res = await db.fns.get_queue_workers(null, null, null, 2, results.length);
+        if (res.length === 0) {
+          break;
+        }
+        results = results.concat(res);
+      }
+
+      assert.equal(results.length, 10);
+      assert.equal(results[3].worker_id, 'w/3');
+      assert.equal(results[4].worker_id, 'w/4');
+      assert.equal(results[5].worker_id, 'w/5');
     });
 
     helper.dbTest('update_queue_worker', async function(db) {
@@ -957,16 +974,33 @@ suite(testing.suiteName(), function() {
       assert.deepEqual(res, []);
     });
 
-    helper.dbTest('get_queue_worker_types pagination', async function(db) {
+    helper.dbTest('get_queue_worker_types full results', async function(db) {
       for (let i = 0; i < 10; i++) {
         await create(db, {workerType: `wt/${i}`});
       }
       const res = await db.fns.get_queue_worker_types(null, null, null, null, null);
       assert.equal(res.length, 10);
-      console.log(res);
       assert.equal(res[3].worker_type, 'wt/3');
       assert.equal(res[4].worker_type, 'wt/4');
       assert.equal(res[5].worker_type, 'wt/5');
+    });
+
+    helper.dbTest('get_queue_worker_types with pagination', async function(db) {
+      for (let i = 0; i < 10; i++) {
+        await create(db, {workerType: `wt/${i}`});
+      }
+      let result = [];
+      while (true) {
+        const res = await db.fns.get_queue_worker_types(null, null, null, 2, result.length);
+        result = result.concat(res);
+        if (res.length === 0) {
+          break;
+        }
+      }
+      assert.equal(result.length, 10);
+      assert.equal(result[3].worker_type, 'wt/3');
+      assert.equal(result[4].worker_type, 'wt/4');
+      assert.equal(result[5].worker_type, 'wt/5');
     });
 
     helper.dbTest('update_queue_worker_type', async function(db) {
@@ -1050,16 +1084,33 @@ suite(testing.suiteName(), function() {
       assert.deepEqual(res, []);
     });
 
-    helper.dbTest('get_queue_provisioners pagination', async function(db) {
+    helper.dbTest('get_queue_provisioners full result', async function(db) {
       for (let i = 0; i < 10; i++) {
         await create(db, {provisionerId: `p/${i}`});
       }
       const res = await db.fns.get_queue_provisioners(null, null, null);
       assert.equal(res.length, 10);
-      console.log(res);
       assert.equal(res[3].provisioner_id, 'p/3');
       assert.equal(res[4].provisioner_id, 'p/4');
       assert.equal(res[5].provisioner_id, 'p/5');
+    });
+
+    helper.dbTest('get_queue_provisioners pagination', async function(db) {
+      for (let i = 0; i < 10; i++) {
+        await create(db, {provisionerId: `p/${i}`});
+      }
+      let results = [];
+      while (true ) {
+        const res = await db.fns.get_queue_provisioners(null, 2, results.length);
+        results = results.concat(res);
+        if (res.length === 0) {
+          break;
+        }
+      }
+      assert.equal(results.length, 10);
+      assert.equal(results[3].provisioner_id, 'p/3');
+      assert.equal(results[4].provisioner_id, 'p/4');
+      assert.equal(results[5].provisioner_id, 'p/5');
     });
 
     helper.dbTest('update_queue_provisioner / get_queue_provisioners', async function(db) {
