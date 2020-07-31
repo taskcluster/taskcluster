@@ -1,4 +1,5 @@
 version: 45
+description: queue provisioners phase 2
 migrationScript: 0045-migration.sql
 downgradeScript: 0045-downgrade.sql
 methods:

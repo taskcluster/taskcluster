@@ -1,4 +1,5 @@
 version: 44
+description: queue worker types phase 2
 migrationScript: 0044-migration.sql
 downgradeScript: 0044-downgrade.sql
 methods:

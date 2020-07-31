@@ -4748,6 +4748,7 @@
       "version": 42
     },
     {
+      "description": "queue workers phase 2",
       "downgradeScript": "begin\n  -- lock this table before reading from it, to prevent loss of concurrent\n  -- updates when the table is dropped.\n  lock table queue_workers;\n\n  create table queue_worker_entities(\n    partition_key text, row_key text,\n    value jsonb not null,\n    version integer not null,\n    etag uuid default public.gen_random_uuid());\n  alter table queue_worker_entities add primary key (partition_key, row_key);\n\n  insert into queue_worker_entities\n  select\n    encode_composite_key(provisioner_id, worker_type) as partition_key,\n    encode_composite_key(worker_group, worker_id) as row_key,\n    entity_buf_encode(\n      jsonb_build_object(\n        'PartitionKey', encode_composite_key(provisioner_id, worker_type),\n        'RowKey', encode_composite_key(worker_group, worker_id),\n        'provisionerId', provisioner_id,\n        'workerType', worker_type,\n        'workerGroup', worker_group,\n        'workerId', worker_id,\n        'quarantineUntil', quarantine_until,\n        'expires', expires,\n        'firstClaim', first_claim),\n      'recentTasks', recent_tasks::text) as value,\n    1 as version,\n    etag\n  from queue_workers;\n\n  revoke select, insert, update, delete on queue_workers from $db_user_prefix$_queue;\n  drop table queue_workers;\n  grant select, insert, update, delete on queue_worker_entities to $db_user_prefix$_queue;\nend\n",
       "methods": {
         "create_queue_worker": {
@@ -4845,6 +4846,7 @@
       "version": 43
     },
     {
+      "description": "queue worker types phase 2",
       "downgradeScript": "begin\n  -- lock this table before reading from it, to prevent loss of concurrent\n  -- updates when the table is dropped.\n  lock table queue_worker_types;\n\n  create table queue_worker_type_entities(\n    partition_key text, row_key text,\n    value jsonb not null,\n    version integer not null,\n    etag uuid default public.gen_random_uuid());\n  alter table queue_worker_type_entities add primary key (partition_key, row_key);\n\n  insert into queue_worker_type_entities\n  select\n    encode_string_key(provisioner_id) as partition_key,\n    encode_string_key(worker_type) as row_key,\n    entity_buf_encode(\n      jsonb_build_object(\n        'PartitionKey', encode_string_key(provisioner_id),\n        'RowKey', encode_string_key(worker_type),\n        'provisionerId', provisioner_id,\n        'workerType', worker_type,\n        'expires', expires,\n        'lastDateActive', last_date_active,\n        'stability', stability),\n      'description', description::text) as value,\n    1 as version,\n    etag\n  from queue_worker_types;\n\n  revoke select, insert, update, delete on queue_worker_types from $db_user_prefix$_queue;\n  drop table queue_worker_types;\n  grant select, insert, update, delete on queue_worker_type_entities to $db_user_prefix$_queue;\nend\n",
       "methods": {
         "create_queue_worker_type": {
@@ -4951,6 +4953,7 @@
       "version": 44
     },
     {
+      "description": "queue provisioners phase 2",
       "downgradeScript": "begin\n  -- lock this table before reading from it, to prevent loss of concurrent\n  -- updates when the table is dropped.\n  lock table queue_provisioners;\n\n  create table queue_provisioner_entities(\n    partition_key text, row_key text,\n    value jsonb not null,\n    version integer not null,\n    etag uuid default public.gen_random_uuid());\n  alter table queue_provisioner_entities add primary key (partition_key, row_key);\n\n  insert into queue_provisioner_entities\n  select\n    encode_string_key(provisioner_id) as partition_key,\n    'provisioner' as row_key,\n    entity_buf_encode(\n      entity_buf_encode(\n        jsonb_build_object(\n          'PartitionKey', encode_string_key(provisioner_id),\n          'RowKey', 'provisioner',\n          'provisionerId', provisioner_id,\n          'expires', expires,\n          'lastDateActive', last_date_active,\n          'stability', stability),\n        'description', description::text),\n      'actions', actions::text) as value,\n    1 as version,\n    etag\n  from queue_provisioners;\n\n  revoke select, insert, update, delete on queue_provisioners from $db_user_prefix$_queue;\n  drop table queue_provisioners;\n  grant select, insert, update, delete on queue_provisioner_entities to $db_user_prefix$_queue;\nend\n",
       "methods": {
         "create_queue_provisioner": {
