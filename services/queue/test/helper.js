@@ -302,6 +302,9 @@ exports.resetTables = (mock, skipping) => {
       'queue_worker_entities',
       'queue_worker_type_entities',
       'queue_provisioner_entities',
+      'queue_workers',
+      'queue_worker_types',
+      'queue_provisioners',
     ]});
   });
 };
