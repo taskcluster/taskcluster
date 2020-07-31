@@ -6,8 +6,7 @@ Taskcluster Queue service.  Behavior of the API conforms to the [Azure
 Documentatation](https://docs.microsoft.com/en-us/rest/api/storageservices/queue-service-rest-api).
 The details of the API conform to those of the
 [fast-azure-storage](https://taskcluster.github.io/fast-azure-storage/classes/Queue.html)
-library.  Like [taskcluster-lib-entities](../entities), this library is a
-temporary shim to assist with migration to a native Postgres backend.
+library.  This library is a temporary shim to assist with migration to a native Postgres backend.
 
 ## Usage
 

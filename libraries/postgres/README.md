@@ -24,7 +24,7 @@ const db = Database.setup({
   monitor: ...,
   statementTimeout: ..., // optional
   poolSize: ..., // optional, default 5
-  azureCryptoKey: ..., // optional, only required to read lib-entities encrypted data
+  azureCryptoKey: ..., // optional, for backward copmatibility
   dbCryptoKeys: ..., // optional, only required if encrypting columns, usually from cfg.postgres.dbCryptoKeys
 });
 ```
