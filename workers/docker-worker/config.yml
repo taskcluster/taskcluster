@@ -157,7 +157,7 @@ defaults:
 
   artifacts:
     skipCompressionExtensions: [
-      '.7z', '.bz2', '.flv', '.gif', '.gz', '.jpeg', '.jpg', '.png',
+      '.7z', '.bz2', '.dmg', '.flv', '.gif', '.gz', '.jpeg', '.jpg', '.png',
       '.swf', '.tbz', '.tgz', '.webp', '.whl', '.woff', '.woff2',
       '.xz', '.zip', '.zst',
     ]
