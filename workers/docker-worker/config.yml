@@ -11,10 +11,6 @@ defaults:
       enabled: true
     kvm:
       enabled: true
-  phone:
-    enabled: false
-    sims: '1'
-    type: null
   dockerConfig:
     # Privileged mode will allow tasks to run with elevated privileges similar
     # to process running on the host.  The task containers will have access to
@@ -33,10 +29,7 @@ defaults:
     delayFactor: 15000
     # Value between 0 and 1
     randomizationFactor: 0.25
-  features:
-    relengAPIProxy:
-      image: 'taskcluster/relengapi-proxy:2.3.1'
-      token: !env RELENG_API_TOKEN
+  features: {}
   ssl:
     certificate: '/etc/star_taskcluster-worker_net.crt'
     key: '/etc/star_taskcluster-worker_net.key'
@@ -63,8 +56,6 @@ defaults:
   # Image used to  create the taskcluster proxy container.
   taskclusterProxyImage: 'taskcluster/taskcluster-proxy:5.1.0'
   taskclusterLogImage: 'taskcluster/livelog:v4'
-  testdroidProxyImage: 'taskcluster/testdroid-proxy:0.0.7'
-  balrogVPNProxyImage: 'taskclusterprivate/taskcluster-vpn-proxy:0.0.3'
   dindImage: 'taskcluster/dind-service:v4.0'
 
   alivenessCheckInterval: 30000
@@ -147,11 +138,6 @@ defaults:
     maxDelay: 600
     # Maximum number of points to queue before flush
     maxPendingPoints: 100
-
-  testdroid:
-    url:      !env TESTDROID_URL
-    username: !env TESTDROID_USERNAME
-    password: !env TESTDROID_PASSWORD
 
   ed25519SigningKeyLocation: '/etc/docker-worker-ed25519-cot-signing-key.key'
 
