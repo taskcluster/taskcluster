@@ -4,6 +4,8 @@ const taskcluster = require('taskcluster-client');
 const helper = require('./helper');
 const testing = require('taskcluster-lib-testing');
 
+const {Provisioner, Worker, WorkerType} = require('../src/data');
+
 helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) {
   helper.withDb(mock, skipping);
   helper.withAmazonIPRanges(mock, skipping);
@@ -15,34 +17,36 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
   helper.resetTables(mock, skipping);
 
   const makeProvisioner = async (opts) => {
-    const provisioner = Object.assign({
+    const provisioner = Provisioner.fromApi('prov1-extended-extended-extended', Object.assign({
       provisionerId: 'prov1-extended-extended-extended',
       expires: new Date('3017-07-29'),
       lastDateActive: new Date(),
       description: 'test-provisioner',
       stability: 'experimental',
       actions: [],
-    }, opts);
-    await helper.Provisioner.create(provisioner);
+    }, opts));
+    const db = await helper.load('db');
+    await provisioner.create(db);
     return provisioner;
   };
 
   const makeWorkerType = async (opts) => {
-    const wType = Object.assign({
+    const wType = WorkerType.fromApi('gecko-b-2-linux-extended-extended', Object.assign({
       provisionerId: 'prov1-extended-extended-extended',
       workerType: 'gecko-b-2-linux-extended-extended',
       expires: new Date('3017-07-29'),
       lastDateActive: new Date(),
       description: 'test-worker-type',
       stability: 'experimental',
-    }, opts);
+    }, opts));
 
-    await helper.WorkerType.create(wType);
+    const db = await helper.load('db');
+    await wType.create(db);
     return wType;
   };
 
   const makeWorker = async (opts) => {
-    const worker = Object.assign({
+    const worker = Worker.fromApi('my-worker-extended-extended', Object.assign({
       provisionerId: 'prov1-extended-extended-extended',
       workerType: 'gecko-b-2-linux-extended-extended',
       workerGroup: 'my-worker-group-extended-extended',
@@ -51,10 +55,9 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
       expires: new Date('3017-07-29'),
       quarantineUntil: new Date(),
       firstClaim: new Date(),
-    }, opts);
-
-    await helper.Worker.create(worker);
-
+    }, opts));
+    const db = await helper.load('db');
+    await worker.create(db);
     return worker;
   };
 
@@ -76,7 +79,6 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     const provisioner = await makeProvisioner({});
 
     const result = await helper.queue.listProvisioners();
-
     assert.equal(result.provisioners.length, 1, 'expected provisioners');
     assert(result.provisioners[0].provisionerId === provisioner.provisionerId, 'expected prov1-extended-extended-extended');
     assert(result.provisioners[0].description === provisioner.description, 'expected description');
@@ -116,7 +118,6 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     const wType = await makeWorkerType({});
 
     const result = await helper.queue.listWorkerTypes('prov1-extended-extended-extended');
-
     assert.equal(result.workerTypes.length, 1, 'expected workerTypes');
     assert(result.workerTypes[0].workerType === wType.workerType, `expected ${wType.workerType}`);
   });
@@ -305,7 +306,6 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
       workerInfo.seen(provisionerId, workerType, workerGroup, workerId),
       workerInfo.seen(provisionerId, workerType, workerGroup, workerId),
     ]);
-
     const result = await helper.queue.listWorkers(provisionerId, workerType);
     assert.equal(result.workers.length, 1, 'expected a worker');
   });
@@ -590,7 +590,6 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     await workerInfo.seen(wType.provisionerId, wType.workerType);
 
     result = await helper.queue.getWorkerType(wType.provisionerId, wType.workerType);
-
     assert(
       new Date(result.lastDateActive).getTime() !== wType.lastDateActive.getTime(), 'expected different lastDateActive',
     );
@@ -855,7 +854,8 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
       tasks: 1,
     });
 
-    const result = await helper.Worker.load({provisionerId, workerType, workerGroup, workerId});
+    const db = await helper.load('db');
+    const result = await Worker.get(db, provisionerId, workerType, workerGroup, workerId, new Date());
 
     assert(result.recentTasks[0].taskId === taskId, `expected taskId ${taskId}`);
     assert(result.recentTasks[0].runId === 0, 'expected runId 0');

@@ -2993,7 +2993,7 @@ module.exports = {
             "name"
           ],
           "category": "Secrets Service",
-          "description": "Delete the secret associated with some key.",
+          "description": "Delete the secret associated with some key. It will succeed whether or not the secret exists",
           "method": "delete",
           "name": "remove",
           "query": [

@@ -40,9 +40,9 @@
       "tables": {
         "azure_queue_messages": "write",
         "queue_artifacts": "write",
-        "queue_provisioner_entities": "write",
-        "queue_worker_entities": "write",
-        "queue_worker_type_entities": "write",
+        "queue_provisioners": "write",
+        "queue_worker_types": "write",
+        "queue_workers": "write",
         "task_dependencies": "write",
         "task_groups": "write",
         "tasks": "write"
@@ -50,7 +50,7 @@
     },
     "secrets": {
       "tables": {
-        "secrets_entities": "write"
+        "secrets": "write"
       }
     },
     "web_server": {
@@ -210,26 +210,34 @@
       "storage_type": "text not null",
       "task_id": "text not null"
     },
-    "queue_provisioner_entities": {
-      "etag": "uuid",
-      "partition_key": "text not null",
-      "row_key": "text not null",
-      "value": "jsonb not null",
-      "version": "integer not null"
+    "queue_provisioners": {
+      "actions": "jsonb not null",
+      "description": "text not null",
+      "etag": "uuid not null",
+      "expires": "timestamp with time zone not null",
+      "last_date_active": "timestamp with time zone not null",
+      "provisioner_id": "text not null",
+      "stability": "text not null"
     },
-    "queue_worker_entities": {
-      "etag": "uuid",
-      "partition_key": "text not null",
-      "row_key": "text not null",
-      "value": "jsonb not null",
-      "version": "integer not null"
+    "queue_worker_types": {
+      "description": "text not null",
+      "etag": "uuid not null",
+      "expires": "timestamp with time zone not null",
+      "last_date_active": "timestamp with time zone not null",
+      "provisioner_id": "text not null",
+      "stability": "text not null",
+      "worker_type": "text not null"
     },
-    "queue_worker_type_entities": {
-      "etag": "uuid",
-      "partition_key": "text not null",
-      "row_key": "text not null",
-      "value": "jsonb not null",
-      "version": "integer not null"
+    "queue_workers": {
+      "etag": "uuid not null",
+      "expires": "timestamp with time zone not null",
+      "first_claim": "timestamp with time zone not null",
+      "provisioner_id": "text not null",
+      "quarantine_until": "timestamp with time zone not null",
+      "recent_tasks": "jsonb not null",
+      "worker_group": "text not null",
+      "worker_id": "text not null",
+      "worker_type": "text not null"
     },
     "roles": {
       "created": "timestamp with time zone not null",
@@ -239,12 +247,10 @@
       "role_id": "text not null",
       "scopes": "jsonb not null"
     },
-    "secrets_entities": {
-      "etag": "uuid",
-      "partition_key": "text not null",
-      "row_key": "text not null",
-      "value": "jsonb not null",
-      "version": "integer not null"
+    "secrets": {
+      "encrypted_secret": "jsonb not null",
+      "expires": "timestamp with time zone not null",
+      "name": "text not null"
     },
     "sessions": {
       "data": "jsonb not null",
@@ -4642,6 +4648,416 @@
       },
       "migrationScript": "begin\n  -- lock this table before reading from it, to prevent loss of concurrent\n  -- updates when the table is dropped.  Note that this may lead to concurrent\n  -- updates failing; the important thing is that they not succeed without\n  -- taking effect.  Failed updates will be retried.\n  lock table clients_entities;\n\n  create table clients\n  as\n    select\n      (value ->> 'clientId')::text as client_id,\n      entity_buf_decode(value, 'description')::text as description,\n      entity_to_crypto_container_v0(value, 'accessToken') as encrypted_access_token,\n      (value ->> 'expires')::timestamptz as expires,\n      (value ->> 'disabled')::boolean as disabled,\n      entity_buf_decode(value, 'scopes')::jsonb as scopes,\n      (details ->> 'created')::timestamptz as created,\n      (details ->> 'lastModified')::timestamptz as last_modified,\n      (details ->> 'lastDateUsed')::timestamptz as last_date_used,\n      (details ->> 'lastRotated')::timestamptz as last_rotated,\n      (details ->> 'deleteOnExpiration')::boolean as delete_on_expiration,\n      etag\n    from (\n      select\n        value,\n        entity_buf_decode(value, 'details')::jsonb as details,\n        etag\n      from clients_entities\n    ) as expanded;\n  alter table clients add primary key (client_id);\n  alter table clients\n    alter column client_id set not null,\n    alter column description set not null,\n    alter column encrypted_access_token set not null,\n    alter column expires set not null,\n    alter column disabled set not null,\n    alter column scopes set not null,\n    alter column created set not null,\n    alter column last_modified set not null,\n    alter column last_date_used set not null,\n    alter column last_rotated set not null,\n    alter column delete_on_expiration set not null,\n    alter column etag set not null,\n    alter column etag set default public.gen_random_uuid();\n\n  revoke select, insert, update, delete on clients_entities from $db_user_prefix$_auth;\n  drop table clients_entities;\n  grant select, insert, update, delete on clients to $db_user_prefix$_auth;\nend\n",
       "version": 41
+    },
+    {
+      "description": "secrets phase 2",
+      "downgradeScript": "begin\n  -- lock this table before reading from it, to prevent loss of concurrent\n  -- updates when the table is dropped.\n  lock table secrets;\n\n  create table secrets_entities(\n    partition_key text, row_key text,\n    value jsonb not null,\n    version integer not null,\n    etag uuid default public.gen_random_uuid());\n  alter table secrets_entities add primary key (partition_key, row_key);\n\n  insert into secrets_entities\n  select\n    encode_string_key('secrets') as partition_key,\n    encode_string_key(name) as row_key,\n    encrypted_entity_buf_encode(\n      jsonb_build_object(\n        'PartitionKey', encode_string_key('secrets'),\n        'RowKey', encode_string_key(name),\n        'expires', secrets.expires,\n        'name', secrets.name),\n      'secret', secrets.encrypted_secret) as value,\n    1 as version,\n    public.gen_random_uuid() as etag\n  from secrets;\n\n  revoke select, insert, update, delete on secrets from $db_user_prefix$_secrets;\n  drop table secrets;\n  grant select, insert, update, delete on secrets_entities to $db_user_prefix$_secrets;\nend\n",
+      "methods": {
+        "delete_secret": {
+          "args": "name_in text",
+          "body": "begin\n  delete from secrets\n  where\n    secrets.name = name_in;\nend",
+          "deprecated": false,
+          "description": "Delete a secret entirely",
+          "mode": "write",
+          "returns": "void",
+          "serviceName": "secrets"
+        },
+        "expire_secrets": {
+          "args": "",
+          "body": "declare\n  count integer;\nbegin\n  delete from secrets where secrets.expires < now();\n  if found then\n    get diagnostics count = row_count;\n    return count;\n  end if;\n  return 0;\nend ",
+          "deprecated": false,
+          "description": "Delete all secrets with an 'expires' in the past.",
+          "mode": "write",
+          "returns": "integer",
+          "serviceName": "secrets"
+        },
+        "get_secret": {
+          "args": "name_in text",
+          "body": "begin\n  return query select secrets.name, secrets.encrypted_secret, secrets.expires from secrets\n  where\n    secrets.name = name_in and\n    secrets.expires >= now()\n  limit 1;\nend",
+          "deprecated": false,
+          "description": "Get a single secret (including secret content and expiration)",
+          "mode": "read",
+          "returns": "table(name text, encrypted_secret jsonb, expires timestamptz)",
+          "serviceName": "secrets"
+        },
+        "get_secrets": {
+          "args": "page_size_in integer, page_offset_in integer",
+          "body": "begin\n  return query select secrets.name from secrets\n  where\n    secrets.expires >= now()\n  order by secrets.name\n  limit get_page_limit(page_size_in)\n  offset get_page_offset(page_offset_in); \nend",
+          "deprecated": false,
+          "description": "Get many secrets at once. This only includes names.\nFetch an individual secret to get the contents",
+          "mode": "read",
+          "returns": "table(name text)",
+          "serviceName": "secrets"
+        },
+        "secrets_entities_create": {
+          "args": "pk text, rk text, properties jsonb, overwrite boolean, version integer",
+          "body": "begin\n  if not overwrite then\n    raise exception 'must overwrite';\n  end if;\n  insert into secrets (name, encrypted_secret, expires) values (\n    (properties ->> 'name')::text,\n    entity_to_crypto_container_v0(properties, 'secret'),\n    (properties ->> 'expires')::timestamptz\n  ) on conflict (name) do update set\n    encrypted_secret = entity_to_crypto_container_v0(properties, 'secret'),\n    expires = (properties ->> 'expires')::timestamptz;\n  return public.gen_random_uuid();\nend",
+          "deprecated": false,
+          "description": "See taskcluster-lib-entities",
+          "mode": "write",
+          "returns": "uuid",
+          "serviceName": "secrets"
+        },
+        "secrets_entities_load": {
+          "args": "partition_key text, row_key text",
+          "body": "begin\n  return query\n  select\n    secrets_entities_load.partition_key,\n    secrets_entities_load.row_key,\n    encrypted_entity_buf_encode(\n      jsonb_build_object(\n        'PartitionKey', secrets_entities_load.partition_key,\n        'RowKey', secrets_entities_load.row_key,\n        'expires', secrets.expires,\n        'name', secrets.name),\n      'secret', secrets.encrypted_secret) as value,\n    1 as version,\n    public.gen_random_uuid() as etag\n  from secrets\n  where\n    secrets.name = decode_string_key(secrets_entities_load.row_key);\nend",
+          "deprecated": false,
+          "description": "See taskcluster-lib-entities",
+          "mode": "read",
+          "returns": "table (partition_key_out text, row_key_out text, value jsonb, version integer, etag uuid)",
+          "serviceName": "secrets"
+        },
+        "secrets_entities_modify": {
+          "args": "partition_key text, row_key text, properties jsonb, version integer, old_etag uuid",
+          "body": "begin\n  raise exception 'not implemented';\nend",
+          "deprecated": false,
+          "description": "See taskcluster-lib-entities",
+          "mode": "write",
+          "returns": "table (etag uuid)",
+          "serviceName": "secrets"
+        },
+        "secrets_entities_remove": {
+          "args": "partition_key text, row_key text",
+          "body": "begin\n  return query delete from secrets\n  where\n    secrets.name = decode_string_key(row_key)\n  returning public.gen_random_uuid();\nend",
+          "deprecated": false,
+          "description": "See taskcluster-lib-entities",
+          "mode": "write",
+          "returns": "table (etag uuid)",
+          "serviceName": "secrets"
+        },
+        "secrets_entities_scan": {
+          "args": "pk text, rk text, condition text, size integer, page integer",
+          "body": "declare\ncond text[];\nexp_cond_field text;\nexp_cond_operator text;\nexp_cond_operand timestamptz;\nbegin\n  if not condition is null then\n    cond := regexp_split_to_array(condition, '\\s+');\n    exp_cond_field := trim(cond[3], '''');\n    exp_cond_operator := cond[4];\n    exp_cond_operand := cond[5] :: timestamptz;\n\n    if exp_cond_operator != '<' or exp_cond_field != 'expires' then\n      raise exception 'secrets_entities_scan only supports `expires < <timestamp>` conditions. Got (%)', exp_cond_operator;\n    end if;\n  end if;\n  return query\n    select\n      encode_string_key('secrets'),\n      encode_string_key(secrets.name),\n      encrypted_entity_buf_encode(\n        jsonb_build_object(\n          'PartitionKey', encode_string_key('secrets'),\n          'RowKey', encode_string_key(secrets.name),\n          'expires', secrets.expires,\n          'name', secrets.name),\n        'secret', secrets.encrypted_secret) as value,\n      1 as version,\n    public.gen_random_uuid() as etag\n    from secrets\n    where\n      row_key is null or\n      secrets.name = decode_string_key(row_key) or\n      (exp_cond_operand is NULL or expires < exp_cond_operand)\n    order by name\n    limit case\n      when (size is not null and size > 0) then size + 1\n      else null\n    end\n    offset case\n      when (page is not null and page > 0) then page\n      else 0\n    end;\nend",
+          "deprecated": false,
+          "description": "See taskcluster-lib-entities",
+          "mode": "read",
+          "returns": "table (partition_key text, row_key text, value jsonb, version integer, etag uuid)",
+          "serviceName": "secrets"
+        },
+        "upsert_secret": {
+          "args": "name_in text, encrypted_secret_in jsonb, expires_in timestamptz",
+          "body": "begin\n  insert into secrets (name, encrypted_secret, expires) values (\n    name_in,\n    encrypted_secret_in,\n    expires_in\n  ) on conflict (name) do update set\n    encrypted_secret = encrypted_secret_in,\n    expires = expires_in;\nend",
+          "deprecated": false,
+          "description": "Store an encrypted secret whether it is new or being updated",
+          "mode": "write",
+          "returns": "void",
+          "serviceName": "secrets"
+        }
+      },
+      "migrationScript": "begin\n  -- lock this table before reading from it, to prevent loss of concurrent\n  -- updates when the table is dropped.  Note that this may lead to concurrent\n  -- updates failing; the important thing is that they not succeed without\n  -- taking effect.  Failed updates will be retried.\n  lock table secrets_entities;\n\n  create table secrets\n  as\n    select\n      (value ->> 'name')::text as name,\n      entity_to_crypto_container_v0(value,'secret') as encrypted_secret,\n      (value ->> 'expires')::timestamptz as expires\n    from secrets_entities;\n  alter table secrets add primary key (name);\n  alter table secrets\n    alter column name set not null,\n    alter column encrypted_secret set not null,\n    alter column expires set not null;\n\n  revoke select, insert, update, delete on secrets_entities from $db_user_prefix$_secrets;\n  drop table secrets_entities;\n  grant select, insert, update, delete on secrets to $db_user_prefix$_secrets;\nend\n",
+      "version": 42
+    },
+    {
+      "description": "queue workers phase 2",
+      "downgradeScript": "begin\n  -- lock this table before reading from it, to prevent loss of concurrent\n  -- updates when the table is dropped.\n  lock table queue_workers;\n\n  create table queue_worker_entities(\n    partition_key text, row_key text,\n    value jsonb not null,\n    version integer not null,\n    etag uuid default public.gen_random_uuid());\n  alter table queue_worker_entities add primary key (partition_key, row_key);\n\n  insert into queue_worker_entities\n  select\n    encode_composite_key(provisioner_id, worker_type) as partition_key,\n    encode_composite_key(worker_group, worker_id) as row_key,\n    entity_buf_encode(\n      jsonb_build_object(\n        'PartitionKey', encode_composite_key(provisioner_id, worker_type),\n        'RowKey', encode_composite_key(worker_group, worker_id),\n        'provisionerId', provisioner_id,\n        'workerType', worker_type,\n        'workerGroup', worker_group,\n        'workerId', worker_id,\n        'quarantineUntil', quarantine_until,\n        'expires', expires,\n        'firstClaim', first_claim),\n      'recentTasks', recent_tasks::text) as value,\n    1 as version,\n    etag\n  from queue_workers;\n\n  revoke select, insert, update, delete on queue_workers from $db_user_prefix$_queue;\n  drop table queue_workers;\n  grant select, insert, update, delete on queue_worker_entities to $db_user_prefix$_queue;\nend\n",
+      "methods": {
+        "create_queue_worker": {
+          "args": "provisioner_id_in text, worker_type_in text, worker_group_in text, worker_id_in text, quarantine_until_in timestamptz, expires_in timestamptz, first_claim_in timestamptz, recent_tasks_in jsonb",
+          "body": "declare\n  new_etag uuid := public.gen_random_uuid();\nbegin\n  insert\n    into queue_workers (provisioner_id, worker_type, worker_group, worker_id, quarantine_until, expires, first_claim, recent_tasks)\n    values (provisioner_id_in, worker_type_in, worker_group_in, worker_id_in, quarantine_until_in, expires_in, first_claim_in, recent_tasks_in);\n    return new_etag;\nend",
+          "deprecated": false,
+          "description": "Create a new queue worker.  Raises UNIQUE_VIOLATION if the worker already exists.",
+          "mode": "write",
+          "returns": "uuid",
+          "serviceName": "queue"
+        },
+        "expire_queue_workers": {
+          "args": "expires_in timestamptz",
+          "body": "declare\n  count integer;\nbegin\n  delete from queue_workers\n  where\n    queue_workers.expires < expires_in and\n    (queue_workers.expires < expires_in and queue_workers.quarantine_until < expires_in);\n  if found then\n    get diagnostics count = row_count;\n    return count;\n  end if;\n  return 0;\nend",
+          "deprecated": false,
+          "description": "Expire non-quarantined queue workers that come before `expires_in`.\nReturns a count of rows that have been deleted.",
+          "mode": "write",
+          "returns": "integer",
+          "serviceName": "queue"
+        },
+        "get_queue_worker": {
+          "args": "provisioner_id_in text, worker_type_in text, worker_group_in text, worker_id_in text, expires_in timestamptz",
+          "body": "begin\n  return query\n  select\n    queue_workers.provisioner_id,\n    queue_workers.worker_type,\n    queue_workers.worker_group,\n    queue_workers.worker_id,\n    queue_workers.quarantine_until,\n    queue_workers.expires,\n    queue_workers.first_claim,\n    queue_workers.recent_tasks,\n    queue_workers.etag\n  from queue_workers\n  where\n    queue_workers.provisioner_id = provisioner_id_in and\n    queue_workers.worker_type = worker_type_in and\n    queue_workers.worker_group = worker_group_in and\n    queue_workers.worker_id = worker_id_in and\n    (queue_workers.expires > expires_in or queue_workers.quarantine_until > expires_in);\n  end",
+          "deprecated": false,
+          "description": "Get a non-expired queue worker by provisioner_id, worker_type, worker_group, and worker_id.\nWorkers are not considered expired until after their quarantine date expires.",
+          "mode": "read",
+          "returns": "table(provisioner_id text, worker_type text, worker_group text, worker_id text, quarantine_until timestamptz, expires timestamptz, first_claim timestamptz, recent_tasks jsonb, etag uuid)",
+          "serviceName": "queue"
+        },
+        "get_queue_workers": {
+          "args": "provisioner_id_in text, worker_type_in text, expires_in timestamptz, page_size_in integer, page_offset_in integer",
+          "body": "begin\n  return query\n  select\n    queue_workers.provisioner_id,\n    queue_workers.worker_type,\n    queue_workers.worker_group,\n    queue_workers.worker_id,\n    queue_workers.quarantine_until,\n    queue_workers.expires,\n    queue_workers.first_claim,\n    queue_workers.recent_tasks,\n    queue_workers.etag\n  from queue_workers\n  where\n    (queue_workers.provisioner_id = provisioner_id_in or get_queue_workers.provisioner_id_in is null) and\n    (queue_workers.worker_type = worker_type_in or get_queue_workers.worker_type_in is null) and\n    ((queue_workers.expires > expires_in and queue_workers.quarantine_until < expires_in) or get_queue_workers.expires_in is null)\n  order by provisioner_id, worker_type, worker_group, worker_id\n  limit get_page_limit(page_size_in)\n  offset get_page_offset(page_offset_in);\nend",
+          "deprecated": false,
+          "description": "Get non-expired queue workers ordered by provisioner_id, worker_type, worker_group, and worker_id.\nWorkers are not considered expired until after their quarantine date expires.\nIf the pagination arguments are both NULL, all rows are returned.\nOtherwise, page_size rows are returned at offset page_offset.",
+          "mode": "read",
+          "returns": "table(provisioner_id text, worker_type text, worker_group text, worker_id text, quarantine_until timestamptz, expires timestamptz, first_claim timestamptz, recent_tasks jsonb, etag uuid)",
+          "serviceName": "queue"
+        },
+        "queue_worker_entities_create": {
+          "args": "pk text, rk text, properties jsonb, overwrite boolean, version integer",
+          "body": "declare\n  new_row queue_workers%ROWTYPE;\nbegin\n  select\n    (properties ->> 'provisionerId')::text,\n    (properties ->> 'workerType')::text,\n    (properties ->> 'workerGroup')::text,\n    (properties ->> 'workerId')::text,\n    entity_buf_decode(properties, 'recentTasks')::jsonb,\n    (properties ->> 'quarantineUntil')::timestamptz,\n    (properties ->> 'expires')::timestamptz,\n    (properties ->> 'firstClaim')::timestamptz,\n    public.gen_random_uuid()\n  into new_row;\n  if overwrite then\n    raise exception 'overwrite not implemented';\n  else\n    execute 'insert into queue_workers select $1.*' using new_row;\n  end if;\n  return new_row.etag;\nend",
+          "deprecated": false,
+          "description": "See taskcluster-lib-entities",
+          "mode": "write",
+          "returns": "uuid",
+          "serviceName": "queue"
+        },
+        "queue_worker_entities_load": {
+          "args": "partition_key text, row_key text",
+          "body": "declare\n  decoded_composite_partition_key text[];\n  decoded_composite_row_key text[];\nbegin\n  decoded_composite_partition_key := decode_composite_key(queue_worker_entities_load.partition_key);\n  decoded_composite_row_key := decode_composite_key(queue_worker_entities_load.row_key);\n  return query\n  select\n    queue_worker_entities_load.partition_key,\n    queue_worker_entities_load.row_key,\n    entity_buf_encode(\n      jsonb_build_object(\n        'PartitionKey', encode_composite_key(provisioner_id, worker_type),\n        'RowKey', encode_composite_key(worker_group, worker_id),\n        'provisionerId', provisioner_id,\n        'workerType', worker_type,\n        'workerGroup', worker_group,\n        'workerId', worker_id,\n        'quarantineUntil', quarantine_until,\n        'expires', expires,\n        'firstClaim', first_claim),\n      'recentTasks', recent_tasks::text) as value,\n    1 as version,\n    queue_workers.etag as etag\n  from queue_workers\n  where\n    queue_workers.provisioner_id = decoded_composite_partition_key[1] and queue_workers.worker_type = decoded_composite_partition_key[2] and\n    queue_workers.worker_group = decoded_composite_row_key[1] and queue_workers.worker_id = decoded_composite_row_key[2];\nend",
+          "deprecated": false,
+          "description": "See taskcluster-lib-entities",
+          "mode": "read",
+          "returns": "table (partition_key_out text, row_key_out text, value jsonb, version integer, etag uuid)",
+          "serviceName": "queue"
+        },
+        "queue_worker_entities_modify": {
+          "args": "partition_key text, row_key text, properties jsonb, version integer, old_etag uuid",
+          "body": "declare\n  decoded_composite_partition_key text[];\n  decoded_composite_row_key text[];\n  new_etag uuid;\nbegin\n  -- NOTE: queue only updates expires, quarantine_until, and recent_tasks, so that's all that's supported here\n  new_etag = public.gen_random_uuid();\n  decoded_composite_partition_key := decode_composite_key(queue_worker_entities_modify.partition_key);\n  decoded_composite_row_key := decode_composite_key(queue_worker_entities_modify.row_key);\n  update queue_workers\n  set (\n    expires,\n    quarantine_until,\n    recent_tasks,\n    etag\n  ) = (\n    (properties ->> 'expires')::timestamptz,\n    (properties ->> 'quarantineUntil')::timestamptz,\n    entity_buf_decode(properties, 'recentTasks')::jsonb,\n    new_etag\n  )\n  where\n    queue_workers.provisioner_id = decoded_composite_partition_key[1] and queue_workers.worker_type = decoded_composite_partition_key[2] and\n    queue_workers.worker_group = decoded_composite_row_key[1] and queue_workers.worker_id = decoded_composite_row_key[2] and\n    queue_workers.etag = queue_worker_entities_modify.old_etag;\n  if found then\n    return query select new_etag;\n    return;\n  end if;\n  perform queue_workers.etag from queue_workers\n  where\n    queue_workers.provisioner_id = decoded_composite_partition_key[1] and queue_workers.worker_type = decoded_composite_partition_key[2] and\n    queue_workers.worker_group = decoded_composite_row_key[1] and queue_workers.worker_id = decoded_composite_row_key[2];\n  if found then\n    raise exception 'unsuccessful update' using errcode = 'P0004';\n  else\n    raise exception 'no such row' using errcode = 'P0002';\n  end if;\nend",
+          "deprecated": false,
+          "description": "See taskcluster-lib-entities",
+          "mode": "write",
+          "returns": "table (etag uuid)",
+          "serviceName": "queue"
+        },
+        "queue_worker_entities_remove": {
+          "args": "partition_key text, row_key text",
+          "body": "declare\n  decoded_composite_partition_key text[];\n  decoded_composite_row_key text[];\nbegin\n  decoded_composite_partition_key := decode_composite_key(queue_worker_entities_remove.partition_key);\n  decoded_composite_row_key := decode_composite_key(queue_worker_entities_remove.row_key);\n  return query delete from queue_workers\n  where\n    queue_workers.provisioner_id = decoded_composite_partition_key[1] and queue_workers.worker_type = decoded_composite_partition_key[2] and\n    queue_workers.worker_group = decoded_composite_row_key[1] and queue_workers.worker_id = decoded_composite_row_key[2]\n  returning queue_workers.etag;\nend",
+          "deprecated": false,
+          "description": "See taskcluster-lib-entities",
+          "mode": "write",
+          "returns": "table (etag uuid)",
+          "serviceName": "queue"
+        },
+        "queue_worker_entities_scan": {
+          "args": "pk text, rk text, condition text, size integer, page integer",
+          "body": "declare\n  cond text[];\n  decoded_composite_partition_key text[];\n  decoded_composite_row_key text[];\n  exp_cond_field text;\n  exp_cond_operator text;\n  exp_cond_operand timestamptz;\nbegin\n  decoded_composite_partition_key := decode_composite_key(pk);\n  decoded_composite_row_key := decode_composite_key(rk);\n  if not condition is null then\n    cond := regexp_split_to_array(condition, '\\s+');\n    exp_cond_field := cond[3];\n    exp_cond_operator := cond[4];\n    exp_cond_operand := cond[5] :: timestamptz;\n\n    return query select\n      encode_composite_key(provisioner_id, worker_type) as partition_key,\n      encode_composite_key(worker_group, worker_id) as row_key,\n      entity_buf_encode(\n        jsonb_build_object(\n          'PartitionKey', encode_composite_key(provisioner_id, worker_type),\n          'RowKey', encode_composite_key(worker_group, worker_id),\n          'provisionerId', provisioner_id,\n          'workerType', worker_type,\n          'workerGroup', worker_group,\n          'workerId', worker_id,\n          'quarantineUntil', quarantine_until,\n          'expires', expires,\n          'firstClaim', first_claim),\n        'recentTasks', recent_tasks::text) as value,\n      1 as version,\n      queue_workers.etag as etag\n    from queue_workers\n    where\n      (queue_worker_entities_scan.pk is null or decoded_composite_partition_key[1] = provisioner_id and decoded_composite_partition_key[2] = worker_type) and\n      (queue_worker_entities_scan.rk is null or decoded_composite_row_key[1] = worker_group and decoded_composite_row_key[2] = worker_id) and\n      case\n        when exp_cond_field = '''quarantineUntil''' then\n        case\n          when exp_cond_operator = '<' then quarantine_until < exp_cond_operand\n          when exp_cond_operator = '>' then quarantine_until > exp_cond_operand\n        end\n        when exp_cond_field = '''expires''' then\n        case\n          when exp_cond_operator = '=' then expires = exp_cond_operand\n          when exp_cond_operator = '<' then expires < exp_cond_operand\n          when exp_cond_operator = '<=' then expires <= exp_cond_operand\n          when exp_cond_operator = '>' then expires > exp_cond_operand\n          when exp_cond_operator = '>=' then expires >= exp_cond_operand\n          else expires <> exp_cond_operand\n        end\n      end\n    order by queue_workers.provisioner_id, queue_workers.worker_type, queue_workers.worker_group, queue_workers.worker_id\n    limit case\n      when (size is not null and size > 0) then size + 1\n      else null\n    end\n    offset case\n      when (page is not null and page > 0) then page\n      else 0\n    end;\n  else\n    return query select\n      encode_composite_key(provisioner_id, worker_type) as partition_key,\n      encode_composite_key(worker_group, worker_id) as row_key,\n      entity_buf_encode(\n        jsonb_build_object(\n          'PartitionKey', encode_composite_key(provisioner_id, worker_type),\n          'RowKey', encode_composite_key(worker_group, worker_id),\n          'provisionerId', provisioner_id,\n          'workerType', worker_type,\n          'workerGroup', worker_group,\n          'workerId', worker_id,\n          'quarantineUntil', quarantine_until,\n          'expires', expires,\n          'firstClaim', first_claim),\n      'recentTasks', recent_tasks::text) as value,\n      1 as version,\n      queue_workers.etag as etag\n    from queue_workers\n    where\n      (queue_worker_entities_scan.pk is null or decoded_composite_partition_key[1] = provisioner_id and decoded_composite_partition_key[2] = worker_type) and\n      (queue_worker_entities_scan.rk is null or decoded_composite_row_key[1] = worker_group and decoded_composite_row_key[2] = worker_id)\n    order by queue_workers.provisioner_id, queue_workers.worker_type, queue_workers.worker_group, queue_workers.worker_id\n    limit case\n      when (size is not null and size > 0) then size + 1\n      else null\n    end\n    offset case\n      when (size is not null and size > 0 and page is not null and page > 0) then page\n      else 0\n    end;\n  end if;\nend",
+          "deprecated": false,
+          "description": "See taskcluster-lib-entities",
+          "mode": "read",
+          "returns": "table (partition_key text, row_key text, value jsonb, version integer, etag uuid)",
+          "serviceName": "queue"
+        },
+        "update_queue_worker": {
+          "args": "provisioner_id_in text, worker_type_in text, worker_group_in text, worker_id_in text, quarantine_until_in timestamptz, expires_in timestamptz, recent_tasks_in jsonb",
+          "body": "declare\n  new_etag uuid := public.gen_random_uuid();\nbegin\n  return query update queue_workers\n  set\n    quarantine_until = quarantine_until_in,\n    expires = expires_in,\n    recent_tasks = recent_tasks_in,\n    etag = new_etag\n  where\n    queue_workers.provisioner_id = provisioner_id_in and\n    queue_workers.worker_type = worker_type_in and\n    queue_workers.worker_group = worker_group_in and\n    queue_workers.worker_id = worker_id_in\n  returning\n    queue_workers.provisioner_id,\n    queue_workers.worker_type,\n    queue_workers.worker_group,\n    queue_workers.worker_id,\n    queue_workers.quarantine_until,\n    queue_workers.expires,\n    queue_workers.first_claim,\n    queue_workers.recent_tasks,\n    queue_workers.etag;\nend",
+          "deprecated": false,
+          "description": "Update a queue worker's quarantine_until, expires, and recent_tasks.\nAll parameters must be supplied.",
+          "mode": "write",
+          "returns": "table(provisioner_id text, worker_type text, worker_group text, worker_id text, quarantine_until timestamptz, expires timestamptz, first_claim timestamptz, recent_tasks jsonb, etag uuid)",
+          "serviceName": "queue"
+        }
+      },
+      "migrationScript": "begin\n  -- lock this table before reading from it, to prevent loss of concurrent\n  -- updates when the table is dropped.  Note that this may lead to concurrent\n  -- updates failing; the important thing is that they not succeed without\n  -- taking effect.  Failed updates will be retried.\n  lock table queue_worker_entities;\n\n  create table queue_workers\n  as\n    select\n      (value ->> 'provisionerId')::text as provisioner_id,\n      (value ->> 'workerType')::text as worker_type,\n      (value ->> 'workerGroup')::text as worker_group,\n      (value ->> 'workerId')::text as worker_id,\n      entity_buf_decode(value, 'recentTasks')::jsonb as recent_tasks,\n      (value ->> 'quarantineUntil')::timestamptz as quarantine_until,\n      (value ->> 'expires')::timestamptz as expires,\n      (value ->> 'firstClaim')::timestamptz as first_claim,\n      etag\n    from queue_worker_entities;\n  alter table queue_workers add primary key (provisioner_id, worker_type, worker_group, worker_id);\n  alter table queue_workers\n    alter column provisioner_id set not null,\n    alter column worker_type set not null,\n    alter column worker_group set not null,\n    alter column worker_id set not null,\n    alter column recent_tasks set not null,\n    alter column quarantine_until set not null,\n    alter column expires set not null,\n    alter column first_claim set not null,\n    alter column etag set not null,\n    alter column etag set default public.gen_random_uuid();\n\n  revoke select, insert, update, delete on queue_worker_entities from $db_user_prefix$_queue;\n  drop table queue_worker_entities;\n  grant select, insert, update, delete on queue_workers to $db_user_prefix$_queue;\nend\n",
+      "version": 43
+    },
+    {
+      "description": "queue worker types phase 2",
+      "downgradeScript": "begin\n  -- lock this table before reading from it, to prevent loss of concurrent\n  -- updates when the table is dropped.\n  lock table queue_worker_types;\n\n  create table queue_worker_type_entities(\n    partition_key text, row_key text,\n    value jsonb not null,\n    version integer not null,\n    etag uuid default public.gen_random_uuid());\n  alter table queue_worker_type_entities add primary key (partition_key, row_key);\n\n  insert into queue_worker_type_entities\n  select\n    encode_string_key(provisioner_id) as partition_key,\n    encode_string_key(worker_type) as row_key,\n    entity_buf_encode(\n      jsonb_build_object(\n        'PartitionKey', encode_string_key(provisioner_id),\n        'RowKey', encode_string_key(worker_type),\n        'provisionerId', provisioner_id,\n        'workerType', worker_type,\n        'expires', expires,\n        'lastDateActive', last_date_active,\n        'stability', stability),\n      'description', description::text) as value,\n    1 as version,\n    etag\n  from queue_worker_types;\n\n  revoke select, insert, update, delete on queue_worker_types from $db_user_prefix$_queue;\n  drop table queue_worker_types;\n  grant select, insert, update, delete on queue_worker_type_entities to $db_user_prefix$_queue;\nend\n",
+      "methods": {
+        "create_queue_worker_type": {
+          "args": "provisioner_id_in text, worker_type_in text, expires_in timestamptz, last_date_active_in timestamptz, description_in text, stability_in text",
+          "body": "declare\n  new_etag uuid := public.gen_random_uuid();\nbegin\n  insert\n    into queue_worker_types (provisioner_id, worker_type, expires, last_date_active, description, stability)\n    values (provisioner_id_in, worker_type_in, expires_in, last_date_active_in, description_in, stability_in);\n    return new_etag;\nend",
+          "deprecated": false,
+          "description": "Create a new queue worker type.  Raises UNIQUE_VIOLATION if the worker type already exists.",
+          "mode": "write",
+          "returns": "uuid",
+          "serviceName": "queue"
+        },
+        "delete_queue_worker_type": {
+          "args": "provisioner_id text, worker_type text, stability text, description text",
+          "body": "begin\n  delete from queue_worker_types\n  where\n    queue_worker_types.provisioner_id = provisioner_id_in and\n    queue_worker_types.worker_type = worker_type_in;\nend",
+          "deprecated": false,
+          "description": "Delete a queue worker type.",
+          "mode": "write",
+          "returns": "void",
+          "serviceName": "queue"
+        },
+        "expire_queue_worker_types": {
+          "args": "expires_in timestamptz",
+          "body": "declare\n  count integer;\nbegin\n  delete from queue_worker_types\n  where queue_worker_types.expires < expires_in;\n  if found then\n    get diagnostics count = row_count;\n    return count;\n  end if;\n  return 0;\nend",
+          "deprecated": false,
+          "description": "Expire queue worker types that come before `expires_in`.\nReturns a count of rows that have been deleted.",
+          "mode": "write",
+          "returns": "integer",
+          "serviceName": "queue"
+        },
+        "get_queue_worker_type": {
+          "args": "provisioner_id_in text, worker_type_in text, expires_in timestamptz",
+          "body": "begin\n  return query\n  select\n    queue_worker_types.provisioner_id,\n    queue_worker_types.worker_type,\n    queue_worker_types.expires,\n    queue_worker_types.last_date_active,\n    queue_worker_types.description,\n    queue_worker_types.stability,\n    queue_worker_types.etag\n  from queue_worker_types\n  where\n    queue_worker_types.provisioner_id = provisioner_id_in and\n    queue_worker_types.worker_type = worker_type_in and\n    queue_worker_types.expires > expires_in;\n  end",
+          "deprecated": false,
+          "description": "Get a non-expired queue worker type by provisioner_id and worker_type.",
+          "mode": "read",
+          "returns": "table(provisioner_id text, worker_type text, expires timestamptz, last_date_active timestamptz, description text, stability text, etag uuid)",
+          "serviceName": "queue"
+        },
+        "get_queue_worker_types": {
+          "args": "provisioner_id_in text, worker_type_in text, expires_in timestamptz, page_size_in integer, page_offset_in integer",
+          "body": "begin\n  return query\n  select\n    queue_worker_types.provisioner_id,\n    queue_worker_types.worker_type,\n    queue_worker_types.expires,\n    queue_worker_types.last_date_active,\n    queue_worker_types.description,\n    queue_worker_types.stability,\n    queue_worker_types.etag\n  from queue_worker_types\n  where\n    (queue_worker_types.provisioner_id = provisioner_id_in or provisioner_id_in is null) and\n    (queue_worker_types.worker_type = worker_type_in or worker_type_in is null) and\n    (queue_worker_types.expires > expires_in or expires_in is null)\n  order by provisioner_id, worker_type\n  limit get_page_limit(page_size_in)\n  offset get_page_offset(page_offset_in);\nend",
+          "deprecated": false,
+          "description": "Get queue worker types ordered by `provisioner_id` and `worker_type`.\nIf the pagination arguments are both NULL, all rows are returned.\nOtherwise, page_size rows are returned at offset page_offset.",
+          "mode": "read",
+          "returns": "table(provisioner_id text, worker_type text, expires timestamptz, last_date_active timestamptz, description text, stability text, etag uuid)",
+          "serviceName": "queue"
+        },
+        "queue_worker_type_entities_create": {
+          "args": "pk text, rk text, properties jsonb, overwrite boolean, version integer",
+          "body": "declare\n  new_row queue_worker_types%ROWTYPE;\nbegin\n  select\n    (properties ->> 'provisionerId')::text,\n    (properties ->> 'workerType')::text,\n    (properties ->> 'expires')::timestamptz,\n    (properties ->> 'lastDateActive')::timestamptz,\n    entity_buf_decode(properties, 'description')::text,\n    (properties ->> 'stability')::text,\n    public.gen_random_uuid()\n  into new_row;\n  if overwrite then\n    raise exception 'overwrite not implemented';\n  else\n    execute 'insert into queue_worker_types select $1.*' using new_row;\n  end if;\n  return new_row.etag;\nend",
+          "deprecated": false,
+          "description": "See taskcluster-lib-entities",
+          "mode": "write",
+          "returns": "uuid",
+          "serviceName": "queue"
+        },
+        "queue_worker_type_entities_load": {
+          "args": "partition_key text, row_key text",
+          "body": "begin\n  return query\n  select\n    queue_worker_type_entities_load.partition_key,\n    queue_worker_type_entities_load.row_key,\n    entity_buf_encode(\n      jsonb_build_object(\n        'PartitionKey', encode_string_key(provisioner_id),\n        'RowKey', encode_string_key(worker_type),\n        'provisionerId', provisioner_id,\n        'workerType', worker_type,\n        'expires', expires,\n        'lastDateActive', last_date_active,\n        'stability', stability),\n      'description', description::text) as value,\n    1 as version,\n    queue_worker_types.etag as etag\n  from queue_worker_types\n  where\n    queue_worker_types.provisioner_id = decode_string_key(partition_key) and\n    queue_worker_types.worker_type = decode_string_key(row_key);\nend",
+          "deprecated": false,
+          "description": "See taskcluster-lib-entities",
+          "mode": "read",
+          "returns": "table (partition_key_out text, row_key_out text, value jsonb, version integer, etag uuid)",
+          "serviceName": "queue"
+        },
+        "queue_worker_type_entities_modify": {
+          "args": "partition_key text, row_key text, properties jsonb, version integer, old_etag uuid",
+          "body": "declare\n  new_etag uuid;\nbegin\n  new_etag = public.gen_random_uuid();\n  update queue_worker_types\n  set (\n    expires,\n    last_date_active,\n    stability,\n    description,\n    etag\n  ) = (\n    (properties ->> 'expires')::timestamptz,\n    (properties ->> 'lastDateActive')::timestamptz,\n    (properties ->> 'stability')::text,\n    entity_buf_decode(properties, 'description')::text,\n    new_etag\n  )\n  where\n    queue_worker_types.provisioner_id = decode_string_key(partition_key) and\n    queue_worker_types.worker_type = decode_string_key(row_key) and\n    queue_worker_types.etag = queue_worker_type_entities_modify.old_etag;\n  if found then\n    return query select new_etag;\n    return;\n  end if;\n  perform queue_worker_types.etag from queue_worker_types\n  where\n    queue_worker_types.provisioner_id = decode_string_key(partition_key) and\n    queue_worker_types.worker_type = decode_string_key(row_key);\n  if found then\n    raise exception 'unsuccessful update' using errcode = 'P0004';\n  else\n    raise exception 'no such row' using errcode = 'P0002';\n  end if;\nend",
+          "deprecated": false,
+          "description": "See taskcluster-lib-entities",
+          "mode": "write",
+          "returns": "table (etag uuid)",
+          "serviceName": "queue"
+        },
+        "queue_worker_type_entities_remove": {
+          "args": "partition_key text, row_key text",
+          "body": "begin\n  return query delete from queue_worker_types\n  where\n    queue_worker_types.provisioner_id = decode_string_key(partition_key) and\n    queue_worker_types.worker_type = decode_string_key(row_key)\n  returning queue_worker_types.etag;\nend",
+          "deprecated": false,
+          "description": "See taskcluster-lib-entities",
+          "mode": "write",
+          "returns": "table (etag uuid)",
+          "serviceName": "queue"
+        },
+        "queue_worker_type_entities_scan": {
+          "args": "pk text, rk text, condition text, size integer, page integer",
+          "body": "declare\n  cond text[];\n  exp_cond_operator text;\n  exp_cond_operand timestamptz;\nbegin\n  if not condition is null then\n    cond := regexp_split_to_array(condition, '\\s+');\n    exp_cond_operator := cond[4];\n    exp_cond_operand := cond[5] :: timestamptz;\n\n    return query select\n      encode_string_key(provisioner_id) as partition_key,\n      encode_string_key(worker_type) as row_key,\n      entity_buf_encode(\n        jsonb_build_object(\n          'PartitionKey', encode_string_key(provisioner_id),\n          'RowKey', encode_string_key(worker_type),\n          'provisionerId', provisioner_id,\n          'workerType', worker_type,\n          'expires', expires,\n          'lastDateActive', last_date_active,\n          'stability', stability),\n        'description', description::text) as value,\n      1 as version,\n      queue_worker_types.etag as etag\n    from queue_worker_types\n    where\n      (queue_worker_type_entities_scan.pk is null or decode_string_key(partition_key) = provisioner_id) and\n      (queue_worker_type_entities_scan.rk is null or decode_string_key(row_key) = worker_type) and\n      case\n        when exp_cond_operator = '=' then expires = exp_cond_operand\n        when exp_cond_operator = '<' then expires < exp_cond_operand\n        when exp_cond_operator = '<=' then expires <= exp_cond_operand\n        when exp_cond_operator = '>' then expires > exp_cond_operand\n        when exp_cond_operator = '>=' then expires >= exp_cond_operand\n        else expires <> exp_cond_operand\n      end\n    order by queue_worker_types.provisioner_id, queue_worker_types.worker_type\n    limit case\n      when (size is not null and size > 0) then size + 1\n      else null\n    end\n    offset case\n      when (page is not null and page > 0) then page\n      else 0\n    end;\n  else\n    return query select\n      encode_string_key(provisioner_id) as partition_key,\n      encode_string_key(worker_type) as row_key,\n      entity_buf_encode(\n        jsonb_build_object(\n          'PartitionKey', encode_string_key(provisioner_id),\n          'RowKey', encode_string_key(worker_type),\n          'provisionerId', provisioner_id,\n          'workerType', worker_type,\n          'expires', expires,\n          'lastDateActive', last_date_active,\n          'stability', stability),\n        'description', description::text) as value,\n      1 as version,\n      queue_worker_types.etag as etag\n    from queue_worker_types\n    where\n      (queue_worker_type_entities_scan.pk is null or decode_string_key(queue_worker_type_entities_scan.pk) = provisioner_id) and\n      (queue_worker_type_entities_scan.rk is null or decode_string_key(queue_worker_type_entities_scan.rk) = worker_type)\n    order by queue_worker_types.provisioner_id, queue_worker_types.worker_type\n    limit case\n      when (size is not null and size > 0) then size + 1\n      else null\n    end\n    offset case\n      when (size is not null and size > 0 and page is not null and page > 0) then page\n      else 0\n    end;\n  end if;\nend",
+          "deprecated": false,
+          "description": "See taskcluster-lib-entities",
+          "mode": "read",
+          "returns": "table (partition_key text, row_key text, value jsonb, version integer, etag uuid)",
+          "serviceName": "queue"
+        },
+        "update_queue_worker_type": {
+          "args": "provisioner_id_in text, worker_type_in text, expires_in timestamptz, last_date_active_in timestamptz, description_in text, stability_in text",
+          "body": "declare\n  new_etag uuid := public.gen_random_uuid();\nbegin\n  return query update queue_worker_types\n  set\n    expires = expires_in,\n    last_date_active = last_date_active_in,\n    description = description_in,\n    stability = stability_in,\n    etag = new_etag\n  where\n    queue_worker_types.provisioner_id = provisioner_id_in and\n    queue_worker_types.worker_type = worker_type_in\n  returning\n    queue_worker_types.provisioner_id,\n    queue_worker_types.worker_type,\n    queue_worker_types.expires,\n    queue_worker_types.last_date_active,\n    queue_worker_types.description,\n    queue_worker_types.stability,\n    queue_worker_types.etag;\nend",
+          "deprecated": false,
+          "description": "Update a queue worker type's expires, last_date_active, description, and stability.\nAll parameters must be supplied.",
+          "mode": "write",
+          "returns": "table(provisioner_id text, worker_type text, expires timestamptz, last_date_active timestamptz, description text, stability text, etag uuid)",
+          "serviceName": "queue"
+        }
+      },
+      "migrationScript": "begin\n  -- lock this table before reading from it, to prevent loss of concurrent\n  -- updates when the table is dropped.  Note that this may lead to concurrent\n  -- updates failing; the important thing is that they not succeed without\n  -- taking effect.  Failed updates will be retried.\n  lock table queue_worker_type_entities;\n\n  create table queue_worker_types\n  as\n    select\n      (value ->> 'provisionerId')::text as provisioner_id,\n      (value ->> 'workerType')::text as worker_type,\n      (value ->> 'expires')::timestamptz as expires,\n      (value ->> 'lastDateActive')::timestamptz as last_date_active,\n      entity_buf_decode(value, 'description')::text as description,\n      (value ->> 'stability')::text as stability,\n      etag\n    from queue_worker_type_entities;\n  alter table queue_worker_types add primary key (provisioner_id, worker_type);\n  alter table queue_worker_types\n    alter column provisioner_id set not null,\n    alter column worker_type set not null,\n    alter column expires set not null,\n    alter column last_date_active set not null,\n    alter column description set not null,\n    alter column stability set not null,\n    alter column etag set not null,\n    alter column etag set default public.gen_random_uuid();\n\n  revoke select, insert, update, delete on queue_worker_type_entities from $db_user_prefix$_queue;\n  drop table queue_worker_type_entities;\n  grant select, insert, update, delete on queue_worker_types to $db_user_prefix$_queue;\nend\n",
+      "version": 44
+    },
+    {
+      "description": "queue provisioners phase 2",
+      "downgradeScript": "begin\n  -- lock this table before reading from it, to prevent loss of concurrent\n  -- updates when the table is dropped.\n  lock table queue_provisioners;\n\n  create table queue_provisioner_entities(\n    partition_key text, row_key text,\n    value jsonb not null,\n    version integer not null,\n    etag uuid default public.gen_random_uuid());\n  alter table queue_provisioner_entities add primary key (partition_key, row_key);\n\n  insert into queue_provisioner_entities\n  select\n    encode_string_key(provisioner_id) as partition_key,\n    'provisioner' as row_key,\n    entity_buf_encode(\n      entity_buf_encode(\n        jsonb_build_object(\n          'PartitionKey', encode_string_key(provisioner_id),\n          'RowKey', 'provisioner',\n          'provisionerId', provisioner_id,\n          'expires', expires,\n          'lastDateActive', last_date_active,\n          'stability', stability),\n        'description', description::text),\n      'actions', actions::text) as value,\n    1 as version,\n    etag\n  from queue_provisioners;\n\n  revoke select, insert, update, delete on queue_provisioners from $db_user_prefix$_queue;\n  drop table queue_provisioners;\n  grant select, insert, update, delete on queue_provisioner_entities to $db_user_prefix$_queue;\nend\n",
+      "methods": {
+        "create_queue_provisioner": {
+          "args": "provisioner_id_in text, expires_in timestamptz, last_date_active_in timestamptz, description_in text, stability_in text, actions_in jsonb",
+          "body": "declare\n  new_etag uuid := public.gen_random_uuid();\nbegin\n  insert\n    into queue_provisioners (provisioner_id, expires, last_date_active, description, stability, actions)\n    values (provisioner_id_in, expires_in, last_date_active_in, description_in, stability_in, actions_in);\n    return new_etag;\nend",
+          "deprecated": false,
+          "description": "Create a new queue provisioner.  Raises UNIQUE_VIOLATION if the provisioner already exists.",
+          "mode": "write",
+          "returns": "uuid",
+          "serviceName": "queue"
+        },
+        "delete_queue_provisioner": {
+          "args": "provisioner_id text, stability text, description text",
+          "body": "begin\n  delete from queue_provisioners\n  where\n    queue_provisioners.provisioner_id = provisioner_id_in;\nend",
+          "deprecated": false,
+          "description": "Delete a queue provisioner.",
+          "mode": "write",
+          "returns": "void",
+          "serviceName": "queue"
+        },
+        "expire_queue_provisioners": {
+          "args": "expires_in timestamptz",
+          "body": "declare\n  count integer;\nbegin\n  delete from queue_provisioners\n  where queue_provisioners.expires < expires_in;\n  if found then\n    get diagnostics count = row_count;\n    return count;\n  end if;\n  return 0;\nend",
+          "deprecated": false,
+          "description": "Expire provisioners that come before `expires_in`.\nReturns a count of rows that have been deleted.",
+          "mode": "write",
+          "returns": "integer",
+          "serviceName": "queue"
+        },
+        "get_queue_provisioner": {
+          "args": "provisioner_id_in text, expires_in timestamptz",
+          "body": "begin\n  return query\n  select\n    queue_provisioners.provisioner_id,\n    queue_provisioners.expires,\n    queue_provisioners.last_date_active,\n    queue_provisioners.description,\n    queue_provisioners.stability,\n    queue_provisioners.actions,\n    queue_provisioners.etag\n  from queue_provisioners\n  where\n    queue_provisioners.provisioner_id = provisioner_id_in and\n    queue_provisioners.expires > expires_in;\n  end",
+          "deprecated": false,
+          "description": "Get a queue provisioner by provisioner_id.",
+          "mode": "read",
+          "returns": "table(provisioner_id text, expires timestamptz, last_date_active timestamptz, description text, stability text, actions jsonb, etag uuid)",
+          "serviceName": "queue"
+        },
+        "get_queue_provisioners": {
+          "args": "expires_in timestamptz, page_size_in integer, page_offset_in integer",
+          "body": "begin\n  return query\n  select\n    queue_provisioners.provisioner_id,\n    queue_provisioners.expires,\n    queue_provisioners.last_date_active,\n    queue_provisioners.description,\n    queue_provisioners.stability,\n    queue_provisioners.actions,\n    queue_provisioners.etag\n  from queue_provisioners\n  where (queue_provisioners.expires > expires_in or expires_in is null)\n  order by provisioner_id\n  limit get_page_limit(page_size_in)\n  offset get_page_offset(page_offset_in);\nend",
+          "deprecated": false,
+          "description": "Get queue provisioners ordered by `provisioner_id`.\nIf the pagination arguments are both NULL, all rows are returned.\nOtherwise, page_size rows are returned at offset page_offset.",
+          "mode": "read",
+          "returns": "table(provisioner_id text, expires timestamptz, last_date_active timestamptz, description text, stability text, actions jsonb, etag uuid)",
+          "serviceName": "queue"
+        },
+        "queue_provisioner_entities_create": {
+          "args": "pk text, rk text, properties jsonb, overwrite boolean, version integer",
+          "body": "declare\n  new_row queue_provisioners%ROWTYPE;\nbegin\n  select\n    (properties ->> 'provisionerId')::text,\n    (properties ->> 'expires')::timestamptz,\n    (properties ->> 'lastDateActive')::timestamptz,\n    entity_buf_decode(properties, 'description')::text,\n    (properties ->> 'stability')::text,\n    entity_buf_decode(properties, 'actions')::jsonb,\n    public.gen_random_uuid()\n  into new_row;\n  if overwrite then\n    raise exception 'overwrite not implemented';\n  else\n    execute 'insert into queue_provisioners select $1.*' using new_row;\n  end if;\n  return new_row.etag;\nend",
+          "deprecated": false,
+          "description": "See taskcluster-lib-entities",
+          "mode": "write",
+          "returns": "uuid",
+          "serviceName": "queue"
+        },
+        "queue_provisioner_entities_load": {
+          "args": "partition_key text, row_key text",
+          "body": "begin\n  return query\n  select\n    queue_provisioner_entities_load.partition_key,\n    queue_provisioner_entities_load.row_key,\n    entity_buf_encode(\n      entity_buf_encode(\n        jsonb_build_object(\n          'PartitionKey', encode_string_key(provisioner_id),\n          'RowKey', 'provisioner',\n          'provisionerId', provisioner_id,\n          'expires', expires,\n          'lastDateActive', last_date_active,\n          'stability', stability),\n        'description', description::text),\n      'actions', actions::text) as value,\n    1 as version,\n    queue_provisioners.etag as etag\n  from queue_provisioners\n  where\n    queue_provisioners.provisioner_id = decode_string_key(partition_key);\nend",
+          "deprecated": false,
+          "description": "See taskcluster-lib-entities",
+          "mode": "read",
+          "returns": "table (partition_key_out text, row_key_out text, value jsonb, version integer, etag uuid)",
+          "serviceName": "queue"
+        },
+        "queue_provisioner_entities_modify": {
+          "args": "partition_key text, row_key text, properties jsonb, version integer, old_etag uuid",
+          "body": "declare\n  new_etag uuid;\nbegin\n  new_etag = public.gen_random_uuid();\n  update queue_provisioners\n  set (\n    expires,\n    stability,\n    description,\n    actions,\n    etag\n  ) = (\n    (properties ->> 'expires')::timestamptz,\n    (properties ->> 'stability')::text,\n    entity_buf_decode(properties, 'description')::text,\n    entity_buf_decode(properties, 'actions')::jsonb,\n    new_etag\n  )\n  where\n    queue_provisioners.provisioner_id = decode_string_key(partition_key) and\n    queue_provisioners.etag = queue_provisioner_entities_modify.old_etag;\n  if found then\n    return query select new_etag;\n    return;\n  end if;\n  perform queue_provisioners.etag from queue_provisioners\n  where\n    queue_provisioners.provisioner_id = decode_string_key(partition_key);\n  if found then\n    raise exception 'unsuccessful update' using errcode = 'P0004';\n  else\n    raise exception 'no such row' using errcode = 'P0002';\n  end if;\nend",
+          "deprecated": false,
+          "description": "See taskcluster-lib-entities",
+          "mode": "write",
+          "returns": "table (etag uuid)",
+          "serviceName": "queue"
+        },
+        "queue_provisioner_entities_remove": {
+          "args": "partition_key text, row_key text",
+          "body": "begin\n  return query delete from queue_provisioners\n  where\n    queue_provisioners.provisioner_id = decode_string_key(partition_key)\n  returning queue_provisioners.etag;\nend",
+          "deprecated": false,
+          "description": "See taskcluster-lib-entities",
+          "mode": "write",
+          "returns": "table (etag uuid)",
+          "serviceName": "queue"
+        },
+        "queue_provisioner_entities_scan": {
+          "args": "pk text, rk text, condition text, size integer, page integer",
+          "body": "declare\n  cond text[];\n  exp_cond_operator text;\n  exp_cond_operand timestamptz;\nbegin\n  if not condition is null then\n    cond := regexp_split_to_array(condition, '\\s+');\n    exp_cond_operator := cond[4];\n    exp_cond_operand := cond[5] :: timestamptz;\n\n    return query select\n      encode_string_key(provisioner_id) as partition_key,\n      'provisioner' as row_key,\n      entity_buf_encode(\n        entity_buf_encode(\n          jsonb_build_object(\n            'PartitionKey', encode_string_key(provisioner_id),\n            'RowKey', 'provisioner',\n            'provisionerId', provisioner_id,\n            'expires', expires,\n            'lastDateActive', last_date_active,\n            'stability', stability),\n          'description', description::text),\n        'actions', actions::text) as value,\n      1 as version,\n      queue_provisioners.etag as etag\n    from queue_provisioners\n    where\n      (queue_provisioner_entities_scan.pk is null or decode_string_key(partition_key) = provisioner_id) and\n      case\n        when exp_cond_operator = '=' then expires = exp_cond_operand\n        when exp_cond_operator = '<' then expires < exp_cond_operand\n        when exp_cond_operator = '<=' then expires <= exp_cond_operand\n        when exp_cond_operator = '>' then expires > exp_cond_operand\n        when exp_cond_operator = '>=' then expires >= exp_cond_operand\n        else expires <> exp_cond_operand\n      end\n    order by queue_provisioners.provisioner_id\n    limit case\n      when (size is not null and size > 0) then size + 1\n      else null\n    end\n    offset case\n      when (page is not null and page > 0) then page\n      else 0\n    end;\n  else\n    return query select\n      encode_string_key(provisioner_id) as partition_key,\n      'provisioner' as row_key,\n      entity_buf_encode(\n        entity_buf_encode(\n          jsonb_build_object(\n            'PartitionKey', encode_string_key(provisioner_id),\n            'RowKey', 'provisioner',\n            'provisionerId', provisioner_id,\n            'expires', expires,\n            'lastDateActive', last_date_active,\n            'stability', stability),\n          'description', description::text),\n        'actions', actions::text) as value,\n      1 as version,\n      queue_provisioners.etag as etag\n    from queue_provisioners\n    where\n      (queue_provisioner_entities_scan.pk is null or decode_string_key(partition_key) = provisioner_id)\n    order by queue_provisioners.provisioner_id\n    limit case\n      when (size is not null and size > 0) then size + 1\n      else null\n    end\n    offset case\n      when (size is not null and size > 0 and page is not null and page > 0) then page\n      else 0\n    end;\n  end if;\nend",
+          "deprecated": false,
+          "description": "See taskcluster-lib-entities",
+          "mode": "read",
+          "returns": "table (partition_key text, row_key text, value jsonb, version integer, etag uuid)",
+          "serviceName": "queue"
+        },
+        "update_queue_provisioner": {
+          "args": "provisioner_id_in text, expires_in timestamptz, last_date_active_in timestamptz, description_in text, stability_in text, actions_in jsonb",
+          "body": "declare\n  new_etag uuid := public.gen_random_uuid();\nbegin\n  return query update queue_provisioners\n  set\n    expires = expires_in,\n    last_date_active = last_date_active_in,\n    description = description_in,\n    stability = stability_in,\n    actions = actions_in,\n    etag = new_etag\n  where\n    queue_provisioners.provisioner_id = provisioner_id_in\n  returning\n    queue_provisioners.provisioner_id,\n    queue_provisioners.expires,\n    queue_provisioners.last_date_active,\n    queue_provisioners.description,\n    queue_provisioners.stability,\n    queue_provisioners.actions,\n    queue_provisioners.etag;\nend",
+          "deprecated": false,
+          "description": "Update a queue provisioner's expires, last_date_active, description, stability, and actions.\nAll parameters must be supplied.",
+          "mode": "write",
+          "returns": "table(provisioner_id text, expires timestamptz, last_date_active timestamptz, description text, stability text, actions jsonb, etag uuid)",
+          "serviceName": "queue"
+        }
+      },
+      "migrationScript": "begin\n  -- lock this table before reading from it, to prevent loss of concurrent\n  -- updates when the table is dropped.  Note that this may lead to concurrent\n  -- updates failing; the important thing is that they not succeed without\n  -- taking effect.  Failed updates will be retried.\n  lock table queue_provisioner_entities;\n\n  create table queue_provisioners\n  as\n    select\n      (value ->> 'provisionerId')::text as provisioner_id,\n      (value ->> 'expires')::timestamptz as expires,\n      (value ->> 'lastDateActive')::timestamptz as last_date_active,\n      entity_buf_decode(value, 'description')::text as description,\n      (value ->> 'stability')::text as stability,\n      entity_buf_decode(value, 'actions')::jsonb as actions,\n      etag\n    from queue_provisioner_entities;\n  alter table queue_provisioners add primary key (provisioner_id);\n  alter table queue_provisioners\n    alter column provisioner_id set not null,\n    alter column expires set not null,\n    alter column last_date_active set not null,\n    alter column description set not null,\n    alter column stability set not null,\n    alter column actions set not null,\n    alter column etag set not null,\n    alter column etag set default public.gen_random_uuid();\n\n  revoke select, insert, update, delete on queue_provisioner_entities from $db_user_prefix$_queue;\n  drop table queue_provisioner_entities;\n  grant select, insert, update, delete on queue_provisioners to $db_user_prefix$_queue;\nend\n",
+      "version": 45
     }
   ]
 }

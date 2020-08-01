@@ -1,0 +1,369 @@
+version: 43
+description: queue workers phase 2
+migrationScript: 0043-migration.sql
+downgradeScript: 0043-downgrade.sql
+methods:
+  queue_worker_entities_load:
+    description: See taskcluster-lib-entities
+    mode: read
+    serviceName: queue
+    args: partition_key text, row_key text
+    returns: table (partition_key_out text, row_key_out text, value jsonb, version integer, etag uuid)
+    body: |-
+      declare
+        decoded_composite_partition_key text[];
+        decoded_composite_row_key text[];
+      begin
+        decoded_composite_partition_key := decode_composite_key(queue_worker_entities_load.partition_key);
+        decoded_composite_row_key := decode_composite_key(queue_worker_entities_load.row_key);
+        return query
+        select
+          queue_worker_entities_load.partition_key,
+          queue_worker_entities_load.row_key,
+          entity_buf_encode(
+            jsonb_build_object(
+              'PartitionKey', encode_composite_key(provisioner_id, worker_type),
+              'RowKey', encode_composite_key(worker_group, worker_id),
+              'provisionerId', provisioner_id,
+              'workerType', worker_type,
+              'workerGroup', worker_group,
+              'workerId', worker_id,
+              'quarantineUntil', quarantine_until,
+              'expires', expires,
+              'firstClaim', first_claim),
+            'recentTasks', recent_tasks::text) as value,
+          1 as version,
+          queue_workers.etag as etag
+        from queue_workers
+        where
+          queue_workers.provisioner_id = decoded_composite_partition_key[1] and queue_workers.worker_type = decoded_composite_partition_key[2] and
+          queue_workers.worker_group = decoded_composite_row_key[1] and queue_workers.worker_id = decoded_composite_row_key[2];
+      end
+  queue_worker_entities_create:
+    serviceName: queue
+    description: See taskcluster-lib-entities
+    mode: write
+    args: pk text, rk text, properties jsonb, overwrite boolean, version integer
+    returns: uuid
+    body: |-
+      declare
+        new_row queue_workers%ROWTYPE;
+      begin
+        select
+          (properties ->> 'provisionerId')::text,
+          (properties ->> 'workerType')::text,
+          (properties ->> 'workerGroup')::text,
+          (properties ->> 'workerId')::text,
+          entity_buf_decode(properties, 'recentTasks')::jsonb,
+          (properties ->> 'quarantineUntil')::timestamptz,
+          (properties ->> 'expires')::timestamptz,
+          (properties ->> 'firstClaim')::timestamptz,
+          public.gen_random_uuid()
+        into new_row;
+        if overwrite then
+          raise exception 'overwrite not implemented';
+        else
+          execute 'insert into queue_workers select $1.*' using new_row;
+        end if;
+        return new_row.etag;
+      end
+  queue_worker_entities_remove:
+    serviceName: queue
+    description: See taskcluster-lib-entities
+    mode: write
+    args: partition_key text, row_key text
+    returns: table (etag uuid)
+    body: |-
+      declare
+        decoded_composite_partition_key text[];
+        decoded_composite_row_key text[];
+      begin
+        decoded_composite_partition_key := decode_composite_key(queue_worker_entities_remove.partition_key);
+        decoded_composite_row_key := decode_composite_key(queue_worker_entities_remove.row_key);
+        return query delete from queue_workers
+        where
+          queue_workers.provisioner_id = decoded_composite_partition_key[1] and queue_workers.worker_type = decoded_composite_partition_key[2] and
+          queue_workers.worker_group = decoded_composite_row_key[1] and queue_workers.worker_id = decoded_composite_row_key[2]
+        returning queue_workers.etag;
+      end
+  queue_worker_entities_modify:
+    serviceName: queue
+    description: See taskcluster-lib-entities
+    mode: write
+    args: partition_key text, row_key text, properties jsonb, version integer, old_etag uuid
+    returns: table (etag uuid)
+    body: |-
+      declare
+        decoded_composite_partition_key text[];
+        decoded_composite_row_key text[];
+        new_etag uuid;
+      begin
+        -- NOTE: queue only updates expires, quarantine_until, and recent_tasks, so that's all that's supported here
+        new_etag = public.gen_random_uuid();
+        decoded_composite_partition_key := decode_composite_key(queue_worker_entities_modify.partition_key);
+        decoded_composite_row_key := decode_composite_key(queue_worker_entities_modify.row_key);
+        update queue_workers
+        set (
+          expires,
+          quarantine_until,
+          recent_tasks,
+          etag
+        ) = (
+          (properties ->> 'expires')::timestamptz,
+          (properties ->> 'quarantineUntil')::timestamptz,
+          entity_buf_decode(properties, 'recentTasks')::jsonb,
+          new_etag
+        )
+        where
+          queue_workers.provisioner_id = decoded_composite_partition_key[1] and queue_workers.worker_type = decoded_composite_partition_key[2] and
+          queue_workers.worker_group = decoded_composite_row_key[1] and queue_workers.worker_id = decoded_composite_row_key[2] and
+          queue_workers.etag = queue_worker_entities_modify.old_etag;
+        if found then
+          return query select new_etag;
+          return;
+        end if;
+        perform queue_workers.etag from queue_workers
+        where
+          queue_workers.provisioner_id = decoded_composite_partition_key[1] and queue_workers.worker_type = decoded_composite_partition_key[2] and
+          queue_workers.worker_group = decoded_composite_row_key[1] and queue_workers.worker_id = decoded_composite_row_key[2];
+        if found then
+          raise exception 'unsuccessful update' using errcode = 'P0004';
+        else
+          raise exception 'no such row' using errcode = 'P0002';
+        end if;
+      end
+  queue_worker_entities_scan:
+    description: See taskcluster-lib-entities
+    mode: read
+    serviceName: queue
+    args: pk text, rk text, condition text, size integer, page integer
+    returns: table (partition_key text, row_key text, value jsonb, version integer, etag uuid)
+    body: |-
+      declare
+        cond text[];
+        decoded_composite_partition_key text[];
+        decoded_composite_row_key text[];
+        exp_cond_field text;
+        exp_cond_operator text;
+        exp_cond_operand timestamptz;
+      begin
+        decoded_composite_partition_key := decode_composite_key(pk);
+        decoded_composite_row_key := decode_composite_key(rk);
+        if not condition is null then
+          cond := regexp_split_to_array(condition, '\s+');
+          exp_cond_field := cond[3];
+          exp_cond_operator := cond[4];
+          exp_cond_operand := cond[5] :: timestamptz;
+
+          return query select
+            encode_composite_key(provisioner_id, worker_type) as partition_key,
+            encode_composite_key(worker_group, worker_id) as row_key,
+            entity_buf_encode(
+              jsonb_build_object(
+                'PartitionKey', encode_composite_key(provisioner_id, worker_type),
+                'RowKey', encode_composite_key(worker_group, worker_id),
+                'provisionerId', provisioner_id,
+                'workerType', worker_type,
+                'workerGroup', worker_group,
+                'workerId', worker_id,
+                'quarantineUntil', quarantine_until,
+                'expires', expires,
+                'firstClaim', first_claim),
+              'recentTasks', recent_tasks::text) as value,
+            1 as version,
+            queue_workers.etag as etag
+          from queue_workers
+          where
+            (queue_worker_entities_scan.pk is null or decoded_composite_partition_key[1] = provisioner_id and decoded_composite_partition_key[2] = worker_type) and
+            (queue_worker_entities_scan.rk is null or decoded_composite_row_key[1] = worker_group and decoded_composite_row_key[2] = worker_id) and
+            case
+              when exp_cond_field = '''quarantineUntil''' then
+              case
+                when exp_cond_operator = '<' then quarantine_until < exp_cond_operand
+                when exp_cond_operator = '>' then quarantine_until > exp_cond_operand
+              end
+              when exp_cond_field = '''expires''' then
+              case
+                when exp_cond_operator = '=' then expires = exp_cond_operand
+                when exp_cond_operator = '<' then expires < exp_cond_operand
+                when exp_cond_operator = '<=' then expires <= exp_cond_operand
+                when exp_cond_operator = '>' then expires > exp_cond_operand
+                when exp_cond_operator = '>=' then expires >= exp_cond_operand
+                else expires <> exp_cond_operand
+              end
+            end
+          order by queue_workers.provisioner_id, queue_workers.worker_type, queue_workers.worker_group, queue_workers.worker_id
+          limit case
+            when (size is not null and size > 0) then size + 1
+            else null
+          end
+          offset case
+            when (page is not null and page > 0) then page
+            else 0
+          end;
+        else
+          return query select
+            encode_composite_key(provisioner_id, worker_type) as partition_key,
+            encode_composite_key(worker_group, worker_id) as row_key,
+            entity_buf_encode(
+              jsonb_build_object(
+                'PartitionKey', encode_composite_key(provisioner_id, worker_type),
+                'RowKey', encode_composite_key(worker_group, worker_id),
+                'provisionerId', provisioner_id,
+                'workerType', worker_type,
+                'workerGroup', worker_group,
+                'workerId', worker_id,
+                'quarantineUntil', quarantine_until,
+                'expires', expires,
+                'firstClaim', first_claim),
+            'recentTasks', recent_tasks::text) as value,
+            1 as version,
+            queue_workers.etag as etag
+          from queue_workers
+          where
+            (queue_worker_entities_scan.pk is null or decoded_composite_partition_key[1] = provisioner_id and decoded_composite_partition_key[2] = worker_type) and
+            (queue_worker_entities_scan.rk is null or decoded_composite_row_key[1] = worker_group and decoded_composite_row_key[2] = worker_id)
+          order by queue_workers.provisioner_id, queue_workers.worker_type, queue_workers.worker_group, queue_workers.worker_id
+          limit case
+            when (size is not null and size > 0) then size + 1
+            else null
+          end
+          offset case
+            when (size is not null and size > 0 and page is not null and page > 0) then page
+            else 0
+          end;
+        end if;
+      end
+  create_queue_worker:
+    description: |-
+      Create a new queue worker.  Raises UNIQUE_VIOLATION if the worker already exists.
+    mode: write
+    serviceName: queue
+    args: provisioner_id_in text, worker_type_in text, worker_group_in text, worker_id_in text, quarantine_until_in timestamptz, expires_in timestamptz, first_claim_in timestamptz, recent_tasks_in jsonb
+    returns: uuid
+    body: |-
+      declare
+        new_etag uuid := public.gen_random_uuid();
+      begin
+        insert
+          into queue_workers (provisioner_id, worker_type, worker_group, worker_id, quarantine_until, expires, first_claim, recent_tasks)
+          values (provisioner_id_in, worker_type_in, worker_group_in, worker_id_in, quarantine_until_in, expires_in, first_claim_in, recent_tasks_in);
+          return new_etag;
+      end
+  get_queue_worker:
+    description: |-
+      Get a non-expired queue worker by provisioner_id, worker_type, worker_group, and worker_id.
+      Workers are not considered expired until after their quarantine date expires.
+    mode: read
+    serviceName: queue
+    args: provisioner_id_in text, worker_type_in text, worker_group_in text, worker_id_in text, expires_in timestamptz
+    returns: table(provisioner_id text, worker_type text, worker_group text, worker_id text, quarantine_until timestamptz, expires timestamptz, first_claim timestamptz, recent_tasks jsonb, etag uuid)
+    body: |-
+      begin
+        return query
+        select
+          queue_workers.provisioner_id,
+          queue_workers.worker_type,
+          queue_workers.worker_group,
+          queue_workers.worker_id,
+          queue_workers.quarantine_until,
+          queue_workers.expires,
+          queue_workers.first_claim,
+          queue_workers.recent_tasks,
+          queue_workers.etag
+        from queue_workers
+        where
+          queue_workers.provisioner_id = provisioner_id_in and
+          queue_workers.worker_type = worker_type_in and
+          queue_workers.worker_group = worker_group_in and
+          queue_workers.worker_id = worker_id_in and
+          (queue_workers.expires > expires_in or queue_workers.quarantine_until > expires_in);
+        end
+  update_queue_worker:
+    serviceName: queue
+    description: |-
+      Update a queue worker's quarantine_until, expires, and recent_tasks.
+      All parameters must be supplied.
+    mode: write
+    args: provisioner_id_in text, worker_type_in text, worker_group_in text, worker_id_in text, quarantine_until_in timestamptz, expires_in timestamptz, recent_tasks_in jsonb
+    returns: table(provisioner_id text, worker_type text, worker_group text, worker_id text, quarantine_until timestamptz, expires timestamptz, first_claim timestamptz, recent_tasks jsonb, etag uuid)
+    body: |-
+      declare
+        new_etag uuid := public.gen_random_uuid();
+      begin
+        return query update queue_workers
+        set
+          quarantine_until = quarantine_until_in,
+          expires = expires_in,
+          recent_tasks = recent_tasks_in,
+          etag = new_etag
+        where
+          queue_workers.provisioner_id = provisioner_id_in and
+          queue_workers.worker_type = worker_type_in and
+          queue_workers.worker_group = worker_group_in and
+          queue_workers.worker_id = worker_id_in
+        returning
+          queue_workers.provisioner_id,
+          queue_workers.worker_type,
+          queue_workers.worker_group,
+          queue_workers.worker_id,
+          queue_workers.quarantine_until,
+          queue_workers.expires,
+          queue_workers.first_claim,
+          queue_workers.recent_tasks,
+          queue_workers.etag;
+      end
+  get_queue_workers:
+    description: |-
+      Get non-expired queue workers ordered by provisioner_id, worker_type, worker_group, and worker_id.
+      Workers are not considered expired until after their quarantine date expires.
+      If the pagination arguments are both NULL, all rows are returned.
+      Otherwise, page_size rows are returned at offset page_offset.
+    mode: read
+    serviceName: queue
+    args: provisioner_id_in text, worker_type_in text, expires_in timestamptz, page_size_in integer, page_offset_in integer
+    returns: table(provisioner_id text, worker_type text, worker_group text, worker_id text, quarantine_until timestamptz, expires timestamptz, first_claim timestamptz, recent_tasks jsonb, etag uuid)
+    body: |-
+      begin
+        return query
+        select
+          queue_workers.provisioner_id,
+          queue_workers.worker_type,
+          queue_workers.worker_group,
+          queue_workers.worker_id,
+          queue_workers.quarantine_until,
+          queue_workers.expires,
+          queue_workers.first_claim,
+          queue_workers.recent_tasks,
+          queue_workers.etag
+        from queue_workers
+        where
+          (queue_workers.provisioner_id = provisioner_id_in or get_queue_workers.provisioner_id_in is null) and
+          (queue_workers.worker_type = worker_type_in or get_queue_workers.worker_type_in is null) and
+          ((queue_workers.expires > expires_in and queue_workers.quarantine_until < expires_in) or get_queue_workers.expires_in is null)
+        order by provisioner_id, worker_type, worker_group, worker_id
+        limit get_page_limit(page_size_in)
+        offset get_page_offset(page_offset_in);
+      end
+  expire_queue_workers:
+    description: |-
+      Expire non-quarantined queue workers that come before `expires_in`.
+      Returns a count of rows that have been deleted.
+    mode: write
+    serviceName: queue
+    args: expires_in timestamptz
+    returns: integer
+    body: |-
+      declare
+        count integer;
+      begin
+        delete from queue_workers
+        where
+          queue_workers.expires < expires_in and
+          (queue_workers.expires < expires_in and queue_workers.quarantine_until < expires_in);
+        if found then
+          get diagnostics count = row_count;
+          return count;
+        end if;
+        return 0;
+      end

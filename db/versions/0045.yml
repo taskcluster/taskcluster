@@ -1,0 +1,327 @@
+version: 45
+description: queue provisioners phase 2
+migrationScript: 0045-migration.sql
+downgradeScript: 0045-downgrade.sql
+methods:
+  queue_provisioner_entities_load:
+    description: See taskcluster-lib-entities
+    mode: read
+    serviceName: queue
+    args: partition_key text, row_key text
+    returns: table (partition_key_out text, row_key_out text, value jsonb, version integer, etag uuid)
+    body: |-
+      begin
+        return query
+        select
+          queue_provisioner_entities_load.partition_key,
+          queue_provisioner_entities_load.row_key,
+          entity_buf_encode(
+            entity_buf_encode(
+              jsonb_build_object(
+                'PartitionKey', encode_string_key(provisioner_id),
+                'RowKey', 'provisioner',
+                'provisionerId', provisioner_id,
+                'expires', expires,
+                'lastDateActive', last_date_active,
+                'stability', stability),
+              'description', description::text),
+            'actions', actions::text) as value,
+          1 as version,
+          queue_provisioners.etag as etag
+        from queue_provisioners
+        where
+          queue_provisioners.provisioner_id = decode_string_key(partition_key);
+      end
+  queue_provisioner_entities_create:
+    serviceName: queue
+    description: See taskcluster-lib-entities
+    mode: write
+    args: pk text, rk text, properties jsonb, overwrite boolean, version integer
+    returns: uuid
+    body: |-
+      declare
+        new_row queue_provisioners%ROWTYPE;
+      begin
+        select
+          (properties ->> 'provisionerId')::text,
+          (properties ->> 'expires')::timestamptz,
+          (properties ->> 'lastDateActive')::timestamptz,
+          entity_buf_decode(properties, 'description')::text,
+          (properties ->> 'stability')::text,
+          entity_buf_decode(properties, 'actions')::jsonb,
+          public.gen_random_uuid()
+        into new_row;
+        if overwrite then
+          raise exception 'overwrite not implemented';
+        else
+          execute 'insert into queue_provisioners select $1.*' using new_row;
+        end if;
+        return new_row.etag;
+      end
+  queue_provisioner_entities_remove:
+    serviceName: queue
+    description: See taskcluster-lib-entities
+    mode: write
+    args: partition_key text, row_key text
+    returns: table (etag uuid)
+    body: |-
+      begin
+        return query delete from queue_provisioners
+        where
+          queue_provisioners.provisioner_id = decode_string_key(partition_key)
+        returning queue_provisioners.etag;
+      end
+  queue_provisioner_entities_modify:
+    serviceName: queue
+    description: See taskcluster-lib-entities
+    mode: write
+    args: partition_key text, row_key text, properties jsonb, version integer, old_etag uuid
+    returns: table (etag uuid)
+    body: |-
+      declare
+        new_etag uuid;
+      begin
+        new_etag = public.gen_random_uuid();
+        update queue_provisioners
+        set (
+          expires,
+          stability,
+          description,
+          actions,
+          etag
+        ) = (
+          (properties ->> 'expires')::timestamptz,
+          (properties ->> 'stability')::text,
+          entity_buf_decode(properties, 'description')::text,
+          entity_buf_decode(properties, 'actions')::jsonb,
+          new_etag
+        )
+        where
+          queue_provisioners.provisioner_id = decode_string_key(partition_key) and
+          queue_provisioners.etag = queue_provisioner_entities_modify.old_etag;
+        if found then
+          return query select new_etag;
+          return;
+        end if;
+        perform queue_provisioners.etag from queue_provisioners
+        where
+          queue_provisioners.provisioner_id = decode_string_key(partition_key);
+        if found then
+          raise exception 'unsuccessful update' using errcode = 'P0004';
+        else
+          raise exception 'no such row' using errcode = 'P0002';
+        end if;
+      end
+  queue_provisioner_entities_scan:
+    description: See taskcluster-lib-entities
+    mode: read
+    serviceName: queue
+    args: pk text, rk text, condition text, size integer, page integer
+    returns: table (partition_key text, row_key text, value jsonb, version integer, etag uuid)
+    body: |-
+      declare
+        cond text[];
+        exp_cond_operator text;
+        exp_cond_operand timestamptz;
+      begin
+        if not condition is null then
+          cond := regexp_split_to_array(condition, '\s+');
+          exp_cond_operator := cond[4];
+          exp_cond_operand := cond[5] :: timestamptz;
+
+          return query select
+            encode_string_key(provisioner_id) as partition_key,
+            'provisioner' as row_key,
+            entity_buf_encode(
+              entity_buf_encode(
+                jsonb_build_object(
+                  'PartitionKey', encode_string_key(provisioner_id),
+                  'RowKey', 'provisioner',
+                  'provisionerId', provisioner_id,
+                  'expires', expires,
+                  'lastDateActive', last_date_active,
+                  'stability', stability),
+                'description', description::text),
+              'actions', actions::text) as value,
+            1 as version,
+            queue_provisioners.etag as etag
+          from queue_provisioners
+          where
+            (queue_provisioner_entities_scan.pk is null or decode_string_key(partition_key) = provisioner_id) and
+            case
+              when exp_cond_operator = '=' then expires = exp_cond_operand
+              when exp_cond_operator = '<' then expires < exp_cond_operand
+              when exp_cond_operator = '<=' then expires <= exp_cond_operand
+              when exp_cond_operator = '>' then expires > exp_cond_operand
+              when exp_cond_operator = '>=' then expires >= exp_cond_operand
+              else expires <> exp_cond_operand
+            end
+          order by queue_provisioners.provisioner_id
+          limit case
+            when (size is not null and size > 0) then size + 1
+            else null
+          end
+          offset case
+            when (page is not null and page > 0) then page
+            else 0
+          end;
+        else
+          return query select
+            encode_string_key(provisioner_id) as partition_key,
+            'provisioner' as row_key,
+            entity_buf_encode(
+              entity_buf_encode(
+                jsonb_build_object(
+                  'PartitionKey', encode_string_key(provisioner_id),
+                  'RowKey', 'provisioner',
+                  'provisionerId', provisioner_id,
+                  'expires', expires,
+                  'lastDateActive', last_date_active,
+                  'stability', stability),
+                'description', description::text),
+              'actions', actions::text) as value,
+            1 as version,
+            queue_provisioners.etag as etag
+          from queue_provisioners
+          where
+            (queue_provisioner_entities_scan.pk is null or decode_string_key(partition_key) = provisioner_id)
+          order by queue_provisioners.provisioner_id
+          limit case
+            when (size is not null and size > 0) then size + 1
+            else null
+          end
+          offset case
+            when (size is not null and size > 0 and page is not null and page > 0) then page
+            else 0
+          end;
+        end if;
+      end
+  create_queue_provisioner:
+    description: |-
+      Create a new queue provisioner.  Raises UNIQUE_VIOLATION if the provisioner already exists.
+    mode: write
+    serviceName: queue
+    args: provisioner_id_in text, expires_in timestamptz, last_date_active_in timestamptz, description_in text, stability_in text, actions_in jsonb
+    returns: uuid
+    body: |-
+      declare
+        new_etag uuid := public.gen_random_uuid();
+      begin
+        insert
+          into queue_provisioners (provisioner_id, expires, last_date_active, description, stability, actions)
+          values (provisioner_id_in, expires_in, last_date_active_in, description_in, stability_in, actions_in);
+          return new_etag;
+      end
+  delete_queue_provisioner:
+    description: |-
+      Delete a queue provisioner.
+    mode: write
+    serviceName: queue
+    args: provisioner_id text, stability text, description text
+    returns: void
+    body: |-
+      begin
+        delete from queue_provisioners
+        where
+          queue_provisioners.provisioner_id = provisioner_id_in;
+      end
+  get_queue_provisioner:
+    description: |-
+      Get a queue provisioner by provisioner_id.
+    mode: read
+    serviceName: queue
+    args: provisioner_id_in text, expires_in timestamptz
+    returns: table(provisioner_id text, expires timestamptz, last_date_active timestamptz, description text, stability text, actions jsonb, etag uuid)
+    body: |-
+      begin
+        return query
+        select
+          queue_provisioners.provisioner_id,
+          queue_provisioners.expires,
+          queue_provisioners.last_date_active,
+          queue_provisioners.description,
+          queue_provisioners.stability,
+          queue_provisioners.actions,
+          queue_provisioners.etag
+        from queue_provisioners
+        where
+          queue_provisioners.provisioner_id = provisioner_id_in and
+          queue_provisioners.expires > expires_in;
+        end
+  update_queue_provisioner:
+    serviceName: queue
+    description: |-
+      Update a queue provisioner's expires, last_date_active, description, stability, and actions.
+      All parameters must be supplied.
+    mode: write
+    args: provisioner_id_in text, expires_in timestamptz, last_date_active_in timestamptz, description_in text, stability_in text, actions_in jsonb
+    returns: table(provisioner_id text, expires timestamptz, last_date_active timestamptz, description text, stability text, actions jsonb, etag uuid)
+    body: |-
+      declare
+        new_etag uuid := public.gen_random_uuid();
+      begin
+        return query update queue_provisioners
+        set
+          expires = expires_in,
+          last_date_active = last_date_active_in,
+          description = description_in,
+          stability = stability_in,
+          actions = actions_in,
+          etag = new_etag
+        where
+          queue_provisioners.provisioner_id = provisioner_id_in
+        returning
+          queue_provisioners.provisioner_id,
+          queue_provisioners.expires,
+          queue_provisioners.last_date_active,
+          queue_provisioners.description,
+          queue_provisioners.stability,
+          queue_provisioners.actions,
+          queue_provisioners.etag;
+      end
+  get_queue_provisioners:
+    description: |-
+      Get queue provisioners ordered by `provisioner_id`.
+      If the pagination arguments are both NULL, all rows are returned.
+      Otherwise, page_size rows are returned at offset page_offset.
+    mode: read
+    serviceName: queue
+    args: expires_in timestamptz, page_size_in integer, page_offset_in integer
+    returns: table(provisioner_id text, expires timestamptz, last_date_active timestamptz, description text, stability text, actions jsonb, etag uuid)
+    body: |-
+      begin
+        return query
+        select
+          queue_provisioners.provisioner_id,
+          queue_provisioners.expires,
+          queue_provisioners.last_date_active,
+          queue_provisioners.description,
+          queue_provisioners.stability,
+          queue_provisioners.actions,
+          queue_provisioners.etag
+        from queue_provisioners
+        where (queue_provisioners.expires > expires_in or expires_in is null)
+        order by provisioner_id
+        limit get_page_limit(page_size_in)
+        offset get_page_offset(page_offset_in);
+      end
+  expire_queue_provisioners:
+    description: |-
+      Expire provisioners that come before `expires_in`.
+      Returns a count of rows that have been deleted.
+    mode: write
+    serviceName: queue
+    args: expires_in timestamptz
+    returns: integer
+    body: |-
+      declare
+        count integer;
+      begin
+        delete from queue_provisioners
+        where queue_provisioners.expires < expires_in;
+        if found then
+          get diagnostics count = row_count;
+          return count;
+        end if;
+        return 0;
+      end

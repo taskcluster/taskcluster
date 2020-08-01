@@ -1450,7 +1450,7 @@ var services = map[string]definitions.Service{
 			definitions.Entry{
 				Name:        "remove",
 				Title:       "Delete Secret",
-				Description: "Delete the secret associated with some key.",
+				Description: "Delete the secret associated with some key. It will succeed whether or not the secret exists",
 				Stability:   "stable",
 				Method:      "delete",
 				Route:       "/secret/<name>",

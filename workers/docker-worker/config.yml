@@ -11,10 +11,6 @@ defaults:
       enabled: true
     kvm:
       enabled: true
-  phone:
-    enabled: false
-    sims: '1'
-    type: null
   dockerConfig:
     # Privileged mode will allow tasks to run with elevated privileges similar
     # to process running on the host.  The task containers will have access to
@@ -138,11 +134,6 @@ defaults:
     maxDelay: 600
     # Maximum number of points to queue before flush
     maxPendingPoints: 100
-
-  testdroid:
-    url:      !env TESTDROID_URL
-    username: !env TESTDROID_USERNAME
-    password: !env TESTDROID_PASSWORD
 
   ed25519SigningKeyLocation: '/etc/docker-worker-ed25519-cot-signing-key.key'
 
