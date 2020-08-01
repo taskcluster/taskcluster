@@ -404,6 +404,7 @@ func resolve(base *BaseArtifact, artifactType string, path string, contentType s
 			".tbz": true,
 			".whl": true, // Python wheel are already zip file
 			".xz":  true,
+			".zst": true,
 			// Flash
 			".swf": true,
 			".flv": true,
