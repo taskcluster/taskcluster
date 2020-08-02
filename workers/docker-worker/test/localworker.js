@@ -14,10 +14,11 @@ function eventPromise(listener, event) {
 
 /** Wrapper for a process with a local worker with given workerType */
 class LocalWorker {
-  constructor(provisionerId, workerType, workerId) {
+  constructor(provisionerId, workerType, workerId, features) {
     this.provisionerId = provisionerId;
     this.workerType = workerType;
     this.workerId = workerId;
+    this.features = features;
     this.process = null;
   }
 
@@ -33,6 +34,8 @@ class LocalWorker {
       // We have special test only settings which require this env varialbe to be
       // set in the worker. (Such as sigterm waiting for clean shutdowns).
       envs.NODE_ENV = 'test';
+
+      envs.DOCKER_WORKER_TEST_FEATURES = JSON.stringify(this.features);
 
       // Provide commandline arguments
       let args = [
