@@ -16,7 +16,7 @@ builder.declare({
   title: 'Get a client token for the Websocktunnel service',
   description: [
     'Get a temporary token suitable for use connecting to a',
-    '[websocktunnel](https://github.com/taskcluster/taskcluster/tree/master/tools/websocktunnel) server.',
+    '[websocktunnel](https://github.com/taskcluster/taskcluster/tree/main/tools/websocktunnel) server.',
     '',
     'The resulting token will only be accepted by servers with a matching audience',
     'value.  Reaching such a server is the caller\s responsibility.  In general,',

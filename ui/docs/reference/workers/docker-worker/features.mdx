@@ -62,8 +62,8 @@ This invocation would require `secrets:get:my-top-secret-secret` in `task.scopes
 
 References:
 
-* [taskcluster-proxy](https://github.com/taskcluster/taskcluster-proxy)
-* [docker-worker integration](https://github.com/taskcluster/docker-worker/blob/master/lib/features/taskcluster_proxy.js)
+* [taskcluster-proxy](https://github.com/taskcluster/taskcluster/tree/main/tools/taskcluster-proxy)
+* [docker-worker integration](https://github.com/taskcluster/taskcluster/blob/main/workers/docker-worker/src/lib/features/taskcluster_proxy.js)
 
 ## Feature: `dockerSave`
 
@@ -96,7 +96,7 @@ Caches are also uploaded as artifacts under `public/cache/${cacheName}.tar` if t
 
 References:
 
-* [implementation](https://github.com/taskcluster/docker-worker/blob/master/lib/features/docker_save.js)
+* [implementation](https://github.com/taskcluster/taskcluster/blob/main/workers/docker-worker/src/lib/features/docker_save.js)
 
 ## Feature: `interactive`
 
@@ -117,7 +117,7 @@ Then click on the `interactive.html` on task inspector link to enter the contain
 
 References:
 
-* [docker-worker integration](https://github.com/taskcluster/docker-worker/blob/master/lib/features/interactive.js)
+* [docker-worker integration](https://github.com/taskcluster/taskcluster/blob/main/workers/docker-worker/src/lib/features/interactive.js)
 * [implementation](https://github.com/taskcluster/docker-exec-websocket-server)
 
 ## Feature: `allowPtrace`

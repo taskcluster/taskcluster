@@ -211,6 +211,13 @@
   },
   {
     "element": "h2",
+    "id": "database-versions",
+    "path": "/manual/deploying/database",
+    "subtitle": "Database Versions",
+    "title": "Database Configuration"
+  },
+  {
+    "element": "h2",
     "id": "db-users",
     "path": "/manual/deploying/database",
     "subtitle": "DB Users",

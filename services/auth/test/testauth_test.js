@@ -17,7 +17,6 @@ suite(testing.suiteName(), function() {
     helper.withDb(mock, skipping);
     helper.withCfg(mock, skipping);
     helper.withPulse(mock, skipping);
-    helper.withEntities(mock, skipping);
     helper.withServers(mock, skipping);
     helper.resetTables(mock, skipping);
 
@@ -105,7 +104,6 @@ suite(testing.suiteName(), function() {
     helper.withDb(mock, skipping);
     helper.withCfg(mock, skipping);
     helper.withPulse(mock, skipping);
-    helper.withEntities(mock, skipping);
     helper.withServers(mock, skipping);
     helper.resetTables(mock, skipping);
 

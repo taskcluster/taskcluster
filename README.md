@@ -20,7 +20,7 @@
     <img src="https://img.shields.io/badge/matrix-%23taskcluster%3Amozilla.org-informational" alt="Chat" />
   </a>
   <a href="https://codecov.io/gh/taskcluster/taskcluster">
-    <img src="https://codecov.io/gh/taskcluster/taskcluster/branch/master/graph/badge.svg" alt="Codecov" />
+    <img src="https://codecov.io/gh/taskcluster/taskcluster/branch/main/graph/badge.svg" alt="Codecov" />
   </a>
   <a href="https://app.netlify.com/sites/taskcluster-web/deploys">
     <img src="https://api.netlify.com/api/v1/badges/bc284a9a-8986-4ba4-b91a-3ede1a56e5a4/deploy-status" alt="netlify" />
@@ -43,6 +43,7 @@ This repository is used to develop, build, and release the Taskcluster services.
     * [Taskcluster Client for Shell](clients/client-shell#readme)
     * [Taskcluster Client for Web](clients/client-web#readme)
 * [Taskcluster Database](db#readme)
+    * [Database Versions](db/versions#readme)
 * [Development Documentation](dev-docs#readme)
 * [Infrastructure](infrastructure#readme)
     * [Docker Images](infrastructure/docker-images#readme)

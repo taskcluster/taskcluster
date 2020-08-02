@@ -1,4 +1,5 @@
 version: 9
+description: purge-cache phase 2
 migrationScript: 0009-migration.sql
 downgradeScript: 0009-downgrade.sql
 methods:

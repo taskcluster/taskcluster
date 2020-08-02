@@ -12,7 +12,7 @@ job-defaults:
     using: bare
   worker:
     max-run-time: 600
-    docker-image: {taskcluster: 'node-and-postgres'}
+    docker-image: {taskcluster: 'ci-image'}
 
 jobs:
   library:

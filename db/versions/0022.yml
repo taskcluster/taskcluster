@@ -1,4 +1,5 @@
 version: 22
+description: "queue task dependencies phase 2 step 1 (slow migration: 10μs per row in table `queue_task_dependency_entities`)"
 migrationScript: 0022-migration.sql
 downgradeScript: 0022-downgrade.sql
 methods:

@@ -258,7 +258,7 @@ input TaskInput {
   extra: JSON
 
   # If present, these options are passed to the taskcluster-client's `use' method
-  # https://github.com/taskcluster/taskcluster/tree/master/clients/client#calling-api-end-points
+  # https://github.com/taskcluster/taskcluster/tree/main/clients/client#calling-api-end-points
   # before calling queue.createTask.  This is typically used to specify
   # `options.authorizedScopes`.  Note that the supplied options are not
   # considered part of the task definition, and this value is only seen in calls

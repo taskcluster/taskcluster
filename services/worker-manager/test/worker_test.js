@@ -22,17 +22,6 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     return worker.create(helper.db);
   };
 
-  const createWorkers = async n => {
-    return Promise.all(_.range(n).map(i => {
-      return createWorker({
-        workerPoolId: `wp/${i}`,
-        workerGroup: `wg/${i}`,
-        workerId: `wi/${i}`,
-        state: i % 2 === 0 ? 'running' : 'requested',
-      });
-    }));
-  };
-
   suite('worker.update', function() {
     test('worker.update', async function() {
       const worker = await createWorker();
@@ -58,56 +47,6 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       ]);
 
       assert.equal(worker.capacity, 3);
-    });
-  });
-
-  suite('Worker.getWorkers', function() {
-    test('no workers available', async function() {
-      const workers = await Worker.getWorkers(helper.db, {});
-
-      assert.equal(workers.rows.length, 0);
-      assert(!workers.continuationToken);
-    });
-    test('get all workers', async function() {
-      await createWorkers(10);
-      const workers = await Worker.getWorkers(helper.db, {});
-
-      assert.equal(workers.rows.length, 10);
-      assert(!workers.continuationToken);
-    });
-    test('get all workers via handler', async function() {
-      let count = 0;
-      let workerPoolIds = [];
-      await createWorkers(10);
-      // will have to go through 5 pages
-      const query = { limit: 2 };
-      await Worker.getWorkers(helper.db, {}, {
-        query,
-        handler: worker => {
-          count += 1;
-          workerPoolIds.push(worker.workerPoolId);
-        },
-      });
-
-      assert.equal(count, 10);
-      _.range(10).forEach(i => {
-        assert(workerPoolIds.includes(`wp/${i}`));
-      });
-    });
-    test('get a subset of workers via handler', async function() {
-      let count = 0;
-      await createWorkers(10);
-      // will have to go through 5 pages
-      const query = { limit: 2 };
-      await Worker.getWorkers(helper.db, { state: 'running' }, {
-        query,
-        handler: worker => {
-          count += 1;
-          assert.equal(worker.state, 'running');
-        },
-      });
-
-      assert.equal(count, 5);
     });
   });
 });

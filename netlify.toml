@@ -17,13 +17,6 @@
   UI_LOGIN_STRATEGY_NAMES = ""
   TASKCLUSTER_ROOT_URL = "https://community-tc.services.mozilla.com"
 
-# Rule for redirecting master branch to the heroku app
-[[redirects]]
-  from = "https://taskcluster-web.netlify.com/*"
-  to = "https://taskcluster-ui.herokuapp.com/:splat"
-  status = 301
-  force = true
-
 # Rule for Single Page Applications (docs)
 [[redirects]]
   from = "/docs/*"

@@ -1,4 +1,5 @@
 version: 27
+description: web-server github access tokens phase 2 step 1+2
 migrationScript: 0027-migration.sql
 downgradeScript: 0027-downgrade.sql
 methods:

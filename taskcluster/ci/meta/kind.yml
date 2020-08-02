@@ -13,7 +13,7 @@ job-defaults:
     using: bare
   worker:
     max-run-time: 600
-    docker-image: {taskcluster: 'node-and-go'}
+    docker-image: {taskcluster: 'ci-image'}
 
 jobs:
   tests:
@@ -26,6 +26,7 @@ jobs:
     run:
       install: yarn install --frozen-lockfile
       command: >-
+        ./db/test-setup.sh --users &&
         set -o pipefail &&
         yarn generate | cat &&
         if ! output=$(git status --porcelain) || [ -n "$output" ]; then

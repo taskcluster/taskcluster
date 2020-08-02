@@ -18,7 +18,7 @@ jobs:
   nodejs:
     description: nodejs client tests
     worker:
-      docker-image: {taskcluster: node-and-go}
+      docker-image: {taskcluster: ci-image}
     run:
       install: >-
         {{ yarn --frozen-lockfile || exit 99; }} &&
@@ -30,14 +30,14 @@ jobs:
   go:
     description: golang client tests
     worker:
-      docker-image: {taskcluster: node-and-go}
+      docker-image: {taskcluster: ci-image}
     run:
       install: cd clients/client-go
       command: go test -v -race ./...
   shell:
     description: cli tests
     worker:
-      docker-image: {taskcluster: node-and-go}
+      docker-image: {taskcluster: ci-image}
     run:
       install: cd clients/client-shell
       command: go test -v -race ./...

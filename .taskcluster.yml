@@ -72,7 +72,7 @@ tasks:
           in:
               $if: >
                 (tasks_for == "github-pull-request" && pullRequestAction in ["opened", "reopened", "synchronize"])
-                || (tasks_for == "github-push" && project == "taskcluster" && event["ref"] == "refs/heads/master")
+                || (tasks_for == "github-push" && project == "taskcluster" && (event["ref"] == "refs/heads/master" || event["ref"] == "refs/heads/main"))
                 || (tasks_for == "github-push" && project == "taskcluster" && event["ref"][:11] == "refs/tags/v")
                 || (tasks_for == "github-push" && project == "staging-releases" && event["ref"][:27] == "refs/heads/staging-release/")
               then:

@@ -95,7 +95,7 @@ There should be at most one `h1` tag in a page and it should be the first header
 Any pull request to the UI should contain a new snippet in the
 `changelog/` directory. Styling changes and minor adjustments to a
 component (e.g., changing a `div` into a `span`) however can be ignored. Refer to
-[changelog.md](https://github.com/taskcluster/taskcluster/blob/master/dev-docs/best-practices/changelog.md)
+[changelog.md](./changelog.md)
 for the format of the changelog file.
 
 ---

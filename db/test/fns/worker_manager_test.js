@@ -321,7 +321,7 @@ suite(testing.suiteName(), function() {
         await create_worker_pool_error(db, {
           error_id: `e/${i}`,
           worker_pool_id: `wp/${i}`,
-          reported: fromNow(`- ${i} days`),
+          reported: newestDate,
         });
       }
 

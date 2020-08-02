@@ -1,4 +1,5 @@
 version: 12
+description: worker-manager workers phase 2
 migrationScript: 0012-migration.sql
 downgradeScript: 0012-downgrade.sql
 methods:

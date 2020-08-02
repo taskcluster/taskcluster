@@ -1,4 +1,5 @@
 version: 38
+description: web-server sessions phase 2
 migrationScript: 0038-migration.sql
 downgradeScript: 0038-downgrade.sql
 methods:

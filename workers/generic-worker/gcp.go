@@ -113,7 +113,7 @@ func (g *GCPConfigProvider) UpdateConfig(c *gwconfig.Config) error {
 	//
 	// See:
 	//   * https://github.com/taskcluster/taskcluster-rfcs/blob/master/rfcs/0148-taskcluster-worker-location.md
-	//   * https://github.com/taskcluster/taskcluster/tree/master/tools/worker-runner#google
+	//   * https://github.com/taskcluster/taskcluster/tree/main/tools/worker-runner#google
 	if c.WorkerLocation == "" {
 		workerLocation := &GCPWorkerLocation{
 			Cloud:  "google",

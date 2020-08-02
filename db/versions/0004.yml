@@ -1,4 +1,5 @@
 version: 4
+description: fix typestamps in `azure_queue_messages`
 # in version 3, this table was incorrectly set up with timestamp columns
 # lacking timezones, causing issues when the server and client timezones do not
 # agree.

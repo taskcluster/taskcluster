@@ -1,4 +1,5 @@
 version: 6
+description: update `azure_queue_count` to count only non-expired rows
 methods:
   azure_queue_count:
     description: |

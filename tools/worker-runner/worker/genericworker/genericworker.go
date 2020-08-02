@@ -65,11 +65,12 @@ func (d *genericworker) ConfigureRun(state *run.State) error {
 		}
 	}
 
-	// pass all of provider metadata in as workerTypeMetadata
-	state.WorkerConfig, err = state.WorkerConfig.Set("workerTypeMetadata", state.ProviderMetadata)
+	// merge provider metadata into workerTypeMetadata property
+	c, err := cfg.NewWorkerConfig().Set("workerTypeMetadata", state.ProviderMetadata)
 	if err != nil {
 		panic(err)
 	}
+	state.WorkerConfig = state.WorkerConfig.Merge(c)
 
 	// split to workerType and provisionerId
 	splitWorkerPoolID := strings.SplitAfterN(state.WorkerPoolID, "/", 2)
@@ -79,15 +80,15 @@ func (d *genericworker) ConfigureRun(state *run.State) error {
 	set("rootURL", state.RootURL)
 	set("clientId", state.Credentials.ClientID)
 	set("accessToken", state.Credentials.AccessToken)
-	set("workerId", state.WorkerID)
+	set("provisionerId", splitWorkerPoolID[0][:len(splitWorkerPoolID[0])-1])
 	set("workerType", splitWorkerPoolID[1])
+	set("workerGroup", state.WorkerGroup)
+	set("workerId", state.WorkerID)
 
 	// optional settings
-	set("workerGroup", state.WorkerGroup)
 	if state.Credentials.Certificate != "" {
 		set("certificate", state.Credentials.Certificate)
 	}
-	set("provisionerId", splitWorkerPoolID[0][:len(splitWorkerPoolID[0])-1])
 
 	return nil
 }

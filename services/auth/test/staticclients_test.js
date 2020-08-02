@@ -3,12 +3,12 @@ const debug = require('debug')('test:static-clients');
 const helper = require('./helper');
 const assume = require('assume');
 const testing = require('taskcluster-lib-testing');
+const {syncStaticClients} = require('../src/static-clients');
 
 helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, skipping) {
   helper.withDb(mock, skipping);
   helper.withCfg(mock, skipping);
   helper.withPulse(mock, skipping);
-  helper.withEntities(mock, skipping);
   helper.withServers(mock, skipping);
 
   test('static/taskcluster/root exists', async () => {
@@ -26,7 +26,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
 
   test('other clients can be created and removed, and azureAccountId is substituted', async () => {
     debug('test that we can create static clients');
-    await helper.Client.syncStaticClients([
+    await syncStaticClients(helper.db, [
       ...helper.cfg.app.staticClients, {
         clientId: 'static/mystuff/foo',
         accessToken: 'test-secret-12345678910',
@@ -41,7 +41,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
     assume(c.scopes).includes('dummy-scope:pamplemousse:foo');
 
     debug('test that we delete the static client again');
-    await helper.Client.syncStaticClients(helper.cfg.app.staticClients, 'pamplemousse');
+    await syncStaticClients(helper.db, helper.cfg.app.staticClients, 'pamplemousse');
     try {
       await helper.apiClient.client('static/mystuff/foo');
       assert(false, 'expected an error');
@@ -51,7 +51,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
   });
 
   test('adding scopes for a static/taskcluster client is an error', async () => {
-    await assert.rejects(() => helper.Client.syncStaticClients([
+    await assert.rejects(() => syncStaticClients(helper.db, [
       ...helper.cfg.app.staticClients
         .filter(({clientId}) => clientId !== 'static/taskcluster/queue'),
       {
@@ -64,14 +64,14 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
   });
 
   test('omitting a static/taskcluster client is an error', async () => {
-    await assert.rejects(() => helper.Client.syncStaticClients(
+    await assert.rejects(() => syncStaticClients(helper.db,
       helper.cfg.app.staticClients
         .filter(({clientId}) => clientId !== 'static/taskcluster/queue')),
     /missing clients/);
   });
 
   test('adding extra static/taskcluster clients is an error', async () => {
-    await assert.rejects(() => helper.Client.syncStaticClients([
+    await assert.rejects(() => syncStaticClients(helper.db, [
       ...helper.cfg.app.staticClients,
       {
         clientId: 'static/taskcluster/newthing',

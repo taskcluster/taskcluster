@@ -1,4 +1,5 @@
 version: 13
+description: add capacity to worker pools
 methods:
   get_worker_pool:
     deprecated: true

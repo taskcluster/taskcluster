@@ -209,7 +209,7 @@ This library is co-versioned with Taskcluster itself.
 That is, a client with version x.y.z contains API methods corresponding to Taskcluster version x.y.z.
 Taskcluster is careful to maintain API compatibility, and guarantees it within a major version.
 That means that any client with version x.* will work against any Taskcluster services at version x.*, and is very likely to work for many other major versions of the Taskcluster services.
-Any incompatibilities are noted in the [Changelog](https://github.com/taskcluster/taskcluster/blob/master/CHANGELOG.md).
+Any incompatibilities are noted in the [Changelog](https://github.com/taskcluster/taskcluster/blob/main/CHANGELOG.md).
 
 
 ## Examples
@@ -377,7 +377,7 @@ type (
 
 		// The taskcluster proxy provides an easy and safe way to make authenticated
 		// taskcluster requests within the scope(s) of a particular task. See
-		// [the github project](https://github.com/taskcluster/taskcluster/tree/master/tools/taskcluster-proxy) for more information.
+		// [the github project](https://github.com/taskcluster/taskcluster/tree/main/tools/taskcluster-proxy) for more information.
 		//
 		// Since: generic-worker 10.6.0
 		TaskclusterProxy bool `json:"taskclusterProxy,omitempty"`
@@ -688,5 +688,5 @@ func main() {
 The libraries provided by this client are auto-generated based on the schema references in this repository.
 This is done with the `yarn generate` command, run from the top level of the repository.
 
-The code which generates the library can all be found under the top level [codegenerator](https://github.com/taskcluster/taskcluster/tree/master/clients/client-go/codegenerator)
+The code which generates the library can all be found under the top level [codegenerator](https://github.com/taskcluster/taskcluster/tree/main/clients/client-go/codegenerator)
 directory.

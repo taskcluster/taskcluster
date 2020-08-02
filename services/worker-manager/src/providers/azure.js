@@ -126,7 +126,7 @@ class AzureProvider extends Provider {
       workerInfo,
     });
 
-    if (toSpawn === 0) {
+    if (toSpawn === 0 || workerPool.config.launchConfigs.length === 0) {
       return; // Nothing to do
     }
 

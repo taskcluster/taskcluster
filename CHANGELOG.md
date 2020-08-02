@@ -67,7 +67,7 @@ The taskcluster-lib-postgres library now allows any Postgres collation that sort
 ▶ [MAJOR] [#3112](https://github.com/taskcluster/taskcluster/issues/3112)
 Queue's artifacts table is upgraded to a normalized format. For deployments with
 many (millions) of artifacts, this migration will take too long to perform
-online, and should be performed in a scheduled downtime. Note that the ["service migration"](https://github.com/taskcluster/taskcluster/blob/master/dev-docs/postgres-phase-2-guidelines.md#service-migration) portion of the process is not included here, and the queue artifact code still uses entities-related functions to acces its data.
+online, and should be performed in a scheduled downtime. Note that the ["service migration"](https://github.com/taskcluster/taskcluster/blob/main/dev-docs/postgres-phase-2-guidelines.md#service-migration) portion of the process is not included here, and the queue artifact code still uses entities-related functions to acces its data.
 
 ### WORKER-DEPLOYERS
 
@@ -81,7 +81,7 @@ Docker-worker now correctly calculates artifacts hashes for chain-of-trust befor
 ▶ [MAJOR] [#2935](https://github.com/taskcluster/taskcluster/issues/2935)
 The `namespaces_entities` and `indexed_tasks_entities` tables have now been
 migrated to use relational tables. For deployments with many (millions) of
-tasks, this migration will take too long to perform online, and should be performed in a scheduled downtime.  Note that the ["service migration"](https://github.com/taskcluster/taskcluster/blob/master/dev-docs/postgres-phase-2-guidelines.md#service-migration) portion of the process is not included here, and the index code still uses entities-related functions to acces its data.
+tasks, this migration will take too long to perform online, and should be performed in a scheduled downtime.  Note that the ["service migration"](https://github.com/taskcluster/taskcluster/blob/main/dev-docs/postgres-phase-2-guidelines.md#service-migration) portion of the process is not included here, and the index code still uses entities-related functions to acces its data.
 
 ▶ [patch] 
 The `db:upgrade` and `dev:db:upgrade` commands can now take an optional database version to upgrade to, defaulting to the most recent version.
@@ -1763,7 +1763,7 @@ With the proper scopes, github repositories can now override the default schedul
 [minor] The AWS Provisioner and Provisioner views are no longer available, as the AWS provisioner itself will be removed in favor of the worker manager service.
 
 [minor] ([bug 1560649](http://bugzil.la/1560649)) The Go client is now hosted in the repository together with the services and other clients, and co-versioned with them.
-See [the docs](https://github.com/taskcluster/taskcluster/tree/master/clients/client-go#readme).
+See [the docs](https://github.com/taskcluster/taskcluster/tree/main/clients/client-go#readme).
 
 [minor] ([bug 1559471](http://bugzil.la/1559471)) The web-server configuration for sign-in now requires a single JWT HS256 key (`JWT_KEY`) instead of a public/private key (`JWT_PRIVATE_KEY`/`JWT_PUBLIC_KEY`).
 

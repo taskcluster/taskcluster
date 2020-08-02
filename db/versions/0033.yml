@@ -1,4 +1,5 @@
 version: 33
+description: hooks queues phase 2
 migrationScript: 0033-migration.sql
 downgradeScript: 0033-downgrade.sql
 methods:

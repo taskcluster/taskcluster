@@ -9,8 +9,8 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
   helper.withDb(mock, skipping);
   helper.withCfg(mock, skipping);
   helper.withPulse(mock, skipping);
-  helper.withEntities(mock, skipping);
   helper.withServers(mock, skipping);
+  helper.resetTables(mock, skipping);
 
   test('ping', async () => {
     await helper.apiClient.ping();
@@ -154,23 +154,27 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
     let expires = taskcluster.fromNow('1 hour');
     let description = 'Test client...';
     let scopes = ['scope1', 'myapi:*'];
-    await helper.apiClient.createClient(CLIENT_ID, {
+    const client = await helper.apiClient.createClient(CLIENT_ID, {
       expires, description, scopes,
     });
 
     helper.assertPulseMessage('client-created', m => m.payload.clientId === CLIENT_ID);
+    return client;
   };
 
   test('auth.resetAccessToken', async () => {
-    await createTestClient();
+    const createdClient = await createTestClient();
     let client = await helper.apiClient.resetAccessToken(CLIENT_ID);
+    // lastModified and lastRotated are both updated..
+    assume(new Date(client.lastModified).getTime())
+      .is.greaterThan(new Date(createdClient.lastModified).getTime());
     assume(new Date(client.lastRotated).getTime())
-      .is.greaterThan(new Date(client.lastModified).getTime());
+      .equals(new Date(client.lastModified).getTime());
     assume(client.accessToken).is.a('string');
     helper.assertPulseMessage('client-updated', m => m.payload.clientId === CLIENT_ID);
 
     let client2 = await helper.apiClient.client(CLIENT_ID);
-    assume(client2.lastRotated).equals(client.lastRotated);
+    assume(new Date(client2.lastRotated)).deeply.equals(new Date(client.lastRotated));
     assume(client2).has.not.own('accessToken');
   });
 
@@ -234,7 +238,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
     helper.assertPulseMessage('client-updated', m => m.payload.clientId === CLIENT_ID);
 
     let client2 = await helper.apiClient.client(CLIENT_ID);
-    assume(client2.lastModified).equals(client.lastModified);
+    assume(new Date(client2.lastModified)).deeply.equals(new Date(client.lastModified));
     assume(client2).has.not.own('accessToken');
     assume(client2.scopes).contains('scope1');
     assume(client2.scopes).contains('myapi:*');
@@ -290,7 +294,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
     helper.assertPulseMessage('client-updated', m => m.payload.clientId === CLIENT_ID);
 
     let client2 = await helper.apiClient.client(CLIENT_ID);
-    assume(client2.lastModified).equals(client.lastModified);
+    assume(new Date(client2.lastModified)).deeply.equals(new Date(client.lastModified));
     assume(client2).has.not.own('accessToken');
     assume(client2.scopes).not.contains('scope1');
     assume(client2.scopes).contains('scope2');

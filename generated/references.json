@@ -567,7 +567,7 @@
         },
         "workerConfig": {
           "additionalProperties": true,
-          "description": "This value is supplied unchanged to the worker from the worker-pool configuration.\nThe expectation is that the worker will merge this information with configuration from other sources,\nand this is precisely what [worker-runner](https://github.com/taskcluster/taskcluster/tree/master/tools/worker-runner) does.\nThis property must not be used for secret configuration, as it is visible both in the worker pool configuration and in the worker instance's metadata.\nInstead, put secret configuration in the [secrets service](https://github.com/taskcluster/taskcluster/tree/master/tools/worker-runner#secrets).\n",
+          "description": "This value is supplied unchanged to the worker from the worker-pool configuration.\nThe expectation is that the worker will merge this information with configuration from other sources,\nand this is precisely what [worker-runner](https://docs.taskcluster.net/docs/reference/workers/worker-runner) does.\nThis property must not be used for secret configuration, as it is visible both in the worker pool configuration and in the worker instance's metadata.\nInstead, put secret configuration in the [secrets service](https://docs.taskcluster.net/docs/reference/workers/worker-runner).\n",
           "title": "Worker Config",
           "type": "object"
         }
@@ -880,7 +880,7 @@
         },
         "workerConfig": {
           "additionalProperties": true,
-          "description": "This value is supplied unchanged to the worker from the provider configuration.\nThe expectation is that the worker will merge this information with configuration from other sources,\nand this is precisely what [worker-runner](https://github.com/taskcluster/taskcluster/tree/master/tools/worker-runner) does.\nThis property must not be used for secret configuration, as it is visible both in the worker pool configuration and in the worker instance's metadata.\nInstead, put secret configuration in the [secrets service](https://github.com/taskcluster/taskcluster/tree/master/tools/worker-runner#secrets).\n",
+          "description": "This value is supplied unchanged to the worker from the provider configuration.\nThe expectation is that the worker will merge this information with configuration from other sources,\nand this is precisely what [worker-runner](https://docs.taskcluster.net/docs/reference/workers/worker-runner) does.\nThis property must not be used for secret configuration, as it is visible both in the worker pool configuration and in the worker instance's metadata.\nInstead, put secret configuration in the [secrets service](https://docs.taskcluster.net/docs/reference/workers/worker-runner).\n",
           "title": "Worker Config",
           "type": "object"
         }
@@ -951,7 +951,7 @@
               },
               "workerConfig": {
                 "additionalProperties": true,
-                "description": "This value is supplied unchanged as the `workerConfig` property of the `taskcluster` instance metadata attribute.\nThe expectation is that the worker will merge this information with configuration from other sources,\nand this is precisely what [worker-runner](https://github.com/taskcluster/taskcluster/tree/master/tools/worker-runner) does.\nThis property must not be used for secret configuration, as it is visible both in the worker pool configuration and in the worker instance's metadata.\nInstead, put secret configuration in the [secrets service](https://github.com/taskcluster/taskcluster/tree/master/tools/worker-runner#secrets).\n",
+                "description": "This value is supplied unchanged as the `workerConfig` property of the `taskcluster` instance metadata attribute.\nThe expectation is that the worker will merge this information with configuration from other sources,\nand this is precisely what [worker-runner](https://docs.taskcluster.net/docs/reference/workers/worker-runner) does.\nThis property must not be used for secret configuration, as it is visible both in the worker pool configuration and in the worker instance's metadata.\nInstead, put secret configuration in the [secrets service](https://docs.taskcluster.net/docs/reference/workers/worker-runner).\n",
                 "title": "Worker Config",
                 "type": "object"
               },
@@ -1143,7 +1143,7 @@
               },
               "workerConfig": {
                 "additionalProperties": true,
-                "description": "This value is supplied unchanged as the `workerConfig` property of the `taskcluster` instance metadata attribute.\nThe expectation is that the worker will merge this information with configuration from other sources,\nand this is precisely what [worker-runner](https://github.com/taskcluster/taskcluster/tree/master/tools/worker-runner) does.\nThis property must not be used for secret configuration, as it is visible both in the worker pool configuration and in the worker instance's metadata.\nInstead, put secret configuration in the [secrets service](https://github.com/taskcluster/taskcluster/tree/master/tools/worker-runner#secrets).\n",
+                "description": "This value is supplied unchanged as the `workerConfig` property of the `taskcluster` instance metadata attribute.\nThe expectation is that the worker will merge this information with configuration from other sources,\nand this is precisely what [worker-runner](https://docs.taskcluster.net/docs/reference/workers/worker-runner) does.\nThis property must not be used for secret configuration, as it is visible both in the worker pool configuration and in the worker instance's metadata.\nInstead, put secret configuration in the [secrets service](https://docs.taskcluster.net/docs/reference/workers/worker-runner).\n",
                 "title": "Worker Config",
                 "type": "object"
               }
@@ -1263,7 +1263,7 @@
               },
               "workerConfig": {
                 "additionalProperties": true,
-                "description": "This value is supplied unchanged as the `workerConfig` property of the `taskcluster` instance metadata attribute.\nThe expectation is that the worker will merge this information with configuration from other sources,\nand this is precisely what [worker-runner](https://github.com/taskcluster/taskcluster/tree/master/tools/worker-runner) does.\nThis property must not be used for secret configuration, as it is visible both in the worker pool configuration and in the worker instance's metadata.\nInstead, put secret configuration in the [secrets service](https://github.com/taskcluster/taskcluster/tree/master/tools/worker-runner#secrets).\n",
+                "description": "This value is supplied unchanged as the `workerConfig` property of the `taskcluster` instance metadata attribute.\nThe expectation is that the worker will merge this information with configuration from other sources,\nand this is precisely what [worker-runner](https://docs.taskcluster.net/docs/reference/workers/worker-runner) does.\nThis property must not be used for secret configuration, as it is visible both in the worker pool configuration and in the worker instance's metadata.\nInstead, put secret configuration in the [secrets service](https://docs.taskcluster.net/docs/reference/workers/worker-runner).\n",
                 "title": "Worker Config",
                 "type": "object"
               }
@@ -6080,8 +6080,8 @@
           "description": "Feature flags enable additional functionality.\n\nSince: generic-worker 5.3.0",
           "properties": {
             "taskclusterProxy": {
-              "description": "The taskcluster proxy provides an easy and safe way to make authenticated\ntaskcluster requests within the scope(s) of a particular task. See\n[the github project](https://github.com/taskcluster/taskcluster/tree/master/tools/taskcluster-proxy) for more information.\n\nSince: generic-worker 10.6.0",
-              "title": "Run [taskcluster-proxy](https://github.com/taskcluster/taskcluster/tree/master/tools/taskcluster-proxy) to allow tasks to dynamically proxy requests to taskcluster services",
+              "description": "The taskcluster proxy provides an easy and safe way to make authenticated\ntaskcluster requests within the scope(s) of a particular task. See\n[the github project](https://github.com/taskcluster/taskcluster/tree/main/tools/taskcluster-proxy) for more information.\n\nSince: generic-worker 10.6.0",
+              "title": "Run [taskcluster-proxy](https://github.com/taskcluster/taskcluster/tree/main/tools/taskcluster-proxy) to allow tasks to dynamically proxy requests to taskcluster services",
               "type": "boolean"
             }
           },
@@ -6452,8 +6452,8 @@
               "type": "boolean"
             },
             "taskclusterProxy": {
-              "description": "The taskcluster proxy provides an easy and safe way to make authenticated\ntaskcluster requests within the scope(s) of a particular task. See\n[the github project](https://github.com/taskcluster/taskcluster/tree/master/tools/taskcluster-proxy) for more information.\n\nSince: generic-worker 10.6.0",
-              "title": "Run [taskcluster-proxy](https://github.com/taskcluster/taskcluster/tree/master/tools/taskcluster-proxy) to allow tasks to dynamically proxy requests to taskcluster services",
+              "description": "The taskcluster proxy provides an easy and safe way to make authenticated\ntaskcluster requests within the scope(s) of a particular task. See\n[the github project](https://github.com/taskcluster/taskcluster/tree/main/tools/taskcluster-proxy) for more information.\n\nSince: generic-worker 10.6.0",
+              "title": "Run [taskcluster-proxy](https://github.com/taskcluster/taskcluster/tree/main/tools/taskcluster-proxy) to allow tasks to dynamically proxy requests to taskcluster services",
               "type": "boolean"
             }
           },
@@ -6828,8 +6828,8 @@
               "type": "boolean"
             },
             "taskclusterProxy": {
-              "description": "The taskcluster proxy provides an easy and safe way to make authenticated\ntaskcluster requests within the scope(s) of a particular task. See\n[the github project](https://github.com/taskcluster/taskcluster/tree/master/tools/taskcluster-proxy) for more information.\n\nSince: generic-worker 10.6.0",
-              "title": "Run [taskcluster-proxy](https://github.com/taskcluster/taskcluster/tree/master/tools/taskcluster-proxy) to allow tasks to dynamically proxy requests to taskcluster services",
+              "description": "The taskcluster proxy provides an easy and safe way to make authenticated\ntaskcluster requests within the scope(s) of a particular task. See\n[the github project](https://github.com/taskcluster/taskcluster/tree/main/tools/taskcluster-proxy) for more information.\n\nSince: generic-worker 10.6.0",
+              "title": "Run [taskcluster-proxy](https://github.com/taskcluster/taskcluster/tree/main/tools/taskcluster-proxy) to allow tasks to dynamically proxy requests to taskcluster services",
               "type": "boolean"
             }
           },
@@ -7200,8 +7200,8 @@
               "type": "boolean"
             },
             "taskclusterProxy": {
-              "description": "The taskcluster proxy provides an easy and safe way to make authenticated\ntaskcluster requests within the scope(s) of a particular task. See\n[the github project](https://github.com/taskcluster/taskcluster/tree/master/tools/taskcluster-proxy) for more information.\n\nSince: generic-worker 10.6.0",
-              "title": "Run [taskcluster-proxy](https://github.com/taskcluster/taskcluster/tree/master/tools/taskcluster-proxy) to allow tasks to dynamically proxy requests to taskcluster services",
+              "description": "The taskcluster proxy provides an easy and safe way to make authenticated\ntaskcluster requests within the scope(s) of a particular task. See\n[the github project](https://github.com/taskcluster/taskcluster/tree/main/tools/taskcluster-proxy) for more information.\n\nSince: generic-worker 10.6.0",
+              "title": "Run [taskcluster-proxy](https://github.com/taskcluster/taskcluster/tree/main/tools/taskcluster-proxy) to allow tasks to dynamically proxy requests to taskcluster services",
               "type": "boolean"
             }
           },
@@ -7600,6 +7600,17 @@
             },
             "azure_crypto_key": {
               "type": "string"
+            },
+            "db_crypto_keys": {
+              "oneOf": [
+                {
+                  "additionalProperties": true,
+                  "type": "object"
+                },
+                {
+                  "type": "array"
+                }
+              ]
             },
             "debug": {
               "title": "node debug env var",
@@ -8824,6 +8835,17 @@
           "properties": {
             "azure_crypto_key": {
               "type": "string"
+            },
+            "db_crypto_keys": {
+              "oneOf": [
+                {
+                  "additionalProperties": true,
+                  "type": "object"
+                },
+                {
+                  "type": "array"
+                }
+              ]
             },
             "debug": {
               "title": "node debug env var",
@@ -12676,7 +12698,7 @@
             "name"
           ],
           "category": "Secrets Service",
-          "description": "Delete the secret associated with some key.",
+          "description": "Delete the secret associated with some key. It will succeed whether or not the secret exists",
           "method": "delete",
           "name": "remove",
           "query": [
@@ -16426,7 +16448,7 @@
     "content": {
       "$schema": "/schemas/common/api-reference-v0.json#",
       "apiVersion": "v1",
-      "description": "The github service is responsible for creating tasks in reposnse\nto GitHub events, and posting results to the GitHub UI.\n\nThis document describes the API end-point for consuming GitHub\nweb hooks, as well as some useful consumer APIs.\n\nWhen Github forbids an action, this service returns an HTTP 403\nwith code ForbiddenByGithub.",
+      "description": "The github service is responsible for creating tasks in response\nto GitHub events, and posting results to the GitHub UI.\n\nThis document describes the API end-point for consuming GitHub\nweb hooks, as well as some useful consumer APIs.\n\nWhen Github forbids an action, this service returns an HTTP 403\nwith code ForbiddenByGithub.",
       "entries": [
         {
           "args": [
@@ -17545,7 +17567,7 @@
             "wstClient"
           ],
           "category": "Websocktunnel Credentials",
-          "description": "Get a temporary token suitable for use connecting to a\n[websocktunnel](https://github.com/taskcluster/taskcluster/tree/master/tools/websocktunnel) server.\n\nThe resulting token will only be accepted by servers with a matching audience\nvalue.  Reaching such a server is the callers responsibility.  In general,\na server URL or set of URLs should be provided to the caller as configuration\nalong with the audience value.\n\nThe token is valid for a limited time (on the scale of hours). Callers should\nrefresh it before expiration.",
+          "description": "Get a temporary token suitable for use connecting to a\n[websocktunnel](https://github.com/taskcluster/taskcluster/tree/main/tools/websocktunnel) server.\n\nThe resulting token will only be accepted by servers with a matching audience\nvalue.  Reaching such a server is the callers responsibility.  In general,\na server URL or set of URLs should be provided to the caller as configuration\nalong with the audience value.\n\nThe token is valid for a limited time (on the scale of hours). Callers should\nrefresh it before expiration.",
           "method": "get",
           "name": "websocktunnelToken",
           "output": "v1/websocktunnel-token-response.json#",

@@ -213,7 +213,7 @@ and reports back results to the queue.
                                             EC2 spot instances. Use with caution!
                                             [default: false]
           taskclusterProxyExecutable        Filepath of taskcluster-proxy executable to use; see
-                                            https://github.com/taskcluster/taskcluster/tree/master/tools/taskcluster-proxy
+                                            https://github.com/taskcluster/taskcluster/tree/main/tools/taskcluster-proxy
                                             [default: "taskcluster-proxy"]
           taskclusterProxyPort              Port number for taskcluster-proxy HTTP requests.
                                             [default: 80]
@@ -230,13 +230,13 @@ and reports back results to the queue.
                                             TASKCLUSTER_WORKER_LOCATION environment variable will be set to a
                                             string containing the JSON object:
                                             {"cloud":"aws","region":"<REGION>","availabilityZone":"<AZ>"}
-                                            See: https://github.com/taskcluster/taskcluster/tree/master/tools/worker-runner#aws
+                                            See: https://github.com/taskcluster/taskcluster/tree/main/tools/worker-runner#aws
 
                                             If an empty string, and --configure-for-gcp is specified,
                                             TASKCLUSTER_WORKER_LOCATION environment variable will be set to a
                                             string containing the JSON object:
                                             {"cloud":"google","region":"<REGION>","zone":"<ZONE>"}
-                                            See: https://github.com/taskcluster/taskcluster/tree/master/tools/worker-runner#google
+                                            See: https://github.com/taskcluster/taskcluster/tree/main/tools/worker-runner#google
 
                                             Otherwise TASKCLUSTER_WORKER_LOCATION environment
                                             variable will not be implicitly set in task commands.

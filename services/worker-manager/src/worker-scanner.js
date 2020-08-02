@@ -1,4 +1,5 @@
 const Iterate = require('taskcluster-lib-iterate');
+const {paginatedIterator} = require('taskcluster-lib-postgres');
 const { Worker } = require('./data');
 
 /**
@@ -46,23 +47,24 @@ class WorkerScanner {
 
   async scan() {
     await this.providers.forAll(p => p.scanPrepare());
-    await Worker.getWorkers(this.db, {}, {
-      handler: async worker => {
-        if (worker.state !== Worker.states.STOPPED) {
-          const provider = this.providers.get(worker.providerId);
-          if (provider) {
-            try {
-              await provider.checkWorker({worker});
-            } catch (err) {
-              this.monitor.reportError(err); // Just report it and move on so this doesn't block other providers
-            }
-          } else {
-            this.monitor.info(
-              `Worker ${worker.workerGroup}/${worker.workerId} has unknown providerId ${worker.providerId} (ignoring)`);
+
+    const fetch = async (size, offset) => await this.db.fns.get_workers(null, null, null, null, size, offset);
+    for await (let row of paginatedIterator({fetch})) {
+      const worker = Worker.fromDb(row);
+      if (worker.state !== Worker.states.STOPPED) {
+        const provider = this.providers.get(worker.providerId);
+        if (provider) {
+          try {
+            await provider.checkWorker({worker});
+          } catch (err) {
+            this.monitor.reportError(err); // Just report it and move on so this doesn't block other providers
           }
+        } else {
+          this.monitor.info(
+            `Worker ${worker.workerGroup}/${worker.workerId} has unknown providerId ${worker.providerId} (ignoring)`);
         }
-      },
-    });
+      }
+    }
 
     await this.providers.forAll(p => p.scanCleanup());
   }

@@ -9,15 +9,31 @@ exports.scopeExpression = {AllOf: []};
 exports.tasks = [];
 
 exports.tasks.push({
-  title: `Ping health endpoint for web-server`,
+  title: `Fetch version endpoint for deployment`,
   requires: [],
+  provides: [
+    `deployment-version`,
+  ],
+  run: async (requirements, utils) => {
+    const dunderVersion = `${process.env.TASKCLUSTER_ROOT_URL}/__version__`;
+    const resp = await got(dunderVersion, {throwHttpErrors: true});
+
+    try {
+      const body = JSON.parse(resp.body);
+      return {'deployment-version': body.version};
+    } catch (err) {
+      throw new Error('__version__ did not return valid JSON');
+    }
+  },
+});
+
+exports.tasks.push({
+  title: `Ping health endpoint for web-server`,
+  requires: ['deployment-version'],
   provides: [
     `ping-web-server`,
   ],
   run: async (requirements, utils) => {
-    if (process.env.TASKCLUSTER_ROOT_URL === 'https://taskcluster.net') {
-      return utils.skip({reason: 'Not supported on legacy deployment'});
-    }
     const serverHealth = `${process.env.TASKCLUSTER_ROOT_URL}/.well-known/apollo/server-health`;
     const resp = await got.get(serverHealth);
 
@@ -32,7 +48,7 @@ exports.tasks.push({
 SERVICES.filter(name => name !== 'web-server').forEach(name => {
   exports.tasks.push({
     title: `Ping health endpoint for ${name}`,
-    requires: [],
+    requires: ['deployment-version'],
     provides: [
       `ping-${name}`,
     ],

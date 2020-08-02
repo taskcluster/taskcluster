@@ -1,9 +1,8 @@
 const taskcluster = require('taskcluster-client');
 const {fakeauth, stickyLoader, Secrets, withMonitor} = require('taskcluster-lib-testing');
 const load = require('../src/main');
-const data = require('../src/data');
 const builder = require('../src/api.js');
-const {withEntity, withDb} = require('taskcluster-lib-testing');
+const {withDb} = require('taskcluster-lib-testing');
 
 exports.load = stickyLoader(load);
 
@@ -20,13 +19,6 @@ exports.secrets = new Secrets({
   },
   load: exports.load,
 });
-
-/**
- * Set helper.Secret to a fully-configured Secret entity, and inject it into the loader
- */
-exports.withEntities = (mock, skipping) => {
-  withEntity(mock, skipping, exports, 'Secret', data.Secret);
-};
 
 exports.withDb = (mock, skipping) => {
   withDb(mock, skipping, exports, 'secrets');

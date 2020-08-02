@@ -122,8 +122,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         const workerPool = await makeWorkerPool({config});
         const workerInfo = {existingCapacity: 0, requestedCapacity: 0};
         await provider.provision({workerPool, workerInfo});
-        const workers = await Worker.getWorkers(helper.db, {});
-        assert.equal(workers.rows.length, expectedWorkers);
+        const workers = await helper.getWorkers();
+        assert.equal(workers.length, expectedWorkers);
         await check(workers);
       });
     };
@@ -140,14 +140,14 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       expectedWorkers: 1,
     }, async function(workers) {
       const now = Date.now();
-      workers.rows.forEach(w => {
+      workers.forEach(w => {
         assert.strictEqual(w.workerPoolId, workerPoolId, 'Worker was created for a wrong worker pool');
         assert.strictEqual(w.workerGroup, 'us-west-2', 'Worker group should be az');
         assert.strictEqual(w.state, Worker.states.REQUESTED, 'Worker should be marked as requested');
         assert.strictEqual(w.providerData.region, defaultLaunchConfig.region, 'Region should come from the chosen config');
         // Check that this is setting times correctly to within a second or so to allow for some time
         // for the provisioning loop
-        assert(workers.rows[0].providerData.terminateAfter - now - (6000 * 1000) < 5000);
+        assert(workers[0].providerData.terminateAfter - now - (6000 * 1000) < 5000);
       });
       assert.deepEqual(fake.rgn('us-west-2').runInstancesCalls.map(({MinCount}) => MinCount), [1]);
       assertHasTag(fake.rgn('us-west-2').runInstancesCalls[0], 'instance', 'CreatedBy', 'taskcluster-wm-aws');
@@ -439,9 +439,9 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       provider.seen = {};
       await provider.checkWorker({worker: worker});
 
-      const workers = await Worker.getWorkers(helper.db, {});
-      assert.notStrictEqual(workers.rows.length, 0);
-      workers.rows.forEach(w =>
+      const workers = await helper.getWorkers();
+      assert.notStrictEqual(workers.length, 0);
+      workers.forEach(w =>
         assert.strictEqual(w.state, Worker.states.STOPPED));
       assert.strictEqual(provider.seen[worker.workerPoolId], 0);
     });
@@ -458,9 +458,9 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       provider.seen = {};
       await provider.checkWorker({worker: worker});
 
-      const workers = await Worker.getWorkers(helper.db, {});
-      assert.notStrictEqual(workers.rows.length, 0);
-      workers.rows.forEach(w =>
+      const workers = await helper.getWorkers();
+      assert.notStrictEqual(workers.length, 0);
+      workers.forEach(w =>
         assert.strictEqual(w.state, Worker.states.REQUESTED));
       assert.strictEqual(provider.seen[worker.workerPoolId], 1);
     });
@@ -491,9 +491,9 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       provider.seen = {};
       await provider.checkWorker({worker: worker});
 
-      const workers = await Worker.getWorkers(helper.db, {});
-      assert.notStrictEqual(workers.rows.length, 0);
-      workers.rows.forEach(w =>
+      const workers = await helper.getWorkers();
+      assert.notStrictEqual(workers.length, 0);
+      workers.forEach(w =>
         assert.strictEqual(w.state, Worker.states.STOPPED));
       assert.strictEqual(provider.seen[worker.workerPoolId], 0);
     });

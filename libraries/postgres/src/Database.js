@@ -151,7 +151,11 @@ class Database {
     try {
       // perform any necessary upgrades..
       const dbVersion = await db.currentVersion();
-      const stopAt = toVersion === undefined ? schema.latestVersion().version : toVersion;
+      const latestVersion = schema.latestVersion().version;
+      const stopAt = toVersion === undefined ? latestVersion : toVersion;
+      if (stopAt > latestVersion) {
+        throw new Error(`no such version ${stopAt}; latest known version is ${latestVersion}`);
+      }
       if (dbVersion < stopAt) {
         // run each of the upgrade scripts
         for (let v = dbVersion + 1; v <= stopAt; v++) {

@@ -1,4 +1,5 @@
 const semver = require('semver');
+const path = require('path');
 const {ChangeLog} = require('../changelog');
 const {
   ensureTask,
@@ -9,6 +10,8 @@ const {
   gitCommit,
   gitTag,
   gitPush,
+  getDbReleases,
+  updateVersionsReadme,
   readRepoJSON,
   readRepoFile,
   writeRepoFile,
@@ -18,6 +21,7 @@ const {
   removeRepoFile,
   REPO_ROOT,
 } = require('../utils');
+const {schema: readSchema} = require('taskcluster-db');
 
 const UPSTREAM_REMOTE = 'git@github.com:taskcluster/taskcluster';
 
@@ -77,7 +81,7 @@ module.exports = ({tasks, cmdOptions, credentials}) => {
   });
 
   ensureTask(tasks, {
-    title: 'Check Repo is Up To Date with Upstream master',
+    title: 'Check Repo is Up To Date with Upstream main',
     requires: [],
     provides: [
       'repo-up-to-date',
@@ -88,7 +92,7 @@ module.exports = ({tasks, cmdOptions, credentials}) => {
       const { revision: remoteRevision } = await gitRemoteRev({
         dir: REPO_ROOT,
         remote: UPSTREAM_REMOTE,
-        ref: 'master',
+        ref: 'main',
         utils,
       });
       if (localRevision !== remoteRevision) {
@@ -195,6 +199,34 @@ module.exports = ({tasks, cmdOptions, credentials}) => {
   });
 
   ensureTask(tasks, {
+    title: 'Update DB Version Mapping',
+    requires: [
+      'release-version',
+      'repo-clean',
+      'repo-up-to-date',
+    ],
+    provides: [
+      'db-version-updated',
+    ],
+    run: async (requirements, utils) => {
+      const changed = [];
+      const schema = await readSchema();
+      const tcVersion = `v${requirements['release-version']}`;
+      const dbVersion = schema.latestVersion().version;
+      const releasesFile = path.join('db', 'releases.txt');
+
+      // first, append this TC release version and DB version to the list of releases
+      await modifyRepoFile(releasesFile,
+        content => content.trim() + `\n${tcVersion}: ${dbVersion}\n`);
+      changed.push(releasesFile);
+
+      // then, regenerate the versions reference
+      const releases = await getDbReleases();
+      await updateVersionsReadme(schema, releases);
+    },
+  });
+
+  ensureTask(tasks, {
     title: 'Update Changelog',
     requires: [
       'changelog',
@@ -237,6 +269,7 @@ module.exports = ({tasks, cmdOptions, credentials}) => {
   ensureTask(tasks, {
     title: 'Commit Updates',
     requires: [
+      'db-version-updated',
       'version-updated',
       'release-version',
       'changed-files',
@@ -246,6 +279,7 @@ module.exports = ({tasks, cmdOptions, credentials}) => {
     ],
     run: async (requirements, utils) => {
       const files = []
+        .concat(requirements['db-version-updated'])
         .concat(requirements['version-updated'])
         .concat(requirements['changed-files']);
       utils.status({message: `Commit changes`});
@@ -301,7 +335,7 @@ module.exports = ({tasks, cmdOptions, credentials}) => {
       await gitPush({
         dir: REPO_ROOT,
         remote: 'git@github.com:taskcluster/taskcluster',
-        refs: [...tags, 'master'],
+        refs: [...tags, 'main'],
         utils,
       });
     },

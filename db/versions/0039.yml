@@ -1,4 +1,5 @@
 version: 39
+description: web-server authorization codes phase 2
 migrationScript: 0039-migration.sql
 downgradeScript: 0039-downgrade.sql
 methods:

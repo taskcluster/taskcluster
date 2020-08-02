@@ -3,7 +3,6 @@ let debug = require('debug')('app:main');
 let taskcluster = require('taskcluster-client');
 let builder = require('./api');
 let exchanges = require('./exchanges');
-let data = require('./data');
 let Bucket = require('./bucket');
 let QueueService = require('./queueservice');
 let EC2RegionResolver = require('./ec2regionresolver');
@@ -112,48 +111,6 @@ let load = loader({
     }),
   },
 
-  // Create Provisioner table
-  Provisioner: {
-    requires: ['cfg', 'monitor', 'process', 'db'],
-    setup: async ({cfg, monitor, process, db}) =>
-      data.Provisioner.setup({
-        db,
-        serviceName: 'queue',
-        tableName: cfg.app.provisionerTableName,
-        operationReportChance: cfg.app.azureReportChance,
-        operationReportThreshold: cfg.app.azureReportThreshold,
-        monitor: monitor.childMonitor('table.provisioner'),
-      }),
-  },
-
-  // Create WorkerType table
-  WorkerType: {
-    requires: ['cfg', 'monitor', 'process', 'db'],
-    setup: async ({cfg, monitor, process, db}) =>
-      data.WorkerType.setup({
-        db,
-        serviceName: 'queue',
-        tableName: cfg.app.workerTypeTableName,
-        operationReportChance: cfg.app.azureReportChance,
-        operationReportThreshold: cfg.app.azureReportThreshold,
-        monitor: monitor.childMonitor('table.workerType'),
-      }),
-  },
-
-  // Create Worker table
-  Worker: {
-    requires: ['cfg', 'monitor', 'process', 'db'],
-    setup: async ({cfg, monitor, process, db}) =>
-      data.Worker.setup({
-        db,
-        serviceName: 'queue',
-        tableName: cfg.app.workerTableName,
-        operationReportChance: cfg.app.azureReportChance,
-        operationReportThreshold: cfg.app.azureReportThreshold,
-        monitor: monitor.childMonitor('table.worker'),
-      }),
-  },
-
   // Create QueueService to manage azure queues
   queueService: {
     requires: ['cfg', 'monitor', 'db'],
@@ -182,10 +139,8 @@ let load = loader({
 
   // Create workerInfo
   workerInfo: {
-    requires: ['Provisioner', 'WorkerType', 'Worker'],
-    setup: ({Provisioner, WorkerType, Worker}) => new WorkerInfo({
-      Provisioner, WorkerType, Worker,
-    }),
+    requires: ['db'],
+    setup: ({db}) => new WorkerInfo({db}),
   },
 
   // Create dependencyTracker
@@ -226,16 +181,12 @@ let load = loader({
       'cfg', 'publisher', 'schemaset', 'db', 'queueService',
       'publicArtifactBucket', 'privateArtifactBucket',
       'regionResolver', 'monitor', 'dependencyTracker',
-      'workClaimer', 'Provisioner', 'workerInfo', 'WorkerType', 'Worker',
-      'db',
+      'workClaimer', 'workerInfo',
     ],
     setup: (ctx) => builder.build({
       context: {
         db: ctx.db,
         taskGroupExpiresExtension: ctx.cfg.app.taskGroupExpiresExtension,
-        Provisioner: ctx.Provisioner,
-        WorkerType: ctx.WorkerType,
-        Worker: ctx.Worker,
         dependencyTracker: ctx.dependencyTracker,
         publisher: ctx.publisher,
         claimTimeout: ctx.cfg.app.claimTimeout,
@@ -367,8 +318,8 @@ let load = loader({
       return monitor.oneShot(ownName, async () => {
         const now = taskcluster.fromNow(cfg.app.taskExpirationDelay);
         debug('Expiring tasks at: %s, from before %s', new Date(), now);
-        const counts = await db.fns.expire_tasks(now);
-        debug('Expired %s tasks', counts[0].expire_tasks);
+        const [{expire_tasks}] = await db.fns.expire_tasks(now);
+        debug('Expired %s tasks', expire_tasks);
       });
     },
   },
@@ -380,8 +331,8 @@ let load = loader({
       return monitor.oneShot(ownName, async () => {
         const now = taskcluster.fromNow(cfg.app.taskExpirationDelay);
         debug('Expiring task-groups at: %s, from before %s', new Date(), now);
-        const counts = await db.fns.expire_task_groups(now);
-        debug('Expired %s task-groups', counts[0].expire_task_groups);
+        const [{expire_task_groups}] = await db.fns.expire_task_groups(now);
+        debug('Expired %s task-groups', expire_task_groups);
       });
     },
   },
@@ -393,8 +344,8 @@ let load = loader({
       return monitor.oneShot(ownName, async () => {
         const now = taskcluster.fromNow(cfg.app.taskExpirationDelay);
         debug('Expiring task-dependency at: %s, from before %s', new Date(), now);
-        const counts = await db.fns.expire_task_dependencies(now);
-        debug('Expired %s task-dependency', counts[0].expire_task_dependencies);
+        const [{expire_task_dependencies}] = await db.fns.expire_task_dependencies(now);
+        debug('Expired %s task-dependency', expire_task_dependencies);
       });
     },
   },
@@ -409,17 +360,6 @@ let load = loader({
         const count = await workerInfo.expire(now);
         debug('Expired %s worker-info', count);
       });
-    },
-  },
-
-  // drop the provisioner / workerType / worker tracking tables (in case
-  // of backouts). Intended to be run from a one-off heroku dyno
-  'remove-all-worker-tables': {
-    requires: ['Provisioner', 'WorkerType', 'Worker'],
-    setup: async ({Provisioner, WorkerType, Worker}) => {
-      await Provisioner.removeTable();
-      await WorkerType.removeTable();
-      await Worker.removeTable();
     },
   },
 

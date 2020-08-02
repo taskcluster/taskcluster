@@ -1,4 +1,5 @@
 version: 19
+description: "queue artifacts phase 2 step 1 (slow migration: about 20μs per row in table `queue_artifacts_entities`)"
 migrationScript: 0019-migration.sql
 downgradeScript: 0019-downgrade.sql
 methods:

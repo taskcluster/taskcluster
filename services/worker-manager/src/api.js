@@ -161,7 +161,7 @@ builder.declare({
     return res.reportError('InputError', 'Incorrect workerPoolId in request body', {});
   }
 
-  const updateResult = await this.db.fns.update_worker_pool_with_capacity(
+  const [row] = await this.db.fns.update_worker_pool_with_capacity(
     workerPoolId,
     input.providerId,
     input.description,
@@ -169,16 +169,16 @@ builder.declare({
     new Date(),
     input.owner,
     input.emailOnError);
-  const workerPool = WorkerPool.fromDbRows(updateResult);
-
-  if (!workerPool) {
+  if (!row) {
     return res.reportError('ResourceNotFound', 'Worker pool does not exist', {});
   }
+
+  const workerPool = WorkerPool.fromDb(row);
 
   await this.publisher.workerPoolUpdated({
     workerPoolId,
     providerId,
-    previousProviderId: updateResult.previous_provider_id,
+    previousProviderId: row.previous_provider_id,
   });
   res.reply(workerPool.serializable());
 });
@@ -208,7 +208,7 @@ builder.declare({
     return res.reportError('ResourceNotFound', 'Worker pool does not exist', {});
   }
 
-  const updateResult = await this.db.fns.update_worker_pool_with_capacity(
+  const [row] = await this.db.fns.update_worker_pool_with_capacity(
     workerPoolId,
     providerId,
     workerPool.description,
@@ -216,12 +216,15 @@ builder.declare({
     new Date(),
     workerPool.owner,
     workerPool.emailOnError);
-  workerPool = WorkerPool.fromDbRows(updateResult);
+  if (!row) {
+    return res.reportError('ResourceNotFound', 'Worker pool does not exist', {});
+  }
+  workerPool = WorkerPool.fromDb(row);
 
   await this.publisher.workerPoolUpdated({
     workerPoolId,
     providerId,
-    previousProviderId: updateResult.previous_provider_id,
+    previousProviderId: row.previous_provider_id,
   });
   res.reply(workerPool.serializable());
 });
@@ -326,10 +329,7 @@ builder.declare({
 builder.declare({
   method: 'get',
   route: '/worker-pool-errors/:workerPoolId(*)',
-  query: {
-    continuationToken: /./,
-    limit: /^[0-9]+$/,
-  },
+  query: paginateResults.query,
   name: 'listWorkerPoolErrors',
   title: 'List Worker Pool Errors',
   category: 'Worker Pools',
@@ -340,17 +340,20 @@ builder.declare({
   ].join('\n'),
 }, async function(req, res) {
   const { errorId, workerPoolId } = req.params;
-  const {rows: errors, continuationToken} = await WorkerPoolError.getWorkerPoolErrors(
-    this.db,
-    { errorId, workerPoolId },
-    { query: req.query },
-  );
-  const result = {
-    workerPoolErrors: errors.map(e => e.serializable()),
-    continuationToken,
-  };
+  const {continuationToken, rows} = await paginateResults({
+    query: req.query,
+    fetch: (size, offset) => this.db.fns.get_worker_pool_errors_for_worker_pool(
+      errorId || null,
+      workerPoolId || null,
+      size,
+      offset,
+    ),
+  });
 
-  return res.reply(result);
+  return res.reply({
+    workerPoolErrors: rows.map(e => WorkerPoolError.fromDb(e).serializable()),
+    continuationToken,
+  });
 });
 
 builder.declare({
@@ -367,18 +370,22 @@ builder.declare({
   ].join('\n'),
 }, async function(req, res) {
   const { workerPoolId, workerGroup } = req.params;
-  const { rows: workers, continuationToken } = await Worker.getWorkers(
-    this.db,
-    { workerPoolId, workerGroup },
-    { query: req.query },
-  );
 
-  const result = {
-    workers: workers.map(w => w.serializable()),
+  const { rows, continuationToken } = await paginateResults({
+    query: req.query,
+    fetch: (size, offset) => this.db.fns.get_workers(
+      workerPoolId,
+      workerGroup,
+      null,
+      null,
+      size,
+      offset),
+  });
+
+  return res.reply({
+    workers: rows.map(w => Worker.fromDb(w).serializable()),
     continuationToken,
-  };
-
-  return res.reply(result);
+  });
 });
 
 builder.declare({
@@ -530,13 +537,22 @@ builder.declare({
       `Worker Pool does not exist`, {});
   }
 
-  const { rows: workers, continuationToken } = await Worker.getWorkers(this.db, { workerPoolId }, { query: req.query });
+  const { rows, continuationToken } = await paginateResults({
+    query: req.query,
+    fetch: (size, offset) => this.db.fns.get_workers({
+      worker_pool_in: workerPoolId,
+      worker_group_in: null,
+      worker_id_in: null,
+      state_in: null,
+      page_size_in: size,
+      page_offset_in: offset,
+    }),
+  });
 
-  const result = {
-    workers: workers.map(w => w.serializable()),
+  return res.reply({
+    workers: rows.map(w => Worker.fromDb(w).serializable()),
     continuationToken,
-  };
-  return res.reply(result);
+  });
 });
 
 let cleanPayload = payload => {

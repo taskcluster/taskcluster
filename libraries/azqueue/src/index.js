@@ -10,10 +10,10 @@ class AZQueue {
   }
 
   async getMetadata(name) {
-    const result = await this.db.fns.azure_queue_count(name);
+    const [{azure_queue_count}] = await this.db.fns.azure_queue_count(name);
 
     return {
-      messageCount: result[0].azure_queue_count,
+      messageCount: azure_queue_count,
     };
   }
 

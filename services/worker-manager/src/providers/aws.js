@@ -97,8 +97,9 @@ class AwsProvider extends Provider {
       maxCapacity: workerPool.config.maxCapacity,
       workerInfo,
     });
-    if (toSpawn === 0) {
-      return;
+
+    if (toSpawn === 0 || workerPool.config.launchConfigs.length === 0) {
+      return; // Nothing to do
     }
 
     const {terminateAfter, reregistrationTimeout} = Provider.interpretLifecycle(workerPool.config);

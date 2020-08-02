@@ -234,6 +234,29 @@ table_name:
 Column types are a "stripped down" version of the full Postgres type definition, including only a simple type name and if necessary the suffix `not null`.
 Primary keys, constraints, defaults, sequences, and so on are not included.
 
+## Pagination
+
+Database functions which return many rows typically have `page_size int, page_offset int` as their last two arguments, and return a page of the given size at the given offset.
+The taskcluster-lib-api function `paginatedResults` is useful for translating such paginated results into an API response.
+For other users in Taskcluster services, this library provides `paginatedIterator` to convert paginated results into an async iterator.
+
+```javascript
+const {paginatedIterator} = require('taskcluster-lib-postgres');
+
+const doTheThings = async () => {
+  for await (let row of paginatedIterator({
+    fetch: async (size, offset) => db.fns.get_widgets(..., size, offset),
+    size: 1000, // optional, defaults to 1000
+  })) {
+    // ..do something with `row`
+  }
+}
+```
+
+It's important to remember that each paginated fetch is a different transaction, and so the content of the DB may change from call to call.
+An "offset" into a set of results that is rapidly changing size is not accurate, and can easily return the same row twice or skip a row.
+For UI purposes, this is not a big deal, but may cause issues for other uses.
+
 ## Encryption
 
 As described above, secret data is stored in a "crypto container".

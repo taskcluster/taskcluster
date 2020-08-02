@@ -43,7 +43,7 @@ module.exports = ({tasks, cmdOptions, credentials, baseDir, logsDir}) => {
     run: async (requirements, utils) => {
       utils.step({title: 'Check Repository'});
 
-      const tag = `taskcluster/livelog:${requirements['release-version']}`;
+      const tag = `taskcluster/livelog:v${requirements['release-version']}`;
       const provides = {
         'livelog-docker-image': tag,
       };
@@ -72,7 +72,7 @@ module.exports = ({tasks, cmdOptions, credentials, baseDir, logsDir}) => {
       // this simple Dockerfile just packages the binary into a Docker image
       const dockerfile = path.join(contextDir, 'Dockerfile');
       fs.writeFileSync(dockerfile, [
-        'FROM progrium/busybox',
+        'FROM scratch',
         'EXPOSE 60023',
         'EXPOSE 60022',
         'COPY version.json /app/version.json',

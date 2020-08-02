@@ -83,10 +83,10 @@ get permission to do this.
 
 Then, add the scopes to read that secret to the appropriate repository role.
 Keep in mind that, for Github repositories at least, it is possible to
-distinguish PRs and specific branches.  If, for example, only the master branch
+distinguish PRs and specific branches.  If, for example, only the `main` branch
 should be allowed to upload, then you would add add
 `secrets:get:repo:github.com/myblog/myblog.com` to role
-`repo:github.com/myblog/myblog.com:branch:master`.
+`repo:github.com/myblog/myblog.com:branch:main`.
 
 ## Task Setup
 
@@ -96,10 +96,10 @@ to perform the upload:
 ```yaml
 tasks:
   - ...
-    # only run on pushes to master
+    # only run on pushes to main
     extra:
       github:
-        branches: [master]
+        branches: [main]
         events: [push]
     # task has access to the secret
     scopes: [secrets:get:repo:github.com/myblog/myblog.com]

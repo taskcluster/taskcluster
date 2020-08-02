@@ -13,7 +13,7 @@ _defaultConfig = config
 
 class Github(BaseClient):
     """
-    The github service is responsible for creating tasks in reposnse
+    The github service is responsible for creating tasks in response
     to GitHub events, and posting results to the GitHub UI.
 
     This document describes the API end-point for consuming GitHub

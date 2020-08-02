@@ -345,7 +345,7 @@ var services = map[string]definitions.Service{
 			definitions.Entry{
 				Name:        "websocktunnelToken",
 				Title:       "Get a client token for the Websocktunnel service",
-				Description: "Get a temporary token suitable for use connecting to a\n[websocktunnel](https://github.com/taskcluster/taskcluster/tree/master/tools/websocktunnel) server.\n\nThe resulting token will only be accepted by servers with a matching audience\nvalue.  Reaching such a server is the callers responsibility.  In general,\na server URL or set of URLs should be provided to the caller as configuration\nalong with the audience value.\n\nThe token is valid for a limited time (on the scale of hours). Callers should\nrefresh it before expiration.",
+				Description: "Get a temporary token suitable for use connecting to a\n[websocktunnel](https://github.com/taskcluster/taskcluster/tree/main/tools/websocktunnel) server.\n\nThe resulting token will only be accepted by servers with a matching audience\nvalue.  Reaching such a server is the callers responsibility.  In general,\na server URL or set of URLs should be provided to the caller as configuration\nalong with the audience value.\n\nThe token is valid for a limited time (on the scale of hours). Callers should\nrefresh it before expiration.",
 				Stability:   "stable",
 				Method:      "get",
 				Route:       "/websocktunnel/<wstAudience>/<wstClient>",
@@ -409,7 +409,7 @@ var services = map[string]definitions.Service{
 		APIVersion:  "v1",
 		ServiceName: "github",
 		Title:       "Taskcluster GitHub API Documentation",
-		Description: "The github service is responsible for creating tasks in reposnse\nto GitHub events, and posting results to the GitHub UI.\n\nThis document describes the API end-point for consuming GitHub\nweb hooks, as well as some useful consumer APIs.\n\nWhen Github forbids an action, this service returns an HTTP 403\nwith code ForbiddenByGithub.",
+		Description: "The github service is responsible for creating tasks in response\nto GitHub events, and posting results to the GitHub UI.\n\nThis document describes the API end-point for consuming GitHub\nweb hooks, as well as some useful consumer APIs.\n\nWhen Github forbids an action, this service returns an HTTP 403\nwith code ForbiddenByGithub.",
 		Entries: []definitions.Entry{
 			definitions.Entry{
 				Name:        "ping",
@@ -1450,7 +1450,7 @@ var services = map[string]definitions.Service{
 			definitions.Entry{
 				Name:        "remove",
 				Title:       "Delete Secret",
-				Description: "Delete the secret associated with some key.",
+				Description: "Delete the secret associated with some key. It will succeed whether or not the secret exists",
 				Stability:   "stable",
 				Method:      "delete",
 				Route:       "/secret/<name>",
