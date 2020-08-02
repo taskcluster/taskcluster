@@ -65,4 +65,46 @@ helper.secrets.mockSuite(suiteName(), ['docker', 'ci-creds'], function(mock, ski
     assert.equal(task2.run.state, 'completed', 'task should be successful');
     assert.equal(task2.run.reasonResolved, 'completed', 'task should be successful');
   });
+
+  test('docker manifest v1.2 only', async () => {
+
+    let task1 = await worker.postToQueue({
+      payload: {
+        image: 'tutum/curl',
+        artifacts: {
+          'public/image.tar.zst': {
+            type: 'file',
+            expires: expires(),
+            path: '/image.tar.zst',
+          },
+        },
+        command: [
+          'curl',
+          '-o',
+          '/image.tar.zst',
+          '-L',
+          'https://firefox-ci-tc.services.mozilla.com/api/queue/v1/task/U9nuixDnT_6eGJ-OsKMLCQ/runs/0/artifacts/public/image.tar.zst',
+        ],
+        maxRunTime: 5 * 60,
+      },
+    });
+
+    assert.equal(task1.run.state, 'completed', 'task should be successful');
+    assert.equal(task1.run.reasonResolved, 'completed', 'task should be successful');
+
+    let task2 = await worker.postToQueue({
+      payload: {
+        image: {
+          path: 'public/image.tar.zst',
+          type: 'task-image',
+          taskId: task1.taskId,
+        },
+        command: cmd('sleep 1'),
+        maxRunTime: 5 * 60,
+      },
+    });
+
+    assert.equal(task2.run.state, 'completed', 'task should be successful');
+    assert.equal(task2.run.reasonResolved, 'completed', 'task should be successful');
+  });
 });
