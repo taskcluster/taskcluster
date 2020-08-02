@@ -14,6 +14,7 @@ import HelpView from '../../../components/HelpView';
 import Search from '../../../components/Search';
 import Button from '../../../components/Button';
 import ErrorPanel from '../../../components/ErrorPanel';
+import Link from '../../../utils/Link';
 import hooksQuery from './hooks.graphql';
 
 @hot(module)
@@ -66,16 +67,24 @@ export default class ListHooks extends Component {
           })),
         }))
       : [];
-    const renderTree = treeItem => (
-      <TreeItem
-        key={treeItem.value}
-        nodeId={treeItem.value}
-        label={treeItem.value}>
-        {Array.isArray(treeItem.nodes)
-          ? treeItem.nodes.map(node => renderTree(node))
-          : null}
-      </TreeItem>
-    );
+    const renderTree = treeItem => {
+      const item = (
+        <TreeItem
+          key={treeItem.value}
+          nodeId={treeItem.value}
+          label={treeItem.value}>
+          {Array.isArray(treeItem.nodes)
+            ? treeItem.nodes.map(node => renderTree(node))
+            : null}
+        </TreeItem>
+      );
+
+      if (treeItem.href) {
+        return <Link to={treeItem.href}>{item}</Link>;
+      }
+
+      return item;
+    };
 
     return (
       <Dashboard
@@ -95,11 +104,7 @@ export default class ListHooks extends Component {
             defaultCollapseIcon={<ExpandMoreIcon />}
             defaultExpanded={['root']}
             defaultExpandIcon={<ChevronRightIcon />}>
-            {renderTree(tree[0])}
-            {renderTree(tree[1])}
-            {renderTree(tree[2])}
-            {renderTree(tree[3])}
-            {renderTree(tree[4])}
+            {tree.map(renderTree)}
           </TreeView>
         )}
         <Button
