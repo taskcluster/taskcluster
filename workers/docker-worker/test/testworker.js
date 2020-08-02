@@ -24,7 +24,7 @@ class TestWorker extends EventEmitter {
     return `test-${slugid.v4().replace(/[_-]/g, '').toLowerCase()}-a`;
   }
 
-  constructor(Worker, workerType, workerId, features) {
+  constructor(Worker, workerType, workerId, features = {}) {
     super();
 
     // This is to avoid the node warning message:

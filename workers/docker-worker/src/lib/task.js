@@ -56,7 +56,7 @@ Convert the feature flags into a state handler.
 @param {Object} task definition.
 @param {Monitor} monitor object implementing record/measure methods
 */
-function buildStateHandlers(task, monitor) {
+function buildStateHandlers(runtime, task, monitor) {
   let handlers = [];
   let featureFlags = task.payload.features || {};
 
@@ -68,9 +68,15 @@ function buildStateHandlers(task, monitor) {
     throw new Error(`${diff.join()} ${diff.length > 1 ? 'are' : 'is'} not part of valid features`);
   }
 
+  diff = _.keys(featureFlags).filter(x => !runtime.features[x].enabled);
+
+  if (diff.length) {
+    throw new Error(`${diff.join()} ${diff.length > 1 ? 'are' : 'is'} not enabled on this worker`);
+  }
+
   for (let flag of Object.keys(features || {})) {
     let enabled = (flag in featureFlags) ?
-      featureFlags[flag] : features[flag].defaults;
+      featureFlags[flag] : (runtime.features[flag].enabled && features[flag].defaults);
 
     if (enabled) {
       handlers.push(new (features[flag].module)());
@@ -297,7 +303,7 @@ class Task extends EventEmitter {
 
     try {
       // states actions.
-      this.states = buildStateHandlers(this.task, this.runtime.monitor);
+      this.states = buildStateHandlers(this.runtime, this.task, this.runtime.monitor);
     } catch (err) {
       this.abortRun(fmtErrorLog(err));
       throw err;
