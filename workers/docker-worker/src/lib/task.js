@@ -323,6 +323,7 @@ class Task extends EventEmitter {
     env.TASK_ID = this.status.taskId;
     env.RUN_ID = this.runId;
     env.TASKCLUSTER_WORKER_TYPE = this.runtime.workerType;
+    env.TASKCLUSTER_WORKER_POOL = this.runtime.workerPool;
     env.TASKCLUSTER_INSTANCE_TYPE = this.runtime.workerNodeType;
     env.TASKCLUSTER_WORKER_GROUP = this.runtime.workerGroup;
     env.TASKCLUSTER_PUBLIC_IP = this.runtime.publicIp;
@@ -430,7 +431,7 @@ class Task extends EventEmitter {
       `Worker ID: ${this.runtime.workerId}`,
       `Worker Group: ${this.runtime.workerGroup}`,
       `Worker Node Type: ${this.runtime.workerNodeType}`,
-      `Worker Type: ${this.runtime.workerType}`,
+      `Worker Pool: ${this.runtime.workerPool}`,
       `Worker Version: ${version}`,
       `Public IP: ${this.runtime.publicIp}`,
       `Hostname: ${os.hostname()}`,

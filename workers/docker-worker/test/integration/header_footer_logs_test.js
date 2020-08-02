@@ -64,7 +64,7 @@ helper.secrets.mockSuite(suiteName(), ['docker', 'ci-creds'], function(mock, ski
       `Log header does not include worker node type. Log Line: ${tcLogs[3]}`,
     );
     assert.ok(
-      tcLogs[4].includes(`Worker Type: ${result.status.workerType}`),
+      tcLogs[4].includes(`Worker Pool: ${result.status.provisionerId}/${result.status.workerType}`),
       `Log header does not include worker type. Log Line: ${tcLogs[4]}`,
     );
     assert.ok(
