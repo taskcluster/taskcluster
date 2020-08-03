@@ -3,6 +3,109 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v36.0.0
+
+### DEPLOYERS
+
+▶ [MAJOR] [#2937](https://github.com/taskcluster/taskcluster/issues/2937)
+Github checks are now stored in a table called `github_checks`, and github integrations are now stored in a table called `github_integrations`.  Both are accessed directly, rather than via taskcluster-lib-entities.  This migration takes about 10 seconds for a million-row table.
+
+▶ [MAJOR] [#2931](https://github.com/taskcluster/taskcluster/issues/2931)
+The `secrets_entities` table has been migrated to a relational table `secrets`. The secrets service now optionally takes an additional environment variable `DB_CRYPTO_KEYS` to be set which is a JSON array where each element in an object of the form:
+
+{
+  "id": "a unique identifier",
+  "algo": "aes-256",
+  "key": "32 bytes of base64 string"
+}
+
+▶ [MAJOR] [#2936](https://github.com/taskcluster/taskcluster/issues/2936)
+The hooks table has been migrated to a relational table `hooks`. The hooks
+service now requires an additional environment variable `DB_CRYPTO_KEYS` to be
+set which is a JSON array where each element in an obejct of the form:
+
+```json
+{
+  "id": "a unique identifier",
+  "algo": "aes-256",
+  "key": "32 bytes of base64 string"
+}
+```
+
+▶ [MAJOR] [#3148](https://github.com/taskcluster/taskcluster/issues/3148)
+The tables in web-server are now all relational.  The migration drops all data in these tables, which will have the effect of signing out all users and requiring them to sign in again.  But it is a very quick upgrade.
+
+Sign-ins will not work until the web-server service has been upgraded to this version (that is, sign-ins will not work during the time between the database upgrade and the services upgrade, nor if services are downgraded back to v35.0.0).
+
+The web-server service now requires an additional environment variable `DB_CRYPTO_KEYS`
+to be set which is a JSON array where each element is an object of the form.
+
+```json
+{
+  "id": "a unique identifier",
+  "algo": "aes-256",
+  "key": "32 bytes of base64 string"
+}
+```
+
+Note that for this upgrade it will only be an array of a single object.
+
+▶ [minor] [#2936](https://github.com/taskcluster/taskcluster/issues/2936)
+Hook queues and last fires are now stored in a relational table, namely, `hooks_queues` and `hooks_last_fires`.
+
+▶ [minor] [#2938](https://github.com/taskcluster/taskcluster/issues/2938)
+The Queue service's workers, worker_types, and provisioners are now stored in a normal database table.
+
+▶ [minor] [#3083](https://github.com/taskcluster/taskcluster/issues/3083)
+The auth service's clients are now stored in the `clients` table and the service accesses that information directly, rather than via taskcluster-lib-entities.  As the number of clients is small, this migration should be very fast.
+
+▶ [minor] [#2933](https://github.com/taskcluster/taskcluster/issues/2933)
+The queue's tracking of worker status (workers, worker types, and provisioners) is now handled in normal database tables without use of taskcluster-lib-entities.
+
+▶ [patch] [#3245](https://github.com/taskcluster/taskcluster/issues/3245)
+The `taskcluster/websocktunnel` and `taskcluster/livelog` docker images now include a leading `v` in their tags, e.g., `taskcluster/websocktunnel:v36.0.0`.
+
+### WORKER-DEPLOYERS
+
+▶ [patch] 
+A worker pool with no launch configs will no longer cause errors (although it will also not create any workers!)
+
+▶ [patch] [#3308](https://github.com/taskcluster/taskcluster/issues/3308)
+Docker-worker now uses taskcluster-proxy and livelog images that match its own version.  Previously, it unintentionally used very old versions of these utilities (5.1.0 and v4, respectively).
+
+▶ [patch] [#3169](https://github.com/taskcluster/taskcluster/issues/3169)
+If `workerTypeMetadata` is given in a generic-worker worker pool definition, its contents will now be merged with the metadata from the provider and passed to generic-worker.
+
+▶ [patch] 
+Worker-runner now correctly sets the `publicIP` configuration for generic-worker (previously it set `publicIp`, which is ignored).
+
+### USERS
+
+▶ [patch] [bug 1654086](http://bugzil.la/1654086)
+This version fixes a bug which would cause the hooks service to crash when sending error reports to denylisted addresses.
+
+▶ [patch] [bug 1645032](http://bugzil.la/1645032)
+User IDs as received from Auth0 in the Mozilla-Auth0 login strategy are no longer suffixed with github usernames or firefox-accounts emails.  In practice, such user IDs are unused.
+
+### DEVELOPERS
+
+▶ [patch] [#3272](https://github.com/taskcluster/taskcluster/issues/3272)
+A mapping between DB and TC versions is now maintained automatically in [`db/versions/README.md`](https://github.com/taskcluster/taskcluster/tree/main/db/versions).
+
+▶ [patch] [#3289](https://github.com/taskcluster/taskcluster/issues/3289)
+The DB schema is now documented in `db/schema.md`.
+
+▶ [patch] [#3276](https://github.com/taskcluster/taskcluster/issues/3276)
+The main branch of development on the Taskcluster repository is now named `main`.
+
+▶ [patch] [#2928](https://github.com/taskcluster/taskcluster/issues/2928)
+taskcluster-lib-postgres now allows calling stored functions with named
+arguments.
+
+### OTHER
+
+▶ Additional changes not described here: [#3170](https://github.com/taskcluster/taskcluster/issues/3170), [#3176](https://github.com/taskcluster/taskcluster/issues/3176), [#3184](https://github.com/taskcluster/taskcluster/issues/3184), [#3185](https://github.com/taskcluster/taskcluster/issues/3185), [#3224](https://github.com/taskcluster/taskcluster/issues/3224), [#3285](https://github.com/taskcluster/taskcluster/issues/3285), [#3290](https://github.com/taskcluster/taskcluster/issues/3290), [#3301](https://github.com/taskcluster/taskcluster/issues/3301).
+
 ## v35.0.0
 
 ### GENERAL

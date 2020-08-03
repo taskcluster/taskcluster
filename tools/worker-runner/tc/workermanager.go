@@ -1,8 +1,8 @@
 package tc
 
 import (
-	tcclient "github.com/taskcluster/taskcluster/v35/clients/client-go"
-	"github.com/taskcluster/taskcluster/v35/clients/client-go/tcworkermanager"
+	tcclient "github.com/taskcluster/taskcluster/v36/clients/client-go"
+	"github.com/taskcluster/taskcluster/v36/clients/client-go/tcworkermanager"
 )
 
 // An interface containing the functions required of WorkerManager, allowing

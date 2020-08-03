@@ -11,7 +11,7 @@ import (
 	"time"
 
 	"github.com/taskcluster/httpbackoff/v3"
-	"github.com/taskcluster/taskcluster/v35/workers/generic-worker/gwconfig"
+	"github.com/taskcluster/taskcluster/v36/workers/generic-worker/gwconfig"
 )
 
 var (
