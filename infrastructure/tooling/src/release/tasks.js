@@ -225,7 +225,10 @@ module.exports = ({tasks, cmdOptions, credentials}) => {
       await updateVersionsReadme(schema, releases);
 
       return {
-        'db-version-updated': releasesFile,
+        'db-version-updated': [
+          releasesFile,
+          path.join('db', 'versions', 'README.md'),
+        ],
       };
     },
   });
