@@ -4787,13 +4787,13 @@
                 "type": "string"
               },
               "hookGroupId": {
-                "maxLength": 64,
+                "maxLength": 1000,
                 "minLength": 1,
                 "pattern": "^([a-zA-Z0-9-_]*)$",
                 "type": "string"
               },
               "hookId": {
-                "maxLength": 64,
+                "maxLength": 1000,
                 "minLength": 1,
                 "pattern": "^([a-zA-Z0-9-_/]*)$",
                 "type": "string"
@@ -5043,13 +5043,13 @@
           "$ref": "bindings.json#"
         },
         "hookGroupId": {
-          "maxLength": 64,
+          "maxLength": 1000,
           "minLength": 1,
           "pattern": "^([a-zA-Z0-9-_]*)$",
           "type": "string"
         },
         "hookId": {
-          "maxLength": 64,
+          "maxLength": 1000,
           "minLength": 1,
           "pattern": "^([a-zA-Z0-9-_/]*)$",
           "type": "string"
@@ -5093,13 +5093,13 @@
           "$ref": "bindings.json#"
         },
         "hookGroupId": {
-          "maxLength": 64,
+          "maxLength": 1000,
           "minLength": 1,
           "pattern": "^([a-zA-Z0-9-_]*)$",
           "type": "string"
         },
         "hookId": {
-          "maxLength": 64,
+          "maxLength": 1000,
           "minLength": 1,
           "pattern": "^([a-zA-Z0-9-_/]*)$",
           "type": "string"

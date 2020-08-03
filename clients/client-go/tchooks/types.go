@@ -43,12 +43,12 @@ type (
 
 		// Syntax:     ^([a-zA-Z0-9-_]*)$
 		// Min length: 1
-		// Max length: 64
+		// Max length: 1000
 		HookGroupID string `json:"hookGroupId,omitempty"`
 
 		// Syntax:     ^([a-zA-Z0-9-_/]*)$
 		// Min length: 1
-		// Max length: 64
+		// Max length: 1000
 		HookID string `json:"hookId,omitempty"`
 
 		Metadata HookMetadata `json:"metadata"`
@@ -88,12 +88,12 @@ type (
 
 		// Syntax:     ^([a-zA-Z0-9-_]*)$
 		// Min length: 1
-		// Max length: 64
+		// Max length: 1000
 		HookGroupID string `json:"hookGroupId"`
 
 		// Syntax:     ^([a-zA-Z0-9-_/]*)$
 		// Min length: 1
-		// Max length: 64
+		// Max length: 1000
 		HookID string `json:"hookId"`
 
 		Metadata HookMetadata `json:"metadata"`
@@ -406,12 +406,12 @@ type (
 
 		// Syntax:     ^([a-zA-Z0-9-_]*)$
 		// Min length: 1
-		// Max length: 64
+		// Max length: 1000
 		HookGroupID string `json:"hookGroupId"`
 
 		// Syntax:     ^([a-zA-Z0-9-_/]*)$
 		// Min length: 1
-		// Max length: 64
+		// Max length: 1000
 		HookID string `json:"hookId"`
 
 		// Information about success or failure of firing of the hook
