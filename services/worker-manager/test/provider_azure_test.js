@@ -89,6 +89,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       config: {
         minCapacity: 1,
         maxCapacity: 1,
+        scalingRatio: 1,
         lifecycle: {
           registrationTimeout: 6000,
         },
@@ -132,6 +133,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         config: {
           minCapacity: 1,
           maxCapacity: 1,
+          scalingRatio: 1,
           launchConfigs: [{
             capacityPerInstance: 1,
             subnetId: 'some/subnet',

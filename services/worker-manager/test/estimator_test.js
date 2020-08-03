@@ -22,6 +22,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       workerPoolId: 'foo/bar',
       maxCapacity: 0,
       minCapacity: 0,
+      scalingRatio: 1,
       workerInfo,
     });
 
@@ -39,6 +40,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       workerPoolId: 'foo/bar',
       maxCapacity: 1,
       minCapacity: 1,
+      scalingRatio: 1,
       workerInfo,
     });
 
@@ -56,10 +58,87 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       workerPoolId: 'foo/bar',
       maxCapacity: 1,
       minCapacity: 1,
+      scalingRatio: 1,
       workerInfo,
     });
 
     assert.strictEqual(estimate, 0);
+    assert.strictEqual(monitor.manager.messages.length, 1);
+    assert(monitor.manager.messages.some(({Type, Severity}) => Type === 'simple-estimate' && Severity === 5));
+  });
+
+  test('scaling ratio 1:1 scale-up', async function() {
+    const workerInfo = {
+      existingCapacity: 0,
+      requestedCapacity: 0,
+    };
+    helper.queue.setPending('foo', 'bar', 100);
+    const estimate = await estimator.simple({
+      workerPoolId: 'foo/bar',
+      maxCapacity: 100,
+      minCapacity: 0,
+      scalingRatio: 1,
+      workerInfo,
+    });
+
+    assert.strictEqual(estimate, 100);
+    assert.strictEqual(monitor.manager.messages.length, 1);
+    assert(monitor.manager.messages.some(({Type, Severity}) => Type === 'simple-estimate' && Severity === 5));
+  });
+
+  test('scaling ratio 1:1 scale-up with lesser max capacity', async function() {
+    const workerInfo = {
+      existingCapacity: 0,
+      requestedCapacity: 0,
+    };
+    helper.queue.setPending('foo', 'bar', 100);
+    const estimate = await estimator.simple({
+      workerPoolId: 'foo/bar',
+      maxCapacity: 50,
+      minCapacity: 0,
+      scalingRatio: 1,
+      workerInfo,
+    });
+
+    assert.strictEqual(estimate, 50);
+    assert.strictEqual(monitor.manager.messages.length, 1);
+    assert(monitor.manager.messages.some(({Type, Severity}) => Type === 'simple-estimate' && Severity === 5));
+  });
+
+  test('scaling ratio 1:2 scale-up', async function() {
+    const workerInfo = {
+      existingCapacity: 0,
+      requestedCapacity: 0,
+    };
+    helper.queue.setPending('foo', 'bar', 100);
+    const estimate = await estimator.simple({
+      workerPoolId: 'foo/bar',
+      maxCapacity: 100,
+      minCapacity: 0,
+      scalingRatio: 0.5,
+      workerInfo,
+    });
+
+    assert.strictEqual(estimate, 50);
+    assert.strictEqual(monitor.manager.messages.length, 1);
+    assert(monitor.manager.messages.some(({Type, Severity}) => Type === 'simple-estimate' && Severity === 5));
+  });
+
+  test('scaling ratio 1:2 scale-up with existing capacity', async function() {
+    const workerInfo = {
+      existingCapacity: 25,
+      requestedCapacity: 0,
+    };
+    helper.queue.setPending('foo', 'bar', 100);
+    const estimate = await estimator.simple({
+      workerPoolId: 'foo/bar',
+      maxCapacity: 100,
+      minCapacity: 0,
+      scalingRatio: 0.5,
+      workerInfo,
+    });
+    // 50 more to spawn for 75 total
+    assert.strictEqual(estimate, 50);
     assert.strictEqual(monitor.manager.messages.length, 1);
     assert(monitor.manager.messages.some(({Type, Severity}) => Type === 'simple-estimate' && Severity === 5));
   });
@@ -73,6 +152,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       workerPoolId: 'foo/bar',
       maxCapacity: 1,
       minCapacity: 1,
+      scalingRatio: 1,
       workerInfo,
     });
 
@@ -92,6 +172,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       workerPoolId: 'foo/bar',
       maxCapacity: 1,
       minCapacity: 1,
+      scalingRatio: 1,
       workerInfo,
     });
 

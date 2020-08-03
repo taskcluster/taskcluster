@@ -75,6 +75,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       config: {
         minCapacity: 1,
         maxCapacity: 1,
+        scalingRatio: 1,
         launchConfigs: [defaultLaunchConfig],
       },
       owner: 'whatever@example.com',
@@ -128,6 +129,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     const config = {
       minCapacity: 1,
       maxCapacity: 1,
+      scalingRatio: 1,
       launchConfigs: [defaultLaunchConfig],
     };
 

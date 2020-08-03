@@ -75,6 +75,13 @@ properties:
     title: Maximum Capacity
     type: integer
     description: Maximum capacity that should not be exceeded at any given time for the entire workerpool
+  scalingRatio:
+    title: Scaling Ratio
+    type: number
+    minimum: 0
+    maximum: 1
+    description: |
+      The ratio of workers to spawn per pending task for this worker pool.
 additionalProperties: false
 required:
   - launchConfigs

@@ -19,6 +19,13 @@ properties:
     description: |
       The maximum amount of capacity that worker-manager should make
       available at any given time.
+  scalingRatio:
+    title: Scaling Ratio
+    type: number
+    minimum: 0
+    maximum: 1
+    description: |
+      The ratio of workers to spawn per pending task for this worker pool.
   lifecycle: {$ref: 'worker-lifecycle.json#'}
   launchConfigs:
     type: array
