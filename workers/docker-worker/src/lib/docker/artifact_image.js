@@ -204,7 +204,6 @@ class ArtifactImage {
     return createHash('md5')
       .update(`${this.taskId}${this.artifactPath}`)
       .digest('hex');
-
   }
 
   async _checkIfImageExists() {
@@ -259,32 +258,14 @@ class ArtifactImage {
     let editedTarballPath = path.join(dir, filename + '-edited.tar');
     let extractedPath = path.join(dir, filename);
     let manifestPath = path.join(extractedPath, 'manifest.json');
+    let repositoriesPath = path.join(extractedPath, 'repositories');
 
     let extractStream = tarfs.extract(extractedPath);
     await pipe(fs.createReadStream(tarballPath), extractStream);
 
-    let repositories = fs.readFileSync(path.join(extractedPath, 'repositories'));
-    let repoInfo = JSON.parse(repositories);
-
-    let keys = Object.keys(repoInfo);
-    if (keys.length > 1) {
-      throw new Error('Image tarballs must only contain one image');
-    }
-
-    let oldRepoName = keys[0];
-    let oldTag = Object.keys(repoInfo[oldRepoName])[0];
-    let newRepoInfo = {};
-    newRepoInfo[imageName] = repoInfo[oldRepoName];
-
-    if (oldTag !== 'latest') {
-      newRepoInfo[imageName]['latest'] = newRepoInfo[imageName][oldTag];
-      delete newRepoInfo[imageName][oldTag];
-    }
-
-    newRepoInfo = JSON.stringify(newRepoInfo);
-    fs.writeFileSync(path.join(extractedPath, 'repositories'), newRepoInfo);
-
+    // See https://github.com/moby/moby/tree/master/image/spec for details
     if (fs.existsSync(manifestPath)) {
+      // Support >= v1.1
       let manifest = JSON.parse(fs.readFileSync(manifestPath));
       if (manifest.length > 1) {
         throw new Error('Image tarballs must only contain one image');
@@ -292,6 +273,34 @@ class ArtifactImage {
 
       manifest[0]['RepoTags'] = [`${imageName}:latest`];
       fs.writeFileSync(manifestPath, JSON.stringify(manifest));
+
+      if (fs.existsSync(repositoriesPath)) {
+        fs.unlinkSync(repositoriesPath);
+      }
+    } else if (fs.existsSync(repositoriesPath)) {
+      // Support == v1.0
+      let repositories = fs.readFileSync(repositoriesPath);
+      let repoInfo = JSON.parse(repositories);
+
+      let keys = Object.keys(repoInfo);
+      if (keys.length > 1) {
+        throw new Error('Image tarballs must only contain one image');
+      }
+
+      let oldRepoName = keys[0];
+      let oldTag = Object.keys(repoInfo[oldRepoName])[0];
+      let newRepoInfo = {};
+      newRepoInfo[imageName] = repoInfo[oldRepoName];
+
+      if (oldTag !== 'latest') {
+        newRepoInfo[imageName]['latest'] = newRepoInfo[imageName][oldTag];
+        delete newRepoInfo[imageName][oldTag];
+      }
+
+      newRepoInfo = JSON.stringify(newRepoInfo);
+      fs.writeFileSync(path.join(extractedPath, 'repositories'), newRepoInfo);
+    } else {
+      throw new Error('Unknown docker archive format');
     }
 
     let pack = tarfs.pack(path.join(dir, filename));
