@@ -223,6 +223,10 @@ module.exports = ({tasks, cmdOptions, credentials}) => {
       // then, regenerate the versions reference
       const releases = await getDbReleases();
       await updateVersionsReadme(schema, releases);
+
+      return {
+        'db-version-updated': releasesFile,
+      };
     },
   });
 
