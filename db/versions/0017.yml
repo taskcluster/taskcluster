@@ -4,6 +4,7 @@ migrationScript: 0017-migration.sql
 downgradeScript: 0017-downgrade.sql
 methods:
   denylisted_notification_entities_load:
+    deprecated: true
     description: See taskcluster-lib-entities
     mode: read
     serviceName: notify
@@ -27,6 +28,7 @@ methods:
           denylisted_notifications.notification_type = decode_string_key(denylisted_notification_entities_load.partition_key) and denylisted_notifications.notification_address = decode_string_key(denylisted_notification_entities_load.row_key);
       end
   denylisted_notification_entities_create:
+    deprecated: true
     serviceName: notify
     description: See taskcluster-lib-entities
     mode: write
@@ -49,6 +51,7 @@ methods:
         return new_row.etag;
       end
   denylisted_notification_entities_remove:
+    deprecated: true
     serviceName: notify
     description: See taskcluster-lib-entities
     mode: write
@@ -62,6 +65,7 @@ methods:
         returning denylisted_notifications.etag;
       end
   denylisted_notification_entities_scan:
+    deprecated: true
     description: See taskcluster-lib-entities
     mode: read
     serviceName: notify
@@ -103,6 +107,8 @@ methods:
           end;
         end if;
       end
+  denylisted_notification_entities_modify:
+    deprecated: true
   add_denylist_address:
     description: |-
       If the denylist address already exists, this is a no-op. Otherwise, add the denylist

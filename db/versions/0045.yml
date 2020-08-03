@@ -4,6 +4,7 @@ migrationScript: 0045-migration.sql
 downgradeScript: 0045-downgrade.sql
 methods:
   queue_provisioner_entities_load:
+    deprecated: true
     description: See taskcluster-lib-entities
     mode: read
     serviceName: queue
@@ -33,6 +34,7 @@ methods:
           queue_provisioners.provisioner_id = decode_string_key(partition_key);
       end
   queue_provisioner_entities_create:
+    deprecated: true
     serviceName: queue
     description: See taskcluster-lib-entities
     mode: write
@@ -59,6 +61,7 @@ methods:
         return new_row.etag;
       end
   queue_provisioner_entities_remove:
+    deprecated: true
     serviceName: queue
     description: See taskcluster-lib-entities
     mode: write
@@ -72,6 +75,7 @@ methods:
         returning queue_provisioners.etag;
       end
   queue_provisioner_entities_modify:
+    deprecated: true
     serviceName: queue
     description: See taskcluster-lib-entities
     mode: write
@@ -113,6 +117,7 @@ methods:
         end if;
       end
   queue_provisioner_entities_scan:
+    deprecated: true
     description: See taskcluster-lib-entities
     mode: read
     serviceName: queue

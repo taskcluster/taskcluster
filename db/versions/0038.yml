@@ -4,6 +4,7 @@ migrationScript: 0038-migration.sql
 downgradeScript: 0038-downgrade.sql
 methods:
   session_storage_table_entities_load:
+    deprecated: true
     description: See taskcluster-lib-entities
     mode: read
     serviceName: web_server
@@ -13,6 +14,7 @@ methods:
       begin
       end
   session_storage_table_entities_create:
+    deprecated: true
     serviceName: web_server
     description: See taskcluster-lib-entities
     mode: write
@@ -23,6 +25,7 @@ methods:
         raise exception 'unsuccessful create' using errcode = 'P0004';
       end
   session_storage_table_entities_remove:
+    deprecated: true
     serviceName: web_server
     description: See taskcluster-lib-entities
     mode: write
@@ -33,6 +36,7 @@ methods:
         raise exception 'unsuccessful delete' using errcode = 'P0004';
       end
   session_storage_table_entities_modify:
+    deprecated: true
     serviceName: web_server
     description: See taskcluster-lib-entities
     mode: write
@@ -43,6 +47,7 @@ methods:
         raise exception 'unsuccessful update' using errcode = 'P0004';
       end
   session_storage_table_entities_scan:
+    deprecated: true
     description: See taskcluster-lib-entities
     mode: read
     serviceName: web_server

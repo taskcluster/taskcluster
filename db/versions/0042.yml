@@ -4,6 +4,7 @@ migrationScript: 0042-migration.sql
 downgradeScript: 0042-downgrade.sql
 methods:
   secrets_entities_load:
+    deprecated: true
     description: See taskcluster-lib-entities
     mode: read
     serviceName: secrets
@@ -29,6 +30,7 @@ methods:
           secrets.name = decode_string_key(secrets_entities_load.row_key);
       end
   secrets_entities_create:
+    deprecated: true
     serviceName: secrets
     description: See taskcluster-lib-entities
     mode: write
@@ -49,6 +51,7 @@ methods:
         return public.gen_random_uuid();
       end
   secrets_entities_remove:
+    deprecated: true
     serviceName: secrets
     description: See taskcluster-lib-entities
     mode: write
@@ -62,6 +65,7 @@ methods:
         returning public.gen_random_uuid();
       end
   secrets_entities_modify:
+    deprecated: true
     serviceName: secrets
     description: See taskcluster-lib-entities
     mode: write
@@ -72,6 +76,7 @@ methods:
         raise exception 'not implemented';
       end
   secrets_entities_scan:
+    deprecated: true
     description: See taskcluster-lib-entities
     mode: read
     serviceName: secrets

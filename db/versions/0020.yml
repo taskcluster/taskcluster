@@ -8,6 +8,7 @@ methods:
   # queue_tasks_entities
 
   queue_tasks_entities_load:
+    deprecated: true
     description: See taskcluster-lib-entities
     mode: read
     serviceName: queue
@@ -58,6 +59,7 @@ methods:
           tasks.task_id = partition_key;
       end
   queue_tasks_entities_create:
+    deprecated: true
     serviceName: queue
     description: See taskcluster-lib-entities
     mode: write
@@ -103,6 +105,7 @@ methods:
         return new_row.etag;
       end
   queue_tasks_entities_remove:
+    deprecated: true
     serviceName: queue
     description: See taskcluster-lib-entities
     mode: write
@@ -116,6 +119,7 @@ methods:
         returning tasks.etag;
       end
   queue_tasks_entities_modify:
+    deprecated: true
     serviceName: queue
     description: See taskcluster-lib-entities
     mode: write
@@ -160,6 +164,7 @@ methods:
         end if;
       end
   queue_tasks_entities_scan:
+    deprecated: true
     description: See taskcluster-lib-entities
     mode: read
     serviceName: queue
@@ -247,6 +252,7 @@ methods:
   # are just ignored.
 
   queue_task_group_members_entities_load:
+    deprecated: true
     description: See taskcluster-lib-entities
     mode: read
     serviceName: queue
@@ -272,6 +278,7 @@ methods:
           tasks.task_id = row_key;
       end
   queue_task_group_members_entities_create:
+    deprecated: true
     serviceName: queue
     description: See taskcluster-lib-entities
     mode: write
@@ -282,6 +289,7 @@ methods:
         return public.gen_random_uuid();
       end
   queue_task_group_members_entities_remove:
+    deprecated: true
     serviceName: queue
     description: See taskcluster-lib-entities
     mode: write
@@ -297,6 +305,7 @@ methods:
           tasks.task_id = row_key;
       end
   queue_task_group_members_entities_modify:
+    deprecated: true
     serviceName: queue
     description: See taskcluster-lib-entities
     mode: write
@@ -307,6 +316,7 @@ methods:
         raise exception 'modify not implemented for queue_task_group_members_entities';
       end
   queue_task_group_members_entities_scan:
+    deprecated: true
     description: See taskcluster-lib-entities
     mode: read
     serviceName: queue
@@ -371,6 +381,7 @@ methods:
   # and removals are translated to changes to the `ever_resolved` column of the tasks table.
 
   queue_task_group_active_sets_entities_load:
+    deprecated: true
     description: See taskcluster-lib-entities
     mode: read
     serviceName: queue
@@ -397,6 +408,7 @@ methods:
           tasks.task_id = row_key;
       end
   queue_task_group_active_sets_entities_create:
+    deprecated: true
     serviceName: queue
     description: See taskcluster-lib-entities
     mode: write
@@ -410,6 +422,7 @@ methods:
         return public.gen_random_uuid();
       end
   queue_task_group_active_sets_entities_remove:
+    deprecated: true
     serviceName: queue
     description: See taskcluster-lib-entities
     mode: write
@@ -426,6 +439,7 @@ methods:
         return query select public.gen_random_uuid() as etag;
       end
   queue_task_group_active_sets_entities_modify:
+    deprecated: true
     serviceName: queue
     description: See taskcluster-lib-entities
     mode: write
@@ -436,6 +450,7 @@ methods:
         raise exception 'modify not supported';
       end
   queue_task_group_active_sets_entities_scan:
+    deprecated: true
     description: See taskcluster-lib-entities
     mode: read
     serviceName: queue

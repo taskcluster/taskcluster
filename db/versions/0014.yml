@@ -3,6 +3,12 @@ description: add secret to workers
 migrationScript: 0014-migration.sql
 downgradeScript: 0014-downgrade.sql
 methods:
+  get_worker:
+    deprecated: true
+    # no changes required
+  update_worker:
+    deprecated: true
+    # no changes required
   get_worker_2:
     description: Get an existing worker. The returned table will have one or (if no such worker is defined) zero rows.
     mode: read

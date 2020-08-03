@@ -8,6 +8,7 @@ methods:
   # queue_task_dependency_entities
 
   queue_task_dependency_entities_load:
+    deprecated: true
     description: See taskcluster-lib-entities
     mode: read
     serviceName: queue
@@ -33,6 +34,7 @@ methods:
           required_task_id = partition_key and dependent_task_id = row_key;
       end
   queue_task_dependency_entities_create:
+    deprecated: true
     serviceName: queue
     description: See taskcluster-lib-entities
     mode: write
@@ -62,6 +64,7 @@ methods:
         return new_etag;
       end
   queue_task_dependency_entities_remove:
+    deprecated: true
     serviceName: queue
     description: See taskcluster-lib-entities
     mode: write
@@ -76,6 +79,7 @@ methods:
         returning task_dependencies.etag;
       end
   queue_task_dependency_entities_modify:
+    deprecated: true
     serviceName: queue
     description: See taskcluster-lib-entities
     mode: write
@@ -86,6 +90,7 @@ methods:
         raise exception 'not implemented';
       end
   queue_task_dependency_entities_scan:
+    deprecated: true
     description: See taskcluster-lib-entities
     mode: read
     serviceName: queue
@@ -145,6 +150,7 @@ methods:
   # This is synthesized from the task_dependencies table
 
   queue_task_requirement_entities_load:
+    deprecated: true
     description: See taskcluster-lib-entities
     mode: read
     serviceName: queue
@@ -169,6 +175,7 @@ methods:
           dependent_task_id = partition_key and required_task_id = row_key and not satisfied;
       end
   queue_task_requirement_entities_create:
+    deprecated: true
     serviceName: queue
     description: See taskcluster-lib-entities
     mode: write
@@ -200,6 +207,7 @@ methods:
         return new_etag;
       end
   queue_task_requirement_entities_remove:
+    deprecated: true
     serviceName: queue
     description: See taskcluster-lib-entities
     mode: write
@@ -218,6 +226,7 @@ methods:
         returning task_dependencies.etag;
       end
   queue_task_requirement_entities_modify:
+    deprecated: true
     serviceName: queue
     description: See taskcluster-lib-entities
     mode: write
@@ -228,6 +237,7 @@ methods:
         raise exception 'not implemented';
       end
   queue_task_requirement_entities_scan:
+    deprecated: true
     description: See taskcluster-lib-entities
     mode: read
     serviceName: queue

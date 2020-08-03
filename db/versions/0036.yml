@@ -4,6 +4,7 @@ migrationScript: 0036-migration.sql
 downgradeScript: 0036-downgrade.sql
 methods:
   taskcluster_integration_owners_entities_load:
+    deprecated: true
     description: See taskcluster-lib-entities
     mode: read
     serviceName: github
@@ -27,6 +28,7 @@ methods:
         github_integrations.owner = decode_string_key(taskcluster_integration_owners_entities_load.partition_key);
       end
   taskcluster_integration_owners_entities_create:
+    deprecated: true
     description: See taskcluster-lib-entities
     serviceName: github
     mode: write
@@ -44,6 +46,7 @@ methods:
         return public.gen_random_uuid(); -- we don't store this or use it so just return anything
       end
   taskcluster_integration_owners_entities_scan:
+    deprecated: true
     description: See taskcluster-lib-entities
     mode: read
     serviceName: github
@@ -81,6 +84,7 @@ methods:
           end;
       end
   taskcluster_integration_owners_entities_remove:
+    deprecated: true
     serviceName: github
     description: See taskcluster-lib-entities
     mode: write
@@ -96,6 +100,7 @@ methods:
         return query select gen_random_uuid() as etag;
       end
   taskcluster_integration_owners_entities_modify:
+    deprecated: true
     serviceName: github
     description: See taskcluster-lib-entities
     mode: write

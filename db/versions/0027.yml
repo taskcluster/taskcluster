@@ -3,6 +3,19 @@ description: web-server github access tokens phase 2 step 1+2
 migrationScript: 0027-migration.sql
 downgradeScript: 0027-downgrade.sql
 methods:
+  # in the interests of time, this migration drops all existing table rows, and the
+  # corresponding DB functions cease to function.  GitHub logins will fail during this
+  # time, as noted in the release notes.
+  github_access_token_table_entities_load:
+    deprecated: true
+  github_access_token_table_entities_create:
+    deprecated: true
+  github_access_token_table_entities_remove:
+    deprecated: true
+  github_access_token_table_entities_modify:
+    deprecated: true
+  github_access_token_table_entities_scan:
+    deprecated: true
   add_github_access_token:
     description: |-
       Sets the encrypted access token for `user_id_in` to

@@ -4,6 +4,7 @@ migrationScript: 0037-migration.sql
 downgradeScript: 0037-downgrade.sql
 methods:
   taskcluster_check_runs_entities_load:
+    deprecated: true
     description: See taskcluster-lib-entities
     mode: read
     serviceName: github
@@ -30,6 +31,7 @@ methods:
         github_checks.task_id = decode_string_key(row_key);
       end
   taskcluster_check_runs_entities_create:
+    deprecated: true
     description: See taskcluster-lib-entities
     serviceName: github
     mode: write
@@ -53,6 +55,7 @@ methods:
         return public.gen_random_uuid(); -- we just return this for api compatibility
       end
   taskcluster_check_runs_entities_scan:
+    deprecated: true
     description: See taskcluster-lib-entities
     mode: read
     serviceName: github
@@ -63,6 +66,7 @@ methods:
           raise exception 'not implemented';
       end
   taskcluster_check_runs_entities_remove:
+    deprecated: true
     serviceName: github
     description: See taskcluster-lib-entities
     mode: write
@@ -79,6 +83,7 @@ methods:
         return query select gen_random_uuid() as etag;
       end
   taskcluster_check_runs_entities_modify:
+    deprecated: true
     serviceName: github
     description: See taskcluster-lib-entities
     mode: write
@@ -89,6 +94,7 @@ methods:
           raise exception 'github integrations are immutable';
       end
   taskcluster_checks_to_tasks_entities_load:
+    deprecated: true
     description: See taskcluster-lib-entities
     mode: read
     serviceName: github
@@ -115,6 +121,7 @@ methods:
         github_checks.check_run_id = decode_string_key(row_key);
       end
   taskcluster_checks_to_tasks_entities_create:
+    deprecated: true
     description: See taskcluster-lib-entities
     serviceName: github
     mode: write
@@ -126,6 +133,7 @@ methods:
         return gen_random_uuid();
       end
   taskcluster_checks_to_tasks_entities_scan:
+    deprecated: true
     description: See taskcluster-lib-entities
     mode: read
     serviceName: github
@@ -136,6 +144,7 @@ methods:
           raise exception 'not implemented';
       end
   taskcluster_checks_to_tasks_entities_remove:
+    deprecated: true
     serviceName: github
     description: See taskcluster-lib-entities
     mode: write
@@ -152,6 +161,7 @@ methods:
         return query select gen_random_uuid() as etag;
       end
   taskcluster_checks_to_tasks_entities_modify:
+    deprecated: true
     serviceName: github
     description: See taskcluster-lib-entities
     mode: write
