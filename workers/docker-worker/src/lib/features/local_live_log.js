@@ -13,6 +13,7 @@ const URL = require('url');
 const BulkLog = require('./bulk_log');
 const waitForPort = require('../wait_for_port');
 const getLogsLocationsFromTask = require('./logs_location.js');
+const {version: workerVersion} = require('../../../package.json');
 
 // Maximum time to wait for the put socket to become available.
 const INIT_TIMEOUT = 2000;
@@ -43,8 +44,9 @@ class TaskclusterLogs {
 
     let docker = task.runtime.docker;
 
-    // Image name for the proxy container.
-    let image = task.runtime.taskclusterLogImage;
+    // Use the livelog image built with this docker-worker release
+    // (and packaged with it, if done with monpacker)
+    let image = `taskcluster/livelog:v${workerVersion}`;
     debug('ensuring image');
     let imageId = await task.runtime.imageManager.ensureImage(image, process.stdout, task);
     debug('image verified %s', imageId);
