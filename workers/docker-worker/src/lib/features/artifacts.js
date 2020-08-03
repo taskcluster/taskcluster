@@ -135,12 +135,9 @@ class Artifacts {
       };
 
       // Check file extension
-      let entryExtension = header.name.split('.').slice(-1)[0];
-      let skipCompressionExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp',
-        '7z', 'zip', 'gz', 'tgz', 'bz2', 'tbz', 'whl', 'xz', 'zst', 'swf',
-        'flv', 'woff', 'woff2'];
+      let skipCompressionExtensions = taskHandler.runtime.artifacts.skipCompressionExtensions;
       let compress = false;
-      if (!skipCompressionExtensions.includes(entryExtension)) {
+      if (!skipCompressionExtensions.some((ext) => header.name.endsWith(ext))) {
         headers['content-encoding'] = 'gzip';
         compress = true;
       }

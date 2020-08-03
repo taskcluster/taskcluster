@@ -10,9 +10,10 @@ Fetch the contents of a single artifact.
 
 @param {Object} result from `.postToQueue` and similar.
 @param {String} path path to fetch artifact from.
+@param {Object} options to pass to `got`
 @return {String} full contents of the artifact.
 */
-module.exports = async (result, path) => {
+module.exports = async (result, path, options) => {
   let taskId = result.taskId;
   let runId = result.runId;
 
@@ -20,5 +21,5 @@ module.exports = async (result, path) => {
   let url = queue.buildUrl(queue.getArtifact, taskId, runId, path);
   debug('get artifact: ' + url);
 
-  return await get(url);
+  return await get(url, options);
 };

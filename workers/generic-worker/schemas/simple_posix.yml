@@ -146,23 +146,25 @@ properties:
             following file extensions, where `identity` will be used, since they are already
             compressed:
 
-            * jpg
-            * jpeg
-            * png
-            * gif
-            * webp
             * 7z
-            * zip
-            * gz
-            * tgz
             * bz2
-            * tbz
-            * whl
-            * xz
-            * swf
+            * dmg
             * flv
+            * gif
+            * gz
+            * jpeg
+            * jpg
+            * png
+            * swf
+            * tbz
+            * tgz
+            * webp
+            * whl
             * woff
             * woff2
+            * xz
+            * zip
+            * zst
 
             Note, setting `contentEncoding` on a directory artifact will apply the same content
             encoding to all the files contained in the directory.

@@ -137,6 +137,13 @@ defaults:
 
   ed25519SigningKeyLocation: '/etc/docker-worker-ed25519-cot-signing-key.key'
 
+  artifacts:
+    skipCompressionExtensions: [
+      '.7z', '.bz2', '.dmg', '.flv', '.gif', '.gz', '.jpeg', '.jpg', '.png',
+      '.swf', '.tbz', '.tgz', '.webp', '.whl', '.woff', '.woff2',
+      '.xz', '.zip', '.zst',
+    ]
+
   dockerSave:
     expiration: '7 days'
 
