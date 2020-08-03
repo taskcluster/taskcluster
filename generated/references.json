@@ -7584,9 +7584,6 @@
                 }
               ]
             },
-            "azure_account_key": {
-              "type": "string"
-            },
             "azure_accounts": {
               "oneOf": [
                 {
@@ -7732,8 +7729,6 @@
             "procs",
             "static_clients",
             "azure_accounts",
-            "azure_account_key",
-            "azure_crypto_key",
             "read_db_url",
             "write_db_url",
             "pulse_username",
@@ -8091,7 +8086,6 @@
           },
           "required": [
             "procs",
-            "azure_crypto_key",
             "read_db_url",
             "write_db_url",
             "taskcluster_client_id",
@@ -8507,15 +8501,6 @@
             "aws_secret_access_key": {
               "type": "string"
             },
-            "azure_account_key": {
-              "type": "string"
-            },
-            "azure_report_chance": {
-              "type": "number"
-            },
-            "azure_report_threshold": {
-              "type": "number"
-            },
             "debug": {
               "title": "node debug env var",
               "type": "string"
@@ -8769,7 +8754,6 @@
             "private_artifact_bucket",
             "taskcluster_client_id",
             "taskcluster_access_token",
-            "azure_account_key",
             "read_db_url",
             "write_db_url",
             "pulse_username",
@@ -8918,7 +8902,6 @@
             "procs",
             "taskcluster_client_id",
             "taskcluster_access_token",
-            "azure_crypto_key",
             "read_db_url",
             "write_db_url"
           ],
@@ -9010,9 +8993,6 @@
               "type": "string"
             },
             "azure_crypto_key": {
-              "type": "string"
-            },
-            "azure_signing_key": {
               "type": "string"
             },
             "db_crypto_keys": {
@@ -9167,8 +9147,6 @@
             "additional_allowed_cors_origin",
             "taskcluster_client_id",
             "taskcluster_access_token",
-            "azure_signing_key",
-            "azure_crypto_key",
             "read_db_url",
             "write_db_url",
             "pulse_username",

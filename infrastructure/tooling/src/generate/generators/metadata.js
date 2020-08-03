@@ -11,7 +11,7 @@ SERVICES.forEach(name => {
   exports.tasks.push({
     title: `Fetch service metadata for ${name}`,
     requires: [],
-    provides: [`configs-${name}`, `procslist-${name}`, `scopes-${name}`, `azure-${name}`],
+    provides: [`configs-${name}`, `procslist-${name}`, `scopes-${name}`],
     run: async (requirements, utils) => {
       const envVars = config({
         serviceName: name,
@@ -37,7 +37,6 @@ SERVICES.forEach(name => {
         [`configs-${name}`]: envVars,
         [`procslist-${name}`]: procs,
         [`scopes-${name}`]: await readOrNull(path.join('services', name, 'scopes.yml')),
-        [`azure-${name}`]: await readOrNull(path.join('services', name, 'azure.yml')),
       };
     },
   });

@@ -1,7 +1,7 @@
 const taskcluster = require('taskcluster-client');
 const {FakeEC2, FakeAzure, FakeGoogle} = require('./fakes');
 const {Worker} = require('../src/data');
-const {stickyLoader, Secrets, withEntity, fakeauth, withMonitor, withPulse, withDb, resetTables} = require('taskcluster-lib-testing');
+const {stickyLoader, Secrets, fakeauth, withMonitor, withPulse, withDb, resetTables} = require('taskcluster-lib-testing');
 const builder = require('../src/api');
 const load = require('../src/main');
 
@@ -15,14 +15,9 @@ withMonitor(exports);
 
 // set up the testing secrets
 exports.secrets = new Secrets({
-  secrets: {
-    azure: withEntity.secret,
-  },
+  secrets: {},
   load: exports.load,
 });
-
-exports.withEntities = (mock, skipping) => {
-};
 
 exports.withDb = (mock, skipping) => {
   withDb(mock, skipping, exports, 'worker_manager');

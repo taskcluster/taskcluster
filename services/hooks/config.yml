@@ -2,9 +2,6 @@ defaults:
   # defaults outlining all configuration options and some sane defaults
   app:
     component: hooks
-    hookTableName: hooks_entities
-    lastFireTableName: last_fire_3_entities
-    queuesTableName: queues_entities
     scheduler:
       pollingDelay:   60000
   influx:
@@ -12,8 +9,8 @@ defaults:
     maxDelay:         300
     maxPendingPoints: 300
   azure:
-    accountId:        !env AZURE_ACCOUNT_ID
-    cryptoKey:        !env AZURE_CRYPTO_KEY
+    # deprecated way of specifying a crypto key
+    cryptoKey:        !env:optional AZURE_CRYPTO_KEY
   postgres:
     readDbUrl:        !env READ_DB_URL
     writeDbUrl:       !env WRITE_DB_URL
@@ -62,7 +59,6 @@ test:
         algo: 'aes-256'
         key: "aSdtIGJzdGFjayEgaGVsbG8gZnV0dXJlIHBlcnNvbgo="
   azure:
-    accountId:        'pamplemousse'
     cryptoKey:        'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA='
   server:
     port:             60401

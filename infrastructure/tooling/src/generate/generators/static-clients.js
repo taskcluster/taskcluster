@@ -10,7 +10,6 @@ exports.tasks.push({
   title: 'Assemble static clients',
   requires: [
     ...SERVICES.map(name => `scopes-${name}`),
-    ...SERVICES.map(name => `azure-${name}`),
   ],
   provides: ['static-clients'],
   run: async (requirements, utils) => {
@@ -21,11 +20,7 @@ exports.tasks.push({
         return;
       }
 
-      const tables = (requirements[`azure-${name}`] || {}).tables || [];
-      const scopes = [
-        ...(requirements[`scopes-${name}`] || []),
-        ...tables.map(t => 'auth:azure-table:read-write:${azureAccountId}/' + t),
-      ];
+      const scopes = requirements[`scopes-${name}`] || [];
       scopes.sort(scopeCompare);
       staticClients.push({
         clientId: `static/taskcluster/${name}`,

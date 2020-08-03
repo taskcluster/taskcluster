@@ -6,7 +6,7 @@ const load = require('../src/main');
 const temporary = require('temporary');
 const mockAwsS3 = require('mock-aws-s3');
 const nock = require('nock');
-const {fakeauth, stickyLoader, Secrets, withEntity, withPulse, withMonitor, withDb, resetTables} = require('taskcluster-lib-testing');
+const {fakeauth, stickyLoader, Secrets, withPulse, withMonitor, withDb, resetTables} = require('taskcluster-lib-testing');
 
 const helper = module.exports;
 
@@ -35,7 +35,6 @@ exports.secrets = new Secrets({
       {env: 'ARTIFACT_REGION', cfg: 'aws.region', name: 'artifactRegion',
         mock: 'us-central-7'},
     ],
-    azure: withEntity.secret,
   },
   load: exports.load,
 });
@@ -141,14 +140,12 @@ exports.withAmazonIPRanges = (mock, skipping) => {
   });
 };
 
-exports.withEntities = (mock, skipping) => {};
-
 exports.withDb = (mock, skipping) => {
   withDb(mock, skipping, exports, 'queue');
 };
 
 /**
- * Set up an API server.  Call this after withEntities, so the server
+ * Set up an API server.  Call this after withDb, so the server
  * uses the same Entities classes.
  *
  * This also sets up helper.scopes to set the scopes for helper.queue, the
@@ -289,7 +286,6 @@ exports.resetTables = (mock, skipping) => {
       'tasks',
       'task_groups',
       'task_dependencies',
-      'queue_artifacts_entities',
       'queue_workers',
       'queue_worker_types',
       'queue_provisioners',

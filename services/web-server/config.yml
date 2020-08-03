@@ -7,11 +7,6 @@ defaults:
     # Delete expired entries in both the access token and authorization code tables
     authorizationCodeExpirationDelay: '- 10 minutes'
 
-    authorizationCodesTableName: authorization_codes_table_entities
-    accessTokenTableName: access_token_table_entities
-    sessionStorageTableName: session_storage_table_entities
-    githubAccessTokenTableName: github_access_token_table_entities
-
   monitoring:
     level: !env:optional LEVEL
     errorConfig: !env:json:optional ERROR_CONFIG
@@ -45,9 +40,8 @@ defaults:
       expiry:         '3 days'
 
   azure:
-    accountId: !env AZURE_ACCOUNT_ID
-    signingKey: !env AZURE_SIGNING_KEY
-    cryptoKey: !env AZURE_CRYPTO_KEY
+    # deprecated way to specify an encryption key
+    cryptoKey: !env:optional AZURE_CRYPTO_KEY
 
   postgres:
     readDbUrl: !env READ_DB_URL
@@ -98,7 +92,6 @@ development:
     allowedCORSOrigins: [true]
 
   azure:
-    signingKey: 'REALULTIMATEPOWER.NET'
     cryptoKey: 'CNcj2aOozdo7Pn+HEkAIixwninIwKnbYc6JPS9mNxZk='
 
     # this is required to start the service without Azure credentials
@@ -115,7 +108,6 @@ test:
     rootUrl: https://tc.example.com
 
   azure:
-    signingKey: 'REALULTIMATEPOWER.NET'
     cryptoKey: 'CNcj2aOozdo7Pn+HEkAIixwninIwKnbYc6JPS9mNxZk='
 
   postgres:

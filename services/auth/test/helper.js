@@ -35,8 +35,8 @@ exports.secrets = new Secrets({
   secretName: 'project/taskcluster/testing/taskcluster-auth',
   secrets: {
     azure: [
-      {env: 'AZURE_ACCOUNT', cfg: 'azure.accountId', name: 'accountId'},
-      {env: 'AZURE_ACCOUNT_KEY', cfg: 'azure.accessKey', name: 'accessKey'},
+      {env: 'AZURE_ACCOUNT', name: 'accountId'},
+      {env: 'AZURE_ACCOUNT_KEY', name: 'accessKey'},
     ],
     aws: [
       {env: 'AWS_ACCESS_KEY_ID', name: 'awsAccessKeyId'},
@@ -66,8 +66,9 @@ exports.withCfg = (mock, skipping) => {
       description: 'testing',
     })));
 
-    // override cfg.app.azureAccounts based on cfg.azure
-    exports.load.cfg('app.azureAccounts', {[exports.cfg.azure.accountId]: exports.cfg.azure.accessKey});
+    // override cfg.app.azureAccounts based on the azure secret
+    const sec = exports.secrets.get('azure');
+    exports.load.cfg('app.azureAccounts', {[sec.accountId]: sec.accessKey});
   });
 
   suiteTeardown(async function() {
@@ -159,7 +160,7 @@ testServiceBuilder.declare({
 });
 
 /**
- * Set up API servers.  Call this after withEntities, so the server
+ * Set up API servers.  Call this after withDb, so the server
  * uses the same entities classes.
  *
  * This is both the auth service and a testing service running behind
@@ -365,7 +366,7 @@ exports.resetTables = (mock, skipping) => {
     // set up the static clients (which have already been overridden in withCfg)
     const cfg = await exports.load('cfg');
     const db = await exports.load('db');
-    await syncStaticClients(db, cfg.app.staticClients || [], cfg.azure.accountId);
+    await syncStaticClients(db, cfg.app.staticClients || []);
 
     // ..and reload the resolver
     const resolver = await exports.load('resolver');

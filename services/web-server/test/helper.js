@@ -482,8 +482,8 @@ const stubbedClients = () => {
 exports.resetTables = (mock, skipping) => {
   setup('reset tables', async function() {
     await resetTables({tableNames: [
-      'authorization_codes_table_entities',
-      'access_token_table_entities',
+      'authorization_codes',
+      'access_tokens',
       'sessions',
       'github_access_tokens',
     ]});

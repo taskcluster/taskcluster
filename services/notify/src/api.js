@@ -1,5 +1,4 @@
 const {APIBuilder, paginateResults} = require('taskcluster-lib-api');
-const Entity = require('taskcluster-lib-entities');
 
 const builder = new APIBuilder({
   title: 'Notification Service',
@@ -206,10 +205,7 @@ builder.declare({
   output: 'notification-address-list.yml',
   title: 'List Denylisted Notifications',
   category: 'Denylist',
-  query: {
-    continuationToken: Entity.continuationTokenPattern,
-    limit: /^[0-9]+$/,
-  },
+  query: paginateResults.query,
   description: [
     'Lists all the denylisted addresses.',
     '',

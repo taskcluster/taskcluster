@@ -7,9 +7,6 @@ defaults:
     # these must be in aws.region
     publicArtifactBucket: ...
     privateArtifactBucket: ...
-  azure:
-    accountId:        pamplemousse
-    accessKey:         '...'
   pulse:
     username:           '...'
     password:           '...'

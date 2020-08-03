@@ -10,57 +10,34 @@
 ▶ [MAJOR] [#2937](https://github.com/taskcluster/taskcluster/issues/2937)
 Github checks are now stored in a table called `github_checks`, and github integrations are now stored in a table called `github_integrations`.  Both are accessed directly, rather than via taskcluster-lib-entities.  This migration takes about 10 seconds for a million-row table.
 
-▶ [MAJOR] [#2931](https://github.com/taskcluster/taskcluster/issues/2931)
-The `secrets_entities` table has been migrated to a relational table `secrets`. The secrets service now optionally takes an additional environment variable `DB_CRYPTO_KEYS` to be set which is a JSON array where each element in an object of the form:
-
-{
-  "id": "a unique identifier",
-  "algo": "aes-256",
-  "key": "32 bytes of base64 string"
-}
-
-▶ [MAJOR] [#2936](https://github.com/taskcluster/taskcluster/issues/2936)
-The hooks table has been migrated to a relational table `hooks`. The hooks
-service now requires an additional environment variable `DB_CRYPTO_KEYS` to be
-set which is a JSON array where each element in an obejct of the form:
-
-```json
-{
-  "id": "a unique identifier",
-  "algo": "aes-256",
-  "key": "32 bytes of base64 string"
-}
-```
+▶ [MAJOR] [#3216](https://github.com/taskcluster/taskcluster/issues/3216)
+The auth, github, hooks, index, and notify services no longer take Helm config `<service>.azure_account_id`, and auth no longer takes Helm config `auth.azure_account_key`, as these services no longer talk to Azure.
 
 ▶ [MAJOR] [#3148](https://github.com/taskcluster/taskcluster/issues/3148)
 The tables in web-server are now all relational.  The migration drops all data in these tables, which will have the effect of signing out all users and requiring them to sign in again.  But it is a very quick upgrade.
 
 Sign-ins will not work until the web-server service has been upgraded to this version (that is, sign-ins will not work during the time between the database upgrade and the services upgrade, nor if services are downgraded back to v35.0.0).
 
-The web-server service now requires an additional environment variable `DB_CRYPTO_KEYS`
-to be set which is a JSON array where each element is an object of the form.
+The web server service continues to honor `web_server.azure_crypto_key`, but now optionally takes an additional Helm variable `web_server.db_crypto_keys` as described in the [deployment documentation](https://docs.taskcluster.net/docs/manual/deploying/database#supporting-encrypted-columns)
 
-```json
-{
-  "id": "a unique identifier",
-  "algo": "aes-256",
-  "key": "32 bytes of base64 string"
-}
-```
-
-Note that for this upgrade it will only be an array of a single object.
-
-▶ [minor] [#2936](https://github.com/taskcluster/taskcluster/issues/2936)
-Hook queues and last fires are now stored in a relational table, namely, `hooks_queues` and `hooks_last_fires`.
-
-▶ [minor] [#2938](https://github.com/taskcluster/taskcluster/issues/2938)
-The Queue service's workers, worker_types, and provisioners are now stored in a normal database table.
+▶ [minor] [#2933](https://github.com/taskcluster/taskcluster/issues/2933)
+The Queue service's workers, worker_types, and provisioners are now stored in a normal database table and access directly, rather than via taskcluster-lib-entities.  If the `queue_workers_entities` table has many rows, this migration could take some time.  Consider dropping all, or some, rows from the table before beginning the migration.
 
 ▶ [minor] [#3083](https://github.com/taskcluster/taskcluster/issues/3083)
 The auth service's clients are now stored in the `clients` table and the service accesses that information directly, rather than via taskcluster-lib-entities.  As the number of clients is small, this migration should be very fast.
 
-▶ [minor] [#2933](https://github.com/taskcluster/taskcluster/issues/2933)
-The queue's tracking of worker status (workers, worker types, and provisioners) is now handled in normal database tables without use of taskcluster-lib-entities.
+▶ [minor] [#2936](https://github.com/taskcluster/taskcluster/issues/2936)
+The hooks service now stores hooks and ancillary information about Pulse queues and hook history in normal database tables, without the use of taskcluster-lib-entities.  This migration is quick.
+
+The hooks service continues to honor `hooks.azure_crypto_key`, but now optionally takes an additional Helm variable `hooks.db_crypto_keys` as described in the [deployment documentation](https://docs.taskcluster.net/docs/manual/deploying/database#supporting-encrypted-columns)
+
+▶ [minor] [#3216](https://github.com/taskcluster/taskcluster/issues/3216)
+The queue service no longer accepts the optional, and probably-unused, `queue.azure_report_chance` and `queue.azure_report_threshold` Helm configurations.
+
+▶ [minor] [#2931](https://github.com/taskcluster/taskcluster/issues/2931)
+The secrets service now stores its secrets in a normal table, without the use of taskcluster-lib-entities.  The migration should be quick, as secrets are typically few in number (hundreds).
+
+The secrets service continues to honor `secrets.azure_crypto_key`, but now optionally takes an additional Helm variable `secrets.db_crypto_keys` as described in the [deployment documentation](https://docs.taskcluster.net/docs/manual/deploying/database#supporting-encrypted-columns)
 
 ▶ [patch] [#3245](https://github.com/taskcluster/taskcluster/issues/3245)
 The `taskcluster/websocktunnel` and `taskcluster/livelog` docker images now include a leading `v` in their tags, e.g., `taskcluster/websocktunnel:v36.0.0`.
@@ -70,14 +47,8 @@ The `taskcluster/websocktunnel` and `taskcluster/livelog` docker images now incl
 ▶ [patch] 
 A worker pool with no launch configs will no longer cause errors (although it will also not create any workers!)
 
-▶ [patch] [#3308](https://github.com/taskcluster/taskcluster/issues/3308)
-Docker-worker now uses taskcluster-proxy and livelog images that match its own version.  Previously, it unintentionally used very old versions of these utilities (5.1.0 and v4, respectively).
-
 ▶ [patch] [#3169](https://github.com/taskcluster/taskcluster/issues/3169)
 If `workerTypeMetadata` is given in a generic-worker worker pool definition, its contents will now be merged with the metadata from the provider and passed to generic-worker.
-
-▶ [patch] 
-Worker-runner now correctly sets the `publicIP` configuration for generic-worker (previously it set `publicIp`, which is ignored).
 
 ### USERS
 
