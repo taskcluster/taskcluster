@@ -1,5 +1,5 @@
 audience: developers
-level: silent
+level: minor
 reference: issue 1986
 ---
-Adjusted `maxLength` of `hookGroupId` and `hookId` to 1000
+Added changelog snippet
