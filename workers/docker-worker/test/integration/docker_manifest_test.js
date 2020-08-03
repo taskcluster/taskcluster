@@ -83,7 +83,10 @@ helper.secrets.mockSuite(suiteName(), ['docker', 'ci-creds'], function(mock, ski
           '-o',
           '/image.tar.zst',
           '-L',
-          'https://firefox-ci-tc.services.mozilla.com/api/queue/v1/task/U9nuixDnT_6eGJ-OsKMLCQ/runs/0/artifacts/public/image.tar.zst',
+          // This image is the busybox image build from https://hg.mozilla.org/try/rev/b76a6f5b3a26211da5ea1fa6a86329f921a302b7
+          // It is a docker image built with kaniko based on `FROM busybox`, with the workaround we have been using for
+          // https://github.com/taskcluster/taskcluster/issues/2973 turned off.
+          'https://s3-us-west-2.amazonaws.com/docker-worker-manifest-test/image-v1_2.tar.zst',
         ],
         maxRunTime: 5 * 60,
       },
