@@ -14,7 +14,7 @@ const features = require('./features');
 const getHostname = require('./util/hostname');
 const { fmtLog, fmtErrorLog } = require('./log');
 const { hasPrefixedScopes } = require('./util/scopes');
-const { scopeMatch } = require('./scopes');
+const scopes = require('./scopes');
 const { validatePayload } = require('./util/validate_schema');
 const waitForEvent = require('./wait_for_event');
 const uploadToS3 = require('./upload_to_s3');
@@ -107,15 +107,18 @@ async function buildVolumeBindings(taskVolumeBindings, volumeCache, expandedScop
   return [caches, bindings];
 }
 
-function runAsPrivileged(task, allowPrivilegedTasks) {
+function runAsPrivileged(runtime, task, allowPrivilegedTasks) {
   let taskCapabilities = task.payload.capabilities || {};
   let privilegedTask = taskCapabilities.privileged || false;
   if (!privilegedTask) {return false;}
 
-  if (!scopeMatch(task.scopes, [['docker-worker:capability:privileged']])) {
+  if (!scopes.scopeMatch(task.scopes, [
+    ['docker-worker:capability:privileged'],
+    [`docker-worker:capability:privileged:${runtime.workerPool}`],
+  ])) {
     throw new Error(
       'Insufficient scopes to run task in privileged mode. Try ' +
-      'adding docker-worker:capability:privileged to the .scopes array',
+      `adding docker-worker:capability:privileged:${runtime.workerPool} to the .scopes array`,
     );
   }
 
@@ -129,12 +132,33 @@ function runAsPrivileged(task, allowPrivilegedTasks) {
   return true;
 }
 
-async function buildDeviceBindings(devices, expandedScopes) {
-  let allowed = await hasPrefixedScopes('docker-worker:capability:device:', devices, expandedScopes);
+async function buildDeviceBindings(runtime, devices, expandedScopes) {
+  let scopeExpression = {
+    AllOf: Object.keys(devices).map((device) => ({
+      AnyOf: [
+        `docker-worker:capability:device:${device}`,
+        `docker-worker:capability:device:${device}:${runtime.workerPool}`,
+      ],
+    })),
+  };
 
-  if (!allowed) {
-    throw new Error('Insufficient scopes to attach devices to task container.  The ' +
-    'task must have scope `docker-worker:capability:device:<dev-name>` for each device.');
+  const satisfyingScopes = scopes.scopesSatisfying(expandedScopes, scopeExpression);
+
+  if (!satisfyingScopes) {
+    let unsatisfied = scopes.removeGivenScopes(expandedScopes, scopeExpression);
+    throw new Error([
+      'Insufficient scopes to attach devices to task container.',
+      'The task is missing the following scopes:',
+      '',
+      '```',
+      `${unsatisfied}`,
+      '```',
+      'This requested devices requires the task scopes to satisfy the following scope expression:',
+      '',
+      '```',
+      `${scopeExpression}`,
+      '```',
+    ].join('\n'));
   }
 
   let deviceBindings = [];
@@ -331,7 +355,7 @@ class Task extends EventEmitter {
     env.TASKCLUSTER_WORKER_LOCATION = this.runtime.workerLocation;
 
     let privilegedTask = runAsPrivileged(
-      this.task, this.runtime.dockerConfig.allowPrivileged,
+      this.runtime, this.task, this.runtime.dockerConfig.allowPrivileged,
     );
 
     let procConfig = {
@@ -386,7 +410,7 @@ class Task extends EventEmitter {
     });
 
     if (this.options.devices) {
-      let bindings = await buildDeviceBindings(this.options.devices, expandedScopes);
+      let bindings = await buildDeviceBindings(this.runtime, this.options.devices, expandedScopes);
       procConfig.create.HostConfig['Devices'] = bindings.deviceBindings;
       binds = _.union(binds, bindings.bindMounts);
     }
