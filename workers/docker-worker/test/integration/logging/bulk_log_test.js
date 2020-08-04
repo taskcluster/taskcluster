@@ -19,7 +19,7 @@ suite('logging to artifact', () => {
         },
         maxRunTime: 5 * 60,
       },
-    });
+    }, undefined, {bulkLog: {enabled: true}});
 
     assert.equal(result.run.state, 'completed');
     assert.equal(result.run.reasonResolved, 'completed');

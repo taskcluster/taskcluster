@@ -11,6 +11,25 @@ defaults:
       enabled: true
     kvm:
       enabled: true
+  features:
+    localLiveLog:
+      enabled: true
+    artifacts:
+      enabled: true
+    chainOfTrust:
+      enabled: true
+    bulkLog:
+      enabled: false
+    taskclusterProxy:
+      enabled: true
+    dind:
+      enabled: true
+    dockerSave:
+      enabled: true
+    interactive:
+      enabled: true
+    allowPtrace:
+      enabled: true
   dockerConfig:
     # Privileged mode will allow tasks to run with elevated privileges similar
     # to process running on the host.  The task containers will have access to
@@ -210,3 +229,5 @@ test:
 
   interactive:
     artifactName: 'private/docker-worker-tests/'
+
+  features: !env:json DOCKER_WORKER_TEST_FEATURES

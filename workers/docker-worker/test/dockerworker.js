@@ -25,11 +25,12 @@ let COPIED_ENV = [
 ];
 
 class DockerWorker {
-  constructor(provisionerId, workerType, workerId) {
+  constructor(provisionerId, workerType, workerId, features) {
     taskcluster.config(helper.optionsFromCiCreds());
     this.provisionerId = provisionerId;
     this.workerType = workerType;
     this.workerId = workerId;
+    this.features = features;
   }
 
   async launch() {
@@ -65,6 +66,7 @@ class DockerWorker {
       ],
       Env: [
         'DOCKER_CONTAINER_ID=' + this.workerId,
+        'DOCKER_WORKER_TEST_FEATURES=' + JSON.stringify(this.features),
       ],
       AttachStdin: false,
       AttachStdout: true,

@@ -24,7 +24,7 @@ class TestWorker extends EventEmitter {
     return `test-${slugid.v4().replace(/[_-]/g, '').toLowerCase()}-a`;
   }
 
-  constructor(Worker, workerType, workerId) {
+  constructor(Worker, workerType, workerId, features = {}) {
     super();
 
     // This is to avoid the node warning message:
@@ -40,7 +40,7 @@ class TestWorker extends EventEmitter {
     // remove leading underscores because workerId could be used as container name
     // and container names must start with an alphanumeric character.
     this.workerId = workerId || `dummy-worker-${slugid.v4()}`.substring(0, 22);
-    this.worker = new Worker(PROVISIONER_ID, this.workerType, this.workerId);
+    this.worker = new Worker(PROVISIONER_ID, this.workerType, this.workerId, features);
 
     this.queue = new taskcluster.Queue(helper.optionsFromCiCreds());
 
