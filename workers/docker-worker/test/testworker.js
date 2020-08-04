@@ -36,6 +36,7 @@ class TestWorker extends EventEmitter {
 
     this.provisionerId = PROVISIONER_ID;
     this.workerType = workerType || TestWorker.workerTypeName();
+    this.workerPoolId = `${this.provisionerId}/${this.workerType}`;
     // remove leading underscores because workerId could be used as container name
     // and container names must start with an alphanumeric character.
     this.workerId = workerId || `dummy-worker-${slugid.v4()}`.substring(0, 22);

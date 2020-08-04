@@ -8,6 +8,8 @@ function Runtime(options) {
   assert(typeof options === 'object', 'options must be an object.');
   for (let key of Object.keys(options || {})) {this[key] = options[key];}
 
+  this.workerPool = `${this.provisionerId}/${this.workerType}`;
+
   // Ensure capacity is always a number.
   if (this.capacity) {this.capacity = parseInt(this.capacity, 10);}
 
@@ -59,6 +61,13 @@ Runtime.prototype = {
   @type {String}
   */
   workerType: null,
+
+  /**
+  Pool of the current worker.
+
+  @type {String}
+  */
+  workerPool: null,
 
   /**
   Which group of workers this worker belongs to.
