@@ -14,7 +14,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/mholt/archiver"
+	"github.com/mholt/archiver/v3"
 	"github.com/taskcluster/httpbackoff/v3"
 	"github.com/taskcluster/slugid-go/slugid"
 	tcclient "github.com/taskcluster/taskcluster/v36/clients/client-go"
@@ -662,18 +662,21 @@ func extract(fsContent FSContent, format string, dir string, task *TaskRun) erro
 		return err
 	}
 	task.Infof("[mounts] Extracting %v file %v to '%v'", format, cacheFile, dir)
+	var unarchiver archiver.Unarchiver
 	switch format {
 	case "zip":
-		return archiver.Zip.Open(cacheFile, dir)
+		unarchiver = &archiver.Zip{}
 	case "tar.gz":
-		return archiver.TarGz.Open(cacheFile, dir)
+		unarchiver = &archiver.TarGz{}
 	case "rar":
-		return archiver.Rar.Open(cacheFile, dir)
+		unarchiver = &archiver.Rar{}
 	case "tar.bz2":
-		return archiver.TarBz2.Open(cacheFile, dir)
+		unarchiver = &archiver.TarBz2{}
+	default:
+		log.Fatalf("Unsupported format %v", format)
+		return fmt.Errorf("Unsupported archive format %v", format)
 	}
-	log.Fatalf("Unsupported format %v", format)
-	return fmt.Errorf("Unsupported archive format %v", format)
+	return unarchiver.Unarchive(cacheFile, dir)
 }
 
 // FSContentFrom returns either a *ArtifactContent or *URLContent or *RawContent or *Base64Content based on the content
