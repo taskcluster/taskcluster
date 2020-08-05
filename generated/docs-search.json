@@ -2871,6 +2871,27 @@
   },
   {
     "element": "h1",
+    "id": "generic-worker",
+    "path": "/reference/workers/generic-worker",
+    "subtitle": null,
+    "title": "Generic Worker"
+  },
+  {
+    "element": "h2",
+    "id": "more-information",
+    "path": "/reference/workers/generic-worker",
+    "subtitle": "More Information",
+    "title": "Generic Worker"
+  },
+  {
+    "element": "h2",
+    "id": "payload-formats",
+    "path": "/reference/workers/generic-worker",
+    "subtitle": "Payload Formats",
+    "title": "Generic Worker"
+  },
+  {
+    "element": "h1",
     "id": "engines",
     "path": "/reference/workers/generic-worker/engines",
     "subtitle": null,

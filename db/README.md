@@ -34,7 +34,7 @@ The following checklist summarizes what needs to be written to modify the databa
 
 * [ ] new version file in `db/versions` that updates all impacted stored functions
   * All DB functions must continue to function for two major Taskcluster versions after they are used.  See [db/fns.md](db/fns.md) to figure out which existing functions you must re-implement.
-  * For any DB functions that are being deprecated in this version, add `deprecated: until vNN` in the re-implementation of that function, giving a major version two greater than the current version.
+  * For any DB functions that are being deprecated in this version, re-implement it such that it will continue working after the migration, and add `deprecated: true` in the re-implementation of that function.
 * [ ] any necessary updates in `db/access.yml`
 * [ ] new test script in `db/test/versions`
   * [ ] test forward migration
@@ -42,6 +42,11 @@ The following checklist summarizes what needs to be written to modify the databa
   * [ ] test migration after downgrade (ensuring downgrade doesn't leave stray Postgres resources around)
 * for any *new* stored functions:
   * [ ] tests for new functions in `db/test/fns`
+
+Note that deprecated DB functions *must* continue to work in order to meet Taskcluster's compatibility guarantees.
+A function that crashes after the migration due to a missing table or missing column and cause user-visible failures violates that guarantee.
+"Continue to work" may mean doing nothing or returning nothing, as long as the result for the user is sensible.
+In cases where the existing function does not need to be revised (for example, a `get_` function in a migration that adds a column), the method's `body`, `args`, etc. properties can be omitted in the YAML file.
 
 #### Permissions
 
