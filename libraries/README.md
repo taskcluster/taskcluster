@@ -10,7 +10,6 @@ These are any packages that are used by Taskcluster services that aren't intende
 * [AZQueue Library](azqueue#readme)
 * [Azure Library](azure#readme)
 * [Config Library](config#readme)
-* [Entities Library](entities#readme)
 * [Iterate Library](iterate#readme)
 * [Loader Library](loader#readme)
 * [Monitor Library](monitor#readme)
