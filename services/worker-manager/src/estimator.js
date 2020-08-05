@@ -6,7 +6,7 @@ class Estimator {
     this.monitor = monitor;
   }
 
-  async simple({workerPoolId, minCapacity, maxCapacity, scalingRatio, workerInfo}) {
+  async simple({workerPoolId, minCapacity, maxCapacity, scalingRatio = 1.0, workerInfo}) {
     const {provisionerId, workerType} = splitWorkerPoolId(workerPoolId);
     const {pendingTasks} = await this.queue.pendingTasks(provisionerId, workerType);
     const {existingCapacity, requestedCapacity = 0} = workerInfo;

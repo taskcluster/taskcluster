@@ -40,7 +40,6 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       workerPoolId: 'foo/bar',
       maxCapacity: 1,
       minCapacity: 1,
-      scalingRatio: 1,
       workerInfo,
     });
 
@@ -58,7 +57,6 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       workerPoolId: 'foo/bar',
       maxCapacity: 1,
       minCapacity: 1,
-      scalingRatio: 1,
       workerInfo,
     });
 
@@ -152,7 +150,6 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       workerPoolId: 'foo/bar',
       maxCapacity: 1,
       minCapacity: 1,
-      scalingRatio: 1,
       workerInfo,
     });
 
@@ -172,7 +169,6 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       workerPoolId: 'foo/bar',
       maxCapacity: 1,
       minCapacity: 1,
-      scalingRatio: 1,
       workerInfo,
     });
 
