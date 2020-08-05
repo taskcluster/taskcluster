@@ -1,24 +1,6 @@
 # see http://code.v.igoro.us/posts/2019/07/codeowners.html
 
-* @taskcluster/services-reviewers
-
-# frontend stuff
-services/web-server @taskcluster/frontend-reviewers
-clients/client-web @taskcluster/frontend-reviewers
-ui @taskcluster/frontend-reviewers
-
-# worker stuff
-workers/** @taskcluster/worker-reviewers
-tools/** @taskcluster/worker-reviewers
-internal/** @taskcluster/worker-reviewers
-go.mod @taskcluster/worker-reviewers
-go.sum @taskcluster/worker-reviewers
-
-# python
-clients/client-py @taskcluster/python-reviewers
-
-# exceptions to the above
-ui/docs @taskcluster/services-reviewers
+* @taskcluster/core
 
 # changelogs should not pull in reviewers
 changelog/**
