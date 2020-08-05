@@ -38,7 +38,7 @@ module.exports = ({tasks, cmdOptions, credentials, baseDir, logsDir}) => {
     run: async (requirements, utils) => {
       utils.step({title: 'Check Repository'});
 
-      const tag = `taskcluster/taskcluster-proxy:${requirements['release-version']}`;
+      const tag = `taskcluster/taskcluster-proxy:v${requirements['release-version']}`;
       const provides = {'taskcluster-proxy-docker-image': tag};
 
       utils.step({title: 'Building taskcluster-proxy'});
