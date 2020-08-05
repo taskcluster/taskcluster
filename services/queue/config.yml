@@ -61,9 +61,6 @@ defaults:
     dependencyResolver:
       # Number of ms to sleep after polling from an empty queue
       pollingDelay:               5000
-      # Number of event loops to run in parallel, each taking up to 32 message
-      # in parallel. Hence, 4 implies 4 * 32 = 128 messages in parallel
-      parallelism:                4
 
     # Mapping from EC2 region to public artifact bucket proxy
     # (Must not end with a slash!)
@@ -150,7 +147,6 @@ test:
       parallelism:                1
     dependencyResolver:
       pollingDelay:               250
-      parallelism:                1
     publicArtifactBucketProxies:
       'us-east-1':    'proxy-for-us-east-1'
     taskCacheMaxSize: 10

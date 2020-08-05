@@ -168,14 +168,19 @@ class Task {
 
   // Update the status of this task using the value returned from one of the task-mutation
   // functions like schedule_task or cancel_task that returns (retries_left, runs,
-  // taken_until).
+  // taken_until).  If the mutation function's preconditions were not met (so it returned
+  // an empty set), returns false; returns true on success.
   updateStatusWith(result) {
     if (result.length) {
       const row = result[0];
       this.retriesLeft = row.retries_left;
       this.runs = row.runs;
       this.takenUntil = row.taken_until;
+
+      return true;
     }
+
+    return false;
   }
 
   // Compare "important" fields to another task (used to check idempotency)

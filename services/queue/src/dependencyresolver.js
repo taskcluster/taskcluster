@@ -14,8 +14,6 @@ class DependencyResolver {
    *   dependencyTracker:   // DependencyTracker instance
    *   queueService:        // QueueService instance
    *   pollingDelay:        // Number of ms to sleep between polling
-   *   parallelism:         // Number of polling loops to run in parallel
-   *                        // Each handles up to 32 messages in parallel
    *   monitor:             // base.monitor instance
    * }
    */
@@ -25,8 +23,6 @@ class DependencyResolver {
     assert(options.queueService, 'Expected options.queueService');
     assert(typeof options.pollingDelay === 'number',
       'Expected pollingDelay to be a number');
-    assert(typeof options.parallelism === 'number',
-      'Expected parallelism to be a number');
     assert(options.monitor !== null, 'options.monitor required!');
     assert(options.ownName, 'Must provide a name');
 
@@ -35,9 +31,8 @@ class DependencyResolver {
     this.queueService = options.queueService;
     this.monitor = options.monitor;
 
-    // Set polling delay and parallelism
+    // Set polling delay
     this._pollingDelay = options.pollingDelay;
-    this._parallelism = options.parallelism;
 
     // do iteration
     this.iterator = new Iterate({
@@ -46,13 +41,7 @@ class DependencyResolver {
       waitTime: this._pollingDelay,
       monitor: this.monitor,
       maxIterationTime: 600 * 1000,
-      handler: async () => {
-        let loops = [];
-        for (let i = 0; i < this._parallelism; i++) {
-          loops.push(this._pollResolvedTasks());
-        }
-        await Promise.all(loops);
-      },
+      handler: async () => this._pollResolvedTasks(),
     });
 
     this.iterator.on('error', () => {
@@ -87,7 +76,7 @@ class DependencyResolver {
       }
     }));
 
-    // If there were no messages, back of for a bit.  This avoids pounding
+    // If there were no messages, back off for a bit.  This avoids pounding
     // Azure repeatedly for empty queues, at the cost of some slight delay
     // to finding new messages in those queues.
     if (messages.length === 0) {
