@@ -8,7 +8,6 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/taskcluster/slugid-go/slugid"
 	"github.com/taskcluster/taskcluster/v36/workers/generic-worker/gwconfig"
 )
 
@@ -51,47 +50,6 @@ func TestMissingScopes(t *testing.T) {
 	logtext := LogText(t)
 	if !strings.Contains(logtext, "queue:get-artifact:SampleArtifacts/_/X.txt") || !strings.Contains(logtext, "generic-worker:cache:banana-cache") {
 		t.Fatalf("Was expecting log file to contain missing scopes, but it doesn't")
-	}
-}
-
-// TestMissingDependency tests that if artifact content is mounted, it must be included as a task dependency
-func TestMissingMountsDependency(t *testing.T) {
-	defer setup(t)()
-	pretendTaskID := slugid.Nice()
-	mounts := []MountEntry{
-		// requires scope "queue:get-artifact:SampleArtifacts/_/X.txt"
-		&FileMount{
-			File: filepath.Join("preloaded", "Mr X.txt"),
-			// Pretend task
-			Content: json.RawMessage(`{
-				"taskId":   "` + pretendTaskID + `",
-				"artifact": "SampleArtifacts/_/X.txt"
-			}`),
-		},
-		// requires scope "generic-worker:cache:banana-cache"
-		&WritableDirectoryCache{
-			CacheName: "banana-cache",
-			Directory: filepath.Join("my-task-caches", "bananas"),
-		},
-	}
-
-	payload := GenericWorkerPayload{
-		Mounts:     toMountArray(t, &mounts),
-		Command:    helloGoodbye(),
-		MaxRunTime: 180,
-	}
-
-	td := testTask(t)
-	td.Scopes = []string{
-		"generic-worker:cache:banana-cache",
-		"queue:get-artifact:SampleArtifacts/_/X.txt",
-	}
-
-	_ = submitAndAssert(t, td, payload, "exception", "malformed-payload")
-
-	logtext := LogText(t)
-	if !strings.Contains(logtext, "[mounts] task.dependencies needs to include "+pretendTaskID+" since one or more of its artifacts are mounted") {
-		t.Fatalf("Was expecting log file to explain that task dependency was missing, but it doesn't: \n%v", logtext)
 	}
 }
 

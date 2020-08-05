@@ -313,16 +313,6 @@ func (taskMount *TaskMount) initReferencedTaskIDs() {
 			}
 		}
 	}
-	taskDependencies := map[string]bool{}
-	for _, taskID := range taskMount.task.Definition.Dependencies {
-		taskDependencies[taskID] = true
-	}
-	for taskID := range taskMount.referencedTaskIDs {
-		if !taskDependencies[taskID] {
-			taskMount.payloadError = fmt.Errorf("[mounts] task.dependencies needs to include %v since one or more of its artifacts are mounted", taskID)
-			return
-		}
-	}
 }
 
 // Here the order is important. We want to delete file caches before we delete
