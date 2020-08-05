@@ -672,6 +672,8 @@ func extract(fsContent FSContent, format string, dir string, task *TaskRun) erro
 		unarchiver = &archiver.Rar{}
 	case "tar.bz2":
 		unarchiver = &archiver.TarBz2{}
+	case "tar.zst":
+		unarchiver = &archiver.TarZstd{}
 	default:
 		log.Fatalf("Unsupported format %v", format)
 		return fmt.Errorf("Unsupported archive format %v", format)
