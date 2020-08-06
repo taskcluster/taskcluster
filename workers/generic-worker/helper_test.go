@@ -404,7 +404,6 @@ func GWTest(t *testing.T) *Test {
 			NumberOfTasksToRun:        1,
 			PrivateIP:                 net.ParseIP("87.65.43.21"),
 			ProvisionerID:             "test-provisioner",
-			PublicIP:                  net.ParseIP("12.34.56.78"),
 			Region:                    "test-worker-group",
 			// should be enough for tests, and travis-ci.org CI environments don't
 			// have a lot of free disk

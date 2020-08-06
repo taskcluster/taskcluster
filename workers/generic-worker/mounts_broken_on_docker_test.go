@@ -5,6 +5,7 @@ package main
 import (
 	"encoding/json"
 	"io/ioutil"
+	"net"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -14,6 +15,7 @@ import (
 func TestMounts(t *testing.T) {
 
 	defer setup(t)()
+	config.PublicIP = net.ParseIP("12.34.56.78")
 
 	taskID1 := CreateArtifactFromFile(t, "SampleArtifacts/_/X.txt", "SampleArtifacts/_/X.txt")
 	taskID2 := CreateArtifactFromFile(t, "mozharness.zip", "public/build/mozharness.zip")
