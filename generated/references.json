@@ -991,6 +991,13 @@
           "minimum": 0,
           "title": "Minimum Capacity",
           "type": "integer"
+        },
+        "scalingRatio": {
+          "description": "The scaling ratio is a ratio of worker capacity to pending tasks - a ratio of 1.0 means that 1 capacity will be added for each pending task\n",
+          "maximum": 1,
+          "minimum": 0,
+          "title": "Scaling Ratio",
+          "type": "number"
         }
       },
       "required": [
@@ -1176,6 +1183,13 @@
           "minimum": 0,
           "title": "Minimum Capacity",
           "type": "integer"
+        },
+        "scalingRatio": {
+          "description": "The scaling ratio is a ratio of worker capacity to pending tasks - a ratio of 1.0 means that 1 capacity will be added for each pending task\n",
+          "maximum": 1,
+          "minimum": 0,
+          "title": "Scaling Ratio",
+          "type": "number"
         }
       },
       "required": [
@@ -1291,6 +1305,13 @@
           "description": "Minimum capacity necessary to maintain at any given time for the entire workerpool",
           "title": "Minimum Capacity",
           "type": "integer"
+        },
+        "scalingRatio": {
+          "description": "The scaling ratio is a ratio of worker capacity to pending tasks - a ratio of 1.0 means that 1 capacity will be added for each pending task\n",
+          "maximum": 1,
+          "minimum": 0,
+          "title": "Scaling Ratio",
+          "type": "number"
         }
       },
       "required": [
@@ -11728,6 +11749,7 @@
             "minCapacity": "The minimum amount of capacity that should be running",
             "pendingTasks": "The number of tasks the queue reports are pending for this worker pool",
             "requestedCapacity": "Amount of capacity that this estimator thinks we should add",
+            "scalingRatio": "The ratio of workers to spawn per pending task for this worker pool.",
             "workerPoolId": "The worker pool name (provisionerId/workerType)"
           },
           "level": "any",

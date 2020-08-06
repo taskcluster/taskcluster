@@ -35,6 +35,7 @@
       }
     ],
     "minCapacity": 1,
-    "maxCapacity": 1
+    "maxCapacity": 1,
+    "scalingRatio": 1
   }
 }

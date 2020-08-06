@@ -6,23 +6,27 @@ class Estimator {
     this.monitor = monitor;
   }
 
-  async simple({workerPoolId, minCapacity, maxCapacity, workerInfo}) {
+  async simple({workerPoolId, minCapacity, maxCapacity, scalingRatio = 1.0, workerInfo}) {
     const {provisionerId, workerType} = splitWorkerPoolId(workerPoolId);
     const {pendingTasks} = await this.queue.pendingTasks(provisionerId, workerType);
     const {existingCapacity, requestedCapacity = 0} = workerInfo;
 
     // First we find the amount of capacity we want. This is a very simple approximation
-    // We add existingCapacity here to make the min/max stuff work and then remove it to
-    // decide how much more to request. In other words, we will ask to spawn
-    // enough capacity to cover all pending tasks at any time unless it would
-    // create more than maxCapacity instances
-    const desiredCapacity = Math.max(minCapacity, Math.min(pendingTasks + existingCapacity, maxCapacity));
-
+    // We add existingCapacity here to represent existing workers and subtract it later.
+    // We scale up based on the scaling ratio and number of pending tasks.
+    // We ask to spawn as much capacity as the scaling ratio dictates to cover all
+    // pending tasks at any time unless it would create more than maxCapacity instances
+    const desiredCapacity = Math.max(
+      minCapacity,
+      // only scale as high as maxCapacity
+      Math.min(pendingTasks * scalingRatio + existingCapacity, maxCapacity),
+    );
     const estimatorInfo = {
       workerPoolId,
       pendingTasks,
       minCapacity,
       maxCapacity,
+      scalingRatio,
       existingCapacity,
       desiredCapacity,
       requestedCapacity,

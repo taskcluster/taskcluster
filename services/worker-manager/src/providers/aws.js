@@ -95,6 +95,7 @@ class AwsProvider extends Provider {
       workerPoolId,
       minCapacity: workerPool.config.minCapacity,
       maxCapacity: workerPool.config.maxCapacity,
+      scalingRatio: workerPool.config.scalingRatio,
       workerInfo,
     });
 
