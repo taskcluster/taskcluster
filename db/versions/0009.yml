@@ -4,6 +4,7 @@ migrationScript: 0009-migration.sql
 downgradeScript: 0009-downgrade.sql
 methods:
   cache_purges_entities_load:
+    deprecated: true
     description: See taskcluster-lib-entities
     mode: read
     serviceName: purge_cache
@@ -33,6 +34,7 @@ methods:
           cache_purges.provisioner_id = decoded_composite_key[1] and cache_purges.worker_type = decoded_composite_key[2] and cache_purges.cache_name = decode_string_key(cache_purges_entities_load.row_key);
       end
   cache_purges_entities_create:
+    deprecated: true
     serviceName: purge_cache
     description: See taskcluster-lib-entities
     mode: write
@@ -58,6 +60,7 @@ methods:
         return new_row.etag;
       end
   cache_purges_entities_remove:
+    deprecated: true
     serviceName: purge_cache
     description: See taskcluster-lib-entities
     mode: write
@@ -74,6 +77,7 @@ methods:
         returning cache_purges.etag;
       end
   cache_purges_entities_modify:
+    deprecated: true
     serviceName: purge_cache
     description: See taskcluster-lib-entities
     mode: write
@@ -130,6 +134,7 @@ methods:
         end if;
       end
   cache_purges_entities_scan:
+    deprecated: true
     description: See taskcluster-lib-entities
     mode: read
     serviceName: purge_cache

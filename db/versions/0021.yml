@@ -4,6 +4,7 @@ migrationScript: 0021-migration.sql
 downgradeScript: 0021-downgrade.sql
 methods:
   queue_task_groups_entities_load:
+    deprecated: true
     description: See taskcluster-lib-entities
     mode: read
     serviceName: queue
@@ -28,6 +29,7 @@ methods:
           task_groups.task_group_id = partition_key;
       end
   queue_task_groups_entities_create:
+    deprecated: true
     serviceName: queue
     description: See taskcluster-lib-entities
     mode: write
@@ -49,6 +51,7 @@ methods:
         return new_etag;
       end
   queue_task_groups_entities_remove:
+    deprecated: true
     serviceName: queue
     description: See taskcluster-lib-entities
     mode: write
@@ -62,6 +65,7 @@ methods:
         returning task_groups.etag;
       end
   queue_task_groups_entities_modify:
+    deprecated: true
     serviceName: queue
     description: See taskcluster-lib-entities
     mode: write
@@ -98,6 +102,7 @@ methods:
         end if;
       end
   queue_task_groups_entities_scan:
+    deprecated: true
     description: See taskcluster-lib-entities
     mode: read
     serviceName: queue

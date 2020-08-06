@@ -11,6 +11,7 @@ const {
   gitTag,
   gitPush,
   getDbReleases,
+  updateDbFns,
   updateVersionsReadme,
   readRepoJSON,
   readRepoFile,
@@ -199,36 +200,79 @@ module.exports = ({tasks, cmdOptions, credentials}) => {
   });
 
   ensureTask(tasks, {
-    title: 'Update DB Version Mapping',
+    title: 'Update DB Release Mapping',
     requires: [
       'release-version',
       'repo-clean',
       'repo-up-to-date',
     ],
     provides: [
-      'db-version-updated',
+      'db-releases',
+      'db-releases-txt',
     ],
     run: async (requirements, utils) => {
-      const changed = [];
       const schema = await readSchema();
       const tcVersion = `v${requirements['release-version']}`;
       const dbVersion = schema.latestVersion().version;
       const releasesFile = path.join('db', 'releases.txt');
 
-      // first, append this TC release version and DB version to the list of releases
+      // append this TC release version and DB version to the list of releases
       await modifyRepoFile(releasesFile,
         content => content.trim() + `\n${tcVersion}: ${dbVersion}\n`);
-      changed.push(releasesFile);
-
-      // then, regenerate the versions reference
-      const releases = await getDbReleases();
-      await updateVersionsReadme(schema, releases);
 
       return {
-        'db-version-updated': [
-          releasesFile,
-          path.join('db', 'versions', 'README.md'),
-        ],
+        // load the whole txt file into `db-releases`
+        'db-releases': await getDbReleases(),
+        'db-releases-txt': [releasesFile],
+      };
+    },
+  });
+
+  ensureTask(tasks, {
+    title: 'Update DB Version README',
+    requires: [
+      'release-version',
+      'repo-clean',
+      'repo-up-to-date',
+      'db-releases',
+    ],
+    provides: [
+      'db-version-updated',
+    ],
+    run: async (requirements, utils) => {
+      const schema = await readSchema();
+
+      // then, regenerate the versions reference
+      const releases = requirements['db-releases'];
+      const versionsReadme = await updateVersionsReadme(schema, releases);
+
+      return {
+        'db-version-updated': [versionsReadme],
+      };
+    },
+  });
+
+  ensureTask(tasks, {
+    title: 'Update DB Functions with new version',
+    requires: [
+      'release-version',
+      'repo-clean',
+      'repo-up-to-date',
+      'db-releases',
+    ],
+    provides: [
+      'db-fns-updated',
+    ],
+    run: async (requirements, utils) => {
+      const schema = await readSchema();
+
+      // then, regenerate the versions reference
+      const releases = requirements['db-releases'];
+      const tcVersion = requirements['release-version'];
+      const dbFnsFile = await updateDbFns(schema, releases, tcVersion);
+
+      return {
+        'db-fns-updated': [dbFnsFile],
       };
     },
   });
@@ -276,7 +320,9 @@ module.exports = ({tasks, cmdOptions, credentials}) => {
   ensureTask(tasks, {
     title: 'Commit Updates',
     requires: [
+      'db-releases-txt',
       'db-version-updated',
+      'db-fns-updated',
       'version-updated',
       'release-version',
       'changed-files',
@@ -286,7 +332,9 @@ module.exports = ({tasks, cmdOptions, credentials}) => {
     ],
     run: async (requirements, utils) => {
       const files = []
+        .concat(requirements['db-releases-txt'])
         .concat(requirements['db-version-updated'])
+        .concat(requirements['db-fns-updated'])
         .concat(requirements['version-updated'])
         .concat(requirements['changed-files']);
       utils.status({message: `Commit changes`});
