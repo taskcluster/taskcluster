@@ -893,19 +893,6 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       assert(!provider.provisionResources.called);
     });
 
-    test('update expires for long-running worker', async function() {
-      await setState({state: 'running', provisioningState: 'Succeeded', powerState: 'PowerState/running'});
-      const expires = taskcluster.fromNow('-1 week');
-      await worker.update(helper.db, worker => {
-        worker.expires = expires;
-      });
-      await provider.checkWorker({worker});
-      await worker.reload(helper.db);
-      assert(worker.expires > expires);
-      assert(!provider.removeWorker.called);
-      assert(!provider.provisionResources.called);
-    });
-
     test('remove unregistered workers after terminateAfter', async function() {
       await setState({state: 'requested', provisioningState: 'Succeeded', powerState: 'PowerState/running'});
       await worker.update(helper.db, worker => {

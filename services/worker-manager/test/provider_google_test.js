@@ -489,16 +489,6 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       assert.equal(errors[0].title, 'Operation Error');
     });
 
-    test('update expiration for a long-running worker', async function() {
-      const expires = taskcluster.fromNow('-1 week');
-      let worker = await suiteMakeWorker({expires, state: 'running'});
-      fake.compute.instances.setFakeInstanceStatus(
-        project, 'us-east1-a', workerId,
-        'RUNNING');
-      worker = await runCheckWorker(worker);
-      assert(worker.expires > expires);
-    });
-
     test('remove unregistered workers after terminateAfter', async function() {
       const terminateAfter = Date.now() - 1000;
       let worker = await suiteMakeWorker({providerData: {terminateAfter}});
