@@ -497,6 +497,24 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       assert.strictEqual(provider.seen[worker.workerPoolId], 0);
     });
 
+    test('update expiration for a long-running worker', async function() {
+      const expires = taskcluster.fromNow('-1 week');
+      fake.rgn('us-west-2').instanceStatuses['i-123'] = 'terminated';
+      const worker = Worker.fromApi({
+        ...workerInDB,
+        workerId: 'i-123',
+        state: Worker.states.RUNNING,
+        expires,
+      });
+      await worker.create(helper.db);
+
+      provider.seen = {};
+      await provider.checkWorker({worker});
+
+      const workers = await helper.getWorkers();
+      assert(workers[0].expires > expires);
+    });
+
     test('remove unregistered workers', async function() {
       fake.rgn('us-west-2').instanceStatuses['i-123'] = 'running';
       const worker = Worker.fromApi({

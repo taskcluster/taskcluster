@@ -323,6 +323,17 @@ class AwsProvider extends Provider {
         switch (is.InstanceState.Name) {
           case 'pending':
           case 'running':
+            // If the worker will be expired soon but it still exists,
+            // update it to stick around a while longer. If this doesn't happen,
+            // long-lived instances become orphaned from the provider. We don't update
+            // this on every loop just to avoid the extra work when not needed
+            if (worker.expires < taskcluster.fromNow('1 day')) {
+              await worker.update(this.db, worker => {
+                worker.expires = taskcluster.fromNow('1 week');
+              });
+            }
+            this.seen[worker.workerPoolId] += worker.capacity || 1;
+            break;
           case 'shutting-down': //so that we don't turn on new instances until they're entirely gone
           case 'stopping':
             this.seen[worker.workerPoolId] += worker.capacity || 1;
