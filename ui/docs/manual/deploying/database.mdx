@@ -148,6 +148,10 @@ This compatibility is limited to major Taskcluster versions: code in version `vN
 
 In order to conform to the inviariant given above, a database upgrade must be completed *before* the corresponding code is deployed.
 
+Before running an upgrade, we recommend:
+ * take a backup of the database
+ * suspend any crons and kill any running jobs (otherwise, these can hold locks for a long time)
+
 To run an upgrade, run a docker container using the new Taskcluster image.
 Set `ADMIN_DB_URL` and `USERNAME_PREFIX` to the values described above and run:
 
@@ -156,6 +160,9 @@ docker run -ti --rm -e ADMIN_DB_URL -e USERNAME_PREFIX taskcluster/taskcluster:1
 ```
 
 The output will describe the changes taking place.
+
+During the upgrade, monitor `select * from pg_stat_activity`, watching for anything that might be preventing the upgrade activities from proceeding, especially locks (`wait_event_type` = `lock`).
+Everything in Taskcluster is designed for failure, so it's OK to kill anything long-running that might be holding a lock the migration process needs to proceed.
 
 <Warning>
 As with any upgrade, consult the release notes before running the upgrade.
