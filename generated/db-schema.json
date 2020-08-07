@@ -5082,6 +5082,21 @@
       },
       "migrationScript": "begin\n  -- lock this table before reading from it, to prevent loss of concurrent\n  -- updates when the table is dropped.  Note that this may lead to concurrent\n  -- updates failing; the important thing is that they not succeed without\n  -- taking effect.  Failed updates will be retried.\n  lock table queue_provisioner_entities;\n\n  create table queue_provisioners\n  as\n    select\n      (value ->> 'provisionerId')::text as provisioner_id,\n      (value ->> 'expires')::timestamptz as expires,\n      (value ->> 'lastDateActive')::timestamptz as last_date_active,\n      entity_buf_decode(value, 'description')::text as description,\n      (value ->> 'stability')::text as stability,\n      entity_buf_decode(value, 'actions')::jsonb as actions,\n      etag\n    from queue_provisioner_entities;\n  alter table queue_provisioners add primary key (provisioner_id);\n  alter table queue_provisioners\n    alter column provisioner_id set not null,\n    alter column expires set not null,\n    alter column last_date_active set not null,\n    alter column description set not null,\n    alter column stability set not null,\n    alter column actions set not null,\n    alter column etag set not null,\n    alter column etag set default public.gen_random_uuid();\n\n  revoke select, insert, update, delete on queue_provisioner_entities from $db_user_prefix$_queue;\n  drop table queue_provisioner_entities;\n  grant select, insert, update, delete on queue_provisioners to $db_user_prefix$_queue;\nend\n",
       "version": 45
+    },
+    {
+      "description": "fix get_dependent_tasks to return tasks in order",
+      "methods": {
+        "get_dependent_tasks": {
+          "args": "required_task_id_in text, satisfied_in boolean, tasks_after_in text, page_size_in integer, page_offset_in integer",
+          "body": "begin\n  return query\n  select\n    task_dependencies.dependent_task_id,\n    task_dependencies.requires,\n    task_dependencies.satisfied\n  from task_dependencies\n  where\n    required_task_id = required_task_id_in and\n    expires > now() and\n    (satisfied_in is null or task_dependencies.satisfied = satisfied_in) and\n    (tasks_after_in is null or task_dependencies.dependent_task_id > tasks_after_in)\n  order by dependent_task_id\n  limit get_page_limit(page_size_in)\n  offset get_page_offset(page_offset_in);\nend",
+          "deprecated": false,
+          "description": "Get the un-expired tasks that depend on this one, limiting to only (un)satisfied\ndependencies if `satisfied_in` is not null.\n\nOnly dependencies with `dependent_task_id > tasks_after_in` are returned.\nThis supports paginated queries that are not susceptible to rows being\nadded or removed.  Typically only one of `page_offset_in` and\n`tasks_after_in` are non-null.",
+          "mode": "read",
+          "returns": "table(dependent_task_id text, requires task_requires, satisfied boolean)",
+          "serviceName": "queue"
+        }
+      },
+      "version": 46
     }
   ]
 }
