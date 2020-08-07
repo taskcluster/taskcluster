@@ -69,7 +69,7 @@ class WorkerScanner {
         // update it to stick around a while longer. If this doesn't happen,
         // long-lived instances become orphaned from the provider. We don't update
         // this on every loop just to avoid the extra work when not needed
-        if (worker.expires < taskcluster.fromNow('1 day')) {
+        if (worker.expires < taskcluster.fromNow('1 week')) {
           await worker.update(this.db, worker => {
             worker.expires = taskcluster.fromNow('1 week');
           });

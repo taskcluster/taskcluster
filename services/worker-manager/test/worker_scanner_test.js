@@ -17,8 +17,10 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     monitor = await helper.load('monitor');
   });
 
-  const expires = taskcluster.fromNow('1 hour');
-  const expires2 = taskcluster.fromNow('3 days');
+  // for testing an expiration that will be updated
+  const expires = taskcluster.fromNow('6 days');
+  // for testing an expiration that won't be updated
+  const expires2 = taskcluster.fromNow('8 days');
 
   const testCase = async ({workers = [], assertion, expectErrors}) => {
     await Promise.all(workers.map(w => {
@@ -81,7 +83,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         workerId: 'testing-123',
       });
       assert(worker.providerData.checked);
-      // expires wasn't updated
+      // verify that expires wasn't updated
       assert.notEqual(worker.providerexpires, expires2);
     },
   }));
@@ -122,6 +124,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         workerId: "testing-123",
       });
       assert(worker1.providerData.checked);
+      // expires should be updated because it is less than 7 days
       assert(worker1.expires > expires);
       const worker2 = await Worker.get(helper.db, {
         workerPoolId: "ff/dd",
@@ -129,6 +132,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         workerId: "testing-124",
       });
       assert(worker2.providerData.checked);
+      // expires should be updated because it is less than 7 days
       assert(worker2.expires > expires);
     },
   }));
@@ -169,6 +173,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         workerId: 'testing-123',
       });
       assert(worker1.providerData.checked);
+      // expires should be updated because it is less than 7 days
       assert(worker1.expires > expires);
       const worker2 = await Worker.get(helper.db, {
         workerPoolId: 'ff/dd',
@@ -176,6 +181,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         workerId: 'testing-124',
       });
       assert(worker2.providerData.checked);
+      // expires should be updated because it is less than 7 days
       assert(worker2.expires > expires);
     },
   }));
