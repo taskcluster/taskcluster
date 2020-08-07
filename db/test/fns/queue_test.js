@@ -1,4 +1,5 @@
 const assert = require('assert').strict;
+const slugid = require('slugid');
 const {cloneDeep, range} = require('lodash');
 const {fromNow} = require('taskcluster-client');
 const helper = require('../helper');
@@ -747,6 +748,131 @@ suite(testing.suiteName(), function() {
         const task = fixRuns(await db.fns.get_task(taskId));
         assert.deepEqual(task[0].runs, res[0].runs);
         assert.deepEqual(task[0].taken_until, res[0].taken_until);
+      });
+    });
+
+    suite('get_dependent_tasks', function() {
+      setup('reset dependencies', async function() {
+        await helper.withDbClient(async client => {
+          await client.query('truncate task_dependencies');
+        });
+      });
+
+      const makeDeps = async (deps) => {
+        await helper.withDbClient(async client => {
+          for (let [dep, req, sat] of deps) {
+            await client.query(`
+              insert into task_dependencies (dependent_task_id, required_task_id, requires, satisfied, expires)
+              values ($1, $2, 'all-completed', $3, now() + interval '1 day')`, [dep, req, sat]);
+          }
+        });
+      };
+
+      helper.dbTest('simple dependent task', async function(db) {
+        const simpleDep = slugid.v4();
+        const simpleReq = slugid.v4();
+        await makeDeps([
+          [simpleDep, simpleReq, false],
+          [simpleDep, slugid.v4(), true], // distraction; should not be returned
+        ]);
+        const res = await db.fns.get_dependent_tasks(simpleReq, null, null, null, null);
+        assert.deepEqual(res, [{dependent_task_id: simpleDep, requires: 'all-completed', satisfied: false}]);
+      });
+
+      helper.dbTest('filtering by satisfied', async function(db) {
+        let res;
+
+        const req = slugid.v4();
+        const satDep = slugid.v4();
+        const unsatDep = slugid.v4();
+        await makeDeps([
+          [satDep, req, true],
+          [unsatDep, req, false],
+        ]);
+
+        // no filter
+        res = await db.fns.get_dependent_tasks(req, null, null, null, null);
+        assert.deepEqual(res.map(row => row.dependent_task_id).sort(), [satDep, unsatDep].sort());
+
+        // satisfied
+        res = await db.fns.get_dependent_tasks(req, true, null, null, null);
+        assert.deepEqual(res.map(row => row.dependent_task_id), [satDep]);
+
+        // unsatisfied
+        res = await db.fns.get_dependent_tasks(req, false, null, null, null);
+        assert.deepEqual(res.map(row => row.dependent_task_id), [unsatDep]);
+      });
+
+      helper.dbTest('numeric pagination and filtering by satisfied', async function(db) {
+        const req = slugid.v4();
+        const deps = range(200).map(() => slugid.v4());
+        await makeDeps(deps.map((dep, i) => [dep, req, Boolean(i & 1)]));
+
+        for (let sat of [null, true, false]) {
+          let rows = [];
+          let offset = 0;
+          while (true) {
+            const res = await db.fns.get_dependent_tasks(req, sat, null, 13, offset);
+            if (res.length === 0) {
+              break;
+            }
+            rows = rows.concat(res);
+            offset += res.length;
+          }
+
+          if (sat === null) {
+            assert.deepEqual(
+              rows.map(row => row.dependent_task_id).sort(),
+              cloneDeep(deps).sort(),
+              'when not filtering by satisified');
+          } else if (sat === true) {
+            assert.deepEqual(
+              rows.map(row => row.dependent_task_id).sort(),
+              deps.filter((d, i) => i & 1).sort(),
+              'sat = true');
+          } else if (sat === false) {
+            assert.deepEqual(
+              rows.map(row => row.dependent_task_id).sort(),
+              deps.filter((d, i) => !(i & 1)).sort(),
+              'sat = false');
+          }
+        }
+      });
+
+      helper.dbTest('taskId-based pagination and filtering by satisfied', async function(db) {
+        const req = slugid.v4();
+        const deps = range(200).map(() => slugid.v4());
+        await makeDeps(deps.map((dep, i) => [dep, req, Boolean(i & 1)]));
+
+        for (let sat of [null, true, false]) {
+          let rows = [];
+          let lastTask = null;
+          while (true) {
+            const res = await db.fns.get_dependent_tasks(req, sat, lastTask, 13, null);
+            if (res.length === 0) {
+              break;
+            }
+            rows = rows.concat(res);
+            lastTask = res[res.length - 1].dependent_task_id;
+          }
+
+          if (sat === null) {
+            assert.deepEqual(
+              rows.map(row => row.dependent_task_id).sort(),
+              cloneDeep(deps).sort(),
+              'when not filtering by satisified');
+          } else if (sat === true) {
+            assert.deepEqual(
+              rows.map(row => row.dependent_task_id).sort(),
+              deps.filter((d, i) => i & 1).sort(),
+              'sat = true');
+          } else if (sat === false) {
+            assert.deepEqual(
+              rows.map(row => row.dependent_task_id).sort(),
+              deps.filter((d, i) => !(i & 1)).sort(),
+              'sat = false');
+          }
+        }
       });
     });
 
