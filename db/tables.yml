@@ -151,6 +151,16 @@ worker_pools:
   provider_data: jsonb not null
   previous_provider_ids: jsonb not null
   etag: uuid not null
+worker_specs:
+  worker_pool_id: text not null
+  worker_spec_id: uuid not null
+  provider_id: text not null
+  created: timestamp with time zone
+  utility: double precision not null
+  capacity: integer not null
+  provider_config: jsonb not null
+  worker_config: jsonb not null
+  lifecycle: jsonb not null
 workers:
   worker_pool_id: text not null
   worker_group: text not null

@@ -51,4 +51,5 @@ worker_manager:
   tables:
     workers: write
     worker_pools: write
+    worker_specs: write
     worker_pool_errors: write

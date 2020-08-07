@@ -1,0 +1,14 @@
+version: 46
+description: move worker launch configs up a level
+migrationScript: 0046-migration.sql
+downgradeScript: 0046-downgrade.sql
+methods: []
+  # ehhhh:
+  #   description: uhhhh
+  #   mode: read
+  #   serviceName: worker_manager
+  #   args: who knows
+  #   returns: table (of something)
+  #   body: |-
+  #     begin
+  #     end
