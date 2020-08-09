@@ -15,7 +15,6 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
   helper.withPulse(mock, skipping);
   helper.withS3(mock, skipping);
   helper.withQueueService(mock, skipping);
-  helper.withEntities(mock, skipping);
   helper.withServer(mock, skipping);
   helper.resetTables(mock, skipping);
 
@@ -589,5 +588,50 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     assert.deepEqual(
       await db.fns.get_dependent_tasks(taskIdB, null, null, null, null),
       [{dependent_task_id: taskIdB, requires: 'all-completed', satisfied: false}]);
+  });
+
+  test('a task on which lots of other tasks depend is resolved', async () => {
+    const reqTaskId = slugid.v4();
+    const depTaskIds = _.range(200).map(() => slugid.v4());
+
+    const t = await helper.queue.createTask(reqTaskId, taskDef());
+    assert.equal(t.status.state, 'pending');
+    await Promise.all(
+      depTaskIds.map(
+        async depTaskId => {
+          const t = await helper.queue.createTask(depTaskId, {...taskDef(), dependencies: [reqTaskId]});
+          assert.equal(t.status.state, 'unscheduled');
+        }));
+
+    // Start dependency-resolver
+    await helper.startPollingService('dependency-resolver');
+
+    debug('### Claim reqTask');
+    await helper.queue.claimTask(reqTaskId, 0, {
+      workerGroup: 'my-worker-group-extended-extended',
+      workerId: 'my-worker-extended-extended',
+    });
+    helper.assertPulseMessage('task-running', m => m.payload.status.taskId === reqTaskId);
+    helper.clearPulseMessages();
+
+    debug('### Resolve reqTask');
+    await helper.queue.reportCompleted(reqTaskId, 0);
+    helper.assertPulseMessage('task-completed', m => m.payload.status.taskId === reqTaskId);
+    helper.clearPulseMessages();
+
+    // now verify that each of those tasks is pending
+    const seen = new Set();
+    await testing.poll(async () => {
+      for (let [i, depTaskId] of depTaskIds.entries()) {
+        if (seen.has(depTaskId)) {
+          continue;
+        }
+        const status = await helper.queue.status(depTaskId);
+        assert.equal(status.status.state, 'pending', `depTaskIds[${i}] = ${depTaskId} is not pending`);
+        seen.add(depTaskId);
+      }
+    }, 40, 250);
+
+    await helper.stopPollingService();
   });
 });

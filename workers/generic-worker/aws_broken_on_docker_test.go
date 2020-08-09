@@ -6,7 +6,7 @@ import (
 	"encoding/json"
 	"testing"
 
-	"github.com/taskcluster/taskcluster/v35/clients/client-go/tcworkermanager"
+	"github.com/taskcluster/taskcluster/v36/clients/client-go/tcworkermanager"
 )
 
 func TestWorkerShutdown(t *testing.T) {

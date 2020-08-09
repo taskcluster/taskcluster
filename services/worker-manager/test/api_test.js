@@ -9,7 +9,6 @@ const path = require('path');
 
 helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   helper.withDb(mock, skipping);
-  helper.withEntities(mock, skipping);
   helper.withPulse(mock, skipping);
   helper.withProviders(mock, skipping);
   helper.withServer(mock, skipping);
@@ -953,6 +952,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     config: {
       minCapacity: 1,
       maxCapacity: 1,
+      scalingRatio: 1,
       launchConfigs: [
         {
           capacityPerInstance: 1,

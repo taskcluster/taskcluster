@@ -1,7 +1,6 @@
 const assert = require('assert');
 const _ = require('lodash');
 const {APIBuilder, paginateResults} = require('taskcluster-lib-api');
-const Entity = require('taskcluster-lib-entities');
 const taskCreds = require('./task-creds');
 const {UNIQUE_VIOLATION} = require('taskcluster-lib-postgres');
 const {Task, Worker, WorkerType, Provisioner} = require('./data');
@@ -1524,10 +1523,7 @@ require('./artifacts');
 builder.declare({
   method: 'get',
   route: '/provisioners',
-  query: {
-    continuationToken: Entity.continuationTokenPattern,
-    limit: /^[0-9]+$/,
-  },
+  query: paginateResults.query,
   name: 'listProvisioners',
   category: 'Worker Metadata',
   stability: APIBuilder.stability.experimental,
@@ -1681,10 +1677,7 @@ builder.declare({
 builder.declare({
   method: 'get',
   route: '/provisioners/:provisionerId/worker-types',
-  query: {
-    continuationToken: Entity.continuationTokenPattern,
-    limit: /^[0-9]+$/,
-  },
+  query: paginateResults.query,
   name: 'listWorkerTypes',
   category: 'Worker Metadata',
   stability: APIBuilder.stability.experimental,
@@ -1804,8 +1797,7 @@ builder.declare({
   method: 'get',
   route: '/provisioners/:provisionerId/worker-types/:workerType/workers',
   query: {
-    continuationToken: Entity.continuationTokenPattern,
-    limit: /^[0-9]+$/,
+    ...paginateResults.query,
     quarantined: /^(true|false)$/,
   },
   name: 'listWorkers',

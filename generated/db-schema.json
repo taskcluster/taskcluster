@@ -2167,7 +2167,7 @@
         "cache_purges_entities_create": {
           "args": "pk text, rk text, properties jsonb, overwrite boolean, version integer",
           "body": "declare\n  new_row cache_purges%ROWTYPE;\nbegin\n  select\n    (properties ->> 'provisionerId')::text as provisioner_id,\n    (properties ->> 'workerType')::text as worker_type,\n    (properties ->> 'cacheName')::text as cache_name,\n    (properties ->> 'before')::timestamptz as before,\n    (properties ->> 'expires')::timestamptz as expires,\n    public.gen_random_uuid() as etag\n  into new_row;\n  if overwrite then\n    raise exception 'overwrite not implemented';\n  else\n    execute 'insert into cache_purges select $1.*' using new_row;\n  end if;\n  return new_row.etag;\nend",
-          "deprecated": false,
+          "deprecated": true,
           "description": "See taskcluster-lib-entities",
           "mode": "write",
           "returns": "uuid",
@@ -2176,7 +2176,7 @@
         "cache_purges_entities_load": {
           "args": "partition_key text, row_key text",
           "body": "declare\n  decoded_composite_key text[];\nbegin\n  decoded_composite_key := decode_composite_key(cache_purges_entities_load.partition_key);\n  return query\n  select\n    cache_purges_entities_load.partition_key,\n    cache_purges_entities_load.row_key,\n    jsonb_build_object(\n      'PartitionKey', cache_purges_entities_load.partition_key,\n      'RowKey', cache_purges_entities_load.row_key,\n      'provisionerId', provisioner_id,\n      'workerType', worker_type,\n      'cacheName', cache_name,\n      'before', before,\n      'expires', expires) as value,\n    1 as version,\n    cache_purges.etag as etag\n  from cache_purges\n  where\n    cache_purges.provisioner_id = decoded_composite_key[1] and cache_purges.worker_type = decoded_composite_key[2] and cache_purges.cache_name = decode_string_key(cache_purges_entities_load.row_key);\nend",
-          "deprecated": false,
+          "deprecated": true,
           "description": "See taskcluster-lib-entities",
           "mode": "read",
           "returns": "table (partition_key_out text, row_key_out text, value jsonb, version integer, etag uuid)",
@@ -2185,7 +2185,7 @@
         "cache_purges_entities_modify": {
           "args": "partition_key text, row_key text, properties jsonb, version integer, old_etag uuid",
           "body": "declare\n  new_row cache_purges%ROWTYPE;\n  decoded_composite_key text[];\nbegin\n  decoded_composite_key := decode_composite_key(cache_purges_entities_modify.partition_key);\n  select\n    (properties ->> 'provisionerId')::text as provisioner_id,\n    (properties ->> 'workerType')::text as worker_type,\n    (properties ->> 'cacheName')::text as cache_name,\n    (properties ->> 'before')::timestamptz as before,\n    (properties ->> 'expires')::timestamptz as expires,\n    public.gen_random_uuid() as etag\n  into new_row;\n  update cache_purges\n  set (\n    provisioner_id,\n    worker_type,\n    cache_name,\n    before,\n    expires,\n    etag\n  ) = (\n    new_row.provisioner_id,\n    new_row.worker_type,\n    new_row.cache_name,\n    new_row.before,\n    new_row.expires,\n    new_row.etag\n  )\n  where\n    cache_purges.provisioner_id = decoded_composite_key[1] and\n    cache_purges.worker_type = decoded_composite_key[2] and\n    cache_purges.cache_name = decode_string_key(cache_purges_entities_modify.row_key) and\n    cache_purges.etag = cache_purges_entities_modify.old_etag;\n  if found then\n    return query select new_row.etag;\n    return;\n  end if;\n  perform cache_purges.etag from cache_purges\n  where\n    cache_purges.provisioner_id = decoded_composite_key[1] and\n    cache_purges.worker_type = decoded_composite_key[2] and\n    cache_purges.cache_name = decode_string_key(cache_purges_entities_modify.row_key);\n  if found then\n    raise exception 'unsuccessful update' using errcode = 'P0004';\n  else\n    raise exception 'no such row' using errcode = 'P0002';\n  end if;\nend",
-          "deprecated": false,
+          "deprecated": true,
           "description": "See taskcluster-lib-entities",
           "mode": "write",
           "returns": "table (etag uuid)",
@@ -2194,7 +2194,7 @@
         "cache_purges_entities_remove": {
           "args": "partition_key text, row_key text",
           "body": "declare\n  decoded_composite_key text[];\nbegin\n  decoded_composite_key := decode_composite_key(cache_purges_entities_remove.partition_key);\n  return query delete from cache_purges\n  where\n    cache_purges.provisioner_id = decoded_composite_key[1] and cache_purges.worker_type = decoded_composite_key[2] and cache_purges.cache_name = decode_string_key(cache_purges_entities_remove.row_key)\n  returning cache_purges.etag;\nend",
-          "deprecated": false,
+          "deprecated": true,
           "description": "See taskcluster-lib-entities",
           "mode": "write",
           "returns": "table (etag uuid)",
@@ -2203,7 +2203,7 @@
         "cache_purges_entities_scan": {
           "args": "pk text, rk text, condition text, size integer, page integer",
           "body": "declare\n  cond text[];\n  exp_cond_operator text;\n  exp_cond_operand timestamptz;\n  partition_key_var text;\n  row_key_var text;\n  decoded_composite_key text[];\nbegin\n  decoded_composite_key := decode_composite_key(cache_purges_entities_scan.pk);\n  if not condition is null then\n    cond := regexp_split_to_array(condition, '\\s+');\n    exp_cond_operator := cond[4];\n    exp_cond_operand := cond[5] :: timestamptz;\n\n    return query select\n      encode_composite_key(cache_purges.provisioner_id, cache_purges.worker_type) as partition_key,\n      encode_string_key(cache_purges.cache_name) as row_key,\n      jsonb_build_object(\n        'PartitionKey', encode_composite_key(cache_purges.provisioner_id, cache_purges.worker_type),\n        'RowKey', cache_name,\n        'provisionerId', provisioner_id,\n        'workerType', worker_type,\n        'cacheName', cache_name,\n        'before', before,\n        'expires', expires\n      ) as value,\n      1 as version,\n      cache_purges.etag as etag from cache_purges\n    where\n      (cache_purges_entities_scan.pk is null or cache_purges_entities_scan.pk = decoded_composite_key[1] || '~' || decoded_composite_key[2]) and\n      (cache_purges_entities_scan.rk is null or cache_purges_entities_scan.rk = cache_name) and\n      case\n        when exp_cond_operator = '=' then expires = exp_cond_operand\n        when exp_cond_operator = '<' then expires < exp_cond_operand\n        when exp_cond_operator = '<=' then expires <= exp_cond_operand\n        when exp_cond_operator = '>' then expires > exp_cond_operand\n        when exp_cond_operator = '>=' then expires >= exp_cond_operand\n        else expires <> exp_cond_operand\n      end\n    order by cache_purges.provisioner_id, cache_purges.worker_type, cache_purges.cache_name\n    limit case\n      when (size is not null and size > 0) then size + 1\n      else null\n    end\n    offset case\n      when (page is not null and page > 0) then page\n      else 0\n    end;\n  else\n    return query select\n      encode_composite_key(cache_purges.provisioner_id, cache_purges.worker_type) as partition_key,\n      encode_string_key(cache_purges.cache_name) as row_key,\n      jsonb_build_object(\n        'PartitionKey', encode_composite_key(cache_purges.provisioner_id, cache_purges.worker_type),\n        'RowKey', encode_string_key(cache_name),\n        'provisionerId', provisioner_id,\n        'workerType', worker_type,\n        'cacheName', cache_name,\n        'before', before,\n        'expires', expires\n      ) as value,\n      1 as version,\n      cache_purges.etag as etag from cache_purges\n    where\n      (cache_purges_entities_scan.pk is null or (cache_purges.provisioner_id = decoded_composite_key[1] and cache_purges.worker_type = decoded_composite_key[2])) and\n      (cache_purges_entities_scan.rk is null or cache_purges_entities_scan.rk = cache_name)\n    order by cache_purges.provisioner_id, cache_purges.worker_type, cache_purges.cache_name\n    limit case\n      when (size is not null and size > 0) then size + 1\n      else null\n    end\n    offset case\n      when (size is not null and size > 0 and page is not null and page > 0) then page\n      else 0\n    end;\n  end if;\nend",
-          "deprecated": false,
+          "deprecated": true,
           "description": "See taskcluster-lib-entities",
           "mode": "read",
           "returns": "table (partition_key text, row_key text, value jsonb, version integer, etag uuid)",
@@ -2319,7 +2319,7 @@
         "wmworker_pools_entities_create": {
           "args": "pk text, rk text, properties jsonb, overwrite boolean, version integer",
           "body": "declare\n  new_row worker_pools%ROWTYPE;\nbegin\n  select\n    (properties ->> 'workerPoolId')::text as worker_pool_id,\n    (properties ->> 'providerId')::text as provider_id,\n    (properties ->> 'owner')::text as owner,\n    (properties ->> 'description')::text as description,\n    (properties -> 'emailOnError')::boolean as email_on_error,\n    (properties ->> 'created')::timestamptz as created,\n    (properties ->> 'lastModified')::timestamptz as last_modified,\n    entity_buf_decode(properties, 'config')::jsonb as config,\n    entity_buf_decode(properties, 'providerData')::jsonb as provider_data,\n    entity_buf_decode(properties, 'previousProviderIds')::jsonb as previous_provider_ids,\n    public.gen_random_uuid() as etag\n  into new_row;\n  if overwrite then\n    raise exception 'overwrite not implemented';\n  else\n    execute 'insert into worker_pools select $1.*' using new_row;\n  end if;\n  return new_row.etag;\nend",
-          "deprecated": false,
+          "deprecated": true,
           "description": "See taskcluster-lib-entities",
           "mode": "write",
           "returns": "uuid",
@@ -2328,7 +2328,7 @@
         "wmworker_pools_entities_load": {
           "args": "partition_key text, row_key text",
           "body": "begin\n  return query\n  select\n    wmworker_pools_entities_load.partition_key,\n    'workerPool' as row_key,\n    entity_buf_encode(\n      entity_buf_encode(\n        entity_buf_encode(\n          jsonb_build_object(\n            'PartitionKey', wmworker_pools_entities_load.partition_key,\n            'RowKey', 'workerPool',\n            'workerPoolId', worker_pool_id,\n            'providerId', provider_id,\n            'owner', owner,\n            'description', description,\n            'emailOnError', email_on_error,\n            'created', created,\n            'lastModified', last_modified),\n          'config', config::text),\n        'providerData', provider_data::text),\n      'previousProviderIds', previous_provider_ids::text) as value,\n    1 as version,\n    worker_pools.etag as etag\n  from worker_pools\n  where\n    worker_pools.worker_pool_id = decode_string_key(wmworker_pools_entities_load.partition_key);\nend",
-          "deprecated": false,
+          "deprecated": true,
           "description": "See taskcluster-lib-entities",
           "mode": "read",
           "returns": "table (partition_key_out text, row_key_out text, value jsonb, version integer, etag uuid)",
@@ -2337,7 +2337,7 @@
         "wmworker_pools_entities_modify": {
           "args": "partition_key text, row_key text, properties jsonb, version integer, old_etag uuid",
           "body": "declare\n  new_row worker_pools%ROWTYPE;\nbegin\n  select\n    (properties ->> 'workerPoolId')::text as worker_pool_id,\n    (properties ->> 'providerId')::text as provider_id,\n    (properties ->> 'owner')::text as owner,\n    (properties ->> 'description')::text as description,\n    (properties -> 'emailOnError')::boolean as email_on_error,\n    (properties ->> 'created')::timestamptz as created,\n    (properties ->> 'lastModified')::timestamptz as last_modified,\n    entity_buf_decode(properties, 'config')::jsonb as config,\n    entity_buf_decode(properties, 'providerData')::jsonb as provider_data,\n    entity_buf_decode(properties, 'previousProviderIds')::jsonb as previous_provider_ids,\n    public.gen_random_uuid() as etag\n  into new_row;\n  update worker_pools\n  set (\n    provider_id,\n    owner,\n    description,\n    email_on_error,\n    created,\n    last_modified,\n    config,\n    provider_data,\n    previous_provider_ids,\n    etag\n  ) = (\n    new_row.provider_id,\n    new_row.owner,\n    new_row.description,\n    new_row.email_on_error,\n    new_row.created,\n    new_row.last_modified,\n    new_row.config,\n    new_row.provider_data,\n    new_row.previous_provider_ids,\n    new_row.etag\n  )\n  where\n    worker_pools.worker_pool_id = decode_string_key(wmworker_pools_entities_modify.partition_key) and\n    worker_pools.etag = wmworker_pools_entities_modify.old_etag;\n\n  if found then\n    return query select new_row.etag;\n    return;\n  end if;\n\n  perform worker_pools.etag from worker_pools\n  where worker_pools.worker_pool_id = decode_string_key(wmworker_pools_entities_modify.partition_key);\n\n  if found then\n    raise exception 'unsuccessful update' using errcode = 'P0004';\n  else\n    raise exception 'no such row' using errcode = 'P0002';\n  end if;\nend",
-          "deprecated": false,
+          "deprecated": true,
           "description": "See taskcluster-lib-entities",
           "mode": "write",
           "returns": "table (etag uuid)",
@@ -2346,7 +2346,7 @@
         "wmworker_pools_entities_remove": {
           "args": "partition_key text, row_key text",
           "body": "begin\n  delete\n  from worker_pools\n  where\n    worker_pools.worker_pool_id = decode_string_key(partition_key);\n  -- worker-manager does not care if the row existed\n  return query select gen_random_uuid() as etag;\nend",
-          "deprecated": false,
+          "deprecated": true,
           "description": "See taskcluster-lib-entities",
           "mode": "write",
           "returns": "table (etag uuid)",
@@ -2355,7 +2355,7 @@
         "wmworker_pools_entities_scan": {
           "args": "pk text, rk text, condition text, size integer, page integer",
           "body": "declare\nbegin\n  if not condition is null then\n    raise exception 'condition not supported';\n  end if;\n  return query\n    select\n      wmworker_pools_entities_scan.partition_key,\n      'workerPool' as row_key,\n      entity_buf_encode(\n        entity_buf_encode(\n          entity_buf_encode(\n            jsonb_build_object(\n              'PartitionKey', encode_string_key(worker_pool_id),\n              'RowKey', 'workerPool',\n              'workerPoolId', worker_pool_id,\n              'providerId', provider_id,\n              'owner', owner,\n              'description', description,\n              'emailOnError', email_on_error,\n              'created', created,\n              'lastModified', last_modified),\n            'config', config::text),\n          'providerData', provider_data::text),\n        'previousProviderIds', previous_provider_ids::text) as value,\n      1 as version,\n    worker_pools.etag as etag\n    from worker_pools\n    where\n      partition_key is null or\n      worker_pool_id = decode_string_key(partition_key)\n    order by worker_pool_id\n    limit size + 1\n    offset page;\nend",
-          "deprecated": false,
+          "deprecated": true,
           "description": "See taskcluster-lib-entities",
           "mode": "read",
           "returns": "table (partition_key text, row_key text, value jsonb, version integer, etag uuid)",
@@ -2372,7 +2372,7 @@
         "update_widgets": {
           "args": "name_in text",
           "body": "begin\n  return;\nend",
-          "deprecated": false,
+          "deprecated": true,
           "description": "Temporary method to test infrastructure support fo database access",
           "mode": "write",
           "returns": "table (name text)",
@@ -2443,7 +2443,7 @@
         "wmworkers_entities_create": {
           "args": "pk text, rk text, properties jsonb, overwrite boolean, version integer",
           "body": "declare\n  new_row workers%ROWTYPE;\nbegin\n  select\n    (properties ->> 'workerPoolId')::text,\n    (properties ->> 'workerGroup')::text,\n    (properties ->> 'workerId')::text,\n    (properties ->> 'providerId')::text,\n    (properties ->> 'created')::timestamptz,\n    (properties ->> 'expires')::timestamptz,\n    (properties ->> 'state')::text,\n    entity_buf_decode(properties, 'providerData')::jsonb,\n    (properties ->> 'capacity')::integer as capacity,\n    (properties ->> 'lastModified')::timestamptz,\n    (properties ->> 'lastChecked')::timestamptz,\n    public.gen_random_uuid()\n  into new_row;\n  if overwrite then\n    raise exception 'overwrite not implemented';\n  else\n    execute 'insert into workers select $1.*' using new_row;\n  end if;\n  return new_row.etag;\nend",
-          "deprecated": false,
+          "deprecated": true,
           "description": "See taskcluster-lib-entities",
           "mode": "write",
           "returns": "uuid",
@@ -2452,7 +2452,7 @@
         "wmworkers_entities_load": {
           "args": "partition_key text, row_key text",
           "body": "declare\n  decoded_composite_key text[];\nbegin\n  decoded_composite_key := decode_composite_key(wmworkers_entities_load.row_key);\n  return query\n  select\n    wmworkers_entities_load.partition_key,\n    wmworkers_entities_load.row_key,\n    entity_buf_encode(\n      jsonb_build_object(\n        'PartitionKey', encode_string_key(worker_pool_id),\n        'RowKey', encode_composite_key(worker_group, worker_id),\n        'workerPoolId', worker_pool_id,\n        'workerGroup', worker_group,\n        'workerId', worker_id,\n        'providerId', provider_id,\n        'created', created,\n        'expires', expires,\n        'state', state,\n        'capacity', capacity,\n        'lastModified', last_modified,\n        'lastChecked', last_checked),\n      'providerData', provider_data::text) as value,\n    1 as version,\n    workers.etag as etag\n  from workers\n  where\n    workers.worker_pool_id = decode_string_key(wmworkers_entities_load.partition_key) and workers.worker_group = decoded_composite_key[1] and workers.worker_id = decoded_composite_key[2];\nend",
-          "deprecated": false,
+          "deprecated": true,
           "description": "See taskcluster-lib-entities",
           "mode": "read",
           "returns": "table (partition_key_out text, row_key_out text, value jsonb, version integer, etag uuid)",
@@ -2461,7 +2461,7 @@
         "wmworkers_entities_modify": {
           "args": "partition_key text, row_key text, properties jsonb, version integer, old_etag uuid",
           "body": "declare\n  new_row workers%ROWTYPE;\n  decoded_composite_key text[];\nbegin\n  decoded_composite_key := decode_composite_key(wmworkers_entities_modify.row_key);\n  select\n    (properties ->> 'workerPoolId')::text,\n    (properties ->> 'workerGroup')::text,\n    (properties ->> 'workerId')::text,\n    (properties ->> 'providerId')::text,\n    (properties ->> 'created')::timestamptz,\n    (properties ->> 'expires')::timestamptz,\n    (properties ->> 'state')::text,\n    entity_buf_decode(properties, 'providerData')::jsonb,\n    (properties ->> 'capacity')::integer,\n    (properties ->> 'lastModified')::timestamptz,\n    (properties ->> 'lastChecked')::timestamptz,\n    public.gen_random_uuid() as etag\n  into new_row;\n  update workers\n  set (\n    provider_id,\n    created,\n    expires,\n    state,\n    capacity,\n    last_modified,\n    last_checked,\n    provider_data,\n    etag\n  ) = (\n    new_row.provider_id,\n    new_row.created,\n    new_row.expires,\n    new_row.state,\n    new_row.capacity,\n    new_row.last_modified,\n    new_row.last_checked,\n    new_row.provider_data,\n    new_row.etag\n  )\n  where\n    workers.worker_pool_id = decode_string_key(wmworkers_entities_modify.partition_key) and\n    workers.worker_group = decoded_composite_key[1] and\n    workers.worker_id = decoded_composite_key[2] and\n    workers.etag = wmworkers_entities_modify.old_etag;\n  if found then\n    return query select new_row.etag;\n    return;\n  end if;\n  perform workers.etag from workers\n  where\n    workers.worker_pool_id = decode_string_key(wmworkers_entities_modify.partition_key) and\n    workers.worker_group = decoded_composite_key[1] and\n    workers.worker_id = decoded_composite_key[2];\n  if found then\n    raise exception 'unsuccessful update' using errcode = 'P0004';\n  else\n    raise exception 'no such row' using errcode = 'P0002';\n  end if;\nend",
-          "deprecated": false,
+          "deprecated": true,
           "description": "See taskcluster-lib-entities",
           "mode": "write",
           "returns": "table (etag uuid)",
@@ -2470,7 +2470,7 @@
         "wmworkers_entities_remove": {
           "args": "partition_key text, row_key text",
           "body": "declare\n  decoded_composite_key text[];\nbegin\n  decoded_composite_key := decode_composite_key(wmworkers_entities_remove.row_key);\n  return query delete from workers\n  where\n    workers.worker_pool_id = decode_string_key(wmworkers_entities_remove.partition_key) and\n    workers.worker_group = decoded_composite_key[1] and\n    workers.worker_id = decoded_composite_key[2]\n  returning workers.etag;\nend",
-          "deprecated": false,
+          "deprecated": true,
           "description": "See taskcluster-lib-entities",
           "mode": "write",
           "returns": "table (etag uuid)",
@@ -2479,7 +2479,7 @@
         "wmworkers_entities_scan": {
           "args": "pk text, rk text, condition text, size integer, page integer",
           "body": "declare\n  cond text[];\n  exp_cond_operator text;\n  exp_cond_operand timestamptz;\n  partition_key_var text;\n  row_key_var text;\n  decoded_composite_key text[];\nbegin\n  decoded_composite_key := decode_composite_key(wmworkers_entities_scan.rk);\n  if not condition is null then\n    cond := regexp_split_to_array(condition, '\\s+');\n    exp_cond_operator := cond[4];\n    exp_cond_operand := cond[5] :: timestamptz;\n\n    return query select\n      encode_string_key(worker_pool_id) as partition_key,\n      encode_composite_key(worker_group, worker_id) as row_key,\n      entity_buf_encode(\n        jsonb_build_object(\n          'PartitionKey', encode_string_key(worker_pool_id),\n          'RowKey', encode_composite_key(worker_group, worker_id),\n          'workerPoolId', worker_pool_id,\n          'workerGroup', worker_group,\n          'workerId', worker_id,\n          'providerId', provider_id,\n          'created', created,\n          'expires', expires,\n          'state', state,\n          'capacity', capacity,\n          'lastModified', last_modified,\n          'lastChecked', last_checked),\n        'providerData', provider_data::text) as value,\n      1 as version,\n      workers.etag as etag from workers\n    where\n      (wmworkers_entities_scan.pk is null or decode_string_key(wmworkers_entities_scan.pk) = worker_pool_id) and\n      (wmworkers_entities_scan.rk is null or wmworkers_entities_scan.rk = decoded_composite_key[1] || '~' || decoded_composite_key[2]) and\n      case\n        when exp_cond_operator = '=' then expires = exp_cond_operand\n        when exp_cond_operator = '<' then expires < exp_cond_operand\n        when exp_cond_operator = '<=' then expires <= exp_cond_operand\n        when exp_cond_operator = '>' then expires > exp_cond_operand\n        when exp_cond_operator = '>=' then expires >= exp_cond_operand\n        else expires <> exp_cond_operand\n      end\n    order by workers.worker_pool_id, workers.worker_group, workers.worker_id\n    limit case\n      when (size is not null and size > 0) then size + 1\n      else null\n    end\n    offset case\n      when (page is not null and page > 0) then page\n      else 0\n    end;\n  else\n    return query select\n      encode_string_key(worker_pool_id) as partition_key,\n      encode_composite_key(worker_group, worker_id) as row_key,\n      entity_buf_encode(\n        jsonb_build_object(\n          'PartitionKey', encode_string_key(worker_pool_id),\n          'RowKey', encode_composite_key(worker_group, worker_id),\n          'workerPoolId', worker_pool_id,\n          'workerGroup', worker_group,\n          'workerId', worker_id,\n          'providerId', provider_id,\n          'created', created,\n          'expires', expires,\n          'state', state,\n          'capacity', capacity,\n          'lastModified', last_modified,\n          'lastChecked', last_checked),\n        'providerData', provider_data::text) as value,\n      1 as version,\n      workers.etag as etag from workers\n    where\n      (wmworkers_entities_scan.pk is null or decode_string_key(wmworkers_entities_scan.pk) = worker_pool_id) and\n      (wmworkers_entities_scan.rk is null or (worker_group = decoded_composite_key[1] and worker_id = decoded_composite_key[2]))\n    order by workers.worker_pool_id, workers.worker_group, workers.worker_id\n    limit case\n      when (size is not null and size > 0) then size + 1\n      else null\n    end\n    offset case\n      when (size is not null and size > 0 and page is not null and page > 0) then page\n      else 0\n    end;\n  end if;\nend",
-          "deprecated": false,
+          "deprecated": true,
           "description": "See taskcluster-lib-entities",
           "mode": "read",
           "returns": "table (partition_key text, row_key text, value jsonb, version integer, etag uuid)",
@@ -2535,6 +2535,9 @@
       "description": "add secret to workers",
       "downgradeScript": "begin\n  alter table workers\n    drop column secret;\nend\n",
       "methods": {
+        "get_worker": {
+          "deprecated": true
+        },
         "get_worker_2": {
           "args": "worker_pool_id_in text, worker_group_in text, worker_id_in text",
           "body": "begin\n  return query\n  select\n    workers.worker_pool_id,\n    workers.worker_group,\n    workers.worker_id,\n    workers.provider_id,\n    workers.created,\n    workers.expires,\n    workers.state,\n    workers.provider_data,\n    workers.capacity,\n    workers.last_modified,\n    workers.last_checked,\n    workers.secret,\n    workers.etag\n  from workers\n  where\n    workers.worker_pool_id = worker_pool_id_in and\n    workers.worker_group = worker_group_in and\n    workers.worker_id = worker_id_in;\nend",
@@ -2543,6 +2546,9 @@
           "mode": "read",
           "returns": "table(worker_pool_id text, worker_group text, worker_id text, provider_id text, created timestamptz, expires timestamptz, state text, provider_data jsonb, capacity integer, last_modified timestamptz, last_checked timestamptz, secret jsonb, etag uuid)",
           "serviceName": "worker_manager"
+        },
+        "update_worker": {
+          "deprecated": true
         },
         "update_worker_2": {
           "args": "worker_pool_id_in text, worker_group_in text, worker_id_in text, provider_id_in text, created_in timestamptz, expires_in timestamptz, state_in text, provider_data_in jsonb, capacity_in integer, last_modified_in timestamptz, last_checked_in timestamptz, etag_in uuid, secret_in jsonb",
@@ -2607,7 +2613,7 @@
         "denylisted_notification_entities_create": {
           "args": "pk text, rk text, properties jsonb, overwrite boolean, version integer",
           "body": "declare\n  new_row denylisted_notifications%ROWTYPE;\nbegin\n  select\n    (properties ->> 'notificationType')::text as notification_type,\n    (properties ->> 'notificationAddress')::text as notification_address,\n    public.gen_random_uuid() as etag\n  into new_row;\n  if overwrite then\n    raise exception 'overwrite not implemented';\n  else\n    execute 'insert into denylisted_notifications select $1.*' using new_row;\n  end if;\n  return new_row.etag;\nend",
-          "deprecated": false,
+          "deprecated": true,
           "description": "See taskcluster-lib-entities",
           "mode": "write",
           "returns": "uuid",
@@ -2616,16 +2622,19 @@
         "denylisted_notification_entities_load": {
           "args": "partition_key text, row_key text",
           "body": "begin\n  return query\n  select\n    denylisted_notification_entities_load.partition_key,\n    denylisted_notification_entities_load.row_key,\n    jsonb_build_object(\n      'PartitionKey', denylisted_notification_entities_load.partition_key,\n      'RowKey', denylisted_notification_entities_load.row_key,\n      'notificationType', notification_type,\n      'notificationAddress', notification_address) as value,\n    1 as version,\n    denylisted_notifications.etag as etag\n  from denylisted_notifications\n  where\n    denylisted_notifications.notification_type = decode_string_key(denylisted_notification_entities_load.partition_key) and denylisted_notifications.notification_address = decode_string_key(denylisted_notification_entities_load.row_key);\nend",
-          "deprecated": false,
+          "deprecated": true,
           "description": "See taskcluster-lib-entities",
           "mode": "read",
           "returns": "table (partition_key_out text, row_key_out text, value jsonb, version integer, etag uuid)",
           "serviceName": "notify"
         },
+        "denylisted_notification_entities_modify": {
+          "deprecated": true
+        },
         "denylisted_notification_entities_remove": {
           "args": "partition_key text, row_key text",
           "body": "begin\n  return query delete from denylisted_notifications\n  where\n    denylisted_notifications.notification_type = decode_string_key(denylisted_notification_entities_remove.partition_key) and denylisted_notifications.notification_address = decode_string_key(denylisted_notification_entities_remove.row_key)\n  returning denylisted_notifications.etag;\nend",
-          "deprecated": false,
+          "deprecated": true,
           "description": "See taskcluster-lib-entities",
           "mode": "write",
           "returns": "table (etag uuid)",
@@ -2634,7 +2643,7 @@
         "denylisted_notification_entities_scan": {
           "args": "pk text, rk text, condition text, size integer, page integer",
           "body": "declare\n  cond text[];\n  exp_cond_operator text;\n  exp_cond_operand timestamptz;\n  partition_key_var text;\n  row_key_var text;\nbegin\n  if not condition is null then\n    raise exception 'no condition support in denylisted_notification_entities_scan';\n  else\n    return query select\n      encode_string_key(denylisted_notifications.notification_type) as partition_key,\n      encode_string_key(denylisted_notifications.notification_address) as row_key,\n      jsonb_build_object(\n        'PartitionKey', encode_string_key(denylisted_notifications.notification_type),\n        'RowKey', encode_string_key(denylisted_notifications.notification_address),\n        'notificationType', notification_type,\n        'notificationAddress', notification_address\n      ) as value,\n      1 as version,\n      denylisted_notifications.etag as etag from denylisted_notifications\n    where\n      (denylisted_notification_entities_scan.pk is null or decode_string_key(denylisted_notification_entities_scan.pk) = notification_type) and\n      (denylisted_notification_entities_scan.rk is null or decode_string_key(denylisted_notification_entities_scan.rk) = notification_address)\n    order by denylisted_notifications.notification_type, denylisted_notifications.notification_address\n    limit case\n      when (size is not null and size > 0) then size + 1\n      else null\n    end\n    offset case\n      when (size is not null and size > 0 and page is not null and page > 0) then page\n      else 0\n    end;\n  end if;\nend",
-          "deprecated": false,
+          "deprecated": true,
           "description": "See taskcluster-lib-entities",
           "mode": "read",
           "returns": "table (partition_key text, row_key text, value jsonb, version integer, etag uuid)",
@@ -2660,7 +2669,7 @@
         "indexed_tasks_entities_create": {
           "args": "pk text, rk text, properties jsonb, overwrite boolean, version integer",
           "body": "declare\n  new_row indexed_tasks%ROWTYPE;\nbegin\n  select\n    (properties ->> 'namespace')::text,\n    (properties ->> 'name')::text,\n    (properties ->> 'rank')::text,\n    (properties ->> 'taskId')::text,\n    entity_buf_decode(properties, 'data')::jsonb,\n    (properties ->> 'expires')::timestamptz,\n    public.gen_random_uuid()\n  into new_row;\n  if overwrite then\n    raise exception 'overwrite not implemented';\n  else\n    execute 'insert into indexed_tasks select $1.*' using new_row;\n  end if;\n  return new_row.etag;\nend",
-          "deprecated": false,
+          "deprecated": true,
           "description": "See taskcluster-lib-entities",
           "mode": "write",
           "returns": "uuid",
@@ -2669,7 +2678,7 @@
         "indexed_tasks_entities_load": {
           "args": "partition_key text, row_key text",
           "body": "begin\n  return query\n  select\n    indexed_tasks_entities_load.partition_key,\n    indexed_tasks_entities_load.row_key,\n    entity_buf_encode(\n      jsonb_build_object(\n        'PartitionKey', sha512(namespace),\n        'RowKey', encode_string_key(name),\n        'namespace', namespace,\n        'name', name,\n        'rank', rank,\n        'taskId', task_id,\n        'expires', expires),\n      'data', data::text) as value,\n    1 as version,\n    indexed_tasks.etag as etag\n  from indexed_tasks\n  where\n    sha512(indexed_tasks.namespace) = partition_key and\n    indexed_tasks.name = decode_string_key(row_key);\nend",
-          "deprecated": false,
+          "deprecated": true,
           "description": "See taskcluster-lib-entities",
           "mode": "read",
           "returns": "table (partition_key_out text, row_key_out text, value jsonb, version integer, etag uuid)",
@@ -2678,7 +2687,7 @@
         "indexed_tasks_entities_modify": {
           "args": "partition_key text, row_key text, properties jsonb, version integer, old_etag uuid",
           "body": "declare\n  new_row indexed_tasks%ROWTYPE;\nbegin\n  select\n    (properties ->> 'namespace')::text,\n    (properties ->> 'name')::text,\n    (properties ->> 'rank')::integer,\n    (properties ->> 'taskId')::text,\n    entity_buf_decode(properties, 'data')::jsonb,\n    (properties ->> 'expires')::timestamptz,\n    public.gen_random_uuid() as etag\n  into new_row;\n  update indexed_tasks\n  set (\n    namespace,\n    name,\n    rank,\n    task_id,\n    data,\n    expires,\n    etag\n  ) = (\n    new_row.namespace,\n    new_row.name,\n    new_row.rank,\n    new_row.task_id,\n    new_row.data,\n    new_row.expires,\n    new_row.etag\n  )\n  where\n    sha512(indexed_tasks.namespace) = indexed_tasks_entities_modify.partition_key and\n    indexed_tasks.name = decode_string_key(indexed_tasks_entities_modify.row_key) and\n    indexed_tasks.etag = indexed_tasks_entities_modify.old_etag;\n  if found then\n    return query select new_row.etag;\n    return;\n  end if;\n  perform indexed_tasks.etag from indexed_tasks\n  where\n    sha512(indexed_tasks.namespace) = indexed_tasks_entities_modify.partition_key and\n    indexed_tasks.name = decode_string_key(indexed_tasks_entities_modify.row_key);\n  if found then\n    raise exception 'unsuccessful update' using errcode = 'P0004';\n  else\n    raise warning 'no such row... % pk: %, row_key %, new_row.etag %, old_etag %', properties, partition_key, row_key, new_row.etag, old_etag;\n    raise exception 'no such row' using errcode = 'P0002';\n  end if;\nend",
-          "deprecated": false,
+          "deprecated": true,
           "description": "See taskcluster-lib-entities",
           "mode": "write",
           "returns": "table (etag uuid)",
@@ -2687,7 +2696,7 @@
         "indexed_tasks_entities_remove": {
           "args": "partition_key text, row_key text",
           "body": "begin\n  return query delete from indexed_tasks\n  where\n    sha512(indexed_tasks.namespace) = indexed_tasks_entities_remove.partition_key and\n    indexed_tasks.name = decode_string_key(indexed_tasks_entities_remove.row_key)\n  returning indexed_tasks.etag;\nend",
-          "deprecated": false,
+          "deprecated": true,
           "description": "See taskcluster-lib-entities",
           "mode": "write",
           "returns": "table (etag uuid)",
@@ -2696,7 +2705,7 @@
         "indexed_tasks_entities_scan": {
           "args": "pk text, rk text, condition text, size integer, page integer",
           "body": "declare\n  cond text[];\n  exp_cond_operator text;\n  exp_cond_operand timestamptz;\n  partition_key_var text;\n  row_key_var text;\nbegin\n  if not condition is null then\n    cond := regexp_split_to_array(condition, '\\s+');\n    exp_cond_operator := cond[4];\n    exp_cond_operand := cond[5] :: timestamptz;\n    return query select\n      sha512(namespace) as partition_key,\n      encode_string_key(name) as row_key,\n      entity_buf_encode(\n        jsonb_build_object(\n          'PartitionKey', sha512(namespace),\n          'RowKey', encode_string_key(name),\n          'namespace', namespace,\n          'name', name,\n          'rank', rank,\n          'taskId', task_id,\n          'expires', expires),\n        'data', data::text) as value,\n      1 as version,\n      indexed_tasks.etag as etag from indexed_tasks\n    where\n      (indexed_tasks_entities_scan.pk is null or sha512(namespace) = indexed_tasks_entities_scan.pk) and\n      (indexed_tasks_entities_scan.rk is null or decode_string_key(indexed_tasks_entities_scan.rk) = name) and\n      case\n        when exp_cond_operator = '=' then expires = exp_cond_operand\n        when exp_cond_operator = '<' then expires < exp_cond_operand\n        when exp_cond_operator = '<=' then expires <= exp_cond_operand\n        when exp_cond_operator = '>' then expires > exp_cond_operand\n        when exp_cond_operator = '>=' then expires >= exp_cond_operand\n        else expires <> exp_cond_operand\n      end\n    order by partition_key, indexed_tasks.name\n    limit case\n      when (size is not null and size > 0) then size + 1\n      else null\n    end\n    offset case\n      when (page is not null and page > 0) then page\n      else 0\n    end;\n  else\n    return query select\n      sha512(namespace) as partition_key,\n      encode_string_key(name) as row_key,\n      entity_buf_encode(\n        jsonb_build_object(\n          'PartitionKey', sha512(namespace),\n          'RowKey', encode_string_key(name),\n          'namespace', namespace,\n          'name', name,\n          'rank', rank,\n          'taskId', task_id,\n          'expires', expires),\n        'data', data::text) as value,\n      1 as version,\n      indexed_tasks.etag as etag from indexed_tasks\n    where\n      (indexed_tasks_entities_scan.pk is null or sha512(namespace) = indexed_tasks_entities_scan.pk) and\n      (indexed_tasks_entities_scan.rk is null or decode_string_key(indexed_tasks_entities_scan.rk) = name)\n    order by partition_key, indexed_tasks.name\n    limit case\n      when (size is not null and size > 0) then size + 1\n      else null\n    end\n    offset case\n      when (size is not null and size > 0 and page is not null and page > 0) then page\n      else 0\n    end;\n  end if;\nend",
-          "deprecated": false,
+          "deprecated": true,
           "description": "See taskcluster-lib-entities",
           "mode": "read",
           "returns": "table (partition_key text, row_key text, value jsonb, version integer, etag uuid)",
@@ -2705,7 +2714,7 @@
         "namespaces_entities_create": {
           "args": "pk text, rk text, properties jsonb, overwrite boolean, version integer",
           "body": "declare\n  new_row index_namespaces%ROWTYPE;\nbegin\n  select\n    (properties ->> 'parent')::text,\n    (properties ->> 'name')::text,\n    (properties ->> 'expires')::timestamptz,\n    public.gen_random_uuid()\n  into new_row;\n  if overwrite then\n    raise exception 'overwrite not implemented';\n  else\n    execute 'insert into index_namespaces select $1.*' using new_row;\n  end if;\n  return new_row.etag;\nend",
-          "deprecated": false,
+          "deprecated": true,
           "description": "See taskcluster-lib-entities",
           "mode": "write",
           "returns": "uuid",
@@ -2714,7 +2723,7 @@
         "namespaces_entities_load": {
           "args": "partition_key text, row_key text",
           "body": "begin\n  return query\n  select\n    namespaces_entities_load.partition_key,\n    namespaces_entities_load.row_key,\n    jsonb_build_object(\n      'PartitionKey', sha512(parent),\n      'RowKey', encode_string_key(name),\n      'parent', parent,\n      'name', name,\n      'expires', expires) as value,\n    1 as version,\n    index_namespaces.etag as etag\n  from index_namespaces\n  where\n    sha512(index_namespaces.parent) = partition_key and\n    index_namespaces.name = decode_string_key(row_key);\nend",
-          "deprecated": false,
+          "deprecated": true,
           "description": "See taskcluster-lib-entities",
           "mode": "read",
           "returns": "table (partition_key_out text, row_key_out text, value jsonb, version integer, etag uuid)",
@@ -2723,7 +2732,7 @@
         "namespaces_entities_modify": {
           "args": "partition_key text, row_key text, properties jsonb, version integer, old_etag uuid",
           "body": "declare\n  new_row index_namespaces%ROWTYPE;\nbegin\n  select\n    (properties ->> 'parent')::text,\n    (properties ->> 'name')::text,\n    (properties ->> 'expires')::timestamptz,\n    public.gen_random_uuid() as etag\n  into new_row;\n  update index_namespaces\n  set (\n    parent,\n    name,\n    expires,\n    etag\n  ) = (\n    new_row.parent,\n    new_row.name,\n    new_row.expires,\n    new_row.etag\n  )\n  where\n    sha512(index_namespaces.parent) = namespaces_entities_modify.partition_key and\n    index_namespaces.name = decode_string_key(namespaces_entities_modify.row_key) and\n    index_namespaces.etag = namespaces_entities_modify.old_etag;\n  if found then\n    return query select new_row.etag;\n    return;\n  end if;\n  perform index_namespaces.etag from index_namespaces\n  where\n    sha512(index_namespaces.parent) = namespaces_entities_modify.partition_key and\n    index_namespaces.name = decode_string_key(namespaces_entities_modify.row_key);\n  if found then\n    raise exception 'unsuccessful update' using errcode = 'P0004';\n  else\n    raise warning 'no such row... % pk: %, row_key %, new_row.etag %, old_etag %', properties, partition_key, row_key, new_row.etag, old_etag;\n    raise exception 'no such row' using errcode = 'P0002';\n  end if;\nend",
-          "deprecated": false,
+          "deprecated": true,
           "description": "See taskcluster-lib-entities",
           "mode": "write",
           "returns": "table (etag uuid)",
@@ -2732,7 +2741,7 @@
         "namespaces_entities_remove": {
           "args": "partition_key text, row_key text",
           "body": "begin\n  return query delete from index_namespaces\n  where\n    sha512(index_namespaces.parent) = namespaces_entities_remove.partition_key and\n    index_namespaces.name = decode_string_key(namespaces_entities_remove.row_key)\n  returning index_namespaces.etag;\nend",
-          "deprecated": false,
+          "deprecated": true,
           "description": "See taskcluster-lib-entities",
           "mode": "write",
           "returns": "table (etag uuid)",
@@ -2741,7 +2750,7 @@
         "namespaces_entities_scan": {
           "args": "pk text, rk text, condition text, size integer, page integer",
           "body": "declare\n  cond text[];\n  exp_cond_operator text;\n  exp_cond_operand timestamptz;\n  partition_key_var text;\n  row_key_var text;\nbegin\n  if not condition is null then\n    cond := regexp_split_to_array(condition, '\\s+');\n    exp_cond_operator := cond[4];\n    exp_cond_operand := cond[5] :: timestamptz;\n    return query select\n      sha512(parent) as partition_key,\n      encode_string_key(name) as row_key,\n      jsonb_build_object(\n        'PartitionKey', sha512(parent),\n        'RowKey', encode_string_key(name),\n        'parent', parent,\n        'name', name,\n        'expires', expires) as value,\n      1 as version,\n      index_namespaces.etag as etag from index_namespaces\n    where\n      (namespaces_entities_scan.pk is null or sha512(parent) = namespaces_entities_scan.pk) and\n      (namespaces_entities_scan.rk is null or decode_string_key(namespaces_entities_scan.rk) = name) and\n      case\n        when exp_cond_operator = '=' then expires = exp_cond_operand\n        when exp_cond_operator = '<' then expires < exp_cond_operand\n        when exp_cond_operator = '<=' then expires <= exp_cond_operand\n        when exp_cond_operator = '>' then expires > exp_cond_operand\n        when exp_cond_operator = '>=' then expires >= exp_cond_operand\n        else expires <> exp_cond_operand\n      end\n    order by partition_key, index_namespaces.name\n    limit case\n      when (size is not null and size > 0) then size + 1\n      else null\n    end\n    offset case\n      when (page is not null and page > 0) then page\n      else 0\n    end;\n  else\n    return query select\n      sha512(parent) as partition_key,\n      encode_string_key(name) as row_key,\n      jsonb_build_object(\n        'PartitionKey', sha512(parent),\n        'RowKey', encode_string_key(name),\n        'parent', parent,\n        'name', name,\n        'expires', expires) as value,\n      1 as version,\n      index_namespaces.etag as etag from index_namespaces\n    where\n      (namespaces_entities_scan.pk is null or sha512(parent) = namespaces_entities_scan.pk) and\n      (namespaces_entities_scan.rk is null or decode_string_key(namespaces_entities_scan.rk) = name)\n    order by partition_key, index_namespaces.name\n    limit case\n      when (size is not null and size > 0) then size + 1\n      else null\n    end\n    offset case\n      when (size is not null and size > 0 and page is not null and page > 0) then page\n      else 0\n    end;\n  end if;\nend",
-          "deprecated": false,
+          "deprecated": true,
           "description": "See taskcluster-lib-entities",
           "mode": "read",
           "returns": "table (partition_key text, row_key text, value jsonb, version integer, etag uuid)",
@@ -2758,7 +2767,7 @@
         "queue_artifacts_entities_create": {
           "args": "pk text, rk text, properties jsonb, overwrite boolean, version integer",
           "body": "declare\n  new_row queue_artifacts%ROWTYPE;\nbegin\n  select\n    uuid_to_slugid(properties ->> 'taskId'),\n    (properties ->> 'runId')::integer,\n    (properties ->> 'name')::text,\n    (properties ->> 'storageType')::text,\n    (properties ->> 'contentType')::text,\n    entity_buf_decode(properties, 'details')::jsonb,\n    (properties ->> 'present')::boolean,\n    (properties ->> 'expires')::timestamptz,\n    public.gen_random_uuid()\n  into new_row;\n  if overwrite then\n    raise exception 'overwrite not implemented';\n  else\n    execute 'insert into queue_artifacts select $1.*' using new_row;\n  end if;\n  return new_row.etag;\nend",
-          "deprecated": false,
+          "deprecated": true,
           "description": "See taskcluster-lib-entities",
           "mode": "write",
           "returns": "uuid",
@@ -2767,7 +2776,7 @@
         "queue_artifacts_entities_load": {
           "args": "partition_key text, row_key text",
           "body": "declare\n  decoded_composite_key text[];\nbegin\n  decoded_composite_key := decode_composite_key(queue_artifacts_entities_load.partition_key);\n  return query\n  select\n    queue_artifacts_entities_load.partition_key,\n    queue_artifacts_entities_load.row_key,\n    entity_buf_encode(\n      jsonb_build_object(\n        'PartitionKey', queue_artifacts_entities_load.partition_key,\n        'RowKey', queue_artifacts_entities_load.row_key,\n        'taskId', slugid_to_uuid(task_id),\n        'runId', run_id,\n        'name', name,\n        'storageType', storage_type,\n        'contentType', content_type,\n        'present', present,\n        'expires', expires),\n      'details', details::text) as value,\n    1 as version,\n    queue_artifacts.etag as etag\n  from queue_artifacts\n  where\n    queue_artifacts.task_id = decoded_composite_key[1] and queue_artifacts.run_id = decoded_composite_key[2]::int and queue_artifacts.name = decode_string_key(queue_artifacts_entities_load.row_key);\nend",
-          "deprecated": false,
+          "deprecated": true,
           "description": "See taskcluster-lib-entities",
           "mode": "read",
           "returns": "table (partition_key_out text, row_key_out text, value jsonb, version integer, etag uuid)",
@@ -2776,7 +2785,7 @@
         "queue_artifacts_entities_modify": {
           "args": "partition_key text, row_key text, properties jsonb, version integer, old_etag uuid",
           "body": "declare\n  new_row queue_artifacts%ROWTYPE;\n  decoded_composite_key text[];\nbegin\n  decoded_composite_key := decode_composite_key(queue_artifacts_entities_modify.partition_key);\n  select\n    (properties ->> 'taskId')::text,\n    (properties ->> 'runId')::integer,\n    (properties ->> 'name')::text,\n    (properties ->> 'storageType')::text,\n    (properties ->> 'contentType')::text,\n    entity_buf_decode(properties, 'details')::jsonb,\n    (properties ->> 'present')::boolean,\n    (properties ->> 'expires')::timestamptz,\n    public.gen_random_uuid()\n  into new_row;\n  update queue_artifacts\n  set (\n    storage_type,\n    content_type,\n    details,\n    present,\n    expires,\n    etag\n  ) = (\n    new_row.storage_type,\n    new_row.content_type,\n    new_row.details,\n    new_row.present,\n    new_row.expires,\n    new_row.etag\n  )\n  where\n    queue_artifacts.task_id = decoded_composite_key[1] and\n    queue_artifacts.run_id = decoded_composite_key[2]::int and\n    queue_artifacts.name = decode_string_key(queue_artifacts_entities_modify.row_key) and\n    queue_artifacts.etag = queue_artifacts_entities_modify.old_etag;\n  if found then\n    return query select new_row.etag;\n    return;\n  end if;\n  perform queue_artifacts.etag from queue_artifacts\n  where\n    queue_artifacts.task_id = decoded_composite_key[1] and\n    queue_artifacts.run_id = decoded_composite_key[2]::int and\n    queue_artifacts.name = decode_string_key(queue_artifacts_entities_modify.row_key);\n  if found then\n    raise exception 'unsuccessful update' using errcode = 'P0004';\n  else\n    raise exception 'no such row' using errcode = 'P0002';\n  end if;\nend",
-          "deprecated": false,
+          "deprecated": true,
           "description": "See taskcluster-lib-entities",
           "mode": "write",
           "returns": "table (etag uuid)",
@@ -2785,7 +2794,7 @@
         "queue_artifacts_entities_remove": {
           "args": "partition_key text, row_key text",
           "body": "declare\n  decoded_composite_key text[];\nbegin\n  decoded_composite_key := decode_composite_key(queue_artifacts_entities_remove.partition_key);\n  return query delete from queue_artifacts\n  where\n    queue_artifacts.task_id = decoded_composite_key[1] and queue_artifacts.run_id = decoded_composite_key[2]::int and queue_artifacts.name = decode_string_key(queue_artifacts_entities_remove.row_key)\n  returning queue_artifacts.etag;\nend",
-          "deprecated": false,
+          "deprecated": true,
           "description": "See taskcluster-lib-entities",
           "mode": "write",
           "returns": "table (etag uuid)",
@@ -2794,7 +2803,7 @@
         "queue_artifacts_entities_scan": {
           "args": "pk text, rk text, condition text, size integer, page integer",
           "body": "declare\n  cond text[];\n  exp_cond_operator text;\n  exp_cond_operand timestamptz;\n  partition_key_var text;\n  row_key_var text;\n  decoded_composite_key text[];\nbegin\n  decoded_composite_key := decode_composite_key(queue_artifacts_entities_scan.pk);\n  if not condition is null then\n    cond := regexp_split_to_array(condition, '\\s+');\n    exp_cond_operator := cond[4];\n    exp_cond_operand := cond[5] :: timestamptz;\n\n    return query select\n      encode_composite_key(queue_artifacts.task_id, queue_artifacts.run_id::text) as partition_key,\n      encode_string_key(queue_artifacts.name) as row_key,\n      entity_buf_encode(\n        jsonb_build_object(\n          'PartitionKey', encode_composite_key(queue_artifacts.task_id, queue_artifacts.run_id::text),\n          'RowKey', name,\n          'taskId', slugid_to_uuid(task_id),\n          'runId', run_id,\n          'name', name,\n          'storageType', storage_type,\n          'contentType', content_type,\n          'present', present,\n          'expires', expires\n        ),\n      'details', details::text) as value,\n      1 as version,\n      queue_artifacts.etag as etag from queue_artifacts\n    where\n      (queue_artifacts_entities_scan.pk is null or queue_artifacts_entities_scan.pk = decoded_composite_key[1] || '~' || decoded_composite_key[2]) and\n      (queue_artifacts_entities_scan.rk is null or queue_artifacts_entities_scan.rk = name) and\n      case\n        when exp_cond_operator = '=' then expires = exp_cond_operand\n        when exp_cond_operator = '<' then expires < exp_cond_operand\n        when exp_cond_operator = '<=' then expires <= exp_cond_operand\n        when exp_cond_operator = '>' then expires > exp_cond_operand\n        when exp_cond_operator = '>=' then expires >= exp_cond_operand\n        else expires <> exp_cond_operand\n      end\n    order by queue_artifacts.task_id, queue_artifacts.run_id, queue_artifacts.name\n    limit case\n      when (size is not null and size > 0) then size + 1\n      else null\n    end\n    offset case\n      when (page is not null and page > 0) then page\n      else 0\n    end;\n  else\n    return query select\n      encode_composite_key(queue_artifacts.task_id, queue_artifacts.run_id::text) as partition_key,\n      encode_string_key(queue_artifacts.name) as row_key,\n      entity_buf_encode(\n        jsonb_build_object(\n          'PartitionKey', encode_composite_key(queue_artifacts.task_id, queue_artifacts.run_id::text),\n          'RowKey', name,\n          'taskId', slugid_to_uuid(task_id),\n          'runId', run_id,\n          'name', name,\n          'storageType', storage_type,\n          'contentType', content_type,\n          'present', present,\n          'expires', expires),\n        'details', details::text) as value,\n      1 as version,\n      queue_artifacts.etag as etag from queue_artifacts\n    where\n      (queue_artifacts_entities_scan.pk is null or (queue_artifacts.task_id = decoded_composite_key[1] and queue_artifacts.run_id = decoded_composite_key[2]::int)) and\n      (queue_artifacts_entities_scan.rk is null or queue_artifacts_entities_scan.rk = name)\n    order by queue_artifacts.task_id, queue_artifacts.run_id, queue_artifacts.name\n    limit case\n      when (size is not null and size > 0) then size + 1\n      else null\n    end\n    offset case\n      when (size is not null and size > 0 and page is not null and page > 0) then page\n      else 0\n    end;\n  end if;\nend",
-          "deprecated": false,
+          "deprecated": true,
           "description": "See taskcluster-lib-entities",
           "mode": "read",
           "returns": "table (partition_key text, row_key text, value jsonb, version integer, etag uuid)",
@@ -2811,7 +2820,7 @@
         "queue_task_group_active_sets_entities_create": {
           "args": "pk text, rk text, properties jsonb, overwrite boolean, version integer",
           "body": "begin\n  -- this method is only called before the task is created, and tasks are\n  -- created in an unresolved state, so there's nothing to do here.  Note\n  -- that the service does not mark a task as unresolved when rerunning it\n  return public.gen_random_uuid();\nend",
-          "deprecated": false,
+          "deprecated": true,
           "description": "See taskcluster-lib-entities",
           "mode": "write",
           "returns": "uuid",
@@ -2820,7 +2829,7 @@
         "queue_task_group_active_sets_entities_load": {
           "args": "partition_key text, row_key text",
           "body": "begin\n  return query\n  select\n    task_group_id,\n    task_id,\n    jsonb_build_object(\n      'PartitionKey', task_group_id,\n      'RowKey', task_id,\n      'taskId', slugid_to_uuid(task_id),\n      'taskGroupId', slugid_to_uuid(task_group_id),\n      'expires', expires) as value,\n    1 as version,\n    tasks.etag as etag\n  from tasks\n  where\n    not ever_resolved and\n    tasks.task_group_id = partition_key and\n    tasks.task_id = row_key;\nend",
-          "deprecated": false,
+          "deprecated": true,
           "description": "See taskcluster-lib-entities",
           "mode": "read",
           "returns": "table (partition_key_out text, row_key_out text, value jsonb, version integer, etag uuid)",
@@ -2829,7 +2838,7 @@
         "queue_task_group_active_sets_entities_modify": {
           "args": "partition_key text, row_key text, properties jsonb, version integer, old_etag uuid",
           "body": "begin\n  raise exception 'modify not supported';\nend",
-          "deprecated": false,
+          "deprecated": true,
           "description": "See taskcluster-lib-entities",
           "mode": "write",
           "returns": "table (etag uuid)",
@@ -2838,7 +2847,7 @@
         "queue_task_group_active_sets_entities_remove": {
           "args": "partition_key text, row_key text",
           "body": "begin\n  -- DependencyTracker uses this to mark a task as ever_resolved\n  update tasks\n  set ever_resolved = true\n  where \n    tasks.task_group_id = partition_key and\n    tasks.task_id = row_key;\n  return query select public.gen_random_uuid() as etag;\nend",
-          "deprecated": false,
+          "deprecated": true,
           "description": "See taskcluster-lib-entities",
           "mode": "write",
           "returns": "table (etag uuid)",
@@ -2847,7 +2856,7 @@
         "queue_task_group_active_sets_entities_scan": {
           "args": "pk text, rk text, condition text, size integer, page integer",
           "body": "declare\n  cond text[];\n  exp_cond_field text;\n  exp_cond_operator text;\n  exp_cond_operand timestamptz;\nbegin\n  if not condition is null then\n    cond := regexp_split_to_array(condition, '\\s+');\n    exp_cond_field := trim(cond[3], '''');\n\n    if exp_cond_field != 'expires' then\n      raise exception 'queue_task_group_active_sets_entities_scan only supports filtering for expired rows';\n    end if;\n\n    -- there's no distinct table to expire, so just return an empty set to make the\n    -- expiration crontask finish immediately\n    return;\n  end if;\n\n  -- the idea here is to use the tasks_task_group_id_unresolved_idx index for a quick response\n  return query select\n    task_group_id as partition_key,\n    task_id as row_key,\n    jsonb_build_object(\n      'PartitionKey', task_group_id,\n      'RowKey', task_id,\n      'taskGroupId', slugid_to_uuid(task_group_id),\n      'taskId', slugid_to_uuid(task_id),\n      'expires', expires) as value,\n    1 as version,\n    public.gen_random_uuid() as etag\n  from tasks\n  where\n    (pk is NULL or pk = task_group_id) and\n    not ever_resolved\n  order by tasks.task_group_id, tasks.task_id\n  limit case\n    when (size is not null and size > 0) then size + 1\n    else null\n  end\n  offset case\n    when (page is not null and page > 0) then page\n    else 0\n  end;\nend",
-          "deprecated": false,
+          "deprecated": true,
           "description": "See taskcluster-lib-entities",
           "mode": "read",
           "returns": "table (partition_key text, row_key text, value jsonb, version integer, etag uuid)",
@@ -2856,7 +2865,7 @@
         "queue_task_group_members_entities_create": {
           "args": "pk text, rk text, properties jsonb, overwrite boolean, version integer",
           "body": "begin\n  return public.gen_random_uuid();\nend",
-          "deprecated": false,
+          "deprecated": true,
           "description": "See taskcluster-lib-entities",
           "mode": "write",
           "returns": "uuid",
@@ -2865,7 +2874,7 @@
         "queue_task_group_members_entities_load": {
           "args": "partition_key text, row_key text",
           "body": "begin\n  return query\n  select\n    task_group_id,\n    task_id,\n    jsonb_build_object(\n      'PartitionKey', task_group_id,\n      'RowKey', task_id,\n      'taskId', slugid_to_uuid(task_id),\n      'taskGroupId', slugid_to_uuid(task_group_id),\n      'expires', expires) as value,\n    1 as version,\n    tasks.etag as etag\n  from tasks\n  where\n    tasks.task_group_id = partition_key and\n    tasks.task_id = row_key;\nend",
-          "deprecated": false,
+          "deprecated": true,
           "description": "See taskcluster-lib-entities",
           "mode": "read",
           "returns": "table (partition_key_out text, row_key_out text, value jsonb, version integer, etag uuid)",
@@ -2874,7 +2883,7 @@
         "queue_task_group_members_entities_modify": {
           "args": "partition_key text, row_key text, properties jsonb, version integer, old_etag uuid",
           "body": "begin\n  raise exception 'modify not implemented for queue_task_group_members_entities';\nend",
-          "deprecated": false,
+          "deprecated": true,
           "description": "See taskcluster-lib-entities",
           "mode": "write",
           "returns": "table (etag uuid)",
@@ -2883,7 +2892,7 @@
         "queue_task_group_members_entities_remove": {
           "args": "partition_key text, row_key text",
           "body": "begin\n  return query\n  select tasks.etag\n  from tasks\n  where\n    tasks.task_group_id = partition_key and\n    tasks.task_id = row_key;\nend",
-          "deprecated": false,
+          "deprecated": true,
           "description": "See taskcluster-lib-entities",
           "mode": "write",
           "returns": "table (etag uuid)",
@@ -2892,7 +2901,7 @@
         "queue_task_group_members_entities_scan": {
           "args": "pk text, rk text, condition text, size integer, page integer",
           "body": "declare\n  cond text[];\n  exp_cond_field text;\n  exp_cond_operator text;\n  exp_cond_operand timestamptz;\nbegin\n  if pk is null then\n    -- if pk is null, then this is the expiration scan for the members table; since\n    -- there is no members table, we stub this out by simply returning an empty set,\n    -- ignoring the condition\n    return;\n  end if;\n\n  if not condition is null then\n    cond := regexp_split_to_array(condition, '\\s+');\n    exp_cond_field := trim(cond[3], '''');\n    exp_cond_operator := cond[4];\n    exp_cond_operand := cond[5] :: timestamptz;\n\n    if exp_cond_operator != '>=' or exp_cond_field != 'expires' then\n      raise exception 'queue_task_group_memberss_entities_scan only supports `expires >= <timestamp>` conditions';\n    end if;\n  end if;\n\n  return query\n  select\n    task_group_id,\n    task_id,\n    jsonb_build_object(\n      'PartitionKey', task_group_id,\n      'RowKey', task_id,\n      'taskId', slugid_to_uuid(task_id),\n      'taskGroupId', slugid_to_uuid(task_group_id),\n      'expires', expires) as value,\n    1 as version,\n    tasks.etag as etag\n  from tasks\n  where\n    tasks.task_group_id = pk and\n    (exp_cond_operand is NULL or expires >= exp_cond_operand)\n  order by tasks.task_id\n  limit case\n    when (size is not null and size > 0) then size + 1\n    else null\n  end\n  offset case\n    when (page is not null and page > 0) then page\n    else 0\n  end;\nend",
-          "deprecated": false,
+          "deprecated": true,
           "description": "See taskcluster-lib-entities",
           "mode": "read",
           "returns": "table (partition_key text, row_key text, value jsonb, version integer, etag uuid)",
@@ -2901,7 +2910,7 @@
         "queue_tasks_entities_create": {
           "args": "pk text, rk text, properties jsonb, overwrite boolean, version integer",
           "body": "declare\n  new_row tasks%ROWTYPE;\nbegin\n  select\n    uuid_to_slugid(properties ->> 'taskId'),\n    (properties ->> 'provisionerId')::text,\n    (properties ->> 'workerType')::text,\n    (properties ->> 'schedulerId')::text,\n    uuid_to_slugid(properties ->> 'taskGroupId')::text,\n    entity_buf_decode(properties, 'dependencies')::jsonb,\n    (properties ->> 'requires')::task_requires,\n    entity_buf_decode(properties, 'routes')::jsonb,\n    (properties ->> 'priority')::task_priority,\n    (properties ->> 'retries')::int,\n    (properties ->> 'retriesLeft')::int,\n    (properties ->> 'created')::timestamptz,\n    (properties ->> 'deadline')::timestamptz,\n    (properties ->> 'expires')::timestamptz,\n    entity_buf_decode(properties, 'scopes')::jsonb,\n    entity_buf_decode(properties, 'payload')::jsonb,\n    entity_buf_decode(properties, 'metadata')::jsonb,\n    entity_buf_decode(properties, 'tags')::jsonb,\n    entity_buf_decode(properties, 'extra')::jsonb,\n    entity_buf_decode(properties, 'runs')::jsonb,\n    case (properties ->> 'takenUntil')::timestamptz\n      when '1970-01-01 00:00:00+00'::timestamptz then null\n      else (properties ->> 'takenUntil')::timestamptz\n    end,\n    false,\n    public.gen_random_uuid()\n  into new_row;\n  if overwrite then\n    raise exception 'overwrite not implemented';\n  else\n    execute 'insert into tasks select $1.*' using new_row;\n  end if;\n  return new_row.etag;\nend",
-          "deprecated": false,
+          "deprecated": true,
           "description": "See taskcluster-lib-entities",
           "mode": "write",
           "returns": "uuid",
@@ -2910,7 +2919,7 @@
         "queue_tasks_entities_load": {
           "args": "partition_key text, row_key text",
           "body": "begin\n  return query\n  select\n    queue_tasks_entities_load.partition_key,\n    queue_tasks_entities_load.row_key,\n    entity_buf_encode(\n      entity_buf_encode(\n        entity_buf_encode(\n          entity_buf_encode(\n            entity_buf_encode(\n              entity_buf_encode(\n                entity_buf_encode(\n                  entity_buf_encode(\n                    jsonb_build_object(\n                      'PartitionKey', task_id,\n                      'RowKey', 'task',\n                      'taskId', slugid_to_uuid(task_id),\n                      'provisionerId', provisioner_id,\n                      'workerType', worker_type,\n                      'schedulerId', scheduler_id,\n                      'taskGroupId', slugid_to_uuid(task_group_id),\n                      'requires', requires::text,\n                      'priority', priority::text,\n                      'retries', retries,\n                      'retriesLeft', retries_left,\n                      'created', created,\n                      'deadline', deadline,\n                      'expires', expires,\n                      'takenUntil', coalesce(taken_until, '1970-01-01 00:00:00+00'::timestamptz)),\n                    'dependencies', dependencies::text),\n                  'routes', routes::text),\n                'scopes', scopes::text),\n              'payload', payload::text),\n            'metadata', metadata::text),\n          'tags', tags::text),\n        'extra', extra::text),\n      'runs', runs::text) as value,\n    1 as version,\n    tasks.etag as etag\n  from tasks\n  where\n    tasks.task_id = partition_key;\nend",
-          "deprecated": false,
+          "deprecated": true,
           "description": "See taskcluster-lib-entities",
           "mode": "read",
           "returns": "table (partition_key_out text, row_key_out text, value jsonb, version integer, etag uuid)",
@@ -2919,7 +2928,7 @@
         "queue_tasks_entities_modify": {
           "args": "partition_key text, row_key text, properties jsonb, version integer, old_etag uuid",
           "body": "declare\n  new_etag uuid;\nbegin\n  -- NOTE: queue only updates runs, retriesLeft, and takenUntil, so only those fields are\n  -- supported here.\n  new_etag = public.gen_random_uuid();\n  update tasks\n  set (\n    runs,\n    retries_left,\n    taken_until,\n    etag\n  ) = (\n    entity_buf_decode(properties, 'runs')::jsonb,\n    (properties ->> 'retriesLeft')::int,\n    case (properties ->> 'takenUntil')::timestamptz\n      when '1970-01-01 00:00:00+00'::timestamptz then null\n      else (properties ->> 'takenUntil')::timestamptz\n    end,\n    new_etag\n  )\n  where\n    tasks.task_id = partition_key and\n    tasks.etag = queue_tasks_entities_modify.old_etag;\n  if found then\n    return query select new_etag;\n    return;\n  end if;\n  perform tasks.etag from tasks\n  where\n    tasks.task_id = partition_key;\n  if found then\n    raise exception 'unsuccessful update' using errcode = 'P0004';\n  else\n    raise exception 'no such row' using errcode = 'P0002';\n  end if;\nend",
-          "deprecated": false,
+          "deprecated": true,
           "description": "See taskcluster-lib-entities",
           "mode": "write",
           "returns": "table (etag uuid)",
@@ -2928,7 +2937,7 @@
         "queue_tasks_entities_remove": {
           "args": "partition_key text, row_key text",
           "body": "begin\n  return query delete from tasks\n  where\n    tasks.task_id = partition_key\n  returning tasks.etag;\nend",
-          "deprecated": false,
+          "deprecated": true,
           "description": "See taskcluster-lib-entities",
           "mode": "write",
           "returns": "table (etag uuid)",
@@ -2937,7 +2946,7 @@
         "queue_tasks_entities_scan": {
           "args": "pk text, rk text, condition text, size integer, page integer",
           "body": "declare\n  cond text[];\n  exp_cond_field text;\n  exp_cond_operator text;\n  exp_cond_operand timestamptz;\nbegin\n  if not condition is null then\n    cond := regexp_split_to_array(condition, '\\s+');\n    exp_cond_field := trim(cond[3], '''');\n    exp_cond_operator := cond[4];\n    exp_cond_operand := cond[5] :: timestamptz;\n\n    if not (exp_cond_field || exp_cond_operator) in ('takenUntil=', 'deadline=', 'expires<') then\n      raise exception 'queue_tasks_entities_scan only supports certain takenUntil, deadline, and expires conditions';\n    end if;\n  end if;\n\n  return query select\n    task_id as partition_key,\n    'task' as row_key,\n    entity_buf_encode(\n      entity_buf_encode(\n        entity_buf_encode(\n          entity_buf_encode(\n            entity_buf_encode(\n              entity_buf_encode(\n                entity_buf_encode(\n                  entity_buf_encode(\n                    jsonb_build_object(\n                      'PartitionKey', task_id,\n                      'RowKey', 'task',\n                      'taskId', slugid_to_uuid(task_id),\n                      'provisionerId', provisioner_id,\n                      'workerType', worker_type,\n                      'schedulerId', scheduler_id,\n                      'taskGroupId', slugid_to_uuid(task_group_id),\n                      'requires', requires::text,\n                      'priority', priority::text,\n                      'retries', retries,\n                      'retriesLeft', retries_left,\n                      'created', created,\n                      'deadline', deadline,\n                      'expires', expires,\n                      'takenUntil', coalesce(taken_until, '1970-01-01 00:00:00+00'::timestamptz)),\n                    'dependencies', dependencies::text),\n                  'routes', routes::text),\n                'scopes', scopes::text),\n              'payload', payload::text),\n            'metadata', metadata::text),\n          'tags', tags::text),\n        'extra', extra::text),\n      'runs', runs::text) as value,\n    1 as version,\n    tasks.etag as etag from tasks\n  where\n    (pk is NULL or pk = task_id) and\n    case\n      when exp_cond_field = 'deadline' then deadline = exp_cond_operand\n      -- note that queue never queries for takenUntil = new Date(0)\n      when exp_cond_field = 'takenUntil' then taken_until = exp_cond_operand\n      when exp_cond_field = 'expires' then expires < exp_cond_operand\n      else true\n    end\n  order by tasks.task_id\n  limit case\n    when (size is not null and size > 0) then size + 1\n    else null\n  end\n  offset case\n    when (page is not null and page > 0) then page\n    else 0\n  end;\nend",
-          "deprecated": false,
+          "deprecated": true,
           "description": "See taskcluster-lib-entities",
           "mode": "read",
           "returns": "table (partition_key text, row_key text, value jsonb, version integer, etag uuid)",
@@ -2954,7 +2963,7 @@
         "queue_task_groups_entities_create": {
           "args": "pk text, rk text, properties jsonb, overwrite boolean, version integer",
           "body": "declare\n  new_etag uuid;\nbegin\n  if overwrite then\n    raise exception 'overwrite not implemented';\n  end if;\n  new_etag = public.gen_random_uuid();\n  insert into task_groups select\n    uuid_to_slugid(properties ->> 'taskGroupId')::text as task_group_id,\n    (properties ->> 'schedulerId')::text as scheduler_id,\n    (properties ->> 'expires')::timestamptz as expires,\n    new_etag as etag;\n  return new_etag;\nend",
-          "deprecated": false,
+          "deprecated": true,
           "description": "See taskcluster-lib-entities",
           "mode": "write",
           "returns": "uuid",
@@ -2963,7 +2972,7 @@
         "queue_task_groups_entities_load": {
           "args": "partition_key text, row_key text",
           "body": "begin\n  return query\n  select\n    task_group_id,\n    'task-group',\n    jsonb_build_object(\n      'PartitionKey', task_group_id,\n      'RowKey', 'task-group',\n      'taskGroupId', slugid_to_uuid(task_group_id),\n      'schedulerId', scheduler_id,\n      'expires', expires) as value,\n    1 as version,\n    task_groups.etag as etag\n  from task_groups\n  where\n    task_groups.task_group_id = partition_key;\nend",
-          "deprecated": false,
+          "deprecated": true,
           "description": "See taskcluster-lib-entities",
           "mode": "read",
           "returns": "table (partition_key_out text, row_key_out text, value jsonb, version integer, etag uuid)",
@@ -2972,7 +2981,7 @@
         "queue_task_groups_entities_modify": {
           "args": "partition_key text, row_key text, properties jsonb, version integer, old_etag uuid",
           "body": "declare\n  new_etag uuid;\nbegin\n  -- NOTE: queue only updates expires, so that's all that's supported here\n  new_etag = public.gen_random_uuid();\n  update task_groups\n  set (\n    expires,\n    etag\n  ) = (\n    (properties ->> 'expires')::timestamptz,\n    new_etag\n  )\n  where\n    task_groups.task_group_id = partition_key and\n    task_groups.etag = queue_task_groups_entities_modify.old_etag;\n  if found then\n    return query select new_etag;\n    return;\n  end if;\n  perform task_groups.etag from task_groups\n  where\n    task_groups.task_group_id = partition_key;\n  if found then\n    raise exception 'unsuccessful update' using errcode = 'P0004';\n  else\n    raise exception 'no such row' using errcode = 'P0002';\n  end if;\nend",
-          "deprecated": false,
+          "deprecated": true,
           "description": "See taskcluster-lib-entities",
           "mode": "write",
           "returns": "table (etag uuid)",
@@ -2981,7 +2990,7 @@
         "queue_task_groups_entities_remove": {
           "args": "partition_key text, row_key text",
           "body": "begin\n  return query delete from task_groups\n  where\n    task_groups.task_group_id = partition_key\n  returning task_groups.etag;\nend",
-          "deprecated": false,
+          "deprecated": true,
           "description": "See taskcluster-lib-entities",
           "mode": "write",
           "returns": "table (etag uuid)",
@@ -2990,7 +2999,7 @@
         "queue_task_groups_entities_scan": {
           "args": "pk text, rk text, condition text, size integer, page integer",
           "body": "declare\n  cond text[];\n  exp_cond_field text;\n  exp_cond_operator text;\n  exp_cond_operand timestamptz;\nbegin\n  if pk is not null then\n    raise exception 'scanning by primary key is not supported';\n  end if;\n\n  if not condition is null then\n    cond := regexp_split_to_array(condition, '\\s+');\n    exp_cond_field := trim(cond[3], '''');\n    exp_cond_operator := cond[4];\n    exp_cond_operand := cond[5] :: timestamptz;\n\n    if exp_cond_field || exp_cond_operator != 'expires<' then\n      raise exception 'queue_task_group_active_sets_entities_scan only supports filtering for expired rows';\n    end if;\n  end if;\n\n  return query select\n    task_group_id as partition_key,\n    'task-group' as row_key,\n    jsonb_build_object(\n      'PartitionKey', task_group_id,\n      'RowKey', 'task-group',\n      'taskGroupId', slugid_to_uuid(task_group_id),\n      'schedulerId', scheduler_id,\n      'expires', expires) as value,\n    1 as version,\n    task_groups.etag as etag from task_groups\n  where\n    case\n      when exp_cond_field = 'expires' then expires < exp_cond_operand\n      else true\n    end\n  order by task_groups.task_group_id\n  limit case\n    when (size is not null and size > 0) then size + 1\n    else null\n  end\n  offset case\n    when (page is not null and page > 0) then page\n    else 0\n  end;\nend",
-          "deprecated": false,
+          "deprecated": true,
           "description": "See taskcluster-lib-entities",
           "mode": "read",
           "returns": "table (partition_key text, row_key text, value jsonb, version integer, etag uuid)",
@@ -3007,7 +3016,7 @@
         "queue_task_dependency_entities_create": {
           "args": "pk text, rk text, properties jsonb, overwrite boolean, version integer",
           "body": "declare\n  new_etag uuid;\nbegin\n  -- note that this function always overwrites (queue always calls it that way anyway)\n  new_etag = public.gen_random_uuid();\n  insert into task_dependencies select\n    rk,\n    pk,\n    ('all-' || (properties ->> 'require'))::task_requires,\n    true,\n    (properties ->> 'expires')::timestamptz,\n    new_etag\n  -- if the row already exists, that's because it was created by\n  -- queue_task_requirement_entities_create, so just update the requires value\n  on conflict (required_task_id, dependent_task_id) do\n    update\n    set requires = ('all-' || (properties ->> 'require'))::task_requires\n    where\n      task_dependencies.required_task_id = pk and\n      task_dependencies.dependent_task_id = rk;\n  return new_etag;\nend",
-          "deprecated": false,
+          "deprecated": true,
           "description": "See taskcluster-lib-entities",
           "mode": "write",
           "returns": "uuid",
@@ -3016,7 +3025,7 @@
         "queue_task_dependency_entities_load": {
           "args": "partition_key text, row_key text",
           "body": "begin\n  return query\n  select\n    required_task_id,\n    dependent_task_id,\n    jsonb_build_object(\n      'PartitionKey', required_task_id,\n      'RowKey', dependent_task_id,\n      'taskId', slugid_to_uuid(required_task_id),\n      'dependentTaskId', slugid_to_uuid(dependent_task_id),\n      'require', replace(requires::text, 'all-', ''),\n      'expires', expires) as value,\n    1 as version,\n    task_dependencies.etag as etag\n  from task_dependencies\n  where\n    required_task_id = partition_key and dependent_task_id = row_key;\nend",
-          "deprecated": false,
+          "deprecated": true,
           "description": "See taskcluster-lib-entities",
           "mode": "read",
           "returns": "table (partition_key_out text, row_key_out text, value jsonb, version integer, etag uuid)",
@@ -3025,7 +3034,7 @@
         "queue_task_dependency_entities_modify": {
           "args": "partition_key text, row_key text, properties jsonb, version integer, old_etag uuid",
           "body": "begin\n  raise exception 'not implemented';\nend",
-          "deprecated": false,
+          "deprecated": true,
           "description": "See taskcluster-lib-entities",
           "mode": "write",
           "returns": "table (etag uuid)",
@@ -3034,7 +3043,7 @@
         "queue_task_dependency_entities_remove": {
           "args": "partition_key text, row_key text",
           "body": "begin\n  return query delete from task_dependencies\n  where\n    task_dependencies.required_task_id = partition_key and\n    task_dependencies.dependent_task_id = row_key\n  returning task_dependencies.etag;\nend",
-          "deprecated": false,
+          "deprecated": true,
           "description": "See taskcluster-lib-entities",
           "mode": "write",
           "returns": "table (etag uuid)",
@@ -3043,7 +3052,7 @@
         "queue_task_dependency_entities_scan": {
           "args": "pk text, rk text, condition text, size integer, page integer",
           "body": "declare\n  cond text[];\n  exp_cond_field text;\n  exp_cond_operator text;\n  exp_cond_operand timestamptz;\nbegin\n  if not condition is null then\n    cond := regexp_split_to_array(condition, '\\s+');\n    exp_cond_field := trim(cond[3], '''');\n    exp_cond_operator := cond[4];\n    exp_cond_operand := cond[5] :: timestamptz;\n\n    if not exp_cond_field || exp_cond_operator in ('expires<', 'expires>=') then\n      raise exception 'scan only supports filtering for expired rows, not on %', exp_cond_field || exp_cond_operator;\n    end if;\n  end if;\n\n  return query select\n    required_task_id as partition_key,\n    dependent_task_id as row_key,\n    jsonb_build_object(\n      'PartitionKey', required_task_id,\n      'RowKey', dependent_task_id,\n      'taskId', slugid_to_uuid(required_task_id),\n      'dependentTaskId', slugid_to_uuid(dependent_task_id),\n      'require', replace(requires::text, 'all-', ''),\n      'expires', expires) as value,\n    1 as version,\n    task_dependencies.etag as etag from task_dependencies\n  where\n    (pk is null or required_task_id = pk) and\n    case\n      when exp_cond_field = 'expires' and exp_cond_operator = '<' then expires < exp_cond_operand\n      when exp_cond_field = 'expires' and exp_cond_operator = '>=' then expires >= exp_cond_operand\n      else true\n    end\n  order by task_dependencies.required_task_id, task_dependencies.dependent_task_id\n  limit case\n    when (size is not null and size > 0) then size + 1\n    else null\n  end\n  offset case\n    when (page is not null and page > 0) then page\n    else 0\n  end;\nend",
-          "deprecated": false,
+          "deprecated": true,
           "description": "See taskcluster-lib-entities",
           "mode": "read",
           "returns": "table (partition_key text, row_key text, value jsonb, version integer, etag uuid)",
@@ -3052,7 +3061,7 @@
         "queue_task_requirement_entities_create": {
           "args": "pk text, rk text, properties jsonb, overwrite boolean, version integer",
           "body": "declare\n  new_etag uuid;\nbegin\n  -- note that this function always overwrites (queue always calls it that way anyway)\n  new_etag = public.gen_random_uuid();\n  insert into task_dependencies select\n    pk,\n    rk,\n    -- arbitrary value; in practice TaskDependency.create is called shortly\n    -- after this and will set the value correctly\n    'all-completed',\n    -- if a TaskRequirement exists, then the dependency is not satisified\n    false,\n    (properties ->> 'expires')::timestamptz,\n    new_etag\n  -- if the dependency was created already, just update satisfied\n  on conflict (required_task_id, dependent_task_id) do\n    update\n    set satisfied = false\n    where\n      task_dependencies.required_task_id = rk and\n      task_dependencies.dependent_task_id = pk;\n  return new_etag;\nend",
-          "deprecated": false,
+          "deprecated": true,
           "description": "See taskcluster-lib-entities",
           "mode": "write",
           "returns": "uuid",
@@ -3061,7 +3070,7 @@
         "queue_task_requirement_entities_load": {
           "args": "partition_key text, row_key text",
           "body": "begin\n  return query\n  select\n    dependent_task_id,\n    required_task_id,\n    jsonb_build_object(\n      'PartitionKey', dependent_task_id,\n      'RowKey', required_task_id,\n      'taskId', slugid_to_uuid(dependent_task_id),\n      'requiredTaskId', slugid_to_uuid(required_task_id),\n      'expires', expires) as value,\n    1 as version,\n    task_dependencies.etag as etag\n  from task_dependencies\n  where\n    dependent_task_id = partition_key and required_task_id = row_key and not satisfied;\nend",
-          "deprecated": false,
+          "deprecated": true,
           "description": "See taskcluster-lib-entities",
           "mode": "read",
           "returns": "table (partition_key_out text, row_key_out text, value jsonb, version integer, etag uuid)",
@@ -3070,7 +3079,7 @@
         "queue_task_requirement_entities_modify": {
           "args": "partition_key text, row_key text, properties jsonb, version integer, old_etag uuid",
           "body": "begin\n  raise exception 'not implemented';\nend",
-          "deprecated": false,
+          "deprecated": true,
           "description": "See taskcluster-lib-entities",
           "mode": "write",
           "returns": "table (etag uuid)",
@@ -3079,7 +3088,7 @@
         "queue_task_requirement_entities_remove": {
           "args": "partition_key text, row_key text",
           "body": "begin\n  -- removing the requirement means that this dep is satisfied\n  return query\n  update task_dependencies\n  set satisfied = true\n  where\n    task_dependencies.dependent_task_id = partition_key and\n    task_dependencies.required_task_id = row_key and\n    not task_dependencies.satisfied\n  returning task_dependencies.etag;\nend",
-          "deprecated": false,
+          "deprecated": true,
           "description": "See taskcluster-lib-entities",
           "mode": "write",
           "returns": "table (etag uuid)",
@@ -3088,7 +3097,7 @@
         "queue_task_requirement_entities_scan": {
           "args": "pk text, rk text, condition text, size integer, page integer",
           "body": "declare\n  cond text[];\n  exp_cond_field text;\n  exp_cond_operator text;\n  exp_cond_operand timestamptz;\nbegin\n  if not condition is null then\n    cond := regexp_split_to_array(condition, '\\s+');\n    exp_cond_field := trim(cond[3], '''');\n    exp_cond_operator := cond[4];\n    exp_cond_operand := cond[5] :: timestamptz;\n\n    if exp_cond_field || exp_cond_operator != 'expires<' then\n      raise exception 'scan only supports filtering for expired rows';\n    end if;\n\n    -- if this is the expiration crontask, return an empty set -- expiration of TaskDependency\n    -- is sufficient\n    return;\n  end if;\n\n  return query select\n    dependent_task_id as partition_key,\n    required_task_id as row_key,\n    jsonb_build_object(\n      'PartitionKey', dependent_task_id,\n      'RowKey', required_task_id,\n      'taskId', slugid_to_uuid(dependent_task_id),\n      'requiredTaskId', slugid_to_uuid(required_task_id),\n      'expires', expires) as value,\n    1 as version,\n    task_dependencies.etag as etag from task_dependencies\n  where\n    (pk is null or dependent_task_id = pk) and\n    not satisfied\n  order by task_dependencies.dependent_task_id, task_dependencies.required_task_id\n  limit case\n    when (size is not null and size > 0) then size + 1\n    else null\n  end\n  offset case\n    when (page is not null and page > 0) then page\n    else 0\n  end;\nend",
-          "deprecated": false,
+          "deprecated": true,
           "description": "See taskcluster-lib-entities",
           "mode": "read",
           "returns": "table (partition_key text, row_key text, value jsonb, version integer, etag uuid)",
@@ -3150,7 +3159,7 @@
         "taskcluster_github_builds_entities_create": {
           "args": "pk text, rk text, properties jsonb, overwrite boolean, version integer",
           "body": "declare\n  new_row github_builds%ROWTYPE;\nbegin\n  select\n    (properties ->> 'organization')::text as organization,\n    (properties ->> 'repository')::text as repository,\n    (properties ->> 'sha')::text as sha,\n    (properties ->> 'taskGroupId')::text as task_group_id,\n    (properties ->> 'state')::text as state,\n    (properties ->> 'created')::timestamptz as created,\n    (properties ->> 'updated')::timestamptz as updated,\n    (properties ->> 'installationId')::integer as installation_id,\n    (properties ->> 'eventType')::text as event_type,\n    (properties ->> 'eventId')::text as event_id,\n    public.gen_random_uuid() as etag\n  into new_row;\n  if overwrite then\n    raise exception 'overwrite not implemented';\n  else\n    execute 'insert into github_builds select $1.*' using new_row;\n  end if;\n  return new_row.etag;\nend",
-          "deprecated": false,
+          "deprecated": true,
           "description": "See taskcluster-lib-entities",
           "mode": "write",
           "returns": "uuid",
@@ -3159,7 +3168,7 @@
         "taskcluster_github_builds_entities_load": {
           "args": "partition_key text, row_key text",
           "body": "begin\n return query\n select\n    taskcluster_github_builds_entities_load.partition_key,\n    'taskGroupId' as row_key,\n    jsonb_build_object(\n      'PartitionKey', taskcluster_github_builds_entities_load.partition_key,\n      'RowKey', 'taskGroupId',\n      'organization', organization,\n      'repository', repository,\n      'sha', sha,\n      'taskGroupId', task_group_id,\n      'state', state,\n      'created', created,\n      'updated', updated,\n      'installationId', installation_id,\n      'eventType', event_type,\n      'eventId', event_id) as value,\n    1 as version,\n    github_builds.etag as etag\nfrom github_builds\nwhere\n  github_builds.task_group_id = decode_string_key(taskcluster_github_builds_entities_load.partition_key);\nend",
-          "deprecated": false,
+          "deprecated": true,
           "description": "See taskcluster-lib-entities",
           "mode": "read",
           "returns": "table (partition_key_out text, row_key_out text, value jsonb, version integer, etag uuid)",
@@ -3168,7 +3177,7 @@
         "taskcluster_github_builds_entities_modify": {
           "args": "partition_key text, row_key text, properties jsonb, version integer, old_etag uuid",
           "body": "declare\n  new_row github_builds%ROWTYPE;\nbegin\n  select\n    (properties ->> 'organization')::text as organization,\n    (properties ->> 'repository')::text as repository,\n    (properties ->> 'sha')::text as sha,\n    (properties ->> 'taskGroupId')::text as task_group_id,\n    (properties ->> 'state')::text as state,\n    (properties ->> 'created')::timestamptz as created,\n    (properties ->> 'updated')::timestamptz as updated,\n    (properties ->> 'installationId')::integer as installation_id,\n    (properties ->> 'eventType')::text as event_type,\n    (properties ->> 'eventId')::text as event_id,\n    public.gen_random_uuid() as etag\n  into new_row;\n  update github_builds\n  set (\n    organization,\n    repository,\n    sha,\n    task_group_id,\n    state,\n    created,\n    updated,\n    installation_id,\n    event_type,\n    event_id,\n    etag\n  ) = (\n    new_row.organization,\n    new_row.repository,\n    new_row.sha,\n    new_row.task_group_id,\n    new_row.state,\n    new_row.created,\n    new_row.updated,\n    new_row.installation_id,\n    new_row.event_type,\n    new_row.event_id,\n    new_row.etag\n  )\n  where\n    github_builds.task_group_id = decode_string_key(taskcluster_github_builds_entities_modify.partition_key) and\n    github_builds.etag = taskcluster_github_builds_entities_modify.old_etag;\n\n  if found then\n    return query select new_row.etag;\n    return;\n  end if;\n\n  perform github_builds.etag from github_builds\n  where github_builds.task_group_id = decode_string_key(taskcluster_github_builds_entities_modify.partition_key);\n\n  if found then\n    raise exception 'unsuccessful update' using errcode = 'P0004';\n  else\n    raise exception 'no such row' using errcode = 'P0002';\n  end if;\nend",
-          "deprecated": false,
+          "deprecated": true,
           "description": "See taskcluster-lib-entities",
           "mode": "write",
           "returns": "table (etag uuid)",
@@ -3177,7 +3186,7 @@
         "taskcluster_github_builds_entities_remove": {
           "args": "partition_key text, row_key text",
           "body": "begin\n  delete\n  from github_builds\n  where\n    github_builds.task_group_id = decode_string_key(partition_key);\n  -- tc-gh does not care if the row existed\n  return query select gen_random_uuid() as etag;\nend",
-          "deprecated": false,
+          "deprecated": true,
           "description": "See taskcluster-lib-entities",
           "mode": "write",
           "returns": "table (etag uuid)",
@@ -3186,7 +3195,7 @@
         "taskcluster_github_builds_entities_scan": {
           "args": "pk text, rk text, condition text, size integer, page integer",
           "body": "declare\nbegin\n  if not condition is null then\n    raise exception 'condition not supported';\n  end if;\n  return query\n    select\n      encode_string_key(task_group_id),\n      'taskGroupId' as row_key,\n      jsonb_build_object(\n        'PartitionKey', encode_string_key(task_group_id),\n        'RowKey', 'taskGroupId',\n        'organization', organization,\n        'repository', repository,\n        'sha', sha,\n        'taskGroupId', task_group_id,\n        'state', state,\n        'created', created,\n        'updated', updated,\n        'installationId', installation_id,\n        'eventType', event_type,\n        'eventId', event_id) as value,\n        1 as version,\n    github_builds.etag as etag\n    from github_builds\n    where\n      partition_key is null or\n      task_group_id = decode_string_key(partition_key)\n    order by task_group_id\n    limit case\n      when (size is not null and size > 0) then size + 1\n      else null\n    end\n    offset case\n      when (page is not null and page > 0) then page\n      else 0\n    end;\nend",
-          "deprecated": false,
+          "deprecated": true,
           "description": "See taskcluster-lib-entities",
           "mode": "read",
           "returns": "table (partition_key text, row_key text, value jsonb, version integer, etag uuid)",
@@ -3272,7 +3281,7 @@
         "roles_entities_create": {
           "args": "pk text, rk text, properties jsonb, overwrite boolean, version integer",
           "body": "declare\n  new_etag uuid = gen_random_uuid();\nbegin\n  -- lock the table, avoiding risk of conflicts when inserting after\n  -- finding no rows\n  lock table roles;\n\n  perform 1 from roles limit 1;\n  if found then\n    raise exception 'roles already exist' using errcode = '23505'; -- unique violation\n  end if;\n\n  insert into roles\n  select \n    (role ->> 'roleId') as role_id,\n    (role ->> 'scopes')::jsonb as scopes,\n    (role ->> 'created')::timestamptz as created,\n    (role ->> 'description') as description,\n    (role ->> 'lastModified')::timestamptz as last_modified,\n    new_etag as etag\n  from jsonb_array_elements(entity_buf_decode(properties, 'blob')::jsonb) as role;\n\n  return new_etag;\nend",
-          "deprecated": false,
+          "deprecated": true,
           "description": "See taskcluster-lib-entities",
           "mode": "write",
           "returns": "uuid",
@@ -3281,7 +3290,7 @@
         "roles_entities_load": {
           "args": "partition_key text, row_key text",
           "body": "begin\n  -- if no roles, return canned \"empty\" value, as the below expression will return NULL\n  perform 1 from roles limit 1;\n  if not found then\n    return query\n    select\n      'role',\n      'role',\n      entity_buf_encode(\n        jsonb_build_object(\n          'PartitionKey', 'role',\n          'RowKey', 'role'),\n        'blob', '[]'),\n      1,\n      gen_random_uuid();\n  end if;\n\n  return query\n  select \n    'role',\n    'role',\n    entity_buf_encode(\n      jsonb_build_object(\n        'PartitionKey', 'role',\n        'RowKey', 'role'),\n      'blob', jsonb_agg(\n        jsonb_build_object(\n          'roleId', role_id,\n          'scopes', scopes,\n          'created', to_js_iso8601(created::text),\n          'description', description,\n          'lastModified', to_js_iso8601(last_modified::text))\n      )::text),\n    1,\n    -- use an aggregate function to select the etag (all rows have the same etag)\n    min(roles.etag::text)::uuid\n  from roles;\nend",
-          "deprecated": false,
+          "deprecated": true,
           "description": "See taskcluster-lib-entities",
           "mode": "read",
           "returns": "table (partition_key_out text, row_key_out text, value jsonb, version integer, etag uuid)",
@@ -3290,7 +3299,7 @@
         "roles_entities_modify": {
           "args": "partition_key text, row_key text, properties jsonb, version integer, old_etag uuid",
           "body": "declare\n  new_etag uuid := public.gen_random_uuid();\nbegin\n  -- lock the table, avoiding risk of conflicts when inserting after\n  -- finding no rows\n  lock table roles;\n\n  delete from roles where roles.etag = old_etag;\n  if not found then\n    -- delete may have done nothing because the table is empty (which is\n    -- ok) or because the etag did not match (which is an unsuccessful\n    -- update)\n    perform role_id from roles limit 1;\n    if found then\n      raise exception 'unsuccessful update' using errcode = 'P0004';\n    end if;\n    -- ..otherwise continue to make the modification\n  end if;\n\n  insert into roles\n  select \n    (role ->> 'roleId') as role_id,\n    (role ->> 'scopes')::jsonb as scopes,\n    (role ->> 'created')::timestamptz as created,\n    (role ->> 'description') as description,\n    (role ->> 'lastModified')::timestamptz as last_modified,\n    new_etag as etag\n  from jsonb_array_elements(entity_buf_decode(properties, 'blob')::jsonb) as role;\n\n  return query select new_etag;\nend",
-          "deprecated": false,
+          "deprecated": true,
           "description": "See taskcluster-lib-entities",
           "mode": "write",
           "returns": "table (etag uuid)",
@@ -3299,7 +3308,7 @@
         "roles_entities_remove": {
           "args": "partition_key text, row_key text",
           "body": "begin\n  raise exception 'not implemented';\nend",
-          "deprecated": false,
+          "deprecated": true,
           "description": "See taskcluster-lib-entities",
           "mode": "write",
           "returns": "table (etag uuid)",
@@ -3308,7 +3317,7 @@
         "roles_entities_scan": {
           "args": "pk text, rk text, condition text, size integer, page integer",
           "body": "begin\n  raise exception 'not implemented';\nend;",
-          "deprecated": false,
+          "deprecated": true,
           "description": "See taskcluster-lib-entities",
           "mode": "read",
           "returns": "table (partition_key text, row_key text, value jsonb, version integer, etag uuid)",
@@ -3426,6 +3435,21 @@
           "mode": "write",
           "returns": "void",
           "serviceName": "web_server"
+        },
+        "github_access_token_table_entities_create": {
+          "deprecated": true
+        },
+        "github_access_token_table_entities_load": {
+          "deprecated": true
+        },
+        "github_access_token_table_entities_modify": {
+          "deprecated": true
+        },
+        "github_access_token_table_entities_remove": {
+          "deprecated": true
+        },
+        "github_access_token_table_entities_scan": {
+          "deprecated": true
         },
         "load_github_access_token": {
           "args": "user_id_in text",
@@ -3714,7 +3738,7 @@
         "wmworker_pool_errors_entities_create": {
           "args": "pk text, rk text, properties jsonb, overwrite boolean, version integer",
           "body": "declare\n  new_row worker_pool_errors%ROWTYPE;\nbegin\n  select\n    uuid_to_slugid(properties ->> 'errorId')::text as error_id,\n    (properties ->> 'workerPoolId')::text as worker_pool_id,\n    (properties ->> 'reported')::timestamptz as reported,\n    (properties ->> 'kind')::text as kind,\n    (properties ->> 'title')::text as title,\n    (properties ->> 'description')::text as description,\n    entity_buf_decode(properties, 'extra')::jsonb as extra,\n    public.gen_random_uuid() as etag\n  into new_row;\n  if overwrite then\n    raise exception 'overwrite not implemented';\n  else\n    execute 'insert into worker_pool_errors select $1.*' using new_row;\n  end if;\n  return new_row.etag;\nend",
-          "deprecated": false,
+          "deprecated": true,
           "description": "See taskcluster-lib-entities",
           "mode": "write",
           "returns": "uuid",
@@ -3723,7 +3747,7 @@
         "wmworker_pool_errors_entities_load": {
           "args": "partition_key text, row_key text",
           "body": "begin\n  return query\n  select\n    wmworker_pool_errors_entities_load.partition_key,\n    wmworker_pool_errors_entities_load.row_key,\n    entity_buf_encode(\n      jsonb_build_object(\n        'PartitionKey', wmworker_pool_errors_entities_load.partition_key,\n        'RowKey', wmworker_pool_errors_entities_load.row_key,\n        'errorId', slugid_to_uuid(error_id),\n        'workerPoolId', worker_pool_id,\n        'reported', reported,\n        'kind', kind,\n        'title', title,\n        'description', description),\n      'extra', extra::text) as value,\n    1 as version,\n    worker_pool_errors.etag as etag\n  from worker_pool_errors\n  where\n    worker_pool_errors.worker_pool_id = decode_string_key(wmworker_pool_errors_entities_load.partition_key) and\n    worker_pool_errors.error_id = decode_string_key(wmworker_pool_errors_entities_load.row_key);\nend",
-          "deprecated": false,
+          "deprecated": true,
           "description": "See taskcluster-lib-entities",
           "mode": "read",
           "returns": "table (partition_key_out text, row_key_out text, value jsonb, version integer, etag uuid)",
@@ -3732,7 +3756,7 @@
         "wmworker_pool_errors_entities_modify": {
           "args": "partition_key text, row_key text, properties jsonb, version integer, old_etag uuid",
           "body": "declare\n  new_row worker_pool_errors%ROWTYPE;\nbegin\n  select\n    uuid_to_slugid(properties ->> 'errorId')::text as error_id,\n    (properties ->> 'workerPoolId')::text as worker_pool_id,\n    (properties ->> 'reported')::timestamptz as reported,\n    (properties ->> 'kind')::text as kind,\n    (properties ->> 'title')::text as title,\n    (properties ->> 'description')::text as description,\n    entity_buf_decode(properties, 'extra')::jsonb as extra,\n    public.gen_random_uuid() as etag\n  into new_row;\n  update worker_pool_errors\n  set (\n    error_id,\n    worker_pool_id,\n    reported,\n    kind,\n    title,\n    description,\n    extra,\n    etag\n  ) = (\n    new_row.error_id,\n    new_row.worker_pool_id,\n    new_row.reported,\n    new_row.kind,\n    new_row.title,\n    new_row.description,\n    new_row.extra,\n    new_row.etag\n  )\n  where\n    worker_pool_errors.worker_pool_id = decode_string_key(wmworker_pool_errors_entities_modify.partition_key) and\n    worker_pool_errors.error_id = decode_string_key(wmworker_pool_errors_entities_modify.row_key) and\n    worker_pool_errors.etag = wmworker_pool_errors_entities_modify.old_etag;\n\n  if found then\n    return query select new_row.etag;\n    return;\n  end if;\n\n  perform worker_pool_errors.etag from worker_pool_errors\n  where\n    worker_pool_errors.worker_pool_id = decode_string_key(wmworker_pool_errors_entities_modify.partition_key) and\n    worker_pool_errors.error_id = decode_string_key(wmworker_pool_errors_entities_modify.row_key);\n\n  if found then\n    raise exception 'unsuccessful update' using errcode = 'P0004';\n  else\n    raise exception 'no such row' using errcode = 'P0002';\n  end if;\nend",
-          "deprecated": false,
+          "deprecated": true,
           "description": "See taskcluster-lib-entities",
           "mode": "write",
           "returns": "table (etag uuid)",
@@ -3741,7 +3765,7 @@
         "wmworker_pool_errors_entities_remove": {
           "args": "partition_key text, row_key text",
           "body": "begin\n  return query delete from worker_pool_errors\n  where\n    worker_pool_errors.worker_pool_id = decode_string_key(wmworker_pool_errors_entities_remove.partition_key) and\n    worker_pool_errors.error_id = decode_string_key(wmworker_pool_errors_entities_remove.row_key)\n  returning worker_pool_errors.etag;\nend",
-          "deprecated": false,
+          "deprecated": true,
           "description": "See taskcluster-lib-entities",
           "mode": "write",
           "returns": "table (etag uuid)",
@@ -3750,7 +3774,7 @@
         "wmworker_pool_errors_entities_scan": {
           "args": "pk text, rk text, condition text, size integer, page integer",
           "body": "declare\nbegin\n  if not condition is null then\n    raise exception 'condition not supported';\n  end if;\n  return query\n    select\n      encode_string_key(wmworker_pool_errors_entities_scan.partition_key),\n      encode_string_key(wmworker_pool_errors_entities_scan.row_key),\n      entity_buf_encode(\n        jsonb_build_object(\n          'PartitionKey', encode_string_key(worker_pool_id),\n          'RowKey', encode_string_key(error_id),\n          'errorId', slugid_to_uuid(error_id),\n          'workerPoolId', worker_pool_id,\n          'reported', reported,\n          'kind', kind,\n          'title', title,\n          'description', description),\n        'extra', extra::text) as value,\n      1 as version,\n    worker_pool_errors.etag as etag\n    from worker_pool_errors\n    where\n      partition_key is null or\n      worker_pool_id = decode_string_key(partition_key) and\n      row_key is null or\n      error_id = decode_string_key(row_key)\n    order by error_id\n    limit case\n      when (size is not null and size > 0) then size + 1\n      else null\n    end\n    offset case\n      when (page is not null and page > 0) then page\n      else 0\n    end;\nend",
-          "deprecated": false,
+          "deprecated": true,
           "description": "See taskcluster-lib-entities",
           "mode": "read",
           "returns": "table (partition_key text, row_key text, value jsonb, version integer, etag uuid)",
@@ -3838,7 +3862,7 @@
         "last_fire_3_entities_create": {
           "args": "pk text, rk text, properties jsonb, overwrite boolean, version integer",
           "body": "begin\nend",
-          "deprecated": false,
+          "deprecated": true,
           "description": "See taskcluster-lib-entities",
           "mode": "write",
           "returns": "uuid",
@@ -3847,7 +3871,7 @@
         "last_fire_3_entities_load": {
           "args": "partition_key text, row_key text",
           "body": "begin\nend",
-          "deprecated": false,
+          "deprecated": true,
           "description": "See taskcluster-lib-entities",
           "mode": "read",
           "returns": "table (partition_key_out text, row_key_out text, value jsonb, version integer, etag uuid)",
@@ -3856,7 +3880,7 @@
         "last_fire_3_entities_modify": {
           "args": "partition_key text, row_key text, properties jsonb, version integer, old_etag uuid",
           "body": "begin\nend",
-          "deprecated": false,
+          "deprecated": true,
           "description": "See taskcluster-lib-entities",
           "mode": "write",
           "returns": "table (etag uuid)",
@@ -3865,7 +3889,7 @@
         "last_fire_3_entities_remove": {
           "args": "partition_key text, row_key text",
           "body": "begin\nend",
-          "deprecated": false,
+          "deprecated": true,
           "description": "See taskcluster-lib-entities",
           "mode": "write",
           "returns": "table (etag uuid)",
@@ -3874,7 +3898,7 @@
         "last_fire_3_entities_scan": {
           "args": "pk text, rk text, condition text, size integer, page integer",
           "body": "begin\nend",
-          "deprecated": false,
+          "deprecated": true,
           "description": "See taskcluster-lib-entities",
           "mode": "read",
           "returns": "table (partition_key text, row_key text, value jsonb, version integer, etag uuid)",
@@ -3918,7 +3942,7 @@
         "queues_entities_create": {
           "args": "pk text, rk text, properties jsonb, overwrite boolean, version integer",
           "body": "declare\n  new_row hooks_queues%ROWTYPE;\nbegin\n  select\n    (properties ->> 'hookGroupId')::text,\n    (properties ->> 'hookId')::text,\n    (properties ->> 'queueName')::text,\n    entity_buf_decode(properties, 'bindings')::jsonb,\n    public.gen_random_uuid()\n  into new_row;\n  if overwrite then\n    raise exception 'overwrite not implemented';\n  else\n    execute 'insert into hooks_queues select $1.*' using new_row;\n  end if;\n  return new_row.etag;\nend",
-          "deprecated": false,
+          "deprecated": true,
           "description": "See taskcluster-lib-entities",
           "mode": "write",
           "returns": "uuid",
@@ -3927,7 +3951,7 @@
         "queues_entities_load": {
           "args": "partition_key text, row_key text",
           "body": "begin\n  return query\n  select\n    queues_entities_load.partition_key,\n    queues_entities_load.row_key,\n    entity_buf_encode(\n      jsonb_build_object(\n        'PartitionKey', encode_string_key(hook_group_id),\n        'RowKey', encode_string_key(hook_id),\n        'hookGroupId', hook_group_id,\n        'hookId', hook_id,\n        'queueName', queue_name),\n      'bindings', bindings::text) as value,\n    1 as version,\n    hooks_queues.etag as etag\n  from hooks_queues\n  where\n    hooks_queues.hook_group_id = decode_string_key(queues_entities_load.partition_key) and hooks_queues.hook_id = decode_string_key(queues_entities_load.row_key);\nend",
-          "deprecated": false,
+          "deprecated": true,
           "description": "See taskcluster-lib-entities",
           "mode": "read",
           "returns": "table (partition_key_out text, row_key_out text, value jsonb, version integer, etag uuid)",
@@ -3936,7 +3960,7 @@
         "queues_entities_modify": {
           "args": "partition_key text, row_key text, properties jsonb, version integer, old_etag uuid",
           "body": "declare\n  new_row hooks_queues%ROWTYPE;\nbegin\n  select\n    (properties ->> 'hookGroupId')::text,\n    (properties ->> 'hookId')::text,\n    (properties ->> 'queueName')::text,\n    entity_buf_decode(properties, 'bindings')::jsonb,\n    public.gen_random_uuid() as etag\n  into new_row;\n  update hooks_queues\n  set (\n    queue_name,\n    bindings,\n    etag\n  ) = (\n    new_row.queue_name,\n    new_row.bindings,\n    new_row.etag\n  )\n  where\n    hooks_queues.hook_group_id = decode_string_key(queues_entities_modify.partition_key) and\n    hooks_queues.hook_id = decode_string_key(queues_entities_modify.row_key) and\n    hooks_queues.etag = queues_entities_modify.old_etag;\n  if found then\n    return query select new_row.etag;\n    return;\n  end if;\n  perform hooks_queues.etag from hooks_queues\n  where\n    hooks_queues.hook_group_id = decode_string_key(queues_entities_modify.partition_key) and\n    hooks_queues.hook_id = decode_string_key(queues_entities_modify.row_key);\n  if found then\n    raise exception 'unsuccessful update' using errcode = 'P0004';\n  else\n    raise exception 'no such row' using errcode = 'P0002';\n  end if;\nend",
-          "deprecated": false,
+          "deprecated": true,
           "description": "See taskcluster-lib-entities",
           "mode": "write",
           "returns": "table (etag uuid)",
@@ -3945,7 +3969,7 @@
         "queues_entities_remove": {
           "args": "partition_key text, row_key text",
           "body": "begin\n  return query delete from hooks_queues\n  where\n    hooks_queues.hook_group_id = decode_string_key(queues_entities_remove.partition_key) and\n    hooks_queues.hook_id = decode_string_key(queues_entities_remove.row_key)\n  returning hooks_queues.etag;\nend",
-          "deprecated": false,
+          "deprecated": true,
           "description": "See taskcluster-lib-entities",
           "mode": "write",
           "returns": "table (etag uuid)",
@@ -3954,7 +3978,7 @@
         "queues_entities_scan": {
           "args": "pk text, rk text, condition text, size integer, page integer",
           "body": "declare\n  cond text[];\n  exp_cond_operator text;\n  exp_cond_operand timestamptz;\n  partition_key_var text;\n  row_key_var text;\nbegin\n  if not condition is null then\n    cond := regexp_split_to_array(condition, '\\s+');\n    exp_cond_operator := cond[4];\n    exp_cond_operand := cond[5] :: timestamptz;\n\n    return query select\n      encode_string_key(hook_group_id) as partition_key,\n      encode_string_key(hook_id) as row_key,\n      entity_buf_encode(\n        jsonb_build_object(\n          'PartitionKey', encode_string_key(hook_group_id),\n          'RowKey', encode_string_key(hook_id),\n          'hookGroupId', hook_group_id,\n          'hookId', hook_id,\n          'queueName', queue_name),\n        'bindings', bindings::text) as value,\n      1 as version,\n      hooks_queues.etag as etag from hooks_queues\n    where\n      (queues_entities_scan.pk is null or decode_string_key(queues_entities_scan.pk) = hook_group_id) and\n      (queues_entities_scan.rk is null or decode_string_key(queues_entities_scan.rk) = hook_id) and\n      case\n        when exp_cond_operator = '=' then expires = exp_cond_operand\n        when exp_cond_operator = '<' then expires < exp_cond_operand\n        when exp_cond_operator = '<=' then expires <= exp_cond_operand\n        when exp_cond_operator = '>' then expires > exp_cond_operand\n        when exp_cond_operator = '>=' then expires >= exp_cond_operand\n        else expires <> exp_cond_operand\n      end\n    order by hooks_queues.hook_group_id, hooks_queues.hook_id\n    limit case\n      when (size is not null and size > 0) then size + 1\n      else null\n    end\n    offset case\n      when (page is not null and page > 0) then page\n      else 0\n    end;\n  else\n    return query select\n      encode_string_key(hook_group_id) as partition_key,\n      encode_string_key(hook_id) as row_key,\n      entity_buf_encode(\n        jsonb_build_object(\n          'PartitionKey', encode_string_key(hook_group_id),\n          'RowKey', encode_string_key(hook_id),\n          'hookGroupId', hook_group_id,\n          'hookId', hook_id,\n          'queueName', queue_name),\n        'bindings', bindings::text) as value,\n      1 as version,\n      hooks_queues.etag as etag from hooks_queues\n    where\n      (queues_entities_scan.pk is null or decode_string_key(queues_entities_scan.pk) = hook_group_id) and\n      (queues_entities_scan.rk is null or decode_string_key(queues_entities_scan.rk) = hook_id)\n    order by hooks_queues.hook_group_id, hooks_queues.hook_id\n    limit case\n      when (size is not null and size > 0) then size + 1\n      else null\n    end\n    offset case\n      when (size is not null and size > 0 and page is not null and page > 0) then page\n      else 0\n    end;\n  end if;\nend",
-          "deprecated": false,
+          "deprecated": true,
           "description": "See taskcluster-lib-entities",
           "mode": "read",
           "returns": "table (partition_key text, row_key text, value jsonb, version integer, etag uuid)",
@@ -4024,7 +4048,7 @@
         "hooks_entities_create": {
           "args": "pk text, rk text, properties jsonb, overwrite boolean, version integer",
           "body": "declare\n  new_row hooks%ROWTYPE;\nbegin\n  select\n    (properties ->> 'hookGroupId')::text,\n    (properties ->> 'hookId')::text,\n    entity_buf_decode(properties, 'metadata')::jsonb,\n    entity_buf_decode(properties, 'task')::jsonb,\n    entity_buf_decode(properties, 'bindings')::jsonb,\n    entity_buf_decode(properties, 'schedule')::jsonb,\n    entity_to_crypto_container_v0(properties, 'triggerToken')::jsonb,\n    entity_to_crypto_container_v0(properties, 'nextTaskId')::jsonb,\n    (properties ->> 'nextScheduledDate')::timestamptz,\n    entity_buf_decode(properties, 'triggerSchema')::jsonb,\n    public.gen_random_uuid()\n  into new_row;\n  if overwrite then\n    raise exception 'overwrite not implemented';\n  else\n    execute 'insert into hooks select $1.*' using new_row;\n  end if;\n  return new_row.etag;\nend",
-          "deprecated": false,
+          "deprecated": true,
           "description": "See taskcluster-lib-entities",
           "mode": "write",
           "returns": "uuid",
@@ -4033,7 +4057,7 @@
         "hooks_entities_load": {
           "args": "partition_key text, row_key text",
           "body": "begin\n  return query\n  select\n    hooks_entities_load.partition_key,\n    hooks_entities_load.row_key,\n    encrypted_entity_buf_encode(\n      encrypted_entity_buf_encode(\n        entity_buf_encode(\n          entity_buf_encode(\n            entity_buf_encode(\n              entity_buf_encode(\n                entity_buf_encode(\n                  jsonb_build_object(\n                    'PartitionKey', encode_string_key(hook_group_id),\n                    'RowKey', encode_string_key(hook_id),\n                    'hookGroupId', hook_group_id,\n                    'hookId', hook_id,\n                    'nextScheduledDate', next_scheduled_date),\n                  'metadata', metadata::text),\n                'task', task::text),\n              'bindings', bindings::text),\n            'schedule', schedule::text),\n          'triggerSchema', trigger_schema::text),\n        'nextTaskId', encrypted_next_task_id),\n      'triggerToken', encrypted_trigger_token) as value,\n    1 as version,\n    hooks.etag as etag\n  from hooks\n  where\n    hooks.hook_group_id = decode_string_key(hooks_entities_load.partition_key) and\n    hooks.hook_id = decode_string_key(hooks_entities_load.row_key);\nend",
-          "deprecated": false,
+          "deprecated": true,
           "description": "See taskcluster-lib-entities",
           "mode": "read",
           "returns": "table (partition_key_out text, row_key_out text, value jsonb, version integer, etag uuid)",
@@ -4042,7 +4066,7 @@
         "hooks_entities_modify": {
           "args": "partition_key text, row_key text, properties jsonb, version integer, old_etag uuid",
           "body": "declare\n  new_row hooks%ROWTYPE;\nbegin\n  select\n    (properties ->> 'hookGroupId')::text,\n    (properties ->> 'hookId')::text,\n    entity_buf_decode(properties, 'metadata')::jsonb,\n    entity_buf_decode(properties, 'task')::jsonb,\n    entity_buf_decode(properties, 'bindings')::jsonb,\n    entity_buf_decode(properties, 'schedule')::jsonb,\n    entity_to_crypto_container_v0(properties, 'triggerToken')::jsonb,\n    entity_to_crypto_container_v0(properties, 'nextTaskId')::jsonb,\n    (properties ->> 'nextScheduledDate')::timestamptz,\n    entity_buf_decode(properties, 'triggerSchema')::jsonb,\n    public.gen_random_uuid() as etag\n  into new_row;\n  update hooks\n  set (\n    metadata,\n    task,\n    bindings,\n    schedule,\n    encrypted_trigger_token,\n    encrypted_next_task_id,\n    next_scheduled_date,\n    trigger_schema,\n    etag\n  ) = (\n    new_row.metadata,\n    new_row.task,\n    new_row.bindings,\n    new_row.schedule,\n    new_row.encrypted_trigger_token,\n    new_row.encrypted_next_task_id,\n    new_row.next_scheduled_date,\n    new_row.trigger_schema,\n    new_row.etag\n  )\n  where\n    hooks.hook_group_id = decode_string_key(hooks_entities_modify.partition_key) and\n    hooks.hook_id = decode_string_key(hooks_entities_modify.row_key) and\n    hooks.etag = hooks_entities_modify.old_etag;\n  if found then\n    return query select new_row.etag;\n    return;\n  end if;\n  perform hooks.etag from hooks\n  where\n    hooks.hook_group_id = decode_string_key(hooks_entities_modify.partition_key) and\n    hooks.hook_id = decode_string_key(hooks_entities_modify.row_key);\n  if found then\n    raise exception 'unsuccessful update' using errcode = 'P0004';\n  else\n    raise exception 'no such row' using errcode = 'P0002';\n  end if;\nend",
-          "deprecated": false,
+          "deprecated": true,
           "description": "See taskcluster-lib-entities",
           "mode": "write",
           "returns": "table (etag uuid)",
@@ -4051,7 +4075,7 @@
         "hooks_entities_remove": {
           "args": "partition_key text, row_key text",
           "body": "begin\n  return query delete from hooks\n  where\n    hooks.hook_group_id = decode_string_key(hooks_entities_remove.partition_key) and\n    hooks.hook_id = decode_string_key(hooks_entities_remove.row_key)\n  returning hooks.etag;\nend",
-          "deprecated": false,
+          "deprecated": true,
           "description": "See taskcluster-lib-entities",
           "mode": "write",
           "returns": "table (etag uuid)",
@@ -4060,7 +4084,7 @@
         "hooks_entities_scan": {
           "args": "pk text, rk text, condition text, size integer, page integer",
           "body": "declare\n  cond text[];\n  nsd_cond_operator text;\n  nsd_cond_operand timestamptz;\n  partition_key_var text;\n  row_key_var text;\nbegin\n  if not condition is null then\n    cond := regexp_split_to_array(condition, '\\s+');\n    nsd_cond_operator := cond[4];\n    nsd_cond_operand := cond[5] :: timestamptz;\n\n    return query select\n      encode_string_key(hook_group_id) as partition_key,\n      encode_string_key(hook_id) as row_key,\n      encrypted_entity_buf_encode(\n        encrypted_entity_buf_encode(\n          entity_buf_encode(\n            entity_buf_encode(\n              entity_buf_encode(\n                entity_buf_encode(\n                  entity_buf_encode(\n                    jsonb_build_object(\n                      'PartitionKey', encode_string_key(hook_group_id),\n                      'RowKey', encode_string_key(hook_id),\n                      'hookGroupId', hook_group_id,\n                      'hookId', hook_id,\n                      'nextScheduledDate', next_scheduled_date),\n                    'metadata', metadata::text),\n                  'task', task::text),\n                'bindings', bindings::text),\n              'schedule', schedule::text),\n            'triggerSchema', trigger_schema::text),\n          'nextTaskId', encrypted_next_task_id),\n        'triggerToken', encrypted_trigger_token) as value,\n      1 as version,\n      hooks.etag as etag from hooks\n    where\n      (hooks_entities_scan.pk is null or decode_string_key(hooks_entities_scan.pk) = hook_group_id) and\n      (hooks_entities_scan.pk is null or decode_string_key(hooks_entities_scan.rk) = hook_id) and\n      case\n        when nsd_cond_operator = '=' then next_scheduled_date = nsd_cond_operand\n        when nsd_cond_operator = '<' then next_scheduled_date < nsd_cond_operand\n        when nsd_cond_operator = '<=' then next_scheduled_date <= nsd_cond_operand\n        when nsd_cond_operator = '>' then next_scheduled_date > nsd_cond_operand\n        when nsd_cond_operator = '>=' then next_scheduled_date >= nsd_cond_operand\n        else next_scheduled_date <> nsd_cond_operand\n      end\n    order by hooks.hook_group_id, hooks.hook_id\n    limit case\n      when (size is not null and size > 0) then size + 1\n      else null\n    end\n    offset case\n      when (page is not null and page > 0) then page\n      else 0\n    end;\n  else\n    return query select\n      encode_string_key(hook_group_id) as partition_key,\n      encode_string_key(hook_id) as row_key,\n      encrypted_entity_buf_encode(\n        encrypted_entity_buf_encode(\n          entity_buf_encode(\n            entity_buf_encode(\n              entity_buf_encode(\n                entity_buf_encode(\n                  entity_buf_encode(\n                    jsonb_build_object(\n                      'PartitionKey', encode_string_key(hook_group_id),\n                      'RowKey', encode_string_key(hook_id),\n                      'hookGroupId', hook_group_id,\n                      'hookId', hook_id,\n                      'nextScheduledDate', next_scheduled_date),\n                    'metadata', metadata::text),\n                  'task', task::text),\n                'bindings', bindings::text),\n              'schedule', schedule::text),\n            'triggerSchema', trigger_schema::text),\n          'nextTaskId', encrypted_next_task_id),\n        'triggerToken', encrypted_trigger_token) as value,\n      1 as version,\n      hooks.etag as etag from hooks\n    where\n      (hooks_entities_scan.pk is null or decode_string_key(hooks_entities_scan.pk) = hook_group_id) and\n      (hooks_entities_scan.rk is null or decode_string_key(hooks_entities_scan.rk) = hook_id)\n    order by hooks.hook_group_id, hooks.hook_id\n    limit case\n      when (size is not null and size > 0) then size + 1\n      else null\n    end\n    offset case\n      when (size is not null and size > 0 and page is not null and page > 0) then page\n      else 0\n    end;\n  end if;\nend",
-          "deprecated": false,
+          "deprecated": true,
           "description": "See taskcluster-lib-entities",
           "mode": "read",
           "returns": "table (partition_key text, row_key text, value jsonb, version integer, etag uuid)",
@@ -4104,7 +4128,7 @@
         "taskcluster_integration_owners_entities_create": {
           "args": "pk text, rk text, properties jsonb, overwrite boolean, version integer",
           "body": "begin\n  if not overwrite then\n    raise exception 'must allow overwrite';\n  end if;\n  insert into github_integrations (owner, installation_id) values (\n    (properties ->> 'owner')::text,\n    (properties ->> 'installationId')::integer )\n  on conflict (owner) do update set installation_id = (properties ->> 'installationId')::integer;\n  return public.gen_random_uuid(); -- we don't store this or use it so just return anything\nend",
-          "deprecated": false,
+          "deprecated": true,
           "description": "See taskcluster-lib-entities",
           "mode": "write",
           "returns": "uuid",
@@ -4113,7 +4137,7 @@
         "taskcluster_integration_owners_entities_load": {
           "args": "partition_key text, row_key text",
           "body": "begin\n return query\n select\n    taskcluster_integration_owners_entities_load.partition_key,\n    'someConstant' as row_key,\n    jsonb_build_object(\n      'PartitionKey', taskcluster_integration_owners_entities_load.partition_key,\n      'RowKey', 'someConstant',\n      'installationId', installation_id,\n      'owner', owner) as value,\n    1 as version,\n    public.gen_random_uuid() as etag -- we just return this for api compatibility\nfrom github_integrations\nwhere\n  github_integrations.owner = decode_string_key(taskcluster_integration_owners_entities_load.partition_key);\nend",
-          "deprecated": false,
+          "deprecated": true,
           "description": "See taskcluster-lib-entities",
           "mode": "read",
           "returns": "table (partition_key_out text, row_key_out text, value jsonb, version integer, etag uuid)",
@@ -4122,7 +4146,7 @@
         "taskcluster_integration_owners_entities_modify": {
           "args": "partition_key text, row_key text, properties jsonb, version integer, old_etag uuid",
           "body": "begin\n    raise exception 'github integrations are immutable';\nend",
-          "deprecated": false,
+          "deprecated": true,
           "description": "See taskcluster-lib-entities",
           "mode": "write",
           "returns": "table (etag uuid)",
@@ -4131,7 +4155,7 @@
         "taskcluster_integration_owners_entities_remove": {
           "args": "partition_key text, row_key text",
           "body": "begin\n  delete\n  from github_integrations\n  where\n     github_integrations.owner = decode_string_key(partition_key);\n  -- tc-gh does not care if the row existed\n  return query select gen_random_uuid() as etag;\nend",
-          "deprecated": false,
+          "deprecated": true,
           "description": "See taskcluster-lib-entities",
           "mode": "write",
           "returns": "table (etag uuid)",
@@ -4140,7 +4164,7 @@
         "taskcluster_integration_owners_entities_scan": {
           "args": "pk text, rk text, condition text, size integer, page integer",
           "body": "declare\nbegin\n  if not condition is null then\n    raise exception 'condition not supported';\n  end if;\n  if not partition_key is null then\n    raise exception 'can only scan entire table';\n  end if;\n  return query\n    select\n      encode_string_key(owner),\n      'someConstant' as row_key,\n      jsonb_build_object(\n        'PartitionKey', encode_string_key(owner),\n        'RowKey', 'someConstant',\n        'installationId', installation_id,\n        'owner', owner) as value,\n      1 as version,\n      public.gen_random_uuid() as etag\n    from github_integrations\n    order by owner\n    limit case\n      when (size is not null and size > 0) then size + 1\n      else null\n    end\n    offset case\n      when (page is not null and page > 0) then page\n      else 0\n    end;\nend",
-          "deprecated": false,
+          "deprecated": true,
           "description": "See taskcluster-lib-entities",
           "mode": "read",
           "returns": "table (partition_key text, row_key text, value jsonb, version integer, etag uuid)",
@@ -4184,7 +4208,7 @@
         "taskcluster_check_runs_entities_create": {
           "args": "pk text, rk text, properties jsonb, overwrite boolean, version integer",
           "body": "declare\n  new_row github_checks%ROWTYPE;\nbegin\n  select\n    (properties ->> 'taskGroupId')::text as task_group_id,\n    (properties ->> 'taskId')::text as task_id,\n    (properties ->> 'checkSuiteId')::text as check_suite_id,\n    (properties ->> 'checkRunId')::text as check_run_id\n  into new_row;\n  if overwrite then\n    raise exception 'overwrite not implemented';\n  else\n    execute 'insert into github_checks select $1.*' using new_row;\n  end if;\n  return public.gen_random_uuid(); -- we just return this for api compatibility\nend",
-          "deprecated": false,
+          "deprecated": true,
           "description": "See taskcluster-lib-entities",
           "mode": "write",
           "returns": "uuid",
@@ -4193,7 +4217,7 @@
         "taskcluster_check_runs_entities_load": {
           "args": "partition_key text, row_key text",
           "body": "begin\n return query\n select\n    partition_key,\n    row_key,\n    jsonb_build_object(\n      'PartitionKey', partition_key,\n      'RowKey', row_key,\n      'taskGroupId', task_group_id,\n      'taskId', task_id,\n      'checkSuiteId', check_suite_id,\n      'checkRunId', check_run_id) as value,\n    1 as version,\n    public.gen_random_uuid() as etag -- we just return this for api compatibility\nfrom github_checks\nwhere\n  github_checks.task_group_id = decode_string_key(partition_key) and\n  github_checks.task_id = decode_string_key(row_key);\nend",
-          "deprecated": false,
+          "deprecated": true,
           "description": "See taskcluster-lib-entities",
           "mode": "read",
           "returns": "table (partition_key_out text, row_key_out text, value jsonb, version integer, etag uuid)",
@@ -4202,7 +4226,7 @@
         "taskcluster_check_runs_entities_modify": {
           "args": "partition_key text, row_key text, properties jsonb, version integer, old_etag uuid",
           "body": "begin\n    raise exception 'github integrations are immutable';\nend",
-          "deprecated": false,
+          "deprecated": true,
           "description": "See taskcluster-lib-entities",
           "mode": "write",
           "returns": "table (etag uuid)",
@@ -4211,7 +4235,7 @@
         "taskcluster_check_runs_entities_remove": {
           "args": "partition_key text, row_key text",
           "body": "begin\n  delete\n  from github_checks\n  where\n    github_checks.task_group_id = decode_string_key(partition_key) and\n    github_checks.task_id = decode_string_key(row_key);\n  -- tc-gh does not care if the row existed\n  return query select gen_random_uuid() as etag;\nend",
-          "deprecated": false,
+          "deprecated": true,
           "description": "See taskcluster-lib-entities",
           "mode": "write",
           "returns": "table (etag uuid)",
@@ -4220,7 +4244,7 @@
         "taskcluster_check_runs_entities_scan": {
           "args": "pk text, rk text, condition text, size integer, page integer",
           "body": "begin\n    raise exception 'not implemented';\nend",
-          "deprecated": false,
+          "deprecated": true,
           "description": "See taskcluster-lib-entities",
           "mode": "read",
           "returns": "table (partition_key text, row_key text, value jsonb, version integer, etag uuid)",
@@ -4229,7 +4253,7 @@
         "taskcluster_checks_to_tasks_entities_create": {
           "args": "pk text, rk text, properties jsonb, overwrite boolean, version integer",
           "body": "begin\n  -- We do nothing here because this is always written in tandem with a check_run\n  return gen_random_uuid();\nend",
-          "deprecated": false,
+          "deprecated": true,
           "description": "See taskcluster-lib-entities",
           "mode": "write",
           "returns": "uuid",
@@ -4238,7 +4262,7 @@
         "taskcluster_checks_to_tasks_entities_load": {
           "args": "partition_key text, row_key text",
           "body": "begin\n return query\n select\n    partition_key,\n    row_key,\n    jsonb_build_object(\n      'PartitionKey', partition_key,\n      'RowKey', row_key,\n      'taskGroupId', task_group_id,\n      'taskId', task_id,\n      'checkSuiteId', check_suite_id,\n      'checkRunId', check_run_id) as value,\n    1 as version,\n    public.gen_random_uuid() as etag -- we just return this for api compatibility\nfrom github_checks\nwhere\n  github_checks.check_suite_id = decode_string_key(partition_key) and\n  github_checks.check_run_id = decode_string_key(row_key);\nend",
-          "deprecated": false,
+          "deprecated": true,
           "description": "See taskcluster-lib-entities",
           "mode": "read",
           "returns": "table (partition_key_out text, row_key_out text, value jsonb, version integer, etag uuid)",
@@ -4247,7 +4271,7 @@
         "taskcluster_checks_to_tasks_entities_modify": {
           "args": "partition_key text, row_key text, properties jsonb, version integer, old_etag uuid",
           "body": "begin\n    raise exception 'github integrations are immutable';\nend",
-          "deprecated": false,
+          "deprecated": true,
           "description": "See taskcluster-lib-entities",
           "mode": "write",
           "returns": "table (etag uuid)",
@@ -4256,7 +4280,7 @@
         "taskcluster_checks_to_tasks_entities_remove": {
           "args": "partition_key text, row_key text",
           "body": "begin\n  delete\n  from github_checks\n  where\n  github_checks.check_suite_id = decode_string_key(partition_key) and\n  github_checks.check_run_id = decode_string_key(row_key);\n  -- tc-gh does not care if the row existed\n  return query select gen_random_uuid() as etag;\nend",
-          "deprecated": false,
+          "deprecated": true,
           "description": "See taskcluster-lib-entities",
           "mode": "write",
           "returns": "table (etag uuid)",
@@ -4265,7 +4289,7 @@
         "taskcluster_checks_to_tasks_entities_scan": {
           "args": "pk text, rk text, condition text, size integer, page integer",
           "body": "begin\n    raise exception 'not implemented';\nend",
-          "deprecated": false,
+          "deprecated": true,
           "description": "See taskcluster-lib-entities",
           "mode": "read",
           "returns": "table (partition_key text, row_key text, value jsonb, version integer, etag uuid)",
@@ -4318,7 +4342,7 @@
         "session_storage_table_entities_create": {
           "args": "pk text, rk text, properties jsonb, overwrite boolean, version integer",
           "body": "begin\n  raise exception 'unsuccessful create' using errcode = 'P0004';\nend",
-          "deprecated": false,
+          "deprecated": true,
           "description": "See taskcluster-lib-entities",
           "mode": "write",
           "returns": "uuid",
@@ -4327,7 +4351,7 @@
         "session_storage_table_entities_load": {
           "args": "partition_key text, row_key text",
           "body": "begin\nend",
-          "deprecated": false,
+          "deprecated": true,
           "description": "See taskcluster-lib-entities",
           "mode": "read",
           "returns": "table (partition_key_out text, row_key_out text, value jsonb, version integer, etag uuid)",
@@ -4336,7 +4360,7 @@
         "session_storage_table_entities_modify": {
           "args": "partition_key text, row_key text, properties jsonb, version integer, old_etag uuid",
           "body": "begin\n  raise exception 'unsuccessful update' using errcode = 'P0004';\nend",
-          "deprecated": false,
+          "deprecated": true,
           "description": "See taskcluster-lib-entities",
           "mode": "write",
           "returns": "table (etag uuid)",
@@ -4345,7 +4369,7 @@
         "session_storage_table_entities_remove": {
           "args": "partition_key text, row_key text",
           "body": "begin\n  raise exception 'unsuccessful delete' using errcode = 'P0004';\nend",
-          "deprecated": false,
+          "deprecated": true,
           "description": "See taskcluster-lib-entities",
           "mode": "write",
           "returns": "table (etag uuid)",
@@ -4354,7 +4378,7 @@
         "session_storage_table_entities_scan": {
           "args": "pk text, rk text, condition text, size integer, page integer",
           "body": "begin\nend",
-          "deprecated": false,
+          "deprecated": true,
           "description": "See taskcluster-lib-entities",
           "mode": "read",
           "returns": "table (partition_key text, row_key text, value jsonb, version integer, etag uuid)",
@@ -4380,7 +4404,7 @@
         "authorization_codes_table_entities_create": {
           "args": "pk text, rk text, properties jsonb, overwrite boolean, version integer",
           "body": "begin\n  raise exception 'unsuccessful create' using errcode = 'P0004';\nend",
-          "deprecated": false,
+          "deprecated": true,
           "description": "See taskcluster-lib-entities",
           "mode": "write",
           "returns": "uuid",
@@ -4389,7 +4413,7 @@
         "authorization_codes_table_entities_load": {
           "args": "partition_key text, row_key text",
           "body": "begin\nend",
-          "deprecated": false,
+          "deprecated": true,
           "description": "See taskcluster-lib-entities",
           "mode": "read",
           "returns": "table (partition_key_out text, row_key_out text, value jsonb, version integer, etag uuid)",
@@ -4398,7 +4422,7 @@
         "authorization_codes_table_entities_modify": {
           "args": "partition_key text, row_key text, properties jsonb, version integer, old_etag uuid",
           "body": "begin\n  raise exception 'unsuccessful update' using errcode = 'P0004';\nend",
-          "deprecated": false,
+          "deprecated": true,
           "description": "See taskcluster-lib-entities",
           "mode": "write",
           "returns": "table (etag uuid)",
@@ -4407,7 +4431,7 @@
         "authorization_codes_table_entities_remove": {
           "args": "partition_key text, row_key text",
           "body": "begin\n  raise exception 'unsuccessful delete' using errcode = 'P0004';\nend",
-          "deprecated": false,
+          "deprecated": true,
           "description": "See taskcluster-lib-entities",
           "mode": "write",
           "returns": "table (etag uuid)",
@@ -4416,7 +4440,7 @@
         "authorization_codes_table_entities_scan": {
           "args": "pk text, rk text, condition text, size integer, page integer",
           "body": "begin\nend",
-          "deprecated": false,
+          "deprecated": true,
           "description": "See taskcluster-lib-entities",
           "mode": "read",
           "returns": "table (partition_key text, row_key text, value jsonb, version integer, etag uuid)",
@@ -4460,7 +4484,7 @@
         "access_token_table_entities_create": {
           "args": "pk text, rk text, properties jsonb, overwrite boolean, version integer",
           "body": "begin\n  raise exception 'unsuccessful create' using errcode = 'P0004';\nend",
-          "deprecated": false,
+          "deprecated": true,
           "description": "See taskcluster-lib-entities",
           "mode": "write",
           "returns": "uuid",
@@ -4469,7 +4493,7 @@
         "access_token_table_entities_load": {
           "args": "partition_key text, row_key text",
           "body": "begin\nend",
-          "deprecated": false,
+          "deprecated": true,
           "description": "See taskcluster-lib-entities",
           "mode": "read",
           "returns": "table (partition_key_out text, row_key_out text, value jsonb, version integer, etag uuid)",
@@ -4478,7 +4502,7 @@
         "access_token_table_entities_modify": {
           "args": "partition_key text, row_key text, properties jsonb, version integer, old_etag uuid",
           "body": "begin\n  raise exception 'unsuccessful update' using errcode = 'P0004';\nend",
-          "deprecated": false,
+          "deprecated": true,
           "description": "See taskcluster-lib-entities",
           "mode": "write",
           "returns": "table (etag uuid)",
@@ -4487,7 +4511,7 @@
         "access_token_table_entities_remove": {
           "args": "partition_key text, row_key text",
           "body": "begin\n  raise exception 'unsuccessful delete' using errcode = 'P0004';\nend",
-          "deprecated": false,
+          "deprecated": true,
           "description": "See taskcluster-lib-entities",
           "mode": "write",
           "returns": "table (etag uuid)",
@@ -4496,7 +4520,7 @@
         "access_token_table_entities_scan": {
           "args": "pk text, rk text, condition text, size integer, page integer",
           "body": "begin\nend",
-          "deprecated": false,
+          "deprecated": true,
           "description": "See taskcluster-lib-entities",
           "mode": "read",
           "returns": "table (partition_key text, row_key text, value jsonb, version integer, etag uuid)",
@@ -4540,7 +4564,7 @@
         "clients_entities_create": {
           "args": "pk text, rk text, properties jsonb, overwrite boolean, version integer",
           "body": "declare\n  new_etag uuid = gen_random_uuid();\nbegin\n  if overwrite then\n    insert into clients\n    select\n      (properties ->> 'clientId')::text as client_id,\n      entity_buf_decode(properties, 'description')::text as description,\n      entity_to_crypto_container_v0(properties, 'accessToken') as encrypted_access_token,\n      (properties ->> 'expires')::timestamptz as expires,\n      (properties ->> 'disabled')::boolean as disabled,\n      entity_buf_decode(properties, 'scopes')::jsonb as scopes,\n      (details ->> 'created')::timestamptz as created,\n      (details ->> 'lastModified')::timestamptz as last_modified,\n      (details ->> 'lastDateUsed')::timestamptz as last_date_used,\n      (details ->> 'lastRotated')::timestamptz as last_rotated,\n      (details ->> 'deleteOnExpiration')::boolean as delete_on_expiration,\n      new_etag as etag\n    from (\n      select\n        entity_buf_decode(clients_entities_create.properties, 'details')::jsonb as details\n    ) as expanded\n    on conflict (client_id) do update set\n      description = excluded.description,\n      encrypted_access_token = excluded.encrypted_access_token,\n      expires = excluded.expires,\n      disabled = excluded.disabled,\n      scopes = excluded.scopes,\n      created = excluded.created,\n      last_modified = excluded.last_modified,\n      last_date_used = excluded.last_date_used,\n      last_rotated = excluded.last_rotated,\n      delete_on_expiration = excluded.delete_on_expiration,\n      etag = excluded.etag;\n  else\n    insert into clients\n    select\n      (properties ->> 'clientId')::text as client_id,\n      entity_buf_decode(properties, 'description')::text as description,\n      entity_to_crypto_container_v0(properties, 'accessToken') as encrypted_access_token,\n      (properties ->> 'expires')::timestamptz as expires,\n      (properties ->> 'disabled')::boolean as disabled,\n      entity_buf_decode(properties, 'scopes')::jsonb as scopes,\n      (details ->> 'created')::timestamptz as created,\n      (details ->> 'lastModified')::timestamptz as last_modified,\n      (details ->> 'lastDateUsed')::timestamptz as last_date_used,\n      (details ->> 'lastRotated')::timestamptz as last_rotated,\n      (details ->> 'deleteOnExpiration')::boolean as delete_on_expiration,\n      new_etag as etag\n    from (\n      select\n        entity_buf_decode(clients_entities_create.properties, 'details')::jsonb as details\n    ) as expanded;\n  end if;\n\n\n  return new_etag;\nend",
-          "deprecated": false,
+          "deprecated": true,
           "description": "See taskcluster-lib-entities",
           "mode": "write",
           "returns": "uuid",
@@ -4549,7 +4573,7 @@
         "clients_entities_load": {
           "args": "partition_key text, row_key text",
           "body": "begin\n  return query\n  select\n    clients_entities_load.partition_key,\n    clients_entities_load.row_key,\n    entity_buf_encode(\n      encrypted_entity_buf_encode(\n        entity_buf_encode(\n          entity_buf_encode(\n            jsonb_build_object(\n              'PartitionKey', clients_entities_load.partition_key,\n              'RowKey', clients_entities_load.row_key,\n              'clientId', client_id,\n              'disabled', disabled::int,\n              'expires', expires),\n            'description', description),\n          'scopes', scopes::text),\n        'accessToken', encrypted_access_token),\n      'details', jsonb_build_object(\n        'created', to_js_iso8601(created::text),\n        'lastModified', to_js_iso8601(last_modified::text),\n        'lastDateUsed', to_js_iso8601(last_date_used::text),\n        'lastRotated', to_js_iso8601(last_rotated::text),\n        'deleteOnExpiration', delete_on_expiration\n      )::text) as value,\n    1 as version,\n    clients.etag as etag\n  from clients\n  where\n    clients.client_id = decode_string_key(clients_entities_load.partition_key);\nend",
-          "deprecated": false,
+          "deprecated": true,
           "description": "See taskcluster-lib-entities",
           "mode": "read",
           "returns": "table (partition_key_out text, row_key_out text, value jsonb, version integer, etag uuid)",
@@ -4558,7 +4582,7 @@
         "clients_entities_modify": {
           "args": "partition_key text, row_key text, properties jsonb, version integer, old_etag uuid",
           "body": "declare\n  new_row clients%ROWTYPE;\nbegin\n  select\n    (properties ->> 'clientId')::text as client_id,\n    entity_buf_decode(properties, 'description')::text as description,\n    entity_to_crypto_container_v0(properties, 'accessToken') as encrypted_access_token,\n    (properties ->> 'expires')::timestamptz as expires,\n    (properties ->> 'disabled')::boolean as disabled,\n    entity_buf_decode(properties, 'scopes')::jsonb as scopes,\n    (details ->> 'created')::timestamptz as created,\n    (details ->> 'lastModified')::timestamptz as last_modified,\n    (details ->> 'lastDateUsed')::timestamptz as last_date_used,\n    (details ->> 'lastRotated')::timestamptz as last_rotated,\n    (details ->> 'deleteOnExpiration')::boolean as delete_on_expiration,\n    public.gen_random_uuid() as etag\n    from (\n      select\n        entity_buf_decode(properties, 'details')::jsonb as details\n    ) as expanded\n  into new_row;\n\n  update clients\n  set (\n    description,\n    encrypted_access_token,\n    expires,\n    disabled,\n    scopes,\n    created,\n    last_modified,\n    last_date_used,\n    last_rotated,\n    delete_on_expiration,\n    etag\n  ) = (\n    new_row.description,\n    new_row.encrypted_access_token,\n    new_row.expires,\n    new_row.disabled,\n    new_row.scopes,\n    new_row.created,\n    new_row.last_modified,\n    new_row.last_date_used,\n    new_row.last_rotated,\n    new_row.delete_on_expiration,\n    new_row.etag\n  )\n  where\n    clients.client_id = decode_string_key(clients_entities_modify.partition_key) and\n    clients.etag = clients_entities_modify.old_etag;\n\n  if found then\n    return query select new_row.etag;\n    return;\n  end if;\n\n  perform clients.etag from clients\n  where\n    clients.client_id = decode_string_key(clients_entities_modify.partition_key);\n  if found then\n    raise exception 'unsuccessful update' using errcode = 'P0004';\n  else\n    raise exception 'no such row' using errcode = 'P0002';\n  end if;\nend",
-          "deprecated": false,
+          "deprecated": true,
           "description": "See taskcluster-lib-entities",
           "mode": "write",
           "returns": "table (etag uuid)",
@@ -4567,7 +4591,7 @@
         "clients_entities_remove": {
           "args": "partition_key text, row_key text",
           "body": "begin\n  return query\n  delete from clients\n  where\n    clients.client_id = decode_string_key(clients_entities_remove.partition_key)\n  returning clients.etag;\nend",
-          "deprecated": false,
+          "deprecated": true,
           "description": "See taskcluster-lib-entities",
           "mode": "write",
           "returns": "table (etag uuid)",
@@ -4576,7 +4600,7 @@
         "clients_entities_scan": {
           "args": "pk text, rk text, condition text, size integer, page integer",
           "body": "declare\n  cond text[];\n  exp_cond_operator text;\n  exp_cond_operand timestamptz;\n  partition_key_var text;\n  row_key_var text;\n  expires_cond timestamptz;\nbegin\n  if not condition is null then\n    -- condition is only used for expiration scan\n    cond := regexp_split_to_array(condition, '\\s+');\n    expires_cond := cond[5]::timestamptz;\n  end if;\n\n  return query select\n    encode_string_key(client_id) as partition_key,\n    'client' as row_key,\n    entity_buf_encode(\n      encrypted_entity_buf_encode(\n        entity_buf_encode(\n          entity_buf_encode(\n            jsonb_build_object(\n              'PartitionKey', encode_string_key(client_id),\n              'RowKey', 'client',\n              'clientId', client_id,\n              'disabled', disabled::int,\n              'expires', expires),\n            'description', description),\n          'scopes', scopes::text),\n        'accessToken', encrypted_access_token),\n      'details', jsonb_build_object(\n        'created', to_js_iso8601(created::text),\n        'lastModified', to_js_iso8601(last_modified::text),\n        'lastDateUsed', to_js_iso8601(last_date_used::text),\n        'lastRotated', to_js_iso8601(last_rotated::text),\n        'deleteOnExpiration', delete_on_expiration\n      )::text) as value,\n    1 as version,\n    clients.etag as etag\n    from clients\n  where\n    (clients_entities_scan.pk is null or decode_string_key(clients_entities_scan.pk) = client_id) and\n    (expires_cond is null or expires < expires_cond)\n  order by clients.client_id\n  limit case\n    when (size is not null and size > 0) then size + 1\n    else null\n  end\n  offset case\n    when (page is not null and page > 0) then page\n    else 0\n  end;\nend",
-          "deprecated": false,
+          "deprecated": true,
           "description": "See taskcluster-lib-entities",
           "mode": "read",
           "returns": "table (partition_key text, row_key text, value jsonb, version integer, etag uuid)",
@@ -4692,7 +4716,7 @@
         "secrets_entities_create": {
           "args": "pk text, rk text, properties jsonb, overwrite boolean, version integer",
           "body": "begin\n  if not overwrite then\n    raise exception 'must overwrite';\n  end if;\n  insert into secrets (name, encrypted_secret, expires) values (\n    (properties ->> 'name')::text,\n    entity_to_crypto_container_v0(properties, 'secret'),\n    (properties ->> 'expires')::timestamptz\n  ) on conflict (name) do update set\n    encrypted_secret = entity_to_crypto_container_v0(properties, 'secret'),\n    expires = (properties ->> 'expires')::timestamptz;\n  return public.gen_random_uuid();\nend",
-          "deprecated": false,
+          "deprecated": true,
           "description": "See taskcluster-lib-entities",
           "mode": "write",
           "returns": "uuid",
@@ -4701,7 +4725,7 @@
         "secrets_entities_load": {
           "args": "partition_key text, row_key text",
           "body": "begin\n  return query\n  select\n    secrets_entities_load.partition_key,\n    secrets_entities_load.row_key,\n    encrypted_entity_buf_encode(\n      jsonb_build_object(\n        'PartitionKey', secrets_entities_load.partition_key,\n        'RowKey', secrets_entities_load.row_key,\n        'expires', secrets.expires,\n        'name', secrets.name),\n      'secret', secrets.encrypted_secret) as value,\n    1 as version,\n    public.gen_random_uuid() as etag\n  from secrets\n  where\n    secrets.name = decode_string_key(secrets_entities_load.row_key);\nend",
-          "deprecated": false,
+          "deprecated": true,
           "description": "See taskcluster-lib-entities",
           "mode": "read",
           "returns": "table (partition_key_out text, row_key_out text, value jsonb, version integer, etag uuid)",
@@ -4710,7 +4734,7 @@
         "secrets_entities_modify": {
           "args": "partition_key text, row_key text, properties jsonb, version integer, old_etag uuid",
           "body": "begin\n  raise exception 'not implemented';\nend",
-          "deprecated": false,
+          "deprecated": true,
           "description": "See taskcluster-lib-entities",
           "mode": "write",
           "returns": "table (etag uuid)",
@@ -4719,7 +4743,7 @@
         "secrets_entities_remove": {
           "args": "partition_key text, row_key text",
           "body": "begin\n  return query delete from secrets\n  where\n    secrets.name = decode_string_key(row_key)\n  returning public.gen_random_uuid();\nend",
-          "deprecated": false,
+          "deprecated": true,
           "description": "See taskcluster-lib-entities",
           "mode": "write",
           "returns": "table (etag uuid)",
@@ -4728,7 +4752,7 @@
         "secrets_entities_scan": {
           "args": "pk text, rk text, condition text, size integer, page integer",
           "body": "declare\ncond text[];\nexp_cond_field text;\nexp_cond_operator text;\nexp_cond_operand timestamptz;\nbegin\n  if not condition is null then\n    cond := regexp_split_to_array(condition, '\\s+');\n    exp_cond_field := trim(cond[3], '''');\n    exp_cond_operator := cond[4];\n    exp_cond_operand := cond[5] :: timestamptz;\n\n    if exp_cond_operator != '<' or exp_cond_field != 'expires' then\n      raise exception 'secrets_entities_scan only supports `expires < <timestamp>` conditions. Got (%)', exp_cond_operator;\n    end if;\n  end if;\n  return query\n    select\n      encode_string_key('secrets'),\n      encode_string_key(secrets.name),\n      encrypted_entity_buf_encode(\n        jsonb_build_object(\n          'PartitionKey', encode_string_key('secrets'),\n          'RowKey', encode_string_key(secrets.name),\n          'expires', secrets.expires,\n          'name', secrets.name),\n        'secret', secrets.encrypted_secret) as value,\n      1 as version,\n    public.gen_random_uuid() as etag\n    from secrets\n    where\n      row_key is null or\n      secrets.name = decode_string_key(row_key) or\n      (exp_cond_operand is NULL or expires < exp_cond_operand)\n    order by name\n    limit case\n      when (size is not null and size > 0) then size + 1\n      else null\n    end\n    offset case\n      when (page is not null and page > 0) then page\n      else 0\n    end;\nend",
-          "deprecated": false,
+          "deprecated": true,
           "description": "See taskcluster-lib-entities",
           "mode": "read",
           "returns": "table (partition_key text, row_key text, value jsonb, version integer, etag uuid)",
@@ -4790,7 +4814,7 @@
         "queue_worker_entities_create": {
           "args": "pk text, rk text, properties jsonb, overwrite boolean, version integer",
           "body": "declare\n  new_row queue_workers%ROWTYPE;\nbegin\n  select\n    (properties ->> 'provisionerId')::text,\n    (properties ->> 'workerType')::text,\n    (properties ->> 'workerGroup')::text,\n    (properties ->> 'workerId')::text,\n    entity_buf_decode(properties, 'recentTasks')::jsonb,\n    (properties ->> 'quarantineUntil')::timestamptz,\n    (properties ->> 'expires')::timestamptz,\n    (properties ->> 'firstClaim')::timestamptz,\n    public.gen_random_uuid()\n  into new_row;\n  if overwrite then\n    raise exception 'overwrite not implemented';\n  else\n    execute 'insert into queue_workers select $1.*' using new_row;\n  end if;\n  return new_row.etag;\nend",
-          "deprecated": false,
+          "deprecated": true,
           "description": "See taskcluster-lib-entities",
           "mode": "write",
           "returns": "uuid",
@@ -4799,7 +4823,7 @@
         "queue_worker_entities_load": {
           "args": "partition_key text, row_key text",
           "body": "declare\n  decoded_composite_partition_key text[];\n  decoded_composite_row_key text[];\nbegin\n  decoded_composite_partition_key := decode_composite_key(queue_worker_entities_load.partition_key);\n  decoded_composite_row_key := decode_composite_key(queue_worker_entities_load.row_key);\n  return query\n  select\n    queue_worker_entities_load.partition_key,\n    queue_worker_entities_load.row_key,\n    entity_buf_encode(\n      jsonb_build_object(\n        'PartitionKey', encode_composite_key(provisioner_id, worker_type),\n        'RowKey', encode_composite_key(worker_group, worker_id),\n        'provisionerId', provisioner_id,\n        'workerType', worker_type,\n        'workerGroup', worker_group,\n        'workerId', worker_id,\n        'quarantineUntil', quarantine_until,\n        'expires', expires,\n        'firstClaim', first_claim),\n      'recentTasks', recent_tasks::text) as value,\n    1 as version,\n    queue_workers.etag as etag\n  from queue_workers\n  where\n    queue_workers.provisioner_id = decoded_composite_partition_key[1] and queue_workers.worker_type = decoded_composite_partition_key[2] and\n    queue_workers.worker_group = decoded_composite_row_key[1] and queue_workers.worker_id = decoded_composite_row_key[2];\nend",
-          "deprecated": false,
+          "deprecated": true,
           "description": "See taskcluster-lib-entities",
           "mode": "read",
           "returns": "table (partition_key_out text, row_key_out text, value jsonb, version integer, etag uuid)",
@@ -4808,7 +4832,7 @@
         "queue_worker_entities_modify": {
           "args": "partition_key text, row_key text, properties jsonb, version integer, old_etag uuid",
           "body": "declare\n  decoded_composite_partition_key text[];\n  decoded_composite_row_key text[];\n  new_etag uuid;\nbegin\n  -- NOTE: queue only updates expires, quarantine_until, and recent_tasks, so that's all that's supported here\n  new_etag = public.gen_random_uuid();\n  decoded_composite_partition_key := decode_composite_key(queue_worker_entities_modify.partition_key);\n  decoded_composite_row_key := decode_composite_key(queue_worker_entities_modify.row_key);\n  update queue_workers\n  set (\n    expires,\n    quarantine_until,\n    recent_tasks,\n    etag\n  ) = (\n    (properties ->> 'expires')::timestamptz,\n    (properties ->> 'quarantineUntil')::timestamptz,\n    entity_buf_decode(properties, 'recentTasks')::jsonb,\n    new_etag\n  )\n  where\n    queue_workers.provisioner_id = decoded_composite_partition_key[1] and queue_workers.worker_type = decoded_composite_partition_key[2] and\n    queue_workers.worker_group = decoded_composite_row_key[1] and queue_workers.worker_id = decoded_composite_row_key[2] and\n    queue_workers.etag = queue_worker_entities_modify.old_etag;\n  if found then\n    return query select new_etag;\n    return;\n  end if;\n  perform queue_workers.etag from queue_workers\n  where\n    queue_workers.provisioner_id = decoded_composite_partition_key[1] and queue_workers.worker_type = decoded_composite_partition_key[2] and\n    queue_workers.worker_group = decoded_composite_row_key[1] and queue_workers.worker_id = decoded_composite_row_key[2];\n  if found then\n    raise exception 'unsuccessful update' using errcode = 'P0004';\n  else\n    raise exception 'no such row' using errcode = 'P0002';\n  end if;\nend",
-          "deprecated": false,
+          "deprecated": true,
           "description": "See taskcluster-lib-entities",
           "mode": "write",
           "returns": "table (etag uuid)",
@@ -4817,7 +4841,7 @@
         "queue_worker_entities_remove": {
           "args": "partition_key text, row_key text",
           "body": "declare\n  decoded_composite_partition_key text[];\n  decoded_composite_row_key text[];\nbegin\n  decoded_composite_partition_key := decode_composite_key(queue_worker_entities_remove.partition_key);\n  decoded_composite_row_key := decode_composite_key(queue_worker_entities_remove.row_key);\n  return query delete from queue_workers\n  where\n    queue_workers.provisioner_id = decoded_composite_partition_key[1] and queue_workers.worker_type = decoded_composite_partition_key[2] and\n    queue_workers.worker_group = decoded_composite_row_key[1] and queue_workers.worker_id = decoded_composite_row_key[2]\n  returning queue_workers.etag;\nend",
-          "deprecated": false,
+          "deprecated": true,
           "description": "See taskcluster-lib-entities",
           "mode": "write",
           "returns": "table (etag uuid)",
@@ -4826,7 +4850,7 @@
         "queue_worker_entities_scan": {
           "args": "pk text, rk text, condition text, size integer, page integer",
           "body": "declare\n  cond text[];\n  decoded_composite_partition_key text[];\n  decoded_composite_row_key text[];\n  exp_cond_field text;\n  exp_cond_operator text;\n  exp_cond_operand timestamptz;\nbegin\n  decoded_composite_partition_key := decode_composite_key(pk);\n  decoded_composite_row_key := decode_composite_key(rk);\n  if not condition is null then\n    cond := regexp_split_to_array(condition, '\\s+');\n    exp_cond_field := cond[3];\n    exp_cond_operator := cond[4];\n    exp_cond_operand := cond[5] :: timestamptz;\n\n    return query select\n      encode_composite_key(provisioner_id, worker_type) as partition_key,\n      encode_composite_key(worker_group, worker_id) as row_key,\n      entity_buf_encode(\n        jsonb_build_object(\n          'PartitionKey', encode_composite_key(provisioner_id, worker_type),\n          'RowKey', encode_composite_key(worker_group, worker_id),\n          'provisionerId', provisioner_id,\n          'workerType', worker_type,\n          'workerGroup', worker_group,\n          'workerId', worker_id,\n          'quarantineUntil', quarantine_until,\n          'expires', expires,\n          'firstClaim', first_claim),\n        'recentTasks', recent_tasks::text) as value,\n      1 as version,\n      queue_workers.etag as etag\n    from queue_workers\n    where\n      (queue_worker_entities_scan.pk is null or decoded_composite_partition_key[1] = provisioner_id and decoded_composite_partition_key[2] = worker_type) and\n      (queue_worker_entities_scan.rk is null or decoded_composite_row_key[1] = worker_group and decoded_composite_row_key[2] = worker_id) and\n      case\n        when exp_cond_field = '''quarantineUntil''' then\n        case\n          when exp_cond_operator = '<' then quarantine_until < exp_cond_operand\n          when exp_cond_operator = '>' then quarantine_until > exp_cond_operand\n        end\n        when exp_cond_field = '''expires''' then\n        case\n          when exp_cond_operator = '=' then expires = exp_cond_operand\n          when exp_cond_operator = '<' then expires < exp_cond_operand\n          when exp_cond_operator = '<=' then expires <= exp_cond_operand\n          when exp_cond_operator = '>' then expires > exp_cond_operand\n          when exp_cond_operator = '>=' then expires >= exp_cond_operand\n          else expires <> exp_cond_operand\n        end\n      end\n    order by queue_workers.provisioner_id, queue_workers.worker_type, queue_workers.worker_group, queue_workers.worker_id\n    limit case\n      when (size is not null and size > 0) then size + 1\n      else null\n    end\n    offset case\n      when (page is not null and page > 0) then page\n      else 0\n    end;\n  else\n    return query select\n      encode_composite_key(provisioner_id, worker_type) as partition_key,\n      encode_composite_key(worker_group, worker_id) as row_key,\n      entity_buf_encode(\n        jsonb_build_object(\n          'PartitionKey', encode_composite_key(provisioner_id, worker_type),\n          'RowKey', encode_composite_key(worker_group, worker_id),\n          'provisionerId', provisioner_id,\n          'workerType', worker_type,\n          'workerGroup', worker_group,\n          'workerId', worker_id,\n          'quarantineUntil', quarantine_until,\n          'expires', expires,\n          'firstClaim', first_claim),\n      'recentTasks', recent_tasks::text) as value,\n      1 as version,\n      queue_workers.etag as etag\n    from queue_workers\n    where\n      (queue_worker_entities_scan.pk is null or decoded_composite_partition_key[1] = provisioner_id and decoded_composite_partition_key[2] = worker_type) and\n      (queue_worker_entities_scan.rk is null or decoded_composite_row_key[1] = worker_group and decoded_composite_row_key[2] = worker_id)\n    order by queue_workers.provisioner_id, queue_workers.worker_type, queue_workers.worker_group, queue_workers.worker_id\n    limit case\n      when (size is not null and size > 0) then size + 1\n      else null\n    end\n    offset case\n      when (size is not null and size > 0 and page is not null and page > 0) then page\n      else 0\n    end;\n  end if;\nend",
-          "deprecated": false,
+          "deprecated": true,
           "description": "See taskcluster-lib-entities",
           "mode": "read",
           "returns": "table (partition_key text, row_key text, value jsonb, version integer, etag uuid)",
@@ -4897,7 +4921,7 @@
         "queue_worker_type_entities_create": {
           "args": "pk text, rk text, properties jsonb, overwrite boolean, version integer",
           "body": "declare\n  new_row queue_worker_types%ROWTYPE;\nbegin\n  select\n    (properties ->> 'provisionerId')::text,\n    (properties ->> 'workerType')::text,\n    (properties ->> 'expires')::timestamptz,\n    (properties ->> 'lastDateActive')::timestamptz,\n    entity_buf_decode(properties, 'description')::text,\n    (properties ->> 'stability')::text,\n    public.gen_random_uuid()\n  into new_row;\n  if overwrite then\n    raise exception 'overwrite not implemented';\n  else\n    execute 'insert into queue_worker_types select $1.*' using new_row;\n  end if;\n  return new_row.etag;\nend",
-          "deprecated": false,
+          "deprecated": true,
           "description": "See taskcluster-lib-entities",
           "mode": "write",
           "returns": "uuid",
@@ -4906,7 +4930,7 @@
         "queue_worker_type_entities_load": {
           "args": "partition_key text, row_key text",
           "body": "begin\n  return query\n  select\n    queue_worker_type_entities_load.partition_key,\n    queue_worker_type_entities_load.row_key,\n    entity_buf_encode(\n      jsonb_build_object(\n        'PartitionKey', encode_string_key(provisioner_id),\n        'RowKey', encode_string_key(worker_type),\n        'provisionerId', provisioner_id,\n        'workerType', worker_type,\n        'expires', expires,\n        'lastDateActive', last_date_active,\n        'stability', stability),\n      'description', description::text) as value,\n    1 as version,\n    queue_worker_types.etag as etag\n  from queue_worker_types\n  where\n    queue_worker_types.provisioner_id = decode_string_key(partition_key) and\n    queue_worker_types.worker_type = decode_string_key(row_key);\nend",
-          "deprecated": false,
+          "deprecated": true,
           "description": "See taskcluster-lib-entities",
           "mode": "read",
           "returns": "table (partition_key_out text, row_key_out text, value jsonb, version integer, etag uuid)",
@@ -4915,7 +4939,7 @@
         "queue_worker_type_entities_modify": {
           "args": "partition_key text, row_key text, properties jsonb, version integer, old_etag uuid",
           "body": "declare\n  new_etag uuid;\nbegin\n  new_etag = public.gen_random_uuid();\n  update queue_worker_types\n  set (\n    expires,\n    last_date_active,\n    stability,\n    description,\n    etag\n  ) = (\n    (properties ->> 'expires')::timestamptz,\n    (properties ->> 'lastDateActive')::timestamptz,\n    (properties ->> 'stability')::text,\n    entity_buf_decode(properties, 'description')::text,\n    new_etag\n  )\n  where\n    queue_worker_types.provisioner_id = decode_string_key(partition_key) and\n    queue_worker_types.worker_type = decode_string_key(row_key) and\n    queue_worker_types.etag = queue_worker_type_entities_modify.old_etag;\n  if found then\n    return query select new_etag;\n    return;\n  end if;\n  perform queue_worker_types.etag from queue_worker_types\n  where\n    queue_worker_types.provisioner_id = decode_string_key(partition_key) and\n    queue_worker_types.worker_type = decode_string_key(row_key);\n  if found then\n    raise exception 'unsuccessful update' using errcode = 'P0004';\n  else\n    raise exception 'no such row' using errcode = 'P0002';\n  end if;\nend",
-          "deprecated": false,
+          "deprecated": true,
           "description": "See taskcluster-lib-entities",
           "mode": "write",
           "returns": "table (etag uuid)",
@@ -4924,7 +4948,7 @@
         "queue_worker_type_entities_remove": {
           "args": "partition_key text, row_key text",
           "body": "begin\n  return query delete from queue_worker_types\n  where\n    queue_worker_types.provisioner_id = decode_string_key(partition_key) and\n    queue_worker_types.worker_type = decode_string_key(row_key)\n  returning queue_worker_types.etag;\nend",
-          "deprecated": false,
+          "deprecated": true,
           "description": "See taskcluster-lib-entities",
           "mode": "write",
           "returns": "table (etag uuid)",
@@ -4933,7 +4957,7 @@
         "queue_worker_type_entities_scan": {
           "args": "pk text, rk text, condition text, size integer, page integer",
           "body": "declare\n  cond text[];\n  exp_cond_operator text;\n  exp_cond_operand timestamptz;\nbegin\n  if not condition is null then\n    cond := regexp_split_to_array(condition, '\\s+');\n    exp_cond_operator := cond[4];\n    exp_cond_operand := cond[5] :: timestamptz;\n\n    return query select\n      encode_string_key(provisioner_id) as partition_key,\n      encode_string_key(worker_type) as row_key,\n      entity_buf_encode(\n        jsonb_build_object(\n          'PartitionKey', encode_string_key(provisioner_id),\n          'RowKey', encode_string_key(worker_type),\n          'provisionerId', provisioner_id,\n          'workerType', worker_type,\n          'expires', expires,\n          'lastDateActive', last_date_active,\n          'stability', stability),\n        'description', description::text) as value,\n      1 as version,\n      queue_worker_types.etag as etag\n    from queue_worker_types\n    where\n      (queue_worker_type_entities_scan.pk is null or decode_string_key(partition_key) = provisioner_id) and\n      (queue_worker_type_entities_scan.rk is null or decode_string_key(row_key) = worker_type) and\n      case\n        when exp_cond_operator = '=' then expires = exp_cond_operand\n        when exp_cond_operator = '<' then expires < exp_cond_operand\n        when exp_cond_operator = '<=' then expires <= exp_cond_operand\n        when exp_cond_operator = '>' then expires > exp_cond_operand\n        when exp_cond_operator = '>=' then expires >= exp_cond_operand\n        else expires <> exp_cond_operand\n      end\n    order by queue_worker_types.provisioner_id, queue_worker_types.worker_type\n    limit case\n      when (size is not null and size > 0) then size + 1\n      else null\n    end\n    offset case\n      when (page is not null and page > 0) then page\n      else 0\n    end;\n  else\n    return query select\n      encode_string_key(provisioner_id) as partition_key,\n      encode_string_key(worker_type) as row_key,\n      entity_buf_encode(\n        jsonb_build_object(\n          'PartitionKey', encode_string_key(provisioner_id),\n          'RowKey', encode_string_key(worker_type),\n          'provisionerId', provisioner_id,\n          'workerType', worker_type,\n          'expires', expires,\n          'lastDateActive', last_date_active,\n          'stability', stability),\n        'description', description::text) as value,\n      1 as version,\n      queue_worker_types.etag as etag\n    from queue_worker_types\n    where\n      (queue_worker_type_entities_scan.pk is null or decode_string_key(queue_worker_type_entities_scan.pk) = provisioner_id) and\n      (queue_worker_type_entities_scan.rk is null or decode_string_key(queue_worker_type_entities_scan.rk) = worker_type)\n    order by queue_worker_types.provisioner_id, queue_worker_types.worker_type\n    limit case\n      when (size is not null and size > 0) then size + 1\n      else null\n    end\n    offset case\n      when (size is not null and size > 0 and page is not null and page > 0) then page\n      else 0\n    end;\n  end if;\nend",
-          "deprecated": false,
+          "deprecated": true,
           "description": "See taskcluster-lib-entities",
           "mode": "read",
           "returns": "table (partition_key text, row_key text, value jsonb, version integer, etag uuid)",
@@ -5004,7 +5028,7 @@
         "queue_provisioner_entities_create": {
           "args": "pk text, rk text, properties jsonb, overwrite boolean, version integer",
           "body": "declare\n  new_row queue_provisioners%ROWTYPE;\nbegin\n  select\n    (properties ->> 'provisionerId')::text,\n    (properties ->> 'expires')::timestamptz,\n    (properties ->> 'lastDateActive')::timestamptz,\n    entity_buf_decode(properties, 'description')::text,\n    (properties ->> 'stability')::text,\n    entity_buf_decode(properties, 'actions')::jsonb,\n    public.gen_random_uuid()\n  into new_row;\n  if overwrite then\n    raise exception 'overwrite not implemented';\n  else\n    execute 'insert into queue_provisioners select $1.*' using new_row;\n  end if;\n  return new_row.etag;\nend",
-          "deprecated": false,
+          "deprecated": true,
           "description": "See taskcluster-lib-entities",
           "mode": "write",
           "returns": "uuid",
@@ -5013,7 +5037,7 @@
         "queue_provisioner_entities_load": {
           "args": "partition_key text, row_key text",
           "body": "begin\n  return query\n  select\n    queue_provisioner_entities_load.partition_key,\n    queue_provisioner_entities_load.row_key,\n    entity_buf_encode(\n      entity_buf_encode(\n        jsonb_build_object(\n          'PartitionKey', encode_string_key(provisioner_id),\n          'RowKey', 'provisioner',\n          'provisionerId', provisioner_id,\n          'expires', expires,\n          'lastDateActive', last_date_active,\n          'stability', stability),\n        'description', description::text),\n      'actions', actions::text) as value,\n    1 as version,\n    queue_provisioners.etag as etag\n  from queue_provisioners\n  where\n    queue_provisioners.provisioner_id = decode_string_key(partition_key);\nend",
-          "deprecated": false,
+          "deprecated": true,
           "description": "See taskcluster-lib-entities",
           "mode": "read",
           "returns": "table (partition_key_out text, row_key_out text, value jsonb, version integer, etag uuid)",
@@ -5022,7 +5046,7 @@
         "queue_provisioner_entities_modify": {
           "args": "partition_key text, row_key text, properties jsonb, version integer, old_etag uuid",
           "body": "declare\n  new_etag uuid;\nbegin\n  new_etag = public.gen_random_uuid();\n  update queue_provisioners\n  set (\n    expires,\n    stability,\n    description,\n    actions,\n    etag\n  ) = (\n    (properties ->> 'expires')::timestamptz,\n    (properties ->> 'stability')::text,\n    entity_buf_decode(properties, 'description')::text,\n    entity_buf_decode(properties, 'actions')::jsonb,\n    new_etag\n  )\n  where\n    queue_provisioners.provisioner_id = decode_string_key(partition_key) and\n    queue_provisioners.etag = queue_provisioner_entities_modify.old_etag;\n  if found then\n    return query select new_etag;\n    return;\n  end if;\n  perform queue_provisioners.etag from queue_provisioners\n  where\n    queue_provisioners.provisioner_id = decode_string_key(partition_key);\n  if found then\n    raise exception 'unsuccessful update' using errcode = 'P0004';\n  else\n    raise exception 'no such row' using errcode = 'P0002';\n  end if;\nend",
-          "deprecated": false,
+          "deprecated": true,
           "description": "See taskcluster-lib-entities",
           "mode": "write",
           "returns": "table (etag uuid)",
@@ -5031,7 +5055,7 @@
         "queue_provisioner_entities_remove": {
           "args": "partition_key text, row_key text",
           "body": "begin\n  return query delete from queue_provisioners\n  where\n    queue_provisioners.provisioner_id = decode_string_key(partition_key)\n  returning queue_provisioners.etag;\nend",
-          "deprecated": false,
+          "deprecated": true,
           "description": "See taskcluster-lib-entities",
           "mode": "write",
           "returns": "table (etag uuid)",
@@ -5040,7 +5064,7 @@
         "queue_provisioner_entities_scan": {
           "args": "pk text, rk text, condition text, size integer, page integer",
           "body": "declare\n  cond text[];\n  exp_cond_operator text;\n  exp_cond_operand timestamptz;\nbegin\n  if not condition is null then\n    cond := regexp_split_to_array(condition, '\\s+');\n    exp_cond_operator := cond[4];\n    exp_cond_operand := cond[5] :: timestamptz;\n\n    return query select\n      encode_string_key(provisioner_id) as partition_key,\n      'provisioner' as row_key,\n      entity_buf_encode(\n        entity_buf_encode(\n          jsonb_build_object(\n            'PartitionKey', encode_string_key(provisioner_id),\n            'RowKey', 'provisioner',\n            'provisionerId', provisioner_id,\n            'expires', expires,\n            'lastDateActive', last_date_active,\n            'stability', stability),\n          'description', description::text),\n        'actions', actions::text) as value,\n      1 as version,\n      queue_provisioners.etag as etag\n    from queue_provisioners\n    where\n      (queue_provisioner_entities_scan.pk is null or decode_string_key(partition_key) = provisioner_id) and\n      case\n        when exp_cond_operator = '=' then expires = exp_cond_operand\n        when exp_cond_operator = '<' then expires < exp_cond_operand\n        when exp_cond_operator = '<=' then expires <= exp_cond_operand\n        when exp_cond_operator = '>' then expires > exp_cond_operand\n        when exp_cond_operator = '>=' then expires >= exp_cond_operand\n        else expires <> exp_cond_operand\n      end\n    order by queue_provisioners.provisioner_id\n    limit case\n      when (size is not null and size > 0) then size + 1\n      else null\n    end\n    offset case\n      when (page is not null and page > 0) then page\n      else 0\n    end;\n  else\n    return query select\n      encode_string_key(provisioner_id) as partition_key,\n      'provisioner' as row_key,\n      entity_buf_encode(\n        entity_buf_encode(\n          jsonb_build_object(\n            'PartitionKey', encode_string_key(provisioner_id),\n            'RowKey', 'provisioner',\n            'provisionerId', provisioner_id,\n            'expires', expires,\n            'lastDateActive', last_date_active,\n            'stability', stability),\n          'description', description::text),\n        'actions', actions::text) as value,\n      1 as version,\n      queue_provisioners.etag as etag\n    from queue_provisioners\n    where\n      (queue_provisioner_entities_scan.pk is null or decode_string_key(partition_key) = provisioner_id)\n    order by queue_provisioners.provisioner_id\n    limit case\n      when (size is not null and size > 0) then size + 1\n      else null\n    end\n    offset case\n      when (size is not null and size > 0 and page is not null and page > 0) then page\n      else 0\n    end;\n  end if;\nend",
-          "deprecated": false,
+          "deprecated": true,
           "description": "See taskcluster-lib-entities",
           "mode": "read",
           "returns": "table (partition_key text, row_key text, value jsonb, version integer, etag uuid)",
@@ -5058,6 +5082,21 @@
       },
       "migrationScript": "begin\n  -- lock this table before reading from it, to prevent loss of concurrent\n  -- updates when the table is dropped.  Note that this may lead to concurrent\n  -- updates failing; the important thing is that they not succeed without\n  -- taking effect.  Failed updates will be retried.\n  lock table queue_provisioner_entities;\n\n  create table queue_provisioners\n  as\n    select\n      (value ->> 'provisionerId')::text as provisioner_id,\n      (value ->> 'expires')::timestamptz as expires,\n      (value ->> 'lastDateActive')::timestamptz as last_date_active,\n      entity_buf_decode(value, 'description')::text as description,\n      (value ->> 'stability')::text as stability,\n      entity_buf_decode(value, 'actions')::jsonb as actions,\n      etag\n    from queue_provisioner_entities;\n  alter table queue_provisioners add primary key (provisioner_id);\n  alter table queue_provisioners\n    alter column provisioner_id set not null,\n    alter column expires set not null,\n    alter column last_date_active set not null,\n    alter column description set not null,\n    alter column stability set not null,\n    alter column actions set not null,\n    alter column etag set not null,\n    alter column etag set default public.gen_random_uuid();\n\n  revoke select, insert, update, delete on queue_provisioner_entities from $db_user_prefix$_queue;\n  drop table queue_provisioner_entities;\n  grant select, insert, update, delete on queue_provisioners to $db_user_prefix$_queue;\nend\n",
       "version": 45
+    },
+    {
+      "description": "fix get_dependent_tasks to return tasks in order",
+      "methods": {
+        "get_dependent_tasks": {
+          "args": "required_task_id_in text, satisfied_in boolean, tasks_after_in text, page_size_in integer, page_offset_in integer",
+          "body": "begin\n  return query\n  select\n    task_dependencies.dependent_task_id,\n    task_dependencies.requires,\n    task_dependencies.satisfied\n  from task_dependencies\n  where\n    required_task_id = required_task_id_in and\n    expires > now() and\n    (satisfied_in is null or task_dependencies.satisfied = satisfied_in) and\n    (tasks_after_in is null or task_dependencies.dependent_task_id > tasks_after_in)\n  order by dependent_task_id\n  limit get_page_limit(page_size_in)\n  offset get_page_offset(page_offset_in);\nend",
+          "deprecated": false,
+          "description": "Get the un-expired tasks that depend on this one, limiting to only (un)satisfied\ndependencies if `satisfied_in` is not null.\n\nOnly dependencies with `dependent_task_id > tasks_after_in` are returned.\nThis supports paginated queries that are not susceptible to rows being\nadded or removed.  Typically only one of `page_offset_in` and\n`tasks_after_in` are non-null.",
+          "mode": "read",
+          "returns": "table(dependent_task_id text, requires task_requires, satisfied boolean)",
+          "serviceName": "queue"
+        }
+      },
+      "version": 46
     }
   ]
 }

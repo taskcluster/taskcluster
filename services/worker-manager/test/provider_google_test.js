@@ -8,7 +8,6 @@ const {WorkerPool, WorkerPoolError, Worker} = require('../src/data');
 
 helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   helper.withDb(mock, skipping);
-  helper.withEntities(mock, skipping);
   helper.withPulse(mock, skipping);
   helper.withFakeQueue(mock, skipping);
   helper.withFakeNotify(mock, skipping);
@@ -76,6 +75,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       config: {
         minCapacity: 1,
         maxCapacity: 1,
+        scalingRatio: 1,
         launchConfigs: [defaultLaunchConfig],
       },
       owner: 'whatever@example.com',
@@ -129,6 +129,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     const config = {
       minCapacity: 1,
       maxCapacity: 1,
+      scalingRatio: 1,
       launchConfigs: [defaultLaunchConfig],
     };
 

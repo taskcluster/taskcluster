@@ -11,6 +11,25 @@ defaults:
       enabled: true
     kvm:
       enabled: true
+  features:
+    localLiveLog:
+      enabled: true
+    artifacts:
+      enabled: true
+    chainOfTrust:
+      enabled: true
+    bulkLog:
+      enabled: false
+    taskclusterProxy:
+      enabled: true
+    dind:
+      enabled: true
+    dockerSave:
+      enabled: true
+    interactive:
+      enabled: true
+    allowPtrace:
+      enabled: true
   dockerConfig:
     # Privileged mode will allow tasks to run with elevated privileges similar
     # to process running on the host.  The task containers will have access to
@@ -29,7 +48,6 @@ defaults:
     delayFactor: 15000
     # Value between 0 and 1
     randomizationFactor: 0.25
-  features: {}
   ssl:
     certificate: '/etc/star_taskcluster-worker_net.crt'
     key: '/etc/star_taskcluster-worker_net.key'
@@ -53,9 +71,6 @@ defaults:
   # When this is true the capacity is always overriden to the number of cores.
   restrictCPU: false
 
-  # Image used to  create the taskcluster proxy container.
-  taskclusterProxyImage: 'taskcluster/taskcluster-proxy:5.1.0'
-  taskclusterLogImage: 'taskcluster/livelog:v4'
   dindImage: 'taskcluster/dind-service:v4.0'
 
   alivenessCheckInterval: 30000
@@ -141,6 +156,13 @@ defaults:
 
   ed25519SigningKeyLocation: '/etc/docker-worker-ed25519-cot-signing-key.key'
 
+  artifacts:
+    skipCompressionExtensions: [
+      '.7z', '.bz2', '.dmg', '.flv', '.gif', '.gz', '.jpeg', '.jpg', '.png',
+      '.swf', '.tbz', '.tgz', '.webp', '.whl', '.woff', '.woff2',
+      '.xz', '.zip', '.zst',
+    ]
+
   dockerSave:
     expiration: '7 days'
 
@@ -207,3 +229,5 @@ test:
 
   interactive:
     artifactName: 'private/docker-worker-tests/'
+
+  features: !env:json DOCKER_WORKER_TEST_FEATURES

@@ -6,8 +6,8 @@ import (
 	"path/filepath"
 
 	"github.com/taskcluster/httpbackoff/v3"
-	"github.com/taskcluster/taskcluster/v35/internal/scopes"
-	"github.com/taskcluster/taskcluster/v35/workers/generic-worker/fileutil"
+	"github.com/taskcluster/taskcluster/v36/internal/scopes"
+	"github.com/taskcluster/taskcluster/v36/workers/generic-worker/fileutil"
 )
 
 var (

@@ -7,10 +7,10 @@ import (
 	"log"
 	"strings"
 
-	"github.com/taskcluster/taskcluster/v35/internal/workerproto"
-	"github.com/taskcluster/taskcluster/v35/tools/worker-runner/cfg"
-	"github.com/taskcluster/taskcluster/v35/tools/worker-runner/run"
-	"github.com/taskcluster/taskcluster/v35/tools/worker-runner/worker/worker"
+	"github.com/taskcluster/taskcluster/v36/internal/workerproto"
+	"github.com/taskcluster/taskcluster/v36/tools/worker-runner/cfg"
+	"github.com/taskcluster/taskcluster/v36/tools/worker-runner/run"
+	"github.com/taskcluster/taskcluster/v36/tools/worker-runner/worker/worker"
 )
 
 type genericworkerConfig struct {
@@ -36,9 +36,7 @@ func (d *genericworker) ConfigureRun(state *run.State) error {
 	// generic-worker will fall back to defaults
 	for cfg, md := range map[string]string{
 		// generic-worker config : providerMetadata
-		// required
-		"publicIp": "public-ipv4",
-		// optional
+		"publicIP":         "public-ipv4",
 		"privateIP":        "local-ipv4",
 		"instanceType":     "instance-type",
 		"instanceID":       "instance-id",

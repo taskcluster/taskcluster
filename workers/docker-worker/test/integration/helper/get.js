@@ -1,8 +1,8 @@
 const got = require('got');
 
-module.exports = async (url) => {
+module.exports = async (url, options) => {
   try {
-    const response = await got(url, {retries: 5});
+    const response = await got(url, {retries: 5, ...options});
     return response.body;
   }
   catch (e) {

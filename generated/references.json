@@ -991,6 +991,13 @@
           "minimum": 0,
           "title": "Minimum Capacity",
           "type": "integer"
+        },
+        "scalingRatio": {
+          "description": "The scaling ratio is a ratio of worker capacity to pending tasks - a ratio of 1.0 means that 1 capacity will be added for each pending task\n",
+          "maximum": 1,
+          "minimum": 0,
+          "title": "Scaling Ratio",
+          "type": "number"
         }
       },
       "required": [
@@ -1176,6 +1183,13 @@
           "minimum": 0,
           "title": "Minimum Capacity",
           "type": "integer"
+        },
+        "scalingRatio": {
+          "description": "The scaling ratio is a ratio of worker capacity to pending tasks - a ratio of 1.0 means that 1 capacity will be added for each pending task\n",
+          "maximum": 1,
+          "minimum": 0,
+          "title": "Scaling Ratio",
+          "type": "number"
         }
       },
       "required": [
@@ -1291,6 +1305,13 @@
           "description": "Minimum capacity necessary to maintain at any given time for the entire workerpool",
           "title": "Minimum Capacity",
           "type": "integer"
+        },
+        "scalingRatio": {
+          "description": "The scaling ratio is a ratio of worker capacity to pending tasks - a ratio of 1.0 means that 1 capacity will be added for each pending task\n",
+          "maximum": 1,
+          "minimum": 0,
+          "title": "Scaling Ratio",
+          "type": "number"
         }
       },
       "required": [
@@ -4787,13 +4808,13 @@
                 "type": "string"
               },
               "hookGroupId": {
-                "maxLength": 64,
+                "maxLength": 1000,
                 "minLength": 1,
                 "pattern": "^([a-zA-Z0-9-_]*)$",
                 "type": "string"
               },
               "hookId": {
-                "maxLength": 64,
+                "maxLength": 1000,
                 "minLength": 1,
                 "pattern": "^([a-zA-Z0-9-_/]*)$",
                 "type": "string"
@@ -5043,13 +5064,13 @@
           "$ref": "bindings.json#"
         },
         "hookGroupId": {
-          "maxLength": 64,
+          "maxLength": 1000,
           "minLength": 1,
           "pattern": "^([a-zA-Z0-9-_]*)$",
           "type": "string"
         },
         "hookId": {
-          "maxLength": 64,
+          "maxLength": 1000,
           "minLength": 1,
           "pattern": "^([a-zA-Z0-9-_/]*)$",
           "type": "string"
@@ -5093,13 +5114,13 @@
           "$ref": "bindings.json#"
         },
         "hookGroupId": {
-          "maxLength": 64,
+          "maxLength": 1000,
           "minLength": 1,
           "pattern": "^([a-zA-Z0-9-_]*)$",
           "type": "string"
         },
         "hookId": {
-          "maxLength": 64,
+          "maxLength": 1000,
           "minLength": 1,
           "pattern": "^([a-zA-Z0-9-_/]*)$",
           "type": "string"
@@ -6002,7 +6023,7 @@
             "additionalProperties": false,
             "properties": {
               "contentEncoding": {
-                "description": "Content-Encoding for the artifact. If not provided, `gzip` will be used, except for the\nfollowing file extensions, where `identity` will be used, since they are already\ncompressed:\n\n* jpg\n* jpeg\n* png\n* gif\n* webp\n* 7z\n* zip\n* gz\n* tgz\n* bz2\n* tbz\n* whl\n* xz\n* swf\n* flv\n* woff\n* woff2\n\nNote, setting `contentEncoding` on a directory artifact will apply the same content\nencoding to all the files contained in the directory.\n\nSince: generic-worker 16.2.0",
+                "description": "Content-Encoding for the artifact. If not provided, `gzip` will be used, except for the\nfollowing file extensions, where `identity` will be used, since they are already\ncompressed:\n\n* 7z\n* bz2\n* dmg\n* flv\n* gif\n* gz\n* jpeg\n* jpg\n* png\n* swf\n* tbz\n* tgz\n* webp\n* whl\n* woff\n* woff2\n* xz\n* zip\n* zst\n\nNote, setting `contentEncoding` on a directory artifact will apply the same content\nencoding to all the files contained in the directory.\n\nSince: generic-worker 16.2.0",
                 "enum": [
                   "identity",
                   "gzip"
@@ -6369,7 +6390,7 @@
             "additionalProperties": false,
             "properties": {
               "contentEncoding": {
-                "description": "Content-Encoding for the artifact. If not provided, `gzip` will be used, except for the\nfollowing file extensions, where `identity` will be used, since they are already\ncompressed:\n\n* jpg\n* jpeg\n* png\n* gif\n* webp\n* 7z\n* zip\n* gz\n* tgz\n* bz2\n* tbz\n* whl\n* xz\n* swf\n* flv\n* woff\n* woff2\n\nNote, setting `contentEncoding` on a directory artifact will apply the same content\nencoding to all the files contained in the directory.\n\nSince: generic-worker 16.2.0",
+                "description": "Content-Encoding for the artifact. If not provided, `gzip` will be used, except for the\nfollowing file extensions, where `identity` will be used, since they are already\ncompressed:\n\n* 7z\n* bz2\n* dmg\n* flv\n* gif\n* gz\n* jpeg\n* jpg\n* png\n* swf\n* tbz\n* tgz\n* webp\n* whl\n* woff\n* woff2\n* xz\n* zip\n* zst\n\nNote, setting `contentEncoding` on a directory artifact will apply the same content\nencoding to all the files contained in the directory.\n\nSince: generic-worker 16.2.0",
                 "enum": [
                   "identity",
                   "gzip"
@@ -6745,7 +6766,7 @@
             "additionalProperties": false,
             "properties": {
               "contentEncoding": {
-                "description": "Content-Encoding for the artifact. If not provided, `gzip` will be used, except for the\nfollowing file extensions, where `identity` will be used, since they are already\ncompressed:\n\n* jpg\n* jpeg\n* png\n* gif\n* webp\n* 7z\n* zip\n* gz\n* tgz\n* bz2\n* tbz\n* whl\n* xz\n* swf\n* flv\n* woff\n* woff2\n\nNote, setting `contentEncoding` on a directory artifact will apply the same content\nencoding to all the files contained in the directory.\n\nSince: generic-worker 16.2.0",
+                "description": "Content-Encoding for the artifact. If not provided, `gzip` will be used, except for the\nfollowing file extensions, where `identity` will be used, since they are already\ncompressed:\n\n* 7z\n* bz2\n* dmg\n* flv\n* gif\n* gz\n* jpeg\n* jpg\n* png\n* swf\n* tbz\n* tgz\n* webp\n* whl\n* woff\n* woff2\n* xz\n* zip\n* zst\n\nNote, setting `contentEncoding` on a directory artifact will apply the same content\nencoding to all the files contained in the directory.\n\nSince: generic-worker 16.2.0",
                 "enum": [
                   "identity",
                   "gzip"
@@ -7117,7 +7138,7 @@
             "additionalProperties": false,
             "properties": {
               "contentEncoding": {
-                "description": "Content-Encoding for the artifact. If not provided, `gzip` will be used, except for the\nfollowing file extensions, where `identity` will be used, since they are already\ncompressed:\n\n* jpg\n* jpeg\n* png\n* gif\n* webp\n* 7z\n* zip\n* gz\n* tgz\n* bz2\n* tbz\n* whl\n* xz\n* swf\n* flv\n* woff\n* woff2\n\nNote, setting `contentEncoding` on a directory artifact will apply the same content\nencoding to all the files contained in the directory.\n\nSince: generic-worker 16.2.0",
+                "description": "Content-Encoding for the artifact. If not provided, `gzip` will be used, except for the\nfollowing file extensions, where `identity` will be used, since they are already\ncompressed:\n\n* 7z\n* bz2\n* dmg\n* flv\n* gif\n* gz\n* jpeg\n* jpg\n* png\n* swf\n* tbz\n* tgz\n* webp\n* whl\n* woff\n* woff2\n* xz\n* zip\n* zst\n\nNote, setting `contentEncoding` on a directory artifact will apply the same content\nencoding to all the files contained in the directory.\n\nSince: generic-worker 16.2.0",
                 "enum": [
                   "identity",
                   "gzip"
@@ -7584,9 +7605,6 @@
                 }
               ]
             },
-            "azure_account_key": {
-              "type": "string"
-            },
             "azure_accounts": {
               "oneOf": [
                 {
@@ -7732,8 +7750,6 @@
             "procs",
             "static_clients",
             "azure_accounts",
-            "azure_account_key",
-            "azure_crypto_key",
             "read_db_url",
             "write_db_url",
             "pulse_username",
@@ -8091,7 +8107,6 @@
           },
           "required": [
             "procs",
-            "azure_crypto_key",
             "read_db_url",
             "write_db_url",
             "taskcluster_client_id",
@@ -8507,15 +8522,6 @@
             "aws_secret_access_key": {
               "type": "string"
             },
-            "azure_account_key": {
-              "type": "string"
-            },
-            "azure_report_chance": {
-              "type": "number"
-            },
-            "azure_report_threshold": {
-              "type": "number"
-            },
             "debug": {
               "title": "node debug env var",
               "type": "string"
@@ -8769,7 +8775,6 @@
             "private_artifact_bucket",
             "taskcluster_client_id",
             "taskcluster_access_token",
-            "azure_account_key",
             "read_db_url",
             "write_db_url",
             "pulse_username",
@@ -8918,7 +8923,6 @@
             "procs",
             "taskcluster_client_id",
             "taskcluster_access_token",
-            "azure_crypto_key",
             "read_db_url",
             "write_db_url"
           ],
@@ -9010,9 +9014,6 @@
               "type": "string"
             },
             "azure_crypto_key": {
-              "type": "string"
-            },
-            "azure_signing_key": {
               "type": "string"
             },
             "db_crypto_keys": {
@@ -9167,8 +9168,6 @@
             "additional_allowed_cors_origin",
             "taskcluster_client_id",
             "taskcluster_access_token",
-            "azure_signing_key",
-            "azure_crypto_key",
             "read_db_url",
             "write_db_url",
             "pulse_username",
@@ -11750,6 +11749,7 @@
             "minCapacity": "The minimum amount of capacity that should be running",
             "pendingTasks": "The number of tasks the queue reports are pending for this worker pool",
             "requestedCapacity": "Amount of capacity that this estimator thinks we should add",
+            "scalingRatio": "The ratio of workers to spawn per pending task for this worker pool.",
             "workerPoolId": "The worker pool name (provisionerId/workerType)"
           },
           "level": "any",

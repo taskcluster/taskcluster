@@ -86,6 +86,7 @@ MonitorManager.register({
     pendingTasks: 'The number of tasks the queue reports are pending for this worker pool',
     minCapacity: 'The minimum amount of capacity that should be running',
     maxCapacity: 'The maximum amount of capacity that should be running',
+    scalingRatio: 'The ratio of workers to spawn per pending task for this worker pool.',
     existingCapacity: 'Amount of currently requested and available capacity',
     desiredCapacity: 'Amount of capacity that this estimator thinks we should have',
     requestedCapacity: 'Amount of capacity that this estimator thinks we should add',

@@ -6,6 +6,7 @@ grants a particular permission level based on the task scopes.
 const promiseRetry = require('promise-retry');
 const waitForPort = require('../wait_for_port');
 const http = require('http');
+const {version: workerVersion} = require('../../../package.json');
 
 // Alias used to link the proxy.
 const ALIAS = 'taskcluster';
@@ -26,8 +27,9 @@ class TaskclusterProxy {
   async link(task) {
     let docker = task.runtime.docker;
 
-    // Image name for the proxy container.
-    let image = task.runtime.taskclusterProxyImage;
+    // Use the taskcluster-proxy image built with this docker-worker release
+    // (and packaged with it, if done with monpacker)
+    let image = `taskcluster/taskcluster-proxy:v${workerVersion}`;
     let imageId = await task.runtime.imageManager.ensureImage(image, process.stdout, task);
 
     let cmd = [

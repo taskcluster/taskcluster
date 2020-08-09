@@ -4,9 +4,9 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
-	taskcluster "github.com/taskcluster/taskcluster/v35/clients/client-go"
-	"github.com/taskcluster/taskcluster/v35/tools/worker-runner/cfg"
-	"github.com/taskcluster/taskcluster/v35/tools/worker-runner/run"
+	taskcluster "github.com/taskcluster/taskcluster/v36/clients/client-go"
+	"github.com/taskcluster/taskcluster/v36/tools/worker-runner/cfg"
+	"github.com/taskcluster/taskcluster/v36/tools/worker-runner/run"
 )
 
 func CallConfigureRun(t *testing.T, state *run.State) {
@@ -58,7 +58,7 @@ func TestConfigureRunWithProviderMetadataConfig(t *testing.T) {
 
 	CallConfigureRun(t, state)
 
-	require.Equal(t, "1.2.3.4", state.WorkerConfig.MustGet("publicIp"))
+	require.Equal(t, "1.2.3.4", state.WorkerConfig.MustGet("publicIP"))
 	require.Equal(t, "10.1.1.1", state.WorkerConfig.MustGet("privateIP"))
 	require.Equal(t, "mars", state.WorkerConfig.MustGet("availabilityZone"))
 	require.Equal(t, "sol", state.WorkerConfig.MustGet("region"))
@@ -100,7 +100,7 @@ func TestConfigureRunWithoutProviderMetadataConfig(t *testing.T) {
 
 	CallConfigureRun(t, state)
 
-	require.False(t, state.WorkerConfig.Has("publicIp"))
+	require.False(t, state.WorkerConfig.Has("publicIP"))
 	require.False(t, state.WorkerConfig.Has("privateIP"))
 	require.False(t, state.WorkerConfig.Has("availabilityZone"))
 	require.False(t, state.WorkerConfig.Has("region"))

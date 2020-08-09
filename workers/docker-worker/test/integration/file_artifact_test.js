@@ -66,6 +66,82 @@ helper.secrets.mockSuite(suiteName(), ['docker', 'ci-creds'], function(mock, ski
     assert.equal(bar.trim(), 'bar');
   });
 
+  test('extract txt compressed', async () => {
+    let expiration = expires();
+    let result = await testworker({
+      payload: {
+        image: 'taskcluster/test-ubuntu',
+        command: cmd(
+          'mkdir /artifacts/',
+          'echo "xfoo" > /artifacts/xfoo.txt',
+          'ls /artifacts',
+        ),
+        features: {
+          localLiveLog: false,
+        },
+        artifacts: {
+          'public/xfoo.txt': {
+            type: 'file',
+            expires: expiration,
+            path: '/artifacts/xfoo.txt',
+          },
+        },
+        maxRunTime: 5 * 60,
+      },
+    });
+
+    // Get task specific results
+    assert.equal(result.run.state, 'completed', 'task should be successful');
+    assert.equal(result.run.reasonResolved, 'completed', 'task should be successful');
+
+    assert.deepEqual(
+      Object.keys(result.artifacts).sort(), ['public/xfoo.txt'].sort(),
+    );
+
+    let xfoo = await getArtifact(result, 'public/xfoo.txt', {decompress: false});
+
+    // Constant is gzips version of `xfoo\n', generated via
+    // $ echo xfoo | gzip | od -t x1 -w30 | cut -d ' ' -f 2- --output-delimiter= --only-delimited
+    assert.equal(xfoo, Buffer.from('1f8b0800000000000003ab48cbcfe70200a7e6f65005000000', 'hex'));
+  });
+
+  test('extract dmg not compressed', async () => {
+    let expiration = expires();
+    let result = await testworker({
+      payload: {
+        image: 'taskcluster/test-ubuntu',
+        command: cmd(
+          'mkdir /artifacts/',
+          'echo "xfoo" > /artifacts/xfoo.dmg',
+          'ls /artifacts',
+        ),
+        features: {
+          localLiveLog: false,
+        },
+        artifacts: {
+          'public/xfoo.dmg': {
+            type: 'file',
+            expires: expiration,
+            path: '/artifacts/xfoo.dmg',
+          },
+        },
+        maxRunTime: 5 * 60,
+      },
+    });
+
+    // Get task specific results
+    assert.equal(result.run.state, 'completed', 'task should be successful');
+    assert.equal(result.run.reasonResolved, 'completed', 'task should be successful');
+
+    assert.deepEqual(
+      Object.keys(result.artifacts).sort(), ['public/xfoo.dmg'].sort(),
+    );
+
+    let xfoo = await getArtifact(result, 'public/xfoo.dmg', {decompress: false});
+
+    assert.equal(xfoo.trim(), 'xfoo');
+  });
+
   test('artifact expiration defaulted to task.expires', async () => {
     let result = await testworker({
       payload: {

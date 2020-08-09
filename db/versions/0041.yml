@@ -4,6 +4,7 @@ migrationScript: 0041-migration.sql
 downgradeScript: 0041-downgrade.sql
 methods:
   clients_entities_load:
+    deprecated: true
     description: See taskcluster-lib-entities
     mode: read
     serviceName: auth
@@ -42,6 +43,7 @@ methods:
           clients.client_id = decode_string_key(clients_entities_load.partition_key);
       end
   clients_entities_create:
+    deprecated: true
     serviceName: auth
     description: See taskcluster-lib-entities
     mode: write
@@ -107,6 +109,7 @@ methods:
         return new_etag;
       end
   clients_entities_remove:
+    deprecated: true
     serviceName: auth
     description: See taskcluster-lib-entities
     mode: write
@@ -121,6 +124,7 @@ methods:
         returning clients.etag;
       end
   clients_entities_modify:
+    deprecated: true
     serviceName: auth
     description: See taskcluster-lib-entities
     mode: write
@@ -194,6 +198,7 @@ methods:
         end if;
       end
   clients_entities_scan:
+    deprecated: true
     description: See taskcluster-lib-entities
     mode: read
     serviceName: auth

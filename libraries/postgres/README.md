@@ -24,7 +24,7 @@ const db = Database.setup({
   monitor: ...,
   statementTimeout: ..., // optional
   poolSize: ..., // optional, default 5
-  azureCryptoKey: ..., // optional, only required to read lib-entities encrypted data
+  azureCryptoKey: ..., // optional, for backward compatibility
   dbCryptoKeys: ..., // optional, only required if encrypting columns, usually from cfg.postgres.dbCryptoKeys
 });
 ```
@@ -66,6 +66,8 @@ const schema2 = Schema.fromSerializable(serializableData);
 In general, prefer the first form in tests, so that changes to the DB directory can be tested quickly, and the second for in production.
 A serializable representation of a schema is available from `schema.asSerializable()`.
 
+The schema's `allMethods` method returns all methods defined in the schema, including deprecated methods.
+
 ## Conceptual Overview
 
 The library expects to define a single schema for all services hosted in this repository, and assumes that schema is applied to a dedicated Postgres database.
@@ -89,6 +91,10 @@ Each new version comes with an upgrade script that runs in a transaction, thus e
 
 When deploying a new version of Taskcluster, any necessary database upgrades *must* be applied before any services are upgraded.
 We maintain the invariant that services expecting database version S can interoperate with a database at version V as long as V >= S.
+
+To allow an end to support for DB methods, it is allowed to completely drop support for database functions after *two* major Taskcluster revisions.
+This is possible because deployers are required to update only a single major version at a time.
+So, for example, services at version v25.1.2 will never run against a database defined in version v27.0.0, so that database version may drop support for functions that were never used in v26.x.x.
 
 This invariant is maintained through careful attention to the definitions of the stored functions.
 These stored functions are changed as necessary during the upgrade process, such that a function operates identically before and after the ugprade: identical arguments, identical return type, and correct behavior.
@@ -190,7 +196,8 @@ methods:
     # deprecating a method without changing it.
     # When a method is deprecated, it is no longer available in `db.fns` but is made
     # available in `db.deprecatedFns` for use in testing but this method should no
-    # longer be used in production.
+    # longer be used in production.  The function is listed in `db/fns.md` a deprecated
+    # including the TC versions through which it must be supported.
     deprecated: true
 
     # The body of the stored function.  This is passed verbatim to `CREATE FUNCTION`.

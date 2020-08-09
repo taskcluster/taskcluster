@@ -20,8 +20,8 @@ import (
 
 	"github.com/taskcluster/httpbackoff/v3"
 	tcurls "github.com/taskcluster/taskcluster-lib-urls"
-	tcclient "github.com/taskcluster/taskcluster/v35/clients/client-go"
-	"github.com/taskcluster/taskcluster/v35/clients/client-go/tcqueue"
+	tcclient "github.com/taskcluster/taskcluster/v36/clients/client-go"
+	"github.com/taskcluster/taskcluster/v36/clients/client-go/tcqueue"
 )
 
 var (
@@ -386,30 +386,27 @@ func resolve(base *BaseArtifact, artifactType string, path string, contentType s
 	// Is content encoding specified in task payload?
 	if contentEncoding == "" {
 		extension := filepath.Ext(path)
-		// based on https://github.com/evansd/whitenoise/blob/03f6ea846394e01cbfe0c730141b81eb8dd6e88a/whitenoise/compress.py#L21-L29
-		// with .7z added (useful for NSS)
+		// originally based on https://github.com/evansd/whitenoise/blob/03f6ea846394e01cbfe0c730141b81eb8dd6e88a/whitenoise/compress.py#L21-L29
 		SkipCompressionExtensions := map[string]bool{
-			// Images
-			".jpg":  true,
-			".jpeg": true,
-			".png":  true,
-			".gif":  true,
-			".webp": true,
-			// Compressed files
-			".7z":  true,
-			".zip": true,
-			".gz":  true,
-			".tgz": true,
-			".bz2": true,
-			".tbz": true,
-			".whl": true, // Python wheel are already zip file
-			".xz":  true,
-			// Flash
-			".swf": true,
-			".flv": true,
-			// Fonts
+			".7z":    true,
+			".bz2":   true,
+			".dmg":   true,
+			".flv":   true,
+			".gif":   true,
+			".gz":    true,
+			".jpeg":  true,
+			".jpg":   true,
+			".png":   true,
+			".swf":   true,
+			".tbz":   true,
+			".tgz":   true,
+			".webp":  true,
+			".whl":   true, // Python wheel are already zip file
 			".woff":  true,
 			".woff2": true,
+			".xz":    true,
+			".zip":   true,
+			".zst":   true,
 		}
 		// When the file extension is blacklisted in SkipCompressionExtensions then "identity" should be used, otherwise "gzip".
 		if SkipCompressionExtensions[extension] {

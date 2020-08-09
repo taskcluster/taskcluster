@@ -2,7 +2,6 @@ const _ = require('lodash');
 const debug = require('debug')('purge-cache');
 const {APIBuilder} = require('taskcluster-lib-api');
 const taskcluster = require('taskcluster-client');
-const Entity = require('taskcluster-lib-entities');
 const { paginateResults } = require('taskcluster-lib-api');
 
 // Common patterns URL parameters
@@ -66,10 +65,7 @@ builder.declare({
 builder.declare({
   method: 'get',
   route: '/purge-cache/list',
-  query: {
-    continuationToken: Entity.continuationTokenPattern,
-    limit: /^[0-9]+$/,
-  },
+  query: paginateResults.query,
   name: 'allPurgeRequests',
   output: 'all-purge-cache-request-list.yml',
   title: 'All Open Purge Requests',

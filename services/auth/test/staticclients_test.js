@@ -24,24 +24,24 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
     }
   });
 
-  test('other clients can be created and removed, and azureAccountId is substituted', async () => {
+  test('other clients can be created and removed', async () => {
     debug('test that we can create static clients');
     await syncStaticClients(helper.db, [
       ...helper.cfg.app.staticClients, {
         clientId: 'static/mystuff/foo',
         accessToken: 'test-secret-12345678910',
         description: 'Just testing, you should never see this in production!!!',
-        scopes: ['dummy-scope:${azureAccountId}:foo'],
+        scopes: ['dummy-scope:bar:foo'],
       },
-    ], 'pamplemousse');
+    ]);
 
     debug('test that static client was created');
     const c = await helper.apiClient.client('static/mystuff/foo');
     assume(c.clientId).equals('static/mystuff/foo');
-    assume(c.scopes).includes('dummy-scope:pamplemousse:foo');
+    assume(c.scopes).includes('dummy-scope:bar:foo');
 
     debug('test that we delete the static client again');
-    await syncStaticClients(helper.db, helper.cfg.app.staticClients, 'pamplemousse');
+    await syncStaticClients(helper.db, helper.cfg.app.staticClients);
     try {
       await helper.apiClient.client('static/mystuff/foo');
       assert(false, 'expected an error');
@@ -60,7 +60,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
         description: 'testing',
         scopes: ['new-queue-scope'],
       },
-    ], 'pamplemousse'), /not allowed/);
+    ]), /not allowed/);
   });
 
   test('omitting a static/taskcluster client is an error', async () => {
@@ -78,6 +78,6 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
         accessToken: 'test-secret-12345678910',
         description: 'testing',
       },
-    ], 'pamplemousse'), /extra clients/);
+    ]), /extra clients/);
   });
 });

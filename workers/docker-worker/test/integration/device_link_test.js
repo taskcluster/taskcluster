@@ -56,6 +56,36 @@ helper.secrets.mockSuite(suiteName(), ['docker', 'ci-creds'], function(mock, ski
     );
   });
 
+  test('link valid video loopback device with worker-scopes', async () => {
+    worker = new TestWorker(DockerWorker);
+    await worker.launch();
+    let task = {
+      scopes: [`docker-worker:capability:device:loopbackVideo:${worker.workerPoolId}`],
+      payload: {
+        capabilities: {
+          devices: {
+            loopbackVideo: true,
+          },
+        },
+        image: 'ubuntu:14.10',
+        command: cmd(
+          'ls /dev',
+          'test -c /dev/video0 || { echo \'Device not found\' ; exit 1; }',
+        ),
+        maxRunTime: 5 * 60,
+      },
+    };
+
+    let result = await worker.postToQueue(task);
+
+    assert.equal(result.status.state, 'completed', 'Task state is not marked as completed');
+    assert.equal(
+      result.run.reasonResolved,
+      'completed',
+      'Task not resolved as complete',
+    );
+  });
+
   test('link valid audio loopback device', async () => {
     worker = new TestWorker(DockerWorker);
     await worker.launch();

@@ -4,6 +4,7 @@ migrationScript: 0035-migration.sql
 downgradeScript: 0035-downgrade.sql
 methods:
   hooks_entities_load:
+    deprecated: true
     description: See taskcluster-lib-entities
     mode: read
     serviceName: hooks
@@ -43,6 +44,7 @@ methods:
           hooks.hook_id = decode_string_key(hooks_entities_load.row_key);
       end
   hooks_entities_create:
+    deprecated: true
     serviceName: hooks
     description: See taskcluster-lib-entities
     mode: write
@@ -73,6 +75,7 @@ methods:
         return new_row.etag;
       end
   hooks_entities_remove:
+    deprecated: true
     serviceName: hooks
     description: See taskcluster-lib-entities
     mode: write
@@ -87,6 +90,7 @@ methods:
         returning hooks.etag;
       end
   hooks_entities_modify:
+    deprecated: true
     serviceName: hooks
     description: See taskcluster-lib-entities
     mode: write
@@ -150,6 +154,7 @@ methods:
         end if;
       end
   hooks_entities_scan:
+    deprecated: true
     description: See taskcluster-lib-entities
     mode: read
     serviceName: hooks

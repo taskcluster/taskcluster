@@ -14,7 +14,7 @@ const features = require('./features');
 const getHostname = require('./util/hostname');
 const { fmtLog, fmtErrorLog } = require('./log');
 const { hasPrefixedScopes } = require('./util/scopes');
-const { scopeMatch } = require('./scopes');
+const scopes = require('./scopes');
 const { validatePayload } = require('./util/validate_schema');
 const waitForEvent = require('./wait_for_event');
 const uploadToS3 = require('./upload_to_s3');
@@ -56,7 +56,7 @@ Convert the feature flags into a state handler.
 @param {Object} task definition.
 @param {Monitor} monitor object implementing record/measure methods
 */
-function buildStateHandlers(task, monitor) {
+function buildStateHandlers(runtime, task, monitor) {
   let handlers = [];
   let featureFlags = task.payload.features || {};
 
@@ -68,9 +68,15 @@ function buildStateHandlers(task, monitor) {
     throw new Error(`${diff.join()} ${diff.length > 1 ? 'are' : 'is'} not part of valid features`);
   }
 
+  diff = _.keys(featureFlags).filter(x => !runtime.features[x].enabled);
+
+  if (diff.length) {
+    throw new Error(`${diff.join()} ${diff.length > 1 ? 'are' : 'is'} not enabled on this worker`);
+  }
+
   for (let flag of Object.keys(features || {})) {
     let enabled = (flag in featureFlags) ?
-      featureFlags[flag] : features[flag].defaults;
+      featureFlags[flag] : (runtime.features[flag].enabled && features[flag].defaults);
 
     if (enabled) {
       handlers.push(new (features[flag].module)());
@@ -107,15 +113,18 @@ async function buildVolumeBindings(taskVolumeBindings, volumeCache, expandedScop
   return [caches, bindings];
 }
 
-function runAsPrivileged(task, allowPrivilegedTasks) {
+function runAsPrivileged(runtime, task, allowPrivilegedTasks) {
   let taskCapabilities = task.payload.capabilities || {};
   let privilegedTask = taskCapabilities.privileged || false;
   if (!privilegedTask) {return false;}
 
-  if (!scopeMatch(task.scopes, [['docker-worker:capability:privileged']])) {
+  if (!scopes.scopeMatch(task.scopes, [
+    ['docker-worker:capability:privileged'],
+    [`docker-worker:capability:privileged:${runtime.workerPool}`],
+  ])) {
     throw new Error(
       'Insufficient scopes to run task in privileged mode. Try ' +
-      'adding docker-worker:capability:privileged to the .scopes array',
+      `adding docker-worker:capability:privileged:${runtime.workerPool} to the .scopes array`,
     );
   }
 
@@ -129,12 +138,33 @@ function runAsPrivileged(task, allowPrivilegedTasks) {
   return true;
 }
 
-async function buildDeviceBindings(devices, expandedScopes) {
-  let allowed = await hasPrefixedScopes('docker-worker:capability:device:', devices, expandedScopes);
+async function buildDeviceBindings(runtime, devices, expandedScopes) {
+  let scopeExpression = {
+    AllOf: Object.keys(devices).map((device) => ({
+      AnyOf: [
+        `docker-worker:capability:device:${device}`,
+        `docker-worker:capability:device:${device}:${runtime.workerPool}`,
+      ],
+    })),
+  };
 
-  if (!allowed) {
-    throw new Error('Insufficient scopes to attach devices to task container.  The ' +
-    'task must have scope `docker-worker:capability:device:<dev-name>` for each device.');
+  const satisfyingScopes = scopes.scopesSatisfying(expandedScopes, scopeExpression);
+
+  if (!satisfyingScopes) {
+    let unsatisfied = scopes.removeGivenScopes(expandedScopes, scopeExpression);
+    throw new Error([
+      'Insufficient scopes to attach devices to task container.',
+      'The task is missing the following scopes:',
+      '',
+      '```',
+      `${unsatisfied}`,
+      '```',
+      'This requested devices requires the task scopes to satisfy the following scope expression:',
+      '',
+      '```',
+      `${scopeExpression}`,
+      '```',
+    ].join('\n'));
   }
 
   let deviceBindings = [];
@@ -297,7 +327,7 @@ class Task extends EventEmitter {
 
     try {
       // states actions.
-      this.states = buildStateHandlers(this.task, this.runtime.monitor);
+      this.states = buildStateHandlers(this.runtime, this.task, this.runtime.monitor);
     } catch (err) {
       this.abortRun(fmtErrorLog(err));
       throw err;
@@ -323,6 +353,7 @@ class Task extends EventEmitter {
     env.TASK_ID = this.status.taskId;
     env.RUN_ID = this.runId;
     env.TASKCLUSTER_WORKER_TYPE = this.runtime.workerType;
+    env.TASKCLUSTER_WORKER_POOL = this.runtime.workerPool;
     env.TASKCLUSTER_INSTANCE_TYPE = this.runtime.workerNodeType;
     env.TASKCLUSTER_WORKER_GROUP = this.runtime.workerGroup;
     env.TASKCLUSTER_PUBLIC_IP = this.runtime.publicIp;
@@ -330,7 +361,7 @@ class Task extends EventEmitter {
     env.TASKCLUSTER_WORKER_LOCATION = this.runtime.workerLocation;
 
     let privilegedTask = runAsPrivileged(
-      this.task, this.runtime.dockerConfig.allowPrivileged,
+      this.runtime, this.task, this.runtime.dockerConfig.allowPrivileged,
     );
 
     let procConfig = {
@@ -385,7 +416,7 @@ class Task extends EventEmitter {
     });
 
     if (this.options.devices) {
-      let bindings = await buildDeviceBindings(this.options.devices, expandedScopes);
+      let bindings = await buildDeviceBindings(this.runtime, this.options.devices, expandedScopes);
       procConfig.create.HostConfig['Devices'] = bindings.deviceBindings;
       binds = _.union(binds, bindings.bindMounts);
     }
@@ -430,7 +461,7 @@ class Task extends EventEmitter {
       `Worker ID: ${this.runtime.workerId}`,
       `Worker Group: ${this.runtime.workerGroup}`,
       `Worker Node Type: ${this.runtime.workerNodeType}`,
-      `Worker Type: ${this.runtime.workerType}`,
+      `Worker Pool: ${this.runtime.workerPool}`,
       `Worker Version: ${version}`,
       `Public IP: ${this.runtime.publicIp}`,
       `Hostname: ${os.hostname()}`,

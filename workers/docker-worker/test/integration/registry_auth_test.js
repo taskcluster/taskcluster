@@ -80,6 +80,8 @@ helper.secrets.mockSuite(suiteName(), ['docker', 'ci-creds'], function(mock, ski
       },
     });
 
+    console.log(result.log);
+
     assert.equal(result.run.state, 'completed', 'auth download works');
     assert.equal(result.run.reasonResolved, 'completed', 'auth download works');
     assert.ok(result.log.includes(registryImageName), 'correct image name');

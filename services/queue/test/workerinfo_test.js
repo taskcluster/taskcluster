@@ -12,7 +12,6 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
   helper.withPulse(mock, skipping);
   helper.withS3(mock, skipping);
   helper.withQueueService(mock, skipping);
-  helper.withEntities(mock, skipping);
   helper.withServer(mock, skipping);
   helper.resetTables(mock, skipping);
 

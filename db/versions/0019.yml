@@ -4,6 +4,7 @@ migrationScript: 0019-migration.sql
 downgradeScript: 0019-downgrade.sql
 methods:
   queue_artifacts_entities_load:
+    deprecated: true
     description: See taskcluster-lib-entities
     mode: read
     serviceName: queue
@@ -37,6 +38,7 @@ methods:
           queue_artifacts.task_id = decoded_composite_key[1] and queue_artifacts.run_id = decoded_composite_key[2]::int and queue_artifacts.name = decode_string_key(queue_artifacts_entities_load.row_key);
       end
   queue_artifacts_entities_create:
+    deprecated: true
     serviceName: queue
     description: See taskcluster-lib-entities
     mode: write
@@ -65,6 +67,7 @@ methods:
         return new_row.etag;
       end
   queue_artifacts_entities_remove:
+    deprecated: true
     serviceName: queue
     description: See taskcluster-lib-entities
     mode: write
@@ -81,6 +84,7 @@ methods:
         returning queue_artifacts.etag;
       end
   queue_artifacts_entities_modify:
+    deprecated: true
     serviceName: queue
     description: See taskcluster-lib-entities
     mode: write
@@ -140,6 +144,7 @@ methods:
         end if;
       end
   queue_artifacts_entities_scan:
+    deprecated: true
     description: See taskcluster-lib-entities
     mode: read
     serviceName: queue

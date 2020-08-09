@@ -1,0 +1,35 @@
+version: 46
+description: fix get_dependent_tasks to return tasks in order
+methods:
+  get_dependent_tasks:
+    description: |-
+      Get the un-expired tasks that depend on this one, limiting to only (un)satisfied
+      dependencies if `satisfied_in` is not null.
+      
+      Only dependencies with `dependent_task_id > tasks_after_in` are returned.
+      This supports paginated queries that are not susceptible to rows being
+      added or removed.  Typically only one of `page_offset_in` and
+      `tasks_after_in` are non-null.
+    mode: read
+    serviceName: queue
+    args: required_task_id_in text, satisfied_in boolean, tasks_after_in text, page_size_in integer, page_offset_in integer
+    returns: table(dependent_task_id text, requires task_requires, satisfied boolean)
+    # this adds the `order by` clause to the function definition in 0028.
+    body: |-
+      begin
+        return query
+        select
+          task_dependencies.dependent_task_id,
+          task_dependencies.requires,
+          task_dependencies.satisfied
+        from task_dependencies
+        where
+          required_task_id = required_task_id_in and
+          expires > now() and
+          (satisfied_in is null or task_dependencies.satisfied = satisfied_in) and
+          (tasks_after_in is null or task_dependencies.dependent_task_id > tasks_after_in)
+        order by dependent_task_id
+        limit get_page_limit(page_size_in)
+        offset get_page_offset(page_offset_in);
+      end
+

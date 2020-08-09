@@ -12,7 +12,6 @@ const {FakeEC2} = require('./fakes');
 
 helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   helper.withDb(mock, skipping);
-  helper.withEntities(mock, skipping);
   helper.withPulse(mock, skipping);
   helper.withFakeQueue(mock, skipping);
   helper.withFakeNotify(mock, skipping);
@@ -96,6 +95,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         ],
         minCapacity: 1,
         maxCapacity: 1,
+        scalingRatio: 1,
       },
       owner: 'whatever@example.com',
       providerData: {},
@@ -133,6 +133,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         launchConfigs: [defaultLaunchConfig],
         minCapacity: 1,
         maxCapacity: 1,
+        scalingRatio: 1,
         lifecycle: {
           registrationTimeout: 6000,
         },
@@ -173,6 +174,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         ],
         minCapacity: 34, // not a multiple of number of configs or capPerInstance
         maxCapacity: 34,
+        scalingRatio: 1,
       },
       // capacity 34 at 6 per instance should be 6 instances..
       expectedWorkers: 6,
@@ -198,6 +200,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
           ],
           minCapacity: 1,
           maxCapacity: 1,
+          scalingRatio: 1,
         },
         expectedWorkers: 1,
       }, async function(workers) {
@@ -229,6 +232,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         ],
         minCapacity: 1,
         maxCapacity: 1,
+        scalingRatio: 1,
       },
       expectedWorkers: 1,
     }, async function(workers) {

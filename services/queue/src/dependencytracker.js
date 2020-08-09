@@ -251,15 +251,19 @@ class DependencyTracker {
     }
 
     // Ensure that we have an initial run
-    task.updateStatusWith(
-      await this.db.fns.schedule_task(task.taskId, 'scheduled'));
+    if (!task.updateStatusWith(await this.db.fns.schedule_task(task.taskId, 'scheduled'))) {
+      // if schedule_task failed, then we've raced with someone to schedule this task; return
+      // the updated task status.
+      task = await Task.get(this.db, task.taskId);
+      return task.status();
+    }
 
     // Construct status structure
     let status = task.status();
 
     // Put message in appropriate azure queue, and publish message to pulse,
     // if the initial run is pending
-    if (task.runs[0].state === 'pending') {
+    if (task.runs && task.runs[0].state === 'pending') {
       await Promise.all([
         this.queueService.putPendingMessage(task, 0),
         this.publisher.taskPending({

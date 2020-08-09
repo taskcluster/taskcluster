@@ -4,6 +4,7 @@ migrationScript: 0032-migration.sql
 downgradeScript: 0032-downgrade.sql
 methods:
   last_fire_3_entities_load:
+    deprecated: true
     description: See taskcluster-lib-entities
     mode: read
     serviceName: hooks
@@ -13,6 +14,7 @@ methods:
       begin
       end
   last_fire_3_entities_create:
+    deprecated: true
     serviceName: hooks
     description: See taskcluster-lib-entities
     mode: write
@@ -22,6 +24,7 @@ methods:
       begin
       end
   last_fire_3_entities_remove:
+    deprecated: true
     serviceName: hooks
     description: See taskcluster-lib-entities
     mode: write
@@ -31,6 +34,7 @@ methods:
       begin
       end
   last_fire_3_entities_modify:
+    deprecated: true
     serviceName: hooks
     description: See taskcluster-lib-entities
     mode: write
@@ -40,6 +44,7 @@ methods:
       begin
       end
   last_fire_3_entities_scan:
+    deprecated: true
     description: See taskcluster-lib-entities
     mode: read
     serviceName: hooks

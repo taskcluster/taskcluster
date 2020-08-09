@@ -7,9 +7,6 @@
 # Even within the Taskcluster codebase, all access must go though stored functions.
 # The information below is only useful to developers implementing or modifying
 # stored functions.
-
-# All of the *_entities tables below are used by tc-lib-entities to emulate
-# Azure entities.
 clients:
   client_id: text not null
   created: timestamp with time zone not null

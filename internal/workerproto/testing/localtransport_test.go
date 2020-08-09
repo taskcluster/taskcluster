@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
-	"github.com/taskcluster/taskcluster/v35/internal/workerproto"
+	"github.com/taskcluster/taskcluster/v36/internal/workerproto"
 )
 
 func TestLocalTransport(t *testing.T) {

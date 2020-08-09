@@ -13,7 +13,7 @@ const {UNIQUE_VIOLATION} = require('taskcluster-lib-postgres');
  * , where description will be amended with a section explaining that this
  * client is static and can't be modified at runtime.
  */
-exports.syncStaticClients = async function(db, clients = [], azureAccountId) {
+exports.syncStaticClients = async function(db, clients = []) {
   // Validate input for sanity (we hardly need perfect validation here...)
   assert(clients instanceof Array, 'Expected clients to be am array');
   for (const client of clients) {
@@ -61,12 +61,6 @@ exports.syncStaticClients = async function(db, clients = [], azureAccountId) {
       return client;
     }
   });
-
-  // substitute the azureAccountId into the scopes
-  clients = clients.map(client => ({
-    ...client,
-    scopes: client.scopes.map(sc => sc.replace(/\${azureAccountId}/g, azureAccountId)),
-  }));
 
   // description suffix to use for all static clients
   const descriptionSuffix = [

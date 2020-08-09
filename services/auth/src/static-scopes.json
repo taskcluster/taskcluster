@@ -13,10 +13,6 @@
     "scopes": [
       "assume:repo:github.com/*",
       "assume:scheduler-id:taskcluster-github/*",
-      "auth:azure-table:read-write:${azureAccountId}/TaskclusterCheckRuns",
-      "auth:azure-table:read-write:${azureAccountId}/TaskclusterChecksToTasks",
-      "auth:azure-table:read-write:${azureAccountId}/TaskclusterGithubBuilds",
-      "auth:azure-table:read-write:${azureAccountId}/TaskclusterIntegrationOwners",
       "queue:route:checks",
       "queue:route:statuses",
       "queue:scheduler-id:taskcluster-github"
@@ -26,9 +22,6 @@
     "clientId": "static/taskcluster/hooks",
     "scopes": [
       "assume:hook-id:*",
-      "auth:azure-table:read-write:${azureAccountId}/Hooks",
-      "auth:azure-table:read-write:${azureAccountId}/LastFire3",
-      "auth:azure-table:read-write:${azureAccountId}/Queues",
       "notify:email:*",
       "queue:create-task:*"
     ]
@@ -36,21 +29,17 @@
   {
     "clientId": "static/taskcluster/index",
     "scopes": [
-      "auth:azure-table:read-write:${azureAccountId}/IndexedTasks",
-      "auth:azure-table:read-write:${azureAccountId}/Namespaces",
       "queue:get-artifact:*"
     ]
   },
   {
     "clientId": "static/taskcluster/notify",
     "scopes": [
-      "auth:azure-table:read-write:${azureAccountId}/DenylistedNotification"
     ]
   },
   {
     "clientId": "static/taskcluster/purge-cache",
     "scopes": [
-      "auth:azure-table:read-write:${azureAccountId}/CachePurges"
     ]
   },
   {
@@ -62,7 +51,6 @@
   {
     "clientId": "static/taskcluster/secrets",
     "scopes": [
-      "auth:azure-table:read-write:${azureAccountId}/Secrets"
     ]
   },
   {
@@ -73,8 +61,6 @@
       "assume:login-identity:*",
       "assume:mozilla-group:*",
       "assume:mozillians-group:*",
-      "auth:azure-table:read-write:${azureAccountId}/AccessTokenTable",
-      "auth:azure-table:read-write:${azureAccountId}/AuthorizationCodesTable",
       "auth:create-client:github/*",
       "auth:create-client:mozilla-auth0/*",
       "auth:delete-client:github/*",
@@ -95,9 +81,6 @@
       "assume:worker-id:*",
       "assume:worker-pool:*",
       "assume:worker-type:*",
-      "auth:azure-table:read-write:${azureAccountId}/WMWorkerPoolErrors",
-      "auth:azure-table:read-write:${azureAccountId}/WMWorkerPools",
-      "auth:azure-table:read-write:${azureAccountId}/WMWorkers",
       "auth:create-client:worker/*",
       "notify:email:*",
       "queue:claim-work:*",

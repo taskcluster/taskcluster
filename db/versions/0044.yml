@@ -4,6 +4,7 @@ migrationScript: 0044-migration.sql
 downgradeScript: 0044-downgrade.sql
 methods:
   queue_worker_type_entities_load:
+    deprecated: true
     description: See taskcluster-lib-entities
     mode: read
     serviceName: queue
@@ -33,6 +34,7 @@ methods:
           queue_worker_types.worker_type = decode_string_key(row_key);
       end
   queue_worker_type_entities_create:
+    deprecated: true
     serviceName: queue
     description: See taskcluster-lib-entities
     mode: write
@@ -59,6 +61,7 @@ methods:
         return new_row.etag;
       end
   queue_worker_type_entities_remove:
+    deprecated: true
     serviceName: queue
     description: See taskcluster-lib-entities
     mode: write
@@ -73,6 +76,7 @@ methods:
         returning queue_worker_types.etag;
       end
   queue_worker_type_entities_modify:
+    deprecated: true
     serviceName: queue
     description: See taskcluster-lib-entities
     mode: write
@@ -116,6 +120,7 @@ methods:
         end if;
       end
   queue_worker_type_entities_scan:
+    deprecated: true
     description: See taskcluster-lib-entities
     mode: read
     serviceName: queue

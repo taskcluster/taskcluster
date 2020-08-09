@@ -4,6 +4,7 @@ migrationScript: 0025-migration.sql
 downgradeScript: 0025-downgrade.sql
 methods:
   roles_entities_load:
+    deprecated: true
     description: See taskcluster-lib-entities
     mode: read
     serviceName: auth
@@ -49,6 +50,7 @@ methods:
         from roles;
       end
   roles_entities_create:
+    deprecated: true
     serviceName: auth
     description: See taskcluster-lib-entities
     mode: write
@@ -80,6 +82,7 @@ methods:
         return new_etag;
       end
   roles_entities_remove:
+    deprecated: true
     serviceName: auth
     description: See taskcluster-lib-entities
     mode: write
@@ -90,6 +93,7 @@ methods:
         raise exception 'not implemented';
       end
   roles_entities_modify:
+    deprecated: true
     serviceName: auth
     description: See taskcluster-lib-entities
     mode: write
@@ -128,6 +132,7 @@ methods:
         return query select new_etag;
       end
   roles_entities_scan:
+    deprecated: true
     description: See taskcluster-lib-entities
     mode: read
     serviceName: auth

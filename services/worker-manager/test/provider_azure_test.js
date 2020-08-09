@@ -16,7 +16,6 @@ const debug = Debug('provider_azure_test');
 
 helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   helper.withDb(mock, skipping);
-  helper.withEntities(mock, skipping);
   helper.withPulse(mock, skipping);
   helper.withFakeQueue(mock, skipping);
   helper.withFakeNotify(mock, skipping);
@@ -90,6 +89,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       config: {
         minCapacity: 1,
         maxCapacity: 1,
+        scalingRatio: 1,
         lifecycle: {
           registrationTimeout: 6000,
         },
@@ -133,6 +133,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         config: {
           minCapacity: 1,
           maxCapacity: 1,
+          scalingRatio: 1,
           launchConfigs: [{
             capacityPerInstance: 1,
             subnetId: 'some/subnet',

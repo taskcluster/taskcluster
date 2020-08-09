@@ -3,10 +3,13 @@ description: add capacity to worker pools
 methods:
   get_worker_pool:
     deprecated: true
+    # no changes required
   get_worker_pools:
     deprecated: true
+    # no changes required
   update_worker_pool:
     deprecated: true
+    # no changes required
   get_worker_pool_with_capacity:
     description: |-
       Get an existing worker pool.  The returned table will have one or (if no such worker pool is defined) zero rows.

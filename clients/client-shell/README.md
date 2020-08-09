@@ -13,12 +13,19 @@ scheduled runs.
 
 ### Installation
 
-To install, download the `taskcluster` binary for the latest release your
-platform, and run it!  On POSIX platforms you will need to `chmod +x` of
+To install, Linux users should download the `taskcluster` binary for the latest release your
+platform, run `chmod +x` and run it!
+
+MacOS users run the following command:
+```shell
+curl https://github.com/taskcluster/taskcluster/releases/download/v36.0.0/taskcluster-darwin-amd64 --output taskcluster
+```
+This is to ensure the binary is not quarantined by MacOS.
+You will need to `chmod +x` of
 course.
 
- * [linux-amd64](https://github.com/taskcluster/taskcluster/releases/download/v35.0.0/taskcluster-linux-amd64)
- * [darwin-amd64](https://github.com/taskcluster/taskcluster/releases/download/v35.0.0/taskcluster-darwin-amd64)
+ * [linux-amd64](https://github.com/taskcluster/taskcluster/releases/download/v36.0.0/taskcluster-linux-amd64)
+ * [darwin-amd64](https://github.com/taskcluster/taskcluster/releases/download/v36.0.0/taskcluster-darwin-amd64)
 
 ## Usage
 

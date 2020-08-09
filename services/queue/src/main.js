@@ -271,7 +271,6 @@ let load = loader({
         ownName,
         queueService, dependencyTracker,
         pollingDelay: cfg.app.dependencyResolver.pollingDelay,
-        parallelism: cfg.app.dependencyResolver.parallelism,
         monitor: monitor.childMonitor('dependency-resolver'),
       });
       await resolver.start();

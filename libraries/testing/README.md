@@ -285,37 +285,6 @@ fake web server -- `http://localhost:1234` or something of that sort.
 
 Call `testing.fakeauth.stop()` in your test suite's `teardown` method to stop the HTTP interceptor.
 
-withEntity
-----------
-
-This function is intended for use with `mockSuite` and the usual Azure configuration for services.
-Given a list of entity classes, it either loads an in-memory version (for `mock = true`) or uses a unique table name.
-It assigns the set-up class instance to `helper.<name>` for easy access from tests.
-
-This is typically called from a service's `helper.js` like this:
-
-```js
-exports.withEntities = async (mock, skipping) => {
-  withEntity(mock, skipping, exports, 'Thing', data.Thing, {});
-});
-```
-
-where `exports` is the `helper` module and `Thing` is the table being loaded, usually defined in `src/data.js`.
-Ideally the class name and the loader component match, but in cases where the same class is used for multiple tables they can differ.
-This call can be repeated for additional tables.
-
-The last argument contains options.
-For cases where tests assume that the table state persists between test cases, pass `{orderedTests: true}` as an option in the final argument.
-For cases where the table-cleanup operation is more complicated than just deleting all rows, pass an async `cleanup` option.
-For cases where the credentials are not generated with SAS (that is, when testing the Auth service), pass `{noSasCredentials: true}` and the original credentials will be used in "real" mode.
-
-This function assumes the following config values:
- * `cfg.azure.accountId`
- * `cfg.taskcluster.rootUrl`
- * `cfg.taskcluster.credentials`
-
-And assumes that the `exports` argument has a `load` function corresponding to a sticky loader.
-
 withDb
 ------
 

@@ -7,7 +7,7 @@ package main
 import (
 	"encoding/json"
 
-	tcclient "github.com/taskcluster/taskcluster/v35/clients/client-go"
+	tcclient "github.com/taskcluster/taskcluster/v36/clients/client-go"
 )
 
 type (
@@ -17,23 +17,25 @@ type (
 		// following file extensions, where `identity` will be used, since they are already
 		// compressed:
 		//
-		// * jpg
-		// * jpeg
-		// * png
-		// * gif
-		// * webp
 		// * 7z
-		// * zip
-		// * gz
-		// * tgz
 		// * bz2
-		// * tbz
-		// * whl
-		// * xz
-		// * swf
+		// * dmg
 		// * flv
+		// * gif
+		// * gz
+		// * jpeg
+		// * jpg
+		// * png
+		// * swf
+		// * tbz
+		// * tgz
+		// * webp
+		// * whl
 		// * woff
 		// * woff2
+		// * xz
+		// * zip
+		// * zst
 		//
 		// Note, setting `contentEncoding` on a directory artifact will apply the same content
 		// encoding to all the files contained in the directory.
@@ -655,7 +657,7 @@ func taskPayloadSchema() string {
         "additionalProperties": false,
         "properties": {
           "contentEncoding": {
-            "description": "Content-Encoding for the artifact. If not provided, ` + "`" + `gzip` + "`" + ` will be used, except for the\nfollowing file extensions, where ` + "`" + `identity` + "`" + ` will be used, since they are already\ncompressed:\n\n* jpg\n* jpeg\n* png\n* gif\n* webp\n* 7z\n* zip\n* gz\n* tgz\n* bz2\n* tbz\n* whl\n* xz\n* swf\n* flv\n* woff\n* woff2\n\nNote, setting ` + "`" + `contentEncoding` + "`" + ` on a directory artifact will apply the same content\nencoding to all the files contained in the directory.\n\nSince: generic-worker 16.2.0",
+            "description": "Content-Encoding for the artifact. If not provided, ` + "`" + `gzip` + "`" + ` will be used, except for the\nfollowing file extensions, where ` + "`" + `identity` + "`" + ` will be used, since they are already\ncompressed:\n\n* 7z\n* bz2\n* dmg\n* flv\n* gif\n* gz\n* jpeg\n* jpg\n* png\n* swf\n* tbz\n* tgz\n* webp\n* whl\n* woff\n* woff2\n* xz\n* zip\n* zst\n\nNote, setting ` + "`" + `contentEncoding` + "`" + ` on a directory artifact will apply the same content\nencoding to all the files contained in the directory.\n\nSince: generic-worker 16.2.0",
             "enum": [
               "identity",
               "gzip"

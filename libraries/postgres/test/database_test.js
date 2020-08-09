@@ -13,7 +13,6 @@ const {
 } = require('..');
 const path = require('path');
 const assert = require('assert').strict;
-const Entity = require('taskcluster-lib-entities');
 
 const monitor = helper.monitor;
 
@@ -765,19 +764,29 @@ helper.dbSuite(path.basename(__filename), function() {
     });
 
     test('decrypt simple from lib-entities', async function() {
-      const entity = Entity.types.EncryptedText('val'); // Migation scripts will hardcode this to val
-      const encrypted = {v: 0, kid: 'azure'}; // Migration scripts also must add these entries
-      entity.serialize(encrypted, 'abc', Buffer.from(azureCryptoKey, 'base64'));
+      // generated with:
+      //   const entity = Entity.types.EncryptedText('val');
+      //   const encrypted = {v: 0, kid: 'azure'};
+      //   entity.serialize(encrypted, 'abc', Buffer.from(azureCryptoKey, 'base64'));
+      const encrypted = {
+        v: 0,
+        kid: 'azure',
+        __buf0_val: '+/EDVGcXi/ASKeFCmbBbduzCkRTmTUFh4g1iVN8Eia4=',
+        __bufchunks_val: 1,
+      };
 
       const decrypted = db.decrypt({value: encrypted});
       assert.equal(decrypted.toString(), 'abc');
     });
 
     test('decrypt multi-chunk from lib-entities', async function() {
-      const entity = Entity.types.EncryptedText('val');
       const content = new Array(50000).fill(0).map((v, i) => String.fromCharCode(i % 65535)).join('');
-      const encrypted = {v: 0, kid: 'azure'};
-      entity.serialize(encrypted, content, Buffer.from(azureCryptoKey, 'base64'));
+
+      // generated with:
+      //  const entity = Entity.types.EncryptedText('val');
+      //  const encrypted = {v: 0, kid: 'azure'};
+      //  entity.serialize(encrypted, content, Buffer.from(azureCryptoKey, 'base64'));
+      const encrypted = require('./big-encrypted-value.json');
 
       // let's make sure this still tests what we mean it to even if lib-entity impl changes
       assert(encrypted.__bufchunks_val > 1);

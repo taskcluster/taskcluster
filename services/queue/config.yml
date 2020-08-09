@@ -9,16 +9,6 @@ defaults:
     publicArtifactBucket:         !env PUBLIC_ARTIFACT_BUCKET
     privateArtifactBucket:        !env PRIVATE_ARTIFACT_BUCKET
 
-    # Azure table name for tasks, artifact meta-data
-    artifactTableName:            'queue_artifacts_entities'
-    workerTableName:              'queue_worker_entities'
-    workerTypeTableName:          'queue_worker_type_entities'
-    provisionerTableName:         'queue_provisioner_entities'
-
-    # Azure monitoring knobs
-    azureReportChance:            !env:number:optional AZURE_REPORT_CHANCE # range [0.0, 1.0]
-    azureReportThreshold:         !env:number:optional AZURE_REPORT_THRESHOLD # in milliseconds
-
     # Time delay before expiring artifacts, in readable format, see:
     # taskcluster.fromNow, notice this should be negative!
     artifactExpirationDelay:      '- 30 minutes'
@@ -71,9 +61,6 @@ defaults:
     dependencyResolver:
       # Number of ms to sleep after polling from an empty queue
       pollingDelay:               5000
-      # Number of event loops to run in parallel, each taking up to 32 message
-      # in parallel. Hence, 4 implies 4 * 32 = 128 messages in parallel
-      parallelism:                4
 
     # Mapping from EC2 region to public artifact bucket proxy
     # (Must not end with a slash!)
@@ -111,10 +98,6 @@ defaults:
     trustProxy:       true
 
   # Azure credentials (for blob and queue storage)
-  azure:
-    accountId:                !env AZURE_ACCOUNT_ID
-    accessKey:                !env AZURE_ACCOUNT_KEY
-
   postgres:
     readDbUrl: !env READ_DB_URL
     writeDbUrl: !env WRITE_DB_URL
@@ -164,7 +147,6 @@ test:
       parallelism:                1
     dependencyResolver:
       pollingDelay:               250
-      parallelism:                1
     publicArtifactBucketProxies:
       'us-east-1':    'proxy-for-us-east-1'
     taskCacheMaxSize: 10

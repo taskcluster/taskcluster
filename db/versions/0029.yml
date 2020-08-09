@@ -4,6 +4,7 @@ migrationScript: 0029-migration.sql
 downgradeScript: 0029-downgrade.sql
 methods:
   wmworker_pool_errors_entities_load:
+    deprecated: true
     description: See taskcluster-lib-entities
     mode: read
     serviceName: worker_manager
@@ -34,6 +35,7 @@ methods:
           worker_pool_errors.error_id = decode_string_key(wmworker_pool_errors_entities_load.row_key);
       end
   wmworker_pool_errors_entities_create:
+    deprecated: true
     serviceName: worker_manager
     description: See taskcluster-lib-entities
     mode: write
@@ -61,6 +63,7 @@ methods:
         return new_row.etag;
       end
   wmworker_pool_errors_entities_remove:
+    deprecated: true
     serviceName: worker_manager
     description: See taskcluster-lib-entities
     mode: write
@@ -75,6 +78,7 @@ methods:
         returning worker_pool_errors.etag;
       end
   wmworker_pool_errors_entities_modify:
+    deprecated: true
     serviceName: worker_manager
     description: See taskcluster-lib-entities
     mode: write
@@ -136,6 +140,7 @@ methods:
         end if;
       end
   wmworker_pool_errors_entities_scan:
+    deprecated: true
     description: See taskcluster-lib-entities
     mode: read
     serviceName: worker_manager

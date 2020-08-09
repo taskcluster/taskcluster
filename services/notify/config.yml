@@ -10,7 +10,6 @@ defaults:
     maxMessageTime:               600
     # Email address to blacklist, useful to mitigate temporary misuse
     emailBlacklist:               !env:json:optional EMAIL_BLACKLIST
-    denylistedNotificationTableName: denylisted_notification_entities
     # ignore tasks with reasonResolved matching something in this list
     ignoreTaskReasonResolved:
         - canceled
@@ -21,9 +20,6 @@ defaults:
     credentials:
       clientId:       !env TASKCLUSTER_CLIENT_ID
       accessToken:    !env TASKCLUSTER_ACCESS_TOKEN
-
-  azure:
-    accountId:                    !env AZURE_ACCOUNT_ID
 
   postgres:
     readDbUrl:                    !env READ_DB_URL
@@ -81,8 +77,6 @@ test:
     sqsQueueName: taskcluster-notify-test-irc
     routePrefix: test-notify
     emailBlacklist: []
-  azure:
-    accountId:        'pamplemousse'
   server:
     port:             60401
     env:              development

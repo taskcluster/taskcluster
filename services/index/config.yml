@@ -4,20 +4,12 @@ defaults:
     #  'route.<routePrefix>.<namespace>'
     routePrefix: 'index'
 
-    # Name of task-graph table in azure table storage
-    indexedTaskTableName: 'indexed_tasks_entities'
-    namespaceTableName: 'namespaces_entities'
-
     # Name of pulse queue, if a non-exclusive queue is to be used.
     listenerQueueName: 'index/incoming-tasks2'
 
     # Time delay before expiring artifacts, in readable format, see:
     # taskcluster.fromNow, notice this should be negative!
     expirationDelay: '-1 day'
-
-  # Azure account
-  azure:
-    accountId: !env AZURE_ACCOUNT_ID
 
   postgres:
     readDbUrl: !env READ_DB_URL
@@ -73,9 +65,6 @@ test:
 
   aws:
     region: 'us-west-2'
-
-  azure:
-    accountId: 'pamplemousse'
 
   pulse:
     namespace: 'taskcluster-fake'

@@ -14,6 +14,7 @@ downgradeScript: |-
   end
 methods:
   update_widgets:
+    deprecated: true
     description: |-
       Temporary method to test infrastructure support fo database access
     mode: write

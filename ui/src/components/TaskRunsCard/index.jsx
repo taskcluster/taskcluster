@@ -172,7 +172,16 @@ export default class TaskRunsCard extends Component {
     const { taskId, runId } = this.getCurrentRun();
 
     if (isLog) {
-      const encoded = encodeURIComponent(url);
+      // react-router decodes its params (via `decodeURI`)
+      // so something like '%252F' and '%2F' in the URL both become '%2F'
+      // we should be able to remove `encodeURI` once
+      // https://github.com/ReactTraining/history/issues/745 has been resolved.
+      //
+      // Context: In order to create the URIs for private artifacts we use
+      // `queue.externalBuildSignedUrl`. Internally, that method uses
+      // `decodeURIComponent` so when an artifact name has a slash in it
+      // the URI will have '`%2F'.
+      const encoded = encodeURI(encodeURIComponent(url));
 
       return this.isLiveLog()
         ? `/tasks/${taskId}/runs/${runId}/logs/live/${encoded}`

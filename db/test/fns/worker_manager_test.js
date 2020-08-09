@@ -80,7 +80,7 @@ suite(testing.suiteName(), function() {
     ))[0].create_worker;
   };
   const update_worker = async (db, w = {}, etag) => {
-    return await db.fns.update_worker(
+    return await db.deprecatedFns.update_worker(
       w.worker_pool_id || 'wp/id',
       w.worker_group || 'w/group',
       w.worker_id || 'w/id',
@@ -367,7 +367,7 @@ suite(testing.suiteName(), function() {
       const now = new Date();
       await create_worker(db, {created: now, last_modified: now, last_checked: now, expires: now});
 
-      const rows = await db.fns.get_worker('wp/id', 'w/group', 'w/id');
+      const rows = await db.deprecatedFns.get_worker('wp/id', 'w/group', 'w/id');
       assert.equal(rows[0].worker_pool_id, 'wp/id');
       assert.equal(rows[0].worker_group, 'w/group');
       assert.equal(rows[0].worker_id, 'w/id');
@@ -406,7 +406,7 @@ suite(testing.suiteName(), function() {
     });
 
     helper.dbTest('get_worker not found', async function(db) {
-      const rows = await db.fns.get_worker('wp/id', 'w/group', 'w/id');
+      const rows = await db.deprecatedFns.get_worker('wp/id', 'w/group', 'w/id');
       assert.deepEqual(rows, []);
     });
 
@@ -466,7 +466,7 @@ suite(testing.suiteName(), function() {
 
     helper.dbTest('update_worker, change to a single field', async function(db) {
       const etag = await create_worker(db);
-      await db.fns.update_worker(
+      await db.deprecatedFns.update_worker(
         'wp/id',
         'w/group',
         'w/id',
@@ -481,7 +481,7 @@ suite(testing.suiteName(), function() {
         etag,
       );
 
-      const rows = await db.fns.get_worker('wp/id', 'w/group', 'w/id');
+      const rows = await db.deprecatedFns.get_worker('wp/id', 'w/group', 'w/id');
       assert.equal(rows[0].worker_pool_id, 'wp/id');
       assert.equal(rows[0].worker_group, 'w/group');
       assert.equal(rows[0].worker_id, 'w/id');
@@ -532,7 +532,7 @@ suite(testing.suiteName(), function() {
 
     helper.dbTest('update_worker, change to a multiple fields', async function(db) {
       const etag = await create_worker(db);
-      const updated = await db.fns.update_worker(
+      const updated = await db.deprecatedFns.update_worker(
         'wp/id',
         'w/group',
         'w/id',
@@ -547,7 +547,7 @@ suite(testing.suiteName(), function() {
         etag,
       );
 
-      const rows = await db.fns.get_worker('wp/id', 'w/group', 'w/id');
+      const rows = await db.deprecatedFns.get_worker('wp/id', 'w/group', 'w/id');
       assert.equal(rows[0].provider_id, 'provider2');
       assert.equal(rows[0].state, 'requested');
       assert.deepEqual(updated, rows);
@@ -579,7 +579,7 @@ suite(testing.suiteName(), function() {
 
     helper.dbTest('update_worker, no changes', async function(db) {
       const etag = await create_worker(db);
-      const updated = await db.fns.update_worker(
+      const updated = await db.deprecatedFns.update_worker(
         'wp/id',
         'w/group',
         'w/id',
@@ -596,7 +596,7 @@ suite(testing.suiteName(), function() {
       // this is not 0 because there was a row that matched even though there was no change
       assert.equal(updated.length, 1);
 
-      const rows = await db.fns.get_worker('wp/id', 'w/group', 'w/id');
+      const rows = await db.deprecatedFns.get_worker('wp/id', 'w/group', 'w/id');
       assert.equal(rows[0].provider_id, 'provider');
       assert.equal(rows[0].state, 'state');
     });
@@ -650,7 +650,7 @@ suite(testing.suiteName(), function() {
 
     helper.dbTest('update_worker, override when etag not specified', async function(db) {
       await create_worker(db);
-      await db.fns.update_worker(
+      await db.deprecatedFns.update_worker(
         'wp/id',
         'w/group',
         'w/id',
@@ -665,7 +665,7 @@ suite(testing.suiteName(), function() {
         null, /* etag */
       );
 
-      const rows = await db.fns.get_worker('wp/id', 'w/group', 'w/id');
+      const rows = await db.deprecatedFns.get_worker('wp/id', 'w/group', 'w/id');
       assert.equal(rows[0].capacity, 2);
     });
 
@@ -695,7 +695,7 @@ suite(testing.suiteName(), function() {
       await create_worker(db);
       await assert.rejects(
         async () => {
-          await db.fns.update_worker(
+          await db.deprecatedFns.update_worker(
             'wp/id',
             'w/group',
             'w/id',
@@ -742,7 +742,7 @@ suite(testing.suiteName(), function() {
       const etag = await create_worker(db);
       await assert.rejects(
         async () => {
-          await db.fns.update_worker(
+          await db.deprecatedFns.update_worker(
             'does-not-exist',
             'w/group',
             'w/id',
@@ -790,7 +790,7 @@ suite(testing.suiteName(), function() {
 
       await db.fns.delete_worker('wp/id', 'w/group', 'w/id');
 
-      const rows = await db.fns.get_worker('wp/id', 'w/group', 'w/id');
+      const rows = await db.deprecatedFns.get_worker('wp/id', 'w/group', 'w/id');
       assert.deepEqual(rows, []);
     });
   });

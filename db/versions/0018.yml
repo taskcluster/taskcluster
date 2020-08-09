@@ -4,6 +4,7 @@ migrationScript: 0018-migration.sql
 downgradeScript: 0018-downgrade.sql
 methods:
   namespaces_entities_load:
+    deprecated: true
     description: See taskcluster-lib-entities
     mode: read
     serviceName: index
@@ -29,6 +30,7 @@ methods:
           index_namespaces.name = decode_string_key(row_key);
       end
   namespaces_entities_create:
+    deprecated: true
     serviceName: index
     description: See taskcluster-lib-entities
     mode: write
@@ -52,6 +54,7 @@ methods:
         return new_row.etag;
       end
   namespaces_entities_remove:
+    deprecated: true
     serviceName: index
     description: See taskcluster-lib-entities
     mode: write
@@ -66,6 +69,7 @@ methods:
         returning index_namespaces.etag;
       end
   namespaces_entities_modify:
+    deprecated: true
     serviceName: index
     description: See taskcluster-lib-entities
     mode: write
@@ -113,6 +117,7 @@ methods:
         end if;
       end
   namespaces_entities_scan:
+    deprecated: true
     description: See taskcluster-lib-entities
     mode: read
     serviceName: index
@@ -188,6 +193,7 @@ methods:
         end if;
       end
   indexed_tasks_entities_load:
+    deprecated: true
     description: See taskcluster-lib-entities
     mode: read
     serviceName: index
@@ -217,6 +223,7 @@ methods:
           indexed_tasks.name = decode_string_key(row_key);
       end
   indexed_tasks_entities_create:
+    deprecated: true
     serviceName: index
     description: See taskcluster-lib-entities
     mode: write
@@ -243,6 +250,7 @@ methods:
         return new_row.etag;
       end
   indexed_tasks_entities_remove:
+    deprecated: true
     serviceName: index
     description: See taskcluster-lib-entities
     mode: write
@@ -257,6 +265,7 @@ methods:
         returning indexed_tasks.etag;
       end
   indexed_tasks_entities_modify:
+    deprecated: true
     serviceName: index
     description: See taskcluster-lib-entities
     mode: write
@@ -313,6 +322,7 @@ methods:
         end if;
       end
   indexed_tasks_entities_scan:
+    deprecated: true
     description: See taskcluster-lib-entities
     mode: read
     serviceName: index

@@ -30,9 +30,6 @@ defaults:
     provisionerId: !env:optional PROVISIONER_ID
     workerType: !env:optional WORKER_TYPE
 
-  azure:
-    accountId: !env AZURE_ACCOUNT_ID
-
   postgres:
     readDbUrl: !env READ_DB_URL
     writeDbUrl: !env WRITE_DB_URL
@@ -69,9 +66,6 @@ test:
 
   webhook:
     secret: ['abc123', 'def456']
-
-  azure:
-    accountId: "pamplemousse"
 
   server:
     port: 60415

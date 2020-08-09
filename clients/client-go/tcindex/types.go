@@ -5,7 +5,7 @@ package tcindex
 import (
 	"encoding/json"
 
-	tcclient "github.com/taskcluster/taskcluster/v35/clients/client-go"
+	tcclient "github.com/taskcluster/taskcluster/v36/clients/client-go"
 )
 
 type (

@@ -12,7 +12,7 @@ exports.tasks = [{
     'target-worker-runner',
     'target-generic-worker',
     'db-versions-readme',
-    'readme-stored-procedures',
+    'db-fns-readme',
   ],
   run: async (requirements, utils) => {
     utils.status({message: 'gathering READMEs'});

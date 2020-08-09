@@ -110,9 +110,17 @@ class Schema {
     return this.versions[this.versions.length - 1];
   }
 
-  allMethods() {
+  /**
+   * Generate a map of all defined methods as of the current version (or, if given,
+   * as of atVersion)
+   */
+  allMethods({atVersion} = {}) {
     const map = this.versions.reduce(
       (acc, version) => {
+        if (atVersion !== undefined && version.version > atVersion) {
+          return acc;
+        }
+
         Object.entries(version.methods).forEach(([name, method]) => {
           if (method.deprecated) {
             Object.assign(method, acc.get(name), {deprecated: true});
