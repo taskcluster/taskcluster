@@ -71,7 +71,7 @@ class WorkerScanner {
         // this on every loop just to avoid the extra work when not needed
         if (worker.expires < taskcluster.fromNow('1 week')) {
           await worker.update(this.db, worker => {
-            worker.expires = taskcluster.fromNow('1 week');
+            worker.expires = taskcluster.fromNow('8 days');
           });
         }
       }
