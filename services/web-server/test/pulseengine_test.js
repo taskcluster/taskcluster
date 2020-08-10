@@ -98,7 +98,7 @@ suite(testing.suiteName(), function() {
       const sent = [];
       engine.handleMessage('M1').then(() => sent.push('M1'));
       assert.deepEqual(sent, []);
-      assert.deepEqual(await pi.next(), {value: 'M1', done: false});
+      assert.deepEqual(await pi.next(), { value: 'M1', done: false });
       assert.deepEqual(sent, ['M1']);
 
       // an unsent M2 will error out after handleError is called

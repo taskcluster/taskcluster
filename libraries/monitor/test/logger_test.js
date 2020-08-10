@@ -26,19 +26,19 @@ suite(testing.suiteName(), function() {
   });
 
   test('logger moves explicitly set traceId up', function() {
-    monitor.info({traceId: 'foo/bar'});
+    monitor.info({ traceId: 'foo/bar' });
     assert.equal(monitorManager.messages[0].traceId, 'foo/bar');
     assert.equal(monitorManager.messages[0].Fields.traceId, undefined);
   });
 
   test('logger with no traceId leaves it out', function() {
-    monitor.info({something: 123});
+    monitor.info({ something: 123 });
     assert.equal(monitorManager.messages[0].traceId, undefined);
   });
 
   test('logger conforms to schema', function() {
     const schema = require('./mozlog_schema.json');
-    monitor.info('something', {test: 123});
+    monitor.info('something', { test: 123 });
     const event = monitorManager.messages[0];
 
     const ajv = new Ajv();
@@ -61,7 +61,7 @@ suite(testing.suiteName(), function() {
     });
 
     m.info('hello', 5);
-    m.warning('oh.hi', {newlined: 'foo\nbar'});
+    m.warning('oh.hi', { newlined: 'foo\nbar' });
     m.warning('goodbye', 6);
     results = results.toString().split('\n');
     assert.equal(results.length, 4); // 3 log lines and one trailing newline
@@ -71,25 +71,25 @@ suite(testing.suiteName(), function() {
   });
 
   test('simple eliding', function() {
-    monitor.info({credentials: 5});
+    monitor.info({ credentials: 5 });
     assert.equal(monitorManager.messages[0].Type, 'monitor.generic');
     assert.equal(monitorManager.messages[0].Fields.credentials, '...');
   });
 
   test('nested eliding', function() {
-    monitor.info({whatever: [{accessToken: 'hi'}]});
+    monitor.info({ whatever: [{ accessToken: 'hi' }] });
     assert.equal(monitorManager.messages[0].Type, 'monitor.generic');
     assert.equal(monitorManager.messages[0].Fields.whatever[0].accessToken, '...');
   });
 
   test('null eliding does not crash', function() {
-    monitor.info({something: null});
+    monitor.info({ something: null });
     assert.equal(monitorManager.messages[0].Type, 'monitor.generic');
     assert.equal(monitorManager.messages[0].Fields.something, null);
   });
 
   test('empty data still logs', function() {
-    monitor.info({whatever: 5});
+    monitor.info({ whatever: 5 });
     assert.equal(monitorManager.messages[0].Type, 'monitor.generic');
     assert.equal(monitorManager.messages[0].Fields.whatever, 5);
   });
@@ -107,7 +107,7 @@ suite(testing.suiteName(), function() {
   });
 
   test('multiline fields.message is truncated in message', function() {
-    monitor.info('foobar', {message: 'title\nmore info\neven more'});
+    monitor.info('foobar', { message: 'title\nmore info\neven more' });
     assert.equal(monitorManager.messages[0].Type, 'foobar');
     assert.equal(monitorManager.messages[0].message, 'title');
     assert.equal(monitorManager.messages[0].Fields.message, 'title\nmore info\neven more');
@@ -130,7 +130,7 @@ suite(testing.suiteName(), function() {
   });
 
   test('metadata still logs but alerts', function() {
-    monitor.info('something', {meta: 'foo'});
+    monitor.info('something', { meta: 'foo' });
     assert.equal(monitorManager.messages[0].Type, 'monitor.loggingError');
     assert.equal(monitorManager.messages[0].Fields.error, 'You may not set meta fields on logs directly.');
     assert.equal(monitorManager.messages[0].Fields.origType, 'something');
@@ -149,7 +149,7 @@ suite(testing.suiteName(), function() {
       'debug',
     ];
     levels.forEach((level, i) => {
-      monitor[level](`something.${level}`, {bar: i});
+      monitor[level](`something.${level}`, { bar: i });
     });
 
     assert.equal(monitorManager.messages.length, 8);
@@ -169,9 +169,9 @@ suite(testing.suiteName(), function() {
     });
     const mgr = m.manager;
     mgr._handleMessage = message => mgr.messages.push(message);
-    m.info('something', {whatever: 5}); // This should not get logged
-    m.alert('something.else', {whatever: 6});
-    m.emerg('something.even.else', {whatever: 7});
+    m.info('something', { whatever: 5 }); // This should not get logged
+    m.alert('something.else', { whatever: 6 });
+    m.emerg('something.even.else', { whatever: 7 });
     assert.equal(mgr.messages.length, 2);
   });
 });

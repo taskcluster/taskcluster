@@ -1,9 +1,9 @@
-const {APIBuilder, paginateResults} = require('taskcluster-lib-api');
+const { APIBuilder, paginateResults } = require('taskcluster-lib-api');
 const slug = require('slugid');
 const assert = require('assert');
-const {ApiError, Provider} = require('./providers/provider');
-const {UNIQUE_VIOLATION} = require('taskcluster-lib-postgres');
-const {WorkerPool, WorkerPoolError, Worker} = require('./data');
+const { ApiError, Provider } = require('./providers/provider');
+const { UNIQUE_VIOLATION } = require('taskcluster-lib-postgres');
+const { WorkerPool, WorkerPoolError, Worker } = require('./data');
 const { createCredentials } = require('./util');
 
 let builder = new APIBuilder({
@@ -48,7 +48,7 @@ builder.declare({
   const start = req.query.continuationToken ? parseInt(req.query.continuationToken) : 0;
   const limit = req.query.limit ? parseInt(req.query.limit) : 100;
 
-  const providers = Object.entries(this.cfg.providers).map(([providerId, {providerType}]) => ({
+  const providers = Object.entries(this.cfg.providers).map(([providerId, { providerType }]) => ({
     providerId,
     providerType,
   }));
@@ -70,19 +70,19 @@ builder.declare({
   stability: APIBuilder.stability.stable,
   input: 'create-worker-pool-request.yml',
   output: 'worker-pool-full.yml',
-  scopes: {AllOf: [
+  scopes: { AllOf: [
     'worker-manager:manage-worker-pool:<workerPoolId>',
     'worker-manager:provider:<providerId>',
-  ]},
+  ] },
   description: [
     'Create a new worker pool. If the worker pool already exists, this will throw an error.',
   ].join('\n'),
 }, async function(req, res) {
-  const {workerPoolId} = req.params;
+  const { workerPoolId } = req.params;
   const input = req.body;
   const providerId = input.providerId;
 
-  await req.authorize({workerPoolId, providerId});
+  await req.authorize({ workerPoolId, providerId });
 
   const provider = this.providers.get(providerId);
   if (!provider) {
@@ -100,7 +100,7 @@ builder.declare({
     return res.reportError('InputValidationError', error);
   }
 
-  let workerPool = WorkerPool.fromApi({workerPoolId, ...input});
+  let workerPool = WorkerPool.fromApi({ workerPoolId, ...input });
 
   try {
     await workerPool.create(this.db);
@@ -111,7 +111,7 @@ builder.declare({
     return res.reportError('RequestConflict', 'Worker pool already exists', {});
   }
 
-  await this.publisher.workerPoolCreated({workerPoolId, providerId});
+  await this.publisher.workerPoolCreated({ workerPoolId, providerId });
   res.reply(workerPool.serializable());
 });
 
@@ -124,10 +124,10 @@ builder.declare({
   category: 'Worker Pools',
   input: 'update-worker-pool-request.yml',
   output: 'worker-pool-full.yml',
-  scopes: {AllOf: [
+  scopes: { AllOf: [
     'worker-manager:manage-worker-pool:<workerPoolId>',
     'worker-manager:provider:<providerId>',
-  ]},
+  ] },
   description: [
     'Given an existing worker pool definition, this will modify it and return',
     'the new definition.',
@@ -138,11 +138,11 @@ builder.declare({
     'as to set its `providerId` to a real provider.',
   ].join('\n'),
 }, async function(req, res) {
-  const {workerPoolId} = req.params;
+  const { workerPoolId } = req.params;
   const input = req.body;
   const providerId = input.providerId;
 
-  await req.authorize({workerPoolId, providerId});
+  await req.authorize({ workerPoolId, providerId });
 
   const provider = this.providers.get(providerId);
   if (!provider) {
@@ -198,10 +198,10 @@ builder.declare({
     '`worker-manager:provider:null-provider`.',
   ].join('\n'),
 }, async function(req, res) {
-  const {workerPoolId} = req.params;
+  const { workerPoolId } = req.params;
   const providerId = "null-provider";
 
-  await req.authorize({workerPoolId});
+  await req.authorize({ workerPoolId });
 
   let workerPool = await WorkerPool.get(this.db, workerPoolId);
   if (!workerPool) {
@@ -241,7 +241,7 @@ builder.declare({
     'Fetch an existing worker pool defition.',
   ].join('\n'),
 }, async function(req, res) {
-  const {workerPoolId} = req.params;
+  const { workerPoolId } = req.params;
 
   const workerPool = await WorkerPool.get(this.db, workerPoolId);
   if (!workerPool) {
@@ -263,7 +263,7 @@ builder.declare({
     'Get the list of all the existing worker pools.',
   ].join('\n'),
 }, async function(req, res) {
-  const {continuationToken, rows} = await paginateResults({
+  const { continuationToken, rows } = await paginateResults({
     query: req.query,
     fetch: (size, offset) => this.db.fns.get_worker_pools_with_capacity(size, offset),
   });
@@ -282,10 +282,10 @@ builder.declare({
   input: 'report-worker-error-request.yml',
   category: 'Worker Interface',
   output: 'worker-pool-error.yml',
-  scopes: {AllOf: [
+  scopes: { AllOf: [
     'assume:worker-pool:<workerPoolId>',
     'assume:worker-id:<workerGroup>/<workerId>',
-  ]},
+  ] },
   stability: APIBuilder.stability.stable,
   description: [
     'Report an error that occurred on a worker.  This error will be included',
@@ -299,11 +299,11 @@ builder.declare({
     'contains secrets or other sensitive information.',
   ].join('\n'),
 }, async function(req, res) {
-  const {workerPoolId} = req.params;
+  const { workerPoolId } = req.params;
   const input = req.body;
-  const {workerGroup, workerId} = input;
+  const { workerGroup, workerId } = input;
 
-  await req.authorize({workerPoolId, workerGroup, workerId});
+  await req.authorize({ workerPoolId, workerGroup, workerId });
 
   const workerPool = await WorkerPool.get(this.db, workerPoolId);
   if (!workerPool) {
@@ -320,7 +320,7 @@ builder.declare({
     kind: input.kind,
     title: input.title,
     description: input.description,
-    extra: {...input.extra, workerGroup, workerId},
+    extra: { ...input.extra, workerGroup, workerId },
   });
 
   res.reply(wpe.serializable());
@@ -340,7 +340,7 @@ builder.declare({
   ].join('\n'),
 }, async function(req, res) {
   const { errorId, workerPoolId } = req.params;
-  const {continuationToken, rows} = await paginateResults({
+  const { continuationToken, rows } = await paginateResults({
     query: req.query,
     fetch: (size, offset) => this.db.fns.get_worker_pool_errors_for_worker_pool(
       errorId || null,
@@ -400,7 +400,7 @@ builder.declare({
     'Get a single worker.',
   ].join('\n'),
 }, async function(req, res) {
-  const {workerPoolId, workerGroup, workerId} = req.params;
+  const { workerPoolId, workerGroup, workerId } = req.params;
   const worker = await Worker.get(this.db, { workerPoolId, workerGroup, workerId });
 
   if (!worker) {
@@ -434,7 +434,7 @@ builder.declare({
     'do not support creating workers at all, and will return a 400 error.',
   ].join('\n'),
 }, async function(req, res) {
-  const {workerPoolId, workerGroup, workerId} = req.params;
+  const { workerPoolId, workerGroup, workerId } = req.params;
   const workerPool = await WorkerPool.get(this.db, workerPoolId);
   if (!workerPool) {
     return res.reportError('ResourceNotFound',
@@ -491,7 +491,7 @@ builder.declare({
     'the API (perhaps even in state RUNNING) afterward.',
   ].join('\n'),
 }, async function(req, res) {
-  const {workerPoolId, workerGroup, workerId} = req.params;
+  const { workerPoolId, workerGroup, workerId } = req.params;
   const worker = await Worker.get(this.db, { workerPoolId, workerGroup, workerId });
 
   if (!worker) {
@@ -505,7 +505,7 @@ builder.declare({
   }
 
   try {
-    await provider.removeWorker({worker, reason: 'workerManager.removeWorker API call'});
+    await provider.removeWorker({ worker, reason: 'workerManager.removeWorker API call' });
   } catch (err) {
     if (!(err instanceof ApiError)) {
       throw err;
@@ -529,7 +529,7 @@ builder.declare({
     'Get the list of all the existing workers in a given worker pool.',
   ].join('\n'),
 }, async function(req, res) {
-  const {workerPoolId} = req.params;
+  const { workerPoolId } = req.params;
   const workerPool = await WorkerPool.get(this.db, workerPoolId);
 
   if(!workerPool){
@@ -578,7 +578,7 @@ builder.declare({
     'some proof of its identity, and that proof varies by provider type.',
   ].join('\n'),
 }, async function(req, res) {
-  const {workerPoolId, providerId, workerGroup, workerId, workerIdentityProof} = req.body;
+  const { workerPoolId, providerId, workerGroup, workerId, workerIdentityProof } = req.body;
 
   // carefully check each value provided, since we have not yet validated the
   // worker's "proof"
@@ -620,7 +620,7 @@ builder.declare({
   const secret = `${slug.nice()}${slug.nice()}`;
   try {
     const encryptedSecret = this.db.encrypt({ value: Buffer.from(secret, 'utf8') });
-    const reg = await provider.registerWorker({worker, workerPool, workerIdentityProof, encryptedSecret });
+    const reg = await provider.registerWorker({ worker, workerPool, workerIdentityProof, encryptedSecret });
     await worker.update(this.db, worker => {
       worker.secret = encryptedSecret;
     });
@@ -672,7 +672,7 @@ builder.declare({
 }, async function(req, res) {
   const { workerPoolId, workerGroup, workerId, secret } = req.body;
 
-  await req.authorize({workerPoolId, workerGroup, workerId});
+  await req.authorize({ workerPoolId, workerGroup, workerId });
 
   if (secret.length !== 44) {
     throw new Error('secret must be 44 characters');
@@ -694,9 +694,9 @@ builder.declare({
   }
 
   // defaults to 96 hours if reregistrationTimeout is not defined
-  const {terminateAfter} = Provider.interpretLifecycle({ lifecycle: {
+  const { terminateAfter } = Provider.interpretLifecycle({ lifecycle: {
     reregistrationTimeout: worker.providerData && worker.providerData.reregistrationTimeout,
-  }});
+  } });
   const expires = new Date(terminateAfter);
 
   // We use these fields from inside the worker rather than

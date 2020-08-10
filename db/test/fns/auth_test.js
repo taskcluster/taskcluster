@@ -2,7 +2,7 @@ const assert = require('assert').strict;
 const helper = require('../helper');
 const testing = require('taskcluster-lib-testing');
 const taskcluster = require('taskcluster-client');
-const {UNIQUE_VIOLATION} = require('taskcluster-lib-postgres');
+const { UNIQUE_VIOLATION } = require('taskcluster-lib-postgres');
 const uuid = require('uuid');
 
 suite(testing.suiteName(), function() {
@@ -10,7 +10,7 @@ suite(testing.suiteName(), function() {
 
   suite('roles', function() {
     // make a role with default values
-    const mkrole = ({role_id, scopes}) => ({
+    const mkrole = ({ role_id, scopes }) => ({
       role_id,
       scopes: scopes || [],
       description: 'a role',
@@ -31,25 +31,25 @@ suite(testing.suiteName(), function() {
 
     helper.dbTest('modify_roles when no roles exist', async function(db) {
       const etag = uuid.v4();
-      await db.fns.modify_roles(JSON.stringify([mkrole({role_id: 'abc'})]), etag);
+      await db.fns.modify_roles(JSON.stringify([mkrole({ role_id: 'abc' })]), etag);
       const roles = await db.fns.get_roles();
-      assert.deepEqual(roles.map(({etag, ...rest}) => rest), [mkrole({role_id: 'abc'})]);
+      assert.deepEqual(roles.map(({ etag, ...rest }) => rest), [mkrole({ role_id: 'abc' })]);
     });
 
     helper.dbTest('modify_roles when roles do exist, no conflict', async function(db) {
       const etag = uuid.v4();
-      await db.fns.modify_roles(JSON.stringify([mkrole({role_id: 'abc'})]), etag);
+      await db.fns.modify_roles(JSON.stringify([mkrole({ role_id: 'abc' })]), etag);
       const roles1 = await db.fns.get_roles();
-      await db.fns.modify_roles(JSON.stringify([mkrole({role_id: 'def'})]), roles1[0].etag);
+      await db.fns.modify_roles(JSON.stringify([mkrole({ role_id: 'def' })]), roles1[0].etag);
       const roles2 = await db.fns.get_roles();
       assert.deepEqual(roles2.map(r => r.role_id), ['def']);
     });
 
     helper.dbTest('modify_roles when roles do exist, with conflict', async function(db) {
       const etag = uuid.v4();
-      await db.fns.modify_roles(JSON.stringify([mkrole({role_id: 'abc'})]), etag);
+      await db.fns.modify_roles(JSON.stringify([mkrole({ role_id: 'abc' })]), etag);
       await assert.rejects(
-        () => db.fns.modify_roles(JSON.stringify([mkrole({role_id: 'def'})]), etag),
+        () => db.fns.modify_roles(JSON.stringify([mkrole({ role_id: 'def' })]), etag),
         err => err.code === 'P0004');
       const roles = await db.fns.get_roles();
       assert.deepEqual(roles.map(r => r.role_id), ['abc']);
@@ -63,7 +63,7 @@ suite(testing.suiteName(), function() {
       });
     });
 
-    const create = async (db, client_id, {expires, delete_on_expiration} = {}) => {
+    const create = async (db, client_id, { expires, delete_on_expiration } = {}) => {
       await db.fns.create_client(
         client_id,
         'Some client...',
@@ -140,7 +140,7 @@ suite(testing.suiteName(), function() {
     helper.dbTest('create the same client with different descriptions', async function(db) {
       await db.fns.create_client(baseClient(db));
       await assert.rejects(
-        () => db.fns.create_client({...baseClient(db), description_in: 'CHANGED'}),
+        () => db.fns.create_client({ ...baseClient(db), description_in: 'CHANGED' }),
         err => err.code === UNIQUE_VIOLATION);
       const [client] = await db.fns.get_client('some-client');
       assert.deepEqual(client.description, 'Some client...');
@@ -149,7 +149,7 @@ suite(testing.suiteName(), function() {
     helper.dbTest('create the same client with different scopes', async function(db) {
       await db.fns.create_client(baseClient(db));
       await assert.rejects(
-        () => db.fns.create_client({...baseClient(db), scopes_in: JSON.stringify(['scope1'])}),
+        () => db.fns.create_client({ ...baseClient(db), scopes_in: JSON.stringify(['scope1']) }),
         err => err.code === UNIQUE_VIOLATION);
       const [client] = await db.fns.get_client('some-client');
       assert.deepEqual(client.scopes, ['scope1', 'scope2']);
@@ -158,7 +158,7 @@ suite(testing.suiteName(), function() {
     helper.dbTest('create the same client with different expires', async function(db) {
       await db.fns.create_client(baseClient(db));
       await assert.rejects(
-        () => db.fns.create_client({...baseClient(db), expires_in: taskcluster.fromNow('1 hour')}),
+        () => db.fns.create_client({ ...baseClient(db), expires_in: taskcluster.fromNow('1 hour') }),
         err => err.code === UNIQUE_VIOLATION);
       const [client] = await db.fns.get_client('some-client');
       assert.deepEqual(client.expires, expires);
@@ -349,10 +349,10 @@ suite(testing.suiteName(), function() {
 
     helper.dbTest('expire clients', async function(db) {
       await Promise.all([
-        create(db, 'old', {expires: taskcluster.fromNow('-1 hour'), delete_on_expiration: true}),
-        create(db, 'old-keep', {expires: taskcluster.fromNow('-1 hour'), delete_on_expiration: false}),
-        create(db, 'new', {expires: taskcluster.fromNow('1 hour'), delete_on_expiration: true}),
-        create(db, 'new-keep', {expires: taskcluster.fromNow('1 hour'), delete_on_expiration: false}),
+        create(db, 'old', { expires: taskcluster.fromNow('-1 hour'), delete_on_expiration: true }),
+        create(db, 'old-keep', { expires: taskcluster.fromNow('-1 hour'), delete_on_expiration: false }),
+        create(db, 'new', { expires: taskcluster.fromNow('1 hour'), delete_on_expiration: true }),
+        create(db, 'new-keep', { expires: taskcluster.fromNow('1 hour'), delete_on_expiration: false }),
       ]);
 
       await db.fns.expire_clients();

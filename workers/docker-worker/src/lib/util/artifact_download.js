@@ -23,7 +23,7 @@ let debug = new Debug('artifactDownload');
  * @param {String} destination - Path to store the file locally
  */
 module.exports = async function(queue, stream, taskId, artifactPath, destination, retryConfig = RETRY_CONFIG) {
-  let {maxAttempts, delayFactor, randomizationFactor} = retryConfig;
+  let { maxAttempts, delayFactor, randomizationFactor } = retryConfig;
   let artifactUrl = artifactPath.startsWith('public/') ?
     queue.buildUrl(queue.getLatestArtifact, taskId, artifactPath) :
     queue.buildSignedUrl(queue.getLatestArtifact, taskId, artifactPath);

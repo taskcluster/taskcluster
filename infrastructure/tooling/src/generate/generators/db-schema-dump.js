@@ -14,21 +14,21 @@ exports.tasks = [{
     }
 
     // reset the DB back to its empty state..
-    utils.step({title: 'Reset Test Database'});
+    utils.step({ title: 'Reset Test Database' });
     await testing.resetDb();
 
     // .. and then upgrade to the latest version
-    utils.step({title: 'Upgrade Test Database'});
+    utils.step({ title: 'Upgrade Test Database' });
     const schema = tcpg.Schema.fromSerializable(requirements['db-schema-serializable']);
     await tcpg.Database.upgrade({
       schema,
-      showProgress: message => utils.status({message}),
+      showProgress: message => utils.status({ message }),
       usernamePrefix: 'test',
       adminDbUrl: process.env.TEST_DB_URL,
     });
 
     // now dump the schema of the DB
-    utils.step({title: 'Dump Test Database'});
+    utils.step({ title: 'Dump Test Database' });
     const { host, port, user, password, database } = parseDbURL(process.env.TEST_DB_URL);
     const pgdump = await execCommand({
       dir: REPO_ROOT,
@@ -71,21 +71,21 @@ exports.tasks = [{
     parts.shift(); // throw out the header
     for (let i = 0; i < parts.length; i += 3) {
       const [name, type, body] = parts.slice(i, i + 3);
-      statements.push({name, type, body});
+      statements.push({ name, type, body });
     }
 
     const byTable = new Map();
-    for (let {name, type, body} of statements) {
+    for (let { name, type, body } of statements) {
       switch (type) {
         case 'TABLE': {
-          byTable.set(name, {...(byTable.get(name) || {}), create: body});
+          byTable.set(name, { ...(byTable.get(name) || {}), create: body });
           break;
         }
 
         case 'CONSTRAINT': {
           const re = /ALTER TABLE ONLY public\.([0-9a-zA-Z_-]+)/;
           const [_, tableName] = re.exec(body);
-          byTable.set(tableName, {...(byTable.get(tableName) || {}), constraint: body});
+          byTable.set(tableName, { ...(byTable.get(tableName) || {}), constraint: body });
           break;
         }
 
@@ -114,7 +114,7 @@ exports.tasks = [{
     output.push('\n');
 
     for (let tableName of [...byTable.keys()].sort()) {
-      const {create, constraint, indexes} = byTable.get(tableName);
+      const { create, constraint, indexes } = byTable.get(tableName);
 
       output.push(`## ${tableName}\n`);
 

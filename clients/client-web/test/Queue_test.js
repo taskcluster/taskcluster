@@ -26,7 +26,7 @@ describe('Queue', function() {
 
   it('should successfully ping with `.use`', () => {
     return queue
-      .use({authorizedScopes: []})
+      .use({ authorizedScopes: [] })
       .ping()
       .then(({ alive }) => expect(alive).to.be.ok);
   });

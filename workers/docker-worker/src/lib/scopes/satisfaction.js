@@ -1,5 +1,5 @@
 const assert = require('assert');
-const {validateScopeSets} = require('./validate');
+const { validateScopeSets } = require('./validate');
 
 const validateScopePatterns = (scopePatterns) => {
   assert(scopePatterns instanceof Array && scopePatterns.every((scope) => {

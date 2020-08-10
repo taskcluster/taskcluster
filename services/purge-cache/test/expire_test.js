@@ -12,7 +12,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   });
 
   test('expire something', async function() {
-    const wt = {provisionerId: 'pid', workerType: 'wt'};
+    const wt = { provisionerId: 'pid', workerType: 'wt' };
     const times = [
       taskcluster.fromNow('-3 hours'),
       taskcluster.fromNow('-2 hours'),

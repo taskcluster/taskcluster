@@ -1,7 +1,7 @@
 const slugid = require('slugid');
 
 class TestReporter {
-  constructor({bucket = [], log = false}) {
+  constructor({ bucket = [], log = false }) {
     this.internal = [];
     this.bucket = bucket;
     this.log = log;

@@ -1,9 +1,9 @@
-const {Client} = require('pg');
-const {withMonitor} = require('taskcluster-lib-testing');
-const {MonitorManager} = require('taskcluster-lib-monitor');
+const { Client } = require('pg');
+const { withMonitor } = require('taskcluster-lib-testing');
+const { MonitorManager } = require('taskcluster-lib-monitor');
 const dbUrl = process.env.TEST_DB_URL;
 
-withMonitor(exports, {noLoader: true});
+withMonitor(exports, { noLoader: true });
 
 exports.monitor = MonitorManager.setup({
   serviceName: 'tc-lib-postgres',
@@ -40,7 +40,7 @@ if (dbUrl) {
 }
 
 const clearDb = async dbUrl => {
-  const client = new Client({connectionString: dbUrl});
+  const client = new Client({ connectionString: dbUrl });
   await client.connect();
   try {
     await client.query(`drop schema if exists public cascade`);

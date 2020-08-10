@@ -1,5 +1,5 @@
 const assert = require('assert');
-const {checkRefs} = require('../src/util');
+const { checkRefs } = require('../src/util');
 const testing = require('taskcluster-lib-testing');
 
 suite(testing.suiteName(), function() {
@@ -15,30 +15,30 @@ suite(testing.suiteName(), function() {
     });
 
     test('on a schema with no refs', function() {
-      checkRefs(schemaWith({type: 'string'}), 'thisservice');
+      checkRefs(schemaWith({ type: 'string' }), 'thisservice');
     });
 
     test('on a schema with a local ref', function() {
-      checkRefs(schemaWith({$ref: 'another-file.json'}), 'thisservice');
+      checkRefs(schemaWith({ $ref: 'another-file.json' }), 'thisservice');
     });
 
     test('on a schema with a rooted ref (not allowed)', function() {
       assert.throws(
-        () => checkRefs(schemaWith({$ref: '/schemas/thisservice/file.json'}), 'thisservice'),
+        () => checkRefs(schemaWith({ $ref: '/schemas/thisservice/file.json' }), 'thisservice'),
         Error,
         /rooted URIs *. are not allowed/);
     });
 
     test('on a schema with a /-relative ref (not allowed)', function() {
       assert.throws(
-        () => checkRefs(schemaWith({$ref: '/schemas/foo.json'}), 'thisservice'),
+        () => checkRefs(schemaWith({ $ref: '/schemas/foo.json' }), 'thisservice'),
         Error,
         /absolute URIs *. are not allowed/);
     });
 
     test('on a schema with an "https:.." ref (not allowed)', function() {
       assert.throws(
-        () => checkRefs(schemaWith({$ref: 'https://schemas.taskcluster.net/foo.json'}), 'thisservice'),
+        () => checkRefs(schemaWith({ $ref: 'https://schemas.taskcluster.net/foo.json' }), 'thisservice'),
         Error,
         /absolute URIs *. are not allowed/);
     });

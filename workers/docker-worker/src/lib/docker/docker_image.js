@@ -110,7 +110,7 @@ class DockerImage {
         let downloadProgress =
           dockerUtils.pullImageIfMissing(docker, image, options);
 
-        downloadProgress.pipe(stream, {end: false});
+        downloadProgress.pipe(stream, { end: false });
         await new Promise((accept, reject) => {
           downloadProgress.once('error', reject);
           downloadProgress.once('end', accept);

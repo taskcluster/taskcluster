@@ -18,16 +18,16 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
   test('setMetadata', async function() {
     const queue = new AZQueue({ db: helper.db });
-    await queue.setMetadata('foo', {someData: "bar"});
+    await queue.setMetadata('foo', { someData: "bar" });
   });
 
   test('setMetadata', async function() {
     const queue = new AZQueue({ db: helper.db });
-    await queue.setMetadata('foo', {someData: "bar"});
+    await queue.setMetadata('foo', { someData: "bar" });
   });
 
   test('listQueues', async function() {
     const queue = new AZQueue({ db: helper.db });
-    assert.deepEqual(await queue.listQueues(), {queues: []});
+    assert.deepEqual(await queue.listQueues(), { queues: [] });
   });
 });

@@ -6,7 +6,7 @@ const yaml = require('js-yaml');
 const jsone = require('json-e');
 const rimraf = util.promisify(require('rimraf'));
 const mkdirp = util.promisify(require('mkdirp'));
-const {listServices, writeRepoFile, readRepoYAML, writeRepoYAML, writeRepoJSON, REPO_ROOT, configToSchema, configToExample} = require('../../utils');
+const { listServices, writeRepoFile, readRepoYAML, writeRepoYAML, writeRepoJSON, REPO_ROOT, configToSchema, configToExample } = require('../../utils');
 
 const SERVICES = listServices();
 const CHART_DIR = path.join('infrastructure', 'k8s');
@@ -164,7 +164,7 @@ const renderTemplates = async (name, vars, procs, templates) => {
     // thankfully this is the only case where this bites us (so far), so we can just do some
     // post processing
     const replicaConfigString = `{{ int (.Values.${context.configName}.procs.${context.configProcName}.replicas) }}`;
-    const processed = yaml.safeDump(rendered, {lineWidth: -1}).replace('REPLICA_CONFIG_STRING', replicaConfigString);
+    const processed = yaml.safeDump(rendered, { lineWidth: -1 }).replace('REPLICA_CONFIG_STRING', replicaConfigString);
 
     const filename = `taskcluster-${name}-${tmpl}-${proc}.yaml`;
     await writeRepoFile(path.join(TMPL_DIR, filename), processed);
@@ -180,7 +180,7 @@ exports.tasks.push({
   provides: ['k8s-templates'],
   run: async (requirements, utils) => {
 
-    const templateFiles = glob.sync('infrastructure/tooling/templates/k8s/*.yaml', {cwd: REPO_ROOT});
+    const templateFiles = glob.sync('infrastructure/tooling/templates/k8s/*.yaml', { cwd: REPO_ROOT });
     const templates = {};
     for (const f of templateFiles) {
       templates[path.basename(f, '.yaml')] = await readRepoYAML(f);
@@ -211,12 +211,12 @@ SERVICES.forEach(name => {
 const extras = {
   ui: {
     vars: [
-      {type: '!env', var: 'APPLICATION_NAME'},
-      {type: '!env', var: 'GRAPHQL_SUBSCRIPTION_ENDPOINT'},
-      {type: '!env', var: 'GRAPHQL_ENDPOINT'},
-      {type: '!env', var: 'UI_LOGIN_STRATEGY_NAMES'},
-      {type: '!env:string', var: 'BANNER_MESSAGE', optional: true},
-      {type: '!env:json', var: 'SITE_SPECIFIC', optional: true},
+      { type: '!env', var: 'APPLICATION_NAME' },
+      { type: '!env', var: 'GRAPHQL_SUBSCRIPTION_ENDPOINT' },
+      { type: '!env', var: 'GRAPHQL_ENDPOINT' },
+      { type: '!env', var: 'UI_LOGIN_STRATEGY_NAMES' },
+      { type: '!env:string', var: 'BANNER_MESSAGE', optional: true },
+      { type: '!env:json', var: 'SITE_SPECIFIC', optional: true },
     ],
     procs: {
       web: {
@@ -244,7 +244,7 @@ const extras = {
     },
   },
 };
-Object.entries(extras).forEach(([name, {procs, vars}]) => {
+Object.entries(extras).forEach(([name, { procs, vars }]) => {
   exports.tasks.push({
     title: `Generate helm templates for ${name}`,
     requires: ['k8s-templates'],
@@ -387,7 +387,7 @@ exports.tasks.push({
           propertyNames: {
             pattern: '^NEW_RELIC_[A-Z0-9_]*$',
           },
-          additionalProperties: {type: 'string'},
+          additionalProperties: { type: 'string' },
         },
       },
       required: ['rootUrl', 'dockerImage', 'pulseHostname', 'pulseVhost', 'azureAccountId', 'forceSSL', 'trustProxy', 'nodeEnv', 'useKubernetesDnsServiceDiscovery'],
@@ -488,7 +488,7 @@ exports.tasks.push({
           };
         } catch (e) {
           // default for the defaults
-          return {cpu: '50m', memory: '100Mi'};
+          return { cpu: '50m', memory: '100Mi' };
         }
       };
       exampleConfig[confName].procs = {};
@@ -540,7 +540,7 @@ exports.tasks.push({
 
     // omit scopes and add a placeholder accessToken to each client
     exampleConfig.auth.static_clients = requirements['static-clients']
-      .map(({scopes, ...c}) => ({...c, accessToken: '...'}));
+      .map(({ scopes, ...c }) => ({ ...c, accessToken: '...' }));
 
     await writeRepoJSON(path.join(CHART_DIR, 'values.schema.json'), schema);
     await writeRepoYAML(path.join(CHART_DIR, 'values.yaml'), valuesYAML); // helm requires this to be "yaml"

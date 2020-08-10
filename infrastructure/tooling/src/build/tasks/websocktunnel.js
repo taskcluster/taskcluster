@@ -7,7 +7,7 @@ const {
   REPO_ROOT,
 } = require('../../utils');
 
-module.exports = ({tasks, cmdOptions, credentials, baseDir, logsDir}) => {
+module.exports = ({ tasks, cmdOptions, credentials, baseDir, logsDir }) => {
   ensureTask(tasks, {
     title: 'Build Websocktunnel Docker Image',
     requires: [
@@ -19,14 +19,14 @@ module.exports = ({tasks, cmdOptions, credentials, baseDir, logsDir}) => {
     ],
     locks: ['docker'],
     run: async (requirements, utils) => {
-      utils.step({title: 'Check Repository'});
+      utils.step({ title: 'Check Repository' });
 
       const tag = `taskcluster/websocktunnel:v${requirements['release-version']}`;
       const provides = {
         'websocktunnel-docker-image': tag,
       };
 
-      utils.step({title: 'Building Websocktunnel'});
+      utils.step({ title: 'Building Websocktunnel' });
 
       const contextDir = path.join(baseDir, 'websocktunnel-build');
       await execCommand({
@@ -38,10 +38,10 @@ module.exports = ({tasks, cmdOptions, credentials, baseDir, logsDir}) => {
         dir: REPO_ROOT,
         logfile: path.join(logsDir, '/websocktunnel-build.log'),
         utils,
-        env: {CGO_ENABLED: '0', ...process.env},
+        env: { CGO_ENABLED: '0', ...process.env },
       });
 
-      utils.step({title: 'Building Docker Image'});
+      utils.step({ title: 'Building Docker Image' });
 
       fs.writeFileSync(
         path.join(contextDir, 'version.json'),
@@ -67,14 +67,14 @@ module.exports = ({tasks, cmdOptions, credentials, baseDir, logsDir}) => {
         dir: REPO_ROOT,
         logfile: path.join(logsDir, 'websocktunnel-docker-build.log'),
         utils,
-        env: {DOCKER_BUILDKIT: 1, ...process.env},
+        env: { DOCKER_BUILDKIT: 1, ...process.env },
       });
 
       if (cmdOptions.staging || !cmdOptions.push) {
         return provides;
       }
 
-      utils.step({title: 'Pushing Docker Image'});
+      utils.step({ title: 'Pushing Docker Image' });
 
       const dockerPushOptions = {};
       if (credentials.dockerUsername && credentials.dockerPassword) {

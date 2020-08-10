@@ -2,7 +2,7 @@ const assert = require('assert');
 const Reclaimer = require('../src/lib/task').Reclaimer;
 const fakeLog = require('debug')('fakeRuntime.log');
 const EventEmitter = require('events');
-const {suiteName} = require('taskcluster-lib-testing');
+const { suiteName } = require('taskcluster-lib-testing');
 
 suite(suiteName(), function() {
   let fakeRuntime, fakeTask;
@@ -24,7 +24,7 @@ suite(suiteName(), function() {
     taskAction = null;
 
     let fakeReclaimTask = async function(taskId, runId) {
-      reclaims.push({taskId, runId});
+      reclaims.push({ taskId, runId });
       let newTakenUntil = new Date();
       newTakenUntil.setMinutes(soon.getMinutes() + 1);
       return makeClaim(taskId, runId, newTakenUntil);
@@ -41,11 +41,11 @@ suite(suiteName(), function() {
       }
 
       cancel(exception, message) {
-        taskAction = {action: 'cancel', exception, message};
+        taskAction = { action: 'cancel', exception, message };
       }
 
       abort(reason) {
-        taskAction = {action: 'abort', reason};
+        taskAction = { action: 'abort', reason };
       }
     }
 
@@ -79,7 +79,7 @@ suite(suiteName(), function() {
     reclaimer = new Reclaimer(fakeRuntime, fakeTask, claim, claim);
 
     await reclaimer.reclaimTask();
-    assert.deepEqual(reclaims, [{taskId: 'fakeTid', runId: 0}]);
+    assert.deepEqual(reclaims, [{ taskId: 'fakeTid', runId: 0 }]);
     assert.equal(taskAction, null);
   });
 

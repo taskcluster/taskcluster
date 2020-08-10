@@ -9,7 +9,7 @@ suite(testing.suiteName(), function() {
     let cfg = config({
       serviceName: 'test',
       files: [
-        {path: path.join(__dirname, 'test.yml'), required: true},
+        { path: path.join(__dirname, 'test.yml'), required: true },
       ],
     });
 
@@ -22,7 +22,7 @@ suite(testing.suiteName(), function() {
     let cfg = config({
       serviceName: 'test',
       files: [
-        {path: path.join(__dirname, 'test-profile.yml'), required: true},
+        { path: path.join(__dirname, 'test-profile.yml'), required: true },
       ],
       profile: 'danish',
     });
@@ -35,7 +35,7 @@ suite(testing.suiteName(), function() {
     let cfg = config({
       serviceName: 'test',
       files: [
-        {path: path.join(__dirname, 'test-profile.yml'), required: true},
+        { path: path.join(__dirname, 'test-profile.yml'), required: true },
       ],
     });
 
@@ -48,7 +48,7 @@ suite(testing.suiteName(), function() {
     let cfg = config({
       serviceName: 'test',
       files: [
-        {path: path.join(__dirname, 'test-env.yml'), required: true},
+        { path: path.join(__dirname, 'test-env.yml'), required: true },
       ],
       env: {
         ENV_VARIABLE: 'env-var-value',
@@ -70,7 +70,7 @@ suite(testing.suiteName(), function() {
       notThere: undefined,
       empty: undefined,
       optional: undefined,
-      json: {test: 42},
+      json: { test: 42 },
       list: ['abc', 'def', 'qouted string', ''],
     });
   });
@@ -80,7 +80,7 @@ suite(testing.suiteName(), function() {
       config({
         serviceName: 'test',
         files: [
-          {path: path.join(__dirname, 'file-that-doesnt-exist.yml'), required: false},
+          { path: path.join(__dirname, 'file-that-doesnt-exist.yml'), required: false },
         ],
       });
     }).throws(/Must load at least one configuration/);
@@ -90,8 +90,8 @@ suite(testing.suiteName(), function() {
     let cfg = config({
       serviceName: 'test',
       files: [
-        {path: path.join(__dirname, 'test.yml'), required: true},
-        {path: path.join(__dirname, 'file-that-doesnt-exist.yml'), required: false},
+        { path: path.join(__dirname, 'test.yml'), required: true },
+        { path: path.join(__dirname, 'file-that-doesnt-exist.yml'), required: false },
       ],
     });
 
@@ -104,8 +104,8 @@ suite(testing.suiteName(), function() {
     let cfg = config({
       serviceName: 'test',
       files: [
-        {path: path.join(__dirname, 'test.yml'), required: true},
-        {path: path.join(__dirname, 'test-env.yml'), required: true},
+        { path: path.join(__dirname, 'test.yml'), required: true },
+        { path: path.join(__dirname, 'test-env.yml'), required: true },
       ],
       env: {
         ENV_VARIABLE: 'env-var-value',
@@ -127,7 +127,7 @@ suite(testing.suiteName(), function() {
       notThere: undefined,
       empty: undefined,
       optional: undefined,
-      json: {test: 42},
+      json: { test: 42 },
       list: ['abc', 'def', 'qouted string', ''],
     });
   });
@@ -136,8 +136,8 @@ suite(testing.suiteName(), function() {
     let cfg = config({
       serviceName: 'test',
       files: [
-        {path: path.join(__dirname, 'test.yml'), required: true},
-        {path: path.join(__dirname, 'test-env.yml'), required: true},
+        { path: path.join(__dirname, 'test.yml'), required: true },
+        { path: path.join(__dirname, 'test-env.yml'), required: true },
       ],
       env: {
         ENV_NUMBER: '32.4',
@@ -158,7 +158,7 @@ suite(testing.suiteName(), function() {
       notThere: undefined,
       empty: undefined,
       optional: undefined,
-      json: {test: 42},
+      json: { test: 42 },
       list: ['abc', 'def', 'qouted string', ''],
     });
   });
@@ -167,7 +167,7 @@ suite(testing.suiteName(), function() {
     const vars = config({
       serviceName: 'test',
       files: [
-        {path: path.join(__dirname, 'test-env.yml'), required: true},
+        { path: path.join(__dirname, 'test-env.yml'), required: true },
       ],
       env: {}, // Notice they do not need to be in the env to do this
       getEnvVars: true,

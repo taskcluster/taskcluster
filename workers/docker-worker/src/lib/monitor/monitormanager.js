@@ -1,6 +1,6 @@
 const assert = require('assert');
 const stream = require('stream');
-const {LEVELS} = require('./logger');
+const { LEVELS } = require('./logger');
 const Monitor = require('./monitor');
 const chalk = require('chalk');
 const Debug = require('debug');
@@ -26,7 +26,7 @@ class MonitorManager {
    * Configure this instance; this sets some per-service details.  It
    * must be called only once per process.
    */
-  configure({serviceName}) {
+  configure({ serviceName }) {
     assert(!this._configured, 'MonitorManager is already configured');
 
     assert(serviceName, 'Must provide a serviceName to MonitorManager.configure');
@@ -234,9 +234,9 @@ class MonitorManager {
    * Handle a message from any logger. This is only used in testing
    * and development.
    */
-  _handleMessage({Type, Fields, Logger, Severity, severity, message}) {
+  _handleMessage({ Type, Fields, Logger, Severity, severity, message }) {
     if (this.fake) {
-      this.messages.push({Type, Fields, Logger, Severity});
+      this.messages.push({ Type, Fields, Logger, Severity });
     }
     if (this.debug) {
       message = message ? message.toString().replace(/\n/g, '\\n') : '';

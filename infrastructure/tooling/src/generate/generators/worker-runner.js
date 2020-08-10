@@ -1,7 +1,7 @@
 const util = require('util');
 const path = require('path');
 const rimraf = util.promisify(require('rimraf'));
-const {REPO_ROOT, modifyRepoFile, execCommand} = require('../../utils');
+const { REPO_ROOT, modifyRepoFile, execCommand } = require('../../utils');
 
 exports.tasks = [];
 

@@ -13,7 +13,7 @@ const streamClosed = require('../stream_closed');
 const temporary = require('temporary');
 const uploadToS3 = require('../upload_to_s3');
 const zlib = require('zlib');
-const {fmtErrorLog} = require('../log');
+const { fmtErrorLog } = require('../log');
 
 let debug = Debug('taskcluster-docker-worker:features:cot');
 
@@ -66,7 +66,7 @@ class ChainOfTrust {
       throw err;
     }
 
-    task.artifactHashes['public/logs/certified.log'] = {sha256: `${this.hash.digest('hex')}`};
+    task.artifactHashes['public/logs/certified.log'] = { sha256: `${this.hash.digest('hex')}` };
 
     let certificate = {
       chainOfTrustVersion: 1,

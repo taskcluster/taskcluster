@@ -1,14 +1,14 @@
 const path = require('path');
 const assert = require('assert');
-const {Client} = require('pg');
-const {Schema, ignorePgErrors, UNDEFINED_OBJECT, UNDEFINED_TABLE} = require('taskcluster-lib-postgres');
+const { Client } = require('pg');
+const { Schema, ignorePgErrors, UNDEFINED_OBJECT, UNDEFINED_TABLE } = require('taskcluster-lib-postgres');
 const tcdb = require('taskcluster-db');
-const {URL} = require('url');
+const { URL } = require('url');
 
 const testDbUrl = process.env.TEST_DB_URL;
 
 const resetDb = async () => {
-  const client = new Client({connectionString: testDbUrl});
+  const client = new Client({ connectionString: testDbUrl });
   await client.connect();
   try {
     // completely reset the DB contents
@@ -40,8 +40,8 @@ const resetDb = async () => {
   }
 };
 
-const resetTables = async ({tableNames}) => {
-  const client = new Client({connectionString: testDbUrl});
+const resetTables = async ({ tableNames }) => {
+  const client = new Client({ connectionString: testDbUrl });
   await client.connect();
   try {
     for (let tableName of tableNames) {

@@ -1,4 +1,4 @@
-const {pickBy} = require('lodash');
+const { pickBy } = require('lodash');
 
 /**
  * Rate limit things, such as destination addresses.
@@ -12,7 +12,7 @@ const {pickBy} = require('lodash');
  * noPeriodicPurge: true to the constructor.
  */
 class RateLimit {
-  constructor({count, time, noPeriodicPurge}) {
+  constructor({ count, time, noPeriodicPurge }) {
     this.count = count;
     this.time = time;
 

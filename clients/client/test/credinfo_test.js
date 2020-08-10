@@ -26,13 +26,13 @@ suite(testing.suiteName(), function() {
     nock('https://auth.taskcluster.net').get('/v1/clients/clid')
       .reply(200, client);
     nock('https://auth.taskcluster.net').get('/v1/scopes/current')
-      .reply(200, {scopes: options.scopes || []});
+      .reply(200, { scopes: options.scopes || [] });
   };
 
   test('permanent', async function() {
-    setupNocks({scopes: ['scope1']});
+    setupNocks({ scopes: ['scope1'] });
     assert.deepEqual(
-      await taskcluster.credentialInformation('https://taskcluster.net', {clientId: 'clid'}), {
+      await taskcluster.credentialInformation('https://taskcluster.net', { clientId: 'clid' }), {
         active: true,
         clientId: 'clid',
         type: 'permanent',
@@ -47,7 +47,7 @@ suite(testing.suiteName(), function() {
       scopes: ['scope1'],
     });
     assert.deepEqual(
-      await taskcluster.credentialInformation('https://taskcluster.net', {clientId: 'clid'}), {
+      await taskcluster.credentialInformation('https://taskcluster.net', { clientId: 'clid' }), {
         active: false,
         clientId: 'clid',
         type: 'permanent',
@@ -62,7 +62,7 @@ suite(testing.suiteName(), function() {
       scopes: ['scope1', 'scope2'],
     });
     assert.deepEqual(
-      await taskcluster.credentialInformation('https://taskcluster.net', {clientId: 'clid'}), {
+      await taskcluster.credentialInformation('https://taskcluster.net', { clientId: 'clid' }), {
         active: false,
         clientId: 'clid',
         type: 'permanent',
@@ -83,7 +83,7 @@ suite(testing.suiteName(), function() {
       },
     });
 
-    setupNocks({scopes: scopes});
+    setupNocks({ scopes: scopes });
     assert.deepEqual(
       await taskcluster.credentialInformation('https://taskcluster.net', credentials), {
         active: true,
@@ -108,7 +108,7 @@ suite(testing.suiteName(), function() {
     });
 
     let permaExpiry = taskcluster.fromNow('1 day');
-    setupNocks({expires: permaExpiry.toJSON(), scopes});
+    setupNocks({ expires: permaExpiry.toJSON(), scopes });
     assert.deepEqual(
       await taskcluster.credentialInformation('https://taskcluster.net', credentials), {
         active: true,
@@ -136,7 +136,7 @@ suite(testing.suiteName(), function() {
     credentials.certificate = JSON.parse(credentials.certificate);
 
     let permaExpiry = taskcluster.fromNow('1 day');
-    setupNocks({expires: permaExpiry.toJSON(), scopes});
+    setupNocks({ expires: permaExpiry.toJSON(), scopes });
     assert.deepEqual(
       await taskcluster.credentialInformation('https://taskcluster.net', credentials), {
         active: true,

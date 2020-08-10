@@ -1,7 +1,7 @@
 const assert = require('assert');
 const libUrls = require('taskcluster-lib-urls');
 const debug = require('debug')('taskcluster-lib-pulse.publisher');
-const {MonitorManager} = require('taskcluster-lib-monitor');
+const { MonitorManager } = require('taskcluster-lib-monitor');
 
 MonitorManager.register({
   name: 'pulsePublisherBlocked',
@@ -33,7 +33,7 @@ class Exchanges {
   }
 
   declare(entryOptions) {
-    const entry = new Entry({exchanges: this, ...entryOptions});
+    const entry = new Entry({ exchanges: this, ...entryOptions });
     assert(!this.entries.some(e => e.name === entry.name),
       `entry with name ${entry.name} already declared`);
     assert(!this.entries.some(e => e.exchange === entry.exchange),
@@ -54,16 +54,16 @@ class Exchanges {
     };
   }
 
-  async publisher({rootUrl, schemaset, client, sendDeadline}) {
+  async publisher({ rootUrl, schemaset, client, sendDeadline }) {
     let publisher;
     if (process.env.NODE_ENV !== 'production') {
       this.exchangePrefix = `exchange/${client.namespace}/${this.apiVersion}/`;
     }
 
     if (client.isFakeClient) {
-      publisher = client.makeFakePublisher({rootUrl, schemaset, client, exchanges: this, PulsePublisher});
+      publisher = client.makeFakePublisher({ rootUrl, schemaset, client, exchanges: this, PulsePublisher });
     } else {
-      publisher = new PulsePublisher({rootUrl, schemaset, client, sendDeadline, exchanges: this});
+      publisher = new PulsePublisher({ rootUrl, schemaset, client, sendDeadline, exchanges: this });
     }
     await publisher._start();
     return publisher;
@@ -73,7 +73,7 @@ class Exchanges {
 exports.Exchanges = Exchanges;
 
 class Entry {
-  constructor({exchanges, ...options}) {
+  constructor({ exchanges, ...options }) {
     assert(options.exchange, 'exchange is required');
     assert(options.name, 'name is required');
     assert(options.title, 'title is required');
@@ -172,7 +172,7 @@ class Entry {
 }
 
 class PulsePublisher {
-  constructor({rootUrl, schemaset, client, exchanges, sendDeadline}) {
+  constructor({ rootUrl, schemaset, client, exchanges, sendDeadline }) {
     this.rootUrl = rootUrl;
     this.schemaset = schemaset;
     this.client = client;
@@ -238,11 +238,11 @@ class PulsePublisher {
       debug('using new channel');
       this._setChannel(channel);
       connection.on('blocked', () => {
-        this.client.monitor.log.pulsePublisherBlocked({blocked: true});
+        this.client.monitor.log.pulsePublisherBlocked({ blocked: true });
         this.blocked = true;
       });
       connection.on('unblocked', () => {
-        this.client.monitor.log.pulsePublisherBlocked({blocked: false});
+        this.client.monitor.log.pulsePublisherBlocked({ blocked: false });
         this.blocked = false;
       });
       this.blocked = false;

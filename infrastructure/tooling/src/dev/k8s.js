@@ -1,6 +1,6 @@
 const _ = require('lodash');
 
-exports.k8sResources = async ({userConfig, answer, configTmpl}) => {
+exports.k8sResources = async ({ userConfig, answer, configTmpl }) => {
   function setDefault(path, val) {
     if (!_.has(userConfig, path, val)) {
       _.set(userConfig, path, val);
@@ -14,7 +14,7 @@ exports.k8sResources = async ({userConfig, answer, configTmpl}) => {
     if (!cfg.procs) {
       continue;
     }
-    for (const [proc, {cpu}] of Object.entries(configTmpl[name].procs)) {
+    for (const [proc, { cpu }] of Object.entries(configTmpl[name].procs)) {
       setDefault(`${name}.procs.${proc}.cpu`, cpu);
     }
   }

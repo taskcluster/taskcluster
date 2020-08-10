@@ -1,8 +1,8 @@
 const _ = require('lodash');
-const {APIBuilder, paginateResults} = require('taskcluster-lib-api');
+const { APIBuilder, paginateResults } = require('taskcluster-lib-api');
 
 const secretToJson = (db, item) => ({
-  secret: _.cloneDeep(JSON.parse(db.decrypt({value: item.encrypted_secret}).toString('utf8'))),
+  secret: _.cloneDeep(JSON.parse(db.decrypt({ value: item.encrypted_secret }).toString('utf8'))),
   expires: item.expires.toJSON(),
 });
 
@@ -48,8 +48,8 @@ builder.declare({
     'updated instead.',
   ].join('\n'),
 }, async function(req, res) {
-  const {name} = req.params;
-  const {secret, expires} = req.body;
+  const { name } = req.params;
+  const { secret, expires } = req.body;
   await this.db.fns.upsert_secret(name, this.db.encrypt({
     value: Buffer.from(JSON.stringify(secret), 'utf8'),
   }), new Date(expires));
@@ -68,7 +68,7 @@ builder.declare({
     'Delete the secret associated with some key. It will succeed whether or not the secret exists',
   ].join('\n'),
 }, async function(req, res) {
-  const {name} = req.params;
+  const { name } = req.params;
   await this.db.fns.delete_secret(name);
   res.reply({});
 });
@@ -89,7 +89,7 @@ builder.declare({
     'regardless of whether the secret exists.',
   ].join('\n'),
 }, async function(req, res) {
-  const {name} = req.params;
+  const { name } = req.params;
   const [item] = await this.db.fns.get_secret(name);
   if (item === undefined) {
     return res.reportError('ResourceNotFound', 'Secret not found', {});
@@ -120,7 +120,7 @@ builder.declare({
     'use the query-string option `limit` to return fewer.',
   ].join('\n'),
 }, async function(req, res) {
-  const {continuationToken, rows: secrets} = await paginateResults({
+  const { continuationToken, rows: secrets } = await paginateResults({
     query: req.query,
     fetch: (size, offset) => this.db.fns.get_secrets(
       size,

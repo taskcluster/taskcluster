@@ -6,7 +6,7 @@ const LRU = require('quick-lru');
 const debug = require('debug')('auth:ScopeResolver');
 const trie = require('./trie');
 const ScopeSetBuilder = require('./scopesetbuilder');
-const {consume} = require('taskcluster-lib-pulse');
+const { consume } = require('taskcluster-lib-pulse');
 
 const ASSUME_PREFIX = /^(:?(:?|a|as|ass|assu|assum|assum|assume)\*$|assume:)/;
 
@@ -101,9 +101,9 @@ class ScopeResolver extends events.EventEmitter {
   /**
    * Reload clients, roles, or both on notifications of changes via pulse.
    */
-  async reloadOnNotifications({exchangeReference, pulseClient, rootUrl}) {
+  async reloadOnNotifications({ exchangeReference, pulseClient, rootUrl }) {
     const AuthEvents = taskcluster.createClient(exchangeReference);
-    const authEvents = new AuthEvents({rootUrl: rootUrl});
+    const authEvents = new AuthEvents({ rootUrl: rootUrl });
 
     // This is a perfect use-case for ephemeral consumers: every process that
     // runs a ScopeResolver should have its own queue, so that it gets it own
@@ -158,7 +158,7 @@ class ScopeResolver extends events.EventEmitter {
         let minLastUsed = taskcluster.fromNow(this._maxLastUsedDelay);
         this._clients.push({
           clientId: client.client_id,
-          accessToken: this.db.decrypt({value: client.encrypted_access_token}),
+          accessToken: this.db.decrypt({ value: client.encrypted_access_token }),
           expires: client.expires,
           updateLastUsed: client.last_date_used < minLastUsed,
           unexpandedScopes: client.scopes,
@@ -201,7 +201,7 @@ class ScopeResolver extends events.EventEmitter {
             for (const client of rows) {
               clients.push({
                 clientId: client.client_id,
-                accessToken: this.db.decrypt({value: client.encrypted_access_token }).toString('utf8'),
+                accessToken: this.db.decrypt({ value: client.encrypted_access_token }).toString('utf8'),
                 expires: client.expires,
                 // Note that lastUsedDate should be updated, if it's out-dated by
                 // more than 6 hours.
@@ -247,7 +247,7 @@ class ScopeResolver extends events.EventEmitter {
    * or 'DependencyCycleError', if any of the roles are illegal, or form a cycle.
    */
   static validateRoles(roles = []) {
-    const rules = roles.map(({role_id, scopes}) => ({pattern: `assume:${role_id}`, scopes}));
+    const rules = roles.map(({ role_id, scopes }) => ({ pattern: `assume:${role_id}`, scopes }));
     trie.dependencyOrdering(rules);
   }
 
@@ -257,12 +257,12 @@ class ScopeResolver extends events.EventEmitter {
    * {role_id, scopes}.
    */
   buildResolver(roles = []) {
-    const rules = roles.map(({role_id, scopes}) => ({pattern: `assume:${role_id}`, scopes}));
+    const rules = roles.map(({ role_id, scopes }) => ({ pattern: `assume:${role_id}`, scopes }));
     const node = trie.optimize(trie.withPrefix(trie.build(rules), 'assume:'));
 
     // LRU of resolved scope-sets, to increase probability of hits, we shall
     // omit all input scopes that doesn't match ASSUME_PREFIX (ie. match 'assume:')
-    const lru = this._disableCache ? ZeroCache : new LRU({maxSize: 10000});
+    const lru = this._disableCache ? ZeroCache : new LRU({ maxSize: 10000 });
 
     return (inputs) => {
       inputs = ScopeSetBuilder.normalizeScopeSet(inputs);

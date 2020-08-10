@@ -1,9 +1,9 @@
 const assert = require('assert');
-const {QlobberTrue} = require('qlobber');
+const { QlobberTrue } = require('qlobber');
 const EventEmitter = require('events');
 const debug = require('debug');
 
-module.exports = ({helper, skipping, namespace}) => {
+module.exports = ({ helper, skipping, namespace }) => {
   let client;
   const debugPulseAssertion = debug('withPulse');
 
@@ -28,7 +28,7 @@ module.exports = ({helper, skipping, namespace}) => {
     helper.assertPulseMessage = (exchange, check) => {
       if (!matchingMessageExists(exchange, check)) {
         debugPulseAssertion(`${client.messages.length} pulse messages recorded:`);
-        client.messages.forEach(({exchange, routingKey}) =>
+        client.messages.forEach(({ exchange, routingKey }) =>
           debugPulseAssertion(`${exchange} - ${routingKey}`));
         throw new Error(`No matching messages found with exchange ${exchange}`);
       }
@@ -37,7 +37,7 @@ module.exports = ({helper, skipping, namespace}) => {
     helper.assertNoPulseMessage = (exchange, check) => {
       if (matchingMessageExists(exchange, check)) {
         debugPulseAssertion(`${client.messages.length} pulse messages recorded:`);
-        client.messages.forEach(({exchange, routingKey}) =>
+        client.messages.forEach(({ exchange, routingKey }) =>
           debugPulseAssertion(`${exchange} - ${routingKey}`));
         throw new Error(`Matching messages found with exchange ${exchange}`);
       }
@@ -47,7 +47,7 @@ module.exports = ({helper, skipping, namespace}) => {
       client.messages = [];
     };
 
-    helper.fakePulseMessage = async ({exchange, routingKey, routes, ...message}) => {
+    helper.fakePulseMessage = async ({ exchange, routingKey, routes, ...message }) => {
       let delivered = false;
       assert(exchange, 'fakePulseMessage requires an exchange');
       assert(routingKey, 'fakePulseMessage requires a routingKey');
@@ -63,7 +63,7 @@ module.exports = ({helper, skipping, namespace}) => {
             q.add(binding.routingKeyPattern);
             if (q.test(routingKey) || routes.some(r => q.test(`route.${r}`))) {
               delivered = true;
-              await cons.handleMessage({exchange, routingKey, routes, ...message});
+              await cons.handleMessage({ exchange, routingKey, routes, ...message });
             }
           }
         }
@@ -71,7 +71,7 @@ module.exports = ({helper, skipping, namespace}) => {
       if (!delivered) {
         debugPulseAssertion(`${client.consumers.length} consumers registered:`);
         client.consumers.forEach(cons =>
-          debugPulseAssertion('- ' + cons.bindings.map(({exchange, routingKeyPattern}) =>
+          debugPulseAssertion('- ' + cons.bindings.map(({ exchange, routingKeyPattern }) =>
             `${exchange} - ${routingKeyPattern}`).join('; ')));
 
         throw new Error('Fake message not delivered to any consumers');
@@ -144,7 +144,7 @@ class FakeClient {
 }
 
 class FakePulseConsumer {
-  constructor({client, bindings, queueName, prefetch, ephemeral, onConnected, handleMessage, ...queueOptions}) {
+  constructor({ client, bindings, queueName, prefetch, ephemeral, onConnected, handleMessage, ...queueOptions }) {
     assert(handleMessage, 'Must provide a message handler function');
 
     this.client = client;
@@ -194,7 +194,7 @@ class FakePulseConsumer {
 }
 
 class FakePulsePublisher extends EventEmitter {
-  constructor({rootUrl, schemaset, client, exchanges, PulsePublisher}) {
+  constructor({ rootUrl, schemaset, client, exchanges, PulsePublisher }) {
     super();
     this.rootUrl = rootUrl;
     this.schemaset = schemaset;

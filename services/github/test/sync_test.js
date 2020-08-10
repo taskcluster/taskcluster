@@ -24,7 +24,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
   test('integration installation', async function() {
     let result = await helper.apiClient.repository('abc123', 'coolRepo');
-    assert.deepEqual(result, {installed: false});
+    assert.deepEqual(result, { installed: false });
     github.createInstall(12345, 'abc123', ['coolRepo']);
     github.createInstall(12346, 'abc124', ['coolerRepo']);
     github.createInstall(12347, 'abc125', ['coolestRepo']);
@@ -34,6 +34,6 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     result = await helper.apiClient.repository('abc123', 'coolRepo');
     result = await helper.apiClient.repository('abc124', 'coolerRepo');
     result = await helper.apiClient.repository('abc125', 'coolestRepo');
-    assert.deepEqual(result, {installed: true});
+    assert.deepEqual(result, { installed: true });
   });
 });

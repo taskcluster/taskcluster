@@ -1,4 +1,4 @@
-const {Exchanges} = require('taskcluster-lib-pulse');
+const { Exchanges } = require('taskcluster-lib-pulse');
 const _ = require('lodash');
 const assert = require('assert');
 
@@ -80,7 +80,7 @@ exchanges.declare({
     'exchange with the designated `organization` and `repository`',
     'in the routing-key along with event specific metadata in the payload.',
   ].join('\n'),
-  routingKey: commonRoutingKey({hasActions: true}),
+  routingKey: commonRoutingKey({ hasActions: true }),
   schema: 'github-pull-request-message.yml',
   messageBuilder: commonMessageBuilder,
   routingKeyBuilder: msg => _.pick(msg, 'organization', 'repository', 'action'),

@@ -42,7 +42,7 @@ function scheduleReclaim(queue, claim) {
 function run(name, args) {
   console.log(`Running "${name} ${args.join(' ')}"`);
   return new Promise((accept, reject) => {
-    const proc = spawn(name, args, {stdio: 'inherit'});
+    const proc = spawn(name, args, { stdio: 'inherit' });
 
     proc.on('close', code => code
       ? reject(new Error(`${name} exited with code ${code}`))

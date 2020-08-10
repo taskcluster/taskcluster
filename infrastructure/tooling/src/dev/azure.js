@@ -1,9 +1,9 @@
 const slugid = require('slugid');
 const msRestNodeAuth = require('@azure/ms-rest-nodeauth');
-const {ResourceManagementClient} = require('@azure/arm-resources');
-const {StorageManagementClient} = require('@azure/arm-storage');
+const { ResourceManagementClient } = require('@azure/arm-resources');
+const { StorageManagementClient } = require('@azure/arm-storage');
 
-const azurePrompts = ({userConfig, prompts, configTmpl}) => {
+const azurePrompts = ({ userConfig, prompts, configTmpl }) => {
 
   prompts.push({
     when: () => !userConfig.azureAccountId,
@@ -29,7 +29,7 @@ const azurePrompts = ({userConfig, prompts, configTmpl}) => {
   });
 };
 
-const azureResources = async ({userConfig, answer, configTmpl}) => {
+const azureResources = async ({ userConfig, answer, configTmpl }) => {
   userConfig.auth = userConfig.auth || {};
   if (!userConfig.auth.azure_account_key || !userConfig.queue.azure_account_key) {
     const resourceGroupName = answer.azureAccountId || userConfig.azureAccountId;

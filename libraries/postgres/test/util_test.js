@@ -1,5 +1,5 @@
-const {range} = require('lodash');
-const {dollarQuote, paginatedIterator} = require('../src/util');
+const { range } = require('lodash');
+const { dollarQuote, paginatedIterator } = require('../src/util');
 const assert = require('assert');
 const path = require('path');
 
@@ -23,7 +23,7 @@ suite(path.basename(__filename), function() {
       };
 
       const got = [];
-      for await (let v of paginatedIterator({fetch, size: 13})) {
+      for await (let v of paginatedIterator({ fetch, size: 13 })) {
         got.push(v);
       }
 
@@ -37,7 +37,7 @@ suite(path.basename(__filename), function() {
       };
 
       const got = [];
-      for await (let v of paginatedIterator({fetch, size: 100})) {
+      for await (let v of paginatedIterator({ fetch, size: 100 })) {
         got.push(v);
       }
 
@@ -54,7 +54,7 @@ suite(path.basename(__filename), function() {
 
       assert.rejects(async () => {
         const got = [];
-        for await (let v of paginatedIterator({fetch, size: 100})) {
+        for await (let v of paginatedIterator({ fetch, size: 100 })) {
           got.push(v);
         }
       }, /oh noes/);

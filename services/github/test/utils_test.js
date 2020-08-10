@@ -1,6 +1,6 @@
 const assert = require('assert');
 const testing = require('taskcluster-lib-testing');
-const {throttleRequest} = require('../src/utils');
+const { throttleRequest } = require('../src/utils');
 
 suite(testing.suiteName(), function() {
   suite('throttleRequest', function() {
@@ -18,11 +18,11 @@ suite(testing.suiteName(), function() {
       throttleRequest.request = async (method, url) => {
         assert.equal(method, 'GET');
         assert.equal(url, 'https://foo');
-        return {result: true};
+        return { result: true };
       };
 
-      const res = await throttleRequest({url: 'https://foo', method: 'GET'});
-      assert.deepEqual(res, {result: true});
+      const res = await throttleRequest({ url: 'https://foo', method: 'GET' });
+      assert.deepEqual(res, { result: true });
     });
 
     test('4xx statuses are returned (not thrown) immediately', async function() {
@@ -35,7 +35,7 @@ suite(testing.suiteName(), function() {
         throw err;
       };
 
-      const res = await throttleRequest({url: 'https://foo', method: 'GET'});
+      const res = await throttleRequest({ url: 'https://foo', method: 'GET' });
       assert.equal(res.status, 424);
       assert.equal(calls, 1); // didn't retry
     });
@@ -51,7 +51,7 @@ suite(testing.suiteName(), function() {
       };
 
       // (set delay=10 to retry more quickly than usual)
-      const res = await throttleRequest({url: 'https://foo', method: 'GET', delay: 10});
+      const res = await throttleRequest({ url: 'https://foo', method: 'GET', delay: 10 });
       assert.equal(res.status, 543);
       assert.equal(calls, 5);
     });
@@ -62,14 +62,14 @@ suite(testing.suiteName(), function() {
       throttleRequest.request = async (method, url) => {
         calls++;
         if (calls >= 1) {
-          return {status: 200};
+          return { status: 200 };
         }
         const err = new Error('uhoh');
         err.status = 543;
         throw err;
       };
 
-      const res = await throttleRequest({url: 'https://foo', method: 'GET', delay: 10});
+      const res = await throttleRequest({ url: 'https://foo', method: 'GET', delay: 10 });
       assert.equal(res.status, 200);
       assert.equal(calls, 1);
     });
@@ -82,7 +82,7 @@ suite(testing.suiteName(), function() {
       };
 
       await assert.rejects(
-        () => throttleRequest({url: 'https://foo', method: 'GET', delay: 10}),
+        () => throttleRequest({ url: 'https://foo', method: 'GET', delay: 10 }),
         err => err.code === 'ECONNREFUSED');
     });
   });

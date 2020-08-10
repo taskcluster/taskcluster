@@ -64,7 +64,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       routingKey: 'route.index.abc',
       routes: task.routes,
       payload: {
-        status: {taskId},
+        status: { taskId },
       },
     };
     await helper.fakePulseMessage(message);
@@ -134,7 +134,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       routingKey: 'route.index.abc',
       routes: task.routes,
       payload: {
-        status: {taskId},
+        status: { taskId },
       },
     };
     await helper.fakePulseMessage(message);
@@ -164,7 +164,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     await helper.index.insertTask(myns + '.my-task', {
       taskId: taskId,
       rank: 41,
-      data: {hello: 'world'},
+      data: { hello: 'world' },
       expires: expiry.toJSON(),
     });
     try {
@@ -178,7 +178,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     await helper.index.insertTask(myns + '.my-task2', {
       taskId: taskId2,
       rank: 42,
-      data: {hello: 'world two'},
+      data: { hello: 'world two' },
       expires: expiry.toJSON(),
     });
     const result = await helper.index.findTask(myns + '.my-task2');
@@ -210,7 +210,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     await helper.index.insertTask(myns + '.one-ns.my-task', {
       taskId: taskId,
       rank: 41,
-      data: {hello: 'world'},
+      data: { hello: 'world' },
       expires: expiry.toJSON(),
     });
 
@@ -223,7 +223,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     await helper.index.insertTask(myns + '.another-ns.my-task', {
       taskId: taskId2,
       rank: 42,
-      data: {hello: 'world two'},
+      data: { hello: 'world two' },
       expires: expiry.toJSON(),
     });
     let result = await helper.index.findTask(myns + '.another-ns.my-task');
@@ -252,7 +252,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       await helper.index.insertTask(myns + '.my-task' + _.toString(i) + '.new' + _.toString(i), {
         taskId: taskId,
         rank: i,
-        data: {hello: 'world ' + _.toString(i)},
+        data: { hello: 'world ' + _.toString(i) },
         expires: expiry.toJSON(),
       });
       const result = await helper.index.findTask(myns + '.my-task' + _.toString(i) + '.new' + _.toString(i));
@@ -270,9 +270,9 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     let i = 1;
     let continuationToken = undefined;
     do {
-      const query = {limit: 1};
+      const query = { limit: 1 };
       if (!_.isUndefined(continuationToken)) {
-        _.extend(query, {continuationToken});
+        _.extend(query, { continuationToken });
       }
       const result = await helper.index.listNamespaces(myns, query);
       debug('listNamespaces returns 1 entry');

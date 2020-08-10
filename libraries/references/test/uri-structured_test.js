@@ -1,7 +1,7 @@
 const fs = require('fs');
 const assert = require('assert');
 const References = require('..');
-const {readUriStructured, writeUriStructured} = require('../src/uri-structured');
+const { readUriStructured, writeUriStructured } = require('../src/uri-structured');
 const mockFs = require('mock-fs');
 const testing = require('taskcluster-lib-testing');
 
@@ -20,8 +20,8 @@ suite(testing.suiteName(), function() {
     writeUriStructured({
       directory: '/refdata',
       serializable: [
-        {filename: 'abc/def.json', content: {abc: 'def'}},
-        {filename: 'abc.json', content: 'abc'},
+        { filename: 'abc/def.json', content: { abc: 'def' } },
+        { filename: 'abc.json', content: 'abc' },
       ],
     });
 
@@ -35,13 +35,13 @@ suite(testing.suiteName(), function() {
       '/data/schemas/common/foo.json': '{"foo": "true"}',
       '/data/references/something/bar.json': '{"bar": "true"}',
     });
-    const files = readUriStructured({directory: '/data'});
+    const files = readUriStructured({ directory: '/data' });
     assert.deepEqual(files.sort(), [{
       filename: 'references/something/bar.json',
-      content: {bar: 'true'},
+      content: { bar: 'true' },
     }, {
       filename: 'schemas/common/foo.json',
-      content: {foo: 'true'},
+      content: { foo: 'true' },
     }]);
   });
 
@@ -52,7 +52,7 @@ suite(testing.suiteName(), function() {
       '/data/references/something/bar.json':
         '{"bar": "true", "$schema": "/schemas/common/foo.json#"}',
     });
-    const references = References.fromUriStructured({directory: '/data'});
+    const references = References.fromUriStructured({ directory: '/data' });
     assert.deepEqual(references.references, [{
       filename: 'references/something/bar.json',
       content: {

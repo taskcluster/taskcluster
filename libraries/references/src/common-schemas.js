@@ -28,7 +28,7 @@ const getCommonSchemas = () => {
     const content = yaml.safeLoad(data);
     assert(content.$id, `${filename} has no $id`);
     assert(content.$schema, `${filename} has no $id`);
-    _commonSchemas.push({content, filename: `schemas/${dentry}`});
+    _commonSchemas.push({ content, filename: `schemas/${dentry}` });
   }
   return _commonSchemas;
 };

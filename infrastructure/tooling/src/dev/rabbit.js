@@ -12,7 +12,7 @@ const servicesWithoutRabbitConfig = (userConfig, configTmpl) => {
   return services;
 };
 
-const rabbitPrompts = ({userConfig, prompts, configTmpl}) => {
+const rabbitPrompts = ({ userConfig, prompts, configTmpl }) => {
   const setupNeeded = servicesWithoutRabbitConfig(userConfig, configTmpl);
 
   prompts.push({
@@ -61,9 +61,9 @@ const rabbitPrompts = ({userConfig, prompts, configTmpl}) => {
   });
 };
 
-const rabbitResources = async ({userConfig, answer, configTmpl}) => {
+const rabbitResources = async ({ userConfig, answer, configTmpl }) => {
   const setupNeeded = servicesWithoutRabbitConfig(userConfig, configTmpl);
-  const {rabbitAdminPassword} = answer;
+  const { rabbitAdminPassword } = answer;
 
   // if we didn't decide we needed rabbit setup, then there's nothing to do
   if (!rabbitAdminPassword) {

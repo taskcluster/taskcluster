@@ -2,7 +2,7 @@ let assert = require('assert');
 let _ = require('lodash');
 let events = require('events');
 let taskCreds = require('./task-creds');
-const {Task} = require('./data');
+const { Task } = require('./data');
 
 /**
  * HintPoller polls for hints for pending tasks.
@@ -28,7 +28,7 @@ class HintPoller {
     assert(!this.destroyed, 'requestClaim() called after destroy()');
     return new Promise((resolve, reject) => {
       // Make a request for count tasks
-      let request = {resolve, reject, count};
+      let request = { resolve, reject, count };
       this.requests.push(request);
 
       // Remove request if aborted
@@ -83,7 +83,7 @@ class HintPoller {
 
           // While we have hints and requests for hints we resolve requests
           while (hints.length > 0 && this.requests.length > 0) {
-            let {resolve, count} = this.requests.shift();
+            let { resolve, count } = this.requests.shift();
             resolve(hints.splice(0, count));
           }
 
@@ -261,7 +261,7 @@ class WorkClaimer extends events.EventEmitter {
       workerId: workerId,
       takenUntil: run.takenUntil,
     }, task.routes);
-    this._monitor.log.taskRunning({taskId, runId});
+    this._monitor.log.taskRunning({ taskId, runId });
 
     let credentials = taskCreds(
       taskId,

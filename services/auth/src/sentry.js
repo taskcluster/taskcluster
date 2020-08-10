@@ -24,7 +24,7 @@ builder.declare({
   let project = req.params.project;
 
   // Check scopes
-  await req.authorize({project});
+  await req.authorize({ project });
 
   let key = await this.sentryManager.projectDSN(project);
 

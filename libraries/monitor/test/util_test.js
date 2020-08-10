@@ -1,5 +1,5 @@
 const assert = require('assert');
-const {cleanupDescription} = require('../src/util');
+const { cleanupDescription } = require('../src/util');
 const testing = require('taskcluster-lib-testing');
 
 suite(testing.suiteName(), function() {

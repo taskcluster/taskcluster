@@ -26,7 +26,7 @@ exports.ERROR_CODES = ERROR_CODES;
 const buildReportErrorMethod = () => {
   return (req, res, next) => {
     res.reportError = (code, message, details = {}) => {
-      throw new ErrorReply({code, message, details});
+      throw new ErrorReply({ code, message, details });
     };
     next();
   };

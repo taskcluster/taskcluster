@@ -1,4 +1,4 @@
-const {Exchanges} = require('taskcluster-lib-pulse');
+const { Exchanges } = require('taskcluster-lib-pulse');
 
 const exchanges = new Exchanges({
   title: 'Worker Manager Exchanges',

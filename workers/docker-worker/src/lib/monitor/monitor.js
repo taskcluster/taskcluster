@@ -1,6 +1,6 @@
 const assert = require('assert');
-const {serializeError} = require('serialize-error');
-const {Logger} = require('./logger');
+const { serializeError } = require('serialize-error');
+const { Logger } = require('./logger');
 const TimeKeeper = require('./timekeeper');
 
 class Monitor {
@@ -25,7 +25,7 @@ class Monitor {
 
     this.log = {};
     Object.entries(this.manager.types).forEach(([name, meta]) => {
-      this._register({name, ...meta});
+      this._register({ name, ...meta });
     });
 
     this._log = new Logger({
@@ -86,7 +86,7 @@ class Monitor {
     return new Monitor({
       manager: this.manager,
       name: this.name.concat([name]),
-      metadata: {...this.metadata, ...metadata},
+      metadata: { ...this.metadata, ...metadata },
       verify: this.verify,
       fake: this.fake,
 
@@ -198,7 +198,7 @@ class Monitor {
         name,
         duration: d[0] * 1000 + d[1] / 1000000,
         status: exitStatus ? 'exception' : 'success',
-      }, {level: exitStatus ? 'err' : 'notice'});
+      }, { level: exitStatus ? 'err' : 'notice' });
       if (!this.fake || this.fake.allowExit) {
         await this._exit(exitStatus);
       }
@@ -215,10 +215,10 @@ class Monitor {
     try {
       assert(typeof val === 'number', 'Count values must be numbers');
     } catch (err) {
-      this.reportError(err, {key, val});
+      this.reportError(err, { key, val });
       return;
     }
-    this.log.countMetric({key, val});
+    this.log.countMetric({ key, val });
   }
 
   /*
@@ -230,10 +230,10 @@ class Monitor {
     try {
       assert(typeof val === 'number', 'Measure values must be numbers');
     } catch (err) {
-      this.reportError(err, {key, val});
+      this.reportError(err, { key, val });
       return;
     }
-    this.log.measureMetric({key, val});
+    this.log.measureMetric({ key, val });
   }
 
   /**
@@ -257,7 +257,7 @@ class Monitor {
       extra['reportId'] = this.manager._reporter.report(err);
     }
     try {
-      this.log.errorReport({...serialized, ...extra}, {level});
+      this.log.errorReport({ ...serialized, ...extra }, { level });
     } catch (err) {
       console.log(`Exception when reporting error:\n${err.stack || err}`);
       console.log(`Original error:\n${err.stack || err}`);
@@ -283,7 +283,7 @@ class Monitor {
     }
   }
 
-  _register({name, type, version, level, fields}) {
+  _register({ name, type, version, level, fields }) {
     assert(!this[name], `Cannot override "${name}" as custom message type.`);
     const requiredFields = Object.keys(fields);
     this.log[name] = (fields = {}, overrides = {}) => {
@@ -294,7 +294,7 @@ class Monitor {
         requiredFields.forEach(f => assert(providedFields.includes(f), `Log message "${name}" must include field "${f}".`));
       }
       let lv = level === 'any' ? overrides.level : level;
-      this._log[lv](type, {v: version, ...fields});
+      this._log[lv](type, { v: version, ...fields });
     };
   }
 
@@ -341,7 +341,7 @@ class Monitor {
     this._resourceInterval = setInterval(() => {
       const lastCpuUsage = process.cpuUsage();
       const lastMemoryUsage = process.memoryUsage();
-      this.log.resourceMetrics({lastCpuUsage, lastMemoryUsage});
+      this.log.resourceMetrics({ lastCpuUsage, lastMemoryUsage });
     }, interval * 1000);
   }
 }

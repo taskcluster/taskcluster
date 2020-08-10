@@ -133,9 +133,9 @@ suite(testing.suiteName(), function() {
       assert.deepEqual([], await db.fns.get_github_integration('doesntexist'));
 
       // this should not reject, just overwrite
-      await upsert_integration(db, {...integrations[0], installation_id: 12345});
+      await upsert_integration(db, { ...integrations[0], installation_id: 12345 });
       [fetched] = await db.fns.get_github_integration(integrations[0].owner);
-      assert.deepEqual(fetched, {...integrations[0], installation_id: 12345});
+      assert.deepEqual(fetched, { ...integrations[0], installation_id: 12345 });
     });
     helper.dbTest('list', async function(db, isFake) {
       for (let i = 0; i < 10; i++) {

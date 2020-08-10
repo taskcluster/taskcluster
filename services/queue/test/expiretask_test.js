@@ -33,11 +33,11 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
         source: 'https://github.com/taskcluster/taskcluster-queue',
       },
     };
-    return {taskId: slugid.v4(), task};
+    return { taskId: slugid.v4(), task };
   };
 
   test('expire completed task', async () => {
-    const {taskId, task} = makeTask('2 day');
+    const { taskId, task } = makeTask('2 day');
 
     debug('### Creating task');
     const r1 = await helper.queue.createTask(taskId, task);
@@ -70,7 +70,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
   });
 
   test('expire won\'t drop table', async () => {
-    const {taskId, task} = makeTask('12 day');
+    const { taskId, task } = makeTask('12 day');
 
     debug('### Creating task');
     const r1 = await helper.queue.createTask(taskId, task);

@@ -89,30 +89,30 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       owner: 'abc123',
       repo: 'coolRepo',
       ref: 'master',
-      info: [{creator: {id: 12345}, state: 'success'}, {creator: {id: 55555}, state: 'failure'}],
+      info: [{ creator: { id: 12345 }, state: 'success' }, { creator: { id: 55555 }, state: 'failure' }],
     });
     github.inst(9090).setStatuses({
       owner: 'abc123',
       repo: 'awesomeRepo',
       ref: 'master',
       info: [
-        {creator: {id: 12345}, state: 'success'},
-        {creator: {id: 55555}, state: 'success', target_url: 'Wonderland'},
+        { creator: { id: 12345 }, state: 'success' },
+        { creator: { id: 55555 }, state: 'success', target_url: 'Wonderland' },
       ],
     });
     github.inst(9090).setStatuses({
       owner: 'abc123',
       repo: 'nonTCGHRepo',
       ref: 'master',
-      info: [{creator: {id: 123345}, state: 'success'}],
+      info: [{ creator: { id: 123345 }, state: 'success' }],
     });
     github.inst(9090).setStatuses({
       owner: 'abc123',
       repo: 'errorRepo',
       ref: 'master',
-      info: {errorStatus: 499},
+      info: { errorStatus: 499 },
     });
-    github.inst(9090).setUser({id: 55555, email: 'noreply@github.com', username: 'magicalTCspirit[bot]'});
+    github.inst(9090).setUser({ id: 55555, email: 'noreply@github.com', username: 'magicalTCspirit[bot]' });
   });
 
   test('all builds', async function() {
@@ -126,14 +126,14 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   });
 
   test('org builds', async function() {
-    let builds = await helper.apiClient.builds({organization: 'abc123'});
+    let builds = await helper.apiClient.builds({ organization: 'abc123' });
     assert.equal(builds.builds.length, 3);
     builds.builds = _.orderBy(builds.builds, ['organization', 'repository']);
     assert.equal(builds.builds[0].organization, 'abc123');
   });
 
   test('repo builds', async function() {
-    let builds = await helper.apiClient.builds({organization: 'abc123', repository: 'xyz'});
+    let builds = await helper.apiClient.builds({ organization: 'abc123', repository: 'xyz' });
     assert.equal(builds.builds.length, 2);
     builds.builds = _.orderBy(builds.builds, ['organization', 'repository']);
     assert.equal(builds.builds[0].organization, 'abc123');
@@ -170,11 +170,11 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
   test('integration installation', async function() {
     let result = await helper.apiClient.repository('abc123', 'coolRepo');
-    assert.deepEqual(result, {installed: true});
+    assert.deepEqual(result, { installed: true });
     result = await helper.apiClient.repository('abc123', 'unknownRepo');
-    assert.deepEqual(result, {installed: false});
+    assert.deepEqual(result, { installed: false });
     result = await helper.apiClient.repository('unknownOwner', 'unknownRepo');
-    assert.deepEqual(result, {installed: false});
+    assert.deepEqual(result, { installed: false });
   });
 
   test('build badges - status:failure', async function() {
@@ -209,7 +209,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     try {
       res = await got(
         helper.apiClient.buildUrl(helper.apiClient.latest, 'abc123', 'awesomeRepo', 'master'),
-        {followRedirect: false});
+        { followRedirect: false });
     } catch (e) {
       console.log(`Test for redirecting to correct page failed. Error: ${JSON.stringify(e)}`);
     }
@@ -219,7 +219,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   test('link for clickable badges when no such thing exists', async function() {
     await assert.rejects(() => got(
       helper.apiClient.buildUrl(helper.apiClient.latest, 'abc123', 'unknownRepo', 'nosuch'),
-      {followRedirect: false}), err => err.statusCode === 404);
+      { followRedirect: false }), err => err.statusCode === 404);
   });
 
   test('simple status creation', async function() {
@@ -286,7 +286,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
   test('pull request comment where integration lacks permission', async function() {
     try {
-      await helper.apiClient.createComment('abc123', 'no-permission', 1, {body: 'x'});
+      await helper.apiClient.createComment('abc123', 'no-permission', 1, { body: 'x' });
     } catch (e) {
       assert.equal(e.statusCode, 403);
       return; // passed

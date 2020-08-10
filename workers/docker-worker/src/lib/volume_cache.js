@@ -1,6 +1,6 @@
 let path = require('path');
 let fs = require('fs');
-const {makeDir, removeDir} = require('./util/fs');
+const { makeDir, removeDir } = require('./util/fs');
 let taskcluster = require('taskcluster-client');
 let uuid = require('uuid');
 let _ = require('lodash');
@@ -71,7 +71,7 @@ class VolumeCache {
 
     // Create a cache key that can be used by consumers of the cache in the
     // forma of <cache name>::<instance id>
-    let instance = {key: cacheName + KEY_DELIMITER + instanceId,
+    let instance = { key: cacheName + KEY_DELIMITER + instanceId,
       path: instancePath,
       lastUsed: created,
     };
@@ -130,7 +130,7 @@ class VolumeCache {
 
     if(fs.existsSync(cachePath)) {
       await makeDir(cachePath);
-      let cacheDetails = {cacheName: cacheName, cachPath: cachePath};
+      let cacheDetails = { cacheName: cacheName, cachPath: cachePath };
       this.log('cache volume created', cacheDetails);
     }
   }
@@ -172,11 +172,11 @@ class VolumeCache {
     if (!instanceId) {
       logMessage = 'cache volume miss';
       instance = await this.add(cacheName);
-      this.set(instance.key, {mounted: true});
+      this.set(instance.key, { mounted: true });
       this.monitor.count('cache.miss');
     } else {
       logMessage = 'cache volume hit';
-      instance = {key: cacheName + KEY_DELIMITER + instanceId,
+      instance = { key: cacheName + KEY_DELIMITER + instanceId,
         path: this.cache[cacheName][instanceId].path,
         lastUsed: this.cache[cacheName][instanceId].lastUsed,
       };
@@ -194,13 +194,13 @@ class VolumeCache {
   @param {String} Cache key in the format of <cache name>::<instance id>
   */
   async release(cacheKey) {
-    this.set(cacheKey, {mounted: false, lastUsed: Date.now()});
-    this.log('cache volume release', {key: cacheKey});
+    this.set(cacheKey, { mounted: false, lastUsed: Date.now() });
+    this.log('cache volume release', { key: cacheKey });
   }
 
   purgeInstance(cacheKey) {
-    this.set(cacheKey, {purge: true});
-    this.log('cache volume purge', {key: cacheKey});
+    this.set(cacheKey, { purge: true });
+    this.log('cache volume purge', { key: cacheKey });
   }
 
   /**
@@ -283,7 +283,7 @@ class VolumeCache {
     try {
       purgeRequests = await this.purgeClient.purgeRequests(this.config.provisionerId,
         this.config.workerType,
-        {since: this.lastPurgeRequest});
+        { since: this.lastPurgeRequest });
       this.setNextPurgeRequestTime();
     } catch (e) {
       // Report the error, but do not set the last request time if this current

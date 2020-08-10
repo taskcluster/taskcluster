@@ -1,4 +1,4 @@
-const {consume} = require('taskcluster-lib-pulse');
+const { consume } = require('taskcluster-lib-pulse');
 const irc = require('irc-upd');
 const taskcluster = require('taskcluster-client');
 const assert = require('assert');
@@ -52,7 +52,7 @@ class IRCBot {
       if (msg.command === 'rpl_whoismodes' || msg.command === 'rpl_whoissecure') {
         return;
       }
-      this.monitor.notice({message: 'Unhandled message from IRC server', content: msg});
+      this.monitor.notice({ message: 'Unhandled message from IRC server', content: msg });
     });
     this.pulseClient = options.pulseClient;
     this.reference = options.reference;
@@ -75,7 +75,7 @@ class IRCBot {
     this.monitor.notice("Connected to IRC server");
 
     const NotifyEvents = taskcluster.createClient(this.reference);
-    const notifyEvents = new NotifyEvents({rootUrl: this.rootUrl});
+    const notifyEvents = new NotifyEvents({ rootUrl: this.rootUrl });
 
     this.pq = await consume({
       client: this.pulseClient,
@@ -86,8 +86,8 @@ class IRCBot {
     );
   }
 
-  async onMessage({payload}) {
-    let {channel, user, message} = payload;
+  async onMessage({ payload }) {
+    let { channel, user, message } = payload;
     if (channel && !/^[#&][^ ,\u{0007}]{1,199}$/u.test(channel)) {
       this.monitor.info('irc channel ' + channel + ' invalid format. Not attempting to send.');
       return;

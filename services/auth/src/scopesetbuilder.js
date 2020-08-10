@@ -1,4 +1,4 @@
-const {scopeCompare, mergeScopeSets, normalizeScopeSet} = require('taskcluster-lib-scopes');
+const { scopeCompare, mergeScopeSets, normalizeScopeSet } = require('taskcluster-lib-scopes');
 
 /**
  * BaseNode is the base-class for all node in an object-structure that holds a
@@ -128,7 +128,7 @@ class ScopeSetBuilder {
    * should only be used when input and output is immutable. Otherwise, it's
    * always safer to force clone the arrays, which is also default behavior.
    */
-  constructor({optionallyClone} = {optionallyClone: false}) {
+  constructor({ optionallyClone } = { optionallyClone: false }) {
     this.optionallyClone = !!optionallyClone;
     this.sets = [];
   }

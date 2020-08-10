@@ -4,7 +4,7 @@ const taskcluster = require('taskcluster-client');
 const helper = require('./helper');
 const testing = require('taskcluster-lib-testing');
 
-const {Provisioner, Worker, WorkerType} = require('../src/data');
+const { Provisioner, Worker, WorkerType } = require('../src/data');
 
 helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) {
   helper.withDb(mock, skipping);
@@ -99,7 +99,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
   });
 
   test('provisioner expiration works', async () => {
-    await makeProvisioner({expires: new Date('2000-01-01')});
+    await makeProvisioner({ expires: new Date('2000-01-01') });
 
     await helper.runExpiration('expire-worker-info');
 
@@ -140,7 +140,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
         description: 'Remove worker type',
       }],
     });
-    const wType = await makeWorkerType({provisionerId: 'prov-B'});
+    const wType = await makeWorkerType({ provisionerId: 'prov-B' });
 
     const result = await helper.queue.listWorkerTypes('prov-B');
 
@@ -149,10 +149,10 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
   });
 
   test('list worker-types (limit and continuationToken)', async () => {
-    await makeWorkerType({workerType: 'gecko-b-2-linux-extended-extended'});
-    await makeWorkerType({workerType: 'gecko-b-2-android'});
+    await makeWorkerType({ workerType: 'gecko-b-2-linux-extended-extended' });
+    await makeWorkerType({ workerType: 'gecko-b-2-android' });
 
-    let result = await helper.queue.listWorkerTypes('prov1-extended-extended-extended', {limit: 1});
+    let result = await helper.queue.listWorkerTypes('prov1-extended-extended-extended', { limit: 1 });
 
     assert(result.continuationToken);
     assert.equal(result.workerTypes.length, 1);
@@ -201,7 +201,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     const taskId2 = slugid.v4();
 
     const worker = await makeWorker({
-      recentTasks: [{taskId, runId: 0}, {taskId: taskId2, runId: 0}],
+      recentTasks: [{ taskId, runId: 0 }, { taskId: taskId2, runId: 0 }],
     });
 
     const result = await helper.queue.listWorkers(worker.provisionerId, worker.workerType);
@@ -220,10 +220,10 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     const past = new Date('2001-01-01');
     const future = new Date('3001-01-01');
     const workers = [
-      await makeWorker({workerId: 'old', expires: past, quarantineUntil: past}),
-      await makeWorker({workerId: 'q', expires: past, quarantineUntil: future}),
-      await makeWorker({workerId: 'new', expires: future, quarantineUntil: past}),
-      await makeWorker({workerId: 'newq', expires: future, quarantineUntil: future}),
+      await makeWorker({ workerId: 'old', expires: past, quarantineUntil: past }),
+      await makeWorker({ workerId: 'q', expires: past, quarantineUntil: future }),
+      await makeWorker({ workerId: 'new', expires: future, quarantineUntil: past }),
+      await makeWorker({ workerId: 'newq', expires: future, quarantineUntil: future }),
     ];
 
     const result = await helper.queue.listWorkers(workers[0].provisionerId, workers[0].workerType);
@@ -264,11 +264,11 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     const worker = await makeWorker({});
 
     const result = await helper.queue.listWorkers(
-      worker.provisionerId, worker.workerType, {quarantined: false},
+      worker.provisionerId, worker.workerType, { quarantined: false },
     );
 
     const result2 = await helper.queue.listWorkers(
-      worker.provisionerId, worker.workerType, {quarantined: true},
+      worker.provisionerId, worker.workerType, { quarantined: true },
     );
 
     assert.equal(result.workers.length, 1, 'expected 1 worker');
@@ -279,10 +279,10 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     const provisionerId = 'prov2';
     const workerType = 'gecko-b-2-linux-extended-extended';
 
-    await makeWorker({provisionerId, workerType, workerId: 'my-worker1'});
-    await makeWorker({provisionerId, workerType, workerId: 'my-worker2'});
+    await makeWorker({ provisionerId, workerType, workerId: 'my-worker1' });
+    await makeWorker({ provisionerId, workerType, workerId: 'my-worker2' });
 
-    let result = await helper.queue.listWorkers(provisionerId, workerType, {limit: 1});
+    let result = await helper.queue.listWorkers(provisionerId, workerType, { limit: 1 });
     assert(result.continuationToken);
     assert.equal(result.workers.length, 1);
 
@@ -408,7 +408,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
         description: 'Remove worker type',
       }],
     });
-    const wType = await makeWorkerType({provisionerId: 'prov-B'});
+    const wType = await makeWorkerType({ provisionerId: 'prov-B' });
 
     const result = await helper.queue.getWorkerType(wType.provisionerId, wType.workerType);
 
@@ -553,7 +553,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
       description: 'Reboot provisioner desc-provisioner',
     };
 
-    await helper.queue.declareProvisioner(provisioner.provisionerId, {actions: [actionOne, actionTwo]});
+    await helper.queue.declareProvisioner(provisioner.provisionerId, { actions: [actionOne, actionTwo] });
 
     const result = await helper.queue.getProvisioner(provisioner.provisionerId);
 
@@ -626,9 +626,9 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     await makeWorkerType({});
     const worker = await makeWorker({
       recentTasks: [
-        {taskId, runId: 0},
-        {taskId, runId: 1},
-        {taskId: taskId2, runId: 0},
+        { taskId, runId: 0 },
+        { taskId, runId: 1 },
+        { taskId: taskId2, runId: 0 },
       ],
     });
 
@@ -673,7 +673,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
   test('queue.getWorker returns 404 for an expired Worker', async () => {
     await makeProvisioner({});
     await makeWorkerType({});
-    const worker = await makeWorker({expires: new Date('2001-01-01')});
+    const worker = await makeWorker({ expires: new Date('2001-01-01') });
 
     let err;
     try {
@@ -746,7 +746,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     await makeWorkerType({});
     const taskId = slugid.v4();
     const worker = await makeWorker({
-      recentTasks: [{taskId, runId: 0}],
+      recentTasks: [{ taskId, runId: 0 }],
     });
 
     const updateProps = {
@@ -806,7 +806,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     const taskId = slugid.v4();
 
     const worker = await makeWorker({
-      recentTasks: [{taskId, runId: 0}],
+      recentTasks: [{ taskId, runId: 0 }],
     });
 
     const updateProps = {
@@ -865,7 +865,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     const workerType = 'gecko-b-1-android';
     const workerGroup = 'my-worker-group-extended-extended';
     const workerId = 'my-worker-extended-extended';
-    await makeProvisioner({provisionerId});
+    await makeProvisioner({ provisionerId });
 
     let taskIds = [];
 
@@ -907,6 +907,6 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     const recentTasks = result.recentTasks;
 
     assert.equal(result.recentTasks.length, 20, 'expected to have 20 tasks');
-    assert.deepEqual(recentTasks.map(({taskId}) => taskId), taskIds.slice(10));
+    assert.deepEqual(recentTasks.map(({ taskId }) => taskId), taskIds.slice(10));
   });
 });

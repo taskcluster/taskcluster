@@ -27,7 +27,7 @@ class FakeGithub {
     };
 
     const stubs = {
-      'repos.createStatus': ({owner, repo, sha, state, target_url, description, context}) => {
+      'repos.createStatus': ({ owner, repo, sha, state, target_url, description, context }) => {
         if (repo === 'no-permission') {
           throwError(403);
         }
@@ -43,7 +43,7 @@ class FakeGithub {
         }
         this._statuses[key].push(info);
       },
-      'issues.createComment': ({owner, repo, number, body}) => {
+      'issues.createComment': ({ owner, repo, number, body }) => {
         if (repo === 'no-permission') {
           throwError(403);
         }
@@ -57,7 +57,7 @@ class FakeGithub {
         this._comments[key].push(info);
       },
       'repos.createCommitComment': () => {},
-      'repos.getCommit': async ({owner, repo, ref, headers}) => {
+      'repos.getCommit': async ({ owner, repo, ref, headers }) => {
         assert.equal(headers && headers.accept, 'application/vnd.github.3.sha');
         assert(ref.startsWith('refs/'), 'repos.getCommit requires a full ref path');
         const key = `${owner}/${repo}@${ref}`;
@@ -69,14 +69,14 @@ class FakeGithub {
           data: this._commits[key],
         };
       },
-      'orgs.checkMembership': async ({org, username}) => {
+      'orgs.checkMembership': async ({ org, username }) => {
         if (this._org_membership[org] && this._org_membership[org].has(username)) {
           return {};
         } else {
           throwError(404);
         }
       },
-      'repos.checkCollaborator': async ({owner, repo, username}) => {
+      'repos.checkCollaborator': async ({ owner, repo, username }) => {
         const key = `${owner}/${repo}`;
         if (this._repo_collaborators[key] && this._repo_collaborators[key].has(username)) {
           return {};
@@ -84,49 +84,49 @@ class FakeGithub {
           throwError(404);
         }
       },
-      'repos.get': async ({owner, repo}) => {
+      'repos.get': async ({ owner, repo }) => {
         const key = `${owner}/${repo}`;
         if (this._repo_info[key]) {
-          return {data: this._repo_info[key]};
+          return { data: this._repo_info[key] };
         } else {
           throwError(404);
         }
       },
-      'repos.getContents': async ({owner, repo, path, ref}) => {
+      'repos.getContents': async ({ owner, repo, path, ref }) => {
         assert.equal(path, '.taskcluster.yml');
         const key = `${owner}/${repo}@${ref}`;
         if (this._taskcluster_yml_files[key]) {
-          return {data: {content: Buffer.from(
+          return { data: { content: Buffer.from(
             JSON.stringify(this._taskcluster_yml_files[key]),
-          ).toString('base64')}};
+          ).toString('base64') } };
         } else {
           throwError(404);
         }
       },
-      'users.getByUsername': async ({username}) => {
-        let user = _.find(this._github_users, {username});
+      'users.getByUsername': async ({ username }) => {
+        let user = _.find(this._github_users, { username });
         if (user) {
-          return {data: user};
+          return { data: user };
         } else {
           throwError(404);
         }
       },
       'apps.listRepos': async () => {
-        return {data: this._repositories};
+        return { data: this._repositories };
       },
-      'repos.listStatusesForRef': async ({owner, repo, ref}) => {
+      'repos.listStatusesForRef': async ({ owner, repo, ref }) => {
         const key = `${owner}/${repo}@${ref}`;
         const info = this._statuses[key];
         if (info && info.errorStatus) {
           throwError(info.errorStatus);
         }
         if (info) {
-          return {data: info};
+          return { data: info };
         } else {
           throwError(404);
         }
       },
-      'checks.create': async ({owner, repo, name, head_sha, output, details_url, actions, status, conclusion}) => {
+      'checks.create': async ({ owner, repo, name, head_sha, output, details_url, actions, status, conclusion }) => {
         if (repo === 'no-permission') {
           throwError(403);
         }
@@ -136,11 +136,11 @@ class FakeGithub {
         return {
           data: {
             id: check_run_id,
-            check_suite: {id: 5555},
+            check_suite: { id: 5555 },
           },
         };
       },
-      'checks.update': async ({repo}) => {
+      'checks.update': async ({ repo }) => {
         if (repo === 'no-permission') {
           throwError(403);
         }
@@ -168,19 +168,19 @@ class FakeGithub {
     });
   }
 
-  setTaskclusterYml({owner, repo, ref, content}) {
+  setTaskclusterYml({ owner, repo, ref, content }) {
     const key = `${owner}/${repo}@${ref}`;
     this._taskcluster_yml_files[key] = content;
   }
 
-  setOrgMember({org, member}) {
+  setOrgMember({ org, member }) {
     if (!this._org_membership[org]) {
       this._org_membership[org] = new Set();
     }
     this._org_membership[org].add(member);
   }
 
-  setRepoCollaborator({owner, repo, username}) {
+  setRepoCollaborator({ owner, repo, username }) {
     const key = `${owner}/${repo}`;
     if (!this._repo_collaborators[key]) {
       this._repo_collaborators[key] = new Set();
@@ -188,42 +188,42 @@ class FakeGithub {
     this._repo_collaborators[key].add(username);
   }
 
-  setRepoInfo({owner, repo, info}) {
+  setRepoInfo({ owner, repo, info }) {
     const key = `${owner}/${repo}`;
     this._repo_info[key] = info;
   }
 
-  setUser({id, email, username}) {
+  setUser({ id, email, username }) {
     assert(id, 'must provide id to setUser');
     assert(email, 'must provide email to setUser');
     assert(username, 'must provide username to setUser');
-    this._github_users.push({id, email, username});
+    this._github_users.push({ id, email, username });
   }
 
   setRepositories(...repoNames) {
     // This function accepts 1 to n strings
-    this._repositories.repositories = [...repoNames].map(repo => {return {name: repo};});
+    this._repositories.repositories = [...repoNames].map(repo => {return { name: repo };});
     this._repositories.total_count = this._repositories.repositories.length;
   }
 
-  setCommit({owner, repo, ref, sha}) {
+  setCommit({ owner, repo, ref, sha }) {
     const key = `${owner}/${repo}@${ref}`;
     this._commits[key] = sha;
   }
 
-  setStatuses({owner, repo, ref, info}) {
+  setStatuses({ owner, repo, ref, info }) {
     const key = `${owner}/${repo}@${ref}`;
     this._statuses[key] = info;
   }
 
-  listStatusesForRef({owner, repo, ref}) {
+  listStatusesForRef({ owner, repo, ref }) {
     const key = `${owner}/${repo}@${ref}`;
-    return {data: this._statuses[key]};
+    return { data: this._statuses[key] };
   }
 
-  getComments({owner, repo, number}) {
+  getComments({ owner, repo, number }) {
     const key = `${owner}/${repo}@${number}`;
-    return {data: this._comments[key]};
+    return { data: this._comments[key] };
   }
 
   hasNextPage() {
@@ -264,10 +264,10 @@ class FakeGithubAuth {
     return {
       apps: {
         listInstallations: async () => {
-          return {data: _.map(this.installations, (install, id) => ({
+          return { data: _.map(this.installations, (install, id) => ({
             id: parseInt(id, 10),
-            account: {login: install._installedOn},
-          }))};
+            account: { login: install._installedOn },
+          })) };
         },
       },
     };

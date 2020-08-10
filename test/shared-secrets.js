@@ -21,7 +21,7 @@ const main = async () => {
   }
   const secrets = new taskcluster.Secrets(configs);
   for (let secretName of ['project/taskcluster/testing/codecov']) {
-    const {secret: results} = await secrets.get(secretName);
+    const { secret: results } = await secrets.get(secretName);
     console.log(Object.entries(results).map(([key, val]) => `export ${key}=${val}`).join('\n'));
   }
 };

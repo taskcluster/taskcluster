@@ -1,4 +1,4 @@
-const {MonitorManager, LEVELS} = require('taskcluster-lib-monitor');
+const { MonitorManager, LEVELS } = require('taskcluster-lib-monitor');
 
 let monitor;
 module.exports = (helper, options = {}) => {
@@ -19,7 +19,7 @@ module.exports = (helper, options = {}) => {
     // any messages at the ERROR level of above should cause a test failure
     if (monitor) {
       const errors = monitor.manager.messages
-        .filter(({Severity}) => Severity <= LEVELS.err);
+        .filter(({ Severity }) => Severity <= LEVELS.err);
       if (errors.length > 0) {
         throw new Error('Errors logged to monitor during test run:\n' +
           errors.map(msg => JSON.stringify(msg.Fields)).join('\n'));

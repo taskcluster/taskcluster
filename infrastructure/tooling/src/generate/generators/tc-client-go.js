@@ -1,5 +1,5 @@
 const path = require('path');
-const {REPO_ROOT, execCommand} = require('../../utils');
+const { REPO_ROOT, execCommand } = require('../../utils');
 
 exports.tasks = [{
   title: 'Generate Taskcluster-Client-Go',

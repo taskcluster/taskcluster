@@ -7,8 +7,8 @@ suite(testing.suiteName(), function() {
   helper.withDbForProcs({ serviceName: 'purge_cache' });
 
   const samples = [
-    { provisioner_id: 'prov-1', worker_type: 'wt-1', cache_name: 'cache-1', before: fromNow('0 seconds'), expires: fromNow('1 day')},
-    { provisioner_id: 'prov-2', worker_type: 'wt-2', cache_name: 'cache-2', before: fromNow('0 seconds'), expires: fromNow('2 days')},
+    { provisioner_id: 'prov-1', worker_type: 'wt-1', cache_name: 'cache-1', before: fromNow('0 seconds'), expires: fromNow('1 day') },
+    { provisioner_id: 'prov-2', worker_type: 'wt-2', cache_name: 'cache-2', before: fromNow('0 seconds'), expires: fromNow('2 days') },
   ];
 
   setup('reset table', async function() {
@@ -63,7 +63,7 @@ suite(testing.suiteName(), function() {
   });
 
   helper.dbTest('purge_cache (create)', async function(db) {
-    const sample = { provisioner_id: 'prov-3', worker_type: 'wt-3', cache_name: 'cache-3', before: fromNow('0 seconds'), expires: fromNow('1 day')};
+    const sample = { provisioner_id: 'prov-3', worker_type: 'wt-3', cache_name: 'cache-3', before: fromNow('0 seconds'), expires: fromNow('1 day') };
 
     await db.fns.purge_cache(
       sample.provisioner_id,
@@ -114,9 +114,9 @@ suite(testing.suiteName(), function() {
 
   helper.dbTest('purge_requests', async function(db) {
     const samples = [
-      { provisioner_id: 'prov-3', worker_type: 'wt-3', cache_name: 'cache-3', before: fromNow('4 days'), expires: fromNow('1 day')},
-      { provisioner_id: 'prov-3', worker_type: 'wt-3', cache_name: 'cache-4', before: fromNow('6 days'), expires: fromNow('1 day')},
-      { provisioner_id: 'prov-3', worker_type: 'wt-3', cache_name: 'cache-5', before: fromNow('8 days'), expires: fromNow('1 day')},
+      { provisioner_id: 'prov-3', worker_type: 'wt-3', cache_name: 'cache-3', before: fromNow('4 days'), expires: fromNow('1 day') },
+      { provisioner_id: 'prov-3', worker_type: 'wt-3', cache_name: 'cache-4', before: fromNow('6 days'), expires: fromNow('1 day') },
+      { provisioner_id: 'prov-3', worker_type: 'wt-3', cache_name: 'cache-5', before: fromNow('8 days'), expires: fromNow('1 day') },
     ];
 
     for (let i = 0; i < samples.length; i++) {
@@ -136,9 +136,9 @@ suite(testing.suiteName(), function() {
 
   helper.dbTest('expire_cache_purges', async function(db) {
     const samples = [
-      { provisioner_id: 'prov-3', worker_type: 'wt-3', cache_name: 'cache-3', before: fromNow('4 days'), expires: fromNow('- 1 day')},
-      { provisioner_id: 'prov-3', worker_type: 'wt-3', cache_name: 'cache-4', before: fromNow('6 days'), expires: fromNow('- 2 days')},
-      { provisioner_id: 'prov-3', worker_type: 'wt-3', cache_name: 'cache-5', before: fromNow('8 days'), expires: fromNow('- 3 days')},
+      { provisioner_id: 'prov-3', worker_type: 'wt-3', cache_name: 'cache-3', before: fromNow('4 days'), expires: fromNow('- 1 day') },
+      { provisioner_id: 'prov-3', worker_type: 'wt-3', cache_name: 'cache-4', before: fromNow('6 days'), expires: fromNow('- 2 days') },
+      { provisioner_id: 'prov-3', worker_type: 'wt-3', cache_name: 'cache-5', before: fromNow('8 days'), expires: fromNow('- 3 days') },
     ];
 
     for (let i = 0; i < samples.length; i++) {

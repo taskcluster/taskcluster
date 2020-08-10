@@ -1,9 +1,9 @@
-const {schema} = require('./schema.js');
-const {Database} = require('taskcluster-lib-postgres');
+const { schema } = require('./schema.js');
+const { Database } = require('taskcluster-lib-postgres');
 
-exports.upgrade = async ({adminDbUrl, showProgress, usernamePrefix, toVersion, useDbDirectory}) => {
+exports.upgrade = async ({ adminDbUrl, showProgress, usernamePrefix, toVersion, useDbDirectory }) => {
   await Database.upgrade({
-    schema: schema({useDbDirectory}),
+    schema: schema({ useDbDirectory }),
     showProgress,
     usernamePrefix,
     adminDbUrl,
@@ -11,9 +11,9 @@ exports.upgrade = async ({adminDbUrl, showProgress, usernamePrefix, toVersion, u
   });
 };
 
-exports.downgrade = async ({adminDbUrl, showProgress, usernamePrefix, toVersion, useDbDirectory}) => {
+exports.downgrade = async ({ adminDbUrl, showProgress, usernamePrefix, toVersion, useDbDirectory }) => {
   await Database.downgrade({
-    schema: schema({useDbDirectory}),
+    schema: schema({ useDbDirectory }),
     showProgress,
     usernamePrefix,
     adminDbUrl,

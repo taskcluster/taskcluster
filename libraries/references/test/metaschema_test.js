@@ -1,4 +1,4 @@
-const {getCommonSchemas} = require('../src/common-schemas');
+const { getCommonSchemas } = require('../src/common-schemas');
 const References = require('..');
 const libUrls = require('taskcluster-lib-urls');
 const testing = require('taskcluster-lib-testing');
@@ -19,7 +19,7 @@ suite(testing.suiteName(), function() {
         ajv.validateSchema(content);
         if (ajv.errors) {
           ajv
-            .errorsText(ajv.errors, {separator: '%%/%%', dataVar: 'schema'})
+            .errorsText(ajv.errors, { separator: '%%/%%', dataVar: 'schema' })
             .split('%%/%%')
             .forEach(err => problems.push(err));
         }
@@ -43,7 +43,7 @@ suite(testing.suiteName(), function() {
       validate({
         $schema,
         type: 'object',
-        properties: {x: {type: 'string'}},
+        properties: { x: { type: 'string' } },
         required: [],
       }, f => f.match(/schema should have properties .* when property properties is present/));
     });
@@ -52,7 +52,7 @@ suite(testing.suiteName(), function() {
       validate({
         $schema,
         additionalProperties: true,
-        properties: {x: {type: 'string'}},
+        properties: { x: { type: 'string' } },
         required: [],
       }, f => f.match(/schema should have properties .* when property properties is present/));
     });
@@ -62,7 +62,7 @@ suite(testing.suiteName(), function() {
         $schema,
         additionalProperties: true,
         type: 'object',
-        properties: {x: {type: 'string'}},
+        properties: { x: { type: 'string' } },
       }, f => f.match(/schema should have properties .* when property properties is present/));
     });
 
@@ -70,7 +70,7 @@ suite(testing.suiteName(), function() {
       validate({
         $schema,
         type: 'object',
-        items: {type: 'string'},
+        items: { type: 'string' },
       }, f => f.match(/schema should have properties type, uniqueItems when property items is present/));
     });
 
@@ -78,14 +78,14 @@ suite(testing.suiteName(), function() {
       validate({
         $schema,
         uniqueItems: true,
-        items: {type: 'string'},
+        items: { type: 'string' },
       }, f => f.match(/schema should have properties type, uniqueItems when property items is present/));
     });
   });
 
   suite('metadata-metaschema', function() {
     const $schema = 'https://tc-tests.example.com/schemas/common/metadata-metaschema.json#';
-    const metadata = {name: 'sch', version: 1};
+    const metadata = { name: 'sch', version: 1 };
 
     test('metadata is required', function() {
       validate({
@@ -96,21 +96,21 @@ suite(testing.suiteName(), function() {
     test('metadata.name is required', function() {
       validate({
         $schema,
-        metadata: {version: 0},
+        metadata: { version: 0 },
       }, f => f.match(/schema.metadata should have required property 'name'/));
     });
 
     test('metadata.version is required', function() {
       validate({
         $schema,
-        metadata: {name: 'foo'},
+        metadata: { name: 'foo' },
       }, f => f.match(/schema.metadata should have required property 'version'/));
     });
 
     test('metadata.otherProperty is forbidden', function() {
       validate({
         $schema,
-        metadata: {name: 'foo', version: 0, otherProperty: 'foo'},
+        metadata: { name: 'foo', version: 0, otherProperty: 'foo' },
       }, f => f.match(/schema.metadata should NOT have additional properties/));
     });
 

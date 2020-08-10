@@ -40,7 +40,7 @@ class Node {
   /** Compute kleene, that is the result of reaching this node when next and final character is kleene */
   get kleene() {
     if (this._kleeneCache === null) {
-      const result = new ScopeSetBuilder({optionallyClone: true});
+      const result = new ScopeSetBuilder({ optionallyClone: true });
       result.add(this.end);
       result.add(this.enter);
       result.add(withParam(this.paramed, '*'));
@@ -170,11 +170,11 @@ exports.execute = execute;
  *  - matched, is the non-parameterized scopes, and
  *  - paramed, is the parameterized scopes with PARAM instead of '<..>'
  */
-const transformRules = (rules) => rules.map(({pattern, scopes}) => {
+const transformRules = (rules) => rules.map(({ pattern, scopes }) => {
   // If not a prefix rule, then we can't have parameterized rules
   if (!pattern.endsWith('*')) {
     scopes = ScopeSetBuilder.normalizeScopeSet(scopes);
-    return {pattern, scopes, matched: scopes, paramed: []};
+    return { pattern, scopes, matched: scopes, paramed: [] };
   }
   // Find matched and paramed from scopes
   const matched = ScopeSetBuilder.normalizeScopeSet(scopes.filter(s => !s.includes('<..>')));
@@ -202,7 +202,7 @@ const transformRules = (rules) => rules.map(({pattern, scopes}) => {
       throw err;
     }
   }
-  return {pattern, scopes, matched, paramed};
+  return { pattern, scopes, matched, paramed };
 });
 
 /**
@@ -256,7 +256,7 @@ const dependencyOrdering = (rules = []) => {
   // with '*' and find all the rules matched by the scopes it has. We do not
   // need to consider indirect dependencies as we are using this to build a
   // topological sorting which will take those into consideration.
-  const dependencies = ({matched, paramed}) => {
+  const dependencies = ({ matched, paramed }) => {
     return new Set([].concat(...[...matched, ...withParam(paramed, '*')].map(
       s => execute(trie, s).scopes().map(index => rules[index]),
     )));
@@ -330,8 +330,8 @@ exports.dependencyOrdering = dependencyOrdering;
  * will invalidate the input trie, and vice versa.
  */
 const withPrefix = (trie, prefix = '') => {
-  const enter = new ScopeSetBuilder({optionallyClone: true});
-  const paramed = new ScopeSetBuilder({optionallyClone: true});
+  const enter = new ScopeSetBuilder({ optionallyClone: true });
+  const paramed = new ScopeSetBuilder({ optionallyClone: true });
 
   // Find scopes granted along the path of the prefix
   enter.add(trie.enter);
@@ -383,7 +383,7 @@ exports.withPrefix = withPrefix;
  * does NOT hold if input = '...*' and suffix != ''.
  */
 const withSuffix = (trie, suffix = '') => {
-  const end = new ScopeSetBuilder({optionallyClone: true});
+  const end = new ScopeSetBuilder({ optionallyClone: true });
 
   // Any scopes attained by reaching the trie is also attained when suffix is added
   // we just need to postfix <..> with the suffix. Notice that kleene in suffix will
@@ -452,7 +452,7 @@ const build = (rules = []) => {
   const trie = new Node();
 
   // Build trie, inserting one rule at the time in order of dependency
-  for (const {pattern, matched, paramed} of dependencyOrdering(rules)) {
+  for (const { pattern, matched, paramed } of dependencyOrdering(rules)) {
     // Create node to merge in later
     const hasKleene = pattern.endsWith('*');
     const node = new Node(
@@ -488,7 +488,7 @@ const build = (rules = []) => {
     }
 
     // Start new scope-set builder for scopes implied by matching pattern
-    const impliedScopes = new ScopeSetBuilder({optionallyClone: true});
+    const impliedScopes = new ScopeSetBuilder({ optionallyClone: true });
     // For each scope granted by matching pattern, we argument the trie
     for (const scope of matched) {
       // Since the scope is not parameterized, we just execute it on the current

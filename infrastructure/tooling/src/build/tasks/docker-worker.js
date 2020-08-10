@@ -7,7 +7,7 @@ const {
   REPO_ROOT,
 } = require('../../utils');
 
-module.exports = ({tasks, cmdOptions, credentials, baseDir, logsDir}) => {
+module.exports = ({ tasks, cmdOptions, credentials, baseDir, logsDir }) => {
   ensureTask(tasks, {
     title: 'Build docker-worker artifacts',
     requires: ['clean-artifacts-dir'],
@@ -19,13 +19,13 @@ module.exports = ({tasks, cmdOptions, credentials, baseDir, logsDir}) => {
       // and the local system does not have the necessary package installed to do so,
       // so we build the docker-worker image in a docker container.
 
-      utils.step({title: 'Pull Docker Image'});
+      utils.step({ title: 'Pull Docker Image' });
 
       const nodeVersion = (await readRepoJSON('package.json')).engines.node;
       const image = 'node:' + nodeVersion;
-      await dockerPull({image, utils, baseDir});
+      await dockerPull({ image, utils, baseDir });
 
-      utils.step({title: 'Build Docker-Worker Tarball'});
+      utils.step({ title: 'Build Docker-Worker Tarball' });
 
       await dockerRun({
         baseDir,

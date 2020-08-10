@@ -1,4 +1,4 @@
-const {Secrets, withDb} = require('taskcluster-lib-testing');
+const { Secrets, withDb } = require('taskcluster-lib-testing');
 
 exports.secrets = new Secrets({
   secretName: [],

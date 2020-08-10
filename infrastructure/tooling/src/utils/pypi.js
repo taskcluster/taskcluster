@@ -6,7 +6,7 @@ const mkdirp = util.promisify(require('mkdirp'));
 const child_process = require('child_process');
 const Observable = require('zen-observable');
 const taskcluster = require('taskcluster-client');
-const {REPO_ROOT} = require('./repo');
+const { REPO_ROOT } = require('./repo');
 
 /**
  * Call the Python client's `release.sh`
@@ -16,7 +16,7 @@ const {REPO_ROOT} = require('./repo');
  * - logfile -- name of the file to write the log to
  * - utils -- taskgraph utils (waitFor, etc.)
  */
-exports.pyClientRelease = async ({dir, username, password, logfile, utils}) => {
+exports.pyClientRelease = async ({ dir, username, password, logfile, utils }) => {
   // override HOME so this doesn't use the user's credentials
   const homeDir = path.join(REPO_ROOT, 'temp', taskcluster.slugid());
 

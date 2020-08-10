@@ -22,7 +22,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     await helper.index.insertTask(myns + '.my-task', {
       taskId: taskId,
       rank: 41,
-      data: {hello: 'world'},
+      data: { hello: 'world' },
       expires: taskcluster.fromNow('25 minutes'),
     });
     let result = await helper.index.findTask(myns + '.my-task');
@@ -31,7 +31,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     await helper.index.insertTask(myns + '.my-task', {
       taskId: taskId2,
       rank: 42,
-      data: {hello: 'world - again'},
+      data: { hello: 'world - again' },
       expires: taskcluster.fromNow('25 minutes'),
     });
     result = await helper.index.findTask(myns + '.my-task');
@@ -79,9 +79,9 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
       await Promise.all([
         ...paths.map(path =>
-          helper.index.insertTask(path, {taskId, rank: 13, data: {}, expires: taskcluster.fromNow('1 day')})),
+          helper.index.insertTask(path, { taskId, rank: 13, data: {}, expires: taskcluster.fromNow('1 day') })),
         ...expiredPaths.map(path =>
-          helper.index.insertTask(path, {taskId, rank: 13, data: {}, expires: taskcluster.fromNow('-1 day')})),
+          helper.index.insertTask(path, { taskId, rank: 13, data: {}, expires: taskcluster.fromNow('-1 day') })),
       ]);
     });
 
@@ -108,7 +108,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     });
 
     test('list top-level namespaces with continuation', async function() {
-      const opts = {limit: 1};
+      const opts = { limit: 1 };
       let results = [];
       let iterations = 0;
 
@@ -138,7 +138,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     });
 
     test('list top-level tasks with continuation', async function() {
-      const opts = {limit: 1};
+      const opts = { limit: 1 };
       let results = [];
 
       while (1) {
@@ -175,7 +175,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       await helper.index.insertTask(myns + '.my-task', {
         taskId: taskId,
         rank: 41,
-        data: {hello: 'world'},
+        data: { hello: 'world' },
         expires: new_expires,
       });
 
@@ -194,7 +194,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     await helper.index.insertTask('my.name.space', {
       taskId: taskId,
       rank: 41,
-      data: {hello: 'world'},
+      data: { hello: 'world' },
       expires: taskcluster.fromNowJSON('24 hours'),
     });
 
@@ -218,7 +218,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     await helper.index.insertTask('my.name.space', {
       taskId: taskId,
       rank: 41,
-      data: {hello: 'world'},
+      data: { hello: 'world' },
       expires: taskcluster.fromNowJSON('24 hours'),
     });
 
@@ -243,7 +243,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     await helper.index.insertTask('my.name.space', {
       taskId: taskId,
       rank: 41,
-      data: {hello: 'world'},
+      data: { hello: 'world' },
       expires: taskcluster.fromNowJSON('24 hours'),
     });
 

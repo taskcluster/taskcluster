@@ -1,6 +1,6 @@
 const SchemaSet = require('taskcluster-lib-validate');
-const {App} = require('taskcluster-lib-app');
-const {APIBuilder} = require('../');
+const { App } = require('taskcluster-lib-app');
+const { APIBuilder } = require('../');
 const assert = require('assert');
 const request = require('superagent');
 const slugid = require('slugid');
@@ -29,7 +29,7 @@ suite(testing.suiteName(), function() {
       category: 'API Library',
       description: 'Place we can call to test something',
     }, function(req, res) {
-      res.status(200).json({myProp: this.myProp});
+      res.status(200).json({ myProp: this.myProp });
     });
 
     const value = slugid.v4();
@@ -188,8 +188,8 @@ suite(testing.suiteName(), function() {
       schemaset,
       context: {
         foo: {
-          taskclusterPerRequestInstance: ({traceId, requestId}) => {
-            fooFake = sinon.fake.returns({foo: traceId, bar: requestId});
+          taskclusterPerRequestInstance: ({ traceId, requestId }) => {
+            fooFake = sinon.fake.returns({ foo: traceId, bar: requestId });
             return fooFake;
           },
         },

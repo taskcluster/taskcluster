@@ -6,10 +6,10 @@ exports.tasks = [{
   requires: ['references-json'],
   provides: ['apis'],
   run: async (requirements, utils) => {
-    const refs = References.fromSerializable({serializable: requirements['references-json']});
+    const refs = References.fromSerializable({ serializable: requirements['references-json'] });
 
     const apis = {};
-    refs.references.forEach(({filename, content}) => {
+    refs.references.forEach(({ filename, content }) => {
       const refSchema = refs.getSchema(content.$schema);
 
       if (refSchema.metadata.name !== 'api' && refSchema.metadata.name !== 'exchanges') {
@@ -25,9 +25,9 @@ exports.tasks = [{
         .concat(refSchema.metadata.name === 'exchanges' ? ['events'] : [])
         .map(w => `${w[0].toUpperCase()}${w.slice(1)}`)
         .join('');
-      apis[camelCaseName] = {reference: content};
+      apis[camelCaseName] = { reference: content };
     });
 
-    return {apis};
+    return { apis };
   },
 }];

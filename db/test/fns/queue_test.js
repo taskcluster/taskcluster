@@ -1,10 +1,10 @@
 const assert = require('assert').strict;
 const slugid = require('slugid');
-const {cloneDeep, range} = require('lodash');
-const {fromNow} = require('taskcluster-client');
+const { cloneDeep, range } = require('lodash');
+const { fromNow } = require('taskcluster-client');
 const helper = require('../helper');
 const testing = require('taskcluster-lib-testing');
-const {UNIQUE_VIOLATION} = require('taskcluster-lib-postgres');
+const { UNIQUE_VIOLATION } = require('taskcluster-lib-postgres');
 const taskcluster = require('taskcluster-client');
 
 suite(testing.suiteName(), function() {
@@ -19,7 +19,7 @@ suite(testing.suiteName(), function() {
 
     helper.dbTest('count empty queue', async function(db) {
       const result = await db.fns.azure_queue_count("deps");
-      assert.deepEqual(result, [{azure_queue_count: 0}]);
+      assert.deepEqual(result, [{ azure_queue_count: 0 }]);
     });
 
     helper.dbTest('count queue containing messages', async function(db) {
@@ -28,7 +28,7 @@ suite(testing.suiteName(), function() {
       await db.fns.azure_queue_put("deps", "invisible", fromNow('10 seconds'), fromNow('10 seconds'));
       const result = await db.fns.azure_queue_count("deps");
       // expired message is not counted, leaving only invisible and visible
-      assert.deepEqual(result, [{azure_queue_count: 2}]);
+      assert.deepEqual(result, [{ azure_queue_count: 2 }]);
     });
 
     helper.dbTest('getting messages on an empty queue', async function(db) {
@@ -45,7 +45,7 @@ suite(testing.suiteName(), function() {
     helper.dbTest('getting messages on a queue with visible messages', async function(db) {
       await db.fns.azure_queue_put("deps", "visible", fromNow('0 seconds'), fromNow('10 seconds'));
       const result = await db.fns.azure_queue_get("deps", fromNow('10 seconds'), 1);
-      assert.deepEqual(result.map(({message_text}) => message_text), ['visible']);
+      assert.deepEqual(result.map(({ message_text }) => message_text), ['visible']);
       // check that message was marked invisible
       const result2 = await db.fns.azure_queue_get("deps", fromNow('10 seconds'), 1);
       assert.deepEqual(result2, []);
@@ -54,7 +54,7 @@ suite(testing.suiteName(), function() {
     helper.dbTest('getting and deleting messages', async function(db) {
       await db.fns.azure_queue_put("deps", "visible", fromNow('0 seconds'), fromNow('10 seconds'));
       const result = await db.fns.azure_queue_get("deps", fromNow('0 seconds'), 1);
-      assert.deepEqual(result.map(({message_text}) => message_text), ['visible']);
+      assert.deepEqual(result.map(({ message_text }) => message_text), ['visible']);
       await db.fns.azure_queue_delete("deps", result[0].message_id, result[0].pop_receipt);
       const result2 = await db.fns.azure_queue_get("deps", fromNow('10 seconds'), 1);
       assert.deepEqual(result2, []);
@@ -63,10 +63,10 @@ suite(testing.suiteName(), function() {
     helper.dbTest('making messages visible again', async function(db) {
       await db.fns.azure_queue_put("deps", "visible", fromNow('0 seconds'), fromNow('10 seconds'));
       const result = await db.fns.azure_queue_get("deps", fromNow('10 seconds'), 1);
-      assert.deepEqual(result.map(({message_text}) => message_text), ['visible']);
+      assert.deepEqual(result.map(({ message_text }) => message_text), ['visible']);
       await db.fns.azure_queue_update("deps", "visible2", result[0].message_id, result[0].pop_receipt, fromNow('0 seconds'));
       const result2 = await db.fns.azure_queue_get("deps", fromNow('10 seconds'), 1);
-      assert.deepEqual(result2.map(({message_text}) => message_text), ['visible2']);
+      assert.deepEqual(result2.map(({ message_text }) => message_text), ['visible2']);
     });
 
     helper.dbTest('deleting expired messages', async function(db) {
@@ -75,7 +75,7 @@ suite(testing.suiteName(), function() {
       await db.fns.azure_queue_delete_expired();
       await helper.withDbClient(async client => {
         const res = await client.query('select count(*) from azure_queue_messages');
-        assert.deepEqual(res.rows[0], {count: '0'});
+        assert.deepEqual(res.rows[0], { count: '0' });
       });
     });
   });
@@ -144,7 +144,7 @@ suite(testing.suiteName(), function() {
         ]);
 
         const res = await db.fns.expire_task_groups(new Date());
-        assert.deepEqual(res, [{expire_task_groups: 2}]);
+        assert.deepEqual(res, [{ expire_task_groups: 2 }]);
 
         assert.equal((await db.fns.get_task_group('11111112Rpaz0wdnDG4LLg')).length, 0);
         assert.equal((await db.fns.get_task_group('222222L2Rpaz0wdnDG4LLg')).length, 1);
@@ -199,10 +199,10 @@ suite(testing.suiteName(), function() {
         options.deadline || deadline,
         options.expires || expires,
         JSON.stringify(['a:scope']),
-        {payload: true},
-        {metadata: true},
+        { payload: true },
+        { metadata: true },
         JSON.stringify(["you're", "it"]),
-        {extra: true},
+        { extra: true },
       );
     };
 
@@ -258,10 +258,10 @@ suite(testing.suiteName(), function() {
       assert.deepEqual(res[0].deadline, deadline);
       assert.deepEqual(res[0].expires, expires);
       assert.deepEqual(res[0].scopes, ['a:scope']);
-      assert.deepEqual(res[0].payload, {payload: true});
-      assert.deepEqual(res[0].metadata, {metadata: true});
+      assert.deepEqual(res[0].payload, { payload: true });
+      assert.deepEqual(res[0].metadata, { metadata: true });
       assert.deepEqual(res[0].tags, ["you're", "it"]);
-      assert.deepEqual(res[0].extra, {extra: true});
+      assert.deepEqual(res[0].extra, { extra: true });
       assert.deepEqual(res[0].runs, []);
       assert.equal(res[0].retries_left, 5);
       assert.deepEqual(res[0].taken_until, null);
@@ -301,12 +301,12 @@ suite(testing.suiteName(), function() {
 
       helper.dbTest('task with existing runs', async function(db) {
         await create(db);
-        await setTaskRuns(db, [{state: 'pending'}]);
+        await setTaskRuns(db, [{ state: 'pending' }]);
         const res = await db.fns.schedule_task(taskId, 'because');
         assert.deepEqual(res, []);
         const task = await db.fns.get_task(taskId);
         // no change
-        assert.deepEqual(task[0].runs, [{state: 'pending'}]);
+        assert.deepEqual(task[0].runs, [{ state: 'pending' }]);
       });
 
       helper.dbTest('task with no runs', async function(db) {
@@ -315,7 +315,7 @@ suite(testing.suiteName(), function() {
         assert.equal(res.length, 1);
         assert.deepEqual(res, [{
           retries_left: 5,
-          runs: [{state: 'pending', reasonCreated: 'because', scheduled: 'date'}],
+          runs: [{ state: 'pending', reasonCreated: 'because', scheduled: 'date' }],
           taken_until: null,
         }]);
         const task = fixRuns(await db.fns.get_task(taskId));
@@ -332,30 +332,30 @@ suite(testing.suiteName(), function() {
       for (let state of ['running', 'pending']) {
         helper.dbTest(`task with ${state} run`, async function(db) {
           await create(db);
-          await setTaskRuns(db, [{state}]);
+          await setTaskRuns(db, [{ state }]);
           const res = fixRuns(await db.fns.rerun_task(taskId));
           assert.deepEqual(res, []);
           const task = fixRuns(await db.fns.get_task(taskId));
-          assert.deepEqual(task[0].runs, [{state}]);
+          assert.deepEqual(task[0].runs, [{ state }]);
         });
       }
 
       helper.dbTest(`task with too many runs`, async function(db) {
         await create(db);
-        await setTaskRuns(db, range(50).map(() => ({state: 'exception'})));
+        await setTaskRuns(db, range(50).map(() => ({ state: 'exception' })));
         const res = fixRuns(await db.fns.rerun_task(taskId));
         assert.deepEqual(res, []);
       });
 
       helper.dbTest(`task with almost too many runs`, async function(db) {
         await create(db);
-        await setTaskRuns(db, range(48).map(() => ({state: 'exception'})));
+        await setTaskRuns(db, range(48).map(() => ({ state: 'exception' })));
         const res = fixRuns(await db.fns.rerun_task(taskId));
         assert.deepEqual(res, [{
           retries_left: 1,
           runs: [
-            ...range(48).map(() => ({state: 'exception'})),
-            {state: 'pending', reasonCreated: 'rerun', scheduled: 'date'},
+            ...range(48).map(() => ({ state: 'exception' })),
+            { state: 'pending', reasonCreated: 'rerun', scheduled: 'date' },
           ],
           taken_until: null,
         }]);
@@ -365,11 +365,11 @@ suite(testing.suiteName(), function() {
 
       helper.dbTest('task with existing run', async function(db) {
         await create(db);
-        await setTaskRuns(db, [{state: 'exception'}]);
+        await setTaskRuns(db, [{ state: 'exception' }]);
         const res = fixRuns(await db.fns.rerun_task(taskId));
         assert.deepEqual(res, [{
           retries_left: 5,
-          runs: [{state: 'exception'}, {state: 'pending', reasonCreated: 'rerun', scheduled: 'date'}],
+          runs: [{ state: 'exception' }, { state: 'pending', reasonCreated: 'rerun', scheduled: 'date' }],
           taken_until: null,
         }]);
         const task = fixRuns(await db.fns.get_task(taskId));
@@ -382,7 +382,7 @@ suite(testing.suiteName(), function() {
         assert.equal(res.length, 1);
         assert.deepEqual(res, [{
           retries_left: 5,
-          runs: [{state: 'pending', reasonCreated: 'rerun', scheduled: 'date'}],
+          runs: [{ state: 'pending', reasonCreated: 'rerun', scheduled: 'date' }],
           taken_until: null,
         }]);
         const task = fixRuns(await db.fns.get_task(taskId));
@@ -399,22 +399,22 @@ suite(testing.suiteName(), function() {
       for (let state of ['exception', 'completed']) {
         helper.dbTest(`task with ${state} run`, async function(db) {
           await create(db);
-          await setTaskRuns(db, [{state}]);
+          await setTaskRuns(db, [{ state }]);
           const res = fixRuns(await db.fns.cancel_task(taskId, 'because'));
           assert.deepEqual(res, []);
           const task = fixRuns(await db.fns.get_task(taskId));
-          assert.deepEqual(task[0].runs, [{state}]);
+          assert.deepEqual(task[0].runs, [{ state }]);
         });
       }
 
       helper.dbTest('task with existing run', async function(db) {
         await create(db);
-        await setTaskRuns(db, [{state: 'running'}]);
+        await setTaskRuns(db, [{ state: 'running' }]);
         await setTaskTakenUntil(db, new Date());
         const res = fixRuns(await db.fns.cancel_task(taskId, 'because'));
         assert.deepEqual(res, [{
           retries_left: 5,
-          runs: [{state: 'exception', reasonResolved: 'because', resolved: 'date'}],
+          runs: [{ state: 'exception', reasonResolved: 'because', resolved: 'date' }],
           taken_until: null,
         }]);
         const task = fixRuns(await db.fns.get_task(taskId));
@@ -427,7 +427,7 @@ suite(testing.suiteName(), function() {
         assert.equal(res.length, 1);
         assert.deepEqual(res, [{
           retries_left: 5,
-          runs: [{state: 'exception', reasonCreated: 'exception', reasonResolved: 'because', scheduled: 'date', resolved: 'date'}],
+          runs: [{ state: 'exception', reasonCreated: 'exception', reasonResolved: 'because', scheduled: 'date', resolved: 'date' }],
           taken_until: null,
         }]);
         const task = fixRuns(await db.fns.get_task(taskId));
@@ -453,7 +453,7 @@ suite(testing.suiteName(), function() {
         await create(db);
         // NOTE: two pending runs is impossible, but we want to see that the function correctly
         // sees that run 0 is not the latest run, even if it is pending
-        await setTaskRuns(db, [{state: 'pending'}, {state: 'pending'}]);
+        await setTaskRuns(db, [{ state: 'pending' }, { state: 'pending' }]);
         const res = fixRuns(await db.fns.claim_task(taskId, 0, 'wg', 'wi', 'psst', takenUntil));
         assert.deepEqual(res, []);
       });
@@ -461,17 +461,17 @@ suite(testing.suiteName(), function() {
       for (let state of ['exception', 'completed', 'failed', 'running']) {
         helper.dbTest(`task with ${state} run`, async function(db) {
           await create(db);
-          await setTaskRuns(db, [{state}]);
+          await setTaskRuns(db, [{ state }]);
           const res = fixRuns(await db.fns.claim_task(taskId, 0, 'wg', 'wi', 'psst', takenUntil));
           assert.deepEqual(res, []);
           const task = fixRuns(await db.fns.get_task(taskId));
-          assert.deepEqual(task[0].runs, [{state}]);
+          assert.deepEqual(task[0].runs, [{ state }]);
         });
       }
 
       helper.dbTest('task with pending run', async function(db) {
         await create(db);
-        await setTaskRuns(db, [{state: 'pending'}]);
+        await setTaskRuns(db, [{ state: 'pending' }]);
         const res = fixRuns(await db.fns.claim_task(taskId, 0, 'wg', 'wi', 'psst', takenUntil));
         assert.deepEqual(res, [{
           retries_left: 5,
@@ -507,7 +507,7 @@ suite(testing.suiteName(), function() {
 
       helper.dbTest('task where runId is not latest', async function(db) {
         await create(db);
-        await setTaskRuns(db, [{state: 'running'}, {state: 'running'}]);
+        await setTaskRuns(db, [{ state: 'running' }, { state: 'running' }]);
         const res = fixRuns(await db.fns.reclaim_task(taskId, 0, takenUntil));
         assert.deepEqual(res, []);
       });
@@ -515,19 +515,19 @@ suite(testing.suiteName(), function() {
       for (let state of ['exception', 'completed', 'failed', 'pending']) {
         helper.dbTest(`task with ${state} run`, async function(db) {
           await create(db);
-          await setTaskRuns(db, [{state}]);
+          await setTaskRuns(db, [{ state }]);
           const res = fixRuns(await db.fns.reclaim_task(taskId, 0, takenUntil));
           assert.deepEqual(res, []);
           const task = fixRuns(await db.fns.get_task(taskId));
-          assert.deepEqual(task[0].runs, [{state}]);
+          assert.deepEqual(task[0].runs, [{ state }]);
         });
       }
 
       helper.dbTest('task with running run', async function(db) {
         await create(db);
         await setTaskRuns(db, [
-          {state: 'exception'},
-          {state: 'running', takenUntil: taskcluster.fromNow('-1 hour')},
+          { state: 'exception' },
+          { state: 'running', takenUntil: taskcluster.fromNow('-1 hour') },
         ]);
         let res = await db.fns.reclaim_task(taskId, 1, takenUntil);
         // see that takenUntil was updated before calling fixRuns..
@@ -536,8 +536,8 @@ suite(testing.suiteName(), function() {
         assert.deepEqual(res, [{
           retries_left: 5,
           runs: [
-            {state: 'exception'},
-            {state: 'running', takenUntil: 'date'},
+            { state: 'exception' },
+            { state: 'running', takenUntil: 'date' },
           ],
           taken_until: takenUntil,
         }]);
@@ -561,7 +561,7 @@ suite(testing.suiteName(), function() {
 
       helper.dbTest('task where runId is not latest', async function(db) {
         await create(db);
-        await setTaskRuns(db, [{state: 'running'}, {state: 'running'}]);
+        await setTaskRuns(db, [{ state: 'running' }, { state: 'running' }]);
         const res = fixRuns(await db.fns.resolve_task(taskId, 0, 'exception', 'because', null));
         assert.deepEqual(res, []);
       });
@@ -569,11 +569,11 @@ suite(testing.suiteName(), function() {
       for (let state of ['exception', 'completed', 'failed', 'pending']) {
         helper.dbTest(`task with ${state} run`, async function(db) {
           await create(db);
-          await setTaskRuns(db, [{state}]);
+          await setTaskRuns(db, [{ state }]);
           const res = fixRuns(await db.fns.resolve_task(taskId, 0, 'exception', 'because', null));
           assert.deepEqual(res, []);
           const task = fixRuns(await db.fns.get_task(taskId));
-          assert.deepEqual(task[0].runs, [{state}]);
+          assert.deepEqual(task[0].runs, [{ state }]);
         });
       }
 
@@ -581,8 +581,8 @@ suite(testing.suiteName(), function() {
         const oldTakenUntil = new Date();
         await create(db);
         await setTaskRuns(db, [
-          {state: 'exception'},
-          {state: 'running', takenUntil: oldTakenUntil.toJSON()},
+          { state: 'exception' },
+          { state: 'running', takenUntil: oldTakenUntil.toJSON() },
         ]);
         let res = await db.fns.resolve_task(taskId, 1, 'exception', 'because', null);
         // see that takenUntil was *not* updated before calling fixRuns..
@@ -591,8 +591,8 @@ suite(testing.suiteName(), function() {
         assert.deepEqual(res, [{
           retries_left: 5,
           runs: [
-            {state: 'exception'},
-            {state: 'exception', reasonResolved: 'because', resolved: 'date', takenUntil: 'date'},
+            { state: 'exception' },
+            { state: 'exception', reasonResolved: 'because', resolved: 'date', takenUntil: 'date' },
           ],
           // task.taken_until *is* reset
           taken_until: null,
@@ -606,16 +606,16 @@ suite(testing.suiteName(), function() {
         const oldTakenUntil = new Date();
         await create(db);
         await setTaskRuns(db, [
-          {state: 'exception'},
-          {state: 'running', takenUntil: oldTakenUntil.toJSON()},
+          { state: 'exception' },
+          { state: 'running', takenUntil: oldTakenUntil.toJSON() },
         ]);
         let res = fixRuns(await db.fns.resolve_task(taskId, 1, 'exception', 'because', 'i-said-so'));
         assert.deepEqual(res, [{
           retries_left: 4,
           runs: [
-            {state: 'exception'},
-            {state: 'exception', reasonResolved: 'because', resolved: 'date', takenUntil: 'date'},
-            {state: 'pending', reasonCreated: 'i-said-so', scheduled: 'date'},
+            { state: 'exception' },
+            { state: 'exception', reasonResolved: 'because', resolved: 'date', takenUntil: 'date' },
+            { state: 'pending', reasonCreated: 'i-said-so', scheduled: 'date' },
           ],
           taken_until: null,
         }]);
@@ -643,7 +643,7 @@ suite(testing.suiteName(), function() {
       helper.dbTest('task where runId is not latest', async function(db) {
         await create(db);
         await setTaskTakenUntil(db, takenUntil);
-        await setTaskRuns(db, [{state: 'running'}, {state: 'running'}]);
+        await setTaskRuns(db, [{ state: 'running' }, { state: 'running' }]);
         const res = fixRuns(await db.fns.check_task_claim(taskId, 0, takenUntil));
         assert.deepEqual(res, []);
       });
@@ -652,11 +652,11 @@ suite(testing.suiteName(), function() {
         helper.dbTest(`task with ${state} run`, async function(db) {
           await create(db);
           await setTaskTakenUntil(db, takenUntil);
-          await setTaskRuns(db, [{state}]);
+          await setTaskRuns(db, [{ state }]);
           const res = fixRuns(await db.fns.check_task_claim(taskId, 0, takenUntil));
           assert.deepEqual(res, []);
           const task = fixRuns(await db.fns.get_task(taskId));
-          assert.deepEqual(task[0].runs, [{state}]);
+          assert.deepEqual(task[0].runs, [{ state }]);
         });
       }
 
@@ -664,7 +664,7 @@ suite(testing.suiteName(), function() {
         await create(db);
         await setTaskTakenUntil(db, null);
         await setTaskRuns(db, [
-          {state: 'running', takenUntil: takenUntil.toJSON()},
+          { state: 'running', takenUntil: takenUntil.toJSON() },
         ]);
         let res = await db.fns.check_task_claim(taskId, 0, takenUntil);
         assert.deepEqual(res, []);
@@ -674,7 +674,7 @@ suite(testing.suiteName(), function() {
         await create(db);
         await setTaskTakenUntil(db, taskcluster.fromNow('1 hour'));
         await setTaskRuns(db, [
-          {state: 'running', takenUntil: takenUntil.toJSON()},
+          { state: 'running', takenUntil: takenUntil.toJSON() },
         ]);
         let res = await db.fns.check_task_claim(taskId, 0, takenUntil);
         assert.deepEqual(res, []);
@@ -684,17 +684,17 @@ suite(testing.suiteName(), function() {
         await create(db);
         await setTaskTakenUntil(db, takenUntil);
         await setTaskRuns(db, [
-          {state: 'running', takenUntil: taskcluster.fromNow('1 hour').toJSON()},
+          { state: 'running', takenUntil: taskcluster.fromNow('1 hour').toJSON() },
         ]);
         let res = await db.fns.check_task_claim(taskId, 0, takenUntil);
         assert.deepEqual(res, []);
       });
 
       helper.dbTest('task with deadline exceeded', async function(db) {
-        await create(db, {deadline: taskcluster.fromNow('-1 hour')});
+        await create(db, { deadline: taskcluster.fromNow('-1 hour') });
         await setTaskTakenUntil(db, takenUntil);
         await setTaskRuns(db, [
-          {state: 'running', takenUntil: takenUntil.toJSON()},
+          { state: 'running', takenUntil: takenUntil.toJSON() },
         ]);
         let res = await db.fns.check_task_claim(taskId, 0, takenUntil);
         assert.deepEqual(res, []);
@@ -704,8 +704,8 @@ suite(testing.suiteName(), function() {
         await create(db);
         await setTaskTakenUntil(db, takenUntil);
         await setTaskRuns(db, [
-          {state: 'exception'},
-          {state: 'running', takenUntil: takenUntil.toJSON()},
+          { state: 'exception' },
+          { state: 'running', takenUntil: takenUntil.toJSON() },
         ]);
         let res = await db.fns.check_task_claim(taskId, 1, takenUntil);
         // see that takenUntil was *not* updated before calling fixRuns..
@@ -714,9 +714,9 @@ suite(testing.suiteName(), function() {
         assert.deepEqual(res, [{
           retries_left: 4,
           runs: [
-            {state: 'exception'},
-            {state: 'exception', reasonResolved: 'claim-expired', resolved: 'date', takenUntil: 'date'},
-            {state: 'pending', reasonCreated: 'retry', scheduled: 'date'},
+            { state: 'exception' },
+            { state: 'exception', reasonResolved: 'claim-expired', resolved: 'date', takenUntil: 'date' },
+            { state: 'pending', reasonCreated: 'retry', scheduled: 'date' },
           ],
           taken_until: null,
         }]);
@@ -730,8 +730,8 @@ suite(testing.suiteName(), function() {
         await setTaskTakenUntil(db, takenUntil);
         await setTaskRetriesLeft(db, 0);
         await setTaskRuns(db, [
-          {state: 'exception'},
-          {state: 'running', takenUntil: takenUntil.toJSON()},
+          { state: 'exception' },
+          { state: 'running', takenUntil: takenUntil.toJSON() },
         ]);
         let res = await db.fns.check_task_claim(taskId, 1, takenUntil);
         // see that takenUntil was *not* updated before calling fixRuns..
@@ -740,8 +740,8 @@ suite(testing.suiteName(), function() {
         assert.deepEqual(res, [{
           retries_left: 0,
           runs: [
-            {state: 'exception'},
-            {state: 'exception', reasonResolved: 'claim-expired', resolved: 'date', takenUntil: 'date'},
+            { state: 'exception' },
+            { state: 'exception', reasonResolved: 'claim-expired', resolved: 'date', takenUntil: 'date' },
           ],
           taken_until: null,
         }]);
@@ -776,7 +776,7 @@ suite(testing.suiteName(), function() {
           [simpleDep, slugid.v4(), true], // distraction; should not be returned
         ]);
         const res = await db.fns.get_dependent_tasks(simpleReq, null, null, null, null);
-        assert.deepEqual(res, [{dependent_task_id: simpleDep, requires: 'all-completed', satisfied: false}]);
+        assert.deepEqual(res, [{ dependent_task_id: simpleDep, requires: 'all-completed', satisfied: false }]);
       });
 
       helper.dbTest('filtering by satisfied', async function(db) {
@@ -884,7 +884,7 @@ suite(testing.suiteName(), function() {
       });
 
       helper.dbTest('expired task gets deleted, counted', async function(db) {
-        await create(db, {expires: taskcluster.fromNow('-1 hour')});
+        await create(db, { expires: taskcluster.fromNow('-1 hour') });
         const res = await db.fns.expire_tasks(new Date());
         assert.equal(res[0].expire_tasks, 1);
         const task = await db.fns.get_task(taskId);
@@ -932,11 +932,11 @@ suite(testing.suiteName(), function() {
       assert.deepEqual(res[0].quarantine_until, quarantineUntil);
       assert.deepEqual(res[0].expires, expires);
       assert.deepEqual(res[0].first_claim, firstClaim);
-      assert.deepEqual(res[0].recent_tasks, [{recent: "task"}]);
+      assert.deepEqual(res[0].recent_tasks, [{ recent: "task" }]);
     });
 
     helper.dbTest('get_queue_worker doesn\'t return expired workers', async function(db) {
-      await create(db, {expires: taskcluster.fromNow('-2 hours')});
+      await create(db, { expires: taskcluster.fromNow('-2 hours') });
       const res = await db.fns.get_queue_worker('prov', 'wt', 'wg', 'wi', new Date());
       assert.deepEqual(res, []);
     });
@@ -962,7 +962,7 @@ suite(testing.suiteName(), function() {
     });
 
     helper.dbTest('get_queue_workers doesn\'t return expired workers', async function(db) {
-      await create(db, {expires: taskcluster.fromNow('-2 hours')});
+      await create(db, { expires: taskcluster.fromNow('-2 hours') });
       const res = await db.fns.get_queue_workers(new Date(), null, null, null, null);
       assert.deepEqual(res, []);
     });
@@ -978,7 +978,7 @@ suite(testing.suiteName(), function() {
 
     helper.dbTest('get_queue_workers full results', async function(db) {
       for (let i = 0; i < 10; i++) {
-        await create(db, {workerId: `w/${i}`});
+        await create(db, { workerId: `w/${i}` });
       }
       const res = await db.fns.get_queue_workers(null, null, null, null, null);
       assert.equal(res.length, 10);
@@ -989,7 +989,7 @@ suite(testing.suiteName(), function() {
 
     helper.dbTest('get_queue_workers with pagination', async function(db) {
       for (let i = 0; i < 10; i++) {
-        await create(db, {workerId: `w/${i}`});
+        await create(db, { workerId: `w/${i}` });
       }
       let results = [];
       while (true) {
@@ -1023,7 +1023,7 @@ suite(testing.suiteName(), function() {
     });
 
     helper.dbTest('expire_queue_workers deletes expired workers', async function(db) {
-      await create(db, {expires: taskcluster.fromNow('-2 hours')});
+      await create(db, { expires: taskcluster.fromNow('-2 hours') });
       let res = await db.fns.expire_queue_workers(new Date());
       assert.equal(res[0].expire_queue_workers, 1);
       res = await db.fns.get_queue_workers(null, null, null, null, null);
@@ -1078,7 +1078,7 @@ suite(testing.suiteName(), function() {
     });
 
     helper.dbTest('get_queue_worker_types doesn\'t return expired worker types', async function(db) {
-      await create(db, {expires: taskcluster.fromNow('-2 hours')});
+      await create(db, { expires: taskcluster.fromNow('-2 hours') });
       const res = await db.fns.get_queue_worker_types('prov', 'wt', new Date(), null, null);
       assert.deepEqual(res, []);
     });
@@ -1095,14 +1095,14 @@ suite(testing.suiteName(), function() {
     });
 
     helper.dbTest('get_queue_worker_types doesn\'t return expired worker types', async function(db) {
-      await create(db, {expires: taskcluster.fromNow('-2 hours')});
+      await create(db, { expires: taskcluster.fromNow('-2 hours') });
       const res = await db.fns.get_queue_worker_types(new Date(), null, null, null, null);
       assert.deepEqual(res, []);
     });
 
     helper.dbTest('get_queue_worker_types full results', async function(db) {
       for (let i = 0; i < 10; i++) {
-        await create(db, {workerType: `wt/${i}`});
+        await create(db, { workerType: `wt/${i}` });
       }
       const res = await db.fns.get_queue_worker_types(null, null, null, null, null);
       assert.equal(res.length, 10);
@@ -1113,7 +1113,7 @@ suite(testing.suiteName(), function() {
 
     helper.dbTest('get_queue_worker_types with pagination', async function(db) {
       for (let i = 0; i < 10; i++) {
-        await create(db, {workerType: `wt/${i}`});
+        await create(db, { workerType: `wt/${i}` });
       }
       let result = [];
       while (true) {
@@ -1145,7 +1145,7 @@ suite(testing.suiteName(), function() {
     });
 
     helper.dbTest('expire_queue_worker_types deletes expired worker types', async function(db) {
-      await create(db, {expires: taskcluster.fromNow('-2 hours')});
+      await create(db, { expires: taskcluster.fromNow('-2 hours') });
       let res = await db.fns.expire_queue_worker_types(new Date());
       assert.equal(res[0].expire_queue_worker_types, 1);
       res = await db.fns.get_queue_worker_types(null, null, null, null, null);
@@ -1188,7 +1188,7 @@ suite(testing.suiteName(), function() {
     });
 
     helper.dbTest('get_queue_provisioners doesn\'t return expired provisioner', async function(db) {
-      await create(db, {expires: taskcluster.fromNow('-2 hours')});
+      await create(db, { expires: taskcluster.fromNow('-2 hours') });
       const res = await db.fns.get_queue_provisioners(new Date(), null, null);
       assert.deepEqual(res, []);
     });
@@ -1205,14 +1205,14 @@ suite(testing.suiteName(), function() {
     });
 
     helper.dbTest('get_queue_provisioners doesn\'t return expired provisioners', async function(db) {
-      await create(db, {expires: taskcluster.fromNow('-2 hours')});
+      await create(db, { expires: taskcluster.fromNow('-2 hours') });
       const res = await db.fns.get_queue_provisioners(new Date(), null, null);
       assert.deepEqual(res, []);
     });
 
     helper.dbTest('get_queue_provisioners full result', async function(db) {
       for (let i = 0; i < 10; i++) {
-        await create(db, {provisionerId: `p/${i}`});
+        await create(db, { provisionerId: `p/${i}` });
       }
       const res = await db.fns.get_queue_provisioners(null, null, null);
       assert.equal(res.length, 10);
@@ -1223,7 +1223,7 @@ suite(testing.suiteName(), function() {
 
     helper.dbTest('get_queue_provisioners pagination', async function(db) {
       for (let i = 0; i < 10; i++) {
-        await create(db, {provisionerId: `p/${i}`});
+        await create(db, { provisionerId: `p/${i}` });
       }
       let results = [];
       while (true ) {
@@ -1260,7 +1260,7 @@ suite(testing.suiteName(), function() {
     });
 
     helper.dbTest('expire_queue_provisioners deletes expired provisioner', async function(db) {
-      await create(db, {expires: taskcluster.fromNow('-2 hours')});
+      await create(db, { expires: taskcluster.fromNow('-2 hours') });
       let res = await db.fns.expire_queue_provisioners(new Date());
       assert.equal(res[0].expire_queue_provisioners, 1);
       res = await db.fns.get_queue_provisioners(null, null, null);

@@ -49,7 +49,7 @@ class ShutdownManager extends EventEmitter {
       idleInterval: afterIdleSeconds,
     });
 
-    this.config.log('worker idle', {afterIdleSeconds});
+    this.config.log('worker idle', { afterIdleSeconds });
 
     if (afterIdleSeconds) {
       this.idleTimeout = setTimeout(() => {

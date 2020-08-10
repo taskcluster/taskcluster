@@ -7,7 +7,7 @@ suite(testing.suiteName(), function() {
   // Create a new nonceManager for each test
   let nonceManager = null;
   setup(function() {
-    nonceManager = API.nonceManager({size: 5});
+    nonceManager = API.nonceManager({ size: 5 });
   });
 
   test('accept one', function() {

@@ -54,7 +54,7 @@ module.exports = (cfg, db, strategies, auth, monitor) => {
     const accessToken = new Buffer.from(taskcluster.slugid()).toString('base64');
     const currentUser = await strategies[user.identityProviderId].userFromIdentity(user.identity);
 
-    const userScopes = (await auth.expandScopes({scopes: currentUser.scopes()})).scopes;
+    const userScopes = (await auth.expandScopes({ scopes: currentUser.scopes() })).scopes;
 
     await db.fns.create_access_token(
       hash(accessToken), /* hashed_access_token */
@@ -116,7 +116,7 @@ module.exports = (cfg, db, strategies, auth, monitor) => {
       throw new oauth2orize.AuthorizationError(null, 'server_error');
     }
 
-    const userScopes = (await auth.expandScopes({scopes: currentUser.scopes()})).scopes;
+    const userScopes = (await auth.expandScopes({ scopes: currentUser.scopes() })).scopes;
 
     await db.fns.create_authorization_code(
       code, /* code */
@@ -203,7 +203,7 @@ module.exports = (cfg, db, strategies, auth, monitor) => {
         }
 
         return [client, redirectURI];
-      }, {returnsArray: true}),
+      }, { returnsArray: true }),
       unpromisify(async (client, user, scope) => {
         // Skip consent form if the client is whitelisted
         if (client.whitelisted && user && _.isEqual(client.scope.sort(), scope.sort())) {
@@ -225,7 +225,7 @@ module.exports = (cfg, db, strategies, auth, monitor) => {
         }
 
         return [false];
-      }, {returnsArray: true}),
+      }, { returnsArray: true }),
       )(req, res, done);
     },
     (req, res) => {

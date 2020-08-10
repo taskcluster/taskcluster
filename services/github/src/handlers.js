@@ -2,9 +2,9 @@ const taskcluster = require('taskcluster-client');
 const libUrls = require('taskcluster-lib-urls');
 const yaml = require('js-yaml');
 const assert = require('assert');
-const {consume} = require('taskcluster-lib-pulse');
-const {UNIQUE_VIOLATION} = require('taskcluster-lib-postgres');
-const {CONCLUSIONS, CHECKRUN_TEXT, CUSTOM_CHECKRUN_TEXT_ARTIFACT_NAME, CUSTOM_CHECKRUN_ANNOTATIONS_ARTIFACT_NAME} = require('./constants');
+const { consume } = require('taskcluster-lib-pulse');
+const { UNIQUE_VIOLATION } = require('taskcluster-lib-postgres');
+const { CONCLUSIONS, CHECKRUN_TEXT, CUSTOM_CHECKRUN_TEXT_ARTIFACT_NAME, CUSTOM_CHECKRUN_ANNOTATIONS_ARTIFACT_NAME } = require('./constants');
 const utils = require('./utils');
 
 /**
@@ -76,7 +76,7 @@ class Handlers {
 
     // Listen for new jobs created via the api webhook endpoint
     const GithubEvents = taskcluster.createClient(this.reference);
-    const githubEvents = new GithubEvents({rootUrl: this.rootUrl});
+    const githubEvents = new GithubEvents({ rootUrl: this.rootUrl });
     const jobBindings = [
       githubEvents.pullRequest(),
       githubEvents.push(),
@@ -84,7 +84,7 @@ class Handlers {
     ];
 
     const schedulerId = this.context.cfg.taskcluster.schedulerId;
-    const queueEvents = new taskcluster.QueueEvents({rootUrl: this.rootUrl});
+    const queueEvents = new taskcluster.QueueEvents({ rootUrl: this.rootUrl });
 
     const statusBindings = [
       queueEvents.taskFailed(`route.${this.context.cfg.app.checkTaskRoute}`),
@@ -99,7 +99,7 @@ class Handlers {
     const deprecatedResultStatusBindings = [
       queueEvents.taskFailed(`route.${this.context.cfg.app.statusTaskRoute}`),
       queueEvents.taskException(`route.${this.context.cfg.app.statusTaskRoute}`),
-      queueEvents.taskGroupResolved({schedulerId}),
+      queueEvents.taskGroupResolved({ schedulerId }),
     ];
 
     // Listen for taskGroupCreationRequested event to create initial status on github
@@ -191,7 +191,7 @@ class Handlers {
   }
 
   // Create a collection of tasks, centralized here to enable testing without creating tasks.
-  async createTasks({scopes, tasks}) {
+  async createTasks({ scopes, tasks }) {
     const scopedQueueClient = this.queueClient.use({
       authorizedScopes: scopes,
       credentials: this.context.cfg.taskcluster.credentials,
@@ -221,7 +221,7 @@ class Handlers {
   }
 
   // Send an exception to Github in the form of a comment.
-  async createExceptionComment({debug, instGithub, organization, repository, sha, error, pullNumber}) {
+  async createExceptionComment({ debug, instGithub, organization, repository, sha, error, pullNumber }) {
     let errorBody = error.body && error.body.error || error.message;
     // Let's prettify any objects
     if (typeof errorBody === 'object') {
@@ -292,10 +292,10 @@ class Handlers {
    * or null if there's no YML,
    * or throws an error in other cases
    */
-  async getYml({instGithub, owner, repo, ref}) {
+  async getYml({ instGithub, owner, repo, ref }) {
     let response;
     try {
-      response = await instGithub.repos.getContents({owner, repo, path: '.taskcluster.yml', ref});
+      response = await instGithub.repos.getContents({ owner, repo, path: '.taskcluster.yml', ref });
     } catch (e) {
       if (e.status === 404) {
         return null;
@@ -342,7 +342,7 @@ const makeDebug = (monitor, attrs = {}) => {
     ...attrs,
     message,
   });
-  debug.refine = moreAttrs => makeDebug(monitor, {...attrs, ...moreAttrs});
+  debug.refine = moreAttrs => makeDebug(monitor, { ...attrs, ...moreAttrs });
   return debug;
 };
 
@@ -354,7 +354,7 @@ const makeDebug = (monitor, attrs = {}) => {
 async function deprecatedStatusHandler(message) {
   let taskGroupId = message.payload.taskGroupId || message.payload.status.taskGroupId;
 
-  let debug = makeDebug(this.monitor, {taskGroupId});
+  let debug = makeDebug(this.monitor, { taskGroupId });
   debug(`Statuses API. Handling state change for task-group ${taskGroupId}`);
 
   let [build] = await this.context.db.fns.get_github_build(taskGroupId);
@@ -425,10 +425,10 @@ async function deprecatedStatusHandler(message) {
 /**
  * Helper to request artifacts from statusHandler.
  */
-async function requestArtifact(artifactName, {taskId, runId, debug, instGithub, build}) {
+async function requestArtifact(artifactName, { taskId, runId, debug, instGithub, build }) {
   try {
     const url = this.queueClient.buildUrl(this.queueClient.getArtifact, taskId, runId, artifactName);
-    const res = await utils.throttleRequest({url, method: 'GET'});
+    const res = await utils.throttleRequest({ url, method: 'GET' });
 
     if (res.status >= 400 && res.status !== 404) {
       let errorMessage = "Failed to get your artifact.\n";
@@ -448,7 +448,7 @@ async function requestArtifact(artifactName, {taskId, runId, debug, instGithub, 
           }
           break;
       }
-      let {organization, repository, sha} = build;
+      let { organization, repository, sha } = build;
       await this.createExceptionComment({
         debug,
         instGithub,
@@ -474,18 +474,18 @@ async function requestArtifact(artifactName, {taskId, runId, debug, instGithub, 
  * Post updates to GitHub, when the status of a task changes. Uses Checks API
  **/
 async function statusHandler(message) {
-  let {taskGroupId, state, runs, taskId} = message.payload.status;
-  let {runId} = message.payload;
-  let {reasonResolved} = runs[runId];
+  let { taskGroupId, state, runs, taskId } = message.payload.status;
+  let { runId } = message.payload;
+  let { reasonResolved } = runs[runId];
 
-  let debug = makeDebug(this.monitor, {taskGroupId, taskId});
+  let debug = makeDebug(this.monitor, { taskGroupId, taskId });
   debug(`Handling state change for task ${taskId} in group ${taskGroupId}`);
 
   let conclusion = CONCLUSIONS[reasonResolved || state];
 
   let [build] = await this.context.db.fns.get_github_build(taskGroupId);
 
-  let {organization, repository, sha, event_id, event_type, installation_id} = build;
+  let { organization, repository, sha, event_id, event_type, installation_id } = build;
 
   debug = debug.refine({
     owner: organization,
@@ -613,8 +613,8 @@ async function statusHandler(message) {
  * graph config, and post the initial status on github.
  **/
 async function jobHandler(message) {
-  const {eventId, installationId} = message.payload;
-  let debug = makeDebug(this.monitor, {eventId, installationId});
+  const { eventId, installationId } = message.payload;
+  let debug = makeDebug(this.monitor, { eventId, installationId });
 
   let context = this.context;
 
@@ -629,7 +629,7 @@ async function jobHandler(message) {
   let organization = message.payload.organization;
   let repository = message.payload.repository;
   let sha = message.payload.details['event.head.sha'];
-  debug = debug.refine({owner: organization, repo: repository, sha});
+  debug = debug.refine({ owner: organization, repo: repository, sha });
   let pullNumber = message.payload.details['event.pullNumber'];
 
   if (!sha) {
@@ -641,7 +641,7 @@ async function jobHandler(message) {
 
     debug('Trying to get release commit info in job handler...');
     let commitInfo = await instGithub.repos.getCommit({
-      headers: {accept: 'application/vnd.github.3.sha'},
+      headers: { accept: 'application/vnd.github.3.sha' },
       owner: organization,
       repo: repository,
       // fetch the target_commitish for the release, as the tag may not
@@ -657,7 +657,7 @@ async function jobHandler(message) {
   debug(`Trying to fetch the YML for ${organization}/${repository}@${sha}`);
   let repoconf;
   try {
-    repoconf = await this.getYml({instGithub, owner: organization, repo: repository, ref: sha});
+    repoconf = await this.getYml({ instGithub, owner: organization, repo: repository, ref: sha });
   } catch (e) {
     if (e.name === 'YAMLException') {
       return await this.createExceptionComment({
@@ -702,7 +702,7 @@ async function jobHandler(message) {
   } catch (e) {
     debug(`.taskcluster.yml for ${organization}/${repository}@${sha} was not formatted correctly.
       Leaving comment on Github.`);
-    await this.createExceptionComment({debug, instGithub, organization, repository, sha, error: e, pullNumber});
+    await this.createExceptionComment({ debug, instGithub, organization, repository, sha, error: e, pullNumber });
     return;
   }
 
@@ -711,11 +711,11 @@ async function jobHandler(message) {
     debug(`Checking pull request permission for ${organization}/${repository}@${sha}...`);
 
     debug(`Retrieving  ${organization}/${repository}@${sha}...`);
-    let defaultBranch = (await instGithub.repos.get({owner: organization, repo: repository}))
+    let defaultBranch = (await instGithub.repos.get({ owner: organization, repo: repository }))
       .data
       .default_branch;
 
-    let defaultBranchYml = await this.getYml({instGithub, owner: organization, repo: repository, ref: defaultBranch});
+    let defaultBranchYml = await this.getYml({ instGithub, owner: organization, repo: repository, ref: defaultBranch });
 
     if (!defaultBranchYml) {
       debug(`${organization}/${repository} has no '.taskcluster.yml' at ${defaultBranch}.`);
@@ -784,7 +784,7 @@ async function jobHandler(message) {
   }
 
   taskGroupId = graphConfig.tasks[0].task.taskGroupId;
-  let {routes} = graphConfig.tasks[0].task;
+  let { routes } = graphConfig.tasks[0].task;
 
   try {
     debug(`Trying to create a record for ${organization}/${repository}@${sha} (${groupState}) in github_builds table`);
@@ -817,10 +817,10 @@ async function jobHandler(message) {
 
   try {
     debug(`Creating tasks for ${organization}/${repository}@${sha} (taskGroupId: ${taskGroupId})`);
-    await this.createTasks({scopes: graphConfig.scopes, tasks: graphConfig.tasks});
+    await this.createTasks({ scopes: graphConfig.scopes, tasks: graphConfig.tasks });
   } catch (e) {
     debug(`Creating tasks for ${organization}/${repository}@${sha} failed! Leaving comment on Github.`);
-    return await this.createExceptionComment({debug, instGithub, organization, repository, sha, error: e});
+    return await this.createExceptionComment({ debug, instGithub, organization, repository, sha, error: e });
   }
 
   try {
@@ -855,7 +855,7 @@ async function taskGroupCreationHandler(message) {
     taskGroupId,
   } = message.payload;
 
-  let debug = makeDebug(this.monitor, {taskGroupId});
+  let debug = makeDebug(this.monitor, { taskGroupId });
   debug(`Task group ${taskGroupId} was defined. Creating group status...`);
 
   const [{
@@ -866,7 +866,7 @@ async function taskGroupCreationHandler(message) {
     organization,
     repository,
   }] = await this.context.db.fns.get_github_build(taskGroupId);
-  debug = debug.refine({event_id, sha, owner: organization, repo: repository, installation_id});
+  debug = debug.refine({ event_id, sha, owner: organization, repo: repository, installation_id });
 
   const statusContext = `${this.context.cfg.app.statusContext} (${event_type.split('.')[0]})`;
   const description = `TaskGroup: Pending (for ${event_type})`;
@@ -896,9 +896,9 @@ async function taskGroupCreationHandler(message) {
  * @returns {Promise<void>}
  */
 async function taskDefinedHandler(message) {
-  const {taskGroupId, taskId} = message.payload.status;
+  const { taskGroupId, taskId } = message.payload.status;
 
-  let debug = makeDebug(this.monitor, {taskGroupId, taskId});
+  let debug = makeDebug(this.monitor, { taskGroupId, taskId });
   debug(`Task was defined for task group ${taskGroupId}. Creating status for task ${taskId}...`);
 
   const [{
@@ -909,7 +909,7 @@ async function taskDefinedHandler(message) {
     organization,
     repository,
   }] = await this.context.db.fns.get_github_build(taskGroupId);
-  debug = debug.refine({owner: organization, repo: repository, sha, installation_id, event_id});
+  debug = debug.refine({ owner: organization, repo: repository, sha, installation_id, event_id });
 
   const taskDefinition = await this.queueClient.task(taskId);
   debug(`Initial status. Got task build from DB and task definition for ${taskId} from Queue service`);
@@ -930,7 +930,7 @@ async function taskDefinedHandler(message) {
     },
     details_url: taskUI(this.context.cfg.taskcluster.rootUrl, taskGroupId, taskId),
   }).catch(async (err) => {
-    await this.createExceptionComment({debug, instGithub, organization, repository, sha, error: err});
+    await this.createExceptionComment({ debug, instGithub, organization, repository, sha, error: err });
     throw err;
   });
 
@@ -942,7 +942,7 @@ async function taskDefinedHandler(message) {
     checkRun.data.check_suite.id.toString(),
     checkRun.data.id.toString(),
   ).catch(async (err) => {
-    await this.createExceptionComment({debug, instGithub, organization, repository, sha, error: err});
+    await this.createExceptionComment({ debug, instGithub, organization, repository, sha, error: err });
     throw err;
   });
 

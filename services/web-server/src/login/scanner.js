@@ -7,7 +7,7 @@ const debug = Debug('scanner');
 module.exports = async (auth, strategies) => {
   async function scan(strategy) {
     const clients = [];
-    const query = {prefix: `${strategy.identityProviderId}/`};
+    const query = { prefix: `${strategy.identityProviderId}/` };
 
     // Get all clients
     while (true) {
@@ -66,7 +66,7 @@ module.exports = async (auth, strategies) => {
 
       // if this client's expandedScopes are not satisfied by the user's expanded
       // scopes, disable the client.
-      if (!scopeUtils.satisfiesExpression(userScopes, {AllOf: client.expandedScopes})) {
+      if (!scopeUtils.satisfiesExpression(userScopes, { AllOf: client.expandedScopes })) {
         await auth.disableClient(client.clientId);
       }
     }

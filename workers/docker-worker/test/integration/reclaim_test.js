@@ -5,7 +5,7 @@ const cmd = require('./helper/cmd');
 const DockerWorker = require('../dockerworker');
 const TestWorker = require('../testworker');
 const expires = require('./helper/expires');
-const {suiteName} = require('taskcluster-lib-testing');
+const { suiteName } = require('taskcluster-lib-testing');
 const helper = require('../helper');
 
 helper.secrets.mockSuite(suiteName(), ['docker', 'ci-creds'], function(mock, skipping) {

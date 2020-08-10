@@ -28,16 +28,16 @@ module.exports = class PulseIterator {
     // is available or the iterator is finished, and rejects if the iterator encounters
     // an error
     return new Promise((resolve, reject) => {
-      this.pullQueue = this.pullQueue.push({resolve, reject});
+      this.pullQueue = this.pullQueue.push({ resolve, reject });
       this.match();
     });
   }
 
   return() {
-    this.stop({done: true});
+    this.stop({ done: true });
 
     // return should always succeed, even if an error was introduced
-    return Promise.resolve({done: true});
+    return Promise.resolve({ done: true });
   }
 
   throw(error) {
@@ -52,7 +52,7 @@ module.exports = class PulseIterator {
 
   // cause this to throw the given error for all pending and subsequent next() calls
   pushError(error) {
-    this.stop({error, done: true});
+    this.stop({ error, done: true });
   }
 
   // insert a value into the queue; the resulting promise resolves when the value
@@ -62,7 +62,7 @@ module.exports = class PulseIterator {
       return Promise.reject(new Error('iterator cancelled'));
     }
     return new Promise((resolve, reject) => {
-      this.pushQueue = this.pushQueue.push({resolve, reject, value, done: false});
+      this.pushQueue = this.pushQueue.push({ resolve, reject, value, done: false });
       this.match();
     });
   }
@@ -74,7 +74,7 @@ module.exports = class PulseIterator {
 
       // reject any pending pushes and then replace with a single, persistent push
       const err = new Error('iterator cancelled');
-      this.pushQueue.forEach(({reject}) => reject(err));
+      this.pushQueue.forEach(({ reject }) => reject(err));
       this.pushQueue = this.pushQueue.clear().push(push);
     }
     this.match();
@@ -93,7 +93,7 @@ module.exports = class PulseIterator {
       if (push.error) {
         pull.reject(push.error);
       } else {
-        pull.resolve({value: push.value, done: push.done});
+        pull.resolve({ value: push.value, done: push.done });
       }
 
       if (push.resolve) {

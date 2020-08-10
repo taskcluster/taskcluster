@@ -1,7 +1,7 @@
 const _ = require('lodash');
 const path = require('path');
 const config = require('taskcluster-lib-config');
-const {listServices, readRepoYAML} = require('../../utils');
+const { listServices, readRepoYAML } = require('../../utils');
 
 const SERVICES = listServices();
 
@@ -16,7 +16,7 @@ SERVICES.forEach(name => {
       const envVars = config({
         serviceName: name,
         // only list config.yml, to avoid grabbing information from user-config.yml
-        files: [{path: 'config.yml', required: true}],
+        files: [{ path: 'config.yml', required: true }],
         getEnvVars: true,
       });
 

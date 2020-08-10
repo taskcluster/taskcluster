@@ -3,7 +3,7 @@ const semver = require('semver');
 const glob = require('glob');
 const chalk = require('chalk');
 const appRootDir = require('app-root-dir');
-const {REPO_ROOT, readRepoFile, readRepoJSON, writeRepoFile, gitAdd, gitCurrentBranch} = require('../utils');
+const { REPO_ROOT, readRepoFile, readRepoJSON, writeRepoFile, gitAdd, gitCurrentBranch } = require('../utils');
 const taskcluster = require('taskcluster-client');
 const path = require('path');
 const openEditor = require('open-editor');
@@ -55,7 +55,7 @@ class ChangeLog {
   }
 
   async load() {
-    const snippetFiles = glob.sync('changelog/*.md', {cwd: appRootDir.get()})
+    const snippetFiles = glob.sync('changelog/*.md', { cwd: appRootDir.get() })
       .filter(filename => filename !== 'changelog/README.md');
 
     this.snippets = await Promise.all(snippetFiles.map(async filename => {
@@ -63,7 +63,7 @@ class ChangeLog {
       const snippetContent = (await readRepoFile(filename)).trimEnd() + '\n';
       const [headerYaml, body] = snippetContent.split('\n---\n', 2);
 
-      let {level, audience, reference, ...extra} = yaml.safeLoad(headerYaml);
+      let { level, audience, reference, ...extra } = yaml.safeLoad(headerYaml);
       if (Object.keys(extra).length !== 0) {
         throw new Error(`Snippet ${filename}: extra properties in header`);
       }
@@ -92,7 +92,7 @@ class ChangeLog {
         }
       }
 
-      return {filename, audience, level, reference, body};
+      return { filename, audience, level, reference, body };
     }));
 
     const cmp = (a, b) => {
@@ -108,7 +108,7 @@ class ChangeLog {
    */
   level() {
     let minor = false;
-    for (let {level} of this.snippets) {
+    for (let { level } of this.snippets) {
       if (level === 'major') {
         return 'major';
       }
@@ -150,7 +150,7 @@ class ChangeLog {
 
     // These changelog snippets are already sorted in level-order so when we insert
     // them here they remain in order. no need to re-sort
-    const categorizedSnippets = this.snippets.reduce((acc, {audience, ...rest}) => {
+    const categorizedSnippets = this.snippets.reduce((acc, { audience, ...rest }) => {
       if (rest.level === 'silent') {
         return acc;
       }
@@ -167,7 +167,7 @@ class ChangeLog {
           return '';
         }
         const snippets = categorizedSnippets[audience]
-          .map(({level, reference, body}) => (
+          .map(({ level, reference, body }) => (
             '▶ ' + levelLabels[level] +
             (reference ? reference : '') + '\n' +
             body.trim()
@@ -183,7 +183,7 @@ class ChangeLog {
    * root of the repository.
    */
   filenames() {
-    return this.snippets.map(({filename}) => filename);
+    return this.snippets.map(({ filename }) => filename);
   }
 }
 
@@ -195,7 +195,7 @@ const check_pr = async (pr) => {
     pull_number: pr,
   });
   const files = await octokit.paginate(options,
-    response => response.data.map(({filename}) => filename));
+    response => response.data.map(({ filename }) => filename));
 
   // files that do not require a changelog entry if they are the only thing changed.  This
   // is similar to the list in .gitattributes., along with yarn and package.json
@@ -286,7 +286,7 @@ const add = async (options) => {
     name = taskcluster.slugid();
     reference = '';
   } else {
-    const {ref} = await gitCurrentBranch({dir: REPO_ROOT});
+    const { ref } = await gitCurrentBranch({ dir: REPO_ROOT });
     let m = ref.match(/(bug|issue)-?([0-9]+)/);
     if (m) {
       reference = `reference: ${m[1]} ${m[2]}\n`;
@@ -319,7 +319,7 @@ const add = async (options) => {
   const helpText =
     '<!-- replace this text with your changelog entry.  See dev-docs/best-practices/changelog.md for help writing changelog entries. -->';
   await writeRepoFile(filename, `audience: ${audience}\nlevel: ${level}\n${reference}---\n${level === 'silent' ? '' : helpText}`);
-  await gitAdd({dir: REPO_ROOT, files: [filename]});
+  await gitAdd({ dir: REPO_ROOT, files: [filename] });
   console.log(`wrote ${filename}`);
 
   if (level !== 'silent') {
@@ -348,4 +348,4 @@ const check = async (options) => {
   }
 };
 
-module.exports = {add, show, check, ChangeLog};
+module.exports = { add, show, check, ChangeLog };

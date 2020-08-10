@@ -1,5 +1,5 @@
 const assert = require('assert').strict;
-const {validatePayload} = require('../src/lib/util/validate_schema');
+const { validatePayload } = require('../src/lib/util/validate_schema');
 const SchemaSet = require('../src/lib/validate');
 const libUrls = require('taskcluster-lib-urls');
 const taskcluster = require('taskcluster-client');
@@ -21,7 +21,7 @@ suite('validate_schema_test.js', function() {
     let payloadErrors = validatePayload(validator, {
       image: 'abc/def',
       maxRunTime: 60,
-    }, {expires: new Date()}, schema);
+    }, { expires: new Date() }, schema);
     assert.deepEqual(payloadErrors, []);
   });
 
@@ -29,7 +29,7 @@ suite('validate_schema_test.js', function() {
     let payloadErrors = validatePayload(validator, {
       image: 'abc/def',
       maxRunTime: false,
-    }, {expires: new Date()}, schema);
+    }, { expires: new Date() }, schema);
     assert(payloadErrors.some(e => e.match(/data\.maxRunTime should be number/)));
   });
 
@@ -44,7 +44,7 @@ suite('validate_schema_test.js', function() {
           expires: taskcluster.fromNow('2h').toJSON(),
         },
       },
-    }, {expires: taskcluster.fromNow('1h')}, schema);
+    }, { expires: taskcluster.fromNow('1h') }, schema);
     assert(payloadErrors.some(e => e.match(/must not be greater than task expiration./)));
   });
 });

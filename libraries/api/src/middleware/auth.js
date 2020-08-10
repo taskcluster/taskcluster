@@ -107,7 +107,7 @@ const ErrorReply = require('../error-reply');
  *
  * Reports 401 if authentication fails.
  */
-const remoteAuthentication = ({signatureValidator, entry}) => {
+const remoteAuthentication = ({ signatureValidator, entry }) => {
   assert(signatureValidator instanceof Function,
     'Expected signatureValidator to be a function!');
 
@@ -158,7 +158,7 @@ const remoteAuthentication = ({signatureValidator, entry}) => {
       port: parseInt(port, 10),
       authorization: req.headers.authorization,
       sourceIp: req.ip,
-    }, {traceId: req.traceId, requestId: req.requestId}));
+    }, { traceId: req.traceId, requestId: req.requestId }));
 
     // Validate request hash if one is provided
     if (typeof result.hash === 'string' && result.scheme === 'hawk') {
@@ -193,7 +193,7 @@ const remoteAuthentication = ({signatureValidator, entry}) => {
     // Write route parameters into {[param]: ''}
     // if these are valid parameters, then we can parameterize using req.params
     let [, params] = utils.cleanRouteAndParams(entry.route);
-    params = Object.assign({}, ...params.map(p => ({[p]: ''})));
+    params = Object.assign({}, ...params.map(p => ({ [p]: '' })));
     useUrlParams = scopeTemplate.validate(params);
   }
 

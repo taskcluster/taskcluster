@@ -9,7 +9,7 @@ const checks = [];
 
 fs.readdirSync(`${__dirname}/`).forEach(file => {
   if (file !== 'index.js' && file.match(/\.js$/)) {
-    const {tasks} = require(`./${file}`);
+    const { tasks } = require(`./${file}`);
 
     for (let task of tasks) {
       checks.push(task);

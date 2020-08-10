@@ -25,7 +25,7 @@ const debug = Debug('api:schema');
  * Handlers may output errors using `req.json`, as `req.reply` will validate
  * against schema and always returns a 200 OK reply.
  */
-const validateSchemas = ({validator, absoluteSchemas, rootUrl, serviceName, entry}) => {
+const validateSchemas = ({ validator, absoluteSchemas, rootUrl, serviceName, entry }) => {
   // convert relative schema references to id's
   const input = entry.input && !entry.skipInputValidation &&
     url.resolve(libUrls.schema(rootUrl, serviceName, ''), entry.input);
@@ -33,11 +33,11 @@ const validateSchemas = ({validator, absoluteSchemas, rootUrl, serviceName, entr
     url.resolve(libUrls.schema(rootUrl, serviceName, ''), entry.output);
 
   // double-check that the schema exists
-  if (input && !_.find(absoluteSchemas, {$id: input})) {
+  if (input && !_.find(absoluteSchemas, { $id: input })) {
     throw new Error(`No schema with id ${input} for input to API method ${entry.name}`);
   }
 
-  if (output && output !== 'blob' && !_.find(absoluteSchemas, {$id: output})) {
+  if (output && output !== 'blob' && !_.find(absoluteSchemas, { $id: output })) {
     throw new Error(`No schema with id ${output} for output from API method ${entry.name}`);
   }
 
@@ -58,7 +58,7 @@ const validateSchemas = ({validator, absoluteSchemas, rootUrl, serviceName, entr
         return res.reportError(
           'InputValidationError',
           error,
-          {schema: libUrls.schema(rootUrl, serviceName, input)});
+          { schema: libUrls.schema(rootUrl, serviceName, input) });
       }
     }
     // Add a reply method sending JSON replies, this will always reply with HTTP

@@ -1,5 +1,5 @@
 class Denier {
-  constructor({emailBlacklist, db}) {
+  constructor({ emailBlacklist, db }) {
     this.emailBlacklist = emailBlacklist;
     this.db = db;
   }
@@ -11,8 +11,8 @@ class Denier {
       }
     }
 
-    const address = {notificationType, notificationAddress};
-    let [{exists_denylist_address}] = await this.db.fns.exists_denylist_address(
+    const address = { notificationType, notificationAddress };
+    let [{ exists_denylist_address }] = await this.db.fns.exists_denylist_address(
       address.notificationType,
       address.notificationAddress,
     );

@@ -1,6 +1,6 @@
 const fs = require('fs');
 const child_process = require('child_process');
-const {Transform} = require('stream');
+const { Transform } = require('stream');
 
 /**
  * Run a command and display its output.

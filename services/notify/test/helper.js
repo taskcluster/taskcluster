@@ -2,7 +2,7 @@ const assert = require('assert');
 const path = require('path');
 const aws = require('aws-sdk');
 const taskcluster = require('taskcluster-client');
-const {stickyLoader, Secrets, fakeauth, withPulse, withMonitor, withDb, resetTables} = require('taskcluster-lib-testing');
+const { stickyLoader, Secrets, fakeauth, withPulse, withMonitor, withDb, resetTables } = require('taskcluster-lib-testing');
 const builder = require('../src/api');
 const load = require('../src/main');
 const RateLimit = require('../src/ratelimit');
@@ -33,8 +33,8 @@ exports.secrets = new Secrets({
   ],
   secrets: {
     aws: [
-      {env: 'AWS_ACCESS_KEY_ID', cfg: 'aws.accessKeyId'},
-      {env: 'AWS_SECRET_ACCESS_KEY', cfg: 'aws.secretAccessKey'},
+      { env: 'AWS_ACCESS_KEY_ID', cfg: 'aws.accessKeyId' },
+      { env: 'AWS_SECRET_ACCESS_KEY', cfg: 'aws.secretAccessKey' },
     ],
   },
   load: exports.load,
@@ -63,7 +63,7 @@ class MockSES {
 
   sendRawEmail(c, callback) {
     this.emails.push({
-      delivery: {recipients: c.Destinations},
+      delivery: { recipients: c.Destinations },
       data: c.RawMessage.Data.toString(),
     });
     callback(null, {});
@@ -139,7 +139,7 @@ exports.withSES = (mock, skipping) => {
             {
               Sid: "Sid1573761323466",
               Effect: "Allow",
-              Principal: {AWS: "*"},
+              Principal: { AWS: "*" },
               Action: "SQS:SendMessage",
               Resource: emailAttr.QueueArn,
               Condition: {
@@ -261,7 +261,7 @@ exports.withFakeMatrix = (mock, skipping) => {
 };
 
 exports.withPulse = (mock, skipping) => {
-  withPulse({helper: exports, skipping, namespace: 'taskcluster-notify'});
+  withPulse({ helper: exports, skipping, namespace: 'taskcluster-notify' });
 };
 
 /**
@@ -282,9 +282,9 @@ exports.withServer = (mock, skipping) => {
     exports.load.cfg('taskcluster.rootUrl', exports.rootUrl);
     exports.load.cfg('taskcluster.clientId', null);
     exports.load.cfg('taskcluster.accessToken', null);
-    fakeauth.start(testclients, {rootUrl: exports.rootUrl});
+    fakeauth.start(testclients, { rootUrl: exports.rootUrl });
 
-    exports.load.inject('rateLimit', new RateLimit({count: 100, time: 100, noPeriodicPurge: true}));
+    exports.load.inject('rateLimit', new RateLimit({ count: 100, time: 100, noPeriodicPurge: true }));
 
     exports.NotifyClient = taskcluster.createClient(builder.reference());
 
@@ -318,8 +318,8 @@ exports.withDb = (mock, skipping) => {
 
 exports.resetTables = (mock, skipping) => {
   setup('reset tables', async function() {
-    await resetTables({tableNames: [
+    await resetTables({ tableNames: [
       'denylisted_notifications',
-    ]});
+    ] });
   });
 };

@@ -1,4 +1,4 @@
-const {Client, Exchanges, connectionStringCredentials} = require('../src');
+const { Client, Exchanges, connectionStringCredentials } = require('../src');
 const path = require('path');
 const amqplib = require('amqplib');
 const assume = require('assume');
@@ -6,7 +6,7 @@ const assert = require('assert');
 const SchemaSet = require('taskcluster-lib-validate');
 const libUrls = require('taskcluster-lib-urls');
 const helper = require('./helper');
-const {suiteName, poll} = require('taskcluster-lib-testing');
+const { suiteName, poll } = require('taskcluster-lib-testing');
 
 helper.secrets.mockSuite(suiteName(), ['pulse'], function(mock, skipping) {
   if (mock) {
@@ -75,7 +75,7 @@ helper.secrets.mockSuite(suiteName(), ['pulse'], function(mock, skipping) {
 
     test('declare routing key args required', function() {
       const exchanges = new Exchanges(exchangeOptions);
-      assume(() => exchanges.declare({...declarationNoConstant, routingKey: [{}]}))
+      assume(() => exchanges.declare({ ...declarationNoConstant, routingKey: [{}] }))
         .to.throw(/is required/);
     });
 
@@ -102,21 +102,21 @@ helper.secrets.mockSuite(suiteName(), ['pulse'], function(mock, skipping) {
           maxSize: 128,
         },
       ];
-      assume(() => exchanges.declare({...declarationNoConstant, routingKey}))
+      assume(() => exchanges.declare({ ...declarationNoConstant, routingKey }))
         .to.throw(/cannot be larger than/);
     });
 
     test('declaration with same name fails', function() {
       const exchanges = new Exchanges(exchangeOptions);
-      exchanges.declare({...declarationNoConstant, name: 'x', exchange: 'xx'});
-      assume(() => exchanges.declare({...declarationNoConstant, name: 'x', exchange: 'yy'}))
+      exchanges.declare({ ...declarationNoConstant, name: 'x', exchange: 'xx' });
+      assume(() => exchanges.declare({ ...declarationNoConstant, name: 'x', exchange: 'yy' }))
         .to.throw(/already declared/);
     });
 
     test('declaration with same exchange fails', function() {
       const exchanges = new Exchanges(exchangeOptions);
-      exchanges.declare({...declarationNoConstant, name: 'x', exchange: 'xx'});
-      assume(() => exchanges.declare({...declarationNoConstant, name: 'y', exchange: 'xx'}))
+      exchanges.declare({ ...declarationNoConstant, name: 'x', exchange: 'xx' });
+      assume(() => exchanges.declare({ ...declarationNoConstant, name: 'y', exchange: 'xx' }))
         .to.throw(/already declared/);
     });
 
@@ -202,7 +202,7 @@ helper.secrets.mockSuite(suiteName(), ['pulse'], function(mock, skipping) {
       client.namespace = exchangeOptions.projectName;
 
       exchanges = new Exchanges(exchangeOptions);
-      exchanges.declare({...declarationNoConstant, exchange: unique});
+      exchanges.declare({ ...declarationNoConstant, exchange: unique });
 
       schemaset = new SchemaSet({
         serviceName: exchangeOptions.serviceName,
@@ -239,24 +239,24 @@ helper.secrets.mockSuite(suiteName(), ['pulse'], function(mock, skipping) {
     });
 
     test('invalid message fails', async function() {
-      await assume(publisher.eggHatched({bogusThing: 'uhoh'}))
+      await assume(publisher.eggHatched({ bogusThing: 'uhoh' }))
         .rejects();
     });
 
     test('message with too-long routingKey fails', async function() {
-      await assume(publisher.eggHatched({eggId: 'uhoh! '.repeat(100)}))
+      await assume(publisher.eggHatched({ eggId: 'uhoh! '.repeat(100) }))
         .rejects();
     });
 
     test('publish a message', async function() {
-      await publisher.eggHatched({eggId: 'yolks-on-you'});
+      await publisher.eggHatched({ eggId: 'yolks-on-you' });
 
       await poll(async () => {
         assert.equal(messages.length, 1);
         const got = messages[0];
         assert.equal(got.fields.routingKey, 'yolks-on-you');
         assert.equal(got.fields.exchange, `exchange/${client.namespace}/v2/${unique}`);
-        assert.deepEqual(JSON.parse(got.content), {eggId: 'yolks-on-you'});
+        assert.deepEqual(JSON.parse(got.content), { eggId: 'yolks-on-you' });
       });
     });
 
@@ -265,7 +265,7 @@ helper.secrets.mockSuite(suiteName(), ['pulse'], function(mock, skipping) {
 
       // this is enough messages to fill the amqplib write buffer..
       const eggIds = [...Array(10000).keys()].map(id => id.toString());
-      await Promise.all(eggIds.map(eggId => publisher.eggHatched({eggId})));
+      await Promise.all(eggIds.map(eggId => publisher.eggHatched({ eggId })));
 
       await poll(async () => {
         const got = messages.map(msg => msg.fields.routingKey);
@@ -275,11 +275,11 @@ helper.secrets.mockSuite(suiteName(), ['pulse'], function(mock, skipping) {
     });
 
     test('publish messages in parallel (with failed connections)', async function() {
-      await Promise.all(['a', 'b', 'c'].map(eggId => publisher.eggHatched({eggId})));
+      await Promise.all(['a', 'b', 'c'].map(eggId => publisher.eggHatched({ eggId })));
       client.connections[0].amqp.close(); // force closure..
-      await Promise.all(['i', 'j', 'k', 'l', 'm'].map(eggId => publisher.eggHatched({eggId})));
+      await Promise.all(['i', 'j', 'k', 'l', 'm'].map(eggId => publisher.eggHatched({ eggId })));
       client.connections[0].amqp.close(); // force closure..
-      await Promise.all(['x', 'y', 'z'].map(eggId => publisher.eggHatched({eggId})));
+      await Promise.all(['x', 'y', 'z'].map(eggId => publisher.eggHatched({ eggId })));
 
       await poll(async () => {
         const got = messages.map(msg => msg.fields.routingKey).sort();

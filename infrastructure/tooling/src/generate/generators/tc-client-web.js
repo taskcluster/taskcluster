@@ -1,9 +1,9 @@
 const util = require('util');
 const stringify = require('json-stable-stringify');
 const path = require('path');
-const {omit} = require('lodash');
-const {compile} = require('ejs');
-const {REPO_ROOT, readRepoFile, writeRepoFile, modifyRepoFile} = require('../../utils');
+const { omit } = require('lodash');
+const { compile } = require('ejs');
+const { REPO_ROOT, readRepoFile, writeRepoFile, modifyRepoFile } = require('../../utils');
 const rimraf = util.promisify(require('rimraf'));
 const mkdirp = util.promisify(require('mkdirp'));
 
@@ -18,7 +18,7 @@ exports.tasks = [{
     await rimraf(path.join(REPO_ROOT, 'clients/client-web/src/clients'));
     await mkdirp(path.join(REPO_ROOT, 'clients/client-web/src/clients'));
 
-    utils.status({message: 'index'});
+    utils.status({ message: 'index' });
     await modifyRepoFile(path.join('clients/client-web/src/index.js'), async contents => {
       const exports = Object
         .keys(apis)
@@ -34,9 +34,9 @@ exports.tasks = [{
     const template = compile(await readRepoFile('clients/client-web/templates/client.ejs'));
 
     for (let name of Object.keys(apis)) {
-      const {reference} = apis[name];
+      const { reference } = apis[name];
 
-      utils.status({message: name});
+      utils.status({ message: name });
       await writeRepoFile(
         path.join('clients/client-web/src', `clients/${name}.js`),
         template({
@@ -48,8 +48,8 @@ exports.tasks = [{
           serviceVersion: reference.apiVersion,
           exchangePrefix: reference.exchangePrefix,
           methods: reference.entries
-            .filter(({type}) => type === 'function')
-            .map(({...entry}) => {
+            .filter(({ type }) => type === 'function')
+            .map(({ ...entry }) => {
               if (entry.input) {
                 entry.input = true;
               }
@@ -61,13 +61,13 @@ exports.tasks = [{
               return entry;
             }),
           topics: reference.entries
-            .filter(({type}) => type === 'topic-exchange')
+            .filter(({ type }) => type === 'topic-exchange')
             .map(entry => ({
               ...entry,
               routingKey: entry.routingKey.map(route => omit(route, ['summary'])),
             })),
         }),
-        {encoding: 'utf-8'},
+        { encoding: 'utf-8' },
       );
     }
   },

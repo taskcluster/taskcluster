@@ -24,7 +24,7 @@ suite(testing.suiteName(), function() {
       tcyaml.compileTasks(config, cfg, {
         organization: 'org',
         repository: 'repo',
-        details: {'event.type': 'pull_request.opened'},
+        details: { 'event.type': 'pull_request.opened' },
       }, now);
       assume(config.scopes.sort()).to.deeply.equal([
         'assume:repo:github.com/org/repo:pull-request',
@@ -41,7 +41,7 @@ suite(testing.suiteName(), function() {
       tcyaml.compileTasks(config, cfg, {
         organization: 'org',
         repository: 'repo',
-        details: {'event.type': 'push', 'event.base.repo.branch': 'master'},
+        details: { 'event.type': 'push', 'event.base.repo.branch': 'master' },
       }, now);
       assume(config.scopes.sort()).to.deeply.equal([
         'assume:repo:github.com/org/repo:branch:master',
@@ -58,7 +58,7 @@ suite(testing.suiteName(), function() {
       tcyaml.compileTasks(config, cfg, {
         organization: 'org',
         repository: 'repo',
-        details: {'event.type': 'tag', 'event.head.tag': 'v1.2.3'},
+        details: { 'event.type': 'tag', 'event.head.tag': 'v1.2.3' },
       }, now);
       assume(config.scopes.sort()).to.deeply.equal([
         'assume:repo:github.com/org/repo:tag:v1.2.3',
@@ -75,7 +75,7 @@ suite(testing.suiteName(), function() {
       tcyaml.compileTasks(config, cfg, {
         organization: 'org',
         repository: 'repo',
-        details: {'event.type': 'release'},
+        details: { 'event.type': 'release' },
       }, now);
       assume(config.scopes.sort()).to.deeply.equal([
         'assume:repo:github.com/org/repo:release',
@@ -176,8 +176,8 @@ suite(testing.suiteName(), function() {
         tasks_for: 'github-push',
         organization: 'org',
         repository: 'repo',
-        body: {ref: 'refs/heads/master'},
-        details: {'event.base.repo.branch': 'master'},
+        body: { ref: 'refs/heads/master' },
+        details: { 'event.base.repo.branch': 'master' },
       }, now);
       assume(config.scopes.sort()).to.deeply.equal([
         'assume:repo:github.com/org/repo:branch:master',
@@ -195,8 +195,8 @@ suite(testing.suiteName(), function() {
         tasks_for: 'github-push',
         organization: 'org',
         repository: 'repo',
-        body: {ref: 'refs/tags/v1.2.3'},
-        details: {'event.head.tag': 'v1.2.3'},
+        body: { ref: 'refs/tags/v1.2.3' },
+        details: { 'event.head.tag': 'v1.2.3' },
       }, now);
       assume(config.scopes.sort()).to.deeply.equal([
         'assume:repo:github.com/org/repo:tag:v1.2.3',

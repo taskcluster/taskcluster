@@ -16,11 +16,11 @@ function Runtime(options) {
   // set up to update credentials as necessary
   if (this.hostManager) {
     this.hostManager.onNewCredentials(creds => {
-      this.log('Got new worker credentials', {clientId: creds.clientId});
+      this.log('Got new worker credentials', { clientId: creds.clientId });
       this.taskcluster = creds;
     });
     this.hostManager.onGracefulTermination(graceful => {
-      this.log('Got graceful-termination request', {graceful});
+      this.log('Got graceful-termination request', { graceful });
       this.shutdownManager.onGracefulTermination(graceful);
     });
   }
@@ -86,7 +86,7 @@ Runtime.prototype = {
   hostManager: null,
 };
 
-Runtime.prototype.logEvent = function({eventType, task = {status: {}}, timestamp}) {
+Runtime.prototype.logEvent = function({ eventType, task = { status: {} }, timestamp }) {
   if (!timestamp) {
     timestamp = Date.now();
   }

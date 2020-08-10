@@ -5,7 +5,7 @@ const builder = require('../src/api');
 const taskcluster = require('taskcluster-client');
 const load = require('../src/main');
 const fakeGithubAuth = require('./github-auth');
-const {fakeauth, stickyLoader, Secrets, withPulse, withMonitor, withDb, resetTables} = require('taskcluster-lib-testing');
+const { fakeauth, stickyLoader, Secrets, withPulse, withMonitor, withDb, resetTables } = require('taskcluster-lib-testing');
 
 exports.load = stickyLoader(load);
 
@@ -52,7 +52,7 @@ exports.withDb = (mock, skipping) => {
 };
 
 exports.withPulse = (mock, skipping) => {
-  withPulse({helper: exports, skipping, namespace: 'taskcluster-github'});
+  withPulse({ helper: exports, skipping, namespace: 'taskcluster-github' });
 };
 
 /**
@@ -97,12 +97,12 @@ exports.withServer = (mock, skipping) => {
     exports.load.cfg('taskcluster.clientId', null);
     exports.load.cfg('taskcluster.accessToken', null);
 
-    fakeauth.start({'test-client': ['*']}, {rootUrl});
+    fakeauth.start({ 'test-client': ['*'] }, { rootUrl });
 
     const GithubClient = taskcluster.createClient(builder.reference());
 
     exports.apiClient = new GithubClient({
-      credentials: {clientId: 'test-client', accessToken: 'unused'},
+      credentials: { clientId: 'test-client', accessToken: 'unused' },
       rootUrl,
       retries: 0,
     });
@@ -128,6 +128,6 @@ exports.resetTables = (mock, skipping) => {
       'github_builds',
       'github_checks',
       'github_integrations',
-    ]});
+    ] });
   });
 };

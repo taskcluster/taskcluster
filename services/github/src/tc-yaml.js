@@ -158,7 +158,7 @@ class VersionZero extends TcYaml {
       config.tasks = config.tasks.map((task) => {
         return {
           taskId: task.taskId,
-          task: {...task.task, ...{taskGroupId, schedulerId: cfg.taskcluster.schedulerId}},
+          task: { ...task.task, ...{ taskGroupId, schedulerId: cfg.taskcluster.schedulerId } },
         };
       });
     }
@@ -285,7 +285,7 @@ class VersionOne extends TcYaml {
         }, task);
         defaultTaskId = slugid.nice(); // invent a new taskId for the next task
 
-        const {taskId, ...taskWithoutTaskId} = task;
+        const { taskId, ...taskWithoutTaskId } = task;
 
         tsort.add(taskId, taskWithoutTaskId.dependencies || []);
         taskMap[taskId] = {
