@@ -22,7 +22,6 @@ import ConnectionDataTable from '../ConnectionDataTable';
 import CopyToClipboardListItem from '../CopyToClipboardListItem';
 import DateDistance from '../DateDistance';
 import StatusLabel from '../StatusLabel';
-import TableCellItem from '../TableCellItem';
 import { DEPENDENTS_PAGE_SIZE } from '../../utils/constants';
 import { pageInfo, task } from '../../utils/prop-types';
 import urls from '../../utils/urls';
@@ -69,6 +68,26 @@ import Link from '../../utils/Link';
   },
   payload: {
     whiteSpace: 'break-spaces',
+  },
+  dependentsStatusAndNameContainer: {
+    display: 'flex',
+  },
+  dependentsStatus: {
+    marginRight: theme.spacing(2),
+  },
+  dependentsName: {
+    display: 'inline-flex',
+    flexBasis: '50%',
+    flexGrow: 1,
+  },
+  dependentsTableRow: {
+    cursor: 'pointer',
+  },
+  dependentsLink: {
+    textDecoration: 'none',
+    display: 'flex',
+    justifyContent: 'space-between',
+    verticalAlign: 'middle',
   },
 }))
 /**
@@ -307,6 +326,7 @@ export default class TaskDetailsCard extends Component {
                             title="View Task">
                             <StatusLabel state={task.status.state} />
                             <ListItemText
+                              primaryTypographyProps={{ variant: 'body2' }}
                               className={classes.listItemText}
                               primary={task.metadata.name}
                             />
@@ -333,28 +353,51 @@ export default class TaskDetailsCard extends Component {
                       />
                     </ListItem>
                     <ConnectionDataTable
+                      withoutTopPagination
                       connection={dependents}
                       pageSize={DEPENDENTS_PAGE_SIZE}
                       sortByHeader={null}
                       sortDirection="desc"
                       onPageChange={onDependentsPageChange}
-                      headers={['Task Name']}
                       renderRow={({
                         node: {
                           taskId,
                           metadata: { name },
+                          status: { state },
                         },
                       }) => (
-                        <TableRow key={taskId}>
-                          <TableCell>
-                            <Link to={`/tasks/${encodeURIComponent(taskId)}`}>
-                              <TableCellItem
-                                className={classes.listItemCell}
-                                dense
-                                button>
-                                {name}
-                                <LinkIcon />
-                              </TableCellItem>
+                        <TableRow
+                          hover
+                          className={classNames(
+                            classes.listItemButton,
+                            classes.dependentsTableRow
+                          )}
+                          key={taskId}>
+                          <TableCell title="View Task">
+                            <Link
+                              className={classes.dependentsLink}
+                              to={`/tasks/${encodeURIComponent(taskId)}`}>
+                              <div
+                                className={
+                                  classes.dependentsStatusAndNameContainer
+                                }>
+                                <div>
+                                  <StatusLabel
+                                    className={classes.dependentsStatus}
+                                    state={state}
+                                  />
+                                </div>
+                                <div className={classes.dependentsName}>
+                                  <Typography variant="body2" noWrap>
+                                    {name}
+                                  </Typography>
+                                </div>
+                              </div>
+                              <div>
+                                <LinkIcon
+                                  className={classes.dependentsLinkIcon}
+                                />
+                              </div>
                             </Link>
                           </TableCell>
                         </TableRow>
