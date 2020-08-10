@@ -1,7 +1,7 @@
 const _ = require('lodash');
 const AWS = require('aws-sdk');
 
-const setupIam = async ({iam, iamName, iamPolicy}) => {
+const setupIam = async ({ iam, iamName, iamPolicy }) => {
   try {
     await iam.createUser({
       Path: '/taskcluster-service/',
@@ -18,7 +18,7 @@ const setupIam = async ({iam, iamName, iamPolicy}) => {
     UserName: iamName,
   }).promise();
 
-  const {AccessKeyMetadata: existingKeys} = await iam.listAccessKeys({
+  const { AccessKeyMetadata: existingKeys } = await iam.listAccessKeys({
     UserName: iamName,
   }).promise();
 
@@ -29,14 +29,14 @@ const setupIam = async ({iam, iamName, iamPolicy}) => {
     }).promise();
   }
 
-  const {AccessKey: accessKey} = await iam.createAccessKey({
+  const { AccessKey: accessKey } = await iam.createAccessKey({
     UserName: iamName,
   }).promise();
 
   return accessKey;
 };
 
-module.exports = async ({userConfig, answer, configTmpl}) => {
+module.exports = async ({ userConfig, answer, configTmpl }) => {
   const iam = new AWS.IAM();
   const s3 = new AWS.S3();
   const prefix = (answer.meta || {}).deploymentPrefix || (userConfig.meta || {}).deploymentPrefix;

@@ -2,7 +2,7 @@ const path = require('path');
 const util = require('util');
 const rimraf = util.promisify(require('rimraf'));
 const glob = require('glob');
-const {REPO_ROOT, readRepoYAML, modifyRepoFile, writeRepoFile, execCommand} = require('../../utils');
+const { REPO_ROOT, readRepoYAML, modifyRepoFile, writeRepoFile, execCommand } = require('../../utils');
 
 exports.tasks = [];
 
@@ -26,7 +26,7 @@ exports.tasks.push({
     'generic-worker-schemas',
   ],
   run: async (requirements, utils) => {
-    const schemaFiles = glob.sync('workers/generic-worker/schemas/*.yml', {cwd: REPO_ROOT});
+    const schemaFiles = glob.sync('workers/generic-worker/schemas/*.yml', { cwd: REPO_ROOT });
     return {
       'generic-worker-schemas': await Promise.all(schemaFiles.map(async filename => {
         const content = await readRepoYAML(filename);
@@ -63,22 +63,22 @@ exports.tasks.push({
     const gwDocsDir = path.join('ui', 'docs', 'reference', 'workers', 'generic-worker');
 
     // begin by deleting all *-payload--schema.mdx files
-    for (let file of glob.sync(`${gwDocsDir}/*-payload.mdx`, {cwd: REPO_ROOT})) {
+    for (let file of glob.sync(`${gwDocsDir}/*-payload.mdx`, { cwd: REPO_ROOT })) {
       await rimraf(path.join(REPO_ROOT, file));
     }
 
-    const schemaFiles = requirements['generic-worker-schemas'].map(({filename, content}) => ({
+    const schemaFiles = requirements['generic-worker-schemas'].map(({ filename, content }) => ({
       $id: content.$id,
       title: content.title,
       filename_base: path.basename(content.$id, '.json#').replace('_', '-') + '-payload',
     }));
 
-    for (let {$id, title, filename_base} of schemaFiles) {
+    for (let { $id, title, filename_base } of schemaFiles) {
       await writeRepoFile(path.join(gwDocsDir, filename_base + '.mdx'), schemaMdx(title, $id));
     }
 
     const links = schemaFiles
-      .map(({title, filename_base}) => ` * [${title}](/docs/reference/workers/generic-worker/${filename_base})`)
+      .map(({ title, filename_base }) => ` * [${title}](/docs/reference/workers/generic-worker/${filename_base})`)
       .join('\n');
 
     await modifyRepoFile(path.join(gwDocsDir, 'README.mdx'),

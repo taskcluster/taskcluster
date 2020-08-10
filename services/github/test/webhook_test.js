@@ -2,7 +2,7 @@ const fs = require('fs');
 const helper = require('./helper');
 const assert = require('assert');
 const testing = require('taskcluster-lib-testing');
-const {LEVELS} = require('taskcluster-lib-monitor');
+const { LEVELS } = require('taskcluster-lib-monitor');
 
 helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   helper.withDb(mock, skipping);
@@ -16,8 +16,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
   setup(async function() {
     github = await helper.load('github');
-    github.inst(5808).setUser({id: 14795478, email: 'someuser@github.com', username: 'TaskclusterRobot'});
-    github.inst(5808).setUser({id: 18102552, email: 'anotheruser@github.com', username: 'owlishDeveloper'});
+    github.inst(5808).setUser({ id: 14795478, email: 'someuser@github.com', username: 'TaskclusterRobot' });
+    github.inst(5808).setUser({ id: 18102552, email: 'anotheruser@github.com', username: 'owlishDeveloper' });
     monitor = await helper.load('monitor');
   });
 
@@ -30,7 +30,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       assert.equal(response.statusCode, statusCode);
       response.connection.destroy();
       if (statusCode < 300) {
-        assert.deepEqual(monitor.manager.messages.find(({Type}) => Type === 'webhook-received'), {
+        assert.deepEqual(monitor.manager.messages.find(({ Type }) => Type === 'webhook-received'), {
           Type: 'webhook-received',
           Logger: 'taskcluster.test.api',
           Fields: {

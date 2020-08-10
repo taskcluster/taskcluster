@@ -13,7 +13,7 @@ const URL = require('url');
 const BulkLog = require('./bulk_log');
 const waitForPort = require('../wait_for_port');
 const getLogsLocationsFromTask = require('./logs_location.js');
-const {version: workerVersion} = require('../../../package.json');
+const { version: workerVersion } = require('../../../package.json');
 
 // Maximum time to wait for the put socket to become available.
 const INIT_TIMEOUT = 2000;
@@ -74,7 +74,7 @@ class TaskclusterLogs {
       HostConfig: {
         // bind the reading side to the host so we can expose it to the world...
         PortBindings: {
-          '60023/tcp': [{HostPort: '0'}],
+          '60023/tcp': [{ HostPort: '0' }],
         },
       },
     };

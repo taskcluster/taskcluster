@@ -5,16 +5,16 @@ const assert = require('assert');
 const _ = require('lodash');
 const libUrls = require('taskcluster-lib-urls');
 const taskcluster = require('taskcluster-client');
-const {buildReportErrorMethod} = require('./middleware/errors');
-const {callHandler} = require('./middleware/handle');
-const {validateSchemas} = require('./middleware/schema');
-const {queryValidator} = require('./middleware/queries');
-const {parameterValidator} = require('./middleware/parameters');
-const {remoteAuthentication} = require('./middleware/auth');
-const {parseBody} = require('./middleware/parse');
-const {expressError} = require('./middleware/express-error');
-const {logRequest} = require('./middleware/logging');
-const {perRequestContext} = require('./middleware/per-request-context');
+const { buildReportErrorMethod } = require('./middleware/errors');
+const { callHandler } = require('./middleware/handle');
+const { validateSchemas } = require('./middleware/schema');
+const { queryValidator } = require('./middleware/queries');
+const { parameterValidator } = require('./middleware/parameters');
+const { remoteAuthentication } = require('./middleware/auth');
+const { parseBody } = require('./middleware/parse');
+const { expressError } = require('./middleware/express-error');
+const { logRequest } = require('./middleware/logging');
+const { perRequestContext } = require('./middleware/per-request-context');
 
 const debug = Debug('api');
 
@@ -77,11 +77,11 @@ class API {
       schemaset,
       context,
     } = this.options;
-    const {errorCodes, serviceName} = this.builder;
+    const { errorCodes, serviceName } = this.builder;
     const absoluteSchemas = schemaset.absoluteSchemas(rootUrl);
 
     // Create router
-    const router = express.Router({caseSensitive: true});
+    const router = express.Router({ caseSensitive: true });
 
     // Allow CORS requests to the API
     if (allowedCORSOrigin) {
@@ -94,16 +94,16 @@ class API {
     this.entries.forEach(entry => {
       const middleware = [
         entry.route,
-        perRequestContext({entry, context}),
-        logRequest({builder: this.builder, entry}),
+        perRequestContext({ entry, context }),
+        logRequest({ builder: this.builder, entry }),
         buildReportErrorMethod(),
-        parseBody({inputLimit}),
-        remoteAuthentication({signatureValidator, entry}),
-        parameterValidator({entry}),
-        queryValidator({entry}),
-        validateSchemas({validator, absoluteSchemas, rootUrl, serviceName, entry}),
-        callHandler({entry}),
-        expressError({errorCodes, entry}),
+        parseBody({ inputLimit }),
+        remoteAuthentication({ signatureValidator, entry }),
+        parameterValidator({ entry }),
+        queryValidator({ entry }),
+        validateSchemas({ validator, absoluteSchemas, rootUrl, serviceName, entry }),
+        callHandler({ entry }),
+        expressError({ errorCodes, entry }),
       ];
 
       // Create entry on router
@@ -187,7 +187,7 @@ const nonceManager = (options) => {
   const N = options.size;
   const noncedb = new Array(N);
   for (let i = 0; i < N; i++) {
-    noncedb[i] = {nonce: null, ts: null};
+    noncedb[i] = { nonce: null, ts: null };
   }
   return (nonce, ts, cb) => {
     for (let i = 0; i < N; i++) {

@@ -31,7 +31,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   });
 
   test('get single workerpool', async function() {
-    helper.fakes.makeWorkerPool('baz/bing', {owner: 'foo@example.com', currentCapacity: 4});
+    helper.fakes.makeWorkerPool('baz/bing', { owner: 'foo@example.com', currentCapacity: 4 });
     const client = helper.getHttpClient();
     const single = await client.query({
       query: gql`${workerPoolQuery}`,
@@ -46,8 +46,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   });
 
   test('list workerpools', async function() {
-    helper.fakes.makeWorkerPool('foo/bar', {providerId: 'baz', currentCapacity: 0});
-    helper.fakes.makeWorkerPool('baz/bing', {providerId: 'wow', currentCapacity: 2});
+    helper.fakes.makeWorkerPool('foo/bar', { providerId: 'baz', currentCapacity: 0 });
+    helper.fakes.makeWorkerPool('baz/bing', { providerId: 'wow', currentCapacity: 2 });
     const client = helper.getHttpClient();
     const response = await client.query({
       query: gql`${workerPoolsQuery}`,

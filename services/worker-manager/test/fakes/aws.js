@@ -1,4 +1,4 @@
-const {FakeCloud} = require('./fake');
+const { FakeCloud } = require('./fake');
 const assert = require('assert').strict;
 const aws = require('aws-sdk');
 
@@ -102,20 +102,20 @@ class FakeEC2Region {
     return ec2Method(this, async () => {
       return {
         Regions: [
-          {RegionName: 'us-west-2'},
-          {RegionName: 'us-east-1'},
-          {RegionName: 'eu-central-1'},
+          { RegionName: 'us-west-2' },
+          { RegionName: 'us-east-1' },
+          { RegionName: 'eu-central-1' },
         ],
       };
     });
   }
 
-  terminateInstances({InstanceIds}) {
+  terminateInstances({ InstanceIds }) {
     return ec2Method(this, async() => {
       return {
         TerminatingInstances: InstanceIds.map(InstanceId => {
           this.terminatedInstances.push(InstanceId);
-          return {InstanceId, CurrentState: {Name: 'shutting-down'}};
+          return { InstanceId, CurrentState: { Name: 'shutting-down' } };
         }),
       };
     });
@@ -128,13 +128,13 @@ class FakeEC2Region {
    *
    * https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/EC2.html#describeInstanceStatus-property
    */
-  describeInstanceStatus({InstanceIds}) {
+  describeInstanceStatus({ InstanceIds }) {
     return ec2Method(this, async() => {
       return {
         InstanceStatuses: InstanceIds.map(InstanceId => {
           const state = this.instanceStatuses[InstanceId];
           assert(state, `No value in instanceStatuses[${InstanceId}]`);
-          return {InstanceState: {Name: state}, InstanceId};
+          return { InstanceState: { Name: state }, InstanceId };
         }),
       };
     });

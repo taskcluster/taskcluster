@@ -1,7 +1,7 @@
 const subject = require('../');
 const assume = require('assume');
 const debug = require('debug')('iterate-test');
-const {MonitorManager} = require('taskcluster-lib-monitor');
+const { MonitorManager } = require('taskcluster-lib-monitor');
 const testing = require('taskcluster-lib-testing');
 
 const possibleEvents = [

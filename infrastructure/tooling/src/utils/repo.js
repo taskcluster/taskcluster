@@ -1,4 +1,4 @@
-const {promisify} = require('util');
+const { promisify } = require('util');
 const path = require('path');
 const fs = require('fs');
 const glob = require('glob');
@@ -18,12 +18,12 @@ exports.REPO_ROOT = REPO_ROOT;
  * List all of the services in the given monorepo repository, defaulting
  * to the current working copy
  */
-exports.listServices = ({repoDir} = {}) => {
+exports.listServices = ({ repoDir } = {}) => {
   // look for package.json's, so that we're not fooled by any
   // stray empty or gitignore'd directories
   const packageJsons = glob.sync(
     'services/*/package.json',
-    {cwd: repoDir || REPO_ROOT});
+    { cwd: repoDir || REPO_ROOT });
   return packageJsons.map(filename => filename.split('/')[1]);
 };
 
@@ -33,7 +33,7 @@ exports.listServices = ({repoDir} = {}) => {
 exports.readRepoFile = async filename => {
   return await readFile(
     path.join(REPO_ROOT, filename),
-    {encoding: 'utf8'});
+    { encoding: 'utf8' });
 };
 
 /**
@@ -47,14 +47,14 @@ exports.readRepoJSON = async filename => {
  * Write a file out within the current working copy
  */
 exports.writeRepoFile = async (filename, data) => {
-  return await writeFile(filename, data, {encoding: 'utf8'});
+  return await writeFile(filename, data, { encoding: 'utf8' });
 };
 
 /**
  * Write a JSON file out using JSON-stable-stringify within the current working copy
  */
 exports.writeRepoJSON = async (filename, data) => {
-  return await writeFile(filename, stringify(data, {space: 2}), {encoding: 'utf8'});
+  return await writeFile(filename, stringify(data, { space: 2 }), { encoding: 'utf8' });
 };
 
 /**
@@ -67,9 +67,9 @@ const modifySync = pSynchronize();
 exports.modifyRepoFile = modifySync(async (filename, modifier) => {
   const contents = await readFile(
     path.join(REPO_ROOT, filename),
-    {encoding: 'utf8'});
+    { encoding: 'utf8' });
   const modified = await modifier(contents);
-  await writeFile(filename, modified, {encoding: 'utf8'});
+  await writeFile(filename, modified, { encoding: 'utf8' });
 });
 
 /**
@@ -99,15 +99,15 @@ exports.modifyRepoYAML = async (filename, modifier) => {
   return exports.modifyRepoFile(filename, async contents => {
     const data = yaml.safeLoad(contents);
     await modifier(data);
-    return yaml.safeDump(data, {lineWidth: -1});
+    return yaml.safeDump(data, { lineWidth: -1 });
   });
 };
 
 /**
  * Call `git ls-files` in the current working copy
  */
-exports.gitLsFiles = async ({patterns} = {}) => {
-  const opts = {cwd: REPO_ROOT};
+exports.gitLsFiles = async ({ patterns } = {}) => {
+  const opts = { cwd: REPO_ROOT };
   const files = (await exec('git', ['ls-files', '-z'].concat(patterns || []), opts))
     .stdout.split(/\0/)
     .filter(v => v !== '');
@@ -125,5 +125,5 @@ exports.readRepoYAML = async filename => {
  * Asynchronously write a yaml file to the current working copy
  */
 exports.writeRepoYAML = async (filename, data) => {
-  return await writeFile(filename, yaml.safeDump(data, {lineWidth: -1}), {encoding: 'utf8'});
+  return await writeFile(filename, yaml.safeDump(data, { lineWidth: -1 }), { encoding: 'utf8' });
 };

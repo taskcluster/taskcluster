@@ -1,11 +1,11 @@
-const {Client, consume, connectionStringCredentials} = require('../src');
+const { Client, consume, connectionStringCredentials } = require('../src');
 const amqplib = require('amqplib');
 const assume = require('assume');
 const fs = require('fs');
 const debugModule = require('debug');
 const assert = require('assert');
 const helper = require('./helper');
-const {suiteName} = require('taskcluster-lib-testing');
+const { suiteName } = require('taskcluster-lib-testing');
 
 helper.secrets.mockSuite(suiteName(), ['pulse'], function(mock, skipping) {
   if (mock) {
@@ -24,9 +24,9 @@ helper.secrets.mockSuite(suiteName(), ['pulse'], function(mock, skipping) {
     const exchangeName = `exchanges/test/${unique}`;
     const routingKey = 'greetings.earthling.foo.bar.bing';
     const routingKeyReference = [
-      {name: 'verb'},
-      {name: 'object'},
-      {name: 'remainder', multipleWords: true},
+      { name: 'verb' },
+      { name: 'object' },
+      { name: 'remainder', multipleWords: true },
     ];
     const debug = debugModule('test');
 
@@ -45,7 +45,7 @@ helper.secrets.mockSuite(suiteName(), ['pulse'], function(mock, skipping) {
       const chan = await conn.createChannel();
 
       for (let i = 0; i < 10; i++) {
-        const message = Buffer.from(JSON.stringify({data: 'Hello', i}));
+        const message = Buffer.from(JSON.stringify({ data: 'Hello', i }));
         debug(`publishing fake message ${i} to exchange ${exchangeName}`);
         await chan.publish(exchangeName, routingKey, message);
       }
@@ -134,7 +134,7 @@ helper.secrets.mockSuite(suiteName(), ['pulse'], function(mock, skipping) {
 
       // check that we logged the 'uhoh' error
       const errors = monitor.manager.messages
-        .filter(({Fields: {message}}) => message === 'uhoh');
+        .filter(({ Fields: { message } }) => message === 'uhoh');
       assert.equal(errors.length, 1);
       monitor.manager.messages = [];
     });
@@ -207,7 +207,7 @@ helper.secrets.mockSuite(suiteName(), ['pulse'], function(mock, skipping) {
         prefetch: 1,
         onConnected: async () => {
           debug('onConnected');
-          got.push({connected: true});
+          got.push({ connected: true });
 
           if (!publishing) {
             // start publishing after first connection, avoiding a race
@@ -273,7 +273,7 @@ helper.secrets.mockSuite(suiteName(), ['pulse'], function(mock, skipping) {
 
       // check that we logged the 'uhoh' error
       const errors = monitor.manager.messages
-        .filter(({Fields: {message}}) => message === 'uhoh');
+        .filter(({ Fields: { message } }) => message === 'uhoh');
       assert.equal(errors.length, 1);
       monitor.manager.messages = [];
     });
@@ -288,7 +288,7 @@ helper.secrets.mockSuite(suiteName(), ['pulse'], function(mock, skipping) {
       });
 
       try {
-        await consume({client, bindings: []}, () => {});
+        await consume({ client, bindings: [] }, () => {});
       } catch (err) {
         assume(err).to.match(/Must pass a queueName/);
         await client.stop();

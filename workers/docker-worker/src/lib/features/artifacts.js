@@ -10,7 +10,7 @@ const tarStream = require('tar-stream');
 const Debug = require('debug');
 const assert = require('assert');
 
-const {fmtLog, fmtErrorLog} = require('../log');
+const { fmtLog, fmtErrorLog } = require('../log');
 const uploadToS3 = require('../upload_to_s3');
 const waitForEvent = require('../wait_for_event');
 
@@ -42,7 +42,7 @@ class Artifacts {
     let contentStream;
     try {
       contentStream = await (new Promise((accept, reject) => {
-        return container.getArchive({path}, (err, data) => {
+        return container.getArchive({ path }, (err, data) => {
           if (err) {reject(err);}
           accept(data);
         });
@@ -149,7 +149,7 @@ class Artifacts {
         let monitor = taskHandler.runtime.monitor;
         let start = process.hrtime();
 
-        let {digest, size} = await uploadToS3(taskHandler.queue, taskId, runId, stream,
+        let { digest, size } = await uploadToS3(taskHandler.queue, taskId, runId, stream,
           entryName, expiry, headers, null, null, compress);
 
         // save the time taken to upload the artifact

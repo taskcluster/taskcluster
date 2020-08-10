@@ -80,7 +80,7 @@ class QueueService {
     });
 
     this.monitor = options.monitor;
-    this.client = new AZQueue({db: options.db});
+    this.client = new AZQueue({ db: options.db });
 
     // Promises that queues are created, return mapping from priority to
     // azure queue names.
@@ -112,7 +112,7 @@ class QueueService {
     clearInterval(this.queueResetInterval);
   }
 
-  _putMessage(queue, message, {visibility, ttl}) {
+  _putMessage(queue, message, { visibility, ttl }) {
     let text = Buffer.from(JSON.stringify(message)).toString('base64');
     return this.monitor.timer('putMessage', this.client.putMessage(queue, text, {
       visibilityTimeout: visibility,
@@ -120,7 +120,7 @@ class QueueService {
     }));
   }
 
-  async _getMessages(queue, {visibility, count}) {
+  async _getMessages(queue, { visibility, count }) {
     let messages = await this.monitor.timer('getMessages', this.client.getMessages(queue, {
       visibilityTimeout: visibility,
       numberOfMessages: count,

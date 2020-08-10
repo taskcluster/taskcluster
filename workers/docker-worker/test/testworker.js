@@ -10,7 +10,7 @@ const split = require('split2');
 const getArtifact = require('./integration/helper/get_artifact');
 const Task = require('./task');
 const taskcluster = require('taskcluster-client');
-const {EventEmitter} = require('events');
+const { EventEmitter } = require('events');
 const getLogsLocationsFromTask = require('../src/lib/features/logs_location.js');
 const helper = require('./helper');
 

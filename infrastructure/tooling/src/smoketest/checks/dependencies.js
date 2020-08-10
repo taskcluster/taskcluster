@@ -38,7 +38,7 @@ exports.tasks.push({
       task.dependencies = [...taskIds];
       taskIds.push(taskcluster.slugid());
       await queue.createTask(taskIds[i], task);
-      utils.status({message: 'Created task ' + taskIds[i]});
+      utils.status({ message: 'Created task ' + taskIds[i] });
     }
     let pollStartTime = new Date();
     while(new Date() - pollStartTime < 1200000){
@@ -63,7 +63,7 @@ exports.tasks.push({
         }
         statuses.push(taskStatus);
       }
-      utils.status({message: message});
+      utils.status({ message: message });
       if (statuses[statuses.length - 1].status.state === 'completed') {
         return {
           ['target-dependencies']: statuses[statuses.length - 1].status.state,

@@ -3,7 +3,7 @@ const taskcluster = require('taskcluster-client');
 const debug = require('debug')('index:handlers');
 const _ = require('lodash');
 const helpers = require('./helpers');
-const {consume} = require('taskcluster-lib-pulse');
+const { consume } = require('taskcluster-lib-pulse');
 
 /**
  * Create handlers

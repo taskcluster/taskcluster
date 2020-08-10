@@ -3,8 +3,8 @@ const Loader = require('taskcluster-lib-loader');
 const SchemaSet = require('taskcluster-lib-validate');
 const libReferences = require('taskcluster-lib-references');
 const tcdb = require('taskcluster-db');
-const {MonitorManager} = require('taskcluster-lib-monitor');
-const {App} = require('taskcluster-lib-app');
+const { MonitorManager } = require('taskcluster-lib-monitor');
+const { App } = require('taskcluster-lib-app');
 const Config = require('taskcluster-lib-config');
 const builder = require('./api');
 const debug = require('debug')('server');
@@ -14,15 +14,15 @@ const signaturevalidator = require('./signaturevalidator');
 const taskcluster = require('taskcluster-client');
 const makeSentryManager = require('./sentrymanager');
 const libPulse = require('taskcluster-lib-pulse');
-const {google: googleapis} = require('googleapis');
+const { google: googleapis } = require('googleapis');
 const assert = require('assert');
-const {syncStaticClients} = require('./static-clients');
+const { syncStaticClients } = require('./static-clients');
 
 // Create component loader
 const load = Loader({
   cfg: {
     requires: ['profile'],
-    setup: ({profile}) => Config({
+    setup: ({ profile }) => Config({
       profile,
       serviceName: 'auth',
     }),
@@ -30,12 +30,12 @@ const load = Loader({
 
   sentryManager: {
     requires: ['cfg'],
-    setup: ({cfg}) => makeSentryManager({...cfg.app.sentry}),
+    setup: ({ cfg }) => makeSentryManager({ ...cfg.app.sentry }),
   },
 
   monitor: {
     requires: ['cfg', 'profile', 'process'],
-    setup: ({cfg, profile, process}) => MonitorManager.setup({
+    setup: ({ cfg, profile, process }) => MonitorManager.setup({
       serviceName: 'auth',
       processName: process,
       verify: profile !== 'production',
@@ -45,7 +45,7 @@ const load = Loader({
 
   resolver: {
     requires: ['cfg', 'monitor', 'db'],
-    setup: ({cfg, monitor, db}) => new ScopeResolver({
+    setup: ({ cfg, monitor, db }) => new ScopeResolver({
       maxLastUsedDelay: cfg.app.maxLastUsedDelay,
       monitor: monitor.childMonitor('scope-resolver'),
       db,
@@ -54,7 +54,7 @@ const load = Loader({
 
   db: {
     requires: ['cfg', 'process', 'monitor'],
-    setup: ({cfg, process, monitor}) => tcdb.setup({
+    setup: ({ cfg, process, monitor }) => tcdb.setup({
       readDbUrl: cfg.postgres.readDbUrl,
       writeDbUrl: cfg.postgres.writeDbUrl,
       serviceName: 'auth',
@@ -67,14 +67,14 @@ const load = Loader({
 
   schemaset: {
     requires: ['cfg'],
-    setup: ({cfg}) => new SchemaSet({
+    setup: ({ cfg }) => new SchemaSet({
       serviceName: 'auth',
     }),
   },
 
   generateReferences: {
     requires: ['cfg', 'schemaset'],
-    setup: ({cfg, schemaset}) => libReferences.fromService({
+    setup: ({ cfg, schemaset }) => libReferences.fromService({
       schemaset,
       references: [builder.reference(), exchanges.reference(), MonitorManager.reference('auth')],
     }).generateReferences(),
@@ -82,7 +82,7 @@ const load = Loader({
 
   pulseClient: {
     requires: ['cfg', 'monitor'],
-    setup: ({cfg, monitor}) => {
+    setup: ({ cfg, monitor }) => {
       return new libPulse.Client({
         namespace: 'taskcluster-auth',
         monitor: monitor.childMonitor('pulse-client'),
@@ -93,7 +93,7 @@ const load = Loader({
 
   publisher: {
     requires: ['cfg', 'schemaset', 'pulseClient'],
-    setup: async ({cfg, schemaset, pulseClient}) => await exchanges.publisher({
+    setup: async ({ cfg, schemaset, pulseClient }) => await exchanges.publisher({
       rootUrl: cfg.taskcluster.rootUrl,
       client: pulseClient,
       schemaset,
@@ -149,12 +149,12 @@ const load = Loader({
   // tests use this to inject other APIs.
   apis: {
     requires: ['api'],
-    setup: ({api}) => [api],
+    setup: ({ api }) => [api],
   },
 
   server: {
     requires: ['cfg', 'apis'],
-    setup: async ({cfg, apis}) => App({
+    setup: async ({ cfg, apis }) => App({
       apis,
       ...cfg.server,
     }),
@@ -162,7 +162,7 @@ const load = Loader({
 
   gcp: {
     requires: ['cfg'],
-    setup: ({cfg}) => {
+    setup: ({ cfg }) => {
       const projects = cfg.gcpCredentials.allowedProjects || {};
       const projectIds = Object.keys(projects);
 
@@ -172,11 +172,11 @@ const load = Loader({
       assert(projectIds.length <= 1, "at most one GCP project is supported");
 
       if (projectIds.length === 0) {
-        return {googleapis, auth: {}, credentials: {}, allowedServiceAccounts: []};
+        return { googleapis, auth: {}, credentials: {}, allowedServiceAccounts: [] };
       }
 
       const project = projects[projectIds[0]];
-      const {credentials, allowedServiceAccounts} = project;
+      const { credentials, allowedServiceAccounts } = project;
       assert.equal(projectIds[0], credentials.project_id, "credentials must be for the given project");
 
       assert(Array.isArray(allowedServiceAccounts));
@@ -206,7 +206,7 @@ const load = Loader({
 
   'expire-sentry': {
     requires: ['cfg', 'sentryManager', 'monitor'],
-    setup: async ({cfg, sentryManager, monitor}, ownName) => {
+    setup: async ({ cfg, sentryManager, monitor }, ownName) => {
       return monitor.oneShot(ownName, async () => {
         const now = taskcluster.fromNow(cfg.app.sentryExpirationDelay);
         debug('Expiring sentry keys');
@@ -218,10 +218,10 @@ const load = Loader({
 
   'purge-expired-clients': {
     requires: ['cfg', 'db', 'monitor'],
-    setup: ({cfg, db, monitor}, ownName) => {
+    setup: ({ cfg, db, monitor }, ownName) => {
       return monitor.oneShot(ownName, async () => {
         debug('Purging expired clients');
-        const [{expire_clients: count}] = await db.fns.expire_clients();
+        const [{ expire_clients: count }] = await db.fns.expire_clients();
         debug(`Purged ${count} expired clients`);
       });
     },

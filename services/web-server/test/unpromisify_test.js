@@ -27,7 +27,7 @@ suite(testing.suiteName(), () => {
     const success = unpromisify(async (a, b) => {
       await sleep();
       return [a + b, a * b];
-    }, {returnsArray: true});
+    }, { returnsArray: true });
     assert.equal(success.length, 3); // a, b, done
 
     success(10, 20, (err, sum, product) => {

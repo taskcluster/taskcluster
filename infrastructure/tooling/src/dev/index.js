@@ -2,18 +2,18 @@ const util = require('util');
 const chalk = require('chalk');
 const path = require('path');
 const _ = require('lodash');
-const {readRepoYAML, writeRepoYAML} = require('../utils');
+const { readRepoYAML, writeRepoYAML } = require('../utils');
 const inquirer = require('inquirer');
 const commonPrompts = require('./common');
-const {rabbitPrompts, rabbitResources} = require('./rabbit');
-const {azurePrompts, azureResources} = require('./azure');
-const {postgresPrompts, postgresResources} = require('./postgres');
-const {k8sResources} = require('./k8s');
+const { rabbitPrompts, rabbitResources } = require('./rabbit');
+const { azurePrompts, azureResources } = require('./azure');
+const { postgresPrompts, postgresResources } = require('./postgres');
+const { k8sResources } = require('./k8s');
 const awsResources = require('./aws');
 const taskclusterResources = require('./taskcluster');
 const helm = require('./helm');
-const {makePgUrl} = require('./util');
-const {upgrade, downgrade} = require('taskcluster-db');
+const { makePgUrl } = require('./util');
+const { upgrade, downgrade } = require('taskcluster-db');
 
 const USER_CONF_FILE = 'dev-config.yml';
 const readUserConfig = async () => {
@@ -35,19 +35,19 @@ const init = async (options) => {
 
   const prompts = [];
 
-  await commonPrompts({userConfig, prompts, configTmpl});
-  await rabbitPrompts({userConfig, prompts, configTmpl});
-  await postgresPrompts({userConfig, prompts, configTmpl});
-  await azurePrompts({userConfig, prompts, configTmpl});
+  await commonPrompts({ userConfig, prompts, configTmpl });
+  await rabbitPrompts({ userConfig, prompts, configTmpl });
+  await postgresPrompts({ userConfig, prompts, configTmpl });
+  await azurePrompts({ userConfig, prompts, configTmpl });
 
   let answer = await inquirer.prompt(prompts);
 
-  userConfig = await awsResources({userConfig, answer, configTmpl});
-  userConfig = await taskclusterResources({userConfig, answer, configTmpl});
-  userConfig = await azureResources({userConfig, answer, configTmpl});
-  userConfig = await postgresResources({userConfig, answer, configTmpl});
-  userConfig = await rabbitResources({userConfig, answer, configTmpl});
-  userConfig = await k8sResources({userConfig, answer, configTmpl});
+  userConfig = await awsResources({ userConfig, answer, configTmpl });
+  userConfig = await taskclusterResources({ userConfig, answer, configTmpl });
+  userConfig = await azureResources({ userConfig, answer, configTmpl });
+  userConfig = await postgresResources({ userConfig, answer, configTmpl });
+  userConfig = await rabbitResources({ userConfig, answer, configTmpl });
+  userConfig = await k8sResources({ userConfig, answer, configTmpl });
 
   await writeRepoYAML(USER_CONF_FILE, _.merge(userConfig, answer));
 };
@@ -68,33 +68,33 @@ const dbUpgrade = async (options) => {
   const userConfig = await readUserConfig();
   const meta = userConfig.meta || {};
 
-  const {dbVersion} = options;
+  const { dbVersion } = options;
   const toVersion = dbVersion ? parseInt(dbVersion) : undefined;
 
-  const {adminDbUrl, usernamePrefix} = dbParams(meta);
+  const { adminDbUrl, usernamePrefix } = dbParams(meta);
   const showProgress = message => {
     util.log(chalk.green(message));
   };
 
-  await upgrade({showProgress, adminDbUrl, usernamePrefix, toVersion});
+  await upgrade({ showProgress, adminDbUrl, usernamePrefix, toVersion });
 };
 
 const dbDowngrade = async (options) => {
   const userConfig = await readUserConfig();
   const meta = userConfig.meta || {};
 
-  const {dbVersion} = options;
+  const { dbVersion } = options;
   const toVersion = parseInt(dbVersion);
   if (!dbVersion.match(/^[0-9]+$/) || isNaN(toVersion)) {
     throw new Error('Missing or invalid --db-version');
   }
 
-  const {adminDbUrl, usernamePrefix} = dbParams(meta);
+  const { adminDbUrl, usernamePrefix } = dbParams(meta);
   const showProgress = message => {
     util.log(chalk.green(message));
   };
 
-  await downgrade({showProgress, adminDbUrl, usernamePrefix, toVersion});
+  await downgrade({ showProgress, adminDbUrl, usernamePrefix, toVersion });
 };
 
 const apply = async (options) => {
@@ -109,4 +109,4 @@ const delete_ = async (options) => {
   await helm('delete');
 };
 
-module.exports = {init, apply, verify, delete_, dbUpgrade, dbDowngrade};
+module.exports = { init, apply, verify, delete_, dbUpgrade, dbDowngrade };

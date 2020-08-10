@@ -1,7 +1,7 @@
 const loglevel = require('loglevel');
 
 class MatrixBot {
-  constructor({matrixClient, userId, monitor}) {
+  constructor({ matrixClient, userId, monitor }) {
     this._userId = userId;
     this._client = matrixClient;
     this._monitor = monitor;
@@ -11,7 +11,7 @@ class MatrixBot {
     // for structured logging instead since it also throws errors like normal
     const matrixLog = loglevel.getLogger('matrix');
     matrixLog.methodFactory = (methodName, level, loggerName) => message => {
-      this._monitor.log.matrixSdkDebug({level, message});
+      this._monitor.log.matrixSdkDebug({ level, message });
     };
     matrixLog.setLevel(matrixLog.getLevel()); // This makes the methodFactory stuff work
   }
@@ -25,8 +25,8 @@ class MatrixBot {
     await this._client.startClient();
   }
 
-  async sendMessage({roomId, format, formattedBody, body, notice, msgtype}) {
-    await this._client.sendEvent(roomId, 'm.room.message', {formatted_body: formattedBody, body, msgtype, format}, '');
+  async sendMessage({ roomId, format, formattedBody, body, notice, msgtype }) {
+    await this._client.sendEvent(roomId, 'm.room.message', { formatted_body: formattedBody, body, msgtype, format }, '');
   }
 }
 

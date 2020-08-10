@@ -9,7 +9,7 @@
 const waitForSocket = require('../wait_for_socket');
 const slugid = require('slugid');
 const path = require('path');
-const {makeDir, removeDir} = require('../util/fs');
+const { makeDir, removeDir } = require('../util/fs');
 let debug = require('debug')('docker-worker:features:dind');
 
 // Maximum time to wait for dind-service to be ready

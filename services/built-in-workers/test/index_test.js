@@ -26,7 +26,7 @@ suite(testing.suiteName(), function() {
       ],
     });
     await tq.claimTask();
-    helper.assertTaskResolved(taskId, {completed: true});
+    helper.assertTaskResolved(taskId, { completed: true });
   });
 
   test('Check Fail worker', async function() {
@@ -50,7 +50,7 @@ suite(testing.suiteName(), function() {
       ],
     });
     await tq.claimTask();
-    helper.assertTaskResolved(taskId, {failed: true});
+    helper.assertTaskResolved(taskId, { failed: true });
   });
 
   test('Check non empty payloadd for succeed', async function() {
@@ -79,7 +79,7 @@ suite(testing.suiteName(), function() {
     const expectedPayload = {
       reason: 'malformed-payload',
     };
-    helper.assertTaskResolved(taskId, {exception: expectedPayload});
+    helper.assertTaskResolved(taskId, { exception: expectedPayload });
   });
 
   test('Check non empty payload for fail', async function() {
@@ -108,6 +108,6 @@ suite(testing.suiteName(), function() {
       reason: 'malformed-payload',
     };
     await tq.claimTask();
-    helper.assertTaskResolved(taskId, {exception: expectedPayload});
+    helper.assertTaskResolved(taskId, { exception: expectedPayload });
   });
 });

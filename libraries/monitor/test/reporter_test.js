@@ -50,7 +50,7 @@ suite(testing.suiteName(), function() {
       assert.equal(reported.level, 'info');
     });
     test('error report with tags', async function() {
-      monitor.reportError(new Error('hi'), {baz: 'bing'});
+      monitor.reportError(new Error('hi'), { baz: 'bing' });
       await monitor.terminate();
       assert.equal(reported.tags.service, 'testing-service');
       assert.equal(reported.tags.proc, 'foo');
@@ -59,7 +59,7 @@ suite(testing.suiteName(), function() {
       assert.equal(reported.level, 'error');
     });
     test('error report with level and tags', async function() {
-      monitor.reportError(new Error('hi'), 'warning', {baz: 'bing'});
+      monitor.reportError(new Error('hi'), 'warning', { baz: 'bing' });
       await monitor.terminate();
       assert.equal(reported.tags.service, 'testing-service');
       assert.equal(reported.tags.proc, 'foo');

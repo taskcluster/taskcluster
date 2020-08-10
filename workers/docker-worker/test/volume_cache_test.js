@@ -2,7 +2,7 @@ const assert = require('assert');
 const devnull = require('dev-null');
 const VolumeCache = require('../src/lib/volume_cache');
 const GarbageCollector = require('../src/lib/gc');
-const {createLogger} = require('../src/lib/log');
+const { createLogger } = require('../src/lib/log');
 const Debug = require('debug');
 const Docker = require('../src/lib/docker');
 const dockerUtils = require('dockerode-process/utils');
@@ -13,7 +13,7 @@ const rmrf = require('rimraf');
 const cmd = require('./integration/helper/cmd');
 const pipe = require('promisepipe');
 const monitor = require('./fixtures/monitor');
-const {suiteName} = require('taskcluster-lib-testing');
+const { suiteName } = require('taskcluster-lib-testing');
 const libUrls = require('taskcluster-lib-urls');
 const helper = require('./helper');
 
@@ -247,7 +247,7 @@ suite(suiteName(), function() {
       let create = await docker.createContainer(createConfig);
 
       let container = docker.getContainer(create.id);
-      let stream = await container.attach({stream: true, stdout: true, stderr: true});
+      let stream = await container.attach({ stream: true, stdout: true, stderr: true });
       stream.pipe(process.stdout);
 
       await container.start({});

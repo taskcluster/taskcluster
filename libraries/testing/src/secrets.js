@@ -4,7 +4,7 @@ const taskcluster = require('taskcluster-client');
 const debug = require('debug')('tc-lib-testing:secrets');
 
 class Secrets {
-  constructor({secretName, secrets, load}) {
+  constructor({ secretName, secrets, load }) {
     this.secretName = Array.isArray(secretName) ? secretName : [secretName];
     this.secrets = secrets;
     this.load = load;
@@ -80,7 +80,7 @@ class Secrets {
   async _fetchSecrets() {
     const secrets = {};
 
-    const client = new taskcluster.Secrets({rootUrl: process.env.TASKCLUSTER_PROXY_URL});
+    const client = new taskcluster.Secrets({ rootUrl: process.env.TASKCLUSTER_PROXY_URL });
     for (let secretName of this.secretName) {
       try {
         const res = await client.get(secretName);

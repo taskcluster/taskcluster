@@ -31,7 +31,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     await client.query('delete from azure_queue_messages');
   };
 
-  const fillDb = async (client, {queues, count, visible, inserted}) => {
+  const fillDb = async (client, { queues, count, visible, inserted }) => {
     await client.query(`create temporary table queues (queue_name text)`);
     for (let queue of queues) {
       await client.query(`insert into queues values ($1)`, [queue]);
@@ -94,14 +94,14 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     setup(async function() {
       await helper.db._withClient('write', async client => {
         await clearDb(client);
-        await fillDb(client, {queues: ['qq'], count: 100000});
+        await fillDb(client, { queues: ['qq'], count: 100000 });
         await analyze(client);
       });
     });
 
     test('get from queue', async function() {
       const queue = new AZQueue({ db: helper.db });
-      const result = await queue.getMessages('qq', {visibilityTimeout: 10, numberOfMessages: 10});
+      const result = await queue.getMessages('qq', { visibilityTimeout: 10, numberOfMessages: 10 });
       assert.equal(result.length, 10);
     });
   });
@@ -149,25 +149,25 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
     test('get pending queue', async function() {
       const queue = new AZQueue({ db: helper.db });
-      const result = await queue.getMessages('q79', {visibilityTimeout: 10, numberOfMessages: 10});
+      const result = await queue.getMessages('q79', { visibilityTimeout: 10, numberOfMessages: 10 });
       assert.equal(result.length, 10);
     });
 
     test('get claim queue', async function() {
       const queue = new AZQueue({ db: helper.db });
-      const result = await queue.getMessages('claims', {visibilityTimeout: 10, numberOfMessages: 5});
+      const result = await queue.getMessages('claims', { visibilityTimeout: 10, numberOfMessages: 5 });
       assert.equal(result.length, 0);
     });
 
     test('get deadline queue', async function() {
       const queue = new AZQueue({ db: helper.db });
-      const result = await queue.getMessages('deadlines', {visibilityTimeout: 10, numberOfMessages: 5});
+      const result = await queue.getMessages('deadlines', { visibilityTimeout: 10, numberOfMessages: 5 });
       assert.equal(result.length, 0);
     });
 
     test('get dependency queue', async function() {
       const queue = new AZQueue({ db: helper.db });
-      const result = await queue.getMessages('dependencies', {visibilityTimeout: 10, numberOfMessages: 5});
+      const result = await queue.getMessages('dependencies', { visibilityTimeout: 10, numberOfMessages: 5 });
       assert.equal(result.length, 5);
     });
   });

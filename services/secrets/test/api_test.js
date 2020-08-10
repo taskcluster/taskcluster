@@ -10,15 +10,15 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
   const SECRET_NAME = `captain:${slugid.v4()}`;
   const testValueFoo = {
-    secret: {data: 'bar'},
+    secret: { data: 'bar' },
     expires: taskcluster.fromNowJSON('1 day'),
   };
   const testValueBar = {
-    secret: {data: 'foo'},
+    secret: { data: 'foo' },
     expires: taskcluster.fromNowJSON('1 day'),
   };
   const testValueExpired = {
-    secret: {data: 'bar'},
+    secret: { data: 'bar' },
     expires: taskcluster.fromNowJSON('- 2 hours'),
   };
 
@@ -31,7 +31,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
    * statusCode - expected non-200 result
    * errMessage - if statusCode is set, error messages should begin with this
    */
-  const makeApiCall = async ({clientName, apiCall, name, args, res, statusCode, errMessage}) => {
+  const makeApiCall = async ({ clientName, apiCall, name, args, res, statusCode, errMessage }) => {
     let client = await helper.client(clientName);
     let gotRes = undefined;
     try {
@@ -205,7 +205,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
       await helper.load('expire');
 
-      let {secret} = await client.get(saveKey);
+      let { secret } = await client.get(saveKey);
       assert.deepEqual(secret, {
         message: 'keep this secret!!',
         list: ['hello', 'world'],
@@ -236,20 +236,20 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
     // assert the list is empty
     list = await client.list();
-    assert.deepEqual(list, {secrets: []});
+    assert.deepEqual(list, { secrets: [] });
 
     // create some
     await client.set('captain:hidden/1', {
-      secret: {sekrit: 1},
+      secret: { sekrit: 1 },
       expires: taskcluster.fromNowJSON('2 hours'),
     });
     await client.set('captain:limited/1', {
-      secret: {'less-sekrit': 1},
+      secret: { 'less-sekrit': 1 },
       expires: taskcluster.fromNowJSON('2 hours'),
     });
 
     list = await client.list();
     list.secrets.sort();
-    assert.deepEqual(list, {secrets: ['captain:hidden/1', 'captain:limited/1']});
+    assert.deepEqual(list, { secrets: ['captain:hidden/1', 'captain:limited/1'] });
   });
 });

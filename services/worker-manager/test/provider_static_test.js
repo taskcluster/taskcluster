@@ -1,9 +1,9 @@
 const taskcluster = require('taskcluster-client');
 const assert = require('assert');
 const helper = require('./helper');
-const {StaticProvider} = require('../src/providers/static');
+const { StaticProvider } = require('../src/providers/static');
 const testing = require('taskcluster-lib-testing');
-const {WorkerPool, Worker} = require('../src/data');
+const { WorkerPool, Worker } = require('../src/data');
 
 helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   helper.withDb(mock, skipping);
@@ -72,7 +72,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     // create a test worker pool directly in the DB
     const createWorker = overrides => {
       const worker = Worker.fromApi(
-        {...defaultWorker, ...overrides});
+        { ...defaultWorker, ...overrides });
       return worker.create(helper.db);
     };
 
@@ -80,15 +80,15 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       const worker = await createWorker({});
       const workerIdentityProof = {};
       await assert.rejects(() =>
-        provider.registerWorker({workerPool, worker, workerIdentityProof}),
+        provider.registerWorker({ workerPool, worker, workerIdentityProof }),
       /missing staticSecret/);
     });
 
     test('invalid token', async function() {
       const worker = await createWorker({});
-      const workerIdentityProof = {staticSecret: 'invalid'};
+      const workerIdentityProof = { staticSecret: 'invalid' };
       await assert.rejects(() =>
-        provider.registerWorker({workerPool, worker, workerIdentityProof}),
+        provider.registerWorker({ workerPool, worker, workerIdentityProof }),
       /bad staticSecret/);
     });
 
@@ -101,8 +101,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
           },
         },
       });
-      const workerIdentityProof = {staticSecret: 'good'};
-      const res = await provider.registerWorker({workerPool, worker, workerIdentityProof});
+      const workerIdentityProof = { staticSecret: 'good' };
+      const res = await provider.registerWorker({ workerPool, worker, workerIdentityProof });
       const expectedExpires = new Date(Date.now() + 3600 * 1000);
       // allow +- 10 seconds since time passes while the test executes
       assert(Math.abs(res.expires - expectedExpires) < 10000,

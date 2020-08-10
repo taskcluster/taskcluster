@@ -2,13 +2,13 @@ const assert = require('assert');
 const dockerUtils = require('dockerode-process/utils');
 const ImageManager = require('../src/lib/docker/image_manager');
 const Docker = require('../src/lib/docker');
-const {createHash} = require('crypto');
+const { createHash } = require('crypto');
 const slugid = require('slugid');
-const {createLogger} = require('../src/lib/log');
-const {NAMESPACE, TASK_ID, ROOT_URL} = require('./fixtures/image_artifacts');
+const { createLogger } = require('../src/lib/log');
+const { NAMESPACE, TASK_ID, ROOT_URL } = require('./fixtures/image_artifacts');
 const taskcluster = require('taskcluster-client');
 const monitor = require('./fixtures/monitor');
-const {suiteName} = require('taskcluster-lib-testing');
+const { suiteName } = require('taskcluster-lib-testing');
 const helper = require('./helper');
 
 let docker = Docker();
@@ -93,7 +93,7 @@ helper.secrets.mockSuite(suiteName(), ['docker'], function(mock, skipping) {
     let index = new taskcluster.Index({
       rootUrl: ROOT_URL,
     });
-    let {taskId} = await index.findTask(image.namespace);
+    let { taskId } = await index.findTask(image.namespace);
     let hashedName = createHash('md5')
       .update(`${taskId}${image.path}`)
       .digest('hex');
@@ -134,7 +134,7 @@ helper.secrets.mockSuite(suiteName(), ['docker'], function(mock, skipping) {
     let index = new taskcluster.Index({
       rootUrl: ROOT_URL,
     });
-    let {taskId} = await index.findTask(image.namespace);
+    let { taskId } = await index.findTask(image.namespace);
     let hashedName = createHash('md5')
       .update(`${taskId}${image.path}`)
       .digest('hex');
@@ -178,7 +178,7 @@ helper.secrets.mockSuite(suiteName(), ['docker'], function(mock, skipping) {
     let index = new taskcluster.Index({
       rootUrl: ROOT_URL,
     });
-    let {taskId} = await index.findTask(image.namespace);
+    let { taskId } = await index.findTask(image.namespace);
     let hashedName = createHash('md5')
       .update(`${taskId}${image.path}`)
       .digest('hex');
@@ -341,7 +341,7 @@ helper.secrets.mockSuite(suiteName(), ['docker'], function(mock, skipping) {
       let index = new taskcluster.Index({
         rootUrl: ROOT_URL,
       });
-      let {taskId} = await index.findTask(image.namespace);
+      let { taskId } = await index.findTask(image.namespace);
       let hashedName = createHash('md5')
         .update(`${taskId}${image.path}`)
         .digest('hex');

@@ -3,11 +3,11 @@ const rimraf = require('rimraf');
 const path = require('path');
 const fs = require('fs');
 
-const writeUriStructured = ({directory, serializable}) => {
+const writeUriStructured = ({ directory, serializable }) => {
   rimraf.sync(directory);
 
   const dirs = new Set();
-  for (let {filename, content} of serializable) {
+  for (let { filename, content } of serializable) {
     const pathname = path.join(directory, filename);
     const dirname = path.dirname(pathname);
     if (!dirs.has(dirname)) {
@@ -18,7 +18,7 @@ const writeUriStructured = ({directory, serializable}) => {
   }
 };
 
-const readUriStructured = ({directory}) => {
+const readUriStructured = ({ directory }) => {
   const files = [];
 
   const queue = ['.'];

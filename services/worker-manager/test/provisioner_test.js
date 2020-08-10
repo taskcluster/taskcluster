@@ -2,8 +2,8 @@ const assert = require('assert');
 const helper = require('./helper');
 const testing = require('taskcluster-lib-testing');
 const taskcluster = require('taskcluster-client');
-const {LEVELS} = require('taskcluster-lib-monitor');
-const {WorkerPool, Worker} = require('../src/data');
+const { LEVELS } = require('taskcluster-lib-monitor');
+const { WorkerPool, Worker } = require('../src/data');
 
 helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   helper.withDb(mock, skipping);
@@ -21,7 +21,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   });
 
   suite('provisioning loop', function() {
-    const testCase = async ({workers = [], workerPools = [], assertion, expectErrors = false}) => {
+    const testCase = async ({ workers = [], workerPools = [], assertion, expectErrors = false }) => {
       await Promise.all(workers.map(w => {
         const worker = Worker.fromApi(w);
         return worker.create(helper.db);
@@ -37,7 +37,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       await helper.initiateProvisioner();
       await testing.poll(async () => {
         if (!expectErrors) {
-          const error = monitor.manager.messages.find(({Type}) => Type === 'monitor.error');
+          const error = monitor.manager.messages.find(({ Type }) => Type === 'monitor.error');
           if (error) {
             throw new Error(JSON.stringify(error, null, 2));
           }
@@ -49,7 +49,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
               msg => msg.Type === 'worker-pool-provisioned' && msg.Fields.workerPoolId === wt.workerPoolId), {
               Logger: 'taskcluster.test.provisioner',
               Type: 'worker-pool-provisioned',
-              Fields: {workerPoolId: wt.workerPoolId, providerId: pId, v: 1},
+              Fields: { workerPoolId: wt.workerPoolId, providerId: pId, v: 1 },
               Severity: LEVELS.info,
             });
           const msg = monitor.manager.messages.find(
@@ -233,7 +233,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
           msg => msg.Type === 'remove-resource' && msg.Logger.endsWith('testing1')), {
           Logger: `taskcluster.test.provider.testing1`,
           Type: 'remove-resource',
-          Fields: {workerPoolId: 'ff/ee'},
+          Fields: { workerPoolId: 'ff/ee' },
           Severity: LEVELS.notice,
         });
       },
@@ -277,7 +277,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         Logger: 'taskcluster.test.provider.testing1',
         Type: 'create-resource',
         Severity: LEVELS.notice,
-        Fields: {workerPoolId: 'pp/foo'},
+        Fields: { workerPoolId: 'pp/foo' },
       });
     });
 
@@ -309,7 +309,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         Logger: 'taskcluster.test.provider.testing1',
         Type: 'update-resource',
         Severity: LEVELS.notice,
-        Fields: {workerPoolId: 'pp/foo'},
+        Fields: { workerPoolId: 'pp/foo' },
       });
     });
 
@@ -329,7 +329,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         Logger: 'taskcluster.test.provider.testing1',
         Type: 'create-resource',
         Severity: LEVELS.notice,
-        Fields: {workerPoolId: 'pp/foo'},
+        Fields: { workerPoolId: 'pp/foo' },
       });
     });
   });
@@ -355,7 +355,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
           msg => msg.Type === 'worker-pool-provisioned' && msg.Fields.workerPoolId === 'pp/ww'), {
           Logger: 'taskcluster.test.provisioner',
           Type: 'worker-pool-provisioned',
-          Fields: {workerPoolId: 'pp/ww', providerId: 'testing1', v: 1},
+          Fields: { workerPoolId: 'pp/ww', providerId: 'testing1', v: 1 },
           Severity: LEVELS.info,
         });
     });
@@ -383,7 +383,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         monitor.manager.messages.find(msg => msg.Type === 'monitor.generic'), {
           Logger: 'taskcluster.test.provisioner',
           Type: 'monitor.generic',
-          Fields: {message: 'Worker pool pp/ww has unknown providerId NO-SUCH'},
+          Fields: { message: 'Worker pool pp/ww has unknown providerId NO-SUCH' },
           Severity: LEVELS.warning,
         });
     });
@@ -408,14 +408,14 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
           msg => msg.Type === 'worker-pool-provisioned' && msg.Fields.workerPoolId === 'pp/ww'), {
           Logger: 'taskcluster.test.provisioner',
           Type: 'worker-pool-provisioned',
-          Fields: {workerPoolId: 'pp/ww', providerId: 'testing1', v: 1},
+          Fields: { workerPoolId: 'pp/ww', providerId: 'testing1', v: 1 },
           Severity: LEVELS.info,
         });
       assert.deepEqual(
         monitor.manager.messages.find(msg => msg.Type === 'monitor.generic'), {
           Logger: 'taskcluster.test.provisioner',
           Type: 'monitor.generic',
-          Fields: {message: 'Worker pool pp/ww has unknown previousProviderIds entry NO-SUCH (ignoring)'},
+          Fields: { message: 'Worker pool pp/ww has unknown previousProviderIds entry NO-SUCH (ignoring)' },
           Severity: LEVELS.info,
         });
     });
@@ -462,7 +462,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
           msg => msg.Type === 'test-deprovision' && msg.Fields.workerPoolId === workerPool.workerPoolId), {
           Logger: 'taskcluster.test.provider.testing1', // This is the old providerId
           Type: 'test-deprovision',
-          Fields: {workerPoolId: workerPool.workerPoolId},
+          Fields: { workerPoolId: workerPool.workerPoolId },
           Severity: LEVELS.notice,
         });
     });
@@ -507,7 +507,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
           msg => msg.Type === 'test-deprovision' && msg.Fields.workerPoolId === workerPool.workerPoolId), {
           Logger: 'taskcluster.test.provider.testing1', // This is the old providerId
           Type: 'test-deprovision',
-          Fields: {workerPoolId: workerPool.workerPoolId},
+          Fields: { workerPoolId: workerPool.workerPoolId },
           Severity: LEVELS.notice,
         });
       assert.deepEqual(

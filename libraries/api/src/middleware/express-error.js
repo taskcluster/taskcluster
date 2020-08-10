@@ -12,8 +12,8 @@ exports.isProduction = process.env.NODE_ENV === 'production';
  * present must match the pattern given in `options` or the request will be
  * rejected with a 400 error message.
  */
-const expressError = ({errorCodes, entry}) => {
-  const {name: method, cleanPayload} = entry;
+const expressError = ({ errorCodes, entry }) => {
+  const { name: method, cleanPayload } = entry;
   return (err, req, res, next) => {
 
     if (res.headersSent) {
@@ -36,7 +36,7 @@ const expressError = ({errorCodes, entry}) => {
       req.tcContext.monitor.reportError(err);
 
       // then formulate a generic error to send to the HTTP client
-      const details = {incidentId};
+      const details = { incidentId };
       if (!exports.isProduction) {
         if (err.stack) {
           details.error = err.stack.toString();
@@ -49,7 +49,7 @@ const expressError = ({errorCodes, entry}) => {
           '' :
           ' Error (not shown in production):\n```\n{{error}}\n```');
 
-      err = new ErrorReply({code: 'InternalServerError', message, details});
+      err = new ErrorReply({ code: 'InternalServerError', message, details });
     }
 
     let code = err.code;
@@ -96,7 +96,7 @@ const expressError = ({errorCodes, entry}) => {
       '* time:       ' + requestInfo.time,
     ].join('\n');
 
-    return res.status(errorCodes[code]).json({code, message, requestInfo});
+    return res.status(errorCodes[code]).json({ code, message, requestInfo });
   };
 };
 

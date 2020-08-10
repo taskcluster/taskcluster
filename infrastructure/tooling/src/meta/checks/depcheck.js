@@ -1,6 +1,6 @@
-const {Worker, isMainThread, parentPort} = require('worker_threads');
+const { Worker, isMainThread, parentPort } = require('worker_threads');
 const _ = require('lodash');
-const {REPO_ROOT, gitLsFiles, readRepoFile} = require('../../utils');
+const { REPO_ROOT, gitLsFiles, readRepoFile } = require('../../utils');
 const acorn = require("acorn-loose");
 const walk = require("acorn-walk");
 const builtinModules = require('builtin-modules');
@@ -20,8 +20,8 @@ if (isMainThread) {
     run: async (requirements, utils) => {
       return new Promise((resolve, reject) => {
         const worker = new Worker(__filename, {});
-        worker.on('message', function ({err, message}) {
-          err ? reject(err) : utils.status({message});
+        worker.on('message', function ({ err, message }) {
+          err ? reject(err) : utils.status({ message });
         });
         worker.on('error', reject);
         worker.on('exit', (code) => {
@@ -36,7 +36,7 @@ if (isMainThread) {
   });
 } else {
   const status = message => {
-    parentPort.postMessage({message});
+    parentPort.postMessage({ message });
   };
 
   const handleFile = async (file, deps, used, section) => {
@@ -93,16 +93,16 @@ if (isMainThread) {
     const specials = rootPkg.metatests.specialImports;
 
     status("listing files");
-    let prodFiles = await gitLsFiles({patterns: ['services/*/src/**.js', 'libraries/*/src/**.js', 'db/src/**.js', 'services/prelude.js']});
+    let prodFiles = await gitLsFiles({ patterns: ['services/*/src/**.js', 'libraries/*/src/**.js', 'db/src/**.js', 'services/prelude.js'] });
     prodFiles = prodFiles.filter(f => !f.startsWith('libraries/testing'));
-    const devFiles = await gitLsFiles({patterns: [
+    const devFiles = await gitLsFiles({ patterns: [
       'services/*/test/**.js',
       'libraries/*/test/**.js',
       'db/test/**.js',
       'infrastructure/tooling/**.js',
       'libraries/testing/src/**.js',
       'test/**.js',
-    ]});
+    ] });
 
     let usedInProd = new Set();
     let usedInDev = new Set();
@@ -135,7 +135,7 @@ if (isMainThread) {
   main().then(
     () => process.exit(0),
     err => {
-      parentPort.postMessage({err});
+      parentPort.postMessage({ err });
       process.exit(1);
     });
 }

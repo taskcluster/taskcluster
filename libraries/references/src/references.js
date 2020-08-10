@@ -1,10 +1,10 @@
 const builtServices = require('./built-services');
-const {makeSerializable, fromSerializable} = require('./serializable');
-const {writeUriStructured, readUriStructured} = require('./uri-structured');
-const {getCommonSchemas} = require('./common-schemas');
+const { makeSerializable, fromSerializable } = require('./serializable');
+const { writeUriStructured, readUriStructured } = require('./uri-structured');
+const { getCommonSchemas } = require('./common-schemas');
 const Ajv = require('ajv');
 const regexEscape = require('regex-escape');
-const {validate} = require('./validate');
+const { validate } = require('./validate');
 
 /**
  * Representation of a set of references. This is considered immutable after
@@ -20,7 +20,7 @@ const {validate} = require('./validate');
  * used only for error messages from validation, etc.
  */
 class References {
-  constructor({rootUrl, schemas, references}) {
+  constructor({ rootUrl, schemas, references }) {
     this.rootUrl = rootUrl;
     this.schemas = schemas;
     this.references = references;
@@ -39,13 +39,13 @@ class References {
    * The data in the directory will be amended with the "common" schemas and
    * meta-schemas.
    */
-  static fromBuiltServices({directory}) {
-    let {references, schemas} = builtServices.load({directory});
+  static fromBuiltServices({ directory }) {
+    let { references, schemas } = builtServices.load({ directory });
     schemas = schemas.concat(getCommonSchemas());
     return new References({
       rootUrl: undefined,
       references,
-      schemas});
+      schemas });
   }
 
   /**
@@ -55,9 +55,9 @@ class References {
    * If the data is absolute, provide the rootUrl; for abstract data, pass
    * rootUrl: undefined.
    */
-  static fromUriStructured({directory, rootUrl}) {
+  static fromUriStructured({ directory, rootUrl }) {
     return References.fromSerializable({
-      serializable: readUriStructured({directory}),
+      serializable: readUriStructured({ directory }),
       rootUrl,
     });
   }
@@ -69,10 +69,10 @@ class References {
    * If the data is absolute, provide the rootUrl; for abstract data, pass
    * rootUrl: undefined.
    */
-  static fromSerializable({serializable, rootUrl}) {
+  static fromSerializable({ serializable, rootUrl }) {
     return new References({
       rootUrl,
-      ...fromSerializable({serializable}),
+      ...fromSerializable({ serializable }),
     });
   }
 
@@ -82,11 +82,11 @@ class References {
    * schemas are valid, and used during `yarn generate` to generate new
    * references.
    */
-  static fromService({schemaset, references}) {
+  static fromService({ schemaset, references }) {
     const schemas = Array.from(getCommonSchemas());
     if (schemaset) {
       Object.entries(schemaset.abstractSchemas()).forEach(([filename, content]) => {
-        schemas.push({filename, content});
+        schemas.push({ filename, content });
       });
     }
 
@@ -95,14 +95,14 @@ class References {
       const apiVersion = content.apiVersion || 'v1';
       // try to find the schema, but make up a name if this fails (it will get caught
       // later in validation)
-      const schema = schemas.find(({content: sch}) => sch.$id === content.$schema);
+      const schema = schemas.find(({ content: sch }) => sch.$id === content.$schema);
       const kind = schema ? schema.content.metadata.name : 'unknown';
       return `references/${serviceName}/${apiVersion || 'v1'}/${kind}.json`;
     };
 
     return new References({
       schemas,
-      references: references.map(content => ({content, filename: referenceFilename(content)})),
+      references: references.map(content => ({ content, filename: referenceFilename(content) })),
     });
   }
 
@@ -134,7 +134,7 @@ class References {
   /**
    * Write out a URI-structured form of this instance.
    */
-  writeUriStructured({directory}) {
+  writeUriStructured({ directory }) {
     writeUriStructured({
       directory,
       serializable: this.makeSerializable(),
@@ -146,7 +146,7 @@ class References {
    */
   makeSerializable() {
     this.validate();
-    return makeSerializable({references: this});
+    return makeSerializable({ references: this });
   }
 
   /**
@@ -175,8 +175,8 @@ class References {
       ajv.addMetaSchema(require('ajv/lib/refs/json-schema-draft-06.json'));
 
       // identify metaschemas, so we can all addMetaSchema for them
-      const metaSchemas = new Set(this.schemas.map(({content}) => content.$schema));
-      for (let {content} of this.schemas) {
+      const metaSchemas = new Set(this.schemas.map(({ content }) => content.$schema));
+      for (let { content } of this.schemas) {
         // try to be resilient to bad schemas, as validation should be able to give
         // better error messages about schema problems.
         if (!content.$id) {
@@ -205,7 +205,7 @@ class References {
 
     if (!this._schemasById) {
       this._schemasById = this.schemas.reduce(
-        (schemas, {content}) => schemas.set(content.$id, content), new Map());
+        (schemas, { content }) => schemas.set(content.$id, content), new Map());
     }
 
     return this._schemasById.get($id);
@@ -266,7 +266,7 @@ class References {
   _withRewrittenUrls(rewrite) {
     return {
       references:
-        this.references.map(({content, filename}) => ({
+        this.references.map(({ content, filename }) => ({
           content: {
             ...content,
             $schema: content.$schema && rewrite(content.$schema),
@@ -274,7 +274,7 @@ class References {
           filename,
         })),
       schemas:
-        this.schemas.map(({content, filename}) => ({
+        this.schemas.map(({ content, filename }) => ({
           content: {
             ...content,
             $schema: content.$schema && rewrite(content.$schema),

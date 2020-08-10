@@ -1,6 +1,6 @@
 const request = require('superagent');
 const assert = require('assert');
-const {APIBuilder} = require('../');
+const { APIBuilder } = require('../');
 const helper = require('./helper');
 const libUrls = require('taskcluster-lib-urls');
 const path = require('path');
@@ -11,7 +11,7 @@ suite(testing.suiteName(), function() {
   const u = path => libUrls.api(helper.rootUrl, 'test', 'v1', path);
 
   setup(async () => {
-    helper.setupServer({builder});
+    helper.setupServer({ builder });
   });
   teardown(() => {
     helper.teardownServer();
@@ -48,7 +48,7 @@ suite(testing.suiteName(), function() {
     category: 'API Library',
     description: 'Place we can call to test something',
   }, function(req, res) {
-    res.reply({value: 4});
+    res.reply({ value: 4 });
   });
 
   // Declare a method we can use to test invalid output
@@ -61,7 +61,7 @@ suite(testing.suiteName(), function() {
     category: 'API Library',
     description: 'Place we can call to test something',
   }, function(req, res) {
-    res.reply({value: 12});
+    res.reply({ value: 12 });
   });
 
   // Declare a method we can test input validation skipping on
@@ -89,7 +89,7 @@ suite(testing.suiteName(), function() {
     title: 'Test End-Point',
     description: 'Place we can call to test something',
   }, function(req, res) {
-    res.reply({value: 12});
+    res.reply({ value: 12 });
   });
 
   // Declare a method we can test blob output on
@@ -102,7 +102,7 @@ suite(testing.suiteName(), function() {
     category: 'API Library',
     description: 'Place we can call to test something',
   }, function(req, res) {
-    res.reply({value: 'Hello World'});
+    res.reply({ value: 'Hello World' });
   });
 
   // Declare a method we can use to test res.reply with empty body
@@ -138,8 +138,8 @@ suite(testing.suiteName(), function() {
     title: 'Test End-Point',
     description: 'place to call to trigger a double send',
   }, function(req, res) {
-    res.status(400).json({error: 'yep'});
-    res.status(200).reply({value: 1});
+    res.status(400).json({ error: 'yep' });
+    res.status(200).reply({ value: 1 });
   });
 
   builder.declare({
@@ -151,7 +151,7 @@ suite(testing.suiteName(), function() {
     title: 'Test End-Point',
     description: 'place to call to trigger a double send',
   }, function(req, res) {
-    res.status(400).reply({value: 1});
+    res.status(400).reply({ value: 1 });
     res.reportError('InputError', 'uhoh', {});
   });
 
@@ -160,7 +160,7 @@ suite(testing.suiteName(), function() {
     const url = u('/test-input');
     return request
       .post(url)
-      .send({value: 5})
+      .send({ value: 5 })
       .then(function(res) {
         assert(res.ok, 'Request failed');
         assert(res.text === 'Hello World', 'Got wrong value');
@@ -172,7 +172,7 @@ suite(testing.suiteName(), function() {
     const url = u('/test-input');
     return request
       .post(url)
-      .send({value: 11})
+      .send({ value: 11 })
       .then(res => assert(false, 'should have failed!'))
       .catch(function(err) {
         assert(err.status === 400, 'Request wasn\'t rejected');
@@ -210,7 +210,7 @@ suite(testing.suiteName(), function() {
     const url = u('/test-skip-input-validation');
     return request
       .post(url)
-      .send({value: 100})
+      .send({ value: 100 })
       .then(function(res) {
         assert(res.ok, 'Request failed');
         assert(res.text === 'Hello World', 'Got wrong value');
@@ -243,7 +243,7 @@ suite(testing.suiteName(), function() {
     const url = u('/test-input');
     return request
       .post(url)
-      .send(JSON.stringify({value: 5}))
+      .send(JSON.stringify({ value: 5 }))
       .set('content-type', 'application/json')
       .then(function(res) {
         assert(res.status === 200, 'Request rejected');
@@ -254,7 +254,7 @@ suite(testing.suiteName(), function() {
     const url = u('/test-input');
     return request
       .post(url)
-      .send(JSON.stringify({value: 5}))
+      .send(JSON.stringify({ value: 5 }))
       .set('content-type', 'text/x-json')
       .then(res => assert(false, 'should have failed!'))
       .catch(function(err) {
@@ -311,7 +311,7 @@ suite(testing.suiteName(), function() {
       folder: path.join(__dirname, 'schemas'),
     });
 
-    const api = await builder.build({rootUrl: libUrls.testRootUrl(), schemaset, monitor: helper.monitor});
+    const api = await builder.build({ rootUrl: libUrls.testRootUrl(), schemaset, monitor: helper.monitor });
     try {
       api.router();
     } catch (err) {

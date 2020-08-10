@@ -1,6 +1,6 @@
 const _ = require('lodash');
 const jsone = require('json-e');
-const {consume} = require('taskcluster-lib-pulse');
+const { consume } = require('taskcluster-lib-pulse');
 const libUrls = require('taskcluster-lib-urls');
 
 /** Handler listening for tasks that carries notifications */
@@ -58,7 +58,7 @@ class Handler {
   }
 
   async onMessage(message) {
-    let {status} = message.payload;
+    let { status } = message.payload;
 
     // If task was canceled, we don't send a notification since this was a deliberate user action
     if (status.state === 'exception') {
@@ -88,7 +88,7 @@ class Handler {
       switch (route[1]) {
         case 'irc-user': {
           if (_.has(task, 'extra.notify.ircUserMessage')) {
-            ircMessage = this.renderMessage(task.extra.notify.ircUserMessage, {task, status, taskId});
+            ircMessage = this.renderMessage(task.extra.notify.ircUserMessage, { task, status, taskId });
           }
           return await this.notifier.irc({
             user: route[2],
@@ -97,7 +97,7 @@ class Handler {
         }
         case 'irc-channel': {
           if (_.has(task, 'extra.notify.ircChannelMessage')) {
-            ircMessage = this.renderMessage(task.extra.notify.ircChannelMessage, {task, status, taskId});
+            ircMessage = this.renderMessage(task.extra.notify.ircChannelMessage, { task, status, taskId });
           }
           return await this.notifier.irc({
             channel: route[2],
@@ -111,10 +111,10 @@ class Handler {
           let formattedBody = undefined;
           let format = _.get(task, 'extra.notify.matrixFormat');
           if (_.has(task, 'extra.notify.matrixBody')) {
-            body = this.renderMessage(task.extra.notify.matrixBody, {task, status, taskId});
+            body = this.renderMessage(task.extra.notify.matrixBody, { task, status, taskId });
           }
           if (_.has(task, 'extra.notify.matrixFormattedBody')) {
-            formattedBody = this.renderMessage(task.extra.notify.matrixFormattedBody, {task, status, taskId});
+            formattedBody = this.renderMessage(task.extra.notify.matrixFormattedBody, { task, status, taskId });
           }
           try {
             return await this.notifier.matrix({
@@ -127,7 +127,7 @@ class Handler {
           } catch (err) {
             // This just means that we haven't been invited to the room yet
             if (err.errcode === 'M_FORBIDDEN') {
-              return this.monitor.log.matrixForbidden({roomId});
+              return this.monitor.log.matrixForbidden({ roomId });
             }
             throw err;
           }
@@ -148,15 +148,15 @@ Task [\`${taskId}\`](${href}) in task-group [\`${task.taskGroupId}\`](${groupHre
 **Owner:** ${task.metadata.owner}
 **Source:** ${task.metadata.source}
           `;
-          let link = {text: 'Inspect Task', href};
+          let link = { text: 'Inspect Task', href };
           let subject = `Task ${status.state}: ${task.metadata.name} - ${taskId}`;
           let template = 'simple';
           if (_.has(task, 'extra.notify.email')) {
             let extra = task.extra.notify.email;
-            content = extra.content ? this.renderMessage(extra.content, {task, status}) : content;
-            subject = extra.subject ? this.renderMessage(extra.subject, {task, status}) : subject;
-            link = extra.link ? jsone(extra.link, {task, status}) : link;
-            template = extra.template ? jsone(extra.template, {task, status}) : template;
+            content = extra.content ? this.renderMessage(extra.content, { task, status }) : content;
+            subject = extra.subject ? this.renderMessage(extra.subject, { task, status }) : subject;
+            link = extra.link ? jsone(extra.link, { task, status }) : link;
+            template = extra.template ? jsone(extra.template, { task, status }) : template;
           }
           return await this.notifier.email({
             address: _.join(_.slice(route, 2, route.length - 1), '.'),

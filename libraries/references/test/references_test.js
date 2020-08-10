@@ -1,7 +1,7 @@
 const assert = require('assert');
 const fs = require('fs');
-const {getCommonSchemas} = require('../src/common-schemas');
-const {makeSerializable} = require('../src/serializable');
+const { getCommonSchemas } = require('../src/common-schemas');
+const { makeSerializable } = require('../src/serializable');
 const mockFs = require('mock-fs');
 const References = require('..');
 const testing = require('taskcluster-lib-testing');
@@ -42,7 +42,7 @@ suite(testing.suiteName(), function() {
           serviceName: 'testy',
           apiVersion: 'v2',
         },
-      ]});
+      ] });
     assert(references.references.some(r => r.content.serviceName === 'testy'));
     assert(references.schemas.some(s => s.content.$id === 'somefile.json#'));
   });
@@ -50,7 +50,7 @@ suite(testing.suiteName(), function() {
   test('makeSerializable', function() {
     assert.deepEqual(
       references.makeSerializable(),
-      makeSerializable({references}));
+      makeSerializable({ references }));
   });
 
   test('writes uri-structured', function() {
@@ -85,30 +85,30 @@ suite(testing.suiteName(), function() {
         content: {
           $schema: '/schemas/common/metaschema.json#',
           $id: '/schemas/test/sch.json#',
-          metadata: {name: 'api', version: 1},
+          metadata: { name: 'api', version: 1 },
           type: 'string',
         },
       }]),
     });
 
-    references.writeUriStructured({directory: '/refdata'});
+    references.writeUriStructured({ directory: '/refdata' });
     assert.deepEqual(JSON.parse(fs.readFileSync('/refdata/schemas/test/sch.json')), {
       $id: '/schemas/test/sch.json#',
       $schema: '/schemas/common/metaschema.json#',
-      metadata: {name: 'api', version: 1},
+      metadata: { name: 'api', version: 1 },
       type: 'string',
     });
   });
 
   test('empty references pass validation', function() {
-    const references = new References({references: [], schemas: []});
+    const references = new References({ references: [], schemas: [] });
     references.validate();
   });
 
   test('bogus references fail validation', function() {
-    const references = new References({references: [], schemas: [
-      {filename: 'bogus.json', content: {}},
-    ]});
+    const references = new References({ references: [], schemas: [
+      { filename: 'bogus.json', content: {} },
+    ] });
     assert.throws(
       () => references.validate(),
       'no $id');

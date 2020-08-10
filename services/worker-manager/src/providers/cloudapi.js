@@ -1,4 +1,4 @@
-const {default: PQueue} = require('p-queue');
+const { default: PQueue } = require('p-queue');
 
 /**
  * All cloud providers we interface with have things like api request rate
@@ -41,7 +41,7 @@ class CloudAPI {
     this.errorHandler = errorHandler;
     this.monitor = monitor;
     for (const type of types) {
-      const {interval, intervalCap} = (apiRateLimits[type] || {});
+      const { interval, intervalCap } = (apiRateLimits[type] || {});
       this.queues[type] = new PQueue({
         interval: interval || intervalDefault,
         intervalCap: intervalCap || intervalCapDefault,
@@ -55,9 +55,9 @@ class CloudAPI {
       throw new Error(`Unknown p-queue attempted: ${type}`);
     }
     try {
-      return await queue.add(func, {priority: tries});
+      return await queue.add(func, { priority: tries });
     } catch (err) {
-      let {backoff, level, reason} = this.errorHandler({err, tries});
+      let { backoff, level, reason } = this.errorHandler({ err, tries });
 
       if (!queue.isPaused) {
         this.monitor.log.cloudApiPaused({
@@ -66,7 +66,7 @@ class CloudAPI {
           reason: reason || 'unknown',
           queueSize: queue.size,
           duration: backoff,
-        }, {level: level || 'notice'});
+        }, { level: level || 'notice' });
         queue.pause();
         setTimeout(() => {
           this.monitor.log.cloudApiResumed({

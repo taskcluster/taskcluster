@@ -1,4 +1,4 @@
-const {MonitorManager} = require('taskcluster-lib-monitor');
+const { MonitorManager } = require('taskcluster-lib-monitor');
 
 MonitorManager.register({
   name: 'apiMethod',
@@ -45,7 +45,7 @@ MonitorManager.register({
  * Log an API request on completion, including information determined
  * by the `remoteAuthentication` middleware, if present.
  */
-const logRequest = ({builder, entry}) => {
+const logRequest = ({ builder, entry }) => {
   return (req, res, next) => {
     let sent = false;
     const start = process.hrtime();

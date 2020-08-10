@@ -8,7 +8,7 @@ const getArtifact = require('./helper/get_artifact');
 const sleep = require('./helper/sleep');
 const waitForEvent = require('../../src/lib/wait_for_event');
 const assert = require('assert');
-const {suiteName} = require('taskcluster-lib-testing');
+const { suiteName } = require('taskcluster-lib-testing');
 const helper = require('../helper');
 
 helper.secrets.mockSuite(suiteName(), ['docker', 'ci-creds'], function(mock, skipping) {

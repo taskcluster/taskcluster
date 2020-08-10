@@ -1,7 +1,7 @@
 export const succeedWith = (response) => {
   window.fetch.returns(Promise.resolve(new Response(
     JSON.stringify(response),
-    { status: 200, headers: { 'Content-Type': 'application/json'} },
+    { status: 200, headers: { 'Content-Type': 'application/json' } },
   )));
 };
 

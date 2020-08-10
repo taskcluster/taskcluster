@@ -6,11 +6,11 @@ const fs = require('mz/fs');
 const got = require('got');
 const tar = require('tar-fs');
 const TestWorker = require('../testworker');
-const {removeImage} = require('../../src/lib/util/remove_image');
+const { removeImage } = require('../../src/lib/util/remove_image');
 const pipe = require('promisepipe');
 const sleep = require('./helper/sleep');
 const taskcluster = require('taskcluster-client');
-const {suiteName} = require('taskcluster-lib-testing');
+const { suiteName } = require('taskcluster-lib-testing');
 const helper = require('../helper');
 
 function createImageName(taskId, runId) {
@@ -129,7 +129,7 @@ helper.secrets.mockSuite(suiteName(), ['docker', 'ci-creds'], function(mock, ski
     //so the tar actually finishes extracting; tarStream doesn't have an end event
     await sleep(1000);
 
-    let testStr = await fs.readFile('/tmp/cacheload/test.log', {encoding: 'utf-8'});
+    let testStr = await fs.readFile('/tmp/cacheload/test.log', { encoding: 'utf-8' });
     assert.equal(testStr, 'testString\n');
 
     //cleanup temp folder

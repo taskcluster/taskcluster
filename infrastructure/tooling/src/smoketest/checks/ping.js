@@ -1,11 +1,11 @@
 const path = require('path');
 const libUrls = require('taskcluster-lib-urls');
 const got = require('got');
-const {listServices, readRepoYAML} = require('../../utils');
+const { listServices, readRepoYAML } = require('../../utils');
 
 const SERVICES = listServices();
 
-exports.scopeExpression = {AllOf: []};
+exports.scopeExpression = { AllOf: [] };
 exports.tasks = [];
 
 exports.tasks.push({
@@ -16,11 +16,11 @@ exports.tasks.push({
   ],
   run: async (requirements, utils) => {
     const dunderVersion = `${process.env.TASKCLUSTER_ROOT_URL}/__version__`;
-    const resp = await got(dunderVersion, {throwHttpErrors: true});
+    const resp = await got(dunderVersion, { throwHttpErrors: true });
 
     try {
       const body = JSON.parse(resp.body);
-      return {'deployment-version': body.version};
+      return { 'deployment-version': body.version };
     } catch (err) {
       throw new Error('__version__ did not return valid JSON');
     }

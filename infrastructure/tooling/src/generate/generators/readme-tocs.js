@@ -1,5 +1,5 @@
 const path = require('path');
-const {gitLsFiles, readRepoFile, writeRepoFile} = require('../../utils');
+const { gitLsFiles, readRepoFile, writeRepoFile } = require('../../utils');
 
 const IGNORE = [
   'infrastructure/docker-images/worker-ci/git/README.md',
@@ -15,7 +15,7 @@ exports.tasks = [{
     'db-fns-readme',
   ],
   run: async (requirements, utils) => {
-    utils.status({message: 'gathering READMEs'});
+    utils.status({ message: 'gathering READMEs' });
     let readmes = (await gitLsFiles())
       .filter(file => file.endsWith('README.md'))
       // ignore generated output
@@ -24,7 +24,7 @@ exports.tasks = [{
       .filter(file => !file.match(/\/test\//))
       // ignore some other files
       .filter(file => !IGNORE.includes(file))
-      .map(file => ({dir: path.dirname(file).replace(/^.$/, ''), children: []}));
+      .map(file => ({ dir: path.dirname(file).replace(/^.$/, ''), children: [] }));
 
     // read each README and extract titles where available
     const firstLine = /^# (.*)\n/;
@@ -53,7 +53,7 @@ exports.tasks = [{
 
     // generate the lines of a table of contents for a particular README
     const tocLines = (lines, indent, dir, children) => {
-      for (let child of children.sort(({dir: a}, {dir: b}) => a < b ? -1 : a > b ? 1 : 0)) {
+      for (let child of children.sort(({ dir: a }, { dir: b }) => a < b ? -1 : a > b ? 1 : 0)) {
         const relative = path.relative(dir, child.dir);
         const title = child.title || relative;
         lines.push(`${indent}* [${title}](${relative}#readme)`);
@@ -63,10 +63,10 @@ exports.tasks = [{
     };
 
     // recursively write out TOC's
-    const rewrite = async ({content, dir, title, children}) => {
+    const rewrite = async ({ content, dir, title, children }) => {
       const lines = tocLines([], '', dir, children);
       if (lines.length > 0) {
-        utils.status({message: `rewriting ${path.join(dir, 'README.md')}`});
+        utils.status({ message: `rewriting ${path.join(dir, 'README.md')}` });
         const newContent = content.replace(
           /(<!-- TOC BEGIN -->)(?:.|\n)*(<!-- TOC END -->)/m,
           `$1\n${lines.join('\n')}\n$2`);

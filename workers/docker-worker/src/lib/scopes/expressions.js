@@ -1,7 +1,7 @@
 const assert = require('assert');
-const {validScope} = require('./validate');
-const {scopeCompare, normalizeScopeSet} = require('./normalize');
-const {patternMatch} = require('./satisfaction');
+const { validScope } = require('./validate');
+const { scopeCompare, normalizeScopeSet } = require('./normalize');
+const { patternMatch } = require('./satisfaction');
 
 /** Validate a scope expression */
 const validateExpression = (expr) => {
@@ -128,7 +128,7 @@ exports.removeGivenScopes = function(scopeset, expression) {
       if (AllOf.length === 1) {
         return AllOf[0];
       }
-      return {AllOf};
+      return { AllOf };
     }
 
     if ('AnyOf' in expr) {
@@ -139,7 +139,7 @@ exports.removeGivenScopes = function(scopeset, expression) {
       if (AnyOf.length === 1) {
         return AnyOf[0];
       }
-      return {AnyOf};
+      return { AnyOf };
     }
 
     // Throw an error if we have invalid expression

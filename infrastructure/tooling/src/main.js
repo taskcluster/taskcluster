@@ -1,7 +1,7 @@
 #! /usr/bin/env node
 
 const program = require('commander');
-const {version} = require('../../../package.json');
+const { version } = require('../../../package.json');
 
 const run = (main, arg) => {
   main(arg).then(
@@ -27,7 +27,7 @@ program.command('build')
       console.error('unexpected command-line arguments');
       process.exit(1);
     }
-    const {build} = require('./build');
+    const { build } = require('./build');
     run(build, options[0]);
   });
 
@@ -40,7 +40,7 @@ program.command('release')
       console.error('unexpected command-line arguments');
       process.exit(1);
     }
-    const {release} = require('./release');
+    const { release } = require('./release');
     run(release, options[0]);
   });
 
@@ -52,7 +52,7 @@ program.command('staging-release')
       console.error('unexpected command-line arguments');
       process.exit(1);
     }
-    const {stagingRelease} = require('./release');
+    const { stagingRelease } = require('./release');
     run(stagingRelease, options[0]);
   });
 
@@ -73,7 +73,7 @@ program.command('release:publish')
       console.error('unexpected command-line arguments');
       process.exit(1);
     }
-    const {publish} = require('./build');
+    const { publish } = require('./build');
     run(publish, options[0]);
   });
 
@@ -84,7 +84,7 @@ program.command('generate')
       console.error('unexpected command-line arguments');
       process.exit(1);
     }
-    const {main} = require('./generate');
+    const { main } = require('./generate');
     run(main, options[0]);
   });
 
@@ -108,7 +108,7 @@ program.command('changelog')
       console.error('unexpected command-line arguments');
       process.exit(1);
     }
-    const {add} = require('./changelog');
+    const { add } = require('./changelog');
     run(add, options[0]);
   });
 
@@ -119,7 +119,7 @@ program.command('changelog:show')
       console.error('unexpected command-line arguments');
       process.exit(1);
     }
-    const {show} = require('./changelog');
+    const { show } = require('./changelog');
     run(show, options[0]);
   });
 
@@ -131,7 +131,7 @@ program.command('changelog:check')
       console.error('unexpected command-line arguments');
       process.exit(1);
     }
-    const {check} = require('./changelog');
+    const { check } = require('./changelog');
     run(check, options[0]);
   });
 
@@ -142,7 +142,7 @@ program.command('dev:init')
       console.error('unexpected command-line arguments');
       process.exit(1);
     }
-    const {init} = require('./dev');
+    const { init } = require('./dev');
     run(init, options[0]);
   });
 
@@ -154,7 +154,7 @@ program.command('dev:db:upgrade')
       console.error('unexpected command-line arguments');
       process.exit(1);
     }
-    const {dbUpgrade} = require('./dev');
+    const { dbUpgrade } = require('./dev');
     run(dbUpgrade, options[0]);
   });
 
@@ -166,7 +166,7 @@ program.command('dev:db:downgrade')
       console.error('unexpected command-line arguments');
       process.exit(1);
     }
-    const {dbDowngrade} = require('./dev');
+    const { dbDowngrade } = require('./dev');
     run(dbDowngrade, options[0]);
   });
 
@@ -177,7 +177,7 @@ program.command('dev:apply')
       console.error('unexpected command-line arguments');
       process.exit(1);
     }
-    const {apply} = require('./dev');
+    const { apply } = require('./dev');
     run(apply, options[0]);
   });
 
@@ -188,7 +188,7 @@ program.command('dev:delete')
       console.error('unexpected command-line arguments');
       process.exit(1);
     }
-    const {delete_} = require('./dev');
+    const { delete_ } = require('./dev');
     run(delete_, options[0]);
   });
 
@@ -199,7 +199,7 @@ program.command('dev:verify')
       console.error('unexpected command-line arguments');
       process.exit(1);
     }
-    const {verify} = require('./dev');
+    const { verify } = require('./dev');
     run(verify, options[0]);
   });
 
@@ -209,14 +209,14 @@ program.command('test:meta')
       console.error('unexpected command-line arguments');
       process.exit(1);
     }
-    const {main} = require('./meta');
+    const { main } = require('./meta');
     run(main, options[0]);
   });
 
 program.command('smoketest')
   .option('--target <target>', 'Run a specific check, rather than all of them')
   .on('--help', () => {
-    const {targets} = require('./smoketest/checks');
+    const { targets } = require('./smoketest/checks');
     console.log(`\nAvailable Targets:\n${targets.map(t => `  - ${t}`).join('\n')}`);
   })
   .action((...options) => {
@@ -224,11 +224,11 @@ program.command('smoketest')
       console.error('unexpected command-line arguments');
       process.exit(1);
     }
-    const {main} = require('./smoketest');
+    const { main } = require('./smoketest');
     run(main, options[0]);
   });
 
-program.command('*', {noHelp: true})
+program.command('*', { noHelp: true })
   .action(() => program.help(txt => txt));
 
 program.parse(process.argv);

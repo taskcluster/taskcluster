@@ -1,7 +1,7 @@
 const taskcluster = require('taskcluster-client');
-const {FakeEC2, FakeAzure, FakeGoogle} = require('./fakes');
-const {Worker} = require('../src/data');
-const {stickyLoader, Secrets, fakeauth, withMonitor, withPulse, withDb, resetTables} = require('taskcluster-lib-testing');
+const { FakeEC2, FakeAzure, FakeGoogle } = require('./fakes');
+const { Worker } = require('../src/data');
+const { stickyLoader, Secrets, fakeauth, withMonitor, withPulse, withDb, resetTables } = require('taskcluster-lib-testing');
 const builder = require('../src/api');
 const load = require('../src/main');
 
@@ -24,7 +24,7 @@ exports.withDb = (mock, skipping) => {
 };
 
 exports.withPulse = (mock, skipping) => {
-  withPulse({helper: exports, skipping, namespace: 'taskcluster-worker-manager'});
+  withPulse({ helper: exports, skipping, namespace: 'taskcluster-worker-manager' });
 };
 
 exports.withProviders = (mock, skipping) => {
@@ -153,7 +153,7 @@ exports.withServer = (mock, skipping) => {
 
     fakeauth.start({
       'test-client': ['*'],
-    }, {rootUrl: exports.rootUrl});
+    }, { rootUrl: exports.rootUrl });
 
     // Create client for working with API
     exports.WorkerManager = taskcluster.createClient(builder.reference());
@@ -228,8 +228,8 @@ const stubbedNotify = () => {
       accessToken: 'none',
     },
     fake: {
-      email: async ({address, subject, content}) => {
-        emails.push({address, subject, content});
+      email: async ({ address, subject, content }) => {
+        emails.push({ address, subject, content });
       },
     },
   });
@@ -247,10 +247,10 @@ exports.getWorkers = async () =>
 
 exports.resetTables = (mock, skipping) => {
   setup('reset tables', async function() {
-    await resetTables({tableNames: [
+    await resetTables({ tableNames: [
       'workers',
       'worker_pools',
       'worker_pool_errors',
-    ]});
+    ] });
   });
 };

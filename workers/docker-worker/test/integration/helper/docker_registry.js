@@ -4,7 +4,7 @@ const path = require('path');
 const slugid = require('slugid');
 
 const sleep = require('./sleep');
-const {removeImage} = require('../../../src/lib/util/remove_image');
+const { removeImage } = require('../../../src/lib/util/remove_image');
 const pipe = require('promisepipe');
 
 // Registry proxy image...
@@ -53,7 +53,7 @@ class Registry {
           `${baseDir}:/fixtures`,
         ],
         PortBindings: {
-          '5000/tcp': [{Hostport: '0'}],
+          '5000/tcp': [{ Hostport: '0' }],
         },
       },
     };

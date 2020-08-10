@@ -1,6 +1,6 @@
 const request = require('superagent');
 const assert = require('assert');
-const {APIBuilder} = require('../');
+const { APIBuilder } = require('../');
 const slugid = require('slugid');
 const helper = require('./helper');
 const libUrls = require('taskcluster-lib-urls');
@@ -204,7 +204,7 @@ suite(testing.suiteName(), function() {
     const url = u('/query-param/');
     return request
       .get(url)
-      .query({nextPage: '352'})
+      .query({ nextPage: '352' })
       .catch(function(res) {
         assert(res.ok, 'Request failed');
         assert(res.text === '352', 'Got wrong value');
@@ -225,7 +225,7 @@ suite(testing.suiteName(), function() {
     const url = u('/query-param/');
     return request
       .get(url)
-      .query({nextPage: 'abc'})
+      .query({ nextPage: 'abc' })
       .then(res => assert(false, 'should have failed!'))
       .catch(function(res) {
         assert(!res.ok, 'Expected request failure!');
@@ -237,7 +237,7 @@ suite(testing.suiteName(), function() {
     const url = u('/query-param-fn/');
     return request
       .get(url)
-      .query({incantation: 'abracadabra'})
+      .query({ incantation: 'abracadabra' })
       .then(res => {
         assert(res.ok, 'Request failed');
         assert(res.text === 'abracadabra');
@@ -248,7 +248,7 @@ suite(testing.suiteName(), function() {
     const url = u('/query-param-fn/');
     return request
       .get(url)
-      .query({incantation: 'alohomora'})
+      .query({ incantation: 'alohomora' })
       .then(res => assert(false, 'should have failed!'))
       .catch(function(res) {
         assert(!res.ok, 'Expected request failure!');

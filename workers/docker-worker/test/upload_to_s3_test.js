@@ -4,7 +4,7 @@ const temporary = require('temporary');
 const fs = require('fs');
 const path = require('path');
 const https = require('https');
-const {suiteName} = require('taskcluster-lib-testing');
+const { suiteName } = require('taskcluster-lib-testing');
 
 suite(suiteName(), function () {
   async function getTemporaryStream(filename, data) {
@@ -79,7 +79,7 @@ suite(suiteName(), function () {
         expiry,
         httpHeader,
         'https://localhost:8000',
-        {rejectUnauthorized: false},
+        { rejectUnauthorized: false },
       );
 
       assert.equal(requestState, 2);

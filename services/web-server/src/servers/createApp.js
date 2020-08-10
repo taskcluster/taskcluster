@@ -13,7 +13,7 @@ const credentials = require('./credentials');
 const oauth2AccessToken = require('./oauth2AccessToken');
 const oauth2 = require('./oauth2');
 const PostgresSessionStore = require('../login/PostgresSessionStore');
-const {traceMiddleware} = require('taskcluster-lib-app');
+const { traceMiddleware } = require('taskcluster-lib-app');
 
 module.exports = async ({ cfg, strategies, auth, monitor, db }) => {
   const app = express();

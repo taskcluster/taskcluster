@@ -2,7 +2,7 @@ const sinon = require('sinon');
 const assert = require('assert').strict;
 const testing = require('taskcluster-lib-testing');
 const helper = require('./helper');
-const {CloudAPI} = require('../src/providers/cloudapi');
+const { CloudAPI } = require('../src/providers/cloudapi');
 
 suite(testing.suiteName(), function() {
   let cloud;
@@ -16,7 +16,7 @@ suite(testing.suiteName(), function() {
       intervalCapDefault: 2000,
       monitor: await helper.load('monitor'),
       providerId: 'fake-provider',
-      errorHandler: ({err, tries}) => {
+      errorHandler: ({ err, tries }) => {
         if (err.code === 403) { // for testing purposes, 403 = rate limit
           return {
             backoff: _backoffDelay * 50,
@@ -52,7 +52,7 @@ suite(testing.suiteName(), function() {
 
   test('one 500', async function() {
     const remote = sinon.stub();
-    remote.onCall(0).throws({code: 500});
+    remote.onCall(0).throws({ code: 500 });
     remote.onCall(1).returns(10);
     const result = await cloud.enqueue('query', () => remote());
     assert.equal(result, 10);
@@ -60,9 +60,9 @@ suite(testing.suiteName(), function() {
   });
   test('multiple 500', async function() {
     const remote = sinon.stub();
-    remote.onCall(0).throws({code: 500});
-    remote.onCall(1).throws({code: 520});
-    remote.onCall(2).throws({code: 503});
+    remote.onCall(0).throws({ code: 500 });
+    remote.onCall(1).throws({ code: 520 });
+    remote.onCall(2).throws({ code: 503 });
     remote.onCall(3).returns(15);
     const result = await cloud.enqueue('query', () => remote());
     assert.equal(result, 15);
@@ -70,12 +70,12 @@ suite(testing.suiteName(), function() {
   });
   test('500s forever should throw', async function() {
     const remote = sinon.stub();
-    remote.throws({code: 500});
+    remote.throws({ code: 500 });
 
     try {
       await cloud.enqueue('query', () => remote());
     } catch (err) {
-      assert.deepEqual(err, {code: 500});
+      assert.deepEqual(err, { code: 500 });
       return;
     }
     assert.equal(remote.callCount, 5);

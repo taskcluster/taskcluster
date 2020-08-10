@@ -7,7 +7,7 @@ const crypto = require('crypto');
 const path = require('path');
 const fs = require('fs');
 const generator = require('generate-password');
-const {WorkerPool, Worker} = require('../data');
+const { WorkerPool, Worker } = require('../data');
 
 const auth = require('@azure/ms-rest-nodeauth');
 const armCompute = require('@azure/arm-compute');
@@ -15,8 +15,8 @@ const armNetwork = require('@azure/arm-network');
 const msRestJS = require('@azure/ms-rest-js');
 const msRestAzure = require('@azure/ms-rest-azure-js');
 
-const {ApiError, Provider} = require('./provider');
-const {CloudAPI} = require('./cloudapi');
+const { ApiError, Provider } = require('./provider');
+const { CloudAPI } = require('./cloudapi');
 
 // Azure provisioning and VM power states
 // see here: https://docs.microsoft.com/en-us/azure/virtual-machines/windows/states-lifecycle
@@ -92,11 +92,11 @@ class AzureProvider extends Provider {
       intervalCapDefault: 2000, // The calls we make are all limited 20/sec so 20 * 100 are allowed
       monitor: this.monitor,
       providerId: this.providerId,
-      errorHandler: ({err, tries}) => {
+      errorHandler: ({ err, tries }) => {
         if (err.statusCode === 429) { // too many requests
-          return {backoff: _backoffDelay * 50, reason: 'rateLimit', level: 'notice'};
+          return { backoff: _backoffDelay * 50, reason: 'rateLimit', level: 'notice' };
         } else if (err.statusCode >= 500) { // For 500s, let's take a shorter backoff
-          return {backoff: _backoffDelay * Math.pow(2, tries), reason: 'errors', level: 'warning'};
+          return { backoff: _backoffDelay * Math.pow(2, tries), reason: 'errors', level: 'warning' };
         }
         // If we don't want to do anything special here, just throw and let the
         // calling code figure out what to do
@@ -118,8 +118,8 @@ class AzureProvider extends Provider {
     this.restClient = new msRestAzure.AzureServiceClient(credentials);
   }
 
-  async provision({workerPool, workerInfo}) {
-    const {workerPoolId} = workerPool;
+  async provision({ workerPool, workerInfo }) {
+    const { workerPoolId } = workerPool;
     let toSpawn = await this.estimator.simple({
       workerPoolId,
       ...workerPool.config,
@@ -130,7 +130,7 @@ class AzureProvider extends Provider {
       return; // Nothing to do
     }
 
-    const {terminateAfter, reregistrationTimeout} = Provider.interpretLifecycle(workerPool.config);
+    const { terminateAfter, reregistrationTimeout } = Provider.interpretLifecycle(workerPool.config);
 
     const cfgs = [];
     while (toSpawn > 0) {
@@ -167,12 +167,12 @@ class AzureProvider extends Provider {
 
       // Disallow users from naming diss
       // required
-      let osDisk = {..._.omit(cfg.storageProfile.osDisk, ['name'])};
+      let osDisk = { ..._.omit(cfg.storageProfile.osDisk, ['name']) };
       // optional
       let dataDisks = [];
       if (_.has(cfg, 'storageProfile.dataDisks')) {
         for (let disk of cfg.storageProfile.dataDisks) {
-          dataDisks.push({..._.omit(disk, 'name')});
+          dataDisks.push({ ..._.omit(disk, 'name') });
         }
       }
 
@@ -260,7 +260,7 @@ class AzureProvider extends Provider {
     }));
   }
 
-  async deprovision({workerPool}) {
+  async deprovision({ workerPool }) {
     // nothing to do: we just wait for workers to terminate themselves
   }
 
@@ -268,9 +268,9 @@ class AzureProvider extends Provider {
     return new Date();
   }
 
-  async registerWorker({worker, workerPool, workerIdentityProof}) {
-    const {document} = workerIdentityProof;
-    const monitor = this.workerMonitor({worker});
+  async registerWorker({ worker, workerPool, workerIdentityProof }) {
+    const { document } = workerIdentityProof;
+    const monitor = this.workerMonitor({ worker });
 
     // use the same message for all errors here, so as not to give an attacker
     // extra information.
@@ -293,7 +293,7 @@ class AzureProvider extends Provider {
       let asn1 = forge.asn1.fromDer(forge.util.createBuffer(decodedMessage));
       message = forge.pkcs7.messageFromAsn1(asn1);
     } catch (err) {
-      this.monitor.log.registrationErrorWarning({message: 'Error extracting PKCS#7 message', error: err.toString()});
+      this.monitor.log.registrationErrorWarning({ message: 'Error extracting PKCS#7 message', error: err.toString() });
       throw error();
     }
 
@@ -308,7 +308,7 @@ class AzureProvider extends Provider {
       pem = forge.pki.publicKeyToPem(crt.publicKey);
       sig = message.rawCapture.signature;
     } catch (err) {
-      this.monitor.log.registrationErrorWarning({message: 'Error extracting PKCS#7 message content', error: err.toString()});
+      this.monitor.log.registrationErrorWarning({ message: 'Error extracting PKCS#7 message content', error: err.toString() });
       throw error();
     }
 
@@ -318,7 +318,7 @@ class AzureProvider extends Provider {
       verifier.update(Buffer.from(content));
       assert(verifier.verify(pem, sig, 'binary'));
     } catch (err) {
-      this.monitor.log.registrationErrorWarning({message: 'Error verifying PKCS#7 message signature', error: err.toString()});
+      this.monitor.log.registrationErrorWarning({ message: 'Error verifying PKCS#7 message signature', error: err.toString() });
       throw error();
     }
 
@@ -326,7 +326,7 @@ class AzureProvider extends Provider {
     try {
       forge.pki.verifyCertificateChain(this.caStore, [crt]);
     } catch (err) {
-      this.monitor.log.registrationErrorWarning({message: 'Error verifying certificate chain', error: err.message});
+      this.monitor.log.registrationErrorWarning({ message: 'Error verifying certificate chain', error: err.message });
       throw error();
     }
 
@@ -334,13 +334,13 @@ class AzureProvider extends Provider {
     try {
       payload = JSON.parse(content);
     } catch (err) {
-      this.monitor.log.registrationErrorWarning({message: 'Payload was not valid JSON', error: err.toString()});
+      this.monitor.log.registrationErrorWarning({ message: 'Payload was not valid JSON', error: err.toString() });
       throw error();
     }
 
     let workerVmId = worker.providerData.vm.vmId;
     if (!workerVmId) {
-      const {vmId} = await this.fetchVmInfo(worker);
+      const { vmId } = await this.fetchVmInfo(worker);
       workerVmId = vmId;
     }
 
@@ -362,12 +362,12 @@ class AzureProvider extends Provider {
     try {
       assert(new Date(payload.timeStamp.expiresOn) > this._now());
     } catch (err) {
-      this.monitor.log.registrationErrorWarning({message: 'Expired message', error: err.toString(), expires: payload.timeStamp.expiresOn});
+      this.monitor.log.registrationErrorWarning({ message: 'Expired message', error: err.toString(), expires: payload.timeStamp.expiresOn });
       throw error();
     }
 
     if (worker.state !== Worker.states.REQUESTED) {
-      this.monitor.log.registrationErrorWarning({message: 'Worker was already running.', error: 'Worker was already running.'});
+      this.monitor.log.registrationErrorWarning({ message: 'Worker was already running.', error: 'Worker was already running.' });
       throw error();
     }
 
@@ -406,8 +406,8 @@ class AzureProvider extends Provider {
    * op: a URL for tracking the ongoing status of an Azure operation
    * errors: a list that will have any errors found for that operation appended to it
    */
-  async handleOperation({op, errors, monitor}) {
-    monitor.debug({message: 'handling operation', op});
+  async handleOperation({ op, errors, monitor }) {
+    monitor.debug({ message: 'handling operation', op });
     let req, resp;
     try {
       // NB: we don't respect azure's Retry-After header, we assume our iteration
@@ -419,7 +419,7 @@ class AzureProvider extends Provider {
       // it's ok if we hit an error here, that will trigger resource teardown
       resp = await this._enqueue('opRead', () => this.restClient.sendLongRunningRequest(req));
     } catch (err) {
-      monitor.debug({message: 'reading operation failed', op, error: err.message});
+      monitor.debug({ message: 'reading operation failed', op, error: err.message });
       // this was a connection error of some sort, so we don't really know anything about
       // the status of the operation.  Return true on the assumption that this was a transient
       // connection failure and the operation is probably still running.  We'll come back
@@ -430,7 +430,7 @@ class AzureProvider extends Provider {
     if (resp.status === 404) {
       // operation not found because it has either expired or does not exist
       // nothing more to do
-      monitor.debug({message: 'operation does not exist', op});
+      monitor.debug({ message: 'operation does not exist', op });
       return false;
     }
 
@@ -438,11 +438,11 @@ class AzureProvider extends Provider {
     if (body) {
       // status is guaranteed to exist if the operation was found
       if (body.status === 'InProgress') {
-        monitor.debug({message: 'operation in progress', op});
+        monitor.debug({ message: 'operation in progress', op });
         return true;
       }
       if (body.error) {
-        monitor.debug({message: 'operation failed', op, error: body.error.message});
+        monitor.debug({ message: 'operation failed', op, error: body.error.message });
         errors.push({
           kind: 'operation-error',
           title: 'Operation Error',
@@ -457,7 +457,7 @@ class AzureProvider extends Provider {
       }
     }
 
-    monitor.debug({message: 'operation complete', op});
+    monitor.debug({ message: 'operation complete', op });
     return false;
   }
 
@@ -479,7 +479,7 @@ class AzureProvider extends Provider {
    * modifyFn: a function (worker, resource) that takes the worker and the created
    *   resource, allowing the worker to be modified.
    */
-  async provisionResource({worker, client, resourceType, resourceConfig, modifyFn, monitor}) {
+  async provisionResource({ worker, client, resourceType, resourceConfig, modifyFn, monitor }) {
     if (!_.has(worker.providerData, resourceType)) {
       throw new Error(`Error provisioning worker: providerData does not contain resourceType ${resourceType}`);
     }
@@ -506,7 +506,7 @@ class AzureProvider extends Provider {
           await worker.update(this.db, worker => {
             worker.providerData[resourceType].operation = undefined;
           });
-          await this.removeWorker({worker, reason: `${resourceType} has state ${resource.provisioningState}`});
+          await this.removeWorker({ worker, reason: `${resourceType} has state ${resource.provisioningState}` });
         } else {
           // we found the resource
           await worker.update(this.db, worker => {
@@ -536,7 +536,7 @@ class AzureProvider extends Provider {
             await worker.update(this.db, worker => {
               worker.providerData[resourceType].operation = undefined;
             });
-            await this.removeWorker({worker, reason: 'operation expired'});
+            await this.removeWorker({ worker, reason: 'operation expired' });
           }
           // operation is still in progress or has failed, so don't try to
           // create the resource
@@ -552,7 +552,7 @@ class AzureProvider extends Provider {
       let resourceRequest = await this._enqueue('query', () => client.beginCreateOrUpdate(
         worker.providerData.resourceGroupName,
         typeData.name,
-        {...resourceConfig, tags: worker.providerData.tags},
+        { ...resourceConfig, tags: worker.providerData.tags },
       ));
       // track operation
       await worker.update(this.db, worker => {
@@ -569,7 +569,7 @@ class AzureProvider extends Provider {
    * This function is expected to be called several times per worker as
    * resources are created.
    */
-  async provisionResources({worker, monitor}) {
+  async provisionResources({ worker, monitor }) {
     try {
       // IP
       let ipConfig = {
@@ -668,12 +668,12 @@ class AzureProvider extends Provider {
           description: err.message,
         });
       }
-      return await this.removeWorker({worker, reason: `VM Creation Error: ${err.message}`});
+      return await this.removeWorker({ worker, reason: `VM Creation Error: ${err.message}` });
     }
   }
 
   async fetchVmInfo(worker) {
-    const {provisioningState, vmId} = await this._enqueue('get', () => this.computeClient.virtualMachines.get(
+    const { provisioningState, vmId } = await this._enqueue('get', () => this.computeClient.virtualMachines.get(
       worker.providerData.resourceGroupName,
       worker.providerData.vm.name,
     ));
@@ -684,16 +684,16 @@ class AzureProvider extends Provider {
         worker.providerData.vm.vmId = vmId;
       });
     }
-    return {provisioningState, vmId};
+    return { provisioningState, vmId };
   }
 
-  async checkWorker({worker}) {
+  async checkWorker({ worker }) {
     const monitor = this.workerMonitor({
       worker,
       extra: {
         resourceGroupName: worker.providerData.resourceGroupName,
         vmName: worker.providerData.vm.name,
-      }});
+      } });
 
     // update providerdata from deprecated disk to disks if applicable
     if (_.has(worker.providerData, 'disk')) {
@@ -707,7 +707,7 @@ class AzureProvider extends Provider {
     this.errors[worker.workerPoolId] = this.errors[worker.workerPoolId] || [];
     let state = worker.state || states.REQUESTED;
     try {
-      const {provisioningState} = await this.fetchVmInfo(worker);
+      const { provisioningState } = await this.fetchVmInfo(worker);
       // lets us get power states for the VM
       const instanceView = await this._enqueue('get', () => this.computeClient.virtualMachines.instanceView(
         worker.providerData.resourceGroupName,
@@ -726,7 +726,7 @@ class AzureProvider extends Provider {
         this.seen[worker.workerPoolId] += worker.capacity || 1;
 
         if (worker.providerData.terminateAfter && worker.providerData.terminateAfter < Date.now()) {
-          state = await this.removeWorker({worker, reason: 'terminateAfter time exceeded'});
+          state = await this.removeWorker({ worker, reason: 'terminateAfter time exceeded' });
         }
       } else if (failProvisioningStates.has(provisioningState) ||
                 // if the VM has ever been in a failing power state
@@ -737,7 +737,7 @@ class AzureProvider extends Provider {
           reason: `failed state; provisioningState=${provisioningState}, powerStates=${powerStates.join(', ')}`,
         });
       } else {
-        const {workerPoolId} = worker;
+        const { workerPoolId } = worker;
         const workerPool = await WorkerPool.get(this.db, workerPoolId);
         if (workerPool) {
           await this.reportError({
@@ -752,7 +752,7 @@ class AzureProvider extends Provider {
       if (err.statusCode !== 404) {
         throw err;
       }
-      monitor.debug({message: `vm or state not found, in state ${state}`});
+      monitor.debug({ message: `vm or state not found, in state ${state}` });
 
       // VM has not been found, so it is either
       // 1. still being created
@@ -760,13 +760,13 @@ class AzureProvider extends Provider {
       // 3. deleted outside of provider actions, should start removal
       if (state === states.REQUESTED) {
         // GETs and updates workers that have not registered every loop
-        state = await this.provisionResources({worker, monitor});
+        state = await this.provisionResources({ worker, monitor });
       } else if (state === states.STOPPING) {
         // continuing to stop
-        state = await this.removeWorker({worker, reason: 'continuing removal'});
+        state = await this.removeWorker({ worker, reason: 'continuing removal' });
       } else {
         // VM in unknown state not found, deleted outside provider
-        state = await this.removeWorker({worker, reason: `vm in ${state} not found`});
+        state = await this.removeWorker({ worker, reason: `vm in ${state} not found` });
       }
     }
 
@@ -785,7 +785,7 @@ class AzureProvider extends Provider {
    * Called after an iteration of the worker scanner
    */
   async scanCleanup() {
-    this.monitor.log.scanSeen({providerId: this.providerId, seen: this.seen});
+    this.monitor.log.scanSeen({ providerId: this.providerId, seen: this.seen });
     await Promise.all(Object.entries(this.seen).map(async ([workerPoolId, seen]) => {
       const workerPool = await WorkerPool.get(this.db, workerPoolId);
 
@@ -794,7 +794,7 @@ class AzureProvider extends Provider {
       }
 
       if (this.errors[workerPoolId].length) {
-        await Promise.all(this.errors[workerPoolId].map(error => this.reportError({workerPool, ...error})));
+        await Promise.all(this.errors[workerPoolId].map(error => this.reportError({ workerPool, ...error })));
       }
     }));
   }
@@ -806,7 +806,7 @@ class AzureProvider extends Provider {
    *   * returns true
    *
    */
-  async removeResource({client, worker, resourceType, monitor, index = undefined}) {
+  async removeResource({ client, worker, resourceType, monitor, index = undefined }) {
     if (!_.has(worker.providerData, resourceType)) {
       throw new Error(`Error removing worker: providerData does not contain resourceType ${resourceType}`);
     }
@@ -832,7 +832,7 @@ class AzureProvider extends Provider {
     // lookup resource by name
     if (!typeData.id) {
       try {
-        let {provisioningState} = await this._enqueue('query', () => client.get(
+        let { provisioningState } = await this._enqueue('query', () => client.get(
           worker.providerData.resourceGroupName,
           typeData.name,
         ));
@@ -895,7 +895,7 @@ class AzureProvider extends Provider {
   /*
    * removeWorker marks a worker for deletion and begins removal
    */
-  async removeWorker({worker, reason}) {
+  async removeWorker({ worker, reason }) {
     this.monitor.log.workerRemoved({
       workerPoolId: worker.workerPoolId,
       providerId: worker.providerId,
@@ -908,7 +908,7 @@ class AzureProvider extends Provider {
       extra: {
         resourceGroupName: worker.providerData.resourceGroupName,
         vmName: worker.providerData.vm.name,
-      }});
+      } });
 
     let states = Worker.states;
     if (worker.state === states.STOPPED) {
@@ -985,7 +985,7 @@ class AzureProvider extends Provider {
       // if this is called directly and not via checkWorker may not exist
       this.errors = this.errors || {};
       this.errors[worker.workerPoolId] = this.errors[worker.workerPoolId] || [];
-      monitor.debug({message: 'error removing resources', error: err.message});
+      monitor.debug({ message: 'error removing resources', error: err.message });
       this.errors[worker.workerPoolId].push({
         kind: 'deletion-error',
         title: 'Deletion Error',

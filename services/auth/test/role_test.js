@@ -1,6 +1,6 @@
 const assert = require('assert');
 const helper = require('./helper');
-const {modifyRoles} = require('../src/data');
+const { modifyRoles } = require('../src/data');
 const slugid = require('slugid');
 const _ = require('lodash');
 const assume = require('assume');
@@ -64,7 +64,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['gcp'], function(mock, skipping) 
   test('createRole (prefix)', async () => {
     let auth = new helper.AuthClient({
       rootUrl: helper.rootUrl,
-      credentials: {clientId, accessToken},
+      credentials: { clientId, accessToken },
     });
 
     let roleId = 'thing-id:' + clientId.slice(0, 11) + '*';
@@ -144,7 +144,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['gcp'], function(mock, skipping) 
     helper.onPulsePublish(() => {
       throw new Error('uhoh');
     });
-    const apiClient = helper.apiClient.use({retries: 0});
+    const apiClient = helper.apiClient.use({ retries: 0 });
     await assert.rejects(() => apiClient.createRole('no-publish', {
       description: 'no-pulse-message',
       scopes: ['foo'],
@@ -154,7 +154,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['gcp'], function(mock, skipping) 
     const monitor = await helper.load('monitor');
     assert.equal(
       monitor.manager.messages.filter(
-        ({Type, Fields}) => Type === 'monitor.error' && Fields.message === 'uhoh',
+        ({ Type, Fields }) => Type === 'monitor.error' && Fields.message === 'uhoh',
       ).length,
       1);
     monitor.manager.reset();
@@ -253,7 +253,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['gcp'], function(mock, skipping) 
     let roleIds = [];
     let allRoleIds = {};
     let count = 0;
-    let query = {limit: 1};
+    let query = { limit: 1 };
 
     allRoleIds = await helper.apiClient.listRoleIds();
 
@@ -309,7 +309,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['gcp'], function(mock, skipping) 
     let roles = [];
     let allRoles = {};
     let count = 0;
-    let query = {limit: 1};
+    let query = { limit: 1 };
 
     allRoles = await helper.apiClient.listRoles2();
 
@@ -386,13 +386,13 @@ helper.secrets.mockSuite(testing.suiteName(), ['gcp'], function(mock, skipping) 
     helper.onPulsePublish(() => {
       throw new Error('uhoh');
     });
-    const apiClient = helper.apiClient.use({retries: 0});
+    const apiClient = helper.apiClient.use({ retries: 0 });
     await assert.rejects(() => apiClient.deleteRole('thing-id:' + clientId));
 
     const monitor = await helper.load('monitor');
     assert.equal(
       monitor.manager.messages.filter(
-        ({Type, Fields}) => Type === 'monitor.error' && Fields.message === 'uhoh',
+        ({ Type, Fields }) => Type === 'monitor.error' && Fields.message === 'uhoh',
       ).length,
       1);
     monitor.manager.reset();
@@ -517,7 +517,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['gcp'], function(mock, skipping) 
       helper.onPulsePublish(() => {
         throw new Error('uhoh');
       });
-      const apiClient = auth.use({retries: 0});
+      const apiClient = auth.use({ retries: 0 });
       await assert.rejects(() => apiClient.updateRole(roleId, {
         description: 'test role',
         scopes: ['scope:role-has:*'],
@@ -526,7 +526,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['gcp'], function(mock, skipping) 
       const monitor = await helper.load('monitor');
       assert.equal(
         monitor.manager.messages.filter(
-          ({Type, Fields}) => Type === 'monitor.error' && Fields.message === 'uhoh',
+          ({ Type, Fields }) => Type === 'monitor.error' && Fields.message === 'uhoh',
         ).length,
         1);
       monitor.manager.reset();

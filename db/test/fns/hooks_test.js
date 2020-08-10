@@ -50,8 +50,8 @@ suite(testing.suiteName(), function() {
       hook.task || {},
       hook.bindings || '[]', // N.B. JSON-encoded
       hook.schedule || '[]', // N.B JSON-encoded
-      hook.encrypted_trigger_token || { v: 0, kid: 'azure', __bufchunks_val: 0},
-      hook.encrypted_next_task_id || { v: 0, kid: 'azure', __bufchunks_val: 0},
+      hook.encrypted_trigger_token || { v: 0, kid: 'azure', __bufchunks_val: 0 },
+      hook.encrypted_next_task_id || { v: 0, kid: 'azure', __bufchunks_val: 0 },
       hook.next_scheduled_date || new Date(1),
       hook.trigger_schema || {},
     );
@@ -61,7 +61,7 @@ suite(testing.suiteName(), function() {
     helper.dbTest('create_last_fire/get_last_fires', async function(db) {
       const now = new Date();
       const taskId = slug.nice();
-      const etag = await create_last_fire(db, {task_id: taskId, task_create_time: now});
+      const etag = await create_last_fire(db, { task_id: taskId, task_create_time: now });
       assert(etag);
 
       const rows = await db.fns.get_last_fires('hook/group/id', 'hook-id', 10, 0);
@@ -78,11 +78,11 @@ suite(testing.suiteName(), function() {
     helper.dbTest('create_last_fire throws when row already exists', async function(db) {
       const now = new Date();
       const taskId = slug.nice();
-      await create_last_fire(db, {task_id: taskId, task_create_time: now});
+      await create_last_fire(db, { task_id: taskId, task_create_time: now });
 
       await assert.rejects(
         async () => {
-          await create_last_fire(db, {task_id: taskId, task_create_time: now});
+          await create_last_fire(db, { task_id: taskId, task_create_time: now });
         },
         err => err.code === UNIQUE_VIOLATION,
       );
@@ -95,7 +95,7 @@ suite(testing.suiteName(), function() {
 
     helper.dbTest('get_last_fires full, pagination', async function(db) {
       for (let i = 0; i < 10; i++) {
-        await create_last_fire(db, {task_id: slug.nice()});
+        await create_last_fire(db, { task_id: slug.nice() });
       }
 
       let rows = await db.fns.get_last_fires('hook/group/id', 'hook-id', 4, 0);
@@ -111,7 +111,7 @@ suite(testing.suiteName(), function() {
     helper.dbTest('delete_last_fires', async function(db) {
       await Promise.all(_.range(5).map(() => {
         const taskId = slug.nice();
-        return create_last_fire(db, {task_id: taskId});
+        return create_last_fire(db, { task_id: taskId });
       }));
 
       let rows = await db.fns.get_last_fires('hook/group/id', 'hook-id', 10, 0);
@@ -127,7 +127,7 @@ suite(testing.suiteName(), function() {
 
     helper.dbTest('expire_last_fires does not delete when < 1 year', async function(db) {
       await Promise.all(['1 day', '1 month', '1 year'].map(period => {
-        return create_last_fire(db, {task_create_time: fromNow(period)});
+        return create_last_fire(db, { task_create_time: fromNow(period) });
       }));
 
       await db.fns.expire_last_fires();
@@ -138,7 +138,7 @@ suite(testing.suiteName(), function() {
 
     helper.dbTest('expire_last_fires deletes when > 1 year', async function(db) {
       await Promise.all(['-1 day', '-13 months', '-2 years'].map(period => {
-        return create_last_fire(db, {task_create_time: fromNow(period)});
+        return create_last_fire(db, { task_create_time: fromNow(period) });
       }));
 
       const count = (await db.fns.expire_last_fires())[0].expire_last_fires;
@@ -192,7 +192,7 @@ suite(testing.suiteName(), function() {
 
     helper.dbTest('get_hooks_queues full, pagination', async function(db) {
       for (let i = 0; i < 10; i++) {
-        await create_hooks_queue(db, {hook_id: `hook-id/${i}`});
+        await create_hooks_queue(db, { hook_id: `hook-id/${i}` });
       }
 
       let rows = await db.fns.get_hooks_queues(4, 0);
@@ -207,7 +207,7 @@ suite(testing.suiteName(), function() {
 
     helper.dbTest('delete_hooks_queue', async function(db) {
       await Promise.all(_.range(5).map(i => {
-        return create_hooks_queue(db, {hook_id: `hook-id/${i}`});
+        return create_hooks_queue(db, { hook_id: `hook-id/${i}` });
       }));
 
       let rows = await db.fns.get_hooks_queues(10, 0);
@@ -398,7 +398,7 @@ suite(testing.suiteName(), function() {
 
     helper.dbTest('get_hooks full, pagination', async function(db) {
       for (let i = 0; i < 10; i++) {
-        await create_hook(db, {hook_id: `hook-id/${i}`});
+        await create_hook(db, { hook_id: `hook-id/${i}` });
       }
 
       let rows = await db.fns.get_hooks(null, null, 4, 0);
@@ -414,9 +414,9 @@ suite(testing.suiteName(), function() {
     helper.dbTest('get_hooks filtered by hook group id', async function(db) {
       for (let i = 0; i < 10; i++) {
         if (i < 5) {
-          await create_hook(db, {hook_group_id: 'foo', hook_id: `hook-id/${i}` });
+          await create_hook(db, { hook_group_id: 'foo', hook_id: `hook-id/${i}` });
         } else {
-          await create_hook(db, {hook_id: `hook-id/${i}`});
+          await create_hook(db, { hook_id: `hook-id/${i}` });
         }
       }
 
@@ -430,9 +430,9 @@ suite(testing.suiteName(), function() {
       const now = fromNow();
       for (let i = 0; i < 10; i++) {
         if (i < 5) {
-          await create_hook(db, {hook_id: `hook-id/${i}`, next_scheduled_date: fromNow('1 day') });
+          await create_hook(db, { hook_id: `hook-id/${i}`, next_scheduled_date: fromNow('1 day') });
         } else {
-          await create_hook(db, {hook_id: `hook-id/${i}`, next_scheduled_date: oneDayAgo });
+          await create_hook(db, { hook_id: `hook-id/${i}`, next_scheduled_date: oneDayAgo });
         }
       }
 
@@ -446,12 +446,12 @@ suite(testing.suiteName(), function() {
     helper.dbTest('get_hooks filtered by hook_group_id and next_scheduled_date', async function(db) {
       const oneDayAgo = fromNow('-1 day');
       const now = fromNow();
-      await create_hook(db, {hook_group_id: 'foo', next_scheduled_date: oneDayAgo });
+      await create_hook(db, { hook_group_id: 'foo', next_scheduled_date: oneDayAgo });
       for (let i = 0; i < 10; i++) {
         if (i < 5) {
-          await create_hook(db, {hook_group_id: 'foo', hook_id: `hook-id/${i}`, next_scheduled_date: fromNow('1 day') });
+          await create_hook(db, { hook_group_id: 'foo', hook_id: `hook-id/${i}`, next_scheduled_date: fromNow('1 day') });
         } else {
-          await create_hook(db, {hook_group_id: 'bar', hook_id: `hook-id/${i}`, next_scheduled_date: oneDayAgo });
+          await create_hook(db, { hook_group_id: 'bar', hook_id: `hook-id/${i}`, next_scheduled_date: oneDayAgo });
         }
       }
 
@@ -465,7 +465,7 @@ suite(testing.suiteName(), function() {
 
     helper.dbTest('delete_hook', async function(db) {
       await Promise.all(_.range(5).map(i => {
-        return create_hook(db, {hook_id: `hook-id/${i}`});
+        return create_hook(db, { hook_id: `hook-id/${i}` });
       }));
 
       let rows = await db.fns.get_hooks(null, null, 10, 0);

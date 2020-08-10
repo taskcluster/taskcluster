@@ -2,7 +2,7 @@ const assert = require('assert');
 const helper = require('./helper');
 const testing = require('taskcluster-lib-testing');
 const taskcluster = require('taskcluster-client');
-const {LEVELS} = require('taskcluster-lib-monitor');
+const { LEVELS } = require('taskcluster-lib-monitor');
 const { Worker } = require('../src/data');
 
 helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
@@ -22,7 +22,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   // for testing an expiration that won't be updated
   const expires2 = taskcluster.fromNow('8 days');
 
-  const testCase = async ({workers = [], assertion, expectErrors}) => {
+  const testCase = async ({ workers = [], assertion, expectErrors }) => {
     await Promise.all(workers.map(w => {
       const worker = Worker.fromApi(w);
       return worker.create(helper.db);
@@ -30,7 +30,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     await helper.initiateWorkerScanner();
     await testing.poll(async () => {
       if (!expectErrors) {
-        const error = monitor.manager.messages.find(({Type}) => Type === 'monitor.error');
+        const error = monitor.manager.messages.find(({ Type }) => Type === 'monitor.error');
         if (error) {
           throw new Error(JSON.stringify(error, null, 2));
         }

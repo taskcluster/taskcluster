@@ -64,7 +64,7 @@ const elideSecrets = fields => {
  * later if we want.
  */
 class Logger {
-  constructor({name, service, level, destination = process.stdout, metadata = null, taskclusterVersion = undefined}) {
+  constructor({ name, service, level, destination = process.stdout, metadata = null, taskclusterVersion = undefined }) {
     assert(name, 'Must specify Logger name.');
 
     this.name = name;
@@ -90,10 +90,10 @@ class Logger {
       type = 'monitor.generic';
     }
     if (Array.isArray(fields)) {
-      fields = {values: fields};
+      fields = { values: fields };
     }
     if (typeof fields === 'string' || typeof fields === 'number') {
-      fields = {message: fields.toString()};
+      fields = { message: fields.toString() };
     }
 
     if (fields === null || typeof fields === 'boolean') {
@@ -188,4 +188,4 @@ class Logger {
   }
 }
 
-module.exports = {Logger, LEVELS};
+module.exports = { Logger, LEVELS };

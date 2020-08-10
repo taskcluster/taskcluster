@@ -1,17 +1,17 @@
-const {pulseCredentials} = require('../src');
+const { pulseCredentials } = require('../src');
 const assert = require('assert');
 const assume = require('assume');
 const testing = require('taskcluster-lib-testing');
 
 suite(testing.suiteName(), function() {
   test('missing arguments are an error', async function() {
-    assume(() => pulseCredentials({password: 'pw', hostname: 'h', vhost: 'v'}))
+    assume(() => pulseCredentials({ password: 'pw', hostname: 'h', vhost: 'v' }))
       .throws(/username/);
-    assume(() => pulseCredentials({username: 'me', hostname: 'h', vhost: 'v'}))
+    assume(() => pulseCredentials({ username: 'me', hostname: 'h', vhost: 'v' }))
       .throws(/password/);
-    assume(() => pulseCredentials({username: 'me', password: 'pw', vhost: 'v'}))
+    assume(() => pulseCredentials({ username: 'me', password: 'pw', vhost: 'v' }))
       .throws(/hostname/);
-    assume(() => pulseCredentials({username: 'me', password: 'pw', hostname: 'v'}))
+    assume(() => pulseCredentials({ username: 'me', password: 'pw', hostname: 'v' }))
       .throws(/vhost/);
   });
 

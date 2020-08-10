@@ -30,7 +30,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
       contentType: 'application/json',
       expires: 60 * 10,
     });
-    await request.put(url).send({message: 'Hello'});
+    await request.put(url).send({ message: 'Hello' });
   });
 
   // Test we can delete an object
@@ -40,7 +40,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
       contentType: 'application/json',
       expires: 60 * 10,
     });
-    await request.put(url).send({message: 'Hello'});
+    await request.put(url).send({ message: 'Hello' });
     await bucket.deleteObject(key);
   });
 
@@ -57,7 +57,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
       expires: 60 * 10,
     });
 
-    let res = await request.put(putUrl).send({message: 'Hello'});
+    let res = await request.put(putUrl).send({ message: 'Hello' });
     assert(res.ok, 'put request failed');
 
     const getUrl = bucket.createGetUrl(key);

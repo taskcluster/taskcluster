@@ -4,7 +4,7 @@ const slugid = require('slugid');
 const taskcluster = require('taskcluster-client');
 const helper = require('./helper');
 const testing = require('taskcluster-lib-testing');
-const {LEVELS} = require('taskcluster-lib-monitor');
+const { LEVELS } = require('taskcluster-lib-monitor');
 
 helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) {
   helper.withDb(mock, skipping);
@@ -67,10 +67,10 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     debug('### Wait for claim expiration');
     await testing.poll(
       async () => {
-        assert.deepEqual(monitor.manager.messages.find(({Type}) => Type === 'task-pending'), {
+        assert.deepEqual(monitor.manager.messages.find(({ Type }) => Type === 'task-pending'), {
           Logger: 'taskcluster.test.claim-resolver',
           Type: 'task-pending',
-          Fields: {taskId, runId: 1, v: 1},
+          Fields: { taskId, runId: 1, v: 1 },
           Severity: LEVELS.notice,
         });
       },
@@ -104,10 +104,10 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     debug('### Wait for claim expiration');
     await testing.poll(
       async () => {
-        assert.deepEqual(monitor.manager.messages.find(({Type}) => Type === 'task-exception'), {
+        assert.deepEqual(monitor.manager.messages.find(({ Type }) => Type === 'task-exception'), {
           Logger: 'taskcluster.test.claim-resolver',
           Type: 'task-exception',
-          Fields: {taskId, runId: 0, v: 1},
+          Fields: { taskId, runId: 0, v: 1 },
           Severity: LEVELS.notice,
         });
       },

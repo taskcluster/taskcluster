@@ -1,6 +1,6 @@
 const assume = require('assume');
 const _ = require('lodash');
-const {mergeScopeSets, scopeCompare} = require('taskcluster-lib-scopes');
+const { mergeScopeSets, scopeCompare } = require('taskcluster-lib-scopes');
 const ScopeSetBuilder = require('../src/scopesetbuilder');
 const testing = require('taskcluster-lib-testing');
 
@@ -76,7 +76,7 @@ suite(testing.suiteName(), () => {
   }));
 
   testCases.forEach((sets, index) => test(`...add().scopes() optionallyClone (${index + 1})`, () => {
-    const builder = new ScopeSetBuilder({optionallyClone: true});
+    const builder = new ScopeSetBuilder({ optionallyClone: true });
     for (const s of sets) {
       builder.add(s);
     }
@@ -84,7 +84,7 @@ suite(testing.suiteName(), () => {
   }));
 
   test('.scopes() optionallyClone: true', () => {
-    const builder = new ScopeSetBuilder({optionallyClone: true});
+    const builder = new ScopeSetBuilder({ optionallyClone: true });
     const sets = [['a', 'b', 'c'], [], []];
     for (const s of sets) {
       builder.add(s);
@@ -93,7 +93,7 @@ suite(testing.suiteName(), () => {
   });
 
   test('.scopes() optionallyClone: false', () => {
-    const builder = new ScopeSetBuilder({optionallyClone: false});
+    const builder = new ScopeSetBuilder({ optionallyClone: false });
     const sets = [['a', 'b', 'c'], [], []];
     for (const s of sets) {
       builder.add(s);

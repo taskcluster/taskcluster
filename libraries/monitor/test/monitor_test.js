@@ -1,5 +1,5 @@
 const path = require('path');
-const {fork} = require('child_process');
+const { fork } = require('child_process');
 const mockFs = require('mock-fs');
 const assert = require('assert');
 const testing = require('taskcluster-lib-testing');
@@ -177,7 +177,7 @@ suite(testing.suiteName(), function() {
     });
 
     test('traceId becomes top-level', function() {
-      const child = monitor.taskclusterPerRequestInstance({entryName: 'what', traceId: 'foo/bar', requestId: '123/456'});
+      const child = monitor.taskclusterPerRequestInstance({ entryName: 'what', traceId: 'foo/bar', requestId: '123/456' });
       monitor.measure('bazbing', 5);
       child.measure('bazbing', 6);
 
@@ -193,7 +193,7 @@ suite(testing.suiteName(), function() {
     });
 
     test('metadata is merged', function() {
-      const child = monitor.childMonitor('api', {addition: 1000});
+      const child = monitor.childMonitor('api', { addition: 1000 });
       monitor.measure('bazbing', 5);
       child.measure('bazbing', 6);
 
@@ -349,7 +349,7 @@ suite(testing.suiteName(), function() {
     });
 
     test('should record errors with extra', function() {
-      monitor.reportError(new Error('oh no'), {foo: 5});
+      monitor.reportError(new Error('oh no'), { foo: 5 });
       assert.equal(monitorManager.messages.length, 1);
       assert.equal(monitorManager.messages[0].Severity, 3);
       assert.equal(monitorManager.messages[0].severity, 'ERROR');
@@ -360,7 +360,7 @@ suite(testing.suiteName(), function() {
     });
 
     test('should record errors with extra and level', function() {
-      monitor.reportError(new Error('oh no'), 'warning', {foo: 5});
+      monitor.reportError(new Error('oh no'), 'warning', { foo: 5 });
       assert.equal(monitorManager.messages.length, 1);
       assert.equal(monitorManager.messages[0].Severity, 4);
       assert.equal(monitorManager.messages[0].severity, 'WARNING');
@@ -467,7 +467,7 @@ suite(testing.suiteName(), function() {
 
   test('dockerflow version file', async () => {
     mockFs({
-      '../../version.json': JSON.stringify({version: 'whatever'}),
+      '../../version.json': JSON.stringify({ version: 'whatever' }),
     });
     const monitor = MonitorManager.setup({
       serviceName: 'testing-service',

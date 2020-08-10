@@ -1,14 +1,14 @@
 const assert = require('assert');
 const fs = require('fs');
 const path = require('path');
-const {omit} = require('lodash');
+const { omit } = require('lodash');
 const stream = require('stream');
-const {LEVELS} = require('./logger');
+const { LEVELS } = require('./logger');
 const Monitor = require('./monitor');
 const chalk = require('chalk');
 const Debug = require('debug');
 const plugins = require('./plugins');
-const {cleanupDescription} = require('./util');
+const { cleanupDescription } = require('./util');
 
 const REPO_ROOT = path.join(__dirname, '../../../');
 
@@ -199,17 +199,17 @@ class MonitorManager {
     return Object.assign(
       {},
       ...Object.entries(MonitorManager.types)
-        .filter(([_, {serviceName: sn}]) => !sn || sn === serviceName)
-        .map(([k, v]) => ({[k]: v})));
+        .filter(([_, { serviceName: sn }]) => !sn || sn === serviceName)
+        .map(([k, v]) => ({ [k]: v })));
   }
 
   /**
    * Handle a message from any logger. This is only used in testing
    * and development.
    */
-  _handleMessage({Type, Fields, Logger, Severity, severity, message}) {
+  _handleMessage({ Type, Fields, Logger, Severity, severity, message }) {
     if (this.fake) {
-      this.messages.push({Type, Fields, Logger, Severity});
+      this.messages.push({ Type, Fields, Logger, Severity });
     }
     if (this.debug) {
       message = message ? message.toString().replace(/\n/g, '\\n') : '';

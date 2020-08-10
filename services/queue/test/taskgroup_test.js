@@ -39,7 +39,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     let taskGroupId = slugid.v4();
 
     debug('### Creating taskA');
-    const r1 = await helper.queue.createTask(taskIdA, _.defaults({taskGroupId}, taskDef));
+    const r1 = await helper.queue.createTask(taskIdA, _.defaults({ taskGroupId }, taskDef));
 
     debug('### Listening for task-defined for taskA');
     helper.assertPulseMessage('task-defined', m => m.payload.status.taskId === taskIdA);
@@ -47,7 +47,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
 
     debug('### Creating taskB');
     let taskIdB = slugid.v4();
-    await helper.queue.createTask(taskIdB, _.defaults({taskGroupId}, taskDef));
+    await helper.queue.createTask(taskIdB, _.defaults({ taskGroupId }, taskDef));
     helper.assertPulseMessage('task-defined', m => m.payload.status.taskId === taskIdB);
     helper.assertPulseMessage('task-pending', m => m.payload.status.taskId === taskIdB);
 

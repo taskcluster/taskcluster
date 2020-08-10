@@ -86,7 +86,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
       status.runs[0].state = 'exception';
       status.runs[0].reasonResolved = reasonResolved;
       await helper.fakePulseMessage({
-        payload: {status},
+        payload: { status },
         exchange: 'exchange/taskcluster-queue/v1/task-completed',
         routingKey: 'doesnt-matter',
         routes: [route],
@@ -146,7 +146,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
   test('irc', async () => {
     const route = 'test-notify.irc-channel.#taskcluster-test.on-any';
     const task = makeTask([route]);
-    task.extra = {notify: {ircChannelMessage: 'it worked with taskid ${status.taskId}'}};
+    task.extra = { notify: { ircChannelMessage: 'it worked with taskid ${status.taskId}' } };
     helper.queue.addTask(baseStatus.taskId, task);
     await helper.fakePulseMessage({
       payload: {
@@ -157,7 +157,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
       routes: [route],
     });
     helper.assertPulseMessage('irc-request', m => {
-      const {channel, message} = m.payload;
+      const { channel, message } = m.payload;
       return _.isEqual(channel, '#taskcluster-test') &&
       _.isEqual(message, 'it worked with taskid DKPZPsvvQEiw67Pb3rkdNg');
     });
@@ -166,7 +166,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
   test('matrix', async () => {
     const route = 'test-notify.matrix-room.!gBxblkbeeBSadzOniu:mozilla.org.on-any';
     const task = makeTask([route]);
-    task.extra = {notify: {matrixFormat: 'matrix.foo', matrixBody: '${taskId}', matrixFormattedBody: '<h1>${taskId}</h1>', matrixMsgtype: 'm.text'}};
+    task.extra = { notify: { matrixFormat: 'matrix.foo', matrixBody: '${taskId}', matrixFormattedBody: '<h1>${taskId}</h1>', matrixMsgtype: 'm.text' } };
     helper.queue.addTask(baseStatus.taskId, task);
     await helper.fakePulseMessage({
       payload: {
@@ -189,7 +189,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
   test('matrix (default notice)', async () => {
     const route = 'test-notify.matrix-room.!gBxblkbeeBSadzOniu:mozilla.org.on-any';
     const task = makeTask([route]);
-    task.extra = {notify: {matrixFormat: 'matrix.foo', matrixBody: '${taskId}', matrixFormattedBody: '<h1>${taskId}</h1>'}};
+    task.extra = { notify: { matrixFormat: 'matrix.foo', matrixBody: '${taskId}', matrixFormattedBody: '<h1>${taskId}</h1>' } };
     helper.queue.addTask(baseStatus.taskId, task);
     await helper.fakePulseMessage({
       payload: {

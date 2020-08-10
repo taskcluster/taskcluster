@@ -1,4 +1,4 @@
-const {isPlainObject} = require('lodash');
+const { isPlainObject } = require('lodash');
 const assert = require('assert').strict;
 
 /**

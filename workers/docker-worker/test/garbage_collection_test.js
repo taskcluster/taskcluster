@@ -1,5 +1,5 @@
 const taskcluster = require('taskcluster-client');
-const {suiteName} = require('taskcluster-lib-testing');
+const { suiteName } = require('taskcluster-lib-testing');
 const libUrls = require('taskcluster-lib-urls');
 const ImageManager = require('../src/lib/docker/image_manager');
 const sleep = require('../src/lib/util/sleep');
@@ -10,10 +10,10 @@ const fs = require('fs');
 const devnull = require('dev-null');
 const Docker = require('../src/lib/docker');
 const GarbageCollector = require('../src/lib/gc');
-const {createLogger} = require('../src/lib/log');
+const { createLogger } = require('../src/lib/log');
 const path = require('path');
 const rmrf = require('rimraf');
-const {removeImage} = require('../src/lib/util/remove_image');
+const { removeImage } = require('../src/lib/util/remove_image');
 const monitor = require('./fixtures/monitor');
 const helper = require('./helper');
 
@@ -74,7 +74,7 @@ helper.secrets.mockSuite(suiteName(), ['docker'], function(mock, skipping) {
       monitor: monitor,
     });
 
-    let container = await docker.createContainer({Image: imageId});
+    let container = await docker.createContainer({ Image: imageId });
     gc.removeContainer(container.id);
     await gc.sweep();
     assert.ok(!gc.markedContainers.length,
@@ -91,8 +91,8 @@ helper.secrets.mockSuite(suiteName(), ['docker'], function(mock, skipping) {
       monitor: monitor,
     });
 
-    let container = await docker.createContainer({Image: imageId,
-      Cmd: ['/bin/bash', '-cvex', 'sleep 5']});
+    let container = await docker.createContainer({ Image: imageId,
+      Cmd: ['/bin/bash', '-cvex', 'sleep 5'] });
     let containerId = container.id;
     container = docker.getContainer(containerId);
     await container.start();
@@ -118,7 +118,7 @@ helper.secrets.mockSuite(suiteName(), ['docker'], function(mock, skipping) {
       monitor: monitor,
     });
 
-    let container = await docker.createContainer({Image: imageId});
+    let container = await docker.createContainer({ Image: imageId });
     gc.removeContainer(container.id);
     gc.markedContainers[container.id].retries = 0;
     await gc.sweep();
@@ -131,7 +131,7 @@ helper.secrets.mockSuite(suiteName(), ['docker'], function(mock, skipping) {
               'added to the list of ignored containers');
 
     let c = docker.getContainer(container.id);
-    await c.remove({force: true});
+    await c.remove({ force: true });
   }),
 
   test('remove container that does not exist', async () => {
@@ -144,7 +144,7 @@ helper.secrets.mockSuite(suiteName(), ['docker'], function(mock, skipping) {
       monitor: monitor,
     });
 
-    let container = await docker.createContainer({Image: imageId});
+    let container = await docker.createContainer({ Image: imageId });
     gc.removeContainer(container.id);
 
     container = docker.getContainer(container.id);
@@ -173,8 +173,8 @@ helper.secrets.mockSuite(suiteName(), ['docker'], function(mock, skipping) {
     let imageName = 'busybox:ubuntu-14.04';
     let imageId = await imageManager.ensureImage(imageName, devnull());
 
-    let container = await docker.createContainer({Image: imageId,
-      Cmd: ['/bin/sh', '-c', 'ls && sleep 5']});
+    let container = await docker.createContainer({ Image: imageId,
+      Cmd: ['/bin/sh', '-c', 'ls && sleep 5'] });
     container = docker.getContainer(container.id);
     await container.start();
 
@@ -323,7 +323,7 @@ helper.secrets.mockSuite(suiteName(), ['docker'], function(mock, skipping) {
 
     let instance1 = await cache.get(cacheName);
     let instance2 = await cache.get(cacheName);
-    cache.set(instance2.key, {mounted: false});
+    cache.set(instance2.key, { mounted: false });
 
     await gc.sweep();
 
@@ -340,12 +340,12 @@ helper.secrets.mockSuite(suiteName(), ['docker'], function(mock, skipping) {
         capacity: 1,
         log: debug,
         docker: docker,
-        taskListener: {availableCapacity: async () => { return 0; }},
+        taskListener: { availableCapacity: async () => { return 0; } },
         containerExpiration: containerExpiration,
         monitor: monitor,
       });
 
-      let container = await docker.createContainer({Image: imageId,
+      let container = await docker.createContainer({ Image: imageId,
         Cmd: ['/bin/bash', '-c', 'echo "hello"'],
       });
       let containerId = container.id;

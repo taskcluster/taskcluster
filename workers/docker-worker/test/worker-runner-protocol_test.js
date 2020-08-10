@@ -1,7 +1,7 @@
 const assert = require('assert');
-const {EventEmitter} = require('events');
-const {Readable, PassThrough} = require('stream');
-const {StreamTransport, Protocol} = require('../src/lib/worker-runner-protocol');
+const { EventEmitter } = require('events');
+const { Readable, PassThrough } = require('stream');
+const { StreamTransport, Protocol } = require('../src/lib/worker-runner-protocol');
 
 const endEvent = emitter => new Promise(resolve => emitter.on('end', resolve));
 
@@ -56,7 +56,7 @@ suite('worker-runner-protocol', function() {
 
       await end;
 
-      assert.deepEqual(messages, [{type: 'test'}]);
+      assert.deepEqual(messages, [{ type: 'test' }]);
     });
 
     test('send', async function() {
@@ -66,8 +66,8 @@ suite('worker-runner-protocol', function() {
       const st = new StreamTransport(input, output);
       output.on('data', chunk => written.push(chunk));
 
-      st.send({type: 'test'});
-      st.send({type: 'test-again'});
+      st.send({ type: 'test' });
+      st.send({ type: 'test-again' });
 
       input.destroy();
       output.destroy();
@@ -90,14 +90,14 @@ suite('worker-runner-protocol', function() {
       left.start();
       right.start();
 
-      left.send({type: 'from-left'});
-      right.send({type: 'from-right'});
+      left.send({ type: 'from-left' });
+      right.send({ type: 'from-right' });
 
       leftward.destroy();
       rightward.destroy();
 
-      assert.deepEqual(leftMessages, [{type: 'from-right'}]);
-      assert.deepEqual(rightMessages, [{type: 'from-left'}]);
+      assert.deepEqual(leftMessages, [{ type: 'from-right' }]);
+      assert.deepEqual(rightMessages, [{ type: 'from-left' }]);
     });
   });
 
@@ -114,7 +114,7 @@ suite('worker-runner-protocol', function() {
       prot.capable('worker-only').then(() => { returned = true; });
       assert.equal(returned, false);
 
-      transp.fakeReceive({type: 'welcome', capabilities: ['shared', 'runner-only']});
+      transp.fakeReceive({ type: 'welcome', capabilities: ['shared', 'runner-only'] });
 
       assert.equal(await prot.capable('worker-only'), false);
       assert.equal(await prot.capable('shared'), true);
@@ -126,8 +126,8 @@ suite('worker-runner-protocol', function() {
       const prot = new Protocol(transp);
       prot.start();
 
-      prot.send({type: 'test'});
-      assert.deepEqual(transp.sent, [{type: 'test'}]);
+      prot.send({ type: 'test' });
+      assert.deepEqual(transp.sent, [{ type: 'test' }]);
     });
 
     test('receiving', async function() {
@@ -137,9 +137,9 @@ suite('worker-runner-protocol', function() {
       prot.start();
 
       prot.on('test-msg', msg => received.push(msg));
-      transp.fakeReceive({type: 'test'});
+      transp.fakeReceive({ type: 'test' });
 
-      assert.deepEqual(received, [{type: 'test'}]);
+      assert.deepEqual(received, [{ type: 'test' }]);
     });
   });
 });

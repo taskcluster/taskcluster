@@ -19,7 +19,7 @@ const loadReferences = (serviceDirectory, references) => {
     const data = fs.readFileSync(filename);
     const content = JSON.parse(data);
 
-    references.push({filename, content});
+    references.push({ filename, content });
   }
 };
 
@@ -55,7 +55,7 @@ const loadSchemas = (serviceDirectory, schemas) => {
 /**
  * Load all schemas and references from `directory`.
  */
-const load = ({directory}) => {
+const load = ({ directory }) => {
   const references = [];
   const schemas = [];
 
@@ -73,7 +73,7 @@ const load = ({directory}) => {
     loadSchemas(filename, schemas);
   });
 
-  return {references, schemas};
+  return { references, schemas };
 };
 
 exports.load = load;

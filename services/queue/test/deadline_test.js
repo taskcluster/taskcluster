@@ -5,7 +5,7 @@ const taskcluster = require('taskcluster-client');
 const assume = require('assume');
 const helper = require('./helper');
 const testing = require('taskcluster-lib-testing');
-const {LEVELS} = require('taskcluster-lib-monitor');
+const { LEVELS } = require('taskcluster-lib-monitor');
 
 helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) {
   helper.withDb(mock, skipping);
@@ -34,7 +34,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
         source: 'https://github.com/taskcluster/taskcluster-queue',
       },
     };
-    return {taskId: slugid.v4(), task};
+    return { taskId: slugid.v4(), task };
   };
 
   let monitor;
@@ -43,7 +43,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
   });
 
   test('Resolve unscheduled task deadline', async () => {
-    const {taskId, task} = makeTask();
+    const { taskId, task } = makeTask();
 
     // make task self-dependent so that it does not get scheduled
     task.dependencies = [taskId];
@@ -65,7 +65,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
         m.payload.status.runs[0].reasonCreated === 'exception' &&
         m.payload.status.runs[0].reasonResolved === 'deadline-exceeded'));
 
-      assert.deepEqual(monitor.manager.messages.find(({Type}) => Type === 'task-exception'), {
+      assert.deepEqual(monitor.manager.messages.find(({ Type }) => Type === 'task-exception'), {
         Type: 'task-exception',
         Logger: 'taskcluster.test.deadline-resolver',
         Fields: {
@@ -86,7 +86,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
   });
 
   test('Resolve pending task deadline', async () => {
-    const {taskId, task} = makeTask();
+    const { taskId, task } = makeTask();
 
     debug('### Creating task');
     const r1 = await helper.queue.createTask(taskId, task);
@@ -115,7 +115,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
   });
 
   test('Resolve running task deadline', async () => {
-    const {taskId, task} = makeTask();
+    const { taskId, task } = makeTask();
 
     debug('### Creating task');
     const r1 = await helper.queue.createTask(taskId, task);
@@ -151,7 +151,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
   });
 
   test('Resolve completed task by deadline (no change)', async () => {
-    const {taskId, task} = makeTask();
+    const { taskId, task } = makeTask();
 
     debug('### Creating task');
     const r1 = await helper.queue.createTask(taskId, task);

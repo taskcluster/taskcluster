@@ -9,7 +9,7 @@ suite(testing.suiteName(), function() {
   helper.withDbForVersion();
 
   test('sessions table created / removed on upgrade and downgrade', async function() {
-    await testing.resetDb({testDbUrl: helper.dbUrl});
+    await testing.resetDb({ testDbUrl: helper.dbUrl });
     await helper.upgradeTo(PREV_VERSION);
 
     await helper.assertTable('session_storage_table_entities');

@@ -16,7 +16,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
     await helper.load.remove('purge-expired-clients');
   });
 
-  const testClient = async ({expires, deleteOnExpiration}) => {
+  const testClient = async ({ expires, deleteOnExpiration }) => {
     await helper.apiClient.createClient(CLIENT_ID, {
       expires: taskcluster.fromNow(expires),
       description: 'test',
@@ -40,19 +40,19 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
   };
 
   test('does not delete unexpired clients', async () => {
-    await testClient({expires: '1 hour', deleteOnExpiration: true});
+    await testClient({ expires: '1 hour', deleteOnExpiration: true });
     await helper.load('purge-expired-clients');
     await assertClientPresent();
   });
 
   test('does not delete expired clients with !deleteOnExpiration', async () => {
-    await testClient({expires: '-1 hour', deleteOnExpiration: false});
+    await testClient({ expires: '-1 hour', deleteOnExpiration: false });
     await helper.load('purge-expired-clients');
     await assertClientPresent();
   });
 
   test('deletes expired clients with deleteOnExpiration', async () => {
-    await testClient({expires: '-1 hour', deleteOnExpiration: true});
+    await testClient({ expires: '-1 hour', deleteOnExpiration: true });
     await helper.load('purge-expired-clients');
     await assertClientAbsent();
   });

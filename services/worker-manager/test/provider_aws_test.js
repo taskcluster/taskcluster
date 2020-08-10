@@ -1,14 +1,14 @@
-const {ApiError} = require('../src/providers/provider');
+const { ApiError } = require('../src/providers/provider');
 const _ = require('lodash');
 const assert = require('assert');
 const helper = require('./helper');
-const {AwsProvider} = require('../src/providers/aws');
+const { AwsProvider } = require('../src/providers/aws');
 const testing = require('taskcluster-lib-testing');
 const fs = require('fs');
 const path = require('path');
 const taskcluster = require('taskcluster-client');
-const {WorkerPool, Worker} = require('../src/data');
-const {FakeEC2} = require('./fakes');
+const { WorkerPool, Worker } = require('../src/data');
+const { FakeEC2 } = require('./fakes');
 
 helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   helper.withDb(mock, skipping);
@@ -109,19 +109,19 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
   const assertHasTag = (runInstanceCall, ResourceType, Key, Value) => {
     const tagspecs = runInstanceCall.TagSpecifications;
-    const tagspec = _.find(tagspecs, {ResourceType});
+    const tagspec = _.find(tagspecs, { ResourceType });
     assert(tagspec, `no tags for resource type ${ResourceType} in ${JSON.stringify(tagspecs)}`);
-    const tag = _.find(tagspec.Tags, {Key});
+    const tag = _.find(tagspec.Tags, { Key });
     assert(tag, `no tag for key ${Key}, resource type ${ResourceType} in ${JSON.stringify(tagspecs)}`);
     assert.equal(tag.Value, Value);
   };
 
   suite('AWS provider - provision', function() {
-    const provisionTest = (name, {config, expectedWorkers}, check) => {
+    const provisionTest = (name, { config, expectedWorkers }, check) => {
       test(name, async function() {
-        const workerPool = await makeWorkerPool({config});
-        const workerInfo = {existingCapacity: 0, requestedCapacity: 0};
-        await provider.provision({workerPool, workerInfo});
+        const workerPool = await makeWorkerPool({ config });
+        const workerInfo = { existingCapacity: 0, requestedCapacity: 0 };
+        await provider.provision({ workerPool, workerInfo });
         const workers = await helper.getWorkers();
         assert.equal(workers.length, expectedWorkers);
         await check(workers);
@@ -150,7 +150,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         // for the provisioning loop
         assert(workers[0].providerData.terminateAfter - now - (6000 * 1000) < 5000);
       });
-      assert.deepEqual(fake.rgn('us-west-2').runInstancesCalls.map(({MinCount}) => MinCount), [1]);
+      assert.deepEqual(fake.rgn('us-west-2').runInstancesCalls.map(({ MinCount }) => MinCount), [1]);
       assertHasTag(fake.rgn('us-west-2').runInstancesCalls[0], 'instance', 'CreatedBy', 'taskcluster-wm-aws');
       assertHasTag(fake.rgn('us-west-2').runInstancesCalls[0], 'instance', 'Owner', 'whatever@example.com');
       assertHasTag(fake.rgn('us-west-2').runInstancesCalls[0], 'instance', 'ManagedBy', 'taskcluster');
@@ -166,11 +166,11 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     provisionTest('spawns instances from across launch configs', {
       config: {
         launchConfigs: [
-          {...defaultLaunchConfig, capacityPerInstance: 6},
-          {...defaultLaunchConfig, capacityPerInstance: 6},
-          {...defaultLaunchConfig, capacityPerInstance: 6},
-          {...defaultLaunchConfig, capacityPerInstance: 6},
-          {...defaultLaunchConfig, capacityPerInstance: 6},
+          { ...defaultLaunchConfig, capacityPerInstance: 6 },
+          { ...defaultLaunchConfig, capacityPerInstance: 6 },
+          { ...defaultLaunchConfig, capacityPerInstance: 6 },
+          { ...defaultLaunchConfig, capacityPerInstance: 6 },
+          { ...defaultLaunchConfig, capacityPerInstance: 6 },
         ],
         minCapacity: 34, // not a multiple of number of configs or capPerInstance
         maxCapacity: 34,
@@ -181,7 +181,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     }, async function(workers) {
       // spawn two each in three launchConfigs; spawning one each would only get us 5 instances since there
       // are only 5 launchConfigs
-      assert.deepEqual(fake.rgn('us-west-2').runInstancesCalls.map(({MinCount}) => MinCount), [2, 2, 2]);
+      assert.deepEqual(fake.rgn('us-west-2').runInstancesCalls.map(({ MinCount }) => MinCount), [2, 2, 2]);
     });
 
     for (let ResourceType of ['instance', 'volume', 'launch-template']) {
@@ -193,7 +193,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
               launchConfig: {
                 ...defaultLaunchConfig.launchConfig,
                 TagSpecifications: [
-                  {ResourceType, Tags: [{Key: 'mytag', Value: 'testy'}]},
+                  { ResourceType, Tags: [{ Key: 'mytag', Value: 'testy' }] },
                 ],
               },
             },
@@ -224,7 +224,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         launchConfigs: [
           {
             ...defaultLaunchConfig,
-            workerConfig: {foo: 5},
+            workerConfig: { foo: 5 },
             additionalUserData: {
               somethingImportant: "apple",
             },
@@ -246,7 +246,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         workerPoolId: workerPoolId,
         providerId: provider.providerId,
         workerGroup: 'us-west-2',
-        workerConfig: {foo: 5},
+        workerConfig: { foo: 5 },
       });
     });
   });
@@ -256,12 +256,12 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     test('registerWorker - verifyInstanceIdentityDocument - document is not string', async function() {
       const workerPool = await makeWorkerPool();
       const workerIdentityProof = {
-        "document": {'instanceId': 'abc'},
+        "document": { 'instanceId': 'abc' },
         "signature": 'abcd',
       };
 
       await assert.rejects(
-        () => provider.registerWorker({worker: workerInDB, workerPool, workerIdentityProof}),
+        () => provider.registerWorker({ worker: workerInDB, workerPool, workerIdentityProof }),
         new ApiError('Request must include both a document (string) and a signature'),
       );
     });
@@ -274,7 +274,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       };
 
       await assert.rejects(
-        () => provider.registerWorker({worker: workerInDB, workerPool, workerIdentityProof}),
+        () => provider.registerWorker({ worker: workerInDB, workerPool, workerIdentityProof }),
         new ApiError('Instance identity document validation error'),
         'Should fail to verify iid (the document has been edited)',
       );
@@ -287,7 +287,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         "signature": fs.readFileSync(path.resolve(__dirname, 'fixtures/aws_iid_SIGNATURE_badKey')).toString(),
       };
 
-      await assert.rejects(() => provider.registerWorker({worker: workerInDB, workerPool, workerIdentityProof}),
+      await assert.rejects(() => provider.registerWorker({ worker: workerInDB, workerPool, workerIdentityProof }),
         new ApiError('Instance identity document validation error'),
         'Should fail to verify iid (the signature was produced with a wrong key)',
       );
@@ -300,7 +300,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         "signature": fs.readFileSync(path.resolve(__dirname, 'fixtures/aws_iid_SIGNATURE_badSignature')).toString(),
       };
 
-      await assert.rejects(() => provider.registerWorker({worker: workerInDB, workerPool, workerIdentityProof}),
+      await assert.rejects(() => provider.registerWorker({ worker: workerInDB, workerPool, workerIdentityProof }),
         new ApiError('Instance identity document validation error'),
         'Should fail to verify iid (the signature is wrong)',
       );
@@ -328,7 +328,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       };
 
       await assert.rejects(
-        () => provider.registerWorker({worker: differentWorkerInDB, workerPool, workerIdentityProof}),
+        () => provider.registerWorker({ worker: differentWorkerInDB, workerPool, workerIdentityProof }),
         new ApiError('Instance validation error'),
         'Should fail to verify worker (info from the signature and info from our DB differ)',
       );
@@ -341,7 +341,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         "signature": fs.readFileSync(path.resolve(__dirname, 'fixtures/aws_iid_EMPTYFILE')).toString(),
       };
 
-      await assert.rejects(() => provider.registerWorker({worker: workerInDB, workerPool, workerIdentityProof}),
+      await assert.rejects(() => provider.registerWorker({ worker: workerInDB, workerPool, workerIdentityProof }),
         new ApiError('Request must include both a document (string) and a signature'),
       );
     });
@@ -359,7 +359,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       };
 
       await assert.rejects(
-        () => provider.registerWorker({worker: runningWorker, workerPool, workerIdentityProof}),
+        () => provider.registerWorker({ worker: runningWorker, workerPool, workerIdentityProof }),
         new ApiError('This worker is either stopped or running. No need to register'),
         'Should fail because the worker is already running',
       );
@@ -390,7 +390,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         "signature": fs.readFileSync(path.resolve(__dirname, 'fixtures/aws_iid_SIGNATURE')).toString(),
       };
 
-      const resp = await provider.registerWorker({worker: runningWorker, workerPool, workerIdentityProof});
+      const resp = await provider.registerWorker({ worker: runningWorker, workerPool, workerIdentityProof });
       assert(resp.expires - new Date() + 10000 > 96 * 3600 * 1000);
       assert(resp.expires - new Date() - 10000 < 96 * 3600 * 1000);
       assert.equal(resp.workerConfig.someConfig, 'someConfigValue');
@@ -422,7 +422,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         "signature": fs.readFileSync(path.resolve(__dirname, 'fixtures/aws_iid_SIGNATURE')).toString(),
       };
 
-      const resp = await provider.registerWorker({worker: runningWorker, workerPool, workerIdentityProof});
+      const resp = await provider.registerWorker({ worker: runningWorker, workerPool, workerIdentityProof });
       assert(resp.expires - new Date() + 10000 > 10 * 3600 * 1000);
       assert(resp.expires - new Date() - 10000 < 10 * 3600 * 1000);
       assert.equal(resp.workerConfig.someKey, 'someValue');
@@ -441,7 +441,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       await worker.create(helper.db);
 
       provider.seen = {};
-      await provider.checkWorker({worker: worker});
+      await provider.checkWorker({ worker: worker });
 
       const workers = await helper.getWorkers();
       assert.notStrictEqual(workers.length, 0);
@@ -460,7 +460,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       await worker.create(helper.db);
 
       provider.seen = {};
-      await provider.checkWorker({worker: worker});
+      await provider.checkWorker({ worker: worker });
 
       const workers = await helper.getWorkers();
       assert.notStrictEqual(workers.length, 0);
@@ -479,7 +479,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       await worker.create(helper.db);
 
       provider.seen = {};
-      await assert.rejects(provider.checkWorker({worker: worker}));
+      await assert.rejects(provider.checkWorker({ worker: worker }));
       assert.strictEqual(provider.seen[worker.workerPoolId], 0);
     });
 
@@ -493,7 +493,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       await worker.create(helper.db);
 
       provider.seen = {};
-      await provider.checkWorker({worker: worker});
+      await provider.checkWorker({ worker: worker });
 
       const workers = await helper.getWorkers();
       assert.notStrictEqual(workers.length, 0);
@@ -515,7 +515,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       });
       await worker.create(helper.db);
       provider.seen = {};
-      await provider.checkWorker({worker: worker});
+      await provider.checkWorker({ worker: worker });
       assert.deepEqual(fake.rgn('us-west-2').terminatedInstances, ['i-123']);
     });
 
@@ -532,7 +532,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       });
       await worker.create(helper.db);
       provider.seen = {};
-      await provider.checkWorker({worker: worker});
+      await provider.checkWorker({ worker: worker });
       assert.deepEqual(fake.rgn('us-west-2').terminatedInstances, []);
     });
 
@@ -549,7 +549,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       });
       await worker.create(helper.db);
       provider.seen = {};
-      await provider.checkWorker({worker: worker});
+      await provider.checkWorker({ worker: worker });
       assert.deepEqual(fake.rgn('us-west-2').terminatedInstances, ['i-123']);
     });
 
@@ -566,7 +566,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       });
       await worker.create(helper.db);
       provider.seen = {};
-      await provider.checkWorker({worker: worker});
+      await provider.checkWorker({ worker: worker });
       assert.deepEqual(fake.rgn('us-west-2').terminatedInstances, []);
     });
   });
@@ -581,7 +581,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
           region: 'us-west-2',
         },
       };
-      await assert.doesNotReject(provider.removeWorker({worker}));
+      await assert.doesNotReject(provider.removeWorker({ worker }));
     });
 
   });

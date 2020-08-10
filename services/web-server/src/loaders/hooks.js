@@ -55,7 +55,7 @@ module.exports = ({ hooks }, isAuthed, rootUrl, monitor, strategies, req, cfg, r
 
   const hookLastFires = new DataLoader(queries =>
     Promise.all(
-      queries.map(async ({hookGroupId, hookId, filter}) => {
+      queries.map(async ({ hookGroupId, hookId, filter }) => {
         try {
           const { lastFires } = await hooks.listLastFires(hookGroupId, hookId);
 

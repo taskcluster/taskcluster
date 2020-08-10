@@ -1,6 +1,6 @@
 const Debug = require('debug');
 const debug = Debug('taskcluster-lib-testing:poll');
-const {sleep} = require('./time');
+const { sleep } = require('./time');
 
 /**
  * Poll a function that returns a promise until the promise is resolved without
@@ -21,13 +21,13 @@ const poll = async (doPoll, iterations, delay) => {
     try {
       return await doPoll();
     } catch (err) {
-      errors.push({err, when: new Date() - start});
+      errors.push({ err, when: new Date() - start });
 
       // Re-throw unless we're out of iterations
       if (iterations !== undefined && iterations <= 0) {
         const err = new Error(
           'Polling iterations exceeded.  Errors ignored during polling:\n' +
-          errors.map(({err, when}) => `${when}ms from start: ${err}`.trim()).join('\n---\n'));
+          errors.map(({ err, when }) => `${when}ms from start: ${err}`.trim()).join('\n---\n'));
         throw err;
       }
       iterations--;

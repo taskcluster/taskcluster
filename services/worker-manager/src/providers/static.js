@@ -1,6 +1,6 @@
 const taskcluster = require('taskcluster-client');
-const {ApiError, Provider} = require('./provider');
-const {Worker} = require('../data');
+const { ApiError, Provider } = require('./provider');
+const { Worker } = require('../data');
 
 class StaticProvider extends Provider {
   constructor(conf) {
@@ -8,13 +8,13 @@ class StaticProvider extends Provider {
     this.configSchema = 'config-static';
   }
 
-  async createWorker({workerPool, workerGroup, workerId, input}) {
-    const {staticSecret} = input.providerInfo || {};
+  async createWorker({ workerPool, workerGroup, workerId, input }) {
+    const { staticSecret } = input.providerInfo || {};
     if (!staticSecret) {
       throw new ApiError('no worker staticSecret provided');
     }
 
-    const {workerPoolId, providerId} = workerPool;
+    const { workerPoolId, providerId } = workerPool;
     const workerData = {
       workerPoolId,
       workerGroup,
@@ -23,7 +23,7 @@ class StaticProvider extends Provider {
       expires: new Date(input.expires),
       capacity: input.capacity,
       state: Worker.states.RUNNING,
-      providerData: {staticSecret, workerConfig: workerPool.config.workerConfig},
+      providerData: { staticSecret, workerConfig: workerPool.config.workerConfig },
     };
 
     let worker;
@@ -44,7 +44,7 @@ class StaticProvider extends Provider {
     return worker;
   }
 
-  async removeWorker({worker, reason}) {
+  async removeWorker({ worker, reason }) {
     this.monitor.log.workerRemoved({
       workerPoolId: worker.workerPoolId,
       providerId: worker.providerId,
@@ -55,8 +55,8 @@ class StaticProvider extends Provider {
     await worker.remove();
   }
 
-  async registerWorker({worker, workerPool, workerIdentityProof}) {
-    const {staticSecret} = workerIdentityProof;
+  async registerWorker({ worker, workerPool, workerIdentityProof }) {
+    const { staticSecret } = workerIdentityProof;
 
     // note that this can be called multiple times for the same worker..
 
@@ -69,7 +69,7 @@ class StaticProvider extends Provider {
     }
 
     let expires;
-    const {reregistrationTimeout} = Provider.interpretLifecycle(workerPool.config);
+    const { reregistrationTimeout } = Provider.interpretLifecycle(workerPool.config);
     if (reregistrationTimeout) {
       expires = new Date(Date.now() + reregistrationTimeout);
     } else {

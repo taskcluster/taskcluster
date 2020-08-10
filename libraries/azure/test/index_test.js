@@ -1,5 +1,5 @@
 const assert = require('assert');
-const {sasCredentials} = require('..');
+const { sasCredentials } = require('..');
 const nock = require('nock');
 const url = require('url');
 const libUrls = require('taskcluster-lib-urls');
@@ -13,7 +13,7 @@ suite(testing.suiteName(), function() {
     const azureTableSASPath = url.parse(
       libUrls.api(rootUrl, 'auth', 'v1', `/azure/myaccount/table/mytable/${accessLevel}`),
     ).pathname;
-    scope = nock(rootUrl, {encodedQueryParams: true, allowUnmocked: true})
+    scope = nock(rootUrl, { encodedQueryParams: true, allowUnmocked: true })
       .get(azureTableSASPath)
       .reply(200, function() {
         return {

@@ -6,8 +6,8 @@ const _ = require('lodash');
  * Query-string options not specified in options will not be allowed. But it's
  * optional if a request carries any query-string parameters at all.
  */
-const queryValidator = ({entry}) => {
-  const {query} = entry;
+const queryValidator = ({ entry }) => {
+  const { query } = entry;
 
   return (req, res, next) => {
     const errors = [];
@@ -39,7 +39,7 @@ const queryValidator = ({entry}) => {
       return res.reportError(
         'InvalidRequestArguments',
         errors.join('\n'),
-        {errors},
+        { errors },
       );
     }
     return next();

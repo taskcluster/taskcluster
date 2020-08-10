@@ -47,8 +47,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         owner: 'amiyaguchi@mozilla.com',
         source: 'http://github.com/',
       },
-      expires: {$fromNow: '10 days'},
-      deadline: {$fromNow: '3 days'},
+      expires: { $fromNow: '10 days' },
+      deadline: { $fromNow: '3 days' },
       tags: {
         purpose: 'taskcluster-testing',
       },
@@ -71,13 +71,13 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   }, hookWithTriggerSchema);
   const unique = new Date().getTime().toString();
   const hookWithBindings = _.defaults({
-    bindings: [{exchange: `exchange/test/${unique}`, routingKeyPattern: 'amongst.rockets.wizards'}],
+    bindings: [{ exchange: `exchange/test/${unique}`, routingKeyPattern: 'amongst.rockets.wizards' }],
   }, hookWithHookIds);
   const hookWithDeniedBindings = _.defaults({
-    bindings: [{exchange: 'exchange/taskcluster-queue/v1/task-created', routingKeyPattern: 'amongst.new.rockets.and.wizards'}],
+    bindings: [{ exchange: 'exchange/taskcluster-queue/v1/task-created', routingKeyPattern: 'amongst.new.rockets.and.wizards' }],
   }, hookWithHookIds);
 
-  const appendLastFire = async ({hookGroupId, hookId, taskId, taskCreateTime, firedBy, result, error}) => {
+  const appendLastFire = async ({ hookGroupId, hookId, taskId, taskCreateTime, firedBy, result, error }) => {
     await helper.db.fns.create_last_fire(
       hookGroupId,
       hookId,
@@ -114,7 +114,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       const r1 = await helper.hooks.createHook('foo', 'bar', hookWithTriggerSchema);
       const r2 = await helper.hooks.hook('foo', 'bar');
       assume(r1).deep.equals(r2);
-      helper.assertPulseMessage('hook-created', ({payload}) =>
+      helper.assertPulseMessage('hook-created', ({ payload }) =>
         _.isEqual({ hookGroupId: 'foo', hookId: 'bar' }, payload));
     });
 
@@ -123,7 +123,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         throw new Error('uhoh');
       });
 
-      const apiClient = helper.hooks.use({retries: 0});
+      const apiClient = helper.hooks.use({ retries: 0 });
       await assert.rejects(
         () => apiClient.createHook('foo', 'bar', hookWithTriggerSchema),
         err => err.statusCode === 500);
@@ -131,7 +131,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       const monitor = await helper.load('monitor');
       assert.equal(
         monitor.manager.messages.filter(
-          ({Type, Fields}) => Type === 'monitor.error' && Fields.message === 'uhoh',
+          ({ Type, Fields }) => Type === 'monitor.error' && Fields.message === 'uhoh',
         ).length,
         1);
       monitor.manager.reset();
@@ -141,8 +141,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       const r1 = await helper.hooks.createHook('foo', 'bar/slash', hookWithTriggerSchema);
       const r2 = await helper.hooks.hook('foo', 'bar/slash');
       assume(r1).deep.equals(r2);
-      helper.assertPulseMessage('hook-created', ({payload}) =>
-        _.isEqual({hookGroupId: 'foo', hookId: 'bar/slash'}, payload));
+      helper.assertPulseMessage('hook-created', ({ payload }) =>
+        _.isEqual({ hookGroupId: 'foo', hookId: 'bar/slash' }, payload));
     });
 
     test('with invalid scopes', async () => {
@@ -174,7 +174,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
     test('with invalid bindings (no routingKeyPattern)', async () => {
       const invalidHookDef = _.defaults({
-        bindings: [{exchange: `exchanges/test-new/${unique}`}],
+        bindings: [{ exchange: `exchanges/test-new/${unique}` }],
       }, hookDef);
       await helper.hooks.createHook('foo', 'bar', invalidHookDef).then(
         () => { throw new Error('Expected an error'); },
@@ -187,7 +187,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
     test('with invalid bindings (not an array)', async () => {
       const invalidHookDef = _.defaults({
-        bindings: {exchange: `exchanges/test-new/${unique}`, routingKeyPattern: '#'},
+        bindings: { exchange: `exchanges/test-new/${unique}`, routingKeyPattern: '#' },
       }, hookDef);
       await helper.hooks.createHook('foo', 'bar', invalidHookDef).then(
         () => { throw new Error('Expected an error'); },
@@ -273,8 +273,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       const r2 = await helper.hooks.updateHook('foo', 'bar', inputWithTriggerSchema);
       assume(r2.metadata).deep.not.equals(r1.metadata);
       assume(r2.task).deep.equals(r1.task);
-      helper.assertPulseMessage('hook-updated', ({payload}) =>
-        _.isEqual({hookId: 'bar', hookGroupId: 'foo'}, payload));
+      helper.assertPulseMessage('hook-updated', ({ payload }) =>
+        _.isEqual({ hookId: 'bar', hookGroupId: 'foo' }, payload));
     });
 
     test('fails if pulse publisher fails', async function() {
@@ -283,7 +283,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         throw new Error('uhoh');
       });
 
-      const apiClient = helper.hooks.use({retries: 0});
+      const apiClient = helper.hooks.use({ retries: 0 });
       await assert.rejects(
         () => apiClient.updateHook('foo', 'bar', hookWithTriggerSchema),
         err => err.statusCode === 500);
@@ -291,7 +291,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       const monitor = await helper.load('monitor');
       assert.equal(
         monitor.manager.messages.filter(
-          ({Type, Fields}) => Type === 'monitor.error' && Fields.message === 'uhoh',
+          ({ Type, Fields }) => Type === 'monitor.error' && Fields.message === 'uhoh',
         ).length,
         1);
       monitor.manager.reset();
@@ -331,8 +331,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       await helper.hooks.hook('foo', 'bar').then(
         () => { throw new Error('The resource in Hook Table should not exist'); },
         (err) => { assume(err.statusCode).equals(404); });
-      helper.assertPulseMessage('hook-deleted', ({payload}) =>
-        _.isEqual({hookGroupId: 'foo', hookId: 'bar'}, payload));
+      helper.assertPulseMessage('hook-deleted', ({ payload }) =>
+        _.isEqual({ hookGroupId: 'foo', hookId: 'bar' }, payload));
       await helper.hooks.listLastFires('foo', 'bar').then(
         () => { throw new Error('The resource in LastFires table should not exist'); },
         (err) => { assume(err.statusCode).equals(404); });
@@ -344,7 +344,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         throw new Error('uhoh');
       });
 
-      const apiClient = helper.hooks.use({retries: 0});
+      const apiClient = helper.hooks.use({ retries: 0 });
       await assert.rejects(
         () => apiClient.removeHook('foo', 'bar'),
         err => err.statusCode === 500);
@@ -352,7 +352,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       const monitor = await helper.load('monitor');
       assert.equal(
         monitor.manager.messages.filter(
-          ({Type, Fields}) => Type === 'monitor.error' && Fields.message === 'uhoh',
+          ({ Type, Fields }) => Type === 'monitor.error' && Fields.message === 'uhoh',
         ).length,
         1);
       monitor.manager.reset();
@@ -360,8 +360,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
     test('remove all lastFires info of the hook ', async () => {
       await helper.hooks.createHook('foo', 'bar', hookWithTriggerSchema);
-      await helper.hooks.triggerHook('foo', 'bar', {location: 'Belo Horizonte, MG',
-        foo: 'triggerHook'});
+      await helper.hooks.triggerHook('foo', 'bar', { location: 'Belo Horizonte, MG',
+        foo: 'triggerHook' });
       await helper.hooks.removeHook('foo', 'bar');
       await helper.hooks.listLastFires('foo', 'bar').then(
         () => { throw new Error('The resource in LastFires table should not exist'); },
@@ -448,7 +448,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     test('returns "no-fire" for a non-scheduled, non-fired task', async () => {
       await helper.hooks.createHook('foo', 'bar', hookWithTriggerSchema);
       const r1 = await helper.hooks.getHookStatus('foo', 'bar');
-      assume(r1).deep.equals({lastFire: {result: 'no-fire'}});
+      assume(r1).deep.equals({ lastFire: { result: 'no-fire' } });
     });
 
     test('returns the next date for a scheduled task', async () => {
@@ -491,7 +491,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       const r1 = await helper.hooks.getHookStatus('foo', 'bar');
       assume(r1).contains('lastFire');
       assume(r1.lastFire.result).is.equal('error');
-      assume(r1.lastFire.error).is.deeply.equal({msg: "uhoh"});
+      assume(r1.lastFire.error).is.deeply.equal({ msg: "uhoh" });
     });
 
     test('returns the last run status for a hook that failed with a string error', async () => {
@@ -509,7 +509,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       const r1 = await helper.hooks.getHookStatus('foo', 'bar');
       assume(r1).contains('lastFire');
       assume(r1.lastFire.result).is.equal('error');
-      assume(r1.lastFire.error).is.deeply.equal({message: "uhoh"});
+      assume(r1.lastFire.error).is.deeply.equal({ message: "uhoh" });
     });
 
     test('fails if no hook exists', async () => {
@@ -523,19 +523,19 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     subSkip();
     test('should launch task with the given payload', async () => {
       await helper.hooks.createHook('foo', 'bar', hookWithTriggerSchema);
-      await helper.hooks.triggerHook('foo', 'bar', {location: 'Belo Horizonte, MG',
-        foo: 'triggerHook'});
+      await helper.hooks.triggerHook('foo', 'bar', { location: 'Belo Horizonte, MG',
+        foo: 'triggerHook' });
       assume(helper.creator.fireCalls).deep.equals([{
         hookGroupId: 'foo',
         hookId: 'bar',
-        context: {firedBy: 'triggerHook', clientId: 'test-client', payload: {location: 'Belo Horizonte, MG', foo: 'triggerHook'}},
+        context: { firedBy: 'triggerHook', clientId: 'test-client', payload: { location: 'Belo Horizonte, MG', foo: 'triggerHook' } },
         options: {},
       }]);
     });
 
     test('returns an empty object when the hook does not create a task', async () => {
       await helper.hooks.createHook('foo', 'bar',
-        Object.assign({}, hookWithTriggerSchema, {task: {$if: 'false', then: true}}));
+        Object.assign({}, hookWithTriggerSchema, { task: { $if: 'false', then: true } }));
       helper.creator.shouldNotProduceTask = true;
       const res = await helper.hooks.triggerHook('foo', 'bar', {});
       assume(res).deep.equals({});
@@ -546,12 +546,12 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       helper.creator.shouldFail = { // firing the hook should fail..
         statusCode: 499,
         code: 'uhoh',
-        body: {message: 'uhoh'},
+        body: { message: 'uhoh' },
       };
       helper.scopes('hooks:trigger-hook:foo/bar');
       try {
-        await helper.hooks.triggerHook('foo', 'bar', {bar: {location: 'Belo Horizonte, MG'},
-          foo: 'triggerHook'});
+        await helper.hooks.triggerHook('foo', 'bar', { bar: { location: 'Belo Horizonte, MG' },
+          foo: 'triggerHook' });
       } catch (err) {
         assume(err.statusCode).equals(400);
         assume(err.body.message).exists();
@@ -614,8 +614,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     });
 
     test('fails if no hook exists', async () => {
-      await helper.hooks.triggerHook('foo', 'bar', {bar: {location: 'Belo Horizonte, MG'},
-        foo: 'triggerHook'}).then(
+      await helper.hooks.triggerHook('foo', 'bar', { bar: { location: 'Belo Horizonte, MG' },
+        foo: 'triggerHook' }).then(
         () => { throw new Error('The resource should not exist'); },
         (err) => { assume(err.statusCode).equals(404); });
     });
@@ -626,7 +626,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
     test('checking schema validation', async () => {
       await helper.hooks.createHook('foo', 'bar', hookWithTriggerSchema);
-      await helper.hooks.triggerHook('foo', 'bar', {location: 28}).then(
+      await helper.hooks.triggerHook('foo', 'bar', { location: 28 }).then(
         () => { throw new Error('Expected an error'); },
         (err) => { debug('Got expected error: %s', err); });
     });
@@ -717,11 +717,11 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     test('successfully triggers task with the given payload', async () => {
       await helper.hooks.createHook('foo', 'bar', hookWithTriggerSchema);
       const res = await helper.hooks.getTriggerToken('foo', 'bar');
-      await helper.hooks.triggerHookWithToken('foo', 'bar', res.token, {location: 'New Zealand'});
+      await helper.hooks.triggerHookWithToken('foo', 'bar', res.token, { location: 'New Zealand' });
       assume(helper.creator.fireCalls).deep.equals([{
         hookGroupId: 'foo',
         hookId: 'bar',
-        context: {firedBy: 'triggerHookWithToken', payload: {location: 'New Zealand'}},
+        context: { firedBy: 'triggerHookWithToken', payload: { location: 'New Zealand' } },
         options: {},
       }]);
     });
@@ -753,7 +753,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     });
 
     test('trigger task after resetting the trigger token', async () => {
-      const payload = {a: 'payload'};
+      const payload = { a: 'payload' };
       await helper.hooks.createHook('foo', 'bar', hookWithTriggerSchema);
       const r1 = await helper.hooks.getTriggerToken('foo', 'bar');
       const r2 = await helper.hooks.resetTriggerToken('foo', 'bar');
@@ -765,7 +765,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       assume(helper.creator.fireCalls).deep.equals([{
         hookGroupId: 'foo',
         hookId: 'bar',
-        context: {firedBy: 'triggerHookWithToken', payload},
+        context: { firedBy: 'triggerHookWithToken', payload },
         options: {},
       }]);
     });
@@ -792,12 +792,12 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       await appendLastFire(lastFire);
       for (let i = 1;i <= 2;i++) {
         taskIds.push(taskcluster.slugid());
-        await appendLastFire({...lastFire,
+        await appendLastFire({ ...lastFire,
           taskId: taskIds[i],
           taskCreateTime: new Date(),
         });
       }
-      const {lastFires} = await helper.hooks.listLastFires(lastFire.hookGroupId, lastFire.hookId);
+      const { lastFires } = await helper.hooks.listLastFires(lastFire.hookGroupId, lastFire.hookId);
       const dataTaskIds = lastFires.map(lastFire => lastFire.taskId);
       taskIds.sort();
       dataTaskIds.sort();
@@ -811,8 +811,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       const r1 = await helper.hooks.createHook('foo', 'bar', hookWithBindings);
       const r2 = await helper.hooks.hook('foo', 'bar');
       assume(r1).deep.equals(r2);
-      helper.assertPulseMessage('hook-created', ({payload}) =>
-        _.isEqual({hookGroupId: 'foo', hookId: 'bar'}, payload));
+      helper.assertPulseMessage('hook-created', ({ payload }) =>
+        _.isEqual({ hookGroupId: 'foo', hookId: 'bar' }, payload));
     });
 
     test('hook-created message reconciles consumers', async () => {

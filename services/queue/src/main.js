@@ -14,10 +14,10 @@ let WorkClaimer = require('./workclaimer');
 let WorkerInfo = require('./workerinfo');
 let loader = require('taskcluster-lib-loader');
 let config = require('taskcluster-lib-config');
-let {MonitorManager} = require('taskcluster-lib-monitor');
+let { MonitorManager } = require('taskcluster-lib-monitor');
 let SchemaSet = require('taskcluster-lib-validate');
 let libReferences = require('taskcluster-lib-references');
-let {App} = require('taskcluster-lib-app');
+let { App } = require('taskcluster-lib-app');
 const tcdb = require('taskcluster-db');
 let pulse = require('taskcluster-lib-pulse');
 const QuickLRU = require('quick-lru');
@@ -29,7 +29,7 @@ require('./monitor');
 let load = loader({
   cfg: {
     requires: ['profile'],
-    setup: ({profile}) => config({
+    setup: ({ profile }) => config({
       profile,
       serviceName: 'queue',
     }),
@@ -37,7 +37,7 @@ let load = loader({
 
   monitor: {
     requires: ['process', 'profile', 'cfg'],
-    setup: ({process, profile, cfg}) => MonitorManager.setup({
+    setup: ({ process, profile, cfg }) => MonitorManager.setup({
       serviceName: 'queue',
       processName: process,
       verify: profile !== 'production',
@@ -48,14 +48,14 @@ let load = loader({
   // Validator and publisher
   schemaset: {
     requires: ['cfg'],
-    setup: ({cfg}) => new SchemaSet({
+    setup: ({ cfg }) => new SchemaSet({
       serviceName: 'queue',
     }),
   },
 
   pulseClient: {
     requires: ['cfg', 'monitor'],
-    setup: ({cfg, monitor}) => {
+    setup: ({ cfg, monitor }) => {
       return new pulse.Client({
         namespace: 'taskcluster-queue',
         monitor: monitor.childMonitor('pulse-client'),
@@ -66,7 +66,7 @@ let load = loader({
 
   publisher: {
     requires: ['cfg', 'schemaset', 'pulseClient'],
-    setup: async ({cfg, schemaset, pulseClient}) => exchanges.publisher({
+    setup: async ({ cfg, schemaset, pulseClient }) => exchanges.publisher({
       rootUrl: cfg.taskcluster.rootUrl,
       client: pulseClient,
       schemaset,
@@ -76,7 +76,7 @@ let load = loader({
   // Create artifact bucket instances
   publicArtifactBucket: {
     requires: ['cfg', 'monitor'],
-    setup: async ({cfg, monitor}) => {
+    setup: async ({ cfg, monitor }) => {
       let bucket = new Bucket({
         bucket: cfg.app.publicArtifactBucket,
         credentials: cfg.aws,
@@ -89,7 +89,7 @@ let load = loader({
   },
   privateArtifactBucket: {
     requires: ['cfg', 'monitor'],
-    setup: async ({cfg, monitor}) => {
+    setup: async ({ cfg, monitor }) => {
       let bucket = new Bucket({
         bucket: cfg.app.privateArtifactBucket,
         credentials: cfg.aws,
@@ -102,7 +102,7 @@ let load = loader({
 
   db: {
     requires: ["cfg", "process", "monitor"],
-    setup: ({cfg, process, monitor}) => tcdb.setup({
+    setup: ({ cfg, process, monitor }) => tcdb.setup({
       readDbUrl: cfg.postgres.readDbUrl,
       writeDbUrl: cfg.postgres.writeDbUrl,
       serviceName: 'queue',
@@ -114,7 +114,7 @@ let load = loader({
   // Create QueueService to manage azure queues
   queueService: {
     requires: ['cfg', 'monitor', 'db'],
-    setup: ({cfg, monitor, db}) => new QueueService({
+    setup: ({ cfg, monitor, db }) => new QueueService({
       db,
       claimQueue: cfg.app.claimQueue,
       resolvedQueue: cfg.app.resolvedQueue,
@@ -127,7 +127,7 @@ let load = loader({
   // Create workClaimer
   workClaimer: {
     requires: ['cfg', 'publisher', 'db', 'queueService', 'monitor'],
-    setup: ({cfg, publisher, db, queueService, monitor}) => new WorkClaimer({
+    setup: ({ cfg, publisher, db, queueService, monitor }) => new WorkClaimer({
       publisher,
       db,
       queueService,
@@ -140,7 +140,7 @@ let load = loader({
   // Create workerInfo
   workerInfo: {
     requires: ['db'],
-    setup: ({db}) => new WorkerInfo({db}),
+    setup: ({ db }) => new WorkerInfo({ db }),
   },
 
   // Create dependencyTracker
@@ -148,16 +148,16 @@ let load = loader({
     requires: [
       'publisher', 'queueService', 'monitor', 'db',
     ],
-    setup: ({monitor, ...ctx}) => new DependencyTracker({
+    setup: ({ monitor, ...ctx }) => new DependencyTracker({
       monitor: monitor.childMonitor('dependency-tracker'),
-      ...ctx},
+      ...ctx },
     ),
   },
 
   // Create EC2RegionResolver for regions we have artifact proxies in
   regionResolver: {
     requires: ['cfg', 'monitor'],
-    setup: async ({cfg, monitor}) => {
+    setup: async ({ cfg, monitor }) => {
       let regionResolver = new EC2RegionResolver(
         cfg.app.useCloudMirror ?
           [...cfg.app.cloudMirrorRegions, cfg.aws.region] :
@@ -170,7 +170,7 @@ let load = loader({
 
   generateReferences: {
     requires: ['cfg', 'schemaset'],
-    setup: ({cfg, schemaset}) => libReferences.fromService({
+    setup: ({ cfg, schemaset }) => libReferences.fromService({
       schemaset,
       references: [builder.reference(), exchanges.reference(), MonitorManager.reference('queue')],
     }).generateReferences(),
@@ -201,7 +201,7 @@ let load = loader({
         monitor: ctx.monitor.childMonitor('api-context'),
         workClaimer: ctx.workClaimer,
         workerInfo: ctx.workerInfo,
-        LRUcache: new QuickLRU({maxSize: ctx.cfg.app.taskCacheMaxSize || 10}),
+        LRUcache: new QuickLRU({ maxSize: ctx.cfg.app.taskCacheMaxSize || 10 }),
       },
       rootUrl: ctx.cfg.taskcluster.rootUrl,
       schemaset: ctx.schemaset,
@@ -212,7 +212,7 @@ let load = loader({
   // Create the server process
   server: {
     requires: ['cfg', 'api'],
-    setup: ({cfg, api}) => App({
+    setup: ({ cfg, api }) => App({
       port: cfg.server.port,
       env: cfg.server.env,
       forceSSL: cfg.server.forceSSL,
@@ -266,7 +266,7 @@ let load = loader({
   // Create the dependency-resolver process
   'dependency-resolver': {
     requires: ['cfg', 'queueService', 'dependencyTracker', 'monitor'],
-    setup: async ({cfg, queueService, dependencyTracker, monitor}, ownName) => {
+    setup: async ({ cfg, queueService, dependencyTracker, monitor }, ownName) => {
       let resolver = new DependencyResolver({
         ownName,
         queueService, dependencyTracker,
@@ -281,7 +281,7 @@ let load = loader({
   // Create the artifact expiration process (periodic job)
   'expire-artifacts': {
     requires: ['cfg', 'db', 'publicArtifactBucket', 'privateArtifactBucket', 'monitor'],
-    setup: ({cfg, db, publicArtifactBucket, privateArtifactBucket, monitor}, ownName) => {
+    setup: ({ cfg, db, publicArtifactBucket, privateArtifactBucket, monitor }, ownName) => {
       return monitor.oneShot(ownName, async () => {
         const now = taskcluster.fromNow(cfg.app.artifactExpirationDelay);
         debug('Expiring artifacts at: %s, from before %s', new Date(), now);
@@ -302,7 +302,7 @@ let load = loader({
   // Create the queue-message expiration process (periodic job)
   'expire-queue-messages': {
     requires: ['cfg', 'queueService', 'monitor'],
-    setup: ({cfg, queueService, monitor}, ownName) => {
+    setup: ({ cfg, queueService, monitor }, ownName) => {
       return monitor.oneShot(ownName, async () => {
         debug('Expiring azqueue messages at: %s', new Date());
         await queueService.deleteExpiredMessages();
@@ -313,11 +313,11 @@ let load = loader({
   // Create the task expiration process (periodic job)
   'expire-tasks': {
     requires: ['cfg', 'db', 'monitor'],
-    setup: ({cfg, db, monitor}, ownName) => {
+    setup: ({ cfg, db, monitor }, ownName) => {
       return monitor.oneShot(ownName, async () => {
         const now = taskcluster.fromNow(cfg.app.taskExpirationDelay);
         debug('Expiring tasks at: %s, from before %s', new Date(), now);
-        const [{expire_tasks}] = await db.fns.expire_tasks(now);
+        const [{ expire_tasks }] = await db.fns.expire_tasks(now);
         debug('Expired %s tasks', expire_tasks);
       });
     },
@@ -326,11 +326,11 @@ let load = loader({
   // Create the task-group expiration process (periodic job)
   'expire-task-groups': {
     requires: ['cfg', 'db', 'monitor'],
-    setup: ({cfg, db, monitor}, ownName) => {
+    setup: ({ cfg, db, monitor }, ownName) => {
       return monitor.oneShot(ownName, async () => {
         const now = taskcluster.fromNow(cfg.app.taskExpirationDelay);
         debug('Expiring task-groups at: %s, from before %s', new Date(), now);
-        const [{expire_task_groups}] = await db.fns.expire_task_groups(now);
+        const [{ expire_task_groups }] = await db.fns.expire_task_groups(now);
         debug('Expired %s task-groups', expire_task_groups);
       });
     },
@@ -339,11 +339,11 @@ let load = loader({
   // Create the task-dependency expiration process (periodic job)
   'expire-task-dependency': {
     requires: ['cfg', 'db', 'monitor'],
-    setup: ({cfg, db, monitor}, ownName) => {
+    setup: ({ cfg, db, monitor }, ownName) => {
       return monitor.oneShot(ownName, async () => {
         const now = taskcluster.fromNow(cfg.app.taskExpirationDelay);
         debug('Expiring task-dependency at: %s, from before %s', new Date(), now);
-        const [{expire_task_dependencies}] = await db.fns.expire_task_dependencies(now);
+        const [{ expire_task_dependencies }] = await db.fns.expire_task_dependencies(now);
         debug('Expired %s task-dependency', expire_task_dependencies);
       });
     },
@@ -352,7 +352,7 @@ let load = loader({
   // Create the worker-info expiration process (periodic job)
   'expire-worker-info': {
     requires: ['cfg', 'workerInfo', 'monitor'],
-    setup: ({cfg, workerInfo, monitor}, ownName) => {
+    setup: ({ cfg, workerInfo, monitor }, ownName) => {
       return monitor.oneShot(ownName, async () => {
         const now = taskcluster.fromNow(cfg.app.workerInfoExpirationDelay);
         debug('Expiring worker-info at: %s, from before %s', new Date(), now);
@@ -365,7 +365,7 @@ let load = loader({
   // Create the load-test process (run as one-off job)
   'load-test': {
     requires: ['cfg'],
-    setup: ({cfg}) => require('./load-test')(cfg),
+    setup: ({ cfg }) => require('./load-test')(cfg),
   },
 
 }, {

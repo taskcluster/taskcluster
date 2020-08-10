@@ -114,7 +114,7 @@ class Schema {
    * Generate a map of all defined methods as of the current version (or, if given,
    * as of atVersion)
    */
-  allMethods({atVersion} = {}) {
+  allMethods({ atVersion } = {}) {
     const map = this.versions.reduce(
       (acc, version) => {
         if (atVersion !== undefined && version.version > atVersion) {
@@ -123,7 +123,7 @@ class Schema {
 
         Object.entries(version.methods).forEach(([name, method]) => {
           if (method.deprecated) {
-            Object.assign(method, acc.get(name), {deprecated: true});
+            Object.assign(method, acc.get(name), { deprecated: true });
           }
           acc.set(name, method);
         });

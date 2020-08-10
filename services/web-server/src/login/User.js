@@ -45,7 +45,7 @@ module.exports = class User {
     assert(options);
 
     if (!this.identity) {
-      return {credentials: null, expires: null};
+      return { credentials: null, expires: null };
     }
 
     const scopes = this.scopes();

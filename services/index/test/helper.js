@@ -2,7 +2,7 @@ const assert = require('assert');
 const builder = require('../src/api');
 const taskcluster = require('taskcluster-client');
 const load = require('../src/main');
-const {fakeauth, stickyLoader, Secrets, withPulse, withMonitor, withDb, resetTables} = require('taskcluster-lib-testing');
+const { fakeauth, stickyLoader, Secrets, withPulse, withMonitor, withDb, resetTables } = require('taskcluster-lib-testing');
 
 const helper = module.exports;
 
@@ -29,7 +29,7 @@ exports.withDb = (mock, skipping) => {
 };
 
 exports.withPulse = (mock, skipping) => {
-  withPulse({helper: exports, skipping, namespace: 'taskcluster-index'});
+  withPulse({ helper: exports, skipping, namespace: 'taskcluster-index' });
 };
 
 /**
@@ -70,7 +70,7 @@ exports.withServer = (mock, skipping) => {
     // a local rootUrl to test the API, including mocking auth on that
     // rootUrl.
     exports.load.cfg('taskcluster.rootUrl', helper.rootUrl);
-    fakeauth.start({'test-client': ['*']}, {rootUrl: helper.rootUrl});
+    fakeauth.start({ 'test-client': ['*'] }, { rootUrl: helper.rootUrl });
 
     helper.Index = taskcluster.createClient(builder.reference());
 
@@ -146,9 +146,9 @@ const stubbedQueue = () => {
 
 exports.resetTables = (mock, skipping) => {
   setup('reset tables', async function() {
-    await resetTables({tableNames: [
+    await resetTables({ tableNames: [
       'indexed_tasks',
       'index_namespaces',
-    ]});
+    ] });
   });
 };

@@ -6,7 +6,7 @@ const load = require('../src/main');
 const temporary = require('temporary');
 const mockAwsS3 = require('mock-aws-s3');
 const nock = require('nock');
-const {fakeauth, stickyLoader, Secrets, withPulse, withMonitor, withDb, resetTables} = require('taskcluster-lib-testing');
+const { fakeauth, stickyLoader, Secrets, withPulse, withMonitor, withDb, resetTables } = require('taskcluster-lib-testing');
 
 const helper = module.exports;
 
@@ -26,14 +26,14 @@ exports.secrets = new Secrets({
   ],
   secrets: {
     aws: [
-      {env: 'AWS_ACCESS_KEY_ID', cfg: 'aws.accessKeyId', name: 'accessKeyId'},
-      {env: 'AWS_SECRET_ACCESS_KEY', cfg: 'aws.secretAccessKey', name: 'secretAccessKey'},
-      {env: 'PUBLIC_ARTIFACT_BUCKET', cfg: 'app.publicArtifactBucket', name: 'publicArtifactBucket',
-        mock: 'fake-public'},
-      {env: 'PRIVATE_ARTIFACT_BUCKET', cfg: 'app.privateArtifactBucket', name: 'privateArtifactBucket',
-        mock: 'fake-private'},
-      {env: 'ARTIFACT_REGION', cfg: 'aws.region', name: 'artifactRegion',
-        mock: 'us-central-7'},
+      { env: 'AWS_ACCESS_KEY_ID', cfg: 'aws.accessKeyId', name: 'accessKeyId' },
+      { env: 'AWS_SECRET_ACCESS_KEY', cfg: 'aws.secretAccessKey', name: 'secretAccessKey' },
+      { env: 'PUBLIC_ARTIFACT_BUCKET', cfg: 'app.publicArtifactBucket', name: 'publicArtifactBucket',
+        mock: 'fake-public' },
+      { env: 'PRIVATE_ARTIFACT_BUCKET', cfg: 'app.privateArtifactBucket', name: 'privateArtifactBucket',
+        mock: 'fake-private' },
+      { env: 'ARTIFACT_REGION', cfg: 'aws.region', name: 'artifactRegion',
+        mock: 'us-central-7' },
     ],
   },
   load: exports.load,
@@ -71,7 +71,7 @@ exports.withS3 = (mock, skipping) => {
       mock.getBucketCors = makeAwsFunc(async () => ({
         CORSRules,
       }));
-      mock.putBucketCors = makeAwsFunc(async ({CORSConfiguration}) => {
+      mock.putBucketCors = makeAwsFunc(async ({ CORSConfiguration }) => {
         CORSRules = _.cloneDeep(CORSConfiguration.CORSRules);
       });
 
@@ -129,7 +129,7 @@ exports.withAmazonIPRanges = (mock, skipping) => {
     interceptor = nock('https://ip-ranges.amazonaws.com')
       .persist()
       .get('/ip-ranges.json')
-      .replyWithFile(200, __dirname + '/fake-ip-ranges.json', {'Content-Type': 'application/json'});
+      .replyWithFile(200, __dirname + '/fake-ip-ranges.json', { 'Content-Type': 'application/json' });
   });
 
   suiteTeardown(async function() {
@@ -164,12 +164,12 @@ exports.withServer = (mock, skipping) => {
     // a local rootUrl to test the API, including mocking auth on that
     // rootUrl.
     exports.load.cfg('taskcluster.rootUrl', helper.rootUrl);
-    fakeauth.start({'test-client': ['*']}, {rootUrl: helper.rootUrl});
+    fakeauth.start({ 'test-client': ['*'] }, { rootUrl: helper.rootUrl });
 
     // the workClaimer needs to use `test-client` too, so feed it the right
     // input..
     exports.load.cfg('taskcluster.credentials',
-      {clientId: 'test-client', accessToken: 'ignored'});
+      { clientId: 'test-client', accessToken: 'ignored' });
     await exports.load('workClaimer');
 
     helper.Queue = taskcluster.createClient(builder.reference());
@@ -217,7 +217,7 @@ exports.withServer = (mock, skipping) => {
 };
 
 exports.withPulse = (mock, skipping) => {
-  withPulse({helper, skipping, namespace: 'taskcluster-queue'});
+  withPulse({ helper, skipping, namespace: 'taskcluster-queue' });
 };
 
 /**
@@ -282,13 +282,13 @@ exports.makeWorkerType = () => `test-${slugid.v4().replace(/[_-]/g, '').toLowerC
 
 exports.resetTables = (mock, skipping) => {
   setup('reset tables', async function() {
-    await resetTables({tableNames: [
+    await resetTables({ tableNames: [
       'tasks',
       'task_groups',
       'task_dependencies',
       'queue_workers',
       'queue_worker_types',
       'queue_provisioners',
-    ]});
+    ] });
   });
 };

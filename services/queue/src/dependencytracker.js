@@ -1,5 +1,5 @@
 let assert = require('assert');
-const {Task} = require('./data');
+const { Task } = require('./data');
 
 /**
  * DependencyTracker tracks dependencies between tasks and ensure that dependent
@@ -200,7 +200,7 @@ class DependencyTracker {
 
   /** Returns true, if some task requirement is blocking the task */
   async isBlocked(taskId) {
-    const [{is_task_blocked}] = await this.db.fns.is_task_blocked(taskId);
+    const [{ is_task_blocked }] = await this.db.fns.is_task_blocked(taskId);
     return is_task_blocked;
   }
 
@@ -213,7 +213,7 @@ class DependencyTracker {
   async updateTaskGroupActiveSet(taskId, taskGroupId, schedulerId) {
     await this.db.fns.mark_task_ever_resolved(taskId);
 
-    const [{is_task_group_active}] = await this.db.fns.is_task_group_active(taskGroupId);
+    const [{ is_task_group_active }] = await this.db.fns.is_task_group_active(taskGroupId);
 
     if (!is_task_group_active) {
       await this.publisher.taskGroupResolved({
@@ -271,7 +271,7 @@ class DependencyTracker {
           runId: 0,
         }, task.routes),
       ]);
-      this.monitor.log.taskPending({taskId: task.taskId, runId: 0});
+      this.monitor.log.taskPending({ taskId: task.taskId, runId: 0 });
     }
 
     return status;

@@ -9,7 +9,7 @@ const assert = require('assert');
  *   vhost   :          // vhost to use
  * }
  */
-const pulseCredentials = ({username, password, hostname, vhost}) => {
+const pulseCredentials = ({ username, password, hostname, vhost }) => {
   assert(username, 'options.username is required');
   assert(password, 'options.password is required');
   assert(hostname, 'options.hostname is required');
@@ -43,7 +43,7 @@ exports.pulseCredentials = pulseCredentials;
  */
 const connectionStringCredentials = (connectionString) => {
   return async () => {
-    return {connectionString};
+    return { connectionString };
   };
 };
 

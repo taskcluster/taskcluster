@@ -1,6 +1,6 @@
 const semver = require('semver');
 const path = require('path');
-const {ChangeLog} = require('../changelog');
+const { ChangeLog } = require('../changelog');
 const {
   ensureTask,
   gitLsFiles,
@@ -22,11 +22,11 @@ const {
   removeRepoFile,
   REPO_ROOT,
 } = require('../utils');
-const {schema: readSchema} = require('taskcluster-db');
+const { schema: readSchema } = require('taskcluster-db');
 
 const UPSTREAM_REMOTE = 'git@github.com:taskcluster/taskcluster';
 
-module.exports = ({tasks, cmdOptions, credentials}) => {
+module.exports = ({ tasks, cmdOptions, credentials }) => {
   ensureTask(tasks, {
     title: 'Get Changelog',
     requires: [
@@ -38,7 +38,7 @@ module.exports = ({tasks, cmdOptions, credentials}) => {
     run: async (requirements, utils) => {
       const changelog = new ChangeLog();
       await changelog.load();
-      return {changelog};
+      return { changelog };
     },
   });
 
@@ -72,7 +72,7 @@ module.exports = ({tasks, cmdOptions, credentials}) => {
     ],
     locks: ['git'],
     run: async (requirements, utils) => {
-      if (await gitIsDirty({dir: REPO_ROOT})) {
+      if (await gitIsDirty({ dir: REPO_ROOT })) {
         throw new Error([
           'The current git working copy is not clean.  Releases can only be made from a clean',
           'working copy.',
@@ -89,7 +89,7 @@ module.exports = ({tasks, cmdOptions, credentials}) => {
     ],
     locks: ['git'],
     run: async (requirements, utils) => {
-      const { revision: localRevision } = await gitDescribe({dir: REPO_ROOT, utils});
+      const { revision: localRevision } = await gitDescribe({ dir: REPO_ROOT, utils });
       const { revision: remoteRevision } = await gitRemoteRev({
         dir: REPO_ROOT,
         remote: UPSTREAM_REMOTE,
@@ -119,8 +119,8 @@ module.exports = ({tasks, cmdOptions, credentials}) => {
     run: async (requirements, utils) => {
       const changed = [];
 
-      for (let file of await gitLsFiles({patterns: ['**/package.json', 'package.json']})) {
-        utils.status({message: `Update ${file}`});
+      for (let file of await gitLsFiles({ patterns: ['**/package.json', 'package.json'] })) {
+        utils.status({ message: `Update ${file}` });
         await modifyRepoJSON(file, contents => {
           contents.version = requirements['release-version'];
         });
@@ -130,42 +130,42 @@ module.exports = ({tasks, cmdOptions, credentials}) => {
       const releaseImage = `taskcluster/taskcluster:v${requirements['release-version']}`;
 
       const build = 'infrastructure/tooling/current-release.yml';
-      utils.status({message: `Update ${build}`});
-      await writeRepoYAML(build, {image: releaseImage});
+      utils.status({ message: `Update ${build}` });
+      await writeRepoYAML(build, { image: releaseImage });
       changed.push(build);
 
       const valuesYaml = 'infrastructure/k8s/values.yaml';
-      utils.status({message: `Update ${valuesYaml}`});
+      utils.status({ message: `Update ${valuesYaml}` });
       await modifyRepoFile(valuesYaml, contents =>
         contents.replace(/dockerImage: .*/, `dockerImage: '${releaseImage}'`));
       changed.push(valuesYaml);
 
       const helmchart = 'infrastructure/k8s/Chart.yaml';
-      utils.status({message: `Update ${helmchart}`});
+      utils.status({ message: `Update ${helmchart}` });
       await modifyRepoFile(helmchart, contents =>
         contents.replace(/appVersion: .*/, `appVersion: '${requirements['release-version']}'`));
       changed.push(helmchart);
 
       const pyclient = 'clients/client-py/setup.py';
-      utils.status({message: `Update ${pyclient}`});
+      utils.status({ message: `Update ${pyclient}` });
       await modifyRepoFile(pyclient, contents =>
         contents.replace(/VERSION = .*/, `VERSION = '${requirements['release-version']}'`));
       changed.push(pyclient);
 
       const shellclient = 'clients/client-shell/cmds/version/version.go';
-      utils.status({message: `Update ${shellclient}`});
+      utils.status({ message: `Update ${shellclient}` });
       await modifyRepoFile(shellclient, contents =>
         contents.replace(/VersionNumber = .*/, `VersionNumber = "${requirements['release-version']}"`));
       changed.push(shellclient);
 
       const shellreadme = 'clients/client-shell/README.md';
-      utils.status({message: `Update ${shellreadme}`});
+      utils.status({ message: `Update ${shellreadme}` });
       await modifyRepoFile(shellreadme, contents =>
         contents.replace(/download\/v[0-9.]*\/taskcluster-/g, `download/v${requirements['release-version']}/taskcluster-`));
       changed.push(shellreadme);
 
       const internalVersion = 'internal/version.go';
-      utils.status({message: `Update ${internalVersion}`});
+      utils.status({ message: `Update ${internalVersion}` });
       await modifyRepoFile(internalVersion, contents =>
         contents.replace(/^(\s*Version\s*=\s*).*/m, `$1"${requirements['release-version']}"`));
       changed.push(internalVersion);
@@ -189,13 +189,13 @@ module.exports = ({tasks, cmdOptions, credentials}) => {
         'workers/generic-worker/**.yml',
         'workers/generic-worker/**.sh',
       ];
-      for (let file of await gitLsFiles({patterns: goFiles})) {
+      for (let file of await gitLsFiles({ patterns: goFiles })) {
         await modifyRepoFile(file, contents =>
           contents.replace(/(github.com\/taskcluster\/taskcluster\/v)\d+/g, `$1${major}`));
         changed.push(file);
       }
 
-      return {'version-updated': changed};
+      return { 'version-updated': changed };
     },
   });
 
@@ -313,7 +313,7 @@ module.exports = ({tasks, cmdOptions, credentials}) => {
         changed.push(filename);
       }
 
-      return {'changed-files': changed};
+      return { 'changed-files': changed };
     },
   });
 
@@ -337,7 +337,7 @@ module.exports = ({tasks, cmdOptions, credentials}) => {
         .concat(requirements['db-fns-updated'])
         .concat(requirements['version-updated'])
         .concat(requirements['changed-files']);
-      utils.status({message: `Commit changes`});
+      utils.status({ message: `Commit changes` });
       await gitCommit({
         dir: REPO_ROOT,
         message: `v${requirements['release-version']}`,

@@ -41,7 +41,7 @@ suite(testing.suiteName(), function() {
 
   test('bad authentication', async () => {
     await expectError(client({
-      credentials: {accessToken: 'wrong'},
+      credentials: { accessToken: 'wrong' },
     }).testAuthenticate({
       clientScopes: [],
       requiredScopes: [],
@@ -87,7 +87,7 @@ suite(testing.suiteName(), function() {
       },
     });
     assert.deepEqual(
-      await client({credentials}).testAuthenticate({
+      await client({ credentials }).testAuthenticate({
         clientScopes: ['scopes:*'],
         requiredScopes: ['scopes:specific'],
       }), {
@@ -105,7 +105,7 @@ suite(testing.suiteName(), function() {
         accessToken: 'no-secret',
       },
     });
-    await expectError(client({credentials}).testAuthenticate({
+    await expectError(client({ credentials }).testAuthenticate({
       clientScopes: ['scopes:*'],
       requiredScopes: ['scopes:specific'],
     }), 'InsufficientScopes');
@@ -120,7 +120,7 @@ suite(testing.suiteName(), function() {
         accessToken: 'wrong',
       },
     });
-    await expectError(client({credentials}).testAuthenticate({
+    await expectError(client({ credentials }).testAuthenticate({
       clientScopes: ['scopes:*'],
       requiredScopes: ['scopes:specific'],
     }), 'AuthenticationFailed');
@@ -139,7 +139,7 @@ suite(testing.suiteName(), function() {
     assert.equal(credentials.clientId, 'my-temp-cred',
       'temp cred name doesn\'t appear as clientId');
     assert.deepEqual(
-      await client({credentials}).testAuthenticate({
+      await client({ credentials }).testAuthenticate({
         clientScopes: ['scopes:*', 'auth:create-client:my-temp-cred'],
         requiredScopes: ['scopes:specific'],
       }), {
@@ -365,14 +365,14 @@ suite(testing.suiteName(), function() {
       delete process.env.TASKCLUSTER_CLIENT_ID;
       delete process.env.TASKCLUSTER_ACCESS_TOKEN;
       assert.deepEqual(taskcluster.fromEnvVars(),
-        {rootUrl: process.env.TASKCLUSTER_ROOT_URL});
+        { rootUrl: process.env.TASKCLUSTER_ROOT_URL });
     });
 
     test('fromEnvVars with only accessToken', async () => {
       delete process.env.TASKCLUSTER_ROOT_URL;
       delete process.env.TASKCLUSTER_CLIENT_ID;
       assert.deepEqual(taskcluster.fromEnvVars(),
-        {credentials: {accessToken: 'no-secret'}});
+        { credentials: { accessToken: 'no-secret' } });
     });
 
     test('fromEnvVar credentials', async () => {

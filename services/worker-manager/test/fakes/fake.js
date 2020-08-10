@@ -82,7 +82,7 @@ class FakeCloud {
     throw new Error([
       '\nSchema Validation Failed!',
       `\nSchema Errors (${schemaFile}):\n  * `,
-      this.ajv.errorsText(this.ajv.errors, {separator: '\n  * '}),
+      this.ajv.errorsText(this.ajv.errors, { separator: '\n  * ' }),
     ].join(''));
   }
 }

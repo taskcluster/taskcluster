@@ -13,7 +13,7 @@ const setTimeoutPromise = util.promisify(setTimeout);
  *
  * All other errors from superagent are thrown.
  */
-const throttleRequest = async ({url, method, response = {status: 0}, attempt = 1, delay = 100}) => {
+const throttleRequest = async ({ url, method, response = { status: 0 }, attempt = 1, delay = 100 }) => {
   if (attempt > 5) {
     return response;
   }

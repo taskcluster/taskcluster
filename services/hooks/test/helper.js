@@ -1,6 +1,6 @@
 const taskcluster = require('taskcluster-client');
 const taskcreator = require('../src/taskcreator');
-const {stickyLoader, fakeauth, Secrets, withPulse, withMonitor, withDb, resetTables} = require('taskcluster-lib-testing');
+const { stickyLoader, fakeauth, Secrets, withPulse, withMonitor, withDb, resetTables } = require('taskcluster-lib-testing');
 const builder = require('../src/api');
 const load = require('../src/main');
 
@@ -50,7 +50,7 @@ helper.withTaskCreator = function(mock, skipping) {
 };
 
 exports.withPulse = (mock, skipping) => {
-  withPulse({helper: exports, skipping, namespace: 'taskcluster-hooks'});
+  withPulse({ helper: exports, skipping, namespace: 'taskcluster-hooks' });
 };
 
 /**
@@ -73,7 +73,7 @@ helper.withServer = (mock, skipping) => {
     helper.load.cfg('taskcluster.rootUrl', helper.rootUrl);
     fakeauth.start({
       'test-client': ['*'],
-    }, {rootUrl: helper.rootUrl});
+    }, { rootUrl: helper.rootUrl });
 
     // Create client for working with API
     helper.Hooks = taskcluster.createClient(builder.reference());
@@ -112,10 +112,10 @@ helper.withServer = (mock, skipping) => {
 
 exports.resetTables = (mock, skipping) => {
   setup('reset tables', async function() {
-    await resetTables({tableNames: [
+    await resetTables({ tableNames: [
       'hooks',
       'hooks_queues',
       'hooks_last_fires',
-    ]});
+    ] });
   });
 };

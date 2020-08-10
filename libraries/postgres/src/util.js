@@ -1,6 +1,6 @@
 const fs = require('fs');
 const path = require('path');
-const {SYNTAX_ERROR} = require('./constants');
+const { SYNTAX_ERROR } = require('./constants');
 
 exports.ignorePgErrors = async (promise, ...codes) => {
   try {
@@ -81,7 +81,7 @@ exports.annotateError = (query, err) => {
  * Call the given fetch method with a given size and offset to fetch data, and
  * return an async iterator that will yield each row in turn.
  */
-exports.paginatedIterator = ({fetch, size = 1000}) => {
+exports.paginatedIterator = ({ fetch, size = 1000 }) => {
   return {
     [Symbol.asyncIterator]() {
       let offset = 0;
@@ -90,26 +90,26 @@ exports.paginatedIterator = ({fetch, size = 1000}) => {
 
       const next = async () => {
         if (rows.length > 0) {
-          return {value: rows.shift(), done: false};
+          return { value: rows.shift(), done: false };
         }
         if (done) {
           // If this iterator has already "finished", just return that status
           // without calling out to the DB again (and potentialyl returning more
           // results).
-          return {done};
+          return { done };
         }
 
         rows = await fetch(size, offset);
         offset += rows.length;
         if (rows.length === 0) {
           done = true;
-          return {done};
+          return { done };
         }
 
-        return {value: rows.shift(), done: false};
+        return { value: rows.shift(), done: false };
       };
 
-      return {next};
+      return { next };
     },
   };
 };

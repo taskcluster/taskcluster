@@ -1,7 +1,7 @@
 const fs = require('fs');
 const _ = require('lodash');
 const glob = require('glob');
-const {REPO_ROOT} = require('../../utils');
+const { REPO_ROOT } = require('../../utils');
 
 exports.tasks = [];
 exports.tasks.push({

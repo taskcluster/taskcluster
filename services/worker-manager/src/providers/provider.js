@@ -2,7 +2,7 @@ const assert = require('assert');
 const libUrls = require('taskcluster-lib-urls');
 const slugid = require('slugid');
 const yaml = require('js-yaml');
-const {Worker, WorkerPoolError} = require('../data.js');
+const { Worker, WorkerPoolError } = require('../data.js');
 
 /**
  * The parent class for all providers.
@@ -48,13 +48,13 @@ class Provider {
   async prepare() {
   }
 
-  async provision({workerPool, workerInfo}) {
+  async provision({ workerPool, workerInfo }) {
   }
 
-  async deprovision({workerPool}) {
+  async deprovision({ workerPool }) {
   }
 
-  async registerWorker({worker, workerPool, workerIdentityProof}) {
+  async registerWorker({ worker, workerPool, workerIdentityProof }) {
     throw new ApiError('not supported for this provider');
   }
 
@@ -64,27 +64,27 @@ class Provider {
   async scanPrepare() {
   }
 
-  async checkWorker({worker}) {
+  async checkWorker({ worker }) {
   }
 
   async scanCleanup() {
   }
 
-  async createWorker({workerPool, workerGroup, workerId, input}) {
+  async createWorker({ workerPool, workerGroup, workerId, input }) {
     throw new ApiError('not supported for this provider');
   }
 
-  async removeWorker({worker, reason}) {
+  async removeWorker({ worker, reason }) {
     throw new ApiError('not supported for this provider');
   }
 
-  async createResources({workerPool}) {
+  async createResources({ workerPool }) {
   }
 
-  async updateResources({workerPool}) {
+  async updateResources({ workerPool }) {
   }
 
-  async removeResources({workerPool}) {
+  async removeResources({ workerPool }) {
   }
 
   /**
@@ -97,7 +97,7 @@ class Provider {
    * this is also set in the lifecycle schema so update there if
    * changing.
    */
-  static interpretLifecycle({lifecycle: {registrationTimeout, reregistrationTimeout} = {}}) {
+  static interpretLifecycle({ lifecycle: { registrationTimeout, reregistrationTimeout } = {} }) {
     reregistrationTimeout = reregistrationTimeout || 345600;
     let terminateAfter = null;
 
@@ -107,11 +107,11 @@ class Provider {
       terminateAfter = Date.now() + reregistrationTimeout * 1000;
     }
 
-    return {terminateAfter, reregistrationTimeout: reregistrationTimeout * 1000};
+    return { terminateAfter, reregistrationTimeout: reregistrationTimeout * 1000 };
   }
 
   // Report an error concerning this worker pool.  This handles notifications and logging.
-  async reportError({workerPool, kind, title, description, extra = {}}) {
+  async reportError({ workerPool, kind, title, description, extra = {} }) {
     const errorId = slugid.v4();
     let error = this.WorkerPoolError.fromApi({
       workerPoolId: workerPool.workerPoolId,
@@ -128,7 +128,7 @@ class Provider {
         await this.notify.email({
           address: workerPool.owner,
           subject: `Taskcluster Worker Manager Error: ${title}`,
-          content: getExtraInfo({extra, description, workerPoolId: workerPool.workerPoolId, errorId}),
+          content: getExtraInfo({ extra, description, workerPoolId: workerPool.workerPoolId, errorId }),
         });
       }
 
@@ -162,7 +162,7 @@ class Provider {
   /**
    * Create a monitor object suitable for logging about a worker
    */
-  workerMonitor({worker, extra = {}}) {
+  workerMonitor({ worker, extra = {} }) {
     return this.monitor.childMonitor({
       workerPoolId: worker.workerPoolId,
       providerId: worker.providerId,
@@ -187,7 +187,7 @@ module.exports = {
 };
 
 // Utility function for reportError
-const getExtraInfo = ({extra, workerPoolId, description, errorId}) => {
+const getExtraInfo = ({ extra, workerPoolId, description, errorId }) => {
   let extraInfo = '';
   if (Object.keys(extra).length) {
     extraInfo = `

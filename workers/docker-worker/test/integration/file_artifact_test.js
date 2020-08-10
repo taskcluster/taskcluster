@@ -6,7 +6,7 @@ const testworker = require('../post_task');
 const TestWorker = require('../testworker');
 const DockerWorker = require('../dockerworker');
 const retryUtil = require('./helper/retry_util');
-const {suiteName} = require('taskcluster-lib-testing');
+const { suiteName } = require('taskcluster-lib-testing');
 const helper = require('../helper');
 const taskcluster = require('taskcluster-client');
 const got = require('got');
@@ -98,7 +98,7 @@ helper.secrets.mockSuite(suiteName(), ['docker', 'ci-creds'], function(mock, ski
       Object.keys(result.artifacts).sort(), ['public/xfoo.txt'].sort(),
     );
 
-    let xfoo = await getArtifact(result, 'public/xfoo.txt', {decompress: false});
+    let xfoo = await getArtifact(result, 'public/xfoo.txt', { decompress: false });
 
     // Constant is gzips version of `xfoo\n', generated via
     // $ echo xfoo | gzip | od -t x1 -w30 | cut -d ' ' -f 2- --output-delimiter= --only-delimited
@@ -137,7 +137,7 @@ helper.secrets.mockSuite(suiteName(), ['docker', 'ci-creds'], function(mock, ski
       Object.keys(result.artifacts).sort(), ['public/xfoo.dmg'].sort(),
     );
 
-    let xfoo = await getArtifact(result, 'public/xfoo.dmg', {decompress: false});
+    let xfoo = await getArtifact(result, 'public/xfoo.dmg', { decompress: false });
 
     assert.equal(xfoo.trim(), 'xfoo');
   });
@@ -462,12 +462,12 @@ helper.secrets.mockSuite(suiteName(), ['docker', 'ci-creds'], function(mock, ski
     // The text file should have gzip content-encoding
     let queue = new taskcluster.Queue(taskcluster.fromEnvVars());
     let url = queue.buildUrl(queue.getArtifact, result.taskId, result.runId, 'public/hello.txt');
-    let resp = await got(url, {retries: 5});
+    let resp = await got(url, { retries: 5 });
     assert.ok(resp.headers['content-encoding'] === 'gzip', `headers are: ${JSON.stringify(resp.headers)}`);
 
     // The jpg file should have no encoding
     url = queue.buildUrl(queue.getArtifact, result.taskId, result.runId, 'public/world.jpg');
-    resp = await got(url, {retries: 5});
+    resp = await got(url, { retries: 5 });
     assert.ok(! ('content-encoding' in resp.headers), `headers are: ${JSON.stringify(resp.headers)}`);
   });
 });

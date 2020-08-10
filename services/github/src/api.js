@@ -1,5 +1,5 @@
 const crypto = require('crypto');
-const {APIBuilder, paginateResults} = require('taskcluster-lib-api');
+const { APIBuilder, paginateResults } = require('taskcluster-lib-api');
 const _ = require('lodash');
 
 // Strips/replaces undesirable characters which GitHub allows in
@@ -142,12 +142,12 @@ async function installationAuthenticate(owner, db, github) {
 async function findTCStatus(github, owner, repo, branch, configuration) {
   const botName = configuration.app.botName;
   const username = botName.endsWith('[bot]') ? botName : `${botName}[bot]`;
-  const taskclusterBot = (await github.users.getByUsername({username})).data;
+  const taskclusterBot = (await github.users.getByUsername({ username })).data;
   // Statuses is an array of status objects, where we find the relevant status
   let statuses;
 
   try {
-    statuses = (await github.repos.listStatusesForRef({owner, repo, ref: branch})).data;
+    statuses = (await github.repos.listStatusesForRef({ owner, repo, ref: branch })).data;
   } catch (e) {
     if (e.code === 404) {
       return undefined;
@@ -229,7 +229,7 @@ builder.declare({
   let publisherKey = '';
 
   const installationId = body.installation && body.installation.id;
-  this.monitor.log.webhookReceived({eventId, eventType, installationId});
+  this.monitor.log.webhookReceived({ eventId, eventType, installationId });
 
   try {
     msg.body = body;
@@ -289,8 +289,8 @@ builder.declare({
 
   // Not all webhook payloads include an e-mail for the user who triggered an event
   let headUser = msg.details['event.head.user.login'].toString();
-  let userDetails = (await instGithub.users.getByUsername({username: headUser})).data;
-  msg.details['event.head.user.email'] = this.ajv.validate({type: 'string', format: 'email'}, userDetails.email)
+  let userDetails = (await instGithub.users.getByUsername({ username: headUser })).data;
+  msg.details['event.head.user.email'] = this.ajv.validate({ type: 'string', format: 'email' }, userDetails.email)
     ? userDetails.email
     : msg.details['event.head.user.login'].replace(/\[bot\]$/, '') + '@users.noreply.github.com';
   msg.repository = sanitizeGitHubField(body.repository.name);
@@ -320,7 +320,7 @@ builder.declare({
     'fields.',
   ].join('\n'),
 }, async function(req, res) {
-  const {organization, repository, sha} = req.query;
+  const { organization, repository, sha } = req.query;
   if (repository && !organization) {
     return res.reportError('InputError',
       'Must provide `organization` if querying `repository`',
@@ -331,7 +331,7 @@ builder.declare({
       'Must provide `repository` if querying `sha`',
       {});
   }
-  let {continuationToken, rows: builds} = await paginateResults({
+  let { continuationToken, rows: builds } = await paginateResults({
     query: req.query,
     fetch: (size, offset) => this.db.fns.get_github_builds(
       size,
@@ -373,7 +373,7 @@ builder.declare({
   route: '/repository/:owner/:repo/:branch/badge.svg',
 }, async function(req, res) {
   // Extract owner, repo and branch from request into variables
-  let {owner, repo, branch} = req.params;
+  let { owner, repo, branch } = req.params;
 
   // This has nothing to do with user input, so we should be safe
   let fileConfig = {
@@ -421,7 +421,7 @@ builder.declare({
   output: 'repository.yml',
 }, async function(req, res) {
   // Extract owner and repo from request into variables
-  let {owner, repo} = req.params;
+  let { owner, repo } = req.params;
 
   let instGithub = await installationAuthenticate(owner, this.db, this.github);
 
@@ -432,23 +432,23 @@ builder.declare({
       while (true) {
         let installed = reposList.data.repositories.map(repo => repo.name).indexOf(repo);
         if (installed !== -1) {
-          return res.reply({installed: true});
+          return res.reply({ installed: true });
         }
         if (instGithub.hasNextPage(reposList)) {
           reposList = await instGithub.getNextPage(reposList);
         } else {
-          return res.reply({installed: false});
+          return res.reply({ installed: false });
         }
       }
 
     } catch (e) {
       if (e.code > 400 && e.code < 500) {
-        return res.reply({installed: false});
+        return res.reply({ installed: false });
       }
       throw e;
     }
   }
-  return res.reply({installed: false});
+  return res.reply({ installed: false });
 });
 
 builder.declare({
@@ -467,7 +467,7 @@ builder.declare({
   route: '/repository/:owner/:repo/:branch/latest',
 }, async function(req, res) {
   // Extract owner, repo and branch from request into variables
-  let {owner, repo, branch} = req.params;
+  let { owner, repo, branch } = req.params;
 
   let instGithub = await installationAuthenticate(owner, this.db, this.github);
 
@@ -502,9 +502,9 @@ builder.declare({
   scopes: 'github:create-status:<owner>/<repo>',
 }, async function(req, res) {
   // Extract owner, repo and sha from request into variables
-  let {owner, repo, sha} = req.params;
+  let { owner, repo, sha } = req.params;
   // Extract other attributes from POST attributes
-  let {state, target_url, description, context} = req.body;
+  let { state, target_url, description, context } = req.body;
 
   let instGithub = await installationAuthenticate(owner, this.db, this.github);
 
@@ -554,9 +554,9 @@ builder.declare({
   scopes: 'github:create-comment:<owner>/<repo>',
 }, async function(req, res) {
   // Extract owner, repo and number from request into variables
-  let {owner, repo, number} = req.params;
+  let { owner, repo, number } = req.params;
   // Extract body from POST attributes
-  let {body} = req.body;
+  let { body } = req.body;
 
   let instGithub = await installationAuthenticate(owner, this.db, this.github);
 

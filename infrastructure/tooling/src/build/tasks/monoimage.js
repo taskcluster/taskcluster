@@ -28,7 +28,7 @@ const tempDir = path.join(REPO_ROOT, 'temp');
  *  All of this is done using a "hooks" approach to allow segmenting the various oddball bits of
  *  this process by theme.
  */
-const generateMonoimageTasks = ({tasks, baseDir, cmdOptions, credentials, logsDir}) => {
+const generateMonoimageTasks = ({ tasks, baseDir, cmdOptions, credentials, logsDir }) => {
   const sourceDir = appRootDir.get();
 
   ensureTask(tasks, {
@@ -45,12 +45,12 @@ const generateMonoimageTasks = ({tasks, baseDir, cmdOptions, credentials, logsDi
     run: async (requirements, utils) => {
       const tag = `taskcluster/taskcluster:v${requirements['release-version']}`;
 
-      utils.step({title: 'Check for Existing Images'});
+      utils.step({ title: 'Check for Existing Images' });
 
-      const imageLocal = (await dockerImages({baseDir}))
+      const imageLocal = (await dockerImages({ baseDir }))
         .some(image => image.RepoTags && image.RepoTags.indexOf(tag) !== -1);
-      const imageOnRegistry = await dockerRegistryCheck({tag});
-      utils.status({message: `Image does ${imageOnRegistry ? '' : 'not '} exist on registry`});
+      const imageOnRegistry = await dockerRegistryCheck({ tag });
+      utils.status({ message: `Image does ${imageOnRegistry ? '' : 'not '} exist on registry` });
 
       const provides = {
         'monoimage-docker-image': tag,
@@ -64,13 +64,13 @@ const generateMonoimageTasks = ({tasks, baseDir, cmdOptions, credentials, logsDi
 
       // bail out if we can, pulling the image if it's only available remotely
       if (!imageLocal && imageOnRegistry) {
-        await dockerPull({image: tag, utils, baseDir});
-        return utils.skip({provides});
+        await dockerPull({ image: tag, utils, baseDir });
+        return utils.skip({ provides });
       } else if (imageLocal) {
-        return utils.skip({provides});
+        return utils.skip({ provides });
       }
 
-      utils.step({title: 'Building Docker Image'});
+      utils.step({ title: 'Building Docker Image' });
 
       let versionJson = requirements['docker-flow-version'];
       let command = ['docker', 'build'];
@@ -87,7 +87,7 @@ const generateMonoimageTasks = ({tasks, baseDir, cmdOptions, credentials, logsDi
         dir: sourceDir,
         logfile: path.join(logsDir, 'docker-build.log'),
         utils,
-        env: {DOCKER_BUILDKIT: 1, ...process.env},
+        env: { DOCKER_BUILDKIT: 1, ...process.env },
       });
 
       return provides;
@@ -109,12 +109,12 @@ const generateMonoimageTasks = ({tasks, baseDir, cmdOptions, credentials, logsDi
       const tag = requirements['monoimage-docker-image']
         .replace(/taskcluster:/, 'taskcluster-devel:');
 
-      utils.step({title: 'Check for Existing Images'});
+      utils.step({ title: 'Check for Existing Images' });
 
-      const imageLocal = (await dockerImages({baseDir}))
+      const imageLocal = (await dockerImages({ baseDir }))
         .some(image => image.RepoTags && image.RepoTags.indexOf(tag) !== -1);
-      const imageOnRegistry = await dockerRegistryCheck({tag});
-      utils.status({message: `Image does ${imageOnRegistry ? '' : 'not '} exist on registry`});
+      const imageOnRegistry = await dockerRegistryCheck({ tag });
+      utils.status({ message: `Image does ${imageOnRegistry ? '' : 'not '} exist on registry` });
 
       const provides = {
         'monoimage-devel-docker-image': tag,
@@ -128,13 +128,13 @@ const generateMonoimageTasks = ({tasks, baseDir, cmdOptions, credentials, logsDi
 
       // bail out if we can, pulling the image if it's only available remotely
       if (!imageLocal && imageOnRegistry) {
-        await dockerPull({image: tag, utils, baseDir});
-        return utils.skip({provides});
+        await dockerPull({ image: tag, utils, baseDir });
+        return utils.skip({ provides });
       } else if (imageLocal) {
-        return utils.skip({provides});
+        return utils.skip({ provides });
       }
 
-      utils.step({title: 'Building Docker Image'});
+      utils.step({ title: 'Building Docker Image' });
 
       const dockerDir = path.join(tempDir, 'devel-image');
       await rimraf(dockerDir);
@@ -151,7 +151,7 @@ const generateMonoimageTasks = ({tasks, baseDir, cmdOptions, credentials, logsDi
           dir: dockerDir,
           logfile: path.join(logsDir, 'docker-build-devel.log'),
           utils,
-          env: {DOCKER_BUILDKIT: 1, ...process.env},
+          env: { DOCKER_BUILDKIT: 1, ...process.env },
         });
       } finally {
         await rimraf(dockerDir);
@@ -172,14 +172,14 @@ const generateMonoimageTasks = ({tasks, baseDir, cmdOptions, credentials, logsDi
     ],
     run: async (requirements, utils) => {
       const tag = requirements[`monoimage-docker-image`];
-      const provides = {[`monoimage-push`]: tag};
+      const provides = { [`monoimage-push`]: tag };
 
       if (!cmdOptions.push) {
-        return utils.skip({provides});
+        return utils.skip({ provides });
       }
 
       if (requirements[`monoimage-image-on-registry`]) {
-        return utils.skip({provides});
+        return utils.skip({ provides });
       }
 
       const dockerPushOptions = {};
@@ -213,7 +213,7 @@ const generateMonoimageTasks = ({tasks, baseDir, cmdOptions, credentials, logsDi
     ],
     run: async (requirements, utils) => {
       const tag = requirements[`monoimage-devel-docker-image`];
-      const provides = {[`monoimage-devel-push`]: tag};
+      const provides = { [`monoimage-devel-push`]: tag };
 
       if (!cmdOptions.push) {
         return utils.skip(provides);

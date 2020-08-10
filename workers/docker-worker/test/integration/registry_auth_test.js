@@ -5,8 +5,8 @@ const DockerWorker = require('../dockerworker');
 const Registry = require('./helper/docker_registry');
 const settings = require('../settings');
 const TestWorker = require('../testworker');
-const {removeImage} = require('../../src/lib/util/remove_image');
-const {suiteName} = require('taskcluster-lib-testing');
+const { removeImage } = require('../../src/lib/util/remove_image');
+const { suiteName } = require('taskcluster-lib-testing');
 const helper = require('../helper');
 
 const CREDENTIALS = {
@@ -67,7 +67,7 @@ helper.secrets.mockSuite(suiteName(), ['docker', 'ci-creds'], function(mock, ski
   test('success', async () => {
     let registries = {};
     registries[registryProxy.imageName('')] = CREDENTIALS;
-    settings.configure({registries: registries});
+    settings.configure({ registries: registries });
 
     await worker.launch();
 
@@ -92,7 +92,7 @@ helper.secrets.mockSuite(suiteName(), ['docker', 'ci-creds'], function(mock, ski
   test('success - with star', async () => {
     let registries = {};
     registries[registryProxy.imageName('')] = CREDENTIALS;
-    settings.configure({registries: registries});
+    settings.configure({ registries: registries });
 
     await worker.launch();
 
@@ -115,7 +115,7 @@ helper.secrets.mockSuite(suiteName(), ['docker', 'ci-creds'], function(mock, ski
   test('failed scopes', async () => {
     let registries = {};
     registries[registryProxy.imageName('')] = CREDENTIALS;
-    settings.configure({registries: registries});
+    settings.configure({ registries: registries });
 
     await worker.launch();
 

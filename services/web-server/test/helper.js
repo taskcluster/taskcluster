@@ -1,6 +1,6 @@
 const load = require('../src/main');
 const taskcluster = require('taskcluster-client');
-const {Secrets, stickyLoader, withMonitor, withPulse, withDb, resetTables} = require('taskcluster-lib-testing');
+const { Secrets, stickyLoader, withMonitor, withPulse, withDb, resetTables } = require('taskcluster-lib-testing');
 const sinon = require('sinon');
 const GithubClient = require('../src/login/clients/GithubClient');
 const libUrls = require('taskcluster-lib-urls');
@@ -38,7 +38,7 @@ exports.withDb = (mock, skipping) => {
 };
 
 exports.withPulse = (helper, skipping) => {
-  withPulse({helper, skipping, namespace: 'taskcluster-web-server'});
+  withPulse({ helper, skipping, namespace: 'taskcluster-web-server' });
 };
 
 exports.withMockedEventIterator = () => {
@@ -139,12 +139,12 @@ exports.githubFixtures = {
   },
   teams: {
     'octocat': [
-      { slug: 'team-1', organization: { login: 'taskcluster'} },
-      { slug: 'team-2', organization: { login: 'neutrinojs'} },
+      { slug: 'team-1', organization: { login: 'taskcluster' } },
+      { slug: 'team-2', organization: { login: 'neutrinojs' } },
     ],
     'taskcluster': [
-      { slug: 'team-3', organization: { login: 'taskcluster'} },
-      { slug: 'team-1', organization: { login: 'neutrinojs'} },
+      { slug: 'team-3', organization: { login: 'taskcluster' } },
+      { slug: 'team-1', organization: { login: 'neutrinojs' } },
     ],
     'a/c': [],
   },
@@ -208,7 +208,7 @@ exports.withGithubClient = () => {
           throw err;
         }
 
-        return {id: user_id};
+        return { id: user_id };
       },
       async userMembershipsOrgs() {
         const organizations = exports.githubFixtures.orgs[currentUsername];
@@ -292,8 +292,8 @@ const stubbedAuth = () => {
           ...input,
         });
       },
-      expandScopes({scopes}) {
-        return {scopes};
+      expandScopes({ scopes }) {
+        return { scopes };
       },
       resetAccessToken(clientId) {
         return Promise.resolve({ clientId, accessToken: taskcluster.slugid() });
@@ -342,7 +342,7 @@ const stubbedClients = () => {
       ...options,
       fake: {
         workerPool: async workerPoolId => workerPools.get(workerPoolId),
-        listWorkerPools: async ({limit = 1000}) => ({workerPools: [...workerPools.values()].slice(0, limit)}),
+        listWorkerPools: async ({ limit = 1000 }) => ({ workerPools: [...workerPools.values()].slice(0, limit) }),
         deleteWorkerPool: async workerPoolId => {
           if (!workerPools.has(workerPoolId)) {
             throw new Error(`No such worker pool ${workerPoolId}`);
@@ -363,7 +363,7 @@ const stubbedClients = () => {
         },
         listRoleIds: async () => {
           let roleIds = Array.from(roles.keys());
-          return Promise.resolve({roleIds});
+          return Promise.resolve({ roleIds });
         },
         role: async (roleId) => {
           const role = roles.get(roleId);
@@ -462,7 +462,7 @@ const stubbedClients = () => {
               name: `artifact-${artifactSuffix}`,
             };
           });
-          return Promise.resolve({artifacts});
+          return Promise.resolve({ artifacts });
         },
         listLatestArtifacts: async (taskId, options) => {
           const artifacts = ["1", "2", "3"].map(artifactSuffix => {
@@ -471,7 +471,7 @@ const stubbedClients = () => {
               name: `artifact-${artifactSuffix}`,
             };
           });
-          return Promise.resolve({artifacts});
+          return Promise.resolve({ artifacts });
         },
         pendingTasks: async (provisionerId, workerType) => 0,
       },
@@ -481,11 +481,11 @@ const stubbedClients = () => {
 
 exports.resetTables = (mock, skipping) => {
   setup('reset tables', async function() {
-    await resetTables({tableNames: [
+    await resetTables({ tableNames: [
       'authorization_codes',
       'access_tokens',
       'sessions',
       'github_access_tokens',
-    ]});
+    ] });
   });
 };

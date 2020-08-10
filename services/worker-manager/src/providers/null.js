@@ -1,4 +1,4 @@
-const {Provider} = require('./provider');
+const { Provider } = require('./provider');
 
 /**
  * The null provider does absolutely nothing.  It exists only to allow for

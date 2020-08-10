@@ -4,25 +4,25 @@ const os = require('os');
 const path = require('path');
 const Docker = require('dockerode');
 const Observable = require('zen-observable');
-const {PassThrough, Transform} = require('stream');
+const { PassThrough, Transform } = require('stream');
 const taskcluster = require('taskcluster-client');
-const {REPO_ROOT} = require('./repo');
+const { REPO_ROOT } = require('./repo');
 const got = require('got');
-const {execCommand} = require('./command');
+const { execCommand } = require('./command');
 const mkdirp = util.promisify(require('mkdirp'));
 const rimraf = util.promisify(require('rimraf'));
 
 /**
  * Set up to call docker in the given baseDir (internal use only)
  */
-const _dockerSetup = ({baseDir}) => {
-  const inner = async ({baseDir}) => {
+const _dockerSetup = ({ baseDir }) => {
+  const inner = async ({ baseDir }) => {
     const docker = new Docker();
     // when running a docker container, always remove the container when finished,
     // mount the workdir at /workdir, and run as the current (non-container) user
     // so that file ownership remains as expected.  Set up /etc/passwd and /etc/group
     // to define names for those uid/gid, too.
-    const {uid, gid} = os.userInfo();
+    const { uid, gid } = os.userInfo();
     fs.writeFileSync(path.join(baseDir, 'passwd'),
       `root:x:0:0:root:/root:/bin/bash\nbuilder:x:${uid}:${gid}:builder:/:/bin/bash\n`);
     fs.writeFileSync(path.join(baseDir, 'group'),
@@ -47,12 +47,12 @@ const _dockerSetup = ({baseDir}) => {
       ],
     };
 
-    return {docker, dockerRunOpts, uid, gid};
+    return { docker, dockerRunOpts, uid, gid };
   };
 
   if (!(baseDir in _dockerSetup.memos)) {
     // cache the promise to return multiple times
-    _dockerSetup.memos[baseDir] = inner({baseDir});
+    _dockerSetup.memos[baseDir] = inner({ baseDir });
   }
   return _dockerSetup.memos[baseDir];
 };
@@ -71,8 +71,8 @@ _dockerSetup.memos = {};
  * - asRoot -- run as root
  * - utils -- taskgraph utils (waitFor, etc.)
  */
-exports.dockerRun = async ({baseDir, logfile, command, env, mounts, workingDir, image, asRoot, utils}) => {
-  const {docker, dockerRunOpts} = await _dockerSetup({baseDir});
+exports.dockerRun = async ({ baseDir, logfile, command, env, mounts, workingDir, image, asRoot, utils }) => {
+  const { docker, dockerRunOpts } = await _dockerSetup({ baseDir });
 
   const output = new PassThrough().pipe(new DemuxDockerStream());
   let errorAddendum = '';
@@ -81,7 +81,7 @@ exports.dockerRun = async ({baseDir, logfile, command, env, mounts, workingDir, 
     errorAddendum = ` Logs available in ${logfile}`;
   }
 
-  const {Mounts, Env, ...otherOpts} = dockerRunOpts;
+  const { Mounts, Env, ...otherOpts } = dockerRunOpts;
   const containerOpts = {
     Image: image,
     AttachStdin: false,
@@ -109,8 +109,8 @@ exports.dockerRun = async ({baseDir, logfile, command, env, mounts, workingDir, 
   // this is roughly the equivalent of `docker run`, performed as individual
   // docker API calls.
   const container = await docker.createContainer(containerOpts);
-  const stream = await container.attach({stream: true, stdout: true, stderr: true});
-  stream.pipe(output, {end: true});
+  const stream = await container.attach({ stream: true, stdout: true, stderr: true });
+  stream.pipe(output, { end: true });
   await container.start({});
 
   // wait for the output to close, then wait for the container to exit
@@ -162,10 +162,10 @@ class DemuxDockerStream extends Transform {
  * - image -- image to run it in
  * - utils -- taskgraph utils (waitFor, etc.)
  */
-exports.dockerPull = async ({baseDir, image, utils}) => {
-  const {docker} = await _dockerSetup({baseDir});
+exports.dockerPull = async ({ baseDir, image, utils }) => {
+  const { docker } = await _dockerSetup({ baseDir });
 
-  utils.status({message: `docker pull ${image}`});
+  utils.status({ message: `docker pull ${image}` });
   const dockerStream = await new Promise(
     (resolve, reject) => docker.pull(image, (err, stream) => err ? reject(err) : resolve(stream)));
 
@@ -201,7 +201,7 @@ exports.dockerPull = async ({baseDir, image, utils}) => {
           const total = Object.values(totals).reduce((a, b) => a + b, 0) * 2;
           const current = Object.values(downloading).reduce((a, b) => a + b, 0) +
             Object.values(extracting).reduce((a, b) => a + b, 0);
-          utils.status({progress: current * 100 / total});
+          utils.status({ progress: current * 100 / total });
         }
       });
   }));
@@ -212,8 +212,8 @@ exports.dockerPull = async ({baseDir, image, utils}) => {
  *
  * - baseDir -- base directory for operations
  */
-exports.dockerImages = async ({baseDir}) => {
-  const {docker} = await _dockerSetup({baseDir});
+exports.dockerImages = async ({ baseDir }) => {
+  const { docker } = await _dockerSetup({ baseDir });
 
   return docker.listImages();
 };
@@ -223,11 +223,11 @@ exports.dockerImages = async ({baseDir}) => {
  *
  * - tag -- the tag to check for
  */
-exports.dockerRegistryCheck = async ({tag}) => {
+exports.dockerRegistryCheck = async ({ tag }) => {
   const [repo, imagetag] = tag.split(/:/);
   try {
     // Access the registry API directly to see if this tag already exists, and do not push if so.
-    const res = await got(`https://index.docker.io/v1/repositories/${repo}/tags`, {json: true});
+    const res = await got(`https://index.docker.io/v1/repositories/${repo}/tags`, { json: true });
     if (!res.body) {
       throw new Error('invalid response from index.docker.io');
     }
@@ -253,9 +253,9 @@ exports.dockerRegistryCheck = async ({tag}) => {
  *     (optional; uses existing docker creds if omitted)
  * - utils -- taskgraph utils (waitFor, etc.)
  */
-exports.dockerPush = async ({baseDir, tag, logfile, credentials, utils}) => {
+exports.dockerPush = async ({ baseDir, tag, logfile, credentials, utils }) => {
   let homeDir;
-  const env = {...process.env};
+  const env = { ...process.env };
 
   try {
     if (credentials) {
@@ -265,7 +265,7 @@ exports.dockerPush = async ({baseDir, tag, logfile, credentials, utils}) => {
       env.HOME = homeDir;
 
       // run `docker login` to set up credentials in the temp homedir
-      utils.status({message: `Signing into docker hub with username ${credentials.username}`});
+      utils.status({ message: `Signing into docker hub with username ${credentials.username}` });
       await execCommand({
         dir: baseDir,
         command: ['docker', 'login', '--username', credentials.username, '--password-stdin'],

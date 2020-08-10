@@ -9,9 +9,9 @@ const testworker = require('../post_task');
 const tweetnacl = require('tweetnacl');
 const taskcluster = require('taskcluster-client');
 const got = require('got');
-const {removeImage} = require('../../src/lib/util/remove_image');
+const { removeImage } = require('../../src/lib/util/remove_image');
 const helper = require('../helper');
-const {TASK_ID, TASK_IMAGE_HASH, TASK_IMAGE_ARTIFACT_HASH} = require('../fixtures/image_artifacts');
+const { TASK_ID, TASK_IMAGE_HASH, TASK_IMAGE_ARTIFACT_HASH } = require('../fixtures/image_artifacts');
 
 let docker = Docker();
 
@@ -76,7 +76,7 @@ suite('certificate of trust', () => {
     let chainOfTrust = await getArtifact(result, 'public/chain-of-trust.json');
     let queue = new taskcluster.Queue(helper.optionsFromCiCreds());
     let url = queue.buildUrl(queue.getArtifact, result.taskId, result.runId, 'public/chain-of-trust.json.sig');
-    let chainOfTrustSig = (await got(url, {encoding: null})).body;
+    let chainOfTrustSig = (await got(url, { encoding: null })).body;
 
     let verifyKey = Buffer.from(fs.readFileSync('test/fixtures/ed25519_public_key', 'ascii'), 'base64');
     let verified = Buffer.from(chainOfTrust);
@@ -88,9 +88,9 @@ suite('certificate of trust', () => {
     logHash.update(result.log);
 
     let expectedHashes = {
-      'public/xfoo': {sha256: 'cebff86446aff2b1039749f09ef2922f9ad4f35ea2576a84e206708d8e8bf7b4'},
-      'public/bar': {sha256: '7d865e959b2466918c9863afca942d0fb89d7c9ac0c99bafc3749504ded97730'},
-      'public/logs/certified.log': {sha256: logHash.digest('hex')},
+      'public/xfoo': { sha256: 'cebff86446aff2b1039749f09ef2922f9ad4f35ea2576a84e206708d8e8bf7b4' },
+      'public/bar': { sha256: '7d865e959b2466918c9863afca942d0fb89d7c9ac0c99bafc3749504ded97730' },
+      'public/logs/certified.log': { sha256: logHash.digest('hex') },
     };
 
     let data = JSON.parse(chainOfTrust);

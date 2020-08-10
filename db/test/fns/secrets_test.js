@@ -17,7 +17,7 @@ suite(testing.suiteName(), function () {
   for (let i = 0; i < 10; i++) {
     secrets[`secret-${i}`] = {
       name: `secret-${i}`,
-      encrypted_secret: {something: slugid.v4()},
+      encrypted_secret: { something: slugid.v4() },
       expires: fromNow(`${i - 5} days`), // half expired half new
     };
   }
@@ -33,7 +33,7 @@ suite(testing.suiteName(), function () {
       if (s.expires < new Date()) {
         assert.equal(undefined, secret);
       } else {
-        secret.encrypted_secret = JSON.parse(db.decrypt({value: secret.encrypted_secret}).toString('utf8'));
+        secret.encrypted_secret = JSON.parse(db.decrypt({ value: secret.encrypted_secret }).toString('utf8'));
         assert.deepEqual(secret, s);
       }
     }
@@ -77,11 +77,11 @@ suite(testing.suiteName(), function () {
     }
     const newExpires = fromNow('1 year');
     await db.fns.upsert_secret('secret-8', db.encrypt({
-      value: Buffer.from(JSON.stringify({newValue: 10}), 'utf8'),
+      value: Buffer.from(JSON.stringify({ newValue: 10 }), 'utf8'),
     }), newExpires);
     const [secret] = await db.fns.get_secret('secret-8');
     assert.deepEqual(secret.expires, newExpires);
-    assert.equal(JSON.parse(db.decrypt({value: secret.encrypted_secret}).toString('utf8')).newValue, 10);
+    assert.equal(JSON.parse(db.decrypt({ value: secret.encrypted_secret }).toString('utf8')).newValue, 10);
     // Now check that other values were not changed
     for await (const s of Object.values(secrets)) {
       if (s.name === 'secret-8') {
@@ -91,7 +91,7 @@ suite(testing.suiteName(), function () {
       if (s.expires < new Date()) {
         assert.equal(undefined, secret);
       } else {
-        secret.encrypted_secret = JSON.parse(db.decrypt({value: secret.encrypted_secret}).toString('utf8'));
+        secret.encrypted_secret = JSON.parse(db.decrypt({ value: secret.encrypted_secret }).toString('utf8'));
         assert.deepEqual(secret, s);
       }
     }
@@ -108,12 +108,12 @@ suite(testing.suiteName(), function () {
       if (s.expires < new Date()) {
         assert.equal(undefined, secret);
       } else {
-        secret.encrypted_secret = JSON.parse(db.decrypt({value: secret.encrypted_secret}).toString('utf8'));
+        secret.encrypted_secret = JSON.parse(db.decrypt({ value: secret.encrypted_secret }).toString('utf8'));
         assert.deepEqual(secret, s);
       }
     }
     await helper.withDbClient(async client => {
-      const {rows: [{count}]} = await client.query('select count(*) from secrets');
+      const { rows: [{ count }] } = await client.query('select count(*) from secrets');
       assert.equal(count, '4');
     });
   });

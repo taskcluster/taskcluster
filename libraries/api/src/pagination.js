@@ -1,7 +1,7 @@
 const assert = require('assert');
 const Hashids = require('hashids/cjs');
 
-exports.paginateResults = async ({query, fetch, maxLimit = 1000}) => {
+exports.paginateResults = async ({ query, fetch, maxLimit = 1000 }) => {
   assert(query, "req.query must be provided");
   assert(fetch, "fetch function must be provided");
 
@@ -13,7 +13,7 @@ exports.paginateResults = async ({query, fetch, maxLimit = 1000}) => {
   // and we need to return a continuationToken
   const rows = await fetch(pageSize + 1, pageOffset);
 
-  const response = {rows};
+  const response = { rows };
   // if we got more than pageSize rows, due to the +1 above, then there are
   // more rows to fetch..
   if (rows.length > pageSize) {

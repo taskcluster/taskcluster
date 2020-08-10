@@ -5,7 +5,7 @@ const {
   REPO_ROOT,
 } = require('../../utils');
 
-module.exports = ({tasks, cmdOptions, credentials, baseDir, logsDir}) => {
+module.exports = ({ tasks, cmdOptions, credentials, baseDir, logsDir }) => {
   ensureTask(tasks, {
     title: 'Build client-shell artifacts',
     requires: ['clean-artifacts-dir'],

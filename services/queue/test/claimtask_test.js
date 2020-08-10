@@ -84,7 +84,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     await testing.sleep(100);
     // Works because r1.credentials expires at takenUntil, and are not revoked
     // on reclaimTask
-    const queue = new helper.Queue({rootUrl: helper.rootUrl, credentials: r1.credentials});
+    const queue = new helper.Queue({ rootUrl: helper.rootUrl, credentials: r1.credentials });
     const r4 = await queue.reclaimTask(taskId, 0);
     const takenUntil3 = new Date(r4.takenUntil);
     assume(takenUntil3.getTime()).is.greaterThan(takenUntil.getTime() - 1);
@@ -92,7 +92,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
 
     debug('### reclaimTask using temp creds from reclaim');
     await testing.sleep(100);
-    const queue2 = new helper.Queue({rootUrl: helper.rootUrl, credentials: r4.credentials});
+    const queue2 = new helper.Queue({ rootUrl: helper.rootUrl, credentials: r4.credentials });
     const r5 = await queue2.reclaimTask(taskId, 0);
     const takenUntil4 = new Date(r5.takenUntil);
     assume(takenUntil4.getTime()).is.greaterThan(takenUntil.getTime() - 1);

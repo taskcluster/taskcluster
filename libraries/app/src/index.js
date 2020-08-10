@@ -39,7 +39,7 @@ const createServer = function() {
   // 404 Error handler
   this.use((req, res, next) => {
     res.setHeader('Content-Type', 'application/json');
-    res.status(404).json({error: 'Not found'});
+    res.status(404).json({ error: 'Not found' });
   });
 
   return new Promise((accept, reject) => {
@@ -171,4 +171,4 @@ const app = async (options) => {
 };
 
 // Export app creation utility
-module.exports = {App: app, traceMiddleware};
+module.exports = { App: app, traceMiddleware };

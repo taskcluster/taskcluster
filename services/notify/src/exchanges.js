@@ -1,4 +1,4 @@
-const {Exchanges} = require('taskcluster-lib-pulse');
+const { Exchanges } = require('taskcluster-lib-pulse');
 const assert = require('assert');
 
 /** Declaration of exchanges offered by the queue */
@@ -86,11 +86,11 @@ exchanges.declare({
   ].join('\n'),
   routingKey: buildCommonRoutingKey(),
   schema: 'irc-request.yml',
-  messageBuilder: ({user, channel, message}) => {
+  messageBuilder: ({ user, channel, message }) => {
     if (channel) {
-      return {channel, message};
+      return { channel, message };
     }
-    return {user, message};
+    return { user, message };
   },
   routingKeyBuilder: commonRoutingKeyBuilder,
   CCBuilder: () => [],

@@ -1,4 +1,4 @@
-let {Exchanges} = require('taskcluster-lib-pulse');
+let { Exchanges } = require('taskcluster-lib-pulse');
 let assert = require('assert');
 
 /** Declaration of exchanges offered by the queue */
@@ -225,7 +225,7 @@ exchanges.declare({
     'efficiently and they would be able to reduce their polling interval',
     'significantly without affecting general responsiveness.',
   ].join('\n'),
-  routingKey: buildCommonRoutingKey({hasRun: true}),
+  routingKey: buildCommonRoutingKey({ hasRun: true }),
   schema: 'task-pending-message.json#',
   messageBuilder: commonMessageBuilder,
   routingKeyBuilder: commonRoutingKeyBuilder,
@@ -241,7 +241,7 @@ exchanges.declare({
     'Whenever a task is claimed by a worker, a run is started on the worker,',
     'and a message is posted on this exchange.',
   ].join('\n'),
-  routingKey: buildCommonRoutingKey({hasRun: true, hasWorker: true}),
+  routingKey: buildCommonRoutingKey({ hasRun: true, hasWorker: true }),
   schema: 'task-running-message.json#',
   messageBuilder: commonMessageBuilder,
   routingKeyBuilder: commonRoutingKeyBuilder,
@@ -276,7 +276,7 @@ exchanges.declare({
     '*NOTE*: this message is currently only sent for reference and error',
     'artifacts.  This will be remedied in a future version of Taskcluster.',
   ].join('\n'),
-  routingKey: buildCommonRoutingKey({hasRun: true, hasWorker: true}),
+  routingKey: buildCommonRoutingKey({ hasRun: true, hasWorker: true }),
   schema: 'artifact-created-message.json#',
   messageBuilder: commonMessageBuilder,
   routingKeyBuilder: commonRoutingKeyBuilder,
@@ -295,7 +295,7 @@ exchanges.declare({
     'that completed the task. But information about additional runs is also',
     'available from the task status structure.',
   ].join('\n'),
-  routingKey: buildCommonRoutingKey({hasRun: true, hasWorker: true}),
+  routingKey: buildCommonRoutingKey({ hasRun: true, hasWorker: true }),
   schema: 'task-completed-message.json#',
   messageBuilder: commonMessageBuilder,
   routingKeyBuilder: commonRoutingKeyBuilder,

@@ -6,7 +6,7 @@ const {
   REPO_ROOT,
 } = require('../../utils');
 
-module.exports = ({tasks, cmdOptions, credentials, baseDir, logsDir}) => {
+module.exports = ({ tasks, cmdOptions, credentials, baseDir, logsDir }) => {
   ensureTask(tasks, {
     title: 'Build worker-runner artifacts',
     requires: ['clean-artifacts-dir'],
@@ -20,7 +20,7 @@ module.exports = ({tasks, cmdOptions, credentials, baseDir, logsDir}) => {
         utils,
       });
 
-      const artifacts = glob.sync('start-worker-*', {cwd: artifactsDir});
+      const artifacts = glob.sync('start-worker-*', { cwd: artifactsDir });
 
       return {
         'worker-runner-artifacts': artifacts,

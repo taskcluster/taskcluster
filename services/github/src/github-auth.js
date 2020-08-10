@@ -38,17 +38,17 @@ const getPrivatePEM = cfg => {
   return privatePEM.replace(/\\n/g, '\n');
 };
 
-module.exports = async ({cfg}) => {
+module.exports = async ({ cfg }) => {
   const privatePEM = getPrivatePEM(cfg);
 
   const getAppGithub = async () => {
     const inteToken = jwt.sign(
-      {iss: cfg.github.credentials.appId},
+      { iss: cfg.github.credentials.appId },
       privatePEM,
-      {algorithm: 'RS256', expiresIn: '1m'},
+      { algorithm: 'RS256', expiresIn: '1m' },
     );
 
-    return new Octokit({auth: `bearer ${inteToken}`});
+    return new Octokit({ auth: `bearer ${inteToken}` });
   };
 
   const getInstallationGithub = async (inst_id) => {
@@ -58,7 +58,7 @@ module.exports = async ({cfg}) => {
       const instaToken = (await inteGithub.apps.createInstallationToken({
         installation_id: inst_id,
       })).data;
-      const instaGithub = new Octokit({auth: `token ${instaToken.token}`});
+      const instaGithub = new Octokit({ auth: `token ${instaToken.token}` });
       return instaGithub;
     } catch (err) {
       err.installationId = inst_id;
@@ -68,7 +68,7 @@ module.exports = async ({cfg}) => {
 
   // This object insures that the authentication is delayed until we need it.
   // Also, the authentication happens not just once in the beginning, but for each request.
-  return {getAppGithub, getInstallationGithub};
+  return { getAppGithub, getInstallationGithub };
 };
 
 module.exports.getPrivatePEM = getPrivatePEM; // for testing

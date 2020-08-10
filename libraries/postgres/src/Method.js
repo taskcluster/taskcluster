@@ -41,7 +41,7 @@ class Method {
     };
   }
 
-  constructor(name, {description, mode, serviceName, args, returns, body, deprecated}) {
+  constructor(name, { description, mode, serviceName, args, returns, body, deprecated }) {
     this.name = name;
     this.description = description;
     this.mode = mode;

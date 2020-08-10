@@ -3,8 +3,8 @@ const request = require('superagent');
 const hawk = require('@hapi/hawk');
 const assert = require('assert');
 const SchemaSet = require('taskcluster-lib-validate');
-const {App} = require('taskcluster-lib-app');
-const {APIBuilder} = require('../');
+const { App } = require('taskcluster-lib-app');
+const { APIBuilder } = require('../');
 const helper = require('./helper');
 const testing = require('taskcluster-lib-testing');
 const path = require('path');
@@ -36,7 +36,7 @@ suite(testing.suiteName(), function() {
       nobody: ['another-irrelevant-scope'],
       param: ['service:myfolder/resource'],
       param2: ['service:myfolder/resource', 'service:myfolder/other-resource'],
-    }, {rootUrl});
+    }, { rootUrl });
 
     nockScope.on('request', req => {
       authenticated = true;
@@ -76,7 +76,7 @@ suite(testing.suiteName(), function() {
     await _apiServer.terminate();
   });
 
-  const testEndpoint = ({method, route, name, scopes = null, handler, handlerBuilder, tests}) => {
+  const testEndpoint = ({ method, route, name, scopes = null, handler, handlerBuilder, tests }) => {
     let sideEffects = {};
     builder.declare({
       method,
@@ -102,7 +102,7 @@ suite(testing.suiteName(), function() {
       key: 'not-used-by-fakeauth',
       algorithm: 'sha256',
     });
-    tests.forEach(({label, id, desiredStatus = 200, params, tester, shouldCallAuth = true}) => {
+    tests.forEach(({ label, id, desiredStatus = 200, params, tester, shouldCallAuth = true }) => {
       const url = buildUrl(params);
       const auth = buildHawk(id);
       test(label, async () => {
@@ -127,7 +127,7 @@ suite(testing.suiteName(), function() {
   };
 
   const requestWithHawk = (url, auth, ext) => {
-    const {header} = hawk.client.header(url, 'GET', {
+    const { header } = hawk.client.header(url, 'GET', {
       credentials: auth,
       ext,
     });
@@ -140,7 +140,7 @@ suite(testing.suiteName(), function() {
     name: 'testDeprecatedSatisfies',
     handler: (req, res) => {
       if (req.satisfies([])) {
-        res.status(200).json({ok: true});
+        res.status(200).json({ ok: true });
       }
     },
     tests: [
@@ -158,9 +158,9 @@ suite(testing.suiteName(), function() {
     method: 'get',
     route: '/test-static-scope',
     name: 'testStaticScope',
-    scopes: {AllOf: ['service:magic']},
+    scopes: { AllOf: ['service:magic'] },
     handler: (req, res) => {
-      res.status(200).json({ok: true});
+      res.status(200).json({ ok: true });
     },
     tests: [
       {
@@ -215,7 +215,7 @@ suite(testing.suiteName(), function() {
     method: 'get',
     route: '/scopes',
     name: 'scopes',
-    scopes: {AllOf: ['service:magic']},
+    scopes: { AllOf: ['service:magic'] },
     handler: async (req, res) => {
       res.status(200).json({
         scopes: await req.scopes(),
@@ -244,7 +244,7 @@ suite(testing.suiteName(), function() {
     method: 'get',
     route: '/test-scopes',
     name: 'testScopes',
-    scopes: {AllOf: ['service:<param>']},
+    scopes: { AllOf: ['service:<param>'] },
     handler: async (req, res) => {
       await req.authorize({
         param: 'myfolder/resource',
@@ -270,7 +270,7 @@ suite(testing.suiteName(), function() {
     method: 'get',
     route: '/test-scopes-authorize-twice',
     name: 'testScopesAuthorizeTwice',
-    scopes: {AllOf: ['service:<param>']},
+    scopes: { AllOf: ['service:<param>'] },
     handler: async (req, res) => {
       await req.authorize({
         param: 'myfolder/resource',
@@ -299,17 +299,17 @@ suite(testing.suiteName(), function() {
     method: 'get',
     route: '/insuff-scopes-details',
     name: 'insuffScopes',
-    scopes: {AllOf: ['service:<param>', 'another-irrelevant-scope']},
+    scopes: { AllOf: ['service:<param>', 'another-irrelevant-scope'] },
     handler: async (req, res) => {
       try {
-        await req.authorize({param: 'myfolder/resource'});
+        await req.authorize({ param: 'myfolder/resource' });
         res.reply({});
       } catch (err) {
         const withAuth = await req.clientId() === 'nobody';
         if (err.code === 'InsufficientScopes') {
           debug(`got details: ${JSON.stringify(err.details, null, 2)}`);
           debug(`got message: ${err.message}`);
-          if (!_.isEqual(err.details.required, { AllOf: ['service:myfolder/resource', 'another-irrelevant-scope']})) {
+          if (!_.isEqual(err.details.required, { AllOf: ['service:myfolder/resource', 'another-irrelevant-scope'] })) {
             throw err;
           }
           if (!_.isEqual(err.details.unsatisfied, withAuth ? 'service:myfolder/resource' : undefined)) {
@@ -347,10 +347,10 @@ suite(testing.suiteName(), function() {
     method: 'get',
     route: '/crash-override',
     name: 'crashOverride',
-    scopes: {AllOf: ['service:<param>']},
+    scopes: { AllOf: ['service:<param>'] },
     handler: async (req, res) => {
       try {
-        await req.authorize({param: 'myfolder/resource'});
+        await req.authorize({ param: 'myfolder/resource' });
         res.reply({});
       } catch (err) {
         if (err.code === 'InsufficientScopes') {
@@ -393,7 +393,7 @@ suite(testing.suiteName(), function() {
     method: 'get',
     route: '/test-id-scope',
     name: 'test-id-scope',
-    scopes: {AllOf: [{for: 'scope', in: 'scopes', each: '<scope>'}]},
+    scopes: { AllOf: [{ for: 'scope', in: 'scopes', each: '<scope>' }] },
     handler: async (req, res) => {
       res.status(200).json({
         clientId: await req.clientId(),
@@ -416,10 +416,10 @@ suite(testing.suiteName(), function() {
     method: 'get',
     route: '/test-scope',
     name: 'test-scope',
-    scopes: {AllOf: ['service:<param>']},
+    scopes: { AllOf: ['service:<param>'] },
     handler: async (req, res) => {
       try {
-        await req.authorize({param: 'myfolder/other-resource'});
+        await req.authorize({ param: 'myfolder/other-resource' });
         res.reply({});
       } catch (err) {
         if (err.code === 'InsufficientScopes') {
@@ -443,9 +443,9 @@ suite(testing.suiteName(), function() {
     method: 'get',
     route: '/test-dyn-auth',
     name: 'testDynAuth',
-    scopes: {AllOf: [{for: 'scope', in: 'scopes', each: '<scope>'}]},
+    scopes: { AllOf: [{ for: 'scope', in: 'scopes', each: '<scope>' }] },
     handler: async (req, res) => {
-      await req.authorize({scopes: req.body.scopes});
+      await req.authorize({ scopes: req.body.scopes });
       return res.status(200).json('OK');
     },
     tests: [
@@ -520,11 +520,11 @@ suite(testing.suiteName(), function() {
     method: 'get',
     route: '/test-expression-auth/:provisionerId/:workerType',
     name: 'testExpAuthWorker',
-    scopes: {AllOf: [
+    scopes: { AllOf: [
       'queue:create-task:<provisionerId>/<workerType>',
-      {for: 'route', in: 'routes', each: 'queue:route:<route>'},
-      {for: 'scope', in: 'scopes', each: '<scope>'},
-    ]},
+      { for: 'route', in: 'routes', each: 'queue:route:<route>' },
+      { for: 'scope', in: 'scopes', each: '<scope>' },
+    ] },
     handler: async (req, res) => {
       await req.authorize({
         provisionerId: req.params.provisionerId,
@@ -538,7 +538,7 @@ suite(testing.suiteName(), function() {
       {
         label: 'extra scope expresesions',
         id: 'admin',
-        params: {provisionerId: 'test-provisioner', workerType: 'test-worker'},
+        params: { provisionerId: 'test-provisioner', workerType: 'test-worker' },
         tester: (auth, url) => requestWithHawk(url, auth)
           .send({
             routes: ['routeA', 'routeB'],
@@ -552,9 +552,9 @@ suite(testing.suiteName(), function() {
     method: 'get',
     route: '/test-expression-if-then-2',
     name: 'testIfThen',
-    scopes: {if: 'private', then: {AllOf: [
+    scopes: { if: 'private', then: { AllOf: [
       'some:scope:nobody:has',
-    ]}},
+    ] } },
     handler: async (req, res) => {
       await req.authorize({
         private: !req.body.public,
@@ -612,10 +612,10 @@ suite(testing.suiteName(), function() {
     method: 'get',
     route: '/test-expression-if-then-forget',
     name: 'testIfThenForget',
-    scopes: {AnyOf: [
+    scopes: { AnyOf: [
       'some:scope:nobody:has',
-      {if: 'public', then: {AllOf: []}},
-    ]},
+      { if: 'public', then: { AllOf: [] } },
+    ] },
     handler: async (req, res) => {
       return res.reply({});
     },
@@ -634,7 +634,7 @@ suite(testing.suiteName(), function() {
     method: 'get',
     route: '/test-dyn-auth-no-authorize',
     name: 'testDynNoAuth',
-    scopes: {AllOf: [{for: 'scope', in: 'scopes', each: '<scope>'}]},
+    scopes: { AllOf: [{ for: 'scope', in: 'scopes', each: '<scope>' }] },
     handler: async (req, res) => {
       return res.reply({});
     },
@@ -661,9 +661,9 @@ suite(testing.suiteName(), function() {
     method: 'get',
     route: '/test-dyn-auth-missing-authorize',
     name: 'testDynMissingAuth',
-    scopes: {AllOf: [{for: 'scope', in: 'scopes', each: '<scope>'}]},
+    scopes: { AllOf: [{ for: 'scope', in: 'scopes', each: '<scope>' }] },
     handler: async (req, res) => {
-      await req.authorize({foo: 'bar'});
+      await req.authorize({ foo: 'bar' });
       return res.reply({});
     },
     tests: [
@@ -691,7 +691,7 @@ suite(testing.suiteName(), function() {
     name: 'testBadAuth',
     scopes: 'something<foo>',
     handlerBuilder: sideEffects => async (req, res) => {
-      await req.authorize({foo: 'bar'});
+      await req.authorize({ foo: 'bar' });
       sideEffects['got-here'] = true;
       return res.reply({});
     },

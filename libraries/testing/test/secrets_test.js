@@ -1,4 +1,4 @@
-const {Secrets, stickyLoader, suiteName} = require('../');
+const { Secrets, stickyLoader, suiteName } = require('../');
 const _ = require('lodash');
 const assert = require('assert');
 const nock = require('nock');
@@ -31,7 +31,7 @@ suite(suiteName(), function() {
       return overwrites[component];
     }
     assert(component !== 'cfg', 'unexpected load of cfg');
-    return Promise.resolve({component});
+    return Promise.resolve({ component });
   };
   const sticky = stickyLoader(loader);
 
@@ -49,9 +49,9 @@ suite(suiteName(), function() {
       secrets = new Secrets({
         secretName: 'path/to/secret',
         secrets: {
-          envOnly: [{env: 'PASS_IN_ENV'}],
-          cfgOnly: [{cfg: 'cfgonly.pass', name: 'cfgonly'}],
-          envAndCfg: [{env: 'PASS_IN_BOTH', cfg: 'both.pass'}],
+          envOnly: [{ env: 'PASS_IN_ENV' }],
+          cfgOnly: [{ cfg: 'cfgonly.pass', name: 'cfgonly' }],
+          envAndCfg: [{ env: 'PASS_IN_BOTH', cfg: 'both.pass' }],
         },
         load: sticky,
       });
@@ -76,7 +76,7 @@ suite(suiteName(), function() {
       secrets = new Secrets({
         secretName: 'path/to/secret',
         secrets: {
-          envOnly: [{env: 'PASS_IN_ENV'}],
+          envOnly: [{ env: 'PASS_IN_ENV' }],
         },
         load: sticky,
       });
@@ -88,21 +88,21 @@ suite(suiteName(), function() {
     });
 
     test('with config', async function() {
-      sticky.inject('cfg', {cfgonly: {pass: 'PP'}, both: {pass: 'P2'}});
+      sticky.inject('cfg', { cfgonly: { pass: 'PP' }, both: { pass: 'P2' } });
       await secrets.setup();
       assert(!secrets.have('envOnly'));
       assert.throws(() => secrets.get('envOnly'));
       assert(secrets.have('cfgOnly'));
-      assert.deepEqual(secrets.get('cfgOnly'), {cfgonly: 'PP'});
+      assert.deepEqual(secrets.get('cfgOnly'), { cfgonly: 'PP' });
       assert(secrets.have('envAndCfg'));
-      assert.deepEqual(secrets.get('envAndCfg'), {PASS_IN_BOTH: 'P2'});
+      assert.deepEqual(secrets.get('envAndCfg'), { PASS_IN_BOTH: 'P2' });
     });
 
     test('have with a false value', async function() {
-      sticky.inject('cfg', {cfgonly: {pass: false}});
+      sticky.inject('cfg', { cfgonly: { pass: false } });
       await secrets.setup();
       assert(secrets.have('cfgOnly'));
-      assert.deepEqual(secrets.get('cfgOnly'), {cfgonly: false});
+      assert.deepEqual(secrets.get('cfgOnly'), { cfgonly: false });
     });
 
     test('with env', async function() {
@@ -110,39 +110,39 @@ suite(suiteName(), function() {
       process.env.PASS_IN_BOTH = 'PIB';
       await secrets.setup();
       assert(secrets.have('envOnly'));
-      assert.deepEqual(secrets.get('envOnly'), {PASS_IN_ENV: 'PIE'});
+      assert.deepEqual(secrets.get('envOnly'), { PASS_IN_ENV: 'PIE' });
       assert(!secrets.have('cfgOnly'));
       assert.throws(() => secrets.get('cfgOnly'));
       assert(secrets.have('envAndCfg'));
-      assert.deepEqual(secrets.get('envAndCfg'), {PASS_IN_BOTH: 'PIB'});
+      assert.deepEqual(secrets.get('envAndCfg'), { PASS_IN_BOTH: 'PIB' });
       assert(!process.env.PASS_IN_ENV, '$PASS_IN_ENV is still set');
     });
 
     test('with env via secrets service', async function() {
       process.env.TASK_ID = 'abc123'; // so fetching occurs
-      secrets._fetchSecrets = async () => ({PASS_IN_ENV: 'PIE', PASS_IN_BOTH: 'PIB'});
+      secrets._fetchSecrets = async () => ({ PASS_IN_ENV: 'PIE', PASS_IN_BOTH: 'PIB' });
       await secrets.setup();
       assert(secrets.have('envOnly'));
-      assert.deepEqual(secrets.get('envOnly'), {PASS_IN_ENV: 'PIE'});
+      assert.deepEqual(secrets.get('envOnly'), { PASS_IN_ENV: 'PIE' });
       assert(!secrets.have('cfgOnly'));
       assert.throws(() => secrets.get('cfgOnly'));
       assert(secrets.have('envAndCfg'));
-      assert.deepEqual(secrets.get('envAndCfg'), {PASS_IN_BOTH: 'PIB'});
+      assert.deepEqual(secrets.get('envAndCfg'), { PASS_IN_BOTH: 'PIB' });
       assert(!process.env.PASS_IN_ENV, '$PASS_IN_ENV is set');
     });
 
     test('with env and config', async function() {
       process.env.PASS_IN_ENV = 'PIE';
       process.env.PASS_IN_BOTH = 'PIB';
-      sticky.inject('cfg', {cfgonly: {pass: 'PP'}, both: {pass: 'P2'}});
+      sticky.inject('cfg', { cfgonly: { pass: 'PP' }, both: { pass: 'P2' } });
       await secrets.setup();
       assert(secrets.have('envOnly'));
-      assert.deepEqual(secrets.get('envOnly'), {PASS_IN_ENV: 'PIE'});
+      assert.deepEqual(secrets.get('envOnly'), { PASS_IN_ENV: 'PIE' });
       assert(secrets.have('cfgOnly'));
-      assert.deepEqual(secrets.get('cfgOnly'), {cfgonly: 'PP'});
+      assert.deepEqual(secrets.get('cfgOnly'), { cfgonly: 'PP' });
       assert(secrets.have('envAndCfg'));
       // NOTE: this prefers the config value!
-      assert.deepEqual(secrets.get('envAndCfg'), {PASS_IN_BOTH: 'P2'});
+      assert.deepEqual(secrets.get('envAndCfg'), { PASS_IN_BOTH: 'P2' });
       assert(!process.env.PASS_IN_ENV, '$PASS_IN_ENV is set');
     });
   });
@@ -151,7 +151,7 @@ suite(suiteName(), function() {
     const secrets = new Secrets({
       secretName: 'path/to/secret',
       secrets: {
-        sec: [{name: 'sec'}],
+        sec: [{ name: 'sec' }],
       },
       load: sticky,
     });
@@ -172,14 +172,14 @@ suite(suiteName(), function() {
     const secrets = new Secrets({
       secretName: 'path/to/secret',
       secrets: {
-        sec: [{name: 'sec', cfg: 'sec'}],
+        sec: [{ name: 'sec', cfg: 'sec' }],
       },
       load: sticky,
     });
     let testsRun = [];
 
     suiteSetup(function() {
-      sticky.inject('cfg', {sec: 'here'});
+      sticky.inject('cfg', { sec: 'here' });
     });
 
     secrets.mockSuite('outer', ['sec'], function(secrets) {
@@ -198,7 +198,7 @@ suite(suiteName(), function() {
     const secrets = new Secrets({
       secretName: 'path/to/secret',
       secrets: {
-        sec: [{name: 'sec', env: 'SECRET_VALUE', cfg: 'sec'}],
+        sec: [{ name: 'sec', env: 'SECRET_VALUE', cfg: 'sec' }],
       },
     });
 
@@ -206,7 +206,7 @@ suite(suiteName(), function() {
       nock('http://proxy')
         .get('/api/secrets/v1/secret/path%2Fto%2Fsecret')
         .reply(200, (uri, requestBody) => {
-          return {secret: {SECRET_VALUE: '13'}};
+          return { secret: { SECRET_VALUE: '13' } };
         });
     });
 
@@ -217,7 +217,7 @@ suite(suiteName(), function() {
     test('with TASK_ID set', async function() {
       process.env.TASK_ID = '1234';
       process.env.TASKCLUSTER_PROXY_URL = 'http://proxy';
-      assert.deepEqual(await secrets._fetchSecrets(), {SECRET_VALUE: '13'});
+      assert.deepEqual(await secrets._fetchSecrets(), { SECRET_VALUE: '13' });
     });
   });
 });

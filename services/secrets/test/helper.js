@@ -1,8 +1,8 @@
 const taskcluster = require('taskcluster-client');
-const {fakeauth, stickyLoader, Secrets, withMonitor} = require('taskcluster-lib-testing');
+const { fakeauth, stickyLoader, Secrets, withMonitor } = require('taskcluster-lib-testing');
 const load = require('../src/main');
 const builder = require('../src/api.js');
-const {withDb} = require('taskcluster-lib-testing');
+const { withDb } = require('taskcluster-lib-testing');
 
 exports.load = stickyLoader(load);
 
@@ -55,13 +55,13 @@ exports.withServer = (mock, skipping) => {
     // rootUrl.
     const rootUrl = 'http://localhost:60415';
     exports.load.cfg('taskcluster.rootUrl', rootUrl);
-    fakeauth.start(testClients, {rootUrl});
+    fakeauth.start(testClients, { rootUrl });
 
     exports.client = async clientId => {
       const SecretsClient = taskcluster.createClient(builder.reference());
 
       return new SecretsClient({
-        credentials: {clientId, accessToken: 'unused'},
+        credentials: { clientId, accessToken: 'unused' },
         rootUrl,
         retries: 0,
       });

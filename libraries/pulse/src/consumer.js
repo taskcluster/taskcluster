@@ -29,7 +29,7 @@ const isExpectedError = err => {
  * and the caller must handle this via the onConnected handler.
  */
 class PulseConsumer {
-  constructor({client, bindings, queueName, ephemeral, prefetch, onConnected, handleMessage, ...queueOptions}) {
+  constructor({ client, bindings, queueName, ephemeral, prefetch, onConnected, handleMessage, ...queueOptions }) {
     assert(handleMessage, 'Must provide a message handler function');
 
     this.client = client;
@@ -110,7 +110,7 @@ class PulseConsumer {
    * connection is coming up.
    */
   async _drainChannel() {
-    const {channel, consumerTag} = this;
+    const { channel, consumerTag } = this;
 
     if (channel && consumerTag) {
       this.consumerTag = null;
@@ -156,7 +156,7 @@ class PulseConsumer {
       ...this.queueOptions,
     });
 
-    for (let {exchange, routingKeyPattern} of this.bindings) {
+    for (let { exchange, routingKeyPattern } of this.bindings) {
       await channel.bindQueue(queueName, exchange, routingKeyPattern);
     }
 

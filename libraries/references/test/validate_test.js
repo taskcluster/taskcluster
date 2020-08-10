@@ -1,10 +1,10 @@
 const assert = require('assert');
-const {getCommonSchemas} = require('../src/common-schemas');
+const { getCommonSchemas } = require('../src/common-schemas');
 const libUrls = require('taskcluster-lib-urls');
 const merge = require('lodash/merge');
 const omit = require('lodash/omit');
 const References = require('..');
-const {validate} = require('../src/validate');
+const { validate } = require('../src/validate');
 const testing = require('taskcluster-lib-testing');
 
 class RefBuilder {
@@ -13,7 +13,7 @@ class RefBuilder {
     this.references = [];
   }
 
-  schema({omitPaths = [], filename = 'test-schema.yml', ...content}) {
+  schema({ omitPaths = [], filename = 'test-schema.yml', ...content }) {
     this.schemas.push({
       filename,
       content: omit(merge({
@@ -24,7 +24,7 @@ class RefBuilder {
     return this;
   }
 
-  apiref({omitPaths = [], filename = 'test-api-ref.yml', entries = [], ...content}) {
+  apiref({ omitPaths = [], filename = 'test-api-ref.yml', entries = [], ...content }) {
     this.references.push({
       filename,
       content: omit(merge({
@@ -33,7 +33,7 @@ class RefBuilder {
         serviceName: 'test',
         title: 'Test Service',
         description: 'Test Service',
-        entries: entries.map(({omitPaths = [], ...content}) => omit(merge({
+        entries: entries.map(({ omitPaths = [], ...content }) => omit(merge({
           type: 'function',
           name: 'foo',
           title: 'Foo',
@@ -49,7 +49,7 @@ class RefBuilder {
     return this;
   }
 
-  exchangesref({omitPaths = [], filename = 'test-exch-ref.yml', entries = [], ...content}) {
+  exchangesref({ omitPaths = [], filename = 'test-exch-ref.yml', entries = [], ...content }) {
     this.references.push({
       filename,
       content: omit(merge({
@@ -59,7 +59,7 @@ class RefBuilder {
         title: 'Test Service',
         description: 'Test Service',
         exchangePrefix: 'test/v2',
-        entries: entries.map(({omitPaths = [], ...content}) => omit(merge({
+        entries: entries.map(({ omitPaths = [], ...content }) => omit(merge({
           type: 'topic-exchange',
           exchange: 'test',
           name: 'foo',
@@ -101,14 +101,14 @@ suite(testing.suiteName(), function() {
 
   test('schema with no $id fails', function() {
     const references = new RefBuilder()
-      .schema({omitPaths: ['$id']})
+      .schema({ omitPaths: ['$id'] })
       .end();
     assertProblems(references, ['schema test-schema.yml has no $id']);
   });
 
   test('schema with invalid $id fails', function() {
     const references = new RefBuilder()
-      .schema({$id: '/schemas/foo.yml'})
+      .schema({ $id: '/schemas/foo.yml' })
       .end();
     assertProblems(references, [
       'schema test-schema.yml has an invalid $id \'https://tc-tests.example.com/schemas/foo.yml\' ' +
@@ -121,7 +121,7 @@ suite(testing.suiteName(), function() {
       .schema({
         type: 'object',
         properties: {
-          foo: {$ref: 'https://example.com/schema.json#'},
+          foo: { $ref: 'https://example.com/schema.json#' },
         },
       })
       .end();
@@ -135,7 +135,7 @@ suite(testing.suiteName(), function() {
       .schema({
         type: 'object',
         properties: {
-          foo: {$ref: '../uncommon/foo.json#'},
+          foo: { $ref: '../uncommon/foo.json#' },
         },
       })
       .end();
@@ -146,7 +146,7 @@ suite(testing.suiteName(), function() {
 
   test('schema with no metaschema fails', function() {
     const references = new RefBuilder()
-      .schema({omitPaths: ['$schema']})
+      .schema({ omitPaths: ['$schema'] })
       .end();
     assertProblems(references, ['schema test-schema.yml has no $schema']);
   });
@@ -156,7 +156,7 @@ suite(testing.suiteName(), function() {
       .schema({
         $id: '/schemas/common/some-format.json#',
         $schema: '/schemas/common/metaschema.json#',
-        metadata: {name: 'api', version: 1},
+        metadata: { name: 'api', version: 1 },
       })
       .end();
     assertProblems(references, []);
@@ -182,7 +182,7 @@ suite(testing.suiteName(), function() {
     const references = new RefBuilder()
       .schema({
         $schema: '/schemas/common/metadata-metaschema.json#',
-        metadata: {version: 1},
+        metadata: { version: 1 },
       })
       .end();
     assertProblems(references, [
@@ -192,7 +192,7 @@ suite(testing.suiteName(), function() {
 
   test('schema with undefined metaschema fails', function() {
     const references = new RefBuilder()
-      .schema({$schema: '/schemas/nosuch.json#'})
+      .schema({ $schema: '/schemas/nosuch.json#' })
       .end();
     assertProblems(references, [
       'schema test-schema.yml has invalid $schema (must be defined here or be on at json-schema.org)',
@@ -201,21 +201,21 @@ suite(testing.suiteName(), function() {
 
   test('api reference with no $schema fails', function() {
     const references = new RefBuilder()
-      .apiref({omitPaths: ['$schema']})
+      .apiref({ omitPaths: ['$schema'] })
       .end();
     assertProblems(references, ['reference test-api-ref.yml has no $schema']);
   });
 
   test('exchanges reference with no $schema fails', function() {
     const references = new RefBuilder()
-      .exchangesref({omitPaths: ['$schema']})
+      .exchangesref({ omitPaths: ['$schema'] })
       .end();
     assertProblems(references, ['reference test-exch-ref.yml has no $schema']);
   });
 
   test('invalid api reference fails', function() {
     const references = new RefBuilder()
-      .apiref({serviceName: true})
+      .apiref({ serviceName: true })
       .end();
     assertProblems(references, [
       'test-api-ref.yml: reference.serviceName should be string',
@@ -224,8 +224,8 @@ suite(testing.suiteName(), function() {
 
   test('invalid exchanges reference fails', function() {
     const references = new RefBuilder()
-      .schema({$id: '/schemas/test/v2/message.json#'})
-      .exchangesref({title: false})
+      .schema({ $id: '/schemas/test/v2/message.json#' })
+      .exchangesref({ title: false })
       .end();
     assertProblems(references, [
       'test-exch-ref.yml: reference.title should be string',
@@ -234,7 +234,7 @@ suite(testing.suiteName(), function() {
 
   test('reference with undefined $schema fails', function() {
     const references = new RefBuilder()
-      .apiref({$schema: '/schemas/nosuch.json#'})
+      .apiref({ $schema: '/schemas/nosuch.json#' })
       .end();
     assertProblems(references, [
       'reference test-api-ref.yml has invalid $schema (must be defined here)',
@@ -243,7 +243,7 @@ suite(testing.suiteName(), function() {
 
   test('reference with non-metadata metaschema fails', function() {
     const references = new RefBuilder()
-      .apiref({$schema: '/schemas/common/metadata-metaschema.json#'})
+      .apiref({ $schema: '/schemas/common/metadata-metaschema.json#' })
       .end();
     assertProblems(references, [
       'reference test-api-ref.yml has schema ' +
@@ -254,7 +254,7 @@ suite(testing.suiteName(), function() {
 
   test('exchanges reference with absolute entry schema URL fails', function() {
     const references = new RefBuilder()
-      .exchangesref({entries: [{schema: 'https://schemas.exmaple.com/message.json#'}]})
+      .exchangesref({ entries: [{ schema: 'https://schemas.exmaple.com/message.json#' }] })
       .end();
     assertProblems(references, [
       'test-exch-ref.yml: entries[0].schema is not relative to the service',
@@ -263,8 +263,8 @@ suite(testing.suiteName(), function() {
 
   test('exchanges reference with /-relative entry schema (that exists) fails', function() {
     const references = new RefBuilder()
-      .schema({$id: '/schemas/test/v2/message.json#'})
-      .exchangesref({entries: [{schema: '/schemas/test/v2/message.json#'}]})
+      .schema({ $id: '/schemas/test/v2/message.json#' })
+      .exchangesref({ entries: [{ schema: '/schemas/test/v2/message.json#' }] })
       .end();
     assertProblems(references, [
       'test-exch-ref.yml: entries[0].schema is not relative to the service',
@@ -273,8 +273,8 @@ suite(testing.suiteName(), function() {
 
   test('exchanges reference with ../-relative entry schema (that exists) fails', function() {
     const references = new RefBuilder()
-      .schema({$id: '/schemas/test/v2/message.json#'})
-      .exchangesref({entries: [{schema: '../test/v2/message.json#'}]})
+      .schema({ $id: '/schemas/test/v2/message.json#' })
+      .exchangesref({ entries: [{ schema: '../test/v2/message.json#' }] })
       .end();
     assertProblems(references, [
       'test-exch-ref.yml: entries[0].schema is not relative to the service',
@@ -283,7 +283,7 @@ suite(testing.suiteName(), function() {
 
   test('exchanges reference with entry schema that does not exist fails', function() {
     const references = new RefBuilder()
-      .exchangesref({entries: [{schema: 'v2/message.json#'}]})
+      .exchangesref({ entries: [{ schema: 'v2/message.json#' }] })
       .end();
     assertProblems(references, [
       'test-exch-ref.yml: entries[0].schema does not exist',
@@ -292,7 +292,7 @@ suite(testing.suiteName(), function() {
 
   test('api reference with absolute entry input URL fails', function() {
     const references = new RefBuilder()
-      .apiref({entries: [{input: 'https://schemas.exmaple.com/resource.json#'}]})
+      .apiref({ entries: [{ input: 'https://schemas.exmaple.com/resource.json#' }] })
       .end();
     assertProblems(references, [
       'test-api-ref.yml: entries[0].input is not relative to the service',
@@ -301,8 +301,8 @@ suite(testing.suiteName(), function() {
 
   test('api reference with /-relative entry input (that exists) fails', function() {
     const references = new RefBuilder()
-      .schema({$id: '/schemas/test/v2/resource.json#'})
-      .apiref({entries: [{input: '/schemas/test/v2/resource.json#'}]})
+      .schema({ $id: '/schemas/test/v2/resource.json#' })
+      .apiref({ entries: [{ input: '/schemas/test/v2/resource.json#' }] })
       .end();
     assertProblems(references, [
       'test-api-ref.yml: entries[0].input is not relative to the service',
@@ -311,7 +311,7 @@ suite(testing.suiteName(), function() {
 
   test('api reference with entry input that does not exist fails', function() {
     const references = new RefBuilder()
-      .apiref({entries: [{input: 'v2/resource.json#'}]})
+      .apiref({ entries: [{ input: 'v2/resource.json#' }] })
       .end();
     assertProblems(references, [
       'test-api-ref.yml: entries[0].input does not exist',
@@ -320,7 +320,7 @@ suite(testing.suiteName(), function() {
 
   test('api reference with absolute entry output URL fails', function() {
     const references = new RefBuilder()
-      .apiref({entries: [{output: 'https://schemas.exmaple.com/resource.json#'}]})
+      .apiref({ entries: [{ output: 'https://schemas.exmaple.com/resource.json#' }] })
       .end();
     assertProblems(references, [
       'test-api-ref.yml: entries[0].output is not relative to the service',
@@ -329,8 +329,8 @@ suite(testing.suiteName(), function() {
 
   test('api reference with /-relative entry output (that exists) fails', function() {
     const references = new RefBuilder()
-      .schema({$id: '/schemas/test/v2/resource.json#'})
-      .apiref({entries: [{output: '/schemas/test/v2/resource.json#'}]})
+      .schema({ $id: '/schemas/test/v2/resource.json#' })
+      .apiref({ entries: [{ output: '/schemas/test/v2/resource.json#' }] })
       .end();
     assertProblems(references, [
       'test-api-ref.yml: entries[0].output is not relative to the service',
@@ -339,7 +339,7 @@ suite(testing.suiteName(), function() {
 
   test('api reference with entry output that does not exist fails', function() {
     const references = new RefBuilder()
-      .apiref({entries: [{output: 'v2/resource.json#'}]})
+      .apiref({ entries: [{ output: 'v2/resource.json#' }] })
       .end();
     assertProblems(references, [
       'test-api-ref.yml: entries[0].output does not exist',
@@ -352,7 +352,7 @@ suite(testing.suiteName(), function() {
         $schema: 'http://json-schema.org/draft-06/schema#',
         $id: '/schemas/test/v2/resource.json#',
       })
-      .apiref({entries: [{output: 'v2/resource.json#'}]})
+      .apiref({ entries: [{ output: 'v2/resource.json#' }] })
       .end();
     assertProblems(references, [
       'test/v2/resource.json#\'s $schema is not the metaschema',
@@ -365,7 +365,7 @@ suite(testing.suiteName(), function() {
         $schema: 'https://tc-tests.example.com/schemas/common/metaschema.json#',
         $id: '/schemas/test/v2/resource.json#',
       })
-      .apiref({entries: [{output: 'v2/resource.json#'}]})
+      .apiref({ entries: [{ output: 'v2/resource.json#' }] })
       .end();
     assertProblems(references, []);
   });
@@ -376,7 +376,7 @@ suite(testing.suiteName(), function() {
         $id: '/schemas/test/test.json#',
       })
       .apiref({
-        entries: [{input: 'test.json#'}],
+        entries: [{ input: 'test.json#' }],
       })
       .end();
     assertProblems(references, []);

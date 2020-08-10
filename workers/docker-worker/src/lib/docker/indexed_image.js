@@ -54,7 +54,7 @@ module.exports = class IndexedImage extends ArtifactImage {
     });
 
     try {
-      let {taskId} = await index.findTask(this.namespace);
+      let { taskId } = await index.findTask(this.namespace);
       this.taskId = taskId;
       return taskId;
     } catch(e) {
