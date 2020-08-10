@@ -1,6 +1,6 @@
 #import "../../../fragments/artifacts.graphql"
 
-query Task($taskId: ID!, $artifactsConnection: PageConnection, $taskActionsFilter: JSON) {
+query Task($taskId: ID!, $artifactsConnection: PageConnection, $dependentsConnection: PageConnection, $taskActionsFilter: JSON) {
   task(taskId: $taskId) {
     taskId
     taskGroupId
@@ -66,6 +66,28 @@ query Task($taskId: ID!, $artifactsConnection: PageConnection, $taskActionsFilte
     }
     metadata {
       name
+    }
+  }
+
+  dependents(taskId: $taskId, connection: $dependentsConnection) {
+    pageInfo {
+      hasNextPage
+      hasPreviousPage
+      cursor
+      previousCursor
+      nextCursor
+    }
+
+    edges {
+      node {
+        taskId
+        status {
+          state
+        }
+        metadata {
+          name
+        }
+      }
     }
   }
 }

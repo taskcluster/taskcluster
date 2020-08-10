@@ -1,6 +1,6 @@
 import React, { Component, Fragment } from 'react';
 import classNames from 'classnames';
-import { arrayOf, shape, string } from 'prop-types';
+import { arrayOf, func, shape, string } from 'prop-types';
 import deepSortObject from 'deep-sort-object';
 import Code from '@mozilla-frontend-infra/components/Code';
 import Label from '@mozilla-frontend-infra/components/Label';
@@ -12,14 +12,18 @@ import Collapse from '@material-ui/core/Collapse';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
+import TableRow from '@material-ui/core/TableRow';
+import TableCell from '@material-ui/core/TableCell';
 import ChevronUpIcon from 'mdi-react/ChevronUpIcon';
 import ChevronDownIcon from 'mdi-react/ChevronDownIcon';
 import LinkIcon from 'mdi-react/LinkIcon';
 import OpenInNewIcon from 'mdi-react/OpenInNewIcon';
+import ConnectionDataTable from '../ConnectionDataTable';
 import CopyToClipboardListItem from '../CopyToClipboardListItem';
 import DateDistance from '../DateDistance';
 import StatusLabel from '../StatusLabel';
-import { task } from '../../utils/prop-types';
+import { DEPENDENTS_PAGE_SIZE } from '../../utils/constants';
+import { pageInfo, task } from '../../utils/prop-types';
 import urls from '../../utils/urls';
 import Link from '../../utils/Link';
 
@@ -65,6 +69,26 @@ import Link from '../../utils/Link';
   payload: {
     whiteSpace: 'break-spaces',
   },
+  dependentsStatusAndNameContainer: {
+    display: 'flex',
+  },
+  dependentsStatus: {
+    marginRight: theme.spacing(2),
+  },
+  dependentsName: {
+    display: 'inline-flex',
+    flexBasis: '50%',
+    flexGrow: 1,
+  },
+  dependentsTableRow: {
+    cursor: 'pointer',
+  },
+  dependentsLink: {
+    textDecoration: 'none',
+    display: 'flex',
+    justifyContent: 'space-between',
+    verticalAlign: 'middle',
+  },
 }))
 /**
  * Render information in a card layout about a task.
@@ -72,6 +96,7 @@ import Link from '../../utils/Link';
 export default class TaskDetailsCard extends Component {
   static defaultProps = {
     dependentTasks: null,
+    dependents: null,
   };
 
   static propTypes = {
@@ -93,6 +118,11 @@ export default class TaskDetailsCard extends Component {
         }),
       })
     ),
+    dependents: shape({
+      edges: arrayOf(task),
+      pageInfo,
+    }),
+    onDependentsPageChange: func.isRequired,
   };
 
   state = {
@@ -109,7 +139,13 @@ export default class TaskDetailsCard extends Component {
   };
 
   render() {
-    const { classes, task, dependentTasks } = this.props;
+    const {
+      classes,
+      task,
+      dependentTasks,
+      dependents,
+      onDependentsPageChange,
+    } = this.props;
     const { showPayload, showMore } = this.state;
     const isExternal = task.metadata.source.startsWith('https://');
     const payload = deepSortObject(task.payload);
@@ -290,6 +326,7 @@ export default class TaskDetailsCard extends Component {
                             title="View Task">
                             <StatusLabel state={task.status.state} />
                             <ListItemText
+                              primaryTypographyProps={{ variant: 'body2' }}
                               className={classes.listItemText}
                               primary={task.metadata.name}
                             />
@@ -303,6 +340,74 @@ export default class TaskDetailsCard extends Component {
                   <ListItem>
                     <ListItemText
                       primary="Dependencies"
+                      secondary={<em>n/a</em>}
+                    />
+                  </ListItem>
+                )}
+                {dependents && dependents.edges && dependents.edges.length ? (
+                  <Fragment>
+                    <ListItem>
+                      <ListItemText
+                        primary="Dependents"
+                        secondary="This task blocks the following tasks from being scheduled."
+                      />
+                    </ListItem>
+                    <ConnectionDataTable
+                      withoutTopPagination
+                      connection={dependents}
+                      pageSize={DEPENDENTS_PAGE_SIZE}
+                      sortByHeader={null}
+                      sortDirection="desc"
+                      onPageChange={onDependentsPageChange}
+                      renderRow={({
+                        node: {
+                          taskId,
+                          metadata: { name },
+                          status: { state },
+                        },
+                      }) => (
+                        <TableRow
+                          hover
+                          className={classNames(
+                            classes.listItemButton,
+                            classes.dependentsTableRow
+                          )}
+                          key={taskId}>
+                          <TableCell title="View Task">
+                            <Link
+                              className={classes.dependentsLink}
+                              to={`/tasks/${encodeURIComponent(taskId)}`}>
+                              <div
+                                className={
+                                  classes.dependentsStatusAndNameContainer
+                                }>
+                                <div>
+                                  <StatusLabel
+                                    className={classes.dependentsStatus}
+                                    state={state}
+                                  />
+                                </div>
+                                <div className={classes.dependentsName}>
+                                  <Typography variant="body2" noWrap>
+                                    {name}
+                                  </Typography>
+                                </div>
+                              </div>
+                              <div>
+                                <LinkIcon
+                                  className={classes.dependentsLinkIcon}
+                                />
+                              </div>
+                            </Link>
+                          </TableCell>
+                        </TableRow>
+                      )}
+                    />
+                  </Fragment>
+                ) : (
+                  <ListItem>
+                    <ListItemText
+                      primary="Dependents"
                       secondary={<em>n/a</em>}
                     />
                   </ListItem>
