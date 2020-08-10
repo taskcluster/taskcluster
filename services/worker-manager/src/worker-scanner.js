@@ -1,4 +1,5 @@
 const Iterate = require('taskcluster-lib-iterate');
+const taskcluster = require('taskcluster-client');
 const {paginatedIterator} = require('taskcluster-lib-postgres');
 const { Worker } = require('./data');
 
@@ -62,6 +63,16 @@ class WorkerScanner {
         } else {
           this.monitor.info(
             `Worker ${worker.workerGroup}/${worker.workerId} has unknown providerId ${worker.providerId} (ignoring)`);
+        }
+
+        // If the worker will be expired soon but it still exists,
+        // update it to stick around a while longer. If this doesn't happen,
+        // long-lived instances become orphaned from the provider. We don't update
+        // this on every loop just to avoid the extra work when not needed
+        if (worker.expires < taskcluster.fromNow('1 week')) {
+          await worker.update(this.db, worker => {
+            worker.expires = taskcluster.fromNow('8 days');
+          });
         }
       }
     }

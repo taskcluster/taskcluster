@@ -17,6 +17,11 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     monitor = await helper.load('monitor');
   });
 
+  // for testing an expiration that will be updated
+  const expires = taskcluster.fromNow('6 days');
+  // for testing an expiration that won't be updated
+  const expires2 = taskcluster.fromNow('8 days');
+
   const testCase = async ({workers = [], assertion, expectErrors}) => {
     await Promise.all(workers.map(w => {
       const worker = Worker.fromApi(w);
@@ -65,7 +70,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         created: new Date(),
         lastModified: new Date(),
         lastChecked: new Date(),
-        expires: taskcluster.fromNow('1 hour'),
+        expires: expires2,
         capacity: 1,
         state: Worker.states.REQUESTED,
         providerData: {},
@@ -78,6 +83,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         workerId: 'testing-123',
       });
       assert(worker.providerData.checked);
+      // verify that expires wasn't updated
+      assert.notEqual(worker.providerexpires, expires2);
     },
   }));
 
@@ -91,7 +98,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         created: new Date(),
         lastModified: new Date(),
         lastChecked: new Date(),
-        expires: taskcluster.fromNow("1 hour"),
+        expires,
         capacity: 1,
         state: Worker.states.REQUESTED,
         providerData: {},
@@ -104,7 +111,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         created: new Date(),
         lastModified: new Date(),
         lastChecked: new Date(),
-        expires: taskcluster.fromNow("1 hour"),
+        expires,
         capacity: 1,
         state: Worker.states.REQUESTED,
         providerData: {},
@@ -117,16 +124,20 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         workerId: "testing-123",
       });
       assert(worker1.providerData.checked);
+      // expires should be updated because it is less than 7 days
+      assert(worker1.expires > expires);
       const worker2 = await Worker.get(helper.db, {
         workerPoolId: "ff/dd",
         workerGroup: "whatever",
         workerId: "testing-124",
       });
       assert(worker2.providerData.checked);
+      // expires should be updated because it is less than 7 days
+      assert(worker2.expires > expires);
     },
   }));
 
-  test('multiple workers with different providers', () => testCase({
+  test('multiple nearly expired workers with different providers', () => testCase({
     workers: [
       {
         workerPoolId: 'ff/ee',
@@ -136,7 +147,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         created: new Date(),
         lastModified: new Date(),
         lastChecked: new Date(),
-        expires: taskcluster.fromNow('1 hour'),
+        expires,
         capacity: 1,
         state: Worker.states.REQUESTED,
         providerData: {},
@@ -149,7 +160,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         created: new Date(),
         lastModified: new Date(),
         lastChecked: new Date(),
-        expires: taskcluster.fromNow('1 hour'),
+        expires,
         capacity: 1,
         state: Worker.states.REQUESTED,
         providerData: {},
@@ -162,12 +173,16 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         workerId: 'testing-123',
       });
       assert(worker1.providerData.checked);
+      // expires should be updated because it is less than 7 days
+      assert(worker1.expires > expires);
       const worker2 = await Worker.get(helper.db, {
         workerPoolId: 'ff/dd',
         workerGroup: 'whatever',
         workerId: 'testing-124',
       });
       assert(worker2.providerData.checked);
+      // expires should be updated because it is less than 7 days
+      assert(worker2.expires > expires);
     },
   }));
 
