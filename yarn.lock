@@ -3381,10 +3381,10 @@ graphql-upload@^8.0.2:
     http-errors "^1.7.3"
     object-path "^0.11.4"
 
-graphql-validation-complexity@^0.2.5:
-  version "0.2.5"
-  resolved "https://registry.yarnpkg.com/graphql-validation-complexity/-/graphql-validation-complexity-0.2.5.tgz#2eba920aa1aa0278c744ea91ccbd4bf503b697c8"
-  integrity sha512-THAN3XSNBJ2alzZCdFREJUmDE4dIwlBpQlSzuxBUycihTS8cRrAJFOdGyDPMusjFSZrNNROipQoGAL0aOTPpQA==
+graphql-validation-complexity@^0.3.0:
+  version "0.3.0"
+  resolved "https://registry.yarnpkg.com/graphql-validation-complexity/-/graphql-validation-complexity-0.3.0.tgz#96c77fc1f66b3e77d8dc52c6ab7286122f0d0ec5"
+  integrity sha512-1ULqqcFvr1tY/dSCrBemvHQ8XRt6wb3yfGOEoh5si9lQNtiGFeqGhcFOqookIJBVle7uhFTTZjbmHDJzPDYYUw==
   dependencies:
     warning "^4.0.3"
 
