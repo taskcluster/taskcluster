@@ -13,7 +13,6 @@ const os = require('os');
 const features = require('./features');
 const getHostname = require('./util/hostname');
 const { fmtLog, fmtErrorLog } = require('./log');
-const { hasPrefixedScopes } = require('./util/scopes');
 const scopes = require('./scopes');
 const { validatePayload } = require('./util/validate_schema');
 const waitForEvent = require('./wait_for_event');
@@ -94,11 +93,32 @@ Create a list of cached volumes that will be mounted within the docker container
 @param {object} volume cache
 @param {object} volumes to mount in the container
  */
-async function buildVolumeBindings(taskVolumeBindings, volumeCache, expandedScopes) {
-  let allowed = await hasPrefixedScopes('docker-worker:cache:', taskVolumeBindings, expandedScopes);
-  if (!allowed) {
-    throw new Error('Insufficient scopes to attach cache volumes.  The task must ' +
-    'have scope `docker-worker:cache:<cache-name>` for each cache in `payload.caches`.');
+async function buildVolumeBindings(runtime, taskVolumeBindings, volumeCache, expandedScopes) {
+  let scopeExpression = {
+    AllOf: Object.keys(taskVolumeBindings).map((taskVolumeBinding) => ({
+      AnyOf: [
+        `docker-worker:cache:${taskVolumeBinding}`,
+        `docker-worker:cache:${taskVolumeBinding}:${runtime.workerPool}`,
+      ],
+    })),
+  };
+
+  const satisfyingScopes = scopes.scopesSatisfying(expandedScopes, scopeExpression);
+
+  if (!satisfyingScopes) {
+    let unsatisfied = scopes.removeGivenScopes(expandedScopes, scopeExpression);
+    throw new Error([
+      'Insufficient scopes to attach cache volumes.',
+      'The task is missing the following scopes:',
+      '',
+      '```',
+      `${unsatisfied}`,
+      '```',
+      'This requested devices requires the task scopes to satisfy the following scope expression:',
+      '```',
+      `${scopeExpression}`,
+      '```',
+    ].join('\n'));
   }
 
   let bindings = [];
@@ -422,7 +442,7 @@ class Task extends EventEmitter {
     }
 
     if (this.task.payload.cache) {
-      let bindings = await buildVolumeBindings(this.task.payload.cache,
+      let bindings = await buildVolumeBindings(this.runtime, this.task.payload.cache,
         this.runtime.volumeCache, expandedScopes);
       this.volumeCaches = bindings[0];
       binds = _.union(binds, bindings[1]);
