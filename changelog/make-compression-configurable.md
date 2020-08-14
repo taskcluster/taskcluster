@@ -1,5 +1,5 @@
 level: patch
-audience: admins
+audience: worker-deployers
 reference: bug 1637302
 ---
-Allow configuring the type of files compressed by docker worker in the config.
+Docker-worker now allows configuring which artifacts it should compress on upload.
