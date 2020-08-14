@@ -3988,9 +3988,9 @@ json-buffer@3.0.0:
   integrity sha1-Wx85evx11ne96Lz8Dkfh+aPZqJg=
 
 json-e@^4.0.1:
-  version "4.0.1"
-  resolved "https://registry.yarnpkg.com/json-e/-/json-e-4.0.1.tgz#79f29efebd79fdd196c2d643ca35c99c75c30fb7"
-  integrity sha512-09/zVZizxq6orDhk07ZMHSxc5FS4nlEBkd+5AWB+e0PcAqEXE+MWypWDQxM/4Fs5pRe/uZPdMjfL9I6ZxWIZCg==
+  version "4.1.0"
+  resolved "https://registry.yarnpkg.com/json-e/-/json-e-4.1.0.tgz#8765acc497b542a204bcba700856dbf905e0ff60"
+  integrity sha512-Jb8kMB1lICgjAAppv+q0EFFovOPdjE3htb7pt9+uE2j3J1W5ZCuBOmAdGi0OUetCZ4wqSO6qT/Np36XDRjHH7w==
   dependencies:
     json-stable-stringify-without-jsonify "^1.0.1"
 
