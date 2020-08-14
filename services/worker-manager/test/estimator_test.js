@@ -153,6 +153,11 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       workerInfo,
     });
 
+    // for #3372
+    if (monitor.manager.messages.length !== 2) {
+      console.log(monitor.manager.messages);
+    }
+
     assert.strictEqual(estimate, 0);
     assert.strictEqual(monitor.manager.messages.length, 2);
     assert(monitor.manager.messages.some(({ Type, Severity }) => Type === 'simple-estimate' && Severity === 3));
