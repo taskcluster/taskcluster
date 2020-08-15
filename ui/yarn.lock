@@ -7339,15 +7339,10 @@ highlight.js@9.18.1:
   resolved "https://registry.yarnpkg.com/highlight.js/-/highlight.js-9.18.1.tgz#ed21aa001fe6252bb10a3d76d47573c6539fe13c"
   integrity sha512-OrVKYz70LHsnCgmbXctv/bfuvntIKDz177h0Co37DQ5jamGZLVmoCVMtjMtNZY3X9DrCcKfklHPNeA0uPZhSJg==
 
-highlight.js@^9.12.0:
+highlight.js@^9.12.0, highlight.js@^9.18.1:
   version "9.18.3"
   resolved "https://registry.yarnpkg.com/highlight.js/-/highlight.js-9.18.3.tgz#a1a0a2028d5e3149e2380f8a865ee8516703d634"
   integrity sha512-zBZAmhSupHIl5sITeMqIJnYCDfAEc3Gdkqj65wC1lpI468MMQeeQkhcIAvk+RylAkxrCcI9xy9piHiXeQ1BdzQ==
-
-highlight.js@^9.9.0:
-  version "9.14.2"
-  resolved "https://registry.yarnpkg.com/highlight.js/-/highlight.js-9.14.2.tgz#efbfb22dc701406e4da406056ef8c2b70ebe5b26"
-  integrity sha512-Nc6YNECYpxyJABGYJAyw7dBAYbXEuIzwzkqoJnwbc1nIpCiN+3ioYf0XrBnLiyyG0JLuJhpPtt2iTSbXiKLoyA==
 
 history@^4.7.2:
   version "4.7.2"
@@ -8999,7 +8994,7 @@ lodash.debounce@^4.0.8:
   resolved "https://registry.yarnpkg.com/lodash.debounce/-/lodash.debounce-4.0.8.tgz#82d79bff30a67c4005ffd5e2515300ad9ca4d7af"
   integrity sha1-gteb/zCmfEAF/9XiUVMArZyk168=
 
-lodash.flow@^3.1.0:
+lodash.flow@^3.5.0:
   version "3.5.0"
   resolved "https://registry.yarnpkg.com/lodash.flow/-/lodash.flow-3.5.0.tgz#87bf40292b8cf83e4e8ce1a3ae4209e20071675a"
   integrity sha1-h79AKSuM+D5OjOGjrkIJ4gBxZ1o=
@@ -9168,12 +9163,12 @@ markdown-escapes@^1.0.0:
   integrity sha512-XUi5HJhhV5R74k8/0H2oCbCiYf/u4cO/rX8tnGkRvrqhsr5BRNU6Mg0yt/8UIx1iIS8220BNJsDb7XnILhLepw==
 
 markdown-it-highlightjs@^3.0.0:
-  version "3.0.0"
-  resolved "https://registry.yarnpkg.com/markdown-it-highlightjs/-/markdown-it-highlightjs-3.0.0.tgz#ed3dd619ca2b98e6bf2112d163bf444043340210"
-  integrity sha1-7T3WGcormOa/IRLRY79EQEM0AhA=
+  version "3.2.0"
+  resolved "https://registry.yarnpkg.com/markdown-it-highlightjs/-/markdown-it-highlightjs-3.2.0.tgz#20a31fc64b1b4f02ea692f877b1dd71f63168814"
+  integrity sha512-QaSD7zCjAuB1Qa6GLfxcv7uB7svTvXGAiJ2LJShQRaJIWEjkQUAIDv+vsANe4F5J2lPJuOdXf7oIRXe0JFJg2g==
   dependencies:
-    highlight.js "^9.9.0"
-    lodash.flow "^3.1.0"
+    highlight.js "^9.18.1"
+    lodash.flow "^3.5.0"
 
 markdown-it-link-attributes@^2.1.0:
   version "2.1.0"
