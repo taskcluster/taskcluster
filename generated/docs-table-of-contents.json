@@ -3354,13 +3354,35 @@
                 },
                 "name": "caches",
                 "next": {
-                  "path": "reference/workers/docker-worker/features",
-                  "title": "Features"
+                  "path": "reference/workers/docker-worker/capabilities",
+                  "title": "Capabilities"
                 },
                 "path": "reference/workers/docker-worker/caches",
                 "prev": {
                   "path": "reference/workers/docker-worker/environment",
                   "title": "Environment Variables"
+                },
+                "up": {
+                  "path": "reference/workers/docker-worker/README",
+                  "title": "docker-worker"
+                }
+              },
+              {
+                "children": [
+                ],
+                "data": {
+                  "order": 30,
+                  "title": "Capabilities"
+                },
+                "name": "capabilities",
+                "next": {
+                  "path": "reference/workers/docker-worker/features",
+                  "title": "Features"
+                },
+                "path": "reference/workers/docker-worker/capabilities",
+                "prev": {
+                  "path": "reference/workers/docker-worker/caches",
+                  "title": "Caches"
                 },
                 "up": {
                   "path": "reference/workers/docker-worker/README",
@@ -3381,8 +3403,8 @@
                 },
                 "path": "reference/workers/docker-worker/features",
                 "prev": {
-                  "path": "reference/workers/docker-worker/caches",
-                  "title": "Caches"
+                  "path": "reference/workers/docker-worker/capabilities",
+                  "title": "Capabilities"
                 },
                 "up": {
                   "path": "reference/workers/docker-worker/README",

@@ -1,6 +1,6 @@
 const util = require('util');
 const chalk = require('chalk');
-const {upgrade, downgrade} = require('taskcluster-db');
+const { upgrade, downgrade } = require('taskcluster-db');
 
 const main = async () => {
   const adminDbUrl = process.env.ADMIN_DB_URL;
@@ -23,12 +23,12 @@ const main = async () => {
   }
 
   if (process.argv[2] === 'upgrade') {
-    await upgrade({showProgress, adminDbUrl, usernamePrefix, toVersion});
+    await upgrade({ showProgress, adminDbUrl, usernamePrefix, toVersion });
   } else if (process.argv[2] === 'downgrade') {
     if (!toVersion) {
       throw new Error('must specify a version to downgrade to');
     }
-    await downgrade({showProgress, adminDbUrl, usernamePrefix, toVersion});
+    await downgrade({ showProgress, adminDbUrl, usernamePrefix, toVersion });
   } else {
     throw new Error('invalid subcommand for db/src/main.js');
   }

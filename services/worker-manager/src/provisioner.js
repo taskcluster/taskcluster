@@ -1,16 +1,16 @@
 const taskcluster = require('taskcluster-client');
 const Iterate = require('taskcluster-lib-iterate');
-const {consume} = require('taskcluster-lib-pulse');
-const {paginatedIterator} = require('taskcluster-lib-postgres');
-const {WorkerPool, Worker} = require('./data');
+const { consume } = require('taskcluster-lib-pulse');
+const { paginatedIterator } = require('taskcluster-lib-postgres');
+const { WorkerPool, Worker } = require('./data');
 
 /**
  * Run all provisioning logic
  */
 class Provisioner {
-  constructor({providers, iterateConf, Worker, WorkerPool,
+  constructor({ providers, iterateConf, Worker, WorkerPool,
     monitor, notify, pulseClient, db, reference,
-    rootUrl, ownName}) {
+    rootUrl, ownName }) {
     this.providers = providers;
     this.WorkerPool = WorkerPool;
     this.Worker = Worker;
@@ -25,7 +25,7 @@ class Provisioner {
     this.provisioningLoopAlive = false;
 
     const WorkerManagerEvents = taskcluster.createClient(reference);
-    const workerManagerEvents = new WorkerManagerEvents({rootUrl});
+    const workerManagerEvents = new WorkerManagerEvents({ rootUrl });
     this.bindings = [
       workerManagerEvents.workerPoolCreated(),
       workerManagerEvents.workerPoolUpdated(),
@@ -77,8 +77,8 @@ class Provisioner {
     await this.providers.forAll(p => p.terminate());
   }
 
-  async onMessage({exchange, payload}) {
-    const {workerPoolId, providerId, previousProviderId} = payload;
+  async onMessage({ exchange, payload }) {
+    const { workerPoolId, providerId, previousProviderId } = payload;
     const workerPool = await WorkerPool.get(this.db, workerPoolId);
     const provider = this.providers.get(providerId);
 
@@ -89,14 +89,14 @@ class Provisioner {
 
     switch (exchange.split('/').pop()) {
       case 'worker-pool-created': {
-        await provider.createResources({workerPool});
+        await provider.createResources({ workerPool });
         break;
       }
       case 'worker-pool-updated': {
         if (providerId === previousProviderId) {
-          await provider.updateResources({workerPool});
+          await provider.updateResources({ workerPool });
         } else {
-          await provider.createResources({workerPool});
+          await provider.createResources({ workerPool });
         }
         break;
       }
@@ -144,7 +144,7 @@ class Provisioner {
 
       // Check the state of workers (state is updated by worker-scanner)
       const fetch = async (size, offset) => await this.db.fns.get_workers(null, null, null, null, size, offset);
-      for await (let row of paginatedIterator({fetch})) {
+      for await (let row of paginatedIterator({ fetch })) {
         const worker = Worker.fromDb(row);
         if (worker.state !== Worker.states.STOPPED) {
           seen(worker);
@@ -161,7 +161,7 @@ class Provisioner {
       const workerPools = (await this.db.fns.get_worker_pools_with_capacity(null, null))
         .map(row => WorkerPool.fromDb(row));
       for (const workerPool of workerPools) {
-        const {providerId, previousProviderIds, workerPoolId} = workerPool;
+        const { providerId, previousProviderIds, workerPoolId } = workerPool;
         const provider = this.providers.get(providerId);
         if (!provider) {
           this.monitor.warning(
@@ -185,9 +185,9 @@ class Provisioner {
             existingCapacity: providerByPool.existingCapacity,
             requestedCapacity: providerByPool.requestedCapacity,
           };
-          await provider.provision({workerPool, workerInfo});
+          await provider.provision({ workerPool, workerInfo });
         } catch (err) {
-          this.monitor.reportError(err, {providerId: workerPool.providerId}); // Just report this and move on
+          this.monitor.reportError(err, { providerId: workerPool.providerId }); // Just report this and move on
         }
 
         await Promise.all(previousProviderIds.map(async pId => {
@@ -199,9 +199,9 @@ class Provisioner {
           }
 
           try {
-            await provider.deprovision({workerPool});
+            await provider.deprovision({ workerPool });
           } catch (err) {
-            this.monitor.reportError(err, {providerId: pId}); // Just report this and move on
+            this.monitor.reportError(err, { providerId: pId }); // Just report this and move on
           }
 
           // Now if this provider is no longer a provider for any workers that exist
@@ -209,10 +209,10 @@ class Provisioner {
           // it from the previous providers list
           if (!providerByPool.providers.has(pId)) {
             try {
-              await provider.removeResources({workerPool});
+              await provider.removeResources({ workerPool });
             } catch (err) {
               // report error and try again next time..
-              this.monitor.reportError(err, {workerPoolId, providerId: pId});
+              this.monitor.reportError(err, { workerPoolId, providerId: pId });
               return;
             }
             // the provider is done with this pool, so remove it from the list of previous providers

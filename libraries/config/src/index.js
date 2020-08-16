@@ -12,8 +12,8 @@ const config = ({
   profile = process.env.NODE_ENV,
   env = process.env,
   files = [
-    {path: 'config.yml', required: true},
-    {path: 'user-config.yml', required: false},
+    { path: 'config.yml', required: true },
+    { path: 'user-config.yml', required: false },
   ],
   serviceName,
   getEnvVars = false,
@@ -35,7 +35,7 @@ const config = ({
     assert(file.required !== undefined, 'Config files must be of the form {path: "...", required: true|false}');
     let f;
     try {
-      f = fs.readFileSync(path.resolve(baseDir, file.path), {encoding: 'utf-8'});
+      f = fs.readFileSync(path.resolve(baseDir, file.path), { encoding: 'utf-8' });
     } catch (err) {
       if (err.code !== 'ENOENT' || file.required) {
         throw err;

@@ -5,7 +5,7 @@ const nock = require('nock');
 const Debug = require('debug');
 const monitor = require('./fixtures/monitor');
 const libUrls = require('taskcluster-lib-urls');
-const {suiteName} = require('taskcluster-lib-testing');
+const { suiteName } = require('taskcluster-lib-testing');
 
 let fakeLog = Debug('fakeRuntime.log');
 
@@ -41,7 +41,7 @@ suite(suiteName(), function() {
       },
       monitor: monitor,
       workerTypeMonitor: monitor,
-      deviceManagement: {enabled: false},
+      deviceManagement: { enabled: false },
       taskcluster: {},
       rootUrl: libUrls.testRootUrl(),
     };
@@ -107,16 +107,16 @@ suite(suiteName(), function() {
       let task = makeTask(SUPERSEDER_URL);
       let claim = makeClaim('fakeTask', 1, task);
       nock(SUPERSEDER_URL).get('/?taskId=fakeTask')
-        .reply(200, {'supersedes': []});
+        .reply(200, { 'supersedes': [] });
       assert.deepEqual(await listener.applySuperseding(claim), [claim]);
     });
 
   test('with a claim the superseder knows about claims those tasks too, ordering the claims according to the superseder',
     async function() {
       nock(SUPERSEDER_URL) .get('/?taskId=fakeTask')
-        .reply(200, {'supersedes': ['cTask1', 'fakeTask', 'cTask2']});
-      claimTaskResponses['cTask1'] = {status: {taskId: 'cTask1'}, runId: 0};
-      claimTaskResponses['cTask2'] = {status: {taskId: 'cTask2'}, runId: 0};
+        .reply(200, { 'supersedes': ['cTask1', 'fakeTask', 'cTask2'] });
+      claimTaskResponses['cTask1'] = { status: { taskId: 'cTask1' }, runId: 0 };
+      claimTaskResponses['cTask2'] = { status: { taskId: 'cTask2' }, runId: 0 };
       let task = makeTask(SUPERSEDER_URL);
       let claim = makeClaim('fakeTask', 0, task);
       let claims = await listener.applySuperseding(claim);
@@ -127,10 +127,10 @@ suite(suiteName(), function() {
   test('when the superseder does not return the primary task, just yield the original claim',
     async function() {
       nock(SUPERSEDER_URL) .get('/?taskId=fakeTask')
-        .reply(200, {'supersedes': ['cTask1', 'cTask2']});
+        .reply(200, { 'supersedes': ['cTask1', 'cTask2'] });
       let task = makeTask(SUPERSEDER_URL);
       let claim = makeClaim('fakeTask', 0, task);
-      claimTaskResponses['cTask1'] = {status: {taskId: 'cTask1'}, runId: 0};
+      claimTaskResponses['cTask1'] = { status: { taskId: 'cTask1' }, runId: 0 };
       assert.deepEqual(await listener.applySuperseding(claim), [claim]);
     });
 
@@ -138,7 +138,7 @@ suite(suiteName(), function() {
     async function() {
       listener.coalescerTimeout = 100;
       nock(SUPERSEDER_URL) .get('/?taskId=fakeTask').delay(400)
-        .reply(200, {'supersedes': []});
+        .reply(200, { 'supersedes': [] });
       let task = makeTask(SUPERSEDER_URL);
       let claim = makeClaim('fakeTask', 0, task);
       assert.deepEqual(await listener.applySuperseding(claim), [claim]);
@@ -147,8 +147,8 @@ suite(suiteName(), function() {
   test('an error in claiming the secondary claim just omits it',
     async function() {
       nock(SUPERSEDER_URL) .get('/?taskId=fakeTask')
-        .reply(200, {'supersedes': ['cTask1', 'fakeTask', 'cTask2']});
-      claimTaskResponses['cTask1'] = {status: {taskId: 'cTask1'}, runId: 0};
+        .reply(200, { 'supersedes': ['cTask1', 'fakeTask', 'cTask2'] });
+      claimTaskResponses['cTask1'] = { status: { taskId: 'cTask1' }, runId: 0 };
       let task = makeTask(SUPERSEDER_URL);
       let claim = makeClaim('fakeTask', 0, task);
       let claims = await listener.applySuperseding(claim);

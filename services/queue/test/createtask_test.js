@@ -6,7 +6,7 @@ const taskcluster = require('taskcluster-client');
 const assume = require('assume');
 const helper = require('./helper');
 const testing = require('taskcluster-lib-testing');
-const {LEVELS} = require('taskcluster-lib-monitor');
+const { LEVELS } = require('taskcluster-lib-monitor');
 
 helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) {
   helper.withDb(mock, skipping);
@@ -69,16 +69,16 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     const r1 = await helper.queue.createTask(taskId, taskDef);
 
     debug('### Check for log messages');
-    assert.deepEqual(monitor.manager.messages.find(({Type}) => Type === 'task-defined'), {
+    assert.deepEqual(monitor.manager.messages.find(({ Type }) => Type === 'task-defined'), {
       Logger: 'taskcluster.test.api',
       Type: 'task-defined',
-      Fields: {taskId, v: 1},
+      Fields: { taskId, v: 1 },
       Severity: LEVELS.notice,
     });
-    assert.deepEqual(monitor.manager.messages.find(({Type}) => Type === 'task-pending'), {
+    assert.deepEqual(monitor.manager.messages.find(({ Type }) => Type === 'task-pending'), {
       Logger: 'taskcluster.test.api',
       Type: 'task-pending',
-      Fields: {taskId, runId: 0, v: 1},
+      Fields: { taskId, runId: 0, v: 1 },
       Severity: LEVELS.notice,
     });
 
@@ -120,7 +120,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
       'abc:**',
       'queue:route:*',
     );
-    await helper.queue.createTask(taskId, _.defaults({scopes: ['abc:**']}, taskDef))
+    await helper.queue.createTask(taskId, _.defaults({ scopes: ['abc:**'] }, taskDef))
       .then(
         () => { throw new Error('Expected an authentication error'); },
         (err) => {
@@ -161,7 +161,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     try {
       try {
         await helper.queue
-          .use({retries: 0})
+          .use({ retries: 0 })
           .createTask(taskId, taskDef);
       } catch (err) {
         if (!err.toString().match(/uhoh/)) {

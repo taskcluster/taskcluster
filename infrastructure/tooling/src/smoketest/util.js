@@ -12,7 +12,7 @@ exports.retryAssertionFailures = async (times, utils, fn) => {
         throw err;
       }
 
-      utils.status({message: `Try ${tries} failed; waiting 100ms`});
+      utils.status({ message: `Try ${tries} failed; waiting 100ms` });
       await new Promise(res => setTimeout(res, 100));
       continue;
     }

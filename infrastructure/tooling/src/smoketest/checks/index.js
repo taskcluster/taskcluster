@@ -2,7 +2,7 @@ const fs = require('fs');
 
 const checks = [];
 const targets = [];
-const scopeExpression = {AllOf: []};
+const scopeExpression = { AllOf: [] };
 
 /**
  * Each file in this directory is expected to export `tasks` containing a list of

@@ -1,12 +1,12 @@
-const {ApiError, Provider} = require('./provider');
+const { ApiError, Provider } = require('./provider');
 const aws = require('aws-sdk');
 const taskcluster = require('taskcluster-client');
 const crypto = require('crypto');
 const fs = require('fs');
 const path = require('path');
 const _ = require('lodash');
-const {CloudAPI} = require('./cloudapi');
-const {WorkerPool, Worker} = require('../data');
+const { CloudAPI } = require('./cloudapi');
+const { WorkerPool, Worker } = require('../data');
 
 class AwsProvider extends Provider {
   constructor({
@@ -73,9 +73,9 @@ class AwsProvider extends Provider {
       intervalCapDefault: this.providerConfig.intervalCapDefault,
       monitor: this.monitor,
       providerId: this.providerId,
-      errorHandler: ({err, tries}) => {
+      errorHandler: ({ err, tries }) => {
         if (err.code === 'RequestLimitExceeded') {
-          return {backoff: this.providerConfig._backoffDelay * Math.pow(2, tries), reason: 'RequestLimitExceeded', level: 'warning'};
+          return { backoff: this.providerConfig._backoffDelay * Math.pow(2, tries), reason: 'RequestLimitExceeded', level: 'warning' };
         }
         throw err;
       },
@@ -83,8 +83,8 @@ class AwsProvider extends Provider {
     this._enqueue = cloud.enqueue.bind(cloud);
   }
 
-  async provision({workerPool, workerInfo}) {
-    const {workerPoolId} = workerPool;
+  async provision({ workerPool, workerInfo }) {
+    const { workerPoolId } = workerPool;
 
     if (!workerPool.providerData[this.providerId]) {
       await this.db.fns.update_worker_pool_provider_data(
@@ -103,7 +103,7 @@ class AwsProvider extends Provider {
       return; // Nothing to do
     }
 
-    const {terminateAfter, reregistrationTimeout} = Provider.interpretLifecycle(workerPool.config);
+    const { terminateAfter, reregistrationTimeout } = Provider.interpretLifecycle(workerPool.config);
 
     const toSpawnPerConfig = Math.ceil(toSpawn / workerPool.config.launchConfigs.length);
     const shuffledConfigs = _.shuffle(workerPool.config.launchConfigs);
@@ -263,23 +263,23 @@ class AwsProvider extends Provider {
    * This method checks instance identity document authenticity
    * If it's authentic it checks whether the data in it corresponds to the worker
    */
-  async registerWorker({worker, workerPool, workerIdentityProof}) {
-    const monitor = this.workerMonitor({worker});
+  async registerWorker({ worker, workerPool, workerIdentityProof }) {
+    const monitor = this.workerMonitor({ worker });
 
     if (worker.state !== Worker.states.REQUESTED) {
       throw new ApiError('This worker is either stopped or running. No need to register');
     }
 
-    const {document, signature} = workerIdentityProof;
+    const { document, signature } = workerIdentityProof;
     if (!document || !signature || !(typeof document === "string")) {
       throw new ApiError('Request must include both a document (string) and a signature');
     }
 
-    if (!this.verifyInstanceIdentityDocument({document, signature})) {
+    if (!this.verifyInstanceIdentityDocument({ document, signature })) {
       throw new ApiError('Instance identity document validation error');
     }
 
-    if (!this.verifyWorkerInstance({document, worker})) {
+    if (!this.verifyWorkerInstance({ document, worker })) {
       throw new ApiError('Instance validation error');
     }
 
@@ -308,9 +308,9 @@ class AwsProvider extends Provider {
     };
   }
 
-  async checkWorker({worker}) {
+  async checkWorker({ worker }) {
     this.seen[worker.workerPoolId] = this.seen[worker.workerPoolId] || 0;
-    const monitor = this.workerMonitor({worker});
+    const monitor = this.workerMonitor({ worker });
 
     let state = worker.state;
     try {
@@ -344,7 +344,7 @@ class AwsProvider extends Provider {
         }
       }
       if (worker.providerData.terminateAfter && worker.providerData.terminateAfter < Date.now()) {
-        await this.removeWorker({worker, reason: 'terminateAfter time exceeded'});
+        await this.removeWorker({ worker, reason: 'terminateAfter time exceeded' });
       }
     } catch (e) {
       if (e.code !== 'InvalidInstanceID.NotFound') { // aws throws this error for instances that had been terminated, too
@@ -368,7 +368,7 @@ class AwsProvider extends Provider {
     });
   }
 
-  async removeWorker({worker, reason}) {
+  async removeWorker({ worker, reason }) {
     this.monitor.log.workerRemoved({
       workerPoolId: worker.workerPoolId,
       providerId: worker.providerId,
@@ -411,7 +411,7 @@ class AwsProvider extends Provider {
   }
 
   async scanCleanup() {
-    this.monitor.log.scanSeen({providerId: this.providerId, seen: this.seen});
+    this.monitor.log.scanSeen({ providerId: this.providerId, seen: this.seen });
   }
 
   /**
@@ -425,7 +425,7 @@ class AwsProvider extends Provider {
    * @param signature - base64-encoded data (can be a string or buffer)
    * @returns boolean (true if verification is successful)
    */
-  verifyInstanceIdentityDocument({document, signature}) {
+  verifyInstanceIdentityDocument({ document, signature }) {
     const verifier = crypto.createVerify('sha256');
 
     verifier.update(document);
@@ -440,8 +440,8 @@ class AwsProvider extends Provider {
    * @param document
    * @returns boolean if everything checks out
    */
-  verifyWorkerInstance({document, worker}) {
-    const {providerData} = worker;
+  verifyWorkerInstance({ document, worker }) {
+    const { providerData } = worker;
     const parsedDocument = JSON.parse(document);
 
     return providerData.privateIp === parsedDocument.privateIp &&

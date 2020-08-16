@@ -1,6 +1,6 @@
 require('../../prelude');
 const loader = require('taskcluster-lib-loader');
-const {MonitorManager} = require('taskcluster-lib-monitor');
+const { MonitorManager } = require('taskcluster-lib-monitor');
 const libReferences = require('taskcluster-lib-references');
 const taskcluster = require('taskcluster-client');
 const config = require('taskcluster-lib-config');
@@ -9,7 +9,7 @@ const taskqueue = require('./TaskQueue');
 const load = loader({
   cfg: {
     requires: ['profile'],
-    setup: ({profile}) => config({
+    setup: ({ profile }) => config({
       profile,
       serviceName: 'built-in-workers',
     }),
@@ -17,7 +17,7 @@ const load = loader({
 
   monitor: {
     requires: ['process', 'profile', 'cfg'],
-    setup: ({process, profile, cfg}) => MonitorManager.setup({
+    setup: ({ process, profile, cfg }) => MonitorManager.setup({
       serviceName: 'built-in-workers',
       processName: process,
       verify: profile !== 'production',
@@ -27,7 +27,7 @@ const load = loader({
 
   queue: {
     requires: ['cfg'],
-    setup: ({cfg}) => new taskcluster.Queue({
+    setup: ({ cfg }) => new taskcluster.Queue({
       rootUrl: cfg.taskcluster.rootUrl,
       credentials: cfg.taskcluster.credentials,
     }),
@@ -35,24 +35,24 @@ const load = loader({
 
   generateReferences: {
     requires: ['cfg'],
-    setup: ({cfg}) => libReferences.fromService({
+    setup: ({ cfg }) => libReferences.fromService({
       references: [MonitorManager.reference('built-in-workers')],
     }).generateReferences(),
   },
 
   succeedTaskQueue: {
     requires: ['queue', 'cfg'],
-    setup: ({cfg, queue}) => new taskqueue.TaskQueue(cfg, queue, 'succeed'),
+    setup: ({ cfg, queue }) => new taskqueue.TaskQueue(cfg, queue, 'succeed'),
   },
 
   failTaskQueue: {
     requires: ['queue', 'cfg'],
-    setup: ({cfg, queue}) => new taskqueue.TaskQueue(cfg, queue, 'fail'),
+    setup: ({ cfg, queue }) => new taskqueue.TaskQueue(cfg, queue, 'fail'),
   },
 
   server: {
     requires: ['succeedTaskQueue', 'failTaskQueue'],
-    setup: async ({failTaskQueue, succeedTaskQueue}) => {
+    setup: async ({ failTaskQueue, succeedTaskQueue }) => {
       await Promise.all([
         succeedTaskQueue.runWorker(),
         failTaskQueue.runWorker(),

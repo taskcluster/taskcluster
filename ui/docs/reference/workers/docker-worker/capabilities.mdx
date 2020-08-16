@@ -1,0 +1,91 @@
+---
+title: Capabilities
+order: 30
+---
+
+# Capabilities
+
+Capabilities are similar to features, but control access to components of the host machine.
+
+## Devices
+
+Docker-worker permits controlled access to host devices.
+To enable a device for a task, the task definition must have
+
+```yaml
+payload:
+  capabilities:
+    devices:
+      <deviceName>: true
+```
+
+It must also have scope `docker-worker:capability:device:<deviceName>` or scope `docker-worker:capability:device:<deviceName>:<workerPoolId>`.
+
+The worker configuration controls whether a device is available, although most default to available (details below).
+```yaml
+deviceManagement:
+  <deviceName>: true  # or false to disable
+```
+
+The supported devices follow.
+
+### loopbackVideo
+
+This device allocates one of `/dev/videoN` for some N to the task and mounts that device into the container.
+Concurrent tasks will be allocated different devices, although note that the device name will vary within the containers.
+
+This device requires the `v4l2loopback` driver be installed in the kernel.
+
+### loopbackAudio
+
+This device is similar to `loopbackVideo`, but allocates
+
+* `/dev/snd/controlC<deviceId>`
+* `/dev/snd/pcmC<deviceId>D0c`
+* `/dev/snd/pcmC<deviceId>D0p`
+* `/dev/snd/pcmC<deviceId>D1c`
+* `/dev/snd/pcmC<deviceId>D1p`
+
+This device requires the `snd-aloop` driver be installed in the kernel and configured.
+
+### hostSharedMemory
+
+This device mounts `/dev/shm` within the container.
+
+### kvm
+
+This device mounts `/dev/kvm` within the container.
+
+### cpu
+
+This "device" is different from the others.
+If `restrictCPU` is set to true in the worker configuration, then each task will be restricted to a single CPU on the host using Docker's `CpusetCpus` support.
+No task configuration or scopes are required.
+
+## Privileged
+
+This capability enables "privileged" mode on the docker container.
+While the [Docker documentation](https://www.docker.com/blog/docker-can-now-run-within-docker/) treats the topic lightly, this is very similar to giving the container "root" access to the host machine, and should not be undertaken lightly.
+Among other things, malicious code running in a task with this capability could get access to the worker's credentials.
+
+Access to this capability is controlled both in the worker config and by scopes.
+
+The worker config must contain
+
+```yaml
+dockerConfig:
+  allowPrivileged: true
+```
+
+to support privileged tasks.
+
+A task wishing to operate in a privileged container must have
+
+```yaml
+payload:
+  capabilities:
+    privileged: true
+```
+
+It must also have scope `docker-worker:capability:privileged` or scope `docker-worker:capability:privileged:<workerPoolId>`.
+The second form is preferred, as it is specific to a single worker pool.

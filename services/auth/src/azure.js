@@ -23,7 +23,7 @@ builder.declare({
     'Retrieve a list of all Azure accounts managed by Taskcluster Auth.',
   ].join('\n'),
 }, function(req, res) {
-  return res.reply({accounts: _.keys(this.azureAccounts)});
+  return res.reply({ accounts: _.keys(this.azureAccounts) });
 });
 
 builder.declare({
@@ -51,8 +51,8 @@ builder.declare({
     accessKey: this.azureAccounts[account],
   });
 
-  let result = await table.queryTables({nextTableName: continuationToken});
-  let data = {tables: result.tables};
+  let result = await table.queryTables({ nextTableName: continuationToken });
+  let data = { tables: result.tables };
   if (result.nextTableName) {
     data.continuationToken = result.nextTableName;
   }
@@ -69,10 +69,10 @@ builder.declare({
   category: 'Azure Credentials',
   scopes: {
     if: 'levelIsReadOnly',
-    then: {AnyOf: [
+    then: { AnyOf: [
       'auth:azure-table:read-only:<account>/<table>',
       'auth:azure-table:read-write:<account>/<table>',
-    ]},
+    ] },
     else: 'auth:azure-table:read-write:<account>/<table>',
   },
   title: 'Get Shared-Access-Signature for Azure Table',
@@ -173,8 +173,8 @@ builder.declare({
     accessKey: this.azureAccounts[account],
   });
 
-  let result = await blob.listContainers({marker: continuationToken});
-  let data = {containers: result.containers.map(c => c.name)};
+  let result = await blob.listContainers({ marker: continuationToken });
+  let data = { containers: result.containers.map(c => c.name) };
   if (result.nextMarker) {
     data.continuationToken = result.nextMarker;
   }
@@ -191,10 +191,10 @@ builder.declare({
   category: 'Azure Credentials',
   scopes: {
     if: 'levelIsReadOnly',
-    then: {AnyOf: [
+    then: { AnyOf: [
       'auth:azure-container:read-only:<account>/<container>',
       'auth:azure-container:read-write:<account>/<container>',
-    ]},
+    ] },
     else: 'auth:azure-container:read-write:<account>/<container>',
   },
   title: 'Get Shared-Access-Signature for Azure Container',
@@ -213,7 +213,7 @@ builder.declare({
   let level = req.params.level;
 
   // Check that the client is authorized to access given account and container
-  await req.authorize({level, account, container, levelIsReadOnly: level === 'read-only'});
+  await req.authorize({ level, account, container, levelIsReadOnly: level === 'read-only' });
 
   // Check that the account exists
   if (!this.azureAccounts[account]) {

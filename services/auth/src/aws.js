@@ -1,6 +1,6 @@
 const AWS = require('aws-sdk');
 const builder = require('./api');
-const {find} = require('lodash');
+const { find } = require('lodash');
 
 builder.declare({
   method: 'get',
@@ -15,10 +15,10 @@ builder.declare({
   category: 'AWS Credentials',
   scopes: {
     if: 'levelIsReadOnly',
-    then: {AnyOf: [
+    then: { AnyOf: [
       'auth:aws-s3:read-only:<bucket>/<prefix>',
       'auth:aws-s3:read-write:<bucket>/<prefix>',
-    ]},
+    ] },
     else: 'auth:aws-s3:read-write:<bucket>/<prefix>',
   },
   title: 'Get Temporary Read/Write Credentials S3',
@@ -70,21 +70,21 @@ builder.declare({
   if (level !== 'read-write' && level !== 'read-only') {
     return res.reportError('InputError',
       'the \'level\' URL parameter must be read-only or read-write; got {{levelGiven}}',
-      {levelGiven: level});
+      { levelGiven: level });
   }
 
   // Check that the client is authorized to access given bucket and prefix
-  await req.authorize({level, bucket, prefix, levelIsReadOnly: level === 'read-only'});
+  await req.authorize({ level, bucket, prefix, levelIsReadOnly: level === 'read-only' });
 
   // find credentials for this bucket
   const awsCredentials = this.cfg.awsCredentials || {};
   const bucketCreds = find(
     awsCredentials.allowedBuckets || {},
-    ({buckets}) => buckets.includes(bucket));
+    ({ buckets }) => buckets.includes(bucket));
   if (!bucketCreds) {
     return res.reportError('ResourceNotFound',
       'No credentials available for bucket {{bucket}}',
-      {bucket});
+      { bucket });
   }
 
   const sts = new AWS.STS({
@@ -98,7 +98,7 @@ builder.declare({
   if (prefix[0] === '/') {
     return res.reportError('InputError',
       'The `prefix` may not start with a slash `/`; got `{{prefix}}`',
-      {prefix});
+      { prefix });
   }
 
   // Decide actions to be allowed on S3 objects

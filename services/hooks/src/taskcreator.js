@@ -27,7 +27,7 @@ class TaskCreator {
 
   taskForHook(hook, context, options) {
     const now = options.created;
-    let task = jsone(hook.task, _.defaults({}, {now, taskId: options.taskId}, context));
+    let task = jsone(hook.task, _.defaults({}, { now, taskId: options.taskId }, context));
     if (!task) {
       return;
     }
@@ -52,7 +52,7 @@ class TaskCreator {
     return task;
   }
 
-  async appendLastFire({hookGroupId, hookId, taskId, taskCreateTime, firedBy, result, error}) {
+  async appendLastFire({ hookGroupId, hookId, taskId, taskCreateTime, firedBy, result, error }) {
     await this.db.fns.create_last_fire(
       hookGroupId,
       hookId,
@@ -114,12 +114,12 @@ class TaskCreator {
         task = this.taskForHook(hook, context, options);
       } catch (err) {
         lastFire.error = err.toString();
-        return {lastFire, error: err};
+        return { lastFire, error: err };
       }
 
       if (!task) {
         this.monitor.count(`fire.${context.firedBy}.declined`);
-        return {response: {}, declined: true};
+        return { response: {}, declined: true };
       }
       this.monitor.count(`fire.${context.firedBy}.created`);
 
@@ -127,14 +127,14 @@ class TaskCreator {
         hook.hookGroupId, hook.hookId, options.taskId);
       if (this.fakeCreate) {
         // for testing, just record that we *would* hvae called this..
-        this.lastCreateTask = {taskId: options.taskId, task};
-        return {response: {status: {taskId: options.taskId}}};
+        this.lastCreateTask = { taskId: options.taskId, task };
+        return { response: { status: { taskId: options.taskId } } };
       }
 
       try {
         const response = await queue.createTask(options.taskId, task);
         lastFire.result = 'success';
-        return {lastFire, response};
+        return { lastFire, response };
       } catch (err) {
         // reformat the error to fit within the (string-formatted) 'error' field
         // of the LastFire table
@@ -150,11 +150,11 @@ class TaskCreator {
         }
 
         lastFire.error = lfError;
-        return {lastFire, error: err};
+        return { lastFire, error: err };
       }
     };
 
-    const {lastFire, error, response, declined} = await inner();
+    const { lastFire, error, response, declined } = await inner();
 
     this.monitor.log.hookFire({
       hookGroupId: hook.hookGroupId,
@@ -180,7 +180,7 @@ exports.TaskCreator = TaskCreator;
 
 class MockTaskCreator extends TaskCreator {
   constructor() {
-    super({credentials: {}, rootUrl: libUrls.testRootUrl()});
+    super({ credentials: {}, rootUrl: libUrls.testRootUrl() });
     this.shouldFail = false;
     this.shouldNotProduceTask = false;
     this.fireCalls = [];
@@ -197,7 +197,7 @@ class MockTaskCreator extends TaskCreator {
       hookGroupId: hook.hookGroupId,
       hookId: hook.hookId,
       context,
-      options});
+      options });
     if (this.shouldNotProduceTask) {
       return;
     }

@@ -1,10 +1,10 @@
-const {Client} = require('./client');
-const {consume} = require('./consumer');
+const { Client } = require('./client');
+const { consume } = require('./consumer');
 const {
   pulseCredentials,
   connectionStringCredentials,
 } = require('./credentials');
-const {Exchanges} = require('./publisher');
+const { Exchanges } = require('./publisher');
 
 module.exports = {
   Client,

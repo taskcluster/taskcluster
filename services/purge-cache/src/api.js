@@ -1,6 +1,6 @@
 const _ = require('lodash');
 const debug = require('debug')('purge-cache');
-const {APIBuilder} = require('taskcluster-lib-api');
+const { APIBuilder } = require('taskcluster-lib-api');
 const taskcluster = require('taskcluster-client');
 const { paginateResults } = require('taskcluster-lib-api');
 
@@ -51,12 +51,12 @@ builder.declare({
     'the current time.',
   ].join('\n'),
 }, async function(req, res) {
-  let {provisionerId, workerType} = req.params;
-  let {cacheName} = req.body;
+  let { provisionerId, workerType } = req.params;
+  let { cacheName } = req.body;
 
   debug(`Processing request for ${provisionerId}/${workerType}/${cacheName}.`);
 
-  await req.authorize({provisionerId, workerType, cacheName});
+  await req.authorize({ provisionerId, workerType, cacheName });
   await this.db.fns.purge_cache(provisionerId, workerType, cacheName, new Date(), taskcluster.fromNow('1 day'));
   // Return 204
   res.reply();
@@ -82,7 +82,7 @@ builder.declare({
   ].join('\n'),
 }, async function(req, res) {
   // openRequests
-  const {continuationToken, rows} = await paginateResults({
+  const { continuationToken, rows } = await paginateResults({
     query: req.query,
     fetch: (size, offset) => this.db.fns.all_purge_requests(size, offset),
   });
@@ -118,7 +118,7 @@ builder.declare({
   ].join('\n'),
 }, async function(req, res) {
 
-  let {provisionerId, workerType} = req.params;
+  let { provisionerId, workerType } = req.params;
   let cacheKey = `${provisionerId}/${workerType}`;
   let since = new Date(req.query.since || 0);
 
@@ -135,7 +135,7 @@ builder.declare({
     };
   }
 
-  let {reqs: openRequests} = cacheCache;
+  let { reqs: openRequests } = cacheCache;
   return res.reply({
     requests: _.reduce(openRequests, (l, entry) => {
       if (entry.before >= since) {

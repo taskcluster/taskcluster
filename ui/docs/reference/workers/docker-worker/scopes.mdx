@@ -14,6 +14,12 @@ Currently docker-worker uses these scopes:
 ## Features
 
 Scope format: `docker-worker:feature:<feature name>`. These are features that will be linked to the container when the task runs.
+See [features](./features).
+
+## Capabilities
+
+Scopes have the format `docker-worker:capability:<capability>` or `docker-worker:capability:<capability>:<workerPoolId>`.
+See [capabilities](./capabilities).
 
 ## Images
 
@@ -21,6 +27,4 @@ Scopes format: `docker-worker:image:<registry>/<user>/<image>:<tag>`. Scopes for
 
 ## Caches
 
-Scopes begin with `docker-worker:cache:<cache name>`. Tasks that require cached volumes to be mounted must supply a scope for that cache. This is to restrict accessing, and possibly corrupting, caches no related to the scope of credentials provided.
-
-
+See [caches](./caches).

@@ -92,7 +92,7 @@ class Scheduler extends events.EventEmitter {
       const nextTaskId = this.db.decrypt({ value: hook.nextTaskId }).toString('utf8');
       debug('firing hook %s/%s with taskId %s', hook.hookGroupId, hook.hookId, nextTaskId);
       try {
-        await this.taskcreator.fire(hook, {firedBy: 'schedule'}, {
+        await this.taskcreator.fire(hook, { firedBy: 'schedule' }, {
           taskId: nextTaskId,
           // use the next scheduled date as task.created, to ensure idempotency
           created: hook.nextScheduledDate,

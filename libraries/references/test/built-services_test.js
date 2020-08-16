@@ -1,5 +1,5 @@
 const assert = require('assert');
-const {load} = require('../src/built-services');
+const { load } = require('../src/built-services');
 const mockFs = require('mock-fs');
 const References = require('..');
 const testing = require('taskcluster-lib-testing');
@@ -10,9 +10,9 @@ suite(testing.suiteName(), function() {
   });
 
   test('fails on files in the input dir', function() {
-    mockFs({'/test/input/some.data': 'junk'});
+    mockFs({ '/test/input/some.data': 'junk' });
     assert.throws(
-      () => load({directory: '/test/input'}),
+      () => load({ directory: '/test/input' }),
       /some.data is not a directory/);
   });
 
@@ -30,7 +30,7 @@ suite(testing.suiteName(), function() {
 
   test('reads references', function() {
     setupFs();
-    const {references, schemas} = load({directory: '/test/input'});
+    const { references, schemas } = load({ directory: '/test/input' });
     assert.deepEqual(references.map(ref => JSON.stringify(ref.content)).sort(), [
       '{"api":1,"$schema":"/sch"}',
       '{"api":2,"$schema":"/sch"}',
@@ -42,7 +42,7 @@ suite(testing.suiteName(), function() {
 
   test('References.fromBuiltServices reads references and adds common', function() {
     setupFs();
-    const references = References.fromBuiltServices({directory: '/test/input'});
+    const references = References.fromBuiltServices({ directory: '/test/input' });
     assert.deepEqual(references.references.map(ref => JSON.stringify(ref.content)).sort(), [
       '{"api":1,"$schema":"/sch"}',
       '{"api":2,"$schema":"/sch"}',
@@ -50,7 +50,7 @@ suite(testing.suiteName(), function() {
       '{"exchanges":3,"$schema":"/sch"}',
     ]);
     // check for one of the common schemas
-    const ids = references.schemas.map(({content}) => content.$id).sort();
+    const ids = references.schemas.map(({ content }) => content.$id).sort();
     assert(ids.some(id => id === '/schemas/common/manifest-v3.json#'));
   });
 
@@ -71,7 +71,7 @@ suite(testing.suiteName(), function() {
         },
       },
     });
-    const {references, schemas} = load({directory: '/test/input'});
+    const { references, schemas } = load({ directory: '/test/input' });
     assert.deepEqual(references, []);
     assert.deepEqual(schemas.map(sch => JSON.stringify(sch.content)).sort(),
       ['"deeper"', '"root"', '"versioned"']);

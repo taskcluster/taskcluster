@@ -1,13 +1,13 @@
 const request = require('superagent');
 const assert = require('assert');
-const {APIBuilder} = require('../');
+const { APIBuilder } = require('../');
 const helper = require('./helper');
 const libUrls = require('taskcluster-lib-urls');
 const testing = require('taskcluster-lib-testing');
 
 suite(testing.suiteName(), function() {
   setup(async function() {
-    await helper.setupServer({builder});
+    await helper.setupServer({ builder });
   });
   teardown(helper.teardownServer);
 

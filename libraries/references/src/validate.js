@@ -1,5 +1,5 @@
 const regexEscape = require('regex-escape');
-const {URL} = require('url');
+const { URL } = require('url');
 const libUrls = require('taskcluster-lib-urls');
 
 /**
@@ -8,27 +8,27 @@ const libUrls = require('taskcluster-lib-urls');
  */
 const UNREFERENCED_SCHEMAS = [
   // schemas used in documentation
-  {service: 'github', schema: 'v1/taskcluster-github-config.json#'},
-  {service: 'github', schema: 'v1/taskcluster-github-config.v1.json#'},
+  { service: 'github', schema: 'v1/taskcluster-github-config.json#' },
+  { service: 'github', schema: 'v1/taskcluster-github-config.v1.json#' },
 
   // schemas for an unpublished, deprecated API methods
-  {service: 'index', schema: 'v1/list-namespaces-request.json#'},
-  {service: 'queue', schema: 'v1/poll-task-urls-response.json#'},
+  { service: 'index', schema: 'v1/list-namespaces-request.json#' },
+  { service: 'queue', schema: 'v1/poll-task-urls-response.json#' },
 
   // schemas for dynamic configs in worker-manager
-  {service: 'worker-manager', schema: 'v1/config-google.json#'},
-  {service: 'worker-manager', schema: 'v1/config-static.json#'},
-  {service: 'worker-manager', schema: 'v1/config-testing.json#'},
-  {service: 'worker-manager', schema: 'v1/config-null.json#'},
-  {service: 'worker-manager', schema: 'v1/config-aws.json#'},
-  {service: 'worker-manager', schema: 'v1/config-azure.json#'},
+  { service: 'worker-manager', schema: 'v1/config-google.json#' },
+  { service: 'worker-manager', schema: 'v1/config-static.json#' },
+  { service: 'worker-manager', schema: 'v1/config-testing.json#' },
+  { service: 'worker-manager', schema: 'v1/config-null.json#' },
+  { service: 'worker-manager', schema: 'v1/config-aws.json#' },
+  { service: 'worker-manager', schema: 'v1/config-azure.json#' },
 
   // schemas for workers
-  {service: 'generic-worker', schema: 'simple_posix.json#'},
-  {service: 'generic-worker', schema: 'multiuser_windows.json#'},
-  {service: 'generic-worker', schema: 'multiuser_posix.json#'},
-  {service: 'generic-worker', schema: 'docker_posix.json#'},
-  {service: 'docker-worker', schema: 'v1/payload.json#'},
+  { service: 'generic-worker', schema: 'simple_posix.json#' },
+  { service: 'generic-worker', schema: 'multiuser_windows.json#' },
+  { service: 'generic-worker', schema: 'multiuser_posix.json#' },
+  { service: 'generic-worker', schema: 'docker_posix.json#' },
+  { service: 'docker-worker', schema: 'v1/payload.json#' },
 ];
 
 /**
@@ -69,7 +69,7 @@ exports.validate = (references) => {
     schemaPattern = new RegExp(`(^${regexEscape(references.rootUrl)}\/schemas\/[^\/]*\/).*\\.json#`);
   }
 
-  for (let {filename, content} of references.schemas) {
+  for (let { filename, content } of references.schemas) {
     if (!content.$id) {
       problems.push(`schema ${filename} has no $id`);
     } else if (!schemaPattern.test(content.$id)) {
@@ -80,19 +80,19 @@ exports.validate = (references) => {
     if (!content.$schema) {
       problems.push(`schema ${filename} has no $schema`);
     } else if (!content.$schema.startsWith('http://json-schema.org') &&
-      !references.getSchema(content.$schema, {skipValidation: true})) {
+      !references.getSchema(content.$schema, { skipValidation: true })) {
       problems.push(`schema ${filename} has invalid $schema (must be defined here or be on at json-schema.org)`);
     }
   }
 
   const metadataMetaschema = libUrls.schema(references.rootUrl, 'common', 'metadata-metaschema.json#');
-  for (let {filename, content} of references.references) {
+  for (let { filename, content } of references.references) {
     if (!content.$schema) {
       problems.push(`reference ${filename} has no $schema`);
-    } else if (!references.getSchema(content.$schema, {skipValidation: true})) {
+    } else if (!references.getSchema(content.$schema, { skipValidation: true })) {
       problems.push(`reference ${filename} has invalid $schema (must be defined here)`);
     } else {
-      const schema = references.getSchema(content.$schema, {skipValidation: true});
+      const schema = references.getSchema(content.$schema, { skipValidation: true });
       if (schema.$schema !== metadataMetaschema) {
         problems.push(`reference ${filename} has schema '${content.$schema}' which does not have ` +
           'the metadata metaschema');
@@ -103,7 +103,7 @@ exports.validate = (references) => {
   // if that was OK, check references in all schemas
 
   if (!problems.length) {
-    for (let {filename, content} of references.schemas) {
+    for (let { filename, content } of references.schemas) {
       const idUrl = new URL(content.$id, references.rootUrl);
 
       const match = schemaPattern.exec(content.$id);
@@ -132,9 +132,9 @@ exports.validate = (references) => {
   // that requires a real rootUrl, since $schema cannot be a relative URL
 
   if (!problems.length) {
-    const ajv = references.makeAjv({skipValidation: true});
+    const ajv = references.makeAjv({ skipValidation: true });
 
-    for (let {filename, content} of references.schemas) {
+    for (let { filename, content } of references.schemas) {
       try {
         ajv.validateSchema(content);
       } catch (err) {
@@ -143,13 +143,13 @@ exports.validate = (references) => {
       }
       if (ajv.errors) {
         ajv
-          .errorsText(ajv.errors, {separator: '%%/%%', dataVar: 'schema'})
+          .errorsText(ajv.errors, { separator: '%%/%%', dataVar: 'schema' })
           .split('%%/%%')
           .forEach(err => problems.push(`${filename}: ${err}`));
       }
     }
 
-    for (let {filename, content} of references.references) {
+    for (let { filename, content } of references.references) {
       try {
         ajv.validate(content.$schema, content);
       } catch (err) {
@@ -158,7 +158,7 @@ exports.validate = (references) => {
       }
       if (ajv.errors) {
         ajv
-          .errorsText(ajv.errors, {separator: '%%/%%', dataVar: 'reference'})
+          .errorsText(ajv.errors, { separator: '%%/%%', dataVar: 'reference' })
           .split('%%/%%')
           .forEach(err => problems.push(`${filename}: ${err}`));
       }
@@ -171,14 +171,14 @@ exports.validate = (references) => {
   if (!problems.length) {
     const metaschemaUrl = libUrls.schema(references.rootUrl, 'common', 'metaschema.json#');
     // check that a schema link is relative to the service
-    for (let {filename, content} of references.references) {
+    for (let { filename, content } of references.references) {
       const checkRelativeSchema = (name, serviceName, schemaName, i) => {
         if (schemaName.match(/^\/|^[a-z]*:|^\.\./)) {
           problems.push(`${filename}: entries[${i}].${name} is not relative to the service`);
           return;
         }
         const fullSchema = libUrls.schema(references.rootUrl, serviceName, schemaName);
-        const schema = references.getSchema(fullSchema, {skipValidation: true});
+        const schema = references.getSchema(fullSchema, { skipValidation: true });
         if (!schema) {
           problems.push(`${filename}: entries[${i}].${name} does not exist`);
         } else if (schema.$schema !== metaschemaUrl) {
@@ -186,10 +186,10 @@ exports.validate = (references) => {
         }
       };
 
-      const metadata = references.getSchema(content.$schema, {skipValidation: true}).metadata;
+      const metadata = references.getSchema(content.$schema, { skipValidation: true }).metadata;
       if (metadata.name === 'api') {
         if (metadata.version === 0) {
-          content.entries.forEach(({input, output}, i) => {
+          content.entries.forEach(({ input, output }, i) => {
             if (input) {
               checkRelativeSchema('input', content.serviceName, input, i);
             }
@@ -202,7 +202,7 @@ exports.validate = (references) => {
         }
       } else if (metadata.name === 'exchanges') {
         if (metadata.version === 0) {
-          content.entries.forEach(({schema}, i) => {
+          content.entries.forEach(({ schema }, i) => {
             checkRelativeSchema('schema', content.serviceName, schema, i);
           });
         } else {
@@ -227,7 +227,7 @@ exports.validate = (references) => {
         return;
       }
       seen.add(schemaId);
-      const schema = references.getSchema(schemaId, {skipValidation: true});
+      const schema = references.getSchema(schemaId, { skipValidation: true });
 
       forAllRefs(schema, (ref, path) => {
         const refId = new URL(ref, schemaId).toString();
@@ -235,10 +235,10 @@ exports.validate = (references) => {
       });
     };
 
-    for (let {content} of references.references) {
-      const metadata = references.getSchema(content.$schema, {skipValidation: true}).metadata;
+    for (let { content } of references.references) {
+      const metadata = references.getSchema(content.$schema, { skipValidation: true }).metadata;
       if (metadata.name === 'api') {
-        content.entries.forEach(({input, output}) => {
+        content.entries.forEach(({ input, output }) => {
           if (input) {
             const fullSchema = libUrls.schema(references.rootUrl, content.serviceName, input);
             recurse(fullSchema);
@@ -249,7 +249,7 @@ exports.validate = (references) => {
           }
         });
       } else if (metadata.name === 'exchanges') {
-        content.entries.forEach(({schema}) => {
+        content.entries.forEach(({ schema }) => {
           const fullSchema = libUrls.schema(references.rootUrl, content.serviceName, schema);
           recurse(fullSchema);
         });
@@ -260,13 +260,13 @@ exports.validate = (references) => {
 
     // allow some un-referenced schemas that may be referenced from documentation or
     // kept for historical purposes
-    for (let {service, schema} of UNREFERENCED_SCHEMAS) {
+    for (let { service, schema } of UNREFERENCED_SCHEMAS) {
       recurse(libUrls.schema(references.rootUrl, service, schema));
     }
 
     // look for schemas that were not seen..
     const commonPrefix = libUrls.schema(references.rootUrl, 'common', '');
-    for (let {content} of references.schemas) {
+    for (let { content } of references.schemas) {
       if (content.$id.startsWith(commonPrefix)) {
         continue;
       }

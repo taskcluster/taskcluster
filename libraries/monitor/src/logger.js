@@ -109,10 +109,10 @@ class Logger {
       type = 'monitor.generic';
     }
     if (Array.isArray(fields)) {
-      fields = {values: fields};
+      fields = { values: fields };
     }
     if (typeof fields === 'string' || typeof fields === 'number') {
-      fields = {message: fields.toString()};
+      fields = { message: fields.toString() };
     }
 
     if (fields === null || typeof fields === 'boolean') {
@@ -140,7 +140,7 @@ class Logger {
 
     if (this.metadata) {
       // include metadata, but prefer a value from fields if set in both places
-      fields = {...this.metadata, ...fields};
+      fields = { ...this.metadata, ...fields };
     }
 
     // determine a top-level message for the log entry..
@@ -222,4 +222,4 @@ class Logger {
   }
 }
 
-module.exports = {Logger, LEVELS};
+module.exports = { Logger, LEVELS };

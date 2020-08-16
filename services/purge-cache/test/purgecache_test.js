@@ -68,19 +68,19 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     spec = await helper.apiClient.purgeRequests(
       'dummy-provisioner-extended-extended',
       'dummy-worker-extended-extended',
-      {since: spec.requests[0].before},
+      { since: spec.requests[0].before },
     );
     assume(spec.requests.length).equals(2);
     spec = await helper.apiClient.purgeRequests(
       'dummy-provisioner-extended-extended',
       'dummy-worker-extended-extended',
-      {since: spec.requests[1].before},
+      { since: spec.requests[1].before },
     );
     assume(spec.requests.length).equals(1);
     spec = await helper.apiClient.purgeRequests(
       'dummy-provisioner-extended-extended',
       'dummy-worker-extended-extended',
-      {since: new Date().toJSON()},
+      { since: new Date().toJSON() },
     );
     assume(spec.requests.length).equals(0);
   });
@@ -89,11 +89,11 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     sinon.stub(helper.db.fns, 'purge_requests').callsFake(async (query) => []);
     try {
       const since = taskcluster.fromNow('-1 hour').toString();
-      await helper.apiClient.purgeRequests('pp', 'wt', {since});
+      await helper.apiClient.purgeRequests('pp', 'wt', { since });
       assert.equal(helper.db.fns.purge_requests.callCount, 1);
-      await helper.apiClient.purgeRequests('pp', 'wt', {since});
-      await helper.apiClient.purgeRequests('pp', 'wt', {since});
-      await helper.apiClient.purgeRequests('pp', 'wt', {since});
+      await helper.apiClient.purgeRequests('pp', 'wt', { since });
+      await helper.apiClient.purgeRequests('pp', 'wt', { since });
+      await helper.apiClient.purgeRequests('pp', 'wt', { since });
       // not called again..
       assert.equal(helper.db.fns.purge_requests.callCount, 1);
     } finally {
@@ -103,16 +103,16 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
   test('purgeRequest with a failed postgres query', async function() {
     // client retries could confuse the picture here, so don't do them
-    const client = helper.apiClient.use({retries: 0});
+    const client = helper.apiClient.use({ retries: 0 });
 
     sinon.stub(helper.db.fns, 'purge_requests')
       .onFirstCall().throws(new Error('uhoh'))
       .onSecondCall().callsFake(async (query) => []);
     try {
       const since = taskcluster.fromNow('-1 hour').toString();
-      await assert.rejects(() => client.purgeRequests('pp', 'wt', {since}));
+      await assert.rejects(() => client.purgeRequests('pp', 'wt', { since }));
       assert.equal(helper.db.fns.purge_requests.callCount, 1);
-      await client.purgeRequests('pp', 'wt', {since});
+      await client.purgeRequests('pp', 'wt', { since });
       // Azure is called again due to error
       assert.equal(helper.db.fns.purge_requests.callCount, 2);
     } finally {

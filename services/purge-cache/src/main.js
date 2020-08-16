@@ -2,9 +2,9 @@ require('../../prelude');
 const debug = require('debug')('purge-cache');
 const config = require('taskcluster-lib-config');
 const loader = require('taskcluster-lib-loader');
-const {MonitorManager} = require('taskcluster-lib-monitor');
+const { MonitorManager } = require('taskcluster-lib-monitor');
 const SchemaSet = require('taskcluster-lib-validate');
-const {App} = require('taskcluster-lib-app');
+const { App } = require('taskcluster-lib-app');
 const libReferences = require('taskcluster-lib-references');
 const taskcluster = require('taskcluster-client');
 const tcdb = require('taskcluster-db');
@@ -13,7 +13,7 @@ const builder = require('./api');
 const load = loader({
   cfg: {
     requires: ['profile'],
-    setup: ({profile}) => config({
+    setup: ({ profile }) => config({
       profile,
       serviceName: 'purge-cache',
     }),
@@ -21,14 +21,14 @@ const load = loader({
 
   schemaset: {
     requires: ['cfg'],
-    setup: ({cfg}) => new SchemaSet({
+    setup: ({ cfg }) => new SchemaSet({
       serviceName: 'purge-cache',
     }),
   },
 
   monitor: {
     requires: ['process', 'profile', 'cfg'],
-    setup: ({process, profile, cfg}) => MonitorManager.setup({
+    setup: ({ process, profile, cfg }) => MonitorManager.setup({
       serviceName: 'purge-cache',
       processName: process,
       verify: profile !== 'production',
@@ -38,7 +38,7 @@ const load = loader({
 
   db: {
     requires: ["cfg", "process", "monitor"],
-    setup: ({cfg, process, monitor}) => tcdb.setup({
+    setup: ({ cfg, process, monitor }) => tcdb.setup({
       readDbUrl: cfg.postgres.readDbUrl,
       writeDbUrl: cfg.postgres.writeDbUrl,
       serviceName: 'purge_cache',
@@ -49,7 +49,7 @@ const load = loader({
 
   'expire-cache-purges': {
     requires: ['cfg', 'db', 'monitor'],
-    setup: ({cfg, db, monitor}, ownName) => {
+    setup: ({ cfg, db, monitor }, ownName) => {
       return monitor.oneShot(ownName, async () => {
         const now = taskcluster.fromNow(cfg.app.cachePurgeExpirationDelay);
         debug('Expiring cache-purges at: %s, from before %s', new Date(), now);
@@ -63,7 +63,7 @@ const load = loader({
 
   generateReferences: {
     requires: ['cfg', 'schemaset'],
-    setup: ({cfg, schemaset}) => libReferences.fromService({
+    setup: ({ cfg, schemaset }) => libReferences.fromService({
       schemaset,
       references: [builder.reference(), MonitorManager.reference('purge-cache')],
     }).generateReferences(),
@@ -77,8 +77,8 @@ const load = loader({
 
   api: {
     requires: ['cfg', 'monitor', 'schemaset', 'cachePurgeCache', 'db'],
-    setup: ({cfg, monitor, schemaset, cachePurgeCache, db}) => builder.build({
-      context: {cfg, cachePurgeCache, db},
+    setup: ({ cfg, monitor, schemaset, cachePurgeCache, db }) => builder.build({
+      context: { cfg, cachePurgeCache, db },
       rootUrl: cfg.taskcluster.rootUrl,
       schemaset,
       monitor: monitor.childMonitor('api'),
@@ -87,7 +87,7 @@ const load = loader({
 
   server: {
     requires: ['cfg', 'api'],
-    setup: ({cfg, api}) => App({
+    setup: ({ cfg, api }) => App({
       ...cfg.server,
       apis: [api],
     }),

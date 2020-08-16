@@ -11,7 +11,7 @@ suite(testing.suiteName(), () => {
   const auth = new Auth({
     rootUrl: libUrls.testRootUrl(),
     fake: {
-      listClients: ({prefix, continuationToken}) => {
+      listClients: ({ prefix, continuationToken }) => {
         // always return a single client, to test pagination, using the next
         // client name as the continuationToken
         let names = Object.keys(clients).filter(n => n.startsWith(prefix));
@@ -26,7 +26,7 @@ suite(testing.suiteName(), () => {
           continuationToken: names[1],
         };
       },
-      expandScopes: ({scopes}) => ({
+      expandScopes: ({ scopes }) => ({
         scopes: [...new Set(scopes.concat(scopes.map(n => n.replace(/^assume:is:/, 'assume:also:'))))],
       }),
       disableClient: clientId => {
@@ -36,7 +36,7 @@ suite(testing.suiteName(), () => {
   });
 
   const addClient = (clientId, expandedScopes, disabled = false) => {
-    clients[clientId] = {clientId, disabled, expandedScopes};
+    clients[clientId] = { clientId, disabled, expandedScopes };
   };
 
   setup(function() {
@@ -44,7 +44,7 @@ suite(testing.suiteName(), () => {
   });
 
   class TestStrategy {
-    constructor({name, cfg}) {
+    constructor({ name, cfg }) {
       this.identityProviderId = name;
     }
 
@@ -61,7 +61,7 @@ suite(testing.suiteName(), () => {
     }
   }
 
-  const strategies = {test: new TestStrategy({name: 'test'})};
+  const strategies = { test: new TestStrategy({ name: 'test' }) };
 
   test('test strategy with valid clients', async function() {
     addClient('test/user1/', ['assume:also:user1']);

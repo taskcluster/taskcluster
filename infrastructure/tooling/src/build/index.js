@@ -4,7 +4,7 @@ const util = require('util');
 const rimraf = util.promisify(require('rimraf'));
 const mkdirp = util.promisify(require('mkdirp'));
 const taskcluster = require('taskcluster-client');
-const {TaskGraph, Lock, ConsoleRenderer, LogRenderer} = require('console-taskgraph');
+const { TaskGraph, Lock, ConsoleRenderer, LogRenderer } = require('console-taskgraph');
 const generateTasks = require('./tasks');
 const {
   gitIsDirty,
@@ -61,7 +61,7 @@ class Base {
       },
       target,
       renderer: process.stdout.isTTY ?
-        new ConsoleRenderer({elideCompleted: true}) :
+        new ConsoleRenderer({ elideCompleted: true }) :
         new LogRenderer(),
     });
     if (this.cmdOptions.dryRun) {
@@ -100,7 +100,7 @@ class Build extends Base {
     // files are not accidentally built into docker images.  But it does mean that
     // changes need to be checked in.
     if (!this.cmdOptions.ignoreUncommittedFiles) {
-      if (await gitIsDirty({dir: REPO_ROOT})) {
+      if (await gitIsDirty({ dir: REPO_ROOT })) {
         throw new Error([
           'The current git working copy is not clean. Any non-checked-in files will',
           'not be reflected in the built image, so this is treatd as an error by default.',
@@ -110,7 +110,7 @@ class Build extends Base {
       }
     }
 
-    const {gitDescription, revision} = await gitDescribe({
+    const { gitDescription, revision } = await gitDescribe({
       dir: REPO_ROOT,
     });
 
@@ -161,8 +161,8 @@ class Publish extends Base {
     if (process.env.TASKCLUSTER_PROXY_URL) {
       const secretName = `project/taskcluster/${this.cmdOptions.staging ? 'staging-' : ''}release`;
       console.log(`loading secrets from taskcluster secret ${secretName} via taskcluster-proxy`);
-      const secrets = new taskcluster.Secrets({rootUrl: process.env.TASKCLUSTER_PROXY_URL});
-      const {secret} = await secrets.get(secretName);
+      const secrets = new taskcluster.Secrets({ rootUrl: process.env.TASKCLUSTER_PROXY_URL });
+      const { secret } = await secrets.get(secretName);
 
       for (let [name, value] of Object.entries(secret)) {
         console.log(`..found value for ${name}`);
@@ -211,7 +211,7 @@ class Publish extends Base {
         'release-revision': '9999999999999999999999999999999999999999',
       };
     } else {
-      const {gitDescription, revision} = await gitDescribe({
+      const { gitDescription, revision } = await gitDescribe({
         dir: REPO_ROOT,
       });
 
@@ -241,4 +241,4 @@ const publish = async (options) => {
   await publish.run();
 };
 
-module.exports = {build, publish};
+module.exports = { build, publish };

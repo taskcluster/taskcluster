@@ -1,7 +1,7 @@
 const assert = require('assert');
 const helper = require('./helper');
 const testing = require('taskcluster-lib-testing');
-const {WorkerPool, WorkerPoolError, Worker} = require('../src/data');
+const { WorkerPool, WorkerPoolError, Worker } = require('../src/data');
 const taskcluster = require('taskcluster-client');
 
 helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
@@ -34,19 +34,19 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     });
 
     test('worker pool with an active providerId', async function() {
-      await makeWP({workerPoolId: 'pp/wt', providerId: 'testing'});
+      await makeWP({ workerPoolId: 'pp/wt', providerId: 'testing' });
       await helper.load('expireWorkerPools');
       assert(await checkWP('pp/wt'));
     });
 
     test('worker pool with null-provider but previousProviderIds', async function() {
-      await makeWP({workerPoolId: 'pp/wt', providerId: 'null-provider', previousProviderIds: ['something']});
+      await makeWP({ workerPoolId: 'pp/wt', providerId: 'null-provider', previousProviderIds: ['something'] });
       await helper.load('expireWorkerPools');
       assert(await checkWP('pp/wt'));
     });
 
     test('worker pool with null-provider and empty previousProviderIds', async function() {
-      await makeWP({workerPoolId: 'pp/wt', providerId: 'null-provider', previousProviderIds: []});
+      await makeWP({ workerPoolId: 'pp/wt', providerId: 'null-provider', previousProviderIds: [] });
       await helper.load('expireWorkerPools');
       assert.equal(await checkWP('pp/wt'), undefined);
     });
@@ -68,7 +68,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     };
 
     const checkWorker = async (workerPoolId = 'pp/wt', workerGroup = 'wg', workerId = 'wid') => {
-      return await Worker.get(helper.db, {workerPoolId, workerGroup, workerId});
+      return await Worker.get(helper.db, { workerPoolId, workerGroup, workerId });
     };
 
     setup(function() {
@@ -80,13 +80,13 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     });
 
     test('active worker', async function() {
-      await makeWorker({expires: taskcluster.fromNow('1 hour')});
+      await makeWorker({ expires: taskcluster.fromNow('1 hour') });
       await helper.load('expireWorkers');
       assert(await checkWorker());
     });
 
     test('expired worker', async function() {
-      await makeWorker({expires: taskcluster.fromNow('-1 hour')});
+      await makeWorker({ expires: taskcluster.fromNow('-1 hour') });
       await helper.load('expireWorkers');
       assert.equal(await checkWorker(), undefined);
     });
@@ -123,13 +123,13 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     });
 
     test('active error', async function() {
-      await makeWPE({reported: taskcluster.fromNow('10 hours')});
+      await makeWPE({ reported: taskcluster.fromNow('10 hours') });
       await helper.load('expireWorkerPoolErrors');
       assert.equal((await checkWPE()).length, 1);
     });
 
     test('old error', async function() {
-      await makeWPE({reported: taskcluster.fromNow('-10 hours')});
+      await makeWPE({ reported: taskcluster.fromNow('-10 hours') });
       await helper.load('expireWorkerPoolErrors');
       assert.equal((await checkWPE()).length, 0);
     });

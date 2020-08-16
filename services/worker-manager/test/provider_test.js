@@ -1,9 +1,9 @@
 const assert = require('assert');
 const helper = require('./helper');
-const {Provider} = require('../src/providers/provider');
+const { Provider } = require('../src/providers/provider');
 const testing = require('taskcluster-lib-testing');
-const {WorkerPool, WorkerPoolError} = require('../src/data');
-const {LEVELS} = require('taskcluster-lib-monitor');
+const { WorkerPool, WorkerPoolError } = require('../src/data');
+const { LEVELS } = require('taskcluster-lib-monitor');
 
 helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   helper.withDb(mock, skipping);
@@ -30,41 +30,41 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   });
 
   test('empty lifecycle', async function() {
-    assert.equal(345600100, Provider.interpretLifecycle({lifecycle: {}}).terminateAfter);
+    assert.equal(345600100, Provider.interpretLifecycle({ lifecycle: {} }).terminateAfter);
   });
 
   test('only registrationTimeout', async function() {
     assert.deepEqual({
       terminateAfter: 10100,
       reregistrationTimeout: 345600000,
-    }, Provider.interpretLifecycle({lifecycle: {registrationTimeout: 10}}));
+    }, Provider.interpretLifecycle({ lifecycle: { registrationTimeout: 10 } }));
   });
 
   test('only reregistrationTimeout', async function() {
     assert.deepEqual({
       terminateAfter: 10100,
       reregistrationTimeout: 10000,
-    }, Provider.interpretLifecycle({lifecycle: {reregistrationTimeout: 10}}));
+    }, Provider.interpretLifecycle({ lifecycle: { reregistrationTimeout: 10 } }));
   });
 
   test('greater registrationTimeout', async function() {
     assert.deepEqual({
       terminateAfter: 10100,
       reregistrationTimeout: 10000,
-    }, Provider.interpretLifecycle({lifecycle: {
+    }, Provider.interpretLifecycle({ lifecycle: {
       registrationTimeout: 100,
       reregistrationTimeout: 10,
-    }}));
+    } }));
   });
 
   test('greater reregistrationTimeout', async function() {
     assert.deepEqual({
       terminateAfter: 10100,
       reregistrationTimeout: 100000,
-    }, Provider.interpretLifecycle({lifecycle: {
+    }, Provider.interpretLifecycle({ lifecycle: {
       registrationTimeout: 10,
       reregistrationTimeout: 100,
-    }}));
+    } }));
   });
 
   suite('reportError', function() {
@@ -114,7 +114,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     });
 
     test('report errors (w/ email)', async function() {
-      const workerPool = await createWP({emailOnError: true});
+      const workerPool = await createWP({ emailOnError: true });
 
       await provider.reportError({
         workerPool,
@@ -134,7 +134,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     });
 
     test('report errors (w/ email and extraInfo)', async function() {
-      const workerPool = await createWP({emailOnError: true});
+      const workerPool = await createWP({ emailOnError: true });
 
       await provider.reportError({
         workerPool,

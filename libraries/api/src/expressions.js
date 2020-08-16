@@ -53,10 +53,10 @@ const compileTemplate = (template) => {
     return template.split(/<([a-zA-Z][a-zA-Z0-9_]*)>/g);
   }
   if ('AllOf' in template) {
-    return {AllOf: template.AllOf.map(compileTemplate)};
+    return { AllOf: template.AllOf.map(compileTemplate) };
   }
   if ('AnyOf' in template) {
-    return {AnyOf: template.AnyOf.map(compileTemplate)};
+    return { AnyOf: template.AnyOf.map(compileTemplate) };
   }
   if ('for' in template) {
     return {
@@ -105,7 +105,7 @@ const extractParams = (compiledTemplate) => {
   if (ctmpl instanceof Array) {
     return ctmpl
       .filter((value, i) => i % 2 === 1)
-      .map(p => ({[p]: 'string'}))
+      .map(p => ({ [p]: 'string' }))
       .reduce(mergeParams, {});
   }
   if ('AllOf' in ctmpl) {
@@ -157,7 +157,7 @@ const render = (compiledTemplate, params) => {
         }
       }
     });
-    return {AllOf};
+    return { AllOf };
   }
   if ('AnyOf' in ctmpl) {
     const AnyOf = [];
@@ -171,7 +171,7 @@ const render = (compiledTemplate, params) => {
         }
       }
     });
-    return {AnyOf};
+    return { AnyOf };
   }
   if ('for' in ctmpl) {
     const value = params[ctmpl.in];

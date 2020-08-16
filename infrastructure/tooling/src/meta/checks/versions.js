@@ -2,7 +2,7 @@ const assert = require('assert');
 const path = require('path');
 const fs = require('fs');
 const _ = require('lodash');
-const {REPO_ROOT} = require('../../utils');
+const { REPO_ROOT } = require('../../utils');
 
 exports.tasks = [];
 exports.tasks.push({

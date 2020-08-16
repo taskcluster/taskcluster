@@ -2,7 +2,7 @@ const path = require('path');
 const builder = require('../src/api');
 const taskcluster = require('taskcluster-client');
 const load = require('../src/main');
-const {withDb, stickyLoader, Secrets, fakeauth, withMonitor} = require('taskcluster-lib-testing');
+const { withDb, stickyLoader, Secrets, fakeauth, withMonitor } = require('taskcluster-lib-testing');
 
 const testclients = {
   'test-client': ['*'],
@@ -52,7 +52,7 @@ exports.withServer = (mock, skipping) => {
     exports.load.cfg('taskcluster.rootUrl', exports.rootUrl);
     exports.load.cfg('taskcluster.clientId', null);
     exports.load.cfg('taskcluster.accessToken', null);
-    fakeauth.start(testclients, {rootUrl: exports.rootUrl});
+    fakeauth.start(testclients, { rootUrl: exports.rootUrl });
 
     exports.PurgeCacheClient = taskcluster.createClient(builder.reference());
 

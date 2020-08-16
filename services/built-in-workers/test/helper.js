@@ -1,7 +1,7 @@
 const assert = require('assert');
 const taskcluster = require('taskcluster-client');
 const load = require('../src/main');
-const {stickyLoader} = require('taskcluster-lib-testing');
+const { stickyLoader } = require('taskcluster-lib-testing');
 
 const helper = module.exports;
 
@@ -56,15 +56,15 @@ const stubbedQueue = () => {
         return exports.claimableWork.pop();
       },
       reportCompleted: async (taskId, runId) => {
-        exports.taskResolutions[taskId] = {completed: true};
+        exports.taskResolutions[taskId] = { completed: true };
         return {};
       },
       reportFailed: async (taskId, runId) => {
-        exports.taskResolutions[taskId] = {failed: true};
+        exports.taskResolutions[taskId] = { failed: true };
         return {};
       },
       reportException: async (taskId, runId, payload) => {
-        exports.taskResolutions[taskId] = {exception: payload};
+        exports.taskResolutions[taskId] = { exception: payload };
         return {};
       },
     },

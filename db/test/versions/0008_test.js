@@ -41,7 +41,7 @@ suite(testing.suiteName(), function() {
   helper.withDbForVersion();
 
   suiteSetup(async function() {
-    await testing.resetDb({testDbUrl: helper.dbUrl});
+    await testing.resetDb({ testDbUrl: helper.dbUrl });
     await helper.upgradeTo(THIS_VERSION);
   });
 
@@ -64,10 +64,10 @@ suite(testing.suiteName(), function() {
   // (this is used by 0010_test.js, too)
   exports.entityBufDecodeTest = entityBufDecodeTest;
 
-  entityBufDecodeTest('0 bufs', {__bufchunks_val: 0}, '');
-  entityBufDecodeTest('empty', {__bufchunks_val: 1, __buf0_val: ''}, '');
-  entityBufDecodeTest('simple string', {__bufchunks_val: 1, __buf0_val: b64('Hello')}, 'Hello');
-  entityBufDecodeTest('backslashy string', {__bufchunks_val: 1, __buf0_val: b64('uh\\oh')}, 'uh\\oh');
+  entityBufDecodeTest('0 bufs', { __bufchunks_val: 0 }, '');
+  entityBufDecodeTest('empty', { __bufchunks_val: 1, __buf0_val: '' }, '');
+  entityBufDecodeTest('simple string', { __bufchunks_val: 1, __buf0_val: b64('Hello') }, 'Hello');
+  entityBufDecodeTest('backslashy string', { __bufchunks_val: 1, __buf0_val: b64('uh\\oh') }, 'uh\\oh');
   // see db version 10 where this expected failure is fixed..
   entityBufDecodeTest('2 huge bufs', hugeBufs.encoded, hugeBufs.decoded, true);
 

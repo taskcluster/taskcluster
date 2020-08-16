@@ -1,10 +1,10 @@
-const {Secrets} = require('taskcluster-lib-testing');
+const { Secrets } = require('taskcluster-lib-testing');
 
 exports.secrets = new Secrets({
   secretName: [],
   secrets: {
     docker: [
-      {env: 'DOCKER_TESTS', name: 'useDocker'},
+      { env: 'DOCKER_TESTS', name: 'useDocker' },
     ],
     // creds with scope `assume:project:taskcluster:docker-worker-tester`, from
     // secret `project/taskcluster/testing/docker-worker/ci-creds` in CI.  Note that
@@ -12,9 +12,9 @@ exports.secrets = new Secrets({
     // `fixtures/image_artifacts.js`.
     // TODO: (#2845) determine the precise list of scopes required
     'ci-creds': [
-      {env: 'TASKCLUSTER_ROOT_URL', name: 'rootUrl'},
-      {env: 'TASKCLUSTER_CLIENT_ID', name: 'clientId'},
-      {env: 'TASKCLUSTER_ACCESS_TOKEN', name: 'accessToken'},
+      { env: 'TASKCLUSTER_ROOT_URL', name: 'rootUrl' },
+      { env: 'TASKCLUSTER_CLIENT_ID', name: 'clientId' },
+      { env: 'TASKCLUSTER_ACCESS_TOKEN', name: 'accessToken' },
     ],
   },
 });

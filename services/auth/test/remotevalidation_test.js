@@ -43,7 +43,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
   });
 
   test('header auth (no creds)', async () => {
-    let myClient2 = new helper.TestClient({rootUrl: helper.rootUrl, credentials: {}});
+    let myClient2 = new helper.TestClient({ rootUrl: helper.rootUrl, credentials: {} });
     await myClient2.resource().then(() => {
       assert(false, 'expected an error!');
     }, err => {

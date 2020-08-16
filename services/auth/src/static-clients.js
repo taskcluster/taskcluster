@@ -2,7 +2,7 @@ const assert = require('assert');
 const _ = require('lodash');
 const taskcluster = require('taskcluster-client');
 const staticScopes = require('./static-scopes.json');
-const {UNIQUE_VIOLATION} = require('taskcluster-lib-postgres');
+const { UNIQUE_VIOLATION } = require('taskcluster-lib-postgres');
 
 /**
  * Ensure static clients exist and remove all clients prefixed 'static/', if not
@@ -34,10 +34,10 @@ exports.syncStaticClients = async function(db, clients = []) {
   // check that we have all of the expected static/taskcluster clients, and no more.  The staticClients
   // are generated from `services/*/scopes.yml` for all of the other services.
   const seenTCClients = clients
-    .map(({clientId}) => clientId)
+    .map(({ clientId }) => clientId)
     .filter(c => c.startsWith('static/taskcluster/'));
   const expectedTCClients = staticScopes
-    .map(({clientId}) => clientId);
+    .map(({ clientId }) => clientId);
   const extraTCClients = _.difference(seenTCClients, expectedTCClients);
   const missingTCClients = _.difference(expectedTCClients, seenTCClients);
 
@@ -55,8 +55,8 @@ exports.syncStaticClients = async function(db, clients = []) {
   // put the configured scopes into place
   clients = clients.map(client => {
     if (client.clientId.startsWith('static/taskcluster/')) {
-      const {scopes} = _.find(staticScopes, {clientId: client.clientId});
-      return {...client, description: 'Internal client', scopes};
+      const { scopes } = _.find(staticScopes, { clientId: client.clientId });
+      return { ...client, description: 'Internal client', scopes };
     } else {
       return client;
     }

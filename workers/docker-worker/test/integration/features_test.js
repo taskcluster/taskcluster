@@ -16,7 +16,7 @@ suite('features', () => {
         },
         maxRunTime: 5 * 60,
       },
-    }, undefined, {bulkLog: {enabled: false}});
+    }, undefined, { bulkLog: { enabled: false } });
 
     assert.equal(result.run.state, 'failed');
     assert.equal(result.run.reasonResolved, 'failed');
@@ -56,7 +56,7 @@ suite('features', () => {
         },
         maxRunTime: 5 * 60,
       },
-    }, undefined, {artifacts: {enabled: false}});
+    }, undefined, { artifacts: { enabled: false } });
 
     assert.equal(result.run.state, 'completed');
     assert.equal(result.run.reasonResolved, 'completed');

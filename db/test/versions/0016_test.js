@@ -9,7 +9,7 @@ suite(testing.suiteName(), function() {
   helper.withDbForVersion();
 
   suiteSetup(async function() {
-    await testing.resetDb({testDbUrl: helper.dbUrl});
+    await testing.resetDb({ testDbUrl: helper.dbUrl });
     await helper.upgradeTo(THIS_VERSION);
 
     // fill a temporary table with a mess of slugids

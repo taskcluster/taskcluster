@@ -1,4 +1,4 @@
-const {splitWorkerPoolId} = require('../utils/workerPool');
+const { splitWorkerPoolId } = require('../utils/workerPool');
 
 module.exports = {
   WorkerManagerWorkerPoolSummary: {
@@ -25,13 +25,13 @@ module.exports = {
     },
   },
   Mutation: {
-    createWorkerPool(parent, { workerPoolId, payload }, { clients} ) {
+    createWorkerPool(parent, { workerPoolId, payload }, { clients } ) {
       return clients.workerManager.createWorkerPool(workerPoolId, payload);
     },
-    updateWorkerPool(parent, { workerPoolId, payload }, { clients} ) {
+    updateWorkerPool(parent, { workerPoolId, payload }, { clients } ) {
       return clients.workerManager.updateWorkerPool(workerPoolId, payload);
     },
-    async deleteWorkerPool(parent, { workerPoolId }, { clients} ) {
+    async deleteWorkerPool(parent, { workerPoolId }, { clients } ) {
       await clients.workerManager.deleteWorkerPool(workerPoolId);
 
       return workerPoolId;

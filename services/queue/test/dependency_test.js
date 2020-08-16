@@ -6,7 +6,7 @@ const taskcluster = require('taskcluster-client');
 const testing = require('taskcluster-lib-testing');
 const assume = require('assume');
 const helper = require('./helper');
-const {LEVELS} = require('taskcluster-lib-monitor');
+const { LEVELS } = require('taskcluster-lib-monitor');
 
 helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) {
   helper.withDb(mock, skipping);
@@ -54,16 +54,16 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     let r1 = await helper.queue.createTask(taskIdA, taskA);
     helper.assertPulseMessage('task-defined', m => m.payload.status.taskId === taskIdA);
     helper.assertPulseMessage('task-pending', m => m.payload.status.taskId === taskIdA);
-    assert.deepEqual(monitor.manager.messages.find(({Type}) => Type === 'task-defined'), {
+    assert.deepEqual(monitor.manager.messages.find(({ Type }) => Type === 'task-defined'), {
       Logger: 'taskcluster.test.api',
       Type: 'task-defined',
-      Fields: {taskId: taskIdA, v: 1},
+      Fields: { taskId: taskIdA, v: 1 },
       Severity: LEVELS.notice,
     });
-    assert.deepEqual(monitor.manager.messages.find(({Type}) => Type === 'task-pending'), {
+    assert.deepEqual(monitor.manager.messages.find(({ Type }) => Type === 'task-pending'), {
       Logger: 'taskcluster.test.api',
       Type: 'task-pending',
-      Fields: {taskId: taskIdA, runId: 0, v: 1},
+      Fields: { taskId: taskIdA, runId: 0, v: 1 },
       Severity: LEVELS.notice,
     });
     helper.clearPulseMessages();
@@ -73,13 +73,13 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     helper.assertPulseMessage('task-defined', m => m.payload.status.taskId === taskIdB);
     assume(r1.status.state).equals('pending');
     assume(r2.status.state).equals('unscheduled');
-    assert.deepEqual(monitor.manager.messages.find(({Type}) => Type === 'task-defined'), {
+    assert.deepEqual(monitor.manager.messages.find(({ Type }) => Type === 'task-defined'), {
       Logger: 'taskcluster.test.api',
       Type: 'task-defined',
-      Fields: {taskId: taskIdB, v: 1},
+      Fields: { taskId: taskIdB, v: 1 },
       Severity: LEVELS.notice,
     });
-    assert.deepEqual(monitor.manager.messages.find(({Type}) => Type === 'task-pending'), undefined);
+    assert.deepEqual(monitor.manager.messages.find(({ Type }) => Type === 'task-pending'), undefined);
     helper.clearPulseMessages();
     monitor.manager.reset();
 
@@ -101,10 +101,10 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     });
 
     helper.assertPulseMessage('task-running', m => m.payload.status.taskId === taskIdA);
-    assert.deepEqual(monitor.manager.messages.find(({Type}) => Type === 'task-running'), {
+    assert.deepEqual(monitor.manager.messages.find(({ Type }) => Type === 'task-running'), {
       Logger: 'taskcluster.test.work-claimer',
       Type: 'task-running',
-      Fields: {taskId: taskIdA, runId: 0, v: 1},
+      Fields: { taskId: taskIdA, runId: 0, v: 1 },
       Severity: LEVELS.notice,
     });
     helper.clearPulseMessages();
@@ -112,10 +112,10 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
 
     await helper.queue.reportCompleted(taskIdA, 0);
     helper.assertPulseMessage('task-completed', m => m.payload.status.taskId === taskIdA);
-    assert.deepEqual(monitor.manager.messages.find(({Type}) => Type === 'task-completed'), {
+    assert.deepEqual(monitor.manager.messages.find(({ Type }) => Type === 'task-completed'), {
       Logger: 'taskcluster.test.api',
       Type: 'task-completed',
-      Fields: {taskId: taskIdA, runId: 0, v: 1},
+      Fields: { taskId: taskIdA, runId: 0, v: 1 },
       Severity: LEVELS.notice,
     });
     helper.clearPulseMessages();
@@ -125,10 +125,10 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     await testing.poll(
       async () => {
         helper.assertPulseMessage('task-pending', m => m.payload.status.taskId === taskIdB);
-        assert.deepEqual(monitor.manager.messages.find(({Type}) => Type === 'task-pending'), {
+        assert.deepEqual(monitor.manager.messages.find(({ Type }) => Type === 'task-pending'), {
           Logger: 'taskcluster.test.dependency-tracker',
           Type: 'task-pending',
-          Fields: {taskId: taskIdB, runId: 0, v: 1},
+          Fields: { taskId: taskIdB, runId: 0, v: 1 },
           Severity: LEVELS.notice,
         });
       },
@@ -235,7 +235,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     }, 200, 250);
 
     debug('### listTaskDependents, limit = 2');
-    let d3 = await helper.queue.listDependentTasks(taskIdA, {limit: 2});
+    let d3 = await helper.queue.listDependentTasks(taskIdA, { limit: 2 });
     assume(d3.tasks).has.length(2);
     assume(d3).ownProperty('continuationToken');
     let d4 = await helper.queue.listDependentTasks(taskIdA, {
@@ -573,10 +573,10 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     debug('### Load dependencies to ensure they are present');
     assert.deepEqual(
       await db.fns.get_dependent_tasks(taskIdA, null, null, null, null),
-      [{dependent_task_id: taskIdA, requires: 'all-completed', satisfied: false}]);
+      [{ dependent_task_id: taskIdA, requires: 'all-completed', satisfied: false }]);
     assert.deepEqual(
       await db.fns.get_dependent_tasks(taskIdB, null, null, null, null),
-      [{dependent_task_id: taskIdB, requires: 'all-completed', satisfied: false}]);
+      [{ dependent_task_id: taskIdB, requires: 'all-completed', satisfied: false }]);
 
     debug('### expire task-dependency');
     await helper.runExpiration('expire-task-dependency');
@@ -587,7 +587,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
       []);
     assert.deepEqual(
       await db.fns.get_dependent_tasks(taskIdB, null, null, null, null),
-      [{dependent_task_id: taskIdB, requires: 'all-completed', satisfied: false}]);
+      [{ dependent_task_id: taskIdB, requires: 'all-completed', satisfied: false }]);
   });
 
   test('a task on which lots of other tasks depend is resolved', async () => {
@@ -599,7 +599,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     await Promise.all(
       depTaskIds.map(
         async depTaskId => {
-          const t = await helper.queue.createTask(depTaskId, {...taskDef(), dependencies: [reqTaskId]});
+          const t = await helper.queue.createTask(depTaskId, { ...taskDef(), dependencies: [reqTaskId] });
           assert.equal(t.status.state, 'unscheduled');
         }));
 

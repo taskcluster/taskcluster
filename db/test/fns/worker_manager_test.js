@@ -24,12 +24,12 @@ suite(testing.suiteName(), function() {
       wp.provider_id || 'provider',
       wp.previous_provider_ids || '[]', // N.B. JSON-encoded
       wp.description || 'descr',
-      wp.config || {config: true},
+      wp.config || { config: true },
       wp.created || new Date(),
       wp.last_modified || new Date(),
       wp.owner || 'me@me.com',
       wp.email_on_error || false,
-      wp.provider_data || {providerdata: true},
+      wp.provider_data || { providerdata: true },
     );
   };
   const update_worker_pool = async (db, wp = {}) => {
@@ -37,7 +37,7 @@ suite(testing.suiteName(), function() {
       wp.worker_pool_id || 'wp/id',
       wp.provider_id || 'provider',
       wp.description || 'descr',
-      wp.config || {config: true},
+      wp.config || { config: true },
       wp.last_modified || new Date(),
       wp.owner || 'me@me.com',
       wp.email_on_error || false,
@@ -50,7 +50,7 @@ suite(testing.suiteName(), function() {
     const old = await db.deprecatedFns.update_worker_pool(...input);
     // We override previous_provider_id in this comparison because a side-effect
     // of calling this function is updating that value so we can't compare here
-    assert.deepEqual({...with_cap[0], previous_provider_id: ''}, {...old[0], previous_provider_id: ''});
+    assert.deepEqual({ ...with_cap[0], previous_provider_id: '' }, { ...old[0], previous_provider_id: '' });
     return with_cap;
   };
   const create_worker_pool_error = async (db, e = {}) => {
@@ -61,7 +61,7 @@ suite(testing.suiteName(), function() {
       e.kind || 'kind',
       e.title || 'title',
       e.description || 'descr',
-      e.extra || {extra: true},
+      e.extra || { extra: true },
     );
   };
   const create_worker = async (db, w = {}) => {
@@ -73,7 +73,7 @@ suite(testing.suiteName(), function() {
       w.created || new Date(),
       w.expires || new Date(),
       w.state || 'state',
-      w.provider_data || {providerdata: true},
+      w.provider_data || { providerdata: true },
       w.capacity || 1,
       w.last_modified || new Date(),
       w.last_checked || new Date(),
@@ -88,7 +88,7 @@ suite(testing.suiteName(), function() {
       w.created || new Date(),
       w.expires || new Date(),
       w.state || 'state',
-      w.provider_data || {providerdata: true},
+      w.provider_data || { providerdata: true },
       w.capacity || 1,
       w.last_modified || new Date(),
       w.last_checked || new Date(),
@@ -104,7 +104,7 @@ suite(testing.suiteName(), function() {
       w.created || new Date(),
       w.expires || new Date(),
       w.state || 'state',
-      w.provider_data || {providerdata: true},
+      w.provider_data || { providerdata: true },
       w.capacity || 1,
       w.last_modified || new Date(),
       w.last_checked || new Date(),
@@ -138,19 +138,19 @@ suite(testing.suiteName(), function() {
   suite(`${testing.suiteName()} - worker_pools`, function() {
     helper.dbTest('create_worker_pool/get_worker_pool', async function(db) {
       const now = new Date();
-      await create_worker_pool(db, {created: now, last_modified: now});
+      await create_worker_pool(db, { created: now, last_modified: now });
 
       const rows = await get_worker_pool(db, 'wp/id');
       assert.equal(rows[0].worker_pool_id, 'wp/id');
       assert.equal(rows[0].provider_id, 'provider');
       assert.deepEqual(rows[0].previous_provider_ids, []);
       assert.equal(rows[0].description, 'descr');
-      assert.deepEqual(rows[0].config, {config: true});
+      assert.deepEqual(rows[0].config, { config: true });
       assert.deepEqual(rows[0].created, now);
       assert.deepEqual(rows[0].last_modified, now);
       assert.equal(rows[0].owner, 'me@me.com');
       assert.equal(rows[0].email_on_error, false);
-      assert.deepEqual(rows[0].provider_data, {providerdata: true});
+      assert.deepEqual(rows[0].provider_data, { providerdata: true });
     });
 
     helper.dbTest('get_worker_pool not found', async function(db) {
@@ -165,7 +165,7 @@ suite(testing.suiteName(), function() {
 
     helper.dbTest('get_worker_pools full, pagination', async function(db) {
       for (let i = 0; i < 10; i++) {
-        await create_worker_pool(db, {worker_pool_id: `wp/${i}`});
+        await create_worker_pool(db, { worker_pool_id: `wp/${i}` });
       }
 
       let rows = await get_worker_pools(db, null, null);
@@ -173,10 +173,10 @@ suite(testing.suiteName(), function() {
       assert.equal(rows[0].provider_id, 'provider');
       assert.deepEqual(rows[0].previous_provider_ids, []);
       assert.equal(rows[0].description, 'descr');
-      assert.deepEqual(rows[0].config, {config: true});
+      assert.deepEqual(rows[0].config, { config: true });
       assert.equal(rows[0].owner, 'me@me.com');
       assert.equal(rows[0].email_on_error, false);
-      assert.deepEqual(rows[0].provider_data, {providerdata: true});
+      assert.deepEqual(rows[0].provider_data, { providerdata: true });
 
       rows = await get_worker_pools(db, 2, 4);
       assert.deepEqual(rows.map(r => r.worker_pool_id), [4, 5].map(i => `wp/${i}`));
@@ -184,7 +184,7 @@ suite(testing.suiteName(), function() {
 
     helper.dbTest('update_worker_pool, change to providerId', async function(db) {
       await create_worker_pool(db);
-      const upd = await update_worker_pool(db, {provider_id: 'provider2'});
+      const upd = await update_worker_pool(db, { provider_id: 'provider2' });
       assert.deepEqual(upd[0].previous_provider_id, 'provider');
 
       const rows = await get_worker_pool(db, 'wp/id');
@@ -192,8 +192,8 @@ suite(testing.suiteName(), function() {
     });
 
     helper.dbTest('update_worker_pool, change to providerId, new provider already in previous', async function(db) {
-      await create_worker_pool(db, {previous_provider_ids: JSON.stringify(['provider2'])});
-      const upd = await update_worker_pool(db, {provider_id: 'provider2'});
+      await create_worker_pool(db, { previous_provider_ids: JSON.stringify(['provider2']) });
+      const upd = await update_worker_pool(db, { provider_id: 'provider2' });
       assert.deepEqual(upd[0].previous_provider_id, 'provider');
 
       const rows = await get_worker_pool(db, 'wp/id');
@@ -201,8 +201,8 @@ suite(testing.suiteName(), function() {
     });
 
     helper.dbTest('update_worker_pool, change to providerId, old provider already in previous', async function(db) {
-      await create_worker_pool(db, {previous_provider_ids: JSON.stringify(['provider'])});
-      const upd = await update_worker_pool(db, {provider_id: 'provider2'});
+      await create_worker_pool(db, { previous_provider_ids: JSON.stringify(['provider']) });
+      const upd = await update_worker_pool(db, { provider_id: 'provider2' });
       assert.deepEqual(upd[0].previous_provider_id, 'provider');
 
       const rows = await get_worker_pool(db, 'wp/id');
@@ -240,7 +240,7 @@ suite(testing.suiteName(), function() {
     });
 
     helper.dbTest('remove_worker_pool_previous_provider_id', async function(db) {
-      await create_worker_pool(db, {previous_provider_ids: JSON.stringify(['old1', 'old2'])});
+      await create_worker_pool(db, { previous_provider_ids: JSON.stringify(['old1', 'old2']) });
 
       await db.fns.remove_worker_pool_previous_provider_id('wp/id', 'old1');
 
@@ -256,7 +256,7 @@ suite(testing.suiteName(), function() {
     });
 
     helper.dbTest('remove_worker_pool_previous_provider_id, no such provider', async function(db) {
-      await create_worker_pool(db, {previous_provider_ids: JSON.stringify(['old1', 'old2'])});
+      await create_worker_pool(db, { previous_provider_ids: JSON.stringify(['old1', 'old2']) });
 
       await db.fns.remove_worker_pool_previous_provider_id('wp/id', 'unknown');
 
@@ -265,14 +265,14 @@ suite(testing.suiteName(), function() {
     });
 
     helper.dbTest('update_worker_pool_provider_data', async function(db) {
-      await create_worker_pool(db, {provider_data: {someprov: {somedata: true}}});
+      await create_worker_pool(db, { provider_data: { someprov: { somedata: true } } });
 
-      await db.fns.update_worker_pool_provider_data('wp/id', 'another', {moredata: true});
+      await db.fns.update_worker_pool_provider_data('wp/id', 'another', { moredata: true });
 
       const rows = await get_worker_pool(db, 'wp/id');
       assert.deepEqual(rows[0].provider_data, {
-        someprov: {somedata: true},
-        another: {moredata: true},
+        someprov: { somedata: true },
+        another: { moredata: true },
       });
     });
   });
@@ -280,7 +280,7 @@ suite(testing.suiteName(), function() {
   suite(`${testing.suiteName()} - worker_pool_errors`, function() {
     helper.dbTest('create_worker_pool_error/get_worker_pool_error', async function(db, isFake) {
       const now = new Date();
-      await create_worker_pool_error(db, {reported: now});
+      await create_worker_pool_error(db, { reported: now });
       const rows = await db.fns.get_worker_pool_error('e/id', 'wp/id');
       assert.equal(rows[0].error_id, 'e/id');
       assert.equal(rows[0].worker_pool_id, 'wp/id');
@@ -288,7 +288,7 @@ suite(testing.suiteName(), function() {
       assert.equal(rows[0].kind, 'kind');
       assert.equal(rows[0].title, 'title');
       assert.equal(rows[0].description, 'descr');
-      assert.deepEqual(rows[0].extra, {extra: true});
+      assert.deepEqual(rows[0].extra, { extra: true });
     });
 
     helper.dbTest('get_worker_pool_error not found', async function(db, isFake) {
@@ -303,7 +303,7 @@ suite(testing.suiteName(), function() {
 
     helper.dbTest('get_worker_pool_errors_for_worker_pool empty query', async function(db, isFake) {
       const now = new Date();
-      await create_worker_pool_error(db, {reported: now});
+      await create_worker_pool_error(db, { reported: now });
       const rows = await db.fns.get_worker_pool_errors_for_worker_pool(null, null, null, null);
       assert.equal(rows[0].error_id, 'e/id');
       assert.equal(rows[0].worker_pool_id, 'wp/id');
@@ -311,7 +311,7 @@ suite(testing.suiteName(), function() {
       assert.equal(rows[0].kind, 'kind');
       assert.equal(rows[0].title, 'title');
       assert.equal(rows[0].description, 'descr');
-      assert.deepEqual(rows[0].extra, {extra: true});
+      assert.deepEqual(rows[0].extra, { extra: true });
     });
 
     helper.dbTest('get_worker_pool_errors_for_worker_pool full, pagination', async function(db, isFake) {
@@ -333,7 +333,7 @@ suite(testing.suiteName(), function() {
       assert.equal(rows[0].kind, 'kind');
       assert.equal(rows[0].title, 'title');
       assert.equal(rows[0].description, 'descr');
-      assert.deepEqual(rows[0].extra, {extra: true});
+      assert.deepEqual(rows[0].extra, { extra: true });
 
       rows = await db.fns.get_worker_pool_errors_for_worker_pool(null, null, 2, 4);
       assert.deepEqual(
@@ -365,7 +365,7 @@ suite(testing.suiteName(), function() {
   suite(`${testing.suiteName()} - workers`, function() {
     helper.dbTest('create_worker/get_worker', async function(db) {
       const now = new Date();
-      await create_worker(db, {created: now, last_modified: now, last_checked: now, expires: now});
+      await create_worker(db, { created: now, last_modified: now, last_checked: now, expires: now });
 
       const rows = await db.deprecatedFns.get_worker('wp/id', 'w/group', 'w/id');
       assert.equal(rows[0].worker_pool_id, 'wp/id');
@@ -375,7 +375,7 @@ suite(testing.suiteName(), function() {
       assert.deepEqual(rows[0].created, now);
       assert.deepEqual(rows[0].expires, now);
       assert.equal(rows[0].state, 'state');
-      assert.deepEqual(rows[0].provider_data, {providerdata: true});
+      assert.deepEqual(rows[0].provider_data, { providerdata: true });
       assert.equal(rows[0].capacity, 1);
       assert.deepEqual(rows[0].last_modified, now);
       assert.deepEqual(rows[0].last_checked, now);
@@ -398,7 +398,7 @@ suite(testing.suiteName(), function() {
       assert.deepEqual(rows[0].created, now);
       assert.deepEqual(rows[0].expires, now);
       assert.equal(rows[0].state, 'state');
-      assert.deepEqual(rows[0].provider_data, {providerdata: true});
+      assert.deepEqual(rows[0].provider_data, { providerdata: true });
       assert.equal(rows[0].capacity, 1);
       assert.deepEqual(rows[0].last_modified, now);
       assert.deepEqual(rows[0].last_checked, now);
@@ -442,7 +442,7 @@ suite(testing.suiteName(), function() {
       assert.deepEqual(rows[0].created, now);
       assert.deepEqual(rows[0].expires, now);
       assert.equal(rows[0].state, 'state');
-      assert.deepEqual(rows[0].provider_data, {providerdata: true});
+      assert.deepEqual(rows[0].provider_data, { providerdata: true });
       assert.equal(rows[0].capacity, 1);
       assert.deepEqual(rows[0].last_modified, now);
       assert.deepEqual(rows[0].last_checked, now);
@@ -802,49 +802,49 @@ suite(testing.suiteName(), function() {
     });
     helper.dbTest('single worker, capacity 1', async function(db) {
       await create_worker_pool(db);
-      await create_worker(db, {capacity: 1, state: 'running'});
+      await create_worker(db, { capacity: 1, state: 'running' });
       assert.equal((await db.fns.get_worker_pool_with_capacity('wp/id'))[0].current_capacity, 1);
     });
     helper.dbTest('single worker, capacity > 1', async function(db) {
       await create_worker_pool(db);
-      await create_worker(db, {capacity: 64, state: 'running'});
+      await create_worker(db, { capacity: 64, state: 'running' });
       assert.equal((await db.fns.get_worker_pool_with_capacity('wp/id'))[0].current_capacity, 64);
     });
     helper.dbTest('multiple workers, capacity 1', async function(db) {
       await create_worker_pool(db);
-      await create_worker(db, {worker_id: 'foo1', capacity: 1, state: 'running'});
-      await create_worker(db, {worker_id: 'foo2', capacity: 1, state: 'running'});
-      await create_worker(db, {worker_id: 'foo3', capacity: 1, state: 'running'});
-      await create_worker(db, {worker_id: 'foo4', capacity: 1, state: 'running'});
+      await create_worker(db, { worker_id: 'foo1', capacity: 1, state: 'running' });
+      await create_worker(db, { worker_id: 'foo2', capacity: 1, state: 'running' });
+      await create_worker(db, { worker_id: 'foo3', capacity: 1, state: 'running' });
+      await create_worker(db, { worker_id: 'foo4', capacity: 1, state: 'running' });
       assert.equal((await db.fns.get_worker_pool_with_capacity('wp/id'))[0].current_capacity, 4);
     });
     helper.dbTest('multiple workers, capacity > 1', async function(db) {
       await create_worker_pool(db);
-      await create_worker(db, {worker_id: 'foo1', capacity: 32, state: 'running'});
-      await create_worker(db, {worker_id: 'foo2', capacity: 64, state: 'running'});
-      await create_worker(db, {worker_id: 'foo3', capacity: 64, state: 'running'});
-      await create_worker(db, {worker_id: 'foo4', capacity: 1, state: 'running'});
+      await create_worker(db, { worker_id: 'foo1', capacity: 32, state: 'running' });
+      await create_worker(db, { worker_id: 'foo2', capacity: 64, state: 'running' });
+      await create_worker(db, { worker_id: 'foo3', capacity: 64, state: 'running' });
+      await create_worker(db, { worker_id: 'foo4', capacity: 1, state: 'running' });
       assert.equal((await db.fns.get_worker_pool_with_capacity('wp/id'))[0].current_capacity, 161);
     });
     helper.dbTest('multiple workers, multiple states', async function(db) {
       await create_worker_pool(db);
-      await create_worker(db, {worker_id: 'foo1', capacity: 32, state: 'running'});
-      await create_worker(db, {worker_id: 'foo2', capacity: 64, state: 'stopped'});
-      await create_worker(db, {worker_id: 'foo3', capacity: 64, state: 'running'});
-      await create_worker(db, {worker_id: 'foo4', capacity: 1, state: 'requested'});
+      await create_worker(db, { worker_id: 'foo1', capacity: 32, state: 'running' });
+      await create_worker(db, { worker_id: 'foo2', capacity: 64, state: 'stopped' });
+      await create_worker(db, { worker_id: 'foo3', capacity: 64, state: 'running' });
+      await create_worker(db, { worker_id: 'foo4', capacity: 1, state: 'requested' });
       assert.equal((await db.fns.get_worker_pool_with_capacity('wp/id'))[0].current_capacity, 97);
     });
     helper.dbTest('no workers (multiple pools)', async function(db) {
       await create_worker_pool(db);
-      await create_worker_pool(db, {worker_pool_id: 'ff/tt'});
+      await create_worker_pool(db, { worker_pool_id: 'ff/tt' });
       const pools = (await db.fns.get_worker_pools_with_capacity(null, null)).sort();
       assert.equal(pools[0].current_capacity, 0);
       assert.equal(pools[1].current_capacity, 0);
     });
     helper.dbTest('single worker (multiple pools)', async function(db) {
       await create_worker_pool(db);
-      await create_worker_pool(db, {worker_pool_id: 'ff/tt'});
-      await create_worker(db, {capacity: 4, state: 'running'});
+      await create_worker_pool(db, { worker_pool_id: 'ff/tt' });
+      await create_worker(db, { capacity: 4, state: 'running' });
       const pools = (await db.fns.get_worker_pools_with_capacity(null, null)).sort();
       assert.equal(pools[0].worker_pool_id, 'ff/tt');
       assert.equal(pools[1].worker_pool_id, 'wp/id');
@@ -853,12 +853,12 @@ suite(testing.suiteName(), function() {
     });
     helper.dbTest('multiple workers (multiple pools)', async function(db) {
       await create_worker_pool(db);
-      await create_worker_pool(db, {worker_pool_id: 'ff/tt'});
-      await create_worker(db, {worker_id: 'foo1', capacity: 4, state: 'running'});
-      await create_worker(db, {worker_id: 'foo2', capacity: 1, state: 'running'});
-      await create_worker(db, {worker_id: 'foo3', capacity: 10, state: 'running', worker_pool_id: 'ff/tt'});
-      await create_worker(db, {worker_id: 'foo4', capacity: 3, state: 'stopped'});
-      await create_worker(db, {worker_id: 'foo5', capacity: 7, state: 'stopped', worker_pool_id: 'ff/tt'});
+      await create_worker_pool(db, { worker_pool_id: 'ff/tt' });
+      await create_worker(db, { worker_id: 'foo1', capacity: 4, state: 'running' });
+      await create_worker(db, { worker_id: 'foo2', capacity: 1, state: 'running' });
+      await create_worker(db, { worker_id: 'foo3', capacity: 10, state: 'running', worker_pool_id: 'ff/tt' });
+      await create_worker(db, { worker_id: 'foo4', capacity: 3, state: 'stopped' });
+      await create_worker(db, { worker_id: 'foo5', capacity: 7, state: 'stopped', worker_pool_id: 'ff/tt' });
       const pools = (await db.fns.get_worker_pools_with_capacity(null, null)).sort();
       assert.equal(pools[0].worker_pool_id, 'ff/tt');
       assert.equal(pools[1].worker_pool_id, 'wp/id');

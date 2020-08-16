@@ -50,7 +50,7 @@ GarbageCollector.prototype = {
   },
 
   markStaleContainers: async function () {
-    let containers = await this.docker.listContainers({all: true});
+    let containers = await this.docker.listContainers({ all: true });
     for(let container of containers) {
       if (!(container.Id in this.markedContainers) &&
           (this.ignoredContainers.indexOf(container.Id) === -1)) {
@@ -125,17 +125,17 @@ GarbageCollector.prototype = {
             this.markedContainers[containerId].retries -= 1;
           }
 
-          this.emit('gc:container:error', {message: message, container: containerId});
+          this.emit('gc:container:error', { message: message, container: containerId });
           this.log('container removal error.',
-            {container: containerId, err: message});
+            { container: containerId, err: message });
         }
       } else {
         delete this.markedContainers[containerId];
         this.ignoredContainers.push(containerId);
         this.emit('gc:container:error',
-          {message: 'Retry limit exceeded', container: containerId});
+          { message: 'Retry limit exceeded', container: containerId });
         this.log('container removal error',
-          {container: containerId, err: 'Retry limit exceeded'});
+          { container: containerId, err: 'Retry limit exceeded' });
       }
     }
   },
@@ -143,13 +143,13 @@ GarbageCollector.prototype = {
   removeUnusedImages: async function (exceedsThreshold) {
     // All containers that are currently managed by the daemon will not allow
     // an image to be removed.  Consider them all running
-    let containers = await this.docker.listContainers({all: true});
+    let containers = await this.docker.listContainers({ all: true });
     let runningImages = containers.map((container) => { return container.Image.replace(/:latest$/, ''); });
 
     for (let image of Object.keys(this.markedImages || {})) {
       if (!exceedsThreshold && this.markedImages[image] > new Date()) {
-        this.emit('gc:image:info', {info: 'Image expiration has not been reached.',
-          image: image});
+        this.emit('gc:image:info', { info: 'Image expiration has not been reached.',
+          image: image });
         continue;
       }
 
@@ -159,8 +159,8 @@ GarbageCollector.prototype = {
         try {
           await dockerImage.remove();
           delete this.markedImages[image];
-          this.emit('gc:image:removed', {image: image});
-          this.log('image removed', {image: image});
+          this.emit('gc:image:removed', { image: image });
+          this.log('image removed', { image: image });
 
         } catch (e) {
           let message = e;
@@ -169,15 +169,15 @@ GarbageCollector.prototype = {
             delete this.markedImages[image];
           }
 
-          this.emit('gc:image:error', {message: message, image: image});
+          this.emit('gc:image:error', { message: message, image: image });
           this.log('image removal error.',
-            {message: message, image: image});
+            { message: message, image: image });
         }
       } else {
         let warning = 'Cannot remove image while it is running.';
-        this.emit('gc:image:warning', {message: warning, image: image});
+        this.emit('gc:image:warning', { message: warning, image: image });
         this.log('garbage collection warning',
-          {message: warning, image: image});
+          { message: warning, image: image });
       }
     }
   },
@@ -200,12 +200,12 @@ GarbageCollector.prototype = {
       this.monitor);
     if (exceedsThreshold) {
       this.emit('gc:diskspace:warning',
-        {message: 'Diskspace threshold reached. ' +
+        { message: 'Diskspace threshold reached. ' +
                           'Removing all non-running images.',
         });
     } else {
       this.emit('gc:diskspace:info',
-        {message: 'Diskspace threshold not reached. ' +
+        { message: 'Diskspace threshold not reached. ' +
                           'Removing only expired images.',
         });
     }

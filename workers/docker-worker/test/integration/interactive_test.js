@@ -2,7 +2,7 @@ const assert = require('assert');
 const cmd = require('./helper/cmd');
 const crypto = require('crypto');
 const Debug = require('debug');
-const {DockerExecClient} = require('docker-exec-websocket-server');
+const { DockerExecClient } = require('docker-exec-websocket-server');
 const DockerWorker = require('../dockerworker');
 const https = require('https');
 const TestWorker = require('../testworker');
@@ -12,7 +12,7 @@ const URL = require('url');
 const poll = require('./helper/poll');
 const sleep = require('./helper/sleep');
 const util = require('util');
-const {suiteName} = require('taskcluster-lib-testing');
+const { suiteName } = require('taskcluster-lib-testing');
 const helper = require('../helper');
 
 const pseudoRandomBytes = util.promisify(crypto.pseudoRandomBytes);
@@ -65,7 +65,7 @@ helper.secrets.mockSuite(suiteName(), ['docker', 'ci-creds'], function(mock, ski
       queue.getLatestArtifact,
       taskId,
       'private/docker-worker-tests/shell.html',
-      {expiration: 60 * 5});
+      { expiration: 60 * 5 });
 
     return poll(() => getWithoutRedirect(signedUrl), 45, 1000);
   }
@@ -95,7 +95,7 @@ helper.secrets.mockSuite(suiteName(), ['docker', 'ci-creds'], function(mock, ski
       tty: false,
       command: ['cat'],
       url: url,
-      wsopts: {rejectUnauthorized: false},
+      wsopts: { rejectUnauthorized: false },
     });
     await client.execute();
 
@@ -143,7 +143,7 @@ helper.secrets.mockSuite(suiteName(), ['docker', 'ci-creds'], function(mock, ski
       tty: false,
       command: ['pwd'],
       url: url,
-      wsopts: {rejectUnauthorized: false},
+      wsopts: { rejectUnauthorized: false },
     });
     let connected = false;
 
@@ -161,7 +161,7 @@ helper.secrets.mockSuite(suiteName(), ['docker', 'ci-creds'], function(mock, ski
       tty: false,
       command: ['echo'],
       url: url,
-      wsopts: {rejectUnauthorized: false},
+      wsopts: { rejectUnauthorized: false },
     });
     await failClient.execute().then(() => {
       assert(false, 'Expected an error');
@@ -195,7 +195,7 @@ helper.secrets.mockSuite(suiteName(), ['docker', 'ci-creds'], function(mock, ski
       tty: false,
       command: ['cat'],
       url: url,
-      wsopts: {rejectUnauthorized: false},
+      wsopts: { rejectUnauthorized: false },
     });
     let connected = false;
 
@@ -245,7 +245,7 @@ helper.secrets.mockSuite(suiteName(), ['docker', 'ci-creds'], function(mock, ski
       tty: false,
       command: ['cat'],
       url: url,
-      wsopts: {rejectUnauthorized: false},
+      wsopts: { rejectUnauthorized: false },
     });
     await client.execute();
 

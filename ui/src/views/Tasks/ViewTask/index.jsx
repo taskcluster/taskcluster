@@ -38,6 +38,7 @@ import Breadcrumbs from '../../../components/Breadcrumbs';
 import {
   ACTIONS_JSON_KNOWN_KINDS,
   ARTIFACTS_PAGE_SIZE,
+  DEPENDENTS_PAGE_SIZE,
   VALID_TASK,
   TASK_ADDED_FIELDS,
   TASK_POLL_INTERVAL,
@@ -106,6 +107,9 @@ const getCachesFromTask = task =>
       taskId: props.match.params.taskId,
       artifactsConnection: {
         limit: ARTIFACTS_PAGE_SIZE,
+      },
+      dependentsConnection: {
+        limit: DEPENDENTS_PAGE_SIZE,
       },
       taskActionsFilter: {
         kind: {
@@ -257,7 +261,7 @@ export default class ViewTask extends Component {
       variables: {
         runId,
         taskId: task.taskId,
-        connection: {
+        artifactsConnection: {
           limit: ARTIFACTS_PAGE_SIZE,
           cursor,
           previousCursor,
@@ -279,6 +283,33 @@ export default class ViewTask extends Component {
               'pageInfo',
               pageInfo
             )
+        );
+      },
+    });
+  };
+
+  handleDependentsPageChange = ({ cursor, previousCursor }) => {
+    const {
+      data: { fetchMore },
+    } = this.props;
+
+    return fetchMore({
+      variables: {
+        dependentsConnection: {
+          limit: DEPENDENTS_PAGE_SIZE,
+          cursor,
+          previousCursor,
+        },
+      },
+      updateQuery(previousResult, { fetchMoreResult }) {
+        const { edges, pageInfo } = fetchMoreResult.dependents;
+
+        return dotProp.set(previousResult, 'dependents', dependents =>
+          dotProp.set(
+            dotProp.set(dependents, 'edges', edges),
+            'pageInfo',
+            pageInfo
+          )
         );
       },
     });
@@ -784,7 +815,7 @@ export default class ViewTask extends Component {
     const {
       classes,
       description,
-      data: { loading, error, task, dependentTasks },
+      data: { loading, error, task, dependentTasks, dependents },
       match,
     } = this.props;
     const {
@@ -867,7 +898,12 @@ export default class ViewTask extends Component {
             <br />
             <Grid container spacing={3}>
               <Grid item xs={12} md={6}>
-                <TaskDetailsCard task={task} dependentTasks={dependentTasks} />
+                <TaskDetailsCard
+                  task={task}
+                  dependentTasks={dependentTasks}
+                  dependents={dependents}
+                  onDependentsPageChange={this.handleDependentsPageChange}
+                />
               </Grid>
 
               <Grid item xs={12} md={6}>

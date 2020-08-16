@@ -1,6 +1,6 @@
 const fs = require('fs');
 const os = require('os');
-const {StreamTransport, Protocol} = require('../worker-runner-protocol');
+const { StreamTransport, Protocol } = require('../worker-runner-protocol');
 
 // This module is imported as an "object", so the only place we have to store
 // persistent state is as module-level globals.
@@ -53,7 +53,7 @@ module.exports = {
     if (!await protocol.capable('shutdown')) {
       throw new Error('Shutdown called but worker-runner doesn\'t support this capability');
     }
-    protocol.send({type: 'shutdown'});
+    protocol.send({ type: 'shutdown' });
   },
 
   async onNewCredentials(cb) {

@@ -1,4 +1,4 @@
-const {Schema} = require('..');
+const { Schema } = require('..');
 const path = require('path');
 const assert = require('assert').strict;
 
@@ -124,25 +124,25 @@ suite(path.basename(__filename), function() {
 
     test('method changes mode', function() {
       assert.throws(
-        () => Schema._checkMethodUpdates(versions({mode: 'write'})),
+        () => Schema._checkMethodUpdates(versions({ mode: 'write' })),
         /method whatever changed mode in version 2/);
     });
 
     test('method changes serviceName', function() {
       assert.throws(
-        () => Schema._checkMethodUpdates(versions({serviceName: 'queue'})),
+        () => Schema._checkMethodUpdates(versions({ serviceName: 'queue' })),
         /method whatever changed serviceName in version 2/);
     });
 
     test('method changes args', function() {
       assert.throws(
-        () => Schema._checkMethodUpdates(versions({args: 'x text'})),
+        () => Schema._checkMethodUpdates(versions({ args: 'x text' })),
         /method whatever changed args in version 2/);
     });
 
     test('method changes returns', function() {
       assert.throws(
-        () => Schema._checkMethodUpdates(versions({returns: 'text'})),
+        () => Schema._checkMethodUpdates(versions({ returns: 'text' })),
         /method whatever changed returns in version 2/);
     });
   });

@@ -1,4 +1,4 @@
-const {Exchanges} = require('taskcluster-lib-pulse');
+const { Exchanges } = require('taskcluster-lib-pulse');
 
 /** Declaration of exchanges offered by the auth */
 const exchanges = new Exchanges({

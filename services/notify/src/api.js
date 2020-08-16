@@ -1,4 +1,4 @@
-const {APIBuilder, paginateResults} = require('taskcluster-lib-api');
+const { APIBuilder, paginateResults } = require('taskcluster-lib-api');
 
 const builder = new APIBuilder({
   title: 'Notification Service',
@@ -57,7 +57,7 @@ builder.declare({
     'Publish a message on pulse with the given `routingKey`.',
   ].join('\n'),
 }, async function(req, res) {
-  await req.authorize({routingKey: req.body.routingKey});
+  await req.authorize({ routingKey: req.body.routingKey });
 
   if (await this.denier.isDenied('pulse', req.body.routingKey)) {
     return res.reportError('DenylistedAddress', `Pulse routing key pattern ${req.body.routingKey} is denylisted`, {});
@@ -222,7 +222,7 @@ builder.declare({
 }, async function(req, res) {
 
   await req.authorize(req.body);
-  const {continuationToken, rows} = await paginateResults({
+  const { continuationToken, rows } = await paginateResults({
     query: req.query,
     fetch: (size, offset) => this.db.fns.all_denylist_addresses(size, offset),
   });

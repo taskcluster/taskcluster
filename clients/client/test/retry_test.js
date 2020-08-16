@@ -1,10 +1,10 @@
 const taskcluster = require('../');
 const assert = require('assert');
 const SchemaSet = require('taskcluster-lib-validate');
-const {APIBuilder} = require('taskcluster-lib-api');
+const { APIBuilder } = require('taskcluster-lib-api');
 const testing = require('taskcluster-lib-testing');
-const {App} = require('taskcluster-lib-app');
-const {monitorManager, monitor} = require('./monitor');
+const { App } = require('taskcluster-lib-app');
+const { monitorManager, monitor } = require('./monitor');
 
 const rootUrl = `http://localhost:60526`;
 
@@ -106,7 +106,7 @@ suite(testing.suiteName(), function() {
     assert(_apiServer === null, '_apiServer must be null');
     testing.fakeauth.start({
       'test-client': ['auth:credentials', 'test:internal-error'],
-    }, {rootUrl});
+    }, { rootUrl });
 
     // Create server for api
     const schemaset = new SchemaSet({

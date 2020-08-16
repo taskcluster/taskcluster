@@ -11,7 +11,7 @@ const assert = require('assert');
 const splitWorkerPoolId = workerPoolId => {
   const split = workerPoolId.split('/');
   assert.equal(split.length, 2, `invalid workerPoolId ${workerPoolId}`);
-  return {provisionerId: split[0], workerType: split[1]};
+  return { provisionerId: split[0], workerType: split[1] };
 };
 exports.splitWorkerPoolId = splitWorkerPoolId;
 

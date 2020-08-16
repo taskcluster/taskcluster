@@ -2,7 +2,7 @@ const jsone = require('json-e');
 const slugid = require('slugid');
 const _ = require('lodash');
 
-module.exports = async ({userConfig, answer, configTmpl}) => {
+module.exports = async ({ userConfig, answer, configTmpl }) => {
 
   function setDefault(path, val) {
     if (!_.has(userConfig, path, val)) {
@@ -24,7 +24,7 @@ module.exports = async ({userConfig, answer, configTmpl}) => {
 
   const azureAccountId = answer.azureAccountId || userConfig.azureAccountId;
 
-  const staticClients = await jsone(configTmpl.auth.static_clients, {azureAccountId});
+  const staticClients = await jsone(configTmpl.auth.static_clients, { azureAccountId });
 
   // It is important we go through in order of configTmpl here to
   // preserve order with the settings in values.yaml. If things

@@ -1,9 +1,9 @@
 const slugid = require('slugid');
 const crypto = require('crypto');
-const {Client} = require('pg');
-const {makePgUrl} = require('./util');
+const { Client } = require('pg');
+const { makePgUrl } = require('./util');
 
-const postgresPrompts = ({userConfig, prompts, configTmpl}) => {
+const postgresPrompts = ({ userConfig, prompts, configTmpl }) => {
   prompts.push({
     when: () => !userConfig.meta.dbPublicIp,
     type: 'input',
@@ -55,7 +55,7 @@ const postgresPrompts = ({userConfig, prompts, configTmpl}) => {
   });
 };
 
-const postgresResources = async ({userConfig, answer, configTmpl}) => {
+const postgresResources = async ({ userConfig, answer, configTmpl }) => {
   let servicesNeedingConfig = [];
   for (const [name, cfg] of Object.entries(configTmpl)) {
     if (!userConfig[name]) {
@@ -80,7 +80,7 @@ const postgresResources = async ({userConfig, answer, configTmpl}) => {
     return userConfig;
   }
 
-  const {dbAdminUsername, dbAdminPassword, dbName, dbPublicIp, dbPrivateIp} =
+  const { dbAdminUsername, dbAdminPassword, dbName, dbPublicIp, dbPrivateIp } =
     Object.assign({}, userConfig.meta || {}, answer.meta || {});
   const adminDbUrl = makePgUrl({
     hostname: dbPublicIp,
@@ -89,7 +89,7 @@ const postgresResources = async ({userConfig, answer, configTmpl}) => {
     dbname: dbName,
   });
 
-  const client = new Client({connectionString: adminDbUrl});
+  const client = new Client({ connectionString: adminDbUrl });
   await client.connect();
 
   try {

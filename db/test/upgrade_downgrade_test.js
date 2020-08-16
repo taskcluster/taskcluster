@@ -6,7 +6,7 @@ const helper = require('./helper');
 suite(testing.suiteName(), function() {
   helper.withDbForVersion();
 
-  const schema = tcdb.schema({useDbDirectory: true});
+  const schema = tcdb.schema({ useDbDirectory: true });
   const latestVersion = schema.latestVersion();
 
   // upgrade and downgrade *twice*, to detect any issues where the downgrade leaves

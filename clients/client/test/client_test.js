@@ -314,7 +314,7 @@ suite(testing.suiteName(), function() {
   };
 
   Object.keys(subjects).forEach(subject => {
-    const {name, urlPrefix, trueUrlPrefix, client, Fake, rootUrl, serviceDiscoveryScheme} = subjects[subject];
+    const { name, urlPrefix, trueUrlPrefix, client, Fake, rootUrl, serviceDiscoveryScheme } = subjects[subject];
     suite(name, () => {
       test('Simple GET', async () => {
         nock(urlPrefix).get('/v1/get-test')
@@ -327,10 +327,10 @@ suite(testing.suiteName(), function() {
         const traceId = '456';
         nock(urlPrefix).get('/v1/get-test')
           .reply(function() {
-            return [200, {traceId: this.req.headers['x-taskcluster-trace-id']}];
+            return [200, { traceId: this.req.headers['x-taskcluster-trace-id'] }];
           });
-        let c = new Fake({rootUrl, serviceDiscoveryScheme});
-        c = c.taskclusterPerRequestInstance({traceId, requestId});
+        let c = new Fake({ rootUrl, serviceDiscoveryScheme });
+        c = c.taskclusterPerRequestInstance({ traceId, requestId });
         assert.equal((await c.get()).traceId, '456');
       });
 
@@ -348,44 +348,44 @@ suite(testing.suiteName(), function() {
 
       test('GET with parameter', async () => {
         nock(urlPrefix).get('/v1/url-param/test/list')
-          .reply(200, {params: {param: 'test'}});
+          .reply(200, { params: { param: 'test' } });
         let result = await client.param('test');
         assert(result.params.param === 'test');
       });
 
       test('GET with number as parameter', async () => {
         nock(urlPrefix).get('/v1/url-param/1337/list')
-          .reply(200, {params: {param: '1337'}});
+          .reply(200, { params: { param: '1337' } });
         await client.param(1337);
       });
 
       test('GET with / in parameter', async () => {
         nock(urlPrefix).get('/v1/url-param/te%2Fst/list')
-          .reply(200, {params: {param: 'te/st'}});
+          .reply(200, { params: { param: 'te/st' } });
         await client.param('te/st');
       });
 
       test('GET with two parameters', async () => {
         nock(urlPrefix).get('/v1/url-param2/te%2Fst/tester/list')
-          .reply(200, {params: {param: 'te/st'}});
+          .reply(200, { params: { param: 'te/st' } });
         await client.param2('te/st', 'tester');
       });
 
       test('GET with query options', async () => {
         nock(urlPrefix).get('/v1/query/test?option=42')
           .reply(200, {});
-        await client.query({option: 42});
+        await client.query({ option: 42 });
       });
 
       test('GET with param and query options', async () => {
         nock(urlPrefix).get('/v1/param-query/test?option=42')
           .reply(200, {});
-        await client.paramQuery('test', {option: 42});
+        await client.paramQuery('test', { option: 42 });
       });
 
       test('GET with missing parameter, but query options', async () => {
         try {
-          await client.paramQuery({option: 42});
+          await client.paramQuery({ option: 42 });
         } catch (err) {
           return;
         }
@@ -407,60 +407,60 @@ suite(testing.suiteName(), function() {
       test('GET public resource', async () => {
         nock(urlPrefix).get('/v1/get-test')
           .reply(200, {});
-        let c = new Fake({rootUrl, serviceDiscoveryScheme});
+        let c = new Fake({ rootUrl, serviceDiscoveryScheme });
         await c.get();
       });
 
       test('GET public resource with query-string', async () => {
         nock(urlPrefix).get('/v1/query/test?option=31')
           .reply(200, {});
-        let c = new Fake({rootUrl, serviceDiscoveryScheme});
-        await c.query({option: 31});
+        let c = new Fake({ rootUrl, serviceDiscoveryScheme });
+        await c.query({ option: 31 });
       });
 
       test('GET public resource no query-string (supported method)', async () => {
         nock(urlPrefix).get('/v1/query/test')
           .reply(200, {});
-        let c = new Fake({rootUrl, serviceDiscoveryScheme});
+        let c = new Fake({ rootUrl, serviceDiscoveryScheme });
         await c.query();
       });
 
       test('POST with payload', async () => {
         nock(urlPrefix)
-          .post('/v1/post-test', {hello: 'world'})
-          .reply(200, {reply: 'hi'});
-        let result = await client.post({hello: 'world'});
-        assert.deepEqual(result, {reply: 'hi'});
+          .post('/v1/post-test', { hello: 'world' })
+          .reply(200, { reply: 'hi' });
+        let result = await client.post({ hello: 'world' });
+        assert.deepEqual(result, { reply: 'hi' });
       });
 
       test('POST with payload and param', async () => {
         nock(urlPrefix)
-          .post('/v1/post-param/test', {hello: 'world'})
+          .post('/v1/post-param/test', { hello: 'world' })
           .reply(200, {});
-        await client.postParam('test', {hello: 'world'});
+        await client.postParam('test', { hello: 'world' });
       });
 
       test('POST with payload, param and query', async () => {
         nock(urlPrefix)
-          .post('/v1/post-param-query/test?option=32', {hello: 'world'})
+          .post('/v1/post-param-query/test?option=32', { hello: 'world' })
           .reply(200, {});
-        await client.postParamQuery('test', {hello: 'world'}, {
+        await client.postParamQuery('test', { hello: 'world' }, {
           option: 32,
         });
       });
 
       test('POST with payload, param and no query (when supported)', async () => {
         nock(urlPrefix)
-          .post('/v1/post-param-query/test', {hello: 'world'})
+          .post('/v1/post-param-query/test', { hello: 'world' })
           .reply(200, {});
-        await client.postParamQuery('test', {hello: 'world'});
+        await client.postParamQuery('test', { hello: 'world' });
       });
 
       test('POST with payload, param and empty query', async () => {
         nock(urlPrefix)
-          .post('/v1/post-param-query/test', {hello: 'world'})
+          .post('/v1/post-param-query/test', { hello: 'world' })
           .reply(200, {});
-        await client.postParamQuery('test', {hello: 'world'}, {});
+        await client.postParamQuery('test', { hello: 'world' }, {});
       });
 
       let assertBewitUrl = function(url, expected) {
@@ -484,11 +484,11 @@ suite(testing.suiteName(), function() {
         },
         {
           buildUrl: (...arg) => {
-            const cc = client.taskclusterPerRequestInstance({traceId: 'foo'});
+            const cc = client.taskclusterPerRequestInstance({ traceId: 'foo' });
             return cc.buildUrl(...arg);
           },
           buildSignedUrl: (...arg) => {
-            const cc = client.taskclusterPerRequestInstance({traceId: 'foo'});
+            const cc = client.taskclusterPerRequestInstance({ traceId: 'foo' });
             return cc.buildSignedUrl(...arg);
           },
           urlPrefix,
@@ -496,11 +496,11 @@ suite(testing.suiteName(), function() {
         },
         {
           buildUrl: (...arg) => {
-            const cc = client.taskclusterPerRequestInstance({traceId: 'foo'});
+            const cc = client.taskclusterPerRequestInstance({ traceId: 'foo' });
             return cc.externalBuildUrl(...arg);
           },
           buildSignedUrl: (...arg) => {
-            const cc = client.taskclusterPerRequestInstance({traceId: 'foo'});
+            const cc = client.taskclusterPerRequestInstance({ traceId: 'foo' });
             return cc.externalBuildSignedUrl(...arg);
           },
           urlPrefix: trueUrlPrefix || urlPrefix,
@@ -558,12 +558,12 @@ suite(testing.suiteName(), function() {
           });
 
           test('BuildUrl with query-string', async () => {
-            let url = cl.buildUrl(client.query, {option: 2});
+            let url = cl.buildUrl(client.query, { option: 2 });
             assert.equal(url, `${cl.urlPrefix}/v1/query/test?option=2`);
           });
 
           test('BuildSignedUrl with query-string', async () => {
-            let url = cl.buildSignedUrl(client.query, {option: 2});
+            let url = cl.buildSignedUrl(client.query, { option: 2 });
             assertBewitUrl(url, `${cl.urlPrefix}/v1/query/test?option=2&bewit=XXX`);
           });
 
@@ -579,7 +579,7 @@ suite(testing.suiteName(), function() {
 
           test('BuildUrl with query-string (wrong key)', async () => {
             try {
-              cl.buildUrl(client.query, {wrongKey: 2});
+              cl.buildUrl(client.query, { wrongKey: 2 });
             } catch (err) {
               return;
             }
@@ -588,7 +588,7 @@ suite(testing.suiteName(), function() {
 
           test('BuildSignedUrl with query-string (wrong key)', async () => {
             try {
-              cl.buildSignedUrl(client.query, {wrongKey: 2});
+              cl.buildSignedUrl(client.query, { wrongKey: 2 });
             } catch (err) {
               return;
             }
@@ -596,23 +596,23 @@ suite(testing.suiteName(), function() {
           });
 
           test('BuildUrl with param and query-string', async () => {
-            let url = cl.buildUrl(client.paramQuery, 'test', {option: 2});
+            let url = cl.buildUrl(client.paramQuery, 'test', { option: 2 });
             assert.equal(url, `${cl.urlPrefix}/v1/param-query/test?option=2`);
           });
 
           test('BuildSignedUrl with param and query-string', async () => {
-            let url = cl.buildSignedUrl(client.paramQuery, 'test', {option: 2});
+            let url = cl.buildSignedUrl(client.paramQuery, 'test', { option: 2 });
             assertBewitUrl(url,
               `${cl.urlPrefix}/v1/param-query/test?option=2&bewit=XXX`);
           });
 
           test('BuildUrl with param and no query (when supported)', async () => {
-            let url = cl.buildUrl(client.paramQuery, 'test', {option: 34});
+            let url = cl.buildUrl(client.paramQuery, 'test', { option: 34 });
             assert.equal(url, `${cl.urlPrefix}/v1/param-query/test?option=34`);
           });
 
           test('BuildSignedUrl with param and no query (when supported)', async () => {
-            let url = cl.buildSignedUrl(client.paramQuery, 'test', {option: 34});
+            let url = cl.buildSignedUrl(client.paramQuery, 'test', { option: 34 });
             assertBewitUrl(url,
               `${cl.urlPrefix}/v1/param-query/test?option=34&bewit=XXX`);
           });
@@ -629,7 +629,7 @@ suite(testing.suiteName(), function() {
 
           test('BuildUrl with missing parameter, but query options', async () => {
             try {
-              cl.buildUrl(client.paramQuery, {option: 2});
+              cl.buildUrl(client.paramQuery, { option: 2 });
             } catch (err) {
               return;
             }
@@ -638,7 +638,7 @@ suite(testing.suiteName(), function() {
 
           test('BuildUrl with missing parameter, but query options', async () => {
             try {
-              cl.buildUrl(client.paramQuery, {option: 2});
+              cl.buildUrl(client.paramQuery, { option: 2 });
             } catch (err) {
               return;
             }
@@ -681,17 +681,17 @@ suite(testing.suiteName(), function() {
       fake: {
         postParam: async function() {
           gotArgs = Array.prototype.slice.call(arguments);
-          return {result: 42};
+          return { result: 42 };
         },
       },
     });
 
-    const gotResult = await client.postParam('test', {hello: 'world'});
-    assert.deepEqual(gotArgs, ['test', {hello: 'world'}]);
-    assert.deepEqual(gotResult, {result: 42});
+    const gotResult = await client.postParam('test', { hello: 'world' });
+    assert.deepEqual(gotArgs, ['test', { hello: 'world' }]);
+    assert.deepEqual(gotResult, { result: 42 });
     assert.deepEqual(client.fakeCalls.postParam, [{
       param: 'test',
-      payload: {hello: 'world'},
+      payload: { hello: 'world' },
     }]);
   });
 

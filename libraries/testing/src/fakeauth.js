@@ -6,10 +6,10 @@ let hawk = require('@hapi/hawk');
 let libUrls = require('taskcluster-lib-urls');
 let taskcluster = require('taskcluster-client');
 
-exports.start = function(clients, {rootUrl} = {}) {
+exports.start = function(clients, { rootUrl } = {}) {
   assert(rootUrl, 'rootUrl option is required');
   const authPath = url.parse(libUrls.api(rootUrl, 'auth', 'v1', '/authenticate-hawk')).pathname;
-  return nock(rootUrl, {encodedQueryParams: true, allowUnmocked: true})
+  return nock(rootUrl, { encodedQueryParams: true, allowUnmocked: true })
     .persist()
     .filteringRequestBody(/.*/, '*')
     .post(authPath, '*')
@@ -33,7 +33,7 @@ exports.start = function(clients, {rootUrl} = {}) {
           clientId = bewitParts[0];
           if (!(clientId in clients)) {
             debug(`rejecting access to ${body.resource} by ${clientId}`);
-            return {status: 'auth-failed', message: `client ${clientId} not configured in fakeauth`};
+            return { status: 'auth-failed', message: `client ${clientId} not configured in fakeauth` };
           }
           scopes = clients[clientId];
           ext = bewitParts[3] || '';
@@ -51,7 +51,7 @@ exports.start = function(clients, {rootUrl} = {}) {
 
       if (!(clientId in clients)) {
         debug(`rejecting access to ${body.resource} by ${clientId}`);
-        return {status: 'auth-failed', message: `client ${clientId} not configured in fakeauth`};
+        return { status: 'auth-failed', message: `client ${clientId} not configured in fakeauth` };
       }
 
       if (ext.authorizedScopes) {
@@ -66,7 +66,7 @@ exports.start = function(clients, {rootUrl} = {}) {
           ' with scopes ' + scopes.join(', ') +
           ' from ' + from);
       let expires = taskcluster.fromNow('2 minutes');
-      return {status: 'auth-success', scheme: 'hawk', scopes, clientId, expires};
+      return { status: 'auth-success', scheme: 'hawk', scopes, clientId, expires };
     });
 };
 

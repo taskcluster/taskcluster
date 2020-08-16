@@ -56,7 +56,7 @@ class TaskListener extends EventEmitter {
       return;
     }
 
-    this.runtime.log('cancelling task', {taskId: message.payload.status.taskId});
+    this.runtime.log('cancelling task', { taskId: message.payload.status.taskId });
     state.handler.cancel(reason);
     this.cleanupRunningState(state);
   }
@@ -221,7 +221,7 @@ class TaskListener extends EventEmitter {
       timestamp: Date.now() - (os.uptime() * 1000),
     });
 
-    this.runtime.logEvent({eventType: 'workerReady'});
+    this.runtime.logEvent({ eventType: 'workerReady' });
 
     // Scheduled the next poll very soon use the error handling it provides.
     this.scheduleTaskPoll(1);
@@ -260,7 +260,7 @@ class TaskListener extends EventEmitter {
 
     // send several historical log messages
     this.runtime.log('shutdown');
-    this.runtime.logEvent({eventType: 'instanceShutdown'});
+    this.runtime.logEvent({ eventType: 'instanceShutdown' });
     this.runtime.log('exit');
 
     // defer to the host impelementation to actually shut down
@@ -395,7 +395,7 @@ class TaskListener extends EventEmitter {
     let efficiency = (totalRunTime / (this.runtime.capacity * (uptime * 1000))) * 100;
     this.runtime.log(
       'reporting efficiency',
-      {efficiency, uptime, totalRunTime, capacity: this.capcity});
+      { efficiency, uptime, totalRunTime, capacity: this.capcity });
     this.runtime.workerTypeMonitor.measure('total-efficiency', efficiency);
   }
 
@@ -411,13 +411,13 @@ class TaskListener extends EventEmitter {
     try {
       // if the task is not set up to supersede anything, then the taskset is just the one claim
       if (!task.payload.supersederUrl) {
-        this.runtime.log('not superseding', {taskId, message: 'no supersederUrl in payload'});
+        this.runtime.log('not superseding', { taskId, message: 'no supersederUrl in payload' });
         return [claim];
       }
 
       let supersederUrl = task.payload.supersederUrl;
       if (!/^https?:\/\/[\x20-\x7e]*$/.test(supersederUrl)) {
-        this.runtime.log('not superseding', {taskId, message: 'invalid supersederUrl in payload'});
+        this.runtime.log('not superseding', { taskId, message: 'invalid supersederUrl in payload' });
         // validatPayload will fail for this task, giving hte user a helpful error message.
         // The important thing is that we don't fetch this supersederUrl.
         return [claim];
@@ -425,16 +425,16 @@ class TaskListener extends EventEmitter {
 
       let tasks = (await this.fetchSupersedingTasks(supersederUrl, taskId));
       if (!tasks || tasks.length === 0) {
-        this.runtime.log('not superseding', {taskId, supersederUrl,
-          message: 'no tasks supersede this one'});
+        this.runtime.log('not superseding', { taskId, supersederUrl,
+          message: 'no tasks supersede this one' });
         return [claim];
       }
 
       // if the returned list does not contain the initial taskId, then ignore
       // the request; this is an invalid response from the superseder
       if (!tasks.includes(taskId)) {
-        this.runtime.log('not superseding', {taskId, supersederUrl,
-          message: 'initial taskId not included in result from superseder'});
+        this.runtime.log('not superseding', { taskId, supersederUrl,
+          message: 'initial taskId not included in result from superseder' });
         return [claim];
       }
 

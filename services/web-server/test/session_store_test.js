@@ -38,7 +38,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     test('it should destroy the specified session', async function () {
       const store = getStore();
 
-      await store.set('foo', {cookie: {}});
+      await store.set('foo', { cookie: {} });
       let val = await store.get('foo');
 
       assert.ok(val, 'entry exists');
@@ -85,7 +85,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   suite('set', function() {
     test('it should set the specified session', async function () {
       const store = getStore();
-      const data = { cookie: { foo: 'bar' }};
+      const data = { cookie: { foo: 'bar' } };
 
       await store.set('foo', data);
 

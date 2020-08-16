@@ -4,7 +4,7 @@
  * or (if returnsArray is true) cb(null, ...res).  The resuting function has the
  * appropriate arity (one more than the input arity, to account for the 'done' argument)
  */
-module.exports = (fn, {returnsArray} = {}) => {
+module.exports = (fn, { returnsArray } = {}) => {
   // eslint-disable-next-line no-unused-vars
   const call = (self, args) => {
     const done = args.pop();

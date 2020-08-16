@@ -12,7 +12,7 @@ suite(testing.suiteName(), function() {
   // so using tc-lib-entities, which has since been removed from the codebase.
 
   test('builds table created / removed on upgrade and downgrade', async function() {
-    await testing.resetDb({testDbUrl: helper.dbUrl});
+    await testing.resetDb({ testDbUrl: helper.dbUrl });
     await helper.upgradeTo(PREV_VERSION);
 
     await helper.assertTable('taskcluster_github_builds_entities');

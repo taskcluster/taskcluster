@@ -14,7 +14,7 @@ exports.modifyRoles = async (db, modifier) => {
       const roles = await db.fns.get_roles();
       const etag = roles.length > 0 ? roles[0].etag : uuid.v4();
       roles.forEach(r => { delete r.etag; });
-      await modifier({roles});
+      await modifier({ roles });
       await db.fns.modify_roles(JSON.stringify(roles), etag);
     } catch (e) {
       // P0004 means there was a conflict, so try again

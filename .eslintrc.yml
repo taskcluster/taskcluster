@@ -77,3 +77,7 @@ rules:
   require-atomic-updates: off
 
   space-infix-ops: error
+
+  object-curly-spacing:
+    - error
+    - always

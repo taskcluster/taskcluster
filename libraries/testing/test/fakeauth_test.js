@@ -2,9 +2,9 @@ const debug = require('debug')('test');
 const hawk = require('@hapi/hawk');
 const request = require('superagent');
 const SchemaSet = require('taskcluster-lib-validate');
-const {APIBuilder} = require('taskcluster-lib-api');
-const {MonitorManager} = require('taskcluster-lib-monitor');
-const {App} = require('taskcluster-lib-app');
+const { APIBuilder } = require('taskcluster-lib-api');
+const { MonitorManager } = require('taskcluster-lib-monitor');
+const { App } = require('taskcluster-lib-app');
 const assert = require('assert');
 const taskcluster = require('taskcluster-client');
 const path = require('path');
@@ -39,12 +39,12 @@ builder.declare({
 }, async function(req, res) {
   try {
     await req.authorize();
-    return res.reply({hasTestScope: true});
+    return res.reply({ hasTestScope: true });
   } catch (err) {
     if (err.code !== 'InsufficientScopes') {
       throw err;
     }
-    return res.reply({hasTestScope: false});
+    return res.reply({ hasTestScope: false });
   }
 });
 
@@ -105,7 +105,7 @@ suite(testing.suiteName(), function() {
       content['ext'] = Buffer.from(JSON.stringify(extContent)).toString('base64');
     }
 
-    let {header} = hawk.client.header(reqUrl, 'GET', content);
+    let { header } = hawk.client.header(reqUrl, 'GET', content);
 
     let bewit = hawk.uri.getBewit(reqUrl, content);
     let bewitUrl = reqUrl + '?bewit=' + bewit;
@@ -127,7 +127,7 @@ suite(testing.suiteName(), function() {
   };
 
   test('using a rawClientId', function() {
-    fakeauth.start({client1: ['test.scope']}, {rootUrl});
+    fakeauth.start({ client1: ['test.scope'] }, { rootUrl });
     return callApi('client1').then(function(responses) {
       for (let res of responses) {
         assert(res.ok && res.body.hasTestScope, 'Request failed');
@@ -136,7 +136,7 @@ suite(testing.suiteName(), function() {
   });
 
   test('using an unconfigured rawClientId', function() {
-    fakeauth.start({client1: ['test.scope']}, {rootUrl});
+    fakeauth.start({ client1: ['test.scope'] }, { rootUrl });
     return callApi('unconfiguredClient')
       .then(() => {assert(false, 'should have failed');})
       .catch(function(err) {
@@ -145,7 +145,7 @@ suite(testing.suiteName(), function() {
   });
 
   test('using authorizedScopes', function() {
-    fakeauth.start({client1: ['some.other.scope']}, {rootUrl});
+    fakeauth.start({ client1: ['some.other.scope'] }, { rootUrl });
     return callApi('client1', {
       authorizedScopes: ['test.scope'],
     }).then(function(responses) {
@@ -156,7 +156,7 @@ suite(testing.suiteName(), function() {
   });
 
   test('using temp creds', function() {
-    fakeauth.start({client1: ['some.other.scope']}, {rootUrl});
+    fakeauth.start({ client1: ['some.other.scope'] }, { rootUrl });
     let tempCreds = taskcluster.createTemporaryCredentials({
       scopes: ['test.scope'],
       expiry: taskcluster.fromNow('1d'),

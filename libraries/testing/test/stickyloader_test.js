@@ -1,16 +1,16 @@
 const _ = require('lodash');
 const assert = require('assert');
-const {stickyLoader, suiteName} = require('../');
+const { stickyLoader, suiteName } = require('../');
 
 suite(suiteName(), function() {
   let loads, sticky;
 
   const loader = (component, overwrites) => {
-    loads.push({component, overwrites: Object.keys(overwrites)});
+    loads.push({ component, overwrites: Object.keys(overwrites) });
     if (component in overwrites) {
       return overwrites[component];
     }
-    return Promise.resolve({component});
+    return Promise.resolve({ component });
   };
 
   setup(function() {
@@ -40,7 +40,7 @@ suite(suiteName(), function() {
   });
 
   test('inject adds to overwrites', async function() {
-    await sticky.inject('inj', {inj: true});
+    await sticky.inject('inj', { inj: true });
     await sticky('inj');
     assert.deepEqual(loads, [{
       component: 'inj',
@@ -61,7 +61,7 @@ suite(suiteName(), function() {
   test('cfg', async function() {
     sticky.inject('cfg', {});
     sticky.cfg('a.b.c', 'd');
-    assert(_.isEqual(await sticky('cfg'), {a: {b: {c: 'd'}}}));
+    assert(_.isEqual(await sticky('cfg'), { a: { b: { c: 'd' } } }));
   });
 
   test('save/restore', async function() {
@@ -88,7 +88,7 @@ suite(suiteName(), function() {
     sticky.inject('abc', 'AAA');
     sticky.save();
     sticky.remove('abc');
-    assert(_.isEqual(await sticky('abc'), {component: 'abc'}), 'should load abc from loader');
+    assert(_.isEqual(await sticky('abc'), { component: 'abc' }), 'should load abc from loader');
     sticky.restore();
     assert(await sticky('abc') === 'AAA', 'should get the original injected value');
   });

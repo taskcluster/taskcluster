@@ -3,7 +3,7 @@ const debug = require('debug')('test:static-clients');
 const helper = require('./helper');
 const assume = require('assume');
 const testing = require('taskcluster-lib-testing');
-const {syncStaticClients} = require('../src/static-clients');
+const { syncStaticClients } = require('../src/static-clients');
 
 helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, skipping) {
   helper.withDb(mock, skipping);
@@ -53,7 +53,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
   test('adding scopes for a static/taskcluster client is an error', async () => {
     await assert.rejects(() => syncStaticClients(helper.db, [
       ...helper.cfg.app.staticClients
-        .filter(({clientId}) => clientId !== 'static/taskcluster/queue'),
+        .filter(({ clientId }) => clientId !== 'static/taskcluster/queue'),
       {
         clientId: 'static/taskcluster/queue',
         accessToken: 'test-secret-12345678910',
@@ -66,7 +66,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
   test('omitting a static/taskcluster client is an error', async () => {
     await assert.rejects(() => syncStaticClients(helper.db,
       helper.cfg.app.staticClients
-        .filter(({clientId}) => clientId !== 'static/taskcluster/queue')),
+        .filter(({ clientId }) => clientId !== 'static/taskcluster/queue')),
     /missing clients/);
   });
 

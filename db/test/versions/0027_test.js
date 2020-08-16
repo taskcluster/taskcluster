@@ -12,7 +12,7 @@ suite(testing.suiteName(), function() {
   helper.withDbForVersion();
 
   test('github_access_tokens table created / removed on upgrade and downgrade', async function() {
-    await testing.resetDb({testDbUrl: helper.dbUrl});
+    await testing.resetDb({ testDbUrl: helper.dbUrl });
     await helper.upgradeTo(PREV_VERSION);
 
     await helper.assertTable('github_access_token_table_entities');

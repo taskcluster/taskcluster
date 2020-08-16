@@ -1,6 +1,6 @@
 const assert = require('assert');
 const _ = require('lodash');
-const {Octokit: github} = require('@octokit/rest');
+const { Octokit: github } = require('@octokit/rest');
 const fakeGithubAuth = require('./github-auth');
 const testing = require('taskcluster-lib-testing');
 

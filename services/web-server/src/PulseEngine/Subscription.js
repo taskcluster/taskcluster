@@ -53,13 +53,13 @@ module.exports = class Subscription {
     // up to the caller and will not interfere with other subscriptions.
     try {
       if (listening && unsubscribed) {
-        this.monitor.log.unbindPulseSubscription({subscriptionId});
+        this.monitor.log.unbindPulseSubscription({ subscriptionId });
         await channel.cancel(this.consumerTag);
         await channel.deleteQueue(queueName);
         await channel.close();
         this.listening = false;
       } else if (!listening && !unsubscribed) {
-        this.monitor.log.bindPulseSubscription({subscriptionId});
+        this.monitor.log.bindPulseSubscription({ subscriptionId });
         const { handleError, handleMessage, subscriptions } = this;
 
         // declare the queue, with autoDelete and exclusive both set to false so that
@@ -80,7 +80,7 @@ module.exports = class Subscription {
         // also raised as exceptions and handled that way)
         bindChannel.on('error', () => {});
         try {
-          for (let {pattern, exchange} of subscriptions) {
+          for (let { pattern, exchange } of subscriptions) {
             await bindChannel.bindQueue(queueName, exchange, pattern);
           }
         } catch (err) {

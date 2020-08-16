@@ -23,7 +23,7 @@ const main = async () => {
     };
   }
   const queue = new taskcluster.Queue(configs);
-  const {dependencies} = await queue.task(process.env.TASK_ID);
+  const { dependencies } = await queue.task(process.env.TASK_ID);
 
   await fs.mkdir(COVERAGE_DIR);
   await Promise.all(dependencies.map(async taskId => {

@@ -36,7 +36,7 @@ exports.tasks.push({
       const accessToken = created.accessToken;
       const auth2 = new taskcluster.Auth({
         rootUrl: process.env.TASKCLUSTER_ROOT_URL,
-        credentials: {clientId, accessToken},
+        credentials: { clientId, accessToken },
       });
       await auth2.resetAccessToken(clientId);
     });

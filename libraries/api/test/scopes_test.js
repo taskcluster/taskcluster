@@ -1,5 +1,5 @@
 const assert = require('assert');
-const {APIBuilder} = require('../');
+const { APIBuilder } = require('../');
 const testing = require('taskcluster-lib-testing');
 
 suite(testing.suiteName(), function() {
@@ -67,7 +67,7 @@ suite(testing.suiteName(), function() {
     builder.declare({
       method: 'get',
       route: '/testScope/:myparam',
-      scopes: {AnyOf: ['something']},
+      scopes: { AnyOf: ['something'] },
       name: 'expNotRejectedtestEP',
       category: 'API Library',
       title: 'Test',
@@ -79,7 +79,7 @@ suite(testing.suiteName(), function() {
     builder.declare({
       method: 'get',
       route: '/testScope2/:myparam',
-      scopes: {AnyOf: [{for: 'foo', in: 'bar', each: '<foo>'}]},
+      scopes: { AnyOf: [{ for: 'foo', in: 'bar', each: '<foo>' }] },
       name: 'expLoopNotRejectedtestEP',
       category: 'API Library',
       title: 'Test',

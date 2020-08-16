@@ -28,7 +28,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
     assert.strictEqual(estimate, 0);
     assert.strictEqual(monitor.manager.messages.length, 1);
-    assert(monitor.manager.messages.some(({Type, Severity}) => Type === 'simple-estimate' && Severity === 5));
+    assert(monitor.manager.messages.some(({ Type, Severity }) => Type === 'simple-estimate' && Severity === 5));
   });
 
   test('single estimation', async function() {
@@ -45,7 +45,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
     assert.strictEqual(estimate, 1);
     assert.strictEqual(monitor.manager.messages.length, 1);
-    assert(monitor.manager.messages.some(({Type, Severity}) => Type === 'simple-estimate' && Severity === 5));
+    assert(monitor.manager.messages.some(({ Type, Severity }) => Type === 'simple-estimate' && Severity === 5));
   });
 
   test('satisfied estimation', async function() {
@@ -62,7 +62,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
     assert.strictEqual(estimate, 0);
     assert.strictEqual(monitor.manager.messages.length, 1);
-    assert(monitor.manager.messages.some(({Type, Severity}) => Type === 'simple-estimate' && Severity === 5));
+    assert(monitor.manager.messages.some(({ Type, Severity }) => Type === 'simple-estimate' && Severity === 5));
   });
 
   test('scaling ratio 1:1 scale-up', async function() {
@@ -81,7 +81,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
     assert.strictEqual(estimate, 100);
     assert.strictEqual(monitor.manager.messages.length, 1);
-    assert(monitor.manager.messages.some(({Type, Severity}) => Type === 'simple-estimate' && Severity === 5));
+    assert(monitor.manager.messages.some(({ Type, Severity }) => Type === 'simple-estimate' && Severity === 5));
   });
 
   test('scaling ratio 1:1 scale-up with lesser max capacity', async function() {
@@ -100,7 +100,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
     assert.strictEqual(estimate, 50);
     assert.strictEqual(monitor.manager.messages.length, 1);
-    assert(monitor.manager.messages.some(({Type, Severity}) => Type === 'simple-estimate' && Severity === 5));
+    assert(monitor.manager.messages.some(({ Type, Severity }) => Type === 'simple-estimate' && Severity === 5));
   });
 
   test('scaling ratio 1:2 scale-up', async function() {
@@ -119,7 +119,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
     assert.strictEqual(estimate, 50);
     assert.strictEqual(monitor.manager.messages.length, 1);
-    assert(monitor.manager.messages.some(({Type, Severity}) => Type === 'simple-estimate' && Severity === 5));
+    assert(monitor.manager.messages.some(({ Type, Severity }) => Type === 'simple-estimate' && Severity === 5));
   });
 
   test('scaling ratio 1:2 scale-up with existing capacity', async function() {
@@ -138,7 +138,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     // 50 more to spawn for 75 total
     assert.strictEqual(estimate, 50);
     assert.strictEqual(monitor.manager.messages.length, 1);
-    assert(monitor.manager.messages.some(({Type, Severity}) => Type === 'simple-estimate' && Severity === 5));
+    assert(monitor.manager.messages.some(({ Type, Severity }) => Type === 'simple-estimate' && Severity === 5));
   });
 
   test('over-satisfied estimation', async function() {
@@ -153,10 +153,15 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       workerInfo,
     });
 
+    // for #3372
+    if (monitor.manager.messages.length !== 2) {
+      console.log(monitor.manager.messages);
+    }
+
     assert.strictEqual(estimate, 0);
     assert.strictEqual(monitor.manager.messages.length, 2);
-    assert(monitor.manager.messages.some(({Type, Severity}) => Type === 'simple-estimate' && Severity === 3));
-    assert(monitor.manager.messages.some(({Type, Fields}) => Type === 'monitor.error' && Fields.existingCapacity === 50));
+    assert(monitor.manager.messages.some(({ Type, Severity }) => Type === 'simple-estimate' && Severity === 3));
+    assert(monitor.manager.messages.some(({ Type, Fields }) => Type === 'monitor.error' && Fields.existingCapacity === 50));
     monitor.manager.reset();
   });
 
@@ -174,7 +179,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
     assert.strictEqual(estimate, 0);
     assert.strictEqual(monitor.manager.messages.length, 1);
-    assert(monitor.manager.messages.some(({Type, Severity}) => Type === 'simple-estimate' && Severity === 5));
+    assert(monitor.manager.messages.some(({ Type, Severity }) => Type === 'simple-estimate' && Severity === 5));
     monitor.manager.reset();
   });
 });

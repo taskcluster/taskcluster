@@ -7,9 +7,9 @@ const builder = require('./api');
 const Scheduler = require('./scheduler');
 const config = require('taskcluster-lib-config');
 const loader = require('taskcluster-lib-loader');
-const {App} = require('taskcluster-lib-app');
+const { App } = require('taskcluster-lib-app');
 const libReferences = require('taskcluster-lib-references');
-const {MonitorManager} = require('taskcluster-lib-monitor');
+const { MonitorManager } = require('taskcluster-lib-monitor');
 const taskcluster = require('taskcluster-client');
 const exchanges = require('./exchanges');
 const libPulse = require('taskcluster-lib-pulse');
@@ -21,7 +21,7 @@ require('./monitor');
 const load = loader({
   cfg: {
     requires: ['profile'],
-    setup: ({profile}) => config({
+    setup: ({ profile }) => config({
       profile,
       serviceName: 'hooks',
     }),
@@ -29,7 +29,7 @@ const load = loader({
 
   monitor: {
     requires: ['process', 'profile', 'cfg'],
-    setup: ({process, profile, cfg}) => MonitorManager.setup({
+    setup: ({ process, profile, cfg }) => MonitorManager.setup({
       serviceName: 'github',
       processName: process,
       verify: profile !== 'production',
@@ -39,7 +39,7 @@ const load = loader({
 
   db: {
     requires: ["cfg", "process", "monitor"],
-    setup: ({cfg, process, monitor}) => tcdb.setup({
+    setup: ({ cfg, process, monitor }) => tcdb.setup({
       readDbUrl: cfg.postgres.readDbUrl,
       writeDbUrl: cfg.postgres.writeDbUrl,
       serviceName: 'hooks',
@@ -52,7 +52,7 @@ const load = loader({
 
   schemaset: {
     requires: ['cfg'],
-    setup: ({cfg}) => {
+    setup: ({ cfg }) => {
       return new SchemaSet({
         serviceName: 'hooks',
       });
@@ -61,7 +61,7 @@ const load = loader({
 
   pulseClient: {
     requires: ['cfg', 'monitor'],
-    setup: ({cfg, monitor}) => {
+    setup: ({ cfg, monitor }) => {
       return new libPulse.Client({
         namespace: 'taskcluster-hooks',
         monitor: monitor.childMonitor('pulse-client'),
@@ -72,7 +72,7 @@ const load = loader({
 
   publisher: {
     requires: ['cfg', 'schemaset', 'monitor', 'pulseClient'],
-    setup: async ({cfg, schemaset, monitor, pulseClient}) => await exchanges.publisher({
+    setup: async ({ cfg, schemaset, monitor, pulseClient }) => await exchanges.publisher({
       rootUrl: cfg.taskcluster.rootUrl,
       client: pulseClient,
       schemaset,
@@ -82,7 +82,7 @@ const load = loader({
 
   taskcreator: {
     requires: ['cfg', 'db', 'monitor'],
-    setup: ({cfg, db, monitor}) => new taskcreator.TaskCreator({
+    setup: ({ cfg, db, monitor }) => new taskcreator.TaskCreator({
       ...cfg.taskcluster,
       db,
       monitor: monitor.childMonitor('taskcreator'),
@@ -91,7 +91,7 @@ const load = loader({
 
   notify: {
     requires: ['cfg'],
-    setup: ({cfg}) => new taskcluster.Notify({
+    setup: ({ cfg }) => new taskcluster.Notify({
       rootUrl: cfg.taskcluster.rootUrl,
       credentials: cfg.taskcluster.credentials,
       authorizedScopes: ['notify:email:*'],
@@ -100,9 +100,9 @@ const load = loader({
 
   api: {
     requires: ['cfg', 'db', 'schemaset', 'taskcreator', 'monitor', 'publisher', 'pulseClient'],
-    setup: ({cfg, db, schemaset, taskcreator, monitor, publisher, pulseClient}) => builder.build({
+    setup: ({ cfg, db, schemaset, taskcreator, monitor, publisher, pulseClient }) => builder.build({
       rootUrl: cfg.taskcluster.rootUrl,
-      context: {db, taskcreator, publisher, denylist: cfg.pulse.denylist},
+      context: { db, taskcreator, publisher, denylist: cfg.pulse.denylist },
       schemaset,
       monitor: monitor.childMonitor('api'),
     }),
@@ -110,7 +110,7 @@ const load = loader({
 
   listeners: {
     requires: ['db', 'taskcreator', 'pulseClient', 'monitor'],
-    setup: async ({db, taskcreator, pulseClient, monitor}) => {
+    setup: async ({ db, taskcreator, pulseClient, monitor }) => {
       let listeners = new HookListeners({
         db,
         taskcreator,
@@ -124,7 +124,7 @@ const load = loader({
 
   generateReferences: {
     requires: ['cfg', 'schemaset'],
-    setup: ({cfg, schemaset}) => libReferences.fromService({
+    setup: ({ cfg, schemaset }) => libReferences.fromService({
       schemaset,
       references: [builder.reference(), exchanges.reference(), MonitorManager.reference('hooks')],
     }).generateReferences(),
@@ -132,7 +132,7 @@ const load = loader({
 
   server: {
     requires: ['cfg', 'api'],
-    setup: ({cfg, api}) => App({
+    setup: ({ cfg, api }) => App({
       port: cfg.server.port,
       env: cfg.server.env,
       forceSSL: cfg.server.forceSSL,
@@ -143,7 +143,7 @@ const load = loader({
 
   schedulerNoStart: {
     requires: ['cfg', 'db', 'taskcreator', 'notify', 'monitor'],
-    setup: ({cfg, db, taskcreator, notify, monitor}) => {
+    setup: ({ cfg, db, taskcreator, notify, monitor }) => {
       return new Scheduler({
         db,
         taskcreator,
@@ -156,12 +156,12 @@ const load = loader({
 
   scheduler: {
     requires: ['schedulerNoStart'],
-    setup: ({schedulerNoStart}) => schedulerNoStart.start(),
+    setup: ({ schedulerNoStart }) => schedulerNoStart.start(),
   },
 
   expires: {
     requires: ['cfg', 'db', 'monitor'],
-    setup: ({cfg, db, monitor}, ownName) => {
+    setup: ({ cfg, db, monitor }, ownName) => {
       return monitor.oneShot(ownName, async () => {
         debug('Expiring lastFires rows');
         const count = (await db.fns.expire_last_fires())[0].expire_last_fires;

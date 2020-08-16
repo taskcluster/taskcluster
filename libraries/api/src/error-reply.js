@@ -1,5 +1,5 @@
 class ErrorReply extends Error {
-  constructor({code, message, details}) {
+  constructor({ code, message, details }) {
     super();
 
     Error.captureStackTrace(this, this.constructor);

@@ -2,7 +2,7 @@ const taskcluster = require('taskcluster-client');
 const slug = require('slugid');
 const assert = require('assert');
 const helper = require('./helper');
-const {WorkerPool, Worker} = require('../src/data');
+const { WorkerPool, Worker } = require('../src/data');
 const testing = require('taskcluster-lib-testing');
 const fs = require('fs');
 const path = require('path');
@@ -47,14 +47,14 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   // create a test worker pool directly in the DB
   const createWorkerPool = async overrides => {
     const workerPool = WorkerPool.fromApi(
-      {...defaultWorkerPool, ...overrides});
+      { ...defaultWorkerPool, ...overrides });
     await workerPool.create(helper.db);
   };
 
   // create a test worker pool directly in the DB
   const createWorker = overrides => {
     const worker = Worker.fromApi(
-      {...defaultWorker, ...overrides});
+      { ...defaultWorker, ...overrides });
     return worker.create(helper.db);
   };
 
@@ -63,25 +63,25 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   });
 
   test('list providers', async function() {
-    const {providers} = await helper.workerManager.listProviders();
+    const { providers } = await helper.workerManager.listProviders();
     assert.deepStrictEqual(providers, [
-      {providerId: 'testing1', providerType: 'testing'},
-      {providerId: 'testing2', providerType: 'testing'},
-      {providerId: 'static', providerType: 'static'},
-      {providerId: 'google', providerType: 'google'},
-      {providerId: 'aws', providerType: 'aws'},
-      {providerId: 'azure', providerType: 'azure'},
+      { providerId: 'testing1', providerType: 'testing' },
+      { providerId: 'testing2', providerType: 'testing' },
+      { providerId: 'static', providerType: 'static' },
+      { providerId: 'google', providerType: 'google' },
+      { providerId: 'aws', providerType: 'aws' },
+      { providerId: 'azure', providerType: 'azure' },
     ]);
   });
 
   test('list providers pagination', async function() {
     let pages = 0;
     let providerIds = [];
-    let query = {limit: 1};
+    let query = { limit: 1 };
     while (true) {
       const res = await helper.workerManager.listProviders(query);
       pages += 1;
-      res.providers.forEach(({providerId}) => providerIds.push(providerId));
+      res.providers.forEach(({ providerId }) => providerIds.push(providerId));
       if (res.continuationToken) {
         query.continuationToken = res.continuationToken;
       } else {
@@ -95,11 +95,11 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   });
 
   const workerPoolCompare = (workerPoolId, input, result) => {
-    const {created, lastModified, currentCapacity, ...definition} = result;
+    const { created, lastModified, currentCapacity, ...definition } = result;
     assert(created);
     assert(lastModified);
     assert(currentCapacity !== undefined);
-    assert.deepStrictEqual({workerPoolId, ...input}, definition);
+    assert.deepStrictEqual({ workerPoolId, ...input }, definition);
   };
 
   test('create worker pool', async function() {
@@ -138,7 +138,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     helper.onPulsePublish(() => {
       throw new Error('uhoh');
     });
-    const apiClient = helper.workerManager.use({retries: 0});
+    const apiClient = helper.workerManager.use({ retries: 0 });
     await assert.rejects(
       () => apiClient.createWorkerPool(workerPoolId, input),
       err => err.statusCode === 500);
@@ -146,7 +146,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     const monitor = await helper.load('monitor');
     assert.equal(
       monitor.manager.messages.filter(
-        ({Type, Fields}) => Type === 'monitor.error' && Fields.message === 'uhoh',
+        ({ Type, Fields }) => Type === 'monitor.error' && Fields.message === 'uhoh',
       ).length,
       1);
     monitor.manager.reset();
@@ -173,7 +173,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       lastModified: taskcluster.fromNow('10 days'),
     };
     const updated = await helper.workerManager.updateWorkerPool(workerPoolId, input2);
-    const {created: _1, lastModified: _2, ...expected} = input2;
+    const { created: _1, lastModified: _2, ...expected } = input2;
     workerPoolCompare(workerPoolId, expected, updated);
 
     assert.equal(initial.lastModified, initial.created);
@@ -196,7 +196,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     });
 
     input.description = 'foo';
-    const apiClient = helper.workerManager.use({retries: 0});
+    const apiClient = helper.workerManager.use({ retries: 0 });
     await assert.rejects(
       () => apiClient.updateWorkerPool(workerPoolId, input),
       err => err.statusCode === 500);
@@ -204,7 +204,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     const monitor = await helper.load('monitor');
     assert.equal(
       monitor.manager.messages.filter(
-        ({Type, Fields}) => Type === 'monitor.error' && Fields.message === 'uhoh',
+        ({ Type, Fields }) => Type === 'monitor.error' && Fields.message === 'uhoh',
       ).length,
       1);
     monitor.manager.reset();
@@ -359,7 +359,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       await helper.workerManager.createWorkerPool('pp/oo', {
         providerId: 'testing1',
         description: 'e',
-        config: {bar: 'extra'},
+        config: { bar: 'extra' },
         owner: 'example@example.com',
         emailOnError: false,
       });
@@ -384,7 +384,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       await helper.workerManager.updateWorkerPool('pp/oo', {
         providerId: 'testing1',
         description: 'e',
-        config: {bar: 'extra'},
+        config: { bar: 'extra' },
         owner: 'example@example.com',
         emailOnError: false,
       });
@@ -451,11 +451,11 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     for (let i of [0, 1, 2]) {
       const workerPoolId = `${sampleWorkerPoolId}-${i}`;
       const description = `pool ${i}`;
-      input[i] = {workerPoolId, description, ...sampleInput};
+      input[i] = { workerPoolId, description, ...sampleInput };
     }
 
     await Promise.all(input.map(async i => {
-      const {workerPoolId, ...definition} = i;
+      const { workerPoolId, ...definition } = i;
       await helper.workerManager.createWorkerPool(workerPoolId, definition);
     }));
 
@@ -473,17 +473,17 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
   test('get worker pools, paginated', async function() {
     const input = await makeWorkerPools();
-    let data = await helper.workerManager.listWorkerPools({limit: 1});
+    let data = await helper.workerManager.listWorkerPools({ limit: 1 });
     assert.equal(data.workerPools.length, 1);
     workerPoolCompare(input[0].workerPoolId, input[0], data.workerPools[0]);
     assert(data.continuationToken);
 
-    data = await helper.workerManager.listWorkerPools({limit: 1, continuationToken: data.continuationToken});
+    data = await helper.workerManager.listWorkerPools({ limit: 1, continuationToken: data.continuationToken });
     assert.equal(data.workerPools.length, 1);
     workerPoolCompare(input[1].workerPoolId, input[1], data.workerPools[0]);
     assert(data.continuationToken);
 
-    data = await helper.workerManager.listWorkerPools({limit: 1, continuationToken: data.continuationToken});
+    data = await helper.workerManager.listWorkerPools({ limit: 1, continuationToken: data.continuationToken });
     assert.equal(data.workerPools.length, 1);
     workerPoolCompare(input[2].workerPoolId, input[2], data.workerPools[0]);
     assert(!data.continuationToken);
@@ -670,7 +670,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   test('get a specific worker that does not exist', async function () {
     const workerPoolId = 'apple/apple';
     await assert.rejects(() =>
-      helper.workerManager.worker(workerPoolId, 'wg-a', 's-3434'), {statusCode: 404});
+      helper.workerManager.worker(workerPoolId, 'wg-a', 's-3434'), { statusCode: 404 });
   });
 
   suite('worker creation / removal', function() {
@@ -692,7 +692,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     });
 
     test('create a worker for a worker pool with invalid providerId', async function () {
-      await createWorkerPool({providerId: 'nosuch'});
+      await createWorkerPool({ providerId: 'nosuch' });
       await assert.rejects(() =>
         helper.workerManager.createWorker(workerPoolId, workerGroup, workerId, {
           expires: taskcluster.fromNow('1 hour'),
@@ -711,7 +711,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
     test('create a worker for a provider that does want it', async function () {
       await createWorkerPool({
-        providerData: {allowCreateWorker: true},
+        providerData: { allowCreateWorker: true },
       });
 
       const expires = taskcluster.fromNow('1 hour');
@@ -744,7 +744,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
     test('remove a worker for a provider that does not want to', async function () {
       await createWorker({
-        providerData: {allowRemoveWorker: false},
+        providerData: { allowRemoveWorker: false },
       });
       await assert.rejects(() =>
         helper.workerManager.removeWorker(workerPoolId, workerGroup, workerId),
@@ -753,7 +753,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
     test('remove a worker for a provider that does want to', async function () {
       await createWorker({
-        providerData: {allowRemoveWorker: true},
+        providerData: { allowRemoveWorker: true },
       });
       await helper.workerManager.removeWorker(workerPoolId, workerGroup, workerId);
       const worker = await Worker.get(helper.db, { workerPoolId, workerGroup, workerId });
@@ -778,7 +778,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       kind: "worker-error",
       title: 'Something is Wrong',
       description: 'Uhoh!',
-      extra: {amISure: true},
+      extra: { amISure: true },
     });
 
     let data = await helper.workerManager.listWorkerPoolErrors(workerPoolId);
@@ -813,7 +813,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         kind: "worker-error",
         title: 'Something is Wrong',
         description: 'Uhoh!',
-        extra: {amISure: true},
+        extra: { amISure: true },
       }),
     /Worker pool does not exist/,
     );
@@ -979,7 +979,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     const providerId = 'testing1';
     const workerGroup = 'wg';
     const workerId = 'wi';
-    const workerIdentityProof = {'token': 'tok'};
+    const workerIdentityProof = { 'token': 'tok' };
 
     suiteSetup(function() {
       helper.load.save();
@@ -1034,8 +1034,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     });
 
     test('worker requests across pools', async function() {
-      await createWorkerPool({workerPoolId: 'ff/ee'});
-      await createWorkerPool({workerPoolId: 'ff/tt'});
+      await createWorkerPool({ workerPoolId: 'ff/ee' });
+      await createWorkerPool({ workerPoolId: 'ff/tt' });
       await createWorker({
         workerPoolId: 'ff/tt',
       });
@@ -1060,7 +1060,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     test('error from prov.registerWorker', async function() {
       await createWorkerPool({});
       await createWorker({
-        providerData: {failRegister: 'uhoh'},
+        providerData: { failRegister: 'uhoh' },
       });
       await assert.rejects(() => helper.workerManager.registerWorker({
         ...defaultRegisterWorker,
@@ -1159,7 +1159,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     const providerId = 'testing1';
     const workerGroup = 'wg';
     const workerId = 'wi';
-    const workerIdentityProof = {'token': 'tok'};
+    const workerIdentityProof = { 'token': 'tok' };
 
     suiteSetup(function() {
       helper.load.save();

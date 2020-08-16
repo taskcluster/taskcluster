@@ -1,12 +1,12 @@
 const _ = require('lodash');
-const {Pool} = require('pg');
+const { Pool } = require('pg');
 const pg = require('pg');
 const crypto = require('crypto');
-const {dollarQuote, annotateError} = require('./util');
+const { dollarQuote, annotateError } = require('./util');
 const Keyring = require('./Keyring');
 const assert = require('assert').strict;
-const {READ, WRITE, DUPLICATE_OBJECT, UNDEFINED_TABLE} = require('./constants');
-const {MonitorManager} = require('taskcluster-lib-monitor');
+const { READ, WRITE, DUPLICATE_OBJECT, UNDEFINED_TABLE } = require('./constants');
+const { MonitorManager } = require('taskcluster-lib-monitor');
 const named = require('yesql').pg;
 
 // Postgres extensions to "create".
@@ -54,24 +54,24 @@ class Database {
   /**
    * Get a new Database instance
    */
-  static async setup({schema, readDbUrl, writeDbUrl, dbCryptoKeys,
-    azureCryptoKey, serviceName, monitor, statementTimeout, poolSize}) {
+  static async setup({ schema, readDbUrl, writeDbUrl, dbCryptoKeys,
+    azureCryptoKey, serviceName, monitor, statementTimeout, poolSize }) {
     assert(readDbUrl, 'readDbUrl is required');
     assert(writeDbUrl, 'writeDbUrl is required');
     assert(schema, 'schema is required');
     assert(serviceName, 'serviceName is required');
     assert(monitor !== undefined, 'monitor is required (but use `false` to disable)');
 
-    const keyring = new Keyring({azureCryptoKey, dbCryptoKeys});
+    const keyring = new Keyring({ azureCryptoKey, dbCryptoKeys });
 
     const db = new Database({
-      urlsByMode: {[READ]: readDbUrl, [WRITE]: writeDbUrl},
+      urlsByMode: { [READ]: readDbUrl, [WRITE]: writeDbUrl },
       monitor,
       statementTimeout,
       poolSize,
       keyring,
     });
-    db._createProcs({schema, serviceName});
+    db._createProcs({ schema, serviceName });
 
     const dbVersion = await db.currentVersion();
     if (dbVersion < schema.latestVersion()) {
@@ -81,7 +81,7 @@ class Database {
     return db;
   }
 
-  _createProcs({schema, serviceName}) {
+  _createProcs({ schema, serviceName }) {
     // generate a JS method for each DB method defined in the schema
     this.fns = {};
     this.deprecatedFns = {};
@@ -97,7 +97,7 @@ class Database {
             `${serviceName} is not allowed to call read-write methods for ${method.serviceName}`);
         }
 
-        this._logDbFunctionCall({name: method.name});
+        this._logDbFunctionCall({ name: method.name });
 
         // For now we only support named arguments that end with "_in" to make sure
         // functions that take a single object argument are not incorrectly labeled as named arguments.
@@ -141,9 +141,9 @@ class Database {
    *
    * If given, the upgrade process stops at toVersion; this is used for testing.
    */
-  static async upgrade({schema, showProgress = () => {}, usernamePrefix, toVersion, adminDbUrl}) {
+  static async upgrade({ schema, showProgress = () => {}, usernamePrefix, toVersion, adminDbUrl }) {
     assert(Database._validUsernamePrefix(usernamePrefix));
-    const db = new Database({urlsByMode: {admin: adminDbUrl, read: adminDbUrl}});
+    const db = new Database({ urlsByMode: { admin: adminDbUrl, read: adminDbUrl } });
 
     await db._createExtensions();
     await db._checkDbSettings();
@@ -161,7 +161,7 @@ class Database {
         for (let v = dbVersion + 1; v <= stopAt; v++) {
           showProgress(`upgrading database to version ${v}`);
           const version = schema.getVersion(v);
-          await db._doUpgrade({version, showProgress, usernamePrefix});
+          await db._doUpgrade({ version, showProgress, usernamePrefix });
           showProgress(`upgrade to version ${v} successful`);
         }
       } else {
@@ -184,9 +184,9 @@ class Database {
       // permissions if upgrading to that version
       if (toVersion === schema.latestVersion().version) {
         showProgress('...checking permissions');
-        await Database._checkPermissions({db, schema, usernamePrefix});
+        await Database._checkPermissions({ db, schema, usernamePrefix });
         showProgress('...checking table columns');
-        await Database._checkTableColumns({db, schema, usernamePrefix});
+        await Database._checkTableColumns({ db, schema, usernamePrefix });
       }
     } finally {
       await db.close();
@@ -200,9 +200,9 @@ class Database {
    *
    * The `showProgress` parameter is like that for upgrade().
    */
-  static async downgrade({schema, showProgress = () => {}, usernamePrefix, toVersion, adminDbUrl}) {
+  static async downgrade({ schema, showProgress = () => {}, usernamePrefix, toVersion, adminDbUrl }) {
     assert(Database._validUsernamePrefix(usernamePrefix));
-    const db = new Database({urlsByMode: {admin: adminDbUrl, read: adminDbUrl}});
+    const db = new Database({ urlsByMode: { admin: adminDbUrl, read: adminDbUrl } });
 
     await db._createExtensions();
     await db._checkDbSettings();
@@ -224,8 +224,8 @@ class Database {
         for (let v = dbVersion; v > toVersion; v--) {
           showProgress(`downgrading database from version ${v} to version ${v - 1}`);
           const fromVersion = schema.getVersion(v);
-          const toVersion = v === 1 ? {version: 0, methods: []} : schema.getVersion(v - 1);
-          await db._doDowngrade({schema, fromVersion, toVersion, showProgress, usernamePrefix});
+          const toVersion = v === 1 ? { version: 0, methods: [] } : schema.getVersion(v - 1);
+          await db._doDowngrade({ schema, fromVersion, toVersion, showProgress, usernamePrefix });
           showProgress(`downgrade to version ${v - 1} successful`);
         }
       } else {
@@ -239,7 +239,7 @@ class Database {
     }
   }
 
-  static async _checkPermissions({db, schema, usernamePrefix}) {
+  static async _checkPermissions({ db, schema, usernamePrefix }) {
     await db._withClient('admin', async (client) => {
       const usernamePattern = usernamePrefix.replace('_', '\\_') + '\\_%';
       // determine current permissions in the form ["username: priv on table"].
@@ -346,7 +346,7 @@ class Database {
     });
   }
 
-  static async _checkTableColumns({db, schema}) {
+  static async _checkTableColumns({ db, schema }) {
     const current = await db._withClient('admin', async client => {
       const tables = {};
 
@@ -363,7 +363,7 @@ class Database {
           c.relname != 'tcversion'
       `);
 
-      for (const {tablename, oid} of tablesres.rows) {
+      for (const { tablename, oid } of tablesres.rows) {
         const rowsres = await client.query(`
           select
             attname,
@@ -377,7 +377,7 @@ class Database {
             a.attrelid=$1 and a.attnum > 0 and not attisdropped
         `, [oid]);
         tables[tablename] = Object.fromEntries(
-          rowsres.rows.map(({attname, type, notnull}) => ([attname, `${type}${notnull ? ' not null' : ''}`])));
+          rowsres.rows.map(({ attname, type, notnull }) => ([attname, `${type}${notnull ? ' not null' : ''}`])));
       }
 
       return tables;
@@ -421,7 +421,7 @@ class Database {
     });
   }
 
-  async _doUpgrade({version, showProgress, usernamePrefix}) {
+  async _doUpgrade({ version, showProgress, usernamePrefix }) {
     await this._withClient('admin', async client => {
       await client.query('begin');
 
@@ -442,7 +442,7 @@ class Database {
           await client.query(`DO ${dollarQuote(migrationScript)}`);
         }
         showProgress('..defining methods');
-        for (let [methodName, {args, body, returns, deprecated}] of Object.entries(version.methods)) {
+        for (let [methodName, { args, body, returns, deprecated }] of Object.entries(version.methods)) {
           if (deprecated && !args && !returns && !body) {
             continue; // This allows just deprecating without changing a method
           }
@@ -463,7 +463,7 @@ class Database {
     });
   }
 
-  async _doDowngrade({schema, fromVersion, toVersion, showProgress, usernamePrefix}) {
+  async _doDowngrade({ schema, fromVersion, toVersion, showProgress, usernamePrefix }) {
     assert.equal(fromVersion.version, toVersion.version + 1);
     await this._withClient('admin', async client => {
       await client.query('begin');
@@ -484,12 +484,12 @@ class Database {
         // either find the most recent definition of each function,
         // or drop the function if it was not defined before fromVersion
         showProgress('..redefining methods');
-        for (let [methodName, {args}] of Object.entries(fromVersion.methods)) {
+        for (let [methodName, { args }] of Object.entries(fromVersion.methods)) {
           let foundMethod = false;
           for (let ver = toVersion.version; ver > 0; ver--) {
             const version = schema.getVersion(ver);
             if (methodName in version.methods) {
-              const {args, body, returns} = version.methods[methodName];
+              const { args, body, returns } = version.methods[methodName];
               showProgress(`   using ${methodName} from db version ${version.version}`);
               await client.query(`create or replace function
                 "${methodName}"(${args})
@@ -520,13 +520,13 @@ class Database {
   /**
    * Private constructor (use Database.setup and Database.upgrade instead)
    */
-  constructor({urlsByMode, monitor, statementTimeout, poolSize, keyring}) {
+  constructor({ urlsByMode, monitor, statementTimeout, poolSize, keyring }) {
     assert(!statementTimeout || typeof statementTimeout === 'number' || typeof statementTimeout === 'boolean');
     const makePool = dbUrl => {
       // default to a max of 5 connections. For services running both a read
       // and write pool, this is a maximum of 10 concurrent connections.  Other
       // requests will be queued.
-      const pool = new Pool({connectionString: dbUrl, max: poolSize || 5});
+      const pool = new Pool({ connectionString: dbUrl, max: poolSize || 5 });
       // ignore errors from *idle* connections.  From the docs:
       //
       // > When a client is sitting idly in the pool it can still emit errors
@@ -701,9 +701,9 @@ class Database {
    * other formats if needed. The "property name" is hardcoded to `val` since we only
    * have one property.
    */
-  encrypt({value}) {
+  encrypt({ value }) {
     assert(value instanceof Buffer, 'Encrypted values must be Buffers');
-    const {id, key} = this.keyring.currentCryptoKey('aes-256');
+    const { id, key } = this.keyring.currentCryptoKey('aes-256');
 
     const iv = crypto.randomBytes(16);
     const cipher = crypto.createCipheriv('aes-256-cbc', key, iv);
@@ -727,7 +727,7 @@ class Database {
    * other formats if needed. The "property name" is hardcoded to `val` since we only
    * have one property.
    */
-  decrypt({value}) {
+  decrypt({ value }) {
     const key = this.keyring.getCryptoKey(value.kid, 'aes-256');
 
     const n = value['__bufchunks_val'];

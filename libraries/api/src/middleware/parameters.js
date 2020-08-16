@@ -10,8 +10,8 @@ const assert = require('assert');
  * present must match the pattern given in `options` or the request will be
  * rejected with a 400 error message.
  */
-const parameterValidator = ({entry}) => {
-  const {params} = entry;
+const parameterValidator = ({ entry }) => {
+  const { params } = entry;
 
   // Validate parameters
   _.forIn(params, (pattern, param) => {
@@ -44,7 +44,7 @@ const parameterValidator = ({entry}) => {
       return res.reportError(
         'InvalidRequestArguments',
         'Invalid URL patterns:\n' + errors.join('\n'),
-        {errors},
+        { errors },
       );
     }
     return next();

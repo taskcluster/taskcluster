@@ -3,7 +3,7 @@ let assert = require('assert');
 let _ = require('lodash');
 let QueueService = require('./queueservice');
 let Iterate = require('taskcluster-lib-iterate');
-const {Task} = require('./data');
+const { Task } = require('./data');
 
 /**
  * Facade that handles resolution tasks by deadline, using the advisory messages
@@ -123,7 +123,7 @@ class DeadlineResolver {
   }
 
   /** Handle advisory message about deadline expiration */
-  async handleMessage({taskId, taskGroupId, schedulerId, deadline, remove}) {
+  async handleMessage({ taskId, taskGroupId, schedulerId, deadline, remove }) {
     const task = await Task.get(this.db, taskId);
 
     // If the task doesn't exist, or if the deadline has changed, then we're done
@@ -150,7 +150,7 @@ class DeadlineResolver {
         status: task.status(),
         runId,
       }, task.routes);
-      this.monitor.log.taskException({taskId, runId});
+      this.monitor.log.taskException({ taskId, runId });
     }
 
     return remove();

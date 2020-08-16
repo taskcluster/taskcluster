@@ -1,4 +1,4 @@
-const {FakeCloud} = require('./fake');
+const { FakeCloud } = require('./fake');
 const assert = require('assert').strict;
 const auth = require('@azure/ms-rest-nodeauth');
 const armCompute = require('@azure/arm-compute');
@@ -153,7 +153,7 @@ class ResourceManager {
   makeFakeResource(resourceGroupName, name, overrides = {}) {
     const key = `${resourceGroupName}/${name}`;
     assert(!this._resources.has(key));
-    const res = {id: `id/${name}`, provisioningState: 'Succeeded', ...overrides};
+    const res = { id: `id/${name}`, provisioningState: 'Succeeded', ...overrides };
     this._resources.set(key, res);
     return res;
   }
@@ -235,7 +235,7 @@ class VMResourceManager extends ResourceManager {
   _requestToResource(request) {
     let dataDisks = [];
     for (let i = 0; i < request.parameters.storageProfile.dataDisks.length; i++) {
-      dataDisks.push({name: slugid.nice()});
+      dataDisks.push({ name: slugid.nice() });
     }
     return {
       id: `id/${request.name}`,
@@ -279,7 +279,7 @@ class FakeRestClient {
     const key = `${op[2]}/${op[3]}`;
     const resourceReq = manager._requests.get(key);
     if (!resourceReq) {
-      return {status: 404};
+      return { status: 404 };
     }
 
     return {

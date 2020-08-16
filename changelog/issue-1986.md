@@ -1,5 +1,5 @@
-audience: developers
+audience: users
 level: minor
 reference: issue 1986
 ---
-Adjusted `maxLength` of `hookGroupId` and `hookId` to 1000
+The maximum length of the `hookGroupId` and `hookId` identifiers is now 1000.

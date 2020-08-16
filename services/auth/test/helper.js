@@ -6,12 +6,12 @@ const taskcluster = require('taskcluster-client');
 const load = require('../src/main');
 const slugid = require('slugid');
 const uuid = require('uuid');
-const {APIBuilder} = require('taskcluster-lib-api');
+const { APIBuilder } = require('taskcluster-lib-api');
 const SchemaSet = require('taskcluster-lib-validate');
 const staticScopes = require('../src/static-scopes.json');
 const makeSentryManager = require('./../src/sentrymanager');
-const {syncStaticClients} = require('../src/static-clients');
-const {stickyLoader, Secrets, withPulse, withMonitor, withDb, resetTables} = require('taskcluster-lib-testing');
+const { syncStaticClients } = require('../src/static-clients');
+const { stickyLoader, Secrets, withPulse, withMonitor, withDb, resetTables } = require('taskcluster-lib-testing');
 
 exports.load = stickyLoader(load);
 
@@ -35,16 +35,16 @@ exports.secrets = new Secrets({
   secretName: 'project/taskcluster/testing/taskcluster-auth',
   secrets: {
     azure: [
-      {env: 'AZURE_ACCOUNT', name: 'accountId'},
-      {env: 'AZURE_ACCOUNT_KEY', name: 'accessKey'},
+      { env: 'AZURE_ACCOUNT', name: 'accountId' },
+      { env: 'AZURE_ACCOUNT_KEY', name: 'accessKey' },
     ],
     aws: [
-      {env: 'AWS_ACCESS_KEY_ID', name: 'awsAccessKeyId'},
-      {env: 'AWS_SECRET_ACCESS_KEY', name: 'awsSecretAccessKey'},
-      {env: 'TEST_BUCKET', name: 'testBucket'},
+      { env: 'AWS_ACCESS_KEY_ID', name: 'awsAccessKeyId' },
+      { env: 'AWS_SECRET_ACCESS_KEY', name: 'awsSecretAccessKey' },
+      { env: 'TEST_BUCKET', name: 'testBucket' },
     ],
     gcp: [
-      {env: 'GCP_CREDENTIALS_ALLOWED_PROJECTS', cfg: 'gcpCredentials.allowedProjects', name: 'allowedProjects', mock: {}},
+      { env: 'GCP_CREDENTIALS_ALLOWED_PROJECTS', cfg: 'gcpCredentials.allowedProjects', name: 'allowedProjects', mock: {} },
     ],
   },
   load: exports.load,
@@ -60,7 +60,7 @@ exports.withCfg = (mock, skipping) => {
     exports.load.save();
 
     // override app.staticClients based on the static scopes
-    exports.load.cfg('app.staticClients', staticScopes.map(({clientId}) => ({
+    exports.load.cfg('app.staticClients', staticScopes.map(({ clientId }) => ({
       clientId,
       accessToken: clientId === 'static/taskcluster/root' ? exports.rootAccessToken : 'must-be-at-least-22-characters',
       description: 'testing',
@@ -68,7 +68,7 @@ exports.withCfg = (mock, skipping) => {
 
     // override cfg.app.azureAccounts based on the azure secret
     const sec = exports.secrets.get('azure');
-    exports.load.cfg('app.azureAccounts', {[sec.accountId]: sec.accessKey});
+    exports.load.cfg('app.azureAccounts', { [sec.accountId]: sec.accessKey });
   });
 
   suiteTeardown(async function() {
@@ -135,7 +135,7 @@ exports.withSentry = (mock, skipping) => {
 };
 
 exports.withPulse = (mock, skipping) => {
-  withPulse({helper: exports, skipping, namespace: 'taskcluster-auth'});
+  withPulse({ helper: exports, skipping, namespace: 'taskcluster-auth' });
 };
 
 const testServiceBuilder = new APIBuilder({
@@ -149,7 +149,7 @@ testServiceBuilder.declare({
   method: 'get',
   route: '/resource',
   name: 'resource',
-  scopes: {AllOf: ['myapi:resource']},
+  scopes: { AllOf: ['myapi:resource'] },
   title: 'Get Resource',
   category: 'Auth Service',
   description: '...',
@@ -259,24 +259,24 @@ exports.withGcp = (mock, skipping) => {
   let policy = {};
 
   const fakeGoogleApis = {
-    iam: ({version, auth}) => {
+    iam: ({ version, auth }) => {
       assert.equal(version, 'v1');
 
-      const {client_email} = auth.testCredentials;
+      const { client_email } = auth.testCredentials;
       const iamResource = `projects/-/serviceAccounts/${client_email}`;
 
       return {
         projects: {
           serviceAccounts: {
-            getIamPolicy: async ({resource_}) => {
+            getIamPolicy: async ({ resource_ }) => {
               if (resource_ !== iamResource) {
                 // api method treats any error as "not found"
                 throw new Error('Not found');
               }
 
-              return {data: _.cloneDeep(policy)};
+              return { data: _.cloneDeep(policy) };
             },
-            setIamPolicy: async ({resource, requestBody}) => {
+            setIamPolicy: async ({ resource, requestBody }) => {
               if (resource !== iamResource) {
                 throw new Error('Not found');
               }
@@ -289,15 +289,15 @@ exports.withGcp = (mock, skipping) => {
       };
     },
 
-    iamcredentials: ({version, auth}) => {
+    iamcredentials: ({ version, auth }) => {
       assert.equal(version, 'v1');
 
-      const {client_email} = auth.testCredentials;
+      const { client_email } = auth.testCredentials;
 
       return {
         projects: {
           serviceAccounts: {
-            generateAccessToken: async ({name, scope, delegates, lifetime}) => {
+            generateAccessToken: async ({ name, scope, delegates, lifetime }) => {
               if (name === 'projects/-/serviceAccounts/invalid@mozilla.com') {
                 throw new Error('Invalid account');
               }
@@ -329,7 +329,7 @@ exports.withGcp = (mock, skipping) => {
         project_id: 'testproject',
         client_email: 'test_client@example.com',
       };
-      const auth = {testCredentials: credentials};
+      const auth = { testCredentials: credentials };
       const allowedServiceAccounts = [
         credentials.client_email,
         'invalid@mozilla.com',
@@ -347,7 +347,7 @@ exports.withGcp = (mock, skipping) => {
         project_id: credentials.project_id,
       };
     } else {
-      const {credentials, allowedServiceAccounts} = await exports.load('gcp');
+      const { credentials, allowedServiceAccounts } = await exports.load('gcp');
       exports.gcpAccount = {
         email: allowedServiceAccounts[0],
         project_id: credentials.project_id,
@@ -358,7 +358,7 @@ exports.withGcp = (mock, skipping) => {
 
 exports.resetTables = (mock, skipping) => {
   setup('reset tables', async function() {
-    await resetTables({tableNames: [
+    await resetTables({ tableNames: [
       'roles',
       'clients',
     ] });

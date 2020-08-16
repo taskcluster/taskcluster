@@ -1,7 +1,7 @@
 const events = require('events');
 const amqplib = require('amqplib');
 const assert = require('assert');
-const {MonitorManager} = require('taskcluster-lib-monitor');
+const { MonitorManager } = require('taskcluster-lib-monitor');
 
 let clientCounter = 0;
 
@@ -59,8 +59,8 @@ MonitorManager.register({
  * The pulse namespace for this user is available as `client.namespace`.
  */
 class Client extends events.EventEmitter {
-  constructor({namespace, recycleInterval, retirementDelay, minReconnectionInterval, monitor, credentials,
-    username, password, hostname, vhost, connectionString}) {
+  constructor({ namespace, recycleInterval, retirementDelay, minReconnectionInterval, monitor, credentials,
+    username, password, hostname, vhost, connectionString }) {
     super();
 
     assert(!username, 'username is deprecated');
@@ -163,7 +163,7 @@ class Client extends events.EventEmitter {
 
       try {
         this.lastConnectionTime = new Date().getTime();
-        const {connectionString} = await this.credentials();
+        const { connectionString } = await this.credentials();
         newConn.connect(connectionString);
       } catch (err) {
         this.monitor.log.pulseDisconnected({
@@ -235,7 +235,7 @@ class Client extends events.EventEmitter {
    * Run the given async function with an amqplib channel or confirmChannel. This wraps
    * withConnection to handle closing the channel.
    */
-  withChannel(fn, {confirmChannel} = {}) {
+  withChannel(fn, { confirmChannel } = {}) {
     return this.withConnection(async conn => {
       const method = confirmChannel ? 'createConfirmChannel' : 'createChannel';
       const channel = await conn.amqp[method]();
@@ -329,7 +329,7 @@ class Connection extends events.EventEmitter {
       noDelay: true,
       timeout: 30 * 1000,
     }).catch(err => {
-      this.monitor.log.pulseDisconnected({error: `${err}`});
+      this.monitor.log.pulseDisconnected({ error: `${err}` });
       this.failed();
     });
 
@@ -344,14 +344,14 @@ class Connection extends events.EventEmitter {
 
       amqp.on('error', err => {
         if (this.state === 'connected') {
-          this.monitor.log.pulseDisconnected({error: `${err}`});
+          this.monitor.log.pulseDisconnected({ error: `${err}` });
           this.failed();
         }
       });
 
       amqp.on('close', err => {
         if (this.state === 'connected') {
-          this.monitor.log.pulseDisconnected({error: 'connection closed unexpectedly'});
+          this.monitor.log.pulseDisconnected({ error: 'connection closed unexpectedly' });
           this.failed();
         }
       });

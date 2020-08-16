@@ -1,7 +1,7 @@
 let assert = require('assert');
 let _ = require('lodash');
 const { paginateResults } = require('taskcluster-lib-api');
-const {UNIQUE_VIOLATION} = require('taskcluster-lib-postgres');
+const { UNIQUE_VIOLATION } = require('taskcluster-lib-postgres');
 
 const STATUS_FIELDS = ['retriesLeft', 'runs', 'takenUntil'];
 
@@ -146,7 +146,7 @@ class Task {
       retriesLeft: this.retriesLeft,
       state: this.state(),
       runs: this.runs.map((run, runId) => {
-        return _.defaults({runId}, _.pick(run, [
+        return _.defaults({ runId }, _.pick(run, [
           'state',
           'reasonCreated',
           'reasonResolved',
@@ -163,7 +163,7 @@ class Task {
 
   // Get state of latest run, or 'unscheduled' if no runs
   state() {
-    return (_.last(this.runs) || {state: 'unscheduled'}).state;
+    return (_.last(this.runs) || { state: 'unscheduled' }).state;
   }
 
   // Update the status of this task using the value returned from one of the task-mutation
@@ -253,7 +253,7 @@ class Provisioner {
     } = {},
   ) {
     const fetchResults = async (query) => {
-      const {continuationToken, rows} = await paginateResults({
+      const { continuationToken, rows } = await paginateResults({
         query,
         fetch: (size, offset) => db.fns.get_queue_provisioners(
           expires,
@@ -301,7 +301,7 @@ class Provisioner {
     }
   }
 
-  async update(db, {description, expires, lastDateActive, stability, actions}) {
+  async update(db, { description, expires, lastDateActive, stability, actions }) {
     return await db.fns.update_queue_provisioner(
       this.provisionerId,
       expires || this.expires,
@@ -393,7 +393,7 @@ class WorkerType {
     } = {},
   ) {
     const fetchResults = async (query) => {
-      const {continuationToken, rows} = await paginateResults({
+      const { continuationToken, rows } = await paginateResults({
         query,
         fetch: (size, offset) => db.fns.get_queue_worker_types(
           provisionerId || null,
@@ -440,7 +440,7 @@ class WorkerType {
     }
   }
 
-  async update(db, {description, expires, lastDateActive, stability}) {
+  async update(db, { description, expires, lastDateActive, stability }) {
     return await db.fns.update_queue_worker_type(
       this.provisionerId,
       this.workerType,
@@ -537,7 +537,7 @@ class Worker {
     } = {},
   ) {
     const fetchResults = async (query) => {
-      const {continuationToken, rows} = await paginateResults({
+      const { continuationToken, rows } = await paginateResults({
         query,
         fetch: (size, offset) => db.fns.get_queue_workers(
           provisionerId || null,
@@ -596,7 +596,7 @@ class Worker {
     }
   }
 
-  async update(db, {quarantineUntil, expires, recentTasks}) {
+  async update(db, { quarantineUntil, expires, recentTasks }) {
     return await db.fns.update_queue_worker(
       this.provisionerId,
       this.workerType,

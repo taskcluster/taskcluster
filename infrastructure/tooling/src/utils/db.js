@@ -1,6 +1,6 @@
 const path = require('path');
 const assert = require('assert');
-const {readRepoFile, writeRepoFile, modifyRepoFile} = require('./repo');
+const { readRepoFile, writeRepoFile, modifyRepoFile } = require('./repo');
 
 /**
  * Get an array giving the DB version for each Taskcluster version
@@ -129,7 +129,7 @@ exports.updateDbFns = async (schema, releases, currentTcVersion) => {
 
   for (let [serviceName, methods] of services.entries()) {
     output.push(` * [${serviceName} functions](#${serviceName})`);
-    for (let {name} of methods.filter(method => !method.deprecated)) {
+    for (let { name } of methods.filter(method => !method.deprecated)) {
       output.push(`   * [\`${name}\`](#${name})`);
     }
   }
@@ -139,7 +139,7 @@ exports.updateDbFns = async (schema, releases, currentTcVersion) => {
   for (let [serviceName, methods] of services.entries()) {
     output.push(`## ${serviceName}\n`);
 
-    for (let {name} of methods.filter(method => !method.deprecated)) {
+    for (let { name } of methods.filter(method => !method.deprecated)) {
       output.push(`* [\`${name}\`](#${name})`);
     }
 

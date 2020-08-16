@@ -11,9 +11,9 @@ exports.scopeExpression = {
 exports.tasks = [];
 
 [
-  {taskType: 'succeed', successCondition: 'completed'},
-  {taskType: 'fail', successCondition: 'failed'},
-].forEach(({taskType, successCondition})=>{
+  { taskType: 'succeed', successCondition: 'completed' },
+  { taskType: 'fail', successCondition: 'failed' },
+].forEach(({ taskType, successCondition })=>{
   exports.tasks.push({
     title: `Create built-in/${taskType} task (--target built-in/${taskType})`,
     requires: [
@@ -38,7 +38,7 @@ exports.tasks = [];
         payload: {},
       };
       let taskId = taskcluster.slugid();
-      utils.status({message: 'built-in/' + taskType + ' taskId: ' + taskId});
+      utils.status({ message: 'built-in/' + taskType + ' taskId: ' + taskId });
       let queue = new taskcluster.Queue(taskcluster.fromEnvVars());
       await queue.createTask(taskId, task);
       let pollForStatusStart = new Date();

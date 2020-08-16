@@ -149,7 +149,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       assume(helper.creator.fireCalls).deep.equals([{
         hookGroupId: 'tests',
         hookId: 'test',
-        context: {firedBy: 'schedule'},
+        context: { firedBy: 'schedule' },
         options: {
           taskId: helper.db.decrypt({ value: oldTaskId }).toString('utf8'),
           created: new Date(3000, 0, 0, 0, 0, 0, 0),
@@ -196,7 +196,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       const monitor = await helper.load('monitor');
       assert.equal(
         monitor.manager.messages.filter(
-          ({Type, Fields}) => Type === 'monitor.error' && Fields.message === 'uhoh',
+          ({ Type, Fields }) => Type === 'monitor.error' && Fields.message === 'uhoh',
         ).length,
         1);
       monitor.manager.reset();
@@ -265,7 +265,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       const monitor = await helper.load('monitor');
       assert.equal(
         monitor.manager.messages.filter(
-          ({Type, Fields}) =>
+          ({ Type, Fields }) =>
             Type === 'monitor.generic' &&
             Fields.message === 'Hook failure email rejected: example@example.com is denylisted',
         ).length,

@@ -1,5 +1,5 @@
 const assert = require('assert');
-const {App} = require('../');
+const { App } = require('../');
 const request = require('superagent');
 const express = require('express');
 const isUUID = require('is-uuid');
