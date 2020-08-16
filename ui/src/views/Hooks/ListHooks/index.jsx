@@ -31,6 +31,9 @@ import hooksQuery from './hooks.graphql';
     button: true,
     color: '#fff',
   },
+  treeItemLabel: {
+    padding: theme.spacing(1),
+  },
 }))
 export default class ListHooks extends Component {
   handleCreateHook = () => {
@@ -49,9 +52,6 @@ export default class ListHooks extends Component {
   };
 
   render() {
-    const treeViewStyle = {
-      padding: '10px 5px',
-    };
     const {
       classes,
       description,
@@ -73,7 +73,7 @@ export default class ListHooks extends Component {
     const renderTree = treeItem => {
       const item = (
         <TreeItem
-          style={treeViewStyle}
+          classes={{ label: classes.treeItemLabel }}
           key={treeItem.value}
           nodeId={treeItem.value}
           label={treeItem.value}>
@@ -105,7 +105,6 @@ export default class ListHooks extends Component {
         <ErrorPanel fixed error={error} />
         {hookGroups && (
           <TreeView
-            style={treeViewStyle}
             defaultCollapseIcon={<ExpandMoreIcon />}
             defaultExpanded={['root']}
             defaultExpandIcon={<ChevronRightIcon />}>
