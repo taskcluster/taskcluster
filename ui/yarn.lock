@@ -9215,16 +9215,6 @@ material-ui-json-schema-viewer@^1.0.3:
     prop-types "^15.7.2"
     ramda "^0.26.1"
 
-material-ui-treeview@^5.0.0:
-  version "5.0.0"
-  resolved "https://registry.yarnpkg.com/material-ui-treeview/-/material-ui-treeview-5.0.0.tgz#af8d8e1e55552e59046d96dae5630a9f827f1c5d"
-  integrity sha512-kWkX9ceL6WZbHZbFdAZq6ghYXls8hSRX1X4Z8FyzABhB6OKmZrVc3yiBuSDUyC9TedsOtSbQRMukSKY1TDkAjw==
-  dependencies:
-    "@material-ui/icons" "^4.5.1"
-    classnames "^2.2.6"
-    fast-memoize "^2.5.1"
-    ramda "^0.25.0"
-
 math-expression-evaluator@^1.2.14:
   version "1.2.17"
   resolved "https://registry.yarnpkg.com/math-expression-evaluator/-/math-expression-evaluator-1.2.17.tgz#de819fdbcd84dccd8fae59c6aeb79615b9d266ac"
@@ -11370,11 +11360,6 @@ querystringify@^2.0.0, querystringify@^2.1.1:
   version "2.1.1"
   resolved "https://registry.yarnpkg.com/querystringify/-/querystringify-2.1.1.tgz#60e5a5fd64a7f8bfa4d2ab2ed6fdf4c85bad154e"
   integrity sha512-w7fLxIRCRT7U8Qu53jQnJyPkYZIaR4n5151KMfcJlO/A9397Wxb1amJvROTK6TOnp7PfoAmg/qXiNHI+08jRfA==
-
-ramda@^0.25.0:
-  version "0.25.0"
-  resolved "https://registry.yarnpkg.com/ramda/-/ramda-0.25.0.tgz#8fdf68231cffa90bc2f9460390a0cb74a29b29a9"
-  integrity sha512-GXpfrYVPwx3K7RQ6aYT8KPS8XViSXUVJT1ONhoKPE9VAleW42YE+U+8VEyGWt41EnEQW7gwecYJriTI0pKoecQ==
 
 ramda@^0.26.1:
   version "0.26.1"

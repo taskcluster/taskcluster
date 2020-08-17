@@ -84,7 +84,11 @@ export default class ListHooks extends Component {
       );
 
       if (treeItem.href) {
-        return <Link to={treeItem.href}>{item}</Link>;
+        return (
+          <Link to={treeItem.href} key={treeItem.value}>
+            {item}
+          </Link>
+        );
       }
 
       return item;
