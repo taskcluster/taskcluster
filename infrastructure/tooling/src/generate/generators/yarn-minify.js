@@ -4,7 +4,7 @@ const { gitLsFiles } = require('../../utils');
 // Ignore packages while we slowly whittle away the requirements
 const IGNORE = {
   'clients/client/yarn.lock': pkg => false,
-  'clients/client-web/yarn.lock': pkg => true,
+  'clients/client-web/yarn.lock': pkg => false,
   'yarn.lock': pkg => true,
   'ui/yarn.lock': pkg => true,
   'workers/docker-worker/yarn.lock': pkg => true,
