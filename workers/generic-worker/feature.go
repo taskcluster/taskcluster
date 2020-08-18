@@ -1,6 +1,6 @@
 package main
 
-import "github.com/taskcluster/taskcluster/v36/internal/scopes"
+import "github.com/taskcluster/taskcluster/v37/internal/scopes"
 
 type (
 	Feature interface {

@@ -12,9 +12,9 @@ import (
 
 	"golang.org/x/crypto/ed25519"
 
-	"github.com/taskcluster/taskcluster/v36/clients/client-go/tcqueue"
-	"github.com/taskcluster/taskcluster/v36/internal/scopes"
-	"github.com/taskcluster/taskcluster/v36/workers/generic-worker/fileutil"
+	"github.com/taskcluster/taskcluster/v37/clients/client-go/tcqueue"
+	"github.com/taskcluster/taskcluster/v37/internal/scopes"
+	"github.com/taskcluster/taskcluster/v37/workers/generic-worker/fileutil"
 )
 
 const (

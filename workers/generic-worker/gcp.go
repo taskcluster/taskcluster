@@ -11,8 +11,8 @@ import (
 	"strings"
 
 	"github.com/taskcluster/httpbackoff/v3"
-	"github.com/taskcluster/taskcluster/v36/clients/client-go/tcworkermanager"
-	"github.com/taskcluster/taskcluster/v36/workers/generic-worker/gwconfig"
+	"github.com/taskcluster/taskcluster/v37/clients/client-go/tcworkermanager"
+	"github.com/taskcluster/taskcluster/v37/workers/generic-worker/gwconfig"
 )
 
 var (
