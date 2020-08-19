@@ -159,6 +159,7 @@
     "taskcluster-lib-testing": "link:libraries/testing",
     "temporary": "^1.0.0",
     "ws": "^7.2.1",
+    "yarn-minify": "^1.0.1",
     "zen-observable": "^0.8.11",
     "zurvan": "^0.5.2"
   },
