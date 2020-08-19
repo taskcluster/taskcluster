@@ -4513,9 +4513,9 @@ media-typer@0.3.0:
   integrity sha1-hxDXrwqmJvj/+hzgAWhUUmMlV0g=
 
 memorystore@^1.6.1:
-  version "1.6.1"
-  resolved "https://registry.yarnpkg.com/memorystore/-/memorystore-1.6.1.tgz#c1df4e6892f303a7782537a4e1a49e4ec1d8ed53"
-  integrity sha512-rYRjVukgBR9sptGI3IfpAjZc4SkupddhAenUhPTGprnqM8Qh863PxfXxXWlfvHpMIAkJCok28Bm7ZlOKB4U+MA==
+  version "1.6.2"
+  resolved "https://registry.yarnpkg.com/memorystore/-/memorystore-1.6.2.tgz#66e7190d7d54885372c1aec3e256b92e3bf1d163"
+  integrity sha512-HQM+cZB/kY1+jj57It22FsptJ3nuZRYxnwh3rWZEvDZO1zuzhIrX9uyFcjP9AhFQvM5WS6vZKtn3veohDH4S7w==
   dependencies:
     debug "3.1.0"
     lru-cache "^4.0.3"
