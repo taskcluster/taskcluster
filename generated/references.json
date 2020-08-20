@@ -5562,19 +5562,7 @@
       "properties": {
         "action": {
           "description": "The GitHub `action` which triggered an event.\n",
-          "enum": [
-            "assigned",
-            "unassigned",
-            "labeled",
-            "unlabeled",
-            "opened",
-            "edited",
-            "closed",
-            "reopened",
-            "synchronize",
-            "review_requested",
-            "review_request_removed"
-          ]
+          "type": "string"
         },
         "body": {
           "description": "The raw body of github event (for version 1)\n",
