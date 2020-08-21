@@ -386,6 +386,21 @@ class Database {
     assert.deepEqual(current, schema.tables.get());
   }
 
+  async _checkVersion({db, schema}) {
+    await db._withClient('admin', async client => {
+      const version = await client.query(`
+        SELECT current_setting('server_version_num');
+      `);
+      const ver = version.rows[0].current_setting;
+      if (ver < 110000) {
+        throw new Error("Postgres version is less than 11. Please upgrade to 11.x");
+      }
+      if (ver > 120000) {
+        throw new Error("Postgres version is greater than 11. Please downgrade to 11.x");
+      }
+    });
+  }
+
   async _createExtensions() {
     await this._withClient('admin', async client => {
       for (let ext of EXTENSIONS) {
