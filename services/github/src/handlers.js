@@ -561,7 +561,20 @@ async function statusHandler(message) {
           customCheckRunAnnotations = json;
         }
       } catch (e) {
-        await this.monitor.reportError(e);
+        if (e instanceof SyntaxError) {
+          let errorMessage = "returned text is not valid JSON";
+          await this.createExceptionComment({
+            debug,
+            instGithub,
+            organization,
+            repository,
+            sha,
+            error: new Error(errorMessage),
+          });
+        }
+        else{
+          await this.monitor.reportError(e);
+        }
       }
     }
 

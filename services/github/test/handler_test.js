@@ -882,6 +882,26 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       sinon.restore();
     });
 
+    test('generate error report when the returned text is not valid JSON', async function() {
+      await addBuild({ state: 'pending', taskGroupId: TASKGROUPID });
+      await addCheckRun({ taskGroupId: TASKGROUPID, taskId: CUSTOM_CHECKRUN_TASKID });
+      sinon.restore();
+      sinon.stub(utils, "throttleRequest")
+        .onFirstCall()
+        .returns({ status: 404 })
+        .onSecondCall()
+        .returns({ status: 200, text: "{{{invalid json!!"});
+      await simulateExchangeMessage({
+        taskGroupId: TASKGROUPID,
+        exchange: 'exchange/taskcluster-queue/v1/task-completed',
+        routingKey: 'route.checks',
+        taskId: CUSTOM_CHECKRUN_TASKID,
+        reasonResolved: 'completed',
+        state: 'completed',
+      });
+      sinon.restore();
+    });
+
     test('fails to get custom check run annotations from an artifact - should log an error', async function () {
       // note: production code doesn't throw the error, just logs it, so the handlers is not interrupted
       await addBuild({ state: 'pending', taskGroupId: TASKGROUPID });
