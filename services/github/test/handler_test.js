@@ -890,7 +890,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         .onFirstCall()
         .returns({ status: 404 })
         .onSecondCall()
-        .returns({ status: 200, text: "{{{invalid json!!"});
+        .returns({ status: 200, text: "{{{invalid json!!" });
       await simulateExchangeMessage({
         taskGroupId: TASKGROUPID,
         exchange: 'exchange/taskcluster-queue/v1/task-completed',
