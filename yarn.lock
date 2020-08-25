@@ -84,7 +84,7 @@
     "@azure/ms-rest-js" "^2.0.4"
     tslib "^1.10.0"
 
-"@azure/ms-rest-js@^2.0.4", "@azure/ms-rest-js@^2.0.5":
+"@azure/ms-rest-js@^2.0.4", "@azure/ms-rest-js@^2.0.8":
   version "2.0.8"
   resolved "https://registry.yarnpkg.com/@azure/ms-rest-js/-/ms-rest-js-2.0.8.tgz#f84304fba29e699fc7a391ce47af2824af4f585e"
   integrity sha512-PO4pnYaF66IAB/RWbhrTprGyhOzDzsgcbT7z8k3O38JKlwifbrhW+8M0fzx0ScZnaacP8rZyBazYMUF9P12c0g==
