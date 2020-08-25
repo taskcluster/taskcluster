@@ -562,7 +562,7 @@ async function statusHandler(message) {
         }
       } catch (e) {
         if (e instanceof SyntaxError) {
-          let errorMessage = "returned text is not valid JSON";
+          let errorMessage = `Custom annotations artifact ${annotationsArtifactName} on task ${taskId} does not contain valid JSON.`;
           await this.createExceptionComment({
             debug,
             instGithub,
