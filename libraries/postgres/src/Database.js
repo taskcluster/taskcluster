@@ -187,6 +187,8 @@ class Database {
         await Database._checkPermissions({db, schema, usernamePrefix});
         showProgress('...checking table columns');
         await Database._checkTableColumns({db, schema, usernamePrefix});
+        showProgress('...checking version');
+        await Databse._checkVersion({db, schema});
       }
     } finally {
       await db.close();
