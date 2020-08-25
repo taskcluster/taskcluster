@@ -891,6 +891,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         .returns({ status: 404 })
         .onSecondCall()
         .returns({ status: 200, text: "{{{invalid json!!" });
+
       await simulateExchangeMessage({
         taskGroupId: TASKGROUPID,
         exchange: 'exchange/taskcluster-queue/v1/task-completed',
@@ -899,6 +900,11 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         reasonResolved: 'completed',
         state: 'completed',
       });
+      let args = github.inst(9988).repos.createCommitComment.args;
+      assert.equal(args[0][0].owner, 'TaskclusterRobot');
+      assert.equal(args[0][0].repo, 'hooks-testing');
+      assert.equal(args[0][0].commit_sha, '03e9577bc1ec60f2ff0929d5f1554de36b8f48cf');
+      assert(args[0][0].body.indexOf('Custom annotations artifact public/github/customCheckRunAnnotations.json on task apple does not contain valid JSON.\n') !== -1);
       sinon.restore();
     });
 
