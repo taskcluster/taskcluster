@@ -53,7 +53,7 @@
     "@azure/ms-rest-js" "^2.0.4"
     tslib "^1.10.0"
 
-"@azure/arm-resources@^2.0.0":
+"@azure/arm-resources@^2.1.0":
   version "2.1.0"
   resolved "https://registry.yarnpkg.com/@azure/arm-resources/-/arm-resources-2.1.0.tgz#bb7a3faca0c717656bef93c6f81ff6a9d1d8fa8b"
   integrity sha512-WpBQt3QwfulWAgss7r6apfKswc6SS8Z005AhQalx618757dX+0kTiizL5XipDZFWq/nlCN2fFv9ba1m4v5x2tg==
