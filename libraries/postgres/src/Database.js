@@ -395,7 +395,7 @@ class Database {
       if (ver < 110000) {
         throw new Error("Postgres version is less than 11. Please upgrade to 11.x");
       }
-      if (ver > 120000) {
+      if (ver >= 120000) {
         throw new Error("Postgres version is greater than 11. Please downgrade to 11.x");
       }
     });
